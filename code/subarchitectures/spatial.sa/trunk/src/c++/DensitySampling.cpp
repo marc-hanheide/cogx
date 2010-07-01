@@ -87,6 +87,7 @@ copyObject(const spatial::Object *o)
 }
 
 SampleCloud::SampleCloud(const spatial::Object *o1, const spatial::Object *o2, 
+    spatial::SpatialRelationType _rel,
     Vector3 offset,
     double intervalQuantum,
     int intervalMultiplier,
@@ -95,6 +96,7 @@ SampleCloud::SampleCloud(const spatial::Object *o1, const spatial::Object *o2,
     int zExt,
     const vector<Matrix33> &orientations1,
     const vector<Matrix33> &orientations2) :
+  rel(_rel),
   sampleOffset(offset),
   sampleIntervalQuantum(intervalQuantum),
   sampleIntervalMultiplier(intervalMultiplier),
@@ -106,6 +108,7 @@ SampleCloud::SampleCloud(const spatial::Object *o1, const spatial::Object *o2,
 {
   object1 = copyObject(o1);
   object2 = copyObject(o2);
+  kernelRadius = 0.0;
 }
 
 SampleCloud::SampleCloud(const SampleCloud &a) :
@@ -116,7 +119,8 @@ SampleCloud::SampleCloud(const SampleCloud &a) :
   yExtent(a.yExtent),
   zExtent(a.zExtent),
   object1Orientations(a.object1Orientations),
-  object2Orientations(a.object2Orientations)
+  object2Orientations(a.object2Orientations),
+  kernelRadius(a.kernelRadius)
 {
   object1 = copyObject(a.object1);
   object2 = copyObject(a.object2);
@@ -140,6 +144,7 @@ SampleCloud::operator=(const SampleCloud &a)
 
   object1 = copyObject(a.object1);
   object2 = copyObject(a.object2);
+  kernelRadius = a.kernelRadius;
   return *this;
 }
 
@@ -165,10 +170,9 @@ struct OffsetKernel {
 
 
 void
-sampleBinaryRelationRecursively(const vector <SpatialRelationType> &relations,
+DensitySampler::sampleBinaryRelationRecursively(const vector <SpatialRelationType> &relations,
     const vector<spatial::Object *> &objects,
     int currentLevel, Cure::LocalGridMap<double> &outMap,
-    int sampleNumberTarget, int orientationQuantization, double kernelWidthFactor, 
     double &total, const vector<Vector3> &triangle, double baseOnness)
 {
   spatial::Object *supportObject = objects[currentLevel+1];
@@ -234,6 +238,9 @@ sampleBinaryRelationRecursively(const vector <SpatialRelationType> &relations,
 
       maxVertical = frameRadius*1.5;
       break;
+    default:
+      cerr << "Unsupported relation type!\n";
+      exit(8);
   }
 
   int mapSize = outMap.getSize();
@@ -249,11 +256,11 @@ sampleBinaryRelationRecursively(const vector <SpatialRelationType> &relations,
   int sampleNumberTargetUsed;
   switch (objects.size()-2 - currentLevel) {
     case 0: //Base level
-      sampleNumberTargetUsed = sampleNumberTarget;
+      sampleNumberTargetUsed = m_sampleNumberTarget;
       break;
     case 1: //One level of indirection
     default:
-      sampleNumberTargetUsed = sampleNumberTarget / 10;
+      sampleNumberTargetUsed = m_sampleNumberTarget / 10;
       break;
   }
 
@@ -270,7 +277,7 @@ sampleBinaryRelationRecursively(const vector <SpatialRelationType> &relations,
   // (keeps the number of sampled positions less than sampleNumberTarget)
   samplingInterval = cellSize*(ceil(samplingInterval/cellSize));
 
-  double kernelRadius = samplingInterval * kernelWidthFactor;
+  double kernelRadius = samplingInterval * m_kernelWidthFactor;
   if (kernelRadius < cellSize)
     kernelRadius = cellSize;
   int kernelWidth = (int)(ceil(kernelRadius/cellSize)+0.1);
@@ -278,7 +285,7 @@ sampleBinaryRelationRecursively(const vector <SpatialRelationType> &relations,
   double kernelStep = cellSize/kernelRadius; 
 
   vector<Matrix33> orientations;
-  getRandomSampleSphere(orientations, orientationQuantization);
+  getRandomSampleSphere(orientations, m_orientationQuantization);
 
   double z0 = ((double)rand())/RAND_MAX*samplingInterval;
   //Offset, 0-centered, along length samplingInterval
@@ -365,8 +372,7 @@ sampleBinaryRelationRecursively(const vector <SpatialRelationType> &relations,
 	    // Sample and recurse, if the value is above a threshold
 	    if (value > 0.5) {
 	      sampleBinaryRelationRecursively(relations, objects, currentLevel-1,
-		  outMap, sampleNumberTarget, orientationQuantization, 
-		  kernelWidthFactor, total, triangle, value * baseOnness);
+		  outMap, total, triangle, value * baseOnness);
 	    }
 	  }
 	}
@@ -394,11 +400,126 @@ sampleBinaryRelationRecursively(const vector <SpatialRelationType> &relations,
   onObject->pose = oldPose;
 }
 
+
+SampleCloud *
+DensitySampler::createRelativeSampleCloud(SpatialRelationType relationType,
+    Object *o1, Object *o2, 
+    const vector<Matrix33> &orientations1,
+    const vector<Matrix33> &orientations2,
+    double cellSize)
+{
+  // Find sample box extents depending on support object dimensions
+  // and relation type
+  double frameRadius;
+  double maxVertical;
+  double minVertical;
+  double maxLateral;
+  switch (relationType) {
+
+    case RELATION_ON:
+      if (o1->type == spatial::OBJECT_PLANE) {
+	spatial::PlaneObject &table1 = (spatial::PlaneObject &)(*o1);
+	if (table1.shape == spatial::PLANE_OBJECT_RECTANGLE) {
+	  frameRadius = table1.radius1 > table1.radius2 ?
+	    table1.radius1 : table1.radius2;
+	}
+	else {
+	  cerr << "Unsupported object type!\n";
+	  return 0;
+	}
+      }
+      else if (o1->type == spatial::OBJECT_BOX ||
+	  o1->type == spatial::OBJECT_HOLLOW_BOX) {
+	spatial::BoxObject &box1 = (spatial::BoxObject &)(*o1);
+	frameRadius = box1.radius1 > box1.radius2 ?
+	  box1.radius1 : box1.radius2;
+	frameRadius = frameRadius > box1.radius3 ? 
+	  frameRadius : box1.radius3;
+      }
+      else {
+	cerr << "Unsupported object type!\n";
+	return 0;
+      }
+      maxLateral = frameRadius*1.5;
+      minVertical = -frameRadius*1.5;
+      maxVertical = frameRadius*3;
+      break;
+
+    case RELATION_IN:
+      if (o1->type == spatial::OBJECT_HOLLOW_BOX) {
+	spatial::BoxObject &box1 = (spatial::BoxObject &)(*o1);
+	frameRadius = box1.radius1 > box1.radius2 ?
+	  box1.radius1 : box1.radius2;
+	frameRadius = frameRadius > box1.radius3 ? 
+	  frameRadius : box1.radius3;
+      }
+      else {
+	cerr << "Unsupported object type!\n";
+	return 0;
+      }
+      maxLateral = frameRadius*1.5;
+      minVertical = -frameRadius*1.5;
+
+      maxVertical = frameRadius*1.5;
+      break;
+    default:
+      cerr << "Unsupported relation type!\n";
+      exit(8);
+  }
+
+  double x1 = -maxLateral + o1->pose.pos.x;
+  double x2 = maxLateral + o1->pose.pos.x;
+  double y1 = -maxLateral + o1->pose.pos.y;
+  double y2 = maxLateral + o1->pose.pos.y;
+  double zmin = o1->pose.pos.z + minVertical;
+  double zmax = o1->pose.pos.z + maxVertical;
+
+  // Distribute N samples over the whole volume
+  double sampleVolume = (x2-x1)*(y2-y1)*(zmax-zmin);
+
+  // samplingInterval: distance between successive samples.
+  // Can be set to a non-multiple of cellSize, but that may lead to
+  // aliasing problems.
+
+  double samplingInterval = pow(sampleVolume/m_sampleNumberTarget, 1/3.0); 
+  // Round samplingInterval upward to the nearest multiple of cellSize
+  // (keeps the number of sampled positions less than sampleNumberTarget)
+  samplingInterval = cellSize*(ceil(samplingInterval/cellSize));
+  int samplingMultiplier = (int)(samplingInterval/cellSize+0.1);
+
+  double z0 = ((double)rand())/RAND_MAX*samplingInterval;
+  //Offset, 0-centered, along length samplingInterval
+  double xOffset = (((double)rand())/RAND_MAX - 0.5) * samplingInterval; 
+  double yOffset = (((double)rand())/RAND_MAX - 0.5) * samplingInterval; 
+
+  int xExtent = (int)(maxLateral / samplingInterval);
+  int yExtent = (int)(maxLateral / samplingInterval);
+  int zExtent = (int)(maxVertical / samplingInterval);
+
+
+  SampleCloud *ret = 
+    new SampleCloud(o1, o2, 
+	relationType,
+	vector3(xOffset, yOffset, z0),
+	cellSize, samplingMultiplier,
+	xExtent,
+	yExtent,
+	zExtent,
+	orientations1,
+	orientations2);
+  ret->kernelRadius = samplingInterval * m_kernelWidthFactor;
+
+  return ret;
+}
+
+
 void
-sampleBinaryRelationSystematically(const vector <SpatialRelationType> &relations,
+DensitySampler::sampleBinaryRelationSystematically(
+    const vector <SpatialRelationType> &relations,
     const vector<spatial::Object *> &objects,
+    const vector<Matrix33> &supportObjectOrientations,
+    const std::vector<string> &objectLabels,
     Cure::LocalGridMap<double> &outMap,
-    int sampleNumberTarget, int orientationQuantization, double kernelWidthFactor,
     double &total, double baseValue)
 {
   spatial::Object *supportObject = objects.back();
@@ -407,20 +528,6 @@ sampleBinaryRelationSystematically(const vector <SpatialRelationType> &relations
     return;
   }
 
-  // Set up a systematically sampled sphere for each variable object
-  vector<vector<Matrix33> >objectOrientations;
-  for (unsigned int i = 1; i < objects.size(); i++) {
-    objectOrientations.push_back(vector<Matrix33>());
-    getRandomSampleSphere(objectOrientations.back(), orientationQuantization);
-  }
-  objectOrientations.push_back(vector<Matrix33>());
-  objectOrientations.back().push_back(supportObject->pose.rot);
-
-
-  // Set up the parameters of the position sampling
-  // If the relation is independent of absolute orientation, this
-  // sample system will rotate with the object;
-  // otherwise it will be in global coordinates.
 
   SampleCloud totalCloud;
 
@@ -432,121 +539,79 @@ sampleBinaryRelationSystematically(const vector <SpatialRelationType> &relations
     spatial::Object *onObject = objects[currentLevel];
     supportObject = objects[currentLevel+1];
 
+    string onObjectLabel = objectLabels[currentLevel];
+    string supportObjectLabel = objectLabels[currentLevel+1];
+
     Pose3 oldPose = onObject->pose;
 
+    SampleCloud *cloud = 0;
 
-    // Find sample box extents depending on support object dimensions
-    // and relation type
-    double frameRadius;
-    double maxVertical;
-    double minVertical;
-    double maxLateral;
-    switch (relationType) {
+    // If the support object here is the "given" object - i.e. the bottommost one
+    // in the hierarchy, then create a temporary sample cloud for that combination
+    // of orientations. Otherwise, see if there's one cached
+    if (currentLevel+1 == objects.size()-1) {
+      if (m_objectOrientations.find(onObjectLabel) == m_objectOrientations.end()) {
+	getRandomSampleSphere(m_objectOrientations[onObjectLabel], 
+	    m_orientationQuantization);
+      }
 
-      case RELATION_ON:
-	if (supportObject->type == spatial::OBJECT_PLANE) {
-	  spatial::PlaneObject &table1 = (spatial::PlaneObject &)(*supportObject);
-	  if (table1.shape == spatial::PLANE_OBJECT_RECTANGLE) {
-	    frameRadius = table1.radius1 > table1.radius2 ?
-	      table1.radius1 : table1.radius2;
-	  }
-	  else {
-	    cerr << "Unsupported object type!\n";
-	    return;
-	  }
+      // Have to create new cloud
+      cloud = createRelativeSampleCloud(relationType,
+	  supportObject, onObject,
+	  supportObjectOrientations, 
+	  m_objectOrientations[onObjectLabel],
+	  outMap.getCellSize());
+      cloud->compute();
+    }
+    else {
+      // Randomly sampled orientations on both objects
+      // See if there's a cached point cloud for this
+      for (vector<SampleCloudContainer>::iterator it = m_sampleClouds.begin();
+	  it != m_sampleClouds.end(); it++) {
+	if (it->obj1Label == supportObjectLabel && it->obj2Label == onObjectLabel &&
+	    it->cloud->rel == relationType) {
+	  cloud = it->cloud;
+	  break;
 	}
-	else if (supportObject->type == spatial::OBJECT_BOX ||
-	    supportObject->type == spatial::OBJECT_HOLLOW_BOX) {
-	  spatial::BoxObject &box1 = (spatial::BoxObject &)(*supportObject);
-	  frameRadius = box1.radius1 > box1.radius2 ?
-	    box1.radius1 : box1.radius2;
-	  frameRadius = frameRadius > box1.radius3 ? 
-	    frameRadius : box1.radius3;
+      }
+      if (cloud == 0) {
+	if (m_objectOrientations.find(supportObjectLabel) == m_objectOrientations.end()) {
+	  getRandomSampleSphere(m_objectOrientations[supportObjectLabel], 
+	      m_orientationQuantization);
 	}
-	else {
-	  cerr << "Unsupported object type!\n";
-	  return;
+	if (m_objectOrientations.find(onObjectLabel) == m_objectOrientations.end()) {
+	  getRandomSampleSphere(m_objectOrientations[onObjectLabel], 
+	      m_orientationQuantization);
 	}
-	maxLateral = frameRadius*1.5;
-	minVertical = -frameRadius*1.5;
-	maxVertical = frameRadius*3;
-	break;
 
-      case RELATION_IN:
-	if (supportObject->type == spatial::OBJECT_HOLLOW_BOX) {
-	  spatial::BoxObject &box1 = (spatial::BoxObject &)(*supportObject);
-	  frameRadius = box1.radius1 > box1.radius2 ?
-	    box1.radius1 : box1.radius2;
-	  frameRadius = frameRadius > box1.radius3 ? 
-	    frameRadius : box1.radius3;
-	}
-	else {
-	  cerr << "Unsupported object type!\n";
-	  return;
-	}
-	maxLateral = frameRadius*1.5;
-	minVertical = -frameRadius*1.5;
+	// Have to create new cloud
+	cloud = createRelativeSampleCloud(relationType,
+	    supportObject, onObject,
+	    m_objectOrientations[supportObjectLabel],
+	    m_objectOrientations[onObjectLabel],
+	    outMap.getCellSize());
+	cloud->compute();
 
-	maxVertical = frameRadius*1.5;
-	break;
+	SampleCloudContainer tmp = {cloud, supportObjectLabel, onObjectLabel};
+	m_sampleClouds.push_back(tmp);
+      }
     }
 
-    int mapSize = outMap.getSize();
-    double cellSize = outMap.getCellSize();
-
-    double x1 = -maxLateral + supportObject->pose.pos.x;
-    double x2 = maxLateral + supportObject->pose.pos.x;
-    double y1 = -maxLateral + supportObject->pose.pos.y;
-    double y2 = maxLateral + supportObject->pose.pos.y;
-    double zmin = supportObject->pose.pos.z + minVertical;
-    double zmax = supportObject->pose.pos.z + maxVertical;
-
-    // Distribute N samples over the whole volume
-    double sampleVolume = (x2-x1)*(y2-y1)*(zmax-zmin);
-
-    // samplingInterval: distance between successive samples.
-    // Can be set to a non-multiple of cellSize, but that may lead to
-    // aliasing problems.
-
-    double samplingInterval = pow(sampleVolume/sampleNumberTarget, 1/3.0); 
-    // Round samplingInterval upward to the nearest multiple of cellSize
-    // (keeps the number of sampled positions less than sampleNumberTarget)
-    samplingInterval = cellSize*(ceil(samplingInterval/cellSize));
-    int samplingMultiplier = (int)(samplingInterval/cellSize+0.1);
-
-    double z0 = ((double)rand())/RAND_MAX*samplingInterval;
-    //Offset, 0-centered, along length samplingInterval
-    double xOffset = (((double)rand())/RAND_MAX) * samplingInterval; 
-    double yOffset = (((double)rand())/RAND_MAX) * samplingInterval; 
-
-    int xExtent = (int)(maxLateral / samplingInterval);
-    int yExtent = (int)(maxLateral / samplingInterval);
-    int zExtent = (int)(maxVertical / samplingInterval);
-
-    SampleCloud cloud(supportObject, onObject, 
-	vector3(xOffset, yOffset, z0),
-	cellSize, samplingMultiplier,
-	xExtent,
-	yExtent,
-	zExtent,
-	objectOrientations[currentLevel+1],
-	objectOrientations[currentLevel]);
 
 //    log("Computing relation: %i", currentLevel);
-    cloud.compute(relationType);
     if (currentLevel == objects.size()-2) {
-      totalCloud = cloud;
+      totalCloud = *cloud;
     }
     else {
 //      log("Compositing relations");
-      totalCloud = totalCloud.composit(cloud);
+      totalCloud = totalCloud.composit(*cloud);
     }
 
   } while (currentLevel > 0);
 
 //  log("Writing into 2D grid");
   totalCloud.KernelDensityEstimation2D(outMap, 
-      supportObject->pose.pos, kernelWidthFactor, 
+      supportObject->pose.pos, m_kernelWidthFactor, 
       total, baseValue);
 
 }
@@ -582,8 +647,12 @@ SampleCloud::composit(const SampleCloud &B) const {
     B.yExtent * B.sampleIntervalMultiplier;
   int newZExtent = A.zExtent * A.sampleIntervalMultiplier + 
     B.zExtent * B.sampleIntervalMultiplier;
+  newXExtent /= i;
+  newYExtent /= i;
+  newZExtent /= i;
 
   SampleCloud C (A.object1, B.object2, 
+      RELATION_COMPOSITE,
       A.sampleOffset + B.sampleOffset,
       A.sampleIntervalQuantum,
       i, 
@@ -592,6 +661,7 @@ SampleCloud::composit(const SampleCloud &B) const {
       newZExtent,
       A.object1Orientations,
       B.object2Orientations);
+  C.kernelRadius = max(A.kernelRadius, B.kernelRadius);
 
   long numberOfValuesInC = (2*newXExtent+1) * (2*newYExtent+1) * (2*newZExtent+1) 
     * A.object1Orientations.size() * B.object2Orientations.size();
@@ -623,6 +693,10 @@ SampleCloud::composit(const SampleCloud &B) const {
   long samplesInB = BYL * BZL * (2*B.xExtent+1);
 
   double tmp[1000]; //FIXME
+  int offsetInAColumn = 0;
+  int offsetInA_ZY = 0;
+  int offsetInBColumn = 0;
+  int offsetInB_ZY = 0;
   for (int a = 0, ca = 0; a < samplesInA; a++, ca+=AStepInC) {
     long pointOffsetInA = valuesPer3DPoint * a;
     for (int b = 0, cb = 0; b < samplesInB; b++, cb+=BStepInC) {
@@ -642,6 +716,32 @@ SampleCloud::composit(const SampleCloud &B) const {
 	  C.values[pointOffsetInC + nOrientations2 * i + j] += sum;
 	}
       }
+
+      offsetInBColumn++;
+      if (offsetInBColumn == BZL) {
+	// If we're skipping columns in B, compensate
+	cb += BStepInC*(CZL-BZL);
+	offsetInBColumn = 0;
+	offsetInB_ZY++;
+      }
+      if (offsetInB_ZY == BYL) {
+	// If we're skipping Y levels, compensate
+	cb += BStepInC*CZL*(CYL-BYL);
+	offsetInB_ZY = 0;
+      }
+    }
+
+    offsetInAColumn++;
+    if (offsetInAColumn == AZL) {
+      // If we're skipping columns in A, compensate
+      ca += AStepInC*(CZL-AZL);
+      offsetInAColumn = 0;
+      offsetInA_ZY++;
+    }
+    if (offsetInA_ZY == AYL) {
+      // If we're skipping Y levels, compensate
+      ca += AStepInC*CZL*(CYL-AYL);
+      offsetInA_ZY = 0;
     }
   }
 
@@ -649,7 +749,7 @@ SampleCloud::composit(const SampleCloud &B) const {
 }
 
 void
-SampleCloud::compute(SpatialRelationType rel) {
+SampleCloud::compute() {
   // Fill the values vector with values for the relation in question, 
   // for each relative position, and each combination of orientations
   // for the two objects.
@@ -670,7 +770,7 @@ SampleCloud::compute(SpatialRelationType rel) {
   double x = minX, y, z;
   object1->pose.pos = vector3(0,0,0);
   std::set<int> orientationsOverThreshold;
-  long samplesOverThreshold = 0;
+//  long samplesOverThreshold = 0;
   switch (rel) {
     case RELATION_ON:
       for (int xi = -xExtent; xi <= xExtent; xi++, x += sampleInterval) {
@@ -739,7 +839,8 @@ SampleCloud::KernelDensityEstimation2D(Cure::LocalGridMap<double> &outMap,
   double cellSize = outMap.getCellSize();
   int mapSize = outMap.getSize();
 
-  double kernelRadius = sampleInterval * kernelWidthFactor;
+  if (kernelRadius == 0.0)
+    kernelRadius = sampleInterval * kernelWidthFactor;
   if (kernelRadius < cellSize)
     kernelRadius = cellSize;
   int kernelWidth = (int)(ceil(kernelRadius/cellSize)+0.1);
@@ -830,6 +931,204 @@ SampleCloud::KernelDensityEstimation2D(Cure::LocalGridMap<double> &outMap,
       }
     }
   }
+}
+
+template<class T> 
+void writeBinary(ostream &o, const T& item) 
+{
+  const char *tmp = reinterpret_cast<const char *>(&item);
+  o.write(tmp, sizeof(T));
+}
+
+template<class T> 
+void readBinary(istream &o, T& item) 
+{
+  char buf[sizeof(T)];
+  o.get(buf, sizeof(T));
+  item = *(reinterpret_cast<T *>(buf));
+}
+
+ostream &operator<<(ostream &o, const SampleCloud &c)
+{
+  writeBinary(o, c.sampleOffset);
+  writeBinary(o, c.sampleIntervalQuantum);
+  writeBinary(o, c.sampleIntervalMultiplier);
+  writeBinary(o, c.xExtent);
+  writeBinary(o, c.yExtent);
+  writeBinary(o, c.zExtent);
+
+  writeBinary(o, c.object1Orientations.size());
+  writeBinary(o, c.object2Orientations.size());
+  for (unsigned long i = 0; i < c.object1Orientations.size(); i++) { 
+    writeBinary(o, c.object1Orientations[i]);
+  }
+  for (unsigned long i = 0; i < c.object2Orientations.size(); i++) 
+    writeBinary(o, c.object2Orientations[i]);
+
+  const long numberOfValues = (2*c.xExtent+1) * (2*c.yExtent+1) * (2*c.zExtent+1) 
+    * c.object1Orientations.size() * c.object2Orientations.size();
+
+  for (long i = 0; i < numberOfValues; i++) {
+    writeBinary(o, c.values[i]);
+  }
+
+  writeBinary(o, c.object1->type);
+  switch(c.object1->type) {
+    case OBJECT_PLANE:
+      writeBinary(o, *(static_cast<PlaneObject *>(c.object1)));
+      break;
+    case OBJECT_BOX:
+      writeBinary(o, *(static_cast<BoxObject *>(c.object1)));
+      break;
+    case OBJECT_CYLINDER:
+      //      writeBinary(o, *(static_cast< *>(c.object1)));
+      break;
+    case OBJECT_SPHERE:
+      //      writeBinary(o, *(static_cast<PlaneObject *>(c.object1)));
+      break;
+    case OBJECT_HOLLOW_BOX:
+      writeBinary(o, *(static_cast<HollowBoxObject *>(c.object1)));
+      break;
+  }
+
+  writeBinary(o, c.object2->type);
+  switch(c.object2->type) {
+    case OBJECT_PLANE:
+      writeBinary(o, *(static_cast<PlaneObject *>(c.object2)));
+      break;
+    case OBJECT_BOX:
+      writeBinary(o, *(static_cast<BoxObject *>(c.object2)));
+      break;
+    case OBJECT_CYLINDER:
+      //      writeBinary(o, *(static_cast< *>(c.object2)));
+      break;
+    case OBJECT_SPHERE:
+      //      writeBinary(o, *(static_cast<PlaneObject *>(c.object2)));
+      break;
+    case OBJECT_HOLLOW_BOX:
+      writeBinary(o, *(static_cast<HollowBoxObject *>(c.object2)));
+      break;
+  }
+
+  return o;
+}
+
+istream &operator>>(istream &o, SampleCloud &c)
+{
+  readBinary(o, c.sampleOffset);
+  readBinary(o, c.sampleIntervalQuantum);
+  readBinary(o, c.sampleIntervalMultiplier);
+  readBinary(o, c.xExtent);
+  readBinary(o, c.yExtent);
+  readBinary(o, c.zExtent);
+
+  int nOri1;
+  readBinary(o, nOri1);
+  c.object1Orientations.resize(nOri1);
+  for (long i = 0; i < nOri1; i++)  {
+    readBinary(o, c.object1Orientations[i]);
+  }
+
+  int nOri2;
+  readBinary(o, nOri2);
+  c.object2Orientations.resize(nOri2);
+  for (long i = 0; i < nOri2; i++)  {
+    readBinary(o, c.object2Orientations[i]);
+  }
+
+  const long numberOfValues = (2*c.xExtent+1) * (2*c.yExtent+1) * (2*c.zExtent+1) 
+    * c.object1Orientations.size() * c.object2Orientations.size();
+  c.values.resize(numberOfValues);
+  for (long i = 0; i < numberOfValues; i++) 
+    readBinary(o, c.values[i]);
+
+  readBinary(o, c.object1->type);
+  switch(c.object1->type) {
+    case OBJECT_PLANE:
+      {
+	PlaneObject *ptr = new PlaneObject;
+	readBinary(o, *ptr);
+	c.object1 = ptr;
+	break;
+      }
+    case OBJECT_BOX:
+      {
+	BoxObject *ptr = new BoxObject;
+	readBinary(o, *ptr);
+	c.object1 = ptr;
+	break;
+      }
+      break;
+    case OBJECT_CYLINDER:
+      {
+//	CylinderObject *ptr = new CylinderObject;
+//	readBinary(o, *ptr);
+//	c.object1 = ptr;
+	break;
+      }
+      break;
+    case OBJECT_SPHERE:
+      {
+//	SphereObject *ptr = new SphereObject;
+//	readBinary(o, *ptr);
+//	c.object1 = ptr;
+	break;
+      }
+      break;
+    case OBJECT_HOLLOW_BOX:
+      {
+	HollowBoxObject *ptr = new HollowBoxObject;
+	readBinary(o, *ptr);
+	c.object1 = ptr;
+	break;
+      }
+      break;
+  }
+
+  readBinary(o, c.object2->type);
+  switch(c.object2->type) {
+    case OBJECT_PLANE:
+      {
+	PlaneObject *ptr = new PlaneObject;
+	readBinary(o, *ptr);
+	c.object2 = ptr;
+	break;
+      }
+    case OBJECT_BOX:
+      {
+	BoxObject *ptr = new BoxObject;
+	readBinary(o, *ptr);
+	c.object2 = ptr;
+	break;
+      }
+      break;
+    case OBJECT_CYLINDER:
+      {
+//	CylinderObject *ptr = new CylinderObject;
+//	readBinary(o, *ptr);
+//	c.object2 = ptr;
+	break;
+      }
+      break;
+    case OBJECT_SPHERE:
+      {
+//	SphereObject *ptr = new SphereObject;
+//	readBinary(o, *ptr);
+//	c.object2 = ptr;
+	break;
+      }
+      break;
+    case OBJECT_HOLLOW_BOX:
+      {
+	HollowBoxObject *ptr = new HollowBoxObject;
+	readBinary(o, *ptr);
+	c.object2 = ptr;
+	break;
+      }
+      break;
+  }
+
+  return o;
 }
 
 }

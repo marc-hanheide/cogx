@@ -57,9 +57,6 @@ ObjectRelationManager::ObjectRelationManager()
   m_trackerTimeThreshold = 3.0;
   m_timeSinceLastMoved = 0.0;
 
-  m_orientationQuantization = 4;
-  m_sampleNumberTarget = 1000;
-  m_kernelWidthFactor = 1.5;
 }
 
 ObjectRelationManager::~ObjectRelationManager() 
@@ -135,17 +132,17 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
 
   it = _config.find("--orientations");
   if (it != _config.end()) {
-    m_orientationQuantization = atoi(it->second.c_str());
+    m_sampler.setOrientationQuantization(atoi(it->second.c_str()));
   }
 
   it = _config.find("--samples");
   if (it != _config.end()) {
-    m_sampleNumberTarget = atoi(it->second.c_str());
+    m_sampler.setSampleNumberTarget(atoi(it->second.c_str()));
   }
 
   it = _config.find("--kernel-width-factor");
   if (it != _config.end()) {
-    m_kernelWidthFactor = atoi(it->second.c_str());
+    m_sampler.setKernelWidthFactor(atoi(it->second.c_str()));
   }
 
   m_RetryDelay = 10;
@@ -334,8 +331,6 @@ void ObjectRelationManager::runComponent()
 {
   log("I am running!");
 
-  //REMOVEME: SampleCloud test
-
   peekabot::GroupProxy root;
   if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness 
       || m_bTestInness) {
@@ -435,7 +430,7 @@ void ObjectRelationManager::runComponent()
     }
   }
 
-  sleepComponent(10000);
+  sleepComponent(2000);
 
   while (isRunning()) {
     // Dispatch recognition commands if the robot has been standing still
@@ -465,26 +460,27 @@ void ObjectRelationManager::runComponent()
       r = bp.get_transformation(peekabot::WORLD_COORDINATES);
       if (r.succeeded()) {
 	Pose3 boxPose;
+	setIdentity(boxPose);
 	double m[16];
 
-	m[0] = r.get_result().x.x; 
-	m[1] = r.get_result().y.x;
-	m[2] = r.get_result().z.x;
-	m[3] = r.get_result().pos.x;
-	m[4] = r.get_result().y.x;
-	m[5] = r.get_result().y.y;
-	m[6] = r.get_result().z.z;
-	m[7] = r.get_result().pos.y;
-	m[8] = r.get_result().z.x;
-	m[9] = r.get_result().z.y; 
-	m[10] = r.get_result().z.z; 
-	m[11] = r.get_result().pos.z; 
-	m[12] = 0;
-	m[13] = 0;
-	m[14] = 0;
-	m[15] = 0;
-
-	setRow44(boxPose, m);
+//	m[0] = r.get_result().x.x; 
+//	m[1] = r.get_result().y.x;
+//	m[2] = r.get_result().z.x;
+//	m[3] = r.get_result().pos.x;
+//	m[4] = r.get_result().y.x;
+//	m[5] = r.get_result().y.y;
+//	m[6] = r.get_result().z.z;
+//	m[7] = r.get_result().pos.y;
+//	m[8] = r.get_result().z.x;
+//	m[9] = r.get_result().z.y; 
+//	m[10] = r.get_result().z.z; 
+//	m[11] = r.get_result().pos.z; 
+//	m[12] = 0;
+//	m[13] = 0;
+//	m[14] = 0;
+//	m[15] = 0;
+//
+//	setRow44(boxPose, m);
 
 	BoxObject box1;
 
@@ -498,28 +494,30 @@ void ObjectRelationManager::runComponent()
 
 
 
+
 	r = bp2.get_transformation(peekabot::WORLD_COORDINATES);
 	if (r.succeeded()) {
 	  Pose3 boxPose;
-	  double m[16];
-
-	  m[0] = r.get_result().x.x;
-	  m[1] = r.get_result().y.x;
-	  m[2] = r.get_result().z.x;
-	  m[3] = r.get_result().pos.x;
-	  m[4] = r.get_result().y.x;
-	  m[5] = r.get_result().y.y;
-	  m[6] = r.get_result().z.z;
-	  m[7] = r.get_result().pos.y;
-	  m[8] = r.get_result().z.x;
-	  m[9] = r.get_result().z.y;
-	  m[10] = r.get_result().z.z;
-	  m[11] = r.get_result().pos.z;
-	  m[12] = 0;
-	  m[13] = 0;
-	  m[14] = 0;
-	  m[15] = 0;
-
+	  setIdentity(boxPose);
+//	  double m[16];
+//
+//	  m[0] = r.get_result().x.x;
+//	  m[1] = r.get_result().y.x;
+//	  m[2] = r.get_result().z.x;
+//	  m[3] = r.get_result().pos.x;
+//	  m[4] = r.get_result().y.x;
+//	  m[5] = r.get_result().y.y;
+//	  m[6] = r.get_result().z.z;
+//	  m[7] = r.get_result().pos.y;
+//	  m[8] = r.get_result().z.x;
+//	  m[9] = r.get_result().z.y;
+//	  m[10] = r.get_result().z.z;
+//	  m[11] = r.get_result().pos.z;
+//	  m[12] = 0;
+//	  m[13] = 0;
+//	  m[14] = 0;
+//	  m[15] = 0;
+//
 	  
 	 /* m[0] = r.get_result()(0,0);
 	  m[1] = r.get_result()(0,1);
@@ -538,7 +536,7 @@ void ObjectRelationManager::runComponent()
 	  m[14] = r.get_result()(3,2);
 	  m[15] = r.get_result()(3,3);*/
 
-	  setRow44(boxPose, m);
+//	  setRow44(boxPose, m);
 
 	  HollowBoxObject box2;
 
@@ -548,6 +546,31 @@ void ObjectRelationManager::runComponent()
 	  box2.radius2 = 0.105;
 	  box2.radius3 = 0.13;
 	  box2.thickness = 0.02;
+
+  //REMOVEME: SampleCloud test
+	Matrix33 rot;
+	setIdentity(rot);
+	vector<Matrix33> oris;
+	oris.push_back(rot);
+	SampleCloud cloud2(&table1, &box1, RELATION_ON, vector3(0,0,0),
+	    1.0, 1, 1, 1, 0, oris, oris);
+	cloud2.values.resize(3*3*1*1*1);
+	for (int x = 0; x < 3; x++) {
+	  for (int y = 0; y < 3; y++) {
+	    cloud2.values[x*3+y] = x;
+	  }
+	}
+	SampleCloud cloud1(&box1, &box2, RELATION_ON, vector3(0,0,0),
+	    1.0, 1, 1, 1, 1, oris, oris);
+	cloud1.values.resize(3*3*3*1*1);
+	for (int x = 0; x < 3; x++) {
+	  for (int y = 0; y < 3; y++) {
+	    for (int z = 0; z < 3; z++) {
+	    cloud1.values[x*9+y*3+z] = y;
+	    }
+	  }
+	}
+	SampleCloud finMan = cloud1.composit(cloud2);
 
 	vector<Matrix33> oris1;
 	oris1.push_back(Matrix33());
@@ -559,20 +582,20 @@ void ObjectRelationManager::runComponent()
 	  if (m_bTestOnness) {
 	    peekabot::Result<peekabot::Transformation> vr;
 	    vr = sqdp.get_transformation();
-	    if (vr.succeeded()) distanceFalloffOutside= 0.1*vr.get_result().pos.z;
+//	    if (vr.succeeded()) distanceFalloffOutside= 0.1*vr.get_result().pos.z;
 	    vr = scwp.get_transformation();
-	    if (vr.succeeded()) distanceFalloffInside = 0.1*vr.get_result().pos.z;
+//	    if (vr.succeeded()) distanceFalloffInside = 0.1*vr.get_result().pos.z;
 	    vr = bcwp.get_transformation();
-	    if (vr.succeeded()) patchThreshold = 0.1*vr.get_result().pos.z;
+//	    if (vr.succeeded()) patchThreshold = 0.1*vr.get_result().pos.z;
 	    vr = csp.get_transformation();
 	    if (vr.succeeded()) {
 	      //	bottomCOMContainmentSteepness = 
-	      supportCOMContainmentSteepness = 0.1*vr.get_result().pos.z;
+//	      supportCOMContainmentSteepness = 0.1*vr.get_result().pos.z;
 	    }
 	    vr = cop.get_transformation();
 	    if (vr.succeeded()) {
 	      //	bottomCOMContainmentOffset = 
-	      supportCOMContainmentOffset = vr.get_result().pos.z;
+//	      supportCOMContainmentOffset = vr.get_result().pos.z;
 	    }
 
 	    sp.set_scale(evaluateOnness(&table1, &box1));
@@ -609,34 +632,44 @@ void ObjectRelationManager::runComponent()
 	    witp2.set_scale(0.01);
 
 	    if (m_bSampleOnness) {
-	      static bool sampleTable = true;
+	      static bool sampleTable = false;
 
-	      Cure::LocalGridMap<double> pdf(25, 0.05, 0.0, 
+	      Cure::LocalGridMap<double> pdf(50, 0.05, 0.0, 
 		  Cure::LocalGridMap<double>::MAP1, 0, 0);
 	      vector<spatial::Object *>objects;
+	      vector<string> objectLabels;
 	      vector<spatial::SpatialRelationType> relations;
 	      objects.push_back(&box1);
+	      objectLabels.push_back("box1");
 
 	      if (sampleTable) {
 		objects.push_back(&table1);
+		objectLabels.push_back("table1");
 		relations.push_back(RELATION_ON);
 	      }
 	      else {
 		objects.push_back(&box2);
+		objectLabels.push_back("box2");
 		relations.push_back(RELATION_ON);
 		objects.push_back(&table1);
+		objectLabels.push_back("table1");
 		relations.push_back(RELATION_ON);
 	      }
 
 	      //	    objects.push_back(&box2);
+	      //	    objectLabels.push_back("box2");
 	      //	    relations.push_back(RELATION_ON);
 
 	      double total = 0.0;
-	      sampleBinaryRelationSystematically(relations, objects, pdf,
-		  m_sampleNumberTarget, m_orientationQuantization, m_kernelWidthFactor,
+	      vector<cogx::Math::Matrix33> supportObjectOrientations;
+	      supportObjectOrientations.push_back(objects.back()->pose.rot); 
+	      m_sampler.
+		sampleBinaryRelationSystematically(relations, objects, 
+		    supportObjectOrientations, 
+		    objectLabels, pdf,
 		  total, 1.0);
 
-//	      sampleTable = !sampleTable;
+	      sampleTable = !sampleTable;
 
 	      peekabot::LineCloudProxy linecloudp;
 
@@ -691,16 +724,19 @@ void ObjectRelationManager::runComponent()
 	      Cure::LocalGridMap<double> pdf(25, 0.05, 0.0, 
 		  Cure::LocalGridMap<double>::MAP1, 0, 0);
 	      vector<spatial::Object *>objects;
+	      vector<string>objectLabels;
 	      objects.push_back(&box1);
+	      objectLabels.push_back("box1");
 	      objects.push_back(&box2);
+	      objectLabels.push_back("box2");
 	      //	    objects.push_back(&box2);
 	      vector<spatial::SpatialRelationType> relations;
 	      relations.push_back(RELATION_IN);
 	      //	    relations.push_back(RELATION_IN);
 
 	      double total;
-	      sampleBinaryRelationRecursively(relations, objects, objects.size()-2, pdf,
-		  m_sampleNumberTarget, m_orientationQuantization, m_kernelWidthFactor,
+	      m_sampler.
+		sampleBinaryRelationRecursively(relations, objects, objects.size()-2, pdf,
 		  total);
 	      peekabot::LineCloudProxy linecloudp;
 
@@ -1497,9 +1533,9 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     double total = 0.0;
 
     vector<Vector3> dummyTriangle;
-    sampleBinaryRelationRecursively(relations, objectChain, 
+    m_sampler.
+      sampleBinaryRelationRecursively(relations, objectChain, 
 	request->objects.size()-2, outMap, total, 
-	m_sampleNumberTarget, m_orientationQuantization, m_kernelWidthFactor,
 	dummyTriangle, 1.0);
 
     request->outMap = convertFromCureMap(outMap);
@@ -1584,8 +1620,8 @@ ObjectRelationManager::new3DPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     double total = 0.0;
 
     vector<Vector3> dummyTriangle;
-    sampleBinaryRelationRecursively(relations, objectChain, request->objects.size()-2, outMap,
-	m_sampleNumberTarget, m_orientationQuantization, m_kernelWidthFactor,
+    m_sampler.
+      sampleBinaryRelationRecursively(relations, objectChain, request->objects.size()-2, outMap,
 	total, dummyTriangle, 1.0);
 
     request->outMap = convertFromCureMap(outMap);
