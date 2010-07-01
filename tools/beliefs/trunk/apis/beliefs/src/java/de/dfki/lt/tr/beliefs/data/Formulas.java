@@ -1,12 +1,14 @@
 package de.dfki.lt.tr.beliefs.data;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.genericproxies.DistributionContent;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBasicDistribution;
+import de.dfki.lt.tr.beliefs.data.genericproxies.GenericFormula;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
@@ -35,6 +37,16 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 
 	public static Formulas create(DistributionValues content) {
 		return new Formulas(content);
+	}
+
+	public static Formulas create() {
+		return new Formulas(new FormulaValues(new LinkedList<FormulaProbPair>()));
+	}
+
+	public static Formulas create(GenericFormula<?> f) {
+		Formulas fs = new Formulas(new FormulaValues(new LinkedList<FormulaProbPair>()));
+		fs.add(f.get(), 1.0);
+		return fs;
 	}
 
 	protected Formulas(DistributionValues content) {
@@ -230,6 +242,23 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 
 	public Formula firstValue() {
 		return Formula.create(_content.get(0).val);
+	}
+
+	public Formula getMostLikely() {
+		double max = Double.MIN_VALUE;
+		dFormula maxFormula=null;
+		for (FormulaProbPair f : _content.values) {
+			if (f.prob>max) {
+				max = f.prob;
+				maxFormula = f.val;
+			}
+		}
+		if (maxFormula!=null) {
+			return Formula.create(maxFormula);
+		} else {
+			return null;
+		}
+		
 	}
 	
 }

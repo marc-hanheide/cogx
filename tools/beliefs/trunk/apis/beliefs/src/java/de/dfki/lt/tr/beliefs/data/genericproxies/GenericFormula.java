@@ -24,6 +24,7 @@ package de.dfki.lt.tr.beliefs.data.genericproxies;
 
 // Belief API slice
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
+import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
@@ -130,6 +131,10 @@ public class GenericFormula<T extends dFormula> extends Proxy<T> {
 	public void setId(int id) {
 		_content.id = id;
 	} // end setId
+
+	public Formula getAsFormula() {
+		return Formula.create(this.get());
+	}
 
 	// /**
 	// * Returns the formula and probability as a pair
