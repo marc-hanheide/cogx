@@ -37,12 +37,12 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
  */
 public class BoolFormula extends GenericFormula<BooleanFormula> {
 
-	public static WMPointer create(Ice.Object pd) {
-		return new WMPointer(pd);
+	public static BoolFormula create(Ice.Object pd) {
+		return new BoolFormula(pd);
 	}
 	
-	public static WMPointer create(boolean v) {
-		return new WMPointer(new BooleanFormula(-1, v));
+	public static BoolFormula create(boolean v) {
+		return new BoolFormula(new BooleanFormula(-1, v));
 	}
 	
 	
@@ -59,5 +59,6 @@ public class BoolFormula extends GenericFormula<BooleanFormula> {
 	public boolean getVal() {
 		return _content.val;
 	}
+
 	
 } // end class

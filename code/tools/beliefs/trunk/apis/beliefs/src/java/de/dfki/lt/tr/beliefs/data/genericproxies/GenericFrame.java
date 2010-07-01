@@ -48,5 +48,5 @@ public class GenericFrame<T extends AbstractFrame> extends Proxy<T> {
 	protected GenericFrame(Class<? extends T> class1, AbstractFrame content) {
 		super(class1, content);
 	}
-
+	
 } // end class

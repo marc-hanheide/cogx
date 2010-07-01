@@ -58,7 +58,6 @@ class CASTTemporalInterval extends TemporalInterval {
 	cast::cdl::CASTTime end;
  };
 
-
 }; // end spatiotemporalframe
 
 
@@ -109,6 +108,23 @@ class CASTBeliefHistory extends AbstractBeliefHistory{
 }; // end lt
 }; // end dfki
 }; // end de
+
+
+ 
+module eu {
+module cogx {
+module beliefs {
+
+class PerceptBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
+};
+
+class GroundedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
+};
+
+
+}; // end beliefs
+}; // end cogx
+}; // end eu
 
 
 #endif

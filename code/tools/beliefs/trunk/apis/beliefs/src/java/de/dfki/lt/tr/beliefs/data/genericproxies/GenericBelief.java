@@ -111,7 +111,7 @@ public class GenericBelief<T extends dBelief, C extends Distribution<?>> extends
 		return contentFactory.create(_content.content);
 	} // end getContent
 
-	public GenericFrame<AbstractFrame> getFrame() {
+	public GenericFrame<? extends AbstractFrame> getFrame() {
 		return GenericFrame.create(AbstractFrame.class, _content.frame);
 	}
 
