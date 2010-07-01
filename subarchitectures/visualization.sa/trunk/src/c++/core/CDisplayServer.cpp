@@ -527,17 +527,18 @@ void CDisplayServer::onUiDataChanged(CGuiElement *pElement, const std::string& n
 }
 
 // Add request for value to queue, processed in <url:#tn=CDisplayServerI::run>
-void CDisplayServer::getControlStateAsync(cogx::display::CGuiElement *pElement)
+void CDisplayServer::getControlStateAsync(CGuiElement *pElement)
 {
    DTRACE("CDisplayServer::getControlStateAsync");
    if (! hIceDisplayServer.get()) return;
    hIceDisplayServer->addDataChange(new CGuiElementValue(pElement, "", CGuiElementValue::get));
 }
 
-void CDisplayServer::onFormSubmitted(CHtmlChunk *pForm, const TFormValues& newValues)
+void CDisplayServer::onFormSubmitted(CHtmlChunk* pForm, const TFormValues& newValues)
 {
-   //TODO: add newValues into the communicator queue
    DTRACE("TODO: CDisplayServer::onFormSubmitted");
+   if (! hIceDisplayServer.get()) return;
+
    CDisplayServerI::CqeFormValue* pData = new CDisplayServerI::CqeFormValue();
    pData->mode = CDisplayServerI::CqeFormValue::set;
    pData->ownerid = pForm->m_dataOwner;
@@ -546,6 +547,20 @@ void CDisplayServer::onFormSubmitted(CHtmlChunk *pForm, const TFormValues& newVa
    pData->values = newValues;
    hIceDisplayServer->addFormDataChange(pData);
 }
+
+void CDisplayServer::getFormStateAsync(CHtmlChunk* pForm)
+{
+   DTRACE("CDisplayServer::getFormStateAsync");
+   if (! hIceDisplayServer.get()) return;
+
+   CDisplayServerI::CqeFormValue* pData = new CDisplayServerI::CqeFormValue();
+   pData->mode = CDisplayServerI::CqeFormValue::get;
+   pData->ownerid = pForm->m_dataOwner;
+   pData->objectid = pForm->id();
+   pData->chunkid = pForm->partId();
+   hIceDisplayServer->addFormDataChange(pData);
+}
+
 
 // -----------------------------------------------------------------
 // CDisplayServerI
@@ -692,7 +707,8 @@ void CDisplayServerI::run()
                      pRcvr->handleForm(pChange->objectid, pChange->chunkid, pChange->values);
                   }
                   else if (pChange->mode == CqeFormValue::get) {
-                     // XXX Not yet
+                     pRcvr->getFormData(pChange->objectid, pChange->chunkid, pChange->values);
+                     // TODO: send the data to the form ...
                   }
                }
             }

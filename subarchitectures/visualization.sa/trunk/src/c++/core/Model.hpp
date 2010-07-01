@@ -52,6 +52,19 @@ public:
          CGuiElement *pElement, const std::string& newValue) {}
 };
 
+class COwnerDataProxy
+{
+public:
+   // Issue a request to retreive the value for a control from the (remote) owner.
+   // see: <url:GuiElements.hpp#tn=syncControlState>
+   // see: <url:CDisplayServer.cpp#tn=CDisplayServerI::addDataChange>
+   // see: <url:CDisplayServer.cpp#tn=CDisplayServerI::run>
+   virtual void getControlStateAsync(cogx::display::CGuiElement *pElement) = 0;
+
+   // Issue a request to retreive the values of a form from the (remote) owner.
+   virtual void getFormStateAsync(CHtmlChunk* pForm) = 0;
+};
+
 // Holder for all data that can be displayed.
 class CDisplayModel
 {

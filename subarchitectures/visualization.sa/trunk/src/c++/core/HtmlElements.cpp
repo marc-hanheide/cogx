@@ -68,7 +68,9 @@ void CHtmlChunk::notifyFormSubmit(TFormValues& formData, const QCastFormProxy* c
 
 void CHtmlChunk::syncFormData(TFormValues& formData, bool notify)
 {
-   //DTRACE("CHtmlChunk::syncFormData");
+   DTRACE("CHtmlChunk::syncFormData");
+   m_formData = formData;
+
    CHtmlFormObserver *pObsrvr;
    CObserverList<CHtmlFormObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
    FOR_EACH(pObsrvr, Observers) {

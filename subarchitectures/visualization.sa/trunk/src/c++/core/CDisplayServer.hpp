@@ -41,7 +41,7 @@ class CDisplayServer:
    public cast::ManagedComponent,
    public CGuiElementObserver,
    public CHtmlFormObserver,
-   public CControlDataProxy
+   public COwnerDataProxy
 {
 private:
    CDisplayModel m_Model;
@@ -93,11 +93,12 @@ private:
    // CGuiElementObserver
    void onUiDataChanged(CGuiElement *pElement, const std::string& newValue); /*override*/
 
-   // CControlDataProxy
-   void getControlStateAsync(cogx::display::CGuiElement *pElement); /*override*/
-
    // CHtmlFormObserver
    void onFormSubmitted(CHtmlChunk *pForm, const TFormValues& newValues); /*override*/
+
+   // CControlDataProxy
+   void getControlStateAsync(cogx::display::CGuiElement *pElement); /*override*/
+   void getFormStateAsync(CHtmlChunk* pForm); /*override*/
 };
 
 // The implementation of DisplayInterface. This class implements

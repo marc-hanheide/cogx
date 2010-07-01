@@ -130,6 +130,9 @@ void QCastViewHtml::doUpdateContent()
    DTRACE("QCastViewHtml::doUpdateContent");
 
    // TODO: save current form values and restore after update
+   //    - store variables in state[formid]
+   //    - in finishLoading: if state[formid] exists use it, else use pChunk->m_formData
+   //    - maybe: use timestamps; if m_formData is newer than state, use m_formData!
    if (pView) {
       QStringList list, head, body;
       QWebPage* pPage = page();

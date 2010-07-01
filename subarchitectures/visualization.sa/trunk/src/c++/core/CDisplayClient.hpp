@@ -20,7 +20,12 @@
 #include <map>
 #include <stdexcept>
 #include <cast/core/CASTComponent.hpp>
+#include <DisplayServer.hpp> // generated from ice
 
+// convenient classes for clients
+#include "CFormValues.hpp"
+
+// Optional use of opencv on the client
 #ifdef FEAT_VISUALIZATION_OPENCV
 # include <highgui.h> // OpenCV - transport an IplImage
 # define _IplImagePtr IplImage*
@@ -29,8 +34,6 @@
 # define _IplImagePtr void*
 # define _CvMatPtr    void*
 #endif
-
-#include <DisplayServer.hpp> // generated from ice
 
 namespace cogx { namespace display {
 
@@ -148,6 +151,7 @@ public:
    virtual void getFormData(const std::string& id, const std::string& partId,
          std::map<std::string, std::string>& fields);
 };
+
 
 
 #if 0
@@ -295,5 +299,6 @@ protected:
 };
 #endif
 
-} } // namespace
+}} // namespace
 #endif // include once
+// vim:sw=3:ts=8:et

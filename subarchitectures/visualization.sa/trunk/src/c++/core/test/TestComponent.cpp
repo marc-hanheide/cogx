@@ -183,11 +183,21 @@ std::string VideoViewer::CVvDisplayClient::getControlState(const std::string& ct
 void VideoViewer::CVvDisplayClient::handleForm(const std::string& id, const std::string& partId,
       const std::map<std::string, std::string>& fields)
 {
-  pViewer->println("Form: %s#%s", id.c_str(), partId.c_str());
-  typeof(fields.begin()) it;
-  for(it = fields.begin(); it != fields.end(); it++) {
-    pViewer->println("   %s = %s", it->first.c_str(), it->second.c_str());
+  pViewer->println("Handle Form: %s#%s", id.c_str(), partId.c_str());
+  pViewer->m_HtmlForm.apply(fields);
+  std::vector<std::string> dump;
+  pViewer->m_HtmlForm.dump(dump);
+  typeof(dump.begin()) it;
+  for(it = dump.begin(); it != dump.end(); it++) {
+    pViewer->println("%s", it->c_str());
   }
+}
+
+void VideoViewer::CVvDisplayClient::getFormData(const std::string& id, const std::string& partId,
+      std::map<std::string, std::string>& fields)
+{
+  pViewer->println("Get Form: %s#%s", id.c_str(), partId.c_str());
+  pViewer->m_HtmlForm.get(fields);
 }
 #endif
 
@@ -352,16 +362,44 @@ void VideoViewer::runComponent()
   }
 #endif
   {
+    using namespace cogx::display;
     // Forms
     std::stringstream str;
     str << "This is the TestComponent for the Display Server<br>";
     str << "<hr>";
-    //str << "<form id=\"testForm\" method=\"post\" action=\"javascript:history.go(-1)\" "
-    //    "onsubmit=\"return MyLibSubmit('#testForm')\" >";
-    str << "<input type=\"text\" name=\"val\" value=\"Some value\" />";
-    str << "<input type=\"submit\" name=\"submit\" value=\"Send\"/>";
-    //str << "</form>";
-    m_display.setHtmlForm("Visualization.test.HtmlForm", "text", str.str());
+    str << "<select name=\"single\"> <option>Single</option> <option>Single2</option> </select>";
+    m_HtmlForm.add(new CFormValues::choice("single", CFormValues::valuelist() << "Single" << "Single2"));
+
+    str << "<select name=\"multiple\" multiple=\"multiple\"><option selected=\"selected\">Multiple</option>";
+    str << "<option>Multiple2</option> <option selected=\"selected\">Multiple3</option>";
+    str << "</select><br/>";
+    m_HtmlForm.add(new CFormValues::set("multiple",
+        CFormValues::valuelist() << "Multiple" << "Multiple2" << "Multiple3"));
+
+    str << "<input type=\"checkbox\" name=\"checkboxname\" value=\"check1\"/> CheckBox1";
+    str << "<input type=\"checkbox\" name=\"checkboxname\" value=\"check2\"/> CheckBox2";
+    m_HtmlForm.add(new CFormValues::set("checkboxname", CFormValues::valuelist() << "check1" << "check2"));
+
+    str << "<input type=\"radio\"  name=\"rbname\" value=\"radio1\"/> RadioButton1";
+    str << "<input type=\"radio\"  name=\"rbname\" value=\"radio2\"/> RadioButton2";
+    m_HtmlForm.add(new CFormValues::choice("rbname", CFormValues::valuelist() << "radio1" << "radio2"));
+
+    str << "<br/>";
+    str << "<input type=\"text\" name=\"val\" value=\"Display Server Rules!\" />";
+    m_HtmlForm.add(new CFormValues::field("val"));
+
+    str << "<input type=\"submit\" name=\"submit\" value=\"Apply\"/>";
+    m_display.setHtmlForm("Visualization.test.HtmlForm", "001_text", str.str());
+  }
+  if (0) {
+    // Test if the form could be restored
+    std::stringstream str;
+    str << "<script>";
+    str << "var vals = {'single': ['Single2'], 'val': 'This also works: Display Server Rules!', ";
+    str << "   'multiple': ['Multiple2', 'Multiple3']};";
+    str << "CogxJsFillFormV('#form_Visualization_test_HtmlForm_001_text', vals);";
+    str << "</script>";
+    m_display.setHtml("Visualization.test.HtmlForm", "999_test", str.str());
   }
 
   int count = 0;
