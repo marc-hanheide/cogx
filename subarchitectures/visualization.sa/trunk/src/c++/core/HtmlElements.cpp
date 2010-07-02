@@ -55,6 +55,8 @@ void CHtmlChunk::setContent(const std::string& content)
 void CHtmlChunk::notifyFormSubmit(TFormValues& formData, const QCastFormProxy* changeSource)
 {
    DTRACE("CHtmlChunk::notifyFormSubmit");
+   m_formData = formData;
+
    CHtmlFormObserver *pObsrvr;
    CObserverList<CHtmlFormObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
    FOR_EACH(pObsrvr, Observers) {

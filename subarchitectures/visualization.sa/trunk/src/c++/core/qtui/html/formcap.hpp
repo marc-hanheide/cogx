@@ -50,6 +50,8 @@ public:
 
 public:
    // CHtmlFormObserver
+   // Both functions emit signalOwnerDataChanged and QCastViewHtml handles it.
+   // (Note: another solution would be to make QCastViewHtml a CHtmlFormObserver)
    virtual void onFormSubmitted(cogx::display::CHtmlChunk *pForm,
          const cogx::display::TFormValues& newValues);
    virtual void onOwnerDataChanged(cogx::display::CHtmlChunk *pForm,
