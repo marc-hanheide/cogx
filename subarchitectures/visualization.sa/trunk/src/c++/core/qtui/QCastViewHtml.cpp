@@ -77,6 +77,9 @@ void QCastViewHtml::createJsObjects()
    if (pPage) pFrame = pPage->currentFrame();
    if (pFrame) {
       QCastFormProxy* pObj = new QCastFormProxy();
+      connect(pObj, SIGNAL(signalOwnerDataChanged(QString)),
+            this, SLOT(doFillHtmlFrom(QString)),
+            Qt::QueuedConnection);
       CPtrVector<cogx::display::CHtmlChunk> forms;
       if (pView) pView->getHtmlForms(forms);
       cogx::display::CHtmlChunk* pForm;
@@ -89,9 +92,36 @@ void QCastViewHtml::createJsObjects()
 
 void QCastViewHtml::finishLoading(bool)
 {
+   DTRACE("QCastViewHtml::finishLoading");
    //progress = 100;
    //adjustTitle();
    // page()->mainFrame()->evaluateJavaScript(m_jQuery);
+
+   if (! pView) return;
+   QWebPage* pPage = page();
+   QWebFrame* pFrame = NULL;
+   if (pPage) pFrame = pPage->currentFrame();
+   if (!pFrame) return;
+
+   CPtrVector<cogx::display::CHtmlChunk> forms;
+   pView->getHtmlForms(forms);
+   cogx::display::CHtmlChunk* pForm;
+   FOR_EACH(pForm, forms) {
+      QString js = QString("CogxJsFillForm('#%1');").arg(QString::fromStdString(pForm->htmlid()));
+      pFrame->evaluateJavaScript(js);
+   }
+}
+
+void QCastViewHtml::doFillHtmlFrom(const QString& formid)
+{
+   DTRACE("QCastViewHtml::doFillHtmlFrom");
+   QWebPage* pPage = page();
+   QWebFrame* pFrame = NULL;
+   if (pPage) pFrame = pPage->currentFrame();
+   if (pFrame) {
+      QString js = QString("CogxJsFillForm('#%1');").arg(formid);
+      pFrame->evaluateJavaScript(js);
+   }
 }
 
 void QCastViewHtml::setModel(cogx::display::CDisplayModel* pDisplayModel)

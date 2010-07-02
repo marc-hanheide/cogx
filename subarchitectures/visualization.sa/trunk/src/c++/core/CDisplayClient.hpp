@@ -127,10 +127,10 @@ private:
       {
          if (m_pClient) m_pClient->handleForm(id, partId, fields);
       }
-      void getFormData(const std::string& id, const std::string& partId,
+      bool getFormData(const std::string& id, const std::string& partId,
             std::map<std::string, std::string>& fields, const Ice::Current&)
       {
-         if (m_pClient) m_pClient->getFormData(id, partId, fields);
+         if (m_pClient) return m_pClient->getFormData(id, partId, fields);
       }
    };
 
@@ -148,7 +148,7 @@ public:
    virtual std::string getControlState(const std::string& ctrlId);
    virtual void handleForm(const std::string& id, const std::string& partId,
          const std::map<std::string, std::string>& fields);
-   virtual void getFormData(const std::string& id, const std::string& partId,
+   virtual bool getFormData(const std::string& id, const std::string& partId,
          std::map<std::string, std::string>& fields);
 };
 

@@ -193,11 +193,12 @@ void VideoViewer::CVvDisplayClient::handleForm(const std::string& id, const std:
   }
 }
 
-void VideoViewer::CVvDisplayClient::getFormData(const std::string& id, const std::string& partId,
+bool VideoViewer::CVvDisplayClient::getFormData(const std::string& id, const std::string& partId,
       std::map<std::string, std::string>& fields)
 {
   pViewer->println("Get Form: %s#%s", id.c_str(), partId.c_str());
   pViewer->m_HtmlForm.get(fields);
+  return true;
 }
 #endif
 

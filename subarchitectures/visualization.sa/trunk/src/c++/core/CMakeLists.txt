@@ -160,7 +160,7 @@ include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
-add_cast_component(DisplayClient CDisplayClient.cpp)
+add_cast_component(DisplayClient CDisplayClient.cpp CFormValues.cpp)
 link_cast_component(${CAST_COMPONENT_NAME}
    VisualizationData Math Video VideoUtils
    ${OPENCV_LDFLAGS}

@@ -66,7 +66,7 @@ void CHtmlChunk::notifyFormSubmit(TFormValues& formData, const QCastFormProxy* c
    }
 }
 
-void CHtmlChunk::syncFormData(TFormValues& formData, bool notify)
+void CHtmlChunk::syncFormData(const TFormValues& formData, bool notify)
 {
    DTRACE("CHtmlChunk::syncFormData");
    m_formData = formData;

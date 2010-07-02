@@ -22,7 +22,7 @@ class QCastFormProxy:
 private:
    QMap<QString, QVariant> _post;
    QMap<QString, QVariant> _get;
-   typedef std::map<std::string, cogx::display::CHtmlChunk*> TFormMap;
+   typedef std::map<QString, cogx::display::CHtmlChunk*> TFormMap;
    typedef TFormMap::iterator TFormMapIterator;
    TFormMap m_Forms;
 
@@ -54,6 +54,18 @@ public:
          const cogx::display::TFormValues& newValues);
    virtual void onOwnerDataChanged(cogx::display::CHtmlChunk *pForm,
          const cogx::display::TFormValues& newValues);
+
+signals:
+   // Transfer onOwnerDataChanged to Qt UI thread; connected to QCastViewHtml
+   // see <url:../QCastViewHtml.cpp#tn=::createJsObjects>
+   // see <url:../QCastViewHtml.cpp#tn=::doFillHtmlFrom>
+   // Operation:
+   //    1. this.onOwnerDataChanged(pForm); current data is stored with the form
+   //    2. this.emit signalOwnerDataChanged(formid)
+   //    3. QCastViewHtml::doFillHtmlFrom (connected to signalOwnerDataChanged, queued)
+   //    4. QCastViewHtml::exec_JS: CogxJsFillForm(formid)
+   //    5. this.getValues(formid)
+   void signalOwnerDataChanged(const QString& formid);
 };
 
 #endif /* end of include guard: FORMCAP_QF5IUX3L */

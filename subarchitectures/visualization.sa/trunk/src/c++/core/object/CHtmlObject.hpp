@@ -40,6 +40,7 @@ public:
    void setHtml(const std::string& partId, const std::string& text);
    CHtmlChunk* setForm(const Ice::Identity& ident, const std::string& partId, const std::string& text);
    void setHead(const std::string& partId, const std::string& text);
+   CHtmlChunk* getPart(const std::string& partId);
    void removePart(const std::string& partId);
 };
 

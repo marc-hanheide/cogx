@@ -53,6 +53,9 @@ private slots:
    void doUpdateContent();
    void createJsObjects();
    void finishLoading(bool);
+private slots:
+   // see: <url:html/formcap.hpp#tn=signalOwnerDataChanged>
+   void doFillHtmlFrom(const QString& formid);
 };
 
 #endif /* end of include guard: QCASTVIEWHTML_X94VTZ5D */

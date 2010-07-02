@@ -117,10 +117,11 @@ void CDisplayClient::handleForm(const std::string& id, const std::string& partId
    debug("handleForm NOT IMPLEMENTED");
 }
 
-void CDisplayClient::getFormData(const std::string& id, const std::string& partId,
+bool CDisplayClient::getFormData(const std::string& id, const std::string& partId,
       std::map<std::string, std::string>& fields)
 {
    debug("getFormData NOT IMPLEMENTED");
+   return false;
 }
 
 void CDisplayClient::setImage(const std::string& id, const Video::Image& image)

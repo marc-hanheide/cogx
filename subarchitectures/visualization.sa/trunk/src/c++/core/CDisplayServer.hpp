@@ -78,6 +78,8 @@ public:
    void setHtmlHead(const std::string& id, const std::string& partId, const std::string& htmlData);
    void setHtmlForm(const Ice::Identity& ident, const std::string& id, const std::string& partId,
          const std::string& htmlData);
+   void setHtmlFormData(const std::string& id, const std::string& partId,
+         const std::map<std::string, std::string>& fields);
    void setObjectTransform2D(const std::string& id, const std::string& partId,
          const std::vector<double>& transform);
    void setObjectPose3D(const std::string& id, const std::string& partId,

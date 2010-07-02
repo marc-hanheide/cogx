@@ -61,7 +61,7 @@ private:
     std::string getControlState(const std::string& ctrlId); /*override*/
     void handleForm(const std::string& id, const std::string& partId,
         const std::map<std::string, std::string>& fields); /*override*/
-    void getFormData(const std::string& id, const std::string& partId,
+    bool getFormData(const std::string& id, const std::string& partId,
         std::map<std::string, std::string>& fields); /*override*/
   };
   CVvDisplayClient m_display;
