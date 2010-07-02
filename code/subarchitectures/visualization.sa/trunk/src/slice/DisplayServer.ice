@@ -87,8 +87,10 @@ module Visualization
    {
       void handleEvent(TEvent event);
       string getControlState(string ctrlId); // XXX: maybe add param what
-      void handleForm(string formId, TFormFieldMap fields);
-      void getFormData(string formId, out TFormFieldMap fields);
+      void handleForm(string id, string partId, TFormFieldMap fields);
+
+      // Get data to fill the form when first displayed; returns false if not supported
+      bool getFormData(string id, string partId, out TFormFieldMap fields);
    };
 };
 
