@@ -88,7 +88,7 @@ QMap<QString, QVariant> QCastFormProxy::getValues(const QString& formid)
    else pForm = it->second;
 
    if (pForm) {
-      return _post;
+      return pForm->m_formData;
    }
    else {
       DMESSAGE("NO SUCH FORM: " << formid.toStdString());
@@ -138,13 +138,11 @@ QString QCastFormProxy::getJavaScript(const QString& jsObjectName, bool htmlScri
 void QCastFormProxy::onFormSubmitted(cogx::display::CHtmlChunk *pForm,
       const cogx::display::TFormValues& newValues)
 {
-   // TODO: pass the data to the form
    emit signalOwnerDataChanged(QString::fromStdString(pForm->htmlid()));
 }
 
 void QCastFormProxy::onOwnerDataChanged(cogx::display::CHtmlChunk *pForm,
       const cogx::display::TFormValues& newValues)
 {
-   // TODO: (important) pass the data to the form
    emit signalOwnerDataChanged(QString::fromStdString(pForm->htmlid()));
 }
