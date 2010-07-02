@@ -176,12 +176,14 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
    double tm0 = fclocks();
    fres << "match start " << tm0 << "<br>";
 
+   // TODO: get part of image (x0, y0, w, h)
    pImg = Video::convertImageToIplGray(image);
    if (pImg) {
       m_pSiftExtractor->extractSifts(pImg, sifts);
 
       typeof(m_models.begin()) it;
       for (it = m_models.begin(); it != m_models.end(); it++) {
+         // Gather features from all objects
          std::vector<TSiftVector*> allfeatures;
          CObjectModel *pModel = *it;
 
@@ -191,11 +193,13 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
             allfeatures.push_back(&pView->m_features);
          }
 
+         // Match image features to all others
          std::vector<TFeatureMatchVector*> results;
          m_pSiftMatcher->matchSiftDescriptors(sifts, allfeatures, results);
          fres << "allfeatures: " << allfeatures.size() << "<br>";
          allfeatures.clear();
 
+         // process results
          fres << "results: " << results.size() << "<br>";
          typeof(results.begin()) itres;
          for(itres = results.begin(); itres != results.end(); itres++) {
@@ -203,11 +207,13 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
 
             int count = 0;
             typeof(pMatches->begin()) itmatch;
+            fres << "result pack *************** count:" << pMatches->size() << "<br>"; 
             for(itmatch = pMatches->begin(); itmatch != pMatches->end(); itmatch++) {
                fres << "  " << itmatch->indexA << "," << itmatch->indexB << ","
-                  << itmatch->distance << " | ";
+                  << itmatch->distance << "<br>";
+                  //<< itmatch->distance << " | ";
                count++;
-               if (count > 3) { break; }
+               if (count > 30) { break; }
             }
             fres << "<br>";
          }
