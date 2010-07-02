@@ -547,37 +547,6 @@ void ObjectRelationManager::runComponent()
 	  box2.radius3 = 0.13;
 	  box2.thickness = 0.02;
 
-  //REMOVEME: SampleCloud test
-	Matrix33 rot;
-	setIdentity(rot);
-	vector<Matrix33> oris;
-	oris.push_back(rot);
-	SampleCloud cloud2(&table1, &box1, RELATION_ON, vector3(0,0,0),
-	    1.0, 1, 1, 1, 0, oris, oris);
-	cloud2.values.resize(3*3*1*1*1);
-	for (int x = 0; x < 3; x++) {
-	  for (int y = 0; y < 3; y++) {
-	    cloud2.values[x*3+y] = x;
-	  }
-	}
-	SampleCloud cloud1(&box1, &box2, RELATION_ON, vector3(0,0,0),
-	    1.0, 1, 1, 1, 1, oris, oris);
-	cloud1.values.resize(3*3*3*1*1);
-	for (int x = 0; x < 3; x++) {
-	  for (int y = 0; y < 3; y++) {
-	    for (int z = 0; z < 3; z++) {
-	    cloud1.values[x*9+y*3+z] = y;
-	    }
-	  }
-	}
-	SampleCloud finMan = cloud1.composit(cloud2);
-
-	vector<Matrix33> oris1;
-	oris1.push_back(Matrix33());
-	vector<Matrix33> oris2;
-	getRandomSampleSphere(oris2, 3);
-	vector<Matrix33> oris3;
-	getRandomSampleSphere(oris3, 3);
 
 	  if (m_bTestOnness) {
 	    peekabot::Result<peekabot::Transformation> vr;
@@ -639,15 +608,20 @@ void ObjectRelationManager::runComponent()
 	      vector<spatial::Object *>objects;
 	      vector<string> objectLabels;
 	      vector<spatial::SpatialRelationType> relations;
-	      objects.push_back(&box1);
-	      objectLabels.push_back("box1");
 
 	      if (sampleTable) {
+		objects.push_back(&box2);
+		objectLabels.push_back("box2");
+		objects.push_back(&box1);
+		objectLabels.push_back("box1");
+		relations.push_back(RELATION_ON);
 		objects.push_back(&table1);
 		objectLabels.push_back("table1");
 		relations.push_back(RELATION_ON);
 	      }
 	      else {
+		objects.push_back(&box1);
+		objectLabels.push_back("box1");
 		objects.push_back(&box2);
 		objectLabels.push_back("box2");
 		relations.push_back(RELATION_ON);
