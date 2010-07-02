@@ -81,7 +81,7 @@ public:
    // TODO: syncFormData can also be called by the owner after a change in its
    // internal state. This requires another function in the ICE interface:
    // DisplayInterface::setFormData.
-   void syncFormData(TFormValues& formData, bool notify=false);
+   void syncFormData(const TFormValues& formData, bool notify=false);
 };
 
 

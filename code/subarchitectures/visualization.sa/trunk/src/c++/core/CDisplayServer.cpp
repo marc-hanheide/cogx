@@ -442,6 +442,26 @@ void CDisplayServer::setHtmlForm(const Ice::Identity& ident, const std::string& 
 #endif
 }
 
+void CDisplayServer::setHtmlFormData(const std::string& id, const std::string& partId,
+      const std::map<std::string, std::string>& fields)
+{
+#ifdef V11N_OBJECT_HTML
+   DTRACE("CDisplayServer::setHtmlForm");
+
+   CDisplayObject *pExisting = m_Model.getObject(id);
+   if (!pExisting) return;
+
+   CHtmlObject *pModel = dynamic_cast<CHtmlObject*>(pExisting);
+   if (! pModel) return;
+
+   CHtmlChunk* pForm = pModel->getPart(partId);
+   if (! pForm) return;
+   if (pForm->type() != CHtmlChunk::form) return;
+
+   pForm->syncFormData(fields, /*notify=*/true);
+#endif
+}
+
 void CDisplayServer::setObjectTransform2D(const std::string& id, const std::string& partId,
       const std::vector<double>& transform)
 {
@@ -707,8 +727,9 @@ void CDisplayServerI::run()
                      pRcvr->handleForm(pChange->objectid, pChange->chunkid, pChange->values);
                   }
                   else if (pChange->mode == CqeFormValue::get) {
-                     pRcvr->getFormData(pChange->objectid, pChange->chunkid, pChange->values);
-                     // TODO: send the data to the form ...
+                     if (pRcvr->getFormData(pChange->objectid, pChange->chunkid, pChange->values)) {
+                        // TODO: send the data to the form ...
+                     }
                   }
                }
             }

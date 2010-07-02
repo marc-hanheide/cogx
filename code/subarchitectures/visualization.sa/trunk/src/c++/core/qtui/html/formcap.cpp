@@ -23,7 +23,7 @@ QCastFormProxy::~QCastFormProxy()
 void QCastFormProxy::registerForm(cogx::display::CHtmlChunk* pForm)
 {
    if (!pForm) return;
-   m_Forms[pForm->htmlid()] = pForm;
+   m_Forms[QString::fromStdString(pForm->htmlid())] = pForm;
    pForm->Observers.addObserver(this);
 }
 
@@ -31,7 +31,7 @@ void QCastFormProxy::removeForm(cogx::display::CHtmlChunk* pForm)
 {
    if (!pForm) return;
    pForm->Observers.removeObserver(this);
-   m_Forms.erase(pForm->htmlid());
+   m_Forms.erase(QString::fromStdString(pForm->htmlid()));
 }
 
 void QCastFormProxy::sendValues(const QString& formid, const QMap<QString,QVariant>& object)
@@ -39,9 +39,9 @@ void QCastFormProxy::sendValues(const QString& formid, const QMap<QString,QVaria
    DTRACE("QCastFormProxy::sendValues");
    cogx::display::CHtmlChunk* pForm = NULL;
    
-   std::string id = formid.mid(1).toStdString(); // remove leading '#' from id
-   TFormMapIterator it = m_Forms.find(id);
-   DMESSAGE("Looking for " << id << " among " << m_Forms.size() << " forms");
+   // std::string id = formid.mid(1).toStdString(); // remove leading '#' from id
+   TFormMapIterator it = m_Forms.find(formid.mid(1));
+   // DMESSAGE("Looking for " << id << " among " << m_Forms.size() << " forms");
    if (it == m_Forms.end()) pForm = NULL;
    else pForm = it->second;
 
@@ -81,9 +81,9 @@ QMap<QString, QVariant> QCastFormProxy::getValues(const QString& formid)
    DTRACE("QCastFormProxy::getValues");
    cogx::display::CHtmlChunk* pForm = NULL;
    
-   std::string id = formid.mid(1).toStdString(); // remove leading '#' from id
-   TFormMapIterator it = m_Forms.find(id);
-   DMESSAGE("Looking for " << id << " among " << m_Forms.size() << " forms");
+   // std::string id = formid.mid(1).toStdString(); // remove leading '#' from id
+   TFormMapIterator it = m_Forms.find(formid.mid(1));
+   // DMESSAGE("Looking for " << id << " among " << m_Forms.size() << " forms");
    if (it == m_Forms.end()) pForm = NULL;
    else pForm = it->second;
 
@@ -139,11 +139,12 @@ void QCastFormProxy::onFormSubmitted(cogx::display::CHtmlChunk *pForm,
       const cogx::display::TFormValues& newValues)
 {
    // TODO: pass the data to the form
+   emit signalOwnerDataChanged(QString::fromStdString(pForm->htmlid()));
 }
 
 void QCastFormProxy::onOwnerDataChanged(cogx::display::CHtmlChunk *pForm,
       const cogx::display::TFormValues& newValues)
 {
    // TODO: (important) pass the data to the form
+   emit signalOwnerDataChanged(QString::fromStdString(pForm->htmlid()));
 }
-

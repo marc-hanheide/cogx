@@ -2,12 +2,12 @@
  * Author: Marko Mahnič
  * Created: 2010-06-10
  *
- * © Copyright 2010 Marko Mahnič. 
+ * © Copyright 2010 Marko Mahnič.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -126,6 +126,17 @@ int CHtmlObject::getHtmlForms(CPtrVector<CHtmlChunk>& forms)
       }
    }
    return count;
+}
+
+CHtmlChunk* CHtmlObject::getPart(const std::string& partId)
+{
+   typeof(m_Parts.begin()) itpart = m_Parts.find(partId);
+   if (itpart != m_Parts.end()) return itpart->second;
+
+   itpart = m_HeadParts.find(partId);
+   if (itpart != m_HeadParts.end()) return itpart->second;
+
+   return NULL;
 }
 
 void CHtmlObject::removePart(const std::string& partId)
