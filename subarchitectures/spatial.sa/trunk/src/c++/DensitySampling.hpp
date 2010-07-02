@@ -139,6 +139,17 @@ class DensitySampler
     void setOrientationQuantization(int q) { m_orientationQuantization = q; }
     void setSampleNumberTarget(int n) { m_sampleNumberTarget = n; }
     void setKernelWidthFactor(double f) { m_kernelWidthFactor = f; }
+
+    SampleCloud * 
+    tryLoadCloudFromFile(const string &supportObjectLabel,
+      const string &onObjectLabel, SpatialRelationType type);
+    void
+    writeCloudToFile(const SampleCloud *cloud, const string &supportObjectLabel,
+      const string &onObjectLabel, SpatialRelationType type);
+
+    bool tryLoadOrientationsFromFile(const string &label);
+    void writeOrientationsToFile(const string &label);
+
   protected:
     SampleCloud *
     createRelativeSampleCloud(SpatialRelationType relationType,

@@ -4,6 +4,7 @@
 #include <Navigation/LocalGridMap.hh>
 #include <cogxmath.h>
 #include <Pose3.h>
+#include <fstream>
 
 using namespace std;
 using namespace cogx::Math;
@@ -99,6 +100,7 @@ SampleCloud::SampleCloud(const spatial::Object *o1, const spatial::Object *o2,
   rel(_rel),
   sampleOffset(offset),
   sampleIntervalQuantum(intervalQuantum),
+  kernelRadius(0.0),
   sampleIntervalMultiplier(intervalMultiplier),
   xExtent(xExt),
   yExtent(yExt),
@@ -108,19 +110,18 @@ SampleCloud::SampleCloud(const spatial::Object *o1, const spatial::Object *o2,
 {
   object1 = copyObject(o1);
   object2 = copyObject(o2);
-  kernelRadius = 0.0;
 }
 
 SampleCloud::SampleCloud(const SampleCloud &a) :
   sampleOffset(a.sampleOffset),
   sampleIntervalQuantum(a.sampleIntervalQuantum),
+  kernelRadius(a.kernelRadius),
   sampleIntervalMultiplier(a.sampleIntervalMultiplier),
   xExtent(a.xExtent),
   yExtent(a.yExtent),
   zExtent(a.zExtent),
   object1Orientations(a.object1Orientations),
-  object2Orientations(a.object2Orientations),
-  kernelRadius(a.kernelRadius)
+  object2Orientations(a.object2Orientations)
 {
   object1 = copyObject(a.object1);
   object2 = copyObject(a.object2);
@@ -273,6 +274,7 @@ DensitySampler::sampleBinaryRelationRecursively(const vector <SpatialRelationTyp
   // aliasing problems.
 
   double samplingInterval = pow(sampleVolume/sampleNumberTargetUsed, 1/3.0); 
+  samplingInterval = 4*cellSize;
   // Round samplingInterval upward to the nearest multiple of cellSize
   // (keeps the number of sampled positions less than sampleNumberTarget)
   samplingInterval = cellSize*(ceil(samplingInterval/cellSize));
@@ -551,8 +553,11 @@ DensitySampler::sampleBinaryRelationSystematically(
     // of orientations. Otherwise, see if there's one cached
     if (currentLevel+1 == objects.size()-1) {
       if (m_objectOrientations.find(onObjectLabel) == m_objectOrientations.end()) {
-	getRandomSampleSphere(m_objectOrientations[onObjectLabel], 
-	    m_orientationQuantization);
+	if (!tryLoadOrientationsFromFile(onObjectLabel)) {
+	  getRandomSampleSphere(m_objectOrientations[onObjectLabel], 
+	      m_orientationQuantization);
+	  writeOrientationsToFile(onObjectLabel);
+	}
       }
 
       // Have to create new cloud
@@ -575,22 +580,38 @@ DensitySampler::sampleBinaryRelationSystematically(
 	}
       }
       if (cloud == 0) {
-	if (m_objectOrientations.find(supportObjectLabel) == m_objectOrientations.end()) {
-	  getRandomSampleSphere(m_objectOrientations[supportObjectLabel], 
-	      m_orientationQuantization);
-	}
-	if (m_objectOrientations.find(onObjectLabel) == m_objectOrientations.end()) {
-	  getRandomSampleSphere(m_objectOrientations[onObjectLabel], 
-	      m_orientationQuantization);
-	}
+	// Could not find this cloud. See if there's one on disk
+	cloud = tryLoadCloudFromFile(supportObjectLabel, onObjectLabel, relationType);
+	if (cloud == 0) {
+	  // Failed to load cloud from file
 
-	// Have to create new cloud
-	cloud = createRelativeSampleCloud(relationType,
-	    supportObject, onObject,
-	    m_objectOrientations[supportObjectLabel],
-	    m_objectOrientations[onObjectLabel],
-	    outMap.getCellSize());
-	cloud->compute();
+	  // Randomize orientations for involved objects, unless we already have such
+	  if (m_objectOrientations.find(supportObjectLabel) == m_objectOrientations.end()) {
+	    if (!tryLoadOrientationsFromFile(supportObjectLabel)) {
+	      getRandomSampleSphere(m_objectOrientations[supportObjectLabel], 
+		  m_orientationQuantization);
+	      writeOrientationsToFile(supportObjectLabel);
+	    }
+	  }
+	  if (m_objectOrientations.find(onObjectLabel) == m_objectOrientations.end()) {
+	    if (!tryLoadOrientationsFromFile(onObjectLabel)) {
+	      getRandomSampleSphere(m_objectOrientations[onObjectLabel], 
+		  m_orientationQuantization);
+	      writeOrientationsToFile(onObjectLabel);
+	    }
+	  }
+
+	  // Have to create new cloud
+	  cloud = createRelativeSampleCloud(relationType,
+	      supportObject, onObject,
+	      m_objectOrientations[supportObjectLabel],
+	      m_objectOrientations[onObjectLabel],
+	      outMap.getCellSize());
+	  cloud->compute();
+
+	  // Save it for next time
+	  writeCloudToFile(cloud, supportObjectLabel, onObjectLabel, relationType);
+	}
 
 	SampleCloudContainer tmp = {cloud, supportObjectLabel, onObjectLabel};
 	m_sampleClouds.push_back(tmp);
@@ -624,6 +645,8 @@ SampleCloud::composit(const SampleCloud &B) const {
     cerr << "Interval length mismatch!";
     exit(1);
   }
+
+  cout << "Compositing...\n";
 
   //Find largest common factor between interval multipliers
   int maxMult, minMult;
@@ -743,7 +766,10 @@ SampleCloud::composit(const SampleCloud &B) const {
       ca += AStepInC*CZL*(CYL-AYL);
       offsetInA_ZY = 0;
     }
+    cout << (a*100)/samplesInA << "%...    ";
+    cout.flush();
   }
+  cout << endl;
 
   return C;
 }
@@ -757,6 +783,8 @@ SampleCloud::compute() {
   // First make sure the values vector has the right size
   long numberOfValues = (2*xExtent+1) * (2*yExtent+1) * (2*zExtent+1) 
     * object1Orientations.size() * object2Orientations.size();
+
+  cout << "Computing point cloud...";
 
   values.resize(numberOfValues); //Ooof!
 
@@ -784,7 +812,7 @@ SampleCloud::compute() {
 	    for (vector<Matrix33>::iterator o1it = object1Orientations.begin();
 		o1it != object1Orientations.end(); o1it++) {
 	      object1->pose.rot = *o1it;
-	    int i = 0;
+	      int i = 0;
 	      for (vector<Matrix33>::iterator o2it = object2Orientations.begin();
 		  o2it != object2Orientations.end(); o2it++) {
 		object2->pose.rot = *o2it;
@@ -799,7 +827,10 @@ SampleCloud::compute() {
 	    }
 	  }
 	}
+	cout << (100*(xi + xExtent + 1))/(2*xExtent+1) << "%...    "; 
+	cout.flush();
       }
+      cout << endl;
       break;
     case RELATION_IN:
       for (int xi = -xExtent; xi <= xExtent; xi++, x += sampleInterval) {
@@ -822,13 +853,15 @@ SampleCloud::compute() {
 	    }
 	  }
 	}
+	cout << (100*(xi + xExtent + 1))/(2*xExtent+1) << "%...    ";
+	cout.flush();
       }
+      cout << endl;
       break;
     default:
       cerr << "Error! Unsupported relation\n";
       exit(1);
   }
-  cout << orientationsOverThreshold.size() << " orientations\n";
 }
 
 void 
@@ -944,7 +977,7 @@ template<class T>
 void readBinary(istream &o, T& item) 
 {
   char buf[sizeof(T)];
-  o.get(buf, sizeof(T));
+  o.read(buf, sizeof(T));
   item = *(reinterpret_cast<T *>(buf));
 }
 
@@ -1022,17 +1055,17 @@ istream &operator>>(istream &o, SampleCloud &c)
   readBinary(o, c.yExtent);
   readBinary(o, c.zExtent);
 
-  int nOri1;
+  size_t nOri1;
   readBinary(o, nOri1);
+  size_t nOri2;
+  readBinary(o, nOri2);
   c.object1Orientations.resize(nOri1);
-  for (long i = 0; i < nOri1; i++)  {
+  c.object2Orientations.resize(nOri2);
+
+  for (unsigned long i = 0; i < nOri1; i++)  {
     readBinary(o, c.object1Orientations[i]);
   }
-
-  int nOri2;
-  readBinary(o, nOri2);
-  c.object2Orientations.resize(nOri2);
-  for (long i = 0; i < nOri2; i++)  {
+  for (unsigned long i = 0; i < nOri2; i++)  {
     readBinary(o, c.object2Orientations[i]);
   }
 
@@ -1042,8 +1075,9 @@ istream &operator>>(istream &o, SampleCloud &c)
   for (long i = 0; i < numberOfValues; i++) 
     readBinary(o, c.values[i]);
 
-  readBinary(o, c.object1->type);
-  switch(c.object1->type) {
+  SpatialObjectType type;
+  readBinary(o, type);
+  switch(type) {
     case OBJECT_PLANE:
       {
 	PlaneObject *ptr = new PlaneObject;
@@ -1085,8 +1119,8 @@ istream &operator>>(istream &o, SampleCloud &c)
       break;
   }
 
-  readBinary(o, c.object2->type);
-  switch(c.object2->type) {
+  readBinary(o, type);
+  switch(type) {
     case OBJECT_PLANE:
       {
 	PlaneObject *ptr = new PlaneObject;
@@ -1131,4 +1165,167 @@ istream &operator>>(istream &o, SampleCloud &c)
   return o;
 }
 
+SampleCloud *
+DensitySampler::tryLoadCloudFromFile(const string &supportObjectLabel,
+    const string &onObjectLabel, SpatialRelationType type) 
+{
+  string filename("cloud_");
+  filename += onObjectLabel;
+  switch (type) {
+    case RELATION_ON:
+      filename += "+on+";
+      break;
+    case RELATION_IN:
+      filename += "+in+";
+      break;
+    default:
+      cerr << "Error! Loading unknown relation type\n";
+      exit(1);
+  }
+  filename += supportObjectLabel;
+  filename += ".cld";
+
+  ifstream infile(filename.c_str(), ios::in | ios::binary);
+  
+  if (!infile.good()) {
+    return 0;
+  }
+
+  cout << "Attempting to load sample point cloud from file " << filename << endl;
+
+  SampleCloud *cloud = new SampleCloud();
+  try {
+    infile >> *cloud;
+  }
+  catch (...)
+  {
+    cerr << "Error on file read!\n";
+    exit(1);
+  }
+
+  // Check that the orientations stored are the same as we're using, if any
+  if (m_objectOrientations.find(supportObjectLabel) != m_objectOrientations.end()) {
+    if (m_objectOrientations[supportObjectLabel].size() != cloud->object1Orientations.size()) {
+      cerr << "Error! point cloud loaded from file has different orientations than already present in system!\n";
+      exit(1);
+    }
+    for (unsigned int i = 0; i < m_objectOrientations[supportObjectLabel].size(); i++) {
+      if (!isZero(m_objectOrientations[supportObjectLabel][i]-cloud->object1Orientations[i])) {
+	cerr << "Error! point cloud loaded from file has different orientations than already present in system!\n";
+	exit(1);
+      }
+    }
+  }
+  m_objectOrientations[supportObjectLabel] = cloud->object1Orientations;
+
+  if (m_objectOrientations.find(onObjectLabel) != m_objectOrientations.end()) {
+    if (m_objectOrientations[onObjectLabel].size() != cloud->object2Orientations.size()) {
+      cerr << "Error! point cloud loaded from file has different orientations than already present in system!\n";
+      exit(1);
+    }
+    for (unsigned int i = 0; i < m_objectOrientations[onObjectLabel].size(); i++) {
+      if (!isZero(m_objectOrientations[onObjectLabel][i]-cloud->object2Orientations[i])) {
+	cerr << "Error! point cloud loaded from file has different orientations than already present in system!\n";
+	exit(1);
+      }
+    }
+  }
+  m_objectOrientations[onObjectLabel] = cloud->object2Orientations;
+  cout << "...load successful\n";
+
+  return cloud;
+}
+
+void
+DensitySampler::writeCloudToFile(const SampleCloud *cloud, const string &supportObjectLabel,
+      const string &onObjectLabel, SpatialRelationType type)
+{
+  string filename("cloud_");
+  filename += onObjectLabel;
+  switch (type) {
+    case RELATION_ON:
+      filename += "+on+";
+      break;
+    case RELATION_IN:
+      filename += "+in+";
+      break;
+    default:
+      cerr << "Error! Loading unknown relation type\n";
+      exit(1);
+  }
+  filename += supportObjectLabel;
+  filename += ".cld";
+
+  cout << "Writing sample cloud to file: " << filename << endl;
+  ofstream outfile(filename.c_str(), ios::out | ios::binary);
+
+  if (!outfile.good()) {
+    cerr << "Unable to write to file!\n";
+    exit(1);
+  }
+
+  try {
+    outfile << *cloud;
+  }
+  catch (...)
+  {
+    cerr << "Error writing to file!\n";
+    exit(1);
+  }
+}
+
+bool 
+DensitySampler::tryLoadOrientationsFromFile(const string &label)
+{
+  string filename("orientations_");
+  filename += label;
+  filename += ".cld";
+
+  ifstream infile(filename.c_str(), ios::in | ios::binary);
+
+  if (!infile.good()) {
+    return false;
+  }
+
+  try {
+    size_t nOri;
+    readBinary(infile, nOri);
+    m_objectOrientations[label].resize(nOri);
+    for (unsigned int i = 0; i < nOri; i++) {
+      readBinary(infile, m_objectOrientations[label][i]);
+    }
+  }
+  catch (...) {
+    cerr << "Error reading orientation file!\n";
+    exit(1);
+  }
+  return true;
+}
+ 
+void 
+DensitySampler::writeOrientationsToFile(const string &label)
+{
+  string filename("orientations_");
+  filename += label;
+  filename += ".cld";
+
+  ofstream outfile(filename.c_str(), ios::out | ios::binary);
+
+  if (!outfile.good()) {
+    cerr << "Unable to read file!\n";
+    exit(1);
+  }
+
+  try {
+    writeBinary(outfile, m_objectOrientations[label].size());
+    for (unsigned int i = 0; i < m_objectOrientations[label].size(); i++) {
+      writeBinary(outfile, m_objectOrientations[label][i]);
+    }
+  }
+  catch (...)
+  {
+    cerr << "Error writing orientation file!\n";
+    exit(1);
+  }
+}
 }

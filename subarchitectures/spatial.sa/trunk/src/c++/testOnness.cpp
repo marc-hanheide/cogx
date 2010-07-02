@@ -34,19 +34,27 @@ int main(void)
   box2.radius3 = 0.13;
   box2.thickness = 0.02;
 
+  DensitySampler sampler;
+
+
   vector<Matrix33> oris1;
   oris1.push_back(Matrix33());
-  vector<Matrix33> oris2;
-  getRandomSampleSphere(oris2, 3);
-  vector<Matrix33> oris3;
-  getRandomSampleSphere(oris3, 3);
+  oris1.back().m00 = 1;
+  oris1.back().m11 = 1;
+  oris1.back().m22 = 1;
+//  vector<Matrix33> oris2;
+//  getRandomSampleSphere(oris2, 3);
+//  vector<Matrix33> oris3;
+//  getRandomSampleSphere(oris3, 3);
 
   Cure::LocalGridMap<double> pdf(25, 0.05, 0.0, 
       Cure::LocalGridMap<double>::MAP1, 0, 0);
 
   vector<spatial::Object *>objects;
   vector<spatial::SpatialRelationType> relations;
+  vector<string> labels;
   objects.push_back(&box1);
+  labels.push_back("box1");
 
   bool sampleTable = false;
 
@@ -56,8 +64,10 @@ int main(void)
   }
   else {
     objects.push_back(&box2);
+    labels.push_back("box2");
     relations.push_back(RELATION_ON);
     objects.push_back(&table1);
+    labels.push_back("table1");
     relations.push_back(RELATION_ON);
   }
 
@@ -65,7 +75,9 @@ int main(void)
   //	    relations.push_back(RELATION_ON);
 
   double total = 0.0;
-  sampleBinaryRelationSystematically(relations, objects, pdf,
-      1000, 4, 1.5,
+  sampler.sampleBinaryRelationSystematically(relations, objects, 
+      oris1,
+      labels,
+      pdf,
       total, 1.0);
 }
