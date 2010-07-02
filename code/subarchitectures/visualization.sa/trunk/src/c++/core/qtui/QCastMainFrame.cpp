@@ -255,7 +255,7 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
 #endif
    QWebSettings::globalSettings()->setAttribute(QWebSettings::JavascriptEnabled, true);
-   QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+   //QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
 }
 
 QCastMainFrame::~QCastMainFrame()

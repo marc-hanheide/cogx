@@ -88,7 +88,21 @@ QMap<QString, QVariant> QCastFormProxy::getValues(const QString& formid)
    else pForm = it->second;
 
    if (pForm) {
-      return pForm->m_formData;
+      DMESSAGE("Fields: " << pForm->m_formData.size());
+      QMap<QString, QVariant> data;
+      typeof(pForm->m_formData.begin()) it;
+      for(it = pForm->m_formData.begin(); it != pForm->m_formData.end(); it++) {
+         size_t pos = it->second.find("\n");
+         if (pos == std::string::npos) {
+            data[QString::fromStdString(it->first)] = QVariant(QString::fromStdString(it->second));
+            DMESSAGE(it->first << ":" << it->second);
+         }
+         else {
+            DMESSAGE(it->first << ":LIST");
+            // TODO: variant string list
+         }
+      }
+      return data;
    }
    else {
       DMESSAGE("NO SUCH FORM: " << formid.toStdString());

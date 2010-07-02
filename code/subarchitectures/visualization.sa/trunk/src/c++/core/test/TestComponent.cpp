@@ -390,6 +390,13 @@ void VideoViewer::runComponent()
     m_HtmlForm.add(new CFormValues::field("val"));
 
     str << "<input type=\"submit\" name=\"submit\" value=\"Apply\"/>";
+
+    // Set the initial form data - before setHtmlForm!
+    m_HtmlForm.setValue("val", "Display Server Rules! (setValue)");
+    m_HtmlForm.setValue("rbname/radio1", "true");
+    m_HtmlForm.setValue("checkboxname/check2", "true");
+    m_HtmlForm.setValue("multiple", "Multiple\nMultiple2");
+
     m_display.setHtmlForm("Visualization.test.HtmlForm", "001_text", str.str());
   }
   if (0) {

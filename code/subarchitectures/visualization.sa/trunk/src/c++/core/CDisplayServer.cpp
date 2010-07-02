@@ -729,6 +729,7 @@ void CDisplayServerI::run()
                   else if (pChange->mode == CqeFormValue::get) {
                      if (pRcvr->getFormData(pChange->objectid, pChange->chunkid, pChange->values)) {
                         // TODO: send the data to the form ...
+                        m_pDisplayServer->setHtmlFormData(pChange->objectid, pChange->chunkid, pChange->values);
                      }
                   }
                }

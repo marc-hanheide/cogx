@@ -78,8 +78,8 @@ void QCastViewHtml::createJsObjects()
    if (pFrame) {
       QCastFormProxy* pObj = new QCastFormProxy();
       connect(pObj, SIGNAL(signalOwnerDataChanged(QString)),
-            this, SLOT(doFillHtmlFrom(QString)),
-            Qt::QueuedConnection);
+           this, SLOT(doFillHtmlFrom(QString)),
+           Qt::QueuedConnection);
       CPtrVector<cogx::display::CHtmlChunk> forms;
       if (pView) pView->getHtmlForms(forms);
       cogx::display::CHtmlChunk* pForm;
