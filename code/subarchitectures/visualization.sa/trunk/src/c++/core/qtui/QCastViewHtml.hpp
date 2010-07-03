@@ -18,6 +18,7 @@
 
 #include "QCastViewBase.hpp"
 #include <QWebView>
+#include <iostream>
 
 class QCastViewHtml: public QWebView, public QCastViewBase
 {
@@ -28,6 +29,8 @@ private:
    bool m_bModified;
    QString m_jsFormCap;
    static QString m_jQuery;
+   static std::vector<QCastViewHtml*> g_savedViews;
+   static QWidget* g_savedViewOwner;
 
 public:
    QCastViewHtml( QWidget* parent = 0, Qt::WindowFlags flags = 0 );

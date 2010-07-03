@@ -42,39 +42,39 @@ QViewContainer::~QViewContainer ()
 
 void QViewContainer::removeUi()
 {
-   DTRACE("QViewContainer::removeUi");
+   DTRACE("QViewContainer::removeUi, mainthread:" << (QObject().thread() == qApp->thread()));
 
    if (layout()) delete layout();
 
    // Remove the current widgets; they should be deleted when todelete goes out of scope.
-   QWidget todelete;
-   QList<QObject*> wdgts = findChildren<QObject*>();
    QObject *pobj;
+   QList<QObject*> wdgts = (QObjectList) children();
+   DMESSAGE("Count: " << wdgts.size());
    FOR_EACH(pobj, wdgts) {
-      if (!pobj) continue;
-
-      pobj->setParent(&todelete);
-      QCastViewBase* pViewWin = dynamic_cast<QCastViewBase*>(pobj);
-      if (pViewWin != NULL) {
-         cogx::display::CDisplayView* pView = pViewWin->getView();
-         if (pView) {
-            pView->viewObservers.removeObserver(pViewWin);
-         }
-      }
+     if (!pobj) continue;
+     QCastViewBase* pViewWin = dynamic_cast<QCastViewBase*>(pobj);
+     if (pViewWin != NULL) {
+        cogx::display::CDisplayView* pView = pViewWin->getView();
+        if (pView) {
+           pView->viewObservers.removeObserver(pViewWin);
+        }
+     }
+     pobj->deleteLater();
    }
+
+   m_pDisplay = NULL;
 }
 
 void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display::CDisplayView* pView)
 {
+   DTRACE("QViewContainer::setView, mainthread:" << (QObject().thread() == qApp->thread()));
    if (! pView) {
-      m_pDisplay = NULL;
       removeUi();
       return;
    }
 
    // TODO: check if the current widget supports view's m_preferredContext
    // otherwise delete the view
-   m_pDisplay = NULL;
    removeUi();
    QLayout *pLayout = new QVBoxLayout();
    setLayout(pLayout);

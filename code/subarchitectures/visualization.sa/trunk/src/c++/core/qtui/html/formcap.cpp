@@ -95,11 +95,19 @@ QMap<QString, QVariant> QCastFormProxy::getValues(const QString& formid)
          size_t pos = it->second.find("\n");
          if (pos == std::string::npos) {
             data[QString::fromStdString(it->first)] = QVariant(QString::fromStdString(it->second));
-            DMESSAGE(it->first << ":" << it->second);
+            //DMESSAGE(it->first << ":" << it->second);
          }
          else {
-            DMESSAGE(it->first << ":LIST");
-            // TODO: variant string list
+            //DMESSAGE(it->first << ":LIST");
+            QVariantList list;
+            std::istringstream ss(it->second);
+            std::string item;
+            while(std::getline(ss, item, '\n')) {
+               if (item == "") continue;
+               //DMESSAGE(item);
+               list << QVariant(QString::fromStdString(item));
+            }
+            data[QString::fromStdString(it->first)] = QVariant(list);
          }
       }
       return data;
@@ -158,5 +166,6 @@ void QCastFormProxy::onFormSubmitted(cogx::display::CHtmlChunk *pForm,
 void QCastFormProxy::onOwnerDataChanged(cogx::display::CHtmlChunk *pForm,
       const cogx::display::TFormValues& newValues)
 {
+   DTRACE("QCastFormProxy::onOwnerDataChanged" << this);
    emit signalOwnerDataChanged(QString::fromStdString(pForm->htmlid()));
 }
