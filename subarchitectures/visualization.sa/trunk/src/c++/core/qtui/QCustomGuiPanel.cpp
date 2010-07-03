@@ -89,12 +89,14 @@ void QCustomGuiPanel::removeUi()
 
    if (layout()) delete layout();
 
-   // Remove the current widgets; they should be deleted when todelete goes out of scope.
-   QWidget todelete;
-   QList<QObject*> wdgts = findChildren<QObject*>();
    QObject *pobj;
+   // TODO: CHECK if delete(findChildren()) works with comboboxes and other controls
+   //    delete(findChildren()) was causing problems with HTML comboboxes in QViewContainer::removeUi
+   //    it was changed to delete(children()) and crashes disappeared
+   QList<QObject*> wdgts = findChildren<QObject*>();
    FOR_EACH(pobj, wdgts) {
-      if (pobj) pobj->setParent(&todelete);
+      if (pobj)
+         pobj->deleteLater();
    }
 }
 

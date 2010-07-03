@@ -89,10 +89,7 @@ CHtmlChunk* CHtmlObject::setForm(const Ice::Identity& ident, const std::string& 
    if (pPart) {
       std::string formtag;
       // see: <url:../qtui/html/formcap.js>
-      // TODO: BUG history.go(-1) will crash the server when HtmlView is closed after submit
-      //       it looks like it happens when a combobox value is changed.
       formtag += "<form id=\"" + pPart->htmlid() + "\" method=\"post\" action=\"javascript:history.go(-1)\" ";
-      // formtag += "<form id=\"" + pPart->htmlid() + "\" method=\"post\" action=\"\" ";
       formtag += "onsubmit=\"return CogxJsSubmit('#" + pPart->htmlid() + "')\" >\n";
       pPart->setContent(formtag + text + "\n</form>");
    }

@@ -19,6 +19,7 @@
 #include <cctype>
 #include <cstring>
 #include <algorithm>
+#include <iostream>
 
 namespace cogx { namespace display {
 
@@ -96,35 +97,45 @@ void CFormValues::set::get(std::map<std::string, std::string>& fieldmap)
    typeof(items.begin()) it;
    for(it = items.begin(); it != items.end(); it++) {
       if (it->second) {
-         if (first) ss << it->first;
-         else {
+         //if (first) ss << it->first;
+         //else {
             ss << '\n' << it->first;
             first = false;
-         }
+         //}
       }
    }
+   if (first) ss << "\n";
    fieldmap[name] = ss.str();
 }
 
 void CFormValues::set::setValue(const std::string& _value)
 {
-   std::stringstream ss(_value);
+   std::istringstream ss(_value);
    std::string item;
    while(std::getline(ss, item, '\n')) {
+      if (item == "") continue;
       typeof(items.begin()) it = items.find(item);
       if (it != items.end()) it->second = true;
+      //std::cout << name << "." << it->first << "=" << it->second << std::endl;
    }
 }
 
 void CFormValues::set::setValue(const std::string& xpath, const std::string& _value)
 {
+   //std::cout << "set::setValue " << xpath << std::endl;
    typeof(items.begin()) it = items.find(xpath);
    if (it == items.end()) return; // throw... wrong xpath
    else {
       std::string tmp;
-      tmp.reserve(_value.size());
+      tmp.resize(_value.size());
       std::transform(_value.begin(), _value.end(), tmp.begin(), tolower);
-      it->second = (tmp=="true" || tmp=="on" || tmp=="yes" || tmp=="1") ? true : false;
+
+      if (tmp.size() == 1 && isdigit(tmp[0]) && tmp[0] != '0') it->second = true;
+      else if (tmp=="t" || tmp == "y" || tmp=="true" || tmp=="on" || tmp=="yes") it->second = true;
+      else it->second = false;
+
+      //std::cout << "  " << name << "." << it->first << "=" 
+      //   << _value << "=" << tmp << "=" << it->second << std::endl;
    }
 }
 
@@ -141,10 +152,13 @@ void CFormValues::apply(const std::map<std::string, std::string>& newfields)
    clear();
    typeof(newfields.begin()) itnew;
    for(itnew = newfields.begin(); itnew != newfields.end(); itnew++) {
+      //std::cout << " apply " << itnew->first;
       typeof(fields.begin()) it = fields.find(itnew->first);
       if (it != fields.end()) {
+         //std::cout << " ok ";
          it->second->setValue(itnew->second);
       }
+      //std::cout << std::endl;
    }
 }
 
@@ -154,8 +168,9 @@ void CFormValues::setValue(const std::string& xpath, const std::string& value)
    size_t pos = xpath.find('/');
    if (pos == std::string::npos) main = xpath;
    else {
-      main = xpath.substr(0, pos-1);
+      main = xpath.substr(0, pos);
       sub = xpath.substr(pos+1);
+      //std::cout << "xpath: " << xpath << " ... " << main << " & " << sub << std::endl;
    }
    typeof(fields.begin()) it = fields.find(main);
    if (it != fields.end()) {
@@ -178,7 +193,7 @@ std::string CFormValues::get(const std::string& xpath)
    size_t pos = xpath.find('/');
    if (pos == std::string::npos) main = xpath;
    else {
-      main = xpath.substr(0, pos-1);
+      main = xpath.substr(0, pos);
       sub = xpath.substr(pos+1);
    }
    typeof(fields.begin()) it = fields.find(main);

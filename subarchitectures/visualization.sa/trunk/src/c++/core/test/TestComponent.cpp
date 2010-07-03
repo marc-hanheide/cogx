@@ -371,8 +371,8 @@ void VideoViewer::runComponent()
     str << "<select name=\"single\"> <option>Single</option> <option>Single2</option> </select>";
     m_HtmlForm.add(new CFormValues::choice("single", CFormValues::valuelist() << "Single" << "Single2"));
 
-    str << "<select name=\"multiple\" multiple=\"multiple\"><option selected=\"selected\">Multiple</option>";
-    str << "<option>Multiple2</option> <option selected=\"selected\">Multiple3</option>";
+    str << "<select name=\"multiple\" multiple=\"multiple\"><option>Multiple</option>";
+    str << "<option>Multiple2</option> <option>Multiple3</option>";
     str << "</select><br/>";
     m_HtmlForm.add(new CFormValues::set("multiple",
         CFormValues::valuelist() << "Multiple" << "Multiple2" << "Multiple3"));
@@ -390,10 +390,13 @@ void VideoViewer::runComponent()
     m_HtmlForm.add(new CFormValues::field("val"));
 
     str << "<input type=\"submit\" name=\"submit\" value=\"Apply\"/>";
+    str << "<hr>";
+    str << "<div id=\"debugout\"></div>";
 
     // Set the initial form data - before setHtmlForm!
     m_HtmlForm.setValue("val", "Display Server Rules! (setValue)");
     m_HtmlForm.setValue("rbname/radio1", "true");
+    m_HtmlForm.setValue("checkboxname/check1", "true");
     m_HtmlForm.setValue("checkboxname/check2", "true");
     m_HtmlForm.setValue("multiple", "Multiple\nMultiple2");
 

@@ -556,7 +556,7 @@ void CDisplayServer::getControlStateAsync(CGuiElement *pElement)
 
 void CDisplayServer::onFormSubmitted(CHtmlChunk* pForm, const TFormValues& newValues)
 {
-   DTRACE("TODO: CDisplayServer::onFormSubmitted");
+   DTRACE("CDisplayServer::onFormSubmitted");
    if (! hIceDisplayServer.get()) return;
 
    CDisplayServerI::CqeFormValue* pData = new CDisplayServerI::CqeFormValue();
@@ -728,7 +728,6 @@ void CDisplayServerI::run()
                   }
                   else if (pChange->mode == CqeFormValue::get) {
                      if (pRcvr->getFormData(pChange->objectid, pChange->chunkid, pChange->values)) {
-                        // TODO: send the data to the form ...
                         m_pDisplayServer->setHtmlFormData(pChange->objectid, pChange->chunkid, pChange->values);
                      }
                   }
