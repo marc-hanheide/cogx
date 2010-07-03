@@ -133,6 +133,21 @@ namespace spatial
     }
     log("Camera range set to: %f", m_CamRange);
 
+  it = _config.find("--orientations");
+  if (it != _config.end()) {
+    m_sampler.setOrientationQuantization(atoi(it->second.c_str()));
+  }
+
+  it = _config.find("--samples");
+  if (it != _config.end()) {
+    m_sampler.setSampleNumberTarget(atoi(it->second.c_str()));
+  }
+
+  it = _config.find("--kernel-width-factor");
+  if (it != _config.end()) {
+    m_sampler.setKernelWidthFactor(atoi(it->second.c_str()));
+  }
+
 
 
     if ((it = _config.find("--probs")) != _config.end()) {
@@ -405,83 +420,83 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
   void
   AdvObjectSearch::owtGridMapDouble(const cast::cdl::WorkingMemoryChange &objID) {
-    try {
-      log("GridMapDouble overwrite!");
-      Cure::LocalGridMap<double>* distribution =
-	new Cure::LocalGridMap<double>(m_gridsize, m_cellsize, 0.0,
-	    Cure::LocalGridMap<unsigned int>::MAP1);
-
-      // get the computed distribution.
-      FrontierInterface::ObjectPriorRequestPtr objreq = getMemoryEntry<
-	FrontierInterface::ObjectPriorRequest> (objID.address);
-      convertToCureMap(objreq->outMap, *distribution);
-
-      // Normalise over the cells which we are keeping (explored)
-      double sumin = 0.0;
-      for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-	for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	  if ((*m_lgm)(x, y) == 2)
-	    continue;
-	  sumin += (*distribution)(x, y);
-	}
-      }
-
-      log("Distribution sums to: %f", sumin);
-      if (sumin != 0.0) {
-	double normFactor = 0.5*pIn/sumin;
-	double normalizedSum = 0.0;
-	//sum with m_pdf
-	for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-	  for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	    if ((*m_lgm)(x, y) == 2)
-	      continue;
-	    (*m_pdf)(x, y).prob = (*m_pdf)(x, y).prob + 
-	      normFactor*(*distribution)(x, y);
-	    normalizedSum += 
-	      normFactor*(*distribution)(x, y);
-	    //if ( (*distribution)(x,y) != 0 )
-	    //    log("pdf:%f dist:%f",(*m_pdf)(x,y).prob, (*distribution)(x,y));
-	  }
-	}
-	log("Normalised probability sum added: %f", normalizedSum);
-
-	/* Display PDF in PB as Line Cloud BEGIN */
-
-	double xW2, yW2;
-	peekabot::PointCloudProxy linecloudp;
-
-	linecloudp.add(m_PeekabotClient, "root.distribution",
-	    peekabot::REPLACE_ON_CONFLICT);
-	linecloudp.clear_vertices();
-	linecloudp.set_color(0.5, 0, 0.5);
-
-	for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-	  for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	    if ((*distribution)(x, y) == 0)
-	      continue;
-	    m_lgm->index2WorldCoords(x, y, xW2, yW2);
-	    linecloudp.add_vertex(xW2, yW2, (*distribution)(x, y)*2);
-	  }
-	}
-	/* Display pdfIn in as line cloud PB END */
-
-	//     DisplayPDFinPB(0,0,"root.distribution");
-	log("Displayed PDF");
-	// Once we get a distribution initiate search.
-	if (objreq->objects.back() == "squaretable"){
-	  gotSquareTable = true;
-	}
-	if (objreq->objects.back() == "desk" || objreq->objects.back() == "printer" || (m_SearchMode == "uniform" && m_CurrentTarget == "rice")){
-	  m_command = EXECUTENEXT;
-	}
-      }
-
-    }
-    catch (DoesNotExistOnWMException excp) {
-      log("Error!  GridMapDouble does not exist on WM!");
-      return;
-    }
-
+//    try {
+//      log("GridMapDouble overwrite!");
+//      Cure::LocalGridMap<double>* distribution =
+//	new Cure::LocalGridMap<double>(m_gridsize, m_cellsize, 0.0,
+//	    Cure::LocalGridMap<unsigned int>::MAP1);
+//
+//      // get the computed distribution.
+//      FrontierInterface::ObjectPriorRequestPtr objreq = getMemoryEntry<
+//	FrontierInterface::ObjectPriorRequest> (objID.address);
+//      convertToCureMap(objreq->outMap, *distribution);
+//
+//      // Normalise over the cells which we are keeping (explored)
+//      double sumin = 0.0;
+//      for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+//	for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+//	  if ((*m_lgm)(x, y) == 2)
+//	    continue;
+//	  sumin += (*distribution)(x, y);
+//	}
+//      }
+//
+//      log("Distribution sums to: %f", sumin);
+//      if (sumin != 0.0) {
+//	double normFactor = 0.5*pIn/sumin;
+//	double normalizedSum = 0.0;
+//	//sum with m_pdf
+//	for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+//	  for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+//	    if ((*m_lgm)(x, y) == 2)
+//	      continue;
+//	    (*m_pdf)(x, y).prob = (*m_pdf)(x, y).prob + 
+//	      normFactor*(*distribution)(x, y);
+//	    normalizedSum += 
+//	      normFactor*(*distribution)(x, y);
+//	    //if ( (*distribution)(x,y) != 0 )
+//	    //    log("pdf:%f dist:%f",(*m_pdf)(x,y).prob, (*distribution)(x,y));
+//	  }
+//	}
+//	log("Normalised probability sum added: %f", normalizedSum);
+//
+//	/* Display PDF in PB as Line Cloud BEGIN */
+//
+//	double xW2, yW2;
+//	peekabot::PointCloudProxy linecloudp;
+//
+//	linecloudp.add(m_PeekabotClient, "root.distribution",
+//	    peekabot::REPLACE_ON_CONFLICT);
+//	linecloudp.clear_vertices();
+//	linecloudp.set_color(0.5, 0, 0.5);
+//
+//	for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+//	  for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+//	    if ((*distribution)(x, y) == 0)
+//	      continue;
+//	    m_lgm->index2WorldCoords(x, y, xW2, yW2);
+//	    linecloudp.add_vertex(xW2, yW2, (*distribution)(x, y)*2);
+//	  }
+//	}
+//	/* Display pdfIn in as line cloud PB END */
+//
+//	//     DisplayPDFinPB(0,0,"root.distribution");
+//	log("Displayed PDF");
+//	// Once we get a distribution initiate search.
+//	if (objreq->objects.back() == "squaretable"){
+//	  gotSquareTable = true;
+//	}
+//	if (objreq->objects.back() == "desk" || objreq->objects.back() == "printer" || (m_SearchMode == "uniform" && m_CurrentTarget == "rice")){
+//	  m_command = EXECUTENEXT;
+//	}
+//      }
+//
+//    }
+//    catch (DoesNotExistOnWMException excp) {
+//      log("Error!  GridMapDouble does not exist on WM!");
+//      return;
+//    }
+//
   }
 
   void AdvObjectSearch::ResetSeenMap(){
@@ -812,16 +827,21 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
            }
     }
 
-    // make call to get distribution and change pdf accordingly
-    Cure::LocalGridMap<double>* tobefilled = new Cure::LocalGridMap<double>(
-        m_gridsize, m_cellsize, 0.0, Cure::LocalGridMap<unsigned int>::MAP1);
+    vector<FrontierInterface::ObjectRelation> relations;
+    relations.resize(objectlist.size()-1, FrontierInterface::ON);
+
+    FrontierInterface::WeightedPointCloudPtr queryCloud
+      = new FrontierInterface::WeightedPointCloud;
+
     //write lgm to WM
     FrontierInterface::ObjectPriorRequestPtr objreq =
         new FrontierInterface::ObjectPriorRequest;
-    objreq->relationType = FrontierInterface::ON;
+    objreq->relationTypes = relations;
     objreq->objects = objectlist;
-    objreq->probSum = probSum/2; // FIXME
-    objreq->outMap = convertFromCureMap(*tobefilled);
+    objreq->cellSize = m_cellsize;
+    objreq->outCloud = queryCloud;
+//    objreq->probSum = probSum/2; // FIXME
+//    objreq->outMap = convertFromCureMap(*tobefilled);
     addToWorkingMemory(newDataID(), objreq);
 
 
@@ -832,14 +852,14 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
       log("got squaretable distrib, now switching to desk");
       objectlist.back() = "desk";
-      objreq->relationType = FrontierInterface::ON;
+      objreq->relationTypes = relations;
       objreq->objects = objectlist;
-      objreq->probSum = probSum/2;
-      objreq->outMap = convertFromCureMap(*tobefilled);
+      objreq->cellSize = m_cellsize;
+      objreq->outCloud = queryCloud;
+//      objreq->probSum = probSum/2;
+//      objreq->outMap = convertFromCureMap(*tobefilled);
       addToWorkingMemory(newDataID(), objreq);
     }
-
-    delete tobefilled;
   }
   void
   AdvObjectSearch::ReadPlaneMap() {

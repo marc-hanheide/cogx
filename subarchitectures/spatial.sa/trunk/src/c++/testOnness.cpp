@@ -75,9 +75,12 @@ int main(void)
   //	    relations.push_back(RELATION_ON);
 
   double total = 0.0;
+  SampleCloud testCloud;
   sampler.sampleBinaryRelationSystematically(relations, objects, 
-      oris1,
-      labels,
-      pdf,
+      oris1, labels,
+      pdf.getCellSize(), testCloud);
+
+  testCloud.KernelDensityEstimation2D(pdf, 
+      objects.back()->pose.pos, sampler.m_kernelWidthFactor, 
       total, 1.0);
 }

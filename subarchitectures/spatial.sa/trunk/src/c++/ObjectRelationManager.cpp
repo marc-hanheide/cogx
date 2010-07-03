@@ -24,6 +24,9 @@
 #include <Navigation/LocalGridMap.hh>
 #include "CureMapConversion.hpp"
 #include "DensitySampling.hpp"
+#include "SpatialGridMap.hh"
+#include "PBVisualization.hh"
+#include "GridMapData.hh"
 
 #define USE_KDE
 
@@ -432,6 +435,17 @@ void ObjectRelationManager::runComponent()
 
   sleepComponent(2000);
 
+//  if (m_bSampleOnness || m_bSampleInness) {
+    VisualPB_Bloxel visualPB("localhost", 5050, 100, 100, 0.05, 1, true);
+    visualPB.connectPeekabot();
+//  }
+
+	      SpatialGridMap::GridMapData def;
+	      def.occupancy = SpatialGridMap::UNKNOWN;
+	      def.pdf = 0.0;
+	      SpatialGridMap::GridMap<SpatialGridMap::GridMapData> pdfMap(100, 100, 0.05, 0.05, 0, 2.0, 0, 0, 0, def);
+
+
   while (isRunning()) {
     // Dispatch recognition commands if the robot has been standing still
     // long enough
@@ -461,7 +475,7 @@ void ObjectRelationManager::runComponent()
       if (r.succeeded()) {
 	Pose3 boxPose;
 	setIdentity(boxPose);
-	double m[16];
+//	double m[16];
 
 //	m[0] = r.get_result().x.x; 
 //	m[1] = r.get_result().y.x;
@@ -603,8 +617,9 @@ void ObjectRelationManager::runComponent()
 	    if (m_bSampleOnness) {
 	      static bool sampleTable = false;
 
-	      Cure::LocalGridMap<double> pdf(50, 0.05, 0.0, 
-		  Cure::LocalGridMap<double>::MAP1, 0, 0);
+
+//	      Cure::LocalGridMap<double> pdf(50, 0.05, 0.0, 
+//		  Cure::LocalGridMap<double>::MAP1, 0, 0);
 	      vector<spatial::Object *>objects;
 	      vector<string> objectLabels;
 	      vector<spatial::SpatialRelationType> relations;
@@ -612,9 +627,9 @@ void ObjectRelationManager::runComponent()
 	      if (sampleTable) {
 		objects.push_back(&box2);
 		objectLabels.push_back("box2");
-		objects.push_back(&box1);
-		objectLabels.push_back("box1");
-		relations.push_back(RELATION_ON);
+//		objects.push_back(&box1);
+//		objectLabels.push_back("box1");
+//		relations.push_back(RELATION_ON);
 		objects.push_back(&table1);
 		objectLabels.push_back("table1");
 		relations.push_back(RELATION_ON);
@@ -622,9 +637,9 @@ void ObjectRelationManager::runComponent()
 	      else {
 		objects.push_back(&box1);
 		objectLabels.push_back("box1");
-		objects.push_back(&box2);
-		objectLabels.push_back("box2");
-		relations.push_back(RELATION_ON);
+//		objects.push_back(&box2);
+//		objectLabels.push_back("box2");
+//		relations.push_back(RELATION_ON);
 		objects.push_back(&table1);
 		objectLabels.push_back("table1");
 		relations.push_back(RELATION_ON);
@@ -634,58 +649,76 @@ void ObjectRelationManager::runComponent()
 	      //	    objectLabels.push_back("box2");
 	      //	    relations.push_back(RELATION_ON);
 
-	      double total = 0.0;
 	      vector<cogx::Math::Matrix33> supportObjectOrientations;
 	      supportObjectOrientations.push_back(objects.back()->pose.rot); 
+	      SampleCloud testCloud;
 	      m_sampler.
 		sampleBinaryRelationSystematically(relations, objects, 
 		    supportObjectOrientations, 
-		    objectLabels, pdf,
-		  total, 1.0);
+		    objectLabels, pdfMap.getCellSize(),
+		    testCloud);
+
+	      //  log("Writing into 2D grid");
+//	      testCloud.KernelDensityEstimation2D(pdf, 
+//		  objects.back()->pose.pos, m_sampler.getKernelWidthFactor(), 
+//		  total, 1.0);
+	      testCloud.compact();
+	      Vector3 center;
+	      double interval;
+	      int xExt, yExt, zExt;
+	      vector<double> weights;
+	      testCloud.makePointCloud(center, interval, xExt, yExt, zExt, weights);
+
+	      center += objects.back()->pose.pos;
+
+	      m_sampler.kernelDensityEstimation3D(pdfMap,
+		  center, interval, xExt, yExt, zExt, weights);
 
 	      sampleTable = !sampleTable;
+	      
+	      visualPB.DisplayMap(pdfMap);
 
-	      peekabot::LineCloudProxy linecloudp;
-
-	      linecloudp.add(m_PeekabotClient, "root.distribution",
-		  peekabot::REPLACE_ON_CONFLICT);
-	      linecloudp.clear_vertices();
-	      linecloudp.set_color(0.5, 0, 0.5);
-
-	      double maxPDFValue = 0.0;
-	      for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
-		for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
-		  if (pdf(x,y) > maxPDFValue) {
-		    maxPDFValue = pdf(x,y);
-		  }
-		}
-	      }
-
-	      for (int x = -pdf.getSize(); x < pdf.getSize(); x++) {
-		for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
-		  if (pdf(x, y) == 0)
-		    continue;
-		  double xW2, yW2;
-		  double xW3, yW3;
-		  pdf.index2WorldCoords(x, y, xW2, yW2);
-		  pdf.index2WorldCoords(x+1, y, xW3, yW3);
-		  linecloudp.add_line(xW2, yW2, pdf(x, y)/maxPDFValue,
-		      xW3, yW3, pdf(x+1, y)/maxPDFValue);
-		}
-	      }
-	      for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
-		for (int y = -pdf.getSize(); y < pdf.getSize(); y++) {
-		  if (pdf(x, y) == 0)
-		    continue;
-		  double xW2, yW2;
-		  double xW3, yW3;
-		  pdf.index2WorldCoords(x, y, xW2, yW2);
-		  pdf.index2WorldCoords(x, y+1, xW3, yW3);
-		  linecloudp.add_line(xW2, yW2, pdf(x, y)/maxPDFValue,
-		      xW3, yW3, pdf(x, y+1)/maxPDFValue);
-		}
-	      }
-
+//	      peekabot::LineCloudProxy linecloudp;
+//
+//	      linecloudp.add(m_PeekabotClient, "root.distribution",
+//		  peekabot::REPLACE_ON_CONFLICT);
+//	      linecloudp.clear_vertices();
+//	      linecloudp.set_color(0.5, 0, 0.5);
+//
+//	      double maxPDFValue = 0.0;
+//	      for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
+//		for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
+//		  if (pdf(x,y) > maxPDFValue) {
+//		    maxPDFValue = pdf(x,y);
+//		  }
+//		}
+//	      }
+//
+//	      for (int x = -pdf.getSize(); x < pdf.getSize(); x++) {
+//		for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
+//		  if (pdf(x, y) == 0)
+//		    continue;
+//		  double xW2, yW2;
+//		  double xW3, yW3;
+//		  pdf.index2WorldCoords(x, y, xW2, yW2);
+//		  pdf.index2WorldCoords(x+1, y, xW3, yW3);
+//		  linecloudp.add_line(xW2, yW2, pdf(x, y)/maxPDFValue,
+//		      xW3, yW3, pdf(x+1, y)/maxPDFValue);
+//		}
+//	      }
+//	      for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
+//		for (int y = -pdf.getSize(); y < pdf.getSize(); y++) {
+//		  if (pdf(x, y) == 0)
+//		    continue;
+//		  double xW2, yW2;
+//		  double xW3, yW3;
+//		  pdf.index2WorldCoords(x, y, xW2, yW2);
+//		  pdf.index2WorldCoords(x, y+1, xW3, yW3);
+//		  linecloudp.add_line(xW2, yW2, pdf(x, y)/maxPDFValue,
+//		      xW3, yW3, pdf(x, y+1)/maxPDFValue);
+//		}
+//	      }
+//
 	    }
 
 	  } // if (m_bTestOnness)
@@ -1449,11 +1482,6 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       return;
     }
 
-    FrontierInterface::GridMapDoublePtr inMap = request->outMap;
-    Cure::LocalGridMap<double> outMap(inMap->size, inMap->cellSize, 0.0, 
-	Cure::LocalGridMap<double>::MAP1,
-	inMap->x, inMap->y);
-
     vector<spatial::Object *> objectChain;
     vector<spatial::SpatialRelationType> relations;
 
@@ -1483,8 +1511,10 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     }
     objectChain.push_back(supportObject);
 
+    FrontierInterface::RelationSeq::iterator rit =
+      request->relationTypes.begin();
     for (vector<string>::iterator it = request->objects.begin();
-	it != request->objects.end(); it++) {
+	it != request->objects.end(); it++, rit++) {
       if (m_planeObjectModels.find(*it) != m_planeObjectModels.end()) {
 	log("Can't compute ON for table on sth else!");
 	return;
@@ -1500,109 +1530,36 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	  generateNewObjectModel(*it);
 	}
 	objectChain.push_back(m_objectModels[*it]);
-	relations.push_back(RELATION_ON);
-      }
-    }
-
-    double total = 0.0;
-
-    vector<Vector3> dummyTriangle;
-    m_sampler.
-      sampleBinaryRelationRecursively(relations, objectChain, 
-	request->objects.size()-2, outMap, total, 
-	dummyTriangle, 1.0);
-
-    request->outMap = convertFromCureMap(outMap);
-
-    for (unsigned long i = 0; i < request->outMap->contents.size(); i++) {
-      request->outMap->contents[i] *= (request->probSum/total);
-    }
-
-    overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
-  }
-
-  catch (DoesNotExistOnWMException) {
-    log("Error! Prior request disappeared from WM!");
-  }
-}
-
-void
-ObjectRelationManager::new3DPriorRequest(const cdl::WorkingMemoryChange &wmc) {
-  try {
-    FrontierInterface::ObjectPriorRequestPtr request =
-      getMemoryEntry<FrontierInterface::ObjectPriorRequest>(wmc.address);
-
-    if (request->objects.size() < 2) {
-      log("Error! Can't compute onness for less than 2 objects!");
-      return;
-    }
-
-    FrontierInterface::GridMapDoublePtr inMap = request->outMap;
-    Cure::LocalGridMap<double> outMap(inMap->size, inMap->cellSize, 0.0,
-        Cure::LocalGridMap<double>::MAP1,
-        inMap->x, inMap->y);
-
-    vector<spatial::Object *> objectChain;
-    vector<spatial::SpatialRelationType> relations;
-
-    string supportObjectLabel = request->objects.back();
-    spatial::Object *supportObject;
-    if (m_planeObjectModels.find(supportObjectLabel) != m_planeObjectModels.end()) {
-      supportObject = &m_planeObjectModels[supportObjectLabel];
-      for (map<string, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); it != m_planeObjects.end(); it++) {
-        if (it->second->label == supportObjectLabel) {
-          // update object
-          supportObject->pose.pos = it->second->pos;
-          fromAngleAxis(supportObject->pose.rot, it->second->angle, vector3(0.0, 0.0, 1.0));
-        }
-      }
-    }
-    else {
-      // For now, assume each label represents a unique object
-      if (m_objects.find(supportObjectLabel) == m_objects.end()) {
-        // The pose of this object is not known. Cannot compute onness
-        // for this hierarchy.
-        log("Error! Support object was unknown; can't compute PDF for hierarchy!");
-        overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
-        return;
-      }
-      supportObject = m_objectModels[supportObjectLabel];
-    }
-    objectChain.push_back(supportObject);
-
-    for (vector<string>::iterator it = request->objects.begin();
-	it != request->objects.end(); it++) {
-      if (m_planeObjectModels.find(*it) != m_planeObjectModels.end()) {
-	log("Can't compute ON for table on sth else!");
-	return;
-      }
-      else {
-	// For now, assume each label represents a unique object
-	if (m_objects.find(*it) == m_objects.end()) {
-	  // New object
-	  log("New SpatialObject: %s", it->c_str());
-	  m_objects[*it] = new SpatialData::SpatialObject;
-	  m_objects[*it]->label = *it;
-
-	  generateNewObjectModel(*it);
+	if (rit != request->relationTypes.end()) {
+	  switch (*rit) {
+	    case FrontierInterface::ON: 
+	      relations.push_back(RELATION_ON);
+	      break;
+	    case FrontierInterface::IN:
+	      relations.push_back(RELATION_IN);
+	      break;
+	  }
 	}
-	objectChain.push_back(m_objectModels[*it]);
-	relations.push_back(RELATION_ON);
       }
     }
 
-    double total = 0.0;
+    vector<Matrix33> supportObjectOrientations;
+    supportObjectOrientations.push_back(supportObject->pose.rot);
 
-    vector<Vector3> dummyTriangle;
+    SampleCloud cloud;
     m_sampler.
-      sampleBinaryRelationRecursively(relations, objectChain, request->objects.size()-2, outMap,
-	total, dummyTriangle, 1.0);
+      sampleBinaryRelationSystematically(relations, objectChain,
+	  supportObjectOrientations,
+	  request->objects, request->cellSize, cloud);
 
-    request->outMap = convertFromCureMap(outMap);
-    
-    for (unsigned long i = 0; i < request->outMap->contents.size(); i++) {
-      request->outMap->contents[i] *= (request->probSum/total);
-    }
+    cloud.compact();
+
+    cloud.makePointCloud(request->outCloud->center, 
+	request->outCloud->interval,
+	request->outCloud->xExtent,
+	request->outCloud->yExtent,
+	request->outCloud->zExtent,
+	request->outCloud->values);
 
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
   }
@@ -1653,7 +1610,6 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
     }
 
     if (supportObject != 0) {
-      int nSamplesPerStep = request->objects.size() == 2 ? pointCount : pointCount>>2;
 
       vector<Vector3> triangle;
       triangle.push_back(vector3(request->triangle[0].x,request->triangle[0].y, 0));

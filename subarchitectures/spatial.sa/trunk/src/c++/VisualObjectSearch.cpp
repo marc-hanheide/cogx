@@ -94,6 +94,21 @@ namespace spatial
 	log("Min bloxel height set to: %f", m_minbloxel);
       }
 
+      it = _config.find("--orientations");
+      if (it != _config.end()) {
+	m_sampler.setOrientationQuantization(atoi(it->second.c_str()));
+      }
+
+      it = _config.find("--samples");
+      if (it != _config.end()) {
+	m_sampler.setSampleNumberTarget(atoi(it->second.c_str()));
+      }
+
+      it = _config.find("--kernel-width-factor");
+      if (it != _config.end()) {
+	m_sampler.setKernelWidthFactor(atoi(it->second.c_str()));
+      }
+
 
       m_horizangle = M_PI/4;
       it = _config.find("--cam-horizangle");
@@ -134,7 +149,7 @@ namespace spatial
       //objectprobability.push_back(make_pair("ricebox",0));
       //def.objprob = objectprobability;
       def.pdf = 0;
-      m_map = new GridMap<GridMapData>(m_gridsize, m_gridsize, m_cellsize, m_minbloxel, 0, m_mapceiling, 0, 0, 0, def);
+      m_map = new SpatialGridMap::GridMap<GridMapData>(m_gridsize, m_gridsize, m_cellsize, m_minbloxel, 0, m_mapceiling, 0, 0, 0, def);
       m_tracer = new LaserRayTracer<GridMapData>(m_map,1.0);
       p = new VisualPB_Bloxel("localhost",5050,m_gridsize,m_gridsize,m_cellsize,1,true);//host,port,xsize,ysize,cellsize,scale, redraw whole map every time
 
@@ -260,6 +275,43 @@ namespace spatial
 	sleep(1);
       }
     }
+
+//void
+//VisualObjectSearch::AskForDistribution(const vector<string> &objectLabels,
+//    const vector<SpatialData::ObjectRelationPtr> &relations)
+//{
+//    FrontierInterface::WeightedPointCloudPtr queryCloud
+//      = new FrontierInterface::WeightedPointCloud;
+//
+//    //write lgm to WM
+//    FrontierInterface::ObjectPriorRequestPtr objreq =
+//        new FrontierInterface::ObjectPriorRequest;
+//    objreq->relationTypes = relations; // ON or IN or whatnot
+//    objreq->objects = objectLabels;	// Names of objects, starting with the query object
+//    objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
+//    objreq->outCloud = queryCloud;	// Data struct to receive output
+//    addToWorkingMemory(newDataID(), objreq);
+//}
+
+//void
+//VisualObjectSearch::owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID) {
+//  try {
+//    FrontierInterface::WeightedPointCloudPtr cloud =
+//      getMemoryEntry<FrontierInterface::WeightedPointCloud>(objID.address);
+//
+//    m_sampler.kernelDensityEstimation3D(m_map, cloud->center,
+//	cloud->interval,
+//	cloud->xExtent,
+//	cloud->yExtent,
+//	cloud->zExtent,
+//	cloud->values);
+//  }
+//  catch (DoesNotExistOnWMException excp) {
+//    log("Error!  WeightedPointCloud does not exist on WM!");
+//    return;
+//  }
+//}
+
 bool VisualObjectSearch::isCircleFree(double xW, double yW, double rad){
    int xiC,yiC;
    if (m_lgm->worldCoords2Index(xW,yW,xiC,yiC)!= 0)

@@ -5,6 +5,8 @@
 #include <cogxmath.h>
 #include <Pose3.h>
 #include <fstream>
+#include "SpatialGridMap.hh"
+#include "KDEFunctors.hh"
 
 using namespace std;
 using namespace cogx::Math;
@@ -274,7 +276,6 @@ DensitySampler::sampleBinaryRelationRecursively(const vector <SpatialRelationTyp
   // aliasing problems.
 
   double samplingInterval = pow(sampleVolume/sampleNumberTargetUsed, 1/3.0); 
-  samplingInterval = 4*cellSize;
   // Round samplingInterval upward to the nearest multiple of cellSize
   // (keeps the number of sampled positions less than sampleNumberTarget)
   samplingInterval = cellSize*(ceil(samplingInterval/cellSize));
@@ -521,8 +522,8 @@ DensitySampler::sampleBinaryRelationSystematically(
     const vector<spatial::Object *> &objects,
     const vector<Matrix33> &supportObjectOrientations,
     const std::vector<string> &objectLabels,
-    Cure::LocalGridMap<double> &outMap,
-    double &total, double baseValue)
+    double cellSize,
+    SampleCloud &outCloud)
 {
   spatial::Object *supportObject = objects.back();
   if (supportObject->pose.pos.x == -FLT_MAX) {
@@ -530,8 +531,6 @@ DensitySampler::sampleBinaryRelationSystematically(
     return;
   }
 
-
-  SampleCloud totalCloud;
 
   unsigned int currentLevel = objects.size() - 1;
 
@@ -565,7 +564,7 @@ DensitySampler::sampleBinaryRelationSystematically(
 	  supportObject, onObject,
 	  supportObjectOrientations, 
 	  m_objectOrientations[onObjectLabel],
-	  outMap.getCellSize());
+	  cellSize);
       cloud->compute();
     }
     else {
@@ -606,7 +605,7 @@ DensitySampler::sampleBinaryRelationSystematically(
 	      supportObject, onObject,
 	      m_objectOrientations[supportObjectLabel],
 	      m_objectOrientations[onObjectLabel],
-	      outMap.getCellSize());
+	      cellSize);
 	  cloud->compute();
 
 	  // Save it for next time
@@ -621,20 +620,14 @@ DensitySampler::sampleBinaryRelationSystematically(
 
 //    log("Computing relation: %i", currentLevel);
     if (currentLevel == objects.size()-2) {
-      totalCloud = *cloud;
+      outCloud = *cloud;
     }
     else {
 //      log("Compositing relations");
-      totalCloud = totalCloud.composit(*cloud);
+      outCloud = outCloud.composit(*cloud);
     }
 
   } while (currentLevel > 0);
-
-//  log("Writing into 2D grid");
-  totalCloud.KernelDensityEstimation2D(outMap, 
-      supportObject->pose.pos, m_kernelWidthFactor, 
-      total, baseValue);
-
 }
 
 SampleCloud
@@ -861,6 +854,29 @@ SampleCloud::compute() {
     default:
       cerr << "Error! Unsupported relation\n";
       exit(1);
+  }
+}
+
+void
+SampleCloud::makePointCloud(Vector3 &center, double &interval,
+    int &xExt, int &yExt, int &zExt, vector<double> &weights) const
+{
+  center = sampleOffset;
+  interval = sampleIntervalQuantum * sampleIntervalMultiplier;
+  xExt = xExtent;
+  yExt = yExtent;
+  zExt = zExtent;
+
+  weights.resize(values.size());
+
+  unsigned long i = 0;
+  for (int xi = -xExtent; xi <= xExtent; xi++) {
+    for (int yi = -yExtent; yi <= yExtent; yi++) {
+      for (int zi = -zExtent; zi <= zExtent; zi++) {
+	weights[i] = values[i];
+	i++;
+      }
+    }
   }
 }
 
@@ -1237,6 +1253,24 @@ DensitySampler::tryLoadCloudFromFile(const string &supportObjectLabel,
 }
 
 void
+SampleCloud::compact()
+{
+  const int nOrientations1 = object1Orientations.size();
+  const int nOrientations2 = object2Orientations.size();
+
+  const int valuesPer3DPoint = nOrientations1 * nOrientations2;
+  unsigned long totalValues = values.size();
+
+  for (unsigned int i1 = 0, i2 = 0; i2 < totalValues; i1++, i2+=valuesPer3DPoint)
+  {
+    double sumThisXYZ= 0.0;
+    for (unsigned int i3 = i2; i3 < i2 + valuesPer3DPoint; i3++)
+      sumThisXYZ += values[i3];
+    values[i1] = sumThisXYZ;
+  }
+}
+
+void
 DensitySampler::writeCloudToFile(const SampleCloud *cloud, const string &supportObjectLabel,
       const string &onObjectLabel, SpatialRelationType type)
 {
@@ -1300,6 +1334,80 @@ DensitySampler::tryLoadOrientationsFromFile(const string &label)
     exit(1);
   }
   return true;
+}
+
+void
+DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap::GridMapData> &map,
+    const cogx::Math::Vector3 &center,
+    double interval,
+    int xExtent,
+    int yExtent,
+    int zExtent,
+    const vector<double> &values)
+{
+  double cellSize = map.getCellSize();
+  double kernelRadius = interval;
+  if (kernelRadius < cellSize)
+    kernelRadius = cellSize;
+
+  //Get outer limits of update region (in xy)
+  pair<int, int> mapCenter =
+  map.worldToGridCoords(center.x, center.y);
+  pair<int, int> mapMin =
+    map.worldToGridCoords(center.x - xExtent*interval - kernelRadius, 
+	center.y - yExtent*interval - kernelRadius);
+  pair<int, int> mapMax = 
+    map.worldToGridCoords(center.x + xExtent*interval + kernelRadius, 
+	center.y + yExtent*interval + kernelRadius);
+
+  double minZ = center.z - zExtent*interval - kernelRadius;
+  double maxZ = center.z + zExtent*interval + kernelRadius;
+
+  double total = 0.0;
+  // Loop over columns in bounding box
+  for (int x = mapMin.first; x <= mapMax.first; x++) {
+    for (int y = mapMin.second; y <= mapMax.second; y++) {
+      // Column center world coords
+      pair<double, double> columnWorldXY =
+	map.gridToWorldCoords(x, y);
+
+      vector<vector<double> >sampleZValues;
+      vector<vector<double> >sampleWeights;
+      vector<double> columnXYSqDiffs;
+
+      for (int sampleX = -xExtent; sampleX <= xExtent; sampleX++) {
+	double wsx = sampleX * interval + center.x;
+	double xDiff = (wsx - columnWorldXY.first) / kernelRadius;
+	if (xDiff < 1 &&
+	    xDiff > -1) {
+	  for (int sampleY = -yExtent; sampleY <= yExtent; sampleY++) {
+	    double wsy = sampleY * interval + center.y;
+	    double yDiff = (wsy - columnWorldXY.second) / kernelRadius;
+	    if (yDiff < 1 &&
+		yDiff > -1) {
+	      columnXYSqDiffs.push_back(xDiff*xDiff+yDiff*yDiff);
+	      sampleZValues.push_back(vector<double>());
+	      sampleWeights.push_back(vector<double>());
+
+	      unsigned int indexOffset = (2*zExtent+1)*(sampleY+yExtent + 
+		  (2*yExtent+1)*(sampleX + xExtent));
+	      for (int sampleZ = -zExtent; sampleZ <= zExtent; sampleZ++) {
+		sampleZValues.back().push_back(center.z + interval*sampleZ);
+		sampleWeights.back().push_back(values[indexOffset + sampleZ + zExtent]);
+	      }
+	      SpatialGridMap::GDAddKDE columnKDEFunctor(kernelRadius,
+		  sampleZValues,
+		  sampleWeights,
+		  columnXYSqDiffs);
+
+	      map.alignedBoxModifier(x,x,y,y,minZ,maxZ, columnKDEFunctor);
+	      total += columnKDEFunctor.getTotal();
+	    }
+	  }
+	}
+      }
+    }
+  }
 }
  
 void 
