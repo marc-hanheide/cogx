@@ -31,6 +31,7 @@
 #include <peekabot.hh>
 #include <highgui.h>
 #include <VisionData.hpp>
+#include "DensitySampling.hpp"
 
 
 
@@ -131,6 +132,8 @@ namespace spatial
       };
     ObjSearchStatus m_status;
     ObjSearchCommand m_command;
+
+    DensitySampler m_sampler;
 
     std::vector<std::vector<int> > m_VCones;
     int m_CurrentViewPointIndex;

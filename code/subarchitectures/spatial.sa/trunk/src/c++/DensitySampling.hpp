@@ -5,6 +5,8 @@
 #include "Math.hpp"
 #include "RelationEvaluation.hpp"
 #include <Navigation/LocalGridMap.hh>
+#include "SpatialGridMap.hh"
+#include "GridMapData.hh"
 
 using namespace std;
 using namespace cogx::Math;
@@ -73,6 +75,10 @@ class SampleCloud
 
     SampleCloud composit(const SampleCloud &B) const;
 
+    void compact();
+    void makePointCloud(Vector3 &center, double &interval,
+    int &xExt, int &yExt, int &zExt, vector<double> &weights) const;
+
     void KernelDensityEstimation2D(Cure::LocalGridMap<double> &outMap,
 	Vector3 cloudCenter, double kernelWidthFactor, double &total, double baseValue);
 
@@ -133,12 +139,20 @@ class DensitySampler
 	  const std::vector<spatial::Object *> &objects,
 	  const vector<Matrix33> &supportObjectOrientations,
 	  const std::vector<string> &objectLabels,
-	  Cure::LocalGridMap<double> &outMap,
-	  double &total, double baseValue);
+	  double cellSize, SampleCloud &outCloud);
+
+    void kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap::GridMapData> &map,
+	const cogx::Math::Vector3 &center,
+	double interval,
+	int xExtent,
+	int yExtent,
+	int zExtent,
+	const vector<double> &values);
 
     void setOrientationQuantization(int q) { m_orientationQuantization = q; }
     void setSampleNumberTarget(int n) { m_sampleNumberTarget = n; }
     void setKernelWidthFactor(double f) { m_kernelWidthFactor = f; }
+    double getKernelWidthFactor() const { return m_kernelWidthFactor; }
 
     SampleCloud * 
     tryLoadCloudFromFile(const string &supportObjectLabel,

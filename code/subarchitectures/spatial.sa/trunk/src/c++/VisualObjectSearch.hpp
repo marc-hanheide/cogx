@@ -26,6 +26,8 @@
 #include <Navigation/GridLineRayTracer.hh>
 #include <gtk/gtk.h>
 
+#include "DensitySampling.hpp"
+
 namespace spatial
 {
 
@@ -90,6 +92,8 @@ namespace spatial
       GtkWidget *hbox;
 
       bool m_savemapmode;
+
+      DensitySampler m_sampler;
   };
 };
 #endif /* VISUALOBJECTSEARCH_HPP_ */
