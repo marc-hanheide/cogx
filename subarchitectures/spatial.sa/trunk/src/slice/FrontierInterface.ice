@@ -81,18 +81,28 @@ module FrontierInterface {
     DoubleData contents;
   };
 
+  class WeightedPointCloud
+  {
+    cogx::Math::Vector3 center;
+    double interval;
+    int xExtent;
+    int yExtent;
+    int zExtent;
+    DoubleData values;
+  };
 
-  enum ObjectRelation { ON };
 
+  enum ObjectRelation { ON, IN };
+  sequence<ObjectRelation> RelationSeq;
   /**
    * Command to compute probability distributions
    * @author Kristoffer Sjöö
    */
   class ObjectPriorRequest {
-    ObjectRelation relationType;
+    RelationSeq relationTypes;
     StringSeq objects; //Starts with the query object's label
-    double probSum; //Sum probability to normalise to
-    GridMapDouble outMap;
+    double cellSize;
+    WeightedPointCloud outCloud;
   };
 
   /**
