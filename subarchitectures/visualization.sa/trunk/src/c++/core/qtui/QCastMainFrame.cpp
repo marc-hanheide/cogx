@@ -256,6 +256,8 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
 #endif
    QWebSettings::globalSettings()->setAttribute(QWebSettings::JavascriptEnabled, true);
    //QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+
+   QWebSettings::globalSettings()->setFontSize(QWebSettings::DefaultFontSize, 12);
 }
 
 QCastMainFrame::~QCastMainFrame()
