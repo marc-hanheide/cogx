@@ -27,10 +27,9 @@ private:
    cogx::display::CDisplayModel* pModel;
    cogx::display::CDisplayView* pView;
    bool m_bModified;
+   bool m_bHasForms;
    QString m_jsFormCap;
    static QString m_jQuery;
-   static std::vector<QCastViewHtml*> g_savedViews;
-   static QWidget* g_savedViewOwner;
 
 public:
    QCastViewHtml( QWidget* parent = 0, Qt::WindowFlags flags = 0 );

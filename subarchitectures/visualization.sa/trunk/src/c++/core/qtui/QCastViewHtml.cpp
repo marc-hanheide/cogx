@@ -30,6 +30,7 @@ QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
 {
    pView = NULL;
    m_bModified = false;
+   m_bHasForms = false;
 
    // The signal is queued an processed when Qt is idle.
    // We emit the signal in paintEvent so that the HTML content is recreated
@@ -72,6 +73,11 @@ QCastViewHtml::~QCastViewHtml()
 void QCastViewHtml::createJsObjects()
 {
    DTRACE("QCastViewHtml::createJsObjects");
+   if (! m_bHasForms) {
+      DMESSAGE("NO forms");
+      return;
+   }
+
    QWebPage* pPage = page();
    QWebFrame* pFrame = NULL;
    if (pPage) pFrame = pPage->currentFrame();
@@ -93,22 +99,22 @@ void QCastViewHtml::createJsObjects()
 void QCastViewHtml::finishLoading(bool)
 {
    DTRACE("QCastViewHtml::finishLoading");
-   //progress = 100;
-   //adjustTitle();
-   // page()->mainFrame()->evaluateJavaScript(m_jQuery);
 
-   if (! pView) return;
-   QWebPage* pPage = page();
-   QWebFrame* pFrame = NULL;
-   if (pPage) pFrame = pPage->currentFrame();
-   if (!pFrame) return;
 
-   CPtrVector<cogx::display::CHtmlChunk> forms;
-   pView->getHtmlForms(forms);
-   cogx::display::CHtmlChunk* pForm;
-   FOR_EACH(pForm, forms) {
-      QString js = QString("CogxJsFillForm('#%1');").arg(QString::fromStdString(pForm->htmlid()));
-      pFrame->evaluateJavaScript(js);
+   if (m_bHasForms) {
+      if (! pView) return;
+      QWebPage* pPage = page();
+      QWebFrame* pFrame = NULL;
+      if (pPage) pFrame = pPage->currentFrame();
+      if (!pFrame) return;
+
+      CPtrVector<cogx::display::CHtmlChunk> forms;
+      pView->getHtmlForms(forms);
+      cogx::display::CHtmlChunk* pForm;
+      FOR_EACH(pForm, forms) {
+         QString js = QString("CogxJsFillForm('#%1');").arg(QString::fromStdString(pForm->htmlid()));
+         pFrame->evaluateJavaScript(js);
+      }
    }
 }
 
@@ -158,6 +164,9 @@ void QCastViewHtml::paintEvent(QPaintEvent* event)
 void QCastViewHtml::doUpdateContent()
 {
    DTRACE("QCastViewHtml::doUpdateContent");
+   CPtrVector<cogx::display::CHtmlChunk> forms;
+   pView->getHtmlForms(forms);
+   m_bHasForms = forms.size() > 0;
 
    // TODO: save current form values and restore after update
    //    - store variables in state[formid]
@@ -173,12 +182,13 @@ void QCastViewHtml::doUpdateContent()
       pView->drawHtml(head, body);
       list.append("<html><head>");
 
-      // TODO: if this->hasForms() {
-      list << "<script type=\"text/javascript\">\n";
-      list << m_jQuery;
-      list << "</script>\n";
-      list << m_jsFormCap;
-      // }
+      // Loading jQuery is _very_ time consuming
+      if (m_bHasForms) {
+         list << "<script type=\"text/javascript\">\n";
+         list << m_jQuery;
+         list << "</script>\n";
+         list << m_jsFormCap;
+      }
 
       list << head;
       list.append("</head><body>");
