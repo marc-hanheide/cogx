@@ -7,6 +7,7 @@
 	<!-- Init build system                                                   -->
 	<!-- =================================================================== -->
 	<target name="init" description="compiles the source code">
+	  <tstamp/>
 	</target>
 
 	<!-- =================================================================== -->
@@ -37,34 +38,60 @@
 		<equals arg1="${build_sa_coma}" arg2="ON" />
 	</condition>
 
-	<!-- =================================================================== -->
-	<!-- the dirset of all sub directories (conditionally)                   -->
-	<!-- =================================================================== -->
-	<dirset id="subdirs" dir="${basedir}">
-		<include name="tools/castutils" />
-		<include name="tools/beliefs" />
-		<include name="tools/cogxutils" />
-		<include name="tools/hardware/video" />
-		<include name="tools/hardware/blobfinder" />
-		<include name="subarchitectures/binder" if="build.binding_sa" />
-		<include name="subarchitectures/spatial.sa" if="build.spatial_sa" />
-		<include name="subarchitectures/vision.sa" if="build.vision_sa" />
-		<include name="subarchitectures/motivation.sa" if="build.motivation_sa" />
-		<include name="subarchitectures/planner.sa" if="build.planner_sa" />
-		<include name="subarchitectures/coma.sa" if="build.coma_sa" />
-	</dirset>
-
+	<target name="sa.binder" if="build.binding_sa">
+	  <ant target="${target}" dir="subarchitectures/binder" />
+	</target>
+	<target name="sa.spatial" if="build.spatial_sa">
+	  <ant target="${target}" dir="subarchitectures/spatial.sa" />
+	</target>
+	<target name="sa.coma" if="build.coma_sa">
+	  <ant target="${target}" dir="subarchitectures/coma.sa" />
+	</target>
+	<target name="sa.vision" if="build.vision_sa">
+	  <ant target="${target}" dir="subarchitectures/vision.sa" />
+	</target>
+	<target name="sa.planner" if="build.planner_sa">
+	  <ant target="${target}" dir="subarchitectures/planner.sa" />
+	</target>
+	<target name="sa.motivation" if="build.motivation_sa">
+	  <ant target="${target}" dir="subarchitectures/motivation.sa" />
+	</target>
 
 	<!-- =========================================
 	     Template target.  Never called explicitly, 
 	     only used to pass calls to underlying 
-	     children modules. 
+	     children modules. Need to automate later?
 	     ========================================= -->
 	<target name="template" depends="init">
 		<echo>Executing &quot;${target}&quot; target for tools/cast module...</echo>
-		<subant target="${target}">
-			<dirset refid="subdirs" />
-		</subant>
+		<ant target="${target}" dir="tools/math" />
+		<ant target="${target}" dir="tools/castutils" />
+		<ant target="${target}" dir="tools/beliefs" />
+		<ant target="${target}" dir="tools/cogxutils" />
+		<ant target="${target}" dir="tools/hardware/video" />
+		<ant target="${target}" dir="tools/hardware/blobfinder" />
+
+		<antcall target="sa.binder">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.spatial">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.coma">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.vision">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.planner">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<!-- <ant target="${target}" dir="subarchitectures/binder" /> -->
+		<!-- <ant target="${target}" dir="subarchitectures/spatial.sa" /> -->
+		<!-- <ant target="${target}" dir="subarchitectures/vision.sa" />  -->
+		<!-- <ant target="${target}" dir="subarchitectures/planner.sa" /> -->
+		<!-- <ant target="${target}" dir="subarchitectures/coma.sa" />  -->
+		<!-- <ant target="${target}" dir="subarchitectures/motivation.sa" /> -->
 	</target>
 
 
