@@ -4,7 +4,7 @@ import itertools
 
 from parser import ParseError
 import mapltypes as types
-import predicates, conditions, effects
+import predicates, conditions, effects, builtin, visitors
 from scope import Scope
 
 class Action(Scope):
@@ -29,6 +29,8 @@ class Action(Scope):
         self.precondition = precondition
         self.replan = replan
         self.effect = effect
+        self.totalCostFound = False
+        self.totalCostTerm = None
 
         if self.precondition:
             self.precondition.set_scope(self)
@@ -52,6 +54,45 @@ class Action(Scope):
         pass
         #str = ["(:action %s" % self.name]
         #indent = len("(:action ")
+
+    def get_total_cost(self):
+        self.totalCostFound = False
+        self.totalCostTerm = None
+        tct = predicates.Term(builtin.total_cost,[])
+
+        @visitors.replace
+        def visitor(eff, parts):
+            if isinstance(eff, effects.SimpleEffect):
+                if eff.predicate == builtin.increase:
+                    if eff.args[0] == tct:
+                        self.totalCostTerm = eff.args[1]
+                        self.totalCostFound = True
+
+        self.effect = self.effect.visit(visitor)
+        return self.totalCostTerm
+
+    def set_total_cost(self, new_total_cost):
+        self.totalCostFound = False
+        self.totalCostTerm = None
+        tct = predicates.Term(builtin.total_cost,[])
+
+        @visitors.replace
+        def visitor(eff, parts):
+            if isinstance(eff, effects.SimpleEffect):
+                if eff.predicate == builtin.increase:
+                    if eff.args[0] == tct:
+                        new_cost_eff = effects.SimpleEffect(builtin.increase,[tct,new_total_cost], eff.scope)
+                        self.totalCostFound = True
+                        return new_cost_eff
+
+        self.effect = self.effect.visit(visitor)
+
+        if not self.totalCostFound:
+            new_cost_eff = effects.SimpleEffect(builtin.increase,[tct,new_total_cost], self.effect.scope)
+            effs = [self.effect,new_cost_eff]
+            new_eff = effects.ConjunctiveEffect(effs,self.effect.scope)
+            self.effect = new_eff
+
 
     def copy(self, newdomain=None):
         """Create a deep copy of this Action.
