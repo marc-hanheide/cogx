@@ -8,7 +8,9 @@ import mapltypes as types
 import builtin
 from builtin import *
 from predicates import *
-    
+
+class TranslatorAnnotations(dict):
+    pass
 
 class Translator(object):
     def __init__(self, **kwargs):
@@ -17,7 +19,11 @@ class Translator(object):
     def translate(self, entity, **kwargs):
         t0 = time.time()
         for translator in self.depends:
+            entity._original = Translator.get_original(entity)
+            original = entity
+            
             entity = translator.translate(entity)
+            entity._original = original._original
         #print "total time for %s: %f" % (type(self), time.time()-t0)
             
         if isinstance(entity, actions.Action):
@@ -28,6 +34,19 @@ class Translator(object):
             return self.translate_problem(entity, **kwargs)
         elif isinstance(entity, domain.Domain):
             return self.translate_domain(entity, **kwargs)
+
+    @staticmethod
+    def get_original(entity):
+        if '_original' in entity.__dict__:
+            return entity._original
+        return entity
+
+    @staticmethod
+    def get_annotations(entity):
+        entity = Translator.get_original(entity)
+        if 'annotations' not in entity.__dict__:
+            entity.annotations = TranslatorAnnotations()
+        return entity.annotations
 
     def translate_action(self, action, domain=None):
         return action.copy(newdomain=domain)
@@ -162,7 +181,8 @@ class PreferenceCompiler(Translator):
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
         p2 = problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
-
+        Translator.get_annotations(_problem)['soft_goals'] = "Might exist..."
+        
         self.counter = 0
 
         @visitors.replace
