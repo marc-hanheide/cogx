@@ -58,6 +58,7 @@ class Translator(object):
         dom = domain.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
         dom.requirements = _domain.requirements.copy()
         dom.actions += [self.translate_action(a, dom) for a in _domain.actions]
+        dom.observe += [self.translate_action(o, dom) for o in _domain.observe]
         dom.axioms += [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
         dom.name2action = None
@@ -130,7 +131,7 @@ class PreferenceCompiler(Translator):
                 self.prefCondScope = cond.scope
                 return conditions.Conjunction([])
 
-        action1.precondition = action1.precondition.visit(visitor1)
+        action1.precondition = visitors.visit(action1.precondition, visitor1)
 
         if not self.prefFound:
             return action1
@@ -306,6 +307,7 @@ class CompositeTypeCompiler(Translator):
                 p.type = CompositeTypeCompiler.replacement_type(p.type, dom.types)
         
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
+        dom.observe = [self.translate_action(a, dom) for o in _domain.observe]
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
         dom.name2action = None
@@ -427,8 +429,14 @@ class ObjectFluentNormalizer(Translator):
                 args.append(param)
             # if action.precondition is None:
             #     print pre.pddl_str()
-            
-        return actions.Action(action.name, args, pre, effect, domain, replan=replan)
+
+        a2 = action.copy_skeletion(domain)
+        a2.add(args)
+        a2.args = args
+        a2.precondition = pre
+        a2.replan = replan
+        a2.effect = effect
+        return a2
 
     def translate_axiom(self, axiom, domain=None):
         assert domain is not None
@@ -534,6 +542,7 @@ class ObjectFluentCompiler(Translator):
                 return effects.ConditionalEffect(cond, results[0])
                                                 
 
+        eff.set_scope(scope)
         result = eff.visit(effectsVisitor)
         result.set_scope(scope)
         return result.visit(visitors.flatten)
@@ -543,14 +552,17 @@ class ObjectFluentCompiler(Translator):
         assert domain is not None
 
         a2 = actions.Action(action.name, [types.Parameter(p.name, p.type) for p in action.args], None, None, domain)
+        #a2 = action.copy_skeletion(domain)
+        #print map(str, a2.args)
         
         a2.precondition, facts = self.translate_condition(action.precondition, a2)
         a2.replan, rfacts = self.translate_condition(action.replan, a2)
         facts += rfacts
 
         a2.effect = action.effect.copy(new_scope=a2)
+        #print a2.effect.pddl_str()
         a2.effect = self.translate_effect(action.effect, facts, a2)
-            
+
         return a2
             
     def translate_axiom(self, axiom, domain=None):
@@ -573,6 +585,7 @@ class ObjectFluentCompiler(Translator):
         dom.requirements = _domain.requirements.copy()
         dom.requirements.discard("object-fluents")
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
+        dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
         dom.name2action = None
@@ -674,7 +687,8 @@ class ModalPredicateCompiler(Translator):
         else:
             args = [types.Parameter(p.name, p.type) for p in action.args]
 
-        a2 = actions.Action(action.name, args, None, None, domain)
+        a2 = action.copy_skeletion(domain)
+        
         if action.precondition:
             a2.precondition = action.precondition.copy(copy_instance=True, new_scope=a2).visit(cond_visitor)
             a2.precondition.set_scope(a2)
@@ -710,6 +724,8 @@ class ModalPredicateCompiler(Translator):
         return a2
         
     def translate_domain(self, _domain):
+        import dtpddl
+        
         modal = []
         nonmodal = []
         for pred in _domain.predicates:
@@ -733,17 +749,23 @@ class ModalPredicateCompiler(Translator):
         dom.requirements = _domain.requirements.copy()
         dom.requirements.discard("modal-predicates")
         
-        for ac in _domain.actions:
+        for ac in _domain.actions + _domain.observe:
             func_arg, compiled = self.compile_modal_args(ac.args, funcs)
             if not func_arg:
-                dom.actions.append(self.translate_action(ac, dom))
+                if isinstance(ac, dtpddl.Observation):
+                    dom.observe.append(self.translate_action(ac, dom))
+                else:
+                    dom.actions.append(self.translate_action(ac, dom))
             else:
                 for f, args in compiled:
                     ac.instantiate({func_arg : FunctionTerm(f, [Term(a) for a in f.args])})
                     a2 = self.translate_action(ac, dom, args)
                     ac.uninstantiate()
                     a2.name = "%s-%s" % (a2.name, f.name)
-                    dom.actions.append(a2)
+                    if isinstance(a2, dtpddl.Observation):
+                        dom.observe.append(a2)
+                    else:
+                        dom.actions.append(a2)
                     
         for ax in _domain.axioms:
             func_arg, compiled = self.compile_modal_args(ax.args, funcs)
@@ -808,8 +830,10 @@ class MAPLCompiler(Translator):
                 return None
             return eff.copy(new_parts = filtered_results)
                 
+        a2 = action.copy_skeletion(domain)
+        if isinstance(action, mapl.MAPLAction):
+            a2.__class__ = actions.Action
         
-        a2 = actions.Action(action.name, action.args, None, None, domain)
         if action.precondition:
             a2.precondition = action.precondition.copy(new_scope=a2)
         if action.replan:
@@ -832,15 +856,6 @@ class MAPLCompiler(Translator):
             a2.effect = keff
         return a2
 
-    def translate_sensor(self, sensor, domain=None):
-        assert domain is not None
-
-        a2 = actions.Action(sensor.name, sensor.args, None, None, domain)
-        if sensor.precondition:
-            a2.precondition = sensor.precondition.copy(new_scope=a2)
-        a2.effect = sensor.knowledge_effect().copy(new_scope=a2)
-        return a2
-    
     def translate_domain(self, _domain):
         import mapl
         if "mapl" not in _domain.requirements:
@@ -868,6 +883,7 @@ class MAPLCompiler(Translator):
         dom.predicates.add(i_indomain)
 
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
+        dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
         dom.name2action = None
