@@ -190,7 +190,7 @@ class PreferenceCompiler(Translator):
         @visitors.replace
         def visitor(cond, parts):
             if isinstance(cond, conditions.PreferenceCondition):
-                Translator.get_annotations(_problem)['soft_goals'].append(cond.cond)
+                Translator.get_annotations(_problem)['soft_goals'].append(cond)
                 help_lit_str = "preference-%i-ignored" % self.counter
                 action_name = "ignore-preference-%i" % self.counter
                 pred = predicates.Predicate(help_lit_str,[])
