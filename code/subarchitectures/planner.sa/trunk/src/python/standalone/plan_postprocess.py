@@ -116,7 +116,8 @@ def getRWDescription(action, args, _state, time):
 
 
 def make_po_plan(actions, task):
-    #annotations = pddl.translators.Translator.get_annotations(task.mapltask)
+    annotations = pddl.translators.Translator.get_annotations(task.mapltask)
+    soft_goals = annotations['soft_goals']
     #print annotations['soft_goals']
     
     t0 = time.time()
@@ -127,6 +128,8 @@ def make_po_plan(actions, task):
     
     readers = defaultdict(set)
     writers = defaultdict(set)
+
+    ignored_soft_goals = set()
     
     state = task.get_state().copy()
     previous = plan.init_node
@@ -135,6 +138,8 @@ def make_po_plan(actions, task):
         t1 = time.time()
 
         if action.startswith("ignore-preference-"):
+            action = action[len("ignore-preference-"):]
+            ignored_soft_goals.add(int(action))
             continue
 
         if action.startswith("ignore-preferences-"):
@@ -202,5 +207,9 @@ def make_po_plan(actions, task):
 #         for to in plan.E[pnode]:
 #             print "    ", to
     log.debug("total time for postprocessing: %f", time.time()-t0)
+
+#    print "Ignored Soft Goals:"
+#    for i in ignored_soft_goals:
+#        print soft_goals[i]
     
     return plan

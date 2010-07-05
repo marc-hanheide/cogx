@@ -181,13 +181,16 @@ class PreferenceCompiler(Translator):
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
         p2 = problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
-        Translator.get_annotations(_problem)['soft_goals'] = "Might exist..."
+
+        if 'soft_goals' not in Translator.get_annotations(_problem):
+            Translator.get_annotations(_problem)['soft_goals'] = []
         
         self.counter = 0
 
         @visitors.replace
         def visitor(cond, parts):
             if isinstance(cond, conditions.PreferenceCondition):
+                Translator.get_annotations(_problem)['soft_goals'].append(cond.cond)
                 help_lit_str = "preference-%i-ignored" % self.counter
                 action_name = "ignore-preference-%i" % self.counter
                 pred = predicates.Predicate(help_lit_str,[])
