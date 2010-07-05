@@ -4,6 +4,7 @@
 <project name="trapi" default="all">
 	<property name="debug" value="true" />
 
+	<property name="cast.jar" value="/usr/local/share/java/cast.jar" />
 	<property name="junit.jar" value="/usr/share/java/junit.jar" />
 	<property name="ice.jar" value="/usr/share/java/Ice.jar" />
 	<property name="log4j.jar" value="/usr/share/java/log4j-1.2.jar" />
