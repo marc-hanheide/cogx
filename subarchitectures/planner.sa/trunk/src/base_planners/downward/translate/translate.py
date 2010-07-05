@@ -572,8 +572,8 @@ if __name__ == "__main__":
         task, mutex_file = pddl.open()
 
     # EXPERIMENTAL!
-    import psyco
-    psyco.full()
+    #import psyco
+    #psyco.full()
 
     sas_task = pddl_to_sas(task, mutex_file)
     
