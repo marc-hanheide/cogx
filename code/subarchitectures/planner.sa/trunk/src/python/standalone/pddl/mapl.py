@@ -152,6 +152,21 @@ class MAPLAction(actions.Action):
         a.sensors = [s.copy(a) for s in self.sensors]
 
         return a
+
+    def copy_skeletion(self, newdomain=None):
+        """Create a copy of this action's skeleton (name, arguments
+        but not conditions and effects).
+
+        Arguments:
+        newdomain -- if not None, the copy will be created inside this scope."""
+        if not newdomain:
+            newdomain = self.parent
+            
+        agents = [Parameter(p.name, p.type) for p in self.agents]
+        args = [Parameter(p.name, p.type) for p in self.maplargs]
+        vars = [Parameter(p.name, p.type) for p in self.vars]
+        
+        return MAPLAction(self.name, agents, args, vars, None, None, None, [], newdomain)
     
     def knowledge_effect(self):
         effs = [s.knowledge_effect() for s in self.sensors]

@@ -69,15 +69,12 @@ class ExecutionCondition(object):
 
         return [ExecutionCondition(action, args, negated)]
         
-class Observation(scope.Scope):
+class Observation(actions.Action):
     def __init__(self, name, agents, args, execution, precondition, effect, domain):
-        scope.Scope.__init__(self, args+agents, domain)
-        self.name = name
+        actions.Action.__init__(self, name, agents+args, precondition, effect, domain)
         self.agents = agents
-        self.args = args
+        self.maplargs = args
         self.execution = execution
-        self.precondition = precondition
-        self.effect = effect
 
     def to_pddl(self):
         str = ["(:observe %s" % self.name]
@@ -88,7 +85,7 @@ class Observation(scope.Scope):
             newdomain = self.parent
             
         agents = [Parameter(p.name, p.type) for p in self.agents]
-        args = [Parameter(p.name, p.type) for p in self.args]
+        args = [Parameter(p.name, p.type) for p in self.maplargs]
         
         o = Observation(self.name, agents, args, None, None, None, newdomain)
 
@@ -103,6 +100,23 @@ class Observation(scope.Scope):
         if self.effect:
             o.effect = self.effect.copy(o)
 
+        return o
+
+    def copy_skeletion(self, newdomain=None):
+        """Create a copy of this observation's skeleton (name,
+        arguments but not conditions and effects).
+
+        Arguments:
+        newdomain -- if not None, the copy will be created inside this scope."""
+        if not newdomain:
+            newdomain = self.parent
+            
+        agents = [Parameter(p.name, p.type) for p in self.agents]
+        args = [Parameter(p.name, p.type) for p in self.maplargs]
+
+        o = Observation(self.name, agents, args, None, None, None, newdomain)
+        exe_cond = [ex.copy(newparent=o, newdomain=newdomain) for ex in self.execution]
+        o.execution = exe_cond
         return o
     
     @staticmethod

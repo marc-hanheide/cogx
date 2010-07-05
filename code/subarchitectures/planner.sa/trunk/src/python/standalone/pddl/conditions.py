@@ -180,6 +180,9 @@ class IntermediateCondition(Condition):
             new_scope = self.scope
         if not new_parts:
             new_parts = [self.cond.copy(new_scope=new_scope, copy_instance=copy_instance)]
+        elif new_scope:
+            new_parts[0].set_scope(new_scope)
+                
         return IntermediateCondition(new_parts[0], new_scope)
 
     #TODO: negate!
@@ -200,6 +203,9 @@ class PreferenceCondition(Condition):
             new_scope = self.scope
         if not new_parts:
             new_parts = [self.cond.copy(new_scope=new_scope, copy_instance=copy_instance)]
+        elif new_scope:
+            new_parts[0].set_scope(new_scope)
+            
         return PreferenceCondition(self.penalty, new_parts[0], new_scope)
 
     def negate(self):
@@ -240,10 +246,13 @@ class JunctionCondition(Condition):
         return fn(self, [p.visit(fn) for p in self.parts])
 
     def copy(self, new_scope=None, new_parts = None, copy_instance=False):
-        if not new_parts:
-            new_parts = self.parts
         if not new_scope:
             new_scope = self.scope
+        if not new_parts:
+            new_parts = self.parts
+        elif new_scope:
+            for p in new_parts:
+                p.set_scope(new_scope)
         return self.__class__([ p.copy(new_scope, copy_instance=copy_instance) for p in new_parts], new_scope)
 
     def set_scope(self, new_scope):

@@ -133,6 +133,10 @@ class ConjunctiveEffect(Effect):
             new_scope = self.scope
         if not new_parts:
             return ConjunctiveEffect([e.copy(new_scope, copy_instance=copy_instance) for e in self.parts])
+        elif new_scope:
+            for p in new_parts:
+                p.set_scope(new_scope)
+                
         return ConjunctiveEffect(new_parts)
 
     def set_scope(self, new_scope):
@@ -185,7 +189,7 @@ class UniversalEffect(Scope, Effect):
                     
         if new_parts:
             cp.effect = new_parts[0]
-            cp.effect.set_scope(self)
+            cp.effect.set_scope(cp)
         else:
             cp.effect = self.effect.copy(cp, copy_instance=copy_instance)
         return cp

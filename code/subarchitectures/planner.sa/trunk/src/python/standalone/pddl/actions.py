@@ -118,6 +118,20 @@ class Action(Scope):
             a.effect = self.effect.copy(a)
 
         return a
+
+    def copy_skeletion(self, newdomain=None):
+        """Create a copy of this action's skeleton (name, arguments
+        but not conditions and effects).
+
+        Arguments:
+        newdomain -- if not None, the copy will be created inside this scope."""
+        if not newdomain:
+            newdomain = self.parent
+
+        args = [types.Parameter(p.name, p.type) for p in self.args]
+        
+        return Action(self.name, args, None, None, newdomain)
+        
     
     @staticmethod
     def parse(it, scope):
