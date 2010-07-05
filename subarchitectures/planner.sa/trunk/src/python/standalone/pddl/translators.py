@@ -87,16 +87,8 @@ class IntermediateCompiler(Translator):
                 p2.domain.predicates.add(pred)
 
                 goalToken = conditions.LiteralCondition(pred,[], cond.scope)
-
-                intermediateEff = effects.SimpleEffect(pred,[],cond.scope)
-
-                costIncrease = predicates.Term(0.0)
-                totalCostTerm = predicates.Term(builtin.total_cost,[])
-                newSimpleEff = effects.SimpleEffect(builtin.increase,[totalCostTerm,costIncrease], cond.scope)
-                combinedEffs = [intermediateEff,newSimpleEff]
-                conjEff = effects.ConjunctiveEffect(combinedEffs, cond.scope)                         
-
-                
+                eff = effects.SimpleEffect(pred,[],cond.scope)
+              
                 consts = cond.get_constants()
                 p2.domain.constants |= consts
                 p2.domain.add(consts)
@@ -104,7 +96,9 @@ class IntermediateCompiler(Translator):
                 for c in consts:
                     p2.remove_object(c)
 
-                helpAct = actions.Action(actionName, [], cond.cond, conjEff, p2.domain)
+                helpAct = actions.Action(actionName, [], cond.cond, eff, p2.domain)
+                costIncrease = predicates.Term(0.0)
+                helpAct.set_total_cost(costIncrease)
                 p2.domain.actions.append(helpAct)
                 p2.actions.append(helpAct)
 
@@ -122,7 +116,6 @@ class PreferenceCompiler(Translator):
         self.costIncrease = 0
         self.prefCondScope = None
         self.prefFound = False
-        self.totalCostFound = False
 
     def translate_action(self, action, domain):
         self.prefFound = False
@@ -131,7 +124,7 @@ class PreferenceCompiler(Translator):
         @visitors.copy
         def visitor1(cond, parts):
             if isinstance(cond, conditions.PreferenceCondition):
-                assert not self.prefFound, "only one preference per precondition supported"
+                assert not self.prefFound, "only one preference per action precondition supported"
                 self.prefFound = True
                 self.costIncrease = cond.penalty
                 self.prefCondScope = cond.scope
@@ -143,29 +136,15 @@ class PreferenceCompiler(Translator):
             return action1
 
         action1.name = "ignore-preferences-" + action1.name
+        old_total_cost = action1.get_total_cost()
+        new_cost_term = None
 
-        self.totalCostFound = False
-        totalCostTerm = predicates.Term(builtin.total_cost,[])
+        if old_total_cost == None:
+            new_cost_term = predicates.Term(self.costIncrease)
+        else:
+            new_cost_term = predicates.Term(self.costIncrease + old_total_cost.object.value)
 
-        @visitors.replace
-        def visitor3(eff, parts):
-            if isinstance(eff, effects.SimpleEffect):
-                if eff.predicate == builtin.increase:
-                    if eff.args[0] == totalCostTerm:
-                        costTerm2 = predicates.Term(self.costIncrease+eff.args[1].object.value)
-                        cost_eff2 = effects.SimpleEffect(builtin.increase,[totalCostTerm,costTerm2], eff.scope)
-                        self.totalCostFound = True
-                        return cost_eff2
-
-        action1.effect = action1.effect.visit(visitor3)
-
-        if not self.totalCostFound:
-            costTerm = predicates.Term(self.costIncrease+1)
-            cost_eff = effects.SimpleEffect(builtin.increase,[totalCostTerm,costTerm], self.prefCondScope)
-            effs = [action1.effect,cost_eff]
-            new_eff = effects.ConjunctiveEffect(effs,action1.effect.scope)
-            action1.effect = new_eff
-
+        action1.set_total_cost(new_cost_term)
         action2 = action.copy(domain)
 
         @visitors.copy
@@ -196,21 +175,18 @@ class PreferenceCompiler(Translator):
                 pred = predicates.Predicate(help_lit_str,[])
                 p2.domain.predicates.add(pred)
 
-                cost_increase = predicates.Term(cond.penalty)
-
                 help_lit = conditions.LiteralCondition(pred,[], cond.scope)
                 parts = [cond.cond, help_lit]
                 goal_dis = conditions.Disjunction(parts, cond.scope)
 
-                term = predicates.Term(builtin.total_cost,[])
-
-                cost_eff = effects.SimpleEffect(builtin.increase,[term,cost_increase], cond.scope)
                 help_eff = effects.SimpleEffect(pred,[], cond.scope)
-                simple_effs = [cost_eff,help_eff]
 
                 precond = help_lit.negate()
-                eff = effects.ConjunctiveEffect(simple_effs, cond.scope)
-                help_act = actions.Action(action_name,[],precond,eff,p2.domain)
+
+                help_act = actions.Action(action_name,[],precond,help_eff,p2.domain)
+                cost_increase = predicates.Term(cond.penalty)
+                help_act.set_total_cost(cost_increase)
+
                 p2.domain.actions.append(help_act)
                 p2.actions.append(help_act)
 
@@ -225,7 +201,6 @@ class PreferenceCompiler(Translator):
 class ADLCompiler(Translator):
     def __init__(self, **kwargs):
         self.depends = [ModalPredicateCompiler(**kwargs), ObjectFluentCompiler(**kwargs), CompositeTypeCompiler(**kwargs), PreferenceCompiler(**kwargs)]
-        self.totalCostFound = False
 
     @staticmethod
     def condition_visitor(cond, parts):
@@ -236,25 +211,9 @@ class ADLCompiler(Translator):
     def translate_action(self, action, domain=None):
         a2 = action.copy(newdomain=domain)
 
-        self.totalCostFound = False
-        totalCostTerm = predicates.Term(builtin.total_cost,[])
-
-        @visitors.replace
-        def visitor(eff, parts):
-            if isinstance(eff, effects.SimpleEffect):
-                if eff.predicate == builtin.increase:
-                    if eff.args[0] == totalCostTerm:
-                        self.totalCostFound = True
-
         if "action-costs" in domain.requirements:
-            a2.effect = a2.effect.visit(visitor)
-            if not self.totalCostFound:
-                costIncrease = predicates.Term(1.0)
-                totalCostTerm = predicates.Term(builtin.total_cost,[])
-                newSimpleEff = effects.SimpleEffect(builtin.increase,[totalCostTerm,costIncrease], a2.effect.scope)
-                combinedEffs = [a2.effect,newSimpleEff]
-                conjEff = effects.ConjunctiveEffect(combinedEffs, a2.effect.scope)
-                a2.effect = conjEff
+            if a2.get_total_cost() == None:
+                a2.set_total_cost(predicates.Term(1.0))
                             
         a2.precondition = visitors.visit(a2.precondition, ADLCompiler.condition_visitor)
         a2.replan = visitors.visit(a2.replan, ADLCompiler.condition_visitor)
