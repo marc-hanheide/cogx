@@ -56,6 +56,11 @@ endif(BUILD_SA_BINDING)
 
 # -------------- /NAV.SA ----------------
 
+add_cast_component(NavGraphProcess NavGraphProcess.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} NavData Laser Robotbase OdometryReceiver Scan2dReceiver CureHWUtils)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+
 
 add_cast_component(SpatialTranslation SpatialTranslation.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData  FrontierInterface)
@@ -79,11 +84,6 @@ add_cast_component(LocalMapManager GridObjectFinder.cpp LocalMapManager.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData FrontierInterface Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils VisionData PTZ highgui cv)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX cxcore)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
-
-add_cast_component(ObjectRelationManager ObjectRelationManager.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
-link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialProperties peekabot PTZ FrontierInterface)
-link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
-link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
 
 #add_cast_component(SpatialPeekabotControl SpatialPeekabotControl.cpp)
 #link_cast_component(${CAST_COMPONENT_NAME} NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils)
@@ -137,5 +137,13 @@ link_directories(${GTK2_LIBRARIES})
   link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface)
   link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES} ${OPENCV_LDFLAGS})
+
+add_cast_component(ObjectRelationManager ObjectRelationManager.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialProperties peekabot PTZ FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
+
+
+
 endif(BUILD_AVS)
 
