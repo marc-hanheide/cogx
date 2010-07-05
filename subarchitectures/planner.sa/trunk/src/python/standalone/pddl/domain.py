@@ -55,6 +55,7 @@ class Domain(Scope):
         self.requirements = set()
         self.stratify_axioms()
         self.name2action = None
+        self.softGoals = set()
 
     def copy(self):
         """Create a deep copy of this Domain."""
@@ -66,6 +67,7 @@ class Domain(Scope):
             
         dom.stratify_axioms()
         dom.name2action = None
+        dom.softGoals = [sg.copy(dom) for sg in self.softGoals]
 
         dom.requirements = set(self.requirements)
         return dom
