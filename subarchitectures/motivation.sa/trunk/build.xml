@@ -90,7 +90,7 @@
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
 	<target name="compile" depends="slice,expandlibs" description="compiles the source code">
-		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" excludes="spatial/** dora/** coma/** vision/**">
+		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" excludes="dora/** coma/** vision/**">
 			<classpath refid="build.classpath" />
 		</javac>
 	</target>
