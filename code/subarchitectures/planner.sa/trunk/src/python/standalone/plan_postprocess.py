@@ -116,6 +116,9 @@ def getRWDescription(action, args, _state, time):
 
 
 def make_po_plan(actions, task):
+    #annotations = pddl.translators.Translator.get_annotations(task.mapltask)
+    #print annotations['soft_goals']
+    
     t0 = time.time()
     plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
 
