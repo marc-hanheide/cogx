@@ -637,9 +637,9 @@ void ObjectRelationManager::runComponent()
 	      else {
 		objects.push_back(&box1);
 		objectLabels.push_back("box1");
-//		objects.push_back(&box2);
-//		objectLabels.push_back("box2");
-//		relations.push_back(RELATION_ON);
+		//objects.push_back(&box2);
+		//objectLabels.push_back("box2");
+		//relations.push_back(RELATION_ON);
 		objects.push_back(&table1);
 		objectLabels.push_back("table1");
 		relations.push_back(RELATION_ON);
@@ -676,8 +676,10 @@ void ObjectRelationManager::runComponent()
 
 	      sampleTable = !sampleTable;
 	      
-	      visualPB.DisplayMap(pdfMap);
-
+	      //visualPB.DisplayMap(pdfMap);
+	      std::vector < std::pair <double,double> > thresholdval;
+	      thresholdval.push_back(make_pair(0.0,100.0));
+	      visualPB.AddPDF(pdfMap,thresholdval);
 //	      peekabot::LineCloudProxy linecloudp;
 //
 //	      linecloudp.add(m_PeekabotClient, "root.distribution",
