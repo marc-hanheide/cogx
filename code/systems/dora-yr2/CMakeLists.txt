@@ -143,3 +143,4 @@ ADD_CUSTOM_TARGET( ant_build ALL )
 endif(DO_ANT)
 
 
+configure_file(${CMAKE_SOURCE_DIR}/cmake/build.properties.in ${CMAKE_SOURCE_DIR}/build.properties)
