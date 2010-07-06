@@ -299,12 +299,15 @@ namespace spatial
 //    FrontierInterface::WeightedPointCloudPtr cloud =
 //      getMemoryEntry<FrontierInterface::WeightedPointCloud>(objID.address);
 //
+// double weightWanted = 1.0;
 //    m_sampler.kernelDensityEstimation3D(m_map, cloud->center,
 //	cloud->interval,
 //	cloud->xExtent,
 //	cloud->yExtent,
 //	cloud->zExtent,
-//	cloud->values);
+//	cloud->values,
+//       weightWanted/cloud->total
+// weightWanted);
 //  }
 //  catch (DoesNotExistOnWMException excp) {
 //    log("Error!  WeightedPointCloud does not exist on WM!");

@@ -859,7 +859,7 @@ SampleCloud::compute() {
 
 void
 SampleCloud::makePointCloud(Vector3 &center, double &interval,
-    int &xExt, int &yExt, int &zExt, vector<double> &weights) const
+    int &xExt, int &yExt, int &zExt, vector<double> &weights, double &total) const
 {
   center = sampleOffset;
   interval = sampleIntervalQuantum * sampleIntervalMultiplier;
@@ -870,10 +870,12 @@ SampleCloud::makePointCloud(Vector3 &center, double &interval,
   weights.resize(values.size());
 
   unsigned long i = 0;
+  total = 0.0;
   for (int xi = -xExtent; xi <= xExtent; xi++) {
     for (int yi = -yExtent; yi <= yExtent; yi++) {
       for (int zi = -zExtent; zi <= zExtent; zi++) {
 	weights[i] = values[i];
+	total += values[i];
 	i++;
       }
     }
@@ -1344,6 +1346,7 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
     int yExtent,
     int zExtent,
     const vector<double> &values,
+    double baseMultiplier,
     double totalWeight)
 {
   double cellSize = map.getCellSize();
@@ -1352,17 +1355,17 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
     kernelRadius = cellSize;
 
   //Get outer limits of update region (in xy)
-  pair<int, int> mapCenter =
+  const pair<int, int> mapCenter =
     map.worldToGridCoords(center.x, center.y);
-  pair<int, int> mapMin =
+  const pair<int, int> mapMin =
     map.worldToGridCoords(center.x - xExtent*interval - kernelRadius, 
 	center.y - yExtent*interval - kernelRadius);
-  pair<int, int> mapMax = 
+  const pair<int, int> mapMax = 
     map.worldToGridCoords(center.x + xExtent*interval + kernelRadius, 
 	center.y + yExtent*interval + kernelRadius);
 
-  double minZ = center.z - zExtent*interval - kernelRadius;
-  double maxZ = center.z + zExtent*interval + kernelRadius;
+  const double minZ = center.z - zExtent*interval - kernelRadius;
+  const double maxZ = center.z + zExtent*interval + kernelRadius;
 
   double total = 0.0;
   // Loop over columns in bounding box
@@ -1399,7 +1402,8 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
 	      SpatialGridMap::GDAddKDE columnKDEFunctor(kernelRadius,
 		  sampleZValues,
 		  sampleWeights,
-		  columnXYSqDiffs);
+		  columnXYSqDiffs,
+		  baseMultiplier);
 
 	      map.alignedBoxModifier(x,x,y,y,minZ,maxZ, columnKDEFunctor);
 	      total += columnKDEFunctor.getTotal();
@@ -1410,12 +1414,18 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
     }
   }
 
-  if (total != totalWeight && total != 0) {
+  double error = (total - totalWeight);
+
+  if (abs(error) > 0.001 && total != 0) {
     // Need to do a second pass to adjust total value
     // Assume the second pass will make proportionally the same changes
     // NOTE: May not be the case with merging! But whatever.
 
-    double adjustmentMultiplier = (totalWeight - total)/total;
+    // We did it once with baseMultiplier. That yielded a change mass = 'total'.
+    // The true modification mass factor is thus (baseMultiplier/total).
+    // We need to modify the total mass by another (-error). 
+
+    const double adjustmentMultiplier = -error * (baseMultiplier/total);
     cout << "Total weight " << total << " different from target: " <<
       totalWeight << "; re-doing with factor " << adjustmentMultiplier << endl;
 

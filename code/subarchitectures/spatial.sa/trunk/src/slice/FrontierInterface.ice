@@ -89,6 +89,7 @@ module FrontierInterface {
     int yExtent;
     int zExtent;
     DoubleData values;
+    double total;
   };
 
 

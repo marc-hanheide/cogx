@@ -77,7 +77,7 @@ class SampleCloud
 
     void compact();
     void makePointCloud(Vector3 &center, double &interval,
-    int &xExt, int &yExt, int &zExt, vector<double> &weights) const;
+    int &xExt, int &yExt, int &zExt, vector<double> &weights, double &total) const;
 
     void KernelDensityEstimation2D(Cure::LocalGridMap<double> &outMap,
 	Vector3 cloudCenter, double kernelWidthFactor, double &total, double baseValue);
@@ -148,6 +148,7 @@ class DensitySampler
 	int yExtent,
 	int zExtent,
 	const vector<double> &values,
+	double baseMultiplier,
 	double totalWeight);
 
     void setOrientationQuantization(int q) { m_orientationQuantization = q; }
