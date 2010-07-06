@@ -141,13 +141,14 @@ class DensitySampler
 	  const std::vector<string> &objectLabels,
 	  double cellSize, SampleCloud &outCloud);
 
-    void kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap::GridMapData> &map,
+    double kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap::GridMapData> &map,
 	const cogx::Math::Vector3 &center,
 	double interval,
 	int xExtent,
 	int yExtent,
 	int zExtent,
-	const vector<double> &values);
+	const vector<double> &values,
+	double totalWeight);
 
     void setOrientationQuantization(int q) { m_orientationQuantization = q; }
     void setSampleNumberTarget(int n) { m_sampleNumberTarget = n; }

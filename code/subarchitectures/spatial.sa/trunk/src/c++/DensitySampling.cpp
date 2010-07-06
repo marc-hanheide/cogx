@@ -1336,14 +1336,15 @@ DensitySampler::tryLoadOrientationsFromFile(const string &label)
   return true;
 }
 
-void
+double
 DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap::GridMapData> &map,
     const cogx::Math::Vector3 &center,
     double interval,
     int xExtent,
     int yExtent,
     int zExtent,
-    const vector<double> &values)
+    const vector<double> &values,
+    double totalWeight)
 {
   double cellSize = map.getCellSize();
   double kernelRadius = interval;
@@ -1352,7 +1353,7 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
 
   //Get outer limits of update region (in xy)
   pair<int, int> mapCenter =
-  map.worldToGridCoords(center.x, center.y);
+    map.worldToGridCoords(center.x, center.y);
   pair<int, int> mapMin =
     map.worldToGridCoords(center.x - xExtent*interval - kernelRadius, 
 	center.y - yExtent*interval - kernelRadius);
@@ -1408,6 +1409,64 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
       }
     }
   }
+
+  if (total != totalWeight && total != 0) {
+    // Need to do a second pass to adjust total value
+    // Assume the second pass will make proportionally the same changes
+    // NOTE: May not be the case with merging! But whatever.
+
+    double adjustmentMultiplier = (totalWeight - total)/total;
+    cout << "Total weight " << total << " different from target: " <<
+      totalWeight << "; re-doing with factor " << adjustmentMultiplier << endl;
+
+    for (int x = mapMin.first; x <= mapMax.first; x++) {
+      for (int y = mapMin.second; y <= mapMax.second; y++) {
+	// Column center world coords
+	pair<double, double> columnWorldXY =
+	  map.gridToWorldCoords(x, y);
+
+	vector<vector<double> >sampleZValues;
+	vector<vector<double> >sampleWeights;
+	vector<double> columnXYSqDiffs;
+
+	for (int sampleX = -xExtent; sampleX <= xExtent; sampleX++) {
+	  double wsx = sampleX * interval + center.x;
+	  double xDiff = (wsx - columnWorldXY.first) / kernelRadius;
+	  if (xDiff < 1 &&
+	      xDiff > -1) {
+	    for (int sampleY = -yExtent; sampleY <= yExtent; sampleY++) {
+	      double wsy = sampleY * interval + center.y;
+	      double yDiff = (wsy - columnWorldXY.second) / kernelRadius;
+	      if (yDiff < 1 &&
+		  yDiff > -1) {
+		columnXYSqDiffs.push_back(xDiff*xDiff+yDiff*yDiff);
+		sampleZValues.push_back(vector<double>());
+		sampleWeights.push_back(vector<double>());
+
+		unsigned int indexOffset = (2*zExtent+1)*(sampleY+yExtent + 
+		    (2*yExtent+1)*(sampleX + xExtent));
+		for (int sampleZ = -zExtent; sampleZ <= zExtent; sampleZ++) {
+		  sampleZValues.back().push_back(center.z + interval*sampleZ);
+		  sampleWeights.back().push_back(values[indexOffset + sampleZ + zExtent]);
+		}
+		SpatialGridMap::GDAddKDE columnKDEFunctor(kernelRadius,
+		    sampleZValues,
+		    sampleWeights,
+		    columnXYSqDiffs,
+		    adjustmentMultiplier);
+
+		map.alignedBoxModifier(x,x,y,y,minZ,maxZ, columnKDEFunctor);
+		total += columnKDEFunctor.getTotal();
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+
+  cout << "Total adjustment: " << total << endl;
+  return total;
 }
  
 void 
