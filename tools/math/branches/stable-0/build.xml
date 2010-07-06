@@ -1,5 +1,7 @@
 <!-- Inner build file for a module in the CogX system -->
 <project name="myproject" default="compile" basedir=".">
+	<property name="projectroot.dir" value="${basedir}/../.." />
+	<property file="${projectroot.dir}/build.properties" />
 
         <!-- =================================================================== -->
         <!-- Add JAR files to classpath                                          -->
@@ -13,8 +15,8 @@
 	<property name="output.dir" value="../../output/classes" />
 
 	<!-- Controls what is compiled -->
-	<property name="src.dir" value="./src/java" />
-	<property name="slice.dir" value="./src/slice" />
+	<property name="src.dir" value="${basedir}/src/java" />
+	<property name="slice.dir" value="${basedir}/src/slice" />
 
 	<!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
 	<taskdef name="slice2java" classname="Slice2JavaTask"/>
