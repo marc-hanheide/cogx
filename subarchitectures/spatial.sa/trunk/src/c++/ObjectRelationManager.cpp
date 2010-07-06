@@ -627,9 +627,9 @@ void ObjectRelationManager::runComponent()
 	      if (sampleTable) {
 		objects.push_back(&box2);
 		objectLabels.push_back("box2");
-//		objects.push_back(&box1);
-//		objectLabels.push_back("box1");
-//		relations.push_back(RELATION_ON);
+		objects.push_back(&box1);
+		objectLabels.push_back("box1");
+		relations.push_back(RELATION_ON);
 		objects.push_back(&table1);
 		objectLabels.push_back("table1");
 		relations.push_back(RELATION_ON);
@@ -637,9 +637,9 @@ void ObjectRelationManager::runComponent()
 	      else {
 		objects.push_back(&box1);
 		objectLabels.push_back("box1");
-		//objects.push_back(&box2);
-		//objectLabels.push_back("box2");
-		//relations.push_back(RELATION_ON);
+		objects.push_back(&box2);
+		objectLabels.push_back("box2");
+		relations.push_back(RELATION_ON);
 		objects.push_back(&table1);
 		objectLabels.push_back("table1");
 		relations.push_back(RELATION_ON);
@@ -667,12 +667,14 @@ void ObjectRelationManager::runComponent()
 	      double interval;
 	      int xExt, yExt, zExt;
 	      vector<double> weights;
-	      testCloud.makePointCloud(center, interval, xExt, yExt, zExt, weights);
+	      double total;
+	      testCloud.makePointCloud(center, interval, xExt, yExt, zExt, weights,
+		  total);
 
 	      center += objects.back()->pose.pos;
 
 	      m_sampler.kernelDensityEstimation3D(pdfMap,
-		  center, interval, xExt, yExt, zExt, weights);
+		  center, interval, xExt, yExt, zExt, weights, 1.0/total, 1.0);
 
 	      sampleTable = !sampleTable;
 	      
@@ -1561,7 +1563,8 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	request->outCloud->xExtent,
 	request->outCloud->yExtent,
 	request->outCloud->zExtent,
-	request->outCloud->values);
+	request->outCloud->values,
+	request->outCloud->total);
 
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
   }
