@@ -108,10 +108,16 @@ evaluateOnness(const Object *objectS, const Object *objectO)
     
     double distanceFactor = COMDistance / maxPatchClearance;
 
+    // Formula for onness based on COMDistance:
+    // y = (1+exp(B*(-1-C))/(1+exp(B*(x-C)))
+    // where x is the distanceFactor,
+    // B is a steepness coefficient 0<B<inf
+    // and C is an offset -l_max <= C < inf
+
     contactOnness *= 
-      (1 + exp(-supportCOMContainmentSteepness*(1 - supportCOMContainmentOffset)))
-      		/ (1 + exp(-supportCOMContainmentSteepness*
-		(-distanceFactor - supportCOMContainmentOffset)));
+      (1 + exp(supportCOMContainmentSteepness*(-1-supportCOMContainmentOffset)))
+      		/ (1 + exp(supportCOMContainmentSteepness*
+		(distanceFactor-supportCOMContainmentOffset)));
 //    if (COMDistance > 0.0) {
 //      contactOnness /= (1+COMDistance/supportCOMContainmentSteepness);
 //    }
