@@ -23,10 +23,14 @@
 package de.dfki.lt.tr.beliefs.data.genericproxies;
 
 // Belief API slice
+import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
 
@@ -41,15 +45,16 @@ import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
  */
 public class GenericFormula<T extends dFormula> extends Proxy<T> {
 
-	public static <T2 extends dFormula> GenericFormula<T2> create(Class<? extends T2> type, Ice.Object pd) {
-		return new GenericFormula<T2>(type,pd);
+	public static <T2 extends dFormula> GenericFormula<T2> create(
+			Class<? extends T2> type, Ice.Object pd) {
+		return new GenericFormula<T2>(type, pd);
 	}
 
 	/**
 	 * Object is created from underlying slice-based datastructure, and a given
 	 * probability.
 	 */
-	protected GenericFormula(Class<? extends T> type , Ice.Object formula) {
+	protected GenericFormula(Class<? extends T> type, Ice.Object formula) {
 		super(type, formula);
 
 	} // end constructor
@@ -88,8 +93,7 @@ public class GenericFormula<T extends dFormula> extends Proxy<T> {
 	} // end getProposition
 
 	/**
-	 * Returns the integer for a formula, provided the formula is
-	 * an integer
+	 * Returns the integer for a formula, provided the formula is an integer
 	 * 
 	 * @return String The proposition of the formula
 	 * @throws BeliefNotInitializedException
@@ -105,7 +109,25 @@ public class GenericFormula<T extends dFormula> extends Proxy<T> {
 		} else {
 			return ((IntegerFormula) _content).val;
 		}
-	} // end getProposition
+	}
+
+	public double getDouble() {
+		if (!(_content instanceof FloatFormula)) {
+			throw new BeliefInvalidQueryException(
+					"Cannot query [proposition] for formula: Formula not of type proposition");
+		} else {
+			return ((FloatFormula) _content).val;
+		}
+	}
+
+	public boolean getBoolean() {
+		if (!(_content instanceof BooleanFormula)) {
+			throw new BeliefInvalidQueryException(
+					"Cannot query [proposition] for formula: Formula not of type proposition");
+		} else {
+			return ((BooleanFormula) _content).val;
+		}
+	}
 
 	/**
 	 * Returns whether the formula is a proposition (or not)
@@ -155,5 +177,44 @@ public class GenericFormula<T extends dFormula> extends Proxy<T> {
 	// }
 	// return new FormulaProbPair(_content, _probability);
 	// } // end getAsPair
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy#toString()
+	 */
+	@Override
+	public String toString() {
+		if (_content instanceof IntegerFormula)
+			return Integer.toString(((IntegerFormula) _content).val);
+		else if (_content instanceof FloatFormula)
+			return Double.toString(((FloatFormula) _content).val);
+		else if (_content instanceof BooleanFormula)
+			return Boolean.toString(((BooleanFormula) _content).val);
+		else if (_content instanceof ElementaryFormula)
+			return ((ElementaryFormula) _content).prop;
+		else if (_content instanceof PointerFormula)
+			return CASTUtils.toString(((PointerFormula) _content).pointer);
+		return super.toString();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		GenericFormula<T> ft = this;
+		if (!(obj instanceof GenericFormula<?>)) {
+			return super.equals(obj);
+		}
+		GenericFormula<?> fo = (GenericFormula<?>) obj;
+		if (!ft.get().getClass().isInstance(fo.get()))
+			return false;
+		if (ft.get() instanceof IntegerFormula)
+			return ft.getInteger() == fo.getInteger();
+		if (ft.get() instanceof FloatFormula)
+			return ft.getDouble() == fo.getDouble();
+		if (ft.get() instanceof BooleanFormula)
+			return ft.getBoolean() == fo.getBoolean();
+		if (ft.get() instanceof ElementaryFormula)
+			return ft.getProposition() == fo.getProposition();
+		return false;
+	}
 
 } // end class

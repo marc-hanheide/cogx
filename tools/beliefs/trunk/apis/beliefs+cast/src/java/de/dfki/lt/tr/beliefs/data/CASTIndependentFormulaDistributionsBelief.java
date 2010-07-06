@@ -82,10 +82,10 @@ public class CASTIndependentFormulaDistributionsBelief<T extends dBelief> extend
 
 	/**
 	 * @return
-	 * @see de.dfki.lt.tr.beliefs.data.CASTFrame#getStopTime()
+	 * @see de.dfki.lt.tr.beliefs.data.CASTFrame#getEndTime()
 	 */
-	public CASTTime getStopTime() {
-		return getFrame().getStopTime();
+	public CASTTime getEndTime() {
+		return getFrame().getEndTime();
 	}
 
 	/**
