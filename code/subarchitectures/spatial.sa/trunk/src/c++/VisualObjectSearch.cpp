@@ -14,507 +14,790 @@
 
 namespace spatial
 {   
-    using namespace cast;
-    using namespace spatial;
-    using namespace std;
-    using namespace boost;
-    using namespace SpatialGridMap;
-    extern "C"
-    { 
-      cast::CASTComponentPtr
-	newComponent() {
-	  return new VisualObjectSearch();
-	}
-    } 
-    VisualObjectSearch::VisualObjectSearch() {
-      // TODO Auto-generated constructor stub
-      // If we're not building the map it means we're using an already built one. Hence, read it.		         
+  using namespace cast;
+  using namespace spatial;
+  using namespace std;
+  using namespace boost;
+  using namespace SpatialGridMap;
+  extern "C"
+  { 
+    cast::CASTComponentPtr
+      newComponent() {
+	return new VisualObjectSearch();
+      }
+  } 
+  VisualObjectSearch::VisualObjectSearch() {
+    // TODO Auto-generated constructor stub
+    // If we're not building the map it means we're using an already built one. Hence, read it.		         
+  }
+  VisualObjectSearch::~VisualObjectSearch() {
+    // TODO Auto-generated destructor stub
+    log("Destructor called.");
+  }
+
+
+  spatial::VisualObjectSearch* AVSComponentPtr;
+  void VisualObjectSearch::configure(const std::map<std::string, std::string>& _config){
+
+    AVSComponentPtr = this;
+    map<string,string>::const_iterator it = _config.find("-c");
+    if (it== _config.end()) {
+      println("configure(...) Need config file (use -c option)\n");
+      std::abort();
     }
-    VisualObjectSearch::~VisualObjectSearch() {
-      // TODO Auto-generated destructor stub
-      log("Destructor called.");
+    std::string configfile = it->second;
+
+
+    Cure::ConfigFileReader cfg;
+    if (cfg.init(configfile)) {
+      println("configure(...) Failed to open with \"%s\"\n",
+	  configfile.c_str());
+      std::abort();
+    }
+
+    if (cfg.getSensorPose(1, m_LaserPoseR)) {
+      println("configure(...) Failed to get sensor pose for laser");
+      std::abort();
+    }
+
+    m_mapceiling= 3.0;
+    it = _config.find("--mapceiling");
+    if (it != _config.end()) {
+      m_mapceiling = (atof(it->second.c_str()));
+      log("Map ceiling set to: %d", m_mapceiling);
+    }
+
+    m_samplesize = 100;
+    it = _config.find("--samplesize");
+    if (it != _config.end()) {
+      m_samplesize = (atof(it->second.c_str()));
+      log("Samplesize set to: %d", m_samplesize);
+    }
+    m_gridsize = 200;
+    m_cellsize = 0.05;
+    it = _config.find("--gridsize");
+    if (it != _config.end()) {
+
+      m_gridsize = (atoi(it->second.c_str()));
+      log("Gridsize set to: %d", m_gridsize);
+    }
+    it = _config.find("--cellsize");
+    if (it != _config.end()) {
+      m_cellsize = (atof(it->second.c_str()));
+      log("Cellsize set to: %f", m_cellsize);
+    }
+
+    m_minbloxel = 0.1;
+    it = _config.find("--minbloxel");
+    if (it != _config.end()) {
+      m_minbloxel = (atof(it->second.c_str()));
+      log("Min bloxel height set to: %f", m_minbloxel);
+    }
+
+    it = _config.find("--orientations");
+    if (it != _config.end()) {
+      m_sampler.setOrientationQuantization(atoi(it->second.c_str()));
+    }
+
+    it = _config.find("--samples");
+    if (it != _config.end()) {
+      m_sampler.setSampleNumberTarget(atoi(it->second.c_str()));
+    }
+
+    it = _config.find("--kernel-width-factor");
+    if (it != _config.end()) {
+      m_sampler.setKernelWidthFactor(atoi(it->second.c_str()));
     }
 
 
-    spatial::VisualObjectSearch* AVSComponentPtr;
-    void VisualObjectSearch::configure(const std::map<std::string, std::string>& _config){
-
-      AVSComponentPtr = this;
-      map<string,string>::const_iterator it = _config.find("-c");
-      if (it== _config.end()) {
-	println("configure(...) Need config file (use -c option)\n");
-	std::abort();
-      }
-      std::string configfile = it->second;
+    m_horizangle = M_PI/4;
+    it = _config.find("--cam-horizangle");
+    if (it != _config.end()) {
+      m_horizangle = (atof(it->second.c_str()))*M_PI/180.0;
+      log("Camera FoV horizontal angle set to: %f", m_horizangle);
+    }
 
 
-      Cure::ConfigFileReader cfg;
-      if (cfg.init(configfile)) {
-	println("configure(...) Failed to open with \"%s\"\n",
-	    configfile.c_str());
-	std::abort();
-      }
-
-      if (cfg.getSensorPose(1, m_LaserPoseR)) {
-	println("configure(...) Failed to get sensor pose for laser");
-	std::abort();
-      }
-
-      m_mapceiling= 3.0;
-      it = _config.find("--mapceiling");
-      if (it != _config.end()) {
-	m_mapceiling = (atof(it->second.c_str()));
-	log("Map ceiling set to: %d", m_mapceiling);
-      }
-
-      m_samplesize = 100;
-      it = _config.find("--samplesize");
-      if (it != _config.end()) {
-	m_samplesize = (atof(it->second.c_str()));
-	log("Samplesize set to: %d", m_samplesize);
-      }
-      m_gridsize = 200;
-      m_cellsize = 0.05;
-      it = _config.find("--gridsize");
-      if (it != _config.end()) {
-
-	m_gridsize = (atoi(it->second.c_str()));
-	log("Gridsize set to: %d", m_gridsize);
-      }
-      it = _config.find("--cellsize");
-      if (it != _config.end()) {
-	m_cellsize = (atof(it->second.c_str()));
-	log("Cellsize set to: %f", m_cellsize);
-      }
-
-      m_minbloxel = 0.1;
-      it = _config.find("--minbloxel");
-      if (it != _config.end()) {
-	m_minbloxel = (atof(it->second.c_str()));
-	log("Min bloxel height set to: %f", m_minbloxel);
-      }
-
-      it = _config.find("--orientations");
-      if (it != _config.end()) {
-	m_sampler.setOrientationQuantization(atoi(it->second.c_str()));
-      }
-
-      it = _config.find("--samples");
-      if (it != _config.end()) {
-	m_sampler.setSampleNumberTarget(atoi(it->second.c_str()));
-      }
-
-      it = _config.find("--kernel-width-factor");
-      if (it != _config.end()) {
-	m_sampler.setKernelWidthFactor(atoi(it->second.c_str()));
-      }
+    m_vertangle = M_PI/4;
+    it = _config.find("--cam-vertangle");
+    if (it != _config.end()) {
+      m_vertangle = (atof(it->second.c_str()));
+      log("Camera FoV vertical angle set to: %f", m_vertangle);
+    }
 
 
-      m_horizangle = M_PI/4;
-      it = _config.find("--cam-horizangle");
-      if (it != _config.end()) {
-	m_horizangle = (atof(it->second.c_str()))*M_PI/180.0;
-	log("Camera FoV horizontal angle set to: %f", m_horizangle);
-      }
+    m_conedepth = 2.0;
+    it = _config.find("--cam-conedepth");
+    if (it != _config.end()) {
+      m_conedepth = (atof(it->second.c_str()));
+      log("Camera view cone depth set to: %f", m_conedepth);
+    }
 
-
-      m_vertangle = M_PI/4;
-      it = _config.find("--cam-vertangle");
-      if (it != _config.end()) {
-	m_vertangle = (atof(it->second.c_str()));
-	log("Camera FoV vertical angle set to: %f", m_vertangle);
-      }
-
-
-      m_conedepth = 2.0;
-      it = _config.find("--cam-conedepth");
-      if (it != _config.end()) {
-	m_conedepth = (atof(it->second.c_str()));
-	log("Camera view cone depth set to: %f", m_conedepth);
-      }
-
-      m_savemapmode = false;
-      it = _config.find("--savemap");
-      if (it != _config.end()) {
-	m_savemapmode = true; 
-	if(m_savemapmode)
+    m_savemapmode = false;
+    it = _config.find("--savemap");
+    if (it != _config.end()) {
+      m_savemapmode = true; 
+      if(m_savemapmode)
 	log("Save map mode : on");
-	else
-	  log("Save map mode : off");
-      }
-
-      GridMapData def;
-      def.occupancy = UNKNOWN;
-      //std::vector< pair<std::string,double> > objectprobability;
-      //objectprobability.push_back(make_pair("ricebox",0));
-      //def.objprob = objectprobability;
-      def.pdf = 0;
-      m_map = new SpatialGridMap::GridMap<GridMapData>(m_gridsize, m_gridsize, m_cellsize, m_minbloxel, 0, m_mapceiling, 0, 0, 0, def);
-      m_tracer = new LaserRayTracer<GridMapData>(m_map,1.0);
-      p = new VisualPB_Bloxel("localhost",5050,m_gridsize,m_gridsize,m_cellsize,1,true);//host,port,xsize,ysize,cellsize,scale, redraw whole map every time
-
-      m_lgm = new Cure::LocalGridMap<unsigned char>(m_gridsize/2, m_cellsize, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-      m_Glrt  = new Cure::ObjGridLineRayTracer<unsigned char>(*m_lgm);
-      p->connectPeekabot();
-
-
+      else
+	log("Save map mode : off");
     }
-    void
-      VisualObjectSearch::start() {
-	log("I am started");
 
-	log("I have started");
-	setupPushScan2d(*this, 0.1);
-	setupPushOdometry(*this);
 
-	addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
-	    new MemberFunctionChangeReceiver<VisualObjectSearch>(this,
-	      &VisualObjectSearch::newRobotPose));
+    string filename;
+    if ((it = _config.find("--relations-file")) != _config.end()) {
+      istringstream istr(it->second);
+      istr >> filename;
+    }
+    LoadSpatialRelations(filename);
 
-	addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
-	    new MemberFunctionChangeReceiver<VisualObjectSearch>(this,
-	      &VisualObjectSearch::newRobotPose));
+    bool m_maploaded = false;
+    GridMapData def;
+    def.occupancy = UNKNOWN;
+    //std::vector< pair<std::string,double> > objectprobability;
+    //objectprobability.push_back(make_pair("ricebox",0));
+    //def.objprob = objectprobability;
+    def.pdf = 0;
+    m_map = new SpatialGridMap::GridMap<GridMapData>(m_gridsize, m_gridsize, m_cellsize, m_minbloxel, 0, m_mapceiling, 0, 0, 0, def);
+    m_tracer = new LaserRayTracer<GridMapData>(m_map,1.0);
+    p = new VisualPB_Bloxel("localhost",5050,m_gridsize,m_gridsize,m_cellsize,1,true);//host,port,xsize,ysize,cellsize,scale, redraw whole map every time
 
+    m_lgm = new Cure::LocalGridMap<unsigned char>(m_gridsize/2, m_cellsize, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+    m_Glrt  = new Cure::ObjGridLineRayTracer<unsigned char>(*m_lgm);
+    p->connectPeekabot();
+
+
+  }
+  void VisualObjectSearch::LoadSpatialRelations(std::string filename){
+    //open file
+    ifstream file(filename.c_str());
+    if (!file.good()){
+      log("Could not open file, returning without doing anything.");
+      return;
+    }
+    string line,word,objectname;
+    int targetobjectindex = 0;
+
+    ObjectRelations objrel;
+
+    while(getline(file,line)){
+      ObjectPairRelation pairrel;
+      istringstream iss(line, istringstream::in);
+      iss >> word;
+      if (word == "END"){
+	log("reached end breaking");
+	objectData.push_back(objrel);
+	break;
       }
-
- void VisualObjectSearch::SaveCureMapToFile() {
-   log("Writing cure map");
-
-   ofstream fout("curemap.txt");
-   for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-     for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-       fout << (*m_lgm)(x, y);
-     }
-     //fout << endl;
-   }
-   fout.close();
- }
-
-
- void VisualObjectSearch::ReadCureMapFromFile() {
-   log("Reading cure map");
-   int length;
-   char * buffer;
-   ifstream file("curemap.txt");
-   if (!file.good()){
-   log("Could not open file, returning without doing anything.");
-   return;
-   }
-   file.seekg(0, ios::end);
-   length = file.tellg();
-   file.seekg(0, ios::beg);
-   buffer = new char[length];
-   file.read(buffer, length);
-   int index = 0;
-   for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-     for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-       char c = buffer[index];
-       (*m_lgm)(x, y) = c;
-       index++;
-     }
-   }
- }
-
- void VisualObjectSearch::savemap( GtkWidget *widget,gpointer data )
- {
-   AVSComponentPtr->SaveCureMapToFile();
- }
- void VisualObjectSearch::readmap( GtkWidget *widget, gpointer data )
- {
-   AVSComponentPtr->ReadCureMapFromFile();
- }
-
-
- void VisualObjectSearch::runComponent(){
-
-   if(m_savemapmode){
-     int argc= 0;
-     char** argv = NULL;
-
-	gtk_init (&argc, &argv);
-
-	// add a window
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title (GTK_WINDOW (window), "map controls");
-
-	//window cannot hold more than 1 button, thus ad a box
-	hbox = gtk_hbox_new (FALSE, 5);
-	savebutton = gtk_button_new_with_label ("Save Map");
-	readbutton = gtk_button_new_with_label ("Load Map");
-
-
-	//parent: window, child: hbox
-	gtk_container_add (GTK_CONTAINER (window), hbox);
-	gtk_container_set_border_width (GTK_CONTAINER (window), 5);
-	gtk_widget_show (hbox);
-
-	//callbacks
-
-	g_signal_connect (G_OBJECT (savebutton), "clicked",
-	    G_CALLBACK (&spatial::VisualObjectSearch::savemap), NULL);
-	g_signal_connect (G_OBJECT (readbutton), "clicked",
-	    G_CALLBACK (&spatial::VisualObjectSearch::readmap), NULL);
-	//add buttons to box
-	gtk_box_pack_start (GTK_BOX (hbox), readbutton, TRUE, TRUE, 0);
-	gtk_box_pack_start (GTK_BOX (hbox), savebutton, TRUE, TRUE, 0);
-
-	gtk_widget_show (readbutton);
-	gtk_widget_show (savebutton);
-	gtk_widget_show (window);
+      if (objrel.object != word){ //if this is a new object
+	if ( objrel.relations.size() != 0)
+	  objectData.push_back(objrel);
+	objrel.relations.clear();
       }
+      objrel.object = word;
+      pairrel.primaryobject = word;
+      iss >> word;
+      pairrel.relation = word == "ON" ? FrontierInterface::ON : FrontierInterface::IN;
+      iss >> pairrel.secobject;
+      iss >> word;
+      pairrel.prob = atof(word.c_str());
+      objrel.relations.push_back(pairrel);
+    }
+    log("relations loaded %d objects",objectData.size());
+    for (unsigned int i = 0; i < objectData.size(); i++){
+      for (unsigned int j = 0; j < objectData[i].relations.size(); j++){
+	cout<< objectData[i].object << " " << objectData[i].relations[j].relation << " " << objectData[i].relations[j].secobject << " " << objectData[i].relations[j].prob << endl;
+      }
+    }
+  }
+  void VisualObjectSearch::start() {
+    log("I have started");
+    setupPushScan2d(*this, 0.1);
+    setupPushOdometry(*this);
 
+    addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
+	new MemberFunctionChangeReceiver<VisualObjectSearch>(this,
+	  &VisualObjectSearch::newRobotPose));
+
+    addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
+	new MemberFunctionChangeReceiver<VisualObjectSearch>(this,
+	  &VisualObjectSearch::newRobotPose));
+
+    /* addChangeFilter(createLocalTypeFilter<
+       FrontierInterface::ObjectTiltAngleRequest> (cdl::OVERWRITE),
+       new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
+       &VisualObjectSearch::owtTiltAngleRequest));
+
+       addChangeFilter(createLocalTypeFilter<
+       SpatialData::NavCommand> (cdl::OVERWRITE),
+       new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
+       &VisualObjectSearch::owtNavCommand));
+
+       addChangeFilter(createGlobalTypeFilter<
+       VisionData::Recognizer3DCommand> (cdl::OVERWRITE),
+       new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
+       &VisualObjectSearch::owtRecognizer3DCommand));
+     */
+    addChangeFilter(createGlobalTypeFilter<
+	VisionData::VisualObject> (cdl::OVERWRITE),
+	new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
+	  &VisualObjectSearch::newVisualObject));
+
+    addChangeFilter(createGlobalTypeFilter<
+	VisionData::VisualObject> (cdl::ADD),
+	new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
+	  &VisualObjectSearch::newVisualObject));
+
+
+  }
+
+  void VisualObjectSearch::SaveCureMapToFile() {
+    log("Writing cure map");
+
+    ofstream fout("curemap.txt");
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+	fout << (*m_lgm)(x, y);
+      }
+      //fout << endl;
+    }
+    fout.close();
+  }
+
+
+  void VisualObjectSearch::ReadCureMapFromFile() {
+    log("Reading cure map");
+    int length;
+    char * buffer;
+    ifstream file("curemap.txt");
+    if (!file.good()){
+      log("Could not open file, returning without doing anything.");
+      return;
+    }
+    file.seekg(0, ios::end);
+    length = file.tellg();
+    file.seekg(0, ios::beg);
+    buffer = new char[length];
+    file.read(buffer, length);
+    int index = 0;
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+	char c = buffer[index];
+	(*m_lgm)(x, y) = c;
+	index++;
+      }
+    }
+
+    // And now change the bloxel map
+    GDMakeObstacle makeobstacle;
+    for (int x = -m_lgm->getSize(); x < m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y < m_lgm->getSize(); y++) {
+	if ((*m_lgm)(x,y) == '1'){
+	  m_map->boxSubColumnModifier(x+m_lgm->getSize(),y + m_lgm->getSize(), m_LaserPoseR.getZ(), m_minbloxel*2,makeobstacle);
+
+	}
+      }
+    }
+    p->DisplayMap(*m_map);
+    p->Display2DCureMap(m_lgm);
+    m_maploaded = true;
+  }
+
+  void VisualObjectSearch::savemap( GtkWidget *widget,gpointer data )
+  {
+    AVSComponentPtr->SaveCureMapToFile();
+  }
+  void VisualObjectSearch::readmap( GtkWidget *widget, gpointer data )
+  {
+    AVSComponentPtr->ReadCureMapFromFile();
+  }
+ void VisualObjectSearch::selectdu( GtkWidget *widget, gpointer data )
+  {
+    AVSComponentPtr->LookforObjectWithStrategy("rice",DIRECT_UNINFORMED);
+  }
+ void VisualObjectSearch::selectdi( GtkWidget *widget, gpointer data )
+  {
+    AVSComponentPtr->LookforObjectWithStrategy("rice",DIRECT_INFORMED);
+  }
+ void VisualObjectSearch::selectind( GtkWidget *widget, gpointer data )
+  {
+    AVSComponentPtr->searchChainPos = 0;
+    AVSComponentPtr->LookforObjectWithStrategy("rice",INDIRECT);
+  }
+
+
+
+  void VisualObjectSearch::runComponent(){
+    m_command = IDLE;
+    if(m_savemapmode){
+      int argc= 0;
+      char** argv = NULL;
+
+      gtk_init (&argc, &argv);
+
+      // add a window
+      window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+      gtk_window_set_title (GTK_WINDOW (window), "map controls");
+
+      //window cannot hold more than 1 button, thus ad a box
+      hbox = gtk_hbox_new (FALSE, 5);
+      savebutton = gtk_button_new_with_label ("Save Map");
+      readbutton = gtk_button_new_with_label ("Load Map");
+      direct_uninformed = gtk_button_new_with_label ("Direct Uninformed");
+      direct_informed = gtk_button_new_with_label ("Direct Informed");
+      indirect = gtk_button_new_with_label ("Indirect");
+
+
+
+
+      //parent: window, child: hbox
+      gtk_container_add (GTK_CONTAINER (window), hbox);
+      gtk_container_set_border_width (GTK_CONTAINER (window), 5);
+      gtk_widget_show (hbox);
+
+      //callbacks
+
+      g_signal_connect (G_OBJECT (savebutton), "clicked",
+	  G_CALLBACK (&spatial::VisualObjectSearch::savemap), NULL);
+      g_signal_connect (G_OBJECT (readbutton), "clicked",
+	  G_CALLBACK (&spatial::VisualObjectSearch::readmap), NULL);
+      
+      
+      g_signal_connect (G_OBJECT (direct_uninformed), "clicked",
+	  G_CALLBACK (&spatial::VisualObjectSearch::selectdu), NULL);
+       g_signal_connect (G_OBJECT (direct_informed), "clicked",
+	  G_CALLBACK (&spatial::VisualObjectSearch::selectdi), NULL);
+       g_signal_connect (G_OBJECT (indirect), "clicked",
+	  G_CALLBACK (&spatial::VisualObjectSearch::selectind), NULL);
+      
+      
+      
+      //add buttons to box
+      gtk_box_pack_start (GTK_BOX (hbox), readbutton, TRUE, TRUE, 0);
+      gtk_box_pack_start (GTK_BOX (hbox), savebutton, TRUE, TRUE, 0);
+
+      gtk_box_pack_start (GTK_BOX (hbox), direct_uninformed, TRUE, TRUE, 0);
+      gtk_box_pack_start (GTK_BOX (hbox), direct_informed, TRUE, TRUE, 0);
+      gtk_box_pack_start (GTK_BOX (hbox), indirect, TRUE, TRUE, 0);
+ 
+      gtk_widget_show (direct_uninformed);
+      gtk_widget_show (direct_informed);
+      gtk_widget_show (indirect);
+      gtk_widget_show (readbutton);
+      gtk_widget_show (savebutton);
+      gtk_widget_show (window);
+    }
+
+    while(true){ 
+      log("I am running!"); 
+      m_Mutex.lock();
+      p->DisplayMap(*m_map);
+      p->Display2DCureMap(m_lgm);
+      while(gtk_events_pending())
+	gtk_main_iteration();
+      InterpretCommand();
+      if(m_maploaded)
+	SampleAndSelect();
+      m_Mutex.unlock();
+      sleep(1);
+    }
+  }
+  //void
+  //VisualObjectSearch::AskForDistribution(const vector<string> &objectLabels,
+  //    const vector<SpatialData::ObjectRelationPtr> &relations)
+  //{
+  //    FrontierInterface::WeightedPointCloudPtr queryCloud
+  //      = new FrontierInterface::WeightedPointCloud;
+  //
+  //    //write lgm to WM
+  //    FrontierInterface::ObjectPriorRequestPtr objreq =
+  //        new FrontierInterface::ObjectPriorRequest;
+  //    objreq->relationTypes = relations; // ON or IN or whatnot
+  //    objreq->objects = objectLabels;	// Names of objects, starting with the query object
+  //    objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
+  //    objreq->outCloud = queryCloud;	// Data struct to receive output
+  //    addToWorkingMemory(newDataID(), objreq);
+  //}
+
+  //void
+  //VisualObjectSearch::owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID) {
+  //  try {
+  //    FrontierInterface::WeightedPointCloudPtr cloud =
+  //      getMemoryEntry<FrontierInterface::WeightedPointCloud>(objID.address);
+  //
+  //    m_sampler.kernelDensityEstimation3D(m_map, cloud->center,
+  //	cloud->interval,
+  //	cloud->xExtent,
+  //	cloud->yExtent,
+  //	cloud->zExtent,
+  //	cloud->values);
+  //  }
+  //  catch (DoesNotExistOnWMException excp) {
+  //    log("Error!  WeightedPointCloud does not exist on WM!");
+  //    return;
+  //  }
+  //}
+
+  VisualObjectSearch::ObjectPairRelation VisualObjectSearch::GetSecondaryObject(string name){
+    ObjectPairRelation obj;
+    obj.primaryobject = "";
+    //NOTE: WE ASSUME THAT EACH OBJECT HAS EXACTLY ONE SPATIAL RELATION WITH ANOTHER OBJECT!
+    // I.E. NO SUCH: RICE ON TABLE, RICE IN ROVIO AT THE SAME TIME
+    for(unsigned int i = 0; i < objectData.size(); i++){
+      if (objectData[i].object == name && objectData[i].relations.size() != 0){
+	return objectData[i].relations[0];
+      }
+    }
+    return obj;
+  }
+
+  void VisualObjectSearch::InterpretCommand(){
+    switch (m_command)
+        {
+      case STOP: {
+        log("Stopped.");
+        m_command = IDLE;
+        log("Command: STOP");
+        Cure::Pose3D pos;
+        PostNavCommand(pos, SpatialData::STOP);
+        break;
+      }
+      case ASK_FOR_DISTRIBUTION:{
+				  AskForDistribution();
+				}
+      case IDLE:{
+		  break;
+		}
+    }
+  }
+  void VisualObjectSearch::LookforObjectWithStrategy(std::string name, SearchMode mode){
+    //ask   
+    if (mode == DIRECT_UNINFORMED){
+      currentSearchMode = DIRECT_UNINFORMED;
+      currentTarget  = name;
+      m_command = NEXT_NBV;
+    }
+    else if (mode == DIRECT_INFORMED){
+      currentSearchMode = DIRECT_INFORMED;
+      currentTarget = name;
+      m_command = ASK_FOR_DISTRIBUTION;
+    }
+    else if(mode == INDIRECT){
+      currentSearchMode = INDIRECT;
+      ObjectPairRelation rel;
       while(true){
-	log("I am running!");
-	m_Mutex.lock();
-	//SampleAndSelect();
-	//p->DisplayMap(*m_map);
-	p->Display2DCureMap(m_lgm);
-	while(gtk_events_pending())
-		gtk_main_iteration();
-	m_Mutex.unlock();
-	sleep(1);
+	rel = GetSecondaryObject(name);
+	if(rel.primaryobject == "")
+	  break;
+	searchChain.push_back(rel);
+	name = rel.secobject;
       }
+      for(unsigned int i = 0; i < searchChain.size(); i++){
+	cout << searchChain[i].primaryobject << " " << searchChain[i].secobject << " " << searchChain[i].prob << endl;
+      }
+      m_command = ASK_FOR_DISTRIBUTION;
     }
+  }
 
-//void
-//VisualObjectSearch::AskForDistribution(const vector<string> &objectLabels,
-//    const vector<SpatialData::ObjectRelationPtr> &relations)
-//{
-//    FrontierInterface::WeightedPointCloudPtr queryCloud
-//      = new FrontierInterface::WeightedPointCloud;
-//
-//    //write lgm to WM
-//    FrontierInterface::ObjectPriorRequestPtr objreq =
-//        new FrontierInterface::ObjectPriorRequest;
-//    objreq->relationTypes = relations; // ON or IN or whatnot
-//    objreq->objects = objectLabels;	// Names of objects, starting with the query object
-//    objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
-//    objreq->outCloud = queryCloud;	// Data struct to receive output
-//    addToWorkingMemory(newDataID(), objreq);
-//}
+  void VisualObjectSearch::AskForDistribution(){
+    log("Asking for distribution");
+    m_command = IDLE;
+    //if informed direct, get search chain, construct distribution parameters and ask for it
+    if (currentSearchMode == DIRECT_INFORMED){
+      vector<FrontierInterface::ObjectRelation> relations;
+      vector<string> labels;
+      ObjectPairRelation rel;
+      string name = currentTarget;
+      while(true){
+	rel = GetSecondaryObject(name);
+	if(rel.primaryobject == "")
+	  break;
+	searchChain.push_back(rel);
+	name = rel.secobject;
+      }
+      labels.push_back(currentTarget);
+      for(unsigned int i = 0; i < searchChain.size(); i++){
+	relations.push_back(searchChain[i].relation);
+	labels.push_back(searchChain[i].secobject);
+      }
+  FrontierInterface::WeightedPointCloudPtr queryCloud = new FrontierInterface::WeightedPointCloud;
+      //write lgm to WM
+      FrontierInterface::ObjectPriorRequestPtr objreq =
+          new FrontierInterface::ObjectPriorRequest;
+      objreq->relationTypes = relations; // ON or IN or whatnot
+      objreq->objects = labels;	// Names of objects, starting with the query object
+      objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
+      objreq->outCloud = queryCloud;	// Data struct to receive output
+      addToWorkingMemory(newDataID(), objreq);
 
-//void
-//VisualObjectSearch::owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID) {
-//  try {
-//    FrontierInterface::WeightedPointCloudPtr cloud =
-//      getMemoryEntry<FrontierInterface::WeightedPointCloud>(objID.address);
-//
-// double weightWanted = 1.0;
-//    m_sampler.kernelDensityEstimation3D(m_map, cloud->center,
-//	cloud->interval,
-//	cloud->xExtent,
-//	cloud->yExtent,
-//	cloud->zExtent,
-//	cloud->values,
-//       weightWanted/cloud->total
-// weightWanted);
-//  }
-//  catch (DoesNotExistOnWMException excp) {
-//    log("Error!  WeightedPointCloud does not exist on WM!");
-//    return;
-//  }
-//}
+      cout << labels[0] << endl;
+   for(unsigned int i = 0; i < relations.size(); i++){
+	cout << relations[i]<< " " << labels[i + 1]  << endl;
+      }
+    
+    }
+    
+    else if (currentSearchMode == INDIRECT){
+    }
+    //if indirect look where we are in the chain ask for it's distribution
+  }
 
-bool VisualObjectSearch::isCircleFree(double xW, double yW, double rad){
-   int xiC,yiC;
-   if (m_lgm->worldCoords2Index(xW,yW,xiC,yiC)!= 0)
-     return false;
+void
+  VisualObjectSearch::owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID) {
+    try {
+      log("got weighted PC");
+      FrontierInterface::WeightedPointCloudPtr cloud =
+       getMemoryEntry<FrontierInterface::WeightedPointCloud>(objID.address);
+  
+      m_sampler.kernelDensityEstimation3D(m_map, cloud->center,
+ 	cloud->interval,
+  	cloud->xExtent,
+  	cloud->yExtent,
+  	cloud->zExtent,
+  	cloud->values,
+	);
+    }
+    catch (DoesNotExistOnWMException excp) {
+      log("Error!  WeightedPointCloud does not exist on WM!");
+      return;
+    }
+  }
+  bool VisualObjectSearch::isCircleFree(double xW, double yW, double rad){
+    int xiC,yiC;
+    if (m_lgm->worldCoords2Index(xW,yW,xiC,yiC)!= 0)
+      return false;
 
-   double w = rad / m_lgm->getCellSize();
-     int wi = int(w + 0.5);
+    double w = rad / m_lgm->getCellSize();
+    int wi = int(w + 0.5);
 
-     for (int x = xiC-wi; x <= xiC+wi; x++) {
-       for (int y = yiC-wi; y <= yiC+wi; y++) {
-	 if (x >= -m_lgm->getSize() && x <= m_lgm->getSize() && y >= -m_lgm->getSize() && y <= m_lgm->getSize()) {
-	   if (hypot(x-xiC,y-yiC) < w) {
-	     if ((*m_lgm)(x,y) == '1' or (*m_lgm)(x,y) == '2') return false;
-	   }
-	 }
-       }
-     }
-     return true;
- }
-
- int VisualObjectSearch::GetFreeSpace(){
-   int count = 0;
-
-   for (int x = -m_lgm->getSize(); x < m_lgm->getSize(); x++){
-     for (int y = -m_lgm->getSize(); y< m_lgm->getSize(); y++){
-       if ((*m_lgm)(x,y) == '0'){
-        count++;
-       }
-     }
-   }
-
-   return count;
- }
- void VisualObjectSearch::SampleAndSelect(){
-
-   double cameraheight = 1.4;
-   int numSamples = 1;
-   int xGrid = 200;
-   int yGrid = 200;
-   debug("Sampling Grid.");
-
-   pair<double,double> panRange, tiltRange;
-   panRange.first = -20;
-   panRange.second = 20;
-   tiltRange.first = 0;
-   tiltRange.first = 0;
-   std::vector< pair<int,int> > samples,freespace;
-   std::vector < std::vector<double> > visualizationpoints;
-   isRegionFree<GridMapData> isfree;
-   //Get X number of samples
-
-   for (int x = -m_lgm->getSize(); x < m_lgm->getSize(); x++){
-        for (int y = -m_lgm->getSize(); y< m_lgm->getSize(); y++){
-	  if ((*m_lgm)(x,y) == '0'){
-	  pair<int,int> coord(x,y);
-	  freespace.push_back(coord);
+    for (int x = xiC-wi; x <= xiC+wi; x++) {
+      for (int y = yiC-wi; y <= yiC+wi; y++) {
+	if (x >= -m_lgm->getSize() && x <= m_lgm->getSize() && y >= -m_lgm->getSize() && y <= m_lgm->getSize()) {
+	  if (hypot(x-xiC,y-yiC) < w) {
+	    if ((*m_lgm)(x,y) == '1' or (*m_lgm)(x,y) == '2') return false;
 	  }
 	}
-   }
-  
-   cout << "There are " << freespace.size() << " free points in cure map." << endl;
-   if (freespace.size() == 0){
-     return;
-   }
-   //srand(time(NULL));
-   int i = 0;
-   GDMakeObstacle makeobstacle;
-   while (i< numSamples){
-     int randomPos = rand() % freespace.size();
-     pair<int,int> samplepoint(freespace[randomPos].first,freespace[randomPos].second);
-     //  pair<int,int> samplepoint(rand() % xGrid,rand() % yGrid);
-     // Convert cure coordinates to Bloxel Grid coordinates
-
-     int bloxelX = samplepoint.first + 100;
-     int bloxelY = samplepoint.second + 100;
-     pair<double,double> worldCoords = m_map->gridToWorldCoords(bloxelX,bloxelY);
-
-     if (find(samples.begin(), samples.end(),samplepoint) == samples.end()  && isCircleFree(worldCoords.first, worldCoords.second, 0.4) 
-	 && (*m_lgm)(samplepoint.first,samplepoint.second) == '0'){
-       //cout << "sample point: " << samplepoint.first << "," << samplepoint.second << endl;
-       //check if the sample point too close to an obstacle by a box query 
-       //cout << "bloxel world coords : " << worldCoords.first << "," << worldCoords.second << endl;
-       double xW,yW;           
-       m_lgm->index2WorldCoords(samplepoint.first,samplepoint.second,xW,yW);
-       std::vector<double> coord;
-       //cout << "cure world coords : " << xW << "," << yW << endl;
-       coord.push_back(xW);
-       coord.push_back(yW);
-       coord.push_back(1.4);
-       visualizationpoints.push_back(coord);
-       i++;
-       // add this for visualization
-     }
-   }
-   p->Add3DPointCloud(visualizationpoints);
-
-   //TODO: Add tilting and panning
-   GetViewConeSums(visualizationpoints);
- }
-
-
- std::vector<double> VisualObjectSearch::GetViewConeSums(std::vector < std::vector<double> > samplepoints){
-  debug("Querying cones");
-  
-  GDProbSum sumcells;
-  GDIsObstacle isobstacle;
-  GDMakeObstacle makeobstacle;
-  GDProbAdd addval(1/ (GetFreeSpace()*m_mapceiling));
-  double maxpdf = -1000.0;
-  int maxindex = -1;
-
-  try{ 
-    for (unsigned int i =0; i < samplepoints.size(); i++){
-      cout << "cone for: " << samplepoints[i][0] << "," << samplepoints[i][1] << "," << samplepoints[i][2] << endl; 
-
-      /* m_map->coneModifier(samplepoints[i][0],samplepoints[i][1],samplepoints[i][2], 0, 0 , 
-	 m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, addval,addval);*/
-      m_map->coneQuery(samplepoints[i][0],samplepoints[i][1],samplepoints[i][2], 0, 0 , 
-	  m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells);
-      if (sumcells.getResult() > maxpdf){
-	maxpdf = sumcells.getResult();
-	maxindex = i;
       }
     }
-  }
-  catch(std::exception &e) {
-    printf("Caught exception %s: \n", e.what());
+    return true;
   }
 
-  return std::vector<double>();
+  VisualObjectSearch::SensingAction VisualObjectSearch::SampleAndSelect(){
+
+    double cameraheight = 1.4;
+    debug("Sampling Grid.");
+
+    double panRange, tiltRange;
+    tiltRange= 20;
+    std::vector< pair<int,int> > freespace;
+    std::vector< std::vector<double> >  visualizationpoints;
+    SensingAction sample;
+    std::vector <SensingAction> samplepoints;
+    isRegionFree<GridMapData> isfree;
+    //Get X number of samples
+
+    for (int x = -m_lgm->getSize(); x < m_lgm->getSize(); x++){
+      for (int y = -m_lgm->getSize(); y< m_lgm->getSize(); y++){
+	if ((*m_lgm)(x,y) == '0'){
+	  pair<int,int> coord(x,y);
+	  freespace.push_back(coord);
+	}
+      }
+    }
+
+    cout << "There are " << freespace.size() << " free points in cure map." << endl;
+    if (freespace.size() == 0){
+      SensingAction tmp;
+      return tmp;
+    }
+    srand(time(NULL));
+    int i = 0;
+    GDMakeObstacle makeobstacle;
+    while (i< m_samplesize){
+      int randomPos = rand() % freespace.size();
+      double randomTilt = (rand() % 2*tiltRange - tiltRange)*M_PI/180;
+      double randomPan = (rand() % 360 - 180)*M_PI/180;
+
+      pair<int,int> samplepoint(freespace[randomPos].first,freespace[randomPos].second);
+      //  pair<int,int> samplepoint(rand() % xGrid,rand() % yGrid);
+      // Convert cure coordinates to Bloxel Grid coordinates
+      int bloxelX = samplepoint.first + m_gridsize/2;
+      int bloxelY = samplepoint.second + m_gridsize/2;
+      pair<double,double> worldCoords = m_map->gridToWorldCoords(bloxelX,bloxelY);
+
+      if (isCircleFree(worldCoords.first, worldCoords.second, 0.1) && (*m_lgm)(samplepoint.first,samplepoint.second) == '0'){
+	//cout << "sample point: " << samplepoint.first << "," << samplepoint.second << endl;
+	//check if the sample point too close to an obstacle by a box query 
+	//cout << "bloxel world coords : " << worldCoords.first << "," << worldCoords.second << endl;
+	double xW,yW;           
+	m_lgm->index2WorldCoords(samplepoint.first,samplepoint.second,xW,yW);
+	std::vector<double> coord;
+	//cout << "cure world coords : " << xW << "," << yW << endl;
+	coord.push_back(xW);
+	coord.push_back(yW);
+	coord.push_back(1.4);
+	visualizationpoints.push_back(coord);
+	SensingAction sample;
+	sample.pos = coord;
+	sample.pan = randomPan;
+	sample.tilt= randomTilt;
+
+	samplepoints.push_back(sample);
+	i++;
+	// add this for visualization
+      }
+    }
+    p->Add3DPointCloud(visualizationpoints);
+
+    //TODO: Add tilting and panning
+    int bestConeIndex = GetViewConeSums(samplepoints);
+    return samplepoints[bestConeIndex];
+  }
+
+
+  int VisualObjectSearch::GetViewConeSums(std::vector <SensingAction> samplepoints){
+    debug("Querying cones");
+
+    GDProbSum sumcells;
+    GDIsObstacle isobstacle;
+    GDMakeObstacle makeobstacle;
+    double maxpdf = -1000.0;
+    int maxindex = -1;
+
+    try{ 
+      for (unsigned int i =0; i < samplepoints.size(); i++){
+	cout << "cone #" << i << " at: " << samplepoints[i].pos[0] << "," << samplepoints[i].pos[1] << "," << samplepoints[i].pos[2] << endl; 
+
+	/*m_map->coneModifier(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan,samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, makeobstacle,makeobstacle);*/
+	m_map->coneQuery(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan, samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 0, 0, isobstacle, sumcells,sumcells);
+	if (sumcells.getResult() > maxpdf){
+	  maxpdf = sumcells.getResult();
+	  maxindex = i;
+	}
+      }
+      return maxindex;
+    }
+    catch(std::exception &e) {
+      printf("Caught exception %s: \n", e.what());
+    }
+  }
+
+  void
+    VisualObjectSearch::newVisualObject(const cast::cdl::WorkingMemoryChange &objID) {
+
+      //if (isWaitingForDetection){
+      try{
+	log("new visual object");
+	VisionData::VisualObjectPtr visualobject(getMemoryEntry<
+	    VisionData::VisualObject> (objID.address));
+
+	//if (visualobject->label == currentTarget){
+	//isWaitingForDetection = false;
+	//DetectionComplete(true);
+	// }
+
+      }
+      catch (const CASTException &e) {
+	//      log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+      }
+      //}
+    }
+
+
+  void VisualObjectSearch::newRobotPose(const cdl::WorkingMemoryChange &objID) 
+  {
+    try {
+      lastRobotPose =
+	getMemoryEntry<NavData::RobotPose2d>(objID.address);
+      m_SlamRobotPose.setX(lastRobotPose->x);
+      m_SlamRobotPose.setY(lastRobotPose->y);
+      m_SlamRobotPose.setTheta(lastRobotPose->theta);
+
+      Cure::Pose3D cp = m_SlamRobotPose;
+      m_TOPP.defineTransform(cp);
+
+
+    }
+    catch (DoesNotExistOnWMException e) {
+      log("Error! robotPose missing on WM!");
+      return;
+    }
+
+  }
+
+  void VisualObjectSearch::receiveOdometry(const Robotbase::Odometry &castOdom)
+  {
+    lockComponent(); //Don't allow any interface calls while processing a callback
+    Cure::Pose3D cureOdom;
+    CureHWUtils::convOdomToCure(castOdom, cureOdom);
+
+    debug("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
+	cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
+	cureOdom.getTime().getDouble());
+    m_TOPP.addOdometry(cureOdom);
+    unlockComponent();
+  }
+
+
+  void VisualObjectSearch::receiveScan2d(const Laser::Scan2d &castScan)
+  {
+    lockComponent();
+    debug("Got scan with n=%d and t=%ld.%06ld",
+	castScan.ranges.size(), 
+	(long)castScan.time.s, (long)castScan.time.us);
+
+    GDIsObstacle obstacle;
+    GDMakeObstacle makeobstacle;
+    GDMakeFree makefree;
+    Cure::LaserScan2d cureScan;
+    CureHWUtils::convScan2dToCure(castScan, cureScan);
+    if (m_TOPP.isTransformDefined()) {
+      Cure::Pose3D scanPose;
+      if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
+	Cure::Pose3D lpW;
+	lpW.add(scanPose, m_LaserPoseR);
+	//add tracer
+	vector<double> LaserPose;
+	LaserPose.push_back(lpW.getX()); //lpW.getY(), 0.4 , lpW.getTheta()};
+	LaserPose.push_back(lpW.getY());
+	LaserPose.push_back(lpW.getZ());
+	LaserPose.push_back(lpW.getTheta());
+
+	debug("Adding scan..");
+	m_Mutex.lock();
+	m_tracer->addScanStationarySensor(castScan,LaserPose,obstacle,makefree,makeobstacle);
+	m_Glrt->addScan(cureScan, lpW,1.0);
+	m_Mutex.unlock();
+    }
+  }
+  unlockComponent();
 }
 
+void VisualObjectSearch::PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype) {
+  SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand();
+  cmd->prio = SpatialData::URGENT;
+  cmd->cmd = cmdtype;
+  cmd->pose.resize(3);
+  cmd->pose[0] = position.getX();
+  cmd->pose[1] = position.getY();
+  cmd->pose[2] = position.getTheta();
+  cmd->tolerance.resize(1);
+  cmd->tolerance[0] = 0.1;
+  cmd->status = SpatialData::NONE;
+  cmd->comp = SpatialData::COMMANDPENDING;
 
- void VisualObjectSearch::newRobotPose(const cdl::WorkingMemoryChange &objID) 
- {
-   try {
-     lastRobotPose =
-       getMemoryEntry<NavData::RobotPose2d>(objID.address);
-     m_SlamRobotPose.setX(lastRobotPose->x);
-     m_SlamRobotPose.setY(lastRobotPose->y);
-     m_SlamRobotPose.setTheta(lastRobotPose->theta);
-
-     Cure::Pose3D cp = m_SlamRobotPose;
-     m_TOPP.defineTransform(cp);
-
-
-   }
-   catch (DoesNotExistOnWMException e) {
-     log("Error! robotPose missing on WM!");
-     return;
-   }
-
- }
-
- void VisualObjectSearch::receiveOdometry(const Robotbase::Odometry &castOdom)
- {
-   lockComponent(); //Don't allow any interface calls while processing a callback
-   Cure::Pose3D cureOdom;
-   CureHWUtils::convOdomToCure(castOdom, cureOdom);
-
-   debug("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
-       cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
-       cureOdom.getTime().getDouble());
-   m_TOPP.addOdometry(cureOdom);
-   unlockComponent();
- }
-
-
- void VisualObjectSearch::receiveScan2d(const Laser::Scan2d &castScan)
- {
-   lockComponent();
-   debug("Got scan with n=%d and t=%ld.%06ld",
-       castScan.ranges.size(), 
-       (long)castScan.time.s, (long)castScan.time.us);
-
-   GDIsObstacle obstacle;
-   GDMakeObstacle makeobstacle;
-   GDMakeFree makefree;
-   Cure::LaserScan2d cureScan;
-   CureHWUtils::convScan2dToCure(castScan, cureScan);
-   if (m_TOPP.isTransformDefined()) {
-     Cure::Pose3D scanPose;
-     if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
-       Cure::Pose3D lpW;
-       lpW.add(scanPose, m_LaserPoseR);
-       //add tracer
-       vector<double> LaserPose;
-       LaserPose.push_back(lpW.getX()); //lpW.getY(), 0.4 , lpW.getTheta()};
-       LaserPose.push_back(lpW.getY());
-       LaserPose.push_back(lpW.getZ());
-       LaserPose.push_back(lpW.getTheta());
-
-       debug("Adding scan..");
-       m_Mutex.lock();
-       m_tracer->addScanStationarySensor(castScan,LaserPose,obstacle,makefree,makeobstacle);
-       m_Glrt->addScan(cureScan, lpW,1.0);
-       m_Mutex.unlock();
-   }
- }
- unlockComponent();
+  addToWorkingMemory(newDataID(), cmd);
+  log("posted nav command");
 }
 
+void VisualObjectSearch::addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, 
+    std::string label, std::string visualObjectID){
+  log("posting recognizer command.");
+  VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
+  rec_cmd->cmd = cmd;
+  rec_cmd->label = label;
+  rec_cmd->visualObjectID = visualObjectID;
+  addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
+  //isWaitingForDetection = true;
+}
 }
