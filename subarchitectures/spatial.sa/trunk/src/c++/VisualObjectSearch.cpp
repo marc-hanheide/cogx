@@ -549,12 +549,14 @@ void
       FrontierInterface::WeightedPointCloudPtr cloud =
        getMemoryEntry<FrontierInterface::WeightedPointCloud>(objID.address);
   
-      m_sampler.kernelDensityEstimation3D(m_map, cloud->center,
+      m_sampler.kernelDensityEstimation3D(*m_map, cloud->center,
  	cloud->interval,
   	cloud->xExtent,
   	cloud->yExtent,
   	cloud->zExtent,
   	cloud->values,
+	1.0,
+	1.0
 	);
     }
     catch (DoesNotExistOnWMException excp) {
