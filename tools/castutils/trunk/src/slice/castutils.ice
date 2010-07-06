@@ -6,6 +6,13 @@
 module castutils {
     module slice {
 
+		dictionary<cast::cdl::WorkingMemoryAddress,cast::cdl::WorkingMemoryAddress> WMAddressMap;
+		
+		class WMMap {
+			WMAddressMap map;
+		};		
+    
+    	class WMTrackedBeliefMap extends WMMap {};
     
         class WMMutex {
               string name;
