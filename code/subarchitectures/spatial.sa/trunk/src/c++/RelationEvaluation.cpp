@@ -19,11 +19,15 @@ struct ActiveFace {
 
 double patchThreshold = 0.030;
 
-// Distance at which onness drops by half
+// Separation/interpenetration at which onness drops by half
 double distanceFalloffOutside			= 0.015; 
 double distanceFalloffInside			= 0.010; 
 
+// Abruptness of transition as the COM moves out from
+// inside the (horizontal projection of) the contact patch
 double supportCOMContainmentSteepness		= 1;
+// Offset for point of greatest slope. Positive means
+// slope is greatest somewhere outside the patch boundary
 double supportCOMContainmentOffset		= 0.5;
 
 //Old params;unused
