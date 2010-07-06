@@ -48,8 +48,8 @@ public class CASTFrame extends GenericFrame<SpatioTemporalFrame> {
 	 */
 	public long age() {
 		CASTTemporalInterval ti = (CASTTemporalInterval) _content.interval;
-		return CASTTimeUtil.diff(ti.start, CASTUtils.getTimeServer()
-				.getCASTTime());
+		return CASTTimeUtil.diff(CASTUtils.getTimeServer()
+				.getCASTTime(),ti.start);
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class CASTFrame extends GenericFrame<SpatioTemporalFrame> {
 	 */
 	public long duration() {
 		CASTTemporalInterval ti = (CASTTemporalInterval) _content.interval;
-		return CASTTimeUtil.diff(ti.start, ti.end);
+		return CASTTimeUtil.diff(ti.end, ti.start);
 	}
 
 	public String getPlace() {
@@ -68,8 +68,8 @@ public class CASTFrame extends GenericFrame<SpatioTemporalFrame> {
 		return ((CASTTemporalInterval) _content.interval).start;
 	}
 
-	public CASTTime getStopTime() {
-		return ((CASTTemporalInterval) _content.interval).start;
+	public CASTTime getEndTime() {
+		return ((CASTTemporalInterval) _content.interval).end;
 	}
 
 	

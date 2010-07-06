@@ -2,6 +2,7 @@ package de.dfki.lt.tr.beliefs.data;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map.Entry;
 
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
@@ -10,6 +11,7 @@ import de.dfki.lt.tr.beliefs.data.genericproxies.DistributionContent;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBasicDistribution;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericFormula;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
+import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
 import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
@@ -260,5 +262,23 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 		}
 		
 	}
+
 	
+//	/* (non-Javadoc)
+//	 * @see java.lang.Object#equals(java.lang.Object)
+//	 */
+//	@Override
+//	public boolean equals(Object obj) {
+//		if (!(obj instanceof Formulas))
+//			return super.equals(obj);
+//		Formulas other=(Formulas) obj;
+//		Formula ml1=this.getMostLikely();
+//		Formula ml2=other.getMostLikely();
+//		// we cannot compare apple and pears...
+//		if (!ml1.get().getClass().isInstance(ml2.get()))
+//			return false;
+//		
+//		return ml1.equals(ml2);
+//	}
+
 }

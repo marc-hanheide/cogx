@@ -255,7 +255,7 @@ public class GenericBelief<T extends dBelief, C extends Distribution<?>> extends
 	 */
 
 	public void setContent(C contentProxy) {
-		_content.content = contentProxy.get();
+		_content.content = (ProbDistribution) contentProxy.get().clone();
 	} // end setContent
 
 	/**
