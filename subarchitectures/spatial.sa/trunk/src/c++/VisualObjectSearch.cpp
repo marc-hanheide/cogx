@@ -155,13 +155,19 @@ namespace spatial
     }
     LoadSpatialRelations(filename);
 
+    m_curemapfile = "";
+    if ((it = _config.find("--curemap-file")) != _config.end()) {
+      istringstream istr(it->second);
+      istr >> m_curemapfile;
+    }
+    log("Cure map file: %s", m_curemapfile.c_str());
     bool m_maploaded = false;
     GridMapData def;
     def.occupancy = UNKNOWN;
     //std::vector< pair<std::string,double> > objectprobability;
     //objectprobability.push_back(make_pair("ricebox",0));
     //def.objprob = objectprobability;
-    def.pdf = 0;
+    def.pdf = 1;
     m_map = new SpatialGridMap::GridMap<GridMapData>(m_gridsize, m_gridsize, m_cellsize, m_minbloxel, 0, m_mapceiling, 0, 0, 0, def);
     m_tracer = new LaserRayTracer<GridMapData>(m_map,1.0);
     pbVis = new VisualPB_Bloxel("localhost",5050,m_gridsize,m_gridsize,m_cellsize,1,true);//host,port,xsize,ysize,cellsize,scale, redraw whole map every time
@@ -461,43 +467,59 @@ namespace spatial
     fout.close();
   }
 
+  void VisualObjectSearch::InitializePDF(){
+    double normalizeto = 1 / m_map->getMinBloxelHeight();
+    double pdfsum;
 
+    for(int x = 0; x < m_gridsize; x++){
+      for(int y = 0 ; y< m_gridsize; y++){
+	double bloxel_floor = 0;
+	for(vector<Bloxel<GridMapData> >::iterator it = (*m_map)(x,y).begin(); it != (*m_map)(x,y).end();it++){
+	  bloxel_floor = it->celing;
+	}
+      }
+
+    }
+  }
   void VisualObjectSearch::ReadCureMapFromFile() {
     log("Reading cure map");
+
     int length;
     char * buffer;
-    ifstream file("curemap.txt");
+    ifstream file(m_curemapfile.c_str());
     if (!file.good()){
       log("Could not open file, returning without doing anything.");
       return;
     }
-    file.seekg(0, ios::end);
-    length = file.tellg();
-    file.seekg(0, ios::beg);
-    buffer = new char[length];
-    file.read(buffer, length);
-    int index = 0;
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	char c = buffer[index];
-	(*m_lgm)(x, y) = c;
-	index++;
-      }
-    }
-
-    // And now change the bloxel map
     GDMakeObstacle makeobstacle;
-    for (int x = -m_lgm->getSize(); x < m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y < m_lgm->getSize(); y++) {
-	if ((*m_lgm)(x,y) == '1'){
-	  m_map->boxSubColumnModifier(x+m_lgm->getSize(),y + m_lgm->getSize(), m_LaserPoseR.getZ(), m_minbloxel*2,makeobstacle);
+    std::string line;
 
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      getline(file,line);
+      if (line != ""){
+	int count = 0;
+	for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+	  char c = line[count];
+	  if (c == '3'){ //if this is a wall
+	    (*m_lgm)(x, y) = '1';
+	    m_map->boxSubColumnModifier(x+m_lgm->getSize(),y + m_lgm->getSize(), 0, m_mapceiling,makeobstacle);
+	  }
+	  else if  (c  == '1'){ // a normal obstacle
+	    (*m_lgm)(x, y) = c;
+	    m_map->boxSubColumnModifier(x+m_lgm->getSize(),y + m_lgm->getSize(), m_LaserPoseR.getZ(), m_minbloxel*2,makeobstacle);
+	  }
+	  else{
+	    (*m_lgm)(x, y) = c;
+	  }
+	  count++;
 	}
       }
+      line = "";
     }
-//    pbVis->DisplayMap(*m_map);
+
+    pbVis->DisplayMap(*m_map);
 //    pbVis->Display2DCureMap(m_lgm);
-    m_maploaded = true;
+  //  m_maploaded = true;
   }
 
   void VisualObjectSearch::savemap( GtkWidget *widget,gpointer data )
@@ -508,15 +530,15 @@ namespace spatial
   {
     AVSComponentPtr->ReadCureMapFromFile();
   }
- void VisualObjectSearch::selectdu( GtkWidget *widget, gpointer data )
+  void VisualObjectSearch::selectdu( GtkWidget *widget, gpointer data )
   {
     AVSComponentPtr->LookforObjectWithStrategy("rice",DIRECT_UNINFORMED);
   }
- void VisualObjectSearch::selectdi( GtkWidget *widget, gpointer data )
+  void VisualObjectSearch::selectdi( GtkWidget *widget, gpointer data )
   {
     AVSComponentPtr->LookforObjectWithStrategy("rice",DIRECT_INFORMED);
   }
- void VisualObjectSearch::selectind( GtkWidget *widget, gpointer data )
+  void VisualObjectSearch::selectind( GtkWidget *widget, gpointer data )
   {
     AVSComponentPtr->searchChainPos = 0;
     AVSComponentPtr->LookforObjectWithStrategy("rice",INDIRECT);
@@ -558,17 +580,17 @@ namespace spatial
 	  G_CALLBACK (&spatial::VisualObjectSearch::savemap), NULL);
       g_signal_connect (G_OBJECT (readbutton), "clicked",
 	  G_CALLBACK (&spatial::VisualObjectSearch::readmap), NULL);
-      
-      
+
+
       g_signal_connect (G_OBJECT (direct_uninformed), "clicked",
 	  G_CALLBACK (&spatial::VisualObjectSearch::selectdu), NULL);
-       g_signal_connect (G_OBJECT (direct_informed), "clicked",
+      g_signal_connect (G_OBJECT (direct_informed), "clicked",
 	  G_CALLBACK (&spatial::VisualObjectSearch::selectdi), NULL);
-       g_signal_connect (G_OBJECT (indirect), "clicked",
+      g_signal_connect (G_OBJECT (indirect), "clicked",
 	  G_CALLBACK (&spatial::VisualObjectSearch::selectind), NULL);
-      
-      
-      
+
+
+
       //add buttons to box
       gtk_box_pack_start (GTK_BOX (hbox), readbutton, TRUE, TRUE, 0);
       gtk_box_pack_start (GTK_BOX (hbox), savebutton, TRUE, TRUE, 0);
@@ -576,7 +598,7 @@ namespace spatial
       gtk_box_pack_start (GTK_BOX (hbox), direct_uninformed, TRUE, TRUE, 0);
       gtk_box_pack_start (GTK_BOX (hbox), direct_informed, TRUE, TRUE, 0);
       gtk_box_pack_start (GTK_BOX (hbox), indirect, TRUE, TRUE, 0);
- 
+
       gtk_widget_show (direct_uninformed);
       gtk_widget_show (direct_informed);
       gtk_widget_show (indirect);
@@ -650,15 +672,15 @@ namespace spatial
 
   void VisualObjectSearch::InterpretCommand(){
     switch (m_command)
-        {
+    {
       case STOP: {
-        log("Stopped.");
-        m_command = IDLE;
-        log("Command: STOP");
-        Cure::Pose3D pos;
-        PostNavCommand(pos, SpatialData::STOP);
-        break;
-      }
+		   log("Stopped.");
+		   m_command = IDLE;
+		   log("Command: STOP");
+		   Cure::Pose3D pos;
+		   PostNavCommand(pos, SpatialData::STOP);
+		   break;
+		 }
       case ASK_FOR_DISTRIBUTION:{
 				  AskForDistribution();
 				}
@@ -717,10 +739,10 @@ namespace spatial
 	relations.push_back(searchChain[i].relation);
 	labels.push_back(searchChain[i].secobject);
       }
-  FrontierInterface::WeightedPointCloudPtr queryCloud = new FrontierInterface::WeightedPointCloud;
+      FrontierInterface::WeightedPointCloudPtr queryCloud = new FrontierInterface::WeightedPointCloud;
       //write lgm to WM
       FrontierInterface::ObjectPriorRequestPtr objreq =
-          new FrontierInterface::ObjectPriorRequest;
+	new FrontierInterface::ObjectPriorRequest;
       objreq->relationTypes = relations; // ON or IN or whatnot
       objreq->objects = labels;	// Names of objects, starting with the query object
       objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
@@ -728,39 +750,49 @@ namespace spatial
       addToWorkingMemory(newDataID(), objreq);
 
       cout << labels[0] << endl;
-   for(unsigned int i = 0; i < relations.size(); i++){
+      for(unsigned int i = 0; i < relations.size(); i++){
 	cout << relations[i]<< " " << labels[i + 1]  << endl;
       }
-    
+
     }
-    
+
     else if (currentSearchMode == INDIRECT){
     }
     //if indirect look where we are in the chain ask for it's distribution
   }
 
-void
-  VisualObjectSearch::owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID) {
-    try {
-      log("got weighted PC");
-      FrontierInterface::WeightedPointCloudPtr cloud =
-       getMemoryEntry<FrontierInterface::ObjectPriorRequest>(objID.address)->outCloud;
-  
-      m_sampler.kernelDensityEstimation3D(*m_map, cloud->center,
- 	cloud->interval,
-  	cloud->xExtent,
-  	cloud->yExtent,
-  	cloud->zExtent,
-  	cloud->values,
-	1.0,
-	1.0
-	);
+  void
+    VisualObjectSearch::owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID) {
+      try {
+	log("got weighted PC");
+	FrontierInterface::WeightedPointCloudPtr cloud =
+	  getMemoryEntry<FrontierInterface::WeightedPointCloud>(objID.address);
+
+	if(currentSearchMode == DIRECT_INFORMED){
+	  log("got direct point cloud");
+	  // the cloud is centered around 0,0, TODO: center the cloud 
+	  // on possible locations of the most supportive object, hint use Sample and Select
+	  // for this, ask Alper if you are not already him.
+
+	}
+	else if(currentSearchMode == INDIRECT){
+	  m_sampler.kernelDensityEstimation3D(*m_map, cloud->center,
+	      cloud->interval,
+	      cloud->xExtent,
+	      cloud->yExtent,
+	      cloud->zExtent,
+	      cloud->values,
+	      1.0,
+	      1.0
+	      );
+
+	}
+      }
+      catch (DoesNotExistOnWMException excp) {
+	log("Error!  WeightedPointCloud does not exist on WM!");
+	return;
+      }
     }
-    catch (DoesNotExistOnWMException excp) {
-      log("Error!  WeightedPointCloud does not exist on WM!");
-      return;
-    }
-  }
   bool VisualObjectSearch::isCircleFree(double xW, double yW, double rad){
     int xiC,yiC;
     if (m_lgm->worldCoords2Index(xW,yW,xiC,yiC)!= 0)
@@ -780,6 +812,7 @@ void
     }
     return true;
   }
+
 
   VisualObjectSearch::SensingAction VisualObjectSearch::SampleAndSelect(){
 
@@ -902,7 +935,24 @@ void
       //}
     }
 
+  void VisualObjectSearch::UnsuccessfulDetection(SensingAction viewcone){
+    double pOut = 0.3;
+    double sensingProb = 0.7;
+    GDProbSum sumcells;
+    GDIsObstacle isobstacle;
+    m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
+	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells);
+    double probsum = sumcells.getResult();
 
+    GDMeasUpdateGetDenominator getnormalizer(pOut, sensingProb,probsum);
+    m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
+	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, getnormalizer,getnormalizer);
+    double normalizer = getnormalizer.getResult();
+
+    GDUnsuccessfulMeasUpdate measupdate(normalizer,sensingProb); 
+    m_map->coneModifier(viewcone.pos[0], viewcone.pos[1],viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, measupdate,measupdate);
+
+  }
   void VisualObjectSearch::newRobotPose(const cdl::WorkingMemoryChange &objID) 
   {
     try {
