@@ -204,6 +204,10 @@ Now the component is ready to interact with the display server. The component
 will communicate with the server through a display client:
 
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   #ifdef FEAT_VISUALIZATION
+   #include <CDisplayClient.hpp>
+   #endif
+   ...
    class VideoViewer : public ManagedComponent, public VideoClient
    {
    private:
@@ -280,7 +284,7 @@ a few methods must be overridden in a class derived from the CDisplayClient:
        void handleEvent(const Visualization::TEvent &event); /*override*/
        std::string getControlState(const std::string& ctrlId); /*override*/
      };
-     cogx::display::CActiveDisplayClient<VideoViewer> m_display;
+     CVvDisplayClient m_display;
    #endif
    };
 \end{Verbatim}
