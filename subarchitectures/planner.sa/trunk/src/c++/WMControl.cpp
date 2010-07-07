@@ -6,8 +6,8 @@
 #include <boost/foreach.hpp>
 
 using namespace std;
-using namespace beliefmodels::autogen;
-using namespace beliefmodels::autogen::beliefs;
+using namespace de::dfki::lt::tr::beliefs::slice;
+using namespace de::dfki::lt::tr::beliefs::slice::sitbeliefs;
 using namespace cast::cdl;
 
 extern "C" {
@@ -45,7 +45,7 @@ void WMControl::start() {
     addChangeFilter(cast::createLocalTypeFilter<Action>(cast::cdl::OVERWRITE), 
 		    new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::actionChanged));
 
-    addChangeFilter(cast::createGlobalTypeFilter<StableBelief>(cast::cdl::WILDCARD),
+    addChangeFilter(cast::createGlobalTypeFilter<dBelief>(cast::cdl::WILDCARD),
             new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::stateChanged));
 
     connectToPythonServer();
@@ -112,7 +112,7 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
     TASK_ID++;
 
     autogen::Planner::PlanningTaskPtr task = getMemoryEntry<autogen::Planner::PlanningTask>(wmc.address);
-    log(task->goal);
+    log(task->goals[0]->goalString);
 
     generateState(task);
 
@@ -133,11 +133,11 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
 
 void WMControl::generateState(autogen::Planner::PlanningTaskPtr& task) {
     log("Planner WMControl:: generating state");
-    task->state = vector<BeliefPtr>();
-    task->state.reserve(m_currentState.size());
-    for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
-        task->state.push_back(i->second);
-    }
+//    task->state = vector<dBeliefPtr>();
+//    task->state.reserve(m_currentState.size());
+//    for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
+//        task->state.push_back(i->second);
+//    }
     //task->state = vector<BeliefPtr>(m_currentState);
 }
 
@@ -196,7 +196,7 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     log("state change...");
     if (wmc.operation == cast::cdl::ADD || wmc.operation == cast::cdl::OVERWRITE) {
         log("added/changed belief at %s@%s", wmc.address.id.c_str(), wmc.address.subarchitecture.c_str());
-        BeliefPtr changedBelief = getMemoryEntry<Belief>(wmc.address);
+        dBeliefPtr changedBelief = getMemoryEntry<dBelief>(wmc.address);
         log("got object");
         m_currentState[wmc.address.id] = changedBelief;
     }
@@ -242,7 +242,7 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
 }
 
 
-void WMControl::sendStateChange(int id, std::vector<BeliefPtr>& changedUnions, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter) {
+void WMControl::sendStateChange(int id, std::vector<dBeliefPtr>& changedUnions, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter) {
     assert(activeTasks.find(id) != activeTasks.end());
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id].address);
     /*if (task->planningStatus == INPROGRESS) {
@@ -312,11 +312,15 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan) {
 }
 
 void WMControl::updateBeliefState(const BeliefSeq& beliefs) {
-    BOOST_FOREACH(BeliefPtr bel, beliefs) {
+// !!! HACK HACK HACK (Wed Jun 30 14:28:15 2010, marc)!!!
+// removed for compatibilty with new beliefs
+/*
+    BOOST_FOREACH(dBeliefPtr bel, beliefs) {
         try {
             if (bel->id == "temporary") {
                 CASTTime time = getCASTTime();
                 framing::TemporalInterval interval;
+		
                 interval.startTime = time;
                 interval.endTime = time;
                 bel->frame = new framing::SimpleSpatioTemporalFrame("here", interval);
@@ -333,7 +337,7 @@ void WMControl::updateBeliefState(const BeliefSeq& beliefs) {
                 wma.id = bel->id;
                 wma.subarchitecture = BINDER_SA;
                 if (existsOnWorkingMemory(wma)) {
-                    BeliefPtr oldBelief = getMemoryEntry<Belief>(wma);
+                    dBeliefPtr oldBelief = getMemoryEntry<dBelief>(wma);
 				
                     history::CASTBeliefHistoryPtr hist = dynamic_cast<history::CASTBeliefHistory*>(bel->hist.get());
                     history::CASTBeliefHistoryPtr oldHist = dynamic_cast<history::CASTBeliefHistory*>(oldBelief->hist.get());
@@ -360,6 +364,7 @@ void WMControl::updateBeliefState(const BeliefSeq& beliefs) {
             log("Consistency exception when trying to update belief %s", bel->id.c_str());
         }
     }
+*/
 }
 
 void WMControl::updateStatus(int id, Completion status) {

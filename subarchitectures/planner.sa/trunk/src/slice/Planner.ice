@@ -2,7 +2,7 @@
 #define PLANNER_ICE
 
 #include <cast/slice/CDL.ice>
-#include <beliefmodels.ice>
+#include <beliefs.ice>
 
 module autogen {
   module Planner {
@@ -16,9 +16,9 @@ module autogen {
     };
 
     sequence<string> stringSeq;
-    sequence<beliefmodels::autogen::featurecontent::FeatureValue> ArgumentSeq;
+    sequence<de::dfki::lt::tr::beliefs::slice::logicalcontent::dFormula> ArgumentSeq;
 
-    sequence<beliefmodels::autogen::beliefs::Belief> BeliefSeq;
+    sequence<de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief> BeliefSeq;
 
     class StateChangeFilter {
       BeliefSeq removeFilter;
@@ -32,16 +32,23 @@ module autogen {
       string fullName;
       Completion status;
     };
-
     sequence<Action> ActionSeq;
+
+    class Goal {
+      float importance;
+      string goalString;
+      bool isInPlan;
+    };
+    sequence<Goal> GoalSeq;
 
     class PlanningTask
     {
       int id;
-      string goal;
+      GoalSeq goals;
+      bool executePlan;
+
       ActionSeq plan;
       string firstActionID;
-      BeliefSeq state;
       Completion executionStatus;
       int executionRetries;
       Completion planningStatus;
@@ -132,7 +139,9 @@ module autogen {
     interface PythonServer extends cast::interfaces::CASTComponent
     {
       void registerTask(PlanningTask task);
+      void executeTask(PlanningTask task);
       void updateTask(PlanningTask task);
+      void updateState(BeliefSeq state);
 
       /*DTP process with ID \argument{id} calls this method when: (1)
 	A useful plan has been found, and execution of that plan
