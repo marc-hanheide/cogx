@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -149,7 +152,8 @@ namespace Planning
         DECLARATION__PEGTL_ACTION(Predicate_Name__Action);
         DECLARATION__PEGTL_ACTION(Action_Name__Action);
         DECLARATION__PEGTL_ACTION(Percept_Name__Action);
-        DECLARATION__PEGTL_ACTION(Function_Name__Action);
+        DECLARATION__PEGTL_ACTION(State_Function_Name__Action);
+        DECLARATION__PEGTL_ACTION(Perceptual_Function_Name__Action);
         DECLARATION__PEGTL_ACTION(Variable_Argument__Action);
         DECLARATION__PEGTL_ACTION(Type_Of_Argument__Action);
         DECLARATION__PEGTL_ACTION(Dive__Action);
@@ -159,7 +163,8 @@ namespace Planning
         DECLARATION__PEGTL_ACTION(Formula_Predicate__Action);
         DECLARATION__PEGTL_ACTION(Formula_Action__Action);
         DECLARATION__PEGTL_ACTION(Formula_Percept__Action);
-        DECLARATION__PEGTL_ACTION(Formula_Function__Action);
+        DECLARATION__PEGTL_ACTION(Formula_State_Function__Action);
+        DECLARATION__PEGTL_ACTION(Formula_Perceptual_Function__Action);
         DECLARATION__PEGTL_ACTION(Not__Action);
         DECLARATION__PEGTL_ACTION(And__Action);
         DECLARATION__PEGTL_ACTION(Or__Action);
@@ -171,22 +176,31 @@ namespace Planning
         DECLARATION__PEGTL_ACTION(Constant_Argument__Action);
         DECLARATION__PEGTL_ACTION(Conditional_Effect__Action);
         DECLARATION__PEGTL_ACTION(Forall_Effect__Action);
-        DECLARATION__PEGTL_ACTION(Decrease__Action);
-        DECLARATION__PEGTL_ACTION(Assign__Action);
         DECLARATION__PEGTL_ACTION(Number__Action);
         DECLARATION__PEGTL_ACTION(Type__Action);
         DECLARATION__PEGTL_ACTION(Type_Of_Type__Action);
         DECLARATION__PEGTL_ACTION(Constant__Action);
         DECLARATION__PEGTL_ACTION(Type_Of_Constant__Action);
         DECLARATION__PEGTL_ACTION(Probabilistic__Action);
+        
         DECLARATION__PEGTL_ACTION(Increase__Action);
-        DECLARATION__PEGTL_ACTION(Number_In_Effect__Action);
+        DECLARATION__PEGTL_ACTION(Decrease__Action);
+        DECLARATION__PEGTL_ACTION(Assign__Action);
+        DECLARATION__PEGTL_ACTION(Equality__Action);
+        
         DECLARATION__PEGTL_ACTION(GOT_REAL_NUMBER__Action);
         DECLARATION__PEGTL_ACTION(GOT_INTEGER_NUMBER__Action);
         DECLARATION__PEGTL_ACTION(Add_Constants__Action);
         DECLARATION__PEGTL_ACTION(Type_Of_Type__TO__Type_Of_Constant__Action);
         DECLARATION__PEGTL_ACTION(Commit_Constants__Action);
         DECLARATION__PEGTL_ACTION(Domain_Name__Action);
+
+
+        
+        DECLARATION__PEGTL_ACTION(Number_In_Formula__Action);
+        DECLARATION__PEGTL_ACTION(Object_In_Formula__Action);
+        DECLARATION__PEGTL_ACTION(Constant_In_Formula__Action);
+        
         
     }
 }

@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -48,6 +51,8 @@ namespace Planning
         DECLARATION__PEGTL_ACTION(Starting_State__Action);
         DECLARATION__PEGTL_ACTION(Objective_Formula__Action);
         DECLARATION__PEGTL_ACTION(Goal_Formula__Action);
+        DECLARATION__PEGTL_ACTION(Start_Initial_State_Parsing__Action);
+        DECLARATION__PEGTL_ACTION(Stop_Initial_State_Parsing__Action);
         
         
 //         SIMPLE_PEGTL_ACTION(, );

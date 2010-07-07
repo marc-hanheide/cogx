@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -33,6 +36,58 @@
 
 namespace Planning
 {
+    
+    template<int ID_VAL, typename NAMING_TYPE >
+    NAMING_TYPE 
+    Planning
+    ::Typed_First_Order_Symbol_Description<ID_VAL
+                                     , NAMING_TYPE>
+    ::get__name() const
+    {
+        return std::tr1::get<0>(Parent::contents());
+    }
+    
+    template<int ID_VAL, typename NAMING_TYPE >
+    NAMING_TYPE 
+    Planning
+    ::First_Order_Symbol_Description<ID_VAL
+                                     , NAMING_TYPE>
+    ::get__name() const
+    {
+        return std::tr1::get<0>(Parent::contents());
+    }
+    
+    template<int ID_VAL, typename NAMING_TYPE >
+    Typed_Arguments
+    Planning
+    ::First_Order_Symbol_Description<ID_VAL
+                                     , NAMING_TYPE>
+    ::get__arguments() const
+    {
+        return std::tr1::get<1>(Parent::contents());
+    }
+    
+    template<int ID_VAL, typename NAMING_TYPE >
+    Typed_Arguments
+    Planning
+    ::Typed_First_Order_Symbol_Description<ID_VAL
+                                     , NAMING_TYPE>
+    ::get__arguments() const
+    {
+        return std::tr1::get<1>(Parent::contents());
+    }
+    
+    template<int ID_VAL, typename NAMING_TYPE >
+    Types
+    Planning
+    ::Typed_First_Order_Symbol_Description<ID_VAL
+                                     , NAMING_TYPE>
+    ::get__range_description() const
+    {
+        return std::tr1::get<2>(Parent::contents());
+    }
+    
+    
     template<int ID_VAL, typename NAMING_TYPE >
     std::ostream& Planning
     ::First_Order_Symbol_Description<ID_VAL
@@ -40,8 +95,6 @@ namespace Planning
     ::operator<<(std::ostream& o) const
     {
 
-        typedef type_wrapper<ID_VAL, NAMING_TYPE, Typed_Arguments> Parent;
-    
         auto name = std::tr1::get<0>(Parent::contents());
         o<<"("<<name<<" ";
 
@@ -49,25 +102,29 @@ namespace Planning
 
         o<<arguments;
         
-//         auto argument_List = std::tr1::get<0>(arguments);
-//         auto argument_Types = std::tr1::get<1>(arguments);
-
-//         assert(argument_List.size() == argument_Types.size());
-    
-//         auto argument = argument_List.begin();
-//         auto type = argument_Types.begin();
-//         for(; argument != argument_List.end(); argument++, type++){
-//             o<<" "<<*argument<<" - (either ";//<<*type<<" ";
-
-//             for(auto type_atom = type->begin()
-//                     ; type_atom != type->end()
-//                     ; type_atom++){
-//                 o<<*type_atom<<" ";
-//             }
-
-//             o<<") ";
-//         }
         o<<")";
+    
+        return o;
+    }
+    
+    template<int ID_VAL, typename NAMING_TYPE >
+    std::ostream& Planning
+    ::Typed_First_Order_Symbol_Description<ID_VAL
+                                     , NAMING_TYPE>
+    ::operator<<(std::ostream& o) const
+    {    
+        auto name = std::tr1::get<0>(Parent::contents());
+        o<<"("<<name<<" ";
+
+        auto arguments = std::tr1::get<1>(Parent::contents());
+
+        o<<arguments;
+        
+        o<<")";
+
+        auto types = std::tr1::get<2>(Parent::contents());
+
+        o<<" - "<<types<<" ";
     
         return o;
     }

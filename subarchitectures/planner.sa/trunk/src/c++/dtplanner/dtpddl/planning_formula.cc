@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -89,7 +92,27 @@ double Number::get__value() const {return std::tr1::get<0>(this->contents());}
 
 Planning::Formula::numbers__vector Probabilistic::get__probabilities() const {return std::tr1::get<1>(this->contents());}
 Planning::Formula::Subformulae Probabilistic::get__formulae() const {return std::tr1::get<0>(this->contents());}
-                
+
+
+bool Planning::Formula::Probabilistic::leq1() const
+{
+    if(sanity()) return true;
+
+    double total = 0.0;
+    for(auto p = get__probabilities().begin(); p != get__probabilities().end(); p++){
+        auto prob = p->get__value();
+        if(!is_admissible_probability(prob)){
+            return false;
+        }
+        
+        total += prob;
+    }
+    
+    if (total <= 1.0) return true;
+    else return false;
+}
+
+
 bool Planning::Formula::Probabilistic::sanity() const
 {
     Are_Doubles_Close are_Doubles_Close(1e-9);
@@ -124,11 +147,58 @@ std::ostream& Planning::Formula::Probabilistic::operator<<(ostream&o)const
     return o<<")"<<std::endl;
 }
 
+#define get__operator_type_as_string__IMPLEMENTATION(TYPE_ID, STRING)   \
+    std::string Planning::Formula::TYPE_ID::                            \
+    get__operator_type_as_string() const                                \
+    {                                                                   \
+        return STRING;                                                  \
+    }                                                                   \
 
-std::ostream& Planning::Formula::Increase::operator<<(ostream&o)const 
-{
-    o<<"(increase "<<std::tr1::get<0>(this->contents())<<" "<<std::tr1::get<1>(this->contents());
+
+
+get__operator_type_as_string__IMPLEMENTATION(Increase, "increase");
+get__operator_type_as_string__IMPLEMENTATION(Decrease, "decrease");
+get__operator_type_as_string__IMPLEMENTATION(Assign, "assign");
+get__operator_type_as_string__IMPLEMENTATION(Equality_Test, "=");
+
+Subformula Planning::Formula::Conditional_Effect::get__condition() const
+{return std::tr1::get<0>(this->contents()); }
+
+Subformula Planning::Formula::Conditional_Effect::get__effect() const
+{return std::tr1::get<1>(this->contents()); }
+
+//                                                                      \
+// std::ostream& Planning::Formula::Increase::operator<<(ostream&o)const
+
+// std::ostream& Planning::Formula::Increase::operator<<(ostream&o)const 
+// {
+//     o<<"(increase "<<std::tr1::get<0>(this->contents())<<" "<<std::tr1::get<1>(this->contents());
     
+
+//     return o<<")"<<std::endl;
+// }
+
+
+// std::ostream& Planning::Formula::Decrease::operator<<(ostream&o)const 
+// {
+//     o<<"(decrease "<<std::tr1::get<0>(this->contents())<<" "<<std::tr1::get<1>(this->contents());
+    
+
+//     return o<<")"<<std::endl;
+// }
+
+// std::ostream& Planning::Formula::Assign::operator<<(ostream&o)const 
+// {
+//     o<<"(assign "<<std::tr1::get<0>(this->contents())<<" "<<std::tr1::get<1>(this->contents());
+    
+
+//     return o<<")"<<std::endl;
+// }
+
+
+std::ostream& Planning::Formula::Conditional_Effect::operator<<(ostream&o)const 
+{
+    o<<"(when "<<std::tr1::get<0>(this->contents())<<" "<<std::tr1::get<1>(this->contents());
 
     return o<<")"<<std::endl;
 }

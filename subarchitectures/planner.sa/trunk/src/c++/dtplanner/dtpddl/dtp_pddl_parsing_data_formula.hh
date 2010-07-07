@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -44,11 +47,27 @@ namespace Planning
         {
         public:
 
+            /* Formulae that are subsequently parsed have as their
+             * subject the initial state.  Some formula describe
+             * actions pre- and post-conditions, others describe
+             * derived predicates. Depending on the context in which a
+             * formula is being parsed the operators have a different
+             * interpretation. For example, in PDDL the '=' operator
+             * in the initial state has the semantics of the 'assign'
+             * operator in an action effect. On the other hand, in a
+             * 'precondition' the '=' operator has the semantics of an
+             * equality test.  */
+            void report__enter_parsing_initial_state();
+            /* Formulae that are subsequently parsed DO NOT have as
+             * their subject the initial state (see
+             * \member{report__enter_parsing_initial_state}).*/
+            void report__exit_parsing_initial_state();
 
             void stack__typed_Arguments();
             
+            void report__perceptual_function_name(const std::string& str);
             void report__percept_name(const std::string& str);
-            void report__function_name(const std::string& str);
+            void report__state_function_name(const std::string& str);
             void report__predicate_name(const std::string& str);
             
             Formula_Data();
@@ -109,10 +128,13 @@ namespace Planning
             /*(see) \member{report__formula_atomic_symbol}*/
             void report__formula_percept();
             /*(see) \member{report__formula_atomic_symbol}*/
-            void report__formula_function();
+            void report__formula_perceptual_function();
+            /*(see) \member{report__formula_atomic_symbol}*/
+            void report__formula_state_function();
             /*(see) \member{report__formula_atomic_symbol}*/
             void report__formula_action();
             
+            void report__conditional_effect_formula();
             void report__empty_formula();
             void report__if_formula();
             void report__not_formula();
@@ -137,13 +159,34 @@ namespace Planning
             void report__parsing_real_number();
             void report__parsing_integer_number();
 
-            /**/
-            void report__number_in_effect();
+            /* There is a function assignment to a constant number in an effect formula.*/
+            void report__number_in_formula();
+            /* There is a function assignment to a variable-symbol in an effect formula.*/
+            void report__object_in_formula();
+            /* There is a function assignment to a PDDL constant in an effect formula.*/
+            void report__constant_in_formula();
+            
             void report__probabilistic_formula();
             void report__increase_formula();
+            void report__decrease_formula();
+            void report__assign_formula();
+            void report__equality_formula();
             Formula::Subformula complete__probabilistic_formula();
             
         private:
+
+            /* Does \member{subformulae} have elements at \argument{index}.*/
+            bool check__exists_parsed_subformulae(int index) const;
+            
+            /* Are there \argument{count} elements at
+             * \member{subformulae} element at \argument{index}.*/
+            bool check__cardinality_constraint_on_subformulae_at_index
+            (int count, int index) const;
+            
+            /* Does the formula being based have as its subject the
+             * initial planning state?*/
+            bool parsing_initial_state;
+            
             /*For \argument{quantifier} see \enum{enum_types} from \module{planning_symbols}.*/
             Formula::Subformula complete__quantified_formula(int quantifier);
             /*(see \member{complete__quantified_formula(forall)})*/
@@ -151,8 +194,6 @@ namespace Planning
             /*(see \member{complete__quantified_formula(exists)})*/
             Formula::Subformula complete__exists_formula();
         protected:
-
-            
             /* Should next next call to \member{report__formula} be skipped?*/
             bool skip_next____report__formula;
 
@@ -183,7 +224,10 @@ namespace Planning
             Planning::Predicate_Name predicate_Name;
             
             /* Parsed function name.*/
-            Planning::Function_Name function_Name;
+            Planning::State_Function_Name state_Function_Name;
+            
+            /* Parsed perceptual function name.*/
+            Planning::Perceptual_Function_Name perceptual_Function_Name;
             
             /* Parsed percept name.*/
             Planning::Percept_Name percept_Name;

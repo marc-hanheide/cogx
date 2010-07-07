@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -55,7 +58,11 @@ namespace Planning
         /*extra formula elements for probabilistic effects.*/
         number,
         probabilistic_effect,
-        increase,
+        conditional_effect,
+        increase, /* PDDL function evaluation modification. */
+        decrease, /* PDDL function evaluation modification. */
+        assign,   /* PDDL function evaluation modification. */
+        equality_test,  /* PDDL equality testing predicate. */
         /**/
         scope,      /* a variable must have a scope For example, it could be
                      * a predicate argument.*/
@@ -65,12 +72,14 @@ namespace Planning
         requirement,/* PDDL requirement string. Representation should be \class{std::string} based.*/
         predicate_name,/* Name of a PDDL "predicate". (as above \class{string} based)*/
         percept_name,/* Name of a DT-PDDL "percept". (as above \class{string} based)*/
-        function_name,/* Name of a PDDL "function". (as above \class{string} based)*/
+        state_function_name,/* Name of a PDDL "function". (as above \class{string} based)*/
         perceptual_function_name,/* Name of a DT-PDDL "perceptual function". (as above \class{string} based)*/
         domain_name,/* Name of a PDDL "domain". (as above \class{string} based)*/
         problem_name,/* Name of a PDDL "problem". (as above \class{string} based)*/
         predicate_description,     /* PDDL "predicate".*/
+        state_function_description,     /* PDDL "function".*/
         percept_description, /* DT-PDDL "perceptive predicate".*/
+        perceptual_function_description, /* DT-PDDL "perceptive predicate".*/
         action_name,   /* Name of a PDDL "action". (as above \class{string} based)*/
         action_header, /*(action_name ?x1 - t1 x2 - t1 etc....)*/
         observation_name,   /* Name of a DT-PDDL ":observe". (as above \class{string} based)*/

@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -82,11 +85,13 @@ namespace Planning
         struct Initial_State
             : seq< pad<s_Init, space>
                    , ifapply<success, Dive__Action>
+                   , ifapply<success, Start_Initial_State_Parsing__Action>
                    , ifapply<success, And__Action>
-                   , star< Effect_Subformulae<Typeless_Predicate_or_Function> >
+                   , star< Effect_Subformulae<Typeless_Predicate, Typeless_Function> >
                    , ifapply<success, Formula__Action>
                    , ifapply<success, Emerge__Action>
-                   , ifapply<success, Starting_State__Action> > {};
+                   , ifapply<success, Starting_State__Action>
+                   , ifapply<success, Stop_Initial_State_Parsing__Action> > {};
         
         /******************************************************************************************************************
          * Metrics.
@@ -102,7 +107,9 @@ namespace Planning
         struct Metric
             : seq< pad<s_Metric, space>
                    , Optimisation_Criteria
-                   , Effect_Subformulae<Typeless_Function>
+                   , ifapply<Open, Dive__Action>
+                   , Typeless_Function
+                   , ifapply<Close, Emerge__Action> 
                    , ifapply<success, Objective_Formula__Action>  > {};
 
 

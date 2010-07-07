@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -90,8 +93,8 @@ namespace Planning
         MAKE_CONSTANT_ATOM(Observational_Proposition, enum_types::observational_proposition, Planning::Percept_Name);
         MAKE_VARIABLE_ATOM(Observational_Predicate, enum_types::observational_predicate, Planning::Percept_Name);
         
-        MAKE_CONSTANT_ATOM(State_Ground_Function, enum_types::state_ground_function, Planning::Function_Name);
-        MAKE_VARIABLE_ATOM(State_Function, enum_types::state_function, Planning::Function_Name);
+        MAKE_CONSTANT_ATOM(State_Ground_Function, enum_types::state_ground_function, Planning::State_Function_Name);
+        MAKE_VARIABLE_ATOM(State_Function, enum_types::state_function, Planning::State_Function_Name);
         MAKE_CONSTANT_ATOM(Perceptual_Ground_Function, enum_types::perceptual_ground_function, Planning::Perceptual_Function_Name);
         MAKE_VARIABLE_ATOM(Perceptual_Function, enum_types::perceptual_function, Planning::Perceptual_Function_Name);
 
@@ -131,12 +134,65 @@ namespace Planning
         public:
             double get__value() const;
         };
-        
-        
-        class Increase : public type_wrapper<enum_types::increase, Subformula, Subformula>
-        {PRINTING;
+
+        template<int ID_VAL>
+        class Function_Modifier : public type_wrapper<ID_VAL, Subformula, Subformula>
+        {
+            /* Function that is being acted on by operator with ID_VAL
+             * (see \module{planning_types_enum.hh})*/
+            Subformula get__subject() const {return std::tr1::get<0>(this->contents());}
+
+            /* Formulae that can be evaluated at a planning state to
+             * give the number by which the \tupelem{subject} is
+             * modified.*/
+            Subformula get__modification() const {return std::tr1::get<1>(this->contents());}
+            
+            std::ostream& operator<<(ostream&o) const
+            {
+                o<<"("<<get__operator_type_as_string()
+                 <<" "<<std::tr1::get<0>(this->contents())<<" "<<std::tr1::get<1>(this->contents());
+                return o<<")"<<std::endl;
+            }
+        protected:
+            virtual std::string get__operator_type_as_string() const = 0;
         };
         
+        class Increase : public Function_Modifier<enum_types::increase>
+        {
+        protected:
+            std::string get__operator_type_as_string() const;
+        };
+        
+        class Decrease : public Function_Modifier<enum_types::decrease>
+        {
+        protected:
+            std::string get__operator_type_as_string() const;
+        };
+        
+        class Assign : public Function_Modifier<enum_types::assign> 
+        {
+        protected:
+            std::string get__operator_type_as_string() const;
+        };
+
+
+        class Equality_Test : public Function_Modifier<enum_types::equality_test> 
+        {
+        protected:
+            std::string get__operator_type_as_string() const;
+        };
+
+        
+        class Conditional_Effect : public type_wrapper<enum_types::conditional_effect, Subformula, Subformula>
+        {PRINTING;
+        public:
+            Subformula get__condition() const;
+            Subformula get__effect() const;
+        };
+
+
+        /* Numbers can appear in list elements in a domain or task
+         * description (see \class{Probabilistic})*/
         typedef std::vector<Number> numbers__vector;
         
         class Probabilistic : public type_wrapper<enum_types::probabilistic_effect
@@ -151,6 +207,11 @@ namespace Planning
             /* Does this probabilistic effect make sense -- i.e. do the
              * elements in \member{numbers__vector} sum to 1.*/
             bool sanity() const;
+
+            /* Does the sum of elements in \tupelem{probabilities} sum
+             * to a value less-than-or-equal-to 1. If so, we suppose
+             * it is a valid PDDL formula.*/
+            bool leq1() const;
         };
         
     }

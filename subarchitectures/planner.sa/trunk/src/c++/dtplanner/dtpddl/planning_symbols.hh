@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -69,7 +72,7 @@ namespace Planning
 
     WRAPPED_STRING(enum_types::predicate_name, Predicate_Name);
     WRAPPED_STRING(enum_types::percept_name, Percept_Name);
-    WRAPPED_STRING(enum_types::function_name, Function_Name);
+    WRAPPED_STRING(enum_types::state_function_name, State_Function_Name);
     WRAPPED_STRING(enum_types::perceptual_function_name, Perceptual_Function_Name);
     WRAPPED_STRING(enum_types::domain_name, Domain_Name);
     WRAPPED_STRING(enum_types::problem_name, Problem_Name);
@@ -82,9 +85,16 @@ namespace Planning
                               , NAMING_TYPE
                               , Typed_Arguments
                               >
-    {PRINTING;};
-
+    {PRINTING;
+    public:
+        
+        typedef type_wrapper<ID_VAL, NAMING_TYPE, Typed_Arguments> Parent;
     
+        
+        NAMING_TYPE get__name() const;
+        Typed_Arguments get__arguments() const;
+    };
+
     class Predicate_Description
         : public First_Order_Symbol_Description<enum_types::predicate_description
                                                 , Predicate_Name> {};
@@ -96,6 +106,38 @@ namespace Planning
     typedef std::set<Predicate_Description> Predicate_Descriptions ;
     typedef std::set<Percept_Description> Percept_Descriptions ;
 
+    
+    template<int ID_VAL, typename NAMING_TYPE>
+    class Typed_First_Order_Symbol_Description
+        : public type_wrapper<ID_VAL
+                              , NAMING_TYPE
+                              , Typed_Arguments
+                              , Types
+                              >
+    {PRINTING;
+    public:
+        typedef type_wrapper<ID_VAL
+            , NAMING_TYPE
+            , Typed_Arguments
+            , Types> Parent;
+        
+        NAMING_TYPE get__name() const;
+        Typed_Arguments get__arguments() const;
+        Types get__range_description() const;
+    };
+
+    
+    class State_Function_Description
+        : public Typed_First_Order_Symbol_Description<enum_types::state_function_description
+                                                      , State_Function_Name> {};
+    
+    class Perceptual_Function_Description
+        : public Typed_First_Order_Symbol_Description<enum_types::perceptual_function_description
+                                                      , Perceptual_Function_Name> {};
+    
+    typedef std::set<State_Function_Description> State_Function_Descriptions ;
+    typedef std::set<Perceptual_Function_Description> Perceptual_Function_Descriptions ;
+    
 }
 
 #include "planning_symbols__TEMPLATES.hh"
