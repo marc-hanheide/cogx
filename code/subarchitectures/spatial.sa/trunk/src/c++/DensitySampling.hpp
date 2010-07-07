@@ -137,7 +137,6 @@ class DensitySampler
       sampleBinaryRelationSystematically(
 	  const std::vector <SpatialRelationType> &relations,
 	  const std::vector<spatial::Object *> &objects,
-	  const vector<Matrix33> &supportObjectOrientations,
 	  const std::vector<string> &objectLabels,
 	  double cellSize, SampleCloud &outCloud);
 

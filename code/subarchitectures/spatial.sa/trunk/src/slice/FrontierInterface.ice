@@ -90,6 +90,7 @@ module FrontierInterface {
     int zExtent;
     DoubleData values;
     double total;
+    bool isBaseObjectKnown;
   };
 
 

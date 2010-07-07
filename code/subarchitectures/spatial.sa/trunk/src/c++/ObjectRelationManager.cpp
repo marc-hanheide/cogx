@@ -652,12 +652,9 @@ void ObjectRelationManager::runComponent()
 	      //	    objectLabels.push_back("box2");
 	      //	    relations.push_back(RELATION_ON);
 
-	      vector<cogx::Math::Matrix33> supportObjectOrientations;
-	      supportObjectOrientations.push_back(objects.back()->pose.rot); 
 	      SampleCloud testCloud;
 	      m_sampler.
 		sampleBinaryRelationSystematically(relations, objects, 
-		    supportObjectOrientations, 
 		    objectLabels, pdfMap.getCellSize(),
 		    testCloud);
 
@@ -863,35 +860,25 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	m_objectModels[obsLabel] = generateNewObjectModel(obsLabel);
       }
       //    log("2");
-/*      if (m_bDemoSampling) {
-	string supObjectLabel = "squaretable";
-	if (observedObject->label == "krispies" ||
-	    observedObject->label == "joystick" ||
-	    observedObject->label == "rice") {
-	  // Evaluate onness for joystick object
-      map<std::string, SpatialObjectPtr>::iterator it = m_objects.find(observedObject->label);
-      if (it != m_objects.end()) {
-	    m_objectModels[observedObject->label] = generateNewObjectModel(observedObject->label);
-	  }
-	  sampleOnnessForObject(objectID, onObjectID);
-	}
-	  for (map<string, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
-	    if (it->second->label == "krispies") {
-	      onObjectID = it->first;
-	    }
-	  }
-	  if (onObjectID == -1) {
-	    onObjectID = m_maxObjectCounter++;
-	    m_objectModels[label] = generateNewObjectModel(onObjectID, "krispies");
-	  }
-	  sampleOnnessForObject(objectID, onObjectID);
-	}*/
 
       double diff = length(m_objects[obsLabel]->pose.pos - pose.pos);
       diff += length(getRow(m_objects[obsLabel]->pose.rot - pose.rot, 1));
       diff += length(getRow(m_objects[obsLabel]->pose.rot - pose.rot, 2));
       if (diff > 0.01 || bNewObject) {
 	//      log("3");
+	if (m_objectModels[obsLabel]->type == OBJECT_PLANE ||
+	    //FIXME
+	    obsLabel == "table") {
+	  // Flatten pose for plane objects
+	  if (pose.rot.m00 == 0.0 && pose.rot.m10 == 0.0) {
+	    setIdentity(pose.rot);
+	  }
+	  else {
+	    fromRotZ(pose.rot, atan2(pose.rot.m01, pose.rot.m00));
+	  }
+	}
+
+
 	m_objects[obsLabel]->pose = pose;
 	m_lastObjectPoseTimes[obsLabel] = observedObject->time;
 
@@ -1470,6 +1457,13 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     //Fill it
     string supportObjectLabel = request->objects.back();
     spatial::Object *supportObject;
+
+    //Look for the base object in the requested hierarchy.
+    //If it doesn't exist, create a model for it and generate a 
+    //sample cloud based on random orientation, position = origin
+
+    request->outCloud->isBaseObjectKnown = true;
+
     if (m_planeObjectModels.find(supportObjectLabel) != m_planeObjectModels.end()) {
       supportObject = &m_planeObjectModels[supportObjectLabel];
       for (map<string, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); it != m_planeObjects.end(); it++) {
@@ -1482,16 +1476,22 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     }
     else {
       // For now, assume each label represents a unique object
+
+      // Check if the object model is known (with a known pose).
+      // Otherwise, generate a model and have its poses randomly sampled
       if (m_objects.find(supportObjectLabel) == m_objects.end()) {
-	// The pose of this object is not known. Cannot compute onness
-	// for this hierarchy.
-	log("Error! Support object was unknown; can't compute PDF for hierarchy!");
-	overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
-	return;
+	// The pose of this object is not known.
+	log("Support object was unknown; computing distribution with object in origin");
+
+	request->outCloud->isBaseObjectKnown = false;
+	supportObject = generateNewObjectModel(supportObjectLabel);
       }
-      supportObject = m_objectModels[supportObjectLabel];
+      else {
+	// Pose is known
+	supportObject = m_objectModels[supportObjectLabel];
+      }
     }
-    objectChain.push_back(supportObject);
+//    objectChain.push_back(supportObject);
 
     FrontierInterface::RelationSeq::iterator rit =
       request->relationTypes.begin();
@@ -1499,6 +1499,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	it != request->objects.end(); it++, rit++) {
       if (m_planeObjectModels.find(*it) != m_planeObjectModels.end()) {
 	log("Can't compute ON for table on sth else!");
+	if (request->outCloud->isBaseObjectKnown) delete supportObject;
 	return;
       }
       else {
@@ -1525,13 +1526,9 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       }
     }
 
-    vector<Matrix33> supportObjectOrientations;
-    supportObjectOrientations.push_back(supportObject->pose.rot);
-
     SampleCloud cloud;
     m_sampler.
       sampleBinaryRelationSystematically(relations, objectChain,
-	  supportObjectOrientations,
 	  request->objects, request->cellSize, cloud);
 
     cloud.compact();
@@ -1545,11 +1542,13 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	request->outCloud->total);
 
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
+    if (request->outCloud->isBaseObjectKnown) delete supportObject;
   }
 
   catch (DoesNotExistOnWMException) {
     log("Error! Prior request disappeared from WM!");
   }
+
 }
 
   void 

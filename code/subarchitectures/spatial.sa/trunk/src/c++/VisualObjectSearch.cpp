@@ -246,6 +246,11 @@ namespace spatial
        new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
        &VisualObjectSearch::owtRecognizer3DCommand));
      */
+       addChangeFilter(createGlobalTypeFilter<
+       FrontierInterface::ObjectPriorRequest> (cdl::OVERWRITE),
+       new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
+       &VisualObjectSearch::owtWeightedPointCloud));
+
     addChangeFilter(createGlobalTypeFilter<
 	VisionData::VisualObject> (cdl::OVERWRITE),
 	new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
@@ -739,7 +744,7 @@ void
     try {
       log("got weighted PC");
       FrontierInterface::WeightedPointCloudPtr cloud =
-       getMemoryEntry<FrontierInterface::WeightedPointCloud>(objID.address);
+       getMemoryEntry<FrontierInterface::ObjectPriorRequest>(objID.address)->outCloud;
   
       m_sampler.kernelDensityEstimation3D(*m_map, cloud->center,
  	cloud->interval,
