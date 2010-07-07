@@ -1,8 +1,4 @@
-/*
- * AdvObjectSearch.hpp
- *
- *  Created on: Feb 15, 2010
- *      Author: aydemir
+/* * AdvObjectSearch.hpp * *  Created on: Feb 15, 2010 *      Author: aydemir
  */
 
 #ifndef VISUALOBJECTSEARCH_HPP_
@@ -90,6 +86,8 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void AskForDistribution();
       int GetViewConeSums(std::vector <SensingAction > samplepoints);
       void LookforObjectWithStrategy(std::string name, SearchMode mode);
+      void UnsuccessfulDetection(SensingAction viewcone);
+      void InitializePDF();
       ObjectPairRelation GetSecondaryObject(std::string name);
       SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* m_map;
       SpatialGridMap::LaserRayTracer<SpatialGridMap::GridMapData>* m_tracer;
@@ -159,7 +157,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
 
       bool m_savemapmode;
       bool m_maploaded;
-
+      std::string m_curemapfile;
       DensitySampler m_sampler;
   };
 };
