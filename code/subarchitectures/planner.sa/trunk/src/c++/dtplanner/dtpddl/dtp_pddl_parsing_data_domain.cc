@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -177,7 +180,48 @@ Planning::Types Domain_Data::find__derived_Predicate_Header(const Planning::Vari
     return Types();
 }
 
+void Domain_Data::report__state_function_domain()
+{
+    state_function_domain_specification = typed_Arguments;
+    typed_Arguments = Typed_Arguments();
+}
 
+void Domain_Data::report__perceptual_function_domain()
+{
+    perceptual_function_domain_specification = typed_Arguments;
+    typed_Arguments = Typed_Arguments();
+}
+
+void Domain_Data::add__state_function()
+{
+    assert(types_of_types.size());
+    NEW_object_referenced_WRAPPED(Planning::State_Function_Description
+                                  , state_function
+                                  , state_Function_Name
+                                  , state_function_domain_specification
+                                  , types_of_types);
+    
+    state_Function_Descriptions.insert(state_function);
+
+    state_function_domain_specification = Typed_Arguments();
+    types_of_types = Types();
+}
+
+void Domain_Data::add__perceptual_function()
+{
+    assert(types_of_types.size());
+    
+    NEW_object_referenced_WRAPPED(Planning::Perceptual_Function_Description
+                                  , perceptual_function 
+                                  , perceptual_Function_Name
+                                  , perceptual_function_domain_specification
+                                  , types_of_types);
+    
+    perceptual_Function_Descriptions.insert(perceptual_function);
+
+    perceptual_function_domain_specification = Typed_Arguments();
+    types_of_types = Types();
+}
 
 void Domain_Data::add__percept()
 {

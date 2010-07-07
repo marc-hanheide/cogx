@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -109,6 +112,25 @@ std::ostream& std::operator<<(std::ostream& o, const Planning::Parsing::Domain_D
     }
     o<<" ) "<<endl;    
 
+    o<<"(:s-functions "<<endl;
+    for(auto function = data.state_Function_Descriptions.begin()
+            ; function != data.state_Function_Descriptions.end()
+            ; function++){
+
+        o<<*function<<std::endl;
+    }
+    o<<" ) "<<endl;    
+
+    o<<"(:o-functions "<<endl;
+    for(auto function = data.perceptual_Function_Descriptions.begin()
+            ; function != data.perceptual_Function_Descriptions.end()
+            ; function++){
+
+        o<<*function<<std::endl;
+    }
+    o<<" ) "<<endl;
+    
+    
     /* Print descriptions for each derived predicate that we generated. */
     for(auto derived_Predicate = data.derived_Predicates.begin()
             ; derived_Predicate != data.derived_Predicates.end()

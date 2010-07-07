@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -47,8 +50,17 @@ namespace Planning
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Observation_Precondition__Action, add__observation_precondition);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Observation_Effect__Action, add__observation_effect);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Completed_Observation__Action, add__observation);
+        
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Percept_Description__Action, add__percept);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Predicate_Description__Action, add__predicate);
+        
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(State_Function_Domainx_Description__Action
+                                                    , report__state_function_domain);
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Perceptual_Function_Domainx_Description__Action
+                                                    , report__perceptual_function_domain);
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(State_Function_Description__Action, add__state_function);
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Perceptual_Function_Description__Action, add__perceptual_function);
+        
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Derived_Predicate_Header__Action, add__derived_predicate_header);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Complete_Derived_Predicate__Action, commit__derived_predicate);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Action_Header__Action, add__action_header);
@@ -80,7 +92,8 @@ namespace Planning
         domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Predicate_Name__Action, report__predicate_name);
         domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Action_Name__Action, report__action_name);
         domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Percept_Name__Action, report__percept_name);
-        domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Function_Name__Action, report__function_name);
+        domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(State_Function_Name__Action, report__state_function_name);
+        domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Perceptual_Function_Name__Action, report__perceptual_function_name);
         domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Variable_Argument__Action, add__variable_argument);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Argument__Action, commit__argument_types);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Dive__Action, report__dive);
@@ -90,7 +103,8 @@ namespace Planning
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Formula_Predicate__Action, report__formula_predicate);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Formula_Action__Action, report__formula_action);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Formula_Percept__Action , report__formula_percept);
-        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Formula_Function__Action , report__formula_function);
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Formula_State_Function__Action , report__formula_state_function);
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Formula_Perceptual_Function__Action , report__formula_perceptual_function);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Not__Action, report__not_formula);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(And__Action, report__and_formula);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Or__Action, report__or_formula);
@@ -100,10 +114,16 @@ namespace Planning
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Forall__Action, report__forall_formula);
         domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Formula__Action, report__formula);
         domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Constant_Argument__Action, add__constant_argument);
-        domain__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Conditional_Effect__Action);/* TODO */
+
+        
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Conditional_Effect__Action, report__conditional_effect_formula);
+//         domain__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Conditional_Effect__Action);/* TODO */
         domain__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Forall_Effect__Action);/* TODO */
-        domain__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Decrease__Action);/* TODO */
-        domain__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Assign__Action);/* TODO */
+
+        
+        
+//         domain__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Decrease__Action);/* TODO */
+//         domain__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Assign__Action);/* TODO */
         domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Number__Action, add__number);
         domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Type__Action, add__type);
         domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Type__Action, add__type_of_type);
@@ -116,10 +136,19 @@ namespace Planning
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Commit_Constants__Action, commit__constants);
         
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Probabilistic__Action, report__probabilistic_formula);
-        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Increase__Action, report__increase_formula);
-        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Number_In_Effect__Action, report__number_in_effect);
+        
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Number_In_Formula__Action, report__number_in_formula);
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Object_In_Formula__Action, report__object_in_formula);
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Constant_In_Formula__Action, report__constant_in_formula);
+        
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(GOT_REAL_NUMBER__Action, report__parsing_real_number);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(GOT_INTEGER_NUMBER__Action, report__parsing_integer_number);
+
+        
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Increase__Action, report__increase_formula);
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Decrease__Action, report__decrease_formula);
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Assign__Action, report__assign_formula);
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Equality__Action, report__equality_formula);
         
     }
 }

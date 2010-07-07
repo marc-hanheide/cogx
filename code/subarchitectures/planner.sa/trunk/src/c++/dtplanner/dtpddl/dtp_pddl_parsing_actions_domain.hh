@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -46,8 +49,16 @@ namespace Planning
         DECLARATION__PEGTL_ACTION(Observation_Precondition__Action);
         DECLARATION__PEGTL_ACTION(Observation_Effect__Action);
         DECLARATION__PEGTL_ACTION(Completed_Observation__Action);
+        
         DECLARATION__PEGTL_ACTION(Percept_Description__Action);
         DECLARATION__PEGTL_ACTION(Predicate_Description__Action);
+
+        
+        DECLARATION__PEGTL_ACTION(State_Function_Domainx_Description__Action);
+        DECLARATION__PEGTL_ACTION(Perceptual_Function_Domainx_Description__Action);
+        DECLARATION__PEGTL_ACTION(State_Function_Description__Action);
+        DECLARATION__PEGTL_ACTION(Perceptual_Function_Description__Action);
+        
         DECLARATION__PEGTL_ACTION(Derived_Predicate_Header__Action);
         DECLARATION__PEGTL_ACTION(Complete_Derived_Predicate__Action);
         DECLARATION__PEGTL_ACTION(Action_Header__Action);
@@ -61,6 +72,7 @@ namespace Planning
         DECLARATION__PEGTL_ACTION(Add_Types__Action);
         DECLARATION__PEGTL_ACTION(Function_Type_Type__Action);
         DECLARATION__PEGTL_ACTION(Requirement__Action);
+
     }
 }
 

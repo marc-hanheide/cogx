@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -58,16 +61,40 @@ namespace Planning
         
         
         struct s_Action : stand_alone_string< a, c, t, i, o, n > {};
-        struct s_Derived : stand_alone_string<d, e, r, i, v, e, d >{}; // *** DOMAIN ELEMENT ***
+        struct s_Derived : stand_alone_string< d, e, r, i, v, e, d >{}; // *** DOMAIN ELEMENT ***
         struct s_Observe : stand_alone_string< o,b,s,e,r,v,e > {};
         
 
         
-        struct s_Percepts: stand_alone_string< p, e, r, c, e, p, t, s>{}; // *** POMDP DOMAIN ELEMENT ***
-        struct s_Functions : stand_alone_string<f, u, n, c, t, i, o, n, s>{}; // *** DOMAIN ELEMENT ***
-        struct s_Predicates : stand_alone_string<p, r, e, d, i, c, a, t, e, s>{}; // *** DOMAIN ELEMENT ***
-        struct s_Types : stand_alone_string<t, y, p, e, s>{}; // *** DOMAIN ELEMENT ***
-        struct s_Requirements : stand_alone_string<r, e, q, u, i, r, e, m, e, n, t, s>{}; // *** DOMAIN ELEMENT ***
+        struct s_Opredicates:
+            stand_alone_things< string<o>
+                                , one<'-'>
+                                , string<p, r, e, d, i, c, a, t, e, s> > {}; // *** POMDP DOMAIN ELEMENT ***
+        struct s_Spredicates:
+            stand_alone_things< string<s>
+                                , one<'-'>
+                                , string<p, r, e, d, i, c, a, t, e, s> > {}; // *** POMDP DOMAIN ELEMENT ***
+        
+        struct s_Ofunctions:
+            stand_alone_things< string<o>
+                                , one<'-'>
+                                , string<f, u, n, c, t, i, o, n, s> > {}; // *** POMDP DOMAIN ELEMENT ***
+        struct s_Sfunctions:
+            stand_alone_things< string<s>
+                                , one<'-'>
+                                , string<f, u, n, c, t, i, o, n, s> > {}; // *** POMDP DOMAIN ELEMENT ***
+        struct s_Percepts: stand_alone_string< p, e, r, c, e, p, t, s> {}; // *** POMDP DOMAIN ELEMENT ***
+        struct s_Functions : stand_alone_string<f, u, n, c, t, i, o, n, s> {}; // *** DOMAIN ELEMENT ***
+        struct s_Predicates : stand_alone_string<p, r, e, d, i, c, a, t, e, s> {}; // *** DOMAIN ELEMENT ***
+
+        struct Predicates_Prefix : sor<s_Predicates, s_Spredicates> {};
+        struct State_Functions_Prefix : sor<s_Functions, s_Sfunctions> {};
+        struct Perceptual_Functions_Prefix : s_Ofunctions {};
+        struct Percepts_Prefix : sor<s_Percepts, s_Opredicates> {};
+        
+        
+        struct s_Types : stand_alone_string<t, y, p, e, s> {}; // *** DOMAIN ELEMENT ***
+        struct s_Requirements : stand_alone_string<r, e, q, u, i, r, e, m, e, n, t, s> {}; // *** DOMAIN ELEMENT ***
 
 
         struct s_Number : ifapply< stand_alone_string<n, u, m, b, e, r>, Function_Type_Number__Action>{};
@@ -127,22 +154,6 @@ namespace Planning
          *
          ******************************************************************************************************************/
         
-//         struct Type_Of_Argument : seq< one<'-'>
-//                                        , pad<sor<Either_Type
-//                                                  , /*SIMULATING EITHER_TYPE*/ ifapply<Type_Name, Type_Of_Type__Action>>
-//                                              , space> > {};
-    
-        
-//         struct Argument : seq< plus<sor<pad<Variable, space>
-//                                         , pad<Constant_Argument, space> > >,
-//                                opt<ifapply<Type_Of_Argument
-//                                            ,Type_Of_Argument__Action>>>{};
-        
-//         struct Argument__VARIABLE_ONLY
-//             : seq< plus < pad  < Variable, space> >,
-//                    opt<ifapply<Type_Of_Argument
-//                                ,Type_Of_Argument__Action> > >{};
-        
         struct No_Parentheses_Predicate_Description : ifapply< seq<Predicate_Name
                                                                    , star<Argument> >
                                                                , Predicate_Description__Action> {};
@@ -151,7 +162,7 @@ namespace Planning
                                            , No_Parentheses_Predicate_Description
                                            , Close> {};
 
-        struct Predicates_Description : seq<s_Predicates, star<Predicate_Description> >/*_seq*/ {};
+        struct Predicates_Description : seq<Predicates_Prefix, star<Predicate_Description> >/*_seq*/ {};
         
         /******************************************************************************************************************
          * High level PDDL domain description elements.
@@ -168,7 +179,51 @@ namespace Planning
                                            , No_Parentheses_Percept_Description
                                            , Close> {};
 
-        struct Percepts_Description : seq<s_Percepts, star<Percept_Description> >/*_seq*/ {};
+        struct Percepts_Description : seq<Percepts_Prefix, star<Percept_Description> >/*_seq*/ {};
+
+        
+        
+        /******************************************************************************************************************
+         * High level PDDL domain description elements.
+         *
+         * - State functions (description of)
+         *
+         ******************************************************************************************************************/
+        
+        struct No_Parentheses_State_Function_Description : ifapply< seq<State_Function_Name
+                                                                 , star<Argument> >
+                                                             , State_Function_Domainx_Description__Action> {};
+        struct State_Function_Description : seq< Open
+                                           , No_Parentheses_State_Function_Description
+                                           , Close
+                                           , Type_Of_Argument
+                                           , ifapply<success, State_Function_Description__Action> > {};
+        
+        struct State_Functions_Description : seq<State_Functions_Prefix, star<State_Function_Description> >/*_seq*/ {};
+        
+        
+        /******************************************************************************************************************
+         * High level PDDL domain description elements.
+         *
+         * - Perceptual functions (description of)
+         *
+         ******************************************************************************************************************/
+
+        struct No_Parentheses_Perceptual_Function_Description
+            : ifapply< seq<Perceptual_Function_Name
+                           , star<Argument> >
+                       , Perceptual_Function_Domainx_Description__Action> {};
+        
+        struct Perceptual_Function_Description :
+            seq< Open
+                 , No_Parentheses_Perceptual_Function_Description
+                 , Close
+                 , Type_Of_Argument
+                 , ifapply<success, Perceptual_Function_Description__Action> > {};
+        
+        struct Perceptual_Functions_Description :
+            seq<Perceptual_Functions_Prefix, star<Perceptual_Function_Description> >/*_seq*/ {};
+        
         
         /******************************************************************************************************************
          * High level PDDL domain description elements.
@@ -221,7 +276,7 @@ namespace Planning
 //                    , ifapply<Close, Emerge__Action> > {}; 
 
 //         struct Basic_Precondition_Subformulae : Precondition_Subformulae<Typeless_Predicate> {};
-        struct Execution_Subformulae : Precondition_Subformulae<Typeless_Action> {};
+        struct Execution_Subformulae : Precondition_Subformulae<Typeless_Action, success> {};
 
         /******************************************************************************************************************
          * High level PDDL domain description elements.
@@ -229,9 +284,8 @@ namespace Planning
          * - Effect Formulae
          *
          ******************************************************************************************************************/
-
         
-        struct Observational_Effect_Subformulae : Effect_Subformulae<Typeless_Percept> {};
+        struct Observational_Effect_Subformulae : Effect_Subformulae<Typeless_Percept, Typeless_Perceptual_Function> {};
 
         
         /******************************************************************************************************************
@@ -332,17 +386,18 @@ namespace Planning
          ******************************************************************************************************************/
 
 
-        struct PDDL_DOMAIN_Element : sor<Types_Description
-                                  , Requirements_Description
-                                  , Constants_Description //:constants
-                                  , Predicates_Description //:functions
-                                  , Percepts_Description //:percepts
-//                                   , Functions_Description //:functions
-//                                   , Perceptual_Functions_Description //:s-functions
-                                  , Derived_Predicate_Description //:derived
-                                  , Action_Description /* :action */
-                                  , Observation_Description /* :observe */
-                                  > {};
+        struct PDDL_DOMAIN_Element :
+            sor<Types_Description
+                , Requirements_Description
+                , Constants_Description //:constants
+                , Predicates_Description //:functions
+                , Percepts_Description //:percepts
+                , State_Functions_Description //:functions
+                , Perceptual_Functions_Description //:s-functions
+                , Derived_Predicate_Description //:derived
+                , Action_Description /* :action */
+                , Observation_Description /* :observe */
+                > {};
         
         struct PDDL_DOMAIN_Element_Noise : seq<Open
                                         , one<':'>, PDDL_DOMAIN_Element

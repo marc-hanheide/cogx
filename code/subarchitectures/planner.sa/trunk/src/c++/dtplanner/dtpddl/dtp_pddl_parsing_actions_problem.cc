@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -47,6 +50,9 @@ namespace Planning
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Starting_State__Action, report__starting_state);
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Objective_Formula__Action, report__objective_function);
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Goal_Formula__Action, report__goal_formula);
+        
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Start_Initial_State_Parsing__Action, report__enter_parsing_initial_state);
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Stop_Initial_State_Parsing__Action, report__exit_parsing_initial_state);
     }
 }
 
@@ -71,10 +77,10 @@ namespace Planning
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Commit_Constants__Action, commit__constants);
 
 
-        problem__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Function_Name__Action, report__function_name);
+        problem__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(State_Function_Name__Action, report__state_function_name);
 
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Skip_Next____Formula__Action____Action, report__skip_next____report__formula);
-        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Formula_Function__Action , report__formula_function);
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Formula_State_Function__Action , report__formula_state_function);
 //         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Variable_Cluster__Action, stack__typed_Arguments);
         problem__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Formula__Action, report__formula);
         problem__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Constant_Argument__Action, add__constant_argument);
@@ -93,53 +99,37 @@ namespace Planning
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Argument__Action, commit__argument_types);
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Probabilistic__Action, report__probabilistic_formula);
         
-        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Number_In_Effect__Action, report__number_in_effect);
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Number_In_Formula__Action, report__number_in_formula);
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Object_In_Formula__Action, report__object_in_formula);
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Constant_In_Formula__Action, report__constant_in_formula);
+        
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(GOT_REAL_NUMBER__Action, report__parsing_real_number);
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(GOT_INTEGER_NUMBER__Action, report__parsing_integer_number);
+
+
+        problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Increase__Action);
+        problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Decrease__Action);
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Assign__Action, report__assign_formula);
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Equality__Action, report__equality_formula);
+
+
         
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Predicate_Name__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Action_Name__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Percept_Name__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Function_Name__Action);
-// //         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Variable_Argument__Action);
-// //         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Argument__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Dive__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Emerge__Action);
+        problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Perceptual_Function_Name__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Empty_Formula__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Skip_Next____Formula__Action____Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Formula_Predicate__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Formula_Action__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Formula_Percept__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Formula_Function__Action);
+        problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Formula_Perceptual_Function__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Not__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(And__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Or__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(If__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Variable_Cluster__Action);
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Variable_Cluster__Action, stack__typed_Arguments);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Exists__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Forall__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Formula__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Constant_Argument__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Conditional_Effect__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Forall_Effect__Action);
-        problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Decrease__Action);
-        problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Assign__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Number__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Type__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Type__Action);
         
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Constant__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Constant__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Add_Constants__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Type__TO__Type_Of_Constant__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Commit_Constants__Action);
         
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Probabilistic__Action);
-        problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Increase__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Number_In_Effect__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(GOT_REAL_NUMBER__Action);
-//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(GOT_INTEGER_NUMBER__Action);
         
     }
 }

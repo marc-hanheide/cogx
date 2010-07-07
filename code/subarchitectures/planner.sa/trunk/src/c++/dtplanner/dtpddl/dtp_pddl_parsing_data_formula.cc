@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -31,14 +34,65 @@
 
 using namespace Planning::Parsing;
 
+
+void Formula_Data::report__enter_parsing_initial_state()
+{
+    parsing_initial_state = true;
+}
+
+void Formula_Data::report__exit_parsing_initial_state()
+{
+    parsing_initial_state = false;
+}
+
+
 Formula_Data::Formula_Data():
     formula_parsing_level(0),
     skip_next____report__formula(false),
-    last_number_parsed_was_double(false)
+    last_number_parsed_was_double(false),
+    parsing_initial_state(false)
 {
 }
 
-void Formula_Data::report__number_in_effect()
+void Formula_Data::report__constant_in_formula()
+{
+    report__dive();
+    
+    if(subformulae.find(formula_parsing_level) == subformulae.end()){
+        VERBOSER(111, "Preparing space to add constant at level ::"<<(formula_parsing_level)<<std::endl);
+        subformulae[formula_parsing_level] = Planning::Formula::Subformulae();
+        VERBOSER(111, ":: DONE ::"<<std::endl);
+    }
+    
+    assert(subformulae.find(formula_parsing_level) != subformulae.end());
+    assert(argument_List.size());
+    subformulae[formula_parsing_level].push_back(argument_List.back());
+    argument_List = Argument_List();
+    
+    report__emerge();
+}
+
+void Formula_Data::report__object_in_formula()
+{
+    report__dive();
+    
+    if(subformulae.find(formula_parsing_level) == subformulae.end()){
+        VERBOSER(111, "Preparing space to add variable at level ::"<<(formula_parsing_level)<<std::endl);
+        subformulae[formula_parsing_level] = Planning::Formula::Subformulae();
+        VERBOSER(111, ":: DONE ::"<<std::endl);
+    }
+    
+    assert(subformulae.find(formula_parsing_level) != subformulae.end());
+    assert(argument_List.size());
+    assert(argument_List.back().test_cast<Variable>());
+    subformulae[formula_parsing_level].push_back(argument_List.back());
+    variables.insert(argument_List.back().do_cast_and_copy<Planning::Variable>());
+    argument_List = Argument_List();
+    
+    report__emerge();
+}
+
+void Formula_Data::report__number_in_formula()
 {
     report__dive();
     
@@ -75,12 +129,41 @@ void Formula_Data::report__probabilistic_formula()
 
 void Formula_Data::report__increase_formula()
 {
-    
     formula_type.push(increase);
 
-    VERBOSER(111, "Got an (increase (... ) NUM) at stack element :: "
+    VERBOSER(2000, "Got an (increase (... ) NUM) at stack element :: "
              <<formula_type.size()<<std::endl);
 }
+
+void Formula_Data::report__decrease_formula()
+{
+    formula_type.push(decrease);
+
+    VERBOSER(2000, "Got an (decrease (... ) NUM) at stack element :: "
+             <<formula_type.size()<<std::endl);
+}
+
+void Formula_Data::report__assign_formula()
+{
+    formula_type.push(assign);
+
+    VERBOSER(2000, "Got an (assign (... ) NUM) at stack element :: "
+             <<formula_type.size()<<std::endl);
+}
+
+
+void  Formula_Data::report__equality_formula()
+{
+    if(parsing_initial_state){
+        report__assign_formula();
+    } else {
+        formula_type.push(equality_test);
+        
+        VERBOSER(2000, "Got an (= (... ) NUM) at stack element :: "
+                 <<formula_type.size()<<std::endl);
+    }
+}
+
 
 void Formula_Data::report__skip_next____report__formula()
 {
@@ -137,6 +220,11 @@ void Formula_Data::report__exists_formula()
 void Formula_Data::report__forall_formula()
 {
     formula_type.push(forall);
+}
+
+void Formula_Data::report__conditional_effect_formula()
+{
+    formula_type.push(conditional_effect);
 }
 
 CXX__deref__shared_ptr<basic_type>
@@ -345,16 +433,23 @@ void  Formula_Data::report__formula_percept()
         (percept_Name);
 }
 
-void  Formula_Data::report__formula_function()
+void  Formula_Data::report__formula_perceptual_function()
+{
+    report__formula_atomic_symbol
+        <Planning::Formula::Perceptual_Ground_Function
+        , Planning::Formula::Perceptual_Function
+        , Planning::Perceptual_Function_Name>
+        (perceptual_Function_Name);
+}
+
+void  Formula_Data::report__formula_state_function()
 {
     report__formula_atomic_symbol
         <Planning::Formula::State_Ground_Function
         , Planning::Formula::State_Function
-        , Planning::Function_Name>
-        (function_Name);
+        , Planning::State_Function_Name>
+        (state_Function_Name);
 }
-
-
 
 void  Formula_Data::report__formula_predicate()
 {
@@ -421,10 +516,8 @@ void Formula_Data::report__formula(const std::string& str)
         case disjunction:
         {
             VERBOSER(25, "disjunction");
-            QUERY_UNRECOVERABLE_ERROR
-                (subformulae.find(formula_parsing_level + 1) == subformulae.end(),
-                 "Parsing an expression that requires a subformula :: at level :: "<<formula_parsing_level<<" :: "
-                 <<str<<" :: I can't accept this!"<<std::endl);
+
+            check__exists_parsed_subformulae(formula_parsing_level + 1);
     
             NEW_object_referenced_WRAPPED_deref_POINTER
                 (Planning::Formula::Disjunction
@@ -437,10 +530,9 @@ void Formula_Data::report__formula(const std::string& str)
         case conjunction:
         {
             VERBOSER(25, "conjunction");
-            QUERY_UNRECOVERABLE_ERROR
-                (subformulae.find(formula_parsing_level + 1) == subformulae.end(),
-                 "Parsing an expression that requires a subformula :: at level :: "<<formula_parsing_level<<" :: "
-                 <<str<<" :: I can't accept this!"<<std::endl);
+
+            check__exists_parsed_subformulae(formula_parsing_level + 1);
+            
             
             NEW_object_referenced_WRAPPED_deref_POINTER
                 (Planning::Formula::Conjunction
@@ -453,10 +545,7 @@ void Formula_Data::report__formula(const std::string& str)
         case negation:
         {
             VERBOSER(25, "negation");
-            QUERY_UNRECOVERABLE_ERROR
-                (subformulae.find(formula_parsing_level + 1) == subformulae.end(),
-                 "Parsing an expression that requires a subformula :: at level :: "<<formula_parsing_level<<" :: "
-                 <<str<<" :: I can't accept this!"<<std::endl);
+            check__exists_parsed_subformulae(formula_parsing_level + 1);
             
             assert(subformulae[formula_parsing_level+1].size() == 1);
             NEW_object_referenced_WRAPPED_deref_POINTER
@@ -470,12 +559,8 @@ void Formula_Data::report__formula(const std::string& str)
         case material_implication:
         {
             VERBOSER(25, "material_implication");
-            QUERY_UNRECOVERABLE_ERROR
-                (subformulae.find(formula_parsing_level + 1) == subformulae.end(),
-                 "Parsing an expression that requires a subformula :: at level :: "<<formula_parsing_level<<" :: "
-                 <<str<<" :: I can't accept this!"<<std::endl);
-            
-            assert(subformulae[formula_parsing_level + 1].size() == 2);
+            check__exists_parsed_subformulae(formula_parsing_level + 1);
+            check__cardinality_constraint_on_subformulae_at_index(2, formula_parsing_level + 1);
             
             NEW_object_referenced_WRAPPED_deref_POINTER
                 (Planning::Formula::Negation
@@ -494,26 +579,9 @@ void Formula_Data::report__formula(const std::string& str)
         break;
         case increase:
         {
-            QUERY_UNRECOVERABLE_ERROR
-                (subformulae.find(formula_parsing_level + 1) == subformulae.end(),
-                 "Parsing the expression :: "<<str<<std::endl
-                 <<"That requires a subformula :: at level :: "<<formula_parsing_level<<" :: "
-                 <<str<<" :: I can't accept this!"<<std::endl);
-            /* BEGIN DEBUG */
-            if(subformulae[formula_parsing_level+1].size() != 2){
-                std::ostringstream oss;
-                for(auto f = subformulae[formula_parsing_level+1].begin()
-                        ; f != subformulae[formula_parsing_level+1].end()
-                        ; f++){
-                    oss<<*f;
-                }
-
-                std::string str = oss.str();
-                
-                UNRECOVERABLE_ERROR("Expecting 2 subformula for \"increase\" domain element\n"
-                                    <<"but got :: "<<subformulae[formula_parsing_level+1].size()<<std::endl
-                                    <<"These were :: "<<str<<std::endl);
-            }/* END DEBUG */
+            check__exists_parsed_subformulae(formula_parsing_level + 1);
+            check__cardinality_constraint_on_subformulae_at_index
+                (formula_parsing_level+1, 2);
             
             
             
@@ -530,6 +598,81 @@ void Formula_Data::report__formula(const std::string& str)
                  , evaluation_expression_RHS);
             
             subformulae[formula_parsing_level].push_back(tmp);
+        }
+        break;
+        case decrease:
+        {
+            check__exists_parsed_subformulae(formula_parsing_level + 1);
+            check__cardinality_constraint_on_subformulae_at_index
+                (formula_parsing_level+1, 2);
+            
+            auto subs = subformulae[formula_parsing_level+1].begin();
+            auto evaluation_expression_LHS = *subs;
+            subs++;
+            auto evaluation_expression_RHS = *subs;
+
+            
+            NEW_object_referenced_WRAPPED_deref_POINTER
+                (Planning::Formula::Decrease
+                 , tmp
+                 , evaluation_expression_LHS
+                 , evaluation_expression_RHS);
+            
+            subformulae[formula_parsing_level].push_back(tmp);
+        }
+        break;
+        case assign:
+        {
+            check__exists_parsed_subformulae(formula_parsing_level + 1);
+            check__cardinality_constraint_on_subformulae_at_index
+                (formula_parsing_level+1, 2);
+            
+            auto subs = subformulae[formula_parsing_level+1].begin();
+            auto evaluation_expression_LHS = *subs;
+            subs++;
+            auto evaluation_expression_RHS = *subs;
+
+            
+            NEW_object_referenced_WRAPPED_deref_POINTER
+                (Planning::Formula::Assign
+                 , tmp
+                 , evaluation_expression_LHS
+                 , evaluation_expression_RHS);
+            
+            subformulae[formula_parsing_level].push_back(tmp);
+        }
+        break;
+        case equality_test:
+        {
+            UNRECOVERABLE_ERROR("unimplemented.");
+        }
+        break;
+        case conditional_effect:
+        {
+            /* (when (boolean-condition/i.e., precondition)
+             * (effect-formula)). As with LAMA, this is to be later
+             * treated as an action that is necessarily triggered by
+             * the parent effect/action.*/
+
+            
+            check__exists_parsed_subformulae(formula_parsing_level + 1);
+            check__cardinality_constraint_on_subformulae_at_index
+                (formula_parsing_level+1, 2);
+
+
+            auto components = subformulae[formula_parsing_level+1].begin();
+            auto precondition_LHS = *components;
+            components++;
+            auto effect_RHS = *components;            
+            
+            NEW_object_referenced_WRAPPED_deref_POINTER
+                (Planning::Formula::Conditional_Effect
+                 , tmp
+                 , precondition_LHS
+                 , effect_RHS);
+            
+            subformulae[formula_parsing_level].push_back(tmp);
+            
         }
         break;
         case probabilistic_effect:
@@ -633,6 +776,11 @@ void Formula_Data::add__constant_argument(const std::string& str)
 }
 
 
+void Formula_Data::report__perceptual_function_name(const std::string& str)
+{
+    NEW_object_referenced_WRAPPED(Planning::Perceptual_Function_Name, tmp, str);
+    perceptual_Function_Name = tmp;
+}
 
 void Formula_Data::report__percept_name(const std::string& str)
 {
@@ -640,10 +788,10 @@ void Formula_Data::report__percept_name(const std::string& str)
     percept_Name = tmp;
 }
 
-void Formula_Data::report__function_name(const std::string& str)
+void Formula_Data::report__state_function_name(const std::string& str)
 {
-    NEW_object_referenced_WRAPPED(Planning::Function_Name, tmp, str);
-    function_Name = tmp;
+    NEW_object_referenced_WRAPPED(Planning::State_Function_Name, tmp, str);
+    state_Function_Name = tmp;
 }
 
 
@@ -660,3 +808,38 @@ void Formula_Data::stack__typed_Arguments()
     typed_Arguments = Typed_Arguments();
 }
 
+bool Formula_Data::check__exists_parsed_subformulae(int index) const
+{
+    QUERY_UNRECOVERABLE_ERROR
+        (subformulae.find(index) == subformulae.end(),
+         "Parsing an expression that requires a subformula :: "
+         <<"at level :: "<<formula_parsing_level<<std::endl);
+    
+    return subformulae.find(index) != subformulae.end();
+}
+
+bool Formula_Data::check__cardinality_constraint_on_subformulae_at_index
+(int count, int index) const
+{
+    check__exists_parsed_subformulae(index);
+    
+    if(subformulae.find(index)->second.size() != count){
+        std::ostringstream oss;
+        for(auto f = subformulae.find(formula_parsing_level+1)->second.begin()
+                ; f != subformulae.find(formula_parsing_level+1)->second.end()
+                ; f++){
+            oss<<*f;
+        }
+        
+        std::string str = oss.str();
+        
+        UNRECOVERABLE_ERROR("Expecting :: "<<count
+                            <<" subformula for domain element\n"
+                            <<"but got :: "<<subformulae.find(formula_parsing_level+1)->second.size()<<std::endl
+                            <<"These were :: "<<str<<std::endl);
+        
+        return false;
+    }/* END DEBUG */
+    
+    return true;
+}

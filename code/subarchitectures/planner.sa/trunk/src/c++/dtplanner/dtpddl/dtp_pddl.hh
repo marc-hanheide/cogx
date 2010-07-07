@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ * 
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -47,6 +50,8 @@ namespace Planning
         struct Open : pad< one<'('>, space >{};
         
         struct Close : pad< one<')'>, space >{};
+        
+        struct Equal : pad< one<'='>, space >{};
 
         
         struct Optional_Open : pad< sor<one<'('>, success>, space >{};
@@ -81,6 +86,9 @@ namespace Planning
 //         struct stand_alone_string : ifthen<string<Chars...>, not_at<pddl_item_completion>>{};
         template<int... Chars >
         struct stand_alone_string : seq<string<Chars...>, at<pddl_item_completion> >{};
+        
+        template<typename...  Things>
+        struct stand_alone_things : seq<Things..., at<pddl_item_completion> >{};
         
         struct s_Domain : stand_alone_string<d, o, m, a, i, n> {};
         
@@ -140,14 +148,17 @@ namespace Planning
         
         struct Predicate_Name : ifapply<Basic_Alphanumeric , Predicate_Name__Action>{};
         
-        struct Function_Name : ifapply<Basic_Alphanumeric , Function_Name__Action>{};
+        struct State_Function_Name : ifapply<Basic_Alphanumeric , State_Function_Name__Action>{};
 
         /* (see  \struct{Types_List} and \struct{Types_Of_Types_List} ) */
         struct Type_Name : Basic_Alphanumeric {};
 
         struct Action_Name : ifapply<Basic_Alphanumeric , Action_Name__Action>{};
 
+        
         struct Percept_Name : ifapply<Basic_Alphanumeric , Percept_Name__Action>{};
+        
+        struct Perceptual_Function_Name : ifapply<Basic_Alphanumeric , Perceptual_Function_Name__Action>{};
         
 
         struct Constant_Name : ifapply<Basic_Alphanumeric, Constant__Action>{};
@@ -216,7 +227,7 @@ namespace Planning
         struct Argument : seq< plus<sor<pad<Variable, space>
                                         , pad<Constant_Argument, space> > >,
                                opt<ifapply<Type_Of_Argument
-                                           ,Type_Of_Argument__Action>>>{};
+                                           , Type_Of_Argument__Action>>>{};
 
         
         struct Argument__VARIABLE_ONLY
@@ -262,8 +273,8 @@ namespace Planning
         struct Typeless_Predicate : ifapply<seq<Predicate_Name, star<Argument> >, Formula_Predicate__Action> {};
         struct Typeless_Percept : ifapply<seq<Percept_Name, star<Argument> >, Formula_Percept__Action> {};
         struct Typeless_Action : ifapply<seq<Action_Name, star<Argument> >, Formula_Action__Action> {};
-        struct Typeless_Function : ifapply<seq<Function_Name, star<Argument> >, Formula_Function__Action> {};
-
+        struct Typeless_Function : ifapply<seq<State_Function_Name, star<Argument> >, Formula_State_Function__Action> {};
+        struct Typeless_Perceptual_Function : ifapply<seq<Perceptual_Function_Name, star<Argument> >, Formula_Perceptual_Function__Action> {};
 
         /* TODO FIX HERE -- Bollocks, because there is no prefix to
          * distinguish predicates from functions. This has to be
@@ -277,34 +288,57 @@ namespace Planning
          * - Precondition Formulae
          *
          ******************************************************************************************************************/
-        
-        template<typename ATOMIC_SYMBOL>
-        struct Precondition_Operator : sor<ifapply<s_And, And__Action>,
-                              ifapply<s_Or, Or__Action>,
-                              ifapply<s_Not, Not__Action>,
-                              ifapply<s_If, If__Action>,
-                              ifapply<s_Forall, Forall__Action>,
-                              ifapply<s_Exists, Exists__Action>,
-                              
-                              /*....................................*/
-                              /*These arguments have to be constant.*/
-                              /*....................................*/
-                              ifapply<ifapply<plus<Argument__VARIABLE_ONLY>
-                                              , Skip_Next____Formula__Action____Action>
-                                      , Variable_Cluster__Action>,
-                              /*....................................*/
-                              
-                              ifapply<ATOMIC_SYMBOL, Skip_Next____Formula__Action____Action>,
-                              ifapply<success, Empty_Formula__Action> /* Empty formula, means no action precondition. */> {};
 
-        template<typename ATOMIC_SYMBOL>
+        struct Subformulae_Without_Parenthesis
+            : sor< ifapply<pad<Number, space>, Number_In_Formula__Action>
+                   , ifapply<Variable, Object_In_Formula__Action>
+                   , ifapply<Constant_Argument, Constant_In_Formula__Action> >{};
+        
+        template<typename ATOMIC_FUNCTION_SYMBOL>
+        struct Equality_Term : sor< Subformulae_Without_Parenthesis
+                                    , seq< ifapply<Open, Dive__Action>
+                                          , ATOMIC_FUNCTION_SYMBOL
+                                          , ifapply<Close, Dive__Action>>
+                                    >{};
+        
+        template<typename ATOMIC_FUNCTION_SYMBOL>
+        struct Equality_Test : seq< ifapply<one<'='>, Equality__Action>
+                                    , Equality_Term< ATOMIC_FUNCTION_SYMBOL>
+                                    , Equality_Term< ATOMIC_FUNCTION_SYMBOL> > {};
+        
+        template<typename ATOMIC_PREDICATE_SYMBOL, typename ATOMIC_FUNCTION_SYMBOL>
+        struct Precondition_Operator :
+            sor< ifapply<s_And, And__Action>
+                 , ifapply<s_Or, Or__Action>
+                 , ifapply<s_Not, Not__Action>
+                 , ifapply<s_If, If__Action>
+                 , ifapply<s_Forall, Forall__Action>
+                 , ifapply<s_Exists, Exists__Action>
+            
+                 , Equality_Test<ATOMIC_FUNCTION_SYMBOL>
+            /*....................................*/
+            /*These arguments have to be constant.*/
+            /*....................................*/
+                 , ifapply<ifapply<plus<Argument__VARIABLE_ONLY>
+                                   , Skip_Next____Formula__Action____Action>
+                           , Variable_Cluster__Action>
+            /*....................................*/
+                
+                 , ifapply<ATOMIC_PREDICATE_SYMBOL, Skip_Next____Formula__Action____Action>
+                 , ifapply<success, Empty_Formula__Action> /* Empty formula, means no action precondition. */> {};
+        
+        template<typename ATOMIC_PREDICATE_SYMBOL, typename ATOMIC_FUNCTION_SYMBOL>
         struct Precondition_Subformulae
             : seq< ifapply<Open, Dive__Action>
-                   , Precondition_Operator<ATOMIC_SYMBOL>
-                   , ifapply< star<Precondition_Subformulae<ATOMIC_SYMBOL>>,  Formula__Action>
+                   , Precondition_Operator<ATOMIC_PREDICATE_SYMBOL, ATOMIC_FUNCTION_SYMBOL>
+                   , ifapply< star<Precondition_Subformulae<ATOMIC_PREDICATE_SYMBOL
+                                                            ,  ATOMIC_FUNCTION_SYMBOL> >
+                              ,  Formula__Action>
                    , ifapply<Close, Emerge__Action> > {}; 
 
-        struct Basic_Precondition_Subformulae : Precondition_Subformulae<Typeless_Predicate> {};
+        struct Basic_Precondition_Subformulae
+            : Precondition_Subformulae<Typeless_Predicate
+                                       , Typeless_Function> {};
         
 
         /******************************************************************************************************************
@@ -314,50 +348,70 @@ namespace Planning
          *
          ******************************************************************************************************************/
 
-        template<typename ATOMIC_SYMBOL>
+        template<typename ATOMIC_PREDICATE_SYMBOL, typename ATOMIC_FUNCTION_SYMBOL>
         struct Effect_Subformulae;
 
-        template<typename ATOMIC_SYMBOL>
+        template<typename ASSIGNMENT_TYPE, typename ASSIGNMENT_ACTION, typename ATOMIC_FUNCTION_SYMBOL>
+        struct Numerical_Formula :
+            seq< ifapply<ASSIGNMENT_TYPE, ASSIGNMENT_ACTION>
+                 , ifapply<Open, Dive__Action>, Typeless_Function, ifapply<Close, Emerge__Action>
+                 , sor< Subformulae_Without_Parenthesis
+                       , seq< ifapply<Open, Dive__Action>
+                              , ATOMIC_FUNCTION_SYMBOL
+                              , ifapply<Close, Emerge__Action>
+                   >>
+                 >
+            
+        {};
+        
+        template<typename ATOMIC_PREDICATE_SYMBOL, typename ATOMIC_FUNCTION_SYMBOL>
         struct Effect_Operator : sor<
             ifapply<s_And, And__Action>
             , ifapply<s_Not, Not__Action>
-            , ifapply<s_Increase, Increase__Action>
-            , ifapply<s_Decrease, Decrease__Action>
-            , ifapply<s_Assign, Assign__Action>
+            , Numerical_Formula<s_Increase, Increase__Action, ATOMIC_FUNCTION_SYMBOL>
+            , Numerical_Formula<s_Decrease, Decrease__Action, ATOMIC_FUNCTION_SYMBOL>
+            , Numerical_Formula<s_Assign, Assign__Action, ATOMIC_FUNCTION_SYMBOL>
+
+            /* Equality testing can occur in an effect formula where we admit conditional effects.*/
+            , Equality_Test<ATOMIC_FUNCTION_SYMBOL>
+            
             , ifapply<s_Probabilistic, Probabilistic__Action>/* Derived action */
             , ifapply<s_Forall, Forall_Effect__Action>/* Derived action */
             , ifapply<s_Foreach, Forall_Effect__Action>/* Derived action */
-            , ifapply<s_When, Conditional_Effect__Action>/* Derived action */
+            , seq< ifapply<s_When, Conditional_Effect__Action>
+                   , Basic_Precondition_Subformulae
+                   , Effect_Subformulae<ATOMIC_PREDICATE_SYMBOL, ATOMIC_FUNCTION_SYMBOL> >/* Derived action */
             
-        /*....................................*/
-        /*These arguments have to be constant.*/
-        /*....................................*/
+        /*........................................*/
+        /*These arguments have to be non-constant.*/
+        /*........................................*/
             , ifapply<ifapply<plus<Argument__VARIABLE_ONLY>
                               , Skip_Next____Formula__Action____Action>
                       , Variable_Cluster__Action>
         /*....................................*/
             
-            , ifapply<ATOMIC_SYMBOL, Skip_Next____Formula__Action____Action> // e.g. Typeless_Predicate or Typeless_Percept
+            , ifapply<ATOMIC_PREDICATE_SYMBOL, Skip_Next____Formula__Action____Action> // e.g. Typeless_Predicate or Typeless_Percept
             , ifapply<success, Empty_Formula__Action> /* Empty formula, means no action effect. */
         > {};
 
         
-        template<typename ATOMIC_SYMBOL>
+        
+        template<typename ATOMIC_PREDICATE_SYMBOL, typename ATOMIC_FUNCTION_SYMBOL>
         struct Effect_Subformulae_With_Parenthesis
             : seq< ifapply<Open, Dive__Action>
-                   , Effect_Operator<ATOMIC_SYMBOL>
-                   , ifapply< star<Effect_Subformulae<ATOMIC_SYMBOL> >,  Formula__Action>
+                   , Effect_Operator<ATOMIC_PREDICATE_SYMBOL, ATOMIC_FUNCTION_SYMBOL>
+                   , ifapply< star<Effect_Subformulae<ATOMIC_PREDICATE_SYMBOL
+                                                      , ATOMIC_FUNCTION_SYMBOL> >
+                              ,  Formula__Action>
                    , ifapply<Close, Emerge__Action> > {};
         
-        struct Effect_Subformulae_Without_Parenthesis
-            : ifapply<pad<Number, space>, Number_In_Effect__Action> {};
         
-        template<typename ATOMIC_SYMBOL>
-        struct Effect_Subformulae : sor< Effect_Subformulae_Without_Parenthesis
-                                        , Effect_Subformulae_With_Parenthesis<ATOMIC_SYMBOL> >
+        template<typename ATOMIC_PREDICATE_SYMBOL, typename ATOMIC_FUNCTION_SYMBOL>
+        struct Effect_Subformulae : sor< Subformulae_Without_Parenthesis
+                                        , Effect_Subformulae_With_Parenthesis<ATOMIC_PREDICATE_SYMBOL, ATOMIC_FUNCTION_SYMBOL> >
         {};
             
-        struct State_Effect_Subformulae : Effect_Subformulae<Typeless_Predicate_or_Function> {};//Typeless_Predicate> {};
+        struct State_Effect_Subformulae : Effect_Subformulae<Typeless_Predicate, Typeless_Function> {};//Typeless_Predicate> {};
 
 
         //////////////////////////////////////////////////////////////////////////////
