@@ -62,51 +62,58 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 				throws CASTException {
 			WorkingMemoryChange newWmc = (WorkingMemoryChange) _wmc.clone();
 			Ice.ObjectImpl oldEntry = map.get(_wmc.address);
-			switch (_wmc.operation) {
-			case ADD:
-				try {
-					Ice.ObjectImpl m = component.getMemoryEntry(newWmc.address,
-							specClass);
-					map.put(_wmc.address, (Ice.ObjectImpl) m.clone());
-					if (oldEntry != null)
-						newWmc.operation = WorkingMemoryOperation.OVERWRITE;
-					if (updateHandler != null)
-						updateHandler.entryChanged(map, newWmc, map
-								.get(newWmc.address), oldEntry);
-				} catch (DoesNotExistOnWMException e) {
-					// it's fine... if it's been deleted already, we have
-					// nothing to do here
-				}
+			try {
+				component.lockEntry(_wmc.address,
+						WorkingMemoryPermissions.LOCKEDOD);
+				switch (_wmc.operation) {
+				case ADD:
+					try {
+						Ice.ObjectImpl m = component.getMemoryEntry(
+								newWmc.address, specClass);
+						map.put(_wmc.address, (Ice.ObjectImpl) m.clone());
+						if (oldEntry != null)
+							newWmc.operation = WorkingMemoryOperation.OVERWRITE;
+						if (updateHandler != null)
+							updateHandler.entryChanged(map, newWmc, map
+									.get(newWmc.address), oldEntry);
+					} catch (DoesNotExistOnWMException e) {
+						// it's fine... if it's been deleted already, we have
+						// nothing to do here
+					}
 
-				break;
-			case OVERWRITE:
-				try {
-					map.put(newWmc.address, (Ice.ObjectImpl) component
-							.getMemoryEntry(newWmc.address, specClass).clone());
-					if (updateHandler != null)
-						updateHandler.entryChanged(map, newWmc, map
-								.get(newWmc.address), oldEntry);
-				} catch (DoesNotExistOnWMException e) {
-					// remove it locally
-					component
-							.log("we expected to overwrite, but actually it has gone...");
-					newWmc.operation = WorkingMemoryOperation.DELETE;
+					break;
+				case OVERWRITE:
+					try {
+						map.put(newWmc.address, (Ice.ObjectImpl) component
+								.getMemoryEntry(newWmc.address, specClass)
+								.clone());
+						if (updateHandler != null)
+							updateHandler.entryChanged(map, newWmc, map
+									.get(newWmc.address), oldEntry);
+					} catch (DoesNotExistOnWMException e) {
+						// remove it locally
+						component
+								.log("we expected to overwrite, but actually it has gone...");
+						newWmc.operation = WorkingMemoryOperation.DELETE;
+						Ice.ObjectImpl o = map.remove(newWmc.address);
+						map.remove(newWmc.address);
+						if (o != null)
+							if (updateHandler != null)
+								updateHandler.entryChanged(map, newWmc, o,
+										oldEntry);
+					}
+
+					break;
+				case DELETE:
 					Ice.ObjectImpl o = map.remove(newWmc.address);
-					map.remove(newWmc.address);
 					if (o != null)
 						if (updateHandler != null)
-							updateHandler.entryChanged(map, newWmc, o,
-									oldEntry);
+							updateHandler.entryChanged(map, newWmc, o, o);
+
+					break;
 				}
-
-				break;
-			case DELETE:
-				Ice.ObjectImpl o = map.remove(newWmc.address);
-				if (o != null)
-					if (updateHandler != null)
-						updateHandler.entryChanged(map, newWmc, o, o);
-
-				break;
+			} finally {
+				component.unlockEntry(_wmc.address);
 			}
 		}
 
@@ -268,8 +275,7 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 		try {
 			if (map.containsKey(key)) {
 				try {
-					component
-							.lockEntry(key, WorkingMemoryPermissions.LOCKEDO);
+					component.lockEntry(key, WorkingMemoryPermissions.LOCKEDO);
 					component.overwriteWorkingMemory(key, value);
 				} catch (CASTException e) {
 					e.printStackTrace();
@@ -299,8 +305,9 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 	@Override
 	public void putAll(
 			Map<? extends WorkingMemoryAddress, ? extends Ice.ObjectImpl> m) {
-		for (Entry<? extends WorkingMemoryAddress, ? extends ObjectImpl> e : m.entrySet()) {
-			put(e.getKey(),e.getValue());
+		for (Entry<? extends WorkingMemoryAddress, ? extends ObjectImpl> e : m
+				.entrySet()) {
+			put(e.getKey(), e.getValue());
 		}
 	}
 

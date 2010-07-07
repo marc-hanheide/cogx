@@ -6,13 +6,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
 import cast.CASTException;
+import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
@@ -37,6 +40,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	private WorkingMemoryAddress addr = null;
 	private Class<? extends T> type;
 	private String subarchitectureID;
+	private boolean initialized = false;
 
 	/**
 	 * try to find an existing specialization of {@link WMMap} in a given
@@ -164,14 +168,11 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	 */
 	public boolean containsKey(Object key) {
 		try {
-			lock();
 			read();
 			return map.map.containsKey(key);
 		} catch (CASTException e) {
 			logger.error("error in PointerMap ", e);
 			return false;
-		} finally {
-			unlock();
 		}
 	}
 
@@ -182,14 +183,11 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	 */
 	public boolean containsValue(Object value) {
 		try {
-			lock();
 			read();
 			return map.map.containsValue(value);
 		} catch (CASTException e) {
 			logger.error("error in PointerMap ", e);
 			return false;
-		} finally {
-			unlock();
 		}
 	}
 
@@ -199,14 +197,11 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	 */
 	public Set<Entry<WorkingMemoryAddress, WorkingMemoryAddress>> entrySet() {
 		try {
-			lock();
 			read();
 			return map.map.entrySet();
 		} catch (CASTException e) {
 			logger.error("error in PointerMap ", e);
 			return null;
-		} finally {
-			unlock();
 		}
 	}
 
@@ -217,29 +212,32 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	 */
 	public boolean equals(Object o) {
 		try {
-			lock();
 			read();
 			return map.map.equals(o);
 		} catch (CASTException e) {
 			logger.error("error in PointerMap ", e);
 			return false;
-		} finally {
-			unlock();
 		}
 	}
 
-	public synchronized WorkingMemoryAddress waitFor(Object key)
-			throws InterruptedException {
+	public WorkingMemoryAddress waitFor(Object key) throws InterruptedException {
 		WorkingMemoryAddress result = null;
 		while (result == null) {
-			logger.info("content " + this.toString());
+			logger.debug("content " + this.toString());
 			result = get(key);
 			if (result == null) {
-				logger.info("have to wait for key " + key);
-				wait();
+				logger.debug("have to wait for key "
+						+ CASTUtils.toString((WorkingMemoryAddress) key));
+
+				synchronized (addr) {
+					addr.wait();
+				}
+
 			}
-			logger.info("got value for key " + key + ": " + result);
 		}
+		logger.debug("got value for key "
+				+ CASTUtils.toString((WorkingMemoryAddress) key) + ": "
+				+ CASTUtils.toString((WorkingMemoryAddress) result));
 		return result;
 	}
 
@@ -250,14 +248,11 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	 */
 	public WorkingMemoryAddress get(Object key) {
 		try {
-			lock();
 			read();
 			return map.map.get(key);
 		} catch (CASTException e) {
 			logger.error("error in PointerMap ", e);
 			return null;
-		} finally {
-			unlock();
 		}
 
 	}
@@ -268,14 +263,11 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	 */
 	public int hashCode() {
 		try {
-			lock();
 			read();
 			return map.map.hashCode();
 		} catch (CASTException e) {
 			logger.error("error in PointerMap ", e);
 			return 0;
-		} finally {
-			unlock();
 		}
 	}
 
@@ -285,14 +277,11 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	 */
 	public boolean isEmpty() {
 		try {
-			lock();
 			read();
 			return map.map.isEmpty();
 		} catch (CASTException e) {
 			logger.error("error in PointerMap ", e);
 			return true;
-		} finally {
-			unlock();
 		}
 	}
 
@@ -302,14 +291,11 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	 */
 	public Set<WorkingMemoryAddress> keySet() {
 		try {
-			lock();
 			read();
 			return map.map.keySet();
 		} catch (CASTException e) {
 			logger.error("error in PointerMap ", e);
 			return null;
-		} finally {
-			unlock();
 		}
 	}
 
@@ -379,14 +365,11 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	 */
 	public int size() {
 		try {
-			lock();
 			read();
 			return map.map.size();
 		} catch (CASTException e) {
 			logger.error("error in PointerMap ", e);
 			return 0;
-		} finally {
-			unlock();
 		}
 	}
 
@@ -396,37 +379,58 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	 */
 	public Collection<WorkingMemoryAddress> values() {
 		try {
-			lock();
 			read();
 			return map.map.values();
 		} catch (CASTException e) {
 			logger.error("error in PointerMap ", e);
 			return null;
-		} finally {
-			unlock();
 		}
 	}
 
-	private synchronized void lock() throws CASTException {
-		if (addr == null) {
-			String sa = subarchitectureID;
-			if (subarchitectureID == null)
-				sa = component.getSubarchitectureID();
-			addr = new WorkingMemoryAddress(component.newDataID(), sa);
-			component.addToWorkingMemory(addr, map);
+	private void init() throws CASTException {
+		if (!initialized) {
+			if (addr == null) {
+				String sa = subarchitectureID;
+				if (subarchitectureID == null)
+					sa = component.getSubarchitectureID();
+				addr = new WorkingMemoryAddress(component.newDataID(), sa);
+				component.addToWorkingMemory(addr, map);
+			}
+			component.addChangeFilter(ChangeFilterFactory.createAddressFilter(
+					addr, WorkingMemoryOperation.OVERWRITE),
+					new WorkingMemoryChangeReceiver() {
+
+						@Override
+						public void workingMemoryChanged(WorkingMemoryChange wmc) {
+							logger.debug("MAP changed, notify waiting threads");
+							synchronized (addr) {
+								addr.notifyAll();
+							}
+
+						}
+					});
+			initialized = true;
 		}
-		logger.info("lock " + addr.id);
-		component.lockEntry(addr, WorkingMemoryPermissions.LOCKEDODR);
 	}
 
-	private synchronized void read() throws CASTException {
+	private void lock() throws CASTException {
+		init();
+		logger.debug("wait for lock " + addr.id);
+		component.lockComponent();
+		component.lockEntry(addr, WorkingMemoryPermissions.LOCKEDOD);
+		logger.debug("have lock " + addr.id);
+	}
+
+	private void read() throws CASTException {
+		init();
 		map = component.getMemoryEntry(addr, type);
 	}
 
-	private synchronized void unlock() {
+	private void unlock() {
 		try {
-			logger.info("unlock " + addr.id + "size: " + map.map.size());
 			component.unlockEntry(addr);
+			component.unlockComponent();
+			logger.debug("unlocked " + addr.id + "size: " + map.map.size());
 		} catch (CASTException e) {
 			logger.error("error in unlocking PointerMap ", e);
 		}
@@ -435,7 +439,6 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	public String toString() {
 		String result = "";
 		try {
-			lock();
 			read();
 			for (Entry<WorkingMemoryAddress, WorkingMemoryAddress> e : map.map
 					.entrySet()) {
@@ -445,14 +448,11 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			return result;
 		} catch (CASTException e) {
 			return "*** invalid due to CASTException: " + e.message + " ***";
-		} finally {
-			unlock();
 		}
 	}
 
-	private synchronized void write() throws CASTException {
+	private void write() throws CASTException {
 		component.overwriteWorkingMemory(addr, map);
-		notifyAll();
 	}
 
 }
