@@ -175,7 +175,7 @@ the name of the file.
 The converters {\em luagl}, {\em html} and {\em htmlhead} send the unprocessed
 contents of the monitored file to the server.
 
-\subsection{A Passive Display Client}
+\subsection{A Passive Display Client}\label{section:PassiveClient} 
 
 The library provides two types of clients: a passive client that only sends
 data to the server and an active client that interacts with the server using UI
@@ -263,145 +263,6 @@ Here \code{getComponentID()} is used for the name of the object since the compon
 is displaying only one object. Any other string can be used instead.
 
 
-\section{Interaction with the display server}
-
-An active display client is needed when the component wants to present some UI
-elements with which it can be configured. The client receives notifications and
-requests related to these elements from the display server. To achieve this 
-a few methods must be overridden in a class derived from the CDisplayClient:
-
-\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
-   class VideoViewer : public ManagedComponent, public VideoClient
-   {
-   private:
-   #ifdef FEAT_VISUALIZATION
-     class CVvDisplayClient: public cogx::display::CDisplayClient
-     {
-       VideoViewer* pViewer;
-     public:
-       CVvDisplayClient() { pViewer = NULL; }
-       void setClientData(VideoViewer* pVideoViewer) { pViewer = pVideoViewer; }
-       void handleEvent(const Visualization::TEvent &event); /*override*/
-       std::string getControlState(const std::string& ctrlId); /*override*/
-     };
-     CVvDisplayClient m_display;
-   #endif
-   };
-\end{Verbatim}
-
-In the constructor of the VideoViewer we call \code{setClientData()} so that
-the new display client will be able to access the VideoViewer:
-
-\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
-  VideoViewer() : camId(0)
-  {
-#ifdef FEAT_VISUALIZATION
-    m_display.setClientData(this);
-#endif
-  }
-\end{Verbatim}
-
-The event path from the server to the client must be initialized. This is done
-right after the component connects to the client:
-
-\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
-   void VideoViewer::start()
-   {
-   #ifdef FEAT_VISUALIZATION
-     m_display.connectIceClient(*this);
-     m_display.installEventReceiver();
-   #endif
-   }
-\end{Verbatim}
-
-The flow of images from the VideoServer to the VideoViewer can be stopped at
-any time. To let the user control the flow the component has to add a UI
-element to the display server.  An appropriate type of UI element for this
-purpose is a chekcbox:
-
-\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
-   void VideoViewer::start()
-   {
-   #ifdef FEAT_VISUALIZATION
-     m_display.addCheckBox(getComponentID(), "toggle.viewer.running", "&Streaming");
-   #endif
-   }
-\end{Verbatim}
-
-The first parameter is the name of the {\em view} that will display the UI
-element when it is active, not the name of object. This means that the UI
-element will be displayed only when an object is displayed in its default view.
-When an object is displayed in another view, the UI element won't be available.
-\todo{TODO: user-defined views will be able to specify which UI elements to show}
-
-When the UI element is first displayed it has to obtain the current state from
-the component that created it. This is done with the method
-\code{getControlState()}:
-
-\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
-   std::string VideoViewer::CVvDisplayClient::getControlState(
-         const std::string& ctrlId)
-   {
-     if (ctrlId == "toggle.viewer.running") {
-       return pViewer->receiving ? "1" : "0";
-     }
-     return "";
-   }
-\end{Verbatim}
-
-The method \code{handleGuiEvent()} will be called every time the UI element
-emits a known event. For the chekcbox element we need to respond to the
-\code{evCheckBoxChange} event:
-
-\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
-   #ifdef FEAT_VISUALIZATION
-   void VideoViewer::CVvDisplayClient::handleGuiEvent(
-         const Visualization::TEvent &event)
-   {
-     if (event.type == Visualization::evCheckBoxChange) {
-       if (event.sourceId == "toggle.viewer.running") {
-         bool newrcv = (event.data != "0");
-         if (newrcv != receiving) {
-           if(receiving) {
-             videoServer->stopReceiveImages(getComponentID());
-           }
-           else {
-             videoServer->startReceiveImages(getComponentID(), camIds, 0, 0);
-           }
-           receiving = !receiving;
-         }
-       }
-     }
-   }
-   #endif
-\end{Verbatim}
-
-Note that the data for UI elements passed between the client and the server is
-serialized into strings. The checkbox element knows only 2 values: \code{"0"}
-and everything else.
-\todo{TODO: Add more element types, define values}
-
-A UI element may be displayed in multiple views. When a UI element is first
-displayed it must be put in a state that reflects the current state of the
-component.  Since a UI element may be created at any time it wouldn't be enough
-to set the initial state of the element at creation time. Instead, we define
-the \code{getControlState()} callback function:
-
-\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
-   #ifdef FEAT_VISUALIZATION
-   std::string VideoViewer::getControlState(const std::string& ctrlId)
-   {
-     if (ctrlId == "toggle.viewer.running") {
-       return receiving ? "2" : "0";
-     }
-     return "";
-   }
-   #endif
-\end{Verbatim}
-
-When the function returns \code{""} the display server won't change the state
-of the UI element.
-
 \section{Displaying objects}
 
 The server can display various types of objects. Initially it was created to
@@ -479,6 +340,8 @@ The client-side interface for defining HTML document chunks is:
          const std::string& htmlData); 
    void setHtmlHead(const std::string& id, const std::string& partId,
          const std::string& htmlData); 
+   void setHtmlForm(const std::string& id, const std::string& partId,
+         const std::string& htmlData); 
 \end{Verbatim}
 
 Chunks for the head and the body part of a document are independent. This means
@@ -486,6 +349,9 @@ that a chunk in the head may have the same partId as a chunk in the body of
 a document. When a part is removed from a document, the chunks for the head
 and the body with the requested partId are removed.
 \todo{TODO: ICE interface for removing (parts of) objects is still missing}
+
+For a more detailed description of HTML form chuks see section
+\ref{section:HtmlForms}.
 
 \subsection{OpenGL objects}
 
@@ -620,4 +486,234 @@ The module \code{StdModel} defines the following functions that create simple sh
 The box and the cylinder are created with the center in $(0, 0, 0)$. The
 parameters for the box define the size of the box. The cylinder has an elliptic
 shape with the given radii and is approximated with {\em np} sides.
+
+
+
+\section{Interaction with the Display Server}
+
+In section \ref{section:PassiveClient} we described a simple client that is
+able to send data to the Display Server. The server also supports some simple
+user interface interaction with remote components. A client component that
+wants to interact with the Display Server and receive notifications about UI
+events can do it through an active display client. We derive a class from
+\code{"CDisplayClient"} and override a few methods:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   class VideoViewer : public ManagedComponent, public VideoClient
+   {
+   private:
+   #ifdef FEAT_VISUALIZATION
+     class CVvDisplayClient: public cogx::display::CDisplayClient
+     {
+       VideoViewer* pViewer;
+     public:
+       CVvDisplayClient() { pViewer = NULL; }
+       void setClientData(VideoViewer* pVideoViewer) { pViewer = pVideoViewer; }
+       void handleEvent(const Visualization::TEvent &event); /*override*/
+       std::string getControlState(const std::string& ctrlId); /*override*/
+     };
+     CVvDisplayClient m_display;
+   #endif
+   };
+\end{Verbatim}
+
+In the constructor of the VideoViewer we call \code{setClientData()} so that
+the new display client will be able to access the VideoViewer:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+  VideoViewer() : camId(0)
+  {
+#ifdef FEAT_VISUALIZATION
+    m_display.setClientData(this);
+#endif
+  }
+\end{Verbatim}
+
+The event path from the server to the client must be initialized. This is done
+right after the component connects to the client:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void VideoViewer::start()
+   {
+   #ifdef FEAT_VISUALIZATION
+     m_display.connectIceClient(*this);
+     m_display.installEventReceiver();
+   #endif
+   }
+\end{Verbatim}
+
+The flow of images from the VideoServer to the VideoViewer can be stopped at
+any time. To let the user control the flow the component has to add a UI
+element to the display server.  An appropriate type of UI element for this
+purpose is a chekcbox:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void VideoViewer::start()
+   {
+   #ifdef FEAT_VISUALIZATION
+     m_display.addCheckBox(getComponentID(), "toggle.viewer.running", "&Streaming");
+   #endif
+   }
+\end{Verbatim}
+
+The first parameter is the name of the {\em view} that will display the UI
+element when it is active, not the name of object. This means that the UI
+element will be displayed only when an object is displayed in its default view.
+When an object is displayed in another view, the UI element won't be available.
+\todo{TODO: user-defined views will be able to specify which UI elements to show}
+
+When the UI element is first displayed it has to obtain the current state from
+the component that created it. This is done with the method
+\code{getControlState()}:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   std::string VideoViewer::CVvDisplayClient::getControlState(
+         const std::string& ctrlId)
+   {
+     if (ctrlId == "toggle.viewer.running") {
+       return pViewer->receiving ? "1" : "0";
+     }
+     return "";
+   }
+\end{Verbatim}
+
+The method \code{handleGuiEvent()} will be called every time the UI element
+emits a known event. For the chekcbox element we need to respond to the
+\code{evCheckBoxChange} event:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   #ifdef FEAT_VISUALIZATION
+   void VideoViewer::CVvDisplayClient::handleGuiEvent(
+         const Visualization::TEvent &event)
+   {
+     if (event.type == Visualization::evCheckBoxChange) {
+       if (event.sourceId == "toggle.viewer.running") {
+         bool newrcv = (event.data != "0");
+         if (newrcv != pViewer->receiving) {
+           if(pViewer->receiving) {
+             pViewer->videoServer->stopReceiveImages(getComponentID());
+           }
+           else {
+             pViewer->videoServer->startReceiveImages(getComponentID(), camIds, 0, 0);
+           }
+           pViewer->receiving = !pViewer->receiving;
+         }
+       }
+     }
+   }
+   #endif
+\end{Verbatim}
+
+Note that the data for UI elements passed between the client and the server is
+serialized into strings. The checkbox element knows only 2 values: \code{"0"}
+and everything else.
+\todo{TODO: Add more element types, define values}
+
+A UI element may be displayed in multiple views. When a UI element is first
+displayed it must be put in a state that reflects the current state of the
+component.  Since a UI element may be created at any time it wouldn't be enough
+to set the initial state of the element at creation time. Instead, we define
+the \code{getControlState()} callback function:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   #ifdef FEAT_VISUALIZATION
+   std::string VideoViewer::CVvDisplayClient::getControlState(const std::string& ctrlId)
+   {
+     if (ctrlId == "toggle.viewer.running") {
+       return pViewer->receiving ? "2" : "0";
+     }
+     return "";
+   }
+   #endif
+\end{Verbatim}
+
+When the function returns \code{""} the display server won't change the state
+of the UI element.
+
+\subsection{Support for HTML forms}\label{section:HtmlForms}
+
+The display server can present HTML forms and send data from a form to a client
+when the form is submitted.
+
+To add support for form processing in an active client we override the methods
+\code{"handleForm"} and \code{"getFormData"}. We also add a convenience
+function that will create the form and send it to the server:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+#ifdef FEAT_VISUALIZATION
+   class COrDisplayClient: public cogx::display::CDisplayClient
+   {
+      CObjectRecognizer* pRecognizer;
+   public:
+      void createForms();
+      void handleForm(const std::string& id, const std::string& partId,
+            const std::map<std::string, std::string>& fields); /*override*/
+      bool getFormData(const std::string& id, const std::string& partId,
+            std::map<std::string, std::string>& fields); /*override*/
+   };
+\end{Verbatim}
+
+A form can be defined with standard HTML form elements but it must not be
+enclosed in the \code{"<form>"} tag which is added by the Display Server.
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void CObjectRecognizer::COrDisplayClient::createForms()
+   {
+      std::ostringstream ss;
+      ss << "Min score: <select name='minScore'>";
+      for (float f = 0.7; f <= 1.0; f += 0.01) {
+         ss << "<option>" << sfloat(f, 2) << "</option>";
+      }
+      ss << "</select>";
+      ss << "<input type=\"submit\" name=\"submit\" value=\"Apply\"/>";
+      setHtmlForm("Settings", "ObjectRecognizer", ss.str());
+   }
+   std::string sfloat(double f, int precision)
+   {
+      std::ostringstream out;
+      out << std::fixed << std::setprecision(precision) << f;
+      return out.str();
+   }
+\end{Verbatim}
+
+The getter and the setter functions pass the form parameters in a dictionary.
+If a HTML field supports multiple values (like a multivalue select field, a
+group of check boxes or radio buttons), the values are stored as a delimited
+string where the delimiter is the newline character \Verb|"\n"|.
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void CObjectRecognizer::COrDisplayClient::handleForm(
+         const std::string& id, const std::string& partId,
+         const std::map<std::string, std::string>& fields)
+   {
+      if (! pRecognizer) return;
+      if (id != "Settings" || partId != "ObjectRecognizer") retrun;
+      float f;
+      typeof(fields.begin()) it;
+      it = fields.find("minScore");
+      if (it != fields.end()) {
+         f = atof(it->second.c_str());
+         if (f < 0.7) f = 0.7;
+         if (f > 1.0) f = 1.0;
+         pRecognizer->m_minScore = f;
+      }
+   }
+
+   bool CObjectRecognizer::COrDisplayClient::getFormData(
+         const std::string& id, const std::string& partId,
+         std::map<std::string, std::string>& fields)
+   {
+      if (! pRecognizer) return false;
+      if (id != "Settings" || partId != "ObjectRecognizer") retrun false;
+      fields["minScore"] = sfloat(pRecognizer->m_minScore, 2);
+      fields["maxAmbiguity"] = sfloat(pRecognizer->m_maxAmbiguity, 2);
+      return true;
+   }
+\end{Verbatim}
+
+A form can be shown in a separate view or as a part of an HTML page composed of
+multiple chunks. When a page contains a form it is slower to display because
+some javascript has to be evaluated every time the page is reloaded. Therfore
+the forms should not be a part of a page that is changed frequently (eg. more
+than once per second).
 
