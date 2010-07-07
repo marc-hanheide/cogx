@@ -11,6 +11,10 @@
 #include <fstream>
 #include "XVector3D.h"
 #include "GridDataFunctors.hh"
+#include <cast/core/CASTUtils.hpp>
+#include <cogxmath.h>
+#include "Matrix33.h"
+#include <Math.hpp>
 
 namespace spatial
 {   
@@ -87,7 +91,7 @@ namespace spatial
       log("Cellsize set to: %f", m_cellsize);
     }
 
-    m_minbloxel = 0.1;
+    m_minbloxel = 0.05;
     it = _config.find("--minbloxel");
     if (it != _config.end()) {
       m_minbloxel = (atof(it->second.c_str()));
@@ -160,11 +164,11 @@ namespace spatial
     def.pdf = 0;
     m_map = new SpatialGridMap::GridMap<GridMapData>(m_gridsize, m_gridsize, m_cellsize, m_minbloxel, 0, m_mapceiling, 0, 0, 0, def);
     m_tracer = new LaserRayTracer<GridMapData>(m_map,1.0);
-    p = new VisualPB_Bloxel("localhost",5050,m_gridsize,m_gridsize,m_cellsize,1,true);//host,port,xsize,ysize,cellsize,scale, redraw whole map every time
+    pbVis = new VisualPB_Bloxel("localhost",5050,m_gridsize,m_gridsize,m_cellsize,1,true);//host,port,xsize,ysize,cellsize,scale, redraw whole map every time
 
     m_lgm = new Cure::LocalGridMap<unsigned char>(m_gridsize/2, m_cellsize, '2', Cure::LocalGridMap<unsigned char>::MAP1);
     m_Glrt  = new Cure::ObjGridLineRayTracer<unsigned char>(*m_lgm);
-    p->connectPeekabot();
+    pbVis->connectPeekabot();
 
 
   }
@@ -219,6 +223,10 @@ namespace spatial
 	new MemberFunctionChangeReceiver<VisualObjectSearch>(this,
 	  &VisualObjectSearch::newRobotPose));
 
+    addChangeFilter(createLocalTypeFilter<SpatialData::SpatialObject>(cdl::ADD),
+	new MemberFunctionChangeReceiver<VisualObjectSearch>(this,
+	  &VisualObjectSearch::newSpatialObject));
+
     addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
 	new MemberFunctionChangeReceiver<VisualObjectSearch>(this,
 	  &VisualObjectSearch::newRobotPose));
@@ -249,6 +257,190 @@ namespace spatial
 	  &VisualObjectSearch::newVisualObject));
 
 
+  }
+
+
+  void 
+  VisualObjectSearch::newSpatialObject(const cast::cdl::WorkingMemoryChange &objID)
+  {
+    try {
+      SpatialData::SpatialObjectPtr newObj = 
+	getMemoryEntry<SpatialData::SpatialObject>(objID.address);
+
+      spatial::Object *model = generateNewObjectModel(newObj->label);
+
+      model->pose = newObj->pose;
+
+      putObjectInMap(*m_map, model);
+
+      pbVis->DisplayMap(*m_map);
+
+      delete model;
+    }
+    catch (DoesNotExistOnWMException e) {
+      log("Error! SpatialObject disappeared from WM!");
+    }
+  }
+
+  void
+  VisualObjectSearch::putObjectInMap(GridMap<GridMapData> &map, spatial::Object *object)
+  {
+    cogx::Math::Pose3 &pose = object->pose;
+    switch (object->type) {
+      case OBJECT_BOX:
+	{
+	  BoxObject &box = *(BoxObject*)object;
+	  double radius1, radius2, radius3;
+	  //Flatten pose to xy-orientation
+
+	  double maxAxis = pose.rot.m20;
+	  Vector3 fakeXDirection = vector3(pose.rot.m01, pose.rot.m11, pose.rot.m21);
+	  radius1 = box.radius2;
+	  radius2 = box.radius3;
+	  radius3 = box.radius1;
+
+
+	  if (-pose.rot.m20 > maxAxis) {
+	    maxAxis = -pose.rot.m20;
+	    fakeXDirection = vector3(pose.rot.m01, pose.rot.m11, pose.rot.m21);
+	    radius1 = box.radius2;
+	    radius2 = box.radius3;
+	    radius3 = box.radius1;
+	  }
+	  if (pose.rot.m21 > maxAxis) {
+	    maxAxis = pose.rot.m21;
+	    fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+	    radius1 = box.radius1;
+	    radius2 = box.radius3;
+	    radius3 = box.radius2;
+	  }
+	  if (-pose.rot.m21 > maxAxis) {
+	    maxAxis = -pose.rot.m21;
+	    fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+	    radius1 = box.radius1;
+	    radius2 = box.radius3;
+	    radius3 = box.radius2;
+	  }
+	  if (pose.rot.m22 > maxAxis) {
+	    maxAxis = pose.rot.m22;
+	    fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+	    radius1 = box.radius1;
+	    radius2 = box.radius2;
+	    radius3 = box.radius3;
+	  }
+	  if (-pose.rot.m22 > maxAxis) {
+	    maxAxis = -pose.rot.m22;
+	    fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+	    radius1 = box.radius1;
+	    radius2 = box.radius2;
+	    radius3 = box.radius3;
+	  }
+
+	  double direction = atan2(fakeXDirection.y, fakeXDirection.x);
+	  if (direction < 0) direction += 2*M_PI;
+	  GDMakeObstacle makeObstacle;
+	  map.boxModifier(box.pose.pos.x, box.pose.pos.y, box.pose.pos.z, 2*radius1, 2*radius2, 2*radius3,
+	      direction, makeObstacle);
+	}
+	break;
+      case OBJECT_HOLLOW_BOX:
+	{
+	  HollowBoxObject &box = *(HollowBoxObject*)object;
+	  double radius1, radius2, radius3;
+	  //Flatten pose to xy-orientation
+
+	  double maxAxis = pose.rot.m20;
+	  Vector3 fakeXDirection = vector3(pose.rot.m01, pose.rot.m11, pose.rot.m21);
+	  int openSide = 0;
+	  radius1 = box.radius2;
+	  radius2 = box.radius3;
+	  radius3 = box.radius1;
+
+
+	  if (-pose.rot.m20 > maxAxis) {
+	    maxAxis = -pose.rot.m20;
+	    fakeXDirection = vector3(pose.rot.m01, pose.rot.m11, pose.rot.m21);
+	    openSide = 5;
+	    radius1 = box.radius2;
+	    radius2 = box.radius3;
+	    radius3 = box.radius1;
+	  }
+	  if (pose.rot.m21 > maxAxis) {
+	    maxAxis = pose.rot.m21;
+	    fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+	    openSide = 1;
+	    radius1 = box.radius1;
+	    radius2 = box.radius3;
+	    radius3 = box.radius2;
+	  }
+	  if (-pose.rot.m21 > maxAxis) {
+	    maxAxis = -pose.rot.m21;
+	    fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+	    openSide = 1;
+	    radius1 = box.radius1;
+	    radius2 = box.radius3;
+	    radius3 = box.radius2;
+	  }
+	  if (pose.rot.m22 > maxAxis) {
+	    maxAxis = pose.rot.m22;
+	    fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+	    openSide = 1;
+	    radius1 = box.radius1;
+	    radius2 = box.radius2;
+	    radius3 = box.radius3;
+	  }
+	  if (-pose.rot.m22 > maxAxis) {
+	    maxAxis = -pose.rot.m22;
+	    fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+	    openSide = 1;
+	    radius1 = box.radius1;
+	    radius2 = box.radius2;
+	    radius3 = box.radius3;
+	  }
+
+	  double direction = atan2(fakeXDirection.y, fakeXDirection.x);
+	  if (direction < 0) direction += 2*M_PI;
+	  GDMakeObstacle makeObstacle;
+	  double h = box.thickness/2;
+	  double cd = cos(direction);
+	  double sd = sin(direction);
+
+	  if (openSide != 0) 
+	    map.boxModifier(box.pose.pos.x, box.pose.pos.y, 
+		box.pose.pos.z + radius3-h, radius1*2, radius2*2, 2*h,
+	      direction, makeObstacle);
+
+	  if (openSide != 1) 
+	    map.boxModifier(box.pose.pos.x+cd*(radius1-h), 
+		box.pose.pos.y+sd*(radius1-h),
+		box.pose.pos.z, 2*h, radius2*2, radius3*2,
+	      direction, makeObstacle);
+
+	  map.boxModifier(box.pose.pos.x-cd*(radius1-h), 
+	      box.pose.pos.y-sd*(radius1-h),
+	      box.pose.pos.z, 2*h, radius2*2, radius3*2,
+	      direction, makeObstacle);
+
+	  map.boxModifier(box.pose.pos.x-sd*(radius2-h), 
+	      box.pose.pos.y+cd*(radius2-h),
+	      box.pose.pos.z, radius1*2, 2*h, radius3*2,
+	      direction, makeObstacle);
+
+	  map.boxModifier(box.pose.pos.x+sd*(radius2-h), 
+	      box.pose.pos.y-cd*(radius2-h),
+	      box.pose.pos.z, radius1*2, 2*h, radius3*2,
+	      direction, makeObstacle);
+
+	  if (openSide != 5) 
+	    map.boxModifier(box.pose.pos.x, box.pose.pos.y, 
+		box.pose.pos.z - radius3+h, radius1*2, radius2*2, 2*h,
+	      direction, makeObstacle);
+	}
+	break;
+      default:
+	log("Error! Unsupported object type in puObjectInMap!");
+	return;
+    }
   }
 
   void VisualObjectSearch::SaveCureMapToFile() {
@@ -298,8 +490,8 @@ namespace spatial
 	}
       }
     }
-    p->DisplayMap(*m_map);
-    p->Display2DCureMap(m_lgm);
+//    pbVis->DisplayMap(*m_map);
+//    pbVis->Display2DCureMap(m_lgm);
     m_maploaded = true;
   }
 
@@ -391,8 +583,8 @@ namespace spatial
     while(true){ 
       log("I am running!"); 
       m_Mutex.lock();
-      p->DisplayMap(*m_map);
-      p->Display2DCureMap(m_lgm);
+//      pbVis->DisplayMap(*m_map);
+//      pbVis->Display2DCureMap(m_lgm);
       while(gtk_events_pending())
 	gtk_main_iteration();
       InterpretCommand();
@@ -649,7 +841,7 @@ void
 	// add this for visualization
       }
     }
-    p->Add3DPointCloud(visualizationpoints);
+    pbVis->Add3DPointCloud(visualizationpoints);
 
     //TODO: Add tilting and panning
     int bestConeIndex = GetViewConeSums(samplepoints);

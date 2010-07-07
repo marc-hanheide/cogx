@@ -120,8 +120,6 @@ protected:
   void newPlaneObject(const cast::cdl::WorkingMemoryChange &);
   void readPlaneModelsFromFile();
 
-  void generateNewObjectModel(const std::string &label);
-
   void recomputeOnnessForObject(const std::string &label);
   void recomputeOnnessForPlane(const std::string &label);
   void recomputeInnessForObject(const std::string &label);

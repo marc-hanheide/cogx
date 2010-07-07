@@ -1440,4 +1440,72 @@ mergeAnyOverlappingVertices(Polyhedron &polyhedron, double eps)
   polyhedron.vertices = newVerts;
 }
 
+spatial::Object *
+generateNewObjectModel(const std::string &label) {
+//  log("generateNewObjectModel %s", label.c_str());
+  if (label == "rovio" || label == "bookcase_sm" || label == "bookcase_lg") {
+    HollowBoxObject *newBoxObject = new HollowBoxObject;
+    newBoxObject->type = OBJECT_HOLLOW_BOX;
+    newBoxObject->thickness = 0.051;
+    if (label == "rovio") {
+      newBoxObject->radius1 = 0.17;
+      newBoxObject->radius2 = 0.155;
+      newBoxObject->radius3 = 0.175;
+    }
+    else if (label == "bookcase_sm") {
+      newBoxObject->radius1 = 0.155;
+      newBoxObject->radius2 = 0.40;
+      newBoxObject->radius3 = 0.75;
+    }
+    else if (label == "bookcase_lg") {
+      newBoxObject->radius1 = 0.14;
+      newBoxObject->radius2 = 0.80;
+      newBoxObject->radius3 = 0.965;
+    }
+    else {
+      newBoxObject->radius1 = 0.1;
+      newBoxObject->radius2 = 0.1;
+      newBoxObject->radius3 = 0.1;
+    }
+    newBoxObject->pose.pos.x = -FLT_MAX;
+    newBoxObject->pose.pos.y = -FLT_MAX;
+    newBoxObject->pose.pos.z = -FLT_MAX;
+    return newBoxObject;
+  }
+  else {
+    BoxObject *newBoxObject = new BoxObject;
+    newBoxObject->type = OBJECT_BOX;
+    if (label == "krispies") {
+      newBoxObject->radius1 = 0.095;
+      newBoxObject->radius2 = 0.045;
+      newBoxObject->radius3 = 0.145;
+    }
+    else if (label == "joystick") {
+      newBoxObject->radius1 = 0.115;
+      newBoxObject->radius2 = 0.105;
+      newBoxObject->radius3 = 0.13;
+    }
+    else if (label == "rice") {
+      newBoxObject->radius1 = 0.075;
+      newBoxObject->radius2 = 0.023;
+      newBoxObject->radius3 = 0.095;
+    }
+    else if (label == "printer") {
+      newBoxObject->radius1 = 0.300;
+      newBoxObject->radius2 = 0.160;
+      newBoxObject->radius3 = 0.260;
+    }
+    else  {
+      newBoxObject->radius1 = 0.1;
+      newBoxObject->radius2 = 0.1;
+      newBoxObject->radius3 = 0.1;
+    }
+    newBoxObject->pose.pos.x = -FLT_MAX;
+    newBoxObject->pose.pos.y = -FLT_MAX;
+    newBoxObject->pose.pos.z = -FLT_MAX;
+
+    return newBoxObject;
+  }
+}
+
 };
