@@ -4,6 +4,7 @@
 package castutils.viewer;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.GridBagLayout;
 import java.awt.event.ItemEvent;
@@ -16,11 +17,13 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -163,6 +166,22 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 				public boolean isCellEditable(int row, int column) {
 					return false;
 				}
+
+				@Override
+				public Component prepareRenderer(TableCellRenderer renderer,
+						int rowIndex, int vColIndex) {
+					Component c = super.prepareRenderer(renderer, rowIndex,
+							vColIndex);
+					if (c instanceof JComponent) {
+						JComponent jc = (JComponent) c;
+						Object v = getValueAt(rowIndex,
+								vColIndex);
+						if (v instanceof String) {
+							jc.setToolTipText((String) v);
+						}
+					}
+					return c;
+				}
 			};
 
 			jTable.addMouseListener(new MouseAdapter() {
@@ -219,11 +238,9 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 			} catch (ClassNotFoundException e) {
 				logger.debug("no class " + fullName + "exists.");
 			} catch (InstantiationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.debug("loading " + fullName + ": ", e);
 			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.debug("loading " + fullName + ": ", e);
 			}
 			oType = oType.getSuperclass();
 			if (oType == null) // if no superclass exists, we have to give up
@@ -268,7 +285,7 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 			{ // log it
 				String logString = wmc.operation.name() + ":";
 				for (Object o : row) {
-					logString += o.toString()+"\n";
+					logString += o.toString() + "\n";
 				}
 				logger.debug(logString);
 			}
