@@ -531,7 +531,7 @@ TomGine::vec4 VirtualScene::getRandomColor(float alpha){
 	col.x = float(rand())/RAND_MAX;
 	col.y = float(rand())/RAND_MAX;
 	col.z = float(rand())/RAND_MAX;
-	col.w = 0.5;
+	col.w = alpha;
 	return col;
 }
 
