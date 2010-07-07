@@ -5,6 +5,7 @@ package eu.cogx.percepttracker;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import SpatialData.Place;
 import SpatialProperties.GatewayPlaceProperty;
@@ -27,19 +28,33 @@ public class SpatialBeliefTracker extends ManagedComponent {
 	private static final String GATEWAYTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils
 					.typeName(GatewayPlaceProperty.class));
+	private static final List<String> types = Arrays.asList(PLACETYPE,
+			GATEWAYTYPE, "relation", "Robot");
 
-	final WMTracker<PerceptBelief, GroundedBelief> tracker;
+	WMTracker<PerceptBelief, GroundedBelief> tracker = null;
 
-	public SpatialBeliefTracker() throws InstantiationException,
-			IllegalAccessException {
-		List<String> types = Arrays.asList(PLACETYPE, GATEWAYTYPE, "relation",
-				"Robot");
+	/**
+	 * configure the component
+	 *  --write-to-sa <subarchitectureID> the SA to write to
+	 * 
+	 * @see cast.core.CASTComponent#configure(java.util.Map)
+	 */
+	@Override
+	protected void configure(Map<String, String> config) {
 		PointerMap<WMTrackedBeliefMap> wm2wmMap;
-		wm2wmMap = new PointerMap<WMTrackedBeliefMap>(this,
-				WMTrackedBeliefMap.class);
-		tracker = new WMTracker<PerceptBelief, GroundedBelief>(this,
-				PerceptBelief.class, GroundedBelief.class, new FormulaMatcher(
-						types, wm2wmMap), wm2wmMap);
+		try {
+			wm2wmMap = new PointerMap<WMTrackedBeliefMap>(this,
+					WMTrackedBeliefMap.class);
+			tracker = WMTracker.create(this, PerceptBelief.class,
+					GroundedBelief.class, new FormulaMatcher(types, wm2wmMap),
+					wm2wmMap, config.get("--write-to-sa"));
+		} catch (InstantiationException e) {
+			logException("cannot create PointerMap and tracker", e);
+		} catch (IllegalAccessException e) {
+			logException("cannot create PointerMap and tracker", e);
+		}
+
+
 	}
 
 	/*
