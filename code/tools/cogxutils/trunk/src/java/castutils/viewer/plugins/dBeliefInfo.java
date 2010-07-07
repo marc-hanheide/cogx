@@ -43,7 +43,7 @@ public class dBeliefInfo implements Plugin {
 			}
 			extraInfo.add(distrStr);
 		} catch (ClassCastException e) {
-			// ignore this
+			extraInfo.add("no special info");
 		}
 
 		// String offsprings = "";
