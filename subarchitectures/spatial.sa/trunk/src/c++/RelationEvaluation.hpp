@@ -146,6 +146,9 @@ randomizeOrientation(Pose3 &pose);
 void
 getRandomSampleSphere(std::vector<Matrix33> &orientations, int n);
 
+void
+getRandomSampleCircle(std::vector<Matrix33> &orientations, int n);
+
 spatial::Object *
 generateNewObjectModel(const std::string &label);
 

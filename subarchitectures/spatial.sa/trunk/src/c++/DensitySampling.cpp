@@ -470,12 +470,12 @@ DensitySampler::createRelativeSampleCloud(SpatialRelationType relationType,
       exit(8);
   }
 
-  double x1 = -maxLateral + o1->pose.pos.x;
-  double x2 = maxLateral + o1->pose.pos.x;
-  double y1 = -maxLateral + o1->pose.pos.y;
-  double y2 = maxLateral + o1->pose.pos.y;
-  double zmin = o1->pose.pos.z + minVertical;
-  double zmax = o1->pose.pos.z + maxVertical;
+  double x1 = -maxLateral;
+  double x2 = maxLateral;
+  double y1 = -maxLateral;
+  double y2 = maxLateral;
+  double zmin = minVertical;
+  double zmax = maxVertical;
 
   // Distribute N samples over the whole volume
   double sampleVolume = (x2-x1)*(y2-y1)*(zmax-zmin);
@@ -520,15 +520,18 @@ void
 DensitySampler::sampleBinaryRelationSystematically(
     const vector <SpatialRelationType> &relations,
     const vector<spatial::Object *> &objects,
-    const vector<Matrix33> &supportObjectOrientations,
     const std::vector<string> &objectLabels,
     double cellSize,
     SampleCloud &outCloud)
 {
   spatial::Object *supportObject = objects.back();
+  bool randomizeBaseObjectPose = false;
+
   if (supportObject->pose.pos.x == -FLT_MAX) {
-    cerr << "Error! Support object pose uninitialized!\n";
-    return;
+//    cerr << "Error! Support object pose uninitialized!\n";
+//    return;
+    randomizeBaseObjectPose = true;
+    supportObject->pose.pos = vector3(0,0,0);
   }
 
 
@@ -548,9 +551,10 @@ DensitySampler::sampleBinaryRelationSystematically(
     SampleCloud *cloud = 0;
 
     // If the support object here is the "given" object - i.e. the bottommost one
-    // in the hierarchy, then create a temporary sample cloud for that combination
+    // in the hierarchy, and that pose is known,
+    // then create a temporary sample cloud for that combination
     // of orientations. Otherwise, see if there's one cached
-    if (currentLevel+1 == objects.size()-1) {
+    if (currentLevel+1 == objects.size()-1 && !randomizeBaseObjectPose) {
       if (m_objectOrientations.find(onObjectLabel) == m_objectOrientations.end()) {
 	if (!tryLoadOrientationsFromFile(onObjectLabel)) {
 	  getRandomSampleSphere(m_objectOrientations[onObjectLabel], 
@@ -558,6 +562,9 @@ DensitySampler::sampleBinaryRelationSystematically(
 	  writeOrientationsToFile(onObjectLabel);
 	}
       }
+
+      vector<Matrix33> supportObjectOrientations;
+      supportObjectOrientations.push_back(supportObject->pose.rot);
 
       // Have to create new cloud
       cloud = createRelativeSampleCloud(relationType,
@@ -587,8 +594,16 @@ DensitySampler::sampleBinaryRelationSystematically(
 	  // Randomize orientations for involved objects, unless we already have such
 	  if (m_objectOrientations.find(supportObjectLabel) == m_objectOrientations.end()) {
 	    if (!tryLoadOrientationsFromFile(supportObjectLabel)) {
-	      getRandomSampleSphere(m_objectOrientations[supportObjectLabel], 
-		  m_orientationQuantization);
+	      if (supportObject->type == OBJECT_PLANE ||
+		  // FIXME
+		  supportObjectLabel == "table") {
+		getRandomSampleCircle(m_objectOrientations[supportObjectLabel],
+		    m_orientationQuantization);
+	      }
+	      else {
+		getRandomSampleSphere(m_objectOrientations[supportObjectLabel], 
+		    m_orientationQuantization);
+	      }
 	      writeOrientationsToFile(supportObjectLabel);
 	    }
 	  }

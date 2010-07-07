@@ -1330,6 +1330,20 @@ getRandomSampleSphere(vector<Matrix33> &orientations, int n)
 }
 
 void
+getRandomSampleCircle(vector<Matrix33> &orientations, int n)
+{
+  orientations.resize(n);
+
+  float offset = ((float)rand())/RAND_MAX/n;
+
+  for (int i = 0; i < n; i++) {
+    fromRotZ(orientations[i], offset);
+    offset += (2*M_PI)/n;
+    if (offset > 2*M_PI) offset -= 2*M_PI;
+  }
+}
+
+void
 randomizeOrientation(Pose3 &pose)
 {
 /*======================================================================*
@@ -1494,6 +1508,11 @@ generateNewObjectModel(const std::string &label) {
       newBoxObject->radius1 = 0.300;
       newBoxObject->radius2 = 0.160;
       newBoxObject->radius3 = 0.260;
+    }
+    else if (label == "table") {
+      newBoxObject->radius1 = 0.55;
+      newBoxObject->radius2 = 0.45;
+      newBoxObject->radius3 = 0.05;
     }
     else  {
       newBoxObject->radius1 = 0.1;
