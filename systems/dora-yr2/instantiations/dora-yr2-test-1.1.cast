@@ -6,7 +6,7 @@ INCLUDE includes/spatial.sa/spatial-blobfinder.cast
 INCLUDE includes/spatial.sa/spatial-ptz.cast
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial.cast
-#INCLUDE includes/spatial.sa/spatial-peekabot.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter 
 INCLUDE includes/spatial.sa/spatial-mediator.cast
 
@@ -33,7 +33,7 @@ INCLUDE includes/spatial.sa/spatial-mediator.cast
 #JAVA MG  comsys-execution comsys.motivation.ComsysActionInterface
 
 # planning and motivation #####################################################
-#INCLUDE includes/planner.sa/planner-base.cast
+INCLUDE includes/planner.sa/planner-base.cast
 #INCLUDE includes/planner.sa/planner.cast
 #INCLUDE includes/motivation.sa/motivation.cast
 
