@@ -25,6 +25,7 @@
 #include <Navigation/GridLineRayTracer.hh>
 #include <gtk/gtk.h>
 
+#include "RelationEvaluation.hpp"
 #include <NavData.hpp>
 #include <VisionData.hpp>
 #include <SpatialData.hpp>
@@ -69,6 +70,11 @@ struct ObjectPairRelation{
 void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void receiveScan2d(const Laser::Scan2d &castScan);
       void receiveOdometry(const Robotbase::Odometry &castOdom);
+
+      void newSpatialObject(const cast::cdl::WorkingMemoryChange &objID);
+      void putObjectInMap(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>
+	  &map, spatial::Object *object);
+
       void PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
       void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID);
       void newVisualObject(const cast::cdl::WorkingMemoryChange &objID);
@@ -121,7 +127,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       AVSCommand m_command;
       std::vector<ObjectRelations> objectData;
       std::vector<SensingAction> exploredActions;
-      VisualPB_Bloxel* p;
+      VisualPB_Bloxel* pbVis;
 
       IceUtil::Mutex m_Mutex;
       Cure::Pose3D m_SlamRobotPose;

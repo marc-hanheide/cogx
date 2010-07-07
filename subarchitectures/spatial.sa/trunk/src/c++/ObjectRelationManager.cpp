@@ -433,17 +433,20 @@ void ObjectRelationManager::runComponent()
     }
   }
 
-  sleepComponent(2000);
-
 //  if (m_bSampleOnness || m_bSampleInness) {
     VisualPB_Bloxel visualPB("localhost", 5050, 100, 100, 0.05, 1, true);
     visualPB.connectPeekabot();
 //  }
 
-	      SpatialGridMap::GridMapData def;
-	      def.occupancy = SpatialGridMap::UNKNOWN;
-	      def.pdf = 0.0;
-	      SpatialGridMap::GridMap<SpatialGridMap::GridMapData> pdfMap(100, 100, 0.05, 0.05, 0, 2.0, 0, 0, 0, def);
+  sleepComponent(2000);
+
+  SpatialGridMap::GridMapData def;
+  def.occupancy = SpatialGridMap::UNKNOWN;
+  def.pdf = 0.0;
+  SpatialGridMap::GridMap<SpatialGridMap::GridMapData> pdfMap(100, 100, 0.05, 0.05, 0, 2.0, 0, 0, 0, def);
+
+
+  sleepComponent(2000);
 
 
   while (isRunning()) {
@@ -627,9 +630,9 @@ void ObjectRelationManager::runComponent()
 	      if (sampleTable) {
 		objects.push_back(&box2);
 		objectLabels.push_back("box2");
-		objects.push_back(&box1);
-		objectLabels.push_back("box1");
-		relations.push_back(RELATION_ON);
+//		objects.push_back(&box1);
+//		objectLabels.push_back("box1");
+//		relations.push_back(RELATION_ON);
 		objects.push_back(&table1);
 		objectLabels.push_back("table1");
 		relations.push_back(RELATION_ON);
@@ -637,9 +640,9 @@ void ObjectRelationManager::runComponent()
 	      else {
 		objects.push_back(&box1);
 		objectLabels.push_back("box1");
-		objects.push_back(&box2);
-		objectLabels.push_back("box2");
-		relations.push_back(RELATION_ON);
+//		objects.push_back(&box2);
+//		objectLabels.push_back("box2");
+//		relations.push_back(RELATION_ON);
 		objects.push_back(&table1);
 		objectLabels.push_back("table1");
 		relations.push_back(RELATION_ON);
@@ -680,7 +683,18 @@ void ObjectRelationManager::runComponent()
 	      
 	      //visualPB.DisplayMap(pdfMap);
 	      std::vector < std::pair <double,double> > thresholdval;
-	      thresholdval.push_back(make_pair(0.0,100.0));
+	      thresholdval.push_back(make_pair(0.001, 0.002));
+	      thresholdval.push_back(make_pair(0.002, 0.003));
+	      thresholdval.push_back(make_pair(0.003, 0.004));
+	      thresholdval.push_back(make_pair(0.004, 0.005));
+	      thresholdval.push_back(make_pair(0.005, 0.006));
+	      thresholdval.push_back(make_pair(0.006, 0.007));
+	      thresholdval.push_back(make_pair(0.007, 0.01));
+	      thresholdval.push_back(make_pair(0.01, 0.02));
+	      thresholdval.push_back(make_pair(0.02, 0.03));
+	      thresholdval.push_back(make_pair(0.03, 0.04));
+	      thresholdval.push_back(make_pair(0.04, 0.05));
+	      thresholdval.push_back(make_pair(0.05, 1));
 	      visualPB.AddPDF(pdfMap,thresholdval);
 //	      peekabot::LineCloudProxy linecloudp;
 //
@@ -846,7 +860,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	m_objects[obsLabel]->label = obsLabel;
 	m_objects[obsLabel]->pose = pose;
 
-	generateNewObjectModel(obsLabel);
+	m_objectModels[obsLabel] = generateNewObjectModel(obsLabel);
       }
       //    log("2");
 /*      if (m_bDemoSampling) {
@@ -857,7 +871,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	  // Evaluate onness for joystick object
       map<std::string, SpatialObjectPtr>::iterator it = m_objects.find(observedObject->label);
       if (it != m_objects.end()) {
-	    generateNewObjectModel(observedObject->label);
+	    m_objectModels[observedObject->label] = generateNewObjectModel(observedObject->label);
 	  }
 	  sampleOnnessForObject(objectID, onObjectID);
 	}
@@ -868,7 +882,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	  }
 	  if (onObjectID == -1) {
 	    onObjectID = m_maxObjectCounter++;
-	    generateNewObjectModel(onObjectID, "krispies");
+	    m_objectModels[label] = generateNewObjectModel(onObjectID, "krispies");
 	  }
 	  sampleOnnessForObject(objectID, onObjectID);
 	}*/
@@ -1399,42 +1413,6 @@ ObjectRelationManager::addTrackerCommand(VisionData::TrackingCommandType cmd, st
 }
 
 void
-ObjectRelationManager::generateNewObjectModel(const std::string &label) {
-  log("generateNewObjectModel %s", label.c_str());
-  BoxObject *newBoxObject = new BoxObject;
-  m_objectModels[label] = newBoxObject;
-  newBoxObject->type = OBJECT_BOX;
-  if (label == "krispies") {
-    newBoxObject->radius1 = 0.095;
-    newBoxObject->radius2 = 0.045;
-    newBoxObject->radius3 = 0.145;
-  }
-  else if (label == "joystick") {
-    newBoxObject->radius1 = 0.115;
-    newBoxObject->radius2 = 0.105;
-    newBoxObject->radius3 = 0.13;
-  }
-  else if (label == "rice") {
-    newBoxObject->radius1 = 0.075;
-    newBoxObject->radius2 = 0.023;
-    newBoxObject->radius3 = 0.095;
-  }
-  else if (label == "printer") {
-    newBoxObject->radius1 = 0.300;
-    newBoxObject->radius2 = 0.160;
-    newBoxObject->radius3 = 0.260;
-  }
-  else  {
-    newBoxObject->radius1 = 0.1;
-    newBoxObject->radius2 = 0.1;
-    newBoxObject->radius3 = 0.1;
-  }
-  newBoxObject->pose.pos.x = -FLT_MAX;
-  newBoxObject->pose.pos.y = -FLT_MAX;
-  newBoxObject->pose.pos.z = -FLT_MAX;
-}
-
-void
 ObjectRelationManager::readPlaneModelsFromFile()
 {
   ifstream infile(m_planeModelFilename.c_str());
@@ -1531,7 +1509,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	  m_objects[*it] = new SpatialData::SpatialObject;
 	  m_objects[*it]->label = *it;
 
-	  generateNewObjectModel(*it);
+	  m_objectModels[*it] = generateNewObjectModel(*it);
 	}
 	objectChain.push_back(m_objectModels[*it]);
 	if (rit != request->relationTypes.end()) {

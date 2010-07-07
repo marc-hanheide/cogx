@@ -146,5 +146,8 @@ randomizeOrientation(Pose3 &pose);
 void
 getRandomSampleSphere(std::vector<Matrix33> &orientations, int n);
 
+spatial::Object *
+generateNewObjectModel(const std::string &label);
+
 };
 #endif //RelationEvaluation_hpp
