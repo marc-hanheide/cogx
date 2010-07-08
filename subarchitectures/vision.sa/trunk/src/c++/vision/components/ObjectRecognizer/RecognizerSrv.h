@@ -13,6 +13,10 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 
+#ifdef FEAT_VISUALIZATION
+#include <CDisplayClient.hpp>
+#endif
+
 #include <string>
 #include <vector>
 #include <map>
@@ -32,6 +36,30 @@ private:
    CSiftExtractor *m_pSiftExtractor;
    CSiftMatcher   *m_pSiftMatcher;
    std::vector<CObjectModel*> m_models;
+
+   // options
+   float m_maxDistance;
+   float m_maxAmbiguity;
+
+private:
+#ifdef FEAT_VISUALIZATION
+   class COrDisplayClient: public cogx::display::CDisplayClient
+   {
+      CObjectRecognizer* pRecognizer;
+   public:
+      COrDisplayClient() { pRecognizer = NULL; }
+      void setClientData(CObjectRecognizer* pObjectRecognizer) { pRecognizer = pObjectRecognizer; }
+      //void handleEvent(const Visualization::TEvent &event); [>override<]
+      //std::string getControlState(const std::string& ctrlId); [>override<]
+      void createForms();
+      void handleForm(const std::string& id, const std::string& partId,
+            const std::map<std::string, std::string>& fields); /*override*/
+      bool getFormData(const std::string& id, const std::string& partId,
+            std::map<std::string, std::string>& fields); /*override*/
+   };
+   COrDisplayClient m_display;
+   cogx::display::CFormValues m_Settings;
+#endif
 
 private:
    void startIceServer();

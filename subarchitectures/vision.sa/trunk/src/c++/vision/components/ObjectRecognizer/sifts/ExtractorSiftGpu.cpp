@@ -92,3 +92,4 @@ long CSiftExtractorGPU::extractSifts(IplImage* pImage, TSiftVector& sifts)
 }
 
 }} // namespace
+// vim:sw=3:ts=8:et

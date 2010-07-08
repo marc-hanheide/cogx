@@ -45,7 +45,12 @@ struct CFeatureMatch
 {
    long indexA;
    long indexB;
-   float distance;
+   //float score;       // Best score in range 0.6-1.0;  cudaSift min = 0.85; (from correlations)
+   //float ambiguity;   // score2 / score1; 0.x-1.0; cudaSift max = 0.95
+   float distance;      // min distance in range 0-sqrt(NDims)
+   float ambiguity;     // distance0 / distance1; 0.0-1.0; lowe max = 0.8
+   static int cmpDistance(CFeatureMatch* pa, CFeatureMatch* pb);
+   static bool isLowerDistance(CFeatureMatch a, CFeatureMatch b);
 };
 typedef std::vector<CFeatureMatch> TFeatureMatchVector;
 
@@ -57,6 +62,14 @@ public:
    virtual void matchSiftDescriptors(TSiftVector& a, std::vector<TSiftVector*>& bb,
          std::vector<TFeatureMatchVector*>& matches) {}
 };
+
+class CDistanceCalculator
+{
+public:
+   // descriptor dims are uchar[0..DescUCharRange], but distnace is float[0 .. sqrt(NDims)]
+   double distance(CSiftFeature& a, CSiftFeature& b);
+};
+
 
 
 inline
@@ -85,6 +98,36 @@ void CSiftFeature::getDescriptor(float* pDescriptor)
    }
 }
 
+inline
+double CDistanceCalculator::distance(CSiftFeature& a, CSiftFeature& b)
+{
+   unsigned char *pa = &a.descriptor[0];
+   unsigned char *pb = &b.descriptor[0];
+   long s = 0;
+   for (int i = 0; i < CSiftFeature::NDims; i++) {
+      long d = (long) *pa - (long) *pb;
+      s += d*d;
+      pa++; pb++;
+   }
+   return sqrt(s) / CSiftFeature::DescUCharRange;
+}
+
+inline
+void sortmatches(TFeatureMatchVector& matches)
+{
+   std::sort(matches.begin(), matches.end(), CFeatureMatch::isLowerDistance);
+}
+
+inline
+void sortmatches(std::vector<TFeatureMatchVector*>& matches)
+{
+   typeof(matches.begin()) it;
+   for(it = matches.begin(); it != matches.end(); it++) {
+      sortmatches(*(*it));
+   }
+}
+
 }} // namespace
 
 #endif /* end of include guard: FEATURES_77JEL51B */
+// vim:sw=3:ts=8:et
