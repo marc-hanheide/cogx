@@ -581,7 +581,7 @@ void Formula_Data::report__formula(const std::string& str)
         {
             check__exists_parsed_subformulae(formula_parsing_level + 1);
             check__cardinality_constraint_on_subformulae_at_index
-                (formula_parsing_level+1, 2);
+                (2, formula_parsing_level+1);
             
             
             
@@ -604,7 +604,7 @@ void Formula_Data::report__formula(const std::string& str)
         {
             check__exists_parsed_subformulae(formula_parsing_level + 1);
             check__cardinality_constraint_on_subformulae_at_index
-                (formula_parsing_level+1, 2);
+                (2, formula_parsing_level+1);
             
             auto subs = subformulae[formula_parsing_level+1].begin();
             auto evaluation_expression_LHS = *subs;
@@ -625,7 +625,7 @@ void Formula_Data::report__formula(const std::string& str)
         {
             check__exists_parsed_subformulae(formula_parsing_level + 1);
             check__cardinality_constraint_on_subformulae_at_index
-                (formula_parsing_level+1, 2);
+                (2, formula_parsing_level+1);
             
             auto subs = subformulae[formula_parsing_level+1].begin();
             auto evaluation_expression_LHS = *subs;
@@ -657,7 +657,7 @@ void Formula_Data::report__formula(const std::string& str)
             
             check__exists_parsed_subformulae(formula_parsing_level + 1);
             check__cardinality_constraint_on_subformulae_at_index
-                (formula_parsing_level+1, 2);
+                (2, formula_parsing_level+1);
 
 
             auto components = subformulae[formula_parsing_level+1].begin();

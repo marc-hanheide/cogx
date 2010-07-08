@@ -107,7 +107,7 @@ namespace Planning
 
         
         struct s_Probabilistic : stand_alone_string<p, r, o, b, a, b, i, l, i, s, t, i, c>{}; // *** EFFECT ***
-        struct s_When : stand_alone_string<p, r, o, b, a, b, i, l, i, s, t, i, c>{}; // *** EFFECT ***
+        struct s_When : stand_alone_string<w, h, e, n>{}; // *** EFFECT ***
         struct s_Foreach : stand_alone_string<f, o, r, e, a, c, h>{}; // *** EFFECT ***
 
         
