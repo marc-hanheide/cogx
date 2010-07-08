@@ -8,66 +8,28 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
-import Ice.ObjectImpl;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
-import castutils.castextensions.WMEntrySet;
-import castutils.castextensions.WMEntrySet.ChangeHandler;
 import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import castutils.castextensions.WMView;
 
 /**
  * @author marc
  * 
  */
-public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
-
-	protected ChangeHandler externalHandler;
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seemotivation.util.WMEntrySet#setHandler(motivation.util.WMEntrySet.
-	 * ChangeHandler)
-	 */
-	@Override
-	public void setHandler(ChangeHandler handler) {
-		externalHandler = handler;
-	}
-
-	Map<MotiveStateTransition, ChangeHandler> stateChangeReceivers;
+public class WMMotiveView extends WMView<Motive> implements WMView.ChangeHandler<Motive> {
 
 	public static class MotiveStateTransition {
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
-		@Override
-		public boolean equals(Object arg0) {
-			if (!(arg0 instanceof MotiveStateTransition))
-				return super.equals(arg0);
+		private MotiveStatus from;
 
-			MotiveStateTransition other = (MotiveStateTransition) arg0;
-			return to.equals(other.to) && from.equals(other.from);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see java.lang.Object#hashCode()
-		 */
-		@Override
-		public int hashCode() {
-			return from.hashCode() & to.hashCode();
-		}
+		private MotiveStatus to;
 
 		/**
 		 * @param from
@@ -85,6 +47,20 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 				this.to = to;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object arg0) {
+			if (!(arg0 instanceof MotiveStateTransition))
+				return super.equals(arg0);
+
+			MotiveStateTransition other = (MotiveStateTransition) arg0;
+			return to.equals(other.to) && from.equals(other.from);
+		}
+
 		/**
 		 * @return the from
 		 */
@@ -98,62 +74,15 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		public MotiveStatus getTo() {
 			return to;
 		}
-
-		private MotiveStatus from;
-		private MotiveStatus to;
-	}
-
-	protected WMMotiveSet(ManagedComponent c) {
-		super(c);
-		stateChangeReceivers = new HashMap<MotiveStateTransition, ChangeHandler>();
-		super.setHandler(this);
-	}
-
-	/**
-	 * Factory method
-	 * 
-	 * @param c
-	 *            the management component this WMSet is in
-	 * @return
-	 */
-	public static WMMotiveSet create(ManagedComponent c) {
-		WMMotiveSet s = new WMMotiveSet(c);
-		s.addType(Motive.class);
-		return s;
-	}
-
-	public void setStateChangeHandler(MotiveStateTransition status,
-			ChangeHandler handler) {
-		stateChangeReceivers.put(status, handler);
-	}
-
-	public void setStateChangeHandler(MotiveStateTransition status,
-			final WorkingMemoryChangeReceiver handler) {
-		stateChangeReceivers.put(status, new WMEntrySet.ChangeHandler() {
-
-			@Override
-			public void entryChanged(
-					Map<WorkingMemoryAddress, ObjectImpl> map,
-					WorkingMemoryChange wmc, ObjectImpl newMotive,
-					ObjectImpl oldMotive) throws CASTException {
-				handler.workingMemoryChanged(wmc);
-
-			}
-		});
-	}
-
-	/**
-	 * Factory method
-	 * 
-	 * @param c
-	 *            the management component this WMSet is in
-	 * @return
-	 */
-	public static WMMotiveSet create(ManagedComponent c,
-			final Class<? extends Motive> specificType) {
-		WMMotiveSet s = new WMMotiveSet(c);
-		s.addType(specificType);
-		return s;
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return from.hashCode() & to.hashCode();
+		}
 	}
 
 	/**
@@ -161,14 +90,49 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 	 */
 	private static final long serialVersionUID = 6388467413187493228L;
 
+	/**
+	 * Factory method
+	 * 
+	 * @param c
+	 *            the management component this WMSet is in
+	 * @return
+	 */
+	public static WMMotiveView create(ManagedComponent c) {
+		WMMotiveView s = new WMMotiveView(c);
+		return s;
+	}
+
+	/**
+	 * Factory method
+	 * 
+	 * @param c
+	 *            the management component this WMSet is in
+	 * @return
+	 */
+	public static WMMotiveView create(ManagedComponent c,
+			final Class<? extends Motive> specificType) {
+		WMMotiveView s = new WMMotiveView(c);
+		return s;
+	}
+
+	protected ChangeHandler<Motive> externalHandler;
+
+	Map<MotiveStateTransition, ChangeHandler<Motive>> stateChangeReceivers;
+
+	protected WMMotiveView(ManagedComponent c) {
+		super(c, Motive.class, null, new ExceptAllFilter<Motive>());
+		stateChangeReceivers = new HashMap<MotiveStateTransition, ChangeHandler<Motive>>();
+		super.registerHandler(this);
+	}
+
 	@Override
-	public void entryChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
-			WorkingMemoryChange wmc, ObjectImpl newObj, ObjectImpl oldObj)
+	public void entryChanged(Map<WorkingMemoryAddress, Motive> map,
+			WorkingMemoryChange wmc, Motive newObj, Motive oldObj)
 			throws CASTException {
 		if (externalHandler != null)
 			externalHandler.entryChanged(map, wmc, newObj, oldObj);
-		Motive newMotive = (Motive) newObj;
-		Motive oldMotive = (Motive) oldObj;
+		Motive newMotive = newObj;
+		Motive oldMotive = oldObj;
 		MotiveStatus fromState = MotiveStatus.WILDCARD;
 		MotiveStatus toState = MotiveStatus.WILDCARD;
 
@@ -177,9 +141,9 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		if (wmc.operation != WorkingMemoryOperation.ADD)
 			fromState = oldMotive.status;
 
-		Set<ChangeHandler> handlersToCall = new HashSet<ChangeHandler>();
+		Set<ChangeHandler<Motive>> handlersToCall = new HashSet<ChangeHandler<Motive>>();
 
-		ChangeHandler enterReceiver = null;
+		ChangeHandler<Motive> enterReceiver = null;
 
 		// call all handlers, including wildcards
 		component.debug("status transition check " + fromState + " -> " + toState);
@@ -208,11 +172,44 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 				handlersToCall.add(enterReceiver);
 			}
 		}
-		for (ChangeHandler h : handlersToCall) {
+		for (ChangeHandler<Motive> h : handlersToCall) {
 			component.log("call handler");
 			h.entryChanged(map, wmc, newMotive, oldMotive);
 		}
 
+	}
+
+	public Map<WorkingMemoryAddress, Motive> getMapByStatus(MotiveStatus status) {
+		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
+		for (Entry<WorkingMemoryAddress, Motive> o : super.entrySet()) {
+			Motive m = o.getValue();
+			if (m.status.equals(status))
+				result.put(o.getKey(), m);
+		}
+		return result;
+	}
+
+	public Map<WorkingMemoryAddress, Motive> getMapByType(
+			Class<? extends Motive> className) {
+		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
+		for (Entry<WorkingMemoryAddress, Motive> o : super.entrySet()) {
+			if (o.getValue().getClass().equals(className)) {
+				Motive m = o.getValue();
+				result.put(o.getKey(), m);
+			}
+		}
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @seemotivation.util.WMEntrySet#setHandler(motivation.util.WMEntrySet.
+	 * ChangeHandler)
+	 */
+	@Override
+	public void setHandler(ChangeHandler<Motive> handler) {
+		externalHandler = handler;
 	}
 
 	public void setState(MotiveStatus status, Collection<Motive> motives) {
@@ -227,26 +224,24 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		}
 	}
 
-	public Map<WorkingMemoryAddress, Motive> getMapByStatus(MotiveStatus status) {
-		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
-		for (Entry<WorkingMemoryAddress, ObjectImpl> o : super.entrySet()) {
-			Motive m = (Motive) o.getValue();
-			if (m.status.equals(status))
-				result.put(o.getKey(), m);
-		}
-		return result;
+	public void setStateChangeHandler(MotiveStateTransition status,
+			ChangeHandler<Motive> handler) {
+		stateChangeReceivers.put(status, handler);
 	}
 
-	public Map<WorkingMemoryAddress, Motive> getMapByType(
-			Class<? extends Motive> className) {
-		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
-		for (Entry<WorkingMemoryAddress, ObjectImpl> o : super.entrySet()) {
-			if (o.getValue().getClass().equals(className)) {
-				Motive m = (Motive) o.getValue();
-				result.put(o.getKey(), m);
+	public void setStateChangeHandler(MotiveStateTransition status,
+			final WorkingMemoryChangeReceiver handler) {
+		stateChangeReceivers.put(status, new ChangeHandler<Motive>() {
+
+			@Override
+			public void entryChanged(Map<WorkingMemoryAddress, Motive> map,
+					WorkingMemoryChange wmc, Motive newEntry, Motive oldEntry)
+					throws CASTException {
+				handler.workingMemoryChanged(wmc);
+				
 			}
-		}
-		return result;
+		});
 	}
+
 
 }

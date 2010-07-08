@@ -17,8 +17,8 @@ import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.slice.PlanProxy;
 import motivation.util.WMMotiveEventQueue;
-import motivation.util.WMMotiveSet;
-import motivation.util.WMMotiveSet.MotiveStateTransition;
+import motivation.util.WMDeprecatedMotiveSet;
+import motivation.util.WMDeprecatedMotiveSet.MotiveStateTransition;
 import Ice.ObjectImpl;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -39,7 +39,7 @@ import facades.ExecutorFacade;
  */
 public class PlanAllManager extends ManagedComponent {
 
-	WMMotiveSet motives;
+	WMDeprecatedMotiveSet motives;
 	WMLock wmLock;
 	volatile private boolean interrupt;
 	private WMMotiveEventQueue activeMotiveEventQueue;
@@ -73,7 +73,7 @@ public class PlanAllManager extends ManagedComponent {
 	public PlanAllManager() throws CASTException {
 		super();
 		wmLock = new WMLock(this, "SchedulerManagerSync", true);
-		motives = WMMotiveSet.create(this);
+		motives = WMDeprecatedMotiveSet.create(this);
 		binderFacade = new BinderFacade(this);
 		plannerFacade = new PlannerFacade(this);
 		executorFacade = new ExecutorFacade(this);

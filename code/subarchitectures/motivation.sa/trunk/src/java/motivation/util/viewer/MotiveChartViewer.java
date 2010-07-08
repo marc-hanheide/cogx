@@ -6,7 +6,7 @@ import java.util.Map;
 import javax.swing.JFrame;
 
 import motivation.slice.Motive;
-import motivation.util.WMMotiveSet;
+import motivation.util.WMDeprecatedMotiveSet;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -168,14 +168,14 @@ public class MotiveChartViewer extends ManagedComponent implements
 	}
 
 	Frame guiFrame;
-	WMMotiveSet motives;
+	WMDeprecatedMotiveSet motives;
 
 	/**
 	 * 
 	 */
 	public MotiveChartViewer() {
 		super();
-		motives = WMMotiveSet.create(this);
+		motives = WMDeprecatedMotiveSet.create(this);
 		motives.setHandler(this);
 		guiFrame = new Frame(this.getClass().getSimpleName());
 
