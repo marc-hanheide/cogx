@@ -63,6 +63,15 @@ public:
 
    // Issue a request to retreive the values of a form from the (remote) owner.
    virtual void getFormStateAsync(CHtmlChunk* pForm) = 0;
+
+   // This function should go in sth. like CPersistentStorage interface
+   // but since ATM we will only be using it in one place (one provider,
+   // one consumer) it is added to this interface.
+   // It retreives the name of the persistent storage that contains data
+   // for the HTML forms etc. ATM it is a filename, configured by a 
+   // CDisplayServer config parameter.
+   // Used by QCastMainFrame to access the persistent storage.
+   virtual std::string getPersistentStorageName() = 0;
 };
 
 // Holder for all data that can be displayed.

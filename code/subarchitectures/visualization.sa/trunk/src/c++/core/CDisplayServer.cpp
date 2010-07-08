@@ -581,6 +581,12 @@ void CDisplayServer::getFormStateAsync(CHtmlChunk* pForm)
    hIceDisplayServer->addFormDataChange(pData);
 }
 
+std::string CDisplayServer::getPersistentStorageName()
+{
+   // TODO: add config parameter for DisplayServerData.ini
+   return "DisplayServerData.ini";
+}
+
 
 // -----------------------------------------------------------------
 // CDisplayServerI

@@ -91,6 +91,17 @@ CHtmlChunk* CHtmlObject::setForm(const Ice::Identity& ident, const std::string& 
       // see: <url:../qtui/html/formcap.js>
       formtag += "<form id=\"" + pPart->htmlid() + "\" method=\"post\" action=\"javascript:history.go(-1)\" ";
       formtag += "onsubmit=\"return CogxJsSubmit('#" + pPart->htmlid() + "')\" >\n";
+
+      // style set in <url:../qtui/QCastViewHtml.cpp#tn=::doupdatecontent>
+      formtag += "<div class=\"v11nformbar\"><table><tr><td class=\"v11nformtitle\">"
+         + pPart->partId();
+      formtag += "<td><input type=\"submit\" value=\"Apply\" /></td>";
+      formtag += "<td><input type=\"button\" value=\"Save\" onclick=\"CogxJsSave('#" 
+         + pPart->htmlid() + "')\" /></td>\n";
+      formtag += "<td><input type=\"button\" value=\"Load\" onclick=\"CogxJsLoad('#" 
+         + pPart->htmlid() + "')\" /></td>\n";
+      formtag += "<td width='32px'>&nbsp;</td></tr></table></div>";
+
       pPart->setContent(formtag + text + "\n</form>");
    }
 
