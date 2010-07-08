@@ -2,7 +2,6 @@ package de.dfki.lt.tr.beliefs.data;
 
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map.Entry;
 
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
@@ -10,8 +9,6 @@ import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.genericproxies.DistributionContent;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBasicDistribution;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericFormula;
-import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
 import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
@@ -19,7 +16,6 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidOperationException;
@@ -144,14 +140,14 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 			f.prob = (float) prob;
 	}
 
-	public void setProb(WorkingMemoryAddress query, double prob) {
-		FormulaProbPair f = findFormula(query);
-		if (f == null)
-			_content.values.add(new FormulaProbPair(new PointerFormula(-1,
-					query), (float) prob));
-		else
-			f.prob = (float) prob;
-	}
+//	public void setProb(WorkingMemoryAddress query, double prob) {
+//		FormulaProbPair f = findFormula(query);
+//		if (f == null)
+//			_content.values.add(new FormulaProbPair(new PointerFormula(-1,
+//					query), (float) prob));
+//		else
+//			f.prob = (float) prob;
+//	}
 
 	/*
 	 * (non-Javadoc)
@@ -211,12 +207,12 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 
 	protected FormulaProbPair findFormula(WorkingMemoryAddress query) {
 		for (FormulaProbPair f : _content.values) {
-			if (f.val instanceof PointerFormula) {
-				PointerFormula ef = (PointerFormula) f.val;
-				if (ef.pointer.equals(query)) {
-					return f;
-				}
-			}
+//			if (f.val instanceof PointerFormula) {
+//				PointerFormula ef = (PointerFormula) f.val;
+//				if (ef.pointer.equals(query)) {
+//					return f;
+//				}
+//			}
 		}
 		return null;
 	}
@@ -230,8 +226,8 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 			return new FloatFormula(-1, ((Double) object).floatValue());
 		else if (object instanceof Integer)
 			return new IntegerFormula(-1, ((Integer) object).intValue());
-		else if (object instanceof WorkingMemoryAddress)
-			return new PointerFormula(-1, ((WorkingMemoryAddress) object));
+//		else if (object instanceof WorkingMemoryAddress)
+//			return new PointerFormula(-1, ((WorkingMemoryAddress) object));
 		else
 			throw new BeliefInvalidOperationException(
 					"cannot create Formula objects for type "
