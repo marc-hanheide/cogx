@@ -399,23 +399,14 @@ void CObjectRecognizer::COrDisplayClient::handleForm(const std::string& id, cons
       const std::map<std::string, std::string>& fields)
 {
    if (! pRecognizer) return;
-   float f;
    typeof(fields.begin()) it;
    it = fields.find("maxDistance");
-   if (it != fields.end()) {
-      f = atof(it->second.c_str());
-      if (f < 0.0) f = 0.0;
-      if (f > 128) f = 128;
-      pRecognizer->m_maxDistance = f;
-   }
+   if (it != fields.end())
+      pRecognizer->m_maxDistance = parsefloat(it->second, 0, 128);
 
    it = fields.find("maxAmbiguity");
-   if (it != fields.end()) {
-      f = atof(it->second.c_str());
-      if (f < 0.7) f = 0.7;
-      if (f > 1.0) f = 1.0;
-      pRecognizer->m_maxAmbiguity = f;
-   }
+   if (it != fields.end())
+      pRecognizer->m_maxAmbiguity = parsefloat(it->second, 0.7, 1.0);
 }
 
 bool CObjectRecognizer::COrDisplayClient::getFormData(const std::string& id, const std::string& partId,

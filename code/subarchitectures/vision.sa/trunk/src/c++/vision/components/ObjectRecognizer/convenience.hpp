@@ -20,6 +20,8 @@
 #include <string>
 
 extern std::string sfloat(double f, int precision=6);
+extern double parsefloat(const std::string& value);
+extern double parsefloat(const std::string& value, double fmin, double fmax);
 extern double fclocks();
 extern long long gethrtime(void);
 

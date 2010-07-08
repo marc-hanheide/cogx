@@ -18,6 +18,7 @@
 #include <sstream>
 #include <iomanip>
 #include <ctime>
+#include <cstdlib>
 
 #ifdef DEBUG_TRACE
 int __Tracer::level = 0;
@@ -35,6 +36,19 @@ double fclocks()
    // clock() is not working correctly
    // return ( (double) clock()) / CLOCKS_PER_SEC;
    return 1e-9 * gethrtime();
+}
+
+double parsefloat(const std::string& value)
+{
+  return atof(value.c_str());
+}
+
+double parsefloat(const std::string& value, double fmin, double fmax)
+{
+  double f = atof(value.c_str());
+  if (f < fmin) f = fmin;
+  if (f > fmax) f = fmax;
+  return f;
 }
 
 long long gethrtime(void)
