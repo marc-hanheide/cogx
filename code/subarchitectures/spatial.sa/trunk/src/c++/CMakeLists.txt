@@ -34,25 +34,26 @@ endif(BUILD_SA_BINDING)
 
 # -------------- NAV.SA ----------------
 
-#option(BUILD_SA_SPATIAL_PEEKABOT "Build spatial.sa PeekaBot components" YES)
-#if(BUILD_SA_SPATIAL_PEEKABOT)
+option(BUILD_SA_SPATIAL_PEEKABOT "Build spatial.sa PeekaBot components" YES)
+if(BUILD_SA_SPATIAL_PEEKABOT)
 
-#add_cast_component(DisplayNavInPB DisplayNavInPB.cpp)
-#link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData VisionData SpatialData Laser Scan2dReceiver)
-#link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
-#link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
-#link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+add_cast_component(DisplayNavInPB DisplayNavInPB.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData VisionData SpatialData Laser Scan2dReceiver)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+endif(BUILD_SA_SPATIAL_PEEKABOT)
 
-#add_cast_component(PeekabotControl PeekabotControl.cpp)
-#link_cast_component(${CAST_COMPONENT_NAME} NavData FrontierInterface)
-#link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
-#link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
-#link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+# add_cast_component(PeekabotControl PeekabotControl.cpp)
+# link_cast_component(${CAST_COMPONENT_NAME} NavData FrontierInterface)
+# link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+# link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+# link_cast_component(${CAST_COMPONENT_NAME} peekabot)
 
-#add_cast_component(SlamProcess SlamProcess.cpp)
-#link_cast_component(${CAST_COMPONENT_NAME} NavData Laser Scan2dReceiver Robotbase OdometryReceiver CureHWUtils)
-#link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
-#link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+add_cast_component(SlamProcess SlamProcess.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} NavData Laser Scan2dReceiver Robotbase OdometryReceiver CureHWUtils)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 # -------------- /NAV.SA ----------------
 
