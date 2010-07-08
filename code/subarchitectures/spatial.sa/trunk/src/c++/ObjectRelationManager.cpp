@@ -1569,9 +1569,24 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	request->outCloud->zExtent,
 	request->outCloud->values,
 	request->outCloud->total);
+
     if (request->outCloud->isBaseObjectKnown) {
       request->outCloud->center += m_objects[supportObjectLabel]->pose.pos;
     }
+    // Hard-coded z-coordinates of some floor-bound objects
+    else if (supportObjectLabel == "table") {
+      request->outCloud->center.z += 0.45-0.05;
+    }
+    else if (supportObjectLabel == "desk") {
+      request->outCloud->center.z += 0.75-0.05;
+    }
+    else if (supportObjectLabel == "bookcase_sm") {
+      request->outCloud->center.z += 0.75+0.08;
+    }
+    else if (supportObjectLabel == "bookcase_lg") {
+      request->outCloud->center.z += 0.965+0.08;
+    }
+
 
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
     if (request->outCloud->isBaseObjectKnown) delete supportObject;
