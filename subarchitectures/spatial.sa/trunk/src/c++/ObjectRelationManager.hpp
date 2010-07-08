@@ -21,6 +21,7 @@
 #include <SpatialProperties.hpp>
 #include <FrontierInterface.hpp>
 #include <map>
+#include <set>
 #include <peekabot.hh>
 #include "RelationEvaluation.hpp"
 #include "DensitySampling.hpp"
@@ -98,6 +99,8 @@ protected:
   bool m_bDisplayVisualObjectsInPB;
 
   std::string m_planeModelFilename;
+
+  std::set<std::string> m_lookForObjects;
 
   peekabot::PeekabotClient m_PeekabotClient;  
   peekabot::GroupProxy m_planeProxies;

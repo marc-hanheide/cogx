@@ -232,7 +232,7 @@ evaluateInness(const Object *objectC, const Object *objectO)
     side5.radius3 = hb->thickness/2;
     sides.push_back(side5);
 
-    if (objectO->type == OBJECT_BOX) {
+    if (objectO->type == OBJECT_BOX || objectO->type == OBJECT_HOLLOW_BOX) {
       double penetrationPenalty = 0.0;
       vector<Vector3> patch;
       for (unsigned int i = 0; i < sides.size(); i++) {
