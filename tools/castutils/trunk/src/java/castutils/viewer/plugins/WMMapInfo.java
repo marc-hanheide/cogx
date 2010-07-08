@@ -5,10 +5,6 @@ import java.util.Map.Entry;
 
 import castutils.slice.WMMap;
 
-import de.dfki.lt.tr.beliefs.data.Belief;
-import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
-
-
 /**
  * @author Marc Hanheide (marc@hanheide.de)
  *
