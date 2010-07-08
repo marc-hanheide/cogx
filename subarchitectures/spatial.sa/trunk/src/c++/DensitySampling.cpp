@@ -1362,7 +1362,8 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
     int zExtent,
     const vector<double> &values,
     double baseMultiplier,
-    double totalWeight)
+    double totalWeight,
+    const Cure::LocalGridMap<unsigned char> *lgm)
 {
   double cellSize = map.getCellSize();
   double kernelRadius = interval;
@@ -1389,6 +1390,15 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
       // Column center world coords
       pair<double, double> columnWorldXY =
 	map.gridToWorldCoords(x, y);
+
+      // If we're supplied with a lgm, and the column is in unknown space,
+      // skip it
+      if (lgm != 0) {
+	int lgmX, lgmY;
+	lgm->worldCoords2Index(columnWorldXY.first, columnWorldXY.second, lgmX, lgmY);
+	if ((*lgm)(lgmX, lgmY) == '2') 
+	  continue;
+      }
 
       vector<vector<double> >sampleZValues;
       vector<vector<double> >sampleWeights;
