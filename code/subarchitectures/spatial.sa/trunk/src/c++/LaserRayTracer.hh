@@ -1,7 +1,6 @@
 #ifndef LASERRAYTRACER_H
 #define LASERRAYTRACER_H
 
-#include <AddressBank/ConfigFileReader.hh>
 #include "SpatialGridMap.hh"
 #include <vector>
 #include <cmath>
@@ -218,21 +217,22 @@ template <class MapData> double
 
 	//TODO: Check if the bloxel at height=z is occupied, if so call EmptierFunctor
 	//data() = '0';
-	for(typename vector<Bloxel<MapData> >::iterator it = (*m_map)(m_Xi,m_Yi).begin(); it != (*m_map)(m_Xi,m_Yi).end(); it++){
-	  
-	  if ((*m_map)(m_Xi,m_Yi).size() > 1)
-//	  printf("grid cell (%d, %d) has %d bloxels, celing: %f data: %d \n",m_Xi,m_Yi,(*m_map)(m_Xi,m_Yi).size(),it->celing, int(it->data)); 
-	  
-	  if (LaserPose[2] < it->celing){
-	     //this is the bloxel that our point is in
-	     if(checkobstacle(it->data)){
-	       //if this is an obstacle carve an empty box in it of minbloxel size
-	       //printf("obstacle!, delete it %d, %d \n",m_Xi,m_Yi);
-	       m_map->boxSubColumnModifier(m_Xi,m_Yi,LaserPose[2],m_map->getMinBloxelHeight()*2,makeempty);
-	     }
-	   }
-	 
-	 }
+	typedef vector<Bloxel<MapData> > MapDataColumn;
+	MapDataColumn &column = (*m_map)(m_Xi, m_Yi);
+//	for(MapDataColumn::iterator it = column.begin(); it != column.end(); it++){
+	for(unsigned int i = 0; i < column.size(); i++){
+
+	  //	  printf("grid cell (%d, %d) has %d bloxels, celing: %f data: %d \n",m_Xi,m_Yi,(*m_map)(m_Xi,m_Yi).size(),it->celing, int(it->data)); 
+
+	  if (LaserPose[2] < column[i].celing){
+	    //this is the bloxel that our point is in
+	    if(checkobstacle(column[i].data)){
+	      //if this is an obstacle carve an empty box in it of minbloxel size
+	      //printf("obstacle!, delete it %d, %d \n",m_Xi,m_Yi);
+	      m_map->boxSubColumnModifier(m_Xi,m_Yi,LaserPose[2],m_map->getMinBloxelHeight()*2,makeempty);
+	    }
+	  }
+	}
 	stepRay();
       }
       if (!isOutside() && getDistToStart() < maxRayLenght) {

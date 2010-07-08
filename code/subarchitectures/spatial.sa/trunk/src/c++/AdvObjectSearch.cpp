@@ -295,6 +295,7 @@ namespace spatial
 
     if (isWaitingForDetection){
     try{
+      log("new visual object");
        VisionData::VisualObjectPtr visualobject(getMemoryEntry<
            VisionData::VisualObject> (objID.address));
 
@@ -330,15 +331,27 @@ namespace spatial
     }
   }
 
+  void AdvObjectSearch::SaveSearchPerformance(std::string result){
+    ofstream out("performancelog.txt",ios_base::app);
+    //    char buf[1024];
+    double dif = difftime(endtime,starttime);
+    out << m_SearchMode << " took " << dif << " seconds with " << m_totalViewPoints << " view points" << "-- " << result << endl;
+    //sprintf(buf,"%s search took %.2lf seconds with %d view points",m_SearchMode.c_str,dif,m_totalViewPoints);
+    //out.write(buf,sizeof(buf)/sizeof(char));
+    out.close();
+    
+  }
 void AdvObjectSearch::DetectionComplete(bool isDetected){
   m_gotDetectionResult = true;
   if (isDetected){
+    log("object detected");
     m_isDetected = true;
     // if we are doing indirect search then ask & initialize next object
-    if (m_SearchMode == "direct" || (m_SearchMode == "indirect" && m_CurrentTarget == "rice") ||
-        (m_SearchMode == "indirect" && m_CurrentTarget == "rice")){
+    if (m_CurrentTarget == "rice"){
+      time(&endtime);
       log("Object Detected, Mission Completed.");
       m_command = IDLE;
+      SaveSearchPerformance("successful");
     }
     else if (m_SearchMode == "indirect" && m_CurrentTarget != "rice"){
       log("detected, changing current target to rice, asking for distribution.");
@@ -369,7 +382,11 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         SpatialData::NavCommand> (objID.address));
     if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
          log("NavCommand succeeded.");
-	 m_totalViewPoints++;
+	 if (m_SearchMode == "uniform" && m_CurrentTarget == "printer")
+	   m_totalViewPoints = m_totalViewPoints + 3;
+	 else
+	   m_totalViewPoints++;
+
 	 log("reached %i th viewpoint", m_totalViewPoints);
          log("Modifying seen map");
          std::pair<int, int> vp;
@@ -410,6 +427,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         VPDistribution.push_back(tiltreq->tiltAngles[i]);
       }
       gotTiltAngles = true;
+      log("out of tilt angles");
     }
     catch (DoesNotExistOnWMException excp) {
       log("Error!  GridMapDouble does not exist on WM!");
@@ -530,25 +548,27 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       //lockComponent();
       m_Dlgm->updatePlaneDisplay(&m_SlamRobotPose);
 
-      key = cvWaitKey(100);
-      if (key == 115) {
+      int cvkey = cvWaitKey(100);
+      char key = char(cvkey);
+      if (cvkey != -1){
+      if (key == 's') {
         m_table_phase = true;
         log("Saving plane map!");
         SavePlaneMap();
         cvReleaseImage(&img);
       }
-      else if (key == 116) { // t
+      else if (key == 't') { // t
         log("Table mode!");
 
         m_table_phase = true;
 
       }
-      else if (key == 103){ // g
+      else if (key == 'g'){ // g
         log("sampling grid!");
         SampleGrid();
 
       }
-      else if (key == 112) { // p
+      else if (key == 'p') { // p
         if (gotDistribution) {
           log("Getting next view");
           GoToNBV();
@@ -558,14 +578,16 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
         }
       }
-      else if (key == 118) { // v
+      else if (key == 'v') { // v
         addRecognizer3DCommand(VisionData::RECOGNIZE,"rice","");
       }
-      else if (key == 119){ // w
+      else if (key == 'w'){ // w
         addRecognizer3DCommand(VisionData::RECOGNIZE,"printer","");
       }
-      else if (key == 117) { // u
+      else if (key == 'u') { // u
+	time(&starttime);
         ResetSeenMap();
+	m_totalViewPoints = 0;
         m_SearchMode = "uniform";
 	m_CurrentTarget = "printer";
         VisitedVPs.clear();
@@ -575,19 +597,27 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         ReadPlaneMap();
         m_command = ASK_FOR_DISTRIBUTION;
       }
-      else if (key == 100) { // d
+      else if (key == 'd') { // d
+	time(&starttime);
         m_SearchMode = "direct";
         ResetSeenMap();
+	m_totalViewPoints = 0;
         VisitedVPs.clear();
+	pIn= 0.8;
+	pOut = 0.2;
         log("Direct search");
         log("Reading plane map!");
         m_CurrentTarget = "rice";
         ReadPlaneMap();
         m_command = ASK_FOR_DISTRIBUTION;
       }
-      else if (key == 105) { // i
+      else if (key == 'i') { // i
+	time(&starttime);
+	pIn = 0.8;
+	pOut = 0.2;
         ResetSeenMap();
         VisitedVPs.clear();
+	m_totalViewPoints = 0;
         m_SearchMode = "indirect";
         log("Indirect search");
         log("Reading plane map!");
@@ -595,7 +625,10 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         ReadPlaneMap();
         m_command = ASK_FOR_DISTRIBUTION;
       }
-
+      else {
+		log("Unknown key %c",char(key));
+      	}
+      }
       InterpretCommand();
       sleepComponent(100);
 
@@ -623,6 +656,8 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         m_command=IDLE;
         if (isStopSearch(0.7)){
           log("Search failed.");
+	  time(&endtime);
+	  SaveSearchPerformance("failed");
         }
         else{
           GoToNBV();
@@ -685,12 +720,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
           m_command=EXECUTENEXT;
         }
         else if (m_SearchMode == "uniform" && m_CurrentTarget == "rice"){
-          for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-	    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	      (*m_pdf)(x, y).isSeen = false;
-	    }
-	  }
-	  
+	  ResetSeenMap();
           std::vector<std::string> objects;
           objects.push_back("rice");
           objects.push_back("printer");
@@ -738,7 +768,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     
     log("waiting for tilt angles");
     while(!gotTiltAngles){
-      sleep(500);
+      sleepComponent(500);
     }
 
     //Calculate necessary tilt angle
@@ -750,7 +780,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     p1.z = 1.4; //camera is 1.4 high
     tilt = 0;
     for (unsigned int i=0; i < VPDistribution.size();i++){
-      log("tilt dist: %f,%f,%f",VPDistribution[i].x,VPDistribution[i].y,VPDistribution[i].z); 
+      //log("tilt dist: %f,%f,%f",VPDistribution[i].x,VPDistribution[i].y,VPDistribution[i].z); 
       d1 = p1.z  - VPDistribution[i].z;
       d2 = sqrt(pow(p1.x - VPDistribution[i].x,2) + pow(p1.y - VPDistribution[i].y,2));
       tilt += atan(d1/d2);
@@ -896,6 +926,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
 if (!(m_SearchMode == "uniform" && m_CurrentTarget == "printer")){
     /******* Get tilt angles  to calculate desired tilt value*/
+  log("asking for tilt angles");
     std::vector<std::string> objects;
     if (m_SearchMode =="direct"){
       log("asking prior: direct");
@@ -1196,7 +1227,7 @@ if (!(m_SearchMode == "uniform" && m_CurrentTarget == "printer")){
     log("pdfIn + Cout sums to: %f", sumin + pOut);
 
     /* DEBUG */
-
+    log("current vp index %d , cones size %d", m_CurrentViewPointIndex,m_VCones.size());
     double denomsum = 0.0;
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {

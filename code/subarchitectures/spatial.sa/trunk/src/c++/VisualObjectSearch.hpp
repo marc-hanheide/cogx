@@ -21,6 +21,7 @@
 #include <Navigation/GridLineRayTracer.hh>
 #include <gtk/gtk.h>
 
+#include <PTZ.hpp>
 #include "RelationEvaluation.hpp"
 #include <NavData.hpp>
 #include <VisionData.hpp>
@@ -71,6 +72,8 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void putObjectInMap(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>
 	  &map, spatial::Object *object);
 
+      void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
+      void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
       void PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
       void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID);
       void newVisualObject(const cast::cdl::WorkingMemoryChange &objID);
@@ -82,12 +85,17 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void SaveCureMapToFile();
       void LoadSpatialRelations(std::string filename);
 
+      void GoToNextBestView();
       void InterpretCommand();
       void AskForDistribution();
       int GetViewConeSums(std::vector <SensingAction > samplepoints);
       void LookforObjectWithStrategy(std::string name, SearchMode mode);
       void UnsuccessfulDetection(SensingAction viewcone);
       void InitializePDF();
+      void InitializePDF(double initprob);
+
+      void DetectionComplete(bool isDetected);
+      void MovePanTilt(double pan, double tilt, double tolerance);
       ObjectPairRelation GetSecondaryObject(std::string name);
       SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* m_map;
       SpatialGridMap::LaserRayTracer<SpatialGridMap::GridMapData>* m_tracer;
@@ -103,7 +111,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
 	STOP,
 	ASK_FOR_DISTRIBUTION,
 	RECOGNIZE,
-	NEXT_NBV,
+	GOTO_NEXT_NBV,
 	IDLE
       };
 
@@ -123,10 +131,12 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       int searchChainPos;
 
       AVSCommand m_command;
+      SensingAction m_currentVP;
       std::vector<ObjectRelations> objectData;
       std::vector<SensingAction> exploredActions;
       VisualPB_Bloxel* pbVis;
 
+      ptz::PTZInterfacePrx m_ptzInterface;
       IceUtil::Mutex m_Mutex;
       Cure::Pose3D m_SlamRobotPose;
       Cure::SensorPose m_LaserPoseR;
@@ -155,6 +165,8 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       GtkWidget *savebutton,*readbutton,*direct_uninformed, *direct_informed,*indirect;
       GtkWidget *hbox;
 
+      bool isWaitingForDetection;
+      bool m_usePTZ;
       bool m_savemapmode;
       bool m_maploaded;
       std::string m_curemapfile;

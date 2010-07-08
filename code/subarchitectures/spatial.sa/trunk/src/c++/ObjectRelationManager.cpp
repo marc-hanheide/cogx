@@ -148,6 +148,16 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
     m_sampler.setKernelWidthFactor(atoi(it->second.c_str()));
   }
 
+  istringstream labeliss;
+  if((it = _config.find("--look-for-objects")) != _config.end()){
+		labeliss.str(it->second);
+	std::string label, plystr, siftstr;
+	
+	while(labeliss >> label){
+	  m_lookForObjects.insert(label);
+	}
+  }
+
   m_RetryDelay = 10;
 
   Cure::ConfigFileReader *cfg = 0;
@@ -316,10 +326,9 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
     m_timeSinceLastMoved = 0.0;
     if (m_bRecognitionIssuedThisStop) {
       // Signal tracking stop
-      addTrackerCommand(VisionData::REMOVEMODEL, "joystick");
-      addTrackerCommand(VisionData::REMOVEMODEL, "krispies");
-      addTrackerCommand(VisionData::REMOVEMODEL, "rice");
-      addTrackerCommand(VisionData::REMOVEMODEL, "printer");
+      for (std::set<string>::iterator it = m_lookForObjects.begin(); it != m_lookForObjects.end(); it++) {
+	addTrackerCommand(VisionData::REMOVEMODEL, it->c_str());
+      }
     }
     m_bRecognitionIssuedThisStop = false;
   }
@@ -459,10 +468,9 @@ void ObjectRelationManager::runComponent()
       if (!m_bRecognitionIssuedThisStop &&
 	  m_timeSinceLastMoved > m_recognitionTimeThreshold) {
 	log("Issuing recognition commands");
-	addRecognizer3DCommand(VisionData::RECOGNIZE, "joystick", "");
-	addRecognizer3DCommand(VisionData::RECOGNIZE, "krispies", "");
-	addRecognizer3DCommand(VisionData::RECOGNIZE, "rice", "");
-	addRecognizer3DCommand(VisionData::RECOGNIZE, "printer", "");
+	for (std::set<string>::iterator it = m_lookForObjects.begin(); it != m_lookForObjects.end(); it++) {
+	  addRecognizer3DCommand(VisionData::RECOGNIZE, it->c_str(), "");
+	}
 	m_bRecognitionIssuedThisStop = true;
       }
 
@@ -856,9 +864,14 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	m_objects[obsLabel] = new SpatialData::SpatialObject;
 	m_objects[obsLabel]->label = obsLabel;
 	m_objects[obsLabel]->pose = pose;
+      }
 
+      if (m_objectModels.find(obsLabel) == m_objectModels.end()) {
 	m_objectModels[obsLabel] = generateNewObjectModel(obsLabel);
       }
+
+      spatial::Object *obsObject = m_objectModels[obsLabel];
+
       //    log("2");
 
       double diff = length(m_objects[obsLabel]->pose.pos - pose.pos);
@@ -866,7 +879,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
       diff += length(getRow(m_objects[obsLabel]->pose.rot - pose.rot, 2));
       if (diff > 0.01 || bNewObject) {
 	//      log("3");
-	if (m_objectModels[obsLabel]->type == OBJECT_PLANE ||
+	if (obsObject->type == OBJECT_PLANE ||
 	    //FIXME
 	    obsLabel == "table") {
 	  // Flatten pose for plane objects
@@ -902,8 +915,8 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	//    log("4");
 
 	if (m_bDisplayVisualObjectsInPB && m_objectProxies.is_assigned()) {
-	  if (m_objectModels[obsLabel]->type == OBJECT_BOX) {
-	    BoxObject *box = (BoxObject*)m_objectModels[obsLabel];
+	  if (obsObject->type == OBJECT_BOX) {
+	    BoxObject *box = (BoxObject*)obsObject;
 	    peekabot::CubeProxy theobjectproxy;
 	    peekabot::GroupProxy root;
 	    root.assign(m_PeekabotClient, "root");
@@ -1144,8 +1157,9 @@ ObjectRelationManager::recomputeOnnessForObject(const string &label)
   }
 
 //  log("1");
+  spatial::Object *obj = m_objectModels[label];
 
-  m_objectModels[label]->pose = m_objects[label]->pose;
+  obj->pose = m_objects[label]->pose;
 
 //  log("2");
 
@@ -1165,7 +1179,7 @@ ObjectRelationManager::recomputeOnnessForObject(const string &label)
       return;
     }
 //    log("3");
-    double onness = evaluateOnness(&po, m_objectModels[label]);
+    double onness = evaluateOnness(&po, obj);
 //    log("4");
     log("Object %s on object %s is %f", label.c_str(), 
 	it->second->label.c_str(), onness);
@@ -1184,7 +1198,7 @@ ObjectRelationManager::recomputeOnnessForObject(const string &label)
 	m_objects[supportObjectLabel]->pose;
 
       double onness = evaluateOnness(m_objectModels[supportObjectLabel],
-	  m_objectModels[label]);
+	  obj);
 
       log("Object %s on object %s is %f", label.c_str(), 
 	  it->second->label.c_str(), onness);
@@ -1204,7 +1218,9 @@ ObjectRelationManager::recomputeInnessForObject(const string &label)
     return;
   }
 
-  m_objectModels[label]->pose = m_objects[label]->pose;
+  spatial::Object *obj = m_objectModels[label];
+
+  obj->pose = m_objects[label]->pose;
 
   for (map<string, SpatialObjectPtr>::iterator it = m_objects.begin();
       it != m_objects.end(); it++) {
@@ -1219,7 +1235,7 @@ ObjectRelationManager::recomputeInnessForObject(const string &label)
 	m_objects[containerObjectLabel]->pose;
 
       double inness = evaluateInness(m_objectModels[containerObjectLabel],
-	  m_objectModels[label]);
+	  obj);
 
       log("Object %s in object %s is %f", label.c_str(),
 	  it->second->label.c_str(), inness);
@@ -1386,7 +1402,7 @@ ObjectRelationManager::addTrackerCommand(VisionData::TrackingCommandType cmd, st
   log("addTrackerCommand");
   track_cmd->cmd = cmd;
   if (m_objects.find(label) == m_objects.end()) {
-    log("Error! Can't issue tracking command; object uknown!");
+    log("Error! Can't issue tracking command; object unknown!");
     return;
   }
 
@@ -1478,17 +1494,23 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       // For now, assume each label represents a unique object
 
       // Check if the object model is known (with a known pose).
+      if (m_objectModels.find(supportObjectLabel) == m_objectModels.end()) {
+	supportObject = generateNewObjectModel(supportObjectLabel);
+      }
+      else {
+	// Pose is known
+	supportObject = m_objectModels[supportObjectLabel];
+      }
+
       // Otherwise, generate a model and have its poses randomly sampled
       if (m_objects.find(supportObjectLabel) == m_objects.end()) {
 	// The pose of this object is not known.
 	log("Support object was unknown; computing distribution with object in origin");
 
 	request->outCloud->isBaseObjectKnown = false;
-	supportObject = generateNewObjectModel(supportObjectLabel);
       }
       else {
-	// Pose is known
-	supportObject = m_objectModels[supportObjectLabel];
+	supportObject->pose = m_objects[supportObjectLabel]->pose;
       }
     }
 //    objectChain.push_back(supportObject);
@@ -1504,12 +1526,8 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       }
       else {
 	// For now, assume each label represents a unique object
-	if (m_objects.find(*it) == m_objects.end()) {
-	  // New object
-	  log("New SpatialObject: %s", it->c_str());
-	  m_objects[*it] = new SpatialData::SpatialObject;
-	  m_objects[*it]->label = *it;
-
+	if (m_objectModels.find(*it) == m_objectModels.end()) {
+	  // New object model
 	  m_objectModels[*it] = generateNewObjectModel(*it);
 	}
 	objectChain.push_back(m_objectModels[*it]);
@@ -1540,6 +1558,9 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	request->outCloud->zExtent,
 	request->outCloud->values,
 	request->outCloud->total);
+    if (request->outCloud->isBaseObjectKnown) {
+      request->outCloud->center += m_objects[supportObjectLabel]->pose.pos;
+    }
 
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
     if (request->outCloud->isBaseObjectKnown) delete supportObject;
@@ -1587,6 +1608,11 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
 	supportObject = 0;
       }
       else {
+	if (m_objectModels.find(supportObjectLabel) == m_objectModels.end()) {
+	  m_objectModels[supportObjectLabel] =
+	    generateNewObjectModel(supportObjectLabel);
+	}
+
 	supportObject = m_objectModels[supportObjectLabel];
       }
     }
