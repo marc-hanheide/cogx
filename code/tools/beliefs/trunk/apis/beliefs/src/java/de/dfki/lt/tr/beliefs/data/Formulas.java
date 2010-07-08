@@ -92,7 +92,7 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 
 	// @Override
 	public Iterator<ProbFormula> iterator() {
-		final Iterator<FormulaProbPair> internalIter = _content.iterator();
+		final Iterator<FormulaProbPair> internalIter = _content.values.iterator();
 		return new Iterator<ProbFormula>() {
 
 			@Override
@@ -239,11 +239,11 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 	}
 
 	public int size() {
-		return _content.size();
+		return _content.values.size();
 	}
 
 	public Formula firstValue() {
-		return Formula.create(_content.get(0).val);
+		return Formula.create(_content.values.get(0).val);
 	}
 
 	public Formula getMostLikely() {
