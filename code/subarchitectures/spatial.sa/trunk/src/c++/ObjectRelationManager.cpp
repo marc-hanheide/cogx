@@ -30,6 +30,8 @@
 
 #define USE_KDE
 
+#define ASSERT_TYPE(x) {if (x->type != OBJECT_PLANE && x->type != OBJECT_BOX && x->type != OBJECT_HOLLOW_BOX) {cerr << "Type assert on " << __LINE__ << endl;}}
+
 using namespace cast;
 #include <Pose3.h>
 
@@ -869,6 +871,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
       if (m_objectModels.find(obsLabel) == m_objectModels.end()) {
 	m_objectModels[obsLabel] = generateNewObjectModel(obsLabel);
       }
+      ASSERT_TYPE(m_objectModels[obsLabel]);
 
       spatial::Object *obsObject = m_objectModels[obsLabel];
 
@@ -1157,6 +1160,7 @@ ObjectRelationManager::recomputeOnnessForObject(const string &label)
   }
 
 //  log("1");
+      ASSERT_TYPE(m_objectModels[label]);
   spatial::Object *obj = m_objectModels[label];
 
   obj->pose = m_objects[label]->pose;
@@ -1194,6 +1198,7 @@ ObjectRelationManager::recomputeOnnessForObject(const string &label)
 	log("Error! Support object model was missing!");
 	return;
       }
+      ASSERT_TYPE(m_objectModels[supportObjectLabel]);
       m_objectModels[supportObjectLabel]->pose = 
 	m_objects[supportObjectLabel]->pose;
 
@@ -1218,6 +1223,7 @@ ObjectRelationManager::recomputeInnessForObject(const string &label)
     return;
   }
 
+      ASSERT_TYPE(m_objectModels[label]);
   spatial::Object *obj = m_objectModels[label];
 
   obj->pose = m_objects[label]->pose;
@@ -1231,6 +1237,7 @@ ObjectRelationManager::recomputeInnessForObject(const string &label)
 	log("Error! Container object model was missing!");
 	return;
       }
+      ASSERT_TYPE(m_objectModels[containerObjectLabel]);
       m_objectModels[containerObjectLabel]->pose =
 	m_objects[containerObjectLabel]->pose;
 
@@ -1273,7 +1280,7 @@ ObjectRelationManager::recomputeOnnessForPlane(const string &planeLabel)
     if (m_objectModels.find(objectLabel) == m_objectModels.end()) {
       log("Error! Object model was missing!");
     }
-
+    ASSERT_TYPE(m_objectModels[objectLabel]);
     m_objectModels[objectLabel]->pose = m_objects[objectLabel]->pose;
     log("Evaluating object %s on object %s",objectLabel.c_str(), 
 	planeLabel.c_str());
@@ -1292,7 +1299,7 @@ ObjectRelationManager::sampleOnnessForObject(const string &supLabel,
     log("Error! Support object model missing!");
     return;
   }
-  m_objectModels[supLabel]->pose = 
+  ASSERT_TYPE(m_objectModels[supLabel]);
     m_objects[supLabel]->pose;
 
   spatial::Object *objectS = m_objectModels[supLabel];
@@ -1302,6 +1309,7 @@ ObjectRelationManager::sampleOnnessForObject(const string &supLabel,
     return;
   }
 
+  ASSERT_TYPE(m_objectModels[onLabel]);
   spatial::Object *objectO = m_objectModels[onLabel];
 
   Pose3 oldPose = objectO->pose;
@@ -1362,6 +1370,7 @@ ObjectRelationManager::sampleOnnessForPlane(const string &planeLabel, const stri
     return;
   }
 
+  ASSERT_TYPE(m_objectModels[objectLabel]);
   spatial::Object *objectO = m_objectModels[objectLabel];
 
   Pose3 oldPose = objectO->pose;
@@ -1500,6 +1509,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       else {
 	// Pose is known
 	supportObject = m_objectModels[supportObjectLabel];
+  ASSERT_TYPE(supportObject);
       }
 
       // Otherwise, generate a model and have its poses randomly sampled
@@ -1530,6 +1540,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	  // New object model
 	  m_objectModels[*it] = generateNewObjectModel(*it);
 	}
+	ASSERT_TYPE(m_objectModels[*it]);
 	objectChain.push_back(m_objectModels[*it]);
 	if (rit != request->relationTypes.end()) {
 	  switch (*rit) {
@@ -1612,6 +1623,7 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
 	  m_objectModels[supportObjectLabel] =
 	    generateNewObjectModel(supportObjectLabel);
 	}
+	  ASSERT_TYPE(m_objectModels[supportObjectLabel]);
 
 	supportObject = m_objectModels[supportObjectLabel];
       }
