@@ -36,13 +36,12 @@ public class PlaceBeliefGoalGenerator extends
 			ExploreMotive result = new ExploreMotive();
 			result.created = getCASTTime();
 			result.correspondingUnion = "";
-			result.goal = "(explored " + belief.getId() + ")";
 			result.maxExecutionTime = MAX_EXECUTION_TIME;
 			result.maxPlanningTime = MAX_PLANNING_TIME;
 			result.priority = MotivePriority.UNSURFACE;
 			result.referenceEntry = adr;
 			result.status = MotiveStatus.UNSURFACED;
-			fillValues(result);
+			fillValues(belief, result);
 			return result;
 		}
 		return null;
@@ -57,15 +56,16 @@ public class PlaceBeliefGoalGenerator extends
 				.getDistribution().getMostLikely().getBoolean();
 		// if that is a place holder
 		if (!isExplored) {
-			fillValues(motive);
+			fillValues(belief, motive);
 			return motive;
 		} else {
 			return null;
 		}
 	}
 
-	private void fillValues(ExploreMotive motive) {
+	private void fillValues(CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief, ExploreMotive motive) {
 		motive.updated=getCASTTime();
+		motive.goal = "(explored " + belief.getId() + ")";
 	}
 
 }
