@@ -266,11 +266,6 @@ namespace spatial
        FrontierInterface::ObjectTiltAngleRequest> (cdl::OVERWRITE),
        new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
        &VisualObjectSearch::owtTiltAngleRequest));
-
-       addChangeFilter(createLocalTypeFilter<
-       SpatialData::NavCommand> (cdl::OVERWRITE),
-       new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
-       &VisualObjectSearch::owtNavCommand));
 */
        addChangeFilter(createGlobalTypeFilter<
        VisionData::Recognizer3DCommand> (cdl::OVERWRITE),
@@ -282,16 +277,16 @@ namespace spatial
        new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
        &VisualObjectSearch::owtWeightedPointCloud));
 
-//    addChangeFilter(createGlobalTypeFilter<
-//	VisionData::VisualObject> (cdl::OVERWRITE),
-//	new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
-//	  &VisualObjectSearch::newVisualObject));
+    addChangeFilter(createGlobalTypeFilter<
+	VisionData::VisualObject> (cdl::OVERWRITE),
+	new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
+	  &VisualObjectSearch::newVisualObject));
+
 
     addChangeFilter(createGlobalTypeFilter<
 	VisionData::VisualObject> (cdl::ADD),
 	new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
 	  &VisualObjectSearch::newVisualObject));
-
 
   }
 
@@ -555,7 +550,7 @@ namespace spatial
     log("myline %i", __LINE__);
      pbVis->Display2DCureMap(m_lgm);
     log("myline %i", __LINE__);
-  //  m_maploaded = true;
+    m_maploaded = true;
   }
 
   void VisualObjectSearch::savemap( GtkWidget *widget,gpointer data )
@@ -651,11 +646,7 @@ namespace spatial
       while(gtk_events_pending())
 	gtk_main_iteration();
 
-    log("myline %i", __LINE__);
       InterpretCommand();
-    log("myline %i", __LINE__);
-      if(m_maploaded)
-	SampleAndSelect();
       m_Mutex.unlock();
       sleep(1);
     }
@@ -708,57 +699,80 @@ namespace spatial
     }
     return obj;
   }
-
   void VisualObjectSearch::InterpretCommand(){
     switch (m_command)
-    {
+        {
       case STOP: {
-		   log("Stopped.");
-		   m_command = IDLE;
-		   log("Command: STOP");
-		   Cure::Pose3D pos;
-		   PostNavCommand(pos, SpatialData::STOP);
-		   break;
-		 }
-      case GOTO_NEXT_NBV:{
-			   m_command = IDLE;
-			   GoToNextBestView();
-			 }
+        log("Stopped.");
+        m_command = IDLE;
+        log("Command: STOP");
+        Cure::Pose3D pos;
+        PostNavCommand(pos, SpatialData::STOP);
+        break;
+      }
       case ASK_FOR_DISTRIBUTION:{
-				  m_command=IDLE;
-				  AskForDistribution();
-				}
+        m_command = IDLE;
+        AskForDistribution();
+	break;
+      }
+      case NEXT_NBV:{
+        //TODO isStopSearch then STOP	
+        GoToNBV();
+        m_command = IDLE; //Wait to get in position
+	break;
+      }
       case RECOGNIZE:{
-		       m_command = IDLE;
-      		addRecognizer3DCommand(VisionData::RECOGNIZE, currentTarget,"");
-		     }
+	Recognize();
+        m_command = IDLE; //Wait for recognition
+	break;
+      }
       case IDLE:{
-		  break;
-		}
+	break;
+      }
+    }
+  }
+  void VisualObjectSearch::GoToNBV(){
+    m_nbv = SampleAndSelect();
+
+    // Send move command
+    Cure::Pose3D pos;
+    pos.setX(m_nbv.pos[0]);
+    pos.setY(m_nbv.pos[1]);
+    pos.setTheta(m_nbv.pan); 
+    log("posting nav command");
+    PostNavCommand(pos, SpatialData::GOTOPOSITION);
+  }
+
+void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &objID){
+    try{
+      log("nav command overwritten");
+      SpatialData::NavCommandPtr cmd(getMemoryEntry<
+	  SpatialData::NavCommand> (objID.address));
+      if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
+	log("NavCommand succeeded.");
+
+	// Move pan tilt to correct position
+	MovePanTilt(0, m_nbv.tilt, 0.08);
+
+	m_command = RECOGNIZE;
+      }
+      else if (cmd->comp == SpatialData::COMMANDFAILED){
+	log("NavCommand failed.Getting next view.");
+	m_command=NEXT_NBV;
+      }
+    }
+    catch (const CASTException &e) {
+      //log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+      log("CASTException in VisualObjectSearch::owtNavCommand");
     }
   }
 
-  void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &objID){
-    log("I do naaathing.");
-  
-    try{
-      log("nav command overwritten");
-    SpatialData::NavCommandPtr cmd(getMemoryEntry<
-        SpatialData::NavCommand> (objID.address));
-    if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
-      MovePanTilt(0,m_currentVP.tilt,0.1);
-      m_command = RECOGNIZE;
-    }
-  
-  }
-    catch(std::exception e) { }
-  }
   void VisualObjectSearch::LookforObjectWithStrategy(std::string name, SearchMode mode){
     //ask   
     if (mode == DIRECT_UNINFORMED){
       currentSearchMode = DIRECT_UNINFORMED;
       currentTarget  = name;
-      m_command = GOTO_NEXT_NBV;
+      m_command = NEXT_NBV;
     }
     else if (mode == DIRECT_INFORMED){
       currentSearchMode = DIRECT_INFORMED;
@@ -778,13 +792,15 @@ namespace spatial
       for(unsigned int i = 0; i < searchChain.size(); i++){
 	cout << searchChain[i].primaryobject << " " << searchChain[i].secobject << " " << searchChain[i].prob << endl;
       }
-      m_command = ASK_FOR_DISTRIBUTION;
+      currentTarget = name;
+      m_command = NEXT_NBV;
     }
   }
 
   void VisualObjectSearch::AskForDistribution(){
     log("Asking for distribution");
     m_command = IDLE;
+
     //if informed direct, get search chain, construct distribution parameters and ask for it
     if (currentSearchMode == DIRECT_INFORMED){
       vector<FrontierInterface::ObjectRelation> relations;
@@ -792,11 +808,10 @@ namespace spatial
       ObjectPairRelation rel;
       string name = currentTarget;
       while(true){
-	//finally set those bloxels that belongs to this conee(true){
 	rel = GetSecondaryObject(name);
 	if(rel.primaryobject == "")
 	  break;
-	searchChain.push_back(rel);
+	searchChain.push_back(rel); 
 	name = rel.secobject;
       }
       labels.push_back(currentTarget);
@@ -820,10 +835,38 @@ namespace spatial
       }
 
     }
-
-    else if (currentSearchMode == INDIRECT){
-    }
     //if indirect look where we are in the chain ask for it's distribution
+    else if (currentSearchMode == INDIRECT){
+      if(currentTarget == searchChain.back().secobject){
+	// This is the first target, no relation exists
+	// Just use the predefined uniform PDF
+	return;
+      }
+
+      vector<FrontierInterface::ObjectRelation> relations;
+      vector<string> labels;
+
+      unsigned int i;
+      for(i=0; i<searchChain.size(); i++){
+	if(searchChain[i].primaryobject == currentTarget){
+	  break;
+	}
+      }
+
+      labels.push_back(currentTarget);
+      relations.push_back(searchChain[i].relation);
+      labels.push_back(searchChain[i].secobject);
+
+      FrontierInterface::WeightedPointCloudPtr queryCloud = new FrontierInterface::WeightedPointCloud;
+      //write lgm to WM
+      FrontierInterface::ObjectPriorRequestPtr objreq =
+	new FrontierInterface::ObjectPriorRequest;
+      objreq->relationTypes = relations; // ON or IN or whatnot
+      objreq->objects = labels;	// Names of objects, starting with the query object
+      objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
+      objreq->outCloud = queryCloud;	// Data struct to receive output
+      addToWorkingMemory(newDataID(), objreq);
+    }
   }
 
   void
@@ -848,16 +891,8 @@ namespace spatial
 	}
 	else {
 	  log("Got distribution around unknown object pose");
-//	if(currentSearchMode == DIRECT_INFORMED){
-//	  log("got direct point cloud");
-	  // the cloud is centered around 0,0, TODO: center the cloud 
-	  // on possible locations of the most supportive object, hint use Sample and Select
-	  // for this, ask Alper if you are not already him.
-
 	}
-//	else if(currentSearchMode == INDIRECT){
-//
-//	}
+	m_command = NEXT_NBV;
 
 	vector< pair<double,double> > thresholds;
 	thresholds.push_back(make_pair(1e-4,1e-3));
@@ -891,15 +926,6 @@ namespace spatial
     return true;
   }
 
-  void VisualObjectSearch::GoToNextBestView(){
-
-    m_currentVP = SampleAndSelect();
-    Cure::Pose3D pos;
-    pos.setX(m_currentVP.pos[0]);
-    pos.setY(m_currentVP.pos[1]);
-    pos.setTheta(m_currentVP.pan);
-    PostNavCommand(pos, SpatialData::GOTOPOSITION);
-  }
   VisualObjectSearch::SensingAction VisualObjectSearch::SampleAndSelect(){
 
     double cameraheight = 1.4;
@@ -942,7 +968,7 @@ namespace spatial
       int bloxelY = samplepoint.second + m_gridsize/2;
       pair<double,double> worldCoords = m_map->gridToWorldCoords(bloxelX,bloxelY);
 
-      if (isCircleFree(worldCoords.first, worldCoords.second, 0.1) && (*m_lgm)(samplepoint.first,samplepoint.second) == '0'){
+      if (isCircleFree(worldCoords.first, worldCoords.second, 0.5) && (*m_lgm)(samplepoint.first,samplepoint.second) == '0'){
 	//cout << "sample point: " << samplepoint.first << "," << samplepoint.second << endl;
 	//check if the sample point too close to an obstacle by a box query 
 	//cout << "bloxel world coords : " << worldCoords.first << "," << worldCoords.second << endl;
@@ -1013,7 +1039,7 @@ namespace spatial
 
     }
       catch (const CASTException &e) {
-        //      log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+              log("failed to delete SpatialDataCommand: %s", e.message.c_str());
           }
     }
   }
@@ -1067,18 +1093,46 @@ namespace spatial
     }
   }
 
- void VisualObjectSearch::DetectionComplete(bool isDetected){
-   if(true){
-     m_command = IDLE;
-     log("Object found.");
-   }
-   else
-   {
-     UnsuccessfulDetection(m_currentVP);
-     m_command = GOTO_NEXT_NBV;
-    }
+  void VisualObjectSearch::Recognize() {
+    isWaitingForDetection = true;
+    addRecognizer3DCommand(VisionData::RECOGNIZE,currentTarget,"");
+  }
 
-}
+
+  void VisualObjectSearch::DetectionComplete(bool isDetected){
+    if (isDetected){
+      // check for success
+      bool greatSuccess = false;
+      if(currentSearchMode == DIRECT_UNINFORMED || currentSearchMode == DIRECT_INFORMED){
+	greatSuccess = true;
+      }
+      else if(currentSearchMode == INDIRECT && searchChain[0].primaryobject == currentTarget){
+	greatSuccess = true;
+      }
+      if(greatSuccess){
+	m_command = IDLE;
+	log("Object Detected, Mission Completed.");
+	return;
+      }
+
+      // if we are doing indirect search then ask & initialize next object
+      if(currentSearchMode == INDIRECT){
+	for(unsigned int i=0; i<searchChain.size(); i++){
+	  if(searchChain[i].secobject == currentTarget){
+	    currentTarget = searchChain[i].primaryobject;
+	  }
+	  log("Object Detected, new target is %s", currentTarget.c_str());
+	  m_command = ASK_FOR_DISTRIBUTION;
+	}
+      }
+    } else {
+      // if we are not yet finished Go to NBV
+      log("Object not detected");
+      //MeasurementUpdate(false); TODO
+      m_command = NEXT_NBV;
+    }
+  }
+
   void
     VisualObjectSearch::newVisualObject(const cast::cdl::WorkingMemoryChange &objID) {
 
