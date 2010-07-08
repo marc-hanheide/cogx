@@ -49,6 +49,14 @@ import cast.core.CASTData;
 public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 		Map<WorkingMemoryAddress, T> {
 	/**
+	 * @author Marc Hanheide (marc@hanheide.de)
+	 * 
+	 */
+	public interface ViewFilter<T2> {
+		public boolean matches(T2 element);
+	}
+
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 6388467413187493228L;
@@ -63,6 +71,8 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 
 	private boolean shouldInitialize;
 
+	private ViewFilter<T> filter;
+
 	/**
 	 * an interface to register a {@link ChangeHandler} being triggered on any
 	 * change to the view.
@@ -74,10 +84,19 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 	 *            {@link castutils.castextensions.WMEntrySet.ChangeHandler} is
 	 *            designed for
 	 */
-	public interface ChangeHandler<T2 extends Ice.ObjectImpl> {
+	public static interface ChangeHandler<T2 extends Ice.ObjectImpl> {
 		void entryChanged(Map<WorkingMemoryAddress, T2> map,
 				WorkingMemoryChange wmc, T2 newEntry, T2 oldEntry)
 				throws CASTException;
+
+	}
+
+	public static class ExceptAllFilter<T2> implements ViewFilter<T2> {
+
+		@Override
+		public boolean matches(T2 element) {
+			return true;
+		}
 
 	}
 
@@ -118,11 +137,13 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 			case ADD:
 				try {
 					T m = component.getMemoryEntry(newWmc.address, specClass);
-					map.put(_wmc.address, (T) m.clone());
-					if (oldEntry != null)
-						newWmc.operation = WorkingMemoryOperation.OVERWRITE;
-					dispatchChangeEvent(map, newWmc, map.get(newWmc.address),
-							oldEntry);
+					if (filter.matches(m)) {
+						map.put(_wmc.address, (T) m.clone());
+						if (oldEntry != null)
+							newWmc.operation = WorkingMemoryOperation.OVERWRITE;
+						dispatchChangeEvent(map, newWmc, map
+								.get(newWmc.address), oldEntry);
+					}
 				} catch (DoesNotExistOnWMException e) {
 					// it's fine... if it's been deleted already, we have
 					// nothing to do here
@@ -131,10 +152,12 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 				break;
 			case OVERWRITE:
 				try {
-					map.put(newWmc.address, (T) component.getMemoryEntry(
-							newWmc.address, specClass).clone());
-					dispatchChangeEvent(map, newWmc, map.get(newWmc.address),
-							oldEntry);
+					T m = component.getMemoryEntry(newWmc.address, specClass);
+					if (filter.matches(m)) {
+						map.put(newWmc.address, (T) m.clone());
+						dispatchChangeEvent(map, newWmc, map
+								.get(newWmc.address), oldEntry);
+					}
 				} catch (DoesNotExistOnWMException e) {
 					// remove it locally
 					log("we expected to overwrite, but actually it has gone...");
@@ -171,7 +194,29 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 	 */
 	public static <T2 extends ObjectImpl> WMView<T2> create(
 			ManagedComponent component, Class<T2> encapsulatedType) {
-		WMView<T2> s = new WMView<T2>(component, encapsulatedType);
+		WMView<T2> s = new WMView<T2>(component, encapsulatedType,
+				new ExceptAllFilter<T2>());
+		return s;
+	}
+
+	/**
+	 * Factory method
+	 * 
+	 * @param <T2>
+	 *            the Java generics typename this view encapsulates
+	 * @param component
+	 *            we always need a working {@link ManagedComponent} to perform
+	 *            all the memory operations on
+	 * @param encapsulatedType
+	 *            the class object to register for
+	 * @param filter
+	 *            a content-based filter
+	 * @return a fresh WMView object
+	 */
+	public static <T2 extends ObjectImpl> WMView<T2> create(
+			ManagedComponent component, Class<T2> encapsulatedType,
+			ViewFilter<T2> filter) {
+		WMView<T2> s = new WMView<T2>(component, encapsulatedType, filter);
 		return s;
 	}
 
@@ -193,7 +238,31 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 			ManagedComponent component, Class<T2> encapsulatedType,
 			String subarchitectureId) {
 		WMView<T2> s = new WMView<T2>(component, encapsulatedType,
-				subarchitectureId);
+				subarchitectureId, new ExceptAllFilter<T2>());
+		return s;
+	}
+
+	/**
+	 * Factory method
+	 * 
+	 * @param <T2>
+	 *            the Java generics typename this view encapsulates
+	 * @param component
+	 *            we always need a working {@link ManagedComponent} to perform
+	 *            all the memory operations on
+	 * @param encapsulatedType
+	 *            the class object to register for
+	 * @param subarchitectureId
+	 *            restrict to this subarchitecture
+	 * @param filter
+	 *            an implemented filter to provide content based filtering
+	 * @return a fresh WMView object
+	 */
+	public static <T2 extends ObjectImpl> WMView<T2> create(
+			ManagedComponent component, Class<T2> encapsulatedType,
+			String subarchitectureId, ViewFilter<T2> filter) {
+		WMView<T2> s = new WMView<T2>(component, encapsulatedType,
+				subarchitectureId, filter);
 		return s;
 	}
 
@@ -205,7 +274,7 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 	 * @param subarchitectureId
 	 */
 	protected WMView(ManagedComponent component, Class<T> encapsulatedType,
-			String subarchitectureId) {
+			String subarchitectureId, ViewFilter<T> filter) {
 		super(component);
 		this.updateHandler = Collections
 				.synchronizedSet(new HashSet<ChangeHandler<T>>());
@@ -215,6 +284,7 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 		// specificTypes = new HashSet<Class<? extends T>>();
 		this.component = component;
 		type = encapsulatedType;
+		this.filter = filter;
 		// create a synchronized hashmap
 		map = Collections
 				.synchronizedMap(new HashMap<WorkingMemoryAddress, T>());
@@ -226,7 +296,8 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 	 * @param component
 	 * @param encapsulatedType
 	 */
-	protected WMView(ManagedComponent component, Class<T> encapsulatedType) {
+	protected WMView(ManagedComponent component, Class<T> encapsulatedType,
+			ViewFilter<T> filter) {
 		super(component);
 		this.updateHandler = Collections
 				.synchronizedSet(new HashSet<ChangeHandler<T>>());
@@ -239,6 +310,7 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 		// create a synchronized hashmap
 		map = Collections
 				.synchronizedMap(new HashMap<WorkingMemoryAddress, T>());
+		this.filter = filter;
 	}
 
 	private void register() {
@@ -272,21 +344,27 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 					+ "entries in SA " + subarchitecturId);
 			for (CASTData<T> entry : entries) {
 				WorkingMemoryAddress wma = new WorkingMemoryAddress(entry
-						.getID(), component.getSubarchitectureID());
-				map.put(wma, entry.getData());
+						.getID(), subarchitecturId);
+				if (filter.matches(entry.getData())) {
+					map.put(wma, entry.getData());
+				}
 			}
 		}
 	}
 
-	/** same as registerHandler, but deprecated
-	 * @param handler 
+	/**
+	 * same as registerHandler, but deprecated
+	 * 
+	 * @param handler
 	 */
 	@Deprecated
 	public synchronized void setHandler(ChangeHandler<T> handler) {
 		this.registerHandler(handler);
 	}
 
-	/** register a ChanceHandler
+	/**
+	 * register a ChanceHandler
+	 * 
 	 * @param handler
 	 *            the handler to add
 	 */
@@ -294,7 +372,9 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 		this.updateHandler.add(handler);
 	}
 
-	/** deregister a ChangeHandler
+	/**
+	 * deregister a ChangeHandler
+	 * 
 	 * @param addReceiver
 	 *            the addReceiver to set
 	 */
