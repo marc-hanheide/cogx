@@ -280,6 +280,16 @@ void QCastMainFrame::setControlDataProxy(cogx::display::COwnerDataProxy *pProxy)
    m_pControlDataProxy = pProxy;
 }
 
+QSettings* QCastMainFrame::getPersistentStorage()
+{
+   std::string name = "DisplayServerData.ini";
+   if (m_pControlDataProxy) {
+      name = m_pControlDataProxy->getPersistentStorageName();
+   }
+   if (name.size() < 1) return NULL;
+   return new QSettings(name.c_str(), QSettings::IniFormat);
+}
+
 void QCastMainFrame::notifyObjectAdded(cogx::display::CDisplayObject *pObject)
 {
    if (pObject != NULL) {

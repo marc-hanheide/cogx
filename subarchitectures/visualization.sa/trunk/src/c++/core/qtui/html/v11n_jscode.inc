@@ -90,5 +90,18 @@ const QString jscode_formcap_js = QString::fromUtf8(
    "    CogxJsFillFormV(form_selector, vals);\n"
    "}\n"
    "\n"
+   "function CogxJsSave(form_selector)\n"
+   "{\n"
+   "    var ob = $(form_selector).serializeObject();\n"
+   "    MyQObject.saveFormData(form_selector, ob);\n"
+   "}\n"
+   "\n"
+   "function CogxJsLoad(form_selector)\n"
+   "{\n"
+   "    var vals = MyQObject.getSavedFormData(form_selector);\n"
+   "    CogxJsFillFormV(form_selector, vals);\n"
+   "}\n"
+   "\n"
+   "\n"
    ); // jscode_formcap_js
 

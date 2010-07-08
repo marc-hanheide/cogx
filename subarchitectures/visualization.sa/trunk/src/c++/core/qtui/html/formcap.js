@@ -87,4 +87,17 @@ function CogxJsFillForm(form_selector)
     var vals = MyQObject.getValues(form_selector);
     CogxJsFillFormV(form_selector, vals);
 }
+
+function CogxJsSave(form_selector)
+{
+    var ob = $(form_selector).serializeObject();
+    MyQObject.saveFormData(form_selector, ob);
+}
+
+function CogxJsLoad(form_selector)
+{
+    var vals = MyQObject.getSavedFormData(form_selector);
+    CogxJsFillFormV(form_selector, vals);
+}
+
 // vim:sw=4:ts=8:et

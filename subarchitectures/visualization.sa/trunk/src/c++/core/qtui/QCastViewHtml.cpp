@@ -100,7 +100,6 @@ void QCastViewHtml::finishLoading(bool)
 {
    DTRACE("QCastViewHtml::finishLoading");
 
-
    if (m_bHasForms) {
       if (! pView) return;
       QWebPage* pPage = page();
@@ -182,8 +181,11 @@ void QCastViewHtml::doUpdateContent()
       pView->drawHtml(head, body);
       list.append("<html><head>");
 
-      // Loading jQuery is _very_ time consuming
       if (m_bHasForms) {
+         // Render std Display Server elements
+         list << "<style> .v11nformbar { background-color: #f0f0f8; } .v11nformtitle { width: 200px; } </style>\n";
+
+         // Loading jQuery is _very_ time consuming
          list << "<script type=\"text/javascript\">\n";
          list << m_jQuery;
          list << "</script>\n";

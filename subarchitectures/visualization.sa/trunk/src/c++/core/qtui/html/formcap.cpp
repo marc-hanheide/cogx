@@ -3,6 +3,8 @@
 #include "v11n_jscode.inc"
 #include <QStringList>
 
+#include "../QCastMainFrame.hpp"
+
 #ifdef DEBUG_TRACE
 // #undef DEBUG_TRACE
 #endif
@@ -142,6 +144,71 @@ QMap<QString, QVariant> QCastFormProxy::getGet()
 {
    DTRACE("QCastFormProxy::getGet");
    return _get;
+}
+
+void QCastFormProxy::saveFormData(const QString& formid, const QMap<QString,QVariant>& object)
+{
+   DTRACE("QCastFormProxy::saveFormData " << formid.toStdString());
+   QCastMainFrame *pWin = dynamic_cast<QCastMainFrame*>(QApplication::activeWindow());
+   if (! pWin) {
+      DMESSAGE("FAILED TO GET MAIN WINDOW");
+      return;
+   }
+   std::auto_ptr<QSettings> pSettings(pWin->getPersistentStorage());
+   if (! pSettings.get()) {
+      DMESSAGE("FAILED TO GET PERSISTENT STORAGE");
+      return;
+   }
+
+   pSettings->beginGroup(QString("FormData/") + formid);
+   pSettings->remove(""); // remove all existing values
+   foreach (QString skey, object.keys()) {
+      QVariant val = object.value(skey);
+      if (val.type() == QVariant::List) {
+         QVariantList lst = val.toList();
+         QString slist;
+         foreach(QVariant item, lst) {
+            QString s = item.toString();
+            s.replace(QRegExp("[\n\r]+"), " ");
+            slist = slist + "\n" + s;
+         }
+         pSettings->setValue(skey, slist);
+      }
+      else pSettings->setValue(skey, val);
+   }
+   pSettings->endGroup();
+}
+
+QMap<QString, QVariant> QCastFormProxy::getSavedFormData(const QString& formid)
+{
+   DTRACE("QCastFormProxy::getSavedFormData");
+   QCastMainFrame *pWin = dynamic_cast<QCastMainFrame*>(QApplication::activeWindow());
+   if (! pWin) {
+      DMESSAGE("FAILED TO GET MAIN WINDOW");
+      return QMap<QString, QVariant>();
+   }
+   std::auto_ptr<QSettings> pSettings(pWin->getPersistentStorage());
+   if (! pSettings.get()) {
+      DMESSAGE("FAILED TO GET PERSISTENT STORAGE");
+      return QMap<QString, QVariant>();
+   }
+
+   QMap<QString, QVariant> formData;
+   pSettings->beginGroup(QString("FormData/") + formid);
+   QStringList fields = pSettings->childKeys();
+   foreach(QString fld, fields) {
+      QString val = pSettings->value(fld, "").toString();
+      DMESSAGE(fld.toStdString() << ":" << val.toStdString());
+      if (val.indexOf('\n') < 0) 
+         formData[fld] = QVariant(val);
+      else {
+         QStringList lst = val.split('\n', QString::SkipEmptyParts);
+         formData[fld] = QVariant(lst);
+      }
+   }
+   pSettings->endGroup();
+
+   return formData;
 }
 
 QString QCastFormProxy::getJavaScript(const QString& jsObjectName, bool htmlScriptBlock)

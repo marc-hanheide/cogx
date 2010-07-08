@@ -101,6 +101,7 @@ private:
    // CControlDataProxy
    void getControlStateAsync(cogx::display::CGuiElement *pElement); /*override*/
    void getFormStateAsync(CHtmlChunk* pForm); /*override*/
+   std::string getPersistentStorageName(); /*override*/
 };
 
 // The implementation of DisplayInterface. This class implements

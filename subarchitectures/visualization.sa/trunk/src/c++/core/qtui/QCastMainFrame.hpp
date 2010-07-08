@@ -79,6 +79,8 @@ public:
 
    void notifyObjectAdded(cogx::display::CDisplayObject *pObject);
 
+   QSettings* getPersistentStorage();
+
 public slots:
    void onViewActivated(QListWidgetItem *pSelected);
 
