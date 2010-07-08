@@ -6,7 +6,6 @@ package de.dfki.lt.tr.beliefs.data.specificproxies;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.data.Formulas;
 import de.dfki.lt.tr.beliefs.data.genericproxies.Distribution;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBasicDistribution;
@@ -109,14 +108,14 @@ public class FormulaDistribution extends GenericBasicDistribution<Formulas> impl
 		return getDistribution().getProb(query);
 	}
 
-	/**
-	 * @param query
-	 * @return
-	 * @see de.dfki.lt.tr.beliefs.data.Formulas#getProb(cast.cdl.WorkingMemoryAddress)
-	 */
-	public float getProb(WorkingMemoryAddress query) {
-		return getDistribution().getProb(query);
-	}
+//	/**
+//	 * @param query
+//	 * @return
+//	 * @see de.dfki.lt.tr.beliefs.data.Formulas#getProb(cast.cdl.WorkingMemoryAddress)
+//	 */
+//	public float getProb(WorkingMemoryAddress query) {
+//		return getDistribution().getProb(query);
+//	}
 
 	/**
 	 * @return

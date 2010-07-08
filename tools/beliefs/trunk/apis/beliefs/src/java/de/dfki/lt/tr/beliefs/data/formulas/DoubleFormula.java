@@ -25,7 +25,6 @@ package de.dfki.lt.tr.beliefs.data.formulas;
 // Belief API slice
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 
 /**
  * The <tt>Formula</tt> class implements the basic structure for building up
