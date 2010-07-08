@@ -495,6 +495,10 @@ namespace spatial
 	int bloxelX = x + m_lgm->getSize();
 	int bloxelY = y + m_lgm->getSize();
 	if ((*m_lgm)(x,y) == '1'){
+	  // For each obstacle cell, assign a uniform probability density to it
+	  // (free/unknown space only), and to its immediate neighbors
+	  // (Only neighbors which are not unknown in the Cure map. Unknown 3D
+	  // space is still assigned, though)
 	  for(int i = -1; i <= 1; i++){
 	    for (int j=-1; j <= 1; j++){
 	      if((*m_lgm)(x+i,y+j) != '2' && (bloxelX+i <= m_gridsize && bloxelX+i > 0 ) 
@@ -891,6 +895,33 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	}
 	else {
 	  log("Got distribution around unknown object pose");
+	  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+	    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+	      int bloxelX = x + m_lgm->getSize();
+	      int bloxelY = y + m_lgm->getSize();
+	      if ((*m_lgm)(x,y) == '1'){
+		// For each obstacle cell in the Cure map,
+		// place a KDE cloud around it, with the center given
+		// by the relation manager (which includes a z-coordinate
+		// for tables, desks etc)
+		pair<double, double> kernelCoords = 
+		  m_map->gridToWorldCoords(x, y);
+		cloud->center.x = kernelCoords.first;
+		cloud->center.y = kernelCoords.second;
+
+		m_sampler.kernelDensityEstimation3D(*m_map, cloud->center,
+		    cloud->interval,
+		    cloud->xExtent,
+		    cloud->yExtent,
+		    cloud->zExtent,
+		    cloud->values,
+		    1.0/(m_lgm->getSize()), //Just an ad-hoc guess
+		    1.0);
+
+		normalizePDF(*m_map);
+	      }
+	    }
+	  }
 	}
 	m_command = NEXT_NBV;
 
@@ -905,6 +936,11 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	log("Error!  WeightedPointCloud does not exist on WM!");
 	return;
       }
+//      else {
+//	// The base object pose is unknown. The returned cloud->center
+//	// represents just a sample offset; we must populate the grid map with
+//	// a pdf based on 
+//      }
     }
   bool VisualObjectSearch::isCircleFree(double xW, double yW, double rad){
     int xiC,yiC;
@@ -1259,14 +1295,14 @@ void VisualObjectSearch::PostNavCommand(Cure::Pose3D position, SpatialData::Comm
   log("posted nav command");
 }
 
-void VisualObjectSearch::addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, 
-    std::string label, std::string visualObjectID){
-  log("posting recognizer command.");
-  VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
-  rec_cmd->cmd = cmd;
-  rec_cmd->label = label;
-  rec_cmd->visualObjectID = visualObjectID;
-  addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
-  isWaitingForDetection = true;
-}
+//void VisualObjectSearch::addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, 
+//    std::string label, std::string visualObjectID){
+//  log("posting recognizer command.");
+//  VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
+//  rec_cmd->cmd = cmd;
+//  rec_cmd->label = label;
+//  rec_cmd->visualObjectID = visualObjectID;
+//  addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
+//  isWaitingForDetection = true;
+//}
 }
