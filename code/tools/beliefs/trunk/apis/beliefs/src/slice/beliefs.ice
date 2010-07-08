@@ -287,7 +287,7 @@ struct FormulaProbPair {
 };
 
     
-["java:type:java.util.LinkedList<FormulaProbPair>"] sequence<FormulaProbPair> FormulaProbPairs;
+["java:type:java.util.LinkedList<FormulaProbPair>:java.util.List<FormulaProbPair>"] sequence<FormulaProbPair> FormulaProbPairs;
 
 
 /**
