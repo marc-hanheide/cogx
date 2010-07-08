@@ -2,7 +2,7 @@
 #define PLANNER_ICE
 
 #include <cast/slice/CDL.ice>
-#include <beliefs.ice>
+#include <beliefs_cast.ice>
 
 module autogen {
   module Planner {
