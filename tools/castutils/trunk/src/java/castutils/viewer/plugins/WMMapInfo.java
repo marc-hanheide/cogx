@@ -6,10 +6,8 @@ import java.util.Map.Entry;
 import castutils.slice.WMMap;
 
 import de.dfki.lt.tr.beliefs.data.Belief;
-import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
-import de.dfki.lt.tr.beliefs.util.ProbFormula;
+
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
