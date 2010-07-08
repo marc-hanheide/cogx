@@ -1,6 +1,6 @@
 /*
  * @author:  Marko Mahnič
- * @created: jun 2010 
+ * @created: jul 2010 
  *
  * © Copyright 2010 Marko Mahnič. 
  * This program is free software: you can redistribute it and/or modify
@@ -13,14 +13,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef MATCHERCUDASIFT_PRYMS88B
-#define MATCHERCUDASIFT_PRYMS88B
+#ifndef MATCHER_USXBKG2U
+#define MATCHER_USXBKG2U
 
 #include "Features.h"
 
 namespace cogx { namespace vision {
 
-class CSiftMatcherCudaSift: public CSiftMatcher
+class CSiftMatcherCpp: public CSiftMatcher
 {
 public:
    virtual void matchSiftDescriptors(TSiftVector& a, TSiftVector& b,
@@ -30,5 +30,5 @@ public:
 };
 
 }} // namespace
-#endif /* end of include guard: MATCHERCUDASIFT_PRYMS88B */
+#endif /* end of include guard: MATCHER_USXBKG2U */
 // vim:sw=3:ts=8:et

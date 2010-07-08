@@ -13,6 +13,7 @@
 #include <opencv/cv.h> // test
 #include <opencv/highgui.h> // test
 
+#include <algorithm>
 #include <fstream>
 
 extern "C"
@@ -34,6 +35,10 @@ CObjectRecognizer::CObjectRecognizer()
 {
    m_pSiftExtractor = NULL;
    m_pSiftMatcher = NULL;
+
+   m_maxDistance = 1.0;
+   m_maxAmbiguity = 0.8;
+
 }
 
 CObjectRecognizer::~CObjectRecognizer()
@@ -111,6 +116,10 @@ void CObjectRecognizer::configure(const map<string,string> & _config)
       while(istr >> label) modelnames.push_back(label);
    }
 
+#ifdef FEAT_VISUALIZATION
+   m_display.configureDisplayClient(_config);
+#endif
+
    loadModels(modeldb, modelnames);
 
    //m_pyRecognizer.configureRecognizer(_config);
@@ -125,6 +134,12 @@ void CObjectRecognizer::configure(const map<string,string> & _config)
 
 void CObjectRecognizer::start()
 {
+#ifdef FEAT_VISUALIZATION
+   m_display.connectIceClient(*this);
+   m_display.setClientData(this);
+   m_display.installEventReceiver();
+   m_display.createForms();
+#endif
 }
 
 void CObjectRecognizer::runComponent()
@@ -159,22 +174,118 @@ long CObjectRecognizer::GetSifts(const Video::Image& image,
    return 0;
 }
 
+class CViewEvaluator
+{
+   CDistanceCalculator *pDist;
+   std::ostream *pOut;
+public:
+   double m_maxDistance;
+   double m_maxAmbiguity;
+   CViewEvaluator(double maxDistance=128, double maxAmbiguity=0.8) {
+      m_maxDistance = maxDistance;
+      m_maxAmbiguity = maxAmbiguity;
+      pDist = NULL;
+   }
+
+   void setDistanceCalculator(CDistanceCalculator *pCalc) {
+      pDist = pCalc;
+   }
+
+   void setOutput(std::ostream* pStream) {
+      pOut = pStream;
+   }
+
+   // matches are sorted by distance (lo->hi)
+   double getScore(TSiftVector& example, CObjectView& view, TFeatureMatchVector& matches)
+   {
+      double score = 0;
+      int count = 0;
+      int i = 0;
+      typeof(matches.begin()) itmatch;
+      for(itmatch = matches.begin(); itmatch != matches.end(); itmatch++) {
+         i++;
+         if (itmatch->ambiguity >= m_maxAmbiguity) continue;
+         if (itmatch->distance > m_maxDistance) break; // all further distances are higher
+         count++;
+         score += std::min(1/(itmatch->distance + 1e-9), 100.0);
+      }
+      if (pOut) (*pOut) << "&nbsp;v" << view.m_id << ": good=" << count << "/" << matches.size();
+      return score;
+   }
+};
+
+struct CModelScore
+{
+   double score;
+   std::vector<double> viewScore;
+};
+
+class CModelEvaluator
+{
+   CViewEvaluator *pViewEval;
+   std::ostream *pOut;
+public:
+   CModelEvaluator() {
+      pViewEval = NULL;
+      pOut = NULL;
+   }
+
+   void setViewEvaluator(CViewEvaluator *pEvaluator) {
+      pViewEval = pEvaluator;
+   }
+
+   void setOutput(std::ostream* pStream) {
+      pOut = pStream;
+   }
+
+   // Order in matches is the same as order in model.m_views
+   void evaluateModel(TSiftVector& example, CObjectModel& model, 
+         std::vector<TFeatureMatchVector*>& matches, CModelScore& score)
+   {
+      if (! pViewEval) return; // XXX throw?
+      assert(model.m_views.size() == matches.size());
+
+      typeof(model.m_views.begin()) itv;
+      int i = 0;
+      if (pOut) (*pOut) << "view scores:<br>";
+      for(itv = model.m_views.begin(); itv != model.m_views.end(); i++, itv++) {
+         CObjectView* pView = *itv;
+         double vsc = pViewEval->getScore(example, *pView, *matches[i]);
+         if (pOut) (*pOut) << " -- " << sfloat(vsc, 2) << "<br>";
+         score.viewScore.push_back(vsc);
+      }
+      if (i < 1) score.score = 0;
+      else {
+         typeof(score.viewScore.begin()) imax = std::max_element(score.viewScore.begin(), score.viewScore.end());
+         score.score = *imax;
+         //score.score = std::sum(score.viewScore.begin(), score.viewScore.end()); 
+      }
+   }
+};
+
 void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
       const int x0, const int y0, const int width, const int height,
       ObjectRecognizerIce::RecognitionResultSeq& results)
 {
    if (! m_pSiftMatcher || ! m_pSiftExtractor) return;
 
-   std::vector<unsigned char>data;
-   // Video::convertImageToGrayBytes(image, data);
-
    IplImage* pImg;
    TSiftVector sifts;
 
+   CDistanceCalculator calc;
+   CViewEvaluator vieweval(m_maxDistance, m_maxAmbiguity);
+   CModelEvaluator modeval;
+
+   vieweval.setDistanceCalculator(&calc);
+   modeval.setViewEvaluator(&vieweval);
+
    std::ofstream fres;
    fres.open("/tmp/or_model_distrib.html", std::ofstream::out);
+   vieweval.setOutput(&fres);
+   modeval.setOutput(&fres);
    double tm0 = fclocks();
    fres << "match start " << tm0 << "<br>";
+   fres << "maxDistance: " << m_maxDistance << " maxAmbiguity: " << m_maxAmbiguity << "<br><br>";
 
    // TODO: get part of image (x0, y0, w, h)
    pImg = Video::convertImageToIplGray(image);
@@ -183,7 +294,6 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
 
       typeof(m_models.begin()) it;
       for (it = m_models.begin(); it != m_models.end(); it++) {
-         // Gather features from all objects
          std::vector<TSiftVector*> allfeatures;
          CObjectModel *pModel = *it;
 
@@ -194,30 +304,19 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
          }
 
          // Match image features to all others
-         std::vector<TFeatureMatchVector*> results;
-         m_pSiftMatcher->matchSiftDescriptors(sifts, allfeatures, results);
-         fres << "allfeatures: " << allfeatures.size() << "<br>";
+         std::vector<TFeatureMatchVector*> matches;
+         m_pSiftMatcher->matchSiftDescriptors(sifts, allfeatures, matches);
+         sortmatches(matches);
+
+         //fres << pModel->m_name << " allfeatures: " << allfeatures.size() << "<br>";
          allfeatures.clear();
 
          // process results
-         fres << "results: " << results.size() << "<br>";
-         typeof(results.begin()) itres;
-         for(itres = results.begin(); itres != results.end(); itres++) {
-            TFeatureMatchVector *pMatches = *itres;
-
-            int count = 0;
-            typeof(pMatches->begin()) itmatch;
-            fres << "result pack *************** count:" << pMatches->size() << "<br>"; 
-            for(itmatch = pMatches->begin(); itmatch != pMatches->end(); itmatch++) {
-               fres << "  " << itmatch->indexA << "," << itmatch->indexB << ","
-                  << itmatch->distance << "<br>";
-                  //<< itmatch->distance << " | ";
-               count++;
-               if (count > 30) { break; }
-            }
-            fres << "<br>";
-         }
-         results.clear();
+         //fres << "results: " << matches.size() << "<br>";
+         CModelScore score;
+         modeval.evaluateModel(sifts, *pModel, matches, score);
+         fres << "score: " << score.score << "<br>";
+         fres << "<br>";
       }
    }
    double tm1 = fclocks();
@@ -235,10 +334,14 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
    sifts.clear();
    fres.close();
 
-   //IplImage* pTest;
-   //Video::convertBytesToIpl(data, image.width, image.height, 1, &pTest);
-   //cvSaveImage("/tmp/sift_inputimage.jpg", pTest);
-   //cvReleaseImage(&pTest);
+   if (1) {
+      std::vector<unsigned char>data;
+      Video::convertImageToGrayBytes(image, data);
+      IplImage* pTest;
+      Video::convertBytesToIpl(data, image.width, image.height, 1, &pTest);
+      cvSaveImage("/tmp/sift_inputimage.jpg", pTest);
+      cvReleaseImage(&pTest);
+   }
 }
 
 #if 0
@@ -266,6 +369,62 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
 
    tcount--;
    PyGILState_Release(state);
+}
+#endif
+
+#ifdef FEAT_VISUALIZATION
+void CObjectRecognizer::COrDisplayClient::createForms()
+{
+   {
+      std::ostringstream ss;
+      ss << "Max distance: <select name='maxDistance'>";
+      for (float f = 0.7; f <= 1.0; f += 0.01) {
+         ss << "<option>" << sfloat(f, 2) << "</option>";
+      }
+      for (float f = 1.1; f <= 3.0; f += 0.1) {
+         ss << "<option>" << sfloat(f, 2) << "</option>";
+      }
+      ss << "</select>";
+      ss << "Max ambiguity: <select name='maxAmbiguity'>";
+      for (float f = 0.7; f <= 1.0; f += 0.01) {
+         ss << "<option>" << sfloat(f, 2) << "</option>";
+      }
+      ss << "</select>";
+      ss << "<input type=\"submit\" name=\"submit\" value=\"Apply\"/>";
+      setHtmlForm("Settings", "ObjectRecognizer", ss.str());
+   }
+}
+
+void CObjectRecognizer::COrDisplayClient::handleForm(const std::string& id, const std::string& partId,
+      const std::map<std::string, std::string>& fields)
+{
+   if (! pRecognizer) return;
+   float f;
+   typeof(fields.begin()) it;
+   it = fields.find("maxDistance");
+   if (it != fields.end()) {
+      f = atof(it->second.c_str());
+      if (f < 0.0) f = 0.0;
+      if (f > 128) f = 128;
+      pRecognizer->m_maxDistance = f;
+   }
+
+   it = fields.find("maxAmbiguity");
+   if (it != fields.end()) {
+      f = atof(it->second.c_str());
+      if (f < 0.7) f = 0.7;
+      if (f > 1.0) f = 1.0;
+      pRecognizer->m_maxAmbiguity = f;
+   }
+}
+
+bool CObjectRecognizer::COrDisplayClient::getFormData(const std::string& id, const std::string& partId,
+      std::map<std::string, std::string>& fields)
+{
+   if (! pRecognizer) return false;
+   fields["maxDistance"] = sfloat(pRecognizer->m_maxDistance, 2);
+   fields["maxAmbiguity"] = sfloat(pRecognizer->m_maxAmbiguity, 2);
+   return true;
 }
 #endif
 

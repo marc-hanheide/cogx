@@ -13,6 +13,8 @@ include_directories(.  sifts
    ../../libs/SiftGPU/src/SiftGPU
    )
 
+include_directories(${VISUALIZATION_INCLUDE_DIRS})
+
 link_directories(
    ${CUDA_INSTALLROOT}/lib
    )
@@ -36,7 +38,9 @@ add_cast_component(ObjectRecognizerSrv
    RecognizerSrv.cpp RecognizerClient.cpp
    #pythonproxy.cpp
    convenience.cpp
+   sifts/Features.cpp
    sifts/ExtractorSiftGpu.cpp
+   sifts/Matcher.cpp
    sifts/MatcherCudaSift.cpp
    models/ObjectModel.cpp
    models/ModelLoader.cpp
@@ -50,6 +54,7 @@ link_cast_component(${CAST_COMPONENT_NAME}
    sqlite3
    #${PYTHON_LIBRARY}
    )
+link_cast_component(${CAST_COMPONENT_NAME} Video ${VISUALIZATION_LIBRARIES})
 add_subdirectory(test) # TODO: move out, add if BUILD_SA_VISION_OBJRECOGNIZER_SRV in test/cmakelists
 endif (BUILD_SA_VISION_OBJRECOGNIZER_SRV)
 

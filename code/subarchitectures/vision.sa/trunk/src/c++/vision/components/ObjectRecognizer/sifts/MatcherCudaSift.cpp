@@ -1,6 +1,6 @@
 /*
  * @author:  Marko Mahnič
- * @created: jun 2010 
+ * @created: jul 2010 
  *
  * © Copyright 2010 Marko Mahnič. 
  * This program is free software: you can redistribute it and/or modify
@@ -67,8 +67,9 @@ void copyVectorToSiftData(TSiftVector& a, SiftData &data)
 }
 
 static
-long appendMatches(SiftData& a, SiftData& b, TFeatureMatchVector& matches)
+long appendMatches(SiftData& a, SiftData& b, TFeatureMatchVector& matches, TSiftVector& sa, TSiftVector& sb)
 {  
+   static CDistanceCalculator dist;
    long maxIndex2 = b.numPts;
    long i, count = 0;
    for (i = 0; i < a.numPts; i++) {
@@ -77,7 +78,10 @@ long appendMatches(SiftData& a, SiftData& b, TFeatureMatchVector& matches)
          CFeatureMatch m;
          m.indexA = i;
          m.indexB = a.h_data[i].match;
-         m.distance = a.h_data[i].score;
+         //m.score = a.h_data[i].score;
+         // m.ambiguity = a.h_data[i].ambiguity;
+         m.distance = dist.distance(*sa[m.indexA], *sb[m.indexB]);
+         m.ambiguity = a.h_data[i].ambiguity * 0.8 / 0.95; // approx conversion from cudasift to lowe
          matches.push_back(m);
       }
    }
@@ -101,7 +105,7 @@ void CSiftMatcherCudaSift::matchSiftDescriptors(TSiftVector& a, TSiftVector& b,
    UploadSiftData(&siftData2);
   
    MatchSiftData(&siftData1, &siftData2); // result in siftData1
-   appendMatches(siftData1, siftData2, matches);
+   appendMatches(siftData1, siftData2, matches, a, b);
 
    FreeSiftData(&siftData1);
    FreeSiftData(&siftData2);
@@ -128,7 +132,7 @@ void CSiftMatcherCudaSift::matchSiftDescriptors(TSiftVector& a, std::vector<TSif
       TFeatureMatchVector* pmatches = new TFeatureMatchVector();
       matches.push_back(pmatches);
       MatchSiftData(&siftData1, &siftData2); // result in siftData1
-      appendMatches(siftData1, siftData2, *pmatches);
+      appendMatches(siftData1, siftData2, *pmatches, a, *(*it));
 
       FreeSiftData(&siftData2);
    }
