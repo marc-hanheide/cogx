@@ -15,8 +15,8 @@ import motivation.components.managers.comparators.AgeComparator;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.util.WMMotiveEventQueue;
-import motivation.util.WMMotiveSet;
-import motivation.util.WMMotiveSet.MotiveStateTransition;
+import motivation.util.WMDeprecatedMotiveSet;
+import motivation.util.WMDeprecatedMotiveSet.MotiveStateTransition;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.architecture.ManagedComponent;
@@ -29,7 +29,7 @@ import castutils.castextensions.WMLock;
  * 
  */
 public class Scheduler extends ManagedComponent {
-	WMMotiveSet motives;
+	WMDeprecatedMotiveSet motives;
 	WMLock wmLock;
 
 	private int maxPlannedMotives;
@@ -43,7 +43,7 @@ public class Scheduler extends ManagedComponent {
 	public Scheduler() throws CASTException {
 		super();
 		// defaults
-		motives = WMMotiveSet.create(this);
+		motives = WMDeprecatedMotiveSet.create(this);
 		motiveComparator = new AgeComparator();
 		relevantEventQueue = new WMMotiveEventQueue();
 		maxPlannedMotives = 3;

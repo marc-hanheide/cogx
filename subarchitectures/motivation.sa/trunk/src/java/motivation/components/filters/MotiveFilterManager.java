@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
-import motivation.util.WMMotiveSet;
+import motivation.util.WMDeprecatedMotiveSet;
 import Ice.ObjectImpl;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -31,14 +31,14 @@ import cast.cdl.WorkingMemoryPermissions;
 public class MotiveFilterManager extends ManagedComponent {
 
 	WorkingMemoryChangeReceiver receiver;
-	WMMotiveSet motives;
+	WMDeprecatedMotiveSet motives;
 
 	List<MotiveFilter> pipe;
 
 	public MotiveFilterManager() {
 		super();
 		pipe = new LinkedList<MotiveFilter>();
-		motives = WMMotiveSet.create(this);
+		motives = WMDeprecatedMotiveSet.create(this);
 
 		receiver = new WorkingMemoryChangeReceiver() {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {

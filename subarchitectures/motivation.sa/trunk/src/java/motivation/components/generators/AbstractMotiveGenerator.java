@@ -7,7 +7,8 @@ package motivation.components.generators;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import motivation.slice.Motive;
-import motivation.util.WMMotiveSet;
+import motivation.util.WMDeprecatedMotiveSet;
+import motivation.util.WMMotiveView;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
@@ -33,7 +34,7 @@ import cast.core.CASTUtils;
  */
 public abstract class AbstractMotiveGenerator extends ManagedComponent {
 
-	protected WMMotiveSet motives;
+	protected WMMotiveView motives;
 
 	/**
 	 * a local MemoryReceiver that established the link between the "Supporter"
@@ -79,7 +80,7 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 
 		public void overwritten(WorkingMemoryChange _wmc) {
 			try {
-//				lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDODR);
+				// lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDODR);
 				Motive motive = getMemoryEntry(motiveAddress, Motive.class);
 				scheduleCheckMotive(motive);
 			} catch (DoesNotExistOnWMException e) {
@@ -89,19 +90,19 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 				println("subarchitecture " + motiveAddress.subarchitecture
 						+ " not known...");
 				e.printStackTrace();
-//			} finally {
-//				try {
-//					unlockEntry(motiveAddress);
-//				} catch (CASTException e) {
-//					log("caught a CASTException when unlocking entry: "
-//							+ e.message + ". This can be safely ignored...");
-//				}
+				// } finally {
+				// try {
+				// unlockEntry(motiveAddress);
+				// } catch (CASTException e) {
+				// log("caught a CASTException when unlocking entry: "
+				// + e.message + ". This can be safely ignored...");
+				// }
 			}
 		}
 
 		public void deleted(WorkingMemoryChange _wmc) {
 			try {
-//				lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDODR);
+				// lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDODR);
 				Motive motive = getMemoryEntry(motiveAddress, Motive.class);
 				if (motive.referenceEntry.equals(_wmc.address)) { // if it is
 					// really
@@ -129,16 +130,16 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 			} catch (CASTException e1) {
 				println("CASTException...  nevermind.");
 				e1.printStackTrace();
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} finally {
-//				try {
-//					unlockEntry(motiveAddress);
-//				} catch (CASTException e) {
-//					log("caught a CASTException when unlocking entry: "
-//							+ e.message + ". This can be safely ignored...");
-//				}
+				// } catch (InterruptedException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
+				// } finally {
+				// try {
+				// unlockEntry(motiveAddress);
+				// } catch (CASTException e) {
+				// log("caught a CASTException when unlocking entry: "
+				// + e.message + ". This can be safely ignored...");
+				// }
 			}
 
 		}
@@ -152,7 +153,7 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 	public AbstractMotiveGenerator() {
 		super();
 		this.checkMotiveQueue = new LinkedBlockingQueue<Motive>();
-		this.motives = WMMotiveSet.create(this);
+		this.motives = WMMotiveView.create(this);
 	}
 
 	/*
@@ -163,7 +164,11 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 	@Override
 	protected void start() {
 		super.start();
-		motives.start();
+		try {
+			motives.start();
+		} catch (UnknownSubarchitectureException e) {
+			logException("couldn't start view", e);
+		}
 	}
 
 	protected abstract boolean checkMotive(Motive motive) throws CASTException;
@@ -225,23 +230,23 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 	 * 
 	 * @param motive
 	 * @return the WM address of the entry
-	 * @throws CASTException 
+	 * @throws CASTException
 	 */
 	public WorkingMemoryAddress write(Motive motive) throws CASTException {
 		motive.updated = getCASTTime();
-			if (motive.thisEntry == null) {
-				log("submit new to WM");
-				motive.thisEntry = new WorkingMemoryAddress();
-				motive.thisEntry.subarchitecture = getSubarchitectureID();
-				motive.thisEntry.id = newDataID();
-				log("added " + motive.thisEntry.subarchitecture + "::"
-						+ motive.thisEntry.id);
-				addReceivers(motive.thisEntry, motive.referenceEntry);
-				log("receivers added");
-				addToWorkingMemory(motive.thisEntry, motive);
-			} else {
-				overwriteWorkingMemory(motive.thisEntry, motive);
-			}
+		if (motive.thisEntry == null) {
+			log("submit new to WM");
+			motive.thisEntry = new WorkingMemoryAddress();
+			motive.thisEntry.subarchitecture = getSubarchitectureID();
+			motive.thisEntry.id = newDataID();
+			log("added " + motive.thisEntry.subarchitecture + "::"
+					+ motive.thisEntry.id);
+			addReceivers(motive.thisEntry, motive.referenceEntry);
+			log("receivers added");
+			addToWorkingMemory(motive.thisEntry, motive);
+		} else {
+			overwriteWorkingMemory(motive.thisEntry, motive);
+		}
 		return motive.thisEntry;
 	}
 

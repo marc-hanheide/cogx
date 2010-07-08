@@ -17,7 +17,7 @@ import castutils.CASTTimeUtil;
  *
  */
 public class WMMotiveDisplay  extends ManagedComponent {
-	WMMotiveSet motives;
+	WMDeprecatedMotiveSet motives;
 
 	/* (non-Javadoc)
 	 * @see cast.core.CASTComponent#start()
@@ -25,8 +25,8 @@ public class WMMotiveDisplay  extends ManagedComponent {
 	@Override
 	protected void start() {
 		super.start();
-		motives = WMMotiveSet.create(this);
-		motives.setHandler(new WMMotiveSet.ChangeHandler() {
+		motives = WMDeprecatedMotiveSet.create(this);
+		motives.setHandler(new WMDeprecatedMotiveSet.ChangeHandler() {
 			@Override
 			public void entryChanged(Map<WorkingMemoryAddress, Ice.ObjectImpl> map, WorkingMemoryChange wmc, Ice.ObjectImpl o, Ice.ObjectImpl old) {
 				Motive motive = (Motive) o;

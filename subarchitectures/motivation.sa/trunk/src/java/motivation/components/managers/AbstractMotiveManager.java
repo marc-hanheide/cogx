@@ -9,7 +9,7 @@ import java.util.Map;
 
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
-import motivation.util.WMMotiveSet;
+import motivation.util.WMDeprecatedMotiveSet;
 import Ice.ObjectImpl;
 import cast.CASTException;
 import cast.architecture.ManagedComponent;
@@ -24,7 +24,7 @@ import castutils.castextensions.WMEntrySet;
 public abstract class AbstractMotiveManager extends ManagedComponent {
 
 	Class<? extends Motive> specificType;
-	WMMotiveSet motives;
+	WMDeprecatedMotiveSet motives;
 	WMEntrySet placeOrigins;
 
 	/**
@@ -33,7 +33,7 @@ public abstract class AbstractMotiveManager extends ManagedComponent {
 	protected AbstractMotiveManager(Class<? extends Motive> specificType) {
 		super();
 		this.specificType = specificType;
-		motives = WMMotiveSet.create(this, specificType);
+		motives = WMDeprecatedMotiveSet.create(this, specificType);
 //		placeOrigins = WMEntrySet.create(this, OriginMap.class);
 	}
 
@@ -91,15 +91,15 @@ public abstract class AbstractMotiveManager extends ManagedComponent {
 		};
 
 		// transition from unsurfaced to surfaced triggers a motive to be managed
-		motives.setStateChangeHandler(new WMMotiveSet.MotiveStateTransition(
+		motives.setStateChangeHandler(new WMDeprecatedMotiveSet.MotiveStateTransition(
 				MotiveStatus.UNSURFACED, MotiveStatus.SURFACED), manageHandler);
 
 		// transition from surfaced to anything (besides ACTIVE) triggers a motive to be unmanaged
-		motives.setStateChangeHandler(new WMMotiveSet.MotiveStateTransition(
+		motives.setStateChangeHandler(new WMDeprecatedMotiveSet.MotiveStateTransition(
 				MotiveStatus.SURFACED, null), retractHandler);
 
 		// transition from surfaced to anything (besides ACTIVE) triggers a motive to be unmanaged
-		motives.setStateChangeHandler(new WMMotiveSet.MotiveStateTransition(
+		motives.setStateChangeHandler(new WMDeprecatedMotiveSet.MotiveStateTransition(
 				MotiveStatus.ACTIVE, null), retractHandler);
 		
 
