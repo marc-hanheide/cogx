@@ -1,5 +1,5 @@
    
-#include <beliefs-cast.ice>
+#include <beliefs_cast.ice>
 
 #ifndef BELIEF_COGX_ICE
 #define BELIEF_COGX_ICE 
