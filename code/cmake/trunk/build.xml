@@ -86,6 +86,9 @@
 		<antcall target="sa.planner">
 		  <param name="target" value="${target}" />
 		</antcall>
+		<antcall target="sa.motivation">
+		  <param name="target" value="${target}" />
+		</antcall>
 		<!-- <ant target="${target}" dir="subarchitectures/binder" /> -->
 		<!-- <ant target="${target}" dir="subarchitectures/spatial.sa" /> -->
 		<!-- <ant target="${target}" dir="subarchitectures/vision.sa" />  -->
