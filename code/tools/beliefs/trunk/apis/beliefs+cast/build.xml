@@ -84,9 +84,9 @@
 	<!-- =================================================== -->
 
 
-	<target name="slice-beliefs-cast" depends="prepare" description="generates source from slice">
+	<target name="slice-beliefs_cast" depends="prepare" description="generates source from slice">
 	  <slice2java tie="true" outputdir="${src.dir}"> 
-	    <fileset dir="${slice.dir}" includes="beliefs-cast.ice"/>
+	    <fileset dir="${slice.dir}" includes="beliefs_cast.ice"/>
 	    <includepath>
 	      <pathelement path="${slice.dir}"/>  
 	      <pathelement path="../beliefs/src/slice"/>  
@@ -98,7 +98,7 @@
 	</target> 
 
 	
-	<target name="slice" depends = "slice-beliefs-cast" description="generates source from slice">
+	<target name="slice" depends = "slice-beliefs_cast" description="generates source from slice">
 
 	</target>
 
@@ -209,7 +209,7 @@
 	<!-- =================================================================== -->
 	
 	<target name="jar">
-	  <!-- <jar destfile="${jar.dir}/belief-cast-v03.jar"
+	  <!-- <jar destfile="${jar.dir}/belief_cast-v03.jar"
 	       basedir ="${output.dir}"
 	       includes = "de/dfki/lt/tr/beliefs/*/*.class"
 	       excludes = "de/dfki/lt/tr/beliefs/*/*Test.class"
