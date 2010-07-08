@@ -148,7 +148,8 @@ class DensitySampler
 	int zExtent,
 	const vector<double> &values,
 	double baseMultiplier,
-	double totalWeight);
+	double totalWeight,
+	const Cure::LocalGridMap<unsigned char> *lgm = 0);
 
     void setOrientationQuantization(int q) { m_orientationQuantization = q; }
     void setSampleNumberTarget(int n) { m_sampleNumberTarget = n; }

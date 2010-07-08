@@ -889,7 +889,8 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	      cloud->zExtent,
 	      cloud->values,
 	      1.0,
-	      1.0
+	      1.0,
+	      m_lgm
 	      );
 	  normalizePDF(*m_map);
 	}
@@ -905,7 +906,7 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 		// by the relation manager (which includes a z-coordinate
 		// for tables, desks etc)
 		pair<double, double> kernelCoords = 
-		  m_map->gridToWorldCoords(x, y);
+		  m_map->gridToWorldCoords(bloxelX, bloxelY);
 		cloud->center.x = kernelCoords.first;
 		cloud->center.y = kernelCoords.second;
 
@@ -916,12 +917,13 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 		    cloud->zExtent,
 		    cloud->values,
 		    1.0/(m_lgm->getSize()), //Just an ad-hoc guess
-		    1.0);
-
-		normalizePDF(*m_map);
+		    1.0,
+		    m_lgm);
 	      }
 	    }
 	  }
+
+	  normalizePDF(*m_map);
 	}
 	m_command = NEXT_NBV;
 
