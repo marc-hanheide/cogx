@@ -3,7 +3,6 @@ package de.dfki.lt.tr.beliefs.data;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.genericproxies.DistributionContent;
@@ -81,10 +80,10 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 		return (float) ((f == null) ? 0.0 : f.prob);
 	}
 
-	public float getProb(WorkingMemoryAddress query) {
-		FormulaProbPair f = findFormula(query);
-		return (float) ((f == null) ? 0.0 : f.prob);
-	}
+//	public float getProb(WorkingMemoryAddress query) {
+//		FormulaProbPair f = findFormula(query);
+//		return (float) ((f == null) ? 0.0 : f.prob);
+//	}
 
 	// @Override
 	public Iterator<ProbFormula> iterator() {
@@ -205,17 +204,17 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 		return null;
 	}
 
-	protected FormulaProbPair findFormula(WorkingMemoryAddress query) {
-		for (FormulaProbPair f : _content.values) {
-//			if (f.val instanceof PointerFormula) {
-//				PointerFormula ef = (PointerFormula) f.val;
-//				if (ef.pointer.equals(query)) {
-//					return f;
-//				}
-//			}
-		}
-		return null;
-	}
+//	protected FormulaProbPair findFormula(WorkingMemoryAddress query) {
+//		for (FormulaProbPair f : _content.values) {
+////			if (f.val instanceof PointerFormula) {
+////				PointerFormula ef = (PointerFormula) f.val;
+////				if (ef.pointer.equals(query)) {
+////					return f;
+////				}
+////			}
+//		}
+//		return null;
+//	}
 
 	protected dFormula getFormulaObject(Object object) {
 		if (object == null)
