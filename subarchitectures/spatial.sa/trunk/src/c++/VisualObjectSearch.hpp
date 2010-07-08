@@ -85,7 +85,8 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void SaveCureMapToFile();
       void LoadSpatialRelations(std::string filename);
 
-      void GoToNextBestView();
+      void Recognize();
+      void GoToNBV();
       void InterpretCommand();
       void AskForDistribution();
       int GetViewConeSums(std::vector <SensingAction > samplepoints);
@@ -111,7 +112,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
 	STOP,
 	ASK_FOR_DISTRIBUTION,
 	RECOGNIZE,
-	GOTO_NEXT_NBV,
+	NEXT_NBV,
 	IDLE
       };
 
@@ -142,6 +143,10 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       Cure::SensorPose m_LaserPoseR;
       Cure::TransformedOdomPoseProvider m_TOPP;
       NavData::RobotPose2dPtr lastRobotPose;
+     
+      SensingAction m_nbv;
+      bool isWaitingForDetection;
+
 
       int m_samplesize;
       double m_gridsize;
@@ -165,7 +170,6 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       GtkWidget *savebutton,*readbutton,*direct_uninformed, *direct_informed,*indirect;
       GtkWidget *hbox;
 
-      bool isWaitingForDetection;
       bool m_usePTZ;
       bool m_savemapmode;
       bool m_maploaded;
