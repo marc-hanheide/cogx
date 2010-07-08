@@ -23,14 +23,12 @@
 package de.dfki.lt.tr.beliefs.data.genericproxies;
 
 // Belief API slice
-import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
 
@@ -192,8 +190,8 @@ public class GenericFormula<T extends dFormula> extends Proxy<T> {
 			return Boolean.toString(((BooleanFormula) _content).val);
 		else if (_content instanceof ElementaryFormula)
 			return ((ElementaryFormula) _content).prop;
-		else if (_content instanceof PointerFormula)
-			return CASTUtils.toString(((PointerFormula) _content).pointer);
+//		else if (_content instanceof PointerFormula)
+//			return CASTUtils.toString(((PointerFormula) _content).pointer);
 		return super.toString();
 	}
 

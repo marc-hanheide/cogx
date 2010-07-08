@@ -153,16 +153,16 @@ public class FormulaDistribution extends GenericBasicDistribution<Formulas> impl
 		getDistribution().setProb(query, prob);
 	}
 
-	/**
-	 * @param query
-	 * @param prob
-	 * @see de.dfki.lt.tr.beliefs.data.Formulas#setProb(cast.cdl.WorkingMemoryAddress,
-	 *      double)
-	 */
-	public void setProb(WorkingMemoryAddress query, double prob) {
-		getDistribution().setProb(query, prob);
-	}
-	
+//	/**
+//	 * @param query
+//	 * @param prob
+//	 * @see de.dfki.lt.tr.beliefs.data.Formulas#setProb(cast.cdl.WorkingMemoryAddress,
+//	 *      double)
+//	 */
+//	public void setProb(WorkingMemoryAddress query, double prob) {
+//		getDistribution().setProb(query, prob);
+//	}
+//	
 	public int size() {
 		return getDistribution().size();
 	}
