@@ -29,7 +29,13 @@ void FakeMotivationSA::runComponent() {
     string id = newDataID();
     debug("step1");
     autogen::Planner::PlanningTaskPtr plan = new autogen::Planner::PlanningTask();
-    plan->goal = m_goal;
+    autogen::Planner::GoalPtr goal = new autogen::Planner::Goal();
+    goal->importance = -1;
+    goal->goalString = m_goal;
+    goal->isInPlan = false;
+
+    plan->goals.push_back(goal);
+
     plan->executionStatus = autogen::Planner::PENDING;
     plan->planningStatus = autogen::Planner::PENDING;
     debug("step2");
