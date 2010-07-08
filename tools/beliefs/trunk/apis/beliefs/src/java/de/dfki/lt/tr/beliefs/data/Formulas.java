@@ -37,11 +37,13 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 	}
 
 	public static Formulas create() {
-		return new Formulas(new FormulaValues(new LinkedList<FormulaProbPair>()));
+		return new Formulas(
+				new FormulaValues(new LinkedList<FormulaProbPair>()));
 	}
 
 	public static Formulas create(GenericFormula<?> f) {
-		Formulas fs = new Formulas(new FormulaValues(new LinkedList<FormulaProbPair>()));
+		Formulas fs = new Formulas(new FormulaValues(
+				new LinkedList<FormulaProbPair>()));
 		fs.add(f.get(), 1.0);
 		return fs;
 	}
@@ -80,14 +82,15 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 		return (float) ((f == null) ? 0.0 : f.prob);
 	}
 
-//	public float getProb(WorkingMemoryAddress query) {
-//		FormulaProbPair f = findFormula(query);
-//		return (float) ((f == null) ? 0.0 : f.prob);
-//	}
+	// public float getProb(WorkingMemoryAddress query) {
+	// FormulaProbPair f = findFormula(query);
+	// return (float) ((f == null) ? 0.0 : f.prob);
+	// }
 
 	// @Override
 	public Iterator<ProbFormula> iterator() {
-		final Iterator<FormulaProbPair> internalIter = _content.values.iterator();
+		final Iterator<FormulaProbPair> internalIter = _content.values
+				.iterator();
 		return new Iterator<ProbFormula>() {
 
 			@Override
@@ -139,14 +142,14 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 			f.prob = (float) prob;
 	}
 
-//	public void setProb(WorkingMemoryAddress query, double prob) {
-//		FormulaProbPair f = findFormula(query);
-//		if (f == null)
-//			_content.values.add(new FormulaProbPair(new PointerFormula(-1,
-//					query), (float) prob));
-//		else
-//			f.prob = (float) prob;
-//	}
+	// public void setProb(WorkingMemoryAddress query, double prob) {
+	// FormulaProbPair f = findFormula(query);
+	// if (f == null)
+	// _content.values.add(new FormulaProbPair(new PointerFormula(-1,
+	// query), (float) prob));
+	// else
+	// f.prob = (float) prob;
+	// }
 
 	/*
 	 * (non-Javadoc)
@@ -204,17 +207,17 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 		return null;
 	}
 
-//	protected FormulaProbPair findFormula(WorkingMemoryAddress query) {
-//		for (FormulaProbPair f : _content.values) {
-////			if (f.val instanceof PointerFormula) {
-////				PointerFormula ef = (PointerFormula) f.val;
-////				if (ef.pointer.equals(query)) {
-////					return f;
-////				}
-////			}
-//		}
-//		return null;
-//	}
+	// protected FormulaProbPair findFormula(WorkingMemoryAddress query) {
+	// for (FormulaProbPair f : _content.values) {
+	// // if (f.val instanceof PointerFormula) {
+	// // PointerFormula ef = (PointerFormula) f.val;
+	// // if (ef.pointer.equals(query)) {
+	// // return f;
+	// // }
+	// // }
+	// }
+	// return null;
+	// }
 
 	protected dFormula getFormulaObject(Object object) {
 		if (object == null)
@@ -225,8 +228,8 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 			return new FloatFormula(-1, ((Double) object).floatValue());
 		else if (object instanceof Integer)
 			return new IntegerFormula(-1, ((Integer) object).intValue());
-//		else if (object instanceof WorkingMemoryAddress)
-//			return new PointerFormula(-1, ((WorkingMemoryAddress) object));
+		// else if (object instanceof WorkingMemoryAddress)
+		// return new PointerFormula(-1, ((WorkingMemoryAddress) object));
 		else
 			throw new BeliefInvalidOperationException(
 					"cannot create Formula objects for type "
@@ -243,37 +246,55 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 
 	public Formula getMostLikely() {
 		double max = Double.MIN_VALUE;
-		dFormula maxFormula=null;
+		dFormula maxFormula = null;
 		for (FormulaProbPair f : _content.values) {
-			if (f.prob>max) {
+			if (f.prob > max) {
 				max = f.prob;
 				maxFormula = f.val;
 			}
 		}
-		if (maxFormula!=null) {
+		if (maxFormula != null) {
 			return Formula.create(maxFormula);
 		} else {
 			return null;
 		}
-		
+
 	}
 
-	
-//	/* (non-Javadoc)
-//	 * @see java.lang.Object#equals(java.lang.Object)
-//	 */
-//	@Override
-//	public boolean equals(Object obj) {
-//		if (!(obj instanceof Formulas))
-//			return super.equals(obj);
-//		Formulas other=(Formulas) obj;
-//		Formula ml1=this.getMostLikely();
-//		Formula ml2=other.getMostLikely();
-//		// we cannot compare apple and pears...
-//		if (!ml1.get().getClass().isInstance(ml2.get()))
-//			return false;
-//		
-//		return ml1.equals(ml2);
-//	}
+	/**
+	 * computes the Shannon entropy (in 'nat')
+	 * (http://en.wikipedia.org/wiki/Entropy_(information_theory)} on all
+	 * formulas in this distribution. The entropy is 0 if we have one discrete
+	 * value for sure and some positive number increasing with the 'randomness'
+	 * of the distribution.
+	 * 
+	 * @return the entropy
+	 */
+	public double entropy() {
+		double result = 0.0;
+		for (FormulaProbPair f : _content.values) {
+			if (f.prob > 0.0) {
+				result += Math.log(f.prob) * f.prob;
+			}
+		}
+		return -result;
+	}
+
+	// /* (non-Javadoc)
+	// * @see java.lang.Object#equals(java.lang.Object)
+	// */
+	// @Override
+	// public boolean equals(Object obj) {
+	// if (!(obj instanceof Formulas))
+	// return super.equals(obj);
+	// Formulas other=(Formulas) obj;
+	// Formula ml1=this.getMostLikely();
+	// Formula ml2=other.getMostLikely();
+	// // we cannot compare apple and pears...
+	// if (!ml1.get().getClass().isInstance(ml2.get()))
+	// return false;
+	//		
+	// return ml1.equals(ml2);
+	// }
 
 }
