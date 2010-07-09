@@ -59,16 +59,19 @@ $.fn.fillForm = function(vals) {
     return this.each(function() {
         var type = this.type, tag = this.tagName.toLowerCase(), i;
         if (tag == 'form')
-            return $(':input',this).fillForm(vals);
+            return $(':input', this).fillForm(vals);
 
-        if (type == 'text' || type == 'password' || tag == 'textarea')
-            this.value = vals[this.name];
+        var safeval = vals[this.name];
+        if (! safeval) safeval = "";
+        if (type == 'text' || type == 'password' || tag == 'textarea') {
+            this.value = safeval;
+        }
         else if (type == 'checkbox' || type == 'radio') {
-            this.checked = CogxJsBoolValue(vals[this.name], this.value);
+            this.checked = CogxJsBoolValue(safeval, this.value);
         }
         else if (tag == 'select') {
             for(i=0; i<this.options.length; i++) {
-               this.options[i].selected = CogxJsBoolValue(vals[this.name], this.options[i].text);
+               this.options[i].selected = CogxJsBoolValue(safeval, this.options[i].text);
             }
         }
     });
@@ -76,7 +79,7 @@ $.fn.fillForm = function(vals) {
 
 function CogxJsFillFormV(form_selector, vals)
 {
-    //$('#debugout').text(jQuery.param(vals, true));
+    //_dumpvals(vals);
     var form = $(form_selector);
     form.clearForm();
     form.fillForm(vals);
@@ -97,7 +100,13 @@ function CogxJsSave(form_selector)
 function CogxJsLoad(form_selector)
 {
     var vals = MyQObject.getSavedFormData(form_selector);
+    //_dumpvals(vals);
     CogxJsFillFormV(form_selector, vals);
 }
 
+function _dumpvals(vals) {
+    var dbo = $('#debugout');
+    if (! dbo) return;
+    dbo.append("<br>" + jQuery.param(vals, true));
+}
 // vim:sw=4:ts=8:et
