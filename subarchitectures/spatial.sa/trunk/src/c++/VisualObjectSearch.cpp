@@ -64,7 +64,7 @@ namespace spatial
       std::abort();
     }
 
-    m_mapceiling= 3.0;
+    m_mapceiling= 2.0;
     it = _config.find("--mapceiling");
     if (it != _config.end()) {
       m_mapceiling = (atof(it->second.c_str()));
@@ -741,6 +741,16 @@ namespace spatial
   }
   void VisualObjectSearch::GoToNBV(){
     m_nbv = SampleAndSelect();
+    /* Add plan to PB BEGIN */
+        NavData::ObjectSearchPlanPtr obs = new NavData::ObjectSearchPlan;
+        cogx::Math::Vector3 viewpoint;
+        viewpoint.x = m_nbv.pos[0];
+        viewpoint.y = m_nbv.pos[0];
+        viewpoint.z = m_nbv.pan;
+        obs->planlist.push_back(viewpoint);
+        addToWorkingMemory(newDataID(), obs);
+     /* Add plan to PB END */
+
 
     // Send move command
     Cure::Pose3D pos;
@@ -883,10 +893,13 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	log("got weighted PC");
 	FrontierInterface::WeightedPointCloudPtr cloud =
 	  getMemoryEntry<FrontierInterface::ObjectPriorRequest>(objID.address)->outCloud;
+	vector<Vector3> centers;
+	centers.push_back(cloud->center);
 
 	if(cloud->isBaseObjectKnown) {
 	  log("Got distribution around known object pose");
-	  m_sampler.kernelDensityEstimation3D(*m_map, cloud->center,
+	  m_sampler.kernelDensityEstimation3D(*m_map,
+	      centers,
 	      cloud->interval,
 	      cloud->xExtent,
 	      cloud->yExtent,
@@ -901,7 +914,7 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	else {
 	  log("Got distribution around unknown object pose");
 	  vector<pair<int, int> >obstacleCells;
-	  const int nTargetKernelSamples = 25;
+	  const unsigned int nTargetKernelSamples = 25;
 	  const int step = 10;
 
 	  while (obstacleCells.size() < nTargetKernelSamples) {
@@ -917,6 +930,7 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	    }
 	  }
 
+	  vector<Vector3> centers;
 	  for(unsigned int i = 0; i < obstacleCells.size(); i++) {
 	    // place a KDE cloud around it, with the center given
 	    // by the relation manager (which includes a z-coordinate
@@ -927,8 +941,11 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	      m_map->gridToWorldCoords(bloxelX, bloxelY);
 	    cloud->center.x = kernelCoords.first;
 	    cloud->center.y = kernelCoords.second;
+	    centers.push_back(cloud->center);
+	  }
 
-	    m_sampler.kernelDensityEstimation3D(*m_map, cloud->center,
+	    m_sampler.kernelDensityEstimation3D(*m_map, 
+		centers,
 		cloud->interval,
 		cloud->xExtent,
 		cloud->yExtent,
@@ -937,7 +954,6 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 		1.0/(m_lgm->getSize()), //Just an ad-hoc guess
 		1.0,
 		m_lgm);
-	  }
 	  normalizePDF(*m_map,m_pout);
 	}
 	m_command = NEXT_NBV;
@@ -1065,7 +1081,7 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	cout << "cone #" << i << " at: " << samplepoints[i].pos[0] << "," << samplepoints[i].pos[1] << "," << samplepoints[i].pos[2] << endl; 
 
 	/*m_map->coneModifier(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan,samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, makeobstacle,makeobstacle);*/
-	m_map->coneQuery(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan, samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 0, 0, isobstacle, sumcells,sumcells);
+	m_map->coneQuery(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan, samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells);
 	if (sumcells.getResult() > maxpdf){
 	  maxpdf = sumcells.getResult();
 	  maxindex = i;
@@ -1217,15 +1233,31 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
     }
 
   void VisualObjectSearch::UnsuccessfulDetection(SensingAction viewcone){
-    double sensingProb = 0.7;
+    double sensingProb = 0.9;
     GDProbSum sumcells;
     GDIsObstacle isobstacle;
     cout << "m_pout before update  is:" <<m_pout << endl;
  //to get the denominator first sum all cells
-m_map->universalQuery(sumcells);    
-cout << "whole map PDF sums to: " << sumcells.getResult() << endl;
+//m_map->universalQuery(sumcells); 
+
+double mapsum = 0;
+for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+  for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+    int bloxelX = x + m_lgm->getSize();
+    int bloxelY = y + m_lgm->getSize();
+    if ((*m_lgm)(x,y) == '1'){
+      double bloxel_floor = 0;
+      for (unsigned int i = 0; i < (*m_map)(bloxelX,bloxelY).size();i++){
+	mapsum =+  (*m_map)(bloxelX,bloxelY)[i].data.pdf * ((*m_map)(bloxelX,bloxelY)[i].celing - bloxel_floor);
+	bloxel_floor = (*m_map)(bloxelX,bloxelY)[i].celing;
+      }	
+    }
+  }
+}
+
+cout << "whole map PDF sums to: " << mapsum << endl;
 // then deal with those bloxels that belongs to this cone
-    GDMeasUpdateGetDenominator getnormalizer(m_pout, sensingProb,sumcells.getResult());
+    GDMeasUpdateGetDenominator getnormalizer(sensingProb,mapsum);
     m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
 	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, getnormalizer,getnormalizer);
     double normalizer = getnormalizer.getResult() + m_pout;
