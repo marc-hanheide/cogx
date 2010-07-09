@@ -658,7 +658,11 @@ function that will create the form and send it to the server:
 \end{Verbatim}
 
 A form can be defined with standard HTML form elements but it must not be
-enclosed in the \code{"<form>"} tag which is added by the Display Server.
+enclosed in the \code{"<form>"} tag which is added by the Display Server.  The
+"submit" button will also be added by the Display Server.  It will be placed
+above the form along with the other buttons that handle form data.  If you want
+the button placed in a different location, simply add another one like in the
+example below:
 
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    void CObjectRecognizer::COrDisplayClient::createForms()
