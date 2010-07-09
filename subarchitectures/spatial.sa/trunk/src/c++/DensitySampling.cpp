@@ -596,7 +596,10 @@ DensitySampler::sampleBinaryRelationSystematically(
 	    if (!tryLoadOrientationsFromFile(supportObjectLabel)) {
 	      if (supportObject->type == OBJECT_PLANE ||
 		  // FIXME
-		  supportObjectLabel == "table") {
+		  supportObjectLabel == "table" ||
+		  supportObjectLabel == "bookcase_sm" ||
+		  supportObjectLabel == "bookcase_lg" ||
+		  supportObjectLabel == "desk"){
 		getRandomSampleCircle(m_objectOrientations[supportObjectLabel],
 		    m_orientationQuantization);
 	      }
@@ -1355,7 +1358,7 @@ DensitySampler::tryLoadOrientationsFromFile(const string &label)
 
 double
 DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap::GridMapData> &map,
-    const cogx::Math::Vector3 &center,
+    const vector<cogx::Math::Vector3> &centers,
     double interval,
     int xExtent,
     int yExtent,
@@ -1371,17 +1374,16 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
     kernelRadius = cellSize;
 
   //Get outer limits of update region (in xy)
-  const pair<int, int> mapCenter =
-    map.worldToGridCoords(center.x, center.y);
+//  const pair<int, int> mapCenter =
+//    map.worldToGridCoords(center.x, center.y);
   const pair<int, int> mapMin =
-    map.worldToGridCoords(center.x - xExtent*interval - kernelRadius, 
-	center.y - yExtent*interval - kernelRadius);
+    make_pair<int,int>(0, 0);
+//    map.worldToGridCoords(center.x - xExtent*interval - kernelRadius, 
+//	center.y - yExtent*interval - kernelRadius);
   const pair<int, int> mapMax = 
-    map.worldToGridCoords(center.x + xExtent*interval + kernelRadius, 
-	center.y + yExtent*interval + kernelRadius);
-
-  const double minZ = center.z - zExtent*interval - kernelRadius;
-  const double maxZ = center.z + zExtent*interval + kernelRadius;
+    make_pair<int,int>(map.getMapSize().first, map.getMapSize().second);
+//    map.worldToGridCoords(center.x + xExtent*interval + kernelRadius, 
+//	center.y + yExtent*interval + kernelRadius);
 
   double total = 0.0;
   // Loop over columns in bounding box
@@ -1404,38 +1406,47 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
       vector<vector<double> >sampleWeights;
       vector<double> columnXYSqDiffs;
 
-      for (int sampleX = -xExtent; sampleX <= xExtent; sampleX++) {
-	double wsx = sampleX * interval + center.x;
-	double xDiff = (wsx - columnWorldXY.first) / kernelRadius;
-	if (xDiff < 1 &&
-	    xDiff > -1) {
-	  for (int sampleY = -yExtent; sampleY <= yExtent; sampleY++) {
-	    double wsy = sampleY * interval + center.y;
-	    double yDiff = (wsy - columnWorldXY.second) / kernelRadius;
-	    if (yDiff < 1 &&
-		yDiff > -1) {
-	      columnXYSqDiffs.push_back(xDiff*xDiff+yDiff*yDiff);
-	      sampleZValues.push_back(vector<double>());
-	      sampleWeights.push_back(vector<double>());
+      for (vector<Vector3>::const_iterator sampleIt = centers.begin();
+	  sampleIt != centers.end(); sampleIt++) {
+	const Vector3 &center = *sampleIt;
+	const double minZ = center.z - zExtent*interval - kernelRadius;
+	const double maxZ = center.z + zExtent*interval + kernelRadius;
 
-	      unsigned int indexOffset = (2*zExtent+1)*(sampleY+yExtent + 
-		  (2*yExtent+1)*(sampleX + xExtent));
-	      for (int sampleZ = -zExtent; sampleZ <= zExtent; sampleZ++) {
-		sampleZValues.back().push_back(center.z + interval*sampleZ);
-		sampleWeights.back().push_back(values[indexOffset + sampleZ + zExtent]);
+	for (int sampleX = -xExtent; sampleX <= xExtent; sampleX++) {
+	  double wsx = sampleX * interval + center.x;
+	  double xDiff = (wsx - columnWorldXY.first) / kernelRadius;
+	  if (xDiff < 1 &&
+	      xDiff > -1) {
+	    for (int sampleY = -yExtent; sampleY <= yExtent; sampleY++) {
+	      double wsy = sampleY * interval + center.y;
+	      double yDiff = (wsy - columnWorldXY.second) / kernelRadius;
+	      if (yDiff < 1 &&
+		  yDiff > -1) {
+		columnXYSqDiffs.push_back(xDiff*xDiff+yDiff*yDiff);
+		sampleZValues.push_back(vector<double>());
+		sampleWeights.push_back(vector<double>());
+
+		unsigned int indexOffset = (2*zExtent+1)*(sampleY+yExtent + 
+		    (2*yExtent+1)*(sampleX + xExtent));
+		for (int sampleZ = -zExtent; sampleZ <= zExtent; sampleZ++) {
+		  sampleZValues.back().push_back(center.z + interval*sampleZ);
+		  sampleWeights.back().push_back(values[indexOffset + sampleZ + zExtent]);
+		}
+		SpatialGridMap::GDAddKDE columnKDEFunctor(kernelRadius,
+		    sampleZValues,
+		    sampleWeights,
+		    columnXYSqDiffs,
+		    baseMultiplier);
+
+		//	      map.boxSubColumnModifier(x,y,minZ,maxZ, columnKDEFunctor);
+		map.alignedBoxQuery(x,x,y,y,minZ,maxZ, columnKDEFunctor, false);
+		total += columnKDEFunctor.getTotal();
 	      }
-	      SpatialGridMap::GDAddKDE columnKDEFunctor(kernelRadius,
-		  sampleZValues,
-		  sampleWeights,
-		  columnXYSqDiffs,
-		  baseMultiplier);
-
-	      map.alignedBoxModifier(x,x,y,y,minZ,maxZ, columnKDEFunctor);
-	      total += columnKDEFunctor.getTotal();
 	    }
 	  }
 	}
       }
+      map.tryMergeColumn(x,y);
     }
   }
 
@@ -1447,7 +1458,7 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
     // NOTE: May not be the case with merging! But whatever.
 
     // We did it once with baseMultiplier. That yielded a change mass = 'total'.
-    // The true modification mass factor is thus (baseMultiplier/total).
+    // The true modification mass factor is thus (total/baseMultiplier).
     // We need to modify the total mass by another (-error). 
 
     const double adjustmentMultiplier = -error * (baseMultiplier/total);
@@ -1463,6 +1474,21 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
 	vector<vector<double> >sampleZValues;
 	vector<vector<double> >sampleWeights;
 	vector<double> columnXYSqDiffs;
+
+      // If we're supplied with a lgm, and the column is in unknown space,
+      // skip it
+      if (lgm != 0) {
+	int lgmX, lgmY;
+	lgm->worldCoords2Index(columnWorldXY.first, columnWorldXY.second, lgmX, lgmY);
+	if ((*lgm)(lgmX, lgmY) == '2') 
+	  continue;
+      }
+
+      for (vector<Vector3>::const_iterator sampleIt = centers.begin();
+	  sampleIt != centers.end(); sampleIt++) {
+	const Vector3 &center = *sampleIt;
+	const double minZ = center.z - zExtent*interval - kernelRadius;
+	const double maxZ = center.z + zExtent*interval + kernelRadius;
 
 	for (int sampleX = -xExtent; sampleX <= xExtent; sampleX++) {
 	  double wsx = sampleX * interval + center.x;
@@ -1490,12 +1516,15 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
 		    columnXYSqDiffs,
 		    adjustmentMultiplier);
 
-		map.alignedBoxModifier(x,x,y,y,minZ,maxZ, columnKDEFunctor);
+		map.alignedBoxQuery(x,x,y,y,minZ,maxZ, columnKDEFunctor, false);
+//		map.boxSubColumnModifier(x,y,minZ,maxZ, columnKDEFunctor);
 		total += columnKDEFunctor.getTotal();
 	      }
 	    }
 	  }
 	}
+      }
+	map.tryMergeColumn(x,y);
       }
     }
   }
