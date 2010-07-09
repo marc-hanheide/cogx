@@ -1,4 +1,4 @@
-#COMPONENT PYTHON PlannerPythonServer PythonServer --domain tutorial/meet-the-people.mapl --log
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain springtest.mapl --log
 
 SUBARCHITECTURE planner.sa
 
