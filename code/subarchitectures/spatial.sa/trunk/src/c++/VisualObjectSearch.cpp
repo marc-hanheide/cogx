@@ -163,6 +163,8 @@ namespace spatial
       istringstream istr(it->second);
       istr >> m_curemapfile;
     }
+
+    m_pout = 0.3;
     log("Cure map file: %s", m_curemapfile.c_str());
     GridMapData def;
     def.occupancy = UNKNOWN;
@@ -218,6 +220,7 @@ namespace spatial
 	objectData.push_back(objrel);
 	break;
       }
+      currentTarget = word;
       if (objrel.object != word){ //if this is a new object
 	if ( objrel.relations.size() != 0)
 	  objectData.push_back(objrel);
@@ -509,7 +512,8 @@ namespace spatial
 	}
       }
     }
-    //normalizePDF(*m_map, initfunctor.getTotal());
+    double tmp = (initfunctor.getTotal()*m_pout)/(1 - m_pout);
+    normalizePDF(*m_map,tmp,initfunctor.getTotal());
   }
   void VisualObjectSearch::ReadCureMapFromFile() {
     log("Reading cure map");
@@ -547,13 +551,10 @@ namespace spatial
 
     vector< pair<double,double> > thresholds;
     thresholds.push_back(make_pair(1e-4,1));
-    InitializePDF(1);
+    InitializePDF(1-m_pout);
     pbVis->DisplayMap(*m_map);
-    log("myline %i", __LINE__);
     pbVis->AddPDF(*m_map, thresholds);
-    log("myline %i", __LINE__);
      pbVis->Display2DCureMap(m_lgm);
-    log("myline %i", __LINE__);
     m_maploaded = true;
   }
 
@@ -567,16 +568,16 @@ namespace spatial
   }
   void VisualObjectSearch::selectdu( GtkWidget *widget, gpointer data )
   {
-    AVSComponentPtr->LookforObjectWithStrategy("rice",DIRECT_UNINFORMED);
+    AVSComponentPtr->LookforObjectWithStrategy(DIRECT_UNINFORMED);
   }
   void VisualObjectSearch::selectdi( GtkWidget *widget, gpointer data )
   {
-    AVSComponentPtr->LookforObjectWithStrategy("rice",DIRECT_INFORMED);
+    AVSComponentPtr->LookforObjectWithStrategy(DIRECT_INFORMED);
   }
   void VisualObjectSearch::selectind( GtkWidget *widget, gpointer data )
   {
     AVSComponentPtr->searchChainPos = 0;
-    AVSComponentPtr->LookforObjectWithStrategy("rice",INDIRECT);
+    AVSComponentPtr->LookforObjectWithStrategy(INDIRECT);
   }
 
 
@@ -643,7 +644,6 @@ namespace spatial
     }
 
     while(true){ 
-      log("I am running!"); 
       m_Mutex.lock();
 //      pbVis->DisplayMap(*m_map);
 //      pbVis->Display2DCureMap(m_lgm);
@@ -715,22 +715,26 @@ namespace spatial
         break;
       }
       case ASK_FOR_DISTRIBUTION:{
+	log("Command: ASK_FOR_DIST");
         m_command = IDLE;
         AskForDistribution();
 	break;
       }
       case NEXT_NBV:{
         //TODO isStopSearch then STOP	
-        GoToNBV();
+	log("Command: NEXT_NBV");
         m_command = IDLE; //Wait to get in position
+	GoToNBV();
 	break;
       }
       case RECOGNIZE:{
-	Recognize();
+	log("Command: Recognize");
         m_command = IDLE; //Wait for recognition
+	Recognize();
 	break;
       }
       case IDLE:{
+	log("Idling..");
 	break;
       }
     }
@@ -744,7 +748,8 @@ namespace spatial
     pos.setY(m_nbv.pos[1]);
     pos.setTheta(m_nbv.pan); 
     log("posting nav command");
-    PostNavCommand(pos, SpatialData::GOTOPOSITION);
+    m_command = RECOGNIZE; // FIXME this line is added and below is commented out only for easy testing
+    //PostNavCommand(pos, SpatialData::GOTOPOSITION);
   }
 
 void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &objID){
@@ -771,32 +776,31 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
     }
   }
 
-  void VisualObjectSearch::LookforObjectWithStrategy(std::string name, SearchMode mode){
+  void VisualObjectSearch::LookforObjectWithStrategy(SearchMode mode){
     //ask   
     if (mode == DIRECT_UNINFORMED){
       currentSearchMode = DIRECT_UNINFORMED;
-      currentTarget  = name;
+      log("Will look for %s", currentTarget.c_str());
       m_command = NEXT_NBV;
     }
     else if (mode == DIRECT_INFORMED){
       currentSearchMode = DIRECT_INFORMED;
-      currentTarget = name;
+      log("Will look for %s", currentTarget.c_str());
       m_command = ASK_FOR_DISTRIBUTION;
     }
     else if(mode == INDIRECT){
       currentSearchMode = INDIRECT;
       ObjectPairRelation rel;
       while(true){
-	rel = GetSecondaryObject(name);
+	rel = GetSecondaryObject(currentTarget);
 	if(rel.primaryobject == "")
 	  break;
 	searchChain.push_back(rel);
-	name = rel.secobject;
+	currentTarget = rel.secobject;
       }
       for(unsigned int i = 0; i < searchChain.size(); i++){
 	cout << searchChain[i].primaryobject << " " << searchChain[i].secobject << " " << searchChain[i].prob << endl;
       }
-      currentTarget = name;
       m_command = NEXT_NBV;
     }
   }
@@ -892,46 +896,58 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	      1.0,
 	      m_lgm
 	      );
-	  normalizePDF(*m_map);
+	  normalizePDF(*m_map,m_pout);
 	}
 	else {
 	  log("Got distribution around unknown object pose");
-	  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-	    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	      int bloxelX = x + m_lgm->getSize();
-	      int bloxelY = y + m_lgm->getSize();
-	      if ((*m_lgm)(x,y) == '1'){
-		// For each obstacle cell in the Cure map,
-		// place a KDE cloud around it, with the center given
-		// by the relation manager (which includes a z-coordinate
-		// for tables, desks etc)
-		pair<double, double> kernelCoords = 
-		  m_map->gridToWorldCoords(bloxelX, bloxelY);
-		cloud->center.x = kernelCoords.first;
-		cloud->center.y = kernelCoords.second;
+	  vector<pair<int, int> >obstacleCells;
+	  const int nTargetKernelSamples = 25;
+	  const int step = 10;
 
-		m_sampler.kernelDensityEstimation3D(*m_map, cloud->center,
-		    cloud->interval,
-		    cloud->xExtent,
-		    cloud->yExtent,
-		    cloud->zExtent,
-		    cloud->values,
-		    1.0/(m_lgm->getSize()), //Just an ad-hoc guess
-		    1.0,
-		    m_lgm);
+	  while (obstacleCells.size() < nTargetKernelSamples) {
+	    int yOffset = rand()%step;
+	    for (int x = -m_lgm->getSize() + rand()%step; x <= m_lgm->getSize(); x+=step) {
+	      for (int y = -m_lgm->getSize() + yOffset; y <= m_lgm->getSize(); y+=step) {
+		int bloxelX = x + m_lgm->getSize();
+		int bloxelY = y + m_lgm->getSize();
+		if ((*m_lgm)(x,y) == '1') {
+		  obstacleCells.push_back(make_pair<int>(bloxelX, bloxelY));
+		}
 	      }
 	    }
 	  }
 
-	  normalizePDF(*m_map);
+	  for(unsigned int i = 0; i < obstacleCells.size(); i++) {
+	    // place a KDE cloud around it, with the center given
+	    // by the relation manager (which includes a z-coordinate
+	    // for tables, desks etc)
+	    int bloxelX = obstacleCells[i].first;
+	    int bloxelY = obstacleCells[i].second;
+	    pair<double, double> kernelCoords = 
+	      m_map->gridToWorldCoords(bloxelX, bloxelY);
+	    cloud->center.x = kernelCoords.first;
+	    cloud->center.y = kernelCoords.second;
+
+	    m_sampler.kernelDensityEstimation3D(*m_map, cloud->center,
+		cloud->interval,
+		cloud->xExtent,
+		cloud->yExtent,
+		cloud->zExtent,
+		cloud->values,
+		1.0/(m_lgm->getSize()), //Just an ad-hoc guess
+		1.0,
+		m_lgm);
+	  }
+	  normalizePDF(*m_map,m_pout);
 	}
 	m_command = NEXT_NBV;
 
 	vector< pair<double,double> > thresholds;
-	thresholds.push_back(make_pair(1e-4,1e-3));
+	thresholds.push_back(make_pair(5e-4,1e-3));
 	thresholds.push_back(make_pair(1e-3,5e-3));
+	thresholds.push_back(make_pair(5e-3,1e-2));
 	thresholds.push_back(make_pair(1e-2,5e-2));
-	thresholds.push_back(make_pair(5e-2,1));
+	thresholds.push_back(make_pair(5e-2,1e2));
 	pbVis->AddPDF(*m_map, thresholds);
 	}
       catch (DoesNotExistOnWMException excp) {
@@ -1074,6 +1090,9 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
           isWaitingForDetection = false;
           DetectionComplete(false);
         }
+	else{
+	  log("this is not the object we looked for: %s",cmd->label.c_str());
+	}
 
     }
       catch (const CASTException &e) {
@@ -1132,13 +1151,18 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
   }
 
   void VisualObjectSearch::Recognize() {
+    log("Recognize called");
     isWaitingForDetection = true;
-    addRecognizer3DCommand(VisionData::RECOGNIZE,currentTarget,"");
+    DetectionComplete(false);
+    // FIXME Below is commented out just for easy testing
+    //addRecognizer3DCommand(VisionData::RECOGNIZE,currentTarget,"");
   }
 
 
   void VisualObjectSearch::DetectionComplete(bool isDetected){
+    cout << "Detection complete" << endl;
     if (isDetected){
+      log("Object Detected.");
       // check for success
       bool greatSuccess = false;
       if(currentSearchMode == DIRECT_UNINFORMED || currentSearchMode == DIRECT_INFORMED){
@@ -1166,7 +1190,7 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
     } else {
       // if we are not yet finished Go to NBV
       log("Object not detected");
-      //MeasurementUpdate(false); TODO
+      UnsuccessfulDetection(m_nbv);  
       m_command = NEXT_NBV;
     }
   }
@@ -1193,22 +1217,38 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
     }
 
   void VisualObjectSearch::UnsuccessfulDetection(SensingAction viewcone){
-    double pOut = 0.3;
     double sensingProb = 0.7;
     GDProbSum sumcells;
     GDIsObstacle isobstacle;
-    //to get the denominator first sum all cells
+    cout << "m_pout before update  is:" <<m_pout << endl;
+/*    for (int x  = 0 ; x < xSize; x++){
+      for (int y = 0; y < ySize; y++){
+	std::pair<double,double> coord = m_map->gridToWorldCoords(x, y);
+	double bloxel_floor = 0;
+	// for each bloxel sitting on this 2D cell
+	for(typename std::vector<MapBloxel>::const_iterator it = map(x,y).begin(); it != map(x,y).end(); it++){
+	  }
+	}
+      }*/
+ //to get the denominator first sum all cells
     m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
 	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells);
     double probsum = sumcells.getResult();
+    cout << "probsum is:" << probsum << endl;
+    m_pout = m_pout / probsum;
     // then deal with those bloxels that belongs to this cone
-    GDMeasUpdateGetDenominator getnormalizer(pOut, sensingProb,probsum);
+    GDMeasUpdateGetDenominator getnormalizer(m_pout, sensingProb,probsum);
     m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
 	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, getnormalizer,getnormalizer);
     double normalizer = getnormalizer.getResult();
+    cout << "normalizer: " << normalizer << endl;
     //finally set those bloxels that belongs to this cone
     GDUnsuccessfulMeasUpdate measupdate(normalizer,sensingProb); 
     m_map->coneModifier(viewcone.pos[0], viewcone.pos[1],viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, measupdate,measupdate);
+    normalizePDF(*m_map,m_pout);
+
+
+    cout << "m_pout after update  is:" << m_pout << endl;
 
   }
   void VisualObjectSearch::newRobotPose(const cdl::WorkingMemoryChange &objID) 
@@ -1297,14 +1337,14 @@ void VisualObjectSearch::PostNavCommand(Cure::Pose3D position, SpatialData::Comm
   log("posted nav command");
 }
 
-//void VisualObjectSearch::addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, 
-//    std::string label, std::string visualObjectID){
-//  log("posting recognizer command.");
-//  VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
-//  rec_cmd->cmd = cmd;
-//  rec_cmd->label = label;
-//  rec_cmd->visualObjectID = visualObjectID;
-//  addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
-//  isWaitingForDetection = true;
-//}
+void VisualObjectSearch::addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, 
+    std::string label, std::string visualObjectID){
+  log("posting recognizer command.");
+  VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
+  rec_cmd->cmd = cmd;
+  rec_cmd->label = label;
+  rec_cmd->visualObjectID = visualObjectID;
+  addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
+  isWaitingForDetection = true;
+}
 }

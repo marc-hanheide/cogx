@@ -90,7 +90,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void InterpretCommand();
       void AskForDistribution();
       int GetViewConeSums(std::vector <SensingAction > samplepoints);
-      void LookforObjectWithStrategy(std::string name, SearchMode mode);
+      void LookforObjectWithStrategy(SearchMode mode);
       void UnsuccessfulDetection(SensingAction viewcone);
       void InitializePDF();
       void InitializePDF(double initprob);
@@ -149,6 +149,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
 
 
       int m_samplesize;
+      double m_pout;
       double m_gridsize;
       double m_cellsize;
       double m_horizangle;
