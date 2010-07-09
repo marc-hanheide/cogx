@@ -34,6 +34,7 @@ if(BUILD_SA_V11N_USE_LUAGL)
 endif(BUILD_SA_V11N_USE_LUAGL)
 
 option(BUILD_SA_V11N_USE_WEBKIT "Build with HTML support (Qt-WebKit)" ON)
+option(BUILD_SA_V11N_USE_WEBKIT_PLUGINS "Enable plugins in HTML pages (Qt-WebKit)" ON)
 if(BUILD_SA_V11N_USE_WEBKIT)
    set(EXPERIMENT_SRC ${EXPERIMENT_SRC}
       object/CHtmlObject.cpp
@@ -52,12 +53,7 @@ if(BUILD_SA_V11N_USE_WEBKIT)
       )
    add_definitions(-DV11N_OBJECT_HTML)
 
-
-   # Disabled because of libflashplugin.so that crashes with WebKit (Ubuntu 10.04)
-   # If nspluginwrapper is removed, it works, but the server crashes when the HTML
-   # context is closed. TODO: Requires debugging (QViewContainer, QCastView, ...)
-   set(WEBKIT_PLUGINS 0)
-   if (WEBKIT_PLUGINS)
+   if (BUILD_SA_V11N_USE_WEBKIT_PLUGINS)
       set(EXPERIMENT_SRC ${EXPERIMENT_SRC}
          qtui/QCastPlugins.cpp
          )
@@ -65,7 +61,7 @@ if(BUILD_SA_V11N_USE_WEBKIT)
          qtui/QCastPlugins.hpp
          )
       add_definitions(-DV11N_OBJECT_HTML_PLUGINS)
-   endif (WEBKIT_PLUGINS)
+   endif (BUILD_SA_V11N_USE_WEBKIT_PLUGINS)
 endif(BUILD_SA_V11N_USE_WEBKIT)
 
 
