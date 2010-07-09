@@ -62,9 +62,9 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 				throws CASTException {
 			WorkingMemoryChange newWmc = (WorkingMemoryChange) _wmc.clone();
 			Ice.ObjectImpl oldEntry = map.get(_wmc.address);
-			try {
-				component.lockEntry(_wmc.address,
-						WorkingMemoryPermissions.LOCKEDOD);
+//			try {
+//				component.lockEntry(_wmc.address,
+//						WorkingMemoryPermissions.LOCKEDOD);
 				switch (_wmc.operation) {
 				case ADD:
 					try {
@@ -112,9 +112,9 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 
 					break;
 				}
-			} finally {
-				component.unlockEntry(_wmc.address);
-			}
+//			} finally {
+//				component.unlockEntry(_wmc.address);
+//			}
 		}
 
 	}
