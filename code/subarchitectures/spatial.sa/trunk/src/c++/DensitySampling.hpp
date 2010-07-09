@@ -141,7 +141,7 @@ class DensitySampler
 	  double cellSize, SampleCloud &outCloud);
 
     double kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap::GridMapData> &map,
-	const cogx::Math::Vector3 &center,
+	const vector<cogx::Math::Vector3> &centers,
 	double interval,
 	int xExtent,
 	int yExtent,
