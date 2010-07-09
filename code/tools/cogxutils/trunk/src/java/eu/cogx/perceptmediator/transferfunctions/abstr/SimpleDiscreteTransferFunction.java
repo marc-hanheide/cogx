@@ -88,6 +88,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 
 			CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief
 					.create(PerceptBelief.class);
+			pb.setId(idToCreate.id);
 			pb.setType(getBeliefTypeFromCastType(wmc.type));
 			pb.setPrivate("robot");
 			return pb.get();
