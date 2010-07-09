@@ -7,7 +7,9 @@ import standalone
 from standalone.task import Task  # requires standalone planner to be in PYTHONPATH already
 from standalone import pddl
 from standalone.pddl import state, prob_state
-from beliefmodels.autogen import distribs, featurecontent
+
+from de.dfki.lt.tr.beliefs.slice.sitbeliefs import dBelief
+from de.dfki.lt.tr.beliefs.slice import logicalcontent, distribs
 
 log = standalone.config.logger("PythonServer")
 
@@ -64,8 +66,8 @@ def belief_to_object(belief):
   return pddl.TypedObject(belief.id, object_type)
     
 def feature_val_to_object(fval):
-  if fval.__class__ == featurecontent.StringValue:
-    val = fval.val.lower()
+  if fval.__class__ == logicalcontent.ElementaryFormula:
+    val = fval.prop.lower()
     #lookup constants
     #if val in current_domain:
     #  return current_domain[val]
@@ -74,22 +76,22 @@ def feature_val_to_object(fval):
 
     return pddl.TypedObject(val, pddl.t_object)
   
-  elif fval.__class__ == featurecontent.PointerValue:
-    bel = belief_dict[fval.beliefId.id]
+  elif fval.__class__ == logicalcontent.PointerFormula:
+    bel = belief_dict[fval.pointer.id]
     return belief_to_object(bel)
   
-  elif fval.__class__ == featurecontent.IntegerValue:
+  elif fval.__class__ == logicalcontent.IntegerFormula:
     if "numeric-fluents" in current_domain.requirements or "fluents" in current_domain.requirements:
       return pddl.TypedObject(fval.val, pddl.t_number)
     else:
       return pddl.TypedObject(str(fval.val), pddl.t_object)
   
-  elif fval.__class__ == featurecontent.BooleanValue:
+  elif fval.__class__ == logicalcontent.BooleanFormula:
     if fval.val:
       return pddl.TRUE
     return pddl.FALSE
   
-  elif fval.__class__ == featurecontent.UnknownValue:
+  elif fval.__class__ == logicalcontent.UnknownFormula:
     return pddl.UNKNOWN
 
   return None
@@ -97,33 +99,37 @@ def feature_val_to_object(fval):
 
 
 def gen_fact_tuples(beliefs):
+  x = logicalcontent.PointerFormula(None)
   def extract_features(dist):
-    if isinstance(dist, distribs.DistributionWithExistDep):
-      #ignore existence probability for now
-      return extract_features(dist.Pc)
+    # if isinstance(dist, distribs.DistributionWithExistDep):
+    #   #ignore existence probability for now
+    #   return extract_features(dist.Pc)
     if isinstance(dist, distribs.CondIndependentDistribs):
       result = []
       for feat, fval_dist in dist.distribs.iteritems():
         assert isinstance(fval_dist, distribs.BasicProbDistribution)
         assert feat == fval_dist.key
         value = fval_dist.values
+        print feat
         
-        if isinstance(value, distribs.FeatureValues):
+        if isinstance(value, distribs.FormulaValues):
           for valpair in value.values:
+            print valpair.val
             val = feature_val_to_object(valpair.val)
             if val is not None:
+              log.debug("%s = %s:%.2f", feat, val, valpair.prob)
               result.append((feat, val, valpair.prob))
         elif isinstance(value, distribs.NormalValues):
           #TODO: discretize?
           val = feature_val_to_object(value.mean)
           if val is not None:
+            log.debug("%s = %s", feat, val)
             result.append((feat, val , 1.0))
       return result
-    if isinstance(dist, distribs.DiscreteDistribution):
-      assert False, "DiscreteDistribution not supported yet"
     assert False, "class %s of %s not supported" % (str(type(dist)), str(dist))
 
   for bel in beliefs:
+    print "belief id:", bel.id
     factdict = defaultdict(list)
     for feat, val, prob in extract_features(bel.content):
       factdict[str(feat)].append((val, prob))
@@ -131,19 +137,21 @@ def gen_fact_tuples(beliefs):
     if bel.type != "relation":
       obj = belief_to_object(bel)
       for feat,vals in factdict.iteritems():
+        log.debug("(%s %s) = %s : %f", feat, obj, val, prob)
         yield SVarDistribution(feat, [obj], vals)
     else:
       elems = []
       i=0
       while ("element%d" % i) in factdict:
-        el_vals = factdict["element%d" % i]
-        assert len(el_vals) == 1, "element features in relations must have exactly one possible value"
+        el_vals = factdict["val%d" % i]
+        assert len(el_vals) == 1, "valN features in relations must have exactly one possible value"
         elems.append(el_vals[0][0])
         i += 1
 
       for feat,vals in factdict.iteritems():
-        if feat.startswith("element"):
+        if feat.startswith("val"):
           continue
+        log.debug("(%s %s) = %s : %f", feat, " ".join(map(str, elems)), vals[0][0], vals[0][1])
         yield SVarDistribution(feat, elems, vals)
   # for bel in beliefs:
   #   if isinstance(union, specialentities.RelationUnion):
@@ -277,16 +285,16 @@ def infer_types(obj_descriptions):
 
   return objects
 
-def generate_mapl_task(task_desc, domain_fn):
+def generate_mapl_task(task_desc, state, domain_fn):
   global current_domain, belief_dict
   task = Task(task_desc.id)
   
   task.load_mapl_domain(domain_fn)
   current_domain = task._mapldomain
 
-  belief_dict = dict((b.id, b) for b in task_desc.state)
+  belief_dict = dict((b.id, b) for b in state)
   
-  obj_descriptions = list(unify_objects(filter_unknown_preds(gen_fact_tuples(task_desc.state))))
+  obj_descriptions = list(unify_objects(filter_unknown_preds(gen_fact_tuples(state))))
   
   objects = infer_types(obj_descriptions)
   task.namedict = rename_objects(objects)
@@ -303,8 +311,15 @@ def generate_mapl_task(task_desc, domain_fn):
 
   problem = pddl.Problem("cogxtask", objects, [], None, task._mapldomain, opt, opt_func )
 
-  goalstrings = transform_goal_string(task_desc.goal, task.namedict).split("\n")
-  problem.goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
+  problem.goal = pddl.conditions.Conjunction([], problem)
+  for goal in task_desc.goals:
+    goalstrings = transform_goal_string(goal.goalString, task.namedict).split("\n")
+    pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
+    if goal.importance < 0:
+      problem.goal.parts.append(pddl_goal)
+    else:
+      problem.goal.parts.append(pddl.conditions.PreferenceCondition(goal.importance, pddl_goal, problem))
+
   log.debug("goal: %s", problem.goal)
 
   task._mapltask = problem
@@ -314,13 +329,13 @@ def generate_mapl_task(task_desc, domain_fn):
   
   return task  
 
-def generate_mapl_state(task_desc, task):
+def generate_mapl_state(task, state):
   global current_domain, belief_dict
   current_domain = task._mapldomain
   
-  belief_dict = dict((b.id, b) for b in task_desc.state)
+  belief_dict = dict((b.id, b) for b in state)
   
-  obj_descriptions = list(unify_objects(filter_unknown_preds(gen_fact_tuples(task_desc.state))))
+  obj_descriptions = list(unify_objects(filter_unknown_preds(gen_fact_tuples(state))))
   
   objects = infer_types(obj_descriptions)
   task.namedict = rename_objects(objects)

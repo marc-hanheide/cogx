@@ -7,7 +7,6 @@ from collections import defaultdict
 import cast.pylog4cxx
 
 cast_log4cxx = None
-logging_reconnect = False
 
 class CASTLoggerProxy(object):
     def __init__(self, name=None):
@@ -85,13 +84,19 @@ from standalone import config
 
 config.set_logging_factory(CASTLoggerProxy)
 
-import autogen.Planner as Planner
-import beliefmodels.autogen as bm
-from beliefmodels.autogen import distribs, featurecontent
+import beliefs_cast_ice
+import beliefs_ice
+#import de.dfki.lt.tr.beliefs.slice ## must be imported *before* Planner
+from autogen import Planner
 import cast.core
-import cast.cdl
+
 from standalone import pddl, plans
 from standalone.pddl import state
+
+from standalone.task import PlanningStatusEnum, Task
+from standalone.planner import Planner as StandalonePlanner
+
+from cast_state import CASTState
 
 this_path = abspath(dirname(__file__))
 
@@ -102,13 +107,7 @@ def extend_pythonpath():
     
 extend_pythonpath()  
 
-from standalone.task import PlanningStatusEnum, Task
-from standalone.planner import Planner as StandalonePlanner
-
-BINDER_SA = "binder"
-
 TEST_DOMAIN_FN = join(dirname(__file__), "domains/springtest.mapl")
-
 
 log = config.logger()
         
@@ -121,6 +120,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.dt = None
     self.planner = StandalonePlanner()
     self.tasks = {}
+    self.beliefs = None
+
+    self.dttasks = {}
+    self.max_dt_id = 0
 
     global cast_log4cxx
     cast_log4cxx = self.m_logger
@@ -176,26 +179,27 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def registerTask(self, task_desc, current=None):
     # MB: id?
     log.info("Planner PythonServer: New PlanningTask received:")
-    log.info("GOAL: %s", task_desc.goal)
-    #print "OBJECTS: " + task_desc.objects;
-    #print "INIT: " + task_desc.state;
+    #log.info("GOAL: %s", task_desc.goal)
 
     # test the DT interface
     if self.dtdomain_fn and self.dtproblem_fn:
         self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
-        for tid in xrange(task_desc.id, task_desc.id+3):
+        for i in xrange(0, 3):
+            tid = self.max_dt_id
+            self.max_dt_id += 1
+            
             task = Task(tid)
             task.dt_orig_id = task_desc.id
-            self.tasks[tid] = task
+            self.tasks[task_desc.id] = task
+            self.dttasks[tid] = task
             task.dt_calls = 1
-            log.info("Calling DT planner with problem '%s' and domain '%s'", self.dtproblem_fn, self.dtdomain_fn)
+            log.info("%d: Calling DT planner with problem '%s' and domain '%s'", tid, self.dtproblem_fn, self.dtdomain_fn)
             self.getDT().newTask(tid, self.dtproblem_fn, self.dtdomain_fn);
-            log.info("done (id=%d)", tid)
+            log.info("%d: done", tid)
         return
 
-    import task_preprocessor
-    task = task_preprocessor.generate_mapl_task(task_desc, self.domain_fn)
-    self.tasks[task_desc.id] = task      
+    task = self.create_task(task_desc, self.domain_fn)
+    self.tasks[task_desc.id] = task
 
     self.planner.register_task(task)
     self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
@@ -207,23 +211,25 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     
     task.replan()
     self.deliver_plan(task)
+
+  def create_task(self, cast_task, domain_fn):
+      task = Task(cast_task.id)
+      task.load_mapl_domain(domain_fn)
+      
+      cast_state = CASTState(self.beliefs, task.mapldomain)
+      task.mapltask = cast_state.to_problem(cast_task, deterministic=True)
+      task.cast_state = cast_state
+      task.set_state(cast_state.state)
+
+      log.debug(str(task.get_state()))
+      return task
     
   def deliver_plan(self, task):    
     if task.planning_status == PlanningStatusEnum.PLANNING_FAILURE:
       self.getClient().updateStatus(task.taskID, Planner.Completion.FAILED);
       return
 
-    #TEST TEST TEST TEST 
-#     import random
-#     s = random.random()
-#     print s
-#     if s > 0.5:
-#       task.set_plan(None, update_status=True)
-#       return
-    #TEST TEST TEST TEST
-    
     plan = task.get_plan()
-    #plan = task_preprocessor.map2binder_rep(plan, task)
     log.debug("The following plan was found %s:\n", plan)
 
     G = plan.to_dot()
@@ -246,7 +252,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       if first_action == -1:
         first_action = i
       
-      uargs = [featvalue_from_object(arg, task.namedict, task.beliefdict) for arg in pnode.args]
+      uargs = [task.cast_state.featvalue_from_object(arg) for arg in pnode.args]
 
       fullname = str(pnode)
       outplan.append(Planner.Action(task.taskID, pnode.action.name, uargs, fullname, Planner.Completion.PENDING))
@@ -260,6 +266,13 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     
     self.getClient().deliverPlan(task.taskID, outplan);
 
+  def updateState(self, state, current=None):
+      log.debug("recieved state update.")
+      self.beliefs = state
+      print "state:"
+      for bel in state:
+          print bel.id
+      
   
   def updateTask(self, task_desc, current=None):
     if task_desc.id not in self.tasks:
@@ -274,9 +287,6 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       
     task = self.tasks[task_desc.id]
     plan = task.get_plan()
-
-    # for bel in task_desc.state:
-    #   print bel
 
     finished_actions = []
     failed_actions = []
@@ -316,16 +326,25 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
             
       if requires_action_dispatch:
         task.mark_changed()
+
+      if finished_actions or failed_actions:
+          diffstate = compute_state_updates(task.get_state(), finished_actions, failed_actions)
+          for fact in diffstate.iterfacts():
+              task.get_state().set(fact)
+          #TODO: create new state?
+          beliefs = task.cast_state.update_beliefs(diffstate)
+          self.getClient().updateBeliefState(beliefs)
+        
+      self.monitor_task(task)
     
-    import task_preprocessor
-    objects, new_state = task_preprocessor.generate_mapl_state(task_desc, task)
-    #print map(str, objects)
-    #print map(str, facts)
+
+  def monitor_task(self, task):
+    new_cast_state = CASTState(self.beliefs, task.mapldomain)
 
     old_state = task.get_state()
-    print_state_difference(old_state, new_state)
+    print_state_difference(old_state, new_state.state)
 
-    newtask = pddl.Problem(task.mapltask.name, objects, [], None, task._mapldomain, task.mapltask.optimization, task.mapltask.opt_func)
+    newtask = new_state.to_problem(None, deterministic=True)
 
     #check if the goal is still valid
     try:
@@ -337,20 +356,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.deliver_plan(task)
       return
       
-
-    new_state.problem = newtask
-    task.set_state(new_state)
+    task.cast_state = new_cast_state
     task.mapltask = newtask
-
-    if finished_actions or failed_actions:
-      diffstate = compute_state_updates(task.get_state(), old_state, finished_actions, failed_actions)
-      for fact in diffstate.iterfacts():
-        task.get_state().set(fact)
-      beliefs = update_beliefs(diffstate, task.namedict, task_desc.state)
-      self.getClient().updateBeliefState(beliefs)
+    task.set_state(new_cast_state.state)
       
-    #print "\n".join(mapl.writer.MAPLWriter().write_problem(newtask))
-  
     self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
 
     problem_fn = abspath(join(this_path, "problem%d.mapl" % task.taskID))
@@ -360,224 +369,93 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     task.replan()
     self.deliver_plan(task)
+      
 
   def deliverAction(self, taskId, action, current=None):
-    if taskId not in self.tasks:
+    if taskId not in self.dttasks:
       log.warning("Warning: received action for task %d, but no such task found.", taskId)
       return
     
-    log.info("received new action from DT")
+    log.info("%d: received new action from DT", taskId)
       
-    task = self.tasks[taskId]
+    task = self.dttasks[taskId]
     task.dt_actions += 1
 
     if task.dt_actions >= 6:
-        log.info("cancelling dt task")
+        log.info("%d: cancelling dt task", taskId)
         self.getDT().cancelTask(taskId)
-        log.info("cancelled.")
+        log.info("%d: cancelled.", taskId)
         task.dt_calls + 1
         if task.dt_calls >= 3:
-            log.info("cancelling planning task")
+            log.info("%d: cancelling planning task", taskId)
             self.getClient().updateStatus(task.dt_orig_id, Planner.Completion.PLANNING_FAILURE)
         else:
-            log.info("and restarting.")
-            self.getDT().newTask(task_desc.id, self.dtproblem_fn, self.dtdomain_fn);
-            log.info("restart done.")
+            log.info("%d: and restarting.", taskId)
+            self.getDT().newTask(taskId, self.dtproblem_fn, self.dtdomain_fn);
+            log.info("%d: restart done.", taskId)
         return
             
             
 
     #create featurevalues
-    #uargs = [featvalue_from_object(task.mapltask[arg], task.namedict, task.beliefdict) for arg in action.arguments]
+    #uargs = [task.cast_state.featvalue_from_object(task.mapltask[arg]) for arg in action.arguments]
     
     fullname = action.name + " ".join(action.arguments)
     #outplan = [Planner.Action(task.taskID, action.name, uargs, fullname, Planner.Completion.PENDING)]
 
-    log.info("First action: %s", fullname)
+    log.info("%d: First action: %s", taskId, fullname)
 
     obs = Planner.Observation("predicate", ["arg1", "arg2"])
     
     self.getDT().deliverObservation(taskId, [obs])
 
-    log.info("delivered dummy observation")
+    log.info("%d: delivered dummy observation", taskId)
     
     #self.getClient().deliverPlan(task.taskID, outplan);
 
   def updateStatus(self, taskId, status, message, current=None):
-      if taskId not in self.tasks:
+      if taskId not in self.dttasks:
           log.warning("Warning: received state update for task %d, but no such task found.", taskId)
           return
 
       log.info("DT planner updates status to %s with the following message: %s", str(status), message)
       
       #just forward the status for now
-      self.getClient().setStatus(taskId, status);
-    
-    
-def compute_state_updates(_state, old_state, actions, failed):
-  diffstate = state.State()
-  for action in actions:
-    for fact in action.effects:
-      if fact.svar.modality != pddl.mapl.update:
-        continue
+      self.getClient().setStatus(self.dttasks[taskId].dt_orig_id, status);
 
-      fact = state.Fact(fact.svar.nonmodal(), fact.svar.modal_args[0])
 
-      if fact not in _state:
-        diffstate.set(fact)
-        log.debug("not in state: %s", str(fact))
-      elif fact.svar in diffstate:
-        del diffstate[fact.svar]
-        log.debug("previous change %s overwritten by later action", str(state.Fact(fact.svar, diffstate[fact.svar])))
+def compute_state_updates(_state, actions, failed):
+    diffstate = state.State()
+    for action in actions:
+        for fact in action.effects:
+            if fact.svar.modality != pddl.mapl.update:
+                continue
 
-  for action in failed:
-    for fact in action.effects:
-      if fact.svar.modality != pddl.mapl.update_fail:
-        continue
+            fact = state.Fact(fact.svar.nonmodal(), fact.svar.modal_args[0])
 
-      fact = state.Fact(fact.svar.nonmodal(), fact.svar.modal_args[0])
+            if fact not in _state:
+                diffstate.set(fact)
+                log.debug("not in state: %s", str(fact))
+            elif fact.svar in diffstate:
+                del diffstate[fact.svar]
+                log.debug("previous change %s overwritten by later action", str(state.Fact(fact.svar, diffstate[fact.svar])))
 
-      if fact not in _state:
-        diffstate.set(fact)
-        log.debug("not in state: %s", str(fact))
-      elif fact.svar in diffstate:
-        del diffstate[fact.svar]
-        log.debug("previous change %s overwritten by later action", str(state.Fact(fact.svar, diffstate[fact.svar])))
-        
-  return diffstate
+    for action in failed:
+        for fact in action.effects:
+            if fact.svar.modality != pddl.mapl.update_fail:
+                continue
 
-def featvalue_from_object(arg, namedict, bdict):
-  if arg in namedict:
-    #arg is provided by the binder
-    name = namedict[arg]
-  else:
-    #arg is a domain constant
-    name = arg.name
+            fact = state.Fact(fact.svar.nonmodal(), fact.svar.modal_args[0])
 
-  if name in bdict:
-    #arg is a pointer to another belief
-    value = featurecontent.PointerValue(cast.cdl.WorkingMemoryAddress(name, BINDER_SA))
-  elif arg.is_instance_of(pddl.t_boolean):
-    value = False
-    if arg == pddl.TRUE:
-      value = True
-    value = featurecontent.BooleanValue(value)
-  else:
-    #assume a string value
-    value = featurecontent.StringValue(name)
+            if fact not in _state:
+                diffstate.set(fact)
+                log.debug("not in state: %s", str(fact))
+            elif fact.svar in diffstate:
+                del diffstate[fact.svar]
+                log.debug("previous change %s overwritten by later action", str(state.Fact(fact.svar, diffstate[fact.svar])))
 
-  return value
+    return diffstate
 
-def update_beliefs(diffstate, namedict, beliefs):
-  bdict = dict((b.id, b) for b in beliefs)
-  changed_ids = set()
-  new_beliefs = []
-
-  def get_value_dist(dist, feature):
-    if isinstance(dist, distribs.DistributionWithExistDep):
-      return get_feature_dist(dist.Pc, feature)
-    if isinstance(dist, distribs.CondIndependentDistribs):
-      if feature in dist.distribs:
-        return dist.distribs[feature].values, dist
-      return None, dist
-    if isinstance(dist, distribs.BasicProbDistribution):
-      if dist.key == feature:
-        return dist.values, None
-      return None, None
-    assert False, "class %s not supported" % str(type(dist))
-
-  def find_relation(args, beliefs):
-    result = None
-
-    arg_values = [featvalue_from_object(arg, namedict, bdict) for arg in args]
-    
-    for bel in beliefs:
-      if not bel.type == "relation":
-        continue
-      
-      found = True
-      for i, arg in enumerate(arg_values):
-        dist, _ = get_value_dist(bel.content, "element%d" % i)
-        if not dist:
-          found = False
-          break
-
-        elem = dist.values[0].val
-        if elem != arg:
-          found = False
-          break
-
-      if found:
-        result = bel
-        break
-
-    if result:
-      return result
-
-    frame = bm.framing.SpatioTemporalFrame()
-    eps = bm.epstatus.PrivateEpistemicStatus("robot")
-    hist = bm.history.CASTBeliefHistory([], [])
-    dist_dict = {}
-    for i, arg in enumerate(arg_values):
-      feat = "element%d" % i
-      pair = distribs.FeatureValueProbPair(arg, 1.0)
-      dist_dict[feat] = distribs.BasicProbDistribution(feat, distribs.FeatureValues([pair])) 
-    dist = distribs.CondIndependentDistribs(dist_dict)
-    result = bm.beliefs.StableBelief(frame, eps, "temporary", "relation", dist, hist)
-    return result
-    
-  for svar, val in diffstate.iteritems():
-    if len(svar.args) == 1:
-      obj = svar.args[0]
-      try:
-        bel = bdict[namedict[obj]]
-      except:
-        log.warning("tried to find belief for %s, but failed", str(obj))
-        continue
-    else:
-      bel = find_relation(svar.args, beliefs)
-      if bel.id == "temporary":
-        beliefs.append(bel)
-        new_beliefs.append(bel)
-      
-    feature = svar.function.name
-    dist, parent = get_value_dist(bel.content, feature)
-    if not dist:
-      if isinstance(parent, distribs.CondIndependentDistribs):
-        dist = distribs.FeatureValues()
-        parent.distribs[feature] = distribs.BasicProbDistribution(feature, dist)
-      else:
-        continue
-      
-    #TODO: deterministic state update for now
-    if isinstance(dist, distribs.NormalValues):
-      dist.mean = val.value
-      dist.variance = 0;
-    else:
-      if val.is_instance_of(pddl.t_number):
-        fval = featurecontent.IntegerValue(val.value)
-      elif val.is_instance_of(pddl.t_boolean):
-        if val == pddl.TRUE:
-          fval = featurecontent.BooleanValue(True)
-        else:
-          fval = featurecontent.BooleanValue(False)
-      elif val == pddl.UNKNOWN:
-        fval = featurecontent.UnknownValue()
-      else:
-        name = namedict.get(val,val)
-          
-        if ":" in name:
-          fval = featurecontent.PointerValue(cast.cdl.WorkingMemoryAddress(name, BINDER_SA))
-        else:
-          fval = featurecontent.StringValue(name)
-          
-      pair = distribs.FeatureValueProbPair(fval, 1.0)
-      dist.values = [pair]
-
-    if bel.id != "temporary":
-      changed_ids.add(bel.id)
-
-  return [bdict[id] for id in changed_ids] + new_beliefs
   
 def print_state_difference(state1, state2, print_fn=None):
   def collect_facts(state):

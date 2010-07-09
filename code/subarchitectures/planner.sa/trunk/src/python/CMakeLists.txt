@@ -1,10 +1,12 @@
 include(Slice2Py)
 
 cast_slice2Py(GEN_FILE Planner.ice ${CAST_SLICE_DIR} ${CAST_SLICE_DIR}/cast/slice ${COGX_ROOT}/subarchitectures/binder/src/slice
-  ${COGX_ROOT}/tools/beliefs/apis/beliefs/src/slice)
+  ${COGX_ROOT}/tools/beliefs/apis/beliefs/src/slice
+  ${COGX_ROOT}/tools/beliefs/apis/beliefs+cast/src/slice)
 cast_slice2Py(GEN_FILE2 ../../tools/beliefs/apis/beliefs/src/slice/beliefs.ice ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} )
+cast_slice2Py(GEN_FILE3 ../../tools/beliefs/apis/beliefs+cast/src/slice/beliefs_cast.ice ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} )
 
-add_custom_target(python ALL DEPENDS ${GEN_FILE} ${GEN_FILE2})
+add_custom_target(python ALL DEPENDS ${GEN_FILE} ${GEN_FILE2} ${GEN_FILE3})
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/standalone/config.auto.in" "${CMAKE_CURRENT_SOURCE_DIR}/standalone/config.auto")
 
