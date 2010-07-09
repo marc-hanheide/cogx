@@ -25,6 +25,12 @@
 
 namespace cogx { namespace vision {
 
+struct CModelScore
+{
+   double score;
+   std::vector<double> viewScore;
+};
+
 // CObjectRecognizer is the component that will be created when CAST starts.
 // The ICE server interface (ObjectRecognizerI) will be created in start().
 class CObjectRecognizer:
@@ -64,6 +70,7 @@ private:
 private:
    void startIceServer();
    void loadModels(const std::string& from, const std::vector<std::string>& modelnames);
+   void fancyDisplay(std::vector<CObjectModel*>& models, std::vector<CModelScore>& scores);
 
 public:
    CObjectRecognizer();

@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <deque>
 
 extern "C"
 {
@@ -214,12 +215,6 @@ public:
    }
 };
 
-struct CModelScore
-{
-   double score;
-   std::vector<double> viewScore;
-};
-
 class CModelEvaluator
 {
    CViewEvaluator *pViewEval;
@@ -263,6 +258,78 @@ public:
    }
 };
 
+std::string color(const std::string& val)
+{
+   union {
+      unsigned long v;
+      unsigned char b[4];
+   };
+   v = 1232357 + val.size() * 13;
+   for(int i=0; i<val.size(); i++) {
+      v = (v + val[i]) * 7 % 0x0f67f241;
+      if (i > 10) break;
+   }
+   for(int i = 0; i < 4; i++) b[i] = b[i] % 192 + 32;
+   char buf[32];
+   sprintf(buf, "#%02x%02x%02x", (int) v & 0xff, (int) (v & 0xff00) >> 8, (int) (v & 0xff0000) >> 16);
+   return std::string(buf);
+}
+
+void CObjectRecognizer::fancyDisplay(std::vector<CObjectModel*>& models, std::vector<CModelScore>& scores)
+{
+#ifdef FEAT_VISUALIZATION
+   const unsigned int histSize = 32;
+   typedef std::deque<double> TFloatQueue;
+   static std::vector<TFloatQueue> scoreHist;
+   while (models.size() > scoreHist.size()) {
+      scoreHist.push_back(TFloatQueue());
+   }
+   for (int i = 0; i < scoreHist.size(); i++) {
+      TFloatQueue& hist = scoreHist[i];
+      while (hist.size() < histSize-1) hist.push_back(0);
+      if (i < scores.size()) hist.push_back(scores[i].score);
+      else hist.push_back(0);
+      while (hist.size() > histSize) hist.pop_front();
+   }
+   double smin = 1e99;
+   double smax = 1e-99;
+   for (int i = 0; i < scoreHist.size(); i++) {
+      TFloatQueue& hist = scoreHist[i];
+      for(int k = 0; k < hist.size(); k++) {
+         if (hist[k] < smin) smin = hist[k];
+         if (hist[k] > smax) smax = hist[k];
+      }
+   }
+   if (smin >= smax) return;
+   if (smin > 0) smin = 0;
+
+   std::ostringstream ss;
+   ss << "<svg viewbox='0 0 242 162'>";
+
+   ss << "<rect x='0' y='0' width='242' height='162' fill='white' stroke='blue' stroke-width='1' />";
+   ss << "<polyline fill='none' stroke='#a0a0ff' stroke-width='1' points='1,120 241,120' />";
+   ss << "<polyline fill='none' stroke='#a0a0ff' stroke-width='1' points='1,80 241,80' />";
+   ss << "<polyline fill='none' stroke='#a0a0ff' stroke-width='1' points='1,40 241,40' />";
+
+   double range = smax-smin;
+   for (int i = 0; i < scoreHist.size(); i++) {
+      TFloatQueue& hist = scoreHist[i];
+      ss << "<polyline fill='none' stroke='" << color(models[i]->m_name) << "' stroke-width='1' points='";
+      for(int k = 0; k < hist.size(); k++) {
+         double p = 1.0 - ((hist[k] - smin) / range);
+         ss << int(240.0*k/hist.size()+0.5) << "," << int(160*p+0.5) << " ";
+      }
+      ss << "' />\n";
+   }
+
+   ss << "<text x='2' y='16' font-size='12' fill='blue'>" << int(smax) << "</text>";
+   ss << "<text x='2' y='160' font-size='12' fill='blue'>" << int(smin) << "</text>";
+
+   ss << "</svg>";
+   m_display.setObject("ObjectRecognizer.Graph", "999_lines", ss.str());
+#endif
+}
+
 void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
       const int x0, const int y0, const int width, const int height,
       ObjectRecognizerIce::RecognitionResultSeq& results)
@@ -278,6 +345,8 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
 
    vieweval.setDistanceCalculator(&calc);
    modeval.setViewEvaluator(&vieweval);
+
+   std::vector<CModelScore> modelScores;
 
    std::ofstream fres;
    fres.open("/tmp/or_model_distrib.html", std::ofstream::out);
@@ -315,12 +384,15 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
          //fres << "results: " << matches.size() << "<br>";
          CModelScore score;
          modeval.evaluateModel(sifts, *pModel, matches, score);
+         modelScores.push_back(score);
          fres << "score: " << score.score << "<br>";
          fres << "<br>";
       }
    }
    double tm1 = fclocks();
    fres << "match end " << tm1 << "  delta:" << tm1-tm0 << "<br>";
+
+   fancyDisplay(m_models, modelScores);
 
    //fres << "NUM SIFTS: " << sifts.size() << "<br>";
 
