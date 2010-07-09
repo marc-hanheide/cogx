@@ -5,13 +5,15 @@ import java.util.Map.Entry;
 
 import de.dfki.lt.tr.beliefs.data.Belief;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.ProbFormula;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
- *
+ * 
  */
 public class dBeliefInfo implements Plugin {
 
@@ -28,15 +30,20 @@ public class dBeliefInfo implements Plugin {
 		try {
 			CASTIndependentFormulaDistributionsBelief<dBelief> assumedBelief = CASTIndependentFormulaDistributionsBelief
 					.create(dBelief.class, (dBelief) iceObject);
-			extraInfo.add("duration="
-					+ assumedBelief.duration());
+			extraInfo.add("duration=" + assumedBelief.duration());
 			String distrStr = "";
 			for (Entry<String, FormulaDistribution> distr : assumedBelief
 					.getContent().entrySet()) {
 				distrStr += distr.getKey() + "={";
 				for (ProbFormula i : distr.getValue()) {
-					distrStr += i.getFormula().toString() + " ("
-							+ i.getProbability() + ") ";
+					if (i.getFormula().get() instanceof PointerFormula) {
+						distrStr += WMPointer.create(i.getFormula().get())
+								.toString()
+								+ " (" + i.getProbability() + ") ";
+					} else {
+						distrStr += i.getFormula().toString() + " ("
+								+ i.getProbability() + ") ";
+					}
 				}
 				distrStr += "} ";
 
