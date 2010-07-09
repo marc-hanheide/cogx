@@ -377,24 +377,26 @@ void VideoViewer::runComponent()
     m_HtmlForm.add(new CFormValues::set("multiple",
         CFormValues::valuelist() << "Multiple" << "Multiple2" << "Multiple3"));
 
+    str << "<br/>";
+    str << "<input type=\"text\" name=\"mytext\" value=\"Display Server Rules!\" />";
+    m_HtmlForm.add(new CFormValues::field("mytext"));
+
+    str << "<br/>";
     str << "<input type=\"checkbox\" name=\"checkboxname\" value=\"check1\"/> CheckBox1";
     str << "<input type=\"checkbox\" name=\"checkboxname\" value=\"check2\"/> CheckBox2";
     m_HtmlForm.add(new CFormValues::set("checkboxname", CFormValues::valuelist() << "check1" << "check2"));
 
+    str << "<br/>";
     str << "<input type=\"radio\"  name=\"rbname\" value=\"radio1\"/> RadioButton1";
     str << "<input type=\"radio\"  name=\"rbname\" value=\"radio2\"/> RadioButton2";
     m_HtmlForm.add(new CFormValues::choice("rbname", CFormValues::valuelist() << "radio1" << "radio2"));
 
-    str << "<br/>";
-    str << "<input type=\"text\" name=\"val\" value=\"Display Server Rules!\" />";
-    m_HtmlForm.add(new CFormValues::field("val"));
-
-    str << "<input type=\"submit\" name=\"submit\" value=\"Apply\"/>";
+    str << "<br><input type=\"submit\" name=\"submit\" value=\"Apply\"/>";
     str << "<hr>";
     str << "<div id=\"debugout\"></div>";
 
     // Set the initial form data - before setHtmlForm!
-    m_HtmlForm.setValue("val", "Display Server Rules! (setValue)");
+    m_HtmlForm.setValue("mytext", "Display Server Rules! (setValue)");
     m_HtmlForm.setValue("rbname/radio1", "true");
     m_HtmlForm.setValue("checkboxname/check1", "true");
     m_HtmlForm.setValue("checkboxname/check2", "true");
@@ -406,7 +408,7 @@ void VideoViewer::runComponent()
     // Test if the form could be restored
     std::stringstream str;
     str << "<script>";
-    str << "var vals = {'single': ['Single2'], 'val': 'This also works: Display Server Rules!', ";
+    str << "var vals = {'single': ['Single2'], 'mytext': 'This also works: Display Server Rules!', ";
     str << "   'multiple': ['Multiple2', 'Multiple3']};";
     str << "CogxJsFillFormV('#form_Visualization_test_HtmlForm_001_text', vals);";
     str << "</script>";
