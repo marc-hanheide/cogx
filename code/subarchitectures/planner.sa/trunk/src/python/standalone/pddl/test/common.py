@@ -22,9 +22,11 @@ class PddlTest(unittest.TestCase):
         return dom, prob
 
     def roundtrip(self, dom, prob=None, print_result=False):
-        import mapl
+        import mapl, dtpddl
         if "mapl" in dom.requirements:
             w = mapl.MAPLWriter()
+        elif "partial-observability" in dom.requirements:
+            w = dtpddl.DTPDDLWriter()
         else:
             w = writer.Writer()
 

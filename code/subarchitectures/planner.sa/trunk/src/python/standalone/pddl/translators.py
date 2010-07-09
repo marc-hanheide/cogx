@@ -307,7 +307,7 @@ class CompositeTypeCompiler(Translator):
                 p.type = CompositeTypeCompiler.replacement_type(p.type, dom.types)
         
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
-        dom.observe = [self.translate_action(a, dom) for o in _domain.observe]
+        dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
         dom.name2action = None
@@ -406,6 +406,9 @@ class ObjectFluentNormalizer(Translator):
         def visitor(eff, results):
             if isinstance(eff, effects.SimpleEffect):
                 return self.translate_literal(eff, termdict)
+            elif isinstance(eff, effects.ConditionalEffect):
+                cond = self.translate_condition(eff.condition, termdict, eff.scope)
+                return effects.ConditionalEffect(cond, results[0], eff.scope)
 
         return visitors.visit(eff, visitor)
         
@@ -416,9 +419,8 @@ class ObjectFluentNormalizer(Translator):
         pre = self.translate_condition(action.precondition, termdict, domain)
         replan = self.translate_condition(action.replan, termdict, domain)
         effect = self.translate_effect(action.effect, termdict, domain)
-        #print effect.pddl_str()
 
-        args = [types.Parameter(p.name, p.type) for p in action.args]
+        add_args = []
         if termdict:
             if pre and not isinstance(pre, conditions.Conjunction):
                 pre = conditions.Conjunction([pre])
@@ -426,13 +428,17 @@ class ObjectFluentNormalizer(Translator):
                 pre = conditions.Conjunction([])
             for term, param in termdict.iteritems():
                 pre.parts.append(conditions.LiteralCondition(equals, [term, Term(param)]))
-                args.append(param)
+                add_args.append(param)
             # if action.precondition is None:
             #     print pre.pddl_str()
 
         a2 = action.copy_skeletion(domain)
-        a2.add(args)
-        a2.args = args
+        a2.add(add_args)
+        if action.__class__ == actions.Action:
+            a2.args += add_args
+        else:
+            a2.maplargs += add_args
+            
         a2.precondition = pre
         a2.replan = replan
         a2.effect = effect
@@ -551,17 +557,18 @@ class ObjectFluentCompiler(Translator):
     def translate_action(self, action, domain=None):
         assert domain is not None
 
-        a2 = actions.Action(action.name, [types.Parameter(p.name, p.type) for p in action.args], None, None, domain)
-        #a2 = action.copy_skeletion(domain)
+        #a2 = actions.Action(action.name, [types.Parameter(p.name, p.type) for p in action.args], None, None, domain)
+        a2 = action.copy_skeletion(domain)
         #print map(str, a2.args)
         
         a2.precondition, facts = self.translate_condition(action.precondition, a2)
         a2.replan, rfacts = self.translate_condition(action.replan, a2)
         facts += rfacts
 
-        a2.effect = action.effect.copy(new_scope=a2)
-        #print a2.effect.pddl_str()
-        a2.effect = self.translate_effect(action.effect, facts, a2)
+        if action.effect:
+            a2.effect = action.effect.copy(new_scope=a2)
+            #print a2.effect.pddl_str()
+            a2.effect = self.translate_effect(action.effect, facts, a2)
 
         return a2
             
@@ -849,7 +856,7 @@ class MAPLCompiler(Translator):
             if a2.effect is None:
                 a2.effect = effects.ConjunctiveEffect([])
             a2.effect.set_scope(a2)
-        if action.sensors:
+        if isinstance(action, mapl.MAPLAction) and action.sensors:
             keff = action.knowledge_effect().copy(a2)
             if a2.effect:
                 keff.parts.insert(0, a2.effect)

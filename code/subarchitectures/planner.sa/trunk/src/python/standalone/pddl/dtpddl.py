@@ -1,6 +1,6 @@
 import itertools
 
-import predicates, conditions, effects, actions, scope, visitors, translators, mapl
+import predicates, conditions, effects, actions, scope, visitors, translators, writer, mapl
 import mapltypes as types
 import builtin
 
@@ -158,6 +158,67 @@ class Observation(actions.Action):
             pass
         
         return observe
+
+class DTPDDLWriter(writer.Writer):
+    def write_observe(self, action):
+        strings = [action.name]
+        strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
+        if action.maplargs:
+            strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.maplargs)], parens=False)
+
+        exe = []
+        for ex in action.execution:
+            ex_str = "(%s %s)" % (ex.action.name, " ".join(a.name for a in ex.args))
+            if ex.negated:
+                ex_str = "(not %s)" % ex_str
+            exe.append(ex_str)
+        if len(exe) > 1:
+            exe = [self.section("and", exe)]
+            
+        strings += self.section(":execution", exe, parens=False)
+            
+        if action.precondition:
+            strings += self.section(":precondition", self.write_condition(action.precondition), parens=False)
+        if action.effect:
+            strings += self.section(":effect", self.write_effect(action.effect), parens=False)
+
+            
+        return self.section(":observe", strings)
+
+    def write_domain(self, domain):
+        strings = ["(define (domain %s)" % domain.name]
+        strings.append("")
+        strings.append("(:requirements %s)" % " ".join(":"+r for r in domain.requirements))
+        strings.append("")
+        strings += self.write_types(domain.types.itervalues())
+
+        strings.append("")
+        strings += self.write_predicates(domain.predicates)
+
+        strings.append("")
+        strings += self.write_functions(domain.functions)
+        
+        if domain.constants:
+            strings.append("")
+            const = [c for c in domain.constants if c not in (types.TRUE, types.FALSE, types.UNKNOWN)]
+            strings += self.write_objects("constants", const)
+
+        for a in domain.axioms:
+            strings.append("")
+            strings += self.write_axiom(a)
+            
+        for a in domain.actions:
+            strings.append("")
+            strings += self.write_action(a)
+
+        for o in domain.observe:
+            strings.append("")
+            strings += self.write_observe(o)
+            
+
+        strings.append("")
+        strings.append(")")
+        return strings
 
 
 class DT2MAPLCompiler(translators.Translator):

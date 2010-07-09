@@ -97,7 +97,7 @@ class DTTest(common.PddlTest):
     def testMAPLTranslation(self):
         """Testing translation of  observation models to mapl actions"""
         self.dom = self.load("testdata/logistics.dtpddl")
-        dom2 = DT2MAPLCompiler().translate_domain(self.dom)
+        dom2 = DT2MAPLCompiler().translate(self.dom)
         #self.roundtrip(dom2, print_result=True)
 
         s1 = dom2.get_action("sense_package")
@@ -105,6 +105,18 @@ class DTTest(common.PddlTest):
 
         s2 = dom2.get_action("sense_position")
         self.assertEqual(len(s2.sensors), 1)
+
+    def testADLTranslation(self):
+        """Testing translation of mapl/dtpddl to adl/dtpddl"""
+        self.dom = self.load("testdata/logistics.dtpddl")
+        dom2 = translators.ADLCompiler().translate(self.dom)
+        self.roundtrip(dom2, print_result=False)
+
+        #s1 = dom2.get_action("sense_package")
+        #self.assertEqual(len(s1.sensors), 1)
+
+        #s2 = dom2.get_action("sense_position")
+        #self.assertEqual(len(s2.sensors), 1)
 
         
     def testDtErrorHandling(self):
