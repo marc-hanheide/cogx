@@ -8,6 +8,8 @@
 using namespace std;
 using namespace de::dfki::lt::tr::beliefs::slice;
 using namespace de::dfki::lt::tr::beliefs::slice::sitbeliefs;
+using namespace de::dfki::lt::tr::beliefs::slice::logicalcontent;
+//using namespace eu::cogx::beliefs::slice;
 using namespace cast::cdl;
 
 extern "C" {
@@ -41,6 +43,12 @@ void WMControl::start() {
     log("Planner WMControl: initializing");
     addChangeFilter(cast::createLocalTypeFilter<autogen::Planner::PlanningTask>(cast::cdl::ADD), 
 		    new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::receivePlannerCommands));
+
+    addChangeFilter(cast::createLocalTypeFilter<autogen::Planner::PlanningTask>(cast::cdl::OVERWRITE), 
+		    new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::taskChanged));
+
+    addChangeFilter(cast::createLocalTypeFilter<autogen::Planner::PlanningTask>(cast::cdl::DELETE), 
+		    new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::taskRemoved));
 
     addChangeFilter(cast::createLocalTypeFilter<Action>(cast::cdl::OVERWRITE), 
 		    new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::actionChanged));
@@ -91,10 +99,17 @@ void WMControl::runComponent() {
         m_queue_mutex.unlock();
 
         if (!execute.empty()) {
+            lockComponent();
+            vector<dBeliefPtr> state;
+            for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
+                state.push_back(i->second);
+            }
+            unlockComponent();
+            pyServer->updateState(state);
+
             for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
                 lockComponent();
-                PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it].address);
-                generateState(task);
+                PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it]);
                 unlockComponent();
                 pyServer->updateTask(task);
                 log("returning..:");
@@ -114,7 +129,10 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
     autogen::Planner::PlanningTaskPtr task = getMemoryEntry<autogen::Planner::PlanningTask>(wmc.address);
     log(task->goals[0]->goalString);
 
-    generateState(task);
+    log("Goals:");
+    BOOST_FOREACH(GoalPtr g, task->goals) {
+        log("    importance %.2f: %s", g->importance, g->goalString.c_str());
+    }
 
     task->id = TASK_ID;
     task->plan = vector<ActionPtr>();
@@ -123,23 +141,60 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
     task->planningStatus = PENDING;
     task->planningRetries = 0;
     task->executionRetries = 0;
-    activeTasks[task->id] = wmc;
+    activeTasks[task->id] = wmc.address;
 
     overwriteWorkingMemory(wmc.address, task);
+    
+    vector<dBeliefPtr> state;
+    for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
+        state.push_back(i->second);
+    }
+    pyServer->updateState(state);
+    
     pyServer->registerTask(task);
 
     //TODO: Store the PlanningTaskPtr with it's taskID till deliverPlan(taskID) is called.
 }
 
-void WMControl::generateState(autogen::Planner::PlanningTaskPtr& task) {
-    log("Planner WMControl:: generating state");
-//    task->state = vector<dBeliefPtr>();
-//    task->state.reserve(m_currentState.size());
-//    for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
-//        task->state.push_back(i->second);
-//    }
-    //task->state = vector<BeliefPtr>(m_currentState);
+void WMControl::taskChanged(const cast::cdl::WorkingMemoryChange& wmc) {
+    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(wmc.address);
+    if (task->executionStatus != PENDING) {
+        return;
+    }
+
+    assert(activeTasks.find(task->id) != activeTasks.end());
+
+    log("task update from: %s", wmc.src.c_str());
+    if (task->executePlan && task->planningStatus == SUCCEEDED && task->firstActionID == "" && task->plan.size() > 0 ) {
+        log("Starting execution of task %d", task->id);
+        deliverPlan(task->id, task->plan);
+    }
 }
+
+void WMControl::taskRemoved(const cast::cdl::WorkingMemoryChange& wmc) {
+    BOOST_FOREACH(taskMap::value_type entry, activeTasks) {
+        if (entry.second == wmc.address) {
+            //Delete the associated action (if it exists))
+            vector<cast::CASTData<Action> > actions;
+            getMemoryEntriesWithData<Action>(actions);
+            BOOST_FOREACH(cast::CASTData<Action> wme, actions) {
+                if (wme.getData()->taskID == entry.first) {
+                    deleteFromWorkingMemory(wme.getID());
+                    break;
+                }
+            }
+            activeTasks.erase(entry.first);
+            break;
+        }
+    }
+}
+
+/*void WMControl::generateState() {
+    log("Planner WMControl:: generating state");
+    vector<BeliefPtr>* state = new vector<BeliefPtr>(m_currentState.size());
+
+    //task->state = vector<BeliefPtr>(m_currentState);
+    }*/
 
 void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     ActionPtr action = getMemoryEntry<Action>(wmc.address);
@@ -150,14 +205,14 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     log("Action %s changed to status %d", action->name.c_str(), action->status);
 
     assert(activeTasks.find(action->taskID) != activeTasks.end());
-    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[action->taskID].address);
+    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[action->taskID]);
 
     assert(task->plan.size() > 0);
     task->plan[0]->status = action->status;
     
     if (action->status == ABORTED) {
         task->executionStatus = ABORTED;
-        overwriteWorkingMemory(activeTasks[task->id].address, task);
+        overwriteWorkingMemory(activeTasks[task->id], task);
     }
     else if (action->status == FAILED) {
         if (task->executionRetries >= MAX_EXEC_RETRIES) {
@@ -167,10 +222,10 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         else {
         log("Action %s failed, replanning.", action->name.c_str());
              task->executionStatus = PENDING;
-             generateState(task);
+             //generateState(task);
              task->executionRetries++;
         }
-        overwriteWorkingMemory(activeTasks[task->id].address, task);
+        overwriteWorkingMemory(activeTasks[task->id], task);
         //pyServer->updateTask(task);
         dispatchPlanning(task, 0);
     }
@@ -185,8 +240,8 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
             task->status = SUCCEEDED;
         }*/
         task->executionRetries = 0;
-        generateState(task);
-        overwriteWorkingMemory(activeTasks[task->id].address, task);
+        //generateState(task);
+        overwriteWorkingMemory(activeTasks[task->id], task);
         //pyServer->updateTask(task);
         dispatchPlanning(task, 0);
     }
@@ -197,8 +252,8 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     if (wmc.operation == cast::cdl::ADD || wmc.operation == cast::cdl::OVERWRITE) {
         log("added/changed belief at %s@%s", wmc.address.id.c_str(), wmc.address.subarchitecture.c_str());
         dBeliefPtr changedBelief = getMemoryEntry<dBelief>(wmc.address);
-        log("got object");
         m_currentState[wmc.address.id] = changedBelief;
+        log("%s->id = %s", wmc.address.id.c_str(), changedBelief->id.c_str());
     }
     else {
         m_currentState.erase(wmc.address.id);
@@ -244,7 +299,7 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
 
 void WMControl::sendStateChange(int id, std::vector<dBeliefPtr>& changedUnions, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter) {
     assert(activeTasks.find(id) != activeTasks.end());
-    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id].address);
+    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
     /*if (task->planningStatus == INPROGRESS) {
         println("Task %d is still planning. Don't send updates.", id);
         return;
@@ -255,9 +310,9 @@ void WMControl::sendStateChange(int id, std::vector<dBeliefPtr>& changedUnions, 
     }
 
     log("Sending state update for task %d", id);
-    generateState(task);
+    //generateState(task);
     
-    overwriteWorkingMemory(activeTasks[id].address, task);
+    overwriteWorkingMemory(activeTasks[id], task);
     //pyServer->updateTask(task);
     dispatchPlanning(task, 0);
 }
@@ -286,18 +341,25 @@ void WMControl::dispatchPlanning(PlanningTaskPtr& task, int msecs) {
 }
 
 
+
 void WMControl::deliverPlan(int id, const ActionSeq& plan) {
     log("Plan delivered");
     assert(activeTasks.find(id) != activeTasks.end());
-    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id].address);
+    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
     task->plan = plan;
     task->planningRetries = 0;
     task->planningStatus = SUCCEEDED;
+
+    if (!task->executePlan) {
+        overwriteWorkingMemory(activeTasks[id], task);
+        return;
+    }
 
     if (plan.size() > 0) {
         ActionPtr first_action = plan[0];
         //log("first action: %s", first_action->fullName.c_str());
         first_action->status = PENDING;
+        task->executionStatus = INPROGRESS;
 	//nah: don't change this, as ut should be handled by executor
         //task->executionStatus = PENDING;
         writeAction(first_action, task);
@@ -305,7 +367,7 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan) {
     else {
         log("Task %d succeeded.", task->id);
         task->executionStatus = SUCCEEDED;
-        overwriteWorkingMemory(activeTasks[id].address, task);
+        overwriteWorkingMemory(activeTasks[id], task);
         activeTasks.erase(id);
     }
 
@@ -369,7 +431,7 @@ void WMControl::updateBeliefState(const BeliefSeq& beliefs) {
 
 void WMControl::updateStatus(int id, Completion status) {
     assert(activeTasks.find(id) != activeTasks.end());
-    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id].address);
+    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
     task->planningStatus = status;
     log("Settings planning status of task %d to %d", id, status);
     if (status == ABORTED) {
@@ -385,13 +447,13 @@ void WMControl::updateStatus(int id, Completion status) {
             log("Planning failed, waiting and replanning.");
             task->planningStatus = PENDING;
             task->planningRetries++;
-            overwriteWorkingMemory(activeTasks[id].address, task);
+            overwriteWorkingMemory(activeTasks[id], task);
             //pyServer->updateTask(task);
             dispatchPlanning(task, REPLAN_DELAY);
             return;
         }
     }
-    overwriteWorkingMemory(activeTasks[id].address, task);
+    overwriteWorkingMemory(activeTasks[id], task);
 }
 
 
@@ -407,10 +469,10 @@ void WMControl::writeAction(ActionPtr& action, PlanningTaskPtr& task) {
         id = newDataID();
         task->firstActionID = id;
         addToWorkingMemory(id, action);
-        overwriteWorkingMemory(activeTasks[task->id].address, task);
+        overwriteWorkingMemory(activeTasks[task->id], task);
     }
     else {
-        overwriteWorkingMemory(activeTasks[task->id].address, task);
+        overwriteWorkingMemory(activeTasks[task->id], task);
         overwriteWorkingMemory(id, action);
     }
 }

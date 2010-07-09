@@ -17,14 +17,13 @@ public:
 
 protected:
     PythonServerPrx pyServer;
-    std::map<int,cast::cdl::WorkingMemoryChange> activeTasks;
 
     virtual void configure(const cast::cdl::StringMap& _config, const Ice::Current& _current);
     virtual void start();
     virtual void runComponent();
 
     void connectToPythonServer();
-    void generateState(PlanningTaskPtr& task);
+    //vector<beliefmodels::autogen::beliefs::BeliefPtr>* generateState();
     //void deliverPlan(const autogen::Planner::PlanningTaskPtr& task);
     void deliverPlan(int id, const ActionSeq& plan);
     void updateBeliefState(const BeliefSeq& beliefs);
@@ -34,6 +33,8 @@ protected:
     void receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc);
     void actionChanged(const cast::cdl::WorkingMemoryChange& wmc);
     void stateChanged(const cast::cdl::WorkingMemoryChange& wmc);
+    void taskChanged(const cast::cdl::WorkingMemoryChange& wmc);
+    void taskRemoved(const cast::cdl::WorkingMemoryChange& wmc);
 
     class InternalCppServer : public CppServer {
     public:
@@ -52,6 +53,9 @@ private:
     void sendStateChange(int id, std::vector< ::de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBeliefPtr >& changedBeliefs, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter);
     void writeAction(ActionPtr& action, PlanningTaskPtr& task);
     void dispatchPlanning(PlanningTaskPtr& task, int msecs=0);
+
+    typedef std::tr1::unordered_map<int,cast::cdl::WorkingMemoryAddress> taskMap;
+    taskMap activeTasks;
 
     typedef std::tr1::unordered_map< std::string, ::de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBeliefPtr > BeliefMap;
     BeliefMap m_currentState;
