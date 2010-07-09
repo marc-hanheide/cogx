@@ -1506,13 +1506,11 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 
       // Check if the object model is known (with a known pose).
       if (m_objectModels.find(supportObjectLabel) == m_objectModels.end()) {
-	supportObject = generateNewObjectModel(supportObjectLabel);
+	m_objectModels[supportObjectLabel] = generateNewObjectModel(supportObjectLabel);
       }
-      else {
-	// Pose is known
-	supportObject = m_objectModels[supportObjectLabel];
-  ASSERT_TYPE(supportObject);
-      }
+      // Pose is known
+      supportObject = m_objectModels[supportObjectLabel];
+      ASSERT_TYPE(supportObject);
 
       // Otherwise, generate a model and have its poses randomly sampled
       if (m_objects.find(supportObjectLabel) == m_objects.end()) {
@@ -1533,7 +1531,6 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	it != request->objects.end(); it++, rit++) {
       if (m_planeObjectModels.find(*it) != m_planeObjectModels.end()) {
 	log("Can't compute ON for table on sth else!");
-	if (request->outCloud->isBaseObjectKnown) delete supportObject;
 	return;
       }
       else {
@@ -1591,7 +1588,6 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 
 
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
-    if (request->outCloud->isBaseObjectKnown) delete supportObject;
   }
 
   catch (DoesNotExistOnWMException) {
