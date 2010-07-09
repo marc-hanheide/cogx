@@ -380,6 +380,11 @@ class MAPLWriter(writer.Writer):
             strings.append("")
             const = [c for c in domain.constants if c not in (types.TRUE, types.FALSE, types.UNKNOWN)]
             strings += self.write_objects("constants", const)
+            
+        for a in domain.axioms:
+            strings.append("")
+            strings += self.write_axiom(a)
+            
         for a in domain.actions:
             strings.append("")
             if isinstance(a, MAPLDurativeAction):
