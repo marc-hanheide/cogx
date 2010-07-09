@@ -284,10 +284,10 @@ void ObjectAnalyzer::runComponent()
 
 void ObjectAnalyzer::newProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
+  ProtoObjectPtr obj;
   try
   {
-	ProtoObjectPtr obj =
-	  getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
+	obj = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
 	
   }
   catch(DoesNotExistOnWMException e)
