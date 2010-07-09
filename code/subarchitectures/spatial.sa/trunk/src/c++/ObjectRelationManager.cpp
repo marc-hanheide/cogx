@@ -682,9 +682,11 @@ void ObjectRelationManager::runComponent()
 		  total);
 
 	      center += objects.back()->pose.pos;
+	      vector<Vector3>centers;
+	      centers.push_back(center);
 
 	      m_sampler.kernelDensityEstimation3D(pdfMap,
-		  center, interval, xExt, yExt, zExt, weights, 1.0/total, 1.0);
+		  centers, interval, xExt, yExt, zExt, weights, 1.0/total, 1.0);
 
 	      sampleTable = !sampleTable;
 	      
