@@ -31,6 +31,7 @@ option(BUILD_BELIEFS "Build beliefs" YES)
 if(BUILD_BELIEFS)
 add_subdirectory (tools/beliefs/apis/beliefs)
 add_subdirectory (tools/beliefs/apis/beliefs+cast)
+add_subdirectory (tools/cogxutils/)
 endif(BUILD_BELIEFS)
 
 option(BUILD_SA_VIZ "Build visualization subarchitecure" NO)
