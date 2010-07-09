@@ -512,8 +512,9 @@ namespace spatial
 	}
       }
     }
-    double tmp = (initfunctor.getTotal()*m_pout)/(1 - m_pout);
-    normalizePDF(*m_map,tmp,initfunctor.getTotal());
+    double massAfterInit = initfunctor.getTotal();
+//    double normalizeTo = (initfunctor.getTotal()*m_pout)/(1 - m_pout);
+    normalizePDF(*m_map,initprob,massAfterInit);
   }
   void VisualObjectSearch::ReadCureMapFromFile() {
     log("Reading cure map");
@@ -820,6 +821,8 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
     m_command = IDLE;
 
     //if informed direct, get search chain, construct distribution parameters and ask for it
+    double queryProbabilityMass = 1.0;
+
     if (currentSearchMode == DIRECT_INFORMED){
       vector<FrontierInterface::ObjectRelation> relations;
       vector<string> labels;
@@ -831,6 +834,7 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	  break;
 	searchChain.push_back(rel); 
 	name = rel.secobject;
+	queryProbabilityMass *= rel.prob;
       }
       labels.push_back(currentTarget);
       for(unsigned int i = 0; i < searchChain.size(); i++){
@@ -845,6 +849,7 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
       objreq->objects = labels;	// Names of objects, starting with the query object
       objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
       objreq->outCloud = queryCloud;	// Data struct to receive output
+      objreq->totalMass = queryProbabilityMass;
       addToWorkingMemory(newDataID(), objreq);
 
       cout << labels[0] << endl;
@@ -891,10 +896,22 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
     VisualObjectSearch::owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID) {
       try {
 	log("got weighted PC");
+	FrontierInterface::ObjectPriorRequestPtr req =
+	  getMemoryEntry<FrontierInterface::ObjectPriorRequest>(objID.address);
 	FrontierInterface::WeightedPointCloudPtr cloud =
-	  getMemoryEntry<FrontierInterface::ObjectPriorRequest>(objID.address)->outCloud;
+	  req->outCloud;
+
 	vector<Vector3> centers;
 	centers.push_back(cloud->center);
+
+	//req->totalMass represents the probability of the relation
+	//GIVEN that the object is in the room.
+	//We want m_pout to remain unchanged, and the probability mass
+	//already in the map diminished so that the relative probability
+	//inside the room coming from the cloud is req->totalMass.
+	//I.e., after normalization its mass should be (1-pout)*req->totalMass.
+	//Before normalization, it will need to be 1/(1-req->totalMass) times larger
+	double weightToAdd = (1-m_pout)*req->totalMass/(1-req->totalMass);
 
 	if(cloud->isBaseObjectKnown) {
 	  log("Got distribution around known object pose");
@@ -906,10 +923,10 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	      cloud->zExtent,
 	      cloud->values,
 	      1.0,
-	      1.0,
+	      weightToAdd,
 	      m_lgm
 	      );
-	  normalizePDF(*m_map,m_pout);
+	  normalizePDF(*m_map,1.0-m_pout);
 	}
 	else {
 	  log("Got distribution around unknown object pose");
@@ -944,17 +961,17 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	    centers.push_back(cloud->center);
 	  }
 
-	    m_sampler.kernelDensityEstimation3D(*m_map, 
-		centers,
-		cloud->interval,
-		cloud->xExtent,
-		cloud->yExtent,
-		cloud->zExtent,
-		cloud->values,
-		1.0/(m_lgm->getSize()), //Just an ad-hoc guess
-		1.0,
-		m_lgm);
-	  normalizePDF(*m_map,m_pout);
+	  m_sampler.kernelDensityEstimation3D(*m_map, 
+	      centers,
+	      cloud->interval,
+	      cloud->xExtent,
+	      cloud->yExtent,
+	      cloud->zExtent,
+	      cloud->values,
+	      1.0/(m_lgm->getSize()), //Just an ad-hoc guess
+	      weightToAdd,
+	      m_lgm);
+	  normalizePDF(*m_map,1.0-m_pout);
 	}
 	m_command = NEXT_NBV;
 
@@ -1264,7 +1281,7 @@ cout << "whole map PDF sums to: " << mapsum << endl;
   cout << "normalizer is: " << normalizer << endl;
 
 GDProbScale scalefunctor(1.0/normalizer);
-m_map->universalModifier(scalefunctor);
+m_map->universalQuery(scalefunctor,false);
 
 GDUnsuccessfulMeasUpdate measupdate(normalizer,sensingProb); 
     m_map->coneModifier(viewcone.pos[0], viewcone.pos[1],viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, measupdate,measupdate);
@@ -1292,7 +1309,7 @@ cout << "map sums to: " << sumcells.getResult() << endl;
     normalizePDF(*m_map,m_pout); */
 
 
-     normalizePDF(*m_map,m_pout);
+     normalizePDF(*m_map,1.0-m_pout,sumcells.getResult());
  cout << "m_pout after update  is:" << m_pout << endl;
 
   }

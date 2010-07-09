@@ -77,7 +77,7 @@ class SampleCloud
 
     void compact();
     void makePointCloud(Vector3 &center, double &interval,
-    int &xExt, int &yExt, int &zExt, vector<double> &weights, double &total) const;
+    int &xExt, int &yExt, int &zExt, vector<double> &weights) const;
 
     void KernelDensityEstimation2D(Cure::LocalGridMap<double> &outMap,
 	Vector3 cloudCenter, double kernelWidthFactor, double &total, double baseValue);

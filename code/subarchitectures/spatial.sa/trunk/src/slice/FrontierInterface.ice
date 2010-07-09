@@ -89,7 +89,6 @@ module FrontierInterface {
     int yExtent;
     int zExtent;
     DoubleData values;
-    double total;
     bool isBaseObjectKnown;
   };
 
@@ -104,6 +103,7 @@ module FrontierInterface {
     RelationSeq relationTypes;
     StringSeq objects; //Starts with the query object's label
     double cellSize;
+    double totalMass;
     WeightedPointCloud outCloud;
   };
 
