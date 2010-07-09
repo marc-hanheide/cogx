@@ -1221,34 +1221,47 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
     GDProbSum sumcells;
     GDIsObstacle isobstacle;
     cout << "m_pout before update  is:" <<m_pout << endl;
-/*    for (int x  = 0 ; x < xSize; x++){
-      for (int y = 0; y < ySize; y++){
-	std::pair<double,double> coord = m_map->gridToWorldCoords(x, y);
-	double bloxel_floor = 0;
-	// for each bloxel sitting on this 2D cell
-	for(typename std::vector<MapBloxel>::const_iterator it = map(x,y).begin(); it != map(x,y).end(); it++){
-	  }
-	}
-      }*/
  //to get the denominator first sum all cells
+m_map->universalQuery(sumcells);    
+cout << "whole map PDF sums to: " << sumcells.getResult() << endl;
+// then deal with those bloxels that belongs to this cone
+    GDMeasUpdateGetDenominator getnormalizer(m_pout, sensingProb,sumcells.getResult());
     m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
+	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, getnormalizer,getnormalizer);
+    double normalizer = getnormalizer.getResult() + m_pout;
+  cout << "normalizer is: " << normalizer << endl;
+
+GDProbScale scalefunctor(1.0/normalizer);
+m_map->universalModifier(scalefunctor);
+
+GDUnsuccessfulMeasUpdate measupdate(normalizer,sensingProb); 
+    m_map->coneModifier(viewcone.pos[0], viewcone.pos[1],viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, measupdate,measupdate);
+ 
+m_pout = m_pout / normalizer;
+m_map->universalQuery(sumcells);    
+cout << "m_pout after update  is:" <<m_pout << endl;
+cout << "map sums to: " << sumcells.getResult() << endl;
+
+/* //to get the denominator first sum all cells
+   m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
 	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells);
     double probsum = sumcells.getResult();
-    cout << "probsum is:" << probsum << endl;
-    m_pout = m_pout / probsum;
     // then deal with those bloxels that belongs to this cone
     GDMeasUpdateGetDenominator getnormalizer(m_pout, sensingProb,probsum);
     m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
 	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, getnormalizer,getnormalizer);
     double normalizer = getnormalizer.getResult();
+     cout << "probsum is:" << probsum << endl;
+    m_pout = m_pout / probsum;
     cout << "normalizer: " << normalizer << endl;
     //finally set those bloxels that belongs to this cone
     GDUnsuccessfulMeasUpdate measupdate(normalizer,sensingProb); 
     m_map->coneModifier(viewcone.pos[0], viewcone.pos[1],viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, measupdate,measupdate);
-    normalizePDF(*m_map,m_pout);
+    normalizePDF(*m_map,m_pout); */
 
 
-    cout << "m_pout after update  is:" << m_pout << endl;
+     normalizePDF(*m_map,m_pout);
+ cout << "m_pout after update  is:" << m_pout << endl;
 
   }
   void VisualObjectSearch::newRobotPose(const cdl::WorkingMemoryChange &objID) 
