@@ -633,14 +633,26 @@ of the UI element.
 \subsection{Support for HTML forms}\label{section:HtmlForms}
 
 The display server can present HTML forms and send data from a form to a client
-when the form is submitted.
+when the form is submitted. The data from a form can also be saved into a
+persistent storage and reloaded later. This way the forms can be used to
+configure the components from the user interface instead of using CAST
+configuration files.
+%
+\todo{TODO: Apply the settings from persistent storage at startup when a component
+registers a form}
+%
+\todo{TODO: Add config param to DS to change the location of persistent storage}
+%
+\todo{TODO: Add menu entry to change the location of persistent storage}
+%
+\todo{TODO: Add widgets to load/save all forms on a page}
 
 To add support for form processing in an active client we override the methods
 \code{"handleForm"} and \code{"getFormData"}. We also add a convenience
 function that will create the form and send it to the server:
 
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
-#ifdef FEAT_VISUALIZATION
+   #ifdef FEAT_VISUALIZATION
    class COrDisplayClient: public cogx::display::CDisplayClient
    {
       CObjectRecognizer* pRecognizer;
@@ -651,6 +663,7 @@ function that will create the form and send it to the server:
       bool getFormData(const std::string& id, const std::string& partId,
             std::map<std::string, std::string>& fields); /*override*/
    };
+   #endif
 \end{Verbatim}
 
 A form can be defined with standard HTML form elements but it must not be
