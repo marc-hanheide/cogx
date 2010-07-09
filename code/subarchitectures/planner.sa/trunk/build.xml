@@ -44,6 +44,7 @@
 				<pathelement path="${castslice.dir}" />
 				<pathelement path="${binderslice.dir}" />
 				<pathelement path="${beliefslice.dir}" />
+				<pathelement path="${castbeliefslice.dir}" />
 			</includepath>
 		</slice2java>
 	</target>
