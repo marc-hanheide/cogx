@@ -637,15 +637,6 @@ when the form is submitted. The data from a form can also be saved into a
 persistent storage and reloaded later. This way the forms can be used to
 configure the components from the user interface instead of using CAST
 configuration files.
-%
-\todo{TODO: Apply the settings from persistent storage at startup when a component
-registers a form}
-%
-\todo{TODO: Add config param to DS to change the location of persistent storage}
-%
-\todo{TODO: Add menu entry to change the location of persistent storage}
-%
-\todo{TODO: Add widgets to load/save all forms on a page}
 
 To add support for form processing in an active client we override the methods
 \code{"handleForm"} and \code{"getFormData"}. We also add a convenience
