@@ -110,22 +110,6 @@ class CASTBeliefHistory extends AbstractBeliefHistory{
 }; // end de
 
 
- 
-// module eu {
-// module cogx {
-// module beliefs {
-
-// class PerceptBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
-// };
-
-// class GroundedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
-// };
-
-
-// }; // end beliefs
-// }; // end cogx
-// }; // end eu
-
 
 #endif
 
