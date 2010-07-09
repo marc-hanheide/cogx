@@ -34,7 +34,7 @@ INCLUDE includes/spatial.sa/spatial-mediator.cast
 
 # planning and motivation #####################################################
 #INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/switching-planner-base.cast
+INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/planner.cast
 INCLUDE includes/planner.sa/fake-motivation.cast
 #INCLUDE includes/motivation.sa/motivation.cast
