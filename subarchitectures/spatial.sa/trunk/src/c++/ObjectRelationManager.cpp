@@ -678,8 +678,7 @@ void ObjectRelationManager::runComponent()
 	      int xExt, yExt, zExt;
 	      vector<double> weights;
 	      double total;
-	      testCloud.makePointCloud(center, interval, xExt, yExt, zExt, weights,
-		  total);
+	      testCloud.makePointCloud(center, interval, xExt, yExt, zExt, weights);
 
 	      center += objects.back()->pose.pos;
 	      vector<Vector3>centers;
@@ -1566,8 +1565,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	request->outCloud->xExtent,
 	request->outCloud->yExtent,
 	request->outCloud->zExtent,
-	request->outCloud->values,
-	request->outCloud->total);
+	request->outCloud->values);
 
     if (request->outCloud->isBaseObjectKnown) {
       request->outCloud->center += m_objects[supportObjectLabel]->pose.pos;

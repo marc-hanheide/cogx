@@ -877,7 +877,7 @@ SampleCloud::compute() {
 
 void
 SampleCloud::makePointCloud(Vector3 &center, double &interval,
-    int &xExt, int &yExt, int &zExt, vector<double> &weights, double &total) const
+    int &xExt, int &yExt, int &zExt, vector<double> &weights) const
 {
   center = sampleOffset;
   interval = sampleIntervalQuantum * sampleIntervalMultiplier;
@@ -888,12 +888,10 @@ SampleCloud::makePointCloud(Vector3 &center, double &interval,
   weights.resize(values.size());
 
   unsigned long i = 0;
-  total = 0.0;
   for (int xi = -xExtent; xi <= xExtent; xi++) {
     for (int yi = -yExtent; yi <= yExtent; yi++) {
       for (int zi = -zExtent; zi <= zExtent; zi++) {
 	weights[i] = values[i];
-	total += values[i];
 	i++;
       }
     }
