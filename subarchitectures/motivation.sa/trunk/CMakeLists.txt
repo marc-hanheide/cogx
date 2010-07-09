@@ -8,7 +8,7 @@ set(BINDER_SLICE ${BINDER_DIR}/src/slice)
 set(BINDER_INCLUDE ${BINDER_DIR}/src/c++/autogen)
 
 set(BELIEF_DIR ${COGX_ROOT}/tools/beliefs)
-set(BELIEF_SLICE ${BELIEF_DIR}/apis/beliefs/src/slice)
+set(BELIEF_SLICE ${BELIEF_DIR}/apis/beliefs/src/slice ${BELIEF_DIR}/apis/beliefs+cast/src/slice)
 set(BELIEF_INCLUDE ${BELIEF_DIR}/apis/beliefs/src/cpp/autogen ${BELIEF_DIR}/apis/beliefs+cast/src/cpp/autogen)
 
 set(PLANNER_DIR ${COGX_ROOT}/subarchitectures/planner.sa)
