@@ -136,6 +136,8 @@ namespace spatial
       m_conedepth = (atof(it->second.c_str()));
       log("Camera view cone depth set to: %f", m_conedepth);
     }
+    m_minDistance = m_conedepth / 4.0;
+    if (m_minDistance < 0.5) m_minDistance = 0.5;
 
     m_savemapmode = false;
     it = _config.find("--savemap");
@@ -220,7 +222,7 @@ namespace spatial
 	objectData.push_back(objrel);
 	break;
       }
-      currentTarget = word;
+      SetCurrentTarget(word);
       if (objrel.object != word){ //if this is a new object
 	if ( objrel.relations.size() != 0)
 	  objectData.push_back(objrel);
@@ -807,7 +809,7 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	if(rel.primaryobject == "")
 	  break;
 	searchChain.push_back(rel);
-	currentTarget = rel.secobject;
+	SetCurrentTarget(rel.secobject);
       }
       for(unsigned int i = 0; i < searchChain.size(); i++){
 	cout << searchChain[i].primaryobject << " " << searchChain[i].secobject << " " << searchChain[i].prob << endl;
@@ -1097,8 +1099,8 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
       for (unsigned int i =0; i < samplepoints.size(); i++){
 	cout << "cone #" << i << " at: " << samplepoints[i].pos[0] << "," << samplepoints[i].pos[1] << "," << samplepoints[i].pos[2] << endl; 
 
-	/*m_map->coneModifier(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan,samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, makeobstacle,makeobstacle);*/
-	m_map->coneQuery(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan, samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells);
+	/*m_map->coneModifier(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan,samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, makeobstacle,makeobstacle, m_minDistance);*/
+	m_map->coneQuery(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan, samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells, m_minDistance);
 	if (sumcells.getResult() > maxpdf){
 	  maxpdf = sumcells.getResult();
 	  maxindex = i;
@@ -1214,7 +1216,7 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
       if(currentSearchMode == INDIRECT){
 	for(unsigned int i=0; i<searchChain.size(); i++){
 	  if(searchChain[i].secobject == currentTarget){
-	    currentTarget = searchChain[i].primaryobject;
+	    SetCurrentTarget(searchChain[i].primaryobject);
 	  }
 	  log("Object Detected, new target is %s", currentTarget.c_str());
 	  m_command = ASK_FOR_DISTRIBUTION;
@@ -1227,6 +1229,34 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
       m_command = NEXT_NBV;
     }
   }
+
+  void
+    VisualObjectSearch::SetCurrentTarget(const string &label) {
+      currentTarget = label;
+      double objectSize = 0.5;
+      if (label == "table") {
+	objectSize = 1.1;
+      }
+      else if (label == "bookcase_sm") {
+	objectSize = 1.5;
+      }
+      else if (label == "bookcase_lg") {
+	objectSize = 1.93;
+      }
+      else if (label == "desk") {
+	objectSize = 2.0;
+      }
+      else if (label == "rice") {
+	objectSize = 0.19;
+      }
+      else if (label == "rovio") {
+	objectSize = 0.35;
+      }
+      m_minDistance = 0.5*objectSize/tan(0.5*m_vertangle);
+      if (m_minDistance < 0.5) m_minDistance = 0.5;
+      m_conedepth = m_minDistance * 4;
+      if (m_conedepth > 5.0) m_conedepth = 5.0;
+    }
 
   void
     VisualObjectSearch::newVisualObject(const cast::cdl::WorkingMemoryChange &objID) {
@@ -1276,7 +1306,7 @@ cout << "whole map PDF sums to: " << mapsum << endl;
 // then deal with those bloxels that belongs to this cone
     GDMeasUpdateGetDenominator getnormalizer(sensingProb,mapsum);
     m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
-	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, getnormalizer,getnormalizer);
+	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, getnormalizer,getnormalizer, m_minDistance);
     double normalizer = getnormalizer.getResult() + m_pout;
   cout << "normalizer is: " << normalizer << endl;
 
@@ -1284,7 +1314,7 @@ GDProbScale scalefunctor(1.0/normalizer);
 m_map->universalQuery(scalefunctor,false);
 
 GDUnsuccessfulMeasUpdate measupdate(normalizer,sensingProb); 
-    m_map->coneModifier(viewcone.pos[0], viewcone.pos[1],viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, measupdate,measupdate);
+    m_map->coneModifier(viewcone.pos[0], viewcone.pos[1],viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, measupdate,measupdate, m_minDistance);
  
 m_pout = m_pout / normalizer;
 m_map->universalQuery(sumcells);    
@@ -1293,19 +1323,19 @@ cout << "map sums to: " << sumcells.getResult() << endl;
 
 /* //to get the denominator first sum all cells
    m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
-	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells);
+	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells, m_minDistance);
     double probsum = sumcells.getResult();
     // then deal with those bloxels that belongs to this cone
     GDMeasUpdateGetDenominator getnormalizer(m_pout, sensingProb,probsum);
     m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
-	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, getnormalizer,getnormalizer);
+	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, getnormalizer,getnormalizer, m_minDistance);
     double normalizer = getnormalizer.getResult();
      cout << "probsum is:" << probsum << endl;
     m_pout = m_pout / probsum;
     cout << "normalizer: " << normalizer << endl;
     //finally set those bloxels that belongs to this cone
     GDUnsuccessfulMeasUpdate measupdate(normalizer,sensingProb); 
-    m_map->coneModifier(viewcone.pos[0], viewcone.pos[1],viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, measupdate,measupdate);
+    m_map->coneModifier(viewcone.pos[0], viewcone.pos[1],viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, measupdate,measupdate, m_minDistance);
     normalizePDF(*m_map,m_pout); */
 
 

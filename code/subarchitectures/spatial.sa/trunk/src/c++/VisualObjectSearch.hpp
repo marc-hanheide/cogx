@@ -92,6 +92,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       int GetViewConeSums(std::vector <SensingAction > samplepoints);
       void LookforObjectWithStrategy(SearchMode mode);
       void UnsuccessfulDetection(SensingAction viewcone);
+      void SetCurrentTarget(const string &label);
       void InitializePDF();
       void InitializePDF(double initprob);
 
@@ -155,6 +156,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       double m_horizangle;
       double m_vertangle;
       double m_conedepth;
+      double m_minDistance;
       double m_minbloxel;
       double m_mapceiling;
       static void savemap( GtkWidget *widget, gpointer   data );
