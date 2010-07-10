@@ -350,7 +350,7 @@ if(plan->planlist.size() > 0)
   color[2] = 0.1;
 		for (unsigned int i = 0; i < plan->planlist.size(); i++){
 			sprintf(path,"viewpoint_%i",i);
-			createFOV(m_ProxyViewPoints, path, m_FovH, m_FovV, color, 0.05, plan->planlist[i], 1.4,false);
+			createFOV(m_ProxyViewPoints, path, m_FovH, m_FovV, color, 0.5, plan->planlist[i], false);
 			
 		}
 		
@@ -379,14 +379,17 @@ void DisplayNavInPB::createRobotFOV()
 
   peekabot::GroupProxy cam;
   cam.assign(m_ProxyRobot, path);
-  cogx::Math::Vector3 dummypos;
-  createFOV(cam, "cam_right.cone", m_FovH, m_FovV, color, 0.2, dummypos,0);
+  NavData::ViewPoint vp;
+  vp.pos.z = 0;
+  vp.pan = 0;
+  vp.tilt = 0;
+  createFOV(cam, "cam_right.cone", m_FovH, m_FovV, color, 0.3, vp);
 }
 
 void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path, 
                                double fovHorizAngle, double fovVertiAngle, 
                                double* color, double opacity, 
-                               cogx::Math::Vector3 position, double zoffset, bool robotfov,double yaw){
+                               NavData::ViewPoint viewpoint, bool robotfov){
 
 		peekabot::GroupProxy proxyCone;	
 		proxyCone.add(proxy, path, peekabot::REPLACE_ON_CONFLICT);
@@ -447,21 +450,22 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
     proxyConeParts[i].set_opacity(opacity);
     proxyConeParts[i].set_scale(2);  // This is how I make the cone
                                      // larger or smaller
-	if (!robotfov )
+    
+  }	if (!robotfov )
 	{
 
-		proxyConeParts[i].set_position(position.x,position.y,zoffset);
-		proxyConeParts[i].set_rotation(position.z,0,0);
+	//proxyCone.set_rotation(viewpoint.pan,viewpoint.tilt,0);
+	proxyCone.rotate(viewpoint.pan,0,0,1);
+	proxyCone.rotate(viewpoint.tilt,0,-1,0);
+	proxyCone.set_position(viewpoint.pos.x, viewpoint.pos.y, viewpoint.pos.z);
 			
 	}
 	else
 	{
 
-		proxyConeParts[i].set_position(0,0,zoffset);
-			proxyConeParts[i].set_rotation(yaw,0,0);
+			proxyCone.set_rotation(viewpoint.pan,viewpoint.tilt,0);
+		proxyCone.set_position(0,0,viewpoint.pos.z);
 	}
-    
-  }
 }
 
 
