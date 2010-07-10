@@ -163,7 +163,9 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       NavData::RobotPose2dPtr lastRobotPose;
      
       SensingAction m_nbv;
-      bool isWaitingForDetection;
+      std::set<std::string> waitingForDetection;
+      std::set<std::string> waitingForObjects;
+//      bool isWaitingForDetection;
       bool isSearchFinished;
 
       int m_samplesize;
