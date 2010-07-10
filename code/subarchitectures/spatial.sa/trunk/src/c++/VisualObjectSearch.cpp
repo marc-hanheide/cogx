@@ -200,7 +200,6 @@ namespace spatial
     m_Glrt  = new Cure::ObjGridLineRayTracer<unsigned char>(*m_lgm);
     pbVis->connectPeekabot();
 
-    isWaitingForDetection = false;
     if (m_usePTZ) {
       log("connecting to PTU");
       Ice::CommunicatorPtr ic = getCommunicator();
@@ -330,6 +329,28 @@ namespace spatial
       pbVis->DisplayMap(*m_map);
 
       delete model;
+
+      if (newObj->label == currentTarget &&
+	  (!waitingForDetection.empty() || !waitingForObjects.empty())) {
+	DetectionComplete(true);
+      }
+      else {
+	waitingForObjects.erase(newObj->label);
+	waitingForDetection.erase(newObj->label);
+
+    string logString("Waiting list: ");
+    for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
+      logString += *it + " ";
+    }
+    for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
+      logString += *it + " ";
+    }
+    log(logString.c_str());
+
+	if (waitingForDetection.empty() && waitingForObjects.empty()) {
+	  DetectionComplete(false);
+	}
+      }
     }
     catch (DoesNotExistOnWMException e) {
       log("Error! SpatialObject disappeared from WM!");
@@ -1554,24 +1575,35 @@ int VisualObjectSearch::GetViewConeSums(std::vector <SensingAction> samplepoints
 
 void
 VisualObjectSearch::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID) {
-  if(isWaitingForDetection){
-    try{
-      log("got recognizer3D overwrite command");
-      VisionData::Recognizer3DCommandPtr cmd(getMemoryEntry<
-	  VisionData::Recognizer3DCommand> (objID.address));
-      if (cmd->label == currentTarget){
-	isWaitingForDetection = false;
-	DetectionComplete(false);
+  try{
+    log("got recognizer3D overwrite command");
+    VisionData::Recognizer3DCommandPtr cmd(getMemoryEntry<
+	VisionData::Recognizer3DCommand> (objID.address));
+    if(waitingForDetection.find(cmd->label) != waitingForDetection.end()){
+      //We were waiting for detection results on this object
+      waitingForDetection.erase(cmd->label);
+
+      string logString("Waiting list: ");
+      for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
+	logString += *it + " ";
       }
-      else{
-	log("this is not the object we looked for: %s",cmd->label.c_str());
-	m_command = NEXT_NBV;
+      for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
+	logString += *it + " ";
+      }
+      log(logString.c_str());
+
+      if (waitingForObjects.empty() && waitingForDetection.empty()) {
+	DetectionComplete(false);
       }
 
     }
-    catch (const CASTException &e) {
-      log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+    else{
+      log("this is not the object we looked for: %s",cmd->label.c_str());
+      //	m_command = NEXT_NBV;
     }
+  }
+  catch (const CASTException &e) {
+    log("failed to delete SpatialDataCommand: %s", e.message.c_str());
   }
 }
 
@@ -1626,7 +1658,8 @@ VisualObjectSearch::MovePanTilt(double pan, double tilt, double tolerance) {
 
   void VisualObjectSearch::Recognize() {
     log("Recognize called");
-    isWaitingForDetection = true;
+    waitingForDetection.insert(currentTarget);
+//    isWaitingForDetection = true;
     //DetectionComplete(false);
     // FIXME Below is commented out just for easy testing
     addRecognizer3DCommand(VisionData::RECOGNIZE,currentTarget,"");
@@ -1634,6 +1667,9 @@ VisualObjectSearch::MovePanTilt(double pan, double tilt, double tolerance) {
 
 
   void VisualObjectSearch::DetectionComplete(bool isDetected){
+    waitingForDetection.clear();
+    waitingForObjects.clear();
+
     cout << "Detection complete" << endl;
     if (isDetected){
       log("Object Detected.");
@@ -1699,25 +1735,33 @@ VisualObjectSearch::MovePanTilt(double pan, double tilt, double tolerance) {
     }
 
   void
-    VisualObjectSearch::newVisualObject(const cast::cdl::WorkingMemoryChange &objID) {
+  VisualObjectSearch::newVisualObject(const cast::cdl::WorkingMemoryChange &objID) {
 
-      if (isWaitingForDetection){
-      try{
-	debug("new visual object");
-	VisionData::VisualObjectPtr visualobject(getMemoryEntry<
-	    VisionData::VisualObject> (objID.address));
+    try{
+      debug("new visual object");
+      VisionData::VisualObjectPtr visualobject(getMemoryEntry<
+	  VisionData::VisualObject> (objID.address));
+      if (waitingForDetection.find(visualobject->label) != waitingForDetection.end()) {
+	//This was an object we were looking for
+	waitingForDetection.erase(visualobject->label);
+	waitingForObjects.insert(visualobject->label);
 
-	if (visualobject->label == currentTarget){
-	isWaitingForDetection = false;
-	DetectionComplete(true);
-	 }
+	string logString("Waiting list: ");
+	for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
+	  logString += *it + " ";
+	}
+	for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
+	  logString += *it + " ";
+	}
+	log(logString.c_str());
 
-      }
-      catch (const CASTException &e) {
-	      log("failed to delete SpatialDataCommand: %s", e.message.c_str());
-      }
+
       }
     }
+    catch (const CASTException &e) {
+      log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+    }
+  }
 
   void VisualObjectSearch::UnsuccessfulDetection(SensingAction viewcone){
     double sensingProb = 1.0;
@@ -1878,6 +1922,5 @@ void VisualObjectSearch::addRecognizer3DCommand(VisionData::Recognizer3DCommandT
   rec_cmd->label = label;
   rec_cmd->visualObjectID = visualObjectID;
   addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
-  isWaitingForDetection = true;
 }
 }
