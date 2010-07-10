@@ -76,7 +76,7 @@ namespace spatial
       std::abort();
     }
 
-    m_mapceiling= 2.0;
+    m_mapceiling= 3.0;
     it = _config.find("--mapceiling");
     if (it != _config.end()) {
       m_mapceiling = (atof(it->second.c_str()));
@@ -330,25 +330,26 @@ namespace spatial
 
       delete model;
 
-      if (newObj->label == currentTarget &&
-	  (!waitingForDetection.empty() || !waitingForObjects.empty())) {
-	DetectionComplete(true);
-      }
-      else {
-	waitingForObjects.erase(newObj->label);
-	waitingForDetection.erase(newObj->label);
+      if (!waitingForDetection.empty() || !waitingForObjects.empty()) {
+	if (newObj->label == currentTarget) {
+	  DetectionComplete(true);
+	}
+	else {
+	  waitingForObjects.erase(newObj->label);
+	  waitingForDetection.erase(newObj->label);
 
-    string logString("Waiting list: ");
-    for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
-      logString += *it + " ";
-    }
-    for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
-      logString += *it + " ";
-    }
-    log(logString.c_str());
+	  string logString("Waiting list: ");
+	  for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
+	    logString += *it + " ";
+	  }
+	  for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
+	    logString += *it + " ";
+	  }
+	  log(logString.c_str());
 
-	if (waitingForDetection.empty() && waitingForObjects.empty()) {
-	  DetectionComplete(false);
+	  if (waitingForDetection.empty() && waitingForObjects.empty()) {
+	    DetectionComplete(false);
+	  }
 	}
       }
     }
@@ -547,7 +548,7 @@ namespace spatial
 	    for (int j=-1; j <= 1; j++){
 	      if((*m_lgm)(x+i,y+j) != '2' && (bloxelX+i <= m_gridsize && bloxelX+i > 0 ) 
 		  && (bloxelY+i <= m_gridsize && bloxelY+i > 0 ))
-		m_map->boxSubColumnModifier(bloxelX+i,bloxelY+j, 0, m_mapceiling,initfunctor);
+		m_map->boxSubColumnModifier(bloxelX+i,bloxelY+j, m_mapceiling/2, m_mapceiling,initfunctor);
 	    }
 	  }
 	}
@@ -589,7 +590,7 @@ namespace spatial
 	  char c = line[count];
 	  if (c == '3'){ //if this is a wall
 	    (*m_lgm)(x, y) = '1';
-	    m_map->boxSubColumnModifier(x+m_lgm->getSize(),y + m_lgm->getSize(), 0, m_mapceiling,makeobstacle);
+	    m_map->boxSubColumnModifier(x+m_lgm->getSize(),y + m_lgm->getSize(), m_mapceiling/2, m_mapceiling,makeobstacle);
 	  }
 	  else if  (c  == '1'){ // a normal obstacle
 	    (*m_lgm)(x, y) = c;
@@ -1662,7 +1663,10 @@ VisualObjectSearch::MovePanTilt(double pan, double tilt, double tolerance) {
 //    isWaitingForDetection = true;
     //DetectionComplete(false);
     // FIXME Below is commented out just for easy testing
-    addRecognizer3DCommand(VisionData::RECOGNIZE,currentTarget,"");
+    addRecognizer3DCommand(VisionData::RECOGNIZE,"rovio","");
+    addRecognizer3DCommand(VisionData::RECOGNIZE,"bookcase_lg","");
+    addRecognizer3DCommand(VisionData::RECOGNIZE,"bookcase_sm","");
+    addRecognizer3DCommand(VisionData::RECOGNIZE,"rice","");
   }
 
 
