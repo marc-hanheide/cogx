@@ -444,10 +444,11 @@ void ObjectRelationManager::runComponent()
     }
   }
 
-//  if (m_bSampleOnness || m_bSampleInness) {
-    VisualPB_Bloxel visualPB("localhost", 5050, 100, 100, 0.05, 1, true);
-    visualPB.connectPeekabot();
-//  }
+  VisualPB_Bloxel *visualPB; 
+  if (m_bSampleOnness || m_bSampleInness) {
+    visualPB = new VisualPB_Bloxel ("localhost", 5050, 100, 100, 0.05, 1, true);
+    visualPB->connectPeekabot();
+  }
 
   sleepComponent(2000);
 
@@ -677,7 +678,6 @@ void ObjectRelationManager::runComponent()
 	      double interval;
 	      int xExt, yExt, zExt;
 	      vector<double> weights;
-	      double total;
 	      testCloud.makePointCloud(center, interval, xExt, yExt, zExt, weights);
 
 	      center += objects.back()->pose.pos;
@@ -685,7 +685,7 @@ void ObjectRelationManager::runComponent()
 	      centers.push_back(center);
 
 	      m_sampler.kernelDensityEstimation3D(pdfMap,
-		  centers, interval, xExt, yExt, zExt, weights, 1.0/total, 1.0);
+		  centers, interval, xExt, yExt, zExt, weights, 1.0, 1.0);
 
 	      sampleTable = !sampleTable;
 	      
@@ -703,7 +703,7 @@ void ObjectRelationManager::runComponent()
 	      thresholdval.push_back(make_pair(0.03, 0.04));
 	      thresholdval.push_back(make_pair(0.04, 0.05));
 	      thresholdval.push_back(make_pair(0.05, 1));
-	      visualPB.AddPDF(pdfMap,thresholdval);
+	      visualPB->AddPDF(pdfMap,thresholdval);
 //	      peekabot::LineCloudProxy linecloudp;
 //
 //	      linecloudp.add(m_PeekabotClient, "root.distribution",

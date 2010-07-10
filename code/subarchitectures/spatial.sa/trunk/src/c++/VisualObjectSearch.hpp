@@ -28,6 +28,7 @@
 #include <SpatialData.hpp>
 #include "DensitySampling.hpp"
 
+#include "XVector3D.h"
 namespace spatial
 {
 
@@ -98,10 +99,25 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
 
       void DetectionComplete(bool isDetected);
       void MovePanTilt(double pan, double tilt, double tolerance);
+
+      /* Functions for 2D evaluation */
+      void Sample2DGrid();
+      std::vector<std::vector<int> > GetViewCones();
+      std::vector<int> GetInsideViewCone(XVector3D &a, bool addall);
+      void CalculateViewCone(XVector3D a, double direction, double range, double fov, XVector3D &b,XVector3D &c);
+      std::vector<double> ScorebyCoverage(Cure::LocalGridMap<unsigned char> fcm );
+
+      bool isPointSameSide(XVector3D p1,XVector3D p2,XVector3D a,XVector3D b);
+      bool isPointInsideTriangle(XVector3D p,XVector3D a,XVector3D b,XVector3D c);
+      void FindBoundingRectangle(XVector3D a,XVector3D b,XVector3D c,int* rectangle);
+
+
+      
       ObjectPairRelation GetSecondaryObject(std::string name);
       SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* m_map;
       SpatialGridMap::LaserRayTracer<SpatialGridMap::GridMapData>* m_tracer;
       Cure::LocalGridMap<unsigned char>* m_lgm;
+      Cure::LocalGridMap<double>* m_lgmpdf;
       Cure::ObjGridLineRayTracer<unsigned char>* m_Glrt;
 
       struct ObjectRelations{
@@ -132,6 +148,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       std::vector<ObjectPairRelation> searchChain;
       int searchChainPos;
 
+      std::string m_PbHost;
       AVSCommand m_command;
       SensingAction m_currentVP;
       std::vector<ObjectRelations> objectData;
@@ -147,9 +164,11 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
      
       SensingAction m_nbv;
       bool isWaitingForDetection;
-
+      bool isSearchFinished;
 
       int m_samplesize;
+    double* m_samplestheta;
+      int* m_samples;
       double m_pout;
       double m_gridsize;
       double m_cellsize;

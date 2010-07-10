@@ -229,7 +229,7 @@ template <class MapData> double
 	    if(checkobstacle(column[i].data)){
 	      //if this is an obstacle carve an empty box in it of minbloxel size
 	      //printf("obstacle!, delete it %d, %d \n",m_Xi,m_Yi);
-	      m_map->boxSubColumnModifier(m_Xi,m_Yi,LaserPose[2],m_map->getMinBloxelHeight()*2,makeempty);
+	      m_map->boxSubColumnModifier(m_Xi,m_Yi,LaserPose[2],m_map->getMinBloxelHeight(),makeempty);
 	    }
 	  }
 	}
@@ -250,7 +250,7 @@ template <class MapData> double
 	    if(!checkobstacle((*m_map)(m_Xi,m_Yi)[i].data)){
 	  //    printf("free space!, add obstacle %d, %d \n",m_Xi,m_Yi);
 	      //if this is an obstacle carve an empty box in it of minbloxel size
-	      m_map->boxSubColumnModifier(m_Xi,m_Yi,LaserPose[2],0.2,makeobstacle);
+	      m_map->boxSubColumnModifier(m_Xi,m_Yi,LaserPose[2],m_map->getMinBloxelHeight(),makeobstacle);
 	    }
 	  }
 

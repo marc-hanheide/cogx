@@ -1,5 +1,4 @@
 include_directories(.)
-include_directories(${COGX_ROOT}/subarchitectures/nav.sa/src/c++/autogen)
 include(Slice2Cpp)
 
 # expects to find .ice file under PROJECT/src/slice e.g. laser/src/slice
