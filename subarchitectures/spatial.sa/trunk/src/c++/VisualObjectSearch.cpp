@@ -571,6 +571,68 @@ namespace spatial
     }
   }
   }
+
+  void VisualObjectSearch::InitializePDFForObject(double initprob, const string &label){
+
+      double height;
+      if (label == "table") {
+	height = 0.45-0.05;
+      }
+      else if (label == "bookcase_sm") {
+	height = 0.75+0.08;
+      }
+      else if (label == "bookcase_lg") {
+	height = 0.965+0.08;
+      }
+      else if (label == "desk") {
+	height = 0.75-.05;
+      }
+      else {
+	return;
+      }
+
+      GDProbSet resetter(0.0);
+      m_map->universalQuery(resetter, true);
+
+    GDProbInit initfunctor(initprob/(m_map->getZBounds().second - m_map->getZBounds().first));
+
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+	int bloxelX = x + m_lgm->getSize();
+	int bloxelY = y + m_lgm->getSize();
+	if ((*m_lgm)(x,y) == '1'){
+	  // For each obstacle cell, assign a uniform probability density to it
+	  // (free/unknown space only), and to its immediate neighbors
+	  // (Only neighbors which are not unknown in the Cure map. Unknown 3D
+	  // space is still assigned, though)
+	  for(int i = -1; i <= 1; i++){
+	    for (int j=-1; j <= 1; j++){
+	      if((*m_lgm)(x+i,y+j) != '2' && (bloxelX+i <= m_gridsize && bloxelX+i > 0 ) 
+		  && (bloxelY+i <= m_gridsize && bloxelY+i > 0 ))
+		m_map->boxSubColumnModifier(bloxelX+i,bloxelY+j, height, 2*m_minbloxel,initfunctor);
+	    }
+	  }
+	}
+      }
+    }
+    double massAfterInit = initfunctor.getTotal();
+//    double normalizeTo = (initfunctor.getTotal()*m_pout)/(1 - m_pout);
+    normalizePDF(*m_map,initprob,massAfterInit);
+ for (int x = -m_lgmpdf->getSize(); x <= m_lgmpdf->getSize(); x++) {
+    for (int y = -m_lgmpdf->getSize(); y <= m_lgmpdf->getSize(); y++) {
+      int bloxelX = x + m_lgmpdf->getSize();
+      int bloxelY = y + m_lgmpdf->getSize();
+      if ((*m_lgm)(x,y) != '2'){
+	double bloxel_floor = 0;
+	for (unsigned int i = 0; i < (*m_map)(bloxelX,bloxelY).size();i++){
+	  (*m_lgmpdf)(x,y) += (*m_map)(bloxelX, bloxelY)[i].data.pdf * ((*m_map)(bloxelX,bloxelY)[i].celing - bloxel_floor);
+	  bloxel_floor = (*m_map)(bloxelX,bloxelY)[i].celing;
+	}	
+      }
+    }
+  }
+  }
+
   void VisualObjectSearch::ReadCureMapFromFile() {
     log("Reading cure map");
 
@@ -865,6 +927,7 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
     if (mode == DIRECT_UNINFORMED){
       currentSearchMode = DIRECT_UNINFORMED;
       log("Will look for %s", currentTarget.c_str());
+      InitializePDFForObject(1-m_pout, currentTarget);
       m_command = NEXT_NBV;
     }
     else if (mode == DIRECT_INFORMED){
@@ -885,6 +948,7 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
       for(unsigned int i = 0; i < searchChain.size(); i++){
 	cout << searchChain[i].primaryobject << " " << searchChain[i].secobject << " " << searchChain[i].prob << endl;
       }
+      InitializePDFForObject(1-m_pout, currentTarget);
       m_command = NEXT_NBV;
     }
   }
