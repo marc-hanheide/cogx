@@ -1,11 +1,12 @@
+# cast config
 
 HOST localhost
 
-SUBARCHITECTURE binder
-JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
-JAVA WM binder.components.BindingWorkingMemory #--log
+# SUBARCHITECTURE binder
+# JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+# JAVA WM binder.components.BindingWorkingMemory #--log
 
-JAVA MG bmvisualizer beliefmodels.util.viewer.BeliefModelChartViewer #--log
+# JAVA MG bmvisualizer beliefmodels.util.viewer.BeliefModelChartViewer #--log
 
 SUBARCHITECTURE visualization.sa 
 CPP WM SubarchitectureWorkingMemory
@@ -13,11 +14,9 @@ CPP TM AlwaysPositiveTaskManager
 
 CPP MG display.srv DisplayServer --log true --debug true
 
-SUBARCHITECTURE vision.sa
-CPP WM SubarchitectureWorkingMemory
-CPP TM AlwaysPositiveTaskManager
+SUBARCHITECTURE somethingelse
+JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+JAVA WM binder.components.BindingWorkingMemory #--log
 
-CPP MG videoserver OpenCvImgSeqServer --camids 0 --files "subarchitectures/visualization.sa/config/test/images/Screenshot%02d.png" --start 0 --end 6 --framerate_ms 20 --debug true
-
-CPP MG video.viewer VideoViewer --videoname videoserver --displayserver "display.srv" --camid 0 --debug true
+JAVA MG java.test.client si.unilj.fri.cogx.v11n.test.V11nJavaTestComponent --displayserver "display.srv"
 
