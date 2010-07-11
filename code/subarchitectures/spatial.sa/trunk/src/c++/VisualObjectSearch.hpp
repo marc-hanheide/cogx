@@ -96,6 +96,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void SetCurrentTarget(const string &label);
       void InitializePDF();
       void InitializePDF(double initprob);
+      void InitializePDFForObject(double initprob, const std::string &);
 
       void DetectionComplete(bool isDetected);
       void MovePanTilt(double pan, double tilt, double tolerance);
