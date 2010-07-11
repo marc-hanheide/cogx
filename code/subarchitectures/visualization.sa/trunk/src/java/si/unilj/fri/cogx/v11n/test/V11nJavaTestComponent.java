@@ -19,9 +19,22 @@ package si.unilj.fri.cogx.v11n.test;
 import cast.architecture.ManagedComponent;
 import si.unilj.fri.cogx.v11n.core.DisplayClient;
 
+//-----------------------------------------------------------------
+// JAVA IMPORTS
+//-----------------------------------------------------------------
+import java.util.Map;
+
 public class V11nJavaTestComponent extends ManagedComponent
 {
-   DisplayClient m_display = new DisplayClient();
+   private class MyDisplayClient extends DisplayClient
+   {
+      @Override
+      public void handleForm(String id, String partId, Map<String, String> fields)
+      {
+      }
+   }
+   
+   DisplayClient m_display = new MyDisplayClient();
 
    @Override
    protected void configure(java.util.Map<String, String> config)
@@ -33,7 +46,7 @@ public class V11nJavaTestComponent extends ManagedComponent
    protected void start()
    {
       m_display.connectIceClient(this);
-      // m_display.installEventReceiver();
+      m_display.installEventReceiver();
    }
 
    @Override
@@ -45,8 +58,14 @@ public class V11nJavaTestComponent extends ManagedComponent
          m_display.setHtml("v11.java.setHtml", "001", "This is a message from V11nJavaTestComponent.");
       }
 
+      if (true) {
+         m_display.setHtmlForm("v11.java.setHtmlForm", "101",
+           "Edit me: <input type='text' value='Text from java' />");
+      }
+
       while (this.isRunning()) {
          sleepComponent(200);
       }
    }
 }
+// vim:sw=3:ts=8:et

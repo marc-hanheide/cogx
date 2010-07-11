@@ -41,8 +41,41 @@ import java.util.Iterator;
 
 public class DisplayClient
 {
+   private class EventReceiverImpl extends Visualization._EventReceiverDisp
+   {
+      private DisplayClient m_Client;
+      public EventReceiverImpl(DisplayClient client)
+      {
+         m_Client = client;
+      }
+
+      public void handleEvent(Visualization.TEvent event, Ice.Current ctx)
+      {
+         if (m_Client != null) m_Client.handleEvent(event);
+      }
+
+      public String getControlState(String ctrlId, Ice.Current ctx)
+      {
+         if (m_Client != null) return m_Client.getControlState(ctrlId);
+         return "";
+      }
+
+      public void handleForm(String id, String partId, Map<String, String> fields, Ice.Current ctx)
+      {
+         if (m_Client != null) m_Client.handleForm(id, partId, fields);
+      }
+
+      public boolean getFormData(String id, String partId, TFormFieldMapHolder fields, Ice.Current ctx)
+      {
+         if (m_Client != null) return m_Client.getFormData(id, partId, fields);
+         return false;
+      }
+   }
+
    private String m_ServerName = "display.srv";
    private DisplayInterfacePrx m_Server = null;
+   private CASTComponent m_Owner = null;
+   private EventReceiverImpl m_EventReceiver = null;
 
    public void configureDisplayClient(java.util.Map<String, String> config)
    {
@@ -53,14 +86,53 @@ public class DisplayClient
 
    public void connectIceClient(CASTComponent owner)
    {
-      // a)
+      m_Owner = owner;
       try {
-         // this only works if you don't play with [["java:package:..."]] in ice files
          m_Server = owner.getIceServer(m_ServerName, DisplayInterface.class, DisplayInterfacePrx.class);
       }
       catch (CASTException e) {
          e.printStackTrace();
       }
+   }
+
+   private String getComponentId()
+   {
+      if (m_Owner == null) return "[null]";
+      return m_Owner.getComponentID();
+   }
+
+   private Ice.Identity getEventClientId() {
+      Ice.Identity id = new Ice.Identity();
+      id.name = getComponentId();
+      id.category = "Visualization.EventReceiver";
+      return id;
+   }
+
+   public void installEventReceiver() // throws(std::runtime_error)
+   {
+      if (m_Owner == null) {
+         // TODO: throw std::runtime_error(cast::exceptionMessage(__HERE__,
+         //         "CDisplayClient: connectIceClient() must be called before installEventReciever()."));
+         System.out.println(" *** Owner is null");
+         return;
+      }
+
+      if (m_Server == null) {
+         // TODO: log("CActiveDisplayClient: server not connected.");
+         System.out.println(" *** Server is null");
+         return;
+      }
+
+      if (m_EventReceiver != null) {
+         // TODO: log("CActiveDisplayClient already has an EventReceiver.");
+         System.out.println(" *** EventReceiver is NOT null");
+         return;
+      }
+
+      Ice.Identity id = getEventClientId();
+      m_EventReceiver = new EventReceiverImpl(this);
+      m_Owner.registerIceServer(Visualization.EventReceiver.class, m_EventReceiver);
+      m_Server.addClient(id);
    }
 
    public void setImage(String id, int width, int height, int channels, byte data[])
@@ -88,10 +160,33 @@ public class DisplayClient
       m_Server.setHtmlHead(id, partId, htmlData);
    }
 
-   //public void setHtmlForm(String id, String partId, String htmlData)
-   //{
-   //   if (m_Server == null) return;
-   //   m_Server.setHtmlForm(ident, id, partId, htmlData);
-   //}
+   public void setHtmlForm(String id, String partId, String htmlData)
+   {
+     if (m_Server == null) return;
+     Ice.Identity iceid = getEventClientId();
+     m_Server.setHtmlForm(iceid, id, partId, htmlData);
+   }
+
+   // -----------------------------------------------------------------
+   // Event Receiver Methods - to be overridden
+   // -----------------------------------------------------------------
+   public void handleEvent(Visualization.TEvent event)
+   {
+   }
+
+   public String getControlState(String ctrlId)
+   {
+      return "";
+   }
+
+   public void handleForm(String id, String partId, Map<String, String> fields)
+   {
+   }
+
+   public boolean getFormData(String id, String partId, TFormFieldMapHolder fields)
+   {
+      return false;
+   }
+
 }
 // vim:sw=3:ts=8:et
