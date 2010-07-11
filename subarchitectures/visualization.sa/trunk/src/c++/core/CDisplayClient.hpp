@@ -51,7 +51,7 @@ protected:
    Ice::Identity getEventClientId() {
       Ice::Identity id;
       id.name = getComponentId();
-      id.category = "Visualization_EventReceiver";
+      id.category = "Visualization.EventReceiver";
       return id;
    }
    void debug(const std::string& message) {
@@ -131,6 +131,7 @@ private:
             std::map<std::string, std::string>& fields, const Ice::Current&)
       {
          if (m_pClient) return m_pClient->getFormData(id, partId, fields);
+         return false;
       }
    };
 
