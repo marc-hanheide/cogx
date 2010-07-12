@@ -230,6 +230,7 @@ public class V11nJavaTestComponent extends ManagedComponent
       m_GraphPos = (m_GraphPos + 1) % 32;
       m_GraphData[m_GraphPos] = m_randGen.nextInt(70) + 10;
       StringBuffer str = new StringBuffer();
+      StringBuffer text = new StringBuffer();
       str.append("<svg viewbox='0 0 242 162'>");
       str.append("<polyline fill='none' stroke='none' stroke-width='0' points='0,0 242,162' />");
       str.append("<polyline fill='none' stroke='red' stroke-width='1' points='");
@@ -238,12 +239,16 @@ public class V11nJavaTestComponent extends ManagedComponent
       while (i != m_GraphPos) {
          double p = 1.0 - (double) (m_GraphData[i] - 10) / (88.0 - 10.0);
          str.append(String.format("%d,%d ", (int) (240.0*k/32+0.5), (int) (160.0*p+0.5)));
+         if (m_GraphData[i] % 10 == 0) {
+            text.append(String.format("<text x='%d' y='%d' font-size='10' fill='green'>%d</text>",
+                     (int) (240.0*k/32+0.5), (int) (160.0*p+0.5), m_GraphData[i]));
+         }
          i = (i + 1) % 32;
          k = k + 1;
       }
       str.append("' />\n");
-      str.append("</svg>");
-      m_display.setObject("v11.java.Graph", "500_lines", str.toString());
+      m_display.setObject("v11.java.Graph", "500_lines",
+            str.toString() + text.toString() + "</svg>");
    }
 
 
