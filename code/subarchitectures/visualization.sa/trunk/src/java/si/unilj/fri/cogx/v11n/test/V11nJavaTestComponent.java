@@ -69,10 +69,37 @@ public class V11nJavaTestComponent extends ManagedComponent
          }
          return false;
       }
+
+      @Override
+      public void handleEvent(Visualization.TEvent event)
+      {
+         if (m_test == null) return;
+         if (event.sourceId.equals("cb.test.onoff")) {
+            if (event.data.equals("0")) m_test.m_ckTestValue = 0;
+            else m_test.m_ckTestValue = 2;
+            if (m_test.m_ckTestValue > 0) m_test.appendMessage("Check box " + event.sourceId + " is ON");
+            else m_test.appendMessage("Check box " + event.sourceId + " is OFF");
+         }
+         if (event.sourceId.equals("button.test")) {
+            m_test.appendMessage("Button " + event.sourceId + " PRESSED");
+         }
+      }
+
+      @Override
+      public String getControlState(String ctrlId)
+      {
+         if (m_test == null) return "";
+         if (ctrlId.equals("cb.test.onoff")) {
+            if (m_test.m_ckTestValue != 0) return "2";
+            else return "0";
+         }
+         return "";
+      }
    }
    
    DisplayClient m_display = new MyDisplayClient(this);
-   String m_textField = "A message from Java";
+   String m_textField = "A message from Java"; // edited in HTML form
+   int m_ckTestValue = 2; // value of a checkbox
 
    @Override
    protected void configure(java.util.Map<String, String> config)
@@ -85,6 +112,40 @@ public class V11nJavaTestComponent extends ManagedComponent
    {
       m_display.connectIceClient(this);
       m_display.installEventReceiver();
+   }
+
+   @Override
+   protected void runComponent()
+   {
+      sleepComponent(1000);
+
+      if (true) {
+         // A multi-part HTML document.
+         // Parts will be added every time the form (setHtmlForm below) is submitted (see handleForm).
+         m_display.setHtml("v11n.java.setHtml", "001", "This is a message from V11nJavaTestComponent.");
+
+         // Test of gui elements
+         // Messages will be added to the document when events happen (see handleEvent).
+         m_display.addCheckBox("v11n.java.setHtml", "cb.test.onoff", "Test On Off");
+         m_display.addButton("v11n.java.setHtml", "button.test", "Test Button");
+      }
+
+      if (true) {
+         // A simple form.
+         // Events will be handled in MyDisplayClient.handleForm().
+         // Form data will be retreived in MyDisplayClient.getFormData().
+         m_display.setHtmlForm("v11n.java.setHtmlForm", "101",
+               "Edit me: <input type='text' name='textfield' value='Empty' />");
+      }
+
+      if (true) makePusher();
+      if (true) makeSvgGraph();
+
+      while (this.isRunning()) {
+         sleepComponent(100);
+         movePusher();
+         updateSvgGraph();
+      }
    }
 
    private int m_msgid = 9000;
@@ -176,34 +237,6 @@ public class V11nJavaTestComponent extends ManagedComponent
       m_display.setObject("v11.java.Graph", "500_lines", str.toString());
    }
 
-   @Override
-   protected void runComponent()
-   {
-      sleepComponent(1000);
-
-      if (true) {
-         // A multi-part HTML document.
-         // Parts will be added every time the form (setHtmlForm below) is submitted.
-         m_display.setHtml("v11n.java.setHtml", "001", "This is a message from V11nJavaTestComponent.");
-      }
-
-      if (true) {
-         // A simple form.
-         // Events will be handled in MyDisplayClient.handleForm().
-         // Form data will be retreived in MyDisplayClient.getFormData().
-         m_display.setHtmlForm("v11n.java.setHtmlForm", "101",
-               "Edit me: <input type='text' name='textfield' value='Empty' />");
-      }
-
-      if (true) makePusher();
-      if (true) makeSvgGraph();
-
-      while (this.isRunning()) {
-         sleepComponent(100);
-         movePusher();
-         updateSvgGraph();
-      }
-   }
 
    public String fileAsString(String fname)
    {
