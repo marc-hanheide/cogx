@@ -440,7 +440,7 @@ void VideoViewer::runComponent()
         case 3: str << "move(0,-1)" << endl; break;
       }
     }
-    boxrot = (boxrot++) % 36;
+    boxrot = (boxrot + 1) % 36;
     str << "boxTurn=" << (boxrot * 10) << endl << "DispList:setDirty('pusher.box.rotation')" << endl;
     if (str.tellp() > 0) {
       m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", str.str());

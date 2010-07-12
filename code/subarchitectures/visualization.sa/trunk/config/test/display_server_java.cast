@@ -16,7 +16,7 @@ CPP MG display.srv DisplayServer --log true --debug true
 
 SUBARCHITECTURE somethingelse
 JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
-JAVA WM binder.components.BindingWorkingMemory #--log
+JAVA WM cast.architecture.SubarchitectureWorkingMemory #--log
 
-JAVA MG java.test.client si.unilj.fri.cogx.v11n.test.V11nJavaTestComponent --displayserver "display.srv"
+JAVA MG java.test.client si.unilj.fri.cogx.v11n.test.V11nJavaTestComponent --displayserver "display.srv" --debug true
 
