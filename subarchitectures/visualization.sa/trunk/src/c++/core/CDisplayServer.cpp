@@ -254,7 +254,7 @@ void CDisplayServer::setCompressedImage(const std::string& id, const std::vector
 
 void CDisplayServer::setObject(const std::string& id, const std::string& partId, const std::string& xmlData)
 {
-   DTRACE("CDisplayServer::setObject");
+   //DTRACE("CDisplayServer::setObject");
    //{ // FAKE
    // static bool done = false;
    // if (!done) {

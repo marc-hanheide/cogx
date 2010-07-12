@@ -19,22 +19,60 @@ package si.unilj.fri.cogx.v11n.test;
 import cast.architecture.ManagedComponent;
 import si.unilj.fri.cogx.v11n.core.DisplayClient;
 
+import Visualization.TFormFieldMapHolder;
+
 //-----------------------------------------------------------------
 // JAVA IMPORTS
 //-----------------------------------------------------------------
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Random;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class V11nJavaTestComponent extends ManagedComponent
 {
    private class MyDisplayClient extends DisplayClient
    {
+      V11nJavaTestComponent m_test = null;
+      public MyDisplayClient(V11nJavaTestComponent dataOwner)
+      {
+         m_test = dataOwner;
+      }
+
       @Override
       public void handleForm(String id, String partId, Map<String, String> fields)
       {
+         if (m_test == null) return;
+         m_test.log("JAVA handleForm " + id + ":" + partId);
+         if (id.equals("v11n.java.setHtmlForm") && partId.equals("101")) {
+            if (fields.containsKey("textfield")) {
+               m_test.m_textField = fields.get("textfield");
+               m_test.log("Got textfield: " + m_test.m_textField);
+               m_test.appendMessage(m_test.m_textField);
+            }
+         }
+      }
+
+      @Override
+      public boolean getFormData(String id, String partId, TFormFieldMapHolder fields)
+      {
+         if (m_test == null) return false;
+         m_test.log("JAVA getFormData " + id + ":" + partId);
+         if (id.equals("v11n.java.setHtmlForm") && partId.equals("101")) {
+            fields.value = new HashMap<String, String>();
+            fields.value.put("textfield", m_test.m_textField);
+            return true;
+         }
+         return false;
       }
    }
    
-   DisplayClient m_display = new MyDisplayClient();
+   DisplayClient m_display = new MyDisplayClient(this);
+   String m_textField = "A message from Java";
 
    @Override
    protected void configure(java.util.Map<String, String> config)
@@ -49,23 +87,159 @@ public class V11nJavaTestComponent extends ManagedComponent
       m_display.installEventReceiver();
    }
 
+   private int m_msgid = 9000;
+   // Called from handleForm() (after a form is applied)
+   // Appends a text message (a html chunk) to an HTML object.
+   // Chunks are sorted by their string ID (but the order depends on C++ std::map implementation).
+   protected void appendMessage(String message)
+   {
+      m_msgid += 1;
+      m_display.setHtml("v11n.java.setHtml", String.format("%04d", m_msgid), "<br>" + message);
+   }
+
+   private void makePusher()
+   {
+      // A LuaGl script.
+      // Load the script from file and send it to the server.
+      // Script animation is done in movePusher() called form the main loop below.
+      String script = fileAsString("subarchitectures/visualization.sa/src/c++/core/object/gllua/test/pusher.luagl");
+      m_display.setLuaGlObject("v11n.java.Pusher", "Pusher", script);
+   }
+
+   private int m_moveCount = 0;
+   private int m_moverBoxRot = 0;
+   Random m_randGen = new Random( 19580427 );
+   private void movePusher()
+   {
+      StringBuffer str = new StringBuffer();
+      m_moveCount++;
+      if (m_moveCount > 100) m_moveCount = 0;
+      if (m_moveCount % 2 == 0) {
+         int dir = m_randGen.nextInt() % 4;
+         switch (dir) {
+            case 0: str.append("move(1,0);\n"); break;
+            case 1: str.append("move(0,1);\n"); break;
+            case 2: str.append("move(-1,0);\n"); break;
+            case 3: str.append("move(0,-1);\n"); break;
+         }
+      }
+      m_moverBoxRot = (m_moverBoxRot + 1) % 36;
+      str
+         .append(String.format("boxTurn=%d;\n", (m_moverBoxRot * 10)))
+         .append("DispList:setDirty('pusher.box.rotation');\n");
+
+      // This will not replace the old script. The new chunk will be evaluated
+      // in the appropriate Lua context. The old functions and variables will
+      // be kept if they are not redefined by the new script.
+      m_display.setLuaGlObject("v11n.java.Pusher", "Pusher", str.toString());
+   }
+
+   private int m_GraphData[] = new int[32];
+   private void makeSvgGraph()
+   {
+      StringBuffer str = new StringBuffer();
+      str.append("<svg viewbox='0 0 242 162'>");
+      str.append("<rect x='0' y='0' width='242' height='162' fill='white' stroke='blue' stroke-width='1' />");
+      str.append("<polyline fill='none' stroke='#a0a0ff' stroke-width='1' points='1,120 241,120' />");
+      str.append("<polyline fill='none' stroke='#a0a0ff' stroke-width='1' points='1,80 241,80' />");
+      str.append("<polyline fill='none' stroke='#a0a0ff' stroke-width='1' points='1,40 241,40' />");
+      str.append("</svg>");
+      m_display.setObject("v11.java.Graph", "000_background", str.toString());
+
+      str = new StringBuffer();
+      str.append("<svg viewbox='0 0 242 162'>");
+      str.append(String.format("<text x='2' y='160' font-size='12' fill='blue'>%d</text>", 10));
+      str.append(String.format("<text x='2' y='16' font-size='12' fill='blue'>%d</text>", 88));
+      str.append("</svg>");
+      m_display.setObject("v11.java.Graph", "999_labels", str.toString());
+      for(int i = 0; i < 32; i++) m_GraphData[i] = m_randGen.nextInt(70) + 10;
+   }
+
+   private int m_GraphPos = 0;
+   private void updateSvgGraph()
+   {
+      m_GraphPos = (m_GraphPos + 1) % 32;
+      m_GraphData[m_GraphPos] = m_randGen.nextInt(70) + 10;
+      StringBuffer str = new StringBuffer();
+      str.append("<svg viewbox='0 0 242 162'>");
+      str.append("<polyline fill='none' stroke='red' stroke-width='1' points='");
+      int i = (m_GraphPos + 1) % 32;
+      int k = 0;
+      while (i != m_GraphPos) {
+         double p = (double) (m_GraphData[i] - 10) / (88.0 - 10.0);
+         str.append(String.format("%d,%d ", (int) (240.0*k/32+0.5), (int) (160.0*p+0.5)));
+         i = (i + 1) % 32;
+         k = k + 1;
+      }
+      str.append("' />\n");
+      str.append("</svg>");
+      m_display.setObject("v11.java.Graph", "500_lines", str.toString());
+   }
+
    @Override
    protected void runComponent()
    {
       sleepComponent(1000);
 
       if (true) {
-         m_display.setHtml("v11.java.setHtml", "001", "This is a message from V11nJavaTestComponent.");
+         // A multi-part HTML document.
+         // Parts will be added every time the form (setHtmlForm below) is submitted.
+         m_display.setHtml("v11n.java.setHtml", "001", "This is a message from V11nJavaTestComponent.");
       }
 
       if (true) {
-         m_display.setHtmlForm("v11.java.setHtmlForm", "101",
-           "Edit me: <input type='text' value='Text from java' />");
+         // A simple form.
+         // Events will be handled in MyDisplayClient.handleForm().
+         // Form data will be retreived in MyDisplayClient.getFormData().
+         m_display.setHtmlForm("v11n.java.setHtmlForm", "101",
+               "Edit me: <input type='text' name='textfield' value='Empty' />");
       }
 
+      if (true) makePusher();
+      if (true) makeSvgGraph();
+
       while (this.isRunning()) {
-         sleepComponent(200);
+         sleepComponent(100);
+         movePusher();
+         updateSvgGraph();
       }
    }
+
+   public String fileAsString(String fname)
+   {
+      File file = new File(fname);
+      StringBuffer contents = new StringBuffer();
+      BufferedReader reader = null;
+
+      try {
+         reader = new BufferedReader(new FileReader(file));
+         String text = null;
+
+         while ((text = reader.readLine()) != null) {
+            contents.append(text)
+               .append(System.getProperty(
+                        "line.separator"));
+         }
+      }
+      catch (FileNotFoundException e) {
+         e.printStackTrace();
+      }
+      catch (IOException e) {
+         e.printStackTrace();
+      }
+      finally {
+         try {
+            if (reader != null) {
+               reader.close();
+            }
+         }
+         catch (IOException e) {
+            e.printStackTrace();
+         }
+      }
+
+      return contents.toString();
+   }
+
 }
 // vim:sw=3:ts=8:et
