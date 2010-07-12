@@ -51,7 +51,36 @@ class CDisplayClient:
     def installEventReceiver(self):
         pass
 
+    def setImage(self, id, videoImage)
+        if self.m_Server == None: return
+        self.m_Server.setImage(id, videoImage)
+
+    def setRawImage(self, id, width, height, channels, data)
+        if self.m_Server == None: return
+        self.m_Server.setRawImage(id, width, height, channels, data)
+
+    def setCompressedImage(self, id, data)
+        if self.m_Server == None: return
+        self.m_Server.setCompressedImage(id, data)
+
     def setHtml(self, id, partId, htmlData):
         if self.m_Server == None: return
         self.m_Server.setHtml(id, partId, htmlData)
+
+    def setHtmlHead(self, id, partId, htmlData):
+        if self.m_Server == None: return
+        self.m_Server.setHtmlHead(id, partId, htmlData)
+
+    def setHtmlForm(self, id, partId, htmlData):
+        if self.m_Server == None: return
+        iceid = self.getEventClientId()
+        self.m_Server.setHtmlHead(iceid, id, partId, htmlData)
+
+    def setObject(self, id, partId, svgObject):
+        if self.m_Server == None: return
+        self.m_Server.setObject(id, partId, svgObject)
+
+    def setLuaGlObject(self, id, partId, script):
+        if self.m_Server == None: return
+        self.m_Server.setLuaGlObject(id, partId, script)
 
