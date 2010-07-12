@@ -195,6 +195,11 @@ public class V11nJavaTestComponent extends ManagedComponent
       m_display.setLuaGlObject("v11n.java.Pusher", "Pusher", str.toString());
    }
 
+   // The graph is created with 3 chunks: graph border, graph labels and graph data.
+   // They are displayed in the order: border - data - labels.
+   // Border and data don't change with time so they are prepared at the beginning.
+   // The graph data is updated in updateSvgGraph().
+   // Every chunk must be a valid SVG document.
    private int m_GraphData[] = new int[32];
    private void makeSvgGraph()
    {
@@ -223,11 +228,12 @@ public class V11nJavaTestComponent extends ManagedComponent
       m_GraphData[m_GraphPos] = m_randGen.nextInt(70) + 10;
       StringBuffer str = new StringBuffer();
       str.append("<svg viewbox='0 0 242 162'>");
+      str.append("<polyline fill='none' stroke='none' stroke-width='0' points='0,0 242,162' />");
       str.append("<polyline fill='none' stroke='red' stroke-width='1' points='");
       int i = (m_GraphPos + 1) % 32;
       int k = 0;
       while (i != m_GraphPos) {
-         double p = (double) (m_GraphData[i] - 10) / (88.0 - 10.0);
+         double p = 1.0 - (double) (m_GraphData[i] - 10) / (88.0 - 10.0);
          str.append(String.format("%d,%d ", (int) (240.0*k/32+0.5), (int) (160.0*p+0.5)));
          i = (i + 1) % 32;
          k = k + 1;
