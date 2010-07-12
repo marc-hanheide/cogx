@@ -54,6 +54,7 @@
             <pathelement path="${castslice.dir}"/>
             <pathelement path="${castslice.dir}/cast/slice/"/>
             <pathelement path="/usr/share/Ice/slice"/>
+            <pathelement path="/usr/share/slice"/>
             <pathelement path="../../tools/math/src/slice"/>
             <pathelement path="../../tools/hardware/video/src/slice"/>
          </includepath>

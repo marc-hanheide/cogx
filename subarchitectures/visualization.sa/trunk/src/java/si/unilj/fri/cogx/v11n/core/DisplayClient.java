@@ -23,6 +23,7 @@ import cast.architecture.*;
 import cast.cdl.*;
 import cast.core.*;
 import cast.CASTException;
+import Video.Image;
 
 //-----------------------------------------------------------------
 // VISUALIZATION IMPORTS
@@ -77,14 +78,14 @@ public class DisplayClient
    private CASTComponent m_Owner = null;
    private EventReceiverImpl m_EventReceiver = null;
 
-   public void configureDisplayClient(java.util.Map<String, String> config)
+   public final void configureDisplayClient(java.util.Map<String, String> config)
    {
       if (config.containsKey("--displayserver")) {
          m_ServerName = config.get("--displayserver");
       }
    }
 
-   public void connectIceClient(CASTComponent owner)
+   public final void connectIceClient(CASTComponent owner)
    {
       m_Owner = owner;
       try {
@@ -101,14 +102,15 @@ public class DisplayClient
       return m_Owner.getComponentID();
    }
 
-   private Ice.Identity getEventClientId() {
+   private Ice.Identity getEventClientId()
+   {
       Ice.Identity id = new Ice.Identity();
       id.name = getComponentId();
       id.category = "Visualization.EventReceiver";
       return id;
    }
 
-   public void installEventReceiver() // throws(std::runtime_error)
+   public final void installEventReceiver() // throws(std::runtime_error)
    {
       if (m_Owner == null) {
          // TODO: throw std::runtime_error(cast::exceptionMessage(__HERE__,
@@ -135,37 +137,101 @@ public class DisplayClient
       m_Server.addClient(id);
    }
 
-   public void setImage(String id, int width, int height, int channels, byte data[])
+   public final void setImage(String id, int width, int height, int channels, byte data[])
    {
       if (m_Server == null) return;
       m_Server.setRawImage(id, width, height, channels, data);
    }
-   //void setImage(String id, Video.Image image); 
 
-   public void setObject(String id, String partId, String svgObject)
+   public final void setImage(String id, Video.Image image)
+   {
+      if (m_Server == null) return;
+      m_Server.setImage(id, image);
+   }
+
+   public final void setCompressedImage(String id, byte[] data, String format)
+   {
+      if (m_Server == null) return;
+      m_Server.setCompressedImage(id, data, format);
+   }
+
+   public final void setCompressedImage(String id, byte[] data)
+   {
+      if (m_Server == null) return;
+      m_Server.setCompressedImage(id, data, "");
+   }
+
+   public final void setObject(String id, String partId, String svgObject)
    {
       if (m_Server == null) return;
       m_Server.setObject(id, partId, svgObject);
    }
 
-   public void setHtml(String id, String partId, String htmlData)
+   public final void setLuaGlObject(String id, String partId, String script)
+   {
+      if (m_Server == null) return;
+      m_Server.setLuaGlObject(id, partId, script);
+   }
+
+   public final void setObjectPose3D(String id, String partId, cogx.Math.Vector3 position, Quaternion rotation)
+   {
+      if (m_Server == null) return;
+      m_Server.setObjectPose3D(id, partId, position, rotation);
+   }
+
+   public final void setObjectTransform2D(String id, String partId, double[] matrix33)
+   {
+      if (m_Server == null) return;
+      m_Server.setObjectTransform2D(id, partId, matrix33);
+   }
+
+   public final void setHtml(String id, String partId, String htmlData)
    {
       if (m_Server == null) return;
       m_Server.setHtml(id, partId, htmlData);
    }
 
-   public void setHtmlHead(String id, String partId, String htmlData)
+   public final void setHtmlHead(String id, String partId, String htmlData)
    {
       if (m_Server == null) return;
       m_Server.setHtmlHead(id, partId, htmlData);
    }
 
-   public void setHtmlForm(String id, String partId, String htmlData)
+   public final void setHtmlForm(String id, String partId, String htmlData)
    {
-     if (m_Server == null) return;
-     Ice.Identity iceid = getEventClientId();
-     m_Server.setHtmlForm(iceid, id, partId, htmlData);
+      if (m_Server == null) return;
+      Ice.Identity iceid = getEventClientId();
+      m_Server.setHtmlForm(iceid, id, partId, htmlData);
    }
+
+   public final void addButton( String viewId, String ctrlId, String label)
+   {
+      if (m_Server == null) return;
+      Ice.Identity iceid = getEventClientId();
+      m_Server.addButton(iceid, viewId, ctrlId, label);
+   }
+
+   public final void addCheckBox(String viewId, String ctrlId, String label)
+   {
+      if (m_Server == null) return;
+      Ice.Identity iceid = getEventClientId();
+      m_Server.addCheckBox(iceid, viewId, ctrlId, label);
+   }
+
+   public final void addToolButton(String viewId, String ctrlId, ActionInfo info)
+   {
+      if (m_Server == null) return;
+      Ice.Identity iceid = getEventClientId();
+      m_Server.addToolButton(iceid, viewId, ctrlId, info);
+   }
+
+   //public final void enableMouseEvents(String viewId, boolean enabled)
+   //{
+   //   if (m_Server == null) return;
+   //   Ice.Identity iceid = getEventClientId();
+   //   m_Server.enableMouseEvents(viewId, enabled);
+   //}
+
 
    // -----------------------------------------------------------------
    // Event Receiver Methods - to be overridden
