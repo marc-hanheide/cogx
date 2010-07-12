@@ -191,6 +191,7 @@ namespace spatial
     //objectprobability.push_back(make_pair("ricebox",0));
     //def.objprob = objectprobability;
     def.pdf = 0;
+    m_tempmap = new SpatialGridMap::GridMap<GridMapData>(m_gridsize, m_gridsize, m_cellsize, m_minbloxel, 0, m_mapceiling, 0, 0, 0, def);
     m_map = new SpatialGridMap::GridMap<GridMapData>(m_gridsize, m_gridsize, m_cellsize, m_minbloxel, 0, m_mapceiling, 0, 0, 0, def);
     m_tracer = new LaserRayTracer<GridMapData>(m_map,1.0);
     pbVis = new VisualPB_Bloxel(m_PbHost,5050,m_gridsize,m_gridsize,m_cellsize,1,true);//host,port,xsize,ysize,cellsize,scale, redraw whole map every time
@@ -332,6 +333,8 @@ namespace spatial
 
       if (!waitingForDetection.empty() || !waitingForObjects.empty()) {
 	if (newObj->label == currentTarget) {
+	  waitingForDetection.clear();
+	  waitingForObjects.clear();
 	  DetectionComplete(true);
 	}
 	else {
@@ -667,11 +670,11 @@ namespace spatial
       line = "";
     }
 
-    vector< pair<double,double> > thresholds;
-    thresholds.push_back(make_pair(1e-4,1));
+//    vector< pair<double,double> > thresholds;
+//    thresholds.push_back(make_pair(1e-4,1));
     InitializePDF(1-m_pout);
     pbVis->DisplayMap(*m_map);
-    pbVis->AddPDF(*m_map, thresholds);
+    pbVis->AddPDF(*m_map);
      pbVis->Display2DCureMap(m_lgm);
     m_maploaded = true;
   }
@@ -840,14 +843,39 @@ namespace spatial
       case NEXT_NBV:{
         //TODO isStopSearch then STOP	
 	log("Command: NEXT_NBV");
-        m_command = IDLE; //Wait to get in position
+        m_command = WAITING; //Wait to get in position
+	m_waitingCount = 0;
 	GoToNBV();
 	break;
       }
       case RECOGNIZE:{
 	log("Command: Recognize");
-        m_command = IDLE; //Wait for recognition
+        m_command = WAITING; //Wait for recognition
+	m_waitingCount = 0;
 	Recognize();
+	break;
+      }
+      case WAITING:{
+	log("Waiting... %i", m_waitingCount);
+	m_waitingCount++;
+	if (m_waitingCount == 30) {
+	  m_command = NEXT_NBV;
+	  m_waitingCount = 0;
+	}
+	if (!waitingForDetection.empty()) {
+	  std::string logString;
+	  for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
+	    logString += *it + " ";
+	  }
+	  log("Waiting for detection: %s", logString.c_str());
+	}
+	if (!waitingForObjects.empty()) {
+	  std::string logString;
+	  for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
+	    logString += *it + " ";
+	  }
+	  log("Waiting for spatial objects: %s", logString.c_str());
+	}
 	break;
       }
       case IDLE:{
@@ -879,18 +907,31 @@ namespace spatial
     viewpoint.pos.x = m_nbv.pos[0];
     viewpoint.pos.y = m_nbv.pos[1];
     viewpoint.pos.z = m_nbv.pos[2];
+    viewpoint.length = m_conedepth;
 	viewpoint.pan = m_nbv.pan;
 	viewpoint.tilt = m_nbv.tilt;
         obs->planlist.push_back(viewpoint);
-        addToWorkingMemory(newDataID(), obs);
-     /* Add plan to PB END */
+	addToWorkingMemory(newDataID(), obs);
+	/* Add plan to PB END */
 
-cout << "selected cone" << viewpoint.pos.x << " " << viewpoint.pos.y << " " <<viewpoint.pos.z << "" << viewpoint.pan << " " << viewpoint.tilt << endl;
-    // Send move command
-    Cure::Pose3D pos;
-    pos.setX(m_nbv.pos[0]);
-    pos.setY(m_nbv.pos[1]);
-    pos.setTheta(m_nbv.pan); 
+
+	/* Show view cone on a temporary map, display the map and wipe it*/
+	GDMakeObstacle makeobstacle;
+	GDIsObstacle isobstacle;
+/*	m_tempmap->coneModifier(m_nbv.pos[0],m_nbv.pos[1],m_nbv.pos[2], m_nbv.pan,m_nbv.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, makeobstacle,makeobstacle);*/
+	pbVis->DisplayMap(*m_tempmap);
+	GridMapData def;
+	def.occupancy = UNKNOWN;
+	GDSet wipemap(def);
+	m_tempmap->universalModifier(wipemap);
+
+
+	cout << "selected cone" << viewpoint.pos.x << " " << viewpoint.pos.y << " " <<viewpoint.pos.z << "" << viewpoint.pan << " " << viewpoint.tilt << endl;
+	// Send move command
+	Cure::Pose3D pos;
+	pos.setX(m_nbv.pos[0]);
+	pos.setY(m_nbv.pos[1]);
+	pos.setTheta(m_nbv.pan); 
     log("posting nav command");
     //m_command = RECOGNIZE; // FIXME this line is added and below is commented out only for easy testing
     PostNavCommand(pos, SpatialData::GOTOPOSITION);
@@ -928,6 +969,7 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
       currentSearchMode = DIRECT_UNINFORMED;
       log("Will look for %s", currentTarget.c_str());
       InitializePDFForObject(1-m_pout, currentTarget);
+      pbVis->AddPDF(*m_map);
       m_command = NEXT_NBV;
     }
     else if (mode == DIRECT_INFORMED){
@@ -949,13 +991,13 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	cout << searchChain[i].primaryobject << " " << searchChain[i].secobject << " " << searchChain[i].prob << endl;
       }
       InitializePDFForObject(1-m_pout, currentTarget);
+      pbVis->AddPDF(*m_map);
       m_command = NEXT_NBV;
     }
   }
 
   void VisualObjectSearch::AskForDistribution(){
     log("Asking for distribution");
-    m_command = IDLE;
 
     //if informed direct, get search chain, construct distribution parameters and ask for it
     double queryProbabilityMass = 1.0;
@@ -1122,13 +1164,13 @@ void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &obj
 	}
 	m_command = NEXT_NBV;
 
-	vector< pair<double,double> > thresholds;
-	thresholds.push_back(make_pair(1e-4,1e-3));
-	thresholds.push_back(make_pair(1e-3,5e-3));
-	thresholds.push_back(make_pair(5e-3,1e-2));
-	thresholds.push_back(make_pair(1e-2,5e-2));
-	thresholds.push_back(make_pair(5e-2,1e2));
-	pbVis->AddPDF(*m_map, thresholds);
+//	vector< pair<double,double> > thresholds;
+//	thresholds.push_back(make_pair(1e-4,1e-3));
+//	thresholds.push_back(make_pair(1e-3,5e-3));
+//	thresholds.push_back(make_pair(5e-3,1e-2));
+//	thresholds.push_back(make_pair(1e-2,5e-2));
+//	thresholds.push_back(make_pair(5e-2,1e2));
+	pbVis->AddPDF(*m_map);
 	}
       catch (DoesNotExistOnWMException excp) {
 	log("Error!  WeightedPointCloud does not exist on WM!");
@@ -1247,7 +1289,6 @@ bool isCircleFree2D(const Cure::LocalGridMap<unsigned char> &map, double xW, dou
     for (double rad = 0; rad < M_PI * 2; rad = rad + M_PI / 13) {
       angles.push_back(rad);
     }
-
     int i = 0;
     int randx, randy;
     double xW, yW, angle;
@@ -1263,7 +1304,7 @@ bool isCircleFree2D(const Cure::LocalGridMap<unsigned char> &map, double xW, dou
       for (int j = 0; j < i; j++) {
         if (m_samples[2 * j] == randx && m_samples[2 * j + 1] == randy
             && m_samplestheta[j] == angle) {
-//          log("we already have this point.");
+          //log("we already have this point.");
           haspoint = true;
           break;
         }
@@ -1282,7 +1323,7 @@ bool isCircleFree2D(const Cure::LocalGridMap<unsigned char> &map, double xW, dou
         //log("1");
         if (m_lgm->worldCoords2Index(lastRobotPose->x, lastRobotPose->y, rS, cS)
             == 0 && m_lgm->worldCoords2Index(xW, yW, rE, cE) == 0) {
-          //log("check if point is reachable");
+        //  log("check if point is reachable");
           // Compensate for the fact that the PathGrid is just a normal matrix where the cells are numbers from the corner
           cS += m_lgm->getSize();
           rS += m_lgm->getSize();
@@ -1296,7 +1337,7 @@ bool isCircleFree2D(const Cure::LocalGridMap<unsigned char> &map, double xW, dou
 
           if (d > 0) {
             // There is a path to this destination
-            //log("there's a path to this destination");
+          //  log("there's a path to this destination");
             m_samples[2 * i] = randx;
             m_samples[2 * i + 1] = randy;
             m_samplestheta[i] = angle;
@@ -1313,7 +1354,7 @@ bool isCircleFree2D(const Cure::LocalGridMap<unsigned char> &map, double xW, dou
         //log("point either non free space or seen.");
       }
     }
-    //log("Displaying VP samples in PB");
+    log("Displaying VP samples in PB");
 
     /* Display Samples in PB BEGIN */
     //samples.set_opacity(0.2);
@@ -1516,7 +1557,7 @@ VisualObjectSearch::SensingAction VisualObjectSearch::SampleAndSelect(){
 
   cout << "highest sum is: " << highest_sum << " " << "for view cone at: " << best2DconeW.first << "," << best2DconeW.second << endl ;
 
-  pair<int,int> tiltRange(20,-20);
+  pair<int,int> tiltRange(40,-40);
   std::vector< pair<int,int> > freespace;
   std::vector< std::vector<double> >  visualizationpoints;
   SensingAction sample;
@@ -1611,7 +1652,7 @@ Add plan to PB BEGIN */
 
 int VisualObjectSearch::GetViewConeSums(std::vector <SensingAction> samplepoints){
   debug("Querying cones");
-  debug("Cone range is %f to %f", m_minDistance, m_conedepth);
+  log("Cone range is %f to %f", m_minDistance, m_conedepth);
 
   GDProbSum sumcells;
   GDIsObstacle isobstacle;
@@ -1721,16 +1762,21 @@ VisualObjectSearch::MovePanTilt(double pan, double tilt, double tolerance) {
   }
 }
 
-  void VisualObjectSearch::Recognize() {
-    log("Recognize called");
-    waitingForDetection.insert(currentTarget);
-//    isWaitingForDetection = true;
-    //DetectionComplete(false);
-    // FIXME Below is commented out just for easy testing
-    addRecognizer3DCommand(VisionData::RECOGNIZE,"rovio","");
-    addRecognizer3DCommand(VisionData::RECOGNIZE,"bookcase_lg","");
-    addRecognizer3DCommand(VisionData::RECOGNIZE,"bookcase_sm","");
-    addRecognizer3DCommand(VisionData::RECOGNIZE,"rice","");
+void VisualObjectSearch::Recognize() {
+  log("Recognize called");
+  //    waitingForDetection.insert(currentTarget);
+  //    isWaitingForDetection = true;
+  //DetectionComplete(false);
+  // FIXME Below is commented out just for easy testing
+  addRecognizer3DCommand(VisionData::RECOGNIZE,"book","");
+  //    addRecognizer3DCommand(VisionData::RECOGNIZE,"dell","");
+  addRecognizer3DCommand(VisionData::RECOGNIZE,"bookcase_lg","");
+  addRecognizer3DCommand(VisionData::RECOGNIZE,"bookcase_sm","");
+  addRecognizer3DCommand(VisionData::RECOGNIZE,"table","");
+  waitingForDetection.insert("book");
+  waitingForDetection.insert("bookcase_lg");
+  waitingForDetection.insert("bookcase_sm");
+waitingForDetection.insert("table");
   }
 
 
@@ -1793,6 +1839,12 @@ VisualObjectSearch::MovePanTilt(double pan, double tilt, double tolerance) {
       else if (label == "rice") {
 	objectSize = 0.19;
       }
+      else if (label == "dell") {
+	objectSize = 0.49;
+      }
+      else if (label == "book") {
+	objectSize = 0.19;
+      }
       else if (label == "rovio") {
 	objectSize = 0.35;
       }
@@ -1832,7 +1884,7 @@ VisualObjectSearch::MovePanTilt(double pan, double tilt, double tolerance) {
   }
 
   void VisualObjectSearch::UnsuccessfulDetection(SensingAction viewcone){
-    double sensingProb = 1.0;
+    double sensingProb = 0.5;
     GDProbSum sumcells;
     GDIsObstacle isobstacle;
     /* DEBUG */
@@ -1870,14 +1922,14 @@ cout << "map sums to: " << sumcells.getResult() << endl;
 
 normalizePDF(*m_map,(1- m_pout));
 
-vector< pair<double,double> > thresholds;
-thresholds.push_back(make_pair(1e-4,1e-3));
-thresholds.push_back(make_pair(1e-3,5e-3));
-thresholds.push_back(make_pair(5e-3,1e-2));
-thresholds.push_back(make_pair(1e-2,5e-2));
-thresholds.push_back(make_pair(5e-2,1e2));
+//vector< pair<double,double> > thresholds;
+//thresholds.push_back(make_pair(1e-4,1e-3));
+//thresholds.push_back(make_pair(1e-3,5e-3));
+//thresholds.push_back(make_pair(5e-3,1e-2));
+//thresholds.push_back(make_pair(1e-2,5e-2));
+//thresholds.push_back(make_pair(5e-2,1e2));
 
-pbVis->AddPDF(*m_map,thresholds);
+pbVis->AddPDF(*m_map);
 /* //to get the denominator first sum all cells
    m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
    viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells, m_minDistance);
@@ -1984,7 +2036,7 @@ void VisualObjectSearch::PostNavCommand(Cure::Pose3D position, SpatialData::Comm
 
 void VisualObjectSearch::addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, 
     std::string label, std::string visualObjectID){
-  log("posting recognizer command.");
+  log("posting recognizer command: %s.", label.c_str());
   VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
   rec_cmd->cmd = cmd;
   rec_cmd->label = label;

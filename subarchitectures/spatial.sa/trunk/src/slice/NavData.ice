@@ -12,10 +12,19 @@
  * @see
  */
 module NavData {
-	sequence<cogx::Math::Vector3> PoseSeq;
+
+  struct ViewPoint{
+    cogx::Math::Vector3 pos;
+    double pan;
+    double tilt;
+    double length;
+  };
+
   
-  class ObjectSearchPlan{
-	PoseSeq planlist;
+  sequence<ViewPoint> SearchPlan; 
+ 
+class ObjectSearchPlan{
+  SearchPlan planlist;
 };
 
 

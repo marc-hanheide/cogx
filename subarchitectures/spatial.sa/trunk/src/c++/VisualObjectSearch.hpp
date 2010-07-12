@@ -116,6 +116,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       
       ObjectPairRelation GetSecondaryObject(std::string name);
       SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* m_map;
+      SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* m_tempmap;
       SpatialGridMap::LaserRayTracer<SpatialGridMap::GridMapData>* m_tracer;
       Cure::LocalGridMap<unsigned char>* m_lgm;
       Cure::LocalGridMap<double>* m_lgmpdf;
@@ -131,6 +132,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
 	ASK_FOR_DISTRIBUTION,
 	RECOGNIZE,
 	NEXT_NBV,
+	WAITING,
 	IDLE
       };
 
@@ -151,6 +153,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
 
       std::string m_PbHost;
       AVSCommand m_command;
+      int m_waitingCount;
       SensingAction m_currentVP;
       std::vector<ObjectRelations> objectData;
       std::vector<SensingAction> exploredActions;
