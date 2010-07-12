@@ -195,11 +195,14 @@ public class V11nJavaTestComponent extends ManagedComponent
       m_display.setLuaGlObject("v11n.java.Pusher", "Pusher", str.toString());
    }
 
-   // The graph is created with 3 chunks: graph border, graph labels and graph data.
-   // They are displayed in the order: border - data - labels.
-   // Border and data don't change with time so they are prepared at the beginning.
+   // The graph is created with 3 chunks: graph border, graph labels and graph
+   // data. They are displayed in the order: border - data - labels.
+   // (The order is defined with partId, eg. 500_lines; ATM this depends on the
+   // implementation of C++ std::map)
+   // Border and labels don't change with time so they are prepared at the
+   // beginning.
    // The graph data is updated in updateSvgGraph().
-   // Every chunk must be a valid SVG document.
+   // Every chunk must be a valid SVG document, otherwise the server may crash.
    private int m_GraphData[] = new int[32];
    private void makeSvgGraph()
    {
