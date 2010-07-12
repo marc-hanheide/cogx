@@ -690,20 +690,7 @@ void ObjectRelationManager::runComponent()
 	      sampleTable = !sampleTable;
 	      
 	      //visualPB.DisplayMap(pdfMap);
-	      std::vector < std::pair <double,double> > thresholdval;
-	      thresholdval.push_back(make_pair(0.001, 0.002));
-	      thresholdval.push_back(make_pair(0.002, 0.003));
-	      thresholdval.push_back(make_pair(0.003, 0.004));
-	      thresholdval.push_back(make_pair(0.004, 0.005));
-	      thresholdval.push_back(make_pair(0.005, 0.006));
-	      thresholdval.push_back(make_pair(0.006, 0.007));
-	      thresholdval.push_back(make_pair(0.007, 0.01));
-	      thresholdval.push_back(make_pair(0.01, 0.02));
-	      thresholdval.push_back(make_pair(0.02, 0.03));
-	      thresholdval.push_back(make_pair(0.03, 0.04));
-	      thresholdval.push_back(make_pair(0.04, 0.05));
-	      thresholdval.push_back(make_pair(0.05, 1));
-	      visualPB->AddPDF(pdfMap,thresholdval);
+	      visualPB->AddPDF(pdfMap);
 //	      peekabot::LineCloudProxy linecloudp;
 //
 //	      linecloudp.add(m_PeekabotClient, "root.distribution",
@@ -867,6 +854,12 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	m_objects[obsLabel] = new SpatialData::SpatialObject;
 	m_objects[obsLabel]->label = obsLabel;
 	m_objects[obsLabel]->pose = pose;
+	//FIXME: This is a pure, unadulterated hack
+	if (obsLabel == "bookcase_lg") {
+	  Matrix33 flip;
+	  fromRotZ(flip, M_PI);
+	  m_objects[obsLabel]->pose.rot = flip*pose.rot;
+	}
       }
 
       if (m_objectModels.find(obsLabel) == m_objectModels.end()) {
@@ -1572,11 +1565,11 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     }
     // Hard-coded z-coordinates of some floor-bound objects
     else if (supportObjectLabel == "table") {
-      request->outCloud->center.z += 0.45-0.05;
+      request->outCloud->center.z += 0.45-0.225;
     }
-    else if (supportObjectLabel == "desk") {
-      request->outCloud->center.z += 0.75-0.05;
-    }
+//    else if (supportObjectLabel == "desk") {
+//      request->outCloud->center.z += 0.75-0.05;
+//    }
     else if (supportObjectLabel == "bookcase_sm") {
       request->outCloud->center.z += 0.75+0.08;
     }

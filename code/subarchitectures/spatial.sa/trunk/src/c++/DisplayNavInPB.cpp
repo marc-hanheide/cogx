@@ -383,6 +383,7 @@ void DisplayNavInPB::createRobotFOV()
   vp.pos.z = 0;
   vp.pan = 0;
   vp.tilt = 0;
+  vp.length = 1.0;
   createFOV(cam, "cam_right.cone", m_FovH, m_FovV, color, 0.3, vp);
 }
 
@@ -394,7 +395,7 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
 		peekabot::GroupProxy proxyCone;	
 		proxyCone.add(proxy, path, peekabot::REPLACE_ON_CONFLICT);
   
-  const double coneLen = 1.0;
+  const double coneLen = viewpoint.length;
   // The "half angle" of the field of view
   const double fovHoriz = fovHorizAngle*M_PI/180.0/2;
   const double fovVerti = fovVertiAngle*M_PI/180.0/2;
@@ -448,7 +449,7 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
   for (int i = 0; i < 5; i++) {
     proxyConeParts[i].set_color(color[0],color[1],color[2]);
     proxyConeParts[i].set_opacity(opacity);
-    proxyConeParts[i].set_scale(2);  // This is how I make the cone
+    proxyConeParts[i].set_scale(1);  // This is how I make the cone
                                      // larger or smaller
     
   }	if (!robotfov )
