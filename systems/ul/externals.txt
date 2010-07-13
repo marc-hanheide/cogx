@@ -4,10 +4,10 @@
 ^/code/subarchitectures/coma.sa/trunk                   subarchitectures/coma.sa
 ^/code/subarchitectures/comsys/trunk                    subarchitectures/comsys
 ^/code/subarchitectures/fakemotivation.sa/trunk         subarchitectures/fakemotivation.sa
-^/code/subarchitectures/motivation.sa/branches/stable-2 subarchitectures/motivation.sa
-^/code/subarchitectures/nav.sa/branches/stable-0        subarchitectures/nav.sa
-^/code/subarchitectures/planner.sa/branches/stable-1    subarchitectures/planner.sa
-^/code/subarchitectures/spatial.sa/branches/stable-1    subarchitectures/spatial.sa
+^/code/subarchitectures/motivation.sa/trunk             subarchitectures/motivation.sa
+^/code/subarchitectures/nav.sa/trunk                    subarchitectures/nav.sa
+^/code/subarchitectures/planner.sa/trunk                subarchitectures/planner.sa
+^/code/subarchitectures/spatial.sa/trunk                subarchitectures/spatial.sa
 ^/code/subarchitectures/vision.sa/trunk                 subarchitectures/vision.sa
 ^/code/subarchitectures/visualization.sa/trunk          subarchitectures/visualization.sa
 
@@ -26,11 +26,11 @@
 ^/code/tools/hardware/stereo/trunk                tools/hardware/stereo
 ^/code/tools/hardware/tests/trunk                 tools/hardware/tests
 ^/code/tools/hardware/tts/trunk                   tools/hardware/tts
-^/code/tools/hardware/utils/branches/stable-0     tools/hardware/utils
+^/code/tools/hardware/utils/trunk                 tools/hardware/utils
 ^/code/tools/hardware/video/trunk                 tools/hardware/video
 ^/code/tools/interconnectivity-branches/stable-0  tools/interconnectivity
 ^/code/tools/mary                                 tools/mary
-^/code/tools/math/branches/stable-0               tools/math
+^/code/tools/math/trunk                           tools/math
 ^/code/tools/python/trunk                         tools/python
 ^/code/tools/scripts/trunk                        tools/scripts
 ^/code/tools/testing/trunk                        tools/testing
