@@ -25,7 +25,7 @@ class _EventReceiverImpl (EventReceiver):
     def handleEvent(self, event, ctx):
         if self.m_Client != None: self.m_Client.handleEvent(event)
 
-    def getControlState(self, ctx):
+    def getControlState(self, ctrlId, ctx):
         if self.m_Client != None: return self.m_Client.getControlState(ctrlId)
         return "";
 
@@ -126,7 +126,20 @@ class CDisplayClient:
     #----------------------------------------------------------------- 
     # GUI elements
     #----------------------------------------------------------------- 
+    def addButton(self, viewId, ctrlId, label):
+        if self.m_Server == None: return
+        iceid = self.getEventClientId()
+        self.m_Server.addButton(iceid, viewId, ctrlId, label)
 
+    def addCheckBox(self, viewId, ctrlId, label):
+        if self.m_Server == None: return
+        iceid = self.getEventClientId()
+        self.m_Server.addCheckBox(iceid, viewId, ctrlId, label)
+
+    def addToolButton(self, viewId, ctrlId, actionInfo):
+        if self.m_Server == None: return
+        iceid = self.getEventClientId()
+        self.m_Server.addToolButton(iceid, viewId, ctrlId, actionInfo)
 
     #----------------------------------------------------------------- 
     # Active client callbacks - to be reimplemented
@@ -134,7 +147,7 @@ class CDisplayClient:
     def handleEvent(self, event):
         pass
 
-    def getControlState(self):
+    def getControlState(self, ctrlId):
         return ""
 
     def handleForm(self, id, partId, fields):
