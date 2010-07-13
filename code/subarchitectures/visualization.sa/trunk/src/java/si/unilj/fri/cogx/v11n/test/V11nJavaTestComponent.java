@@ -149,7 +149,7 @@ public class V11nJavaTestComponent extends ManagedComponent
    }
 
    private int m_msgid = 9000;
-   // Called from handleForm() (after a form is applied)
+   // Called from handleForm() (after a form is submitted)
    // Appends a text message (a html chunk) to an HTML object.
    // Chunks are sorted by their string ID (but the order depends on C++ std::map implementation).
    protected void appendMessage(String message)

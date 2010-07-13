@@ -1,5 +1,7 @@
 project (VisualisationSa)
 
+include(UseCAST)
+
 include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/math/src/c++/math)
 include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/utils)
@@ -16,4 +18,6 @@ add_subdirectory(src/c++/autogen)
 add_subdirectory(src/c++/core)
 add_subdirectory(src/c++/clients)
 
-#add_subdirectory(src/python)
+if(BUILD_PYTHON_COMPONENTS)
+   add_subdirectory(src/python)
+endif(BUILD_PYTHON_COMPONENTS)
