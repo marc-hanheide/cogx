@@ -32,15 +32,20 @@ class _EventReceiverImpl (EventReceiver):
     def handleForm(self, id, partId, fields, ctx):
         if self.m_Client != None: self.m_Client.handleForm(id, partId, fields)
 
-    def getFormData(self, id, partId, fields, ctx):
-        if self.m_Client != None: return self.m_Client.getFormData(id, partId, fields)
-        return False
+    def getFormData(self, id, partId, ctx):
+        if self.m_Client != None:
+            # make the interface consistent with C++ and java
+            fields = {}
+            rv = self.m_Client.getFormData(id, partId, fields)
+            if rv: return (True, fields)
+        return (False, None)
 
 class CDisplayClient:
     def __init__(self):
         self.m_ServerName = "display.srv"
         self.m_Server = None
         self.m_Owner = None
+        self.m_EventReceiver = None
         self._category = None
         pass
 
@@ -108,7 +113,7 @@ class CDisplayClient:
     def setHtmlForm(self, id, partId, htmlData):
         if self.m_Server == None: return
         iceid = self.getEventClientId()
-        self.m_Server.setHtmlHead(iceid, id, partId, htmlData)
+        self.m_Server.setHtmlForm(iceid, id, partId, htmlData)
 
     def setObject(self, id, partId, svgObject):
         if self.m_Server == None: return
@@ -117,6 +122,11 @@ class CDisplayClient:
     def setLuaGlObject(self, id, partId, script):
         if self.m_Server == None: return
         self.m_Server.setLuaGlObject(id, partId, script)
+
+    #----------------------------------------------------------------- 
+    # GUI elements
+    #----------------------------------------------------------------- 
+
 
     #----------------------------------------------------------------- 
     # Active client callbacks - to be reimplemented
