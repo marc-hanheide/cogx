@@ -26,28 +26,44 @@ class MyDisplayClient(DisplayClient.CDisplayClient):
         self.m_test = castComponent
 
     def handleEvent(self, event):
-        pass
+        if self.m_test == None: return
+        t = self.m_test
+        if event.sourceId == "cb.test.onoff":
+            if event.data == "0": t.m_ckTestValue = 0
+            else: t.m_ckTestValue = 2
+            if t.m_ckTestValue > 0: t.appendMessage("Check box " + event.sourceId + " is ON")
+            else: t.appendMessage("Check box " + event.sourceId + " is OFF")
 
-    def getControlState(self):
+        if event.sourceId == "button.test":
+           t.appendMessage("Button " + event.sourceId + " PRESSED")
+
+    def getControlState(self, ctrlId):
+        if self.m_test == None: return
+        t = self.m_test
+        if ctrlId == "cb.test.onoff":
+            if t.m_ckTestValue != 0: return "2"
+            else: return "0"
         return ""
 
     def handleForm(self, id, partId, fields):
         if self.m_test == None: return
-        self.m_test.log("PYTHON handleForm " + id + ":" + partId)
+        t = self.m_test
+        #t.log("PYTHON handleForm " + id + ":" + partId)
         if id == "v11n.python.setHtmlForm" and partId == "101":
             if fields.has_key("textfield"):
-                self.m_test.m_textField = fields["textfield"]
-                self.m_test.log("Got textfield: " + self.m_test.m_textField);
-                self.m_test.appendMessage(self.m_test.m_textField);
+                t.m_textField = fields["textfield"]
+                t.log("Got textfield: " + t.m_textField);
+                t.appendMessage(t.m_textField);
 
     def getFormData(self, id, partId, fields):
-       if self.m_test == None: return False
-       self.m_test.log("PYTHON getFormData " + id + ":" + partId)
-       if id == "v11n.python.setHtmlForm" and partId == "101":
-           fields["textfield"] = self.m_test.m_textField
-           return True
+        if self.m_test == None: return False
+        t = self.m_test
+        #t.log("PYTHON getFormData " + id + ":" + partId)
+        if id == "v11n.python.setHtmlForm" and partId == "101":
+            fields["textfield"] = t.m_textField
+            return True
 
-       return False
+        return False
 
 class V11nTestDisplayClient(cast.core.CASTComponent):
     def __init__(self):
@@ -57,6 +73,7 @@ class V11nTestDisplayClient(cast.core.CASTComponent):
         self.m_moverBoxRot = 0
         self.m_GraphData = []
         self.m_textField = "A message from Python"
+        self.m_ckTestValue = 2
         self._msgid = 9000
 
     def configureComponent(self, config):
@@ -83,8 +100,8 @@ class V11nTestDisplayClient(cast.core.CASTComponent):
 
         # Test of gui elements
         # Messages will be added to the document when events happen (see handleEvent).
-        #m_display.addCheckBox("v11n.python.setHtml", "cb.test.onoff", "Test On Off");
-        #m_display.addButton("v11n.python.setHtml", "button.test", "Test Button");
+        self.m_display.addCheckBox("v11n.python.setHtml", "cb.test.onoff", "Test On Off");
+        self.m_display.addButton("v11n.python.setHtml", "button.test", "Test Button");
 
     def makeHtmlForm(self):
         # A simple form.
