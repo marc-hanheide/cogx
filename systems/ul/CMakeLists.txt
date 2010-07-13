@@ -15,11 +15,14 @@ set(CMAKE_MODULE_PATH /opt/local/share/cast/cmake ${CMAKE_MODULE_PATH})
 find_package(CAST REQUIRED)
 include(UseCAST)
 include(CASTBuild)
+include(cmake/PythonBuild.cmake)
 
 # use cmake files packaged with CAST as well
 set(CMAKE_MODULE_PATH "${COGX_ROOT}/cmake;${CAST_CMAKE_DIR}" ${CMAKE_MODULE_PATH})
 
 add_definitions(-Wall)
+
+include(subarchitectures/visualization.sa/cmake/v11n.cmake)
 
 # UNCOMMENT THE FOLLOWING FOR THE NAVIGATION SUBARCHITECTURE
 
@@ -125,7 +128,6 @@ if(BUILD_SA_FAKE_MOTIVATION)
 endif(BUILD_SA_FAKE_MOTIVATION)
 
 add_subdirectory(tools/scripts)
-add_subdirectory(tools/python)
 
 # ComSys
 add_subdirectory(subarchitectures/comsys)
@@ -138,4 +140,5 @@ if(DO_ANT)
       COMMAND ant -Dcastslice.dir=${CAST_SLICE_DIR} -Dcast.jar=${CAST_INSTALL_ROOT}/share/java/cast.jar -Dice.jar=${ICE_HOME}/share/java/Ice.jar WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
    )
 endif(DO_ANT)
+
 
