@@ -12,3 +12,6 @@ add_subdirectory(src/c++/autogen)
 
 add_subdirectory(src/c++/math)
 
+if(BUILD_PYTHON_COMPONENTS)
+   add_subdirectory(src/python/slicegen)
+endif(BUILD_PYTHON_COMPONENTS)
