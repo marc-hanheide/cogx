@@ -20,28 +20,85 @@ import cast.core
 import time, random
 import cogxv11n.core.DisplayClient as DisplayClient
 
+class MyDisplayClient(DisplayClient.CDisplayClient):
+    def __init__(self, castComponent):
+        DisplayClient.CDisplayClient.__init__(self)
+        self.m_test = castComponent
+
+    def handleEvent(self, event):
+        pass
+
+    def getControlState(self):
+        return ""
+
+    def handleForm(self, id, partId, fields):
+        if self.m_test == None: return
+        self.m_test.log("PYTHON handleForm " + id + ":" + partId)
+        if id == "v11n.python.setHtmlForm" and partId == "101":
+            if fields.has_key("textfield"):
+                self.m_test.m_textField = fields["textfield"]
+                self.m_test.log("Got textfield: " + self.m_test.m_textField);
+                self.m_test.appendMessage(self.m_test.m_textField);
+
+    def getFormData(self, id, partId, fields):
+       if self.m_test == None: return False
+       self.m_test.log("PYTHON getFormData " + id + ":" + partId)
+       if id == "v11n.python.setHtmlForm" and partId == "101":
+           fields["textfield"] = self.m_test.m_textField
+           return True
+
+       return False
+
 class V11nTestDisplayClient(cast.core.CASTComponent):
     def __init__(self):
         cast.core.CASTComponent.__init__(self)
-        self.m_display = DisplayClient.CDisplayClient()
+        self.m_display = MyDisplayClient(self)
         self.m_moveCount = 0
         self.m_moverBoxRot = 0
         self.m_GraphData = []
+        self.m_textField = "A message from Python"
+        self._msgid = 9000
 
     def configureComponent(self, config):
        self.m_display.configureDisplayClient(config)
 
     def startComponent(self):
         self.m_display.connectIceClient(self)
+        self.m_display.installEventReceiver()
 
     def runComponent(self):
-        self.m_display.setHtml("v11n.python.setHtml", "001", "This is a message from V11nTestDisplayClient")
+        self.makeHtml()
+        self.makeHtmlForm()
         self.makePusher()
         self.makeSvgGraph()
         while self.isRunning():
             time.sleep(0.1)
             self.movePusher()
             self.updateSvgGraph()
+
+    def makeHtml(self):
+        # A multi-part HTML document.
+        # Parts will be added every time the form (setHtmlForm below) is submitted (see handleForm).
+        self.m_display.setHtml("v11n.python.setHtml", "001", "This is a message from V11nTestDisplayClient.");
+
+        # Test of gui elements
+        # Messages will be added to the document when events happen (see handleEvent).
+        #m_display.addCheckBox("v11n.python.setHtml", "cb.test.onoff", "Test On Off");
+        #m_display.addButton("v11n.python.setHtml", "button.test", "Test Button");
+
+    def makeHtmlForm(self):
+        # A simple form.
+        # Events will be handled in MyDisplayClient.handleForm().
+        # Form data will be retreived in MyDisplayClient.getFormData().
+        self.m_display.setHtmlForm("v11n.python.setHtmlForm", "101",
+              "Edit me: <input type='text' name='textfield' value='Empty' />");
+
+    # Called from handleForm() (after a form is submitted)
+    # Appends a text message (a html chunk) to an HTML object.
+    # Chunks are sorted by their string ID (but the order depends on C++ std::map implementation).
+    def appendMessage(self, message):
+        self._msgid += 1
+        self.m_display.setHtml("v11n.python.setHtml", "%04d" % self._msgid, "<br>" + message);
 
     def makePusher(self):
         f = open("subarchitectures/visualization.sa/src/c++/core/object/gllua/test/pusher.luagl")
