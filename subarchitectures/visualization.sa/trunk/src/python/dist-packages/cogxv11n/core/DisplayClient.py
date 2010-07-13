@@ -18,11 +18,30 @@
 import Ice
 from Visualization import *
 
+class _EventReceiverImpl (EventReceiver):
+    def __init__(self, displayClient):
+        self.m_Client = displayClient
+
+    def handleEvent(self, event, ctx):
+        if self.m_Client != None: self.m_Client.handleEvent(event)
+
+    def getControlState(self, ctx):
+        if self.m_Client != None: return self.m_Client.getControlState(ctrlId)
+        return "";
+
+    def handleForm(self, id, partId, fields, ctx):
+        if self.m_Client != None: self.m_Client.handleForm(id, partId, fields)
+
+    def getFormData(self, id, partId, fields, ctx):
+        if self.m_Client != None: return self.m_Client.getFormData(id, partId, fields)
+        return False
+
 class CDisplayClient:
     def __init__(self):
         self.m_ServerName = "display.srv"
         self.m_Server = None
         self.m_Owner = None
+        self._category = None
         pass
 
     def configureDisplayClient(self, config):
@@ -45,21 +64,36 @@ class CDisplayClient:
     def getEventClientId(self):
         id = Ice.Identity()
         id.name = self.getComponentId()
-        id.category = "Visualization.EventReceiver"
+        if self._category == None:
+            # same category as given by the C++ implementation (toServantCategory)
+            self._category = EventReceiver.ice_staticId().lstrip(":").replace("::", ".")
+        id.category = self._category # "Visualization.EventReceiver"
         return id
 
     def installEventReceiver(self):
-        pass
+        if self.m_Owner == None:
+            raise Exception("CDisplayClient: connectIceClient() must be called before installEventReciever().")
+        if self.m_Server == None:
+            self.log(" *** CDisplayClient: Server not connected.")
+            return
+        if self.m_EventReceiver != None:
+            self.log(" *** CDisplayClient: The client already has an EventReceiver.")
+            return
 
-    def setImage(self, id, videoImage)
+        iceid = self.getEventClientId()
+        self.m_EventReceiver = _EventReceiverImpl(self)
+        self.m_Owner.registerIceServer(EventReceiver, self.m_EventReceiver)
+        self.m_Server.addClient(iceid)
+
+    def setImage(self, id, videoImage):
         if self.m_Server == None: return
         self.m_Server.setImage(id, videoImage)
 
-    def setRawImage(self, id, width, height, channels, data)
+    def setRawImage(self, id, width, height, channels, data):
         if self.m_Server == None: return
         self.m_Server.setRawImage(id, width, height, channels, data)
 
-    def setCompressedImage(self, id, data)
+    def setCompressedImage(self, id, data):
         if self.m_Server == None: return
         self.m_Server.setCompressedImage(id, data)
 
@@ -83,4 +117,19 @@ class CDisplayClient:
     def setLuaGlObject(self, id, partId, script):
         if self.m_Server == None: return
         self.m_Server.setLuaGlObject(id, partId, script)
+
+    #----------------------------------------------------------------- 
+    # Active client callbacks - to be reimplemented
+    #----------------------------------------------------------------- 
+    def handleEvent(self, event):
+        pass
+
+    def getControlState(self):
+        return ""
+
+    def handleForm(self, id, partId, fields):
+        pass
+
+    def getFormData(self, id, partId, fields):
+        return False
 
