@@ -144,7 +144,7 @@ link_cast_component(${CAST_COMPONENT_NAME}
    VisualizationData Math Video VideoUtils
    ${QT_LIBRARIES}
    ${QT_QTSVG_LIBRARY}
-   ${QT_QTOPENGL_LIBRARY}
+   ${QT_QTOPENGL_LIBRARY} GL GLU
    ${TOMGINE_LIBS}
    boost_serialization-mt
    boost_iostreams-mt
