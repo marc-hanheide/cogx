@@ -3,6 +3,7 @@
 
 	<property name="projectroot.dir" value="${basedir}/../.." />
 	<property file="${projectroot.dir}/build.properties" />
+	<property name="output.dir" value="${projectroot.dir}/output/classes" />
 
    <!-- =================================================================== -->
    <!-- Add JAR files to classpath                                          -->
