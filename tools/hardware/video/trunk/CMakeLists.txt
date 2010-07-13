@@ -17,3 +17,6 @@ add_subdirectory(src/c++/utils)
 add_subdirectory(src/c++/components)
 add_subdirectory(src/c++/test)
 
+if(BUILD_PYTHON_COMPONENTS)
+   add_subdirectory(src/python/slicegen)
+endif(BUILD_PYTHON_COMPONENTS)
