@@ -95,9 +95,16 @@ endif(BUILD_SA_VISION_VIRTUALSCENE_TEST)
 
 option(BUILD_SA_VISION_OBJRECOGNIZER "build object recognizer" NO)
 if (BUILD_SA_VISION_OBJRECOGNIZER)
-add_subdirectory (src/c++/vision/components/ObjectRecognizer)
-add_subdirectory (src/python/ObjectRecognizer)
+   add_subdirectory (src/c++/vision/components/ObjectRecognizer)
+   if(BUILD_PYTHON_COMPONENTS)
+      # This is the old ObjectRecognizer that was implemented in Python
+      add_subdirectory (src/python/ObjectRecognizer)
+   endif(BUILD_PYTHON_COMPONENTS)
 endif (BUILD_SA_VISION_OBJRECOGNIZER)
+
+if(BUILD_PYTHON_COMPONENTS)
+   add_subdirectory (src/python/slicegen)
+endif(BUILD_PYTHON_COMPONENTS)
 
 option(BUILD_SA_VISION_OBJRECOGNIZER_3D "build Object Recognizer" NO)
 if (BUILD_SA_VISION_OBJRECOGNIZER_3D)
