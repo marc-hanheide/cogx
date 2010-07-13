@@ -28,6 +28,8 @@ class _Initializer:
     def addDistPackages(self):
         fp = os.path.join(castPythonDir, "dist-packages")
         if os.path.exists(fp): self.addSysPath(fp)
+        fp = os.path.join(castPythonDir, "dist-slicegen")
+        if os.path.exists(fp): self.addSysPath(fp)
 
 if __INITIALIZER == None:
     __INITIALIZER = _Initializer()
