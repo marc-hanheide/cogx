@@ -68,6 +68,10 @@ class Translator(object):
         domain = self.translate_domain(_problem.domain)
         return problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
 
+class ChainingTranslator(Translator):
+    def __init__(self, *deps):
+        self.depends = deps
+
 class IntermediateCompiler(Translator):
     def __init__(self, **kwargs):
         self.depends = []
@@ -581,14 +585,19 @@ class ObjectFluentCompiler(Translator):
         
     def translate_domain(self, _domain):
         predicates = []
+        functions = []
         for f in _domain.functions:
-            predicates.append(Predicate(f.name, [types.Parameter(p.name, p.type) for p in f.args] + [types.Parameter("?value", f.type)]))
+            if f.type != builtin.t_number:
+                predicates.append(Predicate(f.name, [types.Parameter(p.name, p.type) for p in f.args] + [types.Parameter("?value", f.type)]))
+            else:
+                functions.append(f)
 
+        functions = scope.FunctionTable(functions)
         predicates = scope.FunctionTable(predicates)
         for p in _domain.predicates:
             predicates.add(p)
 
-        dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), predicates, scope.FunctionTable(), [], [])
+        dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), predicates, functions, [], [])
         dom.requirements = _domain.requirements.copy()
         dom.requirements.discard("object-fluents")
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
@@ -744,6 +753,7 @@ class ModalPredicateCompiler(Translator):
             return _domain.copy()
 
         funcs = [f for f in _domain.functions if not f.builtin]
+
         new_preds = []
         for pred in modal:
             func_arg, compiled = self.compile_modal_args(pred.args, funcs)
@@ -788,6 +798,7 @@ class ModalPredicateCompiler(Translator):
                     dom.axioms.append(a2)
         dom.stratify_axioms()
         dom.name2action = None
+
         return dom
     
     def translate_problem(self, _problem):

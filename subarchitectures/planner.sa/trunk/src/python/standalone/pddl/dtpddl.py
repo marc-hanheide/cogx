@@ -1,18 +1,24 @@
 import itertools
 
-import predicates, conditions, effects, actions, scope, visitors, translators, writer, mapl
+import predicates, conditions, effects, actions, scope, visitors, translators, writer, domain, mapl
 import mapltypes as types
 import builtin
 
 from parser import ParseError, UnexpectedTokenError
 from mapltypes import Type, TypedObject, Parameter
 from predicates import Predicate, Function
-from builtin import t_object, t_boolean
+from builtin import t_object, t_boolean, t_number
 
 p = Parameter("?f", types.FunctionType(t_object))
 observed = Predicate("observed", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 
-modal_predicates = [observed]
+p = Parameter("?f", types.FunctionType(t_object))
+committed = Predicate("committed", [p], builtin=True)
+
+reward = Function("reward", [], t_number, builtin=True)
+
+modal_predicates = [observed, committed]
+functions = [reward]
 
 class ExecutionCondition(object):
     def __init__(self, action, args, negated=False):
@@ -185,6 +191,15 @@ class DTPDDLWriter(writer.Writer):
             
         return self.section(":observe", strings)
 
+    def write_percepts(self, preds):
+        strings = []
+        for pred in preds:
+            if not pred.builtin:
+                strings.append(self.write_predicate(pred))
+        if not strings:
+            return []
+        return self.section(":percepts", strings)
+    
     def write_domain(self, domain):
         strings = ["(define (domain %s)" % domain.name]
         strings.append("")
@@ -193,8 +208,13 @@ class DTPDDLWriter(writer.Writer):
         strings += self.write_types(domain.types.itervalues())
 
         strings.append("")
-        strings += self.write_predicates(domain.predicates)
+        #HACK: this should be done in a more elegant way...
+        strings += self.write_predicates([p for p in domain.predicates if not p.name.startswith("observed-")])
 
+        strings.append("")
+        #HACK: this should be done in a more elegant way...
+        strings += self.write_percepts([p for p in domain.predicates if p.name.startswith("observed-")])
+        
         strings.append("")
         strings += self.write_functions(domain.functions)
         
@@ -240,13 +260,17 @@ class DT2MAPLCompiler(translators.Translator):
             if isinstance(elem, conditions.LiteralCondition):
                 if elem.predicate != observed:
                     return [elem]
-            
+
+        @visitors.collect
+        def effect_visitor(elem, results):
+            if isinstance(elem, effects.ConditionalEffect):
+                return elem.condition.visit(atom_visitor)
+                
         sensable_atoms = []
         if observe.precondition:
             sensable_atoms += observe.precondition.visit(atom_visitor)
-        if isinstance(observe.effect, effects.ConditionalEffect):
-            sensable_atoms += observe.effect.condition.visit(atom_visitor)
-        
+        sensable_atoms += observe.effect.visit(effect_visitor)
+
         for a in domain.actions:
             match = can_observe(a)
             if not match:
@@ -255,6 +279,9 @@ class DT2MAPLCompiler(translators.Translator):
                 #sensor with no relation to a concrete action
                 #not yet supported
                 continue
+
+            self.annotations.append(a.name)
+            
             mapping = dict(zip(match.args, a.args))
             observe.instantiate(mapping)
             for atom in sensable_atoms:
@@ -278,14 +305,18 @@ class DT2MAPLCompiler(translators.Translator):
     def translate_domain(self, _domain):
         if "partial-observability" not in _domain.requirements:
             return _domain
-        
+
+        if 'observe_effects' not in translators.Translator.get_annotations(_domain):
+            translators.Translator.get_annotations(_domain)['observe_effects'] = []
+        self.annotations = translators.Translator.get_annotations(_domain)['observe_effects']
+            
         dom = _domain.copy()
         dom.requirements.discard("partial-observability")
 
         for o in dom.observe:
             self.translate_observable(o, dom)
 
-        dom.observe = None
+        dom.observe = []
         return dom
 
     def translate_problem(self, _problem):
@@ -294,3 +325,33 @@ class DT2MAPLCompiler(translators.Translator):
             return _problem
         p2 = problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
         return p2
+
+class DTPDDLCompiler(translators.Translator):
+    def __init__(self, **kwargs):
+        self.depends = [translators.MAPLCompiler(**kwargs)]
+        
+    def translate_domain(self, _domain):
+        if "partial-observability" not in _domain.requirements:
+            return _domain
+        
+        dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), _domain.predicates.copy(), _domain.functions.copy(), [], [])
+        dom.requirements = _domain.requirements.copy()
+
+        for func in modal_predicates:
+            dom.predicates.remove(func)
+        
+        p = Parameter("?f", types.FunctionType(t_object))
+        observed = Predicate("observed", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
+        p = Parameter("?f", types.FunctionType(t_object))
+        committed = Predicate("committed", [p], builtin=False)
+
+        dom.predicates.add(observed)
+        dom.predicates.add(committed)
+
+        dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
+        dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
+        dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
+        dom.stratify_axioms()
+        dom.name2action = None
+        return dom
+

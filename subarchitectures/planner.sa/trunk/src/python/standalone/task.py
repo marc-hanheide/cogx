@@ -31,6 +31,7 @@ class Task(object):
         self._action_blacklist = None
         self._action_whitelist = None
         self._plan = None
+        self.dtpddl_domain = None
         #for dt testing only
         self.dt_calls = 0
         self.dt_actions = 0
@@ -143,17 +144,22 @@ class Task(object):
             self.planner.continual_planning(self)
         return self.get_plan()
 
-    def problem_str(self, writer_class):
-        w = writer_class()
-        return "\n".join(w.write_problem(self.mapltask))
+    # def problem_str(self, writer_class):
+    #     w = writer_class()
+    #     return "\n".join(w.write_problem(self.mapltask))
 
-    def domain_str(self, writer_class):
-        w = writer_class()
-        return "\n".join(w.write_domain(self._mapldomain))
+    # def domain_str(self, writer_class):
+    #     w = writer_class()
+    #     return "\n".join(w.write_domain(self._mapldomain))
     
     def load_mapl_domain(self, domain_file):
         log.info("Loading MAPL domain %s.", domain_file)
         self._mapldomain = pddl.load_domain(domain_file)
+        
+        if "partial-observability" in self._mapldomain.requirements:
+            self.dtpddl_domain = self._mapldomain
+            self._mapldomain = pddl.dtpddl.DT2MAPLCompiler().translate(self._mapldomain)
+        
         
     def load_mapl_problem(self, task_file, agent_name=None):
         log.info("Loading MAPL problem %s.", task_file)
@@ -173,42 +179,99 @@ class Task(object):
         self.load_mapl_problem(task_file, agent_name)
 
 
-class PDDLWriter(pddl.writer.Writer):
-    def __init__(self):
-        self.compiler = pddl.translators.ADLCompiler()
-        self.problem = None
-        #self.compiler = mapl.translators.ModalPredicateCompiler()
-        
-    def write_problem(self, problem):
-        t0 = time.time()
-        p2 = self.compiler.translate(problem)
-        log.debug("total time for translation: %f", time.time()-t0)
-        return pddl.writer.Writer.write_problem(self, p2)
-
-    def write_domain(self, domain, problem=None):
-        if not problem:
-            dom = self.compiler.translate(domain)
-        else:
-            prob = self.compiler.translate(problem)
-            dom = prob.domain
+class PDDLOutput(object):
+    def __init__(self, writer=None, compiler=None):
+        self.compiler = compiler
             
-        return pddl.writer.Writer.write_domain(self, dom)
+        if writer:
+            self.writer = writer
+        else:
+            self.writer = pddl.writer.Writer()
 
-class TFDWriter(PDDLWriter):
+    def translate(self, problem, domain=None):
+        if not self.compiler:
+            if not domain:
+                domain = problem.domain
+            return domain, problem
+        
+        t0 = time.time()
+        if domain is not None and domain != problem.domain:
+            tr_dom = self.compiler.translate(domain)
+            tr_prob = self.compiler.translate(problem)
+        else:
+            tr_prob = self.compiler.translate(problem)
+            tr_dom = tr_prob.domain
+        log.debug("total time for translation: %f", time.time()-t0)
+        return tr_dom, tr_prob
+
+    def write(self, problem, domain=None, domain_fn=None, problem_fn=None):
+        tr_dom, tr_prob = self.translate(problem, domain)
+        dom_str = self.writer.write_domain(tr_dom)
+        prob_str = self.writer.write_problem(tr_prob)
+
+        if domain_fn is not None:
+            f = open(domain_fn, "w")
+            for l in dom_str:
+                f.write(l)
+                f.write("\n")
+            f.close()
+        if problem_fn is not None:
+            f = open(problem_fn, "w")
+            for l in prob_str:
+                f.write(l)
+                f.write("\n")
+            f.close()
+
+        return dom_str, prob_str
+
+class ADLOutput(PDDLOutput):
     def __init__(self):
+        self.writer = pddl.writer.Writer()
+        self.compiler = pddl.translators.ADLCompiler()
+    
+class TFDOutput(PDDLOutput):
+    def __init__(self):
+        self.writer = pddl.writer.Writer()
         self.compiler = TemporalTranslator()
 
-    
-class FDWriter(PDDLWriter):
-    def write_problem(self, problem):
-        t0 = time.time()
-        p2 = self.compiler.translate(problem)
-        self.mutex_groups = self.get_mutex_groups(p2, problem)
-        log.debug("total time for translation: %f", time.time()-t0)
-        return pddl.writer.Writer.write_problem(self, p2)
+class FDOutput(PDDLOutput):
+    def __init__(self):
+        self.writer = pddl.writer.Writer()
+        self.compiler = pddl.translators.ADLCompiler()
+        
+    def write(self, problem, domain=None, domain_fn=None, problem_fn=None, mutex_fn=None):
+        tr_dom, tr_prob = self.translate(problem, domain)
 
+        mutex_groups = self.get_mutex_groups(tr_prob, problem)
+        
+        dom_str = self.writer.write_domain(tr_dom)
+        prob_str = self.writer.write_problem(tr_prob)
+        mutex_str = self.write_mutex(mutex_groups)
+
+        if domain_fn is not None:
+            f = open(domain_fn, "w")
+            for l in dom_str:
+                f.write(l)
+                f.write("\n")
+            f.close()
+        if problem_fn is not None:
+            f = open(problem_fn, "w")
+            for l in prob_str:
+                f.write(l)
+                f.write("\n")
+            f.close()
+        if mutex_fn is not None:
+            f = open(mutex_fn, "w")
+            for l in mutex_str:
+                f.write(l)
+                f.write("\n")
+            f.close()
+
+        return dom_str, prob_str, mutex_str
+    
     def get_mutex_groups(self, prob, oldprob):
         groups = []
+
         for function in oldprob.functions:
             pred = prob.predicates.get(function.name, function.args+[function.type])
             fluents_combinations = state.product(*(prob.get_all_objects(a.type) for a in function.args))
@@ -225,9 +288,10 @@ class FDWriter(PDDLWriter):
         for g in mutex_groups:
             strings = []
             for atom in g:
-                strings.append(self.write_literal(atom))
-            groups += self.section("", strings)
-        return self.section("mutex", groups)
+                strings.append(self.writer.write_literal(atom))
+            groups += self.writer.section("", strings)
+        return self.writer.section("mutex", groups)
+
         
 
 class TemporalTranslator(pddl.translators.Translator):

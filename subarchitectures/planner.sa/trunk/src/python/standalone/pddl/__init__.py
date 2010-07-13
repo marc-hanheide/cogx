@@ -6,6 +6,7 @@ from mapltypes import Type, TypedObject, Parameter
 from predicates import Predicate, Function, Literal, Term, FunctionTerm, VariableTerm, ConstantTerm
 from conditions import LiteralCondition, Conjunction, Disjunction, ExistentialCondition, UniversalCondition
 from effects import SimpleEffect, ConjunctiveEffect, UniversalEffect, ConditionalEffect
+from actions import Action
 from domain import Domain
 from problem import Problem
 

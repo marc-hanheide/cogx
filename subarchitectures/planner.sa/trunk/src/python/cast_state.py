@@ -29,7 +29,7 @@ class CASTState(object):
         self.prob_state = prob_state.ProbabilisticState(self.facts, None)
         self.state = self.prob_state.determinized_state(0.1, 0.9)
 
-    def to_problem(self, cast_task, deterministic=True):
+    def to_problem(self, cast_task, deterministic=True, domain=None):
         if "action-costs" in self.domain.requirements:
             opt = "minimize"
             opt_func = pddl.FunctionTerm(pddl.builtin.total_cost, [])
@@ -37,12 +37,15 @@ class CASTState(object):
             opt = None
             opt_func = None
 
+        if domain is None:
+            domain = self.domain
+
         if deterministic:
             facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.state.iterfacts()]
         else:
             facts = self.facts
 
-        problem = pddl.Problem("cogxtask", self.objects, facts, None, self.domain, opt, opt_func )
+        problem = pddl.Problem("cogxtask", self.objects, facts, None, domain, opt, opt_func )
 
         if cast_task is None:
             return problem
@@ -57,7 +60,10 @@ class CASTState(object):
                 problem.goal.parts.append(pddl.conditions.PreferenceCondition(goal.importance, pddl_goal, problem))
 
         log.debug("goal: %s", problem.goal)
-        self.state.problem = problem
+        if deterministic:
+            self.state.problem = problem
+        else:
+            self.prob_state.problem = problem
         
         return problem
       

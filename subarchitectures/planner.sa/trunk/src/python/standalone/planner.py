@@ -307,13 +307,17 @@ class ContinualAxiomsFF(BasePlanner):
     def _prepare_input(self, _task):
         planning_tmp_dir =  global_vars.config.tmp_dir
         tmp_dir = get_planner_tempdir(planning_tmp_dir)
-        
+
         paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "plan.pddl", "stdout.out")]
-        pddl_strs = _task.domain_str(task.PDDLWriter), _task.problem_str(task.PDDLWriter)
-        for path, content in zip(paths, pddl_strs):
-            f = open(path, "w")
-            f.write(content)
-            f.close()
+        
+        w = task.ADLOutput()
+        w.write(_task.mapltask, domain_fn=paths[0], problem_fn=paths[1])
+        
+        # pddl_strs = _task.domain_str(task.PDDLWriter), _task.problem_str(task.PDDLWriter)
+        # for path, content in zip(paths, pddl_strs):
+        #     f = open(path, "w")
+        #     f.write(content)
+        #     f.close()
         return paths
 
     def _run(self, input_data, task):
@@ -380,16 +384,17 @@ class Downward(BasePlanner):
 
         paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "mutex.pddl", "output.sas", "output", "sas_plan", "stdout.out")]
 
-        w = task.FDWriter()
-        dom_str = "\n".join(w.write_domain(_task.mapltask.domain, _task.mapltask))
-        prob_str = "\n".join(w.write_problem(_task.mapltask))
-        mutex_str = "\n".join(w.write_mutex(w.mutex_groups))
-        pddl_strs = dom_str, prob_str, mutex_str
+        w = task.FDOutput()
+        w.write(_task.mapltask, domain_fn=paths[0], problem_fn=paths[1], mutex_fn=paths[2])
+        # dom_str = "\n".join(w.write_domain(_task.mapltask.domain, _task.mapltask))
+        # prob_str = "\n".join(w.write_problem(_task.mapltask))
+        # mutex_str = "\n".join(w.write_mutex(w.mutex_groups))
+        # pddl_strs = dom_str, prob_str, mutex_str
         
-        for path, content in zip(paths, pddl_strs):
-            f = open(path, "w")
-            f.write(content)
-            f.close()
+        # for path, content in zip(paths, pddl_strs):
+        #     f = open(path, "w")
+        #     f.write(content)
+        #     f.close()
         paths.append(tmp_dir)
         return paths
             

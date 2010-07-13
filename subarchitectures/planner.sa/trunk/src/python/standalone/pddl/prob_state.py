@@ -79,6 +79,26 @@ class ProbFact(Fact):
         values = ["%s (%.2f)" % (str(k), v) for k,v in self.value.iteritems() if v > 0]
         return "%s = {%s}" % (str(self.svar), ", ".join(values))
 
+    def to_init(self):
+        eff = self.to_effect()
+        if isinstance(eff, Literal):
+            if eff.predicate == assign:
+                eff.predicate = equal_assign
+            if eff.predicate == num_assign:
+                eff.predicate = num_equal_assign
+        return eff
+        
+    def to_effect(self):
+        effect_tups = []
+        for val, prob in self.value.iteritems():
+            if prob > 0:
+                eff = Fact(self.svar, val).as_literal(_class=effects.SimpleEffect)
+                if prob == 1.0:
+                    return eff
+                effect_tups.append((prob, eff))
+                
+        return effects.ProbabilisticEffect(effect_tups)
+                
     @staticmethod
     def from_effect(effect, state=None):
         if isinstance(effect, effects.SimpleEffect):
