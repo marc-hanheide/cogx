@@ -171,6 +171,33 @@ IplImage* convertImageToIplGray(const Video::Image & img)
   return grayImg;
 }
 
+void convertImageToGrayBytes(const Video::Image & img, std::vector<unsigned char>& data)
+{
+  // colour channel scaling factors, taken from OpenCV cvcolor.cpp
+  const float cscGr_32f = 0.299;
+  const float cscGg_32f = 0.587;
+  const float cscGb_32f = 0.114;
+  const long kBits   = 10;
+  const long kDiv    = 0x01l << kBits;
+  const long kRed    = (long) (kDiv * cscGr_32f);
+  const long kGreen  = (long) (kDiv * cscGg_32f);
+  const long kBlue   = (long) (kDiv * cscGb_32f);
+
+  data.resize(img.height * img.width);
+  unsigned char* pData = &data[0];
+  unsigned char* pImg = (unsigned char*)&img.data[0];
+  
+  for(int y = 0; y < img.height; y++) {
+    for(int x = 0; x < img.width; x++) {
+      long rf = (long)*pImg++;
+      long gf = (long)*pImg++;
+      long bf = (long)*pImg++;
+      *pData = (unsigned char) ((kRed*rf + kGreen*gf + kBlue*bf) >> kBits);
+      pData++;
+    }
+  }
+}
+
 void SwapRedBlueChannel(Video::Image & img)
 {
   unsigned char t;

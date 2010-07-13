@@ -58,6 +58,12 @@ IplImage* convertBytesToIpl(const std::vector<unsigned char>& data, int width, i
 IplImage* convertImageToIplGray(const Video::Image & image);
 
 /**
+ * @brief Convert from framework image type to grayscale contiguous bytes.
+ * (IplImage). \n
+ */
+void convertImageToGrayBytes(const Video::Image & image, std::vector<unsigned char>& data);
+
+/**
  * @brief Converts an OpenCV image type (IplImage) to a system Image format. \n
  * note: If img is of appropriate size already, no extra memory allocation takes \n
  * place.
