@@ -110,11 +110,9 @@ def gen_fact_tuples(beliefs):
         assert isinstance(fval_dist, distribs.BasicProbDistribution)
         assert feat == fval_dist.key
         value = fval_dist.values
-        print feat
         
         if isinstance(value, distribs.FormulaValues):
           for valpair in value.values:
-            print valpair.val
             val = feature_val_to_object(valpair.val)
             if val is not None:
               log.debug("%s = %s:%.2f", feat, val, valpair.prob)
@@ -129,7 +127,6 @@ def gen_fact_tuples(beliefs):
     assert False, "class %s of %s not supported" % (str(type(dist)), str(dist))
 
   for bel in beliefs:
-    print "belief id:", bel.id
     factdict = defaultdict(list)
     for feat, val, prob in extract_features(bel.content):
       factdict[str(feat)].append((val, prob))
@@ -142,7 +139,7 @@ def gen_fact_tuples(beliefs):
     else:
       elems = []
       i=0
-      while ("element%d" % i) in factdict:
+      while ("val%d" % i) in factdict:
         el_vals = factdict["val%d" % i]
         assert len(el_vals) == 1, "valN features in relations must have exactly one possible value"
         elems.append(el_vals[0][0])
@@ -196,7 +193,9 @@ def tuples2facts(fact_tuples):
       assert feature_label in current_domain.predicates
       func = current_domain.predicates.get(feature_label, ftup.args)
 
-    assert isinstance(func, pddl.Function), "Error looking up %s(%s), got %s" % (feature_label, ", ".join(map(str, ftup.args)), str(func))
+    if not isinstance(func, pddl.Function):
+      log.warning("Error looking up %s(%s), got %s", feature_label, ", ".join(map(str, ftup.args)), str(func))
+      continue
       
     if len(ftup.values) == 1:
       yield state.Fact(state.StateVariable(func, ftup.args), ftup.values[0][0])
@@ -284,81 +283,3 @@ def infer_types(obj_descriptions):
     objects.add(obj)
 
   return objects
-
-def generate_mapl_task(task_desc, state, domain_fn):
-  global current_domain, belief_dict
-  task = Task(task_desc.id)
-  
-  task.load_mapl_domain(domain_fn)
-  current_domain = task._mapldomain
-
-  belief_dict = dict((b.id, b) for b in state)
-  
-  obj_descriptions = list(unify_objects(filter_unknown_preds(gen_fact_tuples(state))))
-  
-  objects = infer_types(obj_descriptions)
-  task.namedict = rename_objects(objects)
-  task.beliefdict = belief_dict
-
-  facts = list(tuples2facts(obj_descriptions))
-
-  if "action-costs" in current_domain.requirements:
-    opt = "minimize"
-    opt_func = pddl.FunctionTerm(pddl.builtin.total_cost, [])
-  else:
-    opt = None
-    opt_func = None
-
-  problem = pddl.Problem("cogxtask", objects, [], None, task._mapldomain, opt, opt_func )
-
-  problem.goal = pddl.conditions.Conjunction([], problem)
-  for goal in task_desc.goals:
-    goalstrings = transform_goal_string(goal.goalString, task.namedict).split("\n")
-    pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
-    if goal.importance < 0:
-      problem.goal.parts.append(pddl_goal)
-    else:
-      problem.goal.parts.append(pddl.conditions.PreferenceCondition(goal.importance, pddl_goal, problem))
-
-  log.debug("goal: %s", problem.goal)
-
-  task._mapltask = problem
-  task.set_state(prob_state.ProbabilisticState(facts, problem).determinized_state(0.1, 0.9))
-
-  log.debug(str(task.get_state()))
-  
-  return task  
-
-def generate_mapl_state(task, state):
-  global current_domain, belief_dict
-  current_domain = task._mapldomain
-  
-  belief_dict = dict((b.id, b) for b in state)
-  
-  obj_descriptions = list(unify_objects(filter_unknown_preds(gen_fact_tuples(state))))
-  
-  objects = infer_types(obj_descriptions)
-  task.namedict = rename_objects(objects)
-  task.beliefdict = belief_dict
-
-  facts = list(tuples2facts(obj_descriptions))
-  state = prob_state.ProbabilisticState(facts, task.mapltask).determinized_state(0.1, 0.9) 
-
-  log.debug(str(state))
-  
-  return objects, state
-
-
-def map2binder_rep(plan, task):
-  assert task.namedict, "task has no namedict"
-  nd = task.namedict
-  print "nd:", nd
-  new_plan = plan.copy()
-  for anode in new_plan.all_actions():
-    for a in anode.args:
-      print a.name, ":", nd.get(a, a.name)
-    print "old action", anode
-    anode.args = [nd.get(a, a.name) for a in anode.args]
-    print "new action", anode
-  return new_plan
-  

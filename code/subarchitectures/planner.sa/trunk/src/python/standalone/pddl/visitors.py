@@ -40,6 +40,8 @@ def collect(f):
     
     def collect_visitor(elem, results):
         result = f(elem, results)
+        if isinstance(elem, effects.ProbabilisticEffect):
+            results = [e for p,e in results]
         if result:
             if not isinstance(result, list):
                 return [result]

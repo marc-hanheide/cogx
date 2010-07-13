@@ -100,21 +100,21 @@ class Writer(object):
         return "(%s %s) - %s" % (func.name, self.write_typelist(func.args), self.write_type(func.type))
     
     def write_predicates(self, preds):
-        if not preds:
-            return []
         strings = []
         for pred in preds:
             if not pred.builtin:
                 strings.append(self.write_predicate(pred))
+        if not strings:
+            return []
         return self.section(":predicates", strings)
 
     def write_functions(self, funcs):
-        if not funcs:
-            return []
         strings = []
         for func in funcs:
             if not func.builtin:
                 strings.append(self.write_function(func))
+        if not strings:
+            return []
         return self.section(":functions", strings)
     
     def write_action(self, action):
@@ -183,6 +183,13 @@ class Writer(object):
             strings = self.write_effect(effect.effect)
             cond = self.write_condition(effect.condition)
             return self.section("when", cond + strings)
+        elif isinstance(effect, effects.ProbabilisticEffect):
+            strings = []
+            for p,e in effect.effects:
+                p_str = self.write_term(p)
+                e_str = self.write_effect(e)
+                strings += self.section(p_str, e_str, parens=False)
+            return self.section("probabilistic", strings)
 
         assert False, effect
             

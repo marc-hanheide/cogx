@@ -72,6 +72,9 @@ class Function(object):
         args = parse_arg_list(it, types)
         return Function(name, args, type)
 
+    def is_modal(self):
+        return any(isinstance(a.type, FunctionType) for a in self.args)
+    
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.hash == other.hash and self.name == other.name \
             and self.type == other.type and all(map(lambda a,b: a == b, self.args, other.args))
@@ -436,6 +439,9 @@ class FunctionTerm(Term):
             candidates = table[name.token.string]
             c_str = "\n  ".join(str(p) for p in candidates)
             raise ParseError(name.token, "no matching function or predicate found for (%s %s). Candidates are:\n  %s" % (name.token.string, type_str, c_str))
+        
+        if func.is_modal():
+            raise ParseError(name.token, "nested modal predicates are not allowed.")
 
         return FunctionTerm(func, args)
 

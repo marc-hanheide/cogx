@@ -90,6 +90,7 @@ import beliefs_ice
 from autogen import Planner
 import cast.core
 
+import standalone
 from standalone import pddl, plans
 from standalone.pddl import state
 
@@ -97,6 +98,7 @@ from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
 
 from cast_state import CASTState
+from dt_problem import DTProblem
 
 this_path = abspath(dirname(__file__))
 
@@ -205,9 +207,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
 
     problem_fn = abspath(join(this_path, "problem%d.mapl" % task.taskID))
-    f = open(problem_fn, "w")
-    f.write(task.problem_str(pddl.mapl.MAPLWriter))
-    f.close()
+    w = standalone.task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
+    w.write(task.mapltask, problem_fn=problem_fn)
     
     task.replan()
     self.deliver_plan(task)
@@ -240,7 +241,11 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     if self.show_dot:
       log.info("Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh")
       show_dot_script = abspath(join(this_path, "show_dot.sh"))
-      os.system("%s %s" % (show_dot_script, dot_fn)) 
+      os.system("%s %s" % (show_dot_script, dot_fn))
+
+    if task.dtpddl_domain is not None:
+        log.info("creating dt task")
+        dtproblem = DTProblem(plan, task.dtpddl_domain, task.cast_state)
     
     ordered_plan = plan.topological_sort()
     outplan = []

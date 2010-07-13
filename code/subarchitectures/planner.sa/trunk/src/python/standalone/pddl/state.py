@@ -139,7 +139,7 @@ class StateVariable(object):
                 args.append(it.next())
         return args
 
-    def as_literal(self):
+    def as_literal(self, _class=None):
         """Return a representation of this StateVariable as a Literal.
         
         If this StateVariable's function is not a Predicate and no
@@ -147,16 +147,21 @@ class StateVariable(object):
         assert isinstance(self.function, Predicate) or self.modality is not None
         
         if not self.modality:
-            return Literal(self.function, [ConstantTerm(a) for a in self.args])
-        fterm = FunctionTerm(self.function, [ConstantTerm(a) for a in self.args])
-        args = []
-        it = iter(self.modal_args)
-        for parg in self.modality.args:
-            if isinstance(parg.type, FunctionType):
-                args.append(fterm)
-            else:
-                args.append(ConstantTerm(it.next()))
-        return Literal(self.modality, args)
+            lit = Literal(self.function, [ConstantTerm(a) for a in self.args])
+        else:
+            fterm = FunctionTerm(self.function, [ConstantTerm(a) for a in self.args])
+            args = []
+            it = iter(self.modal_args)
+            for parg in self.modality.args:
+                if isinstance(parg.type, FunctionType):
+                    args.append(fterm)
+                else:
+                    args.append(ConstantTerm(it.next()))
+            lit = Literal(self.modality, args)
+
+        if _class is not None:
+            lit.__class__ = _class
+        return lit
         
     def __str__(self):
         s = "%s(%s)" % (self.function.name, " ".join(a.name for a in self.args))
@@ -263,6 +268,12 @@ class Fact(tuple):
     
     svar = property(lambda self: self[0])
     value = property(lambda self: self[1])
+
+    def to_effect(self):
+        return self.as_literal(_class=effects.SimpleEffect)
+
+    def to_init(self):
+        return self.as_literal(useEqual=True)
     
     def as_literal(self, useEqual=False, _class=None):
         """Return a representation of this Fact as a Literal."""
@@ -276,10 +287,21 @@ class Fact(tuple):
             
             assert False
 
-        if useEqual:
-            op = equal_assign
+        if _class == conditions.LiteralCondition:
+            if self.value.is_instance_of(t_number):
+                op = eq
+            else:
+                op = equals
+        elif useEqual:
+            if self.value.is_instance_of(t_number):
+                op = num_equal_assign
+            else:
+                op = equal_assign
         else:
-            op = assign
+            if self.value.is_instance_of(t_number):
+                op = num_assign
+            else:
+                op = assign
             
         l = Literal(op, [Term(self.svar.function, [Term(a) for a in self.svar.args]), Term(self.value)])
         if _class:

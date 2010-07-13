@@ -132,6 +132,7 @@ class Domain(Scope):
         if "partial-observability" in requirements:
             import dtpddl
             preds.add(dtpddl.modal_predicates)
+            functions.add(dtpddl.functions)
             
         domain = None
             

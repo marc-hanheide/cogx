@@ -249,7 +249,7 @@ class ProbabilisticEffect(Effect):
         if not new_scope:
             new_scope = self.scope
         if new_parts:
-            return ProbabilisticEffect([(p, eff.copy(new_scope, copy_instance=copy_instance)) for p,eff in self.new_parts])
+            return ProbabilisticEffect([(p, eff.copy(new_scope, copy_instance=copy_instance)) for p,eff in new_parts])
         else:
             return ProbabilisticEffect([(p, eff.copy(new_scope, copy_instance=copy_instance)) for p,eff in self.effects])
 
@@ -291,10 +291,10 @@ class ProbabilisticEffect(Effect):
 
         for elem in it:
             try:
-                pddl_elem = predicates.Term.parse(elem, scope)
-            except:
                 pddl_elem = Effect.parse(iter(elem), scope, timed_effects, only_simple)
-                
+            except Exception, e:
+                pddl_elem = predicates.Term.parse(elem, scope)
+
             parsed_elements.append(pddl_elem)
             token_dict[pddl_elem] = elem.token
 
@@ -310,6 +310,7 @@ class ProbabilisticEffect(Effect):
                 effects.append((next_prob, elem))
                 next_prob = None
             else:
+                print elem
                 raise UnexpectedTokenError(token_dict[elem], "probability or effect")
             
         return ProbabilisticEffect(effects)
@@ -371,12 +372,14 @@ class SimpleEffect(predicates.Literal, Effect):
         ops = [builtin.assign]
         if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
             ops += builtin.numeric_ops
-
+        
         scope.predicates.add(ops)
         scope.predicates.remove(builtin.equals)
-        literal = predicates.Literal.parse(it.reset(), scope)
-        scope.predicates.remove(ops)
-        scope.predicates.add(builtin.equals)
+        try:
+            literal = predicates.Literal.parse(it.reset(), scope)
+        finally:
+            scope.predicates.remove(ops)
+            scope.predicates.add(builtin.equals)
 
         if literal.predicate in ops and literal.negated:
             raise ParseError(first, "Can't negate fluent assignments.")
