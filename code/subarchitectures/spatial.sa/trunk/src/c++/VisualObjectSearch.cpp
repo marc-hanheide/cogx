@@ -1379,7 +1379,7 @@ bool isCircleFree2D(const Cure::LocalGridMap<unsigned char> &map, double xW, dou
 
     /*Checking if a point in x,y is reachable */
 
-    for (double rad = 0; rad < M_PI * 2; rad = rad + M_PI / 13) {
+    for (double rad = 0; rad < M_PI * 2; rad = rad + M_PI / 18) {
       angles.push_back(rad);
     }
     int i = 0;
@@ -1407,7 +1407,7 @@ bool isCircleFree2D(const Cure::LocalGridMap<unsigned char> &map, double xW, dou
       sample.first = randx;
       sample.second = randy;
 
-      if (!haspoint && (*m_lgm)(randx, randy) == '0' && isCircleFree2D(*m_lgm, xW, yW, 0.5)) {
+      if (!haspoint && (*m_lgm)(randx, randy) == '0' && isCircleFree2D(*m_lgm, xW, yW, 0.3)) {
         /*if reachable*/
         // Get the indices of the destination coordinates
         //	log("point reachable");
@@ -1489,32 +1489,8 @@ PostNavCommand(pos,SpatialData::GOTOPOSITION);*/
       m_lgm->index2WorldCoords(m_samples[y * 2], m_samples[2 * y + 1], a.x, a.y);
       a.theta = m_samplestheta[y];
       tpoints = GetInsideViewCone(a, true);
-    //  cout << "view cone got " << tpoints.size() << endl;
-  
- /*   vector < vector<double> > sampled2Dpoints;
-    double xW1,yW1;
-    for(int i= 0; i < tpoints.size() / 2; i++){
-      vector<double> point;
-      m_lgm->index2WorldCoords(tpoints[i * 2], tpoints[i * 2 + 1], xW1, yW1);
-      point.push_back(xW1);
-      point.push_back(yW1);
-      point.push_back(1.4);
-      sampled2Dpoints.push_back(point);
+      ViewConePts.push_back(tpoints);
     }
-    pbVis->Add3DPointCloud(sampled2Dpoints);
-*/
-
-    ViewConePts.push_back(tpoints);
-    candidatePose.setX(a.x);
-    candidatePose.setY(a.y);
-    candidatePose.setTheta(m_samplestheta[y]);
-    //log("CurrentPose.Theta : %f", candidatePose.getTheta());
-    //candidatePoses.push_back(candidatePose);
-    }
-    /*log("View Cones calculated.");
-      if (m_Displaykrsjlgm == 0)
-      m_Displaykrsjlgm = new Cure::X11DispLocalGridMap<unsigned char>(*m_lgm);*/
-
     return ViewConePts;
   }
 
@@ -1634,10 +1610,11 @@ VisualObjectSearch::SensingAction VisualObjectSearch::SampleAndSelect(){
   Sample2DGrid();
   log("getting view cones");
   VCones = GetViewCones();
-  double highest_sum = -10000.0;
+  log("got viewcones");
   double sum;
-  int highest_VC_index = 0;
   int x, y;
+  vector< pair<unsigned int,double> > orderedVClist, tmp;
+  vector<unsigned int>::iterator it;
   for (unsigned int i = 0; i < VCones.size(); i++) {
     sum = 0;
     for (unsigned int j = 0; j < VCones[i].size() / 2; j++) {
@@ -1645,21 +1622,29 @@ VisualObjectSearch::SensingAction VisualObjectSearch::SampleAndSelect(){
       y = VCones[i][2 * j + 1];
       sum += (*m_lgmpdf)(x, y);
     }
-    if (sum > highest_sum) {
-      highest_sum = sum;
-      highest_VC_index = i;
+    if(orderedVClist.size() == 0){
+      orderedVClist.push_back(make_pair(i,sum));
+    }
+    else {
+      bool inserted = false;
+      tmp = orderedVClist;
+      for(unsigned int j = 0; j < tmp.size(); j++){
+	if (sum >= orderedVClist[j].second){
+	  inserted = true;
+	  orderedVClist.insert(orderedVClist.begin()+j,make_pair(i,sum));
+	  break;
+	}
+      }
+      if(!inserted){
+	log("pushing back");
+	orderedVClist.push_back(make_pair(i,sum));
+  }
     }
   }
-
-  std::pair<double,double> best2DconeW;
-  double pan = m_samplestheta[highest_VC_index];
-  m_lgm->index2WorldCoords(m_samples[2*highest_VC_index],m_samples[2*highest_VC_index +1], best2DconeW.first, best2DconeW.second); 
-
-  cout << "highest sum is: " << highest_sum << " " << "for view cone at: " << best2DconeW.first << "," << best2DconeW.second << ", pan = " << pan << endl ;
+for (unsigned int j=0; j < orderedVClist.size(); j++)
+  cout << orderedVClist[j].first << "," << orderedVClist[j].second << "," << endl;
 
   pair<int,int> tiltRange(40,-40);
-  std::vector< pair<int,int> > freespace;
-  std::vector< std::vector<double> >  visualizationpoints;
   SensingAction sample;
   std::vector <SensingAction> samplepoints;
 
@@ -1668,90 +1653,30 @@ VisualObjectSearch::SensingAction VisualObjectSearch::SampleAndSelect(){
     angles.push_back(rad);
   }
 
-  unsigned int i = 0;
-  while (i< angles.size()){
-    //double randomTilt = ((rand() % (tiltRange.first + abs(tiltRange.second))) - abs(tiltRange.second))*M_PI/180;
-    double randomTilt = angles[i];
-    std::vector<double> coord;
-   
-   // coord.push_back(m_SlamRobotPose.getX());
-   // coord.push_back(m_SlamRobotPose.getY());
-     coord.push_back(best2DconeW.first);
-    coord.push_back(best2DconeW.second);
-    coord.push_back(cameraheight);
-    visualizationpoints.push_back(coord);
-    SensingAction sample;
-    sample.pos = coord;
-    sample.pan = m_samplestheta[highest_VC_index];
-    //sample.pan = m_SlamRobotPose.getTheta();
-    sample.tilt= randomTilt;
-    samplepoints.push_back(sample);
-    i++;
+  double xW, yW;
+  for (unsigned int j =0; j < orderedVClist.size() / 20; j++){
+    m_lgm->index2WorldCoords(m_samples[2*orderedVClist[j].first], m_samples[2*orderedVClist[j].first + 1], xW, yW);
+
+    for (unsigned int i =0; i< angles.size(); i++){
+      std::vector<double> coord;
+     // coord.push_back(m_SlamRobotPose.getX());
+     // coord.push_back(m_SlamRobotPose.getY());
+     coord.push_back(xW);
+      coord.push_back(yW);
+      coord.push_back(cameraheight);
+      SensingAction sample;
+      sample.pos = coord;
+      sample.pan = m_samplestheta[orderedVClist[j].first];
+     // sample.pan = m_SlamRobotPose.getTheta();
+      sample.tilt= angles[i];
+      samplepoints.push_back(sample);
+    }
   }
-    // add this for visualization
-  pbVis->Add3DPointCloud(visualizationpoints);
+
   int bestConeIndex = GetViewConeSums(samplepoints);
   return samplepoints[bestConeIndex];
 
 }
-
-//Get X number of samples
-
-/*    srand(time(NULL));
-      int i = 0;
-      while (i< m_samplesize){
-      int randomPos = rand() % freespace.size();
-      double randomTilt = ((rand() % (tiltRange)) - tiltRange/2.0)*M_PI/180;
-      double randomPan = (rand() % 360 - 180)*M_PI/180;
-
-      pair<int,int> samplepoint(freespace[randomPos].first,freespace[randomPos].second);
-//  pair<int,int> samplepoint(rand() % xGrid,rand() % yGrid);
-// Convert cure coordinates to Bloxel Grid coordinates
-int bloxelX = samplepoint.first + m_gridsize/2;
-int bloxelY = samplepoint.second + m_gridsize/2;
-pair<double,double> worldCoords = m_map->gridToWorldCoords(bloxelX,bloxelY);
-
-if (isCircleFree(worldCoords.first, worldCoords.second, 0.5) && (*m_lgm)(samplepoint.first,samplepoint.second) == '0'){
-//cout << "sample point: " << samplepoint.first << "," << samplepoint.second << endl;
-//check if the sample point too close to an obstacle by a box query 
-//cout << "bloxel world coords : " << worldCoords.first << "," << worldCoords.second << endl;
-double xW,yW;           
-m_lgm->index2WorldCoords(samplepoint.first,samplepoint.second,xW,yW);
-std::vector<double> coord;
-//cout << "cure world coords : " << xW << "," << yW << endl;
-coord.push_back(xW);
-coord.push_back(yW);
-coord.push_back(cameraheight);
-visualizationpoints.push_back(coord);
-SensingAction sample;
-sample.pos = coord;
-sample.pan = randomPan;
-sample.tilt= randomTilt;
-
-samplepoints.push_back(sample);
-i++;
-// add this for visualization
-}
-}
-pbVis->Add3DPointCloud(visualizationpoints);
-
-NavData::ObjectSearchPlanPtr obs = new NavData::ObjectSearchPlan;
-for(unsigned int i = 0; i < samplepoints.size(); i++){
-
-SensingAction nbv = samplepoints[i];
-Add plan to PB BEGIN */
-//	NavData::ViewPoint viewpoint;
-//        viewpoint.pos.x = nbv.pos[0];
-//        viewpoint.pos.y = nbv.pos[1];
-//        viewpoint.pos.z = nbv.pos[2];
-//	viewpoint.pan = nbv.pan;
-//	viewpoint.tilt = nbv.tilt;
-//        obs->planlist.push_back(viewpoint);
-/* Add plan to PB END 
-   }*/
-
-
-//   addToWorkingMemory(newDataID(), obs);
 
 int VisualObjectSearch::GetViewConeSums(std::vector <SensingAction> samplepoints){
   debug("Querying cones");
@@ -1996,7 +1921,7 @@ void VisualObjectSearch::Recognize() {
 	objectSize = 0.35;
       }
       m_minDistance = 0.5*objectSize/tan(0.5*m_vertangle);
-      if (m_minDistance < 0.5) m_minDistance = 0.5;
+//      if (m_minDistance < 0.5) m_minDistance = 0.5;
       m_conedepth = m_minDistance * 4;
       if (m_conedepth > 5.0) m_conedepth = 5.0;
       log("Current target changed to: %s, conedepth %f" , currentTarget.c_str(), m_conedepth);

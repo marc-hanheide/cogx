@@ -331,16 +331,6 @@ namespace spatial
     }
   }
 
-  void AdvObjectSearch::SaveSearchPerformance(std::string result){
-    ofstream out("performancelog.txt",ios_base::app);
-    //    char buf[1024];
-    double dif = difftime(endtime,starttime);
-    out << m_SearchMode << " took " << dif << " seconds with " << m_totalViewPoints << " view points" << "-- " << result << endl;
-    //sprintf(buf,"%s search took %.2lf seconds with %d view points",m_SearchMode.c_str,dif,m_totalViewPoints);
-    //out.write(buf,sizeof(buf)/sizeof(char));
-    out.close();
-    
-  }
 void AdvObjectSearch::DetectionComplete(bool isDetected){
   m_gotDetectionResult = true;
   if (isDetected){
@@ -348,10 +338,8 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     m_isDetected = true;
     // if we are doing indirect search then ask & initialize next object
     if (m_CurrentTarget == "rice"){
-      time(&endtime);
       log("Object Detected, Mission Completed.");
       m_command = IDLE;
-      SaveSearchPerformance("successful");
     }
     else if (m_SearchMode == "indirect" && m_CurrentTarget != "rice"){
       log("detected, changing current target to rice, asking for distribution.");
@@ -585,7 +573,6 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         addRecognizer3DCommand(VisionData::RECOGNIZE,"printer","");
       }
       else if (key == 'u') { // u
-	time(&starttime);
         ResetSeenMap();
 	m_totalViewPoints = 0;
         m_SearchMode = "uniform";
@@ -598,7 +585,6 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         m_command = ASK_FOR_DISTRIBUTION;
       }
       else if (key == 'd') { // d
-	time(&starttime);
         m_SearchMode = "direct";
         ResetSeenMap();
 	m_totalViewPoints = 0;
@@ -612,7 +598,6 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         m_command = ASK_FOR_DISTRIBUTION;
       }
       else if (key == 'i') { // i
-	time(&starttime);
 	pIn = 0.8;
 	pOut = 0.2;
         ResetSeenMap();
@@ -656,8 +641,6 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         m_command=IDLE;
         if (isStopSearch(0.7)){
           log("Search failed.");
-	  time(&endtime);
-	  SaveSearchPerformance("failed");
         }
         else{
           GoToNBV();

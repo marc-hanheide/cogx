@@ -8,6 +8,8 @@ project (SPATIALSA)
 set(CMAKE_VERBOSE_MAKEFILE true)
 
 # Include dirs
+include_directories(~/projects/rocs-toolkit/david/src)
+include_directories(${COGX_ROOT}/subarchitectures/nav.sa/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)

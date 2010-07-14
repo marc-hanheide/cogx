@@ -854,12 +854,12 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	m_objects[obsLabel] = new SpatialData::SpatialObject;
 	m_objects[obsLabel]->label = obsLabel;
 	m_objects[obsLabel]->pose = pose;
-	//FIXME: This is a pure, unadulterated hack
-	if (obsLabel == "bookcase_lg") {
-	  Matrix33 flip;
-	  fromRotZ(flip, M_PI);
-	  m_objects[obsLabel]->pose.rot = flip*pose.rot;
-	}
+//	//FIXME: This is a pure, unadulterated hack
+//	if (obsLabel == "bookcase_lg") {
+//	  Matrix33 flip;
+//	  fromRotZ(flip, M_PI);
+//	  m_objects[obsLabel]->pose.rot = flip*pose.rot;
+//	}
       }
 
       if (m_objectModels.find(obsLabel) == m_objectModels.end()) {
@@ -878,7 +878,8 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	//      log("3");
 	if (obsObject->type == OBJECT_PLANE ||
 	    //FIXME
-	    obsLabel == "table") {
+	    obsLabel == "table" || obsLabel == "bookcase_sm" ||
+	    obsLabel == "bookcase_lg") {
 	  // Flatten pose for plane objects
 	  if (pose.rot.m00 == 0.0 && pose.rot.m10 == 0.0) {
 	    setIdentity(pose.rot);
@@ -1475,6 +1476,8 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 
     //Fill it
     string supportObjectLabel = request->objects.back();
+    log("SupportObject: %s", supportObjectLabel.c_str());
+
     spatial::Object *supportObject;
 
     //Look for the base object in the requested hierarchy.
