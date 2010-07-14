@@ -3,6 +3,7 @@ include_directories(.)
 #include_directories(../../../binder/src/c++)
 include_directories(${COGX_ROOT}/tools/beliefs/apis/beliefs/src/cpp/autogen)
 include_directories(${COGX_ROOT}/tools/beliefs/apis/beliefs+cast/src/cpp/autogen)
+include_directories(${COGX_ROOT}/tools/cogxutils/src/c++/autogen)
 include(Slice2Cpp)
 
 
@@ -19,7 +20,7 @@ find_package(Boost 1.35.0 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_cast_component(WMControl WMControl.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} Planner)
+link_cast_component(${CAST_COMPONENT_NAME} Planner BeliefsCogX)
 link_cast_component(${CAST_COMPONENT_NAME} ${Boost_LIBRARIES})
 
 add_subdirectory(dtplanner)
