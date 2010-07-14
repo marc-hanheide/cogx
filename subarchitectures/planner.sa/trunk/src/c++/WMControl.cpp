@@ -4,12 +4,13 @@
 #include <sstream>
 #include <cassert>
 #include <boost/foreach.hpp>
+#include "beliefs_cogx.hpp"
 
 using namespace std;
 using namespace de::dfki::lt::tr::beliefs::slice;
 using namespace de::dfki::lt::tr::beliefs::slice::sitbeliefs;
 using namespace de::dfki::lt::tr::beliefs::slice::logicalcontent;
-//using namespace eu::cogx::beliefs::slice;
+using namespace eu::cogx::beliefs::slice;
 using namespace cast::cdl;
 
 extern "C" {
@@ -53,7 +54,7 @@ void WMControl::start() {
     addChangeFilter(cast::createLocalTypeFilter<Action>(cast::cdl::OVERWRITE), 
 		    new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::actionChanged));
 
-    addChangeFilter(cast::createGlobalTypeFilter<dBelief>(cast::cdl::WILDCARD),
+    addChangeFilter(cast::createGlobalTypeFilter<GroundedBelief>(cast::cdl::WILDCARD),
             new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::stateChanged));
 
     connectToPythonServer();
@@ -127,7 +128,6 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
     TASK_ID++;
 
     autogen::Planner::PlanningTaskPtr task = getMemoryEntry<autogen::Planner::PlanningTask>(wmc.address);
-    log(task->goals[0]->goalString);
 
     log("Goals:");
     BOOST_FOREACH(GoalPtr g, task->goals) {
