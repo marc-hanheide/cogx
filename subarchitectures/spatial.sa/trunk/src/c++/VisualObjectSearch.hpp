@@ -76,6 +76,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
       void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
       void PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
+      void PostViewCone();
       void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID);
       void newVisualObject(const cast::cdl::WorkingMemoryChange &objID);
       void owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID);
@@ -86,6 +87,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void SaveCureMapToFile();
       void LoadSpatialRelations(std::string filename);
 
+      void SaveSearchPerformance(std::string result);
       void Recognize();
       void GoToNBV();
       void InterpretCommand();
@@ -97,8 +99,9 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void InitializePDF();
       void InitializePDF(double initprob);
       void InitializePDFForObject(double initprob, const std::string &);
+      void PopulateLGMap();
 
-      void DetectionComplete(bool isDetected);
+      void DetectionComplete(bool isDetected, std::string detectedObject = "");
       void MovePanTilt(double pan, double tilt, double tolerance);
 
       /* Functions for 2D evaluation */
@@ -146,19 +149,28 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
 	PAUSED,
 	STOPPED
       };
+
+      bool m_bSimulation;
+
       std::string currentTarget;
+      std::string targetObject;
       SearchMode currentSearchMode;
+      std::string indirect_middle_object;
       std::vector<ObjectPairRelation> searchChain;
       int searchChainPos;
 
       std::string m_PbHost;
+      std::vector<std::string> m_objectlist;
+
+      std::vector<std::string> m_recognizedobjects;
       AVSCommand m_command;
+      int m_totalViewPoints;
       int m_waitingCount;
       SensingAction m_currentVP;
       std::vector<ObjectRelations> objectData;
       std::vector<SensingAction> exploredActions;
       VisualPB_Bloxel* pbVis;
-
+      double m_turnangle;
       ptz::PTZInterfacePrx m_ptzInterface;
       IceUtil::Mutex m_Mutex;
       Cure::Pose3D m_SlamRobotPose;
@@ -171,6 +183,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       std::set<std::string> waitingForObjects;
 //      bool isWaitingForDetection;
       bool isSearchFinished;
+      int viewCount;
 
       int m_samplesize;
     double* m_samplestheta;
@@ -184,6 +197,8 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       double m_minDistance;
       double m_minbloxel;
       double m_mapceiling;
+     
+      
       static void savemap( GtkWidget *widget, gpointer   data );
       static void readmap( GtkWidget *widget, gpointer   data );
 
@@ -198,6 +213,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       GtkWidget *savebutton,*readbutton,*direct_uninformed, *direct_informed,*indirect;
       GtkWidget *hbox;
 
+      bool m_showconemap;
       bool m_usePTZ;
       bool m_savemapmode;
       bool m_maploaded;
