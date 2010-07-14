@@ -214,7 +214,7 @@ def findMatchingObject(image, region=None):
             saveImage(image, "xdata/cast_objrecog_%04d.png" % imid)
         features = Setup.extractor.extractFeatures(image)
         matches = _findMatchingObject(features)
-        fout = open('tmp/or_model_distrib.html', 'w')
+        fout = open('/tmp/or_model_distrib.html', 'w')
         fout.write("<table>")
         if len(matches) > 1:
             for i,m in enumerate(matches[0]):
