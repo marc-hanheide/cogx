@@ -36,6 +36,47 @@ block before the first subarchitecture in CMakeLists.txt:
 Finally run \code{ccmake} and set \code{BUILD\_SA\_V11N} to \code{ON} to enable
 the visualization subarchitecture.
 
+\subsection{Java client interface}
+
+To build the Java client interface add the following to the main build.xml file:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   <target name="template" depends="init">
+      ...
+      <ant target="${target}" dir="subarchitectures/visualization.sa" />
+      ...
+   </target>
+\end{Verbatim}
+
+\subsection{Python client interface}
+
+The Python client interface is installed as part of the CMake installation
+process. To enable the installation the following steps should be performed:
+
+\begin{enumerate}
+   \item Add to \verb|svn:externals| of the CogX root directory:
+
+   \begin{Verbatim}[fontsize=\scriptsize,gobble=6]
+      ^/code/tools/python/trunk         tools/python
+   \end{Verbatim}
+
+   \item Perform an update get tools/python and cmake/PythonBuild.cmake:
+
+   \begin{Verbatim}[fontsize=\scriptsize,gobble=6]
+      svn update
+   \end{Verbatim}
+
+   \item Add at the beginning of the main CMakeLists.txt file, \\
+   somewhere {\em after} {\scriptsize \verb|set(CMAKE_INSTALL_PREFIX ...)|}:
+
+   \begin{Verbatim}[fontsize=\scriptsize,gobble=6]
+      include(cmake/PythonBuild.cmake)
+   \end{Verbatim}
+
+   \item Check that the option \verb|BUILD_PYTHON_COMPONENTS| is ON when
+   running \verb|ccmake|.
+
+\end{enumerate}
 
 \section{General operation}
 
