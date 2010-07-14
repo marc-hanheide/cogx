@@ -25,7 +25,7 @@ add_definitions(-Wall)
 
 add_subdirectory (tools/d-lib)
 
-
+include(cmake/PythonBuild.cmake) 
 
 option(BUILD_BELIEFS "Build beliefs" YES)
 if(BUILD_BELIEFS)
@@ -37,7 +37,6 @@ endif(BUILD_BELIEFS)
 option(BUILD_SA_VIZ "Build visualization subarchitecure" NO)
 if(BUILD_SA_VIZ)
 include(subarchitectures/visualization.sa/cmake/v11n.cmake) 
-add_subdirectory (subarchitectures/visualization.sa)
 endif(BUILD_SA_VIZ)
 
 option(BUILD_SA_BINDING "Build binder subarchitecure" NO)
@@ -49,6 +48,11 @@ option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" NO)
 if(BUILD_SA_MOTIVATION)
 add_subdirectory (subarchitectures/motivation.sa)
 endif(BUILD_SA_MOTIVATION)
+
+option(BUILD_SA_DIALOGUE "Build dialogue subarchitecure" NO)
+if(BUILD_SA_DIALOGUE)
+add_subdirectory (subarchitectures/dialogue.sa)
+endif(BUILD_SA_DIALOGUE)
 
 
 option(BUILD_HAL_ROBOT "Build hardware robotbase" YES)

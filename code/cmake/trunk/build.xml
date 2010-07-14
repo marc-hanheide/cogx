@@ -37,6 +37,12 @@
 	<condition property="build.coma_sa">
 		<equals arg1="${build_sa_coma}" arg2="ON" />
 	</condition>
+	<condition property="build.dialogue_sa">
+		<equals arg1="${build_sa_dialogue}" arg2="ON" />
+	</condition>
+	<condition property="build.visualization_sa">
+		<equals arg1="${build_sa_visualization}" arg2="ON" />
+	</condition>
 
 	<target name="sa.binder" if="build.binding_sa">
 	  <ant target="${target}" dir="subarchitectures/binder" />
@@ -47,8 +53,14 @@
 	<target name="sa.coma" if="build.coma_sa">
 	  <ant target="${target}" dir="subarchitectures/coma.sa" />
 	</target>
+	<target name="sa.dialogue" if="build.dialogue_sa">
+	  <ant target="${target}" dir="subarchitectures/dialogue.sa" />
+	</target>
 	<target name="sa.vision" if="build.vision_sa">
 	  <ant target="${target}" dir="subarchitectures/vision.sa" />
+	</target>
+	<target name="sa.visualization" if="build.visualization_sa">
+	  <ant target="${target}" dir="subarchitectures/visualization.sa" />
 	</target>
 	<target name="sa.planner" if="build.planner_sa">
 	  <ant target="${target}" dir="subarchitectures/planner.sa" />
@@ -71,6 +83,9 @@
 		<ant target="${target}" dir="tools/hardware/video" />
 		<ant target="${target}" dir="tools/hardware/blobfinder" />
 
+		<antcall target="sa.visualization">
+		  <param name="target" value="${target}" />
+		</antcall>
 		<antcall target="sa.binder">
 		  <param name="target" value="${target}" />
 		</antcall>
@@ -78,6 +93,9 @@
 		  <param name="target" value="${target}" />
 		</antcall>
 		<antcall target="sa.coma">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.dialogue">
 		  <param name="target" value="${target}" />
 		</antcall>
 		<antcall target="sa.vision">
@@ -89,12 +107,6 @@
 		<antcall target="sa.motivation">
 		  <param name="target" value="${target}" />
 		</antcall>
-		<!-- <ant target="${target}" dir="subarchitectures/binder" /> -->
-		<!-- <ant target="${target}" dir="subarchitectures/spatial.sa" /> -->
-		<!-- <ant target="${target}" dir="subarchitectures/vision.sa" />  -->
-		<!-- <ant target="${target}" dir="subarchitectures/planner.sa" /> -->
-		<!-- <ant target="${target}" dir="subarchitectures/coma.sa" />  -->
-		<!-- <ant target="${target}" dir="subarchitectures/motivation.sa" /> -->
 	</target>
 
 
