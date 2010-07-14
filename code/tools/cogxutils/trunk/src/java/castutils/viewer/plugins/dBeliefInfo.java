@@ -23,7 +23,7 @@ public class dBeliefInfo implements Plugin {
 		Belief<dBelief> belief = Belief.create(dBelief.class,
 				(dBelief) iceObject);
 		String agentStatus = belief.getStatus().getClass().getSimpleName();
-		extraInfo.add("Status: " + agentStatus);
+		extraInfo.add(belief.getId()+": Status: " + agentStatus);
 		extraInfo.add("Type: " + belief.getType());
 
 		// try to convert into an IndependentFormulaDistributionsBelief
