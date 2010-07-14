@@ -1,3 +1,5 @@
+import os
+
 from standalone import task, pddl, plans
 from standalone.pddl import dtpddl, mapl, translators, visitors
 
@@ -15,7 +17,9 @@ class DTProblem(object):
         dom_str, prob_str = DTPDDLOutput().write(self.problem)
         print "\n".join(dom_str)
         print "\n".join(prob_str)
-        
+
+    def write_dt_input(self, domain_fn, problem_fn):
+        DTPDDLOutput().write(self.problem, domain_fn=domain_fn, problem_fn=problem_fn)
 
     def subplan_active(self, plan):
         if not self.subplan_actions:
@@ -23,7 +27,10 @@ class DTProblem(object):
         
         for pnode in plan.topological_sort():
             if pnode in self.subplan_actions:
-                return True
+                if pnode.status == plans.ActionStatusEnum.EXECUTED:
+                    self.subplan_actions.remove(pnode)
+                else:
+                    return True
             if pnode.status != plans.ActionStatusEnum.EXECUTED:
                 return False
         assert False, "DT-Subplan actions no longer in plan!"
@@ -37,6 +44,8 @@ class DTProblem(object):
         goal_svars = set()
         #combine consecutive observe actions into one subtask.
         for pnode in plan.topological_sort():
+            if pnode.status == plans.ActionStatusEnum.EXECUTED:
+                continue
             if pnode.action.name in observe_actions:
                 print pnode.action.name
                 print map(str, pnode.effects)

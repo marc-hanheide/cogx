@@ -31,7 +31,6 @@ class Task(object):
         self._action_blacklist = None
         self._action_whitelist = None
         self._plan = None
-        self.dtpddl_domain = None
         #for dt testing only
         self.dt_calls = 0
         self.dt_actions = 0
