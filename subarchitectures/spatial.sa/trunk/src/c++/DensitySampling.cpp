@@ -1379,13 +1379,16 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
 //    map.worldToGridCoords(center.x - xExtent*interval - kernelRadius, 
 //	center.y - yExtent*interval - kernelRadius);
   const pair<int, int> mapMax = 
-    make_pair<int,int>(map.getMapSize().first, map.getMapSize().second);
+    make_pair<int,int>(map.getMapSize().first-1, map.getMapSize().second-1);
 //    map.worldToGridCoords(center.x + xExtent*interval + kernelRadius, 
 //	center.y + yExtent*interval + kernelRadius);
 
   double total = 0.0;
   // Loop over columns in bounding box
+  cout << "Finding correct KDE weight...";
+
   for (int x = mapMin.first; x <= mapMax.first; x++) {
+    cout << (100*x)/(mapMax.first - mapMin.first + 1) << "% ";
     for (int y = mapMin.second; y <= mapMax.second; y++) {
       // Column center world coords
       pair<double, double> columnWorldXY =
@@ -1404,11 +1407,15 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
       vector<vector<double> >sampleWeights;
       vector<double> columnXYSqDiffs;
 
+      double minZ = DBL_MAX;
+      double maxZ = -DBL_MAX;
       for (vector<Vector3>::const_iterator sampleIt = centers.begin();
 	  sampleIt != centers.end(); sampleIt++) {
 	const Vector3 &center = *sampleIt;
-	const double minZ = center.z - zExtent*interval - kernelRadius;
-	const double maxZ = center.z + zExtent*interval + kernelRadius;
+	const double lowerZ = center.z - zExtent*interval - kernelRadius;
+	if (lowerZ < minZ) minZ = lowerZ;
+	const double upperZ = center.z + zExtent*interval + kernelRadius;
+	if (upperZ > maxZ) maxZ = upperZ;
 
 	for (int sampleX = -xExtent; sampleX <= xExtent; sampleX++) {
 	  double wsx = sampleX * interval + center.x;
@@ -1430,63 +1437,58 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
 		  sampleZValues.back().push_back(center.z + interval*sampleZ);
 		  sampleWeights.back().push_back(values[indexOffset + sampleZ + zExtent]);
 		}
-		SpatialGridMap::GDAddKDE columnKDEFunctor(kernelRadius,
-		    sampleZValues,
-		    sampleWeights,
-		    columnXYSqDiffs,
-		    baseMultiplier);
-
 		//	      map.boxSubColumnModifier(x,y,minZ,maxZ, columnKDEFunctor);
-		map.alignedBoxQuery(x,x,y,y,minZ,maxZ, columnKDEFunctor, false);
-		total += columnKDEFunctor.getTotal();
 	      }
 	    }
 	  }
 	}
       }
-      map.tryMergeColumn(x,y);
+      SpatialGridMap::KDEVolumeQuery volumeFunctor
+	(kernelRadius,
+	 sampleZValues,
+	 sampleWeights,
+	 columnXYSqDiffs);
+      map.alignedBoxQuery(x,x,y,y,minZ,maxZ, volumeFunctor, false);
+      total += volumeFunctor.getTotal();
     }
   }
 
-  double error = (total - totalWeight);
+  cout << "Summed KDE adjusted volume: " << total;
 
-  if (abs(error) > 0.001 && total != 0) {
-    // Need to do a second pass to adjust total value
-    // Assume the second pass will make proportionally the same changes
-    // NOTE: May not be the case with merging! But whatever.
+  const double adjustmentMultiplier = totalWeight/total;
 
-    // We did it once with baseMultiplier. That yielded a change mass = 'total'.
-    // The true modification mass factor is thus (total/baseMultiplier).
-    // We need to modify the total mass by another (-error). 
+  total = 0.0;
 
-    const double adjustmentMultiplier = -error * (baseMultiplier/total);
-    cout << "Total weight " << total << " different from target: " <<
-      totalWeight << "; re-doing with factor " << adjustmentMultiplier << endl;
+  cout << "\nApplying KDE... ";
+  for (int x = mapMin.first; x <= mapMax.first; x++) {
+    cout << (100*x)/(mapMax.first - mapMin.first + 1) << "% ";
+    for (int y = mapMin.second; y <= mapMax.second; y++) {
+      // Column center world coords
+      pair<double, double> columnWorldXY =
+	map.gridToWorldCoords(x, y);
 
-    for (int x = mapMin.first; x <= mapMax.first; x++) {
-      for (int y = mapMin.second; y <= mapMax.second; y++) {
-	// Column center world coords
-	pair<double, double> columnWorldXY =
-	  map.gridToWorldCoords(x, y);
+      vector<vector<double> >sampleZValues;
+      vector<vector<double> >sampleWeights;
+      vector<double> columnXYSqDiffs;
 
-	vector<vector<double> >sampleZValues;
-	vector<vector<double> >sampleWeights;
-	vector<double> columnXYSqDiffs;
+//      // If we're supplied with a lgm, and the column is in unknown space,
+//      // skip it
+//      if (lgm != 0) {
+//	int lgmX, lgmY;
+//	lgm->worldCoords2Index(columnWorldXY.first, columnWorldXY.second, lgmX, lgmY);
+//	if ((*lgm)(lgmX, lgmY) == '2') 
+//	  continue;
+//      }
 
-      // If we're supplied with a lgm, and the column is in unknown space,
-      // skip it
-      if (lgm != 0) {
-	int lgmX, lgmY;
-	lgm->worldCoords2Index(columnWorldXY.first, columnWorldXY.second, lgmX, lgmY);
-	if ((*lgm)(lgmX, lgmY) == '2') 
-	  continue;
-      }
-
+      double minZ = DBL_MAX;
+      double maxZ = -DBL_MAX;
       for (vector<Vector3>::const_iterator sampleIt = centers.begin();
 	  sampleIt != centers.end(); sampleIt++) {
 	const Vector3 &center = *sampleIt;
-	const double minZ = center.z - zExtent*interval - kernelRadius;
-	const double maxZ = center.z + zExtent*interval + kernelRadius;
+	const double lowerZ = center.z - zExtent*interval - kernelRadius;
+	if (lowerZ < minZ) minZ = lowerZ;
+	const double upperZ = center.z + zExtent*interval + kernelRadius;
+	if (upperZ > maxZ) maxZ = upperZ;
 
 	for (int sampleX = -xExtent; sampleX <= xExtent; sampleX++) {
 	  double wsx = sampleX * interval + center.x;
@@ -1508,22 +1510,21 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
 		  sampleZValues.back().push_back(center.z + interval*sampleZ);
 		  sampleWeights.back().push_back(values[indexOffset + sampleZ + zExtent]);
 		}
-		SpatialGridMap::GDAddKDE columnKDEFunctor(kernelRadius,
-		    sampleZValues,
-		    sampleWeights,
-		    columnXYSqDiffs,
-		    adjustmentMultiplier);
-
-		map.alignedBoxQuery(x,x,y,y,minZ,maxZ, columnKDEFunctor, false);
-//		map.boxSubColumnModifier(x,y,minZ,maxZ, columnKDEFunctor);
-		total += columnKDEFunctor.getTotal();
 	      }
 	    }
 	  }
 	}
       }
-	map.tryMergeColumn(x,y);
-      }
+      SpatialGridMap::GDAddKDE columnKDEFunctor(kernelRadius,
+	  sampleZValues,
+	  sampleWeights,
+	  columnXYSqDiffs,
+	  adjustmentMultiplier);
+
+      map.alignedBoxQuery(x,x,y,y,minZ,maxZ, columnKDEFunctor, false);
+      //		map.boxSubColumnModifier(x,y,minZ,maxZ, columnKDEFunctor);
+      total += columnKDEFunctor.getTotal();
+      map.tryMergeColumn(x,y);
     }
   }
 

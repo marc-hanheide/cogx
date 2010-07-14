@@ -169,52 +169,61 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 
   SpatialData::Completion result;
   SpatialData::StatusError status;
+  log("SpatialTranslation: %i", __LINE__);
   if(translateCommand(cmd.second, *ctrl, status)){
     // ok, execution in progress
     result = SpatialData::COMMANDINPROGRESS;
+  log("SpatialTranslation: %i", __LINE__);
   }else{
     // fail :(
     result = SpatialData::COMMANDFAILED;
+  log("SpatialTranslation: %i", __LINE__);
   }
 	
   // Report fail/in_progress
+  log("SpatialTranslation: %i", __LINE__);
   m_Tasks.lock();
+  log("SpatialTranslation: %i", __LINE__);
   if(!m_Tasks.m_Abort){
     // This way we make sure we dont overwrite an "abort" completion
+  log("SpatialTranslation: %i", __LINE__);
     changeNavCmdCompletion(cmd.first, result, status);
   }
+  log("SpatialTranslation: %i", __LINE__);
   if(result == SpatialData::COMMANDFAILED) m_Tasks.m_Executing = false;
   m_Tasks.unlock();
+  log("SpatialTranslation: %i", __LINE__);
 
   // If task failed, dont go on
   if(result == SpatialData::COMMANDFAILED){
     return;
   }
 	
+  log("SpatialTranslation: %i", __LINE__);
   // Post the nav ctrl command then
   string navCtrlCmdId = newDataID();
   string navCmdId = cmd.first;
 		
   Rendezvous *rv = new Rendezvous(*this);
 	
+  log("SpatialTranslation: %i", __LINE__);
   rv->addChangeFilter(
-		      createChangeFilter<NavData::InternalNavCommand>(cdl::OVERWRITE,
-								  "", // src
-								  navCtrlCmdId, // change id
-								  subarchitectureID(), // change sa
-								  cdl::LOCALSA)); // local
+		      createLocalTypeFilter<NavData::InternalNavCommand>(cdl::OVERWRITE)); // local
 
+  log("SpatialTranslation: %i", __LINE__);
   // This listens to the current nav command completion field
   rv->addChangeFilter(
-		      createChangeFilter<SpatialData::NavCommand>(cdl::OVERWRITE,
-							      "", navCmdId, getSubarchitectureID(), cdl::LOCALSA));
+		      createLocalTypeFilter<SpatialData::NavCommand>(cdl::OVERWRITE));
+  log("SpatialTranslation: %i", __LINE__);
 	
 	
   bool some_error = false;
   bool aborted = false;
 	
   // This is in case the abort signal arrives before adding the last filter
+  log("SpatialTranslation: %i", __LINE__);
   if(!m_Tasks.m_Abort){	
+  log("SpatialTranslation: %i", __LINE__);
     // Send command
     addToWorkingMemory<NavData::InternalNavCommand>(navCtrlCmdId, ctrl);
 		
@@ -222,9 +231,9 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
     cdl::WorkingMemoryChange change;
     bool finished = false;
     while(!aborted && !some_error && !finished){
-      debug("before rv wait...");
+      log("before rv wait...");
       change = rv->wait();
-      debug("after rv wait");
+      log("after rv wait");
 			
       debug("Change:");
       debug("::type");
@@ -855,11 +864,15 @@ void SpatialTranslation::changeNavCmdCompletion(const std::string &id,
   SpatialData::NavCommandPtr newcmd;
   bool stop = false;
 
+  log("SpatialTranslation.cpp: %i", __LINE__);
   try {
     lockEntry(id, cdl::LOCKEDODR);
+  log("SpatialTranslation.cpp: %i", __LINE__);
     pcmd = getWorkingMemoryEntry<SpatialData::NavCommand>(id);	
+  log("SpatialTranslation.cpp: %i", __LINE__);
   } catch (DoesNotExistOnWMException) {
     debug("changeNavCmdCompletion called for nonexistent NavCommand");
+  log("SpatialTranslation.cpp: %i", __LINE__);
     return;
   }
   while(!stop){
@@ -868,22 +881,27 @@ void SpatialTranslation::changeNavCmdCompletion(const std::string &id,
     newcmd->status = status;
 
     try {
+  log("SpatialTranslation.cpp: %i", __LINE__);
       overwriteWorkingMemory<SpatialData::NavCommand>(id, newcmd);
       log(std::string("Overwrote Nav Command: ") + id);
       stop = true;
     }catch(ConsistencyException){
 
+  log("SpatialTranslation.cpp: %i", __LINE__);
       // repeat only if the completion we are setting is 
       // more important than the one set				
       pcmd = getWorkingMemoryEntry<SpatialData::NavCommand>(id);
       stop = (completion <= pcmd->getData()->comp);
     }catch(DoesNotExistOnWMException){
+  log("SpatialTranslation.cpp: %i", __LINE__);
       // we can get an exception for trying to update an already
       // deleted entry (because it was aborted)
       stop = true;
     }
   }
+  log("SpatialTranslation.cpp: %i", __LINE__);
   unlockEntry(id);
+  log("SpatialTranslation.cpp: %i", __LINE__);
 }
 
 // ----------------------------------------------------------------------------
