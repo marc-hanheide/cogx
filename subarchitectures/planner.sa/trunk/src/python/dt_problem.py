@@ -67,7 +67,8 @@ class DTProblem(object):
             domain.add(svar.get_args())
             
             val = pddl.Parameter("?val", svar.function.type)
-            a = pddl.Action("commit-%s" % svar.function.name, [val], None, None, domain)
+            name = "commit-%s-%s" % (svar.function.name, "-".join(a.name for a in svar.get_args()))
+            a = pddl.Action(name, [val], None, None, domain)
             
             a.precondition = pddl.LiteralCondition(dtpddl.committed, [term], a, negated=True)
             commit_effect = pddl.SimpleEffect(dtpddl.committed, [term], a)
