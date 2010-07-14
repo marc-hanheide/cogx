@@ -1,0 +1,77 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# The mood of a clause is projected as early as possible. i.e. we don't wait for the verb.
+# Instead, the first 'core' element of the clause does this
+#   Indicative: a free standing, clause initial NP
+#   Imperative: a base form verb wanting a subject (see below for dropped subjects)
+#   Interrogative: auxillaries in Y/N & Wh-words in Wh cases
+#                 (see udc.ccg , verb-finite.ccg and verb-copula.ccg for more)  
+# See documentation for more information.
+
+# This file contains the mood rules for:
+#    1) indicatives 
+#          -standard: I gave the ball to GJ
+#          -fronted object: the mug I took myself but 'the ball I gave to GJ'
+#          - ellided subject:  I walked in  'gave the ball to GJ'
+#    2) standard positive imperatives: 'come here' 
+#    3) and dependent clauses: I said that 'I wanted it'
+
+
+  def SUBJECT(args)         { <Subject>(S:entity args) }
+
+  rule {
+    
+     no typeraise;  # b/c rules handle the building of standard indicative and subordiante clauses, no need for type-raise
+                    # (from another perspective, the rules below at semantics to this standard syntatic rule)
+
+     no sub;        # THIS ADDED TO KILL STUPID COLLAPSED ARG READINGS 'put this on the table' with this & table co-indexed.
+  
+  
+     # These rules create indicative clauses out of any old NP, either as the subject (in Systemic Functional Grammar sense)
+     # or as a Fronted-object as in 'this one I dont like'
+     #   
+     typechange: subj() $1     => 
+                 from-s(s-ind ) /  ( s(VFORM:fin-clause s-minor) +subj() )  $1   
+                 : EVENT( IND() SUBJECT() )             ; 
+    
+  #   typechange: np<12>[F acc nf-real] $1    =>
+  #               from-s(s-ind)  /  ( s(VFORM:fin-clause s-minor) +subj(nf-real) / np<12>[F]) /^ subj()  $1 
+  #               : EVENT( IND() SUBJECT() <Fronted>(F) ); 
+    
+     # this rule creates a dependent, moodless clause with MOOD=s-dependent (the form mimics that of ind above)
+     # It can be marked by 'that', 'if', 'whether', etc or not as in 'I hope you come'
+     #
+   #  typechange: subj() $1  =>  
+   #              from-s(s-dependent ) /  ( s(VFORM:fin-clause s-minor) +subj() )  $1      
+   #              : EVENT( SUBJECT() ) ;
+     
+   } # end rule
+
+   # These rules turn verbs wanting subjects into 1) imperatives and 
+   #                                              2) verbs with contextually 'ellighted' (i.e. dropped) subjects
+   # In verbs.ccg, each family makes a 'call' to this rule, creating a separate rule for that argument 
+   # structure/configuration 
+   # 
+   def imp-rule(args){ 
+        rule { typechange: s(vf-to-imp) +subj(nf-real) args     =>
+                           from-s(fin-full s-imp) args      : EVENT( IMP() SUBJECT(addressee) );  
+
+ #             typechange: s(fin) +subj(nf-real) args           => 
+ #                          from-s(fin-ell s-ind-ell) args   : EVENT( IND() SUBJECT(context) )  ;    
+             } 
+   }						 
+
+   def imp-set-rule(args){ 
+        rule { typechange: s(vf-to-imp) +subj(nf-real) {args}     =>
+                           from-s(fin-full s-imp) {args}      : EVENT( IMP() SUBJECT(addressee) );  
+
+ #             typechange: s(fin) +subj(nf-real) {args}           => 
+ #                          from-s(fin-ell s-ind-ell) {args}   : EVENT( IND() SUBJECT(context) )  ;    
+             } 
+    }						 
+ 
+   # Modifications:
+   # JULY 24  ADDED restriction that nf-real to block presentational, clefts, etc from getting contextualized missing 'dummy' subject readings
+   # AUG  5   ADDED vf-to-imp value, this allows verbs to  lexically select whether or not they receive an imp 
+   #                (see verb and verb-no-imp dictionary macros below)         
+   #
