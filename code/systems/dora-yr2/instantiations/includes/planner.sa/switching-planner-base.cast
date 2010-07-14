@@ -1,6 +1,5 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer --log --debug  --nodot --dtdomain test3.domain.pddl --dtproblem test3.problem.pddl
+COMPONENT PYTHON PlannerPythonServer PythonServer --log --debug  --nodot --domain dttest1.mapl 
 COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
-#COMPONENT PYTHON PlannerPythonServer PythonServer --domain springtest.mapl --log
 
 SUBARCHITECTURE planner.sa
 
