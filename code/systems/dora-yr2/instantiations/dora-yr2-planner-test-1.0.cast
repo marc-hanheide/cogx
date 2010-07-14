@@ -1,6 +1,5 @@
 HOST localhost
 
-
 # spatial #####################################################################
 INCLUDE includes/spatial.sa/spatial-blobfinder.cast
 INCLUDE includes/spatial.sa/spatial-ptz.cast
@@ -33,7 +32,6 @@ INCLUDE includes/spatial.sa/spatial-mediator.cast
 #JAVA MG  comsys-execution comsys.motivation.ComsysActionInterface
 
 # planning and motivation #####################################################
-#INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/planner.cast
 INCLUDE includes/planner.sa/fake-motivation.cast
@@ -45,11 +43,10 @@ INCLUDE includes/planner.sa/fake-motivation.cast
 # exection ####################################################################
 #JAVA MG  manual-execution execution.components.GraphicalExecutionManager
 
-
 # viewing and debugging #######################################################
 
 JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, castutils.slice.WMMap"
 
-
-
-
+# visualization ###############################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+INCLUDE includes/planner.sa/viz-plan.cast
