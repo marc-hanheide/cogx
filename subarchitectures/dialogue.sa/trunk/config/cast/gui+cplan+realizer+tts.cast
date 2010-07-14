@@ -1,0 +1,13 @@
+HOST localhost
+SUBARCHITECTURE dialogue
+
+JAVA WM			cast.architecture.SubarchitectureWorkingMemory
+JAVA TM			cast.architecture.AlwaysPositiveTaskManager
+JAVA MG	gui	de.dfki.lt.tr.cast.dialogue.DialogueGUI --log true
+JAVA MG	parser	de.dfki.lt.tr.cast.dialogue.IncrStringParser --grammar ./resources/grammars/openccg/moloko.v6/grammar.xml --log true
+JAVA MG	irecog	de.dfki.lt.tr.cast.dialogue.IntentionManager --ruleset ./resources/rules/abduction/intentions-basic/index.txt --log true
+JAVA MG cplan	de.dfki.lt.tr.cast.dialogue.ContentPlanner --domainFile ./resources/contentplanning/allRuleFiles.trf --contentRel Content --log true
+JAVA MG realize	de.dfki.lt.tr.cast.dialogue.CCGRealizer --ccg ./resources/grammars/openccg/moloko.v6/grammar.xml --log true
+#JAVA GD speech.synth   de.dfki.lt.tr.cast.dialogue.MaryTTS --startserver --serverHost localhost --serverPort 59125 --voice cmu-slt-hsmm --log true --rawMaryXmlHeader /Users/janicek/Work/cogx-dfki/subarchitectures/comsys/src/java/comsys/components/tts/RAWMARYXMLhead.xml --writeXmlTo /Users/janicek/Work/cogx-dfki/subarchitectures/comsys/maryXML/ --delXml true #--debug true
+#JAVA MG tts	de.dfki.lt.tr.cast.dialogue.MaryTTS --startserver --serverGist localhost --serverPort 59125 --voice cmu-slt-hsmm --log true
+#JAVA GD speech.synth   comsys.components.tts.cc_TTS --startserver --serverHost localhost --serverPort 59125 --voice cmu-slt-hsmm --log true --rawMaryXmlHeader ./subarchitectures/comsys/src/java/comsys/components/tts/RAWMARYXMLhead.xml --writeXmlTo ./subarchitectures/comsys/maryXML/ --delXml true #--debug true
