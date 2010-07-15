@@ -28,7 +28,7 @@ import castutils.viewer.plugins.Plugin;
 public class V11WMViewerComponent extends ManagedComponent {
 
 	final WMEntrySet entrySet;
-	final private MyDisplayClient displayHandler = new MyDisplayClient();
+	final private MyDisplayClient displayClient = new MyDisplayClient();
 	final Map<Class<?>, Plugin> objectDispatcherMap = new HashMap<Class<?>, Plugin>();
 
 	private class MyDisplayClient extends DisplayClient implements
@@ -41,7 +41,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 				WorkingMemoryChange wmc, ObjectImpl newEntry,
 				ObjectImpl oldEntry) throws CASTException {
 			getLogger().info("entryChanged");
-			
+
 			switch (wmc.operation) {
 			case ADD:
 			case OVERWRITE:
@@ -75,15 +75,15 @@ public class V11WMViewerComponent extends ManagedComponent {
 		}
 
 		public void updateView() {
-			String tableHtml = "<table frame=\"border\" border=\"1\" rules=\"all\">" +
-					"<tr><th>NEW?</th><th>address</th><th>type</th><th>info1</th><th>info2</th><th>info3</th><th>info4</th></th>";
+			String tableHtml = "<table frame=\"border\" border=\"1\" rules=\"all\">"
+					+ "<tr><th>NEW?</th><th>address</th><th>type</th><th>info1</th><th>info2</th><th>info3</th><th>info4</th></th>";
 			for (String r : rows.values()) {
 				tableHtml += r;
 			}
 			tableHtml += "</table>";
 			getLogger().info("update View: " + tableHtml);
 
-			displayHandler.setHtml(getComponentID()+".view", "1", tableHtml);
+			displayClient.setHtml(getComponentID() + ".view", "1", tableHtml);
 		}
 
 		private String addrToString(WorkingMemoryAddress wma) {
@@ -97,7 +97,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 	 */
 	public V11WMViewerComponent() {
 		entrySet = WMEntrySet.create(this);
-		entrySet.setHandler(displayHandler);
+		entrySet.setHandler(displayClient);
 	}
 
 	public Plugin findPlugin(Class<? extends ObjectImpl> origType) {
@@ -121,7 +121,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 			oType = oType.getSuperclass();
 			if (oType == null) // if no superclass exists, we have to give up
 				break;
-			if (oType == Ice.Object.class) // we don't need to look up
+			if (oType.equals(Ice.Object.class)) // we don't need to look up
 				// further
 				break;
 
@@ -133,8 +133,6 @@ public class V11WMViewerComponent extends ManagedComponent {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void configure(Map<String, String> arg0) {
-		// TODO Auto-generated method stub
-		super.configure(arg0);
 		String subscrStr = arg0.get("--subscribe");
 		if (subscrStr != null) {
 			StringTokenizer st = new StringTokenizer(subscrStr, ",");
@@ -152,7 +150,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 				}
 			}
 		}
-		displayHandler.configureDisplayClient(arg0);
+		displayClient.configureDisplayClient(arg0);
 	}
 
 	/*
@@ -163,18 +161,8 @@ public class V11WMViewerComponent extends ManagedComponent {
 	@Override
 	protected void start() {
 		entrySet.start();
-		displayHandler.connectIceClient(this);
-		displayHandler.installEventReceiver();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see castutils.viewer.ViewerCastComponent#stop()
-	 */
-	@Override
-	protected void stop() {
-		super.stop();
+		displayClient.connectIceClient(this);
+		displayClient.installEventReceiver();
 	}
 
 }
