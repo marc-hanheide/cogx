@@ -113,8 +113,15 @@ void VideoViewer::start()
   m_display.addCheckBox(getComponentID(), "toggle.viewer.running", "&Streaming");
   m_display.addCheckBox(getComponentID(), "toggle.viewer.sendipl", "Send &IplImage");
   m_display.addButton(getComponentID(), "viewer.do.nothing", "Show &time");
-  //m_display.addButton(getComponentID(), "viewer.do.nothing2", "&Test 2");
-  //m_display.addButton(getComponentID(), "viewer.do.nothing3", "&Test 3");
+
+  m_display.setHtmlForm("TEST", "ACTIVEHTML",
+      "expanded [@@ONCLICK@@('i.am.the.ctrl')]<br>\n"
+      "expanded [@@ONCLICK@@    (  'i.am.the.ctrl'  )]<br>\n"
+      "id stripped [@@ONCLICK@@(  ' \" i.am.the.ctrl   \" ' )]<br>\n"
+      "no id [@@ONCLICK@@()]<br>\n"
+      "error [@@ONCLICK@@('i.am.the.ctrl']<br>\n"
+      "unchanged because of error [@@ONCLICK@@('i.am.the.ctrl')]<br>\n"
+      );
 #else
   cvNamedWindow(getComponentID().c_str(), 1);
 #endif
@@ -336,6 +343,7 @@ void VideoViewer::runComponent()
     sleepComponent(1000);
     fb = fclocks();
     strB << "FClocks fa=" << fa << " fb=" << fb << " diff=" << fb-fa << "<br>" << endl;
+    strB << "<input type='button' value='onclick' onclick=\"CastQFormProxy.onClick('id.something')\" />" << endl;
     m_display.setHtml("@info.TestComponent", "zclock_test", strB.str());
   }
 #ifdef V11N_OBJECT_HTML_PLUGINS

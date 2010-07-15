@@ -75,6 +75,13 @@ void QCastViewHtml::createJsObjects()
    DTRACE("QCastViewHtml::createJsObjects");
    if (! m_bHasForms) {
       DMESSAGE("NO forms");
+      QWebPage* pPage = page();
+      QWebFrame* pFrame = NULL;
+      if (pPage) pFrame = pPage->currentFrame();
+      if (pFrame) {
+         QCastFormProxy* pObj = new QCastFormProxy();
+         pFrame->addToJavaScriptWindowObject(jsObjectName, pObj);
+      }
       return;
    }
 

@@ -50,8 +50,14 @@ module Visualization
       void setHtml(string id, string partId, string htmlData);
       void setHtmlHead(string id, string partId, string htmlData);
 
-      // Create an active HTML form that sends the data to the client.
+      // A HTML chunk that can send onClick evnets to the owner.
+      // Add @@ONCLICK@@('unique.id') to clickable HTML elements. The tag will be replaced
+      // by the DisplayServer.
+      void setActiveHtml(Ice::Identity ident, string id, string partId, string htmlData);
+
+      // Create an active HTML form that sends the submitted data to the client.
       // Note: don't use the <form> tag in htmlData, it will be added.
+      // Note: @@ONCLICK@@ events are also supported.
       void setHtmlForm(Ice::Identity ident, string id, string partId, string htmlData);
 
       // Event handlers need to subscribe

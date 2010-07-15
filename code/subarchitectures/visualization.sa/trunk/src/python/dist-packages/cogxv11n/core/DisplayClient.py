@@ -110,6 +110,11 @@ class CDisplayClient:
         if self.m_Server == None: return
         self.m_Server.setHtmlHead(id, partId, htmlData)
 
+    def setActiveHtml(self, id, partId, htmlData):
+        if self.m_Server == None: return
+        iceid = self.getEventClientId()
+        self.m_Server.setActiveHtml(iceid, id, partId, htmlData)
+
     def setHtmlForm(self, id, partId, htmlData):
         if self.m_Server == None: return
         iceid = self.getEventClientId()

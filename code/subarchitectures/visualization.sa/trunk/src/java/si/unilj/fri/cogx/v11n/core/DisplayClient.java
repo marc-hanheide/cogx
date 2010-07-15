@@ -197,6 +197,13 @@ public class DisplayClient
       m_Server.setHtmlHead(id, partId, htmlData);
    }
 
+   public final void setActiveHtml(String id, String partId, String htmlData)
+   {
+      if (m_Server == null) return;
+      Ice.Identity iceid = getEventClientId();
+      m_Server.setActiveHtml(iceid, id, partId, htmlData);
+   }
+
    public final void setHtmlForm(String id, String partId, String htmlData)
    {
       if (m_Server == null) return;

@@ -6,6 +6,7 @@ set(V_SLICE_INCLUDE_DIRS
    ${COGX_ROOT}/tools/math/src/slice
    ${COGX_ROOT}/tools/hardware/video/src/slice
    /usr/share/slice
+   /usr/share/Ice/slice
    /usr/local/share
    )
 
