@@ -189,6 +189,9 @@ class FloatFormula extends dFormula {
 
 class UnknownFormula extends dFormula { };
 
+class UnderspecifiedFormula extends dFormula { };
+
+
 
 /** 
  * Formula consisting in the negation of another
