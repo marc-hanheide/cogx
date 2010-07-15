@@ -415,14 +415,6 @@ void CDisplayServer::setHtmlForm(const Ice::Identity& ident, const std::string& 
 #ifdef V11N_OBJECT_HTML
    DTRACE("CDisplayServer::setHtmlForm");
    
-   // TODO: remove this (testing)
-   {
-      if (id == "TEST" && partId == "ACTIVEHTML") {
-         setActiveHtml(ident, id, partId, htmlData);
-         return;
-      }
-   }
-
    CHtmlObject *pObject = NULL;
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
