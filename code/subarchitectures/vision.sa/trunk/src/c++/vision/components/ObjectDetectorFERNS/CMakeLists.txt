@@ -11,6 +11,7 @@ include_directories(
    ${COGX_ROOT}/subarchitectures/nav.sa/src/c++/autogen
    ${VISUALIZATION_INCLUDE_DIRS}
    )
+add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
 # Set the sources.
 SET(SOURCES ObjectDetectorFERNS.cpp

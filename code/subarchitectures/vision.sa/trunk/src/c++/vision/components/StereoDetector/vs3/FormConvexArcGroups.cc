@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <algorithm>
+#include <cstdio>
 #include "Math.hh"
 #include "Draw.hh"
 #include "VisionCore.hh"

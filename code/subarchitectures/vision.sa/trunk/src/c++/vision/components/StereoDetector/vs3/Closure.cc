@@ -13,6 +13,7 @@
 #include "TJunction.hh"
 #include "Closure.hh"
 // #include "HCF.hh"
+#include <cstdio>
 
 namespace Z
 {

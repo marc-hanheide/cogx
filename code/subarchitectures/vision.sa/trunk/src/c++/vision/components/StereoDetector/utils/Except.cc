@@ -6,6 +6,7 @@
  * @brief Exception class
  */
 
+#include <cstdio>
 #include <stdarg.h>
 #include <cstdio>
 #include "Except.hh"

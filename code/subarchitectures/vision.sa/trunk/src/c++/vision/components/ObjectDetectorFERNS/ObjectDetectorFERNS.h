@@ -203,6 +203,8 @@ protected:
    */
   virtual void start();
 
+  virtual void runComponent();
+
 public:
   ObjectDetectorFERNS();
   virtual ~ObjectDetectorFERNS();

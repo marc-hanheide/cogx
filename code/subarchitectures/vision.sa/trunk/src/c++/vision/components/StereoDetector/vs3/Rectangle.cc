@@ -15,6 +15,7 @@
 #include "LJunction.hh"
 #include "Closure.hh"
 #include "Vector2.hh"
+#include <cstdio>
 
 namespace Z
 {

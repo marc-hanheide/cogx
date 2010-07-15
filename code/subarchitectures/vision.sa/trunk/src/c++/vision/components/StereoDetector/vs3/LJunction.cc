@@ -9,6 +9,7 @@
 #include "Draw.hh"
 #include "Line.hh"
 #include "LJunction.hh"
+#include <cstdio>
 
 namespace Z
 {

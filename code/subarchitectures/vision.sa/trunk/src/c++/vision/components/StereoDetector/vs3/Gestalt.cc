@@ -10,6 +10,7 @@
 #include "VisionCore.hh"
 #include "Gestalt.hh"
 #include "GestaltPrinciple.hh"
+#include <cstdio>
 
 namespace Z
 {

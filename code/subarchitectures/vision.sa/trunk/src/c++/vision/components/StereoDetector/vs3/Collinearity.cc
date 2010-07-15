@@ -6,6 +6,7 @@
 #include "Line.hh"
 #include "TJunction.hh"
 #include "Collinearity.hh"
+#include <cstdio>
 
 namespace Z
 {

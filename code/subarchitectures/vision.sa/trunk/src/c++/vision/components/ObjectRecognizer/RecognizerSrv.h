@@ -29,6 +29,9 @@ struct CModelScore
 {
    double score;
    std::vector<double> viewScore;
+   CModelScore() {
+      score = 0;
+   }
 };
 
 // CObjectRecognizer is the component that will be created when CAST starts.

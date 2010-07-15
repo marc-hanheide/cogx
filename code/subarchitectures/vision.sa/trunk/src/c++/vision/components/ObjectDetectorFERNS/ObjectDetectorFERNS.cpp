@@ -328,7 +328,10 @@ void ObjectDetectorFERNS::start()
   addChangeFilter(createLocalTypeFilter<DetectionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectDetectorFERNS>(this,
         &ObjectDetectorFERNS::receiveDetectionCommand));
+}
 
+void ObjectDetectorFERNS::runComponent()
+{
 #ifdef FEAT_VISUALIZATION
   m_display.connectIceClient(*this);
 #endif

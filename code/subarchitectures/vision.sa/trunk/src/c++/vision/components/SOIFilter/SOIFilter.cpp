@@ -1137,7 +1137,20 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
 bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask)
 {
   Video::Image image;
-  getRectImage(LEFT, image);
+  StereoClient::getRectImage(LEFT, image);
+
+  Video::Image fullImage;
+  videoServer->getImage(camId, fullImage);
+
+#if defined(FEAT_VISUALIZATION)
+  ostringstream ss;
+#endif
+#if 1 && defined(FEAT_VISUALIZATION)
+  ss << "segmentObject<br>";
+  ss << "rectImage: " << image.width << "x" << image.height << "<br>";
+  ss << "fullImage: " << fullImage.width << "x" << fullImage.height << "<br>";
+  m_display.setImage("soif.VideoImage", fullImage);
+#endif
 
   soiPtr->boundingSphere.rad*=DILATE_FACTOR;
 
@@ -1159,6 +1172,10 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 
   log("Calculated ROI x=%i, y=%i, width=%i, height=%i",
 	  rect.x, rect.y, rect.width, rect.height);
+#if 1 && defined(FEAT_VISUALIZATION)
+  ss << "Calculated ROI x=" << rect.x << " y=" << rect.y
+   	<< " w=" << rect.width << " h=" << rect.height << "<br>";
+#endif
 
   cvSetImageROI(iplImg, rect);
 
@@ -1182,6 +1199,12 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   cvCvtColor(iplPatch, iplPatchHLS, CV_RGB2HLS);
 
   log("Actual ROI width=%i, height=%i", iplPatchHLS->width, iplPatchHLS->height);
+#if 1 && defined(FEAT_VISUALIZATION)
+  CvRect rtest = cvGetImageROI(iplImg);
+  ss << "setRoi-> ROI x=" << rtest.x << " y=" << rtest.y
+   	<< " w=" << rtest.width << " h=" << rtest.height << "<br>";
+  ss << "Actual ROI w=" << iplPatchHLS->width << " h=" << iplPatchHLS->height << "<br>";
+#endif
 
   vector<CvPoint> projPoints, bgProjPoints;
   vector<int>  hullPoints;    
@@ -1213,7 +1236,40 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   segMask.height = iplPatchHLS->height;
 
   segMask.data =  graphCut(segMask.width, segMask.height, 3, costPatch, bgCostPatch);
+#if 0
+  // Patch from rectified stereo image
   convertImageFromIpl(iplPatch, imgPatch);
+#else
+  // Patch from "original" video image
+  {
+	IplImage *iplFull = convertImageToIpl(fullImage);
+	double sx = fullImage.width / image.width;
+	double sy = fullImage.height / image.height;
+	CvRect rect;
+	rect.width = roiPtr->rect.width * sx;
+	rect.height = roiPtr->rect.height * sy;
+	rect.x = roiPtr->rect.pos.x*sx - rect.width/2;
+	rect.y = roiPtr->rect.pos.y*sy - rect.height/2;	
+
+	CvSize sz = cvGetSize(iplFull);
+#if 1 && defined(FEAT_VISUALIZATION)
+	ss << "Full Image getSize w=" << sz.width << " h=" << sz.height << "<br>";
+	ss << "Full Image ROI x=" << rect.x << " y=" << rect.y
+	  << " w=" << rect.width << " h=" << rect.height << "<br>";
+#endif
+
+	cvSetImageROI(iplFull, rect);
+	sz = cvGetSize(iplFull);
+#if 1 && defined(FEAT_VISUALIZATION)
+	ss << "Full Image getSize w=" << sz.width << " h=" << sz.height << "<br>";
+#endif
+	IplImage *iplPatch = cvCreateImage(sz, iplFull->depth, iplFull->nChannels);
+	cvResize(iplFull, iplPatch, CV_INTER_LINEAR );
+	convertImageFromIpl(iplPatch, imgPatch);
+	cvReleaseImage(&iplFull);
+	cvReleaseImage(&iplPatch);
+  }
+#endif
 
   sz = cvGetSize(iplPatchHLS);
   IplImage *segPatch = cvCreateImage(sz, IPL_DEPTH_8U, 1);
@@ -1248,8 +1304,8 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 		CV_RGB(0,255,0));
 
 #ifdef FEAT_VISUALIZATION
-	m_display.setImage("Full image", iplImg);
-	m_display.setImage("Color Filtering", colorFiltering);
+	m_display.setImage("soif.Full image", iplImg);
+	m_display.setImage("soif.Color Filtering", colorFiltering);
 #else
 	cvShowImage("Full image", iplImg);
 	cvShowImage("Color Filtering", colorFiltering);
@@ -1310,6 +1366,10 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   cvReleaseImage(&bgCostPatch);
   cvReleaseImage(&colorFiltering);
   
+#if 1 && defined(FEAT_VISUALIZATION)
+  m_display.setHtml("soif.@debug", "segmentObject.input", ss.str());
+#endif
+
   return protoObj;
 }
 
