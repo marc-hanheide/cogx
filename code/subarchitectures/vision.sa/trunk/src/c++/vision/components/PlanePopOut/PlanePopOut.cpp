@@ -11,6 +11,26 @@
 #include <VideoUtils.h>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
+#ifdef FEAT_VISUALIZATION
+#include <time.h>
+long long gethrtime(void)
+{
+  struct timespec sp;
+  int ret;
+  long long v;
+#ifdef CLOCK_MONOTONIC_HR
+  ret=clock_gettime(CLOCK_MONOTONIC_HR, &sp);
+#else
+  ret=clock_gettime(CLOCK_MONOTONIC, &sp);
+#endif
+  if(ret!=0) return 0;
+  v=1000000000LL; /* seconds->nanonseconds */
+  v*=sp.tv_sec;
+  v+=sp.tv_nsec;
+  return v;
+}
+#endif
+
 
 #define Shrink_SOI 1
 #define Upper_BG 1.5
@@ -391,7 +411,16 @@ void PlanePopOut::configure(const map<string,string> & _config)
   pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
   pre_mConvexHullRadius = 0.0;
   pre_id = "";
+
+#ifdef FEAT_VISUALIZATION
+  m_display.configureDisplayClient(_config);
+#endif
 }
+
+#ifdef FEAT_VISUALIZATION
+	#define ID_POPOUT_POINTS "popout.show.points"
+	#define ID_POPOUT_PLANEGRID "popout.show.planegrid"
+#endif
 
 void PlanePopOut::start()
 {
@@ -412,11 +441,160 @@ void PlanePopOut::start()
   glutReshapeFunc(ResizeWin);
   glutDisplayFunc(DisplayWin);
   }
-
+#ifdef FEAT_VISUALIZATION
+  m_bSendPoints = false;
+  m_bSendPlaneGrid = true;
+  m_display.connectIceClient(*this);
+  m_display.setClientData(this);
+  m_display.installEventReceiver();
+  m_display.addCheckBox("PlanePopout", ID_POPOUT_POINTS, "Show 3D points");
+  m_display.addCheckBox("PlanePopout", ID_POPOUT_PLANEGRID, "Show plane grid");
+#endif
 }
+
+#ifdef FEAT_VISUALIZATION
+void PlanePopOut::CDisplayClient::handleEvent(const Visualization::TEvent &event)
+{
+	if (!pPopout) return;
+	if (event.sourceId == ID_POPOUT_POINTS) {
+		if (event.data == "0" || event.data=="") pPopout->m_bSendPoints = false;
+		else pPopout->m_bSendPoints = true;
+	}
+	else if (event.sourceId == ID_POPOUT_PLANEGRID) {
+		if (event.data == "0" || event.data=="") pPopout->m_bSendPlaneGrid = false;
+		else pPopout->m_bSendPlaneGrid = true;
+	}
+}
+
+std::string PlanePopOut::CDisplayClient::getControlState(const std::string& ctrlId)
+{
+	if (!pPopout) return "";
+	if (ctrlId == ID_POPOUT_POINTS) {
+		if (pPopout->m_bSendPoints) return "2";
+		else return "0";
+	}
+	if (ctrlId == ID_POPOUT_PLANEGRID) {
+		if (pPopout->m_bSendPlaneGrid) return "2";
+		else return "0";
+	}
+	return "";
+}
+
+void SendPoints(const VisionData::SurfacePointSeq& points, std::vector<int> &labels,
+  cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
+{
+	long long t0 = gethrtime();
+	std::ostringstream str;
+	str << "function render()\nglPointSize(2)\nglBegin(GL_POINTS)\n";
+	int plab = -9999;
+	for(size_t i = 0; i < points.size(); i++)
+	{
+		int lab = labels.at(i);
+		if (plab != lab) {
+			plab = lab;
+			switch (lab) {
+				case 0: str << "glColor(1.0,1.0,0.0)\n"; break;
+				default: str << "glColor(0.2,1.0,0.2)\n"; break;
+			}
+		}
+		const VisionData::SurfacePoint &p = points[i];
+		str << "glVertex(" << p.p.x << "," << p.p.y << "," << p.p.z << ")\n";
+	}
+	str << "glEnd()\nend\n";
+	long long t1 = gethrtime();
+	double dt = (t1 - t0) * 1e-6;
+	powner->log("*****: %d points; Time to create script %lfms", points.size(), dt);
+	m_display.setLuaGlObject("PlanePopout", "3D points", str.str());
+	t1 = gethrtime();
+	dt = (t1 - t0) * 1e-6;
+	powner->log("*****GL: %ld points sent after %lfms", points.size(), dt);
+}
+
+void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
+{
+  long long t0 = gethrtime();
+  std::ostringstream str;
+  str << "function render()\nglPointSize(2)\nglBegin(GL_POINTS)\n";
+
+	// See: DrawPlaneGrid
+	str << "glBegin(GL_LINE_LOOP);\n";
+	str << "glColor(1.0,1.0,1.0);\n";
+	str << "glVertex(" << v3dmax.x << "," << v3dmax.y << "," << v3dmax.z << ");\n";
+	str << "glVertex(" << v3dmin.x << "," << v3dmax.y << "," << v3dmax.z << ");\n";
+	str << "glVertex(" << v3dmin.x << "," << v3dmin.y << "," << v3dmin.z << ");\n";
+	str << "glVertex(" << v3dmax.x << "," << v3dmin.y << "," << v3dmin.z << ");\n";
+	str << "glVertex(" << v3dmin.x << "," << v3dmax.y << "," << v3dmax.z << ");\n";
+	str << "glVertex(" << v3dmin.x << "," << v3dmin.y << "," << v3dmin.z << ");\n";
+	str << "glEnd();\n";
+
+	str << "glBegin(GL_LINE_LOOP);\n";
+	str << "glColor(1.0,1.0,1.0);\n";
+	str << "glVertex(" << v3dmax.x << "," << v3dmax.y << "," << v3dmax.z << ");\n";
+	str << "glVertex(" << v3dmin.x << "," << v3dmax.y << "," << v3dmax.z << ");\n";
+	str << "glVertex(" << v3dmin.x+A << "," << v3dmin.y+B << "," << v3dmin.z+C << ");\n";
+	str << "glVertex(" << v3dmax.x+A << "," << v3dmax.y+B << "," << v3dmax.z+C << ");\n";
+	str << "glVertex(" << v3dmin.x << "," << v3dmax.y << "," << v3dmax.z << ");\n";
+	str << "glVertex(" << v3dmin.x+A << "," << v3dmin.y+B << "," << v3dmin.z+C << ");\n";
+	str << "glEnd();\n";
+
+	str << "end\n";
+
+  m_display.setLuaGlObject("PlanePopout", "PlaneGrid", str.str());
+	long long t1 = gethrtime();
+	double dt = (t1 - t0) * 1e-6;
+  powner->log("*****GL: Plane grid sent after %lfms", dt);
+}
+
+void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
+{
+  std::ostringstream str;
+  str << "function render()\n";
+  str << "glColor(1.0,1.0,0.0)\n";
+  str << "glBegin(GL_LINES)\n";
+  str << "glVertex(-1000., 0., 0.)\n";
+  str << "glVertex(1000., 0., 0.)\n";
+  str << "glVertex(0., -1000., 0.)\n";
+  str << "glVertex(0., 1000., 0.)\n";
+  str << "glVertex(0., 0., -1000.)\n";
+  str << "glVertex(0., 0., 1000.)\n";
+  str << "glEnd()\n";
+  //str << "DrawText3D(\"x\", 0.1, 0.02, 0.)\n";
+  //str << "DrawText3D(\"y\", 0., 0.1, 0.02)\n";
+  //str << "DrawText3D(\"z\", 0.02, 0., 0.1)\n";
+
+  // draw tics every m, up to 10 m
+  str << "tic_size = 0.05\n";
+  str << "glBegin(GL_LINES)\n";
+  str << "for i=-10,10 do\n";
+    str << "if i ~= 0 then\n";
+      str << "glVertex(i, 0, 0.)\n";
+      str << "glVertex(i, tic_size, 0.)\n";
+      str << "glVertex(0., i, 0.)\n";
+      str << "glVertex(0., i, tic_size)\n";
+      str << "glVertex(0., 0., i)\n";
+      str << "glVertex(tic_size, 0., i)\n";
+    str << "end\n";
+  str << "end\n";
+  str << "glEnd()\n";
+  //str << "for(int i = -10; i < 10; i++)\n";
+  //  str << "if(i != 0)
+  //    snprintf(buf, 100, "%d", i);
+  //    DrawText3D(buf, (double)i, 2.*tic_size, 0.);
+  //    DrawText3D(buf, 0., (double)i, 2.*tic_size);
+  //    DrawText3D(buf, 2.*tic_size, 0., (double)i);
+  //  }
+  //}
+  str << "end\n";
+  m_display.setLuaGlObject("PlanePopout", "Overlays", str.str());
+}
+#endif
 
 void PlanePopOut::runComponent()
 {
+  sleepComponent(1000);
+#ifdef FEAT_VISUALIZATION
+  SendOverlays(m_display, this);
+#endif
   while(isRunning())
   {
 	VisionData::SurfacePointSeq tempPoints = points;
@@ -465,6 +643,10 @@ void PlanePopOut::runComponent()
 				glutMainLoopEvent();
 			}
 			AddConvexHullinWM();
+#ifdef FEAT_VISUALIZATION
+			if (m_bSendPoints) SendPoints(pointsN, points_label, m_display, this);
+			if (m_bSendPlaneGrid) SendPlaneGrid(m_display, this);
+#endif
 		}
 	}
 	if (para_a!=0.0 || para_b!=0.0 || para_c!=0.0 || para_d!=0.0)

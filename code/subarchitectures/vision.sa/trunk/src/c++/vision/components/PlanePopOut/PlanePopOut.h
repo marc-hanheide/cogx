@@ -12,6 +12,9 @@
 #include <StereoClient.h>
 #include <VisionData.hpp>
 
+#ifdef FEAT_VISUALIZATION
+#include <CDisplayClient.hpp>
+#endif
 
 namespace cast
 {
@@ -59,6 +62,20 @@ private:
 	vector<double> vdradius;
 	vector< Vector3 > v3size;
 
+#ifdef FEAT_VISUALIZATION
+	bool m_bSendPoints;
+	bool m_bSendPlaneGrid;
+	class CDisplayClient: public cogx::display::CDisplayClient
+	{
+		PlanePopOut* pPopout;
+	public:
+		CDisplayClient() { pPopout = NULL; }
+		void setClientData(PlanePopOut* pPlanePopout) { pPopout = pPlanePopout; }
+		void handleEvent(const Visualization::TEvent &event); /*override*/
+		std::string getControlState(const std::string& ctrlId); /*override*/
+	};
+	CDisplayClient m_display;
+#endif
 
 protected:
   /**
