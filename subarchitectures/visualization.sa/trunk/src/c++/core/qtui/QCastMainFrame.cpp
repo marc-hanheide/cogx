@@ -273,6 +273,7 @@ void QCastMainFrame::setModel(cogx::display::CDisplayModel* pDisplayModel)
    if (m_pModel) m_pModel->modelObservers += this;
 
    updateViewList();
+   updateViewMenu();
 }
 
 void QCastMainFrame::setControlDataProxy(cogx::display::COwnerDataProxy *pProxy)
@@ -318,6 +319,47 @@ void QCastMainFrame::updateViewList()
       FrameManager.createMissingWindows(this, m_pModel);
 }
 
+void QCastMainFrame::syncViewListItem()
+{
+   //if (! ui.listWidget->isVisible()) return;
+   cogx::display::CDisplayView *pView = ui.drawingArea->getView();
+   if (pView == NULL) {
+      ui.listWidget->setCurrentItem(NULL);
+      return;
+   }
+
+   QListWidgetItem* pCurrent = ui.listWidget->currentItem();
+   if (pCurrent != NULL && pCurrent->text().toStdString() == pView->m_id) {
+      return;
+   }
+
+   for (int i = 0; i < ui.listWidget->count(); i++) {
+      pCurrent = ui.listWidget->item(i);
+      if (pCurrent != NULL && pCurrent->text().toStdString() == pView->m_id) {
+         ui.listWidget->setCurrentItem(pCurrent);
+         break;
+      }
+   }
+}
+
+void QCastMainFrame::updateViewMenu()
+{
+   QMenu *pMenu = new QMenu(this);
+   DVERIFYGUITHREAD("QViewSubmenu-s", this);
+   //connect(pMenu, "triggered(QAction*)", this, "onViewActivated(QAction*)");
+
+   cogx::display::CDisplayView *pView;
+   // TODO: RLock pModel->m_Views
+   FOR_EACH_V(pView, m_pModel->m_Views) {
+      //QMenu* pSubmenu = pMenu->addMenu(tr(pView->m_id.c_str()));
+      QAction* pAction = pMenu->addAction(tr(pView->m_id.c_str()));
+      connect(pAction, SIGNAL(triggered()), this, SLOT(onViewActivatedAction()));
+   }
+
+   ui.actViewSelectSubmenu->setMenu(pMenu);
+   ui.actViewSelectSubmenu->setEnabled(true);
+}
+
 void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
 {
    DTRACE("QCastMainFrame::updateCustomUi");
@@ -333,6 +375,7 @@ void QCastMainFrame::onShowViewListChanged()
 void QCastMainFrame::onRefreshViewList()
 {
    updateViewList();
+   updateViewMenu();
 }
 
 void QCastMainFrame::setChildMode()
@@ -421,6 +464,8 @@ void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
       }
       ui.drawingArea->setView(m_pModel, pView);
    }
+
+   syncViewListItem();
 }
 
 void QCastMainFrame::closeEvent(QCloseEvent *event)
@@ -442,6 +487,18 @@ void QCastMainFrame::onViewActivated(QListWidgetItem *pSelected)
    setView(pView);
 }
 
+void QCastMainFrame::onViewActivatedAction()
+{
+   DTRACE("QCastMainFrame::onViewActivatedAction");
+   if (! m_pModel) return;
+   QAction* pSelected = dynamic_cast<QAction*>(sender());
+   if (! pSelected) return;
+   cogx::display::CDisplayView *pView;
+   DMESSAGE(pSelected->text().toStdString());
+   pView = m_pModel->getView(pSelected->text().toStdString());
+   setView(pView);
+}
+
 // XXX: This function is called from another thread.
 // According to Qt docs, all GUI elements should be created in the main (GUI) thread!
 // Don't call updateViewList; instead add a request to some queue that will be processed by the
@@ -457,5 +514,6 @@ void QCastMainFrame::onViewAdded(cogx::display::CDisplayModel *pModel, cogx::dis
 void QCastMainFrame::doViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
    updateViewList();
+   updateViewMenu();
    // ui.drawingArea->onViewChanged(pModel, pView);
 }

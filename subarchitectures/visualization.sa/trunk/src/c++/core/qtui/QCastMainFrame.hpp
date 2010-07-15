@@ -83,6 +83,7 @@ public:
 
 public slots:
    void onViewActivated(QListWidgetItem *pSelected);
+   void onViewActivatedAction();
 
 private slots:
    void onShowViewListChanged();
@@ -95,6 +96,8 @@ private slots:
 private:
    void updateCustomUi(cogx::display::CDisplayView *pView);
    void updateViewList();
+   void updateViewMenu();
+   void syncViewListItem();
    QWidgetList getCastFrames();
 
    // CDisplayModelObserver notifications
