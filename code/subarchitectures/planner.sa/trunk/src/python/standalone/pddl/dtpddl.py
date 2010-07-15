@@ -168,9 +168,15 @@ class Observation(actions.Action):
 class DTPDDLWriter(writer.Writer):
     def write_observe(self, action):
         strings = [action.name]
-        strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
-        if action.maplargs:
-            strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.maplargs)], parens=False)
+        #TODO: this is really a bit of a hack...
+        if "mapl" in action.parent.requirements:
+            strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
+            if action.maplargs:
+                strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.maplargs)], parens=False)
+        else:
+            if action.args:
+                strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.args)], parens=False)
+            
 
         exe = []
         for ex in action.execution:
