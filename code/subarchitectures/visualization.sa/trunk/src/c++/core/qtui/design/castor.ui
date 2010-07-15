@@ -52,6 +52,8 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <addaction name="actViewSelectSubmenu"/>
+    <addaction name="separator"/>
     <addaction name="actShowViewList"/>
     <addaction name="actRefreshViewList"/>
    </widget>
@@ -146,6 +148,14 @@
   <action name="actRestoreWindowLayout">
    <property name="text">
     <string>&amp;Restore window layout</string>
+   </property>
+  </action>
+  <action name="actViewSelectSubmenu">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Select</string>
    </property>
   </action>
  </widget>
