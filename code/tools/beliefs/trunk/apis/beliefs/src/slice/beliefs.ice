@@ -175,6 +175,10 @@ class ElementaryFormula extends dFormula {
 	string prop;
 };
 
+class GenericPointerFormula extends dFormula {
+      string pointer;
+};
+
 class BooleanFormula extends dFormula {
 	bool val;
 };
