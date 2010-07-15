@@ -348,6 +348,46 @@ class dBelief extends epobject::EpistemicObject {
 
 
 // ================================
+// INTENTIONS
+// ================================
+ 
+module intentions {
+
+class IntentionalContent {
+	epstatus::Agents agents;
+	logicalcontent::dFormula preconditions;
+	logicalcontent::dFormula postconditions;
+	float probValue;
+};
+
+["java:type:java.util.LinkedList<IntentionalContent>"] sequence<IntentionalContent> AlternativeIntentions;
+
+
+class Intention extends epobject::EpistemicObject {
+	string id;
+	AlternativeIntentions content;
+};
+
+}; // end intentions
+
+
+
+// ================================
+// EVENTS
+// ================================
+ 
+module events {
+
+class Event extends epobject::EpistemicObject {
+	string id;
+	distribs::ProbDistribution content;
+};
+
+}; // end intentions
+
+
+
+// ================================
 // END SLICE
 // ================================
 
