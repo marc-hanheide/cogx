@@ -1,7 +1,6 @@
 package castutils.viewer.plugins;
 
 import java.util.Vector;
-import java.util.Map.Entry;
 
 import castutils.slice.WMMap;
 
