@@ -13,6 +13,7 @@
 #include "Rectangle.hh"
 #include "FlapAri.hh"
 #include "Cube.hh"
+#include <cstdio>
 
 namespace Z
 {

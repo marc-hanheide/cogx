@@ -512,9 +512,9 @@ void SendPoints(const VisionData::SurfacePointSeq& points, std::vector<int> &lab
 
 void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 {
-  long long t0 = gethrtime();
-  std::ostringstream str;
-  str << "function render()\nglPointSize(2)\nglBegin(GL_POINTS)\n";
+	long long t0 = gethrtime();
+	std::ostringstream str;
+	str << "function render()\nglPointSize(2)\nglBegin(GL_POINTS)\n";
 
 	// See: DrawPlaneGrid
 	str << "glBegin(GL_LINE_LOOP);\n";
@@ -539,10 +539,10 @@ void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner
 
 	str << "end\n";
 
-  m_display.setLuaGlObject("PlanePopout", "PlaneGrid", str.str());
+	m_display.setLuaGlObject("PlanePopout", "PlaneGrid", str.str());
 	long long t1 = gethrtime();
 	double dt = (t1 - t0) * 1e-6;
-  powner->log("*****GL: Plane grid sent after %lfms", dt);
+	powner->log("*****GL: Plane grid sent after %lfms", dt);
 }
 
 void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)

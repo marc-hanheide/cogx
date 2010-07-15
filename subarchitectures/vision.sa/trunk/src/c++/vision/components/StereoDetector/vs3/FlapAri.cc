@@ -11,6 +11,7 @@
 #include "LJunction.hh"
 #include "Rectangle.hh"
 #include "FlapAri.hh"
+#include <cstdio>
 
 namespace Z
 {

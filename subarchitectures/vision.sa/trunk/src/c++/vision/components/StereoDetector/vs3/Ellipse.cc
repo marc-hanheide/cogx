@@ -5,6 +5,7 @@
 #include <math.h>
 #include <assert.h>
 #include <algorithm>
+#include <cstdio>
 #ifdef USE_OPENCV_ELLFIT
 #include <opencv/cv.h>
 #include <opencv/cvtypes.h>

@@ -10,6 +10,7 @@
 #include <assert.h>
 #include "Closure.hh"
 #include "Flap.hh"
+#include <cstdio>
 
 namespace Z
 {

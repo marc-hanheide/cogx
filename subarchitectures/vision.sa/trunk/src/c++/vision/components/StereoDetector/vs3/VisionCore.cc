@@ -9,6 +9,7 @@
 #include <time.h>
 #include <signal.h>
 #include <assert.h>
+#include <cstdio>
 #include "Except.hh"
 #include "Math.hh"
 #include "Draw.hh"

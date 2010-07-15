@@ -238,7 +238,7 @@ public:
          std::vector<TFeatureMatchVector*>& matches, CModelScore& score)
    {
       if (! pViewEval) return; // XXX throw?
-      assert(model.m_views.size() == matches.size());
+      if (model.m_views.size() != matches.size()) return; // XXX throw?
 
       typeof(model.m_views.begin()) itv;
       int i = 0;
@@ -336,7 +336,7 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
 {
    if (! m_pSiftMatcher || ! m_pSiftExtractor) return;
 
-   IplImage* pImg;
+   IplImage* pImg = NULL;
    TSiftVector sifts;
 
    CDistanceCalculator calc;
@@ -409,7 +409,7 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
    if (1) {
       std::vector<unsigned char>data;
       Video::convertImageToGrayBytes(image, data);
-      IplImage* pTest;
+      IplImage* pTest = NULL;
       Video::convertBytesToIpl(data, image.width, image.height, 1, &pTest);
       cvSaveImage("/tmp/sift_inputimage.jpg", pTest);
       cvReleaseImage(&pTest);

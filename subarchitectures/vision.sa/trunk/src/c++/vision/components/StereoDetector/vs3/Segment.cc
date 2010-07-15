@@ -7,6 +7,7 @@
  **/
 
 #include <algorithm>
+#include <cstdio>
 #include "Draw.hh"
 #include "VisionCore.hh"
 #include "Segment.hh"

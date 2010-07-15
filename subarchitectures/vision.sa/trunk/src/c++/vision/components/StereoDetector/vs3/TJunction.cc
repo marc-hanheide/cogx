@@ -7,6 +7,7 @@
 #include "Collinearity.hh"
 #include "LJunction.hh" 
 #include "TJunction.hh"
+#include <cstdio>
 
 namespace Z
 {

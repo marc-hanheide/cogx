@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <cstdio>
 #include "Vector2.hh"
 #include "VisionCore.hh"
 #include "Line.hh"

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "Arc.hh"
 #include "AJunction.hh"
+#include <cstdio>
 
 namespace Z
 {

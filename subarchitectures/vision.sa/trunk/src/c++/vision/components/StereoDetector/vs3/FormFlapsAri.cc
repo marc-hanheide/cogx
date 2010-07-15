@@ -15,6 +15,7 @@
 #include "Closure.hh"
 #include "FlapAri.hh"
 #include "FormFlapsAri.hh"
+#include <cstdio>
 
 namespace Z
 {

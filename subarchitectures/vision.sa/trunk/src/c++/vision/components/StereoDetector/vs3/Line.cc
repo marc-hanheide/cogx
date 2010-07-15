@@ -15,6 +15,7 @@
 #include "FormSegments.hh"
 #include "FormLines.hh"
 #include "FormJunctions.hh"
+#include <cstdio>
 
 namespace Z
 {

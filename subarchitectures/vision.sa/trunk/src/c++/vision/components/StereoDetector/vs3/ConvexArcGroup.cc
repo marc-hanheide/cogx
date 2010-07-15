@@ -5,6 +5,7 @@
 #include "Draw.hh"
 #include "Arc.hh"
 #include "ConvexArcGroup.hh"
+#include <cstdio>
 
 namespace Z
 {

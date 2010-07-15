@@ -5,6 +5,7 @@
 #ifndef VEC_MATH_HH
 #define VEC_MATH_HH
 
+#include <cstdio>
 #include <iostream>
 #include <cstdio>
 #include <algorithm>
