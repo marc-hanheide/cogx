@@ -207,6 +207,13 @@ void CDisplayClient::setHtmlHead(const std::string& id, const std::string& partI
    m_pServer->setHtmlHead(id, partId, htmlData);
 }
 
+void CDisplayClient::setActiveHtml(const std::string& id, const std::string& partId, const std::string& htmlData)
+{
+   if (m_pServer == NULL) return;
+   Ice::Identity iceid = getEventClientId();
+   m_pServer->setActiveHtml(iceid, id, partId, htmlData);
+}
+
 void CDisplayClient::setHtmlForm(const std::string& id, const std::string& partId, const std::string& htmlData)
 {
    if (m_pServer == NULL) return;

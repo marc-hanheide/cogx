@@ -114,7 +114,7 @@ void VideoViewer::start()
   m_display.addCheckBox(getComponentID(), "toggle.viewer.sendipl", "Send &IplImage");
   m_display.addButton(getComponentID(), "viewer.do.nothing", "Show &time");
 
-  m_display.setHtmlForm("TEST", "ACTIVEHTML",
+  m_display.setActiveHtml("TEST", "ACTIVEHTML",
       "expanded [@@ONCLICK@@('i.am.the.ctrl')]<br>\n"
       "expanded [@@ONCLICK@@    (  'i.am.the.ctrl'  )]<br>\n"
       "id stripped [@@ONCLICK@@(  ' \" i.am.the.ctrl   \" ' )]<br>\n"
