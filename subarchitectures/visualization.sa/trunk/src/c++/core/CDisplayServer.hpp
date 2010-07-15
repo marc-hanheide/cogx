@@ -76,6 +76,8 @@ public:
    void setLuaGlObject(const std::string& id, const std::string& partId, const std::string& script);
    void setHtml(const std::string& id, const std::string& partId, const std::string& htmlData);
    void setHtmlHead(const std::string& id, const std::string& partId, const std::string& htmlData);
+   void setActiveHtml(const Ice::Identity& ident, const std::string& id, const std::string& partId,
+         const std::string& htmlData);
    void setHtmlForm(const Ice::Identity& ident, const std::string& id, const std::string& partId,
          const std::string& htmlData);
    void setHtmlFormData(const std::string& id, const std::string& partId,
@@ -97,6 +99,7 @@ private:
 
    // CHtmlFormObserver
    void onFormSubmitted(CHtmlChunk *pForm, const TFormValues& newValues); /*override*/
+   // TODO: onClick(pChunk, id) for active chunks; CHtmlFormObserver --> rename to CHtmlChunkObserver
 
    // CControlDataProxy
    void getControlStateAsync(cogx::display::CGuiElement *pElement); /*override*/
@@ -161,6 +164,12 @@ public:
          const std::string& htmlData, const Ice::Current&)
    {
       m_pDisplayServer->setHtmlHead(id, partId, htmlData);
+   }
+
+   virtual void setActiveHtml(const Ice::Identity& ident, const std::string& id, const std::string& partId,
+         const std::string& htmlData, const Ice::Current&)
+   {
+      m_pDisplayServer->setActiveHtml(ident, id, partId, htmlData);
    }
 
    virtual void setHtmlForm(const Ice::Identity& ident, const std::string& id, const std::string& partId,

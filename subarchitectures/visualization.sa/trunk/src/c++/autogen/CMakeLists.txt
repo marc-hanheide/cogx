@@ -2,7 +2,7 @@ include(Slice2Cpp)
 
 include_directories(.)
 
-message("SLD:" ${CAST_SLICE_DIR} )
+#message("SLD:" ${CAST_SLICE_DIR} )
 # expects to find .ice file under PROJECT/src/slice e.g. laser/src/slice
 # 
 # latter args are include paths to serach

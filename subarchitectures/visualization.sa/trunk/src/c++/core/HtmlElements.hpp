@@ -40,6 +40,9 @@ public:
    // The CDisplayServer should not respond to this notification since it is the
    // CDisplayServer that causes the change.
    virtual void onOwnerDataChanged(CHtmlChunk *pForm, const TFormValues& newValues) {}
+
+   // TODO: onClick(pChunk, id) for active chunks; CHtmlFormObserver --> rename to CHtmlChunkObserver
+   // CDisplayServer executes a button click
 };
 
 class CHtmlChunk

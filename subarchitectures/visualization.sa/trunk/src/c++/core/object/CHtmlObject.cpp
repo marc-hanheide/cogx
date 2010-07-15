@@ -18,6 +18,89 @@
 
 namespace cogx { namespace display {
 
+struct CHtmlTransformer
+{
+   static std::string stripchars(const std::string& str, const std::string& chars)
+   {
+      size_t ib = 0;
+      size_t ie = str.size() - 1;
+      while (ib <= ie && (chars.find(str[ib]) != std::string::npos)) ib++;
+      while (ib <= ie && (chars.find(str[ie]) != std::string::npos)) ie--;
+      return str.substr(ib, ie-ib+1);
+   }
+   static std::string escape(const std::string& str, const std::string& chars)
+   {
+      std::ostringstream ss;
+      char esc = chars[0];
+      size_t pos = 0;
+      size_t len = str.size();
+      while(pos < len) {
+         char ch = str[pos];
+         if (chars.find(ch) == std::string::npos) ss << ch;
+         else ss << esc << ch;
+         pos++;
+      }
+      return ss.str();
+   }
+   static void skipspace(size_t& pos, size_t len, const std::string& text)
+   {
+      while(pos < len && (text[pos] == ' ' || text[pos] == '\t')) pos++;
+   }
+   static void skipto(size_t& pos, size_t len, const std::string& text, char end, const std::string& bad)
+   {
+      while(pos < len) {
+         if (text[pos] == end) return;
+         if (bad.find(text[pos]) != std::string::npos) {
+            pos = std::string::npos;
+            return;
+         }
+         pos++;
+      }
+   }
+
+   void transform(const std::string& id, const std::string& partId, const std::string& text, std::ostream& ss)
+   {
+      // CastQFormProxy is defined in <url:../qtui/QCastViewHtml.cpp#tn=jsObjectName>
+      std::string jsOnClick = std::string("onclick=\"CastQFormProxy.onClick('")
+         + escape(id, "\\'\"") + "','"
+         + escape(partId, "\\'\"") + "','";
+
+      const char* data = text.data();
+      size_t pos = 0;
+      size_t len = text.size();
+      size_t posTag = text.find("@@ONCLICK@@");
+      while (posTag != std::string::npos) {
+         size_t start = posTag;
+         ss.write(data + pos, posTag - pos);
+         pos = posTag + 11;
+         // extract param
+         skipspace(pos, len, text);
+         if (text[pos] != '(') posTag = std::string::npos;
+         else {
+            pos++;
+            posTag = pos;
+            skipto(posTag, len, text, ')', "\n\r");
+         }
+         if (posTag == std::string::npos) {
+            pos = start;
+            ss << "Error:";
+            break;
+         }
+         else {
+            std::string ctrlid(data + pos, posTag - pos);
+            ctrlid = stripchars(ctrlid, " \'\"");
+            ctrlid = escape(ctrlid, "\\'\"");
+            ss << jsOnClick << ctrlid << "');\"";
+            pos = posTag + 1;
+         }
+         posTag = text.find("@@ONCLICK@@", pos);
+      }
+      if (pos < text.size()) {
+         ss.write(data + pos, text.size() - pos);
+      }
+   }
+};
+
 std::auto_ptr<CRenderer> CHtmlObject::renderHtml(new CHtmlObject_RenderHtml());
 
 CHtmlObject::CHtmlObject()
@@ -74,11 +157,36 @@ void CHtmlObject::setHtml(const std::string& partId, const std::string& text)
    }
 }
 
+CHtmlChunk* CHtmlObject::setActiveHtml(const Ice::Identity& ident, const std::string& partId,
+      const std::string& text)
+{
+   CHtmlChunk* pPart = NULL;
+   if (m_Parts.find(partId)->second != NULL) {
+      pPart = m_Parts[partId];
+      //pPart->m_dataOwner = ident; // just in case it changed
+   }
+
+   if (pPart == NULL) {
+      pPart = new CHtmlChunk(m_id, partId, CHtmlChunk::html, ident);
+      m_Parts[partId] = pPart;
+   }
+
+   if (pPart) {
+      CHtmlTransformer trans;
+      std::ostringstream ss;
+      trans.transform(m_id, partId, text, ss);
+      pPart->setContent(ss.str());
+   }
+
+   return pPart;
+}
+
 CHtmlChunk* CHtmlObject::setForm(const Ice::Identity& ident, const std::string& partId, const std::string& text)
 {
    CHtmlChunk* pPart = NULL;
    if (m_Parts.find(partId)->second != NULL) {
       pPart = m_Parts[partId];
+      //pPart->m_dataOwner = ident; // just in case it changed
    }
 
    if (pPart == NULL) {
@@ -102,7 +210,11 @@ CHtmlChunk* CHtmlObject::setForm(const Ice::Identity& ident, const std::string& 
          + pPart->htmlid() + "')\" /></td>\n";
       formtag += "<td width='32px'>&nbsp;</td></tr></table></div>";
 
-      pPart->setContent(formtag + text + "\n</form>");
+      CHtmlTransformer trans;
+      std::ostringstream ss;
+      trans.transform(m_id, partId, text, ss);
+
+      pPart->setContent(formtag + ss.str() + "\n</form>");
    }
 
    return pPart;

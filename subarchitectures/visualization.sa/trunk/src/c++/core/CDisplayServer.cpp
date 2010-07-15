@@ -414,30 +414,69 @@ void CDisplayServer::setHtmlForm(const Ice::Identity& ident, const std::string& 
 {
 #ifdef V11N_OBJECT_HTML
    DTRACE("CDisplayServer::setHtmlForm");
+   
+   // TODO: remove this (testing)
+   {
+      if (id == "TEST" && partId == "ACTIVEHTML") {
+         setActiveHtml(ident, id, partId, htmlData);
+         return;
+      }
+   }
 
-   CHtmlObject *pModel = NULL;
+   CHtmlObject *pObject = NULL;
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
-      pModel = dynamic_cast<CHtmlObject*>(pExisting);
-      if (! pModel) {
+      pObject = dynamic_cast<CHtmlObject*>(pExisting);
+      if (! pObject) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
          DMESSAGE("setHtmlForm: Replacing an exisiting object of different type.");
       }
    }
 
-   if (pModel) {
-      if (htmlData.size() < 1) pModel->removePart(partId);
-      else pModel->setForm(ident, partId, htmlData);
-      //m_Model.registerHtmlForm(ident, id, partId);
+   if (pObject) {
+      if (htmlData.size() < 1) pObject->removePart(partId);
+      else pObject->setForm(ident, partId, htmlData);
       m_Model.refreshObject(id);
    }
    else {
-      pModel = new CHtmlObject();
-      pModel->m_id = id;
-      CHtmlChunk* pForm = pModel->setForm(ident, partId, htmlData);
+      pObject = new CHtmlObject();
+      pObject->m_id = id;
+      CHtmlChunk* pForm = pObject->setForm(ident, partId, htmlData);
       if (pForm) pForm->Observers.addObserver(this);
-      m_Model.setObject(pModel);
+      m_Model.setObject(pObject);
+   }
+#endif
+}
+
+void CDisplayServer::setActiveHtml(const Ice::Identity& ident, const std::string& id, const std::string& partId,
+      const std::string& htmlData)
+{
+#ifdef V11N_OBJECT_HTML
+   DTRACE("CDisplayServer::setActiveHtml");
+
+   CHtmlObject *pObject = NULL;
+   CDisplayObject *pExisting = m_Model.getObject(id);
+   if (pExisting) {
+      pObject = dynamic_cast<CHtmlObject*>(pExisting);
+      if (! pObject) {
+         // The retreived model is of a different type, we must replace it
+         m_Model.removeObject(id);
+         DMESSAGE("setActiveHtml: Replacing an exisiting object of different type.");
+      }
+   }
+
+   if (pObject) {
+      if (htmlData.size() < 1) pObject->removePart(partId);
+      else pObject->setActiveHtml(ident, partId, htmlData);
+      m_Model.refreshObject(id);
+   }
+   else {
+      pObject = new CHtmlObject();
+      pObject->m_id = id;
+      CHtmlChunk* pChunk = pObject->setActiveHtml(ident, partId, htmlData);
+      if (pChunk) pChunk->Observers.addObserver(this);
+      m_Model.setObject(pObject);
    }
 #endif
 }

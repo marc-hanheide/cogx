@@ -46,6 +46,7 @@ public slots:
    QMap<QString, QVariant> getValues(const QString& formid);
    void saveFormData(const QString& formid, const QMap<QString,QVariant>& object);
    QMap<QString, QVariant> getSavedFormData(const QString& formid);
+   void onClick(const QString& chunkId, const QString& partId, const QString& ctrlId);
 
 public:
    static QString getJavaScript(const QString& jsObjectName, bool htmlScriptBlock = false);

@@ -146,6 +146,11 @@ QMap<QString, QVariant> QCastFormProxy::getGet()
    return _get;
 }
 
+void QCastFormProxy::onClick(const QString& chunkId, const QString& partId, const QString& ctrlId)
+{
+   DTRACE("QCastFormProxy::onClick " << ctrlId.toStdString());
+}
+
 void QCastFormProxy::saveFormData(const QString& formid, const QMap<QString,QVariant>& object)
 {
    DTRACE("QCastFormProxy::saveFormData " << formid.toStdString());
