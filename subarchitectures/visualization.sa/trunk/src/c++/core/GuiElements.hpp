@@ -86,21 +86,6 @@ public:
    void syncControlState(const std::string& newValue, bool notify=false);
 };
 
-// CGuiElementValue is used for ICE communication: instances are stored in
-// a queue in hIceDisplayServer.
-struct CGuiElementValue
-{
-   enum { get, set };
-   CGuiElementValue(CGuiElement *pElement, const std::string& value, int direction=set) {
-      this->pElement = pElement;
-      this->value = value;
-      this->mode = direction;
-   }
-   CGuiElement *pElement;
-   std::string value;
-   int mode; 
-};
-
 }} // namespace
 #endif /* end of include guard: GUIELEMENTS_6I8U02AA */
 // vim:sw=3:ts=8:et
