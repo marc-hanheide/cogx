@@ -47,6 +47,11 @@ class CASTState(object):
 
         problem = pddl.Problem("cogxtask", self.objects, facts, None, domain, opt, opt_func )
 
+        if deterministic:
+            self.state.problem = problem
+        else:
+            self.prob_state.problem = problem
+
         if cast_task is None:
             return problem
 
@@ -60,10 +65,6 @@ class CASTState(object):
                 problem.goal.parts.append(pddl.conditions.PreferenceCondition(goal.importance, pddl_goal, problem))
 
         log.debug("goal: %s", problem.goal)
-        if deterministic:
-            self.state.problem = problem
-        else:
-            self.prob_state.problem = problem
         
         return problem
       
