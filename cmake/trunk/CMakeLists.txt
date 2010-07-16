@@ -9,8 +9,10 @@ set(CMAKE_INSTALL_PREFIX "${OUTPUT}" CACHE INTERNAL "Prefix prepended to install
 
 
 # use cmake files packaged with CAST as well
+set(CMAKE_MODULE_PATH /usr/share/cast/cmake ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH /usr/local/share/cast/cmake ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH /opt/local/share/cast/cmake ${CMAKE_MODULE_PATH})
+set(QT_QTOPENGL_INCLUDE_DIR  /usr/include/qt4/QtOpenGL)
 
 find_package(CAST REQUIRED)
 include(UseCAST)
@@ -28,21 +30,34 @@ include(subarchitectures/visualization.sa/cmake/v11n.cmake)
 
 add_subdirectory (tools/d-lib)
 
-option(BUILD_SA_BINDING "Build binder subarchitecure" YES)
+include(cmake/PythonBuild.cmake) 
+
+option(BUILD_BELIEFS "Build beliefs" YES)
+if(BUILD_BELIEFS)
+add_subdirectory (tools/beliefs/apis/beliefs)
+add_subdirectory (tools/beliefs/apis/beliefs+cast)
+add_subdirectory (tools/cogxutils/)
+endif(BUILD_BELIEFS)
+
+option(BUILD_SA_VIZ "Build visualization subarchitecure" NO)
+if(BUILD_SA_VIZ)
+include(subarchitectures/visualization.sa/cmake/v11n.cmake) 
+endif(BUILD_SA_VIZ)
+
+option(BUILD_SA_BINDING "Build binder subarchitecure" NO)
 if(BUILD_SA_BINDING)
 add_subdirectory (subarchitectures/binder)
 endif(BUILD_SA_BINDING)
 
-option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" YES)
+option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" NO)
 if(BUILD_SA_MOTIVATION)
 add_subdirectory (subarchitectures/motivation.sa)
 endif(BUILD_SA_MOTIVATION)
 
-
-option(BUILD_SA_NAV "Build navigation subarchitecure" YES)
-if(BUILD_SA_NAV)
-add_subdirectory (subarchitectures/nav.sa)
-endif(BUILD_SA_NAV)
+option(BUILD_SA_DIALOGUE "Build dialogue subarchitecure" NO)
+if(BUILD_SA_DIALOGUE)
+add_subdirectory (subarchitectures/dialogue.sa)
+endif(BUILD_SA_DIALOGUE)
 
 
 option(BUILD_HAL_ROBOT "Build hardware robotbase" YES)
@@ -56,7 +71,7 @@ add_subdirectory (tools/hardware/laser)
 endif(BUILD_HAL_LASER)
 
 
-option(BUILD_HAL_TTS "Build hardware tts" YES)
+option(BUILD_HAL_TTS "Build hardware tts" NO)
 if(BUILD_HAL_TTS)
 add_subdirectory (tools/hardware/tts)
 endif(BUILD_HAL_TTS)
@@ -65,6 +80,11 @@ option(BUILD_HAL_PTZ "Build hardware ptz" YES)
 if(BUILD_HAL_PTZ)
 add_subdirectory (tools/hardware/ptz)
 endif(BUILD_HAL_PTZ)
+
+option(BUILD_HAL_BLOBFINDER "Build hardware blobfinder" YES)
+if(BUILD_HAL_BLOBFINDER)
+add_subdirectory (tools/hardware/blobfinder)
+endif(BUILD_HAL_BLOBFINDER)
 
 option(BUILD_HAL_UTILS "Build hardware utils" YES)
 if(BUILD_HAL_UTILS)
@@ -92,7 +112,7 @@ if(BUILD_HAL_STEREO)
 add_subdirectory (tools/hardware/stereo)
 endif(BUILD_HAL_STEREO)
 
-option(BUILD_SA_VISION "Build vision subarchitecure" YES)
+option(BUILD_SA_VISION "Build vision subarchitecure" NO)
 if(BUILD_SA_VISION)
 add_subdirectory (subarchitectures/vision.sa)
 endif(BUILD_SA_VISION)
@@ -105,7 +125,7 @@ add_subdirectory (tools/beliefmodels)
 endif(BUILD_BELIEF_MODELS)
 
 # Spatial
-option(BUILD_SA_SPATIAL "Build spatial subarchitecure" YES)
+option(BUILD_SA_SPATIAL "Build spatial subarchitecure" NO)
 if(BUILD_SA_SPATIAL)
     add_subdirectory (subarchitectures/spatial.sa)
 endif(BUILD_SA_SPATIAL)
@@ -116,7 +136,7 @@ if(BUILD_MULTI_TESTER)
 endif(BUILD_MULTI_TESTER)
 
 # Planner
-option(BUILD_SA_PLANNER "Build planner subarchitecure" YES)
+option(BUILD_SA_PLANNER "Build planner subarchitecure" NO)
 if(BUILD_SA_PLANNER)
     add_subdirectory (subarchitectures/planner.sa)
 endif(BUILD_SA_PLANNER)
@@ -129,14 +149,14 @@ endif(BUILD_SA_FAKE_MOTIVATION)
 
 add_subdirectory(tools/scripts)
 
+configure_file(${CMAKE_SOURCE_DIR}/cmake/build.properties.in ${CMAKE_SOURCE_DIR}/build.properties)
+
 option(DO_ANT "automatically compile the ant stuff" YES)
 if(DO_ANT)
-   configure_file(cmake/build.properties.in ${CMAKE_CURRENT_SOURCE_DIR}/build.properties)
-   ADD_CUSTOM_TARGET( ant_build ALL )
-   ADD_CUSTOM_COMMAND(
-      TARGET  ant_build
-      COMMAND ant WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-      )
-endif(DO_ANT)
+ADD_CUSTOM_TARGET( ant_build ALL )
+	ADD_CUSTOM_COMMAND(
+		TARGET  ant_build
+		COMMAND ant -Dcastslice.dir=${CAST_SLICE_DIR} -Dcast.jar=${CAST_INSTALL_ROOT}/share/java/cast.jar -Dice.jar=${ICE_HOME}/share/java/Ice.jar WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+     	)
 
 
