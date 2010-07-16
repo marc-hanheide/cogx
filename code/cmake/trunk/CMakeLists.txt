@@ -15,11 +15,14 @@ set(CMAKE_MODULE_PATH /opt/local/share/cast/cmake ${CMAKE_MODULE_PATH})
 find_package(CAST REQUIRED)
 include(UseCAST)
 include(CASTBuild)
+include(cmake/PythonBuild.cmake)
 
 # use cmake files packaged with CAST as well
 set(CMAKE_MODULE_PATH "${COGX_ROOT}/cmake;${CAST_CMAKE_DIR}" ${CMAKE_MODULE_PATH})
 
 add_definitions(-Wall)
+
+include(subarchitectures/visualization.sa/cmake/v11n.cmake)
 
 # UNCOMMENT THE FOLLOWING FOR THE NAVIGATION SUBARCHITECTURE
 
@@ -122,11 +125,12 @@ add_subdirectory(tools/scripts)
 
 option(DO_ANT "automatically compile the ant stuff" YES)
 if(DO_ANT)
-ADD_CUSTOM_TARGET( ant_build ALL )
-	ADD_CUSTOM_COMMAND(
-		TARGET  ant_build
-		COMMAND ant WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-     	)
+   configure_file(cmake/build.properties.in ${CMAKE_CURRENT_SOURCE_DIR}/build.properties)
+   ADD_CUSTOM_TARGET( ant_build ALL )
+   ADD_CUSTOM_COMMAND(
+      TARGET  ant_build
+      COMMAND ant WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
 endif(DO_ANT)
 
 
