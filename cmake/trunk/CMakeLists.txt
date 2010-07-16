@@ -30,8 +30,6 @@ include(subarchitectures/visualization.sa/cmake/v11n.cmake)
 
 add_subdirectory (tools/d-lib)
 
-include(cmake/PythonBuild.cmake) 
-
 option(BUILD_BELIEFS "Build beliefs" YES)
 if(BUILD_BELIEFS)
 add_subdirectory (tools/beliefs/apis/beliefs)
