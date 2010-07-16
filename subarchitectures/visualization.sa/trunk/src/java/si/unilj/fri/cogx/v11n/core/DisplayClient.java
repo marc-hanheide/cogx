@@ -19,32 +19,25 @@ package si.unilj.fri.cogx.v11n.core;
 //-----------------------------------------------------------------
 // CAST IMPORTS
 //-----------------------------------------------------------------
-import cast.architecture.*;
-import cast.cdl.*;
-import cast.core.*;
-import cast.CASTException;
-import Video.Image;
-
-//-----------------------------------------------------------------
-// VISUALIZATION IMPORTS
-//-----------------------------------------------------------------
-//import si.unilj.fri.cogx.Visualization.DisplayInterface;
-//import si.unilj.fri.cogx.Visualization.DisplayInterfacePrx;
-//import si.unilj.fri.cogx.Visualization.*;
-import Visualization.*; // ICE interfaces
-
-//-----------------------------------------------------------------
-// JAVA IMPORTS
-//-----------------------------------------------------------------
-import java.lang.StringBuilder;
 import java.util.Map;
-import java.util.Iterator;
+
+import Visualization.ActionInfo;
+import Visualization.DisplayInterface;
+import Visualization.DisplayInterfacePrx;
+import Visualization.Quaternion;
+import Visualization.TFormFieldMapHolder;
+import cast.CASTException;
+import cast.core.CASTComponent;
 
 public class DisplayClient
 {
    private class EventReceiverImpl extends Visualization._EventReceiverDisp
    {
-      private DisplayClient m_Client;
+      /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8403217494649616812L;
+	private DisplayClient m_Client;
       public EventReceiverImpl(DisplayClient client)
       {
          m_Client = client;
@@ -202,7 +195,7 @@ public class DisplayClient
       if (m_Server == null) return;
       Ice.Identity iceid = getEventClientId();
       m_Server.setActiveHtml(iceid, id, partId, htmlData);
-   }
+   } 
 
    public final void setHtmlForm(String id, String partId, String htmlData)
    {
