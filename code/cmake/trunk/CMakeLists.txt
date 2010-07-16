@@ -37,11 +37,6 @@ add_subdirectory (tools/beliefs/apis/beliefs+cast)
 add_subdirectory (tools/cogxutils/)
 endif(BUILD_BELIEFS)
 
-option(BUILD_SA_VIZ "Build visualization subarchitecure" NO)
-if(BUILD_SA_VIZ)
-include(subarchitectures/visualization.sa/cmake/v11n.cmake) 
-endif(BUILD_SA_VIZ)
-
 option(BUILD_SA_BINDING "Build binder subarchitecure" NO)
 if(BUILD_SA_BINDING)
 add_subdirectory (subarchitectures/binder)
