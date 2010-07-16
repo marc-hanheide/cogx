@@ -721,6 +721,7 @@ void CDisplayServerI::run()
                            event.type = Visualization::evDropListChange; break;
                      }
 
+                     event.objectId = pChange->pElement->m_viewId;
                      event.sourceId = pChange->pElement->m_id;
                      event.data = pChange->value;
 
