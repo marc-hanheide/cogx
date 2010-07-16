@@ -599,6 +599,35 @@ void CDisplayServer::onFormSubmitted(CHtmlChunk* pForm, const TFormValues& newVa
    hIceDisplayServer->addFormDataChange(pData);
 }
 
+class CHtmlClickOperation: public CDisplayServerI::CQueuedOperation
+{
+public:
+   Visualization::TEvent event;
+   CHtmlClickOperation(const Ice::Identity& clientId)
+      : CDisplayServerI::CQueuedOperation(clientId)
+   {
+   }
+
+   bool execute(Visualization::EventReceiverPrx& pClient)
+   {
+      pClient->handleEvent(event);
+   }
+};
+
+void CDisplayServer::onHtmlClick(CHtmlChunk *pChunk, const std::string& ctrlId)
+{
+   DTRACE("CDisplayServer::onHtmlClick");
+   if (! hIceDisplayServer.get()) return;
+   if (! pChunk) return;
+   if (ctrlId.size() < 1) return;
+   CHtmlClickOperation* pOp = new CHtmlClickOperation(pChunk->m_dataOwner);
+   pOp->event.objectId = pChunk->id();
+   pOp->event.partId = pChunk->partId();
+   pOp->event.sourceId = ctrlId;
+
+   hIceDisplayServer->addOperation(pOp);
+}
+
 void CDisplayServer::getFormStateAsync(CHtmlChunk* pForm)
 {
    DTRACE("CDisplayServer::getFormStateAsync");
@@ -859,6 +888,16 @@ void CDisplayServerI::addFormDataChange(CqeFormValue *pChange)
 
    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
    m_FormQueue.push_back(pChange);
+   m_EventMonitor.notify();
+}
+
+void CDisplayServerI::addOperation(CQueuedOperation* pOperation)
+{
+   DTRACE("CDisplayServerI::addOperation");
+   if (!pOperation) return;
+
+   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
+   m_OperationQueue.push_back(pOperation);
    m_EventMonitor.notify();
 }
 

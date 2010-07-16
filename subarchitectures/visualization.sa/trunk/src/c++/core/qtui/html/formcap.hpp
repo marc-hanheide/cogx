@@ -35,10 +35,11 @@ public:
    //    - when sending verify if pForm.m_htmlid is the same as in setPost
    QCastFormProxy();
    ~QCastFormProxy();
-   void registerForm(cogx::display::CHtmlChunk* pForm);
-   void removeForm(cogx::display::CHtmlChunk* pForm);
+   void registerChunk(cogx::display::CHtmlChunk* pChunk);
+   void removeChunk(cogx::display::CHtmlChunk* pChunk);
 
 public slots:
+   // formid conatins a leading #
    void setPost(const QString& formid, const QMap<QString,QVariant>& object);
    QMap<QString, QVariant> getPost();
    void setGet(const QString& formid, const QMap<QString,QVariant>& object);
@@ -46,7 +47,8 @@ public slots:
    QMap<QString, QVariant> getValues(const QString& formid);
    void saveFormData(const QString& formid, const QMap<QString,QVariant>& object);
    QMap<QString, QVariant> getSavedFormData(const QString& formid);
-   void onClick(const QString& chunkId, const QString& partId, const QString& ctrlId);
+   // htmlId doesn't contain a leading #
+   void onClick(const QString& htmlId, const QString& ctrlId);
 
 public:
    static QString getJavaScript(const QString& jsObjectName, bool htmlScriptBlock = false);
@@ -59,6 +61,8 @@ public:
          const cogx::display::TFormValues& newValues);
    virtual void onOwnerDataChanged(cogx::display::CHtmlChunk *pForm,
          const cogx::display::TFormValues& newValues);
+   virtual void onHtmlClick(cogx::display::CHtmlChunk *pChunk,
+         const std::string& ctrlId) { /*unused*/ }
 
 signals:
    // Transfer onOwnerDataChanged to Qt UI thread; connected to QCastViewHtml

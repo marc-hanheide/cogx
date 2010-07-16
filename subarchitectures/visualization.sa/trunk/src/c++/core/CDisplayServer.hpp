@@ -99,7 +99,7 @@ private:
 
    // CHtmlFormObserver
    void onFormSubmitted(CHtmlChunk *pForm, const TFormValues& newValues); /*override*/
-   // TODO: onClick(pChunk, id) for active chunks; CHtmlFormObserver --> rename to CHtmlChunkObserver
+   void onHtmlClick(CHtmlChunk *pChunk, const std::string& ctrlId); /*override*/
 
    // CControlDataProxy
    void getControlStateAsync(cogx::display::CGuiElement *pElement); /*override*/
@@ -230,6 +230,17 @@ public:
    // See Ice demo: demo/Ice/bidir
    //-----------------------------------------------------------------
 public:
+   class CQueuedOperation
+   {
+   public:
+      Ice::Identity m_clientId;
+      CQueuedOperation(const Ice::Identity& clientId) 
+      {
+         m_clientId = clientId;
+      }
+      virtual bool execute(Visualization::EventReceiverPrx& pClient) = 0;
+   };
+
    struct CqeFormValue {
       enum EDirection { get, set };
       EDirection mode;
@@ -260,6 +271,7 @@ private:
    std::set<Visualization::EventReceiverPrx> m_EventClients;
    CPtrVector<CGuiElementValue> m_EventQueue;
    CPtrVector<CqeFormValue> m_FormQueue;
+   CPtrVector<CQueuedOperation> m_OperationQueue;
    IceUtil::ThreadPtr m_pEventSenderThread;
 
    void run();
@@ -270,6 +282,7 @@ public:
    virtual void addClient(const Ice::Identity& ident, const Ice::Current& current); 
    void addDataChange(CGuiElementValue *pChange);
    void addFormDataChange(CqeFormValue *pChange);
+   void addOperation(CQueuedOperation* pOperation);
 };
 
 } } // namespace

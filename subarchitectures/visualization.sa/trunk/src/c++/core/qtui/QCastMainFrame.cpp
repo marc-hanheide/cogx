@@ -454,7 +454,7 @@ void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
             }
 
             CPtrVector<cogx::display::CHtmlChunk> forms;
-            pView->getHtmlForms(forms);
+            pView->getHtmlChunks(forms, cogx::display::CHtmlChunk::form);
             cogx::display::CHtmlChunk* pForm;
             FOR_EACH(pForm, forms) {
                if (!pForm) continue;

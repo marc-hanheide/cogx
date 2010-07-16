@@ -30,6 +30,8 @@ private:
    bool m_bHasForms;
    QString m_jsFormCap;
    static QString m_jQuery;
+   QString jsObjectName;
+   CPtrVector<cogx::display::CHtmlChunk> m_Chunks; // activehtml and form chunks (js interaction)
 
 public:
    QCastViewHtml( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
