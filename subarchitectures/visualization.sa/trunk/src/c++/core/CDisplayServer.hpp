@@ -238,7 +238,7 @@ public:
       {
          m_clientId = clientId;
       }
-      virtual bool execute(Visualization::EventReceiverPrx& pClient) = 0;
+      virtual void execute(Visualization::EventReceiverPrx& pClient) = 0;
    };
 
    struct CqeFormValue {
@@ -269,8 +269,6 @@ private:
    IceUtil::Monitor<IceUtil::Mutex> m_EventMonitor;
    // TODO: client subscribes to events from selected views/dialogs
    std::set<Visualization::EventReceiverPrx> m_EventClients;
-   CPtrVector<CGuiElementValue> m_EventQueue;
-   CPtrVector<CqeFormValue> m_FormQueue;
    CPtrVector<CQueuedOperation> m_OperationQueue;
    IceUtil::ThreadPtr m_pEventSenderThread;
 
@@ -280,8 +278,6 @@ public:
    void startEventServer();
    void destroyEventServer(); 
    virtual void addClient(const Ice::Identity& ident, const Ice::Current& current); 
-   void addDataChange(CGuiElementValue *pChange);
-   void addFormDataChange(CqeFormValue *pChange);
    void addOperation(CQueuedOperation* pOperation);
 };
 
