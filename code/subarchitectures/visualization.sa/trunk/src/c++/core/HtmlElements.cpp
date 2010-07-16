@@ -23,6 +23,29 @@
 
 namespace cogx { namespace display {
 
+const std::string CHtmlChunk::JavascriptObjectName = "CastQFormProxy";
+
+std::string CHtmlChunk::makeHtmlId(EChunkType type, const std::string& objectId, const std::string& partId)
+{
+   std::string htmlId;
+   if (type == form) htmlId = "form";
+   else htmlId = "chunk";
+
+   std::string str = "_0" + objectId + "_1" + partId;
+   int len = str.size();
+   char prevch = ' ';
+   for(int i = 0; i < len; i++) {
+      char ch = str[i];
+      if (isalnum(ch)) htmlId += ch;
+      else {
+         ch = '_';
+         if (prevch != ch) htmlId += ch;
+      }
+      prevch = ch;
+   }
+   return htmlId;
+}
+
 CHtmlChunk::CHtmlChunk(const std::string& id, const std::string& partId, EChunkType type,
       const Ice::Identity& ident)
 {
@@ -30,21 +53,7 @@ CHtmlChunk::CHtmlChunk(const std::string& id, const std::string& partId, EChunkT
    m_partId = partId;
    m_type = type;
    m_dataOwner = ident;
-   if (m_type == form) m_htmlId = "form";
-   else m_htmlId = "chunk";
-
-   std::string str = "_" + id + "_" + partId;
-   int len = str.size();
-   char prevch = ' ';
-   for(int i = 0; i < len; i++) {
-      char ch = str[i];
-      if (isalnum(ch)) m_htmlId += ch;
-      else {
-         ch = '_';
-         if (prevch != ch) m_htmlId += ch;
-      }
-      prevch = ch;
-   }
+   m_htmlId = makeHtmlId(m_type, id, partId);
 }
 
 void CHtmlChunk::setContent(const std::string& content)
@@ -65,6 +74,19 @@ void CHtmlChunk::notifyFormSubmit(TFormValues& formData, const QCastFormProxy* c
       if (pObsrvr == (CHtmlFormObserver*)changeSource) continue;
       //DMESSAGE("Notifying " << pObsrvr << " source=" << changeSource);
       pObsrvr->onFormSubmitted(this, formData);
+   }
+}
+
+void CHtmlChunk::notifyChunkEvent(EChunkEventType type, const std::string& sourceId,
+      const std::string& value, const QCastFormProxy* changeSource)
+{
+   CHtmlFormObserver *pObsrvr;
+   CObserverList<CHtmlFormObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
+   FOR_EACH(pObsrvr, Observers) {
+      switch (type) {
+         case onClick: pObsrvr->onHtmlClick(this, sourceId); break;
+         default: break;
+      }
    }
 }
 

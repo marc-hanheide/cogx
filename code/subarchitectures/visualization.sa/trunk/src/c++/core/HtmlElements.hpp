@@ -35,24 +35,29 @@ public:
    // Pass the POST data to the owner component
    virtual void onFormSubmitted(CHtmlChunk *pForm, const TFormValues& newValues) = 0;
 
+   // onClick(pChunk, id) for active chunks; XXX: CHtmlFormObserver --> rename to CHtmlChunkObserver.
+   // CDisplayServer executes a button click.
+   // @param ctrlId is the parameter passed to @@ONCLICK@@
+   // (see <url:object/CHtmlObject.cpp#tn=CHtmlTransformer>)
+   virtual void onHtmlClick(CHtmlChunk *pChunk, const std::string& ctrlId) = 0;
+
    // Pass the changes from the owner to the form.
    // This function shoul only be implemented in QCastFormObserver.
    // The CDisplayServer should not respond to this notification since it is the
    // CDisplayServer that causes the change.
    virtual void onOwnerDataChanged(CHtmlChunk *pForm, const TFormValues& newValues) {}
-
-   // TODO: onClick(pChunk, id) for active chunks; CHtmlFormObserver --> rename to CHtmlChunkObserver
-   // CDisplayServer executes a button click
 };
 
 class CHtmlChunk
 {
 public:
-   enum EChunkType { html, form, head };
+   enum EChunkType { head = 0x01, html = 0x02, activehtml = 0x04, form = 0x08 };
+   enum EChunkEventType { onClick };
+   static const std::string JavascriptObjectName;
 
 private:
    EChunkType m_type;
-   std::string m_id;
+   std::string m_id;     // Id of the owner CDisplayObject
    std::string m_partId;
    std::string m_htmlId; // a valid hmtl id generated from type, m_id and m_partId
 
@@ -62,6 +67,9 @@ public:
    TFormValues m_formData; // reused when the HTML document is reloaded
 
    CObserverList<CHtmlFormObserver> Observers;
+
+public:
+   static std::string makeHtmlId(EChunkType type, const std::string& objectId, const std::string& partId);
 
 public:
    CHtmlChunk(const std::string& id, const std::string& partId, EChunkType type=html,
@@ -75,8 +83,9 @@ public:
    // (normally) called after a submit subscribed observes.
    void notifyFormSubmit(TFormValues& formData, const QCastFormProxy* changeSource);
 
-   // TODO: some components may want to receive button clicks, etc.
-   // void notifyFormEvent(const std::string& type, const std::string& value, QCastFormProxy* changeSource);
+   // some components may want to receive button clicks, etc.
+   void notifyChunkEvent(EChunkEventType type, const std::string& sourceId, const std::string& value,
+         const QCastFormProxy* changeSource);
 
    // Synchronize the control state after a change in the (remote) component that 
    // created the form (the owner). This function is called as a result of

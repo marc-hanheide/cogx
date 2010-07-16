@@ -58,12 +58,11 @@ struct CHtmlTransformer
       }
    }
 
-   void transform(const std::string& id, const std::string& partId, const std::string& text, std::ostream& ss)
+   void transform(const std::string& htmlId, const std::string& text, std::ostream& ss)
    {
-      // CastQFormProxy is defined in <url:../qtui/QCastViewHtml.cpp#tn=jsObjectName>
-      std::string jsOnClick = std::string("onclick=\"CastQFormProxy.onClick('")
-         + escape(id, "\\'\"") + "','"
-         + escape(partId, "\\'\"") + "','";
+      std::string jsOnClick = std::string("onclick=\"")
+         + CHtmlChunk::JavascriptObjectName + ".onClick('"
+         + escape(htmlId, "\\'\"") + "', '";
 
       const char* data = text.data();
       size_t pos = 0;
@@ -82,9 +81,9 @@ struct CHtmlTransformer
             skipto(posTag, len, text, ')', "\n\r");
          }
          if (posTag == std::string::npos) {
-            pos = start;
-            ss << "Error:";
-            break;
+            pos = start + 2;
+            posTag = text.find("@@ONCLICK@@", pos);
+            continue;
          }
          else {
             std::string ctrlid(data + pos, posTag - pos);
@@ -145,6 +144,7 @@ void CHtmlObject::setHtml(const std::string& partId, const std::string& text)
    CHtmlChunk* pPart = NULL;
    if (m_Parts.find(partId)->second != NULL) {
       pPart = m_Parts[partId];
+      // TODO: if type != html, delete
    }
 
    if (pPart == NULL) {
@@ -163,18 +163,19 @@ CHtmlChunk* CHtmlObject::setActiveHtml(const Ice::Identity& ident, const std::st
    CHtmlChunk* pPart = NULL;
    if (m_Parts.find(partId)->second != NULL) {
       pPart = m_Parts[partId];
-      //pPart->m_dataOwner = ident; // just in case it changed
+      // pPart->m_dataOwner = ident; // just in case it changed
+      // TODO: if type != activehtml, delete
    }
 
    if (pPart == NULL) {
-      pPart = new CHtmlChunk(m_id, partId, CHtmlChunk::html, ident);
+      pPart = new CHtmlChunk(m_id, partId, CHtmlChunk::activehtml, ident);
       m_Parts[partId] = pPart;
    }
 
    if (pPart) {
       CHtmlTransformer trans;
       std::ostringstream ss;
-      trans.transform(m_id, partId, text, ss);
+      trans.transform(pPart->htmlid(), text, ss);
       pPart->setContent(ss.str());
    }
 
@@ -186,7 +187,8 @@ CHtmlChunk* CHtmlObject::setForm(const Ice::Identity& ident, const std::string& 
    CHtmlChunk* pPart = NULL;
    if (m_Parts.find(partId)->second != NULL) {
       pPart = m_Parts[partId];
-      //pPart->m_dataOwner = ident; // just in case it changed
+      // pPart->m_dataOwner = ident; // just in case it changed
+      // TODO: if type != form, delete
    }
 
    if (pPart == NULL) {
@@ -212,7 +214,7 @@ CHtmlChunk* CHtmlObject::setForm(const Ice::Identity& ident, const std::string& 
 
       CHtmlTransformer trans;
       std::ostringstream ss;
-      trans.transform(m_id, partId, text, ss);
+      trans.transform(pPart->htmlid(), text, ss);
 
       pPart->setContent(formtag + ss.str() + "\n</form>");
    }
@@ -237,14 +239,14 @@ void CHtmlObject::setHead(const std::string& partId, const std::string& text)
    }
 }
 
-int CHtmlObject::getHtmlForms(CPtrVector<CHtmlChunk>& forms)
+int CHtmlObject::getHtmlChunks(CPtrVector<CHtmlChunk>& chunks, int typeMask)
 {
    typeof(m_Parts.begin()) itmap;
    int count = 0;
    for(itmap = m_Parts.begin(); itmap != m_Parts.end(); itmap++) {
       CHtmlChunk *pChunk = itmap->second;
-      if (pChunk->type() == CHtmlChunk::form) {
-         forms.push_back(pChunk);
+      if (pChunk->type() & typeMask) {
+         chunks.push_back(pChunk);
          count++;
       }
    }

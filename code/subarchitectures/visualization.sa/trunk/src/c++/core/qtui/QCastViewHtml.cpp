@@ -23,7 +23,10 @@
 #endif
 #include "convenience.hpp"
 
-static const QString jsObjectName("CastQFormProxy");
+namespace cxd = cogx::display;
+
+// ("CastQFormProxy");
+//static const QString jsObjectName = QString::fromStdString(cxd::CHtmlChunk::JavascriptObjectName);
 QString QCastViewHtml::m_jQuery;
 
 QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
@@ -31,6 +34,7 @@ QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
    pView = NULL;
    m_bModified = false;
    m_bHasForms = false;
+   jsObjectName = QString::fromStdString(cxd::CHtmlChunk::JavascriptObjectName);
 
    // The signal is queued an processed when Qt is idle.
    // We emit the signal in paintEvent so that the HTML content is recreated
@@ -68,39 +72,32 @@ QCastViewHtml::~QCastViewHtml()
       pView->viewObservers.removeObserver(this);
    }
    pView = NULL;
+
+   m_Chunks.clear(); // don't delete, just clear;
 }
 
 void QCastViewHtml::createJsObjects()
 {
    DTRACE("QCastViewHtml::createJsObjects");
-   if (! m_bHasForms) {
-      DMESSAGE("NO forms");
-      QWebPage* pPage = page();
-      QWebFrame* pFrame = NULL;
-      if (pPage) pFrame = pPage->currentFrame();
-      if (pFrame) {
-         QCastFormProxy* pObj = new QCastFormProxy();
-         pFrame->addToJavaScriptWindowObject(jsObjectName, pObj);
-      }
-      return;
-   }
-
    QWebPage* pPage = page();
-   QWebFrame* pFrame = NULL;
-   if (pPage) pFrame = pPage->currentFrame();
-   if (pFrame) {
-      QCastFormProxy* pObj = new QCastFormProxy();
+   if (! pPage) return;
+   QWebFrame* pFrame = pPage->currentFrame();
+   if (! pFrame) return;
+
+   QCastFormProxy* pObj = new QCastFormProxy();
+
+   if (! m_bHasForms) {
       connect(pObj, SIGNAL(signalOwnerDataChanged(QString)),
            this, SLOT(doFillHtmlFrom(QString)),
            Qt::QueuedConnection);
-      CPtrVector<cogx::display::CHtmlChunk> forms;
-      if (pView) pView->getHtmlForms(forms);
-      cogx::display::CHtmlChunk* pForm;
-      FOR_EACH(pForm, forms) {
-         pObj->registerForm(pForm);
-      }
-      pFrame->addToJavaScriptWindowObject(jsObjectName, pObj);
    }
+
+   cxd::CHtmlChunk* pChunk;
+   FOR_EACH(pChunk, m_Chunks) {
+      if (! pChunk ) continue;
+      pObj->registerChunk(pChunk);
+   }
+   pFrame->addToJavaScriptWindowObject(jsObjectName, pObj);
 }
 
 void QCastViewHtml::finishLoading(bool)
@@ -114,10 +111,9 @@ void QCastViewHtml::finishLoading(bool)
       if (pPage) pFrame = pPage->currentFrame();
       if (!pFrame) return;
 
-      CPtrVector<cogx::display::CHtmlChunk> forms;
-      pView->getHtmlForms(forms);
-      cogx::display::CHtmlChunk* pForm;
-      FOR_EACH(pForm, forms) {
+      cxd::CHtmlChunk* pForm;
+      FOR_EACH(pForm, m_Chunks) {
+         if (! pForm || pForm->type() != cxd::CHtmlChunk::form) continue;
          QString js = QString("CogxJsFillForm('#%1');").arg(QString::fromStdString(pForm->htmlid()));
          pFrame->evaluateJavaScript(js);
       }
@@ -170,9 +166,16 @@ void QCastViewHtml::paintEvent(QPaintEvent* event)
 void QCastViewHtml::doUpdateContent()
 {
    DTRACE("QCastViewHtml::doUpdateContent");
-   CPtrVector<cogx::display::CHtmlChunk> forms;
-   pView->getHtmlForms(forms);
-   m_bHasForms = forms.size() > 0;
+   m_Chunks.clear();
+   pView->getHtmlChunks(m_Chunks, cxd::CHtmlChunk::form | cxd::CHtmlChunk::activehtml);
+   m_bHasForms = false;
+   cxd::CHtmlChunk* pChunk;
+   FOR_EACH(pChunk, m_Chunks) {
+      if (pChunk && pChunk->type() == cxd::CHtmlChunk::form) {
+         m_bHasForms = true;
+         break;
+      }
+   }
 
    // TODO: save current form values and restore after update
    //    - store variables in state[formid]

@@ -305,7 +305,7 @@ ERenderContext CDisplayObject::getPreferredContext()
    return Context2D;
 }
 
-int CDisplayObject::getHtmlForms(CPtrVector<CHtmlChunk>& forms)
+int CDisplayObject::getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask)
 {
    return 0;
 }
@@ -479,13 +479,13 @@ void CDisplayView::drawHtml(QStringList &head, QStringList &body)
    }
 }
 
-int CDisplayView::getHtmlForms(CPtrVector<CHtmlChunk>& forms)
+int CDisplayView::getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask)
 {
    int count = 0;
    CDisplayObject *pObject;
    FOR_EACH_V(pObject, m_Objects) {
       if (!pObject) continue;
-      count += pObject->getHtmlForms(forms);
+      count += pObject->getHtmlChunks(forms, typeMask);
    }
    return count;
 }

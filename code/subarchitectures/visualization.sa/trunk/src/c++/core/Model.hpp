@@ -127,7 +127,7 @@ public:
    virtual void setPose3D(const std::string& partId, const std::vector<double>& positioXYZ,
          const std::vector<double>& rotationQaternionXYZW);
 
-   virtual int getHtmlForms(CPtrVector<CHtmlChunk>& forms);
+   virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
 };
 
 
@@ -174,7 +174,7 @@ public:
    // XXX: Qt objects shouldn't be here ...
    virtual void draw2D(QPainter &painter);
    virtual void drawHtml(QStringList &head, QStringList &body);
-   virtual int getHtmlForms(CPtrVector<CHtmlChunk>& forms);
+   virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
 
 public:
    // CGuiElementObserver

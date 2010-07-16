@@ -114,13 +114,22 @@ void VideoViewer::start()
   m_display.addCheckBox(getComponentID(), "toggle.viewer.sendipl", "Send &IplImage");
   m_display.addButton(getComponentID(), "viewer.do.nothing", "Show &time");
 
-  m_display.setActiveHtml("TEST", "ACTIVEHTML",
-      "expanded [@@ONCLICK@@('i.am.the.ctrl')]<br>\n"
-      "expanded [@@ONCLICK@@    (  'i.am.the.ctrl'  )]<br>\n"
-      "id stripped [@@ONCLICK@@(  ' \" i.am.the.ctrl   \" ' )]<br>\n"
-      "no id [@@ONCLICK@@()]<br>\n"
-      "error [@@ONCLICK@@('i.am.the.ctrl']<br>\n"
-      "unchanged because of error [@@ONCLICK@@('i.am.the.ctrl')]<br>\n"
+  m_display.setActiveHtml("TEST.parser", "active",
+      "<table><tr><td>"
+      "expanded </td><td> [@@ONCLICK@@('i.am.the.ctrl')]<br>\n"
+      "</td></tr><tr><td>"
+      "expanded </td><td> [@@ONCLICK@@    (  'i.am.the.ctrl'  )]<br>\n"
+      "</td></tr><tr><td>"
+      "id stripped </td><td> [@@ONCLICK@@(  ' \" i.am.the.ctrl   \" ' )]<br>\n"
+      "</td></tr><tr><td>"
+      "no id </td><td> [@@ONCLICK@@()]<br>\n"
+      "</td></tr><tr><td>"
+      "error </td><td> [@@ONCLICK@@('i.am.the.ctrl']<br>\n"
+      "</td></tr><tr><td>"
+      "recover after error </td><td> [@@ONCLICK@@('i.am.the.ctrl')]<br>\n"
+      "</td></tr><tr><td>"
+      "A real test</td><td> <input type='button' value='Click me!' @@ONCLICK@@('i.am.the.ctrl') />\n"
+      "</td></tr></table>"
       );
 #else
   cvNamedWindow(getComponentID().c_str(), 1);
