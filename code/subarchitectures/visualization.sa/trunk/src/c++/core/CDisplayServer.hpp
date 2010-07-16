@@ -241,15 +241,6 @@ public:
       virtual void execute(Visualization::EventReceiverPrx& pClient) = 0;
    };
 
-   struct CqeFormValue {
-      enum EDirection { get, set };
-      EDirection mode;
-      Ice::Identity ownerid;
-      std::string objectid;
-      std::string chunkid;
-      TFormValues values;
-   };
-
 private:
    class CCallbackSenderThread : public IceUtil::Thread
    {
