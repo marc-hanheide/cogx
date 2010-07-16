@@ -151,5 +151,5 @@ ADD_CUSTOM_TARGET( ant_build ALL )
 		TARGET  ant_build
 		COMMAND ant -Dcastslice.dir=${CAST_SLICE_DIR} -Dcast.jar=${CAST_INSTALL_ROOT}/share/java/cast.jar -Dice.jar=${ICE_HOME}/share/java/Ice.jar WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
      	)
-
+endif(DO_ANT)
 
