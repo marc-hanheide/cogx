@@ -566,6 +566,41 @@ void CDisplayServer::addButton(const Ice::Identity& ident, const std::string& vi
    }
 }
 
+class CUiDataChangeOperation: public CDisplayServerI::CQueuedOperation
+{
+public:
+   CGuiElement* pElement;
+   std::string value;
+   CUiDataChangeOperation(const Ice::Identity& clientId)
+      : CDisplayServerI::CQueuedOperation(clientId)
+   {
+      pElement = NULL;
+   }
+
+   void execute(Visualization::EventReceiverPrx& pClient)
+   {
+      if (! pElement) return;
+      Visualization::TEvent event;
+      switch (pElement->m_type) {
+         case CGuiElement::wtCheckBox:
+            event.type = Visualization::evCheckBoxChange; break;
+         case CGuiElement::wtButton:
+            event.type = Visualization::evButtonClick; break;
+         case CGuiElement::wtDropList:
+            event.type = Visualization::evDropListChange; break;
+         default:
+            return;
+      }
+
+      event.objectId = pElement->m_viewId;
+      event.sourceId = pElement->m_id;
+      event.data = value;
+
+      pClient->handleEvent(event);
+   }
+
+};
+
 // Add change notification to queue, processed in <url:#tn=CDisplayServerI::run>
 void CDisplayServer::onUiDataChanged(CGuiElement *pElement, const std::string& newValue)
 {
@@ -574,30 +609,109 @@ void CDisplayServer::onUiDataChanged(CGuiElement *pElement, const std::string& n
    DTRACE("CDisplayServer::onUiDataChanged");
 
    if (! hIceDisplayServer.get()) return;
-   hIceDisplayServer->addDataChange(new CGuiElementValue(pElement, newValue));
+   if (! pElement) return;
+
+   CUiDataChangeOperation* pOp = new CUiDataChangeOperation(pElement->m_dataOwner);
+   pOp->pElement = pElement;
+   pOp->value = newValue;
+   hIceDisplayServer->addOperation(pOp);
 }
+
+class CUiGetControlStateOperation: public CDisplayServerI::CQueuedOperation
+{
+public:
+   CGuiElement* pElement;
+   CUiGetControlStateOperation(const Ice::Identity& clientId)
+      : CDisplayServerI::CQueuedOperation(clientId)
+   {
+      pElement = NULL;
+   }
+
+   void execute(Visualization::EventReceiverPrx& pClient)
+   {
+      if (! pElement) return;
+      // Get data from the ui elemente owner
+      std::string val = pClient->getControlState(pElement->m_id);
+      if (val.size() > 0)
+         pElement->syncControlState(val);
+   }
+};
 
 // Add request for value to queue, processed in <url:#tn=CDisplayServerI::run>
 void CDisplayServer::getControlStateAsync(CGuiElement *pElement)
 {
    DTRACE("CDisplayServer::getControlStateAsync");
    if (! hIceDisplayServer.get()) return;
-   hIceDisplayServer->addDataChange(new CGuiElementValue(pElement, "", CGuiElementValue::get));
+   if (! pElement) return;
+
+   CUiGetControlStateOperation* pOp = new CUiGetControlStateOperation(pElement->m_dataOwner);
+   pOp->pElement = pElement;
+   hIceDisplayServer->addOperation(pOp);
 }
+
+class CHtmlFormSubmitOperation: public CDisplayServerI::CQueuedOperation
+{
+public:
+   TFormValues values;
+   std::string objectId;
+   std::string partId;
+   CHtmlFormSubmitOperation(const Ice::Identity& clientId)
+      : CDisplayServerI::CQueuedOperation(clientId)
+   {
+   }
+
+   void execute(Visualization::EventReceiverPrx& pClient)
+   {
+      pClient->handleForm(objectId, partId, values);
+   }
+};
 
 void CDisplayServer::onFormSubmitted(CHtmlChunk* pForm, const TFormValues& newValues)
 {
    DTRACE("CDisplayServer::onFormSubmitted");
    if (! hIceDisplayServer.get()) return;
+   if (! pForm) return;
 
-   CDisplayServerI::CqeFormValue* pData = new CDisplayServerI::CqeFormValue();
-   pData->mode = CDisplayServerI::CqeFormValue::set;
-   pData->ownerid = pForm->m_dataOwner;
-   pData->objectid = pForm->id();
-   pData->chunkid = pForm->partId();
-   pData->values = newValues;
-   hIceDisplayServer->addFormDataChange(pData);
+   CHtmlFormSubmitOperation* pOp = new CHtmlFormSubmitOperation(pForm->m_dataOwner);
+   pOp->objectId = pForm->id();
+   pOp->partId = pForm->partId();
+   pOp->values = newValues;
+   hIceDisplayServer->addOperation(pOp);
 }
+
+class CHtmlGetFormDataOperation: public CDisplayServerI::CQueuedOperation
+{
+   CDisplayServer* m_pServer;
+public:
+   std::string objectId;
+   std::string partId;
+   CHtmlGetFormDataOperation(const Ice::Identity& clientId, CDisplayServer* pServer)
+      : CDisplayServerI::CQueuedOperation(clientId)
+   {
+      m_pServer = pServer;
+   }
+
+   void execute(Visualization::EventReceiverPrx& pClient)
+   {
+      if (! m_pServer) return;
+      TFormValues values;
+      if (pClient->getFormData(objectId, partId, values)) {
+         m_pServer->setHtmlFormData(objectId, partId, values);
+      }
+   }
+};
+
+void CDisplayServer::getFormStateAsync(CHtmlChunk* pForm)
+{
+   DTRACE("CDisplayServer::getFormStateAsync");
+   if (! hIceDisplayServer.get()) return;
+
+   CHtmlGetFormDataOperation* pOp = new CHtmlGetFormDataOperation(pForm->m_dataOwner, this);
+   pOp->objectId = pForm->id();
+   pOp->partId = pForm->partId();
+   hIceDisplayServer->addOperation(pOp);
+}
+
 
 class CHtmlClickOperation: public CDisplayServerI::CQueuedOperation
 {
@@ -608,7 +722,7 @@ public:
    {
    }
 
-   bool execute(Visualization::EventReceiverPrx& pClient)
+   void execute(Visualization::EventReceiverPrx& pClient)
    {
       pClient->handleEvent(event);
    }
@@ -626,19 +740,6 @@ void CDisplayServer::onHtmlClick(CHtmlChunk *pChunk, const std::string& ctrlId)
    pOp->event.sourceId = ctrlId;
 
    hIceDisplayServer->addOperation(pOp);
-}
-
-void CDisplayServer::getFormStateAsync(CHtmlChunk* pForm)
-{
-   DTRACE("CDisplayServer::getFormStateAsync");
-   if (! hIceDisplayServer.get()) return;
-
-   CDisplayServerI::CqeFormValue* pData = new CDisplayServerI::CqeFormValue();
-   pData->mode = CDisplayServerI::CqeFormValue::get;
-   pData->ownerid = pForm->m_dataOwner;
-   pData->objectid = pForm->id();
-   pData->chunkid = pForm->partId();
-   hIceDisplayServer->addFormDataChange(pData);
 }
 
 std::string CDisplayServer::getPersistentStorageName()
@@ -691,8 +792,7 @@ void CDisplayServerI::run()
    // Called by CCallbackSenderThread
    while (true) {
       std::set<Visualization::EventReceiverPrx> clients;
-      CPtrVector<CGuiElementValue> changes;
-      CPtrVector<CqeFormValue> formChanges;
+      CPtrVector<CQueuedOperation> operations;
 
       {
          // SYNC: Lock the monitor
@@ -706,19 +806,16 @@ void CDisplayServerI::run()
          }
 
          clients = m_EventClients;
-         changes = m_EventQueue;
-         m_EventQueue.clear();
-         formChanges = m_FormQueue;
-         m_FormQueue.clear();
+         operations = m_OperationQueue;
+         m_OperationQueue.clear();
          // SYNC: unlock the monitor
       }
 
       Visualization::TEvent event;
 
-      if(!clients.empty() && !changes.empty()) {
-         DTRACE("EventServer Woke up. Sending events.");
-         // check the queues and send messages
-         CGuiElementValue *pChange;
+      if(!clients.empty() && !operations.empty()) {
+         DTRACE("Sending operations.");
+         CQueuedOperation *pOp;
 
          // XXX: we are assuming that a pElement won't be deleted while in queue
          // If at some point we start deleting pElements, this code should be reviewed,
@@ -727,92 +824,29 @@ void CDisplayServerI::run()
          for(p = clients.begin(); p != clients.end(); p++) {
             Visualization::EventReceiverPrx pRcvr = *p;
             Ice::Identity idReceiver = pRcvr->ice_getIdentity();
-            try {
-               FOR_EACH(pChange, changes) {
-                  if (!pChange || !pChange->pElement) continue;
-                  if (!p->get() || pChange->pElement->m_dataOwner != idReceiver)
-                     continue;
+            FOR_EACH(pOp, operations) {
+               if (!pOp) continue;
+               if (!p->get() || pOp->m_clientId != idReceiver) continue;
 
-                  if (pChange->mode == CGuiElementValue::get) {
-                     // Get data from the ui elemente owner
-                     std::string val = pRcvr->getControlState(pChange->pElement->m_id);
-                     if (val.size() > 0)
-                        pChange->pElement->syncControlState(val);
-                  }
-                  else if (pChange->mode == CGuiElementValue::set) {
-                     // Send new data to the ui elemente owner
-                     switch (pChange->pElement->m_type) {
-                        case CGuiElement::wtCheckBox:
-                           event.type = Visualization::evCheckBoxChange; break;
-                        case CGuiElement::wtButton:
-                           event.type = Visualization::evButtonClick; break;
-                        case CGuiElement::wtDropList:
-                           event.type = Visualization::evDropListChange; break;
-                     }
-
-                     event.objectId = pChange->pElement->m_viewId;
-                     event.sourceId = pChange->pElement->m_id;
-                     event.data = pChange->value;
-
-                     pRcvr->handleEvent(event);
-                  }
+               try {
+                  pOp->execute(pRcvr);
+               }
+               catch(const Ice::Exception& ex) {
+                  DMESSAGE(" *** execute crashed with Ice::Exception: " << ex);
+                  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
+                  m_EventClients.erase(*p);
+                  break;
+               }
+               catch(...) {
+                  DMESSAGE(" *** execute crashed for unknonw reasons");
+                  break;
                }
             }
-            catch(const Ice::Exception& ex) {
-               DMESSAGE(" *** handleEvent crashed with Ice::Exception: " << ex);
-               IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-               m_EventClients.erase(*p);
-            }
-            catch(...) {
-               DMESSAGE(" *** handleEvent crashed for unknonw reasons");
-            }
          }
-         FOR_EACH(pChange, changes) {
-            if(pChange) delete pChange;
+         FOR_EACH(pOp, operations) {
+            if(pOp) delete pOp;
          }
-         changes.clear();
-      }
-
-      if(!clients.empty() && !formChanges.empty()) {
-         DTRACE("Sending form changes.");
-         // check the queues and send messages
-         CqeFormValue *pChange;
-
-         // XXX: we are assuming that a pElement won't be deleted while in queue
-         // If at some point we start deleting pElements, this code should be reviewed,
-         // and the content of CGuiElementValue changed.
-         set<Visualization::EventReceiverPrx>::iterator p;
-         for(p = clients.begin(); p != clients.end(); p++) {
-            Visualization::EventReceiverPrx pRcvr = *p;
-            Ice::Identity idReceiver = pRcvr->ice_getIdentity();
-            try {
-               FOR_EACH(pChange, formChanges) {
-                  if (!pChange) continue;
-                  if (!p->get() || pChange->ownerid != idReceiver) continue;
-
-                  if (pChange->mode == CqeFormValue::set) {
-                     pRcvr->handleForm(pChange->objectid, pChange->chunkid, pChange->values);
-                  }
-                  else if (pChange->mode == CqeFormValue::get) {
-                     if (pRcvr->getFormData(pChange->objectid, pChange->chunkid, pChange->values)) {
-                        m_pDisplayServer->setHtmlFormData(pChange->objectid, pChange->chunkid, pChange->values);
-                     }
-                  }
-               }
-            }
-            catch(const Ice::Exception& ex) {
-               DMESSAGE(" *** handleForm crashed with Ice::Exception: " << ex);
-               IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-               m_EventClients.erase(*p);
-            }
-            catch(...) {
-               DMESSAGE(" *** handleForm crashed for unknonw reasons");
-            }
-         }
-         FOR_EACH(pChange, formChanges) {
-            if(pChange) delete pChange;
-         }
-         formChanges.clear();
+         operations.clear();
       }
    }
 } 
@@ -865,30 +899,6 @@ void CDisplayServerI::addClient(const Ice::Identity& ident, const Ice::Current& 
    //      Visualization::EventReceiverPrx::uncheckedCast(current.con->createProxy(ident));
    // -------------
    cout << "v11n: added `" << ident.name << ":" << ident.category << "'"<< endl;
-}
-
-// put the event into a queue and wake up the event (callback) server
-void CDisplayServerI::addDataChange(CGuiElementValue *pChange)
-{
-   if (!pChange) return;
-   if (!pChange->pElement) {
-      delete pChange;
-      return;
-   }
-
-   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-   m_EventQueue.push_back(pChange);
-   m_EventMonitor.notify();
-}
-
-void CDisplayServerI::addFormDataChange(CqeFormValue *pChange)
-{
-   DTRACE("CDisplayServerI::addFormDataChange");
-   if (!pChange) return;
-
-   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-   m_FormQueue.push_back(pChange);
-   m_EventMonitor.notify();
 }
 
 void CDisplayServerI::addOperation(CQueuedOperation* pOperation)
