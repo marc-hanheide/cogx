@@ -73,26 +73,29 @@ module Visualization
 
    enum EEventType
    {
-      evButtonClick,
+      evButtonClick,    // A normal button was clicked
       evCheckBoxChange, // data = state
       evDropListChange, // data = list item text
-      evMouseClick      // source = view, data = button, (x,y) = position
+      evMouseClick,     // source = view, data = button, (x,y) = position
+      evHtmlOnClick     // An HTML element was clicked
    };
 
    struct TEvent
    {
       EEventType type;
-      string sourceId;
+      string objectId;  // viewId from addCheckBox etc. / id from setActiveHtml etc.
+      string partId;    // partId
+      string sourceId;  // ctrlId from addCheckBox etc. / id from @@ONCLICK@@
       string data;
       float x;
-      float y; // Position of the mouse click inside the control
+      float y;          // Position of the mouse click inside the control
    };
    
    dictionary<string, string> TFormFieldMap;
    interface EventReceiver
    {
       void handleEvent(TEvent event);
-      string getControlState(string ctrlId); // XXX: maybe add param what
+      string getControlState(string ctrlId); // XXX: maybe add param what; maybe add id, partId
       void handleForm(string id, string partId, TFormFieldMap fields);
 
       // Get data to fill the form when first displayed; returns false if not supported
