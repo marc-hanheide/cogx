@@ -96,15 +96,7 @@ endif(BUILD_SA_VISION_VIRTUALSCENE_TEST)
 option(BUILD_SA_VISION_OBJRECOGNIZER "build object recognizer" NO)
 if (BUILD_SA_VISION_OBJRECOGNIZER)
    add_subdirectory (src/c++/vision/components/ObjectRecognizer)
-   if(BUILD_PYTHON_COMPONENTS)
-      # This is the old ObjectRecognizer that was implemented in Python
-      add_subdirectory (src/python/ObjectRecognizer)
-   endif(BUILD_PYTHON_COMPONENTS)
 endif (BUILD_SA_VISION_OBJRECOGNIZER)
-
-if(BUILD_PYTHON_COMPONENTS)
-   add_subdirectory (src/python/slicegen)
-endif(BUILD_PYTHON_COMPONENTS)
 
 option(BUILD_SA_VISION_OBJRECOGNIZER_3D "build Object Recognizer" NO)
 if (BUILD_SA_VISION_OBJRECOGNIZER_3D)
@@ -126,6 +118,11 @@ if (BUILD_SA_VISION_VISLEARNER_CTF)
 elseif (BUILD_SA_VISION_VISLEARNER)
    add_subdirectory(prebuilt/VisualLearner)   
 endif (BUILD_SA_VISION_VISLEARNER_CTF)
+
+option(BUILD_SA_VISION_SIMULATION "Build Simulated Vision" YES)
+if(BUILD_SA_VISION_SIMULATION)
+   add_subdirectory (src/c++/vision/components/SimulatedVision)
+endif(BUILD_SA_VISION_SIMULATION)
 
 if (BUILD_SA_VISION_VISLEARNER)
    set (LIB_VLPROXY_SO "libVisualLearnerProxy.so")
@@ -158,4 +155,8 @@ if(BUILD_SA_VISION_TEST_COMP)
 add_subdirectory (src/c++/vision/components/TestComponent)
 add_subdirectory (src/c++/vision/components/TestComponentReceiver)
 endif(BUILD_SA_VISION_TEST_COMP)
+
+if(BUILD_PYTHON_COMPONENTS)
+   add_subdirectory (src/python)
+endif(BUILD_PYTHON_COMPONENTS)
 
