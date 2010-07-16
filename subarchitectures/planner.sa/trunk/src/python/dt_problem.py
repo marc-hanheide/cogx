@@ -13,6 +13,7 @@ class DTProblem(object):
         self.dtdomain = self.create_limited_domain(domain)
         self.create_goal_actions(self.goals, self.dtdomain)
         self.problem = self.create_problem(self.state, self.dtdomain)
+        self.dt_plan = []
 
         dom_str, prob_str = DTPDDLOutput().write(self.problem)
         print "\n".join(dom_str)
