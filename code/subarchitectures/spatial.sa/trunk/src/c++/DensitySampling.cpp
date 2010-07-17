@@ -1550,12 +1550,12 @@ DensitySampler::writeOrientationsToFile(const string &label)
     writeBinary(outfile, m_objectOrientations[label].size());
     for (unsigned int i = 0; i < m_objectOrientations[label].size(); i++) {
       writeBinary(outfile, m_objectOrientations[label][i]);
-    }
-  }
-  catch (...)
-  {
-    cerr << "Error writing orientation file!\n";
-    exit(1);
-  }
-}
+     }
+   }
+   catch (...)
+   {
+     cerr << "Error writing orientation file!\n";
+     exit(1);
+   }
+ }
 }

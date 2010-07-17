@@ -44,7 +44,7 @@ namespace spatial
   void VisualObjectSearch::configure(const std::map<std::string, std::string>& _config){
 
     targetObject = "book";
-    m_totalViewPoints = 0;
+      m_totalViewPoints = 0;
     isSearchFinished = false;
     AVSComponentPtr = this;
     map<string,string>::const_iterator it = _config.find("-c");
@@ -278,7 +278,7 @@ namespace spatial
       iss >> word;
       pairrel.relation = word == "ON" ? FrontierInterface::ON : FrontierInterface::IN;
       iss >> pairrel.secobject;
-      if( pairrel.secobject == "dell")
+      if( pairrel.primaryobject == "dell")
 	indirect_middle_object = "dell"; //this is horrible, cover your eyes
       
       iss >> word;
@@ -390,6 +390,7 @@ namespace spatial
 	  for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
 	    logString += *it + " ";
 	  }
+	  logString += " / ";
 	  for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
 	    logString += *it + " ";
 	  }
@@ -1023,6 +1024,7 @@ namespace spatial
 	  SpatialData::NavCommand> (objID.address));
       if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
 	log("NavCommand succeeded.");
+m_totalViewPoints++;	
 	MovePanTilt(0.0,m_nbv.tilt,0.08);
 	m_command = RECOGNIZE;
       }
@@ -1212,17 +1214,28 @@ FrontierInterface::WeightedPointCloudPtr queryCloud = new FrontierInterface::Wei
 	else {
 	  log("Got distribution around unknown object pose");
 	  vector<pair<int, int> >obstacleCells;
-	  const unsigned int nTargetKernelSamples = 25;
-	  const int step = 10;
+	  const unsigned int nTargetKernelSamples = 100;
+	  const int step1 = 20;
+	  const int step2 = 1;
 
+	  // Form a diagonal striped pattern of samples across the map
+	  // This is a dirty trick, as it assumes the spatial frequency is low along the diagonal
 	  while (obstacleCells.size() < nTargetKernelSamples) {
-	    int yOffset = rand()%step;
-	    for (int x = -m_lgm->getSize() + rand()%step; x <= m_lgm->getSize(); x+=step) {
-	      for (int y = -m_lgm->getSize() + yOffset; y <= m_lgm->getSize(); y+=step) {
+	    int offset1 = rand()%step1;
+	    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+	      for (int y = -m_lgm->getSize() + (offset1+(x+m_lgm->getSize())*step2)%step1 ; y <= m_lgm->getSize(); y+=step1) {
 		int bloxelX = x + m_lgm->getSize();
 		int bloxelY = y + m_lgm->getSize();
-		if ((*m_lgm)(x,y) == '1') {
-		  obstacleCells.push_back(make_pair<int>(bloxelX, bloxelY));
+		for (int x2 = x-1; x2 <= x+1; x2++) {
+		  if (x2 >= -m_lgm->getSize() && x2 <= m_lgm->getSize()) {
+		    for (int y2 = y-1; y2 <= y+1; y2++) {
+		      if (y2 >= -m_lgm->getSize() && y2 <= m_lgm->getSize()) {
+			if ((*m_lgm)(x2,y2) == '1' || (*m_lgm)(x2,y2) == '3') {
+			  obstacleCells.push_back(make_pair<int>(bloxelX, bloxelY));
+			}
+		      }
+		    }
+		  }
 		}
 	      }
 	    }
@@ -1407,7 +1420,7 @@ bool isCircleFree2D(const Cure::LocalGridMap<unsigned char> &map, double xW, dou
       sample.first = randx;
       sample.second = randy;
 
-      if (!haspoint && (*m_lgm)(randx, randy) == '0' && isCircleFree2D(*m_lgm, xW, yW, 0.3)) {
+      if (!haspoint && (*m_lgm)(randx, randy) == '0' && isCircleFree2D(*m_lgm, xW, yW, 0.4)) {
         /*if reachable*/
         // Get the indices of the destination coordinates
         //	log("point reachable");
@@ -1464,7 +1477,7 @@ bool isCircleFree2D(const Cure::LocalGridMap<unsigned char> &map, double xW, dou
       point.push_back(1.4);
       sampled2Dpoints.push_back(point);
     }
-    pbVis->Add3DPointCloud(sampled2Dpoints);
+ //   pbVis->Add3DPointCloud(sampled2Dpoints);
   /*   m_lgm->index2WorldCoords(m_samples[1 * 2], m_samples[1 * 2 + 1], xW1, yW1);
      Cure::Pose3D pos;
      pos.setX(xW1);
@@ -1610,7 +1623,6 @@ VisualObjectSearch::SensingAction VisualObjectSearch::SampleAndSelect(){
   Sample2DGrid();
   log("getting view cones");
   VCones = GetViewCones();
-  log("got viewcones");
   double sum;
   int x, y;
   vector< pair<unsigned int,double> > orderedVClist, tmp;
@@ -1641,8 +1653,8 @@ VisualObjectSearch::SensingAction VisualObjectSearch::SampleAndSelect(){
   }
     }
   }
-for (unsigned int j=0; j < orderedVClist.size(); j++)
-  cout << orderedVClist[j].first << "," << orderedVClist[j].second << "," << endl;
+/*for (unsigned int j=0; j < orderedVClist.size(); j++)
+  cout << orderedVClist[j].first << "," << orderedVClist[j].second << "," << endl;*/
 
   pair<int,int> tiltRange(40,-40);
   SensingAction sample;
@@ -1692,7 +1704,7 @@ int VisualObjectSearch::GetViewConeSums(std::vector <SensingAction> samplepoints
       SensingAction viewpoint = samplepoints[i];
       /*m_map->coneModifier(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan,samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, makeobstacle,makeobstacle);*/
       m_map->coneQuery(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan, samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells, m_minDistance);
-      cout << "cone #" << i  << " " << viewpoint.pos[0] << " " << viewpoint.pos[1] << " " <<viewpoint.pos[2] << "" << viewpoint.pan << " " << viewpoint.tilt << " pdfsum: " << sumcells.getResult() << endl;
+      //cout << "cone #" << i  << " " << viewpoint.pos[0] << " " << viewpoint.pos[1] << " " <<viewpoint.pos[2] << "" << viewpoint.pan << " " << viewpoint.tilt << " pdfsum: " << sumcells.getResult() << endl;
       
 //      if (sumcells.getResult() < 1e-5) {
 //    /* Show view cone on a temporary map, display the map and wipe it*/
@@ -1733,7 +1745,8 @@ VisualObjectSearch::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange 
     
     log("got recognizer3D overwrite command: %s", cmd->label.c_str());
     // First of all check if we have found the holy grail
- if(waitingForDetection.find(cmd->label) != waitingForDetection.end() ){
+ 
+    if(waitingForDetection.find(cmd->label) != waitingForDetection.end() ){
       //We were waiting for detection results on this object
       waitingForDetection.erase(cmd->label);
 
@@ -1741,6 +1754,7 @@ VisualObjectSearch::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange 
       for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
 	logString += *it + " ";
       }
+      logString += " / ";
       for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
 	logString += *it + " ";
       }
@@ -1753,7 +1767,17 @@ VisualObjectSearch::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange 
     }
     else{
       log("this is not the object we looked for: %s",cmd->label.c_str());
-     // m_command = NEXT_NBV;
+      string logString(" Recognizer Waiting list: ");
+      for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
+	logString += *it + " ";
+      }
+      logString += " / ";
+      for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
+	logString += *it + " ";
+      }
+      log(logString.c_str());
+
+      // m_command = NEXT_NBV;
     }
   }
   catch (const CASTException &e) {
@@ -1858,7 +1882,6 @@ void VisualObjectSearch::Recognize() {
       if(greatSuccess){
 	isSearchFinished = true;
 	m_command = STOP;
-	  m_totalViewPoints++;
 	  SaveSearchPerformance("OBJECT FOUND.");
 	  log("Object Detected, Mission Completed.");
 	  return;
@@ -1870,7 +1893,7 @@ void VisualObjectSearch::Recognize() {
 	// if we are doing indirect search and happen to find the middle object
 	// then set the current target to middle object so that we will as for distribution of primary object SR middle object
 	if(detectedObject == indirect_middle_object){
-	  currentTarget = targetObject;
+	  SetCurrentTarget(targetObject);
 	}
 	
 	}
@@ -1885,7 +1908,6 @@ void VisualObjectSearch::Recognize() {
 	}
     } else {
       // if we are not yet finished Go to NBV
-    m_totalViewPoints++;
       log("Object not detected");
       UnsuccessfulDetection(m_nbv);  
       m_command = NEXT_NBV;
@@ -1944,6 +1966,7 @@ void VisualObjectSearch::Recognize() {
 	for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
 	  logString += *it + " ";
 	}
+	logString += " / ";
 	for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
 	  logString += *it + " ";
 	}
@@ -2017,9 +2040,9 @@ m_map->clearDirty();
     timeinfo = localtime ( &rawtime );
     strftime (buffer,80,"%c",timeinfo);
 
-    ofstream out("performancelog.txt",ios_base::app);
-    out << currentSearchMode << " took " << m_totalViewPoints<< " view points" << ", with result:  " << result << " m_pout: " << m_pout << " " << " time: " << buffer << endl;
-    out.close();
+  //  ofstream out("performancelog.txt",ios_base::app);
+ //   out << currentSearchMode << " took " << m_totalViewPoints<< " view points" << ", with result:  " << result << " m_pout: " << m_pout << " " << " time: " << buffer << endl;
+ //   out.close();
 
     std::abort();
   }

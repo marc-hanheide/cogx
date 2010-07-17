@@ -811,6 +811,7 @@ void ObjectRelationManager::runComponent()
 void
 ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 {
+  log("newObject called");
   try {
     VisionData::VisualObjectPtr observedObject =
       getMemoryEntry<VisionData::VisualObject>(wmc.address);
@@ -845,6 +846,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
       if (it != m_objects.end()) {
 	// update object
 	//	  log("Updating object %i(%s)", objectID, observedObject->label.c_str());
+	log("Updating %s on %s", obsLabel.c_str(), wmc.address.id.c_str());
 	m_visualObjectIDs[obsLabel] = wmc.address.id;
       }
       else {
