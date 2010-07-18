@@ -1,3 +1,4 @@
+
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
  * Authorship of this source code was supported by EC FP7-IST grant
@@ -16,8 +17,6 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * CogX ::
- *
  * Dear CogX team member :: Please email (charles.gretton@gmail.com)
  * if you make a change to this and commit that change to SVN. In that
  * email, can you please attach the source files you changed as they
@@ -30,60 +29,57 @@
  * GNU-09/2009
  *
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
- *
+ * 
  */
 
 
-#ifndef SOLVER_HH
-#define SOLVER_HH
+#ifndef STATE_BASICS_HH
+#define STATE_BASICS_HH
 
-#include "dtp_pddl_parsing_data.hh"
-#include "dtp_pddl_parsing_data_problem.hh"
+
+#include "global.hh"
+
+/*The type of the elements in the bit vector of a \class{State} --
+ *Should be an unsigned integer.*/
+//#define ELEM_TYPE unsigned char
+#define ELEM_TYPE unsigned int
+
+/*Number of bits in each element of the bitvector*/
+#define SIZE_ELEM (sizeof(ELEM_TYPE) << 3)
+
+#define CEIL(X) ( X % SIZE_ELEM )?( ( X / SIZE_ELEM ) + 1):(X / SIZE_ELEM)
+#define FLOOR(X) X / SIZE_ELEM
+#define REMAINDER(X) X % SIZE_ELEM
 
 namespace Planning
 {
-    class Solver
-    {
-    public:
-        /*Problem that is the target of the solution procedure.*/
-        Solver(Planning::Parsing::Problem_Data&);
-
-        /*
-         *
-         * - Merge instance data from the \member{problem} and its
-         * associated problem.
-         *
-         */
-        void preprocess();
-
-        /*Is this solver in a sane state?*/
-        bool sanity() const;
-
-    private:
-
-        /* - Add \member{domain_Data::constants} and assocaited data to
-         * \member{problem_Data}.*/
-        void proprocess__Constants_Data();
-        
-    private:
-        
-        
-        /* PDDL types for \member{constants}*/
-        Planning::Parsing::Problem_Data::Constants_Description constants_Description;
-        
-        /* PDDL objects and constants.*/
-        Constants constants;
-        
-        /*(see \member{preprocess})*/
-        bool preprocessed;
-
-        /*Problem targetted by this solver.*/
-        Planning::Parsing::Problem_Data& problem_Data;
-        
-        /* Domain data associated with \member{problem} (see
-         * \member{preprocess}).*/
-        CXX__PTR_ANNOTATION(Planning::Parsing::Domain_Data) domain_Data;
-    };
+    class Boolean_State;
+    class Integer_State;
+    class Markov_Decision_Process_State;
+    class Partially_Observable_Markov_Decision_Process_State;
+    class State;
 }
+
+namespace std
+{    
+    /* (see \module{boolean_state.hh}) */
+    std::size_t hash_value(const Planning::Boolean_State&);
+
+    /* (see \module{boolean_state.hh}) */
+    std::ostream& operator<<(std::ostream&, const Planning::Boolean_State&);
+    
+    /* (see \module{integer_state.hh}) */
+    std::size_t hash_value(const Planning::Integer_State&);
+
+    /* (see \module{integer_state.hh}) */
+    std::ostream& operator<<(std::ostream&, const Planning::Integer_State&);
+
+    /* (see \module{markov_decision_process_state.hh}) */
+    std::size_t hash_value(const Planning::Markov_Decision_Process_State&);
+    
+    /* (see \module{planning_state.hh}) */
+    std::size_t hash_value(const Planning::State&);
+}
+
 
 #endif

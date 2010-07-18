@@ -16,8 +16,6 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * CogX ::
- *
  * Dear CogX team member :: Please email (charles.gretton@gmail.com)
  * if you make a change to this and commit that change to SVN. In that
  * email, can you please attach the source files you changed as they
@@ -30,59 +28,28 @@
  * GNU-09/2009
  *
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
- *
+ * 
  */
 
+#ifndef BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
+#define BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
 
-#ifndef SOLVER_HH
-#define SOLVER_HH
-
-#include "dtp_pddl_parsing_data.hh"
-#include "dtp_pddl_parsing_data_problem.hh"
+#include "boolean_state.hh"
 
 namespace Planning
-{
-    class Solver
+{  
+    class Boolean__Satisfaction_Status_Management
     {
     public:
-        /*Problem that is the target of the solution procedure.*/
-        Solver(Planning::Parsing::Problem_Data&);
-
-        /*
-         *
-         * - Merge instance data from the \member{problem} and its
-         * associated problem.
-         *
-         */
-        void preprocess();
-
-        /*Is this solver in a sane state?*/
-        bool sanity() const;
-
-    private:
-
-        /* - Add \member{domain_Data::constants} and assocaited data to
-         * \member{problem_Data}.*/
-        void proprocess__Constants_Data();
+        Boolean__Satisfaction_Status_Management(uint num);
         
-    private:
-        
-        
-        /* PDDL types for \member{constants}*/
-        Planning::Parsing::Problem_Data::Constants_Description constants_Description;
-        
-        /* PDDL objects and constants.*/
-        Constants constants;
-        
-        /*(see \member{preprocess})*/
-        bool preprocessed;
-
-        /*Problem targetted by this solver.*/
-        Planning::Parsing::Problem_Data& problem_Data;
-        
-        /* Domain data associated with \member{problem} (see
-         * \member{preprocess}).*/
-        CXX__PTR_ANNOTATION(Planning::Parsing::Domain_Data) domain_Data;
+        void satisfy(uint i);
+        void unsatisfy(uint i);
+        void flip_satisfaction(uint i);
+        bool satisfied(uint i) const;
+    protected:
+        /* Derived from \parent{Markov_Decision_Process_State} fields.*/
+        Boolean_State status;
     };
 }
 

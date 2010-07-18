@@ -90,26 +90,30 @@ namespace Planning
         derived_percept, /*(:derived )*/
         action_schema, /* PDDL "operator" -- i.e., from domain description.*/
         observation_schema, /* DT-PDDL "observational operator" -- i.e., from domain description.*/
-        ground__action,      /* PDDL "action" -- e.g., ground operator symbol.*/
-        int_valued_function, /* PDDL integer valued function symbol --
-                              * e.g. keyword "total-cost" for
-                              * propositional planning problems with
-                              * action costs.*/
-        real_valued_function, /* PDDL real valued function symbol. In
-                               * PPDDL we have that the probability of
-                               * an action outcome occurring ---when
-                               * the stochastic action is executed---
-                               * can be given in terms of a real
-                               * number between 0 and 1.*/
-        object_valued_function /* Something Freiburg folk are
-                                * particularly enamoured by. Started
-                                * with Bäckström and never really
-                                * stopped. It's a function symbol that
-                                * takes arguments in the
-                                * object(/constants) space of the
-                                * problem at hand, and then has a
-                                * range in the same space.
-                                * Ingenious.. really!*/
+        /*NON-PARSING TYPES.*/
+        literal,
+        disjunctive_clause,
+        conjunctive_normal_form_formula,
+        ground__action// ,      /* PDDL "action" -- e.g., ground operator symbol.*/
+//         int_valued_function, /* PDDL integer valued function symbol --
+//                               * e.g. keyword "total-cost" for
+//                               * propositional planning problems with
+//                               * action costs.*/
+//         real_valued_function, /* PDDL real valued function symbol. In
+//                                * PPDDL we have that the probability of
+//                                * an action outcome occurring ---when
+//                                * the stochastic action is executed---
+//                                * can be given in terms of a real
+//                                * number between 0 and 1.*/
+//         object_valued_function /* Something Freiburg folk are
+//                                 * particularly enamoured by. Started
+//                                 * with Bäckström and never really
+//                                 * stopped. It's a function symbol that
+//                                 * takes arguments in the
+//                                 * object(/constants) space of the
+//                                 * problem at hand, and then has a
+//                                 * range in the same space.
+//                                 * Ingenious.. really!*/
     };
 }
 
