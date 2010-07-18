@@ -16,8 +16,6 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * CogX ::
- *
  * Dear CogX team member :: Please email (charles.gretton@gmail.com)
  * if you make a change to this and commit that change to SVN. In that
  * email, can you please attach the source files you changed as they
@@ -30,60 +28,58 @@
  * GNU-09/2009
  *
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
- *
+ * 
  */
 
+#include "markov_decision_process_state.hh"
 
-#ifndef SOLVER_HH
-#define SOLVER_HH
+using namespace Planning;
 
-#include "dtp_pddl_parsing_data.hh"
-#include "dtp_pddl_parsing_data_problem.hh"
-
-namespace Planning
+Markov_Decision_Process_State::
+Markov_Decision_Process_State
+(uint propositions_count,
+ uint function_count)
+    :boolean_State(propositions_count),
+     integer_State(function_count)
 {
-    class Solver
-    {
-    public:
-        /*Problem that is the target of the solution procedure.*/
-        Solver(Planning::Parsing::Problem_Data&);
-
-        /*
-         *
-         * - Merge instance data from the \member{problem} and its
-         * associated problem.
-         *
-         */
-        void preprocess();
-
-        /*Is this solver in a sane state?*/
-        bool sanity() const;
-
-    private:
-
-        /* - Add \member{domain_Data::constants} and assocaited data to
-         * \member{problem_Data}.*/
-        void proprocess__Constants_Data();
-        
-    private:
-        
-        
-        /* PDDL types for \member{constants}*/
-        Planning::Parsing::Problem_Data::Constants_Description constants_Description;
-        
-        /* PDDL objects and constants.*/
-        Constants constants;
-        
-        /*(see \member{preprocess})*/
-        bool preprocessed;
-
-        /*Problem targetted by this solver.*/
-        Planning::Parsing::Problem_Data& problem_Data;
-        
-        /* Domain data associated with \member{problem} (see
-         * \member{preprocess}).*/
-        CXX__PTR_ANNOTATION(Planning::Parsing::Domain_Data) domain_Data;
-    };
 }
 
-#endif
+Markov_Decision_Process_State::
+Markov_Decision_Process_State(const Markov_Decision_Process_State& markov_Decision_Process_State)
+    :boolean_State(markov_Decision_Process_State.boolean_State),
+     integer_State(markov_Decision_Process_State.integer_State)
+{
+}
+
+bool Markov_Decision_Process_State::operator==(const Markov_Decision_Process_State& state) const
+{
+    return ((boolean_State == state.boolean_State) &&
+            (integer_State == state.integer_State));
+}
+
+bool Markov_Decision_Process_State::operator<(const Markov_Decision_Process_State& state) const
+{
+    if(boolean_State < state.boolean_State){
+        return true;
+    } else if(boolean_State == state.boolean_State){
+        if(integer_State < state.integer_State){
+            return true;
+        }
+    }
+
+    return false;   
+}
+
+inline std::size_t Markov_Decision_Process_State::hash_value() const
+{
+    std::size_t seed = boolean_State.hash_value();
+    boost::hash_combine(seed, integer_State.hash_value());
+
+    return seed;
+}
+
+std::size_t std::hash_value(const Planning::Markov_Decision_Process_State& markov_Decision_Process_State)
+{
+    return markov_Decision_Process_State.hash_value();
+}
+

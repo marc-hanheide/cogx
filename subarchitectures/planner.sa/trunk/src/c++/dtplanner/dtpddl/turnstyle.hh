@@ -34,39 +34,47 @@
 #include "global.hh"
 
 namespace Turnstyle
-{
-    /* EARLY TESTING FUNCTION.*/
-    void test__turnstyle_hh();
-    
-    using std::set;
-    
+{   
     /* The plan is to turn action preconditions into propositional
      * formulae, and then those in turn into CNF. */
     class CNF
     {
     public:
-
-        
         typedef unsigned int Atom;
         typedef int Literal;
         
-        typedef set<Literal> Clause;
-        typedef set<Clause> Problem_Data;
+        typedef std::set<Literal> Clause;
+        typedef std::set<Clause> Problem_Data;
 
         /* After construction, input is stored in a (simplified) form in
          * \member{problem_Data}.*/
         CNF(Problem_Data&);
-        
+
+        /* What is the longest clause in this problem? */
         int get_length_of_longest_clause(Problem_Data&) const;
-        
+
+        /* The empty disjunction is unsatisfiable, hence if this CNF
+         * contains an empty clause it is not satisfiable.*/
         bool check__no_empty_clause();
-        
+
+        /* If a clause contains both a literal and its negation, then
+         * it is trivially satisfiable -- i.e, If the valuation has
+         * that the literal is true, then the clause is satisfied, and
+         * otherwise it is satisfied because necessarily that literals
+         * negation satisfies the clause. */
         Problem_Data simplify__remove_A_and_NOT_A(Problem_Data&);
+
+        /* A clause can sometimes subsume another. In this case, the
+         * clause that is subsumed can be removed from the problem .*/
         Problem_Data simplify__subsumption(Problem_Data&);
+
+        /* Repeatedly performs unit-propagation until that is no
+         * longer possible.*/
         Problem_Data simplify__unit_prop(Problem_Data&);
 
         /*Is the argument conjunction of unit-clauses satisfiable.*/
         bool satisfiable_conjunct(Problem_Data& ) const;
+        
         /*Does A subsume B?*/
         bool clause_subsumes(const Clause& A, const Clause& B) const;
         bool clause_trivial(const Clause& A) const;
@@ -79,87 +87,18 @@ namespace Turnstyle
         
         Problem_Data problem_Data;
     };
+
+    
+    /* EARLY TESTING FUNCTION.*/
+    void test__turnstyle_hh();
 }
 
-std::ostream& operator<<(std::ostream&, const Turnstyle::CNF&);
-std::ostream& operator<<(std::ostream&, const Turnstyle::CNF::Problem_Data&);
-std::ostream& operator<<(std::ostream&, const Turnstyle::CNF::Clause&);
-
-// std::ostream& operator<<(std::ostream&, const Turnstyle::CNF::Literal&);
-
-namespace Turnstyle
+namespace std
 {
     
-    
-//     enum type_names
-//     {
-//         atom,
-//         predicate,
-//         proposition,
-//         variable,
-//         constant,
-//         object,
-//         type_name,
-//         finite_domain__function,
-//         integer__function,
-//         real_valued__function
-//     };
-
-//     class Atom : public type_wrapper<type_names::atom, int>{
-//     public:
-//         typename set<Symbol> Symbol_Table;
-//         static Symbol_Table symbol_Table;
-        
-//         set<int> clauses_in_which_occurs_POSITIVE;
-//         set<int> clauses_in_which_occurs_NAGATIVE;
-//     };
-
-//     class Literal : public Atom
-//     {
-//     public:
-//         Literal(bool sign, const Atom& atom)
-//             :sign(sign),Atom(atom){};
-        
-//         bool sign;
-//     };
-
-    
-    
-//     class Clause : public set<Literal> {
-
-//         void add_atom__POSITIVE(const Atom& atom)
-//         {insert(Literal(true,atom));};
-//         void add_atom__NEGATIVE(const Atom& atom)
-//         {insert(Literal(true,atom));};
-//         void add_literal(const Literal& literal)
-//         {insert(literal);};
-//     };
-    
-//     class Problem : public set<Clause> {
-//         void add_clause(const Clause& clause){insert(clause);};
-//     };
-
-    
-    
-//     class Disjunction
-//     {
-//     };
-
-//     class Conjuncton
-//     {
-//     };
-
-//     class Negation
-//     {
-//     };
-    
-//     class Universal_Quantification
-//     {
-//     };
-
-//     class Existential_Quantification
-//     {
-//     };
+    std::ostream& operator<<(std::ostream&, const Turnstyle::CNF&);
+    std::ostream& operator<<(std::ostream&, const Turnstyle::CNF::Problem_Data&);
+    std::ostream& operator<<(std::ostream&, const Turnstyle::CNF::Clause&);
 }
 
 

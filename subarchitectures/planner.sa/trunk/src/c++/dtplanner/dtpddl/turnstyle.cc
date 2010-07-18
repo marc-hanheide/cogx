@@ -27,6 +27,7 @@
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
  * 
  */
+
 #include "turnstyle.hh"
 
 using namespace Turnstyle;
@@ -235,7 +236,7 @@ namespace Turnstyle
 
 
 
-std::ostream& operator<<(std::ostream&o, const Turnstyle::CNF::Problem_Data& problem_Data)
+std::ostream& std::operator<<(std::ostream&o, const Turnstyle::CNF::Problem_Data& problem_Data)
 {
     for(auto p = problem_Data.begin(); p != problem_Data.end(); p++){
         o<<*p<<std::endl;
@@ -247,7 +248,7 @@ std::ostream& operator<<(std::ostream&o, const Turnstyle::CNF::Problem_Data& pro
 
 
 
-std::ostream& operator<<(std::ostream&o, const Turnstyle::CNF::Clause& clause)
+std::ostream& std::operator<<(std::ostream&o, const Turnstyle::CNF::Clause& clause)
 {
     for(auto p = clause.begin(); p != clause.end(); p++){
         o<<*p<<", ";
@@ -256,10 +257,12 @@ std::ostream& operator<<(std::ostream&o, const Turnstyle::CNF::Clause& clause)
     return o;  
 }
 
-std::ostream& operator<<(std::ostream&o, const Turnstyle::CNF& problem)
+std::ostream& std::operator<<(std::ostream&o, const Turnstyle::CNF& problem)
 {
     return o<<problem.problem_Data;  
 }
+
+
 // void CNF::add__searchable__literal_in_clause(const Clause& clause)
 // {
 // }

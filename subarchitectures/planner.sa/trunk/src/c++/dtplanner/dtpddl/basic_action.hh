@@ -16,8 +16,6 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * CogX ::
- *
  * Dear CogX team member :: Please email (charles.gretton@gmail.com)
  * if you make a change to this and commit that change to SVN. In that
  * email, can you please attach the source files you changed as they
@@ -30,60 +28,64 @@
  * GNU-09/2009
  *
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
- *
+ * 
  */
 
+#ifndef BASIC_ACTION_HH
+#define BASIC_ACTION_HH
 
-#ifndef SOLVER_HH
-#define SOLVER_HH
-
-#include "dtp_pddl_parsing_data.hh"
-#include "dtp_pddl_parsing_data_problem.hh"
+#include "state_basics.hh"
 
 namespace Planning
 {
-    class Solver
+    
+    /* We do not keep "transformation" (i.e., a PDDL action)
+     * preconditions in the transformation, but rather store those
+     * separately as CNF formulae. When a formula is true at some
+     * given state, then \class{Satisfaction_Listener} that are
+     * registered with that formula get notified (see
+     * \module{state_formula.hh}). */
+    class State_Transformation
     {
     public:
-        /*Problem that is the target of the solution procedure.*/
-        Solver(Planning::Parsing::Problem_Data&);
+        State_Transformation(bool compulsory = false);
+        
+        virtual State& operator()(const State&) = 0;
 
-        /*
-         *
-         * - Merge instance data from the \member{problem} and its
-         * associated problem.
-         *
-         */
-        void preprocess();
-
-        /*Is this solver in a sane state?*/
-        bool sanity() const;
-
+        void report__newly_satisfied(State&);
+        void report__newly_unsatisfied(State&);
+        
+        bool is_compulsory() const;
+        void set__compulsory(bool);
     private:
-
-        /* - Add \member{domain_Data::constants} and assocaited data to
-         * \member{problem_Data}.*/
-        void proprocess__Constants_Data();
-        
-    private:
-        
-        
-        /* PDDL types for \member{constants}*/
-        Planning::Parsing::Problem_Data::Constants_Description constants_Description;
-        
-        /* PDDL objects and constants.*/
-        Constants constants;
-        
-        /*(see \member{preprocess})*/
-        bool preprocessed;
-
-        /*Problem targetted by this solver.*/
-        Planning::Parsing::Problem_Data& problem_Data;
-        
-        /* Domain data associated with \member{problem} (see
-         * \member{preprocess}).*/
-        CXX__PTR_ANNOTATION(Planning::Parsing::Domain_Data) domain_Data;
+        bool compulsory;
     };
+
+    
+    class STRIPS_Action : public State_Transformation
+    {
+    public:
+        State& operator()(const State&);
+        void add__add(uint);
+        void add__delete(uint);
+        
+    protected:
+        std::vector<uint> add_list;
+        std::vector<uint> delete_list;
+    };
+    
+
+//     class Basic_Functional_Action
+//     {
+//     public:
+        
+//     };
+
+//     class Deterministic_Action 
+//     {
+//     };
 }
+
+
 
 #endif

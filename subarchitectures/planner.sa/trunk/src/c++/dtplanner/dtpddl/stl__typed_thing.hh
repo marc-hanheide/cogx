@@ -157,6 +157,7 @@ typedef std::vector<CXX__deref__shared_ptr<basic_type>> basic_types__vector;
 
 std::size_t hash_value(const basic_type&);
 
+
 template<int type_name, typename... T>
 class type_wrapper : public basic_type
 {
@@ -166,6 +167,13 @@ public:
     typedef std::size_t ID_TYPE;
 
     ~type_wrapper(){};
+
+    template<uint i, typename Modifier>
+    void modify(Modifier modifier)
+    {
+        assert(id < traversable_Collection->size());
+        modifier(std::tr1::get<i>(*traversable_Collection)[id]);
+    }
     
     /* Should only be called once.*/
     THIS& configure(const T&... wrapped_contents)

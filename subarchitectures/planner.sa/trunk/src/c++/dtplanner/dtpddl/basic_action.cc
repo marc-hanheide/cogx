@@ -16,8 +16,6 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * CogX ::
- *
  * Dear CogX team member :: Please email (charles.gretton@gmail.com)
  * if you make a change to this and commit that change to SVN. In that
  * email, can you please attach the source files you changed as they
@@ -30,60 +28,64 @@
  * GNU-09/2009
  *
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
- *
+ * 
  */
 
 
-#ifndef SOLVER_HH
-#define SOLVER_HH
+#include "basic_action.hh"
 
-#include "dtp_pddl_parsing_data.hh"
-#include "dtp_pddl_parsing_data_problem.hh"
+#include "planning_state.hh"
 
-namespace Planning
+using namespace Planning;
+
+
+State_Transformation::State_Transformation(bool compulsory)
+    :compulsory(compulsory)
 {
-    class Solver
-    {
-    public:
-        /*Problem that is the target of the solution procedure.*/
-        Solver(Planning::Parsing::Problem_Data&);
-
-        /*
-         *
-         * - Merge instance data from the \member{problem} and its
-         * associated problem.
-         *
-         */
-        void preprocess();
-
-        /*Is this solver in a sane state?*/
-        bool sanity() const;
-
-    private:
-
-        /* - Add \member{domain_Data::constants} and assocaited data to
-         * \member{problem_Data}.*/
-        void proprocess__Constants_Data();
-        
-    private:
-        
-        
-        /* PDDL types for \member{constants}*/
-        Planning::Parsing::Problem_Data::Constants_Description constants_Description;
-        
-        /* PDDL objects and constants.*/
-        Constants constants;
-        
-        /*(see \member{preprocess})*/
-        bool preprocessed;
-
-        /*Problem targetted by this solver.*/
-        Planning::Parsing::Problem_Data& problem_Data;
-        
-        /* Domain data associated with \member{problem} (see
-         * \member{preprocess}).*/
-        CXX__PTR_ANNOTATION(Planning::Parsing::Domain_Data) domain_Data;
-    };
 }
 
-#endif
+        
+void State_Transformation::report__newly_satisfied(State& state)
+{
+    if(compulsory){
+        state.add__compulsory_transformation(this); 
+    } else {
+        state.add__optional_transformation(this);
+    }
+}
+
+void State_Transformation::report__newly_unsatisfied(State& state)
+{
+    if(compulsory){
+        state.retract__compulsory_transformation(this); 
+    } else {
+        state.retract__optional_transformation(this);
+    }   
+}
+        
+bool State_Transformation::is_compulsory() const
+{
+    return compulsory;
+}
+
+void State_Transformation::set__compulsory(bool in)
+{
+   compulsory = in; 
+}
+
+
+
+State& STRIPS_Action::operator()(const State&)
+{
+    UNRECOVERABLE_ERROR("unimplemented");
+}
+
+void STRIPS_Action::add__add(uint)
+{
+    UNRECOVERABLE_ERROR("unimplemented");
+}
+
+void STRIPS_Action::add__delete(uint)
+{
+    UNRECOVERABLE_ERROR("unimplemented");
+}
