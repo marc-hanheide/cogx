@@ -210,10 +210,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     task.run()
     
-  def deliver_plan(self, task, slice_plan):    
+  def deliver_plan(self, task, slice_plan):
+      task.status = Planner.Completion.SUCCEEDED
       self.m_display.update_task(task)
       self.getClient().deliverPlan(task.id, slice_plan);
-      self.m_display.update_task(task)
 
   def updateState(self, state, percepts, current=None):
       log.debug("recieved state update.")
@@ -235,6 +235,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
         
       task = self.tasks[task_desc.id]
 
+      old_state = task.state.state
+      
       if not task.update_state(self.beliefs):
           print_state_difference(old_state, task.state.state)
           task.update_status(Planner.Completion.FAILED)
