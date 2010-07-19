@@ -56,7 +56,7 @@ class LoggerProxy(object):
         self.console = logging.getLogger(name)
         self.name = name
 
-    def log(self, level, msg, *args, **kwargs):
+    def _log(self, level, msg, *args, **kwargs):
         self.console.log(level, msg, *args, **kwargs)
 
         elems = ["file"]
@@ -68,19 +68,19 @@ class LoggerProxy(object):
         logging.getLogger(".".join(elems)).log(level, msg, *args, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
-        self.log(logging.DEBUG, msg, *args, **kwargs)
+        self._log(logging.DEBUG, msg, *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
-        self.log(logging.INFO, msg, *args, **kwargs)
+        self._log(logging.INFO, msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
-        self.log(logging.WARNING, msg, *args, **kwargs)
+        self._log(logging.WARNING, msg, *args, **kwargs)
         
     def error(self, msg, *args, **kwargs):
-        self.log(logging.ERROR, msg, *args, **kwargs)
+        self._log(logging.ERROR, msg, *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
-        self.log(logging.CRITICAL, msg, *args, **kwargs)
+        self._log(logging.CRITICAL, msg, *args, **kwargs)
 
 logging_factory = LoggerProxy
         

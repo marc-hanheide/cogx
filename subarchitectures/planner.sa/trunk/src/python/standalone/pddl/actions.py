@@ -56,19 +56,16 @@ class Action(Scope):
         #indent = len("(:action ")
 
     def get_total_cost(self):
-        self.totalCostFound = False
         self.totalCostTerm = None
         tct = predicates.Term(builtin.total_cost,[])
 
-        @visitors.replace
         def visitor(eff, parts):
             if isinstance(eff, effects.SimpleEffect):
                 if eff.predicate == builtin.increase:
                     if eff.args[0] == tct:
                         self.totalCostTerm = eff.args[1]
-                        self.totalCostFound = True
 
-        self.effect = self.effect.visit(visitor)
+        self.effect.visit(visitor)
         return self.totalCostTerm
 
     def set_total_cost(self, new_total_cost):
