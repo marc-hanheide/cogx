@@ -53,7 +53,7 @@ class CASTState(object):
             self.prob_state.problem = problem
 
         if cast_task is None:
-            return problem
+            return problem, None
 
         goaldict = {}
         problem.goal = pddl.conditions.Conjunction([], problem)
