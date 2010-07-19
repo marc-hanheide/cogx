@@ -256,7 +256,7 @@ class CASTTask(object):
         self.component.getClient().updateBeliefState(beliefs)
                 
     def update_state(self, beliefs):
-        self.state = CASTState(beliefs, self.domain)
+        self.state = cast_state.CASTState(beliefs, self.domain)
         new_cp_problem = self.state.to_problem(None, deterministic=True, domain=self.cp_domain)
 
         #check if the goal is still valid
