@@ -1,3 +1,4 @@
+import os
 from os.path import abspath, dirname, join, isdir
 
 import cast_state, dt_problem
@@ -28,6 +29,7 @@ class CASTTask(object):
         self.load_domain(domain_fn)
 
         self.state = cast_state.CASTState(beliefs, self.domain)
+        self.percepts = []
 
         cp_problem = self.state.to_problem(planning_task, deterministic=True, domain=self.cp_domain)
         self.cp_task = task.Task(self.id, cp_problem)
@@ -115,8 +117,6 @@ class CASTTask(object):
             log.info("Plan is empty")
         plan.execution_position = first_action
 
-        self.update_status(Planner.Completion.SUCCEEDED)
-
         self.component.deliver_plan(self, outplan)
 
     def action_executed_dt(self, slice_plan):
@@ -196,15 +196,15 @@ class CASTTask(object):
                 sat = False
                 break
         if sat:
-            for pnode in self.dt_task.subplan_actions:
-                pnode.status = plans.ActionStatusEnum.EXECUTED
-            self.cp_task.mark_changed()
-            self.monitor_cp()
-            return
+            self.dt_done()
 
-        obs = Planner.Observation("predicate", ["arg1", "arg2"])
-        self.component.getDT().deliverObservation(self.id, [obs])
-        log.info("%d: delivered dummy observation", self.id)
+        observations = []
+        for fact in self.state.convert_percepts(self.percepts):
+            pred = "observed-%s" % fact.svar.function.name
+            obs = Planner.Observation(pred, [a.name for a in fact.svar.args] + [fact.value.name])
+            log.info("%d: delivered observation %s", self.id, str(obs))
+            
+        self.component.getDT().deliverObservation(self.id, observations)
 
         self.update_status(Planner.Completion.INPROGRESS)
   
@@ -221,6 +221,13 @@ class CASTTask(object):
         self.cp_task.replan()
         self.process_cp_plan()
 
+    def dt_done(self):
+        for pnode in self.dt_task.subplan_actions:
+            pnode.status = plans.ActionStatusEnum.EXECUTED
+        
+        self.cp_task.mark_changed()
+        self.monitor_cp()
+
     def action_delivered(self, action):
         args = [self.cp_task.mapltask[a] for a in action.arguments]
         pddl_action = task.domain.get_action(action.name)
@@ -228,8 +235,8 @@ class CASTTask(object):
         state = self.cp_task.get_state().copy()
         pnode = standalone.plan_postprocess.getRWDescription(pddl_action, args, state, 1)
         self.dt_task.dt_plan.append(pnode)
-        
-        self.update_status(Planner.Completion.SUCCEEDED)
+
+        self.percepts = []
         
         #create featurevalues
         uargs = [self.state.featvalue_from_object(a) for a in args]

@@ -67,7 +67,38 @@ class CASTState(object):
         log.debug("goal: %s", problem.goal)
         
         return problem
-      
+
+    def convert_percepts(self, percepts):
+        objdict = dict((o.name, o) for o in self.objects)
+        tp.belief_dict = {}
+        percept2bel = {}
+
+        for p in percepts:
+            if p.hist.offspring is not None and p.hist.offspring.id in self.beliefdict:
+                percept2bel[p] = self.beliefdict[p.hist.offspring.id]
+
+        obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(percepts))))
+        p_objects = tp.infer_types(obj_descriptions)
+        facts = list(tp.tuples2facts(obj_descriptions))
+
+        def replace_object(obj):
+            if obj.name not in perceptdict:
+                return objdict.get(obj.name, None)
+            bel = percept2bel.get(obj.name, None)
+            if not bel:
+                return None
+            return self.namedict.get(bel.name)
+
+        filtered_facts = []
+        for svar, value in facts:
+            assert svar.modality is None
+            n_args = [replace_object(a) for a in svar.args]
+            nval = replace_object(value)
+            if all(a is not None for a in n_args) and nval is not None:
+                fact = state.Fact(state.StateVariable(svar.function, n_args), nval)
+                filtered_facts.append(fact)
+                
+        return filtered_facts
 
     def featvalue_from_object(self, arg):
         if arg in self.namedict:

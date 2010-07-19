@@ -141,7 +141,7 @@ module autogen {
       void registerTask(PlanningTask task);
       void executeTask(PlanningTask task);
       void updateTask(PlanningTask task);
-      void updateState(BeliefSeq state);
+      void updateState(BeliefSeq state, BeliefSeq percepts);
 
       /*DTP process with ID \argument{id} calls this method when: (1)
 	A useful plan has been found, and execution of that plan
