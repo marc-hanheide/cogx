@@ -30,6 +30,7 @@ module autogen {
       string name;
       ArgumentSeq arguments;
       string fullName;
+      float cost;
       Completion status;
     };
     sequence<Action> ActionSeq;
@@ -48,6 +49,7 @@ module autogen {
       bool executePlan;
 
       ActionSeq plan;
+      float costs;
       string firstActionID;
       Completion executionStatus;
       int executionRetries;

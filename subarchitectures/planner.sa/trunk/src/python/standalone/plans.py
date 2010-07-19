@@ -46,6 +46,7 @@ class PlanNode(object):
         self.full_args = args
         self.time = time
         self.status = status
+        self.cost = 1
 
         self.preconds = set()
         self.replanconds = set()
@@ -104,6 +105,9 @@ class DummyNode(PlanNode):
     def __init__(self, name, args, time, status):
         action = DummyAction(name)
         PlanNode.__init__(self, action, args, time, status)
+        
+        self.cost = 0
+        
     def __str__(self):
         return str(self.action)
     def __eq__(self, other):
@@ -125,6 +129,12 @@ class MAPLPlan(networkx.MultiDiGraph):
     def create_goal_node(self, astate):
         ## TODO: astate is still unused
         return DummyNode("goal", [], 9999, ActionStatusEnum.EXECUTABLE)
+
+    def get_total_costs(self):
+        return sum(n.cost for n in self.nodes_iter())
+            
+    def get_remaining_costs(self):
+        return sum(n.cost for n in self.nodes_iter() if n.status == ActionStatusEnum.EXECUTABLE)
 
     def add_link(self, n1, n2, svar, val, conflict=False):
         if conflict:

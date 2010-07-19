@@ -357,9 +357,18 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan) {
     log("Plan delivered");
     assert(activeTasks.find(id) != activeTasks.end());
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
+
+    double total_costs = 0;
+    BOOST_FOREACH(ActionPtr action, plan) {
+        total_costs += action->cost;
+    }
+
     task->plan = plan;
+    task->costs = total_costs;
     task->planningRetries = 0;
     task->planningStatus = SUCCEEDED;
+
+    log("Task %d has costs %.2f.", task->id, task->costs);
 
     if (!task->executePlan) {
         overwriteWorkingMemory(activeTasks[id], task);
