@@ -3,7 +3,7 @@ from os.path import abspath, dirname, join, isdir
 
 import cast_state, dt_problem
 from autogen import Planner
-from standalone import task, plans, pddl, config
+from standalone import task, plans, plan_postprocess, pddl, config
 from standalone.task import PlanningStatusEnum
 
 log = config.logger("PythonServer")
@@ -209,7 +209,7 @@ class CASTTask(object):
         self.update_status(Planner.Completion.INPROGRESS)
   
     def monitor_cp(self):
-        if task.dt_planning_active():
+        if self.dt_planning_active():
             self.monitor_dt()
             return
         
@@ -230,10 +230,10 @@ class CASTTask(object):
 
     def action_delivered(self, action):
         args = [self.cp_task.mapltask[a] for a in action.arguments]
-        pddl_action = task.domain.get_action(action.name)
+        pddl_action = self.domain.get_action(action.name)
 
         state = self.cp_task.get_state().copy()
-        pnode = standalone.plan_postprocess.getRWDescription(pddl_action, args, state, 1)
+        pnode = plan_postprocess.getRWDescription(pddl_action, args, state, 1)
         self.dt_task.dt_plan.append(pnode)
 
         self.percepts = []
@@ -244,7 +244,7 @@ class CASTTask(object):
         fullname = action.name + " ".join(action.arguments)
         outplan = [Planner.Action(self.id, action.name, uargs, fullname, Planner.Completion.PENDING)]
 
-        log.info("%d: First action: %s", taskId, fullname)
+        log.info("%d: First action: %s", self.id, fullname)
         self.component.deliver_plan(self, outplan)
         
     def action_feedback(self, finished_actions, failed_actions):
