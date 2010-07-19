@@ -45,7 +45,7 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 	 * set to true if monitors should be registered for each PlanningTask to
 	 * measure planning time.
 	 */
-//	private static final boolean MEASURE_TIMES = true;
+	private static final boolean MEASURE_TIMES = true;
 
 	public static class GoalTranslator {
 
@@ -93,7 +93,7 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 
 	Map<String, FeatureValue> unionsWithPlaceID;
 	Map<String, FeatureValue> unionsWithRoomId;
-//	Map<String, StopWatch> taskWatches;
+	Map<String, StopWatch> taskWatches;
 
 	private BinderFacade binderFacade;
 
@@ -106,51 +106,51 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 		this.component = component;
 		this.binderFacade = binderFacade;
 		watch = new StopWatch("plannerStopWatch");
-//		taskWatches = new HashMap<String, StopWatch>();
-//
-//		// We monitor planning tasks to measure planning time
-//		monitorTask = new WorkingMemoryChangeReceiver() {
-//
-//			@Override
-//			public void workingMemoryChanged(WorkingMemoryChange wmc)
-//					throws CASTException {
-//				PlanningTask plan = component.getMemoryEntry(wmc.address,
-//						PlanningTask.class);
-//				StopWatch watch = taskWatches.get(wmc.address.id);
-//				if (watch == null) {
-//					watch = new StopWatch("PlanningTask." + wmc.address.id);
-//					taskWatches.put(wmc.address.id, watch);
-//				}
-//				watch.info(CASTUtils.toString(wmc));
-//				watch.info("STATUS = " + plan.planningStatus.toString());
-//				switch (wmc.operation) {
-//				case ADD:
-//					watch.tic();
-//					break;
-//				case OVERWRITE:
-//					switch (plan.planningStatus) {
-//					case ABORTED:
-//					case FAILED:
-//					case SUCCEEDED:
-//						if (watch.isRunning())
-//							watch.toc(plan.planningStatus.toString() + " / "
-//									+ plan.executionStatus.toString() + "("
-//									+ plan.planningRetries + ")");
-//						else
-//							component.log("watch is not running");
-//						break;
-//					default:
-//						if (!watch.isRunning())
-//							watch.tic();
-//					}
-//					break;
-//				case DELETE:
-//					watch.toc("DELETE");
-//					break;
-//				}
-//
-//			}
-//		};
+		taskWatches = new HashMap<String, StopWatch>();
+
+		// We monitor planning tasks to measure planning time
+		monitorTask = new WorkingMemoryChangeReceiver() {
+
+			@Override
+			public void workingMemoryChanged(WorkingMemoryChange wmc)
+					throws CASTException {
+				PlanningTask plan = component.getMemoryEntry(wmc.address,
+						PlanningTask.class);
+				StopWatch watch = taskWatches.get(wmc.address.id);
+				if (watch == null) {
+					watch = new StopWatch("PlanningTask." + wmc.address.id);
+					taskWatches.put(wmc.address.id, watch);
+				}
+				watch.info(CASTUtils.toString(wmc));
+				watch.info("STATUS = " + plan.planningStatus.toString());
+				switch (wmc.operation) {
+				case ADD:
+					watch.tic();
+					break;
+				case OVERWRITE:
+					switch (plan.planningStatus) {
+					case ABORTED:
+					case FAILED:
+					case SUCCEEDED:
+						if (watch.isRunning())
+							watch.toc(plan.planningStatus.toString() + " / "
+									+ plan.executionStatus.toString() + "("
+									+ plan.planningRetries + ")");
+						else
+							component.log("watch is not running");
+						break;
+					default:
+						if (!watch.isRunning())
+							watch.tic();
+					}
+					break;
+				case DELETE:
+					watch.toc("DELETE");
+					break;
+				}
+
+			}
+		};
 	}
 
 	List<Motive> motives;
@@ -162,7 +162,7 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 	 * The monitorTask is used to measure planning time
 	 * 
 	 */
-//	private WorkingMemoryChangeReceiver monitorTask;
+	private WorkingMemoryChangeReceiver monitorTask;
 
 	public void setGoalMotives(List<Motive> m) {
 		motives = new LinkedList<Motive>(m);
@@ -434,12 +434,12 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 					WorkingMemoryOperation.OVERWRITE), planQueue);
 			component.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
 					WorkingMemoryOperation.DELETE), planQueue);
-//			if (MEASURE_TIMES) {
-//				component.addChangeFilter(ChangeFilterFactory.createIDFilter(
-//						id, WorkingMemoryOperation.OVERWRITE), monitorTask);
-//				component.addChangeFilter(ChangeFilterFactory.createIDFilter(
-//						id, WorkingMemoryOperation.ADD), monitorTask);
-//			}
+			if (MEASURE_TIMES) {
+				component.addChangeFilter(ChangeFilterFactory.createIDFilter(
+						id, WorkingMemoryOperation.OVERWRITE), monitorTask);
+				component.addChangeFilter(ChangeFilterFactory.createIDFilter(
+						id, WorkingMemoryOperation.ADD), monitorTask);
+			}
 
 			// start the stop watch
 			watch.tic();
