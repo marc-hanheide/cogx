@@ -33,6 +33,7 @@ protected:
     void receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc);
     void actionChanged(const cast::cdl::WorkingMemoryChange& wmc);
     void stateChanged(const cast::cdl::WorkingMemoryChange& wmc);
+    void newPercept(const cast::cdl::WorkingMemoryChange& wmc);
     void taskChanged(const cast::cdl::WorkingMemoryChange& wmc);
     void taskRemoved(const cast::cdl::WorkingMemoryChange& wmc);
 
@@ -58,7 +59,9 @@ private:
     taskMap activeTasks;
 
     typedef std::tr1::unordered_map< std::string, ::de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBeliefPtr > BeliefMap;
+    typedef std::vector< ::de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBeliefPtr > PerceptList;
     BeliefMap m_currentState;
+    PerceptList m_percepts;
     std::map<int, StateChangeFilterPtr> m_stateFilters;
     cast::cdl::CASTTime m_lastUpdate;
 

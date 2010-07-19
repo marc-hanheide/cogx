@@ -57,6 +57,9 @@ void WMControl::start() {
     addChangeFilter(cast::createGlobalTypeFilter<GroundedBelief>(cast::cdl::WILDCARD),
             new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::stateChanged));
 
+    addChangeFilter(cast::createGlobalTypeFilter<PerceptBelief>(cast::cdl::ADD),
+            new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::newPercept));
+
     connectToPythonServer();
 }
 
@@ -106,7 +109,8 @@ void WMControl::runComponent() {
                 state.push_back(i->second);
             }
             unlockComponent();
-            pyServer->updateState(state);
+            pyServer->updateState(state, m_percepts);
+            m_percepts.clear();
 
             for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
                 lockComponent();
@@ -149,7 +153,7 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
     for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
         state.push_back(i->second);
     }
-    pyServer->updateState(state);
+    pyServer->updateState(state, PerceptList());
     
     pyServer->registerTask(task);
 
@@ -246,6 +250,13 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         dispatchPlanning(task, 0);
     }
 }
+
+void WMControl::newPercept(const cast::cdl::WorkingMemoryChange& wmc) {
+    log("new percept");
+    dBeliefPtr percept = getMemoryEntry<dBelief>(wmc.address);
+    m_percepts.push_back(percept);
+}        
+
 
 void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     log("state change...");

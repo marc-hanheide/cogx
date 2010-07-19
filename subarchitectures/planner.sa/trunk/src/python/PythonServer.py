@@ -211,14 +211,15 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task.run()
     
   def deliver_plan(self, task, slice_plan):    
+      self.m_display.update_task(task)
       self.getClient().deliverPlan(task.id, slice_plan);
+      self.m_display.update_task(task)
 
-  def updateState(self, state, current=None):
+  def updateState(self, state, percepts, current=None):
       log.debug("recieved state update.")
       self.beliefs = state
-      print "state:"
-      for bel in state:
-          print bel.id
+      for task in self.tasks.itervalues():
+          task.percepts += percepts
       
   def updateTask(self, task_desc, current=None):
       if task_desc.id not in self.tasks:
@@ -276,9 +277,14 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
       log.info("DT planner updates status to %s with the following message: %s", str(status), message)
       task = self.tasks[taskId]
+
+      #notify the cp planner that the subtask is finished
+      if status == Planner.Completion.SUCCEEDED:
+          task.dt_done()
+          return
       
       #just forward the status for now
-      self.setTaskStatus(task, status);
+      self.getClient().updateStatus(task.id, status)
 
   
 def print_state_difference(state1, state2, print_fn=None):
