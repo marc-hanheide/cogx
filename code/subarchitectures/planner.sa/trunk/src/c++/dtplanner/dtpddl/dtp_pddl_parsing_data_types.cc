@@ -38,14 +38,38 @@
 
 using namespace Planning::Parsing;
 
+Types_Data::Types_Data()
+    :symbol_theory(0)
+{
+}
+
 Types_Data::~Types_Data(){}
+
+
+void Types_Data::report__symbol_name_reference(void*symbol_t)
+{
+    symbol_theory = symbol_t;
+}
+
 
 void Types_Data::commit__types()
 {
-    NEW_object_referenced_WRAPPED(/*type name*/Planning::Type,
-                                  /*object name*/object_type,
-                                  /*argument to "type name" constructor*/"object");
+    Planning::Type object_type;
+    if(symbol_theory){
+        NEW_referenced_WRAPPED(symbol_theory,
+                               /*type name*/Planning::Type,
+                               /*object name*/_object_type,
+                               /*argument to "type name" constructor*/"object");
+        object_type = _object_type;
+    } else {    
+        NEW_object_referenced_WRAPPED(/*type name*/Planning::Type,
+                                      /*object name*/_object_type,
+                                      /*argument to "type name" constructor*/"object");
+        object_type = _object_type;
+    }
 
+
+    
     /*Is there a PDDL-type called "object"?*/
     if(types_description.find(object_type) == types_description.end()){
         /*If not, make one.*/
@@ -156,12 +180,24 @@ void Types_Data::add__types(){
 }
 
 void Types_Data::add__type(const std::string& str){
-    NEW_object_referenced_WRAPPED(Type, type, str);
-    types.insert(type);
+    if(symbol_theory){
+        NEW_referenced_WRAPPED(symbol_theory, Planning::Type, type, str);
+        types.insert(type);
+    } else {    
+        NEW_object_referenced_WRAPPED(Planning::Type, type, str);
+        types.insert(type);
+    }    
 }
+
 void Types_Data::add__type_of_type(const std::string& str){
-    NEW_object_referenced_WRAPPED(Type, type, str);
-    types_of_types.insert(type);
+    
+    if(symbol_theory){
+        NEW_referenced_WRAPPED(symbol_theory, Planning::Type, type, str);
+        types_of_types.insert(type);
+    } else {
+        NEW_object_referenced_WRAPPED(Planning::Type, type, str);
+        types_of_types.insert(type);
+    } 
 }
 
 

@@ -94,9 +94,9 @@ namespace std
     }                                                                   \
 
 #define NEW_referenced_WRAPPED(SIZE_T, TYPE_NAME, OBJECT_NAME, CONTENTS...) \
-    TYPE_NAME OBJECT_NAME = TYPE_NAME();                                    \
-    OBJECT_NAME.set__runtime_Thread(SIZE_T);                                \
-    OBJECT_NAME.configure(CONTENTS);{} 					    \
+    TYPE_NAME OBJECT_NAME = TYPE_NAME();                                \
+    OBJECT_NAME.set__runtime_Thread(SIZE_T);                            \
+    OBJECT_NAME.configure(CONTENTS);{}                                  \
     
 
 #define NEW_referenced_WRAPPED_POINTER(SIZE_T, TYPE_NAME, OBJECT_NAME, CONTENTS...) \
@@ -115,19 +115,19 @@ namespace std
     }                                                                                      \
 
 
-#define NEW_object_referenced_WRAPPED(TYPE_NAME, OBJECT_NAME, CONTENTS...)                                       \
-    assert(sizeof(size_t) == sizeof(void*));                                                                     \
-    NEW_referenced_WRAPPED(reinterpret_cast<basic_type::Runtime_Thread>(this), TYPE_NAME, OBJECT_NAME, CONTENTS) \
+#define NEW_object_referenced_WRAPPED(TYPE_NAME, OBJECT_NAME, CONTENTS...) \
+    assert(sizeof(size_t) == sizeof(void*));                            \
+    NEW_referenced_WRAPPED(this, TYPE_NAME, OBJECT_NAME, CONTENTS)      \
+        
 
+#define NEW_object_referenced_WRAPPED_POINTER(TYPE_NAME, OBJECT_NAME, CONTENTS...) \
+    assert(sizeof(size_t) == sizeof(void*));                            \
+    NEW_referenced_WRAPPED_POINTER(this, TYPE_NAME, OBJECT_NAME, CONTENTS) \
+        
 
-#define NEW_object_referenced_WRAPPED_POINTER(TYPE_NAME, OBJECT_NAME, CONTENTS...)                                       \
-    assert(sizeof(size_t) == sizeof(void*));                                                                             \
-    NEW_referenced_WRAPPED_POINTER(reinterpret_cast<basic_type::Runtime_Thread>(this), TYPE_NAME, OBJECT_NAME, CONTENTS) \
-
-
-#define NEW_object_referenced_WRAPPED_deref_POINTER(TYPE_NAME, OBJECT_NAME, CONTENTS...)                                       \
-    assert(sizeof(size_t) == sizeof(void*));                                                                                   \
-    NEW_referenced_WRAPPED_deref_POINTER(reinterpret_cast<basic_type::Runtime_Thread>(this), TYPE_NAME, OBJECT_NAME, CONTENTS) \
+#define NEW_object_referenced_WRAPPED_deref_POINTER(TYPE_NAME, OBJECT_NAME, CONTENTS...) \
+    assert(sizeof(size_t) == sizeof(void*));                            \
+    NEW_referenced_WRAPPED_deref_POINTER(this, TYPE_NAME, OBJECT_NAME, CONTENTS) \
 
 
 class basic_type
@@ -145,6 +145,7 @@ public:
     virtual std::size_t hash_value() const = 0;
     virtual int get__type_name() const = 0;
     virtual std::size_t get__id() const = 0;
+    Runtime_Thread get__runtime_Thread() const;
 protected:
     Runtime_Thread runtime_Thread;
 
@@ -157,6 +158,7 @@ typedef std::vector<CXX__deref__shared_ptr<basic_type>> basic_types__vector;
 
 std::size_t hash_value(const basic_type&);
 
+typedef std::size_t ID_TYPE;
 
 template<int type_name, typename... T>
 class type_wrapper : public basic_type
@@ -164,7 +166,6 @@ class type_wrapper : public basic_type
 public:
     typedef std::tr1::tuple<T...> Contents;
     typedef type_wrapper<type_name, T...> THIS;
-    typedef std::size_t ID_TYPE;
 
     ~type_wrapper(){};
 
@@ -323,6 +324,12 @@ public:
 
         traversable_Collection = indexed__Traversable_Collection[runtime_Thread];
         searchable_Collection = indexed__Searchable_Collection[runtime_Thread]; 
+    }
+
+    template<typename THREAD_TYPE>
+    void set__runtime_Thread(THREAD_TYPE in)
+    {
+        set__runtime_Thread(reinterpret_cast<basic_type::Runtime_Thread>(in));
     }
     
 private:

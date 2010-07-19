@@ -30,50 +30,46 @@
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
  * 
  */
-#include "stl__typed_thing.hh"
 
-using std::ostream;
+#ifndef PLANNING_FORMULA_TO_CNF_HH
+#define PLANNING_FORMULA_TO_CNF_HH
 
+#include "planning_formula.hh"
+#include "planning_formula_to_nnf.hh"
 
-basic_type::Runtime_Thread basic_type::get__runtime_Thread() const
+namespace Planning
 {
-    return runtime_Thread;
-}
-
-
-std::ostream& basic_type::operator<<(std::ostream&o) const {return o<<hash_value();};
-
-std::string basic_type::as_string() const
-{
-    std::string str;
+    /* We first convert to NNF ---Negation Normal Form---, and then to
+     * CNF -- Conjunctive Normal Form. */
+    class Planning_Formula__to__CNF
     {
-        std::ostringstream oss;
-        this->operator<<(oss);
-        str = oss.str();
-    }
+    public:
+        typedef Planning::Formula::Subformulae Subformulae;
+        typedef Planning::Formula::Subformula Subformula;
+        typedef Planning::Formula::Negation Negation;
+        typedef Planning::Formula::Conjunction Conjunction;
+        typedef Planning::Formula::Disjunction Disjunction;
+        typedef Planning::Formula::Exists Exists;
+        typedef Planning::Formula::Forall Forall;
 
-    return std::move(str);
+        /* \argument{bool}: Should we compute an NNF version of the
+         * argument before proceeding.*/
+        Subformula operator()(Subformula, bool = false);
+        
+    private:
+        /* Turns this disjunction-of-conjunctions \argument{data} into
+         * a conjunction-of-disjunctions \result{Subformula}.*/
+        Subformulae& distributive_law(Subformulae&,
+                                      Subformulae,
+                                      const std::vector<Conjunction*>& data,
+                                      uint index);
+        
+        Subformula operator()(const Conjunction&);
+        Subformula operator()(const Disjunction&);
+        
+        Planning_Formula__to__NNF planning_Formula__to__NNF;
+    };
 }
 
-bool basic_type::operator<(const basic_type&in) const
-{return as_string() < in.as_string();};//hash_value() < in.hash_value();};
 
-bool basic_type::operator==(const basic_type&in) const
-{ return as_string() == in.as_string();};//hash_value() == in.hash_value();};
-
-// bool basic_type::operator<(const basic_type&in) const
-// {return hash_value() < in.hash_value();};
-
-// bool basic_type::operator==(const basic_type&in) const
-// { return hash_value() == in.hash_value();};
-
-
-std::ostream& std::operator<<(std::ostream& o, const basic_type& bt)
-{
-    return bt.operator<<(o);
-}
-
-std::size_t hash_value(const basic_type& bt)
-{
-    return bt.hash_value();
-}
+#endif

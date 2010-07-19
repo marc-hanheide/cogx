@@ -42,6 +42,7 @@
 
 namespace Planning
 {
+    
     class Solver
     {
     public:

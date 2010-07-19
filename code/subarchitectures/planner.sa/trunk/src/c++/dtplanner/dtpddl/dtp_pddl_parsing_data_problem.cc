@@ -187,6 +187,9 @@ void Problem_Data::reset__domain_Data(const Planning::Domain_Name& domain_Name)
     if(domains_iterator != Planning::Parsing::domains.end()){
         reset__domain_Data(domains_iterator->second);
     }
+
+    /*(see \module{Formula_Data})*/
+    report__symbol_name_reference(domains_iterator->second.get());
 }
 
 void Problem_Data::reset__domain_Data(const std::string& str)

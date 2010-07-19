@@ -30,50 +30,44 @@
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
  * 
  */
-#include "stl__typed_thing.hh"
 
-using std::ostream;
+#ifndef PROBLEM_GROUNDING_HH
+#define PROBLEM_GROUNDING_HH
 
 
-basic_type::Runtime_Thread basic_type::get__runtime_Thread() const
+#include "dtp_pddl_parsing_data.hh"
+#include "dtp_pddl_parsing_data_problem.hh"
+#include "planning_action_schema.hh"
+
+#include "basic_action.hh"
+
+
+namespace Planning
 {
-    return runtime_Thread;
-}
-
-
-std::ostream& basic_type::operator<<(std::ostream&o) const {return o<<hash_value();};
-
-std::string basic_type::as_string() const
-{
-    std::string str;
+    class Problem_Grounding
     {
-        std::ostringstream oss;
-        this->operator<<(oss);
-        str = oss.str();
-    }
+    public:
+        Problem_Grounding(Parsing::Problem_Data&, CXX__PTR_ANNOTATION(Parsing::Domain_Data));
 
-    return std::move(str);
+        
+        void groud_actions(); 
+        
+    private:
+
+        /* Populate \member{}*/
+        void ground_action_schema(const Planning::Action_Schema& actionSchema);
+
+        /* Problem actions. */
+        std::vector<CXX__PTR_ANNOTATION(State_Transformation)> state_transformations;
+        
+        /*Problem targetted by this solver.*/
+        Parsing::Problem_Data& problem_Data;
+        
+        /* Domain data associated with \member{problem} (see
+         * \member{preprocess}).*/
+        CXX__PTR_ANNOTATION(Parsing::Domain_Data) domain_Data;
+    };
 }
 
-bool basic_type::operator<(const basic_type&in) const
-{return as_string() < in.as_string();};//hash_value() < in.hash_value();};
 
-bool basic_type::operator==(const basic_type&in) const
-{ return as_string() == in.as_string();};//hash_value() == in.hash_value();};
-
-// bool basic_type::operator<(const basic_type&in) const
-// {return hash_value() < in.hash_value();};
-
-// bool basic_type::operator==(const basic_type&in) const
-// { return hash_value() == in.hash_value();};
-
-
-std::ostream& std::operator<<(std::ostream& o, const basic_type& bt)
-{
-    return bt.operator<<(o);
-}
-
-std::size_t hash_value(const basic_type& bt)
-{
-    return bt.hash_value();
-}
+#endif

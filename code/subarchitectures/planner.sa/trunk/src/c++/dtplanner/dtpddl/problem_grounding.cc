@@ -30,50 +30,45 @@
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
  * 
  */
-#include "stl__typed_thing.hh"
-
-using std::ostream;
 
 
-basic_type::Runtime_Thread basic_type::get__runtime_Thread() const
+
+#include "problem_grounding.hh"
+
+
+#include "dtp_pddl_parsing_data_domain.hh"
+
+using namespace Planning;
+
+
+Problem_Grounding::Problem_Grounding(Parsing::Problem_Data& problem_Data,
+                                     CXX__PTR_ANNOTATION(Parsing::Domain_Data) domain_Data)
+    :problem_Data(problem_Data),
+     domain_Data(domain_Data)
 {
-    return runtime_Thread;
+//     QUERY_UNRECOVERABLE_ERROR
+//         (State_Proposition::indexed__Traversable_Collection->end()
+//          == State_Proposition::indexed__Traversable_Collection->find(&problem_Data),
+//          "Could not find propositions associated with problem :: "
+//          <<get__problem_Name()<<std::endl
+//          );
+//     propositions = *indexed__Traversable_Collection->find(&problem_Data);
+    
 }
 
 
-std::ostream& basic_type::operator<<(std::ostream&o) const {return o<<hash_value();};
-
-std::string basic_type::as_string() const
+void Problem_Grounding::groud_actions()
 {
-    std::string str;
-    {
-        std::ostringstream oss;
-        this->operator<<(oss);
-        str = oss.str();
+    for(auto action = domain_Data->get__action_Schemas().begin()
+            ; action != domain_Data->get__action_Schemas().end()
+            ; action ++){
+        ground_action_schema(*action);
+        
     }
-
-    return std::move(str);
 }
 
-bool basic_type::operator<(const basic_type&in) const
-{return as_string() < in.as_string();};//hash_value() < in.hash_value();};
-
-bool basic_type::operator==(const basic_type&in) const
-{ return as_string() == in.as_string();};//hash_value() == in.hash_value();};
-
-// bool basic_type::operator<(const basic_type&in) const
-// {return hash_value() < in.hash_value();};
-
-// bool basic_type::operator==(const basic_type&in) const
-// { return hash_value() == in.hash_value();};
-
-
-std::ostream& std::operator<<(std::ostream& o, const basic_type& bt)
+void Problem_Grounding::ground_action_schema(const Planning::Action_Schema& actionSchema)
 {
-    return bt.operator<<(o);
+    
 }
 
-std::size_t hash_value(const basic_type& bt)
-{
-    return bt.hash_value();
-}

@@ -187,7 +187,6 @@ namespace Planning
             /* PDDL domain requirements (i.e., parsed from PDDL
              * "(:requirements ... )" bit ).*/
             Planning::Requirements domain_requirements;
-
         public:
             typedef decltype(Domain_Data::domain_Name) Identifier;
         };
