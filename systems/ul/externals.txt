@@ -3,11 +3,9 @@
 
 ^/code/subarchitectures/binder/trunk                    subarchitectures/binder
 ^/code/subarchitectures/coma.sa/trunk                   subarchitectures/coma.sa
-^/code/subarchitectures/comsys/trunk                    subarchitectures/comsys
 ^/code/subarchitectures/dialogue.sa/trunk               subarchitectures/dialogue.sa
 ^/code/subarchitectures/fakemotivation.sa/trunk         subarchitectures/fakemotivation.sa
 ^/code/subarchitectures/motivation.sa/trunk             subarchitectures/motivation.sa
-^/code/subarchitectures/nav.sa/trunk                    subarchitectures/nav.sa
 ^/code/subarchitectures/planner.sa/trunk                subarchitectures/planner.sa
 ^/code/subarchitectures/spatial.sa/trunk                subarchitectures/spatial.sa
 ^/code/subarchitectures/vision.sa/trunk                 subarchitectures/vision.sa
@@ -24,9 +22,9 @@
 ^/code/tools/grabimg/trunk                        tools/grabimg
 ^/code/tools/hardware/blobfinder/trunk            tools/hardware/blobfinder
 ^/code/tools/hardware/config/branches/stable-0    tools/hardware/config
-^/code/tools/hardware/laser/branches/stable-1     tools/hardware/laser
+^/code/tools/hardware/laser/branches/stable-0     tools/hardware/laser
 ^/code/tools/hardware/ptz/trunk                   tools/hardware/ptz
-^/code/tools/hardware/robotbase/branches/stable-1 tools/hardware/robotbase
+^/code/tools/hardware/robotbase/branches/stable-0 tools/hardware/robotbase
 ^/code/tools/hardware/sonar/branches/stable-0     tools/hardware/sonar
 ^/code/tools/hardware/stereo/trunk                tools/hardware/stereo
 ^/code/tools/hardware/tests/trunk                 tools/hardware/tests
@@ -40,3 +38,7 @@
 ^/code/tools/python/trunk                         tools/python
 ^/code/tools/scripts/trunk                        tools/scripts
 ^/code/tools/testing/trunk                        tools/testing
+
+# Obsolete
+# ^/code/subarchitectures/comsys/trunk                    subarchitectures/comsys
+# ^/code/subarchitectures/nav.sa/trunk                    subarchitectures/nav.sa
