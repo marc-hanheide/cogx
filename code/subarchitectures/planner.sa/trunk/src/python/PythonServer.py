@@ -26,7 +26,7 @@ class CASTLoggerProxy(object):
             self.log = cast.pylog4cxx.Logger(name, cast_log4cxx.subarch, cast_log4cxx.color)
             self.cast_id = cast_log4cxx.id
 
-    def log(self, level, msg, *args, **kwargs):
+    def _log(self, level, msg, *args, **kwargs):
         self.connect()
         if args and (len(args) == 1) and args[0] and isinstance(args[0], dict):
             args = args[0]
