@@ -208,7 +208,6 @@ class Writer(object):
             elif cond.__class__ == conditions.ExistentialCondition:
                 head = "exists (%s)" % self.write_typelist(cond.values())
             elif cond.__class__ == conditions.PreferenceCondition:
-                assert False, "PreferenceCondition should be compiled away!"
                 head = "preference %s" % cond.penalty
             elif cond.__class__ == conditions.Truth:
                 head = ""

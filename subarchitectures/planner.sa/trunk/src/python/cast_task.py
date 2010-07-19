@@ -23,7 +23,7 @@ class CASTTask(object):
         self.component = component
 
         self.id = planning_task.id
-        self.original_task = planning_task
+        self.slice_goals = planning_task.goals
         self.dt_task = None
 
         self.load_domain(domain_fn)
@@ -31,7 +31,8 @@ class CASTTask(object):
         self.state = cast_state.CASTState(beliefs, self.domain)
         self.percepts = []
 
-        cp_problem = self.state.to_problem(planning_task, deterministic=True, domain=self.cp_domain)
+        cp_problem, self.goaldict = self.state.to_problem(planning_task, deterministic=True, domain=self.cp_domain)
+        
         self.cp_task = task.Task(self.id, cp_problem)
         component.planner.register_task(self.cp_task)
         
@@ -99,6 +100,15 @@ class CASTTask(object):
         ordered_plan = plan.topological_sort()
         outplan = []
         first_action = -1
+
+        for sg in plan.goal_node.satisfied_softgoals:
+            slice_goal = self.goaldict[sg]
+            slice_goal.isInPlan = True
+
+        for g in self.slice_goals:
+            if g.importance < 0:
+                g.isInPlan = True
+            log.debug("Goal: %s, p:%.2f, sat: %d", g.goalString, g.importance, g.isInPlan)
 
         for i, pnode in enumerate(ordered_plan):
             if isinstance(pnode, plans.DummyNode) or not pnode.is_executable():
@@ -257,7 +267,7 @@ class CASTTask(object):
                 
     def update_state(self, beliefs):
         self.state = cast_state.CASTState(beliefs, self.domain)
-        new_cp_problem = self.state.to_problem(None, deterministic=True, domain=self.cp_domain)
+        new_cp_problem, _ = self.state.to_problem(None, deterministic=True, domain=self.cp_domain)
 
         #check if the goal is still valid
         try:

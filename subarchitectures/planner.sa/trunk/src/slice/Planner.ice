@@ -131,7 +131,7 @@ module autogen {
 
     interface CppServer
     {
-      void deliverPlan(int id, ActionSeq plan);
+      void deliverPlan(int id, ActionSeq plan, GoalSeq goals);
       void updateBeliefState(BeliefSeq beliefs);
       //void deliverPlan(PlanningTask task);
       void updateStatus(int id, Completion status);
