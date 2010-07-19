@@ -2,13 +2,19 @@ import castinit    # this will add stuff to sys.path
 import cast.core
 import cogxv11n.core.DisplayClient as DisplayClient
 
+from standalone.task import PlanningStatusEnum
 from autogen import Planner
+
 
 TASKS_ID = "planner.tasks"
 
 STYLE = """
 tr.sat {background-color: #88FF88}
 tr.unsat {background-color: #FF6666}
+
+tr.executed {background-color: #CCCCCC}
+tr.failed {background-color: #FF6666}
+tr.executing {background-color: #88FF88}
 """
 
 class PlannerDisplayClient(DisplayClient.CDisplayClient):
@@ -79,7 +85,21 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
         if task.dt_planning_active():
             html += "<p>Decision theoretic planner is active</p>"
         else:
-            html += "<p>Continual planner is active</p>"
+            html += "<p>Continual planner is active:</p>"
+
+        if task.cp_task.planning_status == PlanningStatusEnum.PLAN_AVAILABLE:
+            def action_row(pnode):
+                args = [a.name for a in pnode.args]
+                name = "(%s %s)" % (pnode.action.name, " ".join(args))
+                return (str(pnode.status).lower(), name, float(pnode.cost), pnode.status)
+            
+            ordered_plan = task.cp_task.get_plan().topological_sort()
+            html += make_html_table(["Action", "Cost", "State"], (action_row(a) for a in ordered_plan), ["class", "%s", "%.2f", "%s"])
+        elif task.cp_task.planning_status == PlanningStatusEnum.RUNNING:
+            html += "<p>Planning...</p>"
+        else:
+            html += "<p>No plan found</p>"
+
         
         # A multi-part HTML document.
         # Parts will be added every time the form (setHtmlForm below) is submitted (see handleForm).
