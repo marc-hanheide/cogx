@@ -98,6 +98,18 @@ def getRWDescription(action, args, _state, time):
     pnode.preconds |= _state.read_svars
     pnode.original_preconds |= set(state.Fact(var, extstate[var]) for var in _state.read_svars)
     #print "write:", time.time()-t0
+
+    cost_term = action.get_total_cost()
+    if cost_term:
+        if isinstance(cost_term, pddl.ConstantTerm):
+            pnode.cost = cost_term.object.value
+        elif isinstance(cost_term, pddl.VariableTerm):
+            pnode.cost = cost_term.get_instance().value
+        else:
+            assert isinstance(cost_term, pddl.FunctionTerm)
+            val = _state.evaluate_term(cost_term)
+            pnode.cost = val.value
+            
         
     #t0 = time.time()
     pnode.replanconds = set(state.Fact(var, _state[var]) for var in pnode.replanconds)

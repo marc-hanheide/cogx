@@ -109,7 +109,7 @@ class CASTTask(object):
             uargs = [self.state.featvalue_from_object(arg) for arg in pnode.args]
 
             fullname = str(pnode)
-            outplan.append(Planner.Action(self.id, pnode.action.name, uargs, fullname, Planner.Completion.PENDING))
+            outplan.append(Planner.Action(self.id, pnode.action.name, uargs, fullname, float(pnode.cost), Planner.Completion.PENDING))
 
         if outplan:
             log.info("First action: %s == %s", str(ordered_plan[first_action]), outplan[0].fullName)
@@ -242,7 +242,7 @@ class CASTTask(object):
         uargs = [self.state.featvalue_from_object(a) for a in args]
     
         fullname = action.name + " ".join(action.arguments)
-        outplan = [Planner.Action(self.id, action.name, uargs, fullname, Planner.Completion.PENDING)]
+        outplan = [Planner.Action(self.id, action.name, uargs, fullname, float(pnode.cost), Planner.Completion.PENDING)]
 
         log.info("%d: First action: %s", self.id, fullname)
         self.component.deliver_plan(self, outplan)
