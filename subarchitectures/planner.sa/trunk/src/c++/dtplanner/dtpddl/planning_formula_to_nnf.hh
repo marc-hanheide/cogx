@@ -30,50 +30,37 @@
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
  * 
  */
-#include "stl__typed_thing.hh"
-
-using std::ostream;
 
 
-basic_type::Runtime_Thread basic_type::get__runtime_Thread() const
+#ifndef PLANNING_FORMULA_TO_NNF_HH
+#define PLANNING_FORMULA_TO_NNF_HH
+
+#include "planning_formula.hh"
+
+namespace Planning
 {
-    return runtime_Thread;
+  class Planning_Formula__to__NNF
+  {
+  public:
+      typedef Planning::Formula::Subformulae Subformulae;
+      typedef Planning::Formula::Subformula Subformula;
+      typedef Planning::Formula::Negation Negation;
+      typedef Planning::Formula::Conjunction Conjunction;
+      typedef Planning::Formula::Disjunction Disjunction;
+      typedef Planning::Formula::Exists Exists;
+      typedef Planning::Formula::Forall Forall;
+      
+      Subformula operator()(Subformula);
+  private:
+      Subformula operator()(Subformula, bool);
+
+      /* Applies the double negative law*/
+      Subformula operator()(Negation&, bool);
+      
+      /*Application of De Morgan's laws*/
+      Subformula operator()(Conjunction&, bool);
+      Subformula operator()(Disjunction&, bool);
+  };
 }
 
-
-std::ostream& basic_type::operator<<(std::ostream&o) const {return o<<hash_value();};
-
-std::string basic_type::as_string() const
-{
-    std::string str;
-    {
-        std::ostringstream oss;
-        this->operator<<(oss);
-        str = oss.str();
-    }
-
-    return std::move(str);
-}
-
-bool basic_type::operator<(const basic_type&in) const
-{return as_string() < in.as_string();};//hash_value() < in.hash_value();};
-
-bool basic_type::operator==(const basic_type&in) const
-{ return as_string() == in.as_string();};//hash_value() == in.hash_value();};
-
-// bool basic_type::operator<(const basic_type&in) const
-// {return hash_value() < in.hash_value();};
-
-// bool basic_type::operator==(const basic_type&in) const
-// { return hash_value() == in.hash_value();};
-
-
-std::ostream& std::operator<<(std::ostream& o, const basic_type& bt)
-{
-    return bt.operator<<(o);
-}
-
-std::size_t hash_value(const basic_type& bt)
-{
-    return bt.hash_value();
-}
+#endif

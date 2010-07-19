@@ -47,6 +47,9 @@ namespace Planning
         {
         public:
 
+            template<typename PROPOSITION_SYMBOL, typename Symbol_Name >
+            void using__symbol_name(const Symbol_Name& symbol_name, ID_TYPE index);
+            
             /* Formulae that are subsequently parsed have as their
              * subject the initial state.  Some formula describe
              * actions pre- and post-conditions, others describe
@@ -58,6 +61,7 @@ namespace Planning
              * 'precondition' the '=' operator has the semantics of an
              * equality test.  */
             void report__enter_parsing_initial_state();
+            
             /* Formulae that are subsequently parsed DO NOT have as
              * their subject the initial state (see
              * \member{report__enter_parsing_initial_state}).*/
@@ -115,6 +119,12 @@ namespace Planning
                          , symbol_name
                          , constant_Arguments);
                     subformulae[formula_parsing_level].push_back(atomic_symbol);
+
+                    this->using__symbol_name
+                        <PROPOSITION_SYMBOL
+                        , Symbol_Name>
+                        (symbol_name,
+                         atomic_symbol.get()->get__id());
                 }
 
                 VERBOSER(101, "PARSED :: "<<formula_parsing_level<<":: "<<subformulae[formula_parsing_level].back()<<std::endl);
@@ -194,6 +204,48 @@ namespace Planning
             /*(see \member{complete__quantified_formula(exists)})*/
             Formula::Subformula complete__exists_formula();
         protected:
+            
+            /* When a formula is being parsed, but before it is
+             * consumed (for example, used as a PDDL action
+             * precondition), we store all the information about the
+             * atomic symbols that occur in the formula.*/
+            std::map<Planning::State_Function_Name, std::set<ID_TYPE> > state_functions__parsed;
+            std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> > perceptual_functions__parsed;
+            std::map<Planning::State_Function_Name, std::set<ID_TYPE> > state_ground_functions__parsed;
+            std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> > perceptual_ground_functions__parsed;
+            std::map<Planning::Predicate_Name, std::set<ID_TYPE> > state_propositions__parsed;
+            std::map<Planning::Predicate_Name, std::set<ID_TYPE> > state_predicates__parsed;
+            std::map<Planning::Percept_Name, std::set<ID_TYPE> > observational_propositions__parsed;
+            std::map<Planning::Percept_Name, std::set<ID_TYPE> > observational_predicates__parsed;
+
+
+            /* While parsing we also keep information about what
+             * Boolean symbols are "added" and what Boolean symbols
+             * are "deleted" in formula. This makes later detection of
+             * static Boolean symbols simple.*/
+            std::map<Planning::Predicate_Name, std::set<ID_TYPE> > deleted__state_propositions__parsed;
+            std::map<Planning::Predicate_Name, std::set<ID_TYPE> > deleted__state_predicates__parsed;
+            std::map<Planning::Percept_Name, std::set<ID_TYPE> > deleted__observational_propositions__parsed;
+            std::map<Planning::Percept_Name, std::set<ID_TYPE> > deleted__observational_predicates__parsed;
+            std::map<Planning::Predicate_Name, std::set<ID_TYPE> > added__state_propositions__parsed;
+            std::map<Planning::Predicate_Name, std::set<ID_TYPE> > added__state_predicates__parsed;
+            std::map<Planning::Percept_Name, std::set<ID_TYPE> > added__observational_propositions__parsed;
+            std::map<Planning::Percept_Name, std::set<ID_TYPE> > added__observational_predicates__parsed;
+
+
+            /* This Boolean is true when a propositional symbol being
+             * parsed is occurring in a delete context. That is, if
+             * the formula being parse is an effect formula, and the
+             * proposition that was parsed was parsed in a delete
+             * context (will be deleted when the corresponding action
+             * is executed).
+             *
+             * (see \member{report__formula} and \member{report__not_formula})
+             *
+             * INITIALLY "FALSE".*/
+            bool in_delete_context;
+            
+            
             /* Should next next call to \member{report__formula} be skipped?*/
             bool skip_next____report__formula;
 
@@ -253,7 +305,8 @@ namespace Planning
             /* Symbols such as predicates, percepts, actions,
              * quantified preconditions, etc take a list of typed
              * variable arguments.*/
-            Planning::Argument_List argument_List;            
+            Planning::Argument_List argument_List;
+
         };
     }
 }

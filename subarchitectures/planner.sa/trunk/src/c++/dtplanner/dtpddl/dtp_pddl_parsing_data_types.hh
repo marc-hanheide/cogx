@@ -46,7 +46,19 @@ namespace Planning
         class Types_Data
         {
         public:
+            /* - \member{symbol_theory} is initially NULL.*/
+            Types_Data();
+            
             ~Types_Data();
+
+
+            /* Function and predicate names are associated with a
+             * domain theory. Therefore, when we talk about them in
+             * some descendants, when we create them they must be
+             * linked to that theory otherwise they will seem like
+             * distinct symbols. The \argument{void*} points to the
+             * theory which initially defines those symbols.*/
+            void report__symbol_name_reference(void*);
             
             /* In PDDL we have a specification element
              * (:types typename_1 typename_2 ... - (either typename_N typename N+1 ... ) )
@@ -97,6 +109,9 @@ namespace Planning
              * otherwise as part of an argument list -- see
              * \member{arguments_Description})*/
             Planning::Types types;
+            
+            /*(see \member{report__symbol_name_reference})*/
+            void* symbol_theory;
         };
     }
 }

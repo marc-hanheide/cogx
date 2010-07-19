@@ -50,7 +50,8 @@ Formula_Data::Formula_Data():
     formula_parsing_level(0),
     skip_next____report__formula(false),
     last_number_parsed_was_double(false),
-    parsing_initial_state(false)
+    parsing_initial_state(false),
+    in_delete_context(false)
 {
 }
 
@@ -199,6 +200,11 @@ void Formula_Data::report__if_formula()
 void Formula_Data::report__not_formula()
 {
     formula_type.push(negation);
+
+    /* delete context is STARTED here. it is stopped when this parsed
+     * symbol is delt with in \member{report__formula()}
+     * \case{negation}. */
+    in_delete_context = true;
 }
 
 void Formula_Data::report__and_formula()
@@ -544,6 +550,9 @@ void Formula_Data::report__formula(const std::string& str)
         break;
         case negation:
         {
+            /* END of the delete context (started in \member{report__not_formula()}).*/
+            in_delete_context = false;
+            
             VERBOSER(25, "negation");
             check__exists_parsed_subformulae(formula_parsing_level + 1);
             
@@ -707,9 +716,18 @@ void Formula_Data::commit__argument_types()
     for(auto i = argument_List.begin(); i != argument_List.end(); i++){
         std::tr1::get<0>(typed_Arguments).push_back(*i);
     }
+
+    Types object_types;
+    if(symbol_theory){
+        NEW_referenced_WRAPPED(symbol_theory, Planning::Type, object_type, "object");
+        object_types.insert(object_type);
+    } else {
+        NEW_object_referenced_WRAPPED(Planning::Type, object_type, "object");
+        object_types.insert(object_type);
+    }
     
-    NEW_object_referenced_WRAPPED(Planning::Type, object_type, "object");
-    Types object_types;object_types.insert(object_type);
+//     NEW_object_referenced_WRAPPED(Planning::Type, object_type, "object");
+//     object_types.insert(object_type);
     
     /*And their types.*/
     for(auto i = argument_List.begin(); i != argument_List.end(); i++){
@@ -776,30 +794,179 @@ void Formula_Data::add__constant_argument(const std::string& str)
 }
 
 
+
+#define REPORT_SYMBOL_USAGE__PROPOSITIONAL(TYPE, NAME_TYPE, storage, add_storage, del_storage) template<>        \
+    void Formula_Data::using__symbol_name<TYPE                          \
+                                          , NAME_TYPE>                  \
+    (const NAME_TYPE& symbol_name,                                      \
+     ID_TYPE index)                                                     \
+    {                                                                   \
+        if(storage.find(symbol_name) == storage.end()){                 \
+            storage[symbol_name] = std::set<ID_TYPE>();                 \
+        }                                                               \
+        storage[symbol_name]                                            \
+            .insert(index);                                             \
+                                                                        \
+        if(in_delete_context){                                          \
+            if(del_storage.find(symbol_name) == del_storage.end()){     \
+                del_storage[symbol_name] = std::set<ID_TYPE>();         \
+            }                                                           \
+            del_storage[symbol_name]                                    \
+                .insert(index);                                         \
+        } else {                                                        \
+                                                                        \
+            if(add_storage.find(symbol_name) == add_storage.end()){     \
+                add_storage[symbol_name] = std::set<ID_TYPE>();         \
+            }                                                           \
+            add_storage[symbol_name]                                    \
+                .insert(index);                                         \
+        }                                                               \
+                                                                        \
+                                                                        \
+    }                                                                   \
+
+#define REPORT_SYMBOL_USAGE__FUNCTIONAL(TYPE, NAME_TYPE, storage) template<>        \
+    void Formula_Data::using__symbol_name<TYPE                          \
+                                          , NAME_TYPE>                  \
+    (const NAME_TYPE& symbol_name,                                      \
+     ID_TYPE index)                                                     \
+    {                                                                   \
+        if(storage.find(symbol_name) == storage.end()){                 \
+            storage[symbol_name] = std::set<ID_TYPE>();                 \
+        }                                                               \
+        storage[symbol_name]                                            \
+            .insert(index);                                             \
+    }                                                                   \
+
+
+#define REPORT_SYMBOL_USAGE__NO_STORAGE(TYPE, NAME_TYPE) template<>     \
+    void Formula_Data::using__symbol_name<TYPE                          \
+                                          , NAME_TYPE>                  \
+    (const NAME_TYPE& symbol_name,                                      \
+     ID_TYPE index)                                                     \
+    {                                                                   \
+    }                                                                   \
+
+
+
+namespace Planning
+{
+    namespace Parsing
+    {
+        
+        REPORT_SYMBOL_USAGE__FUNCTIONAL(Planning::Formula::Perceptual_Function,
+                                        Planning::Perceptual_Function_Name,
+                                        perceptual_functions__parsed);
+        
+        REPORT_SYMBOL_USAGE__FUNCTIONAL(Planning::Formula::State_Function,
+                                        Planning::State_Function_Name,
+                                        state_functions__parsed);
+        
+        REPORT_SYMBOL_USAGE__FUNCTIONAL(Planning::Formula::Perceptual_Ground_Function,
+                                        Planning::Perceptual_Function_Name,
+                                        perceptual_ground_functions__parsed);
+        
+        REPORT_SYMBOL_USAGE__FUNCTIONAL(Planning::Formula::State_Ground_Function,
+                                        Planning::State_Function_Name,
+                                        state_ground_functions__parsed);
+        
+        
+        REPORT_SYMBOL_USAGE__PROPOSITIONAL(Planning::Formula::State_Predicate,
+                                           Planning::Predicate_Name,
+                                           state_predicates__parsed,
+                                           added__state_predicates__parsed,
+                                           deleted__state_predicates__parsed);
+        
+        REPORT_SYMBOL_USAGE__PROPOSITIONAL(Planning::Formula::State_Proposition,
+                                           Planning::Predicate_Name,
+                                           state_propositions__parsed,
+                                           added__state_propositions__parsed,
+                                           deleted__state_propositions__parsed);
+        
+        REPORT_SYMBOL_USAGE__PROPOSITIONAL(Planning::Formula::Observational_Predicate,
+                                           Planning::Percept_Name,
+                                           observational_predicates__parsed,
+                                           added__observational_predicates__parsed,
+                                           deleted__observational_predicates__parsed);
+        
+        REPORT_SYMBOL_USAGE__PROPOSITIONAL(Planning::Formula::Observational_Proposition,
+                                           Planning::Percept_Name,
+                                           observational_propositions__parsed,
+                                           added__observational_propositions__parsed,
+                                           deleted__observational_propositions__parsed);
+
+        REPORT_SYMBOL_USAGE__NO_STORAGE(Planning::Formula::Action_Proposition,
+                                        Planning::Action_Name);
+    }
+}
+
+// template<>
+// void Formula_Data::using__symbol_name<Planning::Perceptual_Function
+//                                       , Planning::Perceptual_Function_Name>
+// (const Perceptual_Function_Name& symbol_name,
+//  ID_TYPE index)
+// {
+//     perceptual_functions__parsed[perceptual_Function_Name]
+//         .insert(index);
+// }
+
 void Formula_Data::report__perceptual_function_name(const std::string& str)
 {
-    NEW_object_referenced_WRAPPED(Planning::Perceptual_Function_Name, tmp, str);
-    perceptual_Function_Name = tmp;
+    if(symbol_theory){
+        NEW_referenced_WRAPPED(symbol_theory, Planning::Perceptual_Function_Name, tmp, str);
+        perceptual_Function_Name = tmp;
+    } else {    
+        NEW_object_referenced_WRAPPED(Planning::Perceptual_Function_Name, tmp, str);
+        perceptual_Function_Name = tmp;
+    }
 }
 
 void Formula_Data::report__percept_name(const std::string& str)
 {
-    NEW_object_referenced_WRAPPED(Planning::Percept_Name, tmp, str);
-    percept_Name = tmp;
+    //NEW_object_referenced_WRAPPED(Planning::Percept_Name, tmp, str);
+    if(symbol_theory){
+        NEW_referenced_WRAPPED(symbol_theory, Planning::Percept_Name, tmp, str);
+        percept_Name = tmp;
+    } else {
+        NEW_object_referenced_WRAPPED(Planning::Percept_Name, tmp, str);
+        percept_Name = tmp;
+    }
+    
+    
+//     NEW_object_referenced_WRAPPED(Planning::Percept_Name, tmp, str);
+//     percept_Name = tmp;
 }
 
 void Formula_Data::report__state_function_name(const std::string& str)
 {
-    NEW_object_referenced_WRAPPED(Planning::State_Function_Name, tmp, str);
-    state_Function_Name = tmp;
+    if(symbol_theory){
+        NEW_referenced_WRAPPED(symbol_theory, Planning::State_Function_Name, tmp, str);
+        state_Function_Name = tmp;
+    } else {    
+        NEW_object_referenced_WRAPPED(Planning::State_Function_Name, tmp, str);
+        state_Function_Name = tmp;
+    }
+    
 }
-
 
 void Formula_Data::report__predicate_name(const std::string& str)
 {
-    NEW_object_referenced_WRAPPED(Planning::Predicate_Name, tmp, str);
-    predicate_Name = tmp;
+    
+    if(symbol_theory){
+        NEW_referenced_WRAPPED(symbol_theory, Planning::Predicate_Name, tmp, str);
+        predicate_Name = tmp;
+    } else {    
+        NEW_object_referenced_WRAPPED(Planning::Predicate_Name, tmp, str);
+        predicate_Name = tmp;
+    }
+    
 }
+
+
+
+
+
+
 
 void Formula_Data::stack__typed_Arguments()
 {

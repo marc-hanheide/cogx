@@ -87,6 +87,39 @@ PRINTING_IMPLEMENTATION("or", Disjunction);
 PRINTING_IMPLEMENTATION("not", Negation);
 
 
+const Subformula Negation::get__subformula() const
+{
+    return tr1::get<0>(contents());
+}
+
+Subformula Negation::get__subformula()
+{
+    return tr1::get<0>(contents());
+}
+
+const Subformulae& Disjunction::get__subformulae() const
+{
+    return tr1::get<0>(contents());
+}
+
+Subformulae Disjunction::get__subformulae()
+{
+    return tr1::get<0>(contents());
+}
+
+
+const Subformulae& Conjunction::get__subformulae() const
+{
+    return tr1::get<0>(contents());
+}
+
+Subformulae Conjunction::get__subformulae()
+{
+    return tr1::get<0>(contents());
+}
+
+
+
 
 double Number::get__value() const {return std::tr1::get<0>(this->contents());}
 
@@ -167,33 +200,6 @@ Subformula Planning::Formula::Conditional_Effect::get__condition() const
 Subformula Planning::Formula::Conditional_Effect::get__effect() const
 {return std::tr1::get<1>(this->contents()); }
 
-//                                                                      \
-// std::ostream& Planning::Formula::Increase::operator<<(ostream&o)const
-
-// std::ostream& Planning::Formula::Increase::operator<<(ostream&o)const 
-// {
-//     o<<"(increase "<<std::tr1::get<0>(this->contents())<<" "<<std::tr1::get<1>(this->contents());
-    
-
-//     return o<<")"<<std::endl;
-// }
-
-
-// std::ostream& Planning::Formula::Decrease::operator<<(ostream&o)const 
-// {
-//     o<<"(decrease "<<std::tr1::get<0>(this->contents())<<" "<<std::tr1::get<1>(this->contents());
-    
-
-//     return o<<")"<<std::endl;
-// }
-
-// std::ostream& Planning::Formula::Assign::operator<<(ostream&o)const 
-// {
-//     o<<"(assign "<<std::tr1::get<0>(this->contents())<<" "<<std::tr1::get<1>(this->contents());
-    
-
-//     return o<<")"<<std::endl;
-// }
 
 
 std::ostream& Planning::Formula::Conditional_Effect::operator<<(ostream&o)const 

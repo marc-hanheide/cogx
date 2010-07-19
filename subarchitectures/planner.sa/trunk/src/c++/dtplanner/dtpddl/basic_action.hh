@@ -35,6 +35,7 @@
 #define BASIC_ACTION_HH
 
 #include "state_basics.hh"
+#include "state_formula.hh"
 
 namespace Planning
 {
@@ -45,7 +46,7 @@ namespace Planning
      * given state, then \class{Satisfaction_Listener} that are
      * registered with that formula get notified (see
      * \module{state_formula.hh}). */
-    class State_Transformation
+    class State_Transformation : public State_Formula::Satisfaction_Listener
     {
     public:
         State_Transformation(bool compulsory = false);

@@ -101,16 +101,25 @@ namespace Planning
         class Conjunction : public type_wrapper<enum_types::conjunction
                                                 , Subformulae>
         {PRINTING;
+        public:
+            const Subformulae& get__subformulae() const;
+            Subformulae get__subformulae();
         };
         
         class Disjunction : public type_wrapper<enum_types::disjunction
                                                 , Subformulae>
         {PRINTING;
+        public:
+            const Subformulae& get__subformulae() const;
+            Subformulae get__subformulae();
         };
         
         class Negation : public type_wrapper<enum_types::negation
                                                 , Subformula >
         {PRINTING;
+        public:
+            const Subformula get__subformula() const;
+            Subformula get__subformula();
         };
         
         class Forall : public type_wrapper<enum_types::forall
