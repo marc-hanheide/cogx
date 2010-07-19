@@ -2,7 +2,14 @@ import castinit    # this will add stuff to sys.path
 import cast.core
 import cogxv11n.core.DisplayClient as DisplayClient
 
+from autogen import Planner
+
 TASKS_ID = "planner.tasks"
+
+STYLE = """
+tr.sat {background-color: #88FF88}
+tr.unsat {background-color: #FF6666}
+"""
 
 class PlannerDisplayClient(DisplayClient.CDisplayClient):
     def __init__(self):
@@ -48,11 +55,27 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
 
     #     return False
 
+    def init_html(self):
+        head = "<style type=\"text/css\">%s</style>" % STYLE
+        self.setHtmlHead(TASKS_ID, "head", head);
+
+        
     def update_task(self, task):
         id = "%04d" % task.id
-        html = ""
-        html += "<h2>Planning Task %d (%s)</h2>" % (task.id, task.status)
-        html += make_html_table(["Goal", "Importance"], ((g.goalString, g.importance) for g in task.original_task.goals), ["%s", "%d"])
+        
+        html = "<h2>Planning Task %d (%s)</h2>" % (task.id, task.status)
+
+        def goal_row(g):
+            if task.status == Planner.Completion.SUCCEEDED:
+                if g.isInPlan:
+                    _class = "sat"
+                else:
+                    _class = "unsat"
+            else:
+                _class = ""
+            return (_class, g.goalString, g.importance, g.isInPlan)
+        
+        html += make_html_table(["Goal", "Importance", "satisfied"], (goal_row(g) for g in task.slice_goals), ["class", "%s", "%d", "%s"])
         if task.dt_planning_active():
             html += "<p>Decision theoretic planner is active</p>"
         else:
@@ -90,7 +113,11 @@ def make_html_table(names, entries, formats = None):
     if not formats:
         formats = ["%s"] * len(names)
 
-    row_template = "<tr>" + "".join("<td>%s</td>" % f for f in formats) + "</tr>"
+    if formats[0] == "class":
+        row_template = "<tr class=\"%s\">" + "".join("<td>%s</td>" % f for f in formats[1:]) + "</tr>"
+    else:
+        row_template = "<tr>" + "".join("<td>%s</td>" % f for f in formats) + "</tr>"
+
     lines = [head]
     for e in entries:
         lines.append(row_template % e)

@@ -55,10 +55,13 @@ class CASTState(object):
         if cast_task is None:
             return problem
 
+        goaldict = {}
         problem.goal = pddl.conditions.Conjunction([], problem)
         for goal in cast_task.goals:
             goalstrings = tp.transform_goal_string(goal.goalString, self.namedict).split("\n")
             pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
+            goaldict[pddl_goal] = goal
+            
             if goal.importance < 0:
                 problem.goal.parts.append(pddl_goal)
             else:
@@ -66,7 +69,7 @@ class CASTState(object):
 
         log.debug("goal: %s", problem.goal)
         
-        return problem
+        return problem, goaldict
 
     def convert_percepts(self, percepts):
         objdict = dict((o.name, o) for o in self.objects)

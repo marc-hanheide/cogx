@@ -184,6 +184,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def runComponent(self):
       self.m_display.connectIceClient(self)
       self.m_display.installEventReceiver()
+      self.m_display.init_html()
 
   def registerTask(self, task_desc, current=None):
     log.info("Planner PythonServer: New PlanningTask received:")
@@ -213,7 +214,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def deliver_plan(self, task, slice_plan):
       task.status = Planner.Completion.SUCCEEDED
       self.m_display.update_task(task)
-      self.getClient().deliverPlan(task.id, slice_plan);
+      self.getClient().deliverPlan(task.id, slice_plan, task.slice_goals);
 
   def updateState(self, state, percepts, current=None):
       log.debug("recieved state update.")

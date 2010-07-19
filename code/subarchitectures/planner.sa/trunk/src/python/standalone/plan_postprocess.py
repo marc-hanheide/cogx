@@ -17,7 +17,9 @@ def MAPLAction(action, task):
     args = [task._mapltask[a] for a in args[:len(action_def.args)]]
     return action_def, args
 
-def getGoalDescription(goal, _state):
+def getGoalDescription(goal, gnode, _state):
+    gnode.action = plans.GoalAction(goal)
+    
     read_vars = []
     universal_args = []
     extstate, reasons, universalReasons = _state.get_extended_state(_state.get_relevant_vars(goal), getReasons=True)
@@ -37,7 +39,23 @@ def getGoalDescription(goal, _state):
 
     log.debug("variables from goal:")
     log.debug("read: %s", " ".join(map(str, read)))
-    return set(state.Fact(var, _state[var]) for var in read), universal, set(state.Fact(var, _state[var]) for var in orig_read), reasons
+
+    gnode.preconds = set(state.Fact(var, _state[var]) for var in read)
+    gnode.preconds_universal = universal
+    gnode.explanations = reasons
+    gnode.original_preconds = set(state.Fact(var, _state[var]) for var in orig_read)
+
+    @pddl.visitors.collect
+    def find_softgoals(elem, results):
+        if isinstance(elem, pddl.conditions.PreferenceCondition):
+            return [elem.cond]
+
+    gnode.satisfied_softgoals = set()
+    for sg in goal.visit(find_softgoals):
+        if extstate.is_satisfied(sg):
+            gnode.satisfied_softgoals.add(sg)
+        
+    return gnode
 
 def getRWDescription(action, args, _state, time):
     pnode = plans.PlanNode(action, args, time, plans.ActionStatusEnum.EXECUTABLE)
@@ -200,16 +218,11 @@ def make_po_plan(actions, task):
         previous = pnode
         log.debug("total time for action: %f", time.time()-t1)
 
-    read, universal, orig_read, explanations = getGoalDescription(task.get_goal(), state)
-    plan.goal_node.preconds = read
-    plan.goal_node.preconds_universal = universal
-    plan.goal_node.action = plans.GoalAction(task.get_goal())
-    plan.goal_node.explanations = explanations
-    plan.goal_node.original_preconds = orig_read
+    gnode = getGoalDescription(task.get_goal(), plan.goal_node, state)
     
     #plan.add_link(previous, plan.goal_node)
 
-    for svar, val in read:
+    for svar, val in gnode.preconds:
         if svar not in frontier:
             relevant_init_vars.add(svar)
         plan.add_link(frontier[svar], plan.goal_node, svar, val)

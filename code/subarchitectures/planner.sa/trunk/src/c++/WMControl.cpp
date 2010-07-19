@@ -171,7 +171,7 @@ void WMControl::taskChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     log("task update from: %s", wmc.src.c_str());
     if (task->executePlan && task->planningStatus == SUCCEEDED && task->firstActionID == "" && task->plan.size() > 0 ) {
         log("Starting execution of task %d", task->id);
-        deliverPlan(task->id, task->plan);
+        deliverPlan(task->id, task->plan, task->goals);
     }
 }
 
@@ -353,7 +353,7 @@ void WMControl::dispatchPlanning(PlanningTaskPtr& task, int msecs) {
 
 
 
-void WMControl::deliverPlan(int id, const ActionSeq& plan) {
+void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals) {
     log("Plan delivered");
     assert(activeTasks.find(id) != activeTasks.end());
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
@@ -364,6 +364,7 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan) {
     }
 
     task->plan = plan;
+    task->goals = goals;
     task->costs = total_costs;
     task->planningRetries = 0;
     task->planningStatus = SUCCEEDED;
@@ -502,8 +503,8 @@ WMControl::InternalCppServer::InternalCppServer(WMControl* Parent) {
     parent = Parent;
 }
 
-void WMControl::InternalCppServer::deliverPlan(int id, const ActionSeq& plan, const Ice::Current&) {
-    parent->deliverPlan(id, plan);
+void WMControl::InternalCppServer::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals, const Ice::Current&) {
+    parent->deliverPlan(id, plan, goals);
 }
 
 void WMControl::InternalCppServer::updateBeliefState(const BeliefSeq& beliefs, const Ice::Current&) {
