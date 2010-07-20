@@ -1,0 +1,16 @@
+STRING TO PROCESS: blabla v bloblo v blibli
+STRING TO PROCESS: blabla ^ bloblo ^ blibli
+de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula
+STRING TO PROCESS:  " blabla bla bli blou " 
+STRING TO PROCESS: blabla bla bli blou BLO
+STRING TO PROCESS: blabla v  ( blibli ^ blo ^ bla )  v blibli
+STRING TO PROCESS:  < op >  blabla
+STRING TO PROCESS:  < op >   ( blabla ^ bloblo ) 
+STRING TO PROCESS: prop1 ^  < op1 >   ( prop2 ^  < op2 >  prop3 )  ^ prop4
+STRING TO PROCESS:  ( prop1 ^ prop2 ) 
+STRING TO PROCESS: !  ( prop1 ^ prop2 ) 
+STRING TO PROCESS: 34
+STRING TO PROCESS: 0.36f
+0.36
+STRING TO PROCESS: false
+
