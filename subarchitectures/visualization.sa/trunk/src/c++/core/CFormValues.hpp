@@ -37,6 +37,8 @@ public:
       virtual void setValue(const std::string& _value);
       virtual void setValue(const std::string& xpath, const std::string& _value);
       virtual std::string get(const std::string& xpath);
+      virtual double getFloat(const std::string& xpath);
+      virtual long   getInt(const std::string& xpath);
       virtual void get(std::map<std::string, std::string>& fieldmap);
       virtual void dump(std::vector<std::string>& dump);
    };
@@ -44,7 +46,11 @@ public:
    class valuelist {
    public:
       std::vector<std::string> items;
-       valuelist& operator << (const std::string& value) {
+      valuelist() {}
+      valuelist(const std::vector<std::string>& values) {
+         items = values;
+      }
+      valuelist& operator << (const std::string& value) {
          items.push_back(value);
          return *this;
       }
@@ -54,7 +60,7 @@ public:
    {
    public:
       std::map<std::string, bool> items;
-      set(const std::string& name, valuelist& setitems);
+      set(const std::string& name, const valuelist& setitems);
       void clear();
       virtual void dump(std::vector<std::string>& dump);
       virtual std::string get(const std::string& xpath);
@@ -67,7 +73,8 @@ public:
    class choice: public set
    {
    public:
-      choice(const std::string& name, valuelist& setitems): set(name, setitems) {}
+      choice(const std::string& name, const valuelist& setitems): set(name, setitems) {}
+      virtual std::string get(const std::string& xpath);
    };
 
    // TODO: add destructor!!
@@ -77,6 +84,8 @@ public:
    void setValue(const std::string& xpath, const std::string& value);
    void clearValue(const std::string& name);
    std::string get(const std::string& xpath);
+   double getFloat(const std::string& xpath);
+   long   getInt(const std::string& xpath);
    void get(std::map<std::string, std::string>& fieldmap);
    void add(field* pfield);
    void dump(std::vector<std::string>& dump);
