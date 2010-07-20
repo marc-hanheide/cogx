@@ -1,0 +1,24 @@
+[Dialogue policy] Adding outgoing edge : one (0.0, 1.0) from start to action1
+[Dialogue policy] Adding outgoing edge : two (0.0, 1.0) from start to action1
+[Dialogue policy] Adding outgoing edge : three (0.0, 1.0) from start to action2
+[Dialogue policy] Adding outgoing edge : four (0.0, 1.0) from action1 to end1
+[Dialogue policy] Adding outgoing edge : five (0.0, 1.0) from action2 to action3
+[Dialogue policy] Adding outgoing edge : six (0.0, 1.0) from action3 to end2
+[dialmanager test] init node""
+[dialmanager test] observing one (1.0, 1.0)
+[dialmanager test] cur action: "act 1"
+[dialmanager test] observing four (1.0, 1.0)
+[dialmanager test] cur action: ""
+[Dialogue policy] Adding outgoing edge : one (0.0, 1.0) from start to action1
+[Dialogue policy] Adding outgoing edge : two (0.0, 1.0) from start to action1
+[Dialogue policy] Adding outgoing edge : three (0.0, 1.0) from start to action2
+[Dialogue policy] Adding outgoing edge : four (0.0, 1.0) from action1 to end1
+[Dialogue policy] Adding outgoing edge : five (0.0, 1.0) from action2 to action3
+[Dialogue policy] Adding outgoing edge : six (0.0, 1.0) from action3 to end2
+[dialmanager test] init node""
+[dialmanager] Warning: observation six (1.0, 1.0) not applicable from node start
+[dialmanager] available observations: 
+[dialmanager] obs: two (0.0, 1.0)
+[dialmanager] obs: one (0.0, 1.0)
+[dialmanager] obs: three (0.0, 1.0)
+
