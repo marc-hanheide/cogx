@@ -18,7 +18,7 @@
 #define STRINGFMT_DO03FM55
 
 template<typename T>
-std::string _str_(T i, short width=0, unsigned short precision=6, char fill=' ')
+std::string _str_(T i, short width, unsigned short precision, char fill=' ')
 {
    std::ostringstream ss;
    if (width != 0) {
