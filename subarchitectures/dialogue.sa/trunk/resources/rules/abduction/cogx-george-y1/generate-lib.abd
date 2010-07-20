@@ -1,0 +1,94 @@
+utt_head(Nom) <-
+	dummy_nom1(Nom),
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0.
+
+generate : it(Nom) <-
+	i : sort(Nom, entity) / 1.0,
+	i : prop(Nom, object) / 1.0,  % will be suppressed anyway
+	i : feat_Salient(Nom, true) / 1.0,
+	i : feat_InfoStatus(Nom, familiar) / 1.0.
+
+generate : this(Nom) <-
+	i : sort(Nom, entity) / 1.0,
+	i : prop(Nom, object) / 1.0,  % will be suppressed anyway
+	i : feat_Salient(Nom, true) / 1.0.
+
+%-------------------------------------------------------------------------
+
+add_patient(Nom, PatNom, Prop) <-
+	Prop \= objecttype,
+	i : rel_Patient(Nom, PatNom) / 1.0,
+		i : sort(PatNom, entity) / 1.0,
+		i : prop(PatNom, Prop) / 1.0,
+		i : feat_InfoStatus(PatNom, familiar) / 1.0,
+		i : feat_ProofStatus(PatNom, asserted) / 1.0.
+
+add_patient(Nom, PatNom, objecttype) <-
+	dont_add_patient(PatNom) / 6.0.
+
+%-------------------------------------------------------------------------
+
+add_prop_value_to_protolf(Nom, UsedNom, color, Value) <-
+	i : rel_Color(Nom, UsedNom) / 1.0,
+		i : sort(UsedNom, quality) / 1.0,
+		i : prop(UsedNom, Value) / 1.0.
+
+add_prop_value_to_protolf(Nom, UsedNom, shape, Value) <-
+	i : rel_Shape(Nom, UsedNom) / 1.0,
+		i : sort(UsedNom, quality) / 1.0,
+		portray_shape_prop(Value, NiceValue),
+		i : prop(UsedNom, NiceValue) / 1.0.
+
+add_prop_value_to_protolf(Nom, UsedNom, objecttype, Value) <-
+	Value \= objecttype,
+	i : rel_Type(Nom, UsedNom) / 1.0,
+		i : sort(UsedNom, 'entity') / 1.0,
+		i : prop(UsedNom, Value) / 1.0.
+
+add_prop_value_to_protolf(Nom, UsedNom, objecttype, objecttype) <-
+	i : rel_Type(Nom, UsedNom) / 1.0,
+		i : sort(UsedNom, 'ont-entity') / 1.0,
+		i : prop(UsedNom, objecttype) / 1.0.
+
+%----------------------------------------------------------------------
+
+check_property_value(Union, color, known(Value)) <-
+	k(now, private(r)) : color(Union, Value) / belief_model.
+%	Value \= unknownColor.
+
+check_property_value(Union, shape, known(Value)) <-
+	k(now, private(r)) : shape(Union, Value) / belief_model.
+%	Value \= unknownShape.
+
+check_property_value(Union, objecttype, known(Value)) <-
+	k(now, private(r)) : objecttype(Union, Value) / belief_model.
+%	Value \= unknownObjectType.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+check_property_value(Union, Prop, unknown) <-
+	property_value_unknown(Union, Prop) / 15.0.
+
+%----------------------------------------------------------------------
+
+propname_to_questiontype(objecttype, type).
+propname_to_questiontype(color, color).
+propname_to_questiontype(shape, shape).
+
+%----------------------------------------------------------------------
+
+portray_shape_prop(P, P).
+
+%portray_shape_prop(shape, shape).  % for generating questions
+%portray_shape_prop(cubic, square).
+%portray_shape_prop(spherical, round).
+%portray_shape_prop(cylindrical, cylindrical).
+
+%----------------------------------------------------------------------
+
+grounding_result_to_relation(assertionVerified, accept).
+grounding_result_to_relation(assertionFalsified, reject).
+
+opposite_answertype(positive, negative).
+opposite_answertype(negative, positive).

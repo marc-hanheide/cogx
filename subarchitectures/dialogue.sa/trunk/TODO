@@ -1,0 +1,7 @@
+TODO -- API distribution for the Dialogue API v6.0 (July 2010)
+
+== TO-DO LIST ==
+
+- speech recognition using Loquendo
+- speech recognition using Sphinx4
+- reference resolution based on Markov Logic Networks
