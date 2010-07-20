@@ -65,7 +65,7 @@ class Action(Scope):
                     if eff.args[0] == tct:
                         self.totalCostTerm = eff.args[1]
 
-        self.effect.visit(visitor)
+        visitors.visit(self.effect, visitor)
         return self.totalCostTerm
 
     def set_total_cost(self, new_total_cost):
