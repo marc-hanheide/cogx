@@ -1,2 +1,0 @@
-start = wait
-end = I[okay]
