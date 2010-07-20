@@ -15,8 +15,9 @@
  */
 #include "CFormValues.hpp"
 
-#include <sstream>
+#include <cstdlib>
 #include <cctype>
+#include <sstream>
 #include <cstring>
 #include <algorithm>
 #include <iostream>
@@ -48,6 +49,16 @@ std::string CFormValues::field::get(const std::string& xpath)
    return value;
 }
 
+double CFormValues::field::getFloat(const std::string& xpath)
+{
+   return atof(value.c_str());
+}
+
+long CFormValues::field::getInt(const std::string& xpath)
+{
+   return atoi(value.c_str());
+}
+
 void CFormValues::field::get(std::map<std::string, std::string>& fieldmap)
 {
    fieldmap[name] = value;
@@ -58,7 +69,7 @@ void CFormValues::field::dump(std::vector<std::string>& dump)
    dump.push_back(name + "=" + value);
 }
 
-CFormValues::set::set(const std::string& name, valuelist& setitems)
+CFormValues::set::set(const std::string& name, const valuelist& setitems)
    : field(name)
 {
    typeof(setitems.items.begin()) it;
@@ -77,6 +88,7 @@ void CFormValues::set::clear()
 
 void CFormValues::set::dump(std::vector<std::string>& dump)
 {
+   dump.push_back(name + "=[" + get("") + "]");
    typeof(items.begin()) it;
    for(it = items.begin(); it != items.end(); it++) {
       dump.push_back(it->first + "=" + (it->second ? "true" : "false"));
@@ -85,6 +97,14 @@ void CFormValues::set::dump(std::vector<std::string>& dump)
 
 std::string CFormValues::set::get(const std::string& xpath)
 {
+   if (xpath.size() == 0) {
+      std::ostringstream ss;
+      typeof(items.begin()) it;
+      for (it = items.begin(); it != items.end(); it++) {
+         if (it->second) ss << '\n' << it->first;
+      }
+      return ss.str();
+   }
    typeof(items.begin()) it = items.find(xpath);
    if (it == items.end()) return ""; // throw... wrong xpath
    else return it->second ? "1" : "0";
@@ -137,6 +157,19 @@ void CFormValues::set::setValue(const std::string& xpath, const std::string& _va
       //std::cout << "  " << name << "." << it->first << "=" 
       //   << _value << "=" << tmp << "=" << it->second << std::endl;
    }
+}
+
+std::string CFormValues::choice::get(const std::string& xpath)
+{
+   if (xpath.size() == 0) {
+      std::ostringstream ss;
+      typeof(items.begin()) it;
+      for (it = items.begin(); it != items.end(); it++) {
+         if (it->second) return it->first;
+      }
+      return "";
+   }
+   return CFormValues::set::get(xpath);
 }
 
 void CFormValues::clear()
