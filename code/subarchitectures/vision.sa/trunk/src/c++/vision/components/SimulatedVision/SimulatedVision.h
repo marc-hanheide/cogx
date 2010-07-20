@@ -29,6 +29,11 @@ private:
    class CDisplayClient: public cogx::display::CDisplayClient
    {
       CVisionSimulator* pSim;
+
+   public:
+      cogx::display::CFormValues m_FormObject;
+      cogx::display::CFormValues m_FormScene;
+
    public:
       CDisplayClient() { pSim = NULL; }
       void setClientData(CVisionSimulator* pSimulator) { pSim = pSimulator; }

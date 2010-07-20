@@ -26,8 +26,12 @@ extern "C"
    }
 }
 
+namespace cxd = cogx::display;
 
 namespace cogx { namespace vision {
+
+#define ID_FORM_OBJECT "001.sim.object"
+#define ID_FORM_SCENE  "002.sim.scene"
 
 void CVisionSimulator::CDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
@@ -46,6 +50,14 @@ void CVisionSimulator::CDisplayClient::handleForm(const std::string& id,
 bool CVisionSimulator::CDisplayClient::getFormData(const std::string& id,
       const std::string& partId, std::map<std::string, std::string>& fields)
 {
+   if (partId == ID_FORM_OBJECT) {
+      m_FormObject.get(fields);
+      return true;
+   }
+   else if (partId == ID_FORM_SCENE) {
+      m_FormObject.get(fields);
+      return true;
+   }
    return false;
 }
 
@@ -95,39 +107,46 @@ void CVisionSimulator::CDisplayClient::createForms()
       ss << "<input type='button' @@ONCLICK@@('scene.load') value='Load Scene' />";
       ss << "<input type='button' @@ONCLICK@@('scene.save') value='Save Scene' />";
 
-      setHtmlForm("Vision.Simulator", "002.sim.scene", ss.str());
+      setHtmlForm("Vision.Simulator", ID_FORM_SCENE, ss.str());
    }
 
    // object form
    {
       struct _local_ {
          static void valueDistrib(std::ostringstream& ss, const std::string& name,
-               const std::vector<std::string>& values, int count)
+               const std::vector<std::string>& values, cogx::display::CFormValues& form, int count)
          {
             std::ostringstream opts;
             for(int i = 0; i < values.size(); i++) {
                opts << "<option>" << values[i] << "</option>";
             }
             for(int i = 0; i < count; i++) {
+               std::string fldname = name + _str_(i);
                ss << "<tr><td>";
-               ss << "<select name='" << name << i << "' >";
+               ss << "<select name='" << fldname << "' >";
                ss << opts.str();
                ss << "</select>";
                ss << "</td><td>";
-               ss << "<input type='text' name='p" << name << i << "' style='width:5em;' />";
+               ss << "<input type='text' name='p" << fldname << "' style='width:5em;' />";
                ss << "</td></tr>";
+               form.add(new cxd::CFormValues::choice(fldname, cxd::CFormValues::valuelist(values)));
+               form.add(new cxd::CFormValues::field(std::string("p") + fldname));
             }
             ss << "<tr><td>";
-            ss << "Unknown: </td><td> 1.0";
+            ss << "Unknown: </td><td> 1.0"; // TODO: JS update
             ss << "</td></tr>";
          }
-         static void ambiguityGain(std::ostringstream& ss, const std::string& name, bool bLabel) {
+         static void ambiguityGain(std::ostringstream& ss, const std::string& name,
+              cogx::display::CFormValues& form, bool bLabel)
+         {
             ss << "<tr><td>" << (bLabel ? "Ambiguity:" : "&nbsp") << "</td><td>";
             ss << "<input type='text' name='ambig" << name << "' style='width:5em;' />";
             ss << "</td></tr>";
+            form.add(new cxd::CFormValues::field(std::string("ambig") + name));
             ss << "<tr><td>" << (bLabel ? "Gain:" : "&nbsp") << "</td><td>";
             ss << "<input type='text' name='gain" << name << "' style='width:5em;' />";
             ss << "</td></tr>";
+            form.add(new cxd::CFormValues::field(std::string("gain") + name));
          }
       };
       std::ostringstream ss;
@@ -143,8 +162,8 @@ void CVisionSimulator::CDisplayClient::createForms()
 
       // up to 3 colors for an object
       ss << "<table>";
-      _local_::valueDistrib(ss, "color", clrs, 3);
-      _local_::ambiguityGain(ss, "color", true);
+      _local_::valueDistrib(ss, "color", clrs, m_FormObject, 3);
+      _local_::ambiguityGain(ss, "color", m_FormObject, true);
       ss << "</table>";
 
       ss << "</td><td>";
@@ -156,8 +175,8 @@ void CVisionSimulator::CDisplayClient::createForms()
 
       // up to 3 shapes for an object
       ss << "<table>";
-      _local_::valueDistrib(ss, "shape", shps, 3);
-      _local_::ambiguityGain(ss, "shape", true);
+      _local_::valueDistrib(ss, "shape", shps, m_FormObject, 3);
+      _local_::ambiguityGain(ss, "shape", m_FormObject, true);
       ss << "</table>";
 
       ss << "</td><td>";
@@ -169,12 +188,19 @@ void CVisionSimulator::CDisplayClient::createForms()
 
       // up to 3 labels for an object
       ss << "<table>";
-      _local_::valueDistrib(ss, "label", lbls, 3);
-      _local_::ambiguityGain(ss, "label", true);
+      _local_::valueDistrib(ss, "label", lbls, m_FormObject, 3);
+      _local_::ambiguityGain(ss, "label", m_FormObject, true);
       ss << "</table>";
 
       ss << "</td></tr></table>";
-      setHtmlForm("Vision.Simulator", "001.sim.object", ss.str());
+      //std::vector<std::string> dump;
+      //m_FormObject.setValue("color0/Color003", "1");
+      //m_FormObject.setValue("gaincolor", "0.35");
+      //m_FormObject.dump(dump);
+      //for (int i = 0; i < dump.size(); i++) {
+      //  ss << dump[i] << "<br>";
+      //}
+      setHtmlForm("Vision.Simulator", ID_FORM_OBJECT, ss.str());
    }
 }
 
