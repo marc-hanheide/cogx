@@ -36,7 +36,7 @@
 namespace Turnstyle
 {   
     /* The plan is to turn action preconditions into propositional
-     * formulae, and then those in turn into CNF. */
+     * formulae, and then those in-turn into CNF. */
     class CNF
     {
     public:

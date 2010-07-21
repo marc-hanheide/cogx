@@ -83,3 +83,18 @@ namespace std
 
 
 #endif
+
+/* ...in many of my outside activities I'd taken a tremendous interest
+ * in development.. I said: it would be a dream for me. And they
+ * discovered then that you had to be an American citizen. So in three
+ * days they somehow made me an American citizen. I had to study the
+ * booklet all weekend; But anyway it all happened. ... I virtually
+ * had my pyjamas engraved with: "President of the World Bank" ... Tom
+ * Clausen ---i.e, Alden Winship ("Tom") Clausen--- took the job. And
+ * frankly this was very lucky for me.
+ *
+ *  -- James David Wolfensohn, 9th President of the World Bank, from
+ *  July 1, 1995 until June 30, 2005. Talking on the Aljezeera program
+ *  "One on One" posted Saturday, July 17, 2010 13:13 Mecca time,
+ *  10:13 GMT
+ */

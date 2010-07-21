@@ -212,6 +212,8 @@ std::ostream& Planning::Formula::Conditional_Effect::operator<<(ostream&o)const
 
 std::ostream& Planning::Formula::Vacuous::operator<<(ostream&o)const 
 {
+    o<<"(  )"<<std::endl;
+    
     return o;
 }
 

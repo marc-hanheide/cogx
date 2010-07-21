@@ -36,39 +36,203 @@
 #include "problem_grounding.hh"
 
 
+#include "dtp_pddl_parsing_data_problem.hh"
 #include "dtp_pddl_parsing_data_domain.hh"
+
+
+/* Functionality for simplifying CNF formula. */
+#include "turnstyle.hh"
 
 using namespace Planning;
 
+#define NEW_CONJUNCTION(NAME, INPUT)            \
+NEW_referenced_WRAPPED_deref_POINTER            \
+(runtime_Thread                                 \
+ , Planning::Formula::Conjunction               \
+ , NAME                                         \
+ , INPUT)                                       \
+        
+#define NEW_DISJUNCTION(NAME, INPUT)            \
+    NEW_referenced_WRAPPED_deref_POINTER        \
+(runtime_Thread                                 \
+ , Planning::Formula::Disjunction               \
+ , NAME                                         \
+ , INPUT)                                       \
+        
+    
+#define NEW_NEGATION(NAME, INPUT)               \
+    NEW_referenced_WRAPPED_deref_POINTER        \
+(runtime_Thread                                 \
+ , Planning::Formula::Negation                  \
+ , NAME                                         \
+ , INPUT)                                       \
+    
 
 Problem_Grounding::Problem_Grounding(Parsing::Problem_Data& problem_Data,
                                      CXX__PTR_ANNOTATION(Parsing::Domain_Data) domain_Data)
     :problem_Data(problem_Data),
      domain_Data(domain_Data)
 {
-//     QUERY_UNRECOVERABLE_ERROR
-//         (State_Proposition::indexed__Traversable_Collection->end()
-//          == State_Proposition::indexed__Traversable_Collection->find(&problem_Data),
-//          "Could not find propositions associated with problem :: "
-//          <<get__problem_Name()<<std::endl
-//          );
-//     propositions = *indexed__Traversable_Collection->find(&problem_Data);
-    
+    assert(domain_Data->get__action_Schemas().size());
+    auto first_action = domain_Data->get__action_Schemas().begin();
+    auto first_actionx_precondition = first_action->get__precondition();
+
+    this->runtime_Thread = first_actionx_precondition.get()->get__runtime_Thread();
 }
 
-
-void Problem_Grounding::groud_actions()
+void Problem_Grounding::ground_actions()
 {
-    for(auto action = domain_Data->get__action_Schemas().begin()
-            ; action != domain_Data->get__action_Schemas().end()
+
+    Planning::Action_Schemas& schemas = domain_Data->get__action_Schemas();
+    for(auto action = schemas.begin()
+            ; action != schemas.end()
             ; action ++){
-        ground_action_schema(*action);
-        
+        ground_action_schema(const_cast<Planning::Action_Schema&>(*action));
     }
 }
 
-void Problem_Grounding::ground_action_schema(const Planning::Action_Schema& actionSchema)
+void Problem_Grounding::simplify_action_schema(Planning::Action_Schema& action_Schema)
 {
+    /* usual suspects C++*/
+    using std::map;
+    using std::vector;
+    using std::string;
+
+    /* \module{planning_formula}*/
+    using Planning::Formula::Conjunction;
+    using Planning::Formula::Disjunction;
+    using Planning::Formula::Negation;
+    using Planning::Formula::Subformula;
+    using Planning::Formula::Subformulae;
+
+    /* \module{turnstyle} */
+    using namespace Turnstyle;
+    typedef CNF::Clause Clause;
+    typedef CNF::Problem_Data Problem_Data;
+
+    /* Atoms that formulate the \argument{action_Schema} preconditions*/
+    vector<Subformula> atoms;
+
+    /* For each atom, we map it to an integer index.*/
+    map<Subformula, uint> atom_id;
+
+    /* First step, we convert the formula into a CNF.*/
+    CNF::Problem_Data problem_Data;
+
+    /* Try to convert the precondition formula into a CNF. */
+    auto precondition_as_cnf = planning_Formula__to__CNF(action_Schema.get__precondition());
+
+    /* Make sure that the conversion to CNF just undertaken has worked.*/
+    auto _conjunction = precondition_as_cnf.do_cast<Conjunction>();
+
+    /* Get the bubformulae associated with the conjunction. */
+    auto conjunction = _conjunction->get__subformulae();
+    for(auto __disjunction = conjunction.begin() /* The precondition is
+                                                 * not in CNF format,
+                                                 * therefore each
+                                                 * subformulae must be
+                                                 * a disjunction. */
+            ; __disjunction != conjunction.end()
+            ; __disjunction++){
+
+        QUERY_UNRECOVERABLE_ERROR(
+            !((*__disjunction).test_cast<Disjunction>()),
+            "Formula :: "<<(*__disjunction)<<std::endl
+            <<"is supposed to be an element in a CNF, however it is not a disjunction.\n");
+        
+        auto _disjunction = (*__disjunction).do_cast<Disjunction>();
+        
+        auto disjunction = _disjunction->get__subformulae();
+
+        Clause clause;
+        for(auto _literal = disjunction.begin() /* Every element in
+                                                 * the disjunction
+                                                 * should be a literal
+                                                 * -- positive or
+                                                 * negative atom.*/
+                ; _literal != disjunction.end()
+                ; _literal++){
+
+            bool negation = _literal->test_cast<Negation>();
+
+            /* Get the atom associated with the literal.*/
+            auto __atom = ((negation)
+                           ?((_literal->do_cast<Negation>())->get__subformula())
+                           :(*_literal));
+
+            /* Get teh integer we associate with this atom.*/
+            auto _atom = atom_id.find(__atom);
+
+            /* If that failed, then make a new integer associated with
+             * that atom, and make sure the \type{Subformula}
+             * associated with that atom is mapped to this new
+             * integer/index in \local{atom_id}.*/
+            if(_atom == atom_id.end()){
+                auto index = atoms.size();
+                atoms.push_back(__atom);
+                atom_id[__atom] = index;
+                _atom = atom_id.find(__atom);
+            }
+            
+            auto atom = _atom->second;
+
+            
+            if(negation){
+                clause.insert(-1 * atom);
+            } else {
+                clause.insert(atom);
+            }
+        }
+        
+        problem_Data.insert(clause);
+    }
+    
+
+    /* Construction of a CNF does implicit simplification of that CNF
+     * data.*/
+    CNF cnf(problem_Data);
+
+
+    Subformulae conjunctive_data;
+    for(auto clause = cnf.problem_Data.begin()
+            ; clause != cnf.problem_Data.end()
+            ; clause++){
+
+        
+        Subformulae disjunctive_data;
+        
+        for(auto _literal = clause->begin()
+                ; _literal != clause->end()
+                ; _literal++){
+            auto literal = *_literal;
+
+            uint index = abs(literal);
+            auto atom = atoms[index];
+            
+            if(literal < 0){
+                NEW_NEGATION(literal, atom);
+                disjunctive_data.push_back(literal);
+            } else if (literal > 0) {
+                disjunctive_data.push_back(atom);
+            } else {
+                assert(0);
+            }
+        }
+        NEW_DISJUNCTION(new_disjunction, disjunctive_data);
+        
+        conjunctive_data.push_back(new_disjunction);
+    }
+    
+    NEW_CONJUNCTION(new_conjunction, conjunctive_data);
+
+    action_Schema.alter__precondition(new_conjunction);
+}
+
+void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Schema)
+{
+    /* First step, we alter the action precondition formula so that it
+     * corresponds to propositional CNF.*/
+    simplify_action_schema(action_Schema);
     
 }
 

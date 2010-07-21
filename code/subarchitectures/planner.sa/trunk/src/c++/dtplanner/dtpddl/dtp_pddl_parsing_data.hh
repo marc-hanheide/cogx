@@ -41,8 +41,9 @@
 namespace Planning
 {
     namespace Parsing
-    {   
-        
+    {
+        class Formula_Data;
+        class Constants_Data;
         class Domain_Data;
         class Problem_Data;
     }

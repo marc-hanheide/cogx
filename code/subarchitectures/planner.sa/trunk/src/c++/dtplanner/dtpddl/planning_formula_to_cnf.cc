@@ -69,6 +69,7 @@ Planning_Formula__to__CNF::Subformula Planning_Formula__to__CNF::operator()(cons
          , Planning::Formula::Conjunction
          , tmp
          , new_subformulae);
+    
     return tmp;
 }
 
@@ -166,7 +167,13 @@ Planning_Formula__to__CNF::operator()(Subformula _input, bool computed__nnf_inpu
         input = planning_Formula__to__NNF(_input);
     }
     
-    switch(input.get()->get__id()){
+    switch(input.get()->get__type_name()){//get__id()){
+        case vacuous:
+        {
+            WARNING("Asked to convert \"vacuous\" formula into CNF.");
+            return _input;
+        }
+        break;
         case conjunction:
         {
             auto tmp = input.do_cast<Conjunction>();
@@ -182,26 +189,36 @@ Planning_Formula__to__CNF::operator()(Subformula _input, bool computed__nnf_inpu
         case exists:
         {
             UNRECOVERABLE_ERROR("All quantifiers should have been removed during parsing, "<<std::endl
-                                <<"and replaced by derived predicates.");
+                                <<"and replaced by derived predicates."<<std::endl
+                                <<"Problematic formula is :: "<<_input<<std::endl);
         }
         break;
         case forall:
         {
             UNRECOVERABLE_ERROR("All quantifiers should have been removed during parsing, "<<std::endl
-                                <<"and replaced by derived predicates.");
+                                <<"and replaced by derived predicates."<<std::endl
+                                <<"Problematic formula is :: "<<_input<<std::endl);
         }
         break;
         default:
         {
-            
+            VERBOSER(3000, "In converting to CNF Formula :: "<<_input<<std::endl
+                     <<"is considered to be an atom, and is being added to a conjunctive element."<<std::endl);
         }
             break;
     }
 
 
     /*The result of CNF conversion is always a conjunct.*/
+    Subformulae _new_subformulae;
+    _new_subformulae.push_back(input);
+    NEW_referenced_WRAPPED_deref_POINTER
+        (input.get()->get__runtime_Thread()
+         , Planning::Formula::Disjunction
+         , new_disjunct
+         , _new_subformulae);
     Subformulae new_subformulae;
-    new_subformulae.push_back(input);
+    new_subformulae.push_back(new_disjunct);
     NEW_referenced_WRAPPED_deref_POINTER
         (input.get()->get__runtime_Thread()
          , Planning::Formula::Conjunction

@@ -311,10 +311,12 @@ namespace Planning
         struct Action_Effect : seq< pad< seq<one<':'>, s_Effect>, space>
                                     , State_Effect_Subformulae > {};
         
+
+        struct Action_Element : sor< ifapply<Action_Precondition, Action_Precondition__Action>
+                                    , ifapply<Action_Effect, Action_Effect__Action> > {};
         
         struct Action_Description :  ifapply<seq< Action_Header
-                                                  , ifapply<Action_Precondition, Action_Precondition__Action>
-                                                  , ifapply<Action_Effect, Action_Effect__Action>
+                                                  , star<Action_Element>
                                                   >
                                              , Completed_Action__Action>{};
 
@@ -348,12 +350,14 @@ namespace Planning
         struct Observation_Effect : seq< pad< seq<one<':'>, s_Effect>, space>
                                          , Observational_Effect_Subformulae > {};
         
+
+        struct Observation_Element : sor< ifapply<Observation_Execution, Observation_Execution__Action>
+                                          , ifapply<Observation_Precondition, Observation_Precondition__Action>
+                                          , ifapply<Observation_Effect, Observation_Effect__Action> > {};
         
         struct Observation_Description :
             ifapply<seq< Observation_Header
-                         , ifapply<Observation_Execution, Observation_Execution__Action>
-                         , ifapply<Observation_Precondition, Observation_Precondition__Action>
-                         , ifapply<Observation_Effect, Observation_Effect__Action> >
+                         , star<Observation_Element> >
                     , Completed_Observation__Action>{};
 
         

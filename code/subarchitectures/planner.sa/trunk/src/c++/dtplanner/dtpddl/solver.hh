@@ -37,12 +37,11 @@
 #ifndef SOLVER_HH
 #define SOLVER_HH
 
-#include "dtp_pddl_parsing_data.hh"
-#include "dtp_pddl_parsing_data_problem.hh"
+#include "solver_basics.hh"
+#include "dtp_pddl_parsing_data_constants.hh"
 
 namespace Planning
 {
-    
     class Solver
     {
     public:
@@ -50,9 +49,12 @@ namespace Planning
         Solver(Planning::Parsing::Problem_Data&);
 
         /*
+         * - Initialisation of \member{domain_Data}.
          *
-         * - Merge instance data from the \member{problem} and its
-         * associated problem.
+         * - Initialisation of \member{problem_Grounding}.
+         *
+         * - Merge object and constants data from the \member{problem}
+         * and its associated problem.
          *
          */
         void preprocess();
@@ -67,10 +69,12 @@ namespace Planning
         void proprocess__Constants_Data();
         
     private:
-        
+        /* Functionality for obtaining a ground version of the problem
+         * at hand.*/
+        CXX__PTR_ANNOTATION(Problem_Grounding) problem_Grounding;
         
         /* PDDL types for \member{constants}*/
-        Planning::Parsing::Problem_Data::Constants_Description constants_Description;
+        Planning::Parsing::Constants_Data::Constants_Description constants_Description;
         
         /* PDDL objects and constants.*/
         Constants constants;

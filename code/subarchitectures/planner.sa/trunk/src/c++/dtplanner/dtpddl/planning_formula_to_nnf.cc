@@ -46,10 +46,20 @@ Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(Subf
 }
 
 
-Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(Subformula input,
-                                                 bool carrying_negation)
+Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(
+    Subformula input,
+    bool carrying_negation)
 {
-    switch(input.get()->get__id()){
+    VERBOSER(3000, "Turning :: "<<input<<std::endl
+             <<"into negation normal form. "<<std::endl);
+    
+    switch(input.get()->get__type_name()){//get__id()){
+        case vacuous:
+        {
+            WARNING("Asked to convert \"vacuous\" formula into NNF.");
+            return input;
+        }
+        break;
         case negation:
         {
             auto tmp = input.do_cast<Negation>();

@@ -35,7 +35,6 @@
 
 #include "dtp_pddl_parsing_data.hh"
 #include "dtp_pddl_parsing_data_constants.hh"
-
 #include "dtp_pddl_parsing_data_formula.hh"
 
 
@@ -54,7 +53,7 @@ namespace Planning
             friend std::ostream& std::operator<<(std::ostream&, const Planning::Parsing::Domain_Data&);
             friend class Problem_Data;
 
-//             Domain_Data();
+            Domain_Data();
 
 //             void stack__typed_Arguments();
 
@@ -124,6 +123,7 @@ namespace Planning
             void add__perceptual_function();
  
             const Planning::Action_Schemas& get__action_Schemas() const;
+            Planning::Action_Schemas& get__action_Schemas();
             
         private:
             /*(see \member{report__state_function_domain})*/
@@ -141,17 +141,39 @@ namespace Planning
             /*Last observation precondition formula parsed.*/
             Planning::Formula::Subformula observation_precondition;
             
+            /* Is the entry in \member{observation_effect} relevant to
+             * the current parsing context? (initially false, and
+             * reset to false in \member{add__observation()})*/
+            bool got__observation_precondition;
+            
             /*Last observation effect formula parsed.*/
             Planning::Formula::Subformula observation_effect;
+
+            /* Is the entry in \member{observation_effect} relevant to
+             * the current parsing context? (initially false, and
+             * reset to false in \member{add__observation()})*/
+            bool got__observation_effect;
+            
             
             /*Domain actions.*/
             Planning::Action_Schemas action_Schemas;
             
             /*Last action precondition formula parsed.*/
             Formula::Subformula action_precondition;
+
+            
+            /* Is the entry in \member{action_precondition} relevant
+             * to the current parsing context? (initially false, and
+             * reset to false in \member{add__action()})*/
+            bool got__action_precondition;
             
             /*Last action effect formula parsed.*/
             Formula::Subformula action_effect;
+            
+            /* Is the entry in \member{action_effect} relevant to the
+             * current parsing context? (initially false and reset to
+             * false in \member{add__action()})*/
+            bool got__action_effect;
             
             /*Parsing the headers of derived predicates.*/
             Planning::Derived_Predicate_Header derived_Predicate_Header;

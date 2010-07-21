@@ -56,6 +56,12 @@ namespace Planning
         Action_Name get__name() const;
         Planning::Formula::Subformula get__effect() const;
         Planning::Formula::Subformula get__precondition() const;
+
+        /* WARNING :: Make sure that the altered precondition is
+         * logically equivalent to the original precondition,
+         * otherwise the program behaviour will unlikely be what you
+         * intended. */
+        void alter__precondition(Planning::Formula::Subformula);
     };
 
     typedef std::set<Action_Schema> Action_Schemas;

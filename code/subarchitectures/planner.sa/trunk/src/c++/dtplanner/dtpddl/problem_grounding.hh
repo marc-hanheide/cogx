@@ -34,12 +34,12 @@
 #ifndef PROBLEM_GROUNDING_HH
 #define PROBLEM_GROUNDING_HH
 
+#include "solver_basics.hh"
 
-#include "dtp_pddl_parsing_data.hh"
-#include "dtp_pddl_parsing_data_problem.hh"
 #include "planning_action_schema.hh"
-
 #include "basic_action.hh"
+
+#include "planning_formula_to_cnf.hh"
 
 
 namespace Planning
@@ -49,15 +49,24 @@ namespace Planning
     public:
         Problem_Grounding(Parsing::Problem_Data&, CXX__PTR_ANNOTATION(Parsing::Domain_Data));
 
-        
-        void groud_actions(); 
-        
+        void ground_actions();
     private:
+        /* Object converts planning formula ---in this case formulae
+         * that correspond to actions preconditions--- into
+         * Conjunctive Normal Form formula.  Such a formula is a
+         * conjunction over disjunctive clauses.  */
+        Planning::Planning_Formula__to__CNF planning_Formula__to__CNF;
 
+        /* The thread with which the domain actions are linked.*/
+        basic_type::Runtime_Thread runtime_Thread;
+
+        /* Simplify the description of the \argument{actionSchema}.*/
+        void simplify_action_schema(Planning::Action_Schema& actionSchema);
+        
         /* Populate \member{}*/
-        void ground_action_schema(const Planning::Action_Schema& actionSchema);
+        void ground_action_schema(Planning::Action_Schema& actionSchema);
 
-        /* Problem actions. */
+        /* Ground problem actions. */
         std::vector<CXX__PTR_ANNOTATION(State_Transformation)> state_transformations;
         
         /*Problem targetted by this solver.*/
