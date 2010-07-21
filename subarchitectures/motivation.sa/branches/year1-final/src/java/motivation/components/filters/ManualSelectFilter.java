@@ -1,6 +1,8 @@
 package motivation.components.filters;
 
 import java.awt.GridLayout;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Dictionary;
@@ -87,6 +89,7 @@ public class ManualSelectFilter implements MotiveFilter {
 			jContentPane = new JPanel();
 			jContentPane.setLayout(new GridLayout(0, 1));
 			jContentPane.add(getJMotivesPanel());
+            jMotivesPanel.add(getPresetPanel());
 			jMotivesPanel.add(getJButtonUpdate());
 		}
 		return jContentPane;
@@ -144,14 +147,21 @@ public class ManualSelectFilter implements MotiveFilter {
 			// jMotivesPanel.add(getJSliderTest());
 			jMotivesPanel.add(new JLabel("Homing"));
 			jMotivesPanel.add(getJSliderHome());
-			jMotivesPanel.add(getPresetPanel());
 		}
 		return jMotivesPanel;
 	}
 
 	private JPanel getPresetPanel() {
 		JPanel presetPanel = new JPanel();
-		presetPanel.add(new JLabel("presets:"));
+        presetPanel.setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridwidth = 2;
+        c.gridx= 0;
+        c.gridy=0;
+        c.fill = GridBagConstraints.BOTH;
+		presetPanel.add(new JLabel("presets:"),c);
+        
+        // ecButton
 		JButton ecButton = new JButton("explore > categorize");
 		ecButton.addActionListener(new ActionListener() {
 			@Override
@@ -168,8 +178,13 @@ public class ManualSelectFilter implements MotiveFilter {
 			}
 		});
 
-		presetPanel.add(ecButton);
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 1;
+        c.fill = GridBagConstraints.BOTH;
+		presetPanel.add(ecButton, c);
 
+        // ceButton
 		JButton ceButton = new JButton("categorize > explore");
 		ceButton.addActionListener(new ActionListener() {
 			@Override
@@ -185,8 +200,14 @@ public class ManualSelectFilter implements MotiveFilter {
 
 			}
 		});
-		presetPanel.add(ceButton);
 
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.gridy = 1;
+        c.fill = GridBagConstraints.BOTH;
+		presetPanel.add(ceButton, c);
+
+        //peButton
 		JButton peButton = new JButton("patrol == explore");
 		peButton.addActionListener(new ActionListener() {
 			@Override
@@ -202,9 +223,16 @@ public class ManualSelectFilter implements MotiveFilter {
 
 			}
 		});
-		presetPanel.add(peButton);
+
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 2;
+        c.fill = GridBagConstraints.BOTH;
+		presetPanel.add(peButton, c);
 		
 		
+
+        // nullButton
 		JButton nullButton = new JButton("unsurface all");
 		nullButton.addActionListener(new ActionListener() {
 			@Override
@@ -222,12 +250,18 @@ public class ManualSelectFilter implements MotiveFilter {
 
 			}
 		});
-		presetPanel.add(nullButton);
+        
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.gridy = 2;
+        c.fill = GridBagConstraints.BOTH;
+		presetPanel.add(nullButton, c);
 
 		return presetPanel;
 	}
 
 	private JSlider createPrioritySlider() {
+        JSlider jSlider = new JSlider();
 		JSlider jSlider = new JSlider(JSlider.HORIZONTAL,
 				MotivePriority.UNSURFACE.value(), MotivePriority.HIGH.value(),
 				MotivePriority.UNSURFACE.value());
@@ -246,7 +280,6 @@ public class ManualSelectFilter implements MotiveFilter {
 		jSlider.setPaintLabels(true);
 		jSlider.setSnapToTicks(true);
 		return jSlider;
-
 	}
 
 	/**
@@ -301,7 +334,6 @@ public class ManualSelectFilter implements MotiveFilter {
 	public void start() {
 		jFrame.setVisible(true);
 		jFrame.pack();
-		jFrame.setSize(500, 500);
 	}
 
 } // @jve:decl-index=0:visual-constraint="583,36"
