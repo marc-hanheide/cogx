@@ -90,3 +90,19 @@ namespace Planning
 
 
 #endif
+
+/* Did he fall?
+ * 
+ * By his body's known weight of eleven-stone-and-four-pounds in
+ * avoirdupois measure, as certified by the graduated machine for
+ * periodical selfweighing in the premises of Francis Froedman,
+ * pharmaceutical chemist of 19 Fredrick street, north, on the last
+ * feast of the Ascension, to wit, the twelfth day of May of the
+ * bissextile year one-thousand-nine-hundred-and-four of the christian
+ * era, (jewish era five-thousand-six-hundred-and-sixty-four,
+ * mohammadan era one-thousand-three-hundred-and-twentytwo), golden
+ * number 5, epact 13, solar cycle 9, dominical letters C B, Roman
+ * indication 2, Julian period 6617, MXMIV.
+ *
+ *  -- James Joyce, Ulysses (Ed. 1922)
+ */

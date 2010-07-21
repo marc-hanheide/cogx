@@ -331,8 +331,20 @@ public:
     {
         set__runtime_Thread(reinterpret_cast<basic_type::Runtime_Thread>(in));
     }
-    
+
+protected:
+    /*Only a descendant or \c++{friend} can access the contents.*/
+    Contents& _contents()
+    {
+        QUERY_UNRECOVERABLE_ERROR(
+            id >= traversable_Collection->size(),
+            "Requesting object associated with :: "<<id<<" yet not such object exists." );
+        
+        return (id < traversable_Collection->size()?((*traversable_Collection)[id]):fake_contents);
+    }
 private:
+    
+    
     void _configure(const Contents& wrapped_contents)
     {
         auto map_iterator = searchable_Collection->find(wrapped_contents);

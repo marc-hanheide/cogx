@@ -40,6 +40,7 @@ using namespace Planning::Parsing;
 
 #include "dtp_pddl_parsing_data_problem.hh"
 #include "dtp_pddl_parsing_data_domain.hh"
+#include "problem_grounding.hh"
 
 Solver::Solver(Planning::Parsing::Problem_Data& problem_Data)
     :problem_Data(problem_Data),
@@ -53,7 +54,12 @@ void Solver::preprocess()
 {
     domain_Data = problem_Data.get__domain_Data();
 
+    problem_Grounding = CXX__PTR_ANNOTATION(Problem_Grounding)
+        (new Problem_Grounding(problem_Data, domain_Data));
+    
     proprocess__Constants_Data();
+
+    problem_Grounding->ground_actions();
 }
 
 

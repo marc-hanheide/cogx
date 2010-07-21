@@ -58,6 +58,8 @@ void Domain_Data::add__observation_execution()
 
 void Domain_Data::add__observation_precondition()
 {
+    got__observation_precondition = true;
+    
     QUERY_UNRECOVERABLE_ERROR(0 != formula_parsing_level,
                               "Expecting formulae to appear at parse level :: "<<0<<std::endl
                               <<"But got :: "<<formula_parsing_level<<std::endl
@@ -79,6 +81,7 @@ void Domain_Data::add__observation_precondition()
 
 void Domain_Data::add__observation_effect()
 {
+    got__observation_effect = true;
     QUERY_UNRECOVERABLE_ERROR(0 != formula_parsing_level,
                               "Expecting formulae to appear at parse level :: "<<0<<std::endl
                               <<"But got :: "<<formula_parsing_level<<std::endl
@@ -99,6 +102,26 @@ void Domain_Data::add__observation_effect()
 
 void Domain_Data::add__observation()
 {
+    
+    if(!got__observation_effect){
+        NEW_object_referenced_WRAPPED_deref_POINTER
+            (Planning::Formula::Vacuous
+             , tmp
+             , static_cast<void*>(0));
+        
+        observation_effect = tmp;
+    }
+    
+    if(!got__observation_precondition){
+        
+        NEW_object_referenced_WRAPPED_deref_POINTER
+            (Planning::Formula::Vacuous
+             , tmp
+             , static_cast<void*>(0));
+        observation_precondition = tmp;
+    }
+    
+    
     NEW_object_referenced_WRAPPED(Planning::Observation_Schema
                                   , new_observation_schema
                                   , observation_Header
@@ -106,6 +129,9 @@ void Domain_Data::add__observation()
                                   , observation_effect);
 
     observation_Schemas.insert(new_observation_schema);
+
+    got__observation_effect = false;
+    got__observation_precondition = false;
 }
 
 

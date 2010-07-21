@@ -37,6 +37,8 @@ using namespace Planning::Parsing;
 
 void Domain_Data::add__action_precondition()
 {
+    got__action_precondition = true;
+    
     QUERY_UNRECOVERABLE_ERROR(0 != formula_parsing_level,
                               "Expecting formulae to appear at parse level :: "<<0<<std::endl
                               <<"But got :: "<<formula_parsing_level<<std::endl
@@ -58,6 +60,7 @@ void Domain_Data::add__action_precondition()
 
 void Domain_Data::add__action_effect()
 {
+    got__action_effect = true;
     QUERY_UNRECOVERABLE_ERROR(0 != formula_parsing_level,
                               "Expecting formulae to appear at parse level :: "<<0<<std::endl
                               <<"But got :: "<<formula_parsing_level<<std::endl
@@ -78,6 +81,25 @@ void Domain_Data::add__action_effect()
 
 void Domain_Data::add__action()
 {
+    if(!got__action_effect){
+        NEW_object_referenced_WRAPPED_deref_POINTER
+            (Planning::Formula::Vacuous
+             , tmp
+             , static_cast<void*>(0));
+        
+        action_effect = tmp;
+    }
+    
+    if(!got__action_precondition){
+        
+        NEW_object_referenced_WRAPPED_deref_POINTER
+            (Planning::Formula::Vacuous
+             , tmp
+             , static_cast<void*>(0));
+        action_precondition = tmp;
+    }
+    
+    
     NEW_object_referenced_WRAPPED(Planning::Action_Schema
                                   , new_action_schema
                                   , action_Header
@@ -85,6 +107,8 @@ void Domain_Data::add__action()
                                   , action_effect);
 
     action_Schemas.insert(new_action_schema);
+    got__action_precondition = false;
+    got__action_effect = false;
 }
 
 

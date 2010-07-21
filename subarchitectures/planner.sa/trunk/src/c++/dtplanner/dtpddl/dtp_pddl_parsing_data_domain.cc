@@ -38,8 +38,21 @@
 
 using namespace Planning::Parsing;
 
+Domain_Data::Domain_Data()
+    :got__action_precondition(false),
+     got__action_effect(false),
+     got__observation_precondition(false),
+     got__observation_effect(false)
+{
+}
+
 
 const Planning::Action_Schemas& Domain_Data::get__action_Schemas() const
+{
+    return action_Schemas;
+}
+
+Planning::Action_Schemas& Domain_Data::get__action_Schemas()
 {
     return action_Schemas;
 }

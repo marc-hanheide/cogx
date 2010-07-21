@@ -154,7 +154,6 @@ int main(int argc, char** argv)
         std::cout<<*problem->second->get__domain_Data()<<std::endl;
         std::cout<<*problem->second<<std::endl;
     }
-    
 
     
     return 0;

@@ -38,6 +38,13 @@ Subformula Action_Schema::get__precondition() const {return std::tr1::get<1>(thi
 Subformula Action_Schema::get__effect() const {return std::tr1::get<2>(this->contents());}
 
 
+
+void Action_Schema::alter__precondition(Planning::Formula::Subformula subformula)
+{
+    std::tr1::get<1>(this->_contents()) = subformula;
+}
+
+
 std::ostream& Planning::Action_Header::operator<<(std::ostream& o) const
 {
     auto name = std::tr1::get<0>(contents());

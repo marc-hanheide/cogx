@@ -89,6 +89,23 @@ Planning::Formula::Action_Proposition Problem_Data::get__prescribed_action()
             }
         }
 
+        
+        NEW_referenced_WRAPPED(domain_Data.get(), Planning::Type, other_type, _type->get__name());
+        auto other_constants = domain_Data->get__constants_Description();
+        for(auto constant = other_constants.begin()
+                ; constant != other_constants.end()
+                ; constant++){
+            if(constant->second.find(other_type) != constant->second.end()){
+                potential.push_back(constant->first);
+            }
+        }
+
+        
+        QUERY_UNRECOVERABLE_ERROR(!potential.size(),
+                                  "Could not find any objects of type :: "<<type<<std::endl);
+        
+        
+        
         auto index = (random() % potential.size());
         constants.push_back(potential[index]);
     }
