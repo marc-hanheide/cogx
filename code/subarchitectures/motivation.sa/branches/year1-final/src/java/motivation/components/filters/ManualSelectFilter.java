@@ -261,7 +261,6 @@ public class ManualSelectFilter implements MotiveFilter {
 	}
 
 	private JSlider createPrioritySlider() {
-        JSlider jSlider = new JSlider();
 		JSlider jSlider = new JSlider(JSlider.HORIZONTAL,
 				MotivePriority.UNSURFACE.value(), MotivePriority.HIGH.value(),
 				MotivePriority.UNSURFACE.value());
