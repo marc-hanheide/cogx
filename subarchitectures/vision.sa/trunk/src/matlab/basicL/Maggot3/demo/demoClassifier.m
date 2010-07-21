@@ -98,9 +98,9 @@ for i = N_init+1 : 200
     msg = sprintf('N_{samps}=%d', i); title(msg) ;
     subplot(1,4,2) ;
     if ~isempty(for_plot)
-%         plot(1:length(kde_cl.debug.Cost(1,:)), kde_cl.debug.Cost(4,:),'g') ;  hold on ; %/kde_cl.debug.Cost(4,size(kde_cl.debug.Cost,2))
-%         plot(1:length(kde_cl.debug.Cost(1,:)), [1:length(kde_cl.debug.Cost(1,:))]*0 + kde_cl.min_th_feat_sel,'k') ;
-         plot(1:length(kde_cl.debug.Cost(1,:)), kde_cl.debug.Cost(1,:)./kde_cl.debug.Cost(2,:),'g') ;
+        plot(1:length(kde_cl.debug.Cost(1,:)), kde_cl.debug.Cost(4,:),'g') ;  hold on ; %/kde_cl.debug.Cost(4,size(kde_cl.debug.Cost,2))
+        plot(1:length(kde_cl.debug.Cost(1,:)), [1:length(kde_cl.debug.Cost(1,:))]*0 + kde_cl.min_th_feat_sel,'k') ;
+%          plot(1:length(kde_cl.debug.Cost(1,:)), kde_cl.debug.Cost(1,:)./kde_cl.debug.Cost(2,:),'g') ;
         
         a = axis ; a(3) = 0 ; axis(a) ;
         set(gca,'XTick',[1:length(kde_cl.debug.Cost(1,:))]) ;
