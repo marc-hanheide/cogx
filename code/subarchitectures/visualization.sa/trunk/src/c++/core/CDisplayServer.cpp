@@ -427,8 +427,10 @@ void CDisplayServer::setHtmlForm(const Ice::Identity& ident, const std::string& 
    }
 
    if (pObject) {
+      CHtmlChunk* pForm = NULL;
       if (htmlData.size() < 1) pObject->removePart(partId);
-      else pObject->setForm(ident, partId, htmlData);
+      else pForm = pObject->setForm(ident, partId, htmlData);
+      if (pForm) pForm->Observers.addObserver(this);
       m_Model.refreshObject(id);
    }
    else {
