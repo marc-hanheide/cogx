@@ -41,6 +41,10 @@ public:
       virtual long   getInt(const std::string& xpath);
       virtual void get(std::map<std::string, std::string>& fieldmap);
       virtual void dump(std::vector<std::string>& dump);
+
+      virtual void setState(const std::string& option, bool on); // throws
+      virtual void setState(const std::string& option, const std::string& _value); // throws
+      virtual bool getState(const std::string& option); // throws
    };
 
    class valuelist {
@@ -67,6 +71,9 @@ public:
       virtual void get(std::map<std::string, std::string>& fieldmap);
       virtual void setValue(const std::string& _value);
       virtual void setValue(const std::string& xpath, const std::string& _value);
+      virtual void setState(const std::string& option, bool on);
+      virtual void setState(const std::string& option, const std::string& _value);
+      virtual bool getState(const std::string& option);
    };
 
    // A set in which at most one element can be chosen
@@ -75,6 +82,9 @@ public:
    public:
       choice(const std::string& name, const valuelist& setitems): set(name, setitems) {}
       virtual std::string get(const std::string& xpath);
+      virtual void setState(const std::string& option, bool on);
+      virtual void setState(const std::string& option, const std::string& _value);
+      virtual bool getState(const std::string& option);
    };
 
    // TODO: add destructor!!
@@ -83,6 +93,12 @@ public:
    void apply(const std::map<std::string, std::string>& newfields);
    void setValue(const std::string& xpath, const std::string& value);
    void clearValue(const std::string& name);
+   // TODO: change the CFormValues interface! Drop xpath
+   //   - get(fieldname), getFloat(), getInt()
+   //   - getState(fieldname, option) 
+   //   - getStateMask(fieldname) [up to 64 options], getList()
+   //   - set(fieldname)
+   //   - setState(fieldname, option, bool/string)
    std::string get(const std::string& xpath);
    double getFloat(const std::string& xpath);
    long   getInt(const std::string& xpath);
