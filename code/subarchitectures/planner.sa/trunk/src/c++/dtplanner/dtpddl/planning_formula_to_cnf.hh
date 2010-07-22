@@ -37,6 +37,8 @@
 #include "planning_formula.hh"
 #include "planning_formula_to_nnf.hh"
 
+#include "stl__deref_tools.hh"
+
 namespace Planning
 {
     /* We first convert to NNF ---Negation Normal Form---, and then to
@@ -44,6 +46,7 @@ namespace Planning
     class Planning_Formula__to__CNF
     {
     public:
+        
         typedef Planning::Formula::Subformulae Subformulae;
         typedef Planning::Formula::Subformula Subformula;
         typedef Planning::Formula::Negation Negation;
@@ -52,20 +55,32 @@ namespace Planning
         typedef Planning::Formula::Exists Exists;
         typedef Planning::Formula::Forall Forall;
 
+        
+        typedef CXX__deref__shared_ptr<Conjunction> Conjunct;
+        typedef std::vector<Conjunct> Conjuncts;
+        
+        typedef CXX__deref__shared_ptr<Disjunction> Disjunct;
+        typedef std::vector<Disjunct> Disjuncts;
+
+        
         /* \argument{bool}: Should we compute an NNF version of the
-         * argument before proceeding.*/
+         * argument before proceeding.
+         *
+         * WEARNING: If the \argument{Subformula} is \type{Vacuous},
+         * then so is the output.*/
         Subformula operator()(Subformula, bool = false);
         
     private:
+        
         /* Turns this disjunction-of-conjunctions \argument{data} into
          * a conjunction-of-disjunctions \result{Subformula}.*/
         Subformulae& distributive_law(Subformulae&,
                                       Subformulae,
-                                      const std::vector<Conjunction*>& data,
+                                      const Conjuncts& data,
                                       uint index);
         
-        Subformula operator()(const Conjunction&);
-        Subformula operator()(const Disjunction&);
+        Subformula operator()(Disjunct);
+        Subformula operator()(Conjunct);
         
         Planning_Formula__to__NNF planning_Formula__to__NNF;
     };

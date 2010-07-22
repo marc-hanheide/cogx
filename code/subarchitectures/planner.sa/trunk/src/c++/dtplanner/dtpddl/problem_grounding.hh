@@ -61,7 +61,7 @@ namespace Planning
         basic_type::Runtime_Thread runtime_Thread;
 
         /* Simplify the description of the \argument{actionSchema}.*/
-        void simplify_action_schema(Planning::Action_Schema& actionSchema);
+        void simplify_action_schema_precondition(Planning::Action_Schema& actionSchema);
         
         /* Populate \member{}*/
         void ground_action_schema(Planning::Action_Schema& actionSchema);

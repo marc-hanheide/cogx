@@ -31,16 +31,15 @@
  * 
  */
 
-
 #include "planning_formula_to_cnf.hh"
 
 using namespace Planning;
 
-Planning_Formula__to__CNF::Subformula Planning_Formula__to__CNF::operator()(const Conjunction& conjunction)
+Planning_Formula__to__CNF::Subformula Planning_Formula__to__CNF::operator()(Conjunct conjunction)
 {
     Subformulae new_subformulae;
     
-    auto subformulae = conjunction.get__subformulae();
+    auto subformulae = conjunction->get__subformulae();
     
     for(auto subformula = subformulae.begin()
             ; subformula != subformulae.end()
@@ -65,7 +64,7 @@ Planning_Formula__to__CNF::Subformula Planning_Formula__to__CNF::operator()(cons
 
     
     NEW_referenced_WRAPPED_deref_POINTER
-        (new_subformulae.back().get()->get__runtime_Thread()
+        (new_subformulae.back()->get__runtime_Thread()
          , Planning::Formula::Conjunction
          , tmp
          , new_subformulae);
@@ -76,81 +75,111 @@ Planning_Formula__to__CNF::Subformula Planning_Formula__to__CNF::operator()(cons
 Planning_Formula__to__CNF::Subformulae&
 Planning_Formula__to__CNF::distributive_law(Subformulae& conjunct,
                                             Subformulae disjunct,
-                                            const std::vector<Conjunction*>& data,
+                                            const Conjuncts& data,
                                             uint index)
 {
+    VERBOSER(3000, "CNF from disjunction; Elem :: "<<index<<" from Count :: "<<data.size()<<std::endl);
     if(index == data.size()) {
+
+        VERBOSER(3000, "Came to the end, adding disjunction :: "<<disjunct<<std::endl);
         assert(disjunct.size());
         
         NEW_referenced_WRAPPED_deref_POINTER
-            (disjunct.back().get()->get__runtime_Thread()
+            (disjunct.back()->get__runtime_Thread()
              , Planning::Formula::Disjunction
              , disjunctive_formula
              , disjunct);
+
+        VERBOSER(3000, "Adding disjunction :: "
+                 <<disjunctive_formula<<" to a CNF conjunct.");
         
         conjunct.push_back(disjunctive_formula);
         
         return conjunct;
     }
     
-    auto input_conjunction = *data[index];
-    auto subformulae = input_conjunction.get__subformulae();
+    assert(index >= 0);
+    assert(index < data.size());
+    
+    auto input_conjunction = data[index];
+    auto subformulae = input_conjunction->get__subformulae();
 
+
+    VERBOSER(3000, "CNF at index :: "<<index<<" has :: "<<subformulae.size()<<" elements."<<std::endl);
     
     for(auto subformula = subformulae.begin()
             ; subformula != subformulae.end()
             ; subformula++){
         if(subformula->test_cast<Disjunction>()){
-            auto long_or = subformula->do_cast<Disjunction>();
-            auto atoms = long_or->get__subformulae();
+            
+            auto atoms = subformula->cxx_get<Disjunction>()->get__subformulae();
             
             for(auto atom = atoms.begin()
                     ; atom != atoms.end()
                     ; atom++){
+                VERBOSER(3000, "Adding to disjunct :: "<<*atom<<std::endl);
                 disjunct.push_back(*atom);
             }
         } else {
+                VERBOSER(3000, "Adding to disjunct :: "<<*subformula<<std::endl);
             disjunct.push_back(*subformula);
         }
         
         
         distributive_law(conjunct, disjunct, data, index + 1);
+        disjunct.resize(disjunct.size() - 1);
     }
     
     return conjunct;
 }
 
 
-Planning_Formula__to__CNF::Subformula Planning_Formula__to__CNF::operator()(const Disjunction& disjunction)
+Planning_Formula__to__CNF::Subformula
+Planning_Formula__to__CNF::operator()(Disjunct disjunction)
 {
-    
-    std::vector<Conjunction*> conjuncts;
-    
-    auto subformulae = disjunction.get__subformulae();
 
+    QUERY_UNRECOVERABLE_ERROR(!disjunction->get__subformulae().size()
+                              , "Got an empty disjunction.");
 
-    for(auto subformula = subformulae.begin()
-            ; subformula != subformulae.end()
-            ; subformula++){
-        auto answer = (*this)(*subformula);
+    
+    Conjuncts conjuncts;
+    {/* Get all the CNF versions of
+      * the \argument{disjunction}
+      * subformulae, and put them in
+      * \local{conjuncts}*/
+        auto subformulae = disjunction->get__subformulae();
+        for(auto subformula = subformulae.begin()
+                ; subformula != subformulae.end()
+                ; subformula++){
+            auto answer = (*this)(*subformula);
+
+            VERBOSER(3000, "Got a new conjunctive element :: "<<answer<<std::endl);
         
-        /* the \local{answer} should be a conjunct.*/
-        auto conjunct = answer.do_cast<Conjunction>();
-        conjuncts.push_back(conjunct);
+            assert(answer.test_cast<Conjunction>());
+        
+            conjuncts.push_back(Conjunct(answer.cxx_get<Conjunction>()));//.cxx_get<Conjunction>());
+        
+            assert(conjuncts.back()->get__subformulae().size() > 0);
+            VERBOSER(3000, "Confirmed the new conjunctive element :: "<<conjuncts.back()<<std::endl);
+        }
     }
 
 
-    assert(conjuncts.size());
+
+    VERBOSER(3000, "Have a disjunction of size :: "<<conjuncts.size()<<std::endl
+             <<"over conjuncts."<<std::endl);
     
+    assert(conjuncts.size());
     Subformulae result;
     distributive_law(result,
                      Subformulae(),
                      conjuncts,
                      0);
 
+    assert(result.size());
     
     NEW_referenced_WRAPPED_deref_POINTER
-        (result.back().get()->get__runtime_Thread()
+        (result.back()->get__runtime_Thread()
          , Planning::Formula::Conjunction
          , conjunctive_formula
          , result);
@@ -167,7 +196,7 @@ Planning_Formula__to__CNF::operator()(Subformula _input, bool computed__nnf_inpu
         input = planning_Formula__to__NNF(_input);
     }
     
-    switch(input.get()->get__type_name()){//get__id()){
+    switch(input->get__type_name()){//get__id()){
         case vacuous:
         {
             WARNING("Asked to convert \"vacuous\" formula into CNF.");
@@ -176,14 +205,14 @@ Planning_Formula__to__CNF::operator()(Subformula _input, bool computed__nnf_inpu
         break;
         case conjunction:
         {
-            auto tmp = input.do_cast<Conjunction>();
-            return (*this)(*tmp);
+            assert(input.test_cast<Conjunction>());
+            return (*this)(Conjunct(input.cxx_get<Conjunction>()));
         }
         break;
         case disjunction:
         {
-            auto tmp = input.do_cast<Disjunction>();
-            return (*this)(*tmp);
+            assert(input.test_cast<Disjunction>());
+            return (*this)(Disjunct(input.cxx_get<Disjunction>()));//Disjunct(input));
         }
         break;
         case exists:
@@ -213,14 +242,14 @@ Planning_Formula__to__CNF::operator()(Subformula _input, bool computed__nnf_inpu
     Subformulae _new_subformulae;
     _new_subformulae.push_back(input);
     NEW_referenced_WRAPPED_deref_POINTER
-        (input.get()->get__runtime_Thread()
+        (input->get__runtime_Thread()
          , Planning::Formula::Disjunction
          , new_disjunct
          , _new_subformulae);
     Subformulae new_subformulae;
     new_subformulae.push_back(new_disjunct);
     NEW_referenced_WRAPPED_deref_POINTER
-        (input.get()->get__runtime_Thread()
+        (input->get__runtime_Thread()
          , Planning::Formula::Conjunction
          , tmp
          , new_subformulae);

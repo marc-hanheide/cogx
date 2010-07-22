@@ -49,6 +49,15 @@
 	   :effect (increase (reward) 5)
 	   )
 
+  (:action flip
+	   :parameters (?x - coin)
+
+;; 	   :precondition (and (chosen ?x) (biased ?x))
+	   :precondition (and (not (and (or (not (chosen ?x)) (not (chosen ?x))) (or (not (chosen ?x)) (not (chosen ?x))))) (or (chosen ?x) (chosen ?x)) (biased ?x))
+
+	   :effect (increase (reward) 5)
+	   )
+
   (:action gamble
 	   :parameters (?x - coin)
 

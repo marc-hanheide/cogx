@@ -77,7 +77,7 @@ Problem_Grounding::Problem_Grounding(Parsing::Problem_Data& problem_Data,
     auto first_action = domain_Data->get__action_Schemas().begin();
     auto first_actionx_precondition = first_action->get__precondition();
 
-    this->runtime_Thread = first_actionx_precondition.get()->get__runtime_Thread();
+    this->runtime_Thread = first_actionx_precondition->get__runtime_Thread();
 }
 
 void Problem_Grounding::ground_actions()
@@ -91,7 +91,7 @@ void Problem_Grounding::ground_actions()
     }
 }
 
-void Problem_Grounding::simplify_action_schema(Planning::Action_Schema& action_Schema)
+void Problem_Grounding::simplify_action_schema_precondition(Planning::Action_Schema& action_Schema)
 {
     /* usual suspects C++*/
     using std::map;
@@ -104,6 +104,7 @@ void Problem_Grounding::simplify_action_schema(Planning::Action_Schema& action_S
     using Planning::Formula::Negation;
     using Planning::Formula::Subformula;
     using Planning::Formula::Subformulae;
+    using Planning::Formula::Vacuous;
 
     /* \module{turnstyle} */
     using namespace Turnstyle;
@@ -119,14 +120,30 @@ void Problem_Grounding::simplify_action_schema(Planning::Action_Schema& action_S
     /* First step, we convert the formula into a CNF.*/
     CNF::Problem_Data problem_Data;
 
+    /* If the action has no precondition.*/
+    if(action_Schema.get__precondition().test_cast<Vacuous>()){
+        return;
+    }
+    
+    
     /* Try to convert the precondition formula into a CNF. */
     auto precondition_as_cnf = planning_Formula__to__CNF(action_Schema.get__precondition());
 
+    if(precondition_as_cnf.test_cast<Vacuous>()){
+        return;
+    }
+
+    
+    QUERY_UNRECOVERABLE_ERROR(!precondition_as_cnf.test_cast<Conjunction>(),
+                              "Converted a formula :: "<<action_Schema.get__precondition()<<std::endl
+                              <<"to CNF format, but ended up with something that is not a conjunct.");
+    
     /* Make sure that the conversion to CNF just undertaken has worked.*/
     auto _conjunction = precondition_as_cnf.do_cast<Conjunction>();
 
     /* Get the bubformulae associated with the conjunction. */
     auto conjunction = _conjunction->get__subformulae();
+    assert(conjunction.size());
     for(auto __disjunction = conjunction.begin() /* The precondition is
                                                  * not in CNF format,
                                                  * therefore each
@@ -140,9 +157,9 @@ void Problem_Grounding::simplify_action_schema(Planning::Action_Schema& action_S
             "Formula :: "<<(*__disjunction)<<std::endl
             <<"is supposed to be an element in a CNF, however it is not a disjunction.\n");
         
-        auto _disjunction = (*__disjunction).do_cast<Disjunction>();
+//         auto _disjunction = (*__disjunction).do_cast<Disjunction>();
         
-        auto disjunction = _disjunction->get__subformulae();
+        auto disjunction = __disjunction->cxx_get<Disjunction>()->get__subformulae();//_disjunction->get__subformulae();
 
         Clause clause;
         for(auto _literal = disjunction.begin() /* Every element in
@@ -170,29 +187,43 @@ void Problem_Grounding::simplify_action_schema(Planning::Action_Schema& action_S
             if(_atom == atom_id.end()){
                 auto index = atoms.size();
                 atoms.push_back(__atom);
-                atom_id[__atom] = index;
+                atom_id[__atom] = index + 1;
                 _atom = atom_id.find(__atom);
             }
             
             auto atom = _atom->second;
 
+            assert(atom != 0);
+            
             
             if(negation){
                 clause.insert(-1 * atom);
             } else {
                 clause.insert(atom);
             }
+
         }
         
         problem_Data.insert(clause);
+
+        
+        std::cerr<<"Pushing clause :: "<<problem_Data<<std::endl;
+        {char ch; std::cin>>ch;}
     }
     
 
+    VERBOSER(3001, "CNF problem data is :: "<<problem_Data<<std::endl);
+    
     /* Construction of a CNF does implicit simplification of that CNF
      * data.*/
     CNF cnf(problem_Data);
 
+    
+    VERBOSER(3001, "CNF having been simplified is :: "<<cnf<<std::endl);
 
+    {char ch; std::cin>>ch;}
+    
+    
     Subformulae conjunctive_data;
     for(auto clause = cnf.problem_Data.begin()
             ; clause != cnf.problem_Data.end()
@@ -207,7 +238,11 @@ void Problem_Grounding::simplify_action_schema(Planning::Action_Schema& action_S
             auto literal = *_literal;
 
             uint index = abs(literal);
-            auto atom = atoms[index];
+            
+            assert(index - 1 >= 0);
+            assert(index - 1 < atoms.size());
+            
+            auto atom = atoms[index - 1];
             
             if(literal < 0){
                 NEW_NEGATION(literal, atom);
@@ -225,6 +260,12 @@ void Problem_Grounding::simplify_action_schema(Planning::Action_Schema& action_S
     
     NEW_CONJUNCTION(new_conjunction, conjunctive_data);
 
+    
+    VERBOSER(3001, "Original formula is :: "<<action_Schema.get__precondition()<<std::endl);
+    VERBOSER(3001, "translated formula is :: "<<precondition_as_cnf<<std::endl);
+    VERBOSER(3001, "formula after simplification is :: "<<new_conjunction<<std::endl);
+    {char ch; std::cin>>ch;}
+    
     action_Schema.alter__precondition(new_conjunction);
 }
 
@@ -232,7 +273,7 @@ void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Sch
 {
     /* First step, we alter the action precondition formula so that it
      * corresponds to propositional CNF.*/
-    simplify_action_schema(action_Schema);
+    simplify_action_schema_precondition(action_Schema);
     
 }
 

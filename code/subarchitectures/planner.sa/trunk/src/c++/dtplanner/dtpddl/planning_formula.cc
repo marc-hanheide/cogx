@@ -115,6 +115,8 @@ const Subformulae& Conjunction::get__subformulae() const
 
 Subformulae Conjunction::get__subformulae()
 {
+    VERBOSER(3000, "Getting the subformulae from a conjunction.");
+    
     return tr1::get<0>(contents());
 }
 
