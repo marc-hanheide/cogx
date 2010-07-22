@@ -124,7 +124,7 @@ namespace Planning
                         <PROPOSITION_SYMBOL
                         , Symbol_Name>
                         (symbol_name,
-                         atomic_symbol.get()->get__id());
+                         atomic_symbol->get__id());
                 }
 
                 VERBOSER(101, "PARSED :: "<<formula_parsing_level<<":: "<<subformulae[formula_parsing_level].back()<<std::endl);

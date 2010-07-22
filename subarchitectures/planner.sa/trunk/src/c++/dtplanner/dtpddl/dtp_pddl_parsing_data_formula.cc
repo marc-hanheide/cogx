@@ -341,11 +341,11 @@ Formula_Data::complete__quantified_formula(int quantifier)
     assert(subformulae[formula_parsing_level + 1].size());
     std::ostringstream oss;
     oss<<"DERIVED-PREDICATE-"
-       <<subformulae[formula_parsing_level + 1][0].get()->get__type_name()
+       <<subformulae[formula_parsing_level + 1][0]->get__type_name()
        <<"-"
        <<quantifier
        <<"-"
-       <<subformulae[formula_parsing_level + 1][0].get()->get__id();
+       <<subformulae[formula_parsing_level + 1][0]->get__id();
     NEW_object_referenced_WRAPPED(Planning::Predicate_Name,
                                   name,
                                   oss.str());
@@ -391,7 +391,7 @@ Formula_Data::complete__quantified_formula(int quantifier)
 
     derived_Predicates__artificial
         .insert(*dynamic_cast<Planning::Derived_Predicate*>
-                (new_derived_predicate.get().get()));
+                (new_derived_predicate.cxx_get().get()));
     
     return new_derived_predicate; 
 }

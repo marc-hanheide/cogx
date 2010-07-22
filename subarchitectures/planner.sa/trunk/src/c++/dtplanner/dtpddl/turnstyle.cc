@@ -238,6 +238,8 @@ namespace Turnstyle
 
 std::ostream& std::operator<<(std::ostream&o, const Turnstyle::CNF::Problem_Data& problem_Data)
 {
+    o<<"CNF with N = "<<problem_Data.size()<<" clauses."<<std::endl;
+    
     for(auto p = problem_Data.begin(); p != problem_Data.end(); p++){
         o<<*p<<std::endl;
     }

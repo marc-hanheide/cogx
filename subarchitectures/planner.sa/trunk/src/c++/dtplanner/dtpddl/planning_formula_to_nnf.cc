@@ -53,7 +53,7 @@ Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(
     VERBOSER(3000, "Turning :: "<<input<<std::endl
              <<"into negation normal form. "<<std::endl);
     
-    switch(input.get()->get__type_name()){//get__id()){
+    switch(input->get__type_name()){//get__id()){
         case vacuous:
         {
             WARNING("Asked to convert \"vacuous\" formula into NNF.");
@@ -94,7 +94,7 @@ Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(
         {
             if(carrying_negation){
                 NEW_referenced_WRAPPED_deref_POINTER
-                    (input.get()->get__runtime_Thread()
+                    (input->get__runtime_Thread()
                      , Planning::Formula::Negation
                      , tmp
                      , input);
@@ -134,7 +134,7 @@ Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(Conj
     
     if(carrying_negation){
         NEW_referenced_WRAPPED_deref_POINTER
-            (new_subformulae.back().get()->get__runtime_Thread()
+            (new_subformulae.back()->get__runtime_Thread()
              , Planning::Formula::Disjunction
              , tmp
              , new_subformulae);
@@ -142,7 +142,7 @@ Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(Conj
         return tmp;
     } else {
         NEW_referenced_WRAPPED_deref_POINTER
-            (new_subformulae.back().get()->get__runtime_Thread()
+            (new_subformulae.back()->get__runtime_Thread()
              , Planning::Formula::Conjunction
              , tmp
              , new_subformulae);
@@ -168,7 +168,7 @@ Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(Disj
     
     if(!carrying_negation){
         NEW_referenced_WRAPPED_deref_POINTER
-            (new_subformulae.back().get()->get__runtime_Thread()
+            (new_subformulae.back()->get__runtime_Thread()
              , Planning::Formula::Disjunction
              , tmp
              , new_subformulae);
@@ -176,7 +176,7 @@ Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(Disj
         return tmp;
     } else {
         NEW_referenced_WRAPPED_deref_POINTER
-            ( new_subformulae.back().get()->get__runtime_Thread()
+            ( new_subformulae.back()->get__runtime_Thread()
               , Planning::Formula::Conjunction
               , tmp
               , new_subformulae);

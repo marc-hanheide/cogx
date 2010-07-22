@@ -121,7 +121,7 @@ void Domain_Data::commit__derived_predicate()
              , Planning::Typed_Arguments()
              , Planning::Variables()
              , last_formula_parsed
-             , last_formula_parsed.get()->get__type_name()
+             , last_formula_parsed->get__type_name()
              );
 
         VERBOSER(42, "new predicate :: "<<new_derived_predicate.get__description());

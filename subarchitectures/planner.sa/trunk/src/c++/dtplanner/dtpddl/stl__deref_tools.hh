@@ -81,23 +81,53 @@ template<typename T>
 class CXX__deref__shared_ptr
 {
 public:
+
     explicit CXX__deref__shared_ptr(const CXX__PTR_ANNOTATION(T)&);
     explicit CXX__deref__shared_ptr();
+    
+    template<typename TT>
+    explicit CXX__deref__shared_ptr(const CXX__deref__shared_ptr<TT>& in)
+    {
+        assert(in.use_count());
+        assert(in.test_cast<T>());
+
+        auto tmp = in.cxx_get<T>();
+        contents = CXX__PTR_ANNOTATION(T)(tmp);//in.cxx_get<T>());
+    }
+
 
     long use_count()const{return contents.use_count();};
-    CXX__PTR_ANNOTATION(T) get() const;
+    
+    CXX__PTR_ANNOTATION(T) cxx_get() const {return contents;} ;
+    template<typename TT>
+    CXX__PTR_ANNOTATION(TT) cxx_get() const {return std::tr1::dynamic_pointer_cast<TT>(contents);} ;
+
+    T& operator*() const {return *contents;};
+    T* get() const {return contents.get();};
+    
+    T* operator->() const {return contents.get();};
+//     const T* operator->() const {return contents.get();};
+    
     bool operator==(const CXX__deref__shared_ptr&) const;
     bool operator<(const CXX__deref__shared_ptr&) const;
     std::size_t hash_value() const;
     ostream& operator<<(ostream&) const;
+    
     template<typename TT> bool test_cast() const {return dynamic_cast<TT*>(contents.get());};
     template<typename TT> C__PTR_ANNOTATION(TT) do_cast() const
     {assert(test_cast<TT>());return dynamic_cast<C__PTR_ANNOTATION(TT)>(contents.get());};
     template<typename TT> TT do_cast_and_copy() const
     {assert(test_cast<TT>());return *dynamic_cast<C__PTR_ANNOTATION(TT)>(contents.get());};
+    
 private:
     CXX__PTR_ANNOTATION(T) contents;
 };
+
+
+
+// template<typename T, typename TT>
+// CXX__deref__shared_ptr<T>::CXX__deref__shared_ptr<TT>(const CXX__deref__shared_ptr<TT>& in)
+
 
 template<typename T>
 CXX__deref__shared_ptr<T>::CXX__deref__shared_ptr(const CXX__PTR_ANNOTATION(T)&in)
@@ -112,11 +142,11 @@ CXX__deref__shared_ptr<T>::CXX__deref__shared_ptr()
 template<typename T>
 std::size_t hash_value(const CXX__deref__shared_ptr<T>&in){return in.hash_value();};
 
-template<typename T>
-CXX__PTR_ANNOTATION(T) CXX__deref__shared_ptr<T>::get() const
-{
-    return contents;
-}
+// template<typename T>
+// CXX__PTR_ANNOTATION(T) CXX__deref__shared_ptr<T>::get() const
+// {
+//     return contents;
+// }
 
 template<typename T>
 bool CXX__deref__shared_ptr<T>::operator==(const CXX__deref__shared_ptr&in) const
