@@ -14,6 +14,7 @@
  * GNU General Public License for more details.
  */
 #include "CFormValues.hpp"
+#include "Exception.h"
 
 #include <cstdlib>
 #include <cctype>
@@ -67,6 +68,22 @@ void CFormValues::field::get(std::map<std::string, std::string>& fieldmap)
 void CFormValues::field::dump(std::vector<std::string>& dump)
 {
    dump.push_back(name + "=" + value);
+}
+
+void CFormValues::field::setState(const std::string& option, bool on)
+{
+   throw Exception("setState not applicable to CFormValues::field");
+}
+
+void CFormValues::field::setState(const std::string& option, const std::string& _value)
+{
+   throw Exception("setState not applicable to CFormValues::field");
+}
+
+bool CFormValues::field::getState(const std::string& option)
+{
+   throw Exception("getState not applicable to CFormValues::field");
+   return false;
 }
 
 CFormValues::set::set(const std::string& name, const valuelist& setitems)
@@ -159,6 +176,22 @@ void CFormValues::set::setValue(const std::string& xpath, const std::string& _va
    }
 }
 
+void CFormValues::set::setState(const std::string& option, bool on)
+{
+   throw Exception("TODO: set::setState not implemented");
+}
+
+void CFormValues::set::setState(const std::string& option, const std::string& _value)
+{
+   throw Exception("TODO: set::setState not implemented");
+}
+
+bool CFormValues::set::getState(const std::string& option)
+{
+   throw Exception("TODO: set::getState not implemented");
+   return false;
+}
+
 std::string CFormValues::choice::get(const std::string& xpath)
 {
    if (xpath.size() == 0) {
@@ -170,6 +203,22 @@ std::string CFormValues::choice::get(const std::string& xpath)
       return "";
    }
    return CFormValues::set::get(xpath);
+}
+
+void CFormValues::choice::setState(const std::string& option, bool on)
+{
+   throw Exception("TODO: choice::setState not implemented");
+}
+
+void CFormValues::choice::setState(const std::string& option, const std::string& _value)
+{
+   throw Exception("TODO: choice::setState not implemented");
+}
+
+bool CFormValues::choice::getState(const std::string& option)
+{
+   throw Exception("TODO: choice::getState not implemented");
+   return false;
 }
 
 void CFormValues::clear()
@@ -234,6 +283,38 @@ std::string CFormValues::get(const std::string& xpath)
       return it->second->get(sub);
    }
    return "";
+}
+
+double CFormValues::getFloat(const std::string& xpath)
+{
+   std::string main, sub;
+   size_t pos = xpath.find('/');
+   if (pos == std::string::npos) main = xpath;
+   else {
+      main = xpath.substr(0, pos);
+      sub = xpath.substr(pos+1);
+   }
+   typeof(fields.begin()) it = fields.find(main);
+   if (it != fields.end()) {
+      return it->second->getFloat(sub);
+   }
+   return 0;
+}
+
+long CFormValues::getInt(const std::string& xpath)
+{
+   std::string main, sub;
+   size_t pos = xpath.find('/');
+   if (pos == std::string::npos) main = xpath;
+   else {
+      main = xpath.substr(0, pos);
+      sub = xpath.substr(pos+1);
+   }
+   typeof(fields.begin()) it = fields.find(main);
+   if (it != fields.end()) {
+      return it->second->getInt(sub);
+   }
+   return 0;
 }
 
 void CFormValues::get(std::map<std::string, std::string>& fieldmap)

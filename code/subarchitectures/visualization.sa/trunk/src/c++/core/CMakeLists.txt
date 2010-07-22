@@ -142,6 +142,7 @@ add_cast_component(DisplayServer
    )
 link_cast_component(${CAST_COMPONENT_NAME}
    VisualizationData Math Video VideoUtils
+   # CogxIceAutogen
    ${QT_LIBRARIES}
    ${QT_QTSVG_LIBRARY}
    ${QT_QTOPENGL_LIBRARY} GL GLU
@@ -159,6 +160,7 @@ add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 add_cast_component(DisplayClient CDisplayClient.cpp CFormValues.cpp)
 link_cast_component(${CAST_COMPONENT_NAME}
    VisualizationData Math Video VideoUtils
+   # CogxIceAutogen
    ${OPENCV_LDFLAGS}
    )
 
