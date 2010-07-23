@@ -22,7 +22,12 @@ use_equalimportance =  0 ;
 classifyWithPosterior = 1 ;
 extensive_answer = 0 ;
 minNumDataPointsToFormKDE = [] ; 
+autonomous_update = [] ;
  
+
+autoUpdateThres_upper = [] ;
+autoUpdateThres_lower = [] ;
+autonomous_update = [] ; %  'oracle_verified', 'self_verified' updates only if it misclassifies the input data
 % not operational % minimal_required_examps_mode = [] ; % if 1, then a vector is added only if it's wrongly classified
 min_samps_per_model_feat_sel = [] ;
 react_compression_to_feature_selection = [] ;
@@ -47,11 +52,12 @@ while i <= nargs
         case 'input_data', input_data = args{i+1} ; i = i + 2 ; 
         case 'make_simple_feature_selection', operator_data = args{i} ; i = i + 1 ;   
         case 'init', operator_data = args{i} ; i = i + 1 ;
+        case 'autonomous_update', autonomous_update = args{i+1} ; i = i + 2 ;
         case 'get_class_names', operator_data = args{i} ; i = i + 1 ;
         case 'get_class_indexes', operator_data = args{i} ; i = i + 1 ;  
         case 'get_name_at_index', operator_data = args{i} ; val_get = args{i+1} ; i = i + 2 ;            
         case 'get_index_at_name', operator_data = args{i} ; val_get = args{i+1} ; i = i + 2 ; 
-        case 'set_name_at_index', operator_data = args{i} ; val_get = args{i+1} ; val_set = args{i+2} ; i = i + 3 ; 
+        case 'set_name_at_index', operator_data = args{i} ; val_get = args{i+1} ; val_set = args{i+2} ; i = i + 3 ;         
         case 'add_input', operator_data = args{i} ; i = i + 1 ; 
         case 'introspect', operator_data = args{i} ; i = i + 1 ;     
         case 'kdes_to_classifier', operator_data = args{i} ; i = i + 1 ;    
@@ -61,6 +67,8 @@ while i <= nargs
         case 'calculate_gains', operator_data = args{i} ; i = i + 1 ;
         case 'unlearn_with_input', operator_data = args{i} ; i = i + 1 ;
         case 'showKDE_of_class_index', operator_data = 'showKDE_of_class_index' ; val_get = args{i+1} ; i = i + 2 ;
+        case 'autoUpdateThres_upper', autoUpdateThres_upper = args{i+1} ; i = i + 2 ;    
+        case 'autoUpdateThres_lower', autoUpdateThres_lower = args{i+1} ; i = i + 2 ;    
         case 'min_samps_per_model_feat_sel', min_samps_per_model_feat_sel = args{i+1} ; i = i + 2 ;
         case 'sub_selected_features', sub_selected_features = args{i+1} ; i = i + 2 ;
         case 'clear_selected_features', clear_selected_features = 1 ; i = i + 1 ;
@@ -108,6 +116,8 @@ if isempty(hyper_input_kde_cl)
     hyper_input_kde_cl.react_compression_to_feature_selection = 0 ;
     hyper_input_kde_cl.sub_feature_sel_forgetting = 0 ;
     hyper_input_kde_cl.cummulative_feat_costs = [] ;
+    hyper_input_kde_cl.autoUpdateThres.upper = 0.15 ;
+    hyper_input_kde_cl.autoUpdateThres.lower = -1 ;
 %     hyper_input_kde_cl.minimal_required_examps_mode = 0 ;
 end
 
@@ -151,6 +161,18 @@ if ~isempty(use_unknown_model)
    hyper_input_kde_cl.use_unknown_model = use_unknown_model  ;
 end
 
+if ~isempty(autonomous_update)
+    operator_data = 'autonomous_update' ;
+end
+
+if ~isempty(autoUpdateThres_upper)
+    hyper_input_kde_cl.autoUpdateThres.upper = autoUpdateThres_upper ;
+end
+
+if ~isempty(autoUpdateThres_lower)
+    hyper_input_kde_cl.autoUpdateThres.lower = autoUpdateThres_lower ;
+end
+ 
 switch operator_data    
     case 'init'
         hyper_output_kde_cl = hyper_input_kde_cl ;
@@ -286,8 +308,41 @@ switch operator_data
             else
                 hyper_output_kde_cl.sub_feature_sel_forgetting = 0 ;
             end
+        end        
+    case 'autonomous_update' ;
+        answers = [] ;
+        for i = 1 : length(input_data) 
+            rslt = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data{i}.data, 'classifyData',...
+                                             'use_unknown_model',1, 'extensive_answer', 1  ) ;
+            if isequal( autonomous_update, 'oracle_verified' )
+                % check if the label already exists and check for errors
+                [data, class, class_name, class_exists] = parseClassData(hyper_input_kde_cl, input_data{i} ) ;
+                if rslt.C ~= class
+                    answers = horzcat(answers, 1) ;
+                    hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input' ) ;
+                else
+                    answers = horzcat(answers, 0) ;
+                end
+            elseif isequal( autonomous_update, 'self_verified' )
+                if rslt.H >  hyper_input_kde_cl.autoUpdateThres.upper || rslt.C == -1 % uncertain classification 
+                    hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input' ) ;
+                    answers = horzcat(answers, 1) ;
+                else
+                    %Certain Classification 
+                    if rslt.H < hyper_input_kde_cl.autoUpdateThres.lower
+                        answers = horzcat(answers, 0) ;
+                        input_data{i}.class = rslt.C ;
+                        hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input' ) ;
+                    else
+                        answers = horzcat(answers, 0) ;
+                    end
+                end
+            else
+                error('Unknown "autonomous_update" type!') ;
+            end
         end
-         
+        hyper_output_kde_cl = hyper_input_kde_cl ;
+        hyper_output_kde_cl.answers = answers ;
     case 'add_input'
         % determine if the class already exists, and initialize it if it
         % does not exist
@@ -463,7 +518,7 @@ switch operator_data
         end
         hyper_output_kde_cl.kde_cl = output_kde_cl ;
     case 'classifyData'
-        input_kde_cl = hyper_input_kde_cl.kde_cl ;
+        input_kde_cl = hyper_input_kde_cl.kde_cl ;       
         P = zeros(length(input_kde_cl),size(input_data,2)) ;
         p_pr = zeros(1,length(input_kde_cl)) ;
         for i = 1 : length(input_kde_cl)
@@ -527,8 +582,9 @@ switch operator_data
         
         if extensive_answer == 1
            % calculate and output additional statistics
+           num_classes = length(class_labels) ;
            % 1. get entropy
-           H = 2*(1-sum(P.*P)) ;
+           H = 2*(1-sum(P.*P))  / (2*(1-1/num_classes));
            
            % 2. get R1 and R2 score (likelihood ratio)
            srtP = sort(P,1, 'descend') ;
@@ -629,7 +685,9 @@ switch operator_data
         
         executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'showKDE', 'selectSubDimensions', sub_feats,vforwvargin{:} ) ;
         hyper_output_kde_cl = hyper_input_kde_cl.class_labels_names(val_get) ;
-        title(hyper_output_kde_cl) ;        
+        title(hyper_output_kde_cl) ;  
+    otherwise
+        hyper_output_kde_cl = hyper_input_kde_cl ;
 end
 
 % -------------------------------------------------------------------- %

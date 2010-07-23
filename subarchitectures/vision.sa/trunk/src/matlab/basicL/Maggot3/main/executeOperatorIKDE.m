@@ -641,7 +641,7 @@ switch operator_data
                 tmp.Mu = input_kde.ikdeParams.scale.Mu ;
                 C = tmp.Cov *(4/((d+2)*size(input_kde.pdf.Mu,2)))^(2/(d+4)) ; %/ 2^2 ; %*(4/((d+2)*input_kde.ikdeParams.N_eff))^(2/(d+4)) ; / 4^2
                 input_kde.pdf = demarginalizeMixture( input_kde.pdf, tmp.H_d,  C, tmp.Mu,...
-                                        selectSubDimensions, model_new.idxToref_out, tmp_pdf_for_dims ) ;  
+                                        selectSubDimensions, model_new.idxToref_out, tmp_pdf_for_dims, tmp.Cov ) ;  
             end          
         end
  
