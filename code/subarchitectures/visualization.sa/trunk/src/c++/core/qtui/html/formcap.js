@@ -55,6 +55,17 @@ function CogxJsBoolValue(truelist, name)
     }
 }
 
+function CogxJsOnClick(htmlid, clickid)
+{
+    MyQObject.onClick(htmlid, clickid);
+}
+
+function CogxJsSendValue(form_selector, clickid, valueid)
+{
+    var ob = $(form_selector).serializeObject();
+    MyQObject.onSendValue(form_selector, clickid, valueid, ob);
+}
+
 $.fn.fillForm = function(vals) {
     return this.each(function() {
         var type = this.type, tag = this.tagName.toLowerCase(), i;

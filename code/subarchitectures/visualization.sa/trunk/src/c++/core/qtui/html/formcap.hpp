@@ -49,6 +49,8 @@ public slots:
    QMap<QString, QVariant> getSavedFormData(const QString& formid);
    // htmlId doesn't contain a leading #
    void onClick(const QString& htmlId, const QString& ctrlId);
+   void onSendValue(const QString& formid, const QString& ctrlId, const QString& valueId,
+         const QMap<QString,QVariant>& object);
 
 public:
    static QString getJavaScript(const QString& jsObjectName, bool htmlScriptBlock = false);
@@ -63,6 +65,8 @@ public:
          const cogx::display::TFormValues& newValues);
    virtual void onHtmlClick(cogx::display::CHtmlChunk *pChunk,
          const std::string& ctrlId) { /*unused*/ }
+   virtual void onHtmlSendValue(cogx::display::CHtmlChunk *pChunk,
+         const std::string& ctrlId, const std::string& value) { /*unused*/ }
 
 signals:
    // Transfer onOwnerDataChanged to Qt UI thread; connected to QCastViewHtml

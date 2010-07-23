@@ -85,6 +85,7 @@ void CHtmlChunk::notifyChunkEvent(EChunkEventType type, const std::string& sourc
    FOR_EACH(pObsrvr, Observers) {
       switch (type) {
          case onClick: pObsrvr->onHtmlClick(this, sourceId); break;
+         case onSendValue: pObsrvr->onHtmlSendValue(this, sourceId, value); break;
          default: break;
       }
    }

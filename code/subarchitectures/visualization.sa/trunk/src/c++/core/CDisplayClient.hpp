@@ -89,6 +89,8 @@ public:
    void setHtmlHead(const std::string& id, const std::string& partId, const std::string& htmlData);
    void setActiveHtml(const std::string& id, const std::string& partId, const std::string& htmlData);
    void setHtmlForm(const std::string& id, const std::string& partId, const std::string& htmlData);
+   void setHtmlFormData(const std::string& id, const std::string& partId,
+         const std::map<std::string, std::string>& fields);
    void setObjectTransform2D(const std::string& id, const std::string& partId,
          const cogx::Math::Matrix33& transform);
    void setObjectTransform2D(const std::string& id, const std::string& partId,

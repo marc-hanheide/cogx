@@ -204,6 +204,12 @@ public class DisplayClient
       m_Server.setHtmlForm(iceid, id, partId, htmlData);
    }
 
+   public final void setHtmlFormData(String id, String partId, Map<String, String> fields)
+   {
+      if (m_Server == null) return;
+      m_Server.setHtmlFormData(id, partId, fields);
+   }
+
    public final void addButton( String viewId, String ctrlId, String label)
    {
       if (m_Server == null) return;

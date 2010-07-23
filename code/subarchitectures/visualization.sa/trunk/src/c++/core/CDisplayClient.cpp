@@ -221,6 +221,13 @@ void CDisplayClient::setHtmlForm(const std::string& id, const std::string& partI
    m_pServer->setHtmlForm(iceid, id, partId, htmlData);
 }
 
+void CDisplayClient::setHtmlFormData(const std::string& id, const std::string& partId,
+      const std::map<std::string, std::string>& fields)
+{
+   if (m_pServer == NULL) return;
+   m_pServer->setHtmlFormData(id, partId, fields);
+}
+
 void CDisplayClient::setObjectTransform2D(const std::string& id, const std::string& partId,
        const std::vector<double>& transform)
 {

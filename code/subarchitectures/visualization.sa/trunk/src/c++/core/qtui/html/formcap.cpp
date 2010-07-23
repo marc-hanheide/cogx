@@ -42,6 +42,30 @@ void QCastFormProxy::removeChunk(cogx::display::CHtmlChunk* pChunk)
    m_Forms.erase(QString::fromStdString(pChunk->htmlid()));
 }
 
+void convertValues(const QMap<QString,QVariant>& object, cxd::TFormValues& vals)
+{
+   DTRACE("convertValues");
+   foreach (QString str, object.keys()) {
+      QVariant val = object.value(str);
+      std::string sval;
+      if (val.type() == QVariant::String)
+         sval = val.toString().toStdString();
+      else if (val.type() == QVariant::List) {
+         QVariantList lst = val.toList();
+         sval = "";
+         foreach(QVariant item, lst) {
+            QString s = item.toString();
+            s.replace('\n', '\r');
+            s.replace(QRegExp("\r+"), " ");
+            if (sval.size() == 0) sval = s.toStdString();
+            else sval += std::string("\n") + s.toStdString();
+         }
+      }
+      vals[str.toStdString()] = sval;
+      DMESSAGE(val.type() << " " << str.toStdString() << ":" << sval);
+   }
+}
+
 void QCastFormProxy::sendValues(const QString& formid, const QMap<QString,QVariant>& object)
 {
    DTRACE("QCastFormProxy::sendValues");
@@ -55,25 +79,7 @@ void QCastFormProxy::sendValues(const QString& formid, const QMap<QString,QVaria
 
    if (pForm) {
       cxd::TFormValues vals;
-      foreach (QString str, object.keys()) {
-         QVariant val = object.value(str);
-         std::string sval;
-         if (val.type() == QVariant::String)
-            sval = val.toString().toStdString();
-         else if (val.type() == QVariant::List) {
-            QVariantList lst = val.toList();
-            sval = "";
-            foreach(QVariant item, lst) {
-               QString s = item.toString();
-               s.replace('\n', '\r');
-               s.replace(QRegExp("\r+"), " ");
-               if (sval.size() == 0) sval = s.toStdString();
-               else sval += std::string("\n") + s.toStdString();
-            }
-         }
-         vals[str.toStdString()] = sval;
-         DMESSAGE(val.type() << " " << str.toStdString() << ":" << sval);
-      }
+      convertValues(object, vals);
       pForm->notifyFormSubmit(vals, this);
    }
    else {
@@ -86,7 +92,7 @@ void QCastFormProxy::sendValues(const QString& formid, const QMap<QString,QVaria
 
 QMap<QString, QVariant> QCastFormProxy::getValues(const QString& formid)
 {
-   DTRACE("QCastFormProxy::getValues");
+   DTRACE("QCastFormProxy::getValues " << formid.toStdString());
    cxd::CHtmlChunk* pForm = NULL;
    
    TFormMapIterator it = m_Forms.find(formid.mid(1));
@@ -154,7 +160,6 @@ void QCastFormProxy::onClick(const QString& htmlId, const QString& ctrlId)
 {
    DTRACE("QCastFormProxy::onClick " << ctrlId.toStdString());
 
-   // TODO: this id should come from JS: change onClick to (htmlid, ctrlid)
    cxd::CHtmlChunk* pChunk = NULL;
    TFormMapIterator it = m_Forms.find(htmlId);
    if (it == m_Forms.end()) pChunk = NULL;
@@ -165,6 +170,29 @@ void QCastFormProxy::onClick(const QString& htmlId, const QString& ctrlId)
    }
    else {
       DMESSAGE("Chunk not registered: " << htmlId.toStdString());
+   }
+}
+
+void QCastFormProxy::onSendValue(const QString& formid, const QString& ctrlId, const QString& valueId,
+      const QMap<QString,QVariant>& object)
+{
+   DTRACE("QCastFormProxy::onSendValue " << ctrlId.toStdString());
+
+   cxd::CHtmlChunk* pChunk = NULL;
+   TFormMapIterator it = m_Forms.find(formid.mid(1));
+   if (it == m_Forms.end()) pChunk = NULL;
+   else pChunk = it->second;
+
+   if (pChunk) {
+      cxd::TFormValues vals;
+      convertValues(object, vals);
+      std::string value;
+      typeof(vals.begin()) it = vals.find(valueId.toStdString());
+      if (it != vals.end()) value = it->second;
+      pChunk->notifyChunkEvent(cxd::CHtmlChunk::onSendValue, ctrlId.toStdString(), value, this);
+   }
+   else {
+      DMESSAGE("Chunk not registered: " << formid.toStdString());
    }
 }
 

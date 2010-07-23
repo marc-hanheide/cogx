@@ -120,6 +120,10 @@ class CDisplayClient:
         iceid = self.getEventClientId()
         self.m_Server.setHtmlForm(iceid, id, partId, htmlData)
 
+    def setHtmlFormData(self, id, partId, fieldDict):
+        if self.m_Server == None: return
+        self.m_Server.setHtmlFormData(id, partId, fieldDict)
+
     def setObject(self, id, partId, svgObject):
         if self.m_Server == None: return
         self.m_Server.setObject(id, partId, svgObject)
@@ -155,9 +159,9 @@ class CDisplayClient:
     def getControlState(self, ctrlId):
         return ""
 
-    def handleForm(self, id, partId, fields):
+    def handleForm(self, id, partId, fieldDict):
         pass
 
-    def getFormData(self, id, partId, fields):
+    def getFormData(self, id, partId, fieldDict):
         return False
 

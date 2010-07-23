@@ -16,6 +16,19 @@
 #include "CHtmlObject.hpp"
 #include <QStringList>
 
+struct _s_ 
+{
+   static void replace(std::string &str, const std::string &find_what, const std::string &replace_with)
+   {
+      size_t pos=0;
+      while((pos = str.find(find_what, pos)) != std::string::npos) {
+         str.erase(pos, find_what.length());
+         str.insert(pos, replace_with);
+         pos += replace_with.length();
+      }
+   }
+};
+
 namespace cogx { namespace display {
 
 struct CHtmlTransformer
@@ -215,8 +228,12 @@ CHtmlChunk* CHtmlObject::setForm(const Ice::Identity& ident, const std::string& 
       CHtmlTransformer trans;
       std::ostringstream ss;
       trans.transform(pPart->htmlid(), text, ss);
+ 
+      // XXX: this was a quick fix; move to transform
+      std::string s = ss.str();
+      _s_::replace(s, "@@FORMID@@", "#" + CHtmlTransformer::escape(pPart->htmlid(), "\\'\""));
 
-      pPart->setContent(formtag + ss.str() + "\n</form>");
+      pPart->setContent(formtag + s + "\n</form>");
    }
 
    return pPart;
