@@ -86,7 +86,7 @@ void QCastViewHtml::createJsObjects()
 
    QCastFormProxy* pObj = new QCastFormProxy();
 
-   if (! m_bHasForms) {
+   if (m_bHasForms) {
       connect(pObj, SIGNAL(signalOwnerDataChanged(QString)),
            this, SLOT(doFillHtmlFrom(QString)),
            Qt::QueuedConnection);

@@ -100,6 +100,7 @@ private:
    // CHtmlFormObserver
    void onFormSubmitted(CHtmlChunk *pForm, const TFormValues& newValues); /*override*/
    void onHtmlClick(CHtmlChunk *pChunk, const std::string& ctrlId); /*override*/
+   void onHtmlSendValue(CHtmlChunk *pChunk, const std::string& ctrlId, const std::string& value);
 
    // CControlDataProxy
    void getControlStateAsync(cogx::display::CGuiElement *pElement); /*override*/
@@ -176,6 +177,12 @@ public:
          const std::string& htmlData, const Ice::Current&)
    {
       m_pDisplayServer->setHtmlForm(ident, id, partId, htmlData);
+   }
+
+   void setHtmlFormData(const std::string& id, const std::string& partId,
+         const std::map<std::string, std::string>& fields, const Ice::Current&)
+   {
+      m_pDisplayServer->setHtmlFormData(id, partId, fields);
    }
 
    virtual void setObjectTransform2D(const std::string& id, const std::string& partId,

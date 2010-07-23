@@ -40,6 +40,7 @@ public:
    // @param ctrlId is the parameter passed to @@ONCLICK@@
    // (see <url:object/CHtmlObject.cpp#tn=CHtmlTransformer>)
    virtual void onHtmlClick(CHtmlChunk *pChunk, const std::string& ctrlId) = 0;
+   virtual void onHtmlSendValue(CHtmlChunk *pChunk, const std::string& ctrlId, const std::string& value) = 0;
 
    // Pass the changes from the owner to the form.
    // This function shoul only be implemented in QCastFormObserver.
@@ -52,7 +53,7 @@ class CHtmlChunk
 {
 public:
    enum EChunkType { head = 0x01, html = 0x02, activehtml = 0x04, form = 0x08 };
-   enum EChunkEventType { onClick };
+   enum EChunkEventType { onClick, onSendValue };
    static const std::string JavascriptObjectName;
 
 private:

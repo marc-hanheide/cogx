@@ -479,7 +479,7 @@ void CDisplayServer::setHtmlFormData(const std::string& id, const std::string& p
       const std::map<std::string, std::string>& fields)
 {
 #ifdef V11N_OBJECT_HTML
-   DTRACE("CDisplayServer::setHtmlForm");
+   DTRACE("CDisplayServer::setHtmlFormData");
 
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (!pExisting) return;
@@ -715,11 +715,11 @@ void CDisplayServer::getFormStateAsync(CHtmlChunk* pForm)
 }
 
 
-class CHtmlClickOperation: public CDisplayServerI::CQueuedOperation
+class CHtmlEventOperation: public CDisplayServerI::CQueuedOperation
 {
 public:
    Visualization::TEvent event;
-   CHtmlClickOperation(const Ice::Identity& clientId)
+   CHtmlEventOperation(const Ice::Identity& clientId)
       : CDisplayServerI::CQueuedOperation(clientId)
    {
    }
@@ -736,10 +736,28 @@ void CDisplayServer::onHtmlClick(CHtmlChunk *pChunk, const std::string& ctrlId)
    if (! hIceDisplayServer.get()) return;
    if (! pChunk) return;
    if (ctrlId.size() < 1) return;
-   CHtmlClickOperation* pOp = new CHtmlClickOperation(pChunk->m_dataOwner);
+   CHtmlEventOperation* pOp = new CHtmlEventOperation(pChunk->m_dataOwner);
+   // TODO: set event type
    pOp->event.objectId = pChunk->id();
    pOp->event.partId = pChunk->partId();
    pOp->event.sourceId = ctrlId;
+
+   hIceDisplayServer->addOperation(pOp);
+}
+
+void CDisplayServer::onHtmlSendValue(CHtmlChunk *pChunk, const std::string& ctrlId,
+      const std::string& value)
+{
+   DTRACE("CDisplayServer::onHtmlSendValue");
+   if (! hIceDisplayServer.get()) return;
+   if (! pChunk) return;
+   if (ctrlId.size() < 1) return;
+   CHtmlEventOperation* pOp = new CHtmlEventOperation(pChunk->m_dataOwner);
+   // TODO: set event type
+   pOp->event.objectId = pChunk->id();
+   pOp->event.partId = pChunk->partId();
+   pOp->event.sourceId = ctrlId;
+   pOp->event.data = value;
 
    hIceDisplayServer->addOperation(pOp);
 }

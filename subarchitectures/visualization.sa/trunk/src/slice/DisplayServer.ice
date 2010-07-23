@@ -26,6 +26,8 @@ module Visualization
       bool checkable;
    };
 
+   dictionary<string, string> TFormFieldMap;
+
    interface DisplayInterface
    {
       void setObject(string id, string partId, string svgObject);
@@ -60,6 +62,12 @@ module Visualization
       // Note: @@ONCLICK@@ events are also supported.
       void setHtmlForm(Ice::Identity ident, string id, string partId, string htmlData);
 
+      // Set html form data. This function usually doesn't need to be called since
+      // the form data is retreived with EventReceiver::getFormData() when necessary.
+      // If the application needs to reload the data while the form is being edited
+      // (eg. after a CogxJsSendValue event) this method can be used.
+      void setHtmlFormData(string id, string partId, TFormFieldMap fields);
+
       // Event handlers need to subscribe
       // TODO: parameter: which views to watch
       void addClient(Ice::Identity ident);
@@ -91,7 +99,6 @@ module Visualization
       float y;          // Position of the mouse click inside the control
    };
    
-   dictionary<string, string> TFormFieldMap;
    interface EventReceiver
    {
       void handleEvent(TEvent event);
