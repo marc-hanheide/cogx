@@ -22,6 +22,42 @@
 
 namespace cogx { namespace vision {
 
+class CObjectAttrs
+{
+public:
+   std::string m_name;
+   std::map<std::string, double> m_colors;
+   double m_ambig_color;
+   double m_gain_color;
+   std::map<std::string, double> m_shapes;
+   double m_ambig_shape;
+   double m_gain_shape;
+   std::map<std::string, double> m_labels;
+   double m_ambig_label;
+   double m_gain_label;
+
+public:
+   void clear();
+   void loadIni(std::istream& ss);
+   void saveIni(std::ostream& ss);
+   void toForm(cogx::display::CFormValues& form);
+   void fromForm(cogx::display::CFormValues& form);
+};
+
+class CSceneAttrs
+{
+public:
+   std::string m_name;
+   std::vector<std::string> m_objects;
+
+public:
+   void loadIni(std::istream& ss);
+   void saveIni(std::ostream& ss);
+   void toForm(cogx::display::CFormValues& form);
+   void fromForm(cogx::display::CFormValues& form);
+};
+
+
 class CVisionSimulator:
    public cast::ManagedComponent
 {
@@ -48,12 +84,41 @@ private:
    };
    CDisplayClient m_display;
 
+private:
+   std::vector<std::string> m_defaultColors;
+   std::vector<std::string> m_defaultShapes;
+   std::vector<std::string> m_defaultLabels;
+
+   // all visual object are in "local" WM, so we only need object_id, and no subarch_id
+   std::vector<std::string> m_WmObjectIds;
+
+public:
+   std::string m_DataDir; // Data directory; add/remove is handled through other apps (file-browser)
+   std::map<std::string, CObjectAttrs> m_Objects;
+   std::map<std::string, CSceneAttrs> m_Scenes; // object IDs for the scene
+
+   std::vector<std::string> m_sceneNames;
+   std::vector<std::string> m_objectNames;
+   std::vector<std::string> m_colorNames;
+   std::vector<std::string> m_shapeNames;
+   std::vector<std::string> m_labelNames;
+
 protected:
    // ManagedComponent overrides
    virtual void configure(const std::map<std::string,std::string> & _config);
    virtual void start();
    virtual void destroy();
    virtual void runComponent();
+
+   // IO
+   void loadObjects();
+   void loadScenes();
+   void updateValueSets();
+   void saveObject(const std::string& objectName);
+   void saveScene(const std::string& sceneName);
+
+   // WM
+   void applyScene(const std::string& sceneName);
 
 public:
    CVisionSimulator();
