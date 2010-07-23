@@ -156,6 +156,12 @@ module VisionData {
     StringSeq identLabels;
     DoubleSeq identDistrib;
 
+    StringSeq colorLabels;
+    DoubleSeq colorDistrib;
+
+    StringSeq shapeLabels;
+    DoubleSeq shapeDistrib;
+
     // Source proto object
     string protoObjectID;
   };
