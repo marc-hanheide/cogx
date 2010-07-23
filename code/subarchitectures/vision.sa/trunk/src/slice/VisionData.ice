@@ -155,12 +155,18 @@ module VisionData {
     // Distribution of identity labels (from object recognizer)
     StringSeq identLabels;
     DoubleSeq identDistrib;
+    double identGain;
+    double identAmbiguity;
 
     StringSeq colorLabels;
     DoubleSeq colorDistrib;
+    double colorGain;
+    double colorAmbiguity;
 
     StringSeq shapeLabels;
     DoubleSeq shapeDistrib;
+    double shapeGain;
+    double shapeAmbiguity;
 
     // Source proto object
     string protoObjectID;
