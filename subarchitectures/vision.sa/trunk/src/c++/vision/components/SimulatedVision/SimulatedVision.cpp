@@ -801,6 +801,8 @@ void CVisionSimulator::applyScene(const std::string& sceneName)
             pvobj->colorDistrib.push_back(1.0 - sum);
             ss << " *unknown*=" << (1.0-sum);
          }
+         pvobj->colorGain = obj.m_gain_color;
+         pvobj->colorAmbiguity = obj.m_ambig_color;
 
          sum = 0;
          for(it = obj.m_shapes.begin(); it != obj.m_shapes.end(); it++) {
@@ -814,6 +816,8 @@ void CVisionSimulator::applyScene(const std::string& sceneName)
             pvobj->shapeDistrib.push_back(1.0 - sum);
             ss << " *unknown*=" << (1.0-sum);
          }
+         pvobj->shapeGain = obj.m_gain_shape;
+         pvobj->shapeAmbiguity = obj.m_ambig_shape;
 
          sum = 0;
          for(it = obj.m_labels.begin(); it != obj.m_labels.end(); it++) {
@@ -827,6 +831,8 @@ void CVisionSimulator::applyScene(const std::string& sceneName)
             pvobj->identDistrib.push_back(1.0 - sum);
             ss << " *unknown*=" << (1.0-sum);
          }
+         pvobj->identGain = obj.m_gain_label;
+         pvobj->identAmbiguity = obj.m_ambig_label;
 
          std::string objId = newDataID();
          addToWorkingMemory(objId, pvobj);

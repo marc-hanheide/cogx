@@ -39,6 +39,11 @@ memory or "Create&Save Scene" to also save the data to the disk. Both buttons
 will also write into the working memory. Currently, the old contents of WM is 
 deleted and new objects are created; overwriteWorkingMemory is not used.
 
+The data is written to the VisualObject:
+   colors: colorLabels, colorDistrib, colorGain, colorAmbiguity
+   shapes: shapeLabels, shapeDistrib, shapeGain, shapeAmbiguity
+   labels: identLabels, identDistrib, identGain, identAmbiguity
+
 The button "Erase Scene" removes the objects from WM.
 
 
