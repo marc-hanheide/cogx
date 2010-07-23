@@ -41,6 +41,12 @@ function CogxJsSubmit(form_selector)
     return true;
 }
 
+function CogxJsSubmitAndClick(form_selector, clickid)
+{
+    CogxJsSubmit(form_selector);
+    CogxJsOnClick(form_selector, clickid);
+}
+
 function CogxJsBoolValue(truelist, name)
 {
     var s;

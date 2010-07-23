@@ -161,7 +161,7 @@ void QCastFormProxy::onClick(const QString& htmlId, const QString& ctrlId)
    DTRACE("QCastFormProxy::onClick " << ctrlId.toStdString());
 
    cxd::CHtmlChunk* pChunk = NULL;
-   TFormMapIterator it = m_Forms.find(htmlId);
+   TFormMapIterator it = m_Forms.find(htmlId.mid(1));
    if (it == m_Forms.end()) pChunk = NULL;
    else pChunk = it->second;
 
