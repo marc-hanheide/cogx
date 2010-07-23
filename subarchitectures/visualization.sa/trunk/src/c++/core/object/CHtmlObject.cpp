@@ -18,13 +18,20 @@
 
 struct _s_ 
 {
-   static void replace(std::string &str, const std::string &find_what, const std::string &replace_with)
+   static void replace(std::string &str, const std::string &what,
+         const std::string &newval, int maxreplace=0)
    {
-      size_t pos=0;
-      while((pos = str.find(find_what, pos)) != std::string::npos) {
-         str.erase(pos, find_what.length());
-         str.insert(pos, replace_with);
-         pos += replace_with.length();
+      size_t findlen = what.length();
+      size_t replen = newval.length();
+      size_t pos = 0;
+      int count = 0;
+      while((pos = str.find(what, pos)) != std::string::npos) {
+         str.replace(pos, findlen, newval);
+         pos += replen;
+         if (maxreplace > 0) {
+            count++;
+            if (count >= maxreplace) break;
+         }
       }
    }
 };
@@ -35,10 +42,9 @@ struct CHtmlTransformer
 {
    static std::string stripchars(const std::string& str, const std::string& chars)
    {
-      size_t ib = 0;
-      size_t ie = str.size() - 1;
-      while (ib <= ie && (chars.find(str[ib]) != std::string::npos)) ib++;
-      while (ib <= ie && (chars.find(str[ie]) != std::string::npos)) ie--;
+      size_t ib = str.find_first_not_of(chars);
+      if (ib == std::string::npos) return "";
+      size_t ie = str.find_last_not_of(chars);
       return str.substr(ib, ie-ib+1);
    }
    static std::string escape(const std::string& str, const std::string& chars)
@@ -74,7 +80,7 @@ struct CHtmlTransformer
    void transform(const std::string& htmlId, const std::string& text, std::ostream& ss)
    {
       std::string jsOnClick = std::string("onclick=\"")
-         + CHtmlChunk::JavascriptObjectName + ".onClick('"
+         + CHtmlChunk::JavascriptObjectName + ".onClick('#"
          + escape(htmlId, "\\'\"") + "', '";
 
       const char* data = text.data();
