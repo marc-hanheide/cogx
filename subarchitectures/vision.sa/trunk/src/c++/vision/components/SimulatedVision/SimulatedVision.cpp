@@ -107,6 +107,8 @@ namespace cogx { namespace vision {
 #define ID_CMD_SCENE_ERASE "!scene.erase"
 #define ID_CMD_SCENE_SUBMIT_SAVE "!scene.submit+save"
 
+#define ID_CHUNK_INFO  "003.sim.info"
+
 void CVisionSimulator::CDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
    std::cout << " *** handleEvent " << event.sourceId << std::endl;
@@ -133,6 +135,9 @@ void CVisionSimulator::CDisplayClient::handleEvent(const Visualization::TEvent &
    }
    else if (pSim && event.sourceId == ID_CMD_SCENE_SUBMIT_SAVE) {
       pSim->saveScene(m_FormScene.get(IDC_FORM_SCENE_NAME));
+   }
+   else if (pSim && event.sourceId == ID_CMD_SCENE_ERASE) {
+      pSim->clearScene();
    }
 }
 
@@ -342,7 +347,7 @@ void CVisionSimulator::CDisplayClient::createForms()
       ss << "<input type='submit' name='submit' value='Create Scene' />";
       ss << "<input type='button' value='Create&amp;Save Scene' "
          << "onclick=\"CogxJsSubmitAndClick('@@FORMID@@','" <<  ID_CMD_SCENE_SUBMIT_SAVE << "');\" />";
-      //ss << "<input type='button' @@ONCLICK@@('" << ID_CMD_SCENE_ERASE << "') value='Erase Scene' />";
+      ss << "<input type='button' @@ONCLICK@@('" << ID_CMD_SCENE_ERASE << "') value='Erase Scene' />";
 
       setHtmlForm(ID_V11N_OBJECT, ID_FORM_SCENE, ss.str());
    }
@@ -722,6 +727,25 @@ void CVisionSimulator::updateValueSets()
    m_sceneNames = _dict_::keys(m_Scenes);
 }
 
+void CVisionSimulator::clearScene()
+{
+   typeof(m_WmObjectIds.begin()) itaddr;
+   for(itaddr = m_WmObjectIds.begin(); itaddr != m_WmObjectIds.end(); itaddr++) {
+      try {
+         // TODO: if an object from the desired scene is already in WM, don't delete, overwrite instd.
+         // pobject = getMemoryEntry<VisualObject>(*it);
+         deleteFromWorkingMemory(*itaddr);
+         log("Object deleted: %s", itaddr->c_str());
+      }
+      catch (cast::DoesNotExistOnWMException e) {
+         log("ERROR: removing stuff to WM");
+      }
+   }
+   m_WmObjectIds.clear();
+
+   m_display.setHtml(ID_V11N_OBJECT, ID_CHUNK_INFO, "<hr>Objects in scene");
+}
+
 void CVisionSimulator::applyScene(const std::string& sceneName)
 {
    log("applyScene");
@@ -747,6 +771,8 @@ void CVisionSimulator::applyScene(const std::string& sceneName)
    }
    m_WmObjectIds.clear();
 
+   std::ostringstream ss;
+
    std::vector<std::string>::iterator itname;
    for(itname = itscn->second.m_objects.begin(); itname != itscn->second.m_objects.end(); itname++) {
       typeof(m_Objects.begin()) itobj = m_Objects.find(*itname);
@@ -759,6 +785,49 @@ void CVisionSimulator::applyScene(const std::string& sceneName)
          pvobj->label = obj.m_name;
          pvobj->labelConfidence = 1.0f;
 
+         ss << "<br>" << obj.m_name << ":";
+
+         typeof(obj.m_colors.begin()) it;
+
+         double sum = 0;
+         for(it = obj.m_colors.begin(); it != obj.m_colors.end(); it++) {
+            pvobj->colorLabels.push_back(it->first);
+            pvobj->colorDistrib.push_back(it->second);
+            sum += it->second;
+            ss << " " << it->first << "=" << it-> second;
+         }
+         if (sum < 1.0) {
+            pvobj->colorLabels.push_back("*unknown*");
+            pvobj->colorDistrib.push_back(1.0 - sum);
+            ss << " *unknown*=" << (1.0-sum);
+         }
+
+         sum = 0;
+         for(it = obj.m_shapes.begin(); it != obj.m_shapes.end(); it++) {
+            pvobj->shapeLabels.push_back(it->first);
+            pvobj->shapeDistrib.push_back(it->second);
+            sum += it->second;
+            ss << " " << it->first << "=" << it-> second;
+         }
+         if (sum < 1.0) {
+            pvobj->shapeLabels.push_back("*unknown*");
+            pvobj->shapeDistrib.push_back(1.0 - sum);
+            ss << " *unknown*=" << (1.0-sum);
+         }
+
+         sum = 0;
+         for(it = obj.m_labels.begin(); it != obj.m_labels.end(); it++) {
+            pvobj->identLabels.push_back(it->first);
+            pvobj->identDistrib.push_back(it->second);
+            sum += it->second;
+            ss << " " << it->first << "=" << it-> second;
+         }
+         if (sum < 1.0) {
+            pvobj->identLabels.push_back("*unknown*");
+            pvobj->identDistrib.push_back(1.0 - sum);
+            ss << " *unknown*=" << (1.0-sum);
+         }
+
          std::string objId = newDataID();
          addToWorkingMemory(objId, pvobj);
          m_WmObjectIds.push_back(objId);
@@ -766,8 +835,11 @@ void CVisionSimulator::applyScene(const std::string& sceneName)
       }
       catch(...) {
          log("ERROR: adding stuff to WM");
+         ss << "FAILED to add";
       }
    }
+
+   m_display.setHtml(ID_V11N_OBJECT, ID_CHUNK_INFO, "<hr>Objects in scene" + ss.str());
 }
 
 void CVisionSimulator::start()
