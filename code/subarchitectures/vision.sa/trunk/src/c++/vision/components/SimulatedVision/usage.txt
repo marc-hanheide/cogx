@@ -19,7 +19,7 @@ Object files have an extension '.tobj'. Scene files have an extension '.tscn'.
 The files are formatted as INI files.
 
 Start a CAST system. The component will read the list of objects and scenes
-from the data directory.
+from the data directory. Currently the files are read only at startup.
 
 You should see a view named "Vision.Simulator" in the Display Server.  In the 
 top form you can edit the attributes of an object.  The first drop-list selects 
