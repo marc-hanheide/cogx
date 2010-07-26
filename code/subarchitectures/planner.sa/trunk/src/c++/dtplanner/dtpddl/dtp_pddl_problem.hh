@@ -170,4 +170,14 @@ namespace Planning
     }
 }
 
+
 #endif
+
+/* From this time, unchained
+ * We're all looking at a different picture
+ * Thru this new frame of mind
+ * A thousand flowers could bloom
+ * Move over, and give us some room
+ * 
+ *  -- Lyrics from Portishead song Glory Box.
+ */

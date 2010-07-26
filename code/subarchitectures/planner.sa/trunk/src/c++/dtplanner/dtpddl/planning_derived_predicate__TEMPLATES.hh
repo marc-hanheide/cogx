@@ -89,6 +89,13 @@ namespace Planning
     First_Order_Derived_Symbol<ID_VAL,NAMING_TYPE>::get__formula() const {return std::tr1::get<4>(this->Parent::contents());}
     
     template<int ID_VAL, typename NAMING_TYPE>
+    void
+    First_Order_Derived_Symbol<ID_VAL,NAMING_TYPE>::alter__formula(Formula::Subformula subformula)
+    {
+        std::tr1::get<4>(this->_contents()) = subformula;
+    }
+    
+    template<int ID_VAL, typename NAMING_TYPE>
     int First_Order_Derived_Symbol<ID_VAL,NAMING_TYPE>::get__type() const {return std::tr1::get<5>(this->Parent::contents());}
 
     template<int ID_VAL, typename NAMING_TYPE>
@@ -214,7 +221,10 @@ namespace Planning
         o<<" )"<<std::endl;
     
         return o;                                            
-    }                
+    }
+
+    
+
 }
 
 

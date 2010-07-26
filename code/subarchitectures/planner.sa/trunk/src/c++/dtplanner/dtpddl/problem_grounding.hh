@@ -35,11 +35,15 @@
 #define PROBLEM_GROUNDING_HH
 
 #include "solver_basics.hh"
+#include "dtp_pddl_parsing_data_constants.hh"
 
 #include "planning_action_schema.hh"
+#include "planning_derived_predicate.hh"
+
 #include "basic_action.hh"
 
 #include "planning_formula_to_cnf.hh"
+
 
 
 namespace Planning
@@ -47,10 +51,34 @@ namespace Planning
     class Problem_Grounding
     {
     public:
-        Problem_Grounding(Parsing::Problem_Data&, CXX__PTR_ANNOTATION(Parsing::Domain_Data));
+        Problem_Grounding(Parsing::Problem_Data&,
+                          CXX__PTR_ANNOTATION(Parsing::Domain_Data),
+                          const Planning::Parsing::Constants_Data::Constants_Description&,
+                          const std::map<Type, Constants>&);
 
         void ground_actions();
+        void ground_derived_predicates();
+        void ground_derived_perceptions();
+
     private:
+        /* Incrementally add entries to \member{cached_constants_of_types}.*/
+        void grow__cached_constants_of_types(const Types&);
+        /* Incrementally add entries to \member{cached_constants_of_types}.*/
+        void grow__cached_constants_of_types(const Argument_Types&);
+        
+        /* Some variables take values from a domain definition as the
+         * union of multiple type classes. Here we cache the domain
+         * objects from unions that appear in the domain
+         * definition.*/
+        std::map<Types, Constants> cached_constants_of_types;
+
+        /* Description of the problem constants (see \module{Solver}).*/
+        const Planning::Parsing::Constants_Data::Constants_Description& constants_Description;
+
+        /* Constants that types can take (see \module{Solver}). This is the
+         * basis of data in \member{cached_constants_of_types}.*/
+        const std::map<Type, Constants>& extensions_of_types;
+        
         /* Object converts planning formula ---in this case formulae
          * that correspond to actions preconditions--- into
          * Conjunctive Normal Form formula.  Such a formula is a
@@ -60,11 +88,34 @@ namespace Planning
         /* The thread with which the domain actions are linked.*/
         basic_type::Runtime_Thread runtime_Thread;
 
-        /* Simplify the description of the \argument{actionSchema}.*/
-        void simplify_action_schema_precondition(Planning::Action_Schema& actionSchema);
+        /* Basis for \member{simplify_action_schema_precondition} and
+         * \member{simplify_derived_predicate_trigger}. Simply turns
+         * quantifier free first-order formula into a CNF form that
+         * has no redundancy.  */
+        Planning::Formula::Subformula simplify_formula(Planning::Formula::Subformula);
+            
+        /* Simplify the description of the \argument{Action_Schema} precondition.*/
+        void simplify_action_schema_precondition(Planning::Action_Schema& );
         
         /* Populate \member{}*/
-        void ground_action_schema(Planning::Action_Schema& actionSchema);
+        void ground_action_schema(Planning::Action_Schema& );
+
+        /* Populate \member{}*/
+        void ground_derived_predicate_schema(Planning::Derived_Predicate&);
+        
+        /* Populate \member{}*/
+        void ground_derived_percept_schema(Planning::Derived_Percept&);
+        
+        
+        /* Simplify the description of the
+         * \argument{Derived_Predicate} trigger formula -- i.e., the
+         * formula that described when the predicate is satisfied, and
+         * when it is not satisfied.*/
+        void simplify_derived_predicate_trigger(Planning::Derived_Predicate& );
+        
+        /*Percept analogue of \member{simplify_derived_predicate_trigger}.*/
+        void simplify_derived_percept_trigger(Planning::Derived_Percept& );
+        
 
         /* Ground problem actions. */
         std::vector<CXX__PTR_ANNOTATION(State_Transformation)> state_transformations;

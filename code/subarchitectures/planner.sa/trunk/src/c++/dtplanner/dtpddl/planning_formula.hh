@@ -65,6 +65,8 @@ namespace Planning
         {
         public: typedef type_wrapper<ID_VAL, NAMING_TYPE, Argument_List> Parent;
             PRINTING;
+        public:
+            const Argument_List& get__arguments() const {return stl::tr1::get<1>(Parent::contents());}; 
         };
         
         template<int ID_VAL, typename NAMING_TYPE>
@@ -74,6 +76,8 @@ namespace Planning
         {
         public: typedef type_wrapper<ID_VAL, NAMING_TYPE, Constant_Arguments> Parent;
             PRINTING;
+        public:
+            const Constant_Arguments& get__arguments() const {return stl::tr1::get<1>(Parent::contents());};
         };
 
 #define MAKE_CONSTANT_ATOM(TYPE_NAME, ID_VAL, NAMING_TYPE)              \

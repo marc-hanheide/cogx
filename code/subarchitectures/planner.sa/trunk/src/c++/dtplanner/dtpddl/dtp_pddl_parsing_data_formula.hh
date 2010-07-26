@@ -182,7 +182,53 @@ namespace Planning
             void report__assign_formula();
             void report__equality_formula();
             Formula::Subformula complete__probabilistic_formula();
-            
+
+            /* Do predicates, or propositions with name
+             * \argument{Predicate_Name} occure in an actions add
+             * effect.*/
+            bool in_add_effect(const Predicate_Name&) const;
+
+            /* Do predicates, or propositions, with name
+             * \argument{Predicate_Name} occure in an actions delete
+             * effect.*/
+            bool in_delete_effect(const Predicate_Name&) const;
+
+            /* \member{state_propositions__parsed} contains all the
+             * propositions that can be true in a starting state. We
+             * make the closed-world assumption, and consequently,
+             * anything that is not indexed by
+             * \member{state_propositions__parsed} is necessarily
+             * false in any starting state. Because some propositions
+             * can only become false, and others can only become true,
+             * we can sometimes know if a predicate is satisfiable in
+             * any planning state, just by examining what is available
+             * in the starting states. Here
+             * \member{possibly_statically_satisfiable} assumes that
+             * its \argument{State_Predicate} cannot be made true by
+             * any planning actions. Contrariwise,
+             * \member{possibly_statically_unsatisfiable} supposes
+             * that no action can make its \argument{State_Predicate}
+             * false. Therefore, these methods are able to determine
+             * the possible satisfiability (necessary, but not
+             * sufficient analysis) of some propositions.
+             *
+             * - If \member{possibly_statically_satisfiable} returns
+             * false, then the argument predicate will never be true
+             * in any planning state; provided no action can make it
+             * true.
+             *
+             * - If \member{possibly_statically_unsatisfiable} returns
+             * true, then the argument predicate is never true in
+             * a planning state; provided no action can make it true.
+             **/
+            bool possibly_statically_satisfiable(const Planning::Formula::State_Predicate&) const;
+            bool possibly_statically_unsatisfiable(const Planning::Formula::State_Predicate&,
+                                                   const std::map<Variable,  Constants&>&) const;
+
+            /* Can a ground instance of \argument{State_Predicate} be
+             * equal to \argument{State_Proposition}.*/
+            bool potential_match_via_an_assignment(const Planning::Formula::State_Predicate&,
+                                                   const Planning::Formula::State_Proposition&) const;
         private:
 
             /* Does \member{subformulae} have elements at \argument{index}.*/
@@ -203,6 +249,7 @@ namespace Planning
             Formula::Subformula complete__forall_formula();
             /*(see \member{complete__quantified_formula(exists)})*/
             Formula::Subformula complete__exists_formula();
+
         protected:
             
             /* When a formula is being parsed, but before it is

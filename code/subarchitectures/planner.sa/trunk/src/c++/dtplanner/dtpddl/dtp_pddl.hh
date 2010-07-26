@@ -412,25 +412,13 @@ namespace Planning
         {};
             
         struct State_Effect_Subformulae : Effect_Subformulae<Typeless_Predicate, Typeless_Function> {};//Typeless_Predicate> {};
-
-
-        //////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////TESTING        /////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////
-//         struct Domain_Description :
-//             seq< Predicates_Description, space_until_eof>{};
-//         struct Domain_Description :
-//             seq< Constants_Description, space_until_eof>{};
-//         struct Domain_Description :
-//             seq< Requirements_Description, space_until_eof>{};
-//         struct Domain_Description :
-//             seq< Functions_Description, space_until_eof>{};
-//         struct Domain_Description :
-//             seq< Action_Description, space_until_eof>{};
-//         struct Domain_Description :
-//             seq< Types_Description, space_until_eof>{};
     }
 }
 
 #endif
+
+/* Worse is better.
+ *
+ *  -- Richard P. Gabriel
+ *
+ */

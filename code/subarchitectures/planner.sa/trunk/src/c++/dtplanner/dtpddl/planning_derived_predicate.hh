@@ -91,6 +91,7 @@ namespace Planning
         Variables get__variables() const ;
         int get__type() const ;
         Formula::Subformula get__formula() const;
+        void alter__formula(Formula::Subformula);
     };
 
     
@@ -104,29 +105,6 @@ namespace Planning
         <enum_types::derived_percept
          , Planning::Percept_Name> {};
     
-//         : public type_wrapper<enum_types::predicate
-//                               , Predicate_Name
-//                               , Typed_Arguments /*confirmed arguments*/
-//                               , Typed_Arguments /*quantified symbols*/
-//                               , Variables /*non-action (i.e., quantified) arguments*/
-//                               , Formula::Subformula /*definition*/
-//                               , int /*type of derived predicate*/>
-//     {
-//     public:
-//         std::ostream& operator<<(std::ostream&) const;
-
-//         /* PDDL domain description of the derived predicate. */
-//         std::string get__description() const;
-
-            
-                
-//         Planning::Predicate_Name get__name() const ;
-//         Planning::Typed_Arguments get__arguments() const ;
-//         Planning::Typed_Arguments get__quantified_symbols() const ;
-//         Variables get__variables() const ;
-//         int get__type() const ;
-//         Formula::Subformula get__formula() const;
-//     };
 
     typedef std::set<Derived_Predicate> Derived_Predicates;
     typedef std::set<Derived_Percept> Derived_Percepts;

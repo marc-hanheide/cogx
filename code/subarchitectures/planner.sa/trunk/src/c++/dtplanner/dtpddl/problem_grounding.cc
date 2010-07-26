@@ -45,6 +45,22 @@
 
 using namespace Planning;
 
+/* usual suspects C++*/
+using std::map;
+using std::vector;
+using std::string;
+using std::list;
+
+/* \module{planning_formula}*/
+using Planning::Formula::Conjunction;
+using Planning::Formula::Disjunction;
+using Planning::Formula::Negation;
+using Planning::Formula::Subformula;
+using Planning::Formula::Subformulae;
+using Planning::Formula::Vacuous;
+using Planning::Derived_Predicate;
+
+
 #define NEW_CONJUNCTION(NAME, INPUT)            \
 NEW_referenced_WRAPPED_deref_POINTER            \
 (runtime_Thread                                 \
@@ -69,9 +85,11 @@ NEW_referenced_WRAPPED_deref_POINTER            \
     
 
 Problem_Grounding::Problem_Grounding(Parsing::Problem_Data& problem_Data,
-                                     CXX__PTR_ANNOTATION(Parsing::Domain_Data) domain_Data)
+                                     CXX__PTR_ANNOTATION(Parsing::Domain_Data) domain_Data,
+                                     Planning::Parsing::Constants_Data::Constants_Description& constants_Description)
     :problem_Data(problem_Data),
-     domain_Data(domain_Data)
+     domain_Data(domain_Data),
+     constants_Description(constants_Description)
 {
     assert(domain_Data->get__action_Schemas().size());
     auto first_action = domain_Data->get__action_Schemas().begin();
@@ -91,25 +109,38 @@ void Problem_Grounding::ground_actions()
     }
 }
 
-void Problem_Grounding::simplify_action_schema_precondition(Planning::Action_Schema& action_Schema)
+
+void  Problem_Grounding::ground_derived_predicates()
 {
-    /* usual suspects C++*/
-    using std::map;
-    using std::vector;
-    using std::string;
+    auto derived_Predicates = domain_Data->get__derived_Predicates();
 
-    /* \module{planning_formula}*/
-    using Planning::Formula::Conjunction;
-    using Planning::Formula::Disjunction;
-    using Planning::Formula::Negation;
-    using Planning::Formula::Subformula;
-    using Planning::Formula::Subformulae;
-    using Planning::Formula::Vacuous;
+    for(auto derived_Predicate = derived_Predicates.begin()
+            ; derived_Predicate != derived_Predicates.end()
+            ; derived_Predicate++){
+        ground_derived_predicate_schema(const_cast<Planning::Derived_Predicate&>(*derived_Predicate));
+    }   
+}
 
+void  Problem_Grounding::ground_derived_perceptions()
+{
+    WARNING("Grounding of derived perception predicates is being called, but is redundant.");
+    
+    auto derived_Percepts = domain_Data->get__derived_Percepts();
+
+    for(auto derived_Percept = derived_Percepts.begin()
+            ; derived_Percept != derived_Percepts.end()
+            ; derived_Percept++){
+        ground_derived_percept_schema(const_cast<Planning::Derived_Percept&>(*derived_Percept));
+    }
+}
+
+Subformula Problem_Grounding::simplify_formula(Planning::Formula::Subformula subformula)
+{
     /* \module{turnstyle} */
     using namespace Turnstyle;
     typedef CNF::Clause Clause;
     typedef CNF::Problem_Data Problem_Data;
+
 
     /* Atoms that formulate the \argument{action_Schema} preconditions*/
     vector<Subformula> atoms;
@@ -120,22 +151,17 @@ void Problem_Grounding::simplify_action_schema_precondition(Planning::Action_Sch
     /* First step, we convert the formula into a CNF.*/
     CNF::Problem_Data problem_Data;
 
-    /* If the action has no precondition.*/
-    if(action_Schema.get__precondition().test_cast<Vacuous>()){
-        return;
-    }
-    
     
     /* Try to convert the precondition formula into a CNF. */
-    auto precondition_as_cnf = planning_Formula__to__CNF(action_Schema.get__precondition());
+    auto precondition_as_cnf = planning_Formula__to__CNF(subformula);//action_Schema.get__precondition());
 
     if(precondition_as_cnf.test_cast<Vacuous>()){
-        return;
+        return subformula;
     }
 
     
     QUERY_UNRECOVERABLE_ERROR(!precondition_as_cnf.test_cast<Conjunction>(),
-                              "Converted a formula :: "<<action_Schema.get__precondition()<<std::endl
+                              "Converted a formula :: "<<subformula<<std::endl
                               <<"to CNF format, but ended up with something that is not a conjunct.");
     
     /* Make sure that the conversion to CNF just undertaken has worked.*/
@@ -261,13 +287,68 @@ void Problem_Grounding::simplify_action_schema_precondition(Planning::Action_Sch
     NEW_CONJUNCTION(new_conjunction, conjunctive_data);
 
     
-    VERBOSER(3001, "Original formula is :: "<<action_Schema.get__precondition()<<std::endl);
+    VERBOSER(3001, "Original formula is :: "<<subformula<<std::endl);
     VERBOSER(3001, "translated formula is :: "<<precondition_as_cnf<<std::endl);
     VERBOSER(3001, "formula after simplification is :: "<<new_conjunction<<std::endl);
     {char ch; std::cin>>ch;}
+
+    return new_conjunction;
+}
+
+void Problem_Grounding::simplify_action_schema_precondition(Planning::Action_Schema& action_Schema)
+{
+    /* If the action has no precondition.*/
+    if(action_Schema.get__precondition().test_cast<Vacuous>()){
+        return;
+    }
+    
+    auto new_conjunction = simplify_formula(action_Schema.get__precondition());
     
     action_Schema.alter__precondition(new_conjunction);
 }
+
+void Problem_Grounding::
+ground_action_schema(list<Constant>& ordereed_assignment,/*result, an assignment*/
+                     map<Variable, Constant>& assignment_detail, /*explicit representation of results*/
+                     const map<Variable, Constants&>& potential_assignments, /* constants from which the result is formed.*/
+                     const Variables& action_variables, /*Gives the order in which variables assignment should be made.*/
+ )
+{
+    complete(assignment)
+    
+}
+
+void Problem_Grounding::grow__cached_constants_of_types(const Types& types)
+{
+    Constants constants;
+    
+    for(auto type = types.begin()
+            ; type != types.end()
+            ; type++){
+        auto consts = extensions_of_types[type];
+        for(auto c = consts.begin()
+                ; c != consts.end()
+                ; c++){
+            constants.insert(*c);
+        }        
+    }
+
+    cached_constants_of_types[types] = std::tr1::move(constants);
+}
+
+void Problem_Grounding::grow__cached_constants_of_types(const Argument_Types& argument_Types)
+{
+    for(auto arg_Types = argument_Types.begin()
+            ; arg_Types != argument_Types.end()
+            ; arg_Types++){
+        if(arg_Types->size() == 1) continue;
+        assert(0 != arg_Types->size());
+        if(cached_constants_of_types.find(*arg_Types) == cached_constants_of_types.end()){
+            grow__cached_constants_of_types(*arg_Types)
+        }
+    }
+}
+
 
 void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Schema)
 {
@@ -275,5 +356,61 @@ void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Sch
      * corresponds to propositional CNF.*/
     simplify_action_schema_precondition(action_Schema);
     
+    auto action_headder = action_Schema.get__header();
+    auto action_Name = action_headder.get__name();
+    auto arguments = action_headder.get__arguments();
+    auto variables = get__symbols(arguments);
+    auto argument_Types = get__types(arguments);
+    
+    grow__cached_constants_of_types(argument_Types);
+    
+    map<Variable,  Constants&> potential_assignments;
+    assert(argument_Types .size() == variables.size());
+    for(uint index = 0; index < argument_Types.size(); index++){
+        auto types = argument_Types[index];
+        auto variable = variables[index];
+
+        if(types.size() == 1){
+            potential_assignments[variable] = *extensions_of_types.find(*types.begin());
+        } else {
+            assert(types.size());
+            assert(cached_constants_of_types.end() != cached_constants_of_types.find(types));
+            potential_assignments[variable] = *cached_constants_of_types.find(types);
+        }
+    }
+
+    list<Constant> arguments;
+    map<Variable, Constant> assignment_detail;
+    
+    ground_action_schema(arguments,
+                         assignment_detail,
+                         potential_assignments,
+                         variables);
+    
 }
 
+void Problem_Grounding::simplify_derived_predicate_trigger(Planning::Derived_Predicate& derived_Predicate)
+{
+    
+    auto new_conjunction = simplify_formula(derived_Predicate.get__formula());
+    derived_Predicate.alter__formula(new_conjunction);
+}
+
+void Problem_Grounding::ground_derived_predicate_schema(Planning::Derived_Predicate& derived_Predicate)
+{
+    simplify_derived_predicate_trigger(derived_Predicate);
+}
+
+
+void Problem_Grounding::simplify_derived_percept_trigger(Planning::Derived_Percept& derived_Percept)
+{
+    
+    auto new_conjunction = simplify_formula(derived_Percept.get__formula());
+    derived_Percept.alter__formula(new_conjunction);
+}
+
+void Problem_Grounding::ground_derived_percept_schema(Planning::Derived_Percept& derived_Percept)
+{
+   
+    simplify_derived_percept_trigger(derived_Percept); 
+}

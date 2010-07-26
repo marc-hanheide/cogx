@@ -53,17 +53,22 @@ Solver::Solver(Planning::Parsing::Problem_Data& problem_Data)
 void Solver::preprocess()
 {
     domain_Data = problem_Data.get__domain_Data();
-
-    problem_Grounding = CXX__PTR_ANNOTATION(Problem_Grounding)
-        (new Problem_Grounding(problem_Data, domain_Data));
     
     proprocess__Constants_Data();
 
+    
+    problem_Grounding = CXX__PTR_ANNOTATION(Problem_Grounding)
+        (new Problem_Grounding(problem_Data,
+                               domain_Data,
+                               constants_Description,
+                               extensions_of_types));
+
     problem_Grounding->ground_actions();
+    problem_Grounding->ground_derived_predicates();
+    problem_Grounding->ground_derived_perceptions();
 }
 
-
-void Solver::proprocess__Constants_Data()
+void Solver::domain_constants__to__problem_objects()
 {
     const Constants_Data& problem__Constants_Data = problem_Data;
     //Constants_Data& domain__Constants_Data = *domain_Data;
@@ -96,6 +101,48 @@ void Solver::proprocess__Constants_Data()
 
     constants_Description = domain_Data->get__constants_Description();
     constants = domain_Data->get__constants();
+}
+
+void Solver::configure__extensions_of_types()
+{
+    /* For each problem constant. */
+    for(auto constant = constants_Description.begin()
+            ; constants_Description != constants_Description.end()
+            ; constants_Description++){
+        auto types = constants_Description->second;
+        auto constant = constants_Description->first;
+        
+        for(auto type = types.begin()
+                ; type != types.end()
+                ; type++){
+
+            auto types_description = domain_Data->get__types_description();
+
+            QUERY_UNRECOVERABLE_ERROR(types_description.find(*type) == types_description.end(),
+                                      "Unable to find :: "<<*type<<std::endl
+                                      <<"In the domain type hierarchy.");
+
+            if(extensions_of_types.find(*type) == extensions_of_types.end()){
+                extensions_of_types[*type] = Constants();
+            }
+            
+            
+            extensions_of_types[*type].insert(constant);
+            
+            for(auto super_type = types_description.find(*type)->second.begin()
+                    ; super_type != types_description.find(*type)->second.end()
+                    ; super_type++){
+                extensions_of_types[*super_type].insert(constant);
+            }
+        }
+    }
+}
+
+void Solver::proprocess__Constants_Data()
+{
+    domain_constants__to__problem_objects();
+    
+    
 }
 
 

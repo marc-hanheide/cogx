@@ -90,7 +90,11 @@ namespace Planning
         derived_percept, /*(:derived )*/
         action_schema, /* PDDL "operator" -- i.e., from domain description.*/
         observation_schema, /* DT-PDDL "observational operator" -- i.e., from domain description.*/
-        /*NON-PARSING TYPES.*/
+        /* ------------------------ NON-PARSING TYPES ------------------------ */
+        /* ------------------------ NON-PARSING TYPES ------------------------ */
+        /* ------------------------ NON-PARSING TYPES ------------------------ */
+        /* ------------------------ NON-PARSING TYPES ------------------------ */
+        /* ------------------------ NON-PARSING TYPES ------------------------ */
         literal,
         disjunctive_clause,
         conjunctive_normal_form_formula,

@@ -201,3 +201,8 @@ void Types_Data::add__type_of_type(const std::string& str){
 }
 
 
+const std::map<Planning::Type, Planning::Types >& Types_Data::get__types_description() const
+{
+    return types_description;
+}
+

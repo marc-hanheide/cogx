@@ -35,8 +35,7 @@
 using namespace Planning::Formula;
 using namespace std;
 
-
-        
+      
 std::ostream& Planning::Formula::Printing::operator<<(std::ostream&o, const std::tr1::tuple<CXX__deref__shared_ptr<basic_type>>& _bt)
 {
     auto bt = std::tr1::get<0>(_bt);

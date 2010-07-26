@@ -34,6 +34,33 @@
 
 using namespace Planning::Parsing;
 
+bool Formula_Data::in_add_effect(const Predicate_Name& predicate_Name) const
+{
+    if(added__state_predicates__parsed.find(predicate_Name)
+       != added__state_predicates__parsed.end()){
+        return true;
+    }  else if(added__state_propositions__parsed.find(predicate_Name)
+               != added__state_propositions__parsed.end()) {
+        return true;
+    }
+    
+    return false;
+}
+
+
+bool Formula_Data::in_delete_effect(const Predicate_Name& predicate_Name) const
+{
+    if(deleted__state_predicates__parsed.find(predicate_Name)
+       != deleted__state_predicates__parsed.end()){
+        return true;
+    } else if(deleted__state_propositions__parsed.find(predicate_Name)
+              != deleted__state_propositions__parsed.end()) {
+        return true;
+    }
+    
+    return false;
+}
+
 
 void Formula_Data::report__enter_parsing_initial_state()
 {
@@ -1010,3 +1037,168 @@ bool Formula_Data::check__cardinality_constraint_on_subformulae_at_index
     
     return true;
 }
+
+
+bool Formula_Data::potential_match_via_an_assignment(const Planning::Formula::State_Predicate& state_Predicate,
+                                                     const Planning::Formula::State_Proposition& state_Proposition) const
+{
+    QUERY_UNRECOVERABLE_ERROR(state_Predicate.get__name() != state_Proposition.get__name(),
+                              "Asked to see if predicate :: "<<state_Predicate<<std::endl
+                              <<"Can be ground to :: "<<state_Proposition<<std::endl
+                              <<"However, those symbols have inconsistent names.");
+    
+    auto propositionx_arguments = state_Proposition.get__arguments();
+    auto predicatex_arguments = state_Predicate.get__arguments();
+
+
+    assert( propositionx_arguments.size() == predicatex_arguments.size());
+    
+    for(uint index = 0; index <  propositionx_arguments.size(); index++){
+        auto prop_arg = propositionx_arguments[index];
+        auto pred_arg = predicatex_arguments[index];
+
+        if(pred_arg.test_cast<Planning::Constant>()){
+            if(*(pred_arg.get<Constant>()) != prop_arg) return false;
+        }
+    }
+    
+    return true;
+}
+
+
+bool Formula_Data::possibly_statically_satisfiable(const Planning::Formula::State_Predicate& state_Predicate) const
+{
+    
+    auto predicate_Name = state_Predicate.get__name();
+
+    auto _occurrence_indices = state_propositions__parsed.find(predicate_Name);
+    if(_occurrence_indices == state_propositions__parsed.end()) return false;
+
+    auto occurrence_indices = _occurrence_indices->second;
+
+    for(auto index = occurrence_indices.begin()
+            ; index != occurrence_indices.end()
+            ; index++){
+
+        assert(Planning::Formula::State_Proposition::
+               indexed__Traversable_Collection.find(reinterpret_cast<type_wrapper::runtime_Thread>(this))
+               != Planning::Formula::State_Proposition::
+               indexed__Traversable_Collection.end());
+        
+        auto traversable_Collection = Planning::Formula::State_Proposition::
+            indexed__Traversable_Collection[reinterpret_cast<type_wrapper::runtime_Thread>(this)];
+
+        assert(traversable_Collection.find(index) != traversable_Collection.end());
+        
+        auto proposition = traversable_Collection[index];
+        
+        if(potential_match_via_an_assignment(state_Predicate, proposition))return true;
+    }
+    
+    return false;
+}
+
+
+bool Formula_Data::possibly_statically_unsatisfiable(const Planning::Formula::State_Predicate& state_Predicate,
+                                                     const std::map<Variable,  Constants&>& assignment_possibilities) const
+{
+    auto predicate_Name = state_Predicate.get__name();
+    auto arguments = state_Predicate.get__arguments();
+    
+    
+    auto _occurrence_indices = state_propositions__parsed.find(predicate_Name);
+    if(_occurrence_indices == state_propositions__parsed.end()) return true;
+    
+    auto occurrence_indices = _occurrence_indices->second;
+
+    map<uint, Constants> important_constants;
+    
+    for(auto index = 0; index < arguments.size(); index++){
+        auto element = arguments[i];
+        if(element->try_cast<Planning::Variable>()){
+            important_constants[index] = Constants();
+        }
+    }
+    
+    for(auto index = occurrence_indices.begin()
+            ; index != occurrence_indices.end()
+            ; index++){
+
+        assert(Planning::Formula::State_Proposition::
+               indexed__Traversable_Collection.find(reinterpret_cast<type_wrapper::runtime_Thread>(this))
+               != Planning::Formula::State_Proposition::
+               indexed__Traversable_Collection.end());
+        
+        auto traversable_Collection = Planning::Formula::State_Proposition::
+            indexed__Traversable_Collection[reinterpret_cast<type_wrapper::runtime_Thread>(this)];
+
+        assert(traversable_Collection.find(index) != traversable_Collection.end());
+        
+        auto proposition = traversable_Collection[index];
+
+        auto propositionx_argument = proposition.get__arguments();
+        
+        if(potential_match_via_an_assignment(state_Predicate, proposition)){
+            for(auto important_indices = important_constants.begin()
+                    ; important_indices != important_constants.end()
+                    ; important_indices ++){
+                important_indices->second.insert(propositionx_argument[important_indices->first]);
+            }            
+        } else {
+            /*The argument fact is necessarily false.*/
+            return true;
+        }
+    }
+
+    bool all_possible_instances_included = true;
+    for(auto important_indices = important_constants.begin()
+            ; important_indices != important_constants.end()
+            ; important_indices ++){
+        
+        assert(arguments[important_indices->first].test_cast<Variable>());
+        
+        auto variable = arguments[important_indices->first].get<Variable>();
+
+        assert(assignment_possibilities.find(*variable) != assignment_possibilities.end());
+        
+        if(*assignment_possibilities.find(*variable) != important_indices->second){
+            all_possible_instances_included = false;
+            break;
+        }
+    }
+
+    if(all_possible_instances_included) return false;
+
+    return true;
+    
+    
+    
+//     auto predicate_Name = state_Predicate.get__name();
+
+//     auto _occurrence_indices = state_propositions__parsed.find(predicate_Name);
+//     if(_occurrence_indices == state_propositions__parsed.end()) return true;
+
+//     auto occurrence_indices = _occurrence_indices->second;
+
+//     for(auto index = occurrence_indices.begin()
+//             ; index != occurrence_indices.end()
+//             ; index++){
+
+//         assert(Planning::Formula::State_Proposition::
+//                indexed__Traversable_Collection.find(reinterpret_cast<type_wrapper::runtime_Thread>(this))
+//                != Planning::Formula::State_Proposition::
+//                indexed__Traversable_Collection.end());
+        
+//         auto traversable_Collection = Planning::Formula::State_Proposition::
+//             indexed__Traversable_Collection[reinterpret_cast<type_wrapper::runtime_Thread>(this)];
+
+//         assert(traversable_Collection.find(index) != traversable_Collection.end());
+        
+//         auto proposition = traversable_Collection[index];
+        
+//         if(!potential_match_via_an_assignment(state_Predicate, proposition))return true;
+//     }
+    
+//     return false;
+}
+
