@@ -58,6 +58,32 @@ Planning::Action_Schemas& Domain_Data::get__action_Schemas()
 }
 
 
+const Planning::Derived_Predicates&  Domain_Data::get__derived_Predicates() const
+{
+    return derived_Predicates;
+}
+
+Planning::Derived_Predicates&  Domain_Data::get__derived_Predicates()
+{
+    return derived_Predicates;
+}
+
+
+
+const Planning::Derived_Percepts& Domain_Data::get__derived_Percepts() const
+{
+    WARNING("No domain parse will generate derived observation predicates.");
+    return derived_Percepts;
+}
+
+Planning::Derived_Percepts& Domain_Data::get__derived_Percepts()
+{
+    WARNING("No domain parse will generate derived observation predicates.");
+    return derived_Percepts;
+}
+
+
+
 void Domain_Data::add__derived_predicate_header()
 {
     NEW_object_referenced_WRAPPED(Planning::Derived_Predicate_Header
@@ -73,11 +99,20 @@ void Domain_Data::add__derived_predicate_header()
 
 void Domain_Data::commit__derived_predicate()
 {
-    assert(subformulae.find(1) != subformulae.end());
-    assert(subformulae[1].size());
     
+    /*Make sure we have a coherent basis on which to build a derived predicate.*/
+    QUERY_UNRECOVERABLE_ERROR(subformulae.find(1) != subformulae.end()
+                              , "Asked to commit a derived predicate, yet no formula was parsed.");
+    QUERY_UNRECOVERABLE_ERROR(!subformulae[1].size()
+                              , "Asked to commit a derived predicate, yet the basis is an empty formula.");
+    
+//     assert(subformulae.find(1) != subformulae.end());
+//     assert(subformulae[1].size());
+
     /*If we have parsed a formula, then we have finished doing so.*/
-    assert(formula_parsing_level == 0);
+    QUERY_UNRECOVERABLE_ERROR(formula_parsing_level != 0
+                              , "Asked to commit a derived predicate, yet we \n"
+                              <<"are still parsing the formula that described that predicate.");
     
     auto last_formula_parsed = *subformulae[1].begin();
     subformulae[1] = Planning::Formula::Subformulae();
@@ -103,12 +138,17 @@ void Domain_Data::commit__derived_predicate()
              );
 
         VERBOSER(42, "new predicate :: "<<new_derived_predicate.get__description());
-        {char ch; std::cin>>ch;}
+//         {char ch; std::cin>>ch;}
         Formula_Data::derived_Predicates__artificial
             .erase(derived_predicate);
         
         derived_Predicates
             .insert(new_derived_predicate);
+
+        if(derived__state_predicates__parsed.end() == derived__state_predicates__parsed.find(new_predicate__name)){
+            derived__state_predicates__parsed[new_predicate__name] = std::set<ID_TYPE>();
+        }
+        derived__state_predicates__parsed[new_predicate__name].insert(new_derived_predicate.get__id());
     }
     /* Actually make a derived predicate, and then commit to that.*/
     else {
@@ -125,14 +165,21 @@ void Domain_Data::commit__derived_predicate()
              );
 
         VERBOSER(42, "new predicate :: "<<new_derived_predicate.get__description());
-        {char ch; std::cin>>ch;}
+//         {char ch; std::cin>>ch;}
         
         
         derived_Predicates
             .insert(new_derived_predicate);
+        
+        if(derived__state_predicates__parsed.end() == derived__state_predicates__parsed.find(new_predicate__name)){
+            derived__state_predicates__parsed[new_predicate__name] = std::set<ID_TYPE>();
+        }
+        derived__state_predicates__parsed[new_predicate__name].insert(new_derived_predicate.get__id());
     }
 
-    
+    /* Re-set/initialise the \member{derived_Predicate_Header}, so it
+     * is ready to store the information from the next parse of a
+     * derived predicate.*/
     derived_Predicate_Header = Planning::Derived_Predicate_Header();
 }
 

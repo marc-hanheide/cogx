@@ -84,6 +84,9 @@ namespace Planning
              * types from hereon -- unless a further commitment is
              * made. */
             void commit__types();
+
+            /* see \member{types_description}*/
+            const std::map<Type, Types >& get__types_description() const;
             
         protected:
             /*(see \member{stack__typed_Arguments} and

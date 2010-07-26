@@ -125,6 +125,12 @@ namespace Planning
             const Planning::Action_Schemas& get__action_Schemas() const;
             Planning::Action_Schemas& get__action_Schemas();
             
+            const Planning::Derived_Predicates& get__derived_Predicates() const;
+            Planning::Derived_Predicates& get__derived_Predicates();
+
+            
+            const Planning::Derived_Percepts& get__derived_Percepts() const;
+            Planning::Derived_Percepts& get__derived_Percepts();
         private:
             /*(see \member{report__state_function_domain})*/
             Planning::Typed_Arguments state_function_domain_specification;
@@ -174,6 +180,8 @@ namespace Planning
              * current parsing context? (initially false and reset to
              * false in \member{add__action()})*/
             bool got__action_effect;
+
+
             
             /*Parsing the headers of derived predicates.*/
             Planning::Derived_Predicate_Header derived_Predicate_Header;
@@ -182,6 +190,20 @@ namespace Planning
              * other predicates. */
             Planning::Derived_Predicates derived_Predicates;
 
+            /* For all predicates that are derived, we map their names
+             * to the indexes where their specifications occur.*/
+            std::map<Planning::Predicate_Name, std::set<ID_TYPE> > derived__state_predicates__parsed;
+            
+            /*Parsing the headers of derived predicates.*/
+            Planning::Derived_Percept_Header derived_Percept_Header;
+            
+            /* Predicates whose truth value is derived from that of
+             * other predicates. */
+            Planning::Derived_Percepts derived_Percepts;
+
+
+            
+            
             /* Parsed observation name.*/
             Planning::Observation_Name observation_Name;
 
@@ -217,3 +239,22 @@ namespace Planning
 
 
 #endif
+
+/* And again, this is a little to rich for my taste. ... Somehow if
+ * you have to foo that often somebody is not fooing right.
+ *
+ *  -- Rob Pike ---advertising Google Go and talking about C++ boost
+ * memory management templates---, keynote speech titled "Public
+ * Static Void" at OSCON (O'Reilly's Open Source CONvention), 2010.
+ *
+ *
+ *
+ *
+ *
+ *
+ * ... == I think things have gotten a bit.. um..  too sophisticated
+ * for.. anyone but the most expert programmers. And.. okay those are
+ * both C++, maby its too easy a target -- It's a complicated and very
+ * large language. But it's not the only language out there that
+ * causes issues for people.
+ */

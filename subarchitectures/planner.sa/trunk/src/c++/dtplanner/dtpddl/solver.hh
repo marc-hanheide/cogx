@@ -62,22 +62,43 @@ namespace Planning
         /*Is this solver in a sane state?*/
         bool sanity() const;
 
+
+        const std::map<Type, Constants>& get__extensions_of_types() const;
     private:
 
-        /* - Add \member{domain_Data::constants} and assocaited data to
-         * \member{problem_Data}.*/
+        /* - Add \member{domain_Data::constants} and associated data to
+         * \member{problem_Data}.
+         *
+         * - Configure \member{extensions_of_types} based on the
+         *   merging of domain constants and problem objects.
+         */
         void proprocess__Constants_Data();
-        
+
+        /* Takes all the constants from the definition of the
+         * \member{problem_Data} associated with the
+         * \member{problem_Data}, and makes them objects of the
+         * \member{problem_Data}.*/
+        void domain_constants__to__problem_objects();
+
+        /* Configuration (i.e., initialisation) of
+         * \member{extensions_of_types}.*/
+        void configure__extensions_of_types();
     private:
         /* Functionality for obtaining a ground version of the problem
          * at hand.*/
         CXX__PTR_ANNOTATION(Problem_Grounding) problem_Grounding;
         
-        /* PDDL types for \member{constants}*/
-        Planning::Parsing::Constants_Data::Constants_Description constants_Description;
-        
         /* PDDL objects and constants.*/
         Constants constants;
+        
+        /* PDDL types for \member{constants}*/
+        Planning::Parsing::Constants_Data::Constants_Description constants_Description;
+
+        /* Reverse map associated with
+         * \member{constants_Description}. A type can be interpreted
+         * in terms of the corresponding set of constants of that
+         * type. Here we store that interpretation.*/
+        std::map<Type, Constants> extensions_of_types;
         
         /*(see \member{preprocess})*/
         bool preprocessed;

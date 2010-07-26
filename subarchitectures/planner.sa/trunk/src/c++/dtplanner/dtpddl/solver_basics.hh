@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -27,50 +30,17 @@
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
  * 
  */
-#ifndef PLANNING_ACTION_SCHEMA_HH
-#define PLANNING_ACTION_SCHEMA_HH
 
-#include "planning_formula.hh"
+
+#ifndef SOLVER_BASICS_HH
+#define SOLVER_BASICS_HH
+
+#include "dtp_pddl_parsing_data.hh"
 
 namespace Planning
 {
-    class Action_Header :
-        public First_Order_Symbol_Description<enum_types::action_header
-                                              , Action_Name>
-    {PRINTING;
-    public:
-        
-    };
-    
-    class Action_Schema : public type_wrapper<enum_types::action_schema
-                                              , Planning::Action_Header
-                                              , Planning::Formula::Subformula
-                                              , Planning::Formula::Subformula>
-    {
-        PRINTING;
-
-            
-
-    public:
-
-            
-
-        Action_Header get__header() const;
-        Action_Name get__name() const;
-        Planning::Formula::Subformula get__effect() const;
-        Planning::Formula::Subformula get__precondition() const;
-
-        /* WARNING :: Make sure that the altered precondition is
-         * logically equivalent to the original precondition,
-         * otherwise the program behaviour will unlikely be what you
-         * intended. */
-        void alter__precondition(Planning::Formula::Subformula);
-    };
-
-    typedef std::set<Action_Schema> Action_Schemas;
+    class Problem_Grounding;
+    class Solver;
 }
-
-
-
 
 #endif

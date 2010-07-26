@@ -382,6 +382,28 @@ namespace Planning
                                  
 
 
+        
+//         /******************************************************************************************************************
+//          * High level PDDL domain description elements.
+//          *
+//          * - Derived percepts (description of)
+//          *
+//          ******************************************************************************************************************/
+
+//         struct Derived_Percept_Header : ifapply< seq<s_Derived
+//                                                      , Open
+//                                                      , pad<Percept_Name, space>
+//                                                      , star<Argument> 
+//                                                      , Close>
+//                                                  , Derived_Percept_Header__Action> {};
+        
+        
+//         struct Derived_Percept_Description :  ifapply< seq< Derived_Percept_Header,
+//                                                             Basic_Precondition_Subformulae >
+//                                                        , Complete_Derived_Percept__Action > {};
+                                 
+
+
                                           
         /******************************************************************************************************************
          * High level PDDL domain description elements.
@@ -399,6 +421,7 @@ namespace Planning
                 , State_Functions_Description //:functions
                 , Perceptual_Functions_Description //:s-functions
                 , Derived_Predicate_Description //:derived
+//                 , Derived_Percept_Description //:o-derived
                 , Action_Description /* :action */
                 , Observation_Description /* :observe */
                 > {};
@@ -431,3 +454,14 @@ namespace Planning
 }
 
 #endif
+
+
+/* Make each program do one thing well.
+ *
+ * -- M. D. McIlroy, E. N. Pinson, and B. A. Tague. Unix Time-Sharing
+ * System Forward :: The Bell System Technical Journal :: Bell
+ * Laboratories. 1978. 57 (6, part 2). p. 1902. The quoted phrase is
+ * usually attributed to the first author, McIlroy.
+ *
+ */
+

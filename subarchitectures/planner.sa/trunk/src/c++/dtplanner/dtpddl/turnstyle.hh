@@ -72,7 +72,8 @@ namespace Turnstyle
          * longer possible.*/
         Problem_Data simplify__unit_prop(Problem_Data&);
 
-        /*Is the argument conjunction of unit-clauses satisfiable.*/
+        /* Is the argument conjunction of unit-clauses satisfiable --
+         * SOUND but NOT COMPLETE.*/
         bool satisfiable_conjunct(Problem_Data& ) const;
         
         /*Does A subsume B?*/
@@ -103,3 +104,10 @@ namespace std
 
 
 #endif
+
+/* April Fool, motherfucker.
+ *
+ * -- Vincent Okamoto quoted on page 361 of the 2003 edition of
+ * "Patriots: the Vietnam War remembered from all sides", by Christian
+ * G. Appy. Vincent was discussing the USA's Phoenix program.
+ */
