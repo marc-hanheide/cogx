@@ -26,8 +26,6 @@ add_definitions(-Wall)
 
 include(subarchitectures/visualization.sa/cmake/v11n.cmake)
 
-# UNCOMMENT THE FOLLOWING FOR THE NAVIGATION SUBARCHITECTURE
-
 add_subdirectory (tools/d-lib)
 
 option(BUILD_BELIEFS "Build beliefs" YES)
