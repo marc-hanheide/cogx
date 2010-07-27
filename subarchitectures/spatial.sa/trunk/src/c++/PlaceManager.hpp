@@ -140,6 +140,7 @@ class PlaceManager : public cast::ManagedComponent
     // frontier
     bool m_useLocalMaps; 	// Whether to connect to the LocalMapManager and
     				// generate PlaceholderPlaceProperties
+    bool m_bNoPlaceholders;
 
     long m_hypIDCounter;
     std::map<int, NavData::FNodePtr> m_PlaceIDToNodeMap;
@@ -160,7 +161,7 @@ class PlaceManager : public cast::ManagedComponent
     					// freespace placeholder properties maintained
     std::map<int, std::string> m_borderProperties; // Keeps track of the
     				// border placeholder properties maintained
-    bool m_firstNodeProcessed;
+    bool m_firstMovementRegistered;
 
     FrontierInterface::FrontierReaderPrx frontierReader;
     FrontierInterface::HypothesisEvaluatorPrx hypothesisEvaluator;
