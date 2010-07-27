@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import de.dfki.lt.tr.beliefs.data.abstractproxies.ManagedContent;
+import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
@@ -87,6 +88,19 @@ public class GenericIndependentDistribution<T extends Distribution<?>> extends
 	}
 
 	/**
+	 * @param arg0
+	 * @return
+	 * @see java.util.Map#get(java.lang.Object)
+	 */
+	public <T2 extends Proxy<? extends ProbDistribution>> T2 get(Object arg0,
+			ProxyFactory<ProbDistribution, T2> factory) {
+		ProbDistribution entry = _content.distribs.get(arg0);
+		if (entry == null)
+			return null;
+		return factory.create(entry);
+	}
+
+	/**
 	 * @return
 	 * @see java.util.Map#isEmpty()
 	 */
@@ -122,15 +136,14 @@ public class GenericIndependentDistribution<T extends Distribution<?>> extends
 	public T put(String arg0, T arg1) {
 		if ((arg1.get() instanceof BasicProbDistribution)) {
 			// write the new key
-			((BasicProbDistribution) arg1.get()).key=arg0;
+			((BasicProbDistribution) arg1.get()).key = arg0;
 		}
-		ProbDistribution c=_content.distribs.put(arg0, arg1.get());
-		if (c!=null)
+		ProbDistribution c = _content.distribs.put(arg0, arg1.get());
+		if (c != null)
 			return _factory.create(c);
 		else
 			return null;
 	}
-
 
 	/**
 	 * @param arg0

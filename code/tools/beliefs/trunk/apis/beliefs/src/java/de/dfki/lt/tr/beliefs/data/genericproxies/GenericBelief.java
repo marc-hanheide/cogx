@@ -110,10 +110,20 @@ public class GenericBelief<T extends dBelief, C extends Distribution<?>> extends
 	public C getContent() {
 		return contentFactory.create(_content.content);
 	} // end getContent
+	
+	public <T2 extends Proxy<? extends ProbDistribution>> T2 getContent(ProxyFactory<ProbDistribution, T2> type)  {
+		return type.create(this.get().content);
+	}
+
 
 	public GenericFrame<? extends AbstractFrame> getFrame() {
 		return GenericFrame.create(AbstractFrame.class, _content.frame);
 	}
+
+	public <T2 extends Proxy<? extends AbstractFrame>> T2 getFrame(ProxyFactory<AbstractFrame, T2> type) {
+		return type.create(_content.frame);
+	}
+
 
 	/**
 	 * Returns the identifier of the belief
