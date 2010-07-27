@@ -250,19 +250,19 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 		PathTransitionCostRequest ptcr = new PathTransitionCostRequest(from,
 				to, 1.0, PathQueryStatus.QUERYPENDING);
 		String id = component.newDataID();
-		WMEntryQueue resultQueue = new WMEntryQueue(component);
+		WMEntryQueue<PathTransitionCostRequest> resultQueue = new WMEntryQueue<PathTransitionCostRequest>(component, PathTransitionCostRequest.class);
 		try {
 			component.addChangeFilter(ChangeFilterFactory.createAddressFilter(
 					id, "spatial.sa", WorkingMemoryOperation.OVERWRITE),
 					resultQueue);
 			component.addToWorkingMemory(id, "spatial.sa", ptcr);
 			while (ptcr.status == PathQueryStatus.QUERYPENDING) {
-				WMEntryQueueElement elem = resultQueue.take();
+				WMEntryQueueElement<PathTransitionCostRequest> elem = resultQueue.take();
 				log("PathTransitionCostRequest.status="
 						+ ptcr.status.name());
 				if (elem.getEntry() == null)
 					return Double.MAX_VALUE;
-				ptcr = (PathTransitionCostRequest) elem.getEntry();
+				ptcr = elem.getEntry();
 			}
 			if (ptcr.status == PathQueryStatus.QUERYCOMPLETED) {
 				log("we found a path and computed costs of "
