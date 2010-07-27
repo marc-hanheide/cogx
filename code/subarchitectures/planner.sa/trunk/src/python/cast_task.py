@@ -190,8 +190,8 @@ class CASTTask(object):
                     failed_actions.append(pnode)
                     self.cp_task.mark_changed()
 
-        if requires_action_dispatch:
-            self.cp_task.mark_changed()
+            if requires_action_dispatch:
+                self.cp_task.mark_changed()
 
         if finished_actions or failed_actions:
             self.action_feedback(finished_actions, failed_actions)
