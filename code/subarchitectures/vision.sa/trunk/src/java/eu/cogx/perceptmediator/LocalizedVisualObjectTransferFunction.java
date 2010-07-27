@@ -29,13 +29,13 @@ import facades.SpatialFacade;
  * @author marc
  * 
  */
-public class LocalizedObjectTransferFunction extends
+public class LocalizedVisualObjectTransferFunction extends
 		DependentDiscreteTransferFunction<VisualObject> {
 
-	public LocalizedObjectTransferFunction(ManagedComponent component,
+	public LocalizedVisualObjectTransferFunction(ManagedComponent component,
 			WMView<PerceptBelief> allBeliefs) {
 		super(component, allBeliefs, Logger
-				.getLogger(LocalizedObjectTransferFunction.class));
+				.getLogger(LocalizedVisualObjectTransferFunction.class));
 		// TODO Auto-generated constructor stub
 	}
 
