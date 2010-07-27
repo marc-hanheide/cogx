@@ -7,7 +7,6 @@ package motivation.components.generators;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import motivation.slice.Motive;
-import motivation.util.WMDeprecatedMotiveSet;
 import motivation.util.WMMotiveView;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;

@@ -9,12 +9,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
-
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
 import java.util.StringTokenizer;
+
+import org.apache.log4j.Logger;
 
 import cast.architecture.ManagedComponent;
 

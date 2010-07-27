@@ -13,8 +13,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 
-import spatial.motivation.PatrolPlaceGenerator;
-
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.GeneralGoalMotive;

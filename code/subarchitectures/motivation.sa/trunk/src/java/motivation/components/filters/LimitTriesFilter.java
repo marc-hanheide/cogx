@@ -5,7 +5,6 @@ package motivation.components.filters;
 
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
-import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChange;
 
 /**

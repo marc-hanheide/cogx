@@ -50,7 +50,7 @@ public class ExecutorFacade implements Callable<PlanProxy> {
 
 	private void executePlan(PlanProxy pp) throws InterruptedException {
 		String id = component.newDataID();
-		WMEntryQueue planProxyQueue = new WMEntryQueue(component);
+		WMEntryQueue<PlanProxy> planProxyQueue = new WMEntryQueue<PlanProxy>(component, PlanProxy.class);
 		component.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
 				WorkingMemoryOperation.DELETE), planProxyQueue);
 		// submit the planProxy

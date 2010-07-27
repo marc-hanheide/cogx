@@ -243,8 +243,7 @@ public class SpatialActionInterface extends ManagedComponent {
 			try {
 				addToWorkingMemory(m_navCmdAddr, cmd);
 			} catch (CASTException e) {
-				println(e.message);
-				e.printStackTrace();
+				logException(e);
 				_callback.executionComplete(TriBool.TRIFALSE);
 			}
 		}

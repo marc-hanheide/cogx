@@ -3,14 +3,12 @@
  */
 package motivation.components.filters;
 
-import cast.architecture.ManagedComponent;
+import motivation.slice.Motive;
+import motivation.slice.MotivePriority;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryChange;
 import cast.core.CASTUtils;
-import motivation.slice.Motive;
-import motivation.slice.MotivePriority;
 import castutils.CASTTimeUtil;
-import motivation.components.filters.MotiveFilterManager;
 
 /**
  * @author marc

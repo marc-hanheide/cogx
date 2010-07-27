@@ -45,7 +45,7 @@ public class PlaceStatistics extends ManagedComponent implements ChangeHandler<P
 		super.start();
 		logger = getLogger();
 		try {
-			places.setHandler(this);
+			places.registerHandler(this);
 			places.start();
 			navGraph.start();
 		} catch (UnknownSubarchitectureException e) {

@@ -102,25 +102,13 @@ public class WMMotiveView extends WMView<Motive> implements WMView.ChangeHandler
 		return s;
 	}
 
-	/**
-	 * Factory method
-	 * 
-	 * @param c
-	 *            the management component this WMSet is in
-	 * @return
-	 */
-	public static WMMotiveView create(ManagedComponent c,
-			final Class<? extends Motive> specificType) {
-		WMMotiveView s = new WMMotiveView(c);
-		return s;
-	}
 
 	protected ChangeHandler<Motive> externalHandler;
 
 	Map<MotiveStateTransition, ChangeHandler<Motive>> stateChangeReceivers;
 
 	protected WMMotiveView(ManagedComponent c) {
-		super(c, Motive.class, null, new ExceptAllFilter<Motive>());
+		super(c, Motive.class, new ExceptAllFilter<Motive>());
 		stateChangeReceivers = new HashMap<MotiveStateTransition, ChangeHandler<Motive>>();
 		super.registerHandler(this);
 	}
