@@ -1,9 +1,11 @@
 package motivation.components.generators;
 
+import autogen.Planner.Goal;
 import motivation.slice.ExploreMotive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
 import SpatialData.Place;
+import SpatialData.PlaceStatus;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
@@ -20,7 +22,7 @@ public class PlaceBeliefGoalGenerator extends
 
 	public PlaceBeliefGoalGenerator() {
 		super(PLACETYPE, ExploreMotive.class, GroundedBelief.class);
-	} 
+	}
 
 	@Override
 	protected ExploreMotive checkForAddition(WorkingMemoryAddress adr,
@@ -29,8 +31,9 @@ public class PlaceBeliefGoalGenerator extends
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, newEntry);
 		// get the most likely status
-		boolean isExplored = belief.getContent().get("explored")
-				.getDistribution().getMostLikely().getBoolean();
+		boolean isExplored = belief.getContent().get("placestatus")
+				.getDistribution().getMostLikely().getProposition()
+				.equalsIgnoreCase(PlaceStatus.TRUEPLACE.name());
 		// if that is a place holder
 		if (!isExplored) {
 			ExploreMotive result = new ExploreMotive();
@@ -48,12 +51,14 @@ public class PlaceBeliefGoalGenerator extends
 	}
 
 	@Override
-	protected ExploreMotive checkForUpdate(GroundedBelief newEntry, ExploreMotive motive) {
+	protected ExploreMotive checkForUpdate(GroundedBelief newEntry,
+			ExploreMotive motive) {
 		assert (newEntry.type.equals(PLACETYPE));
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, newEntry);
-		boolean isExplored = belief.getContent().get("explored")
-				.getDistribution().getMostLikely().getBoolean();
+		boolean isExplored = belief.getContent().get("placestatus")
+				.getDistribution().getMostLikely().getProposition()
+				.equalsIgnoreCase(PlaceStatus.TRUEPLACE.name());
 		// if that is a place holder
 		if (!isExplored) {
 			fillValues(belief, motive);
@@ -63,9 +68,15 @@ public class PlaceBeliefGoalGenerator extends
 		}
 	}
 
-	private void fillValues(CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief, ExploreMotive motive) {
-		motive.updated=getCASTTime();
-		motive.goal = "(explored " + belief.getId() + ")";
+	private void fillValues(
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief,
+			ExploreMotive motive) {
+		motive.updated = getCASTTime();
+		// initially this costs are taken as -1, corresponding to an ultimate
+		// goal.
+		motive.costs = -1;
+		motive.goal = new Goal(-1.0f, "(= (placestatus '" + belief.getId()
+				+ "') trueplace)", false);
 	}
 
 }

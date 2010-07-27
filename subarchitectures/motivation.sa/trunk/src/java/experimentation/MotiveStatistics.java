@@ -7,17 +7,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import NavData.NavGraph;
-
 import motivation.slice.Motive;
-import castutils.castextensions.WMView;
-import castutils.castextensions.WMView.ChangeHandler;
 import cast.CASTException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.core.logging.ComponentLogger;
+import castutils.castextensions.WMView;
+import castutils.castextensions.WMView.ChangeHandler;
 
 /**
  * @author marc
@@ -37,8 +35,6 @@ public class MotiveStatistics extends ManagedComponent implements
 	}
 
 	WMView<Motive> motives;
-	private boolean shutdown = false;
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -49,7 +45,7 @@ public class MotiveStatistics extends ManagedComponent implements
 		super.start();
 		logger = getLogger();
 		try {
-			motives.setHandler(this);
+			motives.registerHandler(this);
 			motives.start();
 		} catch (UnknownSubarchitectureException e) {
 			// TODO Auto-generated catch block
@@ -77,9 +73,7 @@ public class MotiveStatistics extends ManagedComponent implements
 
 		// if there are now more motives we quit!
 		if (map.size() == 0) {
-			shutdown = true;
 		} else {
-			shutdown = false;
 		}
 		notifyAll();
 	}

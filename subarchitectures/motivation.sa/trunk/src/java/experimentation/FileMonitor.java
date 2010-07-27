@@ -16,11 +16,14 @@
  */
 package experimentation;
 
-import java.util.*;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Class for monitoring changes in disk files. Usage:
@@ -196,12 +199,12 @@ public class FileMonitor {
 	private class TestListener implements FileListener {
 		public void fileChanged(File file) {
 			System.out.println("File changed: " + file);
-			try {
-				FileReader fr = new FileReader(file);
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			try {
+//				FileReader fr = new FileReader(file);
+//			} catch (FileNotFoundException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 
 		}
 	}

@@ -3,19 +3,17 @@
  */
 package motivation.components.managers;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
-import motivation.util.WMDeprecatedMotiveSet;
-import Ice.ObjectImpl;
-import cast.CASTException;
+import motivation.util.WMMotiveView;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import castutils.castextensions.WMEntrySet;
+import castutils.castextensions.WMView;
 
 /**
  * @author marc
@@ -23,17 +21,16 @@ import castutils.castextensions.WMEntrySet;
  */
 public abstract class AbstractMotiveManager extends ManagedComponent {
 
-	Class<? extends Motive> specificType;
-	WMDeprecatedMotiveSet motives;
+	WMMotiveView motives;
 	WMEntrySet placeOrigins;
 
 	/**
 	 * @param specificType
 	 */
-	protected AbstractMotiveManager(Class<? extends Motive> specificType) {
+	protected AbstractMotiveManager() {
 		super();
-		this.specificType = specificType;
-		motives = WMDeprecatedMotiveSet.create(this, specificType);
+
+		motives = WMMotiveView.create(this);
 //		placeOrigins = WMEntrySet.create(this, OriginMap.class);
 	}
 
@@ -65,41 +62,41 @@ public abstract class AbstractMotiveManager extends ManagedComponent {
 		log("MotiveManager starting up...");
 		super.start();
 
-		WMEntrySet.ChangeHandler manageHandler = new WMEntrySet.ChangeHandler() {
+		WMView.ChangeHandler<Motive> manageHandler = new WMView.ChangeHandler<Motive>() {
 			@Override
 			public void entryChanged(
-					Map<WorkingMemoryAddress, ObjectImpl> map,
-					WorkingMemoryChange wmc, ObjectImpl newMotive,
-					ObjectImpl oldMotive) {
+					Map<WorkingMemoryAddress, Motive> map,
+					WorkingMemoryChange wmc, Motive newMotive,
+					Motive oldMotive) {
 				log("new Motive ");
-				manageMotive((Motive) newMotive);
+				manageMotive(newMotive);
 			}
 		};
 
-		WMEntrySet.ChangeHandler retractHandler = new WMEntrySet.ChangeHandler() {
+		WMView.ChangeHandler<Motive> retractHandler = new WMView.ChangeHandler<Motive>() {
 			@Override
 			public void entryChanged(
-					Map<WorkingMemoryAddress, ObjectImpl> map,
-					WorkingMemoryChange wmc, ObjectImpl newMotive,
-					ObjectImpl oldMotive) {
+					Map<WorkingMemoryAddress, Motive> map,
+					WorkingMemoryChange wmc, Motive newMotive,
+					Motive oldMotive) {
 				if (newMotive != null
-						&& ((Motive) newMotive).status != MotiveStatus.ACTIVE) {
+						&& (newMotive).status != MotiveStatus.ACTIVE) {
 					log("retract Motive triggered");
-					retractMotive((Motive) newMotive);
+					retractMotive(newMotive);
 				}
 			}
 		};
 
 		// transition from unsurfaced to surfaced triggers a motive to be managed
-		motives.setStateChangeHandler(new WMDeprecatedMotiveSet.MotiveStateTransition(
+		motives.setStateChangeHandler(new WMMotiveView.MotiveStateTransition(
 				MotiveStatus.UNSURFACED, MotiveStatus.SURFACED), manageHandler);
 
 		// transition from surfaced to anything (besides ACTIVE) triggers a motive to be unmanaged
-		motives.setStateChangeHandler(new WMDeprecatedMotiveSet.MotiveStateTransition(
+		motives.setStateChangeHandler(new WMMotiveView.MotiveStateTransition(
 				MotiveStatus.SURFACED, null), retractHandler);
 
 		// transition from surfaced to anything (besides ACTIVE) triggers a motive to be unmanaged
-		motives.setStateChangeHandler(new WMDeprecatedMotiveSet.MotiveStateTransition(
+		motives.setStateChangeHandler(new WMMotiveView.MotiveStateTransition(
 				MotiveStatus.ACTIVE, null), retractHandler);
 		
 
@@ -130,7 +127,11 @@ public abstract class AbstractMotiveManager extends ManagedComponent {
 		// });
 
 		// start the motive listener...
-		motives.start();
+		try {
+			motives.start();
+		} catch (UnknownSubarchitectureException e) {
+			logException(e);
+		}
 	}
 
 	protected abstract void activateMotive(Motive newMotive);

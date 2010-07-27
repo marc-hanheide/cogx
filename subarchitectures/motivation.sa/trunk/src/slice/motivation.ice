@@ -2,6 +2,7 @@
 #define MOTIVATION_ICE
 
 #include <cast/slice/CDL.ice>
+#include <Planner.ice>
 
 module motivation {
     module slice {
@@ -33,6 +34,14 @@ module motivation {
     		NORMAL,
     		HIGH
     	};
+    	
+		["java:type:java.util.LinkedList<cast.cdl.WorkingMemoryAddress>:java.util.List<cast.cdl.WorkingMemoryAddress>"] 
+		sequence<cast::cdl::WorkingMemoryAddress> GoalSeq;
+
+    	class PlannedGoals {
+			GoalSeq goals;
+			cast::cdl::WorkingMemoryAddress planningTask;
+    	};
     		
     	class Motive {
 			cast::cdl::CASTTime created;
@@ -52,7 +61,7 @@ module motivation {
     		/** rank of activated motives */
     		int rank;
     		/** the derived single goal for the planner */
-    		string goal;
+    		autogen::Planner::Goal goal;
     		/** planCosts */
     		double plannedCosts;
     		/** maxplanningTime in sec **/

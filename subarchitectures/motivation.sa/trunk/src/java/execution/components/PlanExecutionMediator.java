@@ -211,7 +211,7 @@ public abstract class PlanExecutionMediator extends AbstractExecutionManager {
 	 * @return
 	 */
 	private PlanningTask newPlanningTask() {
-		return new PlanningTask(0, null, true, null, null, Completion.PENDING,
+		return new PlanningTask(0, null, true, null, 0, null, Completion.PENDING,
 				0, Completion.PENDING, 0);
 	}
 

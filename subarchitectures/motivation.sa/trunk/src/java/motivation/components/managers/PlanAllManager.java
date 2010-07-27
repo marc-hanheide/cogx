@@ -3,9 +3,11 @@
  */
 package motivation.components.managers;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -17,18 +19,20 @@ import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.slice.PlanProxy;
 import motivation.util.WMMotiveEventQueue;
-import motivation.util.WMDeprecatedMotiveSet;
-import motivation.util.WMDeprecatedMotiveSet.MotiveStateTransition;
-import Ice.ObjectImpl;
+import motivation.util.WMMotiveView;
+import motivation.util.WMMotiveView.MotiveStateTransition;
+import autogen.Planner.Goal;
+import autogen.Planner.PlanningTask;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryPermissions;
 import castutils.castextensions.WMLock;
 import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
-import castutils.castextensions.WMEntrySet.ChangeHandler;
+import castutils.castextensions.WMView.ChangeHandler;
 import eu.cogx.planner.facade.PlannerFacade;
 import facades.BinderFacade;
 import facades.ExecutorFacade;
@@ -39,7 +43,7 @@ import facades.ExecutorFacade;
  */
 public class PlanAllManager extends ManagedComponent {
 
-	WMDeprecatedMotiveSet motives;
+	WMMotiveView motives;
 	WMLock wmLock;
 	volatile private boolean interrupt;
 	private WMMotiveEventQueue activeMotiveEventQueue;
@@ -73,7 +77,7 @@ public class PlanAllManager extends ManagedComponent {
 	public PlanAllManager() throws CASTException {
 		super();
 		wmLock = new WMLock(this, "SchedulerManagerSync", true);
-		motives = WMDeprecatedMotiveSet.create(this);
+		motives = WMMotiveView.create(this);
 		binderFacade = new BinderFacade(this);
 		plannerFacade = new PlannerFacade(this);
 		executorFacade = new ExecutorFacade(this);
@@ -98,19 +102,23 @@ public class PlanAllManager extends ManagedComponent {
 				MotiveStatus.ACTIVE), activeMotiveEventQueue);
 		// causing an interrupt if some motive is de-activated by someone
 		motives.setStateChangeHandler(new MotiveStateTransition(
-				MotiveStatus.ACTIVE, null), new ChangeHandler() {
+				MotiveStatus.ACTIVE, null), new ChangeHandler<Motive>() {
 
 			@Override
-			public void entryChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
-					WorkingMemoryChange wmc, ObjectImpl newMotive,
-					ObjectImpl oldMotive) {
+			public void entryChanged(Map<WorkingMemoryAddress, Motive> map,
+					WorkingMemoryChange wmc, Motive newMotive,
+					Motive oldMotive) {
 				interrupt = true;
 
 			}
 		});
 
 		binderFacade.start();
-		motives.start();
+		try {
+			motives.start();
+		} catch (UnknownSubarchitectureException e) {
+			logException(e);
+		}
 		// start the causal event listening on places
 		// placeUnionEventRelation.start();
 		// roomUnionEventRelation.start();
@@ -173,9 +181,12 @@ public class PlanAllManager extends ManagedComponent {
 					// after this we can be quite sure that we actually have
 					// all required information on the binder, available to the
 					// planner
+					Set<Goal> goals=new HashSet<Goal>();
+					for (Motive m:activeMotives)
+						goals.add(m.goal);
+					plannerFacade.setGoals(goals);
 
-					plannerFacade.setGoalMotives(activeMotives);
-					FutureTask<WMEntryQueueElement> generatedPlan = new FutureTask<WMEntryQueueElement>(
+					FutureTask<WMEntryQueueElement<PlanningTask>> generatedPlan = new FutureTask<WMEntryQueueElement<PlanningTask>>(
 							plannerFacade);
 					// generate the plan asynchronously
 					backgroundExecutor.execute(generatedPlan);
@@ -194,7 +205,7 @@ public class PlanAllManager extends ManagedComponent {
 							+ "  maxExecutionTime == " + maxExecutionTime);
 
 					// wait for the future to be completed
-					WMEntryQueueElement pt = null;
+					WMEntryQueueElement<PlanningTask> pt = null;
 					int loopCount = 0;
 					while (!interrupt) {
 						try {

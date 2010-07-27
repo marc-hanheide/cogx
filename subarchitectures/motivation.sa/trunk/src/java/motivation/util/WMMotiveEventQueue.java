@@ -3,18 +3,18 @@ package motivation.util;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import Ice.ObjectImpl;
+import motivation.slice.Motive;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
-import castutils.castextensions.WMEntrySet;
+import castutils.castextensions.WMView;
 
-public class WMMotiveEventQueue extends LinkedBlockingQueue<WMMotiveEventQueue.MotiveEvent> implements WMEntrySet.ChangeHandler{
+public class WMMotiveEventQueue extends LinkedBlockingQueue<WMMotiveEventQueue.MotiveEvent> implements WMView.ChangeHandler<Motive>{
 
 	public class MotiveEvent {
-		public Map<WorkingMemoryAddress, ObjectImpl> map;
+		public Map<WorkingMemoryAddress, Motive> map;
 		public WorkingMemoryChange wmc; 
-		public ObjectImpl newMotive; 
-		public ObjectImpl oldMotive;
+		public Motive newMotive; 
+		public Motive oldMotive;
 	}
 	
 	/**
@@ -24,8 +24,8 @@ public class WMMotiveEventQueue extends LinkedBlockingQueue<WMMotiveEventQueue.M
 
 
 	@Override
-	public void entryChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
-			WorkingMemoryChange wmc, ObjectImpl newMotive, ObjectImpl oldMotive) {
+	public void entryChanged(Map<WorkingMemoryAddress, Motive> map,
+			WorkingMemoryChange wmc, Motive newMotive, Motive oldMotive) {
 		MotiveEvent m = new MotiveEvent(); 
 		try {
 			m.map=map;
