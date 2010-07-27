@@ -47,15 +47,21 @@ namespace Planning
     WRAPPED_STRING__WITH_DECLARATIONS(enum_types::variable, Variable, PRINTING_);
     WRAPPED_STRING(enum_types::constant, Constant);
     WRAPPED_STRING__WITH_DECLARATIONS(enum_types::requirement, Requirement, PRINTING_);
+
+
     
     typedef std::set<Constant> Constants;
     typedef std::set<Variable> Variables;
+    
     
     typedef std::vector<Variable> Variable_List;
     
     typedef std::set<Requirement> Requirements;
     
     typedef std::set<Type> Types;
+
+    
+    typedef std::map<Constant, Types > Constants_Description;
     
     typedef std::vector<Types> Argument_Types;
     typedef basic_types__vector Argument_List;

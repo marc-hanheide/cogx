@@ -259,15 +259,18 @@ public:
             (id == in.id) &&
             (runtime_Thread == in.runtime_Thread);
     }
+
+    bool operator!=(const THIS&in) const {return !operator==(in);}
+    
     
     ID_TYPE get__id() const {return id;}; 
     
     typedef std::vector<Contents > Traversable_Collection;
     typedef std::map<Contents, ID_TYPE> Searchable_Collection;
     
-    typedef std::map<decltype(type_wrapper::runtime_Thread)
+    typedef std::map<basic_type::Runtime_Thread
         , CXX__PTR_ANNOTATION(Traversable_Collection)> Indexed__Traversable_Collection;
-    typedef std::map<decltype(type_wrapper::runtime_Thread)
+    typedef std::map<basic_type::Runtime_Thread
         , CXX__PTR_ANNOTATION(Searchable_Collection)> Indexed__Searchable_Collection;
         
     static Indexed__Traversable_Collection indexed__Traversable_Collection;
@@ -275,6 +278,7 @@ public:
     
     CXX__PTR_ANNOTATION(Traversable_Collection) traversable_Collection;
     CXX__PTR_ANNOTATION(Searchable_Collection) searchable_Collection;
+
     
     type_wrapper(decltype(type_wrapper::runtime_Thread) _runtime_thread = 0)
         :basic_type(_runtime_thread),

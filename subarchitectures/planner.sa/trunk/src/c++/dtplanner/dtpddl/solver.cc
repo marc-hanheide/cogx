@@ -106,11 +106,11 @@ void Solver::domain_constants__to__problem_objects()
 void Solver::configure__extensions_of_types()
 {
     /* For each problem constant. */
-    for(auto constant = constants_Description.begin()
-            ; constants_Description != constants_Description.end()
-            ; constants_Description++){
-        auto types = constants_Description->second;
-        auto constant = constants_Description->first;
+    for(auto constant_Description = constants_Description.begin()
+            ; constant_Description != constants_Description.end()
+            ; constant_Description++){
+        auto types = constant_Description->second;
+        auto constant = constant_Description->first;
         
         for(auto type = types.begin()
                 ; type != types.end()

@@ -1042,7 +1042,10 @@ bool Formula_Data::check__cardinality_constraint_on_subformulae_at_index
 bool Formula_Data::potential_match_via_an_assignment(const Planning::Formula::State_Predicate& state_Predicate,
                                                      const Planning::Formula::State_Proposition& state_Proposition) const
 {
-    QUERY_UNRECOVERABLE_ERROR(state_Predicate.get__name() != state_Proposition.get__name(),
+    auto predicate_Name = state_Predicate.get__name();
+    auto proposition_name = state_Proposition.get__name();
+    
+    QUERY_UNRECOVERABLE_ERROR(predicate_Name != proposition_name,
                               "Asked to see if predicate :: "<<state_Predicate<<std::endl
                               <<"Can be ground to :: "<<state_Proposition<<std::endl
                               <<"However, those symbols have inconsistent names.");
@@ -1054,11 +1057,13 @@ bool Formula_Data::potential_match_via_an_assignment(const Planning::Formula::St
     assert( propositionx_arguments.size() == predicatex_arguments.size());
     
     for(uint index = 0; index <  propositionx_arguments.size(); index++){
-        auto prop_arg = propositionx_arguments[index];
-        auto pred_arg = predicatex_arguments[index];
+        const Constant& prop_arg = propositionx_arguments[index];
+        const CXX__deref__shared_ptr<basic_type>& _pred_arg = predicatex_arguments[index];
 
-        if(pred_arg.test_cast<Planning::Constant>()){
-            if(*(pred_arg.get<Constant>()) != prop_arg) return false;
+        
+        if(_pred_arg.test_cast<Planning::Constant>()){
+            const Constant& pred_arg = *_pred_arg.cxx_get<Constant>();
+            if(pred_arg != prop_arg) return false;
         }
     }
     
@@ -1066,7 +1071,7 @@ bool Formula_Data::potential_match_via_an_assignment(const Planning::Formula::St
 }
 
 
-bool Formula_Data::possibly_statically_satisfiable(const Planning::Formula::State_Predicate& state_Predicate) const
+bool Formula_Data::statically_satisfiable(const Planning::Formula::State_Predicate& state_Predicate) const
 {
     
     auto predicate_Name = state_Predicate.get__name();
@@ -1080,99 +1085,34 @@ bool Formula_Data::possibly_statically_satisfiable(const Planning::Formula::Stat
             ; index != occurrence_indices.end()
             ; index++){
 
-        assert(Planning::Formula::State_Proposition::
-               indexed__Traversable_Collection.find(reinterpret_cast<type_wrapper::runtime_Thread>(this))
-               != Planning::Formula::State_Proposition::
-               indexed__Traversable_Collection.end());
+        auto indexed__Traversable_Collection = Planning::Formula::State_Proposition::indexed__Traversable_Collection;
+        auto runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>(this);
         
-        auto traversable_Collection = Planning::Formula::State_Proposition::
-            indexed__Traversable_Collection[reinterpret_cast<type_wrapper::runtime_Thread>(this)];
+        assert(indexed__Traversable_Collection.find(runtime_Thread)
+               != indexed__Traversable_Collection.end());
+        
+        auto traversable_Collection = indexed__Traversable_Collection[runtime_Thread];
 
-        assert(traversable_Collection.find(index) != traversable_Collection.end());
+        assert(traversable_Collection.use_count());
         
-        auto proposition = traversable_Collection[index];
+        assert(*index < (*traversable_Collection).size());
         
-        if(potential_match_via_an_assignment(state_Predicate, proposition))return true;
+        auto _proposition = (*traversable_Collection)[*index];
+        NEW_referenced_WRAPPED(runtime_Thread
+                               , Planning::Formula::State_Proposition
+                               , proposition
+                               , std::tr1::get<0>(_proposition)
+                               , std::tr1::get<1>(_proposition));
+        
+        if(potential_match_via_an_assignment(state_Predicate, proposition)) return true;
     }
     
     return false;
 }
 
-
-bool Formula_Data::possibly_statically_unsatisfiable(const Planning::Formula::State_Predicate& state_Predicate,
-                                                     const std::map<Variable,  Constants&>& assignment_possibilities) const
+bool Formula_Data::statically_unsatisfiable(const Planning::Formula::State_Predicate& state_Predicate) const
 {
-    auto predicate_Name = state_Predicate.get__name();
-    auto arguments = state_Predicate.get__arguments();
-    
-    
-    auto _occurrence_indices = state_propositions__parsed.find(predicate_Name);
-    if(_occurrence_indices == state_propositions__parsed.end()) return true;
-    
-    auto occurrence_indices = _occurrence_indices->second;
-
-    map<uint, Constants> important_constants;
-    
-    for(auto index = 0; index < arguments.size(); index++){
-        auto element = arguments[i];
-        if(element->try_cast<Planning::Variable>()){
-            important_constants[index] = Constants();
-        }
-    }
-    
-    for(auto index = occurrence_indices.begin()
-            ; index != occurrence_indices.end()
-            ; index++){
-
-        assert(Planning::Formula::State_Proposition::
-               indexed__Traversable_Collection.find(reinterpret_cast<type_wrapper::runtime_Thread>(this))
-               != Planning::Formula::State_Proposition::
-               indexed__Traversable_Collection.end());
-        
-        auto traversable_Collection = Planning::Formula::State_Proposition::
-            indexed__Traversable_Collection[reinterpret_cast<type_wrapper::runtime_Thread>(this)];
-
-        assert(traversable_Collection.find(index) != traversable_Collection.end());
-        
-        auto proposition = traversable_Collection[index];
-
-        auto propositionx_argument = proposition.get__arguments();
-        
-        if(potential_match_via_an_assignment(state_Predicate, proposition)){
-            for(auto important_indices = important_constants.begin()
-                    ; important_indices != important_constants.end()
-                    ; important_indices ++){
-                important_indices->second.insert(propositionx_argument[important_indices->first]);
-            }            
-        } else {
-            /*The argument fact is necessarily false.*/
-            return true;
-        }
-    }
-
-    bool all_possible_instances_included = true;
-    for(auto important_indices = important_constants.begin()
-            ; important_indices != important_constants.end()
-            ; important_indices ++){
-        
-        assert(arguments[important_indices->first].test_cast<Variable>());
-        
-        auto variable = arguments[important_indices->first].get<Variable>();
-
-        assert(assignment_possibilities.find(*variable) != assignment_possibilities.end());
-        
-        if(*assignment_possibilities.find(*variable) != important_indices->second){
-            all_possible_instances_included = false;
-            break;
-        }
-    }
-
-    if(all_possible_instances_included) return false;
-
-    return true;
-    
-    
-    
+    return !Formula_Data::statically_unsatisfiable(state_Predicate);
 //     auto predicate_Name = state_Predicate.get__name();
 
 //     auto _occurrence_indices = state_propositions__parsed.find(predicate_Name);
@@ -1196,9 +1136,177 @@ bool Formula_Data::possibly_statically_unsatisfiable(const Planning::Formula::St
         
 //         auto proposition = traversable_Collection[index];
         
-//         if(!potential_match_via_an_assignment(state_Predicate, proposition))return true;
+//         if(potential_match_via_an_assignment(state_Predicate, proposition)) {return false;}
 //     }
     
-//     return false;
+//     return true; 
 }
+
+const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >& Formula_Data::get__state_functions__parsed() const 
+{
+    return state_functions__parsed;
+}
+
+const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >& Formula_Data::get__perceptual_functions__parsed() const
+{
+    return perceptual_functions__parsed;
+}
+
+const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >& Formula_Data::get__state_ground_functions__parsed() const
+{
+    return state_ground_functions__parsed;
+}
+
+const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >& Formula_Data::get__perceptual_ground_functions__parsed() const
+{
+    return perceptual_ground_functions__parsed;
+}
+
+const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& Formula_Data::get__state_propositions__parsed() const
+{
+    return state_propositions__parsed;
+}
+
+const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& Formula_Data::get__state_predicates__parsed() const
+{
+    return state_predicates__parsed;
+}
+
+const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__observational_propositions__parsed() const
+{
+    return observational_propositions__parsed;
+}
+
+const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__observational_predicates__parsed() const
+{
+    return observational_predicates__parsed; 
+}
+
+const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& Formula_Data::get__deleted__state_propositions__parsed() const
+{
+    return deleted__state_propositions__parsed;
+}
+
+const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& Formula_Data::get__deleted__state_predicates__parsed() const
+{
+    return deleted__state_predicates__parsed;
+}
+
+const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__deleted__observational_propositions__parsed() const
+{
+    return deleted__observational_propositions__parsed;
+}
+
+const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__deleted__observational_predicates__parsed() const
+{
+    return deleted__observational_predicates__parsed;
+}
+
+const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& Formula_Data::get__added__state_propositions__parsed() const
+{
+    return added__state_propositions__parsed;
+}
+
+const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& Formula_Data::get__added__state_predicates__parsed() const
+{
+    return added__state_predicates__parsed;
+}
+
+const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__added__observational_propositions__parsed() const
+{
+    return added__observational_propositions__parsed;
+}
+
+const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__added__observational_predicates__parsed() const
+{
+    return added__observational_predicates__parsed;
+}
+
+            
+
+// Formula_Data::modal_truth
+// Formula_Data::statically_unsatisfiable(const Planning::Formula::State_Predicate& state_Predicate,
+//                                        const std::map<Variable,  Constants&>& assignment_possibilities) const
+// {
+//     auto predicate_Name = state_Predicate.get__name();
+//     auto arguments = state_Predicate.get__arguments();
+    
+    
+//     auto _occurrence_indices = state_propositions__parsed.find(predicate_Name);
+//     if(_occurrence_indices == state_propositions__parsed.end()) return modal_truth::necessarily_true;
+    
+//     auto occurrence_indices = _occurrence_indices->second;
+
+//     /* Which of the symbol (\member{state_Predicate}) arguments are
+//      * variable? -- Result is stored in \local{important_constants}.*/
+//     map<uint, Constants> important_constants;
+//     for(auto index = 0; index < arguments.size(); index++){
+//         auto element = arguments[i];
+//         if(element->try_cast<Planning::Variable>()){
+//             important_constants[index] = Constants();
+//         }
+//     }
+
+//     QUERY_UNRECOVERABLE_ERROR(!important_constants.size(),
+//                               "None of the argument to predicate symbol :: "<<state_Predicate<<std::endl
+//                               <<"Are variable."<<std::endl);
+    
+    
+//     for(auto index = occurrence_indices.begin()
+//             ; index != occurrence_indices.end()
+//             ; index++){
+
+//         auto query__runtime_thread = reinterpret_cast<type_wrapper::runtime_Thread>(this);
+//         auto indexed__Traversable_Collection = Planning::Formula::State_Proposition::indexed__Traversable_Collection;
+        
+//         auto _traversable_Collection = indexed__Traversable_Collection.find(query__runtime_thread);
+//         QUERY_UNRECOVERABLE_ERROR(_traversable_Collectio
+//                                   == indexed__Traversable_Collection.end(),
+//                                   "Cannot find \class{State_Proposition}s associated with current object.");
+        
+//         auto traversable_Collection = _traversable_Collectio->second;
+
+//         QUERY_UNRECOVERABLE_ERROR(index >= traversable_Collection.size(),
+//                                   "We were expectng a proposition at index :: "<<index<<std::endl
+//                                   <<"However we have only parsed :: "<<traversable_Collection.size()
+//                                   <<" propositions for this structure."<<std::endl);
+        
+//         auto proposition = traversable_Collection[index];
+
+        
+//         if(potential_match_via_an_assignment(state_Predicate, proposition)){
+//             auto propositionx_argument = proposition.get__arguments();
+            
+//             for(auto important_indices = important_constants.begin()
+//                     ; important_indices != important_constants.end()
+//                     ; important_indices ++){
+//                 important_indices->second.insert(propositionx_argument[important_indices->first]);
+//             }            
+//         } else {
+//             /*The argument fact is necessarily false.*/
+//             return modal_truth::possibly_true;
+//         }
+//     }
+
+//     bool all_possible_instances_included = true;
+//     for(auto important_indices = important_constants.begin()
+//             ; important_indices != important_constants.end()
+//             ; important_indices ++){
+        
+//         assert(arguments[important_indices->first].test_cast<Variable>());
+        
+//         auto variable = arguments[important_indices->first].get<Variable>();
+
+//         assert(assignment_possibilities.find(*variable) != assignment_possibilities.end());
+        
+//         if(*assignment_possibilities.find(*variable) != important_indices->second){
+//             all_possible_instances_included = false;
+//             break;
+//         }
+//     }
+
+//     if(all_possible_instances_included) return modal_truth::necessarily_false;
+
+//     return modal_truth::possibly_true;
+// }
 

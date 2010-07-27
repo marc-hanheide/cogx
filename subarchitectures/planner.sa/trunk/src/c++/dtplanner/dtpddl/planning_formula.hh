@@ -52,9 +52,17 @@ namespace Planning
             std::ostream& operator<<(std::ostream&, const Argument_List&);
         }
 
-        /* Is an empty formula is treated equivalent to TRUE (i.e.,
-         * TOP).*/
+        /* Is an empty formula is, during processing, treated
+         * equivalent to TRUE (i.e., TOP).*/
         class Vacuous : public type_wrapper<enum_types::vacuous
+                                            , void*>
+        {PRINTING;};
+
+        class True : public type_wrapper<enum_types::formula_true
+                                         , void*>
+        {PRINTING;};
+        
+        class False : public type_wrapper<enum_types::formula_false
                                             , void*>
         {PRINTING;};
 
@@ -66,7 +74,8 @@ namespace Planning
         public: typedef type_wrapper<ID_VAL, NAMING_TYPE, Argument_List> Parent;
             PRINTING;
         public:
-            const Argument_List& get__arguments() const {return stl::tr1::get<1>(Parent::contents());}; 
+            const NAMING_TYPE& get__name() const {return std::tr1::get<0>(Parent::contents());};
+            const Argument_List& get__arguments() const {return std::tr1::get<1>(Parent::contents());}; 
         };
         
         template<int ID_VAL, typename NAMING_TYPE>
@@ -77,7 +86,8 @@ namespace Planning
         public: typedef type_wrapper<ID_VAL, NAMING_TYPE, Constant_Arguments> Parent;
             PRINTING;
         public:
-            const Constant_Arguments& get__arguments() const {return stl::tr1::get<1>(Parent::contents());};
+            const NAMING_TYPE& get__name() const {return std::tr1::get<0>(Parent::contents());};
+            const Constant_Arguments& get__arguments() const {return std::tr1::get<1>(Parent::contents());};
         };
 
 #define MAKE_CONSTANT_ATOM(TYPE_NAME, ID_VAL, NAMING_TYPE)              \

@@ -92,7 +92,7 @@ namespace Planning
         Constants constants;
         
         /* PDDL types for \member{constants}*/
-        Planning::Parsing::Constants_Data::Constants_Description constants_Description;
+        Planning::Constants_Description constants_Description;
 
         /* Reverse map associated with
          * \member{constants_Description}. A type can be interpreted

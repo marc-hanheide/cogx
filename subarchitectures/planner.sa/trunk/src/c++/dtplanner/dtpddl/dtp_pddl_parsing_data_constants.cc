@@ -113,13 +113,13 @@ Planning::Types Constants_Data::get__constantx_types(const Constant& constant)
     return constants_Description.find(constant)->second;//constants_Description[constant];
 }
 
-const std::map<Planning::Constant, Planning::Types >&
+const Planning::Constants_Description&
 Constants_Data::get__constants_Description() const
 {
     return constants_Description;
 }
 
-std::map<Planning::Constant, Planning::Types >
+Planning::Constants_Description&
 Constants_Data::get__constants_Description()
 {
     return constants_Description;

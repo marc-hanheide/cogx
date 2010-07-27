@@ -47,6 +47,8 @@ namespace Planning
         exists = 6,
         forall = 7,
         vacuous = 8,
+        formula_true = 9,
+        formula_false = 10,
         observational_predicate,
         observational_proposition,         /* DT-PDDL "ground percept". So a ground percept symbol.*/
         state_ground_function,
