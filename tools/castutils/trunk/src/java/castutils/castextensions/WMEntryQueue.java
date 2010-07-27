@@ -7,28 +7,29 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.concurrent.LinkedBlockingQueue;
 
+
 import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 
-public class WMEntryQueue extends
-		LinkedBlockingQueue<WMEntryQueue.WMEntryQueueElement> implements
+public class WMEntryQueue<T extends Ice.Object> extends
+		LinkedBlockingQueue<WMEntryQueue.WMEntryQueueElement<T>> implements
 		WorkingMemoryChangeReceiver {
 
-	public class WMEntryQueueElement {
+	public static class WMEntryQueueElement<T2 extends Ice.Object> {
 		/**
 		 * @param addr
 		 * @param entry
 		 */
-		WMEntryQueueElement(WorkingMemoryChange wmc, Ice.ObjectImpl entry) {
+		WMEntryQueueElement(WorkingMemoryChange wmc, T2 entry) {
 			this.wmc = wmc;
 			this.entry = entry;
 		}
 
 		WorkingMemoryChange wmc;
-		Ice.ObjectImpl entry;
+		T2 entry;
 
 		/**
 		 * @return the address
@@ -40,7 +41,7 @@ public class WMEntryQueue extends
 		/**
 		 * @return the entry
 		 */
-		public Ice.ObjectImpl getEntry() {
+		public T2 getEntry() {
 			return entry;
 		}
 		
@@ -73,12 +74,16 @@ public class WMEntryQueue extends
 		
 	}
 
+	private Class<T> type;
+
+
 	/**
 	 * @param component
 	 *            the component that is used to access the memory
 	 */
-	public WMEntryQueue(ManagedComponent component) {
+	public WMEntryQueue(ManagedComponent component, Class<T> type) {
 		super();
+		this.type=type;
 		this.component = component;
 	}
 
@@ -88,8 +93,8 @@ public class WMEntryQueue extends
 	 * 			the component that is used to access the memory
 	 * @param filename
 	 */
-	public WMEntryQueue(ManagedComponent component, String filename) {
-		this(component);
+	public WMEntryQueue(ManagedComponent component, String filename, Class<T> type) {
+		this(component, type);
         try
         {
                 FileInputStream fis = new FileInputStream(filename);
@@ -97,8 +102,8 @@ public class WMEntryQueue extends
                 int count = in.readInt();
                 for (int i=0; i < count; i++) {
                 		WorkingMemoryChange wmc = (WorkingMemoryChange) in.readObject();
-                		Ice.ObjectImpl obj = (Ice.ObjectImpl) in.readObject();
-                		this.put(new WMEntryQueueElement(wmc, obj));
+                		T obj = type.cast(in.readObject());
+                		this.put(new WMEntryQueueElement<T>(wmc, obj));
                 }
                 in.close();
         }
@@ -124,13 +129,13 @@ public class WMEntryQueue extends
 			throws CASTException {
 		try {
 			if (wmc.operation != WorkingMemoryOperation.DELETE) {
-				Ice.ObjectImpl o = component.getMemoryEntry(wmc.address,
-						Ice.ObjectImpl.class);
-				WMEntryQueueElement qe = new WMEntryQueueElement(wmc, o);
+				T o = component.getMemoryEntry(wmc.address,
+						type);
+				WMEntryQueueElement<T> qe = new WMEntryQueueElement<T>(wmc, o);
 				this.put(qe);
 
 			} else {
-				WMEntryQueueElement qe = new WMEntryQueueElement(wmc, null);
+				WMEntryQueueElement<T> qe = new WMEntryQueueElement<T>(wmc, null);
 				this.put(qe);
 			}
 		} catch (InterruptedException e) {
@@ -144,7 +149,7 @@ public class WMEntryQueue extends
             FileOutputStream fos = new FileOutputStream(filename);
             ObjectOutputStream out = new ObjectOutputStream(fos);
             out.writeInt(size());
-            for (WMEntryQueueElement e : this) {
+            for (WMEntryQueueElement<T> e : this) {
                     out.writeObject(e.wmc);
                     out.writeObject(e.entry);
             }
