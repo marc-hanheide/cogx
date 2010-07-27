@@ -20,7 +20,7 @@ import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
 
 public class WorkingMemoryPlayer extends ManagedComponent {
 	private String m_filename;
-	private WMEntryQueue m_events; 
+	private WMEntryQueue<Ice.Object> m_events; 
 	private FilterConfiguration m_filterConfig = null;
 	private boolean m_restoreState = false;
 	
@@ -38,7 +38,7 @@ public class WorkingMemoryPlayer extends ManagedComponent {
 		else {
 			m_filename = getSubarchitectureID() + ".log";
 		}
-		m_events = new WMEntryQueue(this, m_filename);
+		m_events = new WMEntryQueue<Ice.Object>(this, m_filename, Ice.Object.class);
 
 		String cname = _config.get("--config");
 		if (cname != null) {
@@ -55,8 +55,8 @@ public class WorkingMemoryPlayer extends ManagedComponent {
 	}
 	
 	private void restoreState() {
-		Map<WorkingMemoryAddress, Ice.ObjectImpl> map = new HashMap<WorkingMemoryAddress, Ice.ObjectImpl>();
-		for (WMEntryQueueElement elem : m_events) {
+		Map<WorkingMemoryAddress, Ice.Object> map = new HashMap<WorkingMemoryAddress, Ice.Object>();
+		for (WMEntryQueueElement<Ice.Object> elem : m_events) {
 			if (elem.getEntry() != null) {
 				map.put(elem.getEvent().address, elem.getEntry());
 			}
@@ -64,7 +64,7 @@ public class WorkingMemoryPlayer extends ManagedComponent {
 				map.remove(elem.getEvent().address);
 			}
 		}
-		for (Entry<WorkingMemoryAddress, Ice.ObjectImpl> e: map.entrySet()) {
+		for (Entry<WorkingMemoryAddress, Ice.Object> e: map.entrySet()) {
 			try {
 				log("Add " +e.getValue().getClass().getName() + " to address " + e.getKey().id);
 				addToWorkingMemory(e.getKey(), e.getValue());
@@ -82,7 +82,7 @@ public class WorkingMemoryPlayer extends ManagedComponent {
 	}
 	
 	private void replayEvents() {
-		WMEntryQueueElement next = m_events.poll();
+		WMEntryQueueElement<Ice.Object> next = m_events.poll();
 		while (isRunning() && next != null) {
 			CASTTime now = getCASTTime();
 			CASTTime eventTime = next.getEvent().timestamp;
@@ -96,7 +96,7 @@ public class WorkingMemoryPlayer extends ManagedComponent {
 		}
 	}
 	
-	private synchronized void applyEvent(WMEntryQueueElement event) {
+	private synchronized void applyEvent(WMEntryQueueElement<Ice.Object> event) {
 		if (m_filterConfig != null && !m_filterConfig.isEmpty()) {
 			boolean found = false;
 			for (WorkingMemoryChangeFilter f : m_filterConfig) {
@@ -144,8 +144,8 @@ public class WorkingMemoryPlayer extends ManagedComponent {
 
 	public static void main(String[] args) {
 		String filename = args[0];
-		WMEntryQueue events = new WMEntryQueue(null, filename);
-		for (WMEntryQueueElement event : events) {
+		WMEntryQueue<Ice.Object> events = new WMEntryQueue<Ice.Object>(null, filename,Ice.Object.class);
+		for (WMEntryQueueElement<Ice.Object> event : events) {
 			CASTTime t = event.getEvent().timestamp;
 			System.out.printf("%d.%03d: %s\n", t.s, t.us/1000, event);
 			
