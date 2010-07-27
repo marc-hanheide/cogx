@@ -218,3 +218,19 @@ std::ostream& Planning::Formula::Vacuous::operator<<(ostream&o)const
     return o;
 }
 
+
+std::ostream& Planning::Formula::True::operator<<(ostream&o)const 
+{
+    o<<"(TRUE)"<<std::endl;
+    
+    return o;
+}
+
+std::ostream& Planning::Formula::False::operator<<(ostream&o)const 
+{
+    o<<"(FALSE)"<<std::endl;
+    
+    return o;
+}
+
+

@@ -86,10 +86,12 @@ NEW_referenced_WRAPPED_deref_POINTER            \
 
 Problem_Grounding::Problem_Grounding(Parsing::Problem_Data& problem_Data,
                                      CXX__PTR_ANNOTATION(Parsing::Domain_Data) domain_Data,
-                                     Planning::Parsing::Constants_Data::Constants_Description& constants_Description)
+                                     const Planning::Constants_Description& constants_Description,
+                                     const std::map<Type, Constants>&extensions_of_types)
     :problem_Data(problem_Data),
      domain_Data(domain_Data),
-     constants_Description(constants_Description)
+     constants_Description(constants_Description),
+     extensions_of_types(extensions_of_types)
 {
     assert(domain_Data->get__action_Schemas().size());
     auto first_action = domain_Data->get__action_Schemas().begin();
@@ -105,7 +107,7 @@ void Problem_Grounding::ground_actions()
     for(auto action = schemas.begin()
             ; action != schemas.end()
             ; action ++){
-        ground_action_schema(const_cast<Planning::Action_Schema&>(*action));
+        ground_action_schema(const_cast<Planning::Action_Schema&>(*action));/*FIX*/
     }
 }
 
@@ -308,13 +310,15 @@ void Problem_Grounding::simplify_action_schema_precondition(Planning::Action_Sch
 }
 
 void Problem_Grounding::
-ground_action_schema(list<Constant>& ordereed_assignment,/*result, an assignment*/
+ground_action_schema(std::list<Constant>& ordereed_assignment,/*result, an assignment*/
                      map<Variable, Constant>& assignment_detail, /*explicit representation of results*/
-                     const map<Variable, Constants&>& potential_assignments, /* constants from which the result is formed.*/
-                     const Variables& action_variables, /*Gives the order in which variables assignment should be made.*/
+                     const map<Variable, Constants>& potential_assignments, /* constants from which the result is formed.*/
+                     const Argument_List& action_variables /*Gives the order in which variables assignment should be made -- Some of these may be constant.*/
  )
 {
-    complete(assignment)
+
+    UNRECOVERABLE_ERROR("UNIMPLEMENTED");
+//     complete(assignment)
     
 }
 
@@ -325,7 +329,7 @@ void Problem_Grounding::grow__cached_constants_of_types(const Types& types)
     for(auto type = types.begin()
             ; type != types.end()
             ; type++){
-        auto consts = extensions_of_types[type];
+        auto consts = extensions_of_types.find(*type)->second;
         for(auto c = consts.begin()
                 ; c != consts.end()
                 ; c++){
@@ -333,7 +337,7 @@ void Problem_Grounding::grow__cached_constants_of_types(const Types& types)
         }        
     }
 
-    cached_constants_of_types[types] = std::tr1::move(constants);
+    cached_constants_of_types[types] = std::move<>(constants);
 }
 
 void Problem_Grounding::grow__cached_constants_of_types(const Argument_Types& argument_Types)
@@ -344,7 +348,7 @@ void Problem_Grounding::grow__cached_constants_of_types(const Argument_Types& ar
         if(arg_Types->size() == 1) continue;
         assert(0 != arg_Types->size());
         if(cached_constants_of_types.find(*arg_Types) == cached_constants_of_types.end()){
-            grow__cached_constants_of_types(*arg_Types)
+            grow__cached_constants_of_types(*arg_Types);
         }
     }
 }
@@ -361,28 +365,35 @@ void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Sch
     auto arguments = action_headder.get__arguments();
     auto variables = get__symbols(arguments);
     auto argument_Types = get__types(arguments);
-    
+
+    /* ASSERTION -- 6 */
     grow__cached_constants_of_types(argument_Types);
     
-    map<Variable,  Constants&> potential_assignments;
+    map<Variable,  Constants> potential_assignments;
     assert(argument_Types .size() == variables.size());
     for(uint index = 0; index < argument_Types.size(); index++){
         auto types = argument_Types[index];
-        auto variable = variables[index];
+        auto _variable = variables[index];
 
-        if(types.size() == 1){
-            potential_assignments[variable] = *extensions_of_types.find(*types.begin());
-        } else {
-            assert(types.size());
-            assert(cached_constants_of_types.end() != cached_constants_of_types.find(types));
-            potential_assignments[variable] = *cached_constants_of_types.find(types);
+        if(_variable.test_cast<Planning::Variable>()){
+            const Planning::Variable& variable = *_variable.cxx_get<Planning::Variable>();
+            
+            if(types.size() == 1){
+                potential_assignments[variable] = extensions_of_types.find(*types.begin())->second;
+            } else {
+                assert(types.size());
+                assert(cached_constants_of_types.end() != cached_constants_of_types.find(types));/* ASSERTION -- 6 */
+                potential_assignments[variable] = cached_constants_of_types.find(types)->second;
+            }
+        } else if(_variable.test_cast<Planning::Constant>()) {
+            continue;
         }
     }
 
-    list<Constant> arguments;
-    map<Variable, Constant> assignment_detail;
+    std::list<Constant> ground_arguments;
+    std::map<Variable, Constant> assignment_detail;
     
-    ground_action_schema(arguments,
+    ground_action_schema(ground_arguments,
                          assignment_detail,
                          potential_assignments,
                          variables);

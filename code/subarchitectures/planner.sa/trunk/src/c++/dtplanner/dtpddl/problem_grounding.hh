@@ -53,7 +53,7 @@ namespace Planning
     public:
         Problem_Grounding(Parsing::Problem_Data&,
                           CXX__PTR_ANNOTATION(Parsing::Domain_Data),
-                          const Planning::Parsing::Constants_Data::Constants_Description&,
+                          const Planning::Constants_Description&,
                           const std::map<Type, Constants>&);
 
         void ground_actions();
@@ -73,7 +73,7 @@ namespace Planning
         std::map<Types, Constants> cached_constants_of_types;
 
         /* Description of the problem constants (see \module{Solver}).*/
-        const Planning::Parsing::Constants_Data::Constants_Description& constants_Description;
+        const Planning::Constants_Description& constants_Description;
 
         /* Constants that types can take (see \module{Solver}). This is the
          * basis of data in \member{cached_constants_of_types}.*/
@@ -98,8 +98,11 @@ namespace Planning
         void simplify_action_schema_precondition(Planning::Action_Schema& );
         
         /* Populate \member{}*/
-        void ground_action_schema(Planning::Action_Schema& );
-
+        void ground_action_schema(Planning::Action_Schema& action_Schema);
+        void ground_action_schema(std::list<Constant>& ordereed_assignment,
+                                  std::map<Variable, Constant>& assignment_detail,
+                                  const std::map<Planning::Variable, Planning::Constants/*FIX*/>& potential_assignments,
+                                  const Argument_List& action_variables);
         /* Populate \member{}*/
         void ground_derived_predicate_schema(Planning::Derived_Predicate&);
         

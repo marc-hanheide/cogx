@@ -48,7 +48,7 @@ namespace Planning
         {
         public:
             
-            typedef std::map<Constant, Types > Constants_Description;
+//             typedef std::map<Constant, Types > Constants_Description;
             
             void commit__constants();
             void convert__type_of_type__TO__type_of_constant();
@@ -63,12 +63,12 @@ namespace Planning
             const Planning::Types& get__constantx_types(const Constant&) const;
             Planning::Types get__constantx_types(const Constant&);
 
-            const Constants_Description& get__constants_Description() const;
-            Constants_Description get__constants_Description();
+            const Planning::Constants_Description& get__constants_Description() const;
+            Planning::Constants_Description& get__constants_Description();
         protected:
             /* Each constant/object symbol has a type. If none is given,
              * this defaults to the type "object".*/
-            Constants_Description constants_Description;
+            Planning::Constants_Description constants_Description;
             
             /* Last list of constants parsed.*/
             Planning::Constants constants;

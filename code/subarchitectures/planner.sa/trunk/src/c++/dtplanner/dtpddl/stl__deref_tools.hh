@@ -94,6 +94,15 @@ public:
         auto tmp = in.cxx_get<T>();
         contents = CXX__PTR_ANNOTATION(T)(tmp);//in.cxx_get<T>());
     }
+    
+//     template<typename TT>
+//     explicit CXX__deref__shared_ptr(const CXX__PTR_ANNOTATION(TT)& in)
+//     {
+//         assert(in.use_count());
+//         assert(dynamic_cast<const T*>(in.get()));
+
+//         contents = std::tr1::dynamic_pointer_cast<T>(in);//CXX__PTR_ANNOTATION(T)(tmp);//in.cxx_get<T>());
+//     }
 
 
     long use_count()const{return contents.use_count();};
@@ -109,6 +118,7 @@ public:
 //     const T* operator->() const {return contents.get();};
     
     bool operator==(const CXX__deref__shared_ptr&) const;
+    bool operator!=(const CXX__deref__shared_ptr&) const;
     bool operator<(const CXX__deref__shared_ptr&) const;
     std::size_t hash_value() const;
     ostream& operator<<(ostream&) const;
@@ -152,6 +162,12 @@ template<typename T>
 bool CXX__deref__shared_ptr<T>::operator==(const CXX__deref__shared_ptr&in) const
 {
     return ((*contents) == (*in.contents));
+}
+
+template<typename T>
+bool CXX__deref__shared_ptr<T>::operator!=(const CXX__deref__shared_ptr&in) const
+{
+    return !operator==(in);
 }
 
 template<typename T>

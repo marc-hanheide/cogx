@@ -202,28 +202,64 @@ namespace Planning
              * can only become false, and others can only become true,
              * we can sometimes know if a predicate is satisfiable in
              * any planning state, just by examining what is available
-             * in the starting states. Here
-             * \member{possibly_statically_satisfiable} assumes that
-             * its \argument{State_Predicate} cannot be made true by
-             * any planning actions. Contrariwise,
-             * \member{possibly_statically_unsatisfiable} supposes
-             * that no action can make its \argument{State_Predicate}
-             * false. Therefore, these methods are able to determine
-             * the possible satisfiability (necessary, but not
-             * sufficient analysis) of some propositions.
+             * in the starting states.
              *
-             * - If \member{possibly_statically_satisfiable} returns
-             * false, then the argument predicate will never be true
-             * in any planning state; provided no action can make it
-             * true.
+             * Here \member{statically_satisfiable} assumes that its
+             * \argument{State_Predicate} cannot be made FALSE by any
+             * planning actions. Contrariwise,
+             * \member{statically_unsatisfiable} supposes that no
+             * action can make its \argument{State_Predicate}
+             * TRUE. Therefore, these methods are able to determine
+             * the possible satisfiability/unsatisfiability
+             * (necessary, but not sufficient analysis) of some
+             * propositions.
              *
-             * - If \member{possibly_statically_unsatisfiable} returns
-             * true, then the argument predicate is never true in
-             * a planning state; provided no action can make it true.
-             **/
-            bool possibly_statically_satisfiable(const Planning::Formula::State_Predicate&) const;
-            bool possibly_statically_unsatisfiable(const Planning::Formula::State_Predicate&,
-                                                   const std::map<Variable,  Constants&>&) const;
+             * if \member{statically_satisfiable} returns TRUE, then
+             * the \argument{State_Predicate} could indeed be ground
+             * to something that is TRUE in a starting state. If it
+             * returns FALSE, then no such possibility is available --
+             * i.e., necessarily FALSE.
+             *
+             * \member{statically_satisfiable} gives the oppisite
+             * answer to \member{statically_satisfiable}.
+             */
+            bool statically_satisfiable(const Planning::Formula::State_Predicate&) const;
+            bool statically_unsatisfiable(const Planning::Formula::State_Predicate&) const;
+
+
+            
+//             enum modal_truth {possibly_false, necessarily_false, possibly_true, necessarily_true};
+                
+            
+//             /* \argument{State_Predicate} is a predicate symbol --
+//              * that is, a Boolean symbol that has one or more variable
+//              * arguments. Moreover, there are no problem/domain
+//              * operators that have \argument{State_Predicate} as an
+//              * add-effect.
+//              *
+//              * \argument{assignment_possibilities} contains the
+//              * constant symbols that are available for assignments to
+//              * variable arguments of
+//              * \argument{assignment_possibilities}.
+//              *
+//              * Return is ::
+//              *
+//              * - modal_truth::necessarily_true if the
+//              * \argument{State_Predicate} can never be ground to a
+//              * fact that is true; unless an action is around that
+//              * makes the ground fact true.
+//              *
+//              * - modal_truth::necessarily_false Every ground fact that
+//              * indicated by \argument{State_Predicate} is necessarily
+//              * always true; unless there is an action out there that
+//              * can make symbols of that type false.
+//              *
+//              * - modal_truth::possibly_true If we ground
+//              * \argument{State_Predicate} we might get a symbol that
+//              * can be true.
+//              */
+//             modal_truth statically_unsatisfiable(const Planning::Formula::State_Predicate&,
+//                                                   const std::map<Variable,  Constants&>& assignment_possibilities) const;
 
             /* Can a ground instance of \argument{State_Predicate} be
              * equal to \argument{State_Proposition}.*/
@@ -250,6 +286,24 @@ namespace Planning
             /*(see \member{complete__quantified_formula(exists)})*/
             Formula::Subformula complete__exists_formula();
 
+        public:
+            const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >& get__state_functions__parsed() const;
+            const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >& get__perceptual_functions__parsed() const;
+            const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >& get__state_ground_functions__parsed() const;
+            const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >& get__perceptual_ground_functions__parsed() const;
+            const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__state_propositions__parsed() const;
+            const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__state_predicates__parsed() const;
+            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__observational_propositions__parsed() const;
+            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__observational_predicates__parsed() const;
+            const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__deleted__state_propositions__parsed() const;
+            const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__deleted__state_predicates__parsed() const;
+            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__deleted__observational_propositions__parsed() const;
+            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__deleted__observational_predicates__parsed() const;
+            const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__added__state_propositions__parsed() const;
+            const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__added__state_predicates__parsed() const;
+            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__added__observational_propositions__parsed() const;
+            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__added__observational_predicates__parsed() const;
+            
         protected:
             
             /* When a formula is being parsed, but before it is
