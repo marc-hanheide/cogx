@@ -1,6 +1,6 @@
 (define (domain cogx)
 
-	(:requirements :mapl :adl :object-fluents)
+	(:requirements :mapl :adl :object-fluents :action-costs)
 	
 	(:types 
 		place - object
