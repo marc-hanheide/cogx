@@ -1,5 +1,6 @@
 include_directories(.)
-include_directories(${COGX_ROOT}/tools/beliefs/apis/beliefs/src/cpp/autogen)
+#include_directories(${COGX_ROOT}/tools/beliefs/apis/beliefs/src/cpp/autogen)
+include_directories(../autogen)
 
 set(sources Belief.cpp)
 
