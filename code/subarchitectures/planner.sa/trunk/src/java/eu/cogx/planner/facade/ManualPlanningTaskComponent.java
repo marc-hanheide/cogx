@@ -7,6 +7,8 @@ import java.util.LinkedList;
 
 import javax.swing.table.TableModel;
 
+import motivation.slice.PlanProxy;
+
 import autogen.Planner.Goal;
 import autogen.Planner.PlanningTask;
 import cast.UnknownSubarchitectureException;
@@ -69,7 +71,7 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 	}
 
 	@Override
-	public String submit(TableModel goalsTable) {
+	public String submit(TableModel goalsTable, boolean shouldExecutePlan) {
 		log("submit:" + goalsTable);
 		LinkedList<Goal> goals = new LinkedList<Goal>();
 		for (int i=0; i<goalsTable.getRowCount(); i++) {
@@ -90,11 +92,15 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 			}
 		}
 		planner.setGoals(goals);
+		planner.setExecutePlan(shouldExecutePlan);
 		try {
 			WMEntryQueueElement<PlanningTask> res=planner.call();
 			if (res==null)
-				return "null";
+				return "PLANNING FAILED";
 			else {
+				if (shouldExecutePlan) {
+					addToWorkingMemory(newDataID(), new PlanProxy(res.getEvent().address));
+				}
 				String resultString=res.getEntry().planningStatus.name()+" costs=" + res.getEntry().costs+ ", goals:";
 				for (Goal g: res.getEntry().goals) {
 					resultString+=" ["+g.goalString + ", " + g.isInPlan +"]";
