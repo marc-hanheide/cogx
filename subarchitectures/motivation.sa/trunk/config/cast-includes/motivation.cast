@@ -1,16 +1,19 @@
-# execution ###################################################################
-JAVA MG executor execution.components.SpringSchoolExecutionMediator
-
 # motivation ##################################################################
 
-JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(exists (?r - robot) (forall (?h - person) (kval ?r (name ?h))))"
+JAVA MG goal.generator motivation.components.generators.PlaceBeliefGoalGenerator --debug
+JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
+JAVA MG goal.scheduler motivation.components.managers.DeprecatedScheduler --debug --maxPlannedMotives 1
+JAVA MG goal.manager motivation.components.managers.PlanAllManager --debug
 
-#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (visited ?p))"
 
-JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
+     #JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(exists (?r - robot) (forall (?h - person) (kval ?r (name ?h))))"
 
-JAVA MG MotivationScheduler motivation.components.managers.Scheduler  --maxPlannedMotives 1 --orderPolicy  PriorityCostGain #JoinedGainCost 
+     #JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (visited ?p))"
 
-JAVA MG MotivationPlanAllManager motivation.components.managers.PlanAllManager 
+     #JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
 
-JAVA MG MotiveChartViewer motivation.util.viewer.MotiveChartViewer
+     #JAVA MG MotivationScheduler motivation.components.managers.Scheduler  --maxPlannedMotives 1 --orderPolicy  PriorityCostGain #JoinedGainCost 
+
+     #JAVA MG MotivationPlanAllManager motivation.components.managers.PlanAllManager 
+
+     #JAVA MG MotiveChartViewer motivation.util.viewer.MotiveChartViewer
