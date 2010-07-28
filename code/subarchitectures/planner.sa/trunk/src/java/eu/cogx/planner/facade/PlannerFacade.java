@@ -79,6 +79,8 @@ public class PlannerFacade implements Callable<WMEntryQueueElement<PlanningTask>
 
 	private ManagedComponent component;
 	private StopWatch watch;
+
+	private boolean executePlan=false;
 	/**
 	 * @param motives
 	 */
@@ -148,6 +150,10 @@ public class PlannerFacade implements Callable<WMEntryQueueElement<PlanningTask>
 		motives = new LinkedList<Goal>(m);
 	}
 
+	public void setExecutePlan(boolean b) {
+		this.executePlan=b;
+	}
+	
 	/**
 	 * @throws InterruptedException
 	 * @throws InterruptedException
@@ -266,7 +272,7 @@ public class PlannerFacade implements Callable<WMEntryQueueElement<PlanningTask>
 	 * @return
 	 */
 	private PlanningTask newPlanningTask() {
-		return new PlanningTask(0, null, false, new Action[0], 0, "", Completion.PENDING,
+		return new PlanningTask(0, null, executePlan, new Action[0], 0, "", Completion.PENDING,
 				0, Completion.PENDING, 0);
 	}
 }
