@@ -31,8 +31,8 @@ SET(SOURCES
 	Draw.cc
 #	Draw_small.cc
 	Except.cc
-	fitcircle.c
-	fitellipse.c
+#	fitcircle.c
+#	fitellipse.c
 #	OpenCvImgSeqVideo.cc
 #	OpenCvLiveVideo.cc
 	Vector2.ic
