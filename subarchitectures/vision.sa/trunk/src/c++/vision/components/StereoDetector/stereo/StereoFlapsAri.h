@@ -26,7 +26,7 @@ namespace Z
 class TmpFlapAri
 {
 public:
-  TmpSurf surf[2];										///< tmp surfaces
+  Surf2D surf[2];										///< Tmp. 2D surfaces
 
   TmpFlapAri() {}
   TmpFlapAri(FlapAri *flap);
@@ -75,6 +75,7 @@ private:
   unsigned FindMatchingFlap(TmpFlapAri &left_flap, Array<TmpFlapAri> &right_flaps, unsigned l);
   void MatchFlaps(Array<TmpFlapAri> &left_flaps, Array<TmpFlapAri> &right_flaps, int &matches);
   void Calculate3DFlaps(Array<TmpFlapAri> &left_flaps, Array<TmpFlapAri> &right_flaps, int &flapMatches, Array<Flap3DAri> &flap3ds);
+	void DrawSingleMatched(int side, int id, int detail);
 
 public:
 	StereoFlapsAri(VisionCore *vc[2], StereoCamera *sc);
@@ -88,8 +89,7 @@ public:
   const Flap3DAri &Flaps(int i) {return flap3ds[i];}														///<
 
 	int NumStereoMatches() {return flapMatches;}																	///<
-	void Draw(int side, bool masked = false);
-	void DrawMatched(int side);
+	void DrawMatched(int side, bool single, int id, int detail);
 	void ClearResults();
 	void Process();
 	void Process(int oX, int oY, int sc);

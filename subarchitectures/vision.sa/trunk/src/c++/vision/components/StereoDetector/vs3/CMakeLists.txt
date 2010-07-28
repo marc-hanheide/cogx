@@ -4,8 +4,8 @@ include_directories(.)
 
 # Set the headers.
 SET(HEADERS
-	fitcircle.h
-	fitellipse.h
+#	fitcircle.h
+#	fitellipse.h
 	nrutil.h
 	Arc.hh
 #	BallDefinition.hh
@@ -104,8 +104,8 @@ SET(HEADERS
 SET(SOURCES 
 	betacf.c
 	betai.c
-	fitcircle.c
-	fitellipse.c
+#	fitcircle.c
+#	fitellipse.c
 	gammln.c
 	Math.ic
 	nrutil.c

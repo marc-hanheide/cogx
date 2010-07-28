@@ -20,7 +20,6 @@ namespace Z
  */
 TmpRectangle::TmpRectangle(Rectangle *rectangle)
 {
-// 	surf.Init(rectangle->closure);							/// TODO Initialisieren mit Rectangle!!!!
 	surf.Init(rectangle);
 }
 
@@ -56,15 +55,15 @@ void TmpRectangle::Refine()
 }
 
 /**
- * @brief Returns true, if flap is at the x/y-position in the image.
+ * @brief Returns true, if rectangle is at the x/y-position in the image.
  * @param x X-coordinate in image pixel.
  * @param y Y-coordinate in image pixel.
  * @return Returns true, if flap is at this position.
  */
-// bool TmpFlap::IsAtPosition(int x, int y) const
-// {
-//   return surf[0].IsAtPosition(x, y) || surf[1].IsAtPosition(x, y);
-// }
+bool TmpRectangle::IsAtPosition(int x, int y) const
+{
+  return surf.IsAtPosition(x, y);
+}
 
 /**
  * @brief If a rectangle from the right image was matched with a rectangle from the left image we
@@ -81,7 +80,6 @@ void TmpRectangle::Fuddle(unsigned off0)
 //-------------------------------------------------------------------//
 //------------------------- StereoRectangles ------------------------//
 //-------------------------------------------------------------------//
-
 /**
  * @brief Constructor of StereoFlaps: Calculate stereo matching of flaps
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
@@ -94,39 +92,39 @@ StereoRectangles::StereoRectangles(VisionCore *vc[2], StereoCamera *sc) : Stereo
   rectMatches = 0;
 }
 
-
 /**
- * @brief Draw flaps as overlay over the stereo image
- * @param side Left/right side of stereo images.
- * @param masked Draw masked features
+ * @brief Draw matched rectangles.
+ * @param side Left or right image from stereo rig.
+ * @param single Draw single feature
+ * @param id ID of single feature
+ * @param detail Degree of detail
  */
-void StereoRectangles::Draw(int side, bool masked)
+void StereoRectangles::DrawMatched(int side, bool single, int id, int detail)
 {
-	SetColor(RGBColor::yellow);
-	int nrRects = 0;
-	if(side == LEFT) nrRects = NumRectanglesLeft2D();
-	else nrRects = NumRectanglesRight2D();
-
-	for(int i=0; i<nrRects; i++)
+	if(single)
 	{
-		if(masked)
-			vcore[side]->Gestalts(Gestalt::RECTANGLE, i)->Draw();	
-		else
-			if (vcore[side]->Gestalts(Gestalt::RECTANGLE, i)->IsUnmasked())
-				vcore[side]->Gestalts(Gestalt::RECTANGLE, i)->Draw();	
+		if(id < 0 || id >= rectMatches)
+		{
+			printf("StereoClosures::DrawMatched: warning: id out of range!\n");
+			return;
+		}
+		DrawSingleMatched(side, id, detail);
 	}
+	else
+		for(int i=0; i< rectMatches; i++)
+			DrawSingleMatched(side, i, detail);
 }
-
 
 /**
- * @brief Draw matched rectangles as overlay.
+ * @brief Draw single matched closure.
+ * @param side Left or right image from stereo rig.
+ * @param id ID of single feature
+ * @param detail Degree of detail
  */
-void StereoRectangles::DrawMatched(int side)
+void StereoRectangles::DrawSingleMatched(int side, int id, int detail)
 {
-	for(int i=0; i< rectMatches; i++)
-		rectangles[side][i].surf.Draw(RGBColor::red);
+	rectangles[side][id].surf.Draw(RGBColor::red);
 }
-
 
 /**
  * @brief Convert rectangle from object detector to working memory's visual object.
@@ -262,27 +260,21 @@ unsigned StereoRectangles::FindMatchingRectangle(TmpRectangle &left_rect, Array<
  */
 void StereoRectangles::MatchRectangles(Array<TmpRectangle> &left_rects, Array<TmpRectangle> &right_rects, int &matches)
 {
-// printf("\n######################################\n");
-// printf("Match rectangles: %u - %u\n", left_rects.Size(), right_rects.Size());
-
   unsigned j, l = 0, u = left_rects.Size();
   for(; l < u && l < right_rects.Size();)
   {
-// printf("  Find matching rectangle for left rectangle: %u\n", l);
     j = FindMatchingRectangle(left_rects[l], right_rects, l);
-// printf("  left: %u - best right found: %u:", l, j);
-    // found a matching right, move it to same index position as left
+
+		// found a matching right, move it to same index position as left
     if(j != UNDEF_ID)
     {
-// printf(" MATCH!\n");
-      right_rects.Swap(l, j);				/// wechsle gefundenes right_rects[j] an selbe Stelle wie left_rects ==> l
+      right_rects.Swap(l, j);			// change right_rects[j] to same place as left_rects (==>l)
       l++;
     }
     // found no right, move left to end and decrease end
     else
     {
-// printf(" No match!\n");
-      left_rects.Swap(l, u-1);			/// wechsle left_rects[l] an die letzte Stelle u-1 und mach u um eins kleiner
+      left_rects.Swap(l, u-1);		// change left_rects[l] to last place (u-1) and do not consider in future.
       u--;
     }
   }
@@ -326,17 +318,15 @@ void StereoRectangles::Calculate3DRectangles(Array<TmpRectangle> &left_rects, Ar
  */
 void StereoRectangles::ClearResults()
 {
-// 	surf3ds.Clear();
-	rectangle3ds.Clear();
 	rectangles[LEFT].Clear();
 	rectangles[RIGHT].Clear();
+	rectangle3ds.Clear();
 	rectMatches = 0;
 }
 
 
 /**
  * @brief Match and calculate 3D rectangles from 2D rectangles.
- * @param side LEFT/RIGHT image of stereo.images.
  */
 void StereoRectangles::Process()
 {
@@ -370,7 +360,9 @@ void StereoRectangles::Process()
 
 /**
  * @brief Match and calculate 3D rectangles from 2D rectangles.
- * @param side LEFT/RIGHT image of stereo.images.
+ * @param oX Offset in x-direction.
+ * @param oY Offset in y-direction
+ * @param sc Scale factor.
  */
 void StereoRectangles::Process(int oX, int oY, int sc)
 {

@@ -345,7 +345,7 @@ void CEdge::Canny(IplImage *indx, IplImage *indy, IplImage *idst, double lowThr,
               for( j = 0; j < size.width; j++ )
               {
                   x = _dx[j]; y = _dy[j];
-                  _magf[j] = (float)std::sqrt((double)x*x + (double)y*y);
+                  _magf[j] = (float)sqrt((double)x*x + (double)y*y);
               }
           }
       }

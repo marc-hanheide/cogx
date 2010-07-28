@@ -51,7 +51,7 @@ public:
 	double p_e;																										///< probability of an edgel 							TODO das sollte hier weg => für sig-Berechnung
 	double p_ee;																									///< probability of an edgel given another edgel
 
-  bool use_masking;																							///< use masking of gestalts?							TODO überprüfen was das macht? =>StereoClosures
+  bool use_masking;																							///< use masking of gestalts for stereo processing. TODO sollte überall eigens def. werden.
   Vector2 roi_center;																						///< center of the region of interest			TODO überprüfen was das macht? Wieso public?
   double roi_sigma;																							///< sigma of the region of interest			TODO überprüfen was das macht? Wieso public?
 
@@ -84,6 +84,7 @@ public:
   void DrawGestaltInfo(Gestalt::Type type, unsigned num);
   void DrawPrinciple(GestaltPrinciple::Type type, int detail = 0);
 	const char* GetInfo(Gestalt::Type type, int id);
+	const char* GetGestaltTypeName(Gestalt::Type type);
 	const char* GetGestaltListInfo();
   unsigned PickGestaltAt(Gestalt::Type type, int x, int y, unsigned start_at, bool reject_masked = false);
   double RunTime();

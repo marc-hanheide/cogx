@@ -211,6 +211,8 @@ void VisionCore::ProcessImage(int runtime_ms, float ca, float co) //throw Except
 			if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i))
 				principles[i]->PreOperate();
 
+// printf("VisionCore::ProcessImage: after pre-operate.\n");
+
 		// incremental operations
     do
     {
@@ -218,16 +220,21 @@ void VisionCore::ProcessImage(int runtime_ms, float ca, float co) //throw Except
       {
         if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i) && principles[i]->NeedsOperate())
         {
+// printf("VisionCore::ProcessImage: principle[%u]->Operate()\n", i);
           principles[i]->Operate(true);
         }
       }
       clock_gettime(CLOCK_THREAD_CPUTIME_ID, &cur);
     } while(timespec_diff(&cur, &start) < (double)runtime_ms/1000.);
-		
+
+// printf("VisionCore::ProcessImage: after operate.\n");
+
 		// post-operate
 		for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
 			if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i))
 				principles[i]->PostOperate();
+
+// printf("VisionCore::ProcessImage: after post-operate.\n");
   }
   catch(Z::Except &e)
   {
@@ -347,6 +354,26 @@ const char* VisionCore::GetInfo(Gestalt::Type type, int id)
 	return text;
 }
 
+
+/**
+ * @brief Get the name of a Gestalt type.  
+ * @param type Gestalt type
+ * @return Returns the information as string.
+ */
+const char* VisionCore::GetGestaltTypeName(Gestalt::Type type)
+{
+  const unsigned info_size = 10000;
+  static char info_text[info_size] = "";
+  int n = 0;
+
+	n += snprintf(info_text + n, info_size - n, "%s: ", Gestalt::TypeName(type));
+
+	for(unsigned i=0; i< (18 - Gestalt::TypeNameLength(type)); i++)
+		n += snprintf(info_text + n, info_size -n, " ");
+	
+	return info_text;
+}
+
 /**
  * @brief Get the Gestalt list with the number of detected Gestalts.
  * @return Returns the information as string.
@@ -358,7 +385,7 @@ const char* VisionCore::GetGestaltListInfo()
   int n = 0;
 
 	for(int i=0; i < Gestalt::MAX_TYPE; i++)
-		n += snprintf(info_text + n, info_size - n, "%s:  %u\n", Gestalt::TypeName((Gestalt::Type) i), gestalts[i].Size());
+		n += snprintf(info_text + n, info_size - n, "%s %u\n", GetGestaltTypeName((Gestalt::Type)i), gestalts[i].Size());
 
 	return info_text;
 }
@@ -457,10 +484,6 @@ void VisionCore::InformNewGestalt(Gestalt::Type type, unsigned id)
 			if(VisionCore::config.GetValueInt("FORM_SPHERES") == 1)
         Principles(GestaltPrinciple::FORM_SPHERES)->InformNewGestalt(type, id);
       break;
-// 		case Gestalt::E_JUNCTION:
-//       if(VisionCore::config.GetValueInt("FORM_EXT_ELLIPSES") == 1)
-//         Principles(GestaltPrinciple::FORM_EXT_ELLIPSES)->InformNewGestalt(type, id);
-//       break;
 		case Gestalt::E_JUNCTION:
       if(VisionCore::config.GetValueInt("FORM_CYLINDERS") == 1)
         Principles(GestaltPrinciple::FORM_CYLINDERS)->InformNewGestalt(type, id);

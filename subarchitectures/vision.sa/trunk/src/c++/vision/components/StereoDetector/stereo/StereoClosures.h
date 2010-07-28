@@ -28,7 +28,7 @@ namespace Z
 class TmpClosure
 {
 public:
-  TmpSurf surf;													///< tmp surfaces
+  Surf2D surf;													///< tmp surfaces
 
   TmpClosure() {}
   TmpClosure(Closure *closure);
@@ -74,6 +74,7 @@ private:
 	unsigned FindMatchingClosure(TmpClosure &left_clos, Array<TmpClosure> &right_clos, unsigned l);
 	void MatchClosures(Array<TmpClosure> &left_clos, Array<TmpClosure> &right_clos, int &matches);
 	void Calculate3DClosures(Array<TmpClosure> &left_clos, Array<TmpClosure> &right_clos, int &matches, Array<Closure3D> &closure3ds);
+	void DrawSingleMatched(int side, int id, int detail);
 
 public:
 	StereoClosures(VisionCore *vc[2], StereoCamera *sc);
@@ -87,8 +88,8 @@ public:
 	const Closure3D &Closures(int i) {return closure3ds[i];}												///< 
 
 	int NumStereoMatches() {return closMatches;}																		///< 
-	void Draw(int side, bool masked = false);
-	void DrawMatched(int side);
+	void DrawMatched(int side, bool single, int id, int detail);
+
 	void ClearResults();
 	void Process();
 	void Process(int oX, int oY, int sc);

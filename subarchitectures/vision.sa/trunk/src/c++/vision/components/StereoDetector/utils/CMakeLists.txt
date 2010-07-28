@@ -12,6 +12,8 @@ SET(HEADERS
 	ConfigFile.hh
 	Draw.hh
 	Except.hh
+	fitcircle.h
+	fitellipse.h
 	Namespace.hh
 	OpenCvImgSeqVideo.hh
 	OpenCvLiveVideo.hh
@@ -29,6 +31,8 @@ SET(SOURCES
 	Draw.cc
 #	Draw_small.cc
 	Except.cc
+	fitcircle.c
+	fitellipse.c
 #	OpenCvImgSeqVideo.cc
 #	OpenCvLiveVideo.cc
 	Vector2.ic

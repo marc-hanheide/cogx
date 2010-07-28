@@ -81,6 +81,7 @@ void StereoCore::InitStereoGestalts()
     stereoGestalts[i] = 0;
 
 	// initialise all principles
+	stereoGestalts[StereoBase::STEREO_LJUNCTION] = new StereoLJunctions(vcore, stereo_cam);
 	stereoGestalts[StereoBase::STEREO_ELLIPSE] = new StereoEllipses(vcore, stereo_cam);
   stereoGestalts[StereoBase::STEREO_CLOSURE] = new StereoClosures(vcore, stereo_cam);
   stereoGestalts[StereoBase::STEREO_RECTANGLE] = new StereoRectangles(vcore, stereo_cam);
@@ -89,7 +90,8 @@ void StereoCore::InitStereoGestalts()
   stereoGestalts[StereoBase::STEREO_CUBE] = new StereoCubes(vcore, stereo_cam);
 
 	// set principles enabled or disabled
-	stereoGestalts[StereoBase::STEREO_ELLIPSE]->EnablePrinciple(false);													/// TODO Ellipses disabled
+	stereoGestalts[StereoBase::STEREO_LJUNCTION]->EnablePrinciple(true);
+	stereoGestalts[StereoBase::STEREO_ELLIPSE]->EnablePrinciple(true);
 	stereoGestalts[StereoBase::STEREO_CLOSURE]->EnablePrinciple(true);
 	stereoGestalts[StereoBase::STEREO_RECTANGLE]->EnablePrinciple(true);
 	stereoGestalts[StereoBase::STEREO_FLAP]->EnablePrinciple(true);
@@ -169,7 +171,7 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
 					stereoGestalts[i]->Process();
 			}
 		}
-		printf("StereoCore::ProcessStereoImage: process image ended.\n");
+// 		printf("StereoCore::ProcessStereoImage: process image ended.\n");
   }
 	catch(Z::Except &e) 
 	{
@@ -178,7 +180,7 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
 	}
 
 	/// HACK Print results
-// 	PrintResults();
+	PrintResults();
 
 // printf("StereoCore::ProcessStereoImage end\n");
 }
@@ -206,19 +208,40 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
 	pPara->pruning = false;
 }
 
-
-
 /**
  * @brief Get a stereo object as visual object for the CogX cast-framework.
  * @param type Type of stereo object.
  * @param number ID of the stereo object
  * @param obj Visual object as pointer
+ * @return Returns true for success.
  */
-void StereoCore::GetVisualObject(StereoBase::Type type, int id, VisionData::VisualObjectPtr &obj)
+bool StereoCore::GetVisualObject(StereoBase::Type type, int id, VisionData::VisualObjectPtr &obj)
 {
-	stereoGestalts[type]->StereoGestalt2VisualObject(obj, id);
+	return stereoGestalts[type]->StereoGestalt2VisualObject(obj, id);
 }
 
+
+/**
+ * @brief Get the Gestalt list with the number of all found mono and stereo Gestalts.
+ * @return Returns the information as character array.
+ */
+const char* StereoCore::GetGestaltListInfo()
+{
+	const unsigned info_size = 10000;
+  static char info_text[info_size] = "";
+  int n = 0;
+
+	n += snprintf(info_text + n, info_size - n, 
+								"  GESTALT LIST		LEFT	RIGHT	STEREO\n  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+	for(int i=0; i < Gestalt::MAX_TYPE; i++)
+	{
+		n += snprintf(info_text + n, info_size - n, "  %s", vcore[0]->GetGestaltTypeName((Gestalt::Type) i));
+		n += snprintf(info_text + n, info_size - n, "	%i", NumMonoGestalts((Gestalt::Type) i, LEFT) /*vcore[0]->GetNrOfGestaltTypeFeatures(i)*/);
+		n += snprintf(info_text + n, info_size - n, "	%i\n", NumMonoGestalts((Gestalt::Type) i, RIGHT) /*vcore[1]->GetNrOfGestaltTypeFeatures(i)*/);
+	}
+	
+	return info_text;
+}
 
 /**
  * @brief Draw the mono results into a iplImage
@@ -227,10 +250,12 @@ void StereoCore::GetVisualObject(StereoBase::Type type, int id, VisionData::Visu
  * @param iIr Right stereo image.
  * @param masked Draw the masked features.
  * @param single Draw only single Gestalt.
+ * @param id ID of the mono Gestalt
  * @param detail Degree of detail.
  * @return Returns true for success.
  */
-bool StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iIr, bool masked, bool single, int singleSide, int id, int detail)
+bool StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iIr, bool masked, bool single, 
+																 int singleSide, int id, int detail)
 {
 	SetImages(iIl, iIr);
 
@@ -274,7 +299,6 @@ bool StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iI
 	return true;
 }
 
-
 /**
  * @brief Draw the stereo results into the stereo iplImages.
  * @param type Type of stereo object.
@@ -282,31 +306,41 @@ bool StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iI
  * @param iIr Right stereo image.
  * @param matched Draw the matched features.
  */
-void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool matched, bool showAllStereoMatched)
+void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, 
+																	 bool showAllStereoMatched, bool single, int id, int detail)
 {
 	SetImages(iIl, iIr);
-
-	if(!showAllStereoMatched)
+	if(!single)
 	{
-		for(int side = LEFT; side <= RIGHT; side++)
-		{
-			SetActiveDrawAreaSide(side);
-			if(matched) stereoGestalts[type]->DrawMatched(side);
-		}
-	}
-	else // show all stereo matched features
-	{
-		for(int i=0; i< StereoBase::MAX_TYPE; i++)
+		if(!showAllStereoMatched)
 		{
 			for(int side = LEFT; side <= RIGHT; side++)
 			{
 				SetActiveDrawAreaSide(side);
-				stereoGestalts[i]->DrawMatched(side);
+				stereoGestalts[type]->DrawMatched(side, single, id, detail);
+			}
+		}
+		else // show all stereo matched features
+		{
+			for(int i=0; i< StereoBase::MAX_TYPE; i++)
+			{
+				for(int side = LEFT; side <= RIGHT; side++)
+				{
+					SetActiveDrawAreaSide(side);
+					stereoGestalts[i]->DrawMatched(side, single, id, detail);
+				}
 			}
 		}
 	}
+	else
+	{
+		for(int side = LEFT; side <= RIGHT; side++)
+		{
+			SetActiveDrawAreaSide(side);
+			stereoGestalts[type]->DrawMatched(side, single, id, detail);
+		}
+	}
 }
-
 
 /**
  * @brief Draw the region of interest (ROI) into the image
@@ -322,7 +356,6 @@ void StereoCore::DrawROI(int side, CvRect roi, int roiScale, IplImage *iIl, IplI
 	SetActiveDrawAreaSide(side);
 	DrawRect2D(roi.x*roiScale, roi.y*roiScale, roi.x*roiScale + roi.width*roiScale, roi.y*roiScale + roi.height*roiScale, RGBColor::red);
 }
-
 
 /**
  * 
@@ -363,32 +396,33 @@ unsigned StereoCore::PickGestaltAt(int side, Gestalt::Type type, int x, int y, u
 	return vcore[side]->PickGestaltAt(type, x, y, start_after, reject_masked);
 }
 
-
 /**
  *  HACK Wieder entfernen
  * @brief Print the corner points of the calculated flap.
  */
 void StereoCore::PrintResults()
 {
-	// print results of vision core
-  printf("Arc: 2D arcs left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::ARC),
-			vcore[RIGHT]->NumGestalts(Gestalt::ARC));
-  printf("ArcGroup: 2D arc_groups left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::CONVEX_ARC_GROUP),
-			vcore[RIGHT]->NumGestalts(Gestalt::CONVEX_ARC_GROUP));
-  printf("Ellipse: 2D ellipses left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::ELLIPSE),
-			vcore[RIGHT]->NumGestalts(Gestalt::ELLIPSE));
-//   printf("StereoClosures:   clos-matches: %d\n", stereoGestalts[StereoBase::STEREO_CLOSURE]->NumStereoMatches());
+	/// print results of vision core
+//   printf("Arc: 2D arcs left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::ARC),
+// 			vcore[RIGHT]->NumGestalts(Gestalt::ARC));
+//   printf("ArcGroup: 2D arc_groups left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::CONVEX_ARC_GROUP),
+// 			vcore[RIGHT]->NumGestalts(Gestalt::CONVEX_ARC_GROUP));
+//   printf("Ellipse: 2D ellipses left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::ELLIPSE),
+// 			vcore[RIGHT]->NumGestalts(Gestalt::ELLIPSE));
+// //   printf("StereoClosures:   clos-matches: %d\n", stereoGestalts[StereoBase::STEREO_CLOSURE]->NumStereoMatches());
 
-	// print results of vision core
+	/// print results of stereo core
 //   printf("Closure: 2D rects left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::CLOSURE), vcore[RIGHT]->NumGestalts(Gestalt::CLOSURE));
-  printf("StereoClosures:   clos-matches: %d\n", stereoGestalts[StereoBase::STEREO_CLOSURE]->NumStereoMatches());
+//   printf("Stereo:CLOSURES: clos-matches: %d\n", stereoGestalts[StereoBase::STEREO_CLOSURE]->NumStereoMatches());
 
 //   printf("StereoRects: 2D rects left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::RECTANGLE), vcore[RIGHT]->NumGestalts(Gestalt::RECTANGLE));
 //   printf("StereoRects:   rect-matches: %d\n", stereoGestalts[StereoBase::STEREO_RECTANGLE]->NumStereoMatches());
 
 //   printf("StereoFlaps: flaps left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::FLAP), vcore[RIGHT]->NumGestalts(Gestalt::FLAP));
-  printf("StereoFlaps:   flap-matches: %d\n", stereoGestalts[StereoBase::STEREO_FLAP]->NumStereoMatches()); 
+//   printf("Stereo:FLAPS: matches: %d\n", stereoGestalts[StereoBase::STEREO_FLAP]->NumStereoMatches()); 
 
+// 	printf("Stereo:L_JUNCTIONS: matches: %d\n", stereoGestalts[StereoBase::STEREO_LJUNCTION]->NumStereoMatches()); 
+  printf("Stereo:ELLIPSES: matches: %d\n", stereoGestalts[StereoBase::STEREO_ELLIPSE]->NumStereoMatches()); 
 }
 
 

@@ -1,5 +1,9 @@
 /**
- * $Id: Ellipse.cc,v 1.25 2007/07/27 17:01:25 mxz Exp mxz $
+ * @file Ellipse.cc
+ * @author Zillich, Richtsfeld
+ * @date 2006, Dec. 2009, June 2010
+ * @version 0.1
+ * @brief Gestalt feature Ellipse
  */
 
 #include <math.h>
@@ -88,11 +92,13 @@ static bool FitEllipse_opencv(Array<Arc*> &arcs, unsigned l, unsigned u,
   b = params.size.height/2.;
   // note: the angle returned is in degrees!
   phi = ScaleAngle_0_2pi(params.angle*M_PI/180.);
+//  phi = ScaleAngle_0_pi(params.angle*M_PI/180.);					/// HACK ARI: scale to 0..pi
   // note: for unknown reasons sometimes a < b!
   if(a < b)
   {
     swap(a, b);
     phi = ScaleAngle_0_2pi(phi + M_PI_2);
+//    phi = ScaleAngle_0_pi(phi + M_PI_2);									/// HACK ARI: scale to 0..pi
   }
   delete[] points;
   return true;

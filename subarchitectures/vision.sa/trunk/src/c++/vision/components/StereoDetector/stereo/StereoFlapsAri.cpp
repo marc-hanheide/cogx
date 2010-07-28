@@ -82,7 +82,7 @@ void TmpFlapAri::Fuddle(unsigned off0, unsigned off1, bool swap)
   surf[1].ShiftPointsLeft(off1);
   if(swap)
   {
-    TmpSurf t = surf[1];
+    Surf2D t = surf[1];
     surf[1] = surf[0];
     surf[0] = t;
   }
@@ -139,7 +139,7 @@ StereoFlapsAri::StereoFlapsAri(VisionCore *vc[2], StereoCamera *sc) : StereoBase
  * @param side LEFT/RIGHT side of stereo rig.
  * @param i Position of the surface in the array.
  */
-// const TmpSurf &StereoFlaps::Surfaces2D(int side, int i)
+// const Surf2D &StereoFlaps::Surfaces2D(int side, int i)
 // {
 //   assert(side == LEFT || side == RIGHT);
 //   return surfs[side][i];
@@ -167,39 +167,40 @@ const TmpFlapAri &StereoFlapsAri::Flaps2D(int side, int i)
 }
 
 /**
- * @brief Draw flaps as overlay.
- * @param side Left or right side of the stereo images.
- * @param masked Draw masked features.
+ * @brief Draw matched closures.
+ * @param side Left or right image from stereo rig.
+ * @param single Draw single feature
+ * @param id ID of single feature
+ * @param detail Degree of detail
  */
-void StereoFlapsAri::Draw(int side, bool masked)
+void StereoFlapsAri::DrawMatched(int side, bool single, int id, int detail)
 {
-	SetColor(RGBColor::yellow);
-	int nrFlaps = 0;
-	if(side == LEFT) nrFlaps = NumFlapsLeft2D();
-	else nrFlaps = NumFlapsRight2D();
-
-	for(int i=0; i<nrFlaps; i++)
+	if(single)
 	{
-		if(masked)
-			vcore[side]->Gestalts(Gestalt::FLAP_ARI, i)->Draw();
-		else
-			if (vcore[side]->Gestalts(Gestalt::FLAP_ARI, i)->IsUnmasked())
-				vcore[side]->Gestalts(Gestalt::FLAP_ARI, i)->Draw();
+		if(id < 0 || id >= flapMatches)
+		{
+			printf("StereoClosures::DrawMatched: warning: id out of range!\n");
+			return;
+		}
+		DrawSingleMatched(side, id, detail);
 	}
+	else
+		for(int i=0; i< flapMatches; i++)
+			DrawSingleMatched(side, i, detail);
 }
 
 /**
- * @brief Draw matched flaps as overlay.
- * @param side Left or right side of the stereo images.
+ * @brief Draw single matched closure.
+ * @param side Left or right image from stereo rig.
+ * @param id ID of single feature
+ * @param detail Degree of detail
  */
-void StereoFlapsAri::DrawMatched(int side)
+void StereoFlapsAri::DrawSingleMatched(int side, int id, int detail)
 {
-	for(int i=0; i< flapMatches; i++)
-	{
-		flaps[side][i].surf[0].Draw(RGBColor::red);
-		flaps[side][i].surf[1].Draw(RGBColor::red);
-	}
+	flaps[side][id].surf[0].Draw(RGBColor::red);
+	flaps[side][id].surf[1].Draw(RGBColor::red);
 }
+
 
 /**
  * @brief Convert flap from object detector to working memory's visual object.

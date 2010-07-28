@@ -81,9 +81,10 @@ private:
 	bool showDetected;													///< Show detected features in stereo images
 	bool showSingleGestalt;											///< Show single Gestalts
 	int showID;																	///< ID of single Gestalt to show
-	bool showAllStereo;													///< Show all stereo features
-	bool showAllStereoMatched;									///< Show all matched features
+	bool showAllStereo;													///< Show all stereo features (sent to virtual scene)				/// TODO sollte anders heißen!
+	bool showAllStereoMatched;									///< Show all matched stereo features
 	bool showStereoMatched;											///< Show matched features in stereo images
+	bool showSingleStereo;											///< Show only one single stereo feature
 	bool showSegments;													///< Show the edges on the stereo image
 	bool showMasked;														///< Show masked features in stereo images
 	bool showROIs;															///< Show the ROIs at the display
@@ -99,7 +100,7 @@ private:
 	void updatedROI(const cdl::WorkingMemoryChange & _wmc);
 	void deletedROI(const cdl::WorkingMemoryChange & _wmc);
 	void receiveProtoObject(const cdl::WorkingMemoryChange & _wmc);
-
+	void receiveConvexHull(const cdl::WorkingMemoryChange & _wmc);
 	void processImage();
 	void ProcessHRImages();
 	void ProcessPrunedHRImages();
@@ -112,7 +113,7 @@ private:
 
 	void SingleShotMode();
 	void MouseEvent();
-	void ReadSOIs();
+// 	void ReadSOIs();
 
 	void GetImages();
 	void GetHRImages();

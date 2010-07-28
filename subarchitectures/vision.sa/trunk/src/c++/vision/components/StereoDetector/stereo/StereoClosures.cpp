@@ -92,37 +92,38 @@ StereoClosures::StereoClosures(VisionCore *vc[2], StereoCamera *sc) : StereoBase
   closMatches = 0;
 }
 
-
-/**
- * @brief Draw closures to the stereo images.
- * @param side Left or right image from stereo rig.
- * @param masked Draw also masked features.
- */
-void StereoClosures::Draw(int side, bool masked)
-{
-	SetColor(RGBColor::green);
-	int nrRects = 0;
-	if(side == LEFT) nrRects = NumClosuresLeft2D();
-	else nrRects = NumClosuresRight2D();
-	for(int i=0; i<nrRects; i++)
-	{
-		if(masked)
-			vcore[side]->Gestalts(Gestalt::CLOSURE, i)->Draw();	
-		else
-			if (vcore[side]->Gestalts(Gestalt::CLOSURE, i)->IsUnmasked())
-				vcore[side]->Gestalts(Gestalt::CLOSURE, i)->Draw();	
-	}
-}
-
-
 /**
  * @brief Draw matched closures.
  * @param side Left or right image from stereo rig.
+ * @param single Draw single feature
+ * @param id ID of single feature
+ * @param detail Degree of detail
  */
-void StereoClosures::DrawMatched(int side)
+void StereoClosures::DrawMatched(int side, bool single, int id, int detail)
 {
-	for(int i=0; i< closMatches; i++)
-		closures[side][i].surf.Draw(RGBColor::red);
+	if(single)
+	{
+		if(id < 0 || id >= closMatches)
+		{
+			printf("StereoClosures::DrawMatched: warning: id out of range!\n");
+			return;
+		}
+		DrawSingleMatched(side, id, detail);
+	}
+	else
+		for(int i=0; i< closMatches; i++)
+			DrawSingleMatched(side, i, detail);
+}
+
+/**
+ * @brief Draw single matched closure.
+ * @param side Left or right image from stereo rig.
+ * @param id ID of single feature
+ * @param detail Degree of detail
+ */
+void StereoClosures::DrawSingleMatched(int side, int id, int detail)
+{
+	closures[side][id].surf.Draw(RGBColor::red);
 }
 
 

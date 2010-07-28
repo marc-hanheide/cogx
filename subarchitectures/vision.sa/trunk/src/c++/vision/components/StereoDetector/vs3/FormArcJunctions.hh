@@ -1,18 +1,24 @@
 /**
- * $Id: FormArcJunctions.hh,v 1.2 2010/05/26 12:03:44 mz Exp mz $
- */
+ * @file FormEJunctions.cc
+ * @author Zillich, Richtsfeld
+ * @date 2010
+ * @version 0.1
+ * @brief Header file of Gestalt principle FormArcJunctions.
+ **/
 
 #ifndef Z_FORM_ARC_JUNCTIONS_HH
 #define Z_FORM_ARC_JUNCTIONS_HH
 
 #include "VoteImage.hh"
 #include "Arc.hh"
-//#include "ArcJunction.hh"
 #include "GestaltPrinciple.hh"
 
 namespace Z
 {
 
+/**
+ * @brief Class FormArcJunctions, creating junctions between arcs.
+ */
 class FormArcJunctions : public GestaltPrinciple
 {
 private:

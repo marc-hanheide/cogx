@@ -25,7 +25,7 @@ namespace Z
 class TmpCube
 {
 public:
-  TmpSurf surf[3];										///< tmp surfaces
+  Surf2D surf[3];										///< Tmp. 2D surfaces
 
   TmpCube() {}
   TmpCube(Cube *cube);
@@ -68,6 +68,7 @@ private:
   unsigned FindMatchingCube(TmpCube &left_cube, Array<TmpCube> &right_cubes, unsigned l);
   void MatchCubes(Array<TmpCube> &left_cubes, Array<TmpCube> &right_cubes, int &matches);
   void Calculate3DCubes(Array<TmpCube> &left_cubes, Array<TmpCube> &right_cubes, int &cubeMatches, Array<Cube3D> &cube3ds);
+	void DrawSingleMatched(int side, int id, int detail);
 
 public:
 	StereoCubes(VisionCore *vc[2], StereoCamera *sc);
@@ -81,8 +82,8 @@ public:
   const Cube3D &Cubes(int i) {return cube3ds[i];}		///< Return 3D-Cube from position i.
 
 	int NumStereoMatches() {return cubeMatches;}			///< Number of matched stereo features. TODO eigentlich hier "return cube3ds.Size();"
-	void Draw(int side, bool masked);
-	void DrawMatched(int side);
+	void DrawMatched(int side, bool single, int id, int detail);
+
 	void ClearResults();
 	void Process();
 	void Process(int oX, int oY, int sc);
