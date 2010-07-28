@@ -84,6 +84,15 @@ class CASTTask(object):
             self.update_status(Planner.Completion.FAILED)
             return
 
+        for sg in plan.goal_node.satisfied_softgoals:
+            slice_goal = self.goaldict[sg]
+            slice_goal.isInPlan = True
+
+        for g in self.slice_goals:
+            if g.importance < 0:
+                g.isInPlan = True
+            log.debug("Goal: %s, p:%.2f, sat: %d", g.goalString, g.importance, g.isInPlan)
+
         if "partial-observability" in self.domain.requirements:
             log.info("creating dt task")
             self.dt_task = dt_problem.DTProblem(plan, self.domain, self.state)
@@ -100,15 +109,6 @@ class CASTTask(object):
         ordered_plan = plan.topological_sort()
         outplan = []
         first_action = -1
-
-        for sg in plan.goal_node.satisfied_softgoals:
-            slice_goal = self.goaldict[sg]
-            slice_goal.isInPlan = True
-
-        for g in self.slice_goals:
-            if g.importance < 0:
-                g.isInPlan = True
-            log.debug("Goal: %s, p:%.2f, sat: %d", g.goalString, g.importance, g.isInPlan)
 
         for i, pnode in enumerate(ordered_plan):
             if isinstance(pnode, plans.DummyNode) or not pnode.is_executable():
@@ -240,8 +240,11 @@ class CASTTask(object):
 
     def action_delivered(self, action):
         args = [self.cp_task.mapltask[a] for a in action.arguments]
-        pddl_action = self.domain.get_action(action.name)
+        pddl_action = self.cp_task.mapltask.get_action(action.name)
 
+        log.debug("got action from DT: (%s %s)", action.name, " ".join(action.arguments))
+        log.debug("state is: %s", self.cp_task.get_state())
+        #TODO: using the last CP state might be problematic
         state = self.cp_task.get_state().copy()
         pnode = plan_postprocess.getRWDescription(pddl_action, args, state, 1)
         self.dt_task.dt_plan.append(pnode)

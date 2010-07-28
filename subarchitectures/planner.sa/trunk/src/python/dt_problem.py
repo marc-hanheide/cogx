@@ -38,7 +38,7 @@ class DTProblem(object):
 
     def create_goals(self, plan):
         observe_actions = translators.Translator.get_annotations(self.domain).get('observe_effects', [])
-        print observe_actions
+        #print observe_actions
         if not observe_actions:
             return None
 
@@ -48,8 +48,8 @@ class DTProblem(object):
             if pnode.status == plans.ActionStatusEnum.EXECUTED:
                 continue
             if pnode.action.name in observe_actions:
-                print pnode.action.name
-                print map(str, pnode.effects)
+                #print pnode.action.name
+                #print map(str, pnode.effects)
                 #TODO: only add an action if the observe effect supports a later action
                 for svar, val in pnode.effects:
                     if svar.modality in (mapl.knowledge, mapl.direct_knowledge):
