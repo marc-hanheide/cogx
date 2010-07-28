@@ -33,18 +33,19 @@ public class ManualPlanningTaskFrame extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel jContentPane = null;
-	private JPanel jPanel = null;
-	private JScrollPane jScrollPane = null;
-	private JTable jTable = null;
+	private JPanel jBeliefsPanel = null;
+	private JScrollPane jBeliefsScrollPane = null;
+	private JTable jBeliefsTable = null;
 	private final SubmitListener listener;
 	private TableModel beliefTableModel;
-	private JPanel jPanel1 = null;
-	private JTextField jTextField = null;
+	private JPanel jButtonPanel = null;
+	private JTextField jGoalTextEditField = null;
 	private JButton jButtonSubmit = null;
-	private JPanel jPanel2 = null;
-	private JScrollPane jScrollPane1 = null;
-	private JTable jTable1 = null;
+	private JPanel jGoalsPanel = null;
+	private JScrollPane jGoalsScrollPane = null;
+	private JTable jGoalsTable = null;
 	private JTextArea jStatus = null;
+	private JScrollPane jStatusScrollPane = null;
 
 	/**
 	 * This is the default constructor
@@ -74,78 +75,50 @@ public class ManualPlanningTaskFrame extends JFrame {
 	}
 
 	/**
-	 * This method initializes this
-	 * 
-	 * @return void
-	 */
-	private void initialize() {
-		this.setSize(500, 248);
-		this.setContentPane(getJContentPane());
-		this.setTitle("ManualPlanningTask");
-		this.pack();
-	}
-
-	/**
-	 * This method initializes jContentPane
+	 * This method initializes jBeliefsPanel
 	 * 
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getJContentPane() {
-		if (jContentPane == null) {
-			jContentPane = new JPanel();
-			jContentPane.setLayout(new BorderLayout());
-			jContentPane.add(getJPanel(), BorderLayout.WEST);
-			jContentPane.add(getJPanel1(), BorderLayout.SOUTH);
-			jContentPane.add(getJPanel2(), BorderLayout.CENTER);
+	private JPanel getJBeliefsPanel() {
+		if (jBeliefsPanel == null) {
+			jBeliefsPanel = new JPanel();
+			jBeliefsPanel.setLayout(new BorderLayout());
+			jBeliefsPanel.add(getJBeliefsScrollPane(), BorderLayout.CENTER);
 		}
-		return jContentPane;
+		return jBeliefsPanel;
 	}
 
 	/**
-	 * This method initializes jPanel
-	 * 
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getJPanel() {
-		if (jPanel == null) {
-			jPanel = new JPanel();
-			jPanel.setLayout(new BorderLayout());
-			jPanel.add(getJScrollPane(), BorderLayout.CENTER);
-		}
-		return jPanel;
-	}
-
-	/**
-	 * This method initializes jScrollPane
+	 * This method initializes jBeliefsScrollPane
 	 * 
 	 * @return javax.swing.JScrollPane
 	 */
-	private JScrollPane getJScrollPane() {
-		if (jScrollPane == null) {
-			jScrollPane = new JScrollPane();
-			jScrollPane.setPreferredSize(new Dimension(250, 300));
-			jScrollPane.setViewportView(getJTable());
+	private JScrollPane getJBeliefsScrollPane() {
+		if (jBeliefsScrollPane == null) {
+			jBeliefsScrollPane = new JScrollPane();
+			jBeliefsScrollPane.setPreferredSize(new Dimension(250, 300));
+			jBeliefsScrollPane.setViewportView(getJBeliefsTable());
 		}
-		return jScrollPane;
+		return jBeliefsScrollPane;
 	}
 
 	/**
-	 * This method initializes jTable
+	 * This method initializes jBeliefsTable
 	 * 
 	 * @return javax.swing.JTable
 	 */
-	private JTable getJTable() {
-		if (jTable == null) {
-			jTable = new JTable();
-			jTable.setModel(beliefTableModel);
+	private JTable getJBeliefsTable() {
+		if (jBeliefsTable == null) {
+			jBeliefsTable = new JTable();
+			jBeliefsTable.setModel(beliefTableModel);
 
-			jTable.addMouseListener(new java.awt.event.MouseAdapter() {
+			jBeliefsTable.addMouseListener(new java.awt.event.MouseAdapter() {
 				public void mouseClicked(java.awt.event.MouseEvent e) {
-					String text = (String) jTable.getValueAt(jTable
-							.getSelectedRow(), 0);
-					int pos = jTextField.getCaretPosition();
+					String text = (String) jBeliefsTable.getValueAt(
+							jBeliefsTable.getSelectedRow(), 0);
+					int pos = jGoalTextEditField.getCaretPosition();
 					try {
-						jTextField.getDocument().insertString(pos,
+						jGoalTextEditField.getDocument().insertString(pos,
 								"'" + text + "'", null);
 					} catch (BadLocationException e1) {
 						e1.printStackTrace();
@@ -155,66 +128,29 @@ public class ManualPlanningTaskFrame extends JFrame {
 			final TableRowSorter<TableModel> sorter;
 			sorter = new TableRowSorter<TableModel>(beliefTableModel);
 			sorter.setSortsOnUpdates(true);
-			jTable.setRowSorter(sorter);
-			jTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-			jTable.getColumnModel().getColumn(0).setPreferredWidth(60);
-			jTable.getColumnModel().getColumn(1).setPreferredWidth(30);
+			jBeliefsTable.setRowSorter(sorter);
+			jBeliefsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+			jBeliefsTable.getColumnModel().getColumn(0).setPreferredWidth(60);
+			jBeliefsTable.getColumnModel().getColumn(1).setPreferredWidth(30);
 
 		}
-		return jTable;
+		return jBeliefsTable;
 	}
 
 	/**
-	 * This method initializes jPanel1
+	 * This method initializes jButtonPanel
 	 * 
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getJPanel1() {
-		if (jPanel1 == null) {
-			jPanel1 = new JPanel();
-			jPanel1.setLayout(new GridLayout(0, 1));
-			jPanel1.add(getJTextField());
-			jPanel1.add(getJButtonSubmit());
-			jPanel1.add(getJStatus(), null);
+	private JPanel getJButtonPanel() {
+		if (jButtonPanel == null) {
+			jButtonPanel = new JPanel();
+			jButtonPanel.setLayout(new GridLayout(0, 1));
+			jButtonPanel.add(getJGoalTextEditField());
+			jButtonPanel.add(getJButtonSubmit());
+			jButtonPanel.add(getJStatusScrollPane(), null);
 		}
-		return jPanel1;
-	}
-
-	/**
-	 * This method initializes jTextField
-	 * 
-	 * @return javax.swing.JTextField
-	 */
-	private JTextField getJTextField() {
-		if (jTextField == null) {
-			jTextField = new JTextField();
-			jTextField.setText("");
-			jTextField.getDocument().addDocumentListener(
-					new DocumentListener() {
-
-						public void change() {
-							int row = jTable1.getSelectedRow();
-							if (row > -1)
-								jTable1
-										.setValueAt(jTextField.getText(), row,
-												0);
-						}
-
-						public void changedUpdate(DocumentEvent e) {
-							change();
-						}
-
-						public void removeUpdate(DocumentEvent e) {
-							change();
-						}
-
-						public void insertUpdate(DocumentEvent e) {
-							change();
-						}
-					});
-
-		}
-		return jTextField;
+		return jButtonPanel;
 	}
 
 	/**
@@ -229,8 +165,9 @@ public class ManualPlanningTaskFrame extends JFrame {
 			jButtonSubmit
 					.addActionListener(new java.awt.event.ActionListener() {
 						public void actionPerformed(java.awt.event.ActionEvent e) {
-							String ret = listener.submit(jTable1.getModel());
-							if (ret!=null) {
+							String ret = listener
+									.submit(jGoalsTable.getModel());
+							if (ret != null) {
 								jStatus.setText(ret);
 							}
 						}
@@ -240,70 +177,152 @@ public class ManualPlanningTaskFrame extends JFrame {
 	}
 
 	/**
-	 * This method initializes jPanel2
+	 * This method initializes jContentPane
 	 * 
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getJPanel2() {
-		if (jPanel2 == null) {
-			jPanel2 = new JPanel();
-			jPanel2.setLayout(new BorderLayout());
-			jPanel2.add(getJScrollPane1(), BorderLayout.CENTER);
+	private JPanel getJContentPane() {
+		if (jContentPane == null) {
+			jContentPane = new JPanel();
+			jContentPane.setLayout(new BorderLayout());
+			jContentPane.add(getJBeliefsPanel(), BorderLayout.WEST);
+			jContentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
+			jContentPane.add(getJGoalsPanel(), BorderLayout.CENTER);
 		}
-		return jPanel2;
+		return jContentPane;
 	}
 
 	/**
-	 * This method initializes jScrollPane1
+	 * This method initializes jGoalsPanel
+	 * 
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJGoalsPanel() {
+		if (jGoalsPanel == null) {
+			jGoalsPanel = new JPanel();
+			jGoalsPanel.setLayout(new BorderLayout());
+			jGoalsPanel.add(getJGoalsScrollPane(), BorderLayout.CENTER);
+		}
+		return jGoalsPanel;
+	}
+
+	/**
+	 * This method initializes jGoalsScrollPane
 	 * 
 	 * @return javax.swing.JScrollPane
 	 */
-	private JScrollPane getJScrollPane1() {
-		if (jScrollPane1 == null) {
-			jScrollPane1 = new JScrollPane();
-			jScrollPane1.setPreferredSize(new Dimension(600, 300));
-			jScrollPane1.setViewportView(getJTable1());
+	private JScrollPane getJGoalsScrollPane() {
+		if (jGoalsScrollPane == null) {
+			jGoalsScrollPane = new JScrollPane();
+			jGoalsScrollPane.setPreferredSize(new Dimension(600, 300));
+			jGoalsScrollPane.setViewportView(getJGoalsTable());
 		}
-		return jScrollPane1;
+		return jGoalsScrollPane;
 	}
 
 	/**
-	 * This method initializes jTable1
+	 * This method initializes jGoalsTable
 	 * 
 	 * @return javax.swing.JTable
 	 */
-	private JTable getJTable1() {
-		if (jTable1 == null) {
-			jTable1 = new JTable();
-			jTable1.setModel(new DefaultTableModel(new String[] { "Goal",
+	private JTable getJGoalsTable() {
+		if (jGoalsTable == null) {
+			jGoalsTable = new JTable();
+			jGoalsTable.setModel(new DefaultTableModel(new String[] { "Goal",
 					"importance" }, 10));
-			jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+			jGoalsTable.addMouseListener(new java.awt.event.MouseAdapter() {
 				public void mouseClicked(java.awt.event.MouseEvent e) {
-					jTextField.setText((String) jTable1.getValueAt(jTable1
-							.getSelectedRow(), 0));
+					jGoalTextEditField.setText((String) jGoalsTable.getValueAt(
+							jGoalsTable.getSelectedRow(), 0));
 
 				}
 			});
 
 			// jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			jTable1.getColumnModel().getColumn(0).setPreferredWidth(900);
-			jTable1.getColumnModel().getColumn(1).setPreferredWidth(100);
-			jTable1.changeSelection(0, 0, true, false);
+			jGoalsTable.getColumnModel().getColumn(0).setPreferredWidth(900);
+			jGoalsTable.getColumnModel().getColumn(1).setPreferredWidth(100);
+			jGoalsTable.changeSelection(0, 0, true, false);
 		}
-		return jTable1;
+		return jGoalsTable;
 	}
 
 	/**
-	 * This method initializes jStatus	
-	 * 	
-	 * @return javax.swing.JTextArea	
+	 * This method initializes jStatus
+	 * 
+	 * @return javax.swing.JTextArea
 	 */
 	private JTextArea getJStatus() {
 		if (jStatus == null) {
 			jStatus = new JTextArea();
 			jStatus.setEditable(false);
+			jStatus.setLineWrap(true);
+			jStatus
+					.setText("This is a manual PlanningTask creator to test the oversubscription planning. The left pane shows all beliefs available to the planner. Click them to include them into the currently edited goal.");
 		}
 		return jStatus;
+	}
+
+	/**
+	 * This method initializes jGoalTextEditField
+	 * 
+	 * @return javax.swing.JTextField
+	 */
+	private JTextField getJGoalTextEditField() {
+		if (jGoalTextEditField == null) {
+			jGoalTextEditField = new JTextField();
+			jGoalTextEditField.setText("");
+			jGoalTextEditField.getDocument().addDocumentListener(
+					new DocumentListener() {
+
+						public void change() {
+							int row = jGoalsTable.getSelectedRow();
+							if (row > -1)
+								jGoalsTable.setValueAt(jGoalTextEditField
+										.getText(), row, 0);
+						}
+
+						public void changedUpdate(DocumentEvent e) {
+							change();
+						}
+
+						public void insertUpdate(DocumentEvent e) {
+							change();
+						}
+
+						public void removeUpdate(DocumentEvent e) {
+							change();
+						}
+					});
+
+		}
+		return jGoalTextEditField;
+	}
+
+	/**
+	 * This method initializes this
+	 * 
+	 * @return void
+	 */
+	private void initialize() {
+		this.setSize(500, 248);
+		this.setContentPane(getJContentPane());
+		this.setTitle("ManualPlanningTask");
+		this.pack();
+	}
+
+	/**
+	 * This method initializes jStatusScrollPane
+	 * 
+	 * @return javax.swing.JScrollPane
+	 */
+	private JScrollPane getJStatusScrollPane() {
+		if (jStatusScrollPane == null) {
+			jStatusScrollPane = new JScrollPane();
+			jStatusScrollPane.setViewportView(getJStatus());
+			jStatusScrollPane
+					.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		}
+		return jStatusScrollPane;
 	}
 
 } // @jve:decl-index=0:visual-constraint="10,10"
