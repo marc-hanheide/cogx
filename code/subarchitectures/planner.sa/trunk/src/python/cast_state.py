@@ -15,7 +15,6 @@ class CASTState(object):
         self.domain = domain
         self.beliefs = beliefs
         self.beliefdict = dict((b.id, b) for b in beliefs)
-        print self.beliefdict.keys()
         #TODO: make this less ugly
         tp.current_domain = self.domain
         tp.belief_dict = self.beliefdict
@@ -58,8 +57,14 @@ class CASTState(object):
         goaldict = {}
         problem.goal = pddl.conditions.Conjunction([], problem)
         for goal in cast_task.goals:
-            goalstrings = tp.transform_goal_string(goal.goalString, self.namedict).split("\n")
-            pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
+            try:
+                goalstrings = tp.transform_goal_string(goal.goalString, self.namedict).split("\n")
+                pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
+            except pddl.parser.ParseError,e:
+                log.error("Could not parse goal: %s", goal.goalString)
+                log.error("Error: %s", e.message)
+                continue
+            
             goaldict[pddl_goal] = goal
             
             if goal.importance < 0:
