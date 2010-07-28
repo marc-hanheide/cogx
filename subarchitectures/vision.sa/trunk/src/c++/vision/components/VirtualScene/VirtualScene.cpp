@@ -339,8 +339,8 @@ void VirtualScene::applyVirtualSceneCmd(){
 		if(m_labels) newModelEntry->label.AddText(obj->label.c_str(), 30);
 		if(m_labels) newModelEntry->label.SetPose(newModelEntry->model.m_pose);
 		m_VisualObjectList.push_back(newModelEntry);
-		addVectorToCenterOfRotation(m_coo, m_cor_num, obj->pose.pos);
-		updateCameraViews();
+// 		addVectorToCenterOfRotation(m_coo, m_cor_num, obj->pose.pos);				/// HACK @ ARI
+// 		updateCameraViews();									/// HACK @ ARI
 		log("ADDVISUALOBJECT: ok %s", obj->label.c_str());
 
 	// OVERWRITE VISUAL OBJECT
