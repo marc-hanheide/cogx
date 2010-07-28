@@ -14,10 +14,10 @@
 #include <opencv/cv.h>
 #include <opencv/cvtypes.h>
 #else
-extern "C"
-{
-#include "fitellipse.h"
-}
+// extern "C" for FitEllipse_b2ac
+// {
+// #include "fitellipse.h"
+// }
 #endif
 #include "Draw.hh"
 #include "Segment.hh"
@@ -42,27 +42,28 @@ namespace Z
 static bool FitEllipse_b2ac(Array<Arc*> &arcs, unsigned l, unsigned u,
     double &x, double &y, double &a, double &b, double &phi)
 {
-  unsigned n = 0, i, j;
-  double *points_x = 0, *points_y = 0;
-
-  for(i = l; i <= u; i++)
-    n += arcs[i]->NumEdgels();
-  points_x = new double[n];
-  assert(points_x != 0);
-  points_y = new double[n];
-  assert(points_y != 0);
-  n = 0;
-  for(i = l; i <= u; i++)
-    for(j = arcs[i]->idx[START]; j <= arcs[i]->idx[END]; j++)
-    {
-      points_x[n] = arcs[i]->seg->edgels[j].p.x;
-      points_y[n] = arcs[i]->seg->edgels[j].p.y;
-      n++;
-    }
-  bool fit_ok = fit_ellipse(points_x, points_y, (int)n, &x, &y, &a, &b, &phi);
-  delete[] points_x;
-  delete[] points_y;
-  return fit_ok;
+printf("Ellipse: FitEllipse_b2ac not yet implemented!\n");
+//   unsigned n = 0, i, j;
+//   double *points_x = 0, *points_y = 0;
+// 
+//   for(i = l; i <= u; i++)
+//     n += arcs[i]->NumEdgels();
+//   points_x = new double[n];
+//   assert(points_x != 0);
+//   points_y = new double[n];
+//   assert(points_y != 0);
+//   n = 0;
+//   for(i = l; i <= u; i++)
+//     for(j = arcs[i]->idx[START]; j <= arcs[i]->idx[END]; j++)
+//     {
+//       points_x[n] = arcs[i]->seg->edgels[j].p.x;
+//       points_y[n] = arcs[i]->seg->edgels[j].p.y;
+//       n++;
+//     }
+//   bool fit_ok = fit_ellipse(points_x, points_y, (int)n, &x, &y, &a, &b, &phi);
+//   delete[] points_x;
+//   delete[] points_y;
+//   return fit_ok;
 }
 #else
 static bool FitEllipse_opencv(Array<Arc*> &arcs, unsigned l, unsigned u,

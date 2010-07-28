@@ -4,10 +4,10 @@
 
 #include <stdio.h>
 #include <algorithm>
-extern "C"
-{
-#include "fitcircle.h"
-}
+// extern "C"
+// {
+// #include "fitcircle.h"
+// }
 #include "Math.hh"
 #include "Draw.hh"
 #include "VisionCore.hh"
@@ -205,16 +205,17 @@ bool Arc::IsAtPosition(int x, int y)
 
 void Arc::CalculateParams()
 {
-  double *x = new double[NumEdgels()];
-  double *y = new double[NumEdgels()];
-  for(unsigned i = idx[START], j = 0; i <= idx[END]; i++, j++)
-  {
-    x[j] = seg->edgels[i].p.x;
-    y[j] = seg->edgels[i].p.y;
-  }
-  fit_circle(x, y, NumEdgels(), &center.x, &center.y, &radius);
-  delete[] x;
-  delete[] y;
+printf("Arc::CalculateParams: Not yet implemented!\n");
+//   double *x = new double[NumEdgels()];
+//   double *y = new double[NumEdgels()];
+//   for(unsigned i = idx[START], j = 0; i <= idx[END]; i++, j++)
+//   {
+//     x[j] = seg->edgels[i].p.x;
+//     y[j] = seg->edgels[i].p.y;
+//   }
+//   fit_circle(x, y, NumEdgels(), &center.x, &center.y, &radius);
+//   delete[] x;
+//   delete[] y;
 }
 
 /*
