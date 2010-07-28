@@ -11,23 +11,30 @@ module VisionData {
   sequence<string> StringSeq;
   sequence<double> DoubleSeq;
 
+  /**
+   * @brief A convex hull discribes
+   * @author Kai Zhou
+   */
   struct OneObj {
-    Vector3Seq pPlane;
-    Vector3Seq pTop;
+    Vector3Seq pPlane;              // 3D vector sequence, describing the plane ???
+    Vector3Seq pTop;                // 3D vector sequence, describing the object top surface ???
   };
   sequence<OneObj> ObjSeq;
 
+  /**
+   * @brief A convex hull describes ...???
+   * @author Kai Zhou
+   */
   class ConvexHull {
-
-    cogx::Math::Pose3 center;
+    cogx::Math::Pose3 center;       // Pose of the center of the convex hull
    
-    Vector3Seq PointsSeq;				// points forming convex hull (stereo based) in camera coordinates
-    cast::cdl::CASTTime time;	
+    Vector3Seq PointsSeq;           // points forming convex hull (stereo based) in camera coordinates
+    cast::cdl::CASTTime time;       // cast time
     
-    double radius;							// distance between center and farthest point from center
-    double density;							// ~ number of points in volume
-    ObjSeq Objects;							// Objects on this plane
-    cogx::Math::Plane3 plane;		// The estimated plane
+    double radius;                  // distance between center and farthest point from center
+    double density;                 // ~ number of points in volume
+    ObjSeq Objects;                 // Objects on this plane
+    cogx::Math::Plane3 plane;       // The estimated plane
  };
 
   sequence<string> IdSeq;
@@ -71,6 +78,10 @@ module VisionData {
     //Feature2 feature2;
   };
 
+  /**
+   * @brief ???
+   * @author ???
+   */
   struct VisualObjectView {
     // 2D bounding box in the image
     cogx::Math::Rect2 boundingBox;
@@ -81,7 +92,6 @@ module VisionData {
     // ID of the viewing camera
     int camId;
   };
-
   sequence<VisualObjectView> VisualObjectViewSeq;
 
   sequence<int> IntSeq;
@@ -92,13 +102,11 @@ module VisionData {
     cogx::Math::Vector3 normal;
     cogx::Math::Vector2 texCoord;
   };
-
   sequence<Vertex> VertexSeq;
 
   struct Face {
     IntSeq vertices;
   };
-
   sequence<Face> FaceSeq;
 
   class GeometryModel {
@@ -233,6 +241,14 @@ module VisionData {
   enum StereoDetectionCommandType{ SDSTART, SDSTOP, SDSINGLE, SDSINGLEHR };
   class StereoDetectionCommand {
     StereoDetectionCommandType cmd;
+  };
+
+  /**
+   * @brief Objects for the reasoner component.
+   * @author Andreas Richtsfeld 
+   */
+  class ReasonerObjects {
+    VisualObject obj;			// visual object
   };
 
   /**
