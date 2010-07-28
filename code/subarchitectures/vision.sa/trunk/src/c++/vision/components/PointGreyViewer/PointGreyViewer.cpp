@@ -7,7 +7,7 @@
  * A dummy component showing how to get images. 
  */
 
-#include <highgui.h>
+#include <opencv/highgui.h>
 #include <VideoUtils.h>
 #include "PointGreyViewer.h"
 
