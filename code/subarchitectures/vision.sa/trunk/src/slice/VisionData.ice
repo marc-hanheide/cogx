@@ -176,23 +176,29 @@ module VisionData {
     StringSeq labels;
   };
 
+  /** 
+   * @brief Dominant plane from PlanePopUp component.
+   * @author Kai Zhou
+   */
   class DominantPlane {
     cogx::Math::Plane3 plane;
   };
 
-  /** @brief 	Commands for Object Tracker
-   *  @author Thomas Mörwald
+  /**
+   * @brief Commands for Object Tracker
+   * @author Thomas Mörwald
    */
   enum TrackingCommandType{ START, STOP, ADDMODEL, REMOVEMODEL, OVERWRITE, LOCK, UNLOCK, GETPOINT3D, RELEASEMODELS, SCREENSHOT };
   class TrackingCommand {
     TrackingCommandType cmd;
-    string visualObjectID;			// for ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D
-    VertexSeq points;						// GETPOINT3D (Input: vec2 texCoord; Output: vec3 pos, vec3 normal)
-		BoolSeq pointOnModel;				// pointOnModel[i] is true if points[i] hits the VisualObject
+    string visualObjectID;        // for ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D
+    VertexSeq points;             // GETPOINT3D (Input: vec2 texCoord; Output: vec3 pos, vec3 normal)
+    BoolSeq pointOnModel;         // pointOnModel[i] is true if points[i] hits the VisualObject
   };
   
-  /** @brief Commands for ObjectRecognizer3D
-   *	@author Thomas Mörwald
+  /** 
+   * @brief Commands for ObjectRecognizer3D
+   * @author Thomas Mörwald
    */
   enum Recognizer3DCommandType{ RECSTOP, RECLEARN, RECOGNIZE };
   class Recognizer3DCommand{
@@ -230,7 +236,7 @@ module VisionData {
   };
 
   /**
-   * Space of interest.
+   * @brief Space of interest.
    * Coarsely described by a bounding sphere.
    * Somewhat finer (at least for some objects) described by a bounding box.
    * Later on we might even add a bounding convex hull as a yet finer
@@ -253,8 +259,7 @@ module VisionData {
    */
   class ROI {
     cogx::Math::Rect2 rect;
-    // time the ROI was last changed
-    cast::cdl::CASTTime time;
+    cast::cdl::CASTTime time;   // time the ROI was last changed
   };
 
   class ObjectRecognitionMatch {
