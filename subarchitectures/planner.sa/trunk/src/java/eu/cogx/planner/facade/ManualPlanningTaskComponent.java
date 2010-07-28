@@ -75,10 +75,15 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 		for (int i=0; i<goalsTable.getRowCount(); i++) {
 			Object goalObj=goalsTable.getValueAt(i, 0);
 			Object impObj=goalsTable.getValueAt(i, 1);
-			if (goalObj!=null && goalObj instanceof String) {
+			if (goalObj!=null && goalObj instanceof String && ((String) goalObj).length()>0) {
 				int importance=-1;
 				if (impObj!=null && impObj instanceof String) {
+					try {
 					importance=Integer.parseInt((String) impObj);
+					} catch(NumberFormatException e) {
+						getLogger().warn("could not parse importance integer from" + (String) impObj + ". taken default -1.");
+						importance=-1;
+					}
 				}
 				Goal g = new Goal(importance, (String) goalObj, false);
 				goals.add(g);
