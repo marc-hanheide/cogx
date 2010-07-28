@@ -20,6 +20,9 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import javax.swing.JTextArea;
+import javax.swing.JToggleButton;
+import javax.swing.JCheckBox;
+import java.awt.GridBagLayout;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
@@ -28,7 +31,7 @@ import javax.swing.JTextArea;
 public class ManualPlanningTaskFrame extends JFrame {
 
 	public static interface SubmitListener {
-		String submit(TableModel beliefTableModel);
+		String submit(TableModel beliefTableModel, boolean execute);
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -46,7 +49,8 @@ public class ManualPlanningTaskFrame extends JFrame {
 	private JTable jGoalsTable = null;
 	private JTextArea jStatus = null;
 	private JScrollPane jStatusScrollPane = null;
-
+	private JCheckBox jExecuteCheckbox = null;
+	private JPanel jPlanButtonsPanel = null;
 	/**
 	 * This is the default constructor
 	 */
@@ -57,7 +61,7 @@ public class ManualPlanningTaskFrame extends JFrame {
 		listener = new SubmitListener() {
 
 			@Override
-			public String submit(TableModel firstColValue) {
+			public String submit(TableModel firstColValue, boolean execute) {
 				return "";
 			}
 		};
@@ -144,10 +148,12 @@ public class ManualPlanningTaskFrame extends JFrame {
 	 */
 	private JPanel getJButtonPanel() {
 		if (jButtonPanel == null) {
+			GridLayout gridLayout = new GridLayout(0, 1);
+			gridLayout.setColumns(1);
 			jButtonPanel = new JPanel();
-			jButtonPanel.setLayout(new GridLayout(0, 1));
+			jButtonPanel.setLayout(gridLayout);
 			jButtonPanel.add(getJGoalTextEditField());
-			jButtonPanel.add(getJButtonSubmit());
+			jButtonPanel.add(getJPlanButtonsPanel(), null);
 			jButtonPanel.add(getJStatusScrollPane(), null);
 		}
 		return jButtonPanel;
@@ -166,7 +172,7 @@ public class ManualPlanningTaskFrame extends JFrame {
 					.addActionListener(new java.awt.event.ActionListener() {
 						public void actionPerformed(java.awt.event.ActionEvent e) {
 							String ret = listener
-									.submit(jGoalsTable.getModel());
+									.submit(jGoalsTable.getModel(), jExecuteCheckbox.isSelected());
 							if (ret != null) {
 								jStatus.setText(ret);
 							}
@@ -190,6 +196,19 @@ public class ManualPlanningTaskFrame extends JFrame {
 			jContentPane.add(getJGoalsPanel(), BorderLayout.CENTER);
 		}
 		return jContentPane;
+	}
+
+	/**
+	 * This method initializes jExecuteCheckbox	
+	 * 	
+	 * @return javax.swing.JCheckBox	
+	 */
+	private JCheckBox getJExecuteCheckbox() {
+		if (jExecuteCheckbox == null) {
+			jExecuteCheckbox = new JCheckBox();
+			jExecuteCheckbox.setText("execute this plan?");
+		}
+		return jExecuteCheckbox;
 	}
 
 	/**
@@ -247,22 +266,6 @@ public class ManualPlanningTaskFrame extends JFrame {
 	}
 
 	/**
-	 * This method initializes jStatus
-	 * 
-	 * @return javax.swing.JTextArea
-	 */
-	private JTextArea getJStatus() {
-		if (jStatus == null) {
-			jStatus = new JTextArea();
-			jStatus.setEditable(false);
-			jStatus.setLineWrap(true);
-			jStatus
-					.setText("This is a manual PlanningTask creator to test the oversubscription planning. The left pane shows all beliefs available to the planner. Click them to include them into the currently edited goal.");
-		}
-		return jStatus;
-	}
-
-	/**
 	 * This method initializes jGoalTextEditField
 	 * 
 	 * @return javax.swing.JTextField
@@ -299,15 +302,19 @@ public class ManualPlanningTaskFrame extends JFrame {
 	}
 
 	/**
-	 * This method initializes this
+	 * This method initializes jStatus
 	 * 
-	 * @return void
+	 * @return javax.swing.JTextArea
 	 */
-	private void initialize() {
-		this.setSize(500, 248);
-		this.setContentPane(getJContentPane());
-		this.setTitle("ManualPlanningTask");
-		this.pack();
+	private JTextArea getJStatus() {
+		if (jStatus == null) {
+			jStatus = new JTextArea();
+			jStatus.setEditable(false);
+			jStatus.setLineWrap(true);
+			jStatus
+					.setText("This is a manual PlanningTask creator to test the oversubscription planning. The left pane shows all beliefs available to the planner. Click them to include them into the currently edited goal.");
+		}
+		return jStatus;
 	}
 
 	/**
@@ -323,6 +330,33 @@ public class ManualPlanningTaskFrame extends JFrame {
 					.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		}
 		return jStatusScrollPane;
+	}
+
+	/**
+	 * This method initializes this
+	 * 
+	 * @return void
+	 */
+	private void initialize() {
+		this.setSize(500, 248);
+		this.setContentPane(getJContentPane());
+		this.setTitle("ManualPlanningTask");
+		this.pack();
+	}
+
+	/**
+	 * This method initializes jPlanButtonsPanel	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPlanButtonsPanel() {
+		if (jPlanButtonsPanel == null) {
+			jPlanButtonsPanel = new JPanel();
+			jPlanButtonsPanel.setLayout(new GridLayout(1,2));
+			jPlanButtonsPanel.add(getJExecuteCheckbox(), null);
+			jPlanButtonsPanel.add(getJButtonSubmit(), null);
+		}
+		return jPlanButtonsPanel;
 	}
 
 } // @jve:decl-index=0:visual-constraint="10,10"
