@@ -63,6 +63,7 @@ public:
 
 public:
   static const char* TypeName(Type t);
+  static const int TypeNameLength(Type t);
   static Type EnumType(const char *type_name);
 
   Gestalt(VisionCore *c, Type t);

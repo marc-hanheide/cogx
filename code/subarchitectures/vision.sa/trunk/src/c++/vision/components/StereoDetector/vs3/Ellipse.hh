@@ -1,5 +1,9 @@
 /**
- * $Id: Ellipse.hh,v 1.14 2006/11/24 13:47:03 mxz Exp mxz $
+ * @file Ellipse.hh
+ * @author Zillich, Richtsfeld
+ * @date 2006, Dec. 2009, June 2010
+ * @version 0.1
+ * @brief Gestalt feature Ellipse
  */
 
 #ifndef Z_ELLIPSE_HH
@@ -15,6 +19,9 @@ namespace Z
 
 class EJunction;
 
+/**
+ * @brief Gestalt class ellipse.
+ */
 class Ellipse : public Gestalt
 {
 private:

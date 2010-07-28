@@ -156,41 +156,44 @@ const TmpCube &StereoCubes::Cubes2D(int side, int i)
   return cubes[side][i];
 }
 
-/**
- * @brief Draw detected cubes as overlay.
- * @param side Left or right side of the stereo images.
- * @param masked Draw masked features.
- */
-void StereoCubes::Draw(int side, bool masked)
-{
-	SetColor(RGBColor::blue);
-	int nrCubes = 0;
-	if(side == LEFT) nrCubes = NumCubesLeft2D();
-	else nrCubes = NumCubesRight2D();
-
-	for(int i=0; i<nrCubes; i++)
-	{
-		if(masked)
-			vcore[side]->Gestalts(Gestalt::CUBE, i)->Draw();	
-		else
-			if (vcore[side]->Gestalts(Gestalt::CUBE, i)->IsUnmasked())
-				vcore[side]->Gestalts(Gestalt::CUBE, i)->Draw();	
-	}
-}
 
 /**
  * @brief Draw only matched cubes as overlay.
- * @param side Left or right side of the stereo images.
+ * @param side Left or right image from stereo rig.
+ * @param single Draw single feature
+ * @param id ID of single feature
+ * @param detail Degree of detail
  */
-void StereoCubes::DrawMatched(int side)
+void StereoCubes::DrawMatched(int side, bool single, int id, int detail)
 {
-	for(int i=0; i< cubeMatches; i++)
+	if(single)
 	{
-		cubes[side][i].surf[0].Draw(RGBColor::red);
-		cubes[side][i].surf[1].Draw(RGBColor::red);
-		cubes[side][i].surf[2].Draw(RGBColor::red);
+		if(id < 0 || id >= cubeMatches)
+		{
+			printf("StereoClosures::DrawMatched: warning: id out of range!\n");
+			return;
+		}
+		DrawSingleMatched(side, id, detail);
 	}
+	else
+		for(int i=0; i< cubeMatches; i++)
+			DrawSingleMatched(side, i, detail);
 }
+
+
+/**
+ * @brief Draw single matched closure.
+ * @param side Left or right image from stereo rig.
+ * @param id ID of single feature
+ * @param detail Degree of detail
+ */
+void StereoCubes::DrawSingleMatched(int side, int id, int detail)
+{
+	cubes[side][id].surf[0].Draw(RGBColor::red);
+	cubes[side][id].surf[1].Draw(RGBColor::red);
+	cubes[side][id].surf[2].Draw(RGBColor::red);
+}
+
 
 /**
  * @brief Convert cube from object detector to working memory's visual object.
@@ -200,6 +203,7 @@ void StereoCubes::DrawMatched(int side)
  */
 bool StereoCubes::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id)
 {
+	printf("StereoCubes::StereoGestalt2VisualObject: Not yet implemented!\n");
 // 	obj->model = new VisionData::GeometryModel;
 // 	Flap3D flap = Flaps(id);
 // 
@@ -250,6 +254,7 @@ bool StereoCubes::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, i
  */
 void StereoCubes::RecalculateCoordsystem(Cube3D &cube, Pose3 &pose)
 {
+	printf("StereoCubes::RecalculateCoordsystem: Not yet implemented!\n");
 //   Vector3 c(0., 0., 0.);
 //   int cnt = 0;
 //   // find the center of gravity
@@ -266,7 +271,7 @@ void StereoCubes::RecalculateCoordsystem(Cube3D &cube, Pose3 &pose)
 //   pose.pos.y = c.y;
 //   pose.pos.z = c.z;
 // 
-// 	// set the orientation to identity, i.e. parallel to world coordinate system
+// 	// set the orientation to identity, i.e. pStereoGestalt2VisualObjectarallel to world coordinate system
 //   pose.rot.x = 0.;
 //   pose.rot.y = 0.;
 //   pose.rot.z = 0.;
@@ -296,7 +301,7 @@ void StereoCubes::RecalculateCoordsystem(Cube3D &cube, Pose3 &pose)
  * @param off_1 TODO Offset ???
  * @param cross true, if match is "crossed" and not "straight"
  */
-double StereoCubes::MatchingScore(TmpCube &left_cube, TmpCube &right_cube, unsigned &off_0, unsigned &off_1, bool &cross)
+double StereoCubes::MatchingScore(TmpCube &lefStereoGestalt2VisualObjectt_cube, TmpCube &right_cube, unsigned &off_0, unsigned &off_1, bool &cross)
 {
 //   // _s .. straight (left flap surf 0 matches right flap surf 0)
 //   // _x .. crossed (left flap surf 0 matches right flap surf 1)

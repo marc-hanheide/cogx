@@ -1,6 +1,10 @@
 /**
- * $Id: FormArcJunctions.cc,v 1.2 2010/05/26 12:03:44 mz Exp mz $
- */
+ * @file FormEJunctions.cc
+ * @author Zillich, Richtsfeld
+ * @date 2010
+ * @version 0.1
+ * @brief Class file of Gestalt principle FormArcJunctions.
+ **/
 
 #include "Arc.hh"
 #include "AJunction.hh"
@@ -76,10 +80,12 @@ void FormArcJunctions::Reset()
 void FormArcJunctions::Operate(bool incremental)
 {
 	StartRunTime();
+
   if(incremental)
     OperateIncremental();
   else
     OperateNonIncremental();
+	
 	StopRunTime();
 }
 
@@ -87,7 +93,7 @@ void FormArcJunctions::OperateIncremental()
 {
   if(first_op)
   {
-    // in first call just init search lines, don't create junctions
+		// in first call just init search lines, don't create junctions
     vote_img->SetNumLines(NumArcs(core)*8);
     for(unsigned r = 0; r < NumArcs(core); r++)
       InitSearchLines((Arc*)core->RankedGestalts(Gestalt::ARC, r));
@@ -98,8 +104,8 @@ void FormArcJunctions::OperateIncremental()
     // for all subsequent calls 
     // try to be smart about growing search lines
     if(grow_method == GROW_SMART)
-    {
-			printf("FormArcJunctions::OperateIncremental: Not yet implemented!\n");
+		{
+			printf("FormArcJunctions::OperateIncremental: grow_smart not yet implemented!\n");
       // HACK: not implemented yet
       //int r = ExpSelect(NumArcs(core) - 1);
       //ExtendSmartLines((Arc*)core->RankedGestalts(Gestalt::ARC, r));

@@ -325,9 +325,9 @@ bool FormCones::CheckGeometry(EJunction *ej0, EJunction *ej1, LJunction *l, doub
 	diff = fabs(acos(Dot(dirEll, dirLeft)) - acos(Dot(dirEll, dirRight)));
 	if (diff > 0.3 || oAngle0 > 1.3 || oAngle1 > 1.3) return false;				/// TODO Thresholds for right circular cone
 
-printf("	phis: %4.2f - %4.2f - %4.2f\n", PolarAngle(dirEll), PolarAngle(dirLeft), PolarAngle(dirRight));
-printf("	Diff: %4.2f\n", diff);
-printf("	oAngles: %4.2f - %4.2f\n", oAngle0, oAngle1);
+// printf("	phis: %4.2f - %4.2f - %4.2f\n", PolarAngle(dirEll), PolarAngle(dirLeft), PolarAngle(dirRight));
+// printf("	Diff: %4.2f\n", diff);
+// printf("	oAngles: %4.2f - %4.2f\n", oAngle0, oAngle1);
 
 /*	printf("Cone.cc - cone: %u - left: %4.2f - right: %4.2f - diff: %4.3f\n", id, acos(Dot(dirEll, dirLeft)), acos(Dot(dirEll, dirRight)), diff);
 	printf("oAngle0: %4.2f - oAngle1: %4.2f\n", oAngle0, oAngle1);*/

@@ -12,6 +12,7 @@ SET(HEADERS
 	StereoEllipses.h
 	StereoFlaps.h
 	StereoFlapsAri.h
+	StereoLJunctions.h
 	StereoRectangles.h
 )
 
@@ -24,9 +25,11 @@ SET(SOURCES
 	StereoEllipses.cpp
 	StereoFlaps.cpp
 	StereoFlapsAri.cpp
+	StereoLJunctions.cpp
 	StereoRectangles.cpp
 )
 
+#link_cast_component(${CAST_COMPONENT_NAME} SDUtils)
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)

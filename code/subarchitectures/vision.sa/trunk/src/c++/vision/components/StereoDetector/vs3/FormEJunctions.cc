@@ -133,7 +133,6 @@ void FormEJunctions::Operate(bool incremental)
 {
 	StartRunTime();
 	if(first_op) first_op == !SetNumLines();
-	
   if(incremental)
     OperateIncremental();
   else
@@ -209,7 +208,6 @@ void FormEJunctions::OperateIncremental()
 				int r = ExpSelect(NumEllipses(core) - 1);
 				ExtendSearchLines((Ellipse*) core->RankedGestalts(Gestalt::ELLIPSE, r));
 			}
-
     }
 
 		// all search lines grow equally, this is less "anytime-ish"
@@ -235,6 +233,7 @@ void FormEJunctions::OperateIncremental()
  */
 void FormEJunctions::OperateNonIncremental()
 {
+	printf("FormEJunctions::OperateNonIncremental: Not yet implemented!\n");
 //   if(first_op)  // do only once
 //   {
 //     unsigned narcs = NumArcs(core);
@@ -457,8 +456,9 @@ void FormEJunctions::CreateJunctions(unsigned sline, Array<VoteImage::Elem> &isc
 	}
 	
 	// sline type is a ellipse search line
-	else if(vtype_i == VOTE_EOTL || vtype_i == VOTE_EOTR || vtype_i == VOTE_EITL || vtype_i == VOTE_EITR)
+	else if(vtype_i == VOTE_EOTL || vtype_i == VOTE_EOTR || vtype_i == VOTE_EITL || vtype_i == VOTE_EITR)							/// TODO TODO TODO Fehler? Segmentation fault?
 	{
+// printf("FormEJunctions::CreateJunctions: VOTE_EOTL / VOTE_EOTR / VOTE_EITL / VOTE_EITR!\n");
 		int end_i = VOTE_VERTEX(vtype_i);
 		Ellipse *ell_i = Ellipses(core, i-baseOffset);
 
@@ -473,17 +473,13 @@ void FormEJunctions::CreateJunctions(unsigned sline, Array<VoteImage::Elem> &isc
 			if(IsctTypeAdmissible(vtype_i, vtype_j))
 			{
 				Line *line_j = Lines(core, j);
-
 				if(NoEJunctionYet(line_j, ell_i))
 				{
-					
 					// recalculate line_end, if vote line was edge itself
-// printf("  line vote: %u\n", vtype_j);
-// unsigned changed = end_j;
+					// printf("  line vote: %u\n", vtype_j);
 
 					if(vtype_j == VOTE_E) 
 					{
-// printf("  => VOTE_E\n");
 						Vector2 isct;
 						Vector2 start = line_j->point[START];
 						Vector2 end = line_j->point[END];

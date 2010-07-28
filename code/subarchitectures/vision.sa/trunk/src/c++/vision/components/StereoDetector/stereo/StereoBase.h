@@ -3,7 +3,7 @@
  * @author Andreas Richtsfeld
  * @date November 2009
  * @version 0.1
- * @brief Base class for stereo caculation of Gestalts, with class Vertex, TmpSurf and Surf3D.
+ * @brief Base class for stereo caculation of Gestalts, with class Vertex2D, Surf2D, Vertex3D and Surf3D.
  */
 
 #ifndef Z_STEREO_BASE_HH
@@ -26,9 +26,7 @@
 
 namespace Z
 {
-
-
-/// TODO Braucht man diese thresholds noch?
+/// TODO Was für Thresholds sind das genau: Beschreiben und alle anderen herausziehen: Surf u. Point
 // These are some tuning parameters to filter out "bad" surface hypotheses.
 // These might need adjusting to a specific use case.
 
@@ -43,41 +41,70 @@ static const double SC_MIN_CIRC = 0.060;
 // tend to produce impossibly long, thing surfaces)
 const double SC_MAX_LENGTH = 0.5;  // in [m]
 
+// maximum allowed vertical deviation of line based stereo for all surface points
+static const double SC_MAX_DELTA_V_SURF = 10.;
+
+// maximum allowed vertical deviation of line based stereo for points
+static const double SC_MAX_DELTA_V_POINT = 10.;
+
+// minimum disparity (distance to point must be higher than this value)
+static const double SC_MIN_DISPARITY = 0.;
+
+// Space of interest (SOI) check.
+// Sanity check for points: max. and min. distances in x,y,z-direction, relative to
+// the camera
+static const double SC_MIN_DIST_X = -3.;	// 3m to the left
+static const double SC_MAX_DIST_X =  3.;	// 3m to the right			/// TODO TODO TODO MAX-MIN richtig?
+static const double SC_MIN_DIST_Y = -3.;	// 3m up
+static const double SC_MAX_DIST_Y =  3.;	// 3m down
+static const double SC_MIN_DIST_Z =  0.;	// 0m away
+static const double SC_MAX_DIST_Z =  4.;	// 4m away !!! (do not consider points farer than 4m away!
 
 
+
+//----------------------------------------------------------------//
+//-------------------------- Vertex2D ----------------------------// 
+//----------------------------------------------------------------//
 /**
- * @brief Vertex
+ * @class Vertex2D
+ * @brief A 2D vertex class to store and manipulate vs3 vertices.
  */
-class Vertex
+class Vertex2D
 {
 public:
-  Vector3 p;						///< position
-  Vector3 n;						///< TODO Normale ??? 
+  bool is_valid;					///< validation parameter
+  Vector2 p;							///< point
+  Vector2 pr;							///< rectified point
+ 
+	void RePrune(int oX, int oY, int sc);
+  void Rectify(StereoCamera *stereo_cam, int side);
+  void Refine();
+  bool IsAtPosition(int x, int y) const;
+	void Draw(RGBColor col);
 };
 
 //----------------------------------------------------------------//
-//-------------------------- TmpSurface --------------------------//
+//-------------------------- Surface 2D --------------------------//
 //----------------------------------------------------------------//
 /**
- * @class TmpSurf
- * @brief Class for surfaces.
+ * @class Surf2D
+ * @brief A 2D surface class to store and manipulate vs3 surfaces.
+ * (for closures, rectangles, flaps, cubes ...)
  */
-class TmpSurf
+class Surf2D
 {
 public:
   bool is_valid;					///< validation parameter
   vector<Vector2> p;			///< original (distorted, unrectified) points
   vector<Vector2> pr;			///< rectified points
 
-  TmpSurf() {is_valid = false;}
-  TmpSurf(Closure *clos) {Init(clos);}
-	TmpSurf(Rectangle *rectangle) {Init(rectangle);}
-//	TmpSurf(Ellipse *ellipse) {Init(ellipse);}											/// TODO wird diese Funktion aufgerufen
-//	TmpSurf(Cube *cube) {Init(cube, int side);}											/// das funktioniert mit den Seiten nicht!!!
+  Surf2D() {is_valid = false;}
+  Surf2D(Closure *clos) {Init(clos);}
+	Surf2D(Rectangle *rectangle) {Init(rectangle);}
+//	Surf2D(Cube *cube) {Init(cube, int side);}								TODO TODO /// das funktioniert mit den Seiten nicht!!!
 
   void Init(Closure *clos);
 	void Init(Rectangle *rectangle);
-	void Init(Ellipse *ell);
 	void Init(Cube *cube, int side);
 
   void ShiftPointsLeft(unsigned offs);
@@ -89,6 +116,27 @@ public:
 };
 
 
+
+//--------------------------------------------------------------//
+//-------------------------- Vertex3D --------------------------//
+//--------------------------------------------------------------//
+/**
+ * @brief Vertex
+ */
+class Vertex3D
+{
+public:
+  Vector3 p;						///< position vector
+  Vector3 n;						///< normal vector
+
+private:
+	bool SanityOK();
+
+public:
+  bool Reconstruct(StereoCamera *stereo_cam, Vertex2D &left, Vertex2D &right);
+	double Distance(Vertex3D point);
+};
+
 //----------------------------------------------------------------//
 //-------------------------- Surf3D ------------------------------//
 //----------------------------------------------------------------//
@@ -99,7 +147,7 @@ public:
 class Surf3D
 {
 public:
-  Array<Vertex> vertices;
+  Array<Vertex3D> vertices;
 
 private:
   bool NormalsOK();
@@ -108,7 +156,7 @@ private:
   void RefineVertices();
 
 public:
-  bool Reconstruct(StereoCamera *stereo_cam, TmpSurf &left, TmpSurf &right, bool refine);
+  bool Reconstruct(StereoCamera *stereo_cam, Surf2D &left, Surf2D &right, bool refine);
 };
 
 
@@ -125,6 +173,7 @@ class StereoBase
 public:
   enum Type
   {
+		STEREO_LJUNCTION,
 		STEREO_ELLIPSE,
 		STEREO_CLOSURE,
 		STEREO_RECTANGLE,
@@ -133,25 +182,25 @@ public:
 		STEREO_CUBE,
     MAX_TYPE,
     UNDEF = MAX_TYPE
-  };																	///< Type of stereo Gestalts for matching
+  };														///< Type of stereo Gestalts for matching
 
-  VisionCore *vcore[2];								///< Left and right vision core
-	StereoCamera *stereo_cam;						///< Stereo camera parameters
+  VisionCore *vcore[2];					///< Left and right vision core
+	StereoCamera *stereo_cam;			///< Stereo camera parameters
 
-	struct PruningParameter																				///< Parameters, when pruned image will be processed at stereo core
+	struct PruningParameter				///< Parameters, when pruned image will be processed at stereo core
 	{
-		bool pruning;						///< Pruned image delivered
-		int offsetX;						///< Offset x-coordinate
-		int offsetY;						///< Offset y-coordinate
-		int scale;							///< Scale between original and pruned image
+		bool pruning;								///< Pruned image delivered
+		int offsetX;								///< Offset x-coordinate
+		int offsetY;								///< Offset y-coordinate
+		int scale;									///< Scale between original and pruned image
 	};
-	PruningParameter pPara;																			///< Pruning parameters of an image.
+	PruningParameter pPara;				///< Pruning parameters of an image.
 
 private:
-	bool enabled;												///< Enabled / disabled Stereo-Gestalt
+	bool enabled;									///< Enabled / disabled Stereo-Gestalt
 
 protected:
-	Type type;													///< StereoBase Type
+	Type type;										///< StereoBase Type
 
 public:
   static const char* TypeName(Type t);
@@ -159,12 +208,8 @@ public:
 
 	StereoBase();
 
-	// functions to calculate stereo surfaces.
-//   unsigned FindMatchingSurf(TmpSurf &left_surf, Array<TmpSurf> &right_surfs, unsigned l);
-//   void MatchSurfaces(Array<TmpSurf> &left_surfs, Array<TmpSurf> &right_surfs, int &matches);
-//   void Calculate3DSurfs(Array<TmpSurf> &left_surfs, Array<TmpSurf> &right_surfs, int &flapMatches, Array<Surf3D> &surf3ds);
-
-  double MatchingScoreSurf(TmpSurf &left_surf, TmpSurf &right_surf, unsigned &match_offs);
+  double MatchingScoreSurf(Surf2D &left_surf, Surf2D &right_surf, unsigned &match_offs);		/// TODO Gehört eigentlich zu den Stereo's oder zu 2D-3D's?
+  double MatchingScorePoint(Vertex2D &left_point, Vertex2D &right_point);											/// TODO Gehört eigentlich zu den Stereo's oder zu 2D-3D's?
 	void EnablePrinciple(bool status);
 	bool IsEnabled() {return enabled;}
 
@@ -172,7 +217,8 @@ public:
 	virtual int NumStereoMatches() = 0;
 	virtual bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id) = 0;
 	virtual void Draw(int side, bool masked = false) {}																					/// TODO Sollten alle pure virtual (=0) sein.
-	virtual void DrawMatched(int side) {}
+// 	virtual void DrawMatched(int side) {}
+	virtual void DrawMatched(int side, bool single, int id, int detail) = 0;
 	virtual void Process() = 0;
 	virtual void Process(int oX, int oY, int sc) = 0;
 	virtual void ClearResults() {}

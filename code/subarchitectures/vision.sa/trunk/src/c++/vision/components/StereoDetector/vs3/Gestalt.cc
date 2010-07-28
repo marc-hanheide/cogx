@@ -39,6 +39,9 @@ static const char type_names[][NAME_LENGTH] = {
   "UNDEF"
   };
 
+static const int type_names_length[] = {
+  7, 4, 3, 16, 7, 6, 12, 10, 10, 10, 10, 11, 8, 4, 7, 9, 4, 8, 4, 5};
+
 /**
  * @brief Returns the name of a given gestalt type.
  * @param t Type of Gestalt
@@ -47,6 +50,16 @@ static const char type_names[][NAME_LENGTH] = {
 const char* Gestalt::TypeName(Type t)
 {
   return type_names[t];
+}
+
+/**
+ * @brief Returns the length of the name of a given gestalt type.
+ * @param t Type of Gestalt
+ * @return Lenght of Gestalt type name.
+ */
+const int Gestalt::TypeNameLength(Type t)
+{
+  return type_names_length[t];
 }
 
 /**

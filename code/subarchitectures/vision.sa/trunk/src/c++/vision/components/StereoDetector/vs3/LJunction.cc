@@ -164,27 +164,29 @@ void LJunction::Recalc()
  */
 void LJunction::Draw(int detail)
 {
+
   if(detail >= 1)
   {
-    line[LEFT]->Draw(detail - 1);
-    line[RIGHT]->Draw(detail - 1);
-  }
+		// draw arms of junction
+		Vector2 pl = line[LEFT]->point[near_point[LEFT]];
+		Vector2 pr = line[RIGHT]->point[near_point[RIGHT]];
+		DrawLine2D(isct.x, isct.y, pl.x, pl.y, RGBColor::cyan);
+		DrawLine2D(isct.x, isct.y, pr.x, pr.y, RGBColor::magenta);
+	}
   if(detail >= 2)
+  {
+		// draw left and right line
+    line[LEFT]->Draw(detail - 2);
+    line[RIGHT]->Draw(detail - 2);
+  }
+  if(detail >= 3)
   {
     char id_str[20];
     Vector2 v = isct - 10.*dir_i;
     snprintf(id_str, 20, "%u", id);
     DrawText2D(id_str, v.x, v.y, RGBColor::blue);
-    /*v = isct + 10*dir[LEFT];
-    DrawText2D("L", v.x, v.y, RGBColor::blue);
-    v = isct + 10*dir[RIGHT];
-    DrawText2D("R", v.x, v.y, RGBColor::blue);*/
   }
-  // draw arms of junction
-  Vector2 pl = line[LEFT]->point[near_point[LEFT]];
-  Vector2 pr = line[RIGHT]->point[near_point[RIGHT]];
-  DrawLine2D(isct.x, isct.y, pl.x, pl.y, RGBColor::cyan);
-  DrawLine2D(isct.x, isct.y, pr.x, pr.y, RGBColor::magenta);
+
   // draw intersection point
   DrawPoint2D(isct.x, isct.y, RGBColor::blue);
 }

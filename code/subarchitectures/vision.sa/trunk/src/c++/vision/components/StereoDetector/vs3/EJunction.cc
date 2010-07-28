@@ -42,16 +42,7 @@ EJunction::EJunction(VisionCore *vc, Line *l, Ellipse *e, unsigned lE, unsigned 
 	// Add e-junction to ellipsen
 	ellipse->ejcts[vertex].PushBack(this);
 	
-//   vertex = ver;
-//   isct = inter;
-// 	
-//   gap[0] = g[0];
-//   gap[1] = g[1];
-// 	
-//   Lines(line)->AddEJunction(lineEnd, id);
-//   Ellipses(ellipse)->AddEJunction(id);
-// 	
-//   CalculateSignificance();
+//   CalculateSignificance();																																// TODO Calculate significance
 }
 
 /**
@@ -67,10 +58,12 @@ void EJunction::UpdateColLines(Line *l, unsigned lE)
 	{
 		Line *newColLine = l->coll[lE][i]->OtherLine(l);
 		unsigned newColLineEnd = Other(l->coll[lE][i]->near_point[l->coll[lE][i]->WhichLineIs(newColLine)]);
-		colLines.PushBack(newColLine);
-		colLinesEnd.PushBack(newColLineEnd);
-		
-		UpdateColLines(newColLine, newColLineEnd);
+		if(colLines.Find(newColLine) == UNDEF_ID)
+		{
+			colLines.PushBack(newColLine);
+			colLinesEnd.PushBack(newColLineEnd);
+			UpdateColLines(newColLine, newColLineEnd);
+		}
 	}
 }
 

@@ -3,7 +3,7 @@
  * @author Andreas Richtsfeld
  * @date November 2009
  * @version 0.1
- * @brief Base class for stereo caculation of Gestalts, with class Vertex, TmpSurf and Surf3D.
+ * @brief Base class for stereo caculation of Gestalts, with class Vertex2D, Vertex3D, Surf2D and Surf3D.
  */
 
 #include "StereoBase.h"
@@ -15,7 +15,7 @@ namespace Z
 //-----------------------------------------------------------------//
 //------------------------ static helpers -------------------------//
 //-----------------------------------------------------------------//
-/**
+/**																									/// TODO Wo wird TmpLine gebraucht?
  * @brief TmpLine
  */
 struct TmpLine
@@ -80,17 +80,70 @@ static void RefineLines(vector<TmpLine> &lines)
   }
 }
 
-
-
-//-----------------------------------------------------------------//
-//---------------------------- TmpSurf ----------------------------//
-//-----------------------------------------------------------------//
+//----------------------------------------------------------------//
+//-------------------------- Vertex2D ----------------------------// 
+//----------------------------------------------------------------//
 /**
- * @brief Init tmp. surface with data from a closure.
+ * @brief Recalculate the point, when image was pruned from HR image.
+ * @param oX Offset of x-coordinate
+ * @param oY Offset of y-coordinate
+ * @param sc Scale between original and pruned image
+ */
+void Vertex2D::RePrune(int oX, int oY, int sc)
+{
+	p.x = (oX + p.x)/sc;
+	p.y = (oY + p.y)/sc;
+}
+
+/**
+ * @brief Rectify 2D point
+ * @param stereo_cam Stereo camera paramters and functions.
+ * @param side LEFT/RIGHT side of stereo rig.
+ */
+void Vertex2D::Rectify(StereoCamera *stereo_cam, int side)
+{
+  stereo_cam->RectifyPoint(p.x, p.y, pr.x, pr.y, side);
+}
+
+/**
+ * // TODO Not implementation yet.
+ * @brief Refine tmp. surface
+ */
+void Vertex2D::Refine()
+{
+// 	printf("StereoBase:Vertex2D::Refine: Not yet implemented!\n");
+}
+
+/**
+ * @brief Returns true, if the point is at this position in the image.
+ * @param x X-coordinate in the image
+ * @param y Y-coordinate in the image
+ * @return Returns true if the point is at this position in the image.
+ */
+bool Vertex2D::IsAtPosition(int x, int y) const
+{
+	if(fabs(p.x-x) < 2 && fabs(p.y-y) <2) return true;
+  return false;
+}
+
+/**
+ * @brief Draw the surface unrectified.
+ * @param col RGB color
+ */
+void Vertex2D::Draw(RGBColor col)
+{
+	DrawPoint2D(p.x, p.y, col);
+}
+
+//----------------------------------------------------------------//
+//---------------------------- Surf2D ----------------------------//
+//----------------------------------------------------------------//
+/**
+ * @brief Init 2D surface with data from a closure.
  * 																																								TODO Why calculation with edgels ...? Whats going on here?
  * @param clos Closure to init surface
  */
-void TmpSurf::Init(Closure *clos)
+void Surf2D::Init(Closure *clos)
 {
   // array of edgel points, 10000 should be enough, i.e. a random segfault will
   // appear at some possibly distant point in the future :)
@@ -170,7 +223,7 @@ void TmpSurf::Init(Closure *clos)
  * Set the size of the point-vectors (p, pr) and copy corner coordinates to p.
  * @param rectangle Rectangle to init the surface.
  */
-void TmpSurf::Init(Rectangle *rectangle)
+void Surf2D::Init(Rectangle *rectangle)
 {
 	p.resize(4);
 	pr.resize(4);
@@ -182,21 +235,6 @@ void TmpSurf::Init(Rectangle *rectangle)
 }
 
 
-/** TODO
- * @brief Init tmp. surface with data of an vs3 ellipse
- * @param ell Ellipse to init surface
- */
-void TmpSurf::Init(Ellipse *ell)
-{
-	printf("StereoBase: TmpSurf::Init(Ellipse *ell): Not yet implemented!\n");
-// 	for(unsigned i=0; i<4; i++)
-// 		p[i] = (rectangle->ljcts[i])->isct;
-// 
-//   id = clos->ID();
-// 
-//   is_valid = true;
-}
-
 /**
  * @brief Init tmp. surface with data of a cube.
  * Set the size of the point-vectors (p, pr) and copy corner coordinates to p.
@@ -204,9 +242,9 @@ void TmpSurf::Init(Ellipse *ell)
  * @param int Top (0), Right (1) or Left (2) side of the cube.
  * TODO Surfaces of cubes may be ambiguous.
  */
-void TmpSurf::Init(Cube *cube, int side)
+void Surf2D::Init(Cube *cube, int side)
 {
-	printf("StereoBase: TmpSurf::Init(Cube *cube, int side): Implemented, but untested\n");
+	printf("StereoBase: Surf2D::Init(Cube *cube, int side): Implemented, but untested\n");
 
   p.resize(4);
   pr.resize(4);
@@ -233,7 +271,7 @@ void TmpSurf::Init(Cube *cube, int side)
 		p[3] = cube->cornerPoint[1];
 	}
 	else
-		printf("TmpSurf::Init: False cube side.\n");
+		printf("Surf2D::Init: False cube side.\n");
 
   is_valid = true;
 }
@@ -243,7 +281,7 @@ void TmpSurf::Init(Cube *cube, int side)
  * @brief Shift points (and rectified ones) offs to the left: p[i] <- p[i+offs]
  * @param offs Number of point shifts.
  */
-void TmpSurf::ShiftPointsLeft(unsigned offs)
+void Surf2D::ShiftPointsLeft(unsigned offs)
 {
   assert(p.size() == pr.size()); 
   vector<Vector2> t(p.size());
@@ -262,7 +300,7 @@ void TmpSurf::ShiftPointsLeft(unsigned offs)
  * @param oY Offset of y-coordinate
  * @param sc Scale between original and pruned image
  */
-void TmpSurf::RePrune(int oX, int oY, int sc)
+void Surf2D::RePrune(int oX, int oY, int sc)
 {
 	for(unsigned i = 0; i < p.size(); i++)
 	{
@@ -276,7 +314,7 @@ void TmpSurf::RePrune(int oX, int oY, int sc)
  * @param stereo_cam Stereo camera with paramters and functions.
  * @param side LEFT/RIGHT side of stereo rig.
  */
-void TmpSurf::Rectify(StereoCamera *stereo_cam, int side)
+void Surf2D::Rectify(StereoCamera *stereo_cam, int side)
 {
   for(unsigned i = 0; i < p.size(); i++)
     stereo_cam->RectifyPoint(p[i].x, p[i].y, pr[i].x, pr[i].y, side);
@@ -286,8 +324,9 @@ void TmpSurf::Rectify(StereoCamera *stereo_cam, int side)
  * // TODO Not implementation yet.
  * @brief Refine tmp. surface
  */
-void TmpSurf::Refine()
+void Surf2D::Refine()
 {
+// 	printf("StereoBase:Surf2D::Refine: Not yet implemented!\n");
 }
 
 /**
@@ -296,7 +335,7 @@ void TmpSurf::Refine()
  * @param y Y-coordinate in the image
  * @return Returns true if surface is at this position in the image.
  */
-bool TmpSurf::IsAtPosition(int x, int y) const
+bool Surf2D::IsAtPosition(int x, int y) const
 {
   const double GRAB_DIST = 2.;
   try
@@ -306,15 +345,14 @@ bool TmpSurf::IsAtPosition(int x, int y) const
     {
       int j = (i < ncorners - 1 ? i + 1 : 0);
       Vector2 d = Normalise(p[j] - p[i]);
-      if(AbsDistPointToLine(Vector2((double)x, (double)y), p[i], d)
-         <= GRAB_DIST)
-        return true;
+      if(AbsDistPointToLine(Vector2((double)x, (double)y), p[i], d) <= GRAB_DIST)
+				return true;
     }
   }
   catch(Except &e)
   {
     // normalise might divide by zero, ignore and later return false TODO
-		printf("StereoBase:TmpSurf::IsAtPosition: Exception: Normalise-Problem?\n");
+		printf("StereoBase:Surf2D::IsAtPosition: Exception: Normalise-Problem?\n");
   }
   return false;
 }
@@ -324,7 +362,7 @@ bool TmpSurf::IsAtPosition(int x, int y) const
  * @brief Draw the surface unrectified.
  * @param col RGB color
  */
-void TmpSurf::Draw(RGBColor col)
+void Surf2D::Draw(RGBColor col)
 {
 	unsigned m, s = p.size();
 	for(unsigned i = 0; i < s; i++)
@@ -335,10 +373,68 @@ void TmpSurf::Draw(RGBColor col)
 	}
 }
 
+//--------------------------------------------------------------//
+//-------------------------- Vertex3D --------------------------//
+//--------------------------------------------------------------//
+/**
+ * @brief Check whether some sanity checks hold.
+ * @return Returns true, if x,y,z-distances are within the defined 
+ * SOI boundaries.
+ */
+bool Vertex3D::SanityOK()
+{
+	bool sanity = true;
+	if (p.x < SC_MAX_DIST_X || p.x > SC_MIN_DIST_X) sanity = false;
+	else if(p.y < SC_MAX_DIST_Y || p.y > SC_MIN_DIST_Y) sanity = false;
+	else if(p.z < SC_MAX_DIST_Z || p.z > SC_MIN_DIST_Z) sanity = false;
+		return sanity;
+}
+
+/**
+ * @brief Recunstruct surface in 3D space.
+ * E.g. wrong matches tend to produce very elongated surfaces.
+ * @param left Left tmp. surface
+ * @param right Right tmp. surface
+ * @return Return true for success.
+ */
+bool Vertex3D::Reconstruct(StereoCamera *stereo_cam, Vertex2D &left, Vertex2D &right)
+{
+	// calculate 3d point
+	stereo_cam->ReconstructPoint(left.pr.x, left.pr.y, left.pr.x - right.pr.x, p.x, p.y, p.z);
+// printf("  Vertex3D::Reconstruct: 3D point: %4.3f %4.3f %4.3f\n", p.x, p.y, p.z);
+
+	// calculate normals => Here for a point not possible: initialize to x-coordinate.
+	n.x = 1.;
+	n.y = 0.;
+	n.z = 0.;
+
+	// check sanity
+  if(SanityOK())
+    return true;
+  else
+    return false;
+}
+
+/**
+ * @brief Recunstruct surface in 3D space.
+ * E.g. wrong matches tend to produce very elongated surfaces.
+ * @param left Left tmp. surface
+ * @param right Right tmp. surface
+ * @return Return true for success.
+ */
+double Vertex3D::Distance(Vertex3D point)
+{
+	double x = point.p.x - p.x;
+	double y = point.p.y - p.y;
+	double z = point.p.z - p.z;
+	
+	return sqrt(x*x + y*y + z*z);
+}
+
+
 //----------------------------------------------------------------//
 //---------------------------- Surf3D ----------------------------//
 //----------------------------------------------------------------//
-
 /**
  * @brief Check whether normal vectors are consistent.
  * In the ideal case all normal vectors should be equal.
@@ -380,7 +476,8 @@ bool Surf3D::SizeOK()
 /**
  * @brief Check whether some sanity checks hold.
  * E.g. wrong matches tend to produce very elongated surfaces.
- * @return Return true, if ... TODO ???
+ * @return Return true, if the length of a surface line, is within
+ * the defined maximum length.
  */
 bool Surf3D::SanityOK()
 {
@@ -459,7 +556,7 @@ void Surf3D::RefineVertices()
  * but only the first four will be considered.
  * @return Return true for success.
  */
-bool Surf3D::Reconstruct(StereoCamera *stereo_cam, TmpSurf &left, TmpSurf &right, bool refine)
+bool Surf3D::Reconstruct(StereoCamera *stereo_cam, Surf2D &left, Surf2D &right, bool refine)
 {
   assert(left.pr.size() == right.pr.size());
   unsigned n = left.pr.size();
@@ -494,9 +591,9 @@ bool Surf3D::Reconstruct(StereoCamera *stereo_cam, TmpSurf &left, TmpSurf &right
 //------------------------------------------------------------------//
 //---------------------------- StereoBase --------------------------//
 //------------------------------------------------------------------//
-
 static const int NAME_LENGTH = 40;
 static const char type_names[][NAME_LENGTH] = {
+	"STEREO_LJUNCTION",
 	"STEREO_ELLIPSE",
 	"STEREO_CLOSURE",
   "STEREO_RECTANGLE",
@@ -547,19 +644,20 @@ void StereoBase::EnablePrinciple(bool status)
 }
 
 
-/**
- * @brief Calculate Matching score of an surface
+/**																																													/// TODO TODO gehört das hierher????
+ * @brief Calculate Matching score of a surface
  * @param left_surf Left tmp. surface
  * @param right_surf Right tmp. surface.
  * @param match_offs  offset to be added to the indices of the right points in order to
  *             match with the left points.
  *             I.e. left_surf.p[i] corresponds to right_surf.p[i + match_offs]
  *             (of course with proper modulo)
+ * @return Returns the sum of the vertical deviations between the surface points (in px.)
  */
-double StereoBase::MatchingScoreSurf(TmpSurf &left_surf, TmpSurf &right_surf, unsigned &match_offs)
+double StereoBase::MatchingScoreSurf(Surf2D &left_surf, Surf2D &right_surf, unsigned &match_offs)
 {
-  static const double MAX_DELTA_V = 10.;						// TODO: nasty threshold (max. vertical deviation)
-  static const double MIN_DISPARITY = 0.;						// TODO: obtain from config file?
+//  static const double MAX_DELTA_V = 10.;								// TODO: nasty threshold (max. vertical deviation)  SEHR HOCH!!!!
+//  static const double MIN_DISPARITY = 0.;								// TODO: obtain from config file?
   double sumv, sumv_min = HUGE, dv, dv_max, du, du_min;
   unsigned ncorners = left_surf.pr.size(), i, j, offs;
   match_offs = UNDEF_ID;
@@ -585,7 +683,7 @@ double StereoBase::MatchingScoreSurf(TmpSurf &left_surf, TmpSurf &right_surf, un
         du_min = fmin(du_min, du);
       }
 // printf("          dv_max = %6.5f  du_min: %6.5f => sumv: %6.5f\n", dv_max, du_min, sumv);
-      if(dv_max < MAX_DELTA_V && du_min > MIN_DISPARITY)				// jedes dv muss unter MAX_DELTA_V liegen  UND  jedes du muss über MIN_DISPARITY liegen
+      if(dv_max < SC_MAX_DELTA_V_SURF && du_min > SC_MIN_DISPARITY)				// jedes dv muss unter MAX_DELTA_V liegen  UND  jedes du muss über MIN_DISPARITY liegen
 			{
         if(sumv < sumv_min)																			// sumv muss kleiner als HUGE sein
         {
@@ -599,80 +697,27 @@ double StereoBase::MatchingScoreSurf(TmpSurf &left_surf, TmpSurf &right_surf, un
   return sumv_min;
 }
 
-// unsigned Stereo::FindMatchingSurf(TmpSurf &left_surf, 
-//     Array<TmpSurf> &right_surfs, unsigned l)
-// {
-//   double match, best_match = HUGE;
-//   unsigned j, j_best = UNDEF_ID, offs, offs_best = UNDEF_ID;
-//   for(j = l; j < right_surfs.Size(); j++)
-//   {
-// printf(" right: %u\n", j);
-//     match = MatchingScoreSurf(left_surf, right_surfs[j], offs);
-//     if(match < best_match)
-//     {
-//       best_match = match;
-//       j_best = j;
-//       offs_best = offs;
-//     }
-//   }
-//   if(j_best != UNDEF_ID)
-//   {
-//     right_surfs[j_best].ShiftPointsLeft(offs_best);
-//   }
-//   return j_best;
-// }
-
-// void Stereo::MatchSurfaces(Array<TmpSurf> &left_surfs, Array<TmpSurf> &right_surfs, int &matches)
-// {
-//   unsigned j, l = 0, u = left_surfs.Size();
-//   for(; l < u && l < right_surfs.Size();)
-//   {
-//     j = FindMatchingSurf(left_surfs[l], right_surfs, l);
-//     // found a matching right, move it to same index position as left
-//     if(j != UNDEF_ID)
-//     {
-//       right_surfs.Swap(l, j);
-//       l++;
-//     }
-//     // found no right, move left to end and decrease end
-//     else
-//     {
-//       left_surfs.Swap(l, u-1);
-//       u--;
-//     }
-//   }
-//   u = min(u, right_surfs.Size());
-//   matches = u;
-// }
-
-/**
- * @brief Calculate 3D surface
- * @param left_surf Left tmp. surface
- * @param right_surf Right tmp. surface
- * @param matches Number of matches
- * @param surf3ds 3D surfaces
+/**																																													/// TODO TODO gehört das hierher????
+ * @brief Calculate Matching score of a point. Returns the vertical deviation \n
+ * between the two points, if they are within defined boundaries.
+ * @param left_point Left 2D point
+ * @param right_point Right 2D point
+ * @return Returns the the vertical deviation between the points (in px.)
  */
-// void StereoBase::Calculate3DSurfs(Array<TmpSurf> &left_surfs, Array<TmpSurf> &right_surfs, int &matches, Array<Surf3D> &surf3ds)
-// {
-//   unsigned u = matches;
-//   for(unsigned i = 0; i < u;)
-//   {
-//     Surf3D surf3d;
-//     if(surf3d.Reconstruct(stereo_cam, left_surfs[i], right_surfs[i]))
-//     {
-//       surf3ds.PushBack(surf3d);
-//       i++;
-//     }
-//     // move unacceptable surfs to the end
-//     else
-//     {
-//       left_surfs.Swap(i, u-1);
-//       right_surfs.Swap(i, u-1);
-//       u--;
-//     }
-//   }
-//   matches = u;
-// }
+double StereoBase::MatchingScorePoint(Vertex2D &left_point, Vertex2D &right_point)
+{
+  double dv, du;
+	dv = fabs(left_point.pr.y - right_point.pr.y);	// distance in y-dir (should be zero)
+	du = left_point.pr.x - right_point.pr.x;				// distance in z-dir 
+
+//printf("  StereoBase::MatchingScorePoint => du: %4.2f - dv: %4.2f\n", du, dv);
+
+	if(dv < SC_MAX_DELTA_V_POINT && du > SC_MIN_DISPARITY)
+		return dv;
+	else return HUGE;
+}
+
+
 
 
 }

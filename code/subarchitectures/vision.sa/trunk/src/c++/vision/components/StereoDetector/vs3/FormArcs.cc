@@ -54,7 +54,7 @@ void FormArcs::Reset()
 void FormArcs::Operate(bool incremental)
 {
 	StartRunTime();
-	
+
   // note: we only want to run this once for repeated calls to Operate()
   if(!done)
   {

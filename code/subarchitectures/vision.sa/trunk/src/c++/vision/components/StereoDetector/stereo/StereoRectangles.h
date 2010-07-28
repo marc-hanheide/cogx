@@ -25,16 +25,16 @@ namespace Z
 class TmpRectangle
 {
 public:
-  TmpSurf surf;												///< tmp surfaces
+  Surf2D surf;												///< Tmp. 2D surface
 
   TmpRectangle() {}
   TmpRectangle(Rectangle *rectangle);
 	void RePrune(int oX, int oY, int sc);
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
-//   bool IsAtPosition(int x, int y) const;													/// TODO weg damit? oder braucht man noch?
+  bool IsAtPosition(int x, int y) const;													/// TODO weg damit? oder braucht man noch?
   void Fuddle(unsigned off0);
-  bool IsValid() {return surf.is_valid;}
+  bool IsValid() {return surf.is_valid;}													/// do not show if it is not valid!
 };
 
 
@@ -67,21 +67,22 @@ private:
 	unsigned FindMatchingRectangle(TmpRectangle &left_rect, Array<TmpRectangle> &right_rects, unsigned l);
 	void MatchRectangles(Array<TmpRectangle> &left_rects, Array<TmpRectangle> &right_rects, int &matches);
 	void Calculate3DRectangles(Array<TmpRectangle> &left_rects, Array<TmpRectangle> &right_rects, int &matches, Array<Rectangle3D> &rectangle3ds);
+	void DrawSingleMatched(int side, int id, int detail);
 
 public:
 	StereoRectangles(VisionCore *vc[2], StereoCamera *sc);
 	~StereoRectangles() {}
 
-  int NumRectangles2D(int side);
-	int NumRectanglesLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::RECTANGLE);}		///< 
-	int NumRectanglesRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::RECTANGLE);}	///< 
+  int NumRectangles2D(int side) {return vcore[side]->NumGestalts(Gestalt::RECTANGLE);};
+//	int NumRectanglesLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::RECTANGLE);}		///< TODO weg
+//	int NumRectanglesRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::RECTANGLE);}	///< TODO weg
 
   const TmpRectangle &Rectangles2D(int side, int i);
   const Rectangle3D &Rectangles(int i) {return rectangle3ds[i];}											///< 
 
 	int NumStereoMatches() {return rectMatches;}																				///< 
-	void Draw(int side, bool masked = false);
-	void DrawMatched(int side);
+	void DrawMatched(int side, bool single, int id, int detail);
+	
 	void ClearResults();
 	void Process();
 	void Process(int oX, int oY, int sc);
