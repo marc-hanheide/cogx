@@ -185,6 +185,7 @@ public class PlanAllManager extends ManagedComponent {
 					for (Motive m:activeMotives)
 						goals.add(m.goal);
 					plannerFacade.setGoals(goals);
+					plannerFacade.setExecutePlan(true);
 
 					FutureTask<WMEntryQueueElement<PlanningTask>> generatedPlan = new FutureTask<WMEntryQueueElement<PlanningTask>>(
 							plannerFacade);
