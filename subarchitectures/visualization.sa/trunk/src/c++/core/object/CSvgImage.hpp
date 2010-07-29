@@ -54,7 +54,7 @@ private:
          return *_psvgdoc;
       }
       void setData(const std::string& xmlData) {
-         if (_psvgdoc) delete _psvgdoc;
+         if (_psvgdoc) _psvgdoc->deleteLater();
          _psvgdoc = NULL;
          data = xmlData;
       }
