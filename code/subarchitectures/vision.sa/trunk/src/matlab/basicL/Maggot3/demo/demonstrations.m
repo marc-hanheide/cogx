@@ -16,13 +16,13 @@ function demonstrations()
 % installEntireMaggot3() ; 
  
 % disp('----- Demonstating 1D learning and unlearning example ---------') ;
-demonstrateLearninigUnlearning1D() ;
-  
+% demonstrateLearninigUnlearning1D() ;
+% 
 % disp('----- Demonstating likelihood evaluation and marginalization ---------') ;
-demoEvaluations() ;
- 
+% demoEvaluations() ;
+% 
 % disp('----- Demonstating 2D estimation ---------') ;
-demo2Destimation() ;
+% demo2Destimation() ;
 
 % disp('----- Demonstrating 2d sub est') ;
 demo2D1Destimation() ;

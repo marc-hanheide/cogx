@@ -26,9 +26,8 @@ function out_kde = executeOperatorIKDE( input_kde, varargin )
 % pdf.smod.ps.Cov{1} = cov( pdf.smod.ps.q(1))
 %
 % -------------- Potrebno bo verjetno še narediti:
-% evalUnderKde(kde, x)
-% da preveri, èe potrebuje subspace, nato pa toèko(e) projecira
-% v subspace in tam izraèuna verjetnosti.
+% Èe se sluèajno obnaša drugaèe, potem je mogoèe zaradi spremenjenega
+% števila komponent pred kompresijo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 % -------------- ZAdnje spremen+mbe:
 % spremenil sem updatanje uteži
 %
@@ -545,7 +544,9 @@ switch operator_data
             H = getNoisyAddons( output.globalCov ) ; %input_kde.ikdeParams.scale.Cov) ; %input_kde.ikdeParams.scale.Cov ) ;
         end
         % update the kernel bandwidth
-        input_kde.pdf.smod.H = H ;
+        input_kde.pdf.smod.H = H ;        
+        % indicate that the bw was properly calculated
+        input_kde.otherParams.auxiliary_bandwidth_active = 0 ; 
          
         % update the KDE model from the bandwidth and the sample distribution
         input_kde.pdf = getKDEfromSampleDistribution( input_kde.pdf ) ;
@@ -554,8 +555,11 @@ switch operator_data
             force_prevent_compression = 1 ;
         end
         
-        if input_kde.ikdeParams.maxNumCompsBeforeCompression == -1
-            input_kde.ikdeParams.maxNumCompsBeforeCompression = input_kde.ikdeParams.dim_subspace*5 ;
+        if input_kde.ikdeParams.maxNumCompsBeforeCompression == -1 
+            if ~isempty(obs)                
+                dm = size(obs,1) ;
+                input_kde.ikdeParams.maxNumCompsBeforeCompression = ((dm^2-dm)/2+dm+dm+1) ;  %input_kde.ikdeParams.dim_subspace*5 ;
+            end            
         end
  
         if ~isempty(selectSubDimensions)
@@ -595,7 +599,7 @@ switch operator_data
         
        
         % engage automatic compression   
-        if ~isempty( input_kde.pdf.w ) && force_prevent_compression == 0 && input_was_empty == 0     
+        if ~isempty( input_kde.pdf.w ) && force_prevent_compression == 0 && input_was_empty == 0 && input_kde.otherParams.auxiliary_bandwidth_active == 0    
             applyProjectionToSubspace_tmp = input_kde.otherParams.applyProjectionToSubspace ;
             input_kde.otherParams.svdRes = svdRes ; 
             
@@ -611,7 +615,12 @@ switch operator_data
             input_kde.otherParams.applyProjectionToSubspace = applyProjectionToSubspace_tmp ;
   
         else
-            input_kde.ikdeParams.maxNumCompsBeforeCompression = length(input_kde.pdf.w) ;
+            %             input_kde.ikdeParams.maxNumCompsBeforeCompression = length(input_kde.pdf.w) ;
+            if ~isempty(obs)
+                dm = size(obs,1) ;
+                input_kde.ikdeParams.maxNumCompsBeforeCompression = ((dm^2-dm)/2+dm+dm+1) ;  %input_kde.ikdeParams.dim_subspace*5 ;
+            end
+%             input_kde.ikdeParams.maxNumCompsBeforeCompression = ((dm^2-dm)/2+dm+dm+1) ;
             model_new.idxToref_out = [] ;
         end
         
@@ -651,11 +660,12 @@ switch operator_data
         input_kde.otherParams.singleGaussApp.Cov = new_Cov ;
         out_kde = input_kde ;
     case 'set_auxiliary_bandwidth'
+        
          pdf_tmp.Mu = input_kde.pdf.Mu ;
-         pdf_tmp.Cov = input_kde.pdf.Cov ;
+         pdf_tmp.Cov = input_kde.pdf.smod.ps.Cov ;
          pdf_tmp.w = input_kde.pdf.w*input_kde.ikdeParams.N_eff ;
          N_eff = input_kde.ikdeParams.N_eff ;
-         for i = 1 : length(otherClasses)
+         for i = 1 : length(otherClasses.pdfs)
              pdf_tmp.Mu = horzcat(pdf_tmp.Mu, otherClasses.pdfs{i}.Mu) ;
              pdf_tmp.Cov = horzcat(pdf_tmp.Cov,otherClasses.pdfs{i}.smod.ps.Cov) ;
              pdf_tmp.w = horzcat(pdf_tmp.w, otherClasses.pdfs{i}.w*otherClasses.N_eff(i)) ;
@@ -670,6 +680,7 @@ switch operator_data
          out_kde = input_kde ;
          out_kde.pdf.smod.H = H ;
          out_kde.pdf = getKDEfromSampleDistribution( out_kde.pdf ) ;
+         out_kde.otherParams.auxiliary_bandwidth_active = 1 ;
     
     case 'unlearn_with_input'
        
@@ -1032,6 +1043,8 @@ otherParams.turn_off_splitting = 0 ;
 
 otherParams.maxDistSelect = 3 ;
 
+otherParams.auxiliary_bandwidth_active = 0 ;
+ 
 msg = sprintf('Min number of components: %d', otherParams.minNumberOfComponentsThreshold ) ;
 priontoutInitMessage( msg, showMessages ) ;
 priontoutInitMessage( '------- End by initialization -------', showMessages ) ;

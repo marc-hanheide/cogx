@@ -22,12 +22,14 @@ use_equalimportance =  0 ;
 classifyWithPosterior = 1 ;
 extensive_answer = 0 ;
 minNumDataPointsToFormKDE = [] ; 
-autonomous_update = [] ;
- 
+autonomous_update = [] ; 
+exclude_model = [] ;
 
+random_fselect_threshold = [] ;
+compressionClusterThresh = [] ;
 autoUpdateThres_upper = [] ;
 autoUpdateThres_lower = [] ;
-autonomous_update = [] ; %  'oracle_verified', 'self_verified' updates only if it misclassifies the input data
+autonomous_update = [] ; %  'oracle_verified', 'self_verified' updates only if it misclassifies the input data, 'pure_oracle'
 % not operational % minimal_required_examps_mode = [] ; % if 1, then a vector is added only if it's wrongly classified
 min_samps_per_model_feat_sel = [] ;
 react_compression_to_feature_selection = [] ;
@@ -52,6 +54,7 @@ while i <= nargs
         case 'input_data', input_data = args{i+1} ; i = i + 2 ; 
         case 'make_simple_feature_selection', operator_data = args{i} ; i = i + 1 ;   
         case 'init', operator_data = args{i} ; i = i + 1 ;
+        case 'auto_choose_model', operator_data = args{i} ; i = i + 1 ;     
         case 'autonomous_update', autonomous_update = args{i+1} ; i = i + 2 ;
         case 'get_class_names', operator_data = args{i} ; i = i + 1 ;
         case 'get_class_indexes', operator_data = args{i} ; i = i + 1 ;  
@@ -67,6 +70,8 @@ while i <= nargs
         case 'calculate_gains', operator_data = args{i} ; i = i + 1 ;
         case 'unlearn_with_input', operator_data = args{i} ; i = i + 1 ;
         case 'showKDE_of_class_index', operator_data = 'showKDE_of_class_index' ; val_get = args{i+1} ; i = i + 2 ;
+        case 'exclude_model', exclude_model = args{i+1} ; i = i + 2 ;
+        case 'random_fselect_threshold', random_fselect_threshold = args{i+1} ; i = i + 2 ;
         case 'autoUpdateThres_upper', autoUpdateThres_upper = args{i+1} ; i = i + 2 ;    
         case 'autoUpdateThres_lower', autoUpdateThres_lower = args{i+1} ; i = i + 2 ;    
         case 'min_samps_per_model_feat_sel', min_samps_per_model_feat_sel = args{i+1} ; i = i + 2 ;
@@ -82,6 +87,7 @@ while i <= nargs
         case 'unknown_model_value', unknown_model_value = args{i+1} ; i = i + 2 ; 
         case 'use_unknown_model', use_unknown_model = args{i+1} ; i = i + 2 ; 
         case 'minNumDataPointsToFormKDE', minNumDataPointsToFormKDE = args{i+1} ; i = i + 2 ; 
+        case 'compressionClusterThresh', compressionClusterThresh = args{i+1} ; i = i + 2 ;         
 %         case 'minimal_required_examps_mode', minimal_required_examps_mode
 %         = args{i+1} ; i = i + 2 ;  % not operational
         case 'extensive_answer', extensive_answer = 1 ; i = i + 1 ;         
@@ -118,12 +124,20 @@ if isempty(hyper_input_kde_cl)
     hyper_input_kde_cl.cummulative_feat_costs = [] ;
     hyper_input_kde_cl.autoUpdateThres.upper = 0.15 ;
     hyper_input_kde_cl.autoUpdateThres.lower = -1 ;
+    
+    hyper_input_kde_cl.compressionClusterThresh.thReconstructive = 0.0500 ;
+    hyper_input_kde_cl.compressionClusterThresh.thDiscriminative = 0.0500 ;
+    hyper_input_kde_cl.random_fselect_threshold = 2 ;
 %     hyper_input_kde_cl.minimal_required_examps_mode = 0 ;
 end
+ 
+if ~isempty(random_fselect_threshold)
+    hyper_input_kde_cl.random_fselect_threshold  = random_fselect_threshold ;
+end
 
-% if ~isempty(minimal_required_examps_mode)
-%     hyper_input_kde_cl.minimal_required_examps_mode  = minimal_required_examps_mode ;
-% end
+if ~isempty(compressionClusterThresh)
+    hyper_input_kde_cl.compressionClusterThresh  = compressionClusterThresh ;
+end
  
 if ~isempty(min_samps_per_model_feat_sel)
     hyper_input_kde_cl.min_samps_per_model_feat_sel  = min_samps_per_model_feat_sel ;
@@ -161,8 +175,12 @@ if ~isempty(use_unknown_model)
    hyper_input_kde_cl.use_unknown_model = use_unknown_model  ;
 end
 
-if ~isempty(autonomous_update)
-    operator_data = 'autonomous_update' ;
+if ~isempty(autonomous_update)           
+    if isequal(autonomous_update, 'pure_oracle')           
+       operator_data = 'add_input' ;      
+    else
+        operator_data = 'autonomous_update' ; 
+    end
 end
 
 if ~isempty(autoUpdateThres_upper)
@@ -182,8 +200,8 @@ switch operator_data
             return ;
         end
         
-        if val_get == -1 
-            hyper_output_kde_cl = 'unknown' ;
+        if val_get == -1 || val_get == 0
+            hyper_output_kde_cl = '0' ; % 'unknown'
             return ;
         end
         
@@ -241,6 +259,12 @@ switch operator_data
         hyper_input_kde_cl.unknown_model_value = prob_of_unknown( hyper_input_kde_cl.kde_cl ) ;
         hyper_output_kde_cl = hyper_input_kde_cl ;
     case 'make_simple_feature_selection'
+        r = rand(1) ; 
+        if r < hyper_input_kde_cl.random_fselect_threshold
+            hyper_output_kde_cl = hyper_input_kde_cl ;
+            return ;
+        end
+        
         % check if there is enough samples per model
         for i = 1 : length(hyper_input_kde_cl.kde_cl)
            if  hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff < hyper_input_kde_cl.min_samps_per_model_feat_sel
@@ -309,30 +333,55 @@ switch operator_data
                 hyper_output_kde_cl.sub_feature_sel_forgetting = 0 ;
             end
         end        
+    case 'auto_choose_model'
+        % get confusion matrix
+        rslt = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'introspect' ) ;
+        
+        % create distribution
+%         C_m = rslt.Con_matrix(1:size(rslt.Con_matrix(:,1),1),1:size(rslt.Con_matrix(:,1))) ;
+%         P = (1 - diag(C_m))+1e-20 ;          
+        P = rslt.Conf_array ;
+ 
+        P = 1-exp(-P.^2) ;
+        
+        for i = 1 : length(exclude_model)
+            P(str2double(exclude_model{i})) = 0 ;
+        end
+        
+        P = P / max(sum(P),1e-30) ;
+                
+        
+        % sample class from the distribution
+        cls = sampleDiscrete( P ) ;
+%         [valp,cls] = max(P) ;
+        rslt = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'get_name_at_index', cls ) ;
+        hyper_output_kde_cl = [] ;
+        hyper_output_kde_cl.class = cls ;
+        hyper_output_kde_cl.class_name = rslt ;                
     case 'autonomous_update' ;
         answers = [] ;
+ 
         for i = 1 : length(input_data) 
             rslt = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data{i}.data, 'classifyData',...
                                              'use_unknown_model',1, 'extensive_answer', 1  ) ;
             if isequal( autonomous_update, 'oracle_verified' )
                 % check if the label already exists and check for errors
                 [data, class, class_name, class_exists] = parseClassData(hyper_input_kde_cl, input_data{i} ) ;
-                if rslt.C ~= class
-                    answers = horzcat(answers, 1) ;
-                    hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input' ) ;
-                else
-                    answers = horzcat(answers, 0) ;
+                answers = horzcat(answers, 1) ;
+                if rslt.H >  hyper_input_kde_cl.autoUpdateThres.upper || rslt.C ~= class                    
+                    hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input', vforwvargin{:} ) ;
                 end
             elseif isequal( autonomous_update, 'self_verified' )
                 if rslt.H >  hyper_input_kde_cl.autoUpdateThres.upper || rslt.C == -1 % uncertain classification 
-                    hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input' ) ;
+                    hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input', vforwvargin{:} ) ;
                     answers = horzcat(answers, 1) ;
                 else
                     %Certain Classification 
                     if rslt.H < hyper_input_kde_cl.autoUpdateThres.lower
                         answers = horzcat(answers, 0) ;
-                        input_data{i}.class = rslt.C ;
-                        hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input' ) ;
+                        input_data{i}.class_name = [] ;
+                        input_data{i}.class = rslt.C ; 
+                        hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input', vforwvargin{:} ) ;
                     else
                         answers = horzcat(answers, 0) ;
                     end
@@ -340,14 +389,16 @@ switch operator_data
             else
                 error('Unknown "autonomous_update" type!') ;
             end
-        end
+        end       
         hyper_output_kde_cl = hyper_input_kde_cl ;
         hyper_output_kde_cl.answers = answers ;
     case 'add_input'
         % determine if the class already exists, and initialize it if it
         % does not exist
 
-        for i = 1 : length(input_data)            
+        answers = [] ;
+        for i = 1 : length(input_data)  
+            answers = horzcat(answers, ones(1,size(input_data{i}.data,2))) ;
             % check if the label already exists and check for errors
             [data, class, class_name, class_exists] = parseClassData(hyper_input_kde_cl, input_data{i} ) ;
             
@@ -366,8 +417,9 @@ switch operator_data
             kde_w_attenuation = 1 ;
  
             if class_exists == 0                                        
-                % initialize new class                 
-                kde = executeOperatorIKDE( [], 'input_data', input_data{i}.data, 'add_input', vforwvargin{:} ) ; 
+                % initialize new class   
+                kde = executeOperatorIKDE( [], 'input_data', input_data{i}.data, 'add_input', ...
+                                           vforwvargin{:}, 'compressionClusterThresh', hyper_input_kde_cl.compressionClusterThresh  ) ; 
  
                 hyper_input_kde_cl.kde_cl = horzcat(hyper_input_kde_cl.kde_cl, kde) ;                
                 hyper_input_kde_cl.class_labels = horzcat(hyper_input_kde_cl.class_labels, class) ;
@@ -404,7 +456,8 @@ switch operator_data
                 end
                 
                 sub_feats = [] ;
-                if hyper_input_kde_cl.react_compression_to_feature_selection == 1 
+                if hyper_input_kde_cl.react_compression_to_feature_selection == 1 &&...
+                         hyper_input_kde_cl.Params.minNumDataPointsToFormKDE + 1 > hyper_input_kde_cl.kde_cl{class}.ikdeParams.N_eff
                     sub_feats = hyper_input_kde_cl.sub_selected_features ;
                 end
  
@@ -414,7 +467,8 @@ switch operator_data
                                                        data, 'add_input', 'otherClasses', otherClasses,...
                                                        'selectSubDimensions', sub_feats,...
                                                        'kde_w_attenuation', kde_w_attenuation, ...
-                                                       vforwvargin{:} ) ;                               
+                                                       vforwvargin{:},...
+                                                       'compressionClusterThresh', hyper_input_kde_cl.compressionClusterThresh ) ;                               
             end            
         end
 
@@ -428,7 +482,7 @@ switch operator_data
            end
             
         end
-        
+        hyper_input_kde_cl.answers = answers ;
         hyper_output_kde_cl = hyper_input_kde_cl ;   
                         
 %         if isempty(hyper_input_kde_cl.kde_cl)
@@ -663,14 +717,17 @@ switch operator_data
         N_samps = 100 ; 
         idx_unknown = length(hyper_input_kde_cl.kde_cl) + 1 ;
         Con_matrix = zeros(length(hyper_input_kde_cl.kde_cl), idx_unknown) ;
+        Conf_array = zeros(1, length(hyper_input_kde_cl.kde_cl)) ;
         for i = 1 : length(hyper_input_kde_cl.kde_cl)
             x_tmp = sampleGaussianMixture( hyper_input_kde_cl.kde_cl{i}.pdf, N_samps ) ;
-            rslt = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', x_tmp, 'classifyData', 'use_unknown_model', 1 ) ;%'use_unknown_model', 0
+            rslt = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', x_tmp, 'classifyData', 'use_unknown_model', 1, 'extensive_answer', 1  ) ;%'use_unknown_model', 0
             for j = 1 : length(hyper_input_kde_cl.kde_cl)                               
                Con_matrix(i,j) = sum(rslt.C == j)/N_samps ;                
             end  
+            Conf_array(i) = median(rslt.H ) ; 
             Con_matrix(i,idx_unknown) = sum(rslt.C == -1)/N_samps ;
         end
+        hyper_output_kde_cl.Conf_array = Conf_array ;
         hyper_output_kde_cl.N_samps = N_samps ;
         hyper_output_kde_cl.Con_matrix = Con_matrix ;
     case 'showKDE_of_class_index'        
@@ -682,6 +739,14 @@ switch operator_data
         if hyper_input_kde_cl.react_compression_to_feature_selection == 1
             sub_feats = hyper_input_kde_cl.sub_selected_features ;
         end
+
+        % search for degenerate kdes and reapproximate their bandwidths
+           if hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
+                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, val_get, 0, use_equalimportance ) ; 
+                    hyper_input_kde_cl.kde_cl{val_get} = ...
+                                     executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'set_auxiliary_bandwidth' ,...
+                                     'otherClasses', otherClasses) ;
+           end
         
         executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'showKDE', 'selectSubDimensions', sub_feats,vforwvargin{:} ) ;
         hyper_output_kde_cl = hyper_input_kde_cl.class_labels_names(val_get) ;

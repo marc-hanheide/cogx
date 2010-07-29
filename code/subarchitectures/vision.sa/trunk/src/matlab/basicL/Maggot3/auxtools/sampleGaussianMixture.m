@@ -71,7 +71,8 @@ d = size(covar, 1);
 
 mu = reshape(mu, 1, d);   % Ensure that mu is a row vector
 
-[evec, eval] = eig(covar);
+% [evec, eval] = eig(covar);
+[evec,eval,v]=svd(covar) ;
 
 coeffs = randn(nsamp, d)*sqrt(eval);
 
