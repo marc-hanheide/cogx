@@ -22,7 +22,7 @@ INCLUDE includes/spatial.sa/spatial-mediator.cast
 #JAVA MG player castutils.components.WorkingMemoryPlayer  --state --file stored-maps/3rdtask-real/coma.log
 
 # binder ######################################################################
-#INCLUDE includes/binder.sa/binder-base.cast
+INCLUDE includes/binder.sa/binder-base.cast
 #INCLUDE includes/binder.sa/binder.cast
 #INCLUDE includes/binder.sa/perceptmediators.cast
 #JAVA GD bindermonitor binder.components.BinderMonitor --debug
@@ -35,7 +35,7 @@ INCLUDE includes/spatial.sa/spatial-mediator.cast
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/planner.cast
 INCLUDE includes/planner.sa/fake-motivation.cast
-#INCLUDE includes/motivation.sa/motivation.cast
+INCLUDE includes/motivation.sa/motivation.cast
 
 
 
@@ -47,6 +47,6 @@ INCLUDE includes/planner.sa/fake-motivation.cast
 
 JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, castutils.slice.WMMap"
 
-# visualization ###############################################################
+## visualization ###############################################################
 INCLUDE includes/visualization.sa/v11n-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
