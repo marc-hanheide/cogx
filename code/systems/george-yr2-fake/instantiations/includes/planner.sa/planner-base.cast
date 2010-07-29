@@ -1,0 +1,8 @@
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain springtest.mapl --log
+
+SUBARCHITECTURE planner.sa
+
+###############################################################################
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+

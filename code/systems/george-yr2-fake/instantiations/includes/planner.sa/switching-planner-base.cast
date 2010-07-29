@@ -1,0 +1,9 @@
+COMPONENT PYTHON PlannerPythonServer PythonServer --log --debug  --nodot --domain dttest1.mapl 
+COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
+
+SUBARCHITECTURE planner.sa
+
+###############################################################################
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
