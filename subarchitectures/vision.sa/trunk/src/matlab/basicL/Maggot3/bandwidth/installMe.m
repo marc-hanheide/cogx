@@ -17,7 +17,7 @@ end
 
 
 % install paths for tools
-dirNames = {} ;
+dirNames = { } ;
 
 % install local path
 newPath = [pwd] ;
