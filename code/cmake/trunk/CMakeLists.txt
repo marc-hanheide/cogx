@@ -28,6 +28,16 @@ include(subarchitectures/visualization.sa/cmake/v11n.cmake)
 
 add_subdirectory (tools/d-lib)
 
+option(BUILD_DORA "Build dora specific code" NO)
+if(BUILD_DORA)
+add_subdirectory (scenarios/dora)
+endif(BUILD_DORA)
+
+option(BUILD_GEORGE "Build george specific code" NO)
+if(BUILD_GEORGE)
+add_subdirectory (scenarios/george)
+endif(BUILD_GEORGE)
+
 option(BUILD_BELIEFS "Build beliefs" YES)
 if(BUILD_BELIEFS)
 add_subdirectory (tools/beliefs/apis/beliefs)
@@ -49,6 +59,11 @@ option(BUILD_SA_DIALOGUE "Build dialogue subarchitecure" NO)
 if(BUILD_SA_DIALOGUE)
 add_subdirectory (subarchitectures/dialogue.sa)
 endif(BUILD_SA_DIALOGUE)
+
+option(BUILD_SA_COMA "Build sa_coma specific code" NO)
+if(BUILD_SA_COMA)
+add_subdirectory (subarchitectures/coma.sa)
+endif(BUILD_SA_COMA)
 
 
 option(BUILD_HAL_ROBOT "Build hardware robotbase" YES)
