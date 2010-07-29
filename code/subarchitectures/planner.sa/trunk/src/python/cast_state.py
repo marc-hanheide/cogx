@@ -66,6 +66,7 @@ class CASTState(object):
                 continue
             
             goaldict[pddl_goal] = goal
+            goaldict[goal.goalString] = pddl_goal
             
             if goal.importance < 0:
                 problem.goal.parts.append(pddl_goal)

@@ -89,7 +89,7 @@ class CASTTask(object):
             slice_goal.isInPlan = True
 
         for g in self.slice_goals:
-            if g.importance < 0:
+            if g.importance < 0 and g.goalString in self.goaldict:
                 g.isInPlan = True
             log.debug("Goal: %s, p:%.2f, sat: %d", g.goalString, g.importance, g.isInPlan)
 
