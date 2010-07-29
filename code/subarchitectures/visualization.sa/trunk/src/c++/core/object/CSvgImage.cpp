@@ -16,7 +16,7 @@
 #include "CSvgImage.hpp"
 
 #ifdef DEBUG_TRACE
-#undef DEBUG_TRACE
+//#undef DEBUG_TRACE
 #endif
 #include "../convenience.hpp"
 
@@ -99,7 +99,9 @@ void CSvgImage_Render2D::draw(CDisplayObject *pObject, void *pContext)
       try {
          // QSvgRenderer doc(QByteArray::fromRawData(pPart->data.c_str(), pPart->data.length()), NULL);
          QSvgRenderer& doc = pPart->getSvgDoc();
-         QSize size = doc.defaultSize();
+         QRect rect = doc.viewBox();
+         //DMESSAGE("SVG size " << size.width() << "x" << size.height());
+         //DMESSAGE("SVG rect @" << rect.x() << "," << rect.y() << "; " << rect.width() << "x" << rect.height());
          if (pPart->trmatrix.size() == 9) {
             std::vector<double>& trmatrix = pPart->trmatrix;
             QTransform trans;
@@ -109,7 +111,7 @@ void CSvgImage_Render2D::draw(CDisplayObject *pObject, void *pContext)
                  trmatrix[6], trmatrix[7], trmatrix[8]);
             pPainter->setWorldTransform(trans, true);
          }
-         doc.render(pPainter, QRectF(0, 0, size.width(), size.height()));
+         doc.render(pPainter, QRectF(rect));
       }
       catch (...) {
       }
