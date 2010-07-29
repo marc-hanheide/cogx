@@ -9,9 +9,15 @@ class DTProblem(object):
         self.domain = domain
         self.state = cast_state
         self.subplan_actions = []
+        
         self.goals = self.create_goals(plan)
+        self.goal_actions = set()
+        
         self.dtdomain = self.create_limited_domain(domain)
-        self.create_goal_actions(self.goals, self.dtdomain)
+        self.goal_actions |= self.create_goal_actions(self.goals, self.dtdomain)
+        self.dtdomain.actions += [a for a in self.goal_actions]
+        self.dtdomain.name2action = None
+        
         self.problem = self.create_problem(self.state, self.dtdomain)
         self.dt_plan = []
 
@@ -62,6 +68,7 @@ class DTProblem(object):
         return goal_svars
             
     def create_goal_actions(self, goals, domain):
+        result = set()
         for svar in goals:
             term = pddl.Term(svar.function, svar.get_args())
             domain.constants |= set(svar.get_args())
@@ -77,9 +84,8 @@ class DTProblem(object):
                                                        pddl.SimpleEffect(pddl.builtin.increase, [pddl.Term(dtpddl.reward,[]), 100]))
             a.effect = pddl.ConjunctiveEffect([commit_effect, reward_effect], a)
             
-            domain.actions.append(a)
-        domain.name2action = None
-            
+            result.add(a)
+        return result
 
     def create_limited_domain(self, dom):
         dtdomain = dom.copy()

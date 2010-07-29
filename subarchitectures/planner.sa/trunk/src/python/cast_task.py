@@ -240,13 +240,22 @@ class CASTTask(object):
 
     def action_delivered(self, action):
         args = [self.cp_task.mapltask[a] for a in action.arguments]
-        pddl_action = self.cp_task.mapltask.get_action(action.name)
+        pddl_action = self.dt_task.problem.get_action(action.name)
 
         log.debug("got action from DT: (%s %s)", action.name, " ".join(action.arguments))
         log.debug("state is: %s", self.cp_task.get_state())
+
+        if pddl_action.name in set(a.name for a in self.dt_task.goal_actions):
+            log.info("Goal action recieved. DT task completed")
+            self.dt_done()
+            return
+
+        pddl_action = self.cp_task.mapltask.get_action(action.name)
+        
         #TODO: using the last CP state might be problematic
         state = self.cp_task.get_state().copy()
         pnode = plan_postprocess.getRWDescription(pddl_action, args, state, 1)
+        
         self.dt_task.dt_plan.append(pnode)
 
         self.percepts = []
