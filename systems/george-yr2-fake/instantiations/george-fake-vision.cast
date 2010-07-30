@@ -7,11 +7,16 @@ HOST localhost
  CPP MG display.srv DisplayServer --log true --debug true
 
  SUBARCHITECTURE vision.sa
- CPP WM SubarchitectureWorkingMemory
+ JAVA WM cast.architecture.SubarchitectureWorkingMemory
+# CPP WM SubarchitectureWorkingMemory
  CPP TM AlwaysPositiveTaskManager
 
  CPP MG sim.vision SimulatedVision --displayserver "display.srv" --datadir "instantiations/vision-fake"
 
+JAVA MG vision.mediator eu.cogx.perceptmediator.VisualObjectMediatorComponent --debug
+
  JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --debug --subscribe "VisionData.VisualObject"
+
+ JAVA MG perceptdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --debug --subscribe "eu.cogx.beliefs.slice.PerceptBelief"
  
 
