@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+
+<!-- This is a MobileRobotics PeopleBot, with bumpers and the gripper, but
+     sonars are undefined.-->
+
+<!-- Copyright 2008 Centre for Autonomous Systems (CAS), KTH.
+
+     Licensed under the Creative Commons Atrribution-Share Alike 3.0 license,
+     http://creativecommons.org/licenses/by-sa/3.0/
+     
+     If you distribute this work, include a credit text along with the work. -->
+
+<scene>
+
+  <include file="peoplebot.xml">
+
+    <inject at="peoplebot_base">
+
+      <!-- ********************************************
+	   ************* SICK rangefinder  ************
+	   ******************************************** -->
+      
+      <group>
+	<name>rangefinder</name>
+	
+	<transform>
+	  <translate>0 0 0.30</translate>
+	</transform>
+
+	<children>
+	  <model><file>sick_lms200/sick_lms200.pbmf</file></model>
+	</children>
+      </group>
+
+      <!-- ********************************************
+	   ********** PTU + Stereo camera  ************
+	   ******************************************** -->
+
+      <group>
+	<name>ptu</name>
+
+	<transform>
+	  <translate>0 0 1.08</translate>
+	</transform>
+
+	<children>
+	  <include file="dp_ptu_d46.xml">
+	    <inject at="pan.tilt">
+	      <group>
+		<name>stereo_cam</name>
+		<transform>
+		  <translate>0 0 0.0739</translate>
+		</transform>
+		<children>
+		  <include file="sth_dcsg_var.xml"/>
+		</children>
+	      </group>
+	    </inject>
+	  </include>
+	</children>
+      </group>
+    </inject>
+    
+  </include>
+
+</scene>

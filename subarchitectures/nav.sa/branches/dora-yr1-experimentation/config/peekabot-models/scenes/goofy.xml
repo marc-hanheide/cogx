@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<scene>
+
+  <model>
+    <file>pioneer3dx.pbmf</file>
+  </model>
+
+  <sensor type="rangefinder">
+    <name>scanner</name>
+
+    <transform>
+      <translate system="world">0.05 0 0.30</translate>
+    </transform>
+
+    <children>
+      <model>
+        <file>sick_lms200.pbmf</file>
+      </model>
+    </children>
+
+    <params>
+      <float name="angle_uncertainty">0.25</float>
+      <float name="dist_uncertainty_prop">0.002</float>
+      <float name="dist_uncertainty_const">0.01</float>
+    </params>
+  </sensor>
+
+  <sensor type="rangefinder">
+    <name>front_sonars1</name>
+
+    <transform>
+      <translate system="parent">0.01 0 0.21</translate>
+    </transform>
+
+    <params>
+      <string name="mode">discs</string>
+      <int name="samples">6</int>
+      <float name="start_angle">-50</float>
+      <float name="end_angle">50</float>
+      <float name="angle_uncertainty">7.5</float>
+      <float name="dist_uncertainty_prop">0.01</float>
+      <float name="lower_bound">0.15</float>
+      <float name="upper_bound">10.7</float>
+      <color name="valid_color" r="0.7" g="0.7" b="0.7"/>
+      <float name="offset">0.1575</float>
+    </params>
+  </sensor>
+</scene>
