@@ -168,7 +168,12 @@ Token tok;
 dFormula underFormula;
 }
 {
-   <LANGLE> tok=<WORD> <RANGLE> underFormula=SubFormula()
+   <LANGLE> tok=<WORD> <RANGLE> (
+   LOOKAHEAD(3) <LBRACKET> underFormula=CFormulaConj() <RBRACKET>
+   |
+   LOOKAHEAD(3) <LBRACKET> underFormula=CFormulaDisj() <RBRACKET>
+   |
+   underFormula=SubFormula())
    {return new ModalFormula(0,tok.toString(), underFormula);}
 }
 

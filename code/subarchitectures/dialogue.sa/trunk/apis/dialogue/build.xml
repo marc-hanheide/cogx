@@ -27,12 +27,10 @@
   <property name="src.dir" value="./src/java" />
   <property name="generated.dir" value="./src-generated/java" />
 
-<!--
-  <property name="generated.dir"
-            value="${src.dir}/de/dfki/lt/tr/dialogue/slice"/>
--->
-
   <property name="slice.dir" value="./src/slice" />
+
+  <property name="icelib-slice.dir" value="/opt/local/share/slice" />
+  <property name="icelib-slice.dir-alt" value="/opt/local/share/ice/slice" />
 
   <property name="test.dir" value="./test/java"/>
 
@@ -112,7 +110,11 @@
     <slice2java tie="true" outputdir="${generated.dir}">
       <fileset dir="${slice.dir}" includes="dialogue.ice"/>
       <fileset dir="${slice.dir}" includes="lf.ice"/>
+      <fileset dir="${slice.dir}" includes="asr.ice"/>
+      <fileset dir="${slice.dir}" includes="asr-loquendo.ice"/>
       <includepath>
+        <pathelement path="${icelib-slice.dir}"/>
+        <pathelement path="${icelib-slice.dir-alt}"/>
         <pathelement path="${slice.dir}"/>
       </includepath>
     </slice2java>

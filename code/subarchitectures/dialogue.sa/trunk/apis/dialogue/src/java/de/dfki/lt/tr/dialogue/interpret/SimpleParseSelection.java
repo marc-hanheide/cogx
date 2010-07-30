@@ -25,7 +25,7 @@ import de.dfki.lt.tr.dialogue.slice.parse.PackedLFs;
 import de.dfki.lt.tr.dialogue.util.LFPacking;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
 
-public abstract class RandomParseSelection {
+public abstract class SimpleParseSelection {
 
 	static boolean logging = true;
 
@@ -37,7 +37,7 @@ public abstract class RandomParseSelection {
 	 * @param plf   The packed logical form
 	 * @return logical form, or null if none could be extracted
 	 */
-	public static LogicalForm extractLogicalForm(PackedLFs plf) {
+	public static LogicalForm extractLogicalFormWithMood(PackedLFs plf) {
 		LogicalForm[] lfs = packingTool.unpackPackedLogicalForm(plf);
 		log("we've got " + lfs.length + " alternatives");
 		for (int i = 0; i < lfs.length; i++) {

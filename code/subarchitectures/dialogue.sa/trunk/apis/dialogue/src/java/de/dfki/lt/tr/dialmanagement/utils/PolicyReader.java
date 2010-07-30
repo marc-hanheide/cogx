@@ -204,7 +204,8 @@ public class PolicyReader {
 	 * @throws DialogueException if line if ill-formatted
 	 */
 	public static float[] extractMinAndMaxProbabilities (String line) throws DialogueException {
-		if (line.contains("(") && line.contains(")")) {
+
+		if (line.contains("(") && line.contains(")") && line.indexOf("(") > line.indexOf("]")) {
 			String probText = line.split("\\(")[1].replace(")", "");
 			String[] split =probText.split(",");
 			if (split.length == 2) {
