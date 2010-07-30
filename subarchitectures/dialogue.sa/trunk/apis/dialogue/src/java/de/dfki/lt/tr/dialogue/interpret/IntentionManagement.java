@@ -93,7 +93,7 @@ public class IntentionManagement {
 	 * @return recognised intentions and beliefs when successful, null if error occurred
 	 */
 	public LinkedList<EpistemicObject> packedLFsToEpistemicObjects(PackedLFs plf) {
-		LogicalForm lf = RandomParseSelection.extractLogicalForm(plf);
+		LogicalForm lf = SimpleParseSelection.extractLogicalFormWithMood(plf);
 		log("selected LF = " + LFUtils.lfToString(lf));
 		if (lf == null) {
 			log("no LF found");

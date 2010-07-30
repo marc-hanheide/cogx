@@ -229,13 +229,13 @@ extends AbstractDialogueComponent {
 							if (eo instanceof Intention) {
 								Intention i = (Intention)eo;
 								log("adding intention to working memory [" + i.id + "]:\n" + IntentionUtils.intentionToString(i));
-								addToWorkingMemory(newDataID(), i);
+								addToWorkingMemory(i.id, i);
 								epObjs.put(i.id, i);
 							}
 							if (eo instanceof dBelief) {
 								dBelief b = (dBelief)eo;
 								log("adding belief to working memory [" + b.id + "]:\n" + IntentionUtils.logicalBeliefToString(b));
-								addToWorkingMemory(newDataID(), b);
+								addToWorkingMemory(b.id, b);
 								epObjs.put(b.id, b);
 							}
 						}

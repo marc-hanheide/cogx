@@ -78,6 +78,7 @@ implements TRResultListener
 	 * @see #configure(Map)
 	 */
 	
+	@Override
     public void start() {
         super.start();
     } // end start
@@ -87,6 +88,7 @@ implements TRResultListener
      * and starts the engine (<tt>run</tt>) once it has been configured. 
      */
     
+	@Override
     public void configure (Map<String, String> _config) 
     {
     	try { 
@@ -111,6 +113,7 @@ implements TRResultListener
 	 * @param result The result from the ASR engine
 	 */
 		
+	@Override
 	public void notify (Object result)
 	{
 		// create a CAST data object for the result

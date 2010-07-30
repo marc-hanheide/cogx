@@ -101,7 +101,7 @@ public class FormulaUtilsTest {
 	
 	@Test
 	public void embeddedFormula() throws DialogueException {
-		String str = "blabla v (blibli ^ blo ^ bla) v blibli";
+		String str = "(blabla v (blibli ^ blo ^ bla) v blibli)";
 		dFormula formula = FormulaUtils.constructFormula(str);
 		
 		assertTrue(formula instanceof ComplexFormula);
@@ -155,7 +155,7 @@ public class FormulaUtilsTest {
 	@Test
 	public void complexFormula() throws DialogueException {
 		
-		String str = "prop1 ^ <op1> (prop2 ^ <op2> prop3) ^ prop4";
+		String str = "(prop1 ^ <op1> (prop2 ^ <op2> prop3) ^ prop4)";
 		dFormula formula = FormulaUtils.constructFormula(str);
 
 		assertEquals (((ComplexFormula)formula).forms.size(),3);
@@ -174,6 +174,19 @@ public class FormulaUtilsTest {
 
 	}
 	
+	
+	@Test
+	public void modalFormula() throws DialogueException {
+		
+		String str = "<Belief>(<Ref>context1_1 ^ <ObjectType>ball)";
+		
+		dFormula formula = FormulaUtils.constructFormula(str);
+		
+		assertTrue(((ModalFormula)formula).form instanceof ComplexFormula);
+		assertEquals(((ModalFormula)formula).op, "Belief");
+		
+		assertEquals(((ComplexFormula)((ModalFormula)formula).form).forms.size(), 2);
+	}
 	
 
 	@Test

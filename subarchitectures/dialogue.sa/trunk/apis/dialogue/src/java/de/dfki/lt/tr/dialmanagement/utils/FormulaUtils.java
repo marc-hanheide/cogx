@@ -3,11 +3,11 @@ package de.dfki.lt.tr.dialmanagement.utils;
 import java.io.ByteArrayInputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
@@ -45,12 +45,6 @@ public class FormulaUtils {
 		else if (formula instanceof UnknownFormula) {
 			return "?";
 		}
-		else if (formula instanceof ModalFormula) {
-			return "<" + ((ModalFormula)formula).op + ">" + getString(((ModalFormula)formula).form);
-		}
-		else if (formula != null) {
-			return formula.toString();
-		}
 		return "";
 	}
 
@@ -69,7 +63,7 @@ public class FormulaUtils {
 		}
 		else if (s.trim().equals("?")) {
 			return new UnknownFormula(0);
-		}
+		} 
 		if (s.length() > 0) {
 		try {
 			String formattedString = s.trim().replace("\"", " \" ").replace("<", " < ")
@@ -114,6 +108,8 @@ public class FormulaUtils {
 	 * Returns true if the content of form1 is equal to the content form2, 
 	 * and false otherwise
 	 * 
+	 * TODO: implement real comparison between formulae
+	 * 
 	 * @param form1 the first formula
 	 * @param form2 the second formula
 	 * @return true if contents are equal, false otherwise
@@ -131,7 +127,8 @@ public class FormulaUtils {
 		else if (form1 instanceof UnknownFormula && form2 instanceof UnknownFormula) {
 			return true;
 		}
-		return false;
+		
+		return FormulaUtils.getString(form1).equals(FormulaUtils.getString(form2));
 	}
 	
 	 
