@@ -90,6 +90,21 @@ public class VisualObjectTransferFunction implements
 			fd.add((float) from.shapeAmbiguity, 1.0);
 			distr.put("shapeAmbiguity", fd.asDistribution());
 		}
+		{ // ident
+			fd = FormulaDistribution.create();
+			for (int i = 0; i < from.identLabels.length; i++) {
+				fd.add(from.identLabels[i], from.identDistrib[i]);
+			}
+			distr.put("ident", fd.asDistribution());
+
+			fd = FormulaDistribution.create();
+			fd.add((float) from.identGain, 1.0);
+			distr.put("identGain", fd.asDistribution());
+
+			fd = FormulaDistribution.create();
+			fd.add((float) from.identAmbiguity, 1.0);
+			distr.put("identAmbiguity", fd.asDistribution());
+		}
 		return true;
 	}
 
