@@ -43,6 +43,7 @@
 #include "basic_action.hh"
 
 #include "planning_formula_to_cnf.hh"
+#include "assignment_applicator.hh"
 
 
 
@@ -61,6 +62,10 @@ namespace Planning
         void ground_derived_perceptions();
 
     private:
+        
+        /* A tool to apply an assignment to variables to a CNF formula. */
+        CNF_Assignment_Applicator assignment_Applicator;
+        
         /* Incrementally add entries to \member{cached_constants_of_types}.*/
         void grow__cached_constants_of_types(const Types&);
         /* Incrementally add entries to \member{cached_constants_of_types}.*/
@@ -99,10 +104,32 @@ namespace Planning
         
         /* Populate \member{}*/
         void ground_action_schema(Planning::Action_Schema& action_Schema);
-        void ground_action_schema(std::list<Constant>& ordereed_assignment,
+        void ground_action_schema(const Action_Name& action_name,
+                                  Planning::Formula::Subformula& effect_formula,
+//                                   std::list<Constant>& ordereed_assignment,
                                   std::map<Variable, Constant>& assignment_detail,
                                   const std::map<Planning::Variable, Planning::Constants/*FIX*/>& potential_assignments,
-                                  const Argument_List& action_variables);
+                                  const Argument_List& action_variables,
+                                  Planning::Formula::Subformula precondition,
+                                  const std::vector<Variable>& variables_in_order,
+                                  uint variable_index);
+
+        void 
+        ground_action_schema(const Action_Name& action_Name,
+                             Planning::Formula::Subformula& effect_formula,
+                             //                      std::list<Constant>& ordereed_assignment,/*result, an assignment*/
+                             std::map<Variable, Constant>& assignment_detail, /*explicit representation of results*/
+                             const std::map<Variable, Constants>& potential_assignments, /* constants from which the result is formed.*/
+                             const Argument_List& action_variables, /*Gives the order in which variables assignment should be made -- Some of these may be constant.*/
+                             Planning::Formula::Subformula _precondition
+                             );
+        void press_ground_action(const Action_Name& action_name,
+                                 Planning::Formula::Subformula precondition,  
+                                 Planning::Formula::Subformula __effect_formula,/*This should be completely ground at this stage -- i.e., no variable symbols.. */
+                                 const std::map<Variable, Constant>& assignment_detail,
+                                 const Argument_List& action_variables
+                                 );
+        
         /* Populate \member{}*/
         void ground_derived_predicate_schema(Planning::Derived_Predicate&);
         

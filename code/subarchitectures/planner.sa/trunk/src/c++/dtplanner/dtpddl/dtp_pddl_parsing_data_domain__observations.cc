@@ -104,7 +104,7 @@ void Domain_Data::add__observation()
 {
     
     if(!got__observation_effect){
-        NEW_object_referenced_WRAPPED_deref_POINTER
+        NEW_object_referenced_WRAPPED_deref_visitable_POINTER
             (Planning::Formula::Vacuous
              , tmp
              , static_cast<void*>(0));
@@ -114,7 +114,7 @@ void Domain_Data::add__observation()
     
     if(!got__observation_precondition){
         
-        NEW_object_referenced_WRAPPED_deref_POINTER
+        NEW_object_referenced_WRAPPED_deref_visitable_POINTER
             (Planning::Formula::Vacuous
              , tmp
              , static_cast<void*>(0));

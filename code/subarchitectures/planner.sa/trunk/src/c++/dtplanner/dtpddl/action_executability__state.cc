@@ -32,62 +32,29 @@
  */
 
 
+#include "action_executability__state.hh"
 
-#include "planning_state.hh"
 
 using namespace Planning;
 
 
-
-uint State::count__compulsory_generative_transformation() const
+const Boolean__Satisfaction_Status_Management& Action_Executability__State::get__transformation__satisfaction_status() const
 {
-    return applicable_compulsory_generative_transformations.size();
+    return transformation__satisfaction_status;
 }
 
-uint State::count__compulsory_transformation() const
+const Unsigned_Integer__Satisfaction_Status_Management& Action_Executability__State::get__transformation__count_status() const
 {
-    return applicable_compulsory_transformations.size();
+    return transformation__count_status;
 }
 
-
-State_Transformation* State::pop__compulsory_generative_transformation()
+Boolean__Satisfaction_Status_Management& Action_Executability__State::get__transformation__satisfaction_status() 
 {
-    auto result = applicable_compulsory_generative_transformations.top();
-    applicable_compulsory_generative_transformations.pop();
-    return result;
+    return transformation__satisfaction_status;
 }
 
-State_Transformation* State::pop__compulsory_transformation()
+Unsigned_Integer__Satisfaction_Status_Management& Action_Executability__State::get__transformation__count_status() 
 {
-    auto result = applicable_compulsory_transformations.top();
-    applicable_compulsory_transformations.pop();
-    return result;
-}
-
-
-void State::add__compulsory_generative_transformation(State_Transformation*state_Transformation)
-{
-    applicable_compulsory_generative_transformations.push(state_Transformation);
-}
-
-void State::add__optional_transformation(State_Transformation*state_Transformation)
-{
-    
-    applicable_optional_transformations.insert(state_Transformation);
-}
-
-void State::remove__optional_transformation(State_Transformation*state_Transformation)
-{
-    applicable_optional_transformations.erase(state_Transformation);
-}
-
-void State::add__compulsory_transformation(State_Transformation*state_Transformation)
-{
-    applicable_compulsory_transformations.push(state_Transformation);
-}
-
-std::set<State_Transformation*>& State::get__optional_transformations()
-{
-    return applicable_optional_transformations;
+    return transformation__count_status;
 }
 

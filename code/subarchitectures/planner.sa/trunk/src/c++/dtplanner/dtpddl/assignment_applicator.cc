@@ -39,43 +39,41 @@
 
 using namespace Planning;
 
-typedef  Assignment_Applicator::Result Result;
+typedef  CNF_Assignment_Applicator::Result Result;
 
-typedef Assignment_Applicator::Subformulae Subformulae;
-typedef Assignment_Applicator::Subformula Subformula;
-typedef Assignment_Applicator::Negation Negation;
-typedef Assignment_Applicator::Conjunction Conjunction;
-typedef Assignment_Applicator::Disjunction Disjunction;
-typedef Assignment_Applicator::Exists Exists;
-typedef Assignment_Applicator::Forall Forall;
-typedef Assignment_Applicator::State_Proposition State_Proposition;
-typedef Assignment_Applicator::Observational_Predicate Observational_Predicate;
-typedef Assignment_Applicator::Observational_Proposition Observational_Proposition;
-typedef Assignment_Applicator::Equality_Test Equality_Test;
-typedef Assignment_Applicator::State_Predicate State_Predicate;
+typedef CNF_Assignment_Applicator::Subformulae Subformulae;
+typedef CNF_Assignment_Applicator::Subformula Subformula;
+typedef CNF_Assignment_Applicator::Negation Negation;
+typedef CNF_Assignment_Applicator::Conjunction Conjunction;
+typedef CNF_Assignment_Applicator::Disjunction Disjunction;
+typedef CNF_Assignment_Applicator::Exists Exists;
+typedef CNF_Assignment_Applicator::Forall Forall;
+typedef CNF_Assignment_Applicator::State_Proposition State_Proposition;
+typedef CNF_Assignment_Applicator::Observational_Predicate Observational_Predicate;
+typedef CNF_Assignment_Applicator::Observational_Proposition Observational_Proposition;
+typedef CNF_Assignment_Applicator::Equality_Test Equality_Test;
+typedef CNF_Assignment_Applicator::State_Predicate State_Predicate;
 
 
-Assignment_Applicator::Assignment_Applicator(basic_type::Runtime_Thread _runtime_Thread,
+CNF_Assignment_Applicator::CNF_Assignment_Applicator(basic_type::Runtime_Thread _runtime_Thread,
                                              Planning::Parsing::Domain_Data& domain_Data,
-                                             Planning::Parsing::Problem_Data& problem_Data// ,
-//                                              std::map<Variable,  Constants&>& assignment_possibilities
+                                             Planning::Parsing::Problem_Data& problem_Data
                                              )
     :runtime_Thread(_runtime_Thread),
      domain_Data(domain_Data),
      problem_Data(problem_Data),
-//      assignment_possibilities(assignment_possibilities),
      made_assignment_to__runtime_Thread(false),
      processing_negative(false)
 {
     
-    NEW_referenced_WRAPPED_deref_POINTER
+    NEW_referenced_WRAPPED_deref_visitable_POINTER
         (runtime_Thread
          , Planning::Formula::True
          , _formula__true
          , 0);
 
     
-    NEW_referenced_WRAPPED_deref_POINTER
+    NEW_referenced_WRAPPED_deref_visitable_POINTER
         (runtime_Thread
          , Planning::Formula::False
          , _formula__false
@@ -86,7 +84,7 @@ Assignment_Applicator::Assignment_Applicator(basic_type::Runtime_Thread _runtime
 }
 
 /* PREDICATE -- Some of the arguments are not ground.*/
-Result Assignment_Applicator::satisfiable(Fact fact)
+Result CNF_Assignment_Applicator::satisfiable(Fact fact)
 {
     if(!processing_negative && !domain_Data.in_add_effect(fact->get__name())){
 
@@ -97,7 +95,7 @@ Result Assignment_Applicator::satisfiable(Fact fact)
         for(auto i = 0; i < arguments.size(); i++){
 
             if(_arguments[i].test_cast<Planning::Constant>()){
-                NEW_referenced_WRAPPED_deref_POINTER
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
                     (runtime_Thread
                      , Planning::Constant
                      , constant
@@ -143,7 +141,7 @@ Result Assignment_Applicator::satisfiable(Fact fact)
         for(auto i = 0; i < arguments.size(); i++){
 
             if(_arguments[i].test_cast<Planning::Constant>()){
-                NEW_referenced_WRAPPED_deref_POINTER
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
                     (runtime_Thread
                      , Planning::Constant
                      , constant
@@ -186,7 +184,7 @@ Result Assignment_Applicator::satisfiable(Fact fact)
 }
 
 /* PROPOSITION -- All of the arguments are ground.*/
-Result Assignment_Applicator::satisfiable(Ground_Fact ground_Fact)
+Result CNF_Assignment_Applicator::satisfiable(Ground_Fact ground_Fact)
 {
     auto predicate_Name = ground_Fact->get__name();
     
@@ -239,7 +237,7 @@ Result Assignment_Applicator::satisfiable(Ground_Fact ground_Fact)
 }
 
 
-Result Assignment_Applicator::operator()(Conjunct conjunct, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Conjunct conjunct, const Assignment& assignment)
 {
     Subformulae result;
     
@@ -269,7 +267,7 @@ Result Assignment_Applicator::operator()(Conjunct conjunct, const Assignment& as
         return Result(formula__true, true);
     }
 
-    NEW_referenced_WRAPPED_deref_POINTER
+    NEW_referenced_WRAPPED_deref_visitable_POINTER
         (runtime_Thread
          , Planning::Formula::Conjunction
          , conjunctive_formula
@@ -278,7 +276,7 @@ Result Assignment_Applicator::operator()(Conjunct conjunct, const Assignment& as
     return Result(conjunctive_formula, true);
 }
 
-Result Assignment_Applicator::operator()(Disjunct disjunct, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Disjunct disjunct, const Assignment& assignment)
 {
     Subformulae result;
 
@@ -307,7 +305,7 @@ Result Assignment_Applicator::operator()(Disjunct disjunct, const Assignment& as
 
     if(!result.size()) Result(formula__false, false);
     
-    NEW_referenced_WRAPPED_deref_POINTER
+    NEW_referenced_WRAPPED_deref_visitable_POINTER
         (runtime_Thread
          , Planning::Formula::Disjunction
          , disjunctive_formula
@@ -316,7 +314,7 @@ Result Assignment_Applicator::operator()(Disjunct disjunct, const Assignment& as
     return Result(disjunctive_formula, true);
 }
 
-Result Assignment_Applicator::operator()(Nagative negative, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Nagative negative, const Assignment& assignment)
 {
     processing_negative = true;
 
@@ -330,7 +328,7 @@ Result Assignment_Applicator::operator()(Nagative negative, const Assignment& as
         return Result(formula__true, true);
     }
     
-    NEW_referenced_WRAPPED_deref_POINTER
+    NEW_referenced_WRAPPED_deref_visitable_POINTER
         (runtime_Thread
          , Planning::Formula::Negation
          , negated_atom
@@ -340,7 +338,7 @@ Result Assignment_Applicator::operator()(Nagative negative, const Assignment& as
     
 }
 
-Result Assignment_Applicator::operator()(Fact fact, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Fact fact, const Assignment& assignment)
 {
     auto arguments = fact->get__arguments();
 
@@ -363,7 +361,7 @@ Result Assignment_Applicator::operator()(Fact fact, const Assignment& assignment
               argument_List.push_back(*argument);
               
             } else {
-                NEW_referenced_WRAPPED_deref_POINTER
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
                     (runtime_Thread
                      , Planning::Constant
                      , constant
@@ -394,7 +392,7 @@ Result Assignment_Applicator::operator()(Fact fact, const Assignment& assignment
 
         assert(constant_Arguments.size() == arguments.size());
         
-        NEW_referenced_WRAPPED_deref_POINTER
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
             (runtime_Thread
              , Planning::Formula::State_Proposition
              , proposition
@@ -403,7 +401,7 @@ Result Assignment_Applicator::operator()(Fact fact, const Assignment& assignment
 
         return satisfiable(Ground_Fact(proposition));//Result(proposition, satisfiable(proposition));
     } else {
-        NEW_referenced_WRAPPED_deref_POINTER
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
             (runtime_Thread
              , Planning::Formula::State_Predicate
              , predicate
@@ -414,32 +412,32 @@ Result Assignment_Applicator::operator()(Fact fact, const Assignment& assignment
     }
 }
 
-Result Assignment_Applicator::operator()(Observation observation, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Observation observation, const Assignment& assignment)
 {
     UNRECOVERABLE_ERROR("UNIMPLEMENTED");
     return Result(Subformula(observation), true);
 }
 
-Result Assignment_Applicator::operator()(Ground_Fact ground_Fact, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Ground_Fact ground_Fact, const Assignment& assignment)
 {
     UNRECOVERABLE_ERROR("UNIMPLEMENTED");
     return Result(Subformula(ground_Fact), true);
 }
 
-Result Assignment_Applicator::operator()(Ground_Observation ground_Observation, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Ground_Observation ground_Observation, const Assignment& assignment)
 {
     UNRECOVERABLE_ERROR("UNIMPLEMENTED");
     return Result(Subformula(ground_Observation), true);
 }
 
-Result Assignment_Applicator::operator()(Equality equality, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Equality equality, const Assignment& assignment)
 {
     UNRECOVERABLE_ERROR("UNIMPLEMENTED");
     return Result(Subformula(equality), true);
 }
 
 
-Result Assignment_Applicator::operator()(Subformula input,
+Result CNF_Assignment_Applicator::operator()(Subformula input,
                                              const Assignment& assignment)
 {
     if(!made_assignment_to__runtime_Thread){
@@ -525,7 +523,7 @@ Result Assignment_Applicator::operator()(Subformula input,
 
 }
 
-void Assignment_Applicator::reset__runtime_Thread()
+void CNF_Assignment_Applicator::reset__runtime_Thread()
 {
     made_assignment_to__runtime_Thread = false;
 }

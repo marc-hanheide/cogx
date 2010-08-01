@@ -93,3 +93,10 @@ namespace Planning
 }
 
 #endif
+
+/* Precious bodily fluids.
+ *
+ * -- Major General Albert Stubblebine III, infamous proponent of
+ * psychic warfare.
+ *
+ */

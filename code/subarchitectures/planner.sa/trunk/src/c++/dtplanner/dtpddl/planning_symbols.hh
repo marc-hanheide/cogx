@@ -64,7 +64,7 @@ namespace Planning
     typedef std::map<Constant, Types > Constants_Description;
     
     typedef std::vector<Types> Argument_Types;
-    typedef basic_types__vector Argument_List;
+    typedef /*basic_types__vector*/ std::vector<CXX__deref__shared_ptr__visitable<basic_type> > Argument_List;
 
     typedef basic_types Arguments;
     

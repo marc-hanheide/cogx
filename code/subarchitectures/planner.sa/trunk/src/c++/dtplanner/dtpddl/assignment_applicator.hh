@@ -41,14 +41,14 @@ namespace Planning
 {
     /* Applies a variable assingment to a CNF formula, and makes the result
      * available.*/
-    class Assignment_Applicator
+    class CNF_Assignment_Applicator
     {
     public:
-        Assignment_Applicator(basic_type::Runtime_Thread,
-                              Planning::Parsing::Domain_Data&,
-                              Planning::Parsing::Problem_Data&// ,
-//                               std::map<Variable,  Constants&>&
-                              );
+        CNF_Assignment_Applicator(basic_type::Runtime_Thread,
+                                  Planning::Parsing::Domain_Data&,
+                                  Planning::Parsing::Problem_Data&// ,
+                                  //                               std::map<Variable,  Constants&>&
+                                  );
         
         typedef Planning::Formula::Subformulae Subformulae;
         typedef Planning::Formula::Subformula Subformula;
@@ -114,7 +114,7 @@ namespace Planning
                          , std::tr1::tuple<Cached_Partial_Assignment_Satisfiability
                                            , Cached_Partial_Assignment_Unsatisfiability> > Cached_Predicate_Satisfiability;
 
-        Cached_Predicate_Satisfiability cached_satisfiable;
+        Cached_Predicate_Satisfiability cached_satisfiable;        
         Cached_Predicate_Satisfiability cached_unsatisfiable;
         
         

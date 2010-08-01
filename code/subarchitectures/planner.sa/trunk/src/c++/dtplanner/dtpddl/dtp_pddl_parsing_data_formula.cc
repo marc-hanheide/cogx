@@ -34,6 +34,20 @@
 
 using namespace Planning::Parsing;
 
+bool Formula_Data::is_static_fluent(const Planning::State_Function_Name& state_Function_Name) const
+{
+    if(modified_in_effect__state_functions__parsed.find(state_Function_Name)
+       == modified_in_effect__state_functions__parsed.end()){
+        return true;
+    } else if (modified_in_effect__state_ground_functions__parsed.find(state_Function_Name)
+               == modified_in_effect__state_ground_functions__parsed.end()) {
+        return true;
+    }
+    
+    return false;
+}
+
+
 bool Formula_Data::in_add_effect(const Predicate_Name& predicate_Name) const
 {
     if(added__state_predicates__parsed.find(predicate_Name)
@@ -78,9 +92,22 @@ Formula_Data::Formula_Data():
     skip_next____report__formula(false),
     last_number_parsed_was_double(false),
     parsing_initial_state(false),
-    in_delete_context(false)
+    in_delete_context(false),
+    in_modification_context(false),
+    in_effect_context(false)
 {
 }
+
+void Formula_Data::report__enter_parsing_effect_context()
+{
+    in_effect_context = true;
+}
+
+void Formula_Data::report__exit_parsing_effect_context()
+{
+    in_effect_context = false;
+}
+
 
 void Formula_Data::report__constant_in_formula()
 {
@@ -137,7 +164,7 @@ void Formula_Data::report__number_in_formula()
     
     VERBOSER(111, "At level :: "<<formula_parsing_level<<" Got number :: "<<probability<<" in action effect.");
     
-    NEW_object_referenced_WRAPPED_deref_POINTER
+    NEW_object_referenced_WRAPPED_deref_visitable_POINTER
         (Planning::Formula::Number
          , number
          , probability);
@@ -161,6 +188,8 @@ void Formula_Data::report__increase_formula()
 
     VERBOSER(2000, "Got an (increase (... ) NUM) at stack element :: "
              <<formula_type.size()<<std::endl);
+
+    in_modification_context = true;
 }
 
 void Formula_Data::report__decrease_formula()
@@ -169,6 +198,8 @@ void Formula_Data::report__decrease_formula()
 
     VERBOSER(2000, "Got an (decrease (... ) NUM) at stack element :: "
              <<formula_type.size()<<std::endl);
+
+    in_modification_context = true;
 }
 
 void Formula_Data::report__assign_formula()
@@ -177,6 +208,8 @@ void Formula_Data::report__assign_formula()
 
     VERBOSER(2000, "Got an (assign (... ) NUM) at stack element :: "
              <<formula_type.size()<<std::endl);
+
+    in_modification_context = true;
 }
 
 
@@ -260,7 +293,7 @@ void Formula_Data::report__conditional_effect_formula()
     formula_type.push(conditional_effect);
 }
 
-CXX__deref__shared_ptr<basic_type>
+Planning::Formula::Subformula
 Formula_Data::complete__probabilistic_formula()
 {
     assert(subformulae[formula_parsing_level+1].size());
@@ -301,7 +334,7 @@ Formula_Data::complete__probabilistic_formula()
     }
 
     
-    NEW_object_referenced_WRAPPED_deref_POINTER
+    NEW_object_referenced_WRAPPED_deref_visitable_POINTER
         (Planning::Formula::Probabilistic
          , tmp
          , associated_formula
@@ -311,7 +344,7 @@ Formula_Data::complete__probabilistic_formula()
 }
 
 
-CXX__deref__shared_ptr<basic_type>
+Planning::Formula::Subformula
 Formula_Data::complete__quantified_formula(int quantifier)
 {
    
@@ -396,13 +429,13 @@ Formula_Data::complete__quantified_formula(int quantifier)
             "Could not find types for variable :: "<<*variable<<std::endl
             <<"While parsing quantifier for :: "<<subformulae[formula_parsing_level + 1].back()<<std::endl);
         
-        NEW_object_referenced_WRAPPED_deref_POINTER
+        NEW_object_referenced_WRAPPED_deref_visitable_POINTER
             (Planning::Variable, new_variable, variable->get__name());
         Planning::get__symbols(derived_predicatex_arguments).push_back(new_variable);
         Planning::get__types(derived_predicatex_arguments).push_back(some_types);
     }
     
-    NEW_object_referenced_WRAPPED_deref_POINTER
+    NEW_object_referenced_WRAPPED_deref_visitable_POINTER
         (Planning::Derived_Predicate
          , new_derived_predicate
          , name
@@ -423,13 +456,13 @@ Formula_Data::complete__quantified_formula(int quantifier)
     return new_derived_predicate; 
 }
 
-CXX__deref__shared_ptr<basic_type>
+Planning::Formula::Subformula
 Formula_Data::complete__forall_formula()
 {
     return complete__quantified_formula(Planning::enum_types::forall);
 }
 
-CXX__deref__shared_ptr<basic_type>
+Planning::Formula::Subformula
 Formula_Data::complete__exists_formula()
 {
     return complete__quantified_formula(Planning::enum_types::exists);
@@ -525,7 +558,7 @@ void Formula_Data::report__formula(const std::string& str)
         {
             VERBOSER(25, "VACUOUS");
             
-            NEW_object_referenced_WRAPPED_deref_POINTER
+            NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                 (Planning::Formula::Vacuous
                  , tmp
                  , static_cast<void*>(0));
@@ -552,7 +585,7 @@ void Formula_Data::report__formula(const std::string& str)
 
             check__exists_parsed_subformulae(formula_parsing_level + 1);
     
-            NEW_object_referenced_WRAPPED_deref_POINTER
+            NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                 (Planning::Formula::Disjunction
                  , tmp
                  , subformulae[formula_parsing_level+1]);
@@ -567,7 +600,7 @@ void Formula_Data::report__formula(const std::string& str)
             check__exists_parsed_subformulae(formula_parsing_level + 1);
             
             
-            NEW_object_referenced_WRAPPED_deref_POINTER
+            NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                 (Planning::Formula::Conjunction
                  , tmp
                  , subformulae[formula_parsing_level + 1]);
@@ -584,28 +617,28 @@ void Formula_Data::report__formula(const std::string& str)
             check__exists_parsed_subformulae(formula_parsing_level + 1);
             
             assert(subformulae[formula_parsing_level+1].size() == 1);
-            NEW_object_referenced_WRAPPED_deref_POINTER
+            NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                 (Planning::Formula::Negation
                  , tmp
                  , subformulae[formula_parsing_level+1][0]);
             
             subformulae[formula_parsing_level].push_back(tmp);
         }
-            break;
+        break;
         case material_implication:
         {
             VERBOSER(25, "material_implication");
             check__exists_parsed_subformulae(formula_parsing_level + 1);
             check__cardinality_constraint_on_subformulae_at_index(2, formula_parsing_level + 1);
             
-            NEW_object_referenced_WRAPPED_deref_POINTER
+            NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                 (Planning::Formula::Negation
                  , tmp1
                  , subformulae[formula_parsing_level + 1][0]);
             
             subformulae[formula_parsing_level + 1][0] = tmp1;
             
-            NEW_object_referenced_WRAPPED_deref_POINTER
+            NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                 (Planning::Formula::Disjunction
                  , tmp
                  , subformulae[formula_parsing_level + 1]);
@@ -615,6 +648,8 @@ void Formula_Data::report__formula(const std::string& str)
         break;
         case increase:
         {
+            in_modification_context = false;
+            
             check__exists_parsed_subformulae(formula_parsing_level + 1);
             check__cardinality_constraint_on_subformulae_at_index
                 (2, formula_parsing_level+1);
@@ -627,7 +662,7 @@ void Formula_Data::report__formula(const std::string& str)
             auto evaluation_expression_RHS = *subs;
 
             
-            NEW_object_referenced_WRAPPED_deref_POINTER
+            NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                 (Planning::Formula::Increase
                  , tmp
                  , evaluation_expression_LHS
@@ -638,6 +673,8 @@ void Formula_Data::report__formula(const std::string& str)
         break;
         case decrease:
         {
+            in_modification_context = false;
+            
             check__exists_parsed_subformulae(formula_parsing_level + 1);
             check__cardinality_constraint_on_subformulae_at_index
                 (2, formula_parsing_level+1);
@@ -648,7 +685,7 @@ void Formula_Data::report__formula(const std::string& str)
             auto evaluation_expression_RHS = *subs;
 
             
-            NEW_object_referenced_WRAPPED_deref_POINTER
+            NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                 (Planning::Formula::Decrease
                  , tmp
                  , evaluation_expression_LHS
@@ -659,6 +696,9 @@ void Formula_Data::report__formula(const std::string& str)
         break;
         case assign:
         {
+
+            in_modification_context = false;
+            
             check__exists_parsed_subformulae(formula_parsing_level + 1);
             check__cardinality_constraint_on_subformulae_at_index
                 (2, formula_parsing_level+1);
@@ -669,7 +709,7 @@ void Formula_Data::report__formula(const std::string& str)
             auto evaluation_expression_RHS = *subs;
 
             
-            NEW_object_referenced_WRAPPED_deref_POINTER
+            NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                 (Planning::Formula::Assign
                  , tmp
                  , evaluation_expression_LHS
@@ -701,7 +741,7 @@ void Formula_Data::report__formula(const std::string& str)
             components++;
             auto effect_RHS = *components;            
             
-            NEW_object_referenced_WRAPPED_deref_POINTER
+            NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                 (Planning::Formula::Conditional_Effect
                  , tmp
                  , precondition_LHS
@@ -808,21 +848,22 @@ void Formula_Data::report__parsing_integer_number()
 
 void Formula_Data::add__variable_argument(const std::string& str)
 {
-    NEW_object_referenced_WRAPPED_deref_POINTER(Planning::Variable, variable, str);
+    NEW_object_referenced_WRAPPED_deref_visitable_POINTER(Planning::Variable, variable, str);
     
     argument_List.push_back(variable);
 }
 
 void Formula_Data::add__constant_argument(const std::string& str)
 {
-    NEW_object_referenced_WRAPPED_deref_POINTER(Planning::Constant, constant, str);
+    NEW_object_referenced_WRAPPED_deref_visitable_POINTER(Planning::Constant, constant, str);
 
     argument_List.push_back(constant);
 }
 
 
 
-#define REPORT_SYMBOL_USAGE__PROPOSITIONAL(TYPE, NAME_TYPE, storage, add_storage, del_storage) template<>        \
+#define REPORT_SYMBOL_USAGE__PROPOSITIONAL(TYPE, NAME_TYPE, storage, add_storage, del_storage) \
+    template<>                                                          \
     void Formula_Data::using__symbol_name<TYPE                          \
                                           , NAME_TYPE>                  \
     (const NAME_TYPE& symbol_name,                                      \
@@ -834,25 +875,27 @@ void Formula_Data::add__constant_argument(const std::string& str)
         storage[symbol_name]                                            \
             .insert(index);                                             \
                                                                         \
-        if(in_delete_context){                                          \
-            if(del_storage.find(symbol_name) == del_storage.end()){     \
-                del_storage[symbol_name] = std::set<ID_TYPE>();         \
-            }                                                           \
-            del_storage[symbol_name]                                    \
-                .insert(index);                                         \
-        } else {                                                        \
                                                                         \
-            if(add_storage.find(symbol_name) == add_storage.end()){     \
-                add_storage[symbol_name] = std::set<ID_TYPE>();         \
+        if(in_effect_context){                                          \
+            if(in_delete_context){                                      \
+                if(del_storage.find(symbol_name) == del_storage.end()){ \
+                    del_storage[symbol_name] = std::set<ID_TYPE>();     \
+                }                                                       \
+                del_storage[symbol_name]                                \
+                    .insert(index);                                     \
+            } else {                                                    \
+                                                                        \
+                if(add_storage.find(symbol_name) == add_storage.end()){ \
+                    add_storage[symbol_name] = std::set<ID_TYPE>();     \
+                }                                                       \
+                add_storage[symbol_name]                                \
+                    .insert(index);                                     \
             }                                                           \
-            add_storage[symbol_name]                                    \
-                .insert(index);                                         \
         }                                                               \
-                                                                        \
-                                                                        \
     }                                                                   \
 
-#define REPORT_SYMBOL_USAGE__FUNCTIONAL(TYPE, NAME_TYPE, storage) template<>        \
+#define REPORT_SYMBOL_USAGE__FUNCTIONAL(TYPE, NAME_TYPE, storage, mod_storage) \
+    template<>                                                          \
     void Formula_Data::using__symbol_name<TYPE                          \
                                           , NAME_TYPE>                  \
     (const NAME_TYPE& symbol_name,                                      \
@@ -863,6 +906,15 @@ void Formula_Data::add__constant_argument(const std::string& str)
         }                                                               \
         storage[symbol_name]                                            \
             .insert(index);                                             \
+                                                                        \
+        if(in_modification_context){                                    \
+                                                                        \
+            if(mod_storage.find(symbol_name) == mod_storage.end()){     \
+                mod_storage[symbol_name] = std::set<ID_TYPE>();         \
+            }                                                           \
+            mod_storage[symbol_name].insert(index);                     \
+        }                                                               \
+                                                                        \
     }                                                                   \
 
 
@@ -883,19 +935,23 @@ namespace Planning
         
         REPORT_SYMBOL_USAGE__FUNCTIONAL(Planning::Formula::Perceptual_Function,
                                         Planning::Perceptual_Function_Name,
-                                        perceptual_functions__parsed);
+                                        perceptual_functions__parsed,
+                                        modified_in_effect__perceptual_functions__parsed);
         
         REPORT_SYMBOL_USAGE__FUNCTIONAL(Planning::Formula::State_Function,
                                         Planning::State_Function_Name,
-                                        state_functions__parsed);
+                                        state_functions__parsed,
+                                        modified_in_effect__state_functions__parsed);
         
         REPORT_SYMBOL_USAGE__FUNCTIONAL(Planning::Formula::Perceptual_Ground_Function,
                                         Planning::Perceptual_Function_Name,
-                                        perceptual_ground_functions__parsed);
+                                        perceptual_ground_functions__parsed,
+                                        modified_in_effect__perceptual_ground_functions__parsed);
         
         REPORT_SYMBOL_USAGE__FUNCTIONAL(Planning::Formula::State_Ground_Function,
                                         Planning::State_Function_Name,
-                                        state_ground_functions__parsed);
+                                        state_ground_functions__parsed,
+                                        modified_in_effect__state_ground_functions__parsed);
         
         
         REPORT_SYMBOL_USAGE__PROPOSITIONAL(Planning::Formula::State_Predicate,
@@ -927,15 +983,6 @@ namespace Planning
     }
 }
 
-// template<>
-// void Formula_Data::using__symbol_name<Planning::Perceptual_Function
-//                                       , Planning::Perceptual_Function_Name>
-// (const Perceptual_Function_Name& symbol_name,
-//  ID_TYPE index)
-// {
-//     perceptual_functions__parsed[perceptual_Function_Name]
-//         .insert(index);
-// }
 
 void Formula_Data::report__perceptual_function_name(const std::string& str)
 {
@@ -1058,7 +1105,7 @@ bool Formula_Data::potential_match_via_an_assignment(const Planning::Formula::St
     
     for(uint index = 0; index <  propositionx_arguments.size(); index++){
         const Constant& prop_arg = propositionx_arguments[index];
-        const CXX__deref__shared_ptr<basic_type>& _pred_arg = predicatex_arguments[index];
+        const Formula::Subformula& _pred_arg = predicatex_arguments[index];
 
         
         if(_pred_arg.test_cast<Planning::Constant>()){
@@ -1140,6 +1187,28 @@ bool Formula_Data::statically_unsatisfiable(const Planning::Formula::State_Predi
 //     }
     
 //     return true; 
+}
+
+const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >&
+Formula_Data::get__modified_in_effect__perceptual_functions__parsed() const
+{
+    return modified_in_effect__perceptual_functions__parsed;
+}
+
+const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >&
+Formula_Data::get__modified_in_effect__perceptual_ground_functions__parsed() const
+{
+    return modified_in_effect__perceptual_ground_functions__parsed; 
+}
+
+const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >& Formula_Data::get__modified_in_effect__state_functions__parsed() const
+{
+    return modified_in_effect__state_functions__parsed;
+}
+
+const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >& Formula_Data::get__modified_in_effect__state_ground_functions__parsed() const
+{
+    return modified_in_effect__state_ground_functions__parsed;
 }
 
 const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >& Formula_Data::get__state_functions__parsed() const 

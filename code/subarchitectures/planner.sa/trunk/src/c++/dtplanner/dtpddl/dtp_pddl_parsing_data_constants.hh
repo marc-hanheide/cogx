@@ -57,8 +57,8 @@ namespace Planning
             void add__constant(const std::string& str);
             void add__type_of_constant(const std::string& str);
 
-            const Planning::Constants& get__constants() const;
-            Planning::Constants get__constants();
+//             const Planning::Constants& get__constants() const;
+//             Planning::Constants get__constants();
             
             const Planning::Types& get__constantx_types(const Constant&) const;
             Planning::Types get__constantx_types(const Constant&);
@@ -66,14 +66,19 @@ namespace Planning
             const Planning::Constants_Description& get__constants_Description() const;
             Planning::Constants_Description& get__constants_Description();
         protected:
-            /* Each constant/object symbol has a type. If none is given,
-             * this defaults to the type "object".*/
+            /* Result of parsing a constants/objects PDDL descriptive
+             * element. Each constant/object symbol has a type. If
+             * none is given, this defaults to the type "object".*/
             Planning::Constants_Description constants_Description;
             
-            /* Last list of constants parsed.*/
+            /* Parsing temporary containment (see
+             * \member{add__constants()}). Last list of constants
+             * parsed.*/
             Planning::Constants constants;
             
-            /*PDDL object/constant symbols can have a given type. */
+            /* Parsing temporary containment (see
+             * \member{add__constants()}). PDDL object/constant
+             * symbols can have a given type. */
             Planning::Types types_of_constants;
         };
     }

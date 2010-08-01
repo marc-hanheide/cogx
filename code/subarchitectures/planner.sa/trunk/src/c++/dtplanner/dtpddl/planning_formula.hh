@@ -40,8 +40,10 @@ namespace Planning
     
     namespace Formula
     {
-        typedef basic_types__vector Subformulae;
-        typedef CXX__deref__shared_ptr<basic_type> Subformula;
+        typedef CXX__deref__shared_ptr__visitable<basic_type> Subformula;
+        typedef std::vector<Subformula> Subformulae;
+//         typedef basic_types__vector Subformulae;
+//         typedef CXX__deref__shared_ptr<basic_type> Subformula;
         
         namespace Printing
         {
@@ -75,7 +77,9 @@ namespace Planning
             PRINTING;
         public:
             const NAMING_TYPE& get__name() const {return std::tr1::get<0>(Parent::contents());};
-            const Argument_List& get__arguments() const {return std::tr1::get<1>(Parent::contents());}; 
+            const Argument_List& get__arguments() const {return std::tr1::get<1>(Parent::contents());};
+
+            uint get__arity() const{return std::tr1::get<1>(Parent::contents()).size();};
         };
         
         template<int ID_VAL, typename NAMING_TYPE>
@@ -88,6 +92,7 @@ namespace Planning
         public:
             const NAMING_TYPE& get__name() const {return std::tr1::get<0>(Parent::contents());};
             const Constant_Arguments& get__arguments() const {return std::tr1::get<1>(Parent::contents());};
+            uint get__arity() const{return std::tr1::get<1>(Parent::contents()).size();};
         };
 
 #define MAKE_CONSTANT_ATOM(TYPE_NAME, ID_VAL, NAMING_TYPE)              \
@@ -132,7 +137,7 @@ namespace Planning
                                                 , Subformula >
         {PRINTING;
         public:
-            const Subformula get__subformula() const;
+            const Subformula& get__subformula() const;
             Subformula get__subformula();
         };
         
@@ -141,6 +146,15 @@ namespace Planning
                                            , Type
                                            , Subformula >
         {
+        public:
+            const Variable& get__variable() const;
+            Variable get__variable();
+
+            const Type& get__variable_type() const;
+            Type get__variable_type();
+            
+            const Subformula& get__subformula() const;
+            Subformula get__subformula();
         };
 
         class Exists : public type_wrapper<enum_types::exists
@@ -148,6 +162,15 @@ namespace Planning
                                            , Type
                                            , Subformula >
         {
+        public:
+            const Variable& get__variable() const;
+            Variable get__variable();
+
+            const Type& get__variable_type() const;
+            Type get__variable_type();
+            
+            const Subformula&  get__subformula() const;
+            Subformula get__subformula();
         };
         
 
@@ -161,6 +184,8 @@ namespace Planning
         template<int ID_VAL>
         class Function_Modifier : public type_wrapper<ID_VAL, Subformula, Subformula>
         {
+        public:
+            
             /* Function that is being acted on by operator with ID_VAL
              * (see \module{planning_types_enum.hh})*/
             Subformula get__subject() const {return std::tr1::get<0>(this->contents());}
@@ -170,6 +195,7 @@ namespace Planning
              * modified.*/
             Subformula get__modification() const {return std::tr1::get<1>(this->contents());}
             
+        private:
             std::ostream& operator<<(ostream&o) const
             {
                 o<<"("<<get__operator_type_as_string()

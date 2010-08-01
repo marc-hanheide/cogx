@@ -33,6 +33,7 @@
 #ifndef STL__TUPLE_HASH_HH
 #define STL__TUPLE_HASH_HH
 
+
 #include "stl__tuple_tools.hh"
 
 namespace boost
@@ -113,5 +114,6 @@ std::size_t boost::hash_value(const std::tr1::tuple<Args...>& in)
     
     return tmp;
 }
+
 
 #endif

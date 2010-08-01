@@ -41,6 +41,7 @@ using namespace Planning::Parsing;
 #include "dtp_pddl_parsing_data_problem.hh"
 #include "dtp_pddl_parsing_data_domain.hh"
 #include "problem_grounding.hh"
+#include "planning_state.hh"
 
 Solver::Solver(Planning::Parsing::Problem_Data& problem_Data)
     :problem_Data(problem_Data),
@@ -50,8 +51,14 @@ Solver::Solver(Planning::Parsing::Problem_Data& problem_Data)
 {
 }
 
+State& report__state(State&){
+    UNRECOVERABLE_ERROR("unimplemented");
+}
+
 void Solver::preprocess()
 {
+    if(preprocessed) return;
+    
     domain_Data = problem_Data.get__domain_Data();
     
     proprocess__Constants_Data();
@@ -66,41 +73,50 @@ void Solver::preprocess()
     problem_Grounding->ground_actions();
     problem_Grounding->ground_derived_predicates();
     problem_Grounding->ground_derived_perceptions();
+
+    preprocessed = true;
 }
 
 void Solver::domain_constants__to__problem_objects()
 {
-    const Constants_Data& problem__Constants_Data = problem_Data;
-    //Constants_Data& domain__Constants_Data = *domain_Data;
+    VERBOSER(3001, "Adding domain constants to the problem description.");
+        {char ch; std::cin>>ch;}
+    
+//     const Constants_Data& problem__Constants_Data = problem_Data;
+    const Constants_Data& domain__Constants_Data = *domain_Data;
+    auto domain__constants_Description = domain__Constants_Data.get__constants_Description();
+    
+    for(auto _constant = domain__constants_Description.begin()
+            ; _constant != domain__constants_Description.end()
+            ; _constant++){
 
-    for(auto constant = problem__Constants_Data.get__constants().begin()
-            ;constant != problem__Constants_Data.get__constants().end()
-            ; constant++){
-        domain_Data
-            ->add__constant(constant->get__name());
+        const Constant& constant = _constant->first;
         
-        auto types = problem__Constants_Data.get__constantx_types(*constant);
-        assert(types.size());
+        VERBOSER(3001, "Adding domain constant :: "<<constant<<std::endl
+                 <<"As problem object. "<<std::endl);
+        {char ch; std::cin>>ch;}
+        
+        problem_Data
+            .add__constant(constant.get__name());
+        
+        auto types = domain__Constants_Data.get__constantx_types(constant);
+
+        QUERY_UNRECOVERABLE_ERROR(!types.size(),
+                                  "No types were specified for domain constant :: "<<constant<<std::endl);
         
         for(auto type = types.begin()
                 ; type != types.end()
                 ; type++){
-            domain_Data
-                ->add__type_of_constant(type->get__name());
+            problem_Data
+                .add__type_of_constant(type->get__name());
         }
         
-        domain_Data
-            ->add__constants();
+        problem_Data
+            .add__constants();
     }
 
-//     constants_Description
-//         = const_cast<Planning::Parsing::Problem_Data::Constants_Description*>
-//         (&(domain_Data->get__constants_Description()));
-//     constants
-//         = const_cast<Constants*>(&(domain_Data->get__constants()));
-
-    constants_Description = domain_Data->get__constants_Description();
-    constants = domain_Data->get__constants();
+    constants_Description = problem_Data.get__constants_Description();
+    
 }
 
 void Solver::configure__extensions_of_types()

@@ -38,54 +38,173 @@
 
 using namespace Planning;
 
+Are_Doubles_Close State_Transformation::are_Doubles_Close = Are_Doubles_Close(1e-9);
 
-State_Transformation::State_Transformation(bool compulsory)
-    :compulsory(compulsory)
+State& State_Transformation::operator()(State& __successor)
 {
+    State* new_state;
+    State& _successor = (get__compulsory() && are_Doubles_Close(get__probability(), 1.0))
+        ?*(new_state = new State(__successor))
+        :__successor;
+
+    auto effects = get__effects();
+    for(auto effect = effects.begin()
+            ; effect != effects.end()
+            ; effect++){
+        if(!(*effect)->is_satisfied(_successor)){
+            (*effect)->flip_satisfaction(_successor);
+        }
+    }
+
+    return _successor;
 }
 
-        
-void State_Transformation::report__newly_satisfied(State& state)
+const Formula::Action_Proposition& State_Transformation
+::get__get_identifier() const
 {
-    if(compulsory){
-        state.add__compulsory_transformation(this); 
-    } else {
-        state.add__optional_transformation(this);
+    return std::tr1::get<2>(contents());
+}
+
+
+const State_Formula::Conjunctive_Normal_Form_Formula__Pointer& State_Transformation
+::get__precondition() const
+{
+    return std::tr1::get<3>(contents());
+}
+
+
+const State_Formula::List__Literals& State_Transformation
+::get__effects() const
+{
+    return std::tr1::get<4>(contents());
+}
+
+bool State_Transformation
+::get__compulsory() const
+{
+    return std::tr1::get<5>(contents());
+}
+
+double State_Transformation
+::get__probability() const
+{
+    return std::tr1::get<6>(contents());
+}
+
+
+
+
+
+
+void State_Transformation
+::set__satisfied(State& state)
+{
+    state.get__transformation__satisfaction_status().satisfy(get__id());
+}
+
+void State_Transformation
+::set__unsatisfied(State& state)
+{
+    state.get__transformation__satisfaction_status().unsatisfy(get__id());
+}
+
+void State_Transformation
+::flip_satisfaction(State& state)
+{
+    state.get__transformation__satisfaction_status().flip_satisfaction(get__id());
+}
+
+bool State_Transformation
+::is_satisfied(const State& state) const
+{
+    return state.get__transformation__satisfaction_status().satisfied(get__id());
+}
+
+void State_Transformation
+::increment__level_of_satisfaction(State& state)
+{
+    state.get__transformation__count_status().increment_satisfaction(get__id());
+}
+
+void State_Transformation
+::decrement__level_of_satisfaction(State& state)
+{
+    state.get__transformation__count_status().decrement_satisfaction(get__id());
+}
+
+void State_Transformation
+::set__level_of_satisfaction(uint level, State& state)
+{
+    state.get__transformation__count_status().set_satisfaction(get__id(), level);
+}
+
+uint State_Transformation
+::get__level_of_satisfaction(State& state) const
+{
+    return state.get__transformation__count_status().get_satisfaction_level(get__id());
+}
+
+
+
+
+uint State_Transformation::get__number_of_satisfied_conditions(State& state) const
+{
+    return get__level_of_satisfaction(state);
+}
+
+
+void State_Transformation
+::report__newly_satisfied(State& state)
+{
+    increment__level_of_satisfaction(state);
+
+    uint satisfaction_requirement = (get__compulsory())?2:1;
+
+    if(satisfaction_requirement == get__number_of_satisfied_conditions(state)){
+        set__satisfied(state);
+        
+        auto parents = get__traversable_parents();
+        for(auto parent = parents.begin()
+                ; parent != parents.end()
+                ; parent++){
+            (*parent).cxx_get<_Satisfaction_Listener>()
+                ->report__newly_satisfied(state);
+        }
+
+
+        
+        if(get__compulsory()){
+            register double probability = get__probability();
+            if(are_Doubles_Close(probability, 1.0)){
+                state.add__compulsory_transformation(this);
+            } else {
+                state.add__compulsory_generative_transformation(this);
+            }
+        } else {
+            state.add__optional_transformation(this);
+        }
     }
 }
 
-void State_Transformation::report__newly_unsatisfied(State& state)
+void State_Transformation
+::report__newly_unsatisfied(State& state)
 {
-    if(compulsory){
-        state.retract__compulsory_transformation(this); 
-    } else {
-        state.retract__optional_transformation(this);
-    }   
-}
+    decrement__level_of_satisfaction(state);
+
+    if(is_satisfied(state)){
+        set__unsatisfied(state);
         
-bool State_Transformation::is_compulsory() const
-{
-    return compulsory;
+        auto parents = get__traversable_parents();
+        for(auto parent = parents.begin()
+                ; parent != parents.end()
+                ; parent++){
+            (*parent).cxx_get<_Satisfaction_Listener>()->report__newly_unsatisfied(state);
+        }
+        
+        if(!get__compulsory()){    
+            state.remove__optional_transformation(this);
+        }
+    }
+    
 }
 
-void State_Transformation::set__compulsory(bool in)
-{
-   compulsory = in; 
-}
-
-
-
-State& STRIPS_Action::operator()(const State&)
-{
-    UNRECOVERABLE_ERROR("unimplemented");
-}
-
-void STRIPS_Action::add__add(uint)
-{
-    UNRECOVERABLE_ERROR("unimplemented");
-}
-
-void STRIPS_Action::add__delete(uint)
-{
-    UNRECOVERABLE_ERROR("unimplemented");
-}

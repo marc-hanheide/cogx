@@ -38,8 +38,9 @@
 
 using namespace Planning;
 using namespace Planning::State_Formula;
-
       
+
+
 void Literal::set__satisfied(State& state)
 {
     state.get__literals__satisfaction_status().satisfy(get__id());
@@ -53,11 +54,87 @@ void Literal::set__unsatisfied(State& state)
 void Literal::flip_satisfaction(State& state)
 {
     state.get__literals__satisfaction_status().flip_satisfaction(get__id());
+
+    if(get__sign() && !state.is_true(get__variable())){
+        state.flip(get__variable());
+    } else if (!get__sign() && state.is_true(get__variable())) {
+        state.flip(get__variable());
+    }
 }
             
 bool Literal::is_satisfied(const State& state) const
 {
     return state.get__literals__satisfaction_status().satisfied(get__id());
+}
+
+void Literal::report__newly_satisfied(State& state)
+{
+    set__satisfied(state);
+}
+
+void Literal::report__newly_unsatisfied(State& state)
+{
+    set__unsatisfied(state);
+}
+
+
+uint Literal::get__variable() const
+{
+    return std::tr1::get<2>(contents());
+}
+
+bool Literal::get__sign() const
+{
+    return std::tr1::get<3>(contents());
+}
+
+void Literal::flip_variable_on(State& state)
+{
+    if(get__sign()){
+        if(!is_satisfied(state)){
+            flip(state);
+        } 
+    } else {
+        if(is_satisfied(state)){
+            flip(state);
+        }
+    }
+}
+
+void Literal::flip_variable_off(State& state)
+{
+    if(get__sign()){
+        if(is_satisfied(state)){
+            flip(state);
+        } 
+    } else {
+        if(!is_satisfied(state)){
+            flip(state);
+        }
+    }
+}
+
+void Literal::flip(State& state)
+{
+
+    bool was_satisfied = is_satisfied(state);
+    
+    flip_satisfaction(state);
+
+    auto parents = get__traversable_parents();
+    if(was_satisfied){
+        for(auto parent = parents.begin()
+                ; parent != parents.end()
+                ; parent++){
+            (*parent).cxx_get<_Satisfaction_Listener>()->report__newly_unsatisfied(state);
+        }
+    } else {
+        for(auto parent = parents.begin()
+                ; parent != parents.end()
+                ; parent++){
+            (*parent).cxx_get<_Satisfaction_Listener>()->report__newly_satisfied(state);
+        }
+    }
 }
 
 
@@ -168,100 +245,6 @@ uint Conjunctive_Normal_Form_Formula::get__level_of_satisfaction(State&state) co
 
 
 
-uint Literal::get__variable() const
-{
-    return std::tr1::get<0>(contents());
-}
-
-bool Literal::get__sign() const
-{
-    return std::tr1::get<1>(contents());
-}
-
-void Literal::flip_variable_on(State& state)
-{
-    if(get__sign()){
-        if(!is_satisfied(state)){
-            flip(state);
-        } 
-    } else {
-        if(is_satisfied(state)){
-            flip(state);
-        }
-    }
-
-    auto parents = get__parent_clauses();
-    for(auto parent = parents.begin()
-            ; parent != parents.end()
-            ; parent++){
-        (*parent)->report__newly_satisfied(state);
-    }
-}
-
-void Literal::flip_variable_off(State& state)
-{
-    if(get__sign()){
-        if(is_satisfied(state)){
-            flip(state);
-        } 
-    } else {
-        if(!is_satisfied(state)){
-            flip(state);
-        }
-    }
-    
-    auto parents = get__parent_clauses();
-    for(auto parent = parents.begin()
-            ; parent != parents.end()
-            ; parent++){
-        (*parent)->report__newly_unsatisfied(state);
-    }
-}
-
-void Literal::flip(State& state)
-{
-
-    bool was_satisfied = is_satisfied(state);
-    
-    flip_satisfaction(state);
-
-    auto parents = get__parent_clauses();
-    if(was_satisfied){
-        for(auto parent = parents.begin()
-                ; parent != parents.end()
-                ; parent++){
-            (*parent)->report__newly_unsatisfied(state);
-        }
-    } else {
-        for(auto parent = parents.begin()
-                ; parent != parents.end()
-                ; parent++){
-            (*parent)->report__newly_satisfied(state);
-        }
-    }
-}
-
-const Disjunctive_Clause& Literal::get__parent_clause(uint i ) const
-{
-    auto tmp = get__parent_clauses();
-    return *(dynamic_cast<const Disjunctive_Clause*>(tmp[i]));
-}
-
-const std::vector< Satisfaction_Listener* >& Literal::get__parent_clauses() const
-{
-    return *std::tr1::get<2>(contents());
-}
-
-Disjunctive_Clause&  Literal::get__parent_clause(uint i )
-{
-    auto tmp = get__parent_clauses();
-    return *dynamic_cast<Disjunctive_Clause*>(tmp[i]);
-}
-
-std::vector< Satisfaction_Listener* >&  Literal::get__parent_clauses()
-{
-    return *std::tr1::get<2>(contents());
-}
 
 
 uint Disjunctive_Clause::get__number_of_satisfied_literals(State& state) const
@@ -274,11 +257,11 @@ void Disjunctive_Clause::report__newly_satisfied_literal(State& state)
     if(!is_satisfied(state)){
         set__satisfied(state);
 
-        auto parents = get__parent_cnfs();
+        auto parents = get__traversable_parents();
         for(auto parent = parents.begin()
                 ; parent != parents.end()
                 ; parent++){
-            (*parent)->report__newly_satisfied(state);
+            (*parent).cxx_get<_Satisfaction_Listener>()->report__newly_satisfied(state);
         }
     }   
 }
@@ -290,11 +273,11 @@ void Disjunctive_Clause::report__newly_unsatisfied_literal(State& state)
     if(0 == get__number_of_satisfied_literals(state)){
         set__unsatisfied(state);
         
-        auto parents = get__parent_cnfs();
+        auto parents = get__traversable_parents();
         for(auto parent = parents.begin()
                 ; parent != parents.end()
                 ; parent++){
-            (*parent)->report__newly_unsatisfied(state);
+            (*parent).cxx_get<_Satisfaction_Listener>()->report__newly_unsatisfied(state);
         }
     }
 }
@@ -308,37 +291,15 @@ const Literal& Disjunctive_Clause::get__literal(int i) const
     return *tmp[i];
 }
 
-const std::vector< Literal* >& Disjunctive_Clause::get__literals(void) const
+const List__Literals& Disjunctive_Clause::get__literals(void) const
 {
-    return std::tr1::get<0>(contents());
+    return std::tr1::get<2>(contents());
 }
 
-const Conjunctive_Normal_Form_Formula& Disjunctive_Clause::get__parent_cnf(int i) const
+List__Literals& Disjunctive_Clause::get__literals(void)
 {
-    auto tmp = get__parent_cnfs();
-    return *dynamic_cast<const Conjunctive_Normal_Form_Formula*>(tmp[i]);
+    return std::tr1::get<2>(_contents());
 }
-            
-const std::vector< Satisfaction_Listener* >&
-Disjunctive_Clause::get__parent_cnfs() const
-{
-    auto tmp = std::tr1::get<1>(contents());
-    return *tmp;
-}
-
-Conjunctive_Normal_Form_Formula& Disjunctive_Clause::get__parent_cnf(int i) 
-{
-    auto tmp = get__parent_cnfs();
-    return *dynamic_cast< Conjunctive_Normal_Form_Formula*>(tmp[i]);
-}
-
-std::vector< Satisfaction_Listener* >&
-Disjunctive_Clause::get__parent_cnfs() 
-{
-    auto tmp = std::tr1::get<1>(contents());
-    return *tmp;
-}
-
 
 
 uint Conjunctive_Normal_Form_Formula::get__number_of_satisfied_clauses(State& state) const
@@ -354,11 +315,11 @@ void Conjunctive_Normal_Form_Formula::report__newly_satisfied_clause(State& stat
     if(get__disjunctive_clauses().size() == get__number_of_satisfied_clauses(state)){
         set__satisfied(state);
         
-        auto parents = get__listeners();
+        auto parents = get__traversable_parents();
         for(auto parent = parents.begin()
                 ; parent != parents.end()
                 ; parent++){
-            (*parent)->report__newly_satisfied(state);
+            (*parent).cxx_get<_Satisfaction_Listener>()->report__newly_satisfied(state);
         }
     }   
 }
@@ -370,20 +331,20 @@ void Conjunctive_Normal_Form_Formula::report__newly_unsatisfied_clause(State& st
     if(is_satisfied(state)){
         set__unsatisfied(state);
         
-        auto parents = get__listeners();
+        auto parents = get__traversable_parents();
         for(auto parent = parents.begin()
                 ; parent != parents.end()
                 ; parent++){
-            (*parent)->report__newly_unsatisfied(state);
+            (*parent).cxx_get<_Satisfaction_Listener>()->report__newly_unsatisfied(state);
         }
     }
 }
 
 
 
-const std::vector<Disjunctive_Clause*>& Conjunctive_Normal_Form_Formula::get__disjunctive_clauses() const
+const List__Disjunctive_Clause& Conjunctive_Normal_Form_Formula::get__disjunctive_clauses() const
 {
-    return std::tr1::get<0>(contents());
+    return std::tr1::get<2>(contents());
 }
 
 const Disjunctive_Clause&
@@ -391,30 +352,5 @@ Conjunctive_Normal_Form_Formula::get__disjunctive_clause(int i) const
 {
     auto tmp = get__disjunctive_clauses();
 
-    return *dynamic_cast<const Disjunctive_Clause*>(tmp[i]);
-}
-
-
-const Satisfaction_Listener& Conjunctive_Normal_Form_Formula::get__listener(int i) const
-{
-    auto tmp = get__listeners();
-
-    return *dynamic_cast<const Satisfaction_Listener*>(tmp[i]);
-}
-
-const std::vector< Satisfaction_Listener* >& Conjunctive_Normal_Form_Formula::get__listeners() const
-{
-    return *std::tr1::get<1>(contents());
-}
-
-Satisfaction_Listener& Conjunctive_Normal_Form_Formula::get__listener(int i)
-{
-    auto tmp = get__listeners();
-
-    return *dynamic_cast< Satisfaction_Listener*>(tmp[i]);
-}
-
-std::vector< Satisfaction_Listener* >& Conjunctive_Normal_Form_Formula::get__listeners()
-{
-    return *std::tr1::get<1>(contents());
+    return *tmp[i].cxx_get<Disjunctive_Clause>();
 }

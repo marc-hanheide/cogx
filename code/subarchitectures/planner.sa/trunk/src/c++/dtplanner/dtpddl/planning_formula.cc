@@ -36,7 +36,8 @@ using namespace Planning::Formula;
 using namespace std;
 
       
-std::ostream& Planning::Formula::Printing::operator<<(std::ostream&o, const std::tr1::tuple<CXX__deref__shared_ptr<basic_type>>& _bt)
+std::ostream& Planning::Formula::Printing::operator<<(std::ostream&o,
+                                                      const std::tr1::tuple<Subformula>& _bt)
 {
     auto bt = std::tr1::get<0>(_bt);
     return std::operator<<(o, bt);
@@ -86,12 +87,73 @@ PRINTING_IMPLEMENTATION("or", Disjunction);
 PRINTING_IMPLEMENTATION("not", Negation);
 
 
-const Subformula Negation::get__subformula() const
+
+const Planning::Variable& Forall::get__variable() const
 {
     return tr1::get<0>(contents());
 }
 
-Subformula Negation::get__subformula()
+Planning::Variable Forall::get__variable()
+{
+    return tr1::get<0>(contents());
+}
+
+const Planning::Type& Forall::get__variable_type() const
+{
+    return tr1::get<1>(contents());
+}
+Planning::Type Forall::get__variable_type()
+{
+    return tr1::get<1>(contents());
+}
+
+
+const Planning::Variable& Exists::get__variable() const
+{
+    return tr1::get<0>(contents());
+}
+Planning::Variable Exists::get__variable()
+{
+    return tr1::get<0>(contents());
+}
+
+const Planning::Type& Exists::get__variable_type() const
+{
+    return tr1::get<1>(contents());
+}
+
+Planning::Type Exists::get__variable_type()
+{
+    return tr1::get<1>(contents());
+}
+
+const Subformula& Exists::get__subformula() const
+{
+    return tr1::get<2>(contents());
+}
+
+Subformula Exists::get__subformula()
+{
+    return tr1::get<2>(contents());
+}
+
+const Subformula& Forall::get__subformula() const
+{
+    return tr1::get<2>(contents());
+}
+
+Subformula Forall::get__subformula()
+{
+    return tr1::get<2>(contents());
+}
+
+
+Subformula Negation::get__subformula() 
+{
+    return tr1::get<0>(contents());
+}
+
+const Subformula& Negation::get__subformula() const
 {
     return tr1::get<0>(contents());
 }

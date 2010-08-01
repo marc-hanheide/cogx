@@ -100,7 +100,13 @@ namespace Planning
         literal,
         disjunctive_clause,
         conjunctive_normal_form_formula,
-        ground__action// ,      /* PDDL "action" -- e.g., ground operator symbol.*/
+        ground__action,      /* PDDL "action" -- e.g., ground operator symbol.*/
+        /* ------------------------ State Transformations and actions ------------------------ */
+        /* ------------------------ State Transformations and actions ------------------------ */
+        /* ------------------------ State Transformations and actions ------------------------ */
+        /* ------------------------ State Transformations and actions ------------------------ */
+        /* ------------------------ State Transformations and actions ------------------------ */
+        state_transformation
 //         int_valued_function, /* PDDL integer valued function symbol --
 //                               * e.g. keyword "total-cost" for
 //                               * propositional planning problems with

@@ -82,7 +82,7 @@ void Domain_Data::add__action_effect()
 void Domain_Data::add__action()
 {
     if(!got__action_effect){
-        NEW_object_referenced_WRAPPED_deref_POINTER
+        NEW_object_referenced_WRAPPED_deref_visitable_POINTER
             (Planning::Formula::Vacuous
              , tmp
              , static_cast<void*>(0));
@@ -92,7 +92,7 @@ void Domain_Data::add__action()
     
     if(!got__action_precondition){
         
-        NEW_object_referenced_WRAPPED_deref_POINTER
+        NEW_object_referenced_WRAPPED_deref_visitable_POINTER
             (Planning::Formula::Vacuous
              , tmp
              , static_cast<void*>(0));

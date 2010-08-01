@@ -101,7 +101,6 @@ Usual suspects (C++) BOOST
 #include<boost/functional/hash.hpp>
 /*---------------------------------*/
 
-
 /* Sometimes you need a class.. but don't really need a class. */
 class NA
 {};

@@ -35,6 +35,37 @@
 using std::ostream;
 
 
+void basic_type::visit(Visitor<basic_type>& visitor)
+{
+    visitor.c_pointer__accept(this);
+}
+
+void basic_type::visit(Visitor<basic_type>& visitor, CXX__PTR_ANNOTATION(basic_type)& input)
+{
+    QUERY_WARNING(input.get() != this,
+                  "Unexpected use of visitor interface.");
+
+    visitor.cxx_pointer__accept(input);
+}
+
+void basic_type::visit(Visitor<basic_type>& visitor, CXX__deref__shared_ptr<basic_type>& input)
+{
+    QUERY_WARNING(input.get() != this,
+                  "Unexpected use of visitor interface.");
+    
+    visitor.cxx_deref_pointer__accept(input);
+}
+
+void basic_type::visit(Visitor<basic_type>& visitor, CXX__deref__shared_ptr__visitable<basic_type>& input)
+{
+    QUERY_WARNING(input.get() != this,
+                  "Unexpected use of visitor interface.");
+    
+    visitor.cxx_deref_pointer_visitable__accept(input);
+}
+
+
+
 basic_type::Runtime_Thread basic_type::get__runtime_Thread() const
 {
     return runtime_Thread;

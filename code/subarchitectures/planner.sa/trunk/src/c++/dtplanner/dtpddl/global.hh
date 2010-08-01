@@ -236,6 +236,33 @@ namespace std
 }
 
 
+
+/* For a hashed collection of pointers -- where hashes are to be derived
+ * from the elements pointed to.*/
+template<typename T> 
+struct deref_hash {
+    inline std::size_t operator()(const T* t) const
+    {
+	VERBOSER(12, "Hash is :: "<<hasher(*t)<<std::endl);
+	return hasher(*t);
+    }
+private:
+    typedef boost::hash<T> Hasher;
+    Hasher hasher;
+    //typename HASH_BASE::hash<T> hasher;
+};
+
+/*Adaptable binary predicate along the lines of \class{std::equal_to}
+ *only this dereferences its arguments that are forced to be
+ *pointers.*/
+template<typename T>
+struct deref_equal_to
+{
+public:
+    bool operator()(const T* t1, const T* t2) const { return *t1 == *t2;};
+};
+
+
 class Are_Doubles_Close
 {
 public:
