@@ -4,33 +4,54 @@
 include_directories(.)
 include_directories(./pegtl-0.30/include)
 
-set(dtpddl_source 
-  Command_Line_Arguments.cc
-  dtp_pddl.cc
-  dtp_pddl_parsing_actions.cc
-  dtp_pddl_parsing_actions_domain.cc
-  dtp_pddl_parsing_actions_problem.cc
-  dtp_pddl_parsing_data.cc
-  dtp_pddl_parsing_data_constants.cc
-  dtp_pddl_parsing_data_domain__actions.cc
-  dtp_pddl_parsing_data_domain.cc
-  dtp_pddl_parsing_data_domain__observations.cc
-  dtp_pddl_parsing_data_domain__streaming.cc
-  dtp_pddl_parsing_data_formula.cc
-  dtp_pddl_parsing_data_problem.cc
-  dtp_pddl_parsing_data_problem__streaming.cc
-  dtp_pddl_parsing_data_types.cc
-  dtp_pddl_parsing_interface.cc
-  dtp_pddl_parsing_interface_domain.cc
-  dtp_pddl_parsing_interface_problem.cc
-  global.cc
-  planning_action_schema.cc
-  planning_derived_predicate.cc
-  planning_formula.cc
-  planning_observation_schema.cc
-  planning_symbols.cc
-  stl__typed_thing.cc
-  turnstyle.cc)
+set(dtpddl_source
+action_executability__state.cc
+assignment_applicator.cc
+basic_action.cc
+boolean__satisfaction_status_management.cc
+boolean_state.cc
+cnf__state.cc
+Command_Line_Arguments.cc
+dtp_pddl.cc
+dtp_pddl_parsing_actions.cc
+dtp_pddl_parsing_actions_domain.cc
+dtp_pddl_parsing_actions_problem.cc
+dtp_pddl_parsing_data.cc
+dtp_pddl_parsing_data_constants.cc
+dtp_pddl_parsing_data_domain__actions.cc
+dtp_pddl_parsing_data_domain.cc
+dtp_pddl_parsing_data_domain__observations.cc
+dtp_pddl_parsing_data_domain__streaming.cc
+dtp_pddl_parsing_data_formula.cc
+dtp_pddl_parsing_data_problem.cc
+dtp_pddl_parsing_data_problem__streaming.cc
+dtp_pddl_parsing_data_types.cc
+dtp_pddl_parsing_interface.cc
+dtp_pddl_parsing_interface_domain.cc
+dtp_pddl_parsing_interface_problem.cc
+global.cc
+integer_state.cc
+markov_decision_process_state.cc
+partially_observable_markov_decision_process_state.cc
+planning_action_schema.cc
+planning_cnf_to_state_cnf.cc
+planning_derived_predicate.cc
+planning_formula.cc
+planning_formula_to_cnf.cc
+planning_formula_to_nnf.cc
+planning_formula_to_problem_formula.cc
+planning_formula_to_variable_ordering.cc
+planning_observation_schema.cc
+planning_state.cc
+planning_symbols.cc
+problem_grounding.cc
+solver.cc
+state_formula.cc
+stl__deref_tools.cc
+stl__modifiers.cc
+stl__typed_thing.cc
+turnstyle.cc
+unsigned_integer__status_management.cc)
 
 add_definitions(-std=c++0x)
 
