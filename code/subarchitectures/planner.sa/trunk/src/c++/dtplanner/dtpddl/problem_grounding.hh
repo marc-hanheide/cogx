@@ -62,6 +62,11 @@ namespace Planning
         void ground_derived_perceptions();
 
     private:
+        /* All the state formula associated with the ground problem
+         * instance (see \member{press_ground_action}).*/
+        State_Formula::Literals literals;
+        State_Formula::Disjunctive_Clauses disjunctive_Clauses;
+        State_Formula::Conjunctive_Normal_Form_Formulae conjunctive_Normal_Form_Formulae;
         
         /* A tool to apply an assignment to variables to a CNF formula. */
         CNF_Assignment_Applicator assignment_Applicator;

@@ -41,6 +41,8 @@
 
 #include "planning_formula_to_problem_formula.hh"
 #include "planning_formula_to_variable_ordering.hh"
+#include "planning_cnf_to_state_cnf.hh"
+
 
 
 /* Functionality for simplifying CNF formula. */
@@ -321,9 +323,15 @@ press_ground_action(const Action_Name& action_name,
                     const Argument_List& action_variables
                     )
 {
-
-    // HERE HERE HERE
-//     Planning_CNF__to__State_CNF planning_CNF__to__State_CNF;
+    /*HERE -- TURN CNF into formula with problem grounding references.*/
+    
+    Planning_CNF__to__State_CNF
+        planning_CNF__to__State_CNF
+        (reinterpret_cast<basic_type::Runtime_Thread>(this)
+         , literals
+         , disjunctive_Clauses
+         , conjunctive_Normal_Form_Formulae);
+    
     
 //     assignment_Applicator(__effect_formula, assignment_detail);
     

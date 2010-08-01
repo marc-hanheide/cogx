@@ -80,7 +80,6 @@ void Solver::preprocess()
 void Solver::domain_constants__to__problem_objects()
 {
     VERBOSER(3001, "Adding domain constants to the problem description.");
-        {char ch; std::cin>>ch;}
     
 //     const Constants_Data& problem__Constants_Data = problem_Data;
     const Constants_Data& domain__Constants_Data = *domain_Data;
@@ -94,15 +93,15 @@ void Solver::domain_constants__to__problem_objects()
         
         VERBOSER(3001, "Adding domain constant :: "<<constant<<std::endl
                  <<"As problem object. "<<std::endl);
-        {char ch; std::cin>>ch;}
         
         problem_Data
             .add__constant(constant.get__name());
         
         auto types = domain__Constants_Data.get__constantx_types(constant);
 
-        QUERY_UNRECOVERABLE_ERROR(!types.size(),
-                                  "No types were specified for domain constant :: "<<constant<<std::endl);
+        QUERY_UNRECOVERABLE_ERROR
+            (!types.size(),
+             "No types were specified for domain constant :: "<<constant<<std::endl);
         
         for(auto type = types.begin()
                 ; type != types.end()

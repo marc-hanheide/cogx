@@ -62,18 +62,26 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
     switch(input->get__type_name()){
         case enum_types::state_proposition:
         {
-            auto proposition = input.cxx_get<Planning::Formula::State_Predicate>();
+            assert(input.test_cast<Planning::Formula::State_Proposition>());
+            
+            auto _proposition = input.cxx_get<Planning::Formula::State_Proposition>();
+            
+            NEW_referenced_WRAPPED_deref_POINTER
+                (runtime_Thread,
+                 Planning::Formula::State_Proposition,
+                 proposition,
+                 _proposition->get__name(),
+                 _proposition->get__arguments());
+
             auto id = proposition->get__id();
             
             NEW_referenced_WRAPPED_deref_POINTER
                 (runtime_Thread,
                  State_Formula::Literal,
                  _literal,
-                 State_Formula::List__Listeners(),
-                 State_Formula::Listeners(),
                  id,
                  processing_negative);
-
+            
             auto literal = CXX__deref__shared_ptr<State_Formula::Literal>(_literal);
             auto _literal__pointer = problem__literals.find(literal);
             
@@ -83,8 +91,7 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
             }
             auto literal__pointer = *_literal__pointer;
             
-            if(clause__as_set.find(literal__pointer) == clause__as_set.end())return;
-
+            if(clause__as_set.find(literal__pointer) != clause__as_set.end())return;
             
             clause.push_back(literal__pointer);
             clause__as_set.insert(literal__pointer);
@@ -92,6 +99,7 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
         break;
         case enum_types::negation:
         {
+            assert(input.test_cast<Planning::Formula::Negation>());
             processing_negative = true;
             deref_VISITATION(Planning::Formula::Negation, input, get__subformula());
             processing_negative = false;
@@ -99,13 +107,55 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
         break;
         case enum_types::conjunction:
         {
-            deref_VISITATIONS(Planning::Formula::Disjunction, input, get__subformulae());
+            assert(input.test_cast<Planning::Formula::Conjunction>());
+            deref_VISITATIONS(Planning::Formula::Conjunction, input, get__subformulae());
 
+            QUERY_UNRECOVERABLE_ERROR(!disjunctions.size(), "Got an empty formula while processnig :: "<<input);
+
+            NEW_referenced_WRAPPED_deref_POINTER
+                (runtime_Thread,
+                 State_Formula::Conjunctive_Normal_Form_Formula,
+                 _conjunct,
+                 disjunctions);
+
+            
+
+            auto formula = CXX__deref__shared_ptr<State_Formula::Conjunctive_Normal_Form_Formula>(_conjunct);
+            auto _problem__pointer = problem__cnfs.find(formula);
+            
+
+            /* If this CNF is already in the ground instance. */
+            if(_problem__pointer != problem__cnfs.end()){
+                disjunctions = State_Formula::List__Disjunctive_Clause();
+                disjunctions__as_set = State_Formula::Disjunctive_Clauses();
+                return;
+            }
+            
+
+            
+            if(_problem__pointer == problem__cnfs.end()){
+                problem__cnfs.insert(formula);
+                _problem__pointer = problem__cnfs.find(formula);
+            }
+            auto problem__pointer = *_problem__pointer;
+
+            
+            auto clauses = problem__pointer->get__disjunctive_clauses();
+            for(auto clause = clauses.begin()
+                    ; clause != clauses.end()
+                    ;  clause++){
+                (*clause).cxx_get<Disjunctive_Clause>()
+                    ->add__parent(problem__pointer.cxx_get<basic_type>());
+            }
+            
+            disjunctions = State_Formula::List__Disjunctive_Clause();
+            disjunctions__as_set = State_Formula::Disjunctive_Clauses();
             
         }
         break;
         case enum_types::disjunction:
         {
+            assert(input.test_cast<Planning::Formula::Disjunction>());
             deref_VISITATIONS(Planning::Formula::Disjunction, input, get__subformulae());
 
             QUERY_UNRECOVERABLE_ERROR(!clause.size(), "Got an empty clause while processnig :: "<<input);
@@ -114,36 +164,33 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
                 (runtime_Thread,
                  State_Formula::Disjunctive_Clause,
                  _disjunct,
-                 State_Formula::List__Listeners(),
-                 State_Formula::Listeners(),
                  clause);
 
             auto disjunct = CXX__deref__shared_ptr<State_Formula::Disjunctive_Clause>(_disjunct);
             auto _clause__pointer = problem__clauses.find(disjunct);
             
-            if(_clause__pointer == problem__clauses.end()){
-                problem__clauses.insert(disjunct);
-                _clause__pointer = problem__clauses.find(disjunct);
+            if(_clause__pointer != problem__clauses.end()){
+                clause = List__Literals();
+                clause__as_set = Literals();
+                return;   
             }
+            
+            problem__clauses.insert(disjunct);
+            _clause__pointer = problem__clauses.find(disjunct);
             auto clause__pointer = *_clause__pointer;
 
             /* If it is already in the problem. */
-            if(disjunctions__as_set.find(clause__pointer) == disjunctions__as_set.end())return;
+            if(disjunctions__as_set.find(clause__pointer) != disjunctions__as_set.end()){
+                clause = List__Literals();
+                clause__as_set = Literals();
+                return;
+            }
             
             List__Literals& literals = clause__pointer->get__literals();
             for(auto literal = literals.begin()
                     ; literal != literals.end()
                     ; literal ++){
-
-                /* HERE HERE HERE HERE HERE HERE*/
-                /* HERE HERE HERE HERE HERE HERE*/
-                /* HERE HERE HERE HERE HERE HERE*/
-                /* HERE HERE HERE HERE HERE HERE*/
-                /* HERE HERE HERE HERE HERE HERE*/
-                /* HERE HERE HERE HERE HERE HERE*/
-//                 (*literal)->get__parent_clauses()
-//                     .push_back(static_cast<int>(clause__pointer
-//                                                 .cxx_get<Satisfaction_Listener>().get()));
+                (*literal).cxx_get<Literal>()->add__parent(clause__pointer.cxx_get<basic_type>());
             }
             
             disjunctions.push_back(clause__pointer);
@@ -157,6 +204,5 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
             UNRECOVERABLE_ERROR("Non-CNF passed.");
             break;
     }
-    
 }
 
