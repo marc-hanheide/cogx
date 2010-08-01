@@ -32,62 +32,59 @@
  */
 
 
-
-#include "planning_state.hh"
+#include "cnf__state.hh"
 
 using namespace Planning;
 
 
-
-uint State::count__compulsory_generative_transformation() const
+const Unsigned_Integer__Satisfaction_Status_Management& CNF__State::get__cnfs__count_status() const
 {
-    return applicable_compulsory_generative_transformations.size();
+    return cnfs__count_status;
 }
 
-uint State::count__compulsory_transformation() const
+Unsigned_Integer__Satisfaction_Status_Management& CNF__State::get__cnfs__count_status()
 {
-    return applicable_compulsory_transformations.size();
+    return cnfs__count_status;
 }
 
-
-State_Transformation* State::pop__compulsory_generative_transformation()
+const Boolean__Satisfaction_Status_Management& CNF__State::get__cnfs__satisfaction_status() const
 {
-    auto result = applicable_compulsory_generative_transformations.top();
-    applicable_compulsory_generative_transformations.pop();
-    return result;
+    return cnfs__satisfaction_status;
 }
 
-State_Transformation* State::pop__compulsory_transformation()
+Boolean__Satisfaction_Status_Management& CNF__State::get__cnfs__satisfaction_status()
 {
-    auto result = applicable_compulsory_transformations.top();
-    applicable_compulsory_transformations.pop();
-    return result;
+    return cnfs__satisfaction_status;
 }
 
 
-void State::add__compulsory_generative_transformation(State_Transformation*state_Transformation)
+const Unsigned_Integer__Satisfaction_Status_Management& CNF__State::get__clauses__count_status() const
 {
-    applicable_compulsory_generative_transformations.push(state_Transformation);
+    return clauses__count_status;
 }
 
-void State::add__optional_transformation(State_Transformation*state_Transformation)
+Unsigned_Integer__Satisfaction_Status_Management& CNF__State::get__clauses__count_status()
 {
-    
-    applicable_optional_transformations.insert(state_Transformation);
+    return clauses__count_status;
 }
 
-void State::remove__optional_transformation(State_Transformation*state_Transformation)
+const Boolean__Satisfaction_Status_Management& CNF__State::get__clauses__satisfaction_status() const
 {
-    applicable_optional_transformations.erase(state_Transformation);
+    return clauses__satisfaction_status;
 }
 
-void State::add__compulsory_transformation(State_Transformation*state_Transformation)
+Boolean__Satisfaction_Status_Management& CNF__State::get__clauses__satisfaction_status()
 {
-    applicable_compulsory_transformations.push(state_Transformation);
+    return clauses__satisfaction_status;
 }
 
-std::set<State_Transformation*>& State::get__optional_transformations()
+
+const Boolean__Satisfaction_Status_Management& CNF__State::get__literals__satisfaction_status() const
 {
-    return applicable_optional_transformations;
+    return literals__satisfaction_status;
 }
 
+Boolean__Satisfaction_Status_Management& CNF__State::get__literals__satisfaction_status()
+{
+    return literals__satisfaction_status;
+}

@@ -100,3 +100,10 @@ namespace Planning
 
 
 #endif
+
+/* Capable generous men do not create victims, the nurture victims. 
+ *
+ * -- Julian Assange, being interviewed by Chris Anderson in a TED
+ * session titled "Why the world needs WikiLeaks", July 26 2010.
+ */
+

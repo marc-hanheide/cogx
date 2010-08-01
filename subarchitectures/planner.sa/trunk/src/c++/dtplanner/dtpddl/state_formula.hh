@@ -36,6 +36,7 @@
 #define STATE_FORMULA_HH
 
 #include "planning_types_enum.hh"
+#include "planning_formula.hh"
 #include "stl__typed_thing.hh"
 
 
@@ -48,28 +49,46 @@ namespace Planning
         class Literal;
         class Disjunctive_Clause;
         class Conjunctive_Normal_Form_Formula;
-        
-        class Satisfaction_Listener
+
+        typedef Formula::Subformula Satisfaction_Listener__Pointer;
+        typedef std::vector<Satisfaction_Listener__Pointer> List__Listeners;
+        typedef std::set<Satisfaction_Listener__Pointer> Listeners;
+
+        class _Satisfaction_Listener
         {
         public:
+            virtual ~_Satisfaction_Listener(){};
             virtual void report__newly_satisfied(State&) = 0;
             virtual void report__newly_unsatisfied(State&) = 0;
         };
         
+        template<int type_name, typename... T>
+        class Satisfaction_Listener : public type_wrapper<type_name, List__Listeners, Listeners, T...>,
+                                      public _Satisfaction_Listener
+        {
+        public:
+            typedef type_wrapper<type_name, List__Listeners, Listeners, T...> Parent;
+            
+
+            const List__Listeners& get__traversable_parents() const {return std::tr1::get<0>(Parent::contents());};
+            const Listeners& get__searchable_parents() const {return std::tr1::get<1>(Parent::contents());};
+            
+//             List__Listeners& get__traversable_parents() {return std::tr1::get<0>(Parent::contents());};
+//             Listeners& get__searchable_parents() {return std::tr1::get<1>(Parent::contents());};
+            
+        };
+
+
+        
         class Literal
-            : public type_wrapper<enum_types::literal /* Type identifier.*/
+            : public Satisfaction_Listener<enum_types::literal /* Type identifier.*/
                                   , uint /* Boolean variable identifier.*/
-                                  , bool /* Sign of literal (true is positive, false
-                                          * is negative).*/
-                                  , std::vector< Satisfaction_Listener* >* >
+                                  , bool >
         {
         public:
 
-            typedef type_wrapper<enum_types::literal /* Type identifier.*/
-                                  , uint /* Boolean variable identifier.*/
-                                  , bool /* Sign of literal (true is positive, false
-                                          * is negative).*/
-                                  , std::vector< Satisfaction_Listener* >* > Parent;
+            void report__newly_satisfied(State&);
+            void report__newly_unsatisfied(State&);
             
             void set__satisfied(State&);
             void set__unsatisfied(State&);
@@ -91,27 +110,18 @@ namespace Planning
             uint get__variable() const;
 
             /* Sign of this literal (true is positive, false is negative). */
-            bool get__sign() const;
-
-            const Disjunctive_Clause& get__parent_clause(uint i ) const;
-            const std::vector< Satisfaction_Listener* >& get__parent_clauses() const;
-            Disjunctive_Clause& get__parent_clause(uint i );
-            std::vector< Satisfaction_Listener* >& get__parent_clauses();
-            
+            bool get__sign() const;                   
         };
-    
-        class Disjunctive_Clause
-            : public type_wrapper<enum_types::disjunctive_clause
-                                  , std::vector< Literal* >
-                                  , std::vector< Satisfaction_Listener*>* >,
-              public Satisfaction_Listener
-        {
-        public:
 
-            typedef type_wrapper<enum_types::disjunctive_clause
-                                  , std::vector< Literal* >
-                                  , std::vector< Satisfaction_Listener*>* > Parent;
-            
+        typedef CXX__deref__shared_ptr<State_Formula::Literal> Literal__Pointer; 
+        typedef std::set<Literal__Pointer > Literals;       
+        typedef std::vector<Literal__Pointer > List__Literals;       
+        
+        class Disjunctive_Clause
+            : public Satisfaction_Listener<enum_types::disjunctive_clause
+                                           , List__Literals>
+        {
+        public:            
             
             void report__newly_satisfied(State&);
             void report__newly_unsatisfied(State&);
@@ -139,33 +149,20 @@ namespace Planning
             const Literal& get__literal(int i) const;
             
             /*Get the literals in the clause.*/
-            const std::vector< Literal* >& get__literals() const;
-
-            
-            /*Get the \argument{i}th CNF that this clause occurs in.*/
-            const Conjunctive_Normal_Form_Formula& get__parent_cnf(int i) const;
-            
-            /*Get the CNFs that this clause occurs in.*/
-            const std::vector< Satisfaction_Listener* >& get__parent_cnfs() const;
-
-            
-            /*Get the \argument{i}th CNF that this clause occurs in.*/
-            Conjunctive_Normal_Form_Formula& get__parent_cnf(int i);
-            
-            /*Get the CNFs that this clause occurs in.*/
-            std::vector< Satisfaction_Listener* >& get__parent_cnfs();
+            const List__Literals& get__literals() const;
+            List__Literals& get__literals();
         };
 
+        
+        typedef CXX__deref__shared_ptr<Disjunctive_Clause> Disjunctive_Clause__Pointer; 
+        typedef std::set<Disjunctive_Clause__Pointer > Disjunctive_Clauses;       
+        typedef std::vector<Disjunctive_Clause__Pointer > List__Disjunctive_Clause;     
+        
         class Conjunctive_Normal_Form_Formula
-            : public type_wrapper<enum_types::conjunctive_normal_form_formula
-                                  , std::vector< Disjunctive_Clause* >
-                                  , std::vector< Satisfaction_Listener* >* >,
-              public Satisfaction_Listener
+            : public Satisfaction_Listener<enum_types::conjunctive_normal_form_formula
+                                  , List__Disjunctive_Clause >
         {
         public:
-            typedef  type_wrapper<enum_types::conjunctive_normal_form_formula
-                                  , std::vector< Disjunctive_Clause* >
-                                  , std::vector< Satisfaction_Listener* >* > Parent;
             
             void report__newly_satisfied(State&);
             void report__newly_unsatisfied(State&);
@@ -194,14 +191,13 @@ namespace Planning
             const Disjunctive_Clause& get__disjunctive_clause(int i) const;
             
             /*Get the clauses in the formula.*/
-            const std::vector<Disjunctive_Clause*>& get__disjunctive_clauses() const;
-
-            
-            const Satisfaction_Listener& get__listener(int i) const;
-            const std::vector< Satisfaction_Listener* >& get__listeners() const;
-            Satisfaction_Listener& get__listener(int i);
-            std::vector< Satisfaction_Listener* >& get__listeners();
+            const List__Disjunctive_Clause& get__disjunctive_clauses() const;
         };
+        
+        typedef CXX__deref__shared_ptr<Conjunctive_Normal_Form_Formula> Conjunctive_Normal_Form_Formula__Pointer; 
+        typedef std::set<Conjunctive_Normal_Form_Formula__Pointer > Conjunctive_Normal_Form_Formulae;       
+        typedef std::vector< Conjunctive_Normal_Form_Formula__Pointer> List__Conjunctive_Normal_Form_Formula;     
+        
     }
 }
 

@@ -63,7 +63,7 @@ Planning_Formula__to__CNF::Subformula Planning_Formula__to__CNF::operator()(Conj
     }
 
     
-    NEW_referenced_WRAPPED_deref_POINTER
+    NEW_referenced_WRAPPED_deref_visitable_POINTER
         (new_subformulae.back()->get__runtime_Thread()
          , Planning::Formula::Conjunction
          , tmp
@@ -84,7 +84,7 @@ Planning_Formula__to__CNF::distributive_law(Subformulae& conjunct,
         VERBOSER(3000, "Came to the end, adding disjunction :: "<<disjunct<<std::endl);
         assert(disjunct.size());
         
-        NEW_referenced_WRAPPED_deref_POINTER
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
             (disjunct.back()->get__runtime_Thread()
              , Planning::Formula::Disjunction
              , disjunctive_formula
@@ -178,7 +178,7 @@ Planning_Formula__to__CNF::operator()(Disjunct disjunction)
 
     assert(result.size());
     
-    NEW_referenced_WRAPPED_deref_POINTER
+    NEW_referenced_WRAPPED_deref_visitable_POINTER
         (result.back()->get__runtime_Thread()
          , Planning::Formula::Conjunction
          , conjunctive_formula
@@ -241,14 +241,14 @@ Planning_Formula__to__CNF::operator()(Subformula _input, bool computed__nnf_inpu
     /*The result of CNF conversion is always a conjunct.*/
     Subformulae _new_subformulae;
     _new_subformulae.push_back(input);
-    NEW_referenced_WRAPPED_deref_POINTER
+    NEW_referenced_WRAPPED_deref_visitable_POINTER
         (input->get__runtime_Thread()
          , Planning::Formula::Disjunction
          , new_disjunct
          , _new_subformulae);
     Subformulae new_subformulae;
     new_subformulae.push_back(new_disjunct);
-    NEW_referenced_WRAPPED_deref_POINTER
+    NEW_referenced_WRAPPED_deref_visitable_POINTER
         (input->get__runtime_Thread()
          , Planning::Formula::Conjunction
          , tmp

@@ -46,12 +46,16 @@ namespace Planning
     public:
         Markov_Decision_Process_State(uint propositions_count = 0, uint function_count = 0);
         Markov_Decision_Process_State(const Markov_Decision_Process_State&);
-
         Markov_Decision_Process_State& operator=(const Markov_Decision_Process_State&);
+
         
 	bool operator==(const Markov_Decision_Process_State& state) const;
 	bool operator<(const Markov_Decision_Process_State& state) const;
 	inline std::size_t hash_value() const;
+
+        /* (see \member{boolean_State}) */
+        void flip(uint);
+        bool is_true(uint) const;
         
     protected:
         /* For each \LHS{action}, we have the \RHS{probability} that

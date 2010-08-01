@@ -93,10 +93,19 @@ namespace std
         OBJECT_NAME = CXX__deref__shared_ptr<basic_type>(_OBJECT_NAME); \
     }                                                                   \
 
+#define NEW_WRAPPED_deref_visitable_POINTER(TYPE_NAME, OBJECT_NAME, CONTENTS...) \
+    CXX__deref__shared_ptr__visitable<basic_type>                       \
+    OBJECT_NAME(CXX__PTR_ANNOTATION(basic_type)(                        \
+                    static_cast<TYPE_NAME*>(0)));                       \
+    {                                                                   \
+        NEW_WRAPPED_POINTER(TYPE_NAME, _OBJECT_NAME, CONTENTS);         \
+        OBJECT_NAME = CXX__deref__shared_ptr__visitable<basic_type>(_OBJECT_NAME); \
+    }                                                                   \
+
 #define NEW_referenced_WRAPPED(SIZE_T, TYPE_NAME, OBJECT_NAME, CONTENTS...) \
     TYPE_NAME OBJECT_NAME = TYPE_NAME();                                \
     OBJECT_NAME.set__runtime_Thread(SIZE_T);                            \
-    OBJECT_NAME.configure(CONTENTS);{}                                  \
+    OBJECT_NAME.configure(CONTENTS);                                    \
     
 
 #define NEW_referenced_WRAPPED_POINTER(SIZE_T, TYPE_NAME, OBJECT_NAME, CONTENTS...) \
@@ -114,6 +123,15 @@ namespace std
         OBJECT_NAME = CXX__deref__shared_ptr<basic_type>(_OBJECT_NAME);                    \
     }                                                                                      \
 
+#define NEW_referenced_WRAPPED_deref_visitable_POINTER(SIZE_T, TYPE_NAME, OBJECT_NAME, CONTENTS...) \
+    CXX__deref__shared_ptr__visitable<basic_type>                       \
+    OBJECT_NAME(CXX__PTR_ANNOTATION(basic_type)(                        \
+                    static_cast<TYPE_NAME*>(0)));                       \
+    {                                                                   \
+        NEW_referenced_WRAPPED_POINTER(SIZE_T, TYPE_NAME, _OBJECT_NAME, CONTENTS); \
+        OBJECT_NAME = CXX__deref__shared_ptr__visitable<basic_type>(_OBJECT_NAME); \
+    }                                                                   \
+
 
 #define NEW_object_referenced_WRAPPED(TYPE_NAME, OBJECT_NAME, CONTENTS...) \
     assert(sizeof(size_t) == sizeof(void*));                            \
@@ -129,15 +147,30 @@ namespace std
     assert(sizeof(size_t) == sizeof(void*));                            \
     NEW_referenced_WRAPPED_deref_POINTER(this, TYPE_NAME, OBJECT_NAME, CONTENTS) \
 
+#define NEW_object_referenced_WRAPPED_deref_visitable_POINTER(TYPE_NAME, OBJECT_NAME, CONTENTS...) \
+    assert(sizeof(size_t) == sizeof(void*));                            \
+    NEW_referenced_WRAPPED_deref_visitable_POINTER(this, TYPE_NAME, OBJECT_NAME, CONTENTS) \
+
+
+typedef std::size_t ID_TYPE;
 
 class basic_type
 {
 public:
-    typedef std::size_t Runtime_Thread;
+    typedef ID_TYPE Runtime_Thread;
+
     
     basic_type(Runtime_Thread runtime_Thread = 0):runtime_Thread(runtime_Thread){};
 
     virtual ~basic_type(){};
+
+    void visit(Visitor<basic_type>& visitor);
+    void visit(Visitor<basic_type>& visitor,
+               CXX__PTR_ANNOTATION(basic_type)&);
+    void visit(Visitor<basic_type>& visitor,
+               CXX__deref__shared_ptr<basic_type>&);
+    void visit(Visitor<basic_type>& visitor,
+               CXX__deref__shared_ptr__visitable<basic_type>&);
     
     virtual std::ostream& operator<<(std::ostream&) const;
     virtual bool operator<(const basic_type&) const;
@@ -158,7 +191,16 @@ typedef std::vector<CXX__deref__shared_ptr<basic_type>> basic_types__vector;
 
 std::size_t hash_value(const basic_type&);
 
-typedef std::size_t ID_TYPE;
+namespace boost
+{
+    template<typename T>
+    size_t hash_value(const std::tr1::shared_ptr<T>& in)
+    {
+        return 0;
+    }
+}
+
+
 
 template<int type_name, typename... T>
 class type_wrapper : public basic_type

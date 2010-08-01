@@ -411,7 +411,9 @@ namespace Planning
                                         , Effect_Subformulae_With_Parenthesis<ATOMIC_PREDICATE_SYMBOL, ATOMIC_FUNCTION_SYMBOL> >
         {};
             
-        struct State_Effect_Subformulae : Effect_Subformulae<Typeless_Predicate, Typeless_Function> {};//Typeless_Predicate> {};
+        struct State_Effect_Subformulae : seq<  ifapply<success, Stop_Effect_Parsing__Action>
+        , Effect_Subformulae<Typeless_Predicate, Typeless_Function>
+        ,  ifapply<success, Stop_Effect_Parsing__Action> >{};//Typeless_Predicate> {};
     }
 }
 

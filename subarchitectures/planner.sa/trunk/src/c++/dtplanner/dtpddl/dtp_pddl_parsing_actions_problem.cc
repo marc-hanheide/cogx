@@ -65,7 +65,13 @@ namespace Planning
 namespace Planning
 {
     namespace Parsing
-    {        
+    {
+
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Start_Effect_Parsing__Action,
+                                                     report__enter_parsing_effect_context);
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Stop_Effect_Parsing__Action,
+                                                     report__exit_parsing_effect_context);
+        
         problem__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Domain_Name__Action, reset__domain_Data);
 
         

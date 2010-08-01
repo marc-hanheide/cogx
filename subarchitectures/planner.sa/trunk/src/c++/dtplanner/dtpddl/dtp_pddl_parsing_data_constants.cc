@@ -87,11 +87,11 @@ void Constants_Data::add__type_of_constant(const std::string& str)
 
 
 
-const Planning::Constants& Constants_Data::get__constants() const
-{return constants;}
+// const Planning::Constants& Constants_Data::get__constants() const
+// {return constants;}
 
-Planning::Constants Constants_Data::get__constants()
-{return constants;}
+// Planning::Constants Constants_Data::get__constants()
+// {return constants;}
 
 const Planning::Types& Constants_Data::get__constantx_types(const Constant& constant) const
 {

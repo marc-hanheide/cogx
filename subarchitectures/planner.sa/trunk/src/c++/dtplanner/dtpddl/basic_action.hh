@@ -35,56 +35,71 @@
 #define BASIC_ACTION_HH
 
 #include "state_basics.hh"
+#include "planning_formula.hh"
 #include "state_formula.hh"
 
 namespace Planning
 {
-    
-    /* We do not keep "transformation" (i.e., a PDDL action)
-     * preconditions in the transformation, but rather store those
-     * separately as CNF formulae. When a formula is true at some
-     * given state, then \class{Satisfaction_Listener} that are
+    /* We do not keep "transformation" preconditions (i.e., a PDDL
+     * action preconditions) in the transformation, but rather store
+     * those separately as CNF formulae. When a formula is true at
+     * some given state, then \class{Satisfaction_Listener} that are
      * registered with that formula get notified (see
      * \module{state_formula.hh}). */
-    class State_Transformation : public State_Formula::Satisfaction_Listener
+    class State_Transformation :
+        public State_Formula::
+        Satisfaction_Listener<enum_types::state_transformation
+                              , Formula::Action_Proposition
+                              , State_Formula::Conjunctive_Normal_Form_Formula__Pointer
+                              , State_Formula::List__Literals /* effects */
+                              , bool /* compulsory -- whole action */
+                              , double /* Probability that this transformation is applied. */ >
     {
     public:
-        State_Transformation(bool compulsory = false);
-        
-        virtual State& operator()(const State&) = 0;
 
+        /* Should be repeatedly executed until the result is NULL, or
+         * no pending actions are required.
+         *
+         * \argument{predecessor} is the state that transitions to
+         * \argument{successor}. The latter is the state being
+         * generated. \argument{SetOfStatePointers} is the set of
+         * problem states thus far discovered.*/
+        State& operator()(State& predecessor);
+
+
+
+        
         void report__newly_satisfied(State&);
         void report__newly_unsatisfied(State&);
+
+        void set__satisfied(State&);
+        void set__unsatisfied(State&);
+        void flip_satisfaction(State&);
+        bool is_satisfied(const State&) const;
+            
+        void increment__level_of_satisfaction(State&);
+        void decrement__level_of_satisfaction(State&);
+        void set__level_of_satisfaction(uint, State&);
+        uint get__level_of_satisfaction(State&) const;
+
+
+        uint get__number_of_satisfied_conditions(State& state) const;
+
+
+
+
+
         
-        bool is_compulsory() const;
-        void set__compulsory(bool);
-    private:
-        bool compulsory;
+        const Formula::Action_Proposition& get__get_identifier() const;
+        const State_Formula::Conjunctive_Normal_Form_Formula__Pointer& get__precondition() const;
+        const State_Formula::List__Literals& get__effects() const;
+        bool get__compulsory() const;
+        double get__probability() const;
+
+
+        static Are_Doubles_Close are_Doubles_Close;//(1e-9);
+        
     };
-
-    
-    class STRIPS_Action : public State_Transformation
-    {
-    public:
-        State& operator()(const State&);
-        void add__add(uint);
-        void add__delete(uint);
-        
-    protected:
-        std::vector<uint> add_list;
-        std::vector<uint> delete_list;
-    };
-    
-
-//     class Basic_Functional_Action
-//     {
-//     public:
-        
-//     };
-
-//     class Deterministic_Action 
-//     {
-//     };
 }
 
 

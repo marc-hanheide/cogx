@@ -149,6 +149,8 @@ namespace Planning
             }
         };
 
+        DECLARATION__PEGTL_ACTION(Start_Effect_Parsing__Action);
+        DECLARATION__PEGTL_ACTION(Stop_Effect_Parsing__Action);
         DECLARATION__PEGTL_ACTION(Predicate_Name__Action);
         DECLARATION__PEGTL_ACTION(Action_Name__Action);
         DECLARATION__PEGTL_ACTION(Percept_Name__Action);

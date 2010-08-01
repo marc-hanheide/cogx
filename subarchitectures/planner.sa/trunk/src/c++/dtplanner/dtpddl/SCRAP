@@ -1,4 +1,63 @@
 
+
+State_Transformation::State_Transformation(bool compulsory)
+    :compulsory(compulsory)
+{
+}
+
+        
+void State_Transformation::report__newly_satisfied(State& state)
+{
+    if(compulsory){
+        state.add__compulsory_transformation(this); 
+    } else {
+        state.add__optional_transformation(this);
+    }
+}
+
+void State_Transformation::report__newly_unsatisfied(State& state)
+{
+    if(compulsory){
+        state.retract__compulsory_transformation(this); 
+    } else {
+        state.retract__optional_transformation(this);
+    }   
+}
+        
+bool State_Transformation::is__compulsory() const
+{
+    return compulsory;
+}
+
+void State_Transformation::set__compulsory(bool in)
+{
+   compulsory = in; 
+}
+
+
+
+// State& STRIPS_Action::operator()(const State&)
+// {
+//     UNRECOVERABLE_ERROR("unimplemented");
+// }
+
+// void STRIPS_Action::add__add(uint)
+// {
+//     UNRECOVERABLE_ERROR("unimplemented");
+// }
+
+// void STRIPS_Action::add__delete(uint)
+// {
+//     UNRECOVERABLE_ERROR("unimplemented");
+// }
+
+
+
+
+
+
+
+
 // void  Domain_Data::address___derived_Predicates__types_pending()
 // {
 //     if(!derived_Predicates__types_pending.size()) return;

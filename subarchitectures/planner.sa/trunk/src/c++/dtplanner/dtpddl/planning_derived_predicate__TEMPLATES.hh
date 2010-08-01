@@ -85,7 +85,7 @@ namespace Planning
     First_Order_Derived_Symbol<ID_VAL,NAMING_TYPE>::get__variables() const {return std::tr1::get<3>(this->Parent::contents());}
     
     template<int ID_VAL, typename NAMING_TYPE>
-    CXX__deref__shared_ptr<basic_type>
+    Formula::Subformula
     First_Order_Derived_Symbol<ID_VAL,NAMING_TYPE>::get__formula() const {return std::tr1::get<4>(this->Parent::contents());}
     
     template<int ID_VAL, typename NAMING_TYPE>

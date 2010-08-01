@@ -61,12 +61,21 @@ namespace Planning
              * 'precondition' the '=' operator has the semantics of an
              * equality test.  */
             void report__enter_parsing_initial_state();
+
             
             /* Formulae that are subsequently parsed DO NOT have as
              * their subject the initial state (see
              * \member{report__enter_parsing_initial_state}).*/
             void report__exit_parsing_initial_state();
 
+
+            /* Report that we are parsing a formula that describes an operator effect.*/
+            void report__enter_parsing_effect_context();
+            
+            /* Report that we are not parsing a formula that describes an operator effect.*/
+            void report__exit_parsing_effect_context();
+
+            
             void stack__typed_Arguments();
             
             void report__perceptual_function_name(const std::string& str);
@@ -106,14 +115,14 @@ namespace Planning
                 assert(subformulae.find(formula_parsing_level) != subformulae.end());
     
                 if(!got_proposition){
-                    NEW_object_referenced_WRAPPED_deref_POINTER
+                    NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                         (PREDICATE_SYMBOL
                          , atomic_symbol
                          , symbol_name
                          , argument_List);
                     subformulae[formula_parsing_level].push_back(atomic_symbol);
                 } else {
-                    NEW_object_referenced_WRAPPED_deref_POINTER
+                    NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                         (PROPOSITION_SYMBOL
                          , atomic_symbol
                          , symbol_name
@@ -193,6 +202,11 @@ namespace Planning
              * effect.*/
             bool in_delete_effect(const Predicate_Name&) const;
 
+            /* Does an occurrence of symbols
+             * \argument{State_Function_Name} occur in the context of
+             * a modifier? (i.e, assign, decrement, increment, etc.)*/
+            bool is_static_fluent(const Planning::State_Function_Name&) const;
+            
             /* \member{state_propositions__parsed} contains all the
              * propositions that can be true in a starting state. We
              * make the closed-world assumption, and consequently,
@@ -225,6 +239,7 @@ namespace Planning
              */
             bool statically_satisfiable(const Planning::Formula::State_Predicate&) const;
             bool statically_unsatisfiable(const Planning::Formula::State_Predicate&) const;
+
 
 
             
@@ -262,7 +277,10 @@ namespace Planning
 //                                                   const std::map<Variable,  Constants&>& assignment_possibilities) const;
 
             /* Can a ground instance of \argument{State_Predicate} be
-             * equal to \argument{State_Proposition}.*/
+             * equal to \argument{State_Proposition}. Here we assume
+             * that the \argument{State_Predicate} symbol is static,
+             * and therefore can examing the problem starting states
+             * to see what is possible. */
             bool potential_match_via_an_assignment(const Planning::Formula::State_Predicate&,
                                                    const Planning::Formula::State_Proposition&) const;
         private:
@@ -304,6 +322,10 @@ namespace Planning
             const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__added__observational_propositions__parsed() const;
             const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__added__observational_predicates__parsed() const;
             
+            const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >& get__modified_in_effect__state_functions__parsed() const;
+            const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >& get__modified_in_effect__state_ground_functions__parsed() const;
+            const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >& get__modified_in_effect__perceptual_functions__parsed() const;
+            const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >& get__modified_in_effect__perceptual_ground_functions__parsed() const;
         protected:
             
             /* When a formula is being parsed, but before it is
@@ -322,8 +344,8 @@ namespace Planning
 
             /* While parsing we also keep information about what
              * Boolean symbols are "added" and what Boolean symbols
-             * are "deleted" in formula. This makes later detection of
-             * static Boolean symbols simple.*/
+             * are "deleted" in formulae. This makes later detection of
+             * static Boolean symbols possible.*/
             std::map<Planning::Predicate_Name, std::set<ID_TYPE> > deleted__state_propositions__parsed;
             std::map<Planning::Predicate_Name, std::set<ID_TYPE> > deleted__state_predicates__parsed;
             std::map<Planning::Percept_Name, std::set<ID_TYPE> > deleted__observational_propositions__parsed;
@@ -333,7 +355,21 @@ namespace Planning
             std::map<Planning::Percept_Name, std::set<ID_TYPE> > added__observational_propositions__parsed;
             std::map<Planning::Percept_Name, std::set<ID_TYPE> > added__observational_predicates__parsed;
 
+            
 
+            /* While parsing we also keep information about what
+             * functional symbols are "modified" in formulae. This
+             * makes later detection of static fluent symbols
+             * possible.*/
+            std::map<Planning::State_Function_Name, std::set<ID_TYPE> > modified_in_effect__state_functions__parsed;
+            std::map<Planning::State_Function_Name, std::set<ID_TYPE> > modified_in_effect__state_ground_functions__parsed;
+            std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> > modified_in_effect__perceptual_functions__parsed;
+            std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> > modified_in_effect__perceptual_ground_functions__parsed;
+
+            /* Are we parsing a formula that describes the effects of
+             * an operator?*/
+            bool in_effect_context;
+            
             /* This Boolean is true when a propositional symbol being
              * parsed is occurring in a delete context. That is, if
              * the formula being parse is an effect formula, and the
@@ -346,6 +382,11 @@ namespace Planning
              * INITIALLY "FALSE".*/
             bool in_delete_context;
             
+            /* Are with below the context of a function modifier --
+             * i.e., assign, increase, decrease.
+             *
+             * INITIALLY "FALSE".*/
+            bool in_modification_context;
             
             /* Should next next call to \member{report__formula} be skipped?*/
             bool skip_next____report__formula;

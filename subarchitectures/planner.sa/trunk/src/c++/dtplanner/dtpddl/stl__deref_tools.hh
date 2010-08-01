@@ -76,7 +76,6 @@ DEREF__HASH(CXX__deref__hash, CXX__CONST_PTR_ANNOTATION);
 DEREF__EQUAL_TO(C__deref__equal_to, C__CONST_PTR_ANNOTATION);
 DEREF__EQUAL_TO(CXX__deref__equal_to, CXX__CONST_PTR_ANNOTATION);
 
-
 template<typename T>
 class CXX__deref__shared_ptr
 {
@@ -134,6 +133,149 @@ private:
 };
 
 
+
+template<typename T>
+class Visitor;
+
+
+#define VISITATION(OBJECT, ELEM_ACCESS)                         \
+    {                                                           \
+        auto tmp = OBJECT.ELEM_ACCESS;                          \
+        tmp                                                     \
+            ->visit(dynamic_cast<Visitor<basic_type>&>(*this),  \
+                    tmp);                                       \
+    }                                                           \
+        
+
+#define VISITATIONS(OBJECT, ELEMS_ACCESS)                               \
+    {                                                                   \
+        auto _tmp = OBJECT.ELEMS_ACCESS;                                \
+        for(auto tmp = _tmp.begin()                                     \
+                ; tmp != _tmp.end()                                     \
+                ; tmp++){                                               \
+            (*tmp)                                                      \
+                ->visit(dynamic_cast<Visitor<basic_type>&>(*this),      \
+                        *tmp);                                          \
+        }                                                               \
+    }                                                                   \
+      
+
+#define deref_VISITATION(TYPE, POINTER, ELEM_ACCESS)             \
+    {                                                            \
+        auto tmp = POINTER.cxx_get<TYPE>()->ELEM_ACCESS;         \
+        tmp                                                      \
+            ->visit(dynamic_cast<Visitor<basic_type>&>(*this),   \
+                    tmp);                                        \
+    }                                                            \
+        
+
+#define deref_VISITATIONS(TYPE, POINTER, ELEMS_ACCESS)                  \
+    {                                                                   \
+        auto _tmp = POINTER.cxx_get<TYPE>()->ELEMS_ACCESS;              \
+        for(auto tmp = _tmp.begin()                                     \
+                ; tmp != _tmp.end()                                     \
+                ; tmp++){                                               \
+            (*tmp)                                                      \
+                ->visit(dynamic_cast<Visitor<basic_type>&>(*this),      \
+                        *tmp);                                          \
+        }                                                               \
+    }                                                                   \
+        
+
+template<typename T>
+class CXX__deref__shared_ptr__visitable : public CXX__deref__shared_ptr<T>
+{
+public:
+    explicit CXX__deref__shared_ptr__visitable(const CXX__PTR_ANNOTATION(T)& in)
+        :CXX__deref__shared_ptr<T>(in)
+    {};
+    
+    explicit CXX__deref__shared_ptr__visitable()
+        :CXX__deref__shared_ptr<T>()
+    {};
+    
+    template<typename TT>
+    explicit CXX__deref__shared_ptr__visitable(const CXX__deref__shared_ptr<TT>& in)
+        :CXX__deref__shared_ptr<T>(in)
+    {};
+    
+    template<typename TT>
+    explicit CXX__deref__shared_ptr__visitable(const CXX__deref__shared_ptr__visitable<TT>& in)
+        :CXX__deref__shared_ptr<T>(in)
+    {};
+    
+    void visit(Visitor<T>& visitor);    
+};
+
+#define DECLARATION__UNARY_VISITOR(ELEM_TYPE)                           \
+    void c_pointer__accept(ELEM_TYPE*);                                 \
+    void cxx_pointer__accept(CXX__PTR_ANNOTATION(ELEM_TYPE) );          \
+    void cxx_deref_pointer__accept(CXX__deref__shared_ptr<ELEM_TYPE> ); \
+    void cxx_deref_pointer_visitable__accept(CXX__deref__shared_ptr__visitable<ELEM_TYPE> ); \
+    void operator()(ELEM_TYPE*);                                        \
+    void operator()(CXX__PTR_ANNOTATION(ELEM_TYPE));                    \
+    void operator()(CXX__deref__shared_ptr<ELEM_TYPE>);                 \
+    void operator()(CXX__deref__shared_ptr__visitable<ELEM_TYPE>);      \
+
+
+#define IMPLEMENTATION__UNARY_VISITOR(TYPE_NAME, ELEM_TYPE)             \
+    void TYPE_NAME::c_pointer__accept(ELEM_TYPE* in)                    \
+    {                                                                   \
+        this->operator()(in);                                           \
+    }                                                                   \
+    void TYPE_NAME::cxx_pointer__accept(CXX__PTR_ANNOTATION(ELEM_TYPE) in) \
+    {                                                                   \
+                                                                        \
+        this->operator()(in);                                           \
+    }                                                                   \
+    void TYPE_NAME::cxx_deref_pointer__accept(CXX__deref__shared_ptr<ELEM_TYPE> in) \
+    {                                                                   \
+                                                                        \
+        this->operator()(in);                                           \
+    }                                                                   \
+    void TYPE_NAME::cxx_deref_pointer_visitable__accept(CXX__deref__shared_ptr__visitable<ELEM_TYPE> in) \
+    {                                                                   \
+                                                                        \
+        this->operator()(in);                                           \
+    }                                                                   \
+
+
+#define IMPLEMENTATION__STRICT_SHARED_UNARY_VISITOR(TYPE_NAME, ELEM_TYPE) \
+    IMPLEMENTATION__UNARY_VISITOR(TYPE_NAME, ELEM_TYPE)                 \
+    void TYPE_NAME::operator()(ELEM_TYPE*)                              \
+    {                                                                   \
+        UNRECOVERABLE_ERROR("Using strict visitor incorrectly.");       \
+    }                                                                   \
+                                                                        \
+    void TYPE_NAME::operator()(CXX__PTR_ANNOTATION(ELEM_TYPE))          \
+    {                                                                   \
+        UNRECOVERABLE_ERROR("Using strict visitor incorrectly.");       \
+    }                                                                   \
+                                                                        \
+    void TYPE_NAME::operator()(CXX__deref__shared_ptr<ELEM_TYPE>)       \
+    {                                                                   \
+        UNRECOVERABLE_ERROR("Using strict visitor incorrectly.");       \
+    }                                                                   \
+                                                                        \
+    
+
+template<typename T>
+class Visitor
+{
+public:
+    virtual ~Visitor(){};
+    virtual void c_pointer__accept(T*) = 0;
+    virtual void cxx_pointer__accept(CXX__PTR_ANNOTATION(T) in){c_pointer__accept(in.get());};
+    virtual void cxx_deref_pointer__accept(CXX__deref__shared_ptr<T> in){c_pointer__accept(in.get());};
+    virtual void cxx_deref_pointer_visitable__accept(CXX__deref__shared_ptr__visitable<T> in){c_pointer__accept(in.get());};
+};
+
+
+template<typename T>
+void CXX__deref__shared_ptr__visitable<T>::visit(Visitor<T>& visitor)
+{
+    CXX__deref__shared_ptr<T>::get()->visit(visitor, *this);
+}
 
 // template<typename T, typename TT>
 // CXX__deref__shared_ptr<T>::CXX__deref__shared_ptr<TT>(const CXX__deref__shared_ptr<TT>& in)

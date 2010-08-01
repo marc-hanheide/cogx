@@ -93,7 +93,7 @@ Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(
         default:
         {
             if(carrying_negation){
-                NEW_referenced_WRAPPED_deref_POINTER
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
                     (input->get__runtime_Thread()
                      , Planning::Formula::Negation
                      , tmp
@@ -133,7 +133,7 @@ Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(Conj
     assert(new_subformulae.size());
     
     if(carrying_negation){
-        NEW_referenced_WRAPPED_deref_POINTER
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
             (new_subformulae.back()->get__runtime_Thread()
              , Planning::Formula::Disjunction
              , tmp
@@ -141,7 +141,7 @@ Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(Conj
 
         return tmp;
     } else {
-        NEW_referenced_WRAPPED_deref_POINTER
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
             (new_subformulae.back()->get__runtime_Thread()
              , Planning::Formula::Conjunction
              , tmp
@@ -167,7 +167,7 @@ Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(Disj
     assert(new_subformulae.size());
     
     if(!carrying_negation){
-        NEW_referenced_WRAPPED_deref_POINTER
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
             (new_subformulae.back()->get__runtime_Thread()
              , Planning::Formula::Disjunction
              , tmp
@@ -175,7 +175,7 @@ Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(Disj
 
         return tmp;
     } else {
-        NEW_referenced_WRAPPED_deref_POINTER
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
             ( new_subformulae.back()->get__runtime_Thread()
               , Planning::Formula::Conjunction
               , tmp

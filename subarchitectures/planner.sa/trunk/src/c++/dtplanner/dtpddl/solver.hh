@@ -38,6 +38,7 @@
 #define SOLVER_HH
 
 #include "solver_basics.hh"
+#include "state_basics.hh"
 #include "dtp_pddl_parsing_data_constants.hh"
 
 namespace Planning
@@ -62,7 +63,9 @@ namespace Planning
         /*Is this solver in a sane state?*/
         bool sanity() const;
 
-
+        /* \result is FALSE is the state has already been discovered. */
+        State& report__state(State&);//{UNRECOVERABLE_ERROR("unimplemented");};
+        
         const std::map<Type, Constants>& get__extensions_of_types() const;
     private:
 
@@ -87,9 +90,6 @@ namespace Planning
         /* Functionality for obtaining a ground version of the problem
          * at hand.*/
         CXX__PTR_ANNOTATION(Problem_Grounding) problem_Grounding;
-        
-        /* PDDL objects and constants.*/
-        Constants constants;
         
         /* PDDL types for \member{constants}*/
         Planning::Constants_Description constants_Description;

@@ -88,6 +88,10 @@ namespace Planning
 {
     namespace Parsing
     {
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Start_Effect_Parsing__Action,
+                                                     report__enter_parsing_effect_context);
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Stop_Effect_Parsing__Action,
+                                                     report__exit_parsing_effect_context);
         domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Domain_Name__Action, add__domain_Name);
         domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Predicate_Name__Action, report__predicate_name);
         domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Action_Name__Action, report__action_name);

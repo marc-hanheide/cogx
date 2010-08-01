@@ -285,7 +285,9 @@ namespace Planning
          *
          ******************************************************************************************************************/
         
-        struct Observational_Effect_Subformulae : Effect_Subformulae<Typeless_Percept, Typeless_Perceptual_Function> {};
+        struct Observational_Effect_Subformulae : seq< ifapply<success, Start_Effect_Parsing__Action>
+            , Effect_Subformulae<Typeless_Percept, Typeless_Perceptual_Function>
+            , ifapply<success, Stop_Effect_Parsing__Action> >{};
 
         
         /******************************************************************************************************************

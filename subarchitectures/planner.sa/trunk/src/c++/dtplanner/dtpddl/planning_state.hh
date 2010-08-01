@@ -34,60 +34,47 @@
 #ifndef PLANNING_STATE_HH
 #define PLANNING_STATE_HH
 
-
+#include "solver_basics.hh"
 #include "markov_decision_process_state.hh"
 
-#include "boolean__satisfaction_status_management.hh"
-#include "unsigned_integer__status_management.hh"
-
-#include "basic_action.hh"
+#include "action_executability__state.hh"
+#include "cnf__state.hh"
 
 namespace Planning
 {
-    class Solver;
-    
-    class State : public Markov_Decision_Process_State
+
+    class State : public Markov_Decision_Process_State,
+        public CNF__State,
+        public Action_Executability__State
     {
     public:
-
-//         bool operator<(const State&) const;
-//         bool operator==(const State&) const;
-// 	std::size_t hash_value() const;
-        
-
-        void add__compulsory_transformation(State_Transformation*);
-        void retract__compulsory_transformation(State_Transformation*);
-        void add__optional_transformation(State_Transformation*);
-        void retract__optional_transformation(State_Transformation*);
-
-        
-        const Unsigned_Integer__Satisfaction_Status_Management& get__cnfs__count_status() const;
-        Unsigned_Integer__Satisfaction_Status_Management& get__cnfs__count_status();
-        const Boolean__Satisfaction_Status_Management& get__cnfs__satisfaction_status() const;
-        Boolean__Satisfaction_Status_Management& get__cnfs__satisfaction_status();
-        const Unsigned_Integer__Satisfaction_Status_Management& get__clauses__count_status() const;
-        Unsigned_Integer__Satisfaction_Status_Management& get__clauses__count_status();
-        const Boolean__Satisfaction_Status_Management& get__clauses__satisfaction_status() const;
-        Boolean__Satisfaction_Status_Management& get__clauses__satisfaction_status();
-        const Boolean__Satisfaction_Status_Management& get__literals__satisfaction_status() const;
-        Boolean__Satisfaction_Status_Management& get__literals__satisfaction_status();
-    private:
-        Unsigned_Integer__Satisfaction_Status_Management cnfs__count_status;
-        Boolean__Satisfaction_Status_Management cnfs__satisfaction_status;
-        Unsigned_Integer__Satisfaction_Status_Management clauses__count_status;
-        Boolean__Satisfaction_Status_Management clauses__satisfaction_status;
-        Boolean__Satisfaction_Status_Management literals__satisfaction_status;
-
-
-        /* A compulsory transformation is one that has to be evaluated before the search can continue.*/
-        std::set<State_Transformation*> applicable_compulsory_transformations;
-        /* An optional transformation is an action that an agent can choose to execute at a state.*/
-        std::set<State_Transformation*> applicable_optional_transformations;
-
-        
         /* Planner that generated this state.*/
         Solver* solver;
+        
+        uint count__compulsory_generative_transformation() const;
+        uint count__compulsory_transformation() const;
+        State_Transformation* pop__compulsory_generative_transformation();
+        State_Transformation* pop__compulsory_transformation();
+        void add__compulsory_generative_transformation(State_Transformation*);
+        void add__compulsory_transformation(State_Transformation*);
+        
+        std::set<State_Transformation*>& get__optional_transformations();
+        void add__optional_transformation(State_Transformation*);
+        void remove__optional_transformation(State_Transformation*);
+    private:
+        
+        /* A compulsory transformation is one that has to be evaluated before the search can continue.*/
+        std::stack<State_Transformation*> applicable_compulsory_transformations;
+        
+        /* A compulsory transformation is one that has to be evaluated before the search can continue.*/
+        std::stack<State_Transformation*> applicable_compulsory_generative_transformations;
+        
+        /* An optional transformation is an action that an agent can choose to execute at a state.*/
+        std::set<State_Transformation*> applicable_optional_transformations;
     };
+    
+    /*State pointers.*/
+    typedef std::tr1::unordered_set<State*, /*state_hash*/deref_hash<State>,  deref_equal_to<State> > SetOfStatePointers;
 }
 
 #endif

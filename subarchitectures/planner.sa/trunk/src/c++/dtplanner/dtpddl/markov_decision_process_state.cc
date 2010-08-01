@@ -83,3 +83,14 @@ std::size_t std::hash_value(const Planning::Markov_Decision_Process_State& marko
     return markov_Decision_Process_State.hash_value();
 }
 
+
+
+void Markov_Decision_Process_State::flip(uint in)
+{
+    boolean_State.flip(in);
+}
+
+bool Markov_Decision_Process_State::is_true(uint in) const
+{
+    return boolean_State.is_true(in);
+}
