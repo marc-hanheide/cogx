@@ -178,12 +178,14 @@ struct _s_
    static bool startswith(const std::string& s, const std::string& start)
    {
       if (start.size() == 0) return true;
+      if (start.size() > s.size()) return false;
       return (s.compare(0, start.size(), start) == 0);
    }
 
    static bool endswith(const std::string& s, const std::string& end)
    {
       if (end.size() == 0) return true;
+      if (end.size() > s.size()) return false;
       size_t p = s.size() - end.size();
       return (p == s.find(end, p));
    }
