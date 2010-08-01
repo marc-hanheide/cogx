@@ -62,33 +62,33 @@ State& State_Transformation::operator()(State& __successor)
 const Formula::Action_Proposition& State_Transformation
 ::get__get_identifier() const
 {
-    return std::tr1::get<2>(contents());
+    return std::tr1::get<0>(contents());
 }
 
 
 const State_Formula::Conjunctive_Normal_Form_Formula__Pointer& State_Transformation
 ::get__precondition() const
 {
-    return std::tr1::get<3>(contents());
+    return std::tr1::get<1>(contents());
 }
 
 
 const State_Formula::List__Literals& State_Transformation
 ::get__effects() const
 {
-    return std::tr1::get<4>(contents());
+    return std::tr1::get<2>(contents());
 }
 
 bool State_Transformation
 ::get__compulsory() const
 {
-    return std::tr1::get<5>(contents());
+    return std::tr1::get<3>(contents());
 }
 
 double State_Transformation
 ::get__probability() const
 {
-    return std::tr1::get<6>(contents());
+    return std::tr1::get<4>(contents());
 }
 
 
@@ -163,11 +163,11 @@ void State_Transformation
     if(satisfaction_requirement == get__number_of_satisfied_conditions(state)){
         set__satisfied(state);
         
-        auto parents = get__traversable_parents();
+        auto parents = Satisfaction_Listener::get__traversable_parents();
         for(auto parent = parents.begin()
                 ; parent != parents.end()
                 ; parent++){
-            (*parent).cxx_get<_Satisfaction_Listener>()
+            (*parent).cxx_get<Satisfaction_Listener>()
                 ->report__newly_satisfied(state);
         }
 
@@ -198,7 +198,7 @@ void State_Transformation
         for(auto parent = parents.begin()
                 ; parent != parents.end()
                 ; parent++){
-            (*parent).cxx_get<_Satisfaction_Listener>()->report__newly_unsatisfied(state);
+            (*parent).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
         }
         
         if(!get__compulsory()){    

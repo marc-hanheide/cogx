@@ -53,37 +53,38 @@ namespace Planning
         typedef Formula::Subformula Satisfaction_Listener__Pointer;
         typedef std::vector<Satisfaction_Listener__Pointer> List__Listeners;
         typedef std::set<Satisfaction_Listener__Pointer> Listeners;
-
-        class _Satisfaction_Listener
+        
+        class Satisfaction_Listener
         {
         public:
-            virtual ~_Satisfaction_Listener(){};
+            virtual ~Satisfaction_Listener();/*EMPTY*/
             virtual void report__newly_satisfied(State&) = 0;
             virtual void report__newly_unsatisfied(State&) = 0;
+            
+            void add__parent(CXX__PTR_ANNOTATION(basic_type));
+            void add__parent(Satisfaction_Listener__Pointer&);
+            const List__Listeners& get__traversable_parents() const ;
+            const Listeners& get__searchable_parents() const ;
+            
+        private:
+            List__Listeners list__Listeners;
+            Listeners listeners;
         };
         
         template<int type_name, typename... T>
-        class Satisfaction_Listener : public type_wrapper<type_name, List__Listeners, Listeners, T...>,
-                                      public _Satisfaction_Listener
+        class _Satisfaction_Listener : public type_wrapper<type_name, T...>,
+                                       public Satisfaction_Listener
         {
         public:
             typedef type_wrapper<type_name, List__Listeners, Listeners, T...> Parent;
-            
-
-            const List__Listeners& get__traversable_parents() const {return std::tr1::get<0>(Parent::contents());};
-            const Listeners& get__searchable_parents() const {return std::tr1::get<1>(Parent::contents());};
-            
-//             List__Listeners& get__traversable_parents() {return std::tr1::get<0>(Parent::contents());};
-//             Listeners& get__searchable_parents() {return std::tr1::get<1>(Parent::contents());};
-            
         };
 
 
         
         class Literal
-            : public Satisfaction_Listener<enum_types::literal /* Type identifier.*/
-                                  , uint /* Boolean variable identifier.*/
-                                  , bool >
+            : public _Satisfaction_Listener<enum_types::literal /* Type identifier.*/
+                                            , uint /* Boolean variable identifier.*/
+                                            , bool >
         {
         public:
 
@@ -118,8 +119,8 @@ namespace Planning
         typedef std::vector<Literal__Pointer > List__Literals;       
         
         class Disjunctive_Clause
-            : public Satisfaction_Listener<enum_types::disjunctive_clause
-                                           , List__Literals>
+            : public _Satisfaction_Listener<enum_types::disjunctive_clause
+                                            , List__Literals>
         {
         public:            
             
@@ -159,8 +160,8 @@ namespace Planning
         typedef std::vector<Disjunctive_Clause__Pointer > List__Disjunctive_Clause;     
         
         class Conjunctive_Normal_Form_Formula
-            : public Satisfaction_Listener<enum_types::conjunctive_normal_form_formula
-                                  , List__Disjunctive_Clause >
+            : public _Satisfaction_Listener<enum_types::conjunctive_normal_form_formula
+                                            , List__Disjunctive_Clause >
         {
         public:
             

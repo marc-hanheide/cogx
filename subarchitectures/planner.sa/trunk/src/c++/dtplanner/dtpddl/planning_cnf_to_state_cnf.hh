@@ -42,7 +42,7 @@
 
 namespace Planning
 {    
-    class Planning_CNF__to__State_CNF : public Visitor<Planning::Formula::Subformula>
+    class Planning_CNF__to__State_CNF : public Visitor<basic_type>
     {
     public:
         Planning_CNF__to__State_CNF(basic_type::Runtime_Thread
@@ -64,6 +64,8 @@ namespace Planning
         /* Last problem parsed. */
         State_Formula::List__Disjunctive_Clause disjunctions;
         State_Formula::Disjunctive_Clauses disjunctions__as_set;
+
+        
         
         /* Are we processing a negative literal? */
         bool processing_negative;

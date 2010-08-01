@@ -48,12 +48,12 @@ namespace Planning
      * \module{state_formula.hh}). */
     class State_Transformation :
         public State_Formula::
-        Satisfaction_Listener<enum_types::state_transformation
-                              , Formula::Action_Proposition
-                              , State_Formula::Conjunctive_Normal_Form_Formula__Pointer
-                              , State_Formula::List__Literals /* effects */
-                              , bool /* compulsory -- whole action */
-                              , double /* Probability that this transformation is applied. */ >
+        _Satisfaction_Listener<enum_types::state_transformation
+                               , Formula::Action_Proposition
+                               , State_Formula::Conjunctive_Normal_Form_Formula__Pointer
+                               , State_Formula::List__Literals /* effects */
+                               , bool /* compulsory -- whole action */
+                               , double /* Probability that this transformation is applied. */ >
     {
     public:
 
