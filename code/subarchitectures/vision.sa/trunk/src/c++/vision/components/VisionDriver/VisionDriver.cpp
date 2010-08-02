@@ -7,7 +7,9 @@
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "VisionDriver.h"
-#include <opencv/highgui.h>
+#include <highgui.h>
+// #include <opencv/highgui.h>  -- incorrect according to the opencv pkg-config flags
+
 
 /**
  * The function called to create a new instance of our component.
