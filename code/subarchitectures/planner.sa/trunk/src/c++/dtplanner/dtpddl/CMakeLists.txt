@@ -12,6 +12,7 @@ boolean__satisfaction_status_management.cc
 boolean_state.cc
 cnf__state.cc
 Command_Line_Arguments.cc
+domain_action_to_problem_action.cc
 dtp_pddl.cc
 dtp_pddl_parsing_actions.cc
 dtp_pddl_parsing_actions_domain.cc
