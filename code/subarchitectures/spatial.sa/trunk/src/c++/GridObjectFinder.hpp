@@ -18,7 +18,8 @@
 
 #ifndef GridObjectFinder_hpp
 #define GridObjectFinder_hpp
-#include <opencv/cv.h>
+#include <cv.h> 
+// #include <opencv/cv.h>  -- incorrect according to the opencv pkg-config flags
 #include <vector>
 #include <Navigation/LocalGridMap.hh>
 
