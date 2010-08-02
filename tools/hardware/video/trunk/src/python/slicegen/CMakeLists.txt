@@ -6,9 +6,11 @@ include(Slice2Py)
 cast_slice2py(SLICE_GEN01
    ../../slice/Video.ice
    # include dirs
+   ${CAST_SLICE_DIR}
    ${CAST_SLICE_DIR}/cast/slice
    ${COGX_ROOT}/tools/math/src/slice
    ${COGX_ROOT}/tools/hardware/video/src/slice
+   /usr/share/Ice/slice
    /usr/share/slice
    /usr/local/share
    )
