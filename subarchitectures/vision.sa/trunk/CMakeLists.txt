@@ -1,5 +1,8 @@
 project (VISIONSA)
 
+# use cmake files packaged with CAST
+include(UseCAST)
+
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
