@@ -3,7 +3,8 @@
  * @date October 2006
  */
 
-#include <opencv/highgui.h>
+#include <highgui.h>
+//#include <opencv/highgui.h> -- this is incorrect according to the pkg-config flags
 #include <cast/core/CASTUtils.hpp>
 #include <VideoUtils.h>
 #include "OpenCvImgSeqServer.h"

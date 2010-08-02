@@ -9,7 +9,8 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
-#include <opencv/cv.h>
+#include <cv.h>
+//#include <opencv/cv.h>  -- this is incorrect according to the pkg-config flags
 #include "VideoServer.h"
 
 namespace cast

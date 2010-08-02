@@ -11,8 +11,10 @@
 #include <vector>
 #include <stdexcept>
 #include <sys/time.h>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+#include <cv.h> 
+#include <highgui.h>
+// #include <opencv/cv.h> -- incorrect according to the opencv pkg-config flags
+// #include <opencv/highgui.h>  -- incorrect according to the opencv pkg-config flags
 #include <dc1394/types.h>		// apt-get libdc1394-22-dev
 #include <dc1394/control.h>	// apt-get libdc1394-22-dev
 #include "VideoServer.h"
