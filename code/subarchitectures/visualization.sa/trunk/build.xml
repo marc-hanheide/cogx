@@ -51,6 +51,7 @@
       <slice2java tie="true" outputdir="${src.dir}">
          <fileset dir="${slice.dir}" includes="DisplayServer.ice"/>
          <includepath>
+            <pathelement path="${ice.slice.dir}"/> 
             <pathelement path="${slice.dir}"/>
             <pathelement path="${castslice.dir}"/>
             <pathelement path="${castslice.dir}/cast/slice/"/>
