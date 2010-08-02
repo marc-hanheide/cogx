@@ -5,6 +5,8 @@ package motivation.components.managers;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -260,10 +262,9 @@ public class Scheduler extends ManagedComponent implements
 			Map<WorkingMemoryAddress, Motive> impossibleGoals) throws Exception {
 		Map<String, WorkingMemoryAddress> goal2motiveMap = new HashMap<String, WorkingMemoryAddress>();
 
-		Set<Goal> goals=new HashSet<Goal>();
+		List<Goal> goals=new LinkedList<Goal>();
 		for (Motive m:surfacedGoals.values())
 			goals.add(m.goal);
-		planner.setGoals(goals);
 		
 		for (Entry<WorkingMemoryAddress, Motive> m : surfacedGoals.entrySet()) {
 			if (!m.getValue().goal.goalString.isEmpty()) {
@@ -282,7 +283,7 @@ public class Scheduler extends ManagedComponent implements
 			}
 		}
 
-		WMEntryQueueElement<PlanningTask> result = planner.call();
+		WMEntryQueueElement<PlanningTask> result = planner.plan(goals).get();
 		if (result == null) {
 			getLogger().warn("failed to create a plan at all");
 			return null;

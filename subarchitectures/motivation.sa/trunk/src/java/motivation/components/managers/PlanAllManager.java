@@ -3,14 +3,13 @@
  */
 package motivation.components.managers;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -106,8 +105,7 @@ public class PlanAllManager extends ManagedComponent {
 
 			@Override
 			public void entryChanged(Map<WorkingMemoryAddress, Motive> map,
-					WorkingMemoryChange wmc, Motive newMotive,
-					Motive oldMotive) {
+					WorkingMemoryChange wmc, Motive newMotive, Motive oldMotive) {
 				interrupt = true;
 
 			}
@@ -145,7 +143,7 @@ public class PlanAllManager extends ManagedComponent {
 			// TODO
 			// really bad hack to avoid the racong condition on startup
 			this.sleepComponent(1000);
-			
+
 			wmLock.initialize();
 			while (isRunning()) {
 				log("checking for active motives to manage them");
@@ -181,16 +179,13 @@ public class PlanAllManager extends ManagedComponent {
 					// after this we can be quite sure that we actually have
 					// all required information on the binder, available to the
 					// planner
-					Set<Goal> goals=new HashSet<Goal>();
-					for (Motive m:activeMotives)
+					List<Goal> goals = new LinkedList<Goal>();
+					for (Motive m : activeMotives)
 						goals.add(m.goal);
-					plannerFacade.setGoals(goals);
-					plannerFacade.setExecutePlan(true);
 
-					FutureTask<WMEntryQueueElement<PlanningTask>> generatedPlan = new FutureTask<WMEntryQueueElement<PlanningTask>>(
-							plannerFacade);
+					Future<WMEntryQueueElement<PlanningTask>> generatedPlan = plannerFacade
+							.plan(goals, true);
 					// generate the plan asynchronously
-					backgroundExecutor.execute(generatedPlan);
 					// in the meantime compute the maximum time to wait for the
 					// plan
 					int maxPlanningTime = 0;
@@ -227,6 +222,8 @@ public class PlanAllManager extends ManagedComponent {
 
 					if (pt != null) { // if we got a plan...
 						log("a plan has been generated. it's time to execute it");
+						log("  PlanningTask: execute?="+pt.getEntry().executePlan);
+						log("  PlanningTask: firstAction="+pt.getEntry().firstActionID);
 						executorFacade.setPlan(pt.getEvent().address);
 						FutureTask<PlanProxy> executionResult = new FutureTask<PlanProxy>(
 								executorFacade);
