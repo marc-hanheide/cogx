@@ -64,6 +64,7 @@ namespace Planning
     private:
         /* All the state formula associated with the ground problem
          * instance (see \member{press_ground_action}).*/
+        Formula::State_Propositions state_Propositions;
         State_Formula::Literals literals;
         State_Formula::Disjunctive_Clauses disjunctive_Clauses;
         State_Formula::Conjunctive_Normal_Form_Formulae conjunctive_Normal_Form_Formulae;
@@ -108,8 +109,8 @@ namespace Planning
         void simplify_action_schema_precondition(Planning::Action_Schema& );
         
         /* Populate \member{}*/
-        void ground_action_schema(Planning::Action_Schema& action_Schema);
-        void ground_action_schema(const Action_Name& action_name,
+        /* --1-- */ void ground_action_schema(Planning::Action_Schema& action_Schema);
+        /* --3-- */ void ground_action_schema(const Action_Name& action_name,
                                   Planning::Formula::Subformula& effect_formula,
                                   std::map<Variable, Constant>& assignment_detail,
                                   const std::map<Planning::Variable, Planning::Constants/*FIX*/>& potential_assignments,
@@ -119,14 +120,14 @@ namespace Planning
                                   uint variable_index);
 
         void 
-        ground_action_schema(const Action_Name& action_Name,
+        /* --2-- */ ground_action_schema(const Action_Name& action_Name,
                              Planning::Formula::Subformula& effect_formula,
                              std::map<Variable, Constant>& assignment_detail, /*explicit representation of results*/
                              const std::map<Variable, Constants>& potential_assignments, /* constants from which the result is formed.*/
-                             const Argument_List& action_variables, /*Gives the order in which variables assignment should be made -- Some of these may be constant.*/
+                             const Argument_List& action_Arguments, /*Gives the order in which variables assignment should be made -- Some of these may be constant.*/
                              Planning::Formula::Subformula _precondition
                              );
-        void press_ground_action(const Action_Name& action_name,
+        /* --4-- */ void press_ground_action(const Action_Name& action_name,
                                  Planning::Formula::Subformula precondition,  
                                  Planning::Formula::Subformula __effect_formula,/*This should be completely ground at this stage -- i.e., no variable symbols.. */
                                  const std::map<Variable, Constant>& assignment_detail,
