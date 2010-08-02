@@ -20,7 +20,8 @@
 #include <iostream>
 #include <math.h>
 #include <algorithm>
-#include <opencv/highgui.h>
+#include <highgui.h>
+// #include <opencv/highgui.h>  -- incorrect according to the opencv pkg-config flags
 
 using namespace std;
 
