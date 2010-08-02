@@ -91,10 +91,9 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 				goals.add(g);
 			}
 		}
-		planner.setGoals(goals);
-		planner.setExecutePlan(shouldExecutePlan);
+
 		try {
-			WMEntryQueueElement<PlanningTask> res=planner.call();
+			WMEntryQueueElement<PlanningTask> res=planner.plan(goals, shouldExecutePlan).get();
 			if (res==null)
 				return "PLANNING FAILED";
 			else {
