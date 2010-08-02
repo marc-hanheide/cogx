@@ -25,7 +25,7 @@ public class RemoteFilter implements MotiveFilter,
 
 	MotiveFilterManager filterManager = null;
 	Map<Class<?>, MotivePriority> priorities;
-	RemoteFilterServer server;
+	//RemoteFilterServer server;
 
 	/*
 	 * (non-Javadoc)
