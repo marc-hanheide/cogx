@@ -42,6 +42,8 @@
 #include "planning_formula_to_problem_formula.hh"
 #include "planning_formula_to_variable_ordering.hh"
 #include "planning_cnf_to_state_cnf.hh"
+#include "domain_action_to_problem_action.hh"
+
 
 
 
@@ -317,7 +319,7 @@ void Problem_Grounding::simplify_action_schema_precondition(Planning::Action_Sch
 
 void Problem_Grounding::
 press_ground_action(const Action_Name& action_name,
-                    Subformula precondition,  
+                    Subformula _precondition,  
                     Subformula __effect_formula,/*This should be completely ground at this stage -- i.e., no variable symbols.. */
                     const std::map<Variable, Constant>& assignment_detail,
                     const Argument_List& action_variables
@@ -328,20 +330,23 @@ press_ground_action(const Action_Name& action_name,
     Planning_CNF__to__State_CNF
         planning_CNF__to__State_CNF
         (reinterpret_cast<basic_type::Runtime_Thread>(this)
+         , state_Propositions
          , literals
          , disjunctive_Clauses
          , conjunctive_Normal_Form_Formulae);
     
+
+    planning_CNF__to__State_CNF(_precondition);
+    auto precondition = planning_CNF__to__State_CNF.get__answer();
     
-//     assignment_Applicator(__effect_formula, assignment_detail);
-    
+    Domain_Action__to__Problem_Action domain_Action__to__Problem_Action();
 }
 
 
+/* --3-- */
 void Problem_Grounding::
 ground_action_schema(const Action_Name& action_Name,
                      Subformula& effect_formula,
-//                      std::list<Constant>& ordereed_assignment,/*result, an assignment*/
                      map<Variable, Constant>& assignment_detail, /*explicit representation of results*/
                      const map<Variable, Constants>& potential_assignments, /* constants from which the result is formed.*/
                      const Argument_List& action_variables, /*Gives the order in which variables assignment should be made -- Some of these may be constant.*/
@@ -358,22 +363,7 @@ ground_action_schema(const Action_Name& action_Name,
                             action_variables);
     }
     
-
-//     if(!variables_in_order[variable_index].test_cast<Variable>()){
-//         WARNING("Got a constant in action argument list :: "<<variables_in_order[variable_index]<<std::endl);
-        
-//         ground_action_schema(action_Name,
-//                              effect_formula,
-//                              assignment_detail,
-//                              potential_assignments,
-//                              action_variables,
-//                              __precondition,
-//                              variables_in_order,
-//                              variable_index + 1);
-//     }
-    
-    
-    auto variable = variables_in_order[variable_index];//.cxx_get<Variable>();
+    auto variable = variables_in_order[variable_index];
     assert(potential_assignments.find(variable) != potential_assignments.end());
     const Constants& constants = potential_assignments.find(variable)->second;
 
@@ -403,24 +393,17 @@ ground_action_schema(const Action_Name& action_Name,
     }
 }
 
+
+/* --2-- */
 void Problem_Grounding::
 ground_action_schema(const Action_Name& action_Name,
                      Subformula& effect_formula,
-//                      std::list<Constant>& ordereed_assignment,/*result, an assignment*/
                      map<Variable, Constant>& assignment_detail, /*explicit representation of results*/
                      const map<Variable, Constants>& potential_assignments, /* constants from which the result is formed.*/
                      const Argument_List& action_variables, /*Gives the order in which variables assignment should be made -- Some of these may be constant.*/
-                     Subformula _precondition
+                     Subformula precondition
  )
 {
-    Planning_Formula__to__Problem_Formula
-        planning_Formula__to__Problem_Formula(reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data),
-                                              problem_Data);
-
-    auto precondition = planning_Formula__to__Problem_Formula(_precondition);
-    VERBOSER(3001, "Old precondition was :: "<<_precondition<<std::endl
-             <<"New precondition is :: "<<precondition<<std::endl);
-    
     Planning_Formula__to__Variable_Ordering planning_Formula__to__Variable_Ordering(*domain_Data);
     planning_Formula__to__Variable_Ordering(precondition);
     std::vector<Variable> order_in_which_to_make_assignments = planning_Formula__to__Variable_Ordering.get__answer();
@@ -502,6 +485,7 @@ void Problem_Grounding::grow__cached_constants_of_types(const Argument_Types& ar
 }
 
 
+/* --1-- */ 
 void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Schema)
 {
     /* First step, we alter the action precondition formula so that it
@@ -511,17 +495,17 @@ void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Sch
     auto action_header = action_Schema.get__header();
     auto action_Name = action_header.get__name();
     auto arguments = action_header.get__arguments();
-    auto variables = get__symbols(arguments);
+    auto action_Arguments = get__symbols(arguments);
     auto argument_Types = get__types(arguments);
 
     /* ASSERTION -- 6 */
     grow__cached_constants_of_types(argument_Types);
     
     std::map<Variable,  Constants> potential_assignments;
-    assert(argument_Types .size() == variables.size());
+    assert(argument_Types .size() == action_Arguments.size());
     for(uint index = 0; index < argument_Types.size(); index++){
         auto types = argument_Types[index];
-        auto _variable = variables[index];
+        auto _variable = action_Arguments[index];
 
         if(_variable.test_cast<Planning::Variable>()){
             const Planning::Variable& variable = *_variable.cxx_get<Planning::Variable>();
@@ -538,22 +522,35 @@ void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Sch
         }
     }
 
-//     std::list<Constant> ground_arguments;
     std::map<Variable, Constant> assignment_detail;
     
     Planning_Formula__to__Problem_Formula
         planning_Formula__to__Problem_Formula(reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data),
                                               problem_Data);
 
+    
+    
     auto precondition = planning_Formula__to__Problem_Formula(action_Schema.get__precondition());
 
-    /*FIX HERE*/
-//     ground_action_schema(ground_arguments,
-//                          assignment_detail,
-//                          potential_assignments,
-//                          variables,
-//                          precondition);
     
+    VERBOSER(3001, "Old precondition was :: "<<precondition<<std::endl
+             <<"New precondition is :: "<<action_Schema.get__precondition()<<std::endl);
+    
+    auto effect = action_Schema.get__effect();
+    
+//     const Action_Name& _action_Name = action_Name; 
+//     Planning::Formula::Subformula& _effect_formula = effect;//action_Schema.get__effect(); 
+//     std::map<Variable, Constant>& _assignment_detail = assignment_detail; 
+//     const std::map<Variable, Constants>& _potential_assignments = potential_assignments; 
+//     const Argument_List& _action_Arguments = action_Arguments; 
+//     Planning::Formula::Subformula __precondition = precondition; 
+    
+    ground_action_schema(action_Name,
+                         effect,
+                         assignment_detail,
+                         potential_assignments,
+                         action_Arguments,
+                         precondition);
 }
 
 void Problem_Grounding::simplify_derived_predicate_trigger(Planning::Derived_Predicate& derived_Predicate)

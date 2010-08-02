@@ -117,6 +117,17 @@ namespace Planning
         MAKE_CONSTANT_ATOM(Perceptual_Ground_Function, enum_types::perceptual_ground_function, Planning::Perceptual_Function_Name);
         MAKE_VARIABLE_ATOM(Perceptual_Function, enum_types::perceptual_function, Planning::Perceptual_Function_Name);
 
+        typedef std::set<Action_Proposition> Action_Propositions;
+        typedef std::set<Action_Predicate> Action_Predicates;
+        typedef std::set<State_Proposition> State_Propositions;
+        typedef std::set<State_Predicate> State_Predicates;
+        typedef std::set<Observational_Proposition> Observational_Propositions;
+        typedef std::set<Observational_Predicate> Observational_Predicates;
+        typedef std::set<State_Ground_Function> State_Ground_Functions;
+        typedef std::set<State_Function> State_Functions;
+        typedef std::set<Perceptual_Ground_Function> Perceptual_Ground_Functions;
+        typedef std::set<Perceptual_Function> Perceptual_Functions;
+
         class Conjunction : public type_wrapper<enum_types::conjunction
                                                 , Subformulae>
         {PRINTING;

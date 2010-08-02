@@ -60,6 +60,7 @@ Usual suspects C++::1998
 #include <algorithm>
 #include <set>
 #include <stack>
+#include <list>
 
 /* Streaming...*/
 #include <iostream>

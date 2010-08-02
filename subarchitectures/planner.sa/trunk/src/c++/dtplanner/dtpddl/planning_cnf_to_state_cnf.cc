@@ -41,15 +41,22 @@ using namespace Planning::State_Formula;
 
 Planning_CNF__to__State_CNF::
 Planning_CNF__to__State_CNF(basic_type::Runtime_Thread,
+                            Formula::State_Propositions& state_Propositions,
                             State_Formula::Literals& problem__literals,
                             State_Formula::Disjunctive_Clauses& problem__clauses,
                             State_Formula::Conjunctive_Normal_Form_Formulae& problem__cnfs)
-    :problem__literals(problem__literals),
+    :problem__state_Propositions(state_Propositions),
+     problem__literals(problem__literals),
      problem__clauses(problem__clauses),
      problem__cnfs(problem__cnfs),
      processing_negative(false),
      runtime_Thread(runtime_Thread)
 {
+}
+
+State_Formula::Conjunctive_Normal_Form_Formula__Pointer Planning_CNF__to__State_CNF::get__answer() const
+{
+    return answer;
 }
 
 
@@ -73,6 +80,10 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
                  _proposition->get__name(),
                  _proposition->get__arguments());
 
+            
+            problem__state_Propositions
+                .insert(*proposition.cxx_get<Planning::Formula::State_Proposition>());
+            
             auto id = proposition->get__id();
             
             NEW_referenced_WRAPPED_deref_POINTER
@@ -147,10 +158,11 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
                 (*clause).cxx_get<Disjunctive_Clause>()
                     ->add__parent(problem__pointer.cxx_get<basic_type>());
             }
+
+            answer = problem__pointer;
             
             disjunctions = State_Formula::List__Disjunctive_Clause();
-            disjunctions__as_set = State_Formula::Disjunctive_Clauses();
-            
+            disjunctions__as_set = State_Formula::Disjunctive_Clauses();   
         }
         break;
         case enum_types::disjunction:

@@ -38,6 +38,7 @@
 
 #include "planning_formula.hh"
 #include "state_formula.hh"
+#include "planning_formula.hh"
  
 
 namespace Planning
@@ -46,13 +47,18 @@ namespace Planning
     {
     public:
         Planning_CNF__to__State_CNF(basic_type::Runtime_Thread
+                                    , Formula::State_Propositions&
                                     , State_Formula::Literals&
                                     , State_Formula::Disjunctive_Clauses&
                                     , State_Formula::Conjunctive_Normal_Form_Formulae&);
         
         DECLARATION__UNARY_VISITOR(basic_type);
-
+        
+        State_Formula::Conjunctive_Normal_Form_Formula__Pointer get__answer() const ;
     private:
+        State_Formula::Conjunctive_Normal_Form_Formula__Pointer answer;
+        
+        Formula::State_Propositions problem__state_Propositions;
         State_Formula::Literals& problem__literals;
         State_Formula::Disjunctive_Clauses& problem__clauses;
         State_Formula::Conjunctive_Normal_Form_Formulae& problem__cnfs;
