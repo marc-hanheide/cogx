@@ -1,6 +1,8 @@
 
 project(FileMonitorDisplayClient)
 
+find_package(Boost 1.36.0 REQUIRED COMPONENTS regex )
+
 set( SOURCES
    FileMonitor.cpp
    )
@@ -15,6 +17,7 @@ add_cast_component(FileMonitorDC ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} 
    # VisionData Video VideoUtils
    DisplayClient VisualizationData
-   boost_regex-mt
+   ${Boost_LIBRARIES}
+#   boost_regex-mt
    )
 

@@ -1,6 +1,8 @@
 
 project(VisualizationCore)
 find_package(Qt4 REQUIRED) # http://qtnode.net/wiki/Qt4_with_cmake
+set(Boost_USE_MULTITHREADED ON)
+find_package(Boost 1.36.0 REQUIRED COMPONENTS serialization iostreams )
 include(${QT_USE_FILE} ${QT_USE_OPENGL})
 
 option(BUILD_SA_V11N_USE_LUAGL "Build with LuaGl script support (requres lua51 and tolua++51)" ON)
@@ -147,8 +149,7 @@ link_cast_component(${CAST_COMPONENT_NAME}
    ${QT_QTSVG_LIBRARY}
    ${QT_QTOPENGL_LIBRARY} GL GLU
    ${TOMGINE_LIBS}
-   boost_serialization-mt
-   boost_iostreams-mt
+   ${Boost_LIBRARIES}
    ${EXPERIMENT_LIB}
    )
 
