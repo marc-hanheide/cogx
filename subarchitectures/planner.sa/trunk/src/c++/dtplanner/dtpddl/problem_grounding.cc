@@ -508,16 +508,16 @@ void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Sch
      * corresponds to propositional CNF.*/
     simplify_action_schema_precondition(action_Schema);
     
-    auto action_headder = action_Schema.get__header();
-    auto action_Name = action_headder.get__name();
-    auto arguments = action_headder.get__arguments();
+    auto action_header = action_Schema.get__header();
+    auto action_Name = action_header.get__name();
+    auto arguments = action_header.get__arguments();
     auto variables = get__symbols(arguments);
     auto argument_Types = get__types(arguments);
 
     /* ASSERTION -- 6 */
     grow__cached_constants_of_types(argument_Types);
     
-    map<Variable,  Constants> potential_assignments;
+    std::map<Variable,  Constants> potential_assignments;
     assert(argument_Types .size() == variables.size());
     for(uint index = 0; index < argument_Types.size(); index++){
         auto types = argument_Types[index];
@@ -538,7 +538,7 @@ void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Sch
         }
     }
 
-    std::list<Constant> ground_arguments;
+//     std::list<Constant> ground_arguments;
     std::map<Variable, Constant> assignment_detail;
     
     Planning_Formula__to__Problem_Formula

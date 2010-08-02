@@ -58,11 +58,11 @@ Planning::Formula::Action_Proposition Problem_Data::get__prescribed_action()
     
     auto action_name = action_Schema.get__name();
 
-    auto action_headder = action_Schema.get__header();
+    auto action_header = action_Schema.get__header();
 
-    auto headder_contents = action_headder.contents();
+    auto header_contents = action_header.contents();
     
-    auto arguments = std::tr1::get<1>(headder_contents);
+    auto arguments = std::tr1::get<1>(header_contents);
     
     auto variables = get__symbols(arguments);
     auto types = get__types(arguments);
