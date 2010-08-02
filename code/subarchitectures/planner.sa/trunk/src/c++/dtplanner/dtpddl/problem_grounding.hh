@@ -111,7 +111,6 @@ namespace Planning
         void ground_action_schema(Planning::Action_Schema& action_Schema);
         void ground_action_schema(const Action_Name& action_name,
                                   Planning::Formula::Subformula& effect_formula,
-//                                   std::list<Constant>& ordereed_assignment,
                                   std::map<Variable, Constant>& assignment_detail,
                                   const std::map<Planning::Variable, Planning::Constants/*FIX*/>& potential_assignments,
                                   const Argument_List& action_variables,
@@ -122,7 +121,6 @@ namespace Planning
         void 
         ground_action_schema(const Action_Name& action_Name,
                              Planning::Formula::Subformula& effect_formula,
-                             //                      std::list<Constant>& ordereed_assignment,/*result, an assignment*/
                              std::map<Variable, Constant>& assignment_detail, /*explicit representation of results*/
                              const std::map<Variable, Constants>& potential_assignments, /* constants from which the result is formed.*/
                              const Argument_List& action_variables, /*Gives the order in which variables assignment should be made -- Some of these may be constant.*/
