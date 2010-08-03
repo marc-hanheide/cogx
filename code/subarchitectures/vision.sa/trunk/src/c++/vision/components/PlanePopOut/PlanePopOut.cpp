@@ -500,7 +500,7 @@ void SendImage(VisionData::SurfacePointSeq points, std::vector <int> &labels, Vi
 	}
     }
     cvSaveImage("/tmp/planes_image.jpg", iplImg);
-    //m_display.setImage("PlaneMarkedOnImage", iplImg);
+    //m_display.setImage("PlanePopout", iplImg);
     cvReleaseImage(&iplImg);
 }
 
@@ -648,7 +648,7 @@ void PlanePopOut::runComponent()
 		points_label.assign(pointsN.size(), -3);
 
 
-		if (PSO_Label(pointsN,points_label))
+		if (RANSAC(pointsN,points_label))
 		{	//cout<<"after ransac we have "<<points.size()<<" points"<<endl;
 			SplitPoints(pointsN,points_label);
 			if (objnumber != 0)
@@ -658,7 +658,12 @@ void PlanePopOut::runComponent()
 				DrawCuboids(pointsN,points_label); //cal bounding Cuboids and centers of the points cloud
  				BoundingSphere(pointsN,points_label); // get bounding spheres, SOIs and ROIs
 #ifdef FEAT_VISUALIZATION
-				if (m_bSendImage) SendImage(pointsN,points_label,image, m_display, this);
+				if (m_bSendImage) 
+				{
+				    m_bSendPoints = false;
+				    m_bSendPlaneGrid = false;
+				    SendImage(pointsN,points_label,image, m_display, this);				    
+				}
 #endif
 			}
 			else
@@ -1533,6 +1538,7 @@ void PlanePopOut::DrawCuboids(VisionData::SurfacePointSeq &points, std::vector <
 		}
 	}
 	v3size.clear();
+	vdradius.clear();
 	for (int i=0; i<objnumber; i++)
 	{
 		Vector3 s;
@@ -1540,6 +1546,8 @@ void PlanePopOut::DrawCuboids(VisionData::SurfacePointSeq &points, std::vector <
 		s.y = (Max.at(i).p.y-Min.at(i).p.y)/2;
 		s.z = (Max.at(i).p.z-Min.at(i).p.z)/2;
 		v3size.push_back(s);
+		double rad = norm(s);
+		vdradius.push_back(rad);
 	}
 /*
 	for (int i = 0; i<objnumber; i++)
@@ -1742,7 +1750,7 @@ void PlanePopOut::BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vecto
 		if (label < 1)	continue;
 		CvPoint cvp;
 		Vector3 v3AfterAffine = AffineTrans(AffineM33, v3Obj);
-		cvp.x =100.0*v3AfterAffine.x; cvp.y =100.0*v3AfterAffine.y;
+		cvp.x =1000.0*v3AfterAffine.x; cvp.y =1000.0*v3AfterAffine.y;
 		objSeq.at(label-1)[index.at(label-1)] = cvp;
 		PlanePoints3DSeq.at(label-1).push_back(v3Obj);
 		index.at(label-1)++;
@@ -1817,11 +1825,15 @@ void PlanePopOut::BoundingSphere(VisionData::SurfacePointSeq &points, std::vecto
 			if (label > 0 && dist(v3Obj,center.at(label-1).p) > radius_world.at(label-1))
 				radius_world.at(label-1) = dist(v3Obj,center.at(label-1).p);
 		}
-		vdradius.clear();
+/*		//vdradius.clear();
 		for (int i=0; i<objnumber; i++)
-			vdradius.push_back(radius_world.at(i));
+		{
+			//vdradius.push_back(radius_world.at(i));
+			cout<<"in Bounding box, radius of "<<i<<" object is "<<vdradius.at(i)<<endl;
+			cout<<"world radius of "<<i<<" object is "<<radius_world.at(i)<<endl;
+		}
 	
-
+*/
 	for (int i = 0; i<objnumber; i++)
 	{
 		//if (mbDrawWire)	DrawWireSphere(center.at(i).p,radius_world.at(i));
@@ -1833,13 +1845,13 @@ void PlanePopOut::BoundingSphere(VisionData::SurfacePointSeq &points, std::vecto
 			PushStructure.c = points.at(j).c;	//cout<<"in BG"<<PushStructure.c.r<<PushStructure.c.g<<PushStructure.c.b<<endl;
 			Vector3 Point_DP = ProjectOnDominantPlane(PushStructure.p);
 			int label = labels.at(j);
-			if (label > 0 && dist(Point_DP,Center_DP) < Shrink_SOI*radius_world.at(i))
+			if (label > 0 && dist(Point_DP,Center_DP) < Shrink_SOI*vdradius.at(i))
 				SOIPointsSeq.at(label-1).push_back(PushStructure);
 
-			if (label == -1 && dist(Point_DP,Center_DP) < Lower_BG*radius_world.at(i)) // equivocal points
+			if (label == -1 && dist(Point_DP,Center_DP) < Lower_BG*vdradius.at(i)) // equivocal points
 				EQPointsSeq.at(i).push_back(PushStructure);
 
-			if (label == 0 && dist(Point_DP,Center_DP) < Upper_BG*radius_world.at(i) && dist(Point_DP,Center_DP) > Lower_BG*radius_world.at(i)) //BG nearby also required
+			if (label == 0 && dist(Point_DP,Center_DP) < Upper_BG*radius_world.at(i) && dist(Point_DP,Center_DP) > Lower_BG*vdradius.at(i)) //BG nearby also required
 				BGPointsSeq.at(i).push_back(PushStructure);
 
 		}
