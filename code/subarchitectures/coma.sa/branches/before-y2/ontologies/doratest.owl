@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns:xsp="http://www.owl-ontologies.com/2005/08/07/xsp.owl#"
+    xmlns="http://dora.cogx.eu#"
+    xmlns:swrlb="http://www.w3.org/2003/11/swrlb#"
+    xmlns:swrl="http://www.w3.org/2003/11/swrl#"
+    xmlns:protege="http://protege.stanford.edu/plugins/owl/protege#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+  xml:base="http://dora.cogx.eu">
+  <owl:Ontology rdf:about=""/>
+  <owl:Class rdf:ID="FunctionalRegion">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Portion_of_space"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="KitchenTable">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="KitchenObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="OfficeDesk">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="OfficeObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="FunctionEvidence"/>
+  <owl:Class rdf:ID="Office">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="PhysicalRoom"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Object"/>
+  <owl:Class rdf:about="#OfficeObject">
+    <rdfs:subClassOf rdf:resource="#Object"/>
+  </owl:Class>
+  <owl:Class rdf:ID="DummyRoom">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#PhysicalRoom"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#PhysicalRoom">
+    <rdfs:subClassOf rdf:resource="#Portion_of_space"/>
+  </owl:Class>
+  <owl:Class rdf:about="#KitchenObject">
+    <rdfs:subClassOf rdf:resource="#Object"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Kitchen">
+    <rdfs:subClassOf rdf:resource="#PhysicalRoom"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Doorway">
+    <rdfs:subClassOf rdf:resource="#Portion_of_space"/>
+  </owl:Class>
+  <owl:Class rdf:ID="DummyObject">
+    <rdfs:subClassOf rdf:resource="#Object"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Place"/>
+  <owl:ObjectProperty rdf:ID="constituentOfRoom">
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:ID="constituentOf"/>
+    </rdfs:subPropertyOf>
+    <rdfs:range rdf:resource="#PhysicalRoom"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="possiblySameRoomAs">
+    <rdfs:domain rdf:resource="#Place"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    <owl:inverseOf rdf:resource="#possiblySameRoomAs"/>
+    <rdfs:range rdf:resource="#Place"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="constituentOfRegion">
+    <rdfs:range rdf:resource="#FunctionalRegion"/>
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:about="#constituentOf"/>
+    </rdfs:subPropertyOf>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="sameRoomAs">
+    <rdfs:range rdf:resource="#Place"/>
+    <rdfs:domain rdf:resource="#Place"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#constituentOf">
+    <rdfs:domain rdf:resource="#Place"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="in">
+    <rdfs:domain rdf:resource="#Object"/>
+    <owl:inverseOf>
+      <owl:ObjectProperty rdf:ID="contains"/>
+    </owl:inverseOf>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="adjacent">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    <rdfs:domain rdf:resource="#Place"/>
+    <rdfs:range rdf:resource="#Place"/>
+    <owl:inverseOf rdf:resource="#adjacent"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#contains">
+    <rdfs:range rdf:resource="#Object"/>
+    <owl:inverseOf rdf:resource="#in"/>
+  </owl:ObjectProperty>
+</rdf:RDF>
+
+<!-- Created with Protege (with OWL Plugin 3.4, Build 533)  http://protege.stanford.edu -->
