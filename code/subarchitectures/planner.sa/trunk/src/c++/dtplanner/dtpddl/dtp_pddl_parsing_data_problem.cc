@@ -37,6 +37,222 @@
 using namespace Planning::Parsing;
 
 
+bool Problem_Data::statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>& ground_Fact)
+{
+    return false;
+}
+
+
+
+bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>& ground_Fact)
+{
+    INTERACTIVE_VERBOSER(true, 3102, "TESTING statically_false__starting_always_false :: "<<ground_Fact);
+        
+    auto predicate_Name = ground_Fact->get__name();
+
+    auto _prop_indices = get__state_propositions__parsed().find(predicate_Name);
+        
+    /* If we parsed no ground fact instances in the starting
+     * state, and we require it to be true.*/
+    if(_prop_indices ==
+       get__state_propositions__parsed().end()){
+        INTERACTIVE_VERBOSER(true, 3102, "RESULT fact :: "<<ground_Fact<<" can never be satisfied.");
+        
+        WARNING("getting no occurences of static predicate :: "<<predicate_Name<<std::endl
+                <<"in the starting state."<<std::endl);
+        {char ch; std::cin>>ch;}
+        return true;
+    }
+
+    
+    auto prop_indices = _prop_indices->second;
+    
+    if(ground_Fact->get__runtime_Thread()
+       == reinterpret_cast<basic_type::Runtime_Thread>(dynamic_cast<Formula_Data*>(this))){
+        if(prop_indices.end() == prop_indices.find(ground_Fact->get__id())){/*Not in starting state.*/
+            INTERACTIVE_VERBOSER(true, 3102, "RESULT fact :: "<<ground_Fact<<" can never be satisfied.");
+    
+            return true;
+        }
+    } else {
+        
+        NEW_referenced_WRAPPED(dynamic_cast<Formula_Data*>(this)
+                               , Planning::Formula::State_Proposition
+                               , proposition
+                               , predicate_Name
+                               , ground_Fact->get__arguments());
+
+        if(prop_indices.end() == prop_indices.find(proposition.get__id())){/*Not in starting state.*/
+            INTERACTIVE_VERBOSER(true, 3102, "RESULT fact :: "<<ground_Fact<<" can never be satisfied.");
+            return true;
+        }
+    }
+    
+    INTERACTIVE_VERBOSER(true, 3102, "RESULT fact :: "<<ground_Fact<<" MIGHT be satisfied.");
+    return false;
+}
+
+bool Problem_Data::statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>& fact)
+{
+    return false;
+}
+
+
+
+bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>& fact)
+{
+
+    auto occurrence_indices = state_propositions__parsed.find(fact->get__name());
+    if(occurrence_indices == state_propositions__parsed.end()) {
+        INTERACTIVE_VERBOSER(true, 3101, "No ground instances of symbols "<<fact->get__name()<<std::endl);
+        
+        return true;
+    }
+    
+    auto predicate_index = fact->get__name().get__id();
+    auto _arguments = fact->get__arguments();
+
+    
+    
+    Argument_List arguments(_arguments.size());
+        
+    for(auto i = 0; i < arguments.size(); i++){
+        if(_arguments[i].test_cast<Planning::Variable>()){
+            arguments[i] = X_constant;
+        } else {
+            arguments[i] = _arguments[i];
+        }
+    }
+    
+    auto cached_Partial_Assignment_Satisfiability
+        = cached__statically_false__starting_always_false.find(predicate_index);
+        
+    if(cached_Partial_Assignment_Satisfiability == cached__statically_false__starting_always_false.end()){
+        INTERACTIVE_VERBOSER(true, 3101, "Have not cached ground form of first-order fact :: "
+                             <<fact->get__name()<<" "<<arguments<<std::endl);
+        
+        cached__statically_false__starting_always_false[predicate_index]
+            = std::tr1::tuple<Cached_Partial_Assignment_Satisfiability
+            , Cached_Partial_Assignment_Unsatisfiability>();
+        cached_Partial_Assignment_Satisfiability = cached__statically_false__starting_always_false.find(predicate_index);
+    }
+        
+    Cached_Partial_Assignment_Satisfiability& satisfiable__cached =
+        std::tr1::get<0>(cached_Partial_Assignment_Satisfiability->second);
+    Cached_Partial_Assignment_Unsatisfiability& unsatisfiable__cached =
+        std::tr1::get<1>(cached_Partial_Assignment_Satisfiability->second);
+
+    auto find_in__satisfiable__cached = satisfiable__cached.find(arguments);
+    auto find_in__unsatisfiable__cached = unsatisfiable__cached.find(arguments);
+
+    if( ( find_in__satisfiable__cached !=  satisfiable__cached.end() ) ||
+        ( find_in__unsatisfiable__cached != unsatisfiable__cached.end() ) ){
+        if(find_in__satisfiable__cached == satisfiable__cached.end()){
+            assert(!(unsatisfiable__cached.find(arguments) == unsatisfiable__cached.end()));
+            
+            INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cached GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+            
+            
+            return false;
+        } else if (find_in__unsatisfiable__cached == unsatisfiable__cached.end()) {
+            INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cached UN-GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+            
+            return true;
+        }
+    }
+    
+    if(statically_satisfiable(*fact)){
+        INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cache-ING POSSIBLY GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+        satisfiable__cached.insert(arguments);
+        
+        return false;
+    } else {
+        INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cache-ING UN-GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+        
+        unsatisfiable__cached.insert(arguments);
+        return true;
+    }
+}
+
+
+
+bool Problem_Data::translate_to_problem_arguments(const Planning::Argument_List& _arguments, Planning::Argument_List& arguments) const
+{
+    bool result = false;
+    
+    for(auto i = 0; i < arguments.size(); i++){
+        if(_arguments[i].test_cast<Planning::Variable>()){
+            arguments[i] = _arguments[i];
+        } else if (_arguments[i].test_cast<Planning::Constant>()) {
+            auto constant_symbol = _arguments[i].cxx_get<Planning::Constant>();
+                
+            if(constant_symbol->get__runtime_Thread()
+               != reinterpret_cast<basic_type::Runtime_Thread>
+               (dynamic_cast<const Planning::Parsing::Constants_Data*>(this))){
+
+                result = true;
+                
+                INTERACTIVE_VERBOSER(true, 3101, "Constant symbol :: "<<constant_symbol
+                                     <<"was *NOT* from the problem, "<<std::endl
+                                     <<"rather probably from the domain."<<std::endl);
+
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
+                    (reinterpret_cast<basic_type::Runtime_Thread>
+                     (dynamic_cast<const  Planning::Parsing::Constants_Data*>(this))
+                     , Planning::Constant
+                     , constant
+                     , constant_symbol->get__name());
+                    
+                arguments[i] = constant;
+            } else {
+                INTERACTIVE_VERBOSER(true, 3101, "Constant symbol :: "<<constant_symbol<<"was from the problem, "<<std::endl);
+                arguments[i] = _arguments[i];
+            }
+        } else {
+            UNRECOVERABLE_ERROR("Rubbish argument in :: "<<_arguments<<std::endl);
+        }
+    }
+
+    return result;
+}
+
+bool Problem_Data::translate_to_problem_arguments(const Planning::Constant_Arguments& _arguments,
+                                                  Planning::Constant_Arguments& arguments) const
+{
+    bool result = false;
+    
+    for(auto i = 0; i < arguments.size(); i++){
+        auto constant_symbol = _arguments[i];
+                
+        if(constant_symbol.get__runtime_Thread()
+           != reinterpret_cast<basic_type::Runtime_Thread>
+           (dynamic_cast<const Planning::Parsing::Constants_Data*>(this))){
+
+            result = true;
+                
+            INTERACTIVE_VERBOSER(true, 3101, "Constant symbol :: "<<constant_symbol
+                                 <<"was *NOT* from the problem, "<<std::endl
+                                 <<"rather probably from the domain."<<std::endl);
+
+            NEW_referenced_WRAPPED//_deref_visitable_POINTER
+                (reinterpret_cast<basic_type::Runtime_Thread>
+                 (dynamic_cast<const Planning::Parsing::Constants_Data*>(this))
+                 , Planning::Constant
+                 , constant
+                 , constant_symbol.get__name());
+                    
+            arguments[i] = constant;
+        } else {
+            INTERACTIVE_VERBOSER(true, 3101, "Constant symbol :: "<<constant_symbol<<" was from the problem, "<<std::endl);
+            arguments[i] = _arguments[i];
+        }
+    }
+    
+    return result;   
+}
+
+
+
 void Problem_Data::report__observations(const std::vector<std::string>& observationSeq)
 {
 }
@@ -186,7 +402,13 @@ CXX__PTR_ANNOTATION(Domain_Data)  Problem_Data::get__domain_Data()
 
 Problem_Data::Problem_Data(CXX__PTR_ANNOTATION(Domain_Data)& domain_Data)
     :domain_Data(domain_Data)
-{}
+{
+    NEW_object_referenced_WRAPPED_deref_visitable_POINTER
+        (Planning::Constant
+         , _constant
+         , "X");
+    X_constant = _constant;
+}
 
 void Problem_Data::reset__domain_Data(CXX__PTR_ANNOTATION(Domain_Data)& in__domain_Data)
 {
@@ -196,6 +418,9 @@ void Problem_Data::reset__domain_Data(CXX__PTR_ANNOTATION(Domain_Data)& in__doma
 void Problem_Data::reset__domain_Data(const Planning::Domain_Name& domain_Name)
 {
     if(domain_Name == domain_Data->domain_Name){
+        /*(see \module{Formula_Data})*/
+        report__symbol_name_reference(domain_Data.get());
+        
         WARNING("No change occurred when re-specifying problem associated to a domain.");
         return;
     }
@@ -203,10 +428,14 @@ void Problem_Data::reset__domain_Data(const Planning::Domain_Name& domain_Name)
     auto domains_iterator = Planning::Parsing::domains.find(domain_Name);
     if(domains_iterator != Planning::Parsing::domains.end()){
         reset__domain_Data(domains_iterator->second);
+        
+        /*(see \module{Formula_Data})*/
+        report__symbol_name_reference(domains_iterator->second.get());
+    } else {
+        UNRECOVERABLE_ERROR("Unable to find domain :: "<<domain_Name<<std::endl);
     }
+    
 
-    /*(see \module{Formula_Data})*/
-    report__symbol_name_reference(domains_iterator->second.get());
 }
 
 void Problem_Data::reset__domain_Data(const std::string& str)

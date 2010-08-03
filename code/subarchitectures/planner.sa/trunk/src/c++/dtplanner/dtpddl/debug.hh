@@ -44,7 +44,7 @@ Old fashioned debugging -- ERROR STREAM
 
 ---------------------------------*/
 #ifndef DEBUG_LEVEL
-#define DEBUG_LEVEL 3000
+#define DEBUG_LEVEL 3101
 #endif
 
 #ifndef DEBUG_LINE_WIDTH
@@ -91,6 +91,16 @@ Old fashioned debugging -- ERROR STREAM
             VERBOSE(" -- DEBUG_LEVEL :: "<<Y<<" -- "<<std::endl \
                     <<X);                                       \
     }                                                           \
+        
+#define INTERACTIVE_VERBOSER(Z, Y, X)           \
+    {                                           \
+        VERBOSER(Y, X)                          \
+            if(Z && (Y > DEBUG_LEVEL)){         \
+                char ch;                        \
+                std::cin>>ch;                   \
+            }                                   \
+    }                                           \
+        
         
 
 #define UNRECOVERABLE_ERROR(X) {                                 \

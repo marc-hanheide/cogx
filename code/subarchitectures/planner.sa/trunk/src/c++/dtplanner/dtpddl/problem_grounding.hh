@@ -52,10 +52,10 @@ namespace Planning
     class Problem_Grounding
     {
     public:
-        Problem_Grounding(Parsing::Problem_Data&,
-                          CXX__PTR_ANNOTATION(Parsing::Domain_Data),
-                          const Planning::Constants_Description&,
-                          const std::map<Type, Constants>&);
+        Problem_Grounding(Parsing::Problem_Data& problem_Data,
+                          CXX__PTR_ANNOTATION(Parsing::Domain_Data) domain_Data,
+                          const Planning::Constants_Description& constants_Description,
+                          const std::map<Type, Constants>& extensions_of_types);
 
         void ground_actions();
         void ground_derived_predicates();
@@ -165,3 +165,9 @@ namespace Planning
 
 
 #endif
+
+
+/* You stick to your trade, I'll stick to mine
+ *
+ *  -- Arnold Rothstein 
+ */

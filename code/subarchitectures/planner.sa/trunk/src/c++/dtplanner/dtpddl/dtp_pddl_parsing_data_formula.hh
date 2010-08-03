@@ -240,51 +240,15 @@ namespace Planning
             bool statically_satisfiable(const Planning::Formula::State_Predicate&) const;
             bool statically_unsatisfiable(const Planning::Formula::State_Predicate&) const;
 
-
-
-            
-//             enum modal_truth {possibly_false, necessarily_false, possibly_true, necessarily_true};
-                
-            
-//             /* \argument{State_Predicate} is a predicate symbol --
-//              * that is, a Boolean symbol that has one or more variable
-//              * arguments. Moreover, there are no problem/domain
-//              * operators that have \argument{State_Predicate} as an
-//              * add-effect.
-//              *
-//              * \argument{assignment_possibilities} contains the
-//              * constant symbols that are available for assignments to
-//              * variable arguments of
-//              * \argument{assignment_possibilities}.
-//              *
-//              * Return is ::
-//              *
-//              * - modal_truth::necessarily_true if the
-//              * \argument{State_Predicate} can never be ground to a
-//              * fact that is true; unless an action is around that
-//              * makes the ground fact true.
-//              *
-//              * - modal_truth::necessarily_false Every ground fact that
-//              * indicated by \argument{State_Predicate} is necessarily
-//              * always true; unless there is an action out there that
-//              * can make symbols of that type false.
-//              *
-//              * - modal_truth::possibly_true If we ground
-//              * \argument{State_Predicate} we might get a symbol that
-//              * can be true.
-//              */
-//             modal_truth statically_unsatisfiable(const Planning::Formula::State_Predicate&,
-//                                                   const std::map<Variable,  Constants&>& assignment_possibilities) const;
-
             /* Can a ground instance of \argument{State_Predicate} be
              * equal to \argument{State_Proposition}. Here we assume
              * that the \argument{State_Predicate} symbol is static,
-             * and therefore can examing the problem starting states
+             * and therefore can examine the problem starting states
              * to see what is possible. */
             bool potential_match_via_an_assignment(const Planning::Formula::State_Predicate&,
-                                                   const Planning::Formula::State_Proposition&) const;
+                                                     const Planning::Predicate_Name& State_Proposition__name,
+                                                     const Constant_Arguments& State_Proposition__arguments) const;
         private:
-
             /* Does \member{subformulae} have elements at \argument{index}.*/
             bool check__exists_parsed_subformulae(int index) const;
             

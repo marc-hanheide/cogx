@@ -1,4 +1,4 @@
-
+ 
 #include "global.hh"
 #include "Command_Line_Arguments.hh"
 #include "dtp_pddl_parsing_interface.hh"

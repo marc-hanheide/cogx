@@ -90,32 +90,33 @@ namespace Planning
          * sufficient reasoning. */
         Result operator()(Subformula, const Assignment&);
 
-        /* If you want the \member{runtime_Thread} to change under the
-         * next call to \member{operator()}, then a call to this
-         * member will have the desired effect. */
-        void reset__runtime_Thread();
-
 //         /* see \member{assignment_possibilities}*/
 //         void reset__assignment_possibilities(std::map<Variable,  Constants&>&);
     private:
+//         /* Translates constant symbols from the base to be associated
+//          * with the planning problem. First argument is the base of
+//          * the translation, second argument is the result of the
+//          * translation. Result indicates if a translation occurred. */
+//         bool translate_to_problem_arguments(const Argument_List&, Argument_List&) const;
+//         bool translate_to_problem_arguments(const Constant_Arguments&, Constant_Arguments&) const;
         
-        Subformula formula__false;
-        Subformula formula__true;
-        
+        /* Formulae for FALSE and TRUE. */
+        Planning::Formula::Subformula formula__false;
+        Planning::Formula::Subformula formula__true;
         
 //         std::map<Variable,  Constants&>& assignment_possibilities;
 
         typedef ID_TYPE Predicate_Index;
         
-        typedef std::tr1::unordered_set<Argument_List, boost::hash<Argument_List> > Cached_Partial_Assignment_Unsatisfiability;
-        typedef std::tr1::unordered_set<Argument_List, boost::hash<Argument_List> > Cached_Partial_Assignment_Satisfiability;
+//         typedef std::tr1::unordered_set<Argument_List, boost::hash<Argument_List> > Cached_Partial_Assignment_Unsatisfiability;
+//         typedef std::tr1::unordered_set<Argument_List, boost::hash<Argument_List> > Cached_Partial_Assignment_Satisfiability;
         
-        typedef std::map<Predicate_Index
-                         , std::tr1::tuple<Cached_Partial_Assignment_Satisfiability
-                                           , Cached_Partial_Assignment_Unsatisfiability> > Cached_Predicate_Satisfiability;
+//         typedef std::map<Predicate_Index
+//                          , std::tr1::tuple<Cached_Partial_Assignment_Satisfiability
+//                                            , Cached_Partial_Assignment_Unsatisfiability> > Cached_Predicate_Satisfiability;
 
-        Cached_Predicate_Satisfiability cached_satisfiable;        
-        Cached_Predicate_Satisfiability cached_unsatisfiable;
+//         Cached_Predicate_Satisfiability cached_satisfiable;        
+//         Cached_Predicate_Satisfiability cached_unsatisfiable;
         
         
         Result operator()(Conjunct, const Assignment&);
@@ -140,12 +141,6 @@ namespace Planning
          * created.
          */
         basic_type::Runtime_Thread runtime_Thread;
-        
-
-        /* Has an assignment been made to
-         * \member{made_assignment_to__runtime_Thread}.*/
-        bool made_assignment_to__runtime_Thread;
-
 
         /* Are we processing a negative literal (see
          * \member{operator()(Nagative, ...}).

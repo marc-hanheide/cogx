@@ -60,9 +60,14 @@ void Solver::preprocess()
     if(preprocessed) return;
     
     domain_Data = problem_Data.get__domain_Data();
+
+    VERBOSER(3101, "Got domain :: "<<*domain_Data<<std::endl);
+    
+    
     
     proprocess__Constants_Data();
-
+    
+    configure__extensions_of_types();
     
     problem_Grounding = CXX__PTR_ANNOTATION(Problem_Grounding)
         (new Problem_Grounding(problem_Data,
@@ -106,6 +111,16 @@ void Solver::domain_constants__to__problem_objects()
         for(auto type = types.begin()
                 ; type != types.end()
                 ; type++){
+
+            QUERY_UNRECOVERABLE_ERROR(domain_Data->get__types_description().find(*type)
+                                      == domain_Data->get__types_description().end(),
+                                      "Thread :: "<<domain_Data->get__types_description().begin()->first.get__runtime_Thread()<<std::endl
+                                      <<"Got query from thread :: "<<type->get__runtime_Thread()<<std::endl
+                                      <<"For domain at :: "<<reinterpret_cast<basic_type::Runtime_Thread>(domain_Data.get())<<std::endl);
+            
+            assert(type->get__runtime_Thread() == reinterpret_cast<basic_type::Runtime_Thread>(domain_Data.get()));
+            assert(domain_Data->get__types_description().find(*type) != domain_Data->get__types_description().end());
+            
             problem_Data
                 .add__type_of_constant(type->get__name());
         }
@@ -126,6 +141,14 @@ void Solver::configure__extensions_of_types()
             ; constant_Description++){
         auto types = constant_Description->second;
         auto constant = constant_Description->first;
+
+
+        QUERY_UNRECOVERABLE_ERROR(types.size() > 1
+                                  , "Each object is supposed to be of exactly one type."<<std::endl
+                                  <<"However :: "<<constant<<" was declared with type :: "<<types<<std::endl);
+        QUERY_UNRECOVERABLE_ERROR(types.size() == 0
+                                  , "Each object is supposed to be of exactly one type."<<std::endl
+                                  <<"However :: "<<constant<<" was declared without a type."<<std::endl);
         
         for(auto type = types.begin()
                 ; type != types.end()
@@ -133,14 +156,28 @@ void Solver::configure__extensions_of_types()
 
             auto types_description = domain_Data->get__types_description();
 
+
+//             std::string for_debug;
+//             {
+//                 std::ostringstream oss;
+//                 oss<<*domain_Data<<std::endl;
+//                 for(auto thing = types_description.begin()
+//                         ; thing != types_description.end()
+//                         ; thing++){
+//                     oss<<thing->first<<" "<<thing->second<<std::endl;
+//                 }
+//                 for_debug = oss.str();  
+//             }
+            
             QUERY_UNRECOVERABLE_ERROR(types_description.find(*type) == types_description.end(),
                                       "Unable to find :: "<<*type<<std::endl
-                                      <<"In the domain type hierarchy.");
+                                      <<"In the domain type hierarchy :from : "<<*domain_Data<<std::endl);
 
             if(extensions_of_types.find(*type) == extensions_of_types.end()){
                 extensions_of_types[*type] = Constants();
             }
-            
+
+            VERBOSER(3001, "Adding :: "<<constant<<" of type ::"<<*type<<std::endl);
             
             extensions_of_types[*type].insert(constant);
             
