@@ -51,7 +51,6 @@ namespace Planning
             
             ~Types_Data();
 
-
             /* Function and predicate names are associated with a
              * domain theory. Therefore, when we talk about them in
              * some descendants, when we create them they must be
@@ -101,9 +100,9 @@ namespace Planning
             /* Either:
              *
              * (1) A unit list containing the single type on the RHS
-             * of an '-' elements in a :types distribtion welement
+             * of an '-' elements in a :types distribution element
              *
-             * (2) The list of types that occure in an "(either type_1
+             * (2) The list of types that occur in an "(either type_1
              * type_2 ...)" PDDL :types description.*/
             Planning::Types types_of_types;
             

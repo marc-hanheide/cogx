@@ -31,6 +31,7 @@
  * 
  */
 #include "dtp_pddl_parsing_data_formula.hh"
+#include "dtp_pddl_parsing_data_constants.hh"
 
 using namespace Planning::Parsing;
 
@@ -855,7 +856,13 @@ void Formula_Data::add__variable_argument(const std::string& str)
 
 void Formula_Data::add__constant_argument(const std::string& str)
 {
-    NEW_object_referenced_WRAPPED_deref_visitable_POINTER(Planning::Constant, constant, str);
+    assert(dynamic_cast<Constants_Data*>(this));
+//     NEW_object_referenced_WRAPPED_deref_visitable_POINTER(Planning::Constant, constant, str);
+
+    INTERACTIVE_VERBOSER(true, 3101, "Pointers are "
+                         <<reinterpret_cast<basic_type::Runtime_Thread>(dynamic_cast<Constants_Data*>(this))
+                         <<" "<<reinterpret_cast<basic_type::Runtime_Thread>(this));
+    NEW_referenced_WRAPPED_deref_visitable_POINTER(dynamic_cast<Constants_Data*>(this), Planning::Constant, constant, str);
 
     argument_List.push_back(constant);
 }
@@ -1087,32 +1094,63 @@ bool Formula_Data::check__cardinality_constraint_on_subformulae_at_index
 
 
 bool Formula_Data::potential_match_via_an_assignment(const Planning::Formula::State_Predicate& state_Predicate,
-                                                     const Planning::Formula::State_Proposition& state_Proposition) const
+                                                     const Planning::Predicate_Name& proposition_name,
+                                                     const Constant_Arguments& propositionx_arguments) const
 {
     auto predicate_Name = state_Predicate.get__name();
-    auto proposition_name = state_Proposition.get__name();
     
     QUERY_UNRECOVERABLE_ERROR(predicate_Name != proposition_name,
                               "Asked to see if predicate :: "<<state_Predicate<<std::endl
-                              <<"Can be ground to :: "<<state_Proposition<<std::endl
+                              <<"Can be ground to :: ("<<proposition_name<<" "<<propositionx_arguments<<")"<<std::endl
                               <<"However, those symbols have inconsistent names.");
     
-    auto propositionx_arguments = state_Proposition.get__arguments();
+//     auto propositionx_arguments = state_Proposition.get__arguments();
     auto predicatex_arguments = state_Predicate.get__arguments();
-
-
-    assert( propositionx_arguments.size() == predicatex_arguments.size());
+    
+    QUERY_UNRECOVERABLE_ERROR(propositionx_arguments.size() != predicatex_arguments.size(),
+                              "Asked to see if predicate :: "<<state_Predicate<<std::endl
+                              <<"Can be ground to :: ("<<proposition_name<<" "<<propositionx_arguments<<")"<<std::endl
+                              <<"However, those symbols have inconsistent arities.");
     
     for(uint index = 0; index <  propositionx_arguments.size(); index++){
         const Constant& prop_arg = propositionx_arguments[index];
         const Formula::Subformula& _pred_arg = predicatex_arguments[index];
-
+        
         
         if(_pred_arg.test_cast<Planning::Constant>()){
             const Constant& pred_arg = *_pred_arg.cxx_get<Constant>();
-            if(pred_arg != prop_arg) return false;
+            if(pred_arg.get__runtime_Thread() == prop_arg.get__runtime_Thread()){
+                if(pred_arg == prop_arg) {
+                    INTERACTIVE_VERBOSER(true, 3101, "Successful integer match "<<index<<" "<<state_Predicate
+                                         <<" ("<<proposition_name<<" "<<propositionx_arguments<<") "<<std::endl);
+                    continue;
+                } else {
+                    INTERACTIVE_VERBOSER(true, 3101, "FAILED integer match "<<index<<" "<<state_Predicate
+                                         <<" ("<<proposition_name<<" "<<propositionx_arguments<<") "<<std::endl);
+                    return false;
+                }
+            } else {
+                QUERY_WARNING(pred_arg.get__name() == prop_arg.get__name(),
+                              "Constant :: "<<pred_arg<<" has thread :: "
+                              <<pred_arg.get__runtime_Thread()<<std::endl
+                              <<"Whereas Constant :: "<< prop_arg
+                              <<" has thread :: "<<prop_arg.get__runtime_Thread()<<std::endl);
+                
+                if(pred_arg.get__name() == prop_arg.get__name()){
+                    INTERACTIVE_VERBOSER(true, 3101, "Successful string match "<<index<<" "<<state_Predicate
+                                         <<" ("<<proposition_name<<" "<<propositionx_arguments<<") "<<std::endl);
+                    continue;
+                } else {
+                    INTERACTIVE_VERBOSER(true, 3101, "FAILED string match "<<index<<" "<<state_Predicate
+                                         <<" ("<<proposition_name<<" "<<propositionx_arguments<<") "<<std::endl);
+                    return false;
+                }
+            }
         }
     }
+    
+    INTERACTIVE_VERBOSER(true, 3101, "Got a match "<<state_Predicate
+             <<" ("<<proposition_name<<" "<<propositionx_arguments<<") "<<std::endl);
     
     return true;
 }
@@ -1124,8 +1162,16 @@ bool Formula_Data::statically_satisfiable(const Planning::Formula::State_Predica
     auto predicate_Name = state_Predicate.get__name();
 
     auto _occurrence_indices = state_propositions__parsed.find(predicate_Name);
-    if(_occurrence_indices == state_propositions__parsed.end()) return false;
+    if(_occurrence_indices == state_propositions__parsed.end()) {
+        
+        INTERACTIVE_VERBOSER(true, 3101, "No ground instances of symbol "<<state_Predicate<<std::endl);
+        
+        return false;
+    }
+    
 
+    INTERACTIVE_VERBOSER(true, 3101, "Testing ground instances of symbol "<<state_Predicate<<std::endl);
+    
     auto occurrence_indices = _occurrence_indices->second;
 
     for(auto index = occurrence_indices.begin()
@@ -1135,24 +1181,33 @@ bool Formula_Data::statically_satisfiable(const Planning::Formula::State_Predica
         auto indexed__Traversable_Collection = Planning::Formula::State_Proposition::indexed__Traversable_Collection;
         auto runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>(this);
         
-        assert(indexed__Traversable_Collection.find(runtime_Thread)
-               != indexed__Traversable_Collection.end());
+        QUERY_UNRECOVERABLE_ERROR(indexed__Traversable_Collection.find(runtime_Thread)
+                                  == indexed__Traversable_Collection.end(),
+                                  "There were not propositions parsed in this descriptive element.");
         
         auto traversable_Collection = indexed__Traversable_Collection[runtime_Thread];
 
-        assert(traversable_Collection.use_count());
+        QUERY_UNRECOVERABLE_ERROR(!traversable_Collection.use_count(),
+                                  "There were not propositions parsed in this descriptive element.");
         
-        assert(*index < (*traversable_Collection).size());
+        QUERY_UNRECOVERABLE_ERROR(!(*index < (*traversable_Collection).size()),
+                                  "We parsed :: "<<(*traversable_Collection).size()<<" elements"<<std::endl
+                                  <<"And are asking for element :: "<<*index<<std::endl;);
         
-        auto _proposition = (*traversable_Collection)[*index];
-        NEW_referenced_WRAPPED(runtime_Thread
-                               , Planning::Formula::State_Proposition
-                               , proposition
-                               , std::tr1::get<0>(_proposition)
-                               , std::tr1::get<1>(_proposition));
+//         auto _proposition = (*traversable_Collection)[*index];
+//         NEW_referenced_WRAPPED(runtime_Thread
+//                                , Planning::Formula::State_Proposition
+//                                , proposition
+//                                , std::tr1::get<0>(_proposition)
+//                                , std::tr1::get<1>(_proposition));
         
-        if(potential_match_via_an_assignment(state_Predicate, proposition)) return true;
+        auto proposition = (*traversable_Collection)[*index];
+        if(potential_match_via_an_assignment(state_Predicate,
+                                             std::tr1::get<0>(proposition),
+                                             std::tr1::get<1>(proposition))) return true;
     }
+    
+    INTERACTIVE_VERBOSER(true, 3101, "No ground instances to match "<<state_Predicate<<std::endl);
     
     return false;
 }

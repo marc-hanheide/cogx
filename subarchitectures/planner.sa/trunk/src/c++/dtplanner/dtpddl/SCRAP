@@ -1,4 +1,167 @@
 
+//         if(!processing_negative){
+//             INTERACTIVE_VERBOSER(true, 3101, " -- Needed to be TRUE :: "<<fact);
+
+            
+//             statically_false__starting_always_false(fact);
+//         } else if (processing_negative) {
+//             INTERACTIVE_VERBOSER(true, 3101, " -- Needed to be FALSE :: "<<fact);
+
+            
+            
+            
+//         }
+        
+        
+//         auto predicate_index = fact->get__name().get__id();
+//         auto _arguments = fact->get__arguments();
+
+//         Argument_List arguments(_arguments.size());
+        
+//         for(auto i = 0; i < arguments.size(); i++){
+//             if(_arguments[i].test_cast<Planning::Variable>()){
+//                 arguments[i] = X_constant;
+//             } else {
+//                 arguments[i] = _arguments[i];
+//             }
+//         }
+        
+        
+//         INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Ground form of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+        
+//         auto cached_Partial_Assignment_Satisfiability = cached_satisfiable.find(predicate_index);
+        
+        
+//     }
+
+//     if(!domain_Data.in_delete_effect(fact->get__name())){
+        
+//     }
+    
+    
+    
+//     if(!processing_negative && ){
+
+//         INTERACTIVE_VERBOSER(true, 3101, "Got static FALSE first-order fact :: "<<fact);
+        
+//         auto predicate_index = fact->get__name().get__id();
+//         auto _arguments = fact->get__arguments();
+
+//         Argument_List arguments(_arguments.size());
+        
+//         for(auto i = 0; i < arguments.size(); i++){
+//             if(_arguments[i].test_cast<Planning::Variable>()){
+//                 arguments[i] = X_constant;
+//             } else {
+//                 arguments[i] = _arguments[i];
+//             }
+//         }
+        
+//         INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Ground form of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+        
+        
+//         auto cached_Partial_Assignment_Satisfiability = cached_satisfiable.find(predicate_index);
+        
+//         if(cached_Partial_Assignment_Satisfiability == cached_satisfiable.end()){
+//             INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Had not cached ground form of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+            
+//             cached_satisfiable[predicate_index] = std::tr1::tuple<Cached_Partial_Assignment_Satisfiability
+//                 , Cached_Partial_Assignment_Unsatisfiability>();
+//             cached_Partial_Assignment_Satisfiability = cached_satisfiable.find(predicate_index);
+//         }
+        
+//         Cached_Partial_Assignment_Satisfiability& satisfiable__cached =
+//             std::tr1::get<0>(cached_Partial_Assignment_Satisfiability->second);
+//         Cached_Partial_Assignment_Unsatisfiability& unsatisfiable__cached =
+//             std::tr1::get<1>(cached_Partial_Assignment_Satisfiability->second);
+        
+//         if(satisfiable__cached.find(arguments) == satisfiable__cached.end()){
+//             assert(!(unsatisfiable__cached.find(arguments) == unsatisfiable__cached.end()));
+            
+//             INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cached GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+            
+            
+//             return Result(Subformula(fact), true);
+//         } else if (unsatisfiable__cached.find(arguments) == unsatisfiable__cached.end()) {
+//             INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cached UN-GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+            
+//             return Result(formula__false, false);
+//         }
+           
+//         if(problem_Data.statically_satisfiable(*fact)){
+//             INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cache-ING POSSIBLY GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+            
+            
+//             satisfiable__cached.insert(arguments);
+//             return Result(Subformula(fact), true);
+//         } else {
+//             INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cache-ING UN-GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+            
+//             unsatisfiable__cached.insert(arguments);
+//             return Result(formula__false, false);
+//         }
+//     }
+
+
+//     if(processing_negative && !domain_Data.in_add_effect(fact->get__name())){
+        
+//         INTERACTIVE_VERBOSER(true, 3101, "Got static FALSE first-order fact :: "<<fact);
+        
+        
+//         auto predicate_index = fact->get__name().get__id();
+//         auto _arguments = fact->get__arguments();
+
+//         Argument_List arguments(_arguments.size());
+//         for(auto i = 0; i < arguments.size(); i++){
+//             if(_arguments[i].test_cast<Planning::Variable>()){
+//                 arguments[i] = X_constant;
+//             } else {
+//                 arguments[i] = _arguments[i];
+//             }
+//         }
+           
+//         INTERACTIVE_VERBOSER(true, 3101, "TRUE CASE :: Ground form of first-order fact :: "
+//                              <<fact->get__name()<<" "<<arguments<<std::endl);
+        
+//         auto cached_Partial_Assignment_Satisfiability = cached_unsatisfiable.find(predicate_index);
+
+//         if(cached_Partial_Assignment_Satisfiability == cached_unsatisfiable.end()){
+//             INTERACTIVE_VERBOSER(true, 3101, "TRUE CASE :: Had not cached TRUE first-order fact :: "<<fact);
+            
+//             cached_unsatisfiable[predicate_index] = std::tr1::tuple<Cached_Partial_Assignment_Satisfiability
+//                 , Cached_Partial_Assignment_Unsatisfiability>();
+//             cached_Partial_Assignment_Satisfiability = cached_unsatisfiable.find(predicate_index);
+//         }
+           
+//         Cached_Partial_Assignment_Satisfiability& satisfiable__cached =
+//             std::tr1::get<0>(cached_Partial_Assignment_Satisfiability->second);
+//         Cached_Partial_Assignment_Unsatisfiability& unsatisfiable__cached =
+//             std::tr1::get<1>(cached_Partial_Assignment_Satisfiability->second);
+
+//         if(satisfiable__cached.find(arguments) != satisfiable__cached.end()){
+//             return Result(formula__true, true);
+//         } else if (unsatisfiable__cached.find(arguments) != unsatisfiable__cached.end()) {
+//             return Result(Subformula(fact), true);
+//         }
+           
+//         if(problem_Data.statically_unsatisfiable(*fact)){
+//             satisfiable__cached.insert(arguments);
+//             INTERACTIVE_VERBOSER(true, 3101, "TRUE CASE :: Cache-ING ALWAYS GROUNDABLE ::  of first-order fact :: "
+//                                  <<fact->get__name()<<" "<<arguments<<std::endl);
+            
+//             return Result(formula__true, true);
+//         } else {
+//             INTERACTIVE_VERBOSER(true, 3101, "TRUE CASE :: Cache-ING POSSIBLY GROUNDABLE ::  of first-order fact :: "
+//                                  <<fact->get__name()<<" "<<arguments<<std::endl);
+//             unsatisfiable__cached.insert(arguments);
+//             return Result(Subformula(fact), true);
+//         }
+//     }
+    
+//     INTERACTIVE_VERBOSER(true, 3101, "Got dynamic first-order fact :: "<<fact);
+    
+    
+//     return Result(Subformula(fact), true);
 
 State_Transformation::State_Transformation(bool compulsory)
     :compulsory(compulsory)

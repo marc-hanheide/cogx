@@ -290,7 +290,11 @@ Subformula Planning_Formula__to__Problem_Formula::operator()(Subformula input)
             return new_probabilistic_effect;
         }
         break;
-        default: break;
+        default:
+        {
+            UNRECOVERABLE_ERROR("Given strange formula to convert to problem formula.");
+        }
+        break;
     }
     
     return input;

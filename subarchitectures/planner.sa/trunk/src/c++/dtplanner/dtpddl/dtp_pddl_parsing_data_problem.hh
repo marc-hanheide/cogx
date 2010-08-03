@@ -76,7 +76,48 @@ namespace Planning
             /*For Freiburg Jun 2010 */
             void report__observations(const std::vector<std::string>& observationSeq);
             Planning::Formula::Action_Proposition get__prescribed_action();
+
+
+
+
+
+            /******************************************************************************************
+             ******************************************************************************************
+             ******************************************************************************************
+             ************************************ STATIC ANALYSIS *************************************
+             ******************************************************************************************
+             ******************************************************************************************
+             ******************************************************************************************/
+
+
+            typedef ID_TYPE Predicate_Index;
+
+            Planning::Formula::Subformula X_constant;
+
+
+            typedef std::tr1::unordered_set<Planning::Argument_List, boost::hash<Planning::Argument_List> > Cached_Partial_Assignment_Unsatisfiability;
+            typedef std::tr1::unordered_set<Planning::Argument_List, boost::hash<Planning::Argument_List> > Cached_Partial_Assignment_Satisfiability;
+        
+            typedef std::map<Predicate_Index
+                             , std::tr1::tuple<Cached_Partial_Assignment_Satisfiability
+                                               , Cached_Partial_Assignment_Unsatisfiability> > Cached_Predicate_Satisfiability;
+
+            Cached_Predicate_Satisfiability cached__statically_false__starting_always_false;
+
+
             
+            /* Translates constant symbols from the base to be associated
+             * with the planning problem. First argument is the base of
+             * the translation, second argument is the result of the
+             * translation. Result indicates if a translation occurred. */
+            bool translate_to_problem_arguments(const Planning::Argument_List&, Planning::Argument_List&) const;
+            bool translate_to_problem_arguments(const Planning::Constant_Arguments&, Planning::Constant_Arguments&) const;
+            
+            /* Groundability tests for problem and domain symbols.*/
+            bool statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>&);
+            bool statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>&);
+            bool statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>&);
+            bool statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>&);
         private:
             /*Description of the planning goal.*/
             Planning::Formula::Subformula goal_formula;

@@ -44,6 +44,7 @@ Domain_Data::Domain_Data()
      got__observation_precondition(false),
      got__observation_effect(false)
 {
+    symbol_theory = this;
 }
 
 

@@ -60,8 +60,14 @@ void Constants_Data::add__constants()
         }
 
         if(types_of_constants.size() == 0){/*If the constant was given without a type.*/
-            NEW_object_referenced_WRAPPED(Planning::Type, object_type, "object");
-            constants_Description[*constant].insert(object_type);
+            
+            if(symbol_theory){
+                NEW_referenced_WRAPPED(symbol_theory, Planning::Type, object_type, "object");
+                constants_Description[*constant].insert(object_type);
+            } else {    
+                NEW_object_referenced_WRAPPED(Planning::Type, object_type, "object");
+                constants_Description[*constant].insert(object_type);
+            }
         } else {
             constants_Description[*constant]
                 .insert(types_of_constants.begin()
@@ -75,14 +81,28 @@ void Constants_Data::add__constants()
 
 void Constants_Data::add__constant(const std::string& str){
 
+    INTERACTIVE_VERBOSER(true, 3101, "Constants pointer is "
+                         <<reinterpret_cast<basic_type::Runtime_Thread>(this)<<std::endl);
     NEW_object_referenced_WRAPPED(Planning::Constant, constant, str);
     constants.insert(constant);
 }
 
 void Constants_Data::add__type_of_constant(const std::string& str)
 {
-    NEW_object_referenced_WRAPPED(Type, type, str);
-    types_of_constants.insert(type);
+    if(symbol_theory){
+        VERBOSER(3101, reinterpret_cast<basic_type::Runtime_Thread>(this)<<" type :: "<<str<<" is allocated to a theory :: "<<reinterpret_cast<basic_type::Runtime_Thread>(symbol_theory)<<std::endl);
+//         {char ch; std::cin>>ch;}
+        
+        NEW_referenced_WRAPPED(symbol_theory, Type, type, str);
+        types_of_constants.insert(type);
+    } else {
+        VERBOSER(3101, reinterpret_cast<basic_type::Runtime_Thread>(this)<<" type :: "<<str<<" is not allocated to a theory :: "<<reinterpret_cast<basic_type::Runtime_Thread>(this)<<std::endl);
+//         {char ch; std::cin>>ch;}
+        
+        NEW_object_referenced_WRAPPED(Type, type, str);
+        types_of_constants.insert(type);
+    }
+    
 }
 
 
