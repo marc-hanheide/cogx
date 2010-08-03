@@ -1,0 +1,90 @@
+#------------------------------------------------------------------
+# OWL ABox reasoning
+# 
+# OWL reasoning for ABox individuals
+#
+# file name: coma_office_stripped.rules
+# author: Hendrik Zender, zender@dfki.de
+# date: 2008-04-17
+#------------------------------------------------------------------
+
+@prefix oe: <http://www.dfki.de/cosy/officeenv.owl#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+
+
+#------------------------------------------------------------------
+# Tabling directives
+#------------------------------------------------------------------
+
+#-> tableAll().
+
+#-> table(rdf:type).
+#-> table(owl:sameAs).
+#-> table(owl:differentFrom).
+
+#------------------------------------------------------------------
+# OWL rules
+#------------------------------------------------------------------
+
+[topoNeighborRule:
+ (?x oe:near ?y),
+ (?y oe:in ?z)
+ ->
+ (?x oe:in ?z) ]
+
+#[livingroomRule:
+# (?x oe:inTrans ?y),
+# (?x rdf:type oe:LivingroomObject),
+# (?y rdf:type oe:Room)
+# ->
+# (?y rdf:type oe:Livingroom) ]
+
+[bogusRule:
+ (?x rdf:type oe:Person)
+ ->
+ (?x rdf:type oe:Student) ]
+
+[kitchenRule:
+ (?y rdf:type oe:Kitchen)
+ <-
+ (?x oe:in ?y),
+ (?x rdf:type oe:KitchenObject),
+ (?y rdf:type oe:Room) ]
+
+[livingRoomRule:
+  (?x rdf:type oe:Livingroom)
+  <-
+  (?x rdf:type oe:Room),
+  (?y rdf:type oe:LivingroomObject),
+  (?y oe:in ?x) ]
+
+#[recreationroomRule:
+# (?x oe:inTrans ?y),
+# (?x rdf:type oe:RecreationroomObject),
+# (?y rdf:type oe:Room)
+# ->
+# (?y rdf:type oe:Recreationroom) ]
+
+
+#[vipRule:
+# (?x rdf:type fix:Person),
+# (?x fix:annualIncome ?y),
+# greaterThan(?y, 1000000)
+#  ->
+# (?x rdf:type fix:VIP) ]
+
+#[sevipRule:
+# (?x rdf:type fix:VIP),
+# (?x fix:annualIncome ?y),
+# greaterThan(?y, 100000000)
+#  ->
+# (?x rdf:type fix:SEVIP) ]
+
+#[defaultAnnualIncomeRule:
+# (?x rdf:type fix:Person),
+# noValue(?x, fix:annualIncome)
+#  ->
+# (?x rdf:annualIncome "0"^^xsd:int) ]
