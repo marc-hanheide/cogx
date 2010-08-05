@@ -298,6 +298,7 @@ class TemporalTranslator(pddl.translators.Translator):
     def __init__(self):
         self.depends = [pddl.translators.ModalPredicateCompiler(remove_replan=True), pddl.translators.PreferenceCompiler()]
         self.lock_pred = pddl.Predicate("locked", [])
+        self.do_locking = False
 
     def translate_action(self, action, domain=None):
         tct = pddl.Term(pddl.builtin.total_cost,[])
@@ -339,17 +340,22 @@ class TemporalTranslator(pddl.translators.Translator):
         
         if action.replan:
             a2.replan = action.replan.copy(new_scope=a2)
-        if action.precondition:
+            
+        if action.precondition and self.do_locking:
             a2.precondition = pddl.Conjunction([lock_cond, pddl.durative.TimedCondition("start", action.precondition.copy(new_scope=a2))])
-        else:
+        elif action.precondition:
+            a2.precondition = pddl.durative.TimedCondition("start", action.precondition.copy(new_scope=a2))
+        elif self.do_locking:
             a2.precondition = lock_cond
 
         acquire_lock = pddl.durative.TimedEffect(self.lock_pred, [], "start", a2, negated=False)
         release_lock = pddl.durative.TimedEffect(self.lock_pred, [], "end", a2, negated=True)
         effect = pddl.ConjunctiveEffect([acquire_lock, release_lock], a2)
             
-        if action.effect:
+        if action.effect and self.do_locking:
             effect.parts.append(action.effect.visit(effect_visitor))
+        elif action.effect:
+            effect = action.effect.visit(effect_visitor)
             
         a2.effect = effect
         a2.effect.set_scope(a2)

@@ -269,7 +269,7 @@ class BasePlanner(object):
         log.debug("\nNew plan is:")
 #        log.debug("----------------------------------------------")
         for elem in output_data:
-            log.debug(elem)
+            log.debug(str(elem))
         log.debug("")
 
         with statistics.time_block_for_statistics(self.main_planner, "postprocess_time"):
