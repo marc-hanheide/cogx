@@ -120,6 +120,12 @@ namespace Planning
                          , atomic_symbol
                          , symbol_name
                          , argument_List);
+                    this->using__symbol_name
+                        <PREDICATE_SYMBOL
+                        , Symbol_Name>
+                        (symbol_name,
+                         atomic_symbol->get__id());
+                    
                     subformulae[formula_parsing_level].push_back(atomic_symbol);
                 } else {
                     NEW_object_referenced_WRAPPED_deref_visitable_POINTER

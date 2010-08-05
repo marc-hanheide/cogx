@@ -143,8 +143,8 @@ int main(int argc, char** argv)
             ; problem != Planning::Parsing::problems.end()
             ; problem++){
         
-//         std::cout<<*problem->second->get__domain_Data()<<std::endl;
-//         std::cout<<*problem->second<<std::endl;
+        std::cout<<*problem->second->get__domain_Data()<<std::endl;
+        std::cout<<*problem->second<<std::endl;
         
         for(int i =0 ; i < 100; i++){
             std::cout<<problem->second->get__prescribed_action()<<std::endl;
