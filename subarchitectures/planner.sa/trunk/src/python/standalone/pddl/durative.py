@@ -64,7 +64,19 @@ class DurativeAction(actions.Action):
         a.__class__ = DurativeAction
         a.duration = [DurationConstraint(a.lookup([d.term])[0], d.timeSpecifier) for d in self.duration]
         return a
-       
+
+    def copy_skeletion(self, newdomain=None):
+        """Create a copy of this action's skeleton (name, arguments
+        but not conditions and effects).
+
+        Arguments:
+        newdomain -- if not None, the copy will be created inside this scope."""
+
+        a = actions.Action.copy_skeletion(self, newdomain)
+        a.__class__ = DurativeAction
+        a.duration = [DurationConstraint(a.lookup([d.term])[0], d.timeSpecifier) for d in self.duration]
+        return a
+    
     @staticmethod
     def parse(it, scope):
         it.get(":durative-action")
@@ -172,6 +184,20 @@ class TimedEffect(effects.SimpleEffect):
 
     def copy_instance(self, new_scope=None):
         return self.__class__(self.predicate, [a.copy_instance() for a in self.args], self.time, new_scope, negated=self.negated)
+
+    def new_literal(self, predicate=None, args=None, scope=False, negated=None, time=None):
+        if predicate is None:
+            predicate = self.predicate
+        if args is None:
+            args = self.args
+        if scope is False:
+            scope = self.scope
+        if negated is None:
+            negated = self.negated
+        if time is None:
+            time = self.time
+
+        return TimedEffect(predicate, args, time, scope, negated)
     
     def __str__(self):
         return "TimedEffect at %s: %s" %(self.time, predicates.Literal.__str__(self))

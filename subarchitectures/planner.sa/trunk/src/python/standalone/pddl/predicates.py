@@ -172,6 +172,17 @@ class Literal(object):
         
         return self.__class__(self.predicate, self.args, new_scope, self.negated)
 
+    def new_literal(self, predicate=None, args=None, scope=False, negated=None):
+        if predicate is None:
+            predicate = self.predicate
+        if args is None:
+            args = self.args
+        if scope is False:
+            scope = self.scope
+        if negated is None:
+            negated = self.negated
+        return self.__class__(predicate, args, scope, negated)
+
     def set_scope(self, new_scope):
         self.scope = new_scope
         self.args = new_scope.lookup(self.args)

@@ -31,6 +31,7 @@ class Task(object):
         self._action_blacklist = None
         self._action_whitelist = None
         self._plan = None
+        self.planner = None
         #for dt testing only
         self.dt_calls = 0
         self.dt_actions = 0
@@ -295,36 +296,81 @@ class FDOutput(PDDLOutput):
 
 class TemporalTranslator(pddl.translators.Translator):
     def __init__(self):
-        self.depends = [pddl.translators.ModalPredicateCompiler(remove_replan=True)]
+        self.depends = [pddl.translators.ModalPredicateCompiler(remove_replan=True), pddl.translators.PreferenceCompiler()]
+        self.lock_pred = pddl.Predicate("locked", [])
 
     def translate_action(self, action, domain=None):
+        tct = pddl.Term(pddl.builtin.total_cost,[])
 
+        affected_vars = set()
+        cond_effects = []
+        
         @pddl.visitors.copy
         def effect_visitor(eff, results):
             if isinstance(eff, pddl.SimpleEffect):
+                if eff.predicate == pddl.builtin.increase and eff.args[0] == tct:
+                    return False
                 if eff.predicate == pddl.assign:
+                    affected_vars.add((eff.args[0].function, ) + tuple(eff.args[0].args))
                     return pddl.SimpleEffect(pddl.builtin.change, eff.args[:])
                 if eff.predicate == pddl.builtin.num_assign:
+                    affected_vars.add((eff.args[0].function, ) + tuple(eff.args[0].args))
                     return pddl.SimpleEffect(pddl.builtin.num_change, eff.args[:])
+                affected_vars.add((eff.predicate, ) + tuple(eff.args))
                 return pddl.durative.TimedEffect(eff.predicate, eff.args[:], "end", negated=eff.negated)
             if isinstance(eff, pddl.ConditionalEffect):
                 eff2 = pddl.ConditionalEffect(None, results[0])
-                eff2.condition = pddl.durative.TimedCondition("start", eff.condition.copy())
+                eff2.condition = pddl.durative.TimedCondition("all", eff.condition.copy())
+                cond_effects.append(eff2)
                 return eff2
-        
+
         if isinstance(action, pddl.durative.DurativeAction):
             return action.copy(newdomain=domain)
-        
-        dc = pddl.durative.DurationConstraint(pddl.Term(1))
+
+        total_costs = action.get_total_cost()
+        if total_costs:
+            dc = pddl.durative.DurationConstraint(total_costs)
+        else:
+            dc = pddl.durative.DurationConstraint(pddl.Term(1))
         args = [pddl.Parameter(p.name, p.type) for p in action.args]
         a2 = pddl.durative.DurativeAction(action.name, args, [dc], None, None, domain)
+
+        lock_cond = pddl.durative.TimedCondition("start", pddl.LiteralCondition(self.lock_pred, [], a2, negated=True))
         
         if action.replan:
             a2.replan = action.replan.copy(new_scope=a2)
         if action.precondition:
-            a2.precondition = pddl.durative.TimedCondition("start", action.precondition.copy(new_scope=a2))
+            a2.precondition = pddl.Conjunction([lock_cond, pddl.durative.TimedCondition("start", action.precondition.copy(new_scope=a2))])
+        else:
+            a2.precondition = lock_cond
+
+        acquire_lock = pddl.durative.TimedEffect(self.lock_pred, [], "start", a2, negated=False)
+        release_lock = pddl.durative.TimedEffect(self.lock_pred, [], "end", a2, negated=True)
+        effect = pddl.ConjunctiveEffect([acquire_lock, release_lock], a2)
             
-        a2.effect = action.effect.visit(effect_visitor)
+        if action.effect:
+            effect.parts.append(action.effect.visit(effect_visitor))
+            
+        a2.effect = effect
         a2.effect.set_scope(a2)
             
         return a2
+
+    def translate_domain(self, _domain):
+        dom = pddl.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
+        dom.requirements = _domain.requirements.copy()
+        dom.requirements.add("durative-actions")
+        dom.requirements.discard("action-costs")
+        
+        dom.predicates.add(self.lock_pred)
+
+        dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
+        dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
+        dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
+        dom.stratify_axioms()
+        dom.name2action = None
+        return dom
+    
+    def translate_problem(self, _problem):
+        domain = self.translate_domain(_problem.domain)
+        return pddl.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, None, None)

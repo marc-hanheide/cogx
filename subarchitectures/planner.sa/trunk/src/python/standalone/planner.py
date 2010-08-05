@@ -446,13 +446,13 @@ class Downward(BasePlanner):
             pddl_output = open(plan_path).read()
             print pddl_output
         except IOError:
-            print "Warning: Fast Downward did not find a plan or crashed."
-            print "Call was:", cmd
-            print "FD output was:\n\n>>>"
-            print translate_out
-            print prep_out
-            print search_out
-            print "<<<\n"
+            log.warning("Warning: Fast Downward did not find a plan or crashed.")
+            log.warning("Call was: %s", cmd)
+            log.warning("FD output was:\n\n>>>")
+            log.warning(translate_out)
+            log.warning(prep_out)
+            log.warning(search_out)
+            log.warning("<<<\n")
             return None
         pddl_plan = self.parse_fd_output(pddl_output)
         return pddl_plan
@@ -498,54 +498,76 @@ class TFD(BasePlanner):
         planning_tmp_dir =  global_vars.config.tmp_dir
         tmp_dir = get_planner_tempdir(planning_tmp_dir)
 
-        paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "stdout.out")]
-        pddl_strs = _task.domain_str(task.TFDWriter), _task.problem_str(task.TFDWriter)
-        for path, content in zip(paths, pddl_strs):
-            f = open(path, "w")
-            f.write(content)
-            f.close()
+        paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "output.sas", "output", "plan.best", "stdout.out")]
+        w = task.TFDOutput()
+        w.write(_task.mapltask, domain_fn=paths[0], problem_fn=paths[1])
+
+        # pddl_strs = _task.domain_str(task.TFDWriter), _task.problem_str(task.TFDWriter)
+        # for path, content in zip(paths, pddl_strs):
+        #     f = open(path, "w")
+        #     f.write(content)
+        #     f.close()
         paths.append(tmp_dir)
         return paths
 
     def _run(self, input_data, task):
-        domain_path, problem_path, stdout_path, tmp_dir = input_data
-        translate = os.path.join(self.executable, "translate/translate.py")
-        preprocess = os.path.join(self.executable, "preprocess/preprocess")
-        search = os.path.join(self.executable, "search/search")
-        print "running..."
-        cmd = "%(translate)s %(domain_path)s %(problem_path)s" % locals()
-        p_tr = utils.run_process(cmd, dir=tmp_dir)
-        if p_tr.returncode != 0:
-            print "Warning: Error in TFD translate. output was:\n\n>>>"
-            print p_tr.stderr.read()
-            print "<<<\n"
-            return None
-        print "translate done"
-        p_pre = utils.run_process(preprocess, input=p_tr.stdout, dir=tmp_dir)
-        if p_pre.returncode != 0:
-            print "Warning: Error in TFD preprocess. output was:\n\n>>>"
-            print p_pre.stderr.read()
-            print "<<<\n"
-            return None
-        
-        print "preprocess done"
-        cmd = "%(search)s yY t 5 -" % locals()
-        p_search = utils.run_process(cmd, input=p_pre.stdout, dir=tmp_dir)
-        
-        if p_search.returncode != 0:
-            print "Warning: TFD search did not find a plan or crashed.  TFD output was:\n\n>>>"
-            print p_search.stderr.read()
-            print "<<<\n"
-            return None
+        import subprocess
+        domain_path, problem_path, output_sas_path, output_path, plan_path, stdout_path, tmp_dir = input_data
+        exec_path = os.path.join(global_vars.src_path, self.executable)
+        search_args = self.config.search_args
 
-        print "all done"
         output = open(stdout_path, "w")
-        output.write(p_tr.stderr.read())
-        output.write(p_pre.stderr.read())
-        output.write(p_search.stderr.read())
-        output.close()
+        
+        cmd = "%(exec_path)s/translate/translate.py  %(domain_path)s %(problem_path)s" % locals()
+        with statistics.time_block_for_statistics(self.main_planner, "translate_time"):
+            proc, _, translate_err = utils.run_process(cmd, output=output_sas_path, dir=tmp_dir, wait=True)
+        
+        output.write(translate_err)
+        log.debug("translate output:")
+        log.debug(translate_err)
+        
+        if proc.returncode != 0:
+            utils.print_errors(proc, cmd, translate_err, "TFD Translate")
+            return None
 
-        pddl_plan = self.parse_tfd_output(p_search.stdout.read())
+        cmd = "%(exec_path)s/preprocess/preprocess" % locals()
+        with statistics.time_block_for_statistics(self.main_planner, "preprocess_time"):
+            proc, _, prep_err = utils.run_process(cmd, input=output_sas_path, output=output_path, dir=tmp_dir, wait=True)
+        output.write(prep_err)
+        log.debug("preprocess output:")
+        log.debug(prep_err)
+        
+        if proc.returncode != 0:
+            utils.print_errors(proc, cmd, prep_err, "TFD Preprocess")
+            return None
+
+        cmd = "%(exec_path)s/search/search %(search_args)s" % locals()
+        with statistics.time_block_for_statistics(self.main_planner, "search_time"):
+             proc, _, search_err = utils.run_process(cmd, input=output_path, dir=tmp_dir, wait=True)
+        output.write(search_err)
+        log.debug("search output:")
+        log.debug(search_err)
+
+        if proc.returncode != 0:
+            utils.print_errors(proc, cmd, search_err, "TFD Search")
+            return None
+
+        output.close()
+        
+        try:
+            pddl_output = open(plan_path).read()
+            print pddl_output
+        except IOError:
+            log.warning("Warning: TFD did not find a plan or crashed.")
+            log.warning("Call was: %s", cmd)
+            log.warning("FD output was:\n\n>>>")
+            log.warning(translate_err)
+            log.warning(prep_err)
+            log.warning(search_err)
+            log.warning("<<<\n")
+            return None
+        
+        pddl_plan = self.parse_tfd_output(pddl_output)
         return pddl_plan
 
     def parse_tfd_output(self, pddl_output):
@@ -556,9 +578,9 @@ class TFD(BasePlanner):
             start = float(result.group(1))
             action =  result.group(2).lower()
             duration = float(result.group(3))
-            if start == 0:
-                #start of a new (usually better plan)
-                actions = []
+            #if start == 0:
+            #    #start of a new (usually better plan)
+            #    actions = []
             actions.append((start, action, duration))
                 
         return actions
@@ -581,6 +603,7 @@ class TFD(BasePlanner):
         """
         plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
         times_actions = [(a[0], a[1]) for a in action_list]
+        times_actions = sorted(times_actions, key=lambda x:x[0])
         plan = plan_postprocess.make_po_plan(times_actions, task)
             
         return plan
