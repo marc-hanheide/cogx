@@ -79,11 +79,13 @@ bool Formula_Data::in_delete_effect(const Predicate_Name& predicate_Name) const
 
 void Formula_Data::report__enter_parsing_initial_state()
 {
+    INTERACTIVE_VERBOSER(true, 3102, "Parsing initial state.");
     parsing_initial_state = true;
 }
 
 void Formula_Data::report__exit_parsing_initial_state()
 {
+    INTERACTIVE_VERBOSER(true, 3102, "Finished parsing initial state.");
     parsing_initial_state = false;
 }
 
@@ -101,11 +103,13 @@ Formula_Data::Formula_Data():
 
 void Formula_Data::report__enter_parsing_effect_context()
 {
+    INTERACTIVE_VERBOSER(true, 3102, "Parsing symbols in effect context.");
     in_effect_context = true;
 }
 
 void Formula_Data::report__exit_parsing_effect_context()
 {
+    INTERACTIVE_VERBOSER(true, 3102, "No longer parsing symbols in effect context.");
     in_effect_context = false;
 }
 
@@ -876,6 +880,8 @@ void Formula_Data::add__constant_argument(const std::string& str)
     (const NAME_TYPE& symbol_name,                                      \
      ID_TYPE index)                                                     \
     {                                                                   \
+        INTERACTIVE_VERBOSER(true, 3102, "Processing symbol in a ("<<in_effect_context<<")context :: "<<symbol_name); \
+                                                                        \
         if(storage.find(symbol_name) == storage.end()){                 \
             storage[symbol_name] = std::set<ID_TYPE>();                 \
         }                                                               \
@@ -884,10 +890,12 @@ void Formula_Data::add__constant_argument(const std::string& str)
                                                                         \
                                                                         \
         if(in_effect_context){                                          \
+INTERACTIVE_VERBOSER(true, 3102, "Parsing symbol in effect context :: "<<symbol_name); \
             if(in_delete_context){                                      \
                 if(del_storage.find(symbol_name) == del_storage.end()){ \
                     del_storage[symbol_name] = std::set<ID_TYPE>();     \
                 }                                                       \
+INTERACTIVE_VERBOSER(true, 3102, "Got an delete symbol :: "<<symbol_name); \
                 del_storage[symbol_name]                                \
                     .insert(index);                                     \
             } else {                                                    \
@@ -897,6 +905,8 @@ void Formula_Data::add__constant_argument(const std::string& str)
                 }                                                       \
                 add_storage[symbol_name]                                \
                     .insert(index);                                     \
+                                                                        \
+INTERACTIVE_VERBOSER(true, 3102, "Got an add symbol :: "<<symbol_name); \
             }                                                           \
         }                                                               \
     }                                                                   \
@@ -986,6 +996,9 @@ namespace Planning
                                            deleted__observational_propositions__parsed);
 
         REPORT_SYMBOL_USAGE__NO_STORAGE(Planning::Formula::Action_Proposition,
+                                        Planning::Action_Name);
+        
+        REPORT_SYMBOL_USAGE__NO_STORAGE(Planning::Formula::Action_Predicate,
                                         Planning::Action_Name);
     }
 }
