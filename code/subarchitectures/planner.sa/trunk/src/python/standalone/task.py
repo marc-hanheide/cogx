@@ -298,6 +298,7 @@ class TemporalTranslator(pddl.translators.Translator):
     def __init__(self):
         self.depends = [pddl.translators.ModalPredicateCompiler(remove_replan=True), pddl.translators.PreferenceCompiler()]
         self.lock_pred = pddl.Predicate("locked", [])
+        self.ended_pred = pddl.Predicate("ended", [])
         self.do_locking = False
 
     def translate_action(self, action, domain=None):
@@ -337,26 +338,46 @@ class TemporalTranslator(pddl.translators.Translator):
         a2 = pddl.durative.DurativeAction(action.name, args, [dc], None, None, domain)
 
         lock_cond = pddl.durative.TimedCondition("start", pddl.LiteralCondition(self.lock_pred, [], a2, negated=True))
+        ended_cond = pddl.durative.TimedCondition("all", pddl.LiteralCondition(self.ended_pred, [], a2, negated=True))
+
+        ended_effect = pddl.durative.TimedEffect(self.ended_pred, [], "start", a2, negated=False)
+        acquire_lock = pddl.durative.TimedEffect(self.lock_pred, [], "start", a2, negated=False)
+        release_lock = pddl.durative.TimedEffect(self.lock_pred, [], "end", a2, negated=True)
         
         if action.replan:
             a2.replan = action.replan.copy(new_scope=a2)
-            
-        if action.precondition and self.do_locking:
-            a2.precondition = pddl.Conjunction([lock_cond, pddl.durative.TimedCondition("start", action.precondition.copy(new_scope=a2))])
-        elif action.precondition:
-            a2.precondition = pddl.durative.TimedCondition("start", action.precondition.copy(new_scope=a2))
-        elif self.do_locking:
-            a2.precondition = lock_cond
 
-        acquire_lock = pddl.durative.TimedEffect(self.lock_pred, [], "start", a2, negated=False)
-        release_lock = pddl.durative.TimedEffect(self.lock_pred, [], "end", a2, negated=True)
-        effect = pddl.ConjunctiveEffect([acquire_lock, release_lock], a2)
-            
-        if action.effect and self.do_locking:
-            effect.parts.append(action.effect.visit(effect_visitor))
-        elif action.effect:
-            effect = action.effect.visit(effect_visitor)
-            
+        add_conds = []
+        add_effects = []
+
+        if action.name.startswith("ignore-preference"):
+            add_conds.append(lock_cond)
+            add_effects += [ended_effect, acquire_lock, release_lock]
+        else:
+            add_conds.append(ended_cond)
+
+        cond = None
+        if add_conds:
+            cond = pddl.Conjunction(add_conds, a2)
+        if action.precondition:
+            orig = pddl.durative.TimedCondition("start", action.precondition.copy(new_scope=a2))
+            if cond:
+                cond.parts.append(orig)
+            else:
+                cond = orig
+
+        effect = None
+        if add_effects:
+            effect = pddl.ConjunctiveEffect(add_effects, a2)
+        if action.effect:
+            orig = action.effect.visit(effect_visitor)
+            if effect:
+                effect.parts.append(orig)
+            else:
+                effect = orig
+
+        a2.precondition = cond
+        a2.precondition.set_scope(a2)
         a2.effect = effect
         a2.effect.set_scope(a2)
             
@@ -369,6 +390,7 @@ class TemporalTranslator(pddl.translators.Translator):
         dom.requirements.discard("action-costs")
         
         dom.predicates.add(self.lock_pred)
+        dom.predicates.add(self.ended_pred)
 
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
         dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
