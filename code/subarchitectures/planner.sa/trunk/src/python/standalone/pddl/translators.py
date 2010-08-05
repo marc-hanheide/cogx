@@ -375,7 +375,7 @@ class ObjectFluentNormalizer(Translator):
             else:
                 new_args.append(t)
 
-        return lit.__class__(lit.predicate, new_args, negated=lit.negated)
+        return lit.new_literal(args=new_args, scope=None)
 
     def translate_condition(self, cond, termdict, scope):
         @visitors.copy
@@ -395,11 +395,11 @@ class ObjectFluentNormalizer(Translator):
                         new_pred = ge
                         
                     if isinstance(cond.args[0], (VariableTerm, ConstantTerm)) and isinstance(cond.args[1], FunctionTerm):
-                        cond = cond.__class__(new_pred, [cond.args[1], cond.args[0]], negated=cond.negated)
+                        cond = cond.new_literal(predicate=new_pred, args= [cond.args[1], cond.args[0]])
                     elif isinstance(cond.args[0], (VariableTerm, ConstantTerm)) and isinstance(cond.args[1], (VariableTerm, ConstantTerm)):
                         return cond
                     if isinstance(cond.args[1], FunctionTerm) and cond.args[0] in termdict and cond.args[1] not in termdict:
-                        cond = cond.__class__(new_pred, [cond.args[1], cond.args[0]], negated=cond.negated)
+                        cond = cond.new_literal(predicate=new_pred, args=[cond.args[1], cond.args[0]])
 
                 return self.translate_literal(cond, termdict)
             
@@ -417,6 +417,8 @@ class ObjectFluentNormalizer(Translator):
         return visitors.visit(eff, visitor)
         
     def translate_action(self, action, domain=None):
+        import mapl
+        
         assert domain is not None
 
         termdict = {}
@@ -438,10 +440,10 @@ class ObjectFluentNormalizer(Translator):
 
         a2 = action.copy_skeletion(domain)
         a2.add(add_args)
-        if action.__class__ == actions.Action:
-            a2.args += add_args
-        else:
+        if isinstance(action, mapl.MAPLAction):
             a2.maplargs += add_args
+        else:
+            a2.args += add_args
             
         a2.precondition = pre
         a2.replan = replan
@@ -663,6 +665,7 @@ class ModalPredicateCompiler(Translator):
         return func_arg, compiled
 
     def translate_literal(self, literal, scope):
+        import durative
         if literal.predicate in numeric_ops + assignment_ops:
             return literal.copy_instance()
         
@@ -681,8 +684,7 @@ class ModalPredicateCompiler(Translator):
 
         pred = scope.predicates.get("-".join(name_elems), args)
 
-        result = Literal(pred, args, negated=literal.negated)
-        result.__class__ = literal.__class__
+        result = literal.new_literal(predicate=pred, args=args)
         return result.copy_instance()
                 
     def translate_action(self, action, domain=None, new_args=None):
@@ -829,7 +831,7 @@ class MAPLCompiler(Translator):
         self.remove_replan = remove_replan
         
     def translate_action(self, action, domain=None):
-        import mapl
+        import mapl, durative
         assert domain is not None
 
         def visitor(eff, results):
@@ -849,7 +851,9 @@ class MAPLCompiler(Translator):
             return eff.copy(new_parts = filtered_results)
                 
         a2 = action.copy_skeletion(domain)
-        if isinstance(action, mapl.MAPLAction):
+        if isinstance(action, mapl.MAPLDurativeAction):
+            a2.__class__ = durative.DurativeAction
+        elif isinstance(action, mapl.MAPLAction):
             a2.__class__ = actions.Action
         
         if action.precondition:

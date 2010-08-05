@@ -237,7 +237,19 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
         a.__class__ = MAPLDurativeAction
         a.duration = [durative.DurationConstraint(a.lookup([d.term])[0], d.timeSpecifier) for d in self.duration]
         return a
-       
+
+    def copy_skeletion(self, newdomain=None):
+        """Create a copy of this action's skeleton (name, arguments
+        but not conditions and effects).
+
+        Arguments:
+        newdomain -- if not None, the copy will be created inside this scope."""
+
+        a = MAPLAction.copy_skeletion(self, newdomain)
+        a.__class__ = MAPLDurativeAction
+        a.duration = [durative.DurationConstraint(a.lookup([d.term])[0], d.timeSpecifier) for d in self.duration]
+        return a
+    
     @staticmethod
     def parse(it, scope):
         it.get(":durative-action")

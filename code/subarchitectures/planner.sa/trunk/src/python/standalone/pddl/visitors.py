@@ -11,9 +11,9 @@ def copy(f):
     
     def copy_visitor(elem, results):
         result = f(elem, results)
-        if result:
+        if result is not None:
             return result
-        return elem.copy(new_parts = results)
+        return elem.copy(new_parts = filter(None, results))
     return copy_visitor
 
 def replace(f):
@@ -21,8 +21,10 @@ def replace(f):
     
     def replace_visitor(elem, results):
         result = f(elem, results)
-        if result:
+        if result is not None:
             return result
+
+        results = filter(None, results)
 
         if isinstance(elem, (effects.ConjunctiveEffect, conditions.JunctionCondition)):
             elem.parts = results

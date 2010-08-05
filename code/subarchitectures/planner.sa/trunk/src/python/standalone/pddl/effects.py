@@ -53,13 +53,12 @@ class Effect(object):
                 return []
             if isinstance(eff, SimpleEffect):
                 return sum([t.visit(visitor) for t in eff.args], [])
-            if isinstance(eff, ConjunctiveEffect):
-                return sum(results, [])
             if eff.__class__ == UniversalEffect:
                 vars = results[0]
                 return [p for p in vars if p not in eff]
             if eff.__class__ == ConditionalEffect:
                 return results + list(eff.condition.free())
+            return sum(results, [])
         return set(self.visit(visitor))
     
     def pddl_str(self, instantiated=True):
@@ -68,12 +67,15 @@ class Effect(object):
         Arguments:
         instantiated -- if True (which is the default) resolves
         instantiated Parameters before printing the string."""
-        
+
         def printVisitor(eff, results=[]):
-            if eff.__class__ == SimpleEffect:
+            if isinstance(eff, SimpleEffect):
+                import durative
                 s = "(%s %s)" % (eff.predicate.name, " ".join(a.pddl_str(instantiated) for a in eff.args))
                 if eff.negated:
-                    return "(not %s)" % s
+                    s = "(not %s)" % s
+                if isinstance(eff, durative.TimedEffect):
+                    return "(at %s %s)" % (eff.time, s)
                 return s
             if isinstance(eff, ConjunctiveEffect):
                 return "(and %s)" % " ".join(results)
@@ -82,6 +84,8 @@ class Effect(object):
                 return "(forall (%s) %s)" % (args, results[0])
             if eff.__class__ == ConditionalEffect:
                 return "(when (%s) %s)" % (eff.condition.pddl_str(), results[0])
+                
+            assert False, "Class not handled: %s" % eff.__class__
         return self.visit(printVisitor)
     
     @staticmethod
@@ -131,7 +135,7 @@ class ConjunctiveEffect(Effect):
     def copy(self, new_scope=None, new_parts=None, copy_instance=False):
         if not new_scope:
             new_scope = self.scope
-        if not new_parts:
+        if new_parts is None:
             return ConjunctiveEffect([e.copy(new_scope, copy_instance=copy_instance) for e in self.parts])
         elif new_scope:
             for p in new_parts:
@@ -186,8 +190,10 @@ class UniversalEffect(Scope, Effect):
                     arg.type = arg.type.effective_type()
                 else:
                     arg.type = types.ProxyType(cp[arg.type.parameter])
-                    
-        if new_parts:
+
+        if new_parts == []:
+            new_parts = ConjunctiveEffect([])
+        elif new_parts:
             cp.effect = new_parts[0]
             cp.effect.set_scope(cp)
         else:
@@ -248,7 +254,9 @@ class ProbabilisticEffect(Effect):
     def copy(self, new_scope=None, new_parts=None, copy_instance=False):
         if not new_scope:
             new_scope = self.scope
-        if new_parts:
+        if new_parts == []:
+            return ProbabilisticEffect([])
+        elif new_parts:
             return ProbabilisticEffect([(p, eff.copy(new_scope, copy_instance=copy_instance)) for p,eff in new_parts])
         else:
             return ProbabilisticEffect([(p, eff.copy(new_scope, copy_instance=copy_instance)) for p,eff in self.effects])
@@ -337,7 +345,9 @@ class ConditionalEffect(Effect):
     def copy(self, new_scope=None, new_parts=None, copy_instance=False):
         if not new_scope:
             new_scope = self.scope
-        if new_parts:
+        if new_parts == []:
+            return ConditionalEffect(self.condition.copy(new_scope), ConjunctiveEffect([], new_scope))
+        elif new_parts:
             return ConditionalEffect(self.condition.copy(new_scope), new_parts[0].copy(new_scope, copy_instance=copy_instance))
         else:
             return ConditionalEffect(self.condition.copy(new_scope, copy_instance=copy_instance), self.effect.copy(new_scope, copy_instance=copy_instance))
