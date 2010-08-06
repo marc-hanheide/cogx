@@ -1,7 +1,7 @@
 import itertools, time
 
 import config, constants
-import assertions, macros
+import assertions#, macros
 import pddl
 from  pddl import state, mapl
 import statistics
@@ -350,7 +350,7 @@ class TemporalTranslator(pddl.translators.Translator):
         add_conds = []
         add_effects = []
 
-        if action.name.startswith("ignore-preference"):
+        if action.name.startswith("ignore-preference") and "fullfill" not in action.name:
             add_conds.append(lock_cond)
             add_effects += [ended_effect, acquire_lock, release_lock]
         else:
