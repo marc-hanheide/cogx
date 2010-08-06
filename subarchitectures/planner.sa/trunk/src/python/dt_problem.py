@@ -21,9 +21,9 @@ class DTProblem(object):
         self.problem = self.create_problem(self.state, self.dtdomain)
         self.dt_plan = []
 
-        dom_str, prob_str = DTPDDLOutput().write(self.problem)
-        print "\n".join(dom_str)
-        print "\n".join(prob_str)
+        # dom_str, prob_str = DTPDDLOutput().write(self.problem)
+        # print "\n".join(dom_str)
+        # print "\n".join(prob_str)
 
     def write_dt_input(self, domain_fn, problem_fn):
         DTPDDLOutput().write(self.problem, domain_fn=domain_fn, problem_fn=problem_fn)

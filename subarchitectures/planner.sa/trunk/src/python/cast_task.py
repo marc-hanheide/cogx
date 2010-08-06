@@ -41,6 +41,10 @@ class CASTTask(object):
         problem_fn = abspath(join(self.component.get_path(), "problem%d.mapl" % self.id))
         self.write_cp_problem(problem_fn)
 
+        domain_out_fn = abspath(join(self.component.get_path(), "domain%d.mapl" % self.id))
+        w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
+        w.write(self.cp_task.mapltask, domain_fn=domain_out_fn)
+        
         
     def update_status(self, status):
         self.status = status

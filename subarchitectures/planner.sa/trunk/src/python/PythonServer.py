@@ -257,6 +257,11 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       tmp_dir = standalone.planner.get_planner_tempdir(planning_tmp_dir)
       domain_fn = os.path.join(tmp_dir, "domain.dtpddl")
       problem_fn = os.path.join(tmp_dir, "problem.dtpddl")
+
+      #Write dtpddl domain for debugging
+      domain_out_fn = abspath(join(self.get_path(), "domain%d.dtpddl" % task.id))
+      w = standalone.task.PDDLOutput(writer=pddl.dtpddl.DTPDDLWriter())
+      w.write(task.dt_task.problem, domain_fn=domain_out_fn)
       
       task.dt_task.write_dt_input(domain_fn, problem_fn)
       self.getDT().newTask(task.id, problem_fn, domain_fn);
