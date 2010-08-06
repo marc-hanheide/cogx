@@ -330,10 +330,13 @@ class TemporalTranslator(pddl.translators.Translator):
             return action.copy(newdomain=domain)
 
         total_costs = action.get_total_cost()
-        if total_costs:
+        if total_costs == 0:
+            dc = pddl.durative.DurationConstraint(pddl.Term(0.001))
+        elif total_costs:
             dc = pddl.durative.DurationConstraint(total_costs)
         else:
             dc = pddl.durative.DurationConstraint(pddl.Term(1))
+            
         args = [pddl.Parameter(p.name, p.type) for p in action.args]
         a2 = pddl.durative.DurativeAction(action.name, args, [dc], None, None, domain)
 
