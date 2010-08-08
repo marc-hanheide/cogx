@@ -39,12 +39,12 @@ using namespace Planning;
 
 
 
-uint State::count__compulsory_generative_transformation() const
+uint State::count__compulsory_generative_transformations() const
 {
     return applicable_compulsory_generative_transformations.size();
 }
 
-uint State::count__compulsory_transformation() const
+uint State::count__compulsory_transformations() const
 {
     return applicable_compulsory_transformations.size();
 }
@@ -65,7 +65,26 @@ State_Transformation* State::pop__compulsory_transformation()
 }
 
 
-void State::add__compulsory_generative_transformation(State_Transformation*state_Transformation)
+uint State::count__probabilistic_transformations() const
+{
+   return  probabilistic_transformations.size();
+}
+
+Probabilistic_State_Transformation* State::pop__probabilistic_transformation()
+{
+    auto result = probabilistic_transformations.top();
+    probabilistic_transformations.pop();
+    return result;
+}
+
+void State::push__probabilistic_transformation
+(Probabilistic_State_Transformation* probabilistic_State_Transformation)
+{
+    probabilistic_transformations.push(probabilistic_State_Transformation);
+}
+
+
+void State::push__compulsory_generative_transformation(State_Transformation*state_Transformation)
 {
     applicable_compulsory_generative_transformations.push(state_Transformation);
 }
@@ -81,7 +100,7 @@ void State::remove__optional_transformation(State_Transformation*state_Transform
     applicable_optional_transformations.erase(state_Transformation);
 }
 
-void State::add__compulsory_transformation(State_Transformation*state_Transformation)
+void State::push__compulsory_transformation(State_Transformation*state_Transformation)
 {
     applicable_compulsory_transformations.push(state_Transformation);
 }

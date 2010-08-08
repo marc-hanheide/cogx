@@ -46,44 +46,77 @@ namespace Planning
         class Formula_Data : virtual public Types_Data
         {
         public:
-
+            /* 
+             * formula_parsing_level ---0--- Depth in the parse tree
+             *
+             * skip_next____report__formula ---false--- should we
+             * ignore a subsequent call to \member{report__formula}?
+             *
+             * last_number_parsed_was_double ---false--- Was the last
+             * numeric symbol parsed a double representated real
+             * number?
+             *
+             * parsing_initial_state ---false--- Are we parsing a
+             * problem's initial state?
+             *
+             * in_delete_context ---false--- Are we parsing a delete
+             * effect of a PDDL operator?
+             *
+             * in_modification_context ---false--- Are we parsing a
+             * 'assign', 'decrement', or 'increment' modification
+             * instruction to a numeric valued function symbol in an
+             * operator effect?
+             *
+             * in_effect_context ---false--- Are we parsing a decriton
+             * of an operator effect?
+             */
+            Formula_Data();
+            
             template<typename PROPOSITION_SYMBOL, typename Symbol_Name >
             void using__symbol_name(const Symbol_Name& symbol_name, ID_TYPE index);
             
             /* Formulae that are subsequently parsed have as their
-             * subject the initial state.  Some formula describe
-             * actions pre- and post-conditions, others describe
+             * subject the initial state.  Some formula describe an
+             * action's pre- and post-conditions, others describe
              * derived predicates. Depending on the context in which a
-             * formula is being parsed the operators have a different
-             * interpretation. For example, in PDDL the '=' operator
-             * in the initial state has the semantics of the 'assign'
-             * operator in an action effect. On the other hand, in a
-             * 'precondition' the '=' operator has the semantics of an
-             * equality test.  */
+             * formula is being parsed the PDDL-tokens have a
+             * different interpretation. For example, in PDDL the '='
+             * token in a descirption of an initial-state has the
+             * semantics of the 'assign' operator in an action
+             * effect. On the other hand, in a 'precondition' the '='
+             * token has the semantics of an equality test.  */
             void report__enter_parsing_initial_state();
-
             
-            /* Formulae that are subsequently parsed DO NOT have as
+            /* (see \member{report__enter_parsing_initial_state})
+             * Formulae that are subsequently parsed DO NOT have as
              * their subject the initial state (see
              * \member{report__enter_parsing_initial_state}).*/
             void report__exit_parsing_initial_state();
 
 
-            /* Report that we are parsing a formula that describes an operator effect.*/
+            /* Report that we are parsing a formula that describes a
+             * PDDL operator/action effect.*/
             void report__enter_parsing_effect_context();
             
-            /* Report that we are not parsing a formula that describes an operator effect.*/
+            /* (see \member{report__enter_parsing_effect_context})
+             * Report that we are not parsing a formula that describes
+             * an operator effect.*/
             void report__exit_parsing_effect_context();
 
-            
+            /* Pushing \member{typed_Arguments} (a description of the
+             * variable and constant arguments to a first-order
+             * symbol) onto
+             * \member{Types_Data::stack_of__Typed_Arguments}. This
+             * consumes, and thus re-initialises
+             * \member{typed_Arguments}*/
             void stack__typed_Arguments();
-            
+
+            /* */
             void report__perceptual_function_name(const std::string& str);
             void report__percept_name(const std::string& str);
             void report__state_function_name(const std::string& str);
             void report__predicate_name(const std::string& str);
             
-            Formula_Data();
             
             template<typename PROPOSITION_SYMBOL
                      , typename PREDICATE_SYMBOL
@@ -213,10 +246,11 @@ namespace Planning
              * a modifier? (i.e, assign, decrement, increment, etc.)*/
             bool is_static_fluent(const Planning::State_Function_Name&) const;
             
-            /* \member{state_propositions__parsed} contains all the
-             * propositions that can be true in a starting state. We
-             * make the closed-world assumption, and consequently,
-             * anything that is not indexed by
+            /* IF this is a base of \class{Problem_Data}, THEN
+             * \member{state_propositions__parsed} contains all the
+             * propositions that _can_ be true in the problem starting
+             * state. As usual we make the closed-world assumption,
+             * and consequently, anything that is not indexed by
              * \member{state_propositions__parsed} is necessarily
              * false in any starting state. Because some propositions
              * can only become false, and others can only become true,
@@ -240,17 +274,20 @@ namespace Planning
              * returns FALSE, then no such possibility is available --
              * i.e., necessarily FALSE.
              *
-             * \member{statically_satisfiable} gives the oppisite
-             * answer to \member{statically_satisfiable}.
+             * Therefore, \member{statically_satisfiable} gives the
+             * opposite answer to \member{statically_satisfiable}.
              */
             bool statically_satisfiable(const Planning::Formula::State_Predicate&) const;
             bool statically_unsatisfiable(const Planning::Formula::State_Predicate&) const;
 
             /* Can a ground instance of \argument{State_Predicate} be
-             * equal to \argument{State_Proposition}. Here we assume
+             * equal to \argument{State_Proposition}? Here we assume
              * that the \argument{State_Predicate} symbol is static,
              * and therefore can examine the problem starting states
-             * to see what is possible. */
+             * to see what is possible.
+             *
+             * ASSUMES: Planning symbols have the same name and arity.
+             */
             bool potential_match_via_an_assignment(const Planning::Formula::State_Predicate&,
                                                      const Planning::Predicate_Name& State_Proposition__name,
                                                      const Constant_Arguments& State_Proposition__arguments) const;
@@ -264,7 +301,7 @@ namespace Planning
             (int count, int index) const;
             
             /* Does the formula being based have as its subject the
-             * initial planning state?*/
+             * initial state of a planning problem?*/
             bool parsing_initial_state;
             
             /*For \argument{quantifier} see \enum{enum_types} from \module{planning_symbols}.*/
@@ -276,32 +313,54 @@ namespace Planning
 
         public:
             const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >& get__state_functions__parsed() const;
+            
             const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >& get__perceptual_functions__parsed() const;
+            
             const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >& get__state_ground_functions__parsed() const;
+            
             const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >& get__perceptual_ground_functions__parsed() const;
+            
             const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__state_propositions__parsed() const;
+            
             const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__state_predicates__parsed() const;
+            
             const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__observational_propositions__parsed() const;
+            
             const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__observational_predicates__parsed() const;
+            
             const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__deleted__state_propositions__parsed() const;
+            
             const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__deleted__state_predicates__parsed() const;
+            
             const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__deleted__observational_propositions__parsed() const;
+            
             const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__deleted__observational_predicates__parsed() const;
+            
             const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__added__state_propositions__parsed() const;
+            
             const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__added__state_predicates__parsed() const;
+            
             const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__added__observational_propositions__parsed() const;
+            
             const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__added__observational_predicates__parsed() const;
             
-            const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >& get__modified_in_effect__state_functions__parsed() const;
-            const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >& get__modified_in_effect__state_ground_functions__parsed() const;
-            const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >& get__modified_in_effect__perceptual_functions__parsed() const;
-            const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >& get__modified_in_effect__perceptual_ground_functions__parsed() const;
+            
+            
+            const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >&
+            get__modified_in_effect__state_functions__parsed() const;
+            
+            const std::map<Planning::State_Function_Name, std::set<ID_TYPE> >&
+            get__modified_in_effect__state_ground_functions__parsed() const;
+            
+            const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >&
+            get__modified_in_effect__perceptual_functions__parsed() const;
+            
+            const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >&
+            get__modified_in_effect__perceptual_ground_functions__parsed() const;
         protected:
             
-            /* When a formula is being parsed, but before it is
-             * consumed (for example, used as a PDDL action
-             * precondition), we store all the information about the
-             * atomic symbols that occur in the formula.*/
+            /* Store all the atomic symbols that occur in the
+             * formulae parsed by this.*/
             std::map<Planning::State_Function_Name, std::set<ID_TYPE> > state_functions__parsed;
             std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> > perceptual_functions__parsed;
             std::map<Planning::State_Function_Name, std::set<ID_TYPE> > state_ground_functions__parsed;
@@ -312,10 +371,9 @@ namespace Planning
             std::map<Planning::Percept_Name, std::set<ID_TYPE> > observational_predicates__parsed;
 
 
-            /* While parsing we also keep information about what
-             * Boolean symbols are "added" and what Boolean symbols
-             * are "deleted" in formulae. This makes later detection of
-             * static Boolean symbols possible.*/
+            /* Boolean symbols are "added" and Boolean symbols that
+             * are "deleted" in formulae. This store makes later
+             * detection of static Boolean symbols possible.*/
             std::map<Planning::Predicate_Name, std::set<ID_TYPE> > deleted__state_propositions__parsed;
             std::map<Planning::Predicate_Name, std::set<ID_TYPE> > deleted__state_predicates__parsed;
             std::map<Planning::Percept_Name, std::set<ID_TYPE> > deleted__observational_propositions__parsed;
@@ -329,8 +387,8 @@ namespace Planning
 
             /* While parsing we also keep information about what
              * functional symbols are "modified" in formulae. This
-             * makes later detection of static fluent symbols
-             * possible.*/
+             * makes later detection of static function (PDDL, so
+             * called fluent=function) symbols possible.*/
             std::map<Planning::State_Function_Name, std::set<ID_TYPE> > modified_in_effect__state_functions__parsed;
             std::map<Planning::State_Function_Name, std::set<ID_TYPE> > modified_in_effect__state_ground_functions__parsed;
             std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> > modified_in_effect__perceptual_functions__parsed;
@@ -361,16 +419,16 @@ namespace Planning
             /* Should next next call to \member{report__formula} be skipped?*/
             bool skip_next____report__formula;
 
-            /* How deep are we while parsing a formula? -- Count of
-             * opening brackets.*/
+            /* How deep are we while parsing a formula?*/
             int formula_parsing_level;
 
             /* Keeping track of subformulae while parsing a formula.*/
             std::map<int, Planning::Formula::Subformulae> subformulae;
             
-//             std::map<Predicate_Name, std::map<Variable, Types> > predicatex_variablex_types;
-//             std::map<Action_Name, std::map<Variable, Types> > actionx_variablex_types;
-
+            /* When a report of the type of formula being parsed is
+             * received ---for example, by via a call to
+             * \member{report__probabilistic_formula}---, that
+             * reported type is stored here. */
             std::stack<Planning::enum_types> formula_type;
 
             /* Untyped variables in the fragment of the formula

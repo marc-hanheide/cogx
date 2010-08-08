@@ -105,6 +105,11 @@ public:
 
 
     long use_count()const{return contents.use_count();};
+
+    template<typename TT>
+    CXX__deref__shared_ptr<TT> cxx_deref_get()
+    {return CXX__deref__shared_ptr<TT>(cxx_get<TT>());};
+    
     
     CXX__PTR_ANNOTATION(T) cxx_get() const {return contents;} ;
     template<typename TT>

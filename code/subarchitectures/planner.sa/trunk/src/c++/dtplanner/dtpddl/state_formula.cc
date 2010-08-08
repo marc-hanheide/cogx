@@ -40,19 +40,22 @@ using namespace Planning;
 using namespace Planning::State_Formula;
       
 
-void Satisfaction_Listener::add__parent(CXX__PTR_ANNOTATION(basic_type) in)
-{
-    Satisfaction_Listener__Pointer more(in);
-    add__parent(more);
-}
+// void Satisfaction_Listener::add__listener(CXX__PTR_ANNOTATION(basic_type) in)
+// {
+//     Satisfaction_Listener__Pointer more(in);
+//     add__listener(more);
+// }
 
 Satisfaction_Listener::~Satisfaction_Listener()
 {
 }
 
-void Satisfaction_Listener::add__parent(Satisfaction_Listener__Pointer& satisfaction_Listener__Pointer)
+void Satisfaction_Listener::add__listener(Satisfaction_Listener__Pointer& satisfaction_Listener__Pointer)
 {
     if(listeners.find(satisfaction_Listener__Pointer) != listeners.end()){
+        WARNING("Attempted to add "<<satisfaction_Listener__Pointer
+                <<" as a listener to a set that"<<std::endl
+                <<"already contained an equivalent element.");
         return;
     }
     
@@ -60,12 +63,12 @@ void Satisfaction_Listener::add__parent(Satisfaction_Listener__Pointer& satisfac
     list__Listeners.push_back(satisfaction_Listener__Pointer);
 }
             
-const List__Listeners& Satisfaction_Listener::get__traversable_parents() const 
+const List__Listeners& Satisfaction_Listener::get__traversable__listeners() const 
 {
     return list__Listeners;
 }
 
-const Listeners& Satisfaction_Listener::get__searchable_parents() const 
+const Listeners& Satisfaction_Listener::get__searchable__listeners() const 
 {
     return listeners;
 }
@@ -152,18 +155,18 @@ void Literal::flip(State& state)
     
     flip_satisfaction(state);
 
-    auto parents = get__traversable_parents();
+    auto listeners = get__traversable__listeners();
     if(was_satisfied){
-        for(auto parent = parents.begin()
-                ; parent != parents.end()
-                ; parent++){
-            (*parent).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
+        for(auto listener = listeners.begin()
+                ; listener != listeners.end()
+                ; listener++){
+            (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
         }
     } else {
-        for(auto parent = parents.begin()
-                ; parent != parents.end()
-                ; parent++){
-            (*parent).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
+        for(auto listener = listeners.begin()
+                ; listener != listeners.end()
+                ; listener++){
+            (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
         }
     }
 }
@@ -288,11 +291,11 @@ void Disjunctive_Clause::report__newly_satisfied_literal(State& state)
     if(!is_satisfied(state)){
         set__satisfied(state);
 
-        auto parents = get__traversable_parents();
-        for(auto parent = parents.begin()
-                ; parent != parents.end()
-                ; parent++){
-            (*parent).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
+        auto listeners = get__traversable__listeners();
+        for(auto listener = listeners.begin()
+                ; listener != listeners.end()
+                ; listener++){
+            (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
         }
     }   
 }
@@ -304,11 +307,11 @@ void Disjunctive_Clause::report__newly_unsatisfied_literal(State& state)
     if(0 == get__number_of_satisfied_literals(state)){
         set__unsatisfied(state);
         
-        auto parents = get__traversable_parents();
-        for(auto parent = parents.begin()
-                ; parent != parents.end()
-                ; parent++){
-            (*parent).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
+        auto listeners = get__traversable__listeners();
+        for(auto listener = listeners.begin()
+                ; listener != listeners.end()
+                ; listener++){
+            (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
         }
     }
 }
@@ -346,11 +349,11 @@ void Conjunctive_Normal_Form_Formula::report__newly_satisfied_clause(State& stat
     if(get__disjunctive_clauses().size() == get__number_of_satisfied_clauses(state)){
         set__satisfied(state);
         
-        auto parents = get__traversable_parents();
-        for(auto parent = parents.begin()
-                ; parent != parents.end()
-                ; parent++){
-            (*parent).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
+        auto listeners = get__traversable__listeners();
+        for(auto listener = listeners.begin()
+                ; listener != listeners.end()
+                ; listener++){
+            (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
         }
     }   
 }
@@ -362,11 +365,11 @@ void Conjunctive_Normal_Form_Formula::report__newly_unsatisfied_clause(State& st
     if(is_satisfied(state)){
         set__unsatisfied(state);
         
-        auto parents = get__traversable_parents();
-        for(auto parent = parents.begin()
-                ; parent != parents.end()
-                ; parent++){
-            (*parent).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
+        auto listeners = get__traversable__listeners();
+        for(auto listener = listeners.begin()
+                ; listener != listeners.end()
+                ; listener++){
+            (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
         }
     }
 }

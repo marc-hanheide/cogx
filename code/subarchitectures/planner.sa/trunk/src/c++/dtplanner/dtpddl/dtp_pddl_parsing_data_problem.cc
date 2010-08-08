@@ -37,14 +37,19 @@
 using namespace Planning::Parsing;
 
 
-bool Problem_Data::statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>& ground_Fact)
+bool Problem_Data::statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>& ground_Fact) const
+{
+    return false;
+}
+
+bool Problem_Data::statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>& fact) const
 {
     return false;
 }
 
 
 
-bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>& ground_Fact)
+bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>& ground_Fact) const
 {
     INTERACTIVE_VERBOSER(true, 3102, "TESTING statically_false__starting_always_false :: "<<ground_Fact);
         
@@ -68,7 +73,7 @@ bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_pt
     auto prop_indices = _prop_indices->second;
     
     if(ground_Fact->get__runtime_Thread()
-       == reinterpret_cast<basic_type::Runtime_Thread>(dynamic_cast<Formula_Data*>(this))){
+       == reinterpret_cast<basic_type::Runtime_Thread>(dynamic_cast<const Formula_Data*>(this))){
         if(prop_indices.end() == prop_indices.find(ground_Fact->get__id())){/*Not in starting state.*/
             INTERACTIVE_VERBOSER(true, 3102, "RESULT fact :: "<<ground_Fact<<" can never be satisfied.");
     
@@ -76,7 +81,7 @@ bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_pt
         }
     } else {
         
-        NEW_referenced_WRAPPED(dynamic_cast<Formula_Data*>(this)
+        NEW_referenced_WRAPPED(dynamic_cast<const Formula_Data*>(this)
                                , Planning::Formula::State_Proposition
                                , proposition
                                , predicate_Name
@@ -92,14 +97,7 @@ bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_pt
     return false;
 }
 
-bool Problem_Data::statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>& fact)
-{
-    return false;
-}
-
-
-
-bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>& fact)
+bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>& fact) const
 {
 
     auto occurrence_indices = state_propositions__parsed.find(fact->get__name());

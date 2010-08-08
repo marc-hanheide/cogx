@@ -40,6 +40,26 @@
 
 namespace Planning
 {
+    
+    class Probabilistic_State_Transformation :
+        public State_Formula::
+        _Satisfaction_Listener<enum_types::probabilistic_state_transformation
+                               , Formula::Action_Proposition>
+    {
+    public:
+        const Formula::Action_Proposition& get__get_identifier() const;
+
+        std::vector<State*> operator()(State*) const;
+        
+        void report__newly_satisfied(State&);
+        void report__newly_unsatisfied(State&);
+    };
+
+
+    typedef CXX__deref__shared_ptr<Probabilistic_State_Transformation> Probabilistic_State_Transformation__Pointer; 
+    typedef std::set< Probabilistic_State_Transformation__Pointer > Probabilistic_State_Transformations;       
+    typedef std::vector< Probabilistic_State_Transformation__Pointer > List__Probabilistic_State_Transformation;
+    
     /* We do not keep "transformation" preconditions (i.e., a PDDL
      * action preconditions) in the transformation, but rather store
      * those separately as CNF formulae. When a formula is true at
@@ -50,22 +70,61 @@ namespace Planning
         public State_Formula::
         _Satisfaction_Listener<enum_types::state_transformation
                                , Formula::Action_Proposition
-                               , State_Formula::Conjunctive_Normal_Form_Formula__Pointer
+                               , State_Formula::Conjunctive_Normal_Form_Formula__Pointer/*TODO deal with empty conjunct.*/
                                , State_Formula::List__Literals /* effects */
                                , bool /* compulsory -- whole action */
-                               , double /* Probability that this transformation is applied. */ >
+                               , bool /* lookup probability */
+                               , double /* Probability that this transformation is applied. */
+                               , uint /* Probability lookup index (ignore if "lookup probability" is false). */>
     {
     public:
+        /* How is this action identified in the other modules of this
+         * system? This will be a PDDL-based identifier if the
+         * transformation corresponds to a ground PDDL operator.*/
+        const Formula::Action_Proposition& get__get_identifier() const;
 
+        /* What conditions on a state must be satisfied in order for
+         * this transformation to be applicable? That condition is
+         * expressed as a conjunctive normal form propositional
+         * formula (see \module{state_formula}). */
+        const State_Formula::Conjunctive_Normal_Form_Formula__Pointer& get__precondition() const;
+        /* What are the add and delete effects of this transformation? */
+        const State_Formula::List__Literals& get__effects() const;
+
+        /* A compulsory transformation, is one that must be applied to
+         * a state. That is, the agent cannot choose to execute it, or
+         * choose not to execute it. */
+        bool get__compulsory() const;
+
+        /* Should the probability of application be read from a state?*/
+        bool get__lookup_probability() const;
+
+        /*What is the probability of successful application of this transformation?*/
+        double get__probability() const;
+
+        /* If the probability of a successful transformation is to be
+         * read from a state, then this member reads that
+         * information. */
+        double get__probability(const State&) const;
+
+        
+//         virtual ~State_Transformation(){};
+
+//         typedef std::vector<State*> Result_Type;
+        
         /* Should be repeatedly executed until the result is NULL, or
-         * no pending actions are required.
+         * no pending actions are required. If the \return{bool} is
+         * true, then this method should be called again on the same
+         * input state, etc until the \return{bool} is false.
+         *
+         * Sometimes the result has a different address from the
+         * input. Here, the transformation has been generative.
          *
          * \argument{predecessor} is the state that transitions to
          * \argument{successor}. The latter is the state being
          * generated. \argument{SetOfStatePointers} is the set of
          * problem states thus far discovered.*/
-        State& operator()(State& predecessor);
-
+         State* operator()(State* predecessor);
 
 
         
@@ -88,18 +147,14 @@ namespace Planning
 
 
 
-
-        
-        const Formula::Action_Proposition& get__get_identifier() const;
-        const State_Formula::Conjunctive_Normal_Form_Formula__Pointer& get__precondition() const;
-        const State_Formula::List__Literals& get__effects() const;
-        bool get__compulsory() const;
-        double get__probability() const;
-
-
         static Are_Doubles_Close are_Doubles_Close;//(1e-9);
         
     };
+    
+    typedef CXX__deref__shared_ptr<State_Transformation> State_Transformation__Pointer; 
+    typedef std::set< State_Transformation__Pointer > State_Transformations;       
+    typedef std::vector< State_Transformation__Pointer > List__State_Transformation;
+    
 }
 
 

@@ -47,14 +47,16 @@ Markov_Decision_Process_State
 Markov_Decision_Process_State::
 Markov_Decision_Process_State(const Markov_Decision_Process_State& markov_Decision_Process_State)
     :boolean_State(markov_Decision_Process_State.boolean_State),
-     integer_State(markov_Decision_Process_State.integer_State)
+     integer_State(markov_Decision_Process_State.integer_State),
+     float_State(markov_Decision_Process_State.float_State)
 {
 }
 
 bool Markov_Decision_Process_State::operator==(const Markov_Decision_Process_State& state) const
 {
     return ((boolean_State == state.boolean_State) &&
-            (integer_State == state.integer_State));
+            (integer_State == state.integer_State) &&
+            (float_State == state.float_State));
 }
 
 bool Markov_Decision_Process_State::operator<(const Markov_Decision_Process_State& state) const
@@ -64,7 +66,12 @@ bool Markov_Decision_Process_State::operator<(const Markov_Decision_Process_Stat
     } else if(boolean_State == state.boolean_State){
         if(integer_State < state.integer_State){
             return true;
+        } else if (integer_State == state.integer_State) {
+            if(float_State < state.float_State){
+                return true;
+            }
         }
+        
     }
 
     return false;   
@@ -74,6 +81,7 @@ inline std::size_t Markov_Decision_Process_State::hash_value() const
 {
     std::size_t seed = boolean_State.hash_value();
     boost::hash_combine(seed, integer_State.hash_value());
+    boost::hash_combine(seed, float_State.hash_value());
 
     return seed;
 }
@@ -93,4 +101,9 @@ void Markov_Decision_Process_State::flip(uint in)
 bool Markov_Decision_Process_State::is_true(uint in) const
 {
     return boolean_State.is_true(in);
+}
+
+double Markov_Decision_Process_State::get__float(uint index) const
+{
+    return float_State.read(index);
 }

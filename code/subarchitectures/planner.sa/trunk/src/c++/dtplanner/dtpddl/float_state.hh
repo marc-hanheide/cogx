@@ -32,45 +32,45 @@
  * 
  */
 
-#ifndef INTEGER_STATE_HH
-#define INTEGER_STATE_HH
+
+#ifndef FLO_T_STATE.HH
+#define FLO_T_STATE.HH
+
 
 #include "state_basics.hh"
 
 namespace Planning
 {
-    class Integer_State
+    class Float_State
     {
     public:
-        friend std::ostream& std::operator<<(std::ostream&, const Integer_State&);
+        friend std::ostream& std::operator<<(std::ostream&, const Float_State&);
 
 	/* Initially everything is true (all bits in \member{data} are
 	 * true). \argument{size} is the number of propositions that
 	 * this state is required to keep the truth value of. WARNING
 	 * \argument{size} is not necessarily equal to
 	 * \member{data.size()}.*/
-	Integer_State(uint size = 0);
+	Float_State(uint size = 0);
         
 	/* Copy construction clones \member{data}.*/
-	Integer_State(const Integer_State&);
+	Float_State(const Float_State&);
         
 	/* Copy construction makes state with \member{data} cloning
          * \argument{vector}.*/
-	explicit Integer_State(const std::vector<ELEM_TYPE>&);
+	explicit Float_State(const std::vector<double>&);
 
 	/* This clones the same elements as the copy constructor.*/
-	Integer_State& operator=(const Integer_State&);
+	Float_State& operator=(const Float_State&);
 	
 	/* Comparison is based on the size of \member{data} first, and
 	 * then on the actual elements in \memeber{data}.*/
-	bool operator==(const Integer_State& state) const;
-	bool operator<(const Integer_State& state) const;
+	bool operator==(const Float_State& state) const;
+	bool operator<(const Float_State& state) const;
         
-        void write(uint, ELEM_TYPE);
-        void increment(uint);
-        void decrement(uint);
-        uint read(uint) const;
-        bool is_equal(uint, ELEM_TYPE) const;
+        void write(uint, double);
+        double read(uint) const;
+        bool is_equal(uint, double) const;
         
 	/* Hashing is either via \library{boost} or \library{TR1}. The
 	 * hash is generated from \member{data}.*/
@@ -78,22 +78,16 @@ namespace Planning
 
 	/* Same as \member{hash_value()} but allows to pass a reference
 	 * to an external std::vector of data elements.*/
-	std::size_t hash_value(const std::vector<ELEM_TYPE>&);
+	std::size_t hash_value(const std::vector<double>&);
 
         /*(see \member{data.size()})*/
         uint size() const;
     protected:
 	/* \macro{SIZE_ELEM} bits per element in this std::vector, each bit
 	 * represents the truth value of a proposition.*/
-	std::vector<ELEM_TYPE> data;
+	std::vector<double> data;
     };
 }
 
-#endif
 
-/* Precious bodily fluids.
- *
- * -- Major General Albert Stubblebine III, infamous proponent of
- * psychic warfare.
- *
- */
+#endif
