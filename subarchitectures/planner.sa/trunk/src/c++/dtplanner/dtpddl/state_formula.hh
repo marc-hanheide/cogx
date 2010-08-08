@@ -35,6 +35,7 @@
 #ifndef STATE_FORMULA_HH
 #define STATE_FORMULA_HH
 
+#include "state_basics.hh"
 #include "planning_types_enum.hh"
 #include "planning_formula.hh"
 #include "stl__typed_thing.hh"
@@ -42,18 +43,8 @@
 
 namespace Planning
 {
-    class State;
-    
     namespace State_Formula
     {
-        class Literal;
-        class Disjunctive_Clause;
-        class Conjunctive_Normal_Form_Formula;
-
-        typedef Formula::Subformula Satisfaction_Listener__Pointer;
-        typedef std::vector<Satisfaction_Listener__Pointer> List__Listeners;
-        typedef std::set<Satisfaction_Listener__Pointer> Listeners;
-        
         class Satisfaction_Listener
         {
         public:
@@ -61,11 +52,10 @@ namespace Planning
             virtual void report__newly_satisfied(State&) = 0;
             virtual void report__newly_unsatisfied(State&) = 0;
             
-            void add__parent(CXX__PTR_ANNOTATION(basic_type));
-            void add__parent(Satisfaction_Listener__Pointer&);
-            const List__Listeners& get__traversable_parents() const ;
-            const Listeners& get__searchable_parents() const ;
+            void add__listener(Satisfaction_Listener__Pointer&);
             
+            const List__Listeners& get__traversable__listeners() const ;
+            const Listeners& get__searchable__listeners() const ;
         private:
             List__Listeners list__Listeners;
             Listeners listeners;
@@ -113,10 +103,7 @@ namespace Planning
             /* Sign of this literal (true is positive, false is negative). */
             bool get__sign() const;                   
         };
-
-        typedef CXX__deref__shared_ptr<State_Formula::Literal> Literal__Pointer; 
-        typedef std::set<Literal__Pointer > Literals;       
-        typedef std::vector<Literal__Pointer > List__Literals;       
+ 
         
         class Disjunctive_Clause
             : public _Satisfaction_Listener<enum_types::disjunctive_clause
@@ -151,13 +138,9 @@ namespace Planning
             
             /*Get the literals in the clause.*/
             const List__Literals& get__literals() const;
-            List__Literals& get__literals();
+            List__Literals& get__literals();/*_contents .. CHECK*/
         };
 
-        
-        typedef CXX__deref__shared_ptr<Disjunctive_Clause> Disjunctive_Clause__Pointer; 
-        typedef std::set<Disjunctive_Clause__Pointer > Disjunctive_Clauses;       
-        typedef std::vector<Disjunctive_Clause__Pointer > List__Disjunctive_Clause;     
         
         class Conjunctive_Normal_Form_Formula
             : public _Satisfaction_Listener<enum_types::conjunctive_normal_form_formula
@@ -194,11 +177,6 @@ namespace Planning
             /*Get the clauses in the formula.*/
             const List__Disjunctive_Clause& get__disjunctive_clauses() const;
         };
-        
-        typedef CXX__deref__shared_ptr<Conjunctive_Normal_Form_Formula> Conjunctive_Normal_Form_Formula__Pointer; 
-        typedef std::set<Conjunctive_Normal_Form_Formula__Pointer > Conjunctive_Normal_Form_Formulae;       
-        typedef std::vector< Conjunctive_Normal_Form_Formula__Pointer> List__Conjunctive_Normal_Form_Formula;     
-        
     }
 }
 

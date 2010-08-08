@@ -33,25 +33,94 @@
  */
 
 
-
 #ifndef DOMAIN_ACTION_TO_PROBLEM_ACTION_HH
 #define DOMAIN_ACTION_TO_PROBLEM_ACTION_HH
 
-
+#include "dtp_pddl_parsing_data.hh"
 #include "planning_formula.hh"
 #include "state_formula.hh"
 #include "planning_formula.hh"
- 
+#include "basic_action.hh"
+#include "assignment_applicator.hh"
+#include "planning_formula_to_cnf.hh"
 
 namespace Planning
 {  
     class Domain_Action__to__Problem_Action : public Visitor<basic_type>
     {
     public:
-        Domain_Action__to__Problem_Action(){};
+        typedef std::map<Planning::Variable, Planning::Constant> Assignment;
+        
+        Domain_Action__to__Problem_Action(basic_type::Runtime_Thread,
+                                          Assignment& assignment,/*Can have entries added to it if we have quantification in action effects.*/
+                                          Formula::State_Propositions& state_Propositions,
+                                          State_Formula::Literals& problem__literals,
+                                          State_Formula::Disjunctive_Clauses& problem__disjunctive_Clauses,
+                                          State_Formula::Conjunctive_Normal_Form_Formulae& problem__conjunctive_Normal_Form_Formulae,
+                                          const Parsing::Domain_Data&,
+                                          const Parsing::Problem_Data&,
+                                          const Formula::Action_Proposition&,
+                                          State_Formula::Conjunctive_Normal_Form_Formula__Pointer&,
+                                          State_Transformations&/* Non-Executable, or 1-or-more preconditions. */,
+                                          State_Transformations&/* Executable, and zero preconditions. */,
+                                          Probabilistic_State_Transformations&);
         
         DECLARATION__UNARY_VISITOR(basic_type);
+
+
+        /* Non-compulsory ground PDDL action. */
+        State_Transformation__Pointer get__answer() const ;
+    private:
+        static Formula::Subformula simplify_formula(Formula::Subformula,
+                                                    basic_type::Runtime_Thread);
+
         
+        basic_type::Runtime_Thread runtime_Thread;
+        Assignment& assignment;
+        
+        Formula::State_Propositions& problem__state_Propositions;
+        
+        State_Formula::Literals& problem__literals;
+        State_Formula::Disjunctive_Clauses& problem__disjunctive_Clauses;
+        State_Formula::Conjunctive_Normal_Form_Formulae& problem__conjunctive_Normal_Form_Formulae;
+        
+        const Parsing::Domain_Data& domain_Data;
+        const Parsing::Problem_Data& problem_Data;
+        const Formula::Action_Proposition& action_Proposition;
+        //         State_Formula::Conjunctive_Normal_Form_Formula& precondition;/* (see \member{preconditions})*/
+
+        
+        State_Transformations problem__actions;
+        State_Transformations executable_actions_without_preconditions;
+        Probabilistic_State_Transformations probabilistic_actions;
+
+
+        
+        /* A tool to apply an assignment to variables to a CNF formula. */
+        CNF_Assignment_Applicator assignment_Applicator;
+
+
+        
+        /* Object converts planning formula ---in this case formulae
+         * that correspond to actions preconditions--- into
+         * Conjunctive Normal Form formula.  Such a formula is a
+         * conjunction over disjunctive clauses.  */
+        static Planning_Formula__to__CNF planning_Formula__to__CNF;
+        
+        State_Transformation__Pointer result;
+
+        /* CNF that is, as considered by future processing, always satisfied. */
+        State_Formula::Conjunctive_Normal_Form_Formula__Pointer true_cnf;
+        
+        bool processing_negative;/* false -- initialise*/
+        uint count_of_actions_posted;/* 0 initialise*/
+        uint level;/* 0 initialise*/
+        double probability;/* 1.0  initialise*/
+        
+        std::stack<State_Formula::List__Literals> literals_at_levels;
+        std::stack<State_Formula::List__Listeners> list__Listeners;
+        std::stack<State_Formula::Listeners> listeners;
+        std::stack<State_Formula::Conjunctive_Normal_Form_Formula__Pointer> preconditions;
     };
 }
 

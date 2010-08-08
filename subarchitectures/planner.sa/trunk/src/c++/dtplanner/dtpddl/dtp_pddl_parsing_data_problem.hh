@@ -102,9 +102,7 @@ namespace Planning
                              , std::tr1::tuple<Cached_Partial_Assignment_Satisfiability
                                                , Cached_Partial_Assignment_Unsatisfiability> > Cached_Predicate_Satisfiability;
 
-            Cached_Predicate_Satisfiability cached__statically_false__starting_always_false;
-
-
+            
             
             /* Translates constant symbols from the base to be associated
              * with the planning problem. First argument is the base of
@@ -114,10 +112,24 @@ namespace Planning
             bool translate_to_problem_arguments(const Planning::Constant_Arguments&, Planning::Constant_Arguments&) const;
             
             /* Groundability tests for problem and domain symbols.*/
-            bool statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>&);
-            bool statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>&);
-            bool statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>&);
-            bool statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>&);
+            bool statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>&) const;
+            bool statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>&) const;
+            
+            /* Saves time for future invocations by caching results in
+             * \member{cached__statically_false__starting_always_false}.
+             *
+             * ASSUMPTION: Problem starting state is _not_ changed
+             * during (or after) a call to this member.*/
+            bool statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>&) const;
+            
+            bool statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>&) const;
+
+        private:
+            /* Cached results for \member{statically_false__starting_always_false}.*/
+            mutable Cached_Predicate_Satisfiability cached__statically_false__starting_always_false;
+
+
+            
         private:
             /*Description of the planning goal.*/
             Planning::Formula::Subformula goal_formula;

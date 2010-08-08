@@ -36,6 +36,7 @@
 #define SOLVER_BASICS_HH
 
 #include "dtp_pddl_parsing_data.hh"
+#include "state_basics.hh"
 
 namespace Planning
 {

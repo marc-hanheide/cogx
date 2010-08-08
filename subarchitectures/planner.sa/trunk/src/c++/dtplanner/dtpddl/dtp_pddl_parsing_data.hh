@@ -42,19 +42,37 @@ namespace Planning
 {
     namespace Parsing
     {
+        /* (see \module{dtp_pddl_parsing_data_types}) */
+        class Types_Data;
+        
+        /* (see \module{dtp_pddl_parsing_data_formula}). Virtually
+         * inherits from \class{Types_Data}.*/
         class Formula_Data;
+        
+        /* (see \module{dtp_pddl_parsing_data_constants}) Virtually
+         * inherits from \class{Types_Data}. */
         class Constants_Data;
+        
+        /* (see \module{dtp_pddl_parsing_data_domainn}). Inherits from
+         * \class{Formula_Data} and \class{Constants_Data}. */
         class Domain_Data;
+        
+        /* (see \module{dtp_pddl_parsing_data_problem}). Inherits from
+         * \class{Formula_Data} and \class{Constants_Data}. */
         class Problem_Data;
     }
 }
 
 namespace std
-{    
+{
+    /* Output streaming for domain descriptions (see
+     * \module{dtp_pddl_parsing_data_domain__streaming}).*/
     std::ostream& operator<<(std::ostream&, const Planning::Parsing::Domain_Data&);
+    
+    /* Output streaming for problem descriptions (see
+     * \module{dtp_pddl_parsing_data_problem__streaming}).*/
     std::ostream& operator<<(std::ostream&, const Planning::Parsing::Problem_Data&);
 }
-
 
 namespace Planning
 {

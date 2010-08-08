@@ -37,6 +37,7 @@
 
 #include "integer_state.hh"
 #include "boolean_state.hh"
+#include "float_state.hh"
 
 
 namespace Planning
@@ -56,6 +57,9 @@ namespace Planning
         /* (see \member{boolean_State}) */
         void flip(uint);
         bool is_true(uint) const;
+
+        /* What is the value of the real number at \argument{index}.*/
+        double get__float(uint index) const;
         
     protected:
         /* For each \LHS{action}, we have the \RHS{probability} that
@@ -82,6 +86,9 @@ namespace Planning
 
         /* State-characterising propositions. */
         Boolean_State boolean_State;
+        
+        /* Functions into the reals. */
+        Float_State float_State;
     };
 }
 

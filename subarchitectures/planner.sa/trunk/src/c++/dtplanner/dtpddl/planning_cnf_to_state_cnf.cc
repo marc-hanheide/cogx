@@ -155,8 +155,9 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
             for(auto clause = clauses.begin()
                     ; clause != clauses.end()
                     ;  clause++){
+                auto deref__st = problem__pointer.cxx_deref_get<basic_type>();
                 (*clause).cxx_get<Disjunctive_Clause>()
-                    ->add__parent(problem__pointer.cxx_get<basic_type>());
+                    ->add__listener(deref__st);
             }
 
             answer = problem__pointer;
@@ -202,7 +203,8 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
             for(auto literal = literals.begin()
                     ; literal != literals.end()
                     ; literal ++){
-                (*literal).cxx_get<Literal>()->add__parent(clause__pointer.cxx_get<basic_type>());
+                auto deref__st = clause__pointer.cxx_deref_get<basic_type>();
+                (*literal).cxx_get<Literal>()->add__listener(deref__st);
             }
             
             disjunctions.push_back(clause__pointer);

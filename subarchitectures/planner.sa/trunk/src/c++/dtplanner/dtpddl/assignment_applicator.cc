@@ -56,8 +56,8 @@ typedef CNF_Assignment_Applicator::State_Predicate State_Predicate;
 
 
 CNF_Assignment_Applicator::CNF_Assignment_Applicator(basic_type::Runtime_Thread _runtime_Thread,
-                                             Planning::Parsing::Domain_Data& domain_Data,
-                                             Planning::Parsing::Problem_Data& problem_Data
+                                             const Planning::Parsing::Domain_Data& domain_Data,
+                                             const Planning::Parsing::Problem_Data& problem_Data
                                              )
     :runtime_Thread(_runtime_Thread),
      domain_Data(domain_Data),

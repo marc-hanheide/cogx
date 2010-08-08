@@ -38,6 +38,10 @@
 
 
 #include "global.hh"
+#include "stl__typed_thing.hh"
+#include "stl__deref_tools.hh"
+
+
 
 /*The type of the elements in the bit vector of a \class{State} --
  *Should be an unsigned integer.*/
@@ -55,9 +59,37 @@ namespace Planning
 {
     class Boolean_State;
     class Integer_State;
+    class Float_State;
     class Markov_Decision_Process_State;
     class Partially_Observable_Markov_Decision_Process_State;
+
+    /* (see \module{planning_state}) */
     class State;
+    
+    namespace State_Formula
+    {
+        class Literal;
+        class Disjunctive_Clause;
+        class Conjunctive_Normal_Form_Formula;
+        class Satisfaction_Listener;
+        
+        typedef CXX__deref__shared_ptr<basic_type> Satisfaction_Listener__Pointer;
+        typedef std::vector<Satisfaction_Listener__Pointer> List__Listeners;
+        typedef std::set<Satisfaction_Listener__Pointer> Listeners;
+        
+        typedef CXX__deref__shared_ptr<Literal> Literal__Pointer; 
+        typedef std::set<Literal__Pointer > Literals;       
+        typedef std::vector<Literal__Pointer > List__Literals;
+        
+        typedef CXX__deref__shared_ptr<Disjunctive_Clause> Disjunctive_Clause__Pointer; 
+        typedef std::set<Disjunctive_Clause__Pointer > Disjunctive_Clauses;       
+        typedef std::vector<Disjunctive_Clause__Pointer > List__Disjunctive_Clause;     
+            
+        typedef CXX__deref__shared_ptr<Conjunctive_Normal_Form_Formula> Conjunctive_Normal_Form_Formula__Pointer; 
+        typedef std::set<Conjunctive_Normal_Form_Formula__Pointer > Conjunctive_Normal_Form_Formulae;       
+        typedef std::vector< Conjunctive_Normal_Form_Formula__Pointer> List__Conjunctive_Normal_Form_Formula;   
+    }
+    
 }
 
 namespace std
@@ -73,6 +105,12 @@ namespace std
 
     /* (see \module{integer_state.hh}) */
     std::ostream& operator<<(std::ostream&, const Planning::Integer_State&);
+
+    /* (see \module{float_state.hh}) */
+    std::size_t hash_value(const Planning::Float_State&);
+
+    /* (see \module{float_state.hh}) */
+    std::ostream& operator<<(std::ostream&, const Planning::Float_State&);
 
     /* (see \module{markov_decision_process_state.hh}) */
     std::size_t hash_value(const Planning::Markov_Decision_Process_State&);

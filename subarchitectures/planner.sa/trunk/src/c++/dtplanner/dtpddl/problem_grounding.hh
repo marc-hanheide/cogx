@@ -34,6 +34,7 @@
 #ifndef PROBLEM_GROUNDING_HH
 #define PROBLEM_GROUNDING_HH
 
+
 #include "solver_basics.hh"
 #include "dtp_pddl_parsing_data_constants.hh"
 
@@ -68,6 +69,11 @@ namespace Planning
         State_Formula::Literals literals;
         State_Formula::Disjunctive_Clauses disjunctive_Clauses;
         State_Formula::Conjunctive_Normal_Form_Formulae conjunctive_Normal_Form_Formulae;
+
+        
+        State_Transformations deterministic_actions;
+        State_Transformations executable_actions_without_preconditions;
+        Probabilistic_State_Transformations probabilistic_actions;
         
         /* A tool to apply an assignment to variables to a CNF formula. */
         CNF_Assignment_Applicator assignment_Applicator;
@@ -130,7 +136,7 @@ namespace Planning
         /* --4-- */ void press_ground_action(const Action_Name& action_name,
                                  Planning::Formula::Subformula precondition,  
                                  Planning::Formula::Subformula __effect_formula,/*This should be completely ground at this stage -- i.e., no variable symbols.. */
-                                 const std::map<Variable, Constant>& assignment_detail,
+                                 std::map<Variable, Constant>& assignment_detail,
                                  const Argument_List& action_variables
                                  );
         

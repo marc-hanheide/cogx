@@ -225,7 +225,7 @@ Subformula Problem_Grounding::simplify_formula(Planning::Formula::Subformula sub
                            ?((_literal->do_cast<Negation>())->get__subformula())
                            :(*_literal));
 
-            /* Get teh integer we associate with this atom.*/
+            /* Get the integer we associate with this atom.*/
             auto _atom = atom_id.find(__atom);
 
             /* If that failed, then make a new integer associated with
@@ -332,29 +332,88 @@ void Problem_Grounding::
 press_ground_action(const Action_Name& action_Name,
                     Subformula _precondition,  
                     Subformula __effect_formula,/*This should be completely ground at this stage -- i.e., no variable symbols.. */
-                    const std::map<Variable, Constant>& assignment_detail,
+                    std::map<Variable, Constant>& assignment_detail,
                     const Argument_List& action_variables
                     )
 {
     /*HERE -- TURN CNF into formula with problem grounding references.*/
 
     VERBOSER(3101, "Pressing action :: "<<action_Name<<std::endl);
+
+    bool statically_executable_action = false;
     
     
+    State_Formula::Conjunctive_Normal_Form_Formula__Pointer
+        precondition;
     
-    Planning_CNF__to__State_CNF
-        planning_CNF__to__State_CNF
-        (reinterpret_cast<basic_type::Runtime_Thread>(this)
-         , state_Propositions
-         , literals
-         , disjunctive_Clauses
-         , conjunctive_Normal_Form_Formulae);
+    if(enum_types::formula_false == _precondition->get__type_name()){
+        return ;
+    } else if (enum_types::formula_true == _precondition->get__type_name()) {
+        statically_executable_action = true;
+        State_Formula::List__Disjunctive_Clause list__Disjunctive_Clause;
+        NEW_referenced_WRAPPED_deref_POINTER
+            (this,
+             State_Formula::Conjunctive_Normal_Form_Formula,
+             _conjunct,
+             list__Disjunctive_Clause);
+        
+        precondition = _conjunct.cxx_deref_get<State_Formula::Conjunctive_Normal_Form_Formula>();
+    } else {
+        Planning_CNF__to__State_CNF
+            planning_CNF__to__State_CNF
+            (reinterpret_cast<basic_type::Runtime_Thread>(this)
+             , state_Propositions
+             , literals
+             , disjunctive_Clauses
+             , conjunctive_Normal_Form_Formulae);
     
 
-    planning_CNF__to__State_CNF(_precondition);
-    auto precondition = planning_CNF__to__State_CNF.get__answer();
+        planning_CNF__to__State_CNF(_precondition);
+
+        precondition = planning_CNF__to__State_CNF.get__answer();
+    }
+
+    Constant_Arguments constant_Arguments(action_variables.size());
+    auto index = 0;
+    for(auto argument_symbol = action_variables.begin()
+            ; argument_symbol != action_variables.end()
+            ; argument_symbol++){
+        assert(index < constant_Arguments.size());
+        if(argument_symbol->test_cast<Planning::Variable>()){
+            auto variable = argument_symbol->cxx_get<Planning::Variable>();
+            assert(assignment_detail.find(*variable) != assignment_detail.end());
+            constant_Arguments[index++] = assignment_detail[*variable];
+        } else if (argument_symbol->test_cast<Planning::Constant>()) {
+            auto constant = argument_symbol->cxx_get<Planning::Constant>();
+            constant_Arguments[index++] = *constant;
+        } else {
+            UNRECOVERABLE_ERROR("Cannot deal with argument :: "<<*argument_symbol);
+        }
+    }
     
-    Domain_Action__to__Problem_Action domain_Action__to__Problem_Action();
+    
+    NEW_object_referenced_WRAPPED
+        (Formula::Action_Proposition
+         , action_Proposition
+         , action_Name
+         , constant_Arguments);
+    
+
+    /**/
+    Domain_Action__to__Problem_Action
+        domain_Action__to__Problem_Action(reinterpret_cast<basic_type::Runtime_Thread>(this),
+                                          assignment_detail,
+                                          state_Propositions,
+                                          literals,
+                                          disjunctive_Clauses,
+                                          conjunctive_Normal_Form_Formulae,
+                                          *domain_Data,
+                                          problem_Data,
+                                          action_Proposition,
+                                          precondition,
+                                          deterministic_actions,
+                                          executable_actions_without_preconditions,
+                                          probabilistic_actions);
 }
 
 

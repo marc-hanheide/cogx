@@ -51,17 +51,28 @@ namespace Planning
         /* Planner that generated this state.*/
         Solver* solver;
         
-        uint count__compulsory_generative_transformation() const;
-        uint count__compulsory_transformation() const;
+        uint count__compulsory_generative_transformations() const;
         State_Transformation* pop__compulsory_generative_transformation();
+        void push__compulsory_generative_transformation(State_Transformation*);
+
+        
+        uint count__compulsory_transformations() const;
         State_Transformation* pop__compulsory_transformation();
-        void add__compulsory_generative_transformation(State_Transformation*);
-        void add__compulsory_transformation(State_Transformation*);
+        void push__compulsory_transformation(State_Transformation*);
+
+        
+        uint count__probabilistic_transformations() const;
+        Probabilistic_State_Transformation* pop__probabilistic_transformation();
+        void push__probabilistic_transformation(Probabilistic_State_Transformation*);
+
         
         std::set<State_Transformation*>& get__optional_transformations();
         void add__optional_transformation(State_Transformation*);
         void remove__optional_transformation(State_Transformation*);
     private:
+
+        /*Pending probabilistic transformations. All such transformations are compulsory.*/
+        std::stack<Probabilistic_State_Transformation*> probabilistic_transformations;
         
         /* A compulsory transformation is one that has to be evaluated before the search can continue.*/
         std::stack<State_Transformation*> applicable_compulsory_transformations;
