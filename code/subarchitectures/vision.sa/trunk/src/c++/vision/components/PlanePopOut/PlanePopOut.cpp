@@ -41,6 +41,11 @@ long long gethrtime(void)
 #define Torleration 5		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
 #define MAX_V 0.1
+#define label4initial		-3
+#define label4plane		0	//0, -10, -20, -30... for multiple planes
+#define label4objcandidant	-2
+#define label4objs		1	//1,2,3,4.....for multiple objs
+#define label4ambiguousness	-1
 
 /**
  * The function called to create a new instance of our component.
@@ -1298,7 +1303,7 @@ void PlanePopOut::SplitPoints(VisionData::SurfacePointSeq &points, std::vector <
 	std::vector <int> S_label = labels;
 	for (unsigned int i=0; i<S_label.size(); i++)
 	{
-		if (S_label.at(i) == -3) //not belong to the dominant plane cluster
+		if (S_label.at(i) == -2) //not belong to the dominant plane cluster
 			candidants.push_back(i);
 	}
 //cout<<"candidants.size() =  "<<candidants.size()<<endl;
