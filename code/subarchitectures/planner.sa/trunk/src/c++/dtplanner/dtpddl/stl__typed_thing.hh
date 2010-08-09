@@ -209,6 +209,39 @@ public:
     typedef std::tr1::tuple<T...> Contents;
     typedef type_wrapper<type_name, T...> THIS;
 
+
+    static bool ith_exists(int type_index, ID_TYPE object_index)
+    {
+        auto _searchable = indexed__Traversable_Collection.find(type_index);
+        if(_searchable != indexed__Traversable_Collection.end()){
+            auto searchable = *_searchable->second;
+            
+            if(object_index < searchable.size()){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    template<typename Child = type_wrapper<type_name, T...> >
+    static Child make_ith(int type_index, ID_TYPE object_index)
+    {
+        assert(ith_exists(type_index, object_index));
+        
+        Child result;
+        auto _searchable = indexed__Traversable_Collection.find(type_index);
+        assert(_searchable != indexed__Traversable_Collection.end());
+        auto searchable = *_searchable->second;
+
+        assert(object_index < searchable.size());
+        auto object = searchable[object_index];
+        result.configure(object);
+        
+        return std::move<>(result);
+    }
+    
+    
     ~type_wrapper(){};
 
     template<uint i, typename Modifier>
@@ -388,6 +421,7 @@ protected:
         
         return (id < traversable_Collection->size()?((*traversable_Collection)[id]):fake_contents);
     }
+    
 private:
     
     
@@ -427,6 +461,10 @@ private:
     /*....*/
     ID_TYPE id;
 };
+
+
+// template<int type_name, typename... T>
+// typename type_wrapper<type_name, T...>::Contents type_wrapper<type_name, T...>::fake_contents = type_wrapper<type_name, T...>::Contents();
 
 
 template<int type_name>

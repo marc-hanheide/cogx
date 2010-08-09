@@ -35,8 +35,10 @@
 #define PLANNING_STATE_HH
 
 #include "solver_basics.hh"
-#include "markov_decision_process_state.hh"
+#include "state_basics.hh"
+#include "action_basics.hh"
 
+#include "markov_decision_process_state.hh"
 #include "action_executability__state.hh"
 #include "cnf__state.hh"
 

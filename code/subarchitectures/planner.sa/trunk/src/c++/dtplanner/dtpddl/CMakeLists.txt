@@ -6,8 +6,9 @@ include_directories(./pegtl-0.30/include)
 
 set(dtpddl_source
 action_executability__state.cc
+action__probabilistic_state_transformation.cc
+action__state_transformation.cc
 assignment_applicator.cc
-basic_action.cc
 boolean__satisfaction_status_management.cc
 boolean_state.cc
 cnf__state.cc
@@ -30,6 +31,7 @@ dtp_pddl_parsing_data_types.cc
 dtp_pddl_parsing_interface.cc
 dtp_pddl_parsing_interface_domain.cc
 dtp_pddl_parsing_interface_problem.cc
+float_state.cc
 global.cc
 integer_state.cc
 markov_decision_process_state.cc
@@ -48,6 +50,9 @@ planning_symbols.cc
 problem_grounding.cc
 solver.cc
 state_formula.cc
+state_formula__conjunctive_normal_form_formula.cc
+state_formula__disjunctive_clause.cc
+state_formula__literal.cc
 stl__deref_tools.cc
 stl__modifiers.cc
 stl__typed_thing.cc

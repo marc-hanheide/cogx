@@ -36,6 +36,12 @@
 
 #include "planning_cnf_to_state_cnf.hh"
 
+#include "action__state_transformation.hh"
+#include "action__probabilistic_state_transformation.hh"
+#include "state_formula__literal.hh"
+#include "state_formula__disjunctive_clause.hh"
+#include "state_formula__conjunctive_normal_form_formula.hh"
+
 /* Functionality for simplifying CNF formula. */
 #include "turnstyle.hh"
 

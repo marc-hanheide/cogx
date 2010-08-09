@@ -33,8 +33,8 @@
  */
 
 
-#ifndef FLO_T_STATE.HH
-#define FLO_T_STATE.HH
+#ifndef FLO_T_STATE_HH
+#define FLO_T_STATE_HH
 
 
 #include "state_basics.hh"

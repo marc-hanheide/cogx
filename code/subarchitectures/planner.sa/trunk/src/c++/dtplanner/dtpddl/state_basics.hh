@@ -40,6 +40,7 @@
 #include "global.hh"
 #include "stl__typed_thing.hh"
 #include "stl__deref_tools.hh"
+#include "planning_types_enum.hh"
 
 
 
@@ -119,6 +120,16 @@ namespace std
     std::size_t hash_value(const Planning::State&);
 }
 
+namespace std
+{
+    std::ostream& operator<<(std::ostream&
+                             , const Planning::State_Formula::Conjunctive_Normal_Form_Formula&);
+    std::ostream& operator<<(std::ostream&
+                             , const Planning::State_Formula::Disjunctive_Clause&);
+    std::ostream& operator<<(std::ostream&
+                             , const Planning::State_Formula::Literal&);
+    
+}
 
 #endif
 

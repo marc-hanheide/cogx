@@ -38,11 +38,11 @@
 
 #include "dtp_pddl_parsing_data.hh"
 #include "planning_formula.hh"
-#include "state_formula.hh"
 #include "planning_formula.hh"
-#include "basic_action.hh"
 #include "assignment_applicator.hh"
 #include "planning_formula_to_cnf.hh"
+#include "action_basics.hh"
+#include "state_basics.hh"
 
 namespace Planning
 {  
