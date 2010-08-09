@@ -1,0 +1,16 @@
+PROJECT(SDMath)
+
+include_directories(.)
+
+# Set the sources.
+SET(HEADERS
+)
+
+SET(SOURCES 
+	Mathlib.h
+)
+
+
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
+INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+
