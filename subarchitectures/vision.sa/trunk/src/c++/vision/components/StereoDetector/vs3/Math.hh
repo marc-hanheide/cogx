@@ -12,8 +12,8 @@
 #include <limits.h>
 #include <time.h>
 #include <sys/time.h>
+#include <stdexcept>
 #include "Namespace.hh"
-#include "Except.hh"
 
 namespace Z
 {
@@ -102,7 +102,7 @@ extern double AngleBetweenLines(double b, double a);
 /// Scale an integer angle to [0..8[
 extern int ScaleIntAngle_0_8(int a);
 
-extern unsigned BinaryToGray(unsigned b) throw(Except);
+extern unsigned BinaryToGray(unsigned b) throw (std::runtime_error);
 extern unsigned HammingDistance(unsigned a, unsigned b);
 
 extern bool ClipLine(int xmax, int ymax, int *x1, int *y1, int *x2, int *y2);
@@ -111,7 +111,7 @@ extern int CityblockDistance(int x1, int y1, int x2, int y2);
 
 extern double Fact(int n);
 extern double LogFact(int n);
-extern double LogBinCoef(int n, int k) throw(Except);
+extern double LogBinCoef(int n, int k) throw (std::runtime_error);
 extern double LogBinDist(int l, int k, double p);
 extern double LogBinomialPDF(int l, int k, double p);
 extern double BinomialPDF(int l, int k, double p);
@@ -122,8 +122,7 @@ extern double BinomialCDF_tail(int l, int k, double p);
 extern double Significance(int m, int k, int l, double p);
 extern double PoissonPDF(int k, double alpha);
 extern double PoissonCDF(int k, double alpha);
-extern double BivariateGaussianPDF(double mx, double my, double s,
-    double x, double y);
+extern double BivariateGaussianPDF(double mx, double my, double s, double x, double y);
 
 extern int timeval_subtract(struct timeval *result, struct timeval *x,
   struct timeval *y);

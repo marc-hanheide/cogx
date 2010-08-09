@@ -13,8 +13,7 @@
 #include "StereoCamera.hh"
 
 #include <vector>
-#include "Vector2.hh"
-#include "Vector3.hh"
+#include "Vector.hh"
 
 #include "Line.hh"
 #include "Ellipse.hh"

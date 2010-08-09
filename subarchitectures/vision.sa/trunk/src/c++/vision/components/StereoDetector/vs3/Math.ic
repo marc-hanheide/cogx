@@ -205,10 +205,10 @@ inline int ScaleIntAngle_0_8(int a)
  * Return the given binary number in gray code.
  * Note: only converts 4 bit numbers, i.e. 0 - 15
  */
-inline unsigned BinaryToGray(unsigned b) throw(Except)
+inline unsigned BinaryToGray(unsigned b) throw(std::runtime_error)
 {
   if(b > 15)
-    throw Except(__HERE__, "accept only numbers 0 - 15");
+    throw std::runtime_error("Math.ic::BinaryToGray: accept only numbers 0 - 15");
   return gray[b];
 }
 

@@ -438,11 +438,11 @@ void FormEJunctions::CreateJunctions(unsigned sline, Array<VoteImage::Elem> &isc
 						{
 							isct = LineIntersection(line_i->point[end_i], line_i->tang[end_i], ell_j->vertex[end_j], ell_j->dir);
 						}
-						catch (Except &e)
-						{
-							printf("FormEJunctions::CreateJunctions: Lines do not intersect exception.\n");
-						}
-						
+						catch (exception &e)
+            {
+               // lines do not intersect, carry on
+               printf("FormEJunctions::CreateJunctions: Lines do not intersect exception.\n");
+            }
 						if(Length(start-isct) < Length(end-isct)) end_j = 0;
 						else end_j = 1;
 					}
@@ -487,10 +487,11 @@ void FormEJunctions::CreateJunctions(unsigned sline, Array<VoteImage::Elem> &isc
 						{
 							isct = LineIntersection(line_j->point[end_j], line_j->tang[end_j], ell_i->vertex[end_i], ell_i->dir);
 						}
-						catch (Except &e)
-						{
-							printf("FormEJunctions::CreateJunctions: Lines do not intersect exception.\n");
-						}
+						catch (exception &e)
+            {
+               // lines do not intersect, carry on
+               printf("FormEJunctions::CreateJunctions: Lines do not intersect exception.\n");
+            }
 // printf("    lengt s: %4.3f	e: %4.3f\n", Length(start-isct), Length(end-isct));
 						if(Length(start-isct) < Length(end-isct)) end_j = 0;
 						else end_j = 1;

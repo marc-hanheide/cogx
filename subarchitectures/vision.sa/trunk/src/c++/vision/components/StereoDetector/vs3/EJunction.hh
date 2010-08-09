@@ -10,13 +10,13 @@
 #define Z_EJUNCTION_HH
 
 #include <cstdio>
+#include <stdexcept>
 #include "Vector2.hh"
 #include "Gestalt.hh"
 #include "FormEJunctions.hh"
 #include "Draw.hh"
 #include "Line.hh"
 #include "VoteImage.hh"
-#include "Except.hh"
 
 namespace Z
 {

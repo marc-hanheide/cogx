@@ -20,7 +20,7 @@
  * How to use:
  * 
  * \subsection cast Installation with cast framework
- * Commands after start (at
+ * Commands after start
  * 
  * \subsection standalone Installation as standalone program
  *

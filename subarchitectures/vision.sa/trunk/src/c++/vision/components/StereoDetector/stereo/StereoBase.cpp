@@ -349,10 +349,11 @@ bool Surf2D::IsAtPosition(int x, int y) const
 				return true;
     }
   }
-  catch(Except &e)
+	catch (exception &e)																																		/// TODO delete, if not occours
   {
-    // normalise might divide by zero, ignore and later return false TODO
+		// normalise might divide by zero, ignore and later return false TODO
 		printf("StereoBase:Surf2D::IsAtPosition: Exception: Normalise-Problem?\n");
+    cout << e.what() << endl;
   }
   return false;
 }

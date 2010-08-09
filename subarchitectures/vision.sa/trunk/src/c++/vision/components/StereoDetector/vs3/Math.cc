@@ -145,8 +145,11 @@ bool ClipLine(int xmax, int ymax, int *x1, int *y1, int *x2, int *y2)
 double Fact(int n)
 {
   if(n < 0 || n >= FACT_TABSIZE)
-    throw Except(__HERE__, "invalid argument %d, valid range is 0..%d\n", n,
-        FACT_TABSIZE-1);
+	{
+		char buffer [100];
+		sprintf(buffer, "Math: Fact: Invalid argument %d, valid range is 0..%d\n", n, FACT_TABSIZE-1);
+    throw std::runtime_error(buffer);
+	}
   return fact_t[n];
 }
 
@@ -157,8 +160,11 @@ double Fact(int n)
 double LogFact(int n)
 {
   if(n < 0 || n >= FACT_TABSIZE)
-    throw Except(__HERE__, "invalid argument %d, valid range is 0..%d\n", n,
-        FACT_TABSIZE-1);
+	{
+		char buffer [100];
+		sprintf(buffer, "Math: LogFact: Invalid argument %d, valid range is 0..%d\n", n, FACT_TABSIZE-1);
+    throw std::runtime_error(buffer);
+	}
   return log_fact_t[n];
 }
 
@@ -167,10 +173,14 @@ double LogFact(int n)
  *       n
  *  log( k )
  */
-double LogBinCoef(int n, int k) throw(Except)
+double LogBinCoef(int n, int k) throw(std::runtime_error)
 {
   if(k < 0 || k > n)
-    throw Except(__HERE__, "k < 0 or k > n: n = %d, k = %d", n, k);
+	{
+		char buffer [100];
+		sprintf(buffer, "Math: LogBinCoef: k < 0 or k > n: n = %d, k = %d", n, k);
+    throw std::runtime_error(buffer);
+	}
   return LogFact(n) - LogFact(k) - LogFact(n - k);
 }
 

@@ -9,8 +9,6 @@
 #ifndef Z_STEREO_LJCTS_HH
 #define Z_STEREO_LJCTS_HH
 
-#include "VecMath.hh"		// We use here Pose3, Vector3 from VecMath !!! Different to Pose3.h ect.
-
 #include "StereoBase.h"
 #include "StereoCamera.hh"
 #include "LJunction.hh"

@@ -11,7 +11,7 @@
 #define Z_DRAW_HH
 
 #include "Color.hh"
-#include "Vector2.hh"
+#include "Vector.hh"
 
 namespace Z
 {

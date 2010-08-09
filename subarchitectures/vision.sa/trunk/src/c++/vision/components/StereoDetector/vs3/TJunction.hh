@@ -40,7 +40,7 @@ public:
   virtual void Draw(int detail = 0);
   virtual const char* GetInfo();
   virtual bool IsAtPosition(int x, int y);
-  int WhichLineIs(Line *l) throw(Except);
+  int WhichLineIs(Line *l) throw(std::runtime_error);
   void Recalc();
 };
 

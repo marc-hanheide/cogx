@@ -34,7 +34,7 @@ public:
   virtual bool IsAtPosition(int x, int y);
   void Recalc();
   void CorrectGap();
-  int WhichLineIs(Line *l) throw(Except);
+  int WhichLineIs(Line *l) throw(std::runtime_error);
   Line* OtherLine(Line *l);
   int WhichEndIs(Line *l); 
 };

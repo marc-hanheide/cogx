@@ -205,7 +205,8 @@ SET(SOURCES
 
 
 # INCLUDE DIRECTORIES WITH HEADERS (INTERN)
-#include_directories()
+include_directories(.)
+
 
 # INCLUDE DIRECTORIES WITH HEADERS (EXTERN)
 include_directories(/usr/local/include)

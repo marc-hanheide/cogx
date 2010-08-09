@@ -204,7 +204,7 @@ void FormSegments::CreateSegmentsMatas()
   double avg_len = 0.;
 
   if(iplimg == 0)
-    throw Except(__HERE__, "vision core does not have an image");
+    throw std::runtime_error("FormSegments::CreateSegmentsMatas: Vision core does not have an image.\n");
 
   // calculate Canny edges
   grey_img = makFary(iplimg->height, iplimg->width);

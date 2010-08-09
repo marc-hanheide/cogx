@@ -6,7 +6,7 @@
  * @brief Work with configurations from a config file.
  **/
 
-#include "Except.hh"
+#include <stdexcept>
 #include "ConfigFile.hh"
 
 namespace Z
@@ -21,7 +21,11 @@ ConfigFile::ConfigFile(const string &name)
   line_cnt = 0;
   file.open(name.c_str(), ios::in);
   if(!file)
-    throw Except(__HERE__, "failed to open file '%s'", name.c_str());
+	{
+		char buffer [150];
+		sprintf(buffer, "ConfigFile::ConfigFile: Failed to open file '%s'", name.c_str());
+    throw std::runtime_error(buffer);
+	}
 }
 
 /**

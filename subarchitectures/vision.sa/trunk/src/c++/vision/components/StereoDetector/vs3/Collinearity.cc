@@ -14,8 +14,7 @@ namespace Z
 /**
  * TODO: use one function recalc()
  */
-Collinearity::Collinearity(VisionCore *c, Line *line_i, Line *line_j, int end_i,
-    int end_j)
+Collinearity::Collinearity(VisionCore *c, Line *line_i, Line *line_j, int end_i, int end_j)
   : Gestalt(c, COLLINEARITY)
 {
   // line 0 is to be the longer, line 1 the shorter line
@@ -228,14 +227,18 @@ void Collinearity::CorrectGap()
     gap_cor = gap;
 }
 
-int Collinearity::WhichLineIs(Line *l) throw(Except)
+int Collinearity::WhichLineIs(Line *l) throw(std::runtime_error)
 {
   if(l == line[0])
     return 0;
   else if(l == line[1])
     return 1;
   else
-    throw Except(__HERE__, "line %u is not part of collinearity %u", l, id);
+	{
+		char buffer [100];
+		sprintf(buffer, "Collinearity::WhichLineIs: line %u is not part of collinearity %u.", l, id);
+    throw std::runtime_error(buffer);
+	}
 }
 
 Line* Collinearity::OtherLine(Line *l)
