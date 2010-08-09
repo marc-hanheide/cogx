@@ -20,7 +20,7 @@ INCLUDE includes/binder.sa/binder-quiet.cast
 
 # coma ########################################################################
 INCLUDE includes/coma.sa/coma-base.cast
-INCLUDE includes/coma.sa/coma.cast
+INCLUDE includes/coma.sa/coma-crowl.cast
 
 # comsys ######################################################################
 INCLUDE includes/comsys.sa/comsys-base.cast

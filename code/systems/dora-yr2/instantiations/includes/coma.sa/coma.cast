@@ -1,3 +1,2 @@
-JAVA MG comareasoner coma.components.ComaReasoner --crowl-cfg subarchitectures/coma.sa/ontologies/dora.cfg --log true
-JAVA MG placemon coma.components.PlaceMonitor --reasoner-name comareasoner --marshaller-name proxy.marshaller -bsa binder --log true
-JAVA MG comagui  coma.components.ComaInputWindow --reasoner-name comareasoner --log true #--debug true
+JAVA MG hfcserver coma.components.HFCServer --nsFile subarchitectures/coma.sa/ontologies/dora.ns --ruleFile subarchitectures/coma.sa/ontologies/default.rdl --tupleFile subarchitectures/coma.sa/ontologies/dora_omics_thingloc.nt --log
+JAVA MG hfctester coma.components.HFCTester --hfcserver-name hfcserver --log
