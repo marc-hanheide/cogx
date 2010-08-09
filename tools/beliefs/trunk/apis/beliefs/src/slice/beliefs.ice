@@ -81,6 +81,7 @@ class TemporalInterval {
 class SpatioTemporalFrame extends AbstractFrame {
 	string place;
 	TemporalInterval interval;
+	float existProb;
 };
 
 
