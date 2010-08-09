@@ -58,7 +58,7 @@ namespace Planning
     private:
         State_Formula::Conjunctive_Normal_Form_Formula__Pointer answer;
         
-        Formula::State_Propositions problem__state_Propositions;
+        Formula::State_Propositions& problem__state_Propositions;
         State_Formula::Literals& problem__literals;
         State_Formula::Disjunctive_Clauses& problem__clauses;
         State_Formula::Conjunctive_Normal_Form_Formulae& problem__cnfs;

@@ -45,6 +45,12 @@
 #include "domain_action_to_problem_action.hh"
 
 
+#include "state_formula__literal.hh"
+#include "state_formula__disjunctive_clause.hh"
+#include "state_formula__conjunctive_normal_form_formula.hh"
+
+#include "action__state_transformation.hh"
+#include "action__probabilistic_state_transformation.hh"
 
 
 /* Functionality for simplifying CNF formula. */

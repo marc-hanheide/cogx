@@ -35,12 +35,15 @@
 #include "planning_cnf_to_state_cnf.hh"
 
 #include "planning_state.hh"
+#include "state_formula__literal.hh"
+#include "state_formula__disjunctive_clause.hh"
+#include "state_formula__conjunctive_normal_form_formula.hh"
 
 using namespace Planning;
 using namespace Planning::State_Formula;
 
 Planning_CNF__to__State_CNF::
-Planning_CNF__to__State_CNF(basic_type::Runtime_Thread,
+Planning_CNF__to__State_CNF(basic_type::Runtime_Thread runtime_Thread,
                             Formula::State_Propositions& state_Propositions,
                             State_Formula::Literals& problem__literals,
                             State_Formula::Disjunctive_Clauses& problem__clauses,
@@ -71,20 +74,32 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
         {
             assert(input.test_cast<Planning::Formula::State_Proposition>());
             
-            auto _proposition = input.cxx_get<Planning::Formula::State_Proposition>();
+            auto __proposition = input.cxx_get<Planning::Formula::State_Proposition>();
+
             
+    
             NEW_referenced_WRAPPED_deref_POINTER
                 (runtime_Thread,
                  Planning::Formula::State_Proposition,
-                 proposition,
-                 _proposition->get__name(),
-                 _proposition->get__arguments());
+                 _proposition,
+                 __proposition->get__name(),
+                 __proposition->get__arguments());
 
             
-            problem__state_Propositions
-                .insert(*proposition.cxx_get<Planning::Formula::State_Proposition>());
+            INTERACTIVE_VERBOSER(true, 3104,
+                                 "New state proposition :: "<<_proposition<<std::endl);
             
-            auto id = proposition->get__id();
+            auto _problem__state_Proposition = problem__state_Propositions
+                .find(*_proposition.cxx_get<Planning::Formula::State_Proposition>());
+            if(_problem__state_Proposition == problem__state_Propositions.end()){
+                problem__state_Propositions
+                    .insert(*_proposition.cxx_get<Planning::Formula::State_Proposition>());
+                _problem__state_Proposition = problem__state_Propositions
+                    .find(*_proposition.cxx_get<Planning::Formula::State_Proposition>());
+            }
+            auto proposition = *_problem__state_Proposition;
+            
+            auto id = proposition.get__id();
             
             NEW_referenced_WRAPPED_deref_POINTER
                 (runtime_Thread,
@@ -94,15 +109,26 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
                  processing_negative);
             
             auto literal = CXX__deref__shared_ptr<State_Formula::Literal>(_literal);
-            auto _literal__pointer = problem__literals.find(literal);
             
+            auto _literal__pointer = problem__literals.find(literal);
             if(_literal__pointer == problem__literals.end()){
                 problem__literals.insert(literal);
                 _literal__pointer = problem__literals.find(literal);
             }
             auto literal__pointer = *_literal__pointer;
             
-            if(clause__as_set.find(literal__pointer) != clause__as_set.end())return;
+            if(clause__as_set.find(literal__pointer) != clause__as_set.end()){
+                INTERACTIVE_VERBOSER(true, 3104,
+                                     "Already got proposition :: "<<proposition
+                                     <<" as literal :: "<<literal__pointer<<std::endl
+                                     <<"Registered with the current clause being built.");
+                return;
+            }
+            
+            INTERACTIVE_VERBOSER(true, 3104,
+                                 "New proposition :: "<<proposition
+                                 <<" as literal :: "<<literal__pointer<<std::endl
+                                 <<"Now registered with the current clause being built.");
             
             clause.push_back(literal__pointer);
             clause__as_set.insert(literal__pointer);
@@ -121,17 +147,24 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
             assert(input.test_cast<Planning::Formula::Conjunction>());
             deref_VISITATIONS(Planning::Formula::Conjunction, input, get__subformulae());
 
-            QUERY_UNRECOVERABLE_ERROR(!disjunctions.size(), "Got an empty formula while processnig :: "<<input);
-
+            
+            QUERY_UNRECOVERABLE_ERROR(
+                !disjunctions.size(),
+                "No disjunctions identified for formula while processnig :: "
+                <<input<<std::endl
+                <<disjunctions__as_set);
+            
             NEW_referenced_WRAPPED_deref_POINTER
                 (runtime_Thread,
                  State_Formula::Conjunctive_Normal_Form_Formula,
                  _conjunct,
                  disjunctions);
-
             
 
-            auto formula = CXX__deref__shared_ptr<State_Formula::Conjunctive_Normal_Form_Formula>(_conjunct);
+            auto formula =
+                CXX__deref__shared_ptr<State_Formula::Conjunctive_Normal_Form_Formula>
+                (_conjunct);
+            
             auto _problem__pointer = problem__cnfs.find(formula);
             
 
@@ -171,7 +204,9 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
             assert(input.test_cast<Planning::Formula::Disjunction>());
             deref_VISITATIONS(Planning::Formula::Disjunction, input, get__subformulae());
 
-            QUERY_UNRECOVERABLE_ERROR(!clause.size(), "Got an empty clause while processnig :: "<<input);
+            QUERY_UNRECOVERABLE_ERROR(
+                !clause.size(),
+                "Got an empty clause while processnig :: "<<input);
             
             NEW_referenced_WRAPPED_deref_POINTER
                 (runtime_Thread,
@@ -179,21 +214,25 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
                  _disjunct,
                  clause);
 
+            INTERACTIVE_VERBOSER(
+                true, 3104,
+                "Processing disjunctive clause :: "<<_disjunct<<std::endl);
+            
             auto disjunct = CXX__deref__shared_ptr<State_Formula::Disjunctive_Clause>(_disjunct);
             auto _clause__pointer = problem__clauses.find(disjunct);
-            
             if(_clause__pointer != problem__clauses.end()){
-                clause = List__Literals();
-                clause__as_set = Literals();
-                return;   
+            } else {
+                problem__clauses.insert(disjunct);
+                _clause__pointer = problem__clauses.find(disjunct);
             }
             
-            problem__clauses.insert(disjunct);
-            _clause__pointer = problem__clauses.find(disjunct);
             auto clause__pointer = *_clause__pointer;
 
             /* If it is already in the problem. */
             if(disjunctions__as_set.find(clause__pointer) != disjunctions__as_set.end()){
+                INTERACTIVE_VERBOSER(true, 3104,
+                                     "Processing duplicated clause :: "<<clause__pointer<<std::endl
+                                     <<"Reacted by dropping back to processing conjunct."<<std::endl );
                 clause = List__Literals();
                 clause__as_set = Literals();
                 return;
@@ -203,10 +242,18 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
             for(auto literal = literals.begin()
                     ; literal != literals.end()
                     ; literal ++){
+                INTERACTIVE_VERBOSER(true, 3104,
+                                     "Registering clause as listener :: "<<clause__pointer<<std::endl
+                                     <<"With literal"<<*literal<<std::endl );
+                
                 auto deref__st = clause__pointer.cxx_deref_get<basic_type>();
                 (*literal).cxx_get<Literal>()->add__listener(deref__st);
             }
             
+            
+            INTERACTIVE_VERBOSER(true, 3104,
+                                 "Added new CNF clause :: "<<clause__pointer<<std::endl);
+                
             disjunctions.push_back(clause__pointer);
             disjunctions__as_set.insert(clause__pointer);
             

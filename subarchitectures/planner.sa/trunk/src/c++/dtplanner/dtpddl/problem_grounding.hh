@@ -41,12 +41,13 @@
 #include "planning_action_schema.hh"
 #include "planning_derived_predicate.hh"
 
-#include "basic_action.hh"
+// #include "basic_action.hh"
 
 #include "planning_formula_to_cnf.hh"
 #include "assignment_applicator.hh"
 
-
+#include "action_basics.hh"
+#include "state_basics.hh"
 
 namespace Planning
 {

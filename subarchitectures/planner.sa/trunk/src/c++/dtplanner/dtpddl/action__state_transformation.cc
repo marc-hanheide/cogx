@@ -31,62 +31,17 @@
  * 
  */
 
-
-#include "basic_action.hh"
+#include "action__state_transformation.hh"
+#include "action__probabilistic_state_transformation.hh"
 
 #include "planning_state.hh"
 
+#include "state_formula__literal.hh"
+#include "state_formula__disjunctive_clause.hh"
+#include "state_formula__conjunctive_normal_form_formula.hh"
+
+
 using namespace Planning;
-
-std::vector<State*>
-Probabilistic_State_Transformation::
-operator()(State* input) const
-{
-    auto list__Listeners = get__traversable__listeners();
-    std::vector<State*> result(list__Listeners.size());
-
-    uint index = 0;
-    for(auto _listener = list__Listeners.begin()
-            ; _listener != list__Listeners.end()
-            ; _listener++, index++){
-        auto listener = *_listener;
-
-        State* new_state = (index == (list__Listeners.size() - 1))
-            ?input
-            :(new State(*input));
-
-        listener.cxx_get<Satisfaction_Listener>()->report__newly_satisfied(*new_state);
-
-        result[index] = new_state;
-    }
-
-    return std::move<>(result);
-}
-
-const Formula::Action_Proposition&
-Probabilistic_State_Transformation::
-get__get_identifier() const
-{
-    return std::tr1::get<0>(contents());
-}
-
-
-
-void Probabilistic_State_Transformation::
-report__newly_satisfied(State& state)
-{
-    state.push__probabilistic_transformation
-        (this);
-}
-
-void Probabilistic_State_Transformation::
-report__newly_unsatisfied(State& state)
-{
-    /* NA -- A probabilistic transformation should only be activated
-     * once during the computation of successor states under operator
-     * execution.*/
-}
-
 
 
 Are_Doubles_Close State_Transformation::are_Doubles_Close = Are_Doubles_Close(1e-9);
@@ -131,7 +86,7 @@ State_Transformation::operator()(State* in)
 }
 
 const Formula::Action_Proposition& State_Transformation
-::get__get_identifier() const
+::get__identifier() const
 {
     return std::tr1::get<0>(contents());
 }
@@ -300,3 +255,64 @@ void State_Transformation
         }
     }   
 }
+
+std::ostream& State_Transformation::operator<<(std::ostream&o) const
+{
+    o<<get__identifier()<<std::endl;
+
+    if(!get__lookup_probability()){
+        o<<"Prob :: "<<get__probability()<<std::endl;
+    } else {
+        o<<"Prob :: LOOKUP"<<std::endl;
+    }
+    
+    o<<"ADD :: ";
+    /*add effects*/
+    for(auto effect = get__effects().begin()
+            ; effect != get__effects().end()
+            ; effect++){
+        if(!(*effect)->get__sign()){
+            o<<*effect<<", ";
+        }
+    }
+    o<<std::endl;
+
+    
+    /*delete effects*/
+    
+    o<<"DELETE :: ";
+    /*add effects*/
+    for(auto effect = get__effects().begin()
+            ; effect != get__effects().end()
+            ; effect++){
+        if((*effect)->get__sign()){
+            o<<*effect<<", ";
+        }
+    }
+    o<<std::endl;
+    o<<"{";
+    for(auto listener = get__traversable__listeners().begin()
+            ; listener != get__traversable__listeners().end()
+            ; listener++){
+        if(listener->test_cast<State_Transformation>()){
+            listener->cxx_get<State_Transformation>()->operator<<(o);
+        } else if (listener->test_cast<Probabilistic_State_Transformation>()) {
+            o<<*(listener->cxx_get<Probabilistic_State_Transformation>());//->operator<<(o);
+        }
+    }
+    o<<"}"<<std::endl;
+    
+    return o;
+}
+
+namespace std
+{
+    std::ostream& operator<<(std::ostream&o
+                             , const Planning::State_Transformation&in)
+    {
+        return in.operator<<(o);
+    }
+    
+}
+
+

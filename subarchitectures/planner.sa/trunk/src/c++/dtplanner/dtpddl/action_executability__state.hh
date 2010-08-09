@@ -38,7 +38,6 @@
 
 #include "boolean__satisfaction_status_management.hh"
 #include "unsigned_integer__status_management.hh"
-#include "basic_action.hh"
 
 
 namespace Planning

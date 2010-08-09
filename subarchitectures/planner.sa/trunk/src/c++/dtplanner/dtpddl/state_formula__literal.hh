@@ -31,39 +31,50 @@
  * 
  */
 
+#ifndef STATE_FORMULA__LITERAL_HH
+#define STATE_FORMULA__LITERAL_HH
 
 #include "state_formula.hh"
 
-using namespace Planning;
-using namespace Planning::State_Formula;
-
-Satisfaction_Listener::~Satisfaction_Listener()
+namespace Planning
 {
-}
+    namespace State_Formula
+    {
+        class Literal
+            : public _Satisfaction_Listener<enum_types::literal /* Type identifier.*/
+                                            , uint /* Boolean variable identifier.*/
+                                            , bool >
+        {PRINTING;
+        public:
 
-void Satisfaction_Listener::add__listener(Satisfaction_Listener__Pointer& satisfaction_Listener__Pointer)
-{
-    if(listeners.find(satisfaction_Listener__Pointer) != listeners.end()){
-        WARNING("Attempted to add "<<satisfaction_Listener__Pointer
-                <<" as a listener to a set that"<<std::endl
-                <<"already contained an equivalent element.");
-        return;
-    }
-    
-    listeners.insert(satisfaction_Listener__Pointer);
-    list__Listeners.push_back(satisfaction_Listener__Pointer);
-}
+            void report__newly_satisfied(State&);
+            void report__newly_unsatisfied(State&);
             
-const List__Listeners& Satisfaction_Listener::get__traversable__listeners() const 
-{
-    return list__Listeners;
+            void set__satisfied(State&);
+            void set__unsatisfied(State&);
+            void flip_satisfaction(State&);
+            bool is_satisfied(const State&) const;
+
+            
+            /* Set the subject variable to have the truth value "TRUE".*/
+            void flip_variable_on(State&);
+            
+            /* Set the subject variable to have the truth value "FALSE".*/
+            void flip_variable_off(State&);
+            
+            /* Set the subject variable to have the opposite truth
+             * value to its current assignment.*/
+            void flip(State&);
+
+            /* Variable, that is the subject of this literal.*/
+            uint get__variable() const;
+
+            /* Sign of this literal (true is positive, false is negative). */
+            bool get__sign() const;                   
+        };
+ 
+    }
 }
 
-const Listeners& Satisfaction_Listener::get__searchable__listeners() const 
-{
-    return listeners;
-}
 
-
-
-
+#endif

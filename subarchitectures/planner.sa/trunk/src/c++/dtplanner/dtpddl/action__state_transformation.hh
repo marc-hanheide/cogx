@@ -31,9 +31,11 @@
  * 
  */
 
-#ifndef BASIC_ACTION_HH
-#define BASIC_ACTION_HH
+#ifndef ACTION__STATE_TRANSFORMATION_HH
+#define ACTION__STATE_TRANSFORMATION_HH
 
+#include "planning_formula.hh"
+#include "planning_types_enum.hh"
 #include "state_basics.hh"
 #include "planning_formula.hh"
 #include "state_formula.hh"
@@ -41,30 +43,11 @@
 namespace Planning
 {
     
-    class Probabilistic_State_Transformation :
-        public State_Formula::
-        _Satisfaction_Listener<enum_types::probabilistic_state_transformation
-                               , Formula::Action_Proposition>
-    {
-    public:
-        const Formula::Action_Proposition& get__get_identifier() const;
-
-        std::vector<State*> operator()(State*) const;
-        
-        void report__newly_satisfied(State&);
-        void report__newly_unsatisfied(State&);
-    };
-
-
-    typedef CXX__deref__shared_ptr<Probabilistic_State_Transformation> Probabilistic_State_Transformation__Pointer; 
-    typedef std::set< Probabilistic_State_Transformation__Pointer > Probabilistic_State_Transformations;       
-    typedef std::vector< Probabilistic_State_Transformation__Pointer > List__Probabilistic_State_Transformation;
-    
-    /* We do not keep "transformation" preconditions (i.e., a PDDL
-     * action preconditions) in the transformation, but rather store
-     * those separately as CNF formulae. When a formula is true at
-     * some given state, then \class{Satisfaction_Listener} that are
-     * registered with that formula get notified (see
+    /* We do not explicitly store "transformation" preconditions
+     * (i.e., a PDDL action preconditions) in the transformation, but
+     * rather store those separately as CNF formulae. When a formula
+     * is true at some given state, then \class{Satisfaction_Listener}
+     * that are registered with that formula get notified (see
      * \module{state_formula.hh}). */
     class State_Transformation :
         public State_Formula::
@@ -76,12 +59,13 @@ namespace Planning
                                , bool /* lookup probability */
                                , double /* Probability that this transformation is applied. */
                                , uint /* Probability lookup index (ignore if "lookup probability" is false). */>
-    {
+    {PRINTING;
+        
     public:
         /* How is this action identified in the other modules of this
          * system? This will be a PDDL-based identifier if the
          * transformation corresponds to a ground PDDL operator.*/
-        const Formula::Action_Proposition& get__get_identifier() const;
+        const Formula::Action_Proposition& get__identifier() const;
 
         /* What conditions on a state must be satisfied in order for
          * this transformation to be applicable? That condition is
@@ -106,7 +90,6 @@ namespace Planning
          * read from a state, then this member reads that
          * information. */
         double get__probability(const State&) const;
-
         
 //         virtual ~State_Transformation(){};
 
@@ -144,35 +127,10 @@ namespace Planning
 
         uint get__number_of_satisfied_conditions(State& state) const;
 
-
-
-
         static Are_Doubles_Close are_Doubles_Close;//(1e-9);
         
     };
     
-    typedef CXX__deref__shared_ptr<State_Transformation> State_Transformation__Pointer; 
-    typedef std::set< State_Transformation__Pointer > State_Transformations;       
-    typedef std::vector< State_Transformation__Pointer > List__State_Transformation;
-    
 }
 
-
-
 #endif
-
-/* Did he fall?
- * 
- * By his body's known weight of eleven-stone-and-four-pounds in
- * avoirdupois measure, as certified by the graduated machine for
- * periodical selfweighing in the premises of Francis Froedman,
- * pharmaceutical chemist of 19 Fredrick street, north, on the last
- * feast of the Ascension, to wit, the twelfth day of May of the
- * bissextile year one-thousand-nine-hundred-and-four of the christian
- * era, (jewish era five-thousand-six-hundred-and-sixty-four,
- * mohammadan era one-thousand-three-hundred-and-twentytwo), golden
- * number 5, epact 13, solar cycle 9, dominical letters C B, Roman
- * indication 2, Julian period 6617, MXMIV.
- *
- *  -- James Joyce, Ulysses (Ed. 1922)
- */

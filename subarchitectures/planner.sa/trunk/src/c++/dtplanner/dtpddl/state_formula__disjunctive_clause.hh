@@ -31,43 +31,52 @@
  * 
  */
 
+#ifndef STATE_FORMULA__DISJUNCTIVE_CLAUSE_HH
+#define STATE_FORMULA__DISJUNCTIVE_CLAUSE_HH
 
-#ifndef STATE_FORMULA_HH
-#define STATE_FORMULA_HH
 
-#include "state_basics.hh"
-#include "stl__typed_thing.hh"
-#include "planning_formula.hh"
+#include "state_formula.hh"
 
 
 namespace Planning
 {
     namespace State_Formula
     {
-        class Satisfaction_Listener
-        {
-        public:
-            virtual ~Satisfaction_Listener();/*EMPTY*/
-            virtual void report__newly_satisfied(State&) = 0;
-            virtual void report__newly_unsatisfied(State&) = 0;
+        class Disjunctive_Clause
+            : public _Satisfaction_Listener<enum_types::disjunctive_clause
+                                            , List__Literals>
+        {PRINTING;
+        public:            
             
-            void add__listener(Satisfaction_Listener__Pointer&);
+            void report__newly_satisfied(State&);
+            void report__newly_unsatisfied(State&);
             
-            const List__Listeners& get__traversable__listeners() const ;
-            const Listeners& get__searchable__listeners() const ;
-        private:
-            List__Listeners list__Listeners;
-            Listeners listeners;
+
+            void set__satisfied(State&);
+            void set__unsatisfied(State&);
+            void flip_satisfaction(State&);
+            bool is_satisfied(const State&) const;
+            
+            void increment__level_of_satisfaction(State&);
+            void decrement__level_of_satisfaction(State&);
+            void set__level_of_satisfaction(uint, State&);
+            uint get__level_of_satisfaction(State&) const;
+            
+            /*(see \parent{Satisfied_By_Count}::\member{get__level_of_satisfaction()})*/
+            uint get__number_of_satisfied_literals(State&) const;    
+
+            /*Change the level of satisfaction of this clause.*/
+            void report__newly_satisfied_literal(State&);
+            void report__newly_unsatisfied_literal(State&);
+            
+            
+            /*Get the \argument{i}th literal in the clause.*/
+            const Literal& get__literal(int i) const;
+            
+            /*Get the literals in the clause.*/
+            const List__Literals& get__literals() const;
+            List__Literals& get__literals();/*_contents .. CHECK*/
         };
-        
-        template<int type_name, typename... T>
-        class _Satisfaction_Listener : public type_wrapper<type_name, T...>,
-                                       public Satisfaction_Listener
-        {
-        public:
-            typedef type_wrapper<type_name, List__Listeners, Listeners, T...> Parent;
-        };
-        
     }
 }
 

@@ -31,39 +31,28 @@
  * 
  */
 
+#ifndef ACTION__PROBABILISTIC_STATE_TRANSFORMATION_HH
+#define ACTION__PROBABILISTIC_STATE_TRANSFORMATION_HH
 
+#include "planning_formula.hh"
 #include "state_formula.hh"
+#include "planning_types_enum.hh"
 
-using namespace Planning;
-using namespace Planning::State_Formula;
-
-Satisfaction_Listener::~Satisfaction_Listener()
+namespace Planning
 {
+    class Probabilistic_State_Transformation :
+        public State_Formula::
+        _Satisfaction_Listener<enum_types::probabilistic_state_transformation
+                               , Formula::Action_Proposition>
+    {PRINTING;
+    public:
+        const Formula::Action_Proposition& get__identifier() const;
+
+        std::vector<State*> operator()(State*) const;
+        
+        void report__newly_satisfied(State&);
+        void report__newly_unsatisfied(State&);
+    };
 }
 
-void Satisfaction_Listener::add__listener(Satisfaction_Listener__Pointer& satisfaction_Listener__Pointer)
-{
-    if(listeners.find(satisfaction_Listener__Pointer) != listeners.end()){
-        WARNING("Attempted to add "<<satisfaction_Listener__Pointer
-                <<" as a listener to a set that"<<std::endl
-                <<"already contained an equivalent element.");
-        return;
-    }
-    
-    listeners.insert(satisfaction_Listener__Pointer);
-    list__Listeners.push_back(satisfaction_Listener__Pointer);
-}
-            
-const List__Listeners& Satisfaction_Listener::get__traversable__listeners() const 
-{
-    return list__Listeners;
-}
-
-const Listeners& Satisfaction_Listener::get__searchable__listeners() const 
-{
-    return listeners;
-}
-
-
-
-
+#endif
