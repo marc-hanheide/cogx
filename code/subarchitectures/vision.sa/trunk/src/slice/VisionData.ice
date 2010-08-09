@@ -243,12 +243,22 @@ module VisionData {
     StereoDetectionCommandType cmd;
   };
 
+  /** 
+   * @brief Stereo Detector Reasoner Commands
+   * @author Andreas Richtsfeld
+   */
+  enum SDReasonerCommandType{ NEWFRAME };
+  class SDReasonerCommand {
+    SDReasonerCommandType cmd;
+  };
+
   /**
    * @brief Objects for the reasoner component.
    * @author Andreas Richtsfeld 
    */
-  class ReasonerObjects {
-    VisualObject obj;			// visual object
+  class ReasonerObject {
+    VisualObject obj;         // visual object from stereo detector
+    int frameNr;              // frame number
   };
 
   /**
@@ -271,7 +281,7 @@ module VisionData {
   };
 
   /**
-   * 2D rectangular image region of interest.
+   * 2D rectangular image Region Of Interest (ROI).
    */
   class ROI {
     cogx::Math::Rect2 rect;
