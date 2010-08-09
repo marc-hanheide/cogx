@@ -1,47 +1,6 @@
 package coma.components;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeSet;
-
-import Marshalling.Marshaller;
-import Marshalling.MarshallerPrx;
-import SpatialData.Place;
-import SpatialData.PlaceStatus;
-import SpatialProperties.ConnectivityPathProperty;
-import SpatialProperties.GatewayPlaceProperty;
-import SpatialProperties.ObjectPlaceProperty;
-import binder.autogen.core.Feature;
-import binder.autogen.core.FeatureValue;
-import binder.autogen.featvalues.BooleanValue;
-import binder.autogen.featvalues.IntegerValue;
-import binder.autogen.featvalues.StringValue;
-import cast.AlreadyExistsOnWMException;
-import cast.CASTException;
-import cast.ConsistencyException;
-import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
-import cast.UnknownSubarchitectureException;
-import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
-import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
-import cast.cdl.WorkingMemoryPointer;
-import cast.core.CASTData;
-
-import coma.aux.ComaHelper;
-import comadata.ComaReasonerInterfacePrx;
-import comadata.ComaRoom;
 
 /**
  * This is a simple monitor that replicates spatial WM entries, *PLACES*, inside coma.
@@ -57,6 +16,10 @@ import comadata.ComaRoom;
  */
 public class PlaceMonitor extends ManagedComponent {
 
+	public PlaceMonitor() {
+		return;
+	}
+	/*
 	private String m_comareasoner_component_name;
 	private ComaReasonerInterfacePrx m_comareasoner;
 	
@@ -881,6 +844,7 @@ public class PlaceMonitor extends ManagedComponent {
 				 (_wmid.equals("") ? " | WME ID: " + _wmid : "") +
 				 "]]");
 	}
+	*/
 
 	
 // register special filters where necessary, so this general filter is not necessary anymore
@@ -1312,4 +1276,5 @@ public class PlaceMonitor extends ManagedComponent {
 //		
 //	}
 	
+
 }

@@ -18,7 +18,7 @@ public class TestWriter extends ManagedComponent {
 		log("configure() called");
 		m_reasoner_id = new Identity();
 		m_reasoner_id.name="";
-		m_reasoner_id.category="ComaReasoner";
+		m_reasoner_id.category="coma.components.ComaReasoner";
 
 		if (args.containsKey("--reasoner-name")) {
 			m_reasoner_id.name=args.get("--reasoner-name");
