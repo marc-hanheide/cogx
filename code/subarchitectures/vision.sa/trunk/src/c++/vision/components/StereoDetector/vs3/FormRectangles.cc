@@ -436,7 +436,7 @@ bool FormRectangles::IsConvexPolygon(Array<unsigned> ljcts)
 			LJunctions(core, ljcts[l])->isct;																											/// TODO Ist das hier Blödsinn? Wieso try-catch block?
 			intscts[m++] = LJunctions(core, ljcts[l])->isct;
 		}
-		catch (Except &e){}
+		catch (exception &e){}
   }	
 	
   // copy intersections to array with size m

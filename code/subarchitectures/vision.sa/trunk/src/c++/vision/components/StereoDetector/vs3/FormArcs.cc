@@ -123,15 +123,18 @@ bool FormArcs::EdgelsOnCircle(Array<Edgel> &edgels, unsigned i, unsigned j, unsi
         return false;
     return true;
   }
-  catch(Except &e)
+	catch (exception &e)
   {
     // note: if we cannot calculate a circle center, this does not mean that
     // we have no arc: the current part might be too short and thus straight
     // to allow calculation of the circle center.
     // -> report true, let's try growing larger and see if we get an arc
     // eventually
+		
+		printf("FormArcs::EdgelsOnCircle: unknown exception during processing of images.\n");
+    cout << e.what() << endl;
     return true;
-  }
+	}
 }
 
 /**
@@ -169,10 +172,13 @@ bool FormArcs::FitArc(Segment *seg, unsigned *cur_pos)
           core->NewGestalt(GestaltPrinciple::FORM_ARCS, new Arc(core, seg, i, j, k, center, radius));
       }
     }
-    catch(Except &e)
-    {
+		catch (exception &e)
+		{
       // circle center could not be found
-    }
+			printf("FormArcs::FitArc: unknown exception during processing of images.\n");
+			cout << e.what() << endl;
+		}
+		
   }
   return *cur_pos < edgels.Size();
 }
@@ -203,13 +209,12 @@ int FormArcs::Support(Array<Edgel> &edgels, int l, int u, int &i, int &j,
     if(k > u) k = u;
     return k - i + 1;
   }
-  catch(Except &e)
-  {
-    // note: if we cannot calculate a circle center, this does not mean that
-    // we have no arc: the current part might be too short and thus straight
-    // to allow calculation of the circle center.
-    return 0;
-  }
+	catch (exception &e)
+	{
+// 		printf("FormArcs::Support: unknown exception during processing of images.\n");
+// 		cout << e.what() << endl;
+		return 0;
+	}
 }
 
 /**

@@ -10,7 +10,7 @@
 #define Z_BUFFER_VIDEO_HH
 
 #include <opencv/cv.h>
-#include "Except.hh"
+#include <stdexcept>
 #include "Video.hh"
 
 namespace Z
@@ -36,7 +36,7 @@ private:
 public:
   BufferVideo();
   virtual ~BufferVideo();
-  void Init(unsigned w, unsigned h, ColorFormat fmt, bool own_buffer) throw(Except);
+  void Init(unsigned w, unsigned h, ColorFormat fmt, bool own_buffer) throw(std::runtime_error);
   void Init(unsigned w, unsigned h, ColorFormat fmt, char *buf, bool copy);
   void SetBuffer(char *buf);
 

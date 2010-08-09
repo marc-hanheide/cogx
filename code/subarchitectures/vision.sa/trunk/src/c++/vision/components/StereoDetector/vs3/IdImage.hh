@@ -7,7 +7,7 @@
 
 #include <math.h>
 #include "Namespace.hh"
-#include "Vector2.hh"
+#include "Vector.hh"
 
 namespace Z
 {

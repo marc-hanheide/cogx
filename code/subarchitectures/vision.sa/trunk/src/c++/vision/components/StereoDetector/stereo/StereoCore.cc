@@ -17,7 +17,7 @@ extern void SetActiveDrawArea(IplImage *iI);
  * @brief Constructor of Stereo Core
  * @param stereocal_file Stereo calibration file
  */
-StereoCore::StereoCore(const string &stereocal_file) throw(Except)
+StereoCore::StereoCore(const string &stereocal_file) throw(std::runtime_error)
 {
 	pPara = new PruningParameter;
 	pPara->pruning = false;
@@ -53,7 +53,7 @@ StereoCore::StereoCore(const string &stereocal_file) throw(Except)
 
 	// init stereo camera calibration parameters
   stereo_cam = new StereoCamera();
-  if(!stereo_cam->ReadSVSCalib(stereocal_file)) throw (Except(__HERE__, "cannot open calibration file for stereo camera."));
+  if(!stereo_cam->ReadSVSCalib(stereocal_file)) throw (std::runtime_error("StereoCore::StereoCore: Cannot open calibration file for stereo camera."));
 
 	InitStereoGestalts();
 }
@@ -151,12 +151,24 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
 
 // printf("StereoCore::ProcessStereoImage 1\n");
   // do monocular processing for each stereo image
+		try 
+	{
   for(int side = LEFT; side <= RIGHT; side++)
   {
+// printf("StereoCore::ProcessStereoImage: vs3-core %u\n", side);
     vcore[side]->NewImage(side == LEFT ? img_l : img_r);
+// printf("StereoCore::ProcessStereoImage: vs3-core 1\n");
     vcore[side]->ProcessImage(runtime_ms, ca, co);
+// printf("StereoCore::ProcessStereoImage: vse-core end\n");
 	}
-
+	}
+	catch (exception &e)
+  {
+		printf("StereoCore::ProcessStereoImage: Unknown exception during processing of stereo images.\n");
+    cout << e.what() << endl;
+  }
+	
+	
 // printf("StereoCore::ProcessStereoImage 2\n");
 	// do stereo processing for enabled stereo principles
 	try 
@@ -173,11 +185,11 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
 		}
 // 		printf("StereoCore::ProcessStereoImage: process image ended.\n");
   }
-	catch(Z::Except &e) 
-	{
-		printf("StereoCore::ProcessStereoImage: Error during stereo calculation.\n");
-		printf("%s\n", e.what());
-	}
+	catch (exception &e)
+  {
+		printf("StereoCore::ProcessStereoImage: Exception during processing of stereo images");
+    cout << e.what() << endl;
+  }
 
 	/// HACK Print results
 	PrintResults();

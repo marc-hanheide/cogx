@@ -880,13 +880,13 @@ void FormClosures::NewClosure(Line *first, Line *last)
 inline static Vector2 GetVertex(LJunction *j, Collinearity *c)
 {
 	if(j != 0 && c != 0) 
-		throw Except(__HERE__, "need either L-jct or collinearity");
+		throw std::runtime_error("FormClosures: GetVertex: Need either L-jct or collinearity");
 	else if(j != 0) 
 		return j->isct;
   else if(c != 0)
 		return c->vertex;
 	else
-		throw Except(__HERE__, "need one of L-jct or collinearity");
+		throw std::runtime_error("FormClosures: GetVertex: Need one of L-jct or collinearity");
 }
 
 /**
@@ -933,7 +933,7 @@ bool FormClosures::LineIntersectingPath(Line *l_last, LJunction *j_new,
       if(LinesIntersecting(p, q, a, b))
         return true;
     }
-    catch(Except &e)
+    catch (exception &e)
     {
       // lines do not intersect, carry on
     }
@@ -973,9 +973,11 @@ bool FormClosures::ClosingLineIntersectingPath(Line *l_close,
       if(LinesIntersecting(p, q, a, b))
         return true;
     }
-    catch(Except &e)
+    catch (exception &e)
     {
       // lines do not intersect, carry on
+      //printf("FormClosures::ClosingLineIntersectingPath: unknown exception.\n");
+      //cout << e.what() << endl;
     }
     l = prev[l->ID()];
   }

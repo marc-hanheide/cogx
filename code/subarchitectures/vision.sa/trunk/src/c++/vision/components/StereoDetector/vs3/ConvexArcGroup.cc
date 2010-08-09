@@ -2,10 +2,11 @@
  * $Id: ConvexArcGroup.cc,v 1.18 2006/11/24 13:47:03 mxz Exp mxz $
  */
 
+#include <cstdio>
+
 #include "Draw.hh"
 #include "Arc.hh"
 #include "ConvexArcGroup.hh"
-#include <cstdio>
 
 namespace Z
 {
@@ -34,7 +35,12 @@ ConvexArcGroup::ConvexArcGroup(VisionCore *c, Array<Arc*> &a, unsigned l,
       arcs[i] = a[l];
   }
   else
-    throw(Except(__HERE__, "invalid array bounds %u-%u", l, u));
+	{
+		char buffer [100];
+		sprintf(buffer, "ConvexArcGroup::ConvexArcGroup: Invalid array bounds %u-%u", l, u);
+
+    throw(std::runtime_error(buffer));
+	}
   ang_cover = ArcGroupAngularCoverage(arcs);
   closedness = ArcGroupClosedness(arcs);
   if(s >= 0.)
@@ -103,8 +109,10 @@ void ConvexArcGroup::Draw(int detail)
         mean += c[i]*weight[i];
         sum_weight += weight[i];
       }
-      catch(Except &e)
+      catch (exception &e)
       {
+        printf("ConvexArcGroup::Draw: unknown exception during processing of images.\n");
+        cout << e.what() << endl;
       }
     }
     if(sum_weight > 0.)
@@ -198,8 +206,7 @@ void ConvexArcGroup::CalculateSignificance()
  * TODO: significance of a single arc should be > 0. if arc coverage is large
  * enough
  */
-double ArcGroupSignificance(VisionCore *core, Array<Arc*> &arcs,
-    unsigned l, unsigned u)
+double ArcGroupSignificance(VisionCore *core, Array<Arc*> &arcs, unsigned l, unsigned u)
 {
   if(u - l > 0)
   {
@@ -242,12 +249,15 @@ double ArcGroupSignificance(VisionCore *core, Array<Arc*> &arcs,
         mean += c[i]*weight[i];
         sum_weight += weight[i];
       }
-      catch(Except &e)
+      catch (exception &e)
       {
         // lines did not intersect: ignore this point
         c[i] = Vector2(HUGE/2., HUGE/2.);
         weight[i] = 0.;
         // leave mean and sum_weight untouched
+
+        //printf("ConvexArcGroup::ArcGroupSignificance: unknown exception during processing of images.\n");
+        //cout << e.what() << endl;
       }
     }
     if(sum_weight > 0.)

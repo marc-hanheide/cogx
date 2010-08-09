@@ -33,6 +33,7 @@ extern "C" {
 
 namespace cast
 {
+	
 // Gobal variables: Can't solve this in another way
 bool mouseEvent = false;				///< Flag for mouse events
 int mouseX = 0, mouseY = 0;			///< Coordinates from mouse event
@@ -133,10 +134,10 @@ void StereoDetector::configure(const map<string,string> & _config)
 		{
 			score = new Z::StereoCore(camconfig);
 		}
-		catch(Z::Except &e)
+		catch (exception &e)
 		{
-			log("error during initialisation of stereo core.");
-			printf("%s\n", e.what());
+			printf("StereoDetector::configure: Error during initialisation of stereo core.\n");
+			cout << e.what() << endl;
 		}
   }
 	if((it = _config.find("--camids")) != _config.end())
@@ -196,7 +197,7 @@ void StereoDetector::start()
   addChangeFilter(createLocalTypeFilter<ProtoObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<StereoDetector>(this, &StereoDetector::receiveProtoObject));
 
-	// add change filter for ProtoObject changes
+	// add change filter for ConvexHull changes
   addChangeFilter(createLocalTypeFilter<ConvexHull>(cdl::ADD),
       new MemberFunctionChangeReceiver<StereoDetector>(this, &StereoDetector::receiveConvexHull));
 
@@ -521,31 +522,20 @@ void StereoDetector::receiveImages(const std::vector<Video::Image>& images)
  */
 void StereoDetector::processImage()
 {
-	log("Process new image with runtime: %ums", runtime);
+	log("Process new images with runtime: %ums", runtime);
 
-	// clear results before converting and processing new image
 	score->ClearResults();
-
-	// Get the images
 	GetImages();
 
-	log("Got images");
-	
-	// Process the stereo images at the stereo core and get visual (stereo matched) objects
 	try 
 	{
-		log("Calculation of stereo images!");
+// 		log("Calculation of stereo images!");
 		score->ProcessStereoImage(runtime/2, cannyAlpha, cannyOmega, iplImage_l, iplImage_r);
-		log("Calculation of stereo images ended!");
-	}
-	catch(Z::Except &e)
-	{
-		log("errors during processing of stereo images.");
-    printf("%s\n", e.what());
+// 		log("Calculation of stereo images ended!");
 	}
   catch (exception &e)
   {
-		log("unknown exception during processing of stereo images");
+		log("StereoDetector::processImage: Unknown exception during processing of stereo images.\n");
     cout << e.what() << endl;
   }
 
@@ -561,19 +551,14 @@ void StereoDetector::processImage()
  */
 void StereoDetector::ProcessHRImages()
 {
-	log("Process new HR- image with runtime: %ums", runtime);
+	log("Process new HR- images with runtime: %ums", runtime);
 
 	// Get HR images
 	GetHRImages();
 	if(!haveHRImage) log("No HR image available.");
 	if(!haveHRImage) return;
 
-printf("HR: width/height: %u/%u\n", iplImage_l_hr->width, iplImage_l_hr->height);
-
-	// clear results before converting and processing new image
 	score->ClearResults();
-
-	// resize images
 	cvResize(iplImage_l_hr, iplImage_l);
 	cvResize(iplImage_r_hr, iplImage_r);
 
@@ -608,7 +593,6 @@ printf("HR: width/height: %u/%u\n", iplImage_l_hr->width, iplImage_l_hr->height)
 void StereoDetector::ProcessPrunedHRImages()
 {
 printf("ProcessPrunedHRImages\n");
-	// get original image
 	GetImages();
 
 printf("ProcessPrunedHRImages 1\n");
@@ -650,27 +634,17 @@ void StereoDetector::processPrunedHRImage(int oX, int oY, int sc)
 {
 	log("Process pruned image with runtime: %ums", runtime);
 
-	
-	// TODO Es sollten die VCs gesäubert werden, aber die Stereo-Ergebnisse noch nicht! Stereo-Core umbauen!
-	// clear results before converting and processing new image												/// TODO es könnten mehrere geprunte images verarbeitet werden.
-	score->ClearResults();	// TODO muss zu ProcessPrunedHRImages wandern!
-	
-	// Process the stereo images at the stereo core and get visual (stereo matched) objects
+	score->ClearResults();
 	try 
 	{
-		double ca = 0.4;		/// TODO Canny alpha
-		double co = 0.001;	/// TODO Canny omega
+		double ca = 0.4;		// Canny alpha
+		double co = 0.001;	// Canny omega
 		score->ProcessStereoImage(runtime/2, ca, co, iplImage_l_pr, iplImage_r_pr, oX, oY, sc);
 		log("Calculation of pruned stereo images ended!");
 	}
-	catch(Z::Except &e)
-	{
-		log("errors during processing of stereo images.");
-    printf("%s\n", e.what());
-	}
   catch (exception &e)
   {
-		log("other exception during processing of stereo images");
+		log("StereoDetector::processPrunedHRImage: Exception during processing of stereo images");
     cout << e.what() << endl;
   }
 }
@@ -777,6 +751,7 @@ void StereoDetector::WriteVisualObjects()
  */
 void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 {
+	static unsigned frameNumber = 0;
 	static unsigned numStereoObjects = 0;
 	VisionData::VisualObjectPtr obj;
 
@@ -797,13 +772,24 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 			std::string objectID = newDataID();
 			objectIDs.push_back(objectID);
 
-			addToWorkingMemory(objectID, obj);
+			VisionData::ReasonerObjectPtr reaObj = new VisionData::ReasonerObject;																							/// TODO TODO TODO Write ReasonerObject!!!
+			reaObj->obj = obj;
+			reaObj->frameNr = frameNumber;
+			addToWorkingMemory(objectID, reaObj);
 
 			cvWaitKey(20);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
 
 			log("Add new visual object to working memory: %s - %s", obj->label.c_str(), objectID.c_str());
 		}
 	}
+	
+	// Send newFrame command
+	VisionData::SDReasonerCommandPtr newFrame = new VisionData::SDReasonerCommand;
+	newFrame->cmd = VisionData::NEWFRAME;
+	addToWorkingMemory(newDataID(), newFrame);
+	log("NewFrame command sent!");
+
+	frameNumber++;
 }
 
 /**

@@ -7,7 +7,8 @@
 
 #include <opencv/cv.h>
 #include <iostream>
-#include "Except.hh"
+#include <stdexcept>
+
 #include "ImgUtils.hh"
 #include "Math.hh"
 #include "Edgel.hh"

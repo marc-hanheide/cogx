@@ -588,10 +588,10 @@ void FormJunctions::CreateT(Line *line_i, int vtype_i, Line *line_j,
       }
     }
   }
-  catch(Except &e)
-  {
+	catch (exception &e)
+	{
     // if tangents are parallel -> no intersections
-  }
+	}
 }
 
 /**
@@ -796,10 +796,11 @@ LJunction* FormJunctions::NewL(Line *line_i, Line *line_j, int end_i, int end_j)
       return new_l;
     }
   }
-  catch(Except &e)
-  {
+	catch (exception &e)
+	{
     // if tangents are parallel -> no L-jct
-  }
+	}
+
   return 0;
 }
 
@@ -836,10 +837,10 @@ TJunction* FormJunctions::NewT(Line *pole, Line *left, Line *right,
         return new_t;
       }
   }
-  catch(Except &e)
-  {
+	catch (exception &e)
+	{
     // if tangents are parallel -> no L-jct
-  }
+	}
   return 0;
 }
 

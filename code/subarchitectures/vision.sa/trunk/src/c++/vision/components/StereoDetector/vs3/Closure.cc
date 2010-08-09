@@ -66,13 +66,13 @@ Closure::Closure(VisionCore *c) : Gestalt(c, CLOSURE)
 Vector2 Closure::GetVertex(unsigned i)
 {
   if(jcts[i] != 0 && colls[i] != 0)
-    throw Except(__HERE__, "need either L-jct or collinearity");
+    throw std::runtime_error("Closure::GetVertex: Need either L-jct or collinearity");
   else if(jcts[i] != 0)
     return jcts[i]->isct;
   else if(colls[i] != 0)
     return colls[i]->vertex;
   else
-    throw Except(__HERE__, "need one of L-jct or collinearity");
+    throw std::runtime_error("Closure::GetVertex: need one of L-jct or collinearity");
 }
 
 /**
@@ -83,13 +83,13 @@ Vector2 Closure::GetVertex(unsigned i)
 double Closure::GetJunctionSig(unsigned i)
 {
   if(jcts[i] != 0 && colls[i] != 0)
-    throw Except(__HERE__, "need either L-jct or collinearity");
+    throw std::runtime_error("Closure::GetJunctionSig: Need either L-jct or collinearity");
   else if(jcts[i] != 0)
     return jcts[i]->sig;
   else if(colls[i] != 0)
     return colls[i]->sig;
   else
-    throw Except(__HERE__, "need one of L-jct or collinearity");
+    throw std::runtime_error("Closure::GetJunctionSig: Need one of L-jct or collinearity");
 }
 
 /**

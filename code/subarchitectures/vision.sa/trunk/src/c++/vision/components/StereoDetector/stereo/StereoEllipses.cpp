@@ -348,7 +348,8 @@ void Ellipse3D::CalculateCircleProperties()
 
 /**
  * @brief Calculate the significance of the estimated circle hypothesis.
- * TODO HOW?
+ * The significance is calculated from the deviations between distance of the
+ * hull points to the center and the radius. [is between 0...1?]
  */
 void Ellipse3D::CalculateSignificance()
 {

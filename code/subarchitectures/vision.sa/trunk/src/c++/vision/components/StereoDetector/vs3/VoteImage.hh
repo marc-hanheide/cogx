@@ -10,7 +10,7 @@
 
 #include <math.h>
 #include "Gestalt.hh"
-#include "Vector2.hh"
+#include "Vector.hh"
 
 namespace Z
 {

@@ -22,7 +22,7 @@
 #include "Array.hh"
 #include "Config.hh"
 #include "Color.hh"
-#include "Vector2.hh"
+#include "Vector.hh"
 #include "Gestalt.hh"
 #include "GestaltPrinciple.hh"
 

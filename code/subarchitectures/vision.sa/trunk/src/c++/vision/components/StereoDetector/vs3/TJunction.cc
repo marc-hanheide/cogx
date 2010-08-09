@@ -115,12 +115,14 @@ void TJunction::CalculateSignificance()
   sig = -log(acc);
 }
 
-int TJunction::WhichLineIs(Line *l) throw(Except)
+int TJunction::WhichLineIs(Line *l) throw(std::runtime_error)
 {
   for(int i = LEFT; i <= POLE; i++)
     if(l == line[i])
       return i;
-  throw Except(__HERE__, "line %u is not part of T-jct %u", l, id);
+  char buffer [100];
+  sprintf(buffer, "TJunction::WhichLineIs: line %u is not part of T-jct %u", l, id);
+  throw std::runtime_error(buffer);
 }
 
 }

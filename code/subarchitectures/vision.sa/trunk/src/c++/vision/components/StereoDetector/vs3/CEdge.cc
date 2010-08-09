@@ -65,11 +65,11 @@ CEdge::~CEdge()
 void CEdge::SobelGrey(IplImage *img, IplImage *dx, IplImage *dy)
 {
   if(!IsImage8UC1(img))
-    throw Except(__HERE__,"Input image should be IPL_DEPTH_8U, 1 channels!");
+    throw std::runtime_error("CEdge::SobelGrey: Input image should be IPL_DEPTH_8U, 1 channels!");
   if(!IsImage16SC1(dx) || !IsImage16SC1(dy))
-    throw Except(__HERE__,"Output images should be IPL_DEPTH_16S, 1 channel!");
+    throw std::runtime_error("CEdge::SobelGrey: Output images should be IPL_DEPTH_16S, 1 channel!");
   if(!IsImageSizeEqual(img,dx) || !IsImageSizeEqual(img,dy))
-    throw Except(__HERE__,"Size of images must be equal");
+    throw std::runtime_error("CEdge::SobelGrey: Size of images must be equal");
 
   cvSobel( img, dx, 1, 0, apertureSize );
   cvSobel( img, dy, 0, 1, apertureSize );
@@ -78,11 +78,11 @@ void CEdge::SobelGrey(IplImage *img, IplImage *dx, IplImage *dy)
 void CEdge::SobelCol(IplImage *img, IplImage *dx, IplImage *dy)
 {
   if(!IsImage8UC3(img))
-    throw Except(__HERE__,"Input image should be IPL_DEPTH_8U, 3 channels!");
+    throw std::runtime_error("CEdge::SobelCol: Input image should be IPL_DEPTH_8U, 3 channels!");
   if(!IsImage16SC1(dx) || !IsImage16SC1(dy))
-    throw Except(__HERE__,"Output images should be IPL_DEPTH_16S, 1 channel!");
+    throw std::runtime_error("CEdge::SobelCol: Output images should be IPL_DEPTH_16S, 1 channel!");
   if(!IsImageSizeEqual(img,dx) || !IsImageSizeEqual(img,dy))
-    throw Except(__HERE__,"Size of images must be equal");
+    throw std::runtime_error("CEdge::SobelCol: Size of images must be equal");
 
   IplImage *edge = cvCreateImage(cvGetSize(img), IPL_DEPTH_16S, img->nChannels );
   short *d, *d_end, *e;
@@ -170,11 +170,11 @@ void CEdge::Sobel(IplImage *img, IplImage *dx, IplImage *dy)
 void CEdge::Norm(IplImage *dx, IplImage *dy, IplImage *edge)
 {
   if(!IsImage16SC1(dx) || !IsImage16SC1(dy))
-    throw Except(__HERE__,"Input images should be IPL_DEPTH_16S, 1 channel!");
+    throw std::runtime_error("CEdge::Norm: Input images should be IPL_DEPTH_16S, 1 channel!");
   if (!IsImageSizeEqual(dx,dy) || !IsImageSizeEqual(dx,edge))
-    throw Except(__HERE__,"Size of image must be equal!");
+    throw std::runtime_error("CEdge::Norm: Size of image must be equal!");
   if (edge->nChannels != 1)
-    throw Except(__HERE__,"Output image must be a 1 channel image!");
+    throw std::runtime_error("CEdge::Norm: Output image must be a 1 channel image!");
 
   short *d1, *d2;
 
@@ -208,7 +208,7 @@ void CEdge::Norm(IplImage *dx, IplImage *dy, IplImage *edge)
         *e = (float)(sqrt(Sqr((float)*d1) + Sqr((float)*d2)));
     }
   }
-  else throw Except(__HERE__,"Unsupported image format (supported: IPL_DEPTH_16S and IPL_DEPTH_32F");
+  else throw std::runtime_error("CEdge::Norm: Unsupported image format (supported: IPL_DEPTH_16S and IPL_DEPTH_32F");
 }
 
 /**
@@ -217,11 +217,11 @@ void CEdge::Norm(IplImage *dx, IplImage *dy, IplImage *edge)
 void CEdge::Angle(IplImage *dx, IplImage *dy, IplImage *angle)
 {
   if(!IsImage16SC1(dx) || !IsImage16SC1(dy))
-    throw Except(__HERE__,"Input images should be IPL_DEPTH_16S, 1 channel!");
+    throw std::runtime_error("CEdge::Angle: Input images should be IPL_DEPTH_16S, 1 channel!");
   if(!IsImage32FC1(angle))
-    throw Except(__HERE__,"Output image should be IPL_DEPTH_32F, 1 channel!");
+    throw std::runtime_error("CEdge::Angle: Output image should be IPL_DEPTH_32F, 1 channel!");
   if (!IsImageSizeEqual(dx,dy) || !IsImageSizeEqual(dx,angle))
-    throw Except(__HERE__,"Size of image must be equal!");
+    throw std::runtime_error("CEdge::Angle: Size of image must be equal!");
 
   short *d1, *d2;
   float *da, *da_end; 
@@ -244,11 +244,11 @@ void CEdge::Angle(IplImage *dx, IplImage *dy, IplImage *angle)
 void CEdge::Canny(IplImage *indx, IplImage *indy, IplImage *idst, double lowThr, double highThr)
 {
   if(!IsImage16SC1(indx) || !IsImage16SC1(indy))
-    throw Except(__HERE__,"Input images should be IPL_DEPTH_16S, 1 channel!");
+    throw std::runtime_error("CEdge::Angle: Input images should be IPL_DEPTH_16S, 1 channel!");
   if(!IsImage8UC1(idst))
-    throw Except(__HERE__,"Output image should be IPL_DEPTH_8U, 1 channel!");
+    throw std::runtime_error("CEdge::Angle: Output image should be IPL_DEPTH_8U, 1 channel!");
   if (!IsImageSizeEqual(indx,indy) || !IsImageSizeEqual(indx,idst))
-    throw Except(__HERE__,"Size of images must be equal!");
+    throw std::runtime_error("CEdge::Angle: Size of images must be equal!");
 
   CvMat dxstub, *dx = (CvMat*)indx;
   CvMat dystub, *dy = (CvMat*)indy;
@@ -523,11 +523,11 @@ void CEdge::Canny(IplImage *src, IplImage *dst, double lowThr, double highThr)
 void CEdge::LinkEdge(IplImage *src, IplImage *dx, IplImage *dy, Array<Array<Edgel> *> &segments)
 {
   if(!IsImage16SC1(dx) && !IsImage16SC1(dy))
-    throw Except(__HERE__,"Gradient images should be IPL_DEPTH_16S, 1 channel!");
+    throw std::runtime_error("CEdge::LinkEdge: Gradient images should be IPL_DEPTH_16S, 1 channel!");
   if(!IsImage8UC1(src))
-    throw Except(__HERE__,"Canny image should be IPL_DEPTH_8U, 1 channel!");
+    throw std::runtime_error("CEdge::LinkEdge: Canny image should be IPL_DEPTH_8U, 1 channel!");
   if(!IsImageSizeEqual(dx,dy) || !IsImageSizeEqual(dx,src))
-    throw Except(__HERE__,"Input image must have same size!");
+    throw std::runtime_error("CEdge::LinkEdge: Input image must have same size!");
   
   IplImage *tmp = cvCreateImage(cvGetSize(dx), IPL_DEPTH_8U, 1 );
   Array<Edgel> *arr;

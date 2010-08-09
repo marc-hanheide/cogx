@@ -10,7 +10,8 @@
 #include <signal.h>
 #include <assert.h>
 #include <cstdio>
-#include "Except.hh"
+#include <stdexcept>
+
 #include "Math.hh"
 #include "Draw.hh"
 
@@ -236,9 +237,10 @@ void VisionCore::ProcessImage(int runtime_ms, float ca, float co) //throw Except
 
 // printf("VisionCore::ProcessImage: after post-operate.\n");
   }
-  catch(Z::Except &e)
+	catch (exception &e)
   {
-    printf("%s\n", e.what());
+		printf("VisionCore::ProcessImage: unknown exception during processing of images.\n");
+    cout << e.what() << endl;
   }
   realRuntime = timespec_diff(&cur, &start);
 }
@@ -263,9 +265,10 @@ void VisionCore::ProcessImage()
       }
     }
   }
-  catch(Z::Except &e)
+	catch (exception &e)
   {
-    printf("%s\n", e.what());
+		printf("VisionCore::ProcessImage: unknown exception during processing of images.\n");
+    cout << e.what() << endl;
   }
 }
 
@@ -368,7 +371,7 @@ const char* VisionCore::GetGestaltTypeName(Gestalt::Type type)
 
 	n += snprintf(info_text + n, info_size - n, "%s: ", Gestalt::TypeName(type));
 
-	for(unsigned i=0; i< (18 - Gestalt::TypeNameLength(type)); i++)
+	for(int i=0; i< (18 - Gestalt::TypeNameLength(type)); i++)
 		n += snprintf(info_text + n, info_size -n, " ");
 	
 	return info_text;

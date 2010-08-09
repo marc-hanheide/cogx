@@ -41,10 +41,10 @@ BufferVideo::~BufferVideo()
  * @param fmt Color format.
  * @param own_buffer Use own buffer or not.
  */
-void BufferVideo::Init(unsigned w, unsigned h, ColorFormat fmt, bool own_buffer) throw(Except)
+void BufferVideo::Init(unsigned w, unsigned h, ColorFormat fmt, bool own_buffer) throw(exception &e)
 {
   if(have_init)
-    throw Except(__HERE__, "Init() may only be called once");
+    throw std::runtime_error("BufferVideo::Init: May only be called once");
 
   width = w;
   height = h;
@@ -52,7 +52,7 @@ void BufferVideo::Init(unsigned w, unsigned h, ColorFormat fmt, bool own_buffer)
   if(col_fmt == RGB24 || col_fmt == BGR24)
     bytes_per_pixel = 3;
   else
-    throw Except(__HERE__, "invalid color format, must be RGB24 or BGR24");
+    throw std::runtime_error("BufferVideo::Init: Invalid color format, must be RGB24 or BGR24.\n");
   bytes_per_line = width*bytes_per_pixel;
   if(own_buffer)
   {

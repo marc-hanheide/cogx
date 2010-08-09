@@ -10,9 +10,9 @@
 #define Z_STEREO_CORE_HH
 
 #include <VisionData.hpp>
+#include <stdexcept>
 
-#include "Vector2.hh"
-#include "Vector3.hh"
+#include "Vector.hh"
 #include "VisionCore.hh"
 #include "Closure.hh"
 #include "Flap.hh"
@@ -59,7 +59,7 @@ private:
 	const StereoCamera* GetCamera() {return stereo_cam;}					///< Return stereo camera parameters
 
 public:
-  StereoCore(const string &stereocal_file) throw(Except);
+  StereoCore(const string &stereocal_file) throw(std::runtime_error);
   ~StereoCore();
 
   VisionCore* GetMonoCore(int side) {return vcore[side];}				///< Return single vision core [LEFT/RIGHT]

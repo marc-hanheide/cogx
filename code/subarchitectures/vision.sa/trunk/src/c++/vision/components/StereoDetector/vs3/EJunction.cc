@@ -31,10 +31,11 @@ EJunction::EJunction(VisionCore *vc, Line *l, Ellipse *e, unsigned lE, unsigned 
 	{
 		isct = LineIntersection(line->point[lineEnd], line->tang[lineEnd], ellipse->vertex[vertex], ellipse->dir, &gap[0], &gap[1]);
 	}
-	catch (Except &e)
-	{
-		printf("EJunction::EJunction: Lines do not intersect exception.\n");
-	}
+	catch (exception &e)
+  {
+		printf("EJunction::EJunction: Lines do not intersect exception.\n\n");
+    cout << e.what() << endl;
+  }
 
 	// get lines which are connected with the line via a collinearity
 	UpdateColLines(line, Other(lineEnd));

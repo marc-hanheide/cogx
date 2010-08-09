@@ -7,8 +7,7 @@
 
 #include <opencv/cv.h>
 #include <opencv/cxcore.h>
-//#include "PNamespace.hh"
-#include "Except.hh"
+//#include <stdexcept>
 
 namespace Z
 {

@@ -15,8 +15,8 @@
 #include <VideoClient.h>
 #include <VisionData.hpp>
 #include <VideoUtils.h>
-// #include <ConvertImage.h>
 #include <vector>
+#include <stdexcept>
 
 #include <VisionData.hpp>
 #include <StereoClient.h>
@@ -26,7 +26,6 @@
 #include "Pose3.h"
 #include "StereoBase.h"
 #include "Gestalt.hh"
-#include "Except.hh"
 
 namespace cast
 {
