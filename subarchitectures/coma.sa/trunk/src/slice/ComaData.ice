@@ -3,17 +3,17 @@
 
 module comadata {
     
-    sequence<string> instanceSet;
-    sequence<string> conceptSet;
-    sequence<long> placeIdSet;
+    sequence<string> InstanceSet;
+    sequence<string> ConceptSet;
+    sequence<long> PlaceIdSet;
     
     interface ComaReasonerInterface {
         string testReverseString(string s);
-		instanceSet getAllInstances(string concept);
-		instanceSet getRelatedInstances(string instance);
-		instanceSet getRelatedInstancesByRelation(string instance, string relation);
-		instanceSet getAllConcepts(string instance);
-		conceptSet getAllSubconcepts(string concept);
+		InstanceSet getAllInstances(string concept);
+		InstanceSet getRelatedInstances(string instance);
+		InstanceSet getRelatedInstancesByRelation(string instance, string relation);
+		InstanceSet getAllConcepts(string instance);
+		ConceptSet getAllSubconcepts(string concept);
 		bool addInstance(string instance, string concept);
 		bool addRelation(string instance1, string relation, string instance2);
 		bool deleteInstance(string instance);
@@ -22,11 +22,27 @@ module comadata {
 		string executeSPARQL(string sparqlQuery);
     };
     
+    sequence<string> BindingRow;
+    sequence<BindingRow> BindingTable;
+    dictionary<string, int> StringToIntMap;
+    
+    struct QueryResults {
+    	string query;
+    	StringToIntMap varPosMap;
+    	BindingTable bt;   
+    };
+    
+    interface HFCInterface {
+		QueryResults querySelect(string q);
+		string ping();    	
+    };
+    
+    
     class ComaRoom {
     	int roomId;
     	string seedPlaceInstance;
-    	placeIdSet containedPlaceIds;
-    	conceptSet concepts;
+    	PlaceIdSet containedPlaceIds;
+    	ConceptSet concepts;
     };
     
 };
