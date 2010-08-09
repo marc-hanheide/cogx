@@ -3,7 +3,8 @@
 
 HOST localhost
 
-COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname videoserver --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/test-stereo/stereo.ini #--display
+#COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname videoserver --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/test-stereo/stereo.ini #--display
+COMPONENT CPP stereoserver StereoServer --videoname videoserver --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/test-stereo/stereo.ini --display
 
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
@@ -15,5 +16,6 @@ CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "subarchitectures/v
 # live images
 #CPP MG videoserver OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE
 
-CPP MG stereoviewer StereoViewer --stereohost localhost --stereoname stereo --videoname videoserver --camid 0
+#CPP MG stereoviewer StereoViewer --stereohost localhost --stereoname stereo --videoname videoserver --camid 0
+CPP MG stereoviewer StereoViewer --stereohost localhost --stereoname stereoserver --videoname videoserver --camid 0
 
