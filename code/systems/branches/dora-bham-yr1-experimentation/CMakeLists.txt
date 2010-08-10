@@ -42,6 +42,13 @@ add_subdirectory (subarchitectures/nav.sa)
 endif(BUILD_SA_NAV)
 
 
+# ComaData slice2cpp
+option(BUILD_COMA "Build coma subarchitecture" YES)
+if(BUILD_COMA)
+add_subdirectory(subarchitectures/coma.sa)
+endif(BUILD_COMA)
+
+
 option(BUILD_HAL_ROBOT "Build hardware robotbase" YES)
 if(BUILD_HAL_ROBOT)
 add_subdirectory (tools/hardware/robotbase)

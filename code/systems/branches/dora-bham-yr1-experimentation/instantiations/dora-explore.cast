@@ -11,6 +11,11 @@ INCLUDE includes/binder.sa/binder-base.cast
 #INCLUDE includes/binder.sa/binder.cast
 INCLUDE includes/binder.sa/binder-quiet.cast
 
+# coma ##########################################################################ben
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma.cast 
+#/ben
+
 # comsys ########################################################################
 INCLUDE includes/comsys.sa/comsys-base.cast
 INCLUDE includes/comsys.sa/comsys.cast
@@ -24,5 +29,5 @@ INCLUDE includes/motivation.sa/motivation-no-avs.cast
 JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive, comadata.ComaRoom, binder.autogen.core.UnionConfiguration, execution.slice.Action, SpatialData.NavCommand"
 
 # verb stuff
-JAVA MG verbal.kint dora.DoraVerbalisation
+#JAVA MG verbal.kint dora.DoraVerbalisation
 

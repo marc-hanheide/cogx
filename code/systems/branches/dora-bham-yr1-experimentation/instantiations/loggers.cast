@@ -1,0 +1,4 @@
+JAVA MG WMLogger motivation.util.castextensions.WMLogger --subscribe "SpatialData.Place, comadata.ComaRoom, execution.slice.Action, motivation.slice.Motive, VisionData.VisualObject, SpatialProperties.GatewayPlaceProperty, SpatialProperties.ConnectivityPathProperty"
+JAVA MG SetLogger motivation.util.castextensions.SetSizeLogger --subscribe "SpatialProperties.ConnectivityPathProperty, comadata.ComaRoom"
+JAVA MG MotiveSetLogger motivation.util.castextensions.MotiveSetSizeLogger
+JAVA MG PlaceSetLogger motivation.util.castextensions.PlaceSetSizeLogger
