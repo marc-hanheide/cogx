@@ -22,6 +22,8 @@
 #include <float.h>
 #include <limits>
 
+#include "NodeHypothesisGenerationSwitchImpl.hpp"
+
 using namespace cast;
 using namespace std;
 using namespace boost;
@@ -104,6 +106,19 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
   else {
     m_hypPathLength = 1.5;
   }
+  
+  m_NodeHypothesisGenerationOn = true; // default value -- ug85jxh
+  map<string,string>::const_iterator it = _config.find("--node-hypothesis-generation");
+  if (it != _config.end()) {
+    log("creating new NodeHypothesisGenerationSwitchImpl");
+    IceInternal::Handle<PlaceManager> pmPtr(this);
+    IceInternal::Handle<NodeHypothesisGenerationSwitchImpl> ptr
+    		= IceInternal::Handle<NodeHypothesisGenerationSwitchImpl>(new NodeHypothesisGenerationSwitchImpl(pmPtr));
+    log("created new NodeHypothesisGenerationSwitchImpl");
+    std::istringstream str(it->second);
+    str >> std::boolalpha >> m_NodeHypothesisGenerationOn;
+  }
+  log("node hypothesis generation is initially %s", m_NodeHypothesisGenerationOn ? "on" : "off" );
 
   FrontierInterface::PlaceInterfacePtr servant = new PlaceServer(this);
   registerIceServer<FrontierInterface::PlaceInterface, FrontierInterface::PlaceInterface>(servant);
@@ -493,6 +508,8 @@ FrontierPtCompare(const FrontierInterface::FrontierPtPtr &a, const FrontierInter
 void
 PlaceManager::evaluateUnexploredPaths()
 {
+  
+  if (!m_NodeHypothesisGenerationOn) return;
 
   FrontierInterface::FrontierPtSeq points;
   try {

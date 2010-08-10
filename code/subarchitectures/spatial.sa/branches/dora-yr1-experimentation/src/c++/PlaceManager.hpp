@@ -75,6 +75,8 @@ class PlaceManager : public cast::ManagedComponent
     virtual void runComponent();
     virtual void configure(const std::map<std::string, std::string>& _config);
 
+	bool m_NodeHypothesisGenerationOn; // whether new node hypotheses should be generated
+
   protected:
 
     // Call back functions for nodes 
