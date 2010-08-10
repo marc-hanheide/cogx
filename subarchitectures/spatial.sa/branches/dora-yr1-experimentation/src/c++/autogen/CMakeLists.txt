@@ -10,6 +10,10 @@ add_library(SpatialData SHARED ${GEN_CPP_SD})
 target_link_libraries(SpatialData CDL NavData)
 install(TARGETS SpatialData LIBRARY DESTINATION lib)
 
+cast_slice2cpp(GEN_CPP_SD GEN_HPP_SD NodeHypothesisGenerationSwitch.ice ${CAST_SLICE_DIR})
+add_library(NodeHypothesisGenerationSwitch SHARED ${GEN_CPP_SD})
+#target_link_libraries(NodeHypothesisGenerationSwitch)
+install(TARGETS NodeHypothesisGenerationSwitch LIBRARY DESTINATION lib)
 
 cast_slice2cpp(GEN_CPP_SP GEN_HPP_SP SpatialProperties.ice ${CAST_SLICE_DIR})
 add_library(SpatialProperties SHARED ${GEN_CPP_SP})
