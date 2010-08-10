@@ -25,18 +25,18 @@ sleep 3
 xterm -e output/bin/cast-client-start instantiations/AAAI-experimentation.cast &
 PIDS="$PIDS $!"
 
-sleep 20
+#sleep 20
 
-BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 0 0  1 0 5.8 0 5.8 4
+#BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 0 0  1 0 5.8 0 5.8 4
 #BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 0 0  1 0 6.3 0
 
-if [ "$1" ]; then
-    output/bin/universalIceClient MotiveFilterManager localhost motivation.slice.RemoteFilterServer setPriority GeneralGoalMotive NORMAL
-else
+#if [ "$1" ]; then
+#    output/bin/universalIceClient MotiveFilterManager localhost motivation.slice.RemoteFilterServer setPriority GeneralGoalMotive NORMAL
+#else
     output/bin/universalIceClient MotiveFilterManager localhost motivation.slice.RemoteFilterServer setPriority ExploreMotive NORMAL
     output/bin/universalIceClient MotiveFilterManager localhost motivation.slice.RemoteFilterServer setPriority CategorizeRoomMotive NORMAL
-fi
-BUILD/tools/hardware/robotbase/src/c++/components/TourGuide | tee "$LOGNAME".dist.log
+#fi
+#BUILD/tools/hardware/robotbase/src/c++/components/TourGuide | tee "$LOGNAME".dist.log
 
 wait $SERVERPID
 kill $PIDS >/dev/null 2>&1

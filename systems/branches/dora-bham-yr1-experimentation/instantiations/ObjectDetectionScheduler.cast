@@ -69,7 +69,6 @@ JAVA MG PlannerStopWatch experimentation.PlannerStopWatch
 JAVA MG PlaceStatistics experimentation.PlaceStatistics
 JAVA MG MotiveStatistics experimentation.MotiveStatistics
 JAVA MG FileLogger experimentation.FileLogger -logger planner.sa.planning.stdout -files "output/python/standalone/tmp/static_dir_for_debugging/problem.pddl output/python/standalone/tmp/static_dir_for_debugging/stdout.out output/python/standalone/tmp/static_dir_for_debugging/plan.pddl"
-INCLUDE loggers.cast
 
 
 
@@ -77,5 +76,12 @@ INCLUDE loggers.cast
 
 # verb stuff
 #JAVA MG verbal.kint dora.DoraVerbalisation
+
+# v-- syntax is "label1:time1,time2#label2:t1,t2,t3" etc...
+#JAVA MG ObjectDetectionScheduler vision.components.ObjectDetectionScheduler --object-detection "Posterwall: 4,5,6,7,8,9,10,11,12,13,14,15,16,17"
+
+# Distance Monitor
+JAVA MG DistanceMonitor experimentation.DistanceMonitor
+
 
 

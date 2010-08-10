@@ -3,3 +3,13 @@ log4j.rootLogger=DEBUG, console
 
 log4j.appender.console=org.apache.log4j.ConsoleAppender
 log4j.appender.console.layout=org.apache.log4j.xml.XMLLayout
+
+
+
+log4j.appender.XMLLog=org.apache.log4j.FileAppender
+log4j.appender.XMLLog.Threshold=INFO
+log4j.appender.XMLLog.File=cast-server-info.lxml
+log4j.appender.XMLLog.Append=false
+log4j.appender.XMLLog.layout=org.apache.log4j.xml.XMLLayout
+
+
