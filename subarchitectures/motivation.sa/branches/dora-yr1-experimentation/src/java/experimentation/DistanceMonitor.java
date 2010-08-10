@@ -15,10 +15,7 @@ import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import motivation.util.castextensions.WMLock;
+import motivation.util.castextensions.WMLogger;
 
 /**
  *
@@ -37,7 +34,7 @@ public class DistanceMonitor extends ManagedComponent
     private static final double UPDATE_DISTANCE = 0.5;
     private volatile RobotPose2d prevPose = null;
     private volatile double distance = 0;
-    private long nextUpdateDue = 0;
+    private long nextUpdateTime = 0;
     private double nextUpdateDistance = Float.MIN_VALUE;
     private int locked = 0;
 
@@ -61,11 +58,11 @@ public class DistanceMonitor extends ManagedComponent
 
         synchronized (this) {
             if (locked != 0) {
-                log("could not obtain lock");
+//                log("could not obtain lock");
                 return;
             } else {
                 locked++;
-                log("obtained lock: "+locked);
+//                log("obtained lock: "+locked);
             }
         }
 
@@ -86,9 +83,8 @@ public class DistanceMonitor extends ManagedComponent
         } finally {
             synchronized (this) {
                 locked--;
-                log("released lock: "+locked);
+//                log("released lock: "+locked);
             }
-//            lock.unlock();
         }
     }
 
@@ -130,20 +126,20 @@ public class DistanceMonitor extends ManagedComponent
 
     private void update(double distance, double moved, double x, double y, CASTTime time) {
 
-        if (time.s < nextUpdateDue && distance < nextUpdateDistance) {
+        if (time.s < nextUpdateTime && distance < nextUpdateDistance) {
 //            println("not moved far enough: "+distance +" @ time: "+CASTUtils.toString(time));
             return;
         }
 
         nextUpdateDistance = distance + UPDATE_DISTANCE;
-        nextUpdateDue = time.s + UPDATE_FREQUENCY;
+        nextUpdateTime = time.s + UPDATE_FREQUENCY;
 
         // find ben's import
-//        println("<distance cast_time="+ WMLogger.CASTTimeToString(time)+">"+distance+"</distance>");
+        println("<distance cast_time="+ WMLogger.CASTTimeToString(time)+'>'+distance+"</distance>");
 
-        println(CASTUtils.toString(time)
-                + " | distance: " + distance
-                + " | moved: " + moved);//+ " | x,y: " + x + "," + y);
+//        println(CASTUtils.toString(time)
+//                + " | distance: " + distance
+//                + " | moved: " + moved);//+ " | x,y: " + x + "," + y);
 
 //                System.out.println(CASTUtils.toString(time)
 //                + " | distance: " + distance
