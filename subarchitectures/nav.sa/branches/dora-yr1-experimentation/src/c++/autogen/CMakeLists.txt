@@ -11,4 +11,12 @@ target_link_libraries(NavData CDL)
 target_link_libraries(NavData Math)
 install(TARGETS NavData LIBRARY DESTINATION lib)
 
+# ug85jxh
+cast_slice2cpp(GEN_CPP GEN_HPP DoorDetectionSwitch.ice ${CAST_SLICE_DIR}
+				 ${COGX_ROOT}/tools/math/src/slice)
+add_library(DoorDetectionSwitch SHARED ${GEN_CPP})
+target_link_libraries(DoorDetectionSwitch CDL)
+target_link_libraries(DoorDetectionSwitch Math)
+install(TARGETS DoorDetectionSwitch LIBRARY DESTINATION lib)
+
 

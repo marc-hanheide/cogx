@@ -28,6 +28,9 @@
 
 #include <sstream>
 
+#include "DoorDetectionSwitchImpl.hpp"
+#include <Ice/Handle.h>
+
 using namespace cast;
 using namespace std;
 using namespace boost;
@@ -250,6 +253,21 @@ void NavGraphProcess::configure(const map<string,string>& _config)
   }
   log("minDoorWidth=%fm maxDoorWidth=%fm", m_MinDoorWidth, m_MaxDoorWidth);
 
+  // door detection configuring and logging -- ug85jxh
+  m_DoorDetectionOn = true; // default value
+  it = _config.find("--door-detection");
+  if (it != _config.end()) {
+    log("creating new doorDetectionSwitchImpl");
+    IceInternal::Handle<NavGraphProcess> ngpPtr(this);
+//    k = IceInternal::Handle<NavGraphProcess>(this); //IceInternal::Handle<NavGraphProcess>(this);
+    IceInternal::Handle<DoorDetectionSwitchImpl> ptr 
+    		= IceInternal::Handle<DoorDetectionSwitchImpl>(new DoorDetectionSwitchImpl(ngpPtr));
+    log("created new doorDetectionSwitchImpl");
+    std::istringstream str(it->second);
+    str >> std::boolalpha >> m_DoorDetectionOn;
+  }
+  log("LOG:: door detection is initially %s", m_DoorDetectionOn ? "on" : "off" );
+
   m_RemoveMotionBeams = (_config.find("--remove-motion") != _config.end());
 
   // configure the cure nav graph
@@ -450,8 +468,13 @@ void NavGraphProcess::start() {
                   new MemberFunctionChangeReceiver<NavGraphProcess>(this,
                                          &NavGraphProcess::newRobotPose));
 
-  addChangeFilter(createLocalTypeFilter<NavData::ObjObs>(cdl::ADD),
-                  new MemberFunctionChangeReceiver<NavGraphProcess>(this,
+//  addChangeFilter(createLocalTypeFilter<NavData::ObjObs>(cdl::ADD),
+//                  new MemberFunctionChangeReceiver<NavGraphProcess>(this,
+//                                         &NavGraphProcess::newObjObs));
+  
+  // as above but listening across all subarchitectures -- needed by ObjectDetectionScheduler ug85jxh
+  addChangeFilter(createGlobalTypeFilter<NavData::ObjObs>(cdl::ADD),
+                 new MemberFunctionChangeReceiver<NavGraphProcess>(this,
                                          &NavGraphProcess::newObjObs));
   
   addChangeFilter(createLocalTypeFilter<NavData::ObjObs>(cdl::OVERWRITE),
@@ -1133,8 +1156,6 @@ void NavGraphProcess::newObjObs(const cdl::WorkingMemoryChange &objID)
   shared_ptr<CASTData<NavData::ObjObs> > oobj =
     getWorkingMemoryEntry<NavData::ObjObs>(objID.address);
 
-  log("Observed object of category \"%s\"", oobj->getData()->category.c_str());
-
   Cure::Timestamp t(oobj->getData()->time.s, oobj->getData()->time.us);
 
   // As a first approximation we use the last robot pose as the robot
@@ -1307,7 +1328,8 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
       }
     }
     
-    if (!m_InDoor) {
+    // check to see if we are in a door and if we are trying to detect doors
+    if (m_DoorDetectionOn && !m_InDoor) { // ug85jxh
 
       Cure::LaserScan2d doorScan(cureScan);
 
