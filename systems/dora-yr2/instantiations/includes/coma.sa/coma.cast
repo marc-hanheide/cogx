@@ -1,2 +1,1 @@
 JAVA MG hfcserver coma.components.HFCServer --nsFile subarchitectures/coma.sa/ontologies/dora.ns --ruleFile subarchitectures/coma.sa/ontologies/default.rdl --tupleFile subarchitectures/coma.sa/ontologies/dora_omics_thingloc.nt --log
-JAVA MG hfctester coma.components.HFCTester --hfcserver-name hfcserver --log
