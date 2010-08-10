@@ -40,7 +40,7 @@ public class GenericBelief<T extends dBelief, C extends Distribution<?>> extends
 		internal.content = new ProbDistribution();
 		internal.id = "";
 		internal.estatus = new PrivateEpistemicStatus("self");
-		internal.frame = new SpatioTemporalFrame("here", new TemporalInterval());
+		internal.frame = new SpatioTemporalFrame("here", new TemporalInterval(),1.0f);
 		internal.hist = new AbstractBeliefHistory();
 		internal.type = "";
 		return internal;
