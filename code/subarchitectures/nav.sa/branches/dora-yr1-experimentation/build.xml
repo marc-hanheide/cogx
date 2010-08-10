@@ -31,7 +31,7 @@
 	<!-- =================================================================== -->
 	<target name="slice" depends="prepare" description="generates source from slice">
 	  <slice2java tie="true" outputdir="${src.dir}">
-	    <fileset dir="${slice.dir}" includes="NavData.ice"/>
+	    <fileset dir="${slice.dir}" includes="NavData.ice DoorDetectionSwitch.ice"/>
 	    <includepath> 
 	  	<pathelement path="${basedir}/../../tools/math/src/slice"/>
   	    <pathelement path="${slice.dir}"/>

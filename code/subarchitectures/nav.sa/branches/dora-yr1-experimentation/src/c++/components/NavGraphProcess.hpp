@@ -161,6 +161,11 @@ private:
   Cure::SensorPose m_LaserPoseR;
   Cure::SensorPose m_CamPoseR;
 
+  // for switching on or off door detection
+public:
+  bool m_DoorDetectionOn; // ug85jxh
+  
+private:
   bool m_InDoor;
   double m_MinDoorWidth;
   double m_MaxDoorWidth;
