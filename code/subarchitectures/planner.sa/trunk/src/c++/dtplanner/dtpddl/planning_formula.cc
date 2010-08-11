@@ -186,7 +186,7 @@ Subformulae Conjunction::get__subformulae()
 
 double Number::get__value() const {return std::tr1::get<0>(this->contents());}
 
-Planning::Formula::numbers__vector Probabilistic::get__probabilities() const {return std::tr1::get<1>(this->contents());}
+Planning::Formula::Subformulae Probabilistic::get__probabilities() const {return std::tr1::get<1>(this->contents());}
 Planning::Formula::Subformulae Probabilistic::get__formulae() const {return std::tr1::get<0>(this->contents());}
 
 
@@ -196,7 +196,7 @@ bool Planning::Formula::Probabilistic::leq1() const
 
     double total = 0.0;
     for(auto p = get__probabilities().begin(); p != get__probabilities().end(); p++){
-        auto prob = p->get__value();
+        auto prob = p->cxx_get<Number>()->get__value();
         if(!is_admissible_probability(prob)){
             return false;
         }
@@ -211,11 +211,15 @@ bool Planning::Formula::Probabilistic::leq1() const
 
 bool Planning::Formula::Probabilistic::sanity() const
 {
+    for(auto p = get__probabilities().begin(); p != get__probabilities().end(); p++){
+        if((*p)->get__type_name() != enum_types::number) return true;
+    }
+    
     Are_Doubles_Close are_Doubles_Close(1e-9);
 
     double total = 0.0;
     for(auto p = get__probabilities().begin(); p != get__probabilities().end(); p++){
-        auto prob = p->get__value();
+        auto prob = p->cxx_get<Number>()->get__value();
         if(!is_admissible_probability(prob)){
             return false;
         }

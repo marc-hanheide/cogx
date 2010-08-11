@@ -49,11 +49,12 @@ namespace Planning
     class Domain_Action__to__Problem_Action : public Visitor<basic_type>
     {
     public:
-        typedef std::map<Planning::Variable, Planning::Constant> Assignment;
+        //typedef std::map<Planning::Variable, Planning::Constant> Assignment;
         
         Domain_Action__to__Problem_Action(basic_type::Runtime_Thread,
-                                          Assignment& assignment,/*Can have entries added to it if we have quantification in action effects.*/
-                                          Formula::State_Propositions& state_Propositions,
+                                          Planning::Assignment& assignment,/*Can have entries added to it if we have quantification in action effects.*/
+                                          Formula::State_Propositions&,
+                                          Formula::State_Ground_Functions& ,
                                           State_Formula::Literals& problem__literals,
                                           State_Formula::Disjunctive_Clauses& problem__disjunctive_Clauses,
                                           State_Formula::Conjunctive_Normal_Form_Formulae& problem__conjunctive_Normal_Form_Formulae,
@@ -71,14 +72,27 @@ namespace Planning
         /* Non-compulsory ground PDDL action. */
         State_Transformation__Pointer get__answer() const ;
     private:
+
+        void interpret__as_double_valued_ground_state_function(ID_TYPE);
+        
+        const Planning::State_Transformation__Pointer& generate__null_action(double local_probability) ;
+        
+        void process__Function_Modifier(Formula::Subformula& modification,
+                                        ID_TYPE);
+        
+        Formula::Action_Proposition process__generate_name(std::string annotation = "") ;
+
+        int last_function_symbol_id;
+        
         static Formula::Subformula simplify_formula(Formula::Subformula,
                                                     basic_type::Runtime_Thread);
 
         
         basic_type::Runtime_Thread runtime_Thread;
-        Assignment& assignment;
+        Planning::Assignment& assignment;
         
         Formula::State_Propositions& problem__state_Propositions;
+        Formula::State_Ground_Functions& problem__state_Functions;
         
         State_Formula::Literals& problem__literals;
         State_Formula::Disjunctive_Clauses& problem__disjunctive_Clauses;
@@ -116,11 +130,17 @@ namespace Planning
         uint count_of_actions_posted;/* 0 initialise*/
         uint level;/* 0 initialise*/
         double probability;/* 1.0  initialise*/
+
         
         std::stack<State_Formula::List__Literals> literals_at_levels;
         std::stack<State_Formula::List__Listeners> list__Listeners;
         std::stack<State_Formula::Listeners> listeners;
         std::stack<State_Formula::Conjunctive_Normal_Form_Formula__Pointer> preconditions;
+        
+        static Are_Doubles_Close are_Doubles_Close;//(1e-9);
+        
+        /* Last double valued entry traversed while grounding action.*/
+        double last_double_traversed;
     };
 }
 

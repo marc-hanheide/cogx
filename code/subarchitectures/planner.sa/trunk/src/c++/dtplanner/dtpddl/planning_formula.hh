@@ -251,26 +251,30 @@ namespace Planning
         };
 
 
-        /* Numbers can appear in list elements in a domain or task
-         * description (see \class{Probabilistic})*/
-        typedef std::vector<Number> numbers__vector;
+//         /* Numbers can appear in list elements in a domain or task
+//          * description (see \class{Probabilistic})*/
+//         typedef std::vector<Number> numbers__vector;
         
         class Probabilistic : public type_wrapper<enum_types::probabilistic_effect
                                                   , Subformulae
-                                                  , numbers__vector>
+                                                  , Subformulae> //numbers__vector>
         {PRINTING;
 
         public:
-            numbers__vector get__probabilities() const ;
+            Subformulae get__probabilities() const ;
             Subformulae get__formulae() const ;
             
-            /* Does this probabilistic effect make sense -- i.e. do the
-             * elements in \member{numbers__vector} sum to 1.*/
+            /* MEANINGLESS (always TRUE) IF THE FORMULA from
+             * \member{get__probabilities()} ARE NOT NUMERIC. Does this
+             * probabilistic effect make sense -- i.e. do the elements
+             * in \member{numbers__vector} sum to 1.*/
             bool sanity() const;
-
-            /* Does the sum of elements in \tupelem{probabilities} sum
-             * to a value less-than-or-equal-to 1. If so, we suppose
-             * it is a valid PDDL formula.*/
+            
+            /* MEANINGLESS (always TRUE) IF THE FORMULA from
+             * \member{get__probabilities()} ARE NOT NUMERIC. Does the
+             * sum of elements in \tupelem{probabilities} sum to a
+             * value less-than-or-equal-to 1. If so, we suppose it is
+             * a valid PDDL formula.*/
             bool leq1() const;
         };
         

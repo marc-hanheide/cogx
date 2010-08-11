@@ -38,9 +38,14 @@
 
 #include "action__state_transformation.hh"
 #include "action__probabilistic_state_transformation.hh"
+#include "action__simple_numeric_change.hh"
+
 #include "state_formula__literal.hh"
 #include "state_formula__disjunctive_clause.hh"
 #include "state_formula__conjunctive_normal_form_formula.hh"
+
+#include "dtp_pddl_parsing_data_domain.hh"
+#include "dtp_pddl_parsing_data_problem.hh"
 
 /* Functionality for simplifying CNF formula. */
 #include "turnstyle.hh"
@@ -48,6 +53,7 @@
 using namespace Planning;
 using namespace Planning::State_Formula;
 
+Are_Doubles_Close Domain_Action__to__Problem_Action::are_Doubles_Close(1e-9);
 
 Planning_Formula__to__CNF Domain_Action__to__Problem_Action::planning_Formula__to__CNF;
 
@@ -60,8 +66,9 @@ IMPLEMENTATION__STRICT_SHARED_UNARY_VISITOR(Domain_Action__to__Problem_Action,
 Domain_Action__to__Problem_Action::
 Domain_Action__to__Problem_Action
 (basic_type::Runtime_Thread runtime_Thread,
- Assignment& assignment,
+ Planning::Assignment& assignment,
  Formula::State_Propositions& state_Propositions,
+ Formula::State_Ground_Functions& state_Ground_Functions,
  State_Formula::Literals& problem__literals,
  State_Formula::Disjunctive_Clauses& problem__disjunctive_Clauses,
  State_Formula::Conjunctive_Normal_Form_Formulae& problem__conjunctive_Normal_Form_Formulae,
@@ -75,6 +82,7 @@ Domain_Action__to__Problem_Action
     :runtime_Thread(runtime_Thread),
      assignment(assignment),
      problem__state_Propositions(state_Propositions),
+     problem__state_Functions(state_Ground_Functions),
      problem__literals(problem__literals),
      problem__disjunctive_Clauses(problem__disjunctive_Clauses),
      problem__conjunctive_Normal_Form_Formulae(problem__conjunctive_Normal_Form_Formulae),
@@ -90,7 +98,9 @@ Domain_Action__to__Problem_Action
      processing_negative(false),
      count_of_actions_posted(0),
      level(0),
-     probability(1.0)
+     probability(1.0),
+     last_function_symbol_id(-1),
+     last_double_traversed(-1.0)
 {
 
     /* Some actions and transformations have void preconditions. Here
@@ -106,10 +116,53 @@ Domain_Action__to__Problem_Action
     true_cnf = CXX__deref__shared_ptr<State_Formula::Conjunctive_Normal_Form_Formula>(_conjunct);
 
 
+    INTERACTIVE_VERBOSER(true, 3110, "Empty conjunct is :: "<<true_cnf);
+            
     /*Action precondition, for the ground action that this factory shall build.*/
     preconditions.push(precondition); /*(see \argument{precondition})*/
+    
+    INTERACTIVE_VERBOSER(true, 3110, "Making actions with precondition :: "<<preconditions.top());    
 }
 
+const Planning::State_Transformation__Pointer&  Domain_Action__to__Problem_Action
+::generate__null_action(double local_probability) 
+{
+    NEW_referenced_WRAPPED(runtime_Thread
+                           , Planning::Action_Name
+                           , new__action_name
+                           , "no-op");
+    
+    NEW_referenced_WRAPPED(runtime_Thread
+                           , Formula::Action_Proposition
+                           , new__action_proposition
+                           , new__action_name
+                           , Planning::Constant_Arguments());
+
+    NEW_referenced_WRAPPED_deref_POINTER
+        (runtime_Thread
+         , Planning::State_Transformation
+         , _state_Transformation
+         , new__action_proposition
+         , true_cnf
+         , State_Formula::List__Literals()
+         , false
+         , false
+         , local_probability
+         , 0);
+            
+    auto problem_action = problem__actions
+        .find(State_Transformation__Pointer(_state_Transformation));
+    
+    if(problem__actions.end() == problem_action){
+        problem__actions.insert(State_Transformation__Pointer(_state_Transformation));
+        problem_action = problem__actions
+            .find(State_Transformation__Pointer(_state_Transformation));
+    } else {
+        INTERACTIVE_VERBOSER(true, 3510, "Re-using null action."<<std::endl)
+    }
+    
+    return *problem_action;
+}
 
 Planning::State_Transformation__Pointer Domain_Action__to__Problem_Action::get__answer() const 
 {
@@ -119,6 +172,12 @@ Planning::State_Transformation__Pointer Domain_Action__to__Problem_Action::get__
 void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
 {
     switch(input->get__type_name()){
+        case enum_types::number:
+        {
+            assert(input.test_cast<Formula::Number>());
+            last_double_traversed = input.cxx_get<Formula::Number>()->get__value();
+        }
+        break;
         case enum_types::negation:
         {
             assert(input.test_cast<Planning::Formula::Negation>());
@@ -129,6 +188,11 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
         break;
         case enum_types::conjunction:
         {
+            double local_probability = probability;
+            
+            INTERACTIVE_VERBOSER(true, 3110, "LEVEL ::"<<level
+                                 <<" conjunctive formula :: "<<input);
+            
             assert(input.test_cast<Planning::Formula::Conjunction>());
 
 //             if(!input.cxx_get<Planning::Formula::Conjunction>()->get__subformulae().size()){
@@ -153,70 +217,67 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
             preconditions.pop();
             
             /* Action effects. Either an add or delete effect. */
-            auto conjunction = literals_at_levels.top();
+            auto& conjunction = literals_at_levels.top();
 
             /* Any of he subactions that this might trigger. */
-            auto _list__Listeners = list__Listeners.top();
-
-//             if(!conjunction.size() && !_list__Listeners.size()){
-//                 literals_at_levels.pop();
-//                 list__Listeners.pop();
-//                 listeners.pop();
-//                 assert(preconditions.size());
-
-//                 return;
-//             }
+            auto& _list__Listeners = list__Listeners.top();
             
             assert(preconditions.size());
             State_Formula::Conjunctive_Normal_Form_Formula__Pointer
                 _precondition = preconditions.top();
 
-            std::ostringstream __new_action_name;
-            Planning::Action_Name old__action_name = action_Proposition.get__name();
-            Planning::Constant_Arguments arguments = action_Proposition.get__arguments();
-            if(level == 0){
-                __new_action_name<<old__action_name;
-            } else {
-                __new_action_name<<old__action_name
-                              <<"+"
-                              <<count_of_actions_posted++;
-            }
             
-            auto _new_action_name = __new_action_name.str();
             NEW_referenced_WRAPPED(runtime_Thread
                                    , Planning::Action_Name
                                    , new__action_name
-                                   , _new_action_name);
+                                   , "leaf-op");
             
             NEW_referenced_WRAPPED(runtime_Thread
                                    , Formula::Action_Proposition
-                                   , new__action_proposition
+                                   , _new__action_proposition
                                    , new__action_name
-                                   , arguments);
+                                   , Planning::Constant_Arguments());
+
+            
+            auto new__action_proposition =
+                ((level == 0)/*Primary action?*/
+                 ?process__generate_name()
+                 :((_list__Listeners.size() == 0)/*No children?*/
+                   ?(_new__action_proposition)
+                   :process__generate_name()));
+            
+//             INTERACTIVE_VERBOSER(true, 3110, "1--::"<<new__action_proposition);
+//             INTERACTIVE_VERBOSER(true, 3110, "2--::"<<_precondition);
+//             INTERACTIVE_VERBOSER(true, 3110, "3--::"<<conjunction);
+//             INTERACTIVE_VERBOSER(true, 3110, "4--::"<<probability);
             
             NEW_referenced_WRAPPED_deref_POINTER
                 (runtime_Thread
-                 , State_Transformation
+                 , Planning::State_Transformation
                  , _state_Transformation
                  , new__action_proposition
                  , _precondition
                  , conjunction
                  , (level == 0)?false:true
                  , false
-                 , probability
+                 , local_probability//probability
                  , 0);
 
             
-            
             auto problem_action = problem__actions
-                .find(CXX__deref__shared_ptr<State_Transformation>(_state_Transformation));
+                .find(State_Transformation__Pointer(_state_Transformation));
             
             if(problem__actions.end() == problem_action){
-                problem__actions.insert(CXX__deref__shared_ptr<State_Transformation>(_state_Transformation));
+                problem__actions.insert(State_Transformation__Pointer(_state_Transformation));
                 problem_action = problem__actions
-                    .find(CXX__deref__shared_ptr<State_Transformation>(_state_Transformation));
+                    .find(State_Transformation__Pointer(_state_Transformation));
             }
+            
             auto state_Transformation = *problem_action;
+            
+            INTERACTIVE_VERBOSER(true, 3110, "::INTERMEDIATE ACTION:: "<<state_Transformation<<std::endl
+                                 <<"with  "<<_list__Listeners.size()
+                                 <<" listeners to wake on execution"<<std::endl);
             
             result = state_Transformation;
             
@@ -226,17 +287,30 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
 
                 /*An added listener could still be rejected at this
                  * point, if it was added on a previous run.*/
-                state_Transformation
-                    ->add__listener(*listener);
+                if(state_Transformation
+                   ->add__listener(*listener)){
+                    INTERACTIVE_VERBOSER(true, 3110, "successfully added listener."<<std::endl)
+                } else {
+                    WARNING("Failed adding listener :: "<<*listener<<std::endl
+                            <<"to transformation :: "<<state_Transformation<<std::endl)
+                }
+                
             }
 
             /*If the precondition is interesting.*/
             if(_precondition->get__disjunctive_clauses().size()){
                 auto deref__st = state_Transformation.cxx_deref_get<basic_type>();
-                _precondition->add__listener(deref__st);
+                if(_precondition->add__listener(deref__st)){
+                    INTERACTIVE_VERBOSER(true, 3110, "successfully added listener."<<std::endl)
+                } else {
+                    WARNING("Failed adding listener :: "<<deref__st<<std::endl
+                            <<"to formula :: "<<_precondition<<std::endl)
+                }
+            } else {
+                executable_actions_without_preconditions.insert(state_Transformation);
             }
+            
 
-            executable_actions_without_preconditions.insert(state_Transformation);
             
             /* POP LITERALS */
             literals_at_levels.pop();
@@ -249,14 +323,91 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
 
             if(list__Listeners.size()){
                 assert(listeners.size());
-                auto set_of_listeners = listeners.top();
+                auto& set_of_listeners = listeners.top();
+
+                
+                
                 auto deref__st = state_Transformation.cxx_deref_get<basic_type>();
                 if(set_of_listeners.find(deref__st) == set_of_listeners.end()){
-                    auto list_of_listeners = list__Listeners.top();
+                    auto& list_of_listeners = list__Listeners.top();
+
+                    auto old_size = list__Listeners.top().size();
+                    
                     list_of_listeners.push_back(deref__st);
-                    set_of_listeners.insert(deref__st);   
+                    assert(list__Listeners.top().size() != old_size);
+                    
+                    set_of_listeners.insert(deref__st);
+                    
+                    INTERACTIVE_VERBOSER(true, 3110, "::INTERMEDIATE ACTION:: "
+                                         <<state_Transformation<<std::endl
+                                         <<"requesting to be woken..."<<std::endl); 
+                } else {
+                    INTERACTIVE_VERBOSER(true, 3110, "::INTERMEDIATE ACTION:: "
+                                         <<state_Transformation<<std::endl
+                                         <<"ALREADY requested to be woken..."<<std::endl);
+                }
+                
+            }
+            
+            return;
+        }
+        break;
+        case enum_types::state_ground_function:
+        {
+            assert(input.test_cast<Planning::Formula::State_Ground_Function>());
+            auto _symbol = input.cxx_get<Planning::Formula::State_Ground_Function>();
+
+            /*In case the symbol is a reference to a number.*/
+            interpret__as_double_valued_ground_state_function(_symbol->get__id());
+            
+            /*And more generally, if the symbol is a number that characterises states.*/
+            NEW_referenced_WRAPPED_deref_POINTER
+                (runtime_Thread,
+                 Formula::State_Ground_Function,
+                 symbol,
+                 _symbol->get__name(),
+                 _symbol->get__arguments());
+            
+            problem__state_Functions
+                .insert(*symbol.cxx_get<Planning::Formula::State_Ground_Function>());
+
+            last_function_symbol_id = symbol->get__id();            
+        }
+        break;
+        case enum_types::state_function:
+        {
+            assert(input.test_cast<Planning::Formula::State_Function>());
+            
+            auto symbol = input.cxx_get<Formula::State_Function>();
+
+            auto argument_List = symbol->get__arguments();
+            auto predicate_Name = symbol->get__name();
+            
+            Constant_Arguments constant_Arguments(argument_List.size());
+            for(auto index = 0; index < argument_List.size(); index++){
+                if(argument_List[index].test_cast<Planning::Variable>()){
+                    auto variable = *(argument_List[index].cxx_get<Planning::Variable>());
+
+                    assert(assignment.find(variable) != assignment.end());
+                    
+                    constant_Arguments[index] = assignment.find(variable)->second;
+                } else {
+                    assert(argument_List[index].test_cast<Planning::Constant>());
+                    auto constant = *(argument_List[index].cxx_get<Planning::Constant>());
+
+                    constant_Arguments[index] = constant;
                 }
             }
+
+            
+            NEW_referenced_WRAPPED_deref_POINTER
+                (runtime_Thread,
+                 Formula::State_Ground_Function,
+                 ground_function,
+                 symbol->get__name(),
+                 constant_Arguments);
+
+            (*this)(Formula::Subformula(ground_function));
             
             return;
         }
@@ -343,16 +494,154 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
         case enum_types::probabilistic_effect:
         {
             assert(level != 0);
-            UNRECOVERABLE_ERROR("unimplemented.");
-//             assert(input.test_cast<Formula::Probabilistic>());
+            auto new__action_proposition = process__generate_name(":probabilistic:");
 
+            auto probabilistic_transformation = input.cxx_get<Formula::Probabilistic>();
+            auto naturex_choices = probabilistic_transformation->get__formulae();
+            auto _probabilities = probabilistic_transformation->get__probabilities();
 
-//             for(){
-//                 probability = ...;
-//             }
+            std::vector<double> probabilities(_probabilities.size());
+            {
+                uint index = 0;
+                for(auto probability = _probabilities.begin()
+                        ; probability != _probabilities.end()
+                        ; probability++, index++){
+                    assert(last_double_traversed >= 0.0);
+                    VISIT(*probability);
+                    probabilities[index] = last_double_traversed;
+                    last_double_traversed = -1.0;
+                    last_function_symbol_id = -1;
+                }
+            }
+
+            double null_effect__probability = 1.0;
+            if(!input.cxx_get<Formula::Probabilistic>()->sanity()){
+                double sum = 0.0;
+                for(auto p = probabilities.begin()
+                        ; p != probabilities.end()
+                        ; p++ ){
+                    sum += *p;
+                }
+                
+                null_effect__probability -= sum;
+            }
+
+            assert(are_Doubles_Close(0.0, null_effect__probability) ||
+                   null_effect__probability > 0.0);
+            
+            bool has_null_effect = !are_Doubles_Close(0.0, null_effect__probability);
+
+            Formula::Subformulae conjunctive_naturex_choices;
+            for(auto naturex_choice = naturex_choices.begin()
+                    ; naturex_choice != naturex_choices.end()
+                    ; naturex_choice++){
+
+                
+                auto _conjunctive_naturex_choice = *naturex_choice;
+                
+                Formula::Subformula conjunctive_naturex_choice;
+                if(enum_types::conjunction != _conjunctive_naturex_choice->get__type_name()){
+                    Formula::Subformulae elements;
+                    elements.push_back(_conjunctive_naturex_choice);
+                    NEW_referenced_WRAPPED_deref_visitable_POINTER
+                        (runtime_Thread,
+                         Formula::Conjunction,
+                         conjunction,
+                         elements);
+
+                    conjunctive_naturex_choice = conjunction;
+                } else {
+                    conjunctive_naturex_choice = _conjunctive_naturex_choice;
+                }
+
+                conjunctive_naturex_choices.push_back(conjunctive_naturex_choice);
+            }
             
             
-//             probability = 1.0;
+            /* PUSH LISTENERS */
+            list__Listeners.push(State_Formula::List__Listeners());
+            listeners.push(State_Formula::Listeners());
+            
+            level++;
+            uint index = 0;
+            assert(probabilities.size() == conjunctive_naturex_choices.size());
+            for(auto conjunctive_naturex_choice = conjunctive_naturex_choices.begin()
+                    ; conjunctive_naturex_choice != conjunctive_naturex_choices.end()
+                    ; conjunctive_naturex_choice++, index++){
+                probability = probabilities[index];
+                VISIT(*conjunctive_naturex_choice);
+            }
+            probability = 1.0;
+            level--;
+            
+            NEW_referenced_WRAPPED_deref_POINTER
+                (runtime_Thread
+                 , Planning::Probabilistic_State_Transformation
+                 , probabilistic_state_Transformation
+                 , new__action_proposition);
+
+            
+            /* Any of he subactions that this might trigger. */
+            auto& _list__Listeners = list__Listeners.top();
+            for(auto listener = _list__Listeners.begin()
+                    ; listener != _list__Listeners.end()
+                    ; listener++){
+
+                /*An added listener could still be rejected at this
+                 * point, if it was added on a previous run.*/
+                if(probabilistic_state_Transformation.
+                   cxx_get<Planning::Probabilistic_State_Transformation>()
+                   ->add__listener(*listener)){
+                    INTERACTIVE_VERBOSER(true, 3110, "successfully added listener."<<std::endl)
+                } else {
+                    WARNING("Failed adding listener :: "<<*listener<<std::endl
+                            <<"to transformation :: "<<probabilistic_state_Transformation<<std::endl)
+                }
+            }
+            
+            /* POP LISTENERS */
+            list__Listeners.pop();
+            listeners.pop();
+
+            /* Adding  NULL ACTION :i.e., ("no-op"): as required. */
+            if(has_null_effect){
+                auto action = generate__null_action(null_effect__probability);
+                
+                auto deref__st = action.cxx_deref_get<basic_type>();
+                if(probabilistic_state_Transformation.
+                   cxx_get<Planning::Probabilistic_State_Transformation>()
+                   ->add__listener(deref__st)){
+                    INTERACTIVE_VERBOSER(true, 3110, "successfully added listener."<<std::endl)
+                } else {
+                    WARNING("Failed adding listener :: "<<action<<std::endl
+                            <<"to transformation :: "<<probabilistic_state_Transformation<<std::endl)
+                }
+            }
+
+            /* Notify parent to wake me up when I should be executed...*/
+            assert(list__Listeners.size());
+            assert(listeners.size());
+            
+            auto& set_of_listeners = listeners.top();    
+            auto deref__st = probabilistic_state_Transformation
+                .cxx_deref_get<basic_type>();
+            
+            if(set_of_listeners.find(deref__st) == set_of_listeners.end()){
+                auto& list_of_listeners = list__Listeners.top();
+                auto old_size = list__Listeners.top().size();
+                list_of_listeners.push_back(deref__st);
+                assert(list__Listeners.top().size() != old_size);
+                    
+                set_of_listeners.insert(deref__st);
+                    
+                INTERACTIVE_VERBOSER(true, 3110, "::INTERMEDIATE ACTION:: "<<probabilistic_state_Transformation<<std::endl
+                                     <<"requesting to be woken..."<<std::endl); 
+            } else {
+                INTERACTIVE_VERBOSER(true, 3110, "::INTERMEDIATE ACTION:: "<<probabilistic_state_Transformation<<std::endl
+                                     <<"ALREADY requested to be woken..."<<std::endl);
+            }
+            
+            return;
         }
         break;
         case enum_types::conditional_effect:
@@ -367,10 +656,14 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
 
             /* If this condition is statically not executable.*/
             if(std::tr1::get<1>(_condition) == false){
+                WARNING("Got case "<<action_Proposition
+                        <<" where conditional effect is statically impossible :: "<<input);
                 return;
             }
             auto condition = std::tr1::get<0>(_condition);
             if(enum_types::formula_false == condition->get__type_name()){
+                WARNING("Got case "<<action_Proposition
+                        <<" where conditional effect is statically impossible :: "<<input);
                 return ;
             }
 
@@ -393,8 +686,12 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
                 effect = _effect;
             }
 
+            
+            
             State_Formula::Conjunctive_Normal_Form_Formula__Pointer cnf_condition;
             if (enum_types::formula_true == condition->get__type_name()) {
+                INTERACTIVE_VERBOSER(true, 3110, "Got case "<<action_Proposition
+                                     <<" where conditional effect is statically satisfied :: "<<input);
                 cnf_condition = true_cnf;
             } else {
                 Planning_CNF__to__State_CNF
@@ -409,51 +706,42 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
                 planning_CNF__to__State_CNF(condition);
 
                 cnf_condition = planning_CNF__to__State_CNF.get__answer();
+                
+                INTERACTIVE_VERBOSER(true, 3120, "Conditional state transformation with precondition :: ");
+                INTERACTIVE_VERBOSER(true, 3120, ""<<cnf_condition);
             }
 
             level++;
-//             listeners.push(Listeners());            /*searchable*/
-//             list__Listeners.push(List__Listeners());/*traversable*/
             preconditions.push(cnf_condition);
             (*this)(effect);
             level--;
             
             preconditions.pop();
             return;
-            
-//             auto _action = problem__actions.find(result);
-//             if(_action == problem__actions.end()){
-//                 problem__actions.insert(result);
-//                 _action = problem__actions.find(result);
-//             }
-
-//             assert(listeners.size());
-//             assert(listeners.size() == list__Listeners.size());
-            
-//             auto listeners_iterator = listeners.top().find(_action.cxx_deref_get<basic_type>());
-//             if(listeners.top().find(_action.cxx_deref_get<basic_type>()) == listeners.top.end()){
-//                 listeners.top().insert(_action.cxx_deref_get<basic_type>());
-//                 list__Listeners.top().push_back(_action.cxx_deref_get<basic_type>());
-//             }
-            
-//             listeners.pop();
-//             list__Listeners.pop();
-            
         }
         break;
         case enum_types::increase:
         {
-            UNRECOVERABLE_ERROR("unimplemented.");
+            auto subject = input.cxx_get<Formula::Increase>()->get__subject();
+            deref_VISITATION(Formula::Increase, input, get__subject());
+            auto modification = input.cxx_get<Formula::Increase>()->get__modification();
+            process__Function_Modifier(modification, input->get__type_name());
         }
         break;
         case enum_types::decrease:
         {
-            UNRECOVERABLE_ERROR("unimplemented.");
+            auto subject = input.cxx_get<Formula::Decrease>()->get__subject();
+            deref_VISITATION(Formula::Decrease, input, get__subject());
+            auto modification = input.cxx_get<Formula::Decrease>()->get__modification();
+            process__Function_Modifier(modification, input->get__type_name());
         }
         break;
         case enum_types::assign:
         {
-            UNRECOVERABLE_ERROR("unimplemented.");
+            auto subject = input.cxx_get<Formula::Assign>()->get__subject();
+            deref_VISITATION(Formula::Assign, input, get__subject());
+            auto modification = input.cxx_get<Formula::Assign>()->get__modification();
+            process__Function_Modifier(modification, input->get__type_name());
         }
         break;
         default:
@@ -465,6 +753,152 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
     }
     
     
+}
+
+
+void  Domain_Action__to__Problem_Action::
+interpret__as_double_valued_ground_state_function(ID_TYPE function_symbol_id)
+{
+    assert(function_symbol_id != -1);
+    
+    basic_type::Runtime_Thread formula_runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
+        (dynamic_cast<const Parsing::Formula_Data*>(&problem_Data));
+    
+    if(!Formula::State_Ground_Function::
+       ith_exists(formula_runtime_Thread,
+                  function_symbol_id)){
+        
+        return;
+    }
+    
+    auto function_symbol = Formula::State_Ground_Function::
+        make_ith<Formula::State_Ground_Function>
+        (formula_runtime_Thread,
+         function_symbol_id);
+    
+    INTERACTIVE_VERBOSER(true, 3510, "Reading double value for :: "<<function_symbol);
+    
+    if(problem_Data.has_static_value(function_symbol)){
+        if(domain_Data.is_type__double(function_symbol.get__name())){
+            last_double_traversed = problem_Data
+                .read__static_value<double>(function_symbol);
+            
+            INTERACTIVE_VERBOSER(true, 3510, "Reading double value :: "
+                                 <<last_double_traversed);
+        }
+    } else {
+        WARNING("Hope that wasn't supposed to be a referenced read to a dynamic"<<std::endl
+                <<"double-valued number. If it was, we're stuffed...");
+    }
+}
+
+
+void Domain_Action__to__Problem_Action::
+process__Function_Modifier(Formula::Subformula& modification,
+                           ID_TYPE modification_type)
+{
+    assert(last_function_symbol_id != -1);
+    
+    assert(list__Listeners.size());
+    assert(listeners.size());
+    auto& list_of_listeners = list__Listeners.top();
+    auto& set_of_listeners = listeners.top();
+    
+    auto new__action_proposition = process__generate_name(":numeric:");
+
+    /* id of the subject of the modification. */
+    assert(Formula::State_Ground_Function::
+           ith_exists(runtime_Thread,
+                      last_function_symbol_id));
+    
+    auto last_function_symbol = Formula::State_Ground_Function::
+        make_ith<Formula::State_Ground_Function>
+        (runtime_Thread, //dynamic_cast<Planning::Parsing::Formula_Data>(&problem_Data),????
+         last_function_symbol_id);
+    
+    if(problem_Data.has_static_value(modification, assignment)){//last_function_symbol.get__name())){
+        if(domain_Data.is_type__double(last_function_symbol.get__name())){
+            double value = problem_Data
+                .read__static_value<double>(modification, assignment);
+            assert(last_function_symbol_id >= 0);
+            
+            
+            
+            NEW_referenced_WRAPPED_deref_POINTER
+                (runtime_Thread
+                 , Planning::Simple_Double_Transformation
+                 , transformation
+                 , new__action_proposition
+                 , last_function_symbol_id
+                 , value
+                 , modification_type);
+
+            
+            auto deref__st = transformation.cxx_deref_get<basic_type>();
+            list_of_listeners.push_back(deref__st);
+            set_of_listeners.insert(deref__st);   
+            
+            INTERACTIVE_VERBOSER(true, 3110, "Requests waking :: "<<transformation);
+    
+        } else if (domain_Data.is_type__int(last_function_symbol.get__name())) {
+            int value = problem_Data
+                .read__static_value<int>(modification, assignment);
+            
+            assert(last_function_symbol_id >= 0);
+
+            
+            NEW_referenced_WRAPPED_deref_POINTER
+                (runtime_Thread
+                 , Simple_Int_Transformation
+                 , transformation
+                 , new__action_proposition
+                 , last_function_symbol_id
+                 , value
+                 , modification_type);
+
+            CXX__deref__shared_ptr<basic_type> deref__st = transformation;//.cxx_deref_get<basic_type>();
+            list_of_listeners.push_back(deref__st);
+            set_of_listeners.insert(deref__st);   
+            INTERACTIVE_VERBOSER(true, 3110, "Requests waking :: "<<transformation);
+
+            
+        } else {
+            UNRECOVERABLE_ERROR("unimplemented");
+        }
+    } else {
+        UNRECOVERABLE_ERROR("unimplemented");
+    }
+
+    last_function_symbol_id = -1;
+}
+
+Formula::Action_Proposition Domain_Action__to__Problem_Action::
+process__generate_name(std::string annotation) 
+{
+    std::ostringstream __new_action_name;
+    Planning::Action_Name old__action_name = action_Proposition.get__name();
+    Planning::Constant_Arguments arguments = action_Proposition.get__arguments();
+    if(level == 0){
+        __new_action_name<<old__action_name;
+    } else {
+        __new_action_name<<old__action_name
+                         <<"+"<<annotation
+                         <<count_of_actions_posted++;
+    }
+            
+    auto _new_action_name = __new_action_name.str();
+    NEW_referenced_WRAPPED(runtime_Thread
+                           , Planning::Action_Name
+                           , new__action_name
+                           , _new_action_name);
+            
+    NEW_referenced_WRAPPED(runtime_Thread
+                           , Formula::Action_Proposition
+                           , new__action_proposition
+                           , new__action_name
+                           , arguments);
+
+    return std::move<>(new__action_proposition);
 }
 
 

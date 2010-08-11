@@ -320,7 +320,8 @@ Formula_Data::complete__probabilistic_formula()
             <<"Which has :: "<<subformulae[formula_parsing_level+1].size()<<" elements."<<std::endl);
     }/*END -- In case of parsing or authorship errors.*/
 
-    Planning::Formula::numbers__vector probabilities;
+    //Planning::Formula::numbers__vector;
+    Formula::Subformulae probabilities;
     Planning::Formula::Subformulae associated_formula;
     
     for(int i = 0
@@ -329,10 +330,23 @@ Formula_Data::complete__probabilistic_formula()
         auto tmp = subformulae[formula_parsing_level+1][i]; 
         if(!(i%2)){
 
-            QUERY_UNRECOVERABLE_ERROR(
-                !tmp.test_cast<Planning::Formula::Number>()
-                , "Expecting a number, but got :: "<<tmp<<std::endl);
-            probabilities.push_back(tmp.do_cast_and_copy<Planning::Formula::Number>());
+            switch(tmp->get__type_name()){
+                case enum_types::number:
+                break;
+                case enum_types::state_ground_function:
+                break;
+                case enum_types::state_function:
+                break;
+                case enum_types::perceptual_ground_function:
+                break;
+                case enum_types::perceptual_function:
+                break;
+                default:
+                    UNRECOVERABLE_ERROR("Expecting a number, but got :: "<<tmp<<std::endl);
+                    break;
+            }
+            
+            probabilities.push_back(tmp);//.do_cast_and_copy<Planning::Formula::Number>());
         } else {
             associated_formula.push_back(tmp);
         }
@@ -713,6 +727,35 @@ void Formula_Data::report__formula(const std::string& str)
             subs++;
             auto evaluation_expression_RHS = *subs;
 
+            if( parsing_initial_state &&
+                1 == formula_parsing_level &&
+                enum_types::number == evaluation_expression_RHS->get__type_name() ){
+                if(evaluation_expression_LHS.test_cast<Formula::State_Ground_Function>()){
+                
+                    auto index = *evaluation_expression_LHS
+                        .CXX__deref__shared_ptr<basic_type>::cxx_get<Formula::State_Ground_Function>();
+                
+                    auto value = evaluation_expression_RHS.cxx_get<Formula::Number>()->get__value();
+                    if(is_type__double(index.get__name())){
+                        INTERACTIVE_VERBOSER(true, 5000, "Static DOUBLE assignment for :: "
+                                             <<"(assign "<<evaluation_expression_LHS
+                                             <<" "<<evaluation_expression_RHS<<std::endl);
+                        static_ground_double_function[index] = value;
+                    }  else if (is_type__int(index.get__name())) {
+                        INTERACTIVE_VERBOSER(true, 5000, "Static INT assignment for :: "
+                                             <<"(assign "<<evaluation_expression_LHS
+                                             <<" "<<evaluation_expression_RHS<<std::endl);
+                        static_ground_int_function[index] = static_cast<int>(value);
+                    }
+                }
+            } else if (parsing_initial_state) {
+                
+                INTERACTIVE_VERBOSER(true, 5000, "In initial state.. Non-static assignment for :: "
+                                     <<"(assign "<<evaluation_expression_LHS
+                                     <<" "<<evaluation_expression_RHS<<std::endl);
+            }
+            
+            
             
             NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                 (Planning::Formula::Assign
@@ -873,7 +916,7 @@ void Formula_Data::add__constant_argument(const std::string& str)
 
 
 
-#define REPORT_SYMBOL_USAGE__PROPOSITIONAL(TYPE, NAME_TYPE, storage, add_storage, del_storage) \
+#define REPORT_SYMBOL_USAGE__PROPOSITIONAL(TYPE, NAME_TYPE, storage, add_storage, del_storage, OTHER_STUFF) \
     template<>                                                          \
     void Formula_Data::using__symbol_name<TYPE                          \
                                           , NAME_TYPE>                  \
@@ -888,6 +931,7 @@ void Formula_Data::add__constant_argument(const std::string& str)
         storage[symbol_name]                                            \
             .insert(index);                                             \
                                                                         \
+        OTHER_STUFF;                                                    \
                                                                         \
         if(in_effect_context){                                          \
 INTERACTIVE_VERBOSER(true, 3102, "Parsing symbol in effect context :: "<<symbol_name); \
@@ -970,30 +1014,45 @@ namespace Planning
                                         state_ground_functions__parsed,
                                         modified_in_effect__state_ground_functions__parsed);
         
+#define STATING_STATE_PROPOSITIONS_TEST                                 \
+        {                                                               \
+            if( parsing_initial_state &&                                \
+                1 == formula_parsing_level)                             \
+            {                                                           \
+                starting_state_propositions.insert(index);              \
+            }                                                           \
+        }                                                               \
+                                                                        \
+
+#define EMPTY_TEST ;
         
         REPORT_SYMBOL_USAGE__PROPOSITIONAL(Planning::Formula::State_Predicate,
                                            Planning::Predicate_Name,
                                            state_predicates__parsed,
                                            added__state_predicates__parsed,
-                                           deleted__state_predicates__parsed);
+                                           deleted__state_predicates__parsed,
+                                           EMPTY_TEST);
         
         REPORT_SYMBOL_USAGE__PROPOSITIONAL(Planning::Formula::State_Proposition,
                                            Planning::Predicate_Name,
                                            state_propositions__parsed,
                                            added__state_propositions__parsed,
-                                           deleted__state_propositions__parsed);
+                                           deleted__state_propositions__parsed,
+                                           STATING_STATE_PROPOSITIONS_TEST);
         
         REPORT_SYMBOL_USAGE__PROPOSITIONAL(Planning::Formula::Observational_Predicate,
                                            Planning::Percept_Name,
                                            observational_predicates__parsed,
                                            added__observational_predicates__parsed,
-                                           deleted__observational_predicates__parsed);
+                                           deleted__observational_predicates__parsed,
+                                           EMPTY_TEST);
         
         REPORT_SYMBOL_USAGE__PROPOSITIONAL(Planning::Formula::Observational_Proposition,
                                            Planning::Percept_Name,
                                            observational_propositions__parsed,
                                            added__observational_propositions__parsed,
-                                           deleted__observational_propositions__parsed);
+                                           deleted__observational_propositions__parsed,
+                                           EMPTY_TEST);
 
         REPORT_SYMBOL_USAGE__NO_STORAGE(Planning::Formula::Action_Proposition,
                                         Planning::Action_Name);
@@ -1169,6 +1228,56 @@ bool Formula_Data::potential_match_via_an_assignment(const Planning::Formula::St
 }
 
 
+// bool Formula_Data::necessarily_satisfiable(const Planning::Formula::State_Predicate& state_Predicate) const
+// {
+    
+//     auto predicate_Name = state_Predicate.get__name();
+
+//     auto _occurrence_indices = state_propositions__parsed.find(predicate_Name);
+//     if(_occurrence_indices == state_propositions__parsed.end()) {
+        
+//         INTERACTIVE_VERBOSER(true, 3101, "No ground instances of symbol "<<state_Predicate<<std::endl);
+        
+//         return false;
+//     }
+    
+
+//     INTERACTIVE_VERBOSER(true, 3101, "Testing ground instances of symbol "<<state_Predicate<<std::endl);
+    
+//     auto occurrence_indices = _occurrence_indices->second;
+
+//     for(auto index = occurrence_indices.begin()
+//             ; index != occurrence_indices.end()
+//             ; index++){
+
+//         auto indexed__Traversable_Collection = Planning::Formula::State_Proposition::indexed__Traversable_Collection;
+//         auto runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>(this);
+        
+//         QUERY_UNRECOVERABLE_ERROR(indexed__Traversable_Collection.find(runtime_Thread)
+//                                   == indexed__Traversable_Collection.end(),
+//                                   "There were not propositions parsed in this descriptive element.");
+        
+//         auto traversable_Collection = indexed__Traversable_Collection[runtime_Thread];
+
+//         QUERY_UNRECOVERABLE_ERROR(!traversable_Collection.use_count(),
+//                                   "There were not propositions parsed in this descriptive element.");
+        
+//         QUERY_UNRECOVERABLE_ERROR(!(*index < (*traversable_Collection).size()),
+//                                   "We parsed :: "<<(*traversable_Collection).size()<<" elements"<<std::endl
+//                                   <<"And are asking for element :: "<<*index<<std::endl;);
+        
+        
+//         auto proposition = (*traversable_Collection)[*index];
+//         if(potential_match_via_an_assignment(state_Predicate,
+//                                              std::tr1::get<0>(proposition),
+//                                              std::tr1::get<1>(proposition))) return true;
+//     }
+    
+//     INTERACTIVE_VERBOSER(true, 3101, "No ground instances to match "<<state_Predicate<<std::endl);
+    
+//     return false;
+// }
+
 bool Formula_Data::statically_satisfiable(const Planning::Formula::State_Predicate& state_Predicate) const
 {
     
@@ -1207,12 +1316,6 @@ bool Formula_Data::statically_satisfiable(const Planning::Formula::State_Predica
                                   "We parsed :: "<<(*traversable_Collection).size()<<" elements"<<std::endl
                                   <<"And are asking for element :: "<<*index<<std::endl;);
         
-//         auto _proposition = (*traversable_Collection)[*index];
-//         NEW_referenced_WRAPPED(runtime_Thread
-//                                , Planning::Formula::State_Proposition
-//                                , proposition
-//                                , std::tr1::get<0>(_proposition)
-//                                , std::tr1::get<1>(_proposition));
         
         auto proposition = (*traversable_Collection)[*index];
         if(potential_match_via_an_assignment(state_Predicate,
@@ -1359,7 +1462,24 @@ const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__a
     return added__observational_predicates__parsed;
 }
 
-            
+   
+bool Formula_Data::is_type__double(const Planning::State_Function_Name&) const
+{
+    false;
+}
+
+bool Formula_Data::is_type__int(const Planning::State_Function_Name&) const
+{
+    false;
+}
+bool Formula_Data::is_type__double(const Planning::Perceptual_Function_Name&) const
+{
+    false;
+}
+bool Formula_Data::is_type__int(const Planning::Perceptual_Function_Name&) const
+{
+    false;
+}     
 
 // Formula_Data::modal_truth
 // Formula_Data::statically_unsatisfiable(const Planning::Formula::State_Predicate& state_Predicate,

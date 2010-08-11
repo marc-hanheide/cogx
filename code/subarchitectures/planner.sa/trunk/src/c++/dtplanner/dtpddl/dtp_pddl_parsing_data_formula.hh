@@ -291,7 +291,19 @@ namespace Planning
             bool potential_match_via_an_assignment(const Planning::Formula::State_Predicate&,
                                                      const Planning::Predicate_Name& State_Proposition__name,
                                                      const Constant_Arguments& State_Proposition__arguments) const;
+
+            virtual bool is_type__double(const Planning::State_Function_Name&) const;
+            virtual bool is_type__int(const Planning::State_Function_Name&) const;
+            virtual bool is_type__double(const Planning::Perceptual_Function_Name&) const;
+            virtual bool is_type__int(const Planning::Perceptual_Function_Name&) const;
+        protected:
+            
+            /*Cached value of starting state functional assignments -- ONLY USED BY PARENTS.*/
+            std::map<Formula::State_Ground_Function, double> static_ground_double_function;
+            std::map<Formula::State_Ground_Function, int> static_ground_int_function;
+
         private:
+            
             /* Does \member{subformulae} have elements at \argument{index}.*/
             bool check__exists_parsed_subformulae(int index) const;
             
@@ -358,6 +370,8 @@ namespace Planning
             const std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> >&
             get__modified_in_effect__perceptual_ground_functions__parsed() const;
         protected:
+            /* What propositions are necessarily true in the starting states?*/
+            std::set<ID_TYPE>  starting_state_propositions;
             
             /* Store all the atomic symbols that occur in the
              * formulae parsed by this.*/

@@ -41,17 +41,18 @@ Satisfaction_Listener::~Satisfaction_Listener()
 {
 }
 
-void Satisfaction_Listener::add__listener(Satisfaction_Listener__Pointer& satisfaction_Listener__Pointer)
+bool Satisfaction_Listener::add__listener(Satisfaction_Listener__Pointer& satisfaction_Listener__Pointer)
 {
     if(listeners.find(satisfaction_Listener__Pointer) != listeners.end()){
         WARNING("Attempted to add "<<satisfaction_Listener__Pointer
                 <<" as a listener to a set that"<<std::endl
                 <<"already contained an equivalent element.");
-        return;
+        return false;
     }
     
     listeners.insert(satisfaction_Listener__Pointer);
     list__Listeners.push_back(satisfaction_Listener__Pointer);
+    return true;
 }
             
 const List__Listeners& Satisfaction_Listener::get__traversable__listeners() const 

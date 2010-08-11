@@ -107,7 +107,9 @@ namespace Planning
         /* ------------------------ State Transformations and actions ------------------------ */
         /* ------------------------ State Transformations and actions ------------------------ */
         state_transformation,
-        probabilistic_state_transformation
+        probabilistic_state_transformation,
+        simple_int_transformation,
+        simple_double_transformation
 //         int_valued_function, /* PDDL integer valued function symbol --
 //                               * e.g. keyword "total-cost" for
 //                               * propositional planning problems with

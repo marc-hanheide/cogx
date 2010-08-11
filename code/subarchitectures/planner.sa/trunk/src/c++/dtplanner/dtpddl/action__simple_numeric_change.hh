@@ -30,47 +30,48 @@
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
  * 
  */
+#ifndef ACTION__SIMPLE_NUMERIC_CHANGE_HH
+#define ACTION__SIMPLE_NUMERIC_CHANGE_HH
 
 
-#ifndef STATE_FORMULA_HH
-#define STATE_FORMULA_HH
-
-#include "state_basics.hh"
-#include "stl__typed_thing.hh"
 #include "planning_formula.hh"
+#include "state_formula.hh"
+#include "planning_types_enum.hh"
 
 
 namespace Planning
 {
-    namespace State_Formula
-    {
-        class Satisfaction_Listener
-        {
-        public:
-            virtual ~Satisfaction_Listener();/*EMPTY*/
-            virtual void report__newly_satisfied(State&) = 0;
-            virtual void report__newly_unsatisfied(State&) = 0;
-
-            /* Returns false if the \argument{Listener} is already
-             * registered.*/
-            bool add__listener(Satisfaction_Listener__Pointer&);
-            
-            const List__Listeners& get__traversable__listeners() const ;
-            const Listeners& get__searchable__listeners() const ;
-        private:
-            List__Listeners list__Listeners;
-            Listeners listeners;
-        };
+    template<typename Range_Type, int type_id>
+    class Simple_Numeric_Transformation :
+        public State_Formula::
+        _Satisfaction_Listener<type_id
+                               , Formula::Action_Proposition
+                               , ID_TYPE /* Index to change */
+                               , Range_Type
+                               , int/*enum*/>
+    {PRINTING;
+    public:
+        const Formula::Action_Proposition& get__identifier() const;
+        ID_TYPE get__change_index() const;
+        Range_Type get__modification_value() const;
+        int get__modification_type() const;
         
-        template<int type_name, typename... T>
-        class _Satisfaction_Listener : public type_wrapper<type_name, T...>,
-                                       public Satisfaction_Listener
-        {
-        public:
-            typedef type_wrapper<type_name, List__Listeners, Listeners, T...> Parent;
-        };
         
-    }
+        State* operator()(State*) const;
+        
+        void report__newly_satisfied(State&){};
+        void report__newly_unsatisfied(State&){};
+    };
+    
+    class Simple_Int_Transformation
+    : public Simple_Numeric_Transformation<
+        int
+        , enum_types::simple_int_transformation> {};
+    
+    class Simple_Double_Transformation
+    : public Simple_Numeric_Transformation<
+        double
+        , enum_types::simple_double_transformation> {};
 }
 
 

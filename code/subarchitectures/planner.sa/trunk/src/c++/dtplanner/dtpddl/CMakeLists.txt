@@ -7,6 +7,7 @@ include_directories(./pegtl-0.30/include)
 set(dtpddl_source
 action_executability__state.cc
 action__probabilistic_state_transformation.cc
+action__simple_numeric_change.cc
 action__state_transformation.cc
 assignment_applicator.cc
 boolean__satisfaction_status_management.cc

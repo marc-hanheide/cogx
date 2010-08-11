@@ -260,6 +260,9 @@ std::ostream& State_Transformation::operator<<(std::ostream&o) const
 {
     o<<get__identifier()<<std::endl;
 
+    
+    o<<"PRECONDITION :: "<<get__precondition()<<std::endl;
+    
     if(!get__lookup_probability()){
         o<<"Prob :: "<<get__probability()<<std::endl;
     } else {
@@ -290,15 +293,20 @@ std::ostream& State_Transformation::operator<<(std::ostream&o) const
         }
     }
     o<<std::endl;
-    o<<"{";
+    o<<"{"<<get__traversable__listeners().size()<<"-LISTENERS :: ";
     for(auto listener = get__traversable__listeners().begin()
             ; listener != get__traversable__listeners().end()
             ; listener++){
-        if(listener->test_cast<State_Transformation>()){
-            listener->cxx_get<State_Transformation>()->operator<<(o);
-        } else if (listener->test_cast<Probabilistic_State_Transformation>()) {
-            o<<*(listener->cxx_get<Probabilistic_State_Transformation>());//->operator<<(o);
+        if(listener->test_cast<basic_type>()){
+            listener->cxx_get<basic_type>()->operator<<(o);
         }
+        
+        
+//         if(listener->test_cast<State_Transformation>()){
+//             listener->cxx_get<State_Transformation>()->operator<<(o);
+//         } else if (listener->test_cast<Probabilistic_State_Transformation>()) {
+//             o<<*(listener->cxx_get<Probabilistic_State_Transformation>());//->operator<<(o);
+//         }
     }
     o<<"}"<<std::endl;
     

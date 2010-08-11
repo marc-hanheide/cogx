@@ -1,4 +1,25 @@
 
+//     std::ostringstream __new_action_name;
+//     Planning::Action_Name old__action_name = action_Proposition.get__name();
+//     Planning::Constant_Arguments arguments = action_Proposition.get__arguments();
+//     __new_action_name<<old__action_name
+//                      <<":numeric:+"
+//                      <<count_of_actions_posted++;
+            
+//     auto _new_action_name = __new_action_name.str();
+//     NEW_referenced_WRAPPED(runtime_Thread
+//                            , Planning::Action_Name
+//                            , new__action_name
+//                            , _new_action_name);
+            
+//     NEW_referenced_WRAPPED(runtime_Thread
+//                            , Formula::Action_Proposition
+//                            , new__action_proposition
+//                            , new__action_name
+//                            , arguments);
+
+
+
 //         if(!processing_negative){
 //             INTERACTIVE_VERBOSER(true, 3101, " -- Needed to be TRUE :: "<<fact);
 

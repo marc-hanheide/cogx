@@ -78,7 +78,10 @@ void Solver::preprocess()
     problem_Grounding->ground_actions();
     problem_Grounding->ground_derived_predicates();
     problem_Grounding->ground_derived_perceptions();
+    problem_Grounding->ground_starting_states();
 
+    
+    
     preprocessed = true;
 }
 

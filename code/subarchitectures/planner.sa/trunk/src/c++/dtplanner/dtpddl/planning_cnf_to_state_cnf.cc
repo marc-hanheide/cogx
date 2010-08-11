@@ -118,14 +118,14 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
             auto literal__pointer = *_literal__pointer;
             
             if(clause__as_set.find(literal__pointer) != clause__as_set.end()){
-                INTERACTIVE_VERBOSER(true, 3104,
+                INTERACTIVE_VERBOSER(true, 3124,
                                      "Already got proposition :: "<<proposition
                                      <<" as literal :: "<<literal__pointer<<std::endl
                                      <<"Registered with the current clause being built.");
                 return;
             }
             
-            INTERACTIVE_VERBOSER(true, 3104,
+            INTERACTIVE_VERBOSER(true, 3124,
                                  "New proposition :: "<<proposition
                                  <<" as literal :: "<<literal__pointer<<std::endl
                                  <<"Now registered with the current clause being built.");
@@ -170,12 +170,11 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
 
             /* If this CNF is already in the ground instance. */
             if(_problem__pointer != problem__cnfs.end()){
+                answer = *_problem__pointer;
                 disjunctions = State_Formula::List__Disjunctive_Clause();
                 disjunctions__as_set = State_Formula::Disjunctive_Clauses();
                 return;
             }
-            
-
             
             if(_problem__pointer == problem__cnfs.end()){
                 problem__cnfs.insert(formula);
@@ -215,18 +214,28 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
                  clause);
 
             INTERACTIVE_VERBOSER(
-                true, 3104,
+                true, 3124,
                 "Processing disjunctive clause :: "<<_disjunct<<std::endl);
             
             auto disjunct = CXX__deref__shared_ptr<State_Formula::Disjunctive_Clause>(_disjunct);
             auto _clause__pointer = problem__clauses.find(disjunct);
+            
+            bool is_new_planning_problem_clause = false;
             if(_clause__pointer != problem__clauses.end()){
+                INTERACTIVE_VERBOSER(
+                    true, 3120,
+                    "Repeated problem clause :: "<<*_clause__pointer<<std::endl);
             } else {
+                is_new_planning_problem_clause = true;
                 problem__clauses.insert(disjunct);
                 _clause__pointer = problem__clauses.find(disjunct);
+                INTERACTIVE_VERBOSER(
+                    true, 3120,
+                    "New problem clause :: "<<*_clause__pointer<<std::endl);
             }
             
             auto clause__pointer = *_clause__pointer;
+
 
             /* If it is already in the problem. */
             if(disjunctions__as_set.find(clause__pointer) != disjunctions__as_set.end()){
@@ -237,21 +246,29 @@ void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
                 clause__as_set = Literals();
                 return;
             }
-            
-            List__Literals& literals = clause__pointer->get__literals();
-            for(auto literal = literals.begin()
-                    ; literal != literals.end()
-                    ; literal ++){
-                INTERACTIVE_VERBOSER(true, 3104,
-                                     "Registering clause as listener :: "<<clause__pointer<<std::endl
-                                     <<"With literal"<<*literal<<std::endl );
-                
-                auto deref__st = clause__pointer.cxx_deref_get<basic_type>();
-                (*literal).cxx_get<Literal>()->add__listener(deref__st);
+
+            if(is_new_planning_problem_clause){
+                List__Literals& literals = clause__pointer->get__literals();
+                for(auto literal = literals.begin()
+                        ; literal != literals.end()
+                        ; literal ++){
+                    INTERACTIVE_VERBOSER(true, 3120,
+                                         "Input formula is :: "<<input<<std::endl
+                                         <<"Registering clause as listener :: "<<clause__pointer<<std::endl
+                                         <<"With literal"<<*literal<<std::endl );
+                    
+                    auto deref__st = clause__pointer.cxx_deref_get<basic_type>();
+                    if((*literal).cxx_get<Literal>()->add__listener(deref__st)){;
+                    } else {
+                        WARNING("Input formula is :: "<<input<<std::endl
+                                <<"Could not register clause :: "<<deref__st<<std::endl
+                                <<"as a listener to literal :: "<<*literal<<std::endl
+                                <<"apparently because that registration has already occurred.");
+                    }
+                }
             }
             
-            
-            INTERACTIVE_VERBOSER(true, 3104,
+            INTERACTIVE_VERBOSER(true, 3120,
                                  "Added new CNF clause :: "<<clause__pointer<<std::endl);
                 
             disjunctions.push_back(clause__pointer);

@@ -63,15 +63,29 @@ namespace Planning
         void ground_derived_predicates();
         void ground_derived_perceptions();
 
+        void ground_starting_states();
+        
+        const Formula::State_Propositions& get__state_Propositions() const;
+        const Formula::State_Ground_Functions& get__state_Functions() const;
+        const State_Formula::Literals& get__literals() const;
+        const State_Formula::Disjunctive_Clauses& get__disjunctive_Clauses() const;
+        const State_Formula::Conjunctive_Normal_Form_Formulae& get__conjunctive_Normal_Form_Formulae() const;
+        const State_Transformations& get__deterministic_actions() const;
+        const State_Transformations& get__executable_actions_without_preconditions() const;
+        const Probabilistic_State_Transformations& get__probabilistic_actions() const;
+        
+//         const & get__() const;
+//         const & get__() const;
     private:
         /* All the state formula associated with the ground problem
          * instance (see \member{press_ground_action}).*/
         Formula::State_Propositions state_Propositions;
+        Formula::State_Ground_Functions state_Functions;
         State_Formula::Literals literals;
         State_Formula::Disjunctive_Clauses disjunctive_Clauses;
         State_Formula::Conjunctive_Normal_Form_Formulae conjunctive_Normal_Form_Formulae;
 
-        
+        State_Transformation__Pointer executable_starting_states_generator;
         State_Transformations deterministic_actions;
         State_Transformations executable_actions_without_preconditions;
         Probabilistic_State_Transformations probabilistic_actions;
@@ -89,7 +103,7 @@ namespace Planning
          * objects from unions that appear in the domain
          * definition.*/
         std::map<Types, Constants> cached_constants_of_types;
-
+        
         /* Description of the problem constants (see \module{Solver}).*/
         const Planning::Constants_Description& constants_Description;
 
@@ -119,7 +133,7 @@ namespace Planning
         /* --1-- */ void ground_action_schema(Planning::Action_Schema& action_Schema);
         /* --3-- */ void ground_action_schema(const Action_Name& action_name,
                                   Planning::Formula::Subformula& effect_formula,
-                                  std::map<Variable, Constant>& assignment_detail,
+                                  Planning::Assignment& assignment_detail,
                                   const std::map<Planning::Variable, Planning::Constants/*FIX*/>& potential_assignments,
                                   const Argument_List& action_variables,
                                   Planning::Formula::Subformula precondition,
@@ -129,7 +143,7 @@ namespace Planning
         void 
         /* --2-- */ ground_action_schema(const Action_Name& action_Name,
                              Planning::Formula::Subformula& effect_formula,
-                             std::map<Variable, Constant>& assignment_detail, /*explicit representation of results*/
+                             Planning::Assignment& assignment_detail, /*explicit representation of results*/
                              const std::map<Variable, Constants>& potential_assignments, /* constants from which the result is formed.*/
                              const Argument_List& action_Arguments, /*Gives the order in which variables assignment should be made -- Some of these may be constant.*/
                              Planning::Formula::Subformula _precondition
@@ -137,7 +151,7 @@ namespace Planning
         /* --4-- */ void press_ground_action(const Action_Name& action_name,
                                  Planning::Formula::Subformula precondition,  
                                  Planning::Formula::Subformula __effect_formula,/*This should be completely ground at this stage -- i.e., no variable symbols.. */
-                                 std::map<Variable, Constant>& assignment_detail,
+                                 Planning::Assignment& assignment_detail,
                                  const Argument_List& action_variables
                                  );
         
