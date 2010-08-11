@@ -75,7 +75,7 @@ namespace Planning
         typedef CXX__deref__shared_ptr<Observational_Proposition> Ground_Observation;
         typedef CXX__deref__shared_ptr<Equality_Test> Equality;
         
-        typedef std::map<Variable, Constant> Assignment;
+        //typedef std::map<Variable, Constant> Assignment;
         typedef std::tr1::tuple<Subformula, bool> Result;
 
         /* Result contains:
@@ -87,7 +87,7 @@ namespace Planning
          * returned formulae is satisfiable -- This result is sound,
          * in the sense that it is based on necessary, but not
          * sufficient reasoning. */
-        Result operator()(Subformula, const Assignment&);
+        Result operator()(Subformula, const Planning::Assignment&);
 
 //         /* see \member{assignment_possibilities}*/
 //         void reset__assignment_possibilities(std::map<Variable,  Constants&>&);
@@ -118,14 +118,14 @@ namespace Planning
 //         Cached_Predicate_Satisfiability cached_unsatisfiable;
         
         
-        Result operator()(Conjunct, const Assignment&);
-        Result operator()(Disjunct, const Assignment&);
-        Result operator()(Nagative, const Assignment&);
-        Result operator()(Fact, const Assignment&);
-        Result operator()(Ground_Fact, const Assignment&);
-        Result operator()(Observation, const Assignment&);
-        Result operator()(Ground_Observation, const Assignment&);
-        Result operator()(Equality, const Assignment&);
+        Result operator()(Conjunct, const Planning::Assignment&);
+        Result operator()(Disjunct, const Planning::Assignment&);
+        Result operator()(Nagative, const Planning::Assignment&);
+        Result operator()(Fact, const Planning::Assignment&);
+        Result operator()(Ground_Fact, const Planning::Assignment&);
+        Result operator()(Observation, const Planning::Assignment&);
+        Result operator()(Ground_Observation, const Planning::Assignment&);
+        Result operator()(Equality, const Planning::Assignment&);
 
         /* Necessary but non-sufficient conditions are examined to
          * demonstrate if the \argument{Ground_Fact} is satisfiable in

@@ -41,6 +41,8 @@ namespace Planning
 {
     class Probabilistic_State_Transformation;
     class State_Transformation;
+    class Simple_Int_Transformation;
+    class Simple_Double_Transformation;
     
     typedef CXX__deref__shared_ptr<Probabilistic_State_Transformation> Probabilistic_State_Transformation__Pointer; 
     typedef std::set< Probabilistic_State_Transformation__Pointer > Probabilistic_State_Transformations;       
@@ -49,6 +51,14 @@ namespace Planning
     typedef CXX__deref__shared_ptr<State_Transformation> State_Transformation__Pointer; 
     typedef std::set< State_Transformation__Pointer > State_Transformations;       
     typedef std::vector< State_Transformation__Pointer > List__State_Transformation;
+    
+    typedef CXX__deref__shared_ptr<Simple_Int_Transformation> Simple_Int_Transformation__Pointer; 
+    typedef std::set< Simple_Int_Transformation__Pointer > Simple_Int_Transformations;       
+    typedef std::vector< Simple_Int_Transformation__Pointer > List__Simple_Int_Transformation;
+    
+    typedef CXX__deref__shared_ptr<Simple_Double_Transformation> Simple_Double_Transformation__Pointer; 
+    typedef std::set< Simple_Double_Transformation__Pointer > Simple_Double_Transformations;       
+    typedef std::vector< Simple_Double_Transformation__Pointer > List__Simple_Double_Transformation;
 }
 
 
@@ -58,6 +68,10 @@ namespace std
                              , const Planning::State_Transformation&);
     std::ostream& operator<<(std::ostream&
                              , const Planning::Probabilistic_State_Transformation&);
+    std::ostream& operator<<(std::ostream&
+                             , const Planning::Simple_Int_Transformation&);
+    std::ostream& operator<<(std::ostream&
+                             , const Planning::Simple_Double_Transformation&);
 }
 
 

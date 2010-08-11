@@ -131,7 +131,21 @@ namespace Planning
             
             const Planning::Derived_Percepts& get__derived_Percepts() const;
             Planning::Derived_Percepts& get__derived_Percepts();
+
+
+            
+            bool is_type__double(const Planning::State_Function_Name&) const;
+            bool is_type__int(const Planning::State_Function_Name&) const;
+            bool is_type__double(const Planning::Perceptual_Function_Name&) const;
+            bool is_type__int(const Planning::Perceptual_Function_Name&) const;
         private:
+            Planning::Type double__constant;
+            Planning::Type int__constant;
+            std::map<Planning::State_Function_Name
+                     , Planning::Types> range_of_state_function;
+            std::map<Planning::Perceptual_Function_Name
+                     , Planning::Types> range_of_perceptual_function;
+            
             /*(see \member{report__state_function_domain})*/
             Planning::Typed_Arguments state_function_domain_specification;
 

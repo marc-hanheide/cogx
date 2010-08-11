@@ -127,7 +127,6 @@ Result CNF_Assignment_Applicator::satisfiable(Fact fact)
 /* PROPOSITION -- All of the arguments are ground.*/
 Result CNF_Assignment_Applicator::satisfiable(Ground_Fact ground_Fact)
 {
-
     if(!domain_Data.in_add_effect(ground_Fact->get__name())){
         INTERACTIVE_VERBOSER(true, 3102, "Got UN-MAKEABLE ground fact :: "<<ground_Fact);
 
@@ -163,7 +162,7 @@ Result CNF_Assignment_Applicator::satisfiable(Ground_Fact ground_Fact)
 }
 
 
-Result CNF_Assignment_Applicator::operator()(Conjunct conjunct, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Conjunct conjunct, const Planning::Assignment& assignment)
 {
     Subformulae result;
     
@@ -205,7 +204,7 @@ Result CNF_Assignment_Applicator::operator()(Conjunct conjunct, const Assignment
     return Result(conjunctive_formula, true);
 }
 
-Result CNF_Assignment_Applicator::operator()(Disjunct disjunct, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Disjunct disjunct, const Planning::Assignment& assignment)
 {
     Subformulae result;
 
@@ -249,7 +248,7 @@ Result CNF_Assignment_Applicator::operator()(Disjunct disjunct, const Assignment
     return Result(disjunctive_formula, true);
 }
 
-Result CNF_Assignment_Applicator::operator()(Nagative negative, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Nagative negative, const Planning::Assignment& assignment)
 {
     processing_negative = true;
 
@@ -273,7 +272,7 @@ Result CNF_Assignment_Applicator::operator()(Nagative negative, const Assignment
     
 }
 
-Result CNF_Assignment_Applicator::operator()(Fact fact, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Fact fact, const Planning::Assignment& assignment)
 {
     auto arguments = fact->get__arguments();
 
@@ -360,13 +359,13 @@ Result CNF_Assignment_Applicator::operator()(Fact fact, const Assignment& assign
     }
 }
 
-Result CNF_Assignment_Applicator::operator()(Observation observation, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Observation observation, const Planning::Assignment& assignment)
 {
     UNRECOVERABLE_ERROR("UNIMPLEMENTED");
     return Result(Subformula(observation), true);
 }
 
-Result CNF_Assignment_Applicator::operator()(Ground_Fact ground_Fact, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Ground_Fact ground_Fact, const Planning::Assignment& assignment)
 {
     
     auto arguments = ground_Fact->get__arguments();
@@ -422,13 +421,13 @@ Result CNF_Assignment_Applicator::operator()(Ground_Fact ground_Fact, const Assi
     }
 }
 
-Result CNF_Assignment_Applicator::operator()(Ground_Observation ground_Observation, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Ground_Observation ground_Observation, const Planning::Assignment& assignment)
 {
     UNRECOVERABLE_ERROR("UNIMPLEMENTED");
     return Result(Subformula(ground_Observation), true);
 }
 
-Result CNF_Assignment_Applicator::operator()(Equality equality, const Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Equality equality, const Planning::Assignment& assignment)
 {
     UNRECOVERABLE_ERROR("UNIMPLEMENTED");
     return Result(Subformula(equality), true);
@@ -436,7 +435,7 @@ Result CNF_Assignment_Applicator::operator()(Equality equality, const Assignment
 
 
 Result CNF_Assignment_Applicator::operator()(Subformula input,
-                                             const Assignment& assignment)
+                                             const Planning::Assignment& assignment)
 {
     
     switch(input->get__type_name()){//get__id()){

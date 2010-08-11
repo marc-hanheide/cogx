@@ -60,6 +60,11 @@ namespace Planning
 
         /* What is the value of the real number at \argument{index}.*/
         double get__float(uint index) const;
+        void set__float(uint index, double value);
+        
+        /* What is the value of the int number at \argument{index}.*/
+        int get__int(uint index) const;
+        void set__int(uint index, int value);
         
     protected:
         /* For each \LHS{action}, we have the \RHS{probability} that

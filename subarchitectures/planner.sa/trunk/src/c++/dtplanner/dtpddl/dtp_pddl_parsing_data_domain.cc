@@ -45,6 +45,12 @@ Domain_Data::Domain_Data()
      got__observation_effect(false)
 {
     symbol_theory = this;
+
+    
+    NEW_object_referenced_WRAPPED(Planning::Type, _double__constant, "double");
+    NEW_object_referenced_WRAPPED(Planning::Type, _int__constant, "int");
+    double__constant = _double__constant;
+    int__constant = _int__constant;
 }
 
 
@@ -264,6 +270,15 @@ void Domain_Data::add__state_function()
     
     state_Function_Descriptions.insert(state_function);
 
+    range_of_state_function[state_Function_Name] = types_of_types;
+
+    INTERACTIVE_VERBOSER(true, 3110, "type of function :: "<<state_Function_Name<<std::endl
+                         <<"with arguemnts :: "<<state_function_domain_specification<<std::endl
+                         <<"is -- "<<types_of_types<<std::endl);
+        
+    
+    
+    
     state_function_domain_specification = Typed_Arguments();
     types_of_types = Types();
 }
@@ -279,7 +294,8 @@ void Domain_Data::add__perceptual_function()
                                   , types_of_types);
     
     perceptual_Function_Descriptions.insert(perceptual_function);
-
+    range_of_perceptual_function[perceptual_Function_Name] = types_of_types;
+    
     perceptual_function_domain_specification = Typed_Arguments();
     types_of_types = Types();
 }
@@ -357,3 +373,79 @@ void Domain_Data::add__requirement(const std::string& str){
     domain_requirements.insert(requirement);
 }
 
+
+
+#define IMPLEMENTATION____read__type(RESULT_TYPE, CONSTANT, QUERY_TYPE, DATA_BASE) \
+    namespace Planning                                                  \
+    {                                                                   \
+        namespace Parsing                                               \
+        {                                                               \
+                                                                        \
+            bool Domain_Data::                                          \
+            RESULT_TYPE(const QUERY_TYPE& name) const                   \
+            {                                                           \
+                assert(DATA_BASE.find(name) != DATA_BASE.end());        \
+                                                                        \
+                auto _range_types = DATA_BASE.find(name);               \
+                if(_range_types != DATA_BASE.end()){                    \
+                    auto range_types = _range_types->second;            \
+                    auto type_index =                                   \
+                        range_types.find(CONSTANT);                     \
+                    if(type_index != range_types.end()){                \
+                        return true;                                    \
+                    }                                                   \
+                }                                                       \
+                                                                        \
+                return false;                                           \
+            }                                                           \
+        }                                                               \
+    }                                                                   \
+    
+
+
+IMPLEMENTATION____read__type(is_type__double, double__constant,
+                             Planning::State_Function_Name, range_of_state_function);
+IMPLEMENTATION____read__type(is_type__int, int__constant,
+                             Planning::State_Function_Name, range_of_state_function);
+IMPLEMENTATION____read__type(is_type__double, double__constant,
+                             Planning::Perceptual_Function_Name, range_of_perceptual_function);
+IMPLEMENTATION____read__type(is_type__int, int__constant,
+                             Planning::Perceptual_Function_Name, range_of_perceptual_function);
+        
+//         template<>
+//         bool Domain_Data::read__type<double>(const Planning::State_Function_Name& name) const
+//         {
+//             assert(range_of_state_function.find(name) != range_of_state_function.end());
+
+//             auto _range_types = range_of_state_function.find(name);
+//             if(_range_types != range_of_state_function.end()){
+//                 auto range_types = _range_types->second;
+//                 auto type_index = range_types.find(double__constant);
+//                 if(type_index != range_types.end()){
+//                     return true;
+//                 }
+//             }
+
+//             return false;
+//         }
+
+//         template<>
+//         bool Domain_Data::read__type<int>(const Planning::State_Function_Name& name) const
+//         {
+//             assert(range_of_state_function.find(name) != range_of_state_function.end());
+//             return (range_of_state_function[name] == int__constant);
+//         }
+
+//         template<>
+//         bool Domain_Data::read__type<double>(const Planning::Perceptual_Function_Name& name) const
+//         {
+//             assert(range_of_perceptual_function.find(name) != range_of_perceptual_function.end());
+//             return (range_of_perceptual_function[name] == double__constant);
+//         }
+
+//         template<>
+//         bool Domain_Data::read__type<int>(const Planning::Perceptual_Function_Name& name) const
+//         {
+//             assert(range_of_perceptual_function.find(name) != range_of_perceptual_function.end());
+//             return (range_of_perceptual_function[name] == int__constant);
+//         }

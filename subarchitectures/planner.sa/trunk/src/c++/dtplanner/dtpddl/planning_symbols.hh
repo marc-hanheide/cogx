@@ -60,6 +60,8 @@ namespace Planning
     
     typedef std::set<Type> Types;
 
+
+    typedef std::map<Planning::Variable, Planning::Constant> Assignment;
     
     typedef std::map<Constant, Types > Constants_Description;
     

@@ -17,6 +17,8 @@
 
 	   )
 
+  (:functions (reward) - int )
+
   (:predicates  
    (rubbish)
    (committed-is-in ?r - movable)

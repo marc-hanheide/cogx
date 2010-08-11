@@ -122,6 +122,65 @@ Problem_Grounding::Problem_Grounding(Parsing::Problem_Data& _problem_Data,
     this->runtime_Thread = first_actionx_precondition->get__runtime_Thread();
 }
 
+
+void Problem_Grounding::ground_starting_states()
+{
+    auto starting_state = problem_Data.get__starting_state();
+    
+    Planning::Assignment assignment_detail;//();
+    
+    NEW_object_referenced_WRAPPED
+        (Planning::Action_Name
+         , action_Name
+         , "STARTING-STATE");
+    
+    NEW_object_referenced_WRAPPED
+        (Formula::Action_Proposition
+         , action_Proposition
+         , action_Name
+         , Planning::Constant_Arguments());
+    
+    
+    State_Formula::Conjunctive_Normal_Form_Formula__Pointer
+        precondition;
+    
+    NEW_referenced_WRAPPED_deref_POINTER
+        (this,
+         State_Formula::Conjunctive_Normal_Form_Formula,
+         _conjunct,
+         State_Formula::List__Disjunctive_Clause());
+        
+    precondition = _conjunct.cxx_deref_get<State_Formula::Conjunctive_Normal_Form_Formula>();
+    
+    Domain_Action__to__Problem_Action
+        domain_Action__to__Problem_Action(reinterpret_cast<basic_type::Runtime_Thread>(this),
+                                          assignment_detail,
+                                          state_Propositions,
+                                          state_Functions,
+                                          literals,
+                                          disjunctive_Clauses,
+                                          conjunctive_Normal_Form_Formulae,
+                                          *domain_Data,
+                                          problem_Data,
+                                          action_Proposition,
+                                          precondition,
+                                          deterministic_actions,
+                                          executable_actions_without_preconditions,
+                                          probabilistic_actions);
+    
+    domain_Action__to__Problem_Action(starting_state);
+    executable_starting_states_generator = domain_Action__to__Problem_Action.get__answer();
+
+    INTERACTIVE_VERBOSER(true, 3200, "Pushing executable starting state :: "
+                         <<executable_starting_states_generator<<std::endl);
+
+    assert(executable_actions_without_preconditions.end() !=
+           executable_actions_without_preconditions.find(executable_starting_states_generator));
+
+    executable_actions_without_preconditions.erase(executable_starting_states_generator);
+}
+
+
 void Problem_Grounding::ground_actions()
 {
 
@@ -338,13 +397,14 @@ void Problem_Grounding::
 press_ground_action(const Action_Name& action_Name,
                     Subformula _precondition,  
                     Subformula __effect_formula,/*This should be completely ground at this stage -- i.e., no variable symbols.. */
-                    std::map<Variable, Constant>& assignment_detail,
+                    Planning::Assignment& assignment_detail,
                     const Argument_List& action_variables
                     )
 {
     /*HERE -- TURN CNF into formula with problem grounding references.*/
 
-    VERBOSER(3101, "Pressing action :: "<<action_Name<<std::endl);
+    INTERACTIVE_VERBOSER(true, 3121, "Pressing action :: "<<action_Name<<std::endl
+                         <<"with precondition :: "<<_precondition<<std::endl);
 
     bool statically_executable_action = false;
     
@@ -364,6 +424,8 @@ press_ground_action(const Action_Name& action_Name,
              list__Disjunctive_Clause);
         
         precondition = _conjunct.cxx_deref_get<State_Formula::Conjunctive_Normal_Form_Formula>();
+
+        INTERACTIVE_VERBOSER(true, 3121, "Empty precondition :: "<<precondition<<std::endl);
     } else {
         Planning_CNF__to__State_CNF
             planning_CNF__to__State_CNF
@@ -377,6 +439,7 @@ press_ground_action(const Action_Name& action_Name,
         planning_CNF__to__State_CNF(_precondition);
 
         precondition = planning_CNF__to__State_CNF.get__answer();
+        INTERACTIVE_VERBOSER(true, 3121, "Interesting precondition :: "<<precondition<<std::endl);
     }
 
     Constant_Arguments constant_Arguments(action_variables.size());
@@ -405,11 +468,16 @@ press_ground_action(const Action_Name& action_Name,
          , constant_Arguments);
     
 
+    
+    INTERACTIVE_VERBOSER(true, 3200, "Trying for  action :: "<<action_Proposition<<std::endl
+                         <<"with precondition :: "<<precondition<<std::endl);
+    
     /**/
     Domain_Action__to__Problem_Action
         domain_Action__to__Problem_Action(reinterpret_cast<basic_type::Runtime_Thread>(this),
                                           assignment_detail,
                                           state_Propositions,
+                                          state_Functions,
                                           literals,
                                           disjunctive_Clauses,
                                           conjunctive_Normal_Form_Formulae,
@@ -420,6 +488,11 @@ press_ground_action(const Action_Name& action_Name,
                                           deterministic_actions,
                                           executable_actions_without_preconditions,
                                           probabilistic_actions);
+
+    domain_Action__to__Problem_Action(__effect_formula);
+    auto new_action = domain_Action__to__Problem_Action.get__answer();
+    
+    INTERACTIVE_VERBOSER(true, 3200, "Pushing an action :: "<<new_action<<std::endl);
 }
 
 
@@ -427,7 +500,7 @@ press_ground_action(const Action_Name& action_Name,
 void Problem_Grounding::
 ground_action_schema(const Action_Name& action_Name,
                      Subformula& effect_formula,
-                     map<Variable, Constant>& assignment_detail, /*explicit representation of results*/
+                     Planning::Assignment& assignment_detail, /*explicit representation of results*/
                      const map<Variable, Constants>& potential_assignments, /* constants from which the result is formed.*/
                      const Argument_List& action_variables, /*Gives the order in which variables assignment should be made -- Some of these may be constant.*/
                      Subformula __precondition,
@@ -510,7 +583,7 @@ ground_action_schema(const Action_Name& action_Name,
 void Problem_Grounding::
 ground_action_schema(const Action_Name& action_Name,
                      Subformula& effect_formula,
-                     map<Variable, Constant>& assignment_detail, /*explicit representation of results*/
+                     Planning::Assignment& assignment_detail, /*explicit representation of results*/
                      const map<Variable, Constants>& potential_assignments, /* constants from which the result is formed.*/
                      const Argument_List& action_variables, /*Gives the order in which variables assignment should be made -- Some of these may be constant.*/
                      Subformula precondition
@@ -631,7 +704,7 @@ void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Sch
         }
     }
 
-    std::map<Variable, Constant> assignment_detail;
+    Planning::Assignment assignment_detail;
 
     assert(reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data)
            != reinterpret_cast<basic_type::Runtime_Thread>(dynamic_cast<Planning::Parsing::Formula_Data*>(&problem_Data)));
@@ -653,7 +726,7 @@ void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Sch
     
 //     const Action_Name& _action_Name = action_Name; 
 //     Planning::Formula::Subformula& _effect_formula = effect;//action_Schema.get__effect(); 
-//     std::map<Variable, Constant>& _assignment_detail = assignment_detail; 
+//     Planning::Assignment& _assignment_detail = assignment_detail; 
 //     const std::map<Variable, Constants>& _potential_assignments = potential_assignments; 
 //     const Argument_List& _action_Arguments = action_Arguments; 
 //     Planning::Formula::Subformula __precondition = precondition; 
@@ -723,4 +796,44 @@ void Problem_Grounding::ground_derived_percept_schema(Planning::Derived_Percept&
 {
    
     simplify_derived_percept_trigger(derived_Percept); 
+}
+
+const Formula::State_Propositions& Problem_Grounding::get__state_Propositions() const
+{
+    return state_Propositions;
+}
+
+const Formula::State_Ground_Functions& Problem_Grounding::get__state_Functions() const
+{
+    return state_Functions;
+}
+
+const State_Formula::Literals& Problem_Grounding::get__literals() const
+{
+    return literals;
+}
+
+const State_Formula::Disjunctive_Clauses& Problem_Grounding::get__disjunctive_Clauses() const
+{
+    return disjunctive_Clauses;
+}
+
+const State_Formula::Conjunctive_Normal_Form_Formulae& Problem_Grounding::get__conjunctive_Normal_Form_Formulae() const
+{
+    return conjunctive_Normal_Form_Formulae;
+}
+
+const State_Transformations& Problem_Grounding::get__deterministic_actions() const
+{
+    return deterministic_actions;
+}
+
+const State_Transformations& Problem_Grounding::get__executable_actions_without_preconditions() const
+{
+    return executable_actions_without_preconditions;
+}
+
+const Probabilistic_State_Transformations& Problem_Grounding::get__probabilistic_actions() const
+{
+    return probabilistic_actions;
 }

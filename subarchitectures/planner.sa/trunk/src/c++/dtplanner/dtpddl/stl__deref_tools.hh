@@ -143,6 +143,26 @@ template<typename T>
 class Visitor;
 
 
+#define VISIT(ITEM)                                             \
+    {                                                           \
+        (ITEM)                                                  \
+            ->visit(dynamic_cast<Visitor<basic_type>&>(*this),  \
+                    (ITEM));                                    \
+    }                                                           \
+    
+#define VISITS(ITEMS)                                                   \
+    {                                                                   \
+        for(auto tmp = (ITEMS).begin()                                  \
+                ; tmp != (ITEMS).end()                                  \
+                ; tmp++){                                               \
+                                                                        \
+            (*tmp)                                                      \
+                ->visit(dynamic_cast<Visitor<basic_type>&>(*this),      \
+                        *tmp);                                          \
+        }                                                               \
+    }                                                                   \
+
+
 #define VISITATION(OBJECT, ELEM_ACCESS)                         \
     {                                                           \
         auto tmp = OBJECT.ELEM_ACCESS;                          \
@@ -162,8 +182,7 @@ class Visitor;
                 ->visit(dynamic_cast<Visitor<basic_type>&>(*this),      \
                         *tmp);                                          \
         }                                                               \
-    }                                                                   \
-      
+    }
 
 #define deref_VISITATION(TYPE, POINTER, ELEM_ACCESS)             \
     {                                                            \

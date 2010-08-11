@@ -37,14 +37,103 @@
 using namespace Planning::Parsing;
 
 
-bool Problem_Data::statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>& ground_Fact) const
+const Planning::Assignment Problem_Data::EMPTY_ASSIGNMENT = Planning::Assignment();
+
+
+
+
+
+
+Planning::Formula::Subformula Problem_Data::get__starting_state() const
 {
+    return starting_state;
+}
+
+
+
+
+bool Problem_Data::
+statically_true__starting_always_true
+(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>& ground_Fact) const
+{
+    if(starting_state_propositions.find(ground_Fact->get__id())
+       != starting_state_propositions.end()){
+        INTERACTIVE_VERBOSER(true, 3502, "Statically true fact :: "<<ground_Fact<<".");
+       return true; 
+    } else {
+        INTERACTIVE_VERBOSER(true, 3502, "Non-Statically true fact :: "<<ground_Fact<<".");
+    }
+    
+    
     return false;
 }
 
 bool Problem_Data::statically_true__starting_always_true(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>& fact) const
 {
     return false;
+//     auto occurrence_indices = state_propositions__parsed.find(fact->get__name());
+//     if(occurrence_indices == state_propositions__parsed.end()) {
+//         INTERACTIVE_VERBOSER(true, 3101, "No ground instances of symbols "<<fact->get__name()<<std::endl);
+        
+//         return false;
+//     }
+
+//     auto predicate_index = fact->get__name().get__id();
+//     auto _arguments = fact->get__arguments();
+
+    
+    
+//     Argument_List arguments(_arguments.size());
+        
+//     for(auto i = 0; i < arguments.size(); i++){
+//         if(_arguments[i].test_cast<Planning::Variable>()){
+//             arguments[i] = X_constant;
+//         } else {
+//             arguments[i] = _arguments[i];
+//         }
+//     }
+    
+//     auto cached_Partial_Assignment_Satisfiability
+//         = cached__statically_true__starting_always_true.find(predicate_index);
+        
+
+//     if(cached_Partial_Assignment_Satisfiability == cached__statically_true__starting_always_true.end()){
+//         INTERACTIVE_VERBOSER(true, 3101, "Have not cached ground form of first-order fact :: "
+//                              <<fact->get__name()<<" "<<arguments<<std::endl);
+        
+//         cached__statically_true__starting_always_true[predicate_index]
+//             = std::tr1::tuple<Cached_Partial_Assignment_Satisfiability
+//             , Cached_Partial_Assignment_Unsatisfiability>();
+//         cached_Partial_Assignment_Satisfiability = cached__statically_true__starting_always_true.find(predicate_index);
+//     }
+    
+//     Cached_Partial_Assignment_Satisfiability& satisfiable__cached =
+//         std::tr1::get<0>(cached_Partial_Assignment_Satisfiability->second);
+//     Cached_Partial_Assignment_Unsatisfiability& unsatisfiable__cached =
+//         std::tr1::get<1>(cached_Partial_Assignment_Satisfiability->second);
+
+    
+//     auto find_in__satisfiable__cached = satisfiable__cached.find(arguments);
+//     auto find_in__unsatisfiable__cached = unsatisfiable__cached.find(arguments);
+
+    
+//     if( ( find_in__satisfiable__cached !=  satisfiable__cached.end() ) ||
+//         ( find_in__unsatisfiable__cached != unsatisfiable__cached.end() ) ){
+//         if(find_in__satisfiable__cached == satisfiable__cached.end()){
+//             assert(!(unsatisfiable__cached.find(arguments) == unsatisfiable__cached.end()));
+            
+            
+//             return false;
+//         } else if (find_in__unsatisfiable__cached == unsatisfiable__cached.end()) {
+            
+//             return true;
+//         }
+//     }
+
+//     if(necessarily_satisfiable(*fact)){
+        
+//     }
+    
 }
 
 
@@ -292,24 +381,33 @@ Planning::Formula::Action_Proposition Problem_Data::get__prescribed_action()
         assert(argument->size());
         auto _type = argument->begin();
         
-        NEW_object_referenced_WRAPPED(Planning::Type, type, _type->get__name());
+//         NEW_object_referenced_WRAPPED(Planning::Type, type, _type->get__name());
 
+        QUERY_WARNING(!constants_Description.size(),
+                      "No problem constants parsed.");
+        
         Planning::Constant_Arguments potential;
         for(auto constant = constants_Description.begin()
                 ; constant != constants_Description.end()
                 ; constant++){
-            if(constant->second.find(type) != constant->second.end()){
+            INTERACTIVE_VERBOSER(true, 3510, "Got a constant :: "<<constant->first<<std::endl
+                                 <<"of type :: "<<constant->second);
+            if(constant->second.find(*_type) != constant->second.end()){
                 potential.push_back(constant->first);
             }
         }
 
+        QUERY_WARNING(!domain_Data->get__constants_Description().size(),
+                      "No domain constants parsed.");
         
-        NEW_referenced_WRAPPED(domain_Data.get(), Planning::Type, other_type, _type->get__name());
+//         NEW_referenced_WRAPPED(domain_Data.get(), Planning::Type, other_type, _type->get__name());
         auto other_constants = domain_Data->get__constants_Description();
         for(auto constant = other_constants.begin()
                 ; constant != other_constants.end()
                 ; constant++){
-            if(constant->second.find(other_type) != constant->second.end()){
+            INTERACTIVE_VERBOSER(true, 3510, "Got a constant :: "<<constant->first<<std::endl
+                                 <<"of type :: "<<constant->second);
+            if(constant->second.find(*_type) != constant->second.end()){
                 potential.push_back(constant->first);
             }
         }
@@ -475,4 +573,226 @@ void Problem_Data::report__minimisation_objective()
 void Problem_Data::report__maximisation_objective()
 {
     objective = maximise;
+}
+
+
+
+bool Problem_Data::has_static_value(Formula::State_Ground_Function& in) const
+{
+    if(static_ground_double_function.find(in) != static_ground_double_function.end()){
+        return true;
+    }
+
+    if(static_ground_int_function.find(in) != static_ground_int_function.end()){
+        return true;
+    }
+
+    return false;
+}
+
+
+bool Problem_Data::has_static_value(Formula::Subformula input
+                                    , const Planning::Assignment& assignment) const
+{
+    switch(input->get__type_name()){
+        case enum_types::number:
+        {
+            return true;
+        }
+        break;
+        case enum_types::state_ground_function:
+        {
+            return has_static_value(*input.cxx_get<Formula::State_Ground_Function>());
+        }
+        break;
+        case enum_types::state_function:
+        {
+            
+            auto symbol = input.cxx_get<Formula::State_Function>();
+
+            auto argument_List = symbol->get__arguments();
+            auto predicate_Name = symbol->get__name();
+            
+            Constant_Arguments constant_Arguments(argument_List.size());
+            for(auto index = 0; index < argument_List.size(); index++){
+                if(argument_List[index].test_cast<Planning::Variable>()){
+                    auto variable = *(argument_List[index].cxx_get<Planning::Variable>());
+
+                    assert(assignment.find(variable) != assignment.end());
+                    
+                    constant_Arguments[index] = assignment.find(variable)->second;
+                } else {
+                    assert(argument_List[index].test_cast<Planning::Constant>());
+                    auto constant = *(argument_List[index].cxx_get<Planning::Constant>());
+
+                    constant_Arguments[index] = constant;
+                }
+            }
+
+            
+            NEW_referenced_WRAPPED_deref_POINTER
+                (dynamic_cast<const Planning::Parsing::Formula_Data*>(this),
+                 Formula::State_Ground_Function,
+                 ground_function,
+                 symbol->get__name(),
+                 constant_Arguments);
+            
+            return has_static_value(*ground_function.cxx_get<Formula::State_Ground_Function>());
+        }
+        break;
+        default:
+            break;
+    }
+
+    return false;
+}
+
+namespace Planning
+{
+    namespace Parsing
+    {
+        template<>
+        double Problem_Data::read__static_value(const Planning::Formula::State_Ground_Function& in) const
+        {
+            assert(static_ground_double_function.find(in)
+                   != static_ground_double_function.end());
+
+            return static_ground_double_function.find(in)->second;
+        }
+        
+        template<>
+        int Problem_Data::read__static_value(const Planning::Formula::State_Ground_Function& in) const
+        {
+            assert(static_ground_int_function.find(in)
+                   != static_ground_int_function.end());
+
+            return static_ground_int_function.find(in)->second;
+        }
+        
+        template<>
+        double Problem_Data::read__static_value<double>(
+            Formula::Subformula input,
+            const Planning::Assignment& assignment) const
+        {
+    
+            switch(input->get__type_name()){
+                case enum_types::number:
+                {
+                    return input.cxx_get<Formula::Number>()->get__value();
+                }
+                break;
+                case enum_types::state_ground_function:
+                {
+                    assert(static_ground_double_function.find(*input.cxx_get<Formula::State_Ground_Function>())
+                           != static_ground_double_function.end());
+            
+                    return static_ground_double_function.find(*input.cxx_get<Formula::State_Ground_Function>())->second;
+                }
+                break;
+                case enum_types::state_function:
+                {
+            
+                    auto symbol = input.cxx_get<Formula::State_Function>();
+
+                    auto argument_List = symbol->get__arguments();
+                    auto predicate_Name = symbol->get__name();
+            
+                    Constant_Arguments constant_Arguments(argument_List.size());
+                    for(auto index = 0; index < argument_List.size(); index++){
+                        if(argument_List[index].test_cast<Planning::Variable>()){
+                            auto variable = *(argument_List[index].cxx_get<Planning::Variable>());
+
+                            assert(assignment.find(variable) != assignment.end());
+                    
+                            constant_Arguments[index] = assignment.find(variable)->second;
+                        } else {
+                            assert(argument_List[index].test_cast<Planning::Constant>());
+                            auto constant = *(argument_List[index].cxx_get<Planning::Constant>());
+
+                            constant_Arguments[index] = constant;
+                        }
+                    }
+
+            
+//                     NEW_referenced_WRAPPED_deref_POINTER
+                    NEW_referenced_WRAPPED_deref_visitable_POINTER
+                        (dynamic_cast<const Planning::Parsing::Formula_Data*>(this),
+                         Formula::State_Ground_Function,
+                         ground_function,
+                         symbol->get__name(),
+                         constant_Arguments);
+            
+                    return read__static_value<double>(ground_function);
+                }
+                break;
+                default:
+                    UNRECOVERABLE_ERROR("Asked for static double value for symbol that does not have a double value.");
+                    break;
+            }
+        }
+
+        template<>
+        int Problem_Data::read__static_value<int>(
+            Formula::Subformula input,
+            const std::map<Planning::Variable, Planning::Constant>& assignment) const
+        {
+    
+            switch(input->get__type_name()){
+                case enum_types::number:
+                {
+                    return static_cast<int>(input.cxx_get<Formula::Number>()->get__value());
+                }
+                break;
+                case enum_types::state_ground_function:
+                {
+                    assert(static_ground_int_function.find(*input.cxx_get<Formula::State_Ground_Function>())
+                           != static_ground_int_function.end());
+            
+                    return static_ground_int_function.find(*input.cxx_get<Formula::State_Ground_Function>())->second;
+                }
+                break;
+                case enum_types::state_function:
+                {
+            
+                    auto symbol = input.cxx_get<Formula::State_Function>();
+
+                    auto argument_List = symbol->get__arguments();
+                    auto predicate_Name = symbol->get__name();
+            
+                    Constant_Arguments constant_Arguments(argument_List.size());
+                    for(auto index = 0; index < argument_List.size(); index++){
+                        if(argument_List[index].test_cast<Planning::Variable>()){
+                            auto variable = *(argument_List[index].cxx_get<Planning::Variable>());
+
+                            assert(assignment.find(variable) != assignment.end());
+                    
+                            constant_Arguments[index] = assignment.find(variable)->second;
+                        } else {
+                            assert(argument_List[index].test_cast<Planning::Constant>());
+                            auto constant = *(argument_List[index].cxx_get<Planning::Constant>());
+
+                            constant_Arguments[index] = constant;
+                        }
+                    }
+
+            
+//                     NEW_referenced_WRAPPED_deref_POINTER
+                    NEW_referenced_WRAPPED_deref_visitable_POINTER
+                        (dynamic_cast<const Planning::Parsing::Formula_Data*>(this),
+                         Formula::State_Ground_Function,
+                         ground_function,
+                         symbol->get__name(),
+                         constant_Arguments);
+            
+                    return read__static_value<int>(ground_function);
+                }
+                break;
+                default:
+                    UNRECOVERABLE_ERROR("Asked for static int value for symbol that does not have a int value.");
+                    break;
+            }
+        }
+
+
+    }
 }

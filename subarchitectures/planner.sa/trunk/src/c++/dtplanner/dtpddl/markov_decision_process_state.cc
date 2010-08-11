@@ -107,3 +107,19 @@ double Markov_Decision_Process_State::get__float(uint index) const
 {
     return float_State.read(index);
 }
+
+void Markov_Decision_Process_State::set__float(uint index, double value)
+{
+    return float_State.write(index, value);
+}
+
+        
+int Markov_Decision_Process_State::get__int(uint index) const
+{
+    integer_State.read(index);
+}
+
+void Markov_Decision_Process_State::set__int(uint index, int value)
+{
+    integer_State.write(index, value);
+}

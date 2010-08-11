@@ -79,6 +79,7 @@ namespace Planning
 
 
 
+            Planning::Formula::Subformula get__starting_state() const;
 
 
             /******************************************************************************************
@@ -88,6 +89,19 @@ namespace Planning
              ******************************************************************************************
              ******************************************************************************************
              ******************************************************************************************/
+            
+            bool has_static_value(Formula::State_Ground_Function&) const;
+            bool has_static_value(Formula::Subformula
+                                  ,  const Planning::Assignment& assignment) const;
+            
+            static const Planning::Assignment EMPTY_ASSIGNMENT;
+            
+            template<typename T>
+            T read__static_value(Formula::Subformula modification,
+                                 const Planning::Assignment& assignment = EMPTY_ASSIGNMENT) const;
+            
+            template<typename T>
+            T read__static_value(const Planning::Formula::State_Ground_Function&) const;
 
 
             typedef ID_TYPE Predicate_Index;
