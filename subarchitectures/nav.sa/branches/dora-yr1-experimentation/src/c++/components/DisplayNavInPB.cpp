@@ -185,14 +185,6 @@ void DisplayNavInPB::start() {
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newRobotPose));  
-
-  // Hook up changes to the coma rooms 
-  addChangeFilter(createGlobalTypeFilter<comadata::ComaRoom>(cdl::ADD),
-                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newComaRoom));  
-  addChangeFilter(createGlobalTypeFilter<comadata::ComaRoom>(cdl::OVERWRITE),
-                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newComaRoom)); 
 	
   // Hook up changes to the nav data to a callback function
   addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
@@ -283,6 +275,13 @@ addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::OVERWRITE,
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newPointCloud));  
 
+    // Hook up listener for changes to the coma rooms
+  addChangeFilter(createGlobalTypeFilter<comadata::ComaRoom>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newComaRoom));
+  addChangeFilter(createGlobalTypeFilter<comadata::ComaRoom>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newComaRoom));
 
   log("start done");  
 }
@@ -324,17 +323,20 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID){
         DisplayNavInPB::Node node = nodeIter->second;
         node.m_areaId = roomId; // is this correct?
 
-        // let peekabot know
 
-        peekabot::SphereProxy sp;
-        char name[32];
-        sprintf(name, "node%ld", (long)node.m_Id);
-        sp.add(m_ProxyNodes, name, peekabot::REPLACE_ON_CONFLICT);
-        sp.set_position(node.m_X, node.m_Y, 0);
+        if(node.m_Gateway) {
+            // If there is a gateway node here it means the node has changed to
+            // a door while we were processing this ComaRoom, so we can ignore it
+            println("Wasn't expecting a gateway node (id %d) here! (DisplayNavInPB::newComaRoom)",node.m_Id);
+            log    ("Wasn't expecting a gateway node (id %d) here! (DisplayNavInPB::newComaRoom)",node.m_Id);
+        } else {
+            // let peekabot know
+            peekabot::SphereProxy sp;
+            char name[32];
+            sprintf(name, "node%ld", (long)node.m_Id);
+            sp.add(m_ProxyNodes, name, peekabot::REPLACE_ON_CONFLICT);
+            sp.set_position(node.m_X, node.m_Y, 0);
 
-        if(node.m_Gateway) { // this method is not responsible for gateway nodes
-            println("Was not expecting a gateway node (id %d) here! (DisplayNavInPB::newComaRoom)",node.m_Id);
-        } else { 
             float r,g,b;
             getColorByIndex(roomId, r, g, b);
             sp.set_scale(0.1, 0.1, 0.05);
@@ -1052,12 +1054,12 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
   NavData::FNodePtr fnode = oobj->getData();
 
   m_Mutex.lock();
-
   m_PeekabotClient.begin_bundle();
   
   std::map<long,Node>::iterator n = m_Nodes.find(fnode->nodeId);
-  if (n == m_Nodes.end()) {  // Node does not exist from before
-    log("Node %d new", (int)fnode->nodeId);
+
+  if (n == m_Nodes.end()) {  // Node does not exist
+    println("Node %d new", (int)fnode->nodeId);
 
     DisplayNavInPB::Node node;
     node.m_Id = fnode->nodeId;
@@ -1115,8 +1117,8 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
         acp.set_color(0,0,0); // Node is not assigned to a comaRoom so colour it black
     }
 
-  } else { // Node already exist
-    log("Node %d already there, should be changed", fnode->nodeId);
+  } else { // Node already exists
+    println("Node %d already there, should be changed", fnode->nodeId);
 
     n->second.m_Id = fnode->nodeId;
     n->second.m_Gateway = (fnode->gateway != 0);
@@ -1155,6 +1157,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 
     if (m_ShowAreaClass && !fnode->gateway) 
     {
+        println("warning: ACP.set_color(r,0,b) called - is this related to green sphere?");
         peekabot::CylinderProxy acp;
         char name2[32];
         sprintf(name2, "node%ld.area_class", (long)fnode->nodeId);
@@ -1165,7 +1168,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
         //FIXME
         //place::ColorMap::getColorForPlaceClass(fnode->areaTypeNo, r, g, b);
         //getColorByIndex(3+(fnode->areaId%6), r, g, b);
-        acp.set_color(r,g,b);
+        acp.set_color(r,0,b);
     }
 
     // We also redraw the edge just to make sure that it is drawn
@@ -1262,7 +1265,7 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
 
 void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
 {
-		println("Getting color %d",id);
+  println("Getting color %d",id);
 
   switch (id) {
   case 0: // Green
@@ -1320,7 +1323,7 @@ void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
     g = 1.0/0xFF*0x33;
     b = 1.0/0xFF*0x17;
     break;
-  case 11:
+  case 11:// If more colours are added change MAX_COLORS below
     r = 1.0/0xFF*0x2F; 
     g = 1.0/0xFF*0x4F;
     b = 1.0/0xFF*0x2F;
@@ -1328,15 +1331,10 @@ void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
   default: // If more colours are added change
     const int MAX_COLORS = 11;
     const int useColor = id % MAX_COLORS;
-    debug("Only handles color with indices 1-%d, not %d, reusing colour %d", MAX_COLORS, id, useColor);
+    debug("Only handles color with indices 0-%d, not %d, reusing colour %d", MAX_COLORS, id, useColor);
     getColorByIndex(useColor, r, g, b);
   }
 }
-
-/*void DisplayNavInPB::getColorByIndex2(int id, float &r, float &g, float &b)
-{
-
-}*/
 
 void DisplayNavInPB::addEdgeToList(long id1, long id2)
 {
