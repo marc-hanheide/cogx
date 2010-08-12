@@ -45,13 +45,21 @@ public class XMLTag {
     private static final String CDATA_START = "<![CDATA[";
     private static final String CDATA_END = "]]>";
 
-    private String escapeCdata(String s) {
+    /**
+     * Wraps a string in CDATA tags making sure there is no unescaped instance
+     * of ']]>' inside the string.
+     * @param s
+     * @return
+     */
+    public static String escapeCdata(String s) {
         s = s.replaceAll(CDATA_END, CDATA_END + CDATA_END + CDATA_START);// Escape all ']]>' in the string
         return CDATA_START + s + CDATA_END;
     }
 
     public void addContents(String contents) {
-        addContents(contents, useCDATAEscaping);
+        if (!"".equals(contents)) {
+            addContents(contents, useCDATAEscaping);
+        }
     }
 
     public void addContents(String contents, boolean cdataEscape) {

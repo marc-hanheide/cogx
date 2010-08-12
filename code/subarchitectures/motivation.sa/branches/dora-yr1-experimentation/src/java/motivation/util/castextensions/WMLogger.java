@@ -125,7 +125,7 @@ public class WMLogger extends ManagedComponent {
                 }
                 entry.addChild(child);
             } else {
-                println("descending into " + fld.getName() + ":" + fldType);
+                getLogger().debug("descending into " + fld.getName() + ":" + fldType);
                 XMLTag child = toXML(val);
                 child.addAttr("index", Integer.toString(i));
                 entry.addChild(child);
@@ -162,7 +162,7 @@ public class WMLogger extends ManagedComponent {
 
             } else if (isLeafType(fldType)) {
                 // Create a leaf tag here
-                println("Found LeafType: " + fld.getName() + ":" + fldType);
+                getLogger().debug("Found LeafType: " + fld.getName() + ":" + fldType);
                 XMLTag child = getTagFor(fld.getType());
                 child.addAttr("name", fld.getName());
                 if (val != null) {
@@ -171,7 +171,7 @@ public class WMLogger extends ManagedComponent {
                 rootTag.addChild(child);
             } else {
                 // val is a complex object so recurse through toXML again
-                println("descending into " + fld.getName() + ":" + fldType);
+                getLogger().debug("descending into " + fld.getName() + ":" + fldType);
                 if (val != null) {
                     XMLTag child = toXML(val); // This line could cause infinite recursion if val has cyclic references
                     child.addAttr("name", fld.getName());
@@ -191,7 +191,7 @@ public class WMLogger extends ManagedComponent {
      * @param owner
      * @return
      */
-    private XMLTag toXML(Object o) {
+    public XMLTag toXML(Object o) {
         Class cls = o.getClass();
         XMLTag rootTag = new XMLTag("object");
         rootTag.addAttr("type", cls.getName());
@@ -218,7 +218,7 @@ public class WMLogger extends ManagedComponent {
     @Override
     public void start() /* throws UnknownSubarchitectureException */ {
         // create log
-        getLogger().info("WMLogger Started");
+        getLogger().debug("WMLogger Started");
         // register listeners
         for (Class cl : SUBSCRIBED_CLASSES) {
             register(cl);
@@ -246,7 +246,7 @@ public class WMLogger extends ManagedComponent {
         String[] subsArr = subs.split("\\s*,\\s*"); // regex = [whitespace][comma][whitespace]
         for (String className : subsArr) {
             try {
-                println("Subscribtion: " + className);
+                getLogger().debug("Subscribtion: " + className);
                 ClassLoader.getSystemClassLoader().loadClass(className);
                 Class<? extends ObjectImpl> subscription = (Class<? extends ObjectImpl>) Class.forName(className); //TODO: Can this cast be tidier?
                 SUBSCRIBED_CLASSES.add(subscription);
@@ -260,7 +260,7 @@ public class WMLogger extends ManagedComponent {
     }
 
     public <T extends Ice.ObjectImpl> void register(Class<T> type) {
-        getLogger().info("register listeners");
+        getLogger().trace("register listeners");
         addChangeFilter(ChangeFilterFactory.createTypeFilter(type,
                 WorkingMemoryOperation.ADD), new LoggingChangeReceiver(type));
         addChangeFilter(ChangeFilterFactory.createTypeFilter(type,
@@ -316,8 +316,8 @@ public class WMLogger extends ManagedComponent {
                     break;
             }
             final String tagString = rootTag.toString();
-            println("\n ------------------------------------------------------------------------------------ \n" + tagString);
-            getLogger().debug(tagString);
+            println("printTagString:\n" + tagString);
+            getLogger().info(tagString);
 
         }
     }
