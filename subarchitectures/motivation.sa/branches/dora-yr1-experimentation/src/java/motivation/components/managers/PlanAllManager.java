@@ -34,6 +34,7 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryPermissions;
+import motivation.util.castextensions.WMLogger;
 
 /**
  * @author marc
@@ -190,7 +191,8 @@ public class PlanAllManager extends ManagedComponent {
 						} catch (TimeoutException e) {
 							log("no plan yet... continue waiting");
 							if (++loopCount > maxPlanningTime) {
-								log("timeout in execution");
+								log("timeout in planning");
+                                                                getLogger().info("<MOTIVETIMEOUT during=\"planning\"/ cast_time=\""+WMLogger.CASTTimeToString(getCASTTime())+"\">");
 								interrupt = true;
 							}
 						}
@@ -218,6 +220,7 @@ public class PlanAllManager extends ManagedComponent {
 								log("not finished execution yet... continue waiting");
 								if (++loopCount > maxExecutionTime) {
 									log("timeout in execution");
+                                                                        getLogger().info("<MOTIVETIMEOUT during=\"execution\"/ cast_time=\""+WMLogger.CASTTimeToString(getCASTTime())+"\">");
 									interrupt = true;
 								}
 							}

@@ -35,7 +35,7 @@ public class StopWatch {
     }
 
     public void info(String text) {
-        infoLoggerInstance.info(text);
+        infoLoggerInstance.info("<STOPWATCHINFO>"+XMLTag.escapeCdata(text)+"</STOPWATCHINFO>");
     }
 
     public synchronized void toc(String text) {
@@ -48,7 +48,7 @@ public class StopWatch {
 //		cumSquaredTime += lastSpan * lastSpan;
 
         XMLTag t = new XMLTag("STOPWATCH");
-        if ("".equals(text)) {
+        if (!"".equals(text)) {
             t.addAttr("message", XMLTag.escapeString(text));
         }
         t.addContents(Long.toString(lastSpan), false);
