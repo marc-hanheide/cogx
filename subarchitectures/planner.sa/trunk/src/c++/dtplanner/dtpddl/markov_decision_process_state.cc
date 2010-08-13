@@ -42,6 +42,10 @@ Markov_Decision_Process_State
     :boolean_State(propositions_count),
      integer_State(function_count)
 {
+    INTERACTIVE_VERBOSER(true, 7000, "Made an MDP state with  :: "
+                         <<propositions_count
+                         <<" propositions.");
+    
 }
 
 Markov_Decision_Process_State::
@@ -51,6 +55,59 @@ Markov_Decision_Process_State(const Markov_Decision_Process_State& markov_Decisi
      float_State(markov_Decision_Process_State.float_State)
 {
 }
+
+void Markov_Decision_Process_State::
+push__successor(uint _operator_index,
+                const Markov_Decision_Process_State* successor_state,
+                double probability_of_transition)
+{
+    if(successor_driver.size()){    
+        if(successor_driver.back() != _operator_index){
+            successor_driver.push_back(_operator_index);
+        }
+    } else {
+        successor_driver.push_back(_operator_index);
+    }    
+
+//     auto operator_index = successor_driver.back();
+
+    if(successors.size() != successor_driver.size()){// operator_index){
+        successors
+            .push_back(std::vector<const Markov_Decision_Process_State*>());
+
+        assert(successor_probability.size() < successor_driver.size());
+        successor_probability
+            .push_back(std::vector<double>());
+    }
+
+    assert(successors.size() == successor_driver.size());
+    assert(successors.size() == successor_probability.size());
+       
+    assert(successor_driver.size() - 1 < successors.size());
+    assert(successor_driver.size() - 1 < successor_probability.size());
+    
+    successors[successor_driver.size() - 1].push_back(successor_state);
+    successor_probability[successor_driver.size() - 1].push_back(probability_of_transition);
+}
+
+
+uint Markov_Decision_Process_State::get__number_of_atoms() const
+{
+    INTERACTIVE_VERBOSER(true, 7000, "Getting atom count associated with MDP state.");
+    return boolean_State.get__number_of_atoms(); 
+}
+
+uint Markov_Decision_Process_State::get__number_of_int_fluents() const
+{
+    return integer_State.size();
+}
+
+
+uint Markov_Decision_Process_State::get__number_of_double_fluents() const
+{
+    return float_State.size();
+}
+
 
 bool Markov_Decision_Process_State::operator==(const Markov_Decision_Process_State& state) const
 {
@@ -77,7 +134,7 @@ bool Markov_Decision_Process_State::operator<(const Markov_Decision_Process_Stat
     return false;   
 }
 
-inline std::size_t Markov_Decision_Process_State::hash_value() const
+std::size_t Markov_Decision_Process_State::hash_value() const
 {
     std::size_t seed = boolean_State.hash_value();
     boost::hash_combine(seed, integer_State.hash_value());
@@ -122,4 +179,23 @@ int Markov_Decision_Process_State::get__int(uint index) const
 void Markov_Decision_Process_State::set__int(uint index, int value)
 {
     integer_State.write(index, value);
+}
+
+std::ostream&Markov_Decision_Process_State::operator<<(ostream& o) const
+{
+    o<<boolean_State<<std::endl;
+    o<<integer_State<<std::endl;
+    o<<float_State<<std::endl;
+
+    return o;
+}
+
+namespace std
+{
+    
+    /* (see \module{markov_decision_process_state.hh}) */
+    std::ostream& operator<<(ostream& o, const Planning::Markov_Decision_Process_State& in)
+    {
+        return in.operator<<(o);
+    }
 }

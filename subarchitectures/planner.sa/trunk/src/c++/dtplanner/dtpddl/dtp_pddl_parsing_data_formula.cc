@@ -167,7 +167,8 @@ void Formula_Data::report__number_in_formula()
         probability = static_cast<double>(last_number__int);
     } 
     
-    VERBOSER(111, "At level :: "<<formula_parsing_level<<" Got number :: "<<probability<<" in action effect.");
+    INTERACTIVE_VERBOSER(true, 4110, "At level :: "<<formula_parsing_level
+                         <<" Got number :: "<<probability<<" in action effect.");
     
     NEW_object_referenced_WRAPPED_deref_visitable_POINTER
         (Planning::Formula::Number
@@ -359,6 +360,7 @@ Formula_Data::complete__probabilistic_formula()
          , associated_formula
          , probabilities);
 
+    
     return tmp;
 }
 
@@ -802,6 +804,9 @@ void Formula_Data::report__formula(const std::string& str)
         case probabilistic_effect:
         {
             auto tmp = complete__probabilistic_formula();
+
+            
+            INTERACTIVE_VERBOSER(true, 4110, "Got new probabilistic formula :: "<<tmp);
             subformulae[formula_parsing_level].push_back(tmp);
         }
         break;

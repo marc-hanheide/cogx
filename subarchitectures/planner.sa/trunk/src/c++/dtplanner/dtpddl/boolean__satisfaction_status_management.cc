@@ -35,6 +35,13 @@
 
 using namespace Planning;
 
+Boolean__Satisfaction_Status_Management::
+Boolean__Satisfaction_Status_Management(uint num)
+    :status(num)
+{
+}
+
+
 void Boolean__Satisfaction_Status_Management::satisfy(uint i)
 {
     status.flip_on(i);

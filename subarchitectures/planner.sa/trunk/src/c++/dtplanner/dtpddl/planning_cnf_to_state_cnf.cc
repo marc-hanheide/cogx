@@ -67,7 +67,7 @@ IMPLEMENTATION__STRICT_SHARED_UNARY_VISITOR(Planning_CNF__to__State_CNF,
                                             basic_type);
 
 
-void Planning_CNF__to__State_CNF::operator()(Formula::Subformula input)
+void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
 {
     switch(input->get__type_name()){
         case enum_types::state_proposition:

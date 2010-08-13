@@ -52,6 +52,8 @@
 #include "action__state_transformation.hh"
 #include "action__probabilistic_state_transformation.hh"
 
+#include "planning_state.hh"
+
 
 /* Functionality for simplifying CNF formula. */
 #include "turnstyle.hh"
@@ -123,6 +125,77 @@ Problem_Grounding::Problem_Grounding(Parsing::Problem_Data& _problem_Data,
 }
 
 
+void Problem_Grounding::ground_objective_function()
+{
+    auto objective_function = problem_Data.get__objective_function();
+
+    if(!objective_function.use_count()){/*"potentially" expensive.*/
+        is_a_numeric_objective = false;
+    }
+    is_a_numeric_objective = true;
+    
+    basic_type::Runtime_Thread formula_runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
+        (dynamic_cast<const Parsing::Formula_Data*>(&problem_Data));
+            
+    integer_valued_objective = false;
+    double_valued_objective = false;
+    
+    switch(objective_function->get__type_name()){
+        case enum_types::state_ground_function:
+        {
+            objective_index
+                = objective_function.cxx_get<Formula::State_Ground_Function>()
+                ->get__id();
+            
+            if(!Formula::State_Ground_Function::
+               ith_exists(formula_runtime_Thread,
+                          objective_index)){
+                UNRECOVERABLE_ERROR("Got the objective :: "<<objective_function
+                                    <<" that is not registered as a state function.");
+            }
+        }
+        break;
+        default:
+            UNRECOVERABLE_ERROR("Got the objective :: "<<objective_function
+                                <<" that is not a state function.");
+            break;
+    }
+    
+    auto function_symbol = Formula::State_Ground_Function::
+        make_ith<Formula::State_Ground_Function>
+        (formula_runtime_Thread,
+         objective_index);
+
+    QUERY_UNRECOVERABLE_ERROR(problem_Data.has_static_value(function_symbol)
+                              , "Trying to optimise over a static function symbol.");
+    
+    if(domain_Data->is_type__double(function_symbol.get__name())){
+        double_valued_objective = true;
+    } else if (domain_Data->is_type__int(function_symbol.get__name())) {
+        integer_valued_objective = true;;
+    }
+}
+
+double Problem_Grounding::get__objective_value(const State& state) const
+{
+    if(!is_a_numeric_objective){
+        return 0.0;
+    }
+    
+    
+    if(integer_valued_objective){
+        auto value = state.get__int(objective_index);
+        return static_cast<double>(value);
+    }
+
+    if(double_valued_objective){
+        auto value = state.get__float(objective_index);
+        return value;
+    }
+
+    return 0.0;
+}
+
 void Problem_Grounding::ground_starting_states()
 {
     auto starting_state = problem_Data.get__starting_state();
@@ -171,15 +244,22 @@ void Problem_Grounding::ground_starting_states()
     domain_Action__to__Problem_Action(starting_state);
     executable_starting_states_generator = domain_Action__to__Problem_Action.get__answer();
 
-    INTERACTIVE_VERBOSER(true, 3200, "Pushing executable starting state :: "
+    INTERACTIVE_VERBOSER(true, 6000, "Pushing executable starting state :: "
                          <<executable_starting_states_generator<<std::endl);
-
+    
+    assert(executable_actions_without_preconditions.size());
     assert(executable_actions_without_preconditions.end() !=
            executable_actions_without_preconditions.find(executable_starting_states_generator));
 
     executable_actions_without_preconditions.erase(executable_starting_states_generator);
 }
 
+
+const State_Transformation__Pointer& Problem_Grounding::
+get__executable_starting_states_generator() const
+{
+    return executable_starting_states_generator;
+}
 
 void Problem_Grounding::ground_actions()
 {

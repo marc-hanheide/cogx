@@ -50,8 +50,8 @@ namespace Planning
 
         std::vector<State*> operator()(State*) const;
         
-        void report__newly_satisfied(State&);
-        void report__newly_unsatisfied(State&);
+        void report__newly_satisfied(State&) const;
+        void report__newly_unsatisfied(State&) const;
     };
 }
 

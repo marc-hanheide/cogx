@@ -40,6 +40,7 @@
 #include "solver_basics.hh"
 #include "state_basics.hh"
 #include "dtp_pddl_parsing_data_constants.hh"
+#include "planning_state.hh"
 
 namespace Planning
 {
@@ -49,7 +50,13 @@ namespace Planning
         /*Problem that is the target of the solution procedure.*/
         Solver(Planning::Parsing::Problem_Data&);
 
-        /*
+        bool operator()(){return true;};
+
+        std::vector< std::vector<State*> > expansion_stack;
+        Planning::Set_Of_State_Pointers state_space;
+        
+        /* MUST CALL THIS member BEFORE ANY SOLVING CAN OCCUR!
+         *
          * - Initialisation of \member{domain_Data}.
          *
          * - Initialisation of \member{problem_Grounding}.
@@ -60,15 +67,37 @@ namespace Planning
          */
         void preprocess();
 
-        /*Is this solver in a sane state?*/
+        /* Is this solver in a sane state? */
         bool sanity() const;
 
         /* \result is FALSE is the state has already been discovered. */
         State& report__state(State&);//{UNRECOVERABLE_ERROR("unimplemented");};
+
+
+        
+        /* Compute/generate all the successors and executions
+         * probabilities for action \argument{State_Transformation}.*/
+        std::vector<Planning::State*> expand(Planning::State* ,
+                                             const State_Transformation*);
+        
+        /* Complete expansion of \argument{State} without regard to
+         * \member{State::applicable_optional_transformations}.*/
+        std::vector<Planning::State*> expand(Planning::State*);
+
+        /* Compute/generate all the successors, corresponding actions,
+         * and executions probabilities. */
+        void expand_optional_transformations(Planning::State*);
+
+        
         
         const std::map<Type, Constants>& get__extensions_of_types() const;
+        CXX__PTR_ANNOTATION(Problem_Grounding) get__problem_Grounding();
     private:
 
+        /* Compute the problem starting states and add them to
+         * \member{expansion_stack} and \member{state_space}.*/
+        void generate_starting_state();
+        
         /* - Add \member{domain_Data::constants} and associated data to
          * \member{problem_Data}.
          *
@@ -86,6 +115,7 @@ namespace Planning
         /* Configuration (i.e., initialisation) of
          * \member{extensions_of_types}.*/
         void configure__extensions_of_types();
+
     private:
         /* Functionality for obtaining a ground version of the problem
          * at hand.*/

@@ -1,4 +1,26 @@
 
+
+//         /* For each \LHS{action}, we have the \RHS{probability} that
+//          * that action leads to a particular successor. */
+//         typedef std::tr1::tuple<uint, double> Successor_Index;
+
+//         /* Description of state transition function from *this
+//          * state. */
+//         typedef std::map<Successor_Index
+//                          , Markov_Decision_Process_State> Successors;
+
+//         /* Probability of getting a particular successor state. */
+//         typedef std::map<Markov_Decision_Process_State
+//                          , Successor_Index> Successor_Probability;
+
+//         /* (see \typedef{Successors}) */
+//         Successors successors;
+
+//         /* (see \typedef{Successor_Probability}) */
+//         Successor_Probability successor_Probability;
+
+
+
 //     std::ostringstream __new_action_name;
 //     Planning::Action_Name old__action_name = action_Proposition.get__name();
 //     Planning::Constant_Arguments arguments = action_Proposition.get__arguments();

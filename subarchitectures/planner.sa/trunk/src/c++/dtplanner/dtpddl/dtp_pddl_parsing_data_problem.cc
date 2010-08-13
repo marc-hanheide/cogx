@@ -40,6 +40,10 @@ using namespace Planning::Parsing;
 const Planning::Assignment Problem_Data::EMPTY_ASSIGNMENT = Planning::Assignment();
 
 
+const Planning::Formula::Subformula& Problem_Data::get__objective_function() const
+{
+    return objective_function;
+}
 
 
 

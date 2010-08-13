@@ -36,6 +36,14 @@
 
 using namespace Planning;
 
+
+Unsigned_Integer__Satisfaction_Status_Management::
+Unsigned_Integer__Satisfaction_Status_Management(uint num)
+    :status(num)
+{
+}
+
+
 void Unsigned_Integer__Satisfaction_Status_Management::decrement_satisfaction(uint i)
 {
     status.decrement(i);

@@ -53,16 +53,16 @@ operator()(State* input) const
             ; _listener != list__Listeners.end()
             ; _listener++, index++){
         auto listener = *_listener;
-
+        
         State* new_state = (index == (list__Listeners.size() - 1))
             ?input
             :(new State(*input));
-
+        
         listener.cxx_get<Satisfaction_Listener>()->report__newly_satisfied(*new_state);
-
+        
         result[index] = new_state;
     }
-
+    
     return std::move<>(result);
 }
 
@@ -76,14 +76,14 @@ get__identifier() const
 
 
 void Probabilistic_State_Transformation::
-report__newly_satisfied(State& state)
+report__newly_satisfied(State& state) const
 {
     state.push__probabilistic_transformation
         (this);
 }
 
 void Probabilistic_State_Transformation::
-report__newly_unsatisfied(State& state)
+report__newly_unsatisfied(State& state) const
 {
     /* NA -- A probabilistic transformation should only be activated
      * once during the computation of successor states under operator
@@ -93,7 +93,7 @@ report__newly_unsatisfied(State& state)
 std::ostream& Probabilistic_State_Transformation::operator<<(std::ostream&o) const
 {
 
-    o<<"PROBABILISTIC :: "<<get__identifier()<<std::endl;
+    o<<"PROBABILISTIC :: "<<get__identifier().operator<<(o)<<std::endl;
     
     o<<std::endl;
     o<<"{";

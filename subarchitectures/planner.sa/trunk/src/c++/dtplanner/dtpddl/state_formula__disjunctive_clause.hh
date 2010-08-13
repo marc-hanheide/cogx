@@ -48,26 +48,26 @@ namespace Planning
         {PRINTING;
         public:            
             
-            void report__newly_satisfied(State&);
-            void report__newly_unsatisfied(State&);
+            void report__newly_satisfied(State&) const;
+            void report__newly_unsatisfied(State&) const;
             
 
-            void set__satisfied(State&);
-            void set__unsatisfied(State&);
-            void flip_satisfaction(State&);
+            void set__satisfied(State&) const;
+            void set__unsatisfied(State&) const;
+            void flip_satisfaction(State&) const;
             bool is_satisfied(const State&) const;
             
-            void increment__level_of_satisfaction(State&);
-            void decrement__level_of_satisfaction(State&);
-            void set__level_of_satisfaction(uint, State&);
+            void increment__level_of_satisfaction(State&) const;
+            void decrement__level_of_satisfaction(State&) const;
+            void set__level_of_satisfaction(uint, State&) const;
             uint get__level_of_satisfaction(State&) const;
             
             /*(see \parent{Satisfied_By_Count}::\member{get__level_of_satisfaction()})*/
             uint get__number_of_satisfied_literals(State&) const;    
 
             /*Change the level of satisfaction of this clause.*/
-            void report__newly_satisfied_literal(State&);
-            void report__newly_unsatisfied_literal(State&);
+            void report__newly_satisfied_literal(State&) const;
+            void report__newly_unsatisfied_literal(State&) const;
             
             
             /*Get the \argument{i}th literal in the clause.*/

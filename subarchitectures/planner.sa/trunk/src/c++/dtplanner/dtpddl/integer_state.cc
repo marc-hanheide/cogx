@@ -43,6 +43,11 @@ using namespace Planning;
 Integer_State::Integer_State(uint size)
     :data(size)
 {
+    for(auto i =0; i < size; i++){
+        assert(i < data.size());
+        data[i] = 0;
+    }
+    
 }
 
         

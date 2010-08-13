@@ -35,34 +35,62 @@
 using std::ostream;
 
 
-void basic_type::visit(Visitor<basic_type>& visitor)
+void basic_type::visit(Visitor<basic_type>& visitor) const
 {
     visitor.c_pointer__accept(this);
 }
 
-void basic_type::visit(Visitor<basic_type>& visitor, CXX__PTR_ANNOTATION(basic_type)& input)
+void basic_type::visit(Visitor<basic_type>& visitor,
+                       const CXX__PTR_ANNOTATION(basic_type)& in) const
 {
-    QUERY_WARNING(input.get() != this,
+    QUERY_WARNING(in.get() != this,
                   "Unexpected use of visitor interface.");
-
-    visitor.cxx_pointer__accept(input);
+    visitor.cxx_pointer__accept(in);
 }
 
-void basic_type::visit(Visitor<basic_type>& visitor, CXX__deref__shared_ptr<basic_type>& input)
+void basic_type::visit(Visitor<basic_type>& visitor,
+                       const CXX__deref__shared_ptr<basic_type>&in) const
 {
-    QUERY_WARNING(input.get() != this,
+    QUERY_WARNING(in.get() != this,
+                  "Unexpected use of visitor interface.");
+    visitor.cxx_deref_pointer__accept(in);
+}
+
+void basic_type::visit(Visitor<basic_type>& visitor,
+                       const CXX__deref__shared_ptr__visitable<basic_type>&in) const
+{
+    QUERY_WARNING(in.get() != this,
                   "Unexpected use of visitor interface.");
     
-    visitor.cxx_deref_pointer__accept(input);
+    INTERACTIVE_VERBOSER(true, 5000, "Visiting :: "<<*this<<" with "<<in<<std::endl)
+    
+    visitor.cxx_deref_pointer_visitable__accept(in);
 }
 
-void basic_type::visit(Visitor<basic_type>& visitor, CXX__deref__shared_ptr__visitable<basic_type>& input)
-{
-    QUERY_WARNING(input.get() != this,
-                  "Unexpected use of visitor interface.");
+
+// void basic_type::visit(Visitor<basic_type>& visitor, CXX__PTR_ANNOTATION(basic_type)& input) const
+// {
+//     QUERY_WARNING(input.get() != this,
+//                   "Unexpected use of visitor interface.");
+
+//     visitor.cxx_pointer__accept(input);
+// }
+
+// void basic_type::visit(Visitor<basic_type>& visitor, CXX__deref__shared_ptr<basic_type>& input) const
+// {
+//     QUERY_WARNING(input.get() != this,
+//                   "Unexpected use of visitor interface.");
     
-    visitor.cxx_deref_pointer_visitable__accept(input);
-}
+//     visitor.cxx_deref_pointer__accept(input);
+// }
+
+// void basic_type::visit(Visitor<basic_type>& visitor, CXX__deref__shared_ptr__visitable<basic_type>& input) const
+// {
+//     QUERY_WARNING(input.get() != this,
+//                   "Unexpected use of visitor interface.");
+    
+//     visitor.cxx_deref_pointer_visitable__accept(input);
+// }
 
 
 

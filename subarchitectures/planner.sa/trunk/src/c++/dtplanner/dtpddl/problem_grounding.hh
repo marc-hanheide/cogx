@@ -65,6 +65,13 @@ namespace Planning
 
         void ground_starting_states();
         
+        void ground_objective_function();
+        double get__objective_value(const State& state) const;
+        bool is_a_numeric_objective;
+        bool integer_valued_objective;
+        bool double_valued_objective;
+        uint objective_index;
+        
         const Formula::State_Propositions& get__state_Propositions() const;
         const Formula::State_Ground_Functions& get__state_Functions() const;
         const State_Formula::Literals& get__literals() const;
@@ -73,6 +80,8 @@ namespace Planning
         const State_Transformations& get__deterministic_actions() const;
         const State_Transformations& get__executable_actions_without_preconditions() const;
         const Probabilistic_State_Transformations& get__probabilistic_actions() const;
+        
+        const State_Transformation__Pointer& get__executable_starting_states_generator() const;
         
 //         const & get__() const;
 //         const & get__() const;

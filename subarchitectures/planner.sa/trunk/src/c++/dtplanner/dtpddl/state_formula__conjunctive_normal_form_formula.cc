@@ -42,27 +42,27 @@ using namespace Planning;
 using namespace Planning::State_Formula;
                
 
-void Conjunctive_Normal_Form_Formula::report__newly_satisfied(State& state)
+void Conjunctive_Normal_Form_Formula::report__newly_satisfied(State& state) const
 {
     report__newly_satisfied_clause(state);
 }
 
-void Conjunctive_Normal_Form_Formula::report__newly_unsatisfied(State& state)
+void Conjunctive_Normal_Form_Formula::report__newly_unsatisfied(State& state) const
 {
     report__newly_unsatisfied_clause(state);
 }
 
-void Conjunctive_Normal_Form_Formula::set__satisfied(State& state)
+void Conjunctive_Normal_Form_Formula::set__satisfied(State& state) const
 {
     state.get__cnfs__satisfaction_status().satisfy(get__id());
 }
 
-void Conjunctive_Normal_Form_Formula::set__unsatisfied(State& state)
+void Conjunctive_Normal_Form_Formula::set__unsatisfied(State& state) const
 {
     state.get__cnfs__satisfaction_status().unsatisfy(get__id());
 }
 
-void Conjunctive_Normal_Form_Formula::flip_satisfaction(State& state)
+void Conjunctive_Normal_Form_Formula::flip_satisfaction(State& state) const
 {
     state.get__cnfs__satisfaction_status().flip_satisfaction(get__id());
 }
@@ -72,17 +72,17 @@ bool Conjunctive_Normal_Form_Formula::is_satisfied(const State& state) const
     return state.get__cnfs__satisfaction_status().satisfied(get__id());
 }
 
-void Conjunctive_Normal_Form_Formula::increment__level_of_satisfaction(State&state)
+void Conjunctive_Normal_Form_Formula::increment__level_of_satisfaction(State&state) const
 {
     state.get__cnfs__count_status().increment_satisfaction(get__id());
 }
 
-void Conjunctive_Normal_Form_Formula::decrement__level_of_satisfaction(State&state)
+void Conjunctive_Normal_Form_Formula::decrement__level_of_satisfaction(State&state) const
 {
     state.get__cnfs__count_status().decrement_satisfaction(get__id());
 }
 
-void Conjunctive_Normal_Form_Formula::set__level_of_satisfaction(uint value, State&state)
+void Conjunctive_Normal_Form_Formula::set__level_of_satisfaction(uint value, State&state) const
 {
     state.get__cnfs__count_status().set_satisfaction(get__id(), value);
 }
@@ -102,7 +102,7 @@ uint Conjunctive_Normal_Form_Formula::get__number_of_satisfied_clauses(State& st
 }
 
 
-void Conjunctive_Normal_Form_Formula::report__newly_satisfied_clause(State& state)
+void Conjunctive_Normal_Form_Formula::report__newly_satisfied_clause(State& state) const
 {
     increment__level_of_satisfaction(state);
 
@@ -118,7 +118,7 @@ void Conjunctive_Normal_Form_Formula::report__newly_satisfied_clause(State& stat
     }   
 }
 
-void Conjunctive_Normal_Form_Formula::report__newly_unsatisfied_clause(State& state)
+void Conjunctive_Normal_Form_Formula::report__newly_unsatisfied_clause(State& state) const
 {
     decrement__level_of_satisfaction(state);
 

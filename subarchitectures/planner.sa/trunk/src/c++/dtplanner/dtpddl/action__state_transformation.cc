@@ -48,7 +48,7 @@ Are_Doubles_Close State_Transformation::are_Doubles_Close = Are_Doubles_Close(1e
 
 
 State*
-State_Transformation::operator()(State* in)
+State_Transformation::operator()(State* in) const
 {
     const State_Formula::List__Literals& effects = get__effects();
     for(auto effect = effects.begin()
@@ -62,7 +62,12 @@ State_Transformation::operator()(State* in)
             (*effect)->flip_satisfaction(*in);
         }
     }
-
+    
+    if(!are_Doubles_Close(1.0, get__probability(*in))){
+        in->set__probability_during_expansion(in->get__probability_during_expansion()
+                                             * get__probability(*in));
+    }
+    
     /* If the action is not compulsory (i.e., is an agent executable
      * action), then wake up all the derivative actions.*/
     if(!get__compulsory()){
@@ -80,7 +85,6 @@ State_Transformation::operator()(State* in)
     if(get__compulsory()){
         report__newly_unsatisfied(*in);
     }
-    
     
     return in;
 }
@@ -135,19 +139,19 @@ double State_Transformation
 
 
 void State_Transformation
-::set__satisfied(State& state)
+::set__satisfied(State& state) const
 {
     state.get__transformation__satisfaction_status().satisfy(get__id());
 }
 
 void State_Transformation
-::set__unsatisfied(State& state)
+::set__unsatisfied(State& state) const
 {
     state.get__transformation__satisfaction_status().unsatisfy(get__id());
 }
 
 void State_Transformation
-::flip_satisfaction(State& state)
+::flip_satisfaction(State& state) const
 {
     state.get__transformation__satisfaction_status().flip_satisfaction(get__id());
 }
@@ -159,19 +163,19 @@ bool State_Transformation
 }
 
 void State_Transformation
-::increment__level_of_satisfaction(State& state)
+::increment__level_of_satisfaction(State& state) const
 {
     state.get__transformation__count_status().increment_satisfaction(get__id());
 }
 
 void State_Transformation
-::decrement__level_of_satisfaction(State& state)
+::decrement__level_of_satisfaction(State& state) const
 {
     state.get__transformation__count_status().decrement_satisfaction(get__id());
 }
 
 void State_Transformation
-::set__level_of_satisfaction(uint level, State& state)
+::set__level_of_satisfaction(uint level, State& state) const
 {
     state.get__transformation__count_status().set_satisfaction(get__id(), level);
 }
@@ -192,14 +196,19 @@ uint State_Transformation::get__number_of_satisfied_conditions(State& state) con
 
 
 void State_Transformation
-::report__newly_satisfied(State& state)
+::report__newly_satisfied(State& state) const
 {
     increment__level_of_satisfaction(state);
     
     uint satisfaction_requirement = 0;
     /*If the action has no precondition.*/
     if(get__precondition()->get__disjunctive_clauses().size() == 0){
-        assert(get__compulsory());
+        
+        QUERY_UNRECOVERABLE_ERROR(!get__compulsory(),
+                                  "Was only expecting compulsory (i.e., sub-)actions with"
+                                  <<" null preconditions, but now we got :: "<<std::endl
+                                  <<*this<<std::endl);
+        
         satisfaction_requirement = 1;
     } else
     /*If the action has a precondition.*/
@@ -243,7 +252,7 @@ void State_Transformation
 }
 
 void State_Transformation
-::report__newly_unsatisfied(State& state)
+::report__newly_unsatisfied(State& state) const
 {
     decrement__level_of_satisfaction(state);
 

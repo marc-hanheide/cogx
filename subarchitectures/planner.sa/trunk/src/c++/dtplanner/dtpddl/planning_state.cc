@@ -35,9 +35,47 @@
 
 #include "planning_state.hh"
 
+
+#include "solver.hh"
+#include "planning_formula.hh"
+#include "problem_grounding.hh"
+
+
+
 using namespace Planning;
 
 
+State::State(Solver& solver,
+             uint propositions_count,
+             uint function_count,
+             uint formulae_count,
+             uint disjunctions_count,
+             uint literals_count,
+             uint actions_count)
+    :solver(solver),
+     Markov_Decision_Process_State(propositions_count
+                                   , function_count),
+     CNF__State(formulae_count
+                , disjunctions_count
+                , literals_count),
+     Action_Executability__State(actions_count)   
+{   
+}
+
+double State::set__probability_during_expansion(double in)
+{
+    probability_during_expansion = in;
+}
+
+void State::reset__probability_during_expansion()
+{
+    probability_during_expansion = 1.0;
+}
+
+double State::get__probability_during_expansion() const
+{
+    return probability_during_expansion;
+}
 
 uint State::count__compulsory_generative_transformations() const
 {
@@ -50,14 +88,14 @@ uint State::count__compulsory_transformations() const
 }
 
 
-State_Transformation* State::pop__compulsory_generative_transformation()
+const State_Transformation* State::pop__compulsory_generative_transformation()
 {
     auto result = applicable_compulsory_generative_transformations.top();
     applicable_compulsory_generative_transformations.pop();
     return result;
 }
 
-State_Transformation* State::pop__compulsory_transformation()
+const State_Transformation* State::pop__compulsory_transformation()
 {
     auto result = applicable_compulsory_transformations.top();
     applicable_compulsory_transformations.pop();
@@ -70,7 +108,7 @@ uint State::count__probabilistic_transformations() const
    return  probabilistic_transformations.size();
 }
 
-Probabilistic_State_Transformation* State::pop__probabilistic_transformation()
+const Probabilistic_State_Transformation* State::pop__probabilistic_transformation()
 {
     auto result = probabilistic_transformations.top();
     probabilistic_transformations.pop();
@@ -78,35 +116,82 @@ Probabilistic_State_Transformation* State::pop__probabilistic_transformation()
 }
 
 void State::push__probabilistic_transformation
-(Probabilistic_State_Transformation* probabilistic_State_Transformation)
+(const Probabilistic_State_Transformation* probabilistic_State_Transformation)
 {
     probabilistic_transformations.push(probabilistic_State_Transformation);
 }
 
 
-void State::push__compulsory_generative_transformation(State_Transformation*state_Transformation)
+void State::push__compulsory_generative_transformation(const State_Transformation*state_Transformation)
 {
     applicable_compulsory_generative_transformations.push(state_Transformation);
 }
 
-void State::add__optional_transformation(State_Transformation*state_Transformation)
+void State::add__optional_transformation(const State_Transformation*state_Transformation)
 {
     
     applicable_optional_transformations.insert(state_Transformation);
 }
 
-void State::remove__optional_transformation(State_Transformation*state_Transformation)
+void State::remove__optional_transformation(const State_Transformation*state_Transformation)
 {
     applicable_optional_transformations.erase(state_Transformation);
 }
 
-void State::push__compulsory_transformation(State_Transformation*state_Transformation)
+void State::push__compulsory_transformation(const State_Transformation*state_Transformation)
 {
     applicable_compulsory_transformations.push(state_Transformation);
 }
 
-std::set<State_Transformation*>& State::get__optional_transformations()
+std::set<const State_Transformation*> State::get__optional_transformations()
 {
     return applicable_optional_transformations;
+}
+
+
+std::ostream& State::operator<<(std::ostream&o) const
+{
+    auto problem_Grounding = solver.get__problem_Grounding();
+
+    basic_type::Runtime_Thread runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
+        (dynamic_cast<const Planning::Problem_Grounding*>(problem_Grounding.get()));
+
+    
+    INTERACTIVE_VERBOSER(true, 7000, "Printing an planning state with  :: "
+                         <<this->get__number_of_atoms()
+                         <<" propositions.");
+    o<<probability_during_expansion<<"  -- {";
+    for(auto i = 0; i < this->get__number_of_atoms()/*Markov_Decision_Process_State::get__number_of_atoms()*/; i++){
+        if(is_true(i)){
+
+            QUERY_UNRECOVERABLE_ERROR(!Formula::State_Proposition::
+                                      ith_exists(runtime_Thread, i)
+                                      , "Could not find a ground symbol associated with index :: "<<i);
+            
+            auto symbol = Formula::State_Proposition::
+                make_ith<Formula::State_Proposition>
+                (runtime_Thread,
+                 i);
+            o<<symbol<<"; ";
+        }
+    }
+    o<<"}"<<std::endl;
+
+
+    return o;
+}
+
+namespace std
+{
+    std::ostream& operator<<(ostream& o, const Planning::State& in)
+    {
+        return in.operator<<(o);
+    }
+    
+    std::size_t hash_value(const Planning::State& in)
+    {
+        return in.Markov_Decision_Process_State::hash_value();
+    }
+    
 }
 

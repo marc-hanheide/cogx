@@ -47,29 +47,29 @@ namespace Planning
         {PRINTING;
         public:
 
-            void report__newly_satisfied(State&);
-            void report__newly_unsatisfied(State&);
+            void report__newly_satisfied(State&) const;
+            void report__newly_unsatisfied(State&) const;
             
-            void set__satisfied(State&);
-            void set__unsatisfied(State&);
-            void flip_satisfaction(State&);
+            void set__satisfied(State&) const;
+            void set__unsatisfied(State&) const;
+            void flip_satisfaction(State&) const;
             bool is_satisfied(const State&) const;
 
             
-            /* Set the subject variable to have the truth value "TRUE".*/
-            void flip_variable_on(State&);
+//             /* Set the subject variable to have the truth value "TRUE".*/
+//             void flip_variable_on(State&) const;
             
-            /* Set the subject variable to have the truth value "FALSE".*/
-            void flip_variable_off(State&);
+//             /* Set the subject variable to have the truth value "FALSE".*/
+//             void flip_variable_off(State&) const;
             
             /* Set the subject variable to have the opposite truth
              * value to its current assignment.*/
-            void flip(State&);
+            void flip(State&) const;
 
             /* Variable, that is the subject of this literal.*/
             uint get__variable() const;
 
-            /* Sign of this literal (true is positive, false is negative). */
+            /* Sign of this literal (false is positive, true is negative). */
             bool get__sign() const;                   
         };
  
