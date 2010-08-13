@@ -28,40 +28,40 @@ struct RGBColor
   unsigned char r, g, b;
 };
 
-static inline CvPoint2D32f operator+(CvPoint2D32f a, CvPoint2D32f b)
+static inline CvPoint2D64f operator+(CvPoint2D64f a, CvPoint2D64f b)
 {
-  CvPoint2D32f c = {a.x + b.x, a.y + b.y};
+  CvPoint2D64f c = {a.x + b.x, a.y + b.y};
   return c;
 }
 
-static inline CvPoint2D32f operator-(CvPoint2D32f a, CvPoint2D32f b)
+static inline CvPoint2D64f operator-(CvPoint2D64f a, CvPoint2D64f b)
 {
-  CvPoint2D32f c = {a.x - b.x, a.y - b.y};
+  CvPoint2D64f c = {a.x - b.x, a.y - b.y};
   return c;
 }
 
-static inline float Length(CvPoint2D32f p)
+static inline float Length(CvPoint2D64f p)
 {
   return sqrt(p.x*p.x + p.y*p.y);
 }
 
-static inline float Cross(CvPoint2D32f a, CvPoint2D32f b)
+static inline float Cross(CvPoint2D64f a, CvPoint2D64f b)
 {
   return a.x*b.y - a.y*b.x;
 }
 
 /// Returns signed distance of point q from line defined by points p1 and p2.
-static inline float DistPointToLine(CvPoint2D32f p1, CvPoint2D32f p2,
-    CvPoint2D32f q)
+static inline float DistPointToLine(CvPoint2D64f p1, CvPoint2D64f p2,
+    CvPoint2D64f q)
 {
-  CvPoint2D32f dir = p2 - p1;
-  CvPoint2D32f q_to_line = q - p1;
+  CvPoint2D64f dir = p2 - p1;
+  CvPoint2D64f q_to_line = q - p1;
   return Cross(q_to_line, dir)/Length(dir);
 }
 
 /// Check if point q lies on line p1-p2, where max_dist is the maximum distance
 /// allowed.
-static inline bool InLine(CvPoint2D32f p1, CvPoint2D32f p2, CvPoint2D32f q,
+static inline bool InLine(CvPoint2D64f p1, CvPoint2D64f p2, CvPoint2D64f q,
     float max_dist)
 {
   return fabs(DistPointToLine(p1, p2, q)) <= max_dist;
@@ -72,25 +72,25 @@ static inline float Dist(float x1, float y1, float x2, float y2)
   return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
 }
 
-static inline float Dist(CvPoint2D32f p1, CvPoint2D32f p2)
+static inline float Dist(CvPoint2D64f p1, CvPoint2D64f p2)
 {
   return Dist(p1.x, p1.y, p2.x, p2.y);
 }
 
-static inline CvPoint2D32f Rotate(CvPoint2D32f a, float phi)
+static inline CvPoint2D64f Rotate(CvPoint2D64f a, float phi)
 {
   double si = sin(phi), co = cos(phi);
-  CvPoint2D32f b = {co*a.x - si*a.y, si*a.x + co*a.y};
+  CvPoint2D64f b = {co*a.x - si*a.y, si*a.x + co*a.y};
   return b;
 }
 
 /**
  * Transform a point from image to ellipse co-ordinates.
  */
-static inline CvPoint2D32f TransformToEllipse(float x, float y, float phi,
-    CvPoint2D32f p)
+static inline CvPoint2D64f TransformToEllipse(float x, float y, float phi,
+    CvPoint2D64f p)
 {
-  CvPoint2D32f c = {x, y};
+  CvPoint2D64f c = {x, y};
   return Rotate(p - c, -phi);
 }
 
@@ -98,7 +98,7 @@ static inline CvPoint2D32f TransformToEllipse(float x, float y, float phi,
  * Approximation of the shortest absolute distance of a point to a centered,
  * axis-parallel ellipse.
  */
-static float DistPointEllCentAxPar(float a, float b, CvPoint2D32f p)
+static float DistPointEllCentAxPar(float a, float b, CvPoint2D64f p)
 {
   float x2, y2, n, d;
   float a2 = a*a, b2 = b*b;
@@ -121,7 +121,7 @@ static float DistPointEllCentAxPar(float a, float b, CvPoint2D32f p)
  * to worry about that.
  */
 static inline float DistPointEll(float x, float y, float a, float b, float phi,
-    CvPoint2D32f p)
+    CvPoint2D64f p)
 {
   return DistPointEllCentAxPar(a, b, TransformToEllipse(x, y, phi, p));
 }
@@ -177,9 +177,12 @@ static double ScaleAngle_0_2pi(double a)
   return a;
 }
 
+/**
+ * Returns whether two pixels are neighbours. Note: we allow a gap of 1 pixel.
+ */
 static bool AreNeighbours(t_V2i *a, t_V2i *b)
 {
-  return abs(a->x - b->x) <= 1 && abs(a->y - b->y) <= 1;
+  return abs(a->x - b->x) <= 2 && abs(a->y - b->y) <= 2;
 }
 
 static bool IsClosedSegment(t_LL edgels)
@@ -191,30 +194,28 @@ static bool FitEllipse(t_LL edgels, double &x, double &y, double &a,
     double &b, double &phi)
 {
   int n = SizeLL(edgels), i;
-  CvPoint2D32f *points = 0;
+  CvMat *points = 0;
   CvBox2D params;
   void *void_edgel;
   t_V2i *edgel;
   float sup = 0.0;
   const float MAX_DIST = 1.0;
-  const float MIN_SUP = 0.9;
+  const float MIN_SUP = 0.95;
 
   // we need ad least 6 poitns for ellipse fitting
   if(n < 6)
     return false;
-  points = new CvPoint2D32f[n];
-  assert(points != 0);
+  points = cvCreateMat(n, 1, CV_32FC2);
   i = 0;
   ForeachLL_M(edgels, void_edgel)
   {
     edgel = (t_V2i*)void_edgel;
     // note that we swap x and y! (the Canny implementation uses a strange
     // co-ordinate system..)
-    points[i].x = edgel->y;
-    points[i].y = edgel->x;
+    cvSet1D(points, i, cvScalar(edgel->y, edgel->x));
     i++;
   }
-  cvFitEllipse(points, n, &params);
+  params = cvFitEllipse2(points);
   x = params.center.x;
   y = params.center.y;
   // box size is double the axis lengths
@@ -231,17 +232,21 @@ static bool FitEllipse(t_LL edgels, double &x, double &y, double &a,
   // calculate relative support
   for(i = 0; i < n; i++)
   {
-    if(fabs(DistPointEll(x, y, a, b, phi, points[i])) <= MAX_DIST)
+    CvScalar tmp = cvGet1D(points, i);
+    CvPoint2D64f p;
+    p.x = tmp.val[0];
+    p.y = tmp.val[1];
+    if(fabs(DistPointEll(x, y, a, b, phi, p)) <= MAX_DIST)
       sup += 1.;
   }
   sup /= (float)n;
-  delete[] points;
+  cvReleaseMat(&points);
   return sup >= MIN_SUP;
 }
 
 static t_graphGR CreateEdgeGraph(char *rgb24, int width, int height)
 {
-  float alpha = 0.50;  // filter width (these are "good" values)  1.50
+  float alpha = 3.00;  // filter width (these are "good" values)  1.50
   float omega = 0.001; // filter parameter  0.001
   float high_thresh, low_thresh;
   RGBColor *pixbuf = (RGBColor*)rgb24;
@@ -295,7 +300,7 @@ static void FindEllipses(t_graphGR edge_graph, vector<Ellipse> &ellipses)
 static void FilterEllipses(vector<Ellipse> &ells, vector<EllipsePair> &pairs)
 {
   // maximum distance allowed for the centers of two concentric ellipses
-  static const float MAX_DIST = 2;
+  static const float MAX_DIST = 1;
   // invariant: ellipses up to (excluding) l have a Matching concentric ellipse
   // (where matching ellipses are 0,1 and 2,3 etc.). ellipses after u have No
   // matching ellipse. ellipses in between are unknown.
@@ -338,7 +343,7 @@ static void FilterEllipses(vector<Ellipse> &ells, vector<EllipsePair> &pairs)
 bool LinesHorizontal(EllipsePair *points, int l, int u)
 {
   // get direction of first line from two of its points
-  CvPoint2D32f dir = points[l+1].center - points[l].center;
+  CvPoint2D64f dir = points[l+1].center - points[l].center;
   return fabs(dir.x) > fabs(dir.y);
 }
 
@@ -616,7 +621,7 @@ void FindCorrespondences(vector<EllipsePair> &in, vector<EllipsePair> &out,
 {
   float h[9];
   CvMat H = cvMat(3, 3, CV_32FC1, h);
-  CvPoint2D32f obj[4], img[4];
+  CvPoint2D64f obj[4], img[4];
   CvMat obj_mat = cvMat(4, 2, CV_32FC1, obj);
   CvMat img_mat = cvMat(4, 2, CV_32FC1, img);
   int trials = 2*(model.nx - 1) + 2*(model.ny - 1) - 1;
@@ -644,8 +649,8 @@ void FindCorrespondences(vector<EllipsePair> &in, vector<EllipsePair> &out,
  *                   for debug purposes only)
  */
 bool DetectEllipseMarkers(char *rgb24, int width, int height,
-  Model &model, vector<CvPoint2D32f> &centers, vector<Ellipse> &out_ells,
-  vector<EllipsePair> &out_pairs)
+  Model &model, vector<CvPoint2D64f> &centers, vector<Ellipse> &out_ells,
+  vector<EllipsePair> &out_pairs, vector<CvPoint2D64f> &all_edgels)
 {
   bool success = false;
   vector<Ellipse> ellipses;
@@ -654,6 +659,25 @@ bool DetectEllipseMarkers(char *rgb24, int width, int height,
 
   t_graphGR edge_graph = CreateEdgeGraph(rgb24, width, height);
   FindEllipses(edge_graph, ellipses);
+  {
+    // HACK
+    void *void_edge;
+    ForeachLL_M(edge_graph.edges, void_edge)
+    {
+      t_edgeGR edge = (t_edgeGR)void_edge;
+      t_LL edgels = (t_LL)edge->att;
+      void *void_edgel;
+      t_V2i *edgel;
+      ForeachLL_M(edgels, void_edgel)
+      {
+        edgel = (t_V2i*)void_edgel;
+        CvPoint2D64f e;
+        e.x = edgel->y;
+        e.y = edgel->x;
+        all_edgels.push_back(e);
+      }
+    }
+  }
   DestGR(edge_graph);
   if((int)ellipses.size() >= 2*model.NumPoints())
   {

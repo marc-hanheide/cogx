@@ -39,7 +39,7 @@ class EllipsePair
 {
 public:
   Ellipse ell1, ell2;
-  CvPoint2D32f center;
+  CvPoint2D64f center;
   double size;
   EllipsePair() {}
   EllipsePair(Ellipse e1, Ellipse e2) : ell1(e1), ell2(e2)
@@ -50,8 +50,9 @@ public:
   }
 };
 
-extern bool DetectEllipseMarkers(char *rgba32, int width, int height,
-  Model &model, std::vector<CvPoint2D32f> &centers,
-  std::vector<Ellipse> &out_ells, std::vector<EllipsePair> &out_pairs);
+extern bool DetectEllipseMarkers(char *rgba24, int width, int height,
+  Model &model, std::vector<CvPoint2D64f> &centers,
+  std::vector<Ellipse> &out_ells, std::vector<EllipsePair> &out_pairs,
+  std::vector<CvPoint2D64f> &all_edgels);
 
 #endif

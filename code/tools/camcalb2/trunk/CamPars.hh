@@ -45,10 +45,10 @@
 class CamPars
 {
 private:
-  bool IsName(const char *str, size_t len, const char *name);
+  bool IsName(const char *str, size_t len, const char *name) const;
 
 protected:
-  virtual void Write(FILE *file);
+  virtual void Write(FILE *file) const;
   virtual void Read(FILE *file) throw(std::runtime_error);
 
 public:
@@ -60,11 +60,26 @@ public:
 
   CamPars(double f = 1.);
   virtual ~CamPars() {}
-  double sx() {return (std::isnormal(fx) ? f/fx : 0.);}
-  double sy() {return (std::isnormal(fy) ? f/fy : 0.);}
-  double r() {return (std::isnormal(fx) ? fy/fx : 0.);}
-  void Save(const char *filename) throw(std::runtime_error);
+  double sx() const {return (std::isnormal(fx) ? f/fx : 0.);}
+  double sy() const {return (std::isnormal(fy) ? f/fy : 0.);}
+  double r() const {return (std::isnormal(fx) ? fy/fx : 0.);}
+  void Save(const char *filename) const throw(std::runtime_error);
   void Load(const char *filename) throw(std::runtime_error);
+  void DistortPoint(double u, double v, double &ud, double &vd) const
+  {
+    double x = (u - cx)/fx;
+    double y = (v - cy)/fy;
+    double x2 = x*x;
+    double y2 = y*y;
+    double two_xy = 2.*x*y;
+    double r2 = x2 + y2;
+    double r4 = r2*r2;
+    double t = (1. + k1*r2 + k2*r4);
+    double xd = x*t + two_xy*p1 + p2*(r2 + 2.*x2);
+    double yd = y*t + two_xy*p2 + p1*(r2 + 2.*y2);
+    ud = xd*fx + cx;
+    vd = yd*fy + cy;
+  }
 };
 
 #endif
