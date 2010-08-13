@@ -107,21 +107,21 @@ namespace Planning
          * \argument{successor}. The latter is the state being
          * generated. \argument{SetOfStatePointers} is the set of
          * problem states thus far discovered.*/
-         State* operator()(State* predecessor);
+         State* operator()(State* predecessor) const;
 
 
         
-        void report__newly_satisfied(State&);
-        void report__newly_unsatisfied(State&);
+        void report__newly_satisfied(State&) const;
+        void report__newly_unsatisfied(State&) const;
 
-        void set__satisfied(State&);
-        void set__unsatisfied(State&);
-        void flip_satisfaction(State&);
+        void set__satisfied(State&) const;
+        void set__unsatisfied(State&) const;
+        void flip_satisfaction(State&) const;
         bool is_satisfied(const State&) const;
             
-        void increment__level_of_satisfaction(State&);
-        void decrement__level_of_satisfaction(State&);
-        void set__level_of_satisfaction(uint, State&);
+        void increment__level_of_satisfaction(State&) const;
+        void decrement__level_of_satisfaction(State&) const;
+        void set__level_of_satisfaction(uint, State&) const;
         uint get__level_of_satisfaction(State&) const;
 
 

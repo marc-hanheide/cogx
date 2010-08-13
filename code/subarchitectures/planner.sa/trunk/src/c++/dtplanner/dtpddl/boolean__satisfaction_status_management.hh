@@ -41,7 +41,7 @@ namespace Planning
     class Boolean__Satisfaction_Status_Management
     {
     public:
-        Boolean__Satisfaction_Status_Management(uint num);
+        Boolean__Satisfaction_Status_Management(uint num = 0);
         
         void satisfy(uint i);
         void unsatisfy(uint i);

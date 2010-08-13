@@ -36,6 +36,17 @@
 
 using namespace Planning;
 
+CNF__State::CNF__State(uint formulae_count
+           , uint disjunctions_count
+           , uint literals_count)
+    :cnfs__count_status(formulae_count),
+     cnfs__satisfaction_status(formulae_count),
+     clauses__count_status(disjunctions_count),
+     clauses__satisfaction_status(disjunctions_count),
+     literals__satisfaction_status(literals_count)
+{
+}
+
 
 const Unsigned_Integer__Satisfaction_Status_Management& CNF__State::get__cnfs__count_status() const
 {

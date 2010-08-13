@@ -164,13 +164,21 @@ public:
 
     virtual ~basic_type(){};
 
-    void visit(Visitor<basic_type>& visitor);
+    void visit(Visitor<basic_type>& visitor) const;
+    
+//     void visit(Visitor<basic_type>& visitor,
+//                CXX__PTR_ANNOTATION(basic_type)&) const;
+//     void visit(Visitor<basic_type>& visitor,
+//                CXX__deref__shared_ptr<basic_type>&) const;
+//     void visit(Visitor<basic_type>& visitor,
+//                CXX__deref__shared_ptr__visitable<basic_type>&) const;
+    
     void visit(Visitor<basic_type>& visitor,
-               CXX__PTR_ANNOTATION(basic_type)&);
+               const CXX__PTR_ANNOTATION(basic_type)&) const;
     void visit(Visitor<basic_type>& visitor,
-               CXX__deref__shared_ptr<basic_type>&);
+               const CXX__deref__shared_ptr<basic_type>&) const;
     void visit(Visitor<basic_type>& visitor,
-               CXX__deref__shared_ptr__visitable<basic_type>&);
+               const CXX__deref__shared_ptr__visitable<basic_type>&) const;
     
     virtual std::ostream& operator<<(std::ostream&) const;
     virtual bool operator<(const basic_type&) const;

@@ -195,7 +195,9 @@ bool Planning::Formula::Probabilistic::leq1() const
     if(sanity()) return true;
 
     double total = 0.0;
-    for(auto p = get__probabilities().begin(); p != get__probabilities().end(); p++){
+    const auto& probabilities = get__probabilities();
+    for(auto p = probabilities.begin(); p != probabilities.end(); p++){
+        assert(p->test_cast<Number>());
         auto prob = p->cxx_get<Number>()->get__value();
         if(!is_admissible_probability(prob)){
             return false;
@@ -211,14 +213,29 @@ bool Planning::Formula::Probabilistic::leq1() const
 
 bool Planning::Formula::Probabilistic::sanity() const
 {
-    for(auto p = get__probabilities().begin(); p != get__probabilities().end(); p++){
-        if((*p)->get__type_name() != enum_types::number) return true;
+    INTERACTIVE_VERBOSER(true, 5000, "Checking sanity on :: "<<*this);
+    assert(get__probabilities().size());
+    
+    const auto& probabilities = get__probabilities();
+    for(auto p = probabilities.begin(); p != probabilities.end(); p++){
+        const auto&  probability = *p;
+        
+        INTERACTIVE_VERBOSER(true, 5000, "Checking sanity on :: "<<probability);
+        if((*p)->get__type_name() != enum_types::number) {
+            return true;
+        } else {
+            INTERACTIVE_VERBOSER(true, 5000, "Reported not to be a number :: "<<probability);
+        }
     }
+    
+    INTERACTIVE_VERBOSER(true, 5000, "The following specificaton is numerically ground :: "
+                         <<probabilities);
     
     Are_Doubles_Close are_Doubles_Close(1e-9);
 
     double total = 0.0;
-    for(auto p = get__probabilities().begin(); p != get__probabilities().end(); p++){
+    for(auto p = probabilities.begin(); p != probabilities.end(); p++){
+        assert(p->test_cast<Number>());
         auto prob = p->cxx_get<Number>()->get__value();
         if(!is_admissible_probability(prob)){
             return false;

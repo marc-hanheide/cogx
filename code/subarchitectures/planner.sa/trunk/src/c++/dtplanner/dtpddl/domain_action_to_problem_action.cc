@@ -145,7 +145,7 @@ const Planning::State_Transformation__Pointer&  Domain_Action__to__Problem_Actio
          , new__action_proposition
          , true_cnf
          , State_Formula::List__Literals()
-         , false
+         , true/*All no-op actions are subactions of a probabilistic effect, and therefore compulsory.*/
          , false
          , local_probability
          , 0);
@@ -166,16 +166,23 @@ const Planning::State_Transformation__Pointer&  Domain_Action__to__Problem_Actio
 
 Planning::State_Transformation__Pointer Domain_Action__to__Problem_Action::get__answer() const 
 {
+    assert(executable_actions_without_preconditions.find(result)
+           != executable_actions_without_preconditions.end() ||
+           problem__actions.find(result)
+           != problem__actions.end());
+    
     return result;
 }
 
-void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
+void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& input)
 {
     switch(input->get__type_name()){
         case enum_types::number:
         {
             assert(input.test_cast<Formula::Number>());
             last_double_traversed = input.cxx_get<Formula::Number>()->get__value();
+            
+            INTERACTIVE_VERBOSER(true, 4110, "Reading a number :: "<<input);
         }
         break;
         case enum_types::negation:
@@ -188,9 +195,11 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
         break;
         case enum_types::conjunction:
         {
+            assert(input.test_cast<Formula::Conjunction>());
+            
             double local_probability = probability;
             
-            INTERACTIVE_VERBOSER(true, 3110, "LEVEL ::"<<level
+            INTERACTIVE_VERBOSER(true, 5000, "LEVEL ::"<<level
                                  <<" conjunctive formula :: "<<input);
             
             assert(input.test_cast<Planning::Formula::Conjunction>());
@@ -307,7 +316,11 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
                             <<"to formula :: "<<_precondition<<std::endl)
                 }
             } else {
+                INTERACTIVE_VERBOSER(true, 6000, " :: zero precondition conjunction :: "
+                                     <<input);
+                
                 executable_actions_without_preconditions.insert(state_Transformation);
+                assert(executable_actions_without_preconditions.size());
             }
             
 
@@ -354,6 +367,7 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
         break;
         case enum_types::state_ground_function:
         {
+            assert(literals_at_levels.size());
             assert(input.test_cast<Planning::Formula::State_Ground_Function>());
             auto _symbol = input.cxx_get<Planning::Formula::State_Ground_Function>();
 
@@ -376,6 +390,8 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
         break;
         case enum_types::state_function:
         {
+            assert(literals_at_levels.size());
+            
             assert(input.test_cast<Planning::Formula::State_Function>());
             
             auto symbol = input.cxx_get<Formula::State_Function>();
@@ -414,6 +430,21 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
         break;
         case enum_types::state_proposition:
         {
+            /*If this is an effect without a conjunctive parent.*/
+            if(!list__Listeners.size()){
+                
+                Formula::Subformulae elements;
+                elements.push_back(input);
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
+                    (runtime_Thread,
+                     Formula::Conjunction,
+                     conjunction,
+                     elements);
+                (*this)(conjunction);
+                
+                return;
+            }
+            
             assert(input.test_cast<Planning::Formula::State_Proposition>());
             
             auto _proposition = input.cxx_get<Planning::Formula::State_Proposition>();
@@ -455,6 +486,21 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
         break;
         case enum_types::state_predicate:
         {
+            /*If this is an effect without a conjunctive parent.*/
+            if(!list__Listeners.size()){
+                
+                Formula::Subformulae elements;
+                elements.push_back(input);
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
+                    (runtime_Thread,
+                     Formula::Conjunction,
+                     conjunction,
+                     elements);
+                (*this)(conjunction);
+                
+                return;
+            }
+            
             /* -- ground it and try again -- */
             assert(input.test_cast<Formula::State_Predicate>());
             auto predicate = input.cxx_get<Formula::State_Predicate>();
@@ -493,6 +539,8 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
         break;
         case enum_types::probabilistic_effect:
         {
+            assert(input.test_cast<Formula::Probabilistic>());
+            
             assert(level != 0);
             auto new__action_proposition = process__generate_name(":probabilistic:");
 
@@ -500,37 +548,64 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
             auto naturex_choices = probabilistic_transformation->get__formulae();
             auto _probabilities = probabilistic_transformation->get__probabilities();
 
+            /*Sum of effect probabilities.*/
+            double sum_of_effect_probabilities = 0.0;
             std::vector<double> probabilities(_probabilities.size());
             {
                 uint index = 0;
                 for(auto probability = _probabilities.begin()
                         ; probability != _probabilities.end()
                         ; probability++, index++){
-                    assert(last_double_traversed >= 0.0);
+                    QUERY_WARNING((*probability)->get__type_name() != enum_types::number,
+                                  "Was expecting a number, but got :: "<<*probability);
+                    
+                    INTERACTIVE_VERBOSER(true, 4110, "Reading a number :: "<<*probability<<" "
+                                         <<((*probability)->get__type_name() == enum_types::number)<<std::endl);
+            
                     VISIT(*probability);
+                    
+                    assert(last_double_traversed >= 0.0);
+                    assert(last_double_traversed <= 1.0);
+                    
                     probabilities[index] = last_double_traversed;
+                    sum_of_effect_probabilities += probabilities[index];
+                    
+                    INTERACTIVE_VERBOSER(true, 7001, "Adding probability :: "
+                                         <<last_double_traversed<<std::endl);
+                    
                     last_double_traversed = -1.0;
                     last_function_symbol_id = -1;
                 }
             }
 
-            double null_effect__probability = 1.0;
-            if(!input.cxx_get<Formula::Probabilistic>()->sanity()){
-                double sum = 0.0;
-                for(auto p = probabilities.begin()
-                        ; p != probabilities.end()
-                        ; p++ ){
-                    sum += *p;
-                }
+            double null_effect__probability = 1.0 - sum_of_effect_probabilities;
+//             if(!input.cxx_get<Formula::Probabilistic>()->sanity()){
+//                 double sum = 0.0;
+//                 for(auto p = probabilities.begin()
+//                         ; p != probabilities.end()
+//                         ; p++ ){
+//                     sum += *p;
+//                     INTERACTIVE_VERBOSER(true, 7001, "One effect with probability :: "
+//                                          <<*p<<std::endl)
+//                 }
                 
-                null_effect__probability -= sum;
-            }
+//                 null_effect__probability -= sum;
+//             }
 
             assert(are_Doubles_Close(0.0, null_effect__probability) ||
                    null_effect__probability > 0.0);
+            assert(null_effect__probability <= 1.0);
             
             bool has_null_effect = !are_Doubles_Close(0.0, null_effect__probability);
 
+            if(has_null_effect){
+                INTERACTIVE_VERBOSER(true, 7001, "Got a null effect with probability :: "
+                                     <<null_effect__probability<<std::endl);
+            } else {
+                INTERACTIVE_VERBOSER(true, 7001, "Got probabilistic action with no null effect.");
+            }
+            
+            
             Formula::Subformulae conjunctive_naturex_choices;
             for(auto naturex_choice = naturex_choices.begin()
                     ; naturex_choice != naturex_choices.end()
@@ -646,8 +721,8 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
         break;
         case enum_types::conditional_effect:
         {
-            assert(level != 0);
             assert(input.test_cast<Formula::Conditional_Effect>());
+            assert(level != 0);
             
             auto conditional_Effect = input.cxx_get<Formula::Conditional_Effect>();
             auto ___condition =  conditional_Effect->get__condition();
@@ -722,6 +797,23 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
         break;
         case enum_types::increase:
         {
+            /*If this is an effect without a conjunctive parent.*/
+            if(!list__Listeners.size()){
+                
+                Formula::Subformulae elements;
+                elements.push_back(input);
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
+                    (runtime_Thread,
+                     Formula::Conjunction,
+                     conjunction,
+                     elements);
+                (*this)(conjunction);
+                
+                return;
+            }
+            
+            
+            assert(input.test_cast<Formula::Increase>());
             auto subject = input.cxx_get<Formula::Increase>()->get__subject();
             deref_VISITATION(Formula::Increase, input, get__subject());
             auto modification = input.cxx_get<Formula::Increase>()->get__modification();
@@ -730,6 +822,22 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
         break;
         case enum_types::decrease:
         {
+            /*If this is an effect without a conjunctive parent.*/
+            if(!list__Listeners.size()){
+                
+                Formula::Subformulae elements;
+                elements.push_back(input);
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
+                    (runtime_Thread,
+                     Formula::Conjunction,
+                     conjunction,
+                     elements);
+                (*this)(conjunction);
+                
+                return;
+            }
+            
+            assert(input.test_cast<Formula::Decrease>());
             auto subject = input.cxx_get<Formula::Decrease>()->get__subject();
             deref_VISITATION(Formula::Decrease, input, get__subject());
             auto modification = input.cxx_get<Formula::Decrease>()->get__modification();
@@ -738,6 +846,23 @@ void Domain_Action__to__Problem_Action::operator()(Formula::Subformula input)
         break;
         case enum_types::assign:
         {
+            /*If this is an effect without a conjunctive parent.*/
+            if(!list__Listeners.size()){
+                
+                Formula::Subformulae elements;
+                elements.push_back(input);
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
+                    (runtime_Thread,
+                     Formula::Conjunction,
+                     conjunction,
+                     elements);
+                (*this)(conjunction);
+                
+                return;
+            }
+
+            
+            assert(input.test_cast<Formula::Assign>());
             auto subject = input.cxx_get<Formula::Assign>()->get__subject();
             deref_VISITATION(Formula::Assign, input, get__subject());
             auto modification = input.cxx_get<Formula::Assign>()->get__modification();
@@ -798,7 +923,10 @@ process__Function_Modifier(Formula::Subformula& modification,
                            ID_TYPE modification_type)
 {
     assert(last_function_symbol_id != -1);
-    
+
+    QUERY_UNRECOVERABLE_ERROR(!list__Listeners.size(),
+                              "Processing function modifier with modification :: "<<modification<<std::endl
+                              <<"However, the modification has no parents.");
     assert(list__Listeners.size());
     assert(listeners.size());
     auto& list_of_listeners = list__Listeners.top();

@@ -48,8 +48,8 @@ namespace Planning
         {
         public:
             virtual ~Satisfaction_Listener();/*EMPTY*/
-            virtual void report__newly_satisfied(State&) = 0;
-            virtual void report__newly_unsatisfied(State&) = 0;
+            virtual void report__newly_satisfied(State&) const = 0;
+            virtual void report__newly_unsatisfied(State&) const = 0;
 
             /* Returns false if the \argument{Listener} is already
              * registered.*/

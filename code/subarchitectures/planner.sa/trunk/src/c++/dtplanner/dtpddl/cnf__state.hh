@@ -44,6 +44,7 @@ namespace Planning
     class CNF__State
     {
     public:
+        CNF__State(uint formulae_count = 0, uint disjunctions_count = 0, uint literals_count = 0);
         
         const Unsigned_Integer__Satisfaction_Status_Management& get__cnfs__count_status() const;
         Unsigned_Integer__Satisfaction_Status_Management& get__cnfs__count_status();

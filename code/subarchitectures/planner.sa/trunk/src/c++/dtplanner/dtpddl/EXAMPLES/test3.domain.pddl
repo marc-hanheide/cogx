@@ -34,6 +34,8 @@
 
 	       )
 
+  (:functions (reward) - int )
+
   
   (:percepts
 

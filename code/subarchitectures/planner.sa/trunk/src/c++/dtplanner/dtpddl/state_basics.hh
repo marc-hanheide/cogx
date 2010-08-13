@@ -96,22 +96,28 @@ namespace Planning
 namespace std
 {    
     /* (see \module{boolean_state.hh}) */
-    std::size_t hash_value(const Planning::Boolean_State&);
-
-    /* (see \module{boolean_state.hh}) */
     std::ostream& operator<<(std::ostream&, const Planning::Boolean_State&);
     
-    /* (see \module{integer_state.hh}) */
-    std::size_t hash_value(const Planning::Integer_State&);
+    /* (see \module{float_state.hh}) */
+    std::ostream& operator<<(std::ostream&, const Planning::Float_State&);
 
     /* (see \module{integer_state.hh}) */
     std::ostream& operator<<(std::ostream&, const Planning::Integer_State&);
+    
+    /* (see \module{markov_decision_process_state.hh}) */
+    std::ostream& operator<<(ostream&, const Planning::Markov_Decision_Process_State&);
+    
+    /* (see \module{planning_state.hh}) */
+    std::ostream& operator<<(ostream&, const Planning::State&);
+
+    /* (see \module{boolean_state.hh}) */
+    std::size_t hash_value(const Planning::Boolean_State&);
+
+    /* (see \module{integer_state.hh}) */
+    std::size_t hash_value(const Planning::Integer_State&);
 
     /* (see \module{float_state.hh}) */
     std::size_t hash_value(const Planning::Float_State&);
-
-    /* (see \module{float_state.hh}) */
-    std::ostream& operator<<(std::ostream&, const Planning::Float_State&);
 
     /* (see \module{markov_decision_process_state.hh}) */
     std::size_t hash_value(const Planning::Markov_Decision_Process_State&);

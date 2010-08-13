@@ -173,6 +173,34 @@ namespace Planning
     }
 
     template<>
+    void Simple_Numeric_Transformation<int, enum_types::simple_int_transformation>::
+    report__newly_satisfied(State& state) const
+    {
+        this->operator()(&state);
+    }
+    
+    template<>
+    void Simple_Numeric_Transformation<int, enum_types::simple_int_transformation>::
+    report__newly_unsatisfied(State&) const
+    {
+        /*NOTHING TO BE DONE. */
+    }
+    
+    template<>
+    void Simple_Numeric_Transformation<double, enum_types::simple_double_transformation>::
+    report__newly_satisfied(State& state) const
+    {
+        this->operator()(&state);
+    }
+    
+    template<>
+    void Simple_Numeric_Transformation<double, enum_types::simple_double_transformation>::
+    report__newly_unsatisfied(State&) const
+    {
+        /*NOTHING TO BE DONE. */
+    }
+    
+    template<>
     std::ostream& Simple_Numeric_Transformation<int, enum_types::simple_int_transformation>::
     operator<<(std::ostream&o) const
     {

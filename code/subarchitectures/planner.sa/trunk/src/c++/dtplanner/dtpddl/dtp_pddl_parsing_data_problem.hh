@@ -80,6 +80,8 @@ namespace Planning
 
 
             Planning::Formula::Subformula get__starting_state() const;
+            
+            const Planning::Formula::Subformula& get__objective_function() const;
 
 
             /******************************************************************************************
@@ -109,8 +111,14 @@ namespace Planning
             Planning::Formula::Subformula X_constant;
 
 
-            typedef std::tr1::unordered_set<Planning::Argument_List, boost::hash<Planning::Argument_List> > Cached_Partial_Assignment_Unsatisfiability;
-            typedef std::tr1::unordered_set<Planning::Argument_List, boost::hash<Planning::Argument_List> > Cached_Partial_Assignment_Satisfiability;
+            typedef std::tr1::unordered_set<Planning::Argument_List
+                                            , boost::hash<Planning::Argument_List> >
+            Cached_Partial_Assignment_Unsatisfiability;
+
+            
+            typedef std::tr1::unordered_set<Planning::Argument_List
+                                            , boost::hash<Planning::Argument_List> >
+            Cached_Partial_Assignment_Satisfiability;
         
             typedef std::map<Predicate_Index
                              , std::tr1::tuple<Cached_Partial_Assignment_Satisfiability

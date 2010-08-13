@@ -88,7 +88,7 @@ std::vector<Variable> Planning_Formula__to__Variable_Ordering::get__answer()
     break                                                               \
     
 
-void Planning_Formula__to__Variable_Ordering::operator()(Subformula input)
+void Planning_Formula__to__Variable_Ordering::operator()(const Formula::Subformula& input)
 {
     switch(input->get__type_name()){
         case enum_types::variable:

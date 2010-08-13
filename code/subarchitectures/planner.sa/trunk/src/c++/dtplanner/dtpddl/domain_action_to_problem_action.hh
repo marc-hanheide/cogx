@@ -104,9 +104,9 @@ namespace Planning
         //         State_Formula::Conjunctive_Normal_Form_Formula& precondition;/* (see \member{preconditions})*/
 
         
-        State_Transformations problem__actions;
-        State_Transformations executable_actions_without_preconditions;
-        Probabilistic_State_Transformations probabilistic_actions;
+        Planning::State_Transformations& problem__actions;
+        Planning::State_Transformations& executable_actions_without_preconditions;
+        Planning::Probabilistic_State_Transformations& probabilistic_actions;
 
 
         

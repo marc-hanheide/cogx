@@ -43,17 +43,19 @@ namespace Planning
     public:
         friend std::ostream& std::operator<<(std::ostream&, const Boolean_State&);
         
-	/* Initially everything is true (all bits in \member{data} are
-	 * true). \argument{size} is the number of propositions that
-	 * this state is required to keep the truth value of.*/
-	Boolean_State(uint size = 0);
+	/* Initially everything is FALSE (all bits in \member{data}
+	 * are FALSE). \argument{size} is the number of propositions
+	 * that this state is required to keep the truth value of.*/
+	Boolean_State(uint number_of_atoms = 0);
+
+        uint get__number_of_atoms() const;
         
 	/* Copy construction clones \member{data}.*/
 	Boolean_State(const Boolean_State&);
         
-	/* Copy construction makes state with \member{data} cloning
-         * \argument{vector}.*/
-	explicit Boolean_State(const std::vector<ELEM_TYPE>&);
+// 	/* Copy construction makes state with \member{data} cloning
+//          * \argument{vector}.*/
+// 	explicit Boolean_State(const std::vector<ELEM_TYPE>&);
         
 	/* This clones the same elements as the copy constructor.*/
 	Boolean_State& operator=(const Boolean_State&);
@@ -95,6 +97,9 @@ namespace Planning
     private:
 	/* All bits are 1.*/
 	static const ELEM_TYPE big = -1;
+
+        /*Number of atoms whose truth values are stored in this state.*/
+        uint number_of_atoms;
     };
 }
 

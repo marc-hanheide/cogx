@@ -37,6 +37,11 @@
 
 using namespace Planning;
 
+Action_Executability__State::Action_Executability__State(uint actions_count)
+    :transformation__satisfaction_status(actions_count),
+     transformation__count_status(actions_count)
+{
+}
 
 const Boolean__Satisfaction_Status_Management& Action_Executability__State::get__transformation__satisfaction_status() const
 {

@@ -42,7 +42,7 @@ namespace Planning
     class Unsigned_Integer__Satisfaction_Status_Management
     {
     public:
-        Unsigned_Integer__Satisfaction_Status_Management(uint num);
+        Unsigned_Integer__Satisfaction_Status_Management(uint num = 0);
         
         void decrement_satisfaction(uint i);
         void increment_satisfaction(uint i);

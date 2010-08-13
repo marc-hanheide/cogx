@@ -41,7 +41,14 @@ using namespace Planning::Parsing;
 #include "dtp_pddl_parsing_data_problem.hh"
 #include "dtp_pddl_parsing_data_domain.hh"
 #include "problem_grounding.hh"
+
 #include "planning_state.hh"
+#include "state_formula__literal.hh"
+
+
+
+#include "action__state_transformation.hh"
+#include "action__probabilistic_state_transformation.hh"
 
 Solver::Solver(Planning::Parsing::Problem_Data& problem_Data)
     :problem_Data(problem_Data),
@@ -79,11 +86,195 @@ void Solver::preprocess()
     problem_Grounding->ground_derived_predicates();
     problem_Grounding->ground_derived_perceptions();
     problem_Grounding->ground_starting_states();
-
+    problem_Grounding->ground_objective_function();
+    
+    generate_starting_state();
     
     
     preprocessed = true;
 }
+
+
+std::vector<Planning::State*> Solver::expand(Planning::State* state)
+{
+    
+    while(state->count__compulsory_transformations()){
+       auto compulsory_transformation = state->pop__compulsory_transformation();
+       compulsory_transformation->operator()(state);
+    }
+    
+    while(state->count__compulsory_generative_transformations()){
+       auto compulsory_generative_transformation = state->pop__compulsory_generative_transformation();
+       (*compulsory_generative_transformation)(state);
+    }
+
+    
+    std::vector<Planning::State*> result(0);
+    while(state->count__probabilistic_transformations()){
+        auto probabilistic_transformation = state->pop__probabilistic_transformation();
+        std::vector<Planning::State*> successor_states = (*probabilistic_transformation)(state);
+
+        
+        assert(successor_states.end() != /*DON'T LOSE MEMORY.*/
+               find(successor_states.begin(), successor_states.end(), state));
+
+
+        for(auto successor_state = successor_states.begin()
+                ; successor_state != successor_states.end()
+                ; successor_state++){
+            std::vector<Planning::State*> some_results = expand(*successor_state);
+
+            for(auto a_result = some_results.begin()
+                    ; a_result != some_results.end()
+                    ; a_result++){
+                result.push_back(*a_result);
+            }
+            
+        }
+    }
+
+    if(result.size() == 0){
+        result.push_back(state);
+    }
+
+    return std::move<>(result);
+}
+
+std::vector<Planning::State*> Solver::expand(Planning::State* state,
+                                             const State_Transformation* optional_transformation)
+{
+    (*optional_transformation)(state);
+
+    while(state->count__compulsory_transformations()){
+       auto compulsory_transformation = state->pop__compulsory_transformation();
+       (*compulsory_transformation)(state);
+    }
+
+    assert(!state->count__compulsory_generative_transformations());
+    
+//     while(state->count__compulsory_generative_transformations()){
+//        auto compulsory_transformation = state->pop__compulsory_generative_transformation();
+//        (*compulsory_generative_transformation)(state);
+//     }
+    
+    std::vector<Planning::State*> result(0);
+    while(state->count__probabilistic_transformations()){
+        auto probabilistic_transformation = state->pop__probabilistic_transformation();
+        std::vector<Planning::State*> successor_states = (*probabilistic_transformation)(state);
+
+        
+        assert(successor_states.end() != /*DON'T LOSE MEMORY.*/
+               find(successor_states.begin(), successor_states.end(), state));
+
+        
+        for(auto successor_state = successor_states.begin()
+                ; successor_state != successor_states.end()
+                ; successor_state++){
+            std::vector<Planning::State*> some_results = expand(*successor_state);
+            
+            for(auto a_result = some_results.begin()
+                    ; a_result != some_results.end()
+                    ; a_result++){
+                result.push_back(*a_result);
+            }
+        }
+    }
+
+    if(result.size() == 0){
+        result.push_back(state);
+    }
+
+    return std::move<>(result);
+}
+
+void Solver::expand_optional_transformations(Planning::State* state)
+{
+    auto optional_transformations = state->get__optional_transformations();
+    
+    state->reset__probability_during_expansion();
+    for(auto optional_transformation = optional_transformations.begin()
+            ; optional_transformation != optional_transformations.end()
+            ; optional_transformation++){
+
+        Planning::State* new_state = new State(*state);
+        
+        auto successors = expand(new_state, *optional_transformation);
+
+        
+        assert(successors.end() != /*DON'T LOSE MEMORY.*/
+               find(successors.begin(), successors.end(), new_state));
+        assert(successors.end() == /*DON'T MISUSE MEMORY.*/
+               find(successors.begin(), successors.end(), state));
+        
+        for(auto _successor = successors.begin()
+                ; _successor != successors.end()
+                ; _successor++){
+            
+            auto state_space_iterator = state_space.find(*_successor);
+            if(state_space_iterator == state_space.end()){
+                state_space.insert(*_successor);
+                state_space_iterator = state_space.find(*_successor);
+                assert(state_space_iterator != state_space.end());
+            }
+
+            auto successor = *state_space_iterator;
+
+            state->push__successor((*optional_transformation)->get__id()
+                                   , successor
+                                   , successor->get__probability_during_expansion());
+        }
+    }
+
+}
+
+void Solver::generate_starting_state()
+{
+    Planning::State* starting_state
+        = new Planning::State(*this
+                              , problem_Grounding->get__state_Propositions().size()
+                              , problem_Grounding->get__state_Functions().size()
+                              , problem_Grounding->get__conjunctive_Normal_Form_Formulae().size()
+                              , problem_Grounding->get__disjunctive_Clauses().size()
+                              , problem_Grounding->get__literals().size()
+                              , problem_Grounding->get__deterministic_actions().size());
+    
+    auto literals = problem_Grounding->get__literals();
+    for(auto literal = literals.begin()
+            ; literal != literals.end()
+            ; literal++){
+
+        /*Is the literal a negative atom?*/
+        if((*literal)->get__sign()){
+            (*literal)->flip_satisfaction(*starting_state);
+
+            assert((*literal)->is_satisfied(*starting_state));
+            
+            INTERACTIVE_VERBOSER(true, 7001, "Set literal "<<*literal
+                                 <<" to satisfied in starting state."
+                                 <<std::endl);
+        }
+        
+    }
+    
+    
+    starting_state->add__optional_transformation(
+        problem_Grounding->get__executable_starting_states_generator().get());
+    
+    expand_optional_transformations(starting_state);
+
+    auto i = 0;
+    for(auto state = state_space.begin()
+            ; state != state_space.end()
+            ; state++, i++){
+        INTERACTIVE_VERBOSER(true, 7001, "State :: "<<i<<" "
+                             <<(**state)<<std::endl);
+    }
+    
+    
+    
+    UNRECOVERABLE_ERROR("FINISHED TEST");
+}
+
 
 void Solver::domain_constants__to__problem_objects()
 {
@@ -212,3 +403,8 @@ bool Solver::sanity() const
 }
 
 
+
+CXX__PTR_ANNOTATION(Problem_Grounding)  Solver::get__problem_Grounding()
+{
+    return problem_Grounding;
+}

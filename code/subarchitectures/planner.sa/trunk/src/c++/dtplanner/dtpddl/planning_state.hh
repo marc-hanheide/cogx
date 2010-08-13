@@ -42,52 +42,95 @@
 #include "action_executability__state.hh"
 #include "cnf__state.hh"
 
+// inline std::size_t hash_value(const Planning::State& in)
+// {
+//     return std::hash_value(in);
+// }
+
 namespace Planning
 {
+
+    inline std::size_t hash_value(const Planning::State& in)
+    {
+        return std::hash_value(in);
+    }
 
     class State : public Markov_Decision_Process_State,
         public CNF__State,
         public Action_Executability__State
     {
     public:
+        std::ostream& operator<<(std::ostream&) const;
+        
+        State(Solver& solver,/*Object that is solving the problem that involves this state.*/
+              uint propositions_count = 0,/*Number of non-static state-characterising PROPOSITIONS.*/
+              uint function_count = 0,/*Number of non-static state-characterising FLUENTS/FUNCTIONS.*/
+              uint formulae_count = 0,/*Number of CNF formulae in problem description.*/
+              uint disjunctions_count = 0,/*Number of disjunctive-clauses in the problem description.*/
+              uint literals_count = 0, /*Number of literals (i.e., CNF atoms) in the problem desorption.*/
+              uint actions_count = 0 /*Number of state transformations, including actions, in the problem description.*/
+              );
+        
         /* Planner that generated this state.*/
-        Solver* solver;
+        Solver& solver;
+
+        void reset__probability_during_expansion();
+        double get__probability_during_expansion() const;
+        double set__probability_during_expansion(double);
         
         uint count__compulsory_generative_transformations() const;
-        State_Transformation* pop__compulsory_generative_transformation();
-        void push__compulsory_generative_transformation(State_Transformation*);
+        const State_Transformation* pop__compulsory_generative_transformation();
+        void push__compulsory_generative_transformation(const State_Transformation*);
 
         
         uint count__compulsory_transformations() const;
-        State_Transformation* pop__compulsory_transformation();
-        void push__compulsory_transformation(State_Transformation*);
+        const State_Transformation* pop__compulsory_transformation();
+        void push__compulsory_transformation(const State_Transformation*);
 
         
         uint count__probabilistic_transformations() const;
-        Probabilistic_State_Transformation* pop__probabilistic_transformation();
-        void push__probabilistic_transformation(Probabilistic_State_Transformation*);
+        const Probabilistic_State_Transformation* pop__probabilistic_transformation();
+        void push__probabilistic_transformation(const Probabilistic_State_Transformation*);
 
         
-        std::set<State_Transformation*>& get__optional_transformations();
-        void add__optional_transformation(State_Transformation*);
-        void remove__optional_transformation(State_Transformation*);
+        std::set<const State_Transformation*> get__optional_transformations();
+        void add__optional_transformation(const State_Transformation*);
+        void remove__optional_transformation(const State_Transformation*);
     private:
 
         /*Pending probabilistic transformations. All such transformations are compulsory.*/
-        std::stack<Probabilistic_State_Transformation*> probabilistic_transformations;
+        std::stack<const Probabilistic_State_Transformation*> probabilistic_transformations;
         
         /* A compulsory transformation is one that has to be evaluated before the search can continue.*/
-        std::stack<State_Transformation*> applicable_compulsory_transformations;
+        std::stack<const State_Transformation*> applicable_compulsory_transformations;
         
         /* A compulsory transformation is one that has to be evaluated before the search can continue.*/
-        std::stack<State_Transformation*> applicable_compulsory_generative_transformations;
+        std::stack<const State_Transformation*> applicable_compulsory_generative_transformations;
         
         /* An optional transformation is an action that an agent can choose to execute at a state.*/
-        std::set<State_Transformation*> applicable_optional_transformations;
+        std::set<const State_Transformation*> applicable_optional_transformations;
+
+    private:
+        /* Probability during expansion.*/
+        double probability_during_expansion;
+        
+        /* For each action in
+         * \member{Markov_Decision_Process_State::successor_driver},
+         * we kept the expected value of executing that action. */
+        std::vector<double> expected_successor_value;
+
+        /* Index to the maximum value in \member{expected_successor_value}.*/
+        uint index__max_expected_successor_value;
+
+        /* Value of the maximum entry in \member{expected_successor_value}.*/
+        double value__max_expected_successor_value;
     };
     
     /*State pointers.*/
-    typedef std::tr1::unordered_set<State*, /*state_hash*/deref_hash<State>,  deref_equal_to<State> > SetOfStatePointers;
+    typedef std::tr1::unordered_set<State*
+                                    , /*state_hash*/deref_hash<State>
+                                    ,  deref_equal_to<State> > Set_Of_State_Pointers;
 }
+
 
 #endif

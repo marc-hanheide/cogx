@@ -46,15 +46,17 @@ namespace Planning
     class Action_Executability__State
     {
     public:
+        Action_Executability__State(uint actions_count = 0);
+        
         const Boolean__Satisfaction_Status_Management& get__transformation__satisfaction_status() const;
         const Unsigned_Integer__Satisfaction_Status_Management& get__transformation__count_status() const;
         Boolean__Satisfaction_Status_Management& get__transformation__satisfaction_status() ;
         Unsigned_Integer__Satisfaction_Status_Management& get__transformation__count_status() ;
         
     private:
-        /* What actions are executable in this state? This includes
-         * both optional and compulsory transformations.*/
-        Boolean__Satisfaction_Status_Management actions__excitability_status;
+//         /* What actions are executable in this state? This includes
+//          * both optional and compulsory transformations.*/
+//         Boolean__Satisfaction_Status_Management actions__excitability_status;
 
         Boolean__Satisfaction_Status_Management transformation__satisfaction_status;
         Unsigned_Integer__Satisfaction_Status_Management transformation__count_status;

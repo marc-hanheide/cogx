@@ -45,14 +45,19 @@ namespace Planning
     class Markov_Decision_Process_State
     {
     public:
+        std::ostream& operator<<(ostream&) const;
+            
         Markov_Decision_Process_State(uint propositions_count = 0, uint function_count = 0);
         Markov_Decision_Process_State(const Markov_Decision_Process_State&);
         Markov_Decision_Process_State& operator=(const Markov_Decision_Process_State&);
 
+        uint get__number_of_atoms() const;
+        uint get__number_of_int_fluents() const;
+        uint get__number_of_double_fluents() const; 
         
 	bool operator==(const Markov_Decision_Process_State& state) const;
 	bool operator<(const Markov_Decision_Process_State& state) const;
-	inline std::size_t hash_value() const;
+	std::size_t hash_value() const;
 
         /* (see \member{boolean_State}) */
         void flip(uint);
@@ -65,26 +70,23 @@ namespace Planning
         /* What is the value of the int number at \argument{index}.*/
         int get__int(uint index) const;
         void set__int(uint index, int value);
-        
+
+        /* Interface assumes that all the transitions associated with
+         * a given action A are entered before transitions associated
+         * with some distinct transition B!=A are entered.
+         *
+         * - \argument{Markov_Decision_Process_State} is the successor
+         * state under the transition.
+         *
+         * - \argument{double} is the probability of the transition occurring.
+         *
+         * - \argument{operator_index} is the index of the operator
+         * that when executed can cause the transition.*/
+        void push__successor(uint operator_index, const Markov_Decision_Process_State*, double);
     protected:
-        /* For each \LHS{action}, we have the \RHS{probability} that
-         * that action leads to a particular successor. */
-        typedef std::tr1::tuple<uint, double> Successor_Index;
-
-        /* Description of state transition function from *this
-         * state. */
-        typedef std::map<Successor_Index
-                         , Markov_Decision_Process_State> Successors;
-
-        /* Probability of getting a particular successor state. */
-        typedef std::map<Markov_Decision_Process_State
-                         , Successor_Index> Successor_Probability;
-
-        /* (see \typedef{Successors}) */
-        Successors successors;
-        
-        /* (see \typedef{Successor_Probability}) */
-        Successor_Probability successor_Probability;
+        std::vector<uint> successor_driver;
+        std::vector< std::vector<const Markov_Decision_Process_State*> > successors;
+        std::vector< std::vector<double> > successor_probability;
         
         /* State-characterising functions (derived from PDDL "Fluents"). */
         Integer_State integer_State;

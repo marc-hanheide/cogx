@@ -122,39 +122,51 @@ bool Boolean_State::is_true(uint index) const
 
 
 
-
-Boolean_State::Boolean_State(uint size)
+uint Boolean_State::get__number_of_atoms() const
 {
-    data = std::vector<ELEM_TYPE>(CEIL(size));
+    return number_of_atoms;
+}
+
+
+Boolean_State::Boolean_State(uint number_of_atoms)
+    :number_of_atoms(number_of_atoms)
+{
     
+    INTERACTIVE_VERBOSER(true, 7000, "Made an Boolean state with  :: "
+                         <<this->number_of_atoms
+                         <<" propositions.");
     
+    data = std::vector<ELEM_TYPE>(CEIL(number_of_atoms));
+    
+    /*All propositions are initially false.*/
     for(uint i = 0; i < data.size(); i++){
         data[i] = 0;
     }
-
     
-    for(uint i = size + 1; i < SIZE_ELEM * data.size(); i++){
+    for(uint i = number_of_atoms + 1; i < SIZE_ELEM * data.size(); i++){
         flip_on(i);
-    }
-    
+    }    
 
 #ifndef NDEBUG
-    for(uint i = 0 ; i < size; i++){
+    for(uint i = 0 ; i < number_of_atoms; i++){
         assert(is_false(i));
     }
 #endif
 }
     
 Boolean_State::Boolean_State(const Boolean_State& state)
-    :data(state.data)
+    :data(state.data),
+     number_of_atoms(state.number_of_atoms)
+     
 {
 }
 
     
-Boolean_State::Boolean_State(const std::vector<ELEM_TYPE>& tmpData)
-    :data(tmpData)
-{
-}
+// Boolean_State::Boolean_State(const std::vector<ELEM_TYPE>& tmpData)
+//     :data(tmpData),
+//      number_of_atoms(state.number_of_atoms)
+// {
+// }
     
 size_t Boolean_State::hash_value() const
 {
@@ -170,6 +182,7 @@ size_t Boolean_State::hash_value(const std::vector<ELEM_TYPE>& dataRef)
 Boolean_State& Boolean_State::operator=(const Boolean_State& state)
 {
     this->data = state.data;
+    this->number_of_atoms = state.number_of_atoms;
 }
 
     

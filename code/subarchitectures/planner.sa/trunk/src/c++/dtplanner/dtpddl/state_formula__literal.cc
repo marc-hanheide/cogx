@@ -43,23 +43,29 @@ using namespace Planning;
 using namespace Planning::State_Formula;
       
 
-void Literal::set__satisfied(State& state)
+void Literal::set__satisfied(State& state) const
 {
     state.get__literals__satisfaction_status().satisfy(get__id());
 }
 
-void Literal::set__unsatisfied(State& state)
+void Literal::set__unsatisfied(State& state) const
 {
     state.get__literals__satisfaction_status().unsatisfy(get__id());
 }
 
-void Literal::flip_satisfaction(State& state)
+void Literal::flip_satisfaction(State& state) const
 {
+    
+    INTERACTIVE_VERBOSER(true, 7001, "Flipping satisfaction of literal  :: "<<*this);
+    
     state.get__literals__satisfaction_status().flip_satisfaction(get__id());
 
-    if(get__sign() && !state.is_true(get__variable())){
+    /*If it is negative, and the variable is true at the state.*/
+    if(get__sign() && state.is_true(get__variable())){
         state.flip(get__variable());
-    } else if (!get__sign() && state.is_true(get__variable())) {
+    }
+    /*If it is positive, and the variable is false at the state.*/
+    else if (!get__sign() && !state.is_true(get__variable())) {
         state.flip(get__variable());
     }
 }
@@ -69,12 +75,12 @@ bool Literal::is_satisfied(const State& state) const
     return state.get__literals__satisfaction_status().satisfied(get__id());
 }
 
-void Literal::report__newly_satisfied(State& state)
+void Literal::report__newly_satisfied(State& state) const
 {
     set__satisfied(state);
 }
 
-void Literal::report__newly_unsatisfied(State& state)
+void Literal::report__newly_unsatisfied(State& state) const
 {
     set__unsatisfied(state);
 }
@@ -90,33 +96,36 @@ bool Literal::get__sign() const
     return std::tr1::get<1>(contents());
 }
 
-void Literal::flip_variable_on(State& state)
-{
-    if(get__sign()){
-        if(!is_satisfied(state)){
-            flip(state);
-        } 
-    } else {
-        if(is_satisfied(state)){
-            flip(state);
-        }
-    }
-}
+// void Literal::flip_variable_on(State& state) const
+// {
+//     /*negative*/
+//     if(get__sign()){
+//         if(!is_satisfied(state)){
+//             flip(state);
+//         } 
+//     }
+//     /*positive*/
+//     else {
+//         if(is_satisfied(state)){
+//             flip(state);
+//         }
+//     }
+// }
 
-void Literal::flip_variable_off(State& state)
-{
-    if(get__sign()){
-        if(is_satisfied(state)){
-            flip(state);
-        } 
-    } else {
-        if(!is_satisfied(state)){
-            flip(state);
-        }
-    }
-}
+// void Literal::flip_variable_off(State& state) const
+// {
+//     if(get__sign()){
+//         if(is_satisfied(state)){
+//             flip(state);
+//         } 
+//     } else {
+//         if(!is_satisfied(state)){
+//             flip(state);
+//         }
+//     }
+// }
 
-void Literal::flip(State& state)
+void Literal::flip(State& state) const
 {
 
     bool was_satisfied = is_satisfied(state);

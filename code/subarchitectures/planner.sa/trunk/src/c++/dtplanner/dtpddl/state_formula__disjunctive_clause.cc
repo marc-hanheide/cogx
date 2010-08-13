@@ -44,27 +44,27 @@ using namespace Planning;
 using namespace Planning::State_Formula;
       
 
-void Disjunctive_Clause::report__newly_satisfied(State& state)
+void Disjunctive_Clause::report__newly_satisfied(State& state) const
 {
     report__newly_satisfied_literal(state);
 }
 
-void Disjunctive_Clause::report__newly_unsatisfied(State& state)
+void Disjunctive_Clause::report__newly_unsatisfied(State& state) const
 {
     report__newly_unsatisfied_literal(state);
 }
 
-void Disjunctive_Clause::set__satisfied(State& state)
+void Disjunctive_Clause::set__satisfied(State& state) const
 {
     state.get__clauses__satisfaction_status().satisfy(get__id());
 }
 
-void Disjunctive_Clause::set__unsatisfied(State& state)
+void Disjunctive_Clause::set__unsatisfied(State& state) const
 {
     state.get__clauses__satisfaction_status().unsatisfy(get__id());
 }
 
-void Disjunctive_Clause::flip_satisfaction(State& state)
+void Disjunctive_Clause::flip_satisfaction(State& state) const
 {
     state.get__clauses__satisfaction_status().flip_satisfaction(get__id());
 }
@@ -74,17 +74,17 @@ bool Disjunctive_Clause::is_satisfied(const State& state) const
     return state.get__clauses__satisfaction_status().satisfied(get__id());
 }
 
-void Disjunctive_Clause::increment__level_of_satisfaction(State&state)
+void Disjunctive_Clause::increment__level_of_satisfaction(State&state) const
 {
     state.get__clauses__count_status().increment_satisfaction(get__id());
 }
 
-void Disjunctive_Clause::decrement__level_of_satisfaction(State&state)
+void Disjunctive_Clause::decrement__level_of_satisfaction(State&state) const
 {
     state.get__clauses__count_status().decrement_satisfaction(get__id());
 }
 
-void Disjunctive_Clause::set__level_of_satisfaction(uint value, State&state)
+void Disjunctive_Clause::set__level_of_satisfaction(uint value, State&state) const
 {
     state.get__clauses__count_status().set_satisfaction(get__id(), value);
 }
@@ -98,7 +98,7 @@ uint Disjunctive_Clause::get__level_of_satisfaction(State&state) const
 uint Disjunctive_Clause::get__number_of_satisfied_literals(State& state) const
 {return get__level_of_satisfaction(state);}
 
-void Disjunctive_Clause::report__newly_satisfied_literal(State& state)
+void Disjunctive_Clause::report__newly_satisfied_literal(State& state) const
 {
     increment__level_of_satisfaction(state);
 
@@ -114,7 +114,7 @@ void Disjunctive_Clause::report__newly_satisfied_literal(State& state)
     }   
 }
 
-void Disjunctive_Clause::report__newly_unsatisfied_literal(State& state)
+void Disjunctive_Clause::report__newly_unsatisfied_literal(State& state) const
 {
     decrement__level_of_satisfaction(state);
 
