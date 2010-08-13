@@ -4,12 +4,6 @@
  * @author  Michael Zillich,
  *      <A HREF="http://www.cs.bham.ac.uk">The University Of Birmingham</A>
  * @date August 2006
- *
- * TODO: remove finger image
- * TODO: better usage text
- * TODO: when saving poses for images: match pose number to image number:
- *       calibimg_034.jpg -> t034, R034
- * TODO: set window title to current image
  */
 
 #include <stdlib.h>
@@ -30,153 +24,196 @@ using namespace std;
 class CamParsPoses : public CamPars
 {
 private:
-  void WriteVector(FILE *file, float *v, int n);
+  void WriteRowVector(FILE *file, CvMat *m, int i) const;
 protected:
-  virtual void Write(FILE *file);
+  virtual void Write(FILE *file) const;
 public:
-  float cam_matrix[9];
-  float distortion[4];
-  float *trans_vecs;   // translation parts of pose (camera to model) per image
-  float *rot_matrs;    // rotation parts of pose (camera to model) per image
+  CvMat *cam_matrix;   // 3x3 camera matrix
+  CvMat *dist_coeffs;  // 4x1 distortion coefficients
+  CvMat *trans_vecs;   // translation parts of pose (camera to model) per image
+  CvMat *rot_vecs;     // rotation parts of pose (camera to model) per image
+  double mean_reproj_err;   // reprojection error
   int num_points;      // points per image
-  int num_images;      // number of calibration images and thus camera poses
+  int num_images;      // number of images
+  CvMat *img_points;   // Nx2 array of 2D marker points, with N =
+                       // num_points*num_images
+  CvMat *model_points; // Nx3 array of 3D model points
   vector<string> img_names;  // names of images corresponding to poses
-  CvPoint2D32f *img_points;
-  CvPoint3D32f *model_points;
-  bool save_poses;     // save poses when writing file
 
   CamParsPoses();
   virtual ~CamParsPoses();
-  void AllocatePoses();
-  void OpenCV2Internal();
-  void DrawProjectModelPoints(IplImage *img, int num, CvScalar col);
+  /**
+   * Add an image to the list of calibration images.
+   * @param img_name file name of the image to add
+   * @param img the actual image, but note: we just store the filename and only
+   *            use the actual image to get and check image size
+   */
+  void AddImage(const string &img_name, const IplImage *img);
+  /**
+   * Perform the actual calibration.
+   * @param markers nxm marker point positions, with n = the number of
+   *                calibration image and m the number of model points (same for
+   *                each image)
+   * @param model the calibration model
+   */
+  bool Calibrate(vector<CvPoint2D64f> &markers, Model &model);
+  /**
+   * Copy OpenCv calibration parameters to own internal paramters.
+   */
+  void OpenCVParametersToInternal();
+  /**
+   * Draw projected model points for given image number.
+   * @param img IPL image to draw into
+   * @param img_num image number in the sequence of calibration images
+   * @param col color to draw the points
+   * @param distorted_image whether the input image is distorted, or already
+   *                        undistorted (in which case distortion is ommited in
+   *                        the projection).
+   */
+  void DrawProjectedModelPoints(IplImage *img, int img_num, CvScalar col,
+      bool distorted_image);
+  /**
+   * Draw detected marker image points points for given image number.
+   * @param img IPL image to draw into
+   * @param img_num image number in the sequence of calibration images
+   * @param col color to draw the points
+   */
   void DrawImagePoints(IplImage *img, int num, CvScalar col);
-  void EstimateExtrinsicAndDrawModelPoints(IplImage *img, int num, CvScalar col);
-  void ProjectPoint(float *R, float *t,
-      float X, float Y, float Z, float *x, float *y);
 };
 
 CamParsPoses::CamParsPoses()
 {
-  num_images = 0;
+  num_points = 0;
+  img_points = 0;
   trans_vecs = 0;
-  rot_matrs =  0;
-  save_poses = false;
-  for(int k = 0; k < 4; k++)
-    distortion[k] = 0.0;
-  for(int k = 0; k < 8; k++)
-    cam_matrix[k] = 0.0;
-  cam_matrix[8] = 1.0;
+  rot_vecs = 0;
+  mean_reproj_err = HUGE;
+
+  cam_matrix = cvCreateMat(3, 3, CV_64FC1);
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+      cvmSet(cam_matrix, i, j, 0.0);
+  cvmSet(cam_matrix, 2, 2, 1.0);
+
+  dist_coeffs = cvCreateMat(4, 1, CV_64FC1);
+  for(int i = 0; i < 4; i++)
+    cvmSet(dist_coeffs, i, 0,  0.0);
+
 }
 
 CamParsPoses::~CamParsPoses()
 {
-  delete[] trans_vecs;
-  delete[] rot_matrs;
-  delete[] img_points;
-  delete[] model_points;
+  cvReleaseMat(&trans_vecs);
+  cvReleaseMat(&rot_vecs);
+  cvReleaseMat(&img_points);;
+  cvReleaseMat(&model_points);
+  cvReleaseMat(&cam_matrix);
+  cvReleaseMat(&dist_coeffs);
 }
 
-void CamParsPoses::AllocatePoses()
-{
-  trans_vecs = new float[num_images*3];
-  rot_matrs =  new float[num_images*9];
-}
-
-void CamParsPoses::Write(FILE *file)
+void CamParsPoses::Write(FILE *file) const
 {
   CamPars::Write(file);
-  if(save_poses)
+  fprintf(file, "# mean reprojection error\n");
+  fprintf(file, "err = %f\n", mean_reproj_err);
+  fprintf(file,
+      "\n# poses of calibration object w.r.t. camera for each image\n");
+  fprintf(file,
+      "# 3x1 translation vector t [m] and 3x1 rotation vector\n");
+  fprintf(file, "nposes = %d\n", num_images);
+  for(int i = 0; i < num_images; i++)
   {
-    fprintf(file,
-        "\n# poses of calibration object w.r.t. camera for each image\n");
-    fprintf(file,
-        "# 3x1 translation vector t [m] and 3x3 rotation matrix R "
-        "(in row major order)\n");
-    fprintf(file, "nposes = %d\n", num_images);
-    for(int i = 0; i < num_images; i++)
-    {
-      fprintf(file, "# %s\n", img_names[i].c_str());
-      fprintf(file, "pose%d = ", i);
-      WriteVector(file, &trans_vecs[3*i], 3);
-      fprintf(file, "  ");
-      WriteVector(file, &rot_matrs[9*i], 9);
-      fprintf(file, "\n");
-    }
+    fprintf(file, "# %s\n", img_names[i].c_str());
+    fprintf(file, "pose%d = ", i);
+    WriteRowVector(file, trans_vecs, i);
+    fprintf(file, "  ");
+    WriteRowVector(file, rot_vecs, i);
+    fprintf(file, "\n");
   }
 }
 
-void CamParsPoses::WriteVector(FILE *file, float *v, int n)
+void CamParsPoses::WriteRowVector(FILE *file, CvMat *m, int i) const
 {
   fprintf(file, "[");
-  for(int i = 0; i < n; i++)
+  for(int j = 0; j < m->cols; j++)
   {
-    fprintf(file, "%.3f", v[i]);
-    if(i != n-1) fputc(' ', file);
+    fprintf(file, "%.3f", (double)cvmGet(m, i, j));
+    if(j != m->cols-1) fputc(' ', file);
     //else fputc('\n', file);
   }
   fprintf(file, "]");
 }
 
-/**
- * Copy OpenCv calibration parameters to own internal paramters
- */
-void CamParsPoses::OpenCV2Internal()
+void CamParsPoses::OpenCVParametersToInternal()
 {
-  fx = cam_matrix[0];
-  fy = cam_matrix[4];
-  cx = cam_matrix[2];
-  cy = cam_matrix[5];
-  k1 = distortion[0];
-  k2 = distortion[1];
-  p1 = distortion[2];
-  p2 = distortion[3];
+  fx = cvmGet(cam_matrix, 0, 0);
+  fy = cvmGet(cam_matrix, 1, 1);
+  cx = cvmGet(cam_matrix, 0, 2);
+  cy = cvmGet(cam_matrix, 1, 2);
+  k1 = cvmGet(dist_coeffs, 0, 0);
+  k2 = cvmGet(dist_coeffs, 1, 0);
+  p1 = cvmGet(dist_coeffs, 2, 0);
+  p2 = cvmGet(dist_coeffs, 3, 0);
 }
 
-/**
- * Project a 3D model point from world co-ordinates to image pixel
- * co-ordinates.
- * For projection equation see OpenCV manual (OpenCVMan.pdf), p.6-1:
- *  m = A*[Rt]*M
- * X, Y, Z .. model point M in world co-ordinates
- * x, y, z .. image point m in homogenous image co-ordinates
- * R       .. rotation matrix of camera pose
- * t       .. translation vector of camera pose
- * A       .. camera matrix
- */
-void CamParsPoses::ProjectPoint(float *R, float *t,
-    float X, float Y, float Z, float *x, float *y)
+void CamParsPoses::AddImage(const string &img_name, const IplImage *img)
 {
-  float tx, ty, tz, z;
-  float *A = cam_matrix;
-  // R*M + t
-  tx = R[0]*X + R[1]*Y + R[2]*Z + t[0];
-  ty = R[3]*X + R[4]*Y + R[5]*Z + t[1];
-  tz = R[6]*X + R[7]*Y + R[8]*Z + t[2];
-  // A*(..)
-  *x = A[0]*tx + A[1]*ty + A[2]*tz;
-  *y = A[3]*tx + A[4]*ty + A[5]*tz;
-  z = A[6]*tx + A[7]*ty + A[8]*tz;
-  // from homogenous to cartesian image co-ordinates
-  *x = *x/z;
-  *y = *y/z;
+  assert(img != 0);
+  assert(!img_name.empty());
+  if(img_names.empty())
+  {
+    w = img->width;
+    h = img->height;
+  }
+  else
+  {
+    assert(w == img->width && h == img->height);
+  }
+  img_names.push_back(img_name);
 }
 
-void CamParsPoses::DrawProjectModelPoints(IplImage *img, int num, CvScalar col)
+void CamParsPoses::DrawProjectedModelPoints(IplImage *img, int num,
+    CvScalar col, bool distorted_image)
 {
   if(num < num_images)
   {
-    int start = num*num_points;
-    int stop = start + num_points;
-    for(int i = start; i < stop; i++)
+    double _tvec[3];
+    double _rvec[3];
+    CvMat tvec = cvMat(3, 1, CV_64FC1, _tvec);
+    CvMat rvec = cvMat(3, 1, CV_64FC1, _rvec);
+    cvGetRow(trans_vecs, &tvec, num);
+    cvGetRow(rot_vecs, &rvec, num);
+    CvMat *model = cvCreateMat(num_points, 3, CV_64FC1);
+    CvMat *proj_points = cvCreateMat(num_points, 2, CV_64FC1);
+    double _tmp_dist_coeffs[4] = {0., 0., 0., 0.};
+    CvMat tmp_dist_coeffs = cvMat(4, 1, CV_64FC1, _tmp_dist_coeffs);
+
+    // copy the model points corresponding to the first calibration image (note
+    // that of course they are the same for all images)
+    for(int i = 0; i < num_points; i++)
     {
-      float x, y;
-      ProjectPoint(&rot_matrs[num], &trans_vecs[num],
-          model_points[i].x, model_points[i].y, model_points[i].z,
-          &x, &y);
-      CvPoint p1 = cvPoint((int)x, (int)y);
+      cvmSet(model, i, 0, cvmGet(model_points, i, 0));
+      cvmSet(model, i, 1, cvmGet(model_points, i, 1));
+      cvmSet(model, i, 2, cvmGet(model_points, i, 2));
+    }
+
+    // if the input image is distorted, use the distortion coefficients from the
+    // calibration, otherwise leave them 0.
+    if(distorted_image)
+      cvCopy(&dist_coeffs, &tmp_dist_coeffs);
+
+    cvProjectPoints2(model, &rvec, &tvec, cam_matrix, &tmp_dist_coeffs,
+        proj_points);
+
+    for(int i = 0; i < proj_points->rows; i++)
+    {
+      CvPoint p1 = cvPoint((int)cvmGet(proj_points, i, 0),
+                           (int)cvmGet(proj_points, i, 1));
       cvCircle(img, p1, 1, col);
     }
+
+    cvReleaseMat(&model);
+    cvReleaseMat(&proj_points);
   }
 }
 
@@ -188,45 +225,9 @@ void CamParsPoses::DrawImagePoints(IplImage *img, int num, CvScalar col)
     int stop = start + num_points;
     for(int i = start; i < stop; i++)
     {
-      CvPoint p1 = cvPoint((int)img_points[i].x, (int)img_points[i].y);
+      CvPoint p1 = cvPoint((int)cvmGet(img_points, i, 0),
+                           (int)cvmGet(img_points, i ,1));
       cvCircle(img, p1, 1, col);
-    }
-  }
-}
-
-/**
- * Does a pose estimation (i.e. only extrinsic camera parameters) from the
- * num-th image and draws projected points (as little circles) into given image.
- */
-void CamParsPoses::EstimateExtrinsicAndDrawModelPoints(IplImage *img, int num,
-    CvScalar col)
-{
-  if(num < num_images)
-  {
-    float f[2] = {fx, fy};
-    CvPoint2D32f c = {cx, cy};
-    float t[3], r[3];
-    float R[9];
-    CvMat Rmat = cvMat(3, 3, CV_32FC1, R);
-    CvMat rmat = cvMat(3, 1, CV_32FC1, r);
-    CvSize img_size = {w, h};
-    cvFindExtrinsicCameraParams(num_points, img_size,
-        &img_points[num*num_points], &model_points[num*num_points],
-        f, c, distortion, r, t);
-    printf("trans %d-th image: %f %f %f\n", num, t[0], t[1], t[2]);     
-    printf("rot   %d-th image: %f %f %f\n", num, r[0], r[1], r[2]); 
-    cvRodrigues2(&rmat, &Rmat);
-
-    int start = num*num_points;
-    int stop = start + num_points;
-    for(int i = start; i < stop; i++)
-    {
-      float x, y;
-      ProjectPoint(R, t,
-          model_points[i].x, model_points[i].y, model_points[i].z,
-          &x, &y);
-      CvPoint p1 = cvPoint((int)x, (int)y);
-      cvCircle(img, p1, 2, col);
     }
   }
 }
@@ -268,7 +269,7 @@ void DrawPairs(IplImage *img, vector<EllipsePair> &pairs, CvScalar col)
   }
 }
 
-void DrawMarker(IplImage *img, CvPoint2D32f &p, CvScalar col)
+void DrawMarker(IplImage *img, CvPoint2D64f &p, CvScalar col)
 {
   CvPoint p1 = cvPoint((int)p.x, (int)p.y);
   cvCircle(img, p1, 1, col);
@@ -276,157 +277,99 @@ void DrawMarker(IplImage *img, CvPoint2D32f &p, CvScalar col)
   // cvLine(img, cvPoint(x, y - size), cvPoint(x, y + size), col);
 }
 
-void DrawMarkers(IplImage *img, vector<CvPoint2D32f> &markers, int start,
+void DrawMarkers(IplImage *img, vector<CvPoint2D64f> &markers, int start,
     int num, CvScalar col)
 {
   for(int i = start; i < start + num; i++)
     DrawMarker(img, markers[i], col);
 }
 
-void Calibrate(vector<CvPoint2D32f> &markers, int img_width, int img_height,
-  Model &model, CamParsPoses &parms)
+void DrawEdgels(IplImage *img, vector<CvPoint2D64f> &all_edgels, 
+    CvScalar col)
 {
-  try
+  for(size_t i = 0; i < all_edgels.size(); i++)
   {
-    CvSize img_size = {img_width, img_height};
-    int num_points = model.NumPoints();
-    // array with number of points for each image (always the same in our case)
-    int *points_per_img = new int[parms.num_images];
-    // array with markers in each image
-    parms.img_points = new CvPoint2D32f[parms.num_images*num_points];
-    // array with (3D) model markers
-    parms.model_points = new CvPoint3D32f[parms.num_images*num_points];
-    // we have the same number of points in each image
-    for(int i = 0; i < parms.num_images; i++)
-      points_per_img[i] = num_points;
-    // fill image points
-    for(int i = 0; i < parms.num_images*num_points; i++)
-      parms.img_points[i] = markers[i];
-    // fill model points
-    int k = 0;
-    for(int i = 0; i < parms.num_images; i++)
-      for(int y = 0; y < model.ny; y++)
+    CvPoint p1 = cvPoint((int)all_edgels[i].x, (int)all_edgels[i].y);
+    cvLine(img, p1, p1, col);
+  }
+}
+
+bool CamParsPoses::Calibrate(vector<CvPoint2D64f> &markers, Model &model)
+{
+  num_images = (int)img_names.size();
+  num_points = model.NumPoints();
+  int total = num_points*num_images;
+  if(num_images <= 0)
+  {
+    printf("calibrate: no images given\n");
+    return false;
+  }
+  assert(total == (int)markers.size());
+
+  img_points = cvCreateMat(total, 2, CV_64FC1);
+  model_points = cvCreateMat(total, 3, CV_64FC1);
+  trans_vecs = cvCreateMat(num_images, 3, CV_64FC1);
+  rot_vecs = cvCreateMat(num_images, 3, CV_64FC1);
+
+  // we have the same number of points in each image
+  // array with number of points for each image (always the same in our case)
+  int _point_counts[num_images];
+  CvMat point_counts = cvMat(num_images, 1, CV_32SC1, _point_counts);
+  for(int i = 0; i < num_images; i++)
+    _point_counts[i] = num_points;
+  // fill image points
+  for(int i = 0; i < total; i++)
+  {
+    cvmSet(img_points, i, 0, markers[i].x);
+    cvmSet(img_points, i, 1, markers[i].y);
+  }
+  // fill model points
+  int k = 0;
+  for(int i = 0; i < num_images; i++)
+    for(int y = 0; y < model.ny; y++)
+    {
+      // note that the "top right" corner (nx, ny) is missing
+      int nx = (y < model.ny - 1 ? model.nx : model.nx - 1);
+      for(int x = 0; x < nx; x++)
       {
-        // note that the "top right" corner (nx, ny) is missing
-        int nx = (y < model.ny - 1 ? model.nx : model.nx - 1);
-        for(int x = 0; x < nx; x++)
-        {
-          parms.model_points[k].x = x*model.dx;
-          parms.model_points[k].y = y*model.dy;
-          parms.model_points[k].z = 0.0;
-          k++;
-        }
+        cvmSet(model_points, k, 0, x*model.dx);
+        cvmSet(model_points, k, 1, y*model.dy);
+        cvmSet(model_points, k, 2, 0.0);
+        k++;
       }
-    parms.AllocatePoses();
-    // the actual calibration
-    cvCalibrateCamera(
-       parms.num_images,
-       points_per_img,
-       img_size,
-       parms.img_points,
-       parms.model_points,
-       parms.distortion,
-       parms.cam_matrix,
-       parms.trans_vecs,
-       parms.rot_matrs,
-       0    // useIntrinsicGuess, leave 0
-    );
-    parms.OpenCV2Internal();
-    delete[] points_per_img;
-  }
-  catch (std::bad_alloc & exc)
-  {
-    fprintf(stderr, "failed to allocate a ridiculously small amount memory\n");
-  }
+    }
+
+  CvSize img_size = {w, h};
+  // the actual calibration
+  mean_reproj_err = cvCalibrateCamera2(model_points,
+                              img_points,
+                              &point_counts,
+                              img_size,
+                              cam_matrix,
+                              dist_coeffs,
+                              rot_vecs,
+                              trans_vecs);
+  mean_reproj_err /= (double)total;
+
+  OpenCVParametersToInternal();
+
+  return true;
 }
 
-
-#if 0
-/*
- * Draw projected model (cirle center) center points.
- * For projection equation see OpenCV manual (OpenCVMan.pdf), p.6-1:
- *  m = A*[Rt]*M
- * where M model point in world co-ordinates
- * and m image point in homogenous image co-ordinates
- */
-void DrawProjectedMarkers(, vector<CvPoint2D32f> &markers,
-  int model_nx, int model_ny, double model_dx, double model_dy,
-  CamParameters &parms)
+void PrintUsage(const char *argv0)
 {
-  // project pattern grid
-  for(int i = 0; i < model_nx; i++)
-    DrawLine(model_dx*i, 0., 0.,
-        model_dx*i, model_dy*(model_ny-1), 0.);
-  for(int j = 0; j < model_ny; j++)
-    DrawLine(0., model_dy*j, 0.,
-        model_dx*(model_nx-1), model_dy*j, 0.);
+  printf(
+    "usage: %s imagebase start stop focal_length outfile\n"
+    "  imagebase .. base name of image files: e.g. img%%03d.jpg, which would\n"
+    "               load img000.jpg, img001.jpg, ... img019.jpg\n"
+    "  start .. first image number, e.g. 0\n"
+    "  stop  .. last image number, e.g. 19\n"
+    "  focal_length .. nominal focal length in [mm]. Note that of course the\n"
+    "                  actual focal length can not be determined (only the\n"
+    "                  ratio of focal length and pixel size\n"
+    "  outfile .. output file name\n",
+    argv0);
 }
-
-/**
- * Draw the co-ordinate axes of the calibration model.
- */
-void DrawProjectedCoordinateAxes(int model_dx)
-{
-  // length of axes drawn is derived from circle distance
-  float l = 1.5*model_dx;
-  // length and width of arrows
-  float la = 0.85*l, wa = 0.05*l;
-
-  DrawProjectedLine(0, 0, 0,  la, 0, 0);
-  DrawProjectedLine(la, wa, 0,  la, -wa, 0);
-  DrawProjectedLine(la, wa, 0,  l, 0, 0);
-  DrawProjectedLine(la, -wa, 0,  l, 0, 0);
-  DrawProjectedText(l, 0, 0, "x");
-
-  DrawProjectedLine(0, 0, 0,  0, la, 0);
-  DrawProjectedLine(wa, la, 0,  -wa, la, 0);
-  DrawProjectedLine(wa, la, 0,  0, l, 0);
-  DrawProjectedLine(-wa, la, 0,  0, l, 0);
-  DrawProjectedText(0, l, 0, "y");
-
-  DrawProjectedLine(0, 0, 0,  0, 0, la);
-  DrawProjectedLine(wa, 0, la,  -wa, 0, la);
-  DrawProjectedLine(wa, 0, la,  0, 0, l);
-  DrawProjectedLine(-wa, 0, la,  0, 0, l);
-  DrawProjectedText(0, 0, l, "z");
-}
-
-void DrawProjecedLine(IplImage *img,
-    float X1, float Y1, float Z1,
-    float X2, float Y2, float Z2,
-    CamParameters &parms)
-{
-  // let R point to rotation matrix of last image
-  float *R = &parms.rot_matrs[9*(parms.num_images - 1)];
-  // let t point to translation vector of last image
-  float *t = &parms.trans_vecs[3*(parms.num_images - 1)];
-  // camera matrix
-  float *A = parms.cam_matrix;
-  float x1, y1, x2, y2;
-
-  ProjectPoint(R, t, A, X1, Y1, Z1, &x1, &y1);
-  ProjectPoint(R, t, A, X2, Y2, Z2, &x2, &y2);
-  cvLine(img, 
-  get_window()->draw_line(gc, (int)floor(x1+0.5), (int)floor(y1+0.5),
-      (int)floor(x2+0.5), (int)floor(y2+0.5));
-}
-
-void DrawProjectedText(const Glib::RefPtr<const Gdk::GC>& gc,
-      float X, float Y, float Z, const char *text)
-{
-  // let R point to rotation matrix of last image
-  float *R = &parms.rot_matrs[9*(parms.num_images - 1)];
-  // let t point to translation vector of last image
-  float *t = &parms.trans_vecs[3*(parms.num_images - 1)];
-  // camera matrix
-  float *A = parms.cam_matrix;
-  float x, y;
-  Glib::RefPtr<Pango::Layout> caption = create_pango_layout(text);
-
-  ProjectPoint(R, t, A, X, Y, Z, &x, &y);
-  get_window()->draw_layout(gc, (int)x, (int)y , caption);
-}
-#endif
 
 int main(int argc, char **argv)
 {
@@ -434,28 +377,25 @@ int main(int argc, char **argv)
   char *basename = 0;
   int cnt, cnt_min, cnt_max;
   CamParsPoses parms;
-  vector<CvPoint2D32f> markers;
+  vector<CvPoint2D64f> markers;
   const char *parm_filename = 0;
   // TODO: read from file or command line
   Model model = {7, 5, 40., 40.};
 
-  if(argc != 7)
+  if(argc != 6)
   {
-    printf(
-      "usage: %s imagebase start stop nominal_focal_length_mm save_poses calibfile\n",
-      argv[0]);
+    PrintUsage(argv[0]);
     exit(EXIT_FAILURE);
   }
   basename = argv[1];
   cnt_min = atoi(argv[2]);
   cnt_max = atoi(argv[3]);
   parms.f = atof(argv[4]);
-  parms.save_poses = (bool)atoi(argv[5]);
-  parm_filename = argv[6];
+  parm_filename = argv[5];
   parms.num_points = model.NumPoints();
   cnt = cnt_min;
 
-  cvNamedWindow("camcalb", 0);
+  cvNamedWindow("camcalb");
   printf("press <space> to move to next image ...\n");
   while(cnt <= cnt_max && !done)
   {
@@ -463,6 +403,7 @@ int main(int argc, char **argv)
     IplImage *img = 0;
     vector<Ellipse> ells;
     vector<EllipsePair> pairs;
+    vector<CvPoint2D64f> all_edgels;
     char imgname[1024];
 
     snprintf(imgname, 1024, basename, cnt);
@@ -473,20 +414,17 @@ int main(int argc, char **argv)
       fprintf(stderr, "failed to open image '%s'\n", imgname);
       exit(EXIT_FAILURE);
     }
-    parms.w = img->width;
-    parms.h = img->height;
-    cvResizeWindow("camcalb", parms.w, parms.h);
     if(DetectEllipseMarkers((char*)img->imageData, img->width, img->height,
-       model, markers, ells, pairs))
+       model, markers, ells, pairs, all_edgels))
     {
-      DrawMarkers(img, markers, parms.num_images*model.NumPoints(),
+      DrawMarkers(img, markers, parms.img_names.size()*model.NumPoints(),
           model.NumPoints(), CV_RGB(0,255,0));
-      parms.img_names.push_back(imgname);
-      parms.num_images++;
+      parms.AddImage(imgname, img);
     }
     else
     {
-      // DrawEllipses(img, ells, CV_RGB(255,0,0));
+      DrawEdgels(img, all_edgels, CV_RGB(0,255,0));
+      DrawEllipses(img, ells, CV_RGB(0,0,255));
       DrawPairs(img, pairs, CV_RGB(255,0,0));
     }
     cvShowImage("camcalb", img);
@@ -503,98 +441,30 @@ int main(int argc, char **argv)
         ;
     }
   }
-  Calibrate(markers, parms.w, parms.h, model, parms);
+  if(parms.Calibrate(markers, model))
   {
+    printf("mean reprojection error: %f\n", parms.mean_reproj_err);
     // reload and undistort the 0-th image
     IplImage *img = cvLoadImage(parms.img_names[0].c_str(), 1);
     IplImage *undist = cvCloneImage(img);
-    cvUnDistortOnce(img, undist, parms.cam_matrix, parms.distortion, 1);
+    cvUndistort2(img, undist, parms.cam_matrix, parms.dist_coeffs);
     // and draw projected model points
-    parms.DrawProjectModelPoints(undist, 0, CV_RGB(255,0,255));
-    // Just to see how well pose estimation (i.e. estimation of only the
-    // extrinsic camera parameters) works from a single image:
-    // parms.EstimateExtrinsicAndDrawModelPoints(undist, 0, CV_RGB(0,255,0));
+    parms.DrawProjectedModelPoints(undist, 0, CV_RGB(255,0,255), false);
     printf("showing undistorted image with projected model points\n");
     cvShowImage("camcalb", undist);
     printf("press <space> to continue ...\n");
     cvWaitKey();
     cvReleaseImage(&img);
     cvReleaseImage(&undist);
+    parms.Save(parm_filename);
+    printf("camera parameters saved to %s\n", parm_filename);
   }
-  parms.Save(parm_filename);
-  printf("camera parameters saved to %s\n", parm_filename);
+  else
+  {
+    printf("failed to calibrate\n");
+  }
   cvDestroyWindow("camcalb");
 
-  exit(0);
+  exit(EXIT_SUCCESS);
 }
 
-int main_live(int argc, char **argv)
-{
-  bool bayer = true;
-  bool done = false;
-  CvCapture* capture = 0;
-  IplImage *frame = 0, *img = 0;
-  vector<CvPoint2D32f> centers;
-  vector<Ellipse> ells;
-  vector<EllipsePair> pairs;
-  Model model = {7, 5, 40., 40.};
-
-  if(argc != 2)
-  {
-    printf("usage: %s image\n", argv[0]);
-    exit(EXIT_FAILURE);
-  }
-  capture = cvCreateCameraCapture(0);
-  if(!capture)
-  {
-    fprintf(stderr,"Could not initialize capturing.\n");
-    exit(EXIT_FAILURE);
-  }
-  if(bayer)
-    cvSetCaptureProperty(capture, CV_CAP_PROP_CONVERT_RGB, 0.0);
-
-  cvNamedWindow("camcalb", 0);
-
-  while(!done)
-  {
-    int c;
-
-    frame = cvQueryFrame(capture);
-    // sometimes grabbing fails
-    if(frame)
-    {
-      img = cvCloneImage(frame);
-      if(bayer)
-      {
-        IplImage *buf = cvCreateImage(cvSize(img->width, img->height),
-            IPL_DEPTH_8U, 3);
-        cvCvtColor(img, buf, CV_BayerRG2RGB);
-        cvReleaseImage(&img);
-        img = buf;  // don't forget to free later
-      }
-      DetectEllipseMarkers((char*)img->imageData, img->width, img->height,
-        model, centers, ells, pairs);
-      //DrawEllipses(img, ells);
-      //DrawPairs(img, pairs);
-      //DrawMarkers(img, centers);
-      cvShowImage("camcalb", img);
-      cvReleaseImage(&img);
-    }
-    c = cvWaitKey(10);
-    switch(c)
-    {
-      case 's':
-        printf("snapshot\n");
-        break;
-      case ESCAPE:
-      case 'q':
-        done = true;
-        break;
-      default:
-        ;
-    }
-  }
-  cvReleaseCapture(&capture);
-  cvDestroyWindow("camcalb");
-  exit(0);
-}

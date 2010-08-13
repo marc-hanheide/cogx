@@ -49,7 +49,7 @@ CamPars::CamPars(double fnew)
   w = h = 0;
 }
 
-void CamPars::Write(FILE *file)
+void CamPars::Write(FILE *file) const
 {
   fprintf(file, "# focal lengths in [pix]\n");
   fprintf(file, "fx = %.6f\n", fx);
@@ -82,7 +82,7 @@ void CamPars::Write(FILE *file)
  * Check if str corresponds to name (same length and same content).
  * Note that str is NOT '\0' delimited!
  */
-bool CamPars::IsName(const char *str, size_t len, const char *name)
+bool CamPars::IsName(const char *str, size_t len, const char *name) const
 {
   return len == strlen(name) && strncmp(str, name, len) == 0;
 }
@@ -158,7 +158,7 @@ void CamPars::Read(FILE *file) throw(runtime_error)
     throw runtime_error("CamPars::Read: invalid h");
 }
 
-void CamPars::Save(const char *filename) throw(runtime_error)
+void CamPars::Save(const char *filename) const throw(runtime_error)
 {
   FILE *file;
   file = fopen(filename, "w");

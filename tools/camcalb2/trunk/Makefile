@@ -6,7 +6,7 @@ PROGRAMS = camcalb posecalb invertpose
 OBJECTS = camcalb.o ell_markers.o CamPars.o posecalb.o
 DEFS =
 CINC += -I. -Imatas
-CFLAGS += -Wall -O2 $(CINC) $(DEFS)
+CFLAGS += -g -Wall $(CINC) $(DEFS)
 LDLIBS += -lcv -lcxcore -lhighgui
 LDFLAGS += $(LDLIBS)
 
