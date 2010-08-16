@@ -16,7 +16,7 @@ fi
 LOGNAME=./log
 
 echo "Start Log4J"
-xterm -T "LOG4J" -e bash -c "output/bin/log4j-server log4j.properties.client > $LOGNAME.xml" &
+xterm -T "LOG4J" -e bash -c "output/bin/log4j-server log4j.properties > $LOGNAME.xml" &
 PIDS="$PIDS $!"
 sleep 2
 
@@ -45,7 +45,7 @@ sleep 20
 #BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 0 0    1 -1    2 0    0 0 # jxh
 ##BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 0 0  1 0      1 -1    1.4 -1.8      4 -1    0 0 # ben
 #BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 0 0  1 0 5.8 0 5.8 4
-BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 0 0 6.3 0
+#BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 0 0 6.3 0
 
 #if [ "$1" ]; then
 #    output/bin/universalIceClient MotiveFilterManager localhost motivation.slice.RemoteFilterServer setPriority GeneralGoalMotive UNSURFACE

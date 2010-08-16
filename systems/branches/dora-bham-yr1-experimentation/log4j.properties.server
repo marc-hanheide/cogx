@@ -1,14 +1,18 @@
-log4j.rootLogger=DEBUG, console
+log4j.rootLogger=DEBUG, XMLLog, console
 
 
+#log4j.appender.SocketApp=org.apache.log4j.net.SocketAppender
+#log4j.appender.SocketApp.Port=48143
+#log4j.appender.SocketApp.RemoteHost=127.0.0.1
+#log4j.appender.SocketApp.layout=org.apache.log4j.xml.XMLLayout
+
+# console is set to be a ConsoleAppender. 
 log4j.appender.console=org.apache.log4j.ConsoleAppender
 log4j.appender.console.layout=org.apache.log4j.xml.XMLLayout
 
-
-
 log4j.appender.XMLLog=org.apache.log4j.FileAppender
 log4j.appender.XMLLog.Threshold=INFO
-log4j.appender.XMLLog.File=cast-server-info.lxml
+log4j.appender.XMLLog.File=cast-server-info.xml
 log4j.appender.XMLLog.Append=false
 log4j.appender.XMLLog.layout=org.apache.log4j.xml.XMLLayout
 
