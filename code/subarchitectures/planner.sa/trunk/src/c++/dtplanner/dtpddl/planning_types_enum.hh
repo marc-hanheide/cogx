@@ -50,7 +50,9 @@ namespace Planning
         formula_true = 9,
         formula_false = 10,
         observational_predicate,
-        observational_proposition,         /* DT-PDDL "ground percept". So a ground percept symbol.*/
+        observational_proposition,         /* DT-PDDL "ground observational schema".*/
+        perceptual_predicate,
+        perceptual_proposition,         /* DT-PDDL "ground percept". So a ground percept symbol.*/
         state_ground_function,
         state_function,
         perceptual_ground_function,
@@ -109,7 +111,17 @@ namespace Planning
         state_transformation,
         probabilistic_state_transformation,
         simple_int_transformation,
-        simple_double_transformation
+        simple_double_transformation,
+        /* ------------------------ Observations ------------------------ */
+        /* ------------------------ Observations ------------------------ */
+        /* ------------------------ Observations ------------------------ */
+        /* ------------------------ Observations ------------------------ */
+        /* ------------------------ Observations ------------------------ */
+        action_literal,
+        action_disjunctive_clause,
+        action_conjunctive_normal_form_formula,
+        observation,
+        probabilistic_observation
 //         int_valued_function, /* PDDL integer valued function symbol --
 //                               * e.g. keyword "total-cost" for
 //                               * propositional planning problems with

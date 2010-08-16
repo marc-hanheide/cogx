@@ -31,27 +31,42 @@
  * 
  */
 
-#ifndef BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
-#define BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
 
-#include "boolean_state.hh"
+#ifndef ACTION__LITERAL_HH
+#define ACTION__LITERAL_HH
+
+
+#include "action_basics.hh"
+#include "state_formula.hh"
+#include "planning_types_enum.hh"
 
 namespace Planning
-{  
-    class Boolean__Satisfaction_Status_Management
+{
+    /*Created as unsatisfied.*/
+    class Action_Literal
+        : public State_Formula::_Satisfaction_Listener<enum_types::action_literal /* Type identifier.*/
+                                        , uint /* Action symbol identifier.*/
+                                        , bool >
     {
     public:
-        Boolean__Satisfaction_Status_Management(uint num = 0);
-        
-        bool valid_index(uint i) const;
-        void satisfy(uint i);
-        void unsatisfy(uint i);
-        void flip_satisfaction(uint i);
-        bool satisfied(uint i) const;
-    protected:
-        /* Derived from \parent{Markov_Decision_Process_State} fields.*/
-        Boolean_State status;
+
+        void report__newly_satisfied(State&) const;
+        void report__newly_unsatisfied(State&) const;
+            
+        /* Action symbol that is the subject of this literal.*/
+        uint get__action_symbol() const;
+
+        /* Sign of this literal (false is positive, true is negative). */
+        bool get__sign() const;
+            
+        void configure__negatives(CXX__PTR_ANNOTATION(List__Action_Literals)&);
+    private:
+        /*Only one action can be executed at a time.*/
+        CXX__PTR_ANNOTATION(List__Action_Literals) negatives;
     };
+ 
 }
+
+
 
 #endif

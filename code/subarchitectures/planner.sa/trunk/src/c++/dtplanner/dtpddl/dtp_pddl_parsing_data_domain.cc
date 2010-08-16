@@ -42,6 +42,7 @@ Domain_Data::Domain_Data()
     :got__action_precondition(false),
      got__action_effect(false),
      got__observation_precondition(false),
+     got__observation_execution_precondition(false),
      got__observation_effect(false)
 {
     symbol_theory = this;
@@ -366,6 +367,16 @@ Planning::Domain_Name  Domain_Data::get__domain_Name() const {
 };
 
 
+
+const Planning::Observation_Schemas& Domain_Data::get__observation_Schemas() const
+{
+    return observation_Schemas;
+}
+
+Planning::Observation_Schemas& Domain_Data::get__observation_Schemas()
+{
+    return observation_Schemas;
+}
 
           
 void Domain_Data::add__requirement(const std::string& str){

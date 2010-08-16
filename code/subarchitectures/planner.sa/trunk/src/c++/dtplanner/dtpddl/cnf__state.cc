@@ -37,14 +37,67 @@
 using namespace Planning;
 
 CNF__State::CNF__State(uint formulae_count
-           , uint disjunctions_count
-           , uint literals_count)
+                       , uint disjunctions_count
+                       , uint action_formulae_count
+                       , uint action_disjunctions_count)
     :cnfs__count_status(formulae_count),
      cnfs__satisfaction_status(formulae_count),
      clauses__count_status(disjunctions_count),
      clauses__satisfaction_status(disjunctions_count),
-     literals__satisfaction_status(literals_count)
+     action_cnfs__count_status(action_formulae_count),
+     action_cnfs__satisfaction_status(action_formulae_count),
+     action_clauses__count_status(action_disjunctions_count),
+     action_clauses__satisfaction_status(action_disjunctions_count)// ,
+//      literals__satisfaction_status(literals_count)
 {
+}
+
+
+const Unsigned_Integer__Satisfaction_Status_Management& CNF__State::get__action_cnfs__count_status() const
+{
+    return action_cnfs__count_status;
+}
+
+Unsigned_Integer__Satisfaction_Status_Management& CNF__State::get__action_cnfs__count_status()
+{
+    return action_cnfs__count_status;
+}
+
+const Boolean__Satisfaction_Status_Management& CNF__State::get__action_cnfs__satisfaction_status() const
+{
+    return action_cnfs__satisfaction_status;
+}
+
+Boolean__Satisfaction_Status_Management& CNF__State::get__action_cnfs__satisfaction_status()
+{
+    return action_cnfs__satisfaction_status;
+}
+
+        
+
+
+const Unsigned_Integer__Satisfaction_Status_Management&
+CNF__State::get__action_clauses__count_status() const
+{
+    return action_clauses__count_status;
+}
+
+Unsigned_Integer__Satisfaction_Status_Management&
+CNF__State::get__action_clauses__count_status()
+{
+    return action_clauses__count_status;
+}
+
+const Boolean__Satisfaction_Status_Management&
+CNF__State::get__action_clauses__satisfaction_status() const
+{
+    return action_clauses__satisfaction_status;
+}
+
+Boolean__Satisfaction_Status_Management&
+CNF__State::get__action_clauses__satisfaction_status()
+{
+    return action_clauses__satisfaction_status;
 }
 
 
@@ -90,12 +143,12 @@ Boolean__Satisfaction_Status_Management& CNF__State::get__clauses__satisfaction_
 }
 
 
-const Boolean__Satisfaction_Status_Management& CNF__State::get__literals__satisfaction_status() const
-{
-    return literals__satisfaction_status;
-}
+// const Boolean__Satisfaction_Status_Management& CNF__State::get__literals__satisfaction_status() const
+// {
+//     return literals__satisfaction_status;
+// }
 
-Boolean__Satisfaction_Status_Management& CNF__State::get__literals__satisfaction_status()
-{
-    return literals__satisfaction_status;
-}
+// Boolean__Satisfaction_Status_Management& CNF__State::get__literals__satisfaction_status()
+// {
+//     return literals__satisfaction_status;
+// }

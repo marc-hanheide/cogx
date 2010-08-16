@@ -35,23 +35,28 @@
 
 using namespace Planning::Parsing;
 
-void Domain_Data::add__observation_execution()
+
+void Domain_Data::add__observation_execution_precondition()
 {
+    got__observation_execution_precondition = true;
+
     QUERY_UNRECOVERABLE_ERROR(0 != formula_parsing_level,
                               "Expecting formulae to appear at parse level :: "<<0<<std::endl
                               <<"But got :: "<<formula_parsing_level<<std::endl
-                              <<"When parsing precondition for observation :: "<<observation_Name<<std::endl);
+                              <<"When parsing execution precondition for observation :: "<<observation_Name<<std::endl);
+    
     
     QUERY_UNRECOVERABLE_ERROR(
         subformulae.find(1) == subformulae.end()
-        , "Parsed an empty precondition for observation :: "<<observation_Name<<std::endl);
+        , "Parsed an empty execution precondition for observation :: "<<observation_Name<<std::endl);
     
     QUERY_UNRECOVERABLE_ERROR(
         subformulae[1].size() != 1
-        , "Parsed multiple separate formula while getting precondition for :: "
+        , "Parsed multiple separate formula while getting execution precondition for :: "
         <<observation_Name<<std::endl);
+
     
-    this->observation_execution = subformulae[1].back();
+    this->observation_execution_precondition = subformulae[1].back();
 
     subformulae[1] = Formula::Subformulae();
 }
@@ -121,17 +126,28 @@ void Domain_Data::add__observation()
         observation_precondition = tmp;
     }
     
+    if(!got__observation_execution_precondition){
+        
+        NEW_object_referenced_WRAPPED_deref_visitable_POINTER
+            (Planning::Formula::Vacuous
+             , tmp
+             , static_cast<void*>(0));
+        observation_execution_precondition = tmp;
+    }
+    
     
     NEW_object_referenced_WRAPPED(Planning::Observation_Schema
                                   , new_observation_schema
                                   , observation_Header
                                   , observation_precondition
-                                  , observation_effect);
+                                  , observation_effect
+                                  , observation_execution_precondition);
 
     observation_Schemas.insert(new_observation_schema);
 
     got__observation_effect = false;
     got__observation_precondition = false;
+    got__observation_execution_precondition = false;
 }
 
 

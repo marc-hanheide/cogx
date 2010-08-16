@@ -44,18 +44,33 @@ namespace Planning
     class CNF__State
     {
     public:
-        CNF__State(uint formulae_count = 0, uint disjunctions_count = 0, uint literals_count = 0);
+        CNF__State(uint formulae_count = 0
+                   , uint disjunctions_count = 0
+                   , uint action_formulae_count = 0
+                   , uint action_disjunctions_count = 0);
         
         const Unsigned_Integer__Satisfaction_Status_Management& get__cnfs__count_status() const;
         Unsigned_Integer__Satisfaction_Status_Management& get__cnfs__count_status();
         const Boolean__Satisfaction_Status_Management& get__cnfs__satisfaction_status() const;
         Boolean__Satisfaction_Status_Management& get__cnfs__satisfaction_status();
+        
+        const Unsigned_Integer__Satisfaction_Status_Management& get__action_cnfs__count_status() const;
+        Unsigned_Integer__Satisfaction_Status_Management& get__action_cnfs__count_status();
+        const Boolean__Satisfaction_Status_Management& get__action_cnfs__satisfaction_status() const;
+        Boolean__Satisfaction_Status_Management& get__action_cnfs__satisfaction_status();
+        
+        
         const Unsigned_Integer__Satisfaction_Status_Management& get__clauses__count_status() const;
         Unsigned_Integer__Satisfaction_Status_Management& get__clauses__count_status();
         const Boolean__Satisfaction_Status_Management& get__clauses__satisfaction_status() const;
         Boolean__Satisfaction_Status_Management& get__clauses__satisfaction_status();
-        const Boolean__Satisfaction_Status_Management& get__literals__satisfaction_status() const;
-        Boolean__Satisfaction_Status_Management& get__literals__satisfaction_status();
+
+
+        const Unsigned_Integer__Satisfaction_Status_Management& get__action_clauses__count_status() const;
+        Unsigned_Integer__Satisfaction_Status_Management& get__action_clauses__count_status();
+        const Boolean__Satisfaction_Status_Management& get__action_clauses__satisfaction_status() const;
+        Boolean__Satisfaction_Status_Management& get__action_clauses__satisfaction_status();
+
 
     private:
         
@@ -79,10 +94,30 @@ namespace Planning
         Boolean__Satisfaction_Status_Management clauses__satisfaction_status;
 
         
-        /* Tracks what literals are satisfied.  -- Where
+        /* Tracks the number of action-literals satisfied in each
+         * action-clause.  -- Where this is not a starting state, the
+         * values should be initially all false. */
+        Unsigned_Integer__Satisfaction_Status_Management action_clauses__count_status;
+        /* Tracks what action-clauses are satisfied.  -- Where
          * this is not a starting state, the values should be
-         * initially copied from the predecessor state. */
-        Boolean__Satisfaction_Status_Management literals__satisfaction_status;
+         * initially all false. */
+        Boolean__Satisfaction_Status_Management action_clauses__satisfaction_status;
+
+        
+        
+        /* Tracks the number of action-clauses satisfied in each CNF -- Where
+         * this is not a starting state, the values should be
+         * initially all false. */
+        Unsigned_Integer__Satisfaction_Status_Management action_cnfs__count_status;
+        /* Tracks what action-CNFs are satisfied.  -- Where
+         * this is not a starting state, the values should be
+         * initially all false. */
+        Boolean__Satisfaction_Status_Management action_cnfs__satisfaction_status;
+
+//         /* Tracks what literals are satisfied.  -- Where
+//          * this is not a starting state, the values should be
+//          * initially copied from the predecessor state. */
+//         Boolean__Satisfaction_Status_Management literals__satisfaction_status;
     };
 }
 

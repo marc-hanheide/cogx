@@ -35,8 +35,6 @@
 
 namespace Planning
 {
-    WRAPPED_STRING(enum_types::observation_name, Observation_Name);
-
     class Observation_Header :
         public First_Order_Symbol_Description<enum_types::observation_header
                                               , Observation_Name>
@@ -44,6 +42,7 @@ namespace Planning
     
     class Observation_Schema : public type_wrapper<enum_types::observation_schema
                                               , Planning::Observation_Header
+                                              , Planning::Formula::Subformula
                                               , Planning::Formula::Subformula
                                               , Planning::Formula::Subformula>
     {
@@ -59,6 +58,14 @@ namespace Planning
         Observation_Name get__name() const;
         Planning::Formula::Subformula get__effect() const;
         Planning::Formula::Subformula get__precondition() const;
+        Planning::Formula::Subformula get__execution_precondition() const;
+        
+        /* WARNING :: Make sure that the altered precondition is
+         * logically equivalent to the original precondition,
+         * otherwise the program behaviour will unlikely be what you
+         * intended. */
+        void alter__precondition(Planning::Formula::Subformula);
+        void alter__execution_precondition(Planning::Formula::Subformula);
     };
 
     typedef std::set<Observation_Schema> Observation_Schemas;

@@ -265,7 +265,6 @@ public:
     void TYPE_NAME::cxx_deref_pointer_visitable__accept(const CXX__deref__shared_ptr__visitable<ELEM_TYPE>& in) \
     {                                                                   \
                                                                         \
-        std::cerr<<"Visitor got :: "<<in<<std::endl;                    \
         this->operator()(in);                                           \
     }                                                                   \
 

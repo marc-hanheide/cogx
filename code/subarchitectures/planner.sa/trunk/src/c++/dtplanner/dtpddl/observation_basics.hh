@@ -1,3 +1,4 @@
+
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
  * Authorship of this source code was supported by EC FP7-IST grant
@@ -31,27 +32,39 @@
  * 
  */
 
-#ifndef BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
-#define BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
+#ifndef OBSERVATION_BASICS_HH
+#define OBSERVATION_BASICS_HH
 
-#include "boolean_state.hh"
+#include "state_basics.hh"
+#include "action_basics.hh"
+
 
 namespace Planning
-{  
-    class Boolean__Satisfaction_Status_Management
-    {
-    public:
-        Boolean__Satisfaction_Status_Management(uint num = 0);
-        
-        bool valid_index(uint i) const;
-        void satisfy(uint i);
-        void unsatisfy(uint i);
-        void flip_satisfaction(uint i);
-        bool satisfied(uint i) const;
-    protected:
-        /* Derived from \parent{Markov_Decision_Process_State} fields.*/
-        Boolean_State status;
-    };
+{
+    class Observational_State;
+
+    
+    class Observation;
+    
+    typedef CXX__deref__shared_ptr<Observation> Observation__Pointer; 
+    typedef std::set< Observation__Pointer > Observations;       
+    typedef std::vector< Observation__Pointer > List__Observation;
+    
+    class Probabilistic_Observation;
+    
+    typedef CXX__deref__shared_ptr<Probabilistic_Observation> Probabilistic_Observation__Pointer; 
+    typedef std::set< Probabilistic_Observation__Pointer > Probabilistic_Observations;       
+    typedef std::vector< Probabilistic_Observation__Pointer > List__Probabilistic_Observation;
 }
+
+
+namespace std
+{
+    std::ostream& operator<<(std::ostream&
+                             , const Planning::Observation&);
+    std::ostream& operator<<(std::ostream&
+                             , const Planning::Probabilistic_Observation&);
+}
+
 
 #endif

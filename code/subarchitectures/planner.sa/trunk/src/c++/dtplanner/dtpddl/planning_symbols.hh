@@ -80,6 +80,7 @@ namespace Planning
 
     WRAPPED_STRING(enum_types::predicate_name, Predicate_Name);
     WRAPPED_STRING(enum_types::percept_name, Percept_Name);
+    WRAPPED_STRING(enum_types::observation_name, Observation_Name);
     WRAPPED_STRING(enum_types::state_function_name, State_Function_Name);
     WRAPPED_STRING(enum_types::perceptual_function_name, Perceptual_Function_Name);
     WRAPPED_STRING(enum_types::domain_name, Domain_Name);

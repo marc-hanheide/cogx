@@ -108,27 +108,29 @@ namespace Planning
          * generated. \argument{SetOfStatePointers} is the set of
          * problem states thus far discovered.*/
          State* operator()(State* predecessor) const;
-
-
         
         void report__newly_satisfied(State&) const;
         void report__newly_unsatisfied(State&) const;
 
-        void set__satisfied(State&) const;
-        void set__unsatisfied(State&) const;
-        void flip_satisfaction(State&) const;
+        /* Changes the executability status in \argument{State} of the
+         * transformation object.*/
+        void flip(State&) const;
+        
         bool is_satisfied(const State&) const;
             
-        void increment__level_of_satisfaction(State&) const;
-        void decrement__level_of_satisfaction(State&) const;
-        void set__level_of_satisfaction(uint, State&) const;
         uint get__level_of_satisfaction(State&) const;
 
 
         uint get__number_of_satisfied_conditions(State& state) const;
 
-        static Are_Doubles_Close are_Doubles_Close;//(1e-9);
+    private:
+        void set__level_of_satisfaction(uint, State&) const;
+        void increment__level_of_satisfaction(State&) const;
+        void decrement__level_of_satisfaction(State&) const;
+        void set__satisfied(State&) const;
+        void set__unsatisfied(State&) const;
         
+        static Are_Doubles_Close are_Doubles_Close;//(1e-9);
     };
     
 }

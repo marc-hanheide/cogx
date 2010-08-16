@@ -50,16 +50,13 @@ namespace Planning
             
             void report__newly_satisfied(State&) const;
             void report__newly_unsatisfied(State&) const;
-            
 
-            void set__satisfied(State&) const;
-            void set__unsatisfied(State&) const;
-            void flip_satisfaction(State&) const;
+            /* Changes the satisfaction status in \argument{State} of
+             * the Boolean valued object.*/
+            void flip(State&) const;
+
             bool is_satisfied(const State&) const;
             
-            void increment__level_of_satisfaction(State&) const;
-            void decrement__level_of_satisfaction(State&) const;
-            void set__level_of_satisfaction(uint, State&) const;
             uint get__level_of_satisfaction(State&) const;
             
             /*(see \parent{Satisfied_By_Count}::\member{get__level_of_satisfaction()})*/
@@ -76,6 +73,13 @@ namespace Planning
             /*Get the literals in the clause.*/
             const List__Literals& get__literals() const;
             List__Literals& get__literals();/*_contents .. CHECK*/
+
+        private:
+            void increment__level_of_satisfaction(State&) const;
+            void decrement__level_of_satisfaction(State&) const;
+            void set__level_of_satisfaction(uint, State&) const;
+            void set__satisfied(State&) const;
+            void set__unsatisfied(State&) const;
         };
     }
 }

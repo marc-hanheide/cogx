@@ -43,6 +43,9 @@ namespace Planning
     {
     public:
         Unsigned_Integer__Satisfaction_Status_Management(uint num = 0);
+
+        bool valid_index(uint i) const;
+        uint size() const;
         
         void decrement_satisfaction(uint i);
         void increment_satisfaction(uint i);

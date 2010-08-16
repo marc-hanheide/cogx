@@ -91,16 +91,19 @@ bool Integer_State::operator<(const Integer_State& state) const
         
 void Integer_State::write(uint index, ELEM_TYPE value)
 {
+    assert(index < data.size());
     data[index] = value;
 }
        
 void Integer_State::increment(uint index)
 {
+    assert(index < data.size());
     data[index]++;
 }
 
 void Integer_State::decrement(uint index)
 {
+    assert(index < data.size());
     assert(data[index] > 0);
     data[index]--;
 }

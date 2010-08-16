@@ -51,7 +51,7 @@
 	   :effect (increase (reward) 5)
 	   )
 
-  (:action flip
+  (:action flip2
 	   :parameters (?x - coin)
 
 ;; 	   :precondition (and (chosen ?x) (biased ?x))
@@ -83,7 +83,7 @@
   (:observe coin-status-biased
 	   :parameters (?x - coin)
 
-	   :execution (flip ?x)
+	   :execution (or (flip ?x) (flip ?x))
 
 	   :precondition (biased ?x)
 

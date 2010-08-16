@@ -37,6 +37,7 @@
 #include "solver_basics.hh"
 #include "state_basics.hh"
 #include "action_basics.hh"
+#include "observation_basics.hh"
 
 #include "markov_decision_process_state.hh"
 #include "action_executability__state.hh"
@@ -67,8 +68,9 @@ namespace Planning
               uint function_count = 0,/*Number of non-static state-characterising FLUENTS/FUNCTIONS.*/
               uint formulae_count = 0,/*Number of CNF formulae in problem description.*/
               uint disjunctions_count = 0,/*Number of disjunctive-clauses in the problem description.*/
-              uint literals_count = 0, /*Number of literals (i.e., CNF atoms) in the problem desorption.*/
-              uint actions_count = 0 /*Number of state transformations, including actions, in the problem description.*/
+              uint actions_count = 0, /*Number of state transformations, including actions, in the problem description.*/
+              uint action_formulae_count = 0,/*Number of formulae over action literals.*/
+              uint action_disjunctions_count = 0 /*Number of clauses over action literals.*/
               );
         
         /* Planner that generated this state.*/
@@ -77,6 +79,14 @@ namespace Planning
         void reset__probability_during_expansion();
         double get__probability_during_expansion() const;
         double set__probability_during_expansion(double);
+
+        uint count__observations() const;
+        const Observation* pop__observation();
+        void push__observation(const Observation*);
+        
+        uint count__probabilistic_observations() const;
+        const Probabilistic_Observation* pop__probabilistic_observation();
+        void push__probabilistic_observation(const Probabilistic_Observation*);
         
         uint count__compulsory_generative_transformations() const;
         const State_Transformation* pop__compulsory_generative_transformation();
@@ -98,6 +108,12 @@ namespace Planning
         void remove__optional_transformation(const State_Transformation*);
     private:
 
+        /*Pending observations. All such observations are compulsory.*/
+        std::stack<const Observation*> observations;
+        
+        /*Pending probabilistic observations. All such observations are compulsory.*/
+        std::stack<const Probabilistic_Observation*> probabilistic_observations;
+        
         /*Pending probabilistic transformations. All such transformations are compulsory.*/
         std::stack<const Probabilistic_State_Transformation*> probabilistic_transformations;
         

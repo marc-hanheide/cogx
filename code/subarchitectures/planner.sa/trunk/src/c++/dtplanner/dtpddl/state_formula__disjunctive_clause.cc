@@ -56,41 +56,54 @@ void Disjunctive_Clause::report__newly_unsatisfied(State& state) const
 
 void Disjunctive_Clause::set__satisfied(State& state) const
 {
+    assert(state.get__clauses__satisfaction_status().valid_index(get__id()));
     state.get__clauses__satisfaction_status().satisfy(get__id());
 }
 
 void Disjunctive_Clause::set__unsatisfied(State& state) const
 {
+    assert(state.get__clauses__satisfaction_status().valid_index(get__id()));
     state.get__clauses__satisfaction_status().unsatisfy(get__id());
 }
 
-void Disjunctive_Clause::flip_satisfaction(State& state) const
+void Disjunctive_Clause::flip(State& state) const
 {
+    WARNING("Something just changed the Boolean status value associated with a"<<std::endl
+            <<"clause by an unusual mechanism -- "<<std::endl
+            <<"i.e., the satisfaction for a literal was not reported changed.");
+    
+    assert(state.get__clauses__satisfaction_status().valid_index(get__id()));
     state.get__clauses__satisfaction_status().flip_satisfaction(get__id());
 }
             
 bool Disjunctive_Clause::is_satisfied(const State& state) const
 {
+    assert(state.get__clauses__satisfaction_status().valid_index(get__id()));
     return state.get__clauses__satisfaction_status().satisfied(get__id());
 }
 
 void Disjunctive_Clause::increment__level_of_satisfaction(State&state) const
 {
+    assert(state.get__clauses__count_status().valid_index(get__id()));
     state.get__clauses__count_status().increment_satisfaction(get__id());
 }
 
 void Disjunctive_Clause::decrement__level_of_satisfaction(State&state) const
 {
+    assert(state.get__clauses__count_status().valid_index(get__id()));
+    assert(get__level_of_satisfaction(state));
     state.get__clauses__count_status().decrement_satisfaction(get__id());
 }
 
 void Disjunctive_Clause::set__level_of_satisfaction(uint value, State&state) const
 {
+    assert(state.get__clauses__satisfaction_status().valid_index(get__id()));
     state.get__clauses__count_status().set_satisfaction(get__id(), value);
 }
 
 uint Disjunctive_Clause::get__level_of_satisfaction(State&state) const
 {
+    assert(state.get__clauses__count_status().valid_index(get__id()));
     return state.get__clauses__count_status().get_satisfaction_level(get__id());
 }
 

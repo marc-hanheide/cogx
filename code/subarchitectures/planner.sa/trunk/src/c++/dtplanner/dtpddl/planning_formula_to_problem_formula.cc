@@ -121,16 +121,16 @@ Subformula Planning_Formula__to__Problem_Formula::operator()(Subformula input)
             return (*this)(Fact(input));
         }
         break;
-        case enum_types::observational_predicate:
+        case enum_types::perceptual_predicate:
         {
-            assert(input.test_cast<Observational_Predicate>());
-            return (*this)(Observation(input));
+            assert(input.test_cast<Perceptual_Predicate>());
+            return (*this)(Perception(input));
         }
         break;
-        case enum_types::observational_proposition:
+        case enum_types::perceptual_proposition:
         {
-            assert(input.test_cast<Observational_Proposition>());
-            return (*this)(Ground_Observation(input));
+            assert(input.test_cast<Perceptual_Proposition>());
+            return (*this)(Ground_Perception(input));
         }
         break;
         /* HERE */
@@ -401,10 +401,10 @@ Subformula Planning_Formula__to__Problem_Formula::operator()(Ground_Fact ground_
     }
 }
 
-Subformula Planning_Formula__to__Problem_Formula::operator()(Ground_Observation ground_Observation)
+Subformula Planning_Formula__to__Problem_Formula::operator()(Ground_Perception ground_Perception)
 {
     
-    auto arguments = ground_Observation->get__arguments();
+    auto arguments = ground_Perception->get__arguments();
     
     Constant_Arguments argument_List;
     bool got_constant_that_needed_changing = false;
@@ -422,7 +422,7 @@ Subformula Planning_Formula__to__Problem_Formula::operator()(Ground_Observation 
 
             QUERY_UNRECOVERABLE_ERROR(constants_Description.find(new_constant)
                                       == constants_Description.end(),
-                                      "Domain ground obserrvation :: "<<*ground_Observation<<std::endl
+                                      "Domain ground obserrvation :: "<<*ground_Perception<<std::endl
                                       <<"Talks about a constant :: "<<new_constant<<std::endl
                                       <<" ** Talks about a constant **  :: "<<*constant<<std::endl
                                       <<"But the problem description and domain constants don't mention that symbol.");
@@ -436,23 +436,23 @@ Subformula Planning_Formula__to__Problem_Formula::operator()(Ground_Observation 
     }
 
     if(!got_constant_that_needed_changing){
-        return Subformula(ground_Observation);
+        return Subformula(ground_Perception);
     } else {
         NEW_referenced_WRAPPED_deref_visitable_POINTER
             (runtime_Thread
-             , Planning::Formula::Observational_Proposition
+             , Planning::Formula::Perceptual_Proposition
              , new_ground_proposition
-             , ground_Observation->get__name()
+             , ground_Perception->get__name()
              ,  argument_List);
 
         return new_ground_proposition;
     }
 }
 
-Subformula Planning_Formula__to__Problem_Formula::operator()(Observation observation)
+Subformula Planning_Formula__to__Problem_Formula::operator()(Perception perception)
 {
    
-    auto arguments = observation->get__arguments();
+    auto arguments = perception->get__arguments();
     
     Argument_List argument_List;
     bool got_constant_that_needed_changing = false;
@@ -472,7 +472,7 @@ Subformula Planning_Formula__to__Problem_Formula::operator()(Observation observa
 
                 QUERY_UNRECOVERABLE_ERROR(constants_Description.find(*new_constant.cxx_get<Constant>())
                                           == constants_Description.end(),
-                                          "Domain observational predicate :: "<<*observation<<std::endl
+                                          "Domain perceptual predicate :: "<<*perception<<std::endl
                                           <<"Talks about a constant :: "<<new_constant<<std::endl
                                           <<" ** Talks about a constant **  :: "<<*constant<<std::endl
                                           <<"But the problem description and domain constants don't mention that symbol.");
@@ -486,21 +486,21 @@ Subformula Planning_Formula__to__Problem_Formula::operator()(Observation observa
         } else if (argument->test_cast<Variable>()) {
             argument_List.push_back(*argument);
         } else {
-            UNRECOVERABLE_ERROR("Got non-constant and non-variable argument in observational predicate symbol.");
+            UNRECOVERABLE_ERROR("Got non-constant and non-variable argument in perceptual predicate symbol.");
         }
     }
 
     if(!got_constant_that_needed_changing){
-        return Subformula(observation);
+        return Subformula(perception);
     } else {
         NEW_referenced_WRAPPED_deref_visitable_POINTER
             (runtime_Thread
-             , Planning::Formula::Observational_Predicate
-             , new_observation
-             , observation->get__name()
+             , Planning::Formula::Perceptual_Predicate
+             , new_perception
+             , perception->get__name()
              ,  argument_List);
 
-        return new_observation;
+        return new_perception;
     } 
 }
 

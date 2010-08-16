@@ -32,7 +32,6 @@
  */
 
 
-
 #include "problem_grounding.hh"
 
 
@@ -40,17 +39,27 @@
 #include "dtp_pddl_parsing_data_domain.hh"
 
 // #include "planning_formula_to_problem_formula.hh"
-#include "planning_formula_to_variable_ordering.hh"
-#include "planning_cnf_to_state_cnf.hh"
-#include "domain_action_to_problem_action.hh"
+// #include "planning_formula_to_variable_ordering.hh"
+// #include "domain_action_to_problem_action.hh"
+// #include "domain_observation_to_problem_observation.hh"
+
+// #include "planning_cnf_to_state_cnf.hh"
+// #include "planning_cnf_to_action_cnf.hh"
+
+// #include "state_formula__literal.hh"
+// #include "state_formula__disjunctive_clause.hh"
+// #include "state_formula__conjunctive_normal_form_formula.hh"
+
+// #include "action__literal.hh"
+// #include "action__disjunctive_clause.hh"
+// #include "action__conjunctive_normal_form_formula.hh"
+
+// #include "observation.hh"
+// #include "observation__probabilistic.hh"
 
 
-#include "state_formula__literal.hh"
-#include "state_formula__disjunctive_clause.hh"
-#include "state_formula__conjunctive_normal_form_formula.hh"
-
-#include "action__state_transformation.hh"
-#include "action__probabilistic_state_transformation.hh"
+// #include "action__state_transformation.hh"
+// #include "action__probabilistic_state_transformation.hh"
 
 #include "planning_state.hh"
 
@@ -102,16 +111,28 @@ using Planning::Derived_Predicate;
 Problem_Grounding::Problem_Grounding(Parsing::Problem_Data& _problem_Data,
                                      CXX__PTR_ANNOTATION(Parsing::Domain_Data) _domain_Data,
                                      const Planning::Constants_Description& constants_Description,
-                                     const std::map<Type, Constants>&extensions_of_types)
+                                     const std::map<Type, Constants>& extensions_of_types)
     :problem_Data(_problem_Data),
      domain_Data(_domain_Data),
-     assignment_Applicator(reinterpret_cast<basic_type::Runtime_Thread>(&_problem_Data)
-                           , *_domain_Data
-                           , _problem_Data),
      constants_Description(constants_Description),
-     extensions_of_types(extensions_of_types)
+     extensions_of_types(extensions_of_types),
+     actions_validator(reinterpret_cast<basic_type::Runtime_Thread>(this), 0),
+     assignment_Applicator(reinterpret_cast<basic_type::Runtime_Thread>(&_problem_Data)
+          , *_domain_Data
+          , _problem_Data
+          , actions_validator)
 {
+
+//     actions_validator = std::pair<basic_type::Runtime_Thread, ID_TYPE>
+//         (reinterpret_cast<basic_type::Runtime_Thread>(this), 0);
     
+//      assignment_Applicator =
+//          CNF_Assignment_Applicator
+//          (reinterpret_cast<basic_type::Runtime_Thread>(&_problem_Data)
+//           , *_domain_Data
+//           , _problem_Data
+//           , actions_validator);
+     
     INTERACTIVE_VERBOSER(true, 3101, "Problem is at :: "
                          <<reinterpret_cast<basic_type::Runtime_Thread>(&_problem_Data)<<std::endl
                          <<"Domain is at :: "
@@ -122,9 +143,38 @@ Problem_Grounding::Problem_Grounding(Parsing::Problem_Data& _problem_Data,
     auto first_actionx_precondition = first_action->get__precondition();
 
     this->runtime_Thread = first_actionx_precondition->get__runtime_Thread();
+
+
+    negative_literals = CXX__PTR_ANNOTATION(List__Action_Literals)(new List__Action_Literals(0));
 }
 
 
+const Action_Conjunctive_Normal_Form_Formulae& Problem_Grounding::get__action_Conjunctive_Normal_Form_Formulae() const
+{
+    return action_Conjunctive_Normal_Form_Formulae;
+}
+
+const Action_Disjunctive_Clauses& Problem_Grounding::get__action_Disjunctive_Clauses() const 
+{
+    return action_Disjunctive_Clauses;
+}
+
+
+const Observations& Problem_Grounding::get__observations() const
+{
+    return observations;
+}
+    
+const Observations& Problem_Grounding::get__observations_without_preconditions() const
+{
+    return observations_without_preconditions;
+}
+    
+const Formula::Perceptual_Propositions& Problem_Grounding::get__perceptual_Propositions() const
+{
+    return perceptual_Propositions;
+}
+    
 void Problem_Grounding::ground_objective_function()
 {
     auto objective_function = problem_Data.get__objective_function();
@@ -196,82 +246,13 @@ double Problem_Grounding::get__objective_value(const State& state) const
     return 0.0;
 }
 
-void Problem_Grounding::ground_starting_states()
-{
-    auto starting_state = problem_Data.get__starting_state();
-    
-    Planning::Assignment assignment_detail;//();
-    
-    NEW_object_referenced_WRAPPED
-        (Planning::Action_Name
-         , action_Name
-         , "STARTING-STATE");
-    
-    NEW_object_referenced_WRAPPED
-        (Formula::Action_Proposition
-         , action_Proposition
-         , action_Name
-         , Planning::Constant_Arguments());
-    
-    
-    State_Formula::Conjunctive_Normal_Form_Formula__Pointer
-        precondition;
-    
-    NEW_referenced_WRAPPED_deref_POINTER
-        (this,
-         State_Formula::Conjunctive_Normal_Form_Formula,
-         _conjunct,
-         State_Formula::List__Disjunctive_Clause());
-        
-    precondition = _conjunct.cxx_deref_get<State_Formula::Conjunctive_Normal_Form_Formula>();
-    
-    Domain_Action__to__Problem_Action
-        domain_Action__to__Problem_Action(reinterpret_cast<basic_type::Runtime_Thread>(this),
-                                          assignment_detail,
-                                          state_Propositions,
-                                          state_Functions,
-                                          literals,
-                                          disjunctive_Clauses,
-                                          conjunctive_Normal_Form_Formulae,
-                                          *domain_Data,
-                                          problem_Data,
-                                          action_Proposition,
-                                          precondition,
-                                          deterministic_actions,
-                                          executable_actions_without_preconditions,
-                                          probabilistic_actions);
-    
-    domain_Action__to__Problem_Action(starting_state);
-    executable_starting_states_generator = domain_Action__to__Problem_Action.get__answer();
-
-    INTERACTIVE_VERBOSER(true, 6000, "Pushing executable starting state :: "
-                         <<executable_starting_states_generator<<std::endl);
-    
-    assert(executable_actions_without_preconditions.size());
-    assert(executable_actions_without_preconditions.end() !=
-           executable_actions_without_preconditions.find(executable_starting_states_generator));
-
-    executable_actions_without_preconditions.erase(executable_starting_states_generator);
-}
-
-
 const State_Transformation__Pointer& Problem_Grounding::
 get__executable_starting_states_generator() const
 {
     return executable_starting_states_generator;
 }
 
-void Problem_Grounding::ground_actions()
-{
 
-    Planning::Action_Schemas& schemas = domain_Data->get__action_Schemas();
-    for(Planning::Action_Schemas::iterator action = schemas.begin()
-            ; action != schemas.end()
-            ; action ++){
-        Planning::Action_Schema schema = *action;
-        ground_action_schema(schema);//const_cast<Planning::Action_Schema&>(*action));/*FIX*/
-    }
-}
 
 
 void  Problem_Grounding::ground_derived_predicates()
@@ -459,365 +440,7 @@ Subformula Problem_Grounding::simplify_formula(Planning::Formula::Subformula sub
     return new_conjunction;
 }
 
-void Problem_Grounding::simplify_action_schema_precondition(Planning::Action_Schema& action_Schema)
-{
-    /* If the action has no precondition.*/
-    if(action_Schema.get__precondition().test_cast<Vacuous>()){
-        return;
-    }
-    
-    auto new_conjunction = simplify_formula(action_Schema.get__precondition());
-    
-    action_Schema.alter__precondition(new_conjunction);
-}
 
-
-/* --4-- */
-void Problem_Grounding::
-press_ground_action(const Action_Name& action_Name,
-                    Subformula _precondition,  
-                    Subformula __effect_formula,/*This should be completely ground at this stage -- i.e., no variable symbols.. */
-                    Planning::Assignment& assignment_detail,
-                    const Argument_List& action_variables
-                    )
-{
-    /*HERE -- TURN CNF into formula with problem grounding references.*/
-
-    INTERACTIVE_VERBOSER(true, 3121, "Pressing action :: "<<action_Name<<std::endl
-                         <<"with precondition :: "<<_precondition<<std::endl);
-
-    bool statically_executable_action = false;
-    
-    
-    State_Formula::Conjunctive_Normal_Form_Formula__Pointer
-        precondition;
-    
-    if(enum_types::formula_false == _precondition->get__type_name()){
-        return ;
-    } else if (enum_types::formula_true == _precondition->get__type_name()) {
-        statically_executable_action = true;
-        State_Formula::List__Disjunctive_Clause list__Disjunctive_Clause;
-        NEW_referenced_WRAPPED_deref_POINTER
-            (this,
-             State_Formula::Conjunctive_Normal_Form_Formula,
-             _conjunct,
-             list__Disjunctive_Clause);
-        
-        precondition = _conjunct.cxx_deref_get<State_Formula::Conjunctive_Normal_Form_Formula>();
-
-        INTERACTIVE_VERBOSER(true, 3121, "Empty precondition :: "<<precondition<<std::endl);
-    } else {
-        Planning_CNF__to__State_CNF
-            planning_CNF__to__State_CNF
-            (reinterpret_cast<basic_type::Runtime_Thread>(this)
-             , state_Propositions
-             , literals
-             , disjunctive_Clauses
-             , conjunctive_Normal_Form_Formulae);
-    
-
-        planning_CNF__to__State_CNF(_precondition);
-
-        precondition = planning_CNF__to__State_CNF.get__answer();
-        INTERACTIVE_VERBOSER(true, 3121, "Interesting precondition :: "<<precondition<<std::endl);
-    }
-
-    Constant_Arguments constant_Arguments(action_variables.size());
-    auto index = 0;
-    for(auto argument_symbol = action_variables.begin()
-            ; argument_symbol != action_variables.end()
-            ; argument_symbol++){
-        assert(index < constant_Arguments.size());
-        if(argument_symbol->test_cast<Planning::Variable>()){
-            auto variable = argument_symbol->cxx_get<Planning::Variable>();
-            assert(assignment_detail.find(*variable) != assignment_detail.end());
-            constant_Arguments[index++] = assignment_detail[*variable];
-        } else if (argument_symbol->test_cast<Planning::Constant>()) {
-            auto constant = argument_symbol->cxx_get<Planning::Constant>();
-            constant_Arguments[index++] = *constant;
-        } else {
-            UNRECOVERABLE_ERROR("Cannot deal with argument :: "<<*argument_symbol);
-        }
-    }
-    
-    
-    NEW_object_referenced_WRAPPED
-        (Formula::Action_Proposition
-         , action_Proposition
-         , action_Name
-         , constant_Arguments);
-    
-
-    
-    INTERACTIVE_VERBOSER(true, 3200, "Trying for  action :: "<<action_Proposition<<std::endl
-                         <<"with precondition :: "<<precondition<<std::endl);
-    
-    /**/
-    Domain_Action__to__Problem_Action
-        domain_Action__to__Problem_Action(reinterpret_cast<basic_type::Runtime_Thread>(this),
-                                          assignment_detail,
-                                          state_Propositions,
-                                          state_Functions,
-                                          literals,
-                                          disjunctive_Clauses,
-                                          conjunctive_Normal_Form_Formulae,
-                                          *domain_Data,
-                                          problem_Data,
-                                          action_Proposition,
-                                          precondition,
-                                          deterministic_actions,
-                                          executable_actions_without_preconditions,
-                                          probabilistic_actions);
-
-    domain_Action__to__Problem_Action(__effect_formula);
-    auto new_action = domain_Action__to__Problem_Action.get__answer();
-    
-    INTERACTIVE_VERBOSER(true, 3200, "Pushing an action :: "<<new_action<<std::endl);
-}
-
-
-/* --3-- */
-void Problem_Grounding::
-ground_action_schema(const Action_Name& action_Name,
-                     Subformula& effect_formula,
-                     Planning::Assignment& assignment_detail, /*explicit representation of results*/
-                     const map<Variable, Constants>& potential_assignments, /* constants from which the result is formed.*/
-                     const Argument_List& action_variables, /*Gives the order in which variables assignment should be made -- Some of these may be constant.*/
-                     Subformula __precondition,
-                     const std::vector<Variable>& variables_in_order,
-                     uint variable_index
- )
-{
-    INTERACTIVE_VERBOSER(true, 3101, "Grounding at level --3-- :: "<<action_Name<<std::endl);
-    
-    if(variable_index >= variables_in_order.size()){
-        INTERACTIVE_VERBOSER(true, 3101, "Pressing at level --3-- :: "<<action_Name<<std::endl);
-        
-        press_ground_action(action_Name,
-                            __precondition,
-                            effect_formula,
-                            assignment_detail,
-                            action_variables);
-        return;
-    }
-    
-    INTERACTIVE_VERBOSER(true, 3101, "Proceeding to ground formulae at level --3-- :: "<<action_Name<<std::endl);
-        
-    
-    auto variable = variables_in_order[variable_index];
-    assert(potential_assignments.find(variable) != potential_assignments.end());
-    const Constants& constants = potential_assignments.find(variable)->second;
-
-    if(!constants.size()){
-        WARNING("There are no instances of objects that can be assigned to variable  :: "<<variable<<std::endl
-                <<"of action :: "<<action_Name<<std::endl);
-        
-        
-        return;
-    }
-    
-    for(auto constant = constants.begin()
-            ; constant != constants.end()
-            ; constant++){
-        assignment_detail[variable] = *constant;
-
-        
-        INTERACTIVE_VERBOSER(true, 3101, "Applying assignment applicator for action :: "<<action_Name<<std::endl
-                             <<"trying assignment of :: "<<variable<<" to "<<*constant);
-        
-        auto _precondition = assignment_Applicator(__precondition, assignment_detail);
-
-        
-        if(false == std::tr1::get<1>(_precondition)){
-            VERBOSER(3001, "For action :: "<<action_Name<<std::endl
-                     <<"Assignment of :: "<<variable<<" to "<<*constant<<" is INVALID."<<std::endl);
-            
-            continue;
-        }
-        
-        INTERACTIVE_VERBOSER(true, 3101, "For action :: "<<action_Name<<std::endl
-                 <<"Assignment of :: "<<*constant<<" to "<<variable<<" is VALID."<<std::endl);
-        
-        
-        auto precondition = std::tr1::get<0>(_precondition);
-        
-        INTERACTIVE_VERBOSER(true, 3101, "For action :: "<<action_Name<<std::endl
-                 <<"we got a new precondition :: "<<precondition<<std::endl);
-        
-        
-        ground_action_schema(action_Name,
-                             effect_formula,
-                             assignment_detail,
-                             potential_assignments,
-                             action_variables,
-                             precondition,
-                             variables_in_order,
-                             variable_index + 1);
-        
-        assignment_detail.erase(variable);
-    }
-}
-
-
-/* --2-- */
-void Problem_Grounding::
-ground_action_schema(const Action_Name& action_Name,
-                     Subformula& effect_formula,
-                     Planning::Assignment& assignment_detail, /*explicit representation of results*/
-                     const map<Variable, Constants>& potential_assignments, /* constants from which the result is formed.*/
-                     const Argument_List& action_variables, /*Gives the order in which variables assignment should be made -- Some of these may be constant.*/
-                     Subformula precondition
- )
-{
-    INTERACTIVE_VERBOSER(true, 3101, "Grounding at level --2-- :: "<<action_Name<<std::endl);
-    
-    
-    Planning_Formula__to__Variable_Ordering planning_Formula__to__Variable_Ordering(*domain_Data);
-    planning_Formula__to__Variable_Ordering(precondition);
-    std::vector<Variable> order_in_which_to_make_assignments = planning_Formula__to__Variable_Ordering.get__answer();
-
-    QUERY_WARNING(0 == order_in_which_to_make_assignments.size(),
-                  "For action ::"<<action_Name<<" we could not show a preference in what"<<std::endl
-                  <<" order to make assignments to argument variables for grounding...");
-    
-    INTERACTIVE_VERBOSER(true, 3101, "Will be making assignments in the following order :: "<<order_in_which_to_make_assignments<<std::endl);
-    
-    
-    std::set<Variable> variables_that_need_assignment;
-    for(auto argument = action_variables.begin()
-            ; argument != action_variables.end()
-            ; argument++){
-        if((*argument).test_cast<Variable>()){
-            variables_that_need_assignment.insert(*(*argument).cxx_get<Variable>());
-        }
-    }
-
-    
-    INTERACTIVE_VERBOSER(true, 3101, "All variables that need assignment :: "<<variables_that_need_assignment<<std::endl);
-    
-    
-    
-    for(auto variable = order_in_which_to_make_assignments.begin()
-            ; variable != order_in_which_to_make_assignments.end()
-            ; variable++){
-        assert(variables_that_need_assignment.find(*variable) != variables_that_need_assignment.end());
-        variables_that_need_assignment.erase(*variable);
-    }
-
-    INTERACTIVE_VERBOSER(true, 3101, "Unconsidered variables that need assignment :: "<<variables_that_need_assignment<<std::endl);
-    
-    
-    if(variables_that_need_assignment.size()){
-        for(auto variable = variables_that_need_assignment.begin()
-                ; variable != variables_that_need_assignment.end()
-                ; variable++){
-
-            WARNING("Could not make a preference for when to make an assignment to :: "<<*variable<<std::endl
-                    <<"during action grounding.");
-            
-            order_in_which_to_make_assignments.push_back(*variable);
-        }
-    }
-    
-    
-    ground_action_schema(action_Name,
-                         effect_formula,
-                         assignment_detail,
-                         potential_assignments,
-                         action_variables, 
-                         precondition,
-                         order_in_which_to_make_assignments,
-                         0);
-    
-}
-/* --1-- */ 
-void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Schema)
-{
-    
-    /* First step, we alter the action precondition formula so that it
-     * corresponds to propositional CNF.*/
-    simplify_action_schema_precondition(action_Schema);
-    
-    auto action_header = action_Schema.get__header();
-    auto action_Name = action_header.get__name();
-    auto arguments = action_header.get__arguments();
-    auto action_Arguments = get__symbols(arguments);
-    auto argument_Types = get__types(arguments);
-
-    INTERACTIVE_VERBOSER(true, 3101, "Grounding at level --1-- :: "<<action_Schema<<std::endl);
-    
-
-    
-    /* ASSERTION -- 6 */
-    grow__cached_constants_of_types(argument_Types);
-    
-    std::map<Variable,  Constants> potential_assignments;
-    assert(argument_Types .size() == action_Arguments.size());
-    for(uint index = 0; index < argument_Types.size(); index++){
-        auto types = argument_Types[index];
-        auto _variable = action_Arguments[index];
-
-        if(_variable.test_cast<Planning::Variable>()){
-            const Planning::Variable& variable = *_variable.cxx_get<Planning::Variable>();
-            
-            if(types.size() == 1){
-                
-                QUERY_UNRECOVERABLE_ERROR(extensions_of_types.find(*types.begin()) == extensions_of_types.end(),
-                                          "Could not find object of type :: "<<*types.begin()<<" when computing"<<std::endl
-                                          <<"possible assignment for :: "<<variable<<std::endl);
-
-                QUERY_WARNING(!extensions_of_types.find(*types.begin())->second.size(),
-                              "Could not find objects of type :: "<<*types.begin()<<" when computing"<<std::endl
-                              <<"possible assignment for :: "<<variable<<std::endl);
-                if(!extensions_of_types.find(*types.begin())->second.size()){/*Making the above query interactive.*/
-                    char ch; std::cin>>ch;
-                }
-                
-                potential_assignments[variable] = extensions_of_types.find(*types.begin())->second;
-            } else {
-                assert(types.size());
-                assert(cached_constants_of_types.end() != cached_constants_of_types.find(types));/* ASSERTION -- 6 */
-                potential_assignments[variable] = cached_constants_of_types.find(types)->second;
-            }
-        } else if(_variable.test_cast<Planning::Constant>()) {
-            continue;
-        }
-    }
-
-    Planning::Assignment assignment_detail;
-
-    assert(reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data)
-           != reinterpret_cast<basic_type::Runtime_Thread>(dynamic_cast<Planning::Parsing::Formula_Data*>(&problem_Data)));
-    
-//     Planning_Formula__to__Problem_Formula
-//         planning_Formula__to__Problem_Formula(reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data),
-//                                               problem_Data);
-
-    
-    
-//     auto precondition = planning_Formula__to__Problem_Formula(action_Schema.get__precondition());
-
-    
-//     VERBOSER(3001, "Old precondition was :: "<<precondition<<std::endl
-//              <<"New precondition is :: "<<action_Schema.get__precondition()<<std::endl);
-    
-    auto precondition = action_Schema.get__precondition();
-    auto effect = action_Schema.get__effect();
-    
-//     const Action_Name& _action_Name = action_Name; 
-//     Planning::Formula::Subformula& _effect_formula = effect;//action_Schema.get__effect(); 
-//     Planning::Assignment& _assignment_detail = assignment_detail; 
-//     const std::map<Variable, Constants>& _potential_assignments = potential_assignments; 
-//     const Argument_List& _action_Arguments = action_Arguments; 
-//     Planning::Formula::Subformula __precondition = precondition; 
-    
-    ground_action_schema(action_Name,
-                         effect,
-                         assignment_detail,
-                         potential_assignments,
-                         action_Arguments,
-                         precondition);
-}
 
 
 void Problem_Grounding::grow__cached_constants_of_types(const Types& types)

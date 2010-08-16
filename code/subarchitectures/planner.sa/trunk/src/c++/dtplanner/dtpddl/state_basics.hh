@@ -84,7 +84,7 @@ namespace Planning
         
         typedef CXX__deref__shared_ptr<Disjunctive_Clause> Disjunctive_Clause__Pointer; 
         typedef std::set<Disjunctive_Clause__Pointer > Disjunctive_Clauses;       
-        typedef std::vector<Disjunctive_Clause__Pointer > List__Disjunctive_Clause;     
+        typedef std::vector<Disjunctive_Clause__Pointer > List__Disjunctive_Clauses;     
             
         typedef CXX__deref__shared_ptr<Conjunctive_Normal_Form_Formula> Conjunctive_Normal_Form_Formula__Pointer; 
         typedef std::set<Conjunctive_Normal_Form_Formula__Pointer > Conjunctive_Normal_Form_Formulae;       

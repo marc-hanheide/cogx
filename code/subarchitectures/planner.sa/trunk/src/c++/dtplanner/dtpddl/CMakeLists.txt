@@ -5,7 +5,10 @@ include_directories(.)
 include_directories(./pegtl-0.30/include)
 
 set(dtpddl_source
+action__conjunctive_normal_form_formula.cc
+action__disjunctive_clause.cc
 action_executability__state.cc
+action__literal.cc
 action__probabilistic_state_transformation.cc
 action__simple_numeric_change.cc
 action__state_transformation.cc
@@ -15,6 +18,7 @@ boolean_state.cc
 cnf__state.cc
 Command_Line_Arguments.cc
 domain_action_to_problem_action.cc
+domain_observation_to_problem_observation.cc
 dtp_pddl.cc
 dtp_pddl_parsing_actions.cc
 dtp_pddl_parsing_actions_domain.cc
@@ -36,8 +40,11 @@ float_state.cc
 global.cc
 integer_state.cc
 markov_decision_process_state.cc
+observation.cc
+observation__probabilistic.cc
 partially_observable_markov_decision_process_state.cc
 planning_action_schema.cc
+planning_cnf_to_action_cnf.cc
 planning_cnf_to_state_cnf.cc
 planning_derived_predicate.cc
 planning_formula.cc
@@ -45,10 +52,13 @@ planning_formula_to_cnf.cc
 planning_formula_to_nnf.cc
 planning_formula_to_problem_formula.cc
 planning_formula_to_variable_ordering.cc
+planning_observation.cc
 planning_observation_schema.cc
 planning_state.cc
 planning_symbols.cc
+problem_grounding__actions.cc
 problem_grounding.cc
+problem_grounding__observations.cc
 solver.cc
 state_formula.cc
 state_formula__conjunctive_normal_form_formula.cc
