@@ -65,12 +65,12 @@ namespace Planning
 
         /*Boolean symbols.*/
         typedef Planning::Formula::State_Proposition State_Proposition;
-        typedef Planning::Formula::Observational_Predicate Observational_Predicate;
-        typedef Planning::Formula::Observational_Proposition Observational_Proposition;
+        typedef Planning::Formula::Perceptual_Predicate Perceptual_Predicate;
+        typedef Planning::Formula::Perceptual_Proposition Perceptual_Proposition;
         typedef Planning::Formula::State_Predicate State_Predicate;
         typedef CXX__deref__shared_ptr<State_Proposition> Ground_Fact;
-        typedef CXX__deref__shared_ptr<Observational_Predicate> Observation;
-        typedef CXX__deref__shared_ptr<Observational_Proposition> Ground_Observation;
+        typedef CXX__deref__shared_ptr<Perceptual_Predicate> Perception;
+        typedef CXX__deref__shared_ptr<Perceptual_Proposition> Ground_Perception;
         typedef CXX__deref__shared_ptr<State_Predicate> Fact;
 
         /*Action symbols.*/
@@ -109,8 +109,8 @@ namespace Planning
     private:
         
         Subformula operator()(Fact);
-        Subformula operator()(Ground_Observation);
-        Subformula operator()(Observation);
+        Subformula operator()(Ground_Perception);
+        Subformula operator()(Perception);
         Subformula operator()(Ground_Fact);
         Subformula operator()(Addition);
         Subformula operator()(Subtraction);

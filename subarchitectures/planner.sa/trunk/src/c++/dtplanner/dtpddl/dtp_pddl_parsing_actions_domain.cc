@@ -44,7 +44,7 @@ namespace Planning
 {
     namespace Parsing
     {
-        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Observation_Execution__Action, add__observation_execution);
+        domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Observation_Execution__Action, add__observation_execution_precondition);
         domain__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Observation_Name__Action, report__observation_name);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Observation_Header__Action, add__observation_header);
         domain__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Observation_Precondition__Action, add__observation_precondition);

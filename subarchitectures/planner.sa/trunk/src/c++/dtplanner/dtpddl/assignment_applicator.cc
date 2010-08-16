@@ -49,19 +49,23 @@ typedef CNF_Assignment_Applicator::Disjunction Disjunction;
 typedef CNF_Assignment_Applicator::Exists Exists;
 typedef CNF_Assignment_Applicator::Forall Forall;
 typedef CNF_Assignment_Applicator::State_Proposition State_Proposition;
-typedef CNF_Assignment_Applicator::Observational_Predicate Observational_Predicate;
-typedef CNF_Assignment_Applicator::Observational_Proposition Observational_Proposition;
+typedef CNF_Assignment_Applicator::Perceptual_Predicate Perceptual_Predicate;
+typedef CNF_Assignment_Applicator::Perceptual_Proposition Perceptual_Proposition;
 typedef CNF_Assignment_Applicator::Equality_Test Equality_Test;
 typedef CNF_Assignment_Applicator::State_Predicate State_Predicate;
 
 
-CNF_Assignment_Applicator::CNF_Assignment_Applicator(basic_type::Runtime_Thread _runtime_Thread,
-                                             const Planning::Parsing::Domain_Data& domain_Data,
-                                             const Planning::Parsing::Problem_Data& problem_Data
-                                             )
+CNF_Assignment_Applicator::
+CNF_Assignment_Applicator(basic_type::Runtime_Thread _runtime_Thread,
+                          const Planning::Parsing::Domain_Data& domain_Data,
+                          const Planning::Parsing::Problem_Data& problem_Data,
+                          std::pair<basic_type::Runtime_Thread, ID_TYPE>& actions_validator
+                          )
+    
     :runtime_Thread(_runtime_Thread),
      domain_Data(domain_Data),
      problem_Data(problem_Data),
+     actions_validator(actions_validator),
      processing_negative(false)
 {
     
@@ -88,14 +92,14 @@ CNF_Assignment_Applicator::CNF_Assignment_Applicator(basic_type::Runtime_Thread 
 Result CNF_Assignment_Applicator::satisfiable(Fact fact)
 {
     if(!domain_Data.in_add_effect(fact->get__name())){
-        INTERACTIVE_VERBOSER(true, 3101, "Got UN-MAKEABLE first-order fact :: "<<fact);
+        INTERACTIVE_VERBOSER(true, 8000, "Got UN-MAKEABLE first-order fact :: "<<fact);
 
         if(problem_Data.statically_false__starting_always_false(fact)){
             if(!processing_negative){
-                INTERACTIVE_VERBOSER(true, 3101, " --  (trivial FALSE) UN-MAKEABLE needed to be TRUE in STARTING STATES but wasn't :: "<<fact);
+                INTERACTIVE_VERBOSER(true, 8000, " --  (trivial FALSE) UN-MAKEABLE needed to be TRUE in STARTING STATES but wasn't :: "<<fact);
                 return Result(formula__false, false);
             } else {
-                INTERACTIVE_VERBOSER(true, 3101, " --  (trivial TRUE) UN-MAKEABLE always false in STARTING STATE :: "<<fact);
+                INTERACTIVE_VERBOSER(true, 8000, " --  (trivial TRUE) UN-MAKEABLE always false in STARTING STATE :: "<<fact);
                 return Result(formula__true, true);
             }
         }
@@ -103,21 +107,21 @@ Result CNF_Assignment_Applicator::satisfiable(Fact fact)
     
     
     if(!domain_Data.in_delete_effect(fact->get__name())){
-        INTERACTIVE_VERBOSER(true, 3101, " Got UN-BREAKABLE first-order fact :: "<<fact);
+        INTERACTIVE_VERBOSER(true, 8000, " Got UN-BREAKABLE first-order fact :: "<<fact);
 
         if(problem_Data.statically_true__starting_always_true(fact)){
             if(!processing_negative){
-                INTERACTIVE_VERBOSER(true, 3101, " --  (trivial TRUE)  UN-BREAKABLE always true in STARTING STATE  :: "<<fact);
+                INTERACTIVE_VERBOSER(true, 8000, " --  (trivial TRUE)  UN-BREAKABLE always true in STARTING STATE  :: "<<fact);
                 return Result(formula__true, true);
             } else {
-                INTERACTIVE_VERBOSER(true, 3101, " --  (trivial FALSE) UN-BREAKABLE needed to be false in STARTING STATES but wasn't :: "<<fact);
+                INTERACTIVE_VERBOSER(true, 8000, " --  (trivial FALSE) UN-BREAKABLE needed to be false in STARTING STATES but wasn't :: "<<fact);
                 return Result(formula__false, false);
             }
         }
     }
 
     
-    INTERACTIVE_VERBOSER(true, 3101, "Got dynamic first-order fact :: "<<fact);
+    INTERACTIVE_VERBOSER(true, 8000, "Got dynamic first-order fact :: "<<fact);
     
     return Result(Subformula(fact), true);
 
@@ -272,7 +276,7 @@ Result CNF_Assignment_Applicator::operator()(Nagative negative, const Planning::
     
 }
 
-Result CNF_Assignment_Applicator::operator()(Fact fact, const Planning::Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Action_Fact fact, const Planning::Assignment& assignment)
 {
     auto arguments = fact->get__arguments();
 
@@ -340,12 +344,102 @@ Result CNF_Assignment_Applicator::operator()(Fact fact, const Planning::Assignme
         assert(constant_Arguments.size() == arguments.size());
         
         NEW_referenced_WRAPPED_deref_visitable_POINTER
+            (actions_validator.first//dynamic_cast<const Planning::Parsing::Formula_Data*>(&problem_Data)
+             , Planning::Formula::Action_Proposition
+             , proposition
+             , fact->get__name()
+             , constant_Arguments);
+
+        return (*this)(proposition, assignment);//satisfiable(Ground_Fact(proposition));
+    } else {
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
+            (actions_validator.first
+             , Planning::Formula::Action_Predicate
+             , predicate
+             , fact->get__name()
+             , argument_List);
+        
+        return Result(predicate, true);
+    }
+}
+
+Result CNF_Assignment_Applicator::operator()(Fact fact, const Planning::Assignment& assignment)
+{
+    auto arguments = fact->get__arguments();
+
+    bool variable_remains_unassigned = false;
+    
+    Constant_Arguments constant_Arguments;
+    Argument_List argument_List;
+
+    bool no_assignment_made = true;
+    
+    for(auto argument = arguments.begin()
+            ; argument != arguments.end()
+            ; argument++ ){
+        if((*argument).test_cast<Planning::Variable>()){
+            auto variable = (*argument).cxx_get<Planning::Variable>();
+
+            auto maplet = assignment.find(*variable);
+
+            if(maplet == assignment.end()){
+                
+              variable_remains_unassigned = true;
+              argument_List.push_back(*argument);
+              
+            } else {
+                assert(runtime_Thread == reinterpret_cast<basic_type::Runtime_Thread>
+                 (dynamic_cast<const Planning::Parsing::Constants_Data*>(&problem_Data)));
+                
+                no_assignment_made = false;
+                
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
+                    (runtime_Thread
+                     , Planning::Constant
+                     , constant
+                     , maplet->second.get__name());
+                
+                INTERACTIVE_VERBOSER(true, 3101, "New constant :: "<<constant<<" for thread :: "<<runtime_Thread<<std::endl);
+                if(!variable_remains_unassigned){
+                    constant_Arguments.push_back(maplet->second);
+                }
+                argument_List.push_back(constant);
+            }
+
+        } else {
+            QUERY_UNRECOVERABLE_ERROR(!(*argument).test_cast<Planning::Constant>()
+                                      , " Could not understand predicate argument symbol :: "<<*argument<<std::endl
+                                      <<"It is not a variable, and now we find it not to be a constant either."<<std::endl);
+
+            auto constant = (*argument).cxx_get<Planning::Constant>();
+
+            if(!variable_remains_unassigned){
+                constant_Arguments.push_back(*constant);
+            }
+            
+            argument_List.push_back(*argument);
+        }   
+    }
+
+    if(no_assignment_made){
+        return Result(Subformula(fact), true);
+    }
+    
+    /* We have a proposition. */
+    if(!variable_remains_unassigned){
+        
+        assert(constant_Arguments.size() == arguments.size());
+        
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
             (dynamic_cast<const Planning::Parsing::Formula_Data*>(&problem_Data)
              , Planning::Formula::State_Proposition
              , proposition
              , fact->get__name()
              , constant_Arguments);
 
+        INTERACTIVE_VERBOSER(true, 8000, "Testing satisfiability of :: "<<proposition<<std::endl);
+        
+        
         return satisfiable(Ground_Fact(proposition));
     } else {
         NEW_referenced_WRAPPED_deref_visitable_POINTER
@@ -355,14 +449,16 @@ Result CNF_Assignment_Applicator::operator()(Fact fact, const Planning::Assignme
              , fact->get__name()
              , argument_List);
         
+        INTERACTIVE_VERBOSER(true, 8000, "Testing satisfiability of :: "<<predicate<<std::endl);
+        
         return satisfiable(Fact(predicate));
     }
 }
 
-Result CNF_Assignment_Applicator::operator()(Observation observation, const Planning::Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Perception perception, const Planning::Assignment& assignment)
 {
     UNRECOVERABLE_ERROR("UNIMPLEMENTED");
-    return Result(Subformula(observation), true);
+    return Result(Subformula(perception), true);
 }
 
 Result CNF_Assignment_Applicator::operator()(Ground_Fact ground_Fact, const Planning::Assignment& assignment)
@@ -421,10 +517,10 @@ Result CNF_Assignment_Applicator::operator()(Ground_Fact ground_Fact, const Plan
     }
 }
 
-Result CNF_Assignment_Applicator::operator()(Ground_Observation ground_Observation, const Planning::Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Ground_Perception ground_Perception, const Planning::Assignment& assignment)
 {
     UNRECOVERABLE_ERROR("UNIMPLEMENTED");
-    return Result(Subformula(ground_Observation), true);
+    return Result(Subformula(ground_Perception), true);
 }
 
 Result CNF_Assignment_Applicator::operator()(Equality equality, const Planning::Assignment& assignment)
@@ -460,6 +556,55 @@ Result CNF_Assignment_Applicator::operator()(Subformula input,
             return (*this)(Nagative(input), assignment);
         }
         break;
+        case enum_types::action_proposition:
+        {
+            assert(input.test_cast<Formula::Action_Proposition>());
+            auto _action_proposition = input.cxx_get<Formula::Action_Proposition>();
+
+            decltype(_action_proposition) action_proposition;
+            if(actions_validator.first != _action_proposition->get__runtime_Thread()){
+                NEW_referenced_WRAPPED_deref_POINTER
+                    (actions_validator.first
+                     , Formula::Action_Proposition
+                     , new__action_proposition
+                     , _action_proposition->get__name()
+                     , _action_proposition->get__arguments());
+
+                action_proposition = new__action_proposition.cxx_get<Formula::Action_Proposition>();
+            } else {
+                action_proposition = _action_proposition;
+            }
+
+            assert(actions_validator.second);
+            
+            if(action_proposition->get__id() < actions_validator.second){
+                
+                INTERACTIVE_VERBOSER(true, 8000, "Admissible action literal :: "
+                                     <<*action_proposition<<" at thread :: "<<actions_validator.first<<std::endl);
+                
+                return Result(Formula::Subformula(action_proposition), true);
+            } else {
+                INTERACTIVE_VERBOSER(true, 8000, "Inadmissible action literal :: "
+                                     <<*action_proposition<<" at thread :: "<<actions_validator.first<<std::endl);
+                
+                
+                if(processing_negative){
+                    return Result(formula__true, true);
+                } else {
+                    return Result(formula__false, false);
+                }
+            }
+            
+            assert(0);
+        }
+        break;
+        case enum_types::action_predicate:
+        {
+            assert(input.test_cast<Formula::Action_Predicate>());
+            return (*this)(Action_Fact(input), assignment);
+            
+        }
+        break;
         case enum_types::state_predicate:
         {
             assert(input.test_cast<State_Predicate>());
@@ -472,16 +617,16 @@ Result CNF_Assignment_Applicator::operator()(Subformula input,
             return (*this)(Ground_Fact(input), assignment);
         }
         break;
-        case enum_types::observational_predicate:
+        case enum_types::perceptual_predicate:
         {
-            assert(input.test_cast<Observational_Predicate>());
-            return (*this)(Observation(input), assignment);
+            assert(input.test_cast<Perceptual_Predicate>());
+            return (*this)(Perception(input), assignment);
         }
         break;
-        case enum_types::observational_proposition:
+        case enum_types::perceptual_proposition:
         {
-            assert(input.test_cast<Observational_Proposition>());
-            return (*this)(Ground_Observation(input), assignment);
+            assert(input.test_cast<Perceptual_Proposition>());
+            return (*this)(Ground_Perception(input), assignment);
         }
         break;
         case enum_types::equality_test:

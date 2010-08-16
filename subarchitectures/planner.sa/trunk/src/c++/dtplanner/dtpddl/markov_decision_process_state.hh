@@ -84,6 +84,9 @@ namespace Planning
          * that when executed can cause the transition.*/
         void push__successor(uint operator_index, const Markov_Decision_Process_State*, double);
     protected:
+        /*Value of this MDP state.*/
+        double value;
+        
         std::vector<uint> successor_driver;
         std::vector< std::vector<const Markov_Decision_Process_State*> > successors;
         std::vector< std::vector<double> > successor_probability;

@@ -50,6 +50,8 @@ using namespace Planning::Parsing;
 #include "action__state_transformation.hh"
 #include "action__probabilistic_state_transformation.hh"
 
+#include "state_formula__conjunctive_normal_form_formula.hh"
+
 Solver::Solver(Planning::Parsing::Problem_Data& problem_Data)
     :problem_Data(problem_Data),
      preprocessed(false)// ,
@@ -87,6 +89,10 @@ void Solver::preprocess()
     problem_Grounding->ground_derived_perceptions();
     problem_Grounding->ground_starting_states();
     problem_Grounding->ground_objective_function();
+
+    assert(problem_Grounding->get__deterministic_actions().size());
+    problem_Grounding->ground_observations();
+    assert(problem_Grounding->get__observations().size());
     
     generate_starting_state();
     
@@ -229,14 +235,34 @@ void Solver::expand_optional_transformations(Planning::State* state)
 
 void Solver::generate_starting_state()
 {
+    assert(problem_Grounding->get__state_Propositions().size());
+
+    assert(problem_Grounding->get__state_Functions().size());
+
+    assert(problem_Grounding->get__conjunctive_Normal_Form_Formulae().size());
+    
+    assert(problem_Grounding->get__state_Propositions().size() ==
+           Formula::State_Proposition::indexed__Traversable_Collection
+           .find(problem_Grounding->get__state_Propositions().begin()->get__runtime_Thread())->second->size());
+    
+    assert(problem_Grounding->get__state_Functions().size() ==
+           Formula::State_Ground_Function::indexed__Traversable_Collection
+           .find(problem_Grounding->get__state_Functions().begin()->get__runtime_Thread())->second->size());
+    
+    assert(problem_Grounding->get__conjunctive_Normal_Form_Formulae().size() ==
+           State_Formula::Conjunctive_Normal_Form_Formula::indexed__Traversable_Collection
+           .find(problem_Grounding->get__state_Functions().begin()->get__runtime_Thread())->second->size());
+    
     Planning::State* starting_state
         = new Planning::State(*this
                               , problem_Grounding->get__state_Propositions().size()
                               , problem_Grounding->get__state_Functions().size()
                               , problem_Grounding->get__conjunctive_Normal_Form_Formulae().size()
                               , problem_Grounding->get__disjunctive_Clauses().size()
-                              , problem_Grounding->get__literals().size()
-                              , problem_Grounding->get__deterministic_actions().size());
+//                               , problem_Grounding->get__literals().size()
+                              , problem_Grounding->get__deterministic_actions().size()
+                              , problem_Grounding->get__action_Conjunctive_Normal_Form_Formulae().size()
+                              , problem_Grounding->get__action_Disjunctive_Clauses().size());
     
     auto literals = problem_Grounding->get__literals();
     for(auto literal = literals.begin()
@@ -245,13 +271,15 @@ void Solver::generate_starting_state()
 
         /*Is the literal a negative atom?*/
         if((*literal)->get__sign()){
-            (*literal)->flip_satisfaction(*starting_state);
-
-            assert((*literal)->is_satisfied(*starting_state));
-            
-            INTERACTIVE_VERBOSER(true, 7001, "Set literal "<<*literal
+            INTERACTIVE_VERBOSER(true, 8002, "Set literal "<<*literal
                                  <<" to satisfied in starting state."
                                  <<std::endl);
+            
+            /* Must have been unsatisfied in the starting state.*/
+            assert((*literal)->is_satisfied(*starting_state));
+            (*literal)->report__newly_satisfied(*starting_state);
+            assert((*literal)->is_satisfied(*starting_state));
+            
         }
         
     }
@@ -259,6 +287,10 @@ void Solver::generate_starting_state()
     
     starting_state->add__optional_transformation(
         problem_Grounding->get__executable_starting_states_generator().get());
+
+    assert(problem_Grounding->get__executable_actions_without_preconditions().end() ==
+           problem_Grounding->get__executable_actions_without_preconditions()
+           .find(problem_Grounding->get__executable_starting_states_generator()));
     
     expand_optional_transformations(starting_state);
 
@@ -266,11 +298,17 @@ void Solver::generate_starting_state()
     for(auto state = state_space.begin()
             ; state != state_space.end()
             ; state++, i++){
-        INTERACTIVE_VERBOSER(true, 7001, "State :: "<<i<<" "
+        assert((*state)->get__optional_transformations()
+               .find(problem_Grounding->get__executable_starting_states_generator().get())
+               != (*state)->get__optional_transformations().end());
+        
+        (*state)->remove__optional_transformation(
+            problem_Grounding->get__executable_starting_states_generator().get());
+        
+        INTERACTIVE_VERBOSER(true, 7002, "State :: "<<i<<" "
                              <<(**state)<<std::endl);
     }
-    
-    
+
     
     UNRECOVERABLE_ERROR("FINISHED TEST");
 }

@@ -58,7 +58,7 @@ namespace Planning
 //             void stack__typed_Arguments();
 
 
-            void add__observation_execution();
+            void add__observation_execution_precondition();
             void add__observation_precondition();
             void add__observation_effect();
             void add__observation();
@@ -132,6 +132,9 @@ namespace Planning
             const Planning::Derived_Percepts& get__derived_Percepts() const;
             Planning::Derived_Percepts& get__derived_Percepts();
 
+            const Planning::Observation_Schemas& get__observation_Schemas() const;
+            Planning::Observation_Schemas& get__observation_Schemas();
+            
 
             
             bool is_type__double(const Planning::State_Function_Name&) const;
@@ -155,8 +158,9 @@ namespace Planning
             /*Domain observations.*/
             Planning::Observation_Schemas observation_Schemas;
             
-            /*Last observation action precondition.*/
-            Planning::Formula::Subformula observation_execution;
+//             /*Last observation action precondition.*/
+//             Planning::Formula::Subformula observation_execution;
+            Planning::Formula::Subformula observation_execution_precondition;
             
             /*Last observation precondition formula parsed.*/
             Planning::Formula::Subformula observation_precondition;
@@ -165,6 +169,11 @@ namespace Planning
              * the current parsing context? (initially false, and
              * reset to false in \member{add__observation()})*/
             bool got__observation_precondition;
+            
+            /* Is the entry in \member{observation_effect} relevant to
+             * the current parsing context? (initially false, and
+             * reset to false in \member{add__observation()})*/
+            bool got__observation_execution_precondition;
             
             /*Last observation effect formula parsed.*/
             Planning::Formula::Subformula observation_effect;

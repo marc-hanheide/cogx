@@ -31,27 +31,40 @@
  * 
  */
 
-#ifndef BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
-#define BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
+#ifndef ACTION__DISJUNCTIVE_CLAUSE_HH
+#define ACTION__DISJUNCTIVE_CLAUSE_HH
 
-#include "boolean_state.hh"
+#include "action_basics.hh"
+#include "state_formula.hh"
+#include "planning_types_enum.hh"
 
 namespace Planning
-{  
-    class Boolean__Satisfaction_Status_Management
+{
+    class Action_Disjunctive_Clause
+        : public State_Formula::_Satisfaction_Listener<enum_types::action_disjunctive_clause
+                                        , List__Action_Literals>
     {
-    public:
-        Boolean__Satisfaction_Status_Management(uint num = 0);
-        
-        bool valid_index(uint i) const;
-        void satisfy(uint i);
-        void unsatisfy(uint i);
-        void flip_satisfaction(uint i);
-        bool satisfied(uint i) const;
-    protected:
-        /* Derived from \parent{Markov_Decision_Process_State} fields.*/
-        Boolean_State status;
+    public:            
+            
+        void report__newly_satisfied(State&) const;
+        void report__newly_unsatisfied(State&) const;
+
+        bool is_satisfied(const State&) const;
+        uint get__level_of_satisfaction(State&) const;
+        uint get__number_of_satisfied_literals(State&) const;  
+        void report__newly_satisfied_literal(State&) const;
+        void report__newly_unsatisfied_literal(State&) const;
+            
+        const List__Action_Literals& get__literals() const;
+        List__Action_Literals& get__literals();/*_contents .. CHECK*/
+
+    private:
+        void increment__level_of_satisfaction(State&) const;
+        void decrement__level_of_satisfaction(State&) const;
+        void set__satisfied(State&) const;
+        void set__unsatisfied(State&) const;
     };
 }
+
 
 #endif

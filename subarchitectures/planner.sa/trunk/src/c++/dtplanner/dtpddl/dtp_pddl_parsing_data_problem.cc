@@ -190,12 +190,13 @@ bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_pt
     return false;
 }
 
-bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>& fact) const
+bool Problem_Data::statically_false__starting_always_false
+(CXX__deref__shared_ptr<Planning::Formula::State_Predicate>& fact) const
 {
 
     auto occurrence_indices = state_propositions__parsed.find(fact->get__name());
     if(occurrence_indices == state_propositions__parsed.end()) {
-        INTERACTIVE_VERBOSER(true, 3101, "No ground instances of symbols "<<fact->get__name()<<std::endl);
+        INTERACTIVE_VERBOSER(true, 8000, "No ground instances of symbols "<<fact->get__name()<<std::endl);
         
         return true;
     }
@@ -215,11 +216,14 @@ bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_pt
         }
     }
     
+    INTERACTIVE_VERBOSER(true, 8000, "Testing "<<fact->get__name()<<std::endl
+                         <<"With arguments :: "<<arguments<<std::endl);
+        
     auto cached_Partial_Assignment_Satisfiability
         = cached__statically_false__starting_always_false.find(predicate_index);
         
     if(cached_Partial_Assignment_Satisfiability == cached__statically_false__starting_always_false.end()){
-        INTERACTIVE_VERBOSER(true, 3101, "Have not cached ground form of first-order fact :: "
+        INTERACTIVE_VERBOSER(true, 8000, "Have not cached ground form of first-order fact :: "
                              <<fact->get__name()<<" "<<arguments<<std::endl);
         
         cached__statically_false__starting_always_false[predicate_index]
@@ -228,9 +232,14 @@ bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_pt
         cached_Partial_Assignment_Satisfiability = cached__statically_false__starting_always_false.find(predicate_index);
     }
         
-    Cached_Partial_Assignment_Satisfiability& satisfiable__cached =
+//     Cached_Partial_Assignment_Satisfiability& satisfiable__cached =
+//         std::tr1::get<0>(cached_Partial_Assignment_Satisfiability->second);
+//     Cached_Partial_Assignment_Unsatisfiability& unsatisfiable__cached =
+//         std::tr1::get<1>(cached_Partial_Assignment_Satisfiability->second);
+
+    auto& satisfiable__cached =
         std::tr1::get<0>(cached_Partial_Assignment_Satisfiability->second);
-    Cached_Partial_Assignment_Unsatisfiability& unsatisfiable__cached =
+    auto& unsatisfiable__cached =
         std::tr1::get<1>(cached_Partial_Assignment_Satisfiability->second);
 
     auto find_in__satisfiable__cached = satisfiable__cached.find(arguments);
@@ -238,15 +247,15 @@ bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_pt
 
     if( ( find_in__satisfiable__cached !=  satisfiable__cached.end() ) ||
         ( find_in__unsatisfiable__cached != unsatisfiable__cached.end() ) ){
-        if(find_in__satisfiable__cached == satisfiable__cached.end()){
-            assert(!(unsatisfiable__cached.find(arguments) == unsatisfiable__cached.end()));
+        if(find_in__satisfiable__cached != satisfiable__cached.end()){
+            assert(unsatisfiable__cached.find(arguments) == unsatisfiable__cached.end());
             
-            INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cached GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+            INTERACTIVE_VERBOSER(true, 8000, "TRUE CASE :: Cached GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
             
             
             return false;
-        } else if (find_in__unsatisfiable__cached == unsatisfiable__cached.end()) {
-            INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cached UN-GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+        } else if (find_in__unsatisfiable__cached != unsatisfiable__cached.end()) {
+            INTERACTIVE_VERBOSER(true, 8000, "FALSE CASE :: Cached UN-GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
             
             return true;
         }

@@ -34,3 +34,73 @@
 
 #include "partially_observable_markov_decision_process_state.hh"
 
+using namespace Planning;
+
+
+bool Partially_Observable_Markov_Decision_Process_State::
+operator==(const POMDP_State& in) const
+{
+    return ( (in.expected_value == expected_value) &&
+             (in.belief_State.size() == belief_State.size()) &&
+             (in.belief_State == belief_State) );
+}
+
+bool Partially_Observable_Markov_Decision_Process_State::
+operator<(const POMDP_State& in) const
+{
+    if(this->expected_value < in.expected_value){
+        return true;
+    } else if (this->expected_value == in.expected_value) {
+
+        if(belief_State.size() < in.belief_State.size()){
+        } else if (belief_State.size() == in.belief_State.size()) {
+            auto point_lhs = belief_State.begin();
+            auto point_rhs = in.belief_State.begin();
+            for(
+                    ; point_lhs != belief_State.end()
+                    ; point_lhs++, point_rhs++){
+                if(point_lhs->second < point_rhs->second){
+                    return true;
+                } else if (point_lhs->second == point_rhs->second) {
+                    if(static_cast<const void*>(point_lhs->first) <
+                       static_cast<const void*>(point_rhs->first)){
+                    } else if (point_lhs->first == point_rhs->first) {
+                        continue;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+        
+const Partially_Observable_Markov_Decision_Process_State::
+Belief_State&
+Partially_Observable_Markov_Decision_Process_State::
+get__belief_state() const
+{
+    return belief_State;
+}
+
+
+std::size_t  Partially_Observable_Markov_Decision_Process_State::
+hash_value() const
+{
+    return boost::hash_range(belief_State.begin(), belief_State.end());
+}
+
+
+namespace std
+{
+    std::size_t hash_value(const Planning::Partially_Observable_Markov_Decision_Process_State& in)
+    {
+        return in.hash_value();
+    }
+    
+}

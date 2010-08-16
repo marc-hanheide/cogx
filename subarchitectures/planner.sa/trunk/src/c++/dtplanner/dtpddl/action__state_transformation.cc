@@ -59,7 +59,7 @@ State_Transformation::operator()(State* in) const
         if(!(*effect)->is_satisfied(*in)){
             /* The the effect must be applied, because the parent
              * transformation was applied.*/
-            (*effect)->flip_satisfaction(*in);
+            (*effect)->flip(*in);//_satisfaction(*in);
         }
     }
     
@@ -151,8 +151,11 @@ void State_Transformation
 }
 
 void State_Transformation
-::flip_satisfaction(State& state) const
+::flip(State& state) const
 {
+    WARNING("Something just changed the executability status value associated with a"<<std::endl
+            <<"transformation by an unusual mechanism -- "<<std::endl
+            <<"i.e., the satisfaction for a CNF-based precondition was not reported changed.");
     state.get__transformation__satisfaction_status().flip_satisfaction(get__id());
 }
 

@@ -40,6 +40,9 @@
 #include "planning_formula.hh"
 #include "problem_grounding.hh"
 
+#include "action__state_transformation.hh"
+#include "observation.hh"
+#include "observation__probabilistic.hh"
 
 
 using namespace Planning;
@@ -50,17 +53,55 @@ State::State(Solver& solver,
              uint function_count,
              uint formulae_count,
              uint disjunctions_count,
-             uint literals_count,
-             uint actions_count)
+             uint actions_count,
+             uint action_formulae_count,
+             uint action_disjunctions_count)
     :solver(solver),
      Markov_Decision_Process_State(propositions_count
                                    , function_count),
      CNF__State(formulae_count
                 , disjunctions_count
-                , literals_count),
+                , action_formulae_count
+                , action_disjunctions_count),
      Action_Executability__State(actions_count)   
 {   
 }
+
+uint State::count__probabilistic_observations() const
+{
+    return probabilistic_observations.size();
+}
+
+const Probabilistic_Observation* State::pop__probabilistic_observation()
+{
+    auto result = probabilistic_observations.top();
+    probabilistic_observations.pop();
+    return result;
+}
+
+void State::push__probabilistic_observation(const Probabilistic_Observation* in)
+{
+   probabilistic_observations.push(in); 
+}
+
+
+uint State::count__observations() const
+{
+    return observations.size();
+}
+
+const Observation* State::pop__observation()
+{
+    auto result = observations.top();
+    observations.pop();
+    return result;
+}
+
+void State::push__observation(const Observation* in)
+{
+    observations.push(in);
+}
+
 
 double State::set__probability_during_expansion(double in)
 {
@@ -160,7 +201,21 @@ std::ostream& State::operator<<(std::ostream&o) const
     INTERACTIVE_VERBOSER(true, 7000, "Printing an planning state with  :: "
                          <<this->get__number_of_atoms()
                          <<" propositions.");
-    o<<probability_during_expansion<<"  -- {";
+    
+    o<<"  :-ACTIONS-: {"<<std::endl;
+    if(applicable_optional_transformations.size()){
+        for(auto applicable_optional_transformation =applicable_optional_transformations.begin()
+                ; applicable_optional_transformation != applicable_optional_transformations.end()
+                ; applicable_optional_transformation++){
+            o<<(*applicable_optional_transformation)->get__identifier()<<" :-: ";
+        }
+    } else {
+        o<<"POSSIBLE-SINK-STATE; i.e,. if there are no zero/null-precondition actions."<<std::endl;
+    }
+    
+    o<<"}"<<std::endl;
+    
+    o<<" Prob. during expansion :: "<<probability_during_expansion<<"  :-STATE-: {"<<std::endl;
     for(auto i = 0; i < this->get__number_of_atoms()/*Markov_Decision_Process_State::get__number_of_atoms()*/; i++){
         if(is_true(i)){
 

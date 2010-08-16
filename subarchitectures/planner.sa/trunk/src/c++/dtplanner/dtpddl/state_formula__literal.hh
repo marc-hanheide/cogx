@@ -40,6 +40,7 @@ namespace Planning
 {
     namespace State_Formula
     {
+        /*Created as unsatisfied.*/
         class Literal
             : public _Satisfaction_Listener<enum_types::literal /* Type identifier.*/
                                             , uint /* Boolean variable identifier.*/
@@ -49,28 +50,36 @@ namespace Planning
 
             void report__newly_satisfied(State&) const;
             void report__newly_unsatisfied(State&) const;
-            
-            void set__satisfied(State&) const;
-            void set__unsatisfied(State&) const;
-            void flip_satisfaction(State&) const;
+
+            /*Is this literal satisfied?*/
             bool is_satisfied(const State&) const;
-
             
-//             /* Set the subject variable to have the truth value "TRUE".*/
-//             void flip_variable_on(State&) const;
-            
-//             /* Set the subject variable to have the truth value "FALSE".*/
-//             void flip_variable_off(State&) const;
-            
-            /* Set the subject variable to have the opposite truth
-             * value to its current assignment.*/
+            /* Changes the satisfaction status in \argument{State} of
+             * the Boolean valued object.*/
             void flip(State&) const;
-
+            
             /* Variable, that is the subject of this literal.*/
             uint get__variable() const;
 
             /* Sign of this literal (false is positive, true is negative). */
-            bool get__sign() const;                   
+            bool get__sign() const;
+
+
+            
+            void configure__complement(const Literal__Pointer&, const Literals&);
+        private:
+            void set__complement(const Literal__Pointer&);
+            void set__satisfied(State&) const;
+            void set__unsatisfied(State&) const;
+
+            /* The complement of this literal.*/
+            bool has_complement;
+            Literal__Pointer complement;
+            
+//             /* Set the subject variable to have the truth value "TRUE".*/
+//             void flip_variable_on(State&) const;
+//             /* Set the subject variable to have the truth value "FALSE".*/
+//             void flip_variable_off(State&) const;
         };
  
     }

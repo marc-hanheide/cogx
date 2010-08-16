@@ -39,6 +39,7 @@
 #include "dtp_pddl_parsing_data_constants.hh"
 
 #include "planning_action_schema.hh"
+#include "planning_observation_schema.hh"
 #include "planning_derived_predicate.hh"
 
 // #include "basic_action.hh"
@@ -48,6 +49,7 @@
 
 #include "action_basics.hh"
 #include "state_basics.hh"
+#include "observation_basics.hh"
 
 namespace Planning
 {
@@ -63,6 +65,38 @@ namespace Planning
         void ground_derived_predicates();
         void ground_derived_perceptions();
 
+        /* Should only be called if a previous call to
+         * \member{ground_actions()} was made.*/
+        void ground_observations();
+        /* --1-- */  void ground_observation_schema(Planning::Observation_Schema& schema);
+        void
+        /* --2-- */ ground_observation_schema(const Observation_Name& observation_Name,
+                                              Planning::Formula::Subformula& effect,
+                                              Planning::Assignment& assignment_detail,
+                                              const std::map<Planning::Variable, Planning::Constants/*FIX*/>& potential_assignments,
+                                              const Argument_List& observation_Arguments,
+                                              Planning::Formula::Subformula precondition,
+                                              Planning::Formula::Subformula execution_precondition);
+        
+        void
+        /* --3-- */ ground_observation_schema(const Observation_Name& observation_Name,
+                                              Planning::Formula::Subformula& effect_formula,
+                                              Planning::Assignment& assignment_detail,
+                                              const std::map<Planning::Variable, Planning::Constants/*FIX*/>& potential_assignments,
+                                              const Argument_List& observation_variables, 
+                                              Planning::Formula::Subformula precondition,
+                                              Planning::Formula::Subformula execution_precondition,
+                                              const std::vector<Variable>& order_in_which_to_make_assignments,
+                                              uint variable_index);
+        
+        void
+        /* --4-- */ press_ground_observation(const Observation_Name& observation_Name,
+                                             Planning::Formula::Subformula __precondition,
+                                             Planning::Formula::Subformula __execution_precondition,
+                                             Planning::Formula::Subformula effect_formula,
+                                             Planning::Assignment& assignment_detail,
+                                             const Argument_List& observation_variables);
+        
         void ground_starting_states();
         
         void ground_objective_function();
@@ -81,11 +115,19 @@ namespace Planning
         const State_Transformations& get__executable_actions_without_preconditions() const;
         const Probabilistic_State_Transformations& get__probabilistic_actions() const;
         
+        const Observations& get__observations() const;
+        const Observations& get__observations_without_preconditions() const;
+        const Formula::Perceptual_Propositions& get__perceptual_Propositions() const;
+        
         const State_Transformation__Pointer& get__executable_starting_states_generator() const;
+        
+        const Action_Conjunctive_Normal_Form_Formulae& get__action_Conjunctive_Normal_Form_Formulae() const;
+        const Action_Disjunctive_Clauses& get__action_Disjunctive_Clauses() const ;
         
 //         const & get__() const;
 //         const & get__() const;
     private:
+        
         /* All the state formula associated with the ground problem
          * instance (see \member{press_ground_action}).*/
         Formula::State_Propositions state_Propositions;
@@ -99,8 +141,28 @@ namespace Planning
         State_Transformations executable_actions_without_preconditions;
         Probabilistic_State_Transformations probabilistic_actions;
         
+        Action_Literals action_Literals;
+        Action_Disjunctive_Clauses action_Disjunctive_Clauses;
+        Action_Conjunctive_Normal_Form_Formulae action_Conjunctive_Normal_Form_Formulae;
+        CXX__PTR_ANNOTATION(List__Action_Literals) negative_literals;
+
+        
+        std::map<Formula::Action_Proposition
+                 , State_Transformation__Pointer> action_symbol__to__state_transformation;
+        
+        Observations observations;
+        Observations observations_without_preconditions;
+        Formula::Perceptual_Propositions perceptual_Propositions;
+        
         /* A tool to apply an assignment to variables to a CNF formula. */
         CNF_Assignment_Applicator assignment_Applicator;
+        
+        /* First element is an indicator of this object, and the second
+         * element should be kept equal to the largest index (i.e,
+         * \class{basic_type} \method{get__id()}) associated with a
+         * legal/executable ground action symbol -- i.e.,
+         * \class{Action_Name}.*/
+        std::pair<basic_type::Runtime_Thread, ID_TYPE> actions_validator;
         
         /* Incrementally add entries to \member{cached_constants_of_types}.*/
         void grow__cached_constants_of_types(const Types&);
@@ -137,6 +199,7 @@ namespace Planning
             
         /* Simplify the description of the \argument{Action_Schema} precondition.*/
         void simplify_action_schema_precondition(Planning::Action_Schema& );
+        void simplify_observation_schema_preconditions(Planning::Observation_Schema&);
         
         /* Populate \member{}*/
         /* --1-- */ void ground_action_schema(Planning::Action_Schema& action_Schema);

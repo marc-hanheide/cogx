@@ -38,16 +38,69 @@
 
 #include "markov_decision_process_state.hh"
 
+#include "planning_observation.hh"
 
 namespace Planning
 {
+    
+    class Partially_Observable_Markov_Decision_Process_State;
+}
+
+namespace std
+{
+    std::size_t hash_value(const Planning::Partially_Observable_Markov_Decision_Process_State&);
+}
+
+
+namespace Planning
+{
+    
+    class Partially_Observable_Markov_Decision_Process_State;
+    
+    inline std::size_t hash_value(const Planning::Partially_Observable_Markov_Decision_Process_State& in)
+    {
+        return std::hash_value(in);
+    }
+
     class Partially_Observable_Markov_Decision_Process_State
     {
     public:
         typedef Markov_Decision_Process_State MDP_State;
+        typedef Partially_Observable_Markov_Decision_Process_State POMDP_State;
 
+        typedef std::pair<MDP_State*, double> Belief_Point;
+        typedef std::vector<Belief_Point> Belief_State;
+        
+        bool operator==(const POMDP_State&) const;
+        bool operator<(const POMDP_State&) const;
+	std::size_t hash_value() const;
+
+        
+        
+        const Belief_State& get__belief_state() const;
+        
     private:
-        typedef std::map<MDP_State*, double> Belief_State;
+        std::vector<uint> action_based_successor_driver;
+
+        /* For each \member{action_based_successor_driver}, we store
+         * the observation based successor drivers.*/
+        std::vector< std::vector<uint> > observation_based_successor_driver;
+        
+        std::vector<
+            std::vector<
+                std::vector<
+                    const Partially_Observable_Markov_Decision_Process_State*> > > successors;
+        
+        std::vector< 
+            std::vector<
+                std::vector<
+                    double> > >  successor_probability;
+
+        
+        /*Expected value of this POMDP state.*/
+        double expected_value;
+
+        std::vector<std::pair<MDP_State*, double> > belief_State;
     };
 }
 

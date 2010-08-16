@@ -336,25 +336,25 @@ namespace Planning
             
             const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__state_predicates__parsed() const;
             
-            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__observational_propositions__parsed() const;
+            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__perceptual_propositions__parsed() const;
             
-            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__observational_predicates__parsed() const;
+            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__perceptual_predicates__parsed() const;
             
             const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__deleted__state_propositions__parsed() const;
             
             const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__deleted__state_predicates__parsed() const;
             
-            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__deleted__observational_propositions__parsed() const;
+            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__deleted__perceptual_propositions__parsed() const;
             
-            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__deleted__observational_predicates__parsed() const;
+            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__deleted__perceptual_predicates__parsed() const;
             
             const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__added__state_propositions__parsed() const;
             
             const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& get__added__state_predicates__parsed() const;
             
-            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__added__observational_propositions__parsed() const;
+            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__added__perceptual_propositions__parsed() const;
             
-            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__added__observational_predicates__parsed() const;
+            const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& get__added__perceptual_predicates__parsed() const;
             
             
             
@@ -381,8 +381,8 @@ namespace Planning
             std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> > perceptual_ground_functions__parsed;
             std::map<Planning::Predicate_Name, std::set<ID_TYPE> > state_propositions__parsed;
             std::map<Planning::Predicate_Name, std::set<ID_TYPE> > state_predicates__parsed;
-            std::map<Planning::Percept_Name, std::set<ID_TYPE> > observational_propositions__parsed;
-            std::map<Planning::Percept_Name, std::set<ID_TYPE> > observational_predicates__parsed;
+            std::map<Planning::Percept_Name, std::set<ID_TYPE> > perceptual_propositions__parsed;
+            std::map<Planning::Percept_Name, std::set<ID_TYPE> > perceptual_predicates__parsed;
 
 
             /* Boolean symbols are "added" and Boolean symbols that
@@ -390,12 +390,12 @@ namespace Planning
              * detection of static Boolean symbols possible.*/
             std::map<Planning::Predicate_Name, std::set<ID_TYPE> > deleted__state_propositions__parsed;
             std::map<Planning::Predicate_Name, std::set<ID_TYPE> > deleted__state_predicates__parsed;
-            std::map<Planning::Percept_Name, std::set<ID_TYPE> > deleted__observational_propositions__parsed;
-            std::map<Planning::Percept_Name, std::set<ID_TYPE> > deleted__observational_predicates__parsed;
+            std::map<Planning::Percept_Name, std::set<ID_TYPE> > deleted__perceptual_propositions__parsed;
+            std::map<Planning::Percept_Name, std::set<ID_TYPE> > deleted__perceptual_predicates__parsed;
             std::map<Planning::Predicate_Name, std::set<ID_TYPE> > added__state_propositions__parsed;
             std::map<Planning::Predicate_Name, std::set<ID_TYPE> > added__state_predicates__parsed;
-            std::map<Planning::Percept_Name, std::set<ID_TYPE> > added__observational_propositions__parsed;
-            std::map<Planning::Percept_Name, std::set<ID_TYPE> > added__observational_predicates__parsed;
+            std::map<Planning::Percept_Name, std::set<ID_TYPE> > added__perceptual_propositions__parsed;
+            std::map<Planning::Percept_Name, std::set<ID_TYPE> > added__perceptual_predicates__parsed;
 
             
 

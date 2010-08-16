@@ -1,4 +1,69 @@
 
+//             /* Functionality to change \argument{State} to reflect the
+//              * effects of a call to \member{flip()}. */
+//             void flip_satisfaction(State&) const;
+
+
+
+/* PRIVATE */
+void Literal::flip_satisfaction(State& state) const
+{
+    
+}
+
+//     bool was_satisfied = is_satisfied(state);
+    
+    flip_satisfaction(state);
+    
+//     auto listeners = get__traversable__listeners();
+//     if(was_satisfied){
+//         for(auto listener = listeners.begin()
+//                 ; listener != listeners.end()
+//                 ; listener++){
+//             INTERACTIVE_VERBOSER(true, 7002, "Just UNSATISFIED literal  :: "<<*this<<std::endl
+//                                  <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
+//             (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
+//         }
+//     } else {
+//         for(auto listener = listeners.begin()
+//                 ; listener != listeners.end()
+//                 ; listener++){
+//             INTERACTIVE_VERBOSER(true, 7002, "Just SATISFIED literal  :: "<<*this<<std::endl
+//                                  <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
+//             (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
+//         }
+//     }
+
+// void Literal::flip_variable_on(State& state) const
+// {
+//     /*negative*/
+//     if(get__sign()){
+//         if(!is_satisfied(state)){
+//             flip(state);
+//         } 
+//     }
+//     /*positive*/
+//     else {
+//         if(is_satisfied(state)){
+//             flip(state);
+//         }
+//     }
+// }
+
+// void Literal::flip_variable_off(State& state) const
+// {
+//     if(get__sign()){
+//         if(is_satisfied(state)){
+//             flip(state);
+//         } 
+//     } else {
+//         if(!is_satisfied(state)){
+//             flip(state);
+//         }
+//     }
+// }
+
+
 
 //         /* For each \LHS{action}, we have the \RHS{probability} that
 //          * that action leads to a particular successor. */

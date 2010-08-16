@@ -1,123 +1,131 @@
-/* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
- *
- * Authorship of this source code was supported by EC FP7-IST grant
- * 215181-CogX.
- *
- *    This program is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation, either version 3 of the License, or
- *    (at your option) any later version.
- *
- *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License
- *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Dear CogX team member :: Please email (charles.gretton@gmail.com)
- * if you make a change to this and commit that change to SVN. In that
- * email, can you please attach the source files you changed as they
- * appeared before you changed them (i.e., fresh out of SVN), and the
- * diff files (*). Alternatively, you could not commit your changes,
- * but rather post me a patch (**) which I will test and then commit
- * if it does not cause any problems under testing.
- *
- * (*) see http://www.gnu.org/software/diffutils/diffutils.html --
- * GNU-09/2009
- *
- * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
- * 
- */
+#include "planning_cnf_to_action_cnf.hh"
 
-
-#include "planning_cnf_to_state_cnf.hh"
 
 #include "planning_state.hh"
-#include "state_formula__literal.hh"
-#include "state_formula__disjunctive_clause.hh"
-#include "state_formula__conjunctive_normal_form_formula.hh"
+#include "action__literal.hh"
+#include "action__disjunctive_clause.hh"
+#include "action__conjunctive_normal_form_formula.hh"
+#include "action__state_transformation.hh"
 
 using namespace Planning;
-using namespace Planning::State_Formula;
 
-Planning_CNF__to__State_CNF::
-Planning_CNF__to__State_CNF(basic_type::Runtime_Thread runtime_Thread,
-                            Formula::State_Propositions& state_Propositions,
-                            State_Formula::Literals& problem__literals,
-                            State_Formula::Disjunctive_Clauses& problem__clauses,
-                            State_Formula::Conjunctive_Normal_Form_Formulae& problem__cnfs)
-    :problem__state_Propositions(state_Propositions),
-     problem__literals(problem__literals),
-     problem__clauses(problem__clauses),
-     problem__cnfs(problem__cnfs),
+Planning_CNF__to__Action_CNF::
+Planning_CNF__to__Action_CNF(basic_type::Runtime_Thread runtime_Thread,
+                             Action_Literals& problem__action_literals,
+                             Action_Disjunctive_Clauses& problem__action_clauses,
+                             Action_Conjunctive_Normal_Form_Formulae& problem__action_cnfs,
+                             CXX__PTR_ANNOTATION(List__Action_Literals)& problem__negative_literals,
+                             const std::map<Formula::Action_Proposition
+                             , State_Transformation__Pointer>& action_symbol__to__state_transformation)
+    :problem__literals(problem__action_literals),
+     problem__clauses(problem__action_clauses),
+     problem__cnfs(problem__action_cnfs),
+     problem__negative_literals(problem__negative_literals),
+     action_symbol__to__state_transformation(action_symbol__to__state_transformation),
      processing_negative(false),
      runtime_Thread(runtime_Thread)
 {
 }
 
-State_Formula::Conjunctive_Normal_Form_Formula__Pointer Planning_CNF__to__State_CNF::get__answer() const
+Action_Conjunctive_Normal_Form_Formula__Pointer Planning_CNF__to__Action_CNF::get__answer() const
 {
     return answer;
 }
 
 
-IMPLEMENTATION__STRICT_SHARED_UNARY_VISITOR(Planning_CNF__to__State_CNF,
+IMPLEMENTATION__STRICT_SHARED_UNARY_VISITOR(Planning_CNF__to__Action_CNF,
                                             basic_type);
 
 
-void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
+void Planning_CNF__to__Action_CNF::operator()(const Formula::Subformula& input)
 {
     switch(input->get__type_name()){
-        case enum_types::state_proposition:
+        case enum_types::action_proposition:
         {
-            assert(input.test_cast<Planning::Formula::State_Proposition>());
+            assert(input.test_cast<Planning::Formula::Action_Proposition>());
             
-            auto __proposition = input.cxx_get<Planning::Formula::State_Proposition>();
+            auto _proposition = input.cxx_get<Planning::Formula::Action_Proposition>();
 
+            auto proposition = *_proposition;
             
+            assert(proposition.get__runtime_Thread() == runtime_Thread);
     
-            NEW_referenced_WRAPPED_deref_POINTER
-                (runtime_Thread,
-                 Planning::Formula::State_Proposition,
-                 _proposition,
-                 __proposition->get__name(),
-                 __proposition->get__arguments());
-
-            
-            INTERACTIVE_VERBOSER(true, 3104,
-                                 "New state proposition :: "<<_proposition<<std::endl);
-            
-            auto _problem__state_Proposition = problem__state_Propositions
-                .find(*_proposition.cxx_get<Planning::Formula::State_Proposition>());
-            if(_problem__state_Proposition == problem__state_Propositions.end()){
-                problem__state_Propositions
-                    .insert(*_proposition.cxx_get<Planning::Formula::State_Proposition>());
-                _problem__state_Proposition = problem__state_Propositions
-                    .find(*_proposition.cxx_get<Planning::Formula::State_Proposition>());
-            }
-            auto proposition = *_problem__state_Proposition;
-            
             auto id = proposition.get__id();
             
             NEW_referenced_WRAPPED_deref_POINTER
                 (runtime_Thread,
-                 State_Formula::Literal,
+                 Action_Literal,
                  _literal,
                  id,
                  processing_negative);
             
-            auto literal = CXX__deref__shared_ptr<State_Formula::Literal>(_literal);
+            auto literal = CXX__deref__shared_ptr<Action_Literal>(_literal);
             
             auto _literal__pointer = problem__literals.find(literal);
             if(_literal__pointer == problem__literals.end()){
                 problem__literals.insert(literal);
+                
+                if(processing_negative){
+                    problem__negative_literals->push_back(literal);
+                }
+                
                 _literal__pointer = problem__literals.find(literal);
             }
             auto literal__pointer = *_literal__pointer;
+
             
-            literal__pointer->configure__complement(literal__pointer, problem__literals);
+            QUERY_UNRECOVERABLE_ERROR(!action_symbol__to__state_transformation.size(),
+                                      "Got zero actions, therefore observations cannot be triggered.");
+            
+            QUERY_UNRECOVERABLE_ERROR(action_symbol__to__state_transformation.begin()->first.get__runtime_Thread()
+                                      != proposition.get__runtime_Thread(),
+                                      "Oops, asking for action literals from the wrong thread.");
+
+//             for(auto p = action_symbol__to__state_transformation.begin()
+//                     ; p != action_symbol__to__state_transformation.end()
+//                     ; p++){
+                
+//                 std::cerr<<p->first<<"\n"<<p->first.get__runtime_Thread()<<"::"<<p->first.get__id()<<std::endl
+//                          <<proposition<<"\n"<<proposition.get__runtime_Thread()<<"::"<<proposition.get__id()
+//                          <<std::endl<<std::endl;
+                
+//                 std::ostringstream oss1;
+//                 oss1<<p->first;
+//                 std::string string1 = oss1.str();
+                
+//                 std::ostringstream oss2;
+//                 oss2<<proposition;
+//                 std::string string2 = oss2.str();
+                
+                
+//                 if(string2 == string1){
+                    
+//                     assert(p->first.get__arguments() == proposition.get__arguments());
+
+//                     std::cerr<<p->first.get__name().get__runtime_Thread()<<" "
+//                              <<proposition.get__name().get__runtime_Thread();
+                    
+//                     assert(p->first.get__name() == proposition.get__name());
+//                     assert(p->first == proposition);
+//                 }
+//             }
+//             std::cerr<<std::endl;
+            
+            QUERY_UNRECOVERABLE_ERROR
+                (action_symbol__to__state_transformation.find(proposition) ==
+                 action_symbol__to__state_transformation.end(),
+                 "Could not find transformation for :: "<<proposition<<" "<<proposition.get__runtime_Thread()<<std::endl);
+            
+            
+            /* Ensure the corresponding action wakes this literal on
+             * execution; if it is positive.*/
+            if(!processing_negative){
+                auto state_Transformation = action_symbol__to__state_transformation.find(proposition)->second;
+                auto deref__st = literal__pointer.cxx_deref_get<basic_type>();
+                state_Transformation->add__listener(deref__st);
+            }
+            
+            literal__pointer->configure__negatives(/*literal__pointer,*/ problem__negative_literals);
             
             if(clause__as_set.find(literal__pointer) != clause__as_set.end()){
                 INTERACTIVE_VERBOSER(true, 3124,
@@ -158,13 +166,13 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             
             NEW_referenced_WRAPPED_deref_POINTER
                 (runtime_Thread,
-                 State_Formula::Conjunctive_Normal_Form_Formula,
+                 Action_Conjunctive_Normal_Form_Formula,
                  _conjunct,
                  disjunctions);
             
 
             auto formula =
-                CXX__deref__shared_ptr<State_Formula::Conjunctive_Normal_Form_Formula>
+                CXX__deref__shared_ptr<Action_Conjunctive_Normal_Form_Formula>
                 (_conjunct);
             
             auto _problem__pointer = problem__cnfs.find(formula);
@@ -173,8 +181,10 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             /* If this CNF is already in the ground instance. */
             if(_problem__pointer != problem__cnfs.end()){
                 answer = *_problem__pointer;
-                disjunctions = State_Formula::List__Disjunctive_Clauses();
-                disjunctions__as_set = State_Formula::Disjunctive_Clauses();
+                disjunctions = List__Action_Disjunctive_Clauses();//Action_List__Disjunctive_Clause();
+                disjunctions__as_set = Action_Disjunctive_Clauses();//Action_Disjunctive_Clauses();   
+//                 disjunctions = Action_List__Disjunctive_Clause();
+//                 disjunctions__as_set = Action_Disjunctive_Clauses();
                 return;
             }
             
@@ -190,14 +200,14 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
                     ; clause != clauses.end()
                     ;  clause++){
                 auto deref__st = problem__pointer.cxx_deref_get<basic_type>();
-                (*clause).cxx_get<Disjunctive_Clause>()
+                (*clause).cxx_get<Action_Disjunctive_Clause>()
                     ->add__listener(deref__st);
             }
 
             answer = problem__pointer;
             
-            disjunctions = State_Formula::List__Disjunctive_Clauses();
-            disjunctions__as_set = State_Formula::Disjunctive_Clauses();   
+            disjunctions = List__Action_Disjunctive_Clauses();//Action_List__Disjunctive_Clause();
+            disjunctions__as_set = Action_Disjunctive_Clauses();//Action_Disjunctive_Clauses();   
         }
         break;
         case enum_types::disjunction:
@@ -211,7 +221,7 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             
             NEW_referenced_WRAPPED_deref_POINTER
                 (runtime_Thread,
-                 State_Formula::Disjunctive_Clause,
+                 Action_Disjunctive_Clause,
                  _disjunct,
                  clause);
 
@@ -219,7 +229,7 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
                 true, 3124,
                 "Processing disjunctive clause :: "<<_disjunct<<std::endl);
             
-            auto disjunct = CXX__deref__shared_ptr<State_Formula::Disjunctive_Clause>(_disjunct);
+            auto disjunct = CXX__deref__shared_ptr<Action_Disjunctive_Clause>(_disjunct);
             auto _clause__pointer = problem__clauses.find(disjunct);
             
             bool is_new_planning_problem_clause = false;
@@ -244,13 +254,15 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
                 INTERACTIVE_VERBOSER(true, 3104,
                                      "Processing duplicated clause :: "<<clause__pointer<<std::endl
                                      <<"Reacted by dropping back to processing conjunct."<<std::endl );
-                clause = List__Literals();
-                clause__as_set = Literals();
+                clause = List__Action_Literals();
+                clause__as_set = Action_Literals();
+//                 clause = Action_List__Literals();
+//                 clause__as_set = Action_Literals();
                 return;
             }
 
             if(is_new_planning_problem_clause){
-                List__Literals& literals = clause__pointer->get__literals();
+                List__Action_Literals& literals = clause__pointer->get__literals();
                 for(auto literal = literals.begin()
                         ; literal != literals.end()
                         ; literal ++){
@@ -260,7 +272,7 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
                                          <<"With literal"<<*literal<<std::endl );
                     
                     auto deref__st = clause__pointer.cxx_deref_get<basic_type>();
-                    if((*literal).cxx_get<Literal>()->add__listener(deref__st)){;
+                    if((*literal).cxx_get<Action_Literal>()->add__listener(deref__st)){;
                     } else {
                         WARNING("Input formula is :: "<<input<<std::endl
                                 <<"Could not register clause :: "<<deref__st<<std::endl
@@ -276,8 +288,10 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             disjunctions.push_back(clause__pointer);
             disjunctions__as_set.insert(clause__pointer);
             
-            clause = List__Literals();
-            clause__as_set = Literals();
+            clause = List__Action_Literals();
+            clause__as_set = Action_Literals();
+//             clause = List__Action_Literals();
+//             clause__as_set = Action_Literals();
         }
         break;
         default:

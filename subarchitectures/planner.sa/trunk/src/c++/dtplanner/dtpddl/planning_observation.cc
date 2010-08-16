@@ -31,27 +31,23 @@
  * 
  */
 
-#ifndef BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
-#define BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
 
-#include "boolean_state.hh"
+#include "planning_observation.hh"
 
-namespace Planning
-{  
-    class Boolean__Satisfaction_Status_Management
-    {
-    public:
-        Boolean__Satisfaction_Status_Management(uint num = 0);
-        
-        bool valid_index(uint i) const;
-        void satisfy(uint i);
-        void unsatisfy(uint i);
-        void flip_satisfaction(uint i);
-        bool satisfied(uint i) const;
-    protected:
-        /* Derived from \parent{Markov_Decision_Process_State} fields.*/
-        Boolean_State status;
-    };
+
+using namespace Planning;
+
+Observational_State::Observational_State(uint number_of_perceptual_propositions)
+    :Boolean_State(number_of_perceptual_propositions)
+{
 }
 
-#endif
+uint Observational_State::get__id() const
+{
+    return id;
+}
+
+void Observational_State::set__id(uint _id)
+{
+    id = _id;
+}

@@ -61,6 +61,27 @@ namespace Planning
     typedef std::vector< Simple_Double_Transformation__Pointer > List__Simple_Double_Transformation;
 }
 
+namespace Planning
+{
+    class Action_Literal;
+    
+    typedef CXX__deref__shared_ptr<Action_Literal> Action_Literal__Pointer; 
+    typedef std::set< Action_Literal__Pointer > Action_Literals;       
+    typedef std::vector< Action_Literal__Pointer > List__Action_Literals;
+
+    
+    class Action_Disjunctive_Clause;
+    
+    typedef CXX__deref__shared_ptr<Action_Disjunctive_Clause> Action_Disjunctive_Clause__Pointer; 
+    typedef std::set< Action_Disjunctive_Clause__Pointer > Action_Disjunctive_Clauses;       
+    typedef std::vector< Action_Disjunctive_Clause__Pointer > List__Action_Disjunctive_Clauses;
+
+    class Action_Conjunctive_Normal_Form_Formula;
+    
+    typedef CXX__deref__shared_ptr<Action_Conjunctive_Normal_Form_Formula> Action_Conjunctive_Normal_Form_Formula__Pointer; 
+    typedef std::set< Action_Conjunctive_Normal_Form_Formula__Pointer > Action_Conjunctive_Normal_Form_Formulae;       
+    typedef std::vector< Action_Conjunctive_Normal_Form_Formula__Pointer > List__Action_Conjunctive_Normal_Form_Formulae;
+}
 
 namespace std
 {
@@ -72,6 +93,15 @@ namespace std
                              , const Planning::Simple_Int_Transformation&);
     std::ostream& operator<<(std::ostream&
                              , const Planning::Simple_Double_Transformation&);
+    std::ostream& operator<<(std::ostream&
+                             , const Planning::State_Transformation&);
+    
+    std::ostream& operator<<(std::ostream&
+                             , const Planning::Action_Literal&);
+    std::ostream& operator<<(std::ostream&
+                             , const Planning::Action_Disjunctive_Clause&);
+    std::ostream& operator<<(std::ostream&
+                             , const Planning::Action_Conjunctive_Normal_Form_Formula&);
 }
 
 

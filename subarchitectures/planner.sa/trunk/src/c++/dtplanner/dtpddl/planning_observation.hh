@@ -1,3 +1,4 @@
+
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
  * Authorship of this source code was supported by EC FP7-IST grant
@@ -31,27 +32,33 @@
  * 
  */
 
-#ifndef BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
-#define BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
+
+#ifndef PLANNING_OBSERVATION_HH
+#define PLANNING_OBSERVATION_HH
 
 #include "boolean_state.hh"
 
+
 namespace Planning
-{  
-    class Boolean__Satisfaction_Status_Management
+{
+    
+    class Observational_State : public Boolean_State
     {
     public:
-        Boolean__Satisfaction_Status_Management(uint num = 0);
-        
-        bool valid_index(uint i) const;
-        void satisfy(uint i);
-        void unsatisfy(uint i);
-        void flip_satisfaction(uint i);
-        bool satisfied(uint i) const;
-    protected:
-        /* Derived from \parent{Markov_Decision_Process_State} fields.*/
-        Boolean_State status;
+        Observational_State(uint number_of_perceptual_propositions = 0);
+
+        uint get__id() const;
+        void set__id(uint);
+    private:
+        uint id;
     };
+
+    
+    /*State pointers.*/
+    typedef std::tr1::
+    unordered_set<Observational_State*
+                  , /*state_hash*/deref_hash<Observational_State>
+                  ,  deref_equal_to<Observational_State> > Set_Of_Observational_State_Pointers;
 }
 
 #endif

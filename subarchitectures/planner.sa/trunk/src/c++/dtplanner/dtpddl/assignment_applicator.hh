@@ -46,8 +46,10 @@ namespace Planning
     public:
         CNF_Assignment_Applicator(basic_type::Runtime_Thread,
                                   const Planning::Parsing::Domain_Data&,
-                                  const Planning::Parsing::Problem_Data&
+                                  const Planning::Parsing::Problem_Data&,
+                                  std::pair<basic_type::Runtime_Thread, ID_TYPE>& actions_validator
                                   );
+
         
         typedef Planning::Formula::Subformulae Subformulae;
         typedef Planning::Formula::Subformula Subformula;
@@ -57,10 +59,11 @@ namespace Planning
         typedef Planning::Formula::Exists Exists;
         typedef Planning::Formula::Forall Forall;
         typedef Planning::Formula::State_Proposition State_Proposition;
-        typedef Planning::Formula::Observational_Predicate Observational_Predicate;
-        typedef Planning::Formula::Observational_Proposition Observational_Proposition;
+        typedef Planning::Formula::Perceptual_Predicate Perceptual_Predicate;
+        typedef Planning::Formula::Perceptual_Proposition Perceptual_Proposition;
         typedef Planning::Formula::Equality_Test Equality_Test;
         typedef Planning::Formula::State_Predicate State_Predicate;
+        typedef Planning::Formula::Action_Predicate Action_Predicate;
         
         
         
@@ -70,9 +73,10 @@ namespace Planning
         typedef std::vector<Disjunct> Disjuncts;
         typedef CXX__deref__shared_ptr<Negation> Nagative;
         typedef CXX__deref__shared_ptr<State_Predicate> Fact;
+        typedef CXX__deref__shared_ptr<Action_Predicate> Action_Fact;
         typedef CXX__deref__shared_ptr<State_Proposition> Ground_Fact;
-        typedef CXX__deref__shared_ptr<Observational_Predicate> Observation;
-        typedef CXX__deref__shared_ptr<Observational_Proposition> Ground_Observation;
+        typedef CXX__deref__shared_ptr<Perceptual_Predicate> Perception;
+        typedef CXX__deref__shared_ptr<Perceptual_Proposition> Ground_Perception;
         typedef CXX__deref__shared_ptr<Equality_Test> Equality;
         
         //typedef std::map<Variable, Constant> Assignment;
@@ -92,6 +96,8 @@ namespace Planning
 //         /* see \member{assignment_possibilities}*/
 //         void reset__assignment_possibilities(std::map<Variable,  Constants&>&);
     private:
+        std::pair<basic_type::Runtime_Thread, ID_TYPE>& actions_validator;
+        
 //         /* Translates constant symbols from the base to be associated
 //          * with the planning problem. First argument is the base of
 //          * the translation, second argument is the result of the
@@ -122,9 +128,10 @@ namespace Planning
         Result operator()(Disjunct, const Planning::Assignment&);
         Result operator()(Nagative, const Planning::Assignment&);
         Result operator()(Fact, const Planning::Assignment&);
+        Result operator()(Action_Fact, const Planning::Assignment&);
         Result operator()(Ground_Fact, const Planning::Assignment&);
-        Result operator()(Observation, const Planning::Assignment&);
-        Result operator()(Ground_Observation, const Planning::Assignment&);
+        Result operator()(Perception, const Planning::Assignment&);
+        Result operator()(Ground_Perception, const Planning::Assignment&);
         Result operator()(Equality, const Planning::Assignment&);
 
         /* Necessary but non-sufficient conditions are examined to

@@ -109,8 +109,13 @@ namespace Planning
         MAKE_VARIABLE_ATOM(Action_Predicate, enum_types::action_predicate, Planning::Action_Name);
         MAKE_CONSTANT_ATOM(State_Proposition, enum_types::state_proposition, Planning::Predicate_Name);
         MAKE_VARIABLE_ATOM(State_Predicate, enum_types::state_predicate, Planning::Predicate_Name);
-        MAKE_CONSTANT_ATOM(Observational_Proposition, enum_types::observational_proposition, Planning::Percept_Name);
-        MAKE_VARIABLE_ATOM(Observational_Predicate, enum_types::observational_predicate, Planning::Percept_Name);
+
+        
+        MAKE_CONSTANT_ATOM(Perceptual_Proposition, enum_types::perceptual_proposition, Planning::Percept_Name);
+        MAKE_VARIABLE_ATOM(Perceptual_Predicate, enum_types::perceptual_predicate, Planning::Percept_Name);
+        
+        MAKE_CONSTANT_ATOM(Observational_Proposition, enum_types::observational_proposition, Planning::Observation_Name);
+        MAKE_VARIABLE_ATOM(Observational_Predicate, enum_types::observational_predicate, Planning::Observation_Name);
         
         MAKE_CONSTANT_ATOM(State_Ground_Function, enum_types::state_ground_function, Planning::State_Function_Name);
         MAKE_VARIABLE_ATOM(State_Function, enum_types::state_function, Planning::State_Function_Name);
@@ -121,13 +126,21 @@ namespace Planning
         typedef std::set<Action_Predicate> Action_Predicates;
         typedef std::set<State_Proposition> State_Propositions;
         typedef std::set<State_Predicate> State_Predicates;
-        typedef std::set<Observational_Proposition> Observational_Propositions;
+//         typedef std::set<Observational_Proposition> Observational_Propositions;
         typedef std::set<Observational_Predicate> Observational_Predicates;
         typedef std::set<State_Ground_Function> State_Ground_Functions;
         typedef std::set<State_Function> State_Functions;
         typedef std::set<Perceptual_Ground_Function> Perceptual_Ground_Functions;
         typedef std::set<Perceptual_Function> Perceptual_Functions;
 
+        typedef CXX__deref__shared_ptr<Observational_Proposition> Observational_Proposition__Pointer;
+        typedef std::vector<Observational_Proposition__Pointer> List__Observational_Propositions;
+        typedef std::set<Observational_Proposition__Pointer> Observational_Propositions;
+        
+        typedef CXX__deref__shared_ptr<Perceptual_Proposition> Perceptual_Proposition__Pointer;
+        typedef std::vector<Perceptual_Proposition__Pointer> List__Perceptual_Propositions;
+        typedef std::set<Perceptual_Proposition__Pointer> Perceptual_Propositions;
+        
         class Conjunction : public type_wrapper<enum_types::conjunction
                                                 , Subformulae>
         {PRINTING;

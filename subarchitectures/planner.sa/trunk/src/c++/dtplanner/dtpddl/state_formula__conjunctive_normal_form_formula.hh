@@ -44,7 +44,7 @@ namespace Planning
     {
         class Conjunctive_Normal_Form_Formula
             : public _Satisfaction_Listener<enum_types::conjunctive_normal_form_formula
-                                            , List__Disjunctive_Clause >
+                                            , List__Disjunctive_Clauses >
         {PRINTING;
         public:
             
@@ -52,14 +52,11 @@ namespace Planning
             void report__newly_unsatisfied(State&) const;
 
             
-            void set__satisfied(State&) const;
-            void set__unsatisfied(State&) const;
-            void flip_satisfaction(State&) const;
+            /* Changes the satisfaction status in \argument{State} of
+             * the Boolean valued object.*/
+            void flip(State&) const;
             bool is_satisfied(const State&) const;
             
-            void increment__level_of_satisfaction(State&) const;
-            void decrement__level_of_satisfaction(State&) const;
-            void set__level_of_satisfaction(uint, State&) const;
             uint get__level_of_satisfaction(State&) const;
             
             /*How many of this formula's clauses are satisfied? (see
@@ -75,7 +72,13 @@ namespace Planning
             const Disjunctive_Clause& get__disjunctive_clause(int i) const;
             
             /*Get the clauses in the formula.*/
-            const List__Disjunctive_Clause& get__disjunctive_clauses() const;
+            const List__Disjunctive_Clauses& get__disjunctive_clauses() const;
+        private:
+            void set__level_of_satisfaction(uint, State&) const;
+            void increment__level_of_satisfaction(State&) const;
+            void decrement__level_of_satisfaction(State&) const;
+            void set__satisfied(State&) const;
+            void set__unsatisfied(State&) const;
         };
     }
 }

@@ -43,23 +43,37 @@ Unsigned_Integer__Satisfaction_Status_Management(uint num)
 {
 }
 
+uint Unsigned_Integer__Satisfaction_Status_Management::size() const
+{
+    return status.size();
+}
+
+
+bool Unsigned_Integer__Satisfaction_Status_Management::valid_index(uint i) const
+{
+    return (i < status.size());
+}
 
 void Unsigned_Integer__Satisfaction_Status_Management::decrement_satisfaction(uint i)
 {
+    assert(valid_index(i));
     status.decrement(i);
 }
 
 void Unsigned_Integer__Satisfaction_Status_Management::increment_satisfaction(uint i)
 {
+    assert(valid_index(i));
     status.increment(i);
 }
 
 void Unsigned_Integer__Satisfaction_Status_Management::set_satisfaction(uint i, uint value)
 {
+    assert(valid_index(i));
     status.write(i, value);
 }
 
 uint Unsigned_Integer__Satisfaction_Status_Management::get_satisfaction_level(uint i) const
 {
+    assert(valid_index(i));
     return status.read(i);
 }

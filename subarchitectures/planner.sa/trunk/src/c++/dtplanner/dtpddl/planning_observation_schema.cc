@@ -36,7 +36,19 @@ Observation_Header Observation_Schema::get__header() const {return std::tr1::get
 Observation_Name Observation_Schema::get__name() const {return std::tr1::get<0>(get__header().contents());}
 Subformula Observation_Schema::get__precondition() const {return std::tr1::get<1>(this->contents());}
 Subformula Observation_Schema::get__effect() const {return std::tr1::get<2>(this->contents());}
+Subformula Observation_Schema::get__execution_precondition() const {return std::tr1::get<3>(this->contents());}
 
+
+
+void Observation_Schema::alter__precondition(Planning::Formula::Subformula subformula)
+{
+    std::tr1::get<1>(this->_contents()) = subformula;
+}
+
+void Observation_Schema::alter__execution_precondition(Planning::Formula::Subformula subformula)
+{
+    std::tr1::get<3>(this->_contents()) = subformula;
+}
 
 std::ostream& Planning::Observation_Header::operator<<(std::ostream& o) const
 {
@@ -59,6 +71,10 @@ std::ostream& Observation_Schema::operator<<(ostream&o)const
     o<<"(:observe ";
 
     o<<get__header()<<std::endl;
+    
+    o<<":execution ";
+
+    o<<get__execution_precondition()<<std::endl;
     
     o<<":precondition ";
     

@@ -54,41 +54,56 @@ void Conjunctive_Normal_Form_Formula::report__newly_unsatisfied(State& state) co
 
 void Conjunctive_Normal_Form_Formula::set__satisfied(State& state) const
 {
+    assert(state.get__cnfs__satisfaction_status().valid_index(get__id()));
     state.get__cnfs__satisfaction_status().satisfy(get__id());
 }
 
 void Conjunctive_Normal_Form_Formula::set__unsatisfied(State& state) const
 {
+    assert(state.get__cnfs__satisfaction_status().valid_index(get__id()));
     state.get__cnfs__satisfaction_status().unsatisfy(get__id());
 }
 
-void Conjunctive_Normal_Form_Formula::flip_satisfaction(State& state) const
+void Conjunctive_Normal_Form_Formula::flip(State& state) const
 {
+    assert(state.get__cnfs__satisfaction_status().valid_index(get__id()));
+    WARNING("Something just changed the Boolean status value associated with a"<<std::endl
+            <<"CNF by an unusual mechanism -- "<<std::endl
+            <<"i.e., the satisfaction for a clause was not reported changed.");
     state.get__cnfs__satisfaction_status().flip_satisfaction(get__id());
 }
             
 bool Conjunctive_Normal_Form_Formula::is_satisfied(const State& state) const
 {
+    assert(state.get__cnfs__satisfaction_status().valid_index(get__id()));
     return state.get__cnfs__satisfaction_status().satisfied(get__id());
 }
 
 void Conjunctive_Normal_Form_Formula::increment__level_of_satisfaction(State&state) const
 {
+    QUERY_UNRECOVERABLE_ERROR(!state.get__cnfs__count_status().valid_index(get__id())
+                              , "Failing index test on formula :: "<<*this<<std::endl
+                              <<"with id :: "<<get__id()<<std::endl
+                              <<"only :: "<<state.get__cnfs__count_status().size()<<" clauses registered."<<std::endl);
+    
     state.get__cnfs__count_status().increment_satisfaction(get__id());
 }
 
 void Conjunctive_Normal_Form_Formula::decrement__level_of_satisfaction(State&state) const
 {
+    assert(state.get__cnfs__count_status().valid_index(get__id()));
     state.get__cnfs__count_status().decrement_satisfaction(get__id());
 }
 
 void Conjunctive_Normal_Form_Formula::set__level_of_satisfaction(uint value, State&state) const
 {
+    assert(state.get__cnfs__count_status().valid_index(get__id()));
     state.get__cnfs__count_status().set_satisfaction(get__id(), value);
 }
 
 uint Conjunctive_Normal_Form_Formula::get__level_of_satisfaction(State&state) const
 {
+    assert(state.get__cnfs__count_status().valid_index(get__id()));
     return state.get__cnfs__count_status().get_satisfaction_level(get__id());
 }
 
@@ -136,7 +151,7 @@ void Conjunctive_Normal_Form_Formula::report__newly_unsatisfied_clause(State& st
 
 
 
-const List__Disjunctive_Clause& Conjunctive_Normal_Form_Formula::get__disjunctive_clauses() const
+const List__Disjunctive_Clauses& Conjunctive_Normal_Form_Formula::get__disjunctive_clauses() const
 {
     return std::tr1::get<0>(contents());
 }

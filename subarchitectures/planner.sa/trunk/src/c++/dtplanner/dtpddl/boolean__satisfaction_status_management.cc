@@ -42,22 +42,31 @@ Boolean__Satisfaction_Status_Management(uint num)
 }
 
 
+bool Boolean__Satisfaction_Status_Management::valid_index(uint i) const
+{
+    return (i <= status.get__number_of_atoms());
+}
+
 void Boolean__Satisfaction_Status_Management::satisfy(uint i)
 {
+    assert(valid_index(i));
     status.flip_on(i);
 }
 
 void Boolean__Satisfaction_Status_Management::unsatisfy(uint i)
 {
+    assert(valid_index(i));
     status.flip_off(i);
 }
 
 void Boolean__Satisfaction_Status_Management::flip_satisfaction(uint i)
 {
+    assert(valid_index(i));
     status.flip(i);
 }
 
 bool Boolean__Satisfaction_Status_Management::satisfied(uint i) const
 {
+    assert(valid_index(i));
     return status.is_true(i);
 }

@@ -514,8 +514,8 @@ void  Formula_Data::report__formula_action()
 void  Formula_Data::report__formula_percept()
 {
     report__formula_atomic_symbol
-        <Planning::Formula::Observational_Proposition
-        , Planning::Formula::Observational_Predicate
+        <Planning::Formula::Perceptual_Proposition
+        , Planning::Formula::Perceptual_Predicate
         , Planning::Percept_Name>
         (percept_Name);
 }
@@ -604,7 +604,7 @@ void Formula_Data::report__formula(const std::string& str)
         {
             VERBOSER(25, "disjunction");
 
-            check__exists_parsed_subformulae(formula_parsing_level + 1);
+            assert(check__exists_parsed_subformulae(formula_parsing_level + 1));
     
             NEW_object_referenced_WRAPPED_deref_visitable_POINTER
                 (Planning::Formula::Disjunction
@@ -618,15 +618,25 @@ void Formula_Data::report__formula(const std::string& str)
         {
             VERBOSER(25, "conjunction");
 
-            check__exists_parsed_subformulae(formula_parsing_level + 1);
+//             assert(check__exists_parsed_subformulae(formula_parsing_level + 1));
+            
+            if(!check__exists_parsed_subformulae(formula_parsing_level + 1)){
+                
+                NEW_object_referenced_WRAPPED_deref_visitable_POINTER
+                    (Planning::Formula::Conjunction
+                     , tmp
+                     , Formula::Subformulae());
+                subformulae[formula_parsing_level].push_back(tmp);
+            } else {
+                
+                NEW_object_referenced_WRAPPED_deref_visitable_POINTER
+                    (Planning::Formula::Conjunction
+                     , tmp
+                     , subformulae[formula_parsing_level + 1]);
+                subformulae[formula_parsing_level].push_back(tmp);
+            }
             
             
-            NEW_object_referenced_WRAPPED_deref_visitable_POINTER
-                (Planning::Formula::Conjunction
-                 , tmp
-                 , subformulae[formula_parsing_level + 1]);
-            
-            subformulae[formula_parsing_level].push_back(tmp);
         }
         break;
         case negation:
@@ -635,7 +645,7 @@ void Formula_Data::report__formula(const std::string& str)
             in_delete_context = false;
             
             VERBOSER(25, "negation");
-            check__exists_parsed_subformulae(formula_parsing_level + 1);
+            assert(check__exists_parsed_subformulae(formula_parsing_level + 1));
             
             assert(subformulae[formula_parsing_level+1].size() == 1);
             NEW_object_referenced_WRAPPED_deref_visitable_POINTER
@@ -649,7 +659,7 @@ void Formula_Data::report__formula(const std::string& str)
         case material_implication:
         {
             VERBOSER(25, "material_implication");
-            check__exists_parsed_subformulae(formula_parsing_level + 1);
+            assert(check__exists_parsed_subformulae(formula_parsing_level + 1));
             check__cardinality_constraint_on_subformulae_at_index(2, formula_parsing_level + 1);
             
             NEW_object_referenced_WRAPPED_deref_visitable_POINTER
@@ -671,7 +681,7 @@ void Formula_Data::report__formula(const std::string& str)
         {
             in_modification_context = false;
             
-            check__exists_parsed_subformulae(formula_parsing_level + 1);
+            assert(check__exists_parsed_subformulae(formula_parsing_level + 1));
             check__cardinality_constraint_on_subformulae_at_index
                 (2, formula_parsing_level+1);
             
@@ -696,7 +706,7 @@ void Formula_Data::report__formula(const std::string& str)
         {
             in_modification_context = false;
             
-            check__exists_parsed_subformulae(formula_parsing_level + 1);
+            assert(check__exists_parsed_subformulae(formula_parsing_level + 1));
             check__cardinality_constraint_on_subformulae_at_index
                 (2, formula_parsing_level+1);
             
@@ -720,7 +730,7 @@ void Formula_Data::report__formula(const std::string& str)
 
             in_modification_context = false;
             
-            check__exists_parsed_subformulae(formula_parsing_level + 1);
+            assert(check__exists_parsed_subformulae(formula_parsing_level + 1));
             check__cardinality_constraint_on_subformulae_at_index
                 (2, formula_parsing_level+1);
             
@@ -781,7 +791,7 @@ void Formula_Data::report__formula(const std::string& str)
              * the parent effect/action.*/
 
             
-            check__exists_parsed_subformulae(formula_parsing_level + 1);
+            assert(check__exists_parsed_subformulae(formula_parsing_level + 1));
             check__cardinality_constraint_on_subformulae_at_index
                 (2, formula_parsing_level+1);
 
@@ -911,7 +921,7 @@ void Formula_Data::add__constant_argument(const std::string& str)
     assert(dynamic_cast<Constants_Data*>(this));
 //     NEW_object_referenced_WRAPPED_deref_visitable_POINTER(Planning::Constant, constant, str);
 
-    INTERACTIVE_VERBOSER(true, 3101, "Pointers are "
+    INTERACTIVE_VERBOSER(true, 8001, "Pointers from formula are "
                          <<reinterpret_cast<basic_type::Runtime_Thread>(dynamic_cast<Constants_Data*>(this))
                          <<" "<<reinterpret_cast<basic_type::Runtime_Thread>(this));
     NEW_referenced_WRAPPED_deref_visitable_POINTER(dynamic_cast<Constants_Data*>(this), Planning::Constant, constant, str);
@@ -1045,18 +1055,18 @@ namespace Planning
                                            deleted__state_propositions__parsed,
                                            STATING_STATE_PROPOSITIONS_TEST);
         
-        REPORT_SYMBOL_USAGE__PROPOSITIONAL(Planning::Formula::Observational_Predicate,
+        REPORT_SYMBOL_USAGE__PROPOSITIONAL(Planning::Formula::Perceptual_Predicate,
                                            Planning::Percept_Name,
-                                           observational_predicates__parsed,
-                                           added__observational_predicates__parsed,
-                                           deleted__observational_predicates__parsed,
+                                           perceptual_predicates__parsed,
+                                           added__perceptual_predicates__parsed,
+                                           deleted__perceptual_predicates__parsed,
                                            EMPTY_TEST);
         
-        REPORT_SYMBOL_USAGE__PROPOSITIONAL(Planning::Formula::Observational_Proposition,
+        REPORT_SYMBOL_USAGE__PROPOSITIONAL(Planning::Formula::Perceptual_Proposition,
                                            Planning::Percept_Name,
-                                           observational_propositions__parsed,
-                                           added__observational_propositions__parsed,
-                                           deleted__observational_propositions__parsed,
+                                           perceptual_propositions__parsed,
+                                           added__perceptual_propositions__parsed,
+                                           deleted__perceptual_propositions__parsed,
                                            EMPTY_TEST);
 
         REPORT_SYMBOL_USAGE__NO_STORAGE(Planning::Formula::Action_Proposition,
@@ -1135,6 +1145,11 @@ void Formula_Data::stack__typed_Arguments()
 
 bool Formula_Data::check__exists_parsed_subformulae(int index) const
 {
+    if(subformulae.find(index) == subformulae.end()){
+        return false;
+    }
+    
+    
     QUERY_UNRECOVERABLE_ERROR
         (subformulae.find(index) == subformulae.end(),
          "Parsing an expression that requires a subformula :: "
@@ -1417,14 +1432,14 @@ const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& Formula_Data::get_
     return state_predicates__parsed;
 }
 
-const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__observational_propositions__parsed() const
+const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__perceptual_propositions__parsed() const
 {
-    return observational_propositions__parsed;
+    return perceptual_propositions__parsed;
 }
 
-const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__observational_predicates__parsed() const
+const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__perceptual_predicates__parsed() const
 {
-    return observational_predicates__parsed; 
+    return perceptual_predicates__parsed; 
 }
 
 const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& Formula_Data::get__deleted__state_propositions__parsed() const
@@ -1437,14 +1452,14 @@ const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& Formula_Data::get_
     return deleted__state_predicates__parsed;
 }
 
-const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__deleted__observational_propositions__parsed() const
+const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__deleted__perceptual_propositions__parsed() const
 {
-    return deleted__observational_propositions__parsed;
+    return deleted__perceptual_propositions__parsed;
 }
 
-const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__deleted__observational_predicates__parsed() const
+const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__deleted__perceptual_predicates__parsed() const
 {
-    return deleted__observational_predicates__parsed;
+    return deleted__perceptual_predicates__parsed;
 }
 
 const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& Formula_Data::get__added__state_propositions__parsed() const
@@ -1457,14 +1472,14 @@ const std::map<Planning::Predicate_Name, std::set<ID_TYPE> >& Formula_Data::get_
     return added__state_predicates__parsed;
 }
 
-const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__added__observational_propositions__parsed() const
+const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__added__perceptual_propositions__parsed() const
 {
-    return added__observational_propositions__parsed;
+    return added__perceptual_propositions__parsed;
 }
 
-const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__added__observational_predicates__parsed() const
+const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__added__perceptual_predicates__parsed() const
 {
-    return added__observational_predicates__parsed;
+    return added__perceptual_predicates__parsed;
 }
 
    

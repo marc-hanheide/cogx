@@ -31,27 +31,35 @@
  * 
  */
 
-#ifndef BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
-#define BOOLEAN__SATISFACTION_STATUS_MANAGEMENT_HH
+#ifndef OBS_RVATION__PROBABILISTIC_HH
+#define OBS_RVATION__PROBABILISTIC_HH
 
-#include "boolean_state.hh"
+
+#include "observation_basics.hh"
+#include "state_basics.hh"
+
+#include "planning_types_enum.hh"
+#include "planning_formula.hh"
+#include "planning_types_enum.hh"
+#include "state_formula.hh"
 
 namespace Planning
-{  
-    class Boolean__Satisfaction_Status_Management
+{
+    class Probabilistic_Observation :
+        public State_Formula::
+        _Satisfaction_Listener<enum_types::probabilistic_observation
+                               , Formula::Observational_Proposition>
     {
     public:
-        Boolean__Satisfaction_Status_Management(uint num = 0);
+        const Formula::Observational_Proposition& get__identifier() const;
+
+        std::vector<Planning::Observational_State*> operator()(Planning::Observational_State*
+                                                               , Planning::State*) const;
         
-        bool valid_index(uint i) const;
-        void satisfy(uint i);
-        void unsatisfy(uint i);
-        void flip_satisfaction(uint i);
-        bool satisfied(uint i) const;
-    protected:
-        /* Derived from \parent{Markov_Decision_Process_State} fields.*/
-        Boolean_State status;
+        void report__newly_satisfied(State&) const;
+        void report__newly_unsatisfied(State&) const;
     };
 }
+
 
 #endif
