@@ -91,7 +91,7 @@ public class PlaceSetSizeLogger extends ManagedComponent {
 
             // output the set size to logs
             XMLTag logTag = new XMLTag("MOTIVESETSIZE");
-            logTag.addAttr("time", WMLogger.CASTTimeToString(_wmc.timestamp));
+            logTag.addCastTimeAttr(_wmc.timestamp);
             logTag.addChild(setToXML(trueplace, "trueplace"));
             logTag.addChild(setToXML(placeholder, "placeholder"));
             String logString = logTag.toString();

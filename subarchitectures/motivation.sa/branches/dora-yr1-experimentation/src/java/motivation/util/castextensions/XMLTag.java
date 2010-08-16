@@ -1,5 +1,6 @@
 package motivation.util.castextensions;
 
+import cast.cdl.CASTTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +36,15 @@ public class XMLTag {
         attrs.put(key, val);
     }
 
+    /**
+     * Convenience method for adding a <tt>cast_time</tt> attribute.
+     * @param time
+     * @see #addAttr(java.lang.String, java.lang.String) 
+     */
+    public void addCastTimeAttr(CASTTime time){
+        addAttr("cast_time",WMLogger.CASTTimeToString(time));
+    }
+
     public void addChild(XMLTag child) {
         if (contents != null) {
             throw new IllegalStateException("XMLTag cannot have childen and contents string");
@@ -56,12 +66,33 @@ public class XMLTag {
         return CDATA_START + s + CDATA_END;
     }
 
+    /**
+     * Adds the string as contents to the XML tag, a tag cannot have contents and children.
+     * Escaping defaults to useCDATAEscaping
+     * @param bool_contents contents of the tag
+     * @see #addContents(java.lang.String, boolean)
+     * @see #useCDATAEscaping
+     */
     public void addContents(String contents) {
         if (!"".equals(contents)) {
             addContents(contents, useCDATAEscaping);
         }
     }
 
+    public void addContents(Number contents) {
+        addContents(contents.toString(), false);
+    }
+
+    public void addContents(boolean bool_contents) {
+        addContents(Boolean.toString(bool_contents), false);
+    }
+
+    /**
+     * Adds the string as contents to the XML tag, a tag cannot have contents and children.
+     * @param bool_contents contents of the tag
+     * @param cdataEscape should the data be wrapped in CDATA escaping
+     * @see #addContents(java.lang.String)
+     */
     public void addContents(String contents, boolean cdataEscape) {
         if (!children.isEmpty()) {
             throw new IllegalStateException("XMLTag cannot have childen and contents string");
@@ -157,6 +188,8 @@ public class XMLTag {
             sb.append(indent).append("</").append(name).append(">");
         }
 
-        return sb.toString();
+        // Log4J CDATA work around -- Log4j wraps messages in CDATA tags, we don't want this
+        sb.append(CDATA_START);
+        return CDATA_END + sb.toString();
     }
 }

@@ -91,7 +91,7 @@ public class MotiveSetSizeLogger extends ManagedComponent {
 
             // output the set size to logs
             XMLTag logTag = new XMLTag("MOTIVESETSIZE");
-            logTag.addAttr("cast_time", WMLogger.CASTTimeToString(_wmc.timestamp));
+            logTag.addCastTimeAttr(_wmc.timestamp);
             logTag.addChild(setToXML(active, "active"));
             logTag.addChild(setToXML(surfaced, "surfaced"));
             logTag.addChild(setToXML(unsurfaced, "unsurfaced"));

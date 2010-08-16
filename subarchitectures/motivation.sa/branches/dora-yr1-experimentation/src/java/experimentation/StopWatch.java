@@ -35,7 +35,11 @@ public class StopWatch {
     }
 
     public void info(String text) {
-        infoLoggerInstance.info("<STOPWATCHINFO>"+XMLTag.escapeCdata(text)+"</STOPWATCHINFO>");
+        // If XMLTag is too inefficient replace with:
+        // "<STOPWATCHINFO>"+XMLTag.escapeCdata(text)+"</STOPWATCHINFO>"
+        XMLTag t = new XMLTag("STOPWATCHINFO");
+        t.addContents(text);
+        infoLoggerInstance.info(t.toString());
     }
 
     public synchronized void toc(String text) {

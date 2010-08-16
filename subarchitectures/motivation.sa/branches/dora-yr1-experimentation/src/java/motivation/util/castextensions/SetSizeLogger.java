@@ -154,7 +154,11 @@ public class SetSizeLogger extends ManagedComponent {
                     break;
             }
             // output the set size to logs
-            String logString = "<SETSIZE type=\""+specClass.getName()+"\" cast_time=\""+WMLogger.CASTTimeToString(_wmc.timestamp)+"\">"+addresses.size()+"</SETSIZE>";
+            XMLTag t = new XMLTag("SETSIZE");
+            t.addAttr("type", specClass.getName());
+            t.addCastTimeAttr(_wmc.timestamp);
+            t.addContents(addresses.size());
+            String logString = t.toString();
             getLogger().info(logString);
             println(logString);
         }

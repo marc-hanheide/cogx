@@ -35,6 +35,7 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryPermissions;
 import motivation.util.castextensions.WMLogger;
+import motivation.util.castextensions.XMLTag;
 
 /**
  * @author marc
@@ -42,259 +43,266 @@ import motivation.util.castextensions.WMLogger;
  */
 public class PlanAllManager extends ManagedComponent {
 
-	WMMotiveSet motives;
-	WMLock wmLock;
-	volatile private boolean interrupt;
-	private WMMotiveEventQueue activeMotiveEventQueue;
+    WMMotiveSet motives;
+    WMLock wmLock;
+    volatile private boolean interrupt;
+    private WMMotiveEventQueue activeMotiveEventQueue;
+    PlaceUnionEventRelation placeUnionEventRelation;
+    RoomUnionEventRelation roomUnionEventRelation;
+    PlannerFacade plannerFacade;
+    ExecutorFacade executorFacade;
+    BinderFacade binderFacade;
+    Executor backgroundExecutor;
+    /** this is the the very last resort time out... if a plan has been executed in this amount of time we break
+     *
+     */
+    int failsafeExectutionTimeoutSecs = 600;
+    /** this is the the very last resort time out... if a plan has not been delivered in time
+     *
+     */
+    int failsafePlanningTimeoutSecs = 10;
 
-	PlaceUnionEventRelation placeUnionEventRelation;
-	RoomUnionEventRelation roomUnionEventRelation;
-	PlannerFacade plannerFacade;
-	ExecutorFacade executorFacade;
-	BinderFacade binderFacade;
+    /**
+     * @param specificType
+     * @throws CASTException
+     */
+    public PlanAllManager() throws CASTException {
+        super();
+        wmLock = new WMLock(this, "SchedulerManagerSync");
+        motives = WMMotiveSet.create(this);
+        binderFacade = new BinderFacade(this);
+        plannerFacade = new PlannerFacade(this, binderFacade);
+        executorFacade = new ExecutorFacade(this);
+        activeMotiveEventQueue = new WMMotiveEventQueue();
+        backgroundExecutor = Executors.newCachedThreadPool();
+        placeUnionEventRelation = new PlaceUnionEventRelation(this);
+        roomUnionEventRelation = new RoomUnionEventRelation(this);
+    }
 
-	Executor backgroundExecutor;
+    /*
+     * (non-Javadoc)
+     *
+     * @see cast.core.CASTComponent#start()
+     */
+    @Override
+    protected void start() {
+        super.start();
+        log("start up");
+        // register listener for state transition to ACTIVE (trigger processing
+        // whenever some motive becomes ACTIVE)
+        motives.setStateChangeHandler(new MotiveStateTransition(null,
+                MotiveStatus.ACTIVE), activeMotiveEventQueue);
+        // causing an interrupt if some motive is de-activated by someone
+        motives.setStateChangeHandler(new MotiveStateTransition(
+                MotiveStatus.ACTIVE, null), new ChangeHandler() {
 
-	/** this is the the very last resort time out... if a plan has been executed in this amount of time we break
-	 * 
-	 */
-	int failsafeExectutionTimeoutSecs = 600;
+            @Override
+            public void entryChanged(
+                    Map<WorkingMemoryAddress, ObjectImpl> map,
+                    WorkingMemoryChange wmc, ObjectImpl newMotive,
+                    ObjectImpl oldMotive) {
+                interrupt = true;
 
-	/** this is the the very last resort time out... if a plan has not been delivered in time 
-	 * 
-	 */
-	int failsafePlanningTimeoutSecs = 10;
+            }
+        });
 
-	/**
-	 * @param specificType
-	 * @throws CASTException 
-	 */
-	public PlanAllManager() throws CASTException {
-		super();
-		wmLock = new WMLock(this, "SchedulerManagerSync");
-		motives = WMMotiveSet.create(this);
-		binderFacade = new BinderFacade(this);
-		plannerFacade = new PlannerFacade(this, binderFacade);
-		executorFacade = new ExecutorFacade(this);
-		activeMotiveEventQueue = new WMMotiveEventQueue();
-		backgroundExecutor = Executors.newCachedThreadPool();
-		placeUnionEventRelation = new PlaceUnionEventRelation(this);
-		roomUnionEventRelation = new RoomUnionEventRelation(this);
-	}
+        binderFacade.start();
+        motives.start();
+        // start the causal event listening on places
+        placeUnionEventRelation.start();
+        roomUnionEventRelation.start();
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cast.core.CASTComponent#start()
-	 */
-	@Override
-	protected void start() {
-		super.start();
-		log("start up");
-		// register listener for state transition to ACTIVE (trigger processing
-		// whenever some motive becomes ACTIVE)
-		motives.setStateChangeHandler(new MotiveStateTransition(null,
-				MotiveStatus.ACTIVE), activeMotiveEventQueue);
-		// causing an interrupt if some motive is de-activated by someone
-		motives.setStateChangeHandler(new MotiveStateTransition(
-				MotiveStatus.ACTIVE, null), new ChangeHandler() {
+    @Override
+    protected void configure(Map<String, String> arg0) {
+        log("configure manager");
+        String valStr;
+        if ((valStr = arg0.get("--failsafetimeout")) != null) {
+            failsafeExectutionTimeoutSecs = Integer.parseInt(valStr);
+        }
+    }
 
-			@Override
-			public void entryChanged(
-					Map<WorkingMemoryAddress, ObjectImpl> map,
-					WorkingMemoryChange wmc, ObjectImpl newMotive,
-					ObjectImpl oldMotive) {
-				interrupt = true;
+    /*
+     * (non-Javadoc)
+     *
+     * @see cast.core.CASTComponent#runComponent()
+     */
+    @Override
+    protected void runComponent() {
+        log("running");
 
-			}
-		});
+        try {
+            wmLock.initialize();
+            while (isRunning()) {
+                log("checking for active motives to manage them");
+                // flush queue
+                while (!activeMotiveEventQueue.isEmpty()) {
+                    activeMotiveEventQueue.poll();
+                }
 
-		binderFacade.start();
-		motives.start();
-		// start the causal event listening on places
-		placeUnionEventRelation.start();
-		roomUnionEventRelation.start();
-	}
+                interrupt = false;
+                List<Motive> activeMotives = null;
+                try {
+                    wmLock.lock();
+                    activeMotives = new LinkedList<Motive>(motives.getMapByStatus(MotiveStatus.ACTIVE).values());
+                } finally {
+                    wmLock.unlock();
+                }
 
-	@Override
-	protected void configure(Map<String, String> arg0) {
-		log("configure manager");
-		String valStr;
-		if ((valStr = arg0.get("--failsafetimeout")) != null)
-			failsafeExectutionTimeoutSecs = Integer.parseInt(valStr);
-	}
+                if (activeMotives.size() > 0) { // if we have motives to
+                    log("we have some motives that should be planned for");
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cast.core.CASTComponent#runComponent()
-	 */
-	@Override
-	protected void runComponent() {
-		log("running");
+                    // make sure all changes have been propagated to the
+                    // unions!
+                    log("wait to finalize propagation of places to unions");
+                    placeUnionEventRelation.waitForPropagation(1000);
+                    log("wait to finalize propagation of rooms to unions");
+                    roomUnionEventRelation.waitForPropagation(1000);
+                    log("got all changes");
+                    // after this we can be quite sure that we actually have
+                    // all required information on the binder, available to the
+                    // planner
 
-		try {
-			wmLock.initialize();
-			while (isRunning()) {
-				log("checking for active motives to manage them");
-				// flush queue
-				while (!activeMotiveEventQueue.isEmpty())
-					activeMotiveEventQueue.poll();
+                    plannerFacade.setGoalMotives(activeMotives);
+                    FutureTask<WMEntryQueueElement> generatedPlan = new FutureTask<WMEntryQueueElement>(
+                            plannerFacade);
+                    // generate the plan asynchronously
+                    backgroundExecutor.execute(generatedPlan);
+                    // in the meantime compute the maximum time to wait for the plan
+                    int maxPlanningTime = 0;
+                    int maxExecutionTime = 0;
+                    for (Motive m : activeMotives) {
+                        maxPlanningTime += m.maxPlanningTime;
+                        maxExecutionTime += m.maxExecutionTime;
+                    }
+                    log("max planning and execution time for problem computed:\n"
+                            + "  maxPlanningTime == " + maxPlanningTime + "\n"
+                            + "  maxExecutionTime == " + maxExecutionTime);
 
-				interrupt = false;
-				List<Motive> activeMotives = null;
-				try {
-					wmLock.lock();
-					activeMotives = new LinkedList<Motive>(motives
-							.getMapByStatus(MotiveStatus.ACTIVE).values());
-				} finally {
-					wmLock.unlock();
-				}
+                    // wait for the future to be completed
+                    WMEntryQueueElement pt = null;
+                    int loopCount = 0;
+                    while (!interrupt) {
+                        try {
+                            pt = generatedPlan.get(1, TimeUnit.SECONDS);
+                            break;
+                        } catch (TimeoutException e) {
+                            log("no plan yet... continue waiting");
+                            if (++loopCount > maxPlanningTime) {
+                                log("timeout in planning");
+                                // Build XML log element
+                                // Can be replaced with: "<MOTIVETIMEOUT during=\"planning\"/ cast_time=\""+WMLogger.CASTTimeToString(getCASTTime())+"\"/>"
+                                XMLTag t = new XMLTag("MOTIVETIMEOUT");
+                                t.addAttr("during", "planning");
+                                t.addCastTimeAttr(getCASTTime());
+                                getLogger().info(t.toString());
+                                interrupt = true;
+                            }
+                        }
+                    }
 
-				if (activeMotives.size() > 0) { // if we have motives to
-					log("we have some motives that should be planned for");
+                    // probably cancel the planning task
+                    if (!generatedPlan.isDone()) {
+                        generatedPlan.cancel(true);
+                    }
 
-					// make sure all changes have been propagated to the
-					// unions!
-					log("wait to finalize propagation of places to unions");
-					placeUnionEventRelation.waitForPropagation(1000);
-					log("wait to finalize propagation of rooms to unions");
-					roomUnionEventRelation.waitForPropagation(1000);
-					log("got all changes");
-					// after this we can be quite sure that we actually have
-					// all required information on the binder, available to the
-					// planner
+                    if (pt != null) { // if we got a plan...
+                        log("a plan has been generated. it's time to execute it");
+                        executorFacade.setPlan(pt.getEvent().address);
+                        FutureTask<PlanProxy> executionResult = new FutureTask<PlanProxy>(
+                                executorFacade);
+                        backgroundExecutor.execute(executionResult);
 
-					plannerFacade.setGoalMotives(activeMotives);
-					FutureTask<WMEntryQueueElement> generatedPlan = new FutureTask<WMEntryQueueElement>(
-							plannerFacade);
-					// generate the plan asynchronously
-					backgroundExecutor.execute(generatedPlan);
-					// in the meantime compute the maximum time to wait for the plan
-					int maxPlanningTime=0;
-					int maxExecutionTime=0;
-					for (Motive m : activeMotives) {
-						maxPlanningTime+=m.maxPlanningTime;
-						maxExecutionTime+=m.maxExecutionTime;
-					}
-					log("max planning and execution time for problem computed:\n" 
-							+ "  maxPlanningTime == " + maxPlanningTime +"\n"
-							+ "  maxExecutionTime == " + maxExecutionTime);	
-					
-					// wait for the future to be completed
-					WMEntryQueueElement pt = null;
-					int loopCount = 0;
-					while (!interrupt) {
-						try {
-							pt = generatedPlan.get(1, TimeUnit.SECONDS);
-							break;
-						} catch (TimeoutException e) {
-							log("no plan yet... continue waiting");
-							if (++loopCount > maxPlanningTime) {
-								log("timeout in planning");
-                                                                getLogger().info("<MOTIVETIMEOUT during=\"planning\"/ cast_time=\""+WMLogger.CASTTimeToString(getCASTTime())+"\">");
-								interrupt = true;
-							}
-						}
-					}
+                        loopCount = 0;
+                        while (!interrupt) {
+                            try {
+                                executionResult.get(1, TimeUnit.SECONDS);
+                                // interrupt any execution after timeout
+                                Thread.sleep(1000);
+                                break;
+                            } catch (TimeoutException e) {
+                                log("not finished execution yet... continue waiting");
+                                if (++loopCount > maxExecutionTime) {
+                                    log("timeout in execution");
 
-					// probably cancel the planning task
-					if (!generatedPlan.isDone())
-						generatedPlan.cancel(true);
+                                    // Build XML log element
+                                    // Can be replaced with: "<MOTIVETIMEOUT during=\"execution\"/ cast_time=\""+WMLogger.CASTTimeToString(getCASTTime())+"\"/>"
+                                    XMLTag t = new XMLTag("MOTIVETIMEOUT");
+                                    t.addAttr("during", "execution");
+                                    t.addCastTimeAttr(getCASTTime());
+                                    getLogger().info(t.toString());
+                                    interrupt = true;
+                                }
+                            }
 
-					if (pt != null) { // if we got a plan...
-						log("a plan has been generated. it's time to execute it");
-						executorFacade.setPlan(pt.getEvent().address);
-						FutureTask<PlanProxy> executionResult = new FutureTask<PlanProxy>(
-								executorFacade);
-						backgroundExecutor.execute(executionResult);
+                        }
 
-						loopCount = 0;
-						while (!interrupt) {
-							try {
-								executionResult.get(1, TimeUnit.SECONDS);
-								// interrupt any execution after timeout
-								Thread.sleep(1000);
-								break;
-							} catch (TimeoutException e) {
-								log("not finished execution yet... continue waiting");
-								if (++loopCount > maxExecutionTime) {
-									log("timeout in execution");
-                                                                        getLogger().info("<MOTIVETIMEOUT during=\"execution\"/ cast_time=\""+WMLogger.CASTTimeToString(getCASTTime())+"\">");
-									interrupt = true;
-								}
-							}
+                        if (!executionResult.isDone()) {
+                            log("cancelling execution");
+                            executionResult.cancel(true);
+                        }
+                    } else {
+                        log("no plan available, deactivating motives");
+                    }
 
-						}
+                    // deactivate motives
+                    deactivateMotives();
+                    log("wait 1 sec to let state changes propagate");
+                    sleepComponent(1000); // TODO: wait for motives to
+                    // update
+                } else {
+                    log("there are no active motives right now... sleeping until some turn up");
+                    // wait that something happens
+                    while (isRunning()) {
+                        if (activeMotiveEventQueue.poll(1, TimeUnit.SECONDS) != null) {
+                            activeMotiveEventQueue.clear();
+                            log("received relevant event");
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (CASTException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
-						if (!executionResult.isDone()) {
-							log("cancelling execution");
-							executionResult.cancel(true);
-						}
-					} else {
-						log("no plan available, deactivating motives");
-					}
+    }
 
-					// deactivate motives
-					deactivateMotives();
-					log("wait 1 sec to let state changes propagate");
-					sleepComponent(1000); // TODO: wait for motives to
-					// update
-				} else {
-					log("there are no active motives right now... sleeping until some turn up");
-					// wait that something happens
-					while (isRunning()) {
-						if (activeMotiveEventQueue.poll(1, TimeUnit.SECONDS) != null) {
-							activeMotiveEventQueue.clear();
-							log("received relevant event");
-							break;
-						}
-					}
-				}
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		} catch (CASTException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    // /**
+    // * Create task with non-crashy default values.
+    // *
+    // * @return
+    // */
+    // private PlanningTask newPlanningTask() {
+    // return new PlanningTask(0, null, null, null, null, Completion.PENDING,
+    // 0, Completion.PENDING, 0);
+    // }
+    void deactivateMotives() {
+        for (Motive m : motives.getMapByStatus(MotiveStatus.ACTIVE).values()) {
+            m.status = MotiveStatus.SURFACED;
+            try {
+                lockEntry(m.thisEntry, WorkingMemoryPermissions.LOCKEDO);
+                getMemoryEntry(m.thisEntry, Motive.class);
+                overwriteWorkingMemory(m.thisEntry, m);
 
-	}
+            } catch (DoesNotExistOnWMException e) {
+                log("deactive a motive that doesn't exist... no worries");
+            } catch (CASTException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    unlockEntry(m.thisEntry);
+                } catch (CASTException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
 
-	// /**
-	// * Create task with non-crashy default values.
-	// *
-	// * @return
-	// */
-	// private PlanningTask newPlanningTask() {
-	// return new PlanningTask(0, null, null, null, null, Completion.PENDING,
-	// 0, Completion.PENDING, 0);
-	// }
-
-	void deactivateMotives() {
-		for (Motive m : motives.getMapByStatus(MotiveStatus.ACTIVE).values()) {
-			m.status = MotiveStatus.SURFACED;
-			try {
-				lockEntry(m.thisEntry, WorkingMemoryPermissions.LOCKEDO);
-				getMemoryEntry(m.thisEntry, Motive.class);
-				overwriteWorkingMemory(m.thisEntry, m);
-
-			} catch (DoesNotExistOnWMException e) {
-				log("deactive a motive that doesn't exist... no worries");
-			} catch (CASTException e) {
-				e.printStackTrace();
-			} finally {
-				try {
-					unlockEntry(m.thisEntry);
-				} catch (CASTException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-
-	}
-
+    }
 }
