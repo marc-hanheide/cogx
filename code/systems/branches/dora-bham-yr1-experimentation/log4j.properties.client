@@ -1,5 +1,5 @@
-#log4j.rootLogger=TRACE, console, SocketApp
-log4j.rootLogger=DEBUG, console, FileLog, XMLLog, SocketApp
+log4j.rootLogger=TRACE, console, SocketApp
+#log4j.rootLogger=DEBUG, console, FileLog, XMLLog, SocketApp
 
 # console is set to be a ConsoleAppender. 
 log4j.appender.SocketApp=org.apache.log4j.net.SocketAppender
