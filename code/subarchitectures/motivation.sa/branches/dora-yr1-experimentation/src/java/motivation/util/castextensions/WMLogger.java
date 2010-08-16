@@ -288,7 +288,7 @@ public class WMLogger extends ManagedComponent {
             XMLTag rootTag = new XMLTag("WMOPERATION");
             rootTag.addAttr("type", _wmc.operation.toString());
             rootTag.addAttr("address", wma);
-            rootTag.addAttr("cast_time", CASTTimeToString(_wmc.timestamp));
+            rootTag.addCastTimeAttr(_wmc.timestamp);
             rootTag.addAttr("src", _wmc.src);
 
 

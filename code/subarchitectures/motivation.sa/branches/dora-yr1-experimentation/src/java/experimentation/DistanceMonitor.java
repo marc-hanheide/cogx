@@ -16,6 +16,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 import motivation.util.castextensions.WMLogger;
+import motivation.util.castextensions.XMLTag;
 
 /**
  *
@@ -134,15 +135,10 @@ public class DistanceMonitor extends ManagedComponent
         nextUpdateDistance = distance + UPDATE_DISTANCE;
         nextUpdateTime = time.s + UPDATE_FREQUENCY;
 
-        // find ben's import
-        println("<distance cast_time="+ WMLogger.CASTTimeToString(time)+'>'+distance+"</distance>");
-
-//        println(CASTUtils.toString(time)
-//                + " | distance: " + distance
-//                + " | moved: " + moved);//+ " | x,y: " + x + "," + y);
-
-//                System.out.println(CASTUtils.toString(time)
-//                + " | distance: " + distance
-//                + " | moved: " + moved);//+ " | x,y: " + x + "," + y);
+        // Use XMLTag for output
+        XMLTag distTag = new XMLTag("DISTANCE");
+        distTag.addCastTimeAttr(time);
+        distTag.addContents(distance);
+        getLogger().info(distTag.toString());
     }
 }
