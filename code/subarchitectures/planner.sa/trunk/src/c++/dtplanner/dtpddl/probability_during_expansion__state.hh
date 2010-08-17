@@ -1,3 +1,4 @@
+
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
  * Authorship of this source code was supported by EC FP7-IST grant
@@ -31,40 +32,24 @@
  * 
  */
 
-#ifndef ACTION__DISJUNCTIVE_CLAUSE_HH
-#define ACTION__DISJUNCTIVE_CLAUSE_HH
 
-#include "action_basics.hh"
-#include "state_formula.hh"
-#include "planning_types_enum.hh"
+#ifndef PROBABILITY_DURING_EXPANSION__STATE_HH
+#define PROBABILITY_DURING_EXPANSION__STATE_HH
 
 namespace Planning
 {
-    class Action_Disjunctive_Clause
-        : public State_Formula::_Satisfaction_Listener<enum_types::action_disjunctive_clause
-                                        , List__Action_Literals>
-    {PRINTING;
-    public:            
-            
-        void report__newly_satisfied(State&) const;
-        void report__newly_unsatisfied(State&) const;
-
-        bool is_satisfied(const State&) const;
-        uint get__level_of_satisfaction(State&) const;
-        uint get__number_of_satisfied_literals(State&) const;  
-        void report__newly_satisfied_literal(State&) const;
-        void report__newly_unsatisfied_literal(State&) const;
-            
-        const List__Action_Literals& get__literals() const;
-        List__Action_Literals& get__literals();/*_contents .. CHECK*/
-
-    private:
-        void increment__level_of_satisfaction(State&) const;
-        void decrement__level_of_satisfaction(State&) const;
-        void set__satisfied(State&) const;
-        void set__unsatisfied(State&) const;
+    
+    class Probability_During_Expansion_State
+    {
+    public:
+        Probability_During_Expansion_State();
+        void reset__probability_during_expansion();
+        double get__probability_during_expansion() const;
+        double set__probability_during_expansion(double);
+    protected:
+        /* Probability during expansion.*/
+        double probability_during_expansion;
     };
 }
-
 
 #endif

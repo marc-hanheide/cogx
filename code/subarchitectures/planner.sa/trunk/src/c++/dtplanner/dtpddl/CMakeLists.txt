@@ -36,10 +36,12 @@ dtp_pddl_parsing_data_types.cc
 dtp_pddl_parsing_interface.cc
 dtp_pddl_parsing_interface_domain.cc
 dtp_pddl_parsing_interface_problem.cc
+expandable.cc
 float_state.cc
 global.cc
 integer_state.cc
 markov_decision_process_state.cc
+observational__state.cc
 observation.cc
 observation__probabilistic.cc
 partially_observable_markov_decision_process_state.cc
@@ -56,10 +58,13 @@ planning_observation.cc
 planning_observation_schema.cc
 planning_state.cc
 planning_symbols.cc
+probability_during_expansion__state.cc
 problem_grounding__actions.cc
 problem_grounding.cc
 problem_grounding__observations.cc
 solver.cc
+solver__expand_belief.cc
+solver__starting_state.cc
 state_formula.cc
 state_formula__conjunctive_normal_form_formula.cc
 state_formula__disjunctive_clause.cc

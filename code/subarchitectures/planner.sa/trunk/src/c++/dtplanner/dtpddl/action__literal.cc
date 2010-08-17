@@ -41,6 +41,8 @@ using namespace Planning;
 
 void Action_Literal::report__newly_satisfied(State& state) const
 {
+//     Action_Literal__Pointer negation_of_this;
+    
     /*Is a positive symbol.*/
     if(!get__sign()){
         for(auto negative = negatives->begin()
@@ -49,7 +51,8 @@ void Action_Literal::report__newly_satisfied(State& state) const
             if(get__action_symbol() != (*negative)->get__action_symbol()){
                 (*negative)->report__newly_satisfied(state);
             } else {
-                (*negative)->report__newly_unsatisfied(state);
+                // (*negative)->report__newly_unsatisfied(state);
+//                 negation_of_this = Action_Literal__Pointer(*negative); 
             }
         }
     }
@@ -62,19 +65,44 @@ void Action_Literal::report__newly_satisfied(State& state) const
                              <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
         (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
     }
+    
+    
+    /*Is a positive symbol.*/
+    if(!get__sign()){
+
+        
+        auto listeners = get__traversable__listeners();
+        for(auto listener = listeners.begin()
+                ; listener != listeners.end()
+                ; listener++){
+            INTERACTIVE_VERBOSER(true, 7002, "Just UNSATISFIED literal  :: "<<*this<<std::endl
+                                 <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
+            (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
+        }
+        
+        for(auto negative = negatives->begin()
+                ; negative != negatives->end()
+                ; negative++){
+            if(get__action_symbol() != (*negative)->get__action_symbol()){
+                (*negative)->report__newly_unsatisfied(state);
+            } // else {
+//                 (*negative)->report__newly_unsatisfied(state);
+//                 negation_of_this = Action_Literal__Pointer(*negative); 
+//             }
+        }
+    }
 }
 
 void Action_Literal::report__newly_unsatisfied(State& state) const
 {
-    /*NA*/
-//     auto listeners = get__traversable__listeners();
-//     for(auto listener = listeners.begin()
-//             ; listener != listeners.end()
-//             ; listener++){
-//         INTERACTIVE_VERBOSER(true, 7002, "Just UNSATISFIED literal  :: "<<*this<<std::endl
-//                              <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
-//         (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
-//     }
+    auto listeners = get__traversable__listeners();
+    for(auto listener = listeners.begin()
+            ; listener != listeners.end()
+            ; listener++){
+        INTERACTIVE_VERBOSER(true, 7002, "Just UNSATISFIED literal  :: "<<*this<<std::endl
+                             <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
+        (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
+    }
 }
 
             
@@ -94,6 +122,21 @@ void Action_Literal::configure__negatives(CXX__PTR_ANNOTATION(List__Action_Liter
 {
     negatives = in;
 }
+
+std::ostream& Action_Literal::operator<<(std::ostream&o) const
+{
+    if(Formula::Action_Proposition::ith_exists(get__runtime_Thread(), get__action_symbol())){
+        auto proposition = Formula::Action_Proposition
+            ::make_ith<Formula::Action_Proposition>(get__runtime_Thread()
+                                                    , get__action_symbol());
+        o<<((get__sign())?"¬":"")<<proposition<<"[|- :l:"<<get__id()<<":  :v:"<<get__action_symbol()<<": -|]";
+    } else {
+        o<<((get__sign())?"¬":"")<<get__action_symbol()<<"[|- :l:"<<get__id()<<": -|]";
+    }
+    
+    return o;
+}
+    
 
 namespace std
 {

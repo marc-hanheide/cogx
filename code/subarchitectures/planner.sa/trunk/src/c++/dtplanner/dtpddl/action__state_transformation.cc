@@ -141,18 +141,21 @@ double State_Transformation
 void State_Transformation
 ::set__satisfied(State& state) const
 {
+    assert(state.get__transformation__satisfaction_status().valid_index(get__id()));
     state.get__transformation__satisfaction_status().satisfy(get__id());
 }
 
 void State_Transformation
 ::set__unsatisfied(State& state) const
 {
+    assert(state.get__transformation__satisfaction_status().valid_index(get__id()));
     state.get__transformation__satisfaction_status().unsatisfy(get__id());
 }
 
 void State_Transformation
 ::flip(State& state) const
 {
+    assert(state.get__transformation__satisfaction_status().valid_index(get__id()));
     WARNING("Something just changed the executability status value associated with a"<<std::endl
             <<"transformation by an unusual mechanism -- "<<std::endl
             <<"i.e., the satisfaction for a CNF-based precondition was not reported changed.");
@@ -162,30 +165,35 @@ void State_Transformation
 bool State_Transformation
 ::is_satisfied(const State& state) const
 {
+    assert(state.get__transformation__satisfaction_status().valid_index(get__id()));
     return state.get__transformation__satisfaction_status().satisfied(get__id());
 }
 
 void State_Transformation
 ::increment__level_of_satisfaction(State& state) const
 {
+    assert(state.get__transformation__count_status().valid_index(get__id()));
     state.get__transformation__count_status().increment_satisfaction(get__id());
 }
 
 void State_Transformation
 ::decrement__level_of_satisfaction(State& state) const
 {
+    assert(state.get__transformation__count_status().valid_index(get__id()));
     state.get__transformation__count_status().decrement_satisfaction(get__id());
 }
 
 void State_Transformation
 ::set__level_of_satisfaction(uint level, State& state) const
 {
+    assert(state.get__transformation__count_status().valid_index(get__id()));
     state.get__transformation__count_status().set_satisfaction(get__id(), level);
 }
 
 uint State_Transformation
 ::get__level_of_satisfaction(State& state) const
 {
+    assert(state.get__transformation__count_status().valid_index(get__id()));
     return state.get__transformation__count_status().get_satisfaction_level(get__id());
 }
 
@@ -227,6 +235,9 @@ void State_Transformation
     /*If this transformation is now executable.*/
     if(satisfaction_requirement == get__number_of_satisfied_conditions(state)){
         set__satisfied(state);
+        
+        INTERACTIVE_VERBOSER(true, 8060, "Adding action :: "
+                             <<*this<<std::endl);
         
         if(get__compulsory()){
             

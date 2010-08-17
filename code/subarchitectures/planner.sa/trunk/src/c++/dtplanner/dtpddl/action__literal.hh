@@ -47,7 +47,7 @@ namespace Planning
         : public State_Formula::_Satisfaction_Listener<enum_types::action_literal /* Type identifier.*/
                                         , uint /* Action symbol identifier.*/
                                         , bool >
-    {
+    {PRINTING;
     public:
 
         void report__newly_satisfied(State&) const;

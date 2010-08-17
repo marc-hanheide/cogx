@@ -31,40 +31,27 @@
  * 
  */
 
-#ifndef ACTION__DISJUNCTIVE_CLAUSE_HH
-#define ACTION__DISJUNCTIVE_CLAUSE_HH
 
-#include "action_basics.hh"
-#include "state_formula.hh"
-#include "planning_types_enum.hh"
+#include "probability_during_expansion__state.hh"
 
-namespace Planning
+using namespace Planning;
+
+Probability_During_Expansion_State::Probability_During_Expansion_State()
+    :probability_during_expansion(1.0)
 {
-    class Action_Disjunctive_Clause
-        : public State_Formula::_Satisfaction_Listener<enum_types::action_disjunctive_clause
-                                        , List__Action_Literals>
-    {PRINTING;
-    public:            
-            
-        void report__newly_satisfied(State&) const;
-        void report__newly_unsatisfied(State&) const;
-
-        bool is_satisfied(const State&) const;
-        uint get__level_of_satisfaction(State&) const;
-        uint get__number_of_satisfied_literals(State&) const;  
-        void report__newly_satisfied_literal(State&) const;
-        void report__newly_unsatisfied_literal(State&) const;
-            
-        const List__Action_Literals& get__literals() const;
-        List__Action_Literals& get__literals();/*_contents .. CHECK*/
-
-    private:
-        void increment__level_of_satisfaction(State&) const;
-        void decrement__level_of_satisfaction(State&) const;
-        void set__satisfied(State&) const;
-        void set__unsatisfied(State&) const;
-    };
 }
 
+double Probability_During_Expansion_State::set__probability_during_expansion(double in)
+{
+    probability_during_expansion = in;
+}
 
-#endif
+void Probability_During_Expansion_State::reset__probability_during_expansion()
+{
+    probability_during_expansion = 1.0;
+}
+
+double Probability_During_Expansion_State::get__probability_during_expansion() const
+{
+    return probability_during_expansion;
+}

@@ -124,6 +124,20 @@ get__disjunctive_clauses() const
     return std::tr1::get<0>(contents());
 }
 
+std::ostream& Action_Conjunctive_Normal_Form_Formula::operator<<(std::ostream&o) const
+{
+    o<<"{";
+    for(auto clause = get__disjunctive_clauses().begin()
+            ; clause != get__disjunctive_clauses().end()
+            ; clause++){
+        o<<*clause<<";  "<<std::endl;
+    }
+    
+    o<<"}"<<std::endl;
+    return o;
+}
+
+
 
 
 namespace std

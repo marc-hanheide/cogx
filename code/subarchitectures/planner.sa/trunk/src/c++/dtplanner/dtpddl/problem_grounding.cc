@@ -149,6 +149,12 @@ Problem_Grounding::Problem_Grounding(Parsing::Problem_Data& _problem_Data,
 }
 
 
+const Action_Literals& Problem_Grounding::get__action_Literals() const
+{
+    return action_Literals;
+}
+
+
 const Action_Conjunctive_Normal_Form_Formulae& Problem_Grounding::get__action_Conjunctive_Normal_Form_Formulae() const
 {
     return action_Conjunctive_Normal_Form_Formulae;

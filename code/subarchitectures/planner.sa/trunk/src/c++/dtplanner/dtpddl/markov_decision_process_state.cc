@@ -58,36 +58,54 @@ Markov_Decision_Process_State(const Markov_Decision_Process_State& markov_Decisi
 
 void Markov_Decision_Process_State::
 push__successor(uint _operator_index,
-                const Markov_Decision_Process_State* successor_state,
+                 Markov_Decision_Process_State* successor_state,
                 double probability_of_transition)
 {
-    if(successor_driver.size()){    
-        if(successor_driver.back() != _operator_index){
-            successor_driver.push_back(_operator_index);
+    if(successor_Driver.size()){    
+        if(successor_Driver.back() != _operator_index){
+            successor_Driver.push_back(_operator_index);
         }
     } else {
-        successor_driver.push_back(_operator_index);
+        successor_Driver.push_back(_operator_index);
     }    
 
-//     auto operator_index = successor_driver.back();
+//     auto operator_index = successor_Driver.back();
 
-    if(successors.size() != successor_driver.size()){// operator_index){
+    if(successors.size() != successor_Driver.size()){// operator_index){
         successors
-            .push_back(std::vector<const Markov_Decision_Process_State*>());
+            .push_back(std::vector< Markov_Decision_Process_State*>());
 
-        assert(successor_probability.size() < successor_driver.size());
-        successor_probability
+        assert(successor_Probabilities.size() < successor_Driver.size());
+        successor_Probabilities
             .push_back(std::vector<double>());
     }
 
-    assert(successors.size() == successor_driver.size());
-    assert(successors.size() == successor_probability.size());
+    assert(successors.size() == successor_Driver.size());
+    assert(successors.size() == successor_Probabilities.size());
        
-    assert(successor_driver.size() - 1 < successors.size());
-    assert(successor_driver.size() - 1 < successor_probability.size());
+    assert(successor_Driver.size() - 1 < successors.size());
+    assert(successor_Driver.size() - 1 < successor_Probabilities.size());
     
-    successors[successor_driver.size() - 1].push_back(successor_state);
-    successor_probability[successor_driver.size() - 1].push_back(probability_of_transition);
+    successors[successor_Driver.size() - 1].push_back(successor_state);
+    successor_Probabilities[successor_Driver.size() - 1].push_back(probability_of_transition);
+}
+
+const Markov_Decision_Process_State::Successors& Markov_Decision_Process_State::
+get__successors() const
+{
+    return successors;
+}
+
+const Markov_Decision_Process_State::Successor_Driver& Markov_Decision_Process_State::
+get__successor_Driver() const
+{
+    return  successor_Driver;    
+}
+
+const Markov_Decision_Process_State::Successor_Probabilities& Markov_Decision_Process_State::
+get__successor_Probabilities() const
+{
+    return successor_Probabilities;
 }
 
 
@@ -181,7 +199,7 @@ void Markov_Decision_Process_State::set__int(uint index, int value)
     integer_State.write(index, value);
 }
 
-std::ostream&Markov_Decision_Process_State::operator<<(ostream& o) const
+std::ostream& Markov_Decision_Process_State::operator<<(ostream& o) const
 {
     o<<boolean_State<<std::endl;
     o<<integer_State<<std::endl;

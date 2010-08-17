@@ -31,38 +31,20 @@
  * 
  */
 
-#ifndef ACTION__DISJUNCTIVE_CLAUSE_HH
-#define ACTION__DISJUNCTIVE_CLAUSE_HH
 
-#include "action_basics.hh"
-#include "state_formula.hh"
-#include "planning_types_enum.hh"
+#ifndef EXPANDABLE_HH
+#define EXPANDABLE_HH
 
 namespace Planning
 {
-    class Action_Disjunctive_Clause
-        : public State_Formula::_Satisfaction_Listener<enum_types::action_disjunctive_clause
-                                        , List__Action_Literals>
-    {PRINTING;
-    public:            
-            
-        void report__newly_satisfied(State&) const;
-        void report__newly_unsatisfied(State&) const;
-
-        bool is_satisfied(const State&) const;
-        uint get__level_of_satisfaction(State&) const;
-        uint get__number_of_satisfied_literals(State&) const;  
-        void report__newly_satisfied_literal(State&) const;
-        void report__newly_unsatisfied_literal(State&) const;
-            
-        const List__Action_Literals& get__literals() const;
-        List__Action_Literals& get__literals();/*_contents .. CHECK*/
-
+    class Expandable
+    {
+    public:
+        Expandable();
+        bool get__has_been_expanded() const;
+        void set__has_been_expanded() ;
     private:
-        void increment__level_of_satisfaction(State&) const;
-        void decrement__level_of_satisfaction(State&) const;
-        void set__satisfied(State&) const;
-        void set__unsatisfied(State&) const;
+        bool has_been_expanded;
     };
 }
 

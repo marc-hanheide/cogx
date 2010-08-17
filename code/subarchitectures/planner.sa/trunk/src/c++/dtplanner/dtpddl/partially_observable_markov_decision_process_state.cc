@@ -54,17 +54,17 @@ operator<(const POMDP_State& in) const
 
         if(belief_State.size() < in.belief_State.size()){
         } else if (belief_State.size() == in.belief_State.size()) {
-            auto point_lhs = belief_State.begin();
-            auto point_rhs = in.belief_State.begin();
+            auto atom_lhs = belief_State.begin();
+            auto atom_rhs = in.belief_State.begin();
             for(
-                    ; point_lhs != belief_State.end()
-                    ; point_lhs++, point_rhs++){
-                if(point_lhs->second < point_rhs->second){
+                    ; atom_lhs != belief_State.end()
+                    ; atom_lhs++, atom_rhs++){
+                if(atom_lhs->second < atom_rhs->second){
                     return true;
-                } else if (point_lhs->second == point_rhs->second) {
-                    if(static_cast<const void*>(point_lhs->first) <
-                       static_cast<const void*>(point_rhs->first)){
-                    } else if (point_lhs->first == point_rhs->first) {
+                } else if (atom_lhs->second == atom_rhs->second) {
+                    if(static_cast< void*>(atom_lhs->first) <
+                       static_cast< void*>(atom_rhs->first)){
+                    } else if (atom_lhs->first == atom_rhs->first) {
                         continue;
                     } else {
                         return false;
@@ -79,7 +79,13 @@ operator<(const POMDP_State& in) const
     return false;
 }
 
-        
+    
+void Partially_Observable_Markov_Decision_Process_State::
+add__belief_atom( MDP_State* mdp__state, double probability)
+{
+    belief_State.push_back(Belief_Atom(mdp__state, probability));
+}
+
 const Partially_Observable_Markov_Decision_Process_State::
 Belief_State&
 Partially_Observable_Markov_Decision_Process_State::
@@ -101,6 +107,18 @@ namespace std
     std::size_t hash_value(const Planning::Partially_Observable_Markov_Decision_Process_State& in)
     {
         return in.hash_value();
+    }
+    
+    std::ostream& operator<<(std::ostream&o,
+                             const Planning::Partially_Observable_Markov_Decision_Process_State& pomdp__state)
+    {
+        auto state = pomdp__state.get__belief_state();
+
+        for(auto s = state.begin(); s != state.end(); s++){
+            o<<s->second<<" :--:> "<<*(s->first)<<std::endl;
+        }
+        
+        return o;
     }
     
 }

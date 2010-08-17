@@ -47,6 +47,7 @@ namespace Planning
         _Satisfaction_Listener<enum_types::action_conjunctive_normal_form_formula
                                , List__Action_Disjunctive_Clauses >
     {
+        PRINTING;
     public:
             
         void report__newly_satisfied(State&) const;

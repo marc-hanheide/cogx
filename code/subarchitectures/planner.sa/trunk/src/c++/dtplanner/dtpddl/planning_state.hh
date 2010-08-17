@@ -41,7 +41,9 @@
 
 #include "markov_decision_process_state.hh"
 #include "action_executability__state.hh"
+#include "observational__state.hh"
 #include "cnf__state.hh"
+
 
 // inline std::size_t hash_value(const Planning::State& in)
 // {
@@ -58,7 +60,8 @@ namespace Planning
 
     class State : public Markov_Decision_Process_State,
         public CNF__State,
-        public Action_Executability__State
+        public Action_Executability__State,
+        public Observational__State
     {
     public:
         std::ostream& operator<<(std::ostream&) const;
@@ -70,20 +73,23 @@ namespace Planning
               uint disjunctions_count = 0,/*Number of disjunctive-clauses in the problem description.*/
               uint actions_count = 0, /*Number of state transformations, including actions, in the problem description.*/
               uint action_formulae_count = 0,/*Number of formulae over action literals.*/
-              uint action_disjunctions_count = 0 /*Number of clauses over action literals.*/
+              uint action_disjunctions_count = 0, /*Number of clauses over action literals.*/
+              uint observations_count = 0 /*Number of observations.*/
               );
         
         /* Planner that generated this state.*/
         Solver& solver;
 
-        void reset__probability_during_expansion();
-        double get__probability_during_expansion() const;
-        double set__probability_during_expansion(double);
-
+        void take__observations__from( State*);
+        void reset__observations();
         uint count__observations() const;
+        std::stack<const Observation*>& get__observations();
         const Observation* pop__observation();
         void push__observation(const Observation*);
         
+        void take__probabilistic_observations__from( State*);
+        void reset__probabilistic_observations();
+        std::stack<const Probabilistic_Observation*>& get__probabilistic_observations();
         uint count__probabilistic_observations() const;
         const Probabilistic_Observation* pop__probabilistic_observation();
         void push__probabilistic_observation(const Probabilistic_Observation*);
@@ -106,8 +112,10 @@ namespace Planning
         std::set<const State_Transformation*> get__optional_transformations();
         void add__optional_transformation(const State_Transformation*);
         void remove__optional_transformation(const State_Transformation*);
-    private:
-
+    private:  
+        void replace__observations(std::stack<const Observation*>&);
+        void replace__probabilistic_observations(std::stack<const Probabilistic_Observation*>&);
+        
         /*Pending observations. All such observations are compulsory.*/
         std::stack<const Observation*> observations;
         
@@ -127,8 +135,6 @@ namespace Planning
         std::set<const State_Transformation*> applicable_optional_transformations;
 
     private:
-        /* Probability during expansion.*/
-        double probability_during_expansion;
         
         /* For each action in
          * \member{Markov_Decision_Process_State::successor_driver},
@@ -146,6 +152,9 @@ namespace Planning
     typedef std::tr1::unordered_set<State*
                                     , /*state_hash*/deref_hash<State>
                                     ,  deref_equal_to<State> > Set_Of_State_Pointers;
+    /*State pointers.*/
+    typedef std::set<State*
+                     ,  deref_less<State> > Non_Hashed_State_Pointers;
 }
 
 

@@ -39,12 +39,18 @@
 #include "boolean_state.hh"
 #include "float_state.hh"
 
+#include "expandable.hh"
+#include "probability_during_expansion__state.hh"
 
 namespace Planning
 { 
     class Markov_Decision_Process_State
+        : public Probability_During_Expansion_State,
+          public Expandable
     {
     public:
+        virtual ~Markov_Decision_Process_State(){}
+        
         std::ostream& operator<<(ostream&) const;
             
         Markov_Decision_Process_State(uint propositions_count = 0, uint function_count = 0);
@@ -71,6 +77,10 @@ namespace Planning
         int get__int(uint index) const;
         void set__int(uint index, int value);
 
+        typedef std::vector<uint> Successor_Driver;
+        typedef std::vector< std::vector<Markov_Decision_Process_State*> > Successors;
+        typedef std::vector< std::vector<double> > Successor_Probabilities;
+        
         /* Interface assumes that all the transitions associated with
          * a given action A are entered before transitions associated
          * with some distinct transition B!=A are entered.
@@ -82,14 +92,18 @@ namespace Planning
          *
          * - \argument{operator_index} is the index of the operator
          * that when executed can cause the transition.*/
-        void push__successor(uint operator_index, const Markov_Decision_Process_State*, double);
+        void push__successor(uint operator_index,  Markov_Decision_Process_State*, double);
+        const Successors& get__successors() const;
+        const Successor_Probabilities& get__successor_Probabilities() const;
+        const Successor_Driver& get__successor_Driver() const;
     protected:
         /*Value of this MDP state.*/
         double value;
         
-        std::vector<uint> successor_driver;
-        std::vector< std::vector<const Markov_Decision_Process_State*> > successors;
-        std::vector< std::vector<double> > successor_probability;
+        
+        Successor_Driver successor_Driver;
+        Successors successors;
+        Successor_Probabilities successor_Probabilities;
         
         /* State-characterising functions (derived from PDDL "Fluents"). */
         Integer_State integer_State;

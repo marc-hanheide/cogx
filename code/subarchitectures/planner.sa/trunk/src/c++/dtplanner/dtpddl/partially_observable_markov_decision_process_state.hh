@@ -62,20 +62,23 @@ namespace Planning
         return std::hash_value(in);
     }
 
-    class Partially_Observable_Markov_Decision_Process_State
+    class Partially_Observable_Markov_Decision_Process_State :
+        public Expandable
     {
     public:
         typedef Markov_Decision_Process_State MDP_State;
         typedef Partially_Observable_Markov_Decision_Process_State POMDP_State;
 
-        typedef std::pair<MDP_State*, double> Belief_Point;
-        typedef std::vector<Belief_Point> Belief_State;
+        typedef std::pair< MDP_State*, double> Belief_Atom;
+        typedef std::vector<Belief_Atom> Belief_State;
+        
+        typedef std::map< MDP_State*, double> Searchable_Belief_State;
         
         bool operator==(const POMDP_State&) const;
         bool operator<(const POMDP_State&) const;
 	std::size_t hash_value() const;
 
-        
+        void add__belief_atom( MDP_State*, double);
         
         const Belief_State& get__belief_state() const;
         
@@ -89,7 +92,7 @@ namespace Planning
         std::vector<
             std::vector<
                 std::vector<
-                    const Partially_Observable_Markov_Decision_Process_State*> > > successors;
+                    Partially_Observable_Markov_Decision_Process_State*> > > successors;
         
         std::vector< 
             std::vector<
@@ -100,8 +103,21 @@ namespace Planning
         /*Expected value of this POMDP state.*/
         double expected_value;
 
-        std::vector<std::pair<MDP_State*, double> > belief_State;
+        Belief_State belief_State;
     };
+    /*State pointers.*/
+    typedef std::tr1::
+    unordered_set<Partially_Observable_Markov_Decision_Process_State*
+                  , /*state_hash*/deref_hash<Partially_Observable_Markov_Decision_Process_State>
+                  ,  deref_equal_to<Partially_Observable_Markov_Decision_Process_State> >
+    Set_Of_POMDP_State_Pointers;
+    
+    typedef Partially_Observable_Markov_Decision_Process_State::POMDP_State POMDP_State;
+}
+
+namespace std
+{
+    std::ostream& operator<<(std::ostream&, const Planning::Partially_Observable_Markov_Decision_Process_State&);
 }
 
 

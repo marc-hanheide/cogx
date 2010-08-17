@@ -31,39 +31,34 @@
  * 
  */
 
-#ifndef ACTION__DISJUNCTIVE_CLAUSE_HH
-#define ACTION__DISJUNCTIVE_CLAUSE_HH
+#ifndef OBSERVATIONAL__STATE_HH
+#define OBSERVATIONAL__STATE_HH
 
-#include "action_basics.hh"
-#include "state_formula.hh"
-#include "planning_types_enum.hh"
+
+#include "boolean__satisfaction_status_management.hh"
+#include "unsigned_integer__status_management.hh"
+
 
 namespace Planning
 {
-    class Action_Disjunctive_Clause
-        : public State_Formula::_Satisfaction_Listener<enum_types::action_disjunctive_clause
-                                        , List__Action_Literals>
-    {PRINTING;
-    public:            
-            
-        void report__newly_satisfied(State&) const;
-        void report__newly_unsatisfied(State&) const;
+    
+    class Observational__State
+    {
+    public:
+        Observational__State(uint observations_count = 0);
 
-        bool is_satisfied(const State&) const;
-        uint get__level_of_satisfaction(State&) const;
-        uint get__number_of_satisfied_literals(State&) const;  
-        void report__newly_satisfied_literal(State&) const;
-        void report__newly_unsatisfied_literal(State&) const;
-            
-        const List__Action_Literals& get__literals() const;
-        List__Action_Literals& get__literals();/*_contents .. CHECK*/
-
+        uint observations_count() const;
+        
+        const Boolean__Satisfaction_Status_Management& get__observation__satisfaction_status() const;
+        const Unsigned_Integer__Satisfaction_Status_Management& get__observation__count_status() const;
+        Boolean__Satisfaction_Status_Management& get__observation__satisfaction_status() ;
+        Unsigned_Integer__Satisfaction_Status_Management& get__observation__count_status() ;
+        
     private:
-        void increment__level_of_satisfaction(State&) const;
-        void decrement__level_of_satisfaction(State&) const;
-        void set__satisfied(State&) const;
-        void set__unsatisfied(State&) const;
+        Boolean__Satisfaction_Status_Management observation__satisfaction_status;
+        Unsigned_Integer__Satisfaction_Status_Management observation__count_status;
     };
+    
 }
 
 

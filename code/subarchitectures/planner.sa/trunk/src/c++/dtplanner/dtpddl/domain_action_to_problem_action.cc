@@ -338,7 +338,7 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
                     WARNING("Failed adding listener :: "<<deref__st<<std::endl
                             <<"to formula :: "<<_precondition<<std::endl)
                 }
-            } else {
+            } else if (level == 0) {
                 INTERACTIVE_VERBOSER(true, 6000, " :: zero precondition conjunction :: "
                                      <<input);
                 

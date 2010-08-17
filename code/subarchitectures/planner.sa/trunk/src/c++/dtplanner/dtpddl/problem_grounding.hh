@@ -121,6 +121,7 @@ namespace Planning
         
         const State_Transformation__Pointer& get__executable_starting_states_generator() const;
         
+        const Action_Literals& get__action_Literals() const;
         const Action_Conjunctive_Normal_Form_Formulae& get__action_Conjunctive_Normal_Form_Formulae() const;
         const Action_Disjunctive_Clauses& get__action_Disjunctive_Clauses() const ;
         

@@ -40,7 +40,11 @@
 #include "solver_basics.hh"
 #include "state_basics.hh"
 #include "dtp_pddl_parsing_data_constants.hh"
+
+
 #include "planning_state.hh"
+#include "partially_observable_markov_decision_process_state.hh"
+
 
 namespace Planning
 {
@@ -52,8 +56,13 @@ namespace Planning
 
         bool operator()(){return true;};
 
-        std::vector< std::vector<State*> > expansion_stack;
+        void expand_belief_state( POMDP_State*);
+        bool expand_belief_state_space();
+
+        std::queue<Planning::POMDP_State*> expansion_queue;
         Planning::Set_Of_State_Pointers state_space;
+        Planning::Set_Of_POMDP_State_Pointers belief_state__space;
+
         
         /* MUST CALL THIS member BEFORE ANY SOLVING CAN OCCUR!
          *
@@ -87,6 +96,7 @@ namespace Planning
         /* Compute/generate all the successors, corresponding actions,
          * and executions probabilities. */
         void expand_optional_transformations(Planning::State*);
+        void expand_optional_transformation(Planning::State*, const State_Transformation*);
 
         
         
@@ -117,6 +127,8 @@ namespace Planning
         void configure__extensions_of_types();
 
     private:
+        Planning::POMDP_State* starting_belief_state;
+        
         /* Functionality for obtaining a ground version of the problem
          * at hand.*/
         CXX__PTR_ANNOTATION(Problem_Grounding) problem_Grounding;
@@ -139,7 +151,32 @@ namespace Planning
         /* Domain data associated with \member{problem} (see
          * \member{preprocess}).*/
         CXX__PTR_ANNOTATION(Planning::Parsing::Domain_Data) domain_Data;
+
+        /*Testing conditions on doubles.*/
+        static Are_Doubles_Close are_Doubles_Close;//(1e-9);
     };
 }
 
 #endif
+
+
+/* A digital wiring configuration comprises a switch control allowing
+ * a user to select a function to control a corresponding electrical
+ * device. A control unit couples electrical power to the electrical
+ * devices through power outlets. The control unit allows an operator
+ * to dynamically configure the switch controls to operate electrical
+ * devices at specified power outlets. Upon selection of a function on
+ * the switch control, the switch control transmits both a switch
+ * state, indicative of the function selected, and a switch
+ * identification that uniquely identifies that switch control. The
+ * control unit receives the switch state and the switch
+ * identification and generates a device identification uniquely
+ * identifying the power outlet corresponding to the control
+ * switch. The control unit transmits the device identification and
+ * the switch state to the power outlets. The corresponding power
+ * outlet is selected through the device identification and executes
+ * the function in accordance with the switch state.
+ *
+ * -- Abstract from United States Patent 5,455,464, by James Gosling,
+ * 1992 (that Java guy).
+ */
