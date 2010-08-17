@@ -1115,10 +1115,10 @@ void ObjectSearch::Recognize(){
 	if(m_CtrlPTU && m_status != STOPPED) {
 
 	  log("now moving extras");
-	  int n = 1;
 
 	  //postive
-	  while(continueToRecognize() && anglediff + n*m_ptustep < M_PI/2){
+      int n = 1;
+	  while(m_status != STOPPED && anglediff + n*m_ptustep < M_PI/2){
 	    MovePanTilt(anglediff + n*m_ptustep,0);
 	    PostRecognitionCommand();
 	    while(continueToRecognize())  {
@@ -1129,7 +1129,7 @@ void ObjectSearch::Recognize(){
 
 	  //negative
 	  n= 1;
-	  while(continueToRecognize() && anglediff - n*m_ptustep > -M_PI/2){
+	  while(m_status != STOPPED && anglediff - n*m_ptustep > -M_PI/2){
 	    MovePanTilt(anglediff - n*m_ptustep,0);
 	    PostRecognitionCommand();
 	    while(continueToRecognize())  {
@@ -1142,7 +1142,7 @@ void ObjectSearch::Recognize(){
 
 	    //negative with tilt
 	    n= 1;
-	    while(continueToRecognize() && anglediff - n*m_ptustep > -M_PI/2){
+	    while(m_status != STOPPED && anglediff - n*m_ptustep > -M_PI/2){
 	      MovePanTilt(anglediff - n*m_ptustep,m_tiltRads);
 	      PostRecognitionCommand();
 	      while(continueToRecognize())  {
@@ -1161,11 +1161,11 @@ void ObjectSearch::Recognize(){
 
 	    //postive with tilt
 	    n = 1;
-	    while(continueToRecognize() && anglediff + n*m_ptustep < M_PI/2){
+	    while(m_status != STOPPED && anglediff + n*m_ptustep < M_PI/2){
 	      MovePanTilt(anglediff + n*m_ptustep,m_tiltRads);
 	      PostRecognitionCommand();
 	      while(continueToRecognize()) {
-		sleepComponent(10);
+		    sleepComponent(10);
 	      }
 	      n++;
 	    }	    
