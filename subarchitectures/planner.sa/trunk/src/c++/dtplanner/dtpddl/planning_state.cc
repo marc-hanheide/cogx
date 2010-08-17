@@ -55,7 +55,8 @@ State::State(Solver& solver,
              uint disjunctions_count,
              uint actions_count,
              uint action_formulae_count,
-             uint action_disjunctions_count)
+             uint action_disjunctions_count,
+             uint observations_count)
     :solver(solver),
      Markov_Decision_Process_State(propositions_count
                                    , function_count),
@@ -63,9 +64,64 @@ State::State(Solver& solver,
                 , disjunctions_count
                 , action_formulae_count
                 , action_disjunctions_count),
-     Action_Executability__State(actions_count)   
-{   
+     Action_Executability__State(actions_count),
+     Observational__State(observations_count)
+{
+    
+    INTERACTIVE_VERBOSER(true, 8060, "Observation state has size :: "
+                         <<Observational__State::observations_count()<<std::endl);
 }
+
+std::stack<const Observation*>& State::get__observations()
+{
+    return observations;
+}
+
+std::stack<const Probabilistic_Observation*>& State::get__probabilistic_observations()
+{
+    return probabilistic_observations;
+}
+
+
+void State::reset__observations()
+{
+    observations = std::stack<const Observation*>();
+}
+
+void State::reset__probabilistic_observations()
+{
+    probabilistic_observations = std::stack<const Probabilistic_Observation*>();
+}
+
+void State::take__observations__from( State* in)
+{
+    replace__observations(in->get__observations());
+    in->reset__observations();
+//     std::stack<const Observation*>& tmp = const_cast<std::stack<const Observation*>&>(in->observations);
+//     replace__observations(tmp);
+//     in->reset__observations();
+}
+
+void State::take__probabilistic_observations__from( State* in)
+{
+    replace__probabilistic_observations(in->get__probabilistic_observations());
+    in->reset__probabilistic_observations();
+//     std::stack<const Probabilistic_Observation*>& tmp
+//         = const_cast<std::stack<const Probabilistic_Observation*>&>(in->probabilistic_observations);
+//     replace__probabilistic_observations(tmp);
+//     in->reset__probabilistic_observations();
+}
+
+void State::replace__observations(std::stack<const Observation*>& in)
+{
+    observations = std::move<>(in);
+}
+
+void State::replace__probabilistic_observations(std::stack<const Probabilistic_Observation*>& in)
+{
+    probabilistic_observations = std::move<>(in);
+}
+
 
 uint State::count__probabilistic_observations() const
 {
@@ -102,21 +158,6 @@ void State::push__observation(const Observation* in)
     observations.push(in);
 }
 
-
-double State::set__probability_during_expansion(double in)
-{
-    probability_during_expansion = in;
-}
-
-void State::reset__probability_during_expansion()
-{
-    probability_during_expansion = 1.0;
-}
-
-double State::get__probability_during_expansion() const
-{
-    return probability_during_expansion;
-}
 
 uint State::count__compulsory_generative_transformations() const
 {

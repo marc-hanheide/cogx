@@ -180,6 +180,7 @@ const Planning::Observation__Pointer&  Domain_Observation__to__Problem_Observati
          , true_action_cnf
          , Formula::List__Perceptual_Propositions()
          , false
+         , false
          , local_probability
          , 0);
             
@@ -336,6 +337,7 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                  , _precondition
                  , _execution_precondition
                  , conjunction
+                 , ((0==level)?true:false)
                  , false
                  , local_probability//probability
                  , 0);
@@ -396,8 +398,9 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
             }
 
             /*If the preconditions are both uninteresting.*/
-            if(_precondition->get__disjunctive_clauses().size() &&
-               _execution_precondition->get__disjunctive_clauses().size() ) {
+            if((level == 0)
+               && ( _precondition->get__disjunctive_clauses().size() &&
+                    _execution_precondition->get__disjunctive_clauses().size()) ) {
                 INTERACTIVE_VERBOSER(true, 6000, " :: zero precondition conjunction :: "
                                      <<input);
                 

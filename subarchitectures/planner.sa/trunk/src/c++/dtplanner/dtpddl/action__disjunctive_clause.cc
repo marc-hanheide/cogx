@@ -136,6 +136,18 @@ List__Action_Literals& Action_Disjunctive_Clause::get__literals(void)
 }
 
 
+std::ostream& Action_Disjunctive_Clause::operator<<(std::ostream&o) const
+{
+    for(auto literal = get__literals().begin()
+            ; literal != get__literals().end()
+            ; literal++){
+        o<<*literal<<", ";
+    }
+    
+    
+    return o;
+}
+ 
 namespace std
 {
     

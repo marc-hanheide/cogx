@@ -41,6 +41,11 @@ Boolean__Satisfaction_Status_Management(uint num)
 {
 }
 
+uint Boolean__Satisfaction_Status_Management::get__number_of_atoms() const
+{
+    return status.get__number_of_atoms();
+}
+
 
 bool Boolean__Satisfaction_Status_Management::valid_index(uint i) const
 {

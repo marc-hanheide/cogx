@@ -53,6 +53,40 @@ using namespace Planning;
 
 Are_Doubles_Close Observation::are_Doubles_Close = Are_Doubles_Close(1e-9);
 
+void Observation::increment__level_of_satisfaction(State& state) const
+{
+    QUERY_UNRECOVERABLE_ERROR(!state.get__observation__count_status().valid_index(get__id())
+                              , get__id()<<"Can't read state of :: "<<*this<<std::endl);
+    
+//     assert(state.get__observation__count_status().valid_index(get__id()));
+    state.get__observation__count_status().increment_satisfaction(get__id());
+}
+
+void Observation::decrement__level_of_satisfaction(State& state) const
+{
+    assert(state.get__observation__count_status().valid_index(get__id()));
+    state.get__observation__count_status().increment_satisfaction(get__id());
+}
+
+void Observation::set__satisfied(State& state) const
+{
+    assert(state.get__observation__satisfaction_status().valid_index(get__id()));
+    state.get__observation__satisfaction_status().satisfy(get__id());
+}
+
+void Observation::set__unsatisfied(State& state) const
+{
+    assert(state.get__observation__satisfaction_status().valid_index(get__id()));
+    state.get__observation__satisfaction_status().satisfy(get__id());
+}
+
+bool Observation
+::is_top_level() const
+{
+    return std::tr1::get<4>(contents());
+    
+}
+
 const Formula::Observational_Proposition& Observation
 ::get__identifier() const
 {
@@ -80,13 +114,13 @@ const Formula::List__Perceptual_Propositions& Observation
 bool Observation
 ::get__lookup_probability() const
 {
-    return std::tr1::get<4>(contents());
+    return std::tr1::get<5>(contents());
 }
 
 double Observation
 ::get__probability() const
 {
-    return std::tr1::get<5>(contents());
+    return std::tr1::get<6>(contents());
 }
 
 double Observation
@@ -100,7 +134,7 @@ double Observation
 }
 
 Planning::Observational_State* Observation::operator()
-    (Planning::Observational_State* observational_State) const
+    (Planning::Observational_State* observational_State, Planning::State* state) const
 {
     for(auto effect = get__effects().begin()
             ; effect != get__effects().end()
@@ -109,52 +143,127 @@ Planning::Observational_State* Observation::operator()
         observational_State->flip_on((*effect)->get__id());
     }
 
+    if(!are_Doubles_Close(1.0, get__probability(*state))){
+       observational_State
+           ->set__probability_during_expansion(state->get__probability_during_expansion()
+                                               * get__probability(*state));
+    }
+    
+    auto listeners = Satisfaction_Listener::get__traversable__listeners();
+    for(auto listener = listeners.begin()
+            ; listener != listeners.end()
+            ; listener++){
+        (*listener).cxx_get<Satisfaction_Listener>()
+            ->report__newly_satisfied(*state);
+    }
+    
+    /*All observations are compulsory.*/
+    report__newly_unsatisfied(*state);
+    
     return observational_State;
 }
         
 void Observation::report__newly_satisfied(State& state) const
 {
-    /*If the action has no precondition.*/
-    if((get__precondition()->get__disjunctive_clauses().size() == 0) ||
-       get__precondition()->is_satisfied(state)){
+    increment__level_of_satisfaction(state);
 
-        if( (get__execution_precondition()->get__disjunctive_clauses().size() == 0) ||
-            get__execution_precondition()->is_satisfied(state)){
+    if(is_top_level()){
 
+        assert(!( (get__precondition()->get__disjunctive_clauses().size() == 0) &&
+                  (get__execution_precondition()->get__disjunctive_clauses().size() == 0) ));
+        
+        if((get__precondition()->get__disjunctive_clauses().size() == 0) ||
+           get__precondition()->is_satisfied(state)){
+            
+            if( (get__execution_precondition()->get__disjunctive_clauses().size() == 0) ||
+                get__execution_precondition()->is_satisfied(state)){
+                
+                set__satisfied(state);
+                state.push__observation
+                    (this);
+            }
+        }
+    } else {
+        if( (get__precondition()->get__disjunctive_clauses().size() == 0) &&
+            (get__execution_precondition()->get__disjunctive_clauses().size() == 0)){
+            
+            assert(get__level_of_satisfaction(state) == 1);
+            set__satisfied(state);
             state.push__observation
                 (this);
             
-            auto listeners = get__traversable__listeners();
-            for(auto listener = listeners.begin()
-                    ; listener != listeners.end()
-                    ; listener++){
-                (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
+        } else if ( (get__precondition()->get__disjunctive_clauses().size() == 0) ||
+                    (get__execution_precondition()->get__disjunctive_clauses().size() == 0) )
+        {
+            QUERY_UNRECOVERABLE_ERROR(get__level_of_satisfaction(state) > 2
+                                      , "Expecting a level of satisfaction not grater than 2, but got :: "
+                                      <<get__level_of_satisfaction(state)<<std::endl);
+            
+            if(get__level_of_satisfaction(state) == 2){
+                set__satisfied(state);
+                state.push__observation
+                    (this);
             }
-        }        
-    } 
+        } else if (get__level_of_satisfaction(state) == 3) {
+            set__satisfied(state);
+            state.push__observation
+                (this);
+        }
+    }
+    
+    
+    
+//     /*If the action has no precondition.*/
+//     if((get__precondition()->get__disjunctive_clauses().size() == 0) ||
+//        get__precondition()->is_satisfied(state)){
+
+//         if( (get__execution_precondition()->get__disjunctive_clauses().size() == 0) ||
+//             get__execution_precondition()->is_satisfied(state)){
+
+//             state.push__observation
+//                 (this);
+            
+//             auto listeners = get__traversable__listeners();
+//             for(auto listener = listeners.begin()
+//                     ; listener != listeners.end()
+//                     ; listener++){
+//                 (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
+//             }
+//         }        
+//     } 
+}
+
+bool Observation::is_satisfied(const State& state) const
+{
+    return state.get__observation__satisfaction_status().satisfied(get__id());
 }
 
 void Observation::report__newly_unsatisfied(State& state) const
 {
-    /* NA -- A perception should only be activated once during the
-     * computation of successor states under operator execution.*/
+    decrement__level_of_satisfaction(state);
+
+    if(is_satisfied(state)){
+        set__unsatisfied(state);
+    }   
 }
 
 
 uint Observation::get__level_of_satisfaction(State& state) const
 {
-    uint result = 0;
-    if((get__precondition()->get__disjunctive_clauses().size() == 0) ||
-       get__precondition()->is_satisfied(state)){
-        result++;
-    }
+    return state.get__observation__count_status().get_satisfaction_level(get__id());
     
-    if( (get__execution_precondition()->get__disjunctive_clauses().size() == 0) ||
-        get__execution_precondition()->is_satisfied(state)){
-        result++;
-    }
+//     uint result = 0;
+//     if((get__precondition()->get__disjunctive_clauses().size() == 0) ||
+//        get__precondition()->is_satisfied(state)){
+//         result++;
+//     }
+    
+//     if( (get__execution_precondition()->get__disjunctive_clauses().size() == 0) ||
+//         get__execution_precondition()->is_satisfied(state)){
+//         result++;
+//     }
         
-    return result;
+//     return result;
 }
 
 
@@ -163,6 +272,45 @@ uint Observation::get__number_of_satisfied_conditions(State& state) const
     return get__level_of_satisfaction(state);
 }
 
+
+std::ostream& Observation::operator<<(std::ostream&o) const
+{
+    o<<get__identifier()<<std::endl;
+
+    
+    o<<"PRECONDITION :: "<<get__precondition()<<std::endl;
+    
+    o<<"EXECUTION PRECONDITION :: "<<get__execution_precondition()<<std::endl;
+    
+    if(!get__lookup_probability()){
+        o<<"Prob :: "<<get__probability()<<std::endl;
+    } else {
+        o<<"Prob :: LOOKUP"<<std::endl;
+    }
+    
+    o<<"ADD PERCEPTIVE PROPOSITIONS :: ";
+    /*add effects*/
+    for(auto effect = get__effects().begin()
+            ; effect != get__effects().end()
+            ; effect++){
+        o<<*effect<<", ";
+    }
+    o<<std::endl;
+
+    
+    o<<std::endl;
+    o<<"{"<<get__traversable__listeners().size()<<"-LISTENERS :: ";
+    for(auto listener = get__traversable__listeners().begin()
+            ; listener != get__traversable__listeners().end()
+            ; listener++){
+        if(listener->test_cast<basic_type>()){
+            listener->cxx_get<basic_type>()->operator<<(o);
+        }
+    }
+    o<<"}"<<std::endl;
+    
+    return o;
+}
 
 
 namespace std

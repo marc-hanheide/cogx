@@ -31,40 +31,44 @@
  * 
  */
 
-#ifndef ACTION__DISJUNCTIVE_CLAUSE_HH
-#define ACTION__DISJUNCTIVE_CLAUSE_HH
+#include "observational__state.hh"
 
-#include "action_basics.hh"
-#include "state_formula.hh"
-#include "planning_types_enum.hh"
+#include "observation.hh"
 
-namespace Planning
+using namespace Planning;
+
+
+uint Observational__State::observations_count() const
 {
-    class Action_Disjunctive_Clause
-        : public State_Formula::_Satisfaction_Listener<enum_types::action_disjunctive_clause
-                                        , List__Action_Literals>
-    {PRINTING;
-    public:            
-            
-        void report__newly_satisfied(State&) const;
-        void report__newly_unsatisfied(State&) const;
-
-        bool is_satisfied(const State&) const;
-        uint get__level_of_satisfaction(State&) const;
-        uint get__number_of_satisfied_literals(State&) const;  
-        void report__newly_satisfied_literal(State&) const;
-        void report__newly_unsatisfied_literal(State&) const;
-            
-        const List__Action_Literals& get__literals() const;
-        List__Action_Literals& get__literals();/*_contents .. CHECK*/
-
-    private:
-        void increment__level_of_satisfaction(State&) const;
-        void decrement__level_of_satisfaction(State&) const;
-        void set__satisfied(State&) const;
-        void set__unsatisfied(State&) const;
-    };
+    assert(observation__satisfaction_status.get__number_of_atoms() ==
+           observation__count_status.size());
+    
+    return observation__count_status.size();
 }
 
+Observational__State::Observational__State(uint observations_count)
+    :observation__satisfaction_status(observations_count),
+     observation__count_status(observations_count)
+{
+}
 
-#endif
+const Boolean__Satisfaction_Status_Management& Observational__State::get__observation__satisfaction_status() const
+{
+    return observation__satisfaction_status;
+}
+
+const Unsigned_Integer__Satisfaction_Status_Management& Observational__State::get__observation__count_status() const
+{
+    return observation__count_status;
+}
+
+Boolean__Satisfaction_Status_Management& Observational__State::get__observation__satisfaction_status() 
+{
+    return observation__satisfaction_status;
+}
+
+Unsigned_Integer__Satisfaction_Status_Management& Observational__State::get__observation__count_status() 
+{
+    return observation__count_status;
+}
+

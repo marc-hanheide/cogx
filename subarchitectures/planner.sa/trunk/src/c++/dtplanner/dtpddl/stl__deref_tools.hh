@@ -444,3 +444,19 @@ namespace std
 
 
 #endif
+
+/*
+ * There is a time when the operation of the machine becomes so odious,
+ * makes you so sick at heart, that you can't take part; you can't even
+ * tacitly take part, and you've got to put your bodies on the gears and
+ * upon the wheels, upon the levers, upon all the apparatus and you've
+ * got to make it stop.  And you've got to indicate to the people who run
+ * it, to the people who own it, that unless you're free, the machine
+ * will be prevented from working at all.
+ *
+ * -- Mario Savio (1942..1996), Sproul Hall, University of California,
+ *    Berkeley, December 2, 1964. NOTE: This quote features at the
+ *    start of tune The Movies Over, COG, (2008).
+ *
+ *
+ */

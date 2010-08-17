@@ -212,7 +212,7 @@ std::size_t std::hash_value(const Boolean_State& state)
 std::ostream& std::operator<<(std::ostream& o, const Boolean_State& state)
 {
     /*Print out the fluent propositions first.*/
-    for(int i = 0; i < state.data.size(); i++){
+    for(int i = 0; i < state.get__number_of_atoms(); i++){
         if(state.is_true(i)){
             o<<"T";
         } else {

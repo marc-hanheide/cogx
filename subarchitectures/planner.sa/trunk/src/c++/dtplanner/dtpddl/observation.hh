@@ -45,16 +45,21 @@
 namespace Planning
 {
     class Observation
-        : public State_Formula::_Satisfaction_Listener<enum_types::observation
-                                        , Formula::Observational_Proposition
-                                        , State_Formula::Conjunctive_Normal_Form_Formula__Pointer /*State precondition*/
-                                        , Action_Conjunctive_Normal_Form_Formula__Pointer /*Action precondition*/
-                                        , Formula::List__Perceptual_Propositions/*effects*/
-                                        , bool /* lookup probability */
-                                        , double /* Probability that this transformation is applied. */
-                                        , uint /* Probability lookup index (ignore if "lookup probability" is false). */>
+        : public State_Formula::
+        _Satisfaction_Listener<enum_types::observation
+                               , Formula::Observational_Proposition
+                               , State_Formula::Conjunctive_Normal_Form_Formula__Pointer /*State precondition*/
+                               , Action_Conjunctive_Normal_Form_Formula__Pointer /*Action precondition*/
+                               , Formula::List__Perceptual_Propositions/*effects*/
+                               , bool /* top-level -- derived from the top level effects of a PDDL observation schema */
+                               , bool /* lookup probability */
+                               , double /* Probability that this transformation is applied. */
+                               , uint /* Probability lookup index (ignore if "lookup probability" is false). */>
     {
+        PRINTING;
     public:
+        /* top-level -- derived from the top level effects of a PDDL observation schema. */
+        bool is_top_level() const;
         
         /* How is this perception identified in the other modules of this
          * system? This will be a PDDL-based identifier if the
@@ -89,7 +94,7 @@ namespace Planning
         double get__probability(const State&) const;
         
         /**/
-        Planning::Observational_State* operator()(Planning::Observational_State*) const;
+        Planning::Observational_State* operator()(Planning::Observational_State*, Planning::State*) const;
         
         void report__newly_satisfied(State&) const;
         void report__newly_unsatisfied(State&) const;
@@ -97,7 +102,13 @@ namespace Planning
         uint get__level_of_satisfaction(State&) const;
 
         uint get__number_of_satisfied_conditions(State& state) const;
+        
+        bool is_satisfied(const State&) const;
     private:
+        void increment__level_of_satisfaction(State&) const;
+        void decrement__level_of_satisfaction(State&) const;
+        void set__satisfied(State&) const;
+        void set__unsatisfied(State&) const;
         static Are_Doubles_Close are_Doubles_Close;//(1e-9);
     };
 }

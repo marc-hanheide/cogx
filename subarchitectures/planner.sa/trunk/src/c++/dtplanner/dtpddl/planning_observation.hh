@@ -37,19 +37,21 @@
 #define PLANNING_OBSERVATION_HH
 
 #include "boolean_state.hh"
-
+#include "probability_during_expansion__state.hh"
 
 namespace Planning
 {
     
-    class Observational_State : public Boolean_State
+    class Observational_State : public Boolean_State, public Probability_During_Expansion_State
     {
     public:
         Observational_State(uint number_of_perceptual_propositions = 0);
 
+        
         uint get__id() const;
         void set__id(uint);
     private:
+        /* Observations ID.*/
         uint id;
     };
 

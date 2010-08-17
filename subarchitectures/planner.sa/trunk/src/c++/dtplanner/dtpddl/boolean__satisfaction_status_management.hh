@@ -42,6 +42,8 @@ namespace Planning
     {
     public:
         Boolean__Satisfaction_Status_Management(uint num = 0);
+
+        uint get__number_of_atoms() const;
         
         bool valid_index(uint i) const;
         void satisfy(uint i);
