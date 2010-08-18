@@ -8,7 +8,9 @@ log4j.rootLogger=DEBUG, XMLLog, console
 
 # console is set to be a ConsoleAppender. 
 log4j.appender.console=org.apache.log4j.ConsoleAppender
-log4j.appender.console.layout=org.apache.log4j.xml.XMLLayout
+log4j.appender.console.Threshold=INFO
+log4j.appender.console.layout=cast.core.logging.ComponentLayout
+log4j.appender.console.layout.ConversionPattern=%S %30c [ %05p ] - %m %n%E
 
 log4j.appender.XMLLog=org.apache.log4j.FileAppender
 log4j.appender.XMLLog.Threshold=INFO
