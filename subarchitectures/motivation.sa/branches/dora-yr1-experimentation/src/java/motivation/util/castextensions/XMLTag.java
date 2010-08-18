@@ -41,8 +41,8 @@ public class XMLTag {
      * @param time
      * @see #addAttr(java.lang.String, java.lang.String) 
      */
-    public void addCastTimeAttr(CASTTime time){
-        addAttr("cast_time",WMLogger.CASTTimeToString(time));
+    public void addCastTimeAttr(CASTTime time) {
+        addAttr("cast_time", WMLogger.CASTTimeToString(time));
     }
 
     public void addChild(XMLTag child) {
@@ -149,6 +149,8 @@ public class XMLTag {
      */
     @Override
     public String toString() {
+        // Log4J CDATA work around -- Log4j wraps messages in CDATA tags, we don't want this
+//        return CDATA_END + toStringHelper("") + CDATA_START; // The workaround doesn't work, log4j escapes the escaping
         return toStringHelper("");
     }
 
@@ -188,8 +190,6 @@ public class XMLTag {
             sb.append(indent).append("</").append(name).append(">");
         }
 
-        // Log4J CDATA work around -- Log4j wraps messages in CDATA tags, we don't want this
-        sb.append(CDATA_START);
-        return CDATA_END + sb.toString();
+        return sb.toString();
     }
 }

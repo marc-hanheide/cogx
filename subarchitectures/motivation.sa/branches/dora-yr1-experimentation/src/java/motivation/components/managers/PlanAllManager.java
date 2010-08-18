@@ -187,7 +187,7 @@ public class PlanAllManager extends ManagedComponent {
                             pt = generatedPlan.get(1, TimeUnit.SECONDS);
                             break;
                         } catch (TimeoutException e) {
-                            log("no plan yet... continue waiting");
+                            log("no plan yet... continue waiting ("+loopCount+"/"+maxPlanningTime+")");
                             if (++loopCount > maxPlanningTime) {
                                 log("timeout in planning");
                                 // Build XML log element
@@ -221,7 +221,7 @@ public class PlanAllManager extends ManagedComponent {
                                 Thread.sleep(1000);
                                 break;
                             } catch (TimeoutException e) {
-                                log("not finished execution yet... continue waiting");
+                                log("not finished execution yet... continue waiting ("+loopCount+"/"+maxExecutionTime+")");
                                 if (++loopCount > maxExecutionTime) {
                                     log("timeout in execution");
 

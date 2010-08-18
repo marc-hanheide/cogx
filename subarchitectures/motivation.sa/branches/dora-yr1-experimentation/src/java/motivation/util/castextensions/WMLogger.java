@@ -316,7 +316,7 @@ public class WMLogger extends ManagedComponent {
                     break;
             }
             final String tagString = rootTag.toString();
-            println("printTagString:\n" + tagString);
+            //println("printTagString:\n" + tagString);
             getLogger().info(tagString);
 
         }
