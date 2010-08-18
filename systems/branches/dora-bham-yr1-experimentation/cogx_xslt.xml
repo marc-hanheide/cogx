@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet 
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0" 
+	xmlns:log4j="http://jakarta.apache.org/log4j/">
+  <xsl:output method="xml" indent="yes"/> 
+  <xsl:template match="/log4j:logsequence">
+    <xsl:copy> 	<!-- leave log4j:logsequence tag as root node -->
+      <!-- copy all log4j:message tags, their contents and their attributes that are contained within a 
+	log4j:event with attribute logger=PlanningTask -->
+      <xsl:copy-of 
+select="log4j:event[@logger='org.apache.log4j.net.SimpleSocketServer']/log4j:message"/>
+    </xsl:copy> 
+  </xsl:template>
+</xsl:stylesheet>
+
