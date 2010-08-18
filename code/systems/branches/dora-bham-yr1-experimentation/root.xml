@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+	to extract logs use the command - make sure your log file is called "cast-server-info.xml"
+	
+	xalan -in root.xml -xsl <xslt file>  -out <output file>
+
+	for an example of an xslt file look at cogx_xslt.xml
+
+-->
+
+<!DOCTYPE log4j:logsequence  [<!ENTITY data SYSTEM "cast-server-info.xml">]>
+<log4j:logsequence 
+	xmlns:log4j="http://jakarta.apache.org/log4j/"
+	user="cogx" time="Wed, 21 Jul 2010 17:42:46 +0100">
+          &data;
+</log4j:logsequence>
+
