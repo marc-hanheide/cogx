@@ -20,12 +20,14 @@ module SpatialData {
 
 
   /**
-    * Class for AVS plan
+    * Class for exposing AVS plan to planner
     */
 
   struct ViewPoint{
     cogx::Math::Vector3 pose;
-     double probability;
+    double pan;
+    double tilt;
+    double probability;
   };
   
   sequence<ViewPoint> ViewPointSeq;
