@@ -17,7 +17,23 @@ module SpatialData {
   sequence<long> PlaceIDSeq;
   sequence<long> LongOpt;
   sequence<cogx::Math::Vector3> PlanePointSeq;
+
+
+  /**
+    * Class for AVS plan
+    */
+
+  struct ViewPoint{
+    cogx::Math::Vector3 pose;
+     double probability;
+  };
   
+  sequence<ViewPoint> ViewPointSeq;
+ 
+  class SearchPlan{
+    ViewPointSeq plan;
+  };
+
  /**
    * Struct for passing 3D points belonging to a plane
    * Mainly for visualization on PB to compare against the
