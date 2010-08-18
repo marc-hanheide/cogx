@@ -4,8 +4,8 @@ log4j.rootLogger=TRACE, console, SocketApp
 # console is set to be a ConsoleAppender. 
 log4j.appender.SocketApp=org.apache.log4j.net.SocketAppender
 log4j.appender.SocketApp.Port=48143
-log4j.appender.SocketApp.RemoteHost=127.0.0.1
-#log4j.appender.SocketApp.RemoteHost=192.168.13.1
+#log4j.appender.SocketApp.RemoteHost=127.0.0.1
+log4j.appender.SocketApp.RemoteHost=192.168.1.4
 
 
 log4j.appender.console=org.apache.log4j.ConsoleAppender

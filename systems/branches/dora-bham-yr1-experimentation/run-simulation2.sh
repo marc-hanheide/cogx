@@ -16,7 +16,7 @@ fi
 LOGNAME=./log
 
 echo "Start Log4J"
-xterm -T "LOG4J" -e bash -c "output/bin/log4j-server log4j.properties > $LOGNAME.xml" &
+xterm -T "LOG4J" -e bash -c "output/bin/log4j-server log4j.properties.server > $LOGNAME.xml" &
 PIDS="$PIDS $!"
 sleep 2
 
