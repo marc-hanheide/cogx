@@ -558,11 +558,13 @@ void ObjectDetectorFERNS::postObjectsToWM(const vector<string> & labels,
     const Video::Image &image)
 {
 
+  //assuming labels does not contain duplicates
+
   //comments/logs added by nah
   log("posting results to WM");
 
   StringIntMap foundLabels;
-  StringIntMap labelNotFoundResults;
+  StringIntMap notFoundLabels;
 
   //this goes through a list of all known labels which contains duplicates
   for(size_t i = 0; i < model_labels.size(); i++) { 
@@ -577,29 +579,36 @@ void ObjectDetectorFERNS::postObjectsToWM(const vector<string> & labels,
       }
       else {
 	log("did not find label %s in model %d",model_labels[i].c_str(),i);	
-	labelNotFoundResults[model_labels[i]] = i;      
+	notFoundLabels[model_labels[i]] = i;      
       }
 	  
     }
   }
 
+  unsigned int posted = 0;
   
   //for each of the found, asked-for labels
   for(StringIntMap::const_iterator i = foundLabels.begin();
       i != foundLabels.end(); ++i) {
     //this uses the last found index of any model with asked-for label
+    log("posting positive result for %s",i->first.c_str());
     postObjectToWM_Internal(i->second, image);
+    posted++;
   }
 
   //for each of the not-found, asked-for labels
-  for(StringIntMap::const_iterator i = labelNotFoundResults.begin();
-      i != labelNotFoundResults.end(); ++i) {
+  for(StringIntMap::const_iterator i = notFoundLabels.begin();
+      i != notFoundLabels.end(); ++i) {
 
     //if not also found  (i.e. multiple models per label)
     if(foundLabels.find(i->first) == foundLabels.end()) {
+      log("posting negative result for %s",i->first.c_str());
       postObjectToWM_Internal(i->second, image);
+      posted++;
     }
   }
+
+  assert(posted == labels.size()); 
 
 }
 
