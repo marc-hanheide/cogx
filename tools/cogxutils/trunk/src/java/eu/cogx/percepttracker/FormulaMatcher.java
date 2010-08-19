@@ -206,16 +206,17 @@ public class FormulaMatcher implements
 				throw (new IncompatibleAssignmentException(
 						"cannot update with to type " + to.type));
 		}
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> groundedBelief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, to);
-		CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief
+		CASTIndependentFormulaDistributionsBelief<PerceptBelief> perceptBelief = CASTIndependentFormulaDistributionsBelief
 				.create(PerceptBelief.class, from);
-		gb.setTime(gb.getStartTime(), pb.getEndTime());
-		gb.getContent().putAll(pb.getContent());
+		groundedBelief.setTime(groundedBelief.getStartTime(), perceptBelief.getEndTime());
+		groundedBelief.getContent().putAll(perceptBelief.getContent());
 		try {
-			for (Entry<String, FormulaDistribution> entry : gb.getContent()
+			for (Entry<String, FormulaDistribution> entry : groundedBelief.getContent()
 					.entrySet()) {
 				for (ProbFormula f : entry.getValue().getDistribution()) {
+					// propagate any PointerFormulas to PerceptBeliefs to GroundedBeliefs
 					if (f.getFormula().get() instanceof PointerFormula) {
 						WMPointer wmp = WMPointer.create((Ice.Object) f
 								.getFormula().get());
