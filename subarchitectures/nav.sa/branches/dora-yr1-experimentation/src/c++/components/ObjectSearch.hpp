@@ -121,6 +121,7 @@ enum ObjSearchCommand {
     std::vector<Cure::Pose3D> candidatePoses;
     void MovePanTilt(double pan,double tilt,double tolerance = 0.08);
 	void Recognize(); //30 degrees
+	void PostRecognizeAndWait();
     void Plan ();
     void ExecutePlan();
     void ExecuteNextInPlan();
