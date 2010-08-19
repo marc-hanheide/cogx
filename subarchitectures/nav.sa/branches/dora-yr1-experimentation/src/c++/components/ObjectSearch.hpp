@@ -52,7 +52,7 @@ class ObjectSearch : public cast::ManagedComponent
     bool continueToRecognize() const;
     void stopAVS();
 
-
+    std::set<std::string> m_labelsToDetect;
   	int m_gridsize; 
   	float m_cellsize;
 	double m_fov;
