@@ -1059,15 +1059,17 @@ void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
       
       //HACK stopping AVS on first detection for AAAI comparison runs
       
-      println("HACK: stopping AVS on first detection");
-      stopAVS();
+      //println("HACK: stopping AVS on first detection");
+      //stopAVS();
       return;
     }
     else{
       log("nah, did not detect '%s'", obj->label.c_str());	  
     }
-    
-    if (obj->label == m_objectlist[m_objectlist.size()-1]->ObjID) {
+    // remove this object from the list of objects to wait for...
+    m_labelsToDetect.erase(obj->label);    
+    // if we got all the objects now (the set is empty), we can finish here
+    if (m_labelsToDetect.empty()) {
       log("got the last object. recognition complete.");
       if(m_status != STOPPED) {
     	m_status = RECOGNITIONCOMPLETE;  
@@ -1192,9 +1194,12 @@ void ObjectSearch::PostRecognitionCommand(){
     vector<string> obj_labels;
     for (unsigned int i= 0; i < m_objectlist.size(); i++)
       {
+        // add all the labels to the set of objects to detect
+        m_labelsToDetect.insert(m_objectlist[i]->ObjID);
 	obj_labels.push_back((m_objectlist[i]->ObjID));
       }
     cmd->labels = obj_labels;
+
     addToWorkingMemory(newDataID(), "vision.sa", cmd);
     log("DetectionCommand added.");
 }
