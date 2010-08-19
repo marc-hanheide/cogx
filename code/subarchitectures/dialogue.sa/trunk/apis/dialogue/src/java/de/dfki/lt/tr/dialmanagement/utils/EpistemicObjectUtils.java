@@ -165,7 +165,7 @@ public class EpistemicObjectUtils {
 	 */
 	public static Intention createAttributedIntention (HashMap<dFormula,Float> postconditions) throws DialogueException {
 		
-		SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval());
+		SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
 		AttributedEpistemicStatus attrib = new AttributedEpistemicStatus ("robot", Arrays.asList("human"));
 		
 		List<IntentionalContent> intents = new LinkedList<IntentionalContent>();
@@ -188,7 +188,7 @@ public class EpistemicObjectUtils {
 	 */
 	public static Intention createPrivateIntention (HashMap<dFormula,Float> postconditions) throws DialogueException {
 		
-		SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval());
+		SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
 		PrivateEpistemicStatus priv = new PrivateEpistemicStatus ("robot");
 		
 		List<IntentionalContent> intents = new LinkedList<IntentionalContent>();
