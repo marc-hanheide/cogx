@@ -1043,10 +1043,10 @@ void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
       obs->id[0] = objid++;
       
       if (m_CtrlPTU) {
-	ptz::PTZReading ptz = m_PTUServer->getPose();
-	obs->angles.resize(2);
-	obs->angles[0] = ptz.pose.pan;
-	obs->angles[1] = ptz.pose.tilt;
+    	ptz::PTZReading ptz = m_PTUServer->getPose();
+    	obs->angles.resize(2);
+    	obs->angles[0] = ptz.pose.pan;
+    	obs->angles[1] = ptz.pose.tilt;
       }
       
       // FIXME Use the position of the object in the image as well
@@ -1070,7 +1070,7 @@ void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
     if (obj->label == m_objectlist[m_objectlist.size()-1]->ObjID) {
       log("got the last object. recognition complete.");
       if(m_status != STOPPED) {
-	m_status = RECOGNITIONCOMPLETE;  
+    	m_status = RECOGNITIONCOMPLETE;  
       }
     }
   }
@@ -1081,6 +1081,21 @@ void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
 
 bool ObjectSearch::continueToRecognize() const {
   return m_status == RECOGNITIONINPROGRESS;
+}
+
+// Posts the recognise command in the correct way
+void ObjectSearch::PostRecognizeAndWait() {
+    if(m_status == STOPPED) {
+        log("Stopping in Recognize()");
+        return;
+    }
+    else {
+        m_status = RECOGNITIONINPROGRESS;
+        PostRecognitionCommand();
+        while(continueToRecognize()) {
+            sleepComponent(10);
+        }
+    }
 }
 
 void ObjectSearch::Recognize(){
@@ -1110,20 +1125,20 @@ void ObjectSearch::Recognize(){
 	//need to unlock to allow changes through for the original design, but this is dodgy
 	unlockComponent();
 
-	PostRecognitionCommand();
-	while(continueToRecognize()) {
-	  sleepComponent(10);
-	}
 
-	//this only makes sense if using ptu
-	if(m_CtrlPTU && m_status != STOPPED) {
+    PostRecognizeAndWait();
 
-	  log("now moving extras");
+    //this only makes sense if using ptu
+    if(m_CtrlPTU && m_status != STOPPED) {
+
+      log("now moving extras");
 
 	  //postive
       int n = 1;
+	  // while(continueToRecognize() && anglediff + n*m_ptustep < M_PI/2){
 	  while(m_status != STOPPED && anglediff + n*m_ptustep < M_PI/2){
 	    MovePanTilt(anglediff + n*m_ptustep,0);
+        m_status = RECOGNITIONINPROGRESS;
 	    PostRecognitionCommand();
 	    while(continueToRecognize())  {
 	      sleepComponent(10);
@@ -1135,10 +1150,7 @@ void ObjectSearch::Recognize(){
 	  n= 1;
 	  while(m_status != STOPPED && anglediff - n*m_ptustep > -M_PI/2){
 	    MovePanTilt(anglediff - n*m_ptustep,0);
-	    PostRecognitionCommand();
-	    while(continueToRecognize())  {
-	      sleepComponent(10);
-	    }
+        PostRecognizeAndWait();
 	    n++;
 	  }
 
@@ -1148,29 +1160,20 @@ void ObjectSearch::Recognize(){
 	    n= 1;
 	    while(m_status != STOPPED && anglediff - n*m_ptustep > -M_PI/2){
 	      MovePanTilt(anglediff - n*m_ptustep,m_tiltRads);
-	      PostRecognitionCommand();
-	      while(continueToRecognize())  {
-		sleepComponent(10);
-	      }
+	      PostRecognizeAndWait();
 	      n++;
 	    }
 	  
 
 	    MovePanTilt(anglediff,m_tiltRads);
-	    PostRecognitionCommand();
-	    while(continueToRecognize()) {
-	      sleepComponent(10);
-	    }
+	    PostRecognizeAndWait();
 	    
 
 	    //postive with tilt
 	    n = 1;
 	    while(m_status != STOPPED && anglediff + n*m_ptustep < M_PI/2){
 	      MovePanTilt(anglediff + n*m_ptustep,m_tiltRads);
-	      PostRecognitionCommand();
-	      while(continueToRecognize()) {
-		    sleepComponent(10);
-	      }
+	      PostRecognizeAndWait();
 	      n++;
 	    }	    
 	  }
