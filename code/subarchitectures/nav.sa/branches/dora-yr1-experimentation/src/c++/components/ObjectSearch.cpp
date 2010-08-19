@@ -1066,8 +1066,12 @@ void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
     else{
       log("nah, did not detect '%s'", obj->label.c_str());	  
     }
+    
     // remove this object from the list of objects to wait for...
     m_labelsToDetect.erase(obj->label);    
+    
+    log("size of m_labelsToDetect = %d",m_labelsToDetect.size());
+
     // if we got all the objects now (the set is empty), we can finish here
     if (m_labelsToDetect.empty()) {
       log("got the last object. recognition complete.");
@@ -1087,107 +1091,108 @@ bool ObjectSearch::continueToRecognize() const {
 
 // Posts the recognise command in the correct way
 void ObjectSearch::PostRecognizeAndWait() {
-    if(m_status == STOPPED) {
-        log("Stopping in Recognize()");
-        return;
+
+  if(m_status == STOPPED) {
+    log("Stopping in Recognize()");
+    return;
+  }
+  else {
+    m_status = RECOGNITIONINPROGRESS;
+    PostRecognitionCommand();
+    while(continueToRecognize()) {
+      sleepComponent(10);
     }
-    else {
-        m_status = RECOGNITIONINPROGRESS;
-        PostRecognitionCommand();
-        while(continueToRecognize()) {
-            sleepComponent(10);
-        }
-    }
+  }
 }
 
 void ObjectSearch::Recognize(){
-	ptz::PTZReading ptz;
-	ptz.pose.pan = 0;
-	if (m_CtrlPTU)
-		ptz::PTZReading ptz = m_PTUServer->getPose();
-		
-	Cure::Pose3D currpos = m_currPose;
-	double plantheta = m_plan.plan[whereinplan].getTheta();
-	double anglediff = Cure::HelpFunctions::angleDiffRad(plantheta,currpos.getTheta());
-	
-	log("plantheta : %f, currtheta, %f", plantheta, currpos.getTheta());
-	log("anglediff is: %f", anglediff);
-	log("ptz reading: %f", ptz.pose.pan);
-	
-	MovePanTilt(anglediff,0);
 
-	if(m_status == STOPPED) {
-	  log("Stopping in Recognize()");
-	  return;
-	}
-	else {
-	  m_status = RECOGNITIONINPROGRESS;
-	}
+  ptz::PTZReading ptz;
+  ptz.pose.pan = 0;
+  if (m_CtrlPTU)
+    ptz::PTZReading ptz = m_PTUServer->getPose();
+  
+  Cure::Pose3D currpos = m_currPose;
+  double plantheta = m_plan.plan[whereinplan].getTheta();
+  double anglediff = Cure::HelpFunctions::angleDiffRad(plantheta,currpos.getTheta());
+  
+  log("plantheta : %f, currtheta, %f", plantheta, currpos.getTheta());
+  log("anglediff is: %f", anglediff);
+  log("ptz reading: %f", ptz.pose.pan);
+  
+  MovePanTilt(anglediff,0);
+  
+  if(m_status == STOPPED) {
+    log("Stopping in Recognize()");
+    return;
+  }
+  else {
+    m_status = RECOGNITIONINPROGRESS;
+  }
+  
+  //need to unlock to allow changes through for the original design, but this is dodgy
+  unlockComponent();
+  
 
-	//need to unlock to allow changes through for the original design, but this is dodgy
-	unlockComponent();
+  PostRecognizeAndWait();
 
-
-    PostRecognizeAndWait();
-
-    //this only makes sense if using ptu
-    if(m_CtrlPTU && m_status != STOPPED) {
-
-      log("now moving extras");
-
-	  //postive
-      int n = 1;
-	  // while(continueToRecognize() && anglediff + n*m_ptustep < M_PI/2){
-	  while(m_status != STOPPED && anglediff + n*m_ptustep < M_PI/2){
-	    MovePanTilt(anglediff + n*m_ptustep,0);
-        m_status = RECOGNITIONINPROGRESS;
-	    PostRecognitionCommand();
-	    while(continueToRecognize())  {
-	      sleepComponent(10);
-	    }
-	    n++;
-	  }
-
-	  //negative
-	  n= 1;
-	  while(m_status != STOPPED && anglediff - n*m_ptustep > -M_PI/2){
-	    MovePanTilt(anglediff - n*m_ptustep,0);
+  //this only makes sense if using ptu
+  if(m_CtrlPTU && m_status != STOPPED) {
+      
+    log("now moving extras");
+    
+    //postive
+    int n = 1;
+    // while(continueToRecognize() && anglediff + n*m_ptustep < M_PI/2){
+    while(m_status != STOPPED && anglediff + n*m_ptustep < M_PI/2){
+      MovePanTilt(anglediff + n*m_ptustep,0);
+      m_status = RECOGNITIONINPROGRESS;
+      PostRecognitionCommand();
+      while(continueToRecognize())  {
+	sleepComponent(10);
+      }
+      n++;
+    }
+    
+      //negative
+      n= 1;
+      while(m_status != STOPPED && anglediff - n*m_ptustep > -M_PI/2){
+	MovePanTilt(anglediff - n*m_ptustep,0);
         PostRecognizeAndWait();
-	    n++;
-	  }
-
-	  if(m_tiltRads != 0) {
-
-	    //negative with tilt
-	    n= 1;
-	    while(m_status != STOPPED && anglediff - n*m_ptustep > -M_PI/2){
-	      MovePanTilt(anglediff - n*m_ptustep,m_tiltRads);
-	      PostRecognizeAndWait();
-	      n++;
-	    }
-	  
-
-	    MovePanTilt(anglediff,m_tiltRads);
-	    PostRecognizeAndWait();
-	    
-
-	    //postive with tilt
-	    n = 1;
-	    while(m_status != STOPPED && anglediff + n*m_ptustep < M_PI/2){
-	      MovePanTilt(anglediff + n*m_ptustep,m_tiltRads);
-	      PostRecognizeAndWait();
-	      n++;
-	    }	    
-	  }
+	n++;
+      }
+      
+      if(m_tiltRads != 0) {
+	
+	//negative with tilt
+	n= 1;
+	while(m_status != STOPPED && anglediff - n*m_ptustep > -M_PI/2){
+	  MovePanTilt(anglediff - n*m_ptustep,m_tiltRads);
+	  PostRecognizeAndWait();
+	  n++;
 	}
 	
-	MovePanTilt(0,0);
 	
-	//belt up for safety
-	lockComponent();	
-
+	MovePanTilt(anglediff,m_tiltRads);
+	PostRecognizeAndWait();
 	
+	
+	//postive with tilt
+	n = 1;
+	while(m_status != STOPPED && anglediff + n*m_ptustep < M_PI/2){
+	  MovePanTilt(anglediff + n*m_ptustep,m_tiltRads);
+	  PostRecognizeAndWait();
+	  n++;
+	}	    
+      }
+    }
+    
+    MovePanTilt(0,0);
+    
+    //belt up for safety
+    lockComponent();	        
 }
+
 void ObjectSearch::PostRecognitionCommand(){
     log("Posting Recog. Command now");	
     VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;
