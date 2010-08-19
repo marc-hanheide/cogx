@@ -34,7 +34,7 @@ public class CASTFrame extends GenericFrame<SpatioTemporalFrame> {
 
 	public static CASTFrame create(String place, CASTTime start, CASTTime end) {
 		return new CASTFrame(new SpatioTemporalFrame(place,
-				new CASTTemporalInterval(start, end)));
+				new CASTTemporalInterval(start, end), 1.0f));
 	}
 
 	protected CASTFrame(AbstractFrame content) {
@@ -81,4 +81,12 @@ public class CASTFrame extends GenericFrame<SpatioTemporalFrame> {
 		_content.interval = new CASTTemporalInterval(start, end);
 	}
 
+	public void setExistProb(double p) {
+		_content.existProb=(float) p;
+	}
+
+	public double getExistProb() {
+		return _content.existProb;
+	}
+	
 }
