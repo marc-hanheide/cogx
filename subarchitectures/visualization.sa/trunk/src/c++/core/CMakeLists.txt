@@ -1,9 +1,23 @@
 
 project(VisualizationCore)
-find_package(Qt4 REQUIRED) # http://qtnode.net/wiki/Qt4_with_cmake
+
+set(VERBOSE 1)
+
+find_package(Qt4 REQUIRED)  # http://qtnode.net/wiki/Qt4_with_cmake
+set(QT_USE_OPENGL 1)
+include(${QT_USE_FILE})
+include_directories(${QT_INCLUDE_DIR})
+include_directories(${QT_QTOPENGL_INCLUDE_DIR})
+
+#nah: mac-specific hack as cmake appears to be generating the wrong include path for QtOpenGL
+include_directories(/opt/local/libexec/qt4-mac/include/QtOpenGL)
+
+#nah: need to find library paths for OpenGL on OSX as it's different from linux
+find_package(OpenGL REQUIRED)  
+
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost 1.36.0 REQUIRED COMPONENTS serialization iostreams )
-include(${QT_USE_FILE} ${QT_USE_OPENGL})
+
 
 option(BUILD_SA_V11N_USE_LUAGL "Build with LuaGl script support (requres lua51 and tolua++51)" ON)
 if(BUILD_SA_V11N_USE_LUAGL)
@@ -21,7 +35,7 @@ if(BUILD_SA_V11N_USE_LUAGL)
          object/CLuaGlScript.cpp
          )
       set(EXPERIMENT_LIB ${EXPERIMENT_LIB}
-         GL GLU
+         ${OPENGL_LIBRARIES}
          ${LUA_LIBRARIES}
          ${LUA_LIB_TOLUA_51}
          )
@@ -76,8 +90,9 @@ if(BUILD_SA_V11N_USE_TOMGINE)
       ${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/VirtualScene/TomGine/include
       )
    set(TOMGINE_LIBS
-      TomGine GL
+      TomGine 
       ftgl # requires package libftgl-dev
+      ${OPENGL_LIBRARIES}
       )
    add_definitions(-DV11N_OBJECT_TOMGINE_MODEL)
 endif(BUILD_SA_V11N_USE_TOMGINE)
@@ -142,15 +157,16 @@ add_cast_component(DisplayServer
    ${SERVER_UIC_OUTFILES}
    ${SERVER_RESOURCE_OUTFILES}
    )
+
 link_cast_component(${CAST_COMPONENT_NAME}
    VisualizationData Math Video VideoUtils
-   # CogxIceAutogen
+   # CogxIceAutogen   
    ${QT_LIBRARIES}
    ${QT_QTSVG_LIBRARY}
-   ${QT_QTOPENGL_LIBRARY} GL GLU
+   ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES}
    ${TOMGINE_LIBS}
    ${Boost_LIBRARIES}
-   ${EXPERIMENT_LIB}
+   ${EXPERIMENT_LIB}   
    )
 
 find_package(OpenCV REQUIRED)
