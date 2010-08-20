@@ -28,8 +28,14 @@ option(BUILD_SA_VISION_FERNS "build FERNS detector" YES)
 if (BUILD_SA_VISION_FERNS)
 add_subdirectory (src/c++/vision/components/ObjectDetectorFERNS)
 endif (BUILD_SA_VISION_FERNS)
+
+option(BUILD_SA_VISION_UTIL_COMPS "build dummy driver and video viewer" YES)
+if (BUILD_SA_VISION_UTIL_COMPS)
 add_subdirectory (src/c++/vision/components/DummyDriver)
 add_subdirectory (src/c++/vision/components/VideoViewer)
+endif (BUILD_SA_VISION_UTIL_COMPS)
+
+
 option(BUILD_SA_VISION_STEREOVIEWER "build stereo viewer (needs hardware/stereo)" YES)
 if(BUILD_SA_VISION_STEREOVIEWER)
 add_subdirectory (src/c++/vision/components/StereoViewer)
