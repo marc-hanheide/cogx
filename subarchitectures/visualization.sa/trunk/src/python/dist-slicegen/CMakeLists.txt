@@ -3,6 +3,8 @@ include(Slice2Py)
 
 set(V_SLICE_INCLUDE_DIRS
    ${CAST_SLICE_DIR}
+   ${ICE_SLICE_DIR}
+
    ${CAST_SLICE_DIR}/cast/slice
    ${COGX_ROOT}/tools/math/src/slice
    ${COGX_ROOT}/tools/hardware/video/src/slice
