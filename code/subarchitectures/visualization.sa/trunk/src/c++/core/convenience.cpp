@@ -18,6 +18,7 @@
 #include <sstream>
 #include <iomanip>
 #include <ctime>
+#include <stdexcept>
 
 #ifdef DEBUG_TRACE
 int __Tracer::level = 0;
@@ -39,6 +40,11 @@ double fclocks()
 
 long long gethrtime(void)
 {
+
+#ifdef __APPLE__
+	throw std::runtime_error("This needs fixing. see ticket:91 on CogX Trac");
+#else
+
   struct timespec sp;
   int ret;
   long long v;
@@ -52,5 +58,7 @@ long long gethrtime(void)
   v*=sp.tv_sec;
   v+=sp.tv_nsec;
   return v;
+
+#endif
 }
 
