@@ -371,7 +371,9 @@ public class PlaceMonitor extends ManagedComponent {
 		
 		// check whether the given place already contains an instance of the given category
 		String [] objsInPlace = m_comareasoner.getRelatedInstancesByRelation(placeIns, inRel);
+		log("there are already " + objsInPlace.length +" objs in this place");
 		for (String obj : objsInPlace) {
+		    log("check objsInPlace: " + obj);
 			if (obj.startsWith(":")) obj = "dora:" + obj;
 			if (m_comareasoner.isInstanceOf(obj, category)) {
 				log("object of the given category already exists in the given place - doing nothing else.");
