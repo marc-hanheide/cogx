@@ -93,7 +93,7 @@ public class HFCServer extends ManagedComponent {
 			this.forwardChainer = new de.dfki.lt.hfc.ForwardChainer(this.namespaces, this.tupleStore, this.ruleStore);
 			System.out.println("created forward chainer object.");
 			
-			//this.forwardChainer.computeClosure();
+			this.forwardChainer.computeClosure();
 			System.out.println("Constructed a new HFCInterface!");
 		}
 		
