@@ -18,7 +18,7 @@
 
 #include "GridObjectFinder.hpp"
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 #include <highgui.h>
 // #include <opencv/highgui.h>  -- incorrect according to the opencv pkg-config flags
