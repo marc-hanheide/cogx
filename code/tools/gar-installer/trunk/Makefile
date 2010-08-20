@@ -2,10 +2,14 @@ SUBDIRS=	contrib/* \
 		cogx/* 
 
 
+ubuntu-packages:
+	@echo "install all ubuntu packages"
+	find -mindepth 3 -maxdepth 3 -name "Makefile" | xargs grep -l DEB_PACKAGE | xargs -i -- bash -c "make -C \`dirname {}\` ubuntu-install"
+
 
 default:	
 	@echo "available top-level targets:"
-	@echo "  build, install, %-build, %-install, projperm, clean, mrproper"
+	@echo "  build, install, %-build, %-install, clean, mrproper, ubuntu-packages"
 
 
 
@@ -28,9 +32,6 @@ build:
 
 install:
 	for dir in $(SUBDIRS); do $(MAKE) -C $$dir install; done
-
-projperm:
-	$(MAKE) -C util/projperm install
 
 clean:
 	for dir in $(SUBDIRS); do $(MAKE) -C $$dir clean; done
