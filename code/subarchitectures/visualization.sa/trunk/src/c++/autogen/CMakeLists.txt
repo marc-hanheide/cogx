@@ -8,6 +8,7 @@ include_directories(.)
 # latter args are include paths to serach
 cast_slice2cpp(GEN_CPP GEN_HPP DisplayServer.ice ${CAST_SLICE_DIR}
     ${ICE_HOME}/share/Ice/slice
+    ${ICE_SLICE_DIR}
     ${COGX_ROOT}/tools/math/src/slice
     ${COGX_ROOT}/tools/hardware/video/src/slice
     )
