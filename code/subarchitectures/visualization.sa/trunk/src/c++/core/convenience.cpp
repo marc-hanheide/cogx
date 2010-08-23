@@ -20,6 +20,30 @@
 #include <ctime>
 #include <stdexcept>
 
+#ifdef __APPLE__
+// Mac OSX quick workaround
+#include <mach/mach_time.h>
+
+#ifndef CLOCK_MONOTONIC
+#define CLOCK_MONOTONIC 0 // an arbitrary value
+#endif
+
+static
+int clock_gettime(int unused, timespec& tsp)
+{
+  static mach_timebase_info_data_t info = {0,0};  
+  if (info.denom == 0) mach_timebase_info(&info);
+
+  // XXX: conversion may decrease precision
+  double now = mach_absolute_time() * info.numer / info.denom;
+  tsp->tv_sec = now * 1e-9;  
+  tsp->tv_nsec = now - (tsp->tv_sec * 1e9);
+
+  return 0;
+}
+
+#endif // __APPLE__
+
 #ifdef DEBUG_TRACE
 int __Tracer::level = 0;
 #endif
