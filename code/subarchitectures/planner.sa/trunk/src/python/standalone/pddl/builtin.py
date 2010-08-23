@@ -4,35 +4,36 @@ from mapltypes import t_object, t_boolean, t_number
 from mapltypes import TRUE, FALSE, UNKNOWN, UNDEFINED
 
 from predicates import Predicate, Function
+from scope import SCOPE_CONDITION, SCOPE_EFFECT, SCOPE_ALL, SCOPE_INIT
 
 #predefined types
 default_types = [t_object, t_boolean]
 
 #basic predicates
-equals = Predicate("=", [Parameter("?o1", t_object), Parameter("?o2", t_object)], builtin=True)
+equals = Predicate("=", [Parameter("?o1", t_object), Parameter("?o2", t_object)], builtin=True, function_scope=SCOPE_CONDITION)
 
-assign = Predicate("assign", [Parameter("?f", FunctionType(t_object)), Parameter("?v", t_object)], builtin=True)
-change = Predicate("change", [Parameter("?f", FunctionType(t_object)), Parameter("?v", t_object)], builtin=True)
-equal_assign = Predicate("=", [Parameter("?f", FunctionType(t_object)), Parameter("?v", t_object)], builtin=True)
+assign = Predicate("assign", [Parameter("?f", FunctionType(t_object)), Parameter("?v", t_object)], builtin=True, function_scope=SCOPE_EFFECT)
+change = Predicate("change", [Parameter("?f", FunctionType(t_object)), Parameter("?v", t_object)], builtin=True, function_scope=SCOPE_EFFECT)
+equal_assign = Predicate("=", [Parameter("?f", FunctionType(t_object)), Parameter("?v", t_object)], builtin=True, function_scope=SCOPE_INIT)
 
 #numeric predicates
-num_assign = Predicate("assign", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True)
-num_change = Predicate("change", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True)
-num_equal_assign = Predicate("=", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True)
+num_assign = Predicate("assign", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
+num_change = Predicate("change", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
+num_equal_assign = Predicate("=", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_INIT)
 
-scale_up = Predicate("scale-up", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True)
-scale_down = Predicate("scale-down", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True)
-increase = Predicate("increase", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True)
-decrease = Predicate("decrease", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True)
+scale_up = Predicate("scale-up", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
+scale_down = Predicate("scale-down", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
+increase = Predicate("increase", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
+decrease = Predicate("decrease", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
 
 numeric_ops = [num_assign, scale_up, scale_down, increase, decrease]
 assignment_ops = [assign, change, num_assign, equal_assign, num_equal_assign]
 
-gt = Predicate(">", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True)
-lt = Predicate("<", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True)
-eq = Predicate("=", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True)
-ge = Predicate(">=", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True)
-le = Predicate("<=", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True)
+gt = Predicate(">", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True, function_scope=SCOPE_CONDITION)
+lt = Predicate("<", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True, function_scope=SCOPE_CONDITION)
+eq = Predicate("=", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True, function_scope=SCOPE_CONDITION)
+ge = Predicate(">=", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True, function_scope=SCOPE_CONDITION)
+le = Predicate("<=", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True, function_scope=SCOPE_CONDITION)
 
 numeric_comparators = [gt, lt, eq, ge, le]
 

@@ -68,7 +68,7 @@ class DTTest(common.PddlTest):
 
     def setUp(self):
         self.dom, self.prob = self.load("testdata/logistics.domain.mapl", "testdata/logistics.p1.mapl")
-        self.dom.predicates.add(modal_predicates)
+        self.dom.predicates.add(default_predicates)
 
     def testObserveParsing(self):
         """Testing parsing of observation models"""
@@ -109,9 +109,15 @@ class DTTest(common.PddlTest):
     def testADLTranslation(self):
         """Testing translation of mapl/dtpddl to adl/dtpddl"""
         self.dom = self.load("testdata/logistics.dtpddl")
-        dom2 = translators.ADLCompiler().translate(self.dom)
+        dom2 = translators.ModalPredicateCompiler().translate(self.dom)
         self.roundtrip(dom2, print_result=False)
 
+        dom2 = translators.ObjectFluentCompiler().translate(self.dom)
+        self.roundtrip(dom2, print_result=False)
+
+        dom2 = translators.ADLCompiler().translate(self.dom)
+        self.roundtrip(dom2, print_result=False)
+        
         #s1 = dom2.get_action("sense_package")
         #self.assertEqual(len(s1.sensors), 1)
 

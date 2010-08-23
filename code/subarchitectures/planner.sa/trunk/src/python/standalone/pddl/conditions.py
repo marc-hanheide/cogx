@@ -3,7 +3,7 @@
 
 from parser import UnexpectedTokenError
 import mapltypes as types
-from scope import Scope
+from scope import Scope, SCOPE_CONDITION
 import predicates
 
 class Condition(object):
@@ -367,7 +367,7 @@ class LiteralCondition(predicates.Literal, Condition):
     
     @staticmethod
     def parse(it, scope):
-        literal = predicates.Literal.parse(it,scope)
+        literal = predicates.Literal.parse(it,scope, function_scope=SCOPE_CONDITION)
         return LiteralCondition(literal.predicate, literal.args, scope, literal.negated)
 
 

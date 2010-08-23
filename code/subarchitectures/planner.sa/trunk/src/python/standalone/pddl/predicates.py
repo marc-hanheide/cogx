@@ -46,7 +46,7 @@ class Function(object):
     """A Function object represents any type of PDDL function or
     predicate."""
     
-    def __init__(self, name, args, type, builtin=False):
+    def __init__(self, name, args, type, builtin=False, function_scope=scope.SCOPE_ALL):
         """Create a new Function object.
 
         Arguments:
@@ -60,6 +60,7 @@ class Function(object):
         self.args = args
         self.type = type
         self.builtin=builtin
+        self.function_scope=function_scope
 
         self.arity = len(args)
         self.hash = hash((self.name, self.type)+tuple(self.args))
@@ -91,7 +92,7 @@ class Function(object):
 class Predicate(Function):
     """A Predicate is just a Function with a boolean type."""
     
-    def __init__(self, name, args, builtin=False):
+    def __init__(self, name, args, builtin=False, function_scope=scope.SCOPE_ALL):
         """Create a new Predicate object.
 
         Arguments:
@@ -99,7 +100,7 @@ class Predicate(Function):
         args -- list of Parameter objects of this predicate
         builtin -- True if this function is a builtin PDDL/MAPL/whateverDDL predicate
         """
-        Function.__init__(self, name, args, t_boolean, builtin)
+        Function.__init__(self, name, args, t_boolean, builtin, function_scope)
         
     @staticmethod
     def parse(it, types):
@@ -216,7 +217,7 @@ class Literal(object):
         return hash((self.predicate, self.negated ) + tuple(self.args))
         
     @staticmethod
-    def parse(it, scope, negate=False, maxNesting=999):
+    def parse(it, scope, negate=False, maxNesting=999, function_scope=scope.SCOPE_ALL):
         import builtin
         first = it.get("terminal", "predicate").token
 
@@ -231,15 +232,15 @@ class Literal(object):
         args = []
         while True:
             try:
-                args.append(Term.parse(it, scope, maxNesting))
+                args.append(Term.parse(it, scope, maxNesting, function_scope))
             except parser.EndOfListError:
                 break
 
-        predicate = scope.predicates.get(first.string, args)
+        predicate = scope.predicates.get(first.string, args, function_scope)
         if not predicate:
             type_str = " ".join(str(a.get_type()) for a in args)
             candidates = scope.predicates[first.string]
-            c_str = "\n  ".join(str(p) for p in candidates)
+            c_str = "\n  ".join(str(p) for p in candidates if p.function_scope & function_scope)
             raise ParseError(first, "no matching predicate found for (%s %s). Candidates are:\n  %s" % (first.string, type_str, c_str))
 
         #check type constraints for assignments
@@ -350,7 +351,7 @@ class Term(object):
         return not self.__eq__(other)
     
     @staticmethod
-    def parse(it, scope, maxNesting=999):
+    def parse(it, scope, maxNesting=999, function_scope=scope.SCOPE_ALL):
         if isinstance(it, parser.ElementIterator):
             term = it.get(None, "function term, variable or constant")
         else:
@@ -372,7 +373,7 @@ class Term(object):
                 return VariableTerm(obj)
             return ConstantTerm(obj)
         
-        return FunctionTerm.parse(iter(term), scope, maxNesting-1)
+        return FunctionTerm.parse(iter(term), scope, maxNesting-1, function_scope)
 
     
 class FunctionTerm(Term):
@@ -423,7 +424,7 @@ class FunctionTerm(Term):
         return hash((self.function, ) + tuple(self.args))
 
     @staticmethod
-    def parse(it, scope, maxNesting=999):
+    def parse(it, scope, maxNesting=999, function_scope=scope.SCOPE_ALL):
         name = it.get(None, "function or predicate identifier")
         if name.token.string in scope.functions:
             table = scope.functions
@@ -444,11 +445,11 @@ class FunctionTerm(Term):
             except parser.EndOfListError:
                 break
 
-        func = table.get(name.token.string, args)
+        func = table.get(name.token.string, args, function_scope)
         if not func:
             type_str = " ".join(str(a.get_type()) for a in args)
             candidates = table[name.token.string]
-            c_str = "\n  ".join(str(p) for p in candidates)
+            c_str = "\n  ".join(str(p) for p in candidates if p.function_scope & function_scope)
             raise ParseError(name.token, "no matching function or predicate found for (%s %s). Candidates are:\n  %s" % (name.token.string, type_str, c_str))
         
         if func.is_modal():
