@@ -2,9 +2,16 @@
 # -*- coding: latin-1 -*-
 
 import itertools
+from collections import defaultdict
 
 import mapltypes as types
 import predicates
+
+SCOPE_CONDITION = 1
+SCOPE_EFFECT = 2
+SCOPE_INIT = 4
+SCOPE_ALL = 0xffffffff
+
 
 class FunctionTable(dict):
     """This class is used to store and retrieve PDDL Function objects
@@ -41,7 +48,7 @@ class FunctionTable(dict):
         if function.name not in self:
             dict.__setitem__(self, function.name, set())
         else:
-            if self.get(function.name, function.args):
+            if self.get(function.name, function.args, function.function_scope):
                 raise Exception("A function with this name and arguments already exists: " + str(function))
 
         dict.__getitem__(self, function.name).add(function)
@@ -67,9 +74,9 @@ class FunctionTable(dict):
             del self[function.name]
                 
         
-    def get(self, name, args):
+    def get(self, name, args, function_scope=SCOPE_ALL):
         """Get all functions matching the provided name and argument
-        types.
+        types and which can be used in the given scope.
 
         If excactly one function matches the supplied information, it
         will be returned. Otherwise a list of matching Functions will
@@ -99,6 +106,8 @@ class FunctionTable(dict):
         result = []
 #        print name, map(str, args)
         for f in fs:
+            if not (f.function_scope & function_scope):
+                continue
             #in case one tries to check the function argument, too
             if len(argtypes) == len(f.args):
                 funcargs = {}
@@ -359,3 +368,43 @@ class Scope(dict):
         return True
 
 
+# class ParserContext(object):
+#     def __init__(self):
+#         self.stack = []
+#         self.scope = None
+#         self.handlers = defaultdict(list)
+
+#     def register_handler(self, tag, handler, class_=None):
+#         self.handlers[tag].append((class_, handler))
+
+#     def handle(self, tag, iterator):
+#         if tag in self.handlers:
+#             for class_, handler in self.handlers[tag]:
+#                 if not class_ or isinstance(self.current, class_):
+#                     if handler(iterator, self):
+#                         return True
+#                     else:
+#                         iterator.reset()
+#         return False
+    
+#     @property
+#     def current(self):
+#         return self.stack[-1]
+        
+#     def push(self, obj):
+#         self.stack.append(obj)
+#         if isinstance(obj, Scope):
+#             self.scope = obj
+            
+#     def pop(self):
+#         obj = self.types.pop()
+#         if isinstance(obj, Scope):
+#             self.scope = obj.parent
+#         return obj
+
+#     def __contains__(self, key):
+#         return key in self.scope
+
+#     def __getitem__(self, key):
+#         return self.scope[key]
+    

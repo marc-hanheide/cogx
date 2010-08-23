@@ -59,7 +59,7 @@ class PlanNode(object):
         self.explanations = {}
         
         if not isinstance(action, DummyAction):
-            num = len(action.agents) + len(action.maplargs)
+            num = len(action.agents) + len(action.params)
             self.args = args[:num]
         else:
             self.args = args

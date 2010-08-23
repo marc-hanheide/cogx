@@ -18,7 +18,7 @@ logistics = \
 
 (define (domain logistics-object-fluents)
 
-(:requirements :adl :object-fluents :numeric-fluents) 
+(:requirements :adl :object-fluents :numeric-fluents :action-costs) 
 
 (:types  truck airplane - vehicle
          package vehicle - thing
@@ -28,6 +28,7 @@ logistics = \
 (:functions  (city-of ?l - (either location vehicle)) - city
              (location-of ?t - thing) - (either location vehicle)
              (load_succ_prob) - number
+             (load-costs ?v - vehicle) - number
 )
 
 )"""
@@ -130,6 +131,16 @@ univ_unload = """
                                 ))
 """
 
+cost_load = """
+        (:action load
+                 :parameters    (?p - package ?v - vehicle)
+                 :precondition  (= (location-of ?p) (location-of ?v))
+                 :effect        (and (assign (location-of ?p) ?v)
+                                     (increase (total-cost) (load-costs ?v))
+                                ))
+
+"""
+
 modal_action = """
  	(:action tell_val
  	 :agent (?speaker - agent)
@@ -214,7 +225,7 @@ class ActionTest(unittest.TestCase):
         
         action = Parser.parse_as(modal_action.split("\n"), mapl.MAPLAction, self.domain)
 
-        self.assertEqual(action.maplargs[1].type, FunctionType(t_object))
+        self.assertEqual(action.params[1].type, FunctionType(t_object))
         term = predicates.FunctionTerm(self.domain.functions["location-of"][0], [Parameter("?c", self.domain.types["city"])])
         action.instantiate({"?var" : term})
         
@@ -230,7 +241,7 @@ class ActionTest(unittest.TestCase):
         
         action = Parser.parse_as(mapl_drive.split("\n"), mapl.MAPLAction, self.domain)
         self.assertEqual(len(action.agents), 1)
-        self.assertEqual(len(action.maplargs), 2)
+        self.assertEqual(len(action.params), 2)
         self.assertEqual(len(action.vars), 0)
         self.assertEqual(len(action.args), 3)
         self.assert_(isinstance(action.effect, SimpleEffect))
@@ -327,7 +338,26 @@ class ActionTest(unittest.TestCase):
         except ParseError, e:
             self.assertEqual(e.token.string, "?p")
             self.assertEqual(e.token.line, 4)
-            
+
+    def testActionCosts(self):
+        """Testing setting/getting/deleting of action costs"""
+        from builder import Builder
+
+        action = Parser.parse_as(cost_load.split("\n"), Action, self.domain)
+        b = Builder(action)
+        
+        expected_term = b("load-costs", "?v")
+        self.assertEqual(action.get_total_cost(), expected_term)
+
+        action.set_total_cost(25)
+        self.assertEqual(action.get_total_cost(), b(25))
+
+        action.set_total_cost(None)
+        self.assertEqual(len(action.effect.parts), 1)
+
+        action.set_total_cost(b("+", ("load-costs", "?v"), 5))
+        self.assertEqual(len(action.effect.parts), 2)
+        
         
 if __name__ == '__main__':
     unittest.main()    

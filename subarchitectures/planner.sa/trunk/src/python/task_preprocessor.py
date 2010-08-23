@@ -150,29 +150,6 @@ def gen_fact_tuples(beliefs):
           continue
         log.debug("(%s %s) = %s : %f", feat, " ".join(map(str, elems)), vals[0][0], vals[0][1])
         yield SVarDistribution(feat, elems, vals)
-  # for bel in beliefs:
-  #   if isinstance(union, specialentities.RelationUnion):
-  #     try:
-  #       source = feature_val_to_object(union.usource.alternativeValues[0])
-  #       target = feature_val_to_object(union.utarget.alternativeValues[0])
-  #     except Exception, e:
-  #       print "Error getting source or target of relation %s." % union.entityID
-  #       print "Message was: %s" % str(e)
-  #       continue
-
-  #     for feature in union.features:
-  #       # choose feature val with highest probability:
-  #       max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb)
-  #       yield (feature.featlabel, source, target, feature_val_to_object(max_val))
-        
-  #   else:
-  #     name = union.entityID
-  #     object = pddl.TypedObject(name, pddl.t_object)
-      
-  #     for feature in union.features:
-  #       # choose feature val with highest probability:
-  #       max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb)
-  #       yield (feature.featlabel, object, feature_val_to_object(max_val))
 
 def filter_unknown_preds(fact_tuples):
   for ft in fact_tuples:

@@ -182,6 +182,7 @@ class Planner(object):
         skipped_actions = -1
         first_invalid_action = None
         for i,pnode in enumerate(plan):
+            log.debug("Action: %s (%s)", str(pnode), str(pnode.status))
             if isinstance(pnode, plans.DummyNode) or pnode.status in (plans.ActionStatusEnum.EXECUTED, plans.ActionStatusEnum.FAILED):
                 continue
             

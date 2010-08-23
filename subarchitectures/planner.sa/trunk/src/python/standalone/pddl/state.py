@@ -627,14 +627,17 @@ class State(dict):
         
         if pred in (assign, change, num_assign, equal_assign, num_equal_assign):
             eff_value = val
-        elif pred == increase:
-            eff_value = TypedNumber(previous.value + val.value)
-        elif pred == decrease:
-            eff_value = TypedNumber(previous.value - val.value)
-        elif pred == scale_up:
-            eff_value = TypedNumber(previous.value * val.value)
-        elif pred == scale_down:
-            eff_value = TypedNumber(previous.value / val.value)
+        elif pred in (increase, decrease, scale_up, scale_down):
+            if previous == UNKNOWN:
+                eff_value = UNKNOWN
+            elif pred == increase:
+                eff_value = TypedNumber(previous.value + val.value)
+            elif pred == decrease:
+                eff_value = TypedNumber(previous.value - val.value)
+            elif pred == scale_up:
+                eff_value = TypedNumber(previous.value * val.value)
+            elif pred == scale_down:
+                eff_value = TypedNumber(previous.value / val.value)
         else:
             if not svars:
                 #no modal predicate:

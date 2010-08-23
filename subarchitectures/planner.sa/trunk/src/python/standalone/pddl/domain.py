@@ -16,12 +16,38 @@ from scope import Scope, FunctionTable
 from actions import Action
 from axioms import Axiom
 
-supported = set(["mapl",  "modal-predicates", "strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated", "fluents", "numeric-fluents", "object-fluents", "durative-actions", "partial-observability", "action-costs"])
+supported = set(["modal-predicates", "strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated", "fluents", "numeric-fluents", "object-fluents", "durative-actions", "action-costs"])
 
-support_depends = {"mapl" : ["object-fluents", "modal-predicates"],
-                   "adl" : ["typing", "negative-preconditions", "disjunctive-preconditions", "quantified-preconditions", "equality", "conditional-effects"],
+support_depends = {"adl" : ["typing", "negative-preconditions", "disjunctive-preconditions", "quantified-preconditions", "equality", "conditional-effects"],
                    "fluents" : ["numeric-fluents", "object-fluents"]}
 
+class ModuleDescription(object):
+    def __init__(self, module):
+        self.dependencies = module.__dict__.get("dependencies", [])
+        self.types = module.__dict__.get("default_types", [])
+        self.constants = module.__dict__.get("default_constants", [])
+        self.predicates = module.__dict__.get("default_predicates", [])
+        self.functions = module.__dict__.get("default_functions", [])
+
+        self.prepare_domain = module.__dict__.get("prepare_domain", None)
+        self.parse_handlers = module.__dict__.get("parse_handlers", [])
+        self.post_parse = module.__dict__.get("post_parse", None)
+        
+    @staticmethod
+    def import_module(name):
+        modulename = name.replace("-", "_")
+        try:
+            exec("import %s as _pddl_module" % modulename)
+            if not _pddl_module.__dict__.get("pddl_module", False):
+                return False
+            desc = ModuleDescription(_pddl_module)
+            desc.name = name
+            desc.modulename = modulename
+            return desc
+        except ImportError, e:
+            return False
+
+        
 class Domain(Scope):
     """This class represents a PDDL domain."""
     
@@ -85,7 +111,7 @@ class Domain(Scope):
     def stratify_axioms(self):
         """Compute stratification layers for the axioms in this domain."""
         self.stratification, self.nonrecursive = axioms.stratify(self.axioms)
-    
+        
     @staticmethod
     def parse(root, supp = supported):
         it = iter(root)
@@ -96,8 +122,10 @@ class Domain(Scope):
         
         typeDict = dict((t.name, t) for t in builtin.default_types)
         constants = set()
-        preds = FunctionTable([builtin.equals])
+        preds = FunctionTable([builtin.equals, builtin.assign, builtin.equal_assign])
         functions = FunctionTable()
+
+        modules = []
         
         req = iter(it.get(list, "requirement definition"))
         req.get(":requirements")
@@ -105,46 +133,67 @@ class Domain(Scope):
         for r in req:
             if not r.is_terminal() or r.token.string[0] != ":":
                 raise UnexpectedTokenError(r.token, "requirement identifier")
-            requirements.append(r.token.string[1:])
-            if r.token.string[1:] not in supp:
-                raise ParseError(r.token, "%s is not supported." % r.token.string)
-            if r.token.string[1:] in support_depends:
-                requirements += support_depends[r.token.string[1:]]
+            requirement = r.token.string[1:]
+            requirements.append(requirement)
+            if requirement  not in supp:
+                module = ModuleDescription.import_module(requirement)
+                if not module:
+                    raise ParseError(r.token, "%s is not supported." % r.token.string)
+                modules.append(module)
+                requirements += module.dependencies
 
-        if "mapl" in requirements:
-            import mapl
-            constants = set([builtin.TRUE, builtin.FALSE, builtin.UNKNOWN])
-            
+            elif requirement in support_depends:
+                requirements += support_depends[requirement]
+
+        for module in modules:
+            for t in module.types:
+                typeDict[t.name] = t
+            constants |= set(module.constants)
+            preds.add(module.predicates)
+            functions.add(module.functions)
+
         if "fluents" in requirements or "numeric-fluents" in requirements:
             typeDict[builtin.t_number.name] = builtin.t_number
             preds.add(builtin.numeric_comparators)
+            preds.add(builtin.numeric_ops)
+            preds.add(builtin.num_equal_assign)
             functions.add(builtin.numeric_functions)
 
+        if "durative-actions" in requirements:
+            preds.add(builtin.change)
+            preds.add(builtin.num_change)
+            
         if "action-costs" in requirements:
-            preds.add(builtin.increase)
+            try:
+                preds.add(builtin.increase)
+            except:
+                pass
             functions.add(builtin.total_cost)
-
-        if "mapl" in requirements:
-            for t in mapl.mapl_types:
-                typeDict[t.name] = t
-            preds.add(mapl.mapl_predicates)
-
-        if "partial-observability" in requirements:
-            import dtpddl
-            preds.add(dtpddl.modal_predicates)
-            functions.add(dtpddl.functions)
-            
+        
         domain = None
-            
+        
         for elem in it:
             j = iter(elem)
             type = j.get("terminal").token
 
             #If domain is not already constructed, create it now
-            if type in (":action", ":durative-action", ":sensor", ":derived") and domain is None:
+            if type not in (":types", ":constants", ":predicates", ":functions") and domain is None:
                 domain = Domain(domname, typeDict, constants, preds, functions, [], [])
                 domain.requirements = set(requirements)
-            
+                for m in modules:
+                    if m.prepare_domain:
+                        m.prepare_domain(domain)
+
+            handled = False
+            for module in modules:
+                if type.string in module.parse_handlers:
+                    if module.parse_handlers[type.string](j.reset(), domain):
+                        handled = True
+                        break
+
+            if handled:
+                continue
+                    
             if type == ":types":
                 tlist = mapltypes.parse_typelist(j)
                 for key, value in tlist.iteritems():
@@ -184,33 +233,27 @@ class Domain(Scope):
                         functions.add(predicates.Function.parse(iter(elem), type, typeDict))
 
             elif type == ":action":
-                if "mapl" in requirements:
-                    domain.actions.append(mapl.MAPLAction.parse(j.reset(), domain))
-                else:
-                    domain.actions.append(Action.parse(j.reset(), domain))
+                domain.actions.append(Action.parse(j.reset(), domain))
 
             elif type == ":durative-action" and "durative-actions" in requirements :
-                if "mapl" in requirements:
-                    domain.actions.append(mapl.MAPLDurativeAction.parse(j.reset(), domain))
-                else:
-                    import durative
-                    domain.actions.append(durative.DurativeAction.parse(j.reset(), domain))
+                import durative
+                domain.actions.append(durative.DurativeAction.parse(j.reset(), domain))
                 
             elif type == ":derived":
                 domain.axioms.append(Axiom.parse(j.reset(), domain))
-                
-            elif type == ":observe" and "partial-observability" in requirements:
-                domain.observe.append(dtpddl.Observation.parse(j.reset(), domain))
-                
+                                
             else:
                 raise ParseError(type, "Unknown section identifier: '%s'." % type.string)
             
         if domain is None:
             domain = Domain(domname, typeDict, constants, preds, functions, [], [])
+            domain.requirements = set(requirements)
+            for m in modules:
+                if m.prepare_domain:
+                    m.prepare_domain(domain)
 
-        if "mapl" in requirements:
-            for axiom_str in mapl.mapl_axioms:
-                axiom = Parser.parse_as(axiom_str.split("\n"), Axiom, domain)
-                domain.axioms.append(axiom)
-
+        for m in modules:
+            if m.post_parse:
+                m.post_parse(domain)
+                    
         return domain

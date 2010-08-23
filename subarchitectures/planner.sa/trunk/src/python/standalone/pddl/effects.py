@@ -4,7 +4,7 @@
 import parser
 from parser import ParseError, UnexpectedTokenError
 import mapltypes as types
-from scope import Scope
+from scope import Scope, SCOPE_EFFECT
 import builtin
 import conditions, predicates
 import random
@@ -379,19 +379,9 @@ class SimpleEffect(predicates.Literal, Effect):
     def parse(it, scope):
         first = it.get(None, "effect specification").token
 
-        ops = [builtin.assign]
-        if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
-            ops += builtin.numeric_ops
-        
-        scope.predicates.add(ops)
-        scope.predicates.remove(builtin.equals)
-        try:
-            literal = predicates.Literal.parse(it.reset(), scope)
-        finally:
-            scope.predicates.remove(ops)
-            scope.predicates.add(builtin.equals)
+        literal = predicates.Literal.parse(it.reset(), scope, function_scope=SCOPE_EFFECT)
 
-        if literal.predicate in ops and literal.negated:
+        if literal.predicate in builtin.assignment_ops + builtin.numeric_ops and literal.negated:
             raise ParseError(first, "Can't negate fluent assignments.")
 
         if literal.predicate == builtin.equals:

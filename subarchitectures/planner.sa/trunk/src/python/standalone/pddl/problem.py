@@ -5,9 +5,9 @@ import itertools
 import parser
 import mapltypes as types
 import builtin
-import scope
 import predicates, conditions, actions, effects, domain
 
+from scope import SCOPE_INIT
 from parser import ParseError, UnexpectedTokenError
 from actions import Action
 
@@ -156,19 +156,7 @@ class Problem(domain.Domain):
         elif first.string == "assign-probabilistic":
             return effects.ProbabilisticEffect.parse_assign(it.reset(), scope)
         else:
-            scope.predicates.remove(builtin.equals)
-            scope.predicates.add(builtin.equal_assign)
-            if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
-                scope.predicates.remove(builtin.eq)
-                scope.predicates.add(builtin.num_equal_assign)
-            try:
-                lit=  predicates.Literal.parse(it.reset(), scope, maxNesting=0)
-            finally:
-                if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
-                    scope.predicates.remove(builtin.num_equal_assign)
-                    scope.predicates.add(builtin.eq)
-                scope.predicates.remove(builtin.equal_assign)
-                scope.predicates.add(builtin.equals)
+            lit=  predicates.Literal.parse(it.reset(), scope, maxNesting=0, function_scope=SCOPE_INIT)
 
             return lit
 

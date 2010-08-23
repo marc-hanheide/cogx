@@ -2,7 +2,7 @@
 # -*- coding: latin-1 -*-
 import itertools
 
-from parser import ParseError
+from parser import ParseError, UnexpectedTokenError
 import mapltypes as types
 import predicates, conditions, effects, builtin, visitors
 from scope import Scope
@@ -78,17 +78,22 @@ class Action(Scope):
             if isinstance(eff, effects.SimpleEffect):
                 if eff.predicate == builtin.increase:
                     if eff.args[0] == tct:
-                        new_cost_eff = effects.SimpleEffect(builtin.increase,[tct,new_total_cost], eff.scope)
                         self.totalCostFound = True
+                        if not new_total_cost:
+                            return False
+                        new_cost_eff = effects.SimpleEffect(builtin.increase,[tct,new_total_cost], eff.scope)
                         return new_cost_eff
 
         self.effect = self.effect.visit(visitor)
 
         if not self.totalCostFound:
             new_cost_eff = effects.SimpleEffect(builtin.increase,[tct,new_total_cost], self.effect.scope)
-            effs = [self.effect,new_cost_eff]
-            new_eff = effects.ConjunctiveEffect(effs,self.effect.scope)
-            self.effect = new_eff
+            if isinstance(self.effect, effects.ConjunctiveEffect):
+                self.effect.parts.append(new_cost_eff)
+            else:
+                effs = [self.effect,new_cost_eff]
+                new_eff = effects.ConjunctiveEffect(effs,self.effect.scope)
+                self.effect = new_eff
 
 
     def copy(self, newdomain=None):

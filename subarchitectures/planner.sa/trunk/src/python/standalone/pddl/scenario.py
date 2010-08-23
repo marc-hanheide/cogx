@@ -7,7 +7,7 @@ import parser
 import mapltypes as types
 import builtin
 import scope
-import predicates, conditions, actions, effects, domain, mapl
+import predicates, conditions, actions, effects, domain
 
 from parser import ParseError, UnexpectedTokenError
 from problem import Problem

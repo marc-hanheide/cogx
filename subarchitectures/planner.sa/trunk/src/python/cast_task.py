@@ -25,6 +25,7 @@ class CASTTask(object):
         self.id = planning_task.id
         self.slice_goals = planning_task.goals
         self.dt_task = None
+        self.step = 0
 
         self.load_domain(domain_fn)
 
@@ -189,7 +190,7 @@ class CASTTask(object):
                     requires_action_dispatch = True
                     finished_actions.append(pnode)
                     pnode.status = plans.ActionStatusEnum.EXECUTED
-                elif action.status == Planner.Completion.ABORTED or Planner.Completion.FAILED:
+                elif action.status in (Planner.Completion.ABORTED, Planner.Completion.FAILED):
                     pnode.status = plans.ActionStatusEnum.FAILED
                     failed_actions.append(pnode)
                     self.cp_task.mark_changed()
@@ -229,9 +230,10 @@ class CASTTask(object):
         
         self.update_status(Planner.Completion.INPROGRESS)
 
-        problem_fn = abspath(join(self.component.get_path(), "problem%d.mapl" % self.id))
+        problem_fn = abspath(join(self.component.get_path(), "problem%d.mapl" % (self.id)))
         self.write_cp_problem(problem_fn)
 
+        self.step += 1
         self.cp_task.replan()
         self.process_cp_plan()
 

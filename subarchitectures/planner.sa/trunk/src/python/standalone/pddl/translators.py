@@ -440,14 +440,17 @@ class ObjectFluentNormalizer(Translator):
 
         a2 = action.copy_skeletion(domain)
         a2.add(add_args)
-        if isinstance(action, mapl.MAPLAction):
-            a2.maplargs += add_args
-        else:
-            a2.args += add_args
-            
-        a2.precondition = pre
-        a2.replan = replan
-        a2.effect = effect
+        a2.args += add_args
+
+        if pre:
+            pre.set_scope(a2)
+            a2.precondition = pre
+        if replan:
+            replan.set_scope(a2)
+            a2.replan = replan
+        if effect:
+            effect.set_scope(a2)
+            a2.effect = effect
         return a2
 
     def translate_axiom(self, axiom, domain=None):
@@ -473,7 +476,7 @@ class ObjectFluentNormalizer(Translator):
 
 class ObjectFluentCompiler(Translator):
     def __init__(self, **kwargs):
-        self.depends = [MAPLCompiler(**kwargs), ObjectFluentNormalizer(**kwargs)]
+        self.depends = [ModalPredicateCompiler(**kwargs), ObjectFluentNormalizer(**kwargs)]
         
     def translate_condition(self, cond, scope):
         if cond is None:
@@ -504,6 +507,7 @@ class ObjectFluentCompiler(Translator):
                     facts += f
                 return cond.copy(new_parts=parts), facts
         result, facts = cond.visit(visitor)
+
         return result.copy(new_scope=scope), facts
         
     def translate_effect(self, eff, read_facts, scope):
@@ -530,6 +534,7 @@ class ObjectFluentCompiler(Translator):
                                 if val != value:
                                     effs.append(del_eff)
                             else:
+                                #I forgot the reason for this... probably a FD bug
                                 del_cond = conditions.LiteralCondition(equals, [val, value], negated=True)
                                 effs.append(effects.ConditionalEffect(del_cond, del_eff))
                         effs.append(effects.SimpleEffect(new_pred, term.args[:] + [value]))
@@ -565,8 +570,6 @@ class ObjectFluentCompiler(Translator):
 
         #a2 = actions.Action(action.name, [types.Parameter(p.name, p.type) for p in action.args], None, None, domain)
         a2 = action.copy_skeletion(domain)
-        #print map(str, a2.args)
-        
         a2.precondition, facts = self.translate_condition(action.precondition, a2)
         a2.replan, rfacts = self.translate_condition(action.replan, a2)
         facts += rfacts

@@ -2,6 +2,7 @@ from parser import *
 import mapltypes as types
 import builtin, predicates, actions, conditions, effects
 from conditions import *
+from scope import SCOPE_EFFECT
 
 class DurationConstraint(object):
     def __init__(self, term, timeSpecifier="start"):
@@ -213,11 +214,7 @@ class TimedEffect(effects.SimpleEffect):
         first = it.get(None, "effect specification").token
 
         if first.string != "at":
-            scope.predicates.add(builtin.change)
-            scope.predicates.add(builtin.num_change)
             eff = effects.SimpleEffect.parse(it.reset(), scope)
-            scope.predicates.remove(builtin.change)
-            scope.predicates.remove(builtin.num_change)
             return eff
 
         timespec = it.get().token
@@ -225,22 +222,14 @@ class TimedEffect(effects.SimpleEffect):
         if timespec.string not in ("start", "end"):
             raise UnexpectedTokenError(time, "'start' or 'end'")
         
-        ops = [builtin.assign, builtin.change]
-        if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
-            ops += builtin.numeric_ops
-            ops.append(builtin.num_change)
+        literal = predicates.Literal.parse(iter(it.get(list, "effect")), scope, function_scope=SCOPE_EFFECT)
 
-        try:
-            scope.predicates.add(ops)
-            scope.predicates.remove(builtin.equals)
-            literal = predicates.Literal.parse(iter(it.get(list, "effect")), scope)
-        finally:
-            scope.predicates.remove(ops)
-            scope.predicates.add(builtin.equals)
-
-        if literal.predicate in ops and literal.negated:
+        if literal.predicate in builtin.assignment_ops + builtin.numeric_ops and literal.negated:
             raise ParseError(first, "Can't negate fluent assignments.")
 
+        if literal.predicate in (builtin.change, builtin.num_change):
+            raise ParseError(first, "'change' can't be a start or end effect.")
+        
         if literal.predicate == builtin.equals:
             raise ParseError(first, "Can't use '=' in effects, please use 'assign' instead.")
 

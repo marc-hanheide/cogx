@@ -4,6 +4,7 @@ import predicates, conditions, effects, actions, scope, visitors, translators, w
 import mapltypes as types
 import builtin
 
+from builder import Builder
 from parser import ParseError, UnexpectedTokenError
 from mapltypes import Type, TypedObject, Parameter
 from predicates import Predicate, Function
@@ -17,8 +18,33 @@ committed = Predicate("committed", [p], builtin=True)
 
 reward = Function("reward", [], t_number, builtin=True)
 
-modal_predicates = [observed, committed]
-functions = [reward]
+pddl_module = True
+
+default_predicates = [observed, committed]
+default_functions = [reward]
+
+def prepare_domain(domain):
+    domain.percepts = scope.FunctionTable()
+
+def observe_handler(it, domain):
+    domain.observe.append(Observation.parse(it, domain))
+    return True
+
+def percept_handler(it, domain):
+    it.get(":percepts")
+    for elem in it:
+        if elem.is_terminal():
+            raise UnexpectedTokenError(elem, "predicate declaration")
+        domain.percepts.add(predicates.Predicate.parse(iter(elem), domain.types))
+
+    domain.predicates.add([p for p in domain.percepts])
+    return True
+
+parse_handlers = {
+    ":percepts" : percept_handler,
+    ":observe" : observe_handler
+    }
+
 
 class ExecutionCondition(object):
     def __init__(self, action, args, negated=False):
@@ -76,10 +102,10 @@ class ExecutionCondition(object):
         return [ExecutionCondition(action, args, negated)]
         
 class Observation(actions.Action):
-    def __init__(self, name, agents, args, execution, precondition, effect, domain):
-        actions.Action.__init__(self, name, agents+args, precondition, effect, domain)
+    def __init__(self, name, agents, params, execution, precondition, effect, domain):
+        actions.Action.__init__(self, name, agents+params, precondition, effect, domain)
         self.agents = agents
-        self.maplargs = args
+        self.params = params
         self.execution = execution
 
     def to_pddl(self):
@@ -90,10 +116,12 @@ class Observation(actions.Action):
         if not newdomain:
             newdomain = self.parent
             
-        agents = [Parameter(p.name, p.type) for p in self.agents]
-        args = [Parameter(p.name, p.type) for p in self.maplargs]
+        args = [Parameter(p.name, p.type) for p in self.args]
+        adict = dict((a.name, a) for a in args)
+        agents = [adict[a.name] for a in self.agents]
+        params = [a for a in args if a not in agents]
         
-        o = Observation(self.name, agents, args, None, None, None, newdomain)
+        o = Observation(self.name, agents, params, None, None, None, newdomain)
 
         for arg in o.args:
             if isinstance(arg.type, types.ProxyType):
@@ -117,10 +145,12 @@ class Observation(actions.Action):
         if not newdomain:
             newdomain = self.parent
             
-        agents = [Parameter(p.name, p.type) for p in self.agents]
-        args = [Parameter(p.name, p.type) for p in self.maplargs]
+        args = [Parameter(p.name, p.type) for p in self.args]
+        adict = dict((a.name, a) for a in args)
+        agents = [adict[a.name] for a in self.agents]
+        params = [a for a in args if a not in agents]
 
-        o = Observation(self.name, agents, args, None, None, None, newdomain)
+        o = Observation(self.name, agents, params, None, None, None, newdomain)
         exe_cond = [ex.copy(newparent=o, newdomain=newdomain) for ex in self.execution]
         o.execution = exe_cond
         return o
@@ -130,15 +160,18 @@ class Observation(actions.Action):
         it.get(":observe")
         name = it.get().token.string
 
-        it.get(":agent")
-        agent = predicates.parse_arg_list(iter(it.get(list, "agent parameter")), scope.types)
 
+        agent = []
+        params = []
+        
         next = it.get()
+        if next.token.string == ":agent":
+            agent = predicates.parse_arg_list(iter(it.get(list, "agent parameter")), scope.types)
+            next = it.get()
+            
         if next.token.string == ":parameters":
             params = predicates.parse_arg_list(iter(it.get(list, "parameters")), scope.types, previous_params=agent)
             next = it.get()
-        else:
-            params = []
         
         observe = Observation(name, agent, params, None, None, None, scope)
         
@@ -171,8 +204,8 @@ class DTPDDLWriter(writer.Writer):
         #TODO: this is really a bit of a hack...
         if "mapl" in action.parent.requirements:
             strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
-            if action.maplargs:
-                strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.maplargs)], parens=False)
+            if action.params:
+                strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.params)], parens=False)
         else:
             if action.args:
                 strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.args)], parens=False)
@@ -335,6 +368,23 @@ class DT2MAPLCompiler(translators.Translator):
 class DTPDDLCompiler(translators.Translator):
     def __init__(self, **kwargs):
         self.depends = [translators.MAPLCompiler(**kwargs)]
+
+    def translate_action(self, action, domain):
+        cost_term = action.get_total_cost()
+        if cost_term is None or cost_term == 0 :
+            return action.copy(newdomain=domain)
+
+        a2 = action.copy(newdomain=domain)
+        b = Builder(a2)
+        
+        new_reward_eff = b.effect("decrease", ("reward",), cost_term)
+        if isinstance(a2.effect, effects.ConjunctiveEffect):
+            a2.effect.parts.append(new_reward_eff)
+        else:
+            new_eff = b.con(a2.effect, new_reward_eff)
+            a2.effect = new_eff
+
+        return a2
         
     def translate_domain(self, _domain):
         if "partial-observability" not in _domain.requirements:
@@ -343,9 +393,9 @@ class DTPDDLCompiler(translators.Translator):
         dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), _domain.predicates.copy(), _domain.functions.copy(), [], [])
         dom.requirements = _domain.requirements.copy()
 
-        for func in modal_predicates:
+        for func in default_predicates:
             dom.predicates.remove(func)
-        
+            
         p = Parameter("?f", types.FunctionType(t_object))
         observed = Predicate("observed", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
         p = Parameter("?f", types.FunctionType(t_object))
@@ -353,6 +403,11 @@ class DTPDDLCompiler(translators.Translator):
 
         dom.predicates.add(observed)
         dom.predicates.add(committed)
+        try:
+            dom.predicates.add(builtin.increase)
+        except:
+            pass
+        dom.predicates.add(builtin.decrease)
 
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
         dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
