@@ -42,7 +42,6 @@
 namespace Planning
 {
     class Observational_State;
-
     
     class Observation;
     
@@ -64,6 +63,10 @@ namespace std
                              , const Planning::Observation&);
     std::ostream& operator<<(std::ostream&
                              , const Planning::Probabilistic_Observation&);
+    
+    /* (see \module{planning_observation.hh}) */
+    std::size_t hash_value(const Planning::Observational_State&);
+    
 }
 
 

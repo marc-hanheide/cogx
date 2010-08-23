@@ -49,7 +49,14 @@ namespace Planning
                                         , bool >
     {PRINTING;
     public:
-
+        typedef State_Formula::_Satisfaction_Listener<enum_types::action_literal
+                                                      , uint 
+                                                      , bool > Parent;
+        
+        void forced_wake(State&) const;
+        
+        Action_Literal();
+        
         void report__newly_satisfied(State&) const;
         void report__newly_unsatisfied(State&) const;
             
@@ -58,11 +65,21 @@ namespace Planning
 
         /* Sign of this literal (false is positive, true is negative). */
         bool get__sign() const;
-            
-        void configure__negatives(CXX__PTR_ANNOTATION(List__Action_Literals)&);
+
+        void starting__newly_satisfied(State& state) const;
+        
+        void satisfy_complement(State& state);
+        
+        void configure__complement(const Action_Literal__Pointer&, const Action_Literals&);
+//         void configure__negatives(CXX__PTR_ANNOTATION(List__Action_Literals)&);
     private:
-        /*Only one action can be executed at a time.*/
-        CXX__PTR_ANNOTATION(List__Action_Literals) negatives;
+        void set__complement(const Action_Literal__Pointer&);
+        /* The complement of this literal.*/
+        bool has_complement;
+        Action_Literal__Pointer complement;
+        
+//         /*Only one action can be executed at a time.*/
+//         CXX__PTR_ANNOTATION(List__Action_Literals) negatives;
     };
  
 }

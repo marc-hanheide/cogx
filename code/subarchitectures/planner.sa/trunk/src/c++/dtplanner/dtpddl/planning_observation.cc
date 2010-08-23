@@ -42,12 +42,116 @@ Observational_State::Observational_State(uint number_of_perceptual_propositions)
 {
 }
 
-uint Observational_State::get__id() const
+std::stack<const Observation*>& Observational_State::get__observations()
 {
-    return id;
+    return observations;
 }
 
-void Observational_State::set__id(uint _id)
+std::stack<const Probabilistic_Observation*>& Observational_State::get__probabilistic_observations()
 {
-    id = _id;
+    return probabilistic_observations;
+}
+
+
+void Observational_State::reset__observations()
+{
+    observations = std::stack<const Observation*>();
+}
+
+void Observational_State::reset__probabilistic_observations()
+{
+    probabilistic_observations = std::stack<const Probabilistic_Observation*>();
+}
+
+void Observational_State::take__observations__from( Observational_State* in)
+{
+    replace__observations(in->get__observations());
+    in->reset__observations();
+//     std::stack<const Observation*>& tmp = const_cast<std::stack<const Observation*>&>(in->observations);
+//     replace__observations(tmp);
+//     in->reset__observations();
+}
+
+void Observational_State::take__probabilistic_observations__from( Observational_State* in)
+{
+    replace__probabilistic_observations(in->get__probabilistic_observations());
+    in->reset__probabilistic_observations();
+//     std::stack<const Probabilistic_Observation*>& tmp
+//         = const_cast<std::stack<const Probabilistic_Observation*>&>(in->probabilistic_observations);
+//     replace__probabilistic_observations(tmp);
+//     in->reset__probabilistic_observations();
+}
+
+void Observational_State::replace__observations(std::stack<const Observation*>& in)
+{
+    observations = std::move<>(in);
+}
+
+void Observational_State::replace__probabilistic_observations(std::stack<const Probabilistic_Observation*>& in)
+{
+    probabilistic_observations = std::move<>(in);
+}
+
+
+uint Observational_State::count__probabilistic_observations() const
+{
+    return probabilistic_observations.size();
+}
+
+const Probabilistic_Observation* Observational_State::pop__probabilistic_observation()
+{
+    auto result = probabilistic_observations.top();
+    probabilistic_observations.pop();
+    return result;
+}
+
+void Observational_State::push__probabilistic_observation(const Probabilistic_Observation* in)
+{
+   probabilistic_observations.push(in); 
+}
+
+
+uint Observational_State::count__observations() const
+{
+    return observations.size();
+}
+
+const Observation* Observational_State::pop__observation()
+{
+    auto result = observations.top();
+    observations.pop();
+    return result;
+}
+
+void Observational_State::push__observation(const Observation* in)
+{
+    observations.push(in);
+}
+
+// uint Observational_State::get__id() const
+// {
+//     return id;
+// }
+
+// void Observational_State::set__id(uint _id)
+// {
+//     id = _id;
+// }
+
+
+namespace Planning
+{
+
+    std::size_t hash_value(const Observational_State& observational_State)
+    {
+        return observational_State.hash_value();
+    }  
+}
+
+namespace std
+{
+    std::size_t hash_value(const Planning::Observational_State& observational_State)
+    {
+        return observational_State.hash_value();
+    }   
 }

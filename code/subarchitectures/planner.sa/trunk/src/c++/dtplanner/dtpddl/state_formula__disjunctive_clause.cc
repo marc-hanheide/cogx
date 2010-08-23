@@ -117,13 +117,13 @@ void Disjunctive_Clause::report__newly_satisfied_literal(State& state) const
 
     if(!is_satisfied(state)){
         set__satisfied(state);
-
-        auto listeners = get__traversable__listeners();
-        for(auto listener = listeners.begin()
-                ; listener != listeners.end()
-                ; listener++){
-            (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
-        }
+        satisfy_listeners(state);
+//         auto listeners = get__traversable__listeners();
+//         for(auto listener = listeners.begin()
+//                 ; listener != listeners.end()
+//                 ; listener++){
+//             (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
+//         }
     }   
 }
 
@@ -133,13 +133,13 @@ void Disjunctive_Clause::report__newly_unsatisfied_literal(State& state) const
 
     if(0 == get__number_of_satisfied_literals(state)){
         set__unsatisfied(state);
-        
-        auto listeners = get__traversable__listeners();
-        for(auto listener = listeners.begin()
-                ; listener != listeners.end()
-                ; listener++){
-            (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
-        }
+        unsatisfy_listeners(state);
+//         auto listeners = get__traversable__listeners();
+//         for(auto listener = listeners.begin()
+//                 ; listener != listeners.end()
+//                 ; listener++){
+//             (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
+//         }
     }
 }
 

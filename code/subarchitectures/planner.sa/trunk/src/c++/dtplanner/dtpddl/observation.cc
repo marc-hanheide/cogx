@@ -136,101 +136,81 @@ double Observation
 Planning::Observational_State* Observation::operator()
     (Planning::Observational_State* observational_State, Planning::State* state) const
 {
+    INTERACTIVE_VERBOSER(true, 9080, "Applying observation :: "<<get__identifier()<<std::endl);
+    
     for(auto effect = get__effects().begin()
             ; effect != get__effects().end()
             ; effect++){
+        INTERACTIVE_VERBOSER(true, 9080, "Flipping observational effect :: "<<*effect<<std::endl);
         assert((*effect)->get__id() <= observational_State->get__number_of_atoms());
         observational_State->flip_on((*effect)->get__id());
     }
 
     if(!are_Doubles_Close(1.0, get__probability(*state))){
        observational_State
-           ->set__probability_during_expansion(state->get__probability_during_expansion()
+           ->set__probability_during_expansion(observational_State->get__probability_during_expansion()
                                                * get__probability(*state));
+//            ->set__probability_during_expansion(state->get__probability_during_expansion()
+//                                                * get__probability(*state));
     }
-    
-    auto listeners = Satisfaction_Listener::get__traversable__listeners();
-    for(auto listener = listeners.begin()
-            ; listener != listeners.end()
-            ; listener++){
-        (*listener).cxx_get<Satisfaction_Listener>()
-            ->report__newly_satisfied(*state);
-    }
-    
-    /*All observations are compulsory.*/
-    report__newly_unsatisfied(*state);
     
     return observational_State;
 }
+
+void Observation::forced_wake(State& state) const
+{
+    bool simply_satisfied = ((get__precondition()->get__disjunctive_clauses().size() == 0) &&
+                             (get__execution_precondition()->get__disjunctive_clauses().size() == 0));
+    
+    if( simply_satisfied
+        || is_satisfied(state)){
+        INTERACTIVE_VERBOSER(true, 9074, "Waking observation :: "<<get__identifier()<<std::endl);
+        assert(state.get__observational_state_during_expansion());
         
+        state.get__observational_state_during_expansion()
+            ->push__observation
+            (this);
+        
+        wake_sleepers(state);
+    } else {
+        INTERACTIVE_VERBOSER(true, 9074, "Failing to wake observation :: "<<get__identifier()<<std::endl);
+    }
+    
+}
+
 void Observation::report__newly_satisfied(State& state) const
 {
     increment__level_of_satisfaction(state);
 
-    if(is_top_level()){
 
-        assert(!( (get__precondition()->get__disjunctive_clauses().size() == 0) &&
-                  (get__execution_precondition()->get__disjunctive_clauses().size() == 0) ));
-        
-        if((get__precondition()->get__disjunctive_clauses().size() == 0) ||
-           get__precondition()->is_satisfied(state)){
-            
-            if( (get__execution_precondition()->get__disjunctive_clauses().size() == 0) ||
-                get__execution_precondition()->is_satisfied(state)){
-                
-                set__satisfied(state);
-                state.push__observation
-                    (this);
-            }
-        }
-    } else {
-        if( (get__precondition()->get__disjunctive_clauses().size() == 0) &&
-            (get__execution_precondition()->get__disjunctive_clauses().size() == 0)){
-            
-            assert(get__level_of_satisfaction(state) == 1);
-            set__satisfied(state);
-            state.push__observation
-                (this);
-            
-        } else if ( (get__precondition()->get__disjunctive_clauses().size() == 0) ||
-                    (get__execution_precondition()->get__disjunctive_clauses().size() == 0) )
-        {
-            QUERY_UNRECOVERABLE_ERROR(get__level_of_satisfaction(state) > 2
-                                      , "Expecting a level of satisfaction not grater than 2, but got :: "
-                                      <<get__level_of_satisfaction(state)<<std::endl);
-            
-            if(get__level_of_satisfaction(state) == 2){
-                set__satisfied(state);
-                state.push__observation
-                    (this);
-            }
-        } else if (get__level_of_satisfaction(state) == 3) {
-            set__satisfied(state);
-            state.push__observation
-                (this);
-        }
+    INTERACTIVE_VERBOSER(true, 9071, "Incremented satisfaction for :: "<<*this<<std::endl
+                         <<"Designation :: "<<this<<std::endl
+                         <<"At state :: "<<&state<<std::endl
+                         <<"New level is :: "<<get__level_of_satisfaction(state)<<std::endl);
+    
+
+    auto required_level_of_satisfaction = 2;
+
+    if(get__precondition()->get__disjunctive_clauses().size() == 0){
+        --required_level_of_satisfaction;
     }
-    
-    
-    
-//     /*If the action has no precondition.*/
-//     if((get__precondition()->get__disjunctive_clauses().size() == 0) ||
-//        get__precondition()->is_satisfied(state)){
 
-//         if( (get__execution_precondition()->get__disjunctive_clauses().size() == 0) ||
-//             get__execution_precondition()->is_satisfied(state)){
+    if(get__execution_precondition()->get__disjunctive_clauses().size() == 0){
+        --required_level_of_satisfaction;
+    }
 
-//             state.push__observation
-//                 (this);
-            
-//             auto listeners = get__traversable__listeners();
-//             for(auto listener = listeners.begin()
-//                     ; listener != listeners.end()
-//                     ; listener++){
-//                 (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
-//             }
-//         }        
-//     } 
+    assert(0 != required_level_of_satisfaction);
+
+    assert(get__level_of_satisfaction(state) <= 2);
+    
+    if(required_level_of_satisfaction == get__level_of_satisfaction(state)){
+        set__satisfied(state);
+    }
+
+    /* If we are computing observations at a state.*/
+    if(state.get__observational_state_during_expansion()){
+        wake(state);
+    }
 }
 
 bool Observation::is_satisfied(const State& state) const
@@ -240,6 +220,8 @@ bool Observation::is_satisfied(const State& state) const
 
 void Observation::report__newly_unsatisfied(State& state) const
 {
+    assert(get__level_of_satisfaction(state) <= 2);
+    
     decrement__level_of_satisfaction(state);
 
     if(is_satisfied(state)){
@@ -251,19 +233,6 @@ void Observation::report__newly_unsatisfied(State& state) const
 uint Observation::get__level_of_satisfaction(State& state) const
 {
     return state.get__observation__count_status().get_satisfaction_level(get__id());
-    
-//     uint result = 0;
-//     if((get__precondition()->get__disjunctive_clauses().size() == 0) ||
-//        get__precondition()->is_satisfied(state)){
-//         result++;
-//     }
-    
-//     if( (get__execution_precondition()->get__disjunctive_clauses().size() == 0) ||
-//         get__execution_precondition()->is_satisfied(state)){
-//         result++;
-//     }
-        
-//     return result;
 }
 
 

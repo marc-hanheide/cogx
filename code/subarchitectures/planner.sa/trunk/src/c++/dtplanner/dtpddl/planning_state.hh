@@ -80,19 +80,8 @@ namespace Planning
         /* Planner that generated this state.*/
         Solver& solver;
 
-        void take__observations__from( State*);
-        void reset__observations();
-        uint count__observations() const;
-        std::stack<const Observation*>& get__observations();
-        const Observation* pop__observation();
-        void push__observation(const Observation*);
-        
-        void take__probabilistic_observations__from( State*);
-        void reset__probabilistic_observations();
-        std::stack<const Probabilistic_Observation*>& get__probabilistic_observations();
-        uint count__probabilistic_observations() const;
-        const Probabilistic_Observation* pop__probabilistic_observation();
-        void push__probabilistic_observation(const Probabilistic_Observation*);
+        Observational_State* get__observational_state_during_expansion() const;
+        void set__observational_state_during_expansion(Observational_State*);
         
         uint count__compulsory_generative_transformations() const;
         const State_Transformation* pop__compulsory_generative_transformation();
@@ -113,14 +102,6 @@ namespace Planning
         void add__optional_transformation(const State_Transformation*);
         void remove__optional_transformation(const State_Transformation*);
     private:  
-        void replace__observations(std::stack<const Observation*>&);
-        void replace__probabilistic_observations(std::stack<const Probabilistic_Observation*>&);
-        
-        /*Pending observations. All such observations are compulsory.*/
-        std::stack<const Observation*> observations;
-        
-        /*Pending probabilistic observations. All such observations are compulsory.*/
-        std::stack<const Probabilistic_Observation*> probabilistic_observations;
         
         /*Pending probabilistic transformations. All such transformations are compulsory.*/
         std::stack<const Probabilistic_State_Transformation*> probabilistic_transformations;
@@ -135,6 +116,8 @@ namespace Planning
         std::set<const State_Transformation*> applicable_optional_transformations;
 
     private:
+        
+        Observational_State* observational_state_during_expansion;
         
         /* For each action in
          * \member{Markov_Decision_Process_State::successor_driver},

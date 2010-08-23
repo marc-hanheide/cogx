@@ -32,6 +32,7 @@
  */
 
 #include "markov_decision_process_state.hh"
+#include "planning_observation.hh"
 
 using namespace Planning;
 
@@ -40,7 +41,8 @@ Markov_Decision_Process_State
 (uint propositions_count,
  uint function_count)
     :boolean_State(propositions_count),
-     integer_State(function_count)
+     integer_State(function_count),
+     value(0.0)
 {
     INTERACTIVE_VERBOSER(true, 7000, "Made an MDP state with  :: "
                          <<propositions_count
@@ -48,13 +50,14 @@ Markov_Decision_Process_State
     
 }
 
-Markov_Decision_Process_State::
-Markov_Decision_Process_State(const Markov_Decision_Process_State& markov_Decision_Process_State)
-    :boolean_State(markov_Decision_Process_State.boolean_State),
-     integer_State(markov_Decision_Process_State.integer_State),
-     float_State(markov_Decision_Process_State.float_State)
-{
-}
+// Markov_Decision_Process_State::
+// Markov_Decision_Process_State(const Markov_Decision_Process_State& markov_Decision_Process_State)
+//     :boolean_State(markov_Decision_Process_State.boolean_State),
+//      integer_State(markov_Decision_Process_State.integer_State),
+//      float_State(markov_Decision_Process_State.float_State),
+//      value(markov_Decision_Process_State.value)
+// {
+// }
 
 void Markov_Decision_Process_State::
 push__successor(uint _operator_index,
@@ -89,6 +92,23 @@ push__successor(uint _operator_index,
     successors[successor_Driver.size() - 1].push_back(successor_state);
     successor_Probabilities[successor_Driver.size() - 1].push_back(probability_of_transition);
 }
+
+
+const std::vector<std::vector<Observational_State*> >& Markov_Decision_Process_State::get__observations() const
+{
+    return observation__given_action;
+}
+
+const std::vector<std::vector<double> >& Markov_Decision_Process_State::get__observation_Probabilities() const
+{
+    return observation_probability__given_action;
+}
+
+const std::vector<uint>& Markov_Decision_Process_State::get__observation_Driver() const
+{
+    return action_to_observation;
+}
+
 
 const Markov_Decision_Process_State::Successors& Markov_Decision_Process_State::
 get__successors() const
@@ -198,6 +218,82 @@ void Markov_Decision_Process_State::set__int(uint index, int value)
 {
     integer_State.write(index, value);
 }
+
+
+double Markov_Decision_Process_State::get__value() const
+{
+    return value;
+}
+
+void Markov_Decision_Process_State::
+report__considered_observations_under_action(uint action_id)
+{
+    considered_observations_under_action.insert(action_id); 
+}
+
+bool Markov_Decision_Process_State::
+has__considered_observations_under_action(uint action_id) const
+{
+    return (considered_observations_under_action.find(action_id)
+            != considered_observations_under_action.end());
+}
+
+uint Markov_Decision_Process_State::
+get__action_to_observation__index(uint action_id) const
+{
+    auto tmp = mirror__action_to_observation.find(action_id);
+    assert(tmp != mirror__action_to_observation.end());
+
+    return tmp->second;
+}
+
+bool Markov_Decision_Process_State::
+action_to_observation__includes_index(uint action_id) const
+{
+    auto tmp = mirror__action_to_observation.find(action_id);
+
+    return (tmp != mirror__action_to_observation.end());
+}
+
+
+
+void Markov_Decision_Process_State::
+push__observation(uint action_id,
+                  Observational_State* observation,
+                  double probability)
+{
+   
+    if(action_to_observation.size()){    
+        if(action_to_observation.back() != action_id){
+            mirror__action_to_observation[action_id]
+                = action_to_observation.size();
+            
+            action_to_observation.push_back(action_id);
+        }
+    } else {
+        mirror__action_to_observation[action_id]
+            = action_to_observation.size();
+        
+        action_to_observation.push_back(action_id);
+    }
+
+    assert(observation__given_action.size()
+           == observation_probability__given_action.size());
+    
+    if(observation__given_action.size() != action_to_observation.size()){// operator_index){
+        
+        assert(observation__given_action.size() < action_to_observation.size());
+        observation__given_action.push_back(std::vector<Observational_State*>());
+        observation_probability__given_action.push_back(std::vector<double>());
+
+    }
+    
+    observation__given_action[action_to_observation.size() - 1]
+        .push_back(observation);
+    observation_probability__given_action[action_to_observation.size() - 1]
+        .push_back(probability);
+}
+
 
 std::ostream& Markov_Decision_Process_State::operator<<(ostream& o) const
 {

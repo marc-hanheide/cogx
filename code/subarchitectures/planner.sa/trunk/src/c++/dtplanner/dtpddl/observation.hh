@@ -85,6 +85,8 @@ namespace Planning
         /* FIX :: Should the probability of making a perception be read from a state?*/
         bool get__lookup_probability() const;
 
+        void forced_wake(State&) const;
+        
         /*What is the probability of successful application of this perception?*/
         double get__probability() const;
 

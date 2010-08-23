@@ -364,16 +364,16 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                     ; listener != _list__Listeners.end()
                     ; listener++){
 
-                /*An added listener could still be rejected at this
+                /* An added listener could still be rejected at this
                  * point, if it was added on a previous run.*/
                 if(observation
-                   ->add__listener(*listener)){
+                   ->add__sleeper(*listener)// add__listener(*listener)
+                   ){
                     INTERACTIVE_VERBOSER(true, 3110, "successfully added listener."<<std::endl)
                 } else {
                     WARNING("Failed adding listener :: "<<*listener<<std::endl
                             <<"to transformation :: "<<observation<<std::endl)
-                }
-                
+                }   
             }
 
             /*If the precondition is interesting.*/
@@ -390,7 +390,9 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
             if(_execution_precondition->get__disjunctive_clauses().size()){
                 auto deref__st = observation.cxx_deref_get<basic_type>();
                 if(_execution_precondition->add__listener(deref__st)){
-                    INTERACTIVE_VERBOSER(true, 3110, "successfully added listener."<<std::endl)
+                    INTERACTIVE_VERBOSER(true, 9051, "successfully added listener "<<deref__st.get()
+                                         <<" to :: "
+                                         <<_execution_precondition<<std::endl)
                 } else {
                     WARNING("Failed adding listener :: "<<deref__st<<std::endl
                             <<"to formula :: "<<_execution_precondition<<std::endl)
@@ -641,7 +643,7 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                     probabilities[index] = last_double_traversed;
                     sum_of_effect_probabilities += probabilities[index];
                     
-                    INTERACTIVE_VERBOSER(true, 7001, "Adding probability :: "
+                    INTERACTIVE_VERBOSER(true, 9051, "Adding probability :: "
                                          <<last_double_traversed<<std::endl);
                     
                     last_double_traversed = -1.0;
@@ -656,12 +658,14 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
             assert(null_effect__probability <= 1.0);
             
             bool has_null_effect = !are_Doubles_Close(0.0, null_effect__probability);
+
+            
             
             if(has_null_effect){
-                INTERACTIVE_VERBOSER(true, 7001, "Got a null effect with probability :: "
+                INTERACTIVE_VERBOSER(true, 9051, "Got a null effect with probability :: "
                                      <<null_effect__probability<<std::endl);
             } else {
-                INTERACTIVE_VERBOSER(true, 7001, "Got probabilistic action with no null effect.");
+                INTERACTIVE_VERBOSER(true, 9051, "Got probabilistic action with no null effect.");
             }
             
             
@@ -702,6 +706,12 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
             for(auto conjunctive_naturex_choice = conjunctive_naturex_choices.begin()
                     ; conjunctive_naturex_choice != conjunctive_naturex_choices.end()
                     ; conjunctive_naturex_choice++, index++){
+
+
+                INTERACTIVE_VERBOSER(true, 9052, "Visiting :: "<<*conjunctive_naturex_choice<<std::endl
+                                     <<"With probability :: "<<probabilities[index]<<std::endl);
+                
+                
                 probability = probabilities[index];
                 VISIT(*conjunctive_naturex_choice);
             }
@@ -725,8 +735,9 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                  * point, if it was added on a previous run.*/
                 if(probabilistic_Observation.
                    cxx_get<Planning::Probabilistic_Observation>()
-                   ->add__listener(*listener)){
-                    INTERACTIVE_VERBOSER(true, 3110, "successfully added listener."<<std::endl)
+                   ->add__sleeper(*listener)// add__listener(*listener)
+                   ){
+                    INTERACTIVE_VERBOSER(true, 9053, "successfully added listener :: "<<*listener<<std::endl)
                 } else {
                     WARNING("Failed adding listener :: "<<*listener<<std::endl
                             <<"to transformation :: "<<probabilistic_Observation<<std::endl)
@@ -744,8 +755,9 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                 auto deref__st = observation.cxx_deref_get<basic_type>();
                 if(probabilistic_Observation.
                    cxx_get<Planning::Probabilistic_Observation>()
-                   ->add__listener(deref__st)){
-                    INTERACTIVE_VERBOSER(true, 3110, "successfully added listener."<<std::endl)
+                   ->add__sleeper(deref__st)// add__listener(deref__st)
+                   ){
+                    INTERACTIVE_VERBOSER(true, 9053, "successfully added listener :: "<<observation<<std::endl)
                 } else {
                     WARNING("Failed adding listener :: "<<observation<<std::endl
                             <<"to transformation :: "<<probabilistic_Observation<<std::endl)
@@ -768,10 +780,10 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                     
                 set_of_listeners.insert(deref__st);
                     
-                INTERACTIVE_VERBOSER(true, 3110, "::INTERMEDIATE OBSERVATION:: "<<probabilistic_Observation<<std::endl
+                INTERACTIVE_VERBOSER(true, 9054, "::INTERMEDIATE OBSERVATION:: "<<deref__st<<std::endl
                                      <<"requesting to be woken..."<<std::endl); 
             } else {
-                INTERACTIVE_VERBOSER(true, 3110, "::INTERMEDIATE OBSERVATION:: "<<probabilistic_Observation<<std::endl
+                INTERACTIVE_VERBOSER(true, 9054, "::INTERMEDIATE OBSERVATION:: "<<probabilistic_Observation<<std::endl
                                      <<"ALREADY requested to be woken..."<<std::endl);
             }
             

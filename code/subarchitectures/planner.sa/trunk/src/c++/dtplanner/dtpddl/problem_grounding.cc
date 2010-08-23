@@ -145,7 +145,7 @@ Problem_Grounding::Problem_Grounding(Parsing::Problem_Data& _problem_Data,
     this->runtime_Thread = first_actionx_precondition->get__runtime_Thread();
 
 
-    negative_literals = CXX__PTR_ANNOTATION(List__Action_Literals)(new List__Action_Literals(0));
+//     negative_literals = CXX__PTR_ANNOTATION(List__Action_Literals)(new List__Action_Literals(0));
 }
 
 

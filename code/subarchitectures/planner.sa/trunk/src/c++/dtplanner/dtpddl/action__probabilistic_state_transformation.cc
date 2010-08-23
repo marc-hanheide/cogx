@@ -45,20 +45,34 @@ std::vector<State*>
 Probabilistic_State_Transformation::
 operator()(State* input) const
 {
-    auto list__Listeners = get__traversable__listeners();
-    std::vector<State*> result(list__Listeners.size());
+    INTERACTIVE_VERBOSER(true, 9075, "Executing probabilistic action :: "
+                         <<*this<<std::endl);
+    
+    auto local_list__Listeners = get__traversable__listeners();
+    auto local_list__Sleepers = get__traversable__sleepers();
+    
+    std::vector<State*> result(local_list__Sleepers.size());
 
     uint index = 0;
-    for(auto _listener = list__Listeners.begin()
-            ; _listener != list__Listeners.end()
+//     for(auto _listener = list__Listeners.begin()
+//             ; _listener != list__Listeners.end()
+//             ; _listener++, index++){
+
+    assert(local_list__Sleepers.size());
+    assert(!local_list__Listeners.size());
+    
+    
+    for(auto _listener = local_list__Sleepers.begin()
+            ; _listener != local_list__Sleepers.end()
             ; _listener++, index++){
         auto listener = *_listener;
         
-        State* new_state = (index == (list__Listeners.size() - 1))
+        State* new_state = (index == (local_list__Sleepers.size() - 1))
             ?input
             :(new State(*input));
         
-        listener.cxx_get<Satisfaction_Listener>()->report__newly_satisfied(*new_state);
+        listener.cxx_get<Satisfaction_Listener>()->wake(*new_state);
+//         listener.cxx_get<Satisfaction_Listener>()->report__newly_satisfied(*new_state);
         
         result[index] = new_state;
     }
@@ -74,17 +88,26 @@ get__identifier() const
 }
 
 
-
-void Probabilistic_State_Transformation::
-report__newly_satisfied(State& state) const
+void Probabilistic_State_Transformation::forced_wake(State& state) const
 {
+    /* Probabilistic transformations are always satisfied. */
     state.push__probabilistic_transformation
         (this);
 }
 
 void Probabilistic_State_Transformation::
+report__newly_satisfied(State& state) const
+{
+    assert(0);
+    
+//     state.push__probabilistic_transformation
+//         (this);
+}
+
+void Probabilistic_State_Transformation::
 report__newly_unsatisfied(State& state) const
 {
+    assert(0);
     /* NA -- A probabilistic transformation should only be activated
      * once during the computation of successor states under operator
      * execution.*/

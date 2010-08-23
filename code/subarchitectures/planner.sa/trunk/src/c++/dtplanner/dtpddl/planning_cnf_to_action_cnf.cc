@@ -14,13 +14,13 @@ Planning_CNF__to__Action_CNF(basic_type::Runtime_Thread runtime_Thread,
                              Action_Literals& problem__action_literals,
                              Action_Disjunctive_Clauses& problem__action_clauses,
                              Action_Conjunctive_Normal_Form_Formulae& problem__action_cnfs,
-                             CXX__PTR_ANNOTATION(List__Action_Literals)& problem__negative_literals,
+//                              CXX__PTR_ANNOTATION(List__Action_Literals)& problem__negative_literals,
                              const std::map<Formula::Action_Proposition
                              , State_Transformation__Pointer>& action_symbol__to__state_transformation)
     :problem__literals(problem__action_literals),
      problem__clauses(problem__action_clauses),
      problem__cnfs(problem__action_cnfs),
-     problem__negative_literals(problem__negative_literals),
+//      problem__negative_literals(problem__negative_literals),
      action_symbol__to__state_transformation(action_symbol__to__state_transformation),
      processing_negative(false),
      runtime_Thread(runtime_Thread)
@@ -65,9 +65,9 @@ void Planning_CNF__to__Action_CNF::operator()(const Formula::Subformula& input)
             if(_literal__pointer == problem__literals.end()){
                 problem__literals.insert(literal);
                 
-                if(processing_negative){
-                    problem__negative_literals->push_back(literal);
-                }
+//                 if(processing_negative){
+//                     problem__negative_literals->push_back(literal);
+//                 }
                 
                 _literal__pointer = problem__literals.find(literal);
             }
@@ -122,10 +122,26 @@ void Planning_CNF__to__Action_CNF::operator()(const Formula::Subformula& input)
             if(!processing_negative){
                 auto state_Transformation = action_symbol__to__state_transformation.find(proposition)->second;
                 auto deref__st = literal__pointer.cxx_deref_get<basic_type>();
-                state_Transformation->add__listener(deref__st);
+
+                
+                INTERACTIVE_VERBOSER(true, 9075, "Action :: "
+                                     <<state_Transformation->get__identifier()<<std::endl
+                                     <<"Is supposed to wake :: "<<literal__pointer<<std::endl);
+                
+                if(!state_Transformation->add__sleeper(deref__st)){
+                    WARNING("Could not add :: "<<literal__pointer<<" to "
+                            <<state_Transformation->get__identifier()<<std::endl);
+                }
+                
+                
+                INTERACTIVE_VERBOSER(true, 9075, "Testing if registration of sleeper worked :: "
+                                     <<*state_Transformation<<std::endl);
+                
+//                 state_Transformation->add__listener(deref__st);
             }
             
-            literal__pointer->configure__negatives(/*literal__pointer,*/ problem__negative_literals);
+            literal__pointer->configure__complement(literal__pointer, problem__literals);
+//             literal__pointer->configure__negatives(/*literal__pointer,*/ problem__negative_literals);
             
             if(clause__as_set.find(literal__pointer) != clause__as_set.end()){
                 INTERACTIVE_VERBOSER(true, 3124,

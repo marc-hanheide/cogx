@@ -50,6 +50,20 @@ Are_Doubles_Close State_Transformation::are_Doubles_Close = Are_Doubles_Close(1e
 State*
 State_Transformation::operator()(State* in) const
 {
+    
+    if(!are_Doubles_Close(1.0, get__probability(*in))){
+        INTERACTIVE_VERBOSER(true, 9071, "Applying probabilistic effect :: "<<*this<<std::endl);
+        in->set__probability_during_expansion(in->get__probability_during_expansion()
+                                             * get__probability(*in));
+    }
+    
+//     /* If the action is not compulsory (i.e., is an agent executable
+//      * action), then wake up all the derivative actions.*/
+//     if(!get__compulsory()){
+//         wake_sleepers(*in);
+//     }
+
+    
     const State_Formula::List__Literals& effects = get__effects();
     for(auto effect = effects.begin()
             ; effect != effects.end()
@@ -57,33 +71,11 @@ State_Transformation::operator()(State* in) const
         /* If the effect is not satisfied in the state to which this
          * transformation is being applied.*/
         if(!(*effect)->is_satisfied(*in)){
+            INTERACTIVE_VERBOSER(true, 9071, "Flipping :: "<<**effect<<std::endl);
             /* The the effect must be applied, because the parent
              * transformation was applied.*/
             (*effect)->flip(*in);//_satisfaction(*in);
         }
-    }
-    
-    if(!are_Doubles_Close(1.0, get__probability(*in))){
-        in->set__probability_during_expansion(in->get__probability_during_expansion()
-                                             * get__probability(*in));
-    }
-    
-    /* If the action is not compulsory (i.e., is an agent executable
-     * action), then wake up all the derivative actions.*/
-    if(!get__compulsory()){
-        auto listeners = Satisfaction_Listener::get__traversable__listeners();
-        for(auto listener = listeners.begin()
-                ; listener != listeners.end()
-                ; listener++){
-            (*listener).cxx_get<Satisfaction_Listener>()
-                ->report__newly_satisfied(*in);
-        }
-    }
-
-    /* If the actions is a compulsory derivative action, then it is no
-     * longer applicable, because it was just now applied.*/
-    if(get__compulsory()){
-        report__newly_unsatisfied(*in);
     }
     
     return in;
@@ -199,6 +191,33 @@ uint State_Transformation
 
 
 
+            
+void State_Transformation::forced_wake(State& state) const
+{
+    assert(get__compulsory());
+
+    assert(get__traversable__listeners().size() == 0);
+    
+    if(!(get__precondition()->get__disjunctive_clauses().size())
+       || is_satisfied(state)){
+
+        
+        if(get__lookup_probability()){
+            WARNING("Unimplemented support for probability lookup.");
+        }
+        
+        double probability = get__probability(state);
+            
+        if(are_Doubles_Close(probability, 1.0)){
+            state.push__compulsory_transformation(this);
+        } else {
+            state.push__compulsory_generative_transformation(this);
+        }
+            
+        wake_sleepers(state);
+    }
+}
+
 
 uint State_Transformation::get__number_of_satisfied_conditions(State& state) const
 {
@@ -209,74 +228,36 @@ uint State_Transformation::get__number_of_satisfied_conditions(State& state) con
 void State_Transformation
 ::report__newly_satisfied(State& state) const
 {
+    assert(get__level_of_satisfaction(state) == 0);
+    
     increment__level_of_satisfaction(state);
+
+    assert(get__precondition()->get__disjunctive_clauses().size() != 0);
+    assert(get__level_of_satisfaction(state) == 1);
     
-    uint satisfaction_requirement = 0;
-    /*If the action has no precondition.*/
-    if(get__precondition()->get__disjunctive_clauses().size() == 0){
-        
-        QUERY_UNRECOVERABLE_ERROR(!get__compulsory(),
-                                  "Was only expecting compulsory (i.e., sub-)actions with"
-                                  <<" null preconditions, but now we got :: "<<std::endl
-                                  <<*this<<std::endl);
-        
-        satisfaction_requirement = 1;
-    } else
-    /*If the action has a precondition.*/
-    {
-        /* If the action is not compulsary, then only its CNF
-         * precondition has to be satisfied to make it
-         * executable. Otherwise (if it is compulsary), the listener
-         * action must have been executed, and the precondition CNF
-         * must be satisfied.*/
-        satisfaction_requirement = (get__compulsory())?2:1;
-    }
-    
-    /*If this transformation is now executable.*/
-    if(satisfaction_requirement == get__number_of_satisfied_conditions(state)){
-        set__satisfied(state);
-        
-        INTERACTIVE_VERBOSER(true, 8060, "Adding action :: "
-                             <<*this<<std::endl);
-        
-        if(get__compulsory()){
-            
-            if(get__lookup_probability()){
-                WARNING("Unimplemented support for probability lookup.");
-            }
-            
-            register double probability = get__probability(state);
-            if(are_Doubles_Close(probability, 1.0)){
-                state.push__compulsory_transformation(this);
-            } else {
-                state.push__compulsory_generative_transformation(this);
-            }
-            
-            auto listeners = Satisfaction_Listener::get__traversable__listeners();
-            for(auto listener = listeners.begin()
-                    ; listener != listeners.end()
-                    ; listener++){
-                (*listener).cxx_get<Satisfaction_Listener>()
-                    ->report__newly_satisfied(state);
-            }
-        } else {
-            state.add__optional_transformation(this);
-        }
+    set__satisfied(state);
+
+    if(!get__compulsory()){
+        state.add__optional_transformation(this);
     }
 }
 
 void State_Transformation
 ::report__newly_unsatisfied(State& state) const
 {
+    assert(get__level_of_satisfaction(state) == 1);
+    
     decrement__level_of_satisfaction(state);
+    assert(get__level_of_satisfaction(state) == 0);
+    assert(get__precondition()->get__disjunctive_clauses().size() != 0);
 
-    if(is_satisfied(state)){
-        set__unsatisfied(state);
-        
-        if(!get__compulsory()){    
-            state.remove__optional_transformation(this);
-        }
-    }   
+    assert(is_satisfied(state));
+    
+    set__unsatisfied(state);
+    
+    if(!get__compulsory()){    
+        state.remove__optional_transformation(this);
+    }
 }
 
 std::ostream& State_Transformation::operator<<(std::ostream&o) const
@@ -324,12 +305,18 @@ std::ostream& State_Transformation::operator<<(std::ostream&o) const
             listener->cxx_get<basic_type>()->operator<<(o);
         }
         
+    }
+    o<<"}"<<std::endl;
+    
+    o<<std::endl;
+    o<<"{"<<get__traversable__listeners().size()<<"-SLEEPERS :: ";
+    for(auto listener = get__traversable__sleepers().begin()
+            ; listener != get__traversable__sleepers().end()
+            ; listener++){
+        if(listener->test_cast<basic_type>()){
+            listener->cxx_get<basic_type>()->operator<<(o);
+        }
         
-//         if(listener->test_cast<State_Transformation>()){
-//             listener->cxx_get<State_Transformation>()->operator<<(o);
-//         } else if (listener->test_cast<Probabilistic_State_Transformation>()) {
-//             o<<*(listener->cxx_get<Probabilistic_State_Transformation>());//->operator<<(o);
-//         }
     }
     o<<"}"<<std::endl;
     

@@ -37,6 +37,107 @@
 using namespace Planning;
 using namespace Planning::State_Formula;
 
+Satisfaction_Listener::Satisfaction_Listener
+(bool requires_explicit_forced_waking)
+    :requires_explicit_forced_waking(requires_explicit_forced_waking)
+{
+    
+}
+
+
+void Satisfaction_Listener::satisfy_listeners(State& state) const
+{
+    for(auto listener = list__Listeners.begin()
+            ; listener != list__Listeners.end()
+            ; listener++){
+        (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
+    }
+}
+
+void Satisfaction_Listener::unsatisfy_listeners(State& state) const
+{
+    for(auto listener = list__Listeners.begin()
+            ; listener != list__Listeners.end()
+            ; listener++){
+        (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
+    }
+}
+
+void Satisfaction_Listener::wake_sleepers(State& state) const
+{
+    for(auto listener = list__Sleepers.begin()
+            ; listener != list__Sleepers.end()
+            ; listener++){
+        (*listener).cxx_get<Satisfaction_Listener>()->wake(state);
+    }
+}
+
+// void Satisfaction_Listener::forced_wake_sleepers(State& state) const
+// {
+//     for(auto listener = list__sleepers.begin()
+//             ; listener != list__sleepers.end()
+//             ; listener++){
+//         (*listener).cxx_get<Satisfaction_Listener>()->forced_wake(state);
+//     }
+// }
+
+
+void  Satisfaction_Listener::
+wake_sleepers_that_require_forcing(State& state) const
+{
+    for(auto listener = list__Sleepers.begin()
+            ; listener != list__Sleepers.end()
+            ; listener++){
+        if((*listener).cxx_get<Satisfaction_Listener>()->does_require_explicit_forced_waking()){
+            INTERACTIVE_VERBOSER(true, 9074, "Forced waking of :: "<<*listener<<std::endl);
+            (*listener).cxx_get<Satisfaction_Listener>()->forced_wake(state);
+        } else {
+            INTERACTIVE_VERBOSER(true, 9074, "Ignoring non-forced listener :: "<<*listener<<std::endl);
+        }
+    }
+}
+
+bool  Satisfaction_Listener::
+does_require_explicit_forced_waking() const
+{
+    return requires_explicit_forced_waking;
+}
+
+
+            
+bool Satisfaction_Listener::add__sleeper(Satisfaction_Listener__Pointer& in)
+{
+    if(sleepers.find(in) != sleepers.end()){
+        assert(sleepers.size());
+        WARNING("Attempted to add "<<in
+                <<" as a sleeper to a set that"<<std::endl
+                <<"already contained an equivalent element.");
+
+//         for(auto sleeper = sleepers.begin(); sleeper != sleepers.end(); sleeper++){
+//             std::cerr<<in<<" "<<*sleeper<<std::endl;
+//         }
+//         {char ch; std::cin>>ch;};
+        
+        return false;
+    }
+    
+    sleepers.insert(in);
+    list__Sleepers.push_back(in);
+    
+    return true;
+}
+
+            
+const List__Listeners& Satisfaction_Listener::get__traversable__sleepers() const 
+{
+    return list__Sleepers;
+}
+
+const Listeners& Satisfaction_Listener::get__searchable__sleepers() const 
+{
+    return sleepers;
+}            
+
 Satisfaction_Listener::~Satisfaction_Listener()
 {
 }

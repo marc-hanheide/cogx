@@ -38,71 +38,99 @@
 
 using namespace Planning;
 
+Action_Literal::Action_Literal()
+    :Action_Literal::Parent(true)
+{
+}
+
+void Action_Literal::
+configure__complement(const Action_Literal__Pointer& _this,
+                      const Action_Literals& literals)
+{
+    assert(_this.get() == this);
+    
+    NEW_referenced_WRAPPED_deref_POINTER
+        (get__runtime_Thread(),
+         Action_Literal,
+         __complement,
+         get__action_symbol(),
+         !get__sign());
+    
+    auto _complement = CXX__deref__shared_ptr<Action_Literal>(__complement);
+
+    auto _complement_iterator = literals.find(_complement);
+    if(_complement_iterator != literals.end()){
+        this->set__complement(*_complement_iterator);
+        (*_complement_iterator)->set__complement(_this);
+    } else {
+        has_complement = false;
+    }
+}
+
+void Action_Literal::set__complement(const Action_Literal__Pointer& _complement)
+{
+    assert(_complement.get() != this);
+
+    has_complement = true;
+    complement = _complement;
+}
+
+void Action_Literal::forced_wake(State& state) const
+{
+    INTERACTIVE_VERBOSER(true, 9075, "Waking action literal :: "
+                         <<*this<<std::endl);
+    
+    assert(!get__sign());
+    
+    if(state.get__action_Literal()){
+        if(state.get__action_Literal() == this){
+            unsatisfy_listeners(state);
+            satisfy_listeners(state);
+            return;
+        }
+    }
+    
+    if(has_complement){
+        complement->unsatisfy_listeners(state);
+    }
+    
+    if(state.get__action_Literal()){
+        state.get__action_Literal()->unsatisfy_listeners(state);
+    }
+    
+    satisfy_listeners(state);
+
+    if(state.get__action_Literal()){
+        state.get__action_Literal()->satisfy_complement(state);
+    }
+
+    state.set__action_Literal(const_cast<Action_Literal*>(this));
+}
+
+
+void Action_Literal::satisfy_complement(State& state)
+{
+    if(has_complement){
+        assert(complement->get__sign());
+        complement->satisfy_listeners(state);
+    }
+}
+
+
+void Action_Literal::starting__newly_satisfied(State& state) const
+{
+    satisfy_listeners(state);
+}
+
 
 void Action_Literal::report__newly_satisfied(State& state) const
 {
-//     Action_Literal__Pointer negation_of_this;
-    
-    /*Is a positive symbol.*/
-    if(!get__sign()){
-        for(auto negative = negatives->begin()
-                ; negative != negatives->end()
-                ; negative++){
-            if(get__action_symbol() != (*negative)->get__action_symbol()){
-                (*negative)->report__newly_satisfied(state);
-            } else {
-                // (*negative)->report__newly_unsatisfied(state);
-//                 negation_of_this = Action_Literal__Pointer(*negative); 
-            }
-        }
-    }
-    
-    auto listeners = get__traversable__listeners();
-    for(auto listener = listeners.begin()
-            ; listener != listeners.end()
-            ; listener++){
-        INTERACTIVE_VERBOSER(true, 7002, "Just SATISFIED literal  :: "<<*this<<std::endl
-                             <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
-        (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
-    }
-    
-    
-    /*Is a positive symbol.*/
-    if(!get__sign()){
-
-        
-        auto listeners = get__traversable__listeners();
-        for(auto listener = listeners.begin()
-                ; listener != listeners.end()
-                ; listener++){
-            INTERACTIVE_VERBOSER(true, 7002, "Just UNSATISFIED literal  :: "<<*this<<std::endl
-                                 <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
-            (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
-        }
-        
-        for(auto negative = negatives->begin()
-                ; negative != negatives->end()
-                ; negative++){
-            if(get__action_symbol() != (*negative)->get__action_symbol()){
-                (*negative)->report__newly_unsatisfied(state);
-            } // else {
-//                 (*negative)->report__newly_unsatisfied(state);
-//                 negation_of_this = Action_Literal__Pointer(*negative); 
-//             }
-        }
-    }
+    assert(0);
 }
 
 void Action_Literal::report__newly_unsatisfied(State& state) const
 {
-    auto listeners = get__traversable__listeners();
-    for(auto listener = listeners.begin()
-            ; listener != listeners.end()
-            ; listener++){
-        INTERACTIVE_VERBOSER(true, 7002, "Just UNSATISFIED literal  :: "<<*this<<std::endl
-                             <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
-        (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
-    }
+    assert(0);
 }
 
             
@@ -115,12 +143,6 @@ uint Action_Literal::get__action_symbol() const
 bool Action_Literal::get__sign() const
 {
     return std::tr1::get<1>(contents());
-}
-
-            
-void Action_Literal::configure__negatives(CXX__PTR_ANNOTATION(List__Action_Literals)& in)
-{
-    negatives = in;
 }
 
 std::ostream& Action_Literal::operator<<(std::ostream&o) const

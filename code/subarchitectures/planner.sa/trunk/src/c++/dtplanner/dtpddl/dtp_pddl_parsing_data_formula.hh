@@ -497,3 +497,11 @@ namespace Planning
 
 
 #endif
+
+/* They proved that if you quit smoking, it will prolong your
+ * life. What they haven't proved is that a prolonged life is a good
+ * thing. I haven't seen the stats on that yet. ... I'm available for
+ * children's parties, by the way.
+ *
+ * -- Bill Hicks, Ribaldrous Comedian from the USA,  1961-94.
+ */

@@ -320,7 +320,7 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
                 /*An added listener could still be rejected at this
                  * point, if it was added on a previous run.*/
                 if(state_Transformation
-                   ->add__listener(*listener)){
+                   ->add__sleeper(*listener)/*add__listener(*listener)*/){
                     INTERACTIVE_VERBOSER(true, 3110, "successfully added listener."<<std::endl)
                 } else {
                     WARNING("Failed adding listener :: "<<*listener<<std::endl
@@ -357,7 +357,7 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             
             assert(preconditions.size());
 
-            if(list__Listeners.size()){
+            if(list__Listeners.size()){/*If this action has a parent.*/
                 assert(listeners.size());
                 auto& set_of_listeners = listeners.top();
 
@@ -679,7 +679,7 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
                  , new__action_proposition);
 
             
-            /* Any of he subactions that this might trigger. */
+            /* Any of the subactions that this might trigger. */
             auto& _list__Listeners = list__Listeners.top();
             for(auto listener = _list__Listeners.begin()
                     ; listener != _list__Listeners.end()
@@ -689,7 +689,9 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
                  * point, if it was added on a previous run.*/
                 if(probabilistic_state_Transformation.
                    cxx_get<Planning::Probabilistic_State_Transformation>()
-                   ->add__listener(*listener)){
+                   ->add__sleeper(*listener)
+//                    ->add__listener(*listener)
+                   ){
                     INTERACTIVE_VERBOSER(true, 3110, "successfully added listener."<<std::endl)
                 } else {
                     WARNING("Failed adding listener :: "<<*listener<<std::endl
@@ -708,7 +710,8 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
                 auto deref__st = action.cxx_deref_get<basic_type>();
                 if(probabilistic_state_Transformation.
                    cxx_get<Planning::Probabilistic_State_Transformation>()
-                   ->add__listener(deref__st)){
+                   ->add__sleeper(deref__st)// add__listener(deref__st)
+                   ){
                     INTERACTIVE_VERBOSER(true, 3110, "successfully added listener."<<std::endl)
                 } else {
                     WARNING("Failed adding listener :: "<<action<<std::endl

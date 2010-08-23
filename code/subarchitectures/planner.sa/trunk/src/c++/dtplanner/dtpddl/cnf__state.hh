@@ -37,6 +37,7 @@
 
 #include "boolean__satisfaction_status_management.hh"
 #include "unsigned_integer__status_management.hh"
+#include "action_basics.hh"
 
 namespace Planning
 {
@@ -70,9 +71,13 @@ namespace Planning
         Unsigned_Integer__Satisfaction_Status_Management& get__action_clauses__count_status();
         const Boolean__Satisfaction_Status_Management& get__action_clauses__satisfaction_status() const;
         Boolean__Satisfaction_Status_Management& get__action_clauses__satisfaction_status();
-
-
+        
+        
+        void set__action_Literal(Action_Literal*);
+        Action_Literal* get__action_Literal();
     private:
+        Action_Literal* action_Literal;
+//         int last_action_executed;
         
         /* Tracks the number of clauses satisfied in each CNF -- Where
          * this is not a starting state, the values should be
