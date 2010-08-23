@@ -366,15 +366,16 @@ public class PlaceMonitor extends ManagedComponent {
 		String category = "dora:" + ComaHelper.firstCap(((SpatialProperties.StringValue)_objProp.mapValue).value);
 		String placeIns = "dora:place"+_objProp.placeId;
 		String inRel = "dora:in";
+		String containsRel = "dora:contains";
 		
 		log("createObject of category " + category + " in place " + placeIns + " called.");
 		
 		// check whether the given place already contains an instance of the given category
-		String [] objsInPlace = m_comareasoner.getRelatedInstancesByRelation(placeIns, inRel);
+		String [] objsInPlace = m_comareasoner.getRelatedInstancesByRelation(placeIns, containsRel);
 		log("there are already " + objsInPlace.length +" objs in this place");
 		for (String obj : objsInPlace) {
 		    log("check objsInPlace: " + obj);
-			if (obj.startsWith(":")) obj = "dora:" + obj;
+			if (obj.startsWith(":")) obj = "dora" + obj;
 			if (m_comareasoner.isInstanceOf(obj, category)) {
 				log("object of the given category already exists in the given place - doing nothing else.");
 				return false;
