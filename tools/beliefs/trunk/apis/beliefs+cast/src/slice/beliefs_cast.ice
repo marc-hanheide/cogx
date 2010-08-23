@@ -98,6 +98,22 @@ class CASTBeliefHistory extends AbstractBeliefHistory{
 }; // end history
 
 
+
+// ================================
+// MODEL STATUS FOR GEORGE
+// ================================
+
+module modelstatus {
+
+dictionary<string,logicalcontent::dFormula> ModelContent;
+
+class CurrentModelStatus extends epobject::EpistemicObject {
+      string id;
+      ModelContent status;
+};
+
+};
+
 // ================================
 // END SLICE
 // ================================
