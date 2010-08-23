@@ -50,12 +50,14 @@ namespace Planning
         _Satisfaction_Listener<enum_types::probabilistic_observation
                                , Formula::Observational_Proposition>
     {
+        PRINTING;
     public:
         const Formula::Observational_Proposition& get__identifier() const;
 
         std::vector<Planning::Observational_State*> operator()(Planning::Observational_State*
                                                                , Planning::State*) const;
         
+        void forced_wake(State&) const;
         void report__newly_satisfied(State&) const;
         void report__newly_unsatisfied(State&) const;
     };

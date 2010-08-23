@@ -39,6 +39,9 @@
 #include "boolean_state.hh"
 #include "float_state.hh"
 
+#include "state_basics.hh"
+#include "observation_basics.hh"
+
 #include "expandable.hh"
 #include "probability_during_expansion__state.hh"
 
@@ -54,8 +57,9 @@ namespace Planning
         std::ostream& operator<<(ostream&) const;
             
         Markov_Decision_Process_State(uint propositions_count = 0, uint function_count = 0);
-        Markov_Decision_Process_State(const Markov_Decision_Process_State&);
-        Markov_Decision_Process_State& operator=(const Markov_Decision_Process_State&);
+        
+//         Markov_Decision_Process_State(const Markov_Decision_Process_State&);
+        Markov_Decision_Process_State& operator=(const Markov_Decision_Process_State&) = delete;
 
         uint get__number_of_atoms() const;
         uint get__number_of_int_fluents() const;
@@ -77,9 +81,12 @@ namespace Planning
         int get__int(uint index) const;
         void set__int(uint index, int value);
 
-        typedef std::vector<uint> Successor_Driver;
-        typedef std::vector< std::vector<Markov_Decision_Process_State*> > Successors;
-        typedef std::vector< std::vector<double> > Successor_Probabilities;
+        /*(see \member{value})*/
+        double get__value() const;
+        
+        typedef std::vector<uint> Successor_Driver;/*action indices*/
+        typedef std::vector< std::vector<Markov_Decision_Process_State*> > Successors;/*states*/
+        typedef std::vector< std::vector<double> > Successor_Probabilities;/*their probabilities.*/
         
         /* Interface assumes that all the transitions associated with
          * a given action A are entered before transitions associated
@@ -96,9 +103,34 @@ namespace Planning
         const Successors& get__successors() const;
         const Successor_Probabilities& get__successor_Probabilities() const;
         const Successor_Driver& get__successor_Driver() const;
+
+
+        bool has__considered_observations_under_action(uint action_id) const;
+        void report__considered_observations_under_action(uint action_id);
+        
+        void push__observation(uint action_id, Observational_State* observation, double probability);
+        const std::vector<std::vector<Observational_State*> >& get__observations() const;
+        const std::vector<std::vector<double> >& get__observation_Probabilities() const;
+        const std::vector<uint>& get__observation_Driver() const;
+        
+        /*Get the element index of entry \argument{action_id} in \member{action_to_observation}.*/
+        uint get__action_to_observation__index(uint action_id) const;
+        bool action_to_observation__includes_index(uint action_id) const;
+        
     protected:
+        /* If a number is in this set, then we have already considered
+         * what observations occur when the corresponding action is
+         * executed and we arrive at this state.*/
+        std::set<uint> considered_observations_under_action;
+        
         /*Value of this MDP state.*/
         double value;
+        
+        std::vector<uint> action_to_observation;
+        std::map<uint, uint> mirror__action_to_observation;
+        
+        std::vector<std::vector<Observational_State*> > observation__given_action;
+        std::vector<std::vector<double> > observation_probability__given_action;
         
         
         Successor_Driver successor_Driver;
@@ -114,6 +146,8 @@ namespace Planning
         /* Functions into the reals. */
         Float_State float_State;
     };
+
+    typedef Markov_Decision_Process_State MDP_State;
 }
 
 #endif

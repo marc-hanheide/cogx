@@ -52,7 +52,7 @@
 using namespace Planning;
 // using namespace Planning::Parsing;
 
-#define SATISFY_FALSE_ATOMS(ATOMS_ACCESS, STATE)                        \
+#define SATISFY_FALSE_PROPOSITIONAL_ATOMS(ATOMS_ACCESS, STATE)                        \
     {                                                                   \
         auto literals = ATOMS_ACCESS;                                   \
         for(auto literal = literals.begin()                             \
@@ -74,7 +74,31 @@ using namespace Planning;
         }                                                               \
                                                                         \
     }                                                                   \
-        
+
+
+#define SATISFY_FALSE_ACTION_ATOMS(ATOMS_ACCESS, STATE)                 \
+    {                                                                   \
+        auto literals = ATOMS_ACCESS;                                   \
+        for(auto literal = literals.begin()                             \
+                ; literal != literals.end()                             \
+                ; literal++){                                           \
+                                                                        \
+            /*Is the literal a negative atom?*/                         \
+            if((*literal)->get__sign()){                                \
+                INTERACTIVE_VERBOSER(true, 8002, "Set literal "         \
+                                     <<*literal                         \
+                                     <<" to satisfied in starting"      \
+                                     << "state."<<std::endl);           \
+                                                                        \
+                /* Must have been unsatisfied in the starting state.*/  \
+                (*literal)->starting__newly_satisfied(STATE);           \
+                                                                        \
+            }                                                           \
+                                                                        \
+        }                                                               \
+                                                                        \
+    }                                                                   \
+
 
 
 void Solver::generate_starting_state()
@@ -133,8 +157,7 @@ void Solver::generate_starting_state()
                               , problem_Grounding->get__observations().size());
     
     
-    SATISFY_FALSE_ATOMS(problem_Grounding->get__literals(), *starting_state);
-    SATISFY_FALSE_ATOMS(problem_Grounding->get__action_Literals(), *starting_state);
+    SATISFY_FALSE_PROPOSITIONAL_ATOMS(problem_Grounding->get__literals(), *starting_state);
     
     starting_state->add__optional_transformation(
         problem_Grounding->get__executable_starting_states_generator().get());
@@ -163,9 +186,24 @@ void Solver::generate_starting_state()
                != (*state)->get__optional_transformations().end());
         (*state)->remove__optional_transformation(
             problem_Grounding->get__executable_starting_states_generator().get());
-        assert( 0 == (*state)->count__observations() ) ;
+
+//         Observational_State* new_observation
+//             = new Observational_State(problem_Grounding->get__perceptual_Propositions().size());
+        (*state)->set__observational_state_during_expansion(0);//new_observation);
+        
+        /*Initialise action literals for starting states.*/
+        SATISFY_FALSE_ACTION_ATOMS(problem_Grounding->get__action_Literals(), const_cast<State&>(**state));
+//         (*state)->reset__observations();
+//         (*state)->reset__probabilistic_observations();
+
+//         delete (*state)->get__observational_state_during_expansion(new_observation);
+//         (*state)->set__observational_state_during_expansion(0);
+        
+        
+//         assert( 0 == (*state)->count__observations() ) ;
+        INTERACTIVE_VERBOSER(true, 9076, "A starting state is :: "
+                             <<**state<<std::endl);
     }
-    
     
     assert(starting_state->get__successor_Driver().size() == 1);
     auto successor_Probabilities = *starting_state->get__successor_Probabilities().begin();
@@ -177,7 +215,7 @@ void Solver::generate_starting_state()
         auto state = successors[i];
         auto probability = successor_Probabilities[i];
         
-        INTERACTIVE_VERBOSER(true, 8059, "A starting state is :: "
+        INTERACTIVE_VERBOSER(true, 9076, "A starting state is :: "
                              <<*state<<std::endl);
         
         starting_belief_state
@@ -187,7 +225,6 @@ void Solver::generate_starting_state()
     
     belief_state__space.insert(starting_belief_state);
     expansion_queue.push(starting_belief_state);
-    INTERACTIVE_VERBOSER(true, 8061, "Starting belief state is :: "
+    INTERACTIVE_VERBOSER(true, 9076, "Starting belief state is :: "
                          <<(*starting_belief_state)<<std::endl);
 }
-

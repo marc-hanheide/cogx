@@ -34,6 +34,8 @@
 
 #include "cnf__state.hh"
 
+// #include "action__literal.hh"
+
 using namespace Planning;
 
 CNF__State::CNF__State(uint formulae_count
@@ -47,11 +49,35 @@ CNF__State::CNF__State(uint formulae_count
      action_cnfs__count_status(action_formulae_count),
      action_cnfs__satisfaction_status(action_formulae_count),
      action_clauses__count_status(action_disjunctions_count),
-     action_clauses__satisfaction_status(action_disjunctions_count)// ,
+     action_clauses__satisfaction_status(action_disjunctions_count),
+     action_Literal(0)// ,
+//      last_action_executed(-1)// ,
 //      literals__satisfaction_status(literals_count)
 {
 }
 
+
+void CNF__State::set__action_Literal(Action_Literal* in)
+{
+    action_Literal = in;
+}
+
+Action_Literal* CNF__State::get__action_Literal()
+{
+    return  action_Literal;
+}
+
+// void sCNF__State::et__last_action_executed(uint in)
+// {
+//     assert(in >= 0);
+    
+//     last_action_executed = in;
+// }
+
+// int CNF__State::set__last_action_executed()
+// {
+//     return last_action_executed;
+// }
 
 const Unsigned_Integer__Satisfaction_Status_Management& CNF__State::get__action_cnfs__count_status() const
 {

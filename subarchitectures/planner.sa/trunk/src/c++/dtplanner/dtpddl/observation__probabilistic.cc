@@ -45,25 +45,31 @@ const Formula::Observational_Proposition& Probabilistic_Observation::get__identi
     return std::tr1::get<0>(contents());
 }
 
-std::vector<Planning::Observational_State*> Probabilistic_Observation::operator()
+std::vector<Planning::Observational_State*> Probabilistic_Observation::
+operator()
     (Planning::Observational_State* input,
      Planning::State* state) const
 {
     
-    auto list__Listeners = get__traversable__listeners();
-    std::vector<Planning::Observational_State*> result(list__Listeners.size());
+    auto local_list__Sleepers = get__traversable__sleepers();
+    auto local_list__Listeners = get__traversable__listeners();
+    std::vector<Planning::Observational_State*> result(local_list__Sleepers.size());
 
+    assert(local_list__Sleepers.size());
+    assert(!local_list__Listeners.size());
+    
     uint index = 0;
-    for(auto _listener = list__Listeners.begin()
-            ; _listener != list__Listeners.end()
+    for(auto _listener = local_list__Sleepers.begin()
+            ; _listener != local_list__Sleepers.end()
             ; _listener++, index++){
         auto listener = *_listener;
         
-        Planning::Observational_State* new_observation = (index == (list__Listeners.size() - 1))
+        Planning::Observational_State* new_observation = (index == (local_list__Sleepers.size() - 1))
             ?input
             :(new Planning::Observational_State(*input));
         
-        listener.cxx_get<Satisfaction_Listener>()->report__newly_satisfied(*state);
+        state->set__observational_state_during_expansion(new_observation);
+        listener.cxx_get<Satisfaction_Listener>()->wake(*state);
         
         result[index] = new_observation;
     }
@@ -71,20 +77,45 @@ std::vector<Planning::Observational_State*> Probabilistic_Observation::operator(
     return std::move<>(result);
 }
 
-        
+void Probabilistic_Observation::forced_wake(State& state) const
+{
+    state.get__observational_state_during_expansion()
+        ->push__probabilistic_observation
+        (this);
+}
+
+
 void Probabilistic_Observation::report__newly_satisfied(State& state) const
 {
-    state.push__probabilistic_observation
-        (this);
+    assert(0);
+//     state.push__probabilistic_observation
+//         (this);
 }
 
 void Probabilistic_Observation::report__newly_unsatisfied(State&) const
 {
+    assert(0);
     /* NA -- A probabilistic transformation should only be activated
      * once during the computation of successor states under operator
      * execution. Therefore, its truth status is not maintained in
      * planning states.*/
 }
+
+std::ostream& Probabilistic_Observation::operator<<(std::ostream&o) const
+{
+    o<<get__identifier()<<std::endl;
+    
+    auto& listeners = get__traversable__listeners();
+    for(auto listener = listeners.begin()
+            ; listener != listeners.end()
+            ; listener++){
+        o<<*listener<<std::endl;
+    }
+    
+    return o;
+}
+
+
 
 
 

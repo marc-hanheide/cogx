@@ -64,6 +64,8 @@ problem_grounding.cc
 problem_grounding__observations.cc
 solver.cc
 solver__expand_belief.cc
+solver__expand_observation.cc
+solver__expand_state.cc
 solver__starting_state.cc
 state_formula.cc
 state_formula__conjunctive_normal_form_formula.cc

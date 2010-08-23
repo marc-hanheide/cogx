@@ -44,11 +44,11 @@ namespace Planning
     {
     public:
         Planning_CNF__to__Action_CNF(basic_type::Runtime_Thread
-                                    , Action_Literals&
-                                    , Action_Disjunctive_Clauses& 
-                                    , Action_Conjunctive_Normal_Form_Formulae&
-                                    , CXX__PTR_ANNOTATION(List__Action_Literals)&,
-                                     const std::map<Formula::Action_Proposition
+                                     , Action_Literals&
+                                     , Action_Disjunctive_Clauses& 
+                                     , Action_Conjunctive_Normal_Form_Formulae&
+//                                      , CXX__PTR_ANNOTATION(List__Action_Literals)&
+                                     , const std::map<Formula::Action_Proposition
                                      , State_Transformation__Pointer>&);
         
         DECLARATION__UNARY_VISITOR(basic_type);
@@ -70,7 +70,7 @@ namespace Planning
         List__Action_Disjunctive_Clauses disjunctions;
         Action_Disjunctive_Clauses disjunctions__as_set;
 
-        CXX__PTR_ANNOTATION(List__Action_Literals)& problem__negative_literals;
+//         CXX__PTR_ANNOTATION(List__Action_Literals)& problem__negative_literals;
         
         const std::map<Formula::Action_Proposition
                        , State_Transformation__Pointer>& action_symbol__to__state_transformation;

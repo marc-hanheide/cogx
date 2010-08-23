@@ -93,26 +93,28 @@ bool Literal::is_satisfied(const State& state) const
 
 void Literal::report__newly_satisfied(State& state) const
 {
-    auto listeners = get__traversable__listeners();
-    for(auto listener = listeners.begin()
-            ; listener != listeners.end()
-            ; listener++){
-        INTERACTIVE_VERBOSER(true, 7002, "Just SATISFIED literal  :: "<<*this<<std::endl
-                             <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
-        (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
-    }
+    satisfy_listeners(state);
+//     auto listeners = get__traversable__listeners();
+//     for(auto listener = listeners.begin()
+//             ; listener != listeners.end()
+//             ; listener++){
+//         INTERACTIVE_VERBOSER(true, 7002, "Just SATISFIED literal  :: "<<*this<<std::endl
+//                              <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
+//         (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
+//     }
 }
 
 void Literal::report__newly_unsatisfied(State& state) const
 {
-    auto listeners = get__traversable__listeners();
-    for(auto listener = listeners.begin()
-            ; listener != listeners.end()
-            ; listener++){
-        INTERACTIVE_VERBOSER(true, 7002, "Just UNSATISFIED literal  :: "<<*this<<std::endl
-                             <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
-        (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
-    }
+    unsatisfy_listeners(state);
+//     auto listeners = get__traversable__listeners();
+//     for(auto listener = listeners.begin()
+//             ; listener != listeners.end()
+//             ; listener++){
+//         INTERACTIVE_VERBOSER(true, 7002, "Just UNSATISFIED literal  :: "<<*this<<std::endl
+//                              <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
+//         (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
+//     }
 }
 
 

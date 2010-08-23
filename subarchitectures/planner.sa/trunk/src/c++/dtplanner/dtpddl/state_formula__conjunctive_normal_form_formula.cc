@@ -124,12 +124,15 @@ void Conjunctive_Normal_Form_Formula::report__newly_satisfied_clause(State& stat
     if(get__disjunctive_clauses().size() == get__number_of_satisfied_clauses(state)){
         set__satisfied(state);
         
-        auto listeners = get__traversable__listeners();
-        for(auto listener = listeners.begin()
-                ; listener != listeners.end()
-                ; listener++){
-            (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
-        }
+        satisfy_listeners(state);
+//         auto listeners = get__traversable__listeners();
+//         for(auto listener = listeners.begin()
+//                 ; listener != listeners.end()
+//                 ; listener++){
+//             INTERACTIVE_VERBOSER(true, 9061, "Just SATISFIED clause  :: "<<*this<<std::endl
+//                                  <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
+//             (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
+//         }
     }   
 }
 
@@ -139,13 +142,15 @@ void Conjunctive_Normal_Form_Formula::report__newly_unsatisfied_clause(State& st
 
     if(is_satisfied(state)){
         set__unsatisfied(state);
-        
-        auto listeners = get__traversable__listeners();
-        for(auto listener = listeners.begin()
-                ; listener != listeners.end()
-                ; listener++){
-            (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
-        }
+        unsatisfy_listeners(state);
+//         auto listeners = get__traversable__listeners();
+//         for(auto listener = listeners.begin()
+//                 ; listener != listeners.end()
+//                 ; listener++){
+//             INTERACTIVE_VERBOSER(true, 9061, "Just UNSATISFIED clause  :: "<<*this<<std::endl
+//                                  <<"Killing listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
+//             (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
+//         }
     }
 }
 

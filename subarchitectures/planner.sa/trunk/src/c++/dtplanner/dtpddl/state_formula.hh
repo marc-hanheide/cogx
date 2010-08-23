@@ -47,19 +47,56 @@ namespace Planning
         class Satisfaction_Listener
         {
         public:
+            Satisfaction_Listener(bool = false);
             virtual ~Satisfaction_Listener();/*EMPTY*/
-            virtual void report__newly_satisfied(State&) const = 0;
-            virtual void report__newly_unsatisfied(State&) const = 0;
 
+
+            void satisfy_listeners(State& state) const;
+            void unsatisfy_listeners(State& state) const;
+            void wake_sleepers(State& state) const;
+            
+            void wake_sleepers_that_require_forcing(State& state) const;
+            bool does_require_explicit_forced_waking() const;
+
+            
+            virtual void forced_wake(State&) const {assert(0);};
+            
+            void wake(State&in) const {if(!requires_explicit_forced_waking){forced_wake(in);}};
+            
+            /* Returns false if the \argument{Listener} is already
+             * registered.*/
+            bool add__sleeper(Satisfaction_Listener__Pointer&);
+            
+            const List__Listeners& get__traversable__sleepers() const ;
+            const Listeners& get__searchable__sleepers() const ;
+            
+            
+            
+            
             /* Returns false if the \argument{Listener} is already
              * registered.*/
             bool add__listener(Satisfaction_Listener__Pointer&);
             
+            virtual void report__newly_satisfied(State&) const = 0;
+            virtual void report__newly_unsatisfied(State&) const = 0;
+
             const List__Listeners& get__traversable__listeners() const ;
             const Listeners& get__searchable__listeners() const ;
+        protected:
+            /* Does a non-Satisfaction_Listener object have to wake this listener?*/
+            bool requires_explicit_forced_waking;
+            
         private:
             List__Listeners list__Listeners;
             Listeners listeners;
+            
+            /* A sleeper is an object whose satisfaction is not
+             * altered by this, however whose relevance only applies
+             * when this is satisfied.*/
+            List__Listeners list__Sleepers;
+            Listeners sleepers;
+
+            
         };
         
         template<int type_name, typename... T>
@@ -67,6 +104,9 @@ namespace Planning
                                        public Satisfaction_Listener
         {
         public:
+            _Satisfaction_Listener(bool in = false)
+                :Satisfaction_Listener(in) {}
+            
             typedef type_wrapper<type_name, List__Listeners, Listeners, T...> Parent;
         };
         

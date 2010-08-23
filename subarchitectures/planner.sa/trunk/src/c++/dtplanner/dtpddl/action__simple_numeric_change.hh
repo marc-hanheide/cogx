@@ -56,11 +56,12 @@ namespace Planning
         Range_Type get__modification_value() const;
         int get__modification_type() const;
         
+        void forced_wake(State&) const;
         
         State* operator()(State*) const;
         
-        void report__newly_satisfied(State&) const;//{};
-        void report__newly_unsatisfied(State&) const;//{};
+        void report__newly_satisfied(State&) const{assert(0);};
+        void report__newly_unsatisfied(State&) const{assert(0);};
     };
     
     class Simple_Int_Transformation

@@ -36,31 +36,69 @@
 #ifndef PLANNING_OBSERVATION_HH
 #define PLANNING_OBSERVATION_HH
 
+#include "observation_basics.hh"
+
 #include "boolean_state.hh"
 #include "probability_during_expansion__state.hh"
 
 namespace Planning
 {
-    
-    class Observational_State : public Boolean_State, public Probability_During_Expansion_State
+
+    class Observational_State :
+        public Boolean_State,
+        public Probability_During_Expansion_State
     {
     public:
         Observational_State(uint number_of_perceptual_propositions = 0);
 
+        void take__observations__from( Observational_State*);
+        void reset__observations();
+        uint count__observations() const;
+        std::stack<const Observation*>& get__observations();
+        const Observation* pop__observation();
+        void push__observation(const Observation*);
         
-        uint get__id() const;
-        void set__id(uint);
+        void take__probabilistic_observations__from( Observational_State*);
+        void reset__probabilistic_observations();
+        std::stack<const Probabilistic_Observation*>& get__probabilistic_observations();
+        uint count__probabilistic_observations() const;
+        const Probabilistic_Observation* pop__probabilistic_observation();
+        void push__probabilistic_observation(const Probabilistic_Observation*);
+        
     private:
-        /* Observations ID.*/
-        uint id;
+        
+        void replace__observations(std::stack<const Observation*>&);
+        void replace__probabilistic_observations(std::stack<const Probabilistic_Observation*>&);
+        
+        /*Pending observations. All such observations are compulsory.*/
+        std::stack<const Observation*> observations;
+        
+        /*Pending probabilistic observations. All such observations are compulsory.*/
+        std::stack<const Probabilistic_Observation*> probabilistic_observations;
+
+
+        
+        
+//         uint get__id() const;
+//         void set__id(uint);
+//     private:
+//         /* Observations ID.*/
+//         uint id;
     };
 
+    std::size_t hash_value(const Observational_State&);
     
-    /*State pointers.*/
+    /*Observaton pointers.*/
     typedef std::tr1::
     unordered_set<Observational_State*
                   , /*state_hash*/deref_hash<Observational_State>
                   ,  deref_equal_to<Observational_State> > Set_Of_Observational_State_Pointers;
+
+    /*Observaton pointers.*/
+    typedef std::set<Observational_State*
+                     ,  deref_less<Observational_State> > 
+    Non_Hashed_Observational_State_Pointers;
+    
 }
 
 #endif

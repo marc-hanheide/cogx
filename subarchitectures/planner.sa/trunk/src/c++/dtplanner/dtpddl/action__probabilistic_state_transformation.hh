@@ -48,6 +48,8 @@ namespace Planning
     public:
         const Formula::Action_Proposition& get__identifier() const;
 
+        void forced_wake(State&) const;
+        
         std::vector<State*> operator()(State*) const;
         
         void report__newly_satisfied(State&) const;

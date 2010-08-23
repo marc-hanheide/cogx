@@ -60,7 +60,7 @@ namespace Planning
                           CXX__PTR_ANNOTATION(Parsing::Domain_Data) domain_Data,
                           const Planning::Constants_Description& constants_Description,
                           const std::map<Type, Constants>& extensions_of_types);
-
+        
         void ground_actions();
         void ground_derived_predicates();
         void ground_derived_perceptions();
@@ -145,7 +145,7 @@ namespace Planning
         Action_Literals action_Literals;
         Action_Disjunctive_Clauses action_Disjunctive_Clauses;
         Action_Conjunctive_Normal_Form_Formulae action_Conjunctive_Normal_Form_Formulae;
-        CXX__PTR_ANNOTATION(List__Action_Literals) negative_literals;
+//         CXX__PTR_ANNOTATION(List__Action_Literals) negative_literals;
 
         
         std::map<Formula::Action_Proposition

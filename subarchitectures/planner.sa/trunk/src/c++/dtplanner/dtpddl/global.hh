@@ -259,7 +259,18 @@ template<typename T>
 struct deref_equal_to
 {
 public:
-    bool operator()(const T* t1, const T* t2) const { return *t1 == *t2;};
+    bool operator()(const T* t1, const T* t2) const {
+
+//         std::cerr<<"Testing equality of :: "<<std::endl
+//                  <<*t1<<" "<<hash_value(*t1)<<std::endl
+//                  <<*t2<<" "<<hash_value(*t2)<<std::endl;
+//         *t1 == *t2;
+//         {char ch;std::cin>>ch;};
+//         exit(0);
+        
+        
+        return (*t1 == *t2);
+    };
 };
 
 /*Adaptable binary predicate along the lines of \class{std::less}

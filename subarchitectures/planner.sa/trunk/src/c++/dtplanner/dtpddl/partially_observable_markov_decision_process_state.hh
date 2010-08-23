@@ -55,17 +55,20 @@ namespace std
 namespace Planning
 {
     
-    class Partially_Observable_Markov_Decision_Process_State;
+//     class Partially_Observable_Markov_Decision_Process_State;
     
-    inline std::size_t hash_value(const Planning::Partially_Observable_Markov_Decision_Process_State& in)
-    {
-        return std::hash_value(in);
-    }
+    std::size_t hash_value(const Planning::Partially_Observable_Markov_Decision_Process_State& in);
 
     class Partially_Observable_Markov_Decision_Process_State :
         public Expandable
     {
     public:
+        Partially_Observable_Markov_Decision_Process_State();
+        Partially_Observable_Markov_Decision_Process_State(const Partially_Observable_Markov_Decision_Process_State&) = delete;
+
+        Partially_Observable_Markov_Decision_Process_State&
+        operator=(const Partially_Observable_Markov_Decision_Process_State&) = delete;
+        
         typedef Markov_Decision_Process_State MDP_State;
         typedef Partially_Observable_Markov_Decision_Process_State POMDP_State;
 
@@ -74,37 +77,44 @@ namespace Planning
         
         typedef std::map< MDP_State*, double> Searchable_Belief_State;
         
+        typedef std::map<Observational_State*, Searchable_Belief_State> Observation_to_Belief;
+        typedef std::map<uint,  Observation_to_Belief> Action__to__Observation_to_Belief;
+
+        
         bool operator==(const POMDP_State&) const;
         bool operator<(const POMDP_State&) const;
 	std::size_t hash_value() const;
 
+        double get__expected_value() const;
+        
         void add__belief_atom( MDP_State*, double);
         
         const Belief_State& get__belief_state() const;
         
+        void push__successor(uint action_index
+                             , Observational_State*
+                             , POMDP_State* );
     private:
         std::vector<uint> action_based_successor_driver;
 
         /* For each \member{action_based_successor_driver}, we store
          * the observation based successor drivers.*/
-        std::vector< std::vector<uint> > observation_based_successor_driver;
+        std::vector< std::vector<Observational_State*> > observation_based_successor_driver;
         
         std::vector<
             std::vector<
                 std::vector<
                     Partially_Observable_Markov_Decision_Process_State*> > > successors;
         
-        std::vector< 
-            std::vector<
-                std::vector<
-                    double> > >  successor_probability;
-
-        
         /*Expected value of this POMDP state.*/
         double expected_value;
 
         Belief_State belief_State;
     };
+
+
+    
+    
     /*State pointers.*/
     typedef std::tr1::
     unordered_set<Partially_Observable_Markov_Decision_Process_State*
@@ -122,3 +132,16 @@ namespace std
 
 
 #endif
+
+/* Bama: Its like when I'm right I'm right, when I'm wrong I could
+ *       been right, so I'm still right 'cause I could'a' been
+ *       wrong.. you know.. and I'm sorry cause I could be wrong right
+ *       now; I could be wrong.. but if I'm right...
+ *
+ * Marcus: I told you don't shoot nobody; And the first thing you do
+ *         when we walk in this motherfucker is shoot somebody!
+ *
+ * Bama: Cause that's what I do.. I kill motherfuckers!.. you know that.
+ *
+ * -- Dialogue from the 2005 film "Get Rich or Die Tryin'".
+ */

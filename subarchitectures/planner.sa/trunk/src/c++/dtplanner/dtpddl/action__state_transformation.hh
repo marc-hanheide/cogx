@@ -116,6 +116,8 @@ namespace Planning
          * transformation object.*/
         void flip(State&) const;
         
+        void forced_wake(State&) const;
+        
         bool is_satisfied(const State&) const;
             
         uint get__level_of_satisfaction(State&) const;

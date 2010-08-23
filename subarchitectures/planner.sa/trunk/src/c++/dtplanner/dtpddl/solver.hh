@@ -58,11 +58,48 @@ namespace Planning
 
         void expand_belief_state( POMDP_State*);
         bool expand_belief_state_space();
+        void add_entry(POMDP_State::Action__to__Observation_to_Belief&
+                       , uint 
+                       , Planning::Observational_State*
+                       , Planning::MDP_State* 
+                       , double);
+        void press__belief_transitions(POMDP_State*,
+                                       POMDP_State::Action__to__Observation_to_Belief&);
 
+        /* \argument{Observational_State} is being generated, action
+         * \argument{ID_TYPE} was executed, and led to
+         * \argument{State}.
+         *
+         * ASSUME: \argument{Observational_State} is allocated and thus
+         * non-null*/
+        std::vector<Planning::Observational_State*>
+        expand_observations(Observational_State* , ID_TYPE , State* );
+        
+        /* Supposing action \argument{ID_TYPE} was executed, and led
+         * to \argument{State}, we add the possibile observations that
+         * can be seen at \argument{State}.*/
+        void expand_observations(const State_Transformation*, State* );
+        
+        /* Compute/generate all the successors and executions
+         * probabilities for action \argument{State_Transformation}.*/
+        std::vector<Planning::State*> expand(Planning::State* ,
+                                             const State_Transformation*);
+        
+        /* Complete expansion of \argument{State} without regard to
+         * \member{State::applicable_optional_transformations}.*/
+        std::vector<Planning::State*> expand(Planning::State*);
+
+        /* Compute/generate all the successors, corresponding actions,
+         * and executions probabilities. */
+        void expand_optional_transformations(Planning::State*);
+        void expand_optional_transformation(Planning::State*, const State_Transformation*);
+
+        
+        
         std::queue<Planning::POMDP_State*> expansion_queue;
         Planning::Set_Of_State_Pointers state_space;
         Planning::Set_Of_POMDP_State_Pointers belief_state__space;
-
+        Planning::Set_Of_Observational_State_Pointers observation__space;
         
         /* MUST CALL THIS member BEFORE ANY SOLVING CAN OCCUR!
          *
@@ -81,23 +118,6 @@ namespace Planning
 
         /* \result is FALSE is the state has already been discovered. */
         State& report__state(State&);//{UNRECOVERABLE_ERROR("unimplemented");};
-
-
-        
-        /* Compute/generate all the successors and executions
-         * probabilities for action \argument{State_Transformation}.*/
-        std::vector<Planning::State*> expand(Planning::State* ,
-                                             const State_Transformation*);
-        
-        /* Complete expansion of \argument{State} without regard to
-         * \member{State::applicable_optional_transformations}.*/
-        std::vector<Planning::State*> expand(Planning::State*);
-
-        /* Compute/generate all the successors, corresponding actions,
-         * and executions probabilities. */
-        void expand_optional_transformations(Planning::State*);
-        void expand_optional_transformation(Planning::State*, const State_Transformation*);
-
         
         
         const std::map<Type, Constants>& get__extensions_of_types() const;
