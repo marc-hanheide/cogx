@@ -48,6 +48,17 @@ namespace spatial {
  */
 class ObjectRelationManager : public cast::ManagedComponent
 {
+  private:
+    class RelationServer: public FrontierInterface::RelationInterface {
+      virtual FrontierInterface::StringSeq 
+	getObjectRelationProbabilities(const string &object);
+
+      ObjectRelationManager *m_pOwner;
+      RelationServer(ObjectRelationManager *owner) : m_pOwner(owner)
+      {}
+      friend class ObjectRelationManager;
+    };
+    friend class RelationServer;
 public:
 
   ObjectRelationManager ();
@@ -144,9 +155,24 @@ protected:
   void addTrackerCommand(VisionData::TrackingCommandType cmd, 
       std::string label);
 
+  vector<string> computeMarginalDistribution(string object);
+  double probabilityOfConfig(int *roomTypeVal, int *objectInRoomVal,
+      int *objectInObjectVal, int *objectOnObjectVal, int *objectDirectlyOnObjectVal);
+
   ptz::PTZInterfacePrx m_ptzInterface;
 
   DensitySampler m_sampler;
+
+  // Object relation hierarchy items
+  vector<string> hierarchyObjects; //Ordered list of objects regarded. Lower numbers
+  				//are landmarks for higher numbers.
+  int nRooms;
+  int nRoomCategories;
+  int nObjects;
+  vector<double> roomCategoryDefault; //index = roomID * nRoomCategories + catID
+  vector<double> objectInRoomDefault; //index = objectID * nRoomCategories + catID
+  vector<double> objectInObjectDefault; //index = trajectorID * nObjects + landmarkID
+  vector<double> objectOnObjectDefault; //index = trajectorID * nObjects + landmarkID
 }; 
 
 std::vector<cogx::Math::Vector3>
