@@ -168,6 +168,14 @@ module FrontierInterface {
     SpatialData::Place getCurrentPlace();
     FrontierInterface::PlaceMembership getPlaceMembership(double x, double y);
   };
+
+  interface RelationInterface {
+    StringSeq getObjectRelationProbabilities(string obj);
+  };
+
+  interface RelationInterfaceAsComponent extends cast::interfaces::CASTComponent {
+    StringSeq getObjectRelationProbabilities(string obj);
+  };
 };
 
 #endif // FRONTIERINTERFACE_ICE
