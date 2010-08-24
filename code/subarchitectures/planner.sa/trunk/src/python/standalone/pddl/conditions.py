@@ -276,6 +276,16 @@ class Conjunction(JunctionCondition):
         neg_parts = [c.negate() for c in self.parts]
         return Disjunction(neg_parts)
 
+    @staticmethod
+    def new(cond):
+        """If cond is not a conjunction, return a new one with cond as an element.
+        Otherwise, return cond unmodified"""
+        if isinstance(cond, Conjunction):
+            return cond
+        if cond is None:
+            return Conjunction([])
+        return Conjunction([cond], cond.get_scope())
+        
 class Disjunction(JunctionCondition):
     """This class represents a disjunction of zero or more Conditions."""
     
