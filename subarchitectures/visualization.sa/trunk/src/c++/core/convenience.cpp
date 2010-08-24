@@ -29,7 +29,7 @@
 #endif
 
 static
-int clock_gettime(int unused, timespec& tsp)
+int clock_gettime(int unused, timespec* tsp)
 {
   static mach_timebase_info_data_t info = {0,0};  
   if (info.denom == 0) mach_timebase_info(&info);
@@ -64,11 +64,6 @@ double fclocks()
 
 long long gethrtime(void)
 {
-
-#ifdef __APPLE__
-	throw std::runtime_error("This needs fixing. see ticket:91 on CogX Trac");
-#else
-
   struct timespec sp;
   int ret;
   long long v;
@@ -83,6 +78,5 @@ long long gethrtime(void)
   v+=sp.tv_nsec;
   return v;
 
-#endif
 }
 
