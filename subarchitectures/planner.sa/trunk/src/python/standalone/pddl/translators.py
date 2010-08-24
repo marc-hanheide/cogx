@@ -22,7 +22,7 @@ class Translator(object):
             entity._original = Translator.get_original(entity)
             original = entity
             
-            entity = translator.translate(entity)
+            entity = translator.translate(entity, **kwargs)
             entity._original = original._original
         #print "total time for %s: %f" % (type(self), time.time()-t0)
             
@@ -377,7 +377,32 @@ class ObjectFluentNormalizer(Translator):
 
         return lit.new_literal(args=new_args, scope=None)
 
-    def translate_condition(self, cond, termdict, scope):
+    def dependent_terms(self, termdict, args):
+        dep = set(a for a in args)
+        subdict = {}
+        done = False
+        while not done:
+            done = True
+            for t, param in termdict.iteritems():
+                if t in subdict:
+                    continue
+                
+                args = set(t.visit(predicates.collect_args_visitor))
+                if dep & args:
+                    subdict[t] = param
+                    dep.add(param)
+                    done = False
+        return subdict
+
+    def create_temp_scope(self, scope, termdict, domain):
+        if not scope:
+            result = Scope([], domain)
+        else:
+            result = Scope([a for a in scope.itervalues()], scope.parent)
+        result.add(termdict.values())
+        return result
+
+    def translate_condition(self, cond, termdict, domain):
         @visitors.copy
         def visitor(cond, results):
             if isinstance(cond, conditions.LiteralCondition):
@@ -403,16 +428,61 @@ class ObjectFluentNormalizer(Translator):
 
                 return self.translate_literal(cond, termdict)
             
+            elif isinstance(cond, conditions.QuantifiedCondition):
+                #Terms that contain quantified variables must be handled inside the quantifier
+                subdict = self.dependent_terms(termdict, cond.args)
+                temp_scope = self.create_temp_scope(cond, termdict, domain)
+                if not subdict:
+                    return cond.copy(new_parts=results, new_scope=temp_scope)
+                
+                args = subdict.values()
+                if isinstance(cond, conditions.ExistentialCondition):
+                    #just add the new terms to the Ex. Quantifier
+                    result = conditions.ExistentialCondition(cond.args+args, conditions.Conjunction.new(results[0]), temp_scope)
+                    conj = result.condition
+                elif isinstance(cond, conditions.UniversalCondition):
+                    #create an Ex. Quantifier inside the Univ. Quantifier
+                    result = conditions.UniversalCondition(cond.args, None, temp_scope)
+                    ex = conditions.ExistentialCondition(args, conditions.Conjunction.new(results[0]), result)
+                    result.condition = ex
+                    conj = ex.condition
+                for t, arg in subdict.iteritems():
+                    conj.parts.append(conditions.LiteralCondition(equals, [t, Term(arg)]))
+                    del termdict[t] #those terms are limited to the current scope. Remove from global termdict
+                return result
+                
         return visitors.visit(cond, visitor)
         
-    def translate_effect(self, eff, termdict, scope):
+    def translate_effect(self, eff, termdict, domain):
         @visitors.copy
         def visitor(eff, results):
             if isinstance(eff, effects.SimpleEffect):
                 return self.translate_literal(eff, termdict)
             elif isinstance(eff, effects.ConditionalEffect):
-                cond = self.translate_condition(eff.condition, termdict, eff.scope)
-                return effects.ConditionalEffect(cond, results[0], eff.scope)
+                temp_scope = self.create_temp_scope(eff.get_scope(), termdict, domain)
+                cond = self.translate_condition(eff.condition, termdict, domain)
+                return effects.ConditionalEffect(cond, results[0], temp_scope)
+            elif isinstance(eff, effects.UniversalEffect):
+                #Terms that contain quantified variables must be handled inside the quantifier
+                temp_scope = self.create_temp_scope(eff, termdict, domain)
+                subdict = self.dependent_terms(termdict, eff.args)
+                if not subdict:
+                    return eff.copy(new_parts=results, new_scope=temp_scope)
+                
+                #Add the terms to the ex. quantifier and add a conditional effect inside
+                args = subdict.values()
+                result = effects.UniversalEffect(eff.args+args, None, temp_scope)
+                if isinstance(results[0], effects.ConditionalEffect):
+                    result.effect = results[0]
+                    result.effect.condition = conditions.Conjunction.new(result.effect.condition)
+                    cond = result.effect.condition
+                else:
+                    cond = conditions.Conjunction([])
+                    result.effect = effects.ConditionalEffect(cond, results[0], scope=result)
+                for t, arg in subdict.iteritems():
+                    cond.parts.append(conditions.LiteralCondition(equals, [t, Term(arg)]))
+                    del termdict[t] #those terms are limited to the current scope. Remove from global termdict
+                return result
 
         return visitors.visit(eff, visitor)
         
@@ -428,10 +498,7 @@ class ObjectFluentNormalizer(Translator):
 
         add_args = []
         if termdict:
-            if pre and not isinstance(pre, conditions.Conjunction):
-                pre = conditions.Conjunction([pre])
-            elif not pre:
-                pre = conditions.Conjunction([])
+            pre = conditions.Conjunction.new(pre)
             for term, param in termdict.iteritems():
                 pre.parts.append(conditions.LiteralCondition(equals, [term, Term(param)]))
                 add_args.append(param)
@@ -552,10 +619,10 @@ class ObjectFluentCompiler(Translator):
                         effs = [effects.UniversalEffect([param], ceffect, None), effects.SimpleEffect(new_pred, term.args[:] + [value])]
                     return effects.ConjunctiveEffect(effs)
             elif isinstance(eff, effects.ConditionalEffect):
-                #evil hack:
-                new_scope = Scope([], eff.scope)
-                new_scope.predicates = scope.predicates
-                cond, _ = self.translate_condition(eff.condition, new_scope)
+                #TODO: take the read facts from a conditional effect into account
+                temp_scope = Scope([], eff.scope)
+                temp_scope.predicates = scope.predicates
+                cond, _ = self.translate_condition(eff.condition, temp_scope)
                 return effects.ConditionalEffect(cond, results[0])
                                                 
 

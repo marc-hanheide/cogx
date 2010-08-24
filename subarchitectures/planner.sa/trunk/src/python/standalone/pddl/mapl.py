@@ -128,6 +128,9 @@ class SenseEffect(object):
             s2 = predicates.FunctionTerm(self.sense.function, newsensor.lookup(self.sense.args))
         return SenseEffect(s2, newsensor)
 
+    def get_scope(self):
+        return self.sensor
+    
     def set_scope(self, new_scope):
         """Set a new scope for this Effect and all its children
 
