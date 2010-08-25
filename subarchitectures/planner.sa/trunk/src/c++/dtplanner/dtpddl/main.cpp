@@ -139,6 +139,23 @@ int main(int argc, char** argv)
 //         std::cout<<*domain->second<<std::endl;
 //     }
     
+    /*Testing exposure Wed Aug 25 15:41:33 BST 2010 ---*/
+    
+    for(auto problem = Planning::Parsing::problems.begin()
+            ; problem != Planning::Parsing::problems.end()
+            ; problem++){
+        Planning::Solver solver(*problem->second);
+        solver.preprocess();
+        solver.expand_belief_state_space();
+        auto current_state = solver.expansion_queue.front();
+        if(!solver.expand_belief_state_space()){
+            UNRECOVERABLE_ERROR("No starting state!"<<std::endl);
+        }
+        
+    }
+    
+    
+    
     for(auto problem = Planning::Parsing::problems.begin()
             ; problem != Planning::Parsing::problems.end()
             ; problem++){
@@ -159,6 +176,7 @@ int main(int argc, char** argv)
         std::cout<<*problem->second->get__domain_Data()<<std::endl;
         std::cout<<*problem->second<<std::endl;
     }
+
 
     
     return 0;

@@ -141,9 +141,12 @@ namespace Planning
             bool is_type__int(const Planning::State_Function_Name&) const;
             bool is_type__double(const Planning::Perceptual_Function_Name&) const;
             bool is_type__int(const Planning::Perceptual_Function_Name&) const;
+            bool is_type__number(const Planning::State_Function_Name&) const;
+            bool is_type__number(const Planning::Perceptual_Function_Name&) const;
         private:
             Planning::Type double__constant;
             Planning::Type int__constant;
+            Planning::Type number__constant;
             std::map<Planning::State_Function_Name
                      , Planning::Types> range_of_state_function;
             std::map<Planning::Perceptual_Function_Name

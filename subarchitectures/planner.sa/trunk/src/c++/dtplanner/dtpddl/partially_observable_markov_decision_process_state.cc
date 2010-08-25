@@ -46,6 +46,41 @@ namespace Planning
 using namespace Planning;
 
 
+Partially_Observable_Markov_Decision_Process_State::POMDP_State*
+Partially_Observable_Markov_Decision_Process_State::
+get__successor(uint action_index
+               , Observational_State* observational_State)
+{
+    QUERY_UNRECOVERABLE_ERROR
+        (!successors.size()
+         , "No successors at belief-state. "<<std::endl);
+    
+    uint index_to_actions = 0;
+    while(action_index != action_based_successor_driver[index_to_actions]){
+        index_to_actions++;
+        QUERY_UNRECOVERABLE_ERROR
+            (index_to_actions >= action_based_successor_driver.size()
+             , "Unregistered action at belief-state. "<<std::endl);
+    }
+    
+    auto& _observation_based_successor_driver
+        = observation_based_successor_driver[index_to_actions];
+
+    uint index_to_observations = 0;
+    while(observational_State !=
+          _observation_based_successor_driver[index_to_observations]){
+        index_to_observations++;
+        
+        QUERY_UNRECOVERABLE_ERROR
+            (index_to_observations >= _observation_based_successor_driver.size()
+             , "Unregistered observation at belief-state. "<<std::endl);
+    }
+
+    assert(index_to_actions < successors.size());
+    assert(index_to_observations < successors[index_to_actions].size());
+    return successors[index_to_actions][index_to_observations];
+}
+
 Partially_Observable_Markov_Decision_Process_State::
 Partially_Observable_Markov_Decision_Process_State()
     :Expandable()
@@ -121,28 +156,29 @@ push__successor(uint action_index
 {
     if(!action_based_successor_driver.size() ||
        action_based_successor_driver.back() != action_index){
+        
         action_based_successor_driver.push_back(action_index);
         
         observation_based_successor_driver
             .push_back(std::vector<Observational_State*>());
         successors.push_back(
-            std::vector<
-            std::vector<
-            Partially_Observable_Markov_Decision_Process_State*> >());
+            std::vector< Partially_Observable_Markov_Decision_Process_State*>());
     }
     
     auto& observations = observation_based_successor_driver.back();
     auto& _successors = successors.back();
     
-    if(!observations.size() ||observations.back() != observation){
+    if(!observations.size() || observations.back() != observation){
         observations.push_back(observation);
-        _successors
-            .push_back(std::vector<
-                       Partially_Observable_Markov_Decision_Process_State*>());
+        _successors.push_back(successor_pomdp_state);// std::vector<
+//                        Partially_Observable_Markov_Decision_Process_State*>());
+    } else {
+        assert(0);
     }
+    
 
-    auto& successors_states = _successors.back();
-    successors_states.push_back(successor_pomdp_state);
+//     auto& successors_states = _successors.back();
+//     successors_states.push_back(successor_pomdp_state);
 }
 
 double Partially_Observable_Markov_Decision_Process_State::get__expected_value() const
@@ -155,8 +191,8 @@ add__belief_atom( MDP_State* mdp__state, double probability)
 {
     belief_State.push_back(Belief_Atom(mdp__state, probability));
 
-    assert(this->expected_value >= 0.0);
-    assert(this->expected_value < 1.1);
+//     assert(this->expected_value >= 0.0);
+//     assert(this->expected_value < 1.1);
 
     INTERACTIVE_VERBOSER(true, 9097, "Adding to expected value :: "
                          <<(probability * mdp__state->get__value()));

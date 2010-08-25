@@ -51,6 +51,24 @@ namespace Planning
     class Solver
     {
     public:
+        typedef std::vector<std::string> Precept_Arguments;
+        typedef std::pair<std::string, Precept_Arguments>  Precept;
+        typedef std::vector<std::pair<std::string, Precept_Arguments>>  Percept_List;
+        
+        
+        POMDP_State* take_observation(POMDP_State*, const Percept_List&, uint action_index);
+        Observational_State* find_observation(Observational_State* new_observation);
+        POMDP_State* compute_successor(Observational_State* observation,
+                                 uint action_index,
+                                 POMDP_State* current_state);
+        
+//         void expand_belief_state(State* current_state);
+
+        std::pair<Planning::Formula::Action_Proposition, uint>
+        get_prescribed_action(State* current_state);
+        
+
+        
         /*Problem that is the target of the solution procedure.*/
         Solver(Planning::Parsing::Problem_Data&);
 

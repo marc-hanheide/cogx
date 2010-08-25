@@ -34,7 +34,7 @@
 
 	       )
 
-  (:functions (reward) - int )
+  (:functions (reward) - number )
 
   
   (:percepts
@@ -48,7 +48,7 @@
 
 	   :precondition (and (chosen ?x) (biased ?x))
 
-	   :effect (increase (reward) 5)
+	   :effect (assign (reward) 5)
 	   )
 
   (:action flip2

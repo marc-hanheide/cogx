@@ -296,6 +296,8 @@ namespace Planning
             virtual bool is_type__int(const Planning::State_Function_Name&) const;
             virtual bool is_type__double(const Planning::Perceptual_Function_Name&) const;
             virtual bool is_type__int(const Planning::Perceptual_Function_Name&) const;
+            virtual bool is_type__number(const Planning::State_Function_Name&) const;
+            virtual bool is_type__number(const Planning::Perceptual_Function_Name&) const;
         protected:
             
             /*Cached value of starting state functional assignments -- ONLY USED BY PARENTS.*/

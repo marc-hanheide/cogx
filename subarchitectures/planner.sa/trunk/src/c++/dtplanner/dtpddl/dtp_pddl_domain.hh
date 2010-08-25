@@ -191,7 +191,7 @@ namespace Planning
          ******************************************************************************************************************/
         
         struct No_Parentheses_State_Function_Description : ifapply< seq<State_Function_Name
-                                                                 , star<Argument> >
+                                                                        , star<Argument> >
                                                              , State_Function_Domainx_Description__Action> {};
         struct State_Function_Description : seq< Open
                                            , No_Parentheses_State_Function_Description
@@ -418,7 +418,7 @@ namespace Planning
             sor<Types_Description
                 , Requirements_Description
                 , Constants_Description //:constants
-                , Predicates_Description //:functions
+                , Predicates_Description //:predicates
                 , Percepts_Description //:percepts
                 , State_Functions_Description //:functions
                 , Perceptual_Functions_Description //:s-functions

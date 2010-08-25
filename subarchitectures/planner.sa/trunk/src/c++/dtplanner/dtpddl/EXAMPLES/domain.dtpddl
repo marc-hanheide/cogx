@@ -17,7 +17,7 @@
          
 )
 
-(:functions (reward) - int )
+(:functions (reward) - number )
 
 (:predicates  (committed-is-in ?r - movable)
               (label ?p - place ?value - place_label)

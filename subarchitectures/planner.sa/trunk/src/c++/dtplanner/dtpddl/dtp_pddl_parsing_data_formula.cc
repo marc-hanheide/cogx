@@ -753,7 +753,7 @@ void Formula_Data::report__formula(const std::string& str)
                                              <<"(assign "<<evaluation_expression_LHS
                                              <<" "<<evaluation_expression_RHS<<std::endl);
                         static_ground_double_function[index] = value;
-                    }  else if (is_type__int(index.get__name())) {
+                    }  else if (is_type__int(index.get__name()) || is_type__number(index.get__name())) {
                         INTERACTIVE_VERBOSER(true, 5000, "Static INT assignment for :: "
                                              <<"(assign "<<evaluation_expression_LHS
                                              <<" "<<evaluation_expression_RHS<<std::endl);
@@ -1497,6 +1497,16 @@ bool Formula_Data::is_type__double(const Planning::Perceptual_Function_Name&) co
     false;
 }
 bool Formula_Data::is_type__int(const Planning::Perceptual_Function_Name&) const
+{
+    false;
+}     
+
+bool Formula_Data::is_type__number(const Planning::State_Function_Name&) const
+{
+    false;
+}
+
+bool Formula_Data::is_type__number(const Planning::Perceptual_Function_Name&) const
 {
     false;
 }     
