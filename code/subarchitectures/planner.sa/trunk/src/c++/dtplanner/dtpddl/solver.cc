@@ -40,12 +40,13 @@
 #include "problem_grounding.hh"
 
 #include "planning_state.hh"
-#include "state_formula__literal.hh"
 
 #include "action__literal.hh"
 #include "action__state_transformation.hh"
 #include "action__probabilistic_state_transformation.hh"
 
+#include "state_formula__literal.hh"
+#include "state_formula__disjunctive_clause.hh"
 #include "state_formula__conjunctive_normal_form_formula.hh"
 
 using namespace Planning;
@@ -53,6 +54,126 @@ using namespace Planning::Parsing;
 
 
 Are_Doubles_Close Solver::are_Doubles_Close(1e-9);
+
+/*Let's remove a few bugs at a time ;) */
+std::pair<Planning::Formula::Action_Proposition, uint>
+Solver::get_prescribed_action(State* current_state)
+{
+    basic_type::Runtime_Thread runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
+        (dynamic_cast<const Planning::Problem_Grounding*>(problem_Grounding.get()));
+
+    auto executable_action_indices = current_state->get__successor_Driver();
+    auto action_index = random() % executable_action_indices.size();
+
+    QUERY_UNRECOVERABLE_ERROR(!Formula::State_Proposition::
+                              ith_exists(runtime_Thread, action_index)
+                              , "Could not find a ground symbol associated with index :: "
+                              << action_index);
+    
+    auto symbol = State_Transformation::
+        make_ith<State_Transformation>
+        (runtime_Thread,
+         action_index);
+    auto identifier = symbol.get__identifier();
+    auto id_value =  symbol.get__id();
+    std::pair<Planning::Formula::Action_Proposition, uint> result(identifier, id_value);
+    
+    return result;
+}
+
+Observational_State* Solver::find_observation(Observational_State* observation_state)
+{
+    auto index = observation__space.find(observation_state);
+
+    if(index == observation__space.end()){
+        return 0;
+    } else {
+        return *index;
+    }
+}
+
+POMDP_State* Solver::compute_successor(Observational_State* observation,
+                                 uint action_index,
+                                 POMDP_State* current_state)
+{
+    auto result =  current_state->get__successor(action_index, observation);
+    
+    QUERY_UNRECOVERABLE_ERROR
+        (!result
+         , "Unknown successor state"<<std::endl);
+
+    return result;
+}
+
+
+POMDP_State* Solver::take_observation(POMDP_State* current_state,
+                                const Percept_List& perceptions,
+                                uint action_index)
+{
+    basic_type::Runtime_Thread runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
+        (dynamic_cast<const Planning::Problem_Grounding*>(problem_Grounding.get()));
+
+    Observational_State* new_observation
+        = new Observational_State(problem_Grounding->get__perceptual_Propositions().size());
+    
+    for(auto obs = perceptions.begin()
+            ; obs != perceptions.end()
+            ; obs++){
+        std::string _predicate_name = (*obs).first;
+
+        NEW_referenced_WRAPPED
+            (domain_Data.get()
+             , Planning::Percept_Name
+             , percept_name
+             , _predicate_name);
+        
+        Planning::Constant_Arguments constant_Arguments;
+        for(auto _argument = (*obs).second.begin()
+                ; _argument != (*obs).second.end()
+                ; _argument++){
+
+            std::string argument = *_argument;
+            
+            NEW_referenced_WRAPPED
+                (runtime_Thread
+                 , Planning::Constant
+                 , constant
+                 , argument);
+            constant_Arguments.push_back(constant);
+        }
+        
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
+            (problem_Grounding.get()
+             , Formula::Perceptual_Proposition
+             , __proposition
+             , percept_name
+             , constant_Arguments);
+        auto proposition =  Formula::Perceptual_Proposition__Pointer(__proposition);
+        
+        auto& perceptual_Propositions
+            = get__problem_Grounding()->get__perceptual_Propositions();
+        if(perceptual_Propositions.find(proposition) != perceptual_Propositions.end()){
+            new_observation->flip_on(proposition->get__id());
+        } else {
+            WARNING("Unknown perceptual proposition :: "<<proposition);
+        }
+    }
+
+    auto observation = find_observation(new_observation);
+    delete new_observation;
+    
+    
+    QUERY_UNRECOVERABLE_ERROR
+        (!observation
+         , "Unknown observation :: "<<*observation<<std::endl);
+
+    auto successor_state
+        = compute_successor(observation, action_index, current_state);
+    
+    expand_belief_state(successor_state);
+
+    return successor_state;
+}
 
 Solver::Solver(Planning::Parsing::Problem_Data& problem_Data)
     :problem_Data(problem_Data),

@@ -50,8 +50,10 @@ Domain_Data::Domain_Data()
     
     NEW_object_referenced_WRAPPED(Planning::Type, _double__constant, "double");
     NEW_object_referenced_WRAPPED(Planning::Type, _int__constant, "int");
+    NEW_object_referenced_WRAPPED(Planning::Type, _number__constant, "number");
     double__constant = _double__constant;
     int__constant = _int__constant;
+    number__constant = _number__constant;
 }
 
 
@@ -332,21 +334,30 @@ void Domain_Data::add__predicate()
 
 void Domain_Data::set_function_range__number()
 {
-    function_Range = t_number;
+    exit(0);
+//     function_Range = t_number;
+    function_Range = t_int;
 }
 
 void Domain_Data::set_function_range__int()
 {
+    exit(0);
     function_Range = t_int;
 }
 
 void Domain_Data::set_function_range__double()
 {
+    exit(0);
     function_Range = t_double;
 }
 
 void Domain_Data::set_function_range__type(const std::string& str)
 {
+    exit(0);
+    assert("number" != str);
+    assert("int" != str);
+    assert("double" != str);
+    
     function_Range = t_type;
     
     NEW_object_referenced_WRAPPED(Planning::Type, function_range, str);
@@ -422,7 +433,10 @@ IMPLEMENTATION____read__type(is_type__double, double__constant,
                              Planning::Perceptual_Function_Name, range_of_perceptual_function);
 IMPLEMENTATION____read__type(is_type__int, int__constant,
                              Planning::Perceptual_Function_Name, range_of_perceptual_function);
-        
+IMPLEMENTATION____read__type(is_type__number, number__constant,
+                             Planning::State_Function_Name, range_of_state_function);
+IMPLEMENTATION____read__type(is_type__number, number__constant,
+                             Planning::Perceptual_Function_Name, range_of_perceptual_function);
 //         template<>
 //         bool Domain_Data::read__type<double>(const Planning::State_Function_Name& name) const
 //         {

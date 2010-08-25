@@ -1066,7 +1066,7 @@ process__Function_Modifier(Formula::Subformula& modification,
             
             INTERACTIVE_VERBOSER(true, 3110, "Requests waking :: "<<transformation);
     
-        } else if (domain_Data.is_type__int(last_function_symbol.get__name())) {
+        } else if (domain_Data.is_type__int(last_function_symbol.get__name()) || domain_Data.is_type__number(last_function_symbol.get__name())) {
             int value = problem_Data
                 .read__static_value<int>(modification, assignment);
             

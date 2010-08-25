@@ -235,9 +235,9 @@ void Problem_Grounding::ground_objective_function()
     
     if(domain_Data->is_type__double(function_symbol.get__name())){
         double_valued_objective = true;
-    } else if (domain_Data->is_type__int(function_symbol.get__name())) {
+    } else if (domain_Data->is_type__int(function_symbol.get__name()) || domain_Data->is_type__number(function_symbol.get__name())) {
         integer_valued_objective = true;;
-    }
+    } 
 }
 
 double Problem_Grounding::get__objective_value(const State& state) const

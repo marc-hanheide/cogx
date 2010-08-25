@@ -95,6 +95,9 @@ namespace Planning
         void push__successor(uint action_index
                              , Observational_State*
                              , POMDP_State* );
+
+        POMDP_State* get__successor(uint action_index
+                                    , Observational_State*);
     private:
         std::vector<uint> action_based_successor_driver;
 
@@ -103,9 +106,7 @@ namespace Planning
         std::vector< std::vector<Observational_State*> > observation_based_successor_driver;
         
         std::vector<
-            std::vector<
-                std::vector<
-                    Partially_Observable_Markov_Decision_Process_State*> > > successors;
+            std::vector< Partially_Observable_Markov_Decision_Process_State*> > successors;
         
         /*Expected value of this POMDP state.*/
         double expected_value;
