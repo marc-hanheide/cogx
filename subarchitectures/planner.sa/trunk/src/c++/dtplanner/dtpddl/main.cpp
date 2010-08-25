@@ -144,14 +144,35 @@ int main(int argc, char** argv)
     for(auto problem = Planning::Parsing::problems.begin()
             ; problem != Planning::Parsing::problems.end()
             ; problem++){
-        Planning::Solver solver(*problem->second);
-        solver.preprocess();
-        solver.expand_belief_state_space();
-        auto current_state = solver.expansion_queue.front();
-        if(!solver.expand_belief_state_space()){
+        Planning::Solver* solver = new Planning::Solver(*problem->second);
+        solver->preprocess();
+        solver->expand_belief_state_space();
+        auto current_state = solver->expansion_queue.front();
+        if(!solver->expand_belief_state_space()){
             UNRECOVERABLE_ERROR("No starting state!"<<std::endl);
         }
+
+
+        for(auto i = 0; i < 10; i++){
+            
+            std::pair<Planning::Formula::Action_Proposition, uint> _action
+                = solver->get_prescribed_action(current_state);
+            
+            auto observations = current_state->get__possible_observations_given_action(_action.second);
+            
+            auto random_index = random() % observations.size();
+            auto observation = observations[random_index];
+
         
+            
+            Planning::POMDP_State* successor_state
+                = solver->take_observation(current_state,
+                                           observation,
+                                           _action.second);
+            current_state = successor_state;
+        }
+        INTERACTIVE_VERBOSER(true, 10000, "Expanding POMDP state"<<std::endl);
+        delete solver;
     }
     
     

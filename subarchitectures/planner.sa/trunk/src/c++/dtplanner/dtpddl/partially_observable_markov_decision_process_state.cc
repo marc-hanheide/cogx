@@ -46,6 +46,26 @@ namespace Planning
 using namespace Planning;
 
 
+const std::vector<Observational_State*>&
+Partially_Observable_Markov_Decision_Process_State::
+get__possible_observations_given_action(uint action_index) const
+{
+   
+    QUERY_UNRECOVERABLE_ERROR
+        (!successors.size()
+         , "No successors at belief-state. "<<std::endl);
+    
+    uint index_to_actions = 0;
+    while(action_index != action_based_successor_driver[index_to_actions]){
+        index_to_actions++;
+        QUERY_UNRECOVERABLE_ERROR
+            (index_to_actions >= action_based_successor_driver.size()
+             , "Unregistered action at belief-state. "<<std::endl);
+    }
+
+    return observation_based_successor_driver[index_to_actions];
+}
+
 Partially_Observable_Markov_Decision_Process_State::POMDP_State*
 Partially_Observable_Markov_Decision_Process_State::
 get__successor(uint action_index
