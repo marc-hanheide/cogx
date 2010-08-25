@@ -195,7 +195,8 @@ press_ground_observation(const Observation_Name& observation_Name,
              , state_Propositions
              , literals
              , disjunctive_Clauses
-             , conjunctive_Normal_Form_Formulae);
+             , conjunctive_Normal_Form_Formulae
+             , problem_Data);
     
 
         planning_CNF__to__State_CNF(_precondition);
@@ -259,7 +260,8 @@ press_ground_observation(const Observation_Name& observation_Name,
     domain_Observation__to__Problem_Observation(__effect_formula);
     auto new_observation = domain_Observation__to__Problem_Observation.get__answer();
     
-    INTERACTIVE_VERBOSER(true, 9051, "Pushing an observation :: "<<new_observation<<std::endl);
+    INTERACTIVE_VERBOSER(true, 9089, "Pushing an observation :: "<<new_observation<<std::endl);
+//     exit(0);
 }
 
 /* --3-- */ 

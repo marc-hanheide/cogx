@@ -157,6 +157,10 @@ add__belief_atom( MDP_State* mdp__state, double probability)
 
     assert(this->expected_value >= 0.0);
     assert(this->expected_value < 1.1);
+
+    INTERACTIVE_VERBOSER(true, 9097, "Adding to expected value :: "
+                         <<(probability * mdp__state->get__value()));
+    
     
     this->expected_value += (probability * mdp__state->get__value());   
 }
@@ -193,6 +197,8 @@ namespace std
     {
         auto state = pomdp__state.get__belief_state();
 
+
+        o<<"Expected reward :: "<<pomdp__state.get__expected_value()<<std::endl;
         for(auto s = state.begin(); s != state.end(); s++){
             o<<s->second<<" :--:> "<<*(s->first)<<std::endl;
         }
@@ -200,4 +206,25 @@ namespace std
         return o;
     }
     
+    std::ostream& operator<<(std::ostream&o, const Planning::Partially_Observable_Markov_Decision_Process_State::Action__to__Observation_to_Belief& in)
+    {
+        for(auto actions = in.begin()
+                ; actions != in.end()
+                ; actions++){
+            for(auto observations = actions->second.begin()
+                    ; observations != actions->second.end()
+                    ; observations++){
+                for(auto states = observations->second.begin()
+                        ; states != observations->second.end()
+                        ; states++){
+                    o<<actions->first<<" "
+                     <<*observations->first<<" "
+                     <<*states->first<<" === "
+                     <<states->second<<std::endl;
+                }
+            }
+        }
+        
+        return o;
+    }
 }

@@ -65,7 +65,7 @@ void Observation::increment__level_of_satisfaction(State& state) const
 void Observation::decrement__level_of_satisfaction(State& state) const
 {
     assert(state.get__observation__count_status().valid_index(get__id()));
-    state.get__observation__count_status().increment_satisfaction(get__id());
+    state.get__observation__count_status().decrement_satisfaction(get__id());
 }
 
 void Observation::set__satisfied(State& state) const
@@ -77,7 +77,7 @@ void Observation::set__satisfied(State& state) const
 void Observation::set__unsatisfied(State& state) const
 {
     assert(state.get__observation__satisfaction_status().valid_index(get__id()));
-    state.get__observation__satisfaction_status().satisfy(get__id());
+    state.get__observation__satisfaction_status().unsatisfy(get__id());
 }
 
 bool Observation
@@ -129,7 +129,8 @@ double Observation
     if(!get__lookup_probability()){
         return get__probability();
     } else {
-        return state.get__float(std::tr1::get<6>(contents()));
+        UNRECOVERABLE_ERROR("UNTESTED.");
+        return state.get__float(std::tr1::get<7>(contents()));
     }
 }
 
@@ -147,9 +148,18 @@ Planning::Observational_State* Observation::operator()
     }
 
     if(!are_Doubles_Close(1.0, get__probability(*state))){
+        INTERACTIVE_VERBOSER(true, 9090, *this<<std::endl<<"For :: "<<*observational_State<<std::endl
+                             <<"Altering probability :: "
+                             <<observational_State->get__probability_during_expansion()<<std::endl
+                             <<"By :: "<<get__probability(*state)<<std::endl);
+        
        observational_State
            ->set__probability_during_expansion(observational_State->get__probability_during_expansion()
                                                * get__probability(*state));
+       
+        INTERACTIVE_VERBOSER(true, 9090, "Got probability :: "
+                             <<observational_State->get__probability_during_expansion()<<std::endl);
+        
 //            ->set__probability_during_expansion(state->get__probability_during_expansion()
 //                                                * get__probability(*state));
     }
@@ -164,6 +174,26 @@ void Observation::forced_wake(State& state) const
     
     if( simply_satisfied
         || is_satisfied(state)){
+
+        if((get__execution_precondition()->get__disjunctive_clauses().size() == 0)
+           && !simply_satisfied){
+            INTERACTIVE_VERBOSER(true, 9090, "Waking :: "<<*this<<std::endl
+                                 <<"At :: "<<state<<std::endl);
+        }
+        
+    
+        if(get__precondition()->get__disjunctive_clauses().size() != 0){
+            assert(!simply_satisfied && is_satisfied(state));
+            assert(get__precondition()->is_satisfied(state));
+        }
+
+        if(get__execution_precondition()->get__disjunctive_clauses().size() != 0){
+            assert(!simply_satisfied && is_satisfied(state));
+            assert(get__execution_precondition()->is_satisfied(state));
+        }
+        
+        
+        
         INTERACTIVE_VERBOSER(true, 9074, "Waking observation :: "<<get__identifier()<<std::endl);
         assert(state.get__observational_state_during_expansion());
         
@@ -183,7 +213,7 @@ void Observation::report__newly_satisfied(State& state) const
     increment__level_of_satisfaction(state);
 
 
-    INTERACTIVE_VERBOSER(true, 9071, "Incremented satisfaction for :: "<<*this<<std::endl
+    INTERACTIVE_VERBOSER(true, 9089, "Incremented satisfaction for :: "<<*this<<std::endl
                          <<"Designation :: "<<this<<std::endl
                          <<"At state :: "<<&state<<std::endl
                          <<"New level is :: "<<get__level_of_satisfaction(state)<<std::endl);
@@ -204,9 +234,30 @@ void Observation::report__newly_satisfied(State& state) const
     assert(get__level_of_satisfaction(state) <= 2);
     
     if(required_level_of_satisfaction == get__level_of_satisfaction(state)){
-        set__satisfied(state);
-    }
+        
+        if(get__precondition()->get__disjunctive_clauses().size() != 0){
+            assert(get__precondition()->is_satisfied(state));
+        }
 
+        if(get__execution_precondition()->get__disjunctive_clauses().size() != 0){
+            assert(get__execution_precondition()->is_satisfied(state));
+        }
+        
+        INTERACTIVE_VERBOSER(true, 9090, "Satisfying :: "<<*this<<std::endl
+                             <<"At :: "<<state<<std::endl);
+        
+        set__satisfied(state);
+    } else {
+        
+        INTERACTIVE_VERBOSER(true, 9090, "Failed to satisfy  :: "<<*this<<std::endl
+                             <<"At :: "<<state<<std::endl
+                             <<"Despite trying...");
+    }
+    
+
+//     assert(get__precondition()->is_satisfied(state) ||
+//            get__execution_precondition()->is_satisfied(state));
+    
     /* If we are computing observations at a state.*/
     if(state.get__observational_state_during_expansion()){
         wake(state);
@@ -221,9 +272,20 @@ bool Observation::is_satisfied(const State& state) const
 void Observation::report__newly_unsatisfied(State& state) const
 {
     assert(get__level_of_satisfaction(state) <= 2);
+    assert(get__level_of_satisfaction(state) > 0);
+    
+    bool simply_satisfied = ((get__precondition()->get__disjunctive_clauses().size() == 0) &&
+                             (get__execution_precondition()->get__disjunctive_clauses().size() == 0));
+
+    assert(!simply_satisfied);
     
     decrement__level_of_satisfaction(state);
 
+    INTERACTIVE_VERBOSER(true, 9089, "Decremented satisfaction for :: "<<*this<<std::endl
+                         <<"Designation :: "<<this<<std::endl
+                         <<"At state :: "<<&state<<std::endl
+                         <<"New level is :: "<<get__level_of_satisfaction(state)<<std::endl);
+    
     if(is_satisfied(state)){
         set__unsatisfied(state);
     }   
@@ -254,6 +316,7 @@ std::ostream& Observation::operator<<(std::ostream&o) const
     if(!get__lookup_probability()){
         o<<"Prob :: "<<get__probability()<<std::endl;
     } else {
+        UNRECOVERABLE_ERROR("UNTESTED.");
         o<<"Prob :: LOOKUP"<<std::endl;
     }
     
@@ -275,6 +338,18 @@ std::ostream& Observation::operator<<(std::ostream&o) const
         if(listener->test_cast<basic_type>()){
             listener->cxx_get<basic_type>()->operator<<(o);
         }
+    }
+    o<<"}"<<std::endl;
+    
+    o<<std::endl;
+    o<<"{"<<get__traversable__sleepers().size()<<"-SLEEPERS :: ";
+    for(auto listener = get__traversable__sleepers().begin()
+            ; listener != get__traversable__sleepers().end()
+            ; listener++){
+        if(listener->test_cast<basic_type>()){
+            listener->cxx_get<basic_type>()->operator<<(o);
+        }
+        
     }
     o<<"}"<<std::endl;
     

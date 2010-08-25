@@ -119,8 +119,15 @@ uint Conjunctive_Normal_Form_Formula::get__number_of_satisfied_clauses(State& st
 
 void Conjunctive_Normal_Form_Formula::report__newly_satisfied_clause(State& state) const
 {
+    
+    INTERACTIVE_VERBOSER(true, 9090, "Increasing satisfaction of  :: "
+                         <<*this<<std::endl);
+    
     increment__level_of_satisfaction(state);
 
+    assert(get__level_of_satisfaction(state) <= get__disjunctive_clauses().size());
+    
+    
     if(get__disjunctive_clauses().size() == get__number_of_satisfied_clauses(state)){
         set__satisfied(state);
         
@@ -138,6 +145,11 @@ void Conjunctive_Normal_Form_Formula::report__newly_satisfied_clause(State& stat
 
 void Conjunctive_Normal_Form_Formula::report__newly_unsatisfied_clause(State& state) const
 {
+    INTERACTIVE_VERBOSER(true, 9090, "Decreasing satisfaction of  :: "
+                         <<*this<<std::endl);
+    
+    assert(get__level_of_satisfaction(state) > 0);
+    
     decrement__level_of_satisfaction(state);
 
     if(is_satisfied(state)){
@@ -172,7 +184,7 @@ Conjunctive_Normal_Form_Formula::get__disjunctive_clause(int i) const
 
 std::ostream& Conjunctive_Normal_Form_Formula::operator<<(std::ostream&o) const
 {
-    o<<"{";
+    o<<"CNF::{";
     for(auto clause = get__disjunctive_clauses().begin()
             ; clause != get__disjunctive_clauses().end()
             ; clause++){
@@ -180,6 +192,22 @@ std::ostream& Conjunctive_Normal_Form_Formula::operator<<(std::ostream&o) const
     }
     
     o<<"}"<<std::endl;
+
+
+
+    auto listeners = get__traversable__listeners();
+    if(!listeners.size()){
+        o<<"CNF has no listeners :: "<<std::endl;
+    }
+//     for(auto listener = listeners.begin()
+//             ; listener != listeners.end()
+//             ; listener ++){
+//         assert((*listener).get() != this);
+//         o<<"LISTENER :: "<<listener->cxx_get<>()->get__identifier()<<std::endl;
+// //         INTERACTIVE_VERBOSER(true, 9092, " has listener :: "<<*listener<<std::endl);
+        
+//     }
+    
     return o;
 }
 

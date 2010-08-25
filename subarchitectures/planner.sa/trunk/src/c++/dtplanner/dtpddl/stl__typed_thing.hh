@@ -233,17 +233,18 @@ public:
     }
 
     template<typename Child = type_wrapper<type_name, T...> >
-    static Child make_ith(int type_index, ID_TYPE object_index)
+    static Child make_ith(Runtime_Thread thread_index, ID_TYPE object_index)
     {
-        assert(ith_exists(type_index, object_index));
+        assert(ith_exists(thread_index, object_index));
         
         Child result;
-        auto _searchable = indexed__Traversable_Collection.find(type_index);
+        auto _searchable = indexed__Traversable_Collection.find(thread_index);
         assert(_searchable != indexed__Traversable_Collection.end());
         auto searchable = *_searchable->second;
 
         assert(object_index < searchable.size());
         auto object = searchable[object_index];
+        result.set__runtime_Thread(thread_index);
         result.configure(object);
         
         return std::move<>(result);

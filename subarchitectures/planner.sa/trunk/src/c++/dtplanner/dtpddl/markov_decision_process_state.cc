@@ -59,6 +59,19 @@ Markov_Decision_Process_State
 // {
 // }
 
+const Markov_Decision_Process_State::Successor_Driver&
+Markov_Decision_Process_State::
+get__sorted__successor_Driver() const
+{
+    if(sorted__successor_Driver.size() != successor_Driver.size()){
+        sorted__successor_Driver = Successor_Driver(successor_Driver.begin(), successor_Driver.end());
+        sort(sorted__successor_Driver.begin(), sorted__successor_Driver.end());
+    }
+
+    return sorted__successor_Driver;
+}
+
+
 void Markov_Decision_Process_State::
 push__successor(uint _operator_index,
                  Markov_Decision_Process_State* successor_state,
@@ -166,7 +179,6 @@ bool Markov_Decision_Process_State::operator<(const Markov_Decision_Process_Stat
                 return true;
             }
         }
-        
     }
 
     return false;   
@@ -216,7 +228,13 @@ int Markov_Decision_Process_State::get__int(uint index) const
 
 void Markov_Decision_Process_State::set__int(uint index, int value)
 {
+    
     integer_State.write(index, value);
+
+    
+    INTERACTIVE_VERBOSER(true, 9096, "Writing to integer state :: "
+                         <<index<<" "<<value<<std::endl);
+        
 }
 
 
@@ -224,6 +242,12 @@ double Markov_Decision_Process_State::get__value() const
 {
     return value;
 }
+
+void Markov_Decision_Process_State::set__value(double value)
+{
+    this->value = value;
+}
+
 
 void Markov_Decision_Process_State::
 report__considered_observations_under_action(uint action_id)

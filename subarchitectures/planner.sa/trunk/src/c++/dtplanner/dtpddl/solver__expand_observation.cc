@@ -215,10 +215,11 @@ void Solver::expand_observations(const State_Transformation* optional_transforma
             ; observation++){
 
         
-        INTERACTIVE_VERBOSER(true, 9074, "Pushing observation :: "
+        INTERACTIVE_VERBOSER(true, 9090, "Pushing observation :: "
                              <<*(state)<<std::endl
                              <<optional_transformation->get__identifier()<<std::endl
-                             <<**observation<<std::endl);
+                             <<**observation<<std::endl
+                             <<"prob. "<<(*observation)->get__probability_during_expansion()<<std::endl);
         
         state->Markov_Decision_Process_State::
             push__observation

@@ -178,7 +178,7 @@ namespace Planning
         
         /* Description of the problem constants (see \module{Solver}).*/
         const Planning::Constants_Description& constants_Description;
-
+        
         /* Constants that types can take (see \module{Solver}). This is the
          * basis of data in \member{cached_constants_of_types}.*/
         const std::map<Type, Constants>& extensions_of_types;

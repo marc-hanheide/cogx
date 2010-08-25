@@ -111,6 +111,18 @@ std::ostream& Probabilistic_Observation::operator<<(std::ostream&o) const
             ; listener++){
         o<<*listener<<std::endl;
     }
+    o<<std::endl;
+    o<<"{"<<get__traversable__sleepers().size()<<"-SLEEPERS :: ";
+    for(auto listener = get__traversable__sleepers().begin()
+            ; listener != get__traversable__sleepers().end()
+            ; listener++){
+        if(listener->test_cast<basic_type>()){
+            listener->cxx_get<basic_type>()->operator<<(o);
+        }
+        
+    }
+    o<<"}"<<std::endl;
+    
     
     return o;
 }

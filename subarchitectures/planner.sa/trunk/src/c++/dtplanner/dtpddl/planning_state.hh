@@ -65,6 +65,9 @@ namespace Planning
     {
     public:
         std::ostream& operator<<(std::ostream&) const;
+
+        bool operator==(const State&) const;
+        bool operator<(const State&) const;
         
         State(Solver& solver,/*Object that is solving the problem that involves this state.*/
               uint propositions_count = 0,/*Number of non-static state-characterising PROPOSITIONS.*/

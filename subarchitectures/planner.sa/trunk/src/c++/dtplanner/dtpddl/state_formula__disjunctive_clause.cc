@@ -166,12 +166,24 @@ List__Literals& Disjunctive_Clause::get__literals(void)
 
 std::ostream& Disjunctive_Clause::operator<<(std::ostream&o) const
 {
+    o<<"CLAUSE::";
     for(auto literal = get__literals().begin()
             ; literal != get__literals().end()
             ; literal++){
         o<<*literal<<", ";
     }
     
+    auto listeners = get__traversable__listeners();
+    if(!listeners.size()){
+        o<<"Clause has no listeners :: "<<std::endl;
+    }
+//     for(auto listener = listeners.begin()
+//             ; listener != listeners.end()
+//             ; listener ++){
+//         assert((*listener).get() != this);
+//         INTERACTIVE_VERBOSER(true, 9092, " has listener :: "<<*listener<<std::endl);
+        
+//     }
     
     return o;
 }

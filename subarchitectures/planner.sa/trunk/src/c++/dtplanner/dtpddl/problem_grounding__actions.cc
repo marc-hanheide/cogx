@@ -139,7 +139,8 @@ press_ground_action(const Action_Name& action_Name,
              , state_Propositions
              , literals
              , disjunctive_Clauses
-             , conjunctive_Normal_Form_Formulae);
+             , conjunctive_Normal_Form_Formulae
+             , problem_Data);
     
 
         planning_CNF__to__State_CNF(_precondition);

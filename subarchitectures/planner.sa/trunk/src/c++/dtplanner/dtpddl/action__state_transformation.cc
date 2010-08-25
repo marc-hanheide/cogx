@@ -71,7 +71,7 @@ State_Transformation::operator()(State* in) const
         /* If the effect is not satisfied in the state to which this
          * transformation is being applied.*/
         if(!(*effect)->is_satisfied(*in)){
-            INTERACTIVE_VERBOSER(true, 9071, "Flipping :: "<<**effect<<std::endl);
+            INTERACTIVE_VERBOSER(true, 9090, *this<<"Flipping :: "<<**effect<<std::endl);
             /* The the effect must be applied, because the parent
              * transformation was applied.*/
             (*effect)->flip(*in);//_satisfaction(*in);
@@ -309,7 +309,7 @@ std::ostream& State_Transformation::operator<<(std::ostream&o) const
     o<<"}"<<std::endl;
     
     o<<std::endl;
-    o<<"{"<<get__traversable__listeners().size()<<"-SLEEPERS :: ";
+    o<<"{"<<get__traversable__sleepers().size()<<"-SLEEPERS :: ";
     for(auto listener = get__traversable__sleepers().begin()
             ; listener != get__traversable__sleepers().end()
             ; listener++){

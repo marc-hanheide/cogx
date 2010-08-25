@@ -83,6 +83,7 @@ namespace Planning
 
         /*(see \member{value})*/
         double get__value() const;
+        void set__value(double);
         
         typedef std::vector<uint> Successor_Driver;/*action indices*/
         typedef std::vector< std::vector<Markov_Decision_Process_State*> > Successors;/*states*/
@@ -103,7 +104,7 @@ namespace Planning
         const Successors& get__successors() const;
         const Successor_Probabilities& get__successor_Probabilities() const;
         const Successor_Driver& get__successor_Driver() const;
-
+        const Successor_Driver& get__sorted__successor_Driver() const;
 
         bool has__considered_observations_under_action(uint action_id) const;
         void report__considered_observations_under_action(uint action_id);
@@ -134,6 +135,7 @@ namespace Planning
         
         
         Successor_Driver successor_Driver;
+        mutable Successor_Driver sorted__successor_Driver;
         Successors successors;
         Successor_Probabilities successor_Probabilities;
         

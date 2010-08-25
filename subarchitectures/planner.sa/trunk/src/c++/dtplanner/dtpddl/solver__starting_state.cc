@@ -49,6 +49,8 @@
 
 #include "observation.hh"
 
+#include "state_formula.hh"
+
 using namespace Planning;
 // using namespace Planning::Parsing;
 
@@ -156,8 +158,106 @@ void Solver::generate_starting_state()
                               , problem_Grounding->get__action_Disjunctive_Clauses().size()
                               , problem_Grounding->get__observations().size());
     
+    for(auto some = problem_Grounding->get__state_Propositions().begin()
+            ; some != problem_Grounding->get__state_Propositions().end()
+            ; some++){
+        std::cerr<<*some;
+    }
     
+    INTERACTIVE_VERBOSER(true, 9094, "Number of propositions is :: "
+                         <<problem_Grounding->get__state_Propositions().size()<<std::endl);
+    
+#ifndef NDEBUG
+    auto literals = problem_Grounding->get__literals();                                   
+    for(auto literal = literals.begin()                             
+            ; literal != literals.end()                             
+            ; literal++){
+        std::cerr<<*literal<<std::endl;
+    }
+
+    for(auto some = problem_Grounding->get__state_Functions().begin()
+            ; some != problem_Grounding->get__state_Functions().end()
+            ; some++){
+        std::cerr<<*some;
+    }
+    for(auto some = problem_Grounding->get__conjunctive_Normal_Form_Formulae().begin()
+            ; some != problem_Grounding->get__conjunctive_Normal_Form_Formulae().end()
+            ; some++){
+        std::cerr<<*some;
+    }
+    for(auto some = problem_Grounding->get__disjunctive_Clauses().begin()
+            ; some != problem_Grounding->get__disjunctive_Clauses().end()
+            ; some++){
+        std::cerr<<*some;
+    }
+    for(auto some = problem_Grounding->get__deterministic_actions().begin()
+            ; some != problem_Grounding->get__deterministic_actions().end()
+            ; some++){
+        std::cerr<<*some;
+    }
+
+    for(auto some = problem_Grounding->get__action_Conjunctive_Normal_Form_Formulae().begin()
+            ; some != problem_Grounding->get__action_Conjunctive_Normal_Form_Formulae().end()
+            ; some++){
+        std::cerr<<*some;
+    }
+
+    for(auto some = problem_Grounding->get__action_Disjunctive_Clauses().begin()
+            ; some != problem_Grounding->get__action_Disjunctive_Clauses().end()
+            ; some++){
+        std::cerr<<*some;
+    }
+
+    for(auto some = problem_Grounding->get__observations().begin()
+            ; some != problem_Grounding->get__observations().end()
+            ; some++){
+        std::cerr<<*some;
+    }
+#endif
+    
+//     exit(0);
+    
+//     exit(0);
+//     auto literals = problem_Grounding->get__literals(); pro
+    
+    for(auto literal = literals.begin()                             
+            ; literal != literals.end()                             
+            ; literal++){                                           
+
+        auto listeners = (*literal)->get__traversable__listeners();
+        if(!listeners.size()){
+            INTERACTIVE_VERBOSER(true, 9092, "Literal has no listeners :: "<<*literal<<std::endl);
+        }
+        
+        
+        for(auto listener = listeners.begin()
+                ; listener != listeners.end()
+                ; listener ++){
+            auto listeners2 = listener->cxx_get<State_Formula::Satisfaction_Listener>()->get__traversable__listeners();
+            
+            INTERACTIVE_VERBOSER(true, 9092, *literal<<" has listener :: "<<*listener<<std::endl);
+
+            
+            for(auto listener2 = listeners2.begin()
+                    ; listener2 != listeners2.end()
+                    ; listener2 ++){
+                auto listeners3 = listener2->cxx_get<State_Formula::Satisfaction_Listener>()->get__traversable__listeners();
+                INTERACTIVE_VERBOSER(true, 9092, *listener<<" has listener2 :: "<<*listener2<<std::endl);
+            
+                for(auto listener3 = listeners3.begin()
+                        ; listener3 != listeners3.end()
+                        ; listener3 ++){
+                    INTERACTIVE_VERBOSER(true, 9092, *listener3<<" has listened by :: "<<*listener2<<std::endl);
+                }
+                
+            }
+            
+        }                                                             
+    }                                                               
+                   
+    INTERACTIVE_VERBOSER(true, 9090, "Adding false literals"<<std::endl);
     SATISFY_FALSE_PROPOSITIONAL_ATOMS(problem_Grounding->get__literals(), *starting_state);
+    INTERACTIVE_VERBOSER(true, 9090, "DONE :: Adding false literals"<<std::endl);
     
     starting_state->add__optional_transformation(
         problem_Grounding->get__executable_starting_states_generator().get());
@@ -201,7 +301,7 @@ void Solver::generate_starting_state()
         
         
 //         assert( 0 == (*state)->count__observations() ) ;
-        INTERACTIVE_VERBOSER(true, 9076, "A starting state is :: "
+        INTERACTIVE_VERBOSER(true, 9095, "A starting state is :: "
                              <<**state<<std::endl);
     }
     
@@ -215,7 +315,7 @@ void Solver::generate_starting_state()
         auto state = successors[i];
         auto probability = successor_Probabilities[i];
         
-        INTERACTIVE_VERBOSER(true, 9076, "A starting state is :: "
+        INTERACTIVE_VERBOSER(true, 9095, "A starting state is :: "
                              <<*state<<std::endl);
         
         starting_belief_state
@@ -225,6 +325,6 @@ void Solver::generate_starting_state()
     
     belief_state__space.insert(starting_belief_state);
     expansion_queue.push(starting_belief_state);
-    INTERACTIVE_VERBOSER(true, 9076, "Starting belief state is :: "
+    INTERACTIVE_VERBOSER(true, 9095, "Starting belief state is :: "
                          <<(*starting_belief_state)<<std::endl);
 }
