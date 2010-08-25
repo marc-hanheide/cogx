@@ -55,6 +55,9 @@ namespace Planning
         typedef std::pair<std::string, Precept_Arguments>  Precept;
         typedef std::vector<std::pair<std::string, Precept_Arguments>>  Percept_List;
         
+        POMDP_State* take_observation(POMDP_State* current_state,
+                                      Observational_State* observation,
+                                      uint action_index);
         
         POMDP_State* take_observation(POMDP_State*, const Percept_List&, uint action_index);
         Observational_State* find_observation(Observational_State* new_observation);
@@ -66,6 +69,8 @@ namespace Planning
 
         std::pair<Planning::Formula::Action_Proposition, uint>
         get_prescribed_action(State* current_state);
+        std::pair<Planning::Formula::Action_Proposition, uint>
+        get_prescribed_action(POMDP_State* current_state);
         
 
         

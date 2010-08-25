@@ -96,6 +96,7 @@ namespace Planning
                              , Observational_State*
                              , POMDP_State* );
 
+        const std::vector<Observational_State*>& get__possible_observations_given_action(uint action_index) const;
         POMDP_State* get__successor(uint action_index
                                     , Observational_State*);
     private:

@@ -55,6 +55,17 @@ using namespace Planning::Parsing;
 
 Are_Doubles_Close Solver::are_Doubles_Close(1e-9);
 
+
+std::pair<Planning::Formula::Action_Proposition, uint>
+Solver::get_prescribed_action(POMDP_State* state)
+{
+    auto belief = state->get__belief_state();
+    uint index = random() % belief.size();
+    POMDP_State::Belief_Atom atom = belief[index];
+    
+    return get_prescribed_action(dynamic_cast<State*>(atom.first));//mdp_state);
+}
+
 /*Let's remove a few bugs at a time ;) */
 std::pair<Planning::Formula::Action_Proposition, uint>
 Solver::get_prescribed_action(State* current_state)
@@ -105,6 +116,22 @@ POMDP_State* Solver::compute_successor(Observational_State* observation,
     return result;
 }
 
+
+
+POMDP_State* Solver::take_observation(POMDP_State* current_state,
+                                      Observational_State* observation,
+                                      uint action_index)
+{
+   
+    auto successor_state
+        = compute_successor(observation, action_index, current_state);
+
+    
+    expand_belief_state(successor_state);
+
+    
+    return successor_state;
+}
 
 POMDP_State* Solver::take_observation(POMDP_State* current_state,
                                 const Percept_List& perceptions,
@@ -167,12 +194,7 @@ POMDP_State* Solver::take_observation(POMDP_State* current_state,
         (!observation
          , "Unknown observation :: "<<*observation<<std::endl);
 
-    auto successor_state
-        = compute_successor(observation, action_index, current_state);
-    
-    expand_belief_state(successor_state);
-
-    return successor_state;
+    return take_observation(current_state, observation, action_index);
 }
 
 Solver::Solver(Planning::Parsing::Problem_Data& problem_Data)
