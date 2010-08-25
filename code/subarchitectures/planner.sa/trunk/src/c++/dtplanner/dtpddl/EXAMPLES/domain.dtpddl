@@ -60,7 +60,7 @@
           :precondition  (not (committed-label place_0_pt_spatial_data))
           :effect  (and  (committed-label place_0_pt_spatial_data)
                          (when  (label place_0_pt_spatial_data ?val)
-                                (increase (reward ) 100)
+                                (assign (reward ) 100)
                          )
                    )
 )

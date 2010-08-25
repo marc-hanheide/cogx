@@ -152,7 +152,9 @@ int main(int argc, char** argv)
         
         Planning::Solver solver(*problem->second);
         solver.preprocess();
-        solver.expand_belief_state_space();
+        while(solver.expand_belief_state_space()){
+            INTERACTIVE_VERBOSER(true, 9096, "Expanding POMDP state"<<std::endl);
+        };
         
         std::cout<<*problem->second->get__domain_Data()<<std::endl;
         std::cout<<*problem->second<<std::endl;

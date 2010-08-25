@@ -380,6 +380,9 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
             if(_precondition->get__disjunctive_clauses().size()){
                 auto deref__st = observation.cxx_deref_get<basic_type>();
                 if(_precondition->add__listener(deref__st)){
+                    INTERACTIVE_VERBOSER(true, 9091, "successfully added listener "<<*deref__st.get()
+                                         <<" to :: "
+                                         <<_precondition<<std::endl);
                     INTERACTIVE_VERBOSER(true, 3110, "successfully added listener."<<std::endl)
                 } else {
                     WARNING("Failed adding listener :: "<<deref__st<<std::endl
@@ -390,7 +393,7 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
             if(_execution_precondition->get__disjunctive_clauses().size()){
                 auto deref__st = observation.cxx_deref_get<basic_type>();
                 if(_execution_precondition->add__listener(deref__st)){
-                    INTERACTIVE_VERBOSER(true, 9051, "successfully added listener "<<deref__st.get()
+                    INTERACTIVE_VERBOSER(true, 9090, "successfully added listener "<<*deref__st.get()
                                          <<" to :: "
                                          <<_execution_precondition<<std::endl)
                 } else {
@@ -537,22 +540,106 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
             assert(input.test_cast<Planning::Formula::Perceptual_Proposition>());
             
             auto _proposition = input.cxx_get<Planning::Formula::Perceptual_Proposition>();
-            
-            NEW_referenced_WRAPPED_deref_POINTER
-                (runtime_Thread,
-                 Formula::Perceptual_Proposition,
-                 proposition,
-                 _proposition->get__name(),
-                 _proposition->get__arguments());
 
-            problem__perceptual_Propositions
-                .insert(Formula::Perceptual_Proposition__Pointer(proposition));
+
+            Constant_Arguments constant_Arguments;
+            auto problem_thread = reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data);
+            bool no_spurious_constants = true;
+            auto arguments = _proposition->get__arguments();
+            for(auto argument = arguments.begin()
+                    ; argument != arguments.end()
+                    ; argument++ ){
+                if(argument->get__runtime_Thread() != problem_thread) {
+                    no_spurious_constants = false;
+                    break;
+                }
+            }
+
+            if(!no_spurious_constants){
+                constant_Arguments = Constant_Arguments(arguments.size());
+                assert(arguments.size() == constant_Arguments.size());
+                for(auto index = 0
+                        ; index != constant_Arguments.size()
+                        ; index++ ){
+                    assert(index < arguments.size());
+                    assert(index < constant_Arguments.size());
             
-            auto id = proposition->get__id();
+                    if(arguments[index].get__runtime_Thread() != runtime_Thread) {
+                        NEW_referenced_WRAPPED
+                            (problem_thread
+                             , Planning::Constant
+                             , constant
+                             , arguments[index].get__name());
+                        constant_Arguments[index] = constant;
+                    } else {
+                        constant_Arguments[index] = arguments[index];
+                    }
+                }
+            }
+
+            std::size_t id = 0;
+            Formula::Perceptual_Proposition__Pointer local_proposition;
+            
+            if(!no_spurious_constants){
+                assert(problem_thread == reinterpret_cast<basic_type::Runtime_Thread>
+                       (dynamic_cast<const Planning::Parsing::Constants_Data*>(&problem_Data)));
+        
+//                 NEW_referenced_WRAPPED
+//                     (runtime_Thread//dynamic_cast<const Planning::Parsing::Formula_Data*>(&problem_Data)
+//                      , Planning::Formula::Perceptual_Proposition
+//                      , proposition
+//                      , _proposition->get__name()
+//                      , constant_Arguments);
+
+                NEW_referenced_WRAPPED_deref_POINTER
+                    (runtime_Thread
+                     , Formula::Perceptual_Proposition
+                     , proposition
+                     , _proposition->get__name()
+                     , constant_Arguments);
+                
+                problem__perceptual_Propositions
+                    .insert(Formula::Perceptual_Proposition__Pointer(proposition));//.cxx_get<Formula::Perceptual_Proposition>());
+                id = proposition->get__id();
+                local_proposition = Formula::Perceptual_Proposition__Pointer(proposition);
+            } else {
+                
+//                 NEW_referenced_WRAPPED
+//                     (runtime_Thread//dynamic_cast<const Planning::Parsing::Formula_Data*>(&problem_Data)
+//                      , Planning::Formula::Perceptual_Proposition
+//                      , proposition
+//                      , _proposition->get__name()
+//                      , arguments);
+
+                NEW_referenced_WRAPPED_deref_POINTER
+                    (runtime_Thread
+                     , Formula::Perceptual_Proposition
+                     , proposition
+                     , _proposition->get__name()
+                     , arguments);
+                
+                problem__perceptual_Propositions
+                    .insert(Formula::Perceptual_Proposition__Pointer(proposition));
+                
+                id = proposition->get__id();
+                local_proposition = Formula::Perceptual_Proposition__Pointer(proposition);
+            }
+            
+//             NEW_referenced_WRAPPED_deref_POINTER
+//                 (runtime_Thread,
+//                  Formula::Perceptual_Proposition,
+//                  proposition,
+//                  _proposition->get__name(),
+//                  _proposition->get__arguments());
+
+//             problem__perceptual_Propositions
+//                 .insert(Formula::Perceptual_Proposition__Pointer(proposition));
+            
+//             auto id = proposition->get__id();
 
             assert(id < problem__perceptual_Propositions.size());
             
-            effects_lists.top().push_back(Formula::Perceptual_Proposition__Pointer(proposition));
+            effects_lists.top().push_back(local_proposition);//Formula::Perceptual_Proposition__Pointer(proposition));
             
             return;
         }
@@ -613,6 +700,22 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
         case enum_types::probabilistic_effect:/*DONE*/
         {
             assert(input.test_cast<Formula::Probabilistic>());
+
+            if(level == 0){
+                assert(!list__Listeners.size());
+                
+                Formula::Subformulae elements;
+                elements.push_back(input);
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
+                    (runtime_Thread,
+                     Formula::Conjunction,
+                     conjunction,
+                     elements);
+                (*this)(conjunction);
+                
+                return;
+            }
+            
             
             assert(level != 0);
             auto new__observational_proposition = process__generate_name(":probabilistic:");
@@ -843,7 +946,8 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                      , problem__state_Propositions
                      , problem__literals
                      , problem__disjunctive_Clauses
-                     , problem__conjunctive_Normal_Form_Formulae);
+                     , problem__conjunctive_Normal_Form_Formulae
+                     , problem_Data);
                 
 
                 planning_CNF__to__State_CNF(condition);

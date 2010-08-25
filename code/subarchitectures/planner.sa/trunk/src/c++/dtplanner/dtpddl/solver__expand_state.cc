@@ -196,6 +196,13 @@ void Solver::expand_optional_transformation(Planning::State* state
         auto state_space_iterator = state_space.find(*_successor);
         
         if(state_space_iterator == state_space.end()){
+            double state_value =  problem_Grounding->get__objective_value(**_successor);
+            (*_successor)->set__value(state_value);
+        
+            INTERACTIVE_VERBOSER(true, 9096, "Setting value of state :: "<<(**_successor)<<std::endl
+                                 <<state_value<<std::endl);
+        
+                
             state_space.insert(*_successor);
             state_space_iterator = state_space.find(*_successor);
             assert(state_space_iterator != state_space.end());

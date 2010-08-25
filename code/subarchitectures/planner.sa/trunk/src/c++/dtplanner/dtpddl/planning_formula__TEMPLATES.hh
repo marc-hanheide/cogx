@@ -37,7 +37,7 @@
     {                                                                   \
         auto contents = this->Parent::contents();                       \
         auto name = std::tr1::get<0>(contents);                         \
-        o<<"("<<name<<" ";                                              \
+        o<<this->get__runtime_Thread()<<"("<<name<<" ";                       \
         Printing::operator<<(o, std::tr1::get<1>(contents));            \
         o<<")"<<std::endl;                                              \
         return o;                                                       \

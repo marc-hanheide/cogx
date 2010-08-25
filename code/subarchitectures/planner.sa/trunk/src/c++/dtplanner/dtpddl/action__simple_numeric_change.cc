@@ -141,11 +141,16 @@ namespace Planning
     State* Simple_Numeric_Transformation<int, enum_types::simple_int_transformation>::
     operator()(State* in) const
     {
+        
+        INTERACTIVE_VERBOSER(true, 9096, "Executing simple numeric effect :: "<<*this<<std::endl);
+        
         auto index = get__change_index();
         
         switch(get__modification_type()){
             case enum_types::increase:
             {
+                INTERACTIVE_VERBOSER(true, 9096, "Increasing by :: "<<get__modification_value()<<std::endl);
+        
                 in->set__int(index
                             , in->get__int(index)
                             + get__modification_value());
@@ -153,6 +158,8 @@ namespace Planning
             break;
             case enum_types::decrease:
             {
+                INTERACTIVE_VERBOSER(true, 9096, "Decreasing by :: "<<get__modification_value()<<std::endl);
+                
                 in->set__int(index
                             , in->get__int(index)
                             - get__modification_value());
@@ -160,6 +167,8 @@ namespace Planning
             break;
             case enum_types::assign:
             {
+                INTERACTIVE_VERBOSER(true, 9096, "Assign by :: "<<get__modification_value()<<std::endl);
+                
                 in->set__int(index
                             , get__modification_value());
             }

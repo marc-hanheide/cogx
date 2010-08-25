@@ -39,6 +39,7 @@
 #include "planning_formula.hh"
 #include "state_formula.hh"
  
+#include "dtp_pddl_parsing_data_problem.hh"
 
 namespace Planning
 {    
@@ -49,12 +50,15 @@ namespace Planning
                                     , Formula::State_Propositions&
                                     , State_Formula::Literals&
                                     , State_Formula::Disjunctive_Clauses&
-                                    , State_Formula::Conjunctive_Normal_Form_Formulae&);
+                                    , State_Formula::Conjunctive_Normal_Form_Formulae&
+                                    , const Planning::Parsing::Problem_Data&);
         
         DECLARATION__UNARY_VISITOR(basic_type);
         
         State_Formula::Conjunctive_Normal_Form_Formula__Pointer get__answer() const ;
     private:
+        const Planning::Parsing::Problem_Data& problem_Data;
+        
         State_Formula::Conjunctive_Normal_Form_Formula__Pointer answer;
         
         Formula::State_Propositions& problem__state_Propositions;

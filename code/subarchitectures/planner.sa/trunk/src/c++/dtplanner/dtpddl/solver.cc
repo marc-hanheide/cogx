@@ -57,7 +57,8 @@ Are_Doubles_Close Solver::are_Doubles_Close(1e-9);
 Solver::Solver(Planning::Parsing::Problem_Data& problem_Data)
     :problem_Data(problem_Data),
      preprocessed(false),
-     starting_belief_state(0)// ,
+     starting_belief_state(0),
+     null_observation(0)// ,
 //      constants_Description(0),
 //      constants(0)
 {

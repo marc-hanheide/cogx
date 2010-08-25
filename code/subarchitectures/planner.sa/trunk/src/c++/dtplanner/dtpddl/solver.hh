@@ -56,15 +56,25 @@ namespace Planning
 
         bool operator()(){return true;};
 
+        
         void expand_belief_state( POMDP_State*);
         bool expand_belief_state_space();
-        void add_entry(POMDP_State::Action__to__Observation_to_Belief&
+        /*\argument{action_index} does not indicate a legal action at
+         * \argument{successor_state}.*/
+        void fill_illegals(POMDP_State::Normalisation_Factors& _normalisation_Factors
+                   , POMDP_State::Action__to__Observation_to_Belief& _successor_belief_state
+                   , uint action_index
+                   , MDP_State* successor_state
+                   , double probability);
+        void add_entry(POMDP_State::Normalisation_Factors&
+                       , POMDP_State::Action__to__Observation_to_Belief&
                        , uint 
                        , Planning::Observational_State*
                        , Planning::MDP_State* 
                        , double);
         void press__belief_transitions(POMDP_State*,
-                                       POMDP_State::Action__to__Observation_to_Belief&);
+                                       const POMDP_State::Normalisation_Factors& _normalisation_Factors,
+                                       const POMDP_State::Action__to__Observation_to_Belief&);
 
         /* \argument{Observational_State} is being generated, action
          * \argument{ID_TYPE} was executed, and led to
@@ -171,6 +181,9 @@ namespace Planning
         /* Domain data associated with \member{problem} (see
          * \member{preprocess}).*/
         CXX__PTR_ANNOTATION(Planning::Parsing::Domain_Data) domain_Data;
+
+        /*An observation of nothing.*/
+        Observational_State* null_observation;
 
         /*Testing conditions on doubles.*/
         static Are_Doubles_Close are_Doubles_Close;//(1e-9);

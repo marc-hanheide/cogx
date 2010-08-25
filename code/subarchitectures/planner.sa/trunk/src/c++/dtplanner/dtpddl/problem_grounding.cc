@@ -216,6 +216,11 @@ void Problem_Grounding::ground_objective_function()
                                 <<" that is not a state function.");
             break;
     }
+
+    assert(Formula::State_Ground_Function::
+           ith_exists
+           (formula_runtime_Thread,
+            objective_index));
     
     auto function_symbol = Formula::State_Ground_Function::
         make_ith<Formula::State_Ground_Function>
@@ -224,6 +229,9 @@ void Problem_Grounding::ground_objective_function()
 
     QUERY_UNRECOVERABLE_ERROR(problem_Data.has_static_value(function_symbol)
                               , "Trying to optimise over a static function symbol.");
+    
+    INTERACTIVE_VERBOSER(true, 9096, "Objective is :: "
+                         <<function_symbol<<std::endl);
     
     if(domain_Data->is_type__double(function_symbol.get__name())){
         double_valued_objective = true;
@@ -237,7 +245,6 @@ double Problem_Grounding::get__objective_value(const State& state) const
     if(!is_a_numeric_objective){
         return 0.0;
     }
-    
     
     if(integer_valued_objective){
         auto value = state.get__int(objective_index);

@@ -47,6 +47,16 @@
 
 using namespace Planning;
 
+bool State::operator==(const State&in) const
+{
+    return Markov_Decision_Process_State::operator==(in);
+}
+
+bool State::operator<(const State&in) const
+{
+    return Markov_Decision_Process_State::operator<(in);
+}
+
 
 State::State(Solver& solver,
              uint propositions_count,

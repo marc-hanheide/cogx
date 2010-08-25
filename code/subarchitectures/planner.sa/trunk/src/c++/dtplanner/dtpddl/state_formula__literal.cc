@@ -93,6 +93,14 @@ bool Literal::is_satisfied(const State& state) const
 
 void Literal::report__newly_satisfied(State& state) const
 {
+
+    if(!get__traversable__listeners().size()){
+        
+        INTERACTIVE_VERBOSER(true, 9093, "Increasing satisfaction of redundant literal  :: "<<get__traversable__listeners().size()<<" :::: "
+                             <<*this<<std::endl);
+    }
+    
+    
     satisfy_listeners(state);
 //     auto listeners = get__traversable__listeners();
 //     for(auto listener = listeners.begin()
@@ -106,6 +114,8 @@ void Literal::report__newly_satisfied(State& state) const
 
 void Literal::report__newly_unsatisfied(State& state) const
 {
+    INTERACTIVE_VERBOSER(true, 9090, "Decreasing satisfaction of  :: "
+                         <<*this<<std::endl);
     unsatisfy_listeners(state);
 //     auto listeners = get__traversable__listeners();
 //     for(auto listener = listeners.begin()

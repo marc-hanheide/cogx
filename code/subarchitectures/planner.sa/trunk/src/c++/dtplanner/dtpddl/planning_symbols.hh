@@ -43,9 +43,9 @@
 
 namespace Planning
 {
-    WRAPPED_STRING(enum_types::type, Type);
+    WRAPPED_STRING__WITH_DECLARATIONS(enum_types::type, Type, PRINTING_);
     WRAPPED_STRING__WITH_DECLARATIONS(enum_types::variable, Variable, PRINTING_);
-    WRAPPED_STRING(enum_types::constant, Constant);
+    WRAPPED_STRING__WITH_DECLARATIONS(enum_types::constant, Constant, PRINTING_);
     WRAPPED_STRING__WITH_DECLARATIONS(enum_types::requirement, Requirement, PRINTING_);
 
 
@@ -78,7 +78,7 @@ namespace Planning
     
     typedef std::vector<Constant> Constant_Arguments;
 
-    WRAPPED_STRING(enum_types::predicate_name, Predicate_Name);
+    WRAPPED_STRING__WITH_DECLARATIONS(enum_types::predicate_name, Predicate_Name, PRINTING_);
     WRAPPED_STRING(enum_types::percept_name, Percept_Name);
     WRAPPED_STRING(enum_types::observation_name, Observation_Name);
     WRAPPED_STRING(enum_types::state_function_name, State_Function_Name);

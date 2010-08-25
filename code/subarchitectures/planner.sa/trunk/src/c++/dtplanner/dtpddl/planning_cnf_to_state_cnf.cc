@@ -47,13 +47,15 @@ Planning_CNF__to__State_CNF(basic_type::Runtime_Thread runtime_Thread,
                             Formula::State_Propositions& state_Propositions,
                             State_Formula::Literals& problem__literals,
                             State_Formula::Disjunctive_Clauses& problem__clauses,
-                            State_Formula::Conjunctive_Normal_Form_Formulae& problem__cnfs)
+                            State_Formula::Conjunctive_Normal_Form_Formulae& problem__cnfs,
+                            const Planning::Parsing::Problem_Data& _problem_Data)
     :problem__state_Propositions(state_Propositions),
      problem__literals(problem__literals),
      problem__clauses(problem__clauses),
      problem__cnfs(problem__cnfs),
      processing_negative(false),
-     runtime_Thread(runtime_Thread)
+     runtime_Thread(runtime_Thread),
+     problem_Data(_problem_Data)
 {
 }
 
@@ -76,26 +78,103 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             
             auto __proposition = input.cxx_get<Planning::Formula::State_Proposition>();
 
+            Constant_Arguments constant_Arguments;
+            auto problem_thread = reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data);
+            auto arguments = __proposition->get__arguments();
+            bool no_spurious_constants = true;
+            for(auto argument = arguments.begin()
+                    ; argument != arguments.end()
+                    ; argument++ ){
+                if(argument->get__runtime_Thread() != problem_thread) {
+                    no_spurious_constants = false;
+                    break;
+                }
+            }
+
+            if(!no_spurious_constants){
+                constant_Arguments = Constant_Arguments(arguments.size());
+                assert(arguments.size() == constant_Arguments.size());
+                for(auto index = 0
+                        ; index != constant_Arguments.size()
+                        ; index++ ){
+                    assert(index < arguments.size());
+                    assert(index < constant_Arguments.size());
             
-    
-            NEW_referenced_WRAPPED_deref_POINTER
-                (runtime_Thread,
-                 Planning::Formula::State_Proposition,
-                 _proposition,
-                 __proposition->get__name(),
-                 __proposition->get__arguments());
+                    if(arguments[index].get__runtime_Thread() != runtime_Thread) {
+                        NEW_referenced_WRAPPED
+                            (problem_thread
+                             , Planning::Constant
+                             , constant
+                             , arguments[index].get__name());
+                        constant_Arguments[index] = constant;
+                    } else {
+                        constant_Arguments[index] = arguments[index];
+                    }
+                }
+            }
+
+            Formula::State_Proposition _proposition;
+            if(!no_spurious_constants){
+                assert(problem_thread == reinterpret_cast<basic_type::Runtime_Thread>
+                       (dynamic_cast<const Planning::Parsing::Constants_Data*>(&problem_Data)));
+        
+                NEW_referenced_WRAPPED
+                    (runtime_Thread//dynamic_cast<const Planning::Parsing::Formula_Data*>(&problem_Data)
+                     , Planning::Formula::State_Proposition
+                     , proposition
+                     , __proposition->get__name()
+                     , constant_Arguments);
+
+                
+                problem__state_Propositions
+                    .insert(proposition);
+                _proposition = proposition;
+            } else {
+                
+                NEW_referenced_WRAPPED
+                    (runtime_Thread//dynamic_cast<const Planning::Parsing::Formula_Data*>(&problem_Data)
+                     , Planning::Formula::State_Proposition
+                     , proposition
+                     , __proposition->get__name()
+                     , arguments);
+
+                
+                problem__state_Propositions
+                    .insert(proposition);
+                
+                _proposition = proposition;
+            }
+            
+            
+            
+            
+//             Constant_Arguments constant_Arguments;
+//             auto problem_thread = reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data);
+//             bool no_spurious_constants = true;
+//             for(auto argument = __proposition->get__arguments.begin()
+//                     ; argument != __proposition->get__arguments.end()
+//                     ; argument++ ){
+//                 if(argument->get__runtime_Thread() != problem_thread) {
+//                     no_spurious_constants = false;
+//                     break;
+//                 }
+//             }
+
+//             assert(no_spurious_constants);
+            
+            
 
             
             INTERACTIVE_VERBOSER(true, 3104,
                                  "New state proposition :: "<<_proposition<<std::endl);
             
             auto _problem__state_Proposition = problem__state_Propositions
-                .find(*_proposition.cxx_get<Planning::Formula::State_Proposition>());
+                .find(_proposition);//*_proposition.cxx_get<Planning::Formula::State_Proposition>());
             if(_problem__state_Proposition == problem__state_Propositions.end()){
                 problem__state_Propositions
-                    .insert(*_proposition.cxx_get<Planning::Formula::State_Proposition>());
+                    .insert(_proposition);//*_proposition.cxx_get<Planning::Formula::State_Proposition>());
                 _problem__state_Proposition = problem__state_Propositions
-                    .find(*_proposition.cxx_get<Planning::Formula::State_Proposition>());
+                    .find(_proposition);//*_proposition.cxx_get<Planning::Formula::State_Proposition>());
             }
             auto proposition = *_problem__state_Proposition;
             
@@ -112,6 +191,17 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             
             auto _literal__pointer = problem__literals.find(literal);
             if(_literal__pointer == problem__literals.end()){
+
+                
+                for(auto tmp_literal = problem__literals.begin()
+                        ; tmp_literal != problem__literals.end()
+                        ; tmp_literal++){
+                    std::cerr<<(*tmp_literal)->get__runtime_Thread()<<"::"<<*tmp_literal<<std::endl;
+                }
+                
+                INTERACTIVE_VERBOSER(true, 9093, "Adding new problem literal :: "
+                                     <<literal->get__runtime_Thread()<<"::"<<literal<<std::endl);
+                
                 problem__literals.insert(literal);
                 _literal__pointer = problem__literals.find(literal);
             }
@@ -190,8 +280,17 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
                     ; clause != clauses.end()
                     ;  clause++){
                 auto deref__st = problem__pointer.cxx_deref_get<basic_type>();
-                (*clause).cxx_get<Disjunctive_Clause>()
-                    ->add__listener(deref__st);
+
+                
+                if((*clause).cxx_get<Disjunctive_Clause>()
+                   ->add__listener(deref__st)){
+                    
+                
+                    INTERACTIVE_VERBOSER(true, 9091, "successfully added CNF listener "<<*deref__st.get()
+                                         <<" to clause :: "
+                                         <<(*clause)<<std::endl);
+                }
+                
             }
 
             answer = problem__pointer;
@@ -261,6 +360,11 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
                     
                     auto deref__st = clause__pointer.cxx_deref_get<basic_type>();
                     if((*literal).cxx_get<Literal>()->add__listener(deref__st)){;
+                        
+                        INTERACTIVE_VERBOSER(true, 9091, "successfully added clause listener "<<*deref__st.get()
+                                             <<" to literal :: "
+                                             <<(*literal)<<std::endl);
+                        
                     } else {
                         WARNING("Input formula is :: "<<input<<std::endl
                                 <<"Could not register clause :: "<<deref__st<<std::endl

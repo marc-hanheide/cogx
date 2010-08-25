@@ -80,6 +80,7 @@ namespace Planning
         typedef std::map<Observational_State*, Searchable_Belief_State> Observation_to_Belief;
         typedef std::map<uint,  Observation_to_Belief> Action__to__Observation_to_Belief;
 
+        typedef std::map<uint, std::map<Observational_State*, double> > Normalisation_Factors;
         
         bool operator==(const POMDP_State&) const;
         bool operator<(const POMDP_State&) const;
@@ -128,6 +129,7 @@ namespace Planning
 namespace std
 {
     std::ostream& operator<<(std::ostream&, const Planning::Partially_Observable_Markov_Decision_Process_State&);
+    std::ostream& operator<<(std::ostream&, const Planning::Partially_Observable_Markov_Decision_Process_State::Action__to__Observation_to_Belief&);
 }
 
 

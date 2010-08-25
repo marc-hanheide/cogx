@@ -292,7 +292,7 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             
             auto state_Transformation = *problem_action;
             
-            INTERACTIVE_VERBOSER(true, 3110, "::INTERMEDIATE ACTION:: "<<state_Transformation<<std::endl
+            INTERACTIVE_VERBOSER(true, 9092, "::INTERMEDIATE ACTION:: "<<state_Transformation<<std::endl
                                  <<"with  "<<_list__Listeners.size()
                                  <<" listeners to wake on execution"<<std::endl);
             
@@ -472,17 +472,78 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             
             auto _proposition = input.cxx_get<Planning::Formula::State_Proposition>();
             
-            NEW_referenced_WRAPPED_deref_POINTER
-                (runtime_Thread,
-                 Planning::Formula::State_Proposition,
-                 proposition,
-                 _proposition->get__name(),
-                 _proposition->get__arguments());
+            Constant_Arguments constant_Arguments;
+            auto problem_thread = reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data);
+            auto arguments = _proposition->get__arguments();
+            bool no_spurious_constants = true;
+            for(auto argument = arguments.begin()
+                    ; argument != arguments.end()
+                    ; argument++ ){
+                if(argument->get__runtime_Thread() != problem_thread) {
+                    no_spurious_constants = false;
+                    break;
+                }
+            }
 
-            problem__state_Propositions
-                .insert(*proposition.cxx_get<Planning::Formula::State_Proposition>());
+            if(!no_spurious_constants){
+                constant_Arguments = Constant_Arguments(arguments.size());
+                assert(arguments.size() == constant_Arguments.size());
+                for(auto index = 0
+                        ; index != constant_Arguments.size()
+                        ; index++ ){
+                    assert(index < arguments.size());
+                    assert(index < constant_Arguments.size());
             
-            auto id = proposition->get__id();
+                    if(arguments[index].get__runtime_Thread() != runtime_Thread) {
+                        NEW_referenced_WRAPPED
+                            (problem_thread
+                             , Planning::Constant
+                             , constant
+                             , arguments[index].get__name());
+                        constant_Arguments[index] = constant;
+                    } else {
+                        constant_Arguments[index] = arguments[index];
+                    }
+                }
+            }
+
+            std::size_t id = 0;
+            if(!no_spurious_constants){
+                assert(problem_thread == reinterpret_cast<basic_type::Runtime_Thread>
+                       (dynamic_cast<const Planning::Parsing::Constants_Data*>(&problem_Data)));
+        
+                NEW_referenced_WRAPPED
+                    (runtime_Thread//dynamic_cast<const Planning::Parsing::Formula_Data*>(&problem_Data)
+                     , Planning::Formula::State_Proposition
+                     , proposition
+                     , _proposition->get__name()
+                     , constant_Arguments);
+
+                
+                problem__state_Propositions
+                    .insert(proposition);
+                id = proposition.get__id();
+            } else {
+                
+                NEW_referenced_WRAPPED
+                    (runtime_Thread//dynamic_cast<const Planning::Parsing::Formula_Data*>(&problem_Data)
+                     , Planning::Formula::State_Proposition
+                     , proposition
+                     , _proposition->get__name()
+                     , arguments);
+
+                
+                problem__state_Propositions
+                    .insert(proposition);
+                
+                id = proposition.get__id();
+                
+            }
+            
+//             problem__state_Propositions
+//                 .insert(*proposition.cxx_get<Planning::Formula::State_Proposition>());
+            
+//             auto id = proposition->get__id();
 
             assert(id < problem__state_Propositions.size());
             
@@ -497,6 +558,16 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             auto _literal__pointer = problem__literals.find(literal);
             
             if(_literal__pointer == problem__literals.end()){
+                
+                for(auto tmp_literal = problem__literals.begin()
+                        ; tmp_literal != problem__literals.end()
+                        ; tmp_literal++){
+                    std::cerr<<(*tmp_literal)->get__runtime_Thread()<<"::"<<*tmp_literal<<std::endl;
+                }
+                
+                INTERACTIVE_VERBOSER(true, 9093, "Adding new problem literal :: "
+                                     <<literal->get__runtime_Thread()<<"::"<<literal<<std::endl);
+                
                 problem__literals.insert(literal);
                 _literal__pointer = problem__literals.find(literal);
             }
@@ -801,7 +872,8 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
                      , problem__state_Propositions
                      , problem__literals
                      , problem__disjunctive_Clauses
-                     , problem__conjunctive_Normal_Form_Formulae);
+                     , problem__conjunctive_Normal_Form_Formulae
+                     , problem_Data);
                 
 
                 planning_CNF__to__State_CNF(condition);
