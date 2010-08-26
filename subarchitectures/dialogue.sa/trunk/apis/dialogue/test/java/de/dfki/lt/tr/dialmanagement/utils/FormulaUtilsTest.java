@@ -176,6 +176,15 @@ public class FormulaUtilsTest {
 	
 	
 	@Test
+	public void complexFormula2() throws DialogueException {
+		String str = "<Op1>(prop1 ^ prop2) ^ <Op2>(prop3 v prop4)";
+		dFormula formula = FormulaUtils.constructFormula(str);
+		
+		assertTrue (formula instanceof ComplexFormula);
+	}
+	
+	
+	@Test
 	public void modalFormula() throws DialogueException {
 		
 		String str = "<Belief>(<Ref>context1_1 ^ <ObjectType>ball)";
@@ -258,6 +267,72 @@ public class FormulaUtilsTest {
 		
 		assertEquals(((BooleanFormula)formula).val, false);
 		
+	}
+	
+	
+	
+	@Test 
+	public void compareFormula1() throws DialogueException {
+		
+		String str1 = "blabla1 ^ blabla2";
+		dFormula formula1 = FormulaUtils.constructFormula(str1);
+		
+		String str2 = "blabla2 ^ blabla1";
+		dFormula formula2 = FormulaUtils.constructFormula(str2);
+		
+		assertTrue(FormulaUtils.isEqualTo(formula1, formula2));
+	}
+	
+	@Test
+	public void compareFormula2() throws DialogueException {
+		
+		String str1 = "blabla1 v blabla2";
+		dFormula formula1 = FormulaUtils.constructFormula(str1);
+		
+		String str2 = "bloblo1 v bloblo2";
+		dFormula formula2 = FormulaUtils.constructFormula(str2);
+		
+		assertFalse(FormulaUtils.isEqualTo(formula1, formula2));
+	}
+	
+	@Test
+	public void compareFormula3() throws DialogueException {
+		
+		String str1 = "blabla5 ^ <Op1>(blabla1 v blabla2 v (blabla3 ^ blabla4))";
+		
+		dFormula formula1 = FormulaUtils.constructFormula(str1);
+		
+		String str2 = "<Op1>(blabla2 v blabla1 v (blabla4 ^ blabla3)) ^ blabla5";
+		dFormula formula2 = FormulaUtils.constructFormula(str2);
+		
+		assertTrue(FormulaUtils.isEqualTo(formula1, formula2));
+	}
+	
+
+	@Test
+	public void compareFormula4() throws DialogueException {
+		
+		String str1 = "blabla5 ^ <Op1>(blabla1 v blabla2 v (blabla3 ^ blabla4))";
+		
+		dFormula formula1 = FormulaUtils.constructFormula(str1);
+		
+		String str2 = "<Op1>(blabla6 v blabla1 v (blabla4 ^ blabla2)) ^ blabla5";
+		dFormula formula2 = FormulaUtils.constructFormula(str2);
+		
+		assertFalse(FormulaUtils.isEqualTo(formula1, formula2));
+	}
+	
+	
+	@Test
+	public void compareFormula5() throws DialogueException {
+		
+		String str1 = "<Belief>(<Colour>Blue ^ <Shape>Cylindrical ^ <Position>(<XCoord>0.3 ^ <YCoord>2.5))";
+		dFormula formula1 = FormulaUtils.constructFormula(str1);
+		
+		String str2 = "<Belief>(<Position>(<XCoord>0.3 ^ <YCoord>2.5) ^ <Colour>Blue ^ <Shape>Cylindrical)";
+		dFormula formula2 = FormulaUtils.constructFormula(str2);
+		
+		assertTrue(FormulaUtils.isEqualTo(formula1, formula2));
 	}
 		
 }

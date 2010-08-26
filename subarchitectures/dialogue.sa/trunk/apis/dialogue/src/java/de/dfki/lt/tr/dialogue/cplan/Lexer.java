@@ -95,7 +95,7 @@ public class Lexer implements RuleParser.Lexer, LFParser.Lexer  {
 
   /** Skip comments. Comments are C++/Java style line and block comments.
    *  Currently, there is no such thing as a Documentation comment.
-   *  TODO: eventually store comments, and attach them to the rules for
+   *  \todo eventually store comments, and attach them to the rules for
    *  automatic documentation or GUI help purposes.
    */
   void skipComment() throws IOException {
@@ -136,6 +136,7 @@ public class Lexer implements RuleParser.Lexer, LFParser.Lexer  {
     } while (_nextChar == '/' || _nextChar == ' ');
   }
 
+  @SuppressWarnings("fallthrough")
   void readNext() throws IOException {
     _nextChar = _in.read(); ++_column;
     switch (_nextChar) {

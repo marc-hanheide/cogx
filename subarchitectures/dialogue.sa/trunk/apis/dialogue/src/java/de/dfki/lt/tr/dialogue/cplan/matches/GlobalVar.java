@@ -4,7 +4,7 @@ import de.dfki.lt.tr.dialogue.cplan.Bindings;
 import de.dfki.lt.tr.dialogue.cplan.DagEdge;
 
 /** A syntax tree node representing the occurrence of a global variable */
-public class GlobalVar extends MatchVar {
+public class GlobalVar extends Match implements MatchLVal {
   private String _varName;
 
   public GlobalVar(String varName) {

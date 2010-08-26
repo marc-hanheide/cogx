@@ -1,6 +1,16 @@
 int_id(i1).
 mirror_id(idm).
 
+disjoint([p(x), p(y), p(z)]).
+
+%understand : event : utter(S, H, Nom) <-
+%	loop_this(Nom).
+
+%loop_this(X).
+
+%loop_this(Nom) <-
+%	loop_this(Nom).
+
 % X is Y
 understand : event : utter(S, H, Nom) <-
 	i : sort(Nom, ascription),

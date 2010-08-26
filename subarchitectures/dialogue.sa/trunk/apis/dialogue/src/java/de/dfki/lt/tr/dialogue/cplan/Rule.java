@@ -35,10 +35,7 @@ public class Rule {
   public static void matchesToString(StringBuilder sb,
       List<VarMatch> matches) {
     for (VarMatch vm : matches) {
-      if (vm.varName != null) {
-        sb.append(", ##").append(vm.varName).append(" ^ ");
-      }
-      sb.append(vm.match);
+      sb.append(vm);
     }
   }
 
@@ -59,19 +56,7 @@ public class Rule {
     bindings.resetLocalBindings();
     boolean result = true;
     for (VarMatch varMatch : _matches) {
-      DagEdge current = here;
-      if (varMatch.varName != null) {
-        current = bindings.getBinding(varMatch.varName, Bindings.GLOBAL);
-      }
-      if (current == null) {
-        result = false;
-      } else {
-        result = varMatch.match.match(current, bindings);
-        if (result && varMatch.varName == null) {
-          // bind the current location locally to "#"
-            bindings.bind("#", current, Bindings.LOCAL);
-        }
-      }
+      result = varMatch.match(here, bindings);
       if (! result) break;
     }
     if (result && _tracer != null) {
@@ -111,6 +96,8 @@ public class Rule {
     Bindings bindings = new Bindings();
     DagNode result = null;
     if (matches(current, bindings)) {
+      // the special variable "#" should now be bound to current
+      assert(bindings.getBinding("#", Bindings.LOCAL) == current);
       executeActions(current, bindings);
       result = current.getValue().copyResult(false);
     }

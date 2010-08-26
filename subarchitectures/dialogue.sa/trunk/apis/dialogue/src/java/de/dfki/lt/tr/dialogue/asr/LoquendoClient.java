@@ -95,6 +95,19 @@ extends _ResultListenerDisp {
 	}
 
 	/**
+	 * Get notified on being unregistered by the server.
+	 *
+	 * @param reason reason given by the server
+	 * @param __current
+	 */
+	@Override
+	public void unregisteredFromServer(String reason, Current __current)
+	{
+		log("unregistered from the server, reason: " + reason);
+	}
+
+
+	/**
 	 * Registers a process with the client, to be notified whenever the engine
 	 * produces a new result.
 	 *

@@ -19,7 +19,7 @@
 
 package de.dfki.lt.tr.dialmanagement.arch;
   
-
+    
 /**
  * Exception in the dialogue management subsystem
  * 

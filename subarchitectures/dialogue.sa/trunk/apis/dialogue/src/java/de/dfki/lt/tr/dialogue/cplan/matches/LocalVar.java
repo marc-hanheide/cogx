@@ -4,7 +4,7 @@ import de.dfki.lt.tr.dialogue.cplan.Bindings;
 import de.dfki.lt.tr.dialogue.cplan.DagEdge;
 
 /** A syntax tree node representing the occurence of a local variable */
-public class LocalVar extends MatchVar {
+public class LocalVar extends Match implements MatchLVal {
   private String _varName;
 
   public LocalVar(String varName) {
@@ -34,6 +34,6 @@ public class LocalVar extends MatchVar {
   @Override
   public DagEdge getBinding(DagEdge input, Bindings bindings) {
     if (_varName == null) return input;
-    return bindings.getBinding(_varName, Bindings.GLOBAL);
+    return bindings.getBinding(_varName, Bindings.LOCAL);
   }
 }

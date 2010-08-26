@@ -6,27 +6,26 @@ import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.lf.Feature;
 import de.dfki.lt.tr.dialogue.slice.lf.LFRelation;
 
-import de.dfki.lt.tr.infer.wabd.FormulaFactory;
-import de.dfki.lt.tr.infer.wabd.ProofUtils;
-import de.dfki.lt.tr.infer.wabd.TermPredicateFactory;
-import de.dfki.lt.tr.infer.wabd.slice.ModalisedFormula;
-import de.dfki.lt.tr.infer.wabd.slice.Modality;
-import de.dfki.lt.tr.infer.wabd.slice.Term;
+import de.dfki.lt.tr.infer.weigabd.ProofUtils;
+import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
+import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
+import de.dfki.lt.tr.infer.weigabd.slice.Modality;
+import de.dfki.lt.tr.infer.weigabd.slice.Term;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 public abstract class AbducerUtils {
 
-	/** Convert a logical form to an array of modalised formulas -- facts
-         *  for the abducer.
+	/** Convert a logical form to an array of modalised atoms -- facts
+     *  for the abducer.
 	 * 
 	 * @param modality prefixed to every fact
 	 * @param lf
 	 * @return set of corresponding facts
 	 */
-	public static List<ModalisedFormula> lfToFacts(Modality[] modality, LogicalForm lf) {
-		List<ModalisedFormula> facts = new LinkedList<ModalisedFormula>();
+	public static List<ModalisedAtom> lfToFacts(Modality[] modality, LogicalForm lf) {
+		List<ModalisedAtom> facts = new LinkedList<ModalisedAtom>();
 		Iterator<LFNominal> it = LFUtils.lfGetNominals(lf);
 		while (it.hasNext()) {
 			addNomToFactList(facts, modality, it.next());
@@ -34,31 +33,31 @@ public abstract class AbducerUtils {
 		return facts;
 	}
 
-        /** Expand a nominal to a set of abducer facts.
-         *
-         * @param facts the set of facts
-         * @param mod modal context
-         * @param nom the nominal
-         */
-	private static void addNomToFactList(List<ModalisedFormula> facts, Modality[] mod, LFNominal nom) {
+	/** Expand a nominal to a set of abducer facts.
+	 *
+	 * @param facts the set of facts
+	 * @param mod modal context
+	 * @param nom the nominal
+	 */
+	private static void addNomToFactList(List<ModalisedAtom> facts, Modality[] mod, LFNominal nom) {
 		// nominal term
-		Term nomTerm = TermPredicateFactory.term(nom.nomVar);
+		Term nomTerm = TermAtomFactory.term(nom.nomVar);
 		
 		// sort
-		facts.add(FormulaFactory.modalisedFormula(
+		facts.add(TermAtomFactory.modalisedAtom(
 				mod,
-				TermPredicateFactory.predicate("sort", new Term[] {
+				TermAtomFactory.atom("sort", new Term[] {
 					nomTerm,
-					TermPredicateFactory.term(nom.sort)
+					TermAtomFactory.term(nom.sort)
 				})));
 
 		// proposition, if there is one
 		if (!nom.prop.prop.equals("")) {
-			facts.add(FormulaFactory.modalisedFormula(
+			facts.add(TermAtomFactory.modalisedAtom(
 					mod,
-					TermPredicateFactory.predicate("prop", new Term[] {
+					TermAtomFactory.atom("prop", new Term[] {
 						nomTerm,
-						TermPredicateFactory.term(nom.prop.prop)
+						TermAtomFactory.term(nom.prop.prop)
 					})));		
 		}
 
@@ -66,22 +65,22 @@ public abstract class AbducerUtils {
 		Iterator fIter = LFUtils.lfNominalGetFeatures(nom);
 		while (fIter.hasNext()) { 
 			Feature feat = (Feature) fIter.next(); 
-			facts.add(FormulaFactory.modalisedFormula(
+			facts.add(TermAtomFactory.modalisedAtom(
 					mod,
-					TermPredicateFactory.predicate("feat_" + feat.feat, new Term[] {
+					TermAtomFactory.atom("feat_" + feat.feat, new Term[] {
 						nomTerm,
-						TermPredicateFactory.term(feat.value)
+						TermAtomFactory.term(feat.value)
 					})));
 		}
 
 		Iterator rIter = LFUtils.lfNominalGetRelations(nom); 
 		while (rIter.hasNext()) {
 			LFRelation rel = (LFRelation) rIter.next();
-			facts.add(FormulaFactory.modalisedFormula(
+			facts.add(TermAtomFactory.modalisedAtom(
 					mod,
-					TermPredicateFactory.predicate("rel_" + rel.mode, new Term[] {
+					TermAtomFactory.atom("rel_" + rel.mode, new Term[] {
 						nomTerm, 
-						TermPredicateFactory.term(rel.dep)
+						TermAtomFactory.term(rel.dep)
 					})));
 		}
 	}
@@ -92,18 +91,18 @@ public abstract class AbducerUtils {
      * @param root identifier of the root nominal
      * @return the logical form
      */
-	public static LogicalForm factsToLogicalForm(ModalisedFormula[] facts, String root) {
+	public static LogicalForm factsToLogicalForm(ModalisedAtom[] facts, String root) {
 		LogicalForm lf = LFUtils.newLogicalForm();
 		
 		// go through the facts, extending the logical form
 		for (int i = 0; i < facts.length; i++) {
-			ModalisedFormula f = facts[i];
+			ModalisedAtom f = facts[i];
 			String nomVar = "";
 			
-			if (f.p.predSym.equals("sort") && f.p.args.length == 2) {
+			if (f.a.predSym.equals("sort") && f.a.args.length == 2) {
 				//System.err.println("sort...");
-				nomVar = ProofUtils.termToString(f.p.args[0]);
-				String sort = ProofUtils.termToString(f.p.args[1]);
+				nomVar = ProofUtils.termToString(f.a.args[0]);
+				String sort = ProofUtils.termToString(f.a.args[1]);
 
 				boolean isNew = false;
 				LFNominal nom = LFUtils.lfGetNominal(lf, nomVar);
@@ -120,10 +119,10 @@ public abstract class AbducerUtils {
 					lf.noms = LFUtils.lfAddNominal(lf.noms, nom);
 			}
 
-			else if (f.p.predSym.equals("prop") && f.p.args.length == 2) {
+			else if (f.a.predSym.equals("prop") && f.a.args.length == 2) {
 				//System.err.println("prop...");
-				nomVar = ProofUtils.termToString(f.p.args[0]);
-				String prop = ProofUtils.termToString(f.p.args[1]);
+				nomVar = ProofUtils.termToString(f.a.args[0]);
+				String prop = ProofUtils.termToString(f.a.args[1]);
 				LFNominal nom = LFUtils.lfGetNominal(lf, nomVar);
 				if (nom == null) {
 					nom = LFUtils.newLFNominal(nomVar);
@@ -134,12 +133,12 @@ public abstract class AbducerUtils {
 				//System.err.println("  " + LFUtils.lfNominalToString(nom));
 			}
 
-			else if (f.p.predSym.matches("feat_.*") && f.p.args.length == 2) {
+			else if (f.a.predSym.matches("feat_.*") && f.a.args.length == 2) {
 				//System.err.println("feat...");
-				nomVar = ProofUtils.termToString(f.p.args[0]);
+				nomVar = ProofUtils.termToString(f.a.args[0]);
 				Feature feat = new Feature();
-				feat.feat = f.p.predSym.substring(5);
-				feat.value = ProofUtils.termToString(f.p.args[1]);
+				feat.feat = f.a.predSym.substring(5);
+				feat.value = ProofUtils.termToString(f.a.args[1]);
 				LFNominal nom = LFUtils.lfGetNominal(lf, nomVar);
 				if (nom == null) {
 					nom = LFUtils.newLFNominal(nomVar);
@@ -150,11 +149,11 @@ public abstract class AbducerUtils {
 				//System.err.println("  " + LFUtils.lfNominalToString(nom));
 			}
 						
-			else if (f.p.predSym.matches("rel_.*") && f.p.args.length == 2) {
+			else if (f.a.predSym.matches("rel_.*") && f.a.args.length == 2) {
 				//System.err.println("rel...");
-				nomVar = ProofUtils.termToString(f.p.args[0]);
-				String mode = f.p.predSym.substring(4);
-				String dep = ProofUtils.termToString(f.p.args[1]);
+				nomVar = ProofUtils.termToString(f.a.args[0]);
+				String mode = f.a.predSym.substring(4);
+				String dep = ProofUtils.termToString(f.a.args[1]);
 				LFNominal nom = LFUtils.lfGetNominal(lf, nomVar);
 				LFRelation rel = LFUtils.newLFRelation(nomVar, mode, dep);
 				if (nom == null) {

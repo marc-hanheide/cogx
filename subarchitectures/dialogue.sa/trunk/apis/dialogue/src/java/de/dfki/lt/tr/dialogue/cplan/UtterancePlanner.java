@@ -5,12 +5,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import de.dfki.lt.tr.dialogue.cplan.functions.FunctionFactory;
 import de.dfki.lt.tr.dialogue.cplan.util.Position;
 
 public class UtterancePlanner {
@@ -27,28 +29,38 @@ public class UtterancePlanner {
     DagNode.init();
   }
 
-  public UtterancePlanner() {
+  public UtterancePlanner(File pluginDirectory) {
+    FunctionFactory.init(pluginDirectory);
     _lexer = new Lexer();
     _lfparser = new LFParser(_lexer);
     _errors = new ArrayList<Position>();
   }
 
+  public UtterancePlanner() {
+    this(null);
+  }
+  
   public void initializeProcessor(List<Rule> rules) {
     _processor = new ParallelProcessor(rules);
   }
 
-  private List<Rule> readRuleFile(File f, List<Rule> rules) {
+  private void readRules(Reader r, String inputDescription, List<Rule> rules)
+  throws IOException {
+    RuleParser parser = new RuleParser(_lexer);
+    parser.reset(inputDescription, r);
+    parser.errorVerbose = true;
+    parser.parse();
+    List<Rule> fileRules = parser.getRules();
+    if (rules != null) {
+      rules.addAll(fileRules);
+    }
+    _errors.addAll(_lexer.getAllErrorPositions());
+  }
+
+  private void readRulesFromFile(File f, List<Rule> rules) {
     try {
       logger.info("Reading rule file " + f);
-      RuleParser parser = new RuleParser(_lexer);
-      parser.reset(f.getPath(), new FileReader(f));
-      parser.errorVerbose = true;
-      parser.parse();
-      List<Rule> fileRules = parser.getRules();
-      if (rules != null) {
-        rules.addAll(fileRules);
-      }
-      _errors.addAll(_lexer.getAllErrorPositions());
+      readRules(new FileReader(f), f.getPath(), rules);
     }
     catch (FileNotFoundException fnfex) {
       logger.warn("Could not find rule file: " + f);
@@ -56,7 +68,6 @@ public class UtterancePlanner {
     catch (IOException ioex) {
       logger.warn("Could not read rule file: " + f + "(" + ioex +")");
     }
-    return rules;
   }
 
   public List<Position> readRuleFile(File ruleFile) {
@@ -70,12 +81,11 @@ public class UtterancePlanner {
         nextLine = nextLine.trim();
         if (! nextLine.isEmpty()) {
           File nextFile = new File(nextLine);
-          if (nextFile.isAbsolute()) {
-            readRuleFile(nextFile, rules);
-          }
-          else {
-            readRuleFile(new File(ruleRoot, nextLine), rules);
-          }
+          readRulesFromFile(
+              (nextFile.isAbsolute()
+                  ? nextFile
+                  : new File(ruleRoot, nextLine)),
+              rules);
         }
       }
     }
@@ -86,17 +96,14 @@ public class UtterancePlanner {
     return _errors;
   }
 
-  public List<Rule> readRuleString(String ruleString) {
-    RuleParser parser = new RuleParser(new Lexer());
-    parser.reset(ruleString, new StringReader(ruleString));
+  public List<Rule> readRulesFromString(String ruleString) {
+    List<Rule> rules = new ArrayList<Rule>();
     try {
-      parser.parse();
+      readRules(new StringReader(ruleString), "input", rules);
     } catch (IOException e) {
       // this will never be thrown
       e.printStackTrace();
     }
-    List<Rule> rules = new ArrayList<Rule>();
-    rules.addAll(parser.getRules());
     return rules;
   }
 

@@ -32,14 +32,14 @@ public class ParallelProcessor implements Processor {
     }
   }
 
-  private List<RuleAction> computeMatches(DagNode lf, Bindings bindings) {
+  private List<RuleAction> computeMatches(DagEdge lfEdge, Bindings bindings) {
     List<RuleAction> result = new LinkedList<RuleAction>();
 
     Stack<DagEdge> path = new Stack<DagEdge>();
     Stack<Iterator<DagEdge>> iterators = new Stack<Iterator<DagEdge>>();
     {
       List<DagEdge> root = new ArrayList<DagEdge>();
-      root.add(new DagEdge((short)-1, lf));
+      root.add(lfEdge);
       iterators.push(root.iterator());
     }
     path.push(null);
@@ -73,12 +73,13 @@ public class ParallelProcessor implements Processor {
 
   @Override
   public DagNode applyRules(DagNode lf, Bindings bindings) {
-    List<RuleAction> actions = computeMatches(lf, bindings);
+    DagEdge lfEdge = new DagEdge((short)-1, lf);
+    List<RuleAction> actions = computeMatches(lfEdge, bindings);
     if (actions != null) {
       for (RuleAction action : actions) {
         action.apply(bindings);
       }
-      return lf.copyResult(false);
+      return lfEdge.getValue().copyResult(false);
     }
     else {
       return lf;
