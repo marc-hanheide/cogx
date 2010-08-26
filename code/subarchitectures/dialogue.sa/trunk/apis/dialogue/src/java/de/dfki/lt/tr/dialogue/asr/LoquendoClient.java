@@ -55,29 +55,21 @@ extends _ResultListenerDisp {
 	public LoquendoClient(String name, String endpoint) {
 		log("connecting to the Loquendo server \"" + name + "\" at \"" + endpoint + "\"");
         ic = Ice.Util.initialize();
-        try {
-            ic = Ice.Util.initialize();
-            Ice.ObjectPrx base = ic.stringToProxy(name + ":" + endpoint);
-            prx = RecogniserPrxHelper.checkedCast(base);
-            if (prx == null) {
-                throw new Error("Unable to create proxy");
-            }
-			
-			Ice.ObjectAdapter adapter = ic.createObjectAdapter("");
-			Ice.Identity ident = new Identity();
-			ident.name = Ice.Util.generateUUID();
-			ident.category = "";
-			adapter.add(this, ident);
-			adapter.activate();
-			prx.ice_getConnection().setAdapter(adapter);
-			prx.addListener(ident);
-        }
-        catch (Ice.LocalException e) {
-            e.printStackTrace();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+		ic = Ice.Util.initialize();
+		Ice.ObjectPrx base = ic.stringToProxy(name + ":" + endpoint);
+		prx = RecogniserPrxHelper.checkedCast(base);
+		if (prx == null) {
+			throw new Error("Unable to create proxy");
+		}
+
+		Ice.ObjectAdapter adapter = ic.createObjectAdapter("");
+		Ice.Identity ident = new Identity();
+		ident.name = Ice.Util.generateUUID();
+		ident.category = "";
+		adapter.add(this, ident);
+		adapter.activate();
+		prx.ice_getConnection().setAdapter(adapter);
+		prx.addListener(ident);
 		log("connected");
 	}
 
