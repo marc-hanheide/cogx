@@ -169,9 +169,11 @@ dFormula underFormula;
 }
 {
    <LANGLE> tok=<WORD> <RANGLE> (
-   LOOKAHEAD(3) <LBRACKET> underFormula=CFormulaConj() <RBRACKET>
+   LOOKAHEAD(60) <LBRACKET> underFormula=CFormulaConj() <RBRACKET>
    |
-   LOOKAHEAD(3) <LBRACKET> underFormula=CFormulaDisj() <RBRACKET>
+   LOOKAHEAD(60) <LBRACKET> underFormula=CFormulaDisj() <RBRACKET>
+   |
+   LOOKAHEAD(60) <LBRACKET> underFormula=ModalFormula() <RBRACKET>
    |
    underFormula=SubFormula())
    {return new ModalFormula(0,tok.toString(), underFormula);}
@@ -190,11 +192,11 @@ dFormula formulaIn;
 	LOOKAHEAD(3) <NEG> <LBRACKET> formulaIn=GeneralFormula() <RBRACKET>
 	{ formula = new NegatedFormula(0,formulaIn); }
 	|
-	LOOKAHEAD(3) formula = ModalFormula()
+	LOOKAHEAD(60) formula = CFormulaConj()
 	|
-	LOOKAHEAD(2) formula = CFormulaConj()
-	|
-	LOOKAHEAD(2) formula = CFormulaDisj()
+	LOOKAHEAD(60) formula = CFormulaDisj()
+	|	
+	formula = ModalFormula()
 	|
 	formula = BooleanFormula()	
 	|

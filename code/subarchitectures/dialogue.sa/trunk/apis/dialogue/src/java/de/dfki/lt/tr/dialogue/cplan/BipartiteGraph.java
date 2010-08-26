@@ -23,7 +23,7 @@ public class BipartiteGraph {
   // n: number of nodes on left side, nodes are numbered 1 to n
   // m: number of nodes on right side, nodes are numbered n+1 to n+m
   // |G| = m + n + 1
-  // G = NIL[0] ∪ G1[G[1---n]] ∪ G2[G[n+1---n+m]]
+  // G = NIL[0] U G1[G[1---n]] U G2[G[n+1---n+m]]
 
   @SuppressWarnings("unchecked")
   public BipartiteGraph(int n, int m) {
@@ -45,6 +45,7 @@ public class BipartiteGraph {
     G[from + 1].add(to + n + 1);
   }
 
+  @Override
   public String toString() {
     return printGraph() + printData();
   }

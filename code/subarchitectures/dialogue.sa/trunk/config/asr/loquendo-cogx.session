@@ -1,0 +1,23 @@
+[conf]
+"userencoding" = "UTF-8"
+[languages]
+"load" = "en-us"
+[log]
+"status" = "off"
+"path" = "./"
+"files" = "1000"
+"size" = "1000000"
+"structure" = "STRUCTURED_ON_1_LEVEL"
+[options]
+"load" = "recognizer"
+;"load" = "speakerverification"
+;"load" = "dtmf"
+;"load" = "semanticparser"
+;"load" = "phonetictranscription"
+[rp]
+"path" = "./"
+"name" = ""
+[speedup]
+"LimitSearchSpace" = "650"
+[memory]
+"WordLatticeSize" = "40"

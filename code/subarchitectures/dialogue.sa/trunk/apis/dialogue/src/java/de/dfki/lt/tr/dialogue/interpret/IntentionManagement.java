@@ -26,22 +26,20 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parse.PackedLFs;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
-import de.dfki.lt.tr.dialogue.util.Counter;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
-import de.dfki.lt.tr.infer.wabd.AbducerServerConnection;
-import de.dfki.lt.tr.infer.wabd.FormulaFactory;
-import de.dfki.lt.tr.infer.wabd.MercuryUtils;
-import de.dfki.lt.tr.infer.wabd.ProofUtils;
-import de.dfki.lt.tr.infer.wabd.TermPredicateFactory;
-import de.dfki.lt.tr.infer.wabd.slice.FileReadErrorException;
-import de.dfki.lt.tr.infer.wabd.slice.MarkedQuery;
-import de.dfki.lt.tr.infer.wabd.slice.ModalisedFormula;
-import de.dfki.lt.tr.infer.wabd.slice.Modality;
-import de.dfki.lt.tr.infer.wabd.slice.NoProofException;
-import de.dfki.lt.tr.infer.wabd.slice.ProveResult;
-import de.dfki.lt.tr.infer.wabd.slice.SyntaxErrorException;
-import de.dfki.lt.tr.infer.wabd.slice.Term;
+import de.dfki.lt.tr.infer.weigabd.AbducerServerConnection;
+import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
+import de.dfki.lt.tr.infer.weigabd.ProofUtils;
+import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
+import de.dfki.lt.tr.infer.weigabd.slice.FileReadErrorException;
+import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
+import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
+import de.dfki.lt.tr.infer.weigabd.slice.Modality;
+import de.dfki.lt.tr.infer.weigabd.slice.NoProofException;
+import de.dfki.lt.tr.infer.weigabd.slice.ProveResult;
+import de.dfki.lt.tr.infer.weigabd.slice.SyntaxErrorException;
+import de.dfki.lt.tr.infer.weigabd.slice.Term;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -101,20 +99,20 @@ public class IntentionManagement {
 		}
 		log("expanding LF into facts");
 
-		for (ModalisedFormula fact : AbducerUtils.lfToFacts(new Modality[] {Modality.Truth}, lf)) {
-			log("  add fact: " + MercuryUtils.modalisedFormulaToString(fact));
+		for (ModalisedAtom fact : AbducerUtils.lfToFacts(new Modality[] {Modality.Truth}, lf)) {
+			log("  add fact: " + MercuryUtils.modalisedAtomToString(fact));
 			abd.getProxy().addFact(fact);
 		}
 
-		ModalisedFormula g = FormulaFactory.modalisedFormula(
+		ModalisedAtom g = TermAtomFactory.modalisedAtom(
 				new Modality[] {
 					Modality.Understanding,
 					Modality.Event
 				},
-				TermPredicateFactory.predicate("utter", new Term[] {
-					TermPredicateFactory.term(humanAgent),
-					TermPredicateFactory.term(thisAgent),
-					TermPredicateFactory.term(lf.root.nomVar)
+				TermAtomFactory.atom("utter", new Term[] {
+					TermAtomFactory.term(humanAgent),
+					TermAtomFactory.term(thisAgent),
+					TermAtomFactory.term(lf.root.nomVar)
 				}));
 
 		MarkedQuery[] proof = abductiveProof(ProofUtils.newUnsolvedProof(g));
@@ -138,24 +136,24 @@ public class IntentionManagement {
 	public ContentPlanningGoal epistemicObjectsToProtoLF(Intention itn, List<dBelief> bels) {
 
 		// update the abduction context
-		for (ModalisedFormula mf : ConversionUtils.intentionToFacts(itn)) {
+		for (ModalisedAtom mf : ConversionUtils.intentionToFacts(itn)) {
 			abd.getProxy().addFact(mf);
 		}
 		for (dBelief b : bels) {
-			for (ModalisedFormula mf : ConversionUtils.beliefToFacts(b)) {
+			for (ModalisedAtom mf : ConversionUtils.beliefToFacts(b)) {
 				abd.getProxy().addFact(mf);
 			}
 		}
 
-		ModalisedFormula g = FormulaFactory.modalisedFormula(
+		ModalisedAtom g = TermAtomFactory.modalisedAtom(
 				new Modality[] {
 					Modality.Generation,
 					Modality.Event
 				},
-				TermPredicateFactory.predicate("utter", new Term[] {
-					TermPredicateFactory.term(thisAgent),
-					TermPredicateFactory.term(humanAgent),
-					TermPredicateFactory.term(itn.id)
+				TermAtomFactory.atom("utter", new Term[] {
+					TermAtomFactory.term(thisAgent),
+					TermAtomFactory.term(humanAgent),
+					TermAtomFactory.term(itn.id)
 				}));
 
 		MarkedQuery[] proof = abductiveProof(ProofUtils.newUnsolvedProof(g));
@@ -169,7 +167,7 @@ public class IntentionManagement {
 	}
 
 	private ContentPlanningGoal proofToProtoLF(MarkedQuery[] proof) {
-		ModalisedFormula[] imfs = ProofUtils.filterStripByModalityPrefix(
+		ModalisedAtom[] imfs = ProofUtils.filterStripByModalityPrefix(
 				ProofUtils.stripMarking(ProofUtils.filterAssumed(proof)),
 				new Modality[] {Modality.Truth});
 		LogicalForm lf = AbducerUtils.factsToLogicalForm(imfs, "dn1_1");
@@ -182,22 +180,16 @@ public class IntentionManagement {
 	private MarkedQuery[] abductiveProof(MarkedQuery[] goal) {
 		String listGoalsStr = "";
 		for (int i = 0; i < goal.length; i++) {
-			listGoalsStr += MercuryUtils.modalisedFormulaToString(goal[i].formula);
+			listGoalsStr += MercuryUtils.modalisedAtomToString(goal[i].atom);
 			if (i < goal.length - 1) listGoalsStr += ", ";
 		}
 		log("proving: [" + listGoalsStr + "]");
 
-		ProveResult result = abd.getProxy().prove(goal);
-		if (result == ProveResult.ProofFound) {
+		abd.getProxy().startProving(goal);
+		MarkedQuery[] result = abd.getProxy().getBestProof(50);
+		if (result.length > 0) {
 			log("proof found");
-			try {
-				MarkedQuery[] p = abd.getProxy().getBestProof();
-				return p;
-			}
-			catch (NoProofException e) {
-				e.printStackTrace();
-				return null;
-			}
+			return result;
 		}
 		else {
 			return null;

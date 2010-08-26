@@ -35,6 +35,25 @@ import de.dfki.lt.tr.dialogue.cplan.actions.*;
       .setInputReader(inputDescription, input);
   }
 
+  private FunCall getNewFunCall(String name, List args) {
+    try {
+      return new FunCall(name, args);
+    }
+    catch (NoSuchMethodException ex) {
+      yyerror("No such Function registered: " + ex.getMessage());
+    }
+    return null;
+  }
+
+  private FunCallDagNode getNewFunCallDagNode(String name, List args) {
+    try {
+      return new FunCallDagNode(name, args);
+    }
+    catch (NoSuchMethodException ex) {
+      yyerror("No such Function registered: " + ex.getMessage());
+    }
+    return null;
+  }
 }
 
 %token < String >  ID         258
@@ -45,7 +64,7 @@ import de.dfki.lt.tr.dialogue.cplan.actions.*;
 %token < String >  STRING     263
 
 %type < Match > expr term feature nominal id_lvar
-%type < DagNode > rexpr rterm rfeat r_id_var rnominal
+%type < DagNode > rexpr rterm rfeat r_id_var rnominal rarg
 %type < Path > path
 
 %type < VarDagNode > lval
@@ -54,9 +73,11 @@ import de.dfki.lt.tr.dialogue.cplan.actions.*;
 
 %type < Rule > rule
 
-%type < List > rules matches gmatches actions
+%type < List > rules matches gmatches actions rargs
 
-%type < List > args
+%type < VarMatch > gmatch
+
+%type < MatchLVal > funcall
 
 %%
 
@@ -72,11 +93,12 @@ rule : matches ARROW actions  { $$ = new Rule((List<VarMatch>)$1, $3); }
 matches : expr gmatches  { $2.add(0, new VarMatch(null, $1)); $$ = $2; }
         ;
 
-gmatches : ',' GVAR '^' expr gmatches { $5.add(0, new VarMatch($2, $4));
-                                        $$ = $5;
-                                      }
-         |                            { $$ = new LinkedList<VarMatch>(); }
-         ;
+gmatches : ',' gmatch gmatches { $3.add(0, $2); $$ = $3; }
+         |                     { $$ = new LinkedList<VarMatch>(); }
+
+gmatch : GVAR '^' expr         { $$ = new VarMatch(new GlobalVar($1), $3); }
+       | funcall '^' expr      { $$ = new VarMatch($1, $3); }
+       ;
 
 expr : term '^' expr     { $$ = new Conjunction($1, $3); }
      | term '|' expr     { $$ = new Disjunction($1, $3); }
@@ -93,32 +115,42 @@ feature : nominal         { $$ = $1; }
         | nominal id_lvar { $$ = new Conjunction($1,
                                    new FeatVal(DagNode.TYPE_FEAT_ID, $2)); }
         | ':' id_lvar     { $$ = new FeatVal(DagNode.TYPE_FEAT_ID, $2); }
-        // proposition
         | id_lvar         { $$ = new FeatVal(DagNode.PROP_FEAT_ID, $1); }
         | '!' term        { $$ = new Negation($2); }
         | '(' expr ')'    { $$ = $2; }
-        | ID '(' args ')' { $$ = new FunCall($1, $3); }
+// Not needed anymore, the matching against function return values has all the
+// functionality that is possible here
+//        | funcall         { $$ = $1; }
         ;
 
 nominal : ID ':'     { $$ = new FeatVal(DagNode.ID_FEAT_ID, new Atom($1)); }
         | VAR ':'    { $$ = new LocalVar($1);  }
-          // Create a MatchNode that will redirect all matching to this global
-          // var. That means that global variables can only be used sensibly
-          // at the root level of an expression
-        | GVAR ':'        { $$ = new GlobalVar($1); }
+        | GVAR ':'   { $$ = new GlobalVar($1); }
         ;
 
 id_lvar : VAR      { $$ = new LocalVar($1); }
         | ID       { $$ = new Atom($1); }
 
-args : expr ',' args   { $$ = $3.add($1); }
-     | STRING ',' args { $$ = $3.add($1); }
-     //| ID ',' args     { $$ = $3.add($1); }
-     // already covered by expr, but not in the expected way: FIXME
-     |                 { $$ = new LinkedList(); }
+funcall : ID '(' rargs ')' { $$ = getNewFunCall($1, $3);
+                             if ($$ == null) return YYERROR ;
+                           }
+        | ID '(' ')'       { $$ = getNewFunCall($1, null);
+                             if ($$ == null) return YYERROR ;
+                           }
+        ;
+
+/*
+args : arg ',' args   { $3.add(0, $1); $$ = $3; }
+     | arg            { List<Match> result = new LinkedList<Match>();
+                        result.add($1);
+                        $$ = result;
+                      }
      ;
 
-
+arg  : id_lvar        { $$ = $1; }
+     | STRING         { $$ = new Atom($1); }
+     ;
+*/
 
 // Now for the right hand sides of the rules:
 // no negation/alternative/comparison, but global var assignment and
@@ -134,13 +166,13 @@ actions : action {
 
 action : lval path '=' rexpr
        {
-         DagNode rval = $4.copyResult(false);
+         DagNode rval = (($4 != null) ? $4.copyResult(false) : null);
          DagNode.invalidate();
          $$ = new Assignment($1, $2, rval);
        }
        | lval path '^' rexpr
        {
-         DagNode rval = $4.copyResult(false);
+         DagNode rval = (($4 != null) ? $4.copyResult(false) : null);
          DagNode.invalidate();
          $$ = new Addition($1, $2, rval);
        }
@@ -151,7 +183,7 @@ action : lval path '=' rexpr
        ;
 
 lval : VAR       { $$ = new VarDagNode($1, Bindings.LOCAL); }
-     | '#'       { $$ = new VarDagNode(null, Bindings.LOCAL); }
+     | '#'       { $$ = new VarDagNode("#", Bindings.LOCAL); }
      | GVAR      { $$ = new VarDagNode($1, Bindings.GLOBAL); }
 //   | ID ':'    { $$ = new VarDagNode($1, Bindings.ABSOLUTE); }
      ;
@@ -176,13 +208,30 @@ rfeat : rnominal          { $$ = $1; }
                           }
       | r_id_var          { $$ = new DagNode(DagNode.PROP_FEAT_ID, $1); }
       | '(' rexpr ')'     { $$ = $2.setNominal(); }
-      | ID '(' args ')'   { $$ = new FunCallDagNode($1, $3); }
+      | ID '(' rargs ')'  { $$ = getNewFunCallDagNode($1, $3);
+                            if ($$ == null) return YYERROR ;
+                          }
+      | ID '(' ')'        { $$ = getNewFunCallDagNode($1, null);
+                            if ($$ == null) return YYERROR ;
+                          }
       ;
 
 rnominal : r_id_var ':' {
              $$ = new DagNode(DagNode.ID_FEAT_ID, $1).setNominal();
          }
          ;
+
+rargs : rarg ',' rargs   { $3.add(0, $1); $$ = $3; }
+      | rarg             { List<DagNode> result = new LinkedList<DagNode>();
+                           result.add($1);
+                           $$ = result;
+                         }
+      ;
+
+rarg  : r_id_var  { $$ = $1; }
+      | STRING    { $$ = new DagNode($1); }
+      | '#'       { $$ = new VarDagNode("#", Bindings.LOCAL); }
+      ;
 
 r_id_var : ID     { $$ = new DagNode($1); }
          | VAR    { $$ = new VarDagNode($1, Bindings.LOCAL); }

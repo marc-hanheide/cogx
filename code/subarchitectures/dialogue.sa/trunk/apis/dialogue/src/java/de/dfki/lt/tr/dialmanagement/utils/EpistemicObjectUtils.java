@@ -117,7 +117,6 @@ public class EpistemicObjectUtils {
 			return ((FormulaValues)((BasicProbDistribution)distrib).values).values;
 		}
 		
-		
 		return new LinkedList<FormulaProbPair>();
 		
 	}
@@ -161,11 +160,11 @@ public class EpistemicObjectUtils {
 	 * 
 	 * @param postconditions a hashmap mapping each postcondition to its probability value
 	 * @throws DialogueException 
-	 * @returnthe newly constructed attributed intention
+	 * @return the newly constructed attributed intention
 	 */
 	public static Intention createAttributedIntention (HashMap<dFormula,Float> postconditions) throws DialogueException {
 		
-		SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
+	    SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
 		AttributedEpistemicStatus attrib = new AttributedEpistemicStatus ("robot", Arrays.asList("human"));
 		
 		List<IntentionalContent> intents = new LinkedList<IntentionalContent>();
@@ -176,6 +175,29 @@ public class EpistemicObjectUtils {
 		return new Intention(frame, attrib, forgeNewId(), intents);
 	}
 	
+	
+	
+
+	/**
+	 * Create an attributed intention containing a list of postconditions (each of which is associated
+	 * with a probability value)
+	 * 
+	 * @param postconditions a list of <form,prob> pairs
+	 * @throws DialogueException 
+	 * @return the newly constructed attributed intention
+	 */
+	public static Intention createAttributedIntention (List<FormulaProbPair> pairs) throws DialogueException {
+		
+	    SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(), 1.0f);
+		AttributedEpistemicStatus attrib = new AttributedEpistemicStatus ("robot", Arrays.asList("human"));
+		
+		List<IntentionalContent> intents = new LinkedList<IntentionalContent>();
+		
+		for (FormulaProbPair pair: pairs) {
+			intents.add((new IntentionalContent(Arrays.asList("robot"), FormulaUtils.constructFormula(""), pair.val, pair.prob)));
+		}
+		return new Intention(frame, attrib, forgeNewId(), intents);
+	}
 	
 
 	/**
@@ -188,7 +210,7 @@ public class EpistemicObjectUtils {
 	 */
 	public static Intention createPrivateIntention (HashMap<dFormula,Float> postconditions) throws DialogueException {
 		
-		SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
+	    SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
 		PrivateEpistemicStatus priv = new PrivateEpistemicStatus ("robot");
 		
 		List<IntentionalContent> intents = new LinkedList<IntentionalContent>();

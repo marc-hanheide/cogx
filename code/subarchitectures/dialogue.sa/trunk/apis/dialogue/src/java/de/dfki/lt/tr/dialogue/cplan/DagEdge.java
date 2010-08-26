@@ -7,7 +7,7 @@ public class DagEdge {
   short _feature;
   DagNode _value;
 
-  DagEdge(short feature, DagNode value) {
+  public DagEdge(short feature, DagNode value) {
     _feature = feature;
     _value = value;
   }

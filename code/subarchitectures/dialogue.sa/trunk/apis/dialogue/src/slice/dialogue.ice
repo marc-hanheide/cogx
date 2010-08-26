@@ -36,7 +36,7 @@
 // Dependencies: 
 // - de.dfki.lt.tr.dialogue.slice.lf, defined in [ ./lf.ice ] 
 // 
-// This SLICE module is used with the dialogue API v6.0
+// This Slice module is used with the dialogue API v6.0
 // 
 // Authors:		Geert-Jan M. Kruijff	<gj@dfki.de>
 //				Pierre Lison			<pierre.lison@dfki.de>

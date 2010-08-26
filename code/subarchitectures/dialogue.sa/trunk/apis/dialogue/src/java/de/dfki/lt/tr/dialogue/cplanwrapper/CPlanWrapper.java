@@ -15,7 +15,6 @@ import org.apache.log4j.BasicConfigurator;
 import de.dfki.lt.tr.dialogue.cplan.DagEdge;
 import de.dfki.lt.tr.dialogue.cplan.DagNode;
 import de.dfki.lt.tr.dialogue.cplan.UtterancePlanner;
-import de.dfki.lt.tr.dialogue.slice.lf.ConnectiveType;
 import de.dfki.lt.tr.dialogue.slice.lf.Feature;
 import de.dfki.lt.tr.dialogue.slice.lf.LFNominal;
 import de.dfki.lt.tr.dialogue.slice.lf.LFRelation;
@@ -29,16 +28,17 @@ public class CPlanWrapper {
   /** Initialize the content planner by providing it with a file that contains
    *   the rule files to load.
    */
-  public CPlanWrapper(File topRuleFile) {
-    initialize(topRuleFile);
+  public CPlanWrapper(File topRuleFile, File pluginDirectory) {
+    // make this into a configuration file with a rules and a plugins field.
+    initialize(topRuleFile, pluginDirectory);
   }
 
-  private void initialize(File ruleFile) {
-    _planner = new UtterancePlanner();
+  private void initialize(File ruleFile, File pluginDirectory) {
+    _planner = new UtterancePlanner(pluginDirectory);
     _planner.readRuleFile(ruleFile);
   }
 
-  private LFNominal
+  private static LFNominal
   collectNominals(DagNode dag, List<LFNominal> nominals,
                   IdentityHashMap<DagNode, LFNominal> coreferences) {
     assert(dag.isNominal());
@@ -121,7 +121,7 @@ public class CPlanWrapper {
   }
 
   /** Convert inner to outer form, i.e., a dag into a LF */
-  private LogicalForm dagNodeToLf(DagNode dag) {
+  static LogicalForm dagNodeToLf(DagNode dag) {
     LogicalForm result = new LogicalForm();
 
     IdentityHashMap<DagNode, LFNominal> coreferences =
@@ -139,7 +139,7 @@ public class CPlanWrapper {
   }
 
 
-  private DagNode nominalToDagNode(LFNominal nom) {
+  private static DagNode nominalToDagNode(LFNominal nom) {
     DagNode result = new DagNode();
     result.setNominal();
     result.addEdge(DagNode.ID_FEAT_ID, new DagNode(nom.nomVar));
@@ -156,7 +156,7 @@ public class CPlanWrapper {
   }
 
   /** Convert outer to inner form, i.e., a LF into a dag */
-  private DagNode lfToDagNode(LogicalForm lf) {
+  static DagNode lfToDagNode(LogicalForm lf) {
     HashMap<String, DagNode> nameToNom = new HashMap<String, DagNode>();
     // create a DagNode for each nominals where the relations are still missing
     for (LFNominal nom : lf.noms) {
@@ -188,7 +188,9 @@ public class CPlanWrapper {
 
   public static void main(String[] args) {
     BasicConfigurator.configure();
-    CPlanWrapper cp = new CPlanWrapper(new File(args[0]));
+    CPlanWrapper cp =
+      new CPlanWrapper(new File(args[0]),
+          (args.length > 1 ? new File(args[1]) : null));
 
     BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
     String line;
@@ -198,7 +200,7 @@ public class CPlanWrapper {
 
         LogicalForm result = cp.callContentPlanner(lf);
 
-        System.out.println(cp.lfToDagNode(result).toString());
+        System.out.println(CPlanWrapper.lfToDagNode(result).toString());
 
       }
     } catch (IOException e) {

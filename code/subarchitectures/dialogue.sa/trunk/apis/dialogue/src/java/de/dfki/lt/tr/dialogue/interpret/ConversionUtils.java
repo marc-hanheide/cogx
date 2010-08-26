@@ -41,15 +41,14 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.util.Counter;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
-import de.dfki.lt.tr.infer.wabd.FormulaFactory;
-import de.dfki.lt.tr.infer.wabd.MercuryUtils;
-import de.dfki.lt.tr.infer.wabd.ProofUtils;
-import de.dfki.lt.tr.infer.wabd.TermPredicateFactory;
-import de.dfki.lt.tr.infer.wabd.slice.FunctionTerm;
-import de.dfki.lt.tr.infer.wabd.slice.MarkedQuery;
-import de.dfki.lt.tr.infer.wabd.slice.ModalisedFormula;
-import de.dfki.lt.tr.infer.wabd.slice.Modality;
-import de.dfki.lt.tr.infer.wabd.slice.Term;
+import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
+import de.dfki.lt.tr.infer.weigabd.ProofUtils;
+import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
+import de.dfki.lt.tr.infer.weigabd.slice.FunctionTerm;
+import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
+import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
+import de.dfki.lt.tr.infer.weigabd.slice.Modality;
+import de.dfki.lt.tr.infer.weigabd.slice.Term;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -71,71 +70,71 @@ public abstract class ConversionUtils {
 	private static final String attributedEpStFunctor = "attrib";
 	private static final String sharedEpStFunctor = "shared";
 
-	public static List<ModalisedFormula> intentionToFacts(Intention itn) {
-		LinkedList<ModalisedFormula> result = new LinkedList<ModalisedFormula>();
+	public static List<ModalisedAtom> intentionToFacts(Intention itn) {
+		LinkedList<ModalisedAtom> result = new LinkedList<ModalisedAtom>();
 		for (IntentionalContent itc : itn.content) {
 
 			LinkedList<FunctionTerm> args = new LinkedList<FunctionTerm>();
-			args.add(TermPredicateFactory.term(itn.id));
+			args.add(TermAtomFactory.term(itn.id));
 			for (String ag : itc.agents) {
-				args.add(TermPredicateFactory.term(ag));
+				args.add(TermAtomFactory.term(ag));
 			}
 
-			ModalisedFormula amf = FormulaFactory.modalisedFormula(
+			ModalisedAtom amf = TermAtomFactory.modalisedAtom(
 					new Modality[] {
 						Modality.Truth,
 						Modality.Intention
 					},
-					TermPredicateFactory.predicate(agentPredSym, args.toArray(new Term[0])));
+					TermAtomFactory.atom(agentPredSym, args.toArray(new Term[0])));
 
-			log("adding fact: " + MercuryUtils.modalisedFormulaToString(amf));
+			log("adding fact: " + MercuryUtils.modalisedAtomToString(amf));
 			result.add(amf);
 
 			for (String id : IntentionUtils.collectBeliefIdsInDFormula(itc.preconditions)) {
-				ModalisedFormula mf = FormulaFactory.modalisedFormula(
+				ModalisedAtom mf = TermAtomFactory.modalisedAtom(
 						new Modality[] {
 							Modality.Truth,
 							Modality.Intention
 						},
-						TermPredicateFactory.predicate(preconditionPredSym, new Term[] {
-							TermPredicateFactory.term(itn.id),
-							TermPredicateFactory.term(id)
+						TermAtomFactory.atom(preconditionPredSym, new Term[] {
+							TermAtomFactory.term(itn.id),
+							TermAtomFactory.term(id)
 						}));
-				log("adding fact: " + MercuryUtils.modalisedFormulaToString(mf));
+				log("adding fact: " + MercuryUtils.modalisedAtomToString(mf));
 				result.add(mf);
 			}
 
 			for (String id : IntentionUtils.collectBeliefIdsInDFormula(itc.postconditions)) {
-				ModalisedFormula mf = FormulaFactory.modalisedFormula(
+				ModalisedAtom mf = TermAtomFactory.modalisedAtom(
 						new Modality[] {
 							Modality.Truth,
 							Modality.Intention
 						},
-						TermPredicateFactory.predicate(postconditionPredSym, new Term[] {
-							TermPredicateFactory.term(itn.id),
-							TermPredicateFactory.term(id)
+						TermAtomFactory.atom(postconditionPredSym, new Term[] {
+							TermAtomFactory.term(itn.id),
+							TermAtomFactory.term(id)
 						}));
-				log("adding fact: " + MercuryUtils.modalisedFormulaToString(mf));
+				log("adding fact: " + MercuryUtils.modalisedAtomToString(mf));
 				result.add(mf);
 			}
 		}
 		return result;
 	}
 
-	public static List<ModalisedFormula> beliefToFacts(dBelief b) {
-		LinkedList<ModalisedFormula> result = new LinkedList<ModalisedFormula>();
+	public static List<ModalisedAtom> beliefToFacts(dBelief b) {
+		LinkedList<ModalisedAtom> result = new LinkedList<ModalisedAtom>();
 		FunctionTerm rvp = dFormulaToRPV(getFirstLogicalContent(b));
 		if (rvp != null) {
-			ModalisedFormula mf = FormulaFactory.modalisedFormula(
+			ModalisedAtom mf = TermAtomFactory.modalisedAtom(
 					new Modality[] {
 						Modality.Belief
 					},
-					TermPredicateFactory.predicate(beliefPredSym, new Term[] {
-						TermPredicateFactory.term(b.id),
+					TermAtomFactory.atom(beliefPredSym, new Term[] {
+						TermAtomFactory.term(b.id),
 						epistemicStatusToTerm(b.estatus),
 						rvp
 					}));
-			log("adding fact: " + MercuryUtils.modalisedFormulaToString(mf));
+			log("adding fact: " + MercuryUtils.modalisedAtomToString(mf));
 			result.add(mf);
 		}
 		else {
@@ -148,13 +147,13 @@ public abstract class ConversionUtils {
 
 		LinkedList<EpistemicObject> results = new LinkedList<EpistemicObject>();
 
-		ModalisedFormula[] imfs = ProofUtils.filterStripByModalityPrefix(
+		ModalisedAtom[] imfs = ProofUtils.filterStripByModalityPrefix(
 				ProofUtils.stripMarking(ProofUtils.filterAssumed(proof)),
 				new Modality[] {Modality.Intention});
 
 		String s = "";
 		for (int i = 0; i < imfs.length; i++) {
-			s += "\n\t" + MercuryUtils.modalisedFormulaToString(imfs[i]);
+			s += "\n\t" + MercuryUtils.modalisedAtomToString(imfs[i]);
 		}
 		log("looking for intentions in" + s);
 
@@ -165,12 +164,12 @@ public abstract class ConversionUtils {
 		HashMap<String, IntentionalContent> rIts = new HashMap<String, IntentionalContent>();
 
 		// TODO: make a dedicated class
-		for (ModalisedFormula mf : Arrays.asList(imfs)) {
-			if (mf.p.predSym.equals(agentPredSym)) {
+		for (ModalisedAtom ma : Arrays.asList(imfs)) {
+			if (ma.a.predSym.equals(agentPredSym)) {
 				// agent(ID, AGENT)
 //				log("  adding agent");
-				FunctionTerm idTerm = (FunctionTerm) mf.p.args[0];
-				FunctionTerm agentTerm = (FunctionTerm) mf.p.args[1];
+				FunctionTerm idTerm = (FunctionTerm) ma.a.args[0];
+				FunctionTerm agentTerm = (FunctionTerm) ma.a.args[1];
 				if (!rIts.containsKey(idTerm.functor)) {
 
 					rIts.put(idTerm.functor, newIntentionalContent());
@@ -179,12 +178,12 @@ public abstract class ConversionUtils {
 				itc.agents = new LinkedList<String>();
 				itc.agents.add(agentTerm.functor);
 			}
-			else if (mf.p.predSym.equals(preconditionPredSym)) {
+			else if (ma.a.predSym.equals(preconditionPredSym)) {
 				// pre(ID, CONTENT)
 //				log("  adding pre");
-				FunctionTerm idTerm = (FunctionTerm) mf.p.args[0];
-				FunctionTerm epstTerm = (FunctionTerm) mf.p.args[1];
-				Term contentTerm = mf.p.args[2];
+				FunctionTerm idTerm = (FunctionTerm) ma.a.args[0];
+				FunctionTerm epstTerm = (FunctionTerm) ma.a.args[1];
+				Term contentTerm = ma.a.args[2];
 				if (!rIts.containsKey(idTerm.functor)) {
 
 					rIts.put(idTerm.functor, newIntentionalContent());
@@ -195,12 +194,12 @@ public abstract class ConversionUtils {
 				dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newElementaryFormula(b.id));
 				itc.preconditions = combineDFormulas(itc.preconditions, refF);
 			}
-			else if (mf.p.predSym.equals(postconditionPredSym)) {
+			else if (ma.a.predSym.equals(postconditionPredSym)) {
 				// post(ID, CONTENT)
 //				log("  adding post");
-				FunctionTerm idTerm = (FunctionTerm) mf.p.args[0];
-				FunctionTerm epstTerm = (FunctionTerm) mf.p.args[1];
-				Term contentTerm = mf.p.args[2];
+				FunctionTerm idTerm = (FunctionTerm) ma.a.args[0];
+				FunctionTerm epstTerm = (FunctionTerm) ma.a.args[1];
+				Term contentTerm = ma.a.args[2];
 				if (!rIts.containsKey(idTerm.functor)) {
 
 					rIts.put(idTerm.functor, newIntentionalContent());
@@ -297,26 +296,26 @@ public abstract class ConversionUtils {
 	private static FunctionTerm epistemicStatusToTerm(EpistemicStatus epst) {
 		if (epst instanceof PrivateEpistemicStatus) {
 			PrivateEpistemicStatus p = (PrivateEpistemicStatus)epst;
-			return TermPredicateFactory.term(privateEpStFunctor, new Term[] {
-					TermPredicateFactory.term(p.agent)
+			return TermAtomFactory.term(privateEpStFunctor, new Term[] {
+					TermAtomFactory.term(p.agent)
 				});
 		}
 		if (epst instanceof AttributedEpistemicStatus) {
 			AttributedEpistemicStatus a = (AttributedEpistemicStatus)epst;
 			LinkedList<FunctionTerm> args = new LinkedList<FunctionTerm>();
-			args.add(TermPredicateFactory.term(a.agent));
+			args.add(TermAtomFactory.term(a.agent));
 			for (String ag : a.attribagents) {
-				args.add(TermPredicateFactory.term(ag));
+				args.add(TermAtomFactory.term(ag));
 			}
-			return TermPredicateFactory.term(attributedEpStFunctor, args.toArray(new Term[0]));
+			return TermAtomFactory.term(attributedEpStFunctor, args.toArray(new Term[0]));
 		}
 		if (epst instanceof SharedEpistemicStatus) {
 			SharedEpistemicStatus a = (SharedEpistemicStatus)epst;
 			LinkedList<FunctionTerm> args = new LinkedList<FunctionTerm>();
 			for (String ag : a.cgagents) {
-				args.add(TermPredicateFactory.term(ag));
+				args.add(TermAtomFactory.term(ag));
 			}
-			return TermPredicateFactory.term(sharedEpStFunctor, args.toArray(new Term[0]));
+			return TermAtomFactory.term(sharedEpStFunctor, args.toArray(new Term[0]));
 		}
 		return null;
 	}
@@ -398,13 +397,13 @@ public abstract class ConversionUtils {
 					objProp = m2.op;
 					if (m2.form instanceof ElementaryFormula) {
 						ElementaryFormula eF = (ElementaryFormula)m2.form;
-						valTerm = TermPredicateFactory.term(eF.prop);
+						valTerm = TermAtomFactory.term(eF.prop);
 					}
 					else if (m2.form instanceof NegatedFormula) {
 						NegatedFormula nF = (NegatedFormula)m2.form;
 						if (nF.negForm instanceof ElementaryFormula) {
 							ElementaryFormula eF = (ElementaryFormula)nF.negForm;
-							valTerm = TermPredicateFactory.term("not", new Term[] {TermPredicateFactory.term(eF.prop)});
+							valTerm = TermAtomFactory.term("not", new Term[] {TermAtomFactory.term(eF.prop)});
 						}
 						else {
 							return null;
@@ -413,9 +412,9 @@ public abstract class ConversionUtils {
 					else {
 						return null;
 					}
-					return TermPredicateFactory.term("rpv", new Term[] {
-						TermPredicateFactory.term(objRef),
-						TermPredicateFactory.term(objProp),
+					return TermAtomFactory.term("rpv", new Term[] {
+						TermAtomFactory.term(objRef),
+						TermAtomFactory.term(objProp),
 						valTerm
 					});
 				}
