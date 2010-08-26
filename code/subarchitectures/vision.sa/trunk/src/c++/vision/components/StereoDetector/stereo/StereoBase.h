@@ -9,6 +9,8 @@
 #ifndef Z_STEREO_BASE_HH
 #define Z_STEREO_BASE_HH
 
+#include "StereoCamera.hh"
+
 #ifdef HAVE_CAST
   #include <VisionData.hpp>
 #endif
