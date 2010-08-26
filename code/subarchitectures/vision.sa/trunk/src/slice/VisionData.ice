@@ -278,6 +278,7 @@ module VisionData {
     SurfacePointSeq points;   // frontground points
     SurfacePointSeq BGpoints; // background points
     SurfacePointSeq EQpoints; // equivocal points which either belongs to fg or bg
+    int status;
   };
 
   /**
