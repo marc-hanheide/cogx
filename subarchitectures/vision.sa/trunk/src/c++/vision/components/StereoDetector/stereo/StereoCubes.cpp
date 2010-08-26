@@ -114,6 +114,7 @@ bool Cube3D::Reconstruct(StereoCamera *stereo_cam, TmpCube &left, TmpCube &right
 
 //   bool ok2 = surf[2].Reconstruct(stereo_cam, left.surf[2], right.surf[2f], true);
 //   return ok0 && ok1 && ok2;
+	return false;
 }
 
 
@@ -240,7 +241,7 @@ bool StereoCubes::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, i
 // 
 // 	obj->detectionConfidence = 1.0;						// TODO detection confidence is always 1
 
-	return true;
+	return false;
 }
 
 /**
@@ -328,6 +329,7 @@ double StereoCubes::MatchingScore(TmpCube &lefStereoGestalt2VisualObjectt_cube, 
 //     off_1 = off_x1;
 //     return sc_x;
 //   }
+  return 0.0;
 }
 
 /**																																			/// TODO StereoFlaps verschieben
@@ -361,6 +363,7 @@ unsigned StereoCubes::FindMatchingCube(TmpCube &left_cube, Array<TmpCube> &right
 //     right_flaps[j_best].Fuddle(off_0_best, off_1_best, cross_best);
 //   }
 //   return j_best;
+	return 0;
 }
 
 
