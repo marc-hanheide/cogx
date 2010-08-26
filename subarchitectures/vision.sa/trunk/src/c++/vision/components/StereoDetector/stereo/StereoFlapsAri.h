@@ -66,7 +66,9 @@ private:
   Array<Flap3DAri> flap3ds;						///< 3D flaps
   int flapMatches;										///< stereo matched flaps
 
+#ifdef HAVE_CAST
 	bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
+#endif
 	void RecalculateCoordsystem(Flap3DAri &flap, Pose3 &pose);
 
   double MatchingScore(TmpFlapAri &left_flap, TmpFlapAri &right_flap, unsigned &off_0, unsigned &off_1, bool &cross);

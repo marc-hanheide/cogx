@@ -9,12 +9,16 @@
 #ifndef Z_STEREO_BASE_HH
 #define Z_STEREO_BASE_HH
 
-#include <VisionData.hpp>
-#include "StereoCamera.hh"
+//#define HAVE_CAST 0		// define, when in CAST-framework
+
+#ifdef HAVE_CAST
+  #include <VisionData.hpp>
+#endif
 
 #include <vector>
 #include "Vector.hh"
 
+#include "StereoCamera.hh"
 #include "Line.hh"
 #include "Ellipse.hh"
 #include "Closure.hh"
@@ -214,7 +218,9 @@ public:
 
 	// virtual functions for the stereo classes.
 	virtual int NumStereoMatches() = 0;
+#ifdef HAVE_CAST
 	virtual bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id) = 0;
+#endif
 	virtual void Draw(int side, bool masked = false) {}																					/// TODO Sollten alle pure virtual (=0) sein.
 // 	virtual void DrawMatched(int side) {}
 	virtual void DrawMatched(int side, bool single, int id, int detail) = 0;

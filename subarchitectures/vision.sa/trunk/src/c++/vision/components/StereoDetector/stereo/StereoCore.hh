@@ -9,7 +9,6 @@
 #ifndef Z_STEREO_CORE_HH
 #define Z_STEREO_CORE_HH
 
-#include <VisionData.hpp>
 #include <stdexcept>
 
 #include "Vector.hh"
@@ -67,7 +66,9 @@ public:
   void ClearResults();
 	void ProcessStereoImage(int runtime_ms, float ca, float co, IplImage *iIl, IplImage *iIr);
 	void ProcessStereoImage(int runtime_ms, float ca, float co, IplImage *iIl, IplImage *iIr, int oX, int oY, int sc);
+#ifdef HAVE_CAST
 	bool GetVisualObject(StereoBase::Type type, int id, VisionData::VisualObjectPtr &obj);
+#endif
 	const char* GetGestaltListInfo();
 
 	int NumMonoGestalts(Gestalt::Type type, int side) {return vcore[side]->Gestalts(type).Size();}

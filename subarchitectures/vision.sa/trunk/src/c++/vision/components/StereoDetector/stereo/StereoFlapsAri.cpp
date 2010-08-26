@@ -208,6 +208,7 @@ void StereoFlapsAri::DrawSingleMatched(int side, int id, int detail)
  * @param id ID of the object detector flap.
  * @return Return true for success.
  */
+#ifdef HAVE_CAST
 bool StereoFlapsAri::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id)
 {
 	obj->model = new VisionData::GeometryModel;
@@ -248,6 +249,7 @@ bool StereoFlapsAri::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj
 
 	return true;
 }
+#endif
 
 /**
  * TODO: 

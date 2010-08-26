@@ -133,6 +133,7 @@ void StereoClosures::DrawSingleMatched(int side, int id, int detail)
  * @param id ID of the object detector closure.
  * @return Return true for success
  */
+#ifdef HAVE_CAST
 bool StereoClosures::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id)
 {
 	obj->model = new VisionData::GeometryModel;
@@ -169,6 +170,7 @@ bool StereoClosures::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj
 
 	return true;
 }
+#endif
 
 /**
  * @brief Try to find a "natural" looking coordinate system for a flap.

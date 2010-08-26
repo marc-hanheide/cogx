@@ -59,7 +59,9 @@ private:
 	Array<Rectangle3D> rectangle3ds;					///< 3D rectangles
 	int rectMatches;													///< Number of stereo matched rectangles
 
+#ifdef HAVE_CAST
 	bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
+#endif
 	void RecalculateCoordsystem(Rectangle3D &rectangle, Pose3 &pose);
 
 	unsigned FindMatchingRectangle(TmpRectangle &left_rect, Array<TmpRectangle> &right_rects, unsigned l);

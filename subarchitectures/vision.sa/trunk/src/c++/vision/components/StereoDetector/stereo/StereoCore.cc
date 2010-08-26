@@ -227,11 +227,12 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
  * @param obj Visual object as pointer
  * @return Returns true for success.
  */
+#ifdef HAVE_CAST
 bool StereoCore::GetVisualObject(StereoBase::Type type, int id, VisionData::VisualObjectPtr &obj)
 {
 	return stereoGestalts[type]->StereoGestalt2VisualObject(obj, id);
 }
-
+#endif
 
 /**
  * @brief Get the Gestalt list with the number of all found mono and stereo Gestalts.

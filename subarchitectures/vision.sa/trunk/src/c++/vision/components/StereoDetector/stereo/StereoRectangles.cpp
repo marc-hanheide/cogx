@@ -132,6 +132,7 @@ void StereoRectangles::DrawSingleMatched(int side, int id, int detail)
  * @param id ID of the object detector rectangle.
  * @return Return true for success
  */
+#ifdef HAVE_CAST
 bool StereoRectangles::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id)
 {
 	obj->model = new VisionData::GeometryModel;
@@ -171,6 +172,7 @@ bool StereoRectangles::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &o
 
 	return true;
 }
+#endif
 
 /**
  * @brief Try to find a "natural" looking coordinate system for a flap.

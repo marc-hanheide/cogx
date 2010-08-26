@@ -124,6 +124,7 @@ void StereoLJunctions::DrawSingleMatched(int side, int id, int detail)
  * @param id ID of the object detector rectangle.
  * @return Return true for success
  */
+#ifdef HAVE_CAST
 bool StereoLJunctions::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id)
 {
 // printf("StereoLJunctions::StereoGestalt2VisualObject: Not yet implemented.\n");														/// TODO TODO TODO Not yet implemented!
@@ -164,6 +165,7 @@ bool StereoLJunctions::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &o
 
 	return false;
 }
+#endif
 
 /**
  * @brief Try to find a "natural" looking coordinate system for a flap.
