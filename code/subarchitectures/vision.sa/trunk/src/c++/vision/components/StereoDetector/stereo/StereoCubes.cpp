@@ -202,6 +202,7 @@ void StereoCubes::DrawSingleMatched(int side, int id, int detail)
  * @param id ID of the object detector cube.
  * @return Return true for success.
  */
+#ifdef HAVE_CAST
 bool StereoCubes::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id)
 {
 	printf("StereoCubes::StereoGestalt2VisualObject: Not yet implemented!\n");
@@ -243,6 +244,7 @@ bool StereoCubes::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, i
 
 	return false;
 }
+#endif
 
 /**
  * TODO: 

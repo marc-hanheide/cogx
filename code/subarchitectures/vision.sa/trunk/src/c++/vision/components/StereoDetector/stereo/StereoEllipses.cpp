@@ -560,6 +560,7 @@ void StereoEllipses::DrawSingleMatched(int side, int id, int detail)
  * @param id ID of the object detector's ellipse.
  * @return Return true for success
  */
+#ifdef HAVE_CAST
 bool StereoEllipses::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id)
 {
 	obj->model = new VisionData::GeometryModel;
@@ -643,6 +644,7 @@ bool StereoEllipses::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj
 
 	return true;
 }
+#endif
 
 /**
  * @brief Try to find a "natural" looking coordinate system for a ellipse.

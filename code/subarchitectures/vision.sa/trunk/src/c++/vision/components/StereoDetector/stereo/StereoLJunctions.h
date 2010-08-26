@@ -56,7 +56,9 @@ private:
 	Array<LJunction3D> ljct3ds;								///< 3D l-junctions
 	int ljctMatches;													///< Number of stereo matched l-junctions
 
+#ifdef HAVE_CAST
 	bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
+#endif
 	void RecalculateCoordsystem(LJunction3D &ljct, Pose3 &pose);
 
 	unsigned FindMatchingLJunction(TmpLJunction &left_ljct, Array<TmpLJunction> &right_ljcts, unsigned l);

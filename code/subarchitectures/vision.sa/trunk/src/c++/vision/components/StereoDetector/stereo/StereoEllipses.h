@@ -90,7 +90,9 @@ private:
 	int candMatches;											///< Number of matched ellipse candidates from left/right image
 	int ellMatches;												///< Number of stereo matched ellipses (== ellipse3ds.Size())
 	
+#ifdef HAVE_CAST
 	bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
+#endif
 	void RecalculateCoordsystem(Ellipse3D &ellipse, Pose3 &pose);
 
 	double MatchingScoreEllipse(TmpEllipse &left_ell, TmpEllipse &right_ell);

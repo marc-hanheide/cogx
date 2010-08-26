@@ -66,7 +66,9 @@ private:
 	Array<Closure3D> closure3ds;					///< 3D closures
 	int closMatches;											///< Number of stereo matched closures
 
+#ifdef HAVE_CAST
 	bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
+#endif
 	void RecalculateCoordsystem(Closure3D &closure, Pose3 &pose);
 
 	unsigned FindMatchingClosure(TmpClosure &left_clos, Array<TmpClosure> &right_clos, unsigned l);

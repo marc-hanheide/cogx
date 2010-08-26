@@ -59,7 +59,9 @@ private:
   Array<Cube3D> cube3ds;							///< 3D cubes
   int cubeMatches;										///< stereo matched cubes
 
+#ifdef HAVE_CAST
 	bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
+#endif
 	void RecalculateCoordsystem(Cube3D &cube, Pose3 &pose);
 
   double MatchingScore(TmpCube &left_cube, TmpCube &right_cube, unsigned &off_0, unsigned &off_1, bool &cross);
