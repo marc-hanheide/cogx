@@ -287,7 +287,7 @@ void DrawPoints()
   glBegin(GL_POINTS);
   for(size_t i = 0; i < pointsN.size(); i++)
   {
-	if (points_label.at(i) == 0)   		glColor3f(1.0,0.0,0.0); 
+	if (points_label.at(i) == 0)   		glColor3f(1.0,0.0,0.0);
 	else if (points_label.at(i) == -10)  	glColor3f(0.0,1.0,0.0);
 	else if (points_label.at(i) == -20)  	glColor3f(0.0,0.0,1.0);
 	else if (points_label.at(i) > 0)  	glColor3f(0.2,1.0,0.2);
@@ -625,6 +625,23 @@ void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 void PlanePopOut::runComponent()
 {
   sleepComponent(1000);
+
+  // note: this must be called in the run loop, not in configure or start as these are all different threads!
+  int argc = 1;
+  char argv0[] = "PlanePopOut";
+  char *argv[1] = {argv0};
+  if (doDisplay)
+  {
+  glutInit(&argc, argv);
+  win = glutCreateWindow("points");
+  InitWin();
+  glutKeyboardFunc(KeyPress);
+  glutMouseFunc(MousePress);
+  glutMotionFunc(MouseMove);
+  glutReshapeFunc(ResizeWin);
+  glutDisplayFunc(DisplayWin);
+  }
+
 #ifdef FEAT_VISUALIZATION
   //SendOverlays(m_display, this);
 #endif
@@ -634,7 +651,7 @@ void PlanePopOut::runComponent()
 	points.resize(0);
 
 	getPoints(useGlobalPoints, points);
-	
+
 	Video::Image image;
 	getRectImage(LEFT, image);
 	if (points.size() == 0)
@@ -667,7 +684,7 @@ void PlanePopOut::runComponent()
  				BoundingSphere(pointsN,points_label); // get bounding spheres, SOIs and ROIs
 				//cout<<"m_bSendImage is "<<m_bSendImage<<endl;
 #ifdef FEAT_VISUALIZATION
-				if (m_bSendImage) 
+				if (m_bSendImage)
 				{
 				    m_bSendPoints = false;
 				    m_bSendPlaneGrid = false;
@@ -720,7 +737,7 @@ void PlanePopOut::runComponent()
 		if (PreviousObjList.empty())
 		{
 			for(unsigned int i=0; i<CurrentObjList.size(); i++)
-			{	
+			{
 			  CurrentObjList.at(i).count++;
 			  PreviousObjList.push_back(CurrentObjList.at(i));
 			}
@@ -749,7 +766,7 @@ void PlanePopOut::runComponent()
 					  //(abs((CurrentObjList.at(i).c.y-PreviousObjList.at(j).c.y)/CurrentObjList.at(i).c.y)>0.2)
 					{
 					    //cout<<"Current = "<<CurrentObjList.at(i).c.y<<"  Previous = "<<PreviousObjList.at(j).c.y<<endl;
-					    CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;					
+					    CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;
 					    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 					    overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
 					    //cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
@@ -783,7 +800,7 @@ void PlanePopOut::runComponent()
 			    {
 				PreviousObjList.at(j).count = PreviousObjList.at(j).count-1;
 				if(PreviousObjList.at(j).count > 0) Pre2CurrentList.push_back(PreviousObjList.at(j));
-				else 
+				else
 				{
 				  //cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
 				  deleteFromWorkingMemory(PreviousObjList.at(j).id);
@@ -841,13 +858,13 @@ vector<double> PlanePopOut::Hypo2ParaSpace(vector<Vector3> vv3Hypo)
     para_c = ( (vv3Hypo.at(1).x-vv3Hypo.at(0).x)*(vv3Hypo.at(2).y-vv3Hypo.at(0).y)-(vv3Hypo.at(1).y-vv3Hypo.at(0).y)*(vv3Hypo.at(2).x-vv3Hypo.at(0).x) );
     para_d = ( 0-(para_a*vv3Hypo.at(0).x+para_b*vv3Hypo.at(0).y+para_c*vv3Hypo.at(0).z) );
     double temp = sqrt(para_a*para_a+para_b*para_b+para_c*para_c);
-    
+
     vector<double> ABCD;
     ABCD.push_back(para_a/temp);
     ABCD.push_back(para_b/temp);
     ABCD.push_back(para_c/temp);
     ABCD.push_back(para_d/temp);
-    
+
     return ABCD;
 }
 
@@ -873,7 +890,7 @@ Vector3 PlanePopOut::ProjectPointOnPlane(Vector3 p, double A, double B, double C
 }
 
 double PlanePopOut::DistOfParticles(Particle p1, Particle p2, Vector3 c, double r, bool& bParallel)
-{    
+{
     Vector3 i1 = ProjectPointOnPlane(c,p1.p.at(0),p1.p.at(1),p1.p.at(2),p1.p.at(3));
     Vector3 i2 = ProjectPointOnPlane(c,p2.p.at(0),p2.p.at(1),p2.p.at(2),p2.p.at(3));
     Vector3 v1 = i1-c;		//cout<<"v1 = "<<v1<<endl;
@@ -903,7 +920,7 @@ double PlanePopOut::DistOfParticles(Particle p1, Particle p2, Vector3 c, double 
     if (list.at(0)==d23)	re = d14/2/r;
     if (list.at(0)==d24)	re = d13/2/r;
     if (list.at(0)==d14)	re = d23/2/r;
-    
+
     if (abs(costheta)>0.85) bParallel = true;
     return re;
 }
@@ -948,7 +965,7 @@ vector<double> PlanePopOut::UpdatePosition(vector<double> p, vector<double> v)
 	cout<<"the dimentions of position and velocity are different = "<<endl;//error
 	exit(0);
     }
-    
+
     vector<double> r = p;
     for (unsigned int i=0; i<r.size(); i++)
     {
@@ -964,7 +981,7 @@ vector<double> PlanePopOut::UpdateVelocity(vector<double> p, vector<double> v, v
 	cout<<"the dimentions of position and velocity are different = "<<endl;//error
 	exit(0);
     }
-    
+
     vector<double> r = v;
     double r1, r2;
     for (unsigned int i=0; i<r.size(); i++)
@@ -983,7 +1000,7 @@ void PlanePopOut::Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>
 {
     if (vFO.at(0).p.at(3)<0)
     {vFO.at(0).p.at(0)=-vFO.at(0).p.at(0); vFO.at(0).p.at(1)=-vFO.at(0).p.at(1); vFO.at(0).p.at(2)=-vFO.at(0).p.at(2); vFO.at(0).p.at(3)=-vFO.at(0).p.at(3);}
-    Vector3 vnorm; vnorm.x=vFO.at(0).p.at(0); vnorm.y=vFO.at(0).p.at(1); vnorm.z=vFO.at(0).p.at(2); 
+    Vector3 vnorm; vnorm.x=vFO.at(0).p.at(0); vnorm.y=vFO.at(0).p.at(1); vnorm.z=vFO.at(0).p.at(2);
     double min_dist = 9999999.0;
     for (unsigned int i = 0; i<points.size(); i++)
     {
@@ -994,7 +1011,7 @@ void PlanePopOut::Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>
     {
 	vPar.at(i).p.at(0)=vFO.at(0).p.at(0); vPar.at(i).p.at(1)=vFO.at(0).p.at(1); vPar.at(i).p.at(2)=vFO.at(0).p.at(2);
 	vPar.at(i).p.at(3) = (vFO.at(0).p.at(3)-min_dist)*(i+1)/vPar.size()+min_dist;
-	vPar.at(i).v.at(0)=0.0; vPar.at(i).v.at(1)=0.0; vPar.at(i).v.at(2)=0.0; 
+	vPar.at(i).v.at(0)=0.0; vPar.at(i).v.at(1)=0.0; vPar.at(i).v.at(2)=0.0;
 	srand((unsigned) time (NULL));
 	vPar.at(i).v.at(3)=-1+rand()%200/100;
 	vPar.at(i).fCurr = PSO_EvaluateParticle(vPar.at(i),vFO,points,cc,rr);
@@ -1008,7 +1025,7 @@ void PlanePopOut::Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>
 }
 
 void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
-						   VisionData::SurfacePointSeq &points, 
+						   VisionData::SurfacePointSeq &points,
 						   std::vector <int> &labels)
 {
      int N_iter = 200; 				// iteration number
@@ -1017,7 +1034,7 @@ void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
      float c1 = 2.0;				// cognitive factor
      float c2 = 2.1;				// social factor
      float chi = 0.792;				// constriction factor
-     
+
      int N_tour = 3;				// number of tournament best particles
      vector <Particle> mvFoundOptima;		// vector including all the optima found
      Vector3 cc;  cc.x = 0; cc.y = 0; cc.z = 0;
@@ -1040,7 +1057,7 @@ void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
 	    srand((unsigned) time (NULL));
 	    init_velocity.push_back(-1+rand()%200/100); //-1~1 rand number
 	}
-	mvParticle.at(i).v = init_velocity;	
+	mvParticle.at(i).v = init_velocity;
 	mvParticle.at(i).fCurr = PSO_EvaluateParticle(mvParticle.at(i),mvFoundOptima,points,cc,rr);
 	mvParticle.at(i).fbest = mvParticle.at(i).fCurr;
 	mvParticle.at(i).pbest = mvParticle.at(i).p;
@@ -1053,7 +1070,7 @@ void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
      vector <Particle> mvParticle_bak;
      mvParticle_bak.assign(N_particle,InitialParticle());
      mvParticle_bak = mvParticle;
-     
+
      //std::cout << "  finish the initialisation" << std::endl;
      /* PSO iterations */
      int count = 0;
@@ -1062,9 +1079,9 @@ void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
      int min_iter_time_4_optima_found = 60;	// to determine the stability of the optimum found
      for (int i=0; i<N_iter; i++)
      {
-	p_previous = mTournament.at(0);	
+	p_previous = mTournament.at(0);
 	for (int j=0; j<N_particle; j++)
-	{	
+	{
 	  //cout<<"before update velocity, v ="<<mvParticle.at(j).v.at(0)<<endl;
 	    mvParticle.at(j).v = UpdateVelocity(mvParticle.at(j).p, mvParticle.at(j).v, mvParticle.at(j).pbest, mTournament.at(0).p, chi, c1, c2, w);
 	  //cout<<"after update velocity, v ="<<mvParticle.at(j).v.at(0)<<endl;
@@ -1160,7 +1177,7 @@ bool PlanePopOut::PSO_Label(VisionData::SurfacePointSeq &points, std::vector <in
 	      //std::cout << "  too few points to calc plane" << std::endl;
 	      return false;
       }
-      
+
       vector < vector<double> > vvd_particles;
       vector<Vector3> vv3Hypo;
       //vvd_particles.reserve(N_particle);
@@ -1419,16 +1436,16 @@ void PlanePopOut::AddConvexHullinWM()
 	setIdentity(p3);
 	Vector3 v3;
 	setZero(v3);
-	
+
 	if (pre_mConvexHullRadius == 0.0)
-	{ 
+	{
 	    if (mConvexHullPoints.size()>0)
 	    {
 		debug("There are %u points in the convex hull", mConvexHullPoints.size());
 		CHPtr->PointsSeq = mConvexHullPoints;
 		CHPtr->time = getCASTTime();
 		p3.pos = mCenterOfHull;
-		
+
 		CHPtr->center = p3;
 		CHPtr->radius = mConvexHullRadius;
 		CHPtr->density = mConvexHullDensity;
@@ -1436,7 +1453,7 @@ void PlanePopOut::AddConvexHullinWM()
 		CHPtr->plane.a = A; CHPtr->plane.b = B; CHPtr->plane.c = C; CHPtr->plane.d = D;
 		pre_id = newDataID();
 		addToWorkingMemory(pre_id,CHPtr);
-		
+
 		pre_mConvexHullRadius = mConvexHullRadius;
 		pre_mCenterOfHull = mCenterOfHull;
 	    }
@@ -1449,7 +1466,7 @@ void PlanePopOut::AddConvexHullinWM()
 		    CHPtr->PointsSeq = mConvexHullPoints;
 		    CHPtr->time = getCASTTime();
 		    p3.pos = mCenterOfHull;
-		    
+
 		    CHPtr->center = p3;
 		    CHPtr->radius = mConvexHullRadius;
 		    CHPtr->density = mConvexHullDensity;
@@ -1462,12 +1479,12 @@ void PlanePopOut::AddConvexHullinWM()
 			  pre_id = newDataID();
 			  addToWorkingMemory(pre_id,CHPtr);
 			  pre_mConvexHullRadius = mConvexHullRadius;
-			  pre_mCenterOfHull = mCenterOfHull;  
+			  pre_mCenterOfHull = mCenterOfHull;
 		    }
 		    else
 		    {
 			  overwriteWorkingMemory(pre_id, CHPtr);
-		    }		    
+		    }
 	    }
 	}
 
@@ -1720,7 +1737,7 @@ void PlanePopOut::DrawOnePrism(vector <Vector3> ppSeq, double hei, Vector3& v3c)
 		OObj.pPlane.push_back(ppSeq.at(i)); OObj.pTop.push_back(v);
 	}
 	mObjSeq.push_back(OObj);
-	
+
 /*
 	glBegin(GL_POLYGON);
 	glColor3f(1.0,1.0,1.0);
@@ -1796,8 +1813,8 @@ void PlanePopOut::BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vecto
 			{
 			    v3center.at(i) = v3center.at(i) + v3OnPlane.at(k);
 			}
-			v3center.at(i) = v3center.at(i)/ v3OnPlane.size();			
-			
+			v3center.at(i) = v3center.at(i)/ v3OnPlane.size();
+
  			DrawOnePrism(v3OnPlane, height.at(i), v3center.at(i));
 
 
@@ -1818,7 +1835,7 @@ void PlanePopOut::BoundingSphere(VisionData::SurfacePointSeq &points, std::vecto
 	VisionData::SurfacePoint InitialStructure;
 	InitialStructure.p = initial_vector;
 	center.assign(objnumber,InitialStructure);
-	
+
 	for (unsigned int i = 0 ; i<v3center.size() ; i++)
 	{
 	    center.at(i).p = v3center.at(i);
@@ -1849,7 +1866,7 @@ void PlanePopOut::BoundingSphere(VisionData::SurfacePointSeq &points, std::vecto
 			cout<<"in Bounding box, radius of "<<i<<" object is "<<vdradius.at(i)<<endl;
 			cout<<"world radius of "<<i<<" object is "<<radius_world.at(i)<<endl;
 		}
-	
+
 */
 	for (int i = 0; i<objnumber; i++)
 	{
