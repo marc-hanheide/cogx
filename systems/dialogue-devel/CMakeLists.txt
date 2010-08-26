@@ -31,10 +31,10 @@ add_definitions(-Wall)
 #add_subdirectory (subarchitectures/binder)
 #endif(BUILD_SA_BINDING)
 
-option(BUILD_SA_COMSYS "Build dialogue subarchitecture" YES)
-if(BUILD_SA_COMSYS)
+option(BUILD_SA_DIALOGUE "Build dialogue subarchitecture" YES)
+if(BUILD_SA_DIALOGUE)
 add_subdirectory (subarchitectures/dialogue.sa)
-endif(BUILD_SA_COMSYS)
+endif(BUILD_SA_DIALOGUE)
 
 #option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" YES)
 #if(BUILD_SA_MOTIVATION)
