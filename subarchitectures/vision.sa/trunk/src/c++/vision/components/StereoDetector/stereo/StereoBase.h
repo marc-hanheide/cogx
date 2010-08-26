@@ -9,8 +9,6 @@
 #ifndef Z_STEREO_BASE_HH
 #define Z_STEREO_BASE_HH
 
-//#define HAVE_CAST 0		// define, when in CAST-framework
-
 #ifdef HAVE_CAST
   #include <VisionData.hpp>
 #endif
