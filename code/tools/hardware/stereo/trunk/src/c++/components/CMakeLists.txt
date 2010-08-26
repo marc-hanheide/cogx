@@ -23,7 +23,6 @@ add_cast_component(StereoServer StereoServer.cpp StereoCamera.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Stereo Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} gpustereo)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS} cudart cutil)
-# cutil)
 
 if(BUILD_HAL_STEREO_GPU)
    add_dependencies(StereoServer GpuStereo)
