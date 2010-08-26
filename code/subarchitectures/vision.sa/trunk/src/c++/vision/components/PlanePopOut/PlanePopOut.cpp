@@ -31,6 +31,7 @@ long long gethrtime(void)
 }
 #endif
 
+#define USE_PSO	0	//0=use RANSAC, 1=use PSO to estimate multiple planes
 
 #define Shrink_SOI 1
 #define Upper_BG 1.5
@@ -652,8 +653,10 @@ void PlanePopOut::runComponent()
 		points_label.clear();
 		points_label.assign(pointsN.size(), -3);
 
-
-		if (RANSAC(pointsN,points_label))
+		bool executeflag = false;
+		if (USE_PSO == 0)		executeflag = RANSAC(pointsN,points_label);
+		else if (USE_PSO == 1)		executeflag = PSO_Label(pointsN,points_label);
+		if (executeflag = true)
 		{	//cout<<"after ransac we have "<<points.size()<<" points"<<endl;
 			SplitPoints(pointsN,points_label);
 			if (objnumber != 0)
@@ -662,12 +665,14 @@ void PlanePopOut::runComponent()
   				BoundingPrism(pointsN,points_label);
 				DrawCuboids(pointsN,points_label); //cal bounding Cuboids and centers of the points cloud
  				BoundingSphere(pointsN,points_label); // get bounding spheres, SOIs and ROIs
+				//cout<<"m_bSendImage is "<<m_bSendImage<<endl;
 #ifdef FEAT_VISUALIZATION
 				if (m_bSendImage) 
 				{
 				    m_bSendPoints = false;
 				    m_bSendPlaneGrid = false;
-				    SendImage(pointsN,points_label,image, m_display, this);				    
+				    SendImage(pointsN,points_label,image, m_display, this);
+				    //cout<<"send Imgs"<<endl;
 				}
 #endif
 			}
@@ -691,6 +696,7 @@ void PlanePopOut::runComponent()
 			if (m_bSendPlaneGrid) SendPlaneGrid(m_display, this);
 #endif
 		}
+		else	log("Wrong with the execution of Plane fitting!");
 	}
 	if (para_a!=0.0 || para_b!=0.0 || para_c!=0.0 || para_d!=0.0)
 	{
@@ -1099,7 +1105,7 @@ void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
 	    mTournament.assign(N_tour,InitialParticle());
 	    Reinitialise_Parallel(mvParticle,mTournament,mvFoundOptima,points,cc,rr);
 	    count = 0;
-	    cout<<"iteration number = "<<i<<endl;
+	    //cout<<"iteration number = "<<i<<endl;
 	}
      }
      /*
@@ -1133,14 +1139,19 @@ void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
 	      }
 	}
      }
+     for(unsigned int j=0; j<nPoints; j++)	//non-planes, good, they are objects candidants
+     {
+	if (labels.at(j) == -3)
+	    labels.at(j) = -2;
+     }
 
-     cout<<"there are "<<mvFoundOptima.size()<<" planes found!"<<endl;
+     //cout<<"there are "<<mvFoundOptima.size()<<" planes found!"<<endl;
 
 }
 
 bool PlanePopOut::PSO_Label(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
 {
-     int N_particle = 50; 			// particle number
+     int N_particle = 25; 			// particle number
 
       VisionData::SurfacePointSeq P_points = points;
       unsigned int nPoints = P_points.size();
@@ -1376,6 +1387,7 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, Visio
 {
 	debug("create an object at (%f, %f, %f) now", center.x, center.y, center.z);
 	VisionData::SOIPtr obs = new VisionData::SOI;
+	obs->status = 0;
 	obs->boundingBox.pos.x = obs->boundingSphere.pos.x = center.x;
 	obs->boundingBox.pos.y = obs->boundingSphere.pos.y = center.y;
 	obs->boundingBox.pos.z = obs->boundingSphere.pos.z = center.z;
