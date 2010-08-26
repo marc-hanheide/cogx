@@ -409,7 +409,7 @@ namespace mx
 
 		pPointDes->x = rPointSrc.x + ( rPointSrc.x - m_tCameraPosition.x ) * d;
 		pPointDes->y = rPointSrc.y + ( rPointSrc.y - m_tCameraPosition.y ) * d;
-		pPointDes->z = 0;
+		pPointDes->z = dOffset;
 	}
 
 
