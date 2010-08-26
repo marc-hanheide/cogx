@@ -3,19 +3,15 @@
 
 HOST localhost
 
-# reading stored images
-#COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "instantiations/dfki-sep-09/calib/stereo/img%03d-L.bmp instantiations/dfki-sep-09/calib/stereo/img%03d-R.bmp" --start 0 --end 9 --framerate_ms 1000
-
 #robot base
 #COMPONENT CPP robot.server RobotbaseServerPlayer --log #--player-host localhost #--rand-data
 #COMPONENT CPP laser.server LaserServerPlayer --log #--player-host localhost #--rand-data
 
-# live images
-COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids "0 1" --devnums "1 0" --devclass FIREWIRE --camconfigs "instantiations/tuw_stereo.ini:L instantiations/tuw_stereo.ini:R"
+COMPONENT CPP stereoserver StereoServer --videoname videoserver --camids "0 1" --stereoconfig instantiations/stereo-tuw-2010-02-10.ini --maxdisp 100 --imgsize "160 120" --logimages #--display
 
-COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "0 1" --stereoconfig instantiations/tuw_stereo.ini --display
+#COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "0 1" --stereoconfig instantiations/tuw_stereo.ini --display
 
-SUBARCHITECTURE nav.sa 
+#SUBARCHITECTURE nav.sa 
 #CPP WM SubarchitectureWorkingMemory
 #CPP TM AlwaysPositiveTaskManager
 #CPP GD slam.process SlamProcess -c subarchitectures/nav.sa/config/cogxp3.ccf --max-scan-rate 5 --no-file-output #--log #-m tmpmap.metric #--debug
@@ -25,6 +21,17 @@ SUBARCHITECTURE nav.sa
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo
-#CPP MG Filter SOIFilter --log true --videoname video --camid 0 #--display
 
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/img%03d-L.bmp instantiations/img%03d-R.bmp" --start 0 --end 0 --framerate_ms 20 --camconfigs "instantiations/stereo-tuw-2010-02-10.ini:L instantiations/stereo-tuw-2010-02-10.ini:R" --swapredblue
+
+#CPP MG videoserver OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "instantiations/stereo-tuw-2010-02-10.ini:L instantiations/stereo-tuw-2010-02-10.ini:R" 
+# reading stored images
+#CPP MG videoserver OpenCvImgSeqServer --videoname video --camids "0 1" --files "instantiations/dfki-sep-09/calib/stereo/img%03d-L.bmp instantiations/dfki-sep-09/calib/stereo/img%03d-R.bmp" --start 0 --end 9 --framerate_ms 1000
+CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/img%03d-L.bmp instantiations/img%03d-R.bmp" --start 0 --end 0 --framerate_ms 20 --camconfigs "instantiations/stereo-tuw-2010-02-10.ini:L instantiations/stereo-tuw-2010-02-10.ini:R" --swapredblue
+
+
+CPP MG PlanePopOut PlanePopOut --stereoname stereoserver --display 
+
+#CPP MG Filter SOIFilter --log true --videoname videoserver --stereoname stereoserver --camid 0 --globalPoints true --display
+
+CPP MG VirtualScene VirtualScene --videoname videoserver --camid 0 --log
