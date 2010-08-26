@@ -367,7 +367,6 @@ void StereoCamera::SetInputImageSize(CvSize size)
   // width/height
   sx = (double)inImgSize.width/(double)cam[LEFT].width;
   sy = (double)inImgSize.height/(double)cam[LEFT].height;
-  cout << "StereoCamera: sx sy " << sx << " " << sy << endl;
 }
 
 }
