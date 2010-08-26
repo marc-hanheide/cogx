@@ -7,14 +7,14 @@ HOST localhost
 #COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "instantiations/dfki-sep-09/calib/stereo/img%03d-L.bmp instantiations/dfki-sep-09/calib/stereo/img%03d-R.bmp" --start 0 --end 9 --framerate_ms 1000
 
 # live images
-COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids "0 1" --devnums "1 0" --devclass FIREWIRE --camconfigs "instantiations/dfki-sep-09/stereo.ini:L instantiations/dfki-sep-09/stereo.ini:R"
+#COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids "0 1" --devnums "1 0" --devclass FIREWIRE --camconfigs "instantiations/dfki-sep-09/stereo.ini:L instantiations/dfki-sep-09/stereo.ini:R"
 
-COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "0 1" --stereoconfig instantiations/dfki-sep-09/stereo.ini #--display
+#COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "0 1" --stereoconfig instantiations/dfki-sep-09/stereo.ini #--display
 
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo --videoname video --camid 0
+#CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo --videoname video --camid 0
 # --upd 4 is the default, maybe increase if  cast::DoesNotExistOnWMException
 CPP MG Filter SOIFilter --log true --videoname video --camid 0 --display --stereoname stereo --upd 16
 
