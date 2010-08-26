@@ -425,22 +425,6 @@ void PlanePopOut::configure(const map<string,string> & _config)
 void PlanePopOut::start()
 {
   startStereoCommunication(*this);
-
-  int argc = 1;
-  char argv0[] = "PlanePopOut";
-  char *argv[1] = {argv0};
-
-  if (doDisplay)
-  {
-  glutInit(&argc, argv);
-  win = glutCreateWindow("points");
-  InitWin();
-  glutKeyboardFunc(KeyPress);
-  glutMouseFunc(MousePress);
-  glutMotionFunc(MouseMove);
-  glutReshapeFunc(ResizeWin);
-  glutDisplayFunc(DisplayWin);
-  }
 #ifdef FEAT_VISUALIZATION
   m_bSendPoints = false;
   m_bSendPlaneGrid = false;
