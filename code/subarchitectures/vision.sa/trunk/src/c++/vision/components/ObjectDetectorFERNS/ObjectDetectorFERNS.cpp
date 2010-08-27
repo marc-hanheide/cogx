@@ -211,7 +211,6 @@ ObjectDetectorFERNS::ObjectDetectorFERNS()
   doDisplay = false;
   show_tracked_locations = false;
   show_keypoints = false;
-  outputToNav = false;
 }
 
 ObjectDetectorFERNS::~ObjectDetectorFERNS()
@@ -298,12 +297,6 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
       show_keypoints = true;
   }
 
-  if((it = _config.find("--output_to_nav")) != _config.end())
-  {
-    if(tolower(it->second) == "true")
-      outputToNav = true;
-  }
-
   if(doDisplay)
   {
     cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX,
@@ -380,7 +373,6 @@ void ObjectDetectorFERNS::setupFERNS() throw(runtime_error)
   trackers.resize(model_images.size());
   last_frame_ok.resize(model_images.size());
   objWMIds.resize(model_images.size());
-  navWMIds.resize(model_images.size());
 
   for(size_t i = 0; i < detectors.size(); i++)
   {
@@ -541,24 +533,6 @@ void ObjectDetectorFERNS::postObjectToWM_Internal(size_t i,
   {
     overwriteWorkingMemory(objWMIds[i], obj);
   }
-
-  if(outputToNav)
-  {
-    // now put an ObjObs into the nav.sa in order to display our object in the
-    // robot visualisation
-    NavData::ObjObsPtr obs = createObjObs(obj, image);
-
-    // if no nav.sa WM ID yet for that object
-    if(navWMIds[i] == "")
-    {
-      navWMIds[i] = newDataID();
-      addToWorkingMemory(navWMIds[i], "nav.sa", obs);
-    }
-    else
-    {
-      overwriteWorkingMemory(navWMIds[i], "nav.sa", obs);
-    }
-  }
 }
 
 VisualObjectPtr ObjectDetectorFERNS::createVisualObject(size_t i,
@@ -590,27 +564,6 @@ VisualObjectPtr ObjectDetectorFERNS::createVisualObject(size_t i,
   obj->views[0].detectionConfidence = obj->detectionConfidence;
 
   return obj;
-}
-
-NavData::ObjObsPtr ObjectDetectorFERNS::createObjObs(VisualObjectPtr obj,
-    const Video::Image &image)
-{
-  NavData::ObjObsPtr obs = new NavData::ObjObs;
-
-  obs->category = obj->label;
-  obs->time = obj->time;
-
-  // we don't know distance (no 3D information at this point) but view vector
-  // (if the camera is calibrated)
-  assert(obj->views.size() > 0);
-  Vector3 ray = localRay(image.camPars, obj->views[0].boundingBox.pos);
-
-  // assume that camera is mounted so that image x coordinate is horizontal and
-  // points to the right
-  obs->angles.resize(1);
-  obs->angles[0] = -atan2(ray.x, ray.z);
-
-  return obs;
 }
 
 }

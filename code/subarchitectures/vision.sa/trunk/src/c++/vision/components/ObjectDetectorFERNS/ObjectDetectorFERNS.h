@@ -16,7 +16,6 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
 #include <VisionData.hpp>
-#include <NavData.hpp>
 #include "mcv.h"
 #include "planar_pattern_detector_builder.h"
 #include "template_matching_based_tracker.h"
@@ -83,10 +82,6 @@ private:
    */
   std::vector<std::string> objWMIds;
   /**
-   * WM Id of our tracked objects in the navigation subarchitecture
-   */
-  std::vector<std::string> navWMIds;
-  /**
    * Whether to open own (OpenCV) windows and display stuff
    * Default is false.
    */
@@ -101,13 +96,6 @@ private:
    * Default is false.
    */
   bool show_keypoints;
-  /**
-   * Whether to also output detected objects to nav.sa.
-   * If yes, then objects will also be displayed by peekabot together with all
-   * the other objects (walls, doors).
-   * Default is false.
-   */
-  bool outputToNav;
 
 #ifdef FEAT_VISUALIZATION
   cogx::display::CDisplayClient m_display;
@@ -180,13 +168,6 @@ private:
    * @param image (in) image in which we detected the object
    */
   VisionData::VisualObjectPtr createVisualObject(size_t i,
-      const Video::Image &image);
-  /**
-   * Create a ObjObs for the nav.sa from a VisualObject.
-   * @param obj (in) VisualObject already created
-   * @param image (in) image in which we detected the object
-   */
-  NavData::ObjObsPtr createObjObs(VisionData::VisualObjectPtr obj,
       const Video::Image &image);
   /**
    * callback function called when a new detecion command is issued
