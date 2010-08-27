@@ -13,6 +13,7 @@
 #include <Vector3.h>
 #include <Matrix33.h>
 #include <Pose3.h>
+#include <Plane3.h>
 
 #endif
 
