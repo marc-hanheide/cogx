@@ -32,14 +32,14 @@ void ObjectRecognizer3DDriver::loadVisualModelToWM(std::string filename, std::st
 	ModelLoader modelloader;
 	Model model;
 	modelloader.LoadPly(model, filename.c_str());
-	
+
 	VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
   obj->model = new VisionData::GeometryModel;
 	convertModel2Geometry(model, obj->model);
 	obj->label = filename.c_str();
 	obj->detectionConfidence = 0.0;
 	obj->pose = pose;
-	 
+
   log("Add model to working memory: '%s'", obj->label.c_str());
   modelID = newDataID();
   addToWorkingMemory(modelID, obj);
@@ -63,7 +63,7 @@ void ObjectRecognizer3DDriver::addTrackingCommand(VisionData::TrackingCommandTyp
 
 void ObjectRecognizer3DDriver::configure(const map<string,string> & _config){
 	map<string,string>::const_iterator it;
-	
+
 	if((it = _config.find("--labels")) != _config.end())
   {
     istringstream istr(it->second);
@@ -73,13 +73,16 @@ void ObjectRecognizer3DDriver::configure(const map<string,string> & _config){
       m_sumDetections[label] = 0;
       m_sumConfidence[label] = 0.0;
     }
-
-    ostringstream ostr;
-    for(size_t i = 0; i < m_labels.size(); i++)
-      ostr << " '" << m_labels[i] << "'";
-    log("Recognizing objects: %s", ostr.str().c_str());
   }
-  
+
+	if((it = _config.find("--mode")) != _config.end())
+  {
+    m_mode = RECOGNIZE;
+    if(it->second == "LEARN")
+      m_mode = RECLEARN;
+    // else mode is "RECOGNIZE"
+  }
+
   if((it = _config.find("--Loops")) != _config.end())
 	{
     istringstream istr(it->second);
@@ -87,6 +90,14 @@ void ObjectRecognizer3DDriver::configure(const map<string,string> & _config){
 	}else{
 		m_loops = 1;
 	}
+log("BLORB");
+  ostringstream ostr;
+  for(size_t i = 0; i < m_labels.size(); i++)
+    ostr << " '" << m_labels[i] << "'";
+  if(m_mode == RECOGNIZE)
+    log("Recognizing objects: %s", ostr.str().c_str());
+  else if(m_mode == RECLEARN)
+    log("Learning objects: %s", ostr.str().c_str());
 }
 
 void ObjectRecognizer3DDriver::start(){
@@ -94,50 +105,52 @@ void ObjectRecognizer3DDriver::start(){
 //   addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD),
 //       new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
 //         &ObjectRecognizer3DDriver::receiveVisualObject));
-	
+
 	addChangeFilter(createLocalTypeFilter<VisionData::Recognizer3DCommand>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
         &ObjectRecognizer3DDriver::overwriteRecognizer3DCommand));
-  
+
 }
 
 void ObjectRecognizer3DDriver::runComponent(){
   sleepProcess(1000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
-  
+
   m_halt = true;
-  
+
   // Load PLY model to working memory
   std::string modelID;
 //   loadVisualModelToWM(m_plyfile, modelID, Math::Pose3());
 //   m_visualObjectIDs.push_back(modelID);
-  
+
   m_timer.Update();
-  
+
   // trigger Recognizer3D
   for(int j=0; j<m_loops && isRunning(); j++){
-  	
+
   	log("*** Loop %d/%d ***", j, m_loops);
 //   	addTrackingCommand(RELEASEMODELS);
-  	
+
 		for(int i=0; i<m_labels.size(); i++){
-	//   	addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);			
-			addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
+	   	if(m_mode == RECOGNIZE)
+			  addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
+      else if(m_mode = RECLEARN)
+        addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);
 		}
-		
+
 		while(m_halt && isRunning())
 			sleepComponent(100);
-			
+
 // 		log("Taking Screenshot");
 // 		addTrackingCommand(SCREENSHOT);
 		m_halt = true;
 	}
-	
+
 	printf("Results: %f\n", m_timer.Update()/(m_loops*m_labels.size()));
 	for(int i=0; i<m_labels.size(); i++){
 		printf("  %s %f %f\n", m_labels[i].c_str(), 100*float(m_sumDetections[m_labels[i]])/m_loops, 100*m_sumConfidence[m_labels[i]]/m_loops);
 	}
-	
+
 	log("Stop");
 
 }
@@ -147,18 +160,18 @@ void ObjectRecognizer3DDriver::runComponent(){
 void ObjectRecognizer3DDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
   VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
-  
+
 }
 
 void ObjectRecognizer3DDriver::overwriteRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc){
   VisionData::Recognizer3DCommandPtr rec_cmd = getMemoryEntry<VisionData::Recognizer3DCommand>(_wmc.address);
-	
+
 	log("%s %f", rec_cmd->label.c_str(), rec_cmd->confidence);
-	
+
 	m_sumConfidence[rec_cmd->label] += rec_cmd->confidence;
 	if(rec_cmd->confidence > 0.03)
 		m_sumDetections[rec_cmd->label] += 1;
-	
+
   if(rec_cmd->label.compare(m_labels.back().c_str()) == 0)
   	m_halt =false;
 }
