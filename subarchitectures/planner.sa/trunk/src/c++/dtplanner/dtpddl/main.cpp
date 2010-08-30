@@ -153,6 +153,28 @@ int main(int argc, char** argv)
         }
 
 
+    for(auto problem = Planning::Parsing::problems.begin()
+            ; problem != Planning::Parsing::problems.end()
+            ; problem++){
+        
+        std::cout<<*problem->second->get__domain_Data()<<std::endl;
+        std::cout<<*problem->second<<std::endl;
+        
+        for(int i =0 ; i < 100; i++){
+            std::cout<<problem->second->get__prescribed_action()<<std::endl;
+        }
+        
+//         Planning::Solver solver(*problem->second);
+//         solver.preprocess();
+//         while(solver.expand_belief_state_space()){
+//             INTERACTIVE_VERBOSER(true, 9096, "Expanding POMDP state"<<std::endl);
+//         };
+        
+//         std::cout<<*problem->second->get__domain_Data()<<std::endl;
+//         std::cout<<*problem->second<<std::endl;
+    }
+    {char ch; std::cin>>ch;};
+    
         for(auto i = 0; i < 10; i++){
             
             std::pair<Planning::Formula::Action_Proposition, uint> _action
@@ -188,14 +210,14 @@ int main(int argc, char** argv)
             std::cout<<problem->second->get__prescribed_action()<<std::endl;
         }
         
-        Planning::Solver solver(*problem->second);
-        solver.preprocess();
-        while(solver.expand_belief_state_space()){
-            INTERACTIVE_VERBOSER(true, 9096, "Expanding POMDP state"<<std::endl);
-        };
+//         Planning::Solver solver(*problem->second);
+//         solver.preprocess();
+//         while(solver.expand_belief_state_space()){
+//             INTERACTIVE_VERBOSER(true, 9096, "Expanding POMDP state"<<std::endl);
+//         };
         
-        std::cout<<*problem->second->get__domain_Data()<<std::endl;
-        std::cout<<*problem->second<<std::endl;
+//         std::cout<<*problem->second->get__domain_Data()<<std::endl;
+//         std::cout<<*problem->second<<std::endl;
     }
 
 
