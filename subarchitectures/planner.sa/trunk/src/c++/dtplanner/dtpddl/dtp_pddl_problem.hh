@@ -51,7 +51,10 @@ namespace Planning
 
 
         struct s_Problem : stand_alone_string<p, r, o, b, l, e, m> {};
-        struct s_Init : stand_alone_string<i, n, i, t> {};
+        struct s_Init : sor<
+            stand_alone_string<i, n, i, t>,
+            stand_alone_string<I, N, I, T> >{};
+        
         struct s_Goal : stand_alone_string<g, o, a, l> {};
         
         struct s_Metric : stand_alone_string<m, e, t, r, i, c> {};

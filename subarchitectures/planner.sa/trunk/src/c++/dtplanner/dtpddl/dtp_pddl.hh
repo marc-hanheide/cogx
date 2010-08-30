@@ -98,7 +98,7 @@ namespace Planning
         struct s_Constants : sor<stand_alone_string<c, o, n, s, t, a, n, t, s>
                                  , stand_alone_string<o, b, j, e, c, t, s>>{}; 
         
-        struct s_And : stand_alone_string<a, n, d>{};
+        struct s_And : sor<stand_alone_string<a, n, d>, stand_alone_string<A, N, D> >{};
         struct s_Not : stand_alone_string<n, o, t>{}; // *** Will generate DERIVED PREDICATE *** 
         struct s_Or : stand_alone_string<o, r>{}; // *** Will generate DERIVED PREDICATE *** 
         struct s_Forall : stand_alone_string<f, o, r, a, l, l>{}; // *** Will generate DERIVED PREDICATE *** 
@@ -298,7 +298,7 @@ namespace Planning
         struct Equality_Term : sor< Subformulae_Without_Parenthesis
                                     , seq< ifapply<Open, Dive__Action>
                                           , ATOMIC_FUNCTION_SYMBOL
-                                          , ifapply<Close, Dive__Action>>
+                                          , ifapply<Close, Emerge__Action>>
                                     >{};
         
         template<typename ATOMIC_FUNCTION_SYMBOL>

@@ -13,7 +13,8 @@
 	(ON-TABLE B) 
 	(ON-TABLE D) 
 	(HANDEMPTY)
-	(= (total-cost) 0))
+	(= (total-cost ) 0)
+)
 
 (:goal (AND (ON D C) (ON C B) (ON B A)))
 

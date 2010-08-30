@@ -180,10 +180,11 @@ std::ostream& State::operator<<(std::ostream&o) const
     
     o<<"  :-ACTIONS-: {"<<std::endl;
     if(applicable_optional_transformations.size()){
-        for(auto applicable_optional_transformation =applicable_optional_transformations.begin()
+        for(auto applicable_optional_transformation = applicable_optional_transformations.begin()
                 ; applicable_optional_transformation != applicable_optional_transformations.end()
                 ; applicable_optional_transformation++){
-            o<<(*applicable_optional_transformation)->get__identifier()<<" :-: ";
+            o<<(*applicable_optional_transformation)->get__id()<<" "
+             <<(*applicable_optional_transformation)->get__identifier()<<" :-: ";
         }
     } else {
         o<<"POSSIBLE-SINK-STATE; i.e,. if there are no zero/null-precondition actions."<<std::endl;

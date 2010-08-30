@@ -211,8 +211,8 @@ void Formula_Data::report__decrease_formula()
 void Formula_Data::report__assign_formula()
 {
     formula_type.push(assign);
-
-    VERBOSER(2000, "Got an (assign (... ) NUM) at stack element :: "
+    
+    INTERACTIVE_VERBOSER(true, 10002, "Got an (assign (... ) NUM) at stack element :: "
              <<formula_type.size()<<std::endl);
 
     in_modification_context = true;
@@ -234,7 +234,7 @@ void  Formula_Data::report__equality_formula()
 
 void Formula_Data::report__skip_next____report__formula()
 {
-    VERBOSER(41,"Skipping on :: "<<formula_parsing_level);
+    VERBOSER(41, "Skipping on :: "<<formula_parsing_level);
     skip_next____report__formula = true;
 }
 
@@ -531,6 +531,7 @@ void  Formula_Data::report__formula_perceptual_function()
 
 void  Formula_Data::report__formula_state_function()
 {
+    INTERACTIVE_VERBOSER(true, 10002, "Parsing state function :: "<<state_Function_Name);
     report__formula_atomic_symbol
         <Planning::Formula::State_Ground_Function
         , Planning::Formula::State_Function
@@ -550,7 +551,7 @@ void  Formula_Data::report__formula_predicate()
 void Formula_Data::report__formula(const std::string& str)
 {
     if(skip_next____report__formula){
-        VERBOSER(41,"Skipping off :: "<<formula_parsing_level<<" :: "<<str<<std::endl);
+        INTERACTIVE_VERBOSER(true, 10001,"Skipping off :: "<<formula_parsing_level<<" :: "<<str<<std::endl);
         skip_next____report__formula = false;
         return;
     }

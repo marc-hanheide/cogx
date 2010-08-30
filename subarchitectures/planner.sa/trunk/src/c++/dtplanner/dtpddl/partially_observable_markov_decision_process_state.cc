@@ -34,6 +34,8 @@
 
 #include "partially_observable_markov_decision_process_state.hh"
 
+#include "planning_state.hh"
+
 namespace Planning
 {
     std::size_t hash_value(const Planning::Partially_Observable_Markov_Decision_Process_State& in)
@@ -58,9 +60,33 @@ get__possible_observations_given_action(uint action_index) const
     uint index_to_actions = 0;
     while(action_index != action_based_successor_driver[index_to_actions]){
         index_to_actions++;
+
+        std::string debug_string;
+        if(index_to_actions >= action_based_successor_driver.size()){
+            std::ostringstream oss;
+            oss<<"Failing at a belief state "<<*this;
+
+            for(auto atom = belief_State.begin()
+                    ; atom != belief_State.end()
+                    ; atom++){
+                auto _state = atom->first;
+
+                Planning::State* state = dynamic_cast<Planning::State*>(_state);
+
+                QUERY_UNRECOVERABLE_ERROR
+                    (!state
+                     , "Invalid state at belief atom. "<<std::endl);
+
+                oss<<*state<<std::endl<<std::endl;
+            }
+            debug_string = oss.str();
+        }
+        
+        
         QUERY_UNRECOVERABLE_ERROR
             (index_to_actions >= action_based_successor_driver.size()
-             , "Unregistered action at belief-state. "<<std::endl);
+             , "Unregistered action :: "<<action_index<<" at belief-state. "<<std::endl
+             <<debug_string<<std::endl);
     }
 
     return observation_based_successor_driver[index_to_actions];

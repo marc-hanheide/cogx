@@ -37,7 +37,7 @@ std::string Planning::Parsing::pddl_preprocessor(const std::string& file_name)
 {
     std::string result = "";
     
-    char ch;
+    /*unsigned*/ char ch;
     
     FILE * file = 0;
     file = fopen(file_name.c_str(), "r");
@@ -67,15 +67,17 @@ std::string Planning::Parsing::pddl_preprocessor(const std::string& file_name)
                 if(ch == '\n') result += "\n";
             } else {
                 result += ";";
-                result += ch;
+                result += static_cast<char>(tolower(static_cast<unsigned char>(ch)));//static_cast<unsigned char>(tolower(ch));
             }
         } else {   
-            result += ch;
+            result += static_cast<char>(tolower(static_cast<unsigned char>(ch)));//ch;//static_cast<unsigned char>(tolower(ch));
         }
     }
     
     fclose(file);
 
+    INTERACTIVE_VERBOSER(true, 10002, "File contents is :: \n"<<result<<std::endl);
+    
     return std::move(result);
 }
 
