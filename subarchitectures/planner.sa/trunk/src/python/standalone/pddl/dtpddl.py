@@ -395,6 +395,11 @@ class DTPDDLCompiler(translators.Translator):
 
         for func in default_predicates:
             dom.predicates.remove(func)
+        for func in default_functions:
+            dom.functions.remove(func)
+
+        reward = Function("reward", [], t_number, builtin=False)
+        dom.functions.add(reward)
             
         p = Parameter("?f", types.FunctionType(t_object))
         observed = Predicate("observed", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
