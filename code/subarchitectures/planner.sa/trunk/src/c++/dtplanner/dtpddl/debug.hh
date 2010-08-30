@@ -44,7 +44,7 @@ Old fashioned debugging -- ERROR STREAM
 
 ---------------------------------*/
 #ifndef DEBUG_LEVEL
-#define DEBUG_LEVEL 9096
+#define DEBUG_LEVEL 9097
 #endif
 
 #ifndef DEBUG_LINE_WIDTH
@@ -53,6 +53,10 @@ Old fashioned debugging -- ERROR STREAM
 
 #ifndef DEBUG_SLEEP_DELAY
 #define DEBUG_SLEEP_DELAY 0
+#endif
+
+#ifndef PRINTING_WITH_THREAD_INTEGER
+#define PRINTING_WITH_THREAD_INTEGER 0
 #endif
 
 #define STANDARD_DEBUGGING_PREFIX                                       \

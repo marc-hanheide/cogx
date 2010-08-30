@@ -33,22 +33,38 @@ using namespace Planning;
 
 std::ostream& Planning::Predicate_Name::operator<<(std::ostream& o) const
 {
-    return o<<get__runtime_Thread()<<contents();
+    if(PRINTING_WITH_THREAD_INTEGER){
+        o<<get__runtime_Thread();
+    }
+    
+    return o<<contents();
 }
 
 std::ostream& Planning::Type::operator<<(std::ostream& o) const
 {
-    return o<<get__runtime_Thread()<<contents();
+    if(PRINTING_WITH_THREAD_INTEGER){
+        o<<get__runtime_Thread();
+    }
+    
+    return o<<contents();
 }
 
 std::ostream& Planning::Constant::operator<<(std::ostream& o) const
 {
-    return o<<get__runtime_Thread()<<contents();
+    if(PRINTING_WITH_THREAD_INTEGER){
+        o<<get__runtime_Thread();
+    }
+    
+    return o<<contents();
 }
 
 std::ostream& Planning::Variable::operator<<(std::ostream& o) const
 {
-    return o<<get__runtime_Thread()<<"?"<<contents();
+    if(PRINTING_WITH_THREAD_INTEGER){
+        o<<get__runtime_Thread();
+    }
+    
+    return o<<"?"<<contents();
 }
 
 std::ostream& Planning::Requirement::operator<<(std::ostream& o) const
