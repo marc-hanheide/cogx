@@ -249,7 +249,9 @@ void Solver::preprocess()
 
     assert(problem_Grounding->get__deterministic_actions().size());
     problem_Grounding->ground_observations();
-    assert(problem_Grounding->get__observations().size());
+    QUERY_WARNING(!problem_Grounding->get__observations().size(),
+                  "Problem has no observation schemata.");
+//     assert(problem_Grounding->get__observations().size());
     
     generate_starting_state();
     
