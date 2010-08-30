@@ -38,11 +38,12 @@ def rename_objects(objects):
   namedict = {}
   for obj in objects:
     oldname = obj.name
-    obj.name = "%s_%s" % (obj.type, obj.name.translate(trans_tbl))
+    new_name = "%s_%s" % (obj.type, obj.name.translate(trans_tbl))
     #the cast ids are case sensitive, so we have to replace uppercase chars
     #with something different
-    obj.name = re.sub(UCASE_REXP, r'_\1', obj.name).lower()
+    new_name = re.sub(UCASE_REXP, r'_\1', new_name).lower()
     #obj.name = obj.name.lower()
+    obj.rename(new_name)
   
     namedict[oldname] = obj
     namedict[obj] = oldname
@@ -250,11 +251,11 @@ def infer_types(obj_descriptions):
       log.error("%s could be of types %s or %s", obj.name, type1, type2)
       assert False, "Multiple inheritance not supported yet"
     most_spec_type = sorted(types, cmp=type_cmp)[0]
-    obj.type = most_spec_type
+    obj.change_type(most_spec_type)
 
     if obj in current_domain and current_domain[obj].is_instance_of(most_spec_type):
       #use existing constant
-      obj.type = current_domain[obj].type
+      obj.change_type(current_domain[obj].type)
       continue
 
     objects.add(obj)

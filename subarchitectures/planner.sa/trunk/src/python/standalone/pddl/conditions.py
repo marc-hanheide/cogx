@@ -3,6 +3,7 @@
 
 from parser import UnexpectedTokenError
 import mapltypes as types
+import scope
 from scope import Scope, SCOPE_CONDITION
 import predicates
 
@@ -319,14 +320,9 @@ class QuantifiedCondition(Condition, Scope):
         if not new_scope:
             new_scope = self.parent
             
-        cp = self.__class__([predicates.Parameter(a.name, a.type) for a in self.args], None, new_scope)
-        for arg in cp.args:
-            if isinstance(arg.type, types.ProxyType):
-                if copy_instance and arg.type.parameter.is_instantiated():
-                    arg.type = arg.type.effective_type()
-                else:
-                    arg.type = types.ProxyType(cp[arg.type.parameter])
-
+        cp = self.__class__([], None, new_scope)
+        cp.args = cp.copy_args(self.args, copy_instance)
+        
         if new_parts:
             cp.condition = new_parts[0]
             cp.condition.set_scope(cp)

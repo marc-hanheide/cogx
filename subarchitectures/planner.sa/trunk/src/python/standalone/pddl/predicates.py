@@ -56,14 +56,18 @@ class Function(object):
         builtin -- True if this function is a builtin PDDL/MAPL/whateverDDL function
         """
         
-        self.name = name
-        self.args = args
-        self.type = type
+        self._name = name
+        self._args = args
+        self._type = type
         self.builtin=builtin
         self.function_scope=function_scope
 
         self.arity = len(args)
         self.hash = hash((self.name, self.type)+tuple(self.args))
+
+    name = property(lambda self: self._name)
+    type = property(lambda self: self._type)
+    args = property(lambda self: self._args)
         
     @staticmethod
     def parse(it, type, types):
@@ -389,13 +393,16 @@ class FunctionTerm(Term):
         args -- list of TypesObjects or Terms that are arguments of this function.
         scope -- Scope this function term is in. If not None, all arguments will be looked up in this Scope befor the FunctionTerm is created.
         """
-        self.function = function
+        self._function = function
 
         if scope:
-            self.args = scope.lookup(args)
+            self._args = scope.lookup(args)
         else:
-            self.args = args
-    
+            self._args = args
+
+    args = property(lambda self: self._args)
+    function = property(lambda self: self._function)
+            
     def get_type(self):
         """Return the PDDL type of this Term. For FunctionTerms, this is always a FunctionType."""
         return FunctionType(self.function.type)
@@ -469,7 +476,9 @@ class VariableTerm(Term):
         parameter -- The Parameter object that this term refers to
         """
         assert isinstance(parameter, Parameter)
-        self.object = parameter
+        self._object = parameter
+
+    object = property(lambda self: self._object)
         
     def is_instantiated(self):
         """Returns True if this terms parameter is instantiated."""
@@ -518,8 +527,10 @@ class FunctionVariableTerm(FunctionTerm, VariableTerm):
         Arguments:
         parameter -- The Parameter object that this term refers to
         """
-        self.object = parameter
+        self._object = parameter
 
+    object = property(lambda self: self._object)
+        
     def get_type(self):
         """Return the PDDL type of this Term. This is the type of the
         terms parameter."""
@@ -584,8 +595,10 @@ class ConstantTerm(Term):
         obj -- The TypedObject that this term refers to
         """
         assert isinstance(obj, TypedObject)
-        self.object = obj
-    
+        self._object = obj
+
+    object = property(lambda self: self._object)
+        
     def get_type(self):
         """Return the PDDL type of this Term. This is the type of the
         object."""

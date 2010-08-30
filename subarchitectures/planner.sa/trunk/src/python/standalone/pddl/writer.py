@@ -190,7 +190,9 @@ class Writer(object):
                 e_str = self.write_effect(e)
                 strings += self.section(p_str, e_str, parens=False)
             return self.section("probabilistic", strings)
-
+        else:
+            return effect.write_pddl(self)
+        
         assert False, effect
             
         

@@ -164,10 +164,20 @@ class SenseEffect(object):
 class MAPLAction(actions.Action):
     def __init__(self, name, agents, params, vars, precondition, replan, effect, sensors, domain):
         actions.Action.__init__(self, name, agents+params+vars, precondition, effect, domain, replan=replan)
-        self.agents = agents
-        self.params = params
-        self.vars = vars
+        self._agents = [a.name for a in agents]
+        self._params = [a.name for a in params]
+        self._vars = [a.name for a in vars]
         self.sensors = sensors
+
+    def _get_args(self, names):
+        adict = dict((a.name, a) for a in self.args)
+        return [adict[n] for n in names]
+    def _set_args(self, names, newvals):
+        names[:] = [a.name for a in newvals]
+
+    agents = property(lambda self: self._get_args(self._agents), lambda self, x: self._set_args(self._agents, x))
+    params = property(lambda self: self._get_args(self._params), lambda self, x: self._set_args(self._params, x))
+    vars = property(lambda self: self._get_args(self._vars), lambda self, x: self._set_args(self._vars, x))
 
     def to_pddl(self):
         str = ["(:action %s" % self.name]
@@ -184,10 +194,7 @@ class MAPLAction(actions.Action):
         params = [a for a in args if a not in agents and a not in vars]
         
         a = MAPLAction(self.name, agents, params, vars, None, None, None, [], newdomain)
-
-        for arg in a.args:
-            if isinstance(arg.type, types.ProxyType):
-                arg.type = types.ProxyType(a[arg.type.parameter])
+        a.args = a.copy_args(self.args)
         
         if self.precondition:
             a.precondition = self.precondition.copy(a)
@@ -199,7 +206,7 @@ class MAPLAction(actions.Action):
 
         return a
 
-    def copy_skeletion(self, newdomain=None):
+    def copy_skeleton(self, newdomain=None):
         """Create a copy of this action's skeleton (name, arguments
         but not conditions and effects).
 
@@ -286,14 +293,14 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
         a.duration = [durative.DurationConstraint(a.lookup([d.term])[0], d.timeSpecifier) for d in self.duration]
         return a
 
-    def copy_skeletion(self, newdomain=None):
+    def copy_skeleton(self, newdomain=None):
         """Create a copy of this action's skeleton (name, arguments
         but not conditions and effects).
 
         Arguments:
         newdomain -- if not None, the copy will be created inside this scope."""
 
-        a = MAPLAction.copy_skeletion(self, newdomain)
+        a = MAPLAction.copy_skeleton(self, newdomain)
         a.__class__ = MAPLDurativeAction
         a.duration = [durative.DurationConstraint(a.lookup([d.term])[0], d.timeSpecifier) for d in self.duration]
         return a
@@ -492,7 +499,7 @@ class MAPLObjectFluentNormalizer(translators.ObjectFluentNormalizer):
                 pre.parts.append(conditions.LiteralCondition(builtin.equals, [term, predicates.Term(param)]))
                 add_args.append(param)
 
-        a2 = action.copy_skeletion(domain)
+        a2 = action.copy_skeleton(domain)
         a2.add(add_args)
         a2.vars += add_args
         a2.args += add_args

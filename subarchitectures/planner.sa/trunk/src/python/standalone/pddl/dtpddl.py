@@ -104,9 +104,18 @@ class ExecutionCondition(object):
 class Observation(actions.Action):
     def __init__(self, name, agents, params, execution, precondition, effect, domain):
         actions.Action.__init__(self, name, agents+params, precondition, effect, domain)
-        self.agents = agents
-        self.params = params
+        self._agents = [a.name for a in agents]
+        self._params = [a.name for a in params]
         self.execution = execution
+        
+    def _get_args(self, names):
+        adict = dict((a.name, a) for a in self.args)
+        return [adict[n] for n in names]
+    def _set_args(self, names, newvals):
+        names[:] = [a.name for a in newvals]
+
+    agents = property(lambda self: self._get_args(self._agents), lambda x: self._set_args(self._agents, x))
+    params = property(lambda self: self._get_args(self._params), lambda x: self._set_args(self._params, x))
 
     def to_pddl(self):
         str = ["(:observe %s" % self.name]
@@ -122,10 +131,7 @@ class Observation(actions.Action):
         params = [a for a in args if a not in agents]
         
         o = Observation(self.name, agents, params, None, None, None, newdomain)
-
-        for arg in o.args:
-            if isinstance(arg.type, types.ProxyType):
-                arg.type = types.ProxyType(o[arg.type.parameter])
+        o.args = o.copy_args(o.args)
         
         if self.precondition:
             o.precondition = self.precondition.copy(o)
@@ -136,7 +142,7 @@ class Observation(actions.Action):
 
         return o
 
-    def copy_skeletion(self, newdomain=None):
+    def copy_skeleton(self, newdomain=None):
         """Create a copy of this observation's skeleton (name,
         arguments but not conditions and effects).
 

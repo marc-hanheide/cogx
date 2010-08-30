@@ -351,10 +351,22 @@ class TypedObject(object):
             self.__class__ = TypedNumber
             TypedNumber.__init__(self, name)
             return
-        self.name = name
-        self.type = _type
+        self._name = name
+        self._type = _type
         self.hash = hash((self.__class__, self.name, self.type))
 
+    name = property(lambda self: self._name)
+    type = property(lambda self: self._type)
+
+    def rename(self, name):
+        self._name = name
+        self.hash = hash((self.__class__, self.name, self.type))
+
+    def change_type(self, type):
+        assert self.type.equal_or_subtype_of(type) or type.equal_or_subtype_of(self.type), "invalid type change from %s to %s." % (str(self.type), str(type))
+        self._type = type
+        self.hash = hash((self.__class__, self.name, self.type))
+        
     def is_instance_of(self, type):
         """Returns true if this TypedObject's type is equal to "type"
         or a subtype."""
@@ -389,11 +401,12 @@ class TypedNumber(TypedObject):
         Arguments:
         value -- number represented by the new object.
         """
-        self.value = number
-        self.type = t_number
+        self._value = number
+        self._type = t_number
         self.hash = hash((self.__class__, self.name, self.type))
 
-    name = property(lambda self: self.value)
+    value = property(lambda self: self._value)
+    name = property(lambda self: self._value)
 
     def copy(self):
         return self.__class__(self.value)
@@ -423,10 +436,13 @@ class Parameter(TypedObject):
         type -- Type object of the Parameter's type
         """
         assert name[0] == "?"
-        self.name = name
-        self.type = type
+        self._name = name
+        self._type = type
         self.instantiated = None
         self.hash = hash((self.__class__, self.name, self.type))
+
+    name = property(lambda self: self._name)
+    type = property(lambda self: self._type)
 
     def instantiate(self, value):
         """Instantiate this Parameter with the object value. Throws an

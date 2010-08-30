@@ -30,13 +30,10 @@ class Axiom(Scope):
             
         args = [types.Parameter(p.name, p.type) for p in self.args]
         
-        a = Axiom(self.predicate, args, None, newdomain)
-        
-        for arg in a.args:
-            if isinstance(arg.type, types.ProxyType):
-                arg.type = types.ProxyType(a[arg.type.parameter])
-        
+        a = Axiom(self.predicate, [], None, newdomain)
+        a.args = a.copy_args(self.args)
         a.condition = self.condition.copy(a)
+        
         return a
         
         

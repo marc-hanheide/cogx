@@ -66,14 +66,14 @@ class DurativeAction(actions.Action):
         a.duration = [DurationConstraint(a.lookup([d.term])[0], d.timeSpecifier) for d in self.duration]
         return a
 
-    def copy_skeletion(self, newdomain=None):
+    def copy_skeleton(self, newdomain=None):
         """Create a copy of this action's skeleton (name, arguments
         but not conditions and effects).
 
         Arguments:
         newdomain -- if not None, the copy will be created inside this scope."""
 
-        a = actions.Action.copy_skeletion(self, newdomain)
+        a = actions.Action.copy_skeleton(self, newdomain)
         a.__class__ = DurativeAction
         a.duration = [DurationConstraint(a.lookup([d.term])[0], d.timeSpecifier) for d in self.duration]
         return a

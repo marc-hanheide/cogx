@@ -106,11 +106,8 @@ class Action(Scope):
             
         args = [types.Parameter(p.name, p.type) for p in self.args]
         
-        a = Action(self.name, args, None, None, newdomain)
-
-        for arg in a.args:
-            if isinstance(arg.type, types.ProxyType):
-                arg.type = types.ProxyType(a[arg.type.parameter])
+        a = Action(self.name, [], None, None, newdomain)
+        a.args = a.copy_args(self.args)
         
         if self.precondition:
             a.precondition = self.precondition.copy(a)
@@ -121,7 +118,7 @@ class Action(Scope):
 
         return a
 
-    def copy_skeletion(self, newdomain=None):
+    def copy_skeleton(self, newdomain=None):
         """Create a copy of this action's skeleton (name, arguments
         but not conditions and effects).
 
