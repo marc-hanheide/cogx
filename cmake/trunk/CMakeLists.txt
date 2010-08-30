@@ -24,10 +24,7 @@ set(CMAKE_MODULE_PATH "${COGX_ROOT}/cmake;${CAST_CMAKE_DIR}" ${CMAKE_MODULE_PATH
 
 add_definitions(-Wall)
 
-option(BUILD_SA_V11N "Build Visualization / Display Server and Client" YES)
-if(BUILD_SA_V11N)
 include(subarchitectures/visualization.sa/cmake/v11n.cmake)
-endif(BUILD_SA_V11N)
 
 add_subdirectory (tools/d-lib)
 
