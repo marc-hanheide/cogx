@@ -249,6 +249,12 @@ void Solver::expand_optional_transformation(Planning::State* state
                                , *successor
                                , (*successor)->get__probability_during_expansion());
 
+        
+        INTERACTIVE_VERBOSER(true, 10001,
+                             "Expanded state using optional transformation :: "
+                             <<optional_transformation->get__id()<<" "
+                             <<*optional_transformation<<std::endl);
+        
         expand_observations(optional_transformation/*->get__id()*/, *successor);
         
         
@@ -272,6 +278,10 @@ void Solver::expand_optional_transformations(Planning::State* state)
             ; optional_transformation != _optional_transformations.end()
             ; optional_transformation++){
 
+        INTERACTIVE_VERBOSER(true, 10000,
+                             "Expanding transformation at state :: "
+                             <<**optional_transformation<<std::endl);
+    
         expand_optional_transformation( state
                                         , (*optional_transformation).get());
     }
@@ -282,6 +292,12 @@ void Solver::expand_optional_transformations(Planning::State* state)
             ; optional_transformation != optional_transformations.end()
             ; optional_transformation++){
 
+        INTERACTIVE_VERBOSER(true, 10000,
+                             "Expanding transformation at state :: "
+                             <<**optional_transformation<<std::endl);
+    
+        
+        
         expand_optional_transformation( state
                                         , *optional_transformation);
     }

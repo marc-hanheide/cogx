@@ -144,6 +144,19 @@ int main(int argc, char** argv)
     for(auto problem = Planning::Parsing::problems.begin()
             ; problem != Planning::Parsing::problems.end()
             ; problem++){
+            
+        std::cout<<*problem->second->get__domain_Data()<<std::endl;
+        std::cout<<*problem->second<<std::endl;
+            
+        for(int i =0 ; i < 100; i++){
+            std::cout<<problem->second->get__prescribed_action()<<std::endl;
+        }
+            
+    }
+    
+    for(auto problem = Planning::Parsing::problems.begin()
+            ; problem != Planning::Parsing::problems.end()
+            ; problem++){
         Planning::Solver* solver = new Planning::Solver(*problem->second);
         solver->preprocess();
         solver->expand_belief_state_space();
@@ -151,64 +164,45 @@ int main(int argc, char** argv)
         if(!solver->expand_belief_state_space()){
             UNRECOVERABLE_ERROR("No starting state!"<<std::endl);
         }
-
-
-    for(auto problem = Planning::Parsing::problems.begin()
-            ; problem != Planning::Parsing::problems.end()
-            ; problem++){
         
-        std::cout<<*problem->second->get__domain_Data()<<std::endl;
-        std::cout<<*problem->second<<std::endl;
-        
-        for(int i =0 ; i < 100; i++){
-            std::cout<<problem->second->get__prescribed_action()<<std::endl;
-        }
-        
-//         Planning::Solver solver(*problem->second);
-//         solver.preprocess();
-//         while(solver.expand_belief_state_space()){
-//             INTERACTIVE_VERBOSER(true, 9096, "Expanding POMDP state"<<std::endl);
-//         };
-        
-//         std::cout<<*problem->second->get__domain_Data()<<std::endl;
-//         std::cout<<*problem->second<<std::endl;
-    }
-    {char ch; std::cin>>ch;};
-    
         for(auto i = 0; i < 10; i++){
             
             std::pair<Planning::Formula::Action_Proposition, uint> _action
                 = solver->get_prescribed_action(current_state);
             
+            INTERACTIVE_VERBOSER(true, 10002, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+            
             auto observations = current_state->get__possible_observations_given_action(_action.second);
             
             auto random_index = random() % observations.size();
             auto observation = observations[random_index];
-
-        
             
             Planning::POMDP_State* successor_state
                 = solver->take_observation(current_state,
                                            observation,
                                            _action.second);
+            
             current_state = successor_state;
+            
+            INTERACTIVE_VERBOSER(true, 10002, "Current belief state is :: "<<*current_state<<std::endl);
         }
-        INTERACTIVE_VERBOSER(true, 10000, "Expanding POMDP state"<<std::endl);
+
+        
         delete solver;
     }
     
     
     
-    for(auto problem = Planning::Parsing::problems.begin()
-            ; problem != Planning::Parsing::problems.end()
-            ; problem++){
+//     for(auto problem = Planning::Parsing::problems.begin()
+//             ; problem != Planning::Parsing::problems.end()
+//             ; problem++){
         
-        std::cout<<*problem->second->get__domain_Data()<<std::endl;
-        std::cout<<*problem->second<<std::endl;
+//         std::cout<<*problem->second->get__domain_Data()<<std::endl;
+//         std::cout<<*problem->second<<std::endl;
         
-        for(int i =0 ; i < 100; i++){
-            std::cout<<problem->second->get__prescribed_action()<<std::endl;
-        }
+//         for(int i =0 ; i < 100; i++){
+//             std::cout<<problem->second->get__prescribed_action()<<std::endl;
+//         }
         
 //         Planning::Solver solver(*problem->second);
 //         solver.preprocess();
@@ -218,7 +212,7 @@ int main(int argc, char** argv)
         
 //         std::cout<<*problem->second->get__domain_Data()<<std::endl;
 //         std::cout<<*problem->second<<std::endl;
-    }
+//     }
 
 
     

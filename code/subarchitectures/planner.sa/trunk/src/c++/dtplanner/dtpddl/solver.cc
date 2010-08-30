@@ -74,12 +74,22 @@ Solver::get_prescribed_action(State* current_state)
         (dynamic_cast<const Planning::Problem_Grounding*>(problem_Grounding.get()));
 
     auto executable_action_indices = current_state->get__successor_Driver();
-    auto action_index = random() % executable_action_indices.size();
-
+    auto _action_index = random() % executable_action_indices.size();
+    auto action_index = executable_action_indices[_action_index];
+    
+    
     QUERY_UNRECOVERABLE_ERROR(!Formula::State_Proposition::
                               ith_exists(runtime_Thread, action_index)
                               , "Could not find a ground symbol associated with index :: "
                               << action_index);
+    
+    INTERACTIVE_VERBOSER(true, 10001,
+                         "Got successor driver :: "<<action_index<<" "
+                         <<State_Transformation::
+                         make_ith<State_Transformation>
+                         (runtime_Thread,
+                          action_index)
+                         <<"For atom :: "<<*current_state<<std::endl);
     
     auto symbol = State_Transformation::
         make_ith<State_Transformation>
