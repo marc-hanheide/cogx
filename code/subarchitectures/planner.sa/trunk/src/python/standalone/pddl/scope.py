@@ -309,7 +309,23 @@ class Scope(dict):
                 entry.name = newname
                 dict.__setitem__(self, newname, entry)
         return renamings
-                
+
+    def copy_args(self, args, copy_instance=False):
+        result = []
+        for arg in args:
+            if isinstance(arg.type, types.ProxyType):
+                if copy_instance and arg.type.parameter.is_instantiated():
+                    type = arg.type.effective_type()
+                else:
+                    type = types.ProxyType(self[arg.type.parameter])
+            else:
+                type = arg.type
+
+            arg = types.Parameter(arg.name, type)
+            self.add(arg)
+            result.append(arg)
+        return result
+    
     def __contains__(self, key):
         if isinstance(key, (predicates.ConstantTerm, predicates.VariableTerm)):
             key = key.object

@@ -275,19 +275,29 @@ class CompositeTypeCompiler(Translator):
             t.supertypes.add(newtype)
         typedict[newtype.name] = newtype
         return newtype
+
+    @staticmethod
+    def replace_args(elem):
+        new_args = []
+        for arg in elem.args:
+            arg = types.Parameter(arg.name, CompositeTypeCompiler.replacement_type(arg.type, elem.types))
+            new_args.append(arg)
+        elem.args = elem.copy_args(new_args)
     
     @staticmethod
     def type_visitor(elem, results):
-        if isinstance(elem, (conditions.QuantifiedCondition, effects.UniversalEffect)):
-            for p in elem.args:
-                p.type = CompositeTypeCompiler.replacement_type(p.type, elem.types)
+        if isinstance(elem, conditions.QuantifiedCondition):
+            CompositeTypeCompiler.replace_args(elem)
+            elem.condition.set_scope(elem)
+        if isinstance(elem, effects.UniversalEffect):
+            CompositeTypeCompiler.replace_args(elem)
+            elem.effect.set_scope(elem)
         elif isinstance(elem, effects.ConditionalEffect):
             elem.condition.visit(CompositeTypeCompiler.type_visitor)
-    
+
     def translate_action(self, action, domain=None):
         a2 = action.copy(newdomain=domain)
-        for p in a2.args:
-            p.type = CompositeTypeCompiler.replacement_type(p.type, domain.types)
+        CompositeTypeCompiler.replace_args(a2)
         
         visitors.visit(a2.precondition, CompositeTypeCompiler.type_visitor)
         visitors.visit(a2.replan, CompositeTypeCompiler.type_visitor)
@@ -296,8 +306,7 @@ class CompositeTypeCompiler(Translator):
 
     def translate_axiom(self, axiom, domain=None):
         a2 = axiom.copy(newdomain=domain)
-        for p in a2.args:
-            p.type = CompositeTypeCompiler.replacement_type(p.type, domain.types)
+        CompositeTypeCompiler.replace_args(a2)
         
         a2.condition.visit(CompositeTypeCompiler.type_visitor)
         return a2
@@ -306,9 +315,17 @@ class CompositeTypeCompiler(Translator):
         dom = domain.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
         typedict = {}
         dom.requirements = _domain.requirements.copy()
-        for func in itertools.chain(dom.predicates, dom.functions):
-            for p in func.args:
-                p.type = CompositeTypeCompiler.replacement_type(p.type, dom.types)
+
+        dom.predicates = scope.FunctionTable()
+        for func in _domain.predicates:
+            args = [types.Parameter(a.name, CompositeTypeCompiler.replacement_type(a.type, dom.types)) for a in func.args]
+            dom.predicates.add(predicates.Predicate(func.name, args, func.builtin, func.function_scope))
+                                                    
+        dom.functions = scope.FunctionTable()
+        for func in _domain.functions:
+            args = [types.Parameter(a.name, CompositeTypeCompiler.replacement_type(a.type, dom.types)) for a in func.args]
+            ftype = CompositeTypeCompiler.replacement_type(func.type, dom.types)
+            dom.functions.add(predicates.Function(func.name, args, ftype, func.builtin, func.function_scope))
         
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
         dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
@@ -505,7 +522,7 @@ class ObjectFluentNormalizer(Translator):
             # if action.precondition is None:
             #     print pre.pddl_str()
 
-        a2 = action.copy_skeletion(domain)
+        a2 = action.copy_skeleton(domain)
         a2.add(add_args)
         a2.args += add_args
 
@@ -636,7 +653,7 @@ class ObjectFluentCompiler(Translator):
         assert domain is not None
 
         #a2 = actions.Action(action.name, [types.Parameter(p.name, p.type) for p in action.args], None, None, domain)
-        a2 = action.copy_skeletion(domain)
+        a2 = action.copy_skeleton(domain)
         a2.precondition, facts = self.translate_condition(action.precondition, a2)
         a2.replan, rfacts = self.translate_condition(action.replan, a2)
         facts += rfacts
@@ -704,8 +721,6 @@ class ModalPredicateCompiler(Translator):
         pref = []
         suff = []
 
-        proxy_args = []
-
         for a in args:
             if isinstance(a.type, types.FunctionType):
                 assert func_arg is None, "Only one functional parameter currently possible."
@@ -715,9 +730,9 @@ class ModalPredicateCompiler(Translator):
                         continue
                     funcs.append(func)
             else:
-                if isinstance(a.type, types.ProxyType):
-                    a = types.Parameter(a.name, a.type)
-                    proxy_args.append(a)
+                # if isinstance(a.type, types.ProxyType):
+                #     a = types.Parameter(a.name, a.type)
+                #     proxy_args.add(a)
 
                 if func_arg:
                     suff.append(a)
@@ -726,10 +741,14 @@ class ModalPredicateCompiler(Translator):
 
         compiled = []
         for f in funcs:
-            for a in proxy_args:
-                a.type = f.type
+            new_args = []
+            for a in pref + f.args + suff:
+                if isinstance(a.type, types.ProxyType):
+                    type = f.type
+                else:
+                    type = a.type
+                new_args.append(types.Parameter(a.name, type))
                 
-            new_args = [types.Parameter(a.name, a.type) for a in pref + f.args + suff]
             compiled.append((f, new_args))
 
         return func_arg, compiled
@@ -775,7 +794,7 @@ class ModalPredicateCompiler(Translator):
         else:
             args = [types.Parameter(p.name, p.type) for p in action.args]
 
-        a2 = action.copy_skeletion(domain)
+        a2 = action.copy_skeleton(domain)
         
         if action.precondition:
             a2.precondition = action.precondition.copy(copy_instance=True, new_scope=a2).visit(cond_visitor)
@@ -920,7 +939,7 @@ class MAPLCompiler(Translator):
                 return None
             return eff.copy(new_parts = filtered_results)
                 
-        a2 = action.copy_skeletion(domain)
+        a2 = action.copy_skeleton(domain)
         if isinstance(action, mapl.MAPLDurativeAction):
             a2.__class__ = durative.DurativeAction
         elif isinstance(action, mapl.MAPLAction):

@@ -165,7 +165,7 @@ class UniversalEffect(Scope, Effect):
     """This class represents a universal effect."""
     
     def __init__(self, args, effect, parentScope):
-        """Create a new QuantifiedCondition
+        """Create a new UniversalEffect
 
         Arguments:
         args -- List of Parameters over which the effect shall be quantified
@@ -183,13 +183,8 @@ class UniversalEffect(Scope, Effect):
         if not new_scope:
             new_scope = self.parent
             
-        cp = UniversalEffect([predicates.Parameter(a.name, a.type) for a in self.args], None, new_scope)
-        for arg in cp.args:
-            if isinstance(arg.type, types.ProxyType):
-                if copy_instance and arg.type.parameter.is_instantiated():
-                    arg.type = arg.type.effective_type()
-                else:
-                    arg.type = types.ProxyType(cp[arg.type.parameter])
+        cp = UniversalEffect([], None, new_scope)
+        cp.args = cp.copy_args(self.args, copy_instance)
 
         if new_parts == []:
             new_parts = ConjunctiveEffect([])
