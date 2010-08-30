@@ -134,8 +134,9 @@ void Solver::generate_starting_state()
     assert(problem_Grounding->get__deterministic_actions().size() ==
            State_Transformation::indexed__Traversable_Collection
            .find(problem_Grounding->get__state_Functions().begin()->get__runtime_Thread())->second->size());
-    
-    assert(problem_Grounding->get__observations().size() ==
+
+    assert(!problem_Grounding->get__observations().size() ||
+           problem_Grounding->get__observations().size() ==
            Planning::Observation::indexed__Traversable_Collection
            .find(problem_Grounding->get__state_Functions().begin()->get__runtime_Thread())->second->size());
     
