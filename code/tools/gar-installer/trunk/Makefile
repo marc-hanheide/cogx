@@ -1,11 +1,13 @@
 SUBDIRS=	contrib/* \
 		cogx/* 
 
-
 ubuntu-packages:
 	@echo "install all ubuntu packages"
 	find -mindepth 3 -maxdepth 3 -name "Makefile" | xargs grep -l DEB_PACKAGE | xargs -i -- bash -c "make -C \`dirname {}\` ubuntu-install"
 
+print-debs:
+	@find -mindepth 3 -maxdepth 3 -name "Makefile" | xargs grep -l DEB_PACKAGE | xargs -i -- bash -c "$(MAKE) -s -C \`dirname {}\` print-debs"
+	@echo
 
 default:	
 	@echo "available top-level targets:"
