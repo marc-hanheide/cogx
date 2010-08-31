@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ $# != 1 ]; then
+	echo "usage: $0  < type hierarchy file >"
+	exit 1
+fi;
+
+
+echo -n "deleting old event type hierarchy...  " && \
+psql -U elm -c "DELETE from event_type_hierarchy" > /dev/null && \
+echo "done." && \
+echo -n "inserting new hierarchy...            " && \
+cat $1 | psql -U elm -c "COPY event_type_hierarchy FROM STDIN" && \
+echo "done." && \
+echo -n "pre-computing transitive closure...   " && \
+java elm.tools.ComputeETHTransClosure > /dev/null && \
+echo "done." 
+ 

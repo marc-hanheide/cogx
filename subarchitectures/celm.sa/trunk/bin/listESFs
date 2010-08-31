@@ -1,0 +1,3 @@
+#!/bin/sh
+psql -U elm -c "SELECT event_id, feature_name, feature_value FROM event_specific_features ORDER BY event_id;"
+

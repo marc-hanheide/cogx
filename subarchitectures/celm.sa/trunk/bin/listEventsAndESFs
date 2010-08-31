@@ -1,0 +1,4 @@
+#!/bin/sh
+echo "Stored events with types, times and ESFs:" && \
+psql -U elm -c "SELECT elm.event_id AS event_id, event_type, start_time, end_time, feature_name, feature_value FROM elm, event_specific_features WHERE elm.event_id = event_specific_features.event_id ORDER BY start_time, end_time;"
+

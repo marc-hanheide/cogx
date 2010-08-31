@@ -1,0 +1,5 @@
+#!/bin/sh
+echo -n "flushing the memory store...   " && \
+psql -U elm -c "delete from elm;" > /dev/null && \
+echo "as good as new."
+

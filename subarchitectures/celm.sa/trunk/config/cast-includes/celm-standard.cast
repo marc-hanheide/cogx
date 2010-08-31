@@ -1,0 +1,40 @@
+#
+# Setup of the CAST-ELM system in a single subarchitecture.
+#
+# Recompile with GlobalSettings.singleSA == true 
+# (file subarchitectures/celm/src/java/celmarchitecture/global/GlobalSettings.java)
+# for this setup. (To be sure this works delete output/classes/celm* first.)
+#
+# (Hint: ELMWriter, EventRecollector and PBMonitor require parameters which might 
+# need an update every now and then.)
+#
+#
+#
+# SUBARCHITECTURE <subarch name> <default host to be used>
+SUBARCHITECTURE celm.sa
+#JAVA WM celmarchitecture.subarchitectures.elmwriter.ElmWriterWorkingMemory
+JAVA WM celmarchitecture.global.DefaultWorkingMemory --sendXarchCN 
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+#
+# When using the ELMWriter: be careful about the parameter settings, 
+# especially whether you really want the memory store to be flushed when starting up
+# (--flush-db) or not!
+JAVA MG ELMWriter celmarchitecture.subarchitectures.elmwriter.ElmWriter --server localhost --db elm --user elm --passwd lF8AxP4 #--flush-db
+JAVA MG LocationMonitor celmarchitecture.subarchitectures.elmwriter.LocationMonitor
+JAVA MG EventMonitor celmarchitecture.subarchitectures.elmwriter.EventMonitor
+#
+JAVA MG EventRecognizer celmarchitecture.subarchitectures.recognition.Recognizer
+#
+JAVA MG EventRecollector celmarchitecture.subarchitectures.recollection.Recollector --server localhost --db elm --user elm --passwd lF8AxP4
+#
+# 
+#JAVA MG EventSimulator celmarchitecture.subarchitectures.simulator.Simulator
+#JAVA MG QuerySimulator celmarchitecture.subarchitectures.simulator.QuerySimulator
+#
+#JAVA MG NavMonitor celmarchitecture.subarchitectures.monitors.NavMonitor 
+#
+JAVA MG PBMonitor celmarchitecture.subarchitectures.monitors.PBMonitor --subscribe autogen.Planner.Action,beliefmodels.adl.Belief,comadata.ComaRoom,SpatialProperties.ConnectivityPathProperty,motivation.slice.ExploreMotive,SpatialProperties.GatewayPlaceProperty,motivation.slice.Motive,binder.autogen.core.PerceivedEntity,SpatialData.Place,SpatialProperties.PlaceProperty,autogen.Planner.PlanningTask,binder.autogen.core.Proxy,binder.autogen.specialentities.RelationProxy #,motivation.util.castextensions.WMLock # Unlike the others, WMLock does not seem to be derived from IceObject. This causes problems if used here.
+#
+#
+#JAVA MG LocationConverter celmarchitecture.subarchitectures.locationConversion.LocationConverter
+#
