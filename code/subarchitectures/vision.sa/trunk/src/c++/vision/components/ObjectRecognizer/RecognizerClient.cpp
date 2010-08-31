@@ -97,4 +97,4 @@ void CObjectRecognizerClient::FindMatchingObjects(const Video::Image& image,
    m_Server->FindMatchingObjects(image, x0, y0, width, height, result);
 }
 
-};}; // namespace
+}} // namespace

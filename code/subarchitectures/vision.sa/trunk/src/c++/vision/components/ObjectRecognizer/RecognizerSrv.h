@@ -22,14 +22,15 @@
 #include <map>
 #include <stdexcept>
 
-
 namespace cogx { namespace vision {
 
 struct CModelScore
 {
+   CObjectModel *pModel;
    double score;
    std::vector<double> viewScore;
    CModelScore() {
+      pModel = NULL;
       score = 0;
    }
 };
@@ -93,6 +94,7 @@ public:
    virtual void FindMatchingObjects(const Video::Image&,
          const int x0, const int y0, const int width, const int height,
          ObjectRecognizerIce::RecognitionResultSeq&);
+   virtual void UpdateModel(const std::string& modelName, const Video::Image& image);
 };
 
 
@@ -125,6 +127,11 @@ public:
          ObjectRecognizerIce::RecognitionResultSeq& result, const Ice::Current&)
    {
       m_pRecognizer->FindMatchingObjects(image, x0, y0, width, height, result);
+   }
+
+   virtual void UpdateModel(const std::string& modelName, const Video::Image& image, const Ice::Current&)
+   {
+      m_pRecognizer->UpdateModel(modelName, image);
    }
 
 };
