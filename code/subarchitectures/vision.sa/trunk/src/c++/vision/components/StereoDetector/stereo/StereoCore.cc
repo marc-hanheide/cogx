@@ -195,6 +195,9 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
 	/// HACK Print results
 	PrintResults();
 
+	PrintJunctions2File();																				/// TODO Print junctions to file => For Odense project.
+	
+
 // printf("StereoCore::ProcessStereoImage end\n");
 }
 
@@ -484,9 +487,7 @@ void StereoCore::PrintJunctions2File()
 	
 	fprintf(file, "\n");
   fclose(file);
-	
-
-	
+		
 }
 
 } 
