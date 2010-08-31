@@ -213,7 +213,9 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    setAttribute(Qt::WA_DeleteOnClose);
 
    ui.listWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-   connect(ui.listWidget, SIGNAL(itemActivated(QListWidgetItem*)),
+
+   // signal itemActivated requires double click on Gnome; use itemClicked instead. TODO: test
+   connect(ui.listWidget, SIGNAL(itemClicked(QListWidgetItem*)),
          this, SLOT(onViewActivated(QListWidgetItem*)));
 
    connect(ui.actShowViewList, SIGNAL(triggered()),
