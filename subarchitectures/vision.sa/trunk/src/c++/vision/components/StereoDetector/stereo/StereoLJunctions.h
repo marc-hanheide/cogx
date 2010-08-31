@@ -12,7 +12,7 @@
 #include "StereoBase.h"
 #include "StereoCamera.hh"
 #include "LJunction.hh"
-#include "Vector3.hh"
+#include "Vector.hh"
 
 namespace Z
 {
@@ -43,7 +43,7 @@ class LJunction3D
 public:
 	Vertex3D point3D;						///< 3D intersection point
 	
-	Vector3D dir[2];						///< 3D direction of the 2 arms of the L-Junction								/// TODO Calculate
+	Vector3 dir[2];						///< 3D direction of the 2 arms of the L-Junction								/// TODO Calculate
 };
 
 
