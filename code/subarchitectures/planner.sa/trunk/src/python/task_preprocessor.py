@@ -72,7 +72,7 @@ def feature_val_to_object(fval):
     #lookup constants
     #if val in current_domain:
     #  return current_domain[val]
-    if val == "unknown":
+    if "unknown" in val:
       return pddl.UNKNOWN
 
     return pddl.TypedObject(val, pddl.t_object)
