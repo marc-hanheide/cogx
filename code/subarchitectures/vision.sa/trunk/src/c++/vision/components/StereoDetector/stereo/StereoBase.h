@@ -9,7 +9,7 @@
 #ifndef Z_STEREO_BASE_HH
 #define Z_STEREO_BASE_HH
 
-#include "StereoCamera.hh"
+#define HAVE_CAST TRUE
 
 #ifdef HAVE_CAST
   #include <VisionData.hpp>
@@ -17,7 +17,6 @@
 
 #include <vector>
 #include "Vector.hh"
-
 #include "StereoCamera.hh"
 #include "Line.hh"
 #include "Ellipse.hh"
