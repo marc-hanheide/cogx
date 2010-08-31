@@ -433,13 +433,19 @@ void PlanePopOut::start()
 #ifdef FEAT_VISUALIZATION
   m_bSendPoints = false;
   m_bSendPlaneGrid = false;
-  m_bSendImage = true;
+  m_bSendImage = false;
   m_display.connectIceClient(*this);
   m_display.setClientData(this);
   m_display.installEventReceiver();
   m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_POINTS, "Show 3D points");
   m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_PLANEGRID, "Show plane grid");
-  m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_IMAGE, "Show image");
+  m_display.addCheckBox(ID_OBJECT_IMAGE, IDC_POPOUT_IMAGE, "Show image");
+
+  // All object displays are set to off: we need to create dummy display objects
+  // on the server so that we can activate displays through GUI
+  m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", "function render()\nend\n");
+  Video::Image image;
+  m_display.setImage(ID_OBJECT_IMAGE, image);
 #endif
 }
 
@@ -479,7 +485,7 @@ std::string PlanePopOut::CDisplayClient::getControlState(const std::string& ctrl
 	return "";
 }
 
-void SendImage(VisionData::SurfacePointSeq points, std::vector <int> &labels, Video::Image img, cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
+void SendImage(VisionData::SurfacePointSeq points, std::vector <int> &labels, const Video::Image& img, cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 {
     IplImage *iplImg = convertImageToIpl(img);
     Video::CameraParameters c = img.camPars;
