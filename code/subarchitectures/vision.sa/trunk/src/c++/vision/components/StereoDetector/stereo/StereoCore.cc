@@ -168,6 +168,7 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
     cout << e.what() << endl;
   }
 	
+	PrintJunctions2File();																				/// TODO Print junctions to file => For Odense project.
 	
 // printf("StereoCore::ProcessStereoImage 2\n");
 	// do stereo processing for enabled stereo principles
@@ -434,11 +435,58 @@ void StereoCore::PrintResults()
 //   printf("StereoFlaps: flaps left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::FLAP), vcore[RIGHT]->NumGestalts(Gestalt::FLAP));
 //   printf("Stereo:FLAPS: matches: %d\n", stereoGestalts[StereoBase::STEREO_FLAP]->NumStereoMatches()); 
 
-// 	printf("Stereo:L_JUNCTIONS: matches: %d\n", stereoGestalts[StereoBase::STEREO_LJUNCTION]->NumStereoMatches()); 
+ 	printf("Stereo:L_JUNCTIONS: matches: %d\n", stereoGestalts[StereoBase::STEREO_LJUNCTION]->NumStereoMatches()); 
   printf("Stereo:ELLIPSES: matches: %d\n", stereoGestalts[StereoBase::STEREO_ELLIPSE]->NumStereoMatches()); 
 }
 
+/**
+ * @brief Print the junctions into a file, for reading in the Odense project.
+ */
+void StereoCore::PrintJunctions2File()
+{
+	printf("StereoCore::PrintJunctions2File()\n");
 
+	FILE *file = fopen("junction_cache_5_L_filer_2.csv", "w");
+	fprintf(file,"%u\n", vcore[0]->NumGestalts(Gestalt::L_JUNCTION));					// number of junctions
+	fprintf(file,"%u %u\n", vcore[0]->IW(), vcore[0]->IH());									// image width and height
+	
+	for(unsigned i=0; i<vcore[0]->NumGestalts(Gestalt::L_JUNCTION); i++)
+	{
+		LJunction *lj = (LJunction*) vcore[0]->Gestalts(Gestalt::L_JUNCTION)[i];
+		
+		// calculate bin:
+		double angle_0 = ScaleAngle_0_2pi(PolarAngle(lj->dir[0]) + M_PI/2.) * 180/M_PI;
+		double angle_1 = ScaleAngle_0_2pi(PolarAngle(lj->dir[1]) + M_PI/2.) * 180/M_PI;
+		int bin_0 = (int) (64.*angle_0/360.);
+		int bin_1 = (int) (64.*angle_1/360.);
+		fprintf(file,"%u %u 2 %u %u\n", (int) lj->isct.x, (int) lj->isct.y, bin_0, bin_1);					// image width and height
+	}
+	
+	fprintf(file, "\n");
+  fclose(file);
+	
+	
+	file = fopen("junction_cache_5_R_filer_2.csv", "w");
+	fprintf(file,"%u\n", vcore[1]->NumGestalts(Gestalt::L_JUNCTION));					// number of junctions
+	fprintf(file,"%u %u\n", vcore[1]->IW(), vcore[1]->IH());									// image width and height
+	
+	for(unsigned i=0; i<vcore[1]->NumGestalts(Gestalt::L_JUNCTION); i++)
+	{
+		LJunction *lj = (LJunction*) vcore[1]->Gestalts(Gestalt::L_JUNCTION)[i];
+		
+		// calculate bin:
+		double angle_0 = ScaleAngle_0_2pi(PolarAngle(lj->dir[0]) + M_PI/2.) * 180/M_PI;
+		double angle_1 = ScaleAngle_0_2pi(PolarAngle(lj->dir[1]) + M_PI/2.) * 180/M_PI;
+		int bin_0 = (int) (64.*angle_0/360.);
+		int bin_1 = (int) (64.*angle_1/360.);
+		fprintf(file,"%u %u 2 %u %u\n", (int) lj->isct.x, (int) lj->isct.y, bin_0, bin_1);					// image width and height
+	}
+	
+	fprintf(file, "\n");
+  fclose(file);
+	
 
+	
 }
 
+} 

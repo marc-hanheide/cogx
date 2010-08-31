@@ -385,14 +385,15 @@ void Surf2D::Draw(RGBColor col)
 bool Vertex3D::SanityOK()
 {
 	bool sanity = true;
-	if (p.x < SC_MAX_DIST_X || p.x > SC_MIN_DIST_X) sanity = false;
-	else if(p.y < SC_MAX_DIST_Y || p.y > SC_MIN_DIST_Y) sanity = false;
-	else if(p.z < SC_MAX_DIST_Z || p.z > SC_MIN_DIST_Z) sanity = false;
-		return sanity;
+	if (p.x < SC_MIN_DIST_X || p.x > SC_MAX_DIST_X) sanity = false;
+	else if(p.y < SC_MIN_DIST_Y || p.y > SC_MAX_DIST_Y) sanity = false;
+	else if(p.z < SC_MIN_DIST_Z || p.z > SC_MAX_DIST_Z) sanity = false;
+	
+	return sanity;
 }
 
 /**
- * @brief Recunstruct surface in 3D space.
+ * @brief Reconstruct surface in 3D space.
  * E.g. wrong matches tend to produce very elongated surfaces.
  * @param left Left tmp. surface
  * @param right Right tmp. surface

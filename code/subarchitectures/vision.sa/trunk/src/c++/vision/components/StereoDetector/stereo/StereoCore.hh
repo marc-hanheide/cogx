@@ -18,6 +18,7 @@
 #include "StereoCamera.hh"
 #include "Gestalt.hh"
 #include "Draw.hh"
+#include "Math.hh"
 
 #include "StereoBase.h"
 #include "StereoLJunctions.h"
@@ -85,6 +86,8 @@ public:
 	
 	/// TODO delete later: only for debuging first results
 	void PrintResults();
+	
+	void PrintJunctions2File();
 };
 
 }
