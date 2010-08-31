@@ -3,24 +3,33 @@
  */
 package motivation.components.managers;
 
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import org.apache.batik.svggen.font.table.MaxpTable;
 
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
+import motivation.slice.PlanProxy;
 import motivation.util.WMMotiveView;
 import motivation.util.WMMotiveView.MotiveStateTransition;
 import autogen.Planner.Completion;
 import autogen.Planner.Goal;
 import autogen.Planner.PlanningTask;
 import cast.CASTException;
+import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
@@ -37,15 +46,64 @@ import facades.ExecutorFacade;
  * 
  */
 public class Scheduler extends ManagedComponent implements
-		ChangeHandler<Motive> {
+		ChangeHandler<Motive>, Callable<Object> {
+
+	private final static List<MotivePriority> priorityThresholds = Arrays
+			.asList(MotivePriority.values());
 
 	private static final int TIME_TO_WAIT_TO_SETTLE = 100;
-	private static final int TIME_TO_WAIT_FOR_CHANGE = 5000;
-	final PlannerFacade planner = new PlannerFacade(this);
-	final ExecutorFacade executor = new ExecutorFacade(this);
 
+	private static final int TIME_TO_WAIT_FOR_CHANGE = 5000;
+
+	private static MotivePriority getMaxPriority(
+			Map<WorkingMemoryAddress, Motive> possibleGoals) {
+		MotivePriority result = MotivePriority.UNSURFACE;
+		for (Motive m : possibleGoals.values()) {
+			// if the motive has a higher priority then we have so far
+			if (result.compareTo(m.priority) < 0) {
+				result = m.priority;
+			}
+
+		}
+		return result;
+	}
+
+	private static Map<WorkingMemoryAddress, Motive> subSetByPriority(
+			Map<WorkingMemoryAddress, Motive> surfacedGoals,
+			MotivePriority minimumPriority) {
+		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
+		for (Entry<WorkingMemoryAddress, Motive> m : surfacedGoals.entrySet()) {
+			if (m.getValue().priority.compareTo(minimumPriority) >= 0) {
+				result.put(m.getKey(), m.getValue());
+			}
+		}
+		return result;
+	}
+
+	final PlannerFacade planner = new PlannerFacade(this);
+
+	final ExecutorFacade executor = new ExecutorFacade(this);
 	final WMMotiveView motives = WMMotiveView.create(this);
-	private WorkingMemoryChange lastChange;
+	private WorkingMemoryChange lastChange = null;
+
+	private Future<PlanProxy> executionFuture = null;
+
+	private boolean checkAgain = true;
+
+	/**
+	 * 
+	 */
+	public Scheduler() {
+		this.executor.registerCallable(this);
+	}
+
+	@Override
+	public Object call() throws Exception {
+		synchronized (this) {
+			checkAgain = true;
+		}
+		return null;
+	}
 
 	@Override
 	public void entryChanged(Map<WorkingMemoryAddress, Motive> map,
@@ -82,7 +140,6 @@ public class Scheduler extends ManagedComponent implements
 
 				if (!changesToProcess())
 					continue;
-				log("lock all surfaced and activated entries");
 				// get all the surfaced motives
 				surfacedGoals = motives.getMapByStatus(MotiveStatus.SURFACED);
 				activeGoals = motives.getMapByStatus(MotiveStatus.ACTIVE);
@@ -91,9 +148,9 @@ public class Scheduler extends ManagedComponent implements
 				log("we currently have " + activeGoals.size()
 						+ " active goals.");
 
-				lockSet(surfacedGoals);
-				lockSet(activeGoals);
-				if (activeGoals.isEmpty()) {
+				// lockSet(surfacedGoals);
+				// lockSet(activeGoals);
+				if (executionFuture != null && executionFuture.isDone()) {
 					// we are currently not executing
 					// if we are not yet executing, we just check all
 					// surfaced goals whether they can be planned for, and
@@ -108,18 +165,26 @@ public class Scheduler extends ManagedComponent implements
 
 					WMEntryQueueElement<PlanningTask> plan = doPlanning(
 							surfacedGoals, possibleGoals, impossibleGoals);
-//					WMEntryQueueElement<PlanningTask> plan = doPriorityAwarePlanning(
-//							surfacedGoals, possibleGoals, impossibleGoals);
+
 					if (plan != null) {
 						log("we have a plan to execute: "
 								+ plan.getEntry().firstActionID + "costs: "
 								+ plan.getEntry().costs);
-						plan.getEntry().executePlan = true;
-						// trigger overwrite to cause plan to be executed
-						overwriteWorkingMemory(plan.getEvent().address, plan
-								.getEntry());
-						executor.setPlan(plan.getEvent().address);
-						executor.call();
+						if (getMaxPriority(possibleGoals).compareTo(
+								getMaxPriority(impossibleGoals)) < 0) {
+							// TODO here we should better replan for a subset to
+							// make sure that high prioritiy goals are always
+							// planned for.
+							getLogger()
+									.warn(
+											"there is a goal impossible which is of higher priority than the possible ones. This should better be treated in the future!");
+						}
+
+						setStatus(possibleGoals, MotiveStatus.ACTIVE);
+						log("start extecuting for " + possibleGoals.size()
+								+ " possible goals");
+						executionFuture = executor
+								.execute(plan.getEvent().address);
 					}
 
 				} else {
@@ -132,8 +197,17 @@ public class Scheduler extends ManagedComponent implements
 					// the existing plan and at which costs. If we decide its
 					// worth to change the plan, we activate those goals.
 
-					// ask the planner for which of the surfaced goals it can
-					// generate plans
+					MotivePriority maxExecutePriority = getMaxPriority(activeGoals);
+					MotivePriority maxSurfacePriority = getMaxPriority(surfacedGoals);
+					if (maxExecutePriority.compareTo(maxSurfacePriority) <= 0) {
+						// if there are surfaced motives that are of same or
+						// high priority than the activated ones we have to
+						// reschedule.
+						log("there are goals which are not in the current plan which should be tried to include into it. Canceling execution.");
+						if (!executionFuture.isDone())
+							executionFuture.cancel(true);
+						setStatus(activeGoals, MotiveStatus.SURFACED);
+					}
 
 				}
 			}
@@ -144,53 +218,36 @@ public class Scheduler extends ManagedComponent implements
 			logException(e);
 			return;
 		} finally {
-			log("unlock all goals");
-			for (WorkingMemoryAddress wma : surfacedGoals.keySet()) {
-				if (holdsLock(wma.id, wma.subarchitecture)) {
-					try {
-						unlockEntry(wma);
-					} catch (CASTException e) {
-						logException(e);
-					}
-				}
-			}
+			// log("unlock all goals");
+			// for (WorkingMemoryAddress wma : surfacedGoals.keySet()) {
+			// if (holdsLock(wma.id, wma.subarchitecture)) {
+			// try {
+			// unlockEntry(wma);
+			// } catch (CASTException e) {
+			// logException(e);
+			// }
+			// }
+			// }
 
 		}
 
 	}
 
-//	private WMEntryQueueElement<PlanningTask> doPriorityAwarePlanning(
-//			Map<WorkingMemoryAddress, Motive> surfacedGoals,
-//			Map<WorkingMemoryAddress, Motive> possibleGoals,
-//			Map<WorkingMemoryAddress, Motive> impossibleGoals) throws Exception {
-//		WMEntryQueueElement<PlanningTask> result = null;
-//		List<MotivePriority> mpl = Arrays.asList(MotivePriority.values());
-//		Collections.sort(mpl);
-//		for (MotivePriority mp : mpl) {
-//			if (mp == MotivePriority.UNSURFACE)
-//				continue;
-//			Map<WorkingMemoryAddress, Motive> subSet = subSetByPriority(
-//					surfacedGoals, mp);
-//			if (subSet.isEmpty())
-//				return null;
-//			result = doPlanning(subSet, possibleGoals, impossibleGoals);
-//			if (result == null) {
-//				return null;
-//			}
-//			log("planning task returned "
-//					+ result.getEntry().planningStatus.name() + "plan length: "
-//					+ result.getEntry().plan.length);
-//			MotivePriority maxPossiblePrio = getMaxPriority(possibleGoals);
-//			MotivePriority maxImpossiblePrio = getMaxPriority(impossibleGoals);
-//			log("maxPossiblePrio=" + maxPossiblePrio + ", maxImpossiblePrio="
-//					+ maxImpossiblePrio);
-//			if (maxImpossiblePrio.compareTo(maxPossiblePrio) <= 0)
-//				break;
-//			log("we still have goal with higher priority that are not in the plan, so we have to reduce to goal with priority >"
-//					+ mp.name());
-//		}
-//		return result;
-//	}
+	private void setStatus(Map<WorkingMemoryAddress, Motive> activeGoals,
+			MotiveStatus status) throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException, ConsistencyException,
+			PermissionException {
+		try {
+			lockSet(activeGoals);
+			for (Entry<WorkingMemoryAddress, Motive> e : activeGoals.entrySet()) {
+				Motive goal = e.getValue();
+				goal.status = status;
+				overwriteWorkingMemory(e.getKey(), goal);
+			}
+		} finally {
+			unlockSet(activeGoals);
+		}
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -228,8 +285,14 @@ public class Scheduler extends ManagedComponent implements
 	 *         in the last milli seconds.
 	 */
 	private boolean changesToProcess() {
+
 		try {
 			synchronized (this) {
+				if (checkAgain) {
+					checkAgain = false;
+					return true;
+				}
+
 				if (lastChange == null) {
 					this.wait(TIME_TO_WAIT_FOR_CHANGE);
 					if (lastChange == null) {
@@ -257,16 +320,25 @@ public class Scheduler extends ManagedComponent implements
 	}
 
 	private WMEntryQueueElement<PlanningTask> doPlanning(
-			Map<WorkingMemoryAddress, Motive> surfacedGoals,
+			Map<WorkingMemoryAddress, Motive> goalsToPlanFor,
 			Map<WorkingMemoryAddress, Motive> possibleGoals,
-			Map<WorkingMemoryAddress, Motive> impossibleGoals) throws Exception {
+			Map<WorkingMemoryAddress, Motive> impossibleGoals)
+			throws InterruptedException, ExecutionException {
+		return doPlanning(goalsToPlanFor, possibleGoals, impossibleGoals, -1);
+	}
+
+	private WMEntryQueueElement<PlanningTask> doPlanning(
+			Map<WorkingMemoryAddress, Motive> goalsToPlanFor,
+			Map<WorkingMemoryAddress, Motive> possibleGoals,
+			Map<WorkingMemoryAddress, Motive> impossibleGoals, int timeoutMs)
+			throws InterruptedException, ExecutionException {
 		Map<String, WorkingMemoryAddress> goal2motiveMap = new HashMap<String, WorkingMemoryAddress>();
 
-		List<Goal> goals=new LinkedList<Goal>();
-		for (Motive m:surfacedGoals.values())
+		List<Goal> goals = new LinkedList<Goal>();
+		for (Motive m : goalsToPlanFor.values())
 			goals.add(m.goal);
-		
-		for (Entry<WorkingMemoryAddress, Motive> m : surfacedGoals.entrySet()) {
+
+		for (Entry<WorkingMemoryAddress, Motive> m : goalsToPlanFor.entrySet()) {
 			if (!m.getValue().goal.goalString.isEmpty()) {
 				if (goal2motiveMap.containsKey(m.getValue().goal.goalString)) {
 					getLogger().warn(
@@ -283,49 +355,45 @@ public class Scheduler extends ManagedComponent implements
 			}
 		}
 
-		WMEntryQueueElement<PlanningTask> result = planner.plan(goals).get();
-		if (result == null) {
-			getLogger().warn("failed to create a plan at all");
-			return null;
-		}
-		if (result.getEntry().planningStatus != Completion.SUCCEEDED) {
-			getLogger().warn(
-					"planner returned with result "
-							+ result.getEntry().planningStatus.name());
-			return null;
-		}
+		impossibleGoals.clear();
+		possibleGoals.clear();
+		impossibleGoals.putAll(goalsToPlanFor);
+		try {
+			WMEntryQueueElement<PlanningTask> result = planner.plan(goals).get(
+					timeoutMs, TimeUnit.MILLISECONDS);
 
-		// mark all motives POSSIBLE that could be planned for
-		impossibleGoals.putAll(surfacedGoals);
-		for (Goal o : result.getEntry().goals) {
-			WorkingMemoryAddress correspMotiveWMA = goal2motiveMap
-					.get(o.goalString);
-			assert (correspMotiveWMA != null);
-			log("looking for planning result for goal " + o.goalString
-					+ " (#actions=" + result.getEntry().plan.length + "): "
-					+ o.isInPlan);
-
-			if (o.isInPlan) {
-				log("  goal " + o.goalString + " is possible!");
-				possibleGoals.put(correspMotiveWMA, impossibleGoals
-						.remove(correspMotiveWMA));
+			if (result == null) {
+				getLogger().warn("failed to create a plan at all");
+				return null;
 			}
-		}
-
-		return result;
-	}
-
-	private MotivePriority getMaxPriority(
-			Map<WorkingMemoryAddress, Motive> possibleGoals) {
-		MotivePriority result = MotivePriority.UNSURFACE;
-		for (Motive m : possibleGoals.values()) {
-			// if the motive has a higher priority then we have so far
-			if (result.compareTo(m.priority) < 0) {
-				result = m.priority;
+			if (result.getEntry().planningStatus != Completion.SUCCEEDED) {
+				getLogger().warn(
+						"planner returned with result "
+								+ result.getEntry().planningStatus.name());
+				return null;
 			}
 
+			// mark all motives POSSIBLE that have been planned for
+			for (Goal o : result.getEntry().goals) {
+				WorkingMemoryAddress correspMotiveWMA = goal2motiveMap
+						.get(o.goalString);
+				assert (correspMotiveWMA != null);
+				log("looking for planning result for goal " + o.goalString
+						+ " (#actions=" + result.getEntry().plan.length + "): "
+						+ o.isInPlan);
+
+				if (o.isInPlan) {
+					log("  goal " + o.goalString + " is possible!");
+					possibleGoals.put(correspMotiveWMA, impossibleGoals
+							.remove(correspMotiveWMA));
+				}
+			}
+
+			return result;
+		} catch (TimeoutException e) {
+			logException("planner timeout", e);
+			return null;
 		}
-		return result;
 	}
 
 	private void lockSet(Map<WorkingMemoryAddress, Motive> set)
@@ -334,17 +402,6 @@ public class Scheduler extends ManagedComponent implements
 			lockEntry(wma, WorkingMemoryPermissions.LOCKEDOD);
 		}
 
-	}
-
-	private Map<WorkingMemoryAddress, Motive> subSetByPriority(
-			Map<WorkingMemoryAddress, Motive> surfacedGoals, MotivePriority mp) {
-		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
-		for (Entry<WorkingMemoryAddress, Motive> m : surfacedGoals.entrySet()) {
-			if (m.getValue().priority.compareTo(mp) >= 0) {
-				result.put(m.getKey(), m.getValue());
-			}
-		}
-		return result;
 	}
 
 	private void unlockSet(Map<WorkingMemoryAddress, Motive> set) {
