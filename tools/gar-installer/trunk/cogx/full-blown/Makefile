@@ -15,8 +15,9 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		liblua5.1-0-dev@ubuntu \
 		libtolua++5.1-dev@ubuntu \
 		libboost-serialization-dev@ubuntu \
-		libboost-iostreams-dev@ubuntu
-
+		libboost-iostreams-dev@ubuntu \
+		libqt4-dev@ubuntu \
+		libtolua++5.1-dev@ubuntu
 
 
 
