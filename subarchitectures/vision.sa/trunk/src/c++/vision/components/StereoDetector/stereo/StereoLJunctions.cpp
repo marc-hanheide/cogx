@@ -70,7 +70,6 @@ bool TmpLJunction::IsAtPosition(int x, int y) const
 //-------------------------------------------------------------------//
 //------------------------- StereoLJunctions ------------------------//
 //-------------------------------------------------------------------//
-
 /**
  * @brief Constructor of StereoFlaps: Calculate stereo matching of flaps
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
@@ -85,7 +84,7 @@ StereoLJunctions::StereoLJunctions(VisionCore *vc[2], StereoCamera *sc) : Stereo
 
 
 /**
- * @brief Draw matched closures.
+ * @brief Draw matched L-junctions.
  * @param side Left or right image from stereo rig.
  * @param single Draw single feature
  * @param id ID of single feature
@@ -93,6 +92,7 @@ StereoLJunctions::StereoLJunctions(VisionCore *vc[2], StereoCamera *sc) : Stereo
  */
 void StereoLJunctions::DrawMatched(int side, bool single, int id, int detail)
 {
+printf("StereoLJunctions::DrawMatched!\n");
 	if(single)
 	{
 		if(id < 0 || id >= ljctMatches)
@@ -226,7 +226,7 @@ unsigned StereoLJunctions::FindMatchingLJunction(TmpLJunction &left_ljct, Array<
 	{
 		match = MatchingScorePoint(left_ljct.point2D, right_ljcts[j].point2D);
 
-// // printf("      match = %6.5f\n", match);
+// printf("      match = %6.5f\n", match);
 // if (match < HUGE)
 // 	printf("  found matching score of right rect %u\n", j);
 
@@ -258,14 +258,13 @@ void StereoLJunctions::MatchLJunctions(Array<TmpLJunction> &left_ljcts, Array<Tm
     // found a matching right, move it to same index position as left
     if(j != UNDEF_ID)
     {
-// printf("    StereoLJunctions::MatchLJunctions => MATCH: l: %u - j: %u\n", l, j);
       right_ljcts.Swap(l, j);				// change found right_ljcts[j] at same position than left_ljcts ==> l
       l++;
     }
     // found no right, move left to end and decrease end
     else
     {
-      left_ljcts.Swap(l, u-1);			// change found left_ljcts[l] to last position and try to
+      left_ljcts.Swap(l, u-1);			// change found left_ljcts[l] to last position
       u--;
     }
   }
@@ -346,7 +345,9 @@ void StereoLJunctions::Process()
 
 	// do stereo matching and depth calculation
 	ljctMatches = 0;
+printf("StereoLJunctions::Process: left: %u - right: %u\n", ljcts[LEFT].Size(), ljcts[RIGHT].Size());
 	MatchLJunctions(ljcts[LEFT], ljcts[RIGHT], ljctMatches);
+printf("MatchedLJunctions: %u\n", ljctMatches);
 	Calculate3DLJunctions(ljcts[LEFT], ljcts[RIGHT], ljctMatches, ljct3ds);
 }
 
