@@ -10,6 +10,8 @@
 
 #include "VideoUtils.h"
 
+#include "StringFmt.h"
+
 #include <opencv/cv.h> // test
 #include <opencv/highgui.h> // test
 
@@ -167,6 +169,7 @@ long CObjectRecognizer::GetSifts(const Video::Image& image,
       ObjectRecognizerIce::FloatSeq& features, ObjectRecognizerIce::FloatSeq& descriptors)
 {
    DTRACE("CObjectRecognizer::GetSifts");
+   DMESSAGE("**** NOT YET");
    //int region[4];
    //region[0] = x0;
    //region[1] = y0;
@@ -243,7 +246,7 @@ public:
       typeof(model.m_views.begin()) itv;
       int i = 0;
       if (pOut) (*pOut) << "view scores:<br>";
-      for(itv = model.m_views.begin(); itv != model.m_views.end(); i++, itv++) {
+      for (itv = model.m_views.begin(); itv != model.m_views.end(); i++, itv++) {
          CObjectView* pView = *itv;
          double vsc = pViewEval->getScore(example, *pView, *matches[i]);
          if (pOut) (*pOut) << " -- " << sfloat(vsc, 2) << "<br>";
@@ -251,13 +254,15 @@ public:
       }
       if (i < 1) score.score = 0;
       else {
-         typeof(score.viewScore.begin()) imax = std::max_element(score.viewScore.begin(), score.viewScore.end());
+         std::vector<double>::iterator imax;
+         imax = std::max_element(score.viewScore.begin(), score.viewScore.end());
          score.score = *imax;
          //score.score = std::sum(score.viewScore.begin(), score.viewScore.end()); 
       }
    }
 };
 
+// "hash" function that converts string to RGB
 std::string color(const std::string& val)
 {
    union {
@@ -275,6 +280,7 @@ std::string color(const std::string& val)
    return std::string(buf);
 }
 
+// Display graph in v11n
 void CObjectRecognizer::fancyDisplay(std::vector<CObjectModel*>& models, std::vector<CModelScore>& scores)
 {
 #ifdef FEAT_VISUALIZATION
@@ -383,6 +389,7 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
          // process results
          //fres << "results: " << matches.size() << "<br>";
          CModelScore score;
+         score.pModel = pModel;
          modeval.evaluateModel(sifts, *pModel, matches, score);
          modelScores.push_back(score);
          fres << "score: " << score.score << "<br>";
@@ -406,6 +413,30 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
    sifts.clear();
    fres.close();
 
+   // TODO: convert model scores to probabilities.
+   //    - evaluateModel should produce better scores, based on observation models
+   //    - score for each model should be converted to probability for that model
+   //    - maxScore = max score of all models
+   //    - unknown = 1 - maxScore; other scores are changed so that they sum up to 1;
+   //      not ok when there are many (similar) recognitions:
+   //         0.8, 0.8, 0.8, 0.8 => 0.2, 0.2, 0.2, 0.2, u=0.2
+   //      => PDF for models probably doesn't make sense, but looks like I need to
+   //         implement it for the planner to work 
+   //      I could make maxScore (maxProb) part of the recognition result
+   results.clear();
+   vector<CModelScore>::iterator itsc;
+   for (itsc = modelScores.begin(); itsc != modelScores.end(); itsc++) {
+      ObjectRecognizerIce::RecognitionResult orr;
+      if (! itsc->pModel) continue;
+      if (itsc->pModel->m_name == "") orr.label = _str_(itsc->pModel->m_id);
+      else orr.label = itsc->pModel->m_name;
+      orr.probability = itsc->score;
+
+      // TODO: copy pose probabilities to orr.poses/orr.posePd
+
+      results.push_back(orr);
+   }
+
    if (1) {
       std::vector<unsigned char>data;
       Video::convertImageToGrayBytes(image, data);
@@ -413,6 +444,16 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
       Video::convertBytesToIpl(data, image.width, image.height, 1, &pTest);
       cvSaveImage("/tmp/sift_inputimage.jpg", pTest);
       cvReleaseImage(&pTest);
+   }
+}
+
+void CObjectRecognizer::UpdateModel(const std::string& modelName, const Video::Image& image)
+{
+   // TODO: a lot ... UpdateModel
+   TSiftVector sifts;
+   pImg = Video::convertImageToIplGray(image);
+   if (pImg) {
+      m_pSiftExtractor->extractSifts(pImg, sifts);
    }
 }
 
