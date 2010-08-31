@@ -2,6 +2,7 @@ include_directories(.)
 include_directories(${COGX_ROOT}/subarchitectures/nav.sa/src/c++/autogen)
 
 # remove_definitions(-DFEAT_VISUALIZATION)
+add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
