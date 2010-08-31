@@ -39,8 +39,7 @@ public:
   double r;          ///< distance between endpoints
   double col_dist;   ///< color distance between inside mean colors
 
-  LJunction(VisionCore *c, Line *line_i, Line *line_j, int end_i, int end_j,
-      const Vector2 &inter);
+  LJunction(VisionCore *c, Line *line_i, Line *line_j, int end_i, int end_j, const Vector2 &inter);
   void Recalc();
   virtual void Draw(int detail = 0);
   virtual void DrawInfo();
