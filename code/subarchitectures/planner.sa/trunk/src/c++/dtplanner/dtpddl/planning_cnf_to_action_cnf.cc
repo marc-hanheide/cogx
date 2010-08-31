@@ -48,8 +48,14 @@ void Planning_CNF__to__Action_CNF::operator()(const Formula::Subformula& input)
 
             auto proposition = *_proposition;
             
-            assert(proposition.get__runtime_Thread() == runtime_Thread);
-    
+            QUERY_UNRECOVERABLE_ERROR(proposition.get__runtime_Thread() != runtime_Thread
+                                      , "Proposition :: "<<proposition<<std::endl
+                                      <<"Has the wrong runtime thread :: "
+                                      <<proposition.get__runtime_Thread()<<std::endl
+                                      <<"Expecting :: "<<runtime_Thread<<std::endl);
+
+            
+            
             auto id = proposition.get__id();
             
             NEW_referenced_WRAPPED_deref_POINTER

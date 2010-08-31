@@ -51,6 +51,9 @@ namespace Planning
     class Solver
     {
     public:
+        /*Testing conditions on doubles.*/
+        static Are_Doubles_Close are_Doubles_Close;//(1e-9);
+        
         typedef std::vector<std::string> Precept_Arguments;
         typedef std::pair<std::string, Precept_Arguments>  Precept;
         typedef std::vector<std::pair<std::string, Precept_Arguments>>  Percept_List;
@@ -208,8 +211,6 @@ namespace Planning
         /*An observation of nothing.*/
         Observational_State* null_observation;
 
-        /*Testing conditions on doubles.*/
-        static Are_Doubles_Close are_Doubles_Close;//(1e-9);
     };
 }
 

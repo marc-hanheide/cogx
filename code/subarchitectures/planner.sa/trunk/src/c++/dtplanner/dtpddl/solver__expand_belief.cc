@@ -77,13 +77,11 @@ void Solver::press__belief_transitions(POMDP_State* pomdp_state,
 //             auto t1 =  _normalisation_Factors.find(action_index);
 //             auto t2 =  t1->second.find(observation);
 //             auto t3 =  t2->second;
-            double mass_of_belief_successor = _normalisation_Factors.find(action_index)->second.find(observation)->second;//0.0;
-//             for(auto atom = observation_to_Belief->second.begin()
-//                     ; atom != observation_to_Belief->second.end()
-//                     ; atom++){
-//                 mass_of_belief_successor += atom->second;
-// //                 successor_pomdp_state->add__belief_atom(atom->first, atom->second);
-//             }
+            assert(_normalisation_Factors.find(action_index) != _normalisation_Factors.end());
+            assert(_normalisation_Factors.find(action_index)->second.find(observation) !=
+                   _normalisation_Factors.find(action_index)->second.end());
+            
+            double mass_of_belief_successor = _normalisation_Factors.find(action_index)->second.find(observation)->second;
 
 
             double testing_rational_belief_measure = 0.0;
@@ -129,7 +127,9 @@ void Solver::press__belief_transitions(POMDP_State* pomdp_state,
                 
                 INTERACTIVE_VERBOSER(true, 9095, "New successor POMDP state :: "
                                      <<*successor_pomdp_state<<std::endl);
-                
+
+                successor_pomdp_state->set__index(belief_state__space.size());
+                successor_pomdp_state->initialise__prescribed_action_index();
                 belief_state__space.insert(successor_pomdp_state);
                 
                 expansion_queue.push(successor_pomdp_state);
@@ -145,7 +145,7 @@ void Solver::press__belief_transitions(POMDP_State* pomdp_state,
                                  <<"Got a successor belief state :: "<<*successor_pomdp_state);
 //             INTERACTIVE_VERBOSER(true, 9090, "Adding successor state :: "<<*successor_pomdp_state<<std::endl);
             
-            pomdp_state->push__successor(action_index, observation, successor_pomdp_state);
+            pomdp_state->push__successor(action_index, observation, successor_pomdp_state, mass_of_belief_successor);
         }
     }
 }
@@ -491,17 +491,22 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
 bool Solver::expand_belief_state_space()
 {
     if(!expansion_queue.size()){
+        INTERACTIVE_VERBOSER(true, 10003, "Expty expansion queue :: "<<std::endl);
         return false;
     }
     
     auto pomdp_state = expansion_queue.front();
     expansion_queue.pop();
 
-    INTERACTIVE_VERBOSER(true, 9094, "Expanding POMDP state :: "<<*pomdp_state<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10003, "Expanding POMDP state :: "<<*pomdp_state<<std::endl);
     
     expand_belief_state(pomdp_state);
     
-    INTERACTIVE_VERBOSER(true, 9097, "Expanded POMDP state :: "<<*pomdp_state<<std::endl);
+    assert(!pomdp_state->unexpanded());
+    
+    INTERACTIVE_VERBOSER(true, 10003, "Expanded POMDP state :: "<<*pomdp_state<<std::endl);
+
+    return true;
 }
 
 

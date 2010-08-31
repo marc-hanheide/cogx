@@ -1,5 +1,8 @@
 /* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
  *
+ * Authorship of this source code was supported by EC FP7-IST grant
+ * 215181-CogX.
+ *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, either version 3 of the License, or
@@ -27,31 +30,46 @@
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
  * 
  */
-#ifndef PLANNING_FORMULA__TEMPLATES_HH
-#define PLANNING_FORMULA__TEMPLATES_HH
 
 
-#define PRINTING_SYMBOL_IMPLEMENTATION(TYPENAME)                        \
-    template<int ID_VAL, typename NAMING_TYPE>                          \
-    ostream& TYPENAME<ID_VAL, NAMING_TYPE>::operator<<(ostream&o) const \
-    {                                                                   \
-        auto contents = this->Parent::contents();                       \
-        auto name = std::tr1::get<0>(contents);                         \
-        o<</*this->get__runtime_Thread()<<*/"("<<name<<" ";             \
-        Printing::operator<<(o, std::tr1::get<1>(contents));            \
-        o<<")"<<std::endl;                                              \
-        return o;                                                       \
-    }                                                                   \
+#ifndef POLICY_ITERATION_OVER_INFORMATION_STATE_SPACE_HH
+#define POLICY_ITERATION_OVER_INFORMATION_STATE_SPACE_HH
 
+#include "partially_observable_markov_decision_process_state.hh"
 
-namespace  Planning
+#include <boost/numeric/ublas/blas.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/io.hpp>
+#include <boost/numeric/ublas/lu.hpp>
+
+namespace Planning
 {
-    namespace Formula
+    class Policy_Iteration
     {
-        PRINTING_SYMBOL_IMPLEMENTATION(Predicate);
-        PRINTING_SYMBOL_IMPLEMENTATION(Proposition);
-    }
+    public:
+        Policy_Iteration(Set_Of_POMDP_State_Pointers&, double discount_factor = 0.98);
+
+        void operator()();
+        
+    private:
+        void press_greedy_policy();
+        boost::numeric::ublas::vector<double> get_reward_vector();
+        boost::numeric::ublas::matrix<double> get_transition_matrix();
+        
+        Set_Of_POMDP_State_Pointers& states;
+
+        uint dimension;
+
+        double discount_factor;// = 0.98;
+        
+        boost::numeric::ublas::vector<double> instantanious_reward_vector;
+        boost::numeric::ublas::vector<double> value_vector;
+        boost::numeric::ublas::matrix<double> state_transition_matrix;
+    };
+        
 }
+
+
 
 
 #endif
