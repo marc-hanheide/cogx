@@ -35,6 +35,7 @@
 #include "partially_observable_markov_decision_process_state.hh"
 
 #include "planning_state.hh"
+#include "solver.hh"
 
 namespace Planning
 {
@@ -133,6 +134,7 @@ Partially_Observable_Markov_Decision_Process_State()
 //     :expected_value(0.0)
 {
     expected_value = 0.0;
+    expected_reward = 0.0;
     belief_State = Belief_State(0);
 }
 
@@ -143,9 +145,9 @@ operator==(const POMDP_State& in) const
     INTERACTIVE_VERBOSER(true, 9085, "Comparing :: "<<in<<" "<<*this<<std::endl);
     
     INTERACTIVE_VERBOSER(true, 9081, "Comparing :: "<<in.expected_value);
-    INTERACTIVE_VERBOSER(true, 9081, "Comparing :: "<<this->expected_value<<std::endl);
+    INTERACTIVE_VERBOSER(true, 9081, "Comparing :: "<<this->expected_reward<<std::endl);
     
-    if(in.expected_value == this->expected_value){
+    if(in.expected_reward == this->expected_reward){
         if(in.belief_State.size() == this->belief_State.size()){
             if(in.belief_State == this->belief_State){
                 return true;
@@ -163,9 +165,9 @@ operator==(const POMDP_State& in) const
 bool Partially_Observable_Markov_Decision_Process_State::
 operator<(const POMDP_State& in) const
 {
-    if(this->expected_value < in.expected_value){
+    if(this->expected_reward < in.expected_reward){
         return true;
-    } else if (this->expected_value == in.expected_value) {
+    } else if (this->expected_reward == in.expected_reward) {
 
         if(belief_State.size() < in.belief_State.size()){
         } else if (belief_State.size() == in.belief_State.size()) {
@@ -198,24 +200,44 @@ operator<(const POMDP_State& in) const
 void Partially_Observable_Markov_Decision_Process_State::
 push__successor(uint action_index
                 , Observational_State* observation
-                , POMDP_State* successor_pomdp_state)
+                , POMDP_State* successor_pomdp_state
+                , double probability)
 {
     if(!action_based_successor_driver.size() ||
        action_based_successor_driver.back() != action_index){
         
         action_based_successor_driver.push_back(action_index);
+
+#ifndef NDEBUG
+        if(observation_probabilities.size()){/*DEBUG SANITY*/
+            auto probs = observation_probabilities.back();
+            double sum = 0.0;
+            for(auto prob = probs.begin()
+                    ; prob != probs.end()
+                    ; prob++){
+                sum += *prob;
+            }
+            assert(Solver::are_Doubles_Close(1.0, sum));
+        }
+#endif
         
         observation_based_successor_driver
             .push_back(std::vector<Observational_State*>());
         successors.push_back(
             std::vector< Partially_Observable_Markov_Decision_Process_State*>());
+        
+        observation_probabilities.push_back(
+            std::vector<double>()
+            );
     }
     
     auto& observations = observation_based_successor_driver.back();
     auto& _successors = successors.back();
+    auto& observation_probability = observation_probabilities.back();
     
     if(!observations.size() || observations.back() != observation){
         observations.push_back(observation);
+        observation_probability.push_back(probability);
         _successors.push_back(successor_pomdp_state);// std::vector<
 //                        Partially_Observable_Markov_Decision_Process_State*>());
     } else {
@@ -227,9 +249,134 @@ push__successor(uint action_index
 //     successors_states.push_back(successor_pomdp_state);
 }
 
+void Partially_Observable_Markov_Decision_Process_State::initialise__prescribed_action_index()
+{
+    if(action_based_successor_driver.size() == 0){
+        prescribed_action_index = 0;
+        return;
+    }
+    
+    prescribed_action_index = random() % action_based_successor_driver.size();
+}
+
+uint Partially_Observable_Markov_Decision_Process_State::get__prescribed_action() const
+{
+    assert(action_based_successor_driver.size());
+    assert(prescribed_action_index <  action_based_successor_driver.size());
+    return action_based_successor_driver[prescribed_action_index];
+}
+
+
+
+// std::pair<std::vector<Observational_State*>*
+//           , std::vector<double>*  >
+// Partially_Observable_Markov_Decision_Process_State::get_successor_information_at_prescribed_action()
+// {
+//     std::pair<std::vector<Observational_State*>*
+//           , std::vector<double>*  > result;
+
+//     result.first = &observation_based_successor_driver[get__prescribed_action()];
+//     result.second = &observation_probabilities[get__prescribed_action()];
+    
+//     return result;
+// }
+
+const std::vector<Observational_State*>&
+Partially_Observable_Markov_Decision_Process_State::
+get_observations_at_prescribed_action() const
+{
+    assert(prescribed_action_index < observation_based_successor_driver.size());
+    return observation_based_successor_driver[prescribed_action_index];//get__prescribed_action()];
+}
+
+const std::vector<double>&
+Partially_Observable_Markov_Decision_Process_State::
+get_observation_probabilities_at_prescribed_action() const
+{
+    assert(prescribed_action_index <  observation_probabilities.size());
+    return observation_probabilities[prescribed_action_index];//get__prescribed_action()];
+}
+
+void 
+Partially_Observable_Markov_Decision_Process_State::
+accept_values(boost::numeric::ublas::vector<double>& values)
+{
+    bool assigned_score = false;
+    double best_score = 1e-100;
+    
+    assert(successors.size() == action_based_successor_driver.size());
+    assert(successors.size() == observation_based_successor_driver.size());
+    assert(successors.size() == observation_probabilities.size());
+    
+    for( uint driver_index = 0
+             ; driver_index < successors.size()
+             ; driver_index++){
+
+        auto& driven_successors = successors[driver_index];
+        auto& probabilities = observation_probabilities[driver_index];
+//         auto& observations = observation_based_successor_driver[driver_index];
+
+        assert(driven_successors.size() == probabilities.size());
+//         assert(observations.size() == driven_successors.size());
+        
+        double local_score = 0.0;
+        for(uint successor_index = 0
+                ; successor_index < probabilities.size()
+                ; successor_index++){
+            auto successor = driven_successors[successor_index];
+            auto probability = probabilities[successor_index];
+
+            assert(successor->get__index() < values.size());
+            local_score += probability * values[successor->get__index()];
+        }
+        
+        if(local_score > best_score){
+           prescribed_action_index = driver_index;
+           best_score = local_score;
+        }
+    }
+
+    expected_value = best_score; 
+}
+
+bool
+Partially_Observable_Markov_Decision_Process_State::
+unexpanded() const
+{
+    return (action_based_successor_driver.size() == 0);
+}
+
+const std::vector< Partially_Observable_Markov_Decision_Process_State*>&
+Partially_Observable_Markov_Decision_Process_State::get_successors_at_prescribed_action() const
+{
+    assert(prescribed_action_index < successors.size());
+    return successors[prescribed_action_index];//get__prescribed_action()];
+}
+
+
+uint Partially_Observable_Markov_Decision_Process_State::get__index() const
+{
+    return this->index;
+}
+
+void Partially_Observable_Markov_Decision_Process_State::set__index(uint in) 
+{
+    this->index = in;
+}
+
 double Partially_Observable_Markov_Decision_Process_State::get__expected_value() const
 {
     return this->expected_value;
+}
+
+void Partially_Observable_Markov_Decision_Process_State::set__expected_value(double in) 
+{
+    this->expected_value = in;
+}
+
+double Partially_Observable_Markov_Decision_Process_State::get__expected_reward() const
+{
+    return this->expected_reward;
 }
 
 void Partially_Observable_Markov_Decision_Process_State::
@@ -244,7 +391,8 @@ add__belief_atom( MDP_State* mdp__state, double probability)
                          <<(probability * mdp__state->get__value()));
     
     
-    this->expected_value += (probability * mdp__state->get__value());   
+    this->expected_reward += (probability * mdp__state->get__value());
+    this->expected_value =  this->expected_reward;   
 }
 
 const Partially_Observable_Markov_Decision_Process_State::
@@ -280,7 +428,7 @@ namespace std
         auto state = pomdp__state.get__belief_state();
 
 
-        o<<"Expected reward :: "<<pomdp__state.get__expected_value()<<std::endl;
+        o<<"Expected reward :: "<<pomdp__state.get__expected_reward()<<std::endl;
         for(auto s = state.begin(); s != state.end(); s++){
             o<<s->second<<" :--:> "<<*(s->first)<<std::endl;
         }

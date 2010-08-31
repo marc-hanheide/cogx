@@ -168,8 +168,9 @@ void Solver::generate_starting_state()
     INTERACTIVE_VERBOSER(true, 9094, "Number of propositions is :: "
                          <<problem_Grounding->get__state_Propositions().size()<<std::endl);
     
-#ifndef NDEBUG
-    auto literals = problem_Grounding->get__literals();                                   
+    auto& literals = problem_Grounding->get__literals();
+    
+#ifndef NDEBUG                                 
     for(auto literal = literals.begin()                             
             ; literal != literals.end()                             
             ; literal++){
@@ -302,7 +303,7 @@ void Solver::generate_starting_state()
         
         
 //         assert( 0 == (*state)->count__observations() ) ;
-        INTERACTIVE_VERBOSER(true, 9095, "A starting state is :: "
+        INTERACTIVE_VERBOSER(true, 10003, "A starting state is :: "
                              <<**state<<std::endl);
     }
     
@@ -316,16 +317,21 @@ void Solver::generate_starting_state()
         auto state = successors[i];
         auto probability = successor_Probabilities[i];
         
-        INTERACTIVE_VERBOSER(true, 9095, "A starting state is :: "
+        INTERACTIVE_VERBOSER(true, 10003, "A starting state is :: "
                              <<*state<<std::endl);
         
         starting_belief_state
             ->add__belief_atom(state, probability);
         
     }
+
     
+    starting_belief_state->set__index(belief_state__space.size());
+    starting_belief_state->initialise__prescribed_action_index();
     belief_state__space.insert(starting_belief_state);
+    
+    
     expansion_queue.push(starting_belief_state);
-    INTERACTIVE_VERBOSER(true, 9095, "Starting belief state is :: "
+    INTERACTIVE_VERBOSER(true, 10003, "Starting belief state is :: "
                          <<(*starting_belief_state)<<std::endl);
 }

@@ -5,9 +5,11 @@ CXX= g++
 
 CXXPREFIX= #ccache
 
-OPTIMISE := -O1 
+OPTIMISE := -O3 -march=native 
 
-CPPFLAGS := -ggdb -ftemplate-depth-1000 -I./pegtl-0.30/include/ -std=c++0x -pedantic
+CPPFLAGS := -ggdb -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic
+
+# CPPFLAGS := $(OPTIMISE) -DNDEBUG -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic
 
 WARNINGS := -Wall -Wextra
 

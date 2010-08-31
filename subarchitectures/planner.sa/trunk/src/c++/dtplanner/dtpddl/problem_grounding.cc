@@ -133,7 +133,9 @@ Problem_Grounding::Problem_Grounding(Parsing::Problem_Data& _problem_Data,
 //           , _problem_Data
 //           , actions_validator);
      
-    INTERACTIVE_VERBOSER(true, 3101, "Problem is at :: "
+    INTERACTIVE_VERBOSER(true, 10003, "Grounding is at :: "
+                         <<reinterpret_cast<basic_type::Runtime_Thread>(this)<<std::endl
+                         <<"Problem is at :: "
                          <<reinterpret_cast<basic_type::Runtime_Thread>(&_problem_Data)<<std::endl
                          <<"Domain is at :: "
                          <<reinterpret_cast<basic_type::Runtime_Thread>(_domain_Data.get())<<std::endl);
@@ -444,7 +446,7 @@ Subformula Problem_Grounding::simplify_formula(Planning::Formula::Subformula sub
     }
     
     NEW_CONJUNCTION(new_conjunction, conjunctive_data);
-
+    
     
     VERBOSER(3001, "Original formula is :: "<<subformula<<std::endl);
     VERBOSER(3001, "translated formula is :: "<<precondition_as_cnf<<std::endl);

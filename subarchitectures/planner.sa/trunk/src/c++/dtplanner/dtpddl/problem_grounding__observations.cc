@@ -168,7 +168,9 @@ press_ground_observation(const Observation_Name& observation_Name,
              , action_Conjunctive_Normal_Form_Formulae
 //              , negative_literals
              , action_symbol__to__state_transformation);
-    
+
+        INTERACTIVE_VERBOSER(true, 10003, "Attempting to convert :: "<<_execution_precondition);
+        
         planning_CNF__to__Action_CNF(_execution_precondition);
         execution_precondition = planning_CNF__to__Action_CNF.get__answer();
         

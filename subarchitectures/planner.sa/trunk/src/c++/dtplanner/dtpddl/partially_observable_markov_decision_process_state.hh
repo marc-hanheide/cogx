@@ -36,6 +36,11 @@
 #define PARTIALLY_OBSERVABLE_MARKOV_DECISION_PROCESS_STATE_HH
 
 
+#include <boost/numeric/ublas/blas.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/io.hpp>
+#include <boost/numeric/ublas/lu.hpp>
+
 #include "markov_decision_process_state.hh"
 
 #include "planning_observation.hh"
@@ -86,7 +91,30 @@ namespace Planning
         bool operator<(const POMDP_State&) const;
 	std::size_t hash_value() const;
 
+        /* Tests if the state has been expanded or not by examining
+         * the size of \member{action_based_successor_driver}. If no
+         * actions can be applied at this belief state, then we
+         * suppose it is not expanded. For the moment, because we are
+         * dealing, supposedly, with the infinite horizon case, I
+         * think this is a reasonable assumption.*/
+        bool unexpanded() const;
+
+        void accept_values(boost::numeric::ublas::vector<double>& values);
+        
         double get__expected_value() const;
+        void set__expected_value(double) ;
+        
+        uint get__index() const;
+        void set__index(uint) ;
+        
+        void initialise__prescribed_action_index();
+        uint get__prescribed_action() const;
+        
+        const std::vector<Observational_State*>& get_observations_at_prescribed_action() const;
+        const std::vector<double>& get_observation_probabilities_at_prescribed_action() const;
+        const std::vector<POMDP_State*>& get_successors_at_prescribed_action() const;
+        
+        double get__expected_reward() const;
         
         void add__belief_atom( MDP_State*, double);
         
@@ -94,7 +122,8 @@ namespace Planning
         
         void push__successor(uint action_index
                              , Observational_State*
-                             , POMDP_State* );
+                             , POMDP_State*
+                             , double);
 
         const std::vector<Observational_State*>& get__possible_observations_given_action(uint action_index) const;
         POMDP_State* get__successor(uint action_index
@@ -106,13 +135,26 @@ namespace Planning
          * the observation based successor drivers.*/
         std::vector< std::vector<Observational_State*> > observation_based_successor_driver;
         
+        /* Probability of receiving entries in
+         * \member{observation_based_successor_driver}.*/
+        std::vector< std::vector<double> > observation_probabilities;
+        
         std::vector<
             std::vector< Partially_Observable_Markov_Decision_Process_State*> > successors;
+        
+        /*Expected reward of this POMDP state.*/
+        double expected_reward;
         
         /*Expected value of this POMDP state.*/
         double expected_value;
 
         Belief_State belief_State;
+
+        /*State identifier.*/
+        uint index;
+
+        /*Policy identifier.*/
+        uint prescribed_action_index;
     };
 
 
