@@ -1,0 +1,50 @@
+HOST localhost
+
+#
+# C-ELM test system, set up in multiple subarchitectures.
+# Can be used to quickly check whether C-ELM/ELM is properly set up without
+# other subarchitectures. Events and queries are simulated by two of the 
+# processes below.
+#
+# Recompile with GlobalSettings.singleSA == false 
+# (file subarchitectures/celm/src/java/celmarchitecture/global/GlobalSettings.java)
+# for this setup. (To be sure this works delete output/classes/celm* first.)
+#
+
+
+# SUBARCHITECTURE <subarch name> <default host to be used>
+SUBARCHITECTURE CELMWriter.sa
+JAVA WM celmarchitecture.global.DefaultWorkingMemory --noXarchCN
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+JAVA MG ELMWriter celmarchitecture.subarchitectures.elmwriter.ElmWriter --recognition-sa CELMEventRecognition.sa --server localhost --db elm --user elm --passwd lF8AxP4
+JAVA MG LocationMonitor celmarchitecture.subarchitectures.elmwriter.LocationMonitor --writer-sa CELMWriter.sa
+#JAVA MG EventMonitor celmarchitecture.subarchitectures.elmwriter.EventMonitor
+
+
+# SUBARCHITECTURE <subarch name> <default host to be used>
+SUBARCHITECTURE CELMEventRecognition.sa
+JAVA WM celmarchitecture.global.DefaultWorkingMemory --sendXarchCN
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+JAVA MG EventRecognizer celmarchitecture.subarchitectures.recognition.Recognizer --writer-sa CELMWriter.sa
+
+# SUBARCHITECTURE <subarch name> <default host to be used>
+SUBARCHITECTURE CELMRecollection.sa
+JAVA WM celmarchitecture.global.DefaultWorkingMemory --sendXarchCN
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+JAVA MG EventRecollector celmarchitecture.subarchitectures.recollection.Recollector --server localhost --db elm --user elm --passwd lF8AxP4
+
+# SUBARCHITECTURE <subarch name> <default host to be used>
+SUBARCHITECTURE CELMSimulator.sa
+JAVA WM celmarchitecture.global.DefaultWorkingMemory --noXarchCN #--sendXarchCN
+JAVA TM cast.architecture.AlwaysPositiveTaskManager 
+JAVA MG EventSimulator celmarchitecture.subarchitectures.simulator.Simulator --writer-sa CELMWriter.sa
+JAVA MG QuerySimulator celmarchitecture.subarchitectures.simulator.QuerySimulator --recollection-sa CELMRecollection.sa 
+
+# no monitors for "external" SAs here!
+
+# SUBARCHITECTURE <subarch name> <default host to be used>
+#SUBARCHITECTURE CELMLocationConversion.sa
+#JAVA WM celmarchitecture.global.DefaultWorkingMemory --sendXarchCN 
+#JAVA TM cast.architecture.AlwaysPositiveTaskManager 
+#JAVA MG LocationConverter celmarchitecture.subarchitectures.locationConversion.LocationConverter
+
