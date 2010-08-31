@@ -433,7 +433,7 @@ void PlanePopOut::start()
 #ifdef FEAT_VISUALIZATION
   m_bSendPoints = false;
   m_bSendPlaneGrid = false;
-  m_bSendImage = false;
+  m_bSendImage = true;
   m_display.connectIceClient(*this);
   m_display.setClientData(this);
   m_display.installEventReceiver();
@@ -441,11 +441,11 @@ void PlanePopOut::start()
   m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_PLANEGRID, "Show plane grid");
   m_display.addCheckBox(ID_OBJECT_IMAGE, IDC_POPOUT_IMAGE, "Show image");
 
-  // All object displays are set to off: we need to create dummy display objects
+  // Object displays (m_bXX) are set to off: we need to create dummy display objects
   // on the server so that we can activate displays through GUI
   m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", "function render()\nend\n");
-  Video::Image image;
-  m_display.setImage(ID_OBJECT_IMAGE, image);
+  //Video::Image image;
+  //m_display.setImage(ID_OBJECT_IMAGE, image);
 #endif
 }
 
