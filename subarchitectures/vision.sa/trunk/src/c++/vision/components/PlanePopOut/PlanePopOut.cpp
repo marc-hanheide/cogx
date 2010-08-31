@@ -417,9 +417,14 @@ void PlanePopOut::configure(const map<string,string> & _config)
 }
 
 #ifdef FEAT_VISUALIZATION
-	#define ID_POPOUT_POINTS "popout.show.points"
-	#define ID_POPOUT_PLANEGRID "popout.show.planegrid"
-	#define ID_POPOUT_IMAGE "popout.show.image"
+  // display objects
+  #define ID_OBJECT_3D      "PlanePopout.3D"
+  #define ID_OBJECT_IMAGE   "PlanePopout.Image"
+
+  // display controls
+  #define IDC_POPOUT_IMAGE "popout.show.image"
+  #define IDC_POPOUT_POINTS "popout.show.points"
+  #define IDC_POPOUT_PLANEGRID "popout.show.planegrid"
 #endif
 
 void PlanePopOut::start()
@@ -432,9 +437,9 @@ void PlanePopOut::start()
   m_display.connectIceClient(*this);
   m_display.setClientData(this);
   m_display.installEventReceiver();
-  m_display.addCheckBox("PlanePopout", ID_POPOUT_POINTS, "Show 3D points");
-  m_display.addCheckBox("PlanePopout", ID_POPOUT_PLANEGRID, "Show plane grid");
-  m_display.addCheckBox("PlanePopout", ID_POPOUT_IMAGE, "Show image");
+  m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_POINTS, "Show 3D points");
+  m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_PLANEGRID, "Show plane grid");
+  m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_IMAGE, "Show image");
 #endif
 }
 
@@ -442,15 +447,15 @@ void PlanePopOut::start()
 void PlanePopOut::CDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
 	if (!pPopout) return;
-	if (event.sourceId == ID_POPOUT_POINTS) {
+	if (event.sourceId == IDC_POPOUT_POINTS) {
 		if (event.data == "0" || event.data=="") pPopout->m_bSendPoints = false;
 		else pPopout->m_bSendPoints = true;
 	}
-	else if (event.sourceId == ID_POPOUT_PLANEGRID) {
+	else if (event.sourceId == IDC_POPOUT_PLANEGRID) {
 		if (event.data == "0" || event.data=="") pPopout->m_bSendPlaneGrid = false;
 		else pPopout->m_bSendPlaneGrid = true;
 	}
-	else if (event.sourceId == ID_POPOUT_IMAGE) {
+	else if (event.sourceId == IDC_POPOUT_IMAGE) {
 		if (event.data == "0" || event.data=="") pPopout->m_bSendImage = false;
 		else pPopout->m_bSendImage = true;
 	}
@@ -459,15 +464,15 @@ void PlanePopOut::CDisplayClient::handleEvent(const Visualization::TEvent &event
 std::string PlanePopOut::CDisplayClient::getControlState(const std::string& ctrlId)
 {
 	if (!pPopout) return "";
-	if (ctrlId == ID_POPOUT_POINTS) {
+	if (ctrlId == IDC_POPOUT_POINTS) {
 		if (pPopout->m_bSendPoints) return "2";
 		else return "0";
 	}
-	if (ctrlId == ID_POPOUT_PLANEGRID) {
+	if (ctrlId == IDC_POPOUT_PLANEGRID) {
 		if (pPopout->m_bSendPlaneGrid) return "2";
 		else return "0";
 	}
-	if (ctrlId == ID_POPOUT_IMAGE) {
+	if (ctrlId == IDC_POPOUT_IMAGE) {
 		if (pPopout->m_bSendImage) return "2";
 		else return "0";
 	}
@@ -490,7 +495,7 @@ void SendImage(VisionData::SurfacePointSeq points, std::vector <int> &labels, Vi
 	}
     }
     cvSaveImage("/tmp/planes_image.jpg", iplImg);
-    //m_display.setImage("PlanePopout", iplImg);
+    m_display.setImage(ID_OBJECT_IMAGE, iplImg);
     cvReleaseImage(&iplImg);
 }
 
@@ -521,7 +526,7 @@ void SendPoints(const VisionData::SurfacePointSeq& points, std::vector<int> &lab
 	long long t1 = gethrtime();
 	double dt = (t1 - t0) * 1e-6;
 	powner->log("*****: %d points; Time to create script %lfms", points.size(), dt);
-	m_display.setLuaGlObject("PlanePopout", "3D points", str.str());
+	m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", str.str());
 	t1 = gethrtime();
 	dt = (t1 - t0) * 1e-6;
 	powner->log("*****GL: %ld points sent after %lfms", points.size(), dt);
@@ -556,7 +561,7 @@ void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner
 
 	str << "end\n";
 
-	m_display.setLuaGlObject("PlanePopout", "PlaneGrid", str.str());
+	m_display.setLuaGlObject(ID_OBJECT_3D, "PlaneGrid", str.str());
 	long long t1 = gethrtime();
 	double dt = (t1 - t0) * 1e-6;
 	powner->log("*****GL: Plane grid sent after %lfms", dt);
@@ -602,7 +607,7 @@ void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
   //  }
   //}
   str << "end\n";
-  m_display.setLuaGlObject("PlanePopout", "Overlays", str.str());
+  m_display.setLuaGlObject(ID_OBJECT_3D, "Overlays", str.str());
 }
 #endif
 
@@ -670,8 +675,6 @@ void PlanePopOut::runComponent()
 #ifdef FEAT_VISUALIZATION
 				if (m_bSendImage)
 				{
-				    m_bSendPoints = false;
-				    m_bSendPlaneGrid = false;
 				    SendImage(pointsN,points_label,image, m_display, this);
 				    //cout<<"send Imgs"<<endl;
 				}
