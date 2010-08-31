@@ -3,79 +3,99 @@
  */
 package facades;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
-import motivation.slice.Motive;
 import motivation.slice.PlanProxy;
-import castutils.castextensions.WMEntryQueue;
+import autogen.Planner.PlanningTask;
 import cast.CASTException;
-import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryOperation;
+import castutils.castextensions.CASTHelper;
+import castutils.castextensions.WMEntryQueue;
 
 /**
  * @author marc
- *
+ * 
  */
-public class ExecutorFacade implements Callable<PlanProxy> { 
-	
-	/**
-	 * @param component
-	 */
-	public ExecutorFacade(ManagedComponent component) {
-		super();
-		this.component = component;
-	}
+public class ExecutorFacade extends CASTHelper {
 
-	List<Motive> motives;
-	private ManagedComponent component;
-	private WorkingMemoryAddress planAddr;
+	public class ExecutionCallable implements Callable<PlanProxy> {
 
-	public void setPlan(WorkingMemoryAddress planID) {
-		this.planAddr=planID;
-	}
-	
-	@Override
-	public PlanProxy call() throws Exception {
-		PlanProxy pp = new PlanProxy();
-		pp.planAddress = planAddr;
-		executePlan(pp);
-		return pp;
-	}
-	
+		private PlanProxy planProxy;
 
-	private void executePlan(PlanProxy pp) throws InterruptedException {
-		String id = component.newDataID();
-		WMEntryQueue<PlanProxy> planProxyQueue = new WMEntryQueue<PlanProxy>(component, PlanProxy.class);
-		component.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
-				WorkingMemoryOperation.DELETE), planProxyQueue);
-		// submit the planProxy
-		try {
-			component.addToWorkingMemory(id, pp);
+		public ExecutionCallable(WorkingMemoryAddress planID) {
+			planProxy = new PlanProxy(planID);
+		}
+
+		@Override
+		public PlanProxy call() throws Exception {
+			String id = component.newDataID();
+			WMEntryQueue<PlanProxy> planProxyQueue = new WMEntryQueue<PlanProxy>(
+					component, PlanProxy.class);
+			component.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
+					WorkingMemoryOperation.DELETE), planProxyQueue);
+			// submit the planProxy
+			component.addToWorkingMemory(id, planProxy);
 			// wait for the PlanProxy to be deleted
-			// TODO: we should move to status information in here and not only
+			// TODO: we should move to status information in here and not
+			// only
 			// listen for deletion
 			planProxyQueue.take();
 			component.log("plan proxy deletion seen");
 			component.removeChangeFilter(planProxyQueue);
-		} catch (CASTException e) {
-			component.println("CASTException");
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			component.println("executor should be interrupted");
-			try {
-				component.deleteFromWorkingMemory(id);
-				throw (e);
-			} catch (DoesNotExistOnWMException e1) {
-				e1.printStackTrace();
-			} catch (PermissionException e1) {
-				e1.printStackTrace();
+			for (Callable<?> c : listeners) {
+				c.call();
 			}
+			return planProxy;
+
 		}
+
+	}
+	
+	public class FutureExecutionTask extends FutureTask<PlanProxy> {
+
+		public FutureExecutionTask(WorkingMemoryAddress planID) {
+			super(new ExecutionCallable(planID));
+		}
+
+	}
+
+	Set<Callable<?>> listeners;
+
+	private final static ExecutorService executorService = Executors
+			.newCachedThreadPool();
+
+	/**
+	 * @param component
+	 */
+	public ExecutorFacade(ManagedComponent component) {
+		super(component);
+	}
+
+	public Future<PlanProxy> execute(WorkingMemoryAddress planID)
+			throws CASTException {
+		PlanningTask pt = component.getMemoryEntry(planID, PlanningTask.class);
+		if (!pt.executePlan) {
+			pt.executePlan = true;
+			component.overwriteWorkingMemory(planID, pt);
+		}
+		FutureExecutionTask futureExecution = new FutureExecutionTask(planID);
+		executorService.execute(futureExecution);
+		return futureExecution;
+	}
+
+	/** register callables to be called on completion of the executed plan
+	 * @param c
+	 */
+	public void registerCallable(Callable<?> c) {
+		listeners.add(c);
 	}
 
 }

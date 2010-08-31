@@ -224,11 +224,9 @@ public class PlanAllManager extends ManagedComponent {
 						log("a plan has been generated. it's time to execute it");
 						log("  PlanningTask: execute?="+pt.getEntry().executePlan);
 						log("  PlanningTask: firstAction="+pt.getEntry().firstActionID);
-						executorFacade.setPlan(pt.getEvent().address);
-						FutureTask<PlanProxy> executionResult = new FutureTask<PlanProxy>(
-								executorFacade);
-						backgroundExecutor.execute(executionResult);
-
+						
+						Future<PlanProxy> executionResult = executorFacade.execute(pt.getEvent().address); 
+						
 						loopCount = 0;
 						while (!interrupt) {
 							try {
