@@ -9,6 +9,8 @@
 #ifndef STEREO_DETECTOR_H
 #define STEREO_DETECTOR_H
 
+//#define HAVE_CAST 1	// Enable cast-functionality in ./stereo
+
 #include "DoxyMain.h"
 
 #include <cast/architecture/ManagedComponent.hpp>
