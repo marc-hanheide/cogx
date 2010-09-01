@@ -232,7 +232,7 @@ void Planning_Formula__to__Variable_Ordering::operator()(const Planning::Formula
                                   <<"Is reported to be dynamic. We do not suppor this at this stage.");
     }
 
-    assert(score >= 0);
+    assert(score >= static_cast<uint>(0));
     
     (*this)(arguments_List, score);
 }

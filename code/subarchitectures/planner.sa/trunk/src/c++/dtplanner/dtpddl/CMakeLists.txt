@@ -58,6 +58,7 @@ planning_observation.cc
 planning_observation_schema.cc
 planning_state.cc
 planning_symbols.cc
+policy_iteration_over_information_state_space.cc
 probability_during_expansion__state.cc
 problem_grounding__actions.cc
 problem_grounding.cc

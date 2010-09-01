@@ -3,7 +3,7 @@
 
 
 /*Comment this out if you want the old behaviour. */
-// #define EXPOSING_DTP 1
+#define EXPOSING_DTP 1
 
 #include <tr1/memory>
 //#include <cast/architecture.hpp>
