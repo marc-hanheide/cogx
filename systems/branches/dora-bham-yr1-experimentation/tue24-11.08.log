@@ -1,0 +1,1974 @@
+added coma external libs to CLASSPATH: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/arq.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/commons-logging-1.1.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/concurrent.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/crowl.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/icu4j_3_4.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/iri.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/jena.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/log4j-1.2.12.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/xercesImpl.jar:
+CLASSPATH=/usr/local/share/java/cast.jar:/usr/share/java/Ice.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/arq.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/commons-logging-1.1.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/concurrent.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/crowl.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/icu4j_3_4.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/iri.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/jena.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/log4j-1.2.12.jar:/home/cogx/systems/branches/dora-bham-yr1-experimentation/output/classes/coma.libs/xercesImpl.jar::/usr/share/java/log4j-1.2.jar:/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar:/usr/local/share/java/cast.jar:/usr/share/java/log4j-1.2.jar:
+Java server pid: 7734
+CPP server pid: 7735
+Python server pid: 7741
+380.249 ConfigFileReader.cc:123: m_IncPathFromCmdLine="instantiations/cureconfig/"  m_IncPathFromFirstFile=".//"
+380.249 ConfigFileReader.cc:128: Successfully opened config file "instantiations/cureconfig/cogxp3.ccf"
+
+   ************ Started CURE **********
+
+380.252 AddressBank.cc:30: Made Thread Space
+380.257 SensorUser.cc:27: SensorUser Constructor:4 6 1 100
+380.258 ConfigFileReader.cc:123: m_IncPathFromCmdLine="instantiations/cureconfig/"  m_IncPathFromFirstFile=".//"
+380.258 ConfigFileReader.cc:128: Successfully opened config file "instantiations/cureconfig/cogxp3.ccf"
+
+Configured WallHelper with MatchSettings:
+  RoughSearchRange=0.5 NearSearchRange=30 NewFeatureRange=4000 MatchThreshold=1000 EndPointUpdateThreshold=0.01
+Inialization:
+  CountThreshold=8 TightnessValue=0.15 EndThreshold=0.1 LengthThreshold=0.35 VarRhoThreshold=0.005 DistanceThreshold=2 UseEndpoints=1
+Merge Settings:
+  MergeOverLap=0.01 MergeMaxGammaError=0.03 MergeMaxRhoError=0.05 CornerSeparation=0.01
+380.264 FeatureMap.cc:102: FeatureMap with 1 different features
+Successfully configured SimpleOdoModel with "1 0.001 0.002 4e-7 4E-5 1E-6 0 0 0" which gave: CovDistPerMeter=0.001 CovAngPerRad=0.002 CovAngPerMeter=4e-07 CovNormalPerMeter=4e-05 CovXYPerRad=1e-06 BiasDistPerMeter=0 BiasAngPerMeter=0 BiasAngPerRad=0
+380.267 EKFSLAM.cc:137: EKFSLAM Init Pose 
+timestamp: 0.000000 ClassType:0 SubType:704 ID:0 Packed:0
+ vtype: 0 Ptype: 11 Vector3D: 0 0 0
+Euler Angles: 0 0 0
+ v: 0 0 0 0 0 0
+ P:  Rows/cols/RowInc: 3 3 3
+1e-09 0 0 
+0 1e-09 0 
+0 0 1e-09 
+
+Successfully configured RangeHough with Scan Setting:
+  HalfWidth=0.005 MaxRange=8 IndexIncrement=2 VarRange=1e-06 SensorVariance=1e-06
+LineSettings:
+  LengthThreshold=0.5 CountThreshold=15 RhoThreshold=0.04 VarRhoThreshold=0.0003 DGamma=0.017 MaxGap=0.5 RhoBiasThreshold=1 EndPointBehind=0.03
+Will ignore first 1 scans to make sure simulation is startedWant scans at at most 5.0Hz rateSlamProcess::configure successful
+380.315 ConfigFileReader.cc:123: m_IncPathFromCmdLine="instantiations/cureconfig/"  m_IncPathFromFirstFile=".//"
+380.315 ConfigFileReader.cc:128: Successfully opened config file "instantiations/cureconfig/cogxp3.ccf"
+PlaceManager::PlaceManager()
+> [planar_pattern_detector::load] Loading detector file ./ferns/bag.jpg.detector_data ... 
+> [planar_pattern_detector::load] Image name: ./ferns/bag.jpg
+> [planar_pattern_detector::load] Patch size = 32, Yape radius = 7, Number of octaves = 4.
+> [affine_transformation_range::load] min_theta = 0
+> [affine_transformation_range::load] max_lambda2 = 1.5
+> [planar_pattern_detector::load] Recognition rate: 89.2136
+> [buffer_management] Reading compressed buffer... (zlib error = 0)
+> [planar_pattern_detector::load] 40 model points.
+> [ferns] 30 ferns, 12 tests per fern.
+> [fern_based_point_classifier::load] Reading compressed leaves distributions...uncompressed... done.
+> [planar_pattern_detector::load] Ok.
+> [planar_pattern_detector_builder] ./ferns/bag.jpg.detector_data file read.
+> [planar_pattern_detector::load] Loading detector file ./ferns/beano.jpg.detector_data ... 
+> [planar_pattern_detector::load] Image name: ./ferns/beano.jpg
+> [planar_pattern_detector::load] Patch size = 32, Yape radius = 7, Number of octaves = 4.
+> [affine_transformation_range::load] min_theta = 0
+> [affine_transformation_range::load] max_lambda2 = 1.5
+> [planar_pattern_detector::load] Recognition rate: 95.4119
+> [buffer_management] Reading compressed buffer... (zlib error = 0)
+> [planar_pattern_detector::load] 40 model points.
+> [ferns] 30 ferns, 12 tests per fern.
+> [fern_based_point_classifier::load] Reading compressed leaves distributions...uncompressed... done.
+> [planar_pattern_detector::load] Ok.
+> [planar_pattern_detector_builder] ./ferns/beano.jpg.detector_data file read.
+> [planar_pattern_detector::load] Loading detector file ./ferns/colouring.jpg.detector_data ... 
+> [planar_pattern_detector::load] Image name: ./ferns/colouring.jpg
+> [planar_pattern_detector::load] Patch size = 32, Yape radius = 7, Number of octaves = 4.
+> [affine_transformation_range::load] min_theta = 0
+> [affine_transformation_range::load] max_lambda2 = 1.5
+> [planar_pattern_detector::load] Recognition rate: 94.2925
+> [buffer_management] Reading compressed buffer... (zlib error = 0)
+> [planar_pattern_detector::load] 40 model points.
+> [ferns] 30 ferns, 12 tests per fern.
+> [fern_based_point_classifier::load] Reading compressed leaves distributions...uncompressed... done.
+> [planar_pattern_detector::load] Ok.
+> [planar_pattern_detector_builder] ./ferns/colouring.jpg.detector_data file read.
+> [planar_pattern_detector::load] Loading detector file ./ferns/cornflakes.jpg.detector_data ... 
+> [planar_pattern_detector::load] Image name: ./ferns/cornflakes.jpg
+> [planar_pattern_detector::load] Patch size = 32, Yape radius = 7, Number of octaves = 4.
+> [affine_transformation_range::load] min_theta = 0
+> [affine_transformation_range::load] max_lambda2 = 1.5
+> [planar_pattern_detector::load] Recognition rate: 91.846
+> [buffer_management] Reading compressed buffer... (zlib error = 0)
+> [planar_pattern_detector::load] 40 model points.
+> [ferns] 30 ferns, 12 tests per fern.
+> [fern_based_point_classifier::load] Reading compressed leaves distributions...uncompressed... done.
+> [planar_pattern_detector::load] Ok.
+> [planar_pattern_detector_builder] ./ferns/cornflakes.jpg.detector_data file read.
+> [planar_pattern_detector::load] Loading detector file ./ferns/kleenex.jpg.detector_data ... 
+> [planar_pattern_detector::load] Image name: ./ferns/kleenex.jpg
+> [planar_pattern_detector::load] Patch size = 32, Yape radius = 7, Number of octaves = 4.
+> [affine_transformation_range::load] min_theta = 0
+> [affine_transformation_range::load] max_lambda2 = 1.5
+> [planar_pattern_detector::load] Recognition rate: 91.9363
+> [buffer_management] Reading compressed buffer... (zlib error = 0)
+> [planar_pattern_detector::load] 40 model points.
+> [ferns] 30 ferns, 12 tests per fern.
+> [fern_based_point_classifier::load] Reading compressed leaves distributions...uncompressed... done.
+> [planar_pattern_detector::load] Ok.
+> [planar_pattern_detector_builder] ./ferns/kleenex.jpg.detector_data file read.
+> [planar_pattern_detector::load] Loading detector file ./ferns/new-scientist.jpg.detector_data ... 
+> [planar_pattern_detector::load] Image name: ./ferns/new-scientist.jpg
+> [planar_pattern_detector::load] Patch size = 32, Yape radius = 7, Number of octaves = 4.
+> [affine_transformation_range::load] min_theta = 0
+> [affine_transformation_range::load] max_lambda2 = 1.5
+> [planar_pattern_detector::load] Recognition rate: 90.8066
+> [buffer_management] Reading compressed buffer... (zlib error = 0)
+> [planar_pattern_detector::load] 40 model points.
+> [ferns] 30 ferns, 12 tests per fern.
+> [fern_based_point_classifier::load] Reading compressed leaves distributions...uncompressed... done.
+> [planar_pattern_detector::load] Ok.
+> [planar_pattern_detector_builder] ./ferns/new-scientist.jpg.detector_data file read.
+> [planar_pattern_detector::load] Loading detector file ./ferns/record1.jpg.detector_data ... 
+> [planar_pattern_detector::load] Image name: ./ferns/record1.jpg
+> [planar_pattern_detector::load] Patch size = 32, Yape radius = 7, Number of octaves = 4.
+> [affine_transformation_range::load] min_theta = 0
+> [affine_transformation_range::load] max_lambda2 = 1.5
+> [planar_pattern_detector::load] Recognition rate: 83.2074
+> [buffer_management] Reading compressed buffer... (zlib error = 0)
+> [planar_pattern_detector::load] 40 model points.
+> [ferns] 30 ferns, 12 tests per fern.
+> [fern_based_point_classifier::load] Reading compressed leaves distributions...uncompressed... done.
+> [planar_pattern_detector::load] Ok.
+> [planar_pattern_detector_builder] ./ferns/record1.jpg.detector_data file read.
+> [planar_pattern_detector::load] Loading detector file ./ferns/simpsons.jpg.detector_data ... 
+> [planar_pattern_detector::load] Image name: ./ferns/simpsons.jpg
+> [planar_pattern_detector::load] Patch size = 32, Yape radius = 7, Number of octaves = 4.
+> [affine_transformation_range::load] min_theta = 0
+> [affine_transformation_range::load] max_lambda2 = 1.5
+> [planar_pattern_detector::load] Recognition rate: 93.4563
+> [buffer_management] Reading compressed buffer... (zlib error = 0)
+> [planar_pattern_detector::load] 40 model points.
+> [ferns] 30 ferns, 12 tests per fern.
+> [fern_based_point_classifier::load] Reading compressed leaves distributions...uncompressed... done.
+> [planar_pattern_detector::load] Ok.
+> [planar_pattern_detector_builder] ./ferns/simpsons.jpg.detector_data file read.
+> [planar_pattern_detector::load] Loading detector file ./ferns/headlights.jpg.detector_data ... 
+> [planar_pattern_detector::load] Image name: ./ferns/headlights.jpg
+> [planar_pattern_detector::load] Patch size = 32, Yape radius = 7, Number of octaves = 4.
+> [affine_transformation_range::load] min_theta = 0
+> [affine_transformation_range::load] max_lambda2 = 1.5
+> [planar_pattern_detector::load] Recognition rate: 91.2192
+> [buffer_management] Reading compressed buffer... (zlib error = 0)
+> [planar_pattern_detector::load] 40 model points.
+> [ferns] 30 ferns, 12 tests per fern.
+> [fern_based_point_classifier::load] Reading compressed leaves distributions...uncompressed... done.
+> [planar_pattern_detector::load] Ok.
+> [planar_pattern_detector_builder] ./ferns/headlights.jpg.detector_data file read.
+> [planar_pattern_detector::load] Loading detector file ./ferns/johnny.jpg.detector_data ... 
+> [planar_pattern_detector::load] Image name: ./ferns/johnny.jpg
+> [planar_pattern_detector::load] Patch size = 32, Yape radius = 7, Number of octaves = 4.
+> [affine_transformation_range::load] min_theta = 0
+> [affine_transformation_range::load] max_lambda2 = 1.5
+> [planar_pattern_detector::load] Recognition rate: 80.1406
+> [buffer_management] Reading compressed buffer... (zlib error = 0)
+> [planar_pattern_detector::load] 40 model points.
+> [ferns] 30 ferns, 12 tests per fern.
+> [fern_based_point_classifier::load] Reading compressed leaves distributions...uncompressed... done.
+> [planar_pattern_detector::load] Ok.
+> [planar_pattern_detector_builder] ./ferns/johnny.jpg.detector_data file read.
+> [planar_pattern_detector::load] Loading detector file ./ferns/ironingBoard.jpg.detector_data ... 
+> [planar_pattern_detector::load] Image name: ./ferns/ironingBoard.jpg
+> [planar_pattern_detector::load] Patch size = 32, Yape radius = 7, Number of octaves = 4.
+> [affine_transformation_range::load] min_theta = 0
+> [affine_transformation_range::load] max_lambda2 = 1.5
+> [planar_pattern_detector::load] Recognition rate: 83.702
+> [buffer_management] Reading compressed buffer... (zlib error = 0)
+> [planar_pattern_detector::load] 40 model points.
+> [ferns] 30 ferns, 12 tests per fern.
+> [fern_based_point_classifier::load] Reading compressed leaves distributions...uncompressed... done.
+> [planar_pattern_detector::load] Ok.
+> [planar_pattern_detector_builder] ./ferns/ironingBoard.jpg.detector_data file read.
+Process exitValue: 0
+Mary TTS client 3.6.0 (impl. 20080521)
+Connected to localhost:59125, Mary TTS server 3.6.0 (impl. 20080521)
+GRE HANDLER HAS BEEN SET <<<<<<<<<<<<*********************************
+Loading grammar from URL: file:/home/cogx/systems/branches/dora-bham-yr1-experimentation/./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml
+[OpenCvLiveServer::init] Warning: setting video resolution not supported by this OpenCV implementation!
+JoystickDrivable: Using cfgFile=
+JoystickDrivable: Could not open cure config file, testing default joystick setup
+JoystickDrivable: Using joystick device "/dev/input/js0"JoystickDrivable: joystick axis east-west: 0, north-south: 1
+JoystickDrivable: joystick dead id: 4
+JoystickDrivable: joystick zerotrans id: 5
+JoystickDrivable: joystick zerorot id: 7
+JoystickDrivable: USING JOYSTICK
+ x = 0 y = 0.1 d = 0.1
+ x = 1.4 y = 0.1 d = 1.44142
+ x = 0 y = 0.1 d = 1.14142
+ x = 2.5 y = 0 d = 1.4
+ x = 1.4 y = 1.2 d = 1.32426
+ x = 0 y = 0.1 d = 2.00711
+ x = 3.1 y = 0.3 d = 1.42426
+ x = 2 y = 2 d = 1.48284
+ x = 0 y = 0.1 d = 2.87279
+ x = 3.1 y = 0.3 d = 2.54853
+ x = 1.2 y = 3.2 d = 1.60711
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: V:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "V:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+ x = 0 y = 0.1 d = 4.01421
+ x = 3.1 y = 0.3 d = 3.60711
+ x = 1.1 y = 4.1 d = 1.48995
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:d:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:d"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at coma.motivation.CategorizeRoomGenerator.checkMotive(CategorizeRoomGenerator.java:100)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+ x = 0 y = 0.1 d = 2.72426
+ x = 4 y = 0 d = 1.48284
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: l:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "l:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+ x = 0 y = 0.1 d = 3.76569
+ x = 5.1 y = 0.1 d = 1.58284
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 1:d:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "1:d"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at coma.motivation.CategorizeRoomGenerator.checkMotive(CategorizeRoomGenerator.java:100)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:d:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:d"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at coma.motivation.CategorizeRoomGenerator.checkMotive(CategorizeRoomGenerator.java:100)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+ x = 0 y = 0.1 d = 4.90711
+ x = 6.1 y = 0.3 d = 1.44142
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 1:d:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "1:d"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at coma.motivation.CategorizeRoomGenerator.checkMotive(CategorizeRoomGenerator.java:100)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: z3:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "z3:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+ x = 0 y = 0.1 d = 6.06569
+ x = 7.2 y = 0.2 d = 1.34142
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 1:d:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "1:d"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at coma.motivation.CategorizeRoomGenerator.checkMotive(CategorizeRoomGenerator.java:100)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+ x = 7.7 y = -0.8 d = 1.38995
+ x = 0 y = 0.1 d = 7.16569
+ x = 8.5 y = 0.3 d = 1.5
+24/08/10 10:50:53.643 /usr/local/bin/cast-server-c++: warning: thread pool `Ice.ThreadPool.Server' is running low on threads
+Size=1, SizeMax=20, SizeWarn=16
+ x = 8.1 y = -1.5 d = 1.38284
+ x = 0 y = 0.1 d = 8.02426
+ x = 8.8 y = 0.6 d = 1.23137
+ x = 7.8 y = -1.8 d = 1.54142
+ x = 0 y = 0.1 d = 8.06569
+ x = 8.8 y = 0.6 d = 1.27279
+removeDoorwaySameRoomAs called 
+DoorCleaner rule called!
+ x = 7.6 y = -2.8 d = 1.46569
+ x = 0 y = 0.1 d = 9.18995
+ x = 8.8 y = 0.6 d = 2.43137
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:d:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:d"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at coma.motivation.CategorizeRoomGenerator.checkMotive(CategorizeRoomGenerator.java:100)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 2:c:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "2:c"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.PatrolPlaceGenerator.checkMotive(PatrolPlaceGenerator.java:91)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+ x = 7.6 y = -3.9 d = 1.56569
+ x = 0 y = 0.1 d = 10.1899
+ x = 8.8 y = 0.6 d = 3.43137
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = 0 y = 0.1 d = 9.54853
+ x = 8.8 y = 0.6 d = 2.87279
+created new PythonServer
+registering Python planner server
+and trying to get it back again immediately
+It worked. We got a server: autogen.Planner.PythonServer/PlannerPythonServer -t:tcp -h localhost -p 10411
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored 'F1:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x98f508c>
+Status of task 1 was changed to TASK_CHANGED. This may trigger planner activity.
+Connected to CppServer Planner
+Status of task 1 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 1. This may trigger planner activity.
+Planning was triggered for task 1.
+total time for postprocessing: 0.00502586364746
+Status of task 1 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place_61__m
+move agent_0__m place_61__m -> move agent_0__m place__f1__m
+move agent_0__m place__f1__m -> explore_place agent_0__m place__f1__m
+explore_place agent_0__m place__f1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan1.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place_61__m  ==  move agent_0__m place_61__m
+received task update
+checking execution state
+status of move agent_0__m place_61__m is SUCCEEDED
+Status of task 1 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+
+Changed objects:
+ place__d1__m:
+    located(agent_0__m place__d1__m): true - boolean => unknown
+ agent_0__m:
+    located(agent_0__m place_61__m): unknown => true - boolean
+    located(agent_0__m place__d1__m): true - boolean => unknown
+ place_61__m:
+    located(agent_0__m place_61__m): unknown => true - boolean
+Status of task 1 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 1. This may trigger planner activity.
+checking plan validity.
+Action (move agent_0__m place__f1__m place_61__m) ok.
+Action (explore_place agent_0__m place__f1__m) ok.
+checking if goal is still satisfied.
+Plan is still valid.
+time for goal validation: 1.59740447998e-05
+total time for validation: 0.00072sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = 0 y = 0.1 d = 8.50711
+ x = 8.8 y = 0.5 d = 1.81421
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: D6:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "D6:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: D6:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "D6:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: D6:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "D6:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = 0 y = 0.1 d = 8.44853
+ x = 9.5 y = 0.5 d = 1.3
+0024108887
+no actions are executing, reissuing plan
+Status of task 1 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place_61__m
+move agent_0__m place_61__m -> move agent_0__m place__f1__m
+move agent_0__m place__f1__m -> explore_place agent_0__m place__f1__m
+explore_place agent_0__m place__f1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan1.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__f1__m  ==  move agent_0__m place__f1__m
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored '91:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x985c2cc>
+Status of task 2 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 2 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 2. This may trigger planner activity.
+Planning was triggered for task 2.
+total time for postprocessing: 0.00373888015747
+Status of task 2 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place_91__m
+move agent_0__m place_91__m -> explore_place agent_0__m place_91__m
+explore_place agent_0__m place_91__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan2.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place_91__m  ==  move agent_0__m place_91__m
+received task update
+checking execution state
+status of move agent_0__m place_91__m is SUCCEEDED
+Status of task 2 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+
+New objects:
+ place__s1__m:
+    place_id(place__s1__m) = place_id_22 - place_id
+    explored(place__s1__m) = false - boolean
+
+Changed objects:
+ place_91__m:
+    explored(place_91__m): false - boolean => true - boolean
+Status of task 2 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 2. This may trigger planner activity.
+Goal is reached
+no actions are executing, reissuish: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:d:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:d"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at coma.motivation.CategorizeRoomGenerator.checkMotive(CategorizeRoomGenerator.java:100)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = 10 y = -0.4 d = 1.28995
+ x = 0 y = 0.1 d = 9.58995
+ x = 10.4 y = 1.3 d = 1.38995
+ng plan
+Status of task 2 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place_91__m
+move agent_0__m place_91__m -> explore_place agent_0__m place_91__m
+explore_place agent_0__m place_91__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan2.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+Plan is empty
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored 'S1:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x99b190c>
+Status of task 3 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 3 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 3. This may trigger planner activity.
+Planning was triggered for task 3.
+total time for postprocessing: 0.00390291213989
+Status of task 3 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__s1__m
+move agent_0__m place__s1__m -> explore_place agent_0__m place__s1__m
+explore_place agent_0__m place__s1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan3.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__s1__m  ==  move agent_0__m place__s1__m
+received task update
+checking execution state
+status of move agent_0__m place__s1__m is SUCCEEDED
+Status of task 3 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+
+New objects:
+ place__y1__m:
+    place_id(place__y1__m) = place_id_23 - place_id
+    explored(place__y1__m) = false - boolean
+    connected(place__s1__m place__y1__m) = true - boolean
+ place_a1__m:
+    place_id(place_a1__m) = place_id_24 - place_id
+    explored(place_a1__m) = false - boolean
+
+Changed objects:
+ room__u1__m:
+    contains(roomsh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = 10.1 y = -1.2 d = 1.3
+ x = 0 y = 0.1 d = 10.2657
+ x = 10.2 y = 1.9 d = 1.84142
+24/08/10 10:52:37.197 /usr/local/bin/cast-server-c++: warning: thread pool `Ice.ThreadPool.Server' is running low on threads
+Size=1, SizeMax=20, SizeWarn=16
+__u1__m place__s1__m): unknown => true - boolean
+ place__s1__m:
+    contains(room__u1__m place__s1__m): unknown => true - boolean
+    connected(place__s1__m place__y1__m): unknown => true - boolean
+    explored(place__s1__m): false - boolean => true - boolean
+Status of task 3 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 3. This may trigger planner activity.
+Goal is reached
+no actions are executing, reissuing plan
+Status of task 3 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__s1__m
+move agent_0__m place__s1__m -> explore_place agent_0__m place__s1__m
+explore_place agent_0__m place__s1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan3.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+Plan is empty
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored 'Y1:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9a0accc>
+Status of task 4 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 4 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 4. This may trigger planner activity.
+Planning was triggered for task 4.
+total time for postprocessing: 0.00399208068848
+Status of task 4 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__y1__m
+move agent_0__m place__y1__m -> explore_place agent_0__m place__y1__m
+explore_place agent_0__m place__y1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan4.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__y1__m  ==  move agent_0__m place__y1__m
+received task update
+checking execution state
+status of move agent_0__m place__y1__m is SUCCEEDED
+Status of task 4 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning dsh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+cast.DoesNotExistOnWMException
+    message = "Entry does not exist for deleting. Was looking for id 7:h in sa planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "7:h"
+	at cast.architecture.WorkingMemoryWriterComponent.deleteFromWorkingMemory(WorkingMemoryWriterComponent.java:301)
+	at cast.architecture.WorkingMemoryWriterComponent.deleteFromWorkingMemory(WorkingMemoryWriterComponent.java:252)
+	at motivation.util.facades.ExecutorFacade.executePlan(ExecutorFacade.java:71)
+	at motivation.util.facades.ExecutorFacade.call(ExecutorFacade.java:46)
+	at motivation.util.facades.ExecutorFacade.call(ExecutorFacade.java:24)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:303)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:138)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:619)
+cast.ConsistencyException
+    message = "You have attempted to overwrite an outdated working memory entry. Please reread and try again. WMA: l:b:planner.sa. Local version: 22. WM version: 23"
+    wma.id = "l:b"
+    wma.subarchitecture = "planner.sa"
+	at cast.architecture.WorkingMemoryAttachedComponent.checkConsistency(WorkingMemoryAttachedComponent.java:349)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:468)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: sC:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "sC:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 2:d:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "2:d"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at coma.motivation.CategorizeRoomGenerator.checkMotive(CategorizeRoomGenerator.java:100)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = 0 y = 0.1 d = 9.94853
+ x = 10.2 y = 1.9 d = 1.60711
+omain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+
+New objects:
+ place_h1__m:
+    connected(place__y1__m place_h1__m) = true - boolean
+    place_id(place_h1__m) = place_id_26 - place_id
+    explored(place_h1__m) = false - boolean
+ place_g1__m:
+    place_id(place_g1__m) = place_id_25 - place_id
+    explored(place_g1__m) = false - boolean
+    connected(place__y1__m place_g1__m) = true - boolean
+
+Changed objects:
+ place__y1__m:
+    connected(place__y1__m place_h1__m): unknown => true - boolean
+    connected(place__y1__m place_g1__m): unknown => true - boolean
+    contains(room__u1__m place__y1__m): unknown => true - boolean
+    explored(place__y1__m): false - boolean => true - boolean
+ room__u1__m:
+    contains(room__u1__m place__y1__m): unknown => true - boolean
+ place__s1__m:
+    located(agent_0__m place__s1__m): true - boolean => unknown
+
+Removed objects:
+ agent_0__m:
+    located(agent_0__m place__s1__m) = true - boolean
+Status of task 4 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 4. This may trigger planner activity.
+Goal is reached
+no actions are executing, reissuing plan
+Status of task 4 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__y1__m
+move agent_0__m place__y1__m -> explore_place agent_0__m place__y1__m
+explore_place agent_0__m place__y1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan4.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+Plan is empty
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored 'a1:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9a66eac>
+Status of task 5 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 5 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 5. This may trigger planner activity.
+Planning was triggered for task 5.
+total time for postprocessing: 0.00550889968872
+Status of task 5 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__s1__m
+move agent_0__m place__s1__m -> move agent_0__m place_a1__m
+move agent_0__m place_a1__m -> explore_place agent_0__m place_a1__m
+explore_place agent_0__m place_a1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan5.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__s1__m  ==  move agent_0__m place__s1__m
+received task update
+checking execution state
+status of move agent_0__m place__s1__m is SUCCEEDED
+Status of task 5 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - obsh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = 0 y = 0.1 d = 10.2728
+ x = 10 y = 2.2 d = 1.44142
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: yC:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "yC:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: yC:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "yC:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+ x = 0 y = 0.1 d = 10.7971
+ x = 9.8 y = 2.5 d = 1.60711
+24/08/10 10:53:09.773 /usr/local/bin/cast-server-c++: warning: thread pool `Ice.ThreadPool.Server' is running low on threads
+Size=1, SizeMax=20, SizeWarn=16
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 2:d:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "2:d"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at coma.motivation.CategorizeRoomGenerator.checkMotive(CategorizeRoomGenerator.java:100)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+ject'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+
+Changed objects:
+ place__s1__m:
+    located(agent_0__m place__s1__m): unknown => true - boolean
+ agent_0__m:
+    located(agent_0__m place__s1__m): unknown => true - boolean
+    located(agent_0__m place__y1__m): true - boolean => unknown
+ place__y1__m:
+    located(agent_0__m place__y1__m): true - boolean => unknown
+Status of task 5 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 5. This may trigger planner activity.
+checking plan validity.
+Action (move agent_0__m place_a1__m place__s1__m) ok.
+Action (explore_place agent_0__m place_a1__m) ok.
+checking if goal is still satisfied.
+Plan is still valid.
+time for goal validation: 1.69277191162e-05
+total time for validation: 0.00081992149353
+no actions are executing, reissuing plan
+Status of task 5 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__s1__m
+move agent_0__m place__s1__m -> move agent_0__m place_a1__m
+move agent_0__m place_a1__m -> explore_place agent_0__m place_a1__m
+explore_place agent_0__m place_a1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan5.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place_a1__m  ==  move agent_0__m place_a1__m
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored 'g1:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x98cfdcc>
+Status of task 6 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 6 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 6. This may trigger planner activity.
+Planning was triggered for task 6.
+total time for postprocessing: 0.00553798675537
+Status of task 6 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__y1__m
+move agent_0__m place__y1__m -> move agent_0__m place_g1__m
+move agent_0_sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 1:d:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "1:d"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at coma.motivation.CategorizeRoomGenerator.checkMotive(CategorizeRoomGenerator.java:100)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:d:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:d"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at coma.motivation.CategorizeRoomGenerator.checkMotive(CategorizeRoomGenerator.java:100)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = 0 y = 0.1 d = 10.3899
+ x = 10 y = 2.6 d = 2.04142
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: sC:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "sC:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+_m place_g1__m -> explore_place agent_0__m place_g1__m
+explore_place agent_0__m place_g1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan6.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__y1__m  ==  move agent_0__m place__y1__m
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored 'g1:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9a803ac>
+Status of task 7 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 7 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 7. This may trigger planner activity.
+Planning was triggered for task 7.
+total time for postprocessing: 0.00559616088867
+Status of task 7 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__y1__m
+move agent_0__m place__y1__m -> move agent_0__m place_g1__m
+move agent_0__m place_g1__m -> explore_place agent_0__m place_g1__m
+explore_place agent_0__m place_g1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan7.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__y1__m  ==  move agent_0__m place__y1__m
+received task update
+checking execution state
+status of move agent_0__m place__y1__m is SUCCEEDED
+Status of task 7 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+
+Changed objects:
+ place_h1__m:
+    located(agent_0__m place_h1__m): true - boolean => unknown
+ place__y1__m:
+    located(agent_0__m place__y1__m): unknown => true - boolean
+ agent_0__m:
+    located(agent_0__m place__y1__m): unknown => true - boolean
+    located(agent_0__m place_h1__m): true - boolean => unknown
+Status of task 7 was changed to TASK_CHANGEsh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = 0 y = 0.1 d = 10.2071
+ x = 10 y = 2.6 d = 2.8
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: KG:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "KG:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+D. This may trigger planner activity.
+Change detection was activated for task 7. This may trigger planner activity.
+checking plan validity.
+Action (move agent_0__m place_g1__m place__y1__m) ok.
+Action (explore_place agent_0__m place_g1__m) ok.
+checking if goal is still satisfied.
+Plan is still valid.
+time for goal validation: 5.00679016113e-05
+total time for validation: 0.00715804100037
+no actions are executing, reissuing plan
+Status of task 7 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__y1__m
+move agent_0__m place__y1__m -> move agent_0__m place_g1__m
+move agent_0__m place_g1__m -> explore_place agent_0__m place_g1__m
+explore_place agent_0__m place_g1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan7.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place_g1__m  ==  move agent_0__m place_g1__m
+received task update
+checking execution state
+status of move agent_0__m place_g1__m is FAILED
+Status of task 7 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+
+Changed objects:
+ place__y1__m:
+    connected(place__y1__m place_g1__m): true - boolean => unknown
+
+Removed objects:
+ place_g1__m:
+    place_id(place_g1__m) = place_id_25 - place_id
+    explored(place_g1__m) = false - boolean
+    connected(place__y1__m place_g1__m) = true - boolean
+Status of task 7 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 7. This may trigger planner activity.
+Status of task 7 was changed to PLANNING_FAILURE.
+received task update
+Status of task 7 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+
+Changed objects:
+Change detection was activated for task 7. This may trigger planner activity.
+Status of task 7 was changed to PLANNING_FAILURE.
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (kval '0:M' (areaclass 'U1:M')))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentatiosh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+>! Warning: pyr_yape06 not optimized for 88 x 68 images.
+>! You may want add this size to the pyr_yape06::compute_laplacian member function for more efficiency.
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:e:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:e"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.HomingGenerator.checkMotive(HomingGenerator.java:67)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:e:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:e"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.HomingGenerator.checkMotive(HomingGenerator.java:67)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+n/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9b071ac>
+Status of task 8 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 8 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 8. This may trigger planner activity.
+Planning was triggered for task 8.
+total time for postprocessing: 0.00391793251038
+Status of task 8 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> categorize_room agent_0__m room__u1__m
+categorize_room agent_0__m room__u1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan8.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: categorize_room agent_0__m room__u1__m  ==  categorize_room agent_0__m room__u1__m
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored 'L1:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9b4932c>
+Status of task 9 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 9 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 9. This may trigger planner activity.
+Planning was triggered for task 9.
+total time for postprocessing: 0.00555610656738
+Status of task 9 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__d1__m
+move agent_0__m place__d1__m -> move agent_0__m place__l1__m
+move agent_0__m place__l1__m -> explore_place agent_0__m place__l1__m
+explore_place agent_0__m place__l1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan9.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__d1__m  ==  move agent_0__m place__d1__ x = 0 y = 0.1 d = 10.1314
+ x = 9.9 y = 2.9 d = 2.32426
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:e:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:e"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.HomingGenerator.checkMotive(HomingGenerator.java:67)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: KG:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "KG:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+ x = 0 y = 0.1 d = 9.04853
+ x = 9.9 y = 2.9 d = 3.25563
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:e:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:e"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.HomingGenerator.checkMotive(HomingGenerator.java:67)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+m
+received task update
+checking execution state
+status of move agent_0__m place__d1__m is SUCCEEDED
+Status of task 9 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+
+New objects:
+ place_42__m:
+    place_id(place_42__m) = place_id_28 - place_id
+    connected(place_91__m place_42__m) = true - boolean
+    connected(place_42__m place__s1__m) = true - boolean
+    connected(place__s1__m place_42__m) = true - boolean
+    connected(place_42__m place_91__m) = true - boolean
+    explored(place_42__m) = true - boolean
+
+Changed objects:
+ place__d1__m:
+    located(agent_0__m place__d1__m): unknown => true - boolean
+ place__s1__m:
+    connected(place_42__m place__s1__m): unknown => true - boolean
+    connected(place__s1__m place_42__m): unknown => true - boolean
+    located(agent_0__m place__s1__m): true - boolean => unknown
+ agent_0__m:
+    located(agent_0__m place__d1__m): unknown => true - boolean
+    located(agent_0__m place__s1__m): true - boolean => unknown
+ place_91__m:
+    connected(place_91__m place_42__m): unknown => true - boolean
+    connected(place_42__m place_91__m): unknown => true - boolean
+Status of task 9 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 9. This may trigger planner activity.
+checking plan validity.
+Action (move agent_0__m place__l1__m place__d1__m) ok.
+Action (explore_place agent_0__m place__l1__m) ok.
+checking if goal is still satisfied.
+Plan is still valid.
+time for goal validation: 2.8133392334e-05
+total time for validation: 0.00135612487793
+no actions are executing, reissuing plan
+Status of task 9 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__d1__m
+move agent_0__m place__d1__m -> move agent_0__m place__l1__m
+move agent_0__m place__l1__m -> explore_place agent_0__m place__l1__m
+explore_place agent_0__m place__l1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan9.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__l1__m  ==  move agent_0__m place__l1__m
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored 'L1:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = 0 y = 0.1 d = 10.1314
+ x = 9.9 y = 2.9 d = 6.64558
+], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9bad6ec>
+Status of task 10 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 10 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 10. This may trigger planner activity.
+Planning was triggered for task 10.
+total time for postprocessing: 0.00428700447083
+Status of task 10 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__l1__m
+move agent_0__m place__l1__m -> explore_place agent_0__m place__l1__m
+explore_place agent_0__m place__l1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan10.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__l1__m  ==  move agent_0__m place__l1__m
+received task update
+checking execution state
+status of move agent_0__m place__l1__m is FAILED
+Status of task 10 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+
+Changed objects:
+ place__d1__m:
+    connected(place__d1__m place__l1__m): true - boolean => unknown
+
+Removed objects:
+ place__l1__m:
+    place_id(place__l1__m) = place_id_21 - place_id
+    connected(place__d1__m place__l1__m) = true - boolean
+    explored(place__l1__m) = false - boolean
+Status of task 10 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 10. This may trigger planner activity.
+Status of task 10 was changed to PLANNING_FAILURE.
+received task update
+Status of task 10 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - obsh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = 0 y = 0.1 d = 9.68995
+ x = 9.9 y = 2.9 d = 6.28701
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:e:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:e"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.HomingGenerator.checkMotive(HomingGenerator.java:67)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+ject'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+
+Changed objects:
+Change detection was activated for task 10. This may trigger planner activity.
+Status of task 10 was changed to PLANNING_FAILURE.
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (kval '0:M' (areaclass 'j:M')))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'U1:M - object', '4 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9a72b6c>
+Status of task 11 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 11 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 11. This may trigger planner activity.
+Planning was triggered for task 11.
+total time for postprocessing: 0.0174479484558
+Status of task 11 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place_g__m
+move agent_0__m place_g__m -> categorize_room agent_0__m room_j__m
+categorize_room agent_0__m room_j__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan11.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place_g__m  ==  move agent_0__m place_g__m
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored '8:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+goal: <standalone.mapl_newsh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = 0 y = 0.1 d = 6.40711
+ x = 9.9 y = 2.9 d = 5.89706
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:e:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:e"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.HomingGenerator.checkMotive(HomingGenerator.java:67)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:e:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:e"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.HomingGenerator.checkMotive(HomingGenerator.java:67)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = -0.2 y = 0 d = 1.70711
+ x = 9.9 y = 2.9 d = 10.7556
+.conditions.Conjunction object at 0x9ac4acc>
+Status of task 12 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 12 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 12. This may trigger planner activity.
+Planning was triggered for task 12.
+total time for postprocessing: 0.00605702400208
+Status of task 12 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place_3__m
+move agent_0__m place_3__m -> move agent_0__m place_8__m
+move agent_0__m place_8__m -> explore_place agent_0__m place_8__m
+explore_place agent_0__m place_8__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan12.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place_3__m  ==  move agent_0__m place_3__m
+received task update
+checking execution state
+status of move agent_0__m place_3__m is SUCCEEDED
+Status of task 12 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+
+Changed objects:
+ place_w__m:
+    located(agent_0__m place_w__m): true - boolean => unknown
+ place_3__m:
+    located(agent_0__m place_3__m): unknown => true - boolean
+ agent_0__m:
+    located(agent_0__m place_3__m): unknown => true - boolean
+    located(agent_0__m place_w__m): true - boolean => unknown
+Status of task 12 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 12. This may trigger planner activity.
+checking plan validity.
+Action (move agent_0__m place_8__m place_3__m) ok.
+Action (explore_place agent_0__m place_8__m) ok.
+checking if goal is still satisfied.
+Plan is still valid.
+time for goal validation: 2.00271606445e-05
+total time for validation: 0.00102496147156
+no actions are executing, reissuing plan
+Status of task 12 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place_3__m
+move agent_0__m place_3__m -> move agent_0__m place_8__m
+move agent_0__m place_8__m -> explore_place agent_0__m place_8__m
+explore_place agent_0__m place_8__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan12.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place_8__m  ==  move agent_0__m place_8__m
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored 'K:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object'sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = -0.2 y = 0 d = 1.66569
+ x = 9.9 y = 2.9 d = 10.7971
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = -0.2 y = 0 d = 1.92426
+ x = 9.9 y = 2.9 d = 10.5385
+, '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9c09f4c>
+Status of task 13 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 13 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 13. This may trigger planner activity.
+Planning was triggered for task 13.
+total time for postprocessing: 0.00435400009155
+Status of task 13 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__k__m
+move agent_0__m place__k__m -> explore_place agent_0__m place__k__m
+explore_place agent_0__m place__k__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan13.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__k__m  ==  move agent_0__m place__k__m
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored '9:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9c317ac>
+Status of task 14 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 14 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 14. This may trigger planner activity.
+Planning was triggered for task 14.
+total time for postprocessing: 0.00405597686768
+Status of task 14 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place_9__m
+move agent_0__m place_9__m -> explore_place agent_0__m place_9__m
+explore_place agent_0__m place_9__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan14.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place_9__m  ==  move agent_0__m place_9__m
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored 'Z:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gash: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = -0.2 y = 0 d = 2.73137
+ x = 9.9 y = 2.9 d = 10.7213
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: q:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "q:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: q:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "q:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: q:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "q:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: q:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "q:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: q:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "q:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+teway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9c5728c>
+Status of task 15 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 15 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 15. This may trigger planner activity.
+Planning was triggered for task 15.
+total time for postprocessing: 0.00532913208008
+Status of task 15 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__t__m
+move agent_0__m place__t__m -> move agent_0__m place__z__m
+move agent_0__m place__z__m -> explore_place agent_0__m place__z__m
+explore_place agent_0__m place__z__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan15.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__t__m  ==  move agent_0__m place__t__m
+received task update
+checking execution state
+status of move agent_0__m place__t__m is SUCCEEDED
+Status of task 15 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+
+Changed objects:
+ place__t__m:
+    located(agent_0__m place__t__m): unknown => true - boolean
+ place__f__m:
+    located(agent_0__m place__f__m): true - boolean => unknown
+ agent_0__m:
+    located(agent_0__m place__t__m): unknown => true - boolean
+    located(agent_0__m place__f__m): true - boolean => unknown
+Status of task 15 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 15. This may trigger planner activity.
+checking plan validity.
+Action (move agent_0__m place__z__m place__t__m) ok.
+Action (explore_place agent_0__m place__z__m) ok.
+checking if goal is still satisfied.
+Plan is still valid.
+time for goal validation: 2.00271606445e-05
+total time for validation: 0.000767946243286
+no actions are executing, reissuing plan
+Status of task 15 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__t__m
+move agent_0__m place__t__m -> move agent_0__m place__z__m
+move agent_0__m place__z__m -> explore_place agent_0__m place__z__m
+explore_place agent_0__m place__z__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan15.dot
+Showing plan in .dot fsh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = -0.2 y = 0 d = 5.23137
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ormat next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__z__m  ==  move agent_0__m place__z__m
+received task update
+checking execution state
+status of move agent_0__m place__z__m is SUCCEEDED
+Status of task 15 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+
+Changed objects:
+ place__t__m:
+    connected(place__z__m place__t__m): unknown => true - boolean
+    located(agent_0__m place__t__m): true - boolean => unknown
+ room__u__m:
+    contains(room__u__m place__z__m): unknown => true - boolean
+ place__z__m:
+    connected(place__z__m place__t__m): unknown => true - boolean
+    contains(room__u__m place__z__m): unknown => true - boolean
+    explored(place__z__m): false - boolean => true - boolean
+
+Removed objects:
+ agent_0__m:
+    located(agent_0__m place__t__m) = true - boolean
+Status of task 15 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 15. This may trigger planner activity.
+Goal is reached
+no actions are executing, reissuing plan
+Status of task 15 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__t__m
+move agent_0__m place__t__m -> move agent_0__m place__z__m
+move agent_0__m place__z__m -> explore_place agent_0__m place__z__m
+explore_place agent_0__m place__z__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan15.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+Plan is empty
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored 'R:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9c15bcc>
+Status of task 16 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 16 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 16. This may trish: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = -0.2 y = 0 d = 4.58995
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = -0.2 y = 0 d = 2.51421
+ x = 9.9 y = 2.9 d = 10.9627
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 2:d:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "2:d"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at coma.motivation.CategorizeRoomGenerator.checkMotive(CategorizeRoomGenerator.java:100)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+gger planner activity.
+Planning was triggered for task 16.
+total time for postprocessing: 0.0123360157013
+Status of task 16 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__g__m
+move agent_0__m place__g__m -> move agent_0__m place__r__m
+move agent_0__m place__r__m -> explore_place agent_0__m place__r__m
+explore_place agent_0__m place__r__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan16.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__g__m  ==  move agent_0__m place__g__m
+received task update
+checking execution state
+status of move agent_0__m place__g__m is SUCCEEDED
+Status of task 16 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+
+Changed objects:
+ agent_0__m:
+    located(agent_0__m place__g__m): unknown => true - boolean
+    located(agent_0__m place__z__m): true - boolean => unknown
+ place__g__m:
+    located(agent_0__m place__g__m): unknown => true - boolean
+ place__z__m:
+    located(agent_0__m place__z__m): true - boolean => unknown
+Status of task 16 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 16. This may trigger planner activity.
+checking plan validity.
+Action (move agent_0__m place__r__m place__g__m) ok.
+Action (explore_place agent_0__m place__r__m) ok.
+checking if goal is still satisfied.
+Plan is still valid.
+time for goal validation: 1.50203704834e-05
+total time for validation: 0.000787973403931
+no actions are executing, reissuing plan
+Status of task 16 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__g__m
+move agent_0__m place__g__m -> move agent_0__m place__r__m
+move agent_0__m place__r__m -> explore_place agent_0__m place__r__m
+explore_place agent_0__m place__r__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan16.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__r__m  ==  move agent_0__m place__r__m
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (= (explored 'P:M') true))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = -0.2 y = 0 d = 2.55563
+ x = 9.9 y = 2.9 d = 10.9213
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: l:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "l:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: l:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "l:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: l:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "l:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: l:b:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "l:b"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.ExplorePlaceGenerator.checkMotive(ExplorePlaceGenerator.java:130)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = -0.2 y = 0 d = 2.57279
+ x = 9.9 y = 2.9 d = 10.7627
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:e:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:e"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.HomingGenerator.checkMotive(HomingGenerator.java:67)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+- object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9c8716c>
+Status of task 17 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 17 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 17. This may trigger planner activity.
+Planning was triggered for task 17.
+total time for postprocessing: 0.00714707374573
+Status of task 17 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__g__m
+move agent_0__m place__g__m -> move agent_0__m place__p__m
+move agent_0__m place__p__m -> explore_place agent_0__m place__p__m
+explore_place agent_0__m place__p__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan17.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__g__m  ==  move agent_0__m place__g__m
+received task update
+checking execution state
+status of move agent_0__m place__g__m is SUCCEEDED
+Status of task 17 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+
+Changed objects:
+ agent_0__m:
+    located(agent_0__m place__g__m): unknown => true - boolean
+    located(agent_0__m place__f__m): true - boolean => unknown
+ place__f__m:
+    located(agent_0__m place__f__m): true - boolean => unknown
+ place__g__m:
+    located(agent_0__m place__g__m): unknown => true - boolean
+Status of task 17 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 17. This may trigger planner activity.
+checking plan validity.
+Action (move agent_0__m place__p__m place__g__m) ok.
+Action (explore_place agent_0__m place__p__m) ok.
+checking if goal is still satisfied.
+Plan is still valid.
+time for goal validation: 1.78813934326e-05
+total time for validation: 0.000813007354736
+no actions are executing, reissuing plan
+Status of task 17 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__g__m
+move agent_0__m place__g__m -> move agent_0__m place__p__m
+move agent_0__m place__p__m -> explore_place agent_0__m place__p__m
+explore_place agent_0__m place__p__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan17.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__p__m  ==  move agent_0__m place__p__m
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (kval '0:M' (areaclass 'U:M')))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category'sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = -0.2 y = 0 d = 2.55563
+ x = 9.9 y = 2.9 d = 10.8627
+, '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9cd7a0c>
+Status of task 18 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 18 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 18. This may trigger planner activity.
+Planning was triggered for task 18.
+total time for postprocessing: 0.0052170753479
+Status of task 18 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__z__m
+move agent_0__m place__z__m -> categorize_room agent_0__m room__u__m
+categorize_room agent_0__m room__u__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan18.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__z__m  ==  move agent_0__m place__z__m
+received task update
+checking execution state
+status of move agent_0__m place__z__m is SUCCEEDED
+Status of task 18 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+
+Changed objects:
+ place__f__m:
+    located(agent_0__m place__f__m): true - boolean => unknown
+ place__z__m:
+    located(agent_0__m place__z__m): unknown => true - boolean
+ agent_0__m:
+    located(agent_0__m place__z__m): unknown => true - boolean
+    located(agent_0__m place__f__m): true - boolean => unknown
+Status of task 18 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 18. This may trigger planner activity.
+checking plan validity.
+Action (categorize_room agent_0__m room__u__m place__z__m) ok.
+checking if goal is still satisfied.
+Plan is still valid.
+time for goal validation: 2.40802764893e-05
+total time for validation: 0.000739097595215
+no actions are executing, reissuing plan
+Status of task 18 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__z__m
+move agent_0__m place__z__m -> categorize_room agent_0__m room__u__m
+categorize_room agent_0__m room__u__m -> goal
+Dot file for plan is stored in /home/cogx/sysh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+sh: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+ x = -0.2 y = 0 d = 4.41421
+cast.PermissionException
+    message = "Overwrite not allowed on locked item: 0:e:planner.sa"
+    wma.id = "planner.sa"
+    wma.subarchitecture = "0:e"
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:461)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(WorkingMemoryWriterComponent.java:418)
+	at motivation.components.generators.AbstractMotiveGenerator.write(AbstractMotiveGenerator.java:250)
+	at spatial.motivation.HomingGenerator.checkMotive(HomingGenerator.java:67)
+	at motivation.components.generators.AbstractMotiveGenerator.runComponent(AbstractMotiveGenerator.java:218)
+	at cast.core.CASTComponent.run(CASTComponent.java:505)
+	at java.lang.Thread.run(Thread.java:619)
+stems/branches/dora-bham-yr1-experimentation/output/python/plan18.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: categorize_room agent_0__m room__u__m  ==  categorize_room agent_0__m room__u__m
+Planner PythonServer: New PlanningTask received:
+GOAL: (and (kval '0:M' (areaclass 'J1:M')))
+Loading MAPL domain /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/test_data/minidora.domain.mapl.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+goal: <standalone.mapl_new.conditions.Conjunction object at 0x9d2a6ec>
+Status of task 19 was changed to TASK_CHANGED. This may trigger planner activity.
+Status of task 19 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 19. This may trigger planner activity.
+Planning was triggered for task 19.
+total time for postprocessing: 0.00566005706787
+Status of task 19 was changed to PLAN_AVAILABLE.
+The following plan was found:
+init -> move agent_0__m place__d1__m
+move agent_0__m place__d1__m -> categorize_room agent_0__m room__j1__m
+categorize_room agent_0__m room__j1__m -> goal
+Dot file for plan is stored in /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/plan19.dot
+Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh
+First action: move agent_0__m place__d1__m  ==  move agent_0__m place__d1__m
+received task update
+checking execution state
+status of move agent_0__m place__d1__m is SUCCEEDED
+Status of task 19 was changed to TASK_CHANGED. This may trigger planner activity.
+filtering feature assignment ['category', '0:M - object', 'robot - object'], because 'category' is not part of the planning domain
+filtering feature assignment ['roomID', '6:M - object', '0 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', 'F:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'U:M - object', '1 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['roomID', 'j:M - object', '2 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '21:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+filtering feature assignment ['roomID', 'J1:M - object', '3 - number'], because 'roomID' is not part of the planning domain
+filtering feature assignment ['gateway', '42:M - object', 'gateway - object'], because 'gateway' is not part of the planning domain
+
+Changed objects:
+ place__d1__m:
+    located(agent_0__m place__d1__m): unknown => true - boolean
+ place__z__m:
+    located(agent_0__m place__z__m): true - boolean => unknown
+ agent_0__m:
+    located(agent_0__m place__d1__m): unknown => true - boolean
+    located(agent_0__m place__z__m): true - boolean => unknown
+Status of task 19 was changed to TASK_CHANGED. This may trigger planner activity.
+Change detection was activated for task 19. This may trigger planner activity.
+checking plan validity.
+Action (cash: /home/cogx/systems/branches/dora-bham-yr1-experimentation/output/python/show_dot.sh: Permission denied
+24/08/10 11:06:24.831 /usr/local/bin/cast-server-c++: warning: thread pool `Ice.ThreadPool.Server' is running low on threads
+Size=1, SizeMax=20, SizeWarn=16
+ x = -0.2 y = 0 d = 11.1243
+ x = 9.9 y = 2.9 d = 7.69411
+24/08/10 11:08:25:058 warning: Ice.ThreadPool.Server-4329: dispatch exception:
+identity: cast.architecture.SubarchitectureWorkingMemory/planner.sa_wm
+facet: 
+operation: receiveChangeEvent
+Ice.ConnectionRefusedException
+    error = 0
+	at IceInternal.Network.doFinishConnect(Network.java:410)
+	at IceInternal.TcpTransceiver.initialize(TcpTransceiver.java:33)
+	at Ice.ConnectionI.initialize(ConnectionI.java:1541)
+	at Ice.ConnectionI.socketReady(ConnectionI.java:1121)
+	at Ice.ConnectionI$SocketReadyCallback.socketReady(ConnectionI.java:2307)
+	at IceInternal.SelectorThread.run(SelectorThread.java:203)
+	at IceInternal.SelectorThread$HelperThread.run(SelectorThread.java:273)
+Caused by: java.net.ConnectException: Connection refused
+	at sun.nio.ch.SocketChannelImpl.checkConnect(Native Method)
+	at sun.nio.ch.SocketChannelImpl.finishConnect(SocketChannelImpl.java:574)
+	at IceInternal.Network.doFinishConnect(Network.java:386)
+	... 6 more
+
+log4cxx: Detected problem with connection: 
+log4cxx: IO Exception : status code = 104
+log4j:WARN Detected problem with connection: java.net.SocketException: Broken pipe
+24/08/10 11:08:29:688 warning: Ice.ThreadPool.Server-4345: thread pool `Ice.ThreadPool.Server' is running low on threads
+Size=1, SizeMax=20, SizeWarn=16
+24/08/10 11:08:29:689 warning: Ice.ThreadPool.Server-4342: thread pool `Ice.ThreadPool.Server' is running low on threads
+Size=1, SizeMax=20, SizeWarn=16
+24/08/10 11:08:29:689 warning: Ice.ThreadPool.Server-4342: thread pool `Ice.ThreadPool.Server' is running low on threads
+Size=1, SizeMax=20, SizeWarn=16
