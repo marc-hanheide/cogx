@@ -282,6 +282,8 @@ public:
                     <<"With contents :: "<<contents()<<std::endl
                     <<"TWICE. We are ignoring the second call to \function{configure}." );
         }
+
+        return *this;
     }
     
     const Contents& contents() const
