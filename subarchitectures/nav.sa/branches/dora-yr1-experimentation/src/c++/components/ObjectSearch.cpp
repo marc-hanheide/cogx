@@ -264,6 +264,7 @@ void ObjectSearch::configure(const map<string,string>& _config) {
             obj = new Object();
             obj->ObjID = label;
             m_objectlist.push_back(obj);
+	    log("Adding %s to m_objectlist",label.c_str());
     }
   }
   log("Loaded objects.");
@@ -396,10 +397,14 @@ void ObjectSearch::InterpretCommand () {
     m_command = IDLE;
     m_status = STOPPED;
     log("Command: STOP");
-    SpatialData::NavCommandPtr cmd = newNavCommand();
-    cmd->prio = SpatialData::URGENT;
-    cmd->cmd = SpatialData::STOP;
-    new NavCommandReceiver(*this, cmd);
+    
+    //nah: don't stop the robot on STOP as this interferes with next action
+
+    //SpatialData::NavCommandPtr cmd = newNavCommand();
+    //cmd->prio = SpatialData::URGENT;
+    //cmd->cmd = SpatialData::STOP;
+    //new NavCommandReceiver(*this, cmd);
+
     break;
   }
   case TURN: {
@@ -1061,7 +1066,7 @@ void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
       
       //println("HACK: stopping AVS on first detection");
       //stopAVS();
-      return;
+      //return;
     }
     else{
       log("nah, did not detect '%s'", obj->label.c_str());	  
@@ -1146,11 +1151,7 @@ void ObjectSearch::Recognize(){
     // while(continueToRecognize() && anglediff + n*m_ptustep < M_PI/2){
     while(m_status != STOPPED && anglediff + n*m_ptustep < M_PI/2){
       MovePanTilt(anglediff + n*m_ptustep,0);
-      m_status = RECOGNITIONINPROGRESS;
-      PostRecognitionCommand();
-      while(continueToRecognize())  {
-	sleepComponent(10);
-      }
+      PostRecognizeAndWait();
       n++;
     }
     
@@ -1162,7 +1163,7 @@ void ObjectSearch::Recognize(){
 	n++;
       }
       
-      if(m_tiltRads != 0) {
+      if(m_status != STOPPED && m_tiltRads != 0) {
 	
 	//negative with tilt
 	n= 1;
@@ -1194,9 +1195,10 @@ void ObjectSearch::Recognize(){
 }
 
 void ObjectSearch::PostRecognitionCommand(){
-    log("Posting Recog. Command now");	
+    log("Posting Recog. Command now");
     VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;
     vector<string> obj_labels;
+    log("m_objectlist.size(): %i",m_objectlist.size());
     for (unsigned int i= 0; i < m_objectlist.size(); i++)
       {
         // add all the labels to the set of objects to detect
