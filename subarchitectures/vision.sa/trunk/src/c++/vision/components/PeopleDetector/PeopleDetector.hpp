@@ -7,8 +7,8 @@
 #include <VideoClient.h>
 #include <VisionData.hpp>
 
-#include <opencv/highgui.h>
-#include <opencv/cvaux.h>
+#include <highgui.h>
+#include <cvaux.h>
 
 
 namespace cast

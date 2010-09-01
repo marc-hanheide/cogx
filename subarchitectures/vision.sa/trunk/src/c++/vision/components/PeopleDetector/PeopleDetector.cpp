@@ -5,8 +5,8 @@
 #include <VideoUtils.h>
 #include <VisionData.hpp>
 
-#include <opencv/highgui.h>
-#include <opencv/cvaux.h>
+#include <highgui.h>
+#include <cvaux.h>
 
 #include <cmath>
 #include <limits>
