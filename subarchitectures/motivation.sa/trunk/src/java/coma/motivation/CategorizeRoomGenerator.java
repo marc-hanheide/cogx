@@ -11,10 +11,7 @@ import motivation.components.generators.AbstractMotiveGenerator;
 import motivation.factories.MotiveFactory;
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.Motive;
-import castutils.facades.BinderFacade;
-import castutils.facades.SpatialFacade;
 import SpatialData.Place;
-import beliefmodels.autogen.beliefs.Belief;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -27,6 +24,10 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 
 import comadata.ComaRoom;
+
+import de.dfki.lt.tr.beliefs.data.Belief;
+import facades.BinderFacade;
+import facades.SpatialFacade;
 
 /**
  * create Motive for yet uncategorized rooms
