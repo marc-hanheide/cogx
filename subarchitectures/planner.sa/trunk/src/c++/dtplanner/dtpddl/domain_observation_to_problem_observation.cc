@@ -559,7 +559,7 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                 constant_Arguments = Constant_Arguments(arguments.size());
                 assert(arguments.size() == constant_Arguments.size());
                 for(auto index = 0
-                        ; index != constant_Arguments.size()
+                        ; index < constant_Arguments.size()
                         ; index++ ){
                     assert(index < arguments.size());
                     assert(index < constant_Arguments.size());
