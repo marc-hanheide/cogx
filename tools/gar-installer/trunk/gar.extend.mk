@@ -22,9 +22,8 @@ print-debs:
 		echo "	[ubuntu-check] need to install $*. will now call sudo apt-get install $*.";\
 		echo "	[ubuntu-check] press [return] to continue!";\
 		read dummy;\
-		sudo apt-get install $*;\
-	fi;fi)
-	@$(MAKECOOKIE)
+		sudo apt-get install $* || (echo "$* failed. press [return] to continue anyway or CTRL-C to interrupt."; read dummy);\
+	fi;fi) && $(MAKECOOKIE)
 
 configure-cmake:
 	@echo " ==> Running cmake in $(WORKSRC)"
