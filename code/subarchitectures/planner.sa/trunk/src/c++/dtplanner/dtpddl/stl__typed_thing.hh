@@ -450,7 +450,8 @@ private:
            == searchable_Collection->end()){
 //             std::cerr<<"NEW ENTRY..."<<wrapped_contents<<std::endl;
             traversable_Collection->push_back(wrapped_contents);
-            assert(traversable_Collection->size() - 1 >= 0);
+            assert(traversable_Collection->size());
+//             assert(traversable_Collection->size() - 1 >= 0);
             size_t index = traversable_Collection->size() - 1;
             assert((*traversable_Collection)[index] == wrapped_contents);
             (*searchable_Collection)[wrapped_contents] = index;

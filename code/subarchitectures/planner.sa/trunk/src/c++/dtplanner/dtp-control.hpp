@@ -125,7 +125,7 @@ private:
     /*Solver on each thread.*/
     std::map<Ice::Int, Planning::Solver*> solvers;
 
-    /*Current information state on each thread.*/
+    /*Current information-state on each thread.*/
     std::map<Ice::Int, Planning::POMDP_State*> current_state;
 
 };
