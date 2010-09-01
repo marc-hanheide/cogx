@@ -692,7 +692,7 @@ void DTPCONTROL::newTask(Ice::Int id,
 
 #ifdef EXPOSING_DTP
     auto actual_problem = Planning::Parsing::problems.find(pi);
-    solvers[id] = new Planning::Solver(*actual_problem);//thread_to_problem[id]);
+    solvers[id] = new Planning::Solver(*actual_problem->second);//thread_to_problem[id]);
     solvers[id]->preprocess();
     solvers[id]->expand_belief_state_space();
     current_state[id] = solvers[id]->expansion_queue.front();
