@@ -12,6 +12,8 @@ extern "C" {
 #include "dtp_pddl_parsing_data_domain.hh"
 #include "dtp_pddl_parsing_data_problem.hh"
 
+
+
 #include <sstream>
 
 #define A_CAST_SPECIAL__MUTEX_INITIALISATION(X) pthread_mutex_t* X;     \
@@ -422,6 +424,27 @@ void DTPCONTROL::get_observation(Ice::Int id,
     VERBOSER(1001, "DTP has a domain for task :: "<<id<<std::endl
              <<"And is therefore at a point to take the observation seriously.");
     
+#ifdef EXPOSING_DTP
+
+    Planning::Solver::Percept_List percepts;
+    for(auto obs = observationSeq.begin()
+            ; obs != observationSeq.end()
+            ; obs++){
+        Planning::Solver::Precept percept;
+        percept.first = (*obs)->predicate;
+        percept.second = (*obs)->arguments;
+
+        percepts.push_back(percept);
+    }
+    
+    Planning::POMDP_State* successor_state
+        = solvers[id]->take_observation(current_state,
+                                        percepts,
+                                        _action.second);
+
+    current_state[id] = successor_state;
+    
+#else
     std::vector<std::string> observations;
     
     for(auto obs = observationSeq.begin()
@@ -435,6 +458,8 @@ void DTPCONTROL::get_observation(Ice::Int id,
     
     Planning::Parsing::Problem_Identifier pi(thread_to_domain[id], thread_to_problem[id]);
     Planning::Parsing::problems[pi]->report__observations(observations);
+
+#endif
     
     VERBOSER(1001, "DTP observation now triggering action on task  :: "<<id);
     swap_turn(id, Turn::observer);
@@ -509,8 +534,17 @@ void  DTPCONTROL::post_action(Ice::Int id)
         QUERY_UNRECOVERABLE_ERROR
             (Planning::Parsing::problems.find(pi) == Planning::Parsing::problems.end()
              , "DTP Could not find problem for task :: "<<id<<std::endl);
-        auto action = Planning::Parsing::problems[pi]->get__prescribed_action();
 
+
+#ifdef EXPOSING_DTP
+        std::pair<Planning::Formula::Action_Proposition, uint> _action
+            = solvers[id]->get_prescribed_action(current_state[id]);
+
+        auto action = _action.first;
+        
+#else  
+        auto action = Planning::Parsing::problems[pi]->get__prescribed_action();
+#endif
         
         auto name = std::tr1::get<0>(action.contents());
         std::ostringstream oss;
@@ -544,7 +578,6 @@ void  DTPCONTROL::post_action(Ice::Int id)
         VERBOSER(1001, "DTP Posting the action :: "<<pddlaction->name);
         pyServer->deliverAction(id, pddlaction);
         VERBOSER(1001, "DTP Done posting the action :: "<<pddlaction->name);
-
 
 
         swap_turn(id, Turn::actor);
@@ -646,6 +679,16 @@ void DTPCONTROL::newTask(Ice::Int id,
     QUERY_UNRECOVERABLE_ERROR
         (Planning::Parsing::problems.find(pi) == Planning::Parsing::problems.end()
          , "DTP Could not find problem for task :: "<<id<<std::endl);
+
+#ifdef EXPOSING_DTP
+    solvers[id] = new Planning::Solver(thread_to_problem[id]);
+    solvers[id]->preprocess();
+    solvers[id]->expand_belief_state_space();
+    current_state[id] = solvers[id]->expansion_queue.front();
+    if(solvers[id]->expand_belief_state_space()){
+        UNRECOVERABLE_ERROR("I don't seem to have a starting state on the expansion queue."<<std::endl);
+    }
+#endif
     
     VERBOSER(1001, "DTP Spawning the thread that posts actions to Moritz's system."<<std::endl);
     /*Planning is complete, now start \member{post_action} in a thread.*/
