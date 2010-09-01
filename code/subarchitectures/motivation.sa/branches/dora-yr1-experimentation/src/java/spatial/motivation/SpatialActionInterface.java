@@ -150,6 +150,22 @@ public class SpatialActionInterface extends ManagedComponent {
 						overwriteWorkingMemory(m_avsAddr, m_avsCmd);
 						removeChangeFilter(this);
 						m_callback.executionComplete(TriBool.TRITRUE);
+
+
+						//BEGIN HACK 
+
+						//need to
+						//give AVS some time
+						//to clean up to
+						//prevent actions
+						//interfering across
+						//different spatial
+						//actions. This needs
+						//a cleaner solution.
+						sleepComponent(2000);
+						//END HACK                                                                                                                                                 
+
+
 					}
 				} catch (InterruptedException e) {
 					e.printStackTrace();
