@@ -396,6 +396,10 @@ module VisionData {
     double deltaZ;
   };
 
+  class PeopleDetectionCommand {
+  	//nothing involved here
+  };
+
 };
 
 #endif

@@ -1,5 +1,5 @@
 
-#include <opencv/highgui.h>
+#include <highgui.h>
 #include <VideoUtils.h>
 #include "PeopleDetectorTest.h"
 
