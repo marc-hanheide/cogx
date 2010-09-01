@@ -107,6 +107,8 @@ Usual suspects (C++) BOOST
 class NA
 {};
 
+typedef unsigned int uint;
+
 #ifndef VECTOR_PRINTING
 
 #define VECTOR_PRINTING
