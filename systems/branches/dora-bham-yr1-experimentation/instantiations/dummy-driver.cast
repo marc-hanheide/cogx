@@ -1,0 +1,13 @@
+HOST localhost
+
+
+#CPP GD  VideoServer OpenCvLiveServer --videoname video --camids "0" --devnums "0" --devclass FIREWIRE
+
+INCLUDE includes/vision.sa/vision-base.cast
+INCLUDE includes/vision.sa/vision-objects.cast
+INCLUDE includes/vision.sa/vision-live.cast
+
+# CPP MG dummy.objrecog DummyDriver --labels "Poster Cereal_box"
+
+# vale label set #####################################################
+CPP MG dummy.objrecog DummyDriver --labels "Ironing_board Poster Record" #Cereal_box Box_of_Tissues Milk Plastic_bag Colouring_book Comic Magazine"
