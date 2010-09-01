@@ -1167,8 +1167,9 @@ simplify_formula(Formula::Subformula subformula,
             auto literal = *_literal;
 
             uint index = abs(literal);
-            
-            assert(index - 1 >= 0);
+
+            assert(index > static_cast<uint>(0));
+            assert(index - 1 >= static_cast<uint>(0));
             assert(index - 1 < atoms.size());
             
             auto atom = atoms[index - 1];

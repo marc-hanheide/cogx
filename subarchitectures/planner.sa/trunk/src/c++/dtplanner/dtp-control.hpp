@@ -122,11 +122,16 @@ private:
      * \index{Ice::Int}*/
     std::map<Ice::Int, Thread_Attributes> thread_attributes;
 
+#ifdef EXPOSING_DTP
     /*Solver on each thread.*/
     std::map<Ice::Int, Planning::Solver*> solvers;
 
     /*Current information-state on each thread.*/
     std::map<Ice::Int, Planning::POMDP_State*> current_state;
+    
+    /*Action last executed on each thread.*/
+    std::map<Ice::Int, uint> action_index;
+#endif
 
 };
 

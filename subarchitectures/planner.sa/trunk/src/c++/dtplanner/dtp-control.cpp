@@ -437,10 +437,14 @@ void DTPCONTROL::get_observation(Ice::Int id,
         percepts.push_back(percept);
     }
     
+    assert(current_state.find(id) != current_state.end());
+    assert(solvers.find(id) != solvers.end());
+    assert(action_index.find(id) != action_index.end());
+    
     Planning::POMDP_State* successor_state
         = solvers[id]->take_observation(current_state,
                                         percepts,
-                                        _action.second);
+                                        action_index[id]);
 
     current_state[id] = successor_state;
     
@@ -537,10 +541,16 @@ void  DTPCONTROL::post_action(Ice::Int id)
 
 
 #ifdef EXPOSING_DTP
+        assert(current_state.find(id) != current_state.end());
+        assert(solvers.find(id) != solvers.end());
+        
         std::pair<Planning::Formula::Action_Proposition, uint> _action
             = solvers[id]->get_prescribed_action(current_state[id]);
 
         auto action = _action.first;
+        action_index[id] = _action.second;
+        
+        assert(action_index.find(id) != action_index.end());
         
 #else  
         auto action = Planning::Parsing::problems[pi]->get__prescribed_action();
