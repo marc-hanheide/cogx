@@ -442,7 +442,7 @@ void DTPCONTROL::get_observation(Ice::Int id,
     assert(action_index.find(id) != action_index.end());
     
     Planning::POMDP_State* successor_state
-        = solvers[id]->take_observation(current_state,
+        = solvers[id]->take_observation(current_state[id],
                                         percepts,
                                         action_index[id]);
 
