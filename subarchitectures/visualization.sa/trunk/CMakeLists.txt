@@ -20,10 +20,17 @@ if(BUILD_SA_V11N_AUTOGEN_ONLY)
 
   add_subdirectory(src/c++/autogen)
 
+  if(BUILD_PYTHON_COMPONENTS)
+   add_subdirectory(src/python)
+  endif(BUILD_PYTHON_COMPONENTS)
+
 else(BUILD_SA_V11N_AUTOGEN_ONLY)
 
   add_subdirectory(src/c++/autogen)
   add_subdirectory(src/c++/core)
+
+
+
   add_subdirectory(src/c++/clients)
 
   if(BUILD_PYTHON_COMPONENTS)
