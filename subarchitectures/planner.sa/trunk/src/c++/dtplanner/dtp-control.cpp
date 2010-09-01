@@ -691,7 +691,8 @@ void DTPCONTROL::newTask(Ice::Int id,
          , "DTP Could not find problem for task :: "<<id<<std::endl);
 
 #ifdef EXPOSING_DTP
-    solvers[id] = new Planning::Solver(thread_to_problem[id]);
+    auto actual_problem = Planning::Parsing::problems.find(pi);
+    solvers[id] = new Planning::Solver(*actual_problem);//thread_to_problem[id]);
     solvers[id]->preprocess();
     solvers[id]->expand_belief_state_space();
     current_state[id] = solvers[id]->expansion_queue.front();
