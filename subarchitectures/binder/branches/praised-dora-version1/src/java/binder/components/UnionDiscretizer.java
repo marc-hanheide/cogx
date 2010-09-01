@@ -137,12 +137,17 @@ public class UnionDiscretizer extends ManagedComponent {
 		// for each of them the instance with the maximum probability
 		for (int i = 0 ; i < bestConfiguration.includedUnions.length ; i++) {
 			Union union = bestConfiguration.includedUnions[i];
-			// If only maximum-probability values are allowed, compute a new union with only these
-			if (onlyMaxFeatureValues) {
-				union = EntityFilter.getUnionWithMaximumProbability(union);
-			}
 			
-			unions.add(union);
+			//nah: added to prevent arbitrary crash 
+			if(union != null) {
+
+			    // If only maximum-probability values are allowed, compute a new union with only these
+			    if (onlyMaxFeatureValues) {
+				union = EntityFilter.getUnionWithMaximumProbability(union);
+			    }
+			
+			    unions.add(union);
+			}
 		} 
 		
 		// Create a new configuration with the updated unions
