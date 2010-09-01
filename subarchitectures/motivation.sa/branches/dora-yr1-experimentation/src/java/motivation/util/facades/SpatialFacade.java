@@ -62,19 +62,19 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 				try {
 					Place place = getPlaceInterface().getCurrentPlace();
 
-					if (place == null || place.id != currentPlace.id) {
+					if (place == null) {
+						component.getLogger().warn("current place couldn't be retrieved. This should not happen several times in a row.");
+					} else if (place.id != currentPlace.id) {
 						setPlace(place);
 						for (PlaceChangedHandler c : placeCheckerCallables) {
 							c.update(place);
 						}
 					}
 					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					break;
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					break;
+				    // TODO Auto-generated catch block
+				    //e.printStackTrace();
+				    component.logException(e);
 				}
 			}
 		}

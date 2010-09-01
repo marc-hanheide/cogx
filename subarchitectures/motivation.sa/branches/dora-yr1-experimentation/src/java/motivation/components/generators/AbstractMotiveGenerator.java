@@ -247,7 +247,12 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 				log("receivers added");
 				addToWorkingMemory(motive.thisEntry, motive);
 			} else {
-				overwriteWorkingMemory(motive.thisEntry, motive);
+				try {
+					lockEntry(motive.thisEntry,  WorkingMemoryPermissions.LOCKEDODR);
+					overwriteWorkingMemory(motive.thisEntry, motive);
+				} finally {
+					unlockEntry(motive.thisEntry);
+				}
 			}
 		return motive.thisEntry;
 	}

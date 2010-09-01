@@ -28,7 +28,7 @@ public class MotiveFactory {
 	}
 	public static ExploreMotive createExploreMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new ExploreMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0,  "",0.0,5,60,0);
+		return new ExploreMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0,  "",0.0,5,1*60,0);
 	}
 	public static CategorizePlaceMotive createCategorizePlaceMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
@@ -40,15 +40,15 @@ public class MotiveFactory {
 	}
 	public static HomingMotive createHomingMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new HomingMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0, "",0.0,5,180,0);
+		return new HomingMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0, "",0.0,5,3*60,0);
 	}
 	public static CategorizeRoomMotive createCategorizeRoomMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new CategorizeRoomMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0, "",0.0,5,180,-1);
+		return new CategorizeRoomMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0, "",0.0,5,6*60,-1);
 	}
 	public static PatrolMotive createPatrolMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new PatrolMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0,  "",0.0,10,60,0, created);
+		return new PatrolMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0,  "",0.0,10,2*60,0, created);
 	}
 	public static GeneralGoalMotive createGeneralGoalMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();

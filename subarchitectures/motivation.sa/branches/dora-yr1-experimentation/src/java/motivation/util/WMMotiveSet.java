@@ -229,7 +229,10 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 
 	public Map<WorkingMemoryAddress, Motive> getMapByStatus(MotiveStatus status) {
 		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
-		for (Entry<WorkingMemoryAddress, ObjectImpl> o : super.entrySet()) {
+		
+
+		HashSet<Entry<WorkingMemoryAddress, ObjectImpl>> copyOfEntrySet = new HashSet<Entry<WorkingMemoryAddress, ObjectImpl>>(super.entrySet());
+		for (Entry<WorkingMemoryAddress, ObjectImpl> o : copyOfEntrySet) {
 			Motive m = (Motive) o.getValue();
 			if (m.status.equals(status))
 				result.put(o.getKey(), m);
@@ -240,7 +243,9 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 	public Map<WorkingMemoryAddress, Motive> getMapByType(
 			Class<? extends Motive> className) {
 		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
-		for (Entry<WorkingMemoryAddress, ObjectImpl> o : super.entrySet()) {
+
+		HashSet<Entry<WorkingMemoryAddress, ObjectImpl>> copyOfEntrySet = new HashSet<Entry<WorkingMemoryAddress, ObjectImpl>>(super.entrySet());
+		for (Entry<WorkingMemoryAddress, ObjectImpl> o : copyOfEntrySet) {
 			if (o.getValue().getClass().equals(className)) {
 				Motive m = (Motive) o.getValue();
 				result.put(o.getKey(), m);

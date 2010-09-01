@@ -297,14 +297,12 @@ public class WMLogger extends ManagedComponent {
                 case OVERWRITE:
                     try {
                         m = getMemoryEntry(_wmc.address, specClass);
+                        rootTag.addChild(toXML(m));
+                        rootTag.addAttr("content_type", m.getClass().getName());
                     } catch (DoesNotExistOnWMException e) {
                         // If we catch this the entry was deleted before we could load and output its data
-                        WMException wmex = new WMException("WMEntry deleted before it could be loaded in WMLogger.workingMemoryChanged", _wmc.address);
-                        wmex.initCause(e);
-                        throw e;
+                        getLogger().warn(_wmc.operation.toString() + "at " + wma + " from src: " + _wmc.src + "was deleted before we could load it (cast_time: " + CASTTimeToString(_wmc.timestamp));
                     }
-                    rootTag.addChild(toXML(m));
-                    rootTag.addAttr("content_type", m.getClass().getName());
                     break;
 
                 case DELETE:
