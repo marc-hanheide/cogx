@@ -3,10 +3,6 @@ package dora;
 import java.util.Hashtable;
 import java.util.Map;
 
-import castutils.castextensions.Accessor;
-import castutils.castextensions.StateChangeReceiver;
-import castutils.castextensions.WMEntrySet;
-import castutils.castextensions.WMEntrySet.ChangeHandler;
 import Ice.ObjectImpl;
 import cast.CASTException;
 import cast.SubarchitectureComponentException;
@@ -17,10 +13,13 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
-
-import comsys.datastructs.comsysEssentials.ContentPlanningGoal;
-import comsys.datastructs.lf.LogicalForm;
-import comsys.lf.utils.LFUtils;
+import castutils.castextensions.Accessor;
+import castutils.castextensions.StateChangeReceiver;
+import castutils.castextensions.WMEntrySet;
+import castutils.castextensions.WMEntrySet.ChangeHandler;
+import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
+import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
+import de.dfki.lt.tr.dialogue.util.LFUtils;
 
 /**
  * Essentially a set of of
