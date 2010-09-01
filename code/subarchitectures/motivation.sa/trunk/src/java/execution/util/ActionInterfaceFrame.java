@@ -16,9 +16,12 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
+
+import org.jfree.chart.needle.MiddlePinNeedle;
 
 import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
@@ -60,8 +63,9 @@ public class ActionInterfaceFrame extends JFrame {
 	private GraphicalExecutionManager m_exeMan;
 	private JTable m_beliefTable;
 	private DefaultTableModel m_beliefTableModel;
-	private static final Class<?>[] FEATURE_VALUE_TYPES = { ElementaryFormula.class,
-			IntegerFormula.class, FloatFormula.class, BooleanFormula.class };
+	private static final Class<?>[] FEATURE_VALUE_TYPES = {
+			ElementaryFormula.class, IntegerFormula.class, FloatFormula.class,
+			BooleanFormula.class };
 
 	/**
 	 * This is the default constructor
@@ -86,6 +90,24 @@ public class ActionInterfaceFrame extends JFrame {
 		this.setTitle("Robot Actions (Don't you just hate writing GUIs?)");
 	}
 
+	private JPanel getPlacesPanel() {
+		JPanel panel = new JPanel();
+		panel.add(getPlaceTable());
+		return panel;
+	}
+
+	private JPanel getBeliefsPanel() {
+		JPanel panel = new JPanel();
+		panel.add(getBeliefTable());
+		return panel;
+	}
+
+	private JPanel getObjectsPanel() {
+		JPanel panel = new JPanel();
+//		panel.add(getBeliefTable());
+		return panel;
+	}
+
 	/**
 	 * This method initializes jContentPane
 	 * 
@@ -95,13 +117,22 @@ public class ActionInterfaceFrame extends JFrame {
 		if (jContentPane == null) {
 			jContentPane = new JPanel();
 			jContentPane.setLayout(new FlowLayout());
-			jContentPane.add(getM_placeTable(), null);
+
+			jContentPane.add(getPlaceTable(), null);
+
+			JTabbedPane tabbedPane = new JTabbedPane();
+
 			JPanel middlePanel = new JPanel();
 			middlePanel.setLayout(new BoxLayout(middlePanel, BoxLayout.Y_AXIS));
 			middlePanel.add(getActionPanel(), null);
-			middlePanel.add(getM_buttonPanel(), null);
-			jContentPane.add(middlePanel, null);
-			jContentPane.add(getBeliefTable(), null);
+			middlePanel.add(getButtonPanel(), null);
+
+			tabbedPane.addTab("Buttons", middlePanel);
+			tabbedPane.addTab("Places", getPlacesPanel());
+			tabbedPane.addTab("Beliefs", getBeliefsPanel());
+			tabbedPane.addTab("Objects", getObjectsPanel());
+			jContentPane.add(tabbedPane, null);
+
 		}
 		return jContentPane;
 	}
@@ -121,7 +152,7 @@ public class ActionInterfaceFrame extends JFrame {
 	 * 
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getM_buttonPanel() {
+	private JPanel getButtonPanel() {
 		if (m_buttonPanel == null) {
 			m_buttonPanel = new JPanel();
 			m_buttonPanel.setLayout(new GridBagLayout());
@@ -281,14 +312,11 @@ public class ActionInterfaceFrame extends JFrame {
 
 			final JDialog dialog = new JDialog(this);
 			dialog.setLayout(new FlowLayout());
-			dialog
-					.add(new JLabel(
-							"What feature TYPE do you want to ask about?"));
+			dialog.add(new JLabel("What feature TYPE do you want to ask about?"));
 			final JTextField textfield = new JTextField(10);
 			dialog.add(textfield);
 
-			dialog.add(new JLabel(
-					"VALUE TYPE: "));
+			dialog.add(new JLabel("VALUE TYPE: "));
 
 			final JComboBox featureValueTypesCombo = new JComboBox(
 					FEATURE_VALUE_TYPES);
@@ -326,35 +354,34 @@ public class ActionInterfaceFrame extends JFrame {
 	private void submitFeatureValueTest(String _beliefID, String _featureLabel,
 			Object _valueType, String _value) {
 		if (_featureLabel.isEmpty() || _value.isEmpty()) {
-			m_exeMan
-					.println("Missing values for feature test. Please fill in all the fields");
+			m_exeMan.println("Missing values for feature test. Please fill in all the fields");
 			return;
 		}
 
-//		FeatureValue fv = null;
-//
-//		if (_valueType == StringValue.class) {
-//			fv = new StringValue(_value);
-//		} else if (_valueType == IntegerValue.class) {
-//			fv = new IntegerValue(Integer.parseInt(_value));
-//		} else if (_valueType == FloatValue.class) {
-//			fv = new FloatValue(Float.parseFloat(_value));
-//		} else if (_valueType == BooleanValue.class) {
-//			fv = new BooleanValue(Boolean.parseBoolean(_value));
-//		} else {
-			assert (false);
-//		}
+		// FeatureValue fv = null;
+		//
+		// if (_valueType == StringValue.class) {
+		// fv = new StringValue(_value);
+		// } else if (_valueType == IntegerValue.class) {
+		// fv = new IntegerValue(Integer.parseInt(_value));
+		// } else if (_valueType == FloatValue.class) {
+		// fv = new FloatValue(Float.parseFloat(_value));
+		// } else if (_valueType == BooleanValue.class) {
+		// fv = new BooleanValue(Boolean.parseBoolean(_value));
+		// } else {
+		assert (false);
+		// }
 
-		//final sanity check in case assertions are disable
-//		if(fv != null) {
-//			try {
-//				m_exeMan.triggerFeatureValueTest(_beliefID, _featureLabel, fv,
-//						new MonitorPanel());
-//			} catch (CASTException e) {
-//				m_exeMan.logException(e);
-//			}
-//		}
-		
+		// final sanity check in case assertions are disable
+		// if(fv != null) {
+		// try {
+		// m_exeMan.triggerFeatureValueTest(_beliefID, _featureLabel, fv,
+		// new MonitorPanel());
+		// } catch (CASTException e) {
+		// m_exeMan.logException(e);
+		// }
+		// }
+
 	}
 
 	/**
@@ -455,7 +482,7 @@ public class ActionInterfaceFrame extends JFrame {
 	 * 
 	 * @return javax.swing.JTable
 	 */
-	private JTable getM_placeTable() {
+	private JTable getPlaceTable() {
 		if (m_placeTable == null) {
 			// m_placeTable = new JTable(1, 2);
 			// m_placeTableModel = new DefaultTableModel(new String[] { "id",
@@ -487,11 +514,11 @@ public class ActionInterfaceFrame extends JFrame {
 
 	public void addBelief(WorkingMemoryAddress _address, dBelief _belief) {
 		println(_belief.type);
-		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief.create(dBelief.class, _belief);
+		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
+				.create(dBelief.class, _belief);
 
 		IndependentFormulaDistributions cid = b.getContent();
-		
-		
+
 		for (Entry<String, FormulaDistribution> featureType : cid.entrySet()) {
 			println(featureType.getValue().get());
 		}
