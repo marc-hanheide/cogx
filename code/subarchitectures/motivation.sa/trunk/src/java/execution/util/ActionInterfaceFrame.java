@@ -3,6 +3,7 @@ package execution.util;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map.Entry;
@@ -16,12 +17,11 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
-
-import org.jfree.chart.needle.MiddlePinNeedle;
 
 import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
@@ -50,7 +50,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JButton m_stopButton = null;
 	private JTable m_placeTable = null;
 	private DefaultTableModel m_placeTableModel;
-	private JPanel m_actionPanel;
+	private JPanel m_placesActionPanel;
 	private JRadioButton m_avsAction;
 	private JRadioButton m_goAction;
 	private JRadioButton m_detectObjectsAction;
@@ -63,6 +63,12 @@ public class ActionInterfaceFrame extends JFrame {
 	private GraphicalExecutionManager m_exeMan;
 	private JTable m_beliefTable;
 	private DefaultTableModel m_beliefTableModel;
+	private JPanel m_beliefsActionPanel;
+	private JPanel m_objectsActionPanel;
+	private JPanel m_placesPanel;
+	private JPanel m_beliefsPanel;
+	private JPanel m_objectsPanel;
+	private JTabbedPane m_tabbedPane;
 	private static final Class<?>[] FEATURE_VALUE_TYPES = {
 			ElementaryFormula.class, IntegerFormula.class, FloatFormula.class,
 			BooleanFormula.class };
@@ -91,21 +97,29 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 	private JPanel getPlacesPanel() {
-		JPanel panel = new JPanel();
-		panel.add(getPlaceTable());
-		return panel;
+		if (m_placesPanel == null) {
+			m_placesPanel = new JPanel();
+			m_placesPanel.add(new JScrollPane(getPlaceTable()));
+			m_placesPanel.add(getPlacesActionPanel());
+		}
+		return m_placesPanel;
 	}
 
 	private JPanel getBeliefsPanel() {
-		JPanel panel = new JPanel();
-		panel.add(getBeliefTable());
-		return panel;
+		if (m_beliefsPanel == null) {
+			m_beliefsPanel = new JPanel();
+			m_beliefsPanel.add(new JScrollPane(getBeliefTable()));
+			m_beliefsPanel.add(getBeliefsActionPanel());
+		}
+		return m_beliefsPanel;
 	}
 
 	private JPanel getObjectsPanel() {
-		JPanel panel = new JPanel();
-//		panel.add(getBeliefTable());
-		return panel;
+		if (m_objectsPanel == null) {
+			m_objectsPanel = new JPanel();
+			m_objectsPanel.add(getObjectsActionPanel());
+		}
+		return m_objectsPanel;
 	}
 
 	/**
@@ -116,25 +130,31 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel getJContentPane() {
 		if (jContentPane == null) {
 			jContentPane = new JPanel();
-			jContentPane.setLayout(new FlowLayout());
-
-			jContentPane.add(getPlaceTable(), null);
-
-			JTabbedPane tabbedPane = new JTabbedPane();
-
+			jContentPane.setLayout(new GridLayout(2, 1));
 			JPanel middlePanel = new JPanel();
 			middlePanel.setLayout(new BoxLayout(middlePanel, BoxLayout.Y_AXIS));
-			middlePanel.add(getActionPanel(), null);
+			middlePanel.add(getTabbedPane(), null);
 			middlePanel.add(getButtonPanel(), null);
-
-			tabbedPane.addTab("Buttons", middlePanel);
-			tabbedPane.addTab("Places", getPlacesPanel());
-			tabbedPane.addTab("Beliefs", getBeliefsPanel());
-			tabbedPane.addTab("Objects", getObjectsPanel());
-			jContentPane.add(tabbedPane, null);
+			jContentPane.add(middlePanel, null);
 
 		}
 		return jContentPane;
+	}
+
+	/**
+	 * @return
+	 */
+	private JTabbedPane getTabbedPane() {
+
+		if (m_tabbedPane == null) {
+
+			m_tabbedPane = new JTabbedPane();
+			m_tabbedPane.addTab("Places", getPlacesPanel());
+			m_tabbedPane.addTab("Beliefs", getBeliefsPanel());
+			m_tabbedPane.addTab("Objects", getObjectsPanel());
+
+		}
+		return m_tabbedPane;
 	}
 
 	public void addPlace(long _id) {
@@ -156,54 +176,91 @@ public class ActionInterfaceFrame extends JFrame {
 		if (m_buttonPanel == null) {
 			m_buttonPanel = new JPanel();
 			m_buttonPanel.setLayout(new GridBagLayout());
-			m_buttonPanel.add(getM_goButton(), new GridBagConstraints());
+			m_buttonPanel.add(getGoButton(), new GridBagConstraints());
 			m_buttonPanel.add(getM_stopButton(), new GridBagConstraints());
 		}
 		return m_buttonPanel;
 	}
 
 	/**
-	 * This method initializes m_buttonPanel
 	 * 
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getActionPanel() {
-		if (m_actionPanel == null) {
-			m_actionPanel = new JPanel();
-			m_actionPanel.setLayout(new GridBagLayout());
+	private JPanel getPlacesActionPanel() {
+		if (m_placesActionPanel == null) {
+			m_placesActionPanel = new JPanel();
+			m_placesActionPanel.setLayout(new GridBagLayout());
 			m_goAction = new JRadioButton("go to place");
+			m_goAction.setSelected(true);
+
+			ButtonGroup actionGroup = new ButtonGroup();
+			actionGroup.add(m_goAction);
+			m_placesActionPanel.add(m_goAction, new GridBagConstraints());
+		}
+		return m_placesActionPanel;
+	}
+
+	/**
+	 * 
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getBeliefsActionPanel() {
+		if (m_beliefsActionPanel == null) {
+			m_beliefsActionPanel = new JPanel();
+			m_beliefsActionPanel.setLayout(new GridBagLayout());
+
+			m_askForFeatureAction = new JRadioButton("ask for feature");
+			m_testFeatureValueAction = new JRadioButton("test a feature value");
+
+			m_askForFeatureAction.setSelected(true);
+
+			ButtonGroup actionGroup = new ButtonGroup();
+			actionGroup.add(m_askForFeatureAction);
+			actionGroup.add(m_testFeatureValueAction);
+
+			m_beliefsActionPanel.add(m_askForFeatureAction,
+					new GridBagConstraints());
+			m_beliefsActionPanel.add(m_testFeatureValueAction,
+					new GridBagConstraints());
+		}
+		return m_beliefsActionPanel;
+	}
+
+	/**
+	 * 
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getObjectsActionPanel() {
+		if (m_objectsActionPanel == null) {
+			m_objectsActionPanel = new JPanel();
+			m_objectsActionPanel.setLayout(new GridBagLayout());
 			m_avsAction = new JRadioButton("visual search in");
 			m_detectObjectsAction = new JRadioButton("detect objects");
 			m_detectPeopleAction = new JRadioButton("detect people");
 			m_lookForObjectsAction = new JRadioButton("look for objects");
 			m_lookForPeopleAction = new JRadioButton("look for people");
 
-			m_askForFeatureAction = new JRadioButton("ask for feature");
-			m_testFeatureValueAction = new JRadioButton("test a feature value");
-
-			m_goAction.setSelected(true);
+			m_avsAction.setSelected(true);
 
 			ButtonGroup actionGroup = new ButtonGroup();
-			actionGroup.add(m_goAction);
 			actionGroup.add(m_avsAction);
 			actionGroup.add(m_detectObjectsAction);
 			actionGroup.add(m_detectPeopleAction);
 			actionGroup.add(m_lookForObjectsAction);
 			actionGroup.add(m_lookForPeopleAction);
-			actionGroup.add(m_askForFeatureAction);
-			actionGroup.add(m_testFeatureValueAction);
 
-			m_actionPanel.add(m_goAction, new GridBagConstraints());
-			m_actionPanel.add(m_avsAction, new GridBagConstraints());
-			m_actionPanel.add(m_detectObjectsAction, new GridBagConstraints());
-			m_actionPanel.add(m_detectPeopleAction, new GridBagConstraints());
-			m_actionPanel.add(m_lookForObjectsAction, new GridBagConstraints());
-			m_actionPanel.add(m_lookForPeopleAction, new GridBagConstraints());
-			m_actionPanel.add(m_askForFeatureAction, new GridBagConstraints());
-			m_actionPanel.add(m_testFeatureValueAction,
+			m_objectsActionPanel.add(m_avsAction, new GridBagConstraints());
+			m_objectsActionPanel.add(m_detectObjectsAction,
 					new GridBagConstraints());
+			m_objectsActionPanel.add(m_detectPeopleAction,
+					new GridBagConstraints());
+			m_objectsActionPanel.add(m_lookForObjectsAction,
+					new GridBagConstraints());
+			m_objectsActionPanel.add(m_lookForPeopleAction,
+					new GridBagConstraints());
+
 		}
-		return m_actionPanel;
+		return m_objectsActionPanel;
 	}
 
 	/**
@@ -211,7 +268,7 @@ public class ActionInterfaceFrame extends JFrame {
 	 * 
 	 * @return javax.swing.JButton
 	 */
-	private JButton getM_goButton() {
+	private JButton getGoButton() {
 		if (m_goButton == null) {
 			m_goButton = new JButton("Go!");
 			m_goButton.addActionListener(new ActionListener() {
@@ -239,26 +296,37 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 	private void go() throws CASTException {
-		// get action
-		if (m_goAction.isSelected()) {
-			goToPlace();
-		} else if (m_avsAction.isSelected()) {
-			runAVS();
-		} else if (m_detectObjectsAction.isSelected()) {
-			detectObjects();
 
-		} else if (m_detectPeopleAction.isSelected()) {
-			detectPeople();
-		} else if (m_lookForObjectsAction.isSelected()) {
-			lookForObjects();
-		} else if (m_lookForPeopleAction.isSelected()) {
-			lookForPeople();
-		} else if (m_askForFeatureAction.isSelected()) {
-			askForFeature();
-		} else if (m_testFeatureValueAction.isSelected()) {
-			testFeatureValue();
+		//TODO make more robust to code changes
+		int tabIndex = getTabbedPane().getSelectedIndex();
+
+		if (tabIndex == 0) {
+			if (m_goAction.isSelected()) {
+				goToPlace();
+			}
+		} else if (tabIndex == 2) {
+			if (m_avsAction.isSelected()) {
+				runAVS();
+			} else if (m_detectObjectsAction.isSelected()) {
+				detectObjects();
+
+			} else if (m_detectPeopleAction.isSelected()) {
+				detectPeople();
+			} else if (m_lookForObjectsAction.isSelected()) {
+				lookForObjects();
+			} else if (m_lookForPeopleAction.isSelected()) {
+				lookForPeople();
+			}
+		} else if (tabIndex == 1) {
+			if (m_askForFeatureAction.isSelected()) {
+				askForFeature();
+			} else if (m_testFeatureValueAction.isSelected()) {
+				testFeatureValue();
+			}
 		}
-
+		else {
+			throw new RuntimeException("No tab selected apparently... " + m_tabbedPane.getSelectedIndex());
+		}
 	}
 
 	/**
