@@ -1,3 +1,4 @@
+
 COMPONENT PYTHON PlannerPythonServer PythonServer --log
 
 SUBARCHITECTURE planner.sa

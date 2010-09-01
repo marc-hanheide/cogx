@@ -14,7 +14,7 @@ CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-sc
 CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf --log #--debug
 CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --log #--debug
 CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf --log #--debug --no-x-window
-CPP GD objsearch.process ObjectSearch -c instantiations/cureconfig/cogxp3.ccf --explore-range 5 --log --gridsize 200 --cellsize 0.2 --objects "rice_near rice_middle rice_far rice_XXfar kellogs_1 kellogs_2" --samplesize 50 --cam-range 2.5 --cam-fov 45 --coverage-threshold 30  --vp-threshold 0 --away-from-obstacles 1 --disp-magn 1 --cam-step 60 #--ctrl-ptu
+CPP GD objsearch.process ObjectSearch -c instantiations/cureconfig/cogxp3.ccf --explore-range 5 --log --gridsize 200 --cellsize 0.2 --objects "rice_near rice_middle rice_far rice_XXfar kellogs_1 kellogs_2" --samplesize 50 --cam-range 2.5 --cam-fov 45 --coverage-threshold 30  --vp-threshold 0 --away-from-obstacles 1 --disp-magn 1 --cam-step 60 --ctrl-ptu
 CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --log #--debug
 
 # Action interface for planning. Listens for events from the executor then generates correct navcommand
