@@ -1,7 +1,15 @@
 
 project(VisualizationCore)
 
-set(VERBOSE 1)
+#set(VERBOSE 1)
+
+find_package(OpenCV REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIRS})
+link_directories(${OPENCV_LIBRARY_DIRS})
+add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+
+option(BUILD_SA_V11N_SERVER "Build the visualisation display server" YES)
+if(BUILD_SA_V11N_SERVER)
 
 find_package(Qt4 REQUIRED)  # http://qtnode.net/wiki/Qt4_with_cmake
 set(QT_USE_OPENGL 1)
@@ -169,10 +177,12 @@ link_cast_component(${CAST_COMPONENT_NAME}
    ${EXPERIMENT_LIB}   
    )
 
-find_package(OpenCV REQUIRED)
-include_directories(${OPENCV_INCLUDE_DIRS})
-link_directories(${OPENCV_LIBRARY_DIRS})
-add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+
+
+endif(BUILD_SA_V11N_SERVER)
+
+option(BUILD_SA_V11N_CLIENT "Build the visualisation display client library" YES)
+if(BUILD_SA_V11N_CLIENT)
 
 add_cast_component(DisplayClient CDisplayClient.cpp CFormValues.cpp)
 link_cast_component(${CAST_COMPONENT_NAME}
@@ -180,6 +190,8 @@ link_cast_component(${CAST_COMPONENT_NAME}
    # CogxIceAutogen
    ${OPENCV_LDFLAGS}
    )
+
+endif(BUILD_SA_V11N_CLIENT)
 
 option(BUILD_SA_V11N_TESTS "Build the test component for V11N" OFF)
 if(BUILD_SA_V11N_TESTS)
