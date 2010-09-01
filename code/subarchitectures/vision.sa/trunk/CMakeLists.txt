@@ -41,6 +41,13 @@ if(BUILD_SA_VISION_STEREOVIEWER)
 add_subdirectory (src/c++/vision/components/StereoViewer)
 endif(BUILD_SA_VISION_STEREOVIEWER)
 
+option(BUILD_SA_VISION_PEOPLE_DETECTOR "build people detector" YES)
+if (BUILD_SA_PEOPLE_DETECTOR)
+add_subdirectory (src/c++/vision/components/PeopleDetector)
+add_subdirectory (src/c++/vision/components/PeopleDetectorTest)
+endif (BUILD_SA_PEOPLE_DETECTOR)
+
+
 option(BUILD_SA_VISION_OBJTRACKER "build object tracker" NO)
 if (BUILD_SA_VISION_OBJTRACKER)
 add_subdirectory (src/c++/vision/components/ObjectTracker)
