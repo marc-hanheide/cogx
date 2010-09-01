@@ -464,6 +464,7 @@ void Problem_Grounding::ground_starting_states()
         
     precondition = _conjunct.cxx_deref_get<State_Formula::Conjunctive_Normal_Form_Formula>();
     
+            
     Domain_Action__to__Problem_Action
         domain_Action__to__Problem_Action(reinterpret_cast<basic_type::Runtime_Thread>(this),
                                           assignment_detail,
@@ -482,6 +483,7 @@ void Problem_Grounding::ground_starting_states()
                                           actions_validator,
                                           action_symbol__to__state_transformation);
     
+    INTERACTIVE_VERBOSER(true, 10004, "STARTING STATE generation ::"<<starting_state);
     domain_Action__to__Problem_Action(starting_state);
     executable_starting_states_generator = domain_Action__to__Problem_Action.get__answer();
 

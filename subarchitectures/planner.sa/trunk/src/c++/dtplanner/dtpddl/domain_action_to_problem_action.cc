@@ -204,10 +204,9 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             
             double local_probability = probability;
             
-            INTERACTIVE_VERBOSER(true, 5000, "LEVEL ::"<<level
+            INTERACTIVE_VERBOSER(true, 10004, "LEVEL ::"<<level
                                  <<" conjunctive formula :: "<<input);
             
-            assert(input.test_cast<Planning::Formula::Conjunction>());
 
 //             if(!input.cxx_get<Planning::Formula::Conjunction>()->get__subformulae().size()){
 //                 return;
@@ -523,6 +522,10 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
                 problem__state_Propositions
                     .insert(proposition);
                 id = proposition.get__id();
+                
+                QUERY_UNRECOVERABLE_ERROR(id >= problem__state_Propositions.size(),
+                                          proposition<<" with ID :: "<<id<<std::endl
+                                          <<"Was not registered with the solver.");
             } else {
                 
                 NEW_referenced_WRAPPED
@@ -538,6 +541,9 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
                 
                 id = proposition.get__id();
                 
+                QUERY_UNRECOVERABLE_ERROR(id >= problem__state_Propositions.size(),
+                                          proposition<<" with ID :: "<<id<<std::endl
+                                          <<"Was not registered with the solver.");
             }
             
 //             problem__state_Propositions
@@ -545,7 +551,6 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             
 //             auto id = proposition->get__id();
 
-            assert(id < problem__state_Propositions.size());
             
             NEW_referenced_WRAPPED_deref_POINTER
                 (runtime_Thread,

@@ -165,7 +165,7 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             
 
             
-            INTERACTIVE_VERBOSER(true, 3104,
+            INTERACTIVE_VERBOSER(true, 10004,
                                  "New state proposition :: "<<_proposition<<std::endl);
             
             auto _problem__state_Proposition = problem__state_Propositions
