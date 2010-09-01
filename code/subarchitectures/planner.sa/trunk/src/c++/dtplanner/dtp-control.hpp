@@ -2,6 +2,9 @@
 #define DTP_CONTROL
 
 
+/*Comment this out if you want the old behaviour. */
+// #define EXPOSING_DTP 1
+
 #include <tr1/memory>
 //#include <cast/architecture.hpp>
 #include <Ice/Ice.h>
@@ -14,6 +17,9 @@
 #include <memory>
 
 #include "planning_symbols.hh"
+
+#include "solver.hh"
+#include "policy_iteration_over_information_state_space.hh"
 
 using namespace autogen::Planner;
 
@@ -115,6 +121,12 @@ private:
     /* Thread attributes (i.e., joinable) associated with task
      * \index{Ice::Int}*/
     std::map<Ice::Int, Thread_Attributes> thread_attributes;
+
+    /*Solver on each thread.*/
+    std::map<Ice::Int, Planning::Solver*> solvers;
+
+    /*Current information state on each thread.*/
+    std::map<Ice::Int, Planning::POMDP_State*> current_state;
 
 };
 
