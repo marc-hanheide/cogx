@@ -80,7 +80,7 @@ unsigned_integer__status_management.cc)
 
 add_definitions(-std=c++0x)
 
-add_definitions(-pedantic -pg -Wall -Wextra)
+#add_definitions(-pedantic -pg -Wall -Wextra)
 
 add_library(dtpddl ${dtpddl_source})
 target_link_libraries(dtpddl pthread)
