@@ -692,9 +692,12 @@ void DTPCONTROL::newTask(Ice::Int id,
 
 #ifdef EXPOSING_DTP
     auto actual_problem = Planning::Parsing::problems.find(pi);
+    VERBOSER(10050, "Problem is :: "<<*actual_problem->second<<std::endl);
     solvers[id] = new Planning::Solver(*actual_problem->second);//thread_to_problem[id]);
     solvers[id]->preprocess();
-    solvers[id]->expand_belief_state_space();
+    QUERY_UNRECOVERABLE_ERROR(!solver->expansion_queue.size()
+                              , "The problem is NULL, there is no starting state.");
+//     solvers[id]->expand_belief_state_space();
     current_state[id] = solvers[id]->expansion_queue.front();
     if(solvers[id]->expand_belief_state_space()){
         UNRECOVERABLE_ERROR("I don't seem to have a starting state on the expansion queue."<<std::endl);
