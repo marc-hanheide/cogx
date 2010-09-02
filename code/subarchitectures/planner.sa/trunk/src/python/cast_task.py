@@ -11,6 +11,8 @@ log = config.logger("PythonServer")
 PLANNER_CP = 0
 PLANNER_DT = 1
 
+WAIT_FOR_ACTION_TIMEOUT = 2000
+
 status_dict = {PlanningStatusEnum.TASK_CHANGED : Planner.Completion.PENDING, \
                    PlanningStatusEnum.RUNNING : Planner.Completion.INPROGRESS, \
                    PlanningStatusEnum.PLAN_AVAILABLE : Planner.Completion.SUCCEEDED, \
@@ -35,6 +37,7 @@ class CASTTask(object):
         cp_problem, self.goaldict = self.state.to_problem(planning_task, deterministic=True, domain=self.cp_domain)
         
         self.cp_task = task.Task(self.id, cp_problem)
+        self.waiting_for_action = False
         component.planner.register_task(self.cp_task)
         
         self.update_status(Planner.Completion.PENDING)
@@ -223,11 +226,17 @@ class CASTTask(object):
 
         self.update_status(Planner.Completion.INPROGRESS)
   
-    def monitor_cp(self):
+    def monitor_cp(self, pending_updates=False):
         if self.dt_planning_active():
-            self.monitor_dt()
+            self.process_cp_plan()
             return
-        
+
+        if not pending_updates and self.waiting_for_action:
+            #timeout reached, give up
+            self.cp_task.set_plan(None, update_status=True)
+            self.update_status(Planner.Completion.FAILED)
+            return
+
         self.update_status(Planner.Completion.INPROGRESS)
 
         problem_fn = abspath(join(self.component.get_path(), "problem%d.mapl" % (self.id)))
@@ -235,6 +244,17 @@ class CASTTask(object):
 
         self.step += 1
         self.cp_task.replan()
+        if self.cp_task.planning_status == PlanningStatusEnum.WAITING:
+            if pending_updates:
+                log.info("Still waiting for effects of %s to appear", str(self.cp_task.pending_action))
+                return
+            self.waiting_for_action = True
+            log.info("Waiting for effects of %s to appear", str(self.cp_task.pending_action))
+            self.update_status(Planner.Completion.PENDING)
+            self.component.getClient().waitForChanges(self.id, WAIT_FOR_ACTION_TIMEOUT)
+            return
+        
+        self.waiting_for_action = False
         self.process_cp_plan()
 
     def dt_done(self):
@@ -245,6 +265,7 @@ class CASTTask(object):
         self.monitor_cp()
 
     def action_delivered(self, action):
+        log.debug("raw action: (%s %s)", action.name, " ".join(action.arguments))
         args = [self.cp_task.mapltask[a] for a in action.arguments]
         pddl_action = self.dt_task.problem.get_action(action.name)
 
@@ -293,7 +314,7 @@ class CASTTask(object):
         except KeyError:
             log.warning("Goal is not valid anymore.")
             new_cp_problem.goal = pddl.conditions.Falsity()
-            self.cp_task.set_state(Planner.Completion.PLANNING_FAILURE)
+            #self.cp_task.set_state(Planner.Completion.PLANNING_FAILURE)
             return False
         
         self.cp_task.mapltask = new_cp_problem

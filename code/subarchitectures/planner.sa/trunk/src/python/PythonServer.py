@@ -88,6 +88,7 @@ import beliefs_cast_ice
 import beliefs_ice
 #import de.dfki.lt.tr.beliefs.slice ## must be imported *before* Planner
 from autogen import Planner
+import comadata
 import cast.core
 
 import standalone
@@ -120,6 +121,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.domain_fn = TEST_DOMAIN_FN
     self.client = None
     self.dt = None
+    self.hfc = None
     self.planner = StandalonePlanner()
     self.tasks = {}
     self.beliefs = None
@@ -144,6 +146,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     
     self.client_name = config.get("--wm", "Planner")
     self.dt_name = config.get("--dt", "PlannerDTServer")
+    self.coma_name = config.get("--coma", "hfcserver")
     self.show_dot = "--nodot" not in config
 
     if "--dtdomain" in config:
@@ -170,6 +173,12 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.dt = self.getIceServer(self.dt_name, Planner.DTPServer, Planner.DTPServerPrx)
       log.info("Connected to DTPServer %s", self.dt_name)
     return self.dt
+
+  def getHFC(self):
+    if not self.hfc:
+      self.hfc = self.getIceServer(self.coma_name, comadata.HFCInterface, comadata.HFCInterfacePrx)
+      log.info("Connected to Comaserver %s", self.coma_name)
+    return self.hfc
 
   def get_path(self):
       return this_path
@@ -206,6 +215,17 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     #         log.info("%d: done", tid)
     #     return
 
+    query = "SELECT ?x ?y where ?x <dora:typicalObjectInRoom> ?y";
+    try:
+        results = self.getHFC().querySelect(query)
+        log.debug("Query: %s", results.query)
+        log.debug("Variable to array position mapping: %s", ", ".join("%s=%d" % (k,v) for k,v in results.varPosMap.iteritems()))
+        log.debug("Variable result bindings: ")
+        for line in results.bt:
+            log.debug(" ".join(line))
+    except Exception, e:
+        log.warning("Error when calling the HFC server: %s", str(e))
+
     task = CASTTask(task_desc, self.beliefs, self.domain_fn, self)
     self.tasks[task.id] = task
 
@@ -221,6 +241,19 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.beliefs = state
       for task in self.tasks.itervalues():
           task.percepts += percepts
+          if task.status == Planner.Completion.PENDING:
+              self.updateWaitingTask(task)
+
+  def updateWaitingTask(self, task):
+      old_state = task.state.state
+      
+      if not task.update_state(self.beliefs):
+          print_state_difference(old_state, task.state.state)
+          log.warning("goal became invalid while waiting for action effects.")
+          return
+
+      print_state_difference(old_state, task.state.state)
+      task.monitor_cp(pending_updates=True)
       
   def updateTask(self, task_desc, current=None):
       if task_desc.id not in self.tasks:

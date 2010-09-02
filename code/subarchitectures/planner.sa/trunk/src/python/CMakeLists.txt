@@ -5,8 +5,9 @@ cast_slice2Py(GEN_FILE Planner.ice ${CAST_SLICE_DIR} ${CAST_SLICE_DIR}/cast/slic
   ${COGX_ROOT}/tools/beliefs/apis/beliefs+cast/src/slice)
 cast_slice2Py(GEN_FILE2 ../../tools/beliefs/apis/beliefs/src/slice/beliefs.ice ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} )
 cast_slice2Py(GEN_FILE3 ../../tools/beliefs/apis/beliefs+cast/src/slice/beliefs_cast.ice ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} )
+cast_slice2Py(GEN_COMA_ICE ../../subarchitectures/coma.sa/src/slice/ComaData.ice  ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} )
 
-add_custom_target(python ALL DEPENDS ${GEN_FILE} ${GEN_FILE2} ${GEN_FILE3})
+add_custom_target(python ALL DEPENDS ${GEN_FILE} ${GEN_FILE2} ${GEN_FILE3} ${GEN_COMA_ICE})
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/standalone/config.auto.in" "${CMAKE_CURRENT_SOURCE_DIR}/standalone/config.auto")
 

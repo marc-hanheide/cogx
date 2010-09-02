@@ -136,6 +136,7 @@ module autogen {
       //void deliverPlan(PlanningTask task);
       void updateStatus(int id, Completion status);
       void setChangeFilter(int id, StateChangeFilter filter);
+      void waitForChanges(int id, int timeout);
     };
 
     interface PythonServer extends cast::interfaces::CASTComponent
