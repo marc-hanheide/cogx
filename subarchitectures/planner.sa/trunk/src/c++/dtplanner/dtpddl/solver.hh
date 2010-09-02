@@ -183,8 +183,6 @@ namespace Planning
         void configure__extensions_of_types();
 
     private:
-        Planning::POMDP_State* starting_belief_state;
-        
         /* Functionality for obtaining a ground version of the problem
          * at hand.*/
         CXX__PTR_ANNOTATION(Problem_Grounding) problem_Grounding;
@@ -198,11 +196,14 @@ namespace Planning
          * type. Here we store that interpretation.*/
         std::map<Type, Constants> extensions_of_types;
         
+        /*Problem targetted by this solver.*/
+        Planning::Parsing::Problem_Data& problem_Data;
+        
         /*(see \member{preprocess})*/
         bool preprocessed;
 
-        /*Problem targetted by this solver.*/
-        Planning::Parsing::Problem_Data& problem_Data;
+        /*Initial POMDP state.*/
+        Planning::POMDP_State* starting_belief_state;
         
         /* Domain data associated with \member{problem} (see
          * \member{preprocess}).*/

@@ -315,7 +315,7 @@ void Solver::generate_starting_state()
     auto successor_Probabilities = *starting_state->get__successor_Probabilities().begin();
     auto successors = *starting_state->get__successors().begin();
     assert(successor_Probabilities.size() == successors.size());
-    for(auto i = 0
+    for(uint i = 0
             ; i < successor_Probabilities.size()
             ; i++){
         auto state = successors[i];

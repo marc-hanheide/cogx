@@ -124,8 +124,6 @@ namespace Planning
          * executed and we arrive at this state.*/
         std::set<uint> considered_observations_under_action;
         
-        /*Value of this MDP state.*/
-        double value;
         
         std::vector<uint> action_to_observation;
         std::map<uint, uint> mirror__action_to_observation;
@@ -139,11 +137,14 @@ namespace Planning
         Successors successors;
         Successor_Probabilities successor_Probabilities;
         
+        /* State-characterising propositions. */
+        Boolean_State boolean_State;
+        
         /* State-characterising functions (derived from PDDL "Fluents"). */
         Integer_State integer_State;
 
-        /* State-characterising propositions. */
-        Boolean_State boolean_State;
+        /*Value of this MDP state.*/
+        double value;
         
         /* Functions into the reals. */
         Float_State float_State;

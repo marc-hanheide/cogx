@@ -77,9 +77,6 @@ namespace Planning
     private:
 
         
-        std::map<Formula::Action_Proposition
-                       , State_Transformation__Pointer>& action_symbol__to__state_transformation;
-        
         void interpret__as_double_valued_ground_state_function(ID_TYPE);
         
         const Planning::State_Transformation__Pointer& generate__null_action(double local_probability) ;
@@ -89,14 +86,17 @@ namespace Planning
         
         Formula::Action_Proposition process__generate_name(std::string annotation = "") ;
 
-        int last_function_symbol_id;
         
         static Formula::Subformula simplify_formula(Formula::Subformula,
                                                     basic_type::Runtime_Thread);
 
         
         basic_type::Runtime_Thread runtime_Thread;
+        
+        
         Planning::Assignment& assignment;
+        
+        
         
         Formula::State_Propositions& problem__state_Propositions;
         Formula::State_Ground_Functions& problem__state_Functions;
@@ -104,23 +104,30 @@ namespace Planning
         State_Formula::Literals& problem__literals;
         State_Formula::Disjunctive_Clauses& problem__disjunctive_Clauses;
         State_Formula::Conjunctive_Normal_Form_Formulae& problem__conjunctive_Normal_Form_Formulae;
-        
+
         const Parsing::Domain_Data& domain_Data;
         const Parsing::Problem_Data& problem_Data;
+        
+        
         const Formula::Action_Proposition& action_Proposition;
         //         State_Formula::Conjunctive_Normal_Form_Formula& precondition;/* (see \member{preconditions})*/
 
+        /* A tool to apply an assignment to variables to a CNF formula. */
+        CNF_Assignment_Applicator assignment_Applicator;
+        
         
         Planning::State_Transformations& problem__actions;
         Planning::State_Transformations& executable_actions_without_preconditions;
         Planning::Probabilistic_State_Transformations& probabilistic_actions;
-
-
         
-        /* A tool to apply an assignment to variables to a CNF formula. */
-        CNF_Assignment_Applicator assignment_Applicator;
-
-
+        std::map<Formula::Action_Proposition
+                       , State_Transformation__Pointer>& action_symbol__to__state_transformation;
+        
+        
+        bool processing_negative;/* false -- initialise*/
+        uint count_of_actions_posted;/* 0 initialise*/
+        uint level;/* 0 initialise*/
+        double probability;/* 1.0  initialise*/
         
         /* Object converts planning formula ---in this case formulae
          * that correspond to actions preconditions--- into
@@ -128,15 +135,12 @@ namespace Planning
          * conjunction over disjunctive clauses.  */
         static Planning_Formula__to__CNF planning_Formula__to__CNF;
         
+        
         State_Transformation__Pointer result;
 
         /* CNF that is, as considered by future processing, always satisfied. */
         State_Formula::Conjunctive_Normal_Form_Formula__Pointer true_cnf;
         
-        bool processing_negative;/* false -- initialise*/
-        uint count_of_actions_posted;/* 0 initialise*/
-        uint level;/* 0 initialise*/
-        double probability;/* 1.0  initialise*/
 
         
         std::stack<State_Formula::List__Literals> literals_at_levels;
@@ -146,8 +150,14 @@ namespace Planning
         
         static Are_Doubles_Close are_Doubles_Close;//(1e-9);
         
+        
+        
+        int last_function_symbol_id;
+        
         /* Last double valued entry traversed while grounding action.*/
         double last_double_traversed;
+
+        
     };
 }
 

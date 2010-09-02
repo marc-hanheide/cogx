@@ -123,19 +123,22 @@ const std::vector<uint>& Markov_Decision_Process_State::get__observation_Driver(
 }
 
 
-const Markov_Decision_Process_State::Successors& Markov_Decision_Process_State::
+const Markov_Decision_Process_State::Successors&
+Markov_Decision_Process_State::
 get__successors() const
 {
     return successors;
 }
 
-const Markov_Decision_Process_State::Successor_Driver& Markov_Decision_Process_State::
+const Markov_Decision_Process_State::Successor_Driver&
+Markov_Decision_Process_State::
 get__successor_Driver() const
 {
     return  successor_Driver;    
 }
 
-const Markov_Decision_Process_State::Successor_Probabilities& Markov_Decision_Process_State::
+const Markov_Decision_Process_State::Successor_Probabilities&
+Markov_Decision_Process_State::
 get__successor_Probabilities() const
 {
     return successor_Probabilities;
@@ -223,7 +226,7 @@ void Markov_Decision_Process_State::set__float(uint index, double value)
         
 int Markov_Decision_Process_State::get__int(uint index) const
 {
-    integer_State.read(index);
+    return integer_State.read(index);
 }
 
 void Markov_Decision_Process_State::set__int(uint index, int value)

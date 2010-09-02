@@ -208,7 +208,7 @@ bool Problem_Data::statically_false__starting_always_false
     
     Argument_List arguments(_arguments.size());
         
-    for(auto i = 0; i < arguments.size(); i++){
+    for(uint i = 0; i < arguments.size(); i++){
         if(_arguments[i].test_cast<Planning::Variable>()){
             arguments[i] = X_constant;
         } else {
@@ -280,7 +280,7 @@ bool Problem_Data::translate_to_problem_arguments(const Planning::Argument_List&
 {
     bool result = false;
     
-    for(auto i = 0; i < arguments.size(); i++){
+    for(uint i = 0; i < arguments.size(); i++){
         if(_arguments[i].test_cast<Planning::Variable>()){
             arguments[i] = _arguments[i];
         } else if (_arguments[i].test_cast<Planning::Constant>()) {
@@ -321,7 +321,7 @@ bool Problem_Data::translate_to_problem_arguments(const Planning::Constant_Argum
 {
     bool result = false;
     
-    for(auto i = 0; i < arguments.size(); i++){
+    for(uint i = 0; i < arguments.size(); i++){
         auto constant_symbol = _arguments[i];
                 
         if(constant_symbol.get__runtime_Thread()
@@ -369,7 +369,7 @@ Planning::Formula::Action_Proposition Problem_Data::get__prescribed_action()
 
     auto i = 0;
     auto _action_Schema = action_Schemas.begin();
-    for(i = 0; i != action_index; i++,_action_Schema++);
+    for(uint i = 0; i != action_index; i++,_action_Schema++);
     auto action_Schema = *_action_Schema;
     
     auto action_name = action_Schema.get__name();
@@ -627,7 +627,7 @@ bool Problem_Data::has_static_value(Formula::Subformula input
             auto predicate_Name = symbol->get__name();
             
             Constant_Arguments constant_Arguments(argument_List.size());
-            for(auto index = 0; index < argument_List.size(); index++){
+            for(uint index = 0; index < argument_List.size(); index++){
                 if(argument_List[index].test_cast<Planning::Variable>()){
                     auto variable = *(argument_List[index].cxx_get<Planning::Variable>());
 
@@ -711,7 +711,7 @@ namespace Planning
                     auto predicate_Name = symbol->get__name();
             
                     Constant_Arguments constant_Arguments(argument_List.size());
-                    for(auto index = 0; index < argument_List.size(); index++){
+                    for(uint index = 0; index < argument_List.size(); index++){
                         if(argument_List[index].test_cast<Planning::Variable>()){
                             auto variable = *(argument_List[index].cxx_get<Planning::Variable>());
 
@@ -773,7 +773,7 @@ namespace Planning
                     auto predicate_Name = symbol->get__name();
             
                     Constant_Arguments constant_Arguments(argument_List.size());
-                    for(auto index = 0; index < argument_List.size(); index++){
+                    for(uint index = 0; index < argument_List.size(); index++){
                         if(argument_List[index].test_cast<Planning::Variable>()){
                             auto variable = *(argument_List[index].cxx_get<Planning::Variable>());
 

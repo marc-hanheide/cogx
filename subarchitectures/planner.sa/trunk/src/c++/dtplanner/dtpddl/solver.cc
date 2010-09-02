@@ -384,7 +384,9 @@ bool Solver::sanity() const
         WARNING("Tested sanity on :: "<<problem_Data.get__problem_Name()
                 <<"before preprocessing."<<std::endl);
         return false;
-    }   
+    }
+
+    return true;
 }
 
 

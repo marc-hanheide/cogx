@@ -426,8 +426,8 @@ Subformula Problem_Grounding::simplify_formula(Planning::Formula::Subformula sub
 
             uint index = abs(literal);
             
-            assert(index - 1 >= 0);
-            assert(index - 1 < atoms.size());
+            assert(static_cast<int>(index) - 1 >= 0);
+            assert(static_cast<int>(index) - 1 < static_cast<int>(atoms.size()));
             
             auto atom = atoms[index - 1];
             

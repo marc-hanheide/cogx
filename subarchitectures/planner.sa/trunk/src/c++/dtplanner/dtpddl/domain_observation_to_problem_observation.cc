@@ -71,7 +71,7 @@ Planning_Formula__to__CNF Domain_Observation__to__Problem_Observation::planning_
 
 /*DONE*/
 IMPLEMENTATION__STRICT_SHARED_UNARY_VISITOR(Domain_Observation__to__Problem_Observation,
-                                            basic_type);
+                                            basic_type)
 
 
 /*DONE*/
@@ -212,7 +212,7 @@ Planning::Observation__Pointer Domain_Observation__to__Problem_Observation::get_
 void  Domain_Observation__to__Problem_Observation::
 interpret__as_double_valued_ground_state_function(ID_TYPE function_symbol_id)
 {
-    assert(function_symbol_id != -1);
+    //assert(function_symbol_id != -1);
     
     basic_type::Runtime_Thread formula_runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
         (dynamic_cast<const Parsing::Formula_Data*>(&problem_Data));
@@ -492,7 +492,7 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
             auto predicate_Name = symbol->get__name();
             
             Constant_Arguments constant_Arguments(argument_List.size());
-            for(auto index = 0; index < argument_List.size(); index++){
+            for(uint index = 0; index < argument_List.size(); index++){
                 if(argument_List[index].test_cast<Planning::Variable>()){
                     auto variable = *(argument_List[index].cxx_get<Planning::Variable>());
 
@@ -570,7 +570,7 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
             if(!no_spurious_constants){
                 constant_Arguments = Constant_Arguments(arguments.size());
                 assert(arguments.size() == constant_Arguments.size());
-                for(auto index = 0
+                for(uint index = 0
                         ; index < constant_Arguments.size()
                         ; index++ ){
                     assert(index < arguments.size());
@@ -1296,7 +1296,6 @@ simplify_formula(Formula::Subformula subformula,
             uint index = abs(literal);
 
             assert(index > static_cast<uint>(0));
-            assert(index - 1 >= static_cast<uint>(0));
             assert(index - 1 < atoms.size());
             
             auto atom = atoms[index - 1];

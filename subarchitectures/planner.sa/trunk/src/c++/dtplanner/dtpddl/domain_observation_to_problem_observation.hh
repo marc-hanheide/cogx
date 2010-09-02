@@ -88,8 +88,6 @@ namespace Planning
         
         Formula::Observational_Proposition process__generate_name(std::string annotation = "") ;
 
-        int last_function_symbol_id;
-        
         static Formula::Subformula simplify_formula(Formula::Subformula,
                                                     basic_type::Runtime_Thread);
 
@@ -98,9 +96,9 @@ namespace Planning
         basic_type::Runtime_Thread runtime_Thread;
         Planning::Assignment& assignment;
         
-        Formula::Perceptual_Propositions& problem__perceptual_Propositions;
         Formula::State_Ground_Functions& problem__state_Functions;
         Formula::State_Propositions& problem__state_Propositions;
+        Formula::Perceptual_Propositions& problem__perceptual_Propositions;
         
         State_Formula::Literals& problem__literals;
         State_Formula::Disjunctive_Clauses& problem__disjunctive_Clauses;
@@ -110,18 +108,19 @@ namespace Planning
 //         Action_Disjunctive_Clauses& problem__action_clauses;
 //         Action_Conjunctive_Normal_Form_Formulae& problem__action_cnfs;
         
-        Observations& problem__observations;
-        Observations& problem__observations_without_preconditions;
         
         const Parsing::Domain_Data& domain_Data;
         const Parsing::Problem_Data& problem_Data;
-        const Formula::Observational_Proposition& observational_Proposition;
         
+        const Formula::Observational_Proposition& observational_Proposition;
         
         /* A tool to apply an assignment to variables to a CNF formula. */
         CNF_Assignment_Applicator assignment_Applicator;
 
 
+        Observations& problem__observations;
+        Observations& problem__observations_without_preconditions;
+        
         
         /* Object converts planning formula ---in this case formulae
          * that correspond to actions preconditions--- into
@@ -135,11 +134,6 @@ namespace Planning
         State_Formula::Conjunctive_Normal_Form_Formula__Pointer true_cnf;
         Action_Conjunctive_Normal_Form_Formula__Pointer true_action_cnf;
         
-        bool processing_negative;/* false -- initialise*/
-        uint count_of_observations_posted;/* 0 initialise*/
-        uint level;/* 0 initialise*/
-        double probability;/* 1.0  initialise*/
-
         
         std::stack<Formula::List__Perceptual_Propositions> effects_lists;
         std::stack<State_Formula::List__Listeners> list__Listeners;
@@ -149,6 +143,14 @@ namespace Planning
         std::stack<Action_Conjunctive_Normal_Form_Formula__Pointer> execution_preconditions;
         
         static Are_Doubles_Close are_Doubles_Close;//(1e-9);
+        
+        bool processing_negative;/* false -- initialise*/
+        uint count_of_observations_posted;/* 0 initialise*/
+        uint level;/* 0 initialise*/
+        
+        double probability;/* 1.0  initialise*/
+
+        int last_function_symbol_id;
         
         /* Last double valued entry traversed while grounding action.*/
         double last_double_traversed;

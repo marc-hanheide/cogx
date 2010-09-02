@@ -104,21 +104,21 @@ public:
 //     }
 
 
-    long use_count()const{return contents.use_count();};
+    long use_count()const{return contents.use_count();}
 
     template<typename TT>
     CXX__deref__shared_ptr<TT> cxx_deref_get()
-    {return CXX__deref__shared_ptr<TT>(cxx_get<TT>());};
+    {return CXX__deref__shared_ptr<TT>(cxx_get<TT>());}
     
     
     CXX__PTR_ANNOTATION(T) cxx_get() const {return contents;} ;
     template<typename TT>
-    CXX__PTR_ANNOTATION(TT) cxx_get() const {return std::tr1::dynamic_pointer_cast<TT>(contents);} ;
+    CXX__PTR_ANNOTATION(TT) cxx_get() const {return std::tr1::dynamic_pointer_cast<TT>(contents);}
 
-    T& operator*() const {return *contents;};
-    T* get() const {return contents.get();};
+    T& operator*() const {return *contents;}
+    T* get() const {return contents.get();}
     
-    T* operator->() const {return contents.get();};
+    T* operator->() const {return contents.get();}
 //     const T* operator->() const {return contents.get();};
     
     bool operator==(const CXX__deref__shared_ptr&) const;
@@ -127,11 +127,11 @@ public:
     std::size_t hash_value() const;
     ostream& operator<<(ostream&) const;
     
-    template<typename TT> bool test_cast() const {return dynamic_cast<TT*>(contents.get());};
+    template<typename TT> bool test_cast() const {return dynamic_cast<TT*>(contents.get());}
     template<typename TT> C__PTR_ANNOTATION(TT) do_cast() const
-    {assert(test_cast<TT>());return dynamic_cast<C__PTR_ANNOTATION(TT)>(contents.get());};
+    {assert(test_cast<TT>());return dynamic_cast<C__PTR_ANNOTATION(TT)>(contents.get());}
     template<typename TT> TT do_cast_and_copy() const
-    {assert(test_cast<TT>());return *dynamic_cast<C__PTR_ANNOTATION(TT)>(contents.get());};
+    {assert(test_cast<TT>());return *dynamic_cast<C__PTR_ANNOTATION(TT)>(contents.get());}
     
 private:
     CXX__PTR_ANNOTATION(T) contents;
@@ -217,21 +217,21 @@ class CXX__deref__shared_ptr__visitable : public CXX__deref__shared_ptr<T>
 public:
     explicit CXX__deref__shared_ptr__visitable(const CXX__PTR_ANNOTATION(T)& in)
         :CXX__deref__shared_ptr<T>(in)
-    {};
+    {}
     
     explicit CXX__deref__shared_ptr__visitable()
         :CXX__deref__shared_ptr<T>()
-    {};
+    {}
     
     template<typename TT>
     explicit CXX__deref__shared_ptr__visitable(const CXX__deref__shared_ptr<TT>& in)
         :CXX__deref__shared_ptr<T>(in)
-    {};
+    {}
     
     template<typename TT>
     explicit CXX__deref__shared_ptr__visitable(const CXX__deref__shared_ptr__visitable<TT>& in)
         :CXX__deref__shared_ptr<T>(in)
-    {};
+    {}
     
     void visit(Visitor<T>& visitor);    
 };
@@ -292,7 +292,7 @@ template<typename T>
 class Visitor
 {
 public:
-    virtual ~Visitor(){};
+    virtual ~Visitor(){}
     virtual void c_pointer__accept(const T*) = 0;
     virtual void cxx_pointer__accept(const CXX__PTR_ANNOTATION(T)& in){c_pointer__accept(in.get());};
     virtual void cxx_deref_pointer__accept(const CXX__deref__shared_ptr<T>& in){c_pointer__accept(in.get());};
@@ -321,7 +321,7 @@ CXX__deref__shared_ptr<T>::CXX__deref__shared_ptr()
 {}
 
 template<typename T>
-std::size_t hash_value(const CXX__deref__shared_ptr<T>&in){return in.hash_value();};
+std::size_t hash_value(const CXX__deref__shared_ptr<T>&in){return in.hash_value();}
 
 // template<typename T>
 // CXX__PTR_ANNOTATION(T) CXX__deref__shared_ptr<T>::get() const
@@ -372,14 +372,14 @@ public:
     bool operator<(const C__deref__shared_ptr&) const;
     std::size_t hash_value() const;
     ostream& operator<<(ostream&) const;
-    template<typename TT> bool test_cast() const {return dynamic_cast<TT*>(contents);};
-    template<typename TT> C__PTR_ANNOTATION(TT) do_cast() const {return dynamic_cast<TT*>(contents);};
+    template<typename TT> bool test_cast() const {return dynamic_cast<TT*>(contents);}
+    template<typename TT> C__PTR_ANNOTATION(TT) do_cast() const {return dynamic_cast<TT*>(contents);}
 private:
     C__PTR_ANNOTATION(T) contents;
 };
 
 template<typename T>
-std::size_t hash_value(const C__deref__shared_ptr<T>&in){return in.hash_value();};
+std::size_t hash_value(const C__deref__shared_ptr<T>&in){return in.hash_value();}
 
 
 template<typename T>
@@ -420,8 +420,8 @@ ostream& C__deref__shared_ptr<T>::operator<<(ostream& o) const
 }
 
 
-// template<typename T> class deref__equal_to : public CXX__deref__equal_to<T>{};
-// template<typename T> class deref__shared_ptr : public CXX__deref__shared_ptr<T>{};
+// template<typename T> class deref__equal_to : public CXX__deref__equal_to<T>{}
+// template<typename T> class deref__shared_ptr : public CXX__deref__shared_ptr<T>{}
 
 template<typename T>
 class NOT_NECESSARY
@@ -437,9 +437,9 @@ public:
 namespace std
 {
     template<typename T>
-    ostream& operator<<(ostream&o, const CXX__deref__shared_ptr<T>&in){return in.operator<<(o);};
+    ostream& operator<<(ostream&o, const CXX__deref__shared_ptr<T>&in){return in.operator<<(o);}
     template<typename T>
-    ostream& operator<<(ostream&o, const C__deref__shared_ptr<T>&in){return in.operator<<(o);};
+    ostream& operator<<(ostream&o, const C__deref__shared_ptr<T>&in){return in.operator<<(o);}
 }
 
 

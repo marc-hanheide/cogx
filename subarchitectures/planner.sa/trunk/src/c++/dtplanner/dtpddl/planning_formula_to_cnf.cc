@@ -98,7 +98,7 @@ Planning_Formula__to__CNF::distributive_law(Subformulae& conjunct,
         return conjunct;
     }
     
-    assert(index >= 0);
+//     assert(index >= 0);
     assert(index < data.size());
     
     auto input_conjunction = data[index];

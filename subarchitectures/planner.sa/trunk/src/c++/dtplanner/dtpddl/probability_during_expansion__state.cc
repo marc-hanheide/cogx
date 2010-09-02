@@ -43,7 +43,7 @@ Probability_During_Expansion_State::Probability_During_Expansion_State()
 
 double Probability_During_Expansion_State::set__probability_during_expansion(double in)
 {
-    probability_during_expansion = in;
+    return probability_during_expansion = in;
 }
 
 void Probability_During_Expansion_State::reset__probability_during_expansion()

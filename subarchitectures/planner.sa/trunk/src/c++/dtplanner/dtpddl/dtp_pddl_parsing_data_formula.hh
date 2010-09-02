@@ -314,10 +314,6 @@ namespace Planning
             bool check__cardinality_constraint_on_subformulae_at_index
             (int count, int index) const;
             
-            /* Does the formula being based have as its subject the
-             * initial state of a planning problem?*/
-            bool parsing_initial_state;
-            
             /*For \argument{quantifier} see \enum{enum_types} from \module{planning_symbols}.*/
             Formula::Subformula complete__quantified_formula(int quantifier);
             /*(see \member{complete__quantified_formula(forall)})*/
@@ -410,9 +406,18 @@ namespace Planning
             std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> > modified_in_effect__perceptual_functions__parsed;
             std::map<Planning::Perceptual_Function_Name, std::set<ID_TYPE> > modified_in_effect__perceptual_ground_functions__parsed;
 
-            /* Are we parsing a formula that describes the effects of
-             * an operator?*/
-            bool in_effect_context;
+            /* How deep are we while parsing a formula?*/
+            int formula_parsing_level;
+
+            /* Should next next call to \member{report__formula} be skipped?*/
+            bool skip_next____report__formula;
+
+            /*Was the last number parsed a \type{double}?*/
+            bool last_number_parsed_was_double;
+
+            /* Does the formula being based have as its subject the
+             * initial state of a planning problem?*/
+            bool parsing_initial_state;
             
             /* This Boolean is true when a propositional symbol being
              * parsed is occurring in a delete context. That is, if
@@ -432,12 +437,10 @@ namespace Planning
              * INITIALLY "FALSE".*/
             bool in_modification_context;
             
-            /* Should next next call to \member{report__formula} be skipped?*/
-            bool skip_next____report__formula;
-
-            /* How deep are we while parsing a formula?*/
-            int formula_parsing_level;
-
+            /* Are we parsing a formula that describes the effects of
+             * an operator?*/
+            bool in_effect_context;
+            
             /* Keeping track of subformulae while parsing a formula.*/
             std::map<int, Planning::Formula::Subformulae> subformulae;
             
@@ -470,9 +473,6 @@ namespace Planning
             /* Parsed percept name.*/
             Planning::Percept_Name percept_Name;
             
-            /*Was the last number parsed a \type{double}?*/
-            bool last_number_parsed_was_double;
-
             /* If \member{last_number_parsed_was_double} is true, then
              * the following member (\member{last_number__double})
              * should be considered the value of the last number

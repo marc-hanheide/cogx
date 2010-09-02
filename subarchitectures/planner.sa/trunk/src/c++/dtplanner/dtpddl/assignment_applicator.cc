@@ -518,7 +518,7 @@ Result CNF_Assignment_Applicator::operator()(Ground_Fact ground_Fact, const Plan
     if(!no_spurious_constants){
         constant_Arguments = Constant_Arguments(arguments.size());
         assert(arguments.size() == constant_Arguments.size());
-        for(auto index = 0
+        for(uint index = 0
                 ; index != constant_Arguments.size()
                 ; index++ ){
             assert(index < arguments.size());

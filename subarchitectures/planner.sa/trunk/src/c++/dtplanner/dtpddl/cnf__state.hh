@@ -76,7 +76,6 @@ namespace Planning
         void set__action_Literal(Action_Literal*);
         Action_Literal* get__action_Literal();
     private:
-        Action_Literal* action_Literal;
 //         int last_action_executed;
         
         /* Tracks the number of clauses satisfied in each CNF -- Where
@@ -119,6 +118,8 @@ namespace Planning
          * initially all false. */
         Boolean__Satisfaction_Status_Management action_cnfs__satisfaction_status;
 
+        Action_Literal* action_Literal;
+        
 //         /* Tracks what literals are satisfied.  -- Where
 //          * this is not a starting state, the values should be
 //          * initially copied from the predecessor state. */

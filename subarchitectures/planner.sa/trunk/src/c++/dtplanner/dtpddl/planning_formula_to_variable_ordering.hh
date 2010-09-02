@@ -53,7 +53,7 @@ namespace Planning
     public:
         Planning_Formula__to__Variable_Ordering(const Planning::Parsing::Domain_Data&);
         
-        DECLARATION__UNARY_VISITOR(basic_type);
+        DECLARATION__UNARY_VISITOR(basic_type)
 
         /* \result{std::vector<Variable>} is ordered, so that elements
          * occurring earlier a better than those occurring later.

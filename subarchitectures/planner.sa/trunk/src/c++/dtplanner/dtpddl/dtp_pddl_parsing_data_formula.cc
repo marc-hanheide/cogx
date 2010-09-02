@@ -401,7 +401,7 @@ Formula_Data::complete__quantified_formula(int quantifier)
     {
         std::vector<Variable> quantified_variables(_quantified_variables.size());
         
-        auto i = 0;
+        uint i = 0;
         for(auto var = _quantified_variables.begin()
                 ; var != _quantified_variables.end()
                 ; var++){
@@ -1486,30 +1486,30 @@ const std::map<Planning::Percept_Name, std::set<ID_TYPE> >& Formula_Data::get__a
    
 bool Formula_Data::is_type__double(const Planning::State_Function_Name&) const
 {
-    false;
+    return false;
 }
 
 bool Formula_Data::is_type__int(const Planning::State_Function_Name&) const
 {
-    false;
+    return false;
 }
 bool Formula_Data::is_type__double(const Planning::Perceptual_Function_Name&) const
 {
-    false;
+    return false;
 }
 bool Formula_Data::is_type__int(const Planning::Perceptual_Function_Name&) const
 {
-    false;
+    return false;
 }     
 
 bool Formula_Data::is_type__number(const Planning::State_Function_Name&) const
 {
-    false;
+    return false;
 }
 
 bool Formula_Data::is_type__number(const Planning::Perceptual_Function_Name&) const
 {
-    false;
+    return false;
 }     
 
 // Formula_Data::modal_truth

@@ -82,9 +82,9 @@ std::ostream& Printing::operator<<(std::ostream& o, const Argument_List& al)
         return o;                                            \
     }                                                        \
     
-PRINTING_IMPLEMENTATION("and", Conjunction);
-PRINTING_IMPLEMENTATION("or", Disjunction);
-PRINTING_IMPLEMENTATION("not", Negation);
+PRINTING_IMPLEMENTATION("and", Conjunction)
+PRINTING_IMPLEMENTATION("or", Disjunction)
+PRINTING_IMPLEMENTATION("not", Negation)
 
 
 
@@ -273,10 +273,10 @@ std::ostream& Planning::Formula::Probabilistic::operator<<(ostream&o)const
 
 
 
-get__operator_type_as_string__IMPLEMENTATION(Increase, "increase");
-get__operator_type_as_string__IMPLEMENTATION(Decrease, "decrease");
-get__operator_type_as_string__IMPLEMENTATION(Assign, "assign");
-get__operator_type_as_string__IMPLEMENTATION(Equality_Test, "=");
+get__operator_type_as_string__IMPLEMENTATION(Increase, "increase")
+get__operator_type_as_string__IMPLEMENTATION(Decrease, "decrease")
+get__operator_type_as_string__IMPLEMENTATION(Assign, "assign")
+get__operator_type_as_string__IMPLEMENTATION(Equality_Test, "=")
 
 Subformula Planning::Formula::Conditional_Effect::get__condition() const
 {return std::tr1::get<0>(this->contents()); }

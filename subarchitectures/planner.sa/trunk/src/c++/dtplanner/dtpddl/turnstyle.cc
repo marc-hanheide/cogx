@@ -132,7 +132,7 @@ int CNF::get_length_of_longest_clause(Problem_Data& problem) const
 {
     int size = 0; 
     for(auto p = problem.begin(); p != problem.end(); p++){
-        if(p->size() > size)size = p->size();
+        if(p->size() > static_cast<uint>(size)) size = static_cast<int>(p->size());
     }
 
     return size;
@@ -178,11 +178,11 @@ CNF::Problem_Data CNF::simplify__unit_prop(Problem_Data& _problem_Data)
 
 CNF::Problem_Data CNF::simplify__subsumption(Problem_Data& _problem_Data)
 {
-    int longest_clause_length = get_length_of_longest_clause(_problem_Data);
+//     int longest_clause_length = get_length_of_longest_clause(_problem_Data);
     
     Problem_Data problem_Data = _problem_Data;
-    bool something_happened = false;
-    bool unsat = false;
+//     bool something_happened = false;
+//     bool unsat = false;
     
     for(auto i = 1; i < get_length_of_longest_clause(problem_Data); i++){
         Problem_Data problem_Data__clauses_that_could_subsume = collect__size_equals(problem_Data, i);

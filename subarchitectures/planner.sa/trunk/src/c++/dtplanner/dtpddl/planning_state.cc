@@ -67,8 +67,7 @@ State::State(Solver& solver,
              uint action_formulae_count,
              uint action_disjunctions_count,
              uint observations_count)
-    :solver(solver),
-     Markov_Decision_Process_State(propositions_count
+    :Markov_Decision_Process_State(propositions_count
                                    , function_count),
      CNF__State(formulae_count
                 , disjunctions_count
@@ -76,6 +75,7 @@ State::State(Solver& solver,
                 , action_disjunctions_count),
      Action_Executability__State(actions_count),
      Observational__State(observations_count),
+     solver(solver),
      observational_state_during_expansion(0)
 {
     
