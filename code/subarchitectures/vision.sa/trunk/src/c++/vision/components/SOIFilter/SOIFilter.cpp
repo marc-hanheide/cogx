@@ -1238,10 +1238,14 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   segMask.data =  graphCut(segMask.width, segMask.height, 3, costPatch, bgCostPatch);
 
   // The VisualLearner application works well with small images so 
-  // we can add imgPatch, the patch from the small image to the ProtoObject
+  // we add imgPatch, the patch from the small image to the ProtoObject.
+  //
   // OTOH ObjectRecognizer requires higher resolutions so we add a
   // patch from the fullImage to the ProtoObject. In this case the dimensions
-  // of the mask and the patch don't match.
+  // of the mask and the patch don't match. Also the position of the
+  // ROI inside the original image is not exact because the ROI
+  // was calculated for an undistorted image (used by the stereo algorithm).
+  // With our cameras the distortion should not be significant, though.
 #if 0
   // Patch from rectified stereo image
   convertImageFromIpl(iplPatch, imgPatch);
