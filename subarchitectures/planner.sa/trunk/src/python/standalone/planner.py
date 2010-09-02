@@ -93,8 +93,11 @@ class Planner(object):
         if replanning_necessary:
             self._start_planner(task)
         else:
+            if task.pending_action:
+                # we're waiting for action affects to appear
+                task.set_planning_status(PlanningStatusEnum.WAITING)
             #if no action is executing, trigger update
-            if not any(pnode.is_inprogress() for pnode in task.get_plan().nodes_iter()):
+            elif not any(pnode.is_inprogress() for pnode in task.get_plan().nodes_iter()):
                 log.info("no actions are executing, reissuing plan")
                 task.set_plan(task.get_plan(), update_status=True)
             else:
@@ -138,6 +141,62 @@ class Planner(object):
             else:
                 pnode.action = mapltask.get_action(pnode.action.name)
 
+    def is_plan_valid(self, plan, goal_node, init_state):
+        log.debug("checking plan validity.")
+        #log.debug("current state is: %s", map(str, state.iterfacts()))
+        #check for plan validity: test all preconditions and apply effects
+        state = init_state.copy()
+        
+        skipped_actions = -1
+        first_invalid_action = None
+        for i,pnode in enumerate(plan):
+            log.debug("Action: %s (%s)", str(pnode), str(pnode.status))
+            if isinstance(pnode, plans.DummyNode) or pnode.status in (plans.ActionStatusEnum.EXECUTED, plans.ActionStatusEnum.FAILED):
+                continue
+            
+            t1 = time.time()
+            action = pnode.action
+            #don't check preconditions of actions in progress
+            if not pnode.is_inprogress() and (not self.check_node(pnode, state, replan=True) or not self.check_node(pnode, state)):
+                if not first_invalid_action:
+                    first_invalid_action = pnode
+                log.debug("Action (%s %s) is not executable, trying to skip it.", action.name, " ".join(a.name for a in pnode.full_args))
+                # if an action is not executable, maybe it has already been executed
+                # so we're trying if the rest of the plan is executable in the initial state
+                skipped_actions = i
+                state = init_state.copy()
+            else:
+                log.debug("Action (%s %s) ok.", action.name, " ".join(a.name for a in pnode.full_args))
+                for f in pnode.effects:
+                    state.set(f)
+            log.debug("time for checking action (%s %s): %f", action.name, " ".join(a.name for a in pnode.full_args), time.time()-t1)
+
+        t2 = time.time()
+        #Now check if the goal is satisfied
+        #log.debug("state after execution is: %s", map(str, state.iterfacts()))
+        log.debug("checking if goal is still satisfied.")
+        if self.check_node(goal_node, state):
+            if skipped_actions > -1:
+                log.info("Skipped the first %d actions.", skipped_actions)
+                for pnode in plan[0:skipped_actions]:
+                    pnode.status = plans.ActionStatusEnum.EXECUTED
+                #we skipped all actions and the goal ist still satisfied: done
+                if skipped_actions > len(plan)-2:
+                    goal_node.status = plans.ActionStatusEnum.EXECUTED
+
+            log.info("Plan is still valid.")
+            log.debug("time for goal validation: %f", time.time()-t2)
+            return True
+
+        log.debug("time for goal validation: %f", time.time()-t2)
+        
+        if first_invalid_action:
+            #print map(lambda (k,v): "%s = %s" % (str(k), str(v)), task.get_state().iteritems())
+            log.info("Preconditions of (%s %s) are not satisfied, triggering replanning.", first_invalid_action.action.name, " ".join(a.name for a in first_invalid_action.full_args))
+        else:
+            log.info("Goal isn't fulfilled by the current plan, triggering replanning.")
+        return False
+
     @statistics.time_method_for_statistics("monitoring_time")
     def _evaluate_current_plan(self, task):
         """
@@ -145,6 +204,9 @@ class Planner(object):
         a modified task description. 
         Returns True if replanning is necessary, else False.
         """
+
+        task.pending_action = None
+        
         if task.get_plan() is None:
             return True
 
@@ -177,61 +239,35 @@ class Planner(object):
         log.debug("time for checking assertions: %f", time.time()-t0)
 
         log.debug("checking plan validity.")
-        #log.debug("current state is: %s", map(str, state.iterfacts()))
-        #check for plan validity: test all preconditions and apply effects
-        skipped_actions = -1
-        first_invalid_action = None
-        for i,pnode in enumerate(plan):
-            log.debug("Action: %s (%s)", str(pnode), str(pnode.status))
-            if isinstance(pnode, plans.DummyNode) or pnode.status in (plans.ActionStatusEnum.EXECUTED, plans.ActionStatusEnum.FAILED):
-                continue
+        if self.is_plan_valid(plan, task.get_plan().goal_node, task.get_state()):
+            return False # No replanning neccessary
+
+        #check if we're waiting for the last action:
+        last_executed_index = -1
+        for i, pnode in enumerate(plan):
+            if pnode.status == plans.ActionStatusEnum.EXECUTED:
+                last_executed_index = i
+            elif pnode.status == plans.ActionStatusEnum.FAILED:
+                last_executed_index = -1
+                break
             
-            t1 = time.time()
-            action = pnode.action
-            #don't check preconditions of actions in progress
-            if not pnode.is_inprogress() and (not self.check_node(pnode, state, replan=True) or not self.check_node(pnode, state)):
-                if not first_invalid_action:
-                    first_invalid_action = pnode
-                log.debug("Action (%s %s) is not executable, trying to skip it.", action.name, " ".join(a.name for a in pnode.full_args))
-                # if an action is not executable, maybe it has already been executed
-                # so we're trying if the rest of the plan is executable in the initial state
-                skipped_actions = i
-                state = task.get_state().copy()
-            else:
-                log.debug("Action (%s %s) ok.", action.name, " ".join(a.name for a in pnode.full_args))
-                for f in pnode.effects:
-                    state.set(f)
-            log.debug("time for checking action (%s %s): %f", action.name, " ".join(a.name for a in pnode.full_args), time.time()-t1)
-
-        t2 = time.time()
-        #Now check if the goal is satisfied
-        #log.debug("state after execution is: %s", map(str, state.iterfacts()))
-        log.debug("checking if goal is still satisfied.")
-        if self.check_node(task.get_plan().goal_node, state):
-            if skipped_actions > -1:
-                log.info("Skipped the first %d actions.", skipped_actions)
-                for pnode in plan[0:skipped_actions]:
-                   pnode.status = plans.ActionStatusEnum.EXECUTED
-                #we skipped all actions and the goal ist still satisfied: done
-                if skipped_actions > len(plan)-2:
-                    task.get_plan().goal_node.status = plans.ActionStatusEnum.EXECUTED
-
-            log.info("Plan is still valid.")
-            log.debug("time for goal validation: %f", time.time()-t2)
+        if last_executed_index == -1:
             log.debug("total time for validation: %f", time.time()-t0)
-            return False
+            return True
 
-        log.debug("time for goal validation: %f", time.time()-t2)
+        #apply the action's effects and check if the plan would be executable
+        pnode = plan[last_executed_index]
+        remaining_plan = plan[last_executed_index+1:]
+        for f in pnode.effects:
+            state.set(f)
+        if self.is_plan_valid(remaining_plan, task.get_plan().goal_node, state):
+            task.pending_action = pnode
+            log.debug("total time for validation: %f", time.time()-t0)
+            return False # waiting for action completion
+
         log.debug("total time for validation: %f", time.time()-t0)
+        return True
         
-        if first_invalid_action:
-            #print map(lambda (k,v): "%s = %s" % (str(k), str(v)), task.get_state().iteritems())
-            log.info("Preconditions of (%s %s) are not satisfied, triggering replanning.", first_invalid_action.action.name, " ".join(a.name for a in first_invalid_action.full_args))
-        else:
-            log.info("Goal isn't fulfilled by the current plan, triggering replanning.")
-
-        return True  # no monitoring currently
-
     
     @statistics.time_method_for_statistics("planning_time")
     def _start_planner(self, task):

@@ -26,7 +26,8 @@ static const int REPLAN_DELAY = 3000;
 static const string BINDER_SA = "binder";
 
 void WMControl::configure(const cast::cdl::StringMap& _config, const Ice::Current& _current) {
-  m_lastUpdate = getCASTTime();
+    m_lastUpdate = getCASTTime();
+    m_new_updates = false;
     cast::ManagedComponent::configure(_config, _current);
 
     cast::cdl::StringMap::const_iterator it = _config.begin();
@@ -84,6 +85,7 @@ void WMControl::runComponent() {
     std::vector<int> execute;
     while (isRunning()) {
         m_queue_mutex.lock();
+        bool waiting = !m_waiting_tasks.empty();
         if (!m_runqueue.empty()) {
             log("planning is scheduled");
             timeval tval;
@@ -98,12 +100,14 @@ void WMControl::runComponent() {
             }
             for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
                 m_runqueue.erase(*it);
+                m_waiting_tasks.erase(*it);
             }
         }
         m_queue_mutex.unlock();
 
-        if (!execute.empty()) {
+        if (!execute.empty() || (waiting && m_new_updates)) {
             lockComponent();
+            m_new_updates = false;
             vector<dBeliefPtr> state;
             for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
                 state.push_back(i->second);
@@ -269,6 +273,7 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     else {
         m_currentState.erase(wmc.address.id);
     }
+    m_new_updates = true;
 
     // log("Recevied state change...");
 
@@ -376,6 +381,12 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals)
         return;
     }
 
+    //remove task from pending queues
+    m_queue_mutex.lock();
+    m_waiting_tasks.erase(id);
+    m_runqueue.erase(id);
+    m_queue_mutex.unlock();
+
     if (plan.size() > 0) {
         ActionPtr first_action = plan[0];
         //log("first action: %s", first_action->fullName.c_str());
@@ -482,6 +493,15 @@ void WMControl::setChangeFilter(int id, const StateChangeFilterPtr& filter) {
     m_stateFilters[id] = filter;
 }
 
+void WMControl::waitForChanges(int id, int timeout) {
+    assert(activeTasks.find(id) != activeTasks.end());
+    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
+    m_queue_mutex.lock();
+    m_waiting_tasks.insert(id);
+    m_queue_mutex.unlock();
+    dispatchPlanning(task, timeout);
+}
+
 void WMControl::writeAction(ActionPtr& action, PlanningTaskPtr& task) {
     string id = task->firstActionID;
     action->taskID = task->id;
@@ -517,4 +537,8 @@ void WMControl::InternalCppServer::updateStatus(int id, Completion status, const
 
 void WMControl::InternalCppServer::setChangeFilter(int id, const StateChangeFilterPtr& filter, const Ice::Current&) {
     parent->setChangeFilter(id, filter);
+}
+
+void WMControl::InternalCppServer::waitForChanges(int id, int timeout, const Ice::Current&) {
+    parent->waitForChanges(id, timeout);
 }

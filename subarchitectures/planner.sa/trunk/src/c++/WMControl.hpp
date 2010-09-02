@@ -6,6 +6,7 @@
 #include <Ice/Ice.h>
 #include "Planner.hpp"
 #include <map>
+#include <set>
 #include <sys/time.h>
 #include <boost/thread.hpp>
 
@@ -29,6 +30,7 @@ protected:
     void updateBeliefState(const BeliefSeq& beliefs);
     void updateStatus(int id, Completion status);
     void setChangeFilter(int id, const StateChangeFilterPtr& filter);
+    void waitForChanges(int id, int timeout);
 
     void receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc);
     void actionChanged(const cast::cdl::WorkingMemoryChange& wmc);
@@ -45,6 +47,7 @@ protected:
         virtual void updateBeliefState(const BeliefSeq& beliefs, const Ice::Current&);
         virtual void updateStatus(int id, Completion status, const Ice::Current&);
         virtual void setChangeFilter(int id, const StateChangeFilterPtr& filter, const Ice::Current&);
+        virtual void waitForChanges(int id, int timeout, const Ice::Current&);
 
     protected:
         WMControl* parent;
@@ -57,6 +60,7 @@ private:
 
     typedef std::tr1::unordered_map<int,cast::cdl::WorkingMemoryAddress> taskMap;
     taskMap activeTasks;
+    std::set<int> m_waiting_tasks;
 
     typedef std::tr1::unordered_map< std::string, ::de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBeliefPtr > BeliefMap;
     typedef std::vector< ::de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBeliefPtr > PerceptList;
@@ -64,6 +68,7 @@ private:
     PerceptList m_percepts;
     std::map<int, StateChangeFilterPtr> m_stateFilters;
     cast::cdl::CASTTime m_lastUpdate;
+    bool m_new_updates;
 
     std::map<int, timeval> m_runqueue;
     boost::mutex m_queue_mutex;

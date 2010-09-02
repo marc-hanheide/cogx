@@ -10,7 +10,7 @@ from utils import Enum
 
 log = config.logger("planner")
 
-PlanningStatusEnum = Enum("TASK_CHANGED", "RUNNING", "PLAN_AVAILABLE", "PLANNING_FAILURE", "INTERRUPTED")    
+PlanningStatusEnum = Enum("TASK_CHANGED", "RUNNING", "PLAN_AVAILABLE", "PLANNING_FAILURE", "INTERRUPTED", "WAITING")    
 
 statistics_defaults = dict(
     deliberate_replans=0,
@@ -32,6 +32,7 @@ class Task(object):
         self._action_whitelist = None
         self._plan = None
         self.planner = None
+        self.pending_action = None
         #for dt testing only
         self.dt_calls = 0
         self.dt_actions = 0
@@ -128,6 +129,9 @@ class Task(object):
 
     def get_plan(self):
         return self._plan
+
+    def set_planning_status(self, status):
+        self.planning_status = status
 
     def set_plan(self, plan, update_status=True):
         self._plan = plan
