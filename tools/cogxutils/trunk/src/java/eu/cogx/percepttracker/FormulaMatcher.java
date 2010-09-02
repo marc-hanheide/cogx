@@ -130,6 +130,9 @@ public class FormulaMatcher implements
 		} catch (ClassCastException e) {
 			logger.debug("incompatible classes => 0.0");
 			return 0.0;
+		} catch (InterruptedException e) {
+			logger.warn("interrupted", e);
+			return 0.0;
 		}
 	}
 
@@ -145,9 +148,10 @@ public class FormulaMatcher implements
 	 *            the {@link IndependentBasicDistributions} to match against
 	 * @return true if all {@link FormulaDistribution} in this have a matching
 	 *         correspondent in other
+	 * @throws InterruptedException 
 	 */
 	public boolean matches(IndependentFormulaDistributions compareThis,
-			IndependentFormulaDistributions compareTo) {
+			IndependentFormulaDistributions compareTo) throws InterruptedException {
 		for (Entry<String, FormulaDistribution> entry : compareThis.entrySet()) {
 			FormulaDistribution otherEntry = compareTo.get(entry.getKey());
 			if (otherEntry == null)
@@ -165,7 +169,7 @@ public class FormulaMatcher implements
 				// look up the corresponding value of the groundedbelief for
 				// this pointer
 				WorkingMemoryAddress lookUpGroundedBelief;
-				lookUpGroundedBelief = wm2wmMap.get(wmPointer.pointer);
+				lookUpGroundedBelief = wm2wmMap.waitFor(wmPointer.pointer);
 				assert (lookUpGroundedBelief != null);
 				// it should be always valid here!
 				if (!lookUpGroundedBelief
