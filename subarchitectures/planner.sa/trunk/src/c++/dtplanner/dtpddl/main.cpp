@@ -174,12 +174,14 @@ int main(int argc, char** argv)
                                  <<*current_state<<std::endl
                                  <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
             
+            Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
             for(uint i = 0; i < 100; i++){
                 if(!solver->expand_belief_state_space()){
                     break;
                     VERBOSER(10017, "No starting state!"<<std::endl);
                 } else {
                     VERBOSER(10017, "Expanding!"<<std::endl);
+                    policy_Iteration();
                 }
             }
 

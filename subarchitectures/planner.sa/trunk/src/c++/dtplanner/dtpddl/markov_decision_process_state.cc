@@ -47,7 +47,7 @@ Markov_Decision_Process_State
  uint function_count)
     :boolean_State(propositions_count),
      integer_State(function_count),
-     value(0.0)
+     reward(0.0)
 {
     INTERACTIVE_VERBOSER(true, 7000, "Made an MDP state with  :: "
                          <<propositions_count
@@ -60,7 +60,7 @@ Markov_Decision_Process_State(const Markov_Decision_Process_State& markov_Decisi
     :boolean_State(markov_Decision_Process_State.boolean_State),
      integer_State(markov_Decision_Process_State.integer_State),
      float_State(markov_Decision_Process_State.float_State),
-     value(markov_Decision_Process_State.value)
+     reward(markov_Decision_Process_State.reward)
 {
 }
 
@@ -269,14 +269,14 @@ void Markov_Decision_Process_State::set__int(uint index, int value)
 }
 
 
-double Markov_Decision_Process_State::get__value() const
+double Markov_Decision_Process_State::get__reward() const
 {
-    return value;
+    return reward;
 }
 
-void Markov_Decision_Process_State::set__value(double value)
+void Markov_Decision_Process_State::set__reward(double reward)
 {
-    this->value = value;
+    this->reward = reward;
 }
 
 

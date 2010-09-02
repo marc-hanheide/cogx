@@ -388,10 +388,10 @@ add__belief_atom( MDP_State* mdp__state, double probability)
 //     assert(this->expected_value < 1.1);
 
     INTERACTIVE_VERBOSER(true, 9097, "Adding to expected value :: "
-                         <<(probability * mdp__state->get__value()));
+                         <<(probability * mdp__state->get__reward()));
     
     
-    this->expected_reward += (probability * mdp__state->get__value());
+    this->expected_reward += (probability * mdp__state->get__reward());
     this->expected_value =  this->expected_reward;   
 }
 

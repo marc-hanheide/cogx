@@ -122,16 +122,16 @@ namespace Planning
         
         Observational_State* observational_state_during_expansion;
         
-        /* For each action in
-         * \member{Markov_Decision_Process_State::successor_driver},
-         * we kept the expected value of executing that action. */
-        std::vector<double> expected_successor_value;
+//         /* For each action in
+//          * \member{Markov_Decision_Process_State::successor_driver},
+//          * we kept the expected value of executing that action. */
+//         std::vector<double> expected_successor_value;
 
-        /* Index to the maximum value in \member{expected_successor_value}.*/
-        uint index__max_expected_successor_value;
+//         /* Index to the maximum value in \member{expected_successor_value}.*/
+//         uint index__max_expected_successor_value;
 
-        /* Value of the maximum entry in \member{expected_successor_value}.*/
-        double value__max_expected_successor_value;
+//         /* Value of the maximum entry in \member{expected_successor_value}.*/
+//         double value__max_expected_successor_value;
     };
     
     /*State pointers.*/

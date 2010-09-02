@@ -59,14 +59,41 @@ Are_Doubles_Close Solver::are_Doubles_Close(1e-9);
 std::pair<Planning::Formula::Action_Proposition, uint>
 Solver::get_prescribed_action(POMDP_State* state)
 {
-    auto belief = state->get__belief_state();
-    uint index = random() % belief.size();
-    POMDP_State::Belief_Atom atom = belief[index];
+    basic_type::Runtime_Thread runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
+        (dynamic_cast<const Planning::Problem_Grounding*>(problem_Grounding.get()));
 
-
-    assert(dynamic_cast<State*>(atom.first));
+    auto prescribed_action_index = state->get__prescribed_action();
     
-    return get_prescribed_action(dynamic_cast<State*>(atom.first));//mdp_state);
+    QUERY_UNRECOVERABLE_ERROR(!State_Transformation::
+                              ith_exists(runtime_Thread, prescribed_action_index)
+                              , "Could not find a ground symbol associated with index :: "
+                              << prescribed_action_index);
+    
+    INTERACTIVE_VERBOSER(true, 10015,
+                         "Got successor driver :: "<<prescribed_action_index<<" "
+                         <<State_Transformation::
+                         make_ith<State_Transformation>
+                         (runtime_Thread,
+                          prescribed_action_index).get__identifier()<<std::endl);
+    
+    auto symbol = State_Transformation::
+        make_ith<State_Transformation>
+        (runtime_Thread,
+         prescribed_action_index);
+    auto& identifier = symbol.get__identifier();
+    auto id_value =  symbol.get__id();
+    
+    std::pair<Planning::Formula::Action_Proposition, uint> result(identifier, id_value);
+    return result;
+    
+//     auto belief = state->get__belief_state();
+//     uint index = random() % belief.size();
+//     POMDP_State::Belief_Atom atom = belief[index];
+
+
+//     assert(dynamic_cast<State*>(atom.first));
+    
+//     return get_prescribed_action(dynamic_cast<State*>(atom.first));//mdp_state);
 }
 
 /*Let's remove a few bugs at a time ;) */
@@ -84,6 +111,7 @@ Solver::get_prescribed_action(State* current_state)
     auto action_index = executable_action_indices[_action_index];
     
 
+#ifndef DNDEBUG
     if(!Formula::State_Proposition::
        ith_exists(runtime_Thread, action_index)){
         for(auto i =0; i < action_index; i++){
@@ -98,10 +126,10 @@ Solver::get_prescribed_action(State* current_state)
             
         }
     }
+#endif
     
     
-    
-    QUERY_UNRECOVERABLE_ERROR(!Formula::State_Proposition::
+    QUERY_UNRECOVERABLE_ERROR(!State_Transformation::
                               ith_exists(runtime_Thread, action_index)
                               , "Could not find a ground symbol associated with index :: "
                               << action_index);
@@ -170,8 +198,8 @@ POMDP_State* Solver::take_observation(POMDP_State* current_state,
                                 const Percept_List& perceptions,
                                 uint action_index)
 {
-    basic_type::Runtime_Thread runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
-        (dynamic_cast<const Planning::Problem_Grounding*>(problem_Grounding.get()));
+//     basic_type::Runtime_Thread runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
+//         (dynamic_cast<const Planning::Problem_Grounding*>(problem_Grounding.get()));
 
     Observational_State* new_observation
         = new Observational_State(problem_Grounding->get__perceptual_Propositions().size());
