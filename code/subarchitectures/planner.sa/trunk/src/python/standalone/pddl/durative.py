@@ -1,8 +1,55 @@
 from parser import *
 import mapltypes as types
 import builtin, predicates, actions, conditions, effects
+from builtin import t_object, t_number
 from conditions import *
 from scope import SCOPE_EFFECT
+
+pddl_module = True
+
+change = predicates.Predicate("change", [types.Parameter("?f", types.FunctionType(t_object)), types.Parameter("?v", t_object)], builtin=True, function_scope=SCOPE_EFFECT)
+num_change = predicates.Predicate("change", [types.Parameter("?f", types.FunctionType(t_number)), types.Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
+
+total_time = predicates.Function("total-time", [], t_number, builtin=True)
+
+default_predicates = [change, num_change]
+default_functions = [total_time]
+
+strict_mode = True
+
+def action_handler(it, domain):
+    if "mapl" in domain.requirements:
+        return False # let the mapl module handle it
+    domain.actions.append(DurativeAction.parse(it, domain))
+    return True
+
+def effect_handler(it, scope):
+    if not scope.get_tag("durative_action"):
+        return None
+    
+    first = it.get(None, "effect specification")
+    if first.token.string == "at":
+        return TimedEffect.parse(it.reset(), scope)
+
+def condition_handler(it, scope):
+    if not scope.get_tag("durative_action"):
+        return None
+        
+    first = it.get()
+    if first.token.string in ("at", "over"):
+        if scope.get_tag("timed_condition"):
+            raise ParseError(first.token, "Nested timed conditions are not allowed.")
+        return TimedCondition.parse(it.reset(), scope)
+
+    if strict_mode and not scope.get_tag("timed_condition") and first.token.string not in ("and", "forall"):
+        # only "and" and "forall" are allowed outside a timed specifier
+        raise UnexpectedTokenError(first.token, "'and', 'forall' or timed condition ('at' or 'over')")
+    
+parse_handlers = {
+    ":durative-action" : action_handler,
+    "Effect" : effect_handler,
+    "Condition" : condition_handler
+}
 
 class DurationConstraint(object):
     def __init__(self, term, timeSpecifier="start"):
@@ -55,6 +102,8 @@ class DurationConstraint(object):
 class DurativeAction(actions.Action):
     def __init__(self, name, args, duration, precondition, effect, domain, replan=None):
         actions.Action.__init__(self, name, args, precondition, effect, domain, replan=replan)
+        self.set_tag("durative_action", True) # proper parsing context
+        
         self.add(types.TypedObject("?duration", types.t_number))
         self.duration = duration
         for d in self.duration:
@@ -101,15 +150,17 @@ class DurativeAction(actions.Action):
                 if next.token.string == ":condition":
                     if action.precondition:
                         raise ParseError(next.token, "precondition already defined.")
-                    action.precondition = TimedCondition.parse(iter(it.get(list, "condition")), action)
+                    action.precondition = Condition.parse(iter(it.get(list, "condition")), action)
                 elif next.token.string == ":replan":
                     if action.replan:
                         raise ParseError(next.token, "replan condition already defined.")
+                    action.set_tag("durative_action", False)
                     action.replan = conditions.Condition.parse(iter(it.get(list, "condition")), action)
+                    action.set_tag("durative_action", True)
                 elif next.token.string == ":effect":
                     if action.effect:
                         raise ParseError(next.token, "effects already defined.")
-                    action.effect = effects.Effect.parse(iter(it.get(list, "effect")), action, timed_effects=True)
+                    action.effect = effects.Effect.parse(iter(it.get(list, "effect")), action)
                 else:
                     raise UnexpectedTokenError(next.token)
                     
@@ -141,18 +192,19 @@ class TimedCondition(conditions.Condition):
     
     @staticmethod
     def parse(it, scope):
+        scope.set_tag("timed_condition", True)
         
         first = it.get()
         tag = first.token.string
-        if tag == "and":
-            parts = []
-            for part in it:
-                if part.is_terminal():
-                    raise UnexpectedTokenError(part.token, "condition")
-                parts.append(TimedCondition.parse(iter(part), scope))
-            return Conjunction(parts)
-        elif tag == "forall":
-            return QuantifiedCondition.parse(it, scope, UniversalCondition, TimedCondition.parse)
+        # if tag == "and":
+        #     parts = []
+        #     for part in it:
+        #         if part.is_terminal():
+        #             raise UnexpectedTokenError(part.token, "condition")
+        #         parts.append(TimedCondition.parse(iter(part), scope))
+        #     return Conjunction(parts)
+        # elif tag == "forall":
+        #     return QuantifiedCondition.parse(it, scope, UniversalCondition, TimedCondition.parse)
 
         if not tag in ("at", "over"):
             raise UnexpectedTokenError(first.token, "timed condition ('at' or 'over')")
@@ -166,6 +218,7 @@ class TimedCondition(conditions.Condition):
 
         condition = Condition.parse(iter(it.get(list)), scope)
         
+        scope.set_tag("timed_condition", False)
         return TimedCondition(specifier.string, condition)
 
 
@@ -199,6 +252,15 @@ class TimedEffect(effects.SimpleEffect):
             time = self.time
 
         return TimedEffect(predicate, args, time, scope, negated)
+
+    def pddl_str(self, instantiated=True):
+        """Return a pddl text representation of this Effect.
+        
+        Arguments:
+        instantiated -- if True (which is the default) resolves
+        instantiated Parameters before printing the string."""
+        return "(at %s %s)" % (self.time, effects.SimpleEffect.pddl_str(self, instantiated))
+        
     
     def __str__(self):
         return "TimedEffect at %s: %s" %(self.time, predicates.Literal.__str__(self))
@@ -211,10 +273,12 @@ class TimedEffect(effects.SimpleEffect):
         
     @staticmethod
     def parse(it, scope):
-        first = it.get(None, "effect specification").token
+        first = it.get("at", "timed effect specification").token
 
         if first.string != "at":
             eff = effects.SimpleEffect.parse(it.reset(), scope)
+            if eff.predicate not in (change, num_change):
+                raise UnexpectedTokenError(first, "'at start', 'at end' or 'change'")
             return eff
 
         timespec = it.get().token
@@ -227,7 +291,7 @@ class TimedEffect(effects.SimpleEffect):
         if literal.predicate in builtin.assignment_ops + builtin.numeric_ops and literal.negated:
             raise ParseError(first, "Can't negate fluent assignments.")
 
-        if literal.predicate in (builtin.change, builtin.num_change):
+        if literal.predicate in (change, num_change):
             raise ParseError(first, "'change' can't be a start or end effect.")
         
         if literal.predicate == builtin.equals:

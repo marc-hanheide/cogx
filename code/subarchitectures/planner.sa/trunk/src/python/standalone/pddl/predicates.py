@@ -320,6 +320,9 @@ class Term(object):
         Term and a list of results of previous calls."""
         
         return fn(self, [])
+
+    def copy(self, new_scope=None):
+        raise NotImplementedError()
     
     def pddl_str(self, instantiated=True):
         """Return a pddl representation of this Term.
@@ -420,6 +423,9 @@ class FunctionTerm(Term):
         Term and a list of results of previous calls."""
         
         return fn(self, [a.visit(fn) for a in self.args])
+
+    def copy(self, new_scope=None):
+        return FunctionTerm(self.function, [a.copy(new_scope) for a in self.args], new_scope)
     
     def __str__(self):
         return "FunctionTerm: %s(%s)" % (self.function.name, " ".join(str(s) for s in self.args))
@@ -504,6 +510,11 @@ class VariableTerm(Term):
         terms parameter."""
         return self.object.type
 
+    def copy(self, new_scope=None):
+        if new_scope:
+            return VariableTerm(new_scope[self.object])
+        return VariableTerm(self.object)
+    
     def __eq__(self, other):
         if isinstance(other, VariableTerm):
             return self.object == other.object
@@ -556,6 +567,11 @@ class FunctionVariableTerm(FunctionTerm, VariableTerm):
         if self.is_instantiated():
             return FunctionTerm(self.get_instance().function, [a for a in self.get_instance().args])
         return FunctionVariableTerm(self.object)
+
+    def copy(self, new_scope=None):
+        if new_scope:
+            return FunctionVariableTerm(new_scope[self.object])
+        return FunctionVariableTerm(self.object)
     
     def __get_function(self):
         if self.is_instantiated():
@@ -606,6 +622,11 @@ class ConstantTerm(Term):
 
     def copy_instance(self):
         """Returns a copy of this term."""
+        return ConstantTerm(self.object)
+
+    def copy(self, new_scope=None):
+        if new_scope:
+            return ConstantTerm(new_scope[self.object])
         return ConstantTerm(self.object)
     
     def __str__(self):

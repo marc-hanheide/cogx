@@ -6,7 +6,7 @@ from itertools import imap, ifilter
 from collections import defaultdict
 
 import mapltypes as types
-import conditions, problem, effects, durative, mapl
+import conditions, problem, effects, mapl
 from state import StateVariable, Fact, State
 from builtin import *
 from predicates import *

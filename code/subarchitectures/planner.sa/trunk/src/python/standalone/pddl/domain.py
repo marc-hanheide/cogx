@@ -16,7 +16,7 @@ from scope import Scope, FunctionTable
 from actions import Action
 from axioms import Axiom
 
-supported = set(["modal-predicates", "strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated", "fluents", "numeric-fluents", "object-fluents", "durative-actions", "action-costs"])
+supported = set(["modal-predicates", "strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated", "fluents", "numeric-fluents", "object-fluents", "action-costs"])
 
 support_depends = {"adl" : ["typing", "negative-preconditions", "disjunctive-preconditions", "quantified-preconditions", "equality", "conditional-effects"],
                    "fluents" : ["numeric-fluents", "object-fluents"]}
@@ -111,6 +111,28 @@ class Domain(Scope):
     def stratify_axioms(self):
         """Compute stratification layers for the axioms in this domain."""
         self.stratification, self.nonrecursive = axioms.stratify(self.axioms)
+
+    def add_requirement(self, req):
+        if req not in supported:
+            module = ModuleDescription.import_module(req)
+            assert module, "%s is not supported." % req
+            
+            for r in module.dependencies:
+                self.add_requirement(r)
+        
+            for t in module.types:
+                self.types[t.name] = t
+            self.constants |= set(module.constants)
+            self.add(module.constants)
+            self.predicates.add(module.predicates)
+            self.functions.add(module.functions)
+
+            if module.parse_handlers:
+                self.parse_handlers.append(module.parse_handlers)
+            if module.prepare_domain:
+                module.prepare_domain(self)
+            
+        self.requirements.add(req)    
         
     @staticmethod
     def parse(root, supp = supported):
@@ -159,10 +181,6 @@ class Domain(Scope):
             preds.add(builtin.num_equal_assign)
             functions.add(builtin.numeric_functions)
 
-        if "durative-actions" in requirements:
-            preds.add(builtin.change)
-            preds.add(builtin.num_change)
-            
         if "action-costs" in requirements:
             try:
                 preds.add(builtin.increase)
@@ -181,6 +199,8 @@ class Domain(Scope):
                 domain = Domain(domname, typeDict, constants, preds, functions, [], [])
                 domain.requirements = set(requirements)
                 for m in modules:
+                    if m.parse_handlers:
+                        domain.parse_handlers.append(m.parse_handlers)
                     if m.prepare_domain:
                         m.prepare_domain(domain)
 
@@ -234,10 +254,6 @@ class Domain(Scope):
 
             elif type == ":action":
                 domain.actions.append(Action.parse(j.reset(), domain))
-
-            elif type == ":durative-action" and "durative-actions" in requirements :
-                import durative
-                domain.actions.append(durative.DurativeAction.parse(j.reset(), domain))
                 
             elif type == ":derived":
                 domain.axioms.append(Axiom.parse(j.reset(), domain))

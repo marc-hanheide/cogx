@@ -8,6 +8,7 @@ from collections import defaultdict
 import mapltypes as types
 import conditions, problem, effects, durative
 from builtin import *
+from durative import change, num_change
 from predicates import *
 from mapltypes import TypedNumber
 
@@ -625,7 +626,7 @@ class State(dict):
             val = values[0]
             eff_svar = svar
         
-        if pred in (assign, change, num_assign, equal_assign, num_equal_assign):
+        if pred in (assign, change, num_change, num_assign, equal_assign, num_equal_assign):
             eff_value = val
         elif pred in (increase, decrease, scale_up, scale_down):
             if previous == UNKNOWN:

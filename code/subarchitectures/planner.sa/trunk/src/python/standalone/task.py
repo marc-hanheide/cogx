@@ -314,10 +314,10 @@ class TemporalTranslator(pddl.translators.Translator):
                     return False
                 if eff.predicate == pddl.assign:
                     affected_vars.add((eff.args[0].function, ) + tuple(eff.args[0].args))
-                    return pddl.SimpleEffect(pddl.builtin.change, eff.args[:])
+                    return pddl.SimpleEffect(pddl.durative.change, eff.args[:])
                 if eff.predicate == pddl.builtin.num_assign:
                     affected_vars.add((eff.args[0].function, ) + tuple(eff.args[0].args))
-                    return pddl.SimpleEffect(pddl.builtin.num_change, eff.args[:])
+                    return pddl.SimpleEffect(pddl.durative.num_change, eff.args[:])
                 affected_vars.add((eff.predicate, ) + tuple(eff.args))
                 return pddl.durative.TimedEffect(eff.predicate, eff.args[:], "end", negated=eff.negated)
             if isinstance(eff, pddl.ConditionalEffect):

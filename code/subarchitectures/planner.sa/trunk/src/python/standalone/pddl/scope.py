@@ -158,7 +158,7 @@ class FunctionTable(dict):
         
     def __setitem__(self, key, value):
         raise NotImplementedError
-
+    
 class Scope(dict):
     """This class represents any PDDL object that can define variables
     or constants. It implements a lookup table to get the associated
@@ -184,6 +184,10 @@ class Scope(dict):
         
         self.set_parent(parent)
         self.termcache = {}
+
+        self.tags = {}
+        self.inherited_tags = set()
+        
         for obj in objects:
             dict.__setitem__(self, obj.name, obj)
 
@@ -199,11 +203,13 @@ class Scope(dict):
             self.types = parent.types
             assert not "false" in self.types
             self.requirements = parent.requirements
+            self.parse_handlers = parent.parse_handlers
         else:
             self.predicates = FunctionTable()
             self.functions = FunctionTable()
             self.types = {}
             self.requirements = set()
+            self.parse_handlers = []
 
     
     def lookup(self, args):
@@ -325,7 +331,20 @@ class Scope(dict):
             self.add(arg)
             result.append(arg)
         return result
-    
+
+    def set_tag(self, key, value, inherit=True):
+        self.tags[key] = value
+        self.inherited_tags.add(key)
+
+    def get_tag(self, key, from_parents=True, inherited_only=False):
+        if key in self.tags:
+            if inherited_only and key not in self.inherited_tags:
+                return None
+            return self.tags[key]
+        if from_parents and self.parent:
+            return self.parent.get_tag(key, inherited_only=True)
+        return None
+
     def __contains__(self, key):
         if isinstance(key, (predicates.ConstantTerm, predicates.VariableTerm)):
             key = key.object

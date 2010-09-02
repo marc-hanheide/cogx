@@ -212,7 +212,8 @@ class ActionTest(unittest.TestCase):
 
     def testDurativeAction(self):
         """Testing durative action parsing"""
-        
+
+        self.domain.add_requirement("durative-actions")
         action = Parser.parse_as(dur_drive.split("\n"), durative.DurativeAction, self.domain)
 
         self.assertEqual(action.precondition.__class__, durative.TimedCondition)

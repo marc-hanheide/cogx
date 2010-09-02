@@ -116,12 +116,8 @@ class MapsimScenario(object):
                     raise UnexpectedTokenError(opt, "'minimize' or 'maximize'")
                 problem.optimization = opt.string
                 
-                if "durative-actions" in domain.requirements:
-                    problem.functions.add(builtin.total_time)
                 #problem.functions.add(builtin.total_cost)
                 func = predicates.Term.parse(j,problem)
-                if "durative-actions" in domain.requirements:
-                    problem.functions.remove(builtin.total_time)
                 #problem.functions.remove(builtin.total_cost)
 
                 j.no_more_tokens()

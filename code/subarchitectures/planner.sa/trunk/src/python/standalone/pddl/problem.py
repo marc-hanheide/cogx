@@ -22,6 +22,8 @@ def product(*iterables):
 class Problem(domain.Domain):
     def __init__(self, name, objects, init, goal, _domain, optimization=None, opt_func=None):
         domain.Domain.__init__(self, name, _domain.types, _domain.constants, _domain.predicates, _domain.functions, [], [])
+        self.set_tag("only-simple-effects", True, inherit=False)
+        
         self.actions = [a.copy(self) for a in _domain.actions]
         self.axioms = [a.copy(self) for a in _domain.axioms]
         if _domain.observe:
@@ -110,7 +112,6 @@ class Problem(domain.Domain):
                 for elem in j:
                     if elem.is_terminal():
                         raise UnexpectedTokenError(elem.token, "literal or fluent assignment")
-                        
                     init_elem = Problem.parseInitElement(iter(elem), problem)
                     problem.init.append(init_elem)
                     
@@ -125,12 +126,8 @@ class Problem(domain.Domain):
                     raise UnexpectedTokenError(opt, "'minimize' or 'maximize'")
                 problem.optimization = opt.string
 
-                if "durative-actions" in domain.requirements:
-                    problem.functions.add(builtin.total_time)
                 #problem.functions.add(builtin.total_cost)
                 func = predicates.Term.parse(j,problem)
-                if "durative-actions" in domain.requirements:
-                    problem.functions.remove(builtin.total_time)
                 #problem.functions.remove(builtin.total_cost)
 
                 j.no_more_tokens()
@@ -152,7 +149,7 @@ class Problem(domain.Domain):
         first = it.get("terminal").token
         if first.string == "probabilistic":
             #TODO: disallow nested functions in those effects.
-            return effects.ProbabilisticEffect.parse(it.reset(), scope, timed_effects=False, only_simple=True)
+            return effects.ProbabilisticEffect.parse(it.reset(), scope)
         elif first.string == "assign-probabilistic":
             return effects.ProbabilisticEffect.parse_assign(it.reset(), scope)
         else:
