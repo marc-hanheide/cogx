@@ -696,12 +696,13 @@ void DTPCONTROL::newTask(Ice::Int id,
     solvers[id] = new Planning::Solver(*actual_problem->second);//thread_to_problem[id]);
     solvers[id]->preprocess();
     QUERY_UNRECOVERABLE_ERROR(!solvers[id]->expansion_queue.size()
-                              , "The problem is NULL, there is no starting state."
+                              , "The problem is NULL, there is no starting state."<<std::endl
                               <<*actual_problem->second<<std::endl);
 //     solvers[id]->expand_belief_state_space();
     current_state[id] = solvers[id]->expansion_queue.front();
-    if(solvers[id]->expand_belief_state_space()){
-        UNRECOVERABLE_ERROR("I don't seem to have a starting state on the expansion queue."<<std::endl);
+    if(!solvers[id]->expand_belief_state_space()){
+        UNRECOVERABLE_ERROR("I don't seem to have a starting state on the expansion queue."<<std::endl
+                            <<*actual_problem->second<<std::endl);
     }
 #endif
     
