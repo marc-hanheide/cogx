@@ -62,6 +62,9 @@ Solver::get_prescribed_action(POMDP_State* state)
     auto belief = state->get__belief_state();
     uint index = random() % belief.size();
     POMDP_State::Belief_Atom atom = belief[index];
+
+
+    assert(dynamic_cast<State*>(atom.first));
     
     return get_prescribed_action(dynamic_cast<State*>(atom.first));//mdp_state);
 }
@@ -73,6 +76,9 @@ Solver::get_prescribed_action(State* current_state)
     basic_type::Runtime_Thread runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
         (dynamic_cast<const Planning::Problem_Grounding*>(problem_Grounding.get()));
 
+    INTERACTIVE_VERBOSER(true, 10015, "Getting prescribed action from :: "
+                         <<*current_state<<std::endl);
+    
     auto executable_action_indices = current_state->get__successor_Driver();
     auto _action_index = random() % executable_action_indices.size();
     auto action_index = executable_action_indices[_action_index];
@@ -83,12 +89,12 @@ Solver::get_prescribed_action(State* current_state)
                               , "Could not find a ground symbol associated with index :: "
                               << action_index);
     
-    INTERACTIVE_VERBOSER(true, 10001,
+    INTERACTIVE_VERBOSER(true, 10015,
                          "Got successor driver :: "<<action_index<<" "
                          <<State_Transformation::
                          make_ith<State_Transformation>
                          (runtime_Thread,
-                          action_index)
+                          action_index).get__identifier()
                          <<"For atom :: "<<*current_state<<std::endl);
     
     auto symbol = State_Transformation::

@@ -1163,8 +1163,9 @@ bool Formula_Data::check__cardinality_constraint_on_subformulae_at_index
 (int count, int index) const
 {
     check__exists_parsed_subformulae(index);
-    
-    if(subformulae.find(index)->second.size() != count){
+
+    assert(count >= 0);
+    if(subformulae.find(index)->second.size() != static_cast<uint>(count)){
         std::ostringstream oss;
         for(auto f = subformulae.find(formula_parsing_level+1)->second.begin()
                 ; f != subformulae.find(formula_parsing_level+1)->second.end()

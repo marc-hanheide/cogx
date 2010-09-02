@@ -307,7 +307,7 @@ void Solver::generate_starting_state()
         
         
 //         assert( 0 == (*state)->count__observations() ) ;
-        INTERACTIVE_VERBOSER(true, 10006, "A starting state is :: "
+        INTERACTIVE_VERBOSER(true, 10015, "A starting state is :: "
                              <<**state<<std::endl);
     }
     
