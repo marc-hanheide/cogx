@@ -52,7 +52,6 @@ planning_derived_predicate.cc
 planning_formula.cc
 planning_formula_to_cnf.cc
 planning_formula_to_nnf.cc
-planning_formula_to_problem_formula.cc
 planning_formula_to_variable_ordering.cc
 planning_observation.cc
 planning_observation_schema.cc
