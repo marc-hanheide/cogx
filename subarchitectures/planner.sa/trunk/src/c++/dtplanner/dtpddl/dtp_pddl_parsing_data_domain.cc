@@ -82,13 +82,13 @@ Planning::Derived_Predicates&  Domain_Data::get__derived_Predicates()
 
 const Planning::Derived_Percepts& Domain_Data::get__derived_Percepts() const
 {
-    WARNING("No domain parse will generate derived observation predicates.");
+    VERBOSER(3110, "No domain parse will generate derived observation predicates.");
     return derived_Percepts;
 }
 
 Planning::Derived_Percepts& Domain_Data::get__derived_Percepts()
 {
-    WARNING("No domain parse will generate derived observation predicates.");
+    VERBOSER(3110, "No domain parse will generate derived observation predicates.");
     return derived_Percepts;
 }
 

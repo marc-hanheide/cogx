@@ -161,7 +161,7 @@ void Planning_CNF__to__Action_CNF::operator()(const Formula::Subformula& input)
                                      <<"Is supposed to wake :: "<<literal__pointer<<std::endl);
                 
                 if(!state_Transformation->add__sleeper(deref__st)){
-                    WARNING("Could not add :: "<<literal__pointer<<" to "
+                    WARNING("Could not add :: "<<literal__pointer<<" to action labelled"
                             <<state_Transformation->get__identifier()<<std::endl);
                 }
                 
