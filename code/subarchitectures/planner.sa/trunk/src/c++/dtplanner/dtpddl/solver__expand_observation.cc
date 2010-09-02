@@ -126,7 +126,7 @@ void Solver::expand_observations(const State_Transformation* optional_transforma
     
     
     QUERY_WARNING(!optional_transformation->get__traversable__sleepers().size()
-                  , "Warning, there is an action :: "<<*optional_transformation<<std::endl
+                  , "Warning, there is an action :: "<<optional_transformation->get__identifier()<<std::endl
                   <<"That generates no interesting observations."<<std::endl);
     
     optional_transformation->wake_sleepers_that_require_forcing(*state);

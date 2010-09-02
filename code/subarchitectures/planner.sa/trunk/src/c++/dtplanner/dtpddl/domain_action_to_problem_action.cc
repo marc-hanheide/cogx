@@ -526,29 +526,35 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
                     .insert(proposition);
                 id = proposition.get__id();
 
-                if(id >= problem__state_Propositions.size()){
-                    for(auto prop = problem__state_Propositions.begin()
-                            ; prop != problem__state_Propositions.end()
-                            ; prop++){
-                        std::cerr<<*prop<<std::endl;
-                    }
+#ifndef NDEBUG 
+#ifdef  DEBUG_LEVEL
+#if DEBUG_LEVEL < 10000
+                /*GARDED*/if(id >= problem__state_Propositions.size()){
+                    /*GARDED*/for(auto prop = problem__state_Propositions.begin()
+                      /*GARDED*/      ; prop != problem__state_Propositions.end()
+                        /*GARDED*/    ; prop++){
+                        /*GARDED*/std::cerr<<*prop<<std::endl;
+                    /*GARDED*/}
 
-                        std::cerr<<std::endl<<std::endl;
-                    for(auto i = 0; ; i++){
+                        /*GARDED*/std::cerr<<std::endl<<std::endl;
+                    /*GARDED*/for(auto i = 0; ; i++){
 
-                        if(!Formula::State_Proposition::
-                           ith_exists(runtime_Thread, i)){
-                            break;
-                        }
+                        /*GARDED*/if(!Formula::State_Proposition::
+                         /*GARDED*/  ith_exists(runtime_Thread, i)){
+                         /*GARDED*/   break;
+                        /*GARDED*/}
                         
-                        auto symbol = Formula::State_Proposition::
-                            make_ith<Formula::State_Proposition>
-                            (runtime_Thread,
-                             i);
-                        std::cerr<<symbol<<"; "<<std::endl;
-                    }
+                       /*GARDED*/ auto symbol = Formula::State_Proposition::
+                          /*GARDED*/  make_ith<Formula::State_Proposition>
+                          /*GARDED*/  (runtime_Thread,
+                         /*GARDED*/    i);
+                        /*GARDED*/std::cerr<<symbol<<"; "<<std::endl;
+                    /*GARDED*/}
                     
-                }
+                /*GARDED*/}
+#endif 
+#endif 
+#endif 
                 
                 assert(problem__state_Propositions.find(proposition) != problem__state_Propositions.end());
                 QUERY_UNRECOVERABLE_ERROR(id >= problem__state_Propositions.size(),
@@ -593,11 +599,18 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             
             if(_literal__pointer == problem__literals.end()){
                 
-                for(auto tmp_literal = problem__literals.begin()
-                        ; tmp_literal != problem__literals.end()
-                        ; tmp_literal++){
-                    std::cerr<<(*tmp_literal)->get__runtime_Thread()<<"::"<<*tmp_literal<<std::endl;
-                }
+#ifndef NDEBUG 
+#ifdef  DEBUG_LEVEL
+#if DEBUG_LEVEL < 10000
+
+                /*GARDED*/for(auto tmp_literal = problem__literals.begin()
+                /*GARDED*/         ; tmp_literal != problem__literals.end()
+                /*GARDED*/        ; tmp_literal++){
+                /*GARDED*/    std::cerr<<(*tmp_literal)->get__runtime_Thread()<<"::"<<*tmp_literal<<std::endl;
+                /*GARDED*/}
+#endif 
+#endif 
+#endif
                 
                 INTERACTIVE_VERBOSER(true, 9093, "Adding new problem literal :: "
                                      <<literal->get__runtime_Thread()<<"::"<<literal<<std::endl);
