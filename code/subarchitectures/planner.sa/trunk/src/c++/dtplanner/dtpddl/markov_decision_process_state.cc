@@ -98,11 +98,12 @@ push__successor(uint _operator_index,
     QUERY_UNRECOVERABLE_ERROR(!found,
                               "Action :: "<<_operator_index<<std::endl
                               <<"Is not available at state :: "<<*tmp<<std::endl);
-#endif
-    
+
     INTERACTIVE_VERBOSER(true, 10014,
                          "Pushing action  :: "<<_operator_index<<std::endl
                          <<"At state :: "<<*dynamic_cast<State*>(this));
+#endif
+    
     
     if(successor_Driver.size()){    
         if(successor_Driver.back() != _operator_index){

@@ -13,10 +13,11 @@
 	(ON-TABLE B) 
 	(ON-TABLE D) 
 	(HANDEMPTY)
+	(GON D C) 
+	(GON C B) 
+	(GON B A)
 	(= (total-cost ) 0)
 )
 
-(:goal (AND (ON D C) (ON C B) (ON B A)))
-
-(:metric minimize (total-cost))
+(:metric maximise (reward))
 )

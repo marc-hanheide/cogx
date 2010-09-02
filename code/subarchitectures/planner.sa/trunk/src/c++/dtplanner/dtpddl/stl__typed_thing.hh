@@ -226,8 +226,21 @@ public:
             
             if(object_index < searchable.size()){
                 return true;
-            }
-        }
+            } // else {
+                
+//                 WARNING("Testing existence of thing failed:: "<<type_index<<std::endl
+//                         <<object_index<<" out of range :: "<<searchable.size());
+// //                 for(uint i =0 ; i < searchable.size(); i++){
+// //                     std::cerr<<"Got :: "
+// //                         <<make_ith<>(type_index, i)<<std::endl;
+// //                 }
+                
+//             }
+            
+        }//  else {
+//             WARNING("Testing existence on non-existent thread :: "<<type_index);
+//         }
+        
 
         return false;
     }

@@ -175,8 +175,8 @@ int main(int argc, char** argv)
                 }
             }
 
-//             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
-//             policy_Iteration();
+            Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
+            policy_Iteration();
             
             for(auto i = 0; i < 10; i++){
             
