@@ -33,7 +33,9 @@ import eu.cogx.beliefs.slice.PerceptBelief;
  * {@link PerceptBelief} to {@link GroundedBelief}. It compares all contained
  * Formulas and if the most likely ones are matching in the
  * {@link PerceptBelief} and the {@link GroundedBelief} they are assumed to be
- * matching. To be used with a {@link WMTracker}.
+ * matching. There must be a match for all formulas in the PerceptBelief, but
+ * it's ok if the GroundedBelief has some more than are not corresponding. To be
+ * used with a {@link WMTracker}.
  * 
  * @author Marc Hanheide (marc@hanheide.de)
  * 
@@ -185,17 +187,17 @@ public class FormulaMatcher implements
 						.equals(((PointerFormula) fo.get()).pointer))
 					return false;
 			} else if (ft.get() instanceof IntegerFormula) { // compare the
-																// integer
-																// values
+				// integer
+				// values
 				if (ft.getInteger() != fo.getInteger())
 					return false;
 			} else if (ft.get() instanceof FloatFormula) { // compare the float
-															// values
+				// values
 				if (Math.abs(ft.getDouble() - fo.getDouble()) <= EPSILON_EQUALITY)
 					return false;
 			} else if (ft.get() instanceof BooleanFormula) { // compare the
-																// boolean
-																// values
+				// boolean
+				// values
 				if (ft.getBoolean() != fo.getBoolean())
 					return false;
 			} else if (ft.get() instanceof ElementaryFormula) {
