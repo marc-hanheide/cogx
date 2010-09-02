@@ -169,24 +169,32 @@ int main(int argc, char** argv)
             assert(solver->expansion_queue.size());
 //             solver->expand_belief_state_space();
             auto current_state = solver->expansion_queue.front();
+            
+            INTERACTIVE_VERBOSER(true, 10017, "Current state is :: "
+                                 <<*current_state<<std::endl
+                                 <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
+            
             for(uint i = 0; i < 100; i++){
                 if(!solver->expand_belief_state_space()){
-                    UNRECOVERABLE_ERROR("No starting state!"<<std::endl);
+                    break;
+                    VERBOSER(10017, "No starting state!"<<std::endl);
+                } else {
+                    VERBOSER(10017, "Expanding!"<<std::endl);
                 }
             }
 
-            Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
-            policy_Iteration();
+//             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
+//             policy_Iteration();
             
             for(auto i = 0; i < 10; i++){
             
-                INTERACTIVE_VERBOSER(true, 10015, "Current state is :: "
+                INTERACTIVE_VERBOSER(true, 10017, "Current state is :: "
                                      <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
                 
                 std::pair<Planning::Formula::Action_Proposition, uint> _action
                     = solver->get_prescribed_action(current_state);
             
-                INTERACTIVE_VERBOSER(true, 10015, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+                INTERACTIVE_VERBOSER(true, 10017, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
             
                 auto observations = current_state->get__possible_observations_given_action(_action.second);
             

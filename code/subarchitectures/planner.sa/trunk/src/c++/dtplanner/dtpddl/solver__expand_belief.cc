@@ -491,7 +491,7 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
 bool Solver::expand_belief_state_space()
 {
     if(!expansion_queue.size()){
-        INTERACTIVE_VERBOSER(true, 10003, "Expty expansion queue :: "<<std::endl);
+        INTERACTIVE_VERBOSER(true, 10015, "Expty expansion queue :: "<<std::endl);
         return false;
     }
     
@@ -504,7 +504,7 @@ bool Solver::expand_belief_state_space()
     
     assert(!pomdp_state->unexpanded());
     
-    INTERACTIVE_VERBOSER(true, 10003, "Expanded POMDP state :: "<<*pomdp_state<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10015, "Expanded POMDP state :: "<<*pomdp_state<<std::endl);
 
     return true;
 }
