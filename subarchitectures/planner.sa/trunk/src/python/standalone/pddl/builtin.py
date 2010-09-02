@@ -1,5 +1,5 @@
 import mapltypes
-from mapltypes import Parameter, TypedObject, Type, FunctionType
+from mapltypes import Parameter, TypedObject, Type, FunctionType, ProxyType
 from mapltypes import t_object, t_boolean, t_number
 from mapltypes import TRUE, FALSE, UNKNOWN, UNDEFINED
 
@@ -12,13 +12,12 @@ default_types = [t_object, t_boolean]
 #basic predicates
 equals = Predicate("=", [Parameter("?o1", t_object), Parameter("?o2", t_object)], builtin=True, function_scope=SCOPE_CONDITION)
 
-assign = Predicate("assign", [Parameter("?f", FunctionType(t_object)), Parameter("?v", t_object)], builtin=True, function_scope=SCOPE_EFFECT)
-change = Predicate("change", [Parameter("?f", FunctionType(t_object)), Parameter("?v", t_object)], builtin=True, function_scope=SCOPE_EFFECT)
+p = Parameter("?f", FunctionType(t_object))
+assign = Predicate("assign", [p, Parameter("?v", ProxyType(p))], builtin=True, function_scope=SCOPE_EFFECT)
 equal_assign = Predicate("=", [Parameter("?f", FunctionType(t_object)), Parameter("?v", t_object)], builtin=True, function_scope=SCOPE_INIT)
 
 #numeric predicates
 num_assign = Predicate("assign", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
-num_change = Predicate("change", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
 num_equal_assign = Predicate("=", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_INIT)
 
 scale_up = Predicate("scale-up", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
@@ -27,7 +26,7 @@ increase = Predicate("increase", [Parameter("?f", FunctionType(t_number)), Param
 decrease = Predicate("decrease", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
 
 numeric_ops = [num_assign, scale_up, scale_down, increase, decrease]
-assignment_ops = [assign, change, num_assign, equal_assign, num_equal_assign]
+assignment_ops = [assign, num_assign, equal_assign, num_equal_assign]
 
 gt = Predicate(">", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True, function_scope=SCOPE_CONDITION)
 lt = Predicate("<", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True, function_scope=SCOPE_CONDITION)
@@ -48,7 +47,6 @@ neg = Function("-", [Parameter("?n", t_number)], t_number, builtin=True)
 numeric_functions = [minus, plus, mult, div, neg]
 
 #default minimization functions
-total_time = Function("total-time", [], t_number, builtin=True)
 total_cost = Function("total-cost", [], t_number, builtin=True)
 
 

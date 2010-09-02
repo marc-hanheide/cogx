@@ -72,6 +72,14 @@ class Type(object):
         other -- Type object.
         """
         return other.equal_or_subtype_of(self)
+
+    def is_compatible(self, other):
+        """Returns True if self is either equal to, a subtype or a supertype of other.
+
+        Arguments:
+        other -- Type object.
+        """
+        return self.equal_or_subtype_of(other) or self.equal_or_supertype_of(other)
     
     def __str__(self):
         return self.name

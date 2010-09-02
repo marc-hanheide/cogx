@@ -69,6 +69,14 @@ testfiles['endoffile3'] = \
 ;; comment
 """
 
+testfiles['endoffile4'] = \
+"""(element
+  (p1 (p2
+    (p3)
+  )))
+  (p4))
+;; comment
+"""
 
 class ParserTest(unittest.TestCase):
     def setUp(self):
@@ -234,6 +242,19 @@ class ParserTest(unittest.TestCase):
 
         self.fail("Too early end of file did not result in a ParseError")
 
+    def testEndOfFile4(self):
+        """Testing handling of tokens after end of root group"""
+
+        try:
+            p = Parser.parse_file(self.filenames['endoffile4'])
+        except UnexpectedTokenError, e:
+            self.assertEqual(e.token.string, "(")
+            self.assertEqual(e.token.line, 5)
+            self.assertEqual(e.message, "Expected end of file, found '('")
+            return
+
+        self.fail("Content after end of root group did not result in a ParseError")
+        
         
 if __name__ == '__main__':
     unittest.main()    

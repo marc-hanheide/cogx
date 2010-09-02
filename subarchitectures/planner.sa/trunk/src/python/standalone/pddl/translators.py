@@ -754,7 +754,6 @@ class ModalPredicateCompiler(Translator):
         return func_arg, compiled
 
     def translate_literal(self, literal, scope):
-        import durative
         if literal.predicate in numeric_ops + assignment_ops:
             return literal.copy_instance()
         

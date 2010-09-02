@@ -70,12 +70,9 @@ class Effect(object):
 
         def printVisitor(eff, results=[]):
             if isinstance(eff, SimpleEffect):
-                import durative
                 s = "(%s %s)" % (eff.predicate.name, " ".join(a.pddl_str(instantiated) for a in eff.args))
                 if eff.negated:
                     s = "(not %s)" % s
-                if isinstance(eff, durative.TimedEffect):
-                    return "(at %s %s)" % (eff.time, s)
                 return s
             if isinstance(eff, ConjunctiveEffect):
                 return "(and %s)" % " ".join(results)
@@ -84,34 +81,44 @@ class Effect(object):
                 return "(forall (%s) %s)" % (args, results[0])
             if eff.__class__ == ConditionalEffect:
                 return "(when (%s) %s)" % (eff.condition.pddl_str(), results[0])
-                
-            assert False, "Class not handled: %s" % eff.__class__
+
+            try:
+                return eff.pddl_str_extra(results, instantiated=instantiated)
+            except:
+                assert False, "Class not handled: %s" % eff.__class__
         return self.visit(printVisitor)
     
     @staticmethod
-    def parse(it, scope, timed_effects=False, only_simple=False):
+    def parse(it, scope):
+        for handler in scope.parse_handlers:
+            if "Effect" in handler:
+                eff = handler["Effect"](it.reset(), scope)
+                if eff:
+                    return eff
+                
+        it.reset()
         first = it.get(None, "effect specification")
         if first.token.string == "and":
-            return ConjunctiveEffect.parse(it.reset(), scope, timed_effects, only_simple)
+            return ConjunctiveEffect.parse(it.reset(), scope)
         
-        elif not only_simple and first.token.string == "forall":
-            return UniversalEffect.parse(it.reset(), scope, timed_effects)
+        elif first.token.string == "forall":
+            if scope.get_tag("only-simple-effects"):
+                raise ParseError(first.token, "'forall' is not allowed here.")
+            return UniversalEffect.parse(it.reset(), scope)
         
-        elif not only_simple and first.token.string == "when":
-            return ConditionalEffect.parse(it.reset(), scope, timed_effects)
+        elif first.token.string == "when":
+            if scope.get_tag("only-simple-effects"):
+                raise ParseError(first.token, "Conditional effects are not allowed here.")
+            return ConditionalEffect.parse(it.reset(), scope)
         
         elif first.token.string == "probabilistic":
-            return ProbabilisticEffect.parse(it.reset(), scope, timed_effects, only_simple)
+            return ProbabilisticEffect.parse(it.reset(), scope)
 
         elif first.token.string == "assign-probabilistic":
             return ProbabilisticEffect.parse_assign(it.reset(), scope)
         
         else:
-            if timed_effects:
-                import durative
-                return durative.TimedEffect.parse(it.reset(), scope)
-            else:
-                return SimpleEffect.parse(it.reset(), scope)
+            return SimpleEffect.parse(it.reset(), scope)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -152,12 +159,26 @@ class ConjunctiveEffect(Effect):
         return self.__class__ == other.__class__ and self.parts == other.parts
 
     @staticmethod
-    def parse(it, scope, timed_effects=False, only_simple=False):
+    def join(effs, scope=None):
+        """Join together a list of effects in a Conjunctive effect. If an element of the list
+        is already a conjunctive effect, add its elements."""
+        parts = []
+        for eff in effs:
+            if isinstance(eff, ConjunctiveEffect):
+                parts += eff.parts
+            else:
+                parts.append(eff)
+            if scope is None and eff.get_scope() is not None:
+                scope = eff.get_scope()
+        return ConjunctiveEffect(parts, scope)
+    
+    @staticmethod
+    def parse(it, scope):
         it.get("and")
 
         eff = ConjunctiveEffect([])
         for elem in it:
-            eff.parts.append(Effect.parse(iter(elem), scope, timed_effects, only_simple))
+            eff.parts.append(Effect.parse(iter(elem), scope))
             
         return eff
     
@@ -206,12 +227,12 @@ class UniversalEffect(Scope, Effect):
         return self.__class__ == other.__class__ and self.args == other.args and self.effect == other.effect
 
     @staticmethod
-    def parse(it, scope, timed_effects=False):
+    def parse(it, scope):
         first = it.get("forall")
         args = predicates.parse_arg_list(iter(it.get(list, "parameter list")), scope.types)
         eff = UniversalEffect(args, None, scope)
         
-        eff.effect = Effect.parse(iter(it.get(list, "effect specification")), eff, timed_effects)
+        eff.effect = Effect.parse(iter(it.get(list, "effect specification")), eff)
 
         return eff
 
@@ -287,14 +308,14 @@ class ProbabilisticEffect(Effect):
         return ProbabilisticEffect(effects)
 
     @staticmethod
-    def parse(it, scope, timed_effects=False, only_simple=False):
+    def parse(it, scope):
         first = it.get("probabilistic")
         token_dict = {}
         parsed_elements = []
 
         for elem in it:
             try:
-                pddl_elem = Effect.parse(iter(elem), scope, timed_effects, only_simple)
+                pddl_elem = Effect.parse(iter(elem), scope)
             except Exception, e:
                 pddl_elem = predicates.Term.parse(elem, scope)
 
@@ -357,10 +378,12 @@ class ConditionalEffect(Effect):
 
         
     @staticmethod
-    def parse(it, scope, timed_effects=False):
+    def parse(it, scope):
         first = it.get("when")
         condition = conditions.Condition.parse(iter(it.get(list, "condition")), scope)
-        effects = Effect.parse(iter(it.get(list, "effect specification")), scope, timed_effects, only_simple=True)
+        scope.set_tag("only-simple-effects", True)
+        effects = Effect.parse(iter(it.get(list, "effect specification")), scope)
+        scope.set_tag("only-simple-effects", False)
             
         return ConditionalEffect(condition, effects)
 

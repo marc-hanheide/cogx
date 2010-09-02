@@ -20,25 +20,36 @@ class Builder(object):
         else:
             self.scope = elem.scope
 
-    def get_arg(self, arg):
+    def get_arg(self, arg, **kwargs):
         if isinstance(arg, (int, float, long)):
             return predicates.Term(arg)
         if isinstance(arg, (list, tuple)):
-            return self(*arg)
+            return self(*arg, **kwargs)
+        if isinstance(arg, predicates.Term):
+            return arg.copy(self.scope)
         if arg in self.scope:
             return self.scope[arg]
         return arg
         
-    def __call__(self, *args):
-        args = [self.get_arg(a) for a in args]
+    def __call__(self, *args, **kwargs):
+        function_scope = kwargs.get("function_scope", SCOPE_ALL)
+        
+        args = [self.get_arg(a, **kwargs) for a in args]
 
+        if args[0] == "not":
+            return args[1].negate()
+        if args[0] == "and" and function_scope & SCOPE_CONDITION:
+            return conditions.Conjunction(args[1:], self.scope)
+        if args[0] == "and" and function_scope & SCOPE_EFFECT:
+            return effects.ConjunctiveEffect(args[1:], self.scope)
+        
         #is the first argument a function?
         if isinstance(args[0], predicates.Function):
             func = args[0]
         elif isinstance(args[0], str):
-            func = self.scope.functions.get(args[0], args[1:])
+            func = self.scope.functions.get(args[0], args[1:], function_scope)
             if not func:
-                func = self.scope.functions.get(args[0], args[1:])
+                func = self.scope.predicates.get(args[0], args[1:], function_scope)
         else:
             return args[0]
 
@@ -53,18 +64,12 @@ class Builder(object):
         assert(False)
 
     def effect(self, *args):
-        args = [self.get_arg(a) for a in args]
-        first = self.scope.predicates.get(args[0], args[1:], SCOPE_EFFECT)
-        if first:
-            return effects.SimpleEffect(first, args[1:], self.scope)
-        assert(False)
+        lit = self(*args, function_scope=SCOPE_EFFECT)
+        return effects.SimpleEffect(lit.predicate, lit.args, self.scope, lit.negated)
 
     def cond(self, *args):
-        args = [self.get_arg(a) for a in args]
-        first = self.scope.predicates.get(args[0], args[1:], SCOPE_CONDITION)
-        if first:
-            return conditions.LiteralCondition(first, args[1:], self.scope)
-        assert(False)
+        lit = self(*args, function_scope=SCOPE_CONDITION)
+        return conditions.LiteralCondition(lit.predicate, lit.args, self.scope, lit.negated)
 
     def neg(self, arg):
         return self.get_arg(arg).negate()

@@ -223,7 +223,7 @@ class Writer(object):
                 elif cond.time == "all":
                     head = "over all"
             else:
-                assert False, "cant handle condition: %s" % str(cond)
+                return cond.write_pddl(self)
             strings = sum(parts, [])
             return self.section(head, strings)
         

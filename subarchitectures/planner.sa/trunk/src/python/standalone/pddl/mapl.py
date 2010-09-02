@@ -79,7 +79,10 @@ def action_handler(it, domain):
 def durative_handler(it, domain):
     if "durative-actions" not in domain.requirements:
         return False
-    domain.actions.append(MAPLDurativeAction.parse(it, domain))
+
+    action = MAPLDurativeAction.parse(it, domain)
+    action.set_tag("durative_action", True)
+    domain.actions.append(action)
     return True
 
 parse_handlers = {
@@ -282,6 +285,8 @@ class MAPLAction(actions.Action):
 class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
     def __init__(self, name, agents, params, vars, duration, precondition, replan, effect, sensors, domain):
         MAPLAction.__init__(self, name, agents, params, vars, precondition, replan, effect, sensors, domain)
+        self.set_tag("durative_action", True) # proper parsing context
+        
         self.add(TypedObject("?duration", types.t_number))
         self.duration = duration
         for d in self.duration:
@@ -338,15 +343,17 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
                 if next.token.string == ":condition":
                     if action.precondition:
                         raise ParseError(next.token, "precondition already defined.")
-                    action.precondition = durative.TimedCondition.parse(iter(it.get(list, "condition")), action)
+                    action.precondition = conditions.Condition.parse(iter(it.get(list, "condition")), action)
                 elif next.token.string == ":replan":
                     if action.replan:
                         raise ParseError(next.token, "replan condition already defined.")
+                    action.set_tag("durative_action", False)
                     action.replan = conditions.Condition.parse(iter(it.get(list, "condition")), action)
+                    action.set_tag("durative_action", True)
                 elif next.token.string == ":effect":
                     if action.effect:
                         raise ParseError(next.token, "effects already defined.")
-                    action.effect = effects.Effect.parse(iter(it.get(list, "effect")), action, timed_effects=True)
+                    action.effect = effects.Effect.parse(iter(it.get(list, "effect")), action)
                 elif next.token.string == ":sense":
                     action.sensors.append(SenseEffect.parse(iter(it.get(list, "sensor specification")), action))
                 else:

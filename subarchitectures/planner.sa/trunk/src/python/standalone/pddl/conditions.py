@@ -131,6 +131,12 @@ class Condition(object):
     
     @staticmethod
     def parse(it, scope):
+        for handler in scope.parse_handlers:
+            if "Condition" in handler:
+                cond = handler["Condition"](it.reset(), scope)
+                if cond:
+                    return cond
+                
         first = it.get()
         tag = first.token.string
         if tag == "not":

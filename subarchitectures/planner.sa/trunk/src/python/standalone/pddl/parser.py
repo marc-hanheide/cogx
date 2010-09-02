@@ -154,6 +154,11 @@ class Parser(object):
             raise UnexpectedTokenError(token, "'('")
 
         self.root = self.parse(token, tokens)
+        try:
+            spurious = tokens.next()
+            raise UnexpectedTokenError(spurious, "end of file")
+        except StopIteration:
+            pass
 
     @staticmethod
     def parse_file(filename, separators=[]):
