@@ -1236,6 +1236,12 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   segMask.height = iplPatchHLS->height;
 
   segMask.data =  graphCut(segMask.width, segMask.height, 3, costPatch, bgCostPatch);
+
+  // The VisualLearner application works well with small images so 
+  // we can add imgPatch, the patch from the small image to the ProtoObject
+  // OTOH ObjectRecognizer requires higher resolutions so we add a
+  // patch from the fullImage to the ProtoObject. In this case the dimensions
+  // of the mask and the patch don't match.
 #if 0
   // Patch from rectified stereo image
   convertImageFromIpl(iplPatch, imgPatch);
