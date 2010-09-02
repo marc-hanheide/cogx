@@ -166,7 +166,8 @@ int main(int argc, char** argv)
                 ; problem++){
             Planning::Solver* solver = new Planning::Solver(*problem->second);
             solver->preprocess();
-            solver->expand_belief_state_space();
+            assert(solver->expansion_queue.size());
+//             solver->expand_belief_state_space();
             auto current_state = solver->expansion_queue.front();
             for(uint i = 0; i < 100; i++){
                 if(!solver->expand_belief_state_space()){
@@ -179,6 +180,9 @@ int main(int argc, char** argv)
             
             for(auto i = 0; i < 10; i++){
             
+                INTERACTIVE_VERBOSER(true, 10015, "Current state is :: "
+                                     <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
+                
                 std::pair<Planning::Formula::Action_Proposition, uint> _action
                     = solver->get_prescribed_action(current_state);
             

@@ -100,7 +100,7 @@ push__successor(uint _operator_index,
                               <<"Is not available at state :: "<<*tmp<<std::endl);
 #endif
     
-    INTERACTIVE_VERBOSER(true, 10015,
+    INTERACTIVE_VERBOSER(true, 10014,
                          "Pushing action  :: "<<_operator_index<<std::endl
                          <<"At state :: "<<*dynamic_cast<State*>(this));
     
