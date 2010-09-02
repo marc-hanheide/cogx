@@ -83,6 +83,23 @@ Solver::get_prescribed_action(State* current_state)
     auto _action_index = random() % executable_action_indices.size();
     auto action_index = executable_action_indices[_action_index];
     
+
+    if(!Formula::State_Proposition::
+       ith_exists(runtime_Thread, action_index)){
+        for(auto i =0; i < action_index; i++){
+            if(!Formula::State_Proposition::
+               ith_exists(runtime_Thread, i)){
+
+                std::cerr<<State_Transformation::
+                    make_ith<State_Transformation>
+                    (runtime_Thread,
+                     action_index).get__identifier();
+            }
+            
+        }
+    }
+    
+    
     
     QUERY_UNRECOVERABLE_ERROR(!Formula::State_Proposition::
                               ith_exists(runtime_Thread, action_index)

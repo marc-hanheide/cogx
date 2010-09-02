@@ -6,13 +6,23 @@
   (:requirements :strips :typing :action-costs)
   (:types block)
   (:predicates (on ?x - block ?y - block)
+	       (gon ?x - block ?y - block)
+	       (rewarded ?x - block ?y - block)
 	       (on-table ?x - block)
 	       (clear ?x - block)
 	       (handempty)
 	       (holding ?x - block)
 	       )
 
-  (:functions (total-cost) - number)
+  (:functions (total-cost) - number 
+	      (reward) - number)
+
+  (:action get-reward
+	   :parameters (?a - block ?b - block)
+	   :precondition (and (not (rewarded ?a ?b)) (on ?a ?b) (gon ?a ?b))
+	   :effect (and (increase (reward) 1000)
+			(rewarded ?a ?b))
+	   )
 
   (:action pick-up
 	     :parameters (?x - block)
