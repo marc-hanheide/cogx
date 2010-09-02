@@ -34,6 +34,11 @@
 #include "markov_decision_process_state.hh"
 #include "planning_observation.hh"
 
+#ifndef NDEBUG
+#include "planning_state.hh"
+#include "action__state_transformation.hh"
+#endif
+
 using namespace Planning;
 
 Markov_Decision_Process_State::
@@ -50,14 +55,14 @@ Markov_Decision_Process_State
     
 }
 
-// Markov_Decision_Process_State::
-// Markov_Decision_Process_State(const Markov_Decision_Process_State& markov_Decision_Process_State)
-//     :boolean_State(markov_Decision_Process_State.boolean_State),
-//      integer_State(markov_Decision_Process_State.integer_State),
-//      float_State(markov_Decision_Process_State.float_State),
-//      value(markov_Decision_Process_State.value)
-// {
-// }
+Markov_Decision_Process_State::
+Markov_Decision_Process_State(const Markov_Decision_Process_State& markov_Decision_Process_State)
+    :boolean_State(markov_Decision_Process_State.boolean_State),
+     integer_State(markov_Decision_Process_State.integer_State),
+     float_State(markov_Decision_Process_State.float_State),
+     value(markov_Decision_Process_State.value)
+{
+}
 
 const Markov_Decision_Process_State::Successor_Driver&
 Markov_Decision_Process_State::
@@ -77,6 +82,28 @@ push__successor(uint _operator_index,
                  Markov_Decision_Process_State* successor_state,
                 double probability_of_transition)
 {
+
+#ifndef NDEBUG
+    State* tmp = dynamic_cast<State*>(this);
+    auto executable_action_indices = tmp->get__optional_transformations();
+
+    bool found = false;
+    for(auto driver = executable_action_indices.begin()
+            ; driver != executable_action_indices.end()
+            ; driver++){
+        if((*driver)->get__id() == _operator_index){
+            found = true; break;
+        }
+    }
+    QUERY_UNRECOVERABLE_ERROR(!found,
+                              "Action :: "<<_operator_index<<std::endl
+                              <<"Is not available at state :: "<<*tmp<<std::endl);
+#endif
+    
+    INTERACTIVE_VERBOSER(true, 10015,
+                         "Pushing action  :: "<<_operator_index<<std::endl
+                         <<"At state :: "<<*dynamic_cast<State*>(this));
+    
     if(successor_Driver.size()){    
         if(successor_Driver.back() != _operator_index){
             successor_Driver.push_back(_operator_index);

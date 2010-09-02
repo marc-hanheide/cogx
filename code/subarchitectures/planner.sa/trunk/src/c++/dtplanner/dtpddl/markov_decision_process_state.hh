@@ -58,7 +58,6 @@ namespace Planning
             
         Markov_Decision_Process_State(uint propositions_count = 0, uint function_count = 0);
         
-//         Markov_Decision_Process_State(const Markov_Decision_Process_State&);
         Markov_Decision_Process_State& operator=(const Markov_Decision_Process_State&) = delete;
 
         uint get__number_of_atoms() const;
@@ -104,6 +103,10 @@ namespace Planning
         const Successors& get__successors() const;
         const Successor_Probabilities& get__successor_Probabilities() const;
         const Successor_Driver& get__successor_Driver() const;
+
+        /* For computing the set differences between actions available
+         * at distinct MDP states, it is useful to have a sorted
+         * version of \member{successor_Driver}.*/
         const Successor_Driver& get__sorted__successor_Driver() const;
 
         bool has__considered_observations_under_action(uint action_id) const;
@@ -119,6 +122,8 @@ namespace Planning
         bool action_to_observation__includes_index(uint action_id) const;
         
     protected:
+        Markov_Decision_Process_State(const Markov_Decision_Process_State&);// = delete;
+        
         /* If a number is in this set, then we have already considered
          * what observations occur when the corresponding action is
          * executed and we arrive at this state.*/

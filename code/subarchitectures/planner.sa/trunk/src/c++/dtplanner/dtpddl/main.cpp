@@ -168,10 +168,15 @@ int main(int argc, char** argv)
             solver->preprocess();
             solver->expand_belief_state_space();
             auto current_state = solver->expansion_queue.front();
-            if(!solver->expand_belief_state_space()){
-                UNRECOVERABLE_ERROR("No starting state!"<<std::endl);
+            for(uint i = 0; i < 100; i++){
+                if(!solver->expand_belief_state_space()){
+                    UNRECOVERABLE_ERROR("No starting state!"<<std::endl);
+                }
             }
-        
+
+//             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
+//             policy_Iteration();
+            
             for(auto i = 0; i < 10; i++){
             
                 std::pair<Planning::Formula::Action_Proposition, uint> _action
