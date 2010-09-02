@@ -247,15 +247,45 @@ ground_action_schema(const Action_Name& action_Name,
     for(auto constant = constants.begin()
             ; constant != constants.end()
             ; constant++){
+        assert(constant->get__runtime_Thread() == reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data));
+        
         assignment_detail[variable] = *constant;
 
         
         INTERACTIVE_VERBOSER(true, 8000, "Applying assignment applicator for action :: "<<action_Name<<std::endl
                              <<"trying assignment of :: "<<variable<<" to "<<*constant);
         
+//                         std::cerr<<std::endl<<std::endl;
+//                     for(auto i = 0; ; i++){
+
+//                         if(!Formula::State_Proposition::
+//                            ith_exists(runtime_Thread, i)){
+//                             break;
+//                         }
+                        
+//                         auto symbol = Formula::State_Proposition::
+//                             make_ith<Formula::State_Proposition>
+//                             (runtime_Thread,
+//                              i);
+//                         std::cerr<<symbol<<"; "<<std::endl;
+//                     }{char ch; std::cin>>ch;};
         auto _precondition = assignment_Applicator(__precondition, assignment_detail);
 
         
+//                         std::cerr<<std::endl<<std::endl;
+//                     for(auto i = 0; ; i++){
+
+//                         if(!Formula::State_Proposition::
+//                            ith_exists(runtime_Thread, i)){
+//                             break;
+//                         }
+                        
+//                         auto symbol = Formula::State_Proposition::
+//                             make_ith<Formula::State_Proposition>
+//                             (runtime_Thread,
+//                              i);
+//                         std::cerr<<symbol<<"; "<<std::endl;
+//                     }{char ch; std::cin>>ch;};
         if(false == std::tr1::get<1>(_precondition)){
             VERBOSER(8000, "For action :: "<<action_Name<<std::endl
                      <<"Assignment of :: "<<variable<<" to "<<*constant<<" is INVALID."<<std::endl);
@@ -269,7 +299,7 @@ ground_action_schema(const Action_Name& action_Name,
         
         auto precondition = std::tr1::get<0>(_precondition);
         
-        INTERACTIVE_VERBOSER(true, 8000, "For action :: "<<action_Name<<std::endl
+        INTERACTIVE_VERBOSER(true, 10004, "For action :: "<<action_Name<<std::endl
                  <<"we got a new precondition :: "<<precondition<<std::endl);
         
         
@@ -396,9 +426,11 @@ void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Sch
                 QUERY_WARNING(!extensions_of_types.find(*types.begin())->second.size(),
                               "Could not find objects of type :: "<<*types.begin()<<" when computing"<<std::endl
                               <<"possible assignment for :: "<<variable<<std::endl);
+#ifndef NDEBUG
                 if(!extensions_of_types.find(*types.begin())->second.size()){/*Making the above query interactive.*/
                     char ch; std::cin>>ch;
                 }
+#endif
                 
                 potential_assignments[variable] = extensions_of_types.find(*types.begin())->second;
             } else {

@@ -109,8 +109,14 @@ std::size_t boost::hash_value(const std::tr1::tuple<Args...>& in)
     boost_combine_based_tuple_hasher<Args...> tuple_hasher;
 
     std::size_t tmp = tuple_hasher(in);
-    
-    std::cerr<<"HASH :: "<<tmp<<" for TUPLE :: "<<in<<std::endl;
+       
+#ifndef NDEBUG 
+#ifdef  DEBUG_LEVEL
+#if DEBUG_LEVEL < 10000
+    /*GARDED*/std::cerr<<"HASH :: "<<tmp<<" for TUPLE :: "<<in<<std::endl;
+#endif 
+#endif 
+#endif
     
     return tmp;
 }

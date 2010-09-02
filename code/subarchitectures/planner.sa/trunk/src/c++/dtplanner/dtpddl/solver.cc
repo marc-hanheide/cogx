@@ -172,7 +172,7 @@ POMDP_State* Solver::take_observation(POMDP_State* current_state,
             std::string argument = *_argument;
             
             NEW_referenced_WRAPPED
-                (runtime_Thread
+                (&problem_Data//runtime_Thread
                  , Planning::Constant
                  , constant
                  , argument);

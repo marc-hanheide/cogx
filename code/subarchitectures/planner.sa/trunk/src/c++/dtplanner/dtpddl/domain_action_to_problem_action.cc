@@ -479,6 +479,9 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
                     ; argument != arguments.end()
                     ; argument++ ){
                 if(argument->get__runtime_Thread() != problem_thread) {
+                    WARNING("Constant :: "<<*argument<<" was not owned by the problem_data."<<std::endl
+                            <<"Expecting :: "<<problem_thread<<std::endl
+                            <<"But got :: "<<argument->get__runtime_Thread()<<std::endl);
                     no_spurious_constants = false;
                     break;
                 }
@@ -522,7 +525,32 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
                 problem__state_Propositions
                     .insert(proposition);
                 id = proposition.get__id();
+
+                if(id >= problem__state_Propositions.size()){
+                    for(auto prop = problem__state_Propositions.begin()
+                            ; prop != problem__state_Propositions.end()
+                            ; prop++){
+                        std::cerr<<*prop<<std::endl;
+                    }
+
+                        std::cerr<<std::endl<<std::endl;
+                    for(auto i = 0; ; i++){
+
+                        if(!Formula::State_Proposition::
+                           ith_exists(runtime_Thread, i)){
+                            break;
+                        }
+                        
+                        auto symbol = Formula::State_Proposition::
+                            make_ith<Formula::State_Proposition>
+                            (runtime_Thread,
+                             i);
+                        std::cerr<<symbol<<"; "<<std::endl;
+                    }
+                    
+                }
                 
+                assert(problem__state_Propositions.find(proposition) != problem__state_Propositions.end());
                 QUERY_UNRECOVERABLE_ERROR(id >= problem__state_Propositions.size(),
                                           proposition<<" with ID :: "<<id<<std::endl
                                           <<"Was not registered with the solver.");
@@ -541,6 +569,7 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
                 
                 id = proposition.get__id();
                 
+                assert(problem__state_Propositions.find(proposition) != problem__state_Propositions.end());
                 QUERY_UNRECOVERABLE_ERROR(id >= problem__state_Propositions.size(),
                                           proposition<<" with ID :: "<<id<<std::endl
                                           <<"Was not registered with the solver.");
@@ -614,12 +643,26 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
 
                     assert(assignment.find(variable) != assignment.end());
                     
+                    auto problem_thread = reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data);
+                    assert(assignment.find(variable)->second.get__runtime_Thread() == problem_thread);
                     constant_Arguments[index] = assignment.find(variable)->second;
                 } else {
                     assert(argument_List[index].test_cast<Planning::Constant>());
-                    auto constant = *(argument_List[index].cxx_get<Planning::Constant>());
+                    auto constant = argument_List[index].cxx_get<Planning::Constant>();
 
-                    constant_Arguments[index] = constant;
+                    auto problem_thread = reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data);
+                    if(problem_thread != constant->get__runtime_Thread()){
+                        NEW_referenced_WRAPPED_deref_visitable_POINTER
+                            (problem_thread
+                             , Planning::Constant
+                             , _constant
+                             , constant->get__name());
+                        constant = _constant.cxx_get<Planning::Constant>();
+                    }
+                    
+                    assert(constant->get__runtime_Thread() == problem_thread);
+                    
+                    constant_Arguments[index] = *constant;
                 }
             }
 
@@ -970,6 +1013,19 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             deref_VISITATION(Formula::Assign, input, get__subject());
             auto modification = input.cxx_get<Formula::Assign>()->get__modification();
             process__Function_Modifier(modification, input->get__type_name());
+        }
+        break;
+        case enum_types::vacuous:
+        {
+            WARNING("VACUOUS effect formula :: "<<input);
+            
+            Formula::Subformulae elements;
+            NEW_referenced_WRAPPED_deref_visitable_POINTER
+                (runtime_Thread,
+                 Formula::Conjunction,
+                 conjunction,
+                 elements);
+            (*this)(conjunction);
         }
         break;
         default:

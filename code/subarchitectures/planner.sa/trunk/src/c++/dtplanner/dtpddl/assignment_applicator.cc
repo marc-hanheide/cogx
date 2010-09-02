@@ -314,7 +314,12 @@ Result CNF_Assignment_Applicator::operator()(Action_Fact fact, const Planning::A
                 
                 INTERACTIVE_VERBOSER(true, 3101, "New constant :: "<<constant<<" for thread :: "<<runtime_Thread<<std::endl);
                 if(!variable_remains_unassigned){
-                    constant_Arguments.push_back(maplet->second);
+                    if(maplet->second.get__runtime_Thread() != runtime_Thread){
+                        constant_Arguments.push_back(*constant.cxx_get<Planning::Constant>());
+                    } else {
+                        constant_Arguments.push_back(maplet->second);
+                    }
+//                     constant_Arguments.push_back(maplet->second);
                 }
                 argument_List.push_back(constant);
             }
@@ -326,11 +331,23 @@ Result CNF_Assignment_Applicator::operator()(Action_Fact fact, const Planning::A
 
             auto constant = (*argument).cxx_get<Planning::Constant>();
 
+            
+            if(constant->get__runtime_Thread() != runtime_Thread){   
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
+                    (runtime_Thread
+                     , Planning::Constant
+                     , _constant
+                     , constant->get__name());
+
+                constant = _constant.cxx_get<Planning::Constant>();
+            }
+            
             if(!variable_remains_unassigned){
                 constant_Arguments.push_back(*constant);
             }
             
-            argument_List.push_back(*argument);
+            argument_List.push_back(Formula::Subformula(constant));
+//             argument_List.push_back(*argument);
         }   
     }
 
@@ -401,7 +418,12 @@ Result CNF_Assignment_Applicator::operator()(Fact fact, const Planning::Assignme
                 
                 INTERACTIVE_VERBOSER(true, 3101, "New constant :: "<<constant<<" for thread :: "<<runtime_Thread<<std::endl);
                 if(!variable_remains_unassigned){
-                    constant_Arguments.push_back(maplet->second);
+                    if(maplet->second.get__runtime_Thread() != runtime_Thread){
+                        constant_Arguments.push_back(*constant.cxx_get<Planning::Constant>());
+                    } else {
+                        constant_Arguments.push_back(maplet->second);
+                    }
+                    
                 }
                 argument_List.push_back(constant);
             }
@@ -413,11 +435,26 @@ Result CNF_Assignment_Applicator::operator()(Fact fact, const Planning::Assignme
 
             auto constant = (*argument).cxx_get<Planning::Constant>();
 
-            if(!variable_remains_unassigned){
-                constant_Arguments.push_back(*constant);
+            
+            if(constant->get__runtime_Thread() != runtime_Thread){   
+                NEW_referenced_WRAPPED_deref_visitable_POINTER
+                    (runtime_Thread
+                     , Planning::Constant
+                     , _constant
+                     , constant->get__name());
+
+                constant = _constant.cxx_get<Planning::Constant>();
             }
             
-            argument_List.push_back(*argument);
+            
+            if(!variable_remains_unassigned){
+                constant_Arguments.push_back(*constant);
+                INTERACTIVE_VERBOSER(true, 10010, "New constant :: "<<constant_Arguments.back()<<std::endl);
+            }
+            
+            argument_List.push_back(Formula::Subformula(constant));
+            INTERACTIVE_VERBOSER(true, 10010, "New constant :: "<<argument_List.back()<<std::endl);
+//             argument_List.push_back(*argument);
         }   
     }
 
@@ -437,7 +474,7 @@ Result CNF_Assignment_Applicator::operator()(Fact fact, const Planning::Assignme
              , fact->get__name()
              , constant_Arguments);
 
-        INTERACTIVE_VERBOSER(true, 8000, "Testing satisfiability of :: "<<proposition<<std::endl);
+        INTERACTIVE_VERBOSER(true, 10004, "Testing satisfiability of :: "<<proposition<<std::endl);
         
         
         return satisfiable(Ground_Fact(proposition));
@@ -497,12 +534,17 @@ Result CNF_Assignment_Applicator::operator()(Ground_Fact ground_Fact, const Plan
             } else {
                 constant_Arguments[index] = arguments[index];
             }
+            
+            INTERACTIVE_VERBOSER(true, 10010, "New constant :: "<<constant_Arguments[index]<<std::endl);
         }
     }
 
-    if(!no_spurious_constants){
+    assert(!no_spurious_constants);
         assert(runtime_Thread == reinterpret_cast<basic_type::Runtime_Thread>
                (dynamic_cast<const Planning::Parsing::Constants_Data*>(&problem_Data)));
+        assert(runtime_Thread == reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data));
+    
+    if(!no_spurious_constants){
         
         NEW_referenced_WRAPPED_deref_visitable_POINTER
             (dynamic_cast<const Planning::Parsing::Formula_Data*>(&problem_Data)
@@ -511,6 +553,8 @@ Result CNF_Assignment_Applicator::operator()(Ground_Fact ground_Fact, const Plan
              , ground_Fact->get__name()
              , constant_Arguments);
 
+        INTERACTIVE_VERBOSER(true, 10004, "Testing satisfiability of :: "<<proposition<<std::endl);
+        
         return satisfiable(Ground_Fact(proposition));
     } else {
         return satisfiable(ground_Fact);

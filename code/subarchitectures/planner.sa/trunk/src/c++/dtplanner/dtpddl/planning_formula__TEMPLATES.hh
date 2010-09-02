@@ -35,9 +35,13 @@
     template<int ID_VAL, typename NAMING_TYPE>                          \
     ostream& TYPENAME<ID_VAL, NAMING_TYPE>::operator<<(ostream&o) const \
     {                                                                   \
-        auto contents = this->Parent::contents();                       \
-        auto name = std::tr1::get<0>(contents);                         \
-        o<</*this->get__runtime_Thread()<<*/"("<<name<<" ";             \
+        auto& contents = this->Parent::contents();                      \
+        auto& name = std::tr1::get<0>(contents);                        \
+        if(PRINTING_WITH_THREAD_INTEGER){                               \
+            o<<this->get__runtime_Thread();                             \
+        }                                                               \
+                                                                        \
+        o<<"("<<name<<" ";                                              \
         Printing::operator<<(o, std::tr1::get<1>(contents));            \
         o<<")"<<std::endl;                                              \
         return o;                                                       \

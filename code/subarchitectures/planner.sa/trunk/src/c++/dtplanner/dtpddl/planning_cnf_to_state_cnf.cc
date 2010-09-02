@@ -91,6 +91,8 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
                 }
             }
 
+            assert(no_spurious_constants);
+            
             if(!no_spurious_constants){
                 constant_Arguments = Constant_Arguments(arguments.size());
                 assert(arguments.size() == constant_Arguments.size());
@@ -110,6 +112,8 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
                     } else {
                         constant_Arguments[index] = arguments[index];
                     }
+                    
+                    INTERACTIVE_VERBOSER(true, 10010, "New constant :: "<<constant_Arguments[index]<<std::endl);
                 }
             }
 
@@ -178,6 +182,9 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             }
             auto proposition = *_problem__state_Proposition;
             
+            INTERACTIVE_VERBOSER(true, 10004,
+                                 "New state proposition :: "<<proposition<<std::endl);
+            
             auto id = proposition.get__id();
             
             NEW_referenced_WRAPPED_deref_POINTER
@@ -193,11 +200,17 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             if(_literal__pointer == problem__literals.end()){
 
                 
-                for(auto tmp_literal = problem__literals.begin()
-                        ; tmp_literal != problem__literals.end()
-                        ; tmp_literal++){
-                    std::cerr<<(*tmp_literal)->get__runtime_Thread()<<"::"<<*tmp_literal<<std::endl;
-                }
+#ifndef NDEBUG 
+#ifdef  DEBUG_LEVEL
+#if DEBUG_LEVEL < 10000
+                /*GARDED*/for(auto tmp_literal = problem__literals.begin()
+                /*GARDED*/        ; tmp_literal != problem__literals.end()
+                /*GARDED*/        ; tmp_literal++){
+                /*GARDED*/    /*GARDED*/std::cerr<<(*tmp_literal)->get__runtime_Thread()<<"::"<<*tmp_literal<<std::endl;
+                /*GARDED*/}
+#endif 
+#endif 
+#endif 
                 
                 INTERACTIVE_VERBOSER(true, 9093, "Adding new problem literal :: "
                                      <<literal->get__runtime_Thread()<<"::"<<literal<<std::endl);

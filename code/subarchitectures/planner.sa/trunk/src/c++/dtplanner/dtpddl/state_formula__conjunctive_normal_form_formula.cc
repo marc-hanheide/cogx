@@ -120,12 +120,14 @@ uint Conjunctive_Normal_Form_Formula::get__number_of_satisfied_clauses(State& st
 void Conjunctive_Normal_Form_Formula::report__newly_satisfied_clause(State& state) const
 {
     
-    INTERACTIVE_VERBOSER(true, 9090, "Increasing satisfaction of  :: "
+    INTERACTIVE_VERBOSER(true, 10004, "Increasing satisfaction of  :: "
                          <<*this<<std::endl);
     
     increment__level_of_satisfaction(state);
 
-    assert(get__level_of_satisfaction(state) <= get__disjunctive_clauses().size());
+    QUERY_UNRECOVERABLE_ERROR(get__level_of_satisfaction(state) > get__disjunctive_clauses().size(),
+                              "Satisfaction is :: "<<get__level_of_satisfaction(state)<<std::endl
+                              <<"For CNF with clause count :: "<<get__disjunctive_clauses().size());
     
     
     if(get__disjunctive_clauses().size() == get__number_of_satisfied_clauses(state)){

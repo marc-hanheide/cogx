@@ -91,31 +91,57 @@ void Planning_CNF__to__Action_CNF::operator()(const Formula::Subformula& input)
 //                     ; p != action_symbol__to__state_transformation.end()
 //                     ; p++){
                 
-//                 std::cerr<<p->first<<"\n"<<p->first.get__runtime_Thread()<<"::"<<p->first.get__id()<<std::endl
-//                          <<proposition<<"\n"<<proposition.get__runtime_Thread()<<"::"<<proposition.get__id()
-//                          <<std::endl<<std::endl;
+//                 std::cerr<<p->first<<std::endl;// <<"\n"<<p->first.get__runtime_Thread()<<"::"<<p->first.get__id()<<std::endl
+// //                          <<proposition<<"\n"<<proposition.get__runtime_Thread()<<"::"<<proposition.get__id()
+// //                          <<std::endl<<std::endl;
                 
-//                 std::ostringstream oss1;
-//                 oss1<<p->first;
-//                 std::string string1 = oss1.str();
+// //                 std::ostringstream oss1;
+// //                 oss1<<p->first;
+// //                 std::string string1 = oss1.str();
                 
-//                 std::ostringstream oss2;
-//                 oss2<<proposition;
-//                 std::string string2 = oss2.str();
+// //                 std::ostringstream oss2;
+// //                 oss2<<proposition;
+// //                 std::string string2 = oss2.str();
                 
                 
-//                 if(string2 == string1){
+// //                 if(string2 == string1){
                     
-//                     assert(p->first.get__arguments() == proposition.get__arguments());
+// //                     assert(p->first.get__arguments() == proposition.get__arguments());
 
-//                     std::cerr<<p->first.get__name().get__runtime_Thread()<<" "
-//                              <<proposition.get__name().get__runtime_Thread();
+// //                     std::cerr<<p->first.get__name().get__runtime_Thread()<<" "
+// //                              <<proposition.get__name().get__runtime_Thread();
                     
-//                     assert(p->first.get__name() == proposition.get__name());
-//                     assert(p->first == proposition);
-//                 }
+// //                     assert(p->first.get__name() == proposition.get__name());
+// //                     assert(p->first == proposition);
+// //                 }
 //             }
 //             std::cerr<<std::endl;
+
+
+            /*If a positive version of this literal cannot ever be satisfied.*/
+            if(action_symbol__to__state_transformation.find(proposition) ==
+               action_symbol__to__state_transformation.end()){
+                WARNING("Action :: "<<proposition<<" cannot be executed.");
+                
+                if(clause__as_set.find(literal__pointer) != clause__as_set.end()){
+                    INTERACTIVE_VERBOSER(true, 3124,
+                                         "Already got proposition :: "<<proposition
+                                         <<" as literal :: "<<literal__pointer<<std::endl
+                                         <<"Registered with the current clause being built.");
+                    return;
+                }
+            
+                INTERACTIVE_VERBOSER(true, 3124,
+                                     "New proposition :: "<<proposition
+                                     <<" as literal :: "<<literal__pointer<<std::endl
+                                     <<"Now registered with the current clause being built.");
+            
+                clause.push_back(literal__pointer);
+                clause__as_set.insert(literal__pointer);
+                
+                return;
+            }
+            
             
             QUERY_UNRECOVERABLE_ERROR
                 (action_symbol__to__state_transformation.find(proposition) ==
