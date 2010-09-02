@@ -158,64 +158,68 @@ void Solver::generate_starting_state()
                               , problem_Grounding->get__action_Conjunctive_Normal_Form_Formulae().size()
                               , problem_Grounding->get__action_Disjunctive_Clauses().size()
                               , problem_Grounding->get__observations().size());
+
+    auto& literals = problem_Grounding->get__literals();
     
+#ifndef NDEBUG 
+#ifdef  DEBUG_LEVEL
+#if DEBUG_LEVEL < 10000
     for(auto some = problem_Grounding->get__state_Propositions().begin()
             ; some != problem_Grounding->get__state_Propositions().end()
             ; some++){
-        std::cerr<<*some;
-    }
-    
-    INTERACTIVE_VERBOSER(true, 9094, "Number of propositions is :: "
-                         <<problem_Grounding->get__state_Propositions().size()<<std::endl);
-    
-    auto& literals = problem_Grounding->get__literals();
-    
-#ifndef NDEBUG                                 
+        /*GARDED*/std::cerr<<*some;
+    }                      
     for(auto literal = literals.begin()                             
             ; literal != literals.end()                             
             ; literal++){
-        std::cerr<<*literal<<std::endl;
+        /*GARDED*/std::cerr<<*literal<<std::endl;
     }
 
     for(auto some = problem_Grounding->get__state_Functions().begin()
             ; some != problem_Grounding->get__state_Functions().end()
             ; some++){
-        std::cerr<<*some;
+        /*GARDED*/std::cerr<<*some;
     }
     for(auto some = problem_Grounding->get__conjunctive_Normal_Form_Formulae().begin()
             ; some != problem_Grounding->get__conjunctive_Normal_Form_Formulae().end()
             ; some++){
-        std::cerr<<*some;
+        /*GARDED*/std::cerr<<*some;
     }
     for(auto some = problem_Grounding->get__disjunctive_Clauses().begin()
             ; some != problem_Grounding->get__disjunctive_Clauses().end()
             ; some++){
-        std::cerr<<*some;
+        /*GARDED*/std::cerr<<*some;
     }
     for(auto some = problem_Grounding->get__deterministic_actions().begin()
             ; some != problem_Grounding->get__deterministic_actions().end()
             ; some++){
-        std::cerr<<*some;
+        /*GARDED*/std::cerr<<*some;
     }
 
     for(auto some = problem_Grounding->get__action_Conjunctive_Normal_Form_Formulae().begin()
             ; some != problem_Grounding->get__action_Conjunctive_Normal_Form_Formulae().end()
             ; some++){
-        std::cerr<<*some;
+        /*GARDED*/std::cerr<<*some;
     }
 
     for(auto some = problem_Grounding->get__action_Disjunctive_Clauses().begin()
             ; some != problem_Grounding->get__action_Disjunctive_Clauses().end()
             ; some++){
-        std::cerr<<*some;
+        /*GARDED*/std::cerr<<*some;
     }
 
     for(auto some = problem_Grounding->get__observations().begin()
             ; some != problem_Grounding->get__observations().end()
             ; some++){
-        std::cerr<<*some;
+        /*GARDED*/std::cerr<<*some;
     }
-#endif
+#endif 
+#endif 
+#endif 
+    
+    INTERACTIVE_VERBOSER(true, 9094, "Number of propositions is :: "
+                         <<problem_Grounding->get__state_Propositions().size()<<std::endl);
+    
     
 //     exit(0);
     
@@ -303,7 +307,7 @@ void Solver::generate_starting_state()
         
         
 //         assert( 0 == (*state)->count__observations() ) ;
-        INTERACTIVE_VERBOSER(true, 10003, "A starting state is :: "
+        INTERACTIVE_VERBOSER(true, 10006, "A starting state is :: "
                              <<**state<<std::endl);
     }
     
@@ -317,7 +321,7 @@ void Solver::generate_starting_state()
         auto state = successors[i];
         auto probability = successor_Probabilities[i];
         
-        INTERACTIVE_VERBOSER(true, 10003, "A starting state is :: "
+        INTERACTIVE_VERBOSER(true, 10004, "A starting state is :: "
                              <<*state<<std::endl);
         
         starting_belief_state
@@ -332,6 +336,6 @@ void Solver::generate_starting_state()
     
     
     expansion_queue.push(starting_belief_state);
-    INTERACTIVE_VERBOSER(true, 10003, "Starting belief state is :: "
+    INTERACTIVE_VERBOSER(true, 10006, "Starting belief state is :: "
                          <<(*starting_belief_state)<<std::endl);
 }

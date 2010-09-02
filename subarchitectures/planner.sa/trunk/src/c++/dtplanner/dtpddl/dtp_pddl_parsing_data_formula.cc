@@ -922,7 +922,7 @@ void Formula_Data::add__constant_argument(const std::string& str)
     assert(dynamic_cast<Constants_Data*>(this));
 //     NEW_object_referenced_WRAPPED_deref_visitable_POINTER(Planning::Constant, constant, str);
 
-    INTERACTIVE_VERBOSER(true, 8001, "Pointers from formula are "
+    INTERACTIVE_VERBOSER(true, 10003, "Pointers from formula are "
                          <<reinterpret_cast<basic_type::Runtime_Thread>(dynamic_cast<Constants_Data*>(this))
                          <<" "<<reinterpret_cast<basic_type::Runtime_Thread>(this));
     NEW_referenced_WRAPPED_deref_visitable_POINTER(dynamic_cast<Constants_Data*>(this), Planning::Constant, constant, str);

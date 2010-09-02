@@ -497,13 +497,25 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                     auto variable = *(argument_List[index].cxx_get<Planning::Variable>());
 
                     assert(assignment.find(variable) != assignment.end());
+                    auto problem_thread = reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data);
+                    assert(assignment.find(variable)->second.get__runtime_Thread() == problem_thread);
                     
                     constant_Arguments[index] = assignment.find(variable)->second;
                 } else {
                     assert(argument_List[index].test_cast<Planning::Constant>());
-                    auto constant = *(argument_List[index].cxx_get<Planning::Constant>());
+                    auto constant = (argument_List[index].cxx_get<Planning::Constant>());
 
-                    constant_Arguments[index] = constant;
+                    auto problem_thread = reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data);
+                    if(problem_thread != constant->get__runtime_Thread()){
+                        NEW_referenced_WRAPPED_deref_visitable_POINTER
+                            (problem_thread
+                             , Planning::Constant
+                             , _constant
+                             , constant->get__name());
+                        constant = _constant.cxx_get<Planning::Constant>();
+                    }
+                    
+                    constant_Arguments[index] = *constant;
                 }
             }
 
@@ -602,6 +614,44 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                     .insert(Formula::Perceptual_Proposition__Pointer(proposition));//.cxx_get<Formula::Perceptual_Proposition>());
                 id = proposition->get__id();
                 local_proposition = Formula::Perceptual_Proposition__Pointer(proposition);
+
+
+        
+#ifndef NDEBUG 
+#ifdef  DEBUG_LEVEL
+#if DEBUG_LEVEL < 10000
+                /*GARDED*/if(id >= problem__perceptual_Propositions.size()){
+                /*GARDED*/    for(auto prop = problem__perceptual_Propositions.begin()
+                /*GARDED*/            ; prop != problem__perceptual_Propositions.end()
+                /*GARDED*/            ; prop++){
+                /*GARDED*/        std::cerr<<*prop<<std::endl;
+                /*GARDED*/    }
+                /*GARDED*/
+                /*GARDED*/        std::cerr<<std::endl<<std::endl;
+                /*GARDED*/    for(auto i = 0; ; i++){
+                    /*GARDED*/
+                    /*GARDED*/        if(!Formula::Perceptual_Proposition::
+                /*GARDED*/           ith_exists(runtime_Thread, i)){
+                /*GARDED*/            break;
+                /*GARDED*/        }
+                        
+                /*GARDED*/        auto symbol = Formula::Perceptual_Proposition::
+                /*GARDED*/            make_ith<Formula::Perceptual_Proposition>
+                /*GARDED*/            (runtime_Thread,
+                /*GARDED*/             i);
+                /*GARDED*/        std::cerr<<symbol<<"; "<<std::endl;
+                /*GARDED*/    }
+                    
+                /*GARDED*/}
+#endif 
+#endif 
+#endif 
+                
+                QUERY_WARNING(id >= problem__perceptual_Propositions.size(),
+                                          proposition<<" with ID :: "<<id<<std::endl
+                                          <<"Was not registered with the solver.");
+
+                
             } else {
                 
 //                 NEW_referenced_WRAPPED
@@ -623,6 +673,67 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                 
                 id = proposition->get__id();
                 local_proposition = Formula::Perceptual_Proposition__Pointer(proposition);
+
+
+             
+//                 if(id >= problem__perceptual_Propositions.size()){
+//                         std::cerr<<std::endl<<std::endl;
+//                     for(auto prop = problem__perceptual_Propositions.begin()
+//                             ; prop != problem__perceptual_Propositions.end()
+//                             ; prop++){
+//                         std::cerr<<*prop<<std::endl;
+//                     }
+
+//                         std::cerr<<std::endl<<std::endl;
+//                     for(auto i = 0; ; i++){
+
+//                         if(!Formula::Perceptual_Proposition::
+//                            ith_exists(runtime_Thread, i)){
+//                             break;
+//                         }
+                        
+//                         auto symbol = Formula::Perceptual_Proposition::
+//                             make_ith<Formula::Perceptual_Proposition>
+//                             (runtime_Thread,
+//                              i);
+//                         std::cerr<<symbol<<"; "<<std::endl;
+//                     }
+                    
+//                 }   
+
+#ifndef NDEBUG 
+#ifdef  DEBUG_LEVEL
+#if DEBUG_LEVEL < 10000
+                /*GARDED*/if(id >= problem__perceptual_Propositions.size()){
+                /*GARDED*/    for(auto prop = problem__perceptual_Propositions.begin()
+                /*GARDED*/            ; prop != problem__perceptual_Propositions.end()
+                /*GARDED*/            ; prop++){
+                /*GARDED*/        std::cerr<<*prop<<std::endl;
+                /*GARDED*/    }
+                /*GARDED*/
+                /*GARDED*/        std::cerr<<std::endl<<std::endl;
+                /*GARDED*/    for(auto i = 0; ; i++){
+                    /*GARDED*/
+                    /*GARDED*/        if(!Formula::Perceptual_Proposition::
+                /*GARDED*/           ith_exists(runtime_Thread, i)){
+                /*GARDED*/            break;
+                /*GARDED*/        }
+                        
+                /*GARDED*/        auto symbol = Formula::Perceptual_Proposition::
+                /*GARDED*/            make_ith<Formula::Perceptual_Proposition>
+                /*GARDED*/            (runtime_Thread,
+                /*GARDED*/             i);
+                /*GARDED*/        std::cerr<<symbol<<"; "<<std::endl;
+                /*GARDED*/    }
+                    
+                /*GARDED*/}
+#endif 
+#endif 
+#endif 
+                
+                QUERY_WARNING(id >= problem__perceptual_Propositions.size(),
+                              proposition<<" with ID :: "<<id<<std::endl
+                              <<"Was not registered with the solver.");
             }
             
 //             NEW_referenced_WRAPPED_deref_POINTER
@@ -637,7 +748,7 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
             
 //             auto id = proposition->get__id();
 
-            assert(id < problem__perceptual_Propositions.size());
+//             assert(id < problem__perceptual_Propositions.size());
             
             effects_lists.top().push_back(local_proposition);//Formula::Perceptual_Proposition__Pointer(proposition));
             
@@ -674,13 +785,29 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                     auto variable = *(argument_List[index].cxx_get<Planning::Variable>());
 
                     assert(assignment.find(variable) != assignment.end());
+                    auto problem_thread = reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data);
+                    assert(assignment.find(variable)->second.get__runtime_Thread() == problem_thread);
                     
                     constant_Arguments[index] = assignment.find(variable)->second;
                 } else {
                     assert(argument_List[index].test_cast<Planning::Constant>());
-                    auto constant = *(argument_List[index].cxx_get<Planning::Constant>());
+                    auto constant = (argument_List[index].cxx_get<Planning::Constant>());
 
-                    constant_Arguments[index] = constant;
+                    auto problem_thread = reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data);
+                    if(problem_thread != constant->get__runtime_Thread()){
+                        NEW_referenced_WRAPPED_deref_visitable_POINTER
+                            (problem_thread
+                             , Planning::Constant
+                             , _constant
+                             , constant->get__name());
+                        constant = _constant.cxx_get<Planning::Constant>();
+                    }
+                    
+                    assert(constant->get__runtime_Thread() == problem_thread);
+                    
+                    
+                    
+                    constant_Arguments[index] = *constant;
                 }
             }
 

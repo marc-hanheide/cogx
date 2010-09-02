@@ -156,10 +156,10 @@ int main(int argc, char** argv)
             
     }
     
-    INTERACTIVE_VERBOSER(true, 10004, "Passed test 1 :: "<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10010, "Passed test 1 :: "<<std::endl);
 
     uint count_test2 = 0;
-    while(true){
+//     while(true){
         
         for(auto problem = Planning::Parsing::problems.begin()
                 ; problem != Planning::Parsing::problems.end()
@@ -177,7 +177,7 @@ int main(int argc, char** argv)
                 std::pair<Planning::Formula::Action_Proposition, uint> _action
                     = solver->get_prescribed_action(current_state);
             
-                INTERACTIVE_VERBOSER(true, 10002, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+                INTERACTIVE_VERBOSER(true, 10006, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
             
                 auto observations = current_state->get__possible_observations_given_action(_action.second);
             
@@ -195,11 +195,11 @@ int main(int argc, char** argv)
             }
 
         
-            delete solver;
+//             delete solver;
         }
     
         INTERACTIVE_VERBOSER(true, 10004, "Passed test 2 :: "<<++count_test2<<std::endl);
-    }
+  //   }
     
     
 //     for(auto problem = Planning::Parsing::problems.begin()
