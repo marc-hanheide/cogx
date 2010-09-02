@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eu.cogx.perceptmediator;
+package eu.cogx.perceptmediator.george;
 
 import org.apache.log4j.Logger;
 
