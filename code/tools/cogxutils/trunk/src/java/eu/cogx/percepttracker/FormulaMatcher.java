@@ -41,6 +41,9 @@ import eu.cogx.beliefs.slice.PerceptBelief;
 public class FormulaMatcher implements
 		WMTracker.MatcherFunction<PerceptBelief, GroundedBelief> {
 
+	/** the very small epsilon to test doubles for equality */
+	private static final double EPSILON_EQUALITY = 1e-10;
+
 	private Logger logger;
 
 	/**
@@ -148,22 +151,28 @@ public class FormulaMatcher implements
 	 *            the {@link IndependentBasicDistributions} to match against
 	 * @return true if all {@link FormulaDistribution} in this have a matching
 	 *         correspondent in other
-	 * @throws InterruptedException 
+	 * @throws InterruptedException
 	 */
 	public boolean matches(IndependentFormulaDistributions compareThis,
-			IndependentFormulaDistributions compareTo) throws InterruptedException {
+			IndependentFormulaDistributions compareTo)
+			throws InterruptedException {
 		for (Entry<String, FormulaDistribution> entry : compareThis.entrySet()) {
 			FormulaDistribution otherEntry = compareTo.get(entry.getKey());
 			if (otherEntry == null)
 				return false;
 			logger.debug("match " + entry.getKey());
+			// get the most likely value from both; if they match we assume the
+			// formulas do match!
 			Formula ft = entry.getValue().getDistribution().getMostLikely();
 			Formula fo = otherEntry.getDistribution().getMostLikely();
 			logger.debug("ft=" + ft.toString() + ", fo=" + fo.toString());
 
 			// try {
+			// if both Formulas are of different type, they never match
 			if (!ft.get().getClass().isInstance(fo.get()))
 				return false;
+			// if we have a PointerFormula we have to find the corresponding ID
+			// in the universe of the GroundedBeliefs to match
 			if (ft.get() instanceof PointerFormula) {
 				PointerFormula wmPointer = (PointerFormula) ft.get();
 				// look up the corresponding value of the groundedbelief for
@@ -175,13 +184,18 @@ public class FormulaMatcher implements
 				if (!lookUpGroundedBelief
 						.equals(((PointerFormula) fo.get()).pointer))
 					return false;
-			} else if (ft.get() instanceof IntegerFormula) {
+			} else if (ft.get() instanceof IntegerFormula) { // compare the
+																// integer
+																// values
 				if (ft.getInteger() != fo.getInteger())
 					return false;
-			} else if (ft.get() instanceof FloatFormula) {
-				if (ft.getDouble() != fo.getDouble())
+			} else if (ft.get() instanceof FloatFormula) { // compare the float
+															// values
+				if (Math.abs(ft.getDouble() - fo.getDouble()) <= EPSILON_EQUALITY)
 					return false;
-			} else if (ft.get() instanceof BooleanFormula) {
+			} else if (ft.get() instanceof BooleanFormula) { // compare the
+																// boolean
+																// values
 				if (ft.getBoolean() != fo.getBoolean())
 					return false;
 			} else if (ft.get() instanceof ElementaryFormula) {
@@ -214,22 +228,27 @@ public class FormulaMatcher implements
 				.create(GroundedBelief.class, to);
 		CASTIndependentFormulaDistributionsBelief<PerceptBelief> perceptBelief = CASTIndependentFormulaDistributionsBelief
 				.create(PerceptBelief.class, from);
-		groundedBelief.setTime(groundedBelief.getStartTime(), perceptBelief.getEndTime());
+		groundedBelief.setTime(groundedBelief.getStartTime(), perceptBelief
+				.getEndTime());
 		groundedBelief.getContent().putAll(perceptBelief.getContent());
 		try {
-			for (Entry<String, FormulaDistribution> entry : groundedBelief.getContent()
-					.entrySet()) {
+			for (Entry<String, FormulaDistribution> entry : groundedBelief
+					.getContent().entrySet()) {
 				for (ProbFormula f : entry.getValue().getDistribution()) {
-					// propagate any PointerFormulas to PerceptBeliefs to GroundedBeliefs
+					// propagate any PointerFormulas to PerceptBeliefs to
+					// GroundedBeliefs
 					if (f.getFormula().get() instanceof PointerFormula) {
 						WMPointer wmp = WMPointer.create((Ice.Object) f
 								.getFormula().get());
 						WorkingMemoryAddress lookUpGroundedBelief;
 
 						lookUpGroundedBelief = wm2wmMap.waitFor(wmp.getVal());
-						logger.info("update " + entry.getKey() + " formula " + f.getFormula().toString()+" to " + CASTUtils.toString(lookUpGroundedBelief));
+						logger.info("update " + entry.getKey() + " formula "
+								+ f.getFormula().toString() + " to "
+								+ CASTUtils.toString(lookUpGroundedBelief));
 						wmp.setVal(lookUpGroundedBelief);
-						logger.info("new val: " + entry.getKey() + " formula " + f.getFormula().toString());
+						logger.info("new val: " + entry.getKey() + " formula "
+								+ f.getFormula().toString());
 					}
 				}
 			}
