@@ -700,10 +700,22 @@ void DTPCONTROL::newTask(Ice::Int id,
                               <<*actual_problem->second<<std::endl);
 //     solvers[id]->expand_belief_state_space();
     current_state[id] = solvers[id]->expansion_queue.front();
-    if(!solvers[id]->expand_belief_state_space()){
-        UNRECOVERABLE_ERROR("I don't seem to have a starting state on the expansion queue."<<std::endl
-                            <<*actual_problem->second<<std::endl);
+    
+    Planning::Policy_Iteration policy_Iteration(solvers[id]->belief_state__space);
+    for(uint i = 0; i < 25; i++){
+        if(!solvers[id]->expand_belief_state_space()){
+            break;
+            VERBOSER(10017, "No starting state!"<<std::endl);
+        } else {
+            VERBOSER(10017, "Expanding!"<<std::endl);
+            policy_Iteration();
+        }
     }
+    
+//     if(!solvers[id]->expand_belief_state_space()){
+//         UNRECOVERABLE_ERROR("I don't seem to have a starting state on the expansion queue."<<std::endl
+//                             <<*actual_problem->second<<std::endl);
+//     }
 #endif
     
     VERBOSER(1001, "DTP Spawning the thread that posts actions to Moritz's system."<<std::endl);

@@ -183,6 +183,9 @@ std::ostream& State::operator<<(std::ostream&o) const
         for(auto applicable_optional_transformation = applicable_optional_transformations.begin()
                 ; applicable_optional_transformation != applicable_optional_transformations.end()
                 ; applicable_optional_transformation++){
+//             Formula::State_Proposition::
+//                 ith_exists(runtime_Thread, (*applicable_optional_transformation)->get__id());
+            
             o<<(*applicable_optional_transformation)->get__id()<<" "
              <<(*applicable_optional_transformation)->get__identifier()<<" :-: ";
         }
@@ -209,6 +212,7 @@ std::ostream& State::operator<<(std::ostream&o) const
     }
     o<<"}"<<std::endl;
 
+    o<<"VALUE :: "<<this->get__reward()<<std::endl;
 
     return o;
 }

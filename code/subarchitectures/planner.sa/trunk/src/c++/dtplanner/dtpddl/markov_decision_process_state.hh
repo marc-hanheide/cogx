@@ -81,8 +81,8 @@ namespace Planning
         void set__int(uint index, int value);
 
         /*(see \member{value})*/
-        double get__value() const;
-        void set__value(double);
+        double get__reward() const;
+        void set__reward(double);
         
         typedef std::vector<uint> Successor_Driver;/*action indices*/
         typedef std::vector< std::vector<Markov_Decision_Process_State*> > Successors;/*states*/
@@ -148,8 +148,8 @@ namespace Planning
         /* State-characterising functions (derived from PDDL "Fluents"). */
         Integer_State integer_State;
 
-        /*Value of this MDP state.*/
-        double value;
+        /*Reward associated with being in this MDP state.*/
+        double reward;
         
         /* Functions into the reals. */
         Float_State float_State;
