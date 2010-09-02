@@ -150,7 +150,7 @@ Planning::Types Types_Data::find__stack_of__Typed_Arguments(const Planning::Vari
         auto types = Planning::get__types(ta);
 
         
-        for(auto i = 0
+        for(uint i = 0
                 ; i < variables.size()
                 ; i++){
             auto var = variables[i];

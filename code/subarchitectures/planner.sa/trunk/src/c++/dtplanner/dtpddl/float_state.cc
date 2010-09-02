@@ -41,7 +41,7 @@ using namespace Planning;
 Float_State::Float_State(uint size)
     :data(size)
 {
-    for(auto i =0; i < size; i++){
+    for(uint i =0; i < size; i++){
         assert(i < data.size());
         data[i] =0.0;
     }
@@ -141,7 +141,7 @@ std::size_t std::hash_value(const Float_State& state)
 std::ostream& std::operator<<(std::ostream& o, const Float_State& state)
 {
     /*Print out the fluent propositions first.*/
-    for(int i = 0; i < state.data.size(); i++){
+    for(uint i = 0; i < state.data.size(); i++){
         o<<i<<" := "<<state.data[i]<<"; ";
     }
     

@@ -51,7 +51,7 @@ namespace Planning
                                      , const std::map<Formula::Action_Proposition
                                      , State_Transformation__Pointer>&);
         
-        DECLARATION__UNARY_VISITOR(basic_type);
+        DECLARATION__UNARY_VISITOR(basic_type)
         
         Action_Conjunctive_Normal_Form_Formula__Pointer get__answer() const ;
     private:

@@ -235,7 +235,7 @@ Planning::Types Domain_Data::find__derived_Predicate_Header(const Planning::Vari
     auto typed_variables = std::tr1::get<0>(std::tr1::get<1>(derived_Predicate_Header.contents()));
     auto variablex_types = std::tr1::get<1>(std::tr1::get<1>(derived_Predicate_Header.contents()));
     
-    for(auto i = 0
+    for(uint i = 0
             ; i < typed_variables.size()
             ; i++){
         auto var = typed_variables[i];

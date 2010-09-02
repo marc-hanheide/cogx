@@ -46,10 +46,10 @@ CNF__State::CNF__State(uint formulae_count
      cnfs__satisfaction_status(formulae_count),
      clauses__count_status(disjunctions_count),
      clauses__satisfaction_status(disjunctions_count),
-     action_cnfs__count_status(action_formulae_count),
-     action_cnfs__satisfaction_status(action_formulae_count),
      action_clauses__count_status(action_disjunctions_count),
      action_clauses__satisfaction_status(action_disjunctions_count),
+     action_cnfs__count_status(action_formulae_count),
+     action_cnfs__satisfaction_status(action_formulae_count),
      action_Literal(0)// ,
 //      last_action_executed(-1)// ,
 //      literals__satisfaction_status(literals_count)

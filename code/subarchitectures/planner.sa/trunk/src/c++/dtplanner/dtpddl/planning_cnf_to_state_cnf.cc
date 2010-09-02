@@ -66,7 +66,7 @@ State_Formula::Conjunctive_Normal_Form_Formula__Pointer Planning_CNF__to__State_
 
 
 IMPLEMENTATION__STRICT_SHARED_UNARY_VISITOR(Planning_CNF__to__State_CNF,
-                                            basic_type);
+                                            basic_type)
 
 
 void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
@@ -96,7 +96,7 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             if(!no_spurious_constants){
                 constant_Arguments = Constant_Arguments(arguments.size());
                 assert(arguments.size() == constant_Arguments.size());
-                for(auto index = 0
+                for(uint index = 0
                         ; index != constant_Arguments.size()
                         ; index++ ){
                     assert(index < arguments.size());

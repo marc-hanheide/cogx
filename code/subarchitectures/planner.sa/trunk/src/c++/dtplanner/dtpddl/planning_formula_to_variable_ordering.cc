@@ -51,7 +51,7 @@ Planning_Formula__to__Variable_Ordering(const Planning::Parsing::Domain_Data& do
 }
 
 IMPLEMENTATION__STRICT_SHARED_UNARY_VISITOR(Planning_Formula__to__Variable_Ordering,
-                                            basic_type);
+                                            basic_type)
 
 
 std::vector<Variable> Planning_Formula__to__Variable_Ordering::get__answer()
@@ -199,11 +199,11 @@ void Planning_Formula__to__Variable_Ordering::operator()(const Planning::Formula
         }
 
         
-        assert(score >= 0);
+//         assert(score >= 0);
         assert(score < 500);/*Won't support symbols with arity hight than ~400 for the moment.*/
         (*this)(arguments_List, score);
     } else {
-        assert(score >= 0);
+//         assert(score >= 0);
         assert(score < 500);/*Won't support symbols with arity hight than ~400 for the moment.*/
         (*this)(arguments_List, score + state_Predicate.get__arity());
     }
@@ -232,7 +232,7 @@ void Planning_Formula__to__Variable_Ordering::operator()(const Planning::Formula
                                   <<"Is reported to be dynamic. We do not suppor this at this stage.");
     }
 
-    assert(score >= static_cast<uint>(0));
+//     assert(score >= static_cast<uint>(0));
     
     (*this)(arguments_List, score);
 }

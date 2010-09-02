@@ -98,7 +98,7 @@ Policy_Iteration::Policy_Iteration(Set_Of_POMDP_State_Pointers& states, double d
         
         assert(successors.size() == probabilities.size());
 
-        for(auto successor_index = 0; successor_index < successors.size(); successor_index++){
+        for(uint successor_index = 0; successor_index < successors.size(); successor_index++){
             transition_matrix
                 (starting_index,
                  successors[successor_index]->get__index())

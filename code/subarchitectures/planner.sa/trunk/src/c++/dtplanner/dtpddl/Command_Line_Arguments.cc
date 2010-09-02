@@ -38,8 +38,8 @@ using std::string;
 using std::map;
 
 Command_Line_Arguments::Command_Line_Arguments(Command_Line_Arguments&& command_Line_Arguments)
-    :assignments(std::move(command_Line_Arguments.assignments)),
-     arguments(std::move(command_Line_Arguments.arguments)),
+    :arguments(std::move(command_Line_Arguments.arguments)),
+     assignments(std::move(command_Line_Arguments.assignments)),
      lastGuardTest(std::move(command_Line_Arguments.lastGuardTest))
 {
 }

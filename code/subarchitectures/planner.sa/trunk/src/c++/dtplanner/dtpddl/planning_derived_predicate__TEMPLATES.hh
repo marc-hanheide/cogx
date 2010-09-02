@@ -111,7 +111,7 @@ namespace Planning
         auto variables_types = get__types(get__arguments());
 
         assert(variables.size() == variables_types.size());
-        for(auto i = 0; i < variables.size(); i++){
+        for(uint i = 0; i < variables.size(); i++){
 
             oss<<variables[i]<<" - (either ";
 
@@ -137,7 +137,7 @@ namespace Planning
                 auto variables_types = get__types(get__quantified_symbols());
 
                 assert(variables.size() == variables_types.size());
-                for(auto i = 0; i < variables.size(); i++){
+                for(uint i = 0; i < variables.size(); i++){
 
                     oss<<variables[i]<<" - (either ";
 
@@ -162,7 +162,7 @@ namespace Planning
                 auto variables_types = get__types(get__quantified_symbols());
 
                 assert(variables.size() == variables_types.size());
-                for(auto i = 0; i < variables.size(); i++){
+                for(uint i = 0; i < variables.size(); i++){
 
                     oss<<variables[i]<<" - (either ";
 

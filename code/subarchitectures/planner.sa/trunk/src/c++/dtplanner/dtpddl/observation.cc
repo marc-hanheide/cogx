@@ -219,7 +219,7 @@ void Observation::report__newly_satisfied(State& state) const
                          <<"New level is :: "<<get__level_of_satisfaction(state)<<std::endl);
     
 
-    auto required_level_of_satisfaction = 2;
+    uint required_level_of_satisfaction = 2;
 
     if(get__precondition()->get__disjunctive_clauses().size() == 0){
         --required_level_of_satisfaction;

@@ -52,8 +52,8 @@ namespace  Planning
 {
     namespace Formula
     {
-        PRINTING_SYMBOL_IMPLEMENTATION(Predicate);
-        PRINTING_SYMBOL_IMPLEMENTATION(Proposition);
+        PRINTING_SYMBOL_IMPLEMENTATION(Predicate)
+        PRINTING_SYMBOL_IMPLEMENTATION(Proposition)
     }
 }
 

@@ -345,7 +345,7 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
         assert(successors.size() == successor_Drivers.size());
         
         /* For each action that can be executed at \local{state}.*/
-        for(auto driver_index = 0
+        for(uint driver_index = 0
                 ; driver_index < successors.size()
                 ; driver_index++){
             /* Action that generates the successor.*/
@@ -362,7 +362,7 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
             assert(outcome_probabilities.size() == successor_states.size());
 
             /* For each state that can result from exeucting \local{action_index} at \local{state}.*/
-            for(auto successor_state_index =  0
+            for(uint successor_state_index =  0
                     ; successor_state_index <  successor_states.size()
                     ; successor_state_index++){
                 
@@ -404,7 +404,7 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
                 
                 INTERACTIVE_VERBOSER(true, 9094, "Unwinding :: "<<observations.size()<<" observations.");
                 
-                for(auto observation_index = 0
+                for(uint observation_index = 0
                         ; observation_index < observations.size()
                         ; observation_index++){
                     

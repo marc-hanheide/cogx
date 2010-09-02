@@ -168,6 +168,29 @@ namespace Planning
             /*Last observation precondition formula parsed.*/
             Planning::Formula::Subformula observation_precondition;
             
+            /*Last observation effect formula parsed.*/
+            Planning::Formula::Subformula observation_effect;
+
+            
+            /*Domain actions.*/
+            Planning::Action_Schemas action_Schemas;
+            
+            /*Last action precondition formula parsed.*/
+            Formula::Subformula action_precondition;
+            
+            /*Last action effect formula parsed.*/
+            Formula::Subformula action_effect;
+            
+            /* Is the entry in \member{action_precondition} relevant
+             * to the current parsing context? (initially false, and
+             * reset to false in \member{add__action()})*/
+            bool got__action_precondition;
+            
+            /* Is the entry in \member{action_effect} relevant to the
+             * current parsing context? (initially false and reset to
+             * false in \member{add__action()})*/
+            bool got__action_effect;
+
             /* Is the entry in \member{observation_effect} relevant to
              * the current parsing context? (initially false, and
              * reset to false in \member{add__observation()})*/
@@ -178,35 +201,11 @@ namespace Planning
              * reset to false in \member{add__observation()})*/
             bool got__observation_execution_precondition;
             
-            /*Last observation effect formula parsed.*/
-            Planning::Formula::Subformula observation_effect;
-
             /* Is the entry in \member{observation_effect} relevant to
              * the current parsing context? (initially false, and
              * reset to false in \member{add__observation()})*/
             bool got__observation_effect;
             
-            
-            /*Domain actions.*/
-            Planning::Action_Schemas action_Schemas;
-            
-            /*Last action precondition formula parsed.*/
-            Formula::Subformula action_precondition;
-
-            
-            /* Is the entry in \member{action_precondition} relevant
-             * to the current parsing context? (initially false, and
-             * reset to false in \member{add__action()})*/
-            bool got__action_precondition;
-            
-            /*Last action effect formula parsed.*/
-            Formula::Subformula action_effect;
-            
-            /* Is the entry in \member{action_effect} relevant to the
-             * current parsing context? (initially false and reset to
-             * false in \member{add__action()})*/
-            bool got__action_effect;
-
 
             
             /*Parsing the headers of derived predicates.*/

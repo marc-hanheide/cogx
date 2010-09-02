@@ -59,7 +59,7 @@ Planning_Formula__to__CNF Domain_Action__to__Problem_Action::planning_Formula__t
 
 
 IMPLEMENTATION__STRICT_SHARED_UNARY_VISITOR(Domain_Action__to__Problem_Action,
-                                            basic_type);
+                                            basic_type)
 
 
 
@@ -422,7 +422,7 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             auto predicate_Name = symbol->get__name();
             
             Constant_Arguments constant_Arguments(argument_List.size());
-            for(auto index = 0; index < argument_List.size(); index++){
+            for(uint index = 0; index < argument_List.size(); index++){
                 if(argument_List[index].test_cast<Planning::Variable>()){
                     auto variable = *(argument_List[index].cxx_get<Planning::Variable>());
 
@@ -490,7 +490,7 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             if(!no_spurious_constants){
                 constant_Arguments = Constant_Arguments(arguments.size());
                 assert(arguments.size() == constant_Arguments.size());
-                for(auto index = 0
+                for(uint index = 0
                         ; index != constant_Arguments.size()
                         ; index++ ){
                     assert(index < arguments.size());
@@ -650,7 +650,7 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             auto predicate_Name = predicate->get__name();
             
             Constant_Arguments constant_Arguments(argument_List.size());
-            for(auto index = 0; index < argument_List.size(); index++){
+            for(uint index = 0; index < argument_List.size(); index++){
                 if(argument_List[index].test_cast<Planning::Variable>()){
                     auto variable = *(argument_List[index].cxx_get<Planning::Variable>());
 

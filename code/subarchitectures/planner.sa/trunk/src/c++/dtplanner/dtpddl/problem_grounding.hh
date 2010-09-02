@@ -155,16 +155,6 @@ namespace Planning
         Observations observations_without_preconditions;
         Formula::Perceptual_Propositions perceptual_Propositions;
         
-        /* A tool to apply an assignment to variables to a CNF formula. */
-        CNF_Assignment_Applicator assignment_Applicator;
-        
-        /* First element is an indicator of this object, and the second
-         * element should be kept equal to the largest index (i.e,
-         * \class{basic_type} \method{get__id()}) associated with a
-         * legal/executable ground action symbol -- i.e.,
-         * \class{Action_Name}.*/
-        std::pair<basic_type::Runtime_Thread, ID_TYPE> actions_validator;
-        
         /* Incrementally add entries to \member{cached_constants_of_types}.*/
         void grow__cached_constants_of_types(const Types&);
         /* Incrementally add entries to \member{cached_constants_of_types}.*/
@@ -175,13 +165,6 @@ namespace Planning
          * objects from unions that appear in the domain
          * definition.*/
         std::map<Types, Constants> cached_constants_of_types;
-        
-        /* Description of the problem constants (see \module{Solver}).*/
-        const Planning::Constants_Description& constants_Description;
-        
-        /* Constants that types can take (see \module{Solver}). This is the
-         * basis of data in \member{cached_constants_of_types}.*/
-        const std::map<Type, Constants>& extensions_of_types;
         
         /* Object converts planning formula ---in this case formulae
          * that correspond to actions preconditions--- into
@@ -244,16 +227,33 @@ namespace Planning
         /*Percept analogue of \member{simplify_derived_predicate_trigger}.*/
         void simplify_derived_percept_trigger(Planning::Derived_Percept& );
         
-
-        /* Ground problem actions. */
-        std::vector<CXX__PTR_ANNOTATION(State_Transformation)> state_transformations;
-        
         /*Problem targetted by this solver.*/
         Parsing::Problem_Data& problem_Data;
         
         /* Domain data associated with \member{problem} (see
          * \member{preprocess}).*/
         CXX__PTR_ANNOTATION(Parsing::Domain_Data) domain_Data;
+
+        /* Description of the problem constants (see \module{Solver}).*/
+        const Planning::Constants_Description& constants_Description;
+        
+        /* Constants that types can take (see \module{Solver}). This is the
+         * basis of data in \member{cached_constants_of_types}.*/
+        const std::map<Type, Constants>& extensions_of_types;
+        
+        /* First element is an indicator of this object, and the second
+         * element should be kept equal to the largest index (i.e,
+         * \class{basic_type} \method{get__id()}) associated with a
+         * legal/executable ground action symbol -- i.e.,
+         * \class{Action_Name}.*/
+        std::pair<basic_type::Runtime_Thread, ID_TYPE> actions_validator;
+        
+        /* A tool to apply an assignment to variables to a CNF formula. */
+        CNF_Assignment_Applicator assignment_Applicator;
+        
+        /* Ground problem actions. */
+        std::vector<CXX__PTR_ANNOTATION(State_Transformation)> state_transformations;
+        
     };
 }
 
