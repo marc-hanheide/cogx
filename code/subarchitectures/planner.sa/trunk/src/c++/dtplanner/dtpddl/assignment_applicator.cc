@@ -540,7 +540,7 @@ Result CNF_Assignment_Applicator::operator()(Ground_Fact ground_Fact, const Plan
         }
     }
 
-    assert(no_spurious_constants);
+//     assert(no_spurious_constants);
     assert(runtime_Thread == reinterpret_cast<basic_type::Runtime_Thread>
            (dynamic_cast<const Planning::Parsing::Constants_Data*>(&problem_Data)));
     assert(runtime_Thread == reinterpret_cast<basic_type::Runtime_Thread>(&problem_Data));
