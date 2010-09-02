@@ -198,6 +198,8 @@ POMDP_State* Solver::take_observation(POMDP_State* current_state,
                                 const Percept_List& perceptions,
                                 uint action_index)
 {
+    VERBOSER(10050, "Got percepts from THE PLANNING"<<std::endl);
+    
 //     basic_type::Runtime_Thread runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
 //         (dynamic_cast<const Planning::Problem_Grounding*>(problem_Grounding.get()));
 
@@ -241,6 +243,7 @@ POMDP_State* Solver::take_observation(POMDP_State* current_state,
         auto& perceptual_Propositions
             = get__problem_Grounding()->get__perceptual_Propositions();
         if(perceptual_Propositions.find(proposition) != perceptual_Propositions.end()){
+            VERBOSER(10050, "Known percept :: "<<*proposition<<std::endl);
             new_observation->flip_on(proposition->get__id());
         } else {
             WARNING("Unknown perceptual proposition :: "<<proposition);
