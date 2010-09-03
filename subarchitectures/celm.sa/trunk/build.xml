@@ -33,6 +33,10 @@
 	      <pathelement path="/usr/local/share"/>
 	      <pathelement path="/usr/share"/>
 	    </includepath>
+	    <fileset dir="${slice.dir}" includes="NavData.ice"/>
+	    <includepath>
+                <pathelement path="${basedir}/../../tools/math/src/slice"/>
+	    </includepath>
 	  </slice2java>	  
 	</target>
 
