@@ -1,0 +1,9 @@
+HOST localhost
+SUBARCHITECTURE dialogue
+
+JAVA WM			cast.architecture.SubarchitectureWorkingMemory
+JAVA TM			cast.architecture.AlwaysPositiveTaskManager
+JAVA MG	gui	de.dfki.lt.tr.cast.dialogue.DialogueGUI --log true
+JAVA MG	parser	de.dfki.lt.tr.cast.dialogue.IncrStringParser --grammar ./subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml --log true
+JAVA MG castutils.viewer.ViewerCastComponent castutils.viewer.ViewerCastComponent --log --subscribe "de.dfki.lt.tr.dialogue.slice.asr.PhonString"
+JAVA MG celm.monitor.CelmCastComponent celm.monitor.CelmCastComponent --subscribe "de.dfki.lt.tr.dialogue.slice.asr.PhonString"

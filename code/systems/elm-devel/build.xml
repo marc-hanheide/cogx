@@ -1,13 +1,13 @@
 <!-- Top level make file for CogX system -->
 <project name="cogx" default="all">
 
-	<property name="castslice.dir" value="/usr/local/share" />
+	<property name="castslice.dir" value="/usr/local/share/" />
 	<property name="cast.jar" value="/usr/local/share/java/cast.jar" />
 	<property name="ice.jar" value="/usr/share/java/Ice.jar" />
-	<property name="plannerslice.dir" value="${basedir}/subarchitectures/planner.sa/src/slice" />
-	<property name="binderslice.dir" value="${basedir}/subarchitectures/binder/src/slice" />
+	<!--property name="plannerslice.dir" value="${basedir}/subarchitectures/planner.sa/src/slice" /-->
+	<!--property name="binderslice.dir" value="${basedir}/subarchitectures/binder/src/slice" /-->
 
-
+	<property name="output.dir" value="${basedir}/output/classes" />
 
 	<!-- =================================================================== -->
 	<!-- Init build system                                                   -->
@@ -29,8 +29,8 @@
 	     ========================================= -->
 	<target name="template" depends="init">
 		<echo>Executing &quot;${target}&quot; target for tools/cast module...</echo>
-		<!--ant target="${target}" dir="tools/math" /--> 
-		<ant target="${target}" dir="tools/beliefmodels" />
+		<ant target="${target}" dir="tools/math" /> 
+		<ant target="${target}" dir="tools/beliefs" />
 		<ant target="${target}" dir="tools/castutils" />
 		<ant target="${target}" dir="tools/elm" />
 		<!--ant target="${target}" dir="subarchitectures/binder" /> 
@@ -40,7 +40,7 @@
 		<ant target="${target}" dir="subarchitectures/motivation.sa" />
 		<ant target="${target}" dir="subarchitectures/coma.sa" /-->
 		<ant target="${target}" dir="subarchitectures/dialogue.sa" />
-		<!--ant target="${target}" dir="subarchitectures/celm.sa" /-->
+		<ant target="${target}" dir="subarchitectures/celm.sa" />
 	</target>
 
 
@@ -48,7 +48,8 @@
 	<!-- Cleans all subdirs                                                  -->
 	<!-- =================================================================== -->
 	<target name="clean" depends="init">
-		<echo>Cleaning all builds"</echo>
+		<echo>Cleaning all builds</echo>
+		<delete dir="${output.dir}"/>
 		<antcall target="template">
 			<param name="target" value="clean" />
 		</antcall>
@@ -58,7 +59,7 @@
 	<!-- Generates source from slice in all subdirs                          -->
 	<!-- =================================================================== -->
 	<target name="slice" depends="init">
-		<echo>doing slice2java for all builds"</echo>
+		<echo>doing slice2java for all builds</echo>
 		<antcall target="template">
 			<param name="target" value="slice" />
 		</antcall>
@@ -68,7 +69,7 @@
 	<!-- Compiles all subdirs                                                -->
 	<!-- =================================================================== -->
 	<target name="compile" depends="init,slice">
-		<echo>compiling all builds"</echo>
+		<echo>compiling all builds</echo>
 		<antcall target="template">
 			<param name="target" value="compile" />
 		</antcall>
