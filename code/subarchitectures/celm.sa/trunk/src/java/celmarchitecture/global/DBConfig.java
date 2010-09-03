@@ -21,7 +21,7 @@ public class DBConfig {
     public String server                        = "localhost";
     public String name                          = "elm";
     public String user                          = "elm";
-    public String passwd                        = "somepw";
+    public String passwd                        = "elm";
     
     
     public void configure(Map<String, String> config) {

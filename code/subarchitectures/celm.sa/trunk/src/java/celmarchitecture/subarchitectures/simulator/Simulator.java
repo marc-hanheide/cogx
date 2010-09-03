@@ -87,8 +87,7 @@ public class Simulator extends ManagedComponent {
 				.currentTimeMillis()));
 
 		CELMPartialEventToStore ce = new CELMPartialEventToStore(
-				"partial test type 1", etime, new String[0],
-				new CELMEventSpecificFeaturesEntry[0], new byte[0]);
+				"partial test type 1", etime, new CELMEventSpecificFeaturesEntry[0], new byte[0]);
 
 		return ce;
 	}
