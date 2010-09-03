@@ -8,19 +8,17 @@ package celm.util;
 import NavData.RobotPose2d;
 import celm.conversion.CASTTimeConverter;
 
-//import NavData.RobotPose2d;
-
 public class TimedPosition {
 
 	// TODO: unset this
 	private final long milliseconds;
 
 	private final RobotPose2d rp;
+	//private final Object rp;
 
 	public TimedPosition(RobotPose2d rp) {
 
-		this.milliseconds = CASTTimeConverter
-				.toMillisecondsSinceEpochTime(rp.time);
+		this.milliseconds = CASTTimeConverter.toMillisecondsSinceEpochTime(rp.time);
 		this.rp = rp;
 	}
 
@@ -34,13 +32,13 @@ public class TimedPosition {
 		return milliseconds;
 	}
 
-	public RobotPose2d getRobotPose() {
+	public Object getRobotPose() {
 		return rp;
 	}
 
 	public String toString() {
-		return "TimedPosition (t: " + milliseconds + ", x: " + rp.x + ", y: "
-				+ rp.y + ")";
+		return "TimedPosition (t: " + milliseconds + ", x: " + rp.x + ", y: " + rp.y + ")";
+		
 	}
 
 }
