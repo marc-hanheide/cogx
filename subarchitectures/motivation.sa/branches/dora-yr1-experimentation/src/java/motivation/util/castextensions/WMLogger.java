@@ -45,7 +45,6 @@ import java.util.ArrayList;
 public class WMLogger extends ManagedComponent {
 
     LinkedList<Class> SUBSCRIBED_CLASSES = new LinkedList<Class>();
-    
     private static final Class[] LEAF_TYPES_ARR = new Class[]{
         Boolean.class,
         Float.class, Double.class,
@@ -159,6 +158,7 @@ public class WMLogger extends ManagedComponent {
                 if (val != null) {
                     enumTag.addContents(val.toString(), false);
                 }
+                rootTag.addChild(enumTag);
 
             } else if (isLeafType(fldType)) {
                 // Create a leaf tag here
