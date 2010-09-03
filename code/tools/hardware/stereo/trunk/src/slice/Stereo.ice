@@ -13,10 +13,15 @@ module Stereo {
    * cameras.
    */
   interface StereoInterface {
-    void getPoints(bool transformToGlobal, out VisionData::SurfacePointSeq points);
+    /*void getPoints(bool transformToGlobal, out VisionData::SurfacePointSeq points);
     void getPointsInSOI(bool transformToGlobal, VisionData::SOI soi, out VisionData::SurfacePointSeq points);
     void getRectImage(int side, out Video::Image img);
-    void getDisparityImage(out Video::Image img);
+    void getDisparityImage(out Video::Image img);*/
+
+    void getPoints(bool transformToGlobal, double resolution, out VisionData::SurfacePointSeq points);
+    void getPointsInSOI(bool transformToGlobal, VisionData::SOI soi, double resolution, out VisionData::SurfacePointSeq points);
+    void getRectImage(int side, double resolution, out Video::Image img);
+    void getDisparityImage(double resolution, out Video::Image img);
   };
 };
 

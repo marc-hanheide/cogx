@@ -28,41 +28,74 @@ using namespace std;
 using namespace cogx;
 using namespace cogx::Math;
 
-void StereoServerI::getPoints(bool transformToGlobal, VisionData::SurfacePointSeq& points, const Ice::Current&)
+/**
+ * Returns timespecs x - y as double.
+ */
+static double timespec_diff(struct timespec *x, struct timespec *y)
 {
-  stereoSrv->getPoints(transformToGlobal, points);
+  /*timespec res = {x->tv_sec - y->tv_sec, x->tv_nsec - y->tv_nsec};
+  if(res.tv_nsec >= 1000000000)
+  {
+    res.tv_nsec -= 1000000000;
+    res.tv_sec++;
+  }
+  if(res.tv_nsec < 0)
+  {
+    res.tv_nsec += 1000000000;
+  }
+  return (double)res.tv_sec + 1e-9*(double)res.tv_nsec;*/
+  /* TODO: make the above clearer version handle nsec overflows of more than one
+   * sec, see below*/
+  if(x->tv_nsec < y->tv_nsec)
+  {
+    int nsec = (y->tv_nsec - x->tv_nsec) / 1000000000 + 1;
+    y->tv_nsec -= 1000000000 * nsec;
+    y->tv_sec += nsec;
+  }
+  if(x->tv_nsec - y->tv_nsec > 1000000000)
+  {
+    int nsec = (x->tv_nsec - y->tv_nsec) / 1000000000;
+    y->tv_nsec += 1000000000 * nsec;
+    y->tv_sec -= nsec;
+  }
+  return (double)(x->tv_sec - y->tv_sec) +
+    (double)(x->tv_nsec - y->tv_nsec)/1000000000.;
 }
 
-void StereoServerI::getPointsInSOI(bool transformToGlobal, const VisionData::SOIPtr &soi,
+
+void StereoServerI::getPoints(bool transformToGlobal, double resolution, VisionData::SurfacePointSeq& points, const Ice::Current&)
+{
+  stereoSrv->getPoints(transformToGlobal, resolution, points);
+}
+
+void StereoServerI::getPointsInSOI(bool transformToGlobal, const VisionData::SOIPtr &soi, double resolution,
     VisionData::SurfacePointSeq& points, const Ice::Current&)
 {
-  stereoSrv->getPointsInSOI(transformToGlobal, *soi, points);
+  stereoSrv->getPointsInSOI(transformToGlobal, *soi, resolution, points);
 }
 
-void StereoServerI::getRectImage(Ice::Int side, Video::Image& image, const Ice::Current&)
+void StereoServerI::getRectImage(Ice::Int side, double resolution, Video::Image& image, const Ice::Current&)
 {
-  stereoSrv->getRectImage(side, image);
+  stereoSrv->getRectImage(side, resolution, image);
 }
 
-void StereoServerI::getDisparityImage(Video::Image& image, const Ice::Current&)
+void StereoServerI::getDisparityImage(double resolution, Video::Image& image, const Ice::Current&)
 {
-  stereoSrv->getDisparityImage(image);
+  stereoSrv->getDisparityImage(resolution, image);
 }
 
 StereoServer::StereoServer()
 {
+#ifdef HAVE_GPU_STEREO
   census = 0;
-  iceStereoName = "";
-  iceStereoPort = cdl::CPPSERVERPORT;
-  // these are quite small, but work nice'n'fast
-  stereoWidth = 160;
-  stereoHeight = 120;
-  doDisplay = false;
-  logImages = false;
   // normally it's a good idea to do median filering on the disparity image
   medianSize = 5;
-  // 50 is a good start for not-too-strong disparity
-  maxDisp = 50;
+#endif
+  iceStereoName = "";
+  iceStereoPort = cdl::CPPSERVERPORT;
+  doDisplay = false;
+  logImages = false;
+  maxDisp = 64;
 }
 
 StereoServer::~StereoServer()
@@ -114,11 +147,6 @@ void StereoServer::configure(const map<string,string> & _config)
     haveStereoConfig = true;
   }
 
-  //if((it = _config.find("--stereoname")) != _config.end())
-  //{
-  //  iceStereoName = it->second;
-  //}
-
   if((it = _config.find("--display")) != _config.end())
   {
     doDisplay = true;
@@ -130,16 +158,31 @@ void StereoServer::configure(const map<string,string> & _config)
   if((it = _config.find("--imgsize")) != _config.end())
   {
     istringstream str(it->second);
-    str >> stereoWidth >> stereoHeight;
+    int w, h;
+    str >> w >> h;
+    stereoSizes.push_back(cvSize(w, h));
   }
 
+#ifdef HAVE_GPU_STEREO
   if((it = _config.find("--median")) != _config.end())
   {
     istringstream str(it->second);
     str >> medianSize;
-    if(medianSize < 0)
+    if(medianSize <= 1)
       medianSize = 0;
+    // NOTE: OpenCV can do median filtering of float images only for filter sizes 3 and 5
+    if(medianSize > 5)
+    {
+      log("median filtering size must be <= 5; setting to 5");
+      medianSize = 5;
+    }
+    if(medianSize%2 != 1)
+    {
+      log("median filtering size must be odd number, disabling median filtering");
+      medianSize = 0;
+    }
   }
+#endif
 
   if((it = _config.find("--logimages")) != _config.end())
   {
@@ -153,14 +196,15 @@ void StereoServer::configure(const map<string,string> & _config)
   }
 
   // if no extra image size was given, use the original grabbed image size
-  if(stereoWidth == 0 || stereoHeight == 0)
+  if(stereoSizes.empty())
   {
-    stereoWidth = stereoCam.cam[LEFT].width;
-    stereoHeight = stereoCam.cam[LEFT].height;
+    stereoSizes.push_back(cvSize(stereoCam.cam[LEFT].width,
+                                 stereoCam.cam[LEFT].height));
   }
   // now set the input image size to be used by stereo matching
-  stereoCam.SetInputImageSize(cvSize(stereoWidth, stereoHeight));
+  stereoCam.SetInputImageSize(stereoSizes[0]);
   stereoCam.SetupImageRectification();
+  stereoCam.SetDisparityRange(0, maxDisp);
 
   // sanity checks: Have all important things be configured? Is the
   // configuration consistent?
@@ -198,22 +242,22 @@ void StereoServer::start()
   // allocate all our various images
   for(int i = LEFT; i <= RIGHT; i++)
   {
-    colorImg[i] = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 3);
-    rectColorImg[i] = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 3);
-    rectGreyImg[i] = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 1);
+    colorImg[i] = cvCreateImage(stereoSizes[0], IPL_DEPTH_8U, 3);
+    rectColorImg[i] = cvCreateImage(stereoSizes[0], IPL_DEPTH_8U, 3);
+    rectGreyImg[i] = cvCreateImage(stereoSizes[0], IPL_DEPTH_8U, 1);
   }
-  disparityImg = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_32F, 1);
+  disparityImg = cvCreateImage(stereoSizes[0], IPL_DEPTH_32F, 1);
   cvSet(disparityImg, cvScalar(0));
 
   // NOTE: stupid polling runloop is still necessary
   // push interface does not work for stereo server, probably some threading
   // issue with cuda or whatever
   // start receiving images pushed by the video server
-  //videoServer->startReceiveImages(getComponentID().c_str(), camIds, stereoWidth,
-  //    stereoHeight);
+  //videoServer->startReceiveImages(getComponentID().c_str(), camIds, stereoSizes[0].width,
+  //    stereoSizes[0].height);
 }
 
-void StereoServer::getPoints(bool transformToGlobal, vector<VisionData::SurfacePoint> &points)
+void StereoServer::getPoints(bool transformToGlobal, double resolution, vector<VisionData::SurfacePoint> &points)
 {
   lockComponent();
 
@@ -227,11 +271,10 @@ void StereoServer::getPoints(bool transformToGlobal, vector<VisionData::SurfaceP
     for(int x = 0; x < disparityImg->width; x++)
     {
       float d = *((float*)Video::cvAccessImageData(disparityImg, x, y));
-      if(d != 0)
+      VisionData::SurfacePoint p;
+      if(stereoCam.ReconstructPoint((double)x, (double)y, (double)d,
+           p.p.x, p.p.y, p.p.z))
       {
-        VisionData::SurfacePoint p;
-        stereoCam.ReconstructPoint((double)x, (double)y, (double)d,
-           p.p.x, p.p.y, p.p.z);
         if(transformToGlobal)
           // now get from left cam coord sys to global coord sys
           p.p = transform(global_left_pose, p.p);
@@ -244,7 +287,7 @@ void StereoServer::getPoints(bool transformToGlobal, vector<VisionData::SurfaceP
   unlockComponent();
 }
 
-void StereoServer::getPointsInSOI(bool transformToGlobal, const VisionData::SOI &soi,
+void StereoServer::getPointsInSOI(bool transformToGlobal, const VisionData::SOI &soi, double resolution,
     vector<VisionData::SurfacePoint> &points)
 {
   lockComponent();
@@ -259,11 +302,10 @@ void StereoServer::getPointsInSOI(bool transformToGlobal, const VisionData::SOI 
     for(int x = 0; x < disparityImg->width; x++)
     {
       float d = *((float*)Video::cvAccessImageData(disparityImg, x, y));
-      if(d != 0)
+      VisionData::SurfacePoint p;
+      if(stereoCam.ReconstructPoint((double)x, (double)y, (double)d,
+           p.p.x, p.p.y, p.p.z))
       {
-        VisionData::SurfacePoint p;
-        stereoCam.ReconstructPoint((double)x, (double)y, (double)d,
-           p.p.x, p.p.y, p.p.z);
         if(transformToGlobal)
           // now get from left cam coord sys to global coord sys
           p.p = transform(global_left_pose, p.p);
@@ -279,7 +321,7 @@ void StereoServer::getPointsInSOI(bool transformToGlobal, const VisionData::SOI 
   unlockComponent();
 }
 
-void StereoServer::getRectImage(int side, Video::Image& image)
+void StereoServer::getRectImage(int side, double resolution, Video::Image& image)
 {
   assert(side == LEFT || side == RIGHT);
   lockComponent();
@@ -301,7 +343,7 @@ void StereoServer::getRectImage(int side, Video::Image& image)
   unlockComponent();
 }
 
-void StereoServer::getDisparityImage(Video::Image& image)
+void StereoServer::getDisparityImage(double resolution, Video::Image& image)
 {
 	lockComponent();
 	convertImageFromIpl(disparityImg, image);
@@ -324,24 +366,39 @@ void StereoServer::receiveImages(const vector<Video::Image>& images)
   }
 
   cvSet(disparityImg, cvScalar(0));
+
+#ifdef HAVE_GPU_STEREO
+  timespec start, stop;
+  clock_gettime(CLOCK_REALTIME, &start);
   census->setImages(rectGreyImg[LEFT], rectGreyImg[RIGHT]);
   census->match();
   // in case we are interested how blazingly fast the matching is :)
   // census->printTiming();
   census->getDisparityMap(disparityImg);
+  clock_gettime(CLOCK_REALTIME, &stop);
+  log("gpustereo runtime / framerate: %lf s / %lf", timespec_diff(&stop, &start), 1./timespec_diff(&stop, &start));
 
-// TODO TODO TODO OpenCV does not support "float-smoothing" anymore!
-// Find another solution!
-//  if(medianSize > 0)
-//  {
-//    IplImage *tmp = cvCloneImage(disparityImg);
-//    cvSmooth(disparityImg, tmp, CV_MEDIAN, medianSize);
-//    swap(disparityImg, tmp);
-//    cvReleaseImage(&tmp);
-//  }
+  if(medianSize > 0)
+  {
+    IplImage *tmp = cvCloneImage(disparityImg);
+    cvSmooth(disparityImg, tmp, CV_MEDIAN, medianSize);
+    swap(disparityImg, tmp);
+    cvReleaseImage(&tmp);
+  }
+#else
+  // use OpenCV stereo matching provided inside the stereo camera
+  // TODO: timing seems to be wrong
+  timespec start, stop;
+  clock_gettime(CLOCK_REALTIME, &start);
+  stereoCam.CalculateDisparity(rectGreyImg[LEFT], rectGreyImg[RIGHT], disparityImg);
+  clock_gettime(CLOCK_REALTIME, &stop);
+  log("OpenCV runtime / framerate: %lf s / %lf", timespec_diff(&stop, &start), 1./timespec_diff(&stop, &start));
 
-  // use OpenCV stereo match (which is pretty bad)
-  //stereoCam.DisparityImage(greyImg[LEFT], greyImg[RIGHT], disparityImg);
+  //clock_gettime(CLOCK_REALTIME, &start);
+  //usleep(1000);
+  //clock_gettime(CLOCK_REALTIME, &stop);
+  //log("usleep 1000: %lf s / %lf", timespec_diff(&stop, &start), 1./timespec_diff(&stop, &start));
+#endif
 
   unlockComponent();
 
@@ -366,8 +423,10 @@ void StereoServer::receiveImages(const vector<Video::Image>& images)
 
 void StereoServer::runComponent()
 {
+#ifdef HAVE_GPU_STEREO
   // allocate the actual stereo matcher with given max disparity
   census = new CensusGPU(maxDisp);
+#endif
 
   // NOTE: stupid polling runloop is still necessary
   // push interface does not work for stereo server, probably some threading
@@ -377,11 +436,13 @@ void StereoServer::runComponent()
   {
     // HACK: we should actually sent the list of cam ids and not just assume
     // that the video server has precisely two cameras in the right order
-    videoServer->getScaledImages(stereoWidth, stereoHeight, images);
+    videoServer->getScaledImages(stereoSizes[0].width, stereoSizes[0].height, images);
     receiveImages(images);
     sleepComponent(100);
   }
+#ifdef HAVE_GPU_STEREO
   delete census;
+#endif
 }
 
 }
