@@ -35,10 +35,10 @@ public class EventMonitorDefaultPlugin implements EventMonitorPlugin {
 	private boolean localVerbose                             = false;
 	private boolean verbose                                  = GlobalSettings.verbose || localVerbose;
 
-	private	Map<Class<?>, motivation.util.viewer.plugins.Plugin> wmViewerDispatcherMap;
+	private	Map<Class<?>, castutils.viewer.plugins.Plugin> wmViewerDispatcherMap;
 
 	public EventMonitorDefaultPlugin() {
-		wmViewerDispatcherMap = new HashMap<Class<?>, motivation.util.viewer.plugins.Plugin>();
+		wmViewerDispatcherMap = new HashMap<Class<?>, castutils.viewer.plugins.Plugin>();
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class EventMonitorDefaultPlugin implements EventMonitorPlugin {
 				
 		esfs.addKeyValuePair(esfWMOperationKey, getWMOperationName(wmOperation));
 						
-		motivation.util.viewer.plugins.Plugin wmViewerPlugin = findWMViewerPlugin(iceObject.getClass());
+		castutils.viewer.plugins.Plugin wmViewerPlugin = findWMViewerPlugin(iceObject.getClass());
 
 		if (wmViewerPlugin != null) {
 			Vector<Object> objs = wmViewerPlugin.toVector(iceObject);
@@ -128,12 +128,12 @@ public class EventMonitorDefaultPlugin implements EventMonitorPlugin {
          *  so that the code is well encapsulated and not duplicated (bad if it changes!)
 	 *  (At least there could be a public method returning the full path to plugins.)
 	 */
-	protected motivation.util.viewer.plugins.Plugin findWMViewerPlugin(Class<?> origType) {
+	protected castutils.viewer.plugins.Plugin findWMViewerPlugin(Class<?> origType) {
 		Class<?> oType = origType;
 		if (wmViewerDispatcherMap.containsKey(oType))
 			return wmViewerDispatcherMap.get(oType);
 		// if not yet found, look for supertype plugins
-		motivation.util.viewer.plugins.Plugin pluginToCall = null;
+		castutils.viewer.plugins.Plugin pluginToCall = null;
 		while (pluginToCall == null) {
 			String simpleName = oType.getSimpleName();
 			String fullName = getWMViewerPluginFullName(simpleName);
@@ -141,7 +141,7 @@ public class EventMonitorDefaultPlugin implements EventMonitorPlugin {
 				if (verbose) 
 					System.err.println("trying to load class " + fullName);
 				ClassLoader.getSystemClassLoader().loadClass(fullName);
-				pluginToCall = (motivation.util.viewer.plugins.Plugin) Class.forName(fullName).newInstance();
+				pluginToCall = (castutils.viewer.plugins.Plugin) Class.forName(fullName).newInstance();
 				if (verbose) 
 					System.err.println("succeeded... memorize plugin " + fullName
 						   	   + "for type " + oType.getSimpleName());

@@ -1,13 +1,13 @@
 package celmarchitecture.subarchitectures.locationConversion;
 
-import cast.architecture.abstr.ChangeFilterFactory;
-import cast.architecture.abstr.WorkingMemoryChangeReceiver;
-import cast.architecture.subarchitecture.PrivilegedManagedProcess;
-import cast.architecture.subarchitecture.SubarchitectureProcessException;
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.architecture.ManagedComponent;
+import cast.SubarchitectureComponentException;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.core.data.CASTData;
+import cast.core.CASTData;
 
 
 import java.util.Date;
@@ -16,7 +16,7 @@ import java.util.Vector;
 import NavData.*;
 
 import celmarchitecture.global.GlobalSettings;
-import celm.autogen.CELEventLocation;
+import celm.autogen.CELMEventLocation;
 import locationConversion.autogen.*;
 
 import elm.event.EventLocation;
@@ -28,25 +28,21 @@ import elm.event.EventLocationFactory;
  *  WARNING: experimental, largely untested code!
  *  @author Dennis Stachowicz
  */
-public class LocationConverter extends PrivilegedManagedProcess {
+public class LocationConverter extends ManagedComponent {
 
-    public static final double     fNodeBuffer    = 1.0;
+    public static final double fNodeBuffer    = 1.0;
 
     // set this to GlobalSettings.defaultAtomicBuffer???
-    public static final double     gatewayBuffer  = 0.1; 
+    public static final double gatewayBuffer  = 0.1; 
 
     // more specific initialisation?
-    protected EventLocationFactory elFactory      = new EventLocationFactory();
-    protected RobotPose2d            lastPose       = null;
-    protected NavGraph             lastNavGraph   = null;
-
-
+    protected EventLocationFactory elFactory = new EventLocationFactory();
+    protected RobotPose2d lastPose = null;
+    protected NavGraph lastNavGraph = null;
 
     public LocationConverter(String _id) {
-        super(_id);
-    }
-
-     
+        super();
+    } 
     
     @Override
     public void start() {
@@ -110,7 +106,8 @@ public class LocationConverter extends PrivilegedManagedProcess {
 
 	    	    
         }
-        catch (SubarchitectureProcessException e) {
+        //catch (SubarchitectureComponentException e) {
+        catch (Exception e) {
 	    e.printStackTrace();
 	    if (GlobalSettings.exitOnException)
 		System.exit(GlobalSettings.exitValueOnException);
@@ -144,7 +141,7 @@ public class LocationConverter extends PrivilegedManagedProcess {
 		String bufPosString = bufferPositionString(cp.x,
 							   cp.y,
 							   cp.bufferDistance);
-		CELEventLocation location = new CELEventLocation(bufPosString);
+		CELMEventLocation location = new CELMEventLocation(bufPosString);
 		overwriteWorkingMemory(_wmc.address, 
 				       new ConvertPosition(cp.x,
 							   cp.y,
@@ -166,7 +163,7 @@ public class LocationConverter extends PrivilegedManagedProcess {
 							0.0,
 							ch.bufferDistance);
 		}
-		CELEventLocation location = new CELEventLocation(bufPosString);
+		CELMEventLocation location = new CELMEventLocation(bufPosString);
 		overwriteWorkingMemory(_wmc.address, 
 				       new ConvertHere(ch.bufferDistance,
 						       location));
@@ -177,8 +174,8 @@ public class LocationConverter extends PrivilegedManagedProcess {
 		// System.err.println("\n\n\nSorry, ConvertArea is not implemented yet!!!\n\n\n");
 		ConvertArea ca = (ConvertArea) data;
 		
-		CELEventLocation location = 
-		    new CELEventLocation(approximateArea(ca.areaID));
+		CELMEventLocation location =
+		    new CELMEventLocation(approximateArea(ca.areaID));
 
 		overwriteWorkingMemory(_wmc.address, 
 				       new ConvertArea(ca.areaID,
@@ -189,8 +186,9 @@ public class LocationConverter extends PrivilegedManagedProcess {
 
 
      	}    
- 
-        catch (SubarchitectureProcessException e) {
+
+        catch (Exception e) {
+        //catch (SubarchitectureProcessException e) {
 	    e.printStackTrace();
 	    if (GlobalSettings.exitOnException)
 		System.exit(GlobalSettings.exitValueOnException);
