@@ -44,6 +44,8 @@ using namespace cogx::Math;
 class StereoCamera
 {
 public:
+  enum MatchingAlgorithm {BLOCK_MATCH, SEMI_GLOBAL_BLOCK_MATCH, GRAPH_CUT};
+
   class MonoParam
   {
   public:
@@ -65,7 +67,7 @@ public:
       rect[1][0] = rect[1][1] = rect[1][2] = 0.;
       rect[2][0] = rect[2][1] = rect[2][2] = 0.;
     }
-  }; 
+  };
   /// parameters specific to LEFT and RIGHT camera
   MonoParam cam[2];
   Pose3 pose;
@@ -78,6 +80,9 @@ public:
   // size
   double sx;
   double sy;
+  int minDisp;
+  int maxDisp;
+  MatchingAlgorithm matchAlgorithm;
 
 public:
   StereoCamera();
@@ -85,7 +90,7 @@ public:
   void ReadSVSCalib(const std::string &calibfile);
   void ProjectPoint(double X, double Y, double Z, double &u, double &v,
       int side);
-  void ReconstructPoint(double u, double v, double d, double &X, double &Y,
+  bool ReconstructPoint(double u, double v, double d, double &X, double &Y,
       double &Z);
   void DistortNormalisedPoint(double u, double d, double &ud, double &vd,
       int side);
@@ -96,9 +101,11 @@ public:
   void UnrectifyPointFast(double ur, double vr, double &ud, double &vd, int side);
   void SetupImageRectification();
   void RectifyImage(const IplImage *src, IplImage *dst, int side);
-  void DisparityImage(const IplImage *left, const IplImage *right,
-      IplImage *disp);
+  void SetDisparityRange(int min, int max);
   void SetInputImageSize(CvSize size);
+  void SetMatchingAlgoritm(MatchingAlgorithm algo);
+  void CalculateDisparity(const IplImage *left, const IplImage *right,
+      IplImage *disp);
 };
 
 }

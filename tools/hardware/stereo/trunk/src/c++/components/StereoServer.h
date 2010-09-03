@@ -10,12 +10,15 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <opencv/cv.h>
 #include <cast/core/CASTComponent.hpp>
 #include <VideoClient.h>
 #include "StereoCamera.h"
 #include "Math.hpp"
 #include "Stereo.hpp"
+#ifdef HAVE_GPU_STEREO
 #include "gpustereo/CensusGPU.h"
+#endif
 
 namespace cast
 {
@@ -36,17 +39,17 @@ public:
   /**
    * Returns the 3D point cloud.
    */
-  virtual void getPoints(bool transformToGlobal, VisionData::SurfacePointSeq& points, const Ice::Current&);
+  virtual void getPoints(bool transformToGlobal, double resolution, VisionData::SurfacePointSeq& points, const Ice::Current&);
 
   /**
    * Returns part of the 3D point cloud inside given SOI.
    */
-  virtual void getPointsInSOI(bool transformToGlobal, const VisionData::SOIPtr &soi,
+  virtual void getPointsInSOI(bool transformToGlobal, const VisionData::SOIPtr &soi, double resolution,
       VisionData::SurfacePointSeq& points, const Ice::Current&);
 
-  virtual void getRectImage(Ice::Int side, Video::Image& image, const Ice::Current&);
+  virtual void getRectImage(Ice::Int side, double resolution, Video::Image& image, const Ice::Current&);
 
-  virtual void getDisparityImage(Video::Image& image, const Ice::Current&);
+  virtual void getDisparityImage(double resolution, Video::Image& image, const Ice::Current&);
 };
 
 class StereoServer : public CASTComponent,
@@ -89,21 +92,24 @@ private:
    */
   StereoCamera stereoCam;
 
+#ifdef HAVE_GPU_STEREO
   /**
    * The GPU stereo matching code.
    */
   CensusGPU *census;
-
-  // stereo works better/faster with smaller images, so we might want to use a
-  // smaller resolution
-  int stereoWidth;
-  int stereoHeight;
 
   /**
    * Size of median filter for specle removeal in the disparity image.
    * 0 = not median filtering
    */
   int medianSize;
+#endif
+
+  // stereo works better/faster with smaller images, so we might want to use a
+  // smaller resolution
+  std::vector<CvSize> stereoSizes;
+  int stereoWidth;
+  int stereoHeight;
 
   /**
    * maximum disparity range we want to search
@@ -137,17 +143,17 @@ public:
   /**
    * Returns the 3D point cloud.
    */
-  void getPoints(bool transformToGlobal, std::vector<VisionData::SurfacePoint> &points);
+  void getPoints(bool transformToGlobal, double resolution, std::vector<VisionData::SurfacePoint> &points);
 
   /**
    * Returns part of the 3D point cloud inside given SOI.
    */
-  void getPointsInSOI(bool transformToGlobal, const VisionData::SOI &soi,
+  void getPointsInSOI(bool transformToGlobal, const VisionData::SOI &soi, double resolution,
       std::vector<VisionData::SurfacePoint> &points);
 
-  void getRectImage(int side, Video::Image& image);
-  
-  void getDisparityImage(Video::Image& image);
+  void getRectImage(int side, double resolution, Video::Image& image);
+
+  void getDisparityImage(double resolution, Video::Image& image);
 
   /**
    * The callback function for images pushed by the image server.

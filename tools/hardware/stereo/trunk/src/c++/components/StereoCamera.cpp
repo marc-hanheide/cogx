@@ -45,6 +45,9 @@ StereoCamera::StereoCamera()
   sx = sy = 1.;
   inImgSize.width = 0;
   inImgSize.height = 0;
+  minDisp = 0;
+  maxDisp = 64;
+  matchAlgorithm = BLOCK_MATCH;
 }
 
 StereoCamera::~StereoCamera()
@@ -170,29 +173,39 @@ void StereoCamera::ProjectPoint(double X, double Y, double Z,
 /**
  * Given a point in the left image and its disparity, return the reconstructed
  * 3D point.
+ * @return true if disparity was valid and point could be resonstructed, false otherwise
  */
-void StereoCamera::ReconstructPoint(double u, double v, double d, double &X, double &Y, double &Z)
+bool StereoCamera::ReconstructPoint(double u, double v, double d, double &X, double &Y, double &Z)
 {
-  // NOTE: actually tx = -proj[0][3]/proj[0][0] because:
-  // proj[0][3] = -fx*tx  (where fx = proj[0][0])
-  // but there seems to be an error in the SVS calib file:
-  //   [external]
-  //   Tx = -202.797
-  //   [right camera]
-  //   proj = 640 ... -1.297899e+05  (this should be positive!)
-  // This should be further investigated!!!
-  double tx = cam[RIGHT].proj[0][3]/cam[RIGHT].proj[0][0];
-  X = u - sx*cam[LEFT].proj[0][2];
-  Y = v - sy*cam[LEFT].proj[1][2];
-  Z = sx*cam[LEFT].proj[0][0];
-  double W = -d/tx + sx*(cam[LEFT].proj[0][2] - cam[RIGHT].proj[0][2])/tx;
-  // SVS calibration uses mm, we want m -> divide by 1000
-  W *= 1000.;
-  X /= W;
-  Y /= W;
-  Z /= W;
+  // a disparity value of 0 or -1 (depending on which matching algorithm is used)
+  // indicates invalid disparity
+  if(d > (double)minDisp)
+  {
+    // NOTE: actually tx = -proj[0][3]/proj[0][0] because:
+    // proj[0][3] = -fx*tx  (where fx = proj[0][0])
+    // but there seems to be an error in the SVS calib file:
+    //   [external]
+    //   Tx = -202.797
+    //   [right camera]
+    //   proj = 640 ... -1.297899e+05  (this should be positive!)
+    // This should be further investigated!!!
+    double tx = cam[RIGHT].proj[0][3]/cam[RIGHT].proj[0][0];
+    X = u - sx*cam[LEFT].proj[0][2];
+    Y = v - sy*cam[LEFT].proj[1][2];
+    Z = sx*cam[LEFT].proj[0][0];
+    double W = -d/tx + sx*(cam[LEFT].proj[0][2] - cam[RIGHT].proj[0][2])/tx;
+    // SVS calibration uses mm, we want m -> divide by 1000
+    W *= 1000.;
+    X /= W;
+    Y /= W;
+    Z /= W;
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
-
 
 void StereoCamera::DistortNormalisedPoint(double x, double y,
     double &xd, double &yd, int side)
@@ -341,23 +354,20 @@ void StereoCamera::RectifyImage(const IplImage *src, IplImage *dst, int side)
           CV_INTER_LINEAR + CV_WARP_FILL_OUTLIERS, cvScalarAll(0));
 }
 
-void StereoCamera::DisparityImage(const IplImage *left, const IplImage *right,
-    IplImage *disp)
+void StereoCamera::CalculateDisparity(const IplImage *left, const IplImage *right,
+      IplImage *disp)
 {
-  const int max_disparity = 64;
   assert(left != 0 && right != 0 && disp != 0);
-  cvFindStereoCorrespondence(left, right,
-                             CV_DISPARITY_BIRCHFIELD,  // mode
-                             disp,
-                             max_disparity,
-                             15, 3, 6, 8, 15 );
-                             //25,  // param1
-                             //5,   // param2
-                             //12,  // param3
-                             //15,  // param4
-                             //25   // param5
-                             //);
-
+  if(matchAlgorithm == BLOCK_MATCH)
+  {
+    CvStereoBMState *state = cvCreateStereoBMState(CV_STEREO_BM_BASIC, 0);
+    state->minDisparity = minDisp;
+    state->numberOfDisparities = maxDisp - minDisp;
+    cvFindStereoCorrespondenceBM(left, right, disp, state);
+    cvReleaseStereoBMState(&state);
+  }
+  else
+    assert("only supports BLOCK_MATCH for now" == 0);
 }
 
 void StereoCamera::SetInputImageSize(CvSize size)
@@ -367,6 +377,17 @@ void StereoCamera::SetInputImageSize(CvSize size)
   // width/height
   sx = (double)inImgSize.width/(double)cam[LEFT].width;
   sy = (double)inImgSize.height/(double)cam[LEFT].height;
+}
+
+void StereoCamera::SetDisparityRange(int min, int max)
+{
+  minDisp = min;
+  maxDisp = max;
+}
+
+void StereoCamera::SetMatchingAlgoritm(MatchingAlgorithm algo)
+{
+  matchAlgorithm = algo;
 }
 
 }

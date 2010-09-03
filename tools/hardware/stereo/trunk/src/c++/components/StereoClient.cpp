@@ -33,7 +33,6 @@ void StereoClient::startStereoCommunication(CASTComponent &owner)
           "failed to connect to stereo server: %s",
           stereoServerName.c_str()));
   }
-
 }
 
 void StereoClient::configureStereoCommunication(const map<string,string> & _config)
@@ -60,7 +59,7 @@ void StereoClient::configureStereoCommunication(const map<string,string> & _conf
 
 void StereoClient::getPoints(bool transformToGlobal, VisionData::SurfacePointSeq& points)
 {
-  stereoServer->getPoints(transformToGlobal, points);
+  stereoServer->getPoints(transformToGlobal, 0.5, points);
 }
 
 void StereoClient::getPointsInSOI(bool transformToGlobal, const VisionData::SOI &soi,
@@ -68,17 +67,17 @@ void StereoClient::getPointsInSOI(bool transformToGlobal, const VisionData::SOI 
 {
   VisionData::SOIPtr soiPtr = new VisionData::SOI;
   *soiPtr = soi;
-  stereoServer->getPointsInSOI(transformToGlobal, soiPtr, points);
+  stereoServer->getPointsInSOI(transformToGlobal, soiPtr, 0.5, points);
 }
 
 void StereoClient::getRectImage(int side, Video::Image& image)
 {
-  stereoServer->getRectImage(side, image);
+  stereoServer->getRectImage(side, 0.5, image);
 }
 
 void StereoClient::getDisparityImage(Video::Image& image)
 {
-  stereoServer->getDisparityImage(image);
+  stereoServer->getDisparityImage(0.5, image);
 }
 
 }
