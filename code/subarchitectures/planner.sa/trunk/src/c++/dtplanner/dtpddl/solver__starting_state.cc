@@ -107,6 +107,9 @@ void Solver::generate_starting_state()
 {
     assert(problem_Grounding->get__state_Propositions().size());
 
+    QUERY_UNRECOVERABLE_ERROR(!problem_Grounding->get__state_Functions().size()
+                              , "Failing because there is no reward function. This can happen: (a) Because you have no reward function, or (b) because you have one, but do not modify its value in any action effects.");
+    
     assert(problem_Grounding->get__state_Functions().size());
 
     assert(problem_Grounding->get__conjunctive_Normal_Form_Formulae().size());
@@ -163,7 +166,7 @@ void Solver::generate_starting_state()
     
 #ifndef NDEBUG 
 #ifdef  DEBUG_LEVEL
-#if DEBUG_LEVEL < 10000
+#if DEBUG_LEVEL < 10017
     for(auto some = problem_Grounding->get__state_Propositions().begin()
             ; some != problem_Grounding->get__state_Propositions().end()
             ; some++){
@@ -307,7 +310,7 @@ void Solver::generate_starting_state()
         
         
 //         assert( 0 == (*state)->count__observations() ) ;
-        INTERACTIVE_VERBOSER(true, 10015, "A starting state is :: "
+        INTERACTIVE_VERBOSER(true, 10017, "A starting state is :: "
                              <<**state<<std::endl);
     }
     

@@ -298,15 +298,14 @@ namespace Planning
          ******************************************************************************************************************/
 
         
-        struct Action_Header : ifapply< seq<s_Action
-                                            , pad<Action_Name, space>
-                                            , pad<seq<one<':'>, s_Parameters>, space>
-                                            , Open
-                                            , star<Argument> 
-                                            , Close>
-                                        , Action_Header__Action> {};
+        struct Action_Header : seq<s_Action, pad<Action_Name, space> > {};
         
 
+        struct Action_Parameters : seq< pad<seq<one<':'>, s_Parameters>, space>
+                                        , Open
+                                        , star<Argument> 
+                                        , Close > {};
+        
         struct Action_Precondition : seq< pad<seq<one<':'>, s_Precondition>, space>
                                           , Basic_Precondition_Subformulae > {};
         
@@ -314,13 +313,15 @@ namespace Planning
                                     , State_Effect_Subformulae > {};
         
 
-        struct Action_Element : sor< ifapply<Action_Precondition, Action_Precondition__Action>
-                                    , ifapply<Action_Effect, Action_Effect__Action> > {};
+        struct Action_Element : sor< Action_Parameters
+                                     , ifapply<Action_Precondition, Action_Precondition__Action>
+                                     , ifapply<Action_Effect, Action_Effect__Action> > {};
         
-        struct Action_Description :  ifapply<seq< Action_Header
-                                                  , star<Action_Element>
-                                                  >
-                                             , Completed_Action__Action>{};
+        struct Action_Description :  ifapply< ifapply<seq< Action_Header
+                                                           , star<Action_Element> >
+                                                      , Action_Header__Action
+                                                      /*Deas with data from Action_Parameters parsing*/ >
+                                              , Completed_Action__Action>{};
 
 
 

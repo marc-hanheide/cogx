@@ -109,7 +109,7 @@ press_ground_action(const Action_Name& action_Name,
 {
     /*HERE -- TURN CNF into formula with problem grounding references.*/
 
-    INTERACTIVE_VERBOSER(true, 8000, "Pressing action :: "<<action_Name<<std::endl
+    INTERACTIVE_VERBOSER(true, 10017, "Pressing action :: "<<action_Name<<std::endl
                          <<"with precondition :: "<<_precondition<<std::endl);
 
     bool statically_executable_action = false;
@@ -131,7 +131,7 @@ press_ground_action(const Action_Name& action_Name,
         
         precondition = _conjunct.cxx_deref_get<State_Formula::Conjunctive_Normal_Form_Formula>();
 
-        INTERACTIVE_VERBOSER(true, 8000, "Empty precondition :: "<<precondition<<std::endl);
+        INTERACTIVE_VERBOSER(true, 10017, "Empty precondition :: "<<precondition<<std::endl);
     } else {
         Planning_CNF__to__State_CNF
             planning_CNF__to__State_CNF
@@ -146,7 +146,7 @@ press_ground_action(const Action_Name& action_Name,
         planning_CNF__to__State_CNF(_precondition);
 
         precondition = planning_CNF__to__State_CNF.get__answer();
-        INTERACTIVE_VERBOSER(true, 8000, "Interesting precondition :: "<<precondition<<std::endl);
+        INTERACTIVE_VERBOSER(true, 10017, "Interesting precondition :: "<<precondition<<std::endl);
     }
 
     Constant_Arguments constant_Arguments(action_variables.size());
@@ -176,7 +176,7 @@ press_ground_action(const Action_Name& action_Name,
     
 
     
-    INTERACTIVE_VERBOSER(true, 8000, "Trying for  action :: "<<action_Proposition<<std::endl
+    INTERACTIVE_VERBOSER(true, 10017, "Trying for  action :: "<<action_Proposition<<std::endl
                          <<"with precondition :: "<<precondition<<std::endl);
     
     /**/
@@ -201,7 +201,7 @@ press_ground_action(const Action_Name& action_Name,
     domain_Action__to__Problem_Action(__effect_formula);
     auto new_action = domain_Action__to__Problem_Action.get__answer();
     
-    INTERACTIVE_VERBOSER(true, 8000, "Pushing an action :: "<<new_action<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10017, "Pushing an action :: "<<new_action<<std::endl);
 }
 
 /* --3-- */
@@ -216,10 +216,10 @@ ground_action_schema(const Action_Name& action_Name,
                      uint variable_index
  )
 {
-    INTERACTIVE_VERBOSER(true, 8000, "Grounding at level --3-- :: "<<action_Name<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10017, "Grounding at level --3-- :: "<<action_Name<<std::endl);
     
     if(variable_index >= variables_in_order.size()){
-        INTERACTIVE_VERBOSER(true, 8000, "Pressing at level --3-- :: "<<action_Name<<std::endl);
+        INTERACTIVE_VERBOSER(true, 10017, "Pressing at level --3-- :: "<<action_Name<<std::endl);
         
         press_ground_action(action_Name,
                             __precondition,
@@ -229,7 +229,7 @@ ground_action_schema(const Action_Name& action_Name,
         return;
     }
     
-    INTERACTIVE_VERBOSER(true, 8000, "Proceeding to ground formulae at level --3-- :: "<<action_Name<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10017, "Proceeding to ground formulae at level --3-- :: "<<action_Name<<std::endl);
         
     
     auto variable = variables_in_order[variable_index];
@@ -252,7 +252,7 @@ ground_action_schema(const Action_Name& action_Name,
         assignment_detail[variable] = *constant;
 
         
-        INTERACTIVE_VERBOSER(true, 8000, "Applying assignment applicator for action :: "<<action_Name<<std::endl
+        INTERACTIVE_VERBOSER(true, 10017, "Applying assignment applicator for action :: "<<action_Name<<std::endl
                              <<"trying assignment of :: "<<variable<<" to "<<*constant);
         
 //                         std::cerr<<std::endl<<std::endl;
@@ -287,13 +287,15 @@ ground_action_schema(const Action_Name& action_Name,
 //                         std::cerr<<symbol<<"; "<<std::endl;
 //                     }{char ch; std::cin>>ch;};
         if(false == std::tr1::get<1>(_precondition)){
-            VERBOSER(8000, "For action :: "<<action_Name<<std::endl
+            VERBOSER(10017, "For action :: "<<action_Name<<std::endl
                      <<"Assignment of :: "<<variable<<" to "<<*constant<<" is INVALID."<<std::endl);
+            
+            assignment_detail.erase(variable);
             
             continue;
         }
         
-        INTERACTIVE_VERBOSER(true, 8000, "For action :: "<<action_Name<<std::endl
+        INTERACTIVE_VERBOSER(true, 10017, "For action :: "<<action_Name<<std::endl
                  <<"Assignment of :: "<<*constant<<" to "<<variable<<" is VALID."<<std::endl);
         
         
@@ -326,7 +328,7 @@ ground_action_schema(const Action_Name& action_Name,
                      Subformula precondition
  )
 {
-    INTERACTIVE_VERBOSER(true, 8000, "Grounding at level --2-- :: "<<action_Name<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10017, "Grounding at level --2-- :: "<<action_Name<<std::endl);
     
     
     Planning_Formula__to__Variable_Ordering planning_Formula__to__Variable_Ordering(*domain_Data);
@@ -337,7 +339,7 @@ ground_action_schema(const Action_Name& action_Name,
                   "For action ::"<<action_Name<<" we could not show a preference in what"<<std::endl
                   <<" order to make assignments to argument variables for grounding...");
     
-    INTERACTIVE_VERBOSER(true, 8000, "Will be making assignments in the following order :: "<<order_in_which_to_make_assignments<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10017, "Will be making assignments in the following order :: "<<order_in_which_to_make_assignments<<std::endl);
     
     
     std::set<Variable> variables_that_need_assignment;
@@ -350,7 +352,7 @@ ground_action_schema(const Action_Name& action_Name,
     }
 
     
-    INTERACTIVE_VERBOSER(true, 8000, "All variables that need assignment :: "<<variables_that_need_assignment<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10017, "All variables that need assignment :: "<<variables_that_need_assignment<<std::endl);
     
     
     
@@ -361,7 +363,7 @@ ground_action_schema(const Action_Name& action_Name,
         variables_that_need_assignment.erase(*variable);
     }
 
-    INTERACTIVE_VERBOSER(true, 8000, "Unconsidered variables that need assignment :: "<<variables_that_need_assignment<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10017, "Unconsidered variables that need assignment :: "<<variables_that_need_assignment<<std::endl);
     
     
     if(variables_that_need_assignment.size()){
@@ -401,7 +403,7 @@ void Problem_Grounding::ground_action_schema(Planning::Action_Schema& action_Sch
     auto action_Arguments = get__symbols(arguments);
     auto argument_Types = get__types(arguments);
 
-    INTERACTIVE_VERBOSER(true, 8000, "Grounding at level --1-- :: "<<action_Schema<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10017, "Grounding at level --1-- :: "<<action_Schema<<std::endl);
     
 
     
