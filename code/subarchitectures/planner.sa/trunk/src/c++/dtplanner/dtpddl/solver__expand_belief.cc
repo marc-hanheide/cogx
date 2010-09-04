@@ -502,15 +502,17 @@ bool Solver::expand_belief_state_space()
     
     expand_belief_state(pomdp_state);
     
-    QUERY_UNRECOVERABLE_ERROR(pomdp_state->unexpanded(),
-                              "We do not seem to be able to expand POMDP state :: "
-                              <<*pomdp_state<<std::endl);
+    QUERY_WARNING(pomdp_state->unexpanded(),
+                  "We do not seem to be able to expand POMDP state :: "
+                  <<*pomdp_state<<std::endl
+                  <<"I suspect this is a sink state, but if not we have a more serious bug on our hands.\n"
+                  <<"Because you didn't model an action that spins on this state, I assume you want things\n"
+                  <<"To fail horribly at this state.\n");
     
     INTERACTIVE_VERBOSER(true, 10018, "Expanded POMDP state :: "<<*pomdp_state<<std::endl);
 
     return true;
 }
-
 
 #endif
 

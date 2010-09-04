@@ -326,6 +326,7 @@ ground_observation_schema(const Observation_Name& observation_Name,
             VERBOSER(3001, "For observation :: "<<observation_Name<<std::endl
                      <<"Assignment of :: "<<variable<<" to "<<*constant<<" is INVALID."<<std::endl);
             
+            assignment_detail.erase(variable);
             continue;
         }
         
@@ -333,6 +334,7 @@ ground_observation_schema(const Observation_Name& observation_Name,
             VERBOSER(3001, "For observation :: "<<observation_Name<<std::endl
                      <<"Assignment of :: "<<variable<<" to "<<*constant<<" is INVALID."<<std::endl);
             
+            assignment_detail.erase(variable);
             continue;
         }
         
