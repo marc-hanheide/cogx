@@ -10,6 +10,11 @@
 #include <VideoUtils.h>
 #include "StereoViewer.h"
 
+// if true, draw overlaid reprojected points in green (i.e. use
+// only their green channel) to distinguish from original image
+// pixels
+static bool OVERLAY_IN_GREEN = true;
+
 /**
  * The function called to create a new instance of our component.
  */
@@ -373,20 +378,21 @@ void StereoViewer::runComponent()
   glutMotionFunc(MouseMove);
   glutReshapeFunc(ResizeWin);
   glutDisplayFunc(DisplayWin);
+  int imgWidth = 1000;
 
   cvNamedWindow(getComponentID().c_str(), 1);
 
   while(isRunning())
   {
     points.resize(0);
-    getPoints(false, points);
+    getPoints(false, imgWidth, points);
     selectPointNearLeftOpticalAxis();
 
     IplImage *iplImage = 0;
     for(int side = LEFT; side <= RIGHT; side++)
     {
       Video::Image image;
-      getRectImage(side, image);
+      getRectImage(side, imgWidth, image);
       cvReleaseImage(&iplImage);
       iplImage = convertImageToIpl(image);
 
@@ -398,15 +404,21 @@ void StereoViewer::runComponent()
         iplImage);
 
       // clear image before drawing reprojected points
-      // cvSet(iplImage, cvScalar(0));
+      //cvSet(iplImage, cvScalar(0));
       for(size_t i = 0; i < points.size(); i++)
       {
         Vector2 p = projectPoint(image.camPars, points[i].p);
         distortPoint(image.camPars, p, p);
-        cvCircle(iplImage, cvPoint(p.x, p.y), 0,
-            CV_RGB((unsigned char)points[i].c.r,
-                   (unsigned char)points[i].c.g,
-                   (unsigned char)points[i].c.b));
+        CvScalar col;
+        if(OVERLAY_IN_GREEN)
+          col = CV_RGB(0,
+                       (unsigned char)points[i].c.g,
+                       0);
+        else
+          col = CV_RGB((unsigned char)points[i].c.r,
+                       (unsigned char)points[i].c.g,
+                       (unsigned char)points[i].c.b);
+        cvCircle(iplImage, cvPoint(p.x, p.y), 0, col);
       }
 
       // this draws a nice epipolar line
@@ -423,12 +435,12 @@ void StereoViewer::runComponent()
 
       cvSaveImage(side == LEFT ? "viewer-overlay-L.png" : "viewer-overlay-R.png",
         iplImage);
+
+      if(side == RIGHT)
+        cvShowImage(getComponentID().c_str(), iplImage);
     }
 
-    cvShowImage(getComponentID().c_str(), iplImage);
-
     // needed to make the window appear
-    // (an odd behaviour of OpenCV windows!)
     cvWaitKey(10);
     cvReleaseImage(&iplImage);
 
@@ -436,7 +448,7 @@ void StereoViewer::runComponent()
     glutMainLoopEvent();
 
     // wait a bit so we don't hog the CPU
-    sleepComponent(200);
+    //sleepComponent(200);
   }
 }
 
