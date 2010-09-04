@@ -262,7 +262,7 @@ void State_Transformation
 
 std::ostream& State_Transformation::operator<<(std::ostream&o) const
 {
-    o<<get__identifier()<<std::endl;
+    o<<"ACTION IDENTIFIER :: "<<get__identifier()<<std::endl;
 
     
     o<<"PRECONDITION :: "<<get__precondition()<<std::endl;

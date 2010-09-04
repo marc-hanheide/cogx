@@ -235,6 +235,6 @@ namespace Planning
  * outlet is selected through the device identification and executes
  * the function in accordance with the switch state.
  *
- * -- Abstract from United States Patent 5,455,464, by James Gosling,
- * 1992 (that Java guy).
+ * -- Abstract from United States Patent 5,455,464, by James Gosling
+ * (that Java guy), 1992.
  */

@@ -92,14 +92,14 @@ CNF_Assignment_Applicator(basic_type::Runtime_Thread _runtime_Thread,
 Result CNF_Assignment_Applicator::satisfiable(Fact fact)
 {
     if(!domain_Data.in_add_effect(fact->get__name())){
-        INTERACTIVE_VERBOSER(true, 8000, "Got UN-MAKEABLE first-order fact :: "<<fact);
+        INTERACTIVE_VERBOSER(true, 10017, "Got UN-MAKEABLE first-order fact :: "<<fact);
 
         if(problem_Data.statically_false__starting_always_false(fact)){
             if(!processing_negative){
-                INTERACTIVE_VERBOSER(true, 8000, " --  (trivial FALSE) UN-MAKEABLE needed to be TRUE in STARTING STATES but wasn't :: "<<fact);
+                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial FALSE) UN-MAKEABLE needed to be TRUE in STARTING STATES but wasn't :: "<<fact);
                 return Result(formula__false, false);
             } else {
-                INTERACTIVE_VERBOSER(true, 8000, " --  (trivial TRUE) UN-MAKEABLE always false in STARTING STATE :: "<<fact);
+                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial TRUE) UN-MAKEABLE always false in STARTING STATE :: "<<fact);
                 return Result(formula__true, true);
             }
         }
@@ -107,21 +107,21 @@ Result CNF_Assignment_Applicator::satisfiable(Fact fact)
     
     
     if(!domain_Data.in_delete_effect(fact->get__name())){
-        INTERACTIVE_VERBOSER(true, 8000, " Got UN-BREAKABLE first-order fact :: "<<fact);
+        INTERACTIVE_VERBOSER(true, 10017, " Got UN-BREAKABLE first-order fact :: "<<fact);
 
         if(problem_Data.statically_true__starting_always_true(fact)){
             if(!processing_negative){
-                INTERACTIVE_VERBOSER(true, 8000, " --  (trivial TRUE)  UN-BREAKABLE always true in STARTING STATE  :: "<<fact);
+                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial TRUE)  UN-BREAKABLE always true in STARTING STATE  :: "<<fact);
                 return Result(formula__true, true);
             } else {
-                INTERACTIVE_VERBOSER(true, 8000, " --  (trivial FALSE) UN-BREAKABLE needed to be false in STARTING STATES but wasn't :: "<<fact);
+                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial FALSE) UN-BREAKABLE needed to be false in STARTING STATES but wasn't :: "<<fact);
                 return Result(formula__false, false);
             }
         }
     }
 
     
-    INTERACTIVE_VERBOSER(true, 8000, "Got dynamic first-order fact :: "<<fact);
+    INTERACTIVE_VERBOSER(true, 10017, "Got satisfiable first-order fact :: "<<fact);
     
     return Result(Subformula(fact), true);
 
@@ -136,10 +136,10 @@ Result CNF_Assignment_Applicator::satisfiable(Ground_Fact ground_Fact)
 
         if(problem_Data.statically_false__starting_always_false(ground_Fact)){
             if(!processing_negative){
-                INTERACTIVE_VERBOSER(true, 3102, " --  (trivial FALSE) UN-MAKEABLE needed to be TRUE in STARTING STATES but wasn't :: "<<ground_Fact);
+                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial FALSE) UN-MAKEABLE needed to be TRUE in STARTING STATES but wasn't :: "<<ground_Fact);
                 return Result(formula__false, false);
             } else {
-                INTERACTIVE_VERBOSER(true, 3102, " -- (trivial TRUE) UN-MAKEABLE always false in STARTING STATE :: "<<ground_Fact);
+                INTERACTIVE_VERBOSER(true, 10017, " -- (trivial TRUE) UN-MAKEABLE always false in STARTING STATE :: "<<ground_Fact);
                 return Result(formula__true, true);
             }
         }
@@ -147,20 +147,20 @@ Result CNF_Assignment_Applicator::satisfiable(Ground_Fact ground_Fact)
     
     
     if(!domain_Data.in_delete_effect(ground_Fact->get__name())){
-        INTERACTIVE_VERBOSER(true, 3102, " Got UN-BREAKABLE ground fact :: "<<ground_Fact);
+        INTERACTIVE_VERBOSER(true, 10017, " Got UN-BREAKABLE ground fact :: "<<ground_Fact);
 
         if(problem_Data.statically_true__starting_always_true(ground_Fact)){
             if(!processing_negative){
-                INTERACTIVE_VERBOSER(true, 3102, " --  (trivial TRUE)  UN-BREAKABLE always true in STARTING STATE  :: "<<ground_Fact);
+                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial TRUE)  UN-BREAKABLE always true in STARTING STATE  :: "<<ground_Fact);
                 return Result(formula__true, true);
             } else {
-                INTERACTIVE_VERBOSER(true, 3102, " --  (trivial FALSE) UN-BREAKABLE needed to be false in STARTING STATES but wasn't :: "<<ground_Fact);
+                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial FALSE) UN-BREAKABLE needed to be false in STARTING STATES but wasn't :: "<<ground_Fact);
                 return Result(formula__false, false);
             }
         }
     }
     
-    INTERACTIVE_VERBOSER(true, 3102, "Got DYNAMIC ground ground_Fact :: "<<ground_Fact);
+    INTERACTIVE_VERBOSER(true, 10017, "Got possible ground ground_Fact :: "<<ground_Fact);
     
     return Result(Subformula(ground_Fact), true);
 }
@@ -486,7 +486,7 @@ Result CNF_Assignment_Applicator::operator()(Fact fact, const Planning::Assignme
              , fact->get__name()
              , argument_List);
         
-        INTERACTIVE_VERBOSER(true, 8000, "Testing satisfiability of :: "<<predicate<<std::endl);
+        INTERACTIVE_VERBOSER(true, 10017, "Testing satisfiability of :: "<<predicate<<std::endl);
         
         return satisfiable(Fact(predicate));
     }
@@ -624,12 +624,12 @@ Result CNF_Assignment_Applicator::operator()(Subformula input,
             
             if(action_proposition->get__id() < actions_validator.second){
                 
-                INTERACTIVE_VERBOSER(true, 8000, "Admissible action literal :: "
+                INTERACTIVE_VERBOSER(true, 10016, "Admissible action literal :: "
                                      <<*action_proposition<<" at thread :: "<<actions_validator.first<<std::endl);
                 
                 return Result(Formula::Subformula(action_proposition), true);
             } else {
-                INTERACTIVE_VERBOSER(true, 8000, "Inadmissible action literal :: "
+                INTERACTIVE_VERBOSER(true, 10016, "Inadmissible action literal :: "
                                      <<*action_proposition<<" at thread :: "<<actions_validator.first<<std::endl);
                 
                 

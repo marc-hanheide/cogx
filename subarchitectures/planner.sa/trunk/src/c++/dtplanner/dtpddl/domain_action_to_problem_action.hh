@@ -75,7 +75,10 @@ namespace Planning
         /* Non-compulsory ground PDDL action. */
         State_Transformation__Pointer get__answer() const ;
     private:
-
+        
+        /* Returns true if there was no conjunctive parent to traversal
+         * of \argument{input}, false otherwise.*/
+        bool deal_with_a_missing_conjunctive_parent(const Formula::Subformula& input);
         
         void interpret__as_double_valued_ground_state_function(ID_TYPE);
         

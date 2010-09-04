@@ -129,6 +129,27 @@ Domain_Action__to__Problem_Action
     INTERACTIVE_VERBOSER(true, 3110, "Making actions with precondition :: "<<preconditions.top());    
 }
 
+
+bool Domain_Action__to__Problem_Action
+::deal_with_a_missing_conjunctive_parent(const Formula::Subformula& input) 
+{
+    if(!list__Listeners.size()){
+                
+        Formula::Subformulae elements;
+        elements.push_back(input);
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
+            (runtime_Thread,
+             Formula::Conjunction,
+             conjunction,
+             elements);
+        (*this)(conjunction);
+                
+        return true;
+    }
+
+    return false;
+}
+
 const Planning::State_Transformation__Pointer&  Domain_Action__to__Problem_Action
 ::generate__null_action(double local_probability) 
 {
@@ -452,20 +473,25 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
         break;
         case enum_types::state_proposition:
         {
-            /*If this is an effect without a conjunctive parent.*/
-            if(!list__Listeners.size()){
-                
-                Formula::Subformulae elements;
-                elements.push_back(input);
-                NEW_referenced_WRAPPED_deref_visitable_POINTER
-                    (runtime_Thread,
-                     Formula::Conjunction,
-                     conjunction,
-                     elements);
-                (*this)(conjunction);
-                
+            if(deal_with_a_missing_conjunctive_parent(input)){
                 return;
             }
+            
+            
+//             /*If this is an effect without a conjunctive parent.*/
+//             if(!list__Listeners.size()){
+                
+//                 Formula::Subformulae elements;
+//                 elements.push_back(input);
+//                 NEW_referenced_WRAPPED_deref_visitable_POINTER
+//                     (runtime_Thread,
+//                      Formula::Conjunction,
+//                      conjunction,
+//                      elements);
+//                 (*this)(conjunction);
+                
+//                 return;
+//             }
             
             assert(input.test_cast<Planning::Formula::State_Proposition>());
             
@@ -627,20 +653,23 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
         break;
         case enum_types::state_predicate:
         {
-            /*If this is an effect without a conjunctive parent.*/
-            if(!list__Listeners.size()){
-                
-                Formula::Subformulae elements;
-                elements.push_back(input);
-                NEW_referenced_WRAPPED_deref_visitable_POINTER
-                    (runtime_Thread,
-                     Formula::Conjunction,
-                     conjunction,
-                     elements);
-                (*this)(conjunction);
-                
+            if(deal_with_a_missing_conjunctive_parent(input)){
                 return;
             }
+//             /*If this is an effect without a conjunctive parent.*/
+//             if(!list__Listeners.size()){
+                
+//                 Formula::Subformulae elements;
+//                 elements.push_back(input);
+//                 NEW_referenced_WRAPPED_deref_visitable_POINTER
+//                     (runtime_Thread,
+//                      Formula::Conjunction,
+//                      conjunction,
+//                      elements);
+//                 (*this)(conjunction);
+                
+//                 return;
+//             }
             
             /* -- ground it and try again -- */
             assert(input.test_cast<Formula::State_Predicate>());
@@ -695,6 +724,11 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
         case enum_types::probabilistic_effect:
         {
             assert(input.test_cast<Formula::Probabilistic>());
+            
+            if(deal_with_a_missing_conjunctive_parent(input)){
+                return;
+            }
+            
             
             assert(level != 0);
             auto new__action_proposition = process__generate_name(":probabilistic:");
@@ -956,20 +990,23 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
         break;
         case enum_types::increase:
         {
-            /*If this is an effect without a conjunctive parent.*/
-            if(!list__Listeners.size()){
-                
-                Formula::Subformulae elements;
-                elements.push_back(input);
-                NEW_referenced_WRAPPED_deref_visitable_POINTER
-                    (runtime_Thread,
-                     Formula::Conjunction,
-                     conjunction,
-                     elements);
-                (*this)(conjunction);
-                
+            if(deal_with_a_missing_conjunctive_parent(input)){
                 return;
             }
+//             /*If this is an effect without a conjunctive parent.*/
+//             if(!list__Listeners.size()){
+                
+//                 Formula::Subformulae elements;
+//                 elements.push_back(input);
+//                 NEW_referenced_WRAPPED_deref_visitable_POINTER
+//                     (runtime_Thread,
+//                      Formula::Conjunction,
+//                      conjunction,
+//                      elements);
+//                 (*this)(conjunction);
+                
+//                 return;
+//             }
             
             
             assert(input.test_cast<Formula::Increase>());
@@ -1005,20 +1042,23 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
         break;
         case enum_types::assign:
         {
-            /*If this is an effect without a conjunctive parent.*/
-            if(!list__Listeners.size()){
-                
-                Formula::Subformulae elements;
-                elements.push_back(input);
-                NEW_referenced_WRAPPED_deref_visitable_POINTER
-                    (runtime_Thread,
-                     Formula::Conjunction,
-                     conjunction,
-                     elements);
-                (*this)(conjunction);
-                
+            if(deal_with_a_missing_conjunctive_parent(input)){
                 return;
             }
+//             /*If this is an effect without a conjunctive parent.*/
+//             if(!list__Listeners.size()){
+                
+//                 Formula::Subformulae elements;
+//                 elements.push_back(input);
+//                 NEW_referenced_WRAPPED_deref_visitable_POINTER
+//                     (runtime_Thread,
+//                      Formula::Conjunction,
+//                      conjunction,
+//                      elements);
+//                 (*this)(conjunction);
+                
+//                 return;
+//             }
 
             
             assert(input.test_cast<Formula::Assign>());

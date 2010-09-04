@@ -320,7 +320,7 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
         auto starting_state_probability = atom->second;
 
         
-        INTERACTIVE_VERBOSER(true, 9094, "Looking at successors of  :: "
+        INTERACTIVE_VERBOSER(true, 10017, "Looking at successors of  :: "
                              <<*starting_state<<std::endl
                              <<"That occurs in a belief with probability :: "<<starting_state_probability<<std::endl);
         
@@ -329,11 +329,11 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
         if(!starting_state->get__has_been_expanded()){
             assert(dynamic_cast<const State*>(starting_state));
             
-            INTERACTIVE_VERBOSER(true, 9094, "START Expanding MDP-state  :: "
+            INTERACTIVE_VERBOSER(true, 10017, "START Expanding MDP-state  :: "
                                  <<*starting_state<<std::endl);
             
             expand_optional_transformations(dynamic_cast<State*>(starting_state));
-            INTERACTIVE_VERBOSER(true, 9094, "DONE Expanding MDP-state  :: "
+            INTERACTIVE_VERBOSER(true, 10017, "DONE Expanding MDP-state  :: "
                                  <<*starting_state<<std::endl);
         }
         
@@ -402,7 +402,7 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
                 
                 assert(observation_probabilities.size() == observations.size());
                 
-                INTERACTIVE_VERBOSER(true, 9094, "Unwinding :: "<<observations.size()<<" observations.");
+                INTERACTIVE_VERBOSER(true, 10017, "Unwinding :: "<<observations.size()<<" observations.");
                 
                 for(uint observation_index = 0
                         ; observation_index < observations.size()
@@ -419,7 +419,7 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
                         (reinterpret_cast<ID_TYPE>(problem_Grounding.get()),
                          action_index);
                     
-                    INTERACTIVE_VERBOSER(true, 9094, "Starting at state with probability :: "<<starting_state_probability<<std::endl
+                    INTERACTIVE_VERBOSER(true, 10017, "Starting at state with probability :: "<<starting_state_probability<<std::endl
                                          <<"Got a successor  :: "
                                          <<*successor_state<<std::endl
                                          <<"Occurring with probability :: "<<successor_state__probability<<std::endl
@@ -438,7 +438,7 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
 //                                          << (state_probability * successor_state__probability * observation_probability)
 //                                          << " " <<action_index<<std::endl);
                     
-                    INTERACTIVE_VERBOSER(true, 9094, "Pushing observation :: "<<*observation
+                    INTERACTIVE_VERBOSER(true, 10017, "Pushing observation :: "<<*observation
                                          <<" p:= "<<observation_probability<<std::endl);
                     
                     add_entry(_normalisation_Factors
@@ -502,12 +502,23 @@ bool Solver::expand_belief_state_space()
     
     expand_belief_state(pomdp_state);
     
-    assert(!pomdp_state->unexpanded());
+    QUERY_UNRECOVERABLE_ERROR(pomdp_state->unexpanded(),
+                              "We do not seem to be able to expand POMDP state :: "
+                              <<*pomdp_state<<std::endl);
     
-    INTERACTIVE_VERBOSER(true, 10015, "Expanded POMDP state :: "<<*pomdp_state<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10018, "Expanded POMDP state :: "<<*pomdp_state<<std::endl);
 
     return true;
 }
 
 
 #endif
+
+/* Rickie Lee Jones [|speaking|]
+ *
+ * They went on forever ... We lived in Arizona, and the skies always
+ * had little fluffy clouds in 'em, and, uh (pause) they were long
+ * (pause) and clear and (pause) there were lots of stars at night...
+ *
+ * -- sample from The Orb single "Little Fluffy Clouds", 1990.
+ */

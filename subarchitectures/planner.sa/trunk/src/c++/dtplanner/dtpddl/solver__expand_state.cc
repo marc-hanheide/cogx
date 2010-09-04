@@ -215,13 +215,19 @@ void Solver::expand_optional_transformation(Planning::State* state
                         (*state_space_iterator)->get__probability_during_expansion() +
                         (*_successor)->get__probability_during_expansion());
                 
-                QUERY_UNRECOVERABLE_ERROR((*state_space_iterator)->get__probability_during_expansion() <= 1.0
-                                          || !are_Doubles_Close
-                                          (1.0,
-                                           (*state_space_iterator)->get__probability_during_expansion()),
+                QUERY_UNRECOVERABLE_ERROR(!((*state_space_iterator)->get__probability_during_expansion() <= 1.0
+                                            || are_Doubles_Close
+                                            (1.0,
+                                             (*state_space_iterator)->get__probability_during_expansion())),
                                           "Got a successor state :: "<<(**state_space_iterator)<<std::endl
                                           <<"that is invalid :: "
-                                          <<(*state_space_iterator)->get__probability_during_expansion());
+                                          <<(*state_space_iterator)->get__probability_during_expansion()<<std::endl
+                                          <<"Because it occurs with probability :: "
+                                          <<(*state_space_iterator)->get__probability_during_expansion()<<std::endl
+                                          <<!are_Doubles_Close
+                                          (1.0,
+                                           (*state_space_iterator)->get__probability_during_expansion())<<std::endl
+                                          <<((*state_space_iterator)->get__probability_during_expansion() <= 1.0)<<std::endl);
                 
             } else {
                 (*state_space_iterator)

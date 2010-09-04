@@ -432,6 +432,12 @@ namespace std
         for(auto s = state.begin(); s != state.end(); s++){
             o<<s->second<<" :--:> "<<*(s->first)<<std::endl;
         }
+
+        for(auto s = state.begin(); s != state.end(); s++){
+            INTERACTIVE_VERBOSER(true, 10017, "Expanded POMDP state :: "
+                                 <<*dynamic_cast<const State*>(s->first)<<std::endl);
+        }
+        
         
         return o;
     }
