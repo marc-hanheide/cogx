@@ -80,9 +80,8 @@ public:
   // size
   double sx;
   double sy;
-  int minDisp;
-  int maxDisp;
   MatchingAlgorithm matchAlgorithm;
+  CvStereoBMState *stereo_bm_state;
 
 public:
   StereoCamera();
@@ -101,7 +100,7 @@ public:
   void UnrectifyPointFast(double ur, double vr, double &ud, double &vd, int side);
   void SetupImageRectification();
   void RectifyImage(const IplImage *src, IplImage *dst, int side);
-  void SetDisparityRange(int min, int max);
+  void SetDisparityRange(int minDisp, int maxDisp);
   void SetInputImageSize(CvSize size);
   void SetMatchingAlgoritm(MatchingAlgorithm algo);
   void CalculateDisparity(const IplImage *left, const IplImage *right,

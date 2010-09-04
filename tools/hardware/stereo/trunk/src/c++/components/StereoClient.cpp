@@ -57,28 +57,19 @@ void StereoClient::configureStereoCommunication(const map<string,string> & _conf
     throw runtime_error(exceptionMessage(__HERE__, "no stereo server name given"));
 }
 
-void StereoClient::getPoints(bool transformToGlobal, VisionData::SurfacePointSeq& points)
+void StereoClient::getPoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points)
 {
-  stereoServer->getPoints(transformToGlobal, 0.5, points);
+  stereoServer->getPoints(transformToGlobal, imgWidth, points);
 }
 
-void StereoClient::getPointsInSOI(bool transformToGlobal, const VisionData::SOI &soi,
-    VisionData::SurfacePointSeq& points)
+void StereoClient::getRectImage(int side, int imgWidth, Video::Image& image)
 {
-  VisionData::SOIPtr soiPtr = new VisionData::SOI;
-  *soiPtr = soi;
-  stereoServer->getPointsInSOI(transformToGlobal, soiPtr, 0.5, points);
+  stereoServer->getRectImage(side, imgWidth, image);
 }
 
-void StereoClient::getRectImage(int side, Video::Image& image)
+void StereoClient::getDisparityImage(int imgWidth, Video::Image& image)
 {
-  stereoServer->getRectImage(side, 0.5, image);
-}
-
-void StereoClient::getDisparityImage(Video::Image& image)
-{
-  stereoServer->getDisparityImage(0.5, image);
+  stereoServer->getDisparityImage(imgWidth, image);
 }
 
 }
-

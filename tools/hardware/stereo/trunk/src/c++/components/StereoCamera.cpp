@@ -45,17 +45,18 @@ StereoCamera::StereoCamera()
   sx = sy = 1.;
   inImgSize.width = 0;
   inImgSize.height = 0;
-  minDisp = 0;
-  maxDisp = 64;
   matchAlgorithm = BLOCK_MATCH;
+  stereo_bm_state = cvCreateStereoBMState(CV_STEREO_BM_BASIC);
 }
 
 StereoCamera::~StereoCamera()
 {
+  // TODO: free remapping images!
   cvReleaseImage(&mapx[LEFT]);
   cvReleaseImage(&mapx[RIGHT]);
   cvReleaseImage(&mapy[LEFT]);
   cvReleaseImage(&mapy[RIGHT]);
+  cvReleaseStereoBMState(&stereo_bm_state);
 }
 
 /**
@@ -179,7 +180,7 @@ bool StereoCamera::ReconstructPoint(double u, double v, double d, double &X, dou
 {
   // a disparity value of 0 or -1 (depending on which matching algorithm is used)
   // indicates invalid disparity
-  if(d > (double)minDisp)
+  if(d > (double)stereo_bm_state->minDisparity)
   {
     // NOTE: actually tx = -proj[0][3]/proj[0][0] because:
     // proj[0][3] = -fx*tx  (where fx = proj[0][0])
@@ -360,11 +361,7 @@ void StereoCamera::CalculateDisparity(const IplImage *left, const IplImage *righ
   assert(left != 0 && right != 0 && disp != 0);
   if(matchAlgorithm == BLOCK_MATCH)
   {
-    CvStereoBMState *state = cvCreateStereoBMState(CV_STEREO_BM_BASIC, 0);
-    state->minDisparity = minDisp;
-    state->numberOfDisparities = maxDisp - minDisp;
-    cvFindStereoCorrespondenceBM(left, right, disp, state);
-    cvReleaseStereoBMState(&state);
+    cvFindStereoCorrespondenceBM(left, right, disp, stereo_bm_state);
   }
   else
     assert("only supports BLOCK_MATCH for now" == 0);
@@ -379,10 +376,14 @@ void StereoCamera::SetInputImageSize(CvSize size)
   sy = (double)inImgSize.height/(double)cam[LEFT].height;
 }
 
-void StereoCamera::SetDisparityRange(int min, int max)
+void StereoCamera::SetDisparityRange(int minDisp, int maxDisp)
 {
-  minDisp = min;
-  maxDisp = max;
+  // note: disparity limits must by divisible by 16 - q requirement by
+  // OpenCV stereo matching
+  minDisp = minDisp - minDisp%16;
+  maxDisp = maxDisp - maxDisp%16;
+  stereo_bm_state->minDisparity = minDisp;
+  stereo_bm_state->numberOfDisparities = maxDisp - minDisp;
 }
 
 void StereoCamera::SetMatchingAlgoritm(MatchingAlgorithm algo)
