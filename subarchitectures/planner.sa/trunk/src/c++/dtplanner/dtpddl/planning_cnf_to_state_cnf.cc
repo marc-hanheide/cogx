@@ -252,12 +252,14 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             assert(input.test_cast<Planning::Formula::Conjunction>());
             deref_VISITATIONS(Planning::Formula::Conjunction, input, get__subformulae());
 
+
             
-            QUERY_UNRECOVERABLE_ERROR(
+            QUERY_WARNING(
                 !disjunctions.size(),
-                "No disjunctions identified for formula while processnig :: "
+                "No disjunctions identified for formula while processing :: "
                 <<input<<std::endl
                 <<disjunctions__as_set);
+
             
             NEW_referenced_WRAPPED_deref_POINTER
                 (runtime_Thread,
@@ -395,6 +397,17 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             
             clause = List__Literals();
             clause__as_set = Literals();
+        }
+        break;
+        case enum_types::vacuous:
+        {
+            Formula::Subformulae elements;
+            NEW_referenced_WRAPPED_deref_visitable_POINTER
+                (runtime_Thread,
+                 Formula::Conjunction,
+                 conjunction,
+                 elements);
+            (*this)(conjunction);
         }
         break;
         default:
