@@ -625,6 +625,7 @@ void PlanePopOut::runComponent()
   int argc = 1;
   char argv0[] = "PlanePopOut";
   char *argv[1] = {argv0};
+  int stereoWidth = 320;
   if (doDisplay)
   {
   glutInit(&argc, argv);
@@ -645,10 +646,10 @@ void PlanePopOut::runComponent()
 	VisionData::SurfacePointSeq tempPoints = points;
 	points.resize(0);
 
-	getPoints(useGlobalPoints, points);
+	getPoints(useGlobalPoints, stereoWidth, points);
 
 	Video::Image image;
-	getRectImage(LEFT, image);
+	getRectImage(LEFT, stereoWidth, image);
 	if (points.size() == 0)
 	{
 		points = tempPoints;
