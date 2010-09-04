@@ -261,6 +261,25 @@ void Partially_Observable_Markov_Decision_Process_State::initialise__prescribed_
 
 uint Partially_Observable_Markov_Decision_Process_State::get__prescribed_action() const
 {
+    if(!action_based_successor_driver.size()){
+        /* It wasn't really unexpanded. This is a problem because some
+         * states will not expand to anything. We need to sometimes
+         * include a NULL action.*/
+        assert(unexpanded());
+        QUERY_UNRECOVERABLE_ERROR(unexpanded(),
+                      "We do not seem to be able to expand POMDP state :: "
+                      <<*this<<std::endl
+                      <<"I suspect this is a sink state, but if not we have a more serious bug on our hands.\n"
+                      <<"Because you didn't model an action that spins on this state, I assume you want things\n"
+                      <<"To fail horribly at this state.\n"
+                      <<"Now you have asked me to prescribe an action for this state.\n"
+                      <<"Bad moove brother...\n");
+
+        return 0;
+        
+    }
+    
+    
     assert(action_based_successor_driver.size());
     assert(prescribed_action_index <  action_based_successor_driver.size());
     return action_based_successor_driver[prescribed_action_index];

@@ -198,13 +198,11 @@ int main(int argc, char** argv)
             Planning::Solver* solver = new Planning::Solver(*problem->second);
             solver->preprocess();
 
-            exit(0);
-            
             assert(solver->expansion_queue.size());
 //             solver->expand_belief_state_space();
             auto current_state = solver->expansion_queue.front();
             
-            INTERACTIVE_VERBOSER(true, 10017, "Current state is :: "
+            INTERACTIVE_VERBOSER(true, 10021, "Current state is :: "
                                  <<*current_state<<std::endl
                                  <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
             
@@ -212,9 +210,9 @@ int main(int argc, char** argv)
             for(uint i = 0; i < 100; i++){
                 if(!solver->expand_belief_state_space()){
                     break;
-                    VERBOSER(10017, "No starting state!"<<std::endl);
+                    VERBOSER(10021, "No starting state!"<<std::endl);
                 } else {
-                    VERBOSER(10017, "Expanding!"<<std::endl);
+                    VERBOSER(10021, "Expanding!"<<std::endl);
                     policy_Iteration();
                 }
             }
@@ -224,13 +222,15 @@ int main(int argc, char** argv)
             
             for(auto i = 0; i < 10; i++){
             
-                INTERACTIVE_VERBOSER(true, 10017, "Current state is :: "
+                INTERACTIVE_VERBOSER(true, 10021, "Current state is :: "
+                                     <<*current_state<<std::endl
+                                     <<"First element is :: "
                                      <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
                 
                 std::pair<Planning::Formula::Action_Proposition, uint> _action
                     = solver->get_prescribed_action(current_state);
             
-                INTERACTIVE_VERBOSER(true, 10017, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+                INTERACTIVE_VERBOSER(true, 10021, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
             
                 auto observations = current_state->get__possible_observations_given_action(_action.second);
             
