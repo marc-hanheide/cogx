@@ -241,6 +241,7 @@ void Planning_Formula__to__Variable_Ordering::operator()(const Planning::Formula
 {
     auto subformulae = conjunction.get__subformulae();
 
+//     if(!subformulae.size()) return;
     assert(subformulae.size());
     
     if(subformulae.size() == 1){

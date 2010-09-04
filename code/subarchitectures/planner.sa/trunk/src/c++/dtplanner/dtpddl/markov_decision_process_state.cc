@@ -95,9 +95,9 @@ push__successor(uint _operator_index,
             found = true; break;
         }
     }
-    QUERY_UNRECOVERABLE_ERROR(!found,
+    QUERY_WARNING(!found,
                               "Action :: "<<_operator_index<<std::endl
-                              <<"Is not available at state :: "<<*tmp<<std::endl);
+                              <<"Is not available at state unless is is always executable :: "<<*tmp<<std::endl);
 
     INTERACTIVE_VERBOSER(true, 10014,
                          "Pushing action  :: "<<_operator_index<<std::endl

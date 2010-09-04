@@ -166,7 +166,7 @@ void Solver::generate_starting_state()
     
 #ifndef NDEBUG 
 #ifdef  DEBUG_LEVEL
-#if DEBUG_LEVEL < 10017
+#if DEBUG_LEVEL < 10021
     for(auto some = problem_Grounding->get__state_Propositions().begin()
             ; some != problem_Grounding->get__state_Propositions().end()
             ; some++){
