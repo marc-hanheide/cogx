@@ -39,31 +39,64 @@ public:
   /**
    * Returns the 3D point cloud.
    */
-  virtual void getPoints(bool transformToGlobal, double resolution, VisionData::SurfacePointSeq& points, const Ice::Current&);
+  virtual void getPoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points, const Ice::Current&);
 
-  /**
-   * Returns part of the 3D point cloud inside given SOI.
-   */
-  virtual void getPointsInSOI(bool transformToGlobal, const VisionData::SOIPtr &soi, double resolution,
-      VisionData::SurfacePointSeq& points, const Ice::Current&);
+  virtual void getRectImage(Ice::Int side, int imgWidth, Video::Image& image, const Ice::Current&);
 
-  virtual void getRectImage(Ice::Int side, double resolution, Video::Image& image, const Ice::Current&);
-
-  virtual void getDisparityImage(double resolution, Video::Image& image, const Ice::Current&);
+  virtual void getDisparityImage(int imgWidth, Video::Image& image, const Ice::Current&);
 };
 
 class StereoServer : public CASTComponent,
                      public VideoClient
 {
 private:
+
   /**
-   * Ice (servant) name for video interface
+   * All the images needed for stereo processing
    */
-  std::string iceStereoName;
-  /**
-   * Ice port for video interface
-   */
-  int iceStereoPort;
+  class ImageSet
+  {
+  public:
+    IplImage *colorImg[2];
+    IplImage *rectColorImg[2];
+    IplImage *rectGreyImg[2];
+    IplImage *disparityImg;
+
+    ImageSet()
+    {
+      for(int i = LEFT; i <= RIGHT; i++)
+      {
+        colorImg[i] = 0;
+        rectColorImg[i] = 0;
+        rectGreyImg[i] = 0;
+      }
+      disparityImg = 0;
+    }
+    ~ImageSet()
+    {
+      for(int i = LEFT; i <= RIGHT; i++)
+      {
+        cvReleaseImage(&colorImg[i]);
+        cvReleaseImage(&rectColorImg[i]);
+        cvReleaseImage(&rectGreyImg[i]);
+      }
+      cvReleaseImage(&disparityImg);
+    }
+    /**
+     * dispFormat can be IPL_DEPTH_32F or IPL_DEPTH_16S
+     */
+    void init(CvSize size, int dispFormat)
+    {
+      for(int i = LEFT; i <= RIGHT; i++)
+      {
+        colorImg[i] = cvCreateImage(size, IPL_DEPTH_8U, 3);
+        rectColorImg[i] = cvCreateImage(size, IPL_DEPTH_8U, 3);
+        rectGreyImg[i] = cvCreateImage(size, IPL_DEPTH_8U, 1);
+      }
+      assert(dispFormat == IPL_DEPTH_32F || dispFormat == IPL_DEPTH_16S);
+      disparityImg = cvCreateImage(size, dispFormat, 1);
+    }
+  };
 
   /**
    * Camera IDs for getting left and right images
@@ -88,9 +121,24 @@ private:
   Stereo::StereoInterfacePtr hStereoServer;
 
   /**
-   * Stereo parameters
+   * We offer different resolutions for high speed / low accuracy and vice versa
    */
-  StereoCamera stereoCam;
+  std::vector<CvSize> stereoSizes;
+
+  /**
+   * maximum disparity range we want to search, for each resolution we offer
+   */
+  std::vector<int> maxDisps;
+
+  /**
+   * Stereo parameters, one for each resolution we offer
+   */
+  std::vector<StereoCamera*> stereoCams;
+
+  /**
+   * Sets of images (rectified, unrectified, disparity), one for each resolution we offer
+   */
+  std::vector<ImageSet> imgSets;
 
 #ifdef HAVE_GPU_STEREO
   /**
@@ -104,22 +152,6 @@ private:
    */
   int medianSize;
 #endif
-
-  // stereo works better/faster with smaller images, so we might want to use a
-  // smaller resolution
-  std::vector<CvSize> stereoSizes;
-  int stereoWidth;
-  int stereoHeight;
-
-  /**
-   * maximum disparity range we want to search
-   */
-  int maxDisp;
-
-  IplImage *colorImg[2];
-  IplImage *rectColorImg[2];
-  IplImage *rectGreyImg[2];
-  IplImage *disparityImg;
 
   bool doDisplay;
   bool logImages;
@@ -136,6 +168,15 @@ private:
 
   virtual void runComponent();
 
+  int findClosestResolution(int imgWidth);
+
+  /**
+   * the actual stereo processing
+   * Note: we epect images to be of size 2 and image 0 to be the left
+   * and image 1 to be the right image.
+   */
+  void stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, const std::vector<Video::Image>& images);
+
 public:
   StereoServer();
   virtual ~StereoServer();
@@ -143,17 +184,11 @@ public:
   /**
    * Returns the 3D point cloud.
    */
-  void getPoints(bool transformToGlobal, double resolution, std::vector<VisionData::SurfacePoint> &points);
+  void getPoints(bool transformToGlobal, int imgWidth, std::vector<VisionData::SurfacePoint> &points);
 
-  /**
-   * Returns part of the 3D point cloud inside given SOI.
-   */
-  void getPointsInSOI(bool transformToGlobal, const VisionData::SOI &soi, double resolution,
-      std::vector<VisionData::SurfacePoint> &points);
+  void getRectImage(int side, int imgWidth, Video::Image& image);
 
-  void getRectImage(int side, double resolution, Video::Image& image);
-
-  void getDisparityImage(double resolution, Video::Image& image);
+  void getDisparityImage(int imgWidth, Video::Image& image);
 
   /**
    * The callback function for images pushed by the image server.

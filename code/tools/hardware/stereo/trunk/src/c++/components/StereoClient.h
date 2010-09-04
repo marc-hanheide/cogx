@@ -43,15 +43,11 @@ public:
   /**
    * Returns the 3D point cloud.
    */
-  void getPoints(bool transformToGlobal, VisionData::SurfacePointSeq& points);
+  void getPoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points);
 
-  /**
-   * Returns part of the 3D point cloud inside given SOI.
-   */
-  void getPointsInSOI(bool transformToGlobal, const VisionData::SOI &soi, VisionData::SurfacePointSeq& points);
+  void getRectImage(int side, int imgWidth, Video::Image& image);
 
-  void getRectImage(int side, Video::Image& image);
-  void getDisparityImage(Video::Image& image);
+  void getDisparityImage(int imgWidth, Video::Image& image);
 };
 
 }
