@@ -77,6 +77,7 @@ protected:
 
 public:
    void processFileChange(int watchId, const std::string &fname);
+   using cast::ManagedComponent::sleepComponent;
 };
 
 }} // namespace
