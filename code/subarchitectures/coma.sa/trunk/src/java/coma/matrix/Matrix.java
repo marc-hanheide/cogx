@@ -1,8 +1,15 @@
 package coma.matrix;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.TreeMap;
 
-public class Matrix<T> {
+public class Matrix<T> implements Serializable {
 
 	private String[] columnLabels;
 	private String[] rowLabels;
@@ -18,9 +25,9 @@ public class Matrix<T> {
 		this.rowLabels = new String[_numRows];
 		this.labelToCol = new TreeMap<String, Integer>();
 		this.labelToRow = new TreeMap<String, Integer>();
+		System.out.println("Successfully executed basic constructor new Matrix("+_numCols+","+_numRows+")");
 	}
 
-	
 	public Matrix(String[] _colLabels, String[] _rowLabels) throws NonUniqueLabelException {
 		this(_colLabels.length, _rowLabels.length);
 		this.columnLabels = _colLabels;
@@ -34,15 +41,17 @@ public class Matrix<T> {
 			if (labelToRow.containsKey(_rowLabels[j])) throw new NonUniqueLabelException("Non-unique row label: " + _rowLabels[j]); 
 			labelToRow.put(_rowLabels[j], j);
 		}
+		System.out.println("Successfully executed extended constructor new Matrix("+_colLabels+","+_rowLabels+")");
 	}
 	
 	public Matrix(String[] _colLabels, String[] _rowLabels, T _initVal) throws NonUniqueLabelException {
 		this(_colLabels, _rowLabels);
 		for (int i = 0; i < this.grid.length; i++) {
-			for (int j=0; j < grid[j].length; j++) {
-				grid[j][i] = _initVal;
+			for (int j=0; j < grid[i].length; j++) {
+				grid[i][j] = _initVal;
 			}
 		}
+		System.out.println("Successfully executed extended constructor new Matrix("+_colLabels+","+_rowLabels+","+_initVal+")");
 	}
 
 	
@@ -74,15 +83,47 @@ public class Matrix<T> {
 		else {
 			this.grid[_column][_row] = _cell;
 		}
-		return false;
+		return true;
 	}
 	
-//	public class Cell {
-		//int column;
-		//int row;
-		// Function fx;
-		
-//		Object value;
-//	}
+	public boolean insertCell(T _cell, String _colLabel, String _rowLabel) {
+	//	if (!labelToCol.containsKey(_colLabel)) {
+	//			throw new IndexOutOfBoundsException("Error trying to add a cell to " +
+	//					"<" + _colLabel + "," + _rowLabel + ">. Column label " + _colLabel + " is unknown! " +
+	//							"Cell not added!");
+	//	}
+	//	else if (!labelToRow.containsKey(_rowLabel)) {
+	//		throw new IndexOutOfBoundsException("Error trying to add a cell to " +
+	//				"<" + _colLabel + "," + _rowLabel + ">. Row label " + _rowLabel + " is unknown! " +
+	//						"Cell not added!");
+	//	} 
+	//	else {
+			this.grid[labelToCol.get(_colLabel)][labelToRow.get(_rowLabel)] =  _cell;
+	//	}
+		return true;
+	}
+	
+	public void saveToFile(String _filename) throws IOException {
+		FileOutputStream fout = new FileOutputStream(_filename);
+		ObjectOutputStream oos = new ObjectOutputStream(fout);
+		oos.writeObject(this);
+		oos.close();
+	}
+	
+	public static Matrix loadFromFile(String _filename) throws IOException, ClassNotFoundException {
+		FileInputStream fin = new FileInputStream(_filename);
+		ObjectInputStream ois = new ObjectInputStream(fin);
+		return (Matrix) ois.readObject();
+	}
+	
+	public String getRowLabel(int _row) {
+		return rowLabels[_row];
+	}
+
+	public String getColLabel(int _col) {
+		return columnLabels[_col];
+	}
+
+	
 	
 }
