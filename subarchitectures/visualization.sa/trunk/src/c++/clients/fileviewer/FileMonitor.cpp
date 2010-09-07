@@ -541,10 +541,15 @@ public:
 #else
 class CDummyMonitor
 {
+   CFileMonitor *m_pMonitor;
 public:
-   CDummyMonitor(CFileMonitor &Monitor) {}
+   CDummyMonitor(CFileMonitor &Monitor) {
+      m_pMonitor = &Monitor;
+   }
    void installWatches() {}
-   void pollWatches() {}
+   void pollWatches() {
+      m_pMonitor->sleepComponent(500);
+   }
    void releaseWatches() {}
 };
 #endif
