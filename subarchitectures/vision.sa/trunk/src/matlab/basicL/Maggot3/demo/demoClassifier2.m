@@ -1,7 +1,7 @@
 function demoClassifier2()
 
 plotting_activated = 1 ;
-num_add_classes = 2 ;
+num_add_classes = 0 ;
 nfake_dims = 0 ;
 dim = nfake_dims + 2 ;
 
@@ -16,11 +16,12 @@ minNumDataPointsToFormKDE = (dim^2-dim)/2+dim+dim ; % (int) minimum number of po
 react_compression_to_feature_selection = 1 ;    % (1) apply compression in subdimension selected by feature selection
 min_samps_per_model_feat_sel = (dim^2-dim)/2+dim+dim ; % (int) minimum number of samples per model observed before applying feature selection
 min_th_feat_sel = 0.1 ;                       % (double) threshold on importance below which a feature is removed
-costThreshold.thReconstructive = 0.05 ;         % thresholds on reconstructive and discriminative compression
-costThreshold.thDiscriminative = 0.02 ;
+costThreshold.thReconstructive = 0.01 ;         % thresholds on reconstructive and discriminative compression
+costThreshold.thDiscriminative =  0.02 ;
 autoUpdateThres_upper = 0.1 ;                   % in self verified mode, this is the threshold on entropy for asking
 autoUpdateThres_lower = 1e-2 ;                  % in self verified mode, this is the threshold on entropy for auto update
 random_fselect_threshold = 0.05 ;               % probability of feature selection occuring when called
+pair_dist_struct_use_approx = 1 ;               % switch for compression: test which classes shuld be taken into account during compression of i-th class
 % - end of parameters
 N_init = 5 ;  
 
@@ -41,7 +42,8 @@ kde_cl = executeOperatorIKDEClsfr( [], 'init', 'compressionClusterThresh', costT
                     'min_th_feat_sel', min_th_feat_sel,...
                     'autoUpdateThres_upper', autoUpdateThres_upper,...
                     'autoUpdateThres_lower', autoUpdateThres_lower,...
-                    'random_fselect_threshold', random_fselect_threshold ) ;
+                    'random_fselect_threshold', random_fselect_threshold,...
+                    'pair_dist_struct_use_approx', pair_dist_struct_use_approx) ;
  
 
 Num_questions = N_init ;
@@ -69,16 +71,16 @@ for i = N_init+1 : 200
 %     disp('Update...')
     tic
     kde_cl = executeOperatorIKDEClsfr( kde_cl, 'input_data', input_data, 'add_input', ...
-                                        'autonomous_update', 'self_verified',...
+                                        'autonomous_update', 'pure_oracle',...
                                         'autoUpdateThres_upper', 0.15  ) ; % 'self_verified', 'oracle_verified', 'pure_oracle'
     toc
     Num_questions = Num_questions + sum(kde_cl.answers) ;
   
     % perform a feature selection 
 %     disp('Select features')
-    tic
-    kde_cl = executeOperatorIKDEClsfr( kde_cl, 'make_simple_feature_selection') ;
-    toc
+%     tic
+%     kde_cl = executeOperatorIKDEClsfr( kde_cl, 'make_simple_feature_selection') ;
+%     toc
     if isfield(kde_cl, 'debug')
         for_plot = kde_cl.debug ;
     else
@@ -163,9 +165,9 @@ name_list = executeOperatorIKDEClsfr( kde_cl, 'get_class_names' )
 kde_cl = executeOperatorIKDEClsfr( kde_cl, 'set_name_at_index', 2, 'cyan' ) ;
 
 % unlearn class 2 %
-indat = [] ;
-indat.data = xc1(:,i) ; indat.class = 2 ;
-kde_cl = executeOperatorIKDEClsfr( kde_cl, 'input_data', {indat}, 'unlearn_with_input'  ) ;
+% indat = [] ;
+% indat.data = xc1(:,i) ; indat.class = 2 ;
+% kde_cl = executeOperatorIKDEClsfr( kde_cl, 'input_data', {indat}, 'unlearn_with_input'  ) ;
 
 % ----------------------------------------------------------------------- %
 function score = testClassifications( p_ref, kde_cl, refrnc, xctest )

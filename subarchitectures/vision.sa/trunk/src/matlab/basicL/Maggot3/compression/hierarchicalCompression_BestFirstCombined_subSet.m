@@ -1,6 +1,6 @@
-function [pdf_cmprs , idxToref_out, augmented_pdf ]= hierarchicalCompression_BestFirstCombined( pdf, varargin )
+function [pdf_cmprs , idxToref_out, augmented_pdf ]= hierarchicalCompression_BestFirstCombined_subSet( pdf, varargin )
 
-type_cost = 1 ; % 1 means mean hellinger (th opt= 0.001, or 0.02), 2 means max dif in apost (th opt= 0.001 or 0.002)
+
 use_mean_estimate = 0 ;
 disableReclustering = 1 ; % lowdim reclustreing will not work because we don't split mixture in original dimensions
 augmented_pdf = [] ;
@@ -55,9 +55,9 @@ useVbw_tmp = pdf.smod.useVbw ;
 if ~isempty(otherClasses)  
     % precalculate statistics for compression
  
-    if use_mean_estimate == 0
-        otherClasses.pdf.precalcStat = uCostModel( otherClasses.pdf, pdf, [], otherClasses.priors, approximateCost, pdf.Mu(:,1) ) ;
-    end
+%     if use_mean_estimate == 0
+        otherClasses.pdf.precalcStat = uCostModel( otherClasses.pdf, pdf, [], otherClasses.priors, approximateCost, pdf  ) ;
+%     end
     
     hellCostThreshold_for_split = costThreshold.thReconstructive;   
     
@@ -83,25 +83,25 @@ end
     inPars.useWeightedHellinger = 1 + 0*useWeightedHellinger ;
     inPars.approximateCost = approximateCost ;
     beforeSplits = length(pdf.w) ;
-    inPars.type_cost = type_cost ;
-    if turn_off_splitting == 0
-        pdf = executeSplitComponents( pdf, inPars, otherClasses, use_mean_estimate ) ;       
-    else
+%     if turn_off_splitting == 0
+%         df
+%         pdf = executeSplitComponents( pdf, inPars, otherClasses, use_mean_estimate ) ;       
+%     else
     
 %         ignoreSublayer = 1 ;
 %         pdf.smod.H  = 0 ;
 %  !!!!!!!!!!!!!!!!!!!!!!!!!!!!1 for dAMKDE this should be
 %  enabled!!!!!!!!!!!!!!!!!!!!!11!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    end
+%     end
 % end
  augmented_pdf = [] ; % pdf ; 
 
 
-if  ~isempty(otherClasses) && (abs(beforeSplits - length(pdf.w)) > 0)
-    otherClasses.pdf.precalcStat = [] ;
-    % precalculate statistics for compression
-    otherClasses.pdf.precalcStat = uCostModel( otherClasses.pdf, pdf, [], otherClasses.priors, approximateCost, type_cost ) ;
-end
+% if  ~isempty(otherClasses) && (abs(beforeSplits - length(pdf.w)) > 0)
+%     otherClasses.pdf.precalcStat = [] ;
+%     % precalculate statistics for compression
+%     otherClasses.pdf.precalcStat = uCostModel( otherClasses.pdf, pdf, [], otherClasses.priors, approximateCost ) ;
+% end
 
 
 
@@ -137,13 +137,12 @@ pdf_cmprs.Cov = {new_Cov} ;
 pdf_cmprs.w = w_out ;
 % Hell = internalHellingerJointSupportnD( pdf_cmprs, pdf, useWeightedHellinger ) ;
 
-
-if use_mean_estimate == 0
- Hell = uCostModel( otherClasses.pdf, pdf, pdf_cmprs, otherClasses.priors, approximateCost, pdf_cmprs.Mu, type_cost ) ;
-else
- Hell = uCostModel_mode( otherClasses.pdf, pdf, pdf_cmprs, otherClasses.priors, approximateCost, pdf_cmprs  ) ;
-end
+ Hell = uCostModel( otherClasses.pdf, pdf, pdf_cmprs, otherClasses.priors, approximateCost, pdf, type_cost ) ;
  
+%  Hell = uCostModel_mode( otherClasses.pdf, pdf, pdf_cmprs,  otherClasses.priors, approximateCost, pdf) ; %app_pdf.Mu ) ;
+ 
+% Hell = uCostModel_subpdf( otherClasses.pdf, pdf, pdf_cmprs, otherClasses.priors, approximateCost ) ;
+
 cmp_data.idxToref = {[1:length(pdf.w)]} ;
 cmp_data.hells = [Hell] ;
 cmp_data.cantbrake = [0] ;
@@ -225,20 +224,28 @@ while length(pdf.w) >= minNumberOfComponentsThreshold  && isempty(debugForceComp
 %         Hell1 = internalHellingerJointSupportnD( app_pdf, sub_pdf, useWeightedHellinger ) ;
 %         app_pdf.w = app_pdf.w/ sum(app_pdf.w) ;
 %         sub_pdf.w = sub_pdf.w/ sum(sub_pdf.w) ;
+      
         
         
         selection = ones(1,length(pdf.w)) ;        
         selection(cmp_data.idxToref{i_sel}) = 0 ;       
-        selection = find(selection) ;
+        selection = find(selection) ; % select all components except those that form i_sel
         pdf_sel = extractSubPdf( pdf , selection, ignoreSublayer ) ;  
-        % recombine components into augmented pdf
+%         recombine components into augmented pdf
         pdf_compr = mergeDistributions( pdf_sel, app_pdf, [1 1], testWeights ) ;
-
- if use_mean_estimate == 0       
-        Hell1 = uCostModel( otherClasses.pdf, pdf, pdf_compr,  otherClasses.priors, approximateCost, app_pdf.Mu, type_cost ) ;  
- else
-          Hell1 = uCostModel_mode( otherClasses.pdf, pdf, pdf_compr,  otherClasses.priors, approximateCost, pdf_compr ); %app_pdf.Mu ) ;
- end
+ 
+        pdf_decom = extractSubMixture( sub_pdf, find(K==1) ) ;
+        pdf_for_sigmas = mergeDistributions( pdf_decom, app_pdf, [1,1], 0  ) ;
+        pdf_for_sigmas.w = pdf_for_sigmas.w / sum(pdf_for_sigmas.w) ;
+        
+%         Hell1 = uCostModel_subpdf( otherClasses.pdf, pdf_decom, app_pdf,  otherClasses.priors, approximateCost) ;
+        
+%  if use_mean_estimate == 0     
+        Hell1 = uCostModel( otherClasses.pdf, pdf, pdf_compr,  otherClasses.priors, approximateCost, pdf_decom, type_cost ) ;% * app_pdf.w ;  
+ 
+%  else
+%           Hell1 = uCostModel_mode( otherClasses.pdf, pdf, pdf_compr,  otherClasses.priors, approximateCost, pdf_compr ); %app_pdf.Mu ) ;
+%  end
     end
     cmp_data.hells(i_sel) = Hell1 ;
     
@@ -265,15 +272,21 @@ while length(pdf.w) >= minNumberOfComponentsThreshold  && isempty(debugForceComp
         selection(cmp_data.idxToref{id_last}) = 0 ;       
         selection = find(selection) ;   
         pdf_sel = extractSubPdf( pdf , selection, ignoreSublayer ) ;
-        % recombine components into augmented pdf
+%         recombine components into augmented pdf
         pdf_compr = mergeDistributions( pdf_sel, app_pdf, [1 1], testWeights ) ;
 
- if use_mean_estimate == 0       
-        Hell2 = uCostModel( otherClasses.pdf, pdf, pdf_compr, otherClasses.priors, approximateCost, app_pdf.Mu, type_cost ) ;
- else
-        Hell2 = uCostModel_mode( otherClasses.pdf, pdf, pdf_compr,  otherClasses.priors, approximateCost, pdf_compr) ; %app_pdf.Mu ) ;
- end
-%                 Hell2 = uCostModel( otherClasses.pdf, app_pdf, sub_pdf,  otherClasses.priors, approximateCost ) ;
+        pdf_decom = extractSubMixture( sub_pdf, find(K==2) ) ;
+        pdf_for_sigmas = mergeDistributions( pdf_decom, app_pdf, [1,1], 0  ) ;
+        pdf_for_sigmas.w = pdf_for_sigmas.w / sum(pdf_for_sigmas.w) ;
+%         pdf_decom =  extractSubMixture( sub_pdf, find(K==i_sel) ) ;
+%         Hell2 = uCostModel_subpdf( otherClasses.pdf, pdf_decom, app_pdf,  otherClasses.priors, approximateCost ) ;
+        
+%  if use_mean_estimate == 0       
+        Hell2 = uCostModel( otherClasses.pdf, pdf, pdf_compr,  otherClasses.priors, approximateCost, pdf_decom, type_cost ) ; %* app_pdf.w ;
+%  else
+%         Hell2 = uCostModel_mode( otherClasses.pdf, pdf, pdf_compr,  otherClasses.priors, approximateCost, pdf_compr) ; %app_pdf.Mu ) ;
+%  end
+% %                 Hell2 = uCostModel( otherClasses.pdf, app_pdf, sub_pdf,  otherClasses.priors, approximateCost ) ;
         end
         cmp_data.hells  = horzcat( cmp_data.hells, Hell2) ;
     end        

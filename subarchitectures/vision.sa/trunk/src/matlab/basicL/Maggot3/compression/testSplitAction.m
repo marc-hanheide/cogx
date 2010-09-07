@@ -3,13 +3,15 @@
 % Author: Matej Kristan, 2009 (matej.kristan@fri.uni-lj.si; http://vicos.fri.uni-lj.si/matejk/)
 % Last revised: 2009
 %%
-function eq = testSplitAction( pdf, idx_sel, inPars, otherClasses )
+function eq = testSplitAction( pdf, idx_sel, inPars, otherClasses, use_mean_estimate )
 % determines whether component in pdf with index idx_sel should be split or not
  
 
 testWeights = 0 ;
 q = pdf.smod.q(idx_sel);
 q.w = q.w * pdf.w(idx_sel) ;
+
+Mu_test = pdf.Mu(:, idx_sel) ;
 for i = 1 : length(q.w)
     q.Cov{i}= q.Cov{i} + pdf.smod.H ;
 end
@@ -32,7 +34,12 @@ if ~isempty(otherClasses)
 %      pdfX.w = pdfX.w / sum(pdfX.w) ;
      
      % calculate distance
-     d = uCostModel( otherClasses.pdf, pdf, pdf_augmented, otherClasses.priors, inPars.approximateCost ) ;
+     if use_mean_estimate == 0     
+        d = uCostModel( otherClasses.pdf, pdf, pdf_augmented, otherClasses.priors, inPars.approximateCost, pdf, inPars.type_cost ) ;
+     else
+        d = uCostModel_mode( otherClasses.pdf, pdf, pdf_augmented, otherClasses.priors, inPars.approximateCost, Mu_test, inPars.type_cost ) ;
+     end
+        
 %      d = 0
      costThreshold = inPars.costThreshold ;
 else
