@@ -15,7 +15,6 @@
 #include "ObjGridLineRayTracer.hh"
 #include <Map/TransformedOdomPoseProvider.hh>
 #include <SensorData/SensorPose.hh>
-#include <bitset>
 #include <FrontierInterface.hpp>
 #include <Navigation/LocalGridMap.hh>
 #include <Navigation/GridLineRayTracer.hh>
@@ -57,15 +56,21 @@ namespace spatial
 	DIRECT_INFORMED,
 	INDIRECT
       };
-struct ObjectPairRelation{
+      struct ObjectPairRelation{
 	FrontierInterface::ObjectRelation relation;
 	std::string primaryobject;
 	std::string secobject;
 	double prob;
+	friend	bool operator== (ObjectPairRelation first, ObjectPairRelation second){
+	  if (first.relation == second.relation && first.primaryobject == second.primaryobject
+	      && first.secobject == second.secobject)
+	    return true;
+	  else
+	    return false;
+	}
       };
-
-
-void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
+      
+      void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void receiveScan2d(const Laser::Scan2d &castScan);
       void receiveOdometry(const Robotbase::Odometry &castOdom);
 
@@ -73,6 +78,8 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void putObjectInMap(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>
 	  &map, spatial::Object *object);
 
+      double getCostForSingleStrategy(std::vector<ObjectPairRelation> singleStrategy);
+      double GetStrategyCost(std::vector<std::string> policy);
       void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
       void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
       void PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
@@ -86,7 +93,7 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void ReadCureMapFromFile();
       void SaveCureMapToFile();
       void LoadSpatialRelations(std::string filename);
-
+      void getStructuredStrategy(std::string strategy, std::vector<ObjectPairRelation> &singleStrategy);
       void SaveSearchPerformance(std::string result);
       void Recognize();
       void GoToNBV();
@@ -114,9 +121,15 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       bool isPointSameSide(XVector3D p1,XVector3D p2,XVector3D a,XVector3D b);
       bool isPointInsideTriangle(XVector3D p,XVector3D a,XVector3D b,XVector3D c);
       void FindBoundingRectangle(XVector3D a,XVector3D b,XVector3D c,int* rectangle);
+      void InitializeMaps();
+      void IcetoCureLGM(FrontierInterface::LocalGridMap icemap, Cure::LocalGridMap<unsigned char>* lgm);
+      void ChangeMaps(std::string roomid);
+      // keyed with room id
+      std::map<int, SpatialGridMap::GridMap<SpatialGridMap::GridMapData>*> m_maps;
+      std::map<int, Cure::LocalGridMap<unsigned char>*> m_lgms;
 
 
-      
+
       ObjectPairRelation GetSecondaryObject(std::string name);
       SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* m_map;
       SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* m_tempmap;
@@ -150,8 +163,9 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
 	STOPPED
       };
 
+      FrontierInterface::ObjectPriorRequestPtr m_priorreq;
       bool m_bSimulation;
-
+      bool gotPC;
       std::string currentTarget;
       std::string targetObject;
       SearchMode currentSearchMode;
@@ -177,16 +191,16 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       Cure::SensorPose m_LaserPoseR;
       Cure::TransformedOdomPoseProvider m_TOPP;
       NavData::RobotPose2dPtr lastRobotPose;
-     
+
       SensingAction m_nbv;
       std::set<std::string> waitingForDetection;
       std::set<std::string> waitingForObjects;
-//      bool isWaitingForDetection;
+      //      bool isWaitingForDetection;
       bool isSearchFinished;
       int viewCount;
 
       int m_samplesize;
-    double* m_samplestheta;
+      double* m_samplestheta;
       int* m_samples;
       double m_pout;
       double m_gridsize;
@@ -197,8 +211,8 @@ void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       double m_minDistance;
       double m_minbloxel;
       double m_mapceiling;
-     
-      
+
+
       static void savemap( GtkWidget *widget, gpointer   data );
       static void readmap( GtkWidget *widget, gpointer   data );
 
