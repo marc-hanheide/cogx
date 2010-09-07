@@ -1137,7 +1137,7 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
 bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask)
 {
   Video::Image image;
-  StereoClient::getRectImage(LEFT, image);
+  StereoClient::getRectImage(LEFT, 320, image);
 
   Video::Image fullImage;
   videoServer->getImage(camId, fullImage);
