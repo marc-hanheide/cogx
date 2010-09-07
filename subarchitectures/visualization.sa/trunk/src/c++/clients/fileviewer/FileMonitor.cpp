@@ -268,6 +268,7 @@ void CFileMonitor::destroy()
 {
 }
 
+#if USE_INOTIFY
 void describeEvent(inotify_event *event) 
 {
    if ( event->mask & IN_CREATE ) {
@@ -303,6 +304,7 @@ void describeEvent(inotify_event *event)
       }
    }
 }
+#endif
 
 // processFileChange should be called when after a file that has been modified
 // is closed.
@@ -537,6 +539,14 @@ public:
 
 };
 #else
+class CDummyMonitor
+{
+public:
+   CDummyMonitor(CFileMonitor &Monitor) {}
+   void installWatches() {}
+   void pollWatches() {}
+   void releaseWatches() {}
+};
 #endif
 
 
@@ -547,6 +557,7 @@ void CFileMonitor::runComponent()
 #if USE_INOTIFY
    CINotifyMonitor monitor(*this);
 #else
+   CDummyMonitor monitor(*this);
 #endif
 
    monitor.installWatches();
