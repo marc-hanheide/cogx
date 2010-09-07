@@ -12,6 +12,9 @@
 
 #include "StringFmt.h"
 
+#include <cast/architecture/ChangeFilterFactory.hpp>
+#include <VisionData.hpp>
+
 #include <opencv/cv.h> // test
 #include <opencv/highgui.h> // test
 
@@ -30,6 +33,7 @@ extern "C"
 #include "convenience.hpp"
 
 using namespace std;
+using namespace VisionData;
 namespace orice = ObjectRecognizerIce;
 
 namespace cogx { namespace vision {
@@ -41,7 +45,7 @@ CObjectRecognizer::CObjectRecognizer()
 
    m_maxDistance = 1.0;
    m_maxAmbiguity = 0.8;
-
+   m_bWmFilters = true;
 }
 
 CObjectRecognizer::~CObjectRecognizer()
@@ -143,18 +147,66 @@ void CObjectRecognizer::start()
    m_display.installEventReceiver();
    m_display.createForms();
 #endif
+ 
+   // Global change filter expecting message from vision.sa
+   // (ID set in CAST file, subarchitecture entry)
+   if (m_bWmFilters) {
+      addChangeFilter(
+            cast::createLocalTypeFilter<ObjectRecognitionTask>(cast::cdl::ADD),
+            new cast::MemberFunctionChangeReceiver<CObjectRecognizer>(this,
+               &CObjectRecognizer::onAddRecognitionTask)
+            );
+   }
+}
+
+void CObjectRecognizer::onAddRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+   log("OR: Recognition task recieved.");
+
+   // Lock the queue monitor and add a new request address. The
+   // monitor will unlock on scope-exit. notify() will wake up
+   // the timedWait() in the main loop in runComponent.
+   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_RrqMonitor);
+   m_RrQueue.push_back(_wmc);
+   m_RrqMonitor.notify();
+}
+
+// Process queued recognition requests
+void CObjectRecognizer::processQueuedTasks(std::vector<cast::cdl::WorkingMemoryChange> &requests)
+{
 }
 
 void CObjectRecognizer::runComponent()
 {
-   // TODO: crash here or in startIceServer?:
-   // vis.recognizer.srv: Aborting after catching an Ice::Exception from runComponent()
-   // IllegalIdentityException: illegal identity: `ObjectRecognizer/'
+   // FIXME: there is (was?) a crash here or in startIceServer:
+   //    vis.recognizer.srv: Aborting after catching an Ice::Exception from runComponent()
+   //    IllegalIdentityException: illegal identity: `ObjectRecognizer/'
 
    sleepComponent(1000);
    debug("CObjectRecognizer Server: running");
    while(isRunning()) {
-     sleepComponent(1000);
+      if (m_bWmFilters) {
+         std::vector<cast::cdl::WorkingMemoryChange> newRequests;
+
+         {
+            // SYNC: Lock the monitor
+            IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_RrqMonitor);
+            // SYNC: if queue empty, unlock the monitor and wait for notify() or timeout
+            if (m_RrQueue.size() < 1) 
+               m_RrqMonitor.timedWait(IceUtil::Time::seconds(2));
+            // SYNC: Continue with a locked monitor
+
+            newRequests = m_RrQueue;
+            m_RrQueue.clear();
+            // SYNC: unlock the monitor on scope exit
+         }
+
+         if (isRunning())
+            processQueuedTasks(newRequests);
+      }
+      else {
+         sleepComponent(1000);
+      }
    }
    debug("CObjectRecognizer Server: Done.");
 }
@@ -372,11 +424,12 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
          std::vector<TSiftVector*> allfeatures;
          CObjectModel *pModel = *it;
 
-         typeof(pModel->m_views.begin()) itv;
-         for(itv = pModel->m_views.begin(); itv != pModel->m_views.end(); itv++) {
-            CObjectView* pView = *itv;
-            allfeatures.push_back(&pView->m_features);
-         }
+         //typeof(pModel->m_views.begin()) itv;
+         //for(itv = pModel->m_views.begin(); itv != pModel->m_views.end(); itv++) {
+         //   CObjectView* pView = *itv;
+         //   allfeatures.push_back(&pView->m_features);
+         //}
+         pModel->getAllFeatures(allfeatures);
 
          // Match image features to all others
          std::vector<TFeatureMatchVector*> matches;
@@ -447,14 +500,38 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
    }
 }
 
+// Update a known model with features that are present in the image
+//   TODO: It would be nice to know the object pose for the model update
+//         Maybe a pose change relative to previous UpdateModel could be used
 void CObjectRecognizer::UpdateModel(const std::string& modelName, const Video::Image& image)
 {
-   // TODO: a lot ... UpdateModel
+   // find model with modelName; if it does not exist, create a new one
+   // compare sifts to model views; if a good match is found, no need to learn
+   // no match => add view to "unoriented views" (we need DB support for it)
    TSiftVector sifts;
-   pImg = Video::convertImageToIplGray(image);
+   IplImage* pImg = Video::convertImageToIplGray(image);
    if (pImg) {
       m_pSiftExtractor->extractSifts(pImg, sifts);
    }
+   cvReleaseImage(&pImg);
+
+   typeof(m_models.begin()) itmod;
+   CObjectModel *pModel = NULL;
+   for (itmod = m_models.begin(); itmod != m_models.end(); itmod++) {
+      if ((*itmod)->m_name == modelName) {
+         pModel = *itmod;
+         break;
+      }
+   }
+
+   if (pModel == NULL) {
+      // TODO: create a new model
+      return;
+   }
+
+   CObjectView* pView = new CObjectView();
+   // TODO: check if the model matches the features
+   pModel->m_views.push_back(pView); // TODO: this view is special (no pose, learned online)
 }
 
 #if 0
