@@ -3,7 +3,7 @@
 % Author: Matej Kristan, 2009 (matej.kristan@fri.uni-lj.si; http://vicos.fri.uni-lj.si/matejk/)
 % Last revised: 2009
 %%
-function pdf_out = executeSplitComponents( pdf, inPars, otherClasses )
+function pdf_out = executeSplitComponents( pdf, inPars, otherClasses, use_mean_estimate )
 % determines singletons and which components should undergo a split
 
 
@@ -31,7 +31,7 @@ pdf_out.smod.H = pdf.smod.H ;
 for i = 1 : length(pdf.w)
     if any( i==not_singletons ) 
         % evaluate if a split is required         
-        eq = testSplitAction( pdf, i, inPars, otherClasses ) ; 
+        eq = testSplitAction( pdf, i, inPars, otherClasses, use_mean_estimate ) ; 
     else
         % by default, do not split
         eq = 0 ;

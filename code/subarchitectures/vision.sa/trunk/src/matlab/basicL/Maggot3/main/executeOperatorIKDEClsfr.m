@@ -25,6 +25,7 @@ minNumDataPointsToFormKDE = [] ;
 autonomous_update = [] ; 
 exclude_model = [] ;
 
+pair_dist_struct_use_approx = [] ;
 random_fselect_threshold = [] ;
 compressionClusterThresh = [] ;
 autoUpdateThres_upper = [] ;
@@ -70,6 +71,7 @@ while i <= nargs
         case 'calculate_gains', operator_data = args{i} ; i = i + 1 ;
         case 'unlearn_with_input', operator_data = args{i} ; i = i + 1 ;
         case 'showKDE_of_class_index', operator_data = 'showKDE_of_class_index' ; val_get = args{i+1} ; i = i + 2 ;
+        case 'pair_dist_struct_use_approx', pair_dist_struct_use_approx = args{i+1} ; i = i + 2 ;
         case 'exclude_model', exclude_model = args{i+1} ; i = i + 2 ;
         case 'random_fselect_threshold', random_fselect_threshold = args{i+1} ; i = i + 2 ;
         case 'autoUpdateThres_upper', autoUpdateThres_upper = args{i+1} ; i = i + 2 ;    
@@ -128,7 +130,16 @@ if isempty(hyper_input_kde_cl)
     hyper_input_kde_cl.compressionClusterThresh.thReconstructive = 0.0500 ;
     hyper_input_kde_cl.compressionClusterThresh.thDiscriminative = 0.0500 ;
     hyper_input_kde_cl.random_fselect_threshold = 2 ;
+    
+    pair_dist_struct.dist = [] ;
+    pair_dist_struct.dist_th = 4.0 ;
+    pair_dist_struct.use_approx = 0 ;
+    hyper_input_kde_cl.pair_dist_struct = pair_dist_struct ;
 %     hyper_input_kde_cl.minimal_required_examps_mode = 0 ;
+end
+
+if ~isempty(pair_dist_struct_use_approx)
+    hyper_input_kde_cl.pair_dist_struct.use_approx  = pair_dist_struct_use_approx ;
 end
  
 if ~isempty(random_fselect_threshold)
@@ -398,6 +409,9 @@ switch operator_data
 
         answers = [] ;
         for i = 1 : length(input_data)  
+            if isempty(input_data{i}.data)
+                continue ; 
+            end
             answers = horzcat(answers, ones(1,size(input_data{i}.data,2))) ;
             % check if the label already exists and check for errors
             [data, class, class_name, class_exists] = parseClassData(hyper_input_kde_cl, input_data{i} ) ;
@@ -439,18 +453,17 @@ switch operator_data
 % %                                                                                 'input_data', [], 'add_input') ;                       
 % %                        continue ; 
 % %                     end                    
-% %                 end
-                
-                
+% %                 end               
+
                 if isequal(hyper_input_kde_cl.typeRecDescr,'dKDE')
                     % make negative data model
-                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, class, size(data,2), use_equalimportance ) ; 
+                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, class, size(data,2), use_equalimportance, hyper_input_kde_cl.pair_dist_struct ) ; 
                 elseif isequal(hyper_input_kde_cl.typeRecDescr,'oKDE')
                     otherClasses = {} ;
                 elseif isequal(hyper_input_kde_cl.typeRecDescr,'AM')
                     otherClasses = {} ;
                 elseif isequal(hyper_input_kde_cl.typeRecDescr,'dAM')
-                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, class, size(data,2), use_equalimportance ) ; %input_kde_cl  output_kde_cl
+                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, class, size(data,2), use_equalimportance, [] ) ; %input_kde_cl  output_kde_cl
                 else
                     error('Unknown update rule! Either reconstructive or discriminative !') ;
                 end
@@ -475,7 +488,7 @@ switch operator_data
         % search for degenerate kdes and reapproximate their bandwidths
         for i = 1 : length(hyper_input_kde_cl.kde_cl)
            if hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
-                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, i, 0, use_equalimportance ) ; 
+                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, i, 0, use_equalimportance, hyper_input_kde_cl.pair_dist_struct ) ; 
                     hyper_input_kde_cl.kde_cl{i} = ...
                                      executeOperatorIKDE( hyper_input_kde_cl.kde_cl{i}, 'set_auxiliary_bandwidth' ,...
                                      'otherClasses', otherClasses) ;
@@ -756,8 +769,8 @@ switch operator_data
 end
 
 % -------------------------------------------------------------------- %
-function otherClasses = makeOtherClasses( input_kde_cl, i_exclude, newadds, use_equalimportance )
-
+function otherClasses = makeOtherClasses( input_kde_cl, i_exclude, newadds, use_equalimportance, pair_dist_struct )
+ 
 otherClasses.pdfs = {} ; 
 otherClasses.N_eff = [] ;
 w_other = ones(1,length(input_kde_cl)-1) ;  
@@ -766,12 +779,21 @@ w_other = w_other / sum(w_other) ;
 otherClasses.inner_priors = [] ; %w_other ;
 for i = 1 : length(input_kde_cl) 
     if i ~= i_exclude
+        if pair_dist_struct.use_approx ~= 0 
+            t = test_for_overlap(input_kde_cl{i_exclude}.ikdeParams.scale.Mu, input_kde_cl{i_exclude}.ikdeParams.scale.Cov, ...
+                                 input_kde_cl{i}.ikdeParams.scale.Mu, input_kde_cl{i}.ikdeParams.scale.Cov,...
+                                 pair_dist_struct.dist_th) ;                             
+            if t == 0
+               continue ; 
+            end
+        end
+        
         otherClasses.inner_priors = horzcat(otherClasses.inner_priors, input_kde_cl{i}.ikdeParams.N_eff ) ;
         otherClasses.pdfs = horzcat(otherClasses.pdfs, input_kde_cl{i}.pdf) ;
         otherClasses.N_eff = horzcat(otherClasses.N_eff, input_kde_cl{i}.ikdeParams.N_eff ) ;
     end
 end
-
+ 
 otherClasses.inner_priors = otherClasses.inner_priors / sum([otherClasses.inner_priors,input_kde_cl{i_exclude}.ikdeParams.N_eff + newadds ]) ;
  
 otherClasses.priors = sum(otherClasses.inner_priors) ;
@@ -779,9 +801,18 @@ if use_equalimportance == 1
     otherClasses.inner_priors = w_other ;
     otherClasses.priors = (length(input_kde_cl)-1) / length(input_kde_cl) ;     
 end
-if isempty(otherClasses.pdfs)
-    otherClasses = {}  ;
-end
+% if isempty(otherClasses.pdfs)
+%     otherClasses = {}  ;
+% end
+
+% ------------------------------------------------------------------ %
+function t = test_for_overlap(Mu_ref, Cov_ref, Mu_t, Cov_t, dist_th) 
+
+C = Cov_ref + Cov_t ;
+d = Mu_ref - Mu_t ;
+l = sqrt(d'*inv(C)*d) ;
+t = l < dist_th ;
+                             
 
 % ------------------------------------------------------------------ %
 function P = prob_of_unknown( classes_kde_cl )

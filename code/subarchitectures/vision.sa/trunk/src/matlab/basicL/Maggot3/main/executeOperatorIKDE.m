@@ -35,6 +35,12 @@ function out_kde = executeOperatorIKDE( input_kde, varargin )
 % Operators: 'evalPdfOnData', 'add_input', 'unlearn_with_input',
 % 'compress_pdf', 'evalHellingerBetween', 'getSubDimKDE', 'evalTypOnData'
 
+
+% global enforce_spherical_shapes ;
+% enforce_spherical_shapes = 0 ;
+
+calculate_bw_always = 1 ;
+
 turn_off_splitting = [] ; % turns on/off the splitting in compression
 switchSelectionSeeds = [] ; % whether we will use approximate compression
 selectionSeeds = [] ; % seeds used to (optionally) identify relevent components for compression
@@ -507,9 +513,12 @@ switch operator_data
             MDL_guides = [] ;
         end
  
+        diagonalize_kernels = 0 ;
+%         enforce_spherical_shapes = 0 ;
+        
         % generate appropriate weight vector and calculate the effective sample size, ikdeParams
         input_kde.ikdeParams = recalculateIkdeTmpPars( input_kde.ikdeParams, ...
-                                                       input_kde.pdf, obs_relative_weights, obs ) ;
+                                                       input_kde.pdf, obs_relative_weights, obs, diagonalize_kernels ) ;
         % augment sample distribution (we could optionally also implement EM-based update here)
         input_kde.pdf = augmentSampleDistributionByThis( input_kde.pdf, obs,...
                                             input_kde.ikdeParams.obs_mixing_weights,...
@@ -530,15 +539,20 @@ switch operator_data
             svdRes = output.svdRes;
             svdRes.globalCov = output.globalCov ;
  
-       
-        
         input_kde.ikdeParams.dim_subspace = length(svdRes.id_valid) ;
         if svdRes.isCompletelySingular ~= 1
+            
+            if  isempty(input_kde.pdf.smod.H) ||length(input_kde.pdf.w) >= abs(input_kde.ikdeParams.maxNumCompsBeforeCompression) || calculate_bw_always == 1 
+    
+            
             % get the bandwidth from sample distribution
             H = ndDirectPlugin_JointClean( input_kde.pdf.Mu, input_kde.pdf.smod.ps.Cov, ...
                 input_kde.pdf.w, ...
                 output.globalCov, ... %input_kde.ikdeParams.scale.Cov,...
                 input_kde.ikdeParams.N_eff ) ;
+            else
+               H =  input_kde.pdf.smod.H ;
+            end
         else
             % add noise to components if singularity is detected
             H = getNoisyAddons( output.globalCov ) ; %input_kde.ikdeParams.scale.Cov) ; %input_kde.ikdeParams.scale.Cov ) ;
@@ -559,6 +573,8 @@ switch operator_data
             if ~isempty(obs)                
                 dm = size(obs,1) ;
                 input_kde.ikdeParams.maxNumCompsBeforeCompression = ((dm^2-dm)/2+dm+dm+1) ;  %input_kde.ikdeParams.dim_subspace*5 ;
+%                 input_kde.ikdeParams.maxNumCompsBeforeCompression = 20 
+%                 input_kde.ikdeParams.maxNumCompsBeforeCompression = 3
             end            
         end
  
@@ -597,6 +613,9 @@ switch operator_data
             svdRes = [] ;
         end
         
+ 
+        
+        
        
         % engage automatic compression   
         if ~isempty( input_kde.pdf.w ) && force_prevent_compression == 0 && input_was_empty == 0 && input_kde.otherParams.auxiliary_bandwidth_active == 0    
@@ -619,10 +638,23 @@ switch operator_data
             if ~isempty(obs)
                 dm = size(obs,1) ;
                 input_kde.ikdeParams.maxNumCompsBeforeCompression = ((dm^2-dm)/2+dm+dm+1) ;  %input_kde.ikdeParams.dim_subspace*5 ;
+%                 input_kde.ikdeParams.maxNumCompsBeforeCompression = 20 
+%                 input_kde.ikdeParams.maxNumCompsBeforeCompression = 3
             end
 %             input_kde.ikdeParams.maxNumCompsBeforeCompression = ((dm^2-dm)/2+dm+dm+1) ;
             model_new.idxToref_out = [] ;
         end
+        
+        
+% % %         % spherization
+% % %   if enforce_spherical_shapes == 1
+% % %       if ~isempty(input_kde.pdf.Mu)
+% % %         msk = eye(size(input_kde.pdf.Mu,1)) ;
+% % %         for i = 1 : length(input_kde.pdf.Cov)
+% % %             input_kde.pdf.Cov{i} = input_kde.pdf.Cov{i}.*msk ;
+% % %         end   
+% % %       end
+% % %   end
         
         
         input_kde.pdf.smod.useVbw = 0 ;
@@ -654,6 +686,18 @@ switch operator_data
             end          
         end
  
+        
+% % %  % spherization
+% % %   if enforce_spherical_shapes == 1
+% % %       if ~isempty(input_kde.pdf.Mu)
+% % %         msk = eye(size(input_kde.pdf.Mu,1)) ;
+% % %         for i = 1 : length(input_kde.pdf.smod.ps.Cov)
+% % %             input_kde.pdf.smod.ps.Cov{i} = input_kde.pdf.smod.ps.Cov{i}.*msk ;
+% % %         end   
+% % %       end
+% % %   end
+        
+        
         
         [new_mu, new_Cov, w_out] = momentMatchPdf(input_kde.pdf.Mu, input_kde.pdf.Cov, input_kde.pdf.w) ; 
         input_kde.otherParams.singleGaussApp.Mu = new_mu ;
@@ -1058,8 +1102,12 @@ end
 
 % ----------------------------------------------------------------------- %
 function ikdeParams = ...
-          recalculateIkdeTmpPars( ikdeParams, model, obs_relative_weights, obs )  
+          recalculateIkdeTmpPars( ikdeParams, model, obs_relative_weights, obs, diagonalize_kernels )  
   
+      if nargin < 5
+          diagonalize_kernels = 0 ;
+      end
+ 
       if isempty(obs)
           return ;
       end
@@ -1130,6 +1178,11 @@ function ikdeParams = ...
           ikdeParams.scale.Cov = new_Cov*rescale1 ;
           ikdeParams.scale.Mu = new_mu ;
       end   
+      
+      if diagonalize_kernels == 1
+        ikdeParams.scale.Cov = ikdeParams.scale.Cov.*eye(size(ikdeParams.scale.Cov)) ;
+      end
+      
       % repair covariance if possible
       [U,S,V] = svd(ikdeParams.scale.Cov) ; 
 

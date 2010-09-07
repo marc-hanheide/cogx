@@ -1,10 +1,24 @@
-function H = uCostModel( negModel, posModel, posModel_r, negModelPrior, use_approximate_calc )
+function H = uCostModel( negModel, posModel, posModel_r, negModelPrior, use_approximate_calc, pdf_for_sigmas, type_cost )
 % Matej Kristan (2009)
 % calculates a cost of model reduction in terms of classification
 % accuracy.
  
+
+% od testa za Letter se ta razlikuje po tem, da sem aktiviral brisanje
+% predhranjenja in doloèil v funkciji ki klièe to, da naj raèuna na toèkah
+% s subseta, ki ga želimo kompresirati namesto na celotni pozitivni pdf.
+
+% focus only on centers
+% focus_on_centers = 0 ; % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 % use_approximate_calc = 1 ;
-use_sigma_points = 1 ;
+use_sigma_points = 0 ;
+
+if use_sigma_points == 1 
+    focus_on_centers = 0 ;
+else
+    focus_on_centers = 1 ;
+end
 
 % check if negative model even exists for the local compression:
 emptynegative = 0 ;
@@ -22,10 +36,21 @@ if emptynegative == 1
     return ;
 end 
 
+% negModel.precalcStat = [] ;
+
 modelPriors.pNeg = negModelPrior ; % 0.5 ;
 modelPriors.pPos = 1 - modelPriors.pNeg ; 
+
+modelPriors.pPos = 0.5 ;
+modelPriors.pNeg = 0.5 ;
+% kasneje še negModel.inner_priors(i)=0.5 !!!!!!!!!!!!!!!!!!!!!!!!!
+
 minTol = 1e-50 ;
-nimPerc = 0.01 ;
+nimPerc = 0.001 ;
+
+for i = 1 : length(negModel.pdfs)
+        negModel.inner_priors(i) = 0.5 ;
+end
  
 % pdf1.z_g_c0 = posModel ;
 % pdf1.z_g_c1 = negModel ;
@@ -42,7 +67,18 @@ if ~isfield(negModel,'precalcStat') || isempty(negModel.precalcStat)
     
     % calculate sigma points for entire set
     if use_sigma_points == 1
-        [X, sigPointsPerComponent, w, k ] = getAllSigmaPointsOnMixture( f0, MaxV ) ;
+        
+%         if focus_on_centers == 0
+            [X, sigPointsPerComponent, w, k ] = getAllSigmaPointsOnMixture( f0, MaxV ) ;
+%         else
+%             % hack
+% %             if ~isempty(posModel_r)
+% %                 X = [f0.Mu, posModel_r.Mu(:,length(posModel_r.w))] ; sigPointsPerComponent = 1 ; w = 1 ; k = 1 ;
+% %             else
+%                 X = [f0.Mu] ; sigPointsPerComponent = 1 ; w = 1 ; k = 1 ;
+% %             end
+%         end
+        
         X = real(X) ;
         W = repmat(f0.w,sigPointsPerComponent,1) ;
         W = reshape(W,1,length(f0.w)*sigPointsPerComponent) ;
@@ -51,8 +87,13 @@ if ~isfield(negModel,'precalcStat') || isempty(negModel.precalcStat)
     else
         X = f0.Mu ;
         W = f0.w ;
+%             X = pdf_for_sigmas.Mu ;
+%             W = pdf_for_sigmas.w ;
     end
     
+% X = Mu_center ;
+% W = 1 ;
+
     % store vectors
     sigmaPoints.X = X ;
     sigmaPoints.W = W ;
@@ -60,14 +101,19 @@ if ~isfield(negModel,'precalcStat') || isempty(negModel.precalcStat)
     ppos = evaluatePointsUnderPdf(posModel, X) ;
  
     % evaluate probabilities of model 1
-    p1_z_c0 = ppos*modelPriors.pPos ;
+    p1_z_c0 = ppos*modelPriors.pPos ; % p_x_Cpos ;
     
     p1_z_c1 = {} ; p1_z = {} ; p1_c0_g_z = {} ; %p1_c1_g_z = {} ;
     for i = 1 : length(negModel.pdfs)
+        
+        negModel.inner_priors(i) = 0.5 ;
+        
         p_tmp = evaluatePointsUnderPdf(negModel.pdfs{i}, X)*negModel.inner_priors(i) ;
  
-        p1_z_c1 = horzcat(p1_z_c1, p_tmp) ;
+        p1_z_c1 = horzcat(p1_z_c1, p_tmp) ; % p_x_giv_Cneg ;
+        
         p_tmp = p1_z_c0 + p1_z_c1{i} ;
+     
         p1_z = horzcat(p1_z, p_tmp) ;
         p_tmp = p1_z_c0 ./ (p1_z{i} + minTol) ;
         p1_c0_g_z = horzcat(p1_c0_g_z, p_tmp) ;
@@ -125,7 +171,7 @@ end
 H_tmp = ones(1,length(negModel.precalcStat.precalcs.p1_z_c1)) ;
 X = negModel.precalcStat.sigmaPoints.X ;
 W = negModel.precalcStat.sigmaPoints.W ;
-p2_z_c0 = evaluatePointsUnderPdf(posModel_r, X)*modelPriors.pPos ;
+p2_z_c0 = evaluatePointsUnderPdf(posModel_r, X)*modelPriors.pPos ; % p_x_Cpos
 for i = 1 : length(negModel.precalcStat.precalcs.p1_z_c1)
     
 %     p1_z_c1 = negModel.precalcStat.precalcs.p1_z_c1{i} ;
@@ -137,14 +183,40 @@ for i = 1 : length(negModel.precalcStat.precalcs.p1_z_c1)
     p2_c0_g_z = p2_z_c0 ./ (p2_z + minTol) ;
     p2_c1_g_z = 1 - p2_c0_g_z ; %p2_z_c1 ./ (p2_z + minTol) ;
  
-    % % % hellinger over posterior
-    g0 = ((sqrt(p1_c0_g_z) - sqrt(p2_c0_g_z)).^2) ;
-    g1 = ((sqrt(p1_c1_g_z) - sqrt(p2_c1_g_z)).^2) ;
-    Hc = sum(W.*(g0 + g1)) ;
-    H_tmp(i) = sqrt(Hc/2) ;    
+    
+    if type_cost == 1
+        g0 = ((sqrt(p1_c0_g_z) - sqrt(p2_c0_g_z)).^2) ;
+        g1 = ((sqrt(p1_c1_g_z) - sqrt(p2_c1_g_z)).^2) ;
+        Hc = sum(W.*(g0 + g1)) ;
+        H_tmp(i) = sqrt(Hc/2) ;          
+    else
+        Hc = max(abs((p1_c0_g_z)-(p2_c0_g_z))) ; 
+%         Hc = sum(W.*(abs((p1_c0_g_z > p1_c1_g_z) - (p2_c0_g_z > p2_c1_g_z)))) ;
+        H_tmp(i) = Hc ;
+    end
+    
+    
+%      Hc = sum(W.*abs(p1_c0_g_z-p2_c0_g_z)) ; 
+%      H_tmp(i) =  Hc ;
+   
+%  Hc = max(abs((p1_c0_g_z)-(p2_c0_g_z))) ; %sum(W.*abs(p_c_pos_giv_x-p_c_pos_giv_x_cmp)) ;      
+
+%  Hc = sum(W.*(abs((p1_c0_g_z > p1_c1_g_z) - (p2_c0_g_z > p2_c1_g_z)))) ;
+% 
+%  H_tmp(i) = Hc ;
+    
+%     % % % hellinger over posterior
+%     g0 = ((sqrt(p1_c0_g_z) - sqrt(p2_c0_g_z)).^2) ;
+%     g1 = ((sqrt(p1_c1_g_z) - sqrt(p2_c1_g_z)).^2) ;
+%     Hc = sum(W.*(g0 + g1)) ;
+%     H_tmp(i) = sqrt(Hc/2) ;  
+   
 end
 
 H = max(H_tmp) ;
+if isempty(H)
+    H = 0 ;
+end
 
 
  

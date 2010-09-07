@@ -1,5 +1,6 @@
 function [ pdf_cmprs, idxToref_out, augmented_pdf ] = hierarchicalCompression_BestFirst( pdf, varargin )
 
+use_mean_estimate = 0 ;
 disableReclustering = 1 ; % lowdim reclustreing will not work because we don't split mixture in original dimensions
 augmented_pdf = [] ;
 idxToref_out = [] ;
@@ -57,7 +58,7 @@ if use_revitalization == 1 %isempty(memoryLimit) %|| getHell ~= 0
     inPars.numberOfSamples = numberOfSamples ;
     inPars.costFunction = 'hellinger' ;
     inPars.useWeightedHellinger = 1 + 0*useWeightedHellinger ;
-    pdf = executeSplitComponents( pdf, inPars ) ;    
+    pdf = executeSplitComponents( pdf, inPars, [] , use_mean_estimate ) ;    
 end
 augmented_pdf = [] ; %pdf ;
  

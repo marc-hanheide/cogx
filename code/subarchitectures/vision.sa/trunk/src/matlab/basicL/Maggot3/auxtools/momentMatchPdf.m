@@ -15,6 +15,8 @@ function [new_mu, new_Cov, w_out] = momentMatchPdf(Mu, Cov, w)
 %   = sum_c w_c (S_c + m_c m_c') - m m'
 maxelmem = 100 ;
 
+diagonalize_kernels = 0 ;
+
 if isempty(w)
     new_mu = [] ;
     new_Cov = [] ;
@@ -38,16 +40,29 @@ end
 n = length(new_mu) ;
 
 if ~isempty(Cov)
-new_Cov = zeros(n,n) ;
-for j=1:length(w)
-%  m = Mu(:,j) - new_mu ;
-%  new_Cov = new_Cov + w(j) * (Cov{j} + m*m') ;  
-    new_Cov = new_Cov + w(j)*( Cov{j} + Mu(:,j)*Mu(:,j)') ;
-end  
-new_Cov = new_Cov - new_mu*new_mu' ;
+    new_Cov = zeros(n,n) ;
+    for j=1:length(w)
+        %  m = Mu(:,j) - new_mu ;
+        %  new_Cov = new_Cov + w(j) * (Cov{j} + m*m') ;
+        new_Cov = new_Cov + w(j)*( Cov{j} + Mu(:,j)*Mu(:,j)') ;
+    end
+    new_Cov = new_Cov - new_mu*new_mu' ;
 else
-    new_Cov = NaN ;
+    %     new_Cov = NaN ;
+    new_Cov = zeros(n,n) ;
+    for j=1:length(w)
+        %  m = Mu(:,j) - new_mu ;
+        %  new_Cov = new_Cov + w(j) * (Cov{j} + m*m') ;
+        new_Cov = new_Cov + w(j)*(   Mu(:,j)*Mu(:,j)') ;
+    end
+    new_Cov = new_Cov - new_mu*new_mu' ;
+    
 end
+
+if diagonalize_kernels == 1 
+    new_Cov = new_Cov.*eye(size(new_Cov)) ;    
+end
+
 
 if nargout == 3
     w_out = sumw ;

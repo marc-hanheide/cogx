@@ -26,22 +26,30 @@ delta_F = sum(sum(abs(F-eye(size(F))))) ;
 if delta_F < 1e-3
     % generate a summation over the nonsymmetric matrix
     for l1 = 1 : N
-        S1 = Cov{l1} ;
+        S1 = Cov{l1}  + G ;
         Mu1 = Mu(:,l1) ;
         w1 = w(l1) ;
         for l2 = l1 : N
-            S2 = Cov{l2} + G;
+            S2 = Cov{l2};
             Mu2 = Mu(:,l2) ;
             w2 = w(l2) ;
             A = inv(S1 + S2) ;
             dm = (Mu1 - Mu2) ;
-            ds = dm'*A ;
-            b = ds'*ds ;
-            B = A - 2*b ;
-            C = A - b ;
-            
-            f_t = constNorm*sqrt(det(A))*exp(-0.5*ds*dm) ;
-            c = 2*trace(A*B) + trace(C)^2 ;
+%             ds = dm'*A ;
+%             b = ds'*ds ;
+%             B = A - 2*b ;
+%             C = A - b ;
+%             
+%             f_t = constNorm*sqrt(det(A))*exp(-0.5*ds*dm) ;
+%             c = 2*trace(A*B) + trace(C)^2 ;
+
+             m = dm'*A*dm ;
+             f_t = constNorm*sqrt(det(A))*exp(-0.5*m) ;
+             c = 2*sum(sum(A.*A'))*(1-2*m) + (1-m)^2 *trace(A)^2 ;  
+ 
+% if l1 ==1 && l2 == 2
+%    fg = 34 ;
+% end
             
             % determine the weight of the term current
             if ( l1 == l2 )
@@ -71,7 +79,8 @@ else
             
             f_t = constNorm*sqrt(det(A))*exp(-0.5*ds*dm) ;
             c = 2*trace(F*A*F*B) + trace(F*C)^2 ;
-            
+
+
             % determine the weight of the term current
             if ( l1 == l2 )
                 eta = 1 ;
