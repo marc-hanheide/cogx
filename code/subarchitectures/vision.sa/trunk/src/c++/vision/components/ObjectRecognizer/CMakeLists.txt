@@ -21,16 +21,16 @@ link_directories(
 
 add_definitions(-DDEBUG_TRACE)
 
-add_cast_component(ObjectRecognizer
-   Recognizer.cpp
-   convenience.cpp
-   )
-set_target_properties(ObjectRecognizer PROPERTIES
-   COMPILE_FLAGS -DPYTHON_LIB_NAME="\\"${PYLIBNAME}\\""
-   )
-link_cast_component(${CAST_COMPONENT_NAME}
-   VisionData Video VideoUtils
-   ${PYTHON_LIBRARY})
+#add_cast_component(ObjectRecognizer
+#   Recognizer.cpp
+#   convenience.cpp
+#   )
+#set_target_properties(ObjectRecognizer PROPERTIES
+#   COMPILE_FLAGS -DPYTHON_LIB_NAME="\\"${PYLIBNAME}\\""
+#   )
+#link_cast_component(${CAST_COMPONENT_NAME}
+#   VisionData Video VideoUtils
+#   ${PYTHON_LIBRARY})
 
 option(BUILD_SA_VISION_OBJRECOGNIZER_SRV "build object recognizer server" NO)
 if (BUILD_SA_VISION_OBJRECOGNIZER_SRV)

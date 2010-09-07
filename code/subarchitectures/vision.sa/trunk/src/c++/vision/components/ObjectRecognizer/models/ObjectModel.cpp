@@ -17,12 +17,29 @@
 
 namespace cogx { namespace vision {
 
+CObjectView::CObjectView()
+{
+   m_id = 0;
+   m_phi = 0;
+   m_lambda = 0;
+   m_rotation = 0;
+}
+
 CObjectModel::~CObjectModel()
 {
    typeof(m_views.begin()) itv;
    for(itv = m_views.begin(); itv != m_views.end(); itv++) {
       CObjectView* pView = *itv;
       if (pView) delete pView;
+   }
+}
+
+void CObjectModel::getAllFeatures(std::vector<TSiftVector*>& features)
+{
+   typeof(m_views.begin()) itv;
+   for(itv = m_views.begin(); itv != m_views.end(); itv++) {
+      CObjectView* pView = *itv;
+      features.push_back(&pView->m_features);
    }
 }
 

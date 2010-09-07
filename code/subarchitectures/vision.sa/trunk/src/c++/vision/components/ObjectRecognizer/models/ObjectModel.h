@@ -28,8 +28,10 @@ class CObjectView
 {
    friend class CModelLoader;
 public:
+   CObjectView();
    long long m_id;
    std::string m_imagefile; // image filename without path
+   // TODO: views might be missing pose info -- need to mark (flag or impossible value)
    float m_phi, m_lambda, m_rotation;
    TSiftVector m_features;
 };
@@ -41,7 +43,9 @@ public:
    ~CObjectModel();
    long long m_id;
    std::string m_name;
-   std::vector<CObjectView*> m_views;
+   std::vector<CObjectView*> m_views; // views are owned by the model
+
+   void getAllFeatures(std::vector<TSiftVector*>& features);
 };
 
 }} //namespace

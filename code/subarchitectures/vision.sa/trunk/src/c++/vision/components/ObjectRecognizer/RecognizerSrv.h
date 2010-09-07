@@ -42,7 +42,7 @@ class CObjectRecognizer:
    public CObjectRecognizerMethods
 {
 private:
-   //CPyProxy m_pyRecognizer;
+   // Object models and stuff
    CSiftExtractor *m_pSiftExtractor;
    CSiftMatcher   *m_pSiftMatcher;
    std::vector<CObjectModel*> m_models;
@@ -50,6 +50,11 @@ private:
    // options
    float m_maxDistance;
    float m_maxAmbiguity;
+   bool m_bWmFilters; // true if the server should also react to WM requests
+
+   // WM recognition request queue with monitor
+   IceUtil::Monitor<IceUtil::Mutex> m_RrqMonitor;
+   std::vector<cast::cdl::WorkingMemoryChange> m_RrQueue;
 
 private:
 #ifdef FEAT_VISUALIZATION
@@ -75,6 +80,10 @@ private:
    void startIceServer();
    void loadModels(const std::string& from, const std::vector<std::string>& modelnames);
    void fancyDisplay(std::vector<CObjectModel*>& models, std::vector<CModelScore>& scores);
+
+   // WM request processing
+   void onAddRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   void processQueuedTasks(std::vector<cast::cdl::WorkingMemoryChange> &requests);
 
 public:
    CObjectRecognizer();
