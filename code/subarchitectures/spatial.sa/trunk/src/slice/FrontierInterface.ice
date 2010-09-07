@@ -16,6 +16,7 @@ module FrontierInterface {
   sequence<string> StringSeq;
   sequence<cogx::Math::Vector3> Vec3Seq;
   sequence<cogx::Math::Vector2> Vec2Seq;
+  sequence<cogx::Math::Pose3> PoseSeq;
   class NodeHypothesis {
     double x;
     double y;
@@ -105,6 +106,12 @@ module FrontierInterface {
     double cellSize;
     double totalMass;
     WeightedPointCloud outCloud;
+
+    PoseSeq baseObjectPose; // If this argument is present, the 
+    			// base object (last in 'objects') 
+    			// will be temporarily set to the
+    			// pose in question, not randomized
+    			// nor its known position used
   };
 
   /**

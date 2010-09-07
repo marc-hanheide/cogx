@@ -346,39 +346,65 @@ void ObjectRelationManager::runComponent()
 {
   log("I am running!");
 
-  //REMOVEME
-  nRooms = 2;
-  nRoomCategories = 2;
-  nObjects = 2;
-  hierarchyObjects.push_back("joystick");
-  hierarchyObjects.push_back("rice");
-  
-  roomCategoryDefault.push_back(1.0);
-  roomCategoryDefault.push_back(0.0);
-  roomCategoryDefault.push_back(0.0);
-  roomCategoryDefault.push_back(1.0);
-
-  objectInRoomDefault.push_back(0.5);
-  objectInRoomDefault.push_back(0.5);
-  objectInRoomDefault.push_back(0.1);
-  objectInRoomDefault.push_back(0.9);
- 
-  objectInObjectDefault.push_back(0);
-  objectInObjectDefault.push_back(0);
-  objectInObjectDefault.push_back(0.9);
-  objectInObjectDefault.push_back(0);
-
-  objectOnObjectDefault.push_back(0);
-  objectOnObjectDefault.push_back(0);
-  objectOnObjectDefault.push_back(0.1);
-  objectOnObjectDefault.push_back(0);
-
-  vector<string> ret =
-    computeMarginalDistribution("rice");
-  for (vector<string>::iterator it = ret.begin(); it != ret.end(); it++) {
-    log(it->c_str());
-  }
-  ///REMOVEME
+//  //REMOVEME
+//  nRooms = 2;
+//  nRoomCategories = 2;
+//  nObjects = 8;
+//  hierarchyObjects.push_back("table2");
+//  hierarchyObjects.push_back("table1");
+//  hierarchyObjects.push_back("bookcase3");
+//  hierarchyObjects.push_back("bookcase_lg");
+//  hierarchyObjects.push_back("bookcase_sm");
+//  hierarchyObjects.push_back("crate");
+//  hierarchyObjects.push_back("dell");
+//  hierarchyObjects.push_back("book");
+//  
+//  roomCategoryDefault.resize(nRooms * nRoomCategories, 0.0);
+//  roomCategoryDefault[nRoomCategories + 0 + 0] = 1.0;
+//  roomCategoryDefault[nRoomCategories + 1 + 1] = 1.0;
+//
+//  objectInRoomDefault.resize(nRooms * nObjects, 0.0);
+//  objectInRoomDefault[nRooms * 0 + 1] = 1.0;
+//  objectInRoomDefault[nRooms * 1 + 0] = 1.0;
+//  objectInRoomDefault[nRooms * 2 + 1] = 1.0;
+//  objectInRoomDefault[nRooms * 3 + 0] = 1.0;
+//  objectInRoomDefault[nRooms * 4 + 0] = 1.0;
+//  objectInRoomDefault[nRooms * 5 + 0] = 0.2;
+//  objectInRoomDefault[nRooms * 5 + 1] = 0.8;
+//  objectInRoomDefault[nRooms * 6 + 0] = 0.5;
+//  objectInRoomDefault[nRooms * 6 + 1] = 0.5;
+//  objectInRoomDefault[nRooms * 7 + 0] = 0.5;
+//  objectInRoomDefault[nRooms * 7 + 1] = 0.5;
+// 
+//  objectInObjectDefault.resize(nObjects * nObjects, 0.0);
+//  objectInObjectDefault[nObjects * 7 + 2] = 0.9;
+//  objectInObjectDefault[nObjects * 7 + 3] = 0.9;
+//  objectInObjectDefault[nObjects * 7 + 4] = 0.9;
+//  objectInObjectDefault[nObjects * 7 + 5] = 0.6;
+//  objectInObjectDefault[nObjects * 7 + 6] = 0.7;
+//
+//  objectOnObjectDefault.resize(nObjects * nObjects, 0.0);
+//  objectOnObjectDefault[nObjects * 5 + 0] = 0.8;
+//  objectOnObjectDefault[nObjects * 5 + 1] = 0.8;
+//  objectOnObjectDefault[nObjects * 6 + 0] = 0.8;
+//  objectOnObjectDefault[nObjects * 6 + 1] = 0.8;
+//  objectOnObjectDefault[nObjects * 6 + 2] = 0.8;
+//  objectOnObjectDefault[nObjects * 6 + 3] = 0.3;
+//  objectOnObjectDefault[nObjects * 6 + 4] = 0.3;
+//  objectOnObjectDefault[nObjects * 7 + 0] = 0.8;
+//  objectOnObjectDefault[nObjects * 7 + 1] = 0.8;
+//  objectOnObjectDefault[nObjects * 7 + 2] = 0.8;
+//  objectOnObjectDefault[nObjects * 7 + 3] = 0.8;
+//  objectOnObjectDefault[nObjects * 7 + 4] = 0.8;
+//  objectOnObjectDefault[nObjects * 7 + 5] = 0.2;
+//  objectOnObjectDefault[nObjects * 7 + 6] = 0.2;
+//
+//  vector<string> ret =
+//    computeMarginalDistribution("book");
+//  for (vector<string>::iterator it = ret.begin(); it != ret.end(); it++) {
+//    log(it->c_str());
+//  }
+//  ///REMOVEME
 
   peekabot::GroupProxy root;
   if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness 
@@ -1586,10 +1612,20 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       }
     }
 
+    Pose3 tmpPose = supportObject->pose;
+
+    if (request->baseObjectPose.size() > 0) {
+      // The base object pose is given. Set the model's pose to this value
+      // temporarily
+      supportObject->pose = request->baseObjectPose[0];
+    }
+
     SampleCloud cloud;
     m_sampler.
       sampleBinaryRelationSystematically(relations, objectChain,
 	  request->objects, request->cellSize, cloud);
+
+    supportObject->pose = tmpPose;
 
     cloud.compact();
 
@@ -1733,6 +1769,11 @@ updateHierarchy(Precursor precursors[], int current)
   }
   return false;
 }
+
+// Enumerate all non-forbidden relations
+// Store them in an array each
+// each contains a small struct describing the involved objects
+// and 
 
 vector<string>
 ObjectRelationManager::computeMarginalDistribution(string objName)
