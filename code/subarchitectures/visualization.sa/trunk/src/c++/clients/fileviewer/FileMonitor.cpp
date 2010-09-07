@@ -6,11 +6,20 @@
 #include "FileMonitor.hpp"
 
 #include <sys/types.h>
-#include <sys/inotify.h>
 #include <sstream>
 #include <fstream>
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
+
+#ifdef __APPLE__
+#else
+#define USE_INOTIFY 1
+#endif
+
+#if USE_INOTIFY
+#include <sys/inotify.h>
+#else
+#endif
 
 extern "C"
 {
@@ -22,9 +31,9 @@ extern "C"
 
 namespace cogx { namespace display {
 
-std::map<std::string, CFileMonitor::SConverter> CFileMonitor::SConverter::converters;
+std::map<std::string, SConverter> SConverter::converters;
 
-void CFileMonitor::SConverter::add(const std::string &id, const std::string &command,
+void SConverter::add(const std::string &id, const std::string &command,
       const std::string &type, const std::string &exts)
 {
    converters[id].id = id;
@@ -33,14 +42,14 @@ void CFileMonitor::SConverter::add(const std::string &id, const std::string &com
    converters[id].extensions = std::string(",") + exts + ",";
 }
 
-CFileMonitor::SConverter* CFileMonitor::SConverter::find(const std::string &id)
+SConverter* SConverter::find(const std::string &id)
 {
    typeof(converters.begin()) it = converters.find(id);
    if (it == converters.end()) return NULL;
    return &it->second;
 }
 
-CFileMonitor::SConverter* CFileMonitor::SConverter::findByExt(const std::string &ext)
+SConverter* SConverter::findByExt(const std::string &ext)
 {
    if (ext == "") return NULL;
    std::string fx = std::string(",") + ext + ",";
@@ -51,7 +60,7 @@ CFileMonitor::SConverter* CFileMonitor::SConverter::findByExt(const std::string 
    return NULL;
 }
 
-std::string CFileMonitor::SConverter::names()
+std::string SConverter::names()
 {
    std::ostringstream names;
    for (typeof(converters.begin()) it = converters.begin(); it != converters.end(); it++) {
@@ -65,20 +74,20 @@ struct _s_init_converters_
 {
    _s_init_converters_()
    {
-      CFileMonitor::SConverter::add("image", "", "binary", "bmp,gif,jpeg,jpg,png,pbm,pgm,ppm,tiff,xbm,xpm");
-      CFileMonitor::SConverter::add("dot", "dot -Tsvg", "text", "dot");
-      CFileMonitor::SConverter::add("neato", "neato -Tsvg");
-      CFileMonitor::SConverter::add("twopi", "twopi -Tsvg");
-      CFileMonitor::SConverter::add("circo", "circo -Tsvg");
-      CFileMonitor::SConverter::add("fdp", "fdp -Tsvg");
-      CFileMonitor::SConverter::add("svg", "", "text", "svg");
-      CFileMonitor::SConverter::add("luagl", "", "text", "luagl,lua");
-      CFileMonitor::SConverter::add("html", "", "text", "html,htm");
-      CFileMonitor::SConverter::add("htmlhead", "", "text", "css");
+      SConverter::add("image", "", "binary", "bmp,gif,jpeg,jpg,png,pbm,pgm,ppm,tiff,xbm,xpm");
+      SConverter::add("dot", "dot -Tsvg", "text", "dot");
+      SConverter::add("neato", "neato -Tsvg");
+      SConverter::add("twopi", "twopi -Tsvg");
+      SConverter::add("circo", "circo -Tsvg");
+      SConverter::add("fdp", "fdp -Tsvg");
+      SConverter::add("svg", "", "text", "svg");
+      SConverter::add("luagl", "", "text", "luagl,lua");
+      SConverter::add("html", "", "text", "html,htm");
+      SConverter::add("htmlhead", "", "text", "css");
    }
 } _init_converters_;
 
-CFileMonitor::SWatchInfo::SWatchInfo(const std::string &watchDef)
+SWatchInfo::SWatchInfo(const std::string &watchDef)
 {
    this->watchDef = watchDef;
    watchId = -1;
@@ -169,7 +178,7 @@ CFileMonitor::SWatchInfo::SWatchInfo(const std::string &watchDef)
    }
 }
 
-bool CFileMonitor::SWatchInfo::matches(const std::string &fname)
+bool SWatchInfo::matches(const std::string &fname)
 {
    for (typeof(filemasks.begin()) it = filemasks.begin(); it != filemasks.end(); it++) {
       boost::regex rx (*it);
@@ -183,7 +192,7 @@ bool CFileMonitor::SWatchInfo::matches(const std::string &fname)
    return false;
 }
 
-void CFileMonitor::SWatchInfo::dump(std::ostream &stream)
+void SWatchInfo::dump(std::ostream &stream)
 {
    stream << "Watch " << watchId << ": " << directory << "/{";
    for (typeof(filemasks.begin()) it = filemasks.begin(); it != filemasks.end(); it++) {
@@ -295,6 +304,8 @@ void describeEvent(inotify_event *event)
    }
 }
 
+// processFileChange should be called when after a file that has been modified
+// is closed.
 void CFileMonitor::processFileChange(int watchId, const std::string &fname)
 {
    debug("FILE CHANGED: %s", fname.c_str());
@@ -408,48 +419,83 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
    }
 }
 
-
+#if USE_INOTIFY
 // see also: man://inotify(7), man://inotify_init, man://select(2), man://select_tut(2) 
-void CFileMonitor::runComponent()
+
+/* size of the event structure, not counting name */
+const size_t EVENT_SIZE = (sizeof (struct inotify_event));
+
+class CINotifyMonitor
 {
-   m_display.connectIceClient(*this);
+   CFileMonitor *m_pMonitor;
+   int m_fd;
+   char* m_buffer;
+   size_t m_bufLen;
 
-   /* size of the event structure, not counting name */
-   const size_t EVENT_SIZE = (sizeof (struct inotify_event));
-
-   /* reasonable guess as to size of 1024 events */
-   const size_t BUF_LEN = (1024 * (EVENT_SIZE + 16));
-   char buffer[BUF_LEN];
-
-   int fd = inotify_init();
-
-   // Add watches for all configured files/directories
-   for (typeof(m_watches.begin()) it = m_watches.begin(); it != m_watches.end(); it++) {
-      SWatchInfo* pinfo = *it;
-      int wd = inotify_add_watch(fd, pinfo->directory.c_str(), IN_CLOSE_WRITE);
-      if (wd >= 0) {
-         pinfo->watchId = wd;
-      }
-      else {
-         bool found = false;
-         for (typeof(m_watches.begin()) it2 = m_watches.begin(); it2 != it; it2++) {
-            SWatchInfo* pinfo2 = *it2;
-            debug("%s == %d %s", pinfo->directory.c_str(), pinfo2->watchId, pinfo2->directory.c_str());
-            if (pinfo2->directory == pinfo->directory && pinfo2->watchId >= 0) {
-               found = true;
-               pinfo->watchId = pinfo2->watchId;
-               break;
-            }
-         }
-         if (! found)
-            log("inotify_add_watch returned %d for %s", wd, pinfo->directory.c_str());
-      }
+public:
+   CINotifyMonitor(CFileMonitor& Monitor) {
+      m_pMonitor = &Monitor;
+      m_fd = -1;
+      m_buffer = NULL;
+      m_bufLen = 0;
    }
 
-   // int wd = inotify_add_watch(fd, "/home/mmarko/Documents/doc/Devel/CogX/code/systems/ul", IN_ALL_EVENTS);
-   // int wd = inotify_add_watch(fd, ".", IN_CLOSE_WRITE);
+   ~CINotifyMonitor() {
+      releaseWatches();
+   }
 
-   while (isRunning()) {
+   void releaseWatches() {
+      if (m_fd >= 0) close(m_fd);
+      m_fd = -1;
+      if (m_buffer) delete m_buffer;
+      m_buffer == NULL;
+      m_bufLen = 0;
+   }
+
+   void installWatches() {
+      releaseWatches();
+
+      /* reasonable guess as to size of 1024 events */
+      m_bufLen = (1024 * (EVENT_SIZE + 16));
+      m_buffer = new char[m_bufLen];
+
+      m_fd = inotify_init();
+
+      // Add watches for all configured files/directories
+      for (typeof(m_pMonitor->m_watches.begin()) it = m_pMonitor->m_watches.begin();
+            it != m_pMonitor->m_watches.end(); it++)
+      {
+         SWatchInfo* pinfo = *it;
+         int wd = inotify_add_watch(m_fd, pinfo->directory.c_str(), IN_CLOSE_WRITE);
+         if (wd >= 0) {
+            pinfo->watchId = wd;
+         }
+         else {
+            bool found = false;
+            for (typeof(m_pMonitor->m_watches.begin()) it2 = m_pMonitor->m_watches.begin();
+                  it2 != it; it2++)
+            {
+               SWatchInfo* pinfo2 = *it2;
+               m_pMonitor->debug("%s == %d %s", pinfo->directory.c_str(), pinfo2->watchId,
+                     pinfo2->directory.c_str());
+               if (pinfo2->directory == pinfo->directory && pinfo2->watchId >= 0) {
+                  found = true;
+                  pinfo->watchId = pinfo2->watchId;
+                  break;
+               }
+            }
+            if (! found)
+               m_pMonitor->log("inotify_add_watch returned %d for %s", wd, pinfo->directory.c_str());
+         }
+      }
+
+      // int wd = inotify_add_watch(fd, "/home/mmarko/Documents/doc/Devel/CogX/code/systems/ul", IN_ALL_EVENTS);
+      // int wd = inotify_add_watch(fd, ".", IN_CLOSE_WRITE);
+   }
+
+   // Run this function periodically in the main loop.
+   // If the monitor doesn't need polling, just put a sleepComponent in here.
+   void pollWatches() {
       // wait for events, but use timeout (select)
       // timeout needs to be intialized every time ( linux implementation of select )
       struct timeval timeout;
@@ -457,17 +503,17 @@ void CFileMonitor::runComponent()
       timeout.tv_usec = 0;
       fd_set rfds;
       FD_ZERO (&rfds);
-      FD_SET (fd, &rfds);
-      int ret = select (fd+1, &rfds, NULL, NULL, &timeout);
+      FD_SET (m_fd, &rfds);
+      int ret = select (m_fd+1, &rfds, NULL, NULL, &timeout);
 
       if (ret < 0) {
-         debug("Error: select");
+         m_pMonitor->debug("Error: select");
       }
       else if (ret == 0) {
          // debug("inotify: select timed out");
       }
-      else if (ret && FD_ISSET (fd, &rfds)) { // rfds changed before timeout
-         int length = read( fd, buffer, BUF_LEN );  
+      else if (ret && FD_ISSET (m_fd, &rfds)) { // rfds changed before timeout
+         int length = read( m_fd, m_buffer, m_bufLen );  
          // debug("Change occured, length=%d", length);
          int i = 0;
          if (length < 0) {
@@ -476,11 +522,11 @@ void CFileMonitor::runComponent()
          else {
             while (i < length) {
                struct inotify_event *event;
-               event = ( struct inotify_event * ) &buffer[ i ];
+               event = ( struct inotify_event * ) &m_buffer[ i ];
                if ( event->len ) {
                   // describeEvent(event);
                   if ( event->mask & IN_CLOSE_WRITE && ! (event->mask & IN_ISDIR)) {
-                     processFileChange(event->wd, event->name);
+                     m_pMonitor->processFileChange(event->wd, event->name);
                   }
                }
                i += EVENT_SIZE + event->len;
@@ -489,7 +535,27 @@ void CFileMonitor::runComponent()
       }
    }
 
-   if (fd >= 0) close(fd);
+};
+#else
+#endif
+
+
+void CFileMonitor::runComponent()
+{
+   m_display.connectIceClient(*this);
+
+#if USE_INOTIFY
+   CINotifyMonitor monitor(*this);
+#else
+#endif
+
+   monitor.installWatches();
+
+   while (isRunning()) {
+      monitor.pollWatches();
+   }
+
+   monitor.releaseWatches();
 }
 
 }} // namespace

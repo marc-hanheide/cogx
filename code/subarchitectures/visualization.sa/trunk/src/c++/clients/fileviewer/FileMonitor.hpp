@@ -11,38 +11,43 @@
 
 namespace cogx { namespace display {
 
+struct SConverter
+{
+   std::string id;
+   std::string command;
+   std::string type;
+   std::string extensions;
+   static std::map<std::string, SConverter> converters;
+   static void add(const std::string &_id, const std::string &_command,
+         const std::string &type="text", const std::string &exts="");
+   static SConverter* find(const std::string &id);
+   static SConverter* findByExt(const std::string &ext);
+   static std::string names();
+};
+
+struct SWatchInfo
+{
+   std::string watchDef;
+   int watchId;
+   std::string title;
+   std::string section;
+   std::string directory;
+   std::vector<std::string> filemasks;
+   SConverter* pConverter;
+   SWatchInfo(const std::string& watchDef);
+   bool matches(const std::string& filename);
+   void dump(std::ostream& steam);
+};
+
 class CFileMonitor: public cast::ManagedComponent
 {
 private:
    cogx::display::CDisplayClient m_display;
    // void handleGuiEvent(const Visualization::TEvent &event);
 
-   struct SConverter {
-      std::string id;
-      std::string command;
-      std::string type;
-      std::string extensions;
-      static std::map<std::string, SConverter> converters;
-      static void add(const std::string &_id, const std::string &_command,
-            const std::string &type="text", const std::string &exts="");
-      static SConverter* find(const std::string &id);
-      static SConverter* findByExt(const std::string &ext);
-      static std::string names();
-   };
    friend struct _s_init_converters_;
 
-   struct SWatchInfo {
-      std::string watchDef;
-      int watchId;
-      std::string title;
-      std::string section;
-      std::string directory;
-      std::vector<std::string> filemasks;
-      SConverter* pConverter;
-      SWatchInfo(const std::string& watchDef);
-      bool matches(const std::string& filename);
-      void dump(std::ostream& steam);
-   };
+public:
    std::vector<SWatchInfo*> m_watches;
 
 public:
@@ -70,7 +75,7 @@ protected:
     */
    virtual void runComponent();
 
-protected:
+public:
    void processFileChange(int watchId, const std::string &fname);
 };
 
