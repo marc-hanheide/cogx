@@ -38,6 +38,7 @@ public:
     L_JUNCTION,
     A_JUNCTION,
     E_JUNCTION,
+    CORNER,
     EXT_ELLIPSE,
     CYLINDER,
     CONE,

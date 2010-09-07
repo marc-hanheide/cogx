@@ -11,7 +11,7 @@
 
 #include <list>
 #include <set>
-#include "Vector2.hh"
+#include "Vector.hh"
 #include "VisionCore.hh"
 #include "Draw.hh"
 #include "Segment.hh"
@@ -21,6 +21,7 @@
 #include "Collinearity.hh"
 #include "TJunction.hh"
 #include "Closure.hh"
+#include "Corner.hh"
 
 
 namespace Z
@@ -28,10 +29,11 @@ namespace Z
 
 /// Wozu sind diese gut? Wieso nicht include? 
 /// => wenn gegenseitig included wird, dann muss einer zuerst deklariert werden
-// class LJunction;
-// class Collinearity;
-// class TJunction;
-// class Closure;
+class LJunction;
+class Collinearity;
+class TJunction;
+class Closure;
+class Corner;
 
 /**
  * @brief A directed straight line.
@@ -49,15 +51,15 @@ public:
 	Vector2 dir;												///< direction of the line, normalised to 1
   Vector2 tang[2];										///< tangents STAR/END
   double phi;													///< angular direction
-  double len;													///< length of line TODO stimmt?
+  double len;													///< length of line
   //double s;														///< hessian form: distance
   //double theta;												///< hessian form: angle
   Array<Collinearity*> coll[2];				///< collinearities at line-end [START/END]
   Array<LJunction*> l_jct[2][2];			///< L-junctions at START/END and LEFT/RIGHT
   TJunction* t_jct[2];								///< T-junctions at START/END
   Array<TJunction*> pt_jct[2][2];			///< passive T-jcts, START/END and LEFT/RIGHT
-  Array<Closure*> closures; 					// TODO: have two lists, for both senses
-//  Array<Rectangle*> rectangles; 					// TODO Soll man das hier auch so machen?
+  Array<Closure*> closures; 					///< Closures TODO: have two lists, for both senses
+  Array<Corner*> corners[2];	 				///< Corners at [START/END]
   int label;													///< label LEFT/RIGHT
   double energy;											///< energy for global conistency
   double stability;										///< stability for global consistency

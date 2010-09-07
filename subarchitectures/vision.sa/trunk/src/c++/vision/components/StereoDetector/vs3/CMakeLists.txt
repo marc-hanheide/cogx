@@ -119,7 +119,7 @@ SET(SOURCES
 	Collinearity.cc
 	Cone.cc
 	ConvexArcGroup.cc
-#	Corner.cc
+	Corner.cc
 	Cube.cc
 	Cylinder.cc
 	EJunction.cc
@@ -139,7 +139,7 @@ SET(SOURCES
 	FormCones.cc
 	FormConvexArcGroups.cc
 	FormEllipses.cc
-#	FormCorners.cc
+	FormCorners.cc
 	FormCubes.cc
 	FormEJunctions.cc
 	FormCylinders.cc

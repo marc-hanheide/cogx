@@ -23,6 +23,7 @@
 #include "FormEllipses.hh"
 #include "FormSpheres.hh"
 #include "FormJunctions.hh"
+#include "FormCorners.hh"
 #include "FormArcJunctions.hh"
 #include "FormEJunctions.hh"
 #include "FormCylinders.hh"
@@ -31,6 +32,7 @@
 #include "FormFlaps.hh"
 #include "FormFlapsAri.hh"
 #include "FormCubes.hh"
+#include "FormCones.hh"
 
 #include "Line.hh"
 #include "Collinearity.hh"
@@ -40,7 +42,6 @@
 #include "Rectangle.hh"
 #include "Ellipse.hh"
 #include "VisionCore.hh"
-#include "FormCones.hh"
 
 namespace Z
 {
@@ -109,6 +110,7 @@ void VisionCore::InitGestaltPrinciples()
 
   principles[GestaltPrinciple::FORM_LINES] = new FormLines(this);
 	principles[GestaltPrinciple::FORM_JUNCTIONS] = new FormJunctions(this);
+	principles[GestaltPrinciple::FORM_CORNERS] = new FormCorners(this);
   principles[GestaltPrinciple::FORM_CLOSURES] = new FormClosures(this);
   principles[GestaltPrinciple::FORM_RECTANGLES] = new FormRectangles(this);
   principles[GestaltPrinciple::FORM_FLAPS] = new FormFlaps(this);
@@ -498,6 +500,8 @@ void VisionCore::InformNewGestalt(Gestalt::Type type, unsigned id)
 		case Gestalt::L_JUNCTION:
       if(VisionCore::config.GetValueInt("FORM_CLOSURES") == 1)
         Principles(GestaltPrinciple::FORM_CLOSURES)->InformNewGestalt(type, id);
+      if(VisionCore::config.GetValueInt("FORM_CORNERS") == 1)
+        Principles(GestaltPrinciple::FORM_CORNERS)->InformNewGestalt(type, id);
       if(VisionCore::config.GetValueInt("FORM_CONES") == 1)
         Principles(GestaltPrinciple::FORM_CONES)->InformNewGestalt(type, id);
       break;
