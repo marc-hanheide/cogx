@@ -18,7 +18,7 @@
 
 #include <vector>
 #include <opencv/cv.h>
-#include "Namespace.hh"
+//#include "Namespace.hh"
 #include "Array.hh"
 #include "Config.hh"
 #include "Color.hh"

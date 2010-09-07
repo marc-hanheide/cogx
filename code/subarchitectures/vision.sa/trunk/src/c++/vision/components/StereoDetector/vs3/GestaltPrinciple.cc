@@ -27,6 +27,7 @@ static const char type_names[][NAME_LENGTH] = {
 	"FORM_CYLINDERS",
 	"FORM_CONES",
   "FORM_JUNCTIONS",
+  "FORM_CORNERS",
   "FORM_CLOSURES",
   "FORM_RECTANGLES",
   "FORM_FLAPS",

@@ -12,12 +12,17 @@
 #include "Vector2.hh"
 #include "VisionCore.hh"
 #include "Gestalt.hh"
+#include "Array.hh"
+#include "Draw.hh"
+#include "Corner.hh"
+#include "Line.hh"
+#include "Vector.hh"
 
 namespace Z
 {
 
 class Line;
-
+class Corner;
 
 /**
  * @brief Gestalt class LJunction
