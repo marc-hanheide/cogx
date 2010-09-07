@@ -13,8 +13,6 @@
 
 #include "Vector.hh"
 #include "VisionCore.hh"
-#include "Closure.hh"
-#include "Flap.hh"
 #include "StereoCamera.hh"
 #include "Gestalt.hh"
 #include "Draw.hh"
@@ -29,6 +27,9 @@
 #include "StereoFlapsAri.h"
 #include "StereoCubes.h"
 
+#include "Closure.hh"
+#include "Flap.hh"
+#include "Corner.hh"
 
 namespace Z
 {
@@ -86,8 +87,8 @@ public:
 	
 	/// TODO delete later: only for debuging first results
 	void PrintResults();
-	
 	void PrintJunctions2File();
+	void PrintCorners2File();
 };
 
 }
