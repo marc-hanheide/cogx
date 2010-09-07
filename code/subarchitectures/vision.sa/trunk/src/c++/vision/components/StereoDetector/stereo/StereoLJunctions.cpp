@@ -92,7 +92,7 @@ StereoLJunctions::StereoLJunctions(VisionCore *vc[2], StereoCamera *sc) : Stereo
  */
 void StereoLJunctions::DrawMatched(int side, bool single, int id, int detail)
 {
-printf("StereoLJunctions::DrawMatched!\n");
+// printf("StereoLJunctions::DrawMatched!\n");
 	if(single)
 	{
 		if(id < 0 || id >= ljctMatches)
@@ -345,9 +345,9 @@ void StereoLJunctions::Process()
 
 	// do stereo matching and depth calculation
 	ljctMatches = 0;
-printf("StereoLJunctions::Process: left: %u - right: %u\n", ljcts[LEFT].Size(), ljcts[RIGHT].Size());
+// printf("StereoLJunctions::Process: left: %u - right: %u\n", ljcts[LEFT].Size(), ljcts[RIGHT].Size());
 	MatchLJunctions(ljcts[LEFT], ljcts[RIGHT], ljctMatches);
-printf("MatchedLJunctions: %u\n", ljctMatches);
+// printf("MatchedLJunctions: %u\n", ljctMatches);
 	Calculate3DLJunctions(ljcts[LEFT], ljcts[RIGHT], ljctMatches, ljct3ds);
 }
 
