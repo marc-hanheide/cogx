@@ -554,6 +554,13 @@ namespace spatial
 	labels.push_back(singleStrategy.back().primaryobject);
 	relations.push_back(singleStrategy.back().relation);
 	labels.push_back(singleStrategy.back().secobject);
+
+	ObjectPairRelation &baseObj = *(singleStrategy.end()-2);
+
+	if (baseObj.secobject.find("room") == string::npos) {
+	  relations.push_back(baseObj.relation);
+	  labels.push_back(baseObj.secobject);
+	}
 	log("Asking for: %s , %s, %s", labels[0].c_str(), (relations[0] == FrontierInterface::ON ? "ON" : "IN"), singleStrategy.back().secobject.c_str());
 
 	FrontierInterface::ObjectPriorRequestPtr objreq =
@@ -1188,6 +1195,7 @@ namespace spatial
 		}
     }
   }
+
 
   void VisualObjectSearch::PostViewCone()
   {
