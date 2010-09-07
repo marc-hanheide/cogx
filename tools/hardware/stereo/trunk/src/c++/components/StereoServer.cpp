@@ -88,6 +88,7 @@ StereoServer::StereoServer()
   census = 0;
   // normally it's a good idea to do median filering on the disparity image
   medianSize = 5;
+  maxDisp = 64;
 #endif
   doDisplay = false;
   logImages = false;

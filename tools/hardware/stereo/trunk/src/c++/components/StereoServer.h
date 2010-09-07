@@ -151,6 +151,11 @@ private:
    * 0 = not median filtering
    */
   int medianSize;
+
+  /** 
+   * maximum disparity range we want to search 
+   */ 
+  int maxDisp;
 #endif
 
   bool doDisplay;
