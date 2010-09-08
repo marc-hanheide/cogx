@@ -94,6 +94,9 @@ private:
   void displayPeople();
   void receiveScan2d(const Laser::Scan2d &scan);
   void newPointCloud(const cast::cdl::WorkingMemoryChange &objID);
+  #ifdef DISPLAY_COMA
+  void newComaRoom(const cast::cdl::WorkingMemoryChange &objID);
+  #endif
   void newVPlist(const cast::cdl::WorkingMemoryChange &objID);
   void newArea(const cast::cdl::WorkingMemoryChange &objID);
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);

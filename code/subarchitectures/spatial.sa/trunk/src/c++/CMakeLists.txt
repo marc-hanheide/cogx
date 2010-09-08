@@ -148,3 +148,8 @@ link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation
 
 endif(BUILD_AVS)
 
+option(DISPLAY_COMA_PB NO)
+if(DISPLAY_COMA_PB)
+     add_definitions(-DDISPLAY_COMA)
+endif(DISPLAY_COMA_PB)
+
