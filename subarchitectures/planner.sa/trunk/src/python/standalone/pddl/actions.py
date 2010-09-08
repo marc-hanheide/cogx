@@ -104,8 +104,6 @@ class Action(Scope):
         if not newdomain:
             newdomain = self.parent
             
-        args = [types.Parameter(p.name, p.type) for p in self.args]
-        
         a = Action(self.name, [], None, None, newdomain)
         a.args = a.copy_args(self.args)
         
@@ -127,10 +125,9 @@ class Action(Scope):
         if not newdomain:
             newdomain = self.parent
 
-        args = [types.Parameter(p.name, p.type) for p in self.args]
-        
-        return Action(self.name, args, None, None, newdomain)
-        
+        a = Action(self.name, [], None, None, newdomain)
+        a.args = a.copy_args(self.args)
+        return a
     
     @staticmethod
     def parse(it, scope):

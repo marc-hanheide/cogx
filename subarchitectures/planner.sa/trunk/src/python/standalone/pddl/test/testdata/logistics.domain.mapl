@@ -16,6 +16,9 @@
              (p_load_success ?v - vehicle) - number
 )
 
+(:constants
+ agent - agent)
+
 (:action sense_package
          :agent         (?a - agent)
          :parameters    (?t - truck ?p - package)

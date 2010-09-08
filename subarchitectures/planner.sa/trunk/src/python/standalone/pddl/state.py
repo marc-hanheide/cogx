@@ -6,7 +6,7 @@ from itertools import imap, ifilter
 from collections import defaultdict
 
 import mapltypes as types
-import conditions, problem, effects, durative
+import scope, conditions, problem, effects, durative
 from builtin import *
 from durative import change, num_change
 from predicates import *
@@ -812,9 +812,12 @@ class State(dict):
         the effects's arguments are written to the read_svars member
         variable.
         """
+
+        import dynamic_objects
+        
         facts = {}
         if isinstance(effect, effects.UniversalEffect):
-            combinations = product(*map(lambda a: self.problem.get_all_objects(a.type), effect.args))
+            combinations = product(*map(lambda a: list(self.problem.get_all_objects(a.type)), effect.args))
             for params in combinations:
                 effect.instantiate(dict(zip(effect.args, params)))
                 facts.update(self.get_effect_facts(effect.effect, trace_vars))
@@ -846,6 +849,23 @@ class State(dict):
                     if p_total <= s <= p_total + p:
                         return self.get_effect_facts(eff, trace_vars)
                     p_total += p
+                    
+        elif isinstance(effect, dynamic_objects.CreateEffect):
+            new_objects = []
+            for arg in effect.args:
+                i = 0
+                while "%s%d" % (str(arg.type), i) in self.problem:
+                    i += 1
+                obj = types.TypedObject("%s%d" % (str(arg.type), i), arg.type)
+                new_objects.append(obj)
+                self.problem.add_object(obj)
+
+            effect.instantiate(dict(zip(effect.args, new_objects)))
+            facts.update(self.get_effect_facts(effect.effect, trace_vars))
+            effect.uninstantiate()
+
+        elif isinstance(effect, dynamic_objects.DestroyEffect):
+            pass
             
         elif isinstance(effect, effects.ConjunctiveEffect):
             for eff in effect.parts:
@@ -1022,3 +1042,18 @@ class State(dict):
             return ex_state, reasons, universalReasons
         
         return ex_state
+
+    def apply_init_rules(self, domain=None, rules=None):
+        prules = []
+        if domain:
+            prules = [r.copy(newdomain = self.problem) for r in domain.init_rules]
+        if rules:
+            prules += [r.copy(newdomain = self.problem) for r in rules]
+            
+        for rule in prules:
+            combinations = list(product(*map(lambda arg: list(self.problem.get_all_objects(arg.type)), rule.args)))
+            for c in combinations:
+                rule.instantiate(c)
+                if rule.precondition is None or self.is_satisfied(rule.precondition):
+                    self.apply_effect(rule.effect)
+                rule.uninstantiate()
