@@ -126,7 +126,7 @@ private:
     void setClientData(SOIFilter* pSoiFilter) { pFilter = pSoiFilter; }
     void handleEvent(const Visualization::TEvent &event); /*override*/
   };
-  cogx::display::CDisplayClient m_display;
+  CSfDisplayClient m_display;
 #endif
   VisionData::ProtoObjectPtr m_LastProtoObject; // We may want to save it
   Video::Image m_ImageLeft;
