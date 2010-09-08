@@ -189,6 +189,7 @@ void SOIFilter::start()
 
 #ifdef FEAT_VISUALIZATION
   m_display.connectIceClient(*this);
+  m_display.setClientData(this);
   m_display.installEventReceiver();
   m_display.addButton("Last ROI Segmentation", "take.snapshot", "&Snapshot");
 #else
