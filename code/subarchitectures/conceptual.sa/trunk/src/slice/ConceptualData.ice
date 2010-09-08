@@ -32,7 +32,7 @@ module ConceptualData
    interface QdlQueryHandlerInterface
    {
 	QueryResults querySelect(string q);
-   }
+   };
 
 };
 #endif // CONCEPTUALDATA_ICE
