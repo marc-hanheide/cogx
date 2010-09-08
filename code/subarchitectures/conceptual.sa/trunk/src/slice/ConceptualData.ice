@@ -16,16 +16,23 @@ module ConceptualData
     sequence<BindingRow> BindingTable;
     dictionary<string, int> StringToIntMap;
 
-    struct QueryResults {
+    struct QueryResults 
+    {
     	string query;
     	StringToIntMap varPosMap;
     	BindingTable bt;
     };
 
-    interface HFCInterface {
-		QueryResults querySelect(string q);
-		string ping();
+    interface HFCInterface 
+    {
+	QueryResults querySelect(string q);
     };
+
+
+   interface QdlQueryHandlerInterface
+   {
+	QueryResults querySelect(string q);
+   }
 
 };
 #endif // CONCEPTUALDATA_ICE
