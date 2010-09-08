@@ -14,7 +14,7 @@ import comadata.HFCInterface;
 import comadata.QueryResults;
 import de.dfki.lt.hfc.QueryParseException;
 
-public class HFCServer extends ManagedComponent {
+public class DefaultHFCServer extends ManagedComponent {
 	
 	Identity id;
 	
