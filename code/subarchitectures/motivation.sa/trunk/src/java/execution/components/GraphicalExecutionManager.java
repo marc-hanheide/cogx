@@ -41,7 +41,6 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 			"record3", "record4" };
 
 	private final ActionInterfaceFrame m_gui;
-	private String[] m_objectLabels;
 
 	private WorkingMemoryAddress m_currentActionAddress;
 
@@ -52,16 +51,19 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		m_gui = new ActionInterfaceFrame(this);
 		m_gui.pack();
 		m_gui.setVisible(true);
-		m_objectLabels = DEFAULT_LABELS;
+
 	}
 
 	@Override
 	protected void configure(Map<String, String> _config) {
 		String labels = _config.get("--labels");
+		String[] objectLabels = DEFAULT_LABELS;
 		if (labels != null) {
-			m_objectLabels = labels.split(",");
+			objectLabels = labels.split(",");
 		}
-		log("using object labels: " + m_objectLabels);
+
+		log("using object labels: " + objectLabels);
+		m_gui.setObjectModels(objectLabels);
 	}
 
 	@Override
@@ -133,10 +135,10 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-	public WorkingMemoryAddress triggerDetectObjects(ActionMonitor _monitor)
+	public WorkingMemoryAddress triggerDetectObjects(String[] _models, ActionMonitor _monitor)
 			throws CASTException {
 		DetectObjects act = newActionInstance(DetectObjects.class);
-		act.labels = m_objectLabels;
+		act.labels =_models;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
@@ -148,10 +150,10 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-	public WorkingMemoryAddress triggerLookForObjects(ActionMonitor _monitor)
+	public WorkingMemoryAddress triggerLookForObjects(String[] _models, ActionMonitor _monitor)
 			throws CASTException {
 		LookForObjects act = newActionInstance(LookForObjects.class);
-		act.labels = m_objectLabels;
+		act.labels =_models;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}

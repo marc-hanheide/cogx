@@ -6,6 +6,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Map.Entry;
 
 import javax.swing.BoxLayout;
@@ -40,6 +41,8 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private static final int PLACE_ID_COLUMN = 0;
 	private static final int BELIEF_ID_COLUMN = 0;
+	private static final int OBJECT_MODEL_COLUMN = 0;
+
 	@SuppressWarnings("unused")
 	private static final int BELIEF_TYPE_COLUMN = 1;
 	private static final long serialVersionUID = 1L;
@@ -69,6 +72,8 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel m_beliefsPanel;
 	private JPanel m_objectsPanel;
 	private JTabbedPane m_tabbedPane;
+	private JTable m_objectTable;
+	private DefaultTableModel m_objectTableModel;
 	private static final Class<?>[] FEATURE_VALUE_TYPES = {
 			ElementaryFormula.class, IntegerFormula.class, FloatFormula.class,
 			BooleanFormula.class };
@@ -117,6 +122,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel getObjectsPanel() {
 		if (m_objectsPanel == null) {
 			m_objectsPanel = new JPanel();
+			m_objectsPanel.add(new JScrollPane(getObjectTable()));
 			m_objectsPanel.add(getObjectsActionPanel());
 		}
 		return m_objectsPanel;
@@ -505,7 +511,7 @@ public class ActionInterfaceFrame extends JFrame {
 	 * @throws CASTException
 	 */
 	private void detectObjects() throws CASTException {
-		m_exeMan.triggerDetectObjects(new MonitorPanel());
+		m_exeMan.triggerDetectObjects(getSelectedObjectModels(), new MonitorPanel());
 	}
 
 	/**
@@ -520,7 +526,7 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 	private void lookForObjects() throws CASTException {
-		m_exeMan.triggerLookForObjects(new MonitorPanel());
+		m_exeMan.triggerLookForObjects(getSelectedObjectModels(), new MonitorPanel());
 	}
 
 	/**
@@ -562,6 +568,28 @@ public class ActionInterfaceFrame extends JFrame {
 		return m_placeTable;
 	}
 
+	
+	/**
+	 * This method initializes m_objectTable
+	 * 
+	 * @return javax.swing.JTable
+	 */
+	private JTable getObjectTable() {
+		if (m_objectTable == null) {
+			m_objectTable = new JTable(1, 2);
+			m_objectTableModel = new DefaultTableModel(new String[] { "model"}, 0);
+			m_objectTable.setModel(m_objectTableModel);
+		}
+		return m_objectTable;
+	}
+	
+	
+	public void setObjectModels(String[] _models) {
+		for(String model : _models) {
+			m_objectTableModel.addRow(new Object[]{model});
+		}
+	}
+	
 	/**
 	 * This method initializes m_beliefTable
 	 * 
@@ -602,6 +630,16 @@ public class ActionInterfaceFrame extends JFrame {
 	public void removeBelief(WorkingMemoryAddress _address) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public String[] getSelectedObjectModels() {
+		int[] selectedRows = m_objectTable.getSelectedRows();
+		String[] models = new String[selectedRows.length];
+		int modelCount = 0;
+		for(int row : selectedRows) {
+			models[modelCount++] = (String) m_objectTableModel.getValueAt(row, OBJECT_MODEL_COLUMN);
+		}
+		return models;
 	}
 
 }
