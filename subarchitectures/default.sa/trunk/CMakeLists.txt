@@ -16,6 +16,6 @@ include_directories(src/c++/default/autogen)
 
 # Default.SA C++ Components
 add_subdirectory (src/c++/default/components/DefaultKnowledgeLoader)
-add_subdirectory (src/c++/default/components/QdlQueryHandler)
-add_subdirectory (src/c++/default/components/ChainGraphInferencer)
+add_subdirectory (src/c++/default/components/DefaultQdlQueryHandler)
+add_subdirectory (src/c++/default/components/DefaultChainGraphInferencer)
 
