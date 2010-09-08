@@ -32,7 +32,7 @@ module DefaultData
    interface QdlQueryHandlerInterface
    {
 	QueryResults querySelect(string q);
-   }
+   };
 
 };
 #endif // DEFAULTDATA_ICE
