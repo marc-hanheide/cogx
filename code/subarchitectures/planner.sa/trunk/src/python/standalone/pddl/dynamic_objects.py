@@ -6,6 +6,7 @@ import builtin
 
 pddl_module = True
 
+created = predicates.Predicate("created", [types.Parameter("?o", builtin.t_object)], builtin=True)
 unused = predicates.Predicate("unused", [types.Parameter("?o", builtin.t_object)], builtin=True)
 destroyed = predicates.Predicate("not-instantiated", [types.Parameter("?o", builtin.t_object)], builtin=True)
 

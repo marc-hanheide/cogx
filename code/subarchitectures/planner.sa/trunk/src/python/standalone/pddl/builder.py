@@ -1,5 +1,5 @@
 import mapltypes as types
-import scope, predicates, conditions, effects, actions, domain
+import scope, predicates, conditions, effects, actions, domain, state
 from scope import SCOPE_CONDITION, SCOPE_EFFECT, SCOPE_ALL, SCOPE_INIT
 
 # class build(object):
@@ -79,7 +79,17 @@ class Builder(object):
     def dis(self, *args):
         args = [self.get_arg(a) for a in args]
         return conditions.Disjunction(args, self.scope)
-        
+
+    def svar(self, *args):
+        args = [self.get_arg(a) for a in args]
+        #is the first argument a function?
+        if isinstance(args[0], predicates.Function):
+            func = args[0]
+        elif isinstance(args[0], str):
+            func = self.scope.functions.get(args[0], args[1:])
+            if not func:
+                func = self.scope.predicates.get(args[0], args[1:])
+        return state.StateVariable(func, args[1:])
     
 
 # tags = {

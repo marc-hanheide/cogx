@@ -72,6 +72,9 @@ in_domain_axiom = """
 
 mapl_axioms = [kval_axiom, in_domain_axiom]
 
+def prepare_domain(domain):
+    domain.init_rules = []
+
 def action_handler(it, domain):
     domain.actions.append(MAPLAction.parse(it, domain))
     return True
@@ -85,9 +88,14 @@ def durative_handler(it, domain):
     domain.actions.append(action)
     return True
 
+def initrule_handler(it, domain):
+    domain.init_rules.append(InitRule.parse(it, domain))
+    return True
+
 parse_handlers = {
     ":action" : action_handler,
-    ":durative-action" : durative_handler
+    ":durative-action" : durative_handler,
+    ":init-rule" : initrule_handler
     }
 
 def post_parse(domain):
@@ -364,7 +372,73 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
         
         return action
 
+
+class InitRule(actions.Action):
+    def __init__(self, name, args, precondition, effect, domain):
+        actions.Action.__init__(self, name, args, precondition, effect, domain)
+
+    def copy(self, newdomain=None):
+        if not newdomain:
+            newdomain = self.parent
+
+        r = InitRule(self.name, [], None, None, newdomain)
+        r.args = r.copy_args(self.args)
+        
+        if self.precondition:
+            r.precondition = self.precondition.copy(r)
+        if self.effect:
+            r.effect = self.effect.copy(r)
+
+        return r
+
+    def copy_skeleton(self, newdomain=None):
+        """Create a copy of this action's skeleton (name, arguments
+        but not conditions and effects).
+
+        Arguments:
+        newdomain -- if not None, the copy will be created inside this scope."""
+        if not newdomain:
+            newdomain = self.parent
+            
+        r = InitRule(self.name, [], None, None, newdomain)
+        r.args = r.copy_args(self.args)
+        return r
     
+    
+    @staticmethod
+    def parse(it, scope):
+        it.get(":init-rule")
+        name = it.get().token.string
+        next = it.get()
+
+        if next.token.string == ":parameters":
+            params = predicates.parse_arg_list(iter(it.get(list, "parameters")), scope.types)
+            next = it.get()
+        else:
+            params = []
+        
+        rule = InitRule(name, params, None, None, scope)
+
+        try:
+            while True:
+                if next.token.string == ":precondition":
+                    if rule.precondition:
+                        raise ParseError(next.token, "precondition already defined.")
+                    rule.precondition = conditions.Condition.parse(iter(it.get(list, "condition")), rule)
+                elif next.token.string == ":effect":
+                    if rule.effect:
+                        raise ParseError(next.token, "effects already defined.")
+                    rule.effect = effects.Effect.parse(iter(it.get(list, "effect")), rule)
+                else:
+                    raise UnexpectedTokenError(next.token)
+                    
+                next = it.next()
+
+        except StopIteration, e:
+            pass
+            
+        return rule
+
 class MAPLWriter(writer.Writer):
     def write_types(self, _types):
         strings = []
