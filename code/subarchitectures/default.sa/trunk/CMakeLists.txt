@@ -15,18 +15,7 @@ add_subdirectory (src/c++/autogen)
 include_directories(src/c++/autogen)
 
 # Default.SA C++ Components
-option(BUILD_SA_DEFAULT_DEFAULT_KNOWLEDGE_LOADER "Build Default.SA DefaultKnowledgeLoader" NO)
-if (BUILD_SA_DEFAULT_DEFAULT_DEFAULT_KNOWLEDGE_LOADER)
-	add_subdirectory (src/c++/default/components/DefaultKnowledgeLoader)
-endif (BUILD_SA_DEFAULT_DEFAULT_DEFAULT_KNOWLEDGE_LOADER)
-
-option(BUILD_SA_DEFAULT_QDL_QUERY_HANDLER "Build Default.SA QdlQueryHandler" NO)
-if (BUILD_SA_DEFAULT_QDL_QUERY_HANDLER)
-	add_subdirectory (src/c++/default/components/QdlQueryHandler)
-endif (BUILD_SA_DEFAULT_QDL_QUERY_HANDLER)
-
-option(BUILD_SA_DEFAULT_CHAIN_GRAPH_INFERENCER "Build Default.SA ChainGraphInferencer" NO)
-if (BUILD_SA_DEFAULT_CHAIN_GRAPH_INFERENCER)
-	add_subdirectory (src/c++/default/components/ChainGraphInferencer)
-endif (BUILD_SA_DEFAULT_CHAIN_GRAPH_INFERENCER)
+add_subdirectory (src/c++/default/components/DefaultKnowledgeLoader)
+add_subdirectory (src/c++/default/components/QdlQueryHandler)
+add_subdirectory (src/c++/default/components/ChainGraphInferencer)
 
