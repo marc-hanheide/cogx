@@ -1,10 +1,10 @@
 GARNAME = mercury-compiler
-GARVERSION = rotd-2009-10-05
+GARVERSION = 10.04.1
 CATEGORIES = bootstrap
 MAINTAINER = fsiepman
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 
-MASTER_SITES = http://www.mercury.cs.mu.oz.au/download/files/beta-releases/rotd/
+MASTER_SITES = http://www.mercury.csse.unimelb.edu.au/download/files/
 #PATCHFILES= gar-base.diff
 
 # no parallel build due to problems of player make scheme
