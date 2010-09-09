@@ -15,11 +15,15 @@
  */
 #include "CDisplayClient.hpp"
 
+#include "CDisplayServer.hpp"
+ 
+
 #include <sstream>
 #include <sstream>
 #include <Ice/Ice.h>
 #include <IceUtil/IceUtil.h>
 #include <cast/core/CASTUtils.hpp>
+#include <cast/core/CASTComponent.hpp>
 
 using namespace std;
 using namespace cast;
@@ -28,9 +32,10 @@ namespace cogx { namespace display {
 
 CDisplayClient::CDisplayClient()
 {
-   m_serverName = "display.srv";
-   m_pServer = NULL;
-   m_pOwner = NULL;
+  m_standaloneHost = "";
+  m_serverName = "display.srv";
+  m_pServer = NULL;
+  m_pOwner = NULL;
 }
 
 CDisplayClient::~CDisplayClient()
@@ -44,6 +49,12 @@ void CDisplayClient::configureDisplayClient(const map<string,string> & _config)
    if((it = _config.find("--displayserver")) != _config.end()) {
       m_serverName = it->second;
    }
+
+   if((it = _config.find("--standalone-display-host")) != _config.end()) {
+      m_standaloneHost = it->second;      
+   }
+   
+
 }
 
 void CDisplayClient::connectIceClient(CASTComponent& owner)
@@ -58,18 +69,38 @@ void CDisplayClient::connectIceClient(CASTComponent& owner)
      owner.log("CDisplayClient already connected to server.");
    }
 
-   if (m_serverName.empty()) {
-      //throw runtime_error(exceptionMessage(__HERE__,
-      //      "DisplayServer server id not set. Use --display-server-id."));
-      owner.println(" *** DisplayServer server id not set. Use --displayserver.");
-   }
 
-   try {
-     m_pServer = owner.getIceServer<Visualization::DisplayInterface>(m_serverName);
-     owner.debug("CDisplayClient Connected.");
+   //look for a standalone host if this is set
+   if(!m_standaloneHost.empty()) {
+     owner.log("CDisplayClient connecting to standalone server on %s", m_standaloneHost.c_str());
+     try {
+       
+       Ice::ObjectPrx prx = owner.getIceServer(Visualization::V11NSTANDALONENAME,m_pOwner->toServantCategory<Visualization::DisplayInterface>(),
+					       m_standaloneHost,Visualization::V11NSTANDALONEPORT);
+       
+       m_pServer = Visualization::DisplayInterfacePrx::checkedCast(prx);
+       owner.println("CDisplayClient connected to standalone server.");
+     }
+     catch (...) {
+       owner.println(" *** CDisplayClient could not connect standalone server on to '%s'.", m_standaloneHost.c_str());
+     }
+     
    }
-   catch (...) {
-     owner.debug(" *** CDisplayClient could not connect to '%s'.", m_serverName.c_str());
+   else {
+
+     if (m_serverName.empty()) {
+       //throw runtime_error(exceptionMessage(__HERE__,
+       //      "DisplayServer server id not set. Use --display-server-id."));
+       owner.println(" *** DisplayServer server id not set. Use --displayserver.");
+     }
+     
+     try {
+       m_pServer = owner.getIceServer<Visualization::DisplayInterface>(m_serverName);
+       owner.debug("CDisplayClient Connected.");
+     }
+     catch (...) {
+       owner.println(" *** CDisplayClient could not connect to '%s'.", m_serverName.c_str());
+     }
    }
 }
 
@@ -96,7 +127,8 @@ void CDisplayClient::installEventReceiver() throw(std::runtime_error)
    debug(id.name + id.category);
    m_pEventReceiverIceSrv = new CEventReceiverI(this);
    m_pOwner->registerIceServer<Visualization::EventReceiver>(id.name, id.category, m_pEventReceiverIceSrv);
-   m_pServer->addClient(id);
+   const string & myHost(m_pOwner->getComponentManager()->getComponentDescription(m_pOwner->getComponentID()).hostName);      
+   m_pServer->addClient(id,myHost,cast::cdl::CPPSERVERPORT);
    debug("CDisplayClient EventReceiver installed.");
 }
 
@@ -350,7 +382,8 @@ void CActiveDisplayClient::installEventReceiver()
    id.category = "Visualization_EventReceiver";
    m_pEventReceiverIceSrv = new CEventReceiverI(this);
    m_pOwner->registerIceServer<Visualization::EventReceiver>(id.name, id.category, m_pEventReceiverIceSrv);
-   m_pServer->addClient(id);
+   const string & myHost(getComponentManager()->getComponentDescription(getComponentID()).hostName);
+   m_pServer->addClient(id, myHost, cast::cdl::CPPSERVERPORT);
    m_pOwner->debug("CDisplayClient EventReceiver installed.");
 }
 
