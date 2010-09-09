@@ -1194,7 +1194,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
     }
 #endif
 
-    if (m_ShowAreaClass && !fnode->gateway) 
+    if (m_ShowAreaClass && !fnode->gateway) { 
 	    // add translucent area circle
         peekabot::CylinderProxy acp;
         char name2[32];
