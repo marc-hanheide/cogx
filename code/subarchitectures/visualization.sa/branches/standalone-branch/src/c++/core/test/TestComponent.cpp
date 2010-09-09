@@ -7,6 +7,7 @@
 
 #include <highgui.h>
 #include <VideoUtils.h>
+#include <convenience.hpp>
 #include "TestComponent.hpp"
 
 /**
@@ -26,39 +27,6 @@ extern "C"
 #include <fstream>
 #include <iomanip>
 #include <ctime>
-
-std::string sfloat(double f, int precision=6)
-{
-   std::ostringstream out;
-   out << std::fixed << std::setprecision(precision) << f;
-   return out.str();
-}
-
-long long gethrtime(void)
-{
-  struct timespec sp;
-  int ret;
-  long long v;
-#ifdef CLOCK_MONOTONIC_HR
-  ret=clock_gettime(CLOCK_MONOTONIC_HR, &sp);
-#else
-  ret=clock_gettime(CLOCK_MONOTONIC, &sp);
-#endif
-  if(ret!=0) return 0;
-  v=1000000000LL; /* seconds->nanonseconds */
-  v*=sp.tv_sec;
-  v+=sp.tv_nsec;
-  return v;
-}
-
-double fclocks()
-{
-   // clock() is not working correctly
-   // return ( (double) clock()) / CLOCKS_PER_SEC;
-   return 1e-9 * gethrtime();
-}
-// --------------------------
-
 
 namespace cogx { namespace test {
 

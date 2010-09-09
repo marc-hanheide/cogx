@@ -282,7 +282,7 @@ private:
 public:
    void startEventServer();
    void destroyEventServer(); 
-   virtual void addClient(const Ice::Identity& ident, const Ice::Current& current); 
+  virtual void addClient(const Ice::Identity& ident, const std::string & host, Ice::Int port, const Ice::Current& current); 
    void addOperation(CQueuedOperation* pOperation);
 };
 
