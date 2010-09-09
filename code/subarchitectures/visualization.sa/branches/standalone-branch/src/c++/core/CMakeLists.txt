@@ -3,10 +3,7 @@ project(VisualizationCore)
 
 #set(VERBOSE 1)
 
-find_package(OpenCV REQUIRED)
-include_directories(${OPENCV_INCLUDE_DIRS})
-link_directories(${OPENCV_LIBRARY_DIRS})
-add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+
 
 option(BUILD_SA_V11N_SERVER "Build the visualisation display server" YES)
 if(BUILD_SA_V11N_SERVER)
@@ -18,7 +15,8 @@ include_directories(${QT_INCLUDE_DIR})
 include_directories(${QT_QTOPENGL_INCLUDE_DIR})
 
 #nah: mac-specific hack as cmake appears to be generating the wrong include path for QtOpenGL
-include_directories(/opt/local/libexec/qt4-mac/include/QtOpenGL)
+include_directories(/Library/Frameworks/QtOpenGL.framework/Headers)
+
 
 #nah: need to find library paths for OpenGL on OSX as it's different from linux
 find_package(OpenGL REQUIRED)  
@@ -167,14 +165,17 @@ add_cast_component(DisplayServer
    )
 
 link_cast_component(${CAST_COMPONENT_NAME}
-   VisualizationData Math Video VideoUtils
+   VisualizationData 
    # CogxIceAutogen   
    ${QT_LIBRARIES}
+ ${QT_QTWEBKIT_LIBRARY}
    ${QT_QTSVG_LIBRARY}
-   ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES}
-   ${TOMGINE_LIBS}
-   ${Boost_LIBRARIES}
-   ${EXPERIMENT_LIB}   
+   ${QT_QTOPENGL_LIBRARY} 
+  ${OPENGL_LIBRARIES}
+   #${TOMGINE_LIBS}
+   #${Boost_LIBRARIES}
+   #${EXPERIMENT_LIB} 
+
    )
 
 
@@ -183,6 +184,11 @@ endif(BUILD_SA_V11N_SERVER)
 
 option(BUILD_SA_V11N_CLIENT "Build the visualisation display client library" YES)
 if(BUILD_SA_V11N_CLIENT)
+
+	find_package(OpenCV REQUIRED)
+	include_directories(${OPENCV_INCLUDE_DIRS})
+	link_directories(${OPENCV_LIBRARY_DIRS})
+	add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
 add_cast_component(DisplayClient CDisplayClient.cpp CFormValues.cpp)
 link_cast_component(${CAST_COMPONENT_NAME}
@@ -199,3 +205,20 @@ if(BUILD_SA_V11N_TESTS)
 endif(BUILD_SA_V11N_TESTS)
 
 
+option(BUILD_SA_V11N_STANDALONE "Build the standalone display server for V11N" ON)
+
+if(BUILD_SA_V11N_STANDALONE)
+  set(sources StandaloneDisplayServer.cpp)
+
+  add_executable (display-server ${sources}) 
+
+  target_link_libraries(display-server DisplayServer)
+
+IF (APPLE)
+   FIND_LIBRARY(COREFOUNDATION_LIBRARY CoreFoundation )
+   target_link_libraries(display-server ${COREFOUNDATION_LIBRARY})
+ENDIF (APPLE)
+
+install(TARGETS display-server RUNTIME DESTINATION bin)
+
+endif(BUILD_SA_V11N_STANDALONE)
