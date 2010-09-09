@@ -11,6 +11,7 @@
 ^/code/subarchitectures/vision.sa/trunk                 subarchitectures/vision.sa
 ^/code/subarchitectures/visualization.sa/trunk          subarchitectures/visualization.sa
 
+^/code/tools/alchemy                              tools/alchemy
 ^/code/tools/beliefmodels/trunk                   tools/beliefmodels
 ^/code/tools/beliefs/trunk                        tools/beliefs
 ^/code/tools/camcalb2/trunk                       tools/camcalb2
@@ -39,6 +40,12 @@
 ^/code/tools/scripts/trunk                        tools/scripts
 ^/code/tools/testing/trunk                        tools/testing
 
+# Scenarios
+^/code/scenarios/george/trunk			scenarios/george
+^/code/scenarios/dora/trunk			scenarios/dora
+
 # Obsolete
 # ^/code/subarchitectures/comsys/trunk                    subarchitectures/comsys
 # ^/code/subarchitectures/nav.sa/trunk                    subarchitectures/nav.sa
+
+
