@@ -48,16 +48,23 @@ private:
    QCastMainFrame *pMainFrame;
    CDisplayServerIPtr hIceDisplayServer;
 
-public:
-   CDisplayServer();
-   ~CDisplayServer();
-
+protected:
    // CASTComponent methods
    virtual void configure(const std::map<std::string,std::string> & _config)
          throw(std::runtime_error);
    virtual void start();
    virtual void runComponent();
 
+
+public:
+   CDisplayServer();
+   ~CDisplayServer();
+
+    
+    /// nah: extra method to allow standalone server access to functionality.
+    virtual void run(); 
+    
+    
    // TODO: CDisplayServer Methods
    // These methods will be called by the ICE server to perform the real work.
    // The methods have the same prototype as the methods created by slice2cpp,
