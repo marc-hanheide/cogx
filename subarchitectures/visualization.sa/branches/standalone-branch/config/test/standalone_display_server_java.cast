@@ -1,0 +1,14 @@
+HOST localhost
+
+# SUBARCHITECTURE binder
+# JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+# JAVA WM binder.components.BindingWorkingMemory #--log
+
+# JAVA MG bmvisualizer beliefmodels.util.viewer.BeliefModelChartViewer #--log
+
+SUBARCHITECTURE somethingelse
+JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+JAVA WM cast.architecture.SubarchitectureWorkingMemory #--log
+
+JAVA MG java.test.client si.unilj.fri.cogx.v11n.test.V11nJavaTestComponent --standalone-display-host localhost --debug true
+
