@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>724</width>
+    <height>511</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>CAST Viewer</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QViewContainer" name="drawingArea">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QCastView" name="_cast_view_unused" native="true">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>200</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>724</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="actViewSelectSubmenu"/>
+    <addaction name="separator"/>
+    <addaction name="actShowViewList"/>
+    <addaction name="actRefreshViewList"/>
+   </widget>
+   <widget class="QMenu" name="menuQuit">
+    <property name="title">
+     <string>&amp;Window</string>
+    </property>
+    <addaction name="actNewWindow"/>
+    <addaction name="actCloseSomeWindows"/>
+    <addaction name="separator"/>
+    <addaction name="actSaveWindowLayout"/>
+    <addaction name="actRestoreWindowLayout"/>
+   </widget>
+   <addaction name="menuQuit"/>
+   <addaction name="menu_View"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>Views</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <item>
+      <widget class="QListWidget" name="listWidget">
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCustomGuiPanel" name="wgCustomGui">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="actShowViewList">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show list of &amp;views</string>
+   </property>
+   <property name="toolTip">
+    <string>Show list of views</string>
+   </property>
+  </action>
+  <action name="actRefreshViewList">
+   <property name="text">
+    <string>&amp;Refresh list of views</string>
+   </property>
+  </action>
+  <action name="actNewWindow">
+   <property name="text">
+    <string>&amp;New window</string>
+   </property>
+  </action>
+  <action name="actSaveWindowLayout">
+   <property name="text">
+    <string>&amp;Save window layout</string>
+   </property>
+  </action>
+  <action name="actCloseSomeWindows">
+   <property name="text">
+    <string>Close some windows</string>
+   </property>
+  </action>
+  <action name="actRestoreLayoutStartup">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Restore Layout at Startup</string>
+   </property>
+  </action>
+  <action name="actRestoreWindowLayout">
+   <property name="text">
+    <string>&amp;Restore window layout</string>
+   </property>
+  </action>
+  <action name="actViewSelectSubmenu">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Select</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCastView</class>
+   <extends>QWidget</extends>
+   <header>qtui/QCastView.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QCustomGuiPanel</class>
+   <extends>QFrame</extends>
+   <header>qtui/QCustomGuiPanel.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QViewContainer</class>
+   <extends>QFrame</extends>
+   <header>qtui/QViewContainer.hpp</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="jquery.qrc"/>
+ </resources>
+ <connections/>
+</ui>
