@@ -482,6 +482,7 @@ namespace spatial
     m_lgm = m_lgms[atoi(id)];
     log("Changed current room id to: %d, pointing maps to this.", atoi(id));
   }
+
   double VisualObjectSearch::GetStrategyCost(std::vector<std::string> policy){
     double StrategyCost;
     std::string room = policy[0];
@@ -497,87 +498,205 @@ namespace spatial
       getStructuredStrategy(policy[i], singleStrategy);
       getStructuredStrategy(policy[i-1], prevStrategy);
       unsigned int j=0;
+      vector<ObjectPairRelation> strategyStep;
       for(j=0; j < prevStrategy.size(); j++){
 	if (prevStrategy[j].relation != singleStrategy[j].relation || prevStrategy[j].primaryobject != singleStrategy[j].primaryobject || prevStrategy[j].secobject != singleStrategy[j].secobject)
 	  break;
       }
-      log("novel # of relations: %d", singleStrategy.size() -j );
-      if( singleStrategy.size() - j == 1){
-	// this means the secobject of the head of current strategy was the first object of the previous one.
-	// so ask for only the head relation
-
-
-	if (singleStrategy.back().secobject.find("room") != string::npos){
-	  // FIXME: Handle the case there A in room1
-	  log("uniform search skipping for now");
-	  continue;
-	}
-
-	log("indirect");
-	FrontierInterface::WeightedPointCloudPtr queryCloud = new FrontierInterface::WeightedPointCloud;
-	std::vector<std::string> labels;
-	std::vector<FrontierInterface::ObjectRelation> relations;
-	labels.push_back(singleStrategy.back().primaryobject);
-	relations.push_back(singleStrategy.back().relation);
-	labels.push_back(singleStrategy.back().secobject);
-	log("Asking for: %s , %s, %s", labels[0].c_str(), (relations[0] == FrontierInterface::ON ? "ON" : "IN"), singleStrategy.back().secobject.c_str());
-	FrontierInterface::ObjectPriorRequestPtr objreq =
-	  new FrontierInterface::ObjectPriorRequest;
-	objreq->relationTypes = relations; // ON or IN or whatnot
-	objreq->objects = labels;	// Names of objects, starting with the query object
-	objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
-	objreq->outCloud = queryCloud;	// Data struct to receive output
-	objreq->totalMass = 1.0;
-	//FIXME: Here we must give a fake pos for the sec object since we must have found it in the previous
-	// step.
-	gotPC = false;
-	addToWorkingMemory(newDataID(), objreq);
-	// wait for the PC to arrive
-	while(!gotPC)
-	  usleep(2500);
-	log("got PC for indirect search");
-
-	// Do KDE here!
-
+      for(;j < singleStrategy.size(); j++) {
+	strategyStep.push_back(singleStrategy[j]);
       }
-      else if(singleStrategy.size() -j > 1)
-      {
-	// the new bits are more than just one relations, this is indication that we are going for direct 
-	// search
-	log("direct");
 
-	FrontierInterface::WeightedPointCloudPtr queryCloud = new FrontierInterface::WeightedPointCloud;
-	std::vector<std::string> labels;
-	std::vector<FrontierInterface::ObjectRelation> relations;
-	// push backs are not in a loop because we know that we can never have more than 2 unknown objects i.e. A in B in r1 is OK but not A in B in C in r1
+      double costThisStep = 0.0;
 
-	labels.push_back(singleStrategy.back().primaryobject);
-	relations.push_back(singleStrategy.back().relation);
-	labels.push_back(singleStrategy.back().secobject);
+      log("novel # of relations: %d", strategyStep.size() );
 
-	ObjectPairRelation &baseObj = *(singleStrategy.end()-2);
+	  // Set up query
+	  std::vector<std::string> labels;
+	  std::vector<FrontierInterface::ObjectRelation> relations;
 
-	if (baseObj.secobject.find("room") == string::npos) {
-	  relations.push_back(baseObj.relation);
-	  labels.push_back(baseObj.secobject);
+	  labels.push_back(strategyStep.back().primaryobject);
+	  string logstring = "Asking for: ";
+	  logstring = logstring + labels.back();
+	  for (vector<ObjectPairRelation>::iterator it = strategyStep.begin();
+	      it != strategyStep.end(); it++) {
+	    labels.push_back(it->secobject);
+	    relations.push_back(it->relation);
+	    logstring = logstring + (it->relation == FrontierInterface::ON ? 
+	      string("ON") : string("IN"));
+	    logstring = logstring + it->secobject;
+	  }
+	  log(logstring.c_str());
+
+	  FrontierInterface::WeightedPointCloudPtr queryCloud = 
+	    new FrontierInterface::WeightedPointCloud;
+	  FrontierInterface::ObjectPriorRequestPtr objreq =
+	    new FrontierInterface::ObjectPriorRequest;
+	  objreq->relationTypes = relations; // ON or IN or whatnot
+	  objreq->objects = labels;	// Names of objects, starting with the query object
+	  objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
+	  objreq->outCloud = queryCloud;	// Data struct to receive output
+	  objreq->totalMass = 1.0;
+
+
+      if (strategyStep.front().secobject.find("room") != string::npos) {
+	// Search is uniform in the room (possibly direct informed)
+	//TODO: extract roomID
+
+	// Now, check if there's just one object left
+
+	if (strategyStep.size() == 1) {
+	  // If so, do uniform search without asking for a point cloud
+	  InitializePDFForObject(1.0, strategyStep[0].primaryobject);
+
+	  double cost = 0.0;
+	  //TODO: Compute cost
+	  costThisStep = cost;
 	}
-	log("Asking for: %s , %s, %s", labels[0].c_str(), (relations[0] == FrontierInterface::ON ? "ON" : "IN"), singleStrategy.back().secobject.c_str());
+	else {
+	  // There's more than one relation. 
+	  // Strip off the "in room" relation from the policy for purposes
+	  // of relation query
+	  strategyStep.erase(strategyStep.begin());
+	  // Get the uninformed sample cloud from the ORM
 
-	FrontierInterface::ObjectPriorRequestPtr objreq =
-	  new FrontierInterface::ObjectPriorRequest;
-	objreq->relationTypes = relations; // ON or IN or whatnot
-	objreq->objects = labels;	// Names of objects, starting with the query object
-	objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
-	objreq->outCloud = queryCloud;	// Data struct to receive output
-	objreq->totalMass = 1.0;
-	addToWorkingMemory(newDataID(), objreq);
+	  GridMapData def;
+	  def.occupancy = FREE;
+	  SpatialGridMap::GridMap<GridMapData> tmpMap(m_gridsize, m_gridsize, m_cellsize, m_minbloxel,
+	      0, m_mapceiling, 0, 0, 0, def);
 
-	while(!gotPC)
-	  usleep(2500);
-	log("got PC for direct search");
-	//wait for the PC to arrive
+	  // Send request and wait for reply
+	  m_bEvaluation = true;
+	  addToWorkingMemory(newDataID(), objreq);
+
+	  while(!gotPC)
+	    usleep(2500);
+	  log("got PC for direct search");
+
+	  FrontierInterface::WeightedPointCloudPtr cloud =
+	    m_priorreq->outCloud;
+
+	  vector<pair<int, int> >obstacleCells;
+	  const unsigned int nTargetKernelSamples = 100;
+	  const int step1 = 20;
+	  const int step2 = 1;
+
+	  // Form a diagonal striped pattern of samples across the map
+	  // This is a dirty trick, as it assumes the spatial frequency is low along the diagonal
+	  while (obstacleCells.size() < nTargetKernelSamples) {
+	    int offset1 = rand()%step1;
+	    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+	      for (int y = -m_lgm->getSize() + (offset1+(x+m_lgm->getSize())*step2)%step1 ; y <= m_lgm->getSize(); y+=step1) {
+		int bloxelX = x + m_lgm->getSize();
+		int bloxelY = y + m_lgm->getSize();
+		for (int x2 = x-1; x2 <= x+1; x2++) {
+		  if (x2 >= -m_lgm->getSize() && x2 <= m_lgm->getSize()) {
+		    for (int y2 = y-1; y2 <= y+1; y2++) {
+		      if (y2 >= -m_lgm->getSize() && y2 <= m_lgm->getSize()) {
+			if ((*m_lgm)(x2,y2) == '1' || (*m_lgm)(x2,y2) == '3') {
+			  obstacleCells.push_back(make_pair<int>(bloxelX, bloxelY));
+			}
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+
+	  vector<Vector3> centers;
+	  for(unsigned int i = 0; i < obstacleCells.size(); i++) {
+	    // place a KDE cloud around it, with the center given
+	    // by the relation manager (which includes a z-coordinate
+	    // for tables, desks etc)
+	    int bloxelX = obstacleCells[i].first;
+	    int bloxelY = obstacleCells[i].second;
+	    pair<double, double> kernelCoords = 
+	      tmpMap.gridToWorldCoords(bloxelX, bloxelY);
+	    cloud->center.x = kernelCoords.first;
+	    cloud->center.y = kernelCoords.second;
+	    centers.push_back(cloud->center);
+	  }
+
+	  m_sampler.kernelDensityEstimation3D(tmpMap, 
+	      centers,
+	      cloud->interval,
+	      cloud->xExtent,
+	      cloud->yExtent,
+	      cloud->zExtent,
+	      cloud->values,
+	      1.0/(m_lgm->getSize()), //Just an ad-hoc guess
+	      1.0,
+	      m_lgm);
+	  normalizePDF(tmpMap,1.0);
+
+	  double cost = 0.0;
+	  // TODO: Compute cost
+	  costThisStep = cost;
+	}
       }
-      log("\n");
+      else {
+	// This step doesn't begin with the room; this means it's
+	// an indirect search. 
+
+	// TODO: check cache for strategyStep
+
+
+	// Assume a number of poses for the base object, and
+	// create and query a sample cloud for each
+	// KDE and compute cost for each, then average the costs
+
+	// Select hypothesical poses for base object
+	vector<Pose3> baseObjectPoses;
+	baseObjectPoses.push_back(Pose3());
+	// TODO: Some more poses!
+
+	for (vector<Pose3>::iterator it = baseObjectPoses.begin(); 
+	    it != baseObjectPoses.end(); it++) {
+	  GridMapData def;
+	  def.occupancy = FREE;
+	  SpatialGridMap::GridMap<GridMapData> tmpMap(m_gridsize, m_gridsize, m_cellsize, m_minbloxel,
+	      0, m_mapceiling, 0, 0, 0, def);
+
+	  // Fill in the hypothetical pose in question
+	  objreq->baseObjectPose.clear();
+	  objreq->baseObjectPose.push_back(*it);
+
+	  // Send request and wait for reply
+	  m_bEvaluation = true;
+	  addToWorkingMemory(newDataID(), objreq);
+
+	  while(!gotPC)
+	    usleep(2500);
+	  log("got PC for direct search");
+
+	  FrontierInterface::WeightedPointCloudPtr cloud =
+	    m_priorreq->outCloud;
+
+	  // Do KDE for this object
+	  vector<Vector3> centers;
+	  centers.push_back(cloud->center);
+	  m_sampler.kernelDensityEstimation3D(tmpMap,
+	      centers,
+	      cloud->interval,
+	      cloud->xExtent,
+	      cloud->yExtent,
+	      cloud->zExtent,
+	      cloud->values,
+	      1.0,
+	      1.0,
+	      m_lgm
+	      );
+
+	  double cost = 0.0;
+	  // Compute cost for this map and object
+	  costThisStep += cost / baseObjectPoses.size();
+	}
+	// TODO: Save cached cost
+      }
+
+
+      StrategyCost += costThisStep;
     }	 
     return StrategyCost;
   }
@@ -1416,10 +1535,11 @@ namespace spatial
 	FrontierInterface::WeightedPointCloudPtr cloud =
 	  req->outCloud;
 
-	if (m_bSimulation){
+	if (m_bSimulation || m_bEvaluation){
 	  log("in simulation");
 	  m_priorreq = req;
 	  gotPC = true;
+	  m_bEvaluation = false;
 	  return;
 	}
 	vector<Vector3> centers;

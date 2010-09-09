@@ -165,6 +165,7 @@ namespace spatial
 
       FrontierInterface::ObjectPriorRequestPtr m_priorreq;
       bool m_bSimulation;
+      bool m_bEvaluation;
       bool gotPC;
       std::string currentTarget;
       std::string targetObject;
