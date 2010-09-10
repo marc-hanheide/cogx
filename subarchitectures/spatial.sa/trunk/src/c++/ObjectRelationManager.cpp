@@ -941,8 +941,12 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	//      log("3");
 	if (obsObject->type == OBJECT_PLANE ||
 	    //FIXME
-	    obsLabel == "table" || obsLabel == "bookcase_sm" ||
-	    obsLabel == "bookcase_lg") {
+	      obsLabel == "table1" ||
+	      obsLabel == "table2" ||
+	      obsLabel == "bookcase_sm" ||
+	      obsLabel == "bookcase_lg" ||
+	      obsLabel == "shelves" ||
+	      obsLabel == "desk"){
 	  // Flatten pose for plane objects
 	  if (pose.rot.m00 == 0.0 && pose.rot.m10 == 0.0) {
 	    setIdentity(pose.rot);
@@ -1640,19 +1644,24 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       request->outCloud->center += m_objects[supportObjectLabel]->pose.pos;
     }
     // Hard-coded z-coordinates of some floor-bound objects
-    else if (supportObjectLabel == "table") {
+    else if (supportObjectLabel == "table1") {
       request->outCloud->center.z += 0.45-0.225;
     }
-//    else if (supportObjectLabel == "desk") {
-//      request->outCloud->center.z += 0.75-0.05;
-//    }
+    else if (supportObjectLabel == "table2") {
+      request->outCloud->center.z += 0.72-0.36;
+    }
+    else if (supportObjectLabel == "desk") {
+      request->outCloud->center.z += 0.75-0.05;
+    }
     else if (supportObjectLabel == "bookcase_sm") {
       request->outCloud->center.z += 0.75+0.08;
     }
     else if (supportObjectLabel == "bookcase_lg") {
       request->outCloud->center.z += 0.965+0.08;
     }
-
+    else if (supportObjectLabel == "shelves") {
+      request->outCloud->center.z += 1.075+0.00;
+    }
 
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
   }

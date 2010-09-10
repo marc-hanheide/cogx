@@ -528,8 +528,6 @@ DensitySampler::sampleBinaryRelationSystematically(
   bool randomizeBaseObjectPose = false;
 
   if (supportObject->pose.pos.x == -FLT_MAX) {
-//    cerr << "Error! Support object pose uninitialized!\n";
-//    return;
     randomizeBaseObjectPose = true;
     supportObject->pose.pos = vector3(0,0,0);
   }

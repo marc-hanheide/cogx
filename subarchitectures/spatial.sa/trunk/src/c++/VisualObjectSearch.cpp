@@ -738,9 +738,11 @@ namespace spatial
 	  // Randomize orientations for involved objects, unless we already have such
 	  vector<Matrix33> orientations;
 	  if (//FIXME
-	      baseObject == "table" ||
+	      baseObject == "table1" ||
+	      baseObject == "table2" ||
 	      baseObject == "bookcase_sm" ||
 	      baseObject == "bookcase_lg" ||
+	      baseObject == "shelves" ||
 	      baseObject == "desk"){
 	    getRandomSampleCircle(orientations, 6);
 	  }
@@ -1109,7 +1111,10 @@ namespace spatial
     if (map == 0)
       map = m_map;
     double height;
-    if (label == "table") {
+    if (label == "table1") {
+      height = 0.45-0.225;
+    }
+    if (label == "table2") {
       height = 0.45-0.225;
     }
     else if (label == "bookcase_sm") {
@@ -1118,8 +1123,11 @@ namespace spatial
     else if (label == "bookcase_lg") {
       height = 0.965+0.08;
     }
+    else if (label == "shelves") {
+      height = 1.075+0.00;
+    }
     else if (label == "desk") {
-      height = 0.75-.05;
+      height = 0.75-0.05;
     }
     else {
       return;
@@ -2416,14 +2424,20 @@ namespace spatial
     VisualObjectSearch::SetCurrentTarget(const string &label) {
       currentTarget = label;
       double objectSize = 0.5;
-      if (label == "table") {
+      if (label == "table1") {
 	objectSize = 1.1;
+      }
+      if (label == "table2") {
+	objectSize = 1.8;
       }
       else if (label == "bookcase_sm") {
 	objectSize = 1.5;
       }
       else if (label == "bookcase_lg") {
 	objectSize = 1.93;
+      }
+      else if (label == "shelves") {
+	objectSize = 2.15;
       }
       else if (label == "desk") {
 	objectSize = 2.0;
@@ -2433,6 +2447,9 @@ namespace spatial
       }
       else if (label == "dell") {
 	objectSize = 0.49;
+      }
+      else if (label == "metalbox") {
+	objectSize = 0.76;
       }
       else if (label == "book") {
 	objectSize = 0.19;
