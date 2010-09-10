@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 //der DOMParser von Xerces
 import org.apache.xerces.parsers.DOMParser;
 
-// Java-Interfaces für die Knotentypen des DOM
+// Java-Interfaces for die Knotentypen des DOM
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
