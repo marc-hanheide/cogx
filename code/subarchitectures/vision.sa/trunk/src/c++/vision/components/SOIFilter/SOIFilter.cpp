@@ -967,6 +967,38 @@ vector<CvScalar> SOIFilter::colorFilter( vector<CvScalar> colors, vector<CvScala
 
 }
 
+vector<SurfacePoint> SOIFilter::sample3DPoints(vector<SurfacePoint> points, int newSize)
+{
+  vector<SurfacePoint> fltPoints;
+  srand (time(NULL));
+  
+  int fsize = points.size()-newSize;
+  
+  if( fsize >= newSize)
+  {
+	for(int i=points.size()-1; i>=fsize; i--)
+	{
+	  int r = rand()%i;
+	  fltPoints.push_back(points[r]);
+	  points.erase(points.begin() + r);
+	}
+	
+	return fltPoints;
+  }
+  else
+  {
+	for(int i=points.size()-1; i>=newSize; i--)
+	{
+	  int r = rand()%i;
+	  fltPoints.push_back(points[r]);
+	  points.erase(points.begin() + r);
+	}
+	
+	return points;
+	
+  }	  
+}
+
 
 IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, vector<SurfacePoint> allSurfPoints, float hueSigma, float distSigma, bool distcost)
 {
@@ -1010,11 +1042,13 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
   if(filterFlag) //HACK
   {
 	if (surfPoints.size() > MAX_COLOR_SAMPLE)
-	  surfPoints.resize(MAX_COLOR_SAMPLE);
+	  surfPoints = sample3DPoints(surfPoints, MAX_COLOR_SAMPLE);
+//	  surfPoints.resize(MAX_COLOR_SAMPLE);
   }
   else
 	if (surfPoints.size() > MAX_COLOR_SAMPLE*3/4)
-	  surfPoints.resize(MAX_COLOR_SAMPLE*3/4);
+	  surfPoints = sample3DPoints(surfPoints, MAX_COLOR_SAMPLE*3/4);
+//	  surfPoints.resize(MAX_COLOR_SAMPLE*3/4);
 
   int colorKval = min(surfPoints.size(), (size_t) MAX_COLOR_SAMPLE)/HUE_K_RATIO + 1;
   
