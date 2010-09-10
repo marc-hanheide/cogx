@@ -190,18 +190,37 @@ module ref {
 	// @version	090921
 	//---------------------------------------------------------------------------
 	
-	class RefReading extends BaseData { 
+	class RefReading extends BaseData { // outdated
 		string lfId;
 		stringIds restrictiveTrees;
 		stringIds attributiveTrees;
-	}; 
+	};
 	
-	sequence<RefReading> Readings;
+	sequence<RefReading> Readings; // outdated
 
-	class RefReadings extends BaseData {
+	class RefReadings extends BaseData { //outdated
 		Readings refRdngs; 
-	}; 
-	
+	};
+
+	class RefHypo extends BaseData {
+		string beliefId;
+		double prob;
+	};
+
+	sequence<RefHypo> RefHypoSeq;
+
+	class NominalRef extends BaseData {
+		string nominal;
+		RefHypoSeq hypos;
+	};
+
+	sequence<NominalRef> NominalRefSeq;
+
+	class RefLogicalForm extends BaseData {
+		lf::LogicalForm lform;
+		NominalRefSeq refs;
+	};
+
 }; // end module
 
 // ===================================================================

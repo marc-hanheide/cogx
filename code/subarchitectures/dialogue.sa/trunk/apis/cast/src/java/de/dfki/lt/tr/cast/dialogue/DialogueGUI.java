@@ -155,8 +155,8 @@ implements TRResultListener
         m_proposedProcessing.put(taskID, pd);
 		// set the goal
         String taskGoal = DialogueGoals.ASR_TASK;
-        System.out.println("ID: " + taskID);
-        System.out.println("goal: " + taskGoal);
+//        System.out.println("ID: " + taskID);
+//        System.out.println("goal: " + taskGoal);
 		// store the goal with its information
         proposeInformationProcessingTask(taskID, taskGoal);
 	}

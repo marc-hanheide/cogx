@@ -26,6 +26,10 @@ public class Rule {
     _tracer = t;
   }
 
+  public static RuleTracer getTracing() {
+    return _tracer;
+  }
+
   /** Create a new rule: bind the left and right hand side */
   public Rule(List<VarMatch> match, List<Action> right) {
     _matches = match;
