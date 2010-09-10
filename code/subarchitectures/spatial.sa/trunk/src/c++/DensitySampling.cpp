@@ -594,9 +594,11 @@ DensitySampler::sampleBinaryRelationSystematically(
 	    if (!tryLoadOrientationsFromFile(supportObjectLabel)) {
 	      if (supportObject->type == OBJECT_PLANE ||
 		  // FIXME
-		  supportObjectLabel == "table" ||
+		  supportObjectLabel == "table1" ||
+		  supportObjectLabel == "table2" ||
 		  supportObjectLabel == "bookcase_sm" ||
 		  supportObjectLabel == "bookcase_lg" ||
+		  supportObjectLabel == "shelves" ||
 		  supportObjectLabel == "desk"){
 		getRandomSampleCircle(m_objectOrientations[supportObjectLabel],
 		    m_orientationQuantization);
