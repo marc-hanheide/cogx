@@ -1,7 +1,7 @@
-/**
- * @author Alen Vrecko
- * @date July 2009
- */
+  /**
+   * @author Alen Vrecko
+   * @date July 2009
+   */
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "SOIFilter.h"
@@ -13,7 +13,7 @@
 #define CAM_ID_DEFAULT 0
 #define DILATE_FACTOR 1.3
 
-// Segmentation costants
+  // Segmentation costants
 
 #define SMOOTH_COST 30
 #define HUE_K_RATIO 40 // Number of nearest neighbours taken when calculating the cost for hue
@@ -35,271 +35,273 @@
 #define MAX_PATCH_SIZE 36000
 
 #define MAX_COLOR_SAMPLE 90
-#define COLOR_FILTERING_THRESHOLD 10
+#define COLOR_FILTERING_THRESHOLD 5
 
 #define COLOR_SAMPLE_IMG_WIDTH 5
 #define COLOR_SAMPLE_IMG_HEIGHT 15
 
-/**
- * The function called to create a new instance of our component.
- */
-extern "C"
-{
-  cast::CASTComponentPtr newComponent()
+  /**
+   * The function called to create a new instance of our component.
+   */
+  extern "C"
   {
-    return new cast::SOIFilter();
-  }
-}
-
-namespace cast
-{
-
-using namespace std;
-using namespace cdl;
-using namespace VisionData;
-using namespace Video;
-
-using namespace boost::interprocess;
-using namespace boost::posix_time;
-
-//struct gCutData {
-//	int numLab;
-//	int k;
-//	std::list<int>
-//	const IplImage *hueImg;
-//	};
-
-static long smoothFn(int p1, int p2, int l1, int l2)
-{
-  if ( l1 != l2 ) return(SMOOTH_COST);
-  //	else if (l1==0) return(0);
-  else return 0;
-}
-
-SOIFilter::SOIFilter()
-{
-  m_snapshotFiles = "xdata/snapshot/soifilter";
-  m_snapshotFlags = "A";
-}
-
-void SOIFilter::configure(const map<string,string> & _config)
-{
-  map<string,string>::const_iterator it;
-
-  // first let the base classes configure themselves
-  configureStereoCommunication(_config);
-
-  updateThr = UPD_THR_DEFAULT;
-  timeThr = TIME_THR_DEFAULT;
-  camId = CAM_ID_DEFAULT;
-  doDisplay = false;
-  objHueTolerance = OBJ_HUE_TOLERANCE;
-  objDistTolerance = OBJ_DIST_TOLERANCE;
-  bgHueTolerance = BG_HUE_TOLERANCE;
-  bgDistTolerance = BG_DIST_TOLERANCE;
-  lblFixCost = LABEL_FIX_COST;
-  smoothCost = SMOOTH_COST;
-
-  if((it = _config.find("--upd")) != _config.end())
-  {
-	istringstream str(it->second);
-	str >> updateThr;
+	cast::CASTComponentPtr newComponent()
+	{
+	  return new cast::SOIFilter();
+	}
   }
 
-  if((it = _config.find("--time")) != _config.end())
+  namespace cast
   {
-	istringstream str(it->second);
-	str >> timeThr;
-  }
-  timeThr*= 1000;
 
-  if((it = _config.find("--videoname")) != _config.end())
-  {
-	videoServerName = it->second;
-  }
+  using namespace std;
+  using namespace cdl;
+  using namespace VisionData;
+  using namespace Video;
 
-  if((it = _config.find("--camid")) != _config.end())
-  {
-	istringstream str(it->second);
-	str >> camId;
-  }
+  using namespace boost::interprocess;
+  using namespace boost::posix_time;
 
-  if((it = _config.find("--display")) != _config.end())
-  {
-	doDisplay = true;
-  }
+  //struct gCutData {
+  //	int numLab;
+  //	int k;
+  //	std::list<int>
+  //	const IplImage *hueImg;
+  //	};
 
-  if((it = _config.find("--objht")) != _config.end())
+  static long smoothFn(int p1, int p2, int l1, int l2)
   {
-	istringstream str(it->second);
-	str >> objHueTolerance;
+	if ( l1 != l2 ) return(SMOOTH_COST);
+	//	else if (l1==0) return(0);
+	else return 0;
   }
 
-  if((it = _config.find("--objdt")) != _config.end())
+  SOIFilter::SOIFilter()
   {
-	istringstream str(it->second);
-	str >> objDistTolerance;
+	m_snapshotFiles = "xdata/snapshot/soifilter";
+	m_snapshotFlags = "A";
+	m_LastProtoObject = NULL;
   }
 
-  if((it = _config.find("--bght")) != _config.end())
+  void SOIFilter::configure(const map<string,string> & _config)
   {
-	istringstream str(it->second);
-	str >> bgHueTolerance;
-  }
+	map<string,string>::const_iterator it;
 
-  if((it = _config.find("--bgdt")) != _config.end())
-  {
-	istringstream str(it->second);
-	str >> bgDistTolerance;
-  }
+	// first let the base classes configure themselves
+	configureStereoCommunication(_config);
 
-  if((it = _config.find("--fixc")) != _config.end())
-  {
-	istringstream str(it->second);
-	str >> lblFixCost;
-  }  
+	updateThr = UPD_THR_DEFAULT;
+	timeThr = TIME_THR_DEFAULT;
+	camId = CAM_ID_DEFAULT;
+	doDisplay = false;
+	objHueTolerance = OBJ_HUE_TOLERANCE;
+	objDistTolerance = OBJ_DIST_TOLERANCE;
+	bgHueTolerance = BG_HUE_TOLERANCE;
+	bgDistTolerance = BG_DIST_TOLERANCE;
+	lblFixCost = LABEL_FIX_COST;
+	smoothCost = SMOOTH_COST;
 
-  if((it = _config.find("--smoc")) != _config.end())
-  {
-	istringstream str(it->second);
-	str >> smoothCost;
-  }
+	if((it = _config.find("--upd")) != _config.end())
+	{
+	  istringstream str(it->second);
+	  str >> updateThr;
+	}
 
-  if((it = _config.find("--snapfiles")) != _config.end())
-  {
-	istringstream str(it->second);
-	str >> m_snapshotFiles;
-  }
+	if((it = _config.find("--time")) != _config.end())
+	{
+	  istringstream str(it->second);
+	  str >> timeThr;
+	}
+	timeThr*= 1000;
+
+	if((it = _config.find("--videoname")) != _config.end())
+	{
+	  videoServerName = it->second;
+	}
+
+	if((it = _config.find("--camid")) != _config.end())
+	{
+	  istringstream str(it->second);
+	  str >> camId;
+	}
+
+	if((it = _config.find("--display")) != _config.end())
+	{
+	  doDisplay = true;
+	}
+
+	if((it = _config.find("--objht")) != _config.end())
+	{
+	  istringstream str(it->second);
+	  str >> objHueTolerance;
+	}
+
+	if((it = _config.find("--objdt")) != _config.end())
+	{
+	  istringstream str(it->second);
+	  str >> objDistTolerance;
+	}
+
+	if((it = _config.find("--bght")) != _config.end())
+	{
+	  istringstream str(it->second);
+	  str >> bgHueTolerance;
+	}
+
+	if((it = _config.find("--bgdt")) != _config.end())
+	{
+	  istringstream str(it->second);
+	  str >> bgDistTolerance;
+	}
+
+	if((it = _config.find("--fixc")) != _config.end())
+	{
+	  istringstream str(it->second);
+	  str >> lblFixCost;
+	}  
+
+	if((it = _config.find("--smoc")) != _config.end())
+	{
+	  istringstream str(it->second);
+	  str >> smoothCost;
+	}
+
+	if((it = _config.find("--snapfiles")) != _config.end())
+	{
+	  istringstream str(it->second);
+	  str >> m_snapshotFiles;
+	}
 
 
 #ifdef FEAT_VISUALIZATION
-  m_display.configureDisplayClient(_config);
+	m_display.configureDisplayClient(_config);
 #endif
-}
+  }
 
-void SOIFilter::start()
-{
-  videoServer = getIceServer<Video::VideoInterface>(videoServerName);
+  void SOIFilter::start()
+  {
+	videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
-  startStereoCommunication(*this);
+	startStereoCommunication(*this);
 
-  char *name = "filterSemaphore";
-  named_semaphore(open_or_create, name, 0);
-  queuesNotEmpty = new named_semaphore(open_only, name);
+	char *name = "filterSemaphore";
+	named_semaphore(open_or_create, name, 0);
+	queuesNotEmpty = new named_semaphore(open_only, name);
 
 #ifdef FEAT_VISUALIZATION
-  m_display.connectIceClient(*this);
-  m_display.setClientData(this);
-  m_display.installEventReceiver();
-  m_display.addButton("Last ROI Segmentation", "take.snapshot", "&Snapshot");
+	m_display.connectIceClient(*this);
+    m_display.setClientData(this);
+	m_display.installEventReceiver();
+	m_display.addButton("Last ROI Segmentation", "take.snapshot", "&Snapshot");
 #else
-  if (doDisplay)
-  {
-	cvNamedWindow("Full image", 1);
-	cvNamedWindow("Last ROI Segmentation", 1);
-	cvNamedWindow("Color Filtering", 1);
-  }
+	if (doDisplay)
+	{
+	  cvNamedWindow("Full image", 1);
+	  cvNamedWindow("Last ROI Segmentation", 1);
+	  cvNamedWindow("Color Filtering", 1);
+	}
 #endif
 
-  // we want to receive detected SOIs
-  addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::ADD),
-	  new MemberFunctionChangeReceiver<SOIFilter>(this,
-		&SOIFilter::newSOI));
-  // .., when they are updated
-  addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::OVERWRITE),
-	  new MemberFunctionChangeReceiver<SOIFilter>(this,
-		&SOIFilter::updatedSOI));
-  // .. and when they are deleted
-  addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::DELETE),
-	  new MemberFunctionChangeReceiver<SOIFilter>(this,
-		&SOIFilter::deletedSOI));
+	// we want to receive detected SOIs
+	addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::ADD),
+		new MemberFunctionChangeReceiver<SOIFilter>(this,
+		  &SOIFilter::newSOI));
+	// .., when they are updated
+	addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::OVERWRITE),
+		new MemberFunctionChangeReceiver<SOIFilter>(this,
+		  &SOIFilter::updatedSOI));
+	// .. and when they are deleted
+	addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::DELETE),
+		new MemberFunctionChangeReceiver<SOIFilter>(this,
+		  &SOIFilter::deletedSOI));
 
-}
+  }
 
-bool SOIFilter::hasSnapFlag(char ch)
-{
-  size_t pos = m_snapshotFlags.find_first_of(string(1, ch) + "A");
-  return pos >= 0;
-}
+  bool SOIFilter::hasSnapFlag(char ch)
+  {
+	size_t pos = m_snapshotFlags.find_first_of(string(1, ch) + "A");
+	return pos >= 0;
+  }
 
-void saveImage(const std::string& name, const std::string& path, const Video::Image& image, SOIFilter *logger)
-{
-  try {
-	IplImage *iplImg = convertImageToIpl(image);
-	if (iplImg) {
-	  cvSaveImage(path.c_str(), iplImg);
-	  cvReleaseImage(&iplImg);
-	  logger->log("Saved %s to '%s'", name.c_str(), path.c_str());
+  void saveImage(const std::string& name, const std::string& path, const Video::Image& image, SOIFilter *logger)
+  {
+	try {
+	  IplImage *iplImg = convertImageToIpl(image);
+	  if (iplImg) {
+		cvSaveImage(path.c_str(), iplImg);
+		cvReleaseImage(&iplImg);
+		logger->log("Saved %s to '%s'", name.c_str(), path.c_str());
+	  }
+	}
+	catch (...) {
+	  logger->println("Failed to save %s to '%s'", name.c_str(), path.c_str());
 	}
   }
-  catch (...) {
-	logger->println("Failed to save %s to '%s'", name.c_str(), path.c_str());
-  }
-}
 
-void saveMask(const std::string& name, const std::string& path, const VisionData::SegmentMask& image, SOIFilter *logger)
-{
-  try {
-	IplImage *iplImg = convertBytesToIpl(image.data, image.width, image.height, 1);
-	if (iplImg) {
-	  cvSaveImage(path.c_str(), iplImg);
-	  cvReleaseImage(&iplImg);
-	  logger->log("Saved %s to '%s'", name.c_str(), path.c_str());
+  void saveMask(const std::string& name, const std::string& path, const VisionData::SegmentMask& image, SOIFilter *logger)
+  {
+	try {
+	  IplImage *iplImg = convertBytesToIpl(image.data, image.width, image.height, 1);
+	  if (iplImg) {
+		cvSaveImage(path.c_str(), iplImg);
+		cvReleaseImage(&iplImg);
+		logger->log("Saved %s to '%s'", name.c_str(), path.c_str());
+	  }
+	}
+	catch (...) {
+	  logger->println("Failed to save %s to '%s'", name.c_str(), path.c_str());
 	}
   }
-  catch (...) {
-	logger->println("Failed to save %s to '%s'", name.c_str(), path.c_str());
-  }
-}
 
-void SOIFilter::saveSnapshot()
-{
-  ProtoObjectPtr pobj = m_LastProtoObject; // A copy to avoid threading problems
-  if (pobj == NULL) {
-	debug("Snapshot: no proto object saved");
-	return;
-  }
+  void SOIFilter::saveSnapshot()
+  {
+	ProtoObjectPtr pobj(m_LastProtoObject); // A copy to avoid threading problems
 
-  time_t rawtime;
-  struct tm * timeinfo;
-  char buf[80];
-  time ( &rawtime );
-  timeinfo = localtime ( &rawtime );
-  strftime(buf, 80, "%Y%m%d_%H%M%S", timeinfo);
-
-  std::ostringstream ss;
-  ss << m_snapshotFiles << buf;
-  std::string path = ss.str();
-
-  if (hasSnapFlag('p')) try {
-	ofstream fpoints;
-	fpoints.exceptions ( ofstream::eofbit | ofstream::failbit | ofstream::badbit );
-	fpoints.open(string(path + "p.txt").c_str(), ofstream::out);
-	fpoints << ";;r\tg\tb\tx\ty\tz" << endl;
-	typeof(pobj->points.begin()) it;
-	for (it = pobj->points.begin(); it != pobj->points.end(); it++) {
-	  fpoints << (unsigned int)it->c.r << "\t" << (unsigned int)it->c.g << "\t" << (unsigned int)it->c.b << "\t";
-	  fpoints << it->p.x << "\t" << it->p.y << "\t" << it->p.z << endl;
+	if (pobj.get() == NULL) {
+	  debug("Snapshot: no proto object saved");
+	  return;
 	}
-	fpoints.close();
-	log("Saved points to '%sp.txt'", path.c_str());
-  }
-  catch (...) {
-	println("Failed to save points to '%sp.txt'", path.c_str());
-  }
 
-  if (hasSnapFlag('s'))
-	saveImage("segmented image", string(path + "s.png"), pobj->image, this);
+	time_t rawtime;
+	struct tm * timeinfo;
+	char buf[80];
+	time ( &rawtime );
+	timeinfo = localtime ( &rawtime );
+	strftime(buf, 80, "%Y%m%d_%H%M%S", timeinfo);
 
-  if (hasSnapFlag('m'))
-	saveMask("image mask", string(path + "m.png"), pobj->mask, this);
-}
+	std::ostringstream ss;
+	ss << m_snapshotFiles << buf;
+	std::string path = ss.str();
+
+	if (hasSnapFlag('p')) try {
+	  ofstream fpoints;
+	  fpoints.exceptions ( ofstream::eofbit | ofstream::failbit | ofstream::badbit );
+	  fpoints.open(string(path + "p.txt").c_str(), ofstream::out);
+	  fpoints << ";;r\tg\tb\tx\ty\tz" << endl;
+	  typeof(pobj->points.begin()) it;
+	  for (it = pobj->points.begin(); it != pobj->points.end(); it++) {
+		fpoints << (unsigned int)it->c.r << "\t" << (unsigned int)it->c.g << "\t" << (unsigned int)it->c.b << "\t";
+		fpoints << it->p.x << "\t" << it->p.y << "\t" << it->p.z << endl;
+	  }
+	  fpoints.close();
+	  log("Saved points to '%sp.txt'", path.c_str());
+	}
+	catch (...) {
+	  println("Failed to save points to '%sp.txt'", path.c_str());
+	}
+
+	if (hasSnapFlag('s'))
+	  saveImage("segmented image", string(path + "s.png"), pobj->image, this);
+
+	if (hasSnapFlag('m'))
+	  saveMask("image mask", string(path + "m.png"), pobj->mask, this);
+  }
 
 #ifdef FEAT_VISUALIZATION
-void SOIFilter::CSfDisplayClient::handleEvent(const Visualization::TEvent &event)
-{
-  if (event.type == Visualization::evButtonClick) {
-    if (event.sourceId == "take.snapshot") {
+  void SOIFilter::CSfDisplayClient::handleEvent(const Visualization::TEvent &event)
+  {
+   if (event.type == Visualization::evButtonClick) {
+	  if (event.sourceId == "take.snapshot") {
 	  pFilter->saveSnapshot();
     }
   }
@@ -331,13 +333,14 @@ void SOIFilter::runComponent()
 		  { 
 			SOIPtr soiPtr = getMemoryEntry<VisionData::SOI>(soi.addr);
 			
-			ProtoObjectPtr pobj = new ProtoObject;
-			if(segmentObject(soiPtr, pobj->image, pobj->mask))
-			{  
+			m_LastProtoObject = new ProtoObject;
+			ProtoObjectPtr pobj = m_LastProtoObject;
+			if(segmentObject(soiPtr, pobj->image, pobj->mask, pobj->points))
+			{
 			  pobj->time = getCASTTime();
 			  pobj->SOIList.push_back(soi.addr.id);
-			  pobj->points = soiPtr->points;
-			  m_LastProtoObject = pobj;
+			  
+			  //m_LastProtoObject = pobj;
 
 			  string objId = newDataID();
 			  addToWorkingMemory(objId, pobj);
@@ -509,8 +512,30 @@ void SOIFilter::project3DPoints(const vector<SurfacePoint> surfPoints, const ROI
 }
 
 
+vector<SurfacePoint>  SOIFilter::filter3DPoints(const vector<SurfacePoint> surfPoints, vector<CvPoint> &projPoints, vector<CvPoint> &errProjPoints, const SegmentMask segMask)
+{
+  size_t n = surfPoints.size();
+  vector<SurfacePoint> filtSurfPoints;
+  
+  // 
+  for(size_t i = 0; i < n; i++)
+  {
+	int x=projPoints[i].x;
+	int y=projPoints[i].y;
+	if (segMask.data[y*segMask.width + x] == 1)
+	  filtSurfPoints.push_back(surfPoints[i]);
+	else
+	  errProjPoints.push_back(projPoints[i]);
+	  
+  }
+
+  return filtSurfPoints;
+
+}
+
+
 void SOIFilter::drawProjectedSOIPoints(IplImage *img, const vector<CvPoint> projPoints,
-	const vector<CvPoint> bgProjPoints, const vector<int> hull)
+	const vector<CvPoint> bgProjPoints,  const vector<CvPoint> errProjPoints, const vector<int> hull)
 {
   // draw foreground points
   for(size_t i = 0; i < projPoints.size(); i++)
@@ -532,6 +557,12 @@ void SOIFilter::drawProjectedSOIPoints(IplImage *img, const vector<CvPoint> proj
   for(size_t i = 0; i < bgProjPoints.size(); i++)
   {
 	cvCircle(img, cvPoint(bgProjPoints[i].x, bgProjPoints[i].y), 3, CV_RGB(255,0,0));
+  }
+  
+    // draw misprojected points inside SOI
+  for(size_t i = 0; i < errProjPoints.size(); i++)
+  {
+	cvCircle(img, cvPoint(errProjPoints[i].x, errProjPoints[i].y), 3, CV_RGB(127,127,0));
   }
 }
 
@@ -644,7 +675,6 @@ vector<CvScalar> SOIFilter::getSortedHlsList(vector<SurfacePoint> surfPoints)
   IplImage* dst = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 3);
   IplImage* srcL = cvCreateImage(cvSize(size*COLOR_SAMPLE_IMG_WIDTH , COLOR_SAMPLE_IMG_HEIGHT ), IPL_DEPTH_8U, 3);
   // IplImage* dstL = cvCreateImage(cvGetSize(srcL), IPL_DEPTH_8U, 3);
-  debug("0end");
 
   for(int i=0; i< size; i++)
   {
@@ -1135,7 +1165,7 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
   return result;
 }
 
-bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask)
+bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask, vector<SurfacePoint> &segPoints)
 {
   Video::Image image;
   StereoClient::getRectImage(LEFT, 320, image);
@@ -1207,7 +1237,7 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   ss << "Actual ROI w=" << iplPatchHLS->width << " h=" << iplPatchHLS->height << "<br>";
 #endif
 
-  vector<CvPoint> projPoints, bgProjPoints;
+  vector<CvPoint> projPoints, bgProjPoints, errProjPoints;
   vector<int>  hullPoints;    
 
   //projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
@@ -1236,7 +1266,8 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   segMask.width = iplPatchHLS->width;
   segMask.height = iplPatchHLS->height;
 
-  segMask.data =  graphCut(segMask.width, segMask.height, 3, costPatch, bgCostPatch);
+  segMask.data = graphCut(segMask.width, segMask.height, 3, costPatch, bgCostPatch);
+  segPoints = filter3DPoints(soiPtr->points, projPoints, errProjPoints, segMask);
 
   // The VisualLearner application works well with small images so 
   // we add imgPatch, the patch from the small image to the ProtoObject.
@@ -1305,7 +1336,7 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 
   if (doDisplay)
   {
-	drawProjectedSOIPoints(iplPatch, projPoints, bgProjPoints, hullPoints);
+	drawProjectedSOIPoints(iplPatch, projPoints, bgProjPoints, errProjPoints, hullPoints);
 	cvResetImageROI(iplImg);
 	cvRectangle(iplImg, cvPoint(roiPtr->rect.pos.x-1, roiPtr->rect.pos.y-1),
 		cvPoint(roiPtr->rect.pos.x+1, roiPtr->rect.pos.y+1),
