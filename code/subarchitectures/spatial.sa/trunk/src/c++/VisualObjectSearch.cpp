@@ -504,6 +504,52 @@ namespace spatial
     pbVis->DisplayMap(*m_map);
   }
 
+  double VisualObjectSearch::tryLoadStepCost(const std::vector<ObjectPairRelation> &step)
+  {
+    string filename("cached_cost_");
+    filename += step.back().primaryobject;
+    for (std::vector<ObjectPairRelation>::const_iterator it = step.begin(); 
+	it != step.end(); it++) {
+      filename += (it->relation == FrontierInterface::ON ? "_ON_" : "_IN_");
+      filename += it->secobject;
+    }
+    filename += ".cst";
+
+    ifstream infile(filename.c_str(), ios::in);
+
+    if (!infile.good()) {
+      return 0.0;
+    }
+
+    double ret;
+
+    infile >> ret;
+
+    return ret;
+  }
+
+  void VisualObjectSearch::cacheStepCost(const std::vector<ObjectPairRelation> &step,
+      double cost)
+  {
+    string filename("cached_cost_");
+    filename += step.back().primaryobject;
+    for (std::vector<ObjectPairRelation>::const_iterator it = step.begin();
+	it != step.end(); it++) {
+      filename += (it->relation == FrontierInterface::ON ? "_ON_" : "_IN_");
+      filename += it->secobject;
+    }
+    filename += ".cst";
+
+    ofstream outfile(filename.c_str(), ios::out);
+
+    if (!outfile.good()) {
+      log("Error! Could not write to file \"%s\"s",  filename.c_str());
+      return;
+    }
+
+    outfile << cost;
+  }
+
   double VisualObjectSearch::GetStrategyCost(std::vector<std::string> policy){
     double StrategyCost;
     std::string room = policy[0];
@@ -532,53 +578,53 @@ namespace spatial
 
       log("novel # of relations: %d", strategyStep.size() );
 
-	  // Set up query
-	  std::vector<std::string> labels;
-	  std::vector<FrontierInterface::ObjectRelation> relations;
+      // Set up query
+      std::vector<std::string> labels;
+      std::vector<FrontierInterface::ObjectRelation> relations;
 
-	  std::string topObject = strategyStep.back().primaryobject;
+      std::string topObject = strategyStep.back().primaryobject;
 
-	  SetCurrentTarget(topObject);
-	  
-	  labels.push_back(topObject);
-	  string logstring = "Asking for: ";
-	  logstring = logstring + labels.back();
-	  for (int i = strategyStep.size() -1 ; i >= 0; i--){
-	    labels.push_back(strategyStep[i].secobject);
-	    relations.push_back(strategyStep[i].relation);
-	    logstring = logstring + ( strategyStep[i].relation== FrontierInterface::ON ? 
-	      string(" ON ") : string(" IN "));
-	    logstring = logstring + strategyStep[i].secobject;
-	  }
-	  log(logstring.c_str());
+      SetCurrentTarget(topObject);
 
-	  FrontierInterface::WeightedPointCloudPtr queryCloud = 
-	    new FrontierInterface::WeightedPointCloud;
-	  FrontierInterface::ObjectPriorRequestPtr objreq =
-	    new FrontierInterface::ObjectPriorRequest;
-	  objreq->relationTypes = relations; // ON or IN or whatnot
-	  objreq->objects = labels;	// Names of objects, starting with the query object
-	  objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
-	  objreq->outCloud = queryCloud;	// Data struct to receive output
-	  objreq->totalMass = 1.0;
+      labels.push_back(topObject);
+      string logstring = "Asking for: ";
+      logstring = logstring + labels.back();
+      for (int i = strategyStep.size() -1 ; i >= 0; i--){
+	labels.push_back(strategyStep[i].secobject);
+	relations.push_back(strategyStep[i].relation);
+	logstring = logstring + ( strategyStep[i].relation== FrontierInterface::ON ? 
+	    string(" ON ") : string(" IN "));
+	logstring = logstring + strategyStep[i].secobject;
+      }
+      log(logstring.c_str());
+
+      FrontierInterface::WeightedPointCloudPtr queryCloud = 
+	new FrontierInterface::WeightedPointCloud;
+      FrontierInterface::ObjectPriorRequestPtr objreq =
+	new FrontierInterface::ObjectPriorRequest;
+      objreq->relationTypes = relations; // ON or IN or whatnot
+      objreq->objects = labels;	// Names of objects, starting with the query object
+      objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
+      objreq->outCloud = queryCloud;	// Data struct to receive output
+      objreq->totalMass = 1.0;
 
 
-	  if (strategyStep.front().secobject.find("room") != string::npos) {
-	    ChangeMaps(strategyStep.front().secobject);
-	  SpatialGridMap::GridMap<GridMapData> tmpMap = *m_map; 
+      if (strategyStep.front().secobject.find("room") != string::npos) {
+	ChangeMaps(strategyStep.front().secobject);
+	SpatialGridMap::GridMap<GridMapData> tmpMap = *m_map; 
 
-	    // Search is uniform in the room (possibly direct informed)
-	    // Now, check if there's just one object left
+	// Search is uniform in the room (possibly direct informed)
+	// Now, check if there's just one object left
 
-	    if (strategyStep.size() == 1) {
-	      // If so, do uniform search without asking for a point cloud
-	      //TODO: Don't override the map!   
-	      log("strategy contains room and has 1 step.");
-	      InitializePDFForObject(1.0, strategyStep[0].primaryobject, &tmpMap);
-              pbVis->AddPDF(tmpMap);
-	      double cost = 0.0;
-	      cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
-	      costThisStep = cost;
+	if (strategyStep.size() == 1) {
+	  // If so, do uniform search without asking for a point cloud
+	  //TODO: Don't override the map!   
+	  log("strategy contains room and has 1 step.");
+	  InitializePDFForObject(1.0, strategyStep[0].primaryobject, &tmpMap);
+	  pbVis->AddPDF(tmpMap);
+	  double cost = 0.0;
+	  cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
+	  costThisStep = cost;
 	}
 	else {
 	  log("strategy contains room and has more than 1 step");
@@ -659,7 +705,7 @@ namespace spatial
 	      1.0,
 	      m_lgm);
 	  normalizePDF(tmpMap,1.0);
-          pbVis->AddPDF(tmpMap);
+	  pbVis->AddPDF(tmpMap);
 
 	  double cost = 0.0;
 	  //FIXME: get lgmpdf as an arg
@@ -669,115 +715,114 @@ namespace spatial
       }
       else {
 	log("strategy does not contain room");
-	  GridMapData def;
-	  def.occupancy = FREE;
+	GridMapData def;
+	def.occupancy = FREE;
 
 	// This step doesn't begin with the room; this means it's
 	// an indirect search. 
 
-	// TODO: check cache for strategyStep
+	costThisStep = tryLoadStepCost(strategyStep);
+
+	if (costThisStep <= 0) {
+	  // Couldn't find cached cost; compute it
+
+	  // Assume a number of poses for the base object, and
+	  // create and query a sample cloud for each
+	  // KDE and compute cost for each, then average the costs
+
+	  // Select hypothesical poses for base object
+	  vector<Pose3> baseObjectPoses;
+	  Pose3 tmppose;
+	  tmppose.pos = vector3(0,0,0);;
+	  fromAngleAxis(tmppose.rot, 0, vector3(0,0,1));
+	  baseObjectPoses.push_back(tmppose);
+	  // TODO: Some more poses!
+
+	  for (vector<Pose3>::iterator it = baseObjectPoses.begin(); 
+	      it != baseObjectPoses.end(); it++) {
+	    // Fill in the hypothetical pose in question
+	    objreq->baseObjectPose.clear();
+	    objreq->baseObjectPose.push_back(*it);
+
+	    // Send request and wait for reply
+	    m_bEvaluation = true;
+	    {
+	      unlockComponent();
+	      addToWorkingMemory(newDataID(), objreq);
+
+	      while(!gotPC)
+		usleep(2500);
+	      log("got PC for a hypothetical pose");
+	    }
+	    lockComponent();
+	    FrontierInterface::WeightedPointCloudPtr cloud =
+	      m_priorreq->outCloud;
+
+	    double interval = cloud->interval;
+	    int xExtent = cloud->xExtent;
+	    int yExtent = cloud->yExtent;
+
+	    //	  log("Cloud: (%d x %d) at interval %f", xExtent, yExtent, interval);
+
+	    double tmp = interval * (xExtent > yExtent ? xExtent : yExtent);
+	    tmp += m_conedepth;
+	    tmp /= m_cellsize;
+	    int lgmSize = (int)tmp;
+	    if (lgmSize > m_gridsize) lgmSize = m_gridsize;
+	    log("lgmSize = %i", lgmSize);
+
+	    SpatialGridMap::GridMap<GridMapData> tmpMap(lgmSize*2+1, lgmSize*2+1, m_cellsize, m_minbloxel,
+		0, m_mapceiling, 0, 0, 0, def);
+	    GDProbSet resetter(0.0);
+	    tmpMap.universalQuery(resetter, true);
 
 
-	// Assume a number of poses for the base object, and
-	// create and query a sample cloud for each
-	// KDE and compute cost for each, then average the costs
+	    CureObstMap tempLGM(lgmSize, m_cellsize, '0', 
+		CureObstMap::MAP1, 0, 0);
+	    CureObstMap *backupRoomLGM = m_lgm;
+	    m_lgm = &tempLGM;
 
-	// Select hypothesical poses for base object
-	vector<Pose3> baseObjectPoses;
-	Pose3 tmppose;
-	tmppose.pos = vector3(0,0,0);;
-	fromAngleAxis(tmppose.rot, 0, vector3(0,0,1));
-	baseObjectPoses.push_back(tmppose);
-	// TODO: Some more poses!
 
-	for (vector<Pose3>::iterator it = baseObjectPoses.begin(); 
-	    it != baseObjectPoses.end(); it++) {
-	  // Fill in the hypothetical pose in question
-	  objreq->baseObjectPose.clear();
-	  objreq->baseObjectPose.push_back(*it);
+	    // Do KDE for this object
+	    vector<Vector3> centers;
+	    centers.push_back(cloud->center);
+	    m_sampler.kernelDensityEstimation3D(tmpMap,
+		centers,
+		cloud->interval,
+		cloud->xExtent,
+		cloud->yExtent,
+		cloud->zExtent,
+		cloud->values,
+		1.0,
+		1.0,
+		m_lgm
+		);
+	    normalizePDF(tmpMap,1.0);
+	    //pbVis->AddPDF(tmpMap);
+	    // Compute cost for this map and object
 
-	  // Send request and wait for reply
-	  m_bEvaluation = true;
-	  {
-	    unlockComponent();
-	    addToWorkingMemory(newDataID(), objreq);
-	  
-	  while(!gotPC)
-	    usleep(2500);
-	  log("got PC for a hypothetical pose");
+	    // For the purposes of cone generation/evaluation, 
+	    // set m_lgm temporarily to an empty grid
+	    // centered at the origin
+	    // Set its extent to be a bounding box based on
+	    // the spread of the point cloud and the maximum cone length
+	    // FIXME get lgmpdf as arg
+	    double cost = 0.0;
+	    cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
+	    costThisStep += cost / baseObjectPoses.size();
+
+	    m_lgm = backupRoomLGM;
 	  }
-	  lockComponent();
-	  FrontierInterface::WeightedPointCloudPtr cloud =
-	    m_priorreq->outCloud;
 
-	  double interval = cloud->interval;
-	  int xExtent = cloud->xExtent;
-	  int yExtent = cloud->yExtent;
-
-	  log("Cloud: (%d x %d) at interval %f", xExtent, yExtent, interval);
-
-	  double tmp = interval * (xExtent > yExtent ? xExtent : yExtent);
-	  log ("tmp = %f", tmp);
-	  tmp += m_conedepth;
-	  log ("tmp = %f", tmp);
-	  tmp /= m_cellsize;
-	  log ("tmp = %f", tmp);
-
-
-	  int lgmSize = (int)tmp;
-	  log("lgmSize = %i", lgmSize);
-	  if (lgmSize > m_gridsize) lgmSize = m_gridsize;
-	  log("lgmSize = %i", lgmSize);
-	  
-	  SpatialGridMap::GridMap<GridMapData> tmpMap(lgmSize*2+1, lgmSize*2+1, m_cellsize, m_minbloxel,
-	      0, m_mapceiling, 0, 0, 0, def);
-	  GDProbSet resetter(0.0);
-	  tmpMap.universalQuery(resetter, true);
-
-
-	  CureObstMap tempLGM(lgmSize, m_cellsize, '0', 
-	      CureObstMap::MAP1, 0, 0);
-	  CureObstMap *backupRoomLGM = m_lgm;
-	  m_lgm = &tempLGM;
-	  
-
-	  // Do KDE for this object
-	  vector<Vector3> centers;
-	  centers.push_back(cloud->center);
-	  m_sampler.kernelDensityEstimation3D(tmpMap,
-	      centers,
-	      cloud->interval,
-	      cloud->xExtent,
-	      cloud->yExtent,
-	      cloud->zExtent,
-	      cloud->values,
-	      1.0,
-	      1.0,
-	      m_lgm
-	      );
-	  normalizePDF(tmpMap,1.0);
-	  //pbVis->AddPDF(tmpMap);
-	  // Compute cost for this map and object
-
-	  // For the purposes of cone generation/evaluation, 
-	  // set m_lgm temporarily to an empty grid
-	  // centered at the origin
-	  // Set its extent to be a bounding box based on
-	  // the spread of the point cloud and the maximum cone length
-	  // FIXME get lgmpdf as arg
-	  double cost = 0.0;
-	  cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
-	  costThisStep += cost / baseObjectPoses.size();
-
-	  m_lgm = backupRoomLGM;
+	  cacheStepCost(strategyStep, costThisStep);
 	}
-	// TODO: Save cached cost
 
       }
       StrategyCost += costThisStep;
     }	 
     return StrategyCost;
   }
+
   void 
     VisualObjectSearch::newSpatialObject(const cast::cdl::WorkingMemoryChange &objID)
     {
@@ -1893,7 +1938,7 @@ namespace spatial
 
     vector < vector<double> > sampled2Dpoints;
     double xW1,yW1;
-    for(int i= 0; i < samples.size(); i++){
+    for(unsigned int i= 0; i < samples.size(); i++){
       vector<double> point;
       m_lgm->index2WorldCoords(samples[i].getX(), samples[i].getY(), xW1, yW1);
       point.push_back(xW1);
@@ -1922,7 +1967,7 @@ namespace spatial
       std::vector<pair<int,int> > tpoints;
       std::vector<std::vector<pair<int,int> > > ViewConePts;
 
-      for (int y = 0; y < samples2D.size(); y++) { //calc. view cone for each sample
+      for (unsigned int y = 0; y < samples2D.size(); y++) { //calc. view cone for each sample
 
 	m_lgm->index2WorldCoords(samples2D[y].getX(), samples2D[y].getY(), a.x, a.y);
 	a.theta = samples2D[y].getTheta();
