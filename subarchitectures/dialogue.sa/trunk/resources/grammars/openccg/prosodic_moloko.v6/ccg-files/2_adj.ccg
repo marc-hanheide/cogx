@@ -1,0 +1,98 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#	 : grep change with: PROSG09
+
+###########################
+## SYNTACTIC DEFINITIONS ##
+###########################
+
+  def adj(args)         { adj<25>[M DEGREE ACCENT INFOD args] }
+  def from-adj(args)    { adj<~25>[M args] }
+
+##############
+## FAMILIES ##
+##############
+
+  ## Family Building Macros ##
+  	
+  def adj-cat(args, sem)   { adj() args  :  M(* sem) }
+  
+  ## The Families ##
+
+  family Adj                         { entry:  adj-cat(, ) ;}
+  family Adj+of-np                   { entry:  adj-cat( / obl_ma(of,), ARG() ) ;}
+  
+  ## Modifiers ##
+  
+  family Mod-pre-adj-                { entry:  from-adj() /^ adj()                :  M( M-MOD(*) ) ;}
+  family Mod-pre-adj-comparative-    { entry:  from-adj() /^ adj(s-comparative)   :  M( M-MOD(*) ) ;}
+  
+  family Mod-post-adj-               { entry:  from-adj() \ adj()                 :  M( M-MOD(*) ) ;}
+    
+  family More-adj(indexRel=degree)   { entry:  from-adj(s-comparative)  / adj(s-degree-base)   ;}
+  family Most-adj(indexRel=degree)   { entry:  from-adj(s-superlative)  / adj(s-degree-base)   ;}
+  
+  family Adj-er-than                 { entry:  from-adj() / np_ma() \* adj(s-comparative) : M( M-MOD(* ARG() )  ) ;}
+
+  ## Negation and Coordition ##
+  
+  family Negation-adj-(indexRel=polarity)  { entry:  from-adj() \ adj() :  M( NEG()  ) ;}
+  family Coord-adj-                  { entry:  adj[R COM=yes] / adj[N] \* adj[F COM=no] : COORD(*) ;}
+
+
+###########
+## RULES ##
+###########
+
+  # The following rule converts the 'base-generated' atomic cat versions of adjectives into
+  # their complex-cat form (i.e. the form that actually attach to and modify nouns)
+
+  # see modifiers.ccg for the syntactic ( post-n(), pre-s(), etc ) and semantic ( MODIFIER() )
+  # categories used in these rules  
+
+  rule { typechange: adj(pre-n)$1  =>  pre-n(, $1) :  ENTITY( MODIFIER() ) ; }  
+
+ #PROSG09 : Rule for allowing intonational phrase "red_H* LL%"
+  #rule {typechange: adj(pre-n)$1 => s() +cop-adj-ip()$1 : EVENT(MODIFIER());}
+
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+  def _adj-none_ip(prd, base,base_hs,base_ls,base_lphs, class, args) {
+    word base.prd.-adj:Adj(class, pred=prd) {
+      base : s-degree-base m-uncontentious m-focus-false m-rheme-true args;
+      base : s-degree-base m-uncontentious m-focus-false m-rheme-false args ;
+      base_hs : s-degree-base m-uncontentious m-focus-true m-rheme-true hs args ;
+      base_ls : s-degree-base m-contentious m-focus-true m-rheme-true ls args ;
+      base_lphs : s-degree-base m-uncontentious m-focus-true m-rheme-false lphs args ;
+    }
+  }
+  def adj-none(base, class, args) { _adj-none_ip(base, base, markWordsINTO(base), class, args) }
+  def _adj-none(prd, base, class, args) { _adj-none_ip(base, base, markWordsINTO(base), class, args) }
+
+  #PROSG09 : change in the number of arguments for prosodically inflected args e.g red_H*i, redder_H*. 
+  #PROSG09 : there is no alternative way but to enumerate prosodic inflected args e.g red_H*,red_L+H*. 
+ def _adj-deg(prd, base, comp, sup, base_hs,base_ls, base_lphs, comp_hs, comp_ls,comp_lphs, sup_hs,sup_ls, sup_lphs,class, args) {
+    word base.-adj:Adj(class, pred=prd) {
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false args;
+      base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true hs args;
+      base_ls : s-degree-base pre-n  m-focus-true m-contentious m-rheme-true ls args;
+      base_lphs : s-degree-base pre-n   m-focus-true m-uncontentious m-rheme-false lphs args;
+	comp : s-comparative pre-n comparative m-uncontentious m-focus-false m-rheme-true args;
+	comp : s-comparative pre-n comparative m-uncontentious m-focus-false m-rheme-false args;
+	comp_hs : s-comparative pre-n comparative   m-focus-true m-uncontentious m-rheme-true hs args;
+	comp_ls : s-comparative pre-n comparative   m-focus-true m-contentious m-rheme-true ls args;
+	comp_lphs : s-comparative pre-n comparative   m-focus-true m-uncontentious m-rheme-false lphs args;
+	sup  : s-superlative pre-n superlative m-uncontentious m-focus-false m-rheme-true args;
+	sup  : s-superlative pre-n superlative m-uncontentious m-focus-false m-rheme-false args;
+	sup_hs  : s-superlative pre-n superlative   m-focus-true m-uncontentious m-rheme-false hs args;
+	sup_ls  : s-superlative pre-n superlative   m-focus-true m-contentious m-rheme-false ls args;
+	sup_lphs  : s-superlative pre-n superlative   m-focus-true m-uncontentious m-rheme-true lphs args;
+    }
+  }
+
+  #PROSG09 : A function markWord**(word) is used to inflect a word for prosody i.e. red->red_H*. 
+  def adj-deg(base, comp, sup, class, args) {_adj-deg(base, base, comp, sup, markWordHs(base),markWordLs(base), markWordLpHs(base),markWordHs(comp),markWordLs(comp),markWordLpHs(comp),markWordHs(sup),markWordLs(sup), markWordLpHs(sup), class, args) }

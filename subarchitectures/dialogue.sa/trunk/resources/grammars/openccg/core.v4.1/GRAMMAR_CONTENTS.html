@@ -1,0 +1,737 @@
+<html>
+ <head>
+	<title>Lexical Families</title>
+<script type="text/javascript">
+
+/* CLOSED_IMAGE - the image to be displayed when the sublists are closed
+ * OPEN_IMAGE   - the image to be displayed when the sublists are opened
+ */
+CLOSED_IMAGE='plus.png';
+OPEN_IMAGE='minus.png';
+
+/* makeCollapsible - makes a list have collapsible sublists
+ * 
+ * listElement - the element representing the list to make collapsible
+ */
+function makeCollapsible(listElement){
+
+  // removed list item bullets and the sapce they occupy
+  listElement.style.listStyle='none';
+  listElement.style.marginLeft='0';
+  listElement.style.paddingLeft='0';
+
+  // loop over all child elements of the list
+  var child=listElement.firstChild;
+  while (child!=null){
+
+    // only process li elements (and not text elements)
+    if (child.nodeType==1){
+
+      // build a list of child ol and ul elements and hide them
+      var list=new Array();
+      var grandchild=child.firstChild;
+      while (grandchild!=null){
+        if (grandchild.tagName=='OL' || grandchild.tagName=='UL'){
+          grandchild.style.display='none';
+          list.push(grandchild);
+        }
+        grandchild=grandchild.nextSibling;
+      }
+
+      // add toggle buttons
+      var node=document.createElement('img');
+      node.setAttribute('src',CLOSED_IMAGE);
+      node.setAttribute('class','collapsibleClosed');
+      node.onclick=createToggleFunction(node,list);
+      child.insertBefore(node,child.firstChild);
+
+    }
+
+    child=child.nextSibling;
+  }
+
+}
+
+/* createToggleFunction - returns a function that toggles the sublist display
+ * 
+ * toggleElement  - the element representing the toggle gadget
+ * sublistElement - an array of elements representing the sublists that should
+ *                  be opened or closed when the toggle gadget is clicked
+ */
+function createToggleFunction(toggleElement,sublistElements){
+
+  return function(){
+
+    // toggle status of toggle gadget
+    if (toggleElement.getAttribute('class')=='collapsibleClosed'){
+      toggleElement.setAttribute('class','collapsibleOpen');
+      toggleElement.setAttribute('src',OPEN_IMAGE);
+    }else{
+      toggleElement.setAttribute('class','collapsibleClosed');
+      toggleElement.setAttribute('src',CLOSED_IMAGE);
+    }
+
+    // toggle display of sublists
+    for (var i=0;i<sublistElements.length;i++){
+      sublistElements[i].style.display=
+          (sublistElements[i].style.display=='block')?'none':'block';
+    }
+
+  }
+
+}
+
+</script> <body onLoad="makeCollapsible(document.getElementById('files'));">
+<ul id=files><li><font size="2" color ="#616D7E">
+adj.xsl</font><ul>
+<li><font size="4">adj.property
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adj.basic-cat&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">PREDICATIVE</font></li>
+</ul>
+<li><font size="4">adj.of-np.property
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adj-of-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">PREDICATIVE-WITH-ARG</font></li>
+</ul>
+</ul>
+</li>
+<li><font size="2" color ="#616D7E">
+adv.xsl</font><ul>
+<li><font size="4">adv-mod-adj
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adv.mod-adj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-M.MODIFIER</font></li>
+</ul>
+<li><font size="4">copular-negation
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.forward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.NEGATION</font></li>
+</ul>
+<li><font size="4">adv.manner
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.initial&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.MANNER</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.forward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.MANNER</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.backward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.MANNER</font></li>
+</ul>
+<li><font size="4">adv.time
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.initial&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.TIME</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.forward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.TIME</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.backward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.TIME</font></li>
+</ul>
+<li><font size="4">adv.probability
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.initial&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.PROBABILITY</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.forward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.PROBABILITY</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.backward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.PROBABILITY</font></li>
+</ul>
+<li><font size="4">adv.frequency
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.initial&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.FREQUENCY</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.forward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.FREQUENCY</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.backward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.FREQUENCY</font></li>
+</ul>
+<li><font size="4">adv.comment
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.initial&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.COMMENT</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.forward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.COMMENT</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.backward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.COMMENT</font></li>
+</ul>
+<li><font size="4">adv.comment_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.initial_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.COMMENT</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.forward_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.COMMENT</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.backward_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.COMMENT</font></li>
+</ul>
+<li><font size="4">adv.direction
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.initial&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHICHWAY</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.forward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHICHWAY</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.backward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHICHWAY</font></li>
+</ul>
+<li><font size="4">adv.direction_W_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.initial_W_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHICHWAY</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.forward_W_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHICHWAY</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.backward_W_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHICHWAY</font></li>
+</ul>
+<li><font size="4">adv.whereto
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.initial&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHERETO</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.forward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHERETO</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.backward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHERETO</font></li>
+</ul>
+<li><font size="4">adv.location
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.initial&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.LOCATION</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.forward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.LOCATION</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> adv.mod-vp.backward&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.LOCATION</font></li>
+</ul>
+</ul>
+</li>
+<li><font size="2" color ="#616D7E">
+coord.xsl</font><ul>
+<li><font size="4">coord.np
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> np.coord&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">FIRST.NEXT</font></li>
+</ul>
+<li><font size="4">coord.np.pl-result
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> np.coord.pl-result&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">FIRST.NEXT</font></li>
+</ul>
+<li><font size="4">coord.n.pl-result
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> n.coord.pl-result&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">FIRST.NEXT</font></li>
+</ul>
+<li><font size="4">coord.n
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> n.coord&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">FIRST.NEXT</font></li>
+</ul>
+<li><font size="4">coord.s
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> s.coord&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">FIRST.NEXT</font></li>
+</ul>
+<li><font size="4">coord.adj
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> adj.coord&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">FIRST.NEXT</font></li>
+</ul>
+</ul>
+</li>
+<li><font size="2" color ="#616D7E">
+cue-and-discourse.xsl</font><ul>
+<li><font size="4">dis-unit
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> du.generic&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">DIS.DEFAULT</font></li>
+</ul>
+<li><font size="4">dis-unit_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> du.generic_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">DIS.DEFAULT</font></li>
+</ul>
+<li><font size="4">dis-unit.addressee
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> du.np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">DIS.ADDRESSEE</font></li>
+</ul>
+<li><font size="4">dis-unit.connective
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> du.s&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">DIS.BODY</font></li>
+</ul>
+<li><font size="4">dis-unit.connective_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> du.s_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">DIS.BODY</font></li>
+</ul>
+<li><font size="4">dis-unit.suggestion
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> du.subj-conrolled-non-fin-vp&nbsp</font><font size="3" color ="#0000FF">DIS.SUGGESTION</font></li>
+</ul>
+<li><font size="4">sentence-polarity.positive
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> du.s&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">DIS-EVENT-POLARITY.POSITIVE</font></li>
+</ul>
+<li><font size="4">sentence-polarity.negative
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> du.s&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">DIS-EVENT-POLARITY.NEGATIVE</font></li>
+</ul>
+<li><font size="4">cue.positive
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> du.generic&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">DIS.POSITIVE</font></li>
+</ul>
+<li><font size="4">cue.negative
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> du.generic&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">DIS.NEGATIVE</font></li>
+</ul>
+</ul>
+</li>
+<li><font size="2" color ="#616D7E">
+det.xsl</font><ul>
+<li><font size="4">determiner.definite
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.def.sg&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.DELIM.UNQ.QUANT.SPECSING.T</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> det.def.pl&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.DELIM.UNQ.QUANT.SPECNONSING.T</font></li>
+</ul>
+<li><font size="4">determiner.indefinite
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.sg&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.DELIM.EX.QUANT.SPECSING.T</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> det.pl&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.DELIM.EX.QUANT.SPECNONSING.T</font></li>
+</ul>
+<li><font size="4">determiner.demonstrative.sg
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.sg&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.DELIM.UNQ.QUANT.SPECSING.T</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> det.pl&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.DELIM.UNQ.QUANT.SPECSING.T</font></li>
+</ul>
+<li><font size="4">determiner.demonstrative.pl
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.sg&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.DELIM.UNQ.QUANT.SPECNONSING.T</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> det.pl&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.DELIM.UNQ.QUANT.SPECNONSING.T</font></li>
+</ul>
+<li><font size="4">determiner.possessive.sg-owner
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.sg&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.GENOWNER.SINGULAR</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> det.pl&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.GENOWNER.SINGULAR</font></li>
+</ul>
+<li><font size="4">determiner.possessive.pl-owner
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.sg&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.GENOWNER.PLURAL</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> det.pl&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.GENOWNER.PLURAL</font></li>
+</ul>
+<li><font size="4">determiner.negative
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.def.sg&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.DELIM.EX.QUANT.NEGATIVE.T</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> det.def.pl&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.DELIM.EX.QUANT.NEGATIVE.T</font></li>
+</ul>
+<li><font size="4">determiner.quantity
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.pl&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.QUANTITY</font></li>
+</ul>
+<li><font size="4">determiner-of-np.quantity
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.of-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.QUANTITY</font></li>
+</ul>
+<li><font size="4">determiner-np.quantity
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.np.pl&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.QUANTITY</font></li>
+</ul>
+<li><font size="4">determiner.quantity_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.pl_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.QUANTITY</font></li>
+</ul>
+<li><font size="4">determiner-of-np.quantity_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.of-np_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.QUANTITY</font></li>
+</ul>
+<li><font size="4">determiner-np.quantity_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.np.pl_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.QUANTITY</font></li>
+</ul>
+<li><font size="4">determiner.quantity_W_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> det.pl_W_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">D.QUANTITY</font></li>
+</ul>
+</ul>
+</li>
+<li><font size="2" color ="#616D7E">
+marker.xsl</font><ul>
+<li><font size="4">infinitive-to
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> non-fin-vp.becomes.inf-vp&nbsp&nbsp&nbsp&nbsp</font></ul>
+<li><font size="4">sentence-marker
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> s-marker&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font></ul>
+<li><font size="4">dep-clause-marker.purpose
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> dep-clause-marker-with-non-fin-vp.backward</font><font size="3" color ="#0000FF">MOD-E.PURPOSE</font></li>
+</ul>
+<li><font size="4">dep-clause-marker.condition
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> dep-clause-marker.backward&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.CONDITION</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> dep-clause-marker.forward&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.CONDITION</font></li>
+</ul>
+<li><font size="4">dep-clause-marker.cause
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> dep-clause-marker.backward&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.CAUSE</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> dep-clause-marker.forward&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.CAUSE</font></li>
+</ul>
+<li><font size="4">dep-clause-marker.result
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> dep-clause-marker.backward&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.RESULT</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> dep-clause-marker.forward&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.RESULT</font></li>
+</ul>
+</ul>
+</li>
+<li><font size="2" color ="#616D7E">
+mwe.xsl</font><ul>
+<li><font size="4">mwe-arg
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> word.generic&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font></ul>
+</ul>
+</li>
+<li><font size="2" color ="#616D7E">
+noun.xsl</font><ul>
+<li><font size="4">noun
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> n.generic.sg&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY.SINGULAR</font></li>
+</ul>
+<li><font size="4">noun.plural
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> np.generic.pl&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY.PLURAL.DELIMITED</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> n.generic.pl&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY.PLURAL</font></li>
+</ul>
+<li><font size="4">noun.mass
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> np.generic&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY.MASS</font></li>
+</ul>
+<li><font size="4">bare-np
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> np.generic.sg&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY</font></li>
+</ul>
+<li><font size="4">bare-np.modifiable
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> np.generic.sg.modifiable&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY</font></li>
+</ul>
+<li><font size="4">personal-pronoun.sg
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> np.generic.sg&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY.SINGULAR</font></li>
+</ul>
+<li><font size="4">personal-pronoun.pl
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> np.generic.pl&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY.PLURAL</font></li>
+</ul>
+<li><font size="4">deictic-pronoun
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> np.second&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY.VIS-CTXT</font></li>
+</ul>
+<li><font size="4">one-pronoun.n
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> n.second&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY.SIT-CTXT</font></li>
+</ul>
+<li><font size="4">one-pronoun.np
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> np.second.modifiable&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY.SIT-CTXT.EXISTENTIAL.SPEC-NON-SING</font></li>
+</ul>
+<li><font size="4">question-word.obj
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> whnp.obj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> whnp.obj.with-mod&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY.MODIFIER</font></li>
+</ul>
+<li><font size="4">question-word.scomp
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> whnp.scomp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">EVENT</font></li>
+</ul>
+<li><font size="4">question-word.mod
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> whnp.pp-mod&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY</font></li>
+</ul>
+<li><font size="4">dummy-np
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> np.generic&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font></ul>
+<li><font size="4">measure-word
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> n.of-np-arg&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">ENTITY.MEASURE</font></li>
+</ul>
+</ul>
+</li>
+<li><font size="2" color ="#616D7E">
+other.xsl</font><ul>
+<li><font size="4">aux-negation
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> neg.aux-verb&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-AUX.NEGATION</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> neg.aux-verb.progr&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-AUX.NEGATION</font></li>
+</ul>
+<li><font size="4">particle
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prt.generic&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">PRT.DEFAULT</font></li>
+</ul>
+<li><font size="4">pro-sentence
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> s.generic&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.DEICTIC</font></li>
+</ul>
+<li><font size="4">rel-pronoun
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> relative&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.RESTR</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> relative.np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.RESTR</font></li>
+</ul>
+<li><font size="4">possessive-'s
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> possessive&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.OWNER</font></li>
+</ul>
+<li><font size="4">comparative-adj-than
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> mod-comparative-adj.np-arg&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-M.COMPARATIVE</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> neg.aux-verb&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.NEGATION</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> neg.aux-verb.progr&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.NEGATION</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> neg.copular-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.NEGATION</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> neg.copular-pp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.NEGATION</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> neg.copular-adj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.NEGATION</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> copular-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">copular-np</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> copular-adj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">copular-adj</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> copular-pp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">copular-pp</font></li>
+</ul>
+</ul>
+</li>
+<li><font size="2" color ="#616D7E">
+preposition-and-oblique.xsl</font><ul>
+<li><font size="4">prep-oblique
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.oblique&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font></ul>
+<li><font size="4">prep-mod-s.whereto
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHERETO</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHERETO</font></li>
+</ul>
+<li><font size="4">prep-mod-s.of-np.whereto
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s.of-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHERETO</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp.of-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHERETO</font></li>
+</ul>
+<li><font size="4">prep-mod-s.of-np.whereto_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s.of-np_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHERETO</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp.of-np_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHERETO</font></li>
+</ul>
+<li><font size="4">prep-mod-s.of-np.whereto_W_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s.of-np_W_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHERETO</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp.of-np_W_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHERETO</font></li>
+</ul>
+<li><font size="4">prep-mod-s.wherefrom
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHEREFROM</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHEREFROM</font></li>
+</ul>
+<li><font size="4">prep-mod-s.wherefrom_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHEREFROM</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.WHEREFROM</font></li>
+</ul>
+<li><font size="4">prep-mod-s.through
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.THROUGH</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.THROUGH</font></li>
+</ul>
+<li><font size="4">prep-mod-s.location
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.LOCATION-WITH-ANCHOR</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.LOCATION-WITH-ANCHOR</font></li>
+</ul>
+<li><font size="4">prep-mod-s.of-np.location
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s.of-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.LOCATION-WITH-ANCHOR</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp.of-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.LOCATION-WITH-ANCHOR</font></li>
+</ul>
+<li><font size="4">prep-mod-s.of-np.location_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s.of-np_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.LOCATION-WITH-ANCHOR</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp.of-np_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.LOCATION-WITH-ANCHOR</font></li>
+</ul>
+<li><font size="4">prep-mod-s.of-np.location_W_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s.of-np_W_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.LOCATION-WITH-ANCHOR</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp.of-np_W_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.LOCATION-WITH-ANCHOR</font></li>
+</ul>
+<li><font size="4">prep-mod-s.accompaniment
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.ACCOMPANIMENT</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.ACCOMPANIMENT</font></li>
+</ul>
+<li><font size="4">prep-mod-s.recipient
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.RECIPIENT</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.RECIPIENT</font></li>
+</ul>
+<li><font size="4">prep-mod-s.purpose
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.PURPOSE-ENTITY</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.PURPOSE-ENTITY</font></li>
+</ul>
+<li><font size="4">prep-mod-s.comparison
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-s&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.COMPARISION-ENTITY</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-vp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-E.COMPARISION-ENTITY</font></li>
+</ul>
+<li><font size="4">here-and-there
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-n.saturated&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.LOCATION</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-np.saturated&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.LOCATION</font></li>
+</ul>
+<li><font size="4">here-and-there_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-n.saturated_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.LOCATION</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-np.saturated_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.LOCATION</font></li>
+</ul>
+<li><font size="4">prep-mod-n.comparison
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-n&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.COMPARISON-ENTITY</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.COMPARISON-ENTITY</font></li>
+</ul>
+<li><font size="4">prep-mod-n.owner
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-n&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.OWNER</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.OWNER</font></li>
+</ul>
+<li><font size="4">prep-mod-n.location
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-n&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.LOCATION-WITH-ANCHOR</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.LOCATION-WITH-ANCHOR</font></li>
+</ul>
+<li><font size="4">prep-mod-n.of-np.location
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-n.of-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.LOCATION-WITH-ANCHOR</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-np.of-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.LOCATION-WITH-ANCHOR</font></li>
+</ul>
+<li><font size="4">prep-mod-n.of-np.location_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-n.of-np_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.LOCATION-WITH-ANCHOR</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-np.of-np_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.LOCATION-WITH-ANCHOR</font></li>
+</ul>
+<li><font size="4">prep-mod-n.of-np.location_W_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-n.of-np_W_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.LOCATION-WITH-ANCHOR</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-np.of-np_W_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.LOCATION-WITH-ANCHOR</font></li>
+</ul>
+<li><font size="4">prep-mod-n.recipient
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-n&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.RECIPIENT</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.RECIPIENT</font></li>
+</ul>
+<li><font size="4">prep-mod-n.accompaniment
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> prep.mod-n&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.ACCOMPANIMENT</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T.ACCOMPANIMENT</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-n&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T-PHYSICAL.ACCOMPANIMENT</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> prep.mod-n&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">MOD-T-PHYSICAL.LOCATION-WITH-ANCHOR</font></li>
+</ul>
+</ul>
+</li>
+<li><font size="2" color ="#616D7E">
+verb-aux.xsl</font><ul>
+<li><font size="4">aux
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.aux&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">AUX.SCOPE.INDICATIVE</font></li>
+</ul>
+<li><font size="4">aux.polar-question
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> inverted&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">AUX.SCOPE.INTERROGATIVE</font></li>
+</ul>
+<li><font size="4">aux.fronted-obj-question
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> fronted-whnp.obj-controlled&nbsp&nbsp</font><font size="3" color ="#0000FF">AUX.RESTR.SCOPE.INTERROGATIVE</font></li>
+</ul>
+<li><font size="4">aux.fronted-scomp-question
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> fronted-whnp.scomp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">AUX.RESTR-E.SCOPE.INTERROGATIVE</font></li>
+</ul>
+<li><font size="4">aux.fronted-location-question
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> fronted-whnp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">AUX.SCOPE-LOCATION.INTERROGATIVE</font></li>
+</ul>
+<li><font size="4">aux.fronted-whereto-question
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> fronted-whnp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">AUX.SCOPE-WHERETO.INTERROGATIVE</font></li>
+</ul>
+<li><font size="4">aux.progr
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.aux.progr&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">AUX.SCOPE.INDICATIVE</font></li>
+</ul>
+<li><font size="4">aux.progr.polar-question
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> inverted.progr&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">AUX.SCOPE.INTERROGATIVE</font></li>
+</ul>
+<li><font size="4">aux.progr.fronted-obj-question
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> fronted-whnp.obj-controlled.progr</font><font size="3" color ="#0000FF">AUX.RESTR.SCOPE.INTERROGATIVE</font></li>
+</ul>
+<li><font size="4">aux.progr.fronted-scomp-question
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> fronted-whnp.scomp.progr&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">AUX.RESTR-E.SCOPE.INTERROGATIVE</font></li>
+</ul>
+<li><font size="4">aux.progr.fronted-location-question
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> fronted-whnp.progr&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">AUX.SCOPE-LOCATION.INTERROGATIVE</font></li>
+</ul>
+<li><font size="4">aux.progr.fronted-whereto-question
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> fronted-whnp.progr&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">AUX.SCOPE-WHERETO.INTERROGATIVE</font></li>
+<font size="3" color ="#0000FF">s.main</font></li>
+<font size="3" color ="#0000FF">s.vcomp.non-fin</font></li>
+<font size="3" color ="#0000FF">fronted-pp-mod-whnp</font></li>
+<font size="3" color ="#0000FF">s.main</font></li>
+<font size="3" color ="#0000FF">s.vcomp.progr</font></li>
+<font size="3" color ="#0000FF">fronted-pp-mod-whnp</font></li>
+</ul>
+<li><font size="4">aux.polar-question.future
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> inverted&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">AUX.SCOPE.INTERROGATIVE.FUTURE</font></li>
+</ul>
+<li><font size="4">aux.future-ind
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> non-fin-vp.becomes.fin-vp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">AUX.MAKE-FUTURE-INDICATIVE</font></li>
+</ul>
+</ul>
+</li>
+<li><font size="2" color ="#616D7E">
+verb-copular.xsl</font><ul>
+<li><font size="4">copular
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> copular-adj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">COP.RESTR.SCOPE2</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> copular-pp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">COP.RESTR.SCOPE2</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> copular-pp.progr-verb&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">COP.RESTR.SCOPE-WITH-ECOMP</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> copular-np&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">COP.RESTR.SCOPE</font></li>
+</ul>
+<li><font size="4">copular.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> copular-adj.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">COP.RESTR.SCOPE2</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> copular-pp.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">COP.RESTR.SCOPE2</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> copular-np.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">COP.RESTR.SCOPE</font></li>
+</ul>
+<li><font size="4">copular.inverted
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> copular-adj.inverted&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">COP.RESTR.SCOPE2</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> copular-pp.inverted&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">COP.RESTR.SCOPE2</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> copular-np.inverted&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">COP.RESTR.SCOPE</font></li>
+</ul>
+<li><font size="4">copular.fronted-question
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> copular-adj.whnp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">COP.RESTR.SCOPE2</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> copular-pp.whnp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">COP.RESTR.SCOPE2</font></li>
+<li> <font size="3" face="courier"color ="#FF0000"> copular-np.whnp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">COP.RESTR.SCOPE</font></li>
+</ul>
+</ul>
+</li>
+<li><font size="2" color ="#616D7E">
+verb-other-families.xsl</font><ul>
+<li><font size="4">iv
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR</font></li>
+</ul>
+<li><font size="4">iv.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR</font></li>
+</ul>
+<li><font size="4">iv.prt
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.prt&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PARTICLE</font></li>
+</ul>
+<li><font size="4">iv.prt.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.prt.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PARTICLE</font></li>
+</ul>
+<li><font size="4">tv
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT</font></li>
+</ul>
+<li><font size="4">tv.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT</font></li>
+</ul>
+<li><font size="4">tv_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT</font></li>
+</ul>
+<li><font size="4">tv.NO-SUBJ_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.NO-SUBJ_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT</font></li>
+</ul>
+<li><font size="4">tv.at-obj
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.at-obj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT</font></li>
+</ul>
+<li><font size="4">tv.at-obj.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.at-obj.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT</font></li>
+</ul>
+<li><font size="4">tv.at-obj_W_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.at-obj_W_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT</font></li>
+</ul>
+<li><font size="4">tv.at-obj.NO-SUBJ_W_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.at-obj.NO-SUBJ_W_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT</font></li>
+</ul>
+<li><font size="4">tv.to-obj
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.to-obj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT</font></li>
+</ul>
+<li><font size="4">tv.to-obj.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.to-obj.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT</font></li>
+</ul>
+<li><font size="4">tv.with-obj
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.with-obj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT</font></li>
+</ul>
+<li><font size="4">tv.with-obj.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.with-obj.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT</font></li>
+</ul>
+<li><font size="4">tv.physical-obj
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT-PHYSICAL</font></li>
+</ul>
+<li><font size="4">tv.physical-obj.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT-PHYSICAL</font></li>
+</ul>
+<li><font size="4">tv.animate-obj
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT-ANIMATE</font></li>
+</ul>
+<li><font size="4">tv.animate-obj.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT-ANIMATE</font></li>
+</ul>
+<li><font size="4">tv.prt
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.prt&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.PARTICLE</font></li>
+</ul>
+<li><font size="4">tv.prt.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.prt.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.PARTICLE</font></li>
+</ul>
+<li><font size="4">dtv
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.indobj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.RECIPIENT</font></li>
+</ul>
+<li><font size="4">dtv.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.indobj.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.RECIPIENT</font></li>
+</ul>
+<li><font size="4">dtv.animate-indobj
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.indobj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.RECIPIENT-ANIMATE</font></li>
+</ul>
+<li><font size="4">dtv.animate-indobj.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.indobj.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.RECIPIENT-ANIMATE</font></li>
+</ul>
+<li><font size="4">dtv.to-indobj
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.to-indobj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.RECIPIENT</font></li>
+</ul>
+<li><font size="4">dtv.to-indobj.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.to-indobj.NO-SUBJ&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.RECIPIENT</font></li>
+</ul>
+<li><font size="4">dtv.about-indobj
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.about-indobj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.RECIPIENT</font></li>
+</ul>
+<li><font size="4">dtv.about-indobj.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.about-indobj.NO-SUBJ</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.RECIPIENT</font></li>
+</ul>
+<li><font size="4">dtv.deverbal-obj.at-indobj
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.dtv.at-indobj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.DEVERBAL-OBJ</font></li>
+</ul>
+<li><font size="4">dtv.deverbal-obj.at-indobj.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.dtv.at-indobj.NO-SUBJ&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.DEVERBAL-OBJ</font></li>
+</ul>
+<li><font size="4">v.adj-comp
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.adj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.RESTR.SCOPE</font></li>
+</ul>
+<li><font size="4">v.adj-comp.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.adj.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.RESTR.SCOPE</font></li>
+</ul>
+<li><font size="4">resultant-verb
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.adj&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.RESULTANT</font></li>
+</ul>
+<li><font size="4">resultant-verb.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.adj.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.RESULTANT</font></li>
+</ul>
+<li><font size="4">v.sentence-comp
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.sentence&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.VCOMP</font></li>
+</ul>
+<li><font size="4">v.sentence-comp.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.sentence.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.VCOMP</font></li>
+</ul>
+<li><font size="4">v.non-imp-sentence-comp
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.non-imp-sentence&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.VCOMP</font></li>
+</ul>
+<li><font size="4">v.non-imp-sentence-comp.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.non-imp-sentence.NO-SUBJ</font><font size="3" color ="#0000FF">E.ACTOR.VCOMP</font></li>
+</ul>
+<li><font size="4">v.obj.sentence-comp
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.sentence&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.VCOMP</font></li>
+</ul>
+<li><font size="4">v.obj.sentence-comp.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.sentence.NO-SUBJ&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.VCOMP</font></li>
+</ul>
+<li><font size="4">v.subj-controlled-inf-verb-comp
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.inf-verb&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.VCOMP</font></li>
+</ul>
+<li><font size="4">v.subj-controlled-inf-verb-comp.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.inf-verb.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.VCOMP</font></li>
+</ul>
+<li><font size="4">v.subj-controlled-non-fin-verb-comp
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.non-fin-verb&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.VCOMP</font></li>
+</ul>
+<li><font size="4">v.subj-controlled-non-fin-verb-comp.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.non-fin-verb.NO-SUBJ&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.VCOMP</font></li>
+</ul>
+<li><font size="4">v.subj-controlled-non-fin-verb-comp_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.non-fin-verb_W&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.VCOMP</font></li>
+</ul>
+<li><font size="4">v.subj-controlled-non-fin-verb-comp.NO-SUBJ_W
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.non-fin-verb.NO-SUBJ_W&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.VCOMP</font></li>
+</ul>
+<li><font size="4">v.subj-controlled-progr-verb-comp
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.progr-verb&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.VCOMP</font></li>
+</ul>
+<li><font size="4">v.subj-controlled-progr-verb-comp.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.progr-verb.NO-SUBJ&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.VCOMP</font></li>
+</ul>
+<li><font size="4">v.obj-controlled-non-fin-verb-comp
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.non-fin-verb&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.VCOMP</font></li>
+</ul>
+<li><font size="4">v.obj-controlled-non-fin-verb-comp.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.non-fin-verb.NO-SUBJ</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.VCOMP</font></li>
+</ul>
+<li><font size="4">v.obj-controlled-inf-verb-comp
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.inf-verb&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.VCOMP</font></li>
+</ul>
+<li><font size="4">v.obj-controlled-inf-verb-comp.NO-SUBJ
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.inf-verb.NO-SUBJ&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.ACTOR.PATIENT.VCOMP</font></li>
+</ul>
+<li><font size="4">existence.dummy-deic-subject
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.dummy-deic-subj&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.EXISTENCE</font></li>
+</ul>
+<li><font size="4">existence.dummy-deic-subject.inverted
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.dummy-deic-subj.inverted</font><font size="3" color ="#0000FF">E.EXISTENCE</font></li>
+</ul>
+<li><font size="4">existence.dummy-pers-subject
+</font><ul><li> <font size="3" face="courier"color ="#FF0000"> verb.obj.dummy-pers-subj&nbsp&nbsp&nbsp&nbsp&nbsp</font><font size="3" color ="#0000FF">E.EXISTENCE</font></li>
+</ul>
+</ul>
+</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,111 @@
+# This contains the dictionary items and testbed for 
+# the COMSYS-DEVIL release
+
+# to run the testbed use the command ccg-test
+
+# NOTE:  the " " around single quotes are NOT IN THE GRAMMAR
+#        but simply required by DotCCG
+
+#############
+## Testbed ##
+#############
+
+# You will get 3 readings for the bulk of these:
+#         the np reading
+#         the type-raised np as subject reading
+#         the np as fronted object reading
+# For 'the square' and 'the green square' you will get 9
+# because square has an adjectival entry ( see X dictionary-open.ccg )
+
+
+testbed {
+
+  ########## 
+  ## Demo ##
+  ##########
+
+  the triangle: 3 ;
+  the circle: 3 ;
+  the square: 9 ;        
+  the star: 3 ;
+  the red triangle: 3 ;
+  the blue circle: 3 ;
+  the green square: 9 ;
+  the yellow star: 3 ;
+  the red thing: 3 ;
+  the blue thing: 3 ;
+  the green thing: 3 ;
+  the yellow thing: 3 ;
+  
+  a yellow flag: 3 ;
+  a car: 3;
+  
+  ############
+  ## Part 1 ##
+  ############
+   
+	### Recognition of complex action sequences ##
+	
+	I am playing a game: 1 ;
+    which game am I playing : 1 ;
+	I do not know : 1 ;
+	the shape game or the colour game: 1 ;
+	which game am I playing : 1 ;
+	you are playing the shape game : 1 ;
+	
+	### Ability to verbalise rules ##
+	
+	# to distinguish 'he goes to the table' from 'it goes on the table'
+	# I gave the latter the pred go-loc
+	
+	where should the blue triangle go: 1;
+	it should go next to the left flag: 1 ; # next to is treated as a mwe, hence underscore
+	now I am playing the colour game : 1 ;
+	where does the blue square go: 1 ;
+	it should go next to the blue flag: 1;
+	where is the blue flag: 1;
+	it is on the right: 1;
+	it is on the right of the red flag: 1;
+	
+	### Ability to apply context specific game rules
+	
+	### Ability to play the game
+	
+	play the colour game: 1;
+	play the shape game: 1;
+	
+  ############
+  ## Part 2 ##
+  ############
+
+	this is a car: 1;
+	where is the car: 1;
+	behind the wall: 1;
+	what is behind the wall: 1;
+	I see a car and a blue thing: 1;
+	what is the blue thing: 1;
+	it is a ball: 1;
+
+  ######################
+  ## Part 3: Explorer ##
+  ######################
+
+	could you go and find the Borland book please: 1;
+	#I will go and look for it in a library where books are normally found: 1;
+	do you know where the Borland book is: 1;
+	I believe it is in GJ "'s" office: 1;
+	the book is in GJ  "'s" office near the Starbucks mug: 1;
+	
+        I am sorry but could you help me: 1;
+        could I ask you a question: 1;
+        would you know where the Borland book is: 1;
+        could you tell me where the Borland book is: 2;
+        I would like to know something: 1;
+        I would like to ask you something: 1;
+        would you happen to know where the Borland book is: 1;
+        I would need to kill you now: 1;
+        I would need your help: 1;
+        so_long and thanks for all the fish: 1;
+	
+}  
+

@@ -1,0 +1,362 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
+
+
+# This file contains everything necessary for standard verbs, and some
+# special verbs (thanks, it is made out_of metal, etc), but not for the copula
+# and aux/modal verbs.
+
+# It also contains verbal and sentential coordination.
+
+#################################
+# VERB ARGUMENTS: SLOTS & ROLES # 
+#################################
+
+  # These are the syntactic slots and corresponding semantic roles
+  # used for verbal arguments(compliments)
+  
+  # Semantic Role cats are, like all semantic cats, written in CAPS.
+  
+  # The general format for syn-cat names is type_slot# (args) for the bare compliment itself.
+  # For the comp plus its slash, +type_slot# (args)
+  
+  # The slots are numbered based on their left to right position after the verb itself, so
+  #	_SUBJ_	 VERB		_1_			_2_				_3_
+                          
+  # 1)	  I      slept  
+  # 2)	  I      hit		the ball
+  # 3)	  I      gave		him			the ball
+  # 4)	  I	 gave		it			to  him
+  # 5)	  I	 picked		it			up
+  # 6)	  I	 put		it			on the table
+  # 7)    I	 want								        to run
+  # 8)	  I	 want		him                     				to run
+  		 
+  # As you can see, the slot position is independent of the category (or kind) of the compliment.
+  # So in 3, 4, 5, 6 we have a NP, an OBLIQUE, a PARTICLE and a PP all in slot 3. Thus,
+  # the variable name for a given syntactic argument is a combination of category and slot position:
+  # Verb(vp) & Sentence comps are an exception, they are always in slot 3.. this was just a pragmatic
+  # decision to avoid doubling all of the cats.
+
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # IMPORTANT:  
+  #         Although there are no semantic constraints for entites (animacy, etc)
+  #         some of these verb-roles are restricting for modifiers (where-to and location, e.g.)
+  #         Changes to the modifier section of ontological hierarchy will need be reflected here
+  #
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+
+
+  ## SUBJECT SLOT ##
+  
+    def ACTOR(args)     { <Actor>(S:entity args) }
+  
+  ## COMP SLOT 1 ##
+  
+    def np_1(args)           { np<2>[X acc args] }            def +np_1(args)          { / np_1(args) }
+    #PROSG09
+    def +np_ip(args)          { /(trs()/! np_1(args)) }
+    def +np_1-subj(args)     { \ np<~2>[X nom] }  # this is for 'object-controlled vp comps' like 'I want him to get it'
+
+    def obl_1(frm, args)     { obl<2>[X acc MARK=frm args] }  def +obl_1(frm, args)    { / obl_1(frm, args) }
+    def adj_1(args)          { adj<2>[X args] }               def +adj_1(args)         { / adj_1(args) }
+    def pp_1(args)           { pp<2>[X args] }                def +pp_1(args)          { / pp_1(args) } 
+    def s_1(feats)           { s<2>[X feats] }                def +s_1(feats, args)    { / ( s_1(feats) args ) }
+	   
+    def PATIENT(args)        { <Patient>(X:entity args) }
+
+    def INSTRUMENT(args)     { <Modifier>(M:m-instrumental ^ with <Arg>(X:entity args) ) }  # used in family for 'use'  you can use the coffee maker to make coffee'
+
+  ## COMP SLOT 2 ##
+   
+    def np_2(args)           { np<3>[Y acc args] }            def +np_2(args)          { / np_2(args) }
+    def +np_2-subj(args)     { \ np<~3>[Y nom] }  
+    def obl_2(frm, args)     { obl<3>[Y acc MARK=frm args] }  def +obl_2(frm, args)    { / obl_2(frm, args) }
+    def adj_2(args)          { adj<3>[Y args] }               def +adj_2(args)         { / adj_2(args) }
+    def pp_2(args)           { pp<3>[Y args] }                def +pp_2(args)          { / pp_2(args) }
+    def prt_2(args)          { prt<3>[Y args] }               def +prt_2(args)         { / prt_2(args) }
+
+    def RECIPIENT(args)      { <Recipient>(Y:entity args) }
+    def PARTICLE(args)       { <Particle>(Y args) }
+	
+    # These are all given dependecy <Result>, but have different semantic resrictions on their arg
+    #
+    def R-LOC(args)            { <Result>(Y:m-location args) }
+    def R-WHERETO(args)        { <Result>(Y:m-dynamic args) }
+    def R-QUALITY(args)        { <Result>(Y:quality args) }
+	
+    def R-MODIFIER(args)       { <Result>(Y:modifier args) }
+    def R-ENTITY(args)         { <Result>(Y:entity args) }
+
+ ## COMP SLOT 3 ## 
+
+    def s_3(feats)              { s<4>[Z feats] }     
+    def +s_3(feats, args)       { / ( s_3(feats) args ) }
+    def +verb-subj-cont(feats)  { +s_3(feats, +subj() ) }
+    def +verb-obj-cont(feats)   { +s_3(feats, +np_1-subj() ) }
+
+    def ECOMP(args)          { <Event>(Z:event args) }
+
+
+##############
+## FAMILIES ##
+##############
+
+  #   There is currently an issue which must be resolved concerning extracting
+  # of 'internal' arguments for verbs with multi arguments, e.g. questionging IT
+  # in 'I put IT on the table'
+  #   One possible solution is to use SETARG for all, but 
+  # TYPE CHANGING RULES (here, imp-rules) DON'T WORK WITH SET-ARG (Jason confirmed this) 
+  #   The current solution is to give two reading, i.e. /np/pp & /pp/np,
+  # We get stupid double-bound readings for put on# (>S operator does it). This was
+  # solved by shutting of sub rules ( by adding 'no sub;', see mood-rules.ccg)
+  # Note, however, that this also leads to OVERGENERATION. We should eventually sort out
+  # a way of 'blocking' these readings from combining via ind and imp rules. 
+  # This could be done perhaps by adding another layer of mood features.
+
+
+  #--------------------------------
+  #---  Family Building Macros ----
+  #--------------------------------
+  
+ 
+  def vcat(args, sem)             {  s(s-minor) +subj(nf-real)   args    : EVENT(* ACTOR() sem)  }
+  def vcat-set(args, sem)         {  s(s-minor) +subj(nf-real) { args }  : EVENT(* ACTOR() sem)  } 
+    # for those with sets of args, currently not used, see above
+
+  # Creates a family with a single entry including given args and sem, plus creates relevant
+  # mood rules (for imp and ellided subj) (see mood-rules.ccg)
+  #
+  def vfam(name, args, sem){ 
+        
+           family name (V)  { entry: vcat(args , sem);  }
+           imp-rule(args)   
+  }
+
+  # In addition to its use in 'real' switchables (e.g. I picked up the ball, I picked the ball up)
+  # giving verbs with multiple arguments  a second entry with inverted, or switched, ordering allows
+  # 'extraction' of their patient np, e.g. for questioning. See above.
+  #
+  def vfam-swt(name, arg1, arg2, sem){ 
+        
+           family name (V)  {
+               entry: vcat( arg1 arg2 , sem); 
+               entry: vcat( arg2 arg1 , sem);
+           }
+           imp-rule(arg1 arg2)   
+           imp-rule(arg2 arg1)   
+  }
+
+  # This is used for two entry families where only difference is the syn-cat of one argument
+  # See, e.g. , v+dep-clause (that CLAUSE vs. CLAUSE )
+  #
+  def vfam-alt(name, arg1, arg2, sem){ 
+        
+           family name (V)  {
+               entry: vcat ( arg1 , sem); 
+               entry: vcat ( arg2 , sem);
+           }
+           imp-rule(arg1)   
+           imp-rule(arg2)   
+  }
+
+  #------------------------------
+  #--- The Standard Families ----
+  #------------------------------
+  #PROSG09: vfam is a macro for making family entries for all possible forms of a Verb. It takes verb forms like iv, tv, v+pp as 1st input argument. Too good Trevor.
+  vfam    ( iv              ,                   ,           )
+  vfam    ( tv              , +np_1()           , PATIENT() ) 		
+  #PROSG09 To handle "I don't know@L+H* LH% the color@H* LL%", we need a family entry "s\!np/(s/!np)" in the lies of current "s\!np/np" 
+  vfam    ( tv              , +np_ip()           , PATIENT() ) 		
+  vfam    ( v+Rec-np        , +np_2()           , RECIPIENT() )
+
+  def vfam-obl(word){ vfam( "v+".word."-np"  ,   +obl_1(word,)   ,   PATIENT() ) }
+   vfam-obl(of)
+   vfam-obl(with)
+   vfam-obl(for)
+   vfam-obl(to)
+   vfam-obl(from)
+	  
+  vfam    ( v+pp-whereto    , +pp_2()             , R-WHERETO()  )
+  vfam    ( v+pp-loc        , +pp_2()             , R-LOC()      )
+  vfam    ( v+pp            , +pp_2()             , R-MODIFIER()   )   
+              		            
+  vfam    ( v+adj           , +adj_2()            , R-QUALITY()   )  
+
+  vfam-swt( v+np+prt        , +prt_2() , +np_1()  , PATIENT() PARTICLE() ) 								  
+  vfam-swt( v+np+pp-whereto , +pp_2()  , +np_1()  , PATIENT() R-WHERETO() ) 
+  vfam-swt( v+np+pp-loc     , +pp_2()  , +np_1()  , PATIENT() R-LOC()     )
+  vfam-swt( v+np+adj        , +adj_2() , +np_1()  , PATIENT() R-QUALITY()   )
+
+  vfam    ( dtv            , +np_1() +np_2()    , PATIENT() RECIPIENT()   )
+  def vfam-dtv(word){ vfam-swt( "dtv-".word     ,   +obl_1(word,) , +np_2()  ,   PATIENT() RECIPIENT() ) }
+   vfam-dtv(for)
+   vfam-dtv(to)
+  						     
+
+  vfam    ( v+sent          , +s_3(fin,)                      , ECOMP()  )
+  vfam-alt( v+dep-clause    , +s_3(s-dependant,) 
+                            , +s_3(s-dependant MARK=that,)    , ECOMP()  )
+  vfam    ( v+deictic-event , +s_3(fin-deictic,)              , ECOMP()  )
+  vfam    ( v+verb-ing      , +verb-subj-cont(ing)            , ECOMP()  )
+  vfam    ( v+verb-inf      , +verb-subj-cont(inf)            , ECOMP()  )
+
+
+  vfam    ( v+np+sent       , +s_3(fin,) +np_1()                    , PATIENT() ECOMP()  )
+  vfam-alt( v+np+dep-clause , +s_3(s-dependant,) +np_1()
+                            , +s_3(s-dependant MARK=that,) +np_1()  , PATIENT() ECOMP()  )
+  vfam    ( v+np+verb-ing   , +verb-obj-cont(ing) +np_1()           , PATIENT() ECOMP()  )
+  vfam    ( v+np+verb-inf   , +verb-obj-cont(inf) +np_1()           , PATIENT() ECOMP()  )
+  vfam    ( v+np+verb-base  , +verb-obj-cont(vf-base) +np_1()       , PATIENT() ECOMP()  )
+
+  #-----------------------------
+  #--- Specialized Families ----
+  #-----------------------------
+  
+
+  # I made it from plastic, it is made of plastic, etc.
+  # 
+  def vfam-obl-result(word){ vfam-swt( "v+np+".word."-np-result" , +np_1(), +obl_2(word,) , PATIENT() R-ENTITY()   ) }
+   vfam-obl-result(of)
+   vfam-obl-result(from)
+   vfam-obl-result(out_of)  
+	  
+  # you use this to pick up balls
+  #
+  vfam   ( v+instrumental-np+verb-inf , +verb-subj-cont(inf) +np_1()      , PATIENT() ECOMP( INSTRUMENT() )  )
+  
+  # thank you for helping me  
+  #
+  vfam   ( v+Rec-np+for-verb-ing      , +verb-obj-cont(for-ing) +np_1()   , RECIPIENT() ECOMP()              )   
+
+  # don't be silly
+  family imp-do(V)               { entry: from-s(s-imp) / (s(vf-base) +subj()):  EVENT( IMP() <Subject>(S:entity addressee) ) ;}
+  family imp-lets(V)             { entry: from-s(s-imp) / (s(vf-base) +subj()):  EVENT( IMP() <Subject>(S:entity speaker+addressee) ) ;}
+
+  family Thanks(V)  { entry: s(s-ind) +s_3(for-ing, \ np_2(nom) )  : EVENT (* IND() <Actor>(A:entity speaker <Num>(sg) ) RECIPIENT(addressee) ECOMP() ) ;
+                      entry: s(s-ind)                              : EVENT (* IND() <Actor>(A:entity speaker <Num>(sg) ) RECIPIENT(addressee) ) ;  
+                      entry: s(s-ind) +obl_1(for,)                 : EVENT (* IND() <Actor>(A:entity speaker <Num>(sg) ) RECIPIENT(addressee) PATIENT() ) ;  
+  }
+
+  ##################################
+  ## VP & Sentential Coordination ##
+  ##################################
+    
+  # First entry handles coordinated vps, i.e. subject controlled vp chains.
+  # Every syn feature except for modifier class must be identical. If this weren't allowed to differ, 
+  # couldnt handle I walked in and picked it up, cuz walk and pick have dif m-classes. 
+  
+  # NOTE: Open question: what should the m-class of the result be? 
+  #          As it stands, we get multiple readings for all coordinated clauses involving modifiers,
+  #          one with mod of 2nd conjunct, one with result
+  
+  # Second entry handles general sentence coordination. The conjuncts must be mooded-clauses, 
+  # the result is of general s-major mood and 'fin' verb form (if you don't give it a verb form
+  # then some rules will grap a hold of it and make silly readings (e.g. see rules around imperatives)
+  #   NOTE: May 15 restricted these to being ind or int, not dropped subject ind (s-ind-ell) or imp.
+  #         This is because we want those to be handled using the vp-chains. This reduces number of parses
+  #         and looks more sexy, like Givon's(1995)   S[subj vp vp vp vp vp ...] treatment
+		   
+  def coord-s-entry(res, next, first) {
+         entry:    s<10>[R res fin COM=yes] /^ s<11>[N  next fin  ] \* s<12>[F first fin COM=no]  : COORD(*) ;  
+  } 
+
+  family Coord-s-  { 
+      entry:   ( s<10>[R VFORM:VFORM POL:POL FIN:FIN NUM:NUM PERS:PERS COM=yes] +subj() ) 
+                 / (s<11>[N VFORM:VFORM POL:POL FIN:FIN NUM:NUM PERS:PERS] +subj() ) 
+	   	 \ (s<12>[F VFORM:VFORM POL:POL FIN:FIN NUM:NUM PERS:PERS COM=no] +subj() ) : COORD(*) ; 
+       coord-s-entry(s-ind, s-ind, s-ind)
+       coord-s-entry(s-int, s-int, s-int)
+       coord-s-entry(s-dependent, s-dependent, s-dependent)
+       coord-s-entry(s-mood-mixed, s-ind, s-int)
+       coord-s-entry(s-mood-mixed, s-int, s-ind)
+       coord-s-entry(s-mood-mixed, s-int, s-imp)
+       coord-s-entry(s-mood-mixed, s-ind, s-imp)
+       coord-s-entry(s-ind, s-ind, s-ind)
+   }
+
+   # Added sept 18 to allow incremental parsing of coordinated imperatives. 
+   #    go and ...  walk over there and ...
+   # Is currently 'over generating' by also applying to pre-placable adverbs to receive
+   # an 'imp waiting for verb' reading
+
+   imp-rule ( / (s<11>[N VFORM:VFORM POL:POL FIN:FIN NUM:NUM PERS:PERS] +subj() ) )
+
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+
+  # This handles verbs which are perfectly regular ex. jump -> jumps, jumping, jumped (past), jumped (past participle)
+  #
+  def verb-reg(stem, mod, class, props)       {  verb(stem, stem."ing", stem."ed", stem."ed", mod, class, props) }
+  def _verb-reg(prd, stem, mod, class, props) { _verb(prd, stem, stem."ing", stem."ed", stem."ed", mod, class, props) }
+
+  # This handles verbs whose 3rd person present form is regular, but whose past and past particle aren't
+  #
+  def verb(stem, ving, pasttense, pastpart, mod, class, props)       {  verb-basic(stem, pluralize(stem), ving, pasttense, pastpart, mod, class, props) }
+  def _verb(prd, stem, ving, pasttense, pastpart, mod, class, props) { _verb-basic(prd, stem, pluralize(stem), ving, pasttense, pastpart, mod, class, props) }
+
+  # This handles irregular verbs, i.e. each form must be fully specified
+  #
+  #PROSG09 changes
+  def verb-basic(stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(stem, stem,accentMark(stem), 3sing,accentMark(3sing),ving,accentMark(ving), pasttense,accentMark(pasttense), pastpart,accentMark(pastpart), mod, class, props) }
+
+  def _verb-basic(prd, stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(prd, stem, accentMark(stem), 3sing,accentMark(3sing),ving,accentMark(ving), pasttense,accentMark(pasttense), pastpart,accentMark(pastpart), mod, class, props) }
+
+ #PROSG09 changes
+  def _verb-basic_ip(prd, stem,stem_hs,stem_ls,stem_lphs,3sing,3sing_hs,3sing_ls,3sing_lphs,ving,ving_hs,ving_ls,ving_lphs, pasttense,,pasttense_hs,pasttense_ls,pasttense_lphs, pastpart,pastpart_hs,pastpart_ls,pastpart_lpls, mod, class, props) {
+    word stem.-verb-.class.mod:props(class, pred=prd) {
+      stem:      mod fin-full pres s-pos do non-3rd s-sg e-focus-false e-uncontentious e-rheme-true e-speaker spkr;  	
+      stem:      mod fin-full pres s-pos do non-3rd s-sg e-focus-false e-uncontentious e-rheme-false e-hearer hear;  	
+      stem_hs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-true e-hearer hear hs; 
+      stem_hs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-speaker spkr e-rheme-true hs;  	
+      stem_lphs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs;  	
+      stem_lphs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-false e-speaker spkr lphs;  	
+      3sing:     mod fin-full pres s-pos do 3rd     s-sg  ;
+      stem:      mod fin-full pres s-pos do         s-pl  ;
+      pasttense: mod fin-full past s-pos do               ;
+      pastpart:  mod pp                                   ;
+      ving:      mod ing                                  ;
+      stem:      mod vf-base e-focus-false e-uncontentious e-rheme-true e-speaker spkr;
+      stem:      mod vf-base e-focus-false e-uncontentious e-rheme-false e-hearer hear;
+      stem_hs:   mod vf-base e-focus-true e-uncontentious e-rheme-true e-hearer hear hs ;
+      stem_hs:   mod vf-base e-focus-true e-uncontentious e-rheme-true e-speaker spkr hs ;
+      stem_lphs:   mod vf-base e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs;
+      stem_lphs:   mod vf-base e-focus-true e-uncontentious e-rheme-false e-speaker spkr lphs;
+      stem:      mod vf-to-imp e-focus-false e-uncontentious e-rheme-true e-speaker spkr ;   # This entry gets turned into an imp via rule (see above)
+      stem:      mod vf-to-imp e-focus-false e-uncontentious e-rheme-false e-hearer hear ;   # This entry gets turned into an imp via rule (see above)
+
+    }
+  }
+
+  # This set is identical but DOES NOT have a to-imp reading
+  # Use these if you don't want this verb to receive an imperative reading.
+  #
+  #
+  def verb-reg-no-imp(stem, mod, class, props)       {  verb-no-imp(stem, stem."ing", stem."ed", stem."ed", mod, class, props) }
+  def _verb-reg-no-imp(prd, stem, mod, class, props) { _verb-no-imp(prd, stem, stem."ing", stem."ed", stem."ed", mod, class, props) }
+  def verb-no-imp(stem, ving, pasttense, pastpart, mod, class, props)       {  verb-basic-no-imp(stem, pluralize(stem), ving, pasttense, pastpart, mod, class, props) }
+  def _verb-no-imp(prd, stem, ving, pasttense, pastpart, mod, class, props) { _verb-basic-no-imp(prd, stem, pluralize(stem), ving, pasttense, pastpart, mod, class, props) }
+  def verb-basic-no-imp(stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic-no-imp(stem, stem, 3sing, ving, pasttense, pastpart, mod, class, props) }
+  def _verb-basic-no-imp(prd, stem, 3sing, ving, pasttense, pastpart, mod, class, props) {
+    word stem.prd.-verb-.class.mod:props(class, pred=prd) {
+	  stem:      mod fin-full pres s-pos do non-3rd s-sg  ;  	
+          3sing:     mod fin-full pres s-pos do 3rd     s-sg  ;
+          stem:      mod fin-full pres s-pos do         s-pl  ;
+          pasttense: mod fin-full past s-pos do               ;
+	  pastpart:  mod pp                                   ;
+	  ving:      mod ing                                  ;
+	  stem:      mod vf-base                              ;
+    }
+  }
+
+
+ def adjectival-verb(stem, mod, class, props) {_adjectival-verb(stem, stem, mod, class, props) }
+ def _adjectival-verb(prd, stem, mod, class, props) {
+     word stem.-be-adj-to: props (class, pred=prd)
+     {stem: vf-be mod;}
+ }
+

@@ -1,0 +1,82 @@
+############ [name of the grammar] ####################
+#
+#
+## [a brief description of your grammar]
+## [your name, Month Year]
+#
+####################### Features #######################
+#
+## here's a sample feature declaration (commented out)
+## NB: only use *one* feature declaration per grammar
+#
+## feature {
+##   case<2>: nom acc;
+##   num<2>: sg pl;
+##   pers<2>: non-3rd {1st 2nd} 3rd;
+##   tense<E>: past pres;
+##   ontology: sem-obj {
+##      phys-obj {animate-being {person animal}
+##                thing }
+##      situation {change {action} state}
+##  };
+## }
+#
+######################### Words #########################
+#
+## word declarations include the lexical item, the
+## family/category, the semantic sort, and any
+## associated features
+#
+## word the:Det;
+## word slept:IntransV: past;
+#
+#
+## expansions can be used to reduce redundant specification
+## 'noun' below is an expansion -- for more see the CCG GUI
+## tutorial : http://comp.ling.utexas.edu/wiki/doku.php/ccggui
+#
+## def noun(Sing, Plur, Class) {
+##  word Sing:N(Class) {
+##  *: sg sg-X;
+##  Plur: pl pl-X;
+##  }
+## }
+##
+## noun(policeman, policemen, person)
+## noun(peach, peaches, thing)
+#
+#
+#
+######################### Rules #########################
+#
+################## Lexicon/Categories ####################
+#
+## same example lexical families for English
+## these examples show use of features and semantics
+#
+## family IntransV(V) {
+##  entry: s<1> [E] \ np<2> [X nom] : E:action(* <Actor>X:animate-being);
+## }
+##
+## family TransV(V) {
+##  entry: s<1> [E] \ np<2> [X nom] / np<3> [Y acc] :
+##   E:action(* <Actor>X:animate-being <Patient>Y:sem-obj;
+## }
+##
+## family Det(indexRel="det") {
+##   entry: np<2> [X pers=3rd] /^ n<2> [X]: X:sem-obj(<det> *);
+## }
+##
+#
+#
+####################### Testbed #########################
+#
+## use just one testbed per grammar
+## here's a sample testbed -- the number after the sentence
+## is the expected number of parses
+#
+## testbed {
+##   the policeman saw the boys: 1;
+##   the policeman see the boys: 0;
+##   every good boy does fine: 1;
+## }
