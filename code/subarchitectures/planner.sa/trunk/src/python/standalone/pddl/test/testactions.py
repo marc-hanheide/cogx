@@ -10,6 +10,7 @@ from mapltypes import *
 from predicates import *
 from effects import *
 from actions import Action
+from builder import Builder
 from parser import Parser, ParseError
 
 logistics = \
@@ -26,7 +27,8 @@ logistics = \
          city location thing agent - object)
   
 (:functions  (city-of ?l - (either location vehicle)) - city
-             (location-of ?t - thing) - (either location vehicle)
+             (location-of ?t - package) - (either location vehicle)
+             (location-of ?t - vehicle) - location
              (load_succ_prob) - number
              (load-costs ?v - vehicle) - number
 )
@@ -70,6 +72,15 @@ mapl_drive = """
                  :agent         (?a - agent)
                  :parameters    (?t - truck ?to - location)
                  :precondition  (= (city-of (location-of ?t)) (city-of ?to))
+                 :effect        (assign (location-of ?t) ?to))
+        """
+
+normalized_drive = """
+        (:action drive
+                 :parameters    (?t - truck ?to - location ?from - location ?c - city)
+                 :precondition  (and (= (location-of ?t) ?from)
+                                     (= (city-of ?from) ?c)
+                                     (= (city-of ?to) ?c))
                  :effect        (assign (location-of ?t) ?to))
         """
 
@@ -227,8 +238,18 @@ class ActionTest(unittest.TestCase):
         action = Parser.parse_as(modal_action.split("\n"), mapl.MAPLAction, self.domain)
 
         self.assertEqual(action.params[1].type, FunctionType(t_object))
-        term = predicates.FunctionTerm(self.domain.functions["location-of"][0], [Parameter("?c", self.domain.types["city"])])
+        term = predicates.FunctionTerm(self.domain.functions["location-of"][0], [Term(Parameter("?c", self.domain.types["city"]))])
         action.instantiate({"?var" : term})
+
+    def testTermInstantiation(self):
+        """Testing instantiation of variables with function terms"""
+        
+        action = Parser.parse_as(normalized_drive.split("\n"), Action, self.domain)
+        term = Builder(action)("location-of", "?t")
+        action.instantiate({"?from" : term})
+        pre2 = action.precondition.copy(copy_instance=True)
+        self.assertEqual(pre2.pddl_str(), "(and (= (location-of ?t) (location-of ?t)) (= (city-of (location-of ?t)) ?c) (= (city-of ?to) ?c))")
+        action.uninstantiate()
         
     def testEffects(self):
         """Testing basic effect parsing"""

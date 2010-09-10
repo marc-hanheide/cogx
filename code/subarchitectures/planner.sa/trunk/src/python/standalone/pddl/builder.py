@@ -59,7 +59,7 @@ class Builder(object):
         if isinstance(func, predicates.Predicate):
             return predicates.Literal(func, args[1:], self.scope)
         else:
-            return predicates.FunctionTerm(func, args[1:])
+            return predicates.FunctionTerm(func, args[1:], self.scope)
 
         assert(False)
 

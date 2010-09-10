@@ -462,7 +462,7 @@ class Parameter(TypedObject):
         """
         
         if value is not None:
-            assert value.is_instance_of(self.type)
+            assert value.is_instance_of(self.type), "%s not of type %s" % (str(value.get_type()), str(self.type))
         self.instantiated = value
 
     def is_instantiated(self):
@@ -474,11 +474,11 @@ class Parameter(TypedObject):
         (None if it is not instantiated)."""
         return self.instantiated
     
-    # def __hash__(self):
-    #     return hash(id(self))
+    def __hash__(self):
+        return hash(id(self))
 
-    # def __eq__(self, other):
-    #     return id(self) == id(other)
+    def __eq__(self, other):
+        return id(self) == id(other)
 
 
 #basic types for all pddl representations
