@@ -104,7 +104,7 @@ namespace spatial
       void GoToNBV();
       void InterpretCommand();
       void AskForDistribution();
-      int GetViewConeSums(std::vector <SensingAction > samplepoints, SpatialGridMap::GridMap<SpatialGridMap::GridMapData> *map = 0);
+      int GetViewConeSums(std::vector <SensingAction > &samplepoints, SpatialGridMap::GridMap<SpatialGridMap::GridMapData> *map = 0);
       void LookforObjectWithStrategy(SearchMode mode);
       void UnsuccessfulDetection(SensingAction viewcone, SpatialGridMap::GridMap<SpatialGridMap::GridMapData> *map = 0);
       void SetCurrentTarget(const string &label);
@@ -205,6 +205,7 @@ namespace spatial
       bool isSearchFinished;
       int viewCount;
 
+      double m_sampleawayfromobs;
       int m_samplesize;
       double m_pout;
       double m_gridsize;
