@@ -216,12 +216,6 @@ namespace spatial
       m_usePTZ = true;
       log("will use ptu");
     }
-    string filename;
-    if ((it = _config.find("--relations-file")) != _config.end()) {
-      istringstream istr(it->second);
-      istr >> filename;
-    }
-    LoadSpatialRelations(filename);
 
     m_curemapfile = "";
     if ((it = _config.find("--curemap-file")) != _config.end()) {
@@ -264,53 +258,6 @@ namespace spatial
 
     gotPC = false;
 
-  }
-  void VisualObjectSearch::LoadSpatialRelations(std::string filename){
-    //open file
-    ifstream file(filename.c_str());
-    if (!file.good()){
-      log("Could not open file, returning without doing anything.");
-      return;
-    }
-    string line,word,objectname;
-
-    ObjectRelations objrel;
-
-    indirect_middle_object = "z";
-
-    SetCurrentTarget("book");
-    while(getline(file,line)){
-      ObjectPairRelation pairrel;
-      istringstream iss(line, istringstream::in);
-      iss >> word;
-      if (word == "END"){
-	log("reached end breaking");
-	objectData.push_back(objrel);
-	break;
-      }
-      if (objrel.object != word){ //if this is a new object
-	if ( objrel.relations.size() != 0)
-	  objectData.push_back(objrel);
-	objrel.relations.clear();
-      }
-      objrel.object = word;
-      pairrel.primaryobject = word;
-      iss >> word;
-      pairrel.relation = word == "ON" ? FrontierInterface::ON : FrontierInterface::IN;
-      iss >> pairrel.secobject;
-      if( pairrel.primaryobject == "dell")
-	indirect_middle_object = "dell"; //this is horrible, cover your eyes
-
-      iss >> word;
-      pairrel.prob = atof(word.c_str());
-      objrel.relations.push_back(pairrel);
-    }
-    log("relations loaded %d objects",objectData.size());
-    for (unsigned int i = 0; i < objectData.size(); i++){
-      for (unsigned int j = 0; j < objectData[i].relations.size(); j++){
-	cout<< objectData[i].object << " " << objectData[i].relations[j].relation << " " << objectData[i].relations[j].secobject << " " << objectData[i].relations[j].prob << endl;
-      }
-    }
   }
 
   void VisualObjectSearch::IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm  ){
@@ -557,6 +504,27 @@ namespace spatial
     outfile << cost;
   }
 
+  vector<VisualObjectSearch::ObjectPairRelation>
+    VisualObjectSearch::getStrategyStep(vector<string> &policy, int step)
+  {
+    vector<ObjectPairRelation> strategyStep;
+
+    std::vector<ObjectPairRelation> singleStrategy, prevStrategy;
+    singleStrategy.clear();
+    prevStrategy.clear();
+    getStructuredStrategy(policy[step], singleStrategy);
+    getStructuredStrategy(policy[step-1], prevStrategy);
+    unsigned int j=0;
+    for(j=0; j < prevStrategy.size(); j++){
+      if (prevStrategy[j].relation != singleStrategy[j].relation || prevStrategy[j].primaryobject != singleStrategy[j].primaryobject || prevStrategy[j].secobject != singleStrategy[j].secobject)
+	break;
+    }
+    for(;j < singleStrategy.size(); j++) {
+      strategyStep.push_back(singleStrategy[j]);
+    }
+    return strategyStep;
+  }
+
   double VisualObjectSearch::GetStrategyCost(std::vector<std::string> policy){
     double StrategyCost;
     std::string room = policy[0];
@@ -564,21 +532,9 @@ namespace spatial
     ChangeMaps(room);
 
     // we always execute the first policy
-    std::vector<ObjectPairRelation> singleStrategy, prevStrategy;
     for (unsigned int i=1; i < policy.size(); i++){
-      singleStrategy.clear();
-      prevStrategy.clear();
-      getStructuredStrategy(policy[i], singleStrategy);
-      getStructuredStrategy(policy[i-1], prevStrategy);
-      unsigned int j=0;
-      vector<ObjectPairRelation> strategyStep;
-      for(j=0; j < prevStrategy.size(); j++){
-	if (prevStrategy[j].relation != singleStrategy[j].relation || prevStrategy[j].primaryobject != singleStrategy[j].primaryobject || prevStrategy[j].secobject != singleStrategy[j].secobject)
-	  break;
-      }
-      for(;j < singleStrategy.size(); j++) {
-	strategyStep.push_back(singleStrategy[j]);
-      }
+      vector<ObjectPairRelation> strategyStep = 
+	getStrategyStep(policy, i);
 
       double	costThisStep = tryLoadStepCost(strategyStep);
       if (costThisStep == 0) {
@@ -625,7 +581,6 @@ namespace spatial
 
 	  if (strategyStep.size() == 1) {
 	    // If so, do uniform search without asking for a point cloud
-	    //TODO: Don't override the map!   
 	    log("strategy contains room and has 1 step.");
 	    InitializePDFForObject(1.0, strategyStep[0].primaryobject, &tmpMap);
 	    pbVis->AddPDF(tmpMap);
@@ -729,18 +684,14 @@ namespace spatial
 	  // This step doesn't begin with the room; this means it's
 	  // an indirect search. 
 
+	  // Assume a number of poses for the base object, and
+	  // create and query a sample cloud for each
+	  // KDE and compute cost for each, then average the costs
 
-	  if (costThisStep <= 0) {
-	    // Couldn't find cached cost; compute it
-
-	    // Assume a number of poses for the base object, and
-	    // create and query a sample cloud for each
-	    // KDE and compute cost for each, then average the costs
-
-	    // Select hypothesical poses for base object
-	    vector<Pose3> baseObjectPoses;
-	    Pose3 tmpPose;
-	    tmpPose.pos = vector3(0,0,0);;
+	  // Select hypothesical poses for base object
+	  vector<Pose3> baseObjectPoses;
+	  Pose3 tmpPose;
+	  tmpPose.pos = vector3(0,0,0);;
 
 	  // Randomize orientations for involved objects, unless we already have such
 	  vector<Matrix33> orientations;
@@ -883,18 +834,12 @@ namespace spatial
 
 	if (!waitingForDetection.empty() || !waitingForObjects.empty()) {
 
-	  if (newObj->label == indirect_middle_object && currentSearchMode == INDIRECT){ 
+	  if (newObj->label == currentTarget) {
 	    log("an indirect middle object");
 	    waitingForDetection.clear();
 	    waitingForObjects.clear();
-	    DetectionComplete(true,indirect_middle_object);
+	    DetectionComplete(true,newObj->label);
 	  }	
-	  else if (newObj->label == currentTarget) {
-	    log("this is the current target");
-	    waitingForDetection.clear();
-	    waitingForObjects.clear();
-	    DetectionComplete(true);
-	  }
 	  else {
 	    waitingForObjects.erase(newObj->label);
 	    waitingForDetection.erase(newObj->label);
@@ -1197,11 +1142,13 @@ namespace spatial
   }
   void VisualObjectSearch::selectdi( GtkWidget *widget, gpointer data )
   {
-    AVSComponentPtr->LookforObjectWithStrategy(DIRECT_INFORMED);
+    AVSComponentPtr->targetObject = "book";
+    AVSComponentPtr->LookforObjectWithStrategy();
   }
   void VisualObjectSearch::selectind( GtkWidget *widget, gpointer data )
   {
-    AVSComponentPtr->LookforObjectWithStrategy(INDIRECT);
+    AVSComponentPtr->targetObject = "book";
+    AVSComponentPtr->LookforObjectWithStrategy();
   }
 
 
@@ -1336,7 +1283,8 @@ namespace spatial
   //  }
   //}
 
-  VisualObjectSearch::ObjectPairRelation VisualObjectSearch::GetSecondaryObject(string name){
+  VisualObjectSearch::ObjectPairRelation 
+  VisualObjectSearch::GetSecondaryObject(string name){
     ObjectPairRelation obj;
     obj.primaryobject = "";
     //NOTE: WE ASSUME THAT EACH OBJECT HAS EXACTLY ONE SPATIAL RELATION WITH ANOTHER OBJECT!
@@ -1348,6 +1296,24 @@ namespace spatial
     }
     return obj;
   }
+
+  void VisualObjectSearch::FindBestPolicy(const vector<vector<string> > &policies)
+  {
+    unsigned int bestPolicyNo;
+    double bestCost = DBL_MAX;
+
+    for (unsigned int i = 0; i < policies.size(); i++) {
+      double cost = GetStrategyCost(policies[i]);
+      if (cost < bestCost) {
+	bestCost = cost;
+	bestPolicyNo = i;
+      }
+    }
+
+    currentSearchPolicy = policies[bestPolicyNo];
+    currentPolicyStep = 0;
+  }
+
   void VisualObjectSearch::InterpretCommand(){
     switch (m_command)
     {
@@ -1363,6 +1329,14 @@ namespace spatial
 		   PostNavCommand(pos, SpatialData::STOP);
 		   break;
 		 }
+      case EVALUATE_POLICIES:{
+				  log("Command: EVALUATE_POLICIES");
+				  vector<vector<string> >policies;
+				  // TODO: Actually get policies from configurations
+				  FindBestPolicy(policies);
+				  m_command = ASK_FOR_DISTRIBUTION;
+				  break;
+				}
       case ASK_FOR_DISTRIBUTION:{
 				  log("Command: ASK_FOR_DIST");
 				  m_command = IDLE;
@@ -1400,6 +1374,7 @@ namespace spatial
 			  PostViewCone(m_nbv);
 
 			  GoToNBV();
+
 		      }
 		      break;
 		    }
@@ -1553,41 +1528,43 @@ namespace spatial
     }
   }
 
-  void VisualObjectSearch::LookforObjectWithStrategy(SearchMode mode){
+  void VisualObjectSearch::LookforObjectWithStrategy(){
     //ask   
-    if (mode == DIRECT_UNINFORMED){
-      currentSearchMode = DIRECT_UNINFORMED;
-      log("Will look for %s", currentTarget.c_str());
-      InitializePDFForObject(1-m_pout, currentTarget);
-      PopulateLGMap();  
-      pbVis->AddPDF(*m_map);
-      m_map->clearDirty();
-      m_command = NEXT_NBV;
-    }
-    else if (mode == DIRECT_INFORMED){
-      currentSearchMode = DIRECT_INFORMED;
-      log("Will look for %s", currentTarget.c_str());
-      m_command = ASK_FOR_DISTRIBUTION;
-    }
-    else if(mode == INDIRECT){
-      currentSearchMode = INDIRECT;
-      ObjectPairRelation rel;
-      while(true){
-	rel = GetSecondaryObject(currentTarget);
-	if(rel.primaryobject == "")
-	  break;
-	searchChain.push_back(rel);
-	SetCurrentTarget(rel.secobject);
-      }
-      for(unsigned int i = 0; i < searchChain.size(); i++){
-	cout << searchChain[i].primaryobject << " " << searchChain[i].secobject << " " << searchChain[i].prob << endl;
-      }
-      InitializePDFForObject(1-m_pout, currentTarget);
-      PopulateLGMap();  
-      pbVis->AddPDF(*m_map);
-      m_map->clearDirty();
-      m_command = NEXT_NBV;
-    }
+    m_command = EVALUATE_POLICIES;
+
+//    if (mode == DIRECT_UNINFORMED){
+//      currentSearchMode = DIRECT_UNINFORMED;
+//      log("Will look for %s", currentTarget.c_str());
+//      InitializePDFForObject(1-m_pout, currentTarget);
+//      PopulateLGMap();  
+//      pbVis->AddPDF(*m_map);
+//      m_map->clearDirty();
+//      m_command = NEXT_NBV;
+//    }
+//    else if (mode == DIRECT_INFORMED){
+//      currentSearchMode = DIRECT_INFORMED;
+//      log("Will look for %s", currentTarget.c_str());
+//      m_command = ASK_FOR_DISTRIBUTION;
+//    }
+//    else if(mode == INDIRECT){
+//      currentSearchMode = INDIRECT;
+//      ObjectPairRelation rel;
+//      while(true){
+//	rel = GetSecondaryObject(currentTarget);
+//	if(rel.primaryobject == "")
+//	  break;
+//	searchChain.push_back(rel);
+//	SetCurrentTarget(rel.secobject);
+//      }
+//      for(unsigned int i = 0; i < searchChain.size(); i++){
+//	cout << searchChain[i].primaryobject << " " << searchChain[i].secobject << " " << searchChain[i].prob << endl;
+//      }
+//      InitializePDFForObject(1-m_pout, currentTarget);
+//      PopulateLGMap();  
+//      pbVis->AddPDF(*m_map);
+//      m_map->clearDirty();
+//      m_command = NEXT_NBV;
+//    }
   }
 
   void VisualObjectSearch::AskForDistribution(){
@@ -1596,80 +1573,143 @@ namespace spatial
     //if informed direct, get search chain, construct distribution parameters and ask for it
     double queryProbabilityMass = 1.0;
 
-    if (currentSearchMode == DIRECT_INFORMED){
-      vector<FrontierInterface::ObjectRelation> relations;
-      vector<string> labels;
-      ObjectPairRelation rel;
-      string name = currentTarget;
-      while(true){
-	rel = GetSecondaryObject(name);
-	if(rel.primaryobject == "")
-	  break;
-	searchChain.push_back(rel); 
-	name = rel.secobject;
-	queryProbabilityMass *= rel.prob;
-      }
-      cout << queryProbabilityMass << endl;
-      labels.push_back(currentTarget);
-      for(unsigned int i = 0; i < searchChain.size(); i++){
-	relations.push_back(searchChain[i].relation);
-	labels.push_back(searchChain[i].secobject);
-      }
-      FrontierInterface::WeightedPointCloudPtr queryCloud = new FrontierInterface::WeightedPointCloud;
-      //write lgm to WM
-      FrontierInterface::ObjectPriorRequestPtr objreq =
-	new FrontierInterface::ObjectPriorRequest;
-      objreq->relationTypes = relations; // ON or IN or whatnot
-      objreq->objects = labels;	// Names of objects, starting with the query object
-      objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
-      objreq->outCloud = queryCloud;	// Data struct to receive output
-      objreq->totalMass = queryProbabilityMass;
-      addToWorkingMemory(newDataID(), objreq);
+    vector<ObjectPairRelation> strategyStep = 
+      getStrategyStep(currentSearchPolicy, currentPolicyStep);
 
-      cout << "Asked for: " << endl;
-      cout << labels[0] << endl;
-      for(unsigned int i = 0; i < relations.size(); i++){
-	cout << (relations[i] == FrontierInterface::ON ? "ON" : "IN" ) << " " << labels[i + 1]  << endl;
-      }
+    std::string topObject = strategyStep.back().primaryobject;
+    SetCurrentTarget(topObject);
 
+    // Set up query
+    std::vector<std::string> labels;
+    std::vector<FrontierInterface::ObjectRelation> relations;
+    labels.push_back(topObject);
+    string logstring = "Asking for: ";
+    logstring = logstring + labels.back();
+    for (int i = strategyStep.size() -1 ; i >= 0; i--){
+      labels.push_back(strategyStep[i].secobject);
+      relations.push_back(strategyStep[i].relation);
+      logstring = logstring + ( strategyStep[i].relation== FrontierInterface::ON ? 
+	  string(" ON ") : string(" IN "));
+      logstring = logstring + strategyStep[i].secobject;
     }
-    //if indirect look where we are in the chain ask for it's distribution
-    else if (currentSearchMode == INDIRECT){
-      if(currentTarget == searchChain.back().secobject){
-	// This is the first target, no relation exists
-	// Just use the predefined uniform PDF
-	return;
+    log(logstring.c_str());
+    FrontierInterface::WeightedPointCloudPtr queryCloud = 
+      new FrontierInterface::WeightedPointCloud;
+    FrontierInterface::ObjectPriorRequestPtr objreq =
+      new FrontierInterface::ObjectPriorRequest;
+    objreq->relationTypes = relations; // ON or IN or whatnot
+    objreq->objects = labels;	// Names of objects, starting with the query object
+    objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
+    objreq->outCloud = queryCloud;	// Data struct to receive output
+    objreq->totalMass = 1-m_pout;
+
+
+    string baseObject = strategyStep.front().secobject;
+
+    if (baseObject.find("room") != string::npos) {
+      if (strategyStep.size() == 1) {
+	log("strategy contains room and has 1 step.");
+	InitializePDFForObject(1.0, strategyStep[0].primaryobject, m_map);
+	PopulateLGMap();
+	pbVis->AddPDF(*m_map);
+	m_map->clearDirty();
+	m_command = NEXT_NBV;
       }
 
-      vector<FrontierInterface::ObjectRelation> relations;
-      vector<string> labels;
-      unsigned int h;
-      for(h=0; h<searchChain.size(); h++){
-	if(searchChain[h].primaryobject == currentTarget){
-	  log("breaking at %d",h);
-	  break;
-	}
+      else {
+	// There's more than one relation. 
+	// Strip off the "in room" relation from the policy for purposes
+	// of relation query
+	strategyStep.erase(strategyStep.begin());
+	// Get the uninformed sample cloud from the ORM
+
+	// remove the room relation from the request 
+	objreq->objects.erase( objreq->objects.end() -1);
+	objreq->relationTypes.erase( objreq->relationTypes.end() -1);
+	// Send request and wait for reply
+	addToWorkingMemory(newDataID(), objreq);
+	m_command = IDLE;
       }
-      labels.push_back(currentTarget);
-      relations.push_back(searchChain[h].relation);
-      labels.push_back(searchChain[h].secobject);
-      cout << "Asked for: " << endl;
-      for(unsigned int j = 0; j < labels.size(); j++){
-	cout << labels[j]  << endl;
-      }
-      for(unsigned int j = 0; j < relations.size(); j++){
-	cout << (relations[j] == FrontierInterface::ON ? "ON" : "IN" )  << endl;
-      }
-      FrontierInterface::WeightedPointCloudPtr queryCloud = new FrontierInterface::WeightedPointCloud;
-      //write lgm to WM
-      FrontierInterface::ObjectPriorRequestPtr objreq =
-	new FrontierInterface::ObjectPriorRequest;
-      objreq->relationTypes = relations; // ON or IN or whatnot
-      objreq->objects = labels;	// Names of objects, starting with the query object
-      objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
-      objreq->outCloud = queryCloud;	// Data struct to receive output
-      addToWorkingMemory(newDataID(), objreq);
     }
+    else {
+      addToWorkingMemory(newDataID(), objreq);
+      m_command = IDLE;
+    }
+
+//    if (currentSearchMode == DIRECT_INFORMED){
+//      vector<FrontierInterface::ObjectRelation> relations;
+//      vector<string> labels;
+//      ObjectPairRelation rel;
+//      string name = currentTarget;
+//      while(true){
+//	rel = GetSecondaryObject(name);
+//	if(rel.primaryobject == "")
+//	  break;
+//	searchChain.push_back(rel); 
+//	name = rel.secobject;
+//	queryProbabilityMass *= rel.prob;
+//      }
+//      cout << queryProbabilityMass << endl;
+//      labels.push_back(currentTarget);
+//      for(unsigned int i = 0; i < searchChain.size(); i++){
+//	relations.push_back(searchChain[i].relation);
+//	labels.push_back(searchChain[i].secobject);
+//      }
+//      FrontierInterface::WeightedPointCloudPtr queryCloud = new FrontierInterface::WeightedPointCloud;
+//      //write lgm to WM
+//      FrontierInterface::ObjectPriorRequestPtr objreq =
+//	new FrontierInterface::ObjectPriorRequest;
+//      objreq->relationTypes = relations; // ON or IN or whatnot
+//      objreq->objects = labels;	// Names of objects, starting with the query object
+//      objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
+//      objreq->outCloud = queryCloud;	// Data struct to receive output
+//      objreq->totalMass = queryProbabilityMass;
+//      addToWorkingMemory(newDataID(), objreq);
+//
+//      cout << "Asked for: " << endl;
+//      cout << labels[0] << endl;
+//      for(unsigned int i = 0; i < relations.size(); i++){
+//	cout << (relations[i] == FrontierInterface::ON ? "ON" : "IN" ) << " " << labels[i + 1]  << endl;
+//      }
+//
+//    }
+//    //if indirect look where we are in the chain ask for it's distribution
+//    else if (currentSearchMode == INDIRECT){
+//      if(currentTarget == searchChain.back().secobject){
+//	// This is the first target, no relation exists
+//	// Just use the predefined uniform PDF
+//	return;
+//      }
+//
+//      vector<FrontierInterface::ObjectRelation> relations;
+//      vector<string> labels;
+//      unsigned int h;
+//      for(h=0; h<searchChain.size(); h++){
+//	if(searchChain[h].primaryobject == currentTarget){
+//	  log("breaking at %d",h);
+//	  break;
+//	}
+//      }
+//      labels.push_back(currentTarget);
+//      relations.push_back(searchChain[h].relation);
+//      labels.push_back(searchChain[h].secobject);
+//      cout << "Asked for: " << endl;
+//      for(unsigned int j = 0; j < labels.size(); j++){
+//	cout << labels[j]  << endl;
+//      }
+//      for(unsigned int j = 0; j < relations.size(); j++){
+//	cout << (relations[j] == FrontierInterface::ON ? "ON" : "IN" )  << endl;
+//      }
+//      FrontierInterface::WeightedPointCloudPtr queryCloud = new FrontierInterface::WeightedPointCloud;
+//      //write lgm to WM
+//      FrontierInterface::ObjectPriorRequestPtr objreq =
+//	new FrontierInterface::ObjectPriorRequest;
+//      objreq->relationTypes = relations; // ON or IN or whatnot
+//      objreq->objects = labels;	// Names of objects, starting with the query object
+//      objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
+//      objreq->outCloud = queryCloud;	// Data struct to receive output
+//      addToWorkingMemory(newDataID(), objreq);
+//    }
   }
 
   void
@@ -2400,13 +2440,7 @@ namespace spatial
       log("Object Detected.");
       // check for success
       bool greatSuccess = false;
-      if(currentSearchMode == DIRECT_UNINFORMED || currentSearchMode == DIRECT_INFORMED){
-	greatSuccess = true;
-      }
-      else if(currentSearchMode == INDIRECT && searchChain[0].primaryobject == currentTarget){
-	greatSuccess = true;
-      }
-      else if(detectedObject == targetObject){ // means if we found the holy grail
+      if(targetObject == detectedObject) {
 	greatSuccess = true;
       }
       if(greatSuccess){
@@ -2417,26 +2451,31 @@ namespace spatial
 	return;
       }
 
-      // if we are doing indirect search then ask & initialize next object
-      if(currentSearchMode == INDIRECT){
+      currentPolicyStep++;
 
-	// if we are doing indirect search and happen to find the middle object
-	// then set the current target to middle object so that we will as for distribution of primary object SR middle object
-	if(detectedObject == indirect_middle_object){
-	  SetCurrentTarget(targetObject);
-	}
+      m_command = ASK_FOR_DISTRIBUTION;
 
-      }
-      for(unsigned int i=0; i<searchChain.size(); i++){
-	if(searchChain[i].secobject == currentTarget){
-
-	  SetCurrentTarget(searchChain[i].primaryobject);
-
-	}
-	log("Object Detected, new target is %s", currentTarget.c_str());
-	m_command = ASK_FOR_DISTRIBUTION;
-      }
-    } else {
+    }
+//      // if we are doing indirect search then ask & initialize next object
+//      if(currentSearchMode == INDIRECT){
+//
+//	// if we are doing indirect search and happen to find the middle object
+//	// then set the current target to middle object so that we will as for distribution of primary object SR middle object
+//	if(detectedObject == indirect_middle_object){
+//	  SetCurrentTarget(targetObject);
+//	}
+//
+//      }
+//      for(unsigned int i=0; i<searchChain.size(); i++){
+//	if(searchChain[i].secobject == currentTarget){
+//
+//	  SetCurrentTarget(searchChain[i].primaryobject);
+//
+//	}
+//	log("Object Detected, new target is %s", currentTarget.c_str());
+//	m_command = ASK_FOR_DISTRIBUTION;
+//      }
+    else {
       // if we are not yet finished Go to NBV
       log("Object not detected");
       UnsuccessfulDetection(m_nbv);  

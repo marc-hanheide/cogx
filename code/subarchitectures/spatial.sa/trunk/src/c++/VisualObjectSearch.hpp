@@ -54,11 +54,7 @@ namespace spatial
 	double tilt;
 	double totalprob;
       };
-      enum SearchMode{
-	DIRECT_UNINFORMED,
-	DIRECT_INFORMED,
-	INDIRECT
-      };
+
       struct ObjectPairRelation{
 	FrontierInterface::ObjectRelation relation;
 	std::string primaryobject;
@@ -84,8 +80,10 @@ namespace spatial
       void putObjectInMap(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>
 	  &map, spatial::Object *object);
 
+      vector<ObjectPairRelation> getStrategyStep(vector<string> &policy, int step);
       double GetCostForSingleStrategy(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* tmpMap, std::string targetObject, double pout, double threshold);
       double GetStrategyCost(std::vector<std::string> policy);
+      void FindBestPolicy(const vector<vector<string> > &policies);
       void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
       void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
       void PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
@@ -97,7 +95,6 @@ namespace spatial
       bool isCircleFree(double xW, double yW, double rad);
 
       void SaveCureMapToFile();
-      void LoadSpatialRelations(std::string filename);
       void getStructuredStrategy(std::string strategy, std::vector<ObjectPairRelation> &singleStrategy);
       void SaveSearchPerformance(std::string result);
       void Recognize();
@@ -105,7 +102,7 @@ namespace spatial
       void InterpretCommand();
       void AskForDistribution();
       int GetViewConeSums(std::vector <SensingAction > &samplepoints, SpatialGridMap::GridMap<SpatialGridMap::GridMapData> *map = 0);
-      void LookforObjectWithStrategy(SearchMode mode);
+      void LookforObjectWithStrategy();
       void UnsuccessfulDetection(SensingAction viewcone, SpatialGridMap::GridMap<SpatialGridMap::GridMapData> *map = 0);
       void SetCurrentTarget(const string &label);
       void InitializePDF();
@@ -149,6 +146,7 @@ namespace spatial
 
       enum AVSCommand{
 	STOP,
+	EVALUATE_POLICIES,
 	ASK_FOR_DISTRIBUTION,
 	RECOGNIZE,
 	NEXT_NBV,
@@ -174,8 +172,8 @@ namespace spatial
       bool isRunComponent; 
       std::string currentTarget;
       std::string targetObject;
-      SearchMode currentSearchMode;
-      std::string indirect_middle_object;
+      std::vector<std::string> currentSearchPolicy;
+      int currentPolicyStep;
       std::vector<ObjectPairRelation> searchChain;
       int searchChainPos;
 
