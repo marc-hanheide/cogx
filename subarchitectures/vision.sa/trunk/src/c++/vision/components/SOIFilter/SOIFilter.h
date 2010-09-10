@@ -169,7 +169,9 @@ private:
                     std::vector<CvPoint> &projPoints, std::vector<int> &hull);
                     
   std::vector<VisionData::SurfacePoint>  filter3DPoints(const std::vector<VisionData::SurfacePoint> surfPoints,
-  					std::vector<CvPoint> &projPoints, std::vector<CvPoint> &errProjPoints, const VisionData::SegmentMask segMask);	
+  					std::vector<CvPoint> &projPoints, std::vector<CvPoint> &errProjPoints, const VisionData::SegmentMask segMask);
+  					
+  std::vector<VisionData::SurfacePoint> sample3DPoints(std::vector<VisionData::SurfacePoint> points, int newSize);
 
 					   
   void drawProjectedSOIPoints(IplImage *img, const std::vector<CvPoint> projPoints, const std::vector<CvPoint> bgProjPoints,
