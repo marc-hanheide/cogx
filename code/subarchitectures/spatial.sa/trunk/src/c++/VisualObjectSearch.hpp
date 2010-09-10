@@ -30,6 +30,8 @@
 #include "XVector3D.h"
 namespace spatial
 {
+  typedef Cure::LocalGridMap<double> CurePDFMap;
+  typedef Cure::LocalGridMap<unsigned char> CureObstMap;
 
   class VisualObjectSearch : public cast::ManagedComponent,
   public Scan2dReceiver,
@@ -50,6 +52,7 @@ namespace spatial
 	std::vector<double> pos;
 	double pan;
 	double tilt;
+	double totalprob;
       };
       enum SearchMode{
 	DIRECT_UNINFORMED,
@@ -78,19 +81,18 @@ namespace spatial
       void putObjectInMap(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>
 	  &map, spatial::Object *object);
 
-      double getCostForSingleStrategy(std::vector<ObjectPairRelation> singleStrategy);
+      double GetCostForSingleStrategy(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* tmpMap, std::string targetObject, double pout, double threshold);
       double GetStrategyCost(std::vector<std::string> policy);
       void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
       void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
       void PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
-      void PostViewCone();
+      void PostViewCone(const SensingAction &nbv);
       void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID);
       void newVisualObject(const cast::cdl::WorkingMemoryChange &objID);
       void owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID);
-      SensingAction SampleAndSelect();
+      SensingAction SampleAndSelect(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* tmpMap = 0);
       bool isCircleFree(double xW, double yW, double rad);
 
-      void ReadCureMapFromFile();
       void SaveCureMapToFile();
       void LoadSpatialRelations(std::string filename);
       void getStructuredStrategy(std::string strategy, std::vector<ObjectPairRelation> &singleStrategy);
@@ -99,34 +101,34 @@ namespace spatial
       void GoToNBV();
       void InterpretCommand();
       void AskForDistribution();
-      int GetViewConeSums(std::vector <SensingAction > samplepoints);
+      int GetViewConeSums(std::vector <SensingAction > samplepoints, SpatialGridMap::GridMap<SpatialGridMap::GridMapData> *map = 0);
       void LookforObjectWithStrategy(SearchMode mode);
-      void UnsuccessfulDetection(SensingAction viewcone);
+      void UnsuccessfulDetection(SensingAction viewcone, SpatialGridMap::GridMap<SpatialGridMap::GridMapData> *map = 0);
       void SetCurrentTarget(const string &label);
       void InitializePDF();
       void InitializePDF(double initprob);
-      void InitializePDFForObject(double initprob, const std::string &);
-      void PopulateLGMap();
+      void InitializePDFForObject(double initprob, const std::string &, SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* map = 0 );
+      CurePDFMap* PopulateLGMap(const SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* map = 0);
 
       void DetectionComplete(bool isDetected, std::string detectedObject = "");
       void MovePanTilt(double pan, double tilt, double tolerance);
 
       /* Functions for 2D evaluation */
-      void Sample2DGrid();
-      std::vector<std::vector<int> > GetViewCones();
-      std::vector<int> GetInsideViewCone(XVector3D &a, bool addall);
+      std::vector<Cure::Pose3D> Sample2DGrid();
+      std::vector<std::vector<pair<int,int> > > GetViewCones(std::vector<Cure::Pose3D> samples2D);
+      std::vector<pair<int, int> > GetInsideViewCone(XVector3D &a, bool addall);
       void CalculateViewCone(XVector3D a, double direction, double range, double fov, XVector3D &b,XVector3D &c);
-      std::vector<double> ScorebyCoverage(Cure::LocalGridMap<unsigned char> fcm );
+      std::vector<double> ScorebyCoverage(CureObstMap fcm );
 
       bool isPointSameSide(XVector3D p1,XVector3D p2,XVector3D a,XVector3D b);
       bool isPointInsideTriangle(XVector3D p,XVector3D a,XVector3D b,XVector3D c);
       void FindBoundingRectangle(XVector3D a,XVector3D b,XVector3D c,int* rectangle);
       void InitializeMaps();
-      void IcetoCureLGM(FrontierInterface::LocalGridMap icemap, Cure::LocalGridMap<unsigned char>* lgm);
+      void IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm);
       void ChangeMaps(std::string roomid);
       // keyed with room id
       std::map<int, SpatialGridMap::GridMap<SpatialGridMap::GridMapData>*> m_maps;
-      std::map<int, Cure::LocalGridMap<unsigned char>*> m_lgms;
+      std::map<int, CureObstMap*> m_lgms;
 
 
 
@@ -134,8 +136,7 @@ namespace spatial
       SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* m_map;
       SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* m_tempmap;
       SpatialGridMap::LaserRayTracer<SpatialGridMap::GridMapData>* m_tracer;
-      Cure::LocalGridMap<unsigned char>* m_lgm;
-      Cure::LocalGridMap<double>* m_lgmpdf;
+      CureObstMap* m_lgm;
       Cure::ObjGridLineRayTracer<unsigned char>* m_Glrt;
 
       struct ObjectRelations{
@@ -167,6 +168,7 @@ namespace spatial
       bool m_bSimulation;
       bool m_bEvaluation;
       bool gotPC;
+      bool isRunComponent; 
       std::string currentTarget;
       std::string targetObject;
       SearchMode currentSearchMode;
@@ -201,8 +203,6 @@ namespace spatial
       int viewCount;
 
       int m_samplesize;
-      double* m_samplestheta;
-      int* m_samples;
       double m_pout;
       double m_gridsize;
       double m_cellsize;
@@ -212,8 +212,8 @@ namespace spatial
       double m_minDistance;
       double m_minbloxel;
       double m_mapceiling;
-
-
+      double m_best3DConeRatio;
+      double m_tiltinterval;
       static void savemap( GtkWidget *widget, gpointer   data );
       static void readmap( GtkWidget *widget, gpointer   data );
 
