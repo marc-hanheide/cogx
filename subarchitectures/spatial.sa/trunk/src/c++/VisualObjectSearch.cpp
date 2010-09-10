@@ -556,7 +556,6 @@ namespace spatial
     log("got room: %s", room.c_str());
     ChangeMaps(room);
 
-    //check if cached cost already exists
     // we always execute the first policy
     std::vector<ObjectPairRelation> singleStrategy, prevStrategy;
     for (unsigned int i=1; i < policy.size(); i++){
@@ -608,8 +607,9 @@ namespace spatial
       objreq->outCloud = queryCloud;	// Data struct to receive output
       objreq->totalMass = 1.0;
 
+      string baseObject = strategyStep.front().secobject;
 
-      if (strategyStep.front().secobject.find("room") != string::npos) {
+      if (baseObject.find("room") != string::npos) {
 	ChangeMaps(strategyStep.front().secobject);
 	SpatialGridMap::GridMap<GridMapData> tmpMap = *m_map; 
 
@@ -732,11 +732,27 @@ namespace spatial
 
 	  // Select hypothesical poses for base object
 	  vector<Pose3> baseObjectPoses;
-	  Pose3 tmppose;
-	  tmppose.pos = vector3(0,0,0);;
-	  fromAngleAxis(tmppose.rot, 0, vector3(0,0,1));
-	  baseObjectPoses.push_back(tmppose);
-	  // TODO: Some more poses!
+	  Pose3 tmpPose;
+	  tmpPose.pos = vector3(0,0,0);;
+
+	  // Randomize orientations for involved objects, unless we already have such
+	  vector<Matrix33> orientations;
+	  if (//FIXME
+	      baseObject == "table" ||
+	      baseObject == "bookcase_sm" ||
+	      baseObject == "bookcase_lg" ||
+	      baseObject == "desk"){
+	    getRandomSampleCircle(orientations, 6);
+	  }
+	  else {
+	    vector<Matrix33> orientations;
+	    getRandomSampleSphere(orientations, 5);
+	  }
+	  for (vector<Matrix33>::iterator it = orientations.begin();
+	      it != orientations.end(); it++) {
+	    tmpPose.rot = *it;
+	    baseObjectPoses.push_back(tmpPose);
+	  }
 
 	  for (vector<Pose3>::iterator it = baseObjectPoses.begin(); 
 	      it != baseObjectPoses.end(); it++) {
