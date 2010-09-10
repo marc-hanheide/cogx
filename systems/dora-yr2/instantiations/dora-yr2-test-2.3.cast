@@ -1,0 +1,30 @@
+HOST localhost
+
+# Spatial.SA ################################################################
+INCLUDE includes/spatial.sa/spatial-blobfinder.cast
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial.cast
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf
+CPP GD self.representer SelfRepresenter 
+
+# Default.SA ################################################################
+JAVA MG default.hfcserver def.components.DefaultHFCServer --nsFile subarchitectures/coma.sa/ontologies/dora.ns --ruleFile subarchitectures/coma.sa/ontologies/default.rdl --tupleFile subarchitectures/coma.sa/ontologies/dora_omics_thingloc.nt --log
+#CPP GD default.qqh DefaultQdlQueryHandler
+CPP GD default.tester DefaultTester --test-hfc default.hfcserver #--test-qqh default.qqh
+
+# Conceptual.SA  ############################################################
+
+
+# Coma ######################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+
+# Execution #################################################################
+JAVA MG  manual-execution execution.components.GraphicalExecutionManager
+
+# viewing and debugging #######################################################
+#JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, comadata.ComaRoom"
+#JAVA MG WMViewerBeliefs  castutils.viewer.ViewerCastComponent --log --subscribe "beliefmodels.autogen.beliefs.StableBelief"
+
+
+
