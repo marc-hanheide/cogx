@@ -83,7 +83,7 @@ public class WebsiteScanner {
 				FileOutputStream fstream = new FileOutputStream(cacheFileName);
 			    PrintStream outstream = new PrintStream(fstream);
 				while (line != null) {
-					outstream.println(line.replaceAll("&", ""));
+					outstream.println(line.replaceAll("&", "").replaceAll("match(/<script", ""));
 							//replaceAll("&&", "&amp;&amp;").replaceAll(" & ", " &amp; ").
 							//replaceAll("&(#[1-9][0-9]{1,3}|[0-9A-Za-z]+)[^;]+[:blank:]"," &amp; "));
 							//replaceAll("&[^;]+[:blank:]", ""));
