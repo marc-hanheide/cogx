@@ -141,14 +141,6 @@ public class DefaultHFCServer extends ManagedComponent {
 			
 			return _results;
 		}
-
-
-		@Override
-		public String ping(Current current) {
-			return "pong.";
-		}
-		
-		
 		
 	}
 	
