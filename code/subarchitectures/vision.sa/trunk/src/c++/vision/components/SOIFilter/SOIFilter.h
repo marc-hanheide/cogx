@@ -156,7 +156,7 @@ private:
   /**
    * segment out object roi
    */
-  bool segmentObject(const VisionData::SOIPtr soiPtr, Video::Image &imgPatch, VisionData::SegmentMask &segMask);
+  bool segmentObject(const VisionData::SOIPtr soiPtr, Video::Image &imgPatch, VisionData::SegmentMask &segMask, std::vector<VisionData::SurfacePoint> &segPoints);
   
   
   void projectSOIPoints(const VisionData::SOI &soi, const VisionData::ROI &roi, std::vector<CvPoint> &projPoints,
@@ -166,11 +166,14 @@ private:
 				
   void project3DPoints(const std::vector<VisionData::SurfacePoint> surfPoints, const VisionData::ROI &roi,
                     const float ratio, const Video::CameraParameters &cam,
-                    std::vector<CvPoint> &projPoints, std::vector<int> &hull);			
+                    std::vector<CvPoint> &projPoints, std::vector<int> &hull);
+                    
+  std::vector<VisionData::SurfacePoint>  filter3DPoints(const std::vector<VisionData::SurfacePoint> surfPoints,
+  					std::vector<CvPoint> &projPoints, std::vector<CvPoint> &errProjPoints, const VisionData::SegmentMask segMask);	
 
 					   
   void drawProjectedSOIPoints(IplImage *img, const std::vector<CvPoint> projPoints, const std::vector<CvPoint> bgProjPoints,
-  					const std::vector<int> hull);
+  					const std::vector<CvPoint> errProjPoints, const std::vector<int> hull);
 
   					
   void drawPoints(IplImage *img, const std::vector<CvPoint> projPoints);
