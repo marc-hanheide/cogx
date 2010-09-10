@@ -1,0 +1,69 @@
+%-------------------------------------------------------------------------
+% ASSERTION
+%-------------------------------------------------------------------------
+
+% X is Y
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, ind),
+	i : 'feat_Tense'(Nom, pres),
+	polarity(Nom, Polarity),
+	i : 'rel_Subject'(Nom, SubjNom),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : topic(S, H, EpSt, Int, SubjNom, RestrNom),
+	understand : assertion_effect(S, H, Int, SubjNom, Polarity, ScopeNom).
+
+	% mirroring
+%	mirror_id(MInt),
+%	int : agent(MInt, H) / -0.1,
+%	understand : topic(H, S, EpSt, MInt, SubjNom, RestrNom),
+%	understand : assertion_effect(H, S, MInt, SubjNom, Polarity, ScopeNom).
+
+%-------------------------------------------------------------------------
+
+% there is X
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, presentational),
+	i : feat_Mood(Nom, ind),
+	i : feat_Tense(Nom, pres),
+	i : rel_Presented(Nom, PresNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : assertion_effect(S, H, Int, PresNom, pos, PresNom).
+
+%-------------------------------------------------------------------------
+
+% I see X
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, perception),
+	i : prop(Nom, see),
+	i : prop(Nom, ind),
+	i : rel_Patient(Nom, PatNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : pre(Int, state(see, 'Agent'(S), 'Patient'(PatNom))) / p(1.0),
+	understand : assertion_effect(S, H, Int, PatNom, pos, PatNom).
+
+%-------------------------------------------------------------------------
+% CONFIRMATIONS
+%-------------------------------------------------------------------------
+
+	% TODO: these need access to the discourse structure
+
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, marker),
+	i : prop(Nom, Prop),
+	marker_to_state_type(Prop, StateType),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, state(StateType)) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+marker_to_state_type(yes, 'verified').
+marker_to_state_type('No', 'falsified').
+
+%-------------------------------------------------------------------------

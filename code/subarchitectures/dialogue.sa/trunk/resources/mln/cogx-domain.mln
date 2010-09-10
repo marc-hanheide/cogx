@@ -1,0 +1,101 @@
+// domains
+
+feat = {VRed, VBlue, VGreen, LRed, LBlue, LGreen, VYellow, LYellow, VWhite, LWhite, VBlack, LBlack,
+		VCompact, VElongated, VFlat, LCompact, LElongated, LFlat,
+		VSpherical, VCylindrical, VConical, VCuboid, LSpherical, LCylindrical, LConical, LCuboid,
+		ASlide, ARoll, ATopple,
+		LColaCan, LDish, LBox, LBall, LApple, LTube, LBook, LWizHat}
+		
+//vcolor = {VRed, VBlue, VGreen, LRed, LBlue, LGreen, VYellow}
+//vshape1 = {VCompact, VElongated, VFlat}
+//vshape2 = {VSpherical, VCylindrical, VConical, VCuboid}
+//pushaff = {ASlide, ARoll, ATopple}
+//lcolor = {Red, LBlue, LGreen, LYellow, LWhite, LBlack}
+//lshape1 = {LCompact, LElongated, LFlat}
+//lshape2 = {LSpherical, LCylindrical, LConical, LCuboid}
+//ltype = {LColaCan, LDish, LBox, LBall, LApple, LTube, LBook, LWizHat}
+
+modal = {Vision, Language, Affordance}
+group = { VColor, LColor, VShape1, LShape1, VShape2, LShape2, PushAff, Type}
+
+grpfeat(VColor, VRed).
+grpfeat(VColor, VGreen).
+grpfeat(VColor, VBlue).
+grpfeat(VColor, VYellow).
+grpfeat(VColor, VWhite).
+grpfeat(VColor, VBlack).
+grpfeat(LColor, LRed).
+grpfeat(LColor, LBlue).
+grpfeat(LColor, LGreen).
+grpfeat(LColor, LWhite).
+grpfeat(LColor, LYellow).
+grpfeat(LColor, LBlack).
+grpfeat(VShape1, VCompact).
+grpfeat(VShape1, VElongated).
+grpfeat(VShape1, VFlat).
+grpfeat(LShape1, LCompact).
+grpfeat(LShape1, LElongated).
+grpfeat(LShape1, LFlat).
+grpfeat(PushAff, ASlide).
+grpfeat(PushAff, ARoll).
+grpfeat(PushAff, ATopple).
+
+grpfeat(VShape2, VSpherical).
+grpfeat(VShape2, VCylindrical).
+grpfeat(VShape2, VConical).
+grpfeat(VShape2, VCuboid).
+grpfeat(LShape2, LSpherical).
+grpfeat(LShape2, LCylindrical).
+grpfeat(LShape2, LConical).
+grpfeat(LShape2, LCuboid).
+
+grpfeat(Type, LColaCan).
+grpfeat(Type, LDish).
+grpfeat(Type, LBox).
+grpfeat(Type, LBall).
+grpfeat(Type, LApple).
+grpfeat(Type, LTube).
+grpfeat(Type, LBook).
+grpfeat(Type, LWizHat).
+
+modfeat(modal, feat)
+
+modfeat(Vision, VRed).
+modfeat(Vision, VGreen).
+modfeat(Vision, VBlue).
+modfeat(Vision, VYellow).
+modfeat(Vision, VWhite).
+modfeat(Vision, VBlack).
+modfeat(Language, LRed).
+modfeat(Language, LBlue).
+modfeat(Language, LGreen).
+modfeat(Language, LWhite).
+modfeat(Language, LYellow).
+modfeat(Language, LBlack).
+modfeat(Vision, VCompact).
+modfeat(Vision, VElongated).
+modfeat(Vision, VFlat).
+modfeat(Language, LCompact).
+modfeat(Language, LElongated).
+modfeat(Language, LFlat).
+modfeat(Affordance, ASlide).
+modfeat(Affordance, ARoll).
+modfeat(Affordance, ATopple).
+
+modfeat(Vision, VSpherical).
+modfeat(Vision, VCylindrical).
+modfeat(Vision, VConical).
+modfeat(Vision, VCuboid).
+modfeat(Language, LSpherical).
+modfeat(Language, LCylindrical).
+modfeat(Language, LConical).
+modfeat(Language, LCuboid).
+
+modfeat(Language, LColaCan).
+modfeat(Language, LDish).
+modfeat(Language, LBox).
+modfeat(Language, LBall).
+modfeat(Language, LApple).
+modfeat(Language, LTube).
+modfeat(Language, LBook).
+modfeat(Language, LWizHat).

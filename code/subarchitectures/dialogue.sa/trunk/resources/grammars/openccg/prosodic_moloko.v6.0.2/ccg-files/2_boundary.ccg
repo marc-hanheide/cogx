@@ -1,0 +1,53 @@
+# Authors: Raveesh Meena (rame01@dfki.de), 2009
+
+# This file contains definition of family, and dictionary entries for boundary tones as per Steedman 2000.
+
+#def ips(args)         { s<10> [NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER args]}
+#def from-ips(args)    { s<~10>[args] }
+
+#rule { typechange: np(args)$1 => trs()/! np()$1 ; }
+
+
+##
+##########################
+## Syntactic Definition ##
+##########################
+# Boundary take intermediate phrase of type Rheme ans results into a Rheme intonation phrase.
+# Ownership of Rheme is indicated by semantic feature RhOwner in the LF.
+# Argument category, an intermediate phrase ("ip"), must bear ACCENT of type Rheme i.e. rhmf as per type definition
+# Resultant category is an intonation phrase("cp") with ACCENT of type rhthm as per type definition. 
+# This allows unification of two intonation phrases.
+
+#family IntmPhr_r(indexRel=RhOwner) {entry: (from-ips(cp rhthm)$1)\*(ips(ip rhmf)$1);}
+family IntmPhr_rs(indexRel="*NoSem*") {entry: (from-ips(cp rhthm owners)$1)\*(ips(btone rhmf owners)$1);}
+
+# Boundary take intermediate phrase of type Theme ans results into a Theme intonation phrase.
+# Ownership of Theme is indicated by semantic feature ThOwner in the LF.
+# Argument category, an intermediate phrase ("ip"), must bear ACCENT of type Theme i.e. thmf as per type definition
+# Resultant category is an intonation phrase("cp") with ACCENT of type rhthm as per type definition. 
+# This allows unification of two intonation phrases.
+
+#family IntmPhr_t(indexRel=ThOwner) {entry: (from-ips(cp rhthm)$1)\*(ips(ip thmf)$1);}
+family IntmPhr_th(indexRel="*NoSem*") {entry: (from-ips(cp rhthm owners)$1)\*(ips(btone thmf owners)$1);}
+
+################
+## DICTIONARY ##
+################
+
+##Steedman 2000,pg 15. Rhemes can be marked by all types of boundaries. 
+##Steedman 2000,pg 16-17. Ownership of Rhemes could be of speaker or hearer. 
+word r_intmphr:IntmPhr_rs{
+LL%: spkr btone;
+LH%: hear;
+HL%: spkr;
+HH%: hear;
+}
+
+##Steedman 2000,pg 15. Themes can be marked by all types of boundaries. 
+##Steedman 2000,pg 16-17. Ownership of Themes could be of speaker or hearer. 
+word t_intmphr:IntmPhr_th{
+LL%: spkr;
+LH%: hear;
+HL%: spkr;
+HH%: hear;
+}

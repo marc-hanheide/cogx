@@ -1,0 +1,115 @@
+
+
+# NOTE: In some of the cases below, the 'expected' number of parses will be incorrect
+#       This is because as new features get added, old ones removed, these numbers fluxuate
+#       this is especially true with various 'discourse phenomena' and 'complex constructions'
+
+testbed {
+	  
+###################
+# Prosodic Tesbed #
+###################
+
+#### following works as intended.####
+
+### Rheme or Theme only utterance###
+## assertions##
+this is a red box:1;
+this is a "red@H*" box LL%: 1 ;
+this is a "red@H*" "box@H*" LL%: 1 ;
+this is a red "box@H*" LL%: 1 ;
+this is a "blue@H*" "mug@H*" LL%: 1 ;
+it is a red box:1;
+it is a "red@H*" box LL%: 1 ;
+it is a "blue@H*" "mug@H*" LL%: 1 ;
+it is a red "box@H*" LL%: 1 ;
+
+## verification requests ## 
+is it a red box: 1 ;
+is it a red "box@L*" HH%: 1 ;
+is it a "red@L*" box HH%: 1 ;
+is it a "red@L*" "box@L*" HH%: 1 ;
+
+is this a red box: 1 ;
+is this a red "box@L*" HH%: 1 ;
+is this a "red@L*" box HH%: 1 ;
+is this a "red@L*" "box@L*" HH%: 1 ;
+
+is it a blue mug: 1 ;
+is it a blue "mug@L*" HH%:1 ;
+is it a "blue@L*" "mug@L*" HH%:1 ;
+is it a large blue "mug@L*" HH%:1 ;
+is it a large "blue@L*" mug HH%:1 ;
+is it a "large@L*" blue mug HH%:1 ;
+
+## disambiguation requests ##
+is the box "red@L*" or "orange@L*" HH%:1;
+
+## information requests ##
+what color is the mug:1;
+#what "color@H*" is the mug HH%:1;
+what color is the "mug@H*" HH%:1;
+#what "color@H*" is "this@H*" mug HH%:1;
+what color is the bigger "mug@H*" HH%:1;
+what color is the "bigger@H*" mug HH%:1;
+#what "color@H*" is the bigger mug HH%:1;
+#"what@H*" color is the mug HH%:1;
+
+### Rheme-Theme Utterances ###
+## assertions ##
+the "box@L+H*" LH% is "red@H*" LL%:1 ;
+the "box@H*" LL% is "red@L+H*" LH%:1 ;
+the "robot@L+H*" LH% moves a "ball@H*" LL%:1 ;
+the "robot@H*" LL% moves a "ball@L+H*" LH%:1 ;
+
+the box is blue:1;
+the "box@L+H*" LH% is "blue@H*" LL%:1;
+the "box@L+H*" is LH% "blue@H*" LL%:1;
+the "box@H*" is "blue@H*" LL%:1;
+the "box@L+H*" is "blue@L+H*" LL%:1;
+the "box@L+H*" LH% "is@H*" LL% "blue@L+H*" LH%:1;
+
+## verifications ##
+is the box red:1;
+is the "box@L+H*" LH%  "red@L*" HH%:1 ;
+is the "box@L*" LL% "red@L+H*" HH%:1 ;
+
+##disambiguations ##
+
+##information questions ##
+
+### following parses need to be constrained or not allowed ###
+is it a "red@H*" "box@L+H*" LH%: 0 ;
+is it a "red@L+H*" "box@H*" LH%: 0 ;
+is it a red box LL%: 0 ;        
+a red box LL%: 0 ;
+
+##### content planner ######
+the "box@L+H*" LH% is "blue@H*" LL%:1;
+the "box@L+H*" LH% "is@H*" "blue@H*" LL%:1;
+
+the "box@L+H*" is LH% "blue@H*" LL%:1;
+the "box@L+H*" "is@L+H*" LH% "blue@H*" LL%:1;
+
+the "box@H*" LL% is "blue@L+H*" LH%:1;
+the "box@H*" LL% "is@L+H*" "blue@L+H*" LH%:1;
+
+the "box@H*" is blue LL%:1;
+the box is "blue@H*" LL%:1;
+the box "is@H*" blue LL%:1;
+the "box@H*" "is@H*" "blue@H*" LL%:1;
+
+the "box@L+H*" "is@L+H*" "blue@L+H*" LH%:1;
+the "box@L+H*" is "blue@L+H*" LH%:1;
+the "box@L+H*" is blue LH%:1;
+the box is "blue@L+H*" LH%:1;
+the box "is@L+H*" blue LH%:1;
+
+the "box@L+H*" LH% "is@H*" LL% "blue@L+H*" LH%:1;
+
+"I@L+H*" "see@L+H*" LH% a "car@H*" and a "blue@H*" "thing@H*" LL%:1;
+what color "is@H*" LH% the "box@L+H*" LH%:1;
+what "color@H*" is LH% the "box@L+H*" LH%:1;
+
+
+}

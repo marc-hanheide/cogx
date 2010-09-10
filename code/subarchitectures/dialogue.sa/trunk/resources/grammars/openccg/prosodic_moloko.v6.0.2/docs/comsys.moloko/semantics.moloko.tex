@@ -1,0 +1,444 @@
+\section{Semantics}
+
+Moloko's semantics can divided into three broad categories: entities, events and modifiers. These correspond to the three propositional acts of reference, predication and modification (Croft). Of course, these categories must be treated in the broadest, most general of terms. Entities (T) correspond to not only to concrete objects, but any facet of experience which can be construed, or reified as a thing (Talmy, Langacker). Events (E) cover all types of dynamic processes, as well as ascriptions and states which endure over time. Finally, modifiers can be applied to any of the three basic categories (T, E, M) and they need not be inherit properties like size and color for T, or location, time and polarity for E--they also include evaluations, judgements and many other types of textual and interpersonal relationships. 
+\subsection{The Semantic/Ontological Hierarchy} \label{sec-Ontology}
+In order for the grammar to be of any use, the three broad semantic categories, T, E and M, require much finer levels of granularity. The Moloko grammar includes a richly sorted ontological type heirarchy for each. Consider the following semantic representation for the utterance \emph{quickly give the red ball to GJ}: 
+\vspace{-1.5em} %% some negative vertical spacing
+
+\begin{align*}
+\atsign{g1}{action-non-motion}(& \prop{give}  \\ 
+      & \wand\ \diam{Mood}(imp) \\
+      & \wand\ \diam{Actor}(a1:animate \wand\ \prop{addressee})  \\ 
+      & \wand\ \diam{Patient}(b1:thing  \wand\ \prop{ball})\\
+      & \wand\ \diam{Delimination}(unique) \\
+      & \wand\ \diam{Quantification}(specific) \\
+      & \wand\ \diam{Num}(sg)\\
+      & \wand\ \diam{Modifier}(r1:color  \wand\ \prop{red}) )\\
+      & \wand\ \diam{Recipient}(g2:person  \wand\ \prop{GJ}) )\\
+      & \wand\ \diam{Modifier}(r1:manner \wand\ \prop{quickly}) ))
+\end{align*}
+At the top level, we see that the event \emph{give} (g1) is of type  'action-non-motion'. At the next level, the three entities, i.e. the event participants (see below), \emph{addressee, ball, GJ} are of type 'animate', 'thing' and 'person' respectively. Finally, the event modifier \emph{quickly} is of type 'manner' and the entity modifier \emph{red} is of type 'color'. An important note concerning this semantic type heirarchy is that, for the most part, it is 'external' to the grammar itself. 
+What that means is the semantic sort given to a word does not dictate its treatment within the grammar proper. For example, the fact that kick is specified to represent an 'action-motion' event does not dictate its combinatorial possibilities. This is done, instead, by specifiying the appropriate lexical family (here a 'dative' ditranstive), and by specifying its modifier group to allow for the appropriate modifications (manner, place, time, etc) and block others (e.g. dynamic locationals like whereto, wherefrom) (see... below). This is done primarily to allow easy, modular extension to the semantic heirarchy. So for example, if finer grain distinctions are needed amongst verb sorts, the grammar need not be internally modified. There are, however, some exceptions  to this principle, and will be covered in ()
+
+\subsection{Semantic Relations: Modifiers vs Dependents } \label{sec-Semantic-Relations}
+
+I NEED TO FIX THIS. IT WAS WRITTEN QUICKLY, A LONG TIME AGO, AND IT STINKS.
+CAN CONNECT IT WITH VERBAL ROLE/MODIFIER
+
+Given the quite broad definition of modifiers given in section X, one could view nearly any relationship as a modification. For example, a determiner like \emph{the} modifies the entity of its head noun by delimiting and quantifying it. Likewise, a negation marker, as in \emph{I did not put it there}, can be seen as an event modifier (negative propositional semantics) and a 'intention' modifier (specifying that, counter some expectation, the speaker claims they DIDN'T do it).\footnote{currently, these two levels of semantics (ideational and interpersonal) are not separated within the semantic representation.}Essentially then, whenever a word or construction 'adds' an 'extra' semantic dependency relation or feature to another 'independent' semantic 'head', it can be viewed as a modifier. This stands in contrast to head-dependent relations, where a word 'fills in' a 'missing'  role within the semantic head. This is the case, for example, with verbs and their complements, prepositions and their 'anchors', etc. 
+
+Although not much rides on this distinction between 'modifier' and 'dependent', there is one case where this has greatly impacted the structure of the moloko grammar--this is in the cases of the major 'open class' modifiers: adjectives,  prepositions, and to a lesser degree adverbs. Words of these type need to be able to play either role . Consider the following sentence pairs:
+
+\begin{itemize}
+\item I wrote the letter \underline{on the table}
+\item I put the picture on the table        (Caused Motion)
+\item I wanted the \underline{bigger} picture
+\item I made the picture bigger             (Resultant Verb)
+\end{itemize}
+In the first sentence of each pair, the underlined constituents are acting as a modifier. The sentences would be semantically and syntactically 'complete' without them:
+\begin{itemize}
+\item	I wrote the letter
+\item	I wanted the picture
+\end{itemize}
+Compare this second set of sentences. Here, the same words are somehow 'essential' to the sentences. Removing them leads to syntactic (and semantic) incompleteness.
+\begin{itemize}
+\item	I put the letter xxx
+\item	I wanted the picture xxx
+\end{itemize}
+To handle the dual functionality of such words they must be able to behave in two grammatically distinct ways. This will be discussed in section \ref{sec-Dual-Relation-Words}. 
+
+\subsection{Entity Semantics}
+
+In addition to their propositional head and its corresponding ontological sort, all entities are given the following levels of semantic structure: 
+\begin{enumerate}
+\item Number
+\item Specification
+\item Delimination
+\end{enumerate}
+Where appropriate, entities also receive this additional semantic structure
+\begin{enumerate}
+\item Ownership and  Compounding
+\item Groups
+\end{enumerate}
+We will also discuss pronouns in this section.
+
+\subsubsection{Number/Specification and Delimination}
+See Moloko document for WP9. Only change is removal of the singular and non-singular distinction from \diam{Quantification}. As this information is specified by the feature \diam{Num}, this was redundant.
+
+For the sake of incrementality (see section \ref{sec-Incrementality}), all of this information is encoded in determiners and not in the nouns themselves. Thus, the full \catg{np} \emph{a cat} is formed by combining \atsign{c1}{animate}( \prop{cat} \ )  with : 
+\begin{align*}
+\atsign{x1}{entity}(&  \\ 
+      & \wand\ \diam{Delimination}(existential) \\
+      & \wand\ \diam{Quantification}(specific) \\
+      & \wand\ \diam{Number}(sg) \ ) \\ \\
+\end{align*} 
+
+
+\subsubsection{Ownership and Compounding}
+The semantic relationships which exist between the two objects underlying compounding and possessive constructions are rich and varied, and must be handled grammar externally. In each case, we have included only a single dependency relation to mark this connection: \diam{Owner} and \diam{Compound} respectively. We see both of these relations contributing to  the semantic structure of \emph{the edge of GJ's coffee mug}: 
+\vspace{-1.5em} 
+
+\begin{align*}
+\atsign{e1}{location}(& \prop{edge}  \\ 
+      & \wand\ \diam{Delimination}(unique) \\
+      & \wand\ \diam{Quantification}(specific) \\
+      & \wand\ \diam{Num}(sg)\\
+      & \wand\ \diam{Owner}(t2:thing \wand\ \prop{mug}\\
+      & \wand\ \diam{Delimination}(unique) \\
+      & \wand\ \diam{Quantification}(specific) \\
+      & \wand\ \diam{Num}(sg)\\
+      & \wand\ \diam{Compound}(c2:thing \wand\ \prop{coffee})\\
+      & \wand\ \diam{Owner}(t2:person \wand\ \prop{GJ})))
+\end{align*}
+
+\subsubsect{Groups}
+We handle the semantics of expressions like \emph{some of GJ's money} and  \emph{the first of the three balls}, i.e. subsets or groups, using the following structure:
+\vspace{-1.5em}
+
+\begin{align*}
+\atsign{g1}{entity}(& \prop{group}  \\ 
+      & subset-description \\
+      & \diam{Set}( set-description ))
+\end{align*}
+So, for example \emph{some of the balls} , we have:
+\begin{align*}
+\atsign{g1}{entity}(& \prop{group}  \\ 
+      & \wand\ \diam{Delimination}(existential) \\
+      & \wand\ \diam{Quantification}(specific) \\
+      & \wand\ \diam{Set}(b2:thing \wand\ \prop{ball}\\
+      & \wand\ \diam{Delimination}(unique) \\
+      & \wand\ \diam{Quantification}(specific) \\
+      & \wand\ \diam{Num}(pl)
+\end{align*}
+Note the difference in semantics between \emph{I want \underline{three of the books}} and {I want \underline{three books}}:
+\vspace{-1.5em}
+
+\begin{align*}
+\atsign{g1}{entity}(& \prop{group}  \\ 
+      & \wand\ \diam{Delimination}(variable) \\
+      & \wand\ \diam{Quantification}(unspecific) \\
+      & \wand\ \diam{Number}(pl) \\
+      & \wand\ \diam{Modifier}(t1:number-cardinal \wand\ \prop{three}) \\
+      & \wand\ \diam{Set}(b2:thing \wand\ \prop{book}\\
+      & \wand\ \diam{Delimination}(unique) \\
+      & \wand\ \diam{Quantification}(unspecific) \\
+      & \wand\ \diam{Num}(pl)\\
+\end{align*}
+\vspace{-2.5em}
+\begin{align*}
+\atsign{b1}{thing}(& \prop{book}  \\ 
+      & \wand\ \diam{Delimination}(existential) \\
+      & \wand\ \diam{Quantification}(specific) \\
+      & \wand\ \diam{Number}(pl) \\
+      & \wand\ \diam{Modifier}(t1:number-cardinal \wand\ \prop{three}) 
+\end{align*}
+
+\subsubsect{Pronouns}
+
+Here are some illustrations of the various forms and functions of pronouns:
+\begin{enumerate}
+\item \emph{\ul{I} am happy, \ul{they} brought GJ the ball }
+\item \emph{ give \ul{it} to \ul{me}, the robot picked \ul{it} up and put \ul{it} with \ul{them} }
+\item \emph{\ul{my} ball, what is \ul{your} name}
+\item \emph{\ul{mine} are over there, the girl already ate \ul{hers}}
+\end{enumerate}
+1 and 2 are full nominal uses, nominative and non-nominative respectively. All of these uses receive the same semantics: the nominative, singular form as \prop{semantic head} with the number specified by the \diam{Num} feature. These entities do not receive \diam{Delimination} and \diam{Quantification} \footnote{though they should.}. Thus, the 1st person singular pronoun in any of these uses receives: \emph{ \atsign{i1}{person}( \prop{I } \wand\ \diam{Num}(sg) ) }. Note that \emph{you} is ambiguous between singular and plural and thus receives two readings.
+
+3 are ownership marking determiners (possessive pronouns) and 4 are owned entities. Both make use of the \diam{Owner} role discussed above. Here are \emph{their ball} and \emph{theirs}:
+\vspace{-1.5em}
+
+\begin{align*}
+\atsign{b1}{thing}(& \prop{ball}  \\ 
+      & \wand\ \diam{Delimination}(unique) \\
+      & \wand\ \diam{Quantification}(specific) \\
+      & \wand\ \diam{Number}(sg) \\
+      & \wand\ \diam{Owner}(t1:person \wand\ \prop{they} \wand\ \diam{Number}(pl) ) 
+\end{align*}
+\begin{align*}
+\atsign{c1}{entity}(& \prop{context}  \\ 
+      & \wand\ \diam{Delimination}(unique) \\
+      & \wand\ \diam{Quantification}(specific) \\
+      & \wand\ \diam{Number}(sg) \\
+      & \wand\ \diam{Owner}(t1:person \wand\ \prop{they} \wand\ \diam{Number}(pl) ) 
+\end{align*}
+Two comments about \emph{theirs}. First, this form is ambiguous between the singular reading given and a variable, unspecific plural reading. Second, it makes use of a contextualized semantic head (see section \ref{sec-Contextualized}).
+
+\subsection{Event Semantics}
+
+In addition their propositional head and its corresponding ontological sort, events are given the following levels of semantic structure: 
+\begin{enumerate}
+\item Participant Roles 
+\item TAM (tense, aspect, modality) and Voice
+\item Mood
+\item Modality
+\end{enumerate}
+\subsubsection{Participant Roles}
+
+First, roles vs modifiers.
+
+Second, the number of event role labels used within the grammar are quite small (Actor, Patient, Recipient, Result, Event). Again, the idea is that the specifics of participant role interpretation, i.e. what it 'means' to be kicked, or to run, or to be \emph{put on the table}, are handled outside the grammar. As the grammar was designed for use in embodied agents, this is of course fully intentional. Note, however, that because of this decision, we do not get any meaningful level of semantics internal inferencing, like one does within a richer frame-based role structure. In our case, these  types of inferences must be handled outside the grammar.
+
+Third, events specify only the number and (top-level) semantic type (E, T or M) of their participants. Only in a few cases do they subcategorize based on finer grained semantic levels. For example, the verb \emph{put} specifies that it's result is a dynamic whereto location but ditranstive recipients are not constrained to animate referents. The  grammar was built with the expectation that these 'appropriateness' restrictions are handled outside the grammar. The main, and notable, exception to this design principle is the grammar internal restriction of event modifiers (see...)
+
+\subsubsection{Tense/Aspect/Polarity} \label{sec-TAM}
+
+Events are currently categorized along the traditional lines of tense (past, present, future), grammatical (as compared to lexical) aspect (the continuous and perfect dimensions), polarity (positive, negative) and voice (active, passive) using semantic features. Tense is always marked, whereas aspect, polarity and voice rely on the idea of unspecified defaults: only the 'marked' forms are marked. For polarity, if no negative particle/auxillary occurs the event is 'implicitly' postive but does not receive a feature marking this. The same is true for voice - if a passive construction is not used, the event is 'implicitly' active- and for aspect-if the event is not marked for progressive or for perfective, it simply receives no aspectual feature, instead receiving the default (imperfective, non-progressive) interpretation. So, for example, here are \emph{it got taken}\footnote{ Both \emph{get} and \emph{be} passives receive the same semantic treatment. The \emph{Actor} has been filled using a contextualized semantic object (see section \ref{sec-Contextualized} below).} (passive, non-continuous, imperfective, past, positive) and \emph{she isn't coming} (active, continuous, imperfective, present, negative):
+\begin{verbatim}
+  @t1:action-non-motion(take ^ 
+                        <Mood>ind ^ 
+                        <Tense>past ^ 
+                        <Voice>passive ^ 
+                        <Actor>(c1:entity ^ context) ^ 
+                        <Patient>(i1:thing ^ it ^ <Num>sg) )
+
+  @c1:action-motion(come ^ 
+                    <Aspect>continuous ^ 
+                    <Mood>ind ^ 
+                    <Polarity>neg ^ 
+                    <Tense>pres ^ 
+                    <Actor>(s1:person ^ she ^ <Num>sg) ) 
+\end{verbatim}                    
+                    
+\subsubsection{Mood}
+
+Mood--the classification of utterances into imperatives, interrogatives and indicatives--is not a property of events, and hence not a component of what is typically referred to as 'propositional semantics' (or ideational meaning). Nevertheless, as the various layers of meaning, e.g. ideational, interpersonal, textual etc. have not been separated out in the Moloko grammar, this interpersonal feature is attached as a feature to the event. For open interrogatives, a dependency relation \diam{Wh-Rest} is added at this level. It specifies the nature and scope of the question.  This will be discussed in detail in section \ref{sec-Mood}.
+
+\subsubsect{Modality} 
+
+Depending on what kind of word is contributing this meaning, the encoding of modality is handled in one of two ways.  For pure modal-auxilliary verbs (\emph{can, should, must} etc.) this is marked by adding a \diam{Modifier} dependency relation with appropriate contents to the main event. Here is semantic representation for \emph{can you walk}. 
+
+\vspace{-1.5em} 
+\begin{align*}
+\atsign{w1}{action-motion}(& \prop{walk}  \\ 
+      & \wand\ \diam{Mood}(int) \\
+      & \wand\ \diam{Actor}(y1:animate \wand\ \prop{you}\wand \diam{Num}(sg))  \\ 
+      & \wand\ \diam{Modifier}(c1:ability \wand\ \prop{can}) ))
+\end{align*} 
+Most modal or modal-like words (\emph{want, need, try, have(to), continue, keep, try, stop, be able, be willing, etc.}), however, have been handled as main events with their scoped over event occupying the role \diam{Event} (note the co-indexing of I).
+
+\vspace{-1.5em} 
+\begin{align*}
+\atsign{w1}{????}(& \prop{want}  \\ 
+      & \wand\ \diam{Mood}(ind) \\
+      & \wand\ \diam{Actor}(i1:animate \wand\ \prop{I}\wand \diam{Num}(sg))  \\ 
+      & \wand\ \diam{Event}(w1:action-motion \wand\ \prop{walk} \\
+      & \wand\ \diam{Actor}(i1:animate)) 
+\end{align*} 
+This was done for two reasons. First, whereas no other modal can scope over a pure modal, they can scope over semi-modals(e.g. \emph{* I want to can , * I tried to should } but \emph{I can keep running}. This can consequently lead to major differences in propositional meaning based on changes in word order, i.e. \emph{I wanted to keep running} vs. \emph{I kept wanting to run}). Second, many of these verbs also have 'object controlled' readings which require an \diam{Actor}, thus further motivating this treatment. e.g. \emph{I want him to walk}.
+\vspace{-1.5em} 
+
+\begin{align*}
+\atsign{w1}{????}(& \prop{want}  \\ 
+      & \wand\ \diam{Mood}(ind) \\
+      & \wand\ \diam{Actor}(i1:animate \wand\ \prop{I}\wand \diam{Num}(sg))  \\ 
+      & \wand\ \diam{Patient}(h1:animate \wand\ \prop{him}\wand \diam{Num}(sg))  \\ 
+      & \wand\ \diam{Event}(w1:action-motion \wand\ \prop{walk} \\
+      & \wand\ \diam{Actor}(h1:animate))
+\end{align*} 
+Note that in each of these examples the modality has, like all semantic objects, been ontologically subcategorized. 
+
+\subsection{Modifier Semantics}
+
+Consider some examples of modifiers.
+
+\begin{enumerate}
+
+\item \diam{Modifier}(i1:whereto \wand\  \prop{into}  \wand\ \diam{Anchor}(m1:entity \wand\ \prop{mug} ) ) 
+\item \diam{Modifier}(y1:time-point \wand\ \prop{now}) ))
+\item \diam{Modifier}(o1:time-point \wand\  \prop{on} \diam{Anchor}(t1:day \wand\ \prop{Tuesday}) ))
+\item \diam{Modifier}(w1:instrumental \wand\  \prop{with} \diam{Anchor}(t1:thing \wand\ \prop{ball}) ))
+\item \diam{Modifier}(q1:manner \wand\ \prop{quickly}) ))
+\item \diam{Modifier}(a1:frequency \wand\ \prop{always}) ))\\
+
+\item \diam{Modifier}(r1:color \wand\ \prop{red}) ))
+\item \diam{Modifier}(b1:size \wand\ \prop{big}) ))
+\item \diam{Modifier}(f1:number-cardinal \wand\ \prop{five}) ))\\
+
+\item \diam{Modifier}(i1:location \wand\  \prop{on}  \wand\ \diam{Anchor}(t1:entity \wand\ \prop{table} ) ) 
+\item \diam{Modifier}(w1:accompaniment \wand\  \prop{with} \diam{Anchor}(g1:person \wand\ \prop{GJ}) ))\\
+
+\item \diam{Modifier}(r1:degree \wand\ \prop{really}) ))
+\item \diam{Modifier}(m1:degree \wand\ \prop{much}) ))
+
+\end{enumerate}
+Most modifiers in Moloko are subsumed under one dependency relation named \diam{Modifier}. Functional subcategorization has been moved to the semantic/ontological sort of the propositional head of the modifier. This is true for event modifiers (1-6), entity modifiers (7-9), event/entity modifiers (10-11) and modifier modifiers (12-13). This is preferable to specifically labeled relations ( \diam{Location} , \diam{Time} , \diam{Property} , \diam{ Instrument} etc. ) for a number of reasons. First, it provides a uniform  treatment of a wide variety of phenomena. Second, it is easily extendable: all that is required is the modification of the semantic/ontological hierarchy. Third, it allows for the hierarchic grouping of relations.
+
+In addition to their propositional head and sort, when appropriate modifiers receive a \diam{Degree} value of comparative or superlative. The 'default' value is the base value. 
+
+
+\subsection{Miscellaneous Semantic Issues}
+\subsubsection{Quantifier and Modifier Scope}
+
+The scope of quantifiers and modifiers is given a quite naive treatment in the Moloko grammar. In general, these operators scope directly over the appropriate semantic object, i.e they attach to it. Thus, clause level negation attaches directly to the main event, nominal quantifiers attach to entities, etc. Moreover, the differences in scope and/or information structure associated with the ordering of such operators is not treated either, e.g. \emph{I am normally happy} and \emph{normally I am happy} receive the same semantic representation.
+
+\subsubsection{Proximity}
+
+Both the determiner and deictic uses of \emph{this} and \emph{that}, as well as \emph{here} and \emph{there} are handled by contributing the semantic feature \diam{Proximity} with values \fv{proximal} and \fv{distal} respectively. Due to issues with \textsc{DotCCG}, we have three separate sets of values corresponding to entities, modifiers and events.
+
+\subsubsection{Contextualized Semantic Objects} \label{sec-Contextualized}
+
+The Moloko grammar has been designed for use in situated interaction. If it is to handle language in such environments, clearly it must be sensitive to the relevant phenomena. In this section, we will mention a few related cases, all of which have been handled by 'filling in' a semantic role with the head \prop{context}. 
+
+To begin, people often 'leave out' linguistic material which traditional grammars mark as necessary. This is particularly true in both situated and highly interactional settings. To handle such grammatically fragmentary but interactionally complete utterances, we have added a number readings which 'contextualize' the relevant compliment slots. \\ \\
+Consider this simple hypothetical exchange. 
+\begin{itemize}
+\item 1 \ul{User}:  \ \ \emph{go get me a coffee}
+\item 2 \ul{Robot}: \emph{Sure} \\  \\ Robot goes to kitchen and returns 
+\item 3  \ul{User}: \ \ \emph{Hi Robot did you get that coffee for me} 
+\item 4  \ul{Robot}: \emph{um I tried to but I couldn't} 
+\item 5  \ul{Robot}: \emph{I didn't see any mugs}
+\item 6  \ul{User}:  \ \ \emph{didn't you}  
+\item 7  \ul{Robot}: \emph{No} 
+\item 8  \ul{User}: \ \ \emph{well try to do it again please} 
+\item 9  \ul{Robot}: \emph{ok I will} 
+\end{itemize}
+The event \prop{Robot \ get \  coffee \ for \ User} is first introduced as an imperative request by the user at line 1. Beginning at line 3, it is re-envoked and then tossed back in forth between the two participants in lines 4, 8 and 9, i.e. it is 'interpersonally argued' with only the mood, tense, aspect, polarity, and other modality like features changing from line to line. Similarly with \prop{Robot \ didn't \ see \ mugs } in 5 and 6 (and 7??). What is crucially important here is that many of the resulting utterances do not contain 'full clauses', i.e. the  verbal compliments corresponding to this event are not expressed. As an illustration of how we have handled this, here are the semantic structures corresponding to the various 'minor clauses' used in the dialogue above: \footnote{One important exception to this pattern is in the case of modal-like verbs whose event comp  either cannot or has not been marked by an infinite \emph{to}. Compare e.g., \emph{I started to} and \emph{I started}. In the latter case, the semantic structure does not receive an \diam{Event} compliment and hence does not receive a \prop{context} head.  }  \\ \\
+\emph{I tried to but I couldn't}
+\begin{verbatim}
+   @b1:event(but ^ 
+            <First>(t1:modal ^ try ^ 
+                    <Mood>ind ^ 
+                    <Tense>past ^ 
+                    <Actor>(i1:person ^ I ^ <Num>sg) ^ 
+                    <Event>(c1:event ^ context) ^ 
+                    <Subject>i1:person) ^ 
+            <Next>(c2:event ^ context ^ 
+                   <Mood>ind ^ 
+                   <Polarity>neg ^ 
+                   <Modifier>(c3:modal ^ could) ^ 
+                   <Subject>(i2:person ^ I ^<Num>sg)))
+\end{verbatim}
+\emph{I will}
+\begin{verbatim}
+  @c1:event(context ^ 
+            <Mood>ind ^ 
+            <Tense>fut ^ 
+            <Modifier>(w1:modal ^ will) ^ 
+            <Subject>(i1:person ^ I ^ <Num>sg))
+\end{verbatim}
+\emph{didn't you}
+\begin{verbatim}
+  @c1:event(context ^ 
+            <Mood>int ^ 
+            <Tense>past ^ 
+            <Subject>(y1:person ^ you ^ <Num>sg))
+\end{verbatim}
+In addition to those cases where an event compliment is fully unexpressed, it can also be referred to using a pronoun, as in \emph{try to do it again please}. This has also been handled using a \prop{context} head: 
+\begin{verbatim}
+    @t1:modal(try ^ 
+            <Mood>imp ^ 
+            <Actor>(a1:entity ^ addressee) ^ 
+            <Event>(d1:event ^ do ^ 
+                    <Actor>a1:entity ^ 
+                    <Event>(c1:event ^ context)) ^ 
+            <Modifier>(a2:m-frequency ^ again) ^ 
+            <Modifier>(p1:m-comment ^ please) ^ 
+            <Subject>a1:entity)
+\end{verbatim}
+Similarly, there are number of constructions in which \prop{entities} also have either 'unexpressed' or pronoun/deictic contexualized semantic heads. We have already seen such usage for ownership prnouns (section \ref{sec-Pronouns}) and the  \diam{Actor} in passive constructions (section \ref{sec-TAM}). Here are a few additional examples: \emph{this}, \emph{these two} and \emph{the green one}.
+\begin{verbatim}
+  @c1:entity(context ^   
+             <Delimitation>unique ^ 
+             <Num>sg ^ 
+             <Proximity>proximal ^ 
+             <Quantification>specific)
+             
+   @c1:entity(context ^ 
+             <Delimitation>unique ^ 
+             <Num>pl ^ 
+             <Proximity>proximal ^ 
+             <Quantification>specific ^ 
+             <Modifier>(t1:number-cardinal ^ two))
+             
+    @c1:entity(context ^ 
+             <Delimitation>unique ^ 
+             <Num>sg ^ 
+             <Quantification>specific ^ 
+             <Modifier>(g1:q-color ^ green))  
+ \end{verbatim}       
+The same holds for \prop{locational} and \prop{temporal} deictics. Consider the readings for \emph{put it there}, \emph{the table in here} and \emph{I haven't seen it since then}. \footnote{ \emph{then} and \emph{now} could be marked for and hence distinguished by \diam{Proximity} }
+\begin{verbatim}
+ @p1:action-non-motion(put ^ 
+                        <Mood>imp ^ 
+                        <Actor>(a1:entity ^ addressee) ^ 
+                        <Patient>(i1:thing ^ it ^ <Num>sg) ^ 
+                        <Result>(c1:m-whereto ^ context ^ 
+                                 <Proximity>m-distal) ^ 
+                        <Subject>a1:entity)
+ 
+  @t1:thing(table ^ 
+            <Delimitation>unique ^ 
+            <Num>sg ^ 
+            <Quantification>specific ^ 
+            <Modifier>(i1:m-location ^ in ^ 
+                       <Anchor>(c1:e-location ^ context ^ 
+                                <Delimitation>unique ^ 
+                                <Num>sg ^ 
+                                <Proximity>proximal ^ 
+                                <Quantification>specific )))
+
+  @s1:perception(see ^ 
+                 <Polarity>neg ^  <Mood>ind ^ 
+                 <Aspect>perfect ^  <Tense>pres ^ 
+                 <Actor>(i1:person ^ I ^  <Num>sg) ^ 
+                 <Modifier>(s2:m-time-point ^ since ^ 
+                            <Anchor>(c1:e-time-unit ^ context ^ 
+                                     <Delimitation>unique ^ 
+                                     <Num>sg ^ 
+                                     <Quantification>specific) ^ 
+                 <Patient>(i2:thing ^ it ^ <Num>sg) ^ 
+                 <Subject>i1:person)
+\end{verbatim}      
+
+\subsubsection{Role Defined entities and modifiers}
+We have treated relative clauses by adding a specific modifier relation \diam{Role-In} to the entity which contains the semantics of the clause, i.e. the event that this entity plays a role in. The restricted entity is co-indexed with the appropriate event role. Here is \emph{ball that I took} and \emph{ball that I wanted to take}.
+\begin{verbatim}
+  @b1:thing(ball ^ 
+            <Role-in>(t1:action-non-motion ^ take ^ 
+                      <Tense>past ^ 
+                      <Actor>(i1:person ^ I ^ 
+                              <Num>sg) ^ 
+                      <Patient>b1:thing ^ 
+                      <Subject>i1:person)
+
+  @b1:thing(ball ^ 
+            <Role-in>(w1:cognition ^ want ^ 
+                      <Tense>past ^ 
+                      <Actor>(i1:person ^ I ^ 
+                              <Num>sg) ^ 
+                      <Event>(t1:action-non-motion ^ take ^ 
+                              <Actor>i1:person ^ 
+                              <Patient>b1:thing) ^ 
+                      <Subject>i1:person)
+\end{verbatim}                                            
+Note that these 'minor clauses' have no mood marking. They do however have a \diam{Subject}. This is to insure full semantic integration during their incremental parsing.
+
+They are not fully functioning (and hence 'turned off' in the grammar) but we are near to having similar readings for modifiers like \emph{where I wanted to walk}:
+\begin{verbatim}
+  @w1:m-location(where ^ 
+                 <Scope>(w2:action-motion ^ walk ^ 
+                         <Actor>(i1:person ^ I ^ 
+                                 <Num>sg) ^ 
+                         <Role-in>(w3:cognition ^ want ^ 
+                                   <Tense>past ^ 
+                                   <Actor>i1:person ^ 
+                                   <Event>w2:action-motion ^ 
+                                   <Subject>i1:person)))
+\end{verbatim}
+This could then allow sentences like \emph{put it \ul{where I told you to put it}}, \emph{I went \ul{where you wanted me to go}, I don't know \ul{where it is}, I saw \ul{what you picked up}}, etc. 
+\subsection{Location}
+
+e, q, m location: q and m should be collapsed, in fact all should \\
+static vs. dynamic \\
+chains of locations: the cup is in the box in the room vs. the cup is in the room, in the box. Also chains of dynamics.  go out the door around the corner up the stairs ....  All handled by forward projecting rules \ref{sec-Prepositions}. The correct ordering must be sorted out grammar externally \\
+specifying location (prepositions on events, entities) \\
+questioning location: where, which place, which room \\
+
+\subsection{Time}
+
+e, q, m time \\
+sequence, point, interval \\
+specifying location (after you came, after that day, after then, afterwards) \\
+questioning time: when, how long \\
+
+

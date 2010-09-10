@@ -1,0 +1,202 @@
+<types name="core" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../types.xsd"
+>
+
+
+<type name="types"/>
+
+
+<!-- ======================================================= -->
+<!--             SEMANTIC TYPES- VERB MODIFIERS              -->
+<!-- ======================================================= -->
+
+
+<!-- perhaps can collapse time and duration into single??= -->
+
+<!-- only the "top level of these modifier types serve restrictive functions
+	the others are there for "ontological" reasons -->
+ 
+<type name="modifier" parents="types"/> 
+    
+	<type name="m-loc-dynamic"    parents="modifier"/>
+	     <type name="m-direction"    parents="m-loc-dynamic"/>
+	     <type name="m-wherefrom"    parents="m-loc-dynamic"/>
+	     <type name="m-whereto"      parents="m-loc-dynamic"/>
+	<type name="m-manner"         parents="modifier"/> 
+    <type name="m-duration"       parents="modifier"/>  
+    <type name="m-time"           parents="modifier"/>   
+    <type name="m-loc-static"     parents="modifier"/>	   
+	<type name="m-probability"    parents="modifier"/>
+    <type name="m-frequency"      parents="modifier"/>    
+    <type name="m-comment"        parents="modifier"/>  <!-- fortunately, please, kindly, -->  
+	<type name="m-accompianiment" parents="modifier"/>
+	<type name="m-comparison"    parents="modifier"/>
+	 
+	<type name="m-relational"     parents="modifier"/>    
+		 <type name="m-cause"        parents="m-relational"/>
+	     <type name="m-result"       parents="m-relational"/>	
+         <type name="m-condition"    parents="m-relational"/>	
+		 <type name="m-purpose"      parents="m-relational"/> 
+ 
+ <!-- these are just useful groups inherited from by event-types below -->
+				      			   
+	<type name="m-D"   parents="m-frequency m-probability m-relational m-comment"/>
+    <type name="m-C"   parents="m-D m-loc-static m-time m-duration m-comparison"/>
+	<type name="m-B"   parents="m-C m-manner"/>   	
+    <type name="m-ALL" parents="m-B m-loc-dynamic"/>
+
+ 
+<type name="event" parents="types"/> 		 	
+
+     <type name="action"      parents="event"/> 		 	 			
+	     <type name="action-motion"     parents="action m-ALL"/>
+		 <type name="action-non-motion" parents="action m-B"/> 
+		 
+	 <type name="state"       parents="event"/>
+		<type name="existence"  parents="state"/>
+		<type name="ascription" parents="state m-C"/>
+
+     <type name="internal" parents="event"/>
+		<type name="perception" parents="internal m-ALL"/>
+		<type name="cognition" parents="internal m-B"/>
+
+     <type name="grammatical" parents= "event m-D"/> 
+	  
+		 		 	 					    
+<!-- ======================================================= -->
+<!--             SEMANTIC TYPES- VERBS                       -->
+<!--     Where should motion be included, if we want mult inher how do it?-->
+<!-- WE WILL NEED TO BE CARFEFUL ABOUT NAMES!! NO DUPLICATES!!! -->
+<!-- ======================================================= -->
+
+<!-- relations between configs, like ordering, cause-effect, etc.-->
+<type name="relational" parents="types"/>  
+
+<!--
+<type name="grammatical" parents="types"/> 
+<type name="configuration" parents="types"/> 
+
+	<type name="doing" parents="configuration"/>
+		<type name="motion" parents="doing"/>
+		<type name="non-motion" parents="doing"/>
+	
+	<type name="being-having" parents="configuration"/>
+		<type name="existence" parents="being-having"/>
+		<type name="ascription" parents="being-having"/>
+			
+	<type name="internal" parents="configuration"/>
+		<type name="perception" parents="internal"/>
+		<type name="cognition" parents="internal"/>
+		<type name="emotional" parents="internal"/>	
+		
+	<type name="communication" parents="configuration"/>
+-->
+
+<!-- ======================================================= -->
+<!--             SEMANTIC TYPES- NOUNS                       -->
+<!--             not sure about material, part				 -->
+<!--         also, event...in time??						 -->
+<!-- ======================================================= -->
+
+<type name="entity" parents="types"/>
+	<type name="physical" parents="entity"/> 
+		<type name="animate" parents="physical"/> 
+			<type name="person" parents="animate"/>			
+		<type name="thing" parents="physical"/> 
+		<type name="part" parents="physical"/> 
+	<type name="e-location" parents="entity"/> 
+	<type name="e-material" parents="entity"/>
+	<type name="e-measure" parents="entity"/>
+	<type name="e-event" parents="entity"/> 
+	<type name="e-time" parents="entity"/> 
+		<type name="e-time-location" parents="e-time"/> 
+		<type name="e-time-unit" parents="e-time"/>
+
+     <type name="deverbal-perception" parents="entity"/>  
+	   
+<!-- ======================================================= -->
+<!--             SEMANTIC TYPES- ADJECTIVES                  -->
+<!-- ======================================================= -->
+ 
+<type name="quality" parents="types"/> 
+	<type name="q-physical" parents="quality"/> 
+		<type name="q-size" parents="q-physical"/> 
+		<type name="q-shape" parents="q-physical"/> 
+		<type name="q-age" parents="q-physical"/> 
+		<type name="q-color" parents="q-physical"/> 
+		<type name="q-state" parents="q-physical"/> 
+		<type name="q-material" parents="q-physical"/> 			
+	<type name="q-position" parents="quality"/> 
+		<type name="q-location" parents="q-position"/> 
+		<type name="q-temporal" parents="q-position"/>
+		<type name="q-discourse" parents="q-position"/>
+
+<!-- ======================================================= -->
+<!--             SEMANTIC TYPES- DISCOURSE UNITS             -->
+<!-- ======================================================= -->
+
+<type name="discourse" parents="types"/> 
+    <type name="cue" parents="discourse"/> 
+    <type name="greeting" parents="discourse"/>
+	<type name="reject" parents="discourse"/>
+	<type name="acknowledge" parents="discourse"/>
+	<type name="evaluate" parents="discourse"/>
+			
+<!-- ======================================================= -->
+<!--             FEATURE TYPES- NFORM                        -->
+<!-- ======================================================= -->
+ 
+<type name="pers-vals" parents="types"/>
+  <type name="pers-open" parents="pers-vals"/>
+    <type name="3rd" parents="pers-open"/>
+    <type name="non-3rd" parents="pers-open"/>
+      <type name="1st" parents="non-3rd"/>
+      <type name="2nd" parents="non-3rd"/>
+  <type name="pers-na" parents="pers-vals"/>
+    
+<type name="num-vals" parents="types"/>
+   <type name="num-open" parents="num-vals"/>   
+     <type name="sg" parents="num-vals"/>
+     <type name="pl" parents="num-vals"/>
+   <type name="num-na" parents="num-vals"/>   
+
+<type name="vform" parents="types"/> 
+    <type name="non-fin" parents="vform"/>
+	<type name="fin" parents="vform"/> 
+	<type name="inf" parents="vform"/> 
+	<type name="progr" parents="vform"/> 	
+	
+<!-- used to handle "one" "something" etc (i.e. those NP that can be modified by preps 
+	 and relative clauses) 
+	 Also allows more complex Wh-Nps like Where on the table, What on the table
+	 BUT currently, doesn't allow what that I gave you do you want b/c extracted np
+	     is forced to ntype basic by verb in rel-clause.
+	   -->
+<type name="modifiable" parents="types"/> 
+    <type name="+" parents="modifiable"/>
+	<type name="-" parents="modifiable"/>
+	       
+<!-- how much is being used?? -->	  
+<type name="nform" parents="types"/> 
+     <type name="basic" parents="nform"/>
+    	 
+	 <type name="dummy" parents="nform"/>
+	      <type name="dummy-deic" parents="dummy"/>
+  	      <type name="dummy-pers" parents="dummy"/>
+	 <type name="WHNP" parents="nform"/> 
+	      <type name="WHNP-subj" parents="WHNP"/>
+			   <type name="who-subj" parents="WHNP-subj"/>
+          <type name="WHNP-obj" parents="WHNP"/>
+			   <type name="who-obj" parents="WHNP-obj"/>
+		   	   <type name="what-obj" parents="WHNP-obj"/> 
+		  <type name="WHNP-pp-mod" parents="WHNP"/> 	    		
+		      <type name="where-location" parents="WHNP-pp-mod"/>  
+
+	  
+<!-- Can atomic types be hierarchied
+<type name="du" parents="types">
+      <type name="s" parents="du"/>	  
+      <type name="np" parents="du"/> 
+-->
+</types>	

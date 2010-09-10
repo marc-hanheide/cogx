@@ -1,0 +1,19 @@
+%-------------------------------------------------------------------------
+% ENGAGEMENT
+%-------------------------------------------------------------------------
+
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, greeting),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, state('engagement-open', 'Agent'(S), 'Agent'(H))) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, closing),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, state('engagement-closed', 'Agent'(S), 'Agent'(H))) / p(1.0).
+
+%-------------------------------------------------------------------------

@@ -1,0 +1,303 @@
+%-------------------------------------------------------------------------
+% INTENTION UTILS
+%-------------------------------------------------------------------------
+
+int_id(i1).
+%mirror_id(idm).
+
+%-------------------------------------------------------------------------
+% PERSONS
+%-------------------------------------------------------------------------
+
+	% the speaker
+person(S, H, Nom, S) <-
+	i : sort(Nom, person),
+	i : prop(Nom, 'I'),
+	i : feat_Num(Nom, sg).
+
+	% the hearer
+person(S, H, Nom, H) <-
+	i : sort(Nom, person),
+	i : prop(Nom, you).
+
+%-------------------------------------------------------------------------
+% TOPIC
+%-------------------------------------------------------------------------
+
+understand : topic(S, H, _EpSt, Int, Ref, Nom) <-
+	does_not_specify_topic(Nom) / p(0.001).
+
+% the X
+understand : topic(S, H, _EpSt0, Int, Ref, Nom) <-
+%	i : sort(Nom, thing),
+%	i : prop(Nom, Prop),
+	i : feat_Delimitation(Nom, unique),
+	i : feat_Quantification(Nom, specific),
+	i : feat_Num(Nom, sg),
+	EpSt = shared(S, H),
+	try_topic_objecttype(S, H, EpSt, Int, Ref, Nom),
+	try_topic_proximity(S, H, EpSt, Int, Ref, Nom),
+	try_restr_modifier(S, H, EpSt, Int, Ref, Nom),
+	try_restr_compound(S, H, EpSt, Int, Ref, Nom),
+	try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom).
+
+% a X
+understand : topic(S, H, _EpSt0, Int, Ref, Nom) <-
+%	i : sort(Nom, thing),
+%	i : prop(Nom, Prop),
+	i : feat_Delimitation(Nom, existential),
+	i : feat_Quantification(Nom, specific),
+	i : feat_Num(Nom, sg),
+	EpSt = attrib(H, S),
+	try_topic_objecttype(S, H, EpSt, Int, Ref, Nom),
+	try_topic_proximity(S, H, EpSt, Int, Ref, Nom),
+	try_restr_modifier(S, H, EpSt, Int, Ref, Nom),
+	try_restr_compound(S, H, EpSt, Int, Ref, Nom),
+	try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom).
+
+% "it"
+understand : topic(S, H, EpSt, Int, Ref, Nom) <-
+	i : sort(Nom, thing),
+	i : prop(Nom, it),
+	i : feat_Num(Nom, sg),
+	% XXX: have the epst bound dynamically depending on the refexp
+	int : pre(Int, belief(shared(S, H), rpv(Ref, 'Saliency', salient))) / p(1.0).
+
+% colour
+understand : topic(S, H, EpSt, Int, Ref, Nom) <-
+	i : sort(Nom, 'q-color'),
+	i : prop(Nom, Prop),
+	int : pre(Int, belief(EpSt, rpv(Ref, 'Color', Prop))) / p(1.0).
+
+% size
+understand : topic(S, H, EpSt, Int, Ref, Nom) <-
+	i : sort(Nom, 'q-size'),
+	i : prop(Nom, Prop),
+	int : pre(Int, belief(EpSt, rpv(Ref, 'Size', Prop))) / p(1.0).
+
+% shape
+understand : topic(S, H, EpSt, Int, Ref, Nom) <-
+	i : sort(Nom, 'q-shape'),
+	i : prop(Nom, Prop),
+	int : pre(Int, belief(EpSt, rpv(Ref, 'Shape', Prop))) / p(1.0).
+
+% place
+understand : topic(S, H, EpSt, Int, Ref, Nom) <-
+	i : sort(Nom, 'e-place'),
+	i : prop(Nom, Prop),
+	i : feat_Delimitation(Nom, unique),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific),
+	assert_modifier(S, H, Int, Ref, Nom),
+	int : pre(Int, belief(EpSt, rpv(Ref, 'PlaceType', Prop))) / p(1.0).
+
+% material
+understand : topic(S, H, EpSt, Int, Ref, Nom) <-
+	i : sort(Nom, _Sort),
+	i : prop(Nom, Prop),
+	Prop = cornflakes,
+	int : pre(Int, belief(EpSt, rpv(Ref, 'Material', Prop))) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom) <-
+	is_not_reference(Ref) / p(0.3).  % effectively the threshold for ref
+
+try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom) <-
+	understand : resolves_to_belief(Ref, BId, EpSt) / reference_resolution,
+	int : pre(Int, belief(EpSt, rpv(Ref, 'Belief', BId))) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+try_topic_objecttype(S, H, EpSt, Int, Ref, Nom) <-
+	has_no_topic_objecttype(Nom) / p(0.5).
+
+try_topic_objecttype(S, H, EpSt, Int, Ref, Nom) <-
+	i : sort(Nom, Sort),
+	i : prop(Nom, Prop),
+	valid_objecttype(Sort, Prop, Type),
+	int : pre(Int, belief(EpSt, rpv(Ref, 'ObjectType', Prop))) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+try_topic_proximity(S, H, EpSt, Int, Ref, Nom) <-
+	has_no_topic_proximity(Nom) / p(0.5).
+
+try_topic_proximity(S, H, EpSt, Int, Ref, Nom) <-
+	i : feat_Proximity(Nom, Proximity),
+	int : pre(Int, belief(EpSt, rpv(Ref, 'Proximity', Proximity))) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+try_restr_modifier(S, H, EpSt, Int, Ref, Nom) <-
+	has_no_restr_modifier(Nom) / p(0.5).
+
+try_restr_modifier(S, H, EpSt, Int, Ref, Nom) <-
+	i : rel_Modifier(Nom, ModNom),
+	understand : topic(S, H, EpSt, Int, Ref, ModNom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+try_restr_compound(S, H, EpSt, Int, Ref, Nom) <-
+	has_no_restr_compound(Nom) / p(0.5).
+
+try_restr_compound(S, H, EpSt, Int, Ref, Nom) <-
+	i : rel_Compound(Nom, ModNom),
+	understand : topic(S, H, EpSt, Int, Ref, ModNom).
+
+%-------------------------------------------------------------------------
+% ASSERTION EFFECT
+%-------------------------------------------------------------------------
+
+understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
+	i : sort(Nom, 'q-color'),
+	i : prop(Nom, Prop),
+	polarprop(Prop, Polarity, PolarProp),
+	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'Color', PolarProp))) / p(1.0),
+	int : post(Int, belief(shared(S, H), rpv(Ref, 'Color', PolarProp))) / p(1.0).
+
+understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
+	i : sort(Nom, 'q-shape'),
+	i : prop(Nom, Prop),
+	polarprop(Prop, Polarity, PolarProp),
+	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'Shape', PolarProp))) / p(1.0),
+	int : post(Int, belief(shared(S, H), rpv(Ref, 'Shape', PolarProp))) / p(1.0).
+
+understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
+	i : sort(Nom, 'q-size'),
+	i : prop(Nom, Prop),
+	polarprop(Prop, Polarity, PolarProp),
+	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'Size', PolarProp))) / p(1.0),
+	int : post(Int, belief(shared(S, H), rpv(Ref, 'Size', PolarProp))) / p(1.0).
+
+understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
+	i : sort(Nom, thing),
+	i : prop(Nom, Prop),
+	i : feat_Delimitation(Nom, unique),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific),
+	try_scope_modifier(S, H, Int, Ref, Polarity, Nom),
+	try_scope_compound(S, H, Int, Ref, Polarity, Nom),
+	polarprop(Prop, Polarity, PolarProp),
+	int : pre(Int, belief(shared(S, H), rpv(Ref, 'ObjectType', PolarProp))) / p(1.0).
+
+understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
+	i : sort(Nom, thing),
+	i : prop(Nom, Prop),
+	i : feat_Delimitation(Nom, existential),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific),
+	try_scope_modifier(S, H, Int, Ref, Polarity, Nom),
+	try_scope_compound(S, H, Int, Ref, Polarity, Nom),
+	polarprop(Prop, Polarity, PolarProp),
+	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'ObjectType', PolarProp))) / p(1.0),
+	int : post(Int, belief(shared(S, H), rpv(Ref, 'ObjectType', PolarProp))) / p(1.0).
+
+understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
+	i : sort(Nom, 'e-place'),
+	i : prop(Nom, Prop),
+	polarprop(Prop, Polarity, PolarProp),
+	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'PlaceType', PolarProp))) / p(1.0),
+	int : post(Int, belief(shared(S, H), rpv(Ref, 'PlaceType', PolarProp))) / p(1.0).
+
+understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
+	i : sort(Nom, 'm-location'),
+	i : prop(Nom, Prop),
+	polarprop(Prop, Polarity, PolarProp),
+	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'Location', PolarProp))) / p(1.0),
+	int : post(Int, belief(shared(S, H), rpv(Ref, 'Location', PolarProp))) / p(1.0).
+
+% cornflakes
+understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
+	i : sort(Nom, _Sort),
+	i : prop(Nom, Prop),
+	Prop = cornflakes,
+	polarprop(Prop, Polarity, PolarProp),
+	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'Material', PolarProp))) / p(1.0),
+	int : post(Int, belief(shared(S, H), rpv(Ref, 'Material', PolarProp))) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+try_scope_modifier(S, H, Int, Ref, Polarity, Nom) <-
+	has_no_scope_modifier(Nom) / p(0.5).
+
+try_scope_modifier(S, H, Int, Ref, Polarity, Nom) <-
+	i : rel_Modifier(Nom, ModNom),
+	understand : assertion_effect(S, H, Int, Ref, Polarity, ModNom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+try_scope_compound(S, H, Int, Ref, Polarity, Nom) <-
+	has_no_scope_compound(Nom) / p(0.5).
+
+try_scope_compound(S, H, Int, Ref, Polarity, Nom) <-
+	i : rel_Compound(Nom, ModNom),
+	understand : assertion_effect(S, H, Int, Ref, Polarity, ModNom).
+
+%-------------------------------------------------------------------------
+% QUESTIONS
+%-------------------------------------------------------------------------
+
+polar_query_prop(Nom, 'Color', PropValue) <-
+	i : sort(Nom, 'q-color'),
+	i : prop(Nom, PropValue).
+
+polar_query_prop(Nom, 'Shape', PropValue) <-
+	i : sort(Nom, 'q-shape'),
+	i : prop(Nom, PropValue).
+
+polar_query_prop(Nom, 'Size', PropValue) <-
+	i : sort(Nom, 'q-size'),
+	i : prop(Nom, PropValue).
+
+polar_query_prop(Nom, 'ObjectType', PropValue) <-
+	i : sort(Nom, thing),
+	i : prop(Nom, PropValue),
+	i : feat_Delimitation(Nom, existential),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific).
+
+%-------------------------------------------------------------------------
+
+wh_query_prop(Nom, 'Color') <-
+	i : sort(Nom, 'q-color').
+
+wh_query_prop(Nom, 'Color') <-
+%	i : sort(Nom, quality),
+	i : prop(Nom, color).
+
+wh_query_prop(Nom, 'Shape') <-
+	i : sort(Nom, 'q-shape').
+
+wh_query_prop(Nom, 'Shape') <-
+%	i : sort(Nom, quality),
+	i : prop(Nom, shape).
+
+wh_query_prop(Nom, 'Size') <-
+	i : sort(Nom, 'q-size').
+
+wh_query_prop(Nom, 'Size') <-
+%	i : sort(Nom, quality),
+	i : prop(Nom, size).
+
+wh_query_prop(Nom, 'ObjectType') <-
+	i : sort(Nom, thing),
+%	i : prop(Nom, PropValue),
+%	i : feat_Delimitation(Nom, existential),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific).
+
+%-------------------------------------------------------------------------
+
+polarity(Nom, Polarity) <-
+	i : feat_Polarity(Nom, Polarity).
+
+polarity(Nom, pos) <-
+	polarity_positive(Nom) / p(0.5).
+
+%-------------------------------------------------------------------------
+
+polarprop(Prop, pos, Prop).
+polarprop(Prop, neg, not(Prop)).
+
+%-------------------------------------------------------------------------

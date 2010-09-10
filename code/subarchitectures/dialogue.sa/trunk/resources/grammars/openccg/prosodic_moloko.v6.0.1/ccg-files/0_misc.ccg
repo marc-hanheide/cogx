@@ -1,0 +1,81 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
+
+# This file contains a cats, families, and dicionary-forms for
+# important things (sentence, subject, coordination and particles). 
+# These items:
+#     1) don't deserve a file of their own
+#     2) are required by the following files, and hence (in DotCCG) must
+#        be defined before hand
+
+ 
+#########################
+# SENTENCE & EVENT CATS #
+#########################
+  
+  def EVENT(args)     { E:event( args ) }
+
+  def s(args)         { s<10> [E NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER args]}
+  def from-s(args)    { s<~10>[E args] }
+
+###############
+# The SUBJECT #
+###############
+
+ 
+   def subj(args)        { np<9> [S nom NUM:NUM PERS:PERS args] }
+   def from-subj(args)   { np<~9>[S nom NUM:NUM PERS:PERS args] } 
+
+   def +subj(args)       { \! subj(args) } 
+   def +from-subj(args)  { \! from-subj(args) }
+
+   def -subj(args)       { /! subj(args) } 
+   def -from-subj(args)  { /! from-subj(args) }
+   # NOTE the ! : Verbs don't actually syntactically'take' their subjects.
+   #       This is done via rule for ind, via aux or wh-word for int, etc   
+ 
+  
+#############################
+## COORD CAT & DICT FORMS  ##
+#############################
+
+
+  # The syntactic categories for coordination, as well as the families,
+  # are located in their respective files.
+  #  e.g Noun & NP coord are in noun.ccg, prep in prep.ccg
+  #  Sentential & VP coord are in verb.ccg
+
+  def COORD(args)       { R( args <First>(F) ^ <Next>(N) ) }
+ 
+  # modify a given pos (adj, adv, prep, etc) on the given side (left, right)
+  #
+  def coord+(form, pos, class, args) {_coord+(form, form, pos, class, args) }
+  def _coord+(prd, form, pos, class, args) {
+    word form."-coord-".pos : "Coord-" . pos."-" (class, pred=prd)
+	{form: args;}
+  } 
+  
+  def coord(form, pos, class) {_coord-ip(form, form,accentMark(form), pos, class) }
+  def _coord(form, form, pos, class) {_coord-ip(prd, form, accentMark(form),pos, class) }
+  def _coord-ip(prd, form,form_hs,form_ls,form_lphs, pos, class) {
+    word form."-coord-".pos : "Coord-" . pos."-" (class, pred=prd) {
+	form: e-focus-false e-uncontentious e-rheme-true e-speaker spkr ;
+	form: e-focus-false e-uncontentious e-rheme-false e-hearer hear ;
+	form_hs: e-focus-true e-uncontentious e-rheme-true e-speaker spkr ;
+	form_ls: e-focus-true e-uncontentious e-rheme-true e-speaker spkr ;
+	form_lphs: e-focus-true e-uncontentious e-rheme-false e-hearer hear ;
+
+	}
+  } 
+
+############
+# PARTICLE #
+############
+
+  # As in pick UP the ball , pick the ball UP.
+  # Currently not really being used much. But definitely should!
+
+  def prt(args)      { prt<25>[P args] }
+  family Particle    { entry:  prt(MARK= *) : P(*) ;}

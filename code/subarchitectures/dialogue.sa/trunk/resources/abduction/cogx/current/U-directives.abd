@@ -1,0 +1,146 @@
+%-------------------------------------------------------------------------
+% QUESTION
+%-------------------------------------------------------------------------
+
+% is X Y
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, int),
+	i : 'feat_Tense'(Nom, pres),
+	i : 'rel_Subject'(Nom, SubjNom),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : topic(S, H, EpSt, Int, SubjNom, RestrNom),
+	understand : polar_query_scope(S, H, Int, SubjNom, ScopeNom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : polar_query_scope(S, H, Int, Ref, Nom) <-
+	polar_query_prop(Nom, Prop, Value),
+	int : pre(Int, belief(attrib(S, H), rpv(Ref, Prop, not(unknown)))) / p(1.0),
+	int : post(Int, state('question-answered', 'Agent'(H), 'LingRef'(Ref), 'Property'(Prop), 'Hypo'(Value))) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% what X is Y
+understand : event : utter(S, H, Nom) <-
+%	i : sort(Nom, ascription),  % XXX garbage
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+	i : rel_Subject(Nom, SubjNom),
+%	i : 'rel_Cop-Scope'(Nom, ScopeNom),  % XXX garbage
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : rel_Scope(WhNom, ScopeNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
+	understand : wh_query_scope(S, H, Int, SubjNom, ScopeNom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : wh_query_scope(S, H, Int, Ref, Nom) <-
+	wh_query_prop(Nom, Prop),
+	int : pre(Int, belief(attrib(S, H), rpv(Ref, Prop, not(unknown)))) / p(1.0),
+	int : post(Int, state('question-answered', 'Agent'(H), 'LingRef'(Ref), 'Property'(Prop))) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% what do you see
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, perception),
+	i : prop(Nom, see),
+	i : feat_Tense(Nom, pres),
+	i : feat_Mood(Nom, int),
+	i : rel_Actor(Nom, ActorNom),
+		person(S, H, ActorNom, H),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : prop(WhNom, what),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, state('scene-description', 'Agent'(H))) / p(1.0).
+
+%-------------------------------------------------------------------------
+% COMMAND: ACTION-NON-MOTION
+%-------------------------------------------------------------------------
+
+% find/bring X
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, 'action-non-motion'),
+	i : 'feat_Mood'(Nom, imp),
+	i : 'rel_Actor'(Nom, ActorNom),
+		i : prop(ActorNom, addressee),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	find_patient(Nom, RefNom),
+	understand : topic(S, H, EpSt, Int, RefNom, RefNom),
+	i : prop(Nom, ActionProp),
+	nm_action_effects(S, H, Nom, Int, RefNom, ActionProp).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+nm_action_effects(S, H, RootNom, Int, Ref, find) <-
+	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'Location', unknown))) / p(1.0),
+	int : post(Int, belief(shared(S, H), rpv(Ref, 'Location', not(unknown)))) / p(1.0).
+
+nm_action_effects(S, H, RootNom, Int, Ref, bring) <-
+	determine_recipient(RootNom, S, S, H, Recipient),
+	int : post(Int, state(posession, 'Agent'(Recipient), 'Patient'(Ref))) / p(1.0).
+
+nm_action_effects(S, H, RootNom, Int, Ref, get) <-
+	determine_recipient(RootNom, H, S, H, Recipient),
+	int : post(Int, state(posession, 'Agent'(Recipient), 'Patient'(Ref))) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+% NOTE: this is a hack. A proper parse would be sufficiently clear.
+find_patient(Nom, RefNom) <-
+	i : 'rel_Patient'(Nom, RefNom),
+	i : sort(RefNom, thing).
+
+find_patient(Nom, RefNom) <-
+	i : 'rel_Recipient'(Nom, RefNom),
+	i : sort(RefNom, thing).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+determine_recipient(Nom, Default, _, Hearer, Default) <-
+	default_recipient(Default) / p(0.5).
+
+determine_recipient(Nom, _Default, Speaker, _, Speaker) <-
+	i : rel_Recipient(Nom, RecpNom),
+		i : sort(RecpNom, person),
+		i : prop(RecpNom, 'I').
+
+%-------------------------------------------------------------------------
+% COMMAND: ACTION-MOTION
+%-------------------------------------------------------------------------
+
+% go to X
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, 'action-motion'),
+	i : feat_Mood(Nom, imp),
+	i : rel_Actor(Nom, ActorNom),
+		i : prop(ActorNom, addressee),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	i : rel_Modifier(Nom, ModifNom),
+		i : rel_Anchor(ModifNom, AnchorNom),
+		understand : topic(S, H, EpSt, Int, AnchorNom, AnchorNom),
+	i : prop(Nom, ActionProp),
+	m_action_effects(S, H, Int, AnchorNom, ActionProp).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+m_action_effects(S, H, Int, Ref, go) <-
+	int : post(Int, state(position, 'Agent'(H), 'Location'(Ref))) / p(1.0).
+
+m_action_effects(S, H, Int, Ref, move) <-
+	m_action_effect(S, H, Int, Ref, go).
+
+m_action_effects(S, H, Int, Ref, turn) <-
+	int : post(Int, state('orientation-towards', 'Agent'(H), 'Location'(Ref))) / p(1.0).
+
+%-------------------------------------------------------------------------
