@@ -16,7 +16,9 @@
 
 #include "QViewContainer.hpp"
 #include "QCastView.hpp"
+#ifdef V11N_VIEW_GL
 #include "QCastViewGL.hpp"
+#endif
 #ifdef V11N_OBJECT_HTML
 #include "QCastViewHtml.hpp"
 #endif
@@ -81,12 +83,14 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
 
    // TODO: Also create toolbars for active views!
    if (! m_pDisplay) {
-      if (pView->m_preferredContext == cogx::display::ContextGL) {
-         m_pDisplay = new QCastViewGL(this);
-      }
-      else if (pView->m_preferredContext == cogx::display::Context2D) {
+      if (pView->m_preferredContext == cogx::display::Context2D) {
          m_pDisplay = new QCastView(this);
       }
+#ifdef V11N_VIEW_GL
+      else if (pView->m_preferredContext == cogx::display::ContextGL) {
+         m_pDisplay = new QCastViewGL(this);
+      }
+#endif
 #ifdef V11N_OBJECT_HTML
       else if (pView->m_preferredContext == cogx::display::ContextHtml) {
          m_pDisplay = new QCastViewHtml(this);
