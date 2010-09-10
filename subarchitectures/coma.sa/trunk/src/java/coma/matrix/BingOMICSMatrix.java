@@ -4,7 +4,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -141,7 +144,11 @@ public class BingOMICSMatrix {
 	public void markNumHits() {
 		FileOutputStream fstream;
 		try {
-			fstream = new FileOutputStream("bing-omics-locations-coocmatrix.nt");
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
+	        Date date = new Date();
+	        String currDateID = dateFormat.format(date);
+	        
+			fstream = new FileOutputStream("bing-omics-locations-coocmatrix."+currDateID+".nt");
 			PrintStream outstream = new PrintStream(fstream);
 
 			for (int a = 0; a < this.matrix.getNumCols() ; a++) {
