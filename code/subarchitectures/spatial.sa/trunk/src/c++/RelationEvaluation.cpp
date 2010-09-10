@@ -1458,7 +1458,7 @@ spatial::Object *
 generateNewObjectModel(const std::string &label) {
 //  log("generateNewObjectModel %s", label.c_str());
   if (label == "rovio" || label == "bookcase_sm" || label == "bookcase_lg"
-      || label == "dell") {
+      || label == "dell" || label == "shelves" || label == "metalbox") {
     HollowBoxObject *newBoxObject = new HollowBoxObject;
     newBoxObject->type = OBJECT_HOLLOW_BOX;
     newBoxObject->thickness = 0.051;
@@ -1477,10 +1477,20 @@ generateNewObjectModel(const std::string &label) {
       newBoxObject->radius2 = 0.80;
       newBoxObject->radius3 = 0.965;
     }
+    else if (label == "shelves") {
+      newBoxObject->radius1 = 0.25;
+      newBoxObject->radius2 = 0.89;
+      newBoxObject->radius3 = 1.075;
+    }
     else if (label == "dell") {
       newBoxObject->radius1 = 0.11;
       newBoxObject->radius2 = 0.245;
       newBoxObject->radius3 = 0.200;
+    }
+    else if (label == "metalbox") {
+      newBoxObject->radius1 = 0.2;
+      newBoxObject->radius2 = 0.38;
+      newBoxObject->radius3 = 0.275;
     }
     else {
       newBoxObject->radius1 = 0.1;
@@ -1520,10 +1530,15 @@ generateNewObjectModel(const std::string &label) {
       newBoxObject->radius2 = 0.095;
       newBoxObject->radius3 = 0.12;
     }
-    else if (label == "table") {
+    else if (label == "table1") {
       newBoxObject->radius1 = 0.55;
       newBoxObject->radius2 = 0.45;
       newBoxObject->radius3 = 0.275;
+    }
+    else if (label == "table2") {
+      newBoxObject->radius1 = 0.40;
+      newBoxObject->radius2 = 0.90;
+      newBoxObject->radius3 = 0.36;
     }
     else  {
       newBoxObject->radius1 = 0.1;
