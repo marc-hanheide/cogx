@@ -14,4 +14,7 @@ switch MTD
    case 5
       disp('MKDBF model initialized.');
       [mC]=MKDBFinit;
+   case 6
+      disp('ODKDE model initialized.');
+      mC=ODKDEinit;
 end

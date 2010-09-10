@@ -1,4 +1,3 @@
-
 function detectCG(mC,Fnames, Cnames)
 
 numC=length(mC);

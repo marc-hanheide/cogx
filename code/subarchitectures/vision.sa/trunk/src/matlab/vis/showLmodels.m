@@ -2,7 +2,7 @@ function showLmodels(mC,Fnames,Cnames,sphw,hp)
 %showLmodels(mC,Fnames,Cnames,sphw,hp)
 %Show learned models
 
-%return;
+return; %Don't show anything for now...
 
 %disp('Showing models...');
 

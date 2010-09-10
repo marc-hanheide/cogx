@@ -13,6 +13,8 @@ switch MTD
       mtdAcr='AB';
    case 5
       mtdAcr='MKDBF';
+   case 6
+      mtdAcr='ODKDE';
 end
 
   

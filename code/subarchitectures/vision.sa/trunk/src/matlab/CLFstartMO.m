@@ -15,7 +15,8 @@ currMode.CTT=[1:7;1 1 1 1 2 2 2]';
 
 global Dirs Data 
 if nargin==0 || strcmp(opSys,'win')
-   Dirs.cogLearn='D:\Work\Matlab\CogX\DK_code\';
+   %Dirs.cogLearn='D:\Work\Matlab\CogX\DK_code\';
+   Dirs.cogLearn=[pwd '/'];
 else   
    Dirs.cogLearn='./';
 end
