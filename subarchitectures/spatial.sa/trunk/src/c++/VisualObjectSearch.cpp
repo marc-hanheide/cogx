@@ -46,6 +46,7 @@ namespace spatial
   spatial::VisualObjectSearch* AVSComponentPtr;
   void VisualObjectSearch::configure(const std::map<std::string, std::string>& _config){
 
+    isRunComponent = false;
     targetObject = "book";
     m_totalViewPoints = 0;
     isSearchFinished = false;
@@ -92,6 +93,20 @@ namespace spatial
       log("Map ceiling set to: %d", m_mapceiling);
     }
 
+    m_best3DConeRatio = 0.1;
+    it = _config.find("--3Dconeratio ");
+    if (it != _config.end()) {
+      m_best3DConeRatio= (atof(it->second.c_str()));
+      log("Best 3D cone ratio set to: %d", m_best3DConeRatio);
+    }
+
+    m_tiltinterval = 10*M_PI/180 ;
+    it = _config.find("--tiltinterval");
+    if (it != _config.end()) {
+      m_tiltinterval = (atof(it->second.c_str()));
+      log("Tilt Interval set to: %d", m_tiltinterval);
+    }
+
     m_samplesize = 100;
     it = _config.find("--samplesize");
     if (it != _config.end()) {
@@ -109,11 +124,6 @@ namespace spatial
     log("Loaded objects.");
     for(unsigned int i =0; i<m_objectlist.size(); i++)
       cout << m_objectlist[i] << endl;
-
-
-    m_samples = new int[2 * m_samplesize];
-    m_samplestheta = new double[m_samplesize];
-
 
     m_gridsize = 200;
     m_cellsize = 0.05;
@@ -224,8 +234,7 @@ namespace spatial
     m_tracer = new LaserRayTracer<GridMapData>(m_map,1.0);
     pbVis = new VisualPB_Bloxel(m_PbHost,5050,m_gridsize,m_gridsize,m_cellsize,1,true);//host,port,xsize,ysize,cellsize,scale, redraw whole map every time
 
-    m_lgm = new Cure::LocalGridMap<unsigned char>(m_gridsize/2, m_cellsize, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-    m_lgmpdf = new Cure::LocalGridMap<double>(m_gridsize/2, m_cellsize,0, Cure::LocalGridMap<unsigned char>::MAP1);
+    m_lgm = new CureObstMap(m_gridsize/2, m_cellsize, '2', CureObstMap::MAP1);
     m_Glrt  = new Cure::ObjGridLineRayTracer<unsigned char>(*m_lgm);
     pbVis->connectPeekabot();
 
@@ -296,7 +305,7 @@ namespace spatial
     }
   }
 
-  void VisualObjectSearch::IcetoCureLGM(FrontierInterface::LocalGridMap icemap, Cure::LocalGridMap<unsigned char>* lgm  ){
+  void VisualObjectSearch::IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm  ){
     log("icemap.size: %d, icemap.data.size %d, icemap.cellSize: %f, centerx,centery: %f,%f",icemap.size, icemap.data.size(), icemap.cellSize, icemap.xCenter, icemap.yCenter);
     int lp = 0;
     for(int x = -icemap.size ; x <= icemap.size; x++){
@@ -313,7 +322,6 @@ namespace spatial
     // Then read local room maps
 
     // Ideally we would get the number of rooms and belonging nodes from somewhere but here we hardcode it. 
-    int localGridMapSize = 100;
     // Get the combined map of room1
     SpatialData::PlaceIDSeq placestosearch;
 
@@ -328,7 +336,7 @@ namespace spatial
       log("%d",placestosearch[g]);
     combined_lgm = agg2->getCombinedGridMap(placestosearch);
     log("have combined lgm");
-    m_lgms[1] = new Cure::LocalGridMap<unsigned char>(combined_lgm.size, m_cellsize, '2', Cure::LocalGridMap<unsigned char>::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
+    m_lgms[1] = new CureObstMap(combined_lgm.size, m_cellsize, '2', CureObstMap::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
 
     IcetoCureLGM(combined_lgm,m_lgms[1]);
 
@@ -337,7 +345,7 @@ namespace spatial
     def.occupancy = UNKNOWN;
     def.pdf = 0;
     SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* tmpmap;
-    tmpmap = new SpatialGridMap::GridMap<GridMapData>(combined_lgm.size*2,combined_lgm.size*2, m_cellsize, m_minbloxel, 0, m_mapceiling, combined_lgm.xCenter, combined_lgm.yCenter, 0, def);
+    tmpmap = new SpatialGridMap::GridMap<GridMapData>(combined_lgm.size*2 +1,combined_lgm.size*2 +1, m_cellsize, m_minbloxel, 0, m_mapceiling, combined_lgm.xCenter, combined_lgm.yCenter, 0, def);
     m_maps[1] = tmpmap;
     GDMakeObstacle makeobstacle;
     for (int x = -combined_lgm.size; x < combined_lgm.size; x++){
@@ -354,10 +362,10 @@ namespace spatial
       placestosearch.push_back(i);
     combined_lgm = agg2->getCombinedGridMap(placestosearch);
     log("have combined lgm");
-    m_lgms[2] = new Cure::LocalGridMap<unsigned char>(combined_lgm.size, m_cellsize, '2', Cure::LocalGridMap<unsigned char>::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
+    m_lgms[2] = new CureObstMap(combined_lgm.size, m_cellsize, '2', CureObstMap::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
     IcetoCureLGM(combined_lgm,m_lgms[2]);
 
-    tmpmap = new SpatialGridMap::GridMap<GridMapData>(combined_lgm.size*2,combined_lgm.size*2, m_cellsize, m_minbloxel, 0, m_mapceiling, combined_lgm.xCenter, combined_lgm.yCenter, 0, def);
+    tmpmap = new SpatialGridMap::GridMap<GridMapData>(combined_lgm.size*2 + 1,combined_lgm.size*2 + 1, m_cellsize, m_minbloxel, 0, m_mapceiling, combined_lgm.xCenter, combined_lgm.yCenter, 0, def);
     m_maps[2] = tmpmap;
     for (int x = -combined_lgm.size; x < combined_lgm.size; x++){
       for (int y = -combined_lgm.size; y < combined_lgm.size; y++){
@@ -366,10 +374,8 @@ namespace spatial
 	}
       }
     }
-    pbVis->Display2DCureMap(m_lgms[1],"room1"); 
-    pbVis->Display2DCureMap(m_lgms[2],"room2"); 
-    log("displaying room1 map"); 
-    pbVis->DisplayMap((*m_maps[1]));
+  //  pbVis->Display2DCureMap(m_lgms[1],"room1"); 
+  //  pbVis->Display2DCureMap(m_lgms[2],"room2"); 
   }
 
   void VisualObjectSearch::start() {
@@ -470,9 +476,20 @@ namespace spatial
       }
     }
   }
-  double VisualObjectSearch::getCostForSingleStrategy(std::vector<ObjectPairRelation> singleStrategy){
   
-  
+  double VisualObjectSearch::GetCostForSingleStrategy(GridMap<GridMapData>* tmpMap, std::string targetObject, double pout, double threshold){
+    SetCurrentTarget(targetObject);
+    m_pout = 0.3; 
+    double totalprob = 0; 
+    double cost = 0;
+    while (m_pout <= threshold){
+      log("total prob mass of cones for strategy step so far: %f", totalprob);
+      SensingAction nbv = SampleAndSelect(tmpMap);
+      totalprob += nbv.totalprob;
+      UnsuccessfulDetection(nbv, tmpMap);
+      cost++;
+    }
+ return cost; 
   }
 
   void VisualObjectSearch::ChangeMaps(std::string roomid){
@@ -480,7 +497,10 @@ namespace spatial
     // set our maps for it
     m_map = m_maps[atoi(id)]; 
     m_lgm = m_lgms[atoi(id)];
+
     log("Changed current room id to: %d, pointing maps to this.", atoi(id));
+    pbVis->Display2DCureMap(m_lgm);
+    pbVis->DisplayMap(*m_map);
   }
 
   double VisualObjectSearch::GetStrategyCost(std::vector<std::string> policy){
@@ -515,16 +535,19 @@ namespace spatial
 	  std::vector<std::string> labels;
 	  std::vector<FrontierInterface::ObjectRelation> relations;
 
-	  labels.push_back(strategyStep.back().primaryobject);
+	  std::string topObject = strategyStep.back().primaryobject;
+
+	  SetCurrentTarget(topObject);
+	  
+	  labels.push_back(topObject);
 	  string logstring = "Asking for: ";
 	  logstring = logstring + labels.back();
-	  for (vector<ObjectPairRelation>::iterator it = strategyStep.begin();
-	      it != strategyStep.end(); it++) {
-	    labels.push_back(it->secobject);
-	    relations.push_back(it->relation);
-	    logstring = logstring + (it->relation == FrontierInterface::ON ? 
-	      string("ON") : string("IN"));
-	    logstring = logstring + it->secobject;
+	  for (int i = strategyStep.size() -1 ; i >= 0; i--){
+	    labels.push_back(strategyStep[i].secobject);
+	    relations.push_back(strategyStep[i].relation);
+	    logstring = logstring + ( strategyStep[i].relation== FrontierInterface::ON ? 
+	      string(" ON ") : string(" IN "));
+	    logstring = logstring + strategyStep[i].secobject;
 	  }
 	  log(logstring.c_str());
 
@@ -539,39 +562,45 @@ namespace spatial
 	  objreq->totalMass = 1.0;
 
 
-      if (strategyStep.front().secobject.find("room") != string::npos) {
-	// Search is uniform in the room (possibly direct informed)
-	//TODO: extract roomID
+	  if (strategyStep.front().secobject.find("room") != string::npos) {
+	    ChangeMaps(strategyStep.front().secobject);
+	  SpatialGridMap::GridMap<GridMapData> tmpMap = *m_map; 
 
-	// Now, check if there's just one object left
+	    // Search is uniform in the room (possibly direct informed)
+	    // Now, check if there's just one object left
 
-	if (strategyStep.size() == 1) {
-	  // If so, do uniform search without asking for a point cloud
-	  InitializePDFForObject(1.0, strategyStep[0].primaryobject);
-
-	  double cost = 0.0;
-	  //TODO: Compute cost
-	  costThisStep = cost;
+	    if (strategyStep.size() == 1) {
+	      // If so, do uniform search without asking for a point cloud
+	      //TODO: Don't override the map!   
+	      log("strategy contains room and has 1 step.");
+	      InitializePDFForObject(1.0, strategyStep[0].primaryobject, &tmpMap);
+              pbVis->AddPDF(tmpMap);
+	      double cost = 0.0;
+	      cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
+	      costThisStep = cost;
 	}
 	else {
+	  log("strategy contains room and has more than 1 step");
 	  // There's more than one relation. 
 	  // Strip off the "in room" relation from the policy for purposes
 	  // of relation query
 	  strategyStep.erase(strategyStep.begin());
 	  // Get the uninformed sample cloud from the ORM
 
-	  GridMapData def;
-	  def.occupancy = FREE;
-	  SpatialGridMap::GridMap<GridMapData> tmpMap(m_gridsize, m_gridsize, m_cellsize, m_minbloxel,
-	      0, m_mapceiling, 0, 0, 0, def);
-
+	  // remove the room relation from the request 
+	  objreq->objects.erase( objreq->objects.end() -1);
+	  objreq->relationTypes.erase( objreq->relationTypes.end() -1);
 	  // Send request and wait for reply
 	  m_bEvaluation = true;
-	  addToWorkingMemory(newDataID(), objreq);
+	  {
+	    unlockComponent();
+	    addToWorkingMemory(newDataID(), objreq);
+	    while(!gotPC)
+	      usleep(2500);
+	    log("got PC for direct search");
+	  }
 
-	  while(!gotPC)
-	    usleep(2500);
-	  log("got PC for direct search");
+	  lockComponent();
 
 	  FrontierInterface::WeightedPointCloudPtr cloud =
 	    m_priorreq->outCloud;
@@ -629,13 +658,19 @@ namespace spatial
 	      1.0,
 	      m_lgm);
 	  normalizePDF(tmpMap,1.0);
+          pbVis->AddPDF(tmpMap);
 
 	  double cost = 0.0;
-	  // TODO: Compute cost
+	  //FIXME: get lgmpdf as an arg
+	  cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
 	  costThisStep = cost;
 	}
       }
       else {
+	log("strategy does not contain room");
+	  GridMapData def;
+	  def.occupancy = FREE;
+
 	// This step doesn't begin with the room; this means it's
 	// an indirect search. 
 
@@ -648,30 +683,62 @@ namespace spatial
 
 	// Select hypothesical poses for base object
 	vector<Pose3> baseObjectPoses;
-	baseObjectPoses.push_back(Pose3());
+	Pose3 tmppose;
+	tmppose.pos = vector3(0,0,0);;
+	fromAngleAxis(tmppose.rot, 0, vector3(0,0,1));
+	baseObjectPoses.push_back(tmppose);
 	// TODO: Some more poses!
 
 	for (vector<Pose3>::iterator it = baseObjectPoses.begin(); 
 	    it != baseObjectPoses.end(); it++) {
-	  GridMapData def;
-	  def.occupancy = FREE;
-	  SpatialGridMap::GridMap<GridMapData> tmpMap(m_gridsize, m_gridsize, m_cellsize, m_minbloxel,
-	      0, m_mapceiling, 0, 0, 0, def);
-
 	  // Fill in the hypothetical pose in question
 	  objreq->baseObjectPose.clear();
 	  objreq->baseObjectPose.push_back(*it);
 
 	  // Send request and wait for reply
 	  m_bEvaluation = true;
-	  addToWorkingMemory(newDataID(), objreq);
-
+	  {
+	    unlockComponent();
+	    addToWorkingMemory(newDataID(), objreq);
+	  
 	  while(!gotPC)
 	    usleep(2500);
-	  log("got PC for direct search");
-
+	  log("got PC for a hypothetical pose");
+	  }
+	  lockComponent();
 	  FrontierInterface::WeightedPointCloudPtr cloud =
 	    m_priorreq->outCloud;
+
+	  double interval = cloud->interval;
+	  int xExtent = cloud->xExtent;
+	  int yExtent = cloud->yExtent;
+
+	  log("Cloud: (%d x %d) at interval %f", xExtent, yExtent, interval);
+
+	  double tmp = interval * (xExtent > yExtent ? xExtent : yExtent);
+	  log ("tmp = %f", tmp);
+	  tmp += m_conedepth;
+	  log ("tmp = %f", tmp);
+	  tmp /= m_cellsize;
+	  log ("tmp = %f", tmp);
+
+
+	  int lgmSize = (int)tmp;
+	  log("lgmSize = %i", lgmSize);
+	  if (lgmSize > m_gridsize) lgmSize = m_gridsize;
+	  log("lgmSize = %i", lgmSize);
+	  
+	  SpatialGridMap::GridMap<GridMapData> tmpMap(lgmSize*2+1, lgmSize*2+1, m_cellsize, m_minbloxel,
+	      0, m_mapceiling, 0, 0, 0, def);
+	  GDProbSet resetter(0.0);
+	  tmpMap.universalQuery(resetter, true);
+
+
+	  CureObstMap tempLGM(lgmSize, m_cellsize, '0', 
+	      CureObstMap::MAP1, 0, 0);
+	  CureObstMap *backupRoomLGM = m_lgm;
+	  m_lgm = &tempLGM;
+	  
 
 	  // Do KDE for this object
 	  vector<Vector3> centers;
@@ -687,15 +754,25 @@ namespace spatial
 	      1.0,
 	      m_lgm
 	      );
-
-	  double cost = 0.0;
+	  normalizePDF(tmpMap,1.0);
+	  //pbVis->AddPDF(tmpMap);
 	  // Compute cost for this map and object
+
+	  // For the purposes of cone generation/evaluation, 
+	  // set m_lgm temporarily to an empty grid
+	  // centered at the origin
+	  // Set its extent to be a bounding box based on
+	  // the spread of the point cloud and the maximum cone length
+	  // FIXME get lgmpdf as arg
+	  double cost = 0.0;
+	  cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
 	  costThisStep += cost / baseObjectPoses.size();
+
+	  m_lgm = backupRoomLGM;
 	}
 	// TODO: Save cached cost
+
       }
-
-
       StrategyCost += costThisStep;
     }	 
     return StrategyCost;
@@ -963,12 +1040,12 @@ namespace spatial
     double massAfterInit = initfunctor.getTotal();
     //    double normalizeTo = (initfunctor.getTotal()*m_pout)/(1 - m_pout);
     normalizePDF(*m_map,initprob,massAfterInit);
-
-    PopulateLGMap();
   }
 
-  void VisualObjectSearch::InitializePDFForObject(double initprob, const string &label){
+  void VisualObjectSearch::InitializePDFForObject(double initprob, const string &label,SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* map ){
 
+    if (map == 0)
+      map = m_map;
     double height;
     if (label == "table") {
       height = 0.45-0.225;
@@ -987,9 +1064,9 @@ namespace spatial
     }
 
     GDProbSet resetter(0.0);
-    m_map->universalQuery(resetter, true);
+    map->universalQuery(resetter, true);
 
-    GDProbInit initfunctor(initprob/(m_map->getZBounds().second - m_map->getZBounds().first));
+    GDProbInit initfunctor(initprob/(map->getZBounds().second - map->getZBounds().first));
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
@@ -1001,9 +1078,9 @@ namespace spatial
 	  // space is still assigned, though)
 	  for(int i = -1; i <= 1; i++){
 	    for (int j=-1; j <= 1; j++){
-	      if((*m_lgm)(x+i,y+j) == '0' && (bloxelX+i <= m_gridsize && bloxelX+i > 0 ) 
-		  && (bloxelY+i <= m_gridsize && bloxelY+i > 0 ))
-		m_map->boxSubColumnModifier(bloxelX+i,bloxelY+j, height, 2*m_minbloxel,initfunctor);
+	      if((*m_lgm)(x+i,y+j) == '0' && (bloxelX+i <= map->getMapSize().first && bloxelX+i > 0 ) 
+		  && (bloxelY+i <= map->getMapSize().second && bloxelY+i > 0 ))
+		map->boxSubColumnModifier(bloxelX+i,bloxelY+j, height, 2*m_minbloxel,initfunctor);
 	    }
 	  }
 	}
@@ -1011,50 +1088,7 @@ namespace spatial
     }
     double massAfterInit = initfunctor.getTotal();
     //    double normalizeTo = (initfunctor.getTotal()*m_pout)/(1 - m_pout);
-    normalizePDF(*m_map,initprob,massAfterInit);
-    PopulateLGMap();
-  }
-
-  void VisualObjectSearch::ReadCureMapFromFile() {
-    log("Reading cure map");
-
-    ifstream file(m_curemapfile.c_str());
-    if (!file.good()){
-      log("Could not open file, returning without doing anything.");
-      return;
-    }
-    GDMakeObstacle makeobstacle;
-    std::string line;
-
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      getline(file,line);
-      if (line != ""){
-	int count = 0;
-	for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	  char c = line[count];
-	  if (c == '3'){ //if this is a wall
-	    (*m_lgm)(x, y) = '3';
-	    m_map->boxSubColumnModifier(x+m_lgm->getSize(),y + m_lgm->getSize(), m_mapceiling/2, m_mapceiling,makeobstacle);
-	  }
-	  else if  (c  == '1'){ // a normal obstacle
-	    (*m_lgm)(x, y) = c;
-	    m_map->boxSubColumnModifier(x+m_lgm->getSize(),y + m_lgm->getSize(), m_LaserPoseR.getZ(), m_minbloxel*2,makeobstacle);
-	  }
-	  else{
-	    (*m_lgm)(x, y) = c;
-	  }
-	  count++;
-	}
-      }
-      line = "";
-    }
-
-    InitializePDF(1-m_pout);
-    // pbVis->DisplayMap(*m_map);
-    //  pbVis->AddPDF(*m_map);
-    pbVis->Display2DCureMap(m_lgm);
-    m_map->clearDirty();
-    m_maploaded = true;
+    normalizePDF(*map,initprob,massAfterInit);
   }
 
   void VisualObjectSearch::savemap( GtkWidget *widget,gpointer data )
@@ -1063,16 +1097,16 @@ namespace spatial
   }
   void VisualObjectSearch::readmap( GtkWidget *widget, gpointer data )
   {
-    //  AVSComponentPtr->ReadCureMapFromFile();
     AVSComponentPtr->InitializeMaps();
   }
   void VisualObjectSearch::selectdu( GtkWidget *widget, gpointer data )
   {
-    std::vector<std::string> policy;
+    AVSComponentPtr->isRunComponent = true;
+   /* std::vector<std::string> policy;
     policy.push_back("room1");
     policy.push_back("dell ON table IN room1");
     policy.push_back("book IN dell ON table IN room1");
-    AVSComponentPtr->GetStrategyCost(policy);
+    AVSComponentPtr->GetStrategyCost(policy);*/
     //AVSComponentPtr->LookforObjectWithStrategy(DIRECT_UNINFORMED);
   }
   void VisualObjectSearch::selectdi( GtkWidget *widget, gpointer data )
@@ -1088,6 +1122,7 @@ namespace spatial
 
   void VisualObjectSearch::runComponent(){
     m_command = IDLE;
+    
     if(m_savemapmode){
       int argc= 0;
       char** argv = NULL;
@@ -1151,15 +1186,23 @@ namespace spatial
 
     viewCount = 0; //Init viewcount
 
-    while(true){ 
-      m_Mutex.lock();
-      //      pbVis->DisplayMap(*m_map);
-      pbVis->Display2DCureMap(m_lgm);
+    while(true){
       while(gtk_events_pending())
 	gtk_main_iteration();
-      InterpretCommand();
-      log("Outside probability: %f, at viewpoint %d", m_pout, m_totalViewPoints);
-      m_Mutex.unlock();
+      if (isRunComponent){
+	lockComponent();
+	//      pbVis->DisplayMap(*m_map);
+	pbVis->Display2DCureMap(m_lgm);
+	InterpretCommand();
+	log("Outside probability: %f, at viewpoint %d", m_pout, m_totalViewPoints);
+	InitializeMaps();
+	std::vector<std::string> policy;
+	policy.push_back("room1");
+	policy.push_back("table IN room1");
+	policy.push_back("book ON table IN room1");
+	GetStrategyCost(policy);
+	unlockComponent();
+      }
       sleep(1);
     }
   }
@@ -1244,7 +1287,7 @@ namespace spatial
 
 			  PopulateLGMap();
 			  m_nbv = SampleAndSelect();
-			  PostViewCone();
+			  PostViewCone(m_nbv);
 		      }
 
 		      else {
@@ -1260,7 +1303,7 @@ namespace spatial
 
 			  PopulateLGMap();
 			  m_nbv = SampleAndSelect();
-			  PostViewCone();
+			  PostViewCone(m_nbv);
 
 			  GoToNBV();
 		      }
@@ -1316,39 +1359,46 @@ namespace spatial
   }
 
 
-  void VisualObjectSearch::PostViewCone()
+  void VisualObjectSearch::PostViewCone(const SensingAction &nbv)
   {
     /* Add plan to PB BEGIN */
     NavData::ObjectSearchPlanPtr obs = new NavData::ObjectSearchPlan;
     NavData::ViewPoint viewpoint;
-    viewpoint.pos.x = m_nbv.pos[0];
-    viewpoint.pos.y = m_nbv.pos[1];
-    viewpoint.pos.z = m_nbv.pos[2];
+    viewpoint.pos.x = nbv.pos[0];
+    viewpoint.pos.y = nbv.pos[1];
+    viewpoint.pos.z = nbv.pos[2];
     viewpoint.length = m_conedepth;
-    viewpoint.pan = m_nbv.pan;
-    viewpoint.tilt = m_nbv.tilt;
+    viewpoint.pan = nbv.pan;
+    viewpoint.tilt = nbv.tilt;
     obs->planlist.push_back(viewpoint);
     addToWorkingMemory(newDataID(), obs);
     /* Add plan to PB END */
 
-    cout << "selected cone" << viewpoint.pos.x << " " << viewpoint.pos.y << " " <<viewpoint.pos.z << "" << viewpoint.pan << " " << viewpoint.tilt << endl;
+    //cout << "selected cone " << viewpoint.pos.x << " " << viewpoint.pos.y << " " <<viewpoint.pos.z << " " << viewpoint.pan << " " << viewpoint.tilt << endl;
   }
 
-  void VisualObjectSearch::PopulateLGMap() {
-    for (int x = -m_lgmpdf->getSize(); x <= m_lgmpdf->getSize(); x++) {
-      for (int y = -m_lgmpdf->getSize(); y <= m_lgmpdf->getSize(); y++) {
-	int bloxelX = x + m_lgmpdf->getSize();
-	int bloxelY = y + m_lgmpdf->getSize();
+  CurePDFMap* VisualObjectSearch::PopulateLGMap(const GridMap<GridMapData>* map) {
+    log("populate lg map.");
+    if (map == 0)
+      map = m_map;
+    CurePDFMap* lgmpdf  = new CurePDFMap(m_lgm->getSize(),m_lgm->getCellSize() ,0, CureObstMap::MAP1,m_lgm->getCentXW(), m_lgm->getCentYW()); 
+
+
+    for (int x = -lgmpdf->getSize(); x <= lgmpdf->getSize(); x++) {
+      for (int y = -lgmpdf->getSize(); y <= lgmpdf->getSize(); y++) {
+	int bloxelX = x + lgmpdf->getSize();
+	int bloxelY = y + lgmpdf->getSize();
 	if ((*m_lgm)(x,y) != '2'){
 	  double bloxel_floor = 0;
-	  (*m_lgmpdf)(x,y) = 0;
-	  for (unsigned int i = 0; i < (*m_map)(bloxelX,bloxelY).size();i++){
-	    (*m_lgmpdf)(x,y) += (*m_map)(bloxelX, bloxelY)[i].data.pdf * ((*m_map)(bloxelX,bloxelY)[i].celing - bloxel_floor);
-	    bloxel_floor = (*m_map)(bloxelX,bloxelY)[i].celing;
+	  (*lgmpdf)(x,y) = 0;
+	  for (unsigned int i = 0; i < (*map)(bloxelX,bloxelY).size();i++){
+	    (*lgmpdf)(x,y) += (*map)(bloxelX, bloxelY)[i].data.pdf * ((*map)(bloxelX,bloxelY)[i].celing - bloxel_floor);
+	    bloxel_floor = (*map)(bloxelX,bloxelY)[i].celing;
 	  }	
 	}
       }
     }
+    return lgmpdf;
   }
 
   void VisualObjectSearch::GoToNBV(){
@@ -1415,6 +1465,7 @@ namespace spatial
       currentSearchMode = DIRECT_UNINFORMED;
       log("Will look for %s", currentTarget.c_str());
       InitializePDFForObject(1-m_pout, currentTarget);
+      PopulateLGMap();  
       pbVis->AddPDF(*m_map);
       m_map->clearDirty();
       m_command = NEXT_NBV;
@@ -1438,6 +1489,7 @@ namespace spatial
 	cout << searchChain[i].primaryobject << " " << searchChain[i].secobject << " " << searchChain[i].prob << endl;
       }
       InitializePDFForObject(1-m_pout, currentTarget);
+      PopulateLGMap();  
       pbVis->AddPDF(*m_map);
       m_map->clearDirty();
       m_command = NEXT_NBV;
@@ -1675,7 +1727,7 @@ namespace spatial
     return true;
   }
 
-  bool isCircleFree2D(const Cure::LocalGridMap<unsigned char> &map, double xW, double yW, double rad)
+  bool isCircleFree2D(const CureObstMap &map, double xW, double yW, double rad)
   {
     int xiC, yiC;
     if (map.worldCoords2Index(xW, yW, xiC, yiC) != 0) {
@@ -1699,11 +1751,15 @@ namespace spatial
     }
 
     return true;
-  }void VisualObjectSearch::Sample2DGrid() {
+  }
+  
+  
+  std::vector<Cure::Pose3D> VisualObjectSearch::Sample2DGrid() {
     srand (
 	time(NULL));
     std::vector<double> angles;
 
+    std::vector<Cure::Pose3D> samples;
     log("Sampling Grid");
     /*Sampling free space BEGIN*/
     /*Checking if a point in x,y is reachable */
@@ -1767,6 +1823,7 @@ namespace spatial
     double xW, yW, angle;
     //log("for sample size");
     bool haspoint;
+    Cure::Pose3D singlesample;
     while (i < m_samplesize) {
       haspoint = false;
       randx = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
@@ -1774,14 +1831,14 @@ namespace spatial
       int the = (int) (rand() % angles.size());
       angle = angles[the];
       //if we have that point already, skip.
-      for (int j = 0; j < i; j++) {
-	if (m_samples[2 * j] == randx && m_samples[2 * j + 1] == randy
+     /* for (int j = 0; j < i; j++) {
+	if (samples[2 * j] == randx && m_samples[2 * j + 1] == randy
 	    && m_samplestheta[j] == angle) {
 	  //log("we already have this point.");
 	  haspoint = true;
 	  break;
 	}
-      }
+      }*/
       m_lgm->index2WorldCoords(randx, randy, xW, yW);
       std::pair<int,int> sample;
       sample.first = randx;
@@ -1811,9 +1868,10 @@ namespace spatial
 	  if (d > 0) {
 	    // There is a path to this destination
 	    //  log("there's a path to this destination");
-	    m_samples[2 * i] = randx;
-	    m_samples[2 * i + 1] = randy;
-	    m_samplestheta[i] = angle;
+	    singlesample.setX(randx);
+	    singlesample.setY(randy);
+	    singlesample.setTheta(angle);
+	    samples.push_back(singlesample);
 	    i++;
 	  }
 	  else {
@@ -1834,17 +1892,15 @@ namespace spatial
 
     vector < vector<double> > sampled2Dpoints;
     double xW1,yW1;
-    for(int i= 0; i < m_samplesize; i++){
+    for(int i= 0; i < samples.size(); i++){
       vector<double> point;
-      m_lgm->index2WorldCoords(m_samples[i * 2], m_samples[i * 2 + 1], xW1, yW1);
-
-
+      m_lgm->index2WorldCoords(samples[i].getX(), samples[i].getY(), xW1, yW1);
       point.push_back(xW1);
       point.push_back(yW1);
       point.push_back(1.4);
       sampled2Dpoints.push_back(point);
     }
-    //   pbVis->Add3DPointCloud(sampled2Dpoints);
+     pbVis->Add3DPointCloud(sampled2Dpoints);
     /*   m_lgm->index2WorldCoords(m_samples[1 * 2], m_samples[1 * 2 + 1], xW1, yW1);
 	 Cure::Pose3D pos;
 	 pos.setX(xW1);
@@ -1853,30 +1909,32 @@ namespace spatial
 	 PostNavCommand(pos,SpatialData::GOTOPOSITION);*/
     /* Display Samples in PB END */
     /*Sampling free space END*/
+  return samples;
   }
 
 
-  std::vector<std::vector<int> >
-    VisualObjectSearch::GetViewCones() {
+  std::vector<std::vector<pair <int,int> > >
+    VisualObjectSearch::GetViewCones(std::vector<Cure::Pose3D> samples2D ) {
       log("Calculating view cones for generated samples");
       Cure::Pose3D candidatePose;
       XVector3D a;
-      std::vector<int> tpoints;
-      std::vector<std::vector<int> > ViewConePts;
+      std::vector<pair<int,int> > tpoints;
+      std::vector<std::vector<pair<int,int> > > ViewConePts;
 
-      for (int y = 0; y < m_samplesize; y++) { //calc. view cone for each sample
+      for (int y = 0; y < samples2D.size(); y++) { //calc. view cone for each sample
 
-	m_lgm->index2WorldCoords(m_samples[y * 2], m_samples[2 * y + 1], a.x, a.y);
-	a.theta = m_samplestheta[y];
+	m_lgm->index2WorldCoords(samples2D[y].getX(), samples2D[y].getY(), a.x, a.y);
+	a.theta = samples2D[y].getTheta();
 	tpoints = GetInsideViewCone(a, true);
 	ViewConePts.push_back(tpoints);
       }
       return ViewConePts;
     }
 
-  std::vector<int>
+  std::vector<pair<int, int> >
     VisualObjectSearch::GetInsideViewCone(XVector3D &a, bool addall) {
-      std::vector<int> tpoints;
+      //log("get inside view cone");
+      std::vector<pair<int, int> > tpoints;
       XVector3D b, c, p;
       XVector3D m_a, m_b, m_c;
       int* rectangle = new int[4];
@@ -1903,16 +1961,13 @@ namespace spatial
 	  p.x = x;
 	  p.y = y;
 	  if (isPointInsideTriangle(p, m_a, m_b, m_c)) {
-	    tpoints.push_back(x);
-	    tpoints.push_back(y);
+	    tpoints.push_back(make_pair(x,y));
 	  }
 
 	}
       }
-      vector<int>::iterator theIterator = tpoints.begin();
-      tpoints.insert(theIterator, 1, m_a.y);
-      theIterator = tpoints.begin();
-      tpoints.insert(theIterator, 1, m_a.x);
+      vector<pair<int,int> >::iterator theIterator = tpoints.begin();
+      tpoints.insert(theIterator, 1, make_pair(a.x,a.y));
       return tpoints;
 
     }
@@ -1972,34 +2027,38 @@ namespace spatial
     }
 
 
-  VisualObjectSearch::SensingAction VisualObjectSearch::SampleAndSelect(){
-
+  VisualObjectSearch::SensingAction VisualObjectSearch::SampleAndSelect(GridMap<GridMapData>* tmpMap){
+    if ( tmpMap == 0)
+      tmpMap = m_map;
+    CurePDFMap* lgmpdf = PopulateLGMap(tmpMap); 
     double cameraheight = 1.4;
     debug("Sampling Grid.");
 
     double lgmpdfsum = 0;
-    for (int x = -m_lgmpdf->getSize(); x <= m_lgmpdf->getSize(); x++) {
-      for (int y = -m_lgmpdf->getSize(); y <= m_lgmpdf->getSize(); y++) {
-	lgmpdfsum += (*m_lgmpdf)(x,y);
+    for (int x = -lgmpdf->getSize(); x <= lgmpdf->getSize(); x++) {
+      for (int y = -lgmpdf->getSize(); y <= lgmpdf->getSize(); y++) {
+	lgmpdfsum += (*lgmpdf)(x,y);
       }
     }
     cout<< "lgmpdf map sums to: " << lgmpdfsum << endl;
-    std::vector<std::vector<int> > VCones;
-    VCones.clear();
+    std::vector<std::vector<pair<int,int> > > VCones;
     log("sampling grid");
-    Sample2DGrid();
+    std::vector<Cure::Pose3D> samples2D = Sample2DGrid();
     log("getting view cones");
-    VCones = GetViewCones();
+    VCones = GetViewCones(samples2D);
+    log("got view cones");
     double sum;
     int x, y;
     vector< pair<unsigned int,double> > orderedVClist, tmp;
     vector<unsigned int>::iterator it;
     for (unsigned int i = 0; i < VCones.size(); i++) {
       sum = 0;
-      for (unsigned int j = 0; j < VCones[i].size() / 2; j++) {
-	x = VCones[i][2 * j];
-	y = VCones[i][2 * j + 1];
-	sum += (*m_lgmpdf)(x, y);
+      for (unsigned int j = 0; j < VCones[i].size(); j++) {
+	x = VCones[i][j].first;
+	y = VCones[i][j].second;
+	if ((x > -lgmpdf->getSize() &&  x < lgmpdf->getSize()) &&
+	    (y > -lgmpdf->getSize() && y < lgmpdf->getSize()))
+	  sum += (*lgmpdf)(x, y);
       }
       if(orderedVClist.size() == 0){
 	orderedVClist.push_back(make_pair(i,sum));
@@ -2028,13 +2087,15 @@ namespace spatial
     std::vector <SensingAction> samplepoints;
 
     std::vector<double> angles;
-    for (double rad = -30*M_PI/180; rad < 30*M_PI/180; rad = rad + M_PI / 18.0 ) {
+    for (double rad = -30*M_PI/180; rad < 30*M_PI/180; rad = rad + M_PI / m_tiltinterval) {
       angles.push_back(rad);
     }
 
+    // We have the VC candidate list ordered according to their lgmpdf sums (2D)
+    // now for the top X candidate get a bunch of tilt angles and calculate the 3D cone sums
     double xW, yW;
-    for (unsigned int j =0; j < orderedVClist.size() / 20; j++){
-      m_lgm->index2WorldCoords(m_samples[2*orderedVClist[j].first], m_samples[2*orderedVClist[j].first + 1], xW, yW);
+    for (unsigned int j =0; j < orderedVClist.size() * m_best3DConeRatio ; j++){
+      m_lgm->index2WorldCoords(samples2D[orderedVClist[j].first].getX(), samples2D[orderedVClist[j].first].getY(), xW, yW);
 
       for (unsigned int i =0; i< angles.size(); i++){
 	std::vector<double> coord;
@@ -2045,22 +2106,28 @@ namespace spatial
 	coord.push_back(cameraheight);
 	SensingAction sample;
 	sample.pos = coord;
-	sample.pan = m_samplestheta[orderedVClist[j].first];
+	sample.pan = samples2D[orderedVClist[j].first].getTheta();
 	// sample.pan = m_SlamRobotPose.getTheta();
 	sample.tilt= angles[i];
 	samplepoints.push_back(sample);
+	PostViewCone(sample);
       }
     }
 
     // keyed with room id
-    int bestConeIndex = GetViewConeSums(samplepoints);
+    int bestConeIndex = GetViewConeSums(samplepoints, tmpMap);
+    delete lgmpdf;
+    log("returning best nbv: %d", bestConeIndex);
     return samplepoints[bestConeIndex];
 
   }
 
-  int VisualObjectSearch::GetViewConeSums(std::vector <SensingAction> samplepoints){
-    debug("Querying cones");
+  int VisualObjectSearch::GetViewConeSums(std::vector <SensingAction> samplepoints, GridMap<GridMapData> *map){
+    log("Getting view cone sums");
     log("Cone range is %f to %f", m_minDistance, m_conedepth);
+
+    if (map == 0) 
+      map = m_map;
 
     GDProbSum sumcells;
     GDIsObstacle isobstacle;
@@ -2071,26 +2138,28 @@ namespace spatial
       for (unsigned int i =0; i < samplepoints.size(); i++){
 	SensingAction viewpoint = samplepoints[i];
 	/*m_map->coneModifier(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan,samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, makeobstacle,makeobstacle);*/
-	m_map->coneQuery(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan, samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells, m_minDistance);
-	//cout << "cone #" << i  << " " << viewpoint.pos[0] << " " << viewpoint.pos[1] << " " <<viewpoint.pos[2] << "" << viewpoint.pan << " " << viewpoint.tilt << " pdfsum: " << sumcells.getResult() << endl;
+	map->coneQuery(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan, samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells, m_minDistance);
+	log("cone query done.");
+	cout << "cone #" << i  << " " << viewpoint.pos[0] << " " << viewpoint.pos[1] << " " <<viewpoint.pos[2] << "" << viewpoint.pan << " " << viewpoint.tilt << " pdfsum: " << sumcells.getResult() << endl;
 
-	//      if (sumcells.getResult() < 1e-5) {
 	//    /* Show view cone on a temporary map, display the map and wipe it*/
-	////    GDMakeObstacle makeobstacle;
-	//    GDIsObstacle isobstacle;
-	//    if (m_showconemap){
-	//      m_tempmap->coneModifier(viewpoint.pos[0],viewpoint.pos[1],viewpoint.pos[2], viewpoint.pan,viewpoint.tilt, m_horizangle, m_vertangle, 3.0, 5, 5, isobstacle, makeobstacle,makeobstacle);
-	//      pbVis->DisplayMap(*m_tempmap, "lastconemap");
-	//      sleepComponent(5000);
-	//
-	//      GridMapData def;
-	//      def.occupancy = UNKNOWN;
-	//      GDSet wipemap(def);
-	//      BloxelFalse<GridMapData> dummy;
-	//      m_tempmap->coneModifier(viewpoint.pos[0],viewpoint.pos[1],viewpoint.pos[2], viewpoint.pan,viewpoint.tilt, m_horizangle, m_vertangle, 3.0, 5, 5, dummy, wipemap,wipemap);
-	//
-	//    }
-	//      }
+
+	if (m_showconemap){
+	  GDMakeObstacle makeobstacle;
+	  GDIsObstacle isobstacle; 
+	  m_tempmap = map;
+	  m_tempmap->coneModifier(viewpoint.pos[0],viewpoint.pos[1],viewpoint.pos[2], viewpoint.pan,viewpoint.tilt, m_horizangle, m_vertangle, 3.0, 5, 5, isobstacle, makeobstacle,makeobstacle);
+	  pbVis->DisplayMap(*m_tempmap, "lastconemap");
+	  sleepComponent(5000);
+
+	  GridMapData def;
+	  def.occupancy = UNKNOWN;
+	  GDSet wipemap(def);
+	  BloxelFalse<GridMapData> dummy;
+	  m_tempmap->coneModifier(viewpoint.pos[0],viewpoint.pos[1],viewpoint.pos[2], viewpoint.pan,viewpoint.tilt, m_horizangle, m_vertangle, 3.0, 5, 5, dummy, wipemap,wipemap);
+	}
+
+	samplepoints[i].totalprob = sumcells.getResult();
 	if (sumcells.getResult() > maxpdf){
 	  maxpdf = sumcells.getResult();
 	  maxindex = i;
@@ -2348,44 +2417,48 @@ namespace spatial
       }
     }
 
-  void VisualObjectSearch::UnsuccessfulDetection(SensingAction viewcone){
+  void VisualObjectSearch::UnsuccessfulDetection(SensingAction viewcone, GridMap<GridMapData> *map){
+
+    if (map == 0) 
+      map = m_map;
+
     double sensingProb = 0.8;
     GDProbSum sumcells;
     GDIsObstacle isobstacle;
     /* DEBUG */
     GDProbSum conesum;
-    m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
+    map->coneQuery(viewcone.pos[0],viewcone.pos[1],
 	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, conesum, conesum, m_minDistance);
-    cout << "cone sums to" << conesum.getResult() << endl;
+    cout << "cone sums to " << conesum.getResult() << endl;
 
     /* DEBUG */
 
     cout << "m_pout before update  is:" <<m_pout << endl;
     //to get the denominator first sum all cells
-    m_map->universalQuery(sumcells); 
+    map->universalQuery(sumcells); 
 
     double mapsum = 0;
     mapsum = sumcells.getResult();
     cout << "whole map PDF sums to: " << mapsum << endl;
     // then deal with those bloxels that belongs to this cone
     GDMeasUpdateGetDenominator getnormalizer(sensingProb,mapsum);
-    m_map->coneQuery(viewcone.pos[0],viewcone.pos[1],
+    map->coneQuery(viewcone.pos[0],viewcone.pos[1],
 	viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, getnormalizer,getnormalizer, m_minDistance);
     double normalizer = getnormalizer.getResult() + m_pout;
     cout << "normalizer is: " << normalizer << endl;
 
     GDProbScale scalefunctor(1.0/normalizer);
-    m_map->universalQuery(scalefunctor,false);
+    map->universalQuery(scalefunctor,false);
 
     GDUnsuccessfulMeasUpdate measupdate(normalizer,sensingProb); 
-    m_map->coneModifier(viewcone.pos[0], viewcone.pos[1],viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, measupdate,measupdate, m_minDistance);
+    map->coneModifier(viewcone.pos[0], viewcone.pos[1],viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, measupdate,measupdate, m_minDistance);
 
     m_pout = m_pout / normalizer;
-    m_map->universalQuery(sumcells);    
+    map->universalQuery(sumcells);    
     cout << "m_pout after update  is:" <<m_pout << endl;
     cout << "map sums to: " << sumcells.getResult() << endl;
 
-    normalizePDF(*m_map,(1- m_pout));
+    normalizePDF(*map,(1- m_pout));
 
     //vector< pair<double,double> > thresholds;
     //thresholds.push_back(make_pair(1e-4,1e-3));
@@ -2394,9 +2467,8 @@ namespace spatial
     //thresholds.push_back(make_pair(1e-2,5e-2));
     //thresholds.push_back(make_pair(5e-2,1e2));
 
-    pbVis->AddPDF(*m_map);
-    m_map->clearDirty();
-
+    pbVis->AddPDF(*map);
+    map->clearDirty();
   }
 
   void VisualObjectSearch::SaveSearchPerformance(std::string result){
@@ -2474,10 +2546,8 @@ namespace spatial
 	LaserPose.push_back(lpW.getTheta());
 
 	debug("Adding scan..");
-	m_Mutex.lock();
 	m_tracer->addScanStationarySensor(castScan,LaserPose,obstacle,makefree,makeobstacle);
 	m_Glrt->addScan(cureScan, lpW,1.0);
-	m_Mutex.unlock();
     }
   }
   unlockComponent();
