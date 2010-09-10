@@ -4,7 +4,8 @@ global mAV mDA mFS;
 
 %[mAV,mDA,mFS]=MVBFinit;
 %[mAV,mDA,mFS]=KDBFinit;
-mAV=MKDBFinit;
+%mAV=MKDBFinit;
+mAV=ODKDEinit;
 
 lrcH=LRcontrol;
 [LRguiL LRguiR]=LRvisStart;

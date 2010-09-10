@@ -79,7 +79,7 @@ for i = N_init+1 : 200
     % perform a feature selection 
 %     disp('Select features')
 %     tic
-%     kde_cl = executeOperatorIKDEClsfr( kde_cl, 'make_simple_feature_selection') ;
+    kde_cl = executeOperatorIKDEClsfr( kde_cl, 'make_simple_feature_selection') ;
 %     toc
     if isfield(kde_cl, 'debug')
         for_plot = kde_cl.debug ;

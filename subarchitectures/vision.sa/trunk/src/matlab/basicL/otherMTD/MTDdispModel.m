@@ -15,6 +15,10 @@ switch MTD
 %          fprintf('   ');
 %       end
 %       fprintf('\n');
+   case 6
+      fprintf('Selected features: ');
+      disp(getc(mC,0,'Fb'));
+end;
 end
 
   

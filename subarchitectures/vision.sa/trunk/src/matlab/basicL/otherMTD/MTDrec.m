@@ -13,6 +13,8 @@ switch MTD
       rQnt=ABrec(f,mC);
    case 5
       rQnt=MKDBFrec(f,mC);
+   case 6
+      rQnt=ODKDErec(f,mC);
 end
 
   

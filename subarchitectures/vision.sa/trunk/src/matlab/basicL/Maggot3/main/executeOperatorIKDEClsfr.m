@@ -44,7 +44,7 @@ unknown_model_value = [] ;
 create_clsfr_from_this = [] ;
 ignoreClasses = [] ;
 typeRecDescr = [] ; % type of model: {discriminative, reconstructive}
-operator_data = [] ;
+operator_data = '' ;
 input_data = [] ;
 vforwvargin = {} ;
 args = varargin;
@@ -570,6 +570,7 @@ switch operator_data
         hyper_output_kde_cl = hyper_input_kde_cl ; 
     case 'compress_pdf'
         % store previous
+        hyper_output_kde_cl = hyper_input_kde_cl ;
         input_kde_cl = hyper_input_kde_cl.kde_cl ;
         output_kde_cl = input_kde_cl ;
         for class = 1 : length(input_kde_cl)
@@ -583,7 +584,7 @@ switch operator_data
                                        'otherClasses', otherClasses, vforwvargin{:} ) ;
             output_kde_cl{class} = kde ;
         end
-        hyper_output_kde_cl.kde_cl = output_kde_cl ;
+        hyper_output_kde_cl.kde_cl = output_kde_cl ;        
     case 'classifyData'
         input_kde_cl = hyper_input_kde_cl.kde_cl ;       
         P = zeros(length(input_kde_cl),size(input_data,2)) ;

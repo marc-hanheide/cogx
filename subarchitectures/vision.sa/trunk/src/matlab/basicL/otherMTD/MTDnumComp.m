@@ -15,7 +15,8 @@ switch MTD
       end
    case 4
       nc=length([mC.Weights])/length(mC);
-   
+   case 6
+      nc=getc(mC,'numComp');
       
 end
 

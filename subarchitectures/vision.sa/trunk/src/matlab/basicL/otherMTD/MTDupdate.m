@@ -11,6 +11,8 @@ switch MTD
       [mCtd,mCGtd,mFStd]=KDBFupdate(f,c,mCtd,mCGtd,mFStd);
    case 5
       [mCtd]=MKDBFupdate(f,c,mCtd);
+   case 6
+      [mCtd]=ODKDEupdate(f,c,mCtd);
 end
 
   
