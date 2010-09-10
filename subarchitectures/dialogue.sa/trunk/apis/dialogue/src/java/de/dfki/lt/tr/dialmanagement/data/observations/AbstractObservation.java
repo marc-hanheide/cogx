@@ -72,6 +72,34 @@ public abstract class AbstractObservation {
 	}
 	
 	/**
+	 * Changes the mimimum probability for the observation
+	 * 
+	 * @param minProb the mimimum probability
+	 * @throws DialogueException if prob not well formed
+	 */
+	public void setMinProb(float minProb) throws DialogueException {
+		if (minProb < 0.0f || minProb > 1.0f) {
+			throw new DialogueException("ERROR: minProb is ill-defined");
+		}
+		this.minProb = minProb;
+	}
+	
+	
+	/**
+	 * Changes the maximum probability for the observation
+	 * 
+	 * @param maxProb the maximum probability
+	 * @throws DialogueException if prob not well formed
+	 */
+	public void setMaxProb(float maxProb) throws DialogueException {
+		if (maxProb < 0.0f || maxProb > 1.0f) {
+			throw new DialogueException("ERROR: minProb is ill-defined");
+		}
+		this.maxProb = maxProb;
+	}
+	
+	
+	/**
 	 * Returns a text representation for the observation
 	 */
 	@Override

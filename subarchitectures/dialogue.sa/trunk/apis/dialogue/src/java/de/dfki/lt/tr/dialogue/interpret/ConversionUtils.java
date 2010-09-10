@@ -146,20 +146,23 @@ public abstract class ConversionUtils {
 	public static LinkedList<EpistemicObject> proofToEpistemicObjects(IdentifierGenerator idGen, String attribAgent, MarkedQuery[] proof) {
 
 		LinkedList<EpistemicObject> results = new LinkedList<EpistemicObject>();
+		List<dBelief> bels_pre = new LinkedList<dBelief>();
+		List<dBelief> bels_post = new LinkedList<dBelief>();
 
 		ModalisedAtom[] imfs = ProofUtils.filterStripByModalityPrefix(
 				ProofUtils.stripMarking(ProofUtils.filterAssumed(proof)),
 				new Modality[] {Modality.Intention});
 
+/*
 		String s = "";
 		for (int i = 0; i < imfs.length; i++) {
 			s += "\n\t" + MercuryUtils.modalisedAtomToString(imfs[i]);
 		}
 		log("looking for intentions in" + s);
-
-		// * generate ids via assumability function (before proving)
-		// * store intentions in a dictionary, indexed by their id from proof,
-		//   if a new one is detected, add to dictionary (this can be done in a loop)
+*/
+		// generate ids via assumability function (before proving)
+		// store intentions in a dictionary, indexed by their id from proof,
+		// if a new one is detected, add to dictionary (this can be done in a loop)
 
 		HashMap<String, IntentionalContent> rIts = new HashMap<String, IntentionalContent>();
 
@@ -182,33 +185,74 @@ public abstract class ConversionUtils {
 				// pre(ID, CONTENT)
 //				log("  adding pre");
 				FunctionTerm idTerm = (FunctionTerm) ma.a.args[0];
-				FunctionTerm epstTerm = (FunctionTerm) ma.a.args[1];
-				Term contentTerm = ma.a.args[2];
-				if (!rIts.containsKey(idTerm.functor)) {
-
-					rIts.put(idTerm.functor, newIntentionalContent());
+				FunctionTerm argTerm = (FunctionTerm) ma.a.args[1];
+				if (argTerm.functor.equals("belief")) {
+					FunctionTerm epstTerm = (FunctionTerm) argTerm.args[0];
+					Term contentTerm = argTerm.args[1];
+					if (!rIts.containsKey(idTerm.functor)) {
+						rIts.put(idTerm.functor, newIntentionalContent());
+					}
+					IntentionalContent itc = rIts.get(idTerm.functor);
+					dBelief b = termsToBelief(idGen, epstTerm, contentTerm);
+					if (!mergeBeliefInto(b, bels_pre)) {
+						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newElementaryFormula(b.id));
+						itc.preconditions = combineDFormulas(itc.preconditions, refF);
+					}
 				}
-				IntentionalContent itc = rIts.get(idTerm.functor);
-				dBelief b = termsToBelief(idGen, epstTerm, contentTerm);
-				results.add(b);
-				dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newElementaryFormula(b.id));
-				itc.preconditions = combineDFormulas(itc.preconditions, refF);
+				if (argTerm.functor.equals("state")) {
+					List<dFormula> args = new LinkedList<dFormula>();
+					for (int i = 0; i < argTerm.args.length; i++) {
+						if (argTerm.args[i] instanceof FunctionTerm) {
+							args.add(uniTermToFormula((FunctionTerm) argTerm.args[i]));
+						}
+					}
+					dFormula stateF = BeliefFormulaFactory.newModalFormula(IntentionManagement.stateModality,
+							BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, args));
+
+					if (!rIts.containsKey(idTerm.functor)) {
+						rIts.put(idTerm.functor, newIntentionalContent());
+					}
+					IntentionalContent itc = rIts.get(idTerm.functor);
+					itc.preconditions = combineDFormulas(itc.preconditions, stateF);
+				}
 			}
 			else if (ma.a.predSym.equals(postconditionPredSym)) {
 				// post(ID, CONTENT)
 //				log("  adding post");
 				FunctionTerm idTerm = (FunctionTerm) ma.a.args[0];
-				FunctionTerm epstTerm = (FunctionTerm) ma.a.args[1];
-				Term contentTerm = ma.a.args[2];
-				if (!rIts.containsKey(idTerm.functor)) {
+				FunctionTerm argTerm = (FunctionTerm) ma.a.args[1];
+				if (argTerm.functor.equals("belief")) {
+					FunctionTerm epstTerm = (FunctionTerm) argTerm.args[0];
+					Term contentTerm = argTerm.args[1];
 
-					rIts.put(idTerm.functor, newIntentionalContent());
+					if (!rIts.containsKey(idTerm.functor)) {
+						rIts.put(idTerm.functor, newIntentionalContent());
+					}
+					IntentionalContent itc = rIts.get(idTerm.functor);
+
+					dBelief b = termsToBelief(idGen, epstTerm, contentTerm);
+					if (!mergeBeliefInto(b, bels_post)) {
+						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newElementaryFormula(b.id));
+						itc.postconditions = combineDFormulas(itc.postconditions, refF);
+					}
+
 				}
-				IntentionalContent itc = rIts.get(idTerm.functor);
-				dBelief b = termsToBelief(idGen, epstTerm, contentTerm);
-				results.add(b);
-				dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newElementaryFormula(b.id));
-				itc.postconditions = combineDFormulas(itc.postconditions, refF);
+				if (argTerm.functor.equals("state")) {
+					List<dFormula> args = new LinkedList<dFormula>();
+					for (int i = 0; i < argTerm.args.length; i++) {
+						if (argTerm.args[i] instanceof FunctionTerm) {
+							args.add(uniTermToFormula((FunctionTerm) argTerm.args[i]));
+						}
+					}
+					dFormula stateF = BeliefFormulaFactory.newModalFormula(IntentionManagement.stateModality,
+							BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, args));
+
+					if (!rIts.containsKey(idTerm.functor)) {
+						rIts.put(idTerm.functor, newIntentionalContent());
+					}
+					IntentionalContent itc = rIts.get(idTerm.functor);
+					itc.postconditions = combineDFormulas(itc.postconditions, stateF);
+				}
 			}
 		}
 
@@ -226,7 +270,14 @@ public abstract class ConversionUtils {
 			it.content = new LinkedList<IntentionalContent>();
 			IntentionalContent itc = rIts.get(iter.next());
 			it.content.add(itc);
-			if (itc.preconditions != null && itc.postconditions != null && itc.agents != null) {
+			if (itc.agents != null) {
+
+				if (itc.preconditions == null) {
+					itc.preconditions = BeliefFormulaFactory.newElementaryFormula("nil");
+				}
+				if (itc.postconditions == null) {
+					itc.postconditions = BeliefFormulaFactory.newElementaryFormula("nil");
+				}
 				results.add(it);
 			}
 			else {
@@ -234,8 +285,140 @@ public abstract class ConversionUtils {
 			}
 		}
 
+		results.addAll(bels_pre);
+		results.addAll(bels_post);
 		return results;
 	}
+
+	private static dFormula extractFormulaFromBelief(dBelief b) {
+		if (b.content instanceof BasicProbDistribution) {
+			BasicProbDistribution pd = (BasicProbDistribution)b.content;
+			if (pd.values instanceof FormulaValues) {
+				FormulaValues fv = (FormulaValues)pd.values;
+				if (fv.values.size() == 1) {
+					return fv.values.get(0).val;
+				}
+			}
+		}
+		return null;
+	}
+
+	// return true iff b was merged into bels
+	private static boolean mergeBeliefInto(dBelief b, List<dBelief> bels) {
+		dFormula f = extractFormulaFromBelief(b);
+		if (f != null) {
+			if (f instanceof ComplexFormula) {
+				ComplexFormula cf = (ComplexFormula)f;
+				if (cf.op == BinaryOp.conj) {
+					String discourseReferent = null;
+					List newFs = new LinkedList<dFormula>();
+					for (dFormula xf : cf.forms) {
+						if (xf instanceof ModalFormula && ((ModalFormula)xf).op.equals(IntentionManagement.discRefModality)) {
+							discourseReferent = ((ElementaryFormula)((ModalFormula)xf).form).prop;
+						}
+						else {
+							newFs.add(xf);
+						}
+					}
+
+					if (discourseReferent != null) {
+						for (dBelief bb : bels) {
+							if (epistemicStatusesEquivalent(b.estatus, bb.estatus)) {
+								dFormula ff = extractFormulaFromBelief(bb);
+								if (ff != null) {
+									if (ff instanceof ComplexFormula) {
+										ComplexFormula cff = (ComplexFormula)ff;
+										if (cff.op == BinaryOp.conj) {
+
+											String c_discourseReferent = null;
+											for (dFormula xcff : cff.forms) {
+												if (xcff instanceof ModalFormula && ((ModalFormula)xcff).op.equals(IntentionManagement.discRefModality)) {
+													c_discourseReferent = ((ElementaryFormula)((ModalFormula)xcff).form).prop;
+												}
+											}
+											if (c_discourseReferent != null && c_discourseReferent.equals(discourseReferent)) {
+												cff.forms.addAll(newFs);
+												return true;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		bels.add(b);
+		return false;
+	}
+
+	// FIXME: this is a piggy O(n^2) code
+	private static boolean stringListsSortedEqual(List<String> l1, List<String> l2) {
+		if (l1.size() != l2.size()) {
+			return false;
+		}
+		for (String s1 : l1) {
+			boolean found = false;
+			for (String s2 : l2) {
+				if (s1.equals(s2)) {
+					found = true;
+				}
+			}
+			if (!found) {
+				return false;
+			}
+		}
+		for (String s2 : l2) {
+			boolean found = false;
+			for (String s1 : l1) {
+				if (s1.equals(s2)) {
+					found = true;
+				}
+			}
+			if (!found) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private static boolean epistemicStatusesEquivalent(EpistemicStatus e1, EpistemicStatus e2) {
+		if (e1 instanceof PrivateEpistemicStatus && e2 instanceof PrivateEpistemicStatus) {
+			PrivateEpistemicStatus p1 = (PrivateEpistemicStatus)e1;
+			PrivateEpistemicStatus p2 = (PrivateEpistemicStatus)e2;
+			return p1.agent.equals(p2.agent);
+		}
+		if (e1 instanceof AttributedEpistemicStatus && e2 instanceof AttributedEpistemicStatus) {
+			AttributedEpistemicStatus a1 = (AttributedEpistemicStatus)e1;
+			AttributedEpistemicStatus a2 = (AttributedEpistemicStatus)e2;
+			return a1.agent.equals(a2.agent) && stringListsSortedEqual(a1.attribagents, a2.attribagents);
+		}
+		if (e1 instanceof SharedEpistemicStatus && e2 instanceof SharedEpistemicStatus) {
+			SharedEpistemicStatus s1 = (SharedEpistemicStatus)e1;
+			SharedEpistemicStatus s2 = (SharedEpistemicStatus)e2;
+			return stringListsSortedEqual(s1.cgagents, s2.cgagents);
+		}
+		return false;
+	}
+
+	private static dFormula uniTermToFormula(FunctionTerm ft) {
+		if (ft.args.length > 0) {
+			// this is a modal formula
+			List<dFormula> args = new LinkedList<dFormula>();
+			for (int i = 0; i < ft.args.length; i++) {
+				if (ft.args[i] instanceof FunctionTerm) {
+					args.add(uniTermToFormula((FunctionTerm) ft.args[i]));
+				}
+			}
+			return BeliefFormulaFactory.newModalFormula(ft.functor, BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, args));
+		}
+		else {
+			// this is a proposition
+			return BeliefFormulaFactory.newElementaryFormula(ft.functor);
+		}
+ 	}
 
 	private static dBelief termsToBelief(IdentifierGenerator idGen, FunctionTerm epstT, Term contentT) {
 		EpistemicStatus epst = termToEpistemicStatus(epstT);
@@ -293,7 +476,7 @@ public abstract class ConversionUtils {
 		return b;
 	}
 
-	private static FunctionTerm epistemicStatusToTerm(EpistemicStatus epst) {
+	public static FunctionTerm epistemicStatusToTerm(EpistemicStatus epst) {
 		if (epst instanceof PrivateEpistemicStatus) {
 			PrivateEpistemicStatus p = (PrivateEpistemicStatus)epst;
 			return TermAtomFactory.term(privateEpStFunctor, new Term[] {
@@ -329,7 +512,7 @@ public abstract class ConversionUtils {
 
 	private static dFormula termToContent(FunctionTerm t) {
 		if (t.functor.equals("rpv")) {
-			ModalFormula rF = BeliefFormulaFactory.newModalFormula(IntentionManagement.refModality, BeliefFormulaFactory.newElementaryFormula(((FunctionTerm)t.args[0]).functor));
+			ModalFormula rF = BeliefFormulaFactory.newModalFormula(IntentionManagement.discRefModality, BeliefFormulaFactory.newElementaryFormula(((FunctionTerm)t.args[0]).functor));
 			ModalFormula pvF = BeliefFormulaFactory.newModalFormula(((FunctionTerm)t.args[1]).functor, termToContentFormula((FunctionTerm)t.args[2]));
 			return BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, rF, pvF);
 		}
@@ -355,7 +538,31 @@ public abstract class ConversionUtils {
 		if (newF == null) {
 			return oldF;
 		}
-		return BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, oldF, newF);
+
+		// try to have oldF a conjunction
+		if (newF instanceof ComplexFormula && ((ComplexFormula)newF).op == BinaryOp.conj) {
+			dFormula tmp = newF;
+			newF = oldF;
+			oldF = tmp;
+		}
+
+		if (oldF instanceof ComplexFormula && ((ComplexFormula)oldF).op == BinaryOp.conj) {
+			ComplexFormula c_oldF = (ComplexFormula)oldF;
+			List<dFormula> newFs = new LinkedList<dFormula>();
+			newFs.addAll(c_oldF.forms);
+
+			if (newF instanceof ComplexFormula && ((ComplexFormula)newF).op == BinaryOp.conj) {
+				ComplexFormula c_newF = (ComplexFormula)newF;
+				newFs.addAll(c_newF.forms);
+			}
+			else {
+				newFs.add(newF);
+			}
+			return BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, newFs);
+		}
+		else {
+			return BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, oldF, newF);
+		}
 	}
 
 	private static dFormula getFirstLogicalContent(dBelief b) {
@@ -387,7 +594,7 @@ public abstract class ConversionUtils {
 				if (arg1 instanceof ModalFormula && arg2 instanceof ModalFormula) {
 					ModalFormula m1 = (ModalFormula)arg1;
 					ModalFormula m2 = (ModalFormula)arg2;
-					if (m1.op.equals(IntentionManagement.refModality) && m1.form instanceof ElementaryFormula) {
+					if (m1.op.equals(IntentionManagement.discRefModality) && m1.form instanceof ElementaryFormula) {
 						ElementaryFormula eF = (ElementaryFormula)m1.form;
 						objRef = eF.prop;
 					}

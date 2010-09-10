@@ -67,10 +67,13 @@ public class FunCall implements MatchLVal {
   public DagEdge getBinding(DagEdge input, Bindings bindings) {
     Object result =
       _fn.apply(FunCallDagNode.getActualParameters(_args, null, bindings));
+    DagNode subRes = (result instanceof DagNode)
+                     ? (DagNode) result
+                     : new DagNode(result.toString());
     return new DagEdge((short)-1,
-                       ((result instanceof DagNode)
-                           ?  (DagNode) result
-                           : new DagNode(DagNode.PROP_FEAT_ID,
-                                         new DagNode(result.toString()))));
+        (subRes.newEdgesAreEmpty()
+         ? new DagNode(DagNode.PROP_FEAT_ID, subRes)
+         : subRes));
+
   }
 }

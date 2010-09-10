@@ -22,7 +22,7 @@ public class LoquendoASR
 extends AbstractDialogueComponent
 implements TRResultListener {
 
-	public static final String defaultServerName = "LoquendoRecogniserServer";
+	public static final String defaultServerName = "LoquendoASRServer";
 	public static final String defaultServerEndpoint = "tcp -p 9021";
 
 	private LoquendoClient client = null;
@@ -49,10 +49,23 @@ implements TRResultListener {
      */
 	@Override
 	public void configure (Map<String, String> _config) {
-		client = new LoquendoClient(serverName, serverEndpoint);
-		client.registerNotification(this);
-//		client.configure(_config);
-		client.start();
+		if (_config.containsKey("--serverName")) {
+			serverName = _config.get("--serverName");
+		}
+		if (_config.containsKey("--serverEndpoint")) {
+			serverEndpoint = _config.get("--serverEndpoint");
+		}
+		try {
+			client = new LoquendoClient(serverName, serverEndpoint);
+			client.registerNotification(this);
+			client.start();
+		}
+        catch (Ice.LocalException e) {
+            e.printStackTrace();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
 	}
 
 	@Override

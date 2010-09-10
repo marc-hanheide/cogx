@@ -33,7 +33,8 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagement;
 import de.dfki.lt.tr.dialogue.interpret.IntentionUtils;
-import de.dfki.lt.tr.dialogue.slice.parse.PackedLFs;
+import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
+import de.dfki.lt.tr.dialogue.slice.ref.RefLogicalForm;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
@@ -93,7 +94,7 @@ extends AbstractDialogueComponent {
 				while ((file = f.readLine()) != null) {
 					file = parentAbsPath + File.separator + file;
 					log("adding file " + file);
-					im.addFile(file);
+					im.loadFile(file);
 				}
 				f.close();
 			}
@@ -110,32 +111,22 @@ extends AbstractDialogueComponent {
 		}
 
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(PackedLFs.class,  WorkingMemoryOperation.ADD),
+				ChangeFilterFactory.createLocalTypeFilter(RefLogicalForm.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handlePackedLFs(_wmc);
+						handleRefLogicalForm(_wmc);
 					}
 		});
 
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(PackedLFs.class,  WorkingMemoryOperation.OVERWRITE),
-				new WorkingMemoryChangeReceiver() {
-					@Override
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handlePackedLFs(_wmc);
-					}
-		});
-
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(Intention.class,  WorkingMemoryOperation.ADD),
+				ChangeFilterFactory.createLocalTypeFilter(Intention.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						handleIntention(_wmc);
 					}
 		});
-
 	}
 
 	@Override
@@ -147,29 +138,21 @@ extends AbstractDialogueComponent {
 	}
 
 
-	private void handlePackedLFs(WorkingMemoryChange _wmc) {
+	private void handleRefLogicalForm(WorkingMemoryChange _wmc) {
 
 //		String id = _wmc.address.id;
 
 		try {
 			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
-
-			PackedLFs arg = (PackedLFs)data.getData();
-			if (arg.finalized == 1) {
-				log("got a finalised PackedLFs!");
-
-				String taskID = newTaskID();
-				ProcessingData pd = new ProcessingData(newProcessingDataId());
-				pd.add(data);
-				m_proposedProcessing.put(taskID, pd);
-				String taskGoal = DialogueGoals.INTENTION_RECOGNITION_TASK;
-				System.out.println("ID: " + taskID);
-				System.out.println("goal: " + taskGoal);
-				proposeInformationProcessingTask(taskID, taskGoal);
-			}
-			else {
-				log("received an unfinalised PackedLFs, ignoring");
-			}
+			RefLogicalForm arg = (RefLogicalForm)data.getData();
+			String taskID = newTaskID();
+			ProcessingData pd = new ProcessingData(newProcessingDataId());
+			pd.add(data);
+			m_proposedProcessing.put(taskID, pd);
+			String taskGoal = DialogueGoals.INTENTION_RECOGNITION_TASK;
+//				System.out.println("ID: " + taskID);
+//				System.out.println("goal: " + taskGoal);
+			proposeInformationProcessingTask(taskID, taskGoal);
 		}
 		catch (SubarchitectureComponentException e) {
 			e.printStackTrace();
@@ -188,19 +171,13 @@ extends AbstractDialogueComponent {
 			else {
 				IntentionalContent itnc = itn.content.get(0);
 				if (itnc.agents.size() == 1 && itnc.agents.get(0).equals("robot")) {
-					log("got a private intention, will process it");
-
+					log("got a private intention, will try to realise it");
 					String taskID = newTaskID();
 					ProcessingData pd = new ProcessingData(newProcessingDataId());
 					pd.add(data);
 					m_proposedProcessing.put(taskID, pd);
 					String taskGoal = DialogueGoals.INTENTION_REALISATION_TASK;
-					System.out.println("ID: " + taskID);
-					System.out.println("goal: " + taskGoal);
 					proposeInformationProcessingTask(taskID, taskGoal);
-				}
-				else {
-					log("not the robot's intention, ignoring");
 				}
 			}
 		}
@@ -218,10 +195,10 @@ extends AbstractDialogueComponent {
 		if (iter.hasNext()) {
 			Object body = iter.next().getData();
 
-			if (body instanceof PackedLFs) {
-				PackedLFs plf = (PackedLFs) body;
-				log("processing a PackedLFs");
-				LinkedList<EpistemicObject> eos = im.packedLFsToEpistemicObjects(plf);
+			if (body instanceof RefLogicalForm) {
+				RefLogicalForm rlf = (RefLogicalForm) body;
+				LogicalForm lf = rlf.lform;
+				LinkedList<EpistemicObject> eos = im.logicalFormToEpistemicObjects(lf);
 				if (eos != null && !eos.isEmpty()) {
 					log("recognised " + eos.size() + " epistemic objects");
 					try {

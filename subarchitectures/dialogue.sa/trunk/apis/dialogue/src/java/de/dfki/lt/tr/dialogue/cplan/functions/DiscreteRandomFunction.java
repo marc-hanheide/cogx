@@ -15,7 +15,7 @@ public class DiscreteRandomFunction implements Function {
   @Override
   public Object apply(List args) {
     int i = rand.nextInt(args.size());
-    return args.get(i).toString().trim();
+    return args.get(i);
   }
 
   @Override

@@ -28,12 +28,13 @@ import de.dfki.lt.tr.dialogue.slice.parse.PackedLFs;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
-import de.dfki.lt.tr.infer.weigabd.AbducerServerConnection;
+import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
 import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
 import de.dfki.lt.tr.infer.weigabd.ProofUtils;
 import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
 import de.dfki.lt.tr.infer.weigabd.slice.FileReadErrorException;
 import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
+import de.dfki.lt.tr.infer.weigabd.slice.ProofWithCost;
 import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
 import de.dfki.lt.tr.infer.weigabd.slice.Modality;
 import de.dfki.lt.tr.infer.weigabd.slice.NoProofException;
@@ -56,7 +57,7 @@ import java.util.List;
 public class IntentionManagement {
 
 	public boolean logging = true;
-	private AbducerServerConnection abd;
+	private AbductionEngineConnection abd;
 
 //	public static Counter counter = new Counter("ir");
 	public IdentifierGenerator idGen;
@@ -64,7 +65,8 @@ public class IntentionManagement {
 	public static final String thisAgent = "robot";
 	public static final String humanAgent = "human";
 
-	public static final String refModality = "Ref";
+	public static final String discRefModality = "LingRef";
+	public static final String stateModality = "State";
 	public static final String beliefLinkModality = "Belief";
 
 	/**
@@ -76,11 +78,10 @@ public class IntentionManagement {
     }
 
 	private void init() {
-		abd = new AbducerServerConnection();
-		abd.connect("AbducerServer", "default -p 10000");
-		abd.getProxy().clearRules();
-		abd.getProxy().clearFacts();
-		abd.getProxy().clearAssumables();
+		abd = new AbductionEngineConnection();
+		abd.connectToServer("AbducerServer", "default -p 10000");
+		abd.bindToEngine("IntentionManagementEngine");
+		abd.getProxy().clearContext();
 	}
 
 	/**
@@ -90,17 +91,10 @@ public class IntentionManagement {
 	 * @param plf the utterance
 	 * @return recognised intentions and beliefs when successful, null if error occurred
 	 */
-	public LinkedList<EpistemicObject> packedLFsToEpistemicObjects(PackedLFs plf) {
-		LogicalForm lf = SimpleParseSelection.extractLogicalFormWithMood(plf);
-		log("selected LF = " + LFUtils.lfToString(lf));
-		if (lf == null) {
-			log("no LF found");
-			return null;
-		}
-		log("expanding LF into facts");
-
+	public LinkedList<EpistemicObject> logicalFormToEpistemicObjects(LogicalForm lf) {
+//		log("expanding LF into facts");
 		for (ModalisedAtom fact : AbducerUtils.lfToFacts(new Modality[] {Modality.Truth}, lf)) {
-			log("  add fact: " + MercuryUtils.modalisedAtomToString(fact));
+//			log("  add fact: " + MercuryUtils.modalisedAtomToString(fact));
 			abd.getProxy().addFact(fact);
 		}
 
@@ -186,10 +180,10 @@ public class IntentionManagement {
 		log("proving: [" + listGoalsStr + "]");
 
 		abd.getProxy().startProving(goal);
-		MarkedQuery[] result = abd.getProxy().getBestProof(50);
+		ProofWithCost[] result = abd.getProxy().getProofs(250);
 		if (result.length > 0) {
-			log("proof found");
-			return result;
+			log("found " + result.length + " proofs, picking the best one");
+			return result[0].proof;
 		}
 		else {
 			return null;
@@ -201,7 +195,7 @@ public class IntentionManagement {
 	 *
 	 * @param file file name
 	 */
-	public void addFile(String file) {
+	public void loadFile(String file) {
 		try {
 			abd.getProxy().loadFile(file);
 		}

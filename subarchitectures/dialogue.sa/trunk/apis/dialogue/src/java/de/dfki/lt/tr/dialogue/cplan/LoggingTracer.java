@@ -16,7 +16,7 @@ public class LoggingTracer implements RuleTracer {
   private static Logger logger = Logger.getLogger("UtterancePlanner");
 
 
-  LoggingTracer(int bitmask) {
+  public LoggingTracer(int bitmask) {
     if (bitmask != 0) {
       BasicConfigurator.resetConfiguration();
       RootLogger.getRootLogger().addAppender(

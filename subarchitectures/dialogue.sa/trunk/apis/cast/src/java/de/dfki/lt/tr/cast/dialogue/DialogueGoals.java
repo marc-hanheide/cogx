@@ -76,4 +76,9 @@ public class DialogueGoals {
 	// Intention realisation
 	public static final String INTENTION_REALISATION_TASK = "intentionRealisation";
 
+	// Reference resolution
+	public static final String REFERENCE_RESOLUTION_TASK = "referenceResolution";
+
+	public static final String BELIEF_MODEL_UPDATE_TASK = "beliefModelUpdate";
+
 } // end class

@@ -26,6 +26,8 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import java.util.Arrays;
+import java.util.List;
 import java.util.LinkedList;
 
 public abstract class BeliefFormulaFactory {
@@ -59,6 +61,24 @@ public abstract class BeliefFormulaFactory {
 		cplxF.forms = new LinkedList<dFormula>();
 		cplxF.forms.add(f1);
 		cplxF.forms.add(f2);
+		return cplxF;
+	}
+
+	public static ComplexFormula newComplexFormula(BinaryOp op, dFormula[] fs) {
+		ComplexFormula cplxF = new ComplexFormula();
+		cplxF.id = -1;  // FIXME: generate a unique id
+		cplxF.op = op;
+		cplxF.forms = new LinkedList<dFormula>();
+		cplxF.forms.addAll(Arrays.asList(fs));
+		return cplxF;
+	}
+
+	public static ComplexFormula newComplexFormula(BinaryOp op, List<dFormula> fs) {
+		ComplexFormula cplxF = new ComplexFormula();
+		cplxF.id = -1;  // FIXME: generate a unique id
+		cplxF.op = op;
+		cplxF.forms = new LinkedList<dFormula>();
+		cplxF.forms.addAll(fs);
 		return cplxF;
 	}
 

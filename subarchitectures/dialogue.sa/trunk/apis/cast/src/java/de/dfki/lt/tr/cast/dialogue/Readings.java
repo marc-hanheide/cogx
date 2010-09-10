@@ -82,17 +82,17 @@ public class Readings
 
 	// Hashtable used to record the tasks we want to carry out. For each
 	// taskID we store a Vector with the data it is to work on
-	private Hashtable<String, ProcessingData> m_proposedProcessing;
+	private Hashtable<String, ProcessingData> m_proposedProcessing = new Hashtable<String, ProcessingData>();
 	
 	// Hashtable linking data IDs to goal IDs
-	private Hashtable<String, String> m_dataToProcessingGoalMap;
+	private Hashtable<String, String> m_dataToProcessingGoalMap = new Hashtable<String, String>();
 	
 	// Hashtable linking task IDs to task types
-	private Hashtable<String, String> m_taskToTaskTypeMap;
+	private Hashtable<String, String> m_taskToTaskTypeMap = new Hashtable<String, String>();
 	
 	// Vector with objects to be processed,
 	// can be ComSys:PhonString,...
-	private Vector<ProcessingData> m_dataObjects;	
+	private Vector<ProcessingData> m_dataObjects = new Vector<ProcessingData>();
 	
 	// Counter for ProcessingData identifiers
 	private int pdIdCounter;	
