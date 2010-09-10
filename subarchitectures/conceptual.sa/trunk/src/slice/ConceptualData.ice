@@ -11,7 +11,6 @@
 
 module ConceptualData 
 {
-
     sequence<string> BindingRow;
     sequence<BindingRow> BindingTable;
     dictionary<string, int> StringToIntMap;
@@ -25,14 +24,15 @@ module ConceptualData
 
     interface HFCInterface 
     {
-	QueryResults querySelect(string q);
+		QueryResults querySelect(string q);
+		string ping();
     };
-
 
    interface QdlQueryHandlerInterface
    {
-	QueryResults querySelect(string q);
+		QueryResults querySelect(string q);
    };
 
 };
+
 #endif // CONCEPTUALDATA_ICE
