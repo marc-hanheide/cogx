@@ -93,6 +93,13 @@ namespace spatial
       log("Map ceiling set to: %d", m_mapceiling);
     }
 
+    m_sampleawayfromobs= 0.2;
+    it = _config.find("--m_sampleawayfromobs");
+    if (it != _config.end()) {
+      m_sampleawayfromobs= (atof(it->second.c_str()));
+      log("Distance to nearest obs for samples set to: %d", m_sampleawayfromobs);
+    }
+
     m_best3DConeRatio = 0.1;
     it = _config.find("--3Dconeratio ");
     if (it != _config.end()) {
@@ -106,7 +113,7 @@ namespace spatial
       m_tiltinterval = (atof(it->second.c_str()))*M_PI/180;
       log("Tilt Interval set to: %f", m_tiltinterval);
     }
-      log("Tilt Interval set to: %f", m_tiltinterval);
+    log("Tilt Interval set to: %f", m_tiltinterval);
 
     m_samplesize = 100;
     it = _config.find("--samplesize");
@@ -375,8 +382,8 @@ namespace spatial
 	}
       }
     }
-  //  pbVis->Display2DCureMap(m_lgms[1],"room1"); 
-  //  pbVis->Display2DCureMap(m_lgms[2],"room2"); 
+    //  pbVis->Display2DCureMap(m_lgms[1],"room1"); 
+    //  pbVis->Display2DCureMap(m_lgms[2],"room2"); 
   }
 
   void VisualObjectSearch::start() {
@@ -477,20 +484,20 @@ namespace spatial
       }
     }
   }
-  
+
   double VisualObjectSearch::GetCostForSingleStrategy(GridMap<GridMapData>* tmpMap, std::string targetObject, double pout, double threshold){
     SetCurrentTarget(targetObject);
     m_pout = 0.3; 
     double totalprob = 0; 
     double cost = 0;
-    while (m_pout <= threshold){
+    while (totalprob <= 0.7){
       log("total prob mass of cones for strategy step so far: %f", totalprob);
       SensingAction nbv = SampleAndSelect(tmpMap);
       totalprob += nbv.totalprob;
       UnsuccessfulDetection(nbv, tmpMap);
       cost++;
     }
- return cost; 
+    return cost; 
   }
 
   void VisualObjectSearch::ChangeMaps(std::string roomid){
@@ -573,104 +580,105 @@ namespace spatial
 	strategyStep.push_back(singleStrategy[j]);
       }
 
-      double costThisStep = 0.0;
+      double	costThisStep = tryLoadStepCost(strategyStep);
+      if (costThisStep == 0) {
+	log("novel # of relations: %d", strategyStep.size() );
 
-      log("novel # of relations: %d", strategyStep.size() );
+	// Set up query
+	std::vector<std::string> labels;
+	std::vector<FrontierInterface::ObjectRelation> relations;
 
-      // Set up query
-      std::vector<std::string> labels;
-      std::vector<FrontierInterface::ObjectRelation> relations;
+	std::string topObject = strategyStep.back().primaryobject;
 
-      std::string topObject = strategyStep.back().primaryobject;
+	SetCurrentTarget(topObject);
 
-      SetCurrentTarget(topObject);
-
-      labels.push_back(topObject);
-      string logstring = "Asking for: ";
-      logstring = logstring + labels.back();
-      for (int i = strategyStep.size() -1 ; i >= 0; i--){
-	labels.push_back(strategyStep[i].secobject);
-	relations.push_back(strategyStep[i].relation);
-	logstring = logstring + ( strategyStep[i].relation== FrontierInterface::ON ? 
-	    string(" ON ") : string(" IN "));
-	logstring = logstring + strategyStep[i].secobject;
-      }
-      log(logstring.c_str());
-
-      FrontierInterface::WeightedPointCloudPtr queryCloud = 
-	new FrontierInterface::WeightedPointCloud;
-      FrontierInterface::ObjectPriorRequestPtr objreq =
-	new FrontierInterface::ObjectPriorRequest;
-      objreq->relationTypes = relations; // ON or IN or whatnot
-      objreq->objects = labels;	// Names of objects, starting with the query object
-      objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
-      objreq->outCloud = queryCloud;	// Data struct to receive output
-      objreq->totalMass = 1.0;
-
-      string baseObject = strategyStep.front().secobject;
-
-      if (baseObject.find("room") != string::npos) {
-	ChangeMaps(strategyStep.front().secobject);
-	SpatialGridMap::GridMap<GridMapData> tmpMap = *m_map; 
-
-	// Search is uniform in the room (possibly direct informed)
-	// Now, check if there's just one object left
-
-	if (strategyStep.size() == 1) {
-	  // If so, do uniform search without asking for a point cloud
-	  //TODO: Don't override the map!   
-	  log("strategy contains room and has 1 step.");
-	  InitializePDFForObject(1.0, strategyStep[0].primaryobject, &tmpMap);
-	  pbVis->AddPDF(tmpMap);
-	  double cost = 0.0;
-	  cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
-	  costThisStep = cost;
+	labels.push_back(topObject);
+	string logstring = "Asking for: ";
+	logstring = logstring + labels.back();
+	for (int i = strategyStep.size() -1 ; i >= 0; i--){
+	  labels.push_back(strategyStep[i].secobject);
+	  relations.push_back(strategyStep[i].relation);
+	  logstring = logstring + ( strategyStep[i].relation== FrontierInterface::ON ? 
+	      string(" ON ") : string(" IN "));
+	  logstring = logstring + strategyStep[i].secobject;
 	}
-	else {
-	  log("strategy contains room and has more than 1 step");
-	  // There's more than one relation. 
-	  // Strip off the "in room" relation from the policy for purposes
-	  // of relation query
-	  strategyStep.erase(strategyStep.begin());
-	  // Get the uninformed sample cloud from the ORM
+	log(logstring.c_str());
 
-	  // remove the room relation from the request 
-	  objreq->objects.erase( objreq->objects.end() -1);
-	  objreq->relationTypes.erase( objreq->relationTypes.end() -1);
-	  // Send request and wait for reply
-	  m_bEvaluation = true;
-	  {
-	    unlockComponent();
-	    addToWorkingMemory(newDataID(), objreq);
-	    while(!gotPC)
-	      usleep(2500);
-	    log("got PC for direct search");
+	FrontierInterface::WeightedPointCloudPtr queryCloud = 
+	  new FrontierInterface::WeightedPointCloud;
+	FrontierInterface::ObjectPriorRequestPtr objreq =
+	  new FrontierInterface::ObjectPriorRequest;
+	objreq->relationTypes = relations; // ON or IN or whatnot
+	objreq->objects = labels;	// Names of objects, starting with the query object
+	objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
+	objreq->outCloud = queryCloud;	// Data struct to receive output
+	objreq->totalMass = 1.0;
+
+	string baseObject = strategyStep.front().secobject;
+
+	if (baseObject.find("room") != string::npos) {
+	  ChangeMaps(strategyStep.front().secobject);
+	  SpatialGridMap::GridMap<GridMapData> tmpMap = *m_map; 
+
+	  // Search is uniform in the room (possibly direct informed)
+	  // Now, check if there's just one object left
+
+	  if (strategyStep.size() == 1) {
+	    // If so, do uniform search without asking for a point cloud
+	    //TODO: Don't override the map!   
+	    log("strategy contains room and has 1 step.");
+	    InitializePDFForObject(1.0, strategyStep[0].primaryobject, &tmpMap);
+	    pbVis->AddPDF(tmpMap);
+	    double cost = 0.0;
+	    cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
+	    costThisStep = cost;
 	  }
+	  else {
+	    log("strategy contains room and has more than 1 step");
+	    // There's more than one relation. 
+	    // Strip off the "in room" relation from the policy for purposes
+	    // of relation query
+	    strategyStep.erase(strategyStep.begin());
+	    // Get the uninformed sample cloud from the ORM
 
-	  lockComponent();
+	    // remove the room relation from the request 
+	    objreq->objects.erase( objreq->objects.end() -1);
+	    objreq->relationTypes.erase( objreq->relationTypes.end() -1);
+	    // Send request and wait for reply
+	    m_bEvaluation = true;
+	    {
+	      unlockComponent();
+	      addToWorkingMemory(newDataID(), objreq);
+	      while(!gotPC)
+		usleep(2500);
+	      log("got PC for direct search");
+	    }
 
-	  FrontierInterface::WeightedPointCloudPtr cloud =
-	    m_priorreq->outCloud;
+	    lockComponent();
 
-	  vector<pair<int, int> >obstacleCells;
-	  const unsigned int nTargetKernelSamples = 100;
-	  const int step1 = 20;
-	  const int step2 = 1;
+	    FrontierInterface::WeightedPointCloudPtr cloud =
+	      m_priorreq->outCloud;
 
-	  // Form a diagonal striped pattern of samples across the map
-	  // This is a dirty trick, as it assumes the spatial frequency is low along the diagonal
-	  while (obstacleCells.size() < nTargetKernelSamples) {
-	    int offset1 = rand()%step1;
-	    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-	      for (int y = -m_lgm->getSize() + (offset1+(x+m_lgm->getSize())*step2)%step1 ; y <= m_lgm->getSize(); y+=step1) {
-		int bloxelX = x + m_lgm->getSize();
-		int bloxelY = y + m_lgm->getSize();
-		for (int x2 = x-1; x2 <= x+1; x2++) {
-		  if (x2 >= -m_lgm->getSize() && x2 <= m_lgm->getSize()) {
-		    for (int y2 = y-1; y2 <= y+1; y2++) {
-		      if (y2 >= -m_lgm->getSize() && y2 <= m_lgm->getSize()) {
-			if ((*m_lgm)(x2,y2) == '1' || (*m_lgm)(x2,y2) == '3') {
-			  obstacleCells.push_back(make_pair<int>(bloxelX, bloxelY));
+	    vector<pair<int, int> >obstacleCells;
+	    const unsigned int nTargetKernelSamples = 100;
+	    const int step1 = 20;
+	    const int step2 = 1;
+
+	    // Form a diagonal striped pattern of samples across the map
+	    // This is a dirty trick, as it assumes the spatial frequency is low along the diagonal
+	    while (obstacleCells.size() < nTargetKernelSamples) {
+	      int offset1 = rand()%step1;
+	      for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+		for (int y = -m_lgm->getSize() + (offset1+(x+m_lgm->getSize())*step2)%step1 ; y <= m_lgm->getSize(); y+=step1) {
+		  int bloxelX = x + m_lgm->getSize();
+		  int bloxelY = y + m_lgm->getSize();
+		  for (int x2 = x-1; x2 <= x+1; x2++) {
+		    if (x2 >= -m_lgm->getSize() && x2 <= m_lgm->getSize()) {
+		      for (int y2 = y-1; y2 <= y+1; y2++) {
+			if (y2 >= -m_lgm->getSize() && y2 <= m_lgm->getSize()) {
+			  if ((*m_lgm)(x2,y2) == '1' || (*m_lgm)(x2,y2) == '3') {
+			    obstacleCells.push_back(make_pair<int>(bloxelX, bloxelY));
+			  }
 			}
 		      }
 		    }
@@ -678,62 +686,61 @@ namespace spatial
 		}
 	      }
 	    }
+
+	    vector<Vector3> centers;
+	    for(unsigned int i = 0; i < obstacleCells.size(); i++) {
+	      // place a KDE cloud around it, with the center given
+	      // by the relation manager (which includes a z-coordinate
+	      // for tables, desks etc)
+	      int bloxelX = obstacleCells[i].first;
+	      int bloxelY = obstacleCells[i].second;
+	      pair<double, double> kernelCoords = 
+		tmpMap.gridToWorldCoords(bloxelX, bloxelY);
+	      cloud->center.x = kernelCoords.first;
+	      cloud->center.y = kernelCoords.second;
+	      centers.push_back(cloud->center);
+	    }
+
+	    m_sampler.kernelDensityEstimation3D(tmpMap, 
+		centers,
+		cloud->interval,
+		cloud->xExtent,
+		cloud->yExtent,
+		cloud->zExtent,
+		cloud->values,
+		1.0/(m_lgm->getSize()), //Just an ad-hoc guess
+		1.0,
+		m_lgm);
+	    normalizePDF(tmpMap,1.0);
+	    pbVis->AddPDF(tmpMap);
+
+	    double cost = 0.0;
+	    //FIXME: get lgmpdf as an arg
+	    cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
+	    costThisStep = cost;
 	  }
 
-	  vector<Vector3> centers;
-	  for(unsigned int i = 0; i < obstacleCells.size(); i++) {
-	    // place a KDE cloud around it, with the center given
-	    // by the relation manager (which includes a z-coordinate
-	    // for tables, desks etc)
-	    int bloxelX = obstacleCells[i].first;
-	    int bloxelY = obstacleCells[i].second;
-	    pair<double, double> kernelCoords = 
-	      tmpMap.gridToWorldCoords(bloxelX, bloxelY);
-	    cloud->center.x = kernelCoords.first;
-	    cloud->center.y = kernelCoords.second;
-	    centers.push_back(cloud->center);
-	  }
-
-	  m_sampler.kernelDensityEstimation3D(tmpMap, 
-	      centers,
-	      cloud->interval,
-	      cloud->xExtent,
-	      cloud->yExtent,
-	      cloud->zExtent,
-	      cloud->values,
-	      1.0/(m_lgm->getSize()), //Just an ad-hoc guess
-	      1.0,
-	      m_lgm);
-	  normalizePDF(tmpMap,1.0);
-	  pbVis->AddPDF(tmpMap);
-
-	  double cost = 0.0;
-	  //FIXME: get lgmpdf as an arg
-	  cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
-	  costThisStep = cost;
 	}
-      }
-      else {
-	log("strategy does not contain room");
-	GridMapData def;
-	def.occupancy = FREE;
+	else {
+	  log("strategy does not contain room");
+	  GridMapData def;
+	  def.occupancy = FREE;
 
-	// This step doesn't begin with the room; this means it's
-	// an indirect search. 
+	  // This step doesn't begin with the room; this means it's
+	  // an indirect search. 
 
-	costThisStep = tryLoadStepCost(strategyStep);
 
-	if (costThisStep <= 0) {
-	  // Couldn't find cached cost; compute it
+	  if (costThisStep <= 0) {
+	    // Couldn't find cached cost; compute it
 
-	  // Assume a number of poses for the base object, and
-	  // create and query a sample cloud for each
-	  // KDE and compute cost for each, then average the costs
+	    // Assume a number of poses for the base object, and
+	    // create and query a sample cloud for each
+	    // KDE and compute cost for each, then average the costs
 
-	  // Select hypothesical poses for base object
-	  vector<Pose3> baseObjectPoses;
-	  Pose3 tmpPose;
-	  tmpPose.pos = vector3(0,0,0);;
+	    // Select hypothesical poses for base object
+	    vector<Pose3> baseObjectPoses;
+	    Pose3 tmpPose;
+	    tmpPose.pos = vector3(0,0,0);;
 
 	  // Randomize orientations for involved objects, unless we already have such
 	  vector<Matrix33> orientations;
@@ -748,93 +755,102 @@ namespace spatial
 	  }
 	  else {
 	    vector<Matrix33> orientations;
-	    getRandomSampleSphere(orientations, 5);
-	  }
-	  for (vector<Matrix33>::iterator it = orientations.begin();
-	      it != orientations.end(); it++) {
-	    tmpPose.rot = *it;
-	    baseObjectPoses.push_back(tmpPose);
-	  }
-
-	  for (vector<Pose3>::iterator it = baseObjectPoses.begin(); 
-	      it != baseObjectPoses.end(); it++) {
-	    // Fill in the hypothetical pose in question
-	    objreq->baseObjectPose.clear();
-	    objreq->baseObjectPose.push_back(*it);
-
-	    // Send request and wait for reply
-	    m_bEvaluation = true;
-	    {
-	      unlockComponent();
-	      addToWorkingMemory(newDataID(), objreq);
-
-	      while(!gotPC)
-		usleep(2500);
-	      log("got PC for a hypothetical pose");
+	    if (//FIXME
+		baseObject == "table" ||
+		baseObject == "bookcase_sm" ||
+		baseObject == "bookcase_lg" ||
+		baseObject == "desk"){
+	      getRandomSampleCircle(orientations, 6);
 	    }
-	    lockComponent();
-	    FrontierInterface::WeightedPointCloudPtr cloud =
-	      m_priorreq->outCloud;
+	    else {
+	      vector<Matrix33> orientations;
+	      getRandomSampleSphere(orientations, 5);
+	    }
+	    for (vector<Matrix33>::iterator it = orientations.begin();
+		it != orientations.end(); it++) {
+	      tmpPose.rot = *it;
+	      baseObjectPoses.push_back(tmpPose);
+	    }
 
-	    double interval = cloud->interval;
-	    int xExtent = cloud->xExtent;
-	    int yExtent = cloud->yExtent;
+	    for (vector<Pose3>::iterator it = baseObjectPoses.begin(); 
+		it != baseObjectPoses.end(); it++) {
+	      // Fill in the hypothetical pose in question
+	      objreq->baseObjectPose.clear();
+	      objreq->baseObjectPose.push_back(*it);
 
-	    //	  log("Cloud: (%d x %d) at interval %f", xExtent, yExtent, interval);
+	      // Send request and wait for reply
+	      m_bEvaluation = true;
+	      {
+		unlockComponent();
+		addToWorkingMemory(newDataID(), objreq);
 
-	    double tmp = interval * (xExtent > yExtent ? xExtent : yExtent);
-	    tmp += m_conedepth;
-	    tmp /= m_cellsize;
-	    int lgmSize = (int)tmp;
-	    if (lgmSize > m_gridsize) lgmSize = m_gridsize;
-	    log("lgmSize = %i", lgmSize);
+		while(!gotPC)
+		  usleep(2500);
+		log("got PC for a hypothetical pose");
+	      }
+	      lockComponent();
+	      FrontierInterface::WeightedPointCloudPtr cloud =
+		m_priorreq->outCloud;
 
-	    SpatialGridMap::GridMap<GridMapData> tmpMap(lgmSize*2+1, lgmSize*2+1, m_cellsize, m_minbloxel,
-		0, m_mapceiling, 0, 0, 0, def);
-	    GDProbSet resetter(0.0);
-	    tmpMap.universalQuery(resetter, true);
+	      double interval = cloud->interval;
+	      int xExtent = cloud->xExtent;
+	      int yExtent = cloud->yExtent;
+
+	      //	  log("Cloud: (%d x %d) at interval %f", xExtent, yExtent, interval);
+
+	      double tmp = interval * (xExtent > yExtent ? xExtent : yExtent);
+	      tmp += m_conedepth;
+	      tmp /= m_cellsize;
+	      int lgmSize = (int)tmp;
+	      if (lgmSize > m_gridsize) lgmSize = m_gridsize;
+	      log("lgmSize = %i", lgmSize);
+
+	      SpatialGridMap::GridMap<GridMapData> tmpMap(lgmSize*2+1, lgmSize*2+1, m_cellsize, m_minbloxel,
+		  0, m_mapceiling, 0, 0, 0, def);
+	      GDProbSet resetter(0.0);
+	      tmpMap.universalQuery(resetter, true);
 
 
-	    CureObstMap tempLGM(lgmSize, m_cellsize, '0', 
-		CureObstMap::MAP1, 0, 0);
-	    CureObstMap *backupRoomLGM = m_lgm;
-	    m_lgm = &tempLGM;
+	      CureObstMap tempLGM(lgmSize, m_cellsize, '0', 
+		  CureObstMap::MAP1, 0, 0);
+	      CureObstMap *backupRoomLGM = m_lgm;
+	      m_lgm = &tempLGM;
 
 
-	    // Do KDE for this object
-	    vector<Vector3> centers;
-	    centers.push_back(cloud->center);
-	    m_sampler.kernelDensityEstimation3D(tmpMap,
-		centers,
-		cloud->interval,
-		cloud->xExtent,
-		cloud->yExtent,
-		cloud->zExtent,
-		cloud->values,
-		1.0,
-		1.0,
-		m_lgm
-		);
-	    normalizePDF(tmpMap,1.0);
-	    //pbVis->AddPDF(tmpMap);
-	    // Compute cost for this map and object
+	      // Do KDE for this object
+	      vector<Vector3> centers;
+	      centers.push_back(cloud->center);
+	      m_sampler.kernelDensityEstimation3D(tmpMap,
+		  centers,
+		  cloud->interval,
+		  cloud->xExtent,
+		  cloud->yExtent,
+		  cloud->zExtent,
+		  cloud->values,
+		  1.0,
+		  1.0,
+		  m_lgm
+		  );
+	      normalizePDF(tmpMap,1.0);
+	      //pbVis->AddPDF(tmpMap);
+	      // Compute cost for this map and object
 
-	    // For the purposes of cone generation/evaluation, 
-	    // set m_lgm temporarily to an empty grid
-	    // centered at the origin
-	    // Set its extent to be a bounding box based on
-	    // the spread of the point cloud and the maximum cone length
-	    // FIXME get lgmpdf as arg
-	    double cost = 0.0;
-	    cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
-	    costThisStep += cost / baseObjectPoses.size();
+	      // For the purposes of cone generation/evaluation, 
+	      // set m_lgm temporarily to an empty grid
+	      // centered at the origin
+	      // Set its extent to be a bounding box based on
+	      // the spread of the point cloud and the maximum cone length
+	      // FIXME get lgmpdf as arg
+	      double cost = 0.0;
+	      cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
+	      costThisStep += cost / baseObjectPoses.size();
+	      m_lgm = backupRoomLGM;
+	    }
 
-	    m_lgm = backupRoomLGM;
 	  }
 
-	  cacheStepCost(strategyStep, costThisStep);
 	}
-
+	cacheStepCost(strategyStep,costThisStep);
       }
       StrategyCost += costThisStep;
     }	 
@@ -1172,11 +1188,11 @@ namespace spatial
   void VisualObjectSearch::selectdu( GtkWidget *widget, gpointer data )
   {
     AVSComponentPtr->isRunComponent = true;
-   /* std::vector<std::string> policy;
-    policy.push_back("room1");
-    policy.push_back("dell ON table IN room1");
-    policy.push_back("book IN dell ON table IN room1");
-    AVSComponentPtr->GetStrategyCost(policy);*/
+    /* std::vector<std::string> policy;
+       policy.push_back("room1");
+       policy.push_back("dell ON table IN room1");
+       policy.push_back("book IN dell ON table IN room1");
+       AVSComponentPtr->GetStrategyCost(policy);*/
     //AVSComponentPtr->LookforObjectWithStrategy(DIRECT_UNINFORMED);
   }
   void VisualObjectSearch::selectdi( GtkWidget *widget, gpointer data )
@@ -1192,7 +1208,7 @@ namespace spatial
 
   void VisualObjectSearch::runComponent(){
     m_command = IDLE;
-    
+
     if(m_savemapmode){
       int argc= 0;
       char** argv = NULL;
@@ -1263,14 +1279,22 @@ namespace spatial
 	lockComponent();
 	//      pbVis->DisplayMap(*m_map);
 	pbVis->Display2DCureMap(m_lgm);
+	if(m_lgms.size() == 0 )
+	  InitializeMaps();
 	InterpretCommand();
 	log("Outside probability: %f, at viewpoint %d", m_pout, m_totalViewPoints);
-	InitializeMaps();
 	std::vector<std::string> policy;
 	policy.push_back("room1");
 	policy.push_back("table IN room1");
 	policy.push_back("book ON table IN room1");
-	GetStrategyCost(policy);
+	double policycost = GetStrategyCost(policy);
+	log("policy cost: %3.2f", policycost);
+
+	policy.clear();
+	policy.push_back("room1");
+	policy.push_back("table IN room1");
+	policycost = GetStrategyCost(policy);
+	log("policy cost: %3.2f", policycost);
 	unlockComponent();
       }
       sleep(1);
@@ -1822,8 +1846,8 @@ namespace spatial
 
     return true;
   }
-  
-  
+
+
   std::vector<Cure::Pose3D> VisualObjectSearch::Sample2DGrid() {
     srand (
 	time(NULL));
@@ -1901,20 +1925,20 @@ namespace spatial
       int the = (int) (rand() % angles.size());
       angle = angles[the];
       //if we have that point already, skip.
-     /* for (int j = 0; j < i; j++) {
-	if (samples[2 * j] == randx && m_samples[2 * j + 1] == randy
-	    && m_samplestheta[j] == angle) {
-	  //log("we already have this point.");
-	  haspoint = true;
-	  break;
-	}
+      /* for (int j = 0; j < i; j++) {
+	 if (samples[2 * j] == randx && m_samples[2 * j + 1] == randy
+	 && m_samplestheta[j] == angle) {
+      //log("we already have this point.");
+      haspoint = true;
+      break;
+      }
       }*/
       m_lgm->index2WorldCoords(randx, randy, xW, yW);
       std::pair<int,int> sample;
       sample.first = randx;
       sample.second = randy;
 
-      if (!haspoint && (*m_lgm)(randx, randy) == '0' && isCircleFree2D(*m_lgm, xW, yW, 0.4)) {
+      if (!haspoint && (*m_lgm)(randx, randy) == '0' && isCircleFree2D(*m_lgm, xW, yW, m_sampleawayfromobs)) {
 	/*if reachable*/
 	// Get the indices of the destination coordinates
 	//	log("point reachable");
@@ -1970,7 +1994,7 @@ namespace spatial
       point.push_back(1.4);
       sampled2Dpoints.push_back(point);
     }
-     pbVis->Add3DPointCloud(sampled2Dpoints);
+    pbVis->Add3DPointCloud(sampled2Dpoints);
     /*   m_lgm->index2WorldCoords(m_samples[1 * 2], m_samples[1 * 2 + 1], xW1, yW1);
 	 Cure::Pose3D pos;
 	 pos.setX(xW1);
@@ -1979,7 +2003,7 @@ namespace spatial
 	 PostNavCommand(pos,SpatialData::GOTOPOSITION);*/
     /* Display Samples in PB END */
     /*Sampling free space END*/
-  return samples;
+    return samples;
   }
 
 
@@ -2191,7 +2215,7 @@ namespace spatial
 
   }
 
-  int VisualObjectSearch::GetViewConeSums(std::vector <SensingAction> samplepoints, GridMap<GridMapData> *map){
+  int VisualObjectSearch::GetViewConeSums(std::vector <SensingAction> &samplepoints, GridMap<GridMapData> *map){
     log("Getting view cone sums");
     log("Cone range is %f to %f", m_minDistance, m_conedepth);
 
