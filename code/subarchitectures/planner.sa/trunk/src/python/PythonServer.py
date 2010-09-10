@@ -88,7 +88,6 @@ import beliefs_cast_ice
 import beliefs_ice
 #import de.dfki.lt.tr.beliefs.slice ## must be imported *before* Planner
 from autogen import Planner
-import comadata
 import cast.core
 
 import standalone
@@ -175,6 +174,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     return self.dt
 
   def getHFC(self):
+    import comadata
     if not self.hfc:
       self.hfc = self.getIceServer(self.coma_name, comadata.HFCInterface, comadata.HFCInterfacePrx)
       log.info("Connected to Comaserver %s", self.coma_name)
