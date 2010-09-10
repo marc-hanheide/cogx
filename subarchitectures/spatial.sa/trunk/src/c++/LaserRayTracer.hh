@@ -2,6 +2,7 @@
 #define LASERRAYTRACER_H
 
 #include "SpatialGridMap.hh"
+#include "GridDataFunctors.hh"
 #include <vector>
 #include <cmath>
 namespace SpatialGridMap{
@@ -20,8 +21,9 @@ namespace SpatialGridMap{
       //template <class ObstacleFunctor>
       //void addScanStationarySensor(const Laser::Scan2d &castScan, const ObstacleFunctor &obstacle,double* LaserPose);
       
-       template <class CheckObstacleFunctor, class MakeEmptyFunctor, class MakeObstacleFunctor> 
-      void addScanStationarySensor(const Laser::Scan2d &castScan, vector<double> LaserPose, const CheckObstacleFunctor &checkobstacle, const MakeEmptyFunctor &makeempty, const MakeObstacleFunctor &makeobstacle);
+//       template <class CheckObstacleFunctor, class MakeEmptyFunctor, class MakeObstacleFunctor> 
+      //void addScanStationarySensor(const Laser::Scan2d &castScan, vector<double> LaserPose, CheckObstacleFunctor &checkobstacle, MakeEmptyFunctor &makeempty, MakeObstacleFunctor &makeobstacle);
+      void addScanStationarySensor(const Laser::Scan2d &castScan, vector<double> LaserPose, GDIsObstacle &checkobstacle, GDMakeFree &makeempty, GDMakeObstacle &makeobstacle);
     private:
       void setRayStart(double x, double y, double theta);
       int (LaserRayTracer<MapData>::* drawLineFcn)(void);
@@ -45,7 +47,7 @@ namespace SpatialGridMap{
       int m_Xi,m_Yi;
       pair <double,double> mapCenterW;
       pair <int,int> mapSize;
-      GridMap<MapData>* m_map;
+      SpatialGridMap::GridMap<MapData>* m_map;
   };
 
    template <class MapData>
@@ -198,8 +200,9 @@ template <class MapData> double
     }
 
   template <class MapData>
-    template <class CheckObstacleFunctor, class MakeEmptyFunctor, class MakeObstacleFunctor>
-  void LaserRayTracer<MapData>::addScanStationarySensor(const Laser::Scan2d &castScan, vector<double> LaserPose, const CheckObstacleFunctor &checkobstacle, const MakeEmptyFunctor &makeempty, const MakeObstacleFunctor &makeobstacle){
+//    template <class CheckObstacleFunctor, class MakeEmptyFunctor, class MakeObstacleFunctor>
+  //void LaserRayTracer<MapData>::addScanStationarySensor(const Laser::Scan2d &castScan, vector<double> LaserPose, CheckObstacleFunctor &checkobstacle, MakeEmptyFunctor &makeempty, MakeObstacleFunctor &makeobstacle){
+  void LaserRayTracer<MapData>::addScanStationarySensor(const Laser::Scan2d &castScan, vector<double> LaserPose, GDIsObstacle &checkobstacle, GDMakeFree &makeempty, GDMakeObstacle &makeobstacle){
     if (LaserPose.size() != 4){
       printf("Not adding scan, laser pose is incomplete! (should be [x,y,z,theta] \n");
       return;
@@ -217,6 +220,7 @@ template <class MapData> double
 
 	//TODO: Check if the bloxel at height=z is occupied, if so call EmptierFunctor
 	//data() = '0';
+
 	typedef vector<Bloxel<MapData> > MapDataColumn;
 	MapDataColumn &column = (*m_map)(m_Xi, m_Yi);
 //	for(MapDataColumn::iterator it = column.begin(); it != column.end(); it++){
@@ -231,6 +235,7 @@ template <class MapData> double
 	      //printf("obstacle!, delete it %d, %d \n",m_Xi,m_Yi);
 	      m_map->boxSubColumnModifier(m_Xi,m_Yi,LaserPose[2],m_map->getMinBloxelHeight(),makeempty);
 	    }
+	    break;
 	  }
 	}
 	stepRay();
@@ -253,6 +258,7 @@ template <class MapData> double
 	      m_map->boxSubColumnModifier(m_Xi,m_Yi,LaserPose[2],m_map->getMinBloxelHeight(),makeobstacle);
 	    }
 	  }
+	  break;
 
 	}
 
