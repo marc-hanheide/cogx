@@ -103,9 +103,10 @@ namespace spatial
     m_tiltinterval = 10*M_PI/180 ;
     it = _config.find("--tiltinterval");
     if (it != _config.end()) {
-      m_tiltinterval = (atof(it->second.c_str()));
-      log("Tilt Interval set to: %d", m_tiltinterval);
+      m_tiltinterval = (atof(it->second.c_str()))*M_PI/180;
+      log("Tilt Interval set to: %f", m_tiltinterval);
     }
+      log("Tilt Interval set to: %f", m_tiltinterval);
 
     m_samplesize = 100;
     it = _config.find("--samplesize");
@@ -2082,12 +2083,11 @@ namespace spatial
     /*for (unsigned int j=0; j < orderedVClist.size(); j++)
       cout << orderedVClist[j].first << "," << orderedVClist[j].second << "," << endl;*/
 
-    pair<int,int> tiltRange(40,-40);
     SensingAction sample;
     std::vector <SensingAction> samplepoints;
 
     std::vector<double> angles;
-    for (double rad = -30*M_PI/180; rad < 30*M_PI/180; rad = rad + M_PI / m_tiltinterval) {
+    for (double rad = -30*M_PI/180; rad < 30*M_PI/180; rad = rad + m_tiltinterval) {
       angles.push_back(rad);
     }
 
