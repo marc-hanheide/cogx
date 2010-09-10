@@ -9,7 +9,6 @@ option(BUILD_SA_V11N_SERVER "Build the visualisation display server" YES)
 if(BUILD_SA_V11N_SERVER)
 
 find_package(Qt4 REQUIRED)  # http://qtnode.net/wiki/Qt4_with_cmake
-set(QT_USE_OPENGL 1)
 include(${QT_USE_FILE})
 include_directories(${QT_INCLUDE_DIR})
 include_directories(${QT_QTOPENGL_INCLUDE_DIR})
@@ -30,8 +29,9 @@ if(BUILD_SA_V11N_USE_LUAGL)
    find_package(Lua51)
    find_library(LUA_LIB_TOLUA_51 tolua++5.1)
    if (LUA51_FOUND AND LUA_LIB_TOLUA_51)
+      set(QT_USE_OPENGL 1)
       include_directories(object/gllua ${LUA_INCLUDE_DIR})
-      set(EXPERIMENT_SRC ${EXPERIMENT_SRC}
+      set(LUAGL_EXPERIMENT_SRC
          object/gllua/glbind.cpp
          object/gllua/glubind.cpp
          object/gllua/gllbuffer.cpp
@@ -40,7 +40,8 @@ if(BUILD_SA_V11N_USE_LUAGL)
          object/gllua/v11nbind.cpp
          object/CLuaGlScript.cpp
          )
-      set(EXPERIMENT_LIB ${EXPERIMENT_LIB}
+      set(LUAGL_EXPERIMENT_LIB
+	 ${QT_QTOPENGL_LIBRARY} 
          ${OPENGL_LIBRARIES}
          ${LUA_LIBRARIES}
          ${LUA_LIB_TOLUA_51}
@@ -58,16 +59,16 @@ endif(BUILD_SA_V11N_USE_LUAGL)
 option(BUILD_SA_V11N_USE_WEBKIT "Build with HTML support (Qt-WebKit)" ON)
 option(BUILD_SA_V11N_USE_WEBKIT_PLUGINS "Enable plugins in HTML pages (Qt-WebKit)" ON)
 if(BUILD_SA_V11N_USE_WEBKIT)
-   set(EXPERIMENT_SRC ${EXPERIMENT_SRC}
+   set(WEBKIT_EXPERIMENT_SRC
       object/CHtmlObject.cpp
       qtui/QCastViewHtml.cpp
       qtui/html/formcap.cpp
       )
-   set(EXPERIMENT_MOC ${EXPERIMENT_MOC}
+   set(WEBKIT_EXPERIMENT_MOC
       qtui/QCastViewHtml.hpp
       qtui/html/formcap.hpp
       )
-   set(EXPERIMENT_LIB ${EXPERIMENT_LIB}
+   set(WEBKIT_EXPERIMENT_LIB
       ${QT_QTWEBKIT_LIBRARY}
       )
    include_directories(
@@ -76,10 +77,10 @@ if(BUILD_SA_V11N_USE_WEBKIT)
    add_definitions(-DV11N_OBJECT_HTML)
 
    if (BUILD_SA_V11N_USE_WEBKIT_PLUGINS)
-      set(EXPERIMENT_SRC ${EXPERIMENT_SRC}
+      set(WEBKIT_EXPERIMENT_SRC ${WEBKIT_EXPERIMENT_SRC}
          qtui/QCastPlugins.cpp
          )
-      set(EXPERIMENT_MOC ${EXPERIMENT_MOC}
+      set(WEBKIT_EXPERIMENT_MOC ${WEBKIT_EXPERIMENT_MOC}
          qtui/QCastPlugins.hpp
          )
       add_definitions(-DV11N_OBJECT_HTML_PLUGINS)
@@ -89,6 +90,7 @@ endif(BUILD_SA_V11N_USE_WEBKIT)
 
 option(BUILD_SA_V11N_USE_TOMGINE "Build with support for TomGine models (requires vision.sa)" OFF)
 if(BUILD_SA_V11N_USE_TOMGINE)
+   set(QT_USE_OPENGL 1)
    set(TOMGINE_SRC
       object/CTomGineModel.cpp
       )
@@ -98,7 +100,9 @@ if(BUILD_SA_V11N_USE_TOMGINE)
    set(TOMGINE_LIBS
       TomGine 
       ftgl # requires package libftgl-dev
+      ${QT_QTOPENGL_LIBRARY} 
       ${OPENGL_LIBRARIES}
+      ${Boost_LIBRARIES}
       )
    add_definitions(-DV11N_OBJECT_TOMGINE_MODEL)
 endif(BUILD_SA_V11N_USE_TOMGINE)
@@ -118,14 +122,14 @@ set(SERVER_CPP
    HtmlElements.cpp
    object/CSvgImage.cpp
    object/CRasterImage.cpp
-   ${EXPERIMENT_SRC}
+   ${LUAGL_EXPERIMENT_SRC}
+   ${WEBKIT_EXPERIMENT_SRC}
    ${TOMGINE_SRC}
    )
 set(GUI_CPP
    qtui/QCastApplication.cpp
    qtui/QCastMainFrame.cpp
    qtui/QCastView.cpp
-   qtui/QCastViewGL.cpp
    qtui/QCustomGuiPanel.cpp
    qtui/QViewContainer.cpp
    qtui/ChangeSlot.cpp
@@ -134,10 +138,10 @@ set(SERVER_MOC_HEADERS
    qtui/QCastApplication.hpp
    qtui/QCastMainFrame.hpp
    qtui/QCastView.hpp
-   qtui/QCastViewGL.hpp
    qtui/ChangeSlot.hpp
    qtui/QCustomGuiPanel.hpp
    qtui/QViewContainer.hpp
+   ${WEBKIT_EXPERIMENT_MOC}
    )
 set(SERVER_UI_FILES
    qtui/design/castor.ui
@@ -145,7 +149,17 @@ set(SERVER_UI_FILES
 set(SERVER_RESOURCE_FILES
    qtui/design/jquery.qrc
    )
-qt4_wrap_cpp (SERVER_MOC_OUTFILES ${SERVER_MOC_HEADERS} ${EXPERIMENT_MOC})
+if(QT_USE_OPENGL)
+   add_definitions(-DV11N_VIEW_GL)
+   set(GUI_CPP ${GUI_CPP}
+      qtui/QCastViewGL.cpp
+      )
+   set(SERVER_MOC_HEADERS ${SERVER_MOC_HEADERS}
+      qtui/QCastViewGL.hpp
+      )
+endif(QT_USE_OPENGL)
+
+qt4_wrap_cpp (SERVER_MOC_OUTFILES ${SERVER_MOC_HEADERS})
 qt4_wrap_ui  (SERVER_UIC_OUTFILES ${SERVER_UI_FILES})
 qt4_add_resources (SERVER_RESOURCE_OUTFILES ${SERVER_RESOURCE_FILES})
 include_directories( .  #./object
@@ -168,34 +182,28 @@ link_cast_component(${CAST_COMPONENT_NAME}
    VisualizationData 
    # CogxIceAutogen   
    ${QT_LIBRARIES}
- ${QT_QTWEBKIT_LIBRARY}
    ${QT_QTSVG_LIBRARY}
-   ${QT_QTOPENGL_LIBRARY} 
-  ${OPENGL_LIBRARIES}
-   #${TOMGINE_LIBS}
-   #${Boost_LIBRARIES}
-   #${EXPERIMENT_LIB} 
-
+   ${TOMGINE_LIBS}
+   ${LUAGL_EXPERIMENT_LIB} 
+   ${WEBKIT_EXPERIMENT_LIB} 
    )
-
-
 
 endif(BUILD_SA_V11N_SERVER)
 
 option(BUILD_SA_V11N_CLIENT "Build the visualisation display client library" YES)
 if(BUILD_SA_V11N_CLIENT)
 
-	find_package(OpenCV REQUIRED)
-	include_directories(${OPENCV_INCLUDE_DIRS})
-	link_directories(${OPENCV_LIBRARY_DIRS})
-	add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+   find_package(OpenCV REQUIRED)
+   include_directories(${OPENCV_INCLUDE_DIRS})
+   link_directories(${OPENCV_LIBRARY_DIRS})
+   add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
-add_cast_component(DisplayClient CDisplayClient.cpp CFormValues.cpp)
-link_cast_component(${CAST_COMPONENT_NAME}
-   VisualizationData Math Video VideoUtils
-   # CogxIceAutogen
-   ${OPENCV_LDFLAGS}
-   )
+   add_cast_component(DisplayClient CDisplayClient.cpp CFormValues.cpp)
+   link_cast_component(${CAST_COMPONENT_NAME}
+      VisualizationData Math Video VideoUtils
+      # CogxIceAutogen
+      ${OPENCV_LDFLAGS}
+      )
 
 endif(BUILD_SA_V11N_CLIENT)
 
@@ -214,10 +222,10 @@ if(BUILD_SA_V11N_STANDALONE)
 
   target_link_libraries(display-server DisplayServer)
 
-IF (APPLE)
-   FIND_LIBRARY(COREFOUNDATION_LIBRARY CoreFoundation )
-   target_link_libraries(display-server ${COREFOUNDATION_LIBRARY})
-ENDIF (APPLE)
+  IF (APPLE)
+     FIND_LIBRARY(COREFOUNDATION_LIBRARY CoreFoundation )
+     target_link_libraries(display-server ${COREFOUNDATION_LIBRARY})
+  ENDIF (APPLE)
 
 install(TARGETS display-server RUNTIME DESTINATION bin)
 
