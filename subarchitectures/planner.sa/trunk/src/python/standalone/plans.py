@@ -12,7 +12,6 @@ from collections import defaultdict
 import copy
 
 import networkx
-import graph
 import constants
 import pddl
 from utils import Enum

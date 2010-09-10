@@ -401,6 +401,7 @@ class FunctionTerm(Term):
         if scope:
             self._args = scope.lookup(args)
         else:
+            assert all(isinstance(a, Term) for a in args)
             self._args = args
 
     args = property(lambda self: self._args)
@@ -502,7 +503,9 @@ class VariableTerm(Term):
         this terms parameter is instantiated. Return a copy of this
         VariableTerm otherwise."""
         if self.is_instantiated():
-            return ConstantTerm(self.get_instance())
+            if isinstance(self.get_instance(), TypedObject):
+                return Term(self.get_instance())
+            return self.get_instance().copy_instance()
         return VariableTerm(self.object)
     
     def get_type(self):

@@ -505,8 +505,9 @@ class ObjectFluentNormalizer(Translator):
         
     def translate_action(self, action, domain=None):
         import mapl
-        
-        assert domain is not None
+
+        if domain is None:
+            domain = action.parent
 
         termdict = {}
         pre = self.translate_condition(action.precondition, termdict, domain)
@@ -538,7 +539,8 @@ class ObjectFluentNormalizer(Translator):
         return a2
 
     def translate_axiom(self, axiom, domain=None):
-        assert domain is not None
+        if domain is None:
+            domain = action.parent
 
         termdict = {}
         pre = self.translate_condition(axiom.condition, termdict, domain)
