@@ -1,4 +1,4 @@
-package coma.components;
+package def.components;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,22 +10,14 @@ import Ice.Identity;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChangeQueueBehaviour;
 
-import comadata.HFCInterface;
-import comadata.QueryResults;
+import DefaultData.HFCInterface;
+import DefaultData.QueryResults;
 import de.dfki.lt.hfc.QueryParseException;
 
 public class DefaultHFCServer extends ManagedComponent {
 	
 	Identity id;
-	
-	/**
-	 * Dunno whether this is still necessary in CAST2... 
-	 */
-	public HFCServer() {
-		super();
-		m_queueBehaviour = WorkingMemoryChangeQueueBehaviour.QUEUE;
-	}
-	
+		
 	protected void configure(Map<String, String> args) {
 		log("registering HFCServer...");
 		
@@ -50,8 +42,7 @@ public class DefaultHFCServer extends ManagedComponent {
 //				System.exit(0);
 //			}
 //		}
-		
-       	
+	
 	}
 
 	
@@ -63,7 +54,7 @@ public class DefaultHFCServer extends ManagedComponent {
 	 * 
 	 * @author zender
 	 *
-	 */public class HFCInterfaceI extends comadata._HFCInterfaceDisp {
+	 */public class HFCInterfaceI extends DefaultData._HFCInterfaceDisp {
 
 		// ICE related ID
 		private static final long serialVersionUID = 6809681574925454933L;
