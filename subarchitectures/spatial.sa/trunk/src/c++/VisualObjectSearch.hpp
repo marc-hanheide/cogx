@@ -72,6 +72,9 @@ namespace spatial
 	    return false;
 	}
       };
+
+      double tryLoadStepCost(const std::vector<ObjectPairRelation> &step);
+      void cacheStepCost(const std::vector<ObjectPairRelation> &step, double cost);
       
       void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void receiveScan2d(const Laser::Scan2d &castScan);
