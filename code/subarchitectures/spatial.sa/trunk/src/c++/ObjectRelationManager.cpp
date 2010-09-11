@@ -342,69 +342,198 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   }
 }
 
+void ObjectRelationManager::readRelationsFromFile(const string &filename)
+{
+  ifstream infile(filename.c_str());
+  if (infile.bad()) {
+    log("Error! Couldn't open relation file!");
+    return;
+  }
+
+  int lineNo = 1;
+  while (!infile.eof()) {
+    char line[1024];
+    infile.getline(line, 1023);
+    istringstream is(line);
+
+    string token;
+    is >> token;
+
+    if (token == "nRooms") {
+      is >> nRooms;
+    }
+    else if (token == "nRoomCategories") {
+      is >> nRoomCategories;
+    }
+    else if (token == "nObjects") {
+      is >> nObjects;
+    }
+    else if (token == "Objects") {
+      lineNo++;
+      infile.getline(line, 1023);
+      while (strlen(line)>0 && !infile.eof()) {
+	hierarchyObjects.push_back(line);
+	lineNo++;
+	infile.getline(line, 1023);
+      }
+    }
+    else if (token == "roomCategoryDefault") {
+      roomCategoryDefault.resize(nRooms * nRoomCategories, 0.0);
+      lineNo++;
+      infile.getline(line, 1023);
+      while (strlen(line)>0 && !infile.eof()) {
+	istringstream is2(line);
+	int a, b;
+	double c;
+	string tmp;
+	is2 >> a;
+	is2 >> tmp;
+	if (tmp != "is") {
+	  log("Error in file around line %i", lineNo);
+	  return;
+	}
+	is2 >> b;
+	is2 >> c;
+	roomCategoryDefault[nRoomCategories * a + b] = c;
+
+	lineNo++;
+	infile.getline(line, 1023);
+      }
+    }
+    else if (token == "objectInRoomDefault") {
+      objectInRoomDefault.resize(nObjects * nRoomCategories, 0.0);
+      lineNo++;
+      infile.getline(line, 1023);
+      while (strlen(line)>0 && !infile.eof()) {
+	istringstream is2(line);
+	int a, b;
+	double c;
+	string tmp;
+	is2 >> a;
+	is2 >> tmp;
+	if (tmp != "in") {
+	  log("Error in file around line %i", lineNo);
+	  return;
+	}
+	is2 >> b;
+	is2 >> c;
+	objectInRoomDefault[nRoomCategories * a + b] = c;
+
+	lineNo++;
+	infile.getline(line, 1023);
+      }
+    }
+    else if (token == "objectInObjectDefault") {
+      objectInObjectDefault.resize(nObjects * nObjects, 0.0);
+      lineNo++;
+      infile.getline(line, 1023);
+      while (strlen(line)>0 && !infile.eof()) {
+	istringstream is2(line);
+	int a, b;
+	double c;
+	string tmp;
+	is2 >> a;
+	is2 >> tmp;
+	if (tmp != "in") {
+	  log("Error in file around line %i", lineNo);
+	  return;
+	}
+	is2 >> b;
+	is2 >> c;
+	objectInObjectDefault[nObjects * a + b] = c;
+
+	lineNo++;
+	infile.getline(line, 1023);
+      }
+    }
+    else if (token == "objectOnObjectDefault") {
+      objectOnObjectDefault.resize(nObjects * nObjects, 0.0);
+      lineNo++;
+      infile.getline(line, 1023);
+      while (strlen(line)>0 && !infile.eof()) {
+	istringstream is2(line);
+	int a, b;
+	double c;
+	string tmp;
+	is2 >> a;
+	is2 >> tmp;
+	if (tmp != "on") {
+	  log("Error in file around line %i", lineNo);
+	  return;
+	}
+	is2 >> b;
+	is2 >> c;
+	objectOnObjectDefault[nObjects * a + b] = c;
+
+	lineNo++;
+	infile.getline(line, 1023);
+      }
+    }
+    else if (token == "") {
+    }
+    else {
+      log("Error in file around line %i", lineNo);
+      return;
+    }
+  }
+}
+//  nRooms = 2;
+//  nRoomCategories = 2;
+//  nObjects = 6;
+//  hierarchyObjects.push_back("table2");
+//  hierarchyObjects.push_back("table1");
+////  hierarchyObjects.push_back("bookcase3");
+//  hierarchyObjects.push_back("bookcase_lg");
+//  hierarchyObjects.push_back("bookcase_sm");
+//  hierarchyObjects.push_back("crate");
+////  hierarchyObjects.push_back("dell");
+//  hierarchyObjects.push_back("book");
+//  
+//  roomCategoryDefault[nRoomCategories * 0 + 0] = 1.0;
+//  roomCategoryDefault[nRoomCategories * 1 + 1] = 1.0;
+//
+//  objectInRoomDefault.resize(nObjects * nRoomCategories, 0.0);
+//  objectInRoomDefault[nRoomCategories * 0 + 1] = 1.0;
+//  objectInRoomDefault[nRoomCategories * 1 + 0] = 1.0;
+//  objectInRoomDefault[nRoomCategories * 2 + 0] = 1;
+//  objectInRoomDefault[nRoomCategories * 3 + 1] = 1;
+//  objectInRoomDefault[nRoomCategories * 4 + 0] = 0.2;
+//  objectInRoomDefault[nRoomCategories * 4 + 1] = 0.8;
+//  objectInRoomDefault[nRoomCategories * 5 + 0] = 0.5;
+//  objectInRoomDefault[nRoomCategories * 5 + 1] = 0.5;
+////  objectInRoomDefault[nRooms * 6 + 0] = 0.5;
+////  objectInRoomDefault[nRooms * 6 + 1] = 0.5;
+////  objectInRoomDefault[nRooms * 7 + 0] = 0.5;
+////  objectInRoomDefault[nRooms * 7 + 1] = 0.5;
+// 
+//  objectInObjectDefault.resize(nObjects * nObjects, 0.0);
+//  objectInObjectDefault[nObjects * 5 + 2] = 0.9;
+//  objectInObjectDefault[nObjects * 5 + 3] = 0.9;
+//  objectInObjectDefault[nObjects * 5 + 4] = 0.5;
+//
+//  objectOnObjectDefault.resize(nObjects * nObjects, 0.0);
+//  objectOnObjectDefault[nObjects * 5 + 0] = 0.6;
+//  objectOnObjectDefault[nObjects * 5 + 1] = 0.6;
+//  objectOnObjectDefault[nObjects * 5 + 2] = 0.3;
+//  objectOnObjectDefault[nObjects * 5 + 3] = 0.3;
+//  objectOnObjectDefault[nObjects * 5 + 4] = 0.2;
+//  objectOnObjectDefault[nObjects * 4 + 0] = 0.7;
+//  objectOnObjectDefault[nObjects * 4 + 1] = 0.7;
+//
+
 void ObjectRelationManager::runComponent() 
 {
   log("I am running!");
 
-//  //REMOVEME
-//  nRooms = 2;
-//  nRoomCategories = 2;
-//  nObjects = 8;
-//  hierarchyObjects.push_back("table2");
-//  hierarchyObjects.push_back("table1");
-//  hierarchyObjects.push_back("bookcase3");
-//  hierarchyObjects.push_back("bookcase_lg");
-//  hierarchyObjects.push_back("bookcase_sm");
-//  hierarchyObjects.push_back("crate");
-//  hierarchyObjects.push_back("dell");
-//  hierarchyObjects.push_back("book");
-//  
-//  roomCategoryDefault.resize(nRooms * nRoomCategories, 0.0);
-//  roomCategoryDefault[nRoomCategories + 0 + 0] = 1.0;
-//  roomCategoryDefault[nRoomCategories + 1 + 1] = 1.0;
-//
-//  objectInRoomDefault.resize(nRooms * nObjects, 0.0);
-//  objectInRoomDefault[nRooms * 0 + 1] = 1.0;
-//  objectInRoomDefault[nRooms * 1 + 0] = 1.0;
-//  objectInRoomDefault[nRooms * 2 + 1] = 1.0;
-//  objectInRoomDefault[nRooms * 3 + 0] = 1.0;
-//  objectInRoomDefault[nRooms * 4 + 0] = 1.0;
-//  objectInRoomDefault[nRooms * 5 + 0] = 0.2;
-//  objectInRoomDefault[nRooms * 5 + 1] = 0.8;
-//  objectInRoomDefault[nRooms * 6 + 0] = 0.5;
-//  objectInRoomDefault[nRooms * 6 + 1] = 0.5;
-//  objectInRoomDefault[nRooms * 7 + 0] = 0.5;
-//  objectInRoomDefault[nRooms * 7 + 1] = 0.5;
-// 
-//  objectInObjectDefault.resize(nObjects * nObjects, 0.0);
-//  objectInObjectDefault[nObjects * 7 + 2] = 0.9;
-//  objectInObjectDefault[nObjects * 7 + 3] = 0.9;
-//  objectInObjectDefault[nObjects * 7 + 4] = 0.9;
-//  objectInObjectDefault[nObjects * 7 + 5] = 0.6;
-//  objectInObjectDefault[nObjects * 7 + 6] = 0.7;
-//
-//  objectOnObjectDefault.resize(nObjects * nObjects, 0.0);
-//  objectOnObjectDefault[nObjects * 5 + 0] = 0.8;
-//  objectOnObjectDefault[nObjects * 5 + 1] = 0.8;
-//  objectOnObjectDefault[nObjects * 6 + 0] = 0.8;
-//  objectOnObjectDefault[nObjects * 6 + 1] = 0.8;
-//  objectOnObjectDefault[nObjects * 6 + 2] = 0.8;
-//  objectOnObjectDefault[nObjects * 6 + 3] = 0.3;
-//  objectOnObjectDefault[nObjects * 6 + 4] = 0.3;
-//  objectOnObjectDefault[nObjects * 7 + 0] = 0.8;
-//  objectOnObjectDefault[nObjects * 7 + 1] = 0.8;
-//  objectOnObjectDefault[nObjects * 7 + 2] = 0.8;
-//  objectOnObjectDefault[nObjects * 7 + 3] = 0.8;
-//  objectOnObjectDefault[nObjects * 7 + 4] = 0.8;
-//  objectOnObjectDefault[nObjects * 7 + 5] = 0.2;
-//  objectOnObjectDefault[nObjects * 7 + 6] = 0.2;
+  //REMOVEME
+//  readRelationsFromFile("relationFile.txt");
 //
 //  vector<string> ret =
 //    computeMarginalDistribution("book");
 //  for (vector<string>::iterator it = ret.begin(); it != ret.end(); it++) {
 //    log(it->c_str());
 //  }
-//  ///REMOVEME
+  ///REMOVEME
 
   peekabot::GroupProxy root;
   if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness 
@@ -1800,15 +1929,15 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
   vector<double> probs;
   // Get all relational chains pertaining to this object,
 
-  int *roomTypeVal = new int[nRooms];
-  int *objectInRoomVal = new int[nObjects*nRooms];
-  int *objectInObjectVal = new int[nObjects*nObjects];
-  int *objectOnObjectVal = new int[nObjects*nObjects];
-  int *objectDirectlyOnObjectVal = new int[nObjects*nObjects];
+  int roomTypeVal[nRooms];
+  int objectInRoomVal[nObjects];
+  int objectInObjectVal[nObjects*nObjects];
+  int objectOnObjectVal[nObjects*nObjects];
+  int objectDirectlyOnObjectVal[nObjects];
   if (nRooms*nRoomCategories != (int)roomCategoryDefault.size()) {
     log ("Error! roomCategoryDefault inconsistency!");
   }
-  if (nObjects*nRooms != (int)objectInRoomDefault.size()) {
+  if (nObjects*nRoomCategories != (int)objectInRoomDefault.size()) {
     log ("Error! objectInRoomDefault inconsistency!");
   }
   if (nObjects*nObjects != (int)objectInObjectDefault.size()) {
@@ -1820,17 +1949,17 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 
   for (int i = 0; i < nRooms; i++) {
     roomTypeVal[i] = 0;
-    for (int j = 0; j < nObjects; j++) {
-      objectInRoomVal[j * nRooms + i] = 0;
-    }
+  }
+  for (int j = 0; j < nObjects; j++) {
+    objectInRoomVal[j] = 0;
   }
 
   for (int i = 0; i < nObjects; i++) {
     for (int j = 0; j < nObjects; j++) {
       objectInObjectVal[i * nObjects + j] = 0;
       objectOnObjectVal[i * nObjects + j] = 0;
-      objectDirectlyOnObjectVal[i * nObjects + j] = 0;
     }
+    objectDirectlyOnObjectVal[i] = -1;
   }
 
   double totalOverallMass = 0.0;
@@ -1853,43 +1982,66 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 
     // Loop over possible immediate precursors to query object (including "no precursors")
     while (true) {
+      ostringstream s("");
+      s << hierarchyObjects[object];
+      int i = object;
+      while (precursors[i].object != -1) {
+	s << (precursors[i].state == 0 ? " on " : " in ") << 
+	  hierarchyObjects[precursors[i].object];
+	i = precursors[i].object;
+      }
+      s << " in room " << fixedRoom << ": ";
+//      log("%s", s.str().c_str());
+
       int combinations = 0;
       double totalProbMass = 0.0;
 
-      std::set<int> fixedRoomTypeVals; // Not currently used
-      std::set<int> fixedObjectInRoomVals;
-      std::set<int> fixedObjectInObjectVals;
-      std::set<int> fixedObjectOnObjectVals;
-      std::set<int> fixedObjectDirectlyOnObjectVals;
+      bool fixedRoomTypeVals[nRooms]; // Not currently used
+      bool fixedObjectInRoomVals[nObjects];
+      bool fixedObjectInObjectVals[nObjects*nObjects];
+      bool fixedObjectOnObjectVals[nObjects*nObjects];
+      bool fixedObjectDirectlyOnObjectVals[nObjects];
+      for (int j = 0; j < nObjects; j++) {
+	fixedObjectInRoomVals[j] = false;
+	fixedObjectDirectlyOnObjectVals[j] = false;
+	for (int k = 0; k < nObjects; k++) {
+	  fixedObjectInObjectVals[j * nObjects + k] = false;
+	  fixedObjectOnObjectVals[j * nObjects + k] = false;
+	}
+      }
+      for (int j = 0; j < nRooms; j++) {
+	fixedRoomTypeVals[j] = false;
+      }
 
       // Fix query object to be in fixedRoom
-      fixedObjectInRoomVals.insert(object * nRooms + fixedRoom);
-      objectInRoomVal[object * nRooms + fixedRoom] = 1;
+      fixedObjectInRoomVals[object] = true;
+      objectInRoomVal[object] = fixedRoom;
 
-      int i = object;
+      i = object;
       while (precursors[i].object != -1) {
-	fixedObjectInObjectVals.insert(i * nObjects + precursors[i].object);
-	fixedObjectDirectlyOnObjectVals.insert(i * nObjects + precursors[i].object);
+	fixedObjectInObjectVals[i * nObjects + precursors[i].object] = true;
+	fixedObjectDirectlyOnObjectVals[i] = true;
 	if (precursors[i].state == 0) {
-	  objectDirectlyOnObjectVal[i * nObjects + precursors[i].object] = 1;
+	  objectDirectlyOnObjectVal[i] = precursors[i].object;
 	  objectInObjectVal[i * nObjects + precursors[i].object] = 0;
 	}
 	else {
-	  objectDirectlyOnObjectVal[i * nObjects + precursors[i].object] = 0;
+	  objectDirectlyOnObjectVal[i] = -1;
 	  objectInObjectVal[i * nObjects + precursors[i].object] = 1;
 	}
 	i = precursors[i].object;
       }
       // Set all relations involving the unrelated trajector to 0
       for (int j = i-1; j >= 0; j--) {
-	fixedObjectInObjectVals.insert(i * nObjects + j);
-	fixedObjectOnObjectVals.insert(i * nObjects + j);
+	fixedObjectInObjectVals[i * nObjects + j] = true;
+	fixedObjectOnObjectVals[i * nObjects + j] = true;
 	objectOnObjectVal[i * nObjects + j] = 0;
 	objectInObjectVal[i * nObjects + j] = 0;
       }
 
 
       while (true) {
+
 	double prob = probabilityOfConfig(roomTypeVal, objectInRoomVal,
 	    objectInObjectVal, objectOnObjectVal, objectDirectlyOnObjectVal);
 	if (prob > 0.0)
@@ -1900,7 +2052,7 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	int index = 0;
 
 	while (index < nRooms) {
-	  if (fixedRoomTypeVals.find(index) != fixedRoomTypeVals.end()) {
+	  if (fixedRoomTypeVals[index]) {
 	    index++;
 	  }
 	  else {
@@ -1919,14 +2071,14 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	  continue;
 
 	index = 0;
-	while (index < nObjects * nRooms) {
-	  if (fixedObjectInRoomVals.find(index) != fixedObjectInRoomVals.end()) {
+	while (index < nObjects) {
+	  if (fixedObjectInRoomVals[index]) {
 	    index++;
 	  }
 	  else {
 	    objectInRoomVal[index]++;
 
-	    if (objectInRoomVal[index] == 2) {
+	    if (objectInRoomVal[index] == nRooms) {
 	      objectInRoomVal[index] = 0;
 	      index++;
 	    }
@@ -1936,7 +2088,7 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	  }
 	}
 
-	if (index < nRooms * nObjects) 
+	if (index < nObjects) 
 	  continue;
 
 	index = 0;
@@ -1947,15 +2099,61 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	    index2 = index+1;
 	  }
 	  else {
-	    if (fixedObjectInObjectVals.find(index2 * nObjects + index) !=
-		fixedObjectInObjectVals.end()) {
+	    if (objectInRoomVal[index] != objectInRoomVal[index2] ||
+		fixedObjectInObjectVals[index * nObjects + index2]) {
 	      index2++;
 	    }
 	    else {
-	      objectInObjectVal[index2 * nObjects + index]++;
+	      objectInObjectVal[index * nObjects + index2]++;
 
-	      if (objectInObjectVal[index2 * nObjects + index] == 2) {
-		objectInObjectVal[index2 * nObjects + index] = 0;
+	      if (objectInObjectVal[index * nObjects + index2] == 2) {
+		objectInObjectVal[index * nObjects + index2] = 0;
+		index2++;
+	      }
+	      else {
+		break;
+	      }
+	    }
+	  }
+	}
+
+
+//	if (index < nObjects) 
+//	  continue;
+//
+//	for (int i = 0; i < nRooms; i++) 
+//	  cout <<roomTypeVal[i];
+//	cout << " ";
+//	for (int i = 0; i < nObjects; i++) 
+//	  cout <<objectInRoomVal[i];
+//	cout << " ";
+//	for (int i = 0; i < nObjects*nObjects; i++) 
+//	  cout <<objectInObjectVal[i];
+//	cout << " ";
+//	for (int i = 0; i < nObjects*nObjects; i++) 
+//	  cout <<objectOnObjectVal[i];
+//	cout << " ";
+//	for (int i = 0; i < nObjects; i++) 
+//	  cout <<objectDirectlyOnObjectVal[i];
+//	cout << "\n";
+
+	index = 0;
+	index2 = 1;
+	while (index < nObjects) {
+	  if (index2 >= nObjects) {
+	    index++;
+	    index2 = index+1;
+	  }
+	  else {
+	    if (objectInRoomVal[index] != objectInRoomVal[index2] ||
+		fixedObjectOnObjectVals[index * nObjects + index2]) {
+	      index2++;
+	    }
+	    else {
+	      objectOnObjectVal[index * nObjects + index2]++;
+
+	      if (objectOnObjectVal[index * nObjects + index2] == 2) {
+		objectOnObjectVal[index * nObjects + index2] = 0;
 		index2++;
 	      }
 	      else {
@@ -1969,56 +2167,30 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	  continue;
 
 	index = 0;
-	index2 = 1;
 	while (index < nObjects) {
-	  if (index2 >= nObjects) {
+	  if (fixedObjectDirectlyOnObjectVals[index]) {
 	    index++;
-	    index2 = index+1;
 	  }
 	  else {
-	    if (fixedObjectOnObjectVals.find(index2 * nObjects + index) !=
-		fixedObjectOnObjectVals.end()) {
-	      index2++;
+	    // Skip past values of objectDirectlyOnObjectVal
+	    // that violate objectOnObjectVal
+	    do {
+	      objectDirectlyOnObjectVal[index]++;
+	      if (objectDirectlyOnObjectVal[index] >= index)
+		break;
+	    } while (objectOnObjectVal[index * nObjects + 
+		objectDirectlyOnObjectVal[index]] == 0);
+
+	    //	      if (objectDirectlyOnObjectVal[index] == nObjects) 
+	    if (objectDirectlyOnObjectVal[index] >= index) 
+	    { 
+	      // We don't need to go farther; no object is allowed
+	      //to be on an object with a larger id than itself
+	      objectDirectlyOnObjectVal[index] = -1;
+	      index++;
 	    }
 	    else {
-	      objectOnObjectVal[index2 * nObjects + index]++;
-
-	      if (objectOnObjectVal[index2 * nObjects + index] == 2) {
-		objectOnObjectVal[index2 * nObjects + index] = 0;
-		index2++;
-	      }
-	      else {
-		break;
-	      }
-	    }
-	  }
-	}
-
-	if (index < nObjects) 
-	  continue;
-
-	index = 0;
-	index2 = 1;
-	while (index < nObjects) {
-	  if (index2 >= nObjects) {
-	    index++;
-	    index2 = index+1;
-	  }
-	  else {
-	    if (fixedObjectDirectlyOnObjectVals.find(index2 * nObjects + index) !=
-		fixedObjectDirectlyOnObjectVals.end()) {
-	      index2++;
-	    }
-	    else {
-	      objectDirectlyOnObjectVal[index2 * nObjects + index]++;
-
-	      if (objectDirectlyOnObjectVal[index2 * nObjects + index] == 2) {
-		objectDirectlyOnObjectVal[index2 * nObjects + index] = 0;
-		index2++;
-	      }
-	      else {
-		break;
-	      }
+	      break;
 	    }
 	  }
 	}
@@ -2027,21 +2199,12 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	  break;
       };
 
-      ostringstream s;
-      s << hierarchyObjects[object];
-      i = object;
-      while (precursors[i].object != -1) {
-	s << (precursors[i].state == 0 ? " on " : " in ") << 
-	  hierarchyObjects[precursors[i].object];
-	i = precursors[i].object;
-      }
-      s << " in room " << fixedRoom << ": ";
       ret.push_back(s.str());
       probs.push_back(totalProbMass);
       totalOverallMass += totalProbMass;
       
       s << totalProbMass << ", " << combinations << " combinations\n";
-      log(s.str());
+//      log("%s", s.str().c_str());
 
       // Recursively find the precursor that should be incremented
       bool done = updateHierarchy(precursors, object);
@@ -2058,11 +2221,6 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
     ret[i] = s.str();
   }
 
-  delete[] roomTypeVal;
-  delete[] objectInRoomVal;
-  delete[] objectInObjectVal;
-  delete[] objectOnObjectVal;
-  delete[] objectDirectlyOnObjectVal;
   return ret;
 }
 
@@ -2074,25 +2232,21 @@ ObjectRelationManager::probabilityOfConfig(int *roomTypeVal, int *objectInRoomVa
   //First, check functions that represent 1/0 values.
   for (int o1 = nObjects-1; o1 >= 0; o1--) {
     //Object-in-room exclusivity
-    int inRoomCount = 0;
-    for (int r1 = 0; r1 < nRooms; r1++) {
-      if (objectInRoomVal[o1 * nRooms + r1] != 0) {
-	inRoomCount++;
 
-	int category = roomTypeVal[r1];
-
-	prob *= objectInRoomDefault[o1 * nRooms + category];
-      }
-    }
-    // Must be in exactly 1 room
-    if (inRoomCount != 1) {
+    int inRoom = objectInRoomVal[o1];
+    if (inRoom < 0) {
+      // Must be in exactly 1 room
       return 0;
     }
+
+    int category = roomTypeVal[inRoom];
+
+    prob *= objectInRoomDefault[o1 * nRoomCategories + category];
 
     for (int o2 = o1-1; o2 >= 0; o2--) {
       //Object onness basic check
       if (objectOnObjectVal[o1 * nObjects + o2] == 0 &&
-	  objectDirectlyOnObjectVal[o1 * nObjects + o2] != 0) {
+	  objectDirectlyOnObjectVal[o1] == o2) {
 	return 0;
       }
 
@@ -2117,12 +2271,9 @@ ObjectRelationManager::probabilityOfConfig(int *roomTypeVal, int *objectInRoomVa
 	  }
 	}
 
-	for (int r1 = 0; r1 < nRooms; r1++) {
-	  // If A in/on B, then A in R iff B in R
-	  if (objectInRoomVal[o1 * nRooms + r1] !=
-	      objectInRoomVal[o2 * nRooms + r1]) {
+	// If A in/on B, then A in R iff B in R
+	if (objectInRoomVal[o1] != objectInRoomVal[o2]) {
 	    return 0;
-	  }
 	}
       }
 
@@ -2148,7 +2299,7 @@ ObjectRelationManager::probabilityOfConfig(int *roomTypeVal, int *objectInRoomVa
 	// object is on or in, and that that object is in turn
 	// on o2
 	for (int o3 = o1-1; o3 > o2; o3--) {
-	  if ((objectDirectlyOnObjectVal[o1 * nObjects + o3] != 0 ||
+	  if ((objectDirectlyOnObjectVal[o1] == o3 ||
 	      objectInObjectVal[o1 * nObjects + o3] != 0) &&
 	    objectOnObjectVal[o3 * nObjects + o2]) {
 	    found = true;
@@ -2156,7 +2307,7 @@ ObjectRelationManager::probabilityOfConfig(int *roomTypeVal, int *objectInRoomVa
 	}
 	// Unique direct support check
 	for (int o3 = o1-1; o3 >= 0; o3--) {
-	  if (objectDirectlyOnObjectVal[o1 * nObjects + o3] != 0) {
+	  if (objectDirectlyOnObjectVal[o1] == o3) {
 	    supports++;
 	    found = true;
 	  }
