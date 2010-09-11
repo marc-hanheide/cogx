@@ -123,6 +123,8 @@ protected:
 
   void connectPeekabot();
 
+  void readRelationsFromFile(const string &filename);
+
   Pose3 getCameraToWorldTransform();
 
   virtual void configure(const std::map<std::string, std::string>& _config);
