@@ -818,7 +818,8 @@ void CDisplayServerI::run()
          // SYNC: Lock the monitor
          IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
          // SYNC: Unlock the monitor and wait for notify() or timeout
-         m_EventMonitor.timedWait(IceUtil::Time::seconds(2));
+         if (m_OperationQueue.size() < 1)
+            m_EventMonitor.timedWait(IceUtil::Time::seconds(2));
          // SYNC: Continue with a locked monitor
 
          if(m_stopEventServer) {
