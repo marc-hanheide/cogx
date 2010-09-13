@@ -16,7 +16,7 @@ DEB_PACKAGES=\
 	liblog4j1.2-java@ubuntu \
         sun-java6-jdk@ubuntu \
         ant@ubuntu \
-        libzeroc-ice-java@ubuntu
+        libzeroc-ice3.3-java@ubuntu
 	
 MFLAGS=$(MFLAGS_NUMCPU)
 
@@ -33,7 +33,7 @@ INSTALL_ENV += CLASSPATH=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar:/us
 include ../../gar.extend.mk
 
 
-CONFIGURE_ARGS = -Dinstall.prefix=$(prefix) -Dclasspath=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar
+CONFIGURE_ARGS = -Dinstall.prefix=$(prefix) -Dinstall.dir=$(prefix)/share/java -Dclasspath=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar
 BUILD_ARGS = $(CONFIGURE_ARGS) compile
 INSTALL_ARGS = $(CONFIGURE_ARGS) install
 
