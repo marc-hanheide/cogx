@@ -16,7 +16,14 @@
 # GNU General Public License for more details.
 
 import Ice
+import cast
 from Visualization import *
+
+# Get servant category as given by the C++ implementation (toServantCategory)
+# (The right place for this function would be CAST.)
+def castServantCategory(IceInterface):
+    category = IceInterface.ice_staticId().lstrip(":").replace("::", ".")
+    return category
 
 class _EventReceiverImpl (EventReceiver):
     def __init__(self, displayClient):
@@ -43,6 +50,7 @@ class _EventReceiverImpl (EventReceiver):
 class CDisplayClient:
     def __init__(self):
         self.m_ServerName = "display.srv"
+        self.m_ServerHost = ""
         self.m_Server = None
         self.m_Owner = None
         self.m_EventReceiver = None
@@ -51,16 +59,30 @@ class CDisplayClient:
 
     def configureDisplayClient(self, config):
         if config.has_key("--displayserver"):
-            self.m_ServerName = config["--displayserver"]
+            self.m_ServerName = config["--displayserver"].strip()
             print self.m_ServerName
+        if config.has_key("--standalone-display-host"):
+           self.m_ServerHost = config["--standalone-display-host"].strip()
+           print self.m_ServerHost
 
     def connectIceClient(self, owner):
         self.m_Owner = owner
-        try:
-            self.m_Server = owner.getIceServer(self.m_ServerName, DisplayInterface, DisplayInterfacePrx)
-        except Exception as e:
-            print e
-            self.m_Server = None
+        if len(self.m_ServerHost) > 0:
+            try:
+                dispCategory = castServantCategory(DisplayInterface)
+                prx = owner.getIceServerManual(
+                    V11NSTANDALONENAME, dispCategory, self.m_ServerHost, V11NSTANDALONEPORT)
+
+                self.m_Server = DisplayInterfacePrx.checkedCast(prx)
+            except Exception as e:
+                print e
+                self.m_Server = None
+        else:
+            try:
+                self.m_Server = owner.getIceServer(self.m_ServerName, DisplayInterface, DisplayInterfacePrx)
+            except Exception as e:
+                print e
+                self.m_Server = None
 
     def getComponentId(self):
         if self.m_Owner == None: return "[None]"
@@ -70,8 +92,7 @@ class CDisplayClient:
         id = Ice.Identity()
         id.name = self.getComponentId()
         if self._category == None:
-            # same category as given by the C++ implementation (toServantCategory)
-            self._category = EventReceiver.ice_staticId().lstrip(":").replace("::", ".")
+            self._category = castServantCategory(EventReceiver)
         id.category = self._category # "Visualization.EventReceiver"
         return id
 
@@ -79,16 +100,19 @@ class CDisplayClient:
         if self.m_Owner == None:
             raise Exception("CDisplayClient: connectIceClient() must be called before installEventReciever().")
         if self.m_Server == None:
-            self.log(" *** CDisplayClient: Server not connected.")
+            print (" *** CDisplayClient: Server not connected.")
             return
         if self.m_EventReceiver != None:
-            self.log(" *** CDisplayClient: The client already has an EventReceiver.")
+            print (" *** CDisplayClient: The client already has an EventReceiver.")
             return
 
         iceid = self.getEventClientId()
         self.m_EventReceiver = _EventReceiverImpl(self)
         self.m_Owner.registerIceServer(EventReceiver, self.m_EventReceiver)
-        self.m_Server.addClient(iceid)
+
+        #self.m_Server.addClient(iceid)
+        myHost = self.m_Owner.getComponentManager().getComponentDescription(self.getComponentId()).hostName
+        self.m_Server.addClient(iceid, myHost, cast.cdl.PYTHONSERVERPORT)
 
     def setImage(self, id, videoImage):
         if self.m_Server == None: return
