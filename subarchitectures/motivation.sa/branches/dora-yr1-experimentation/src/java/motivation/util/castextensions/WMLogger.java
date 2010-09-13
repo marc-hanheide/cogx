@@ -37,6 +37,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import javax.management.ReflectionException;
 
 /**
  * @author marc
@@ -138,9 +139,8 @@ public class WMLogger extends ManagedComponent {
      *
      * @param fld Field that is being transformed to XML
      * @param owner Object to which the field belongs
-     * @param rootTag XML representation so far
      */
-    private void toXMLSlave(Field fld, Object owner, XMLTag rootTag) {
+    private XMLTag toXMLSlave(Field fld, Object owner) throws ReflectionException {
         try {
             // Get field type and value
             Class fldType = fld.getType();
@@ -149,7 +149,8 @@ public class WMLogger extends ManagedComponent {
             if (fldType.isArray()) {
                 // Hand off to handleArray()
                 getLogger().debug("Found Array: " + fld.getName() + ":" + fldType + " Length: " + Array.getLength(fld.get(owner)));
-                rootTag.addChild(handleArray(fld, val));
+                //rootTag.addChild(handleArray(fld, val));
+                return handleArray(fld,val);
             } else if (fldType.isEnum()) {
                 // create an <enum> tag
                 XMLTag enumTag = new XMLTag("enum");
@@ -158,7 +159,8 @@ public class WMLogger extends ManagedComponent {
                 if (val != null) {
                     enumTag.addContents(val.toString(), false);
                 }
-                rootTag.addChild(enumTag);
+//                rootTag.addChild(enumTag);
+                return enumTag;
 
             } else if (isLeafType(fldType)) {
                 // Create a leaf tag here
@@ -168,20 +170,29 @@ public class WMLogger extends ManagedComponent {
                 if (val != null) {
                     child.addContents(val.toString());
                 }
-                rootTag.addChild(child);
+//                rootTag.addChild(child);
+                return child;
             } else {
                 // val is a complex object so recurse through toXML again
                 getLogger().debug("descending into " + fld.getName() + ":" + fldType);
                 if (val != null) {
                     XMLTag child = toXML(val); // This line could cause infinite recursion if val has cyclic references
                     child.addAttr("name", fld.getName());
-                    rootTag.addChild(child);
+//                    rootTag.addChild(child);
+                    return child;
+                } else {
+                    XMLTag nullObj = new XMLTag("object");
+                    nullObj.addAttr("name", fld.getName());
+                    nullObj.addAttr("type", fld.getType().getName());
+                    return nullObj;
                 }
             }
         } catch (IllegalArgumentException ex) {
-            getLogger().error("Error in WMLogger.toXMLSlave()", ex);
+//            getLogger().error("IllegalArgumentException in WMLogger.toXMLSlave()", ex);
+            throw new ReflectionException(ex);
         } catch (IllegalAccessException ex) {
-            getLogger().error("Error in WMLogger.toXMLSlave()", ex);
+//            getLogger().error("IllegalAccessException in WMLogger.toXMLSlave()", ex);
+            throw new ReflectionException(ex);
         }
     }
 
@@ -206,9 +217,14 @@ public class WMLogger extends ManagedComponent {
         for (Field fld : fields) {
             if (isStatic(fld)) {
                 // do nothing
-                getLogger().debug("Ignoring static field: " + fld.getName() + ":" + fld.getType());
+                getLogger().trace("Ignoring static field: " + fld.getName() + ":" + fld.getType());
             } else {
-                toXMLSlave(fld, o, rootTag);
+                try {
+                    XMLTag child = toXMLSlave(fld, o);
+                    rootTag.addChild(child);
+                } catch (ReflectionException ex) {
+                    getLogger().warn("ReflectionException in WMLogger.toXMLSlave when processing Class:" + cls.getCanonicalName() + " Field:"+fld.getName() + "\nlog entry may not be complete", ex);
+                }
             }
         }
 
@@ -310,7 +326,7 @@ public class WMLogger extends ManagedComponent {
                     break;
 
                 default:
-                    getLogger().warn("WMChange operation ignored in WMLogger.: " + _wmc.operation);
+                    getLogger().warn("WMChange operation ignored in WMLogger: " + _wmc.operation);
                     break;
             }
             final String tagString = rootTag.toString();

@@ -3,6 +3,9 @@
  */
 package motivation.util.castextensions;
 
+import cast.cdl.WorkingMemoryChangeFilter;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 
 
@@ -36,7 +39,8 @@ public class PlaceSetSizeLogger extends ManagedComponent {
 
     public <T extends Ice.ObjectImpl> void register() {
         try {
-            Class<? extends ObjectImpl> type = (Class<? extends ObjectImpl>) Class.forName(PLACE_CLASS_NAME);
+//            Class<? extends ObjectImpl> type = (Class<? extends ObjectImpl>) Class.forName(PLACE_CLASS_NAME);
+            Class<? extends ObjectImpl> type = (Class.forName(PLACE_CLASS_NAME)).asSubclass(ObjectImpl.class);
             getLogger().info("register listener");
             MotiveChangeReciever sscr = new MotiveChangeReciever();
             addChangeFilter(ChangeFilterFactory.createTypeFilter(type, WorkingMemoryOperation.ADD), sscr);
@@ -46,14 +50,11 @@ public class PlaceSetSizeLogger extends ManagedComponent {
             getLogger().fatal("couldn't load motive class in MotiveSetSizeLogger.register", ex);
         }
     }
-    Set<WorkingMemoryAddress> trueplace = new HashSet();
-    Set<WorkingMemoryAddress> placeholder = new HashSet();
+    Set<WorkingMemoryAddress> trueplace = new HashSet<WorkingMemoryAddress>();
+    Set<WorkingMemoryAddress> placeholder = new HashSet<WorkingMemoryAddress>();
 
     public class MotiveChangeReciever implements WorkingMemoryChangeReceiver {
 
-        /** Has to be a Set&lt;String&gt; as WorkingMemoryAddress doesn't 
-         * correctly implement .equals or .hashCode() */
-//        Set<String> addresses = new HashSet<String>();
         public MotiveChangeReciever() {
             super();
         }
@@ -70,23 +71,25 @@ public class PlaceSetSizeLogger extends ManagedComponent {
             boolean success;
             switch (_wmc.operation) {
                 case OVERWRITE:
+                    getLogger().trace("overwrite");
                     success = trueplace.remove(wma) || placeholder.remove(wma);
                 case ADD:
-                    Place m = getMemoryEntry(wma, Place.class);
-                    Set s = getSetFor(m);
-
-                    if (m == null) {
-                        return;
-                    } else {
-                        s.add(m);
-                    }
+                    getLogger().trace("add");
+                    Place p = getMemoryEntry(wma, Place.class);
+                    success = add(p, wma);
                     break;
                 case DELETE:
+                    getLogger().trace("delete");
                     success = trueplace.remove(wma) || placeholder.remove(wma);
                     break;
                 default:
+                    success = true;
                     getLogger().warn("WMChange operation ignored in SetSizeLogger: " + _wmc.operation);
                     break;
+            }
+
+            if (!success) {
+                getLogger().warn("Failure in PlaceSetSizeLogger");
             }
 
             // output the set size to logs
@@ -102,26 +105,25 @@ public class PlaceSetSizeLogger extends ManagedComponent {
         private XMLTag setToXML(Set<WorkingMemoryAddress> set, String status) {
             XMLTag t = new XMLTag("SETSIZE");
             t.addAttr("type", PLACE_CLASS_NAME);
-            t.addAttr("status",status);
-            t.addContents(Integer.toString(set.size()),false);
+            t.addAttr("status", status);
+            t.addContents(Integer.toString(set.size()), false);
             return t;
         }
 
         /**
-         * returns the set that corresponds to the motive type,
-         * or null if we are not interested in a motive with this status
-         * @returns a motive set or null
+         * Adds the Place's memory address to the correct set
+         * @see Set#add(java.lang.Object) 
          */
-        private Set<WorkingMemoryAddress> getSetFor(Place p) {
+        private boolean add(Place p, WorkingMemoryAddress wma) {
             switch (p.status) {
                 case TRUEPLACE:
-                    return trueplace;
+                    return trueplace.add(wma);
                 case PLACEHOLDER:
-                    return placeholder;
+                    return placeholder.add(wma);
                 default:
                     // We are only interested in the above motives
-                    getLogger().debug("Ignoring Place with status: " + p.status + " in PlaceSetSizeLogger");
-                    return null;
+                    getLogger().warn("Ignoring Place with status: " + p.status + " in PlaceSetSizeLogger");
+                    return true; //
             }
         }
     }

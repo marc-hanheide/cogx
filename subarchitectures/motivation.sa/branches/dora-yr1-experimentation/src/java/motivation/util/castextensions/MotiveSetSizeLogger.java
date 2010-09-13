@@ -73,20 +73,18 @@ public class MotiveSetSizeLogger extends ManagedComponent {
                     success = active.remove(wma) || surfaced.remove(wma) || unsurfaced.remove(wma);
                 case ADD:
                     Motive m = getMemoryEntry(wma, Motive.class);
-                    Set s = getSetFor(m);
-
-                    if (m == null) {
-                        return;
-                    } else {
-                        s.add(m);
-                    }
+                    success = add(m, wma);
                     break;
                 case DELETE:
                     success = (active.remove(wma) || surfaced.remove(wma) || unsurfaced.remove(wma));
                     break;
                 default:
+                    success = false;
                     getLogger().warn("WMChange operation ignored in SetSizeLogger: " + _wmc.operation);
                     break;
+            }
+            if(!success) {
+                getLogger().warn("error in MotiveSetSizeLogger");
             }
 
             // output the set size to logs
@@ -109,22 +107,20 @@ public class MotiveSetSizeLogger extends ManagedComponent {
         }
 
         /**
-         * returns the set that corresponds to the motive type,
-         * or null if we are not interested in a motive with this status
-         * @returns a motive set or null
+         * adds address of the motive to the correct list
          */
-        private Set<WorkingMemoryAddress> getSetFor(Motive m) {
+        private boolean add(Motive m, WorkingMemoryAddress wma) {
             switch (m.status) {
                 case ACTIVE:
-                    return active;
+                    return active.add(wma);
                 case SURFACED:
-                    return surfaced;
+                    return surfaced.add(wma);
                 case UNSURFACED:
-                    return unsurfaced;
+                    return unsurfaced.add(wma);
                 default:
                     // We are only interested in the above motives
                     getLogger().debug("Ignoring motive with status: " + m.status + " in MotiveSetSizeLogger");
-                    return null;
+                    return true;
             }
         }
     }
