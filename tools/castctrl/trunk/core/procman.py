@@ -147,7 +147,7 @@ class CProcess(CProcessBase):
             return
         if params == None: params = self.params
         else: self.params = params
-        if self.command == None:
+        if self.command == None or self.command.strip() == "":
             error("No command for process '%s'" % self.name)
             return
         self.error = CProcessBase.OK
@@ -172,6 +172,7 @@ class CProcess(CProcessBase):
             self.error = CProcessBase.ERRSTART
             self._setStatus(CProcessBase.STOPPED)
             error("Process '%s' failed to start" % (self.name))
+            error("Command: '%s'" % (self.command))
             error("%s" % e)
         time.sleep(0.01)
 

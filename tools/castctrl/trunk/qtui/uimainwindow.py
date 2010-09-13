@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Mon Sep 13 14:14:54 2010
+# Created: Mon Sep 13 14:40:13 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -196,6 +196,21 @@ class Ui_MainWindow(object):
         self.horizontalLayout_14.addWidget(self.btEditClientConfig)
         self.verticalLayout_14.addLayout(self.horizontalLayout_14)
         self.verticalLayout_2.addWidget(self.frame_11)
+        self.frame_9 = QtGui.QFrame(self.tabConfigure)
+        self.frame_9.setMinimumSize(QtCore.QSize(0, 0))
+        self.frame_9.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.frame_9.setFrameShadow(QtGui.QFrame.Raised)
+        self.frame_9.setObjectName("frame_9")
+        self.verticalLayout_11 = QtGui.QVBoxLayout(self.frame_9)
+        self.verticalLayout_11.setObjectName("verticalLayout_11")
+        self.ckRunDisplaySrv = QtGui.QCheckBox(self.frame_9)
+        font = QtGui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.ckRunDisplaySrv.setFont(font)
+        self.ckRunDisplaySrv.setObjectName("ckRunDisplaySrv")
+        self.verticalLayout_11.addWidget(self.ckRunDisplaySrv)
+        self.verticalLayout_2.addWidget(self.frame_9)
         self.frame_10 = QtGui.QFrame(self.tabConfigure)
         self.frame_10.setFrameShape(QtGui.QFrame.StyledPanel)
         self.frame_10.setFrameShadow(QtGui.QFrame.Raised)
@@ -732,6 +747,7 @@ class Ui_MainWindow(object):
         self.clientConfigCmbx.setStatusTip(QtGui.QApplication.translate("MainWindow", "CAST configuration file ", None, QtGui.QApplication.UnicodeUTF8))
         self.btBrowseCastFile.setText(QtGui.QApplication.translate("MainWindow", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.btEditClientConfig.setText(QtGui.QApplication.translate("MainWindow", "Edit", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckRunDisplaySrv.setText(QtGui.QApplication.translate("MainWindow", "Run Standalone Display Server", None, QtGui.QApplication.UnicodeUTF8))
         self.ckRunPlayer.setToolTip(QtGui.QApplication.translate("MainWindow", "Run Player/Stage with External Servers", None, QtGui.QApplication.UnicodeUTF8))
         self.ckRunPlayer.setText(QtGui.QApplication.translate("MainWindow", "Run Player", None, QtGui.QApplication.UnicodeUTF8))
         self.label_8.setText(QtGui.QApplication.translate("MainWindow", "Configuration", None, QtGui.QApplication.UnicodeUTF8))
