@@ -45,6 +45,8 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <sstream>
+#include <stdexcept>
 
 #ifdef WIN32
 #include <windows.h>
@@ -71,7 +73,12 @@ CDataFile::CDataFile(const t_Str& szFileName)
 	m_Flags = (AUTOCREATE_SECTIONS | AUTOCREATE_KEYS);
 	m_Sections.push_back( t_Section() );
 
-	Load(m_szFileName);
+	if(!Load(m_szFileName))
+	{
+		ostringstream errstr;
+		errstr << "[CDataFile::Load] Unable to open file '" << szFileName << "'. Does it exist?";
+		throw runtime_error(errstr.str());
+	}
 }
 
 CDataFile::CDataFile()
