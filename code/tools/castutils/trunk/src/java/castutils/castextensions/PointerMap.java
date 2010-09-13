@@ -439,6 +439,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	public String toString() {
 		String result = "";
 		try {
+			lock();
 			read();
 			for (Entry<WorkingMemoryAddress, WorkingMemoryAddress> e : map.map
 					.entrySet()) {
@@ -448,6 +449,8 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			return result;
 		} catch (CASTException e) {
 			return "*** invalid due to CASTException: " + e.message + " ***";
+		} finally {
+			unlock();
 		}
 	}
 
