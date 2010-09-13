@@ -48,6 +48,8 @@ long long gethrtime(void)
 #define label4objs		1	//1,2,3,4.....for multiple objs
 #define label4ambiguousness	-1
 
+#define SendDensePoints  1 	//0 send sparse points ,1 send dense points (recollect them after the segmentation)
+
 /**
  * The function called to create a new instance of our component.
  */
@@ -669,7 +671,7 @@ void PlanePopOut::runComponent()
 		bool executeflag = false;
 		if (USE_PSO == 0)		executeflag = RANSAC(pointsN,points_label);
 		else if (USE_PSO == 1)		executeflag = PSO_Label(pointsN,points_label);
-		if (executeflag = true)
+		if (executeflag == true)
 		{	//cout<<"after ransac we have "<<points.size()<<" points"<<endl;
 			SplitPoints(pointsN,points_label);
 			if (objnumber != 0)
@@ -678,6 +680,7 @@ void PlanePopOut::runComponent()
   				BoundingPrism(pointsN,points_label);
 				DrawCuboids(pointsN,points_label); //cal bounding Cuboids and centers of the points cloud
  				BoundingSphere(pointsN,points_label); // get bounding spheres, SOIs and ROIs
+				if (SendDensePoints==1) CollectDensePoints(image.camPars, points);
 				//cout<<"m_bSendImage is "<<m_bSendImage<<endl;
 #ifdef FEAT_VISUALIZATION
 				if (m_bSendImage)
@@ -819,6 +822,42 @@ void PlanePopOut::runComponent()
     // wait a bit so we don't hog the CPU
     sleepComponent(50);
   }
+}
+
+void PlanePopOut::CollectDensePoints(Video::CameraParameters &cam, VisionData::SurfacePointSeq points)
+{
+	CvPoint* points2D = (CvPoint*)malloc( points.size() * sizeof(points2D[0]));
+	for (unsigned int i=0; i<SOIPointsSeq.size(); i++)
+	{
+		VisionData::SurfacePointSeq DenseSurfacePoints;
+		for (unsigned int j=0; j<SOIPointsSeq.at(i).size(); j++)
+		{
+			Vector3 v3OneObj = SOIPointsSeq.at(i).at(j).p;
+			Vector2 SOIPointOnImg; SOIPointOnImg = projectPoint(cam, v3OneObj);
+			CvPoint cvp;	cvp.x = (int)SOIPointOnImg.x; cvp.y = (int)SOIPointOnImg.y;
+			points2D[j] = cvp;
+		}
+		int* hull = (int*)malloc( SOIPointsSeq.at(i).size() * sizeof(hull[0]));
+
+		CvMat pointMat = cvMat( 1, SOIPointsSeq.at(i).size(), CV_32SC2, points2D);
+		CvMat* hullMat = cvCreateMat (1, SOIPointsSeq.at(i).size(), CV_32SC2);
+
+		cvConvexHull2(&pointMat, hullMat, CV_CLOCKWISE, 0);
+		for (unsigned int k=0; k<points.size(); k++)
+		{
+			Vector3 v3OneObj = points.at(k).p;
+			Vector2 PointOnImg; PointOnImg = projectPoint(cam, v3OneObj);
+			CvPoint2D32f p32f; p32f.x = PointOnImg.x; p32f.y = PointOnImg.y;
+			//log("Just before cvPointPolygonTest");
+			int r = cvPointPolygonTest(hullMat, p32f,0);
+			//log("Just after cvPointPolygonTest");
+			if (r>=0) DenseSurfacePoints.push_back(points.at(k));
+		}
+		cvReleaseMat(&hullMat);
+		SOIPointsSeq.at(i)= DenseSurfacePoints;
+		free(hull);
+	}
+	free(points2D);	
 }
 
 void PlanePopOut::CalRadiusCenter4BoundingSphere(VisionData::SurfacePointSeq points, Vector3 &c, double &r)
@@ -1335,7 +1374,7 @@ void PlanePopOut::SplitPoints(VisionData::SurfacePointSeq &points, std::vector <
 	std::stack <int> objstack;
 	double split_threshold = Calc_SplitThreshold(points, labels);
 	unsigned int obj_number_threshold;
-	obj_number_threshold = 20;
+	obj_number_threshold = 15;
 	while(!candidants.empty())
 	{
 		S_label.at(*candidants.begin()) = objnumber;

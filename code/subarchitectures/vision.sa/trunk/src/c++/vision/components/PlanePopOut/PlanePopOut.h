@@ -136,6 +136,7 @@ public:
 	Vector3 ProjectPointOnPlane(Vector3 p, double A, double B, double C, double D);
 	void Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>& vT, vector<Particle> vFO, VisionData::SurfacePointSeq points, Vector3 cc, double rr);
 	CvPoint ProjectPointOnImage(Vector3 p, const Video::CameraParameters &cam);
+	void CollectDensePoints(Video::CameraParameters &cam, VisionData::SurfacePointSeq points);
 	
 	inline Particle InitialParticle()
 	{
