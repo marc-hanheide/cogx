@@ -9,28 +9,27 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import execution.slice.Action;
 import execution.slice.TriBool;
 
-public abstract class NonBlockingCompleteOnDeleteExecutor extends
-		NonBlockingActionExecutor implements WorkingMemoryChangeReceiver {
-
-	private final ManagedComponent m_component;
+public abstract class NonBlockingCompleteOnDeleteExecutor<ActionType extends Action> extends
+		NonBlockingActionExecutor<ActionType> implements WorkingMemoryChangeReceiver {
 
 	protected String m_cmdID;
 
-	public NonBlockingCompleteOnDeleteExecutor(ManagedComponent _component) {
-		m_component = _component;
+	public NonBlockingCompleteOnDeleteExecutor(ManagedComponent _component, Class<ActionType> _actCls) {
+		super(_component, _actCls);
 	}
 
 	protected <T extends ObjectImpl> void addThenCompleteOnDelete(
 			WorkingMemoryAddress _workingMemoryAddress, T _command) {
-		m_cmdID = m_component.newDataID();
-		m_component.addChangeFilter(ChangeFilterFactory.createIDFilter(m_cmdID,
+		m_cmdID = getComponent().newDataID();
+		getComponent().addChangeFilter(ChangeFilterFactory.createIDFilter(m_cmdID,
 				WorkingMemoryOperation.DELETE), this);
 		try {
-			m_component.addToWorkingMemory(m_cmdID, _command);
+			getComponent().addToWorkingMemory(m_cmdID, _command);
 		} catch (AlreadyExistsOnWMException e) {
-			m_component.logException(e);
+			getComponent().logException(e);
 			executionComplete(TriBool.TRIFALSE);
 		}
 	}

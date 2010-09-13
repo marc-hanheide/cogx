@@ -1,5 +1,7 @@
 package execution.util;
 
+import cast.architecture.ManagedComponent;
+import execution.slice.Action;
 import execution.slice.TriBool;
 
 /**
@@ -10,9 +12,23 @@ import execution.slice.TriBool;
  * @author nah
  * 
  */
-public abstract class NonBlockingActionExecutor implements ActionExecutor {
+public abstract class NonBlockingActionExecutor<ActionType extends Action>
+		extends ComponentActionExecutor {
 
 	private ExecutionCompletionCallback m_callback;
+	private final Class<ActionType> m_actCls;
+
+	public NonBlockingActionExecutor(ManagedComponent _component, Class<ActionType> _actCls) {
+		super(_component);
+		m_actCls = _actCls;
+	}
+
+	protected abstract boolean acceptAction(ActionType _action);
+
+	@Override
+	public boolean accept(Action _action) {
+		return acceptAction(m_actCls.cast(_action));
+	}
 
 	@Override
 	public TriBool execute() {
@@ -31,7 +47,7 @@ public abstract class NonBlockingActionExecutor implements ActionExecutor {
 	}
 
 	public abstract void executeAction();
-	
+
 	/**
 	 * Should be called when execution has completed. Result is passed back to
 	 * callback.
