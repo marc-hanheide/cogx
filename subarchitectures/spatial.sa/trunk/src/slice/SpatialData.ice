@@ -334,5 +334,31 @@ module SpatialData {
     string label; // This is the same as in VisualObject
     cogx::Math::Pose3 pose;   // World coordinates
   };
+
+
+  /*
+   * Command to generate AVS view points for a particular object
+   * @author Nick Hawes
+   */
+  class ViewPointGenerationCommand {
+    ///Object to generate the viewpoints for. TODO: what should this label contain?
+    string objectName;
+  };
+
+
+
+  /**
+   * Command to process to viewpoint at the given WM address with the given object models (which should be sent to the recogniser).
+   * @author Nick Hawes
+   */
+  class ProcessViewPointCommand {
+    ///The view point to process
+    cast::cdl::WorkingMemoryAddress viewPointAddress;
+
+    ///The objects that should be identified from the view point
+    cast::cdl::StringSeq objectModels;
+  };
+
 };
+
 #endif // SPATIALDATA_ICE
