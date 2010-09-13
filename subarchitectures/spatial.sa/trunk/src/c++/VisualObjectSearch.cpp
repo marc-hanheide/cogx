@@ -1076,7 +1076,7 @@ namespace spatial
       height = 0.45-0.225;
     }
     if (label == "table2") {
-      height = 0.45-0.225;
+      height = 0.72-0.36;
     }
     else if (label == "bookcase_sm") {
       height = 0.75+0.08;
