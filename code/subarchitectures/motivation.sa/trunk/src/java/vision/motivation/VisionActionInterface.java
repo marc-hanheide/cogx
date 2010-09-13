@@ -5,6 +5,7 @@ package vision.motivation;
 
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 
 import VisionData.DetectionCommand;
 import VisionData.ForegroundedModel;
@@ -19,10 +20,8 @@ import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ForegroundModels;
 import execution.slice.actions.RecogniseForegroundedModels;
-import execution.util.ActionExecutorFactory;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
-import execution.util.DoNothingExecutor;
 import execution.util.LocalActionStateManager;
 import execution.util.NonBlockingCompleteOnDeleteExecutor;
 
@@ -135,6 +134,9 @@ public class VisionActionInterface extends ManagedComponent {
 		}
 	}
 
+	
+	
+	
 	public static class BackgroundModelExecutor extends
 			BlockingActionExecutor<BackgroundModels> {
 
@@ -172,6 +174,40 @@ public class VisionActionInterface extends ManagedComponent {
 		}
 	}
 
+	/**
+	 * An action executor to handle object detection.
+	 * 
+	 * @author nah
+	 */
+	public static class RecogniseForegroundedModelsExecutor extends
+			NonBlockingCompleteOnDeleteExecutor<RecogniseForegroundedModels> implements
+			WorkingMemoryChangeReceiver {
+
+
+		public RecogniseForegroundedModelsExecutor(ManagedComponent _component) {
+			super(_component, RecogniseForegroundedModels.class);
+		}
+
+		@Override
+		protected VisionActionInterface getComponent() {
+			return (VisionActionInterface) super.getComponent();
+		}
+		@Override
+		public boolean acceptAction(RecogniseForegroundedModels _action) {
+			return true;
+		}
+
+		@Override
+		public void executeAction() {
+			Set<String> foregroundedModels = getComponent().m_foregroundedModels.keySet();
+			DetectionCommand cmd = new DetectionCommand(new String[foregroundedModels.size()]);
+			cmd.labels = foregroundedModels.toArray(cmd.labels);
+			addThenCompleteOnDelete(new WorkingMemoryAddress(getComponent().newDataID(),
+					getComponent().getSubarchitectureID()), cmd);
+		}
+
+	}
+	
 	private LocalActionStateManager m_actionStateManager;
 
 	@Override
@@ -196,8 +232,6 @@ public class VisionActionInterface extends ManagedComponent {
 				new ComponentActionFactory<DetectPeopleActionExecutor>(this,
 						DetectPeopleActionExecutor.class));
 
-		ActionExecutorFactory nada = new ComponentActionFactory<DoNothingExecutor>(
-				this, DoNothingExecutor.class);
 
 		m_actionStateManager.registerActionType(ForegroundModels.class,
 				new ComponentActionFactory<ForegroundModelExecutor>(this,
@@ -208,7 +242,7 @@ public class VisionActionInterface extends ManagedComponent {
 						BackgroundModelExecutor.class));
 
 		m_actionStateManager.registerActionType(
-				RecogniseForegroundedModels.class, nada);
+				RecogniseForegroundedModels.class, new ComponentActionFactory<RecogniseForegroundedModelsExecutor>(this, RecogniseForegroundedModelsExecutor.class));
 
 	}
 

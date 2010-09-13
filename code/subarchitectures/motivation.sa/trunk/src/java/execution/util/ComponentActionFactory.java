@@ -6,7 +6,7 @@ import cast.architecture.ManagedComponent;
 
 /**
  * Create factory that can create action executor which can be constructed using
- * a {@link ManagedComponent} as the sole argument.
+ * a {@link ManagedComponent} as the sole argument. The {@link ActionExecutor} class specific MUST have a public constructor and the sole argument must be written as {@link ManagedComponent} not any subclass.
  * 
  * @author nah
  * 
