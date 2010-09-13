@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 
 import comadata.ComaRoom;
@@ -24,7 +25,7 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
  */
 public class ComaRoomTransferFunction extends
 		SimpleDiscreteTransferFunction<ComaRoom> {
-
+	
 	public ComaRoomTransferFunction(ManagedComponent component) {
 		super(component, Logger.getLogger(ComaRoomTransferFunction.class));
 		// TODO Auto-generated constructor stub
