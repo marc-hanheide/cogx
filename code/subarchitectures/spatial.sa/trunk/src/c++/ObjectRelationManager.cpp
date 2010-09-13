@@ -350,9 +350,10 @@ void ObjectRelationManager::readRelationsFromFile(const string &filename)
     return;
   }
 
-  int lineNo = 1;
+  int lineNo = 0;
   while (!infile.eof()) {
     char line[1024];
+    lineNo++;
     infile.getline(line, 1023);
     istringstream is(line);
 
@@ -388,11 +389,11 @@ void ObjectRelationManager::readRelationsFromFile(const string &filename)
 	string tmp;
 	is2 >> a;
 	is2 >> tmp;
-	if (tmp != "is") {
+	is2 >> b;
+	if (a < 0 || a >= nRooms || b < 0 || b >= nRoomCategories || tmp != "is") {
 	  log("Error in file around line %i", lineNo);
 	  return;
 	}
-	is2 >> b;
 	is2 >> c;
 	roomCategoryDefault[nRoomCategories * a + b] = c;
 
@@ -416,6 +417,10 @@ void ObjectRelationManager::readRelationsFromFile(const string &filename)
 	  return;
 	}
 	is2 >> b;
+	if (a < 0 || a >= nObjects || b < 0 || b >= nRooms || tmp != "in") {
+	  log("Error in file around line %i", lineNo);
+	  return;
+	}
 	is2 >> c;
 	objectInRoomDefault[nRoomCategories * a + b] = c;
 
@@ -434,11 +439,11 @@ void ObjectRelationManager::readRelationsFromFile(const string &filename)
 	string tmp;
 	is2 >> a;
 	is2 >> tmp;
-	if (tmp != "in") {
+	is2 >> b;
+	if (a < 0 || a >= nObjects || b < 0 || b >= a || tmp != "in") {
 	  log("Error in file around line %i", lineNo);
 	  return;
 	}
-	is2 >> b;
 	is2 >> c;
 	objectInObjectDefault[nObjects * a + b] = c;
 
@@ -457,11 +462,11 @@ void ObjectRelationManager::readRelationsFromFile(const string &filename)
 	string tmp;
 	is2 >> a;
 	is2 >> tmp;
-	if (tmp != "on") {
+	is2 >> b;
+	if (a < 0 || a >= nObjects || b < 0 || b >= a || tmp != "on") {
 	  log("Error in file around line %i", lineNo);
 	  return;
 	}
-	is2 >> b;
 	is2 >> c;
 	objectOnObjectDefault[nObjects * a + b] = c;
 
@@ -526,13 +531,13 @@ void ObjectRelationManager::runComponent()
   log("I am running!");
 
   //REMOVEME
-//  readRelationsFromFile("relationFile.txt");
-//
-//  vector<string> ret =
-//    computeMarginalDistribution("book");
-//  for (vector<string>::iterator it = ret.begin(); it != ret.end(); it++) {
-//    log(it->c_str());
-//  }
+  readRelationsFromFile("relationFile.txt");
+
+  vector<string> ret =
+    computeMarginalDistribution("book");
+  for (vector<string>::iterator it = ret.begin(); it != ret.end(); it++) {
+    log(it->c_str());
+  }
   ///REMOVEME
 
   peekabot::GroupProxy root;
@@ -1991,7 +1996,8 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	i = precursors[i].object;
       }
       s << " in room " << fixedRoom << ": ";
-//      log("%s", s.str().c_str());
+      log("%s", s.str().c_str());
+      string tmp = s.str();
 
       int combinations = 0;
       double totalProbMass = 0.0;
@@ -2003,10 +2009,14 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
       bool fixedObjectDirectlyOnObjectVals[nObjects];
       for (int j = 0; j < nObjects; j++) {
 	fixedObjectInRoomVals[j] = false;
+	objectInRoomVal[j] = 0;
 	fixedObjectDirectlyOnObjectVals[j] = false;
+	objectDirectlyOnObjectVal[j] = -1;
 	for (int k = 0; k < nObjects; k++) {
 	  fixedObjectInObjectVals[j * nObjects + k] = false;
 	  fixedObjectOnObjectVals[j * nObjects + k] = false;
+	  objectOnObjectVal[j * nObjects + k] = 0;
+	  objectInObjectVal[j * nObjects + k] = 0;
 	}
       }
       for (int j = 0; j < nRooms; j++) {
@@ -2022,7 +2032,9 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	fixedObjectInObjectVals[i * nObjects + precursors[i].object] = true;
 	fixedObjectDirectlyOnObjectVals[i] = true;
 	if (precursors[i].state == 0) {
+	  fixedObjectOnObjectVals[i * nObjects + precursors[i].object] = true;
 	  objectDirectlyOnObjectVal[i] = precursors[i].object;
+	  objectOnObjectVal[i * nObjects + precursors[i].object] = 1;
 	  objectInObjectVal[i * nObjects + precursors[i].object] = 0;
 	}
 	else {
@@ -2031,13 +2043,11 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	}
 	i = precursors[i].object;
       }
-      // Set all relations involving the unrelated trajector to 0
-      for (int j = i-1; j >= 0; j--) {
-	fixedObjectInObjectVals[i * nObjects + j] = true;
-	fixedObjectOnObjectVals[i * nObjects + j] = true;
-	objectOnObjectVal[i * nObjects + j] = 0;
-	objectInObjectVal[i * nObjects + j] = 0;
-      }
+//      // Fixes all relations involving the unrelated trajector to 0
+//      for (int j = i-1; j >= 0; j--) {
+//	fixedObjectInObjectVals[i * nObjects + j] = true;
+//	fixedObjectOnObjectVals[i * nObjects + j] = true;
+//      }
 
 
       while (true) {
@@ -2071,27 +2081,6 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	  continue;
 
 	index = 0;
-	while (index < nObjects) {
-	  if (fixedObjectInRoomVals[index]) {
-	    index++;
-	  }
-	  else {
-	    objectInRoomVal[index]++;
-
-	    if (objectInRoomVal[index] == nRooms) {
-	      objectInRoomVal[index] = 0;
-	      index++;
-	    }
-	    else {
-	      break;
-	    }
-	  }
-	}
-
-	if (index < nObjects) 
-	  continue;
-
-	index = 0;
 	int index2 = 1;
 	while (index < nObjects) {
 	  if (index2 >= nObjects) {
@@ -2100,14 +2089,14 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	  }
 	  else {
 	    if (objectInRoomVal[index] != objectInRoomVal[index2] ||
-		fixedObjectInObjectVals[index * nObjects + index2]) {
+		fixedObjectInObjectVals[index2 * nObjects + index]) {
 	      index2++;
 	    }
 	    else {
-	      objectInObjectVal[index * nObjects + index2]++;
+	      objectInObjectVal[index2 * nObjects + index]++;
 
-	      if (objectInObjectVal[index * nObjects + index2] == 2) {
-		objectInObjectVal[index * nObjects + index2] = 0;
+	      if (objectInObjectVal[index2 * nObjects + index] == 2) {
+		objectInObjectVal[index2 * nObjects + index] = 0;
 		index2++;
 	      }
 	      else {
@@ -2118,9 +2107,9 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	}
 
 
-//	if (index < nObjects) 
-//	  continue;
-//
+	if (index < nObjects) 
+	  continue;
+
 //	for (int i = 0; i < nRooms; i++) 
 //	  cout <<roomTypeVal[i];
 //	cout << " ";
@@ -2146,19 +2135,40 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	  }
 	  else {
 	    if (objectInRoomVal[index] != objectInRoomVal[index2] ||
-		fixedObjectOnObjectVals[index * nObjects + index2]) {
+		fixedObjectOnObjectVals[index2 * nObjects + index]) {
 	      index2++;
 	    }
 	    else {
-	      objectOnObjectVal[index * nObjects + index2]++;
+	      objectOnObjectVal[index2 * nObjects + index]++;
 
-	      if (objectOnObjectVal[index * nObjects + index2] == 2) {
-		objectOnObjectVal[index * nObjects + index2] = 0;
+	      if (objectOnObjectVal[index2 * nObjects + index] == 2) {
+		objectOnObjectVal[index2 * nObjects + index] = 0;
 		index2++;
 	      }
 	      else {
 		break;
 	      }
+	    }
+	  }
+	}
+
+	if (index < nObjects) 
+	  continue;
+
+	index = 0;
+	while (index < nObjects) {
+	  if (fixedObjectInRoomVals[index]) {
+	    index++;
+	  }
+	  else {
+	    objectInRoomVal[index]++;
+
+	    if (objectInRoomVal[index] == nRooms) {
+	      objectInRoomVal[index] = 0;
+	      index++;
+	    }
+	    else {
+	      break;
 	    }
 	  }
 	}
