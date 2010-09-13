@@ -3,18 +3,27 @@
  */
 package vision.motivation;
 
+import java.util.Hashtable;
 import java.util.Map;
 
 import VisionData.DetectionCommand;
+import VisionData.ForegroundedModel;
 import VisionData.PeopleDetectionCommand;
+import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import execution.slice.Action;
+import execution.slice.TriBool;
+import execution.slice.actions.BackgroundModels;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
-import execution.util.ActionExecutor;
+import execution.slice.actions.ForegroundModels;
+import execution.slice.actions.RecogniseForegroundedModels;
 import execution.util.ActionExecutorFactory;
+import execution.util.BlockingActionExecutor;
+import execution.util.ComponentActionFactory;
+import execution.util.DoNothingExecutor;
 import execution.util.LocalActionStateManager;
 import execution.util.NonBlockingCompleteOnDeleteExecutor;
 
@@ -33,18 +42,18 @@ public class VisionActionInterface extends ManagedComponent {
 	 * @author nah
 	 */
 	private class DetectObjectsActionExecutor extends
-			NonBlockingCompleteOnDeleteExecutor implements
+			NonBlockingCompleteOnDeleteExecutor<DetectObjects> implements
 			WorkingMemoryChangeReceiver {
 
 		private String[] m_labels;
 
 		public DetectObjectsActionExecutor(ManagedComponent _component) {
-			super(_component);
+			super(_component, DetectObjects.class);
 		}
 
 		@Override
-		public boolean accept(Action _action) {
-			DetectObjects action = (DetectObjects) _action;
+		public boolean acceptAction(DetectObjects _action) {
+			DetectObjects action = _action;
 			m_labels = action.labels;
 			return true;
 		}
@@ -59,20 +68,20 @@ public class VisionActionInterface extends ManagedComponent {
 	}
 
 	/**
-	 * An action executor to handle object detection.
+	 * An action executor to handle people detection.
 	 * 
 	 * @author nah
 	 */
 	private class DetectPeopleActionExecutor extends
-			NonBlockingCompleteOnDeleteExecutor implements
+			NonBlockingCompleteOnDeleteExecutor<DetectPeople> implements
 			WorkingMemoryChangeReceiver {
 
 		public DetectPeopleActionExecutor(ManagedComponent _component) {
-			super(_component);
+			super(_component, DetectPeople.class);
 		}
 
 		@Override
-		public boolean accept(Action _action) {
+		public boolean acceptAction(DetectPeople _action) {
 			return true;
 		}
 
@@ -86,34 +95,72 @@ public class VisionActionInterface extends ManagedComponent {
 
 	}
 
-	private class DetectObjectsActionFactory implements ActionExecutorFactory {
+	private class ForegroundModelExecutor extends
+			BlockingActionExecutor<ForegroundModels> {
 
-		private final ManagedComponent m_component;
-
-		public DetectObjectsActionFactory(ManagedComponent _component) {
-			m_component = _component;
+		public ForegroundModelExecutor(ManagedComponent _component) {
+			super(_component, ForegroundModels.class);
 		}
 
 		@Override
-		public ActionExecutor getActionExecutor() {
-			return new DetectObjectsActionExecutor(m_component);
-		}
+		public TriBool execute() {
 
+			String[] models = getAction().models;
+			for (String model : models) {
+				if (!m_foregroundedModels.contains(model)) {
+					ForegroundedModel foreground = new ForegroundedModel(model);
+					WorkingMemoryAddress addr = new WorkingMemoryAddress(
+							newDataID(), getSubarchitectureID());
+					try {
+						addToWorkingMemory(addr, foreground);
+						m_foregroundedModels.put(model, addr);
+						getComponent().log("Foregrounded model: " + model);
+
+					} catch (CASTException e) {
+						getComponent().logException(e);
+						return TriBool.TRIFALSE;
+					}
+				} else {
+					getComponent().log(
+							"Not foregrounding already foregrounded model: "
+									+ model);
+				}
+			}
+
+			return TriBool.TRITRUE;
+		}
 	}
 
-	private class DetectPeopleActionFactory implements ActionExecutorFactory {
+	private class BackgroundModelExecutor extends
+			BlockingActionExecutor<BackgroundModels> {
 
-		private final ManagedComponent m_component;
-
-		public DetectPeopleActionFactory(ManagedComponent _component) {
-			m_component = _component;
+		public BackgroundModelExecutor(ManagedComponent _component) {
+			super(_component, BackgroundModels.class);
 		}
 
 		@Override
-		public ActionExecutor getActionExecutor() {
-			return new DetectPeopleActionExecutor(m_component);
-		}
+		public TriBool execute() {
 
+			String[] models = getAction().models;
+			for (String model : models) {
+				WorkingMemoryAddress addr = m_foregroundedModels.remove(model);
+				if (addr != null) {
+					try {
+						deleteFromWorkingMemory(addr);
+						getComponent().log("Backgrounded model: " + model);
+					} catch (CASTException e) {
+						getComponent().logException(e);
+						return TriBool.TRIFALSE;
+					}
+				} else {
+					getComponent().log(
+							"Not backgrounding non-foregrounded model: "
+									+ model);
+				}
+			}
+
+			return TriBool.TRITRUE;
+		}
 	}
 
 	private LocalActionStateManager m_actionStateManager;
@@ -122,17 +169,38 @@ public class VisionActionInterface extends ManagedComponent {
 	protected void configure(Map<String, String> _config) {
 	}
 
-	public VisionActionInterface() {
+	private final Hashtable<String, WorkingMemoryAddress> m_foregroundedModels;
 
+	public VisionActionInterface() {
+		m_foregroundedModels = new Hashtable<String, WorkingMemoryAddress>();
 	}
 
 	@Override
 	protected void start() {
 		m_actionStateManager = new LocalActionStateManager(this);
+		
 		m_actionStateManager.registerActionType(DetectObjects.class,
-				new DetectObjectsActionFactory(this));
+				new ComponentActionFactory<DetectObjectsActionExecutor>(this,
+						DetectObjectsActionExecutor.class));
+	
 		m_actionStateManager.registerActionType(DetectPeople.class,
-				new DetectPeopleActionFactory(this));
+				new ComponentActionFactory<DetectPeopleActionExecutor>(this,
+						DetectPeopleActionExecutor.class));
+
+		ActionExecutorFactory nada = new ComponentActionFactory<DoNothingExecutor>(
+				this, DoNothingExecutor.class);
+
+		m_actionStateManager.registerActionType(ForegroundModels.class,
+				new ComponentActionFactory<ForegroundModelExecutor>(this,
+						ForegroundModelExecutor.class));
+
+		m_actionStateManager.registerActionType(BackgroundModels.class,
+				new ComponentActionFactory<BackgroundModelExecutor>(this,
+						BackgroundModelExecutor.class));
+
+		m_actionStateManager.registerActionType(
+				RecogniseForegroundedModels.class, nada);
+
 	}
 
 }
