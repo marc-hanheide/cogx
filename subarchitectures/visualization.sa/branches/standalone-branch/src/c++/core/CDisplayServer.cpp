@@ -899,10 +899,11 @@ void CDisplayServerI::destroyEventServer()
    }
 }
 
-void CDisplayServerI::addClient(const Ice::Identity& ident, const std::string & host, Ice::Int port, const Ice::Current& current)
+void CDisplayServerI::addClient(const Ice::Identity& ident, const std::string& host, Ice::Int port, const Ice::Current& current)
 {
    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-   cout << "v11n: adding client `" << ident.name << ":" << ident.category << "'"<< endl;
+   cout << "v11n: adding client `" << ident.name << ":" << ident.category
+      << "'@" << host << ":" << port << endl;
    Ice::ObjectPrx prx = m_pDisplayServer->getIceServer(ident.name, ident.category, host, port);
 
    Visualization::EventReceiverPrx client = Visualization::EventReceiverPrx::uncheckedCast(prx);
