@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Tue Jun  1 19:31:35 2010
-#      by: PyQt4 UI code generator 4.7.2
+# Created: Mon Sep 13 14:14:54 2010
+#      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
 from cctextedit import CCastTextEdit
@@ -14,7 +14,6 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(883, 668)
-        MainWindow.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout = QtGui.QHBoxLayout(self.centralwidget)
@@ -128,7 +127,6 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.txtLocalHost.sizePolicy().hasHeightForWidth())
         self.txtLocalHost.setSizePolicy(sizePolicy)
         self.txtLocalHost.setMinimumSize(QtCore.QSize(160, 28))
-        self.txtLocalHost.setText("")
         self.txtLocalHost.setMaxLength(128)
         self.txtLocalHost.setObjectName("txtLocalHost")
         self.horizontalLayout_15.addWidget(self.txtLocalHost)
@@ -329,6 +327,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_16.addLayout(self.horizontalLayout_19)
         self.verticalLayout_15.addWidget(self.log4jConfigPanel)
         self.verticalLayout_2.addWidget(self.frame_8)
+        self.label_17 = QtGui.QLabel(self.tabConfigure)
+        self.label_17.setObjectName("label_17")
+        self.verticalLayout_2.addWidget(self.label_17)
         spacerItem6 = QtGui.QSpacerItem(20, 235, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem6)
         self.tabWidget.addTab(self.tabConfigure, "")
@@ -546,7 +547,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.frame_6)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 883, 20))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 883, 23))
         self.menubar.setObjectName("menubar")
         self.menuCast = QtGui.QMenu(self.menubar)
         self.menuCast.setObjectName("menuCast")
@@ -582,12 +583,12 @@ class Ui_MainWindow(object):
         self.processBar.setMinimumSize(QtCore.QSize(0, 0))
         self.processBar.setIconSize(QtCore.QSize(24, 24))
         self.processBar.setObjectName("processBar")
-        MainWindow.addToolBar(QtCore.Qt.ToolBarArea(QtCore.Qt.TopToolBarArea), self.processBar)
+        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.processBar)
         self.buildBar = QtGui.QToolBar(MainWindow)
         self.buildBar.setMinimumSize(QtCore.QSize(0, 0))
         self.buildBar.setIconSize(QtCore.QSize(24, 24))
         self.buildBar.setObjectName("buildBar")
-        MainWindow.addToolBar(QtCore.Qt.ToolBarArea(QtCore.Qt.TopToolBarArea), self.buildBar)
+        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.buildBar)
         self.actQuit = QtGui.QAction(MainWindow)
         self.actQuit.setObjectName("actQuit")
         self.actOpenClientConfig = QtGui.QAction(MainWindow)
@@ -701,7 +702,7 @@ class Ui_MainWindow(object):
         self.buildBar.addAction(self.actRunMakeClean)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
         QtCore.QObject.connect(self.btBrowseCastFile, QtCore.SIGNAL("clicked()"), self.actOpenClientConfig.trigger)
         QtCore.QObject.connect(self.btBrowsePlayerFile, QtCore.SIGNAL("clicked()"), self.actOpenPlayerConfig.trigger)
         QtCore.QObject.connect(self.btBrowseHostFile, QtCore.SIGNAL("clicked()"), self.actOpenHostConfig.trigger)
@@ -749,6 +750,7 @@ class Ui_MainWindow(object):
         self.label_12.setText(QtGui.QApplication.translate("MainWindow", "Console:", None, QtGui.QApplication.UnicodeUTF8))
         self.log4jConsoleLevelCmbx.setStatusTip(QtGui.QApplication.translate("MainWindow", "Player configuration file", None, QtGui.QApplication.UnicodeUTF8))
         self.label_16.setText(QtGui.QApplication.translate("MainWindow", "XML File:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_17.setText(QtGui.QApplication.translate("MainWindow", "NOTE: Preferred editor and terminal are configured in ~/.config/CASTControl/user.conf", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabConfigure), QtGui.QApplication.translate("MainWindow", "Configure", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("MainWindow", "Servers", None, QtGui.QApplication.UnicodeUTF8))
         self.btServerStart.setText(QtGui.QApplication.translate("MainWindow", "Start", None, QtGui.QApplication.UnicodeUTF8))
