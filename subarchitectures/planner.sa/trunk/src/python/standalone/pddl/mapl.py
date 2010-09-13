@@ -31,13 +31,18 @@ i_indomain = Predicate("i_in-domain", [p, Parameter("?v", types.ProxyType(p)), ]
 #not_indomain = Predicate("not_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 
 p = Parameter("?f", types.FunctionType(t_object))
+hyp = Predicate("hyp", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
+p = Parameter("?f", types.FunctionType(t_object))
+commit = Predicate("commit", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
+
+p = Parameter("?f", types.FunctionType(t_object))
 update = Predicate("update", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 p = Parameter("?f", types.FunctionType(t_object))
 update_fail = Predicate("update-failed", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 
 shared_knowledge = Predicate("shval", [Parameter("?a", t_agent), Parameter("?a2", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
 
-modal_predicates = [knowledge, shared_knowledge, indomain, direct_knowledge, i_indomain, update, update_fail]
+modal_predicates = [knowledge, shared_knowledge, indomain, direct_knowledge, i_indomain, update, update_fail, hyp, commit]
 
 is_planning_agent = Predicate("is_planning_agent", [Parameter("?a", t_agent)], builtin=True)
 achieved = Predicate("achieved", [Parameter("?sg", t_subgoal)], builtin=True)
@@ -61,6 +66,14 @@ kval_axiom = """
 )
 """
 
+hyp_axiom = """
+(:derived (hyp ?svar - (function object) ?val - (typeof ?svar))
+          (or (= ?svar ?val)
+              (commit ?svar ?val)
+          )
+)
+"""
+
 in_domain_axiom = """
 (:derived (in-domain ?svar - (function object) ?val - (typeof ?svar))
           (or (= ?svar ?val)
@@ -70,7 +83,7 @@ in_domain_axiom = """
 )
 """
 
-mapl_axioms = [kval_axiom, in_domain_axiom]
+mapl_axioms = [kval_axiom, in_domain_axiom, hyp_axiom]
 
 def prepare_domain(domain):
     domain.init_rules = []
@@ -292,13 +305,19 @@ class MAPLAction(actions.Action):
 
 class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
     def __init__(self, name, agents, params, vars, duration, precondition, replan, effect, sensors, domain):
-        MAPLAction.__init__(self, name, agents, params, vars, precondition, replan, effect, sensors, domain)
+        d = Parameter("?duration", types.t_number)
+        MAPLAction.__init__(self, name, agents, params, vars + [d], precondition, replan, effect, sensors, domain)
         self.set_tag("durative_action", True) # proper parsing context
         
-        self.add(TypedObject("?duration", types.t_number))
         self.duration = duration
         for d in self.duration:
             d.set_scope(self)
+
+    def instantiate(self, mapping):
+        if not isinstance(mapping, dict):
+            mapping = dict((param.name, c) for (param, c) in zip(self.args, mapping))
+        mapping["?duration"] = self.duration[0].term.copy_instance()
+        actions.Action.instantiate(self, mapping)
 
     def copy(self, newdomain=None):
         a = MAPLAction.copy(self, newdomain)

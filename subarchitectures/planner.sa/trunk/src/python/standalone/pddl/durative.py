@@ -101,10 +101,10 @@ class DurationConstraint(object):
         
 class DurativeAction(actions.Action):
     def __init__(self, name, args, duration, precondition, effect, domain, replan=None):
-        actions.Action.__init__(self, name, args, precondition, effect, domain, replan=replan)
+        d = Parameter("?duration", types.t_number)
+        actions.Action.__init__(self, name, args+[d], precondition, effect, domain, replan=replan)
         self.set_tag("durative_action", True) # proper parsing context
         
-        self.add(types.TypedObject("?duration", types.t_number))
         self.duration = duration
         for d in self.duration:
             d.set_scope(self)

@@ -153,7 +153,8 @@ class Writer(object):
     def write_durative_action(self, action):
         strings = [action.name]
         if action.args:
-            strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.args)], parens=False)
+            args = [a for a in action.args if a.name != "?duration"]
+            strings += self.section(":parameters", ["(%s)" % self.write_typelist(args)], parens=False)
             
         strings += self.section(":duration", self.write_durations(action.duration), parens=False)
         

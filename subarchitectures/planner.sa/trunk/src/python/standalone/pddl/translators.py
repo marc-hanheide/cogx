@@ -756,7 +756,9 @@ class ModalPredicateCompiler(Translator):
         return func_arg, compiled
 
     def translate_literal(self, literal, scope):
-        if literal.predicate in numeric_ops + assignment_ops:
+        import durative
+        
+        if literal.predicate in durative.default_predicates + numeric_ops + assignment_ops:
             return literal.copy_instance()
         
         args = []
@@ -773,14 +775,13 @@ class ModalPredicateCompiler(Translator):
             return literal
 
         pred = scope.predicates.get("-".join(name_elems), args)
-
         result = literal.new_literal(predicate=pred, args=args)
         return result.copy_instance()
                 
     def translate_action(self, action, domain=None, new_args=None):
         assert domain is not None
 
-        @visitors.replace
+        @visitors.copy
         def cond_visitor(cond, results):
             if isinstance(cond, conditions.LiteralCondition):
                 return self.translate_literal(cond, domain)
@@ -833,11 +834,12 @@ class ModalPredicateCompiler(Translator):
         
     def translate_domain(self, _domain):
         import dtpddl
+        import durative
         
         modal = []
         nonmodal = []
         for pred in _domain.predicates:
-            if pred not in numeric_ops + assignment_ops and any(isinstance(a.type, types.FunctionType) for a in pred.args):
+            if pred not in durative.default_predicates + numeric_ops + assignment_ops and any(isinstance(a.type, types.FunctionType) for a in pred.args):
                 modal.append(pred)
             else:
                 nonmodal.append(pred)
@@ -988,11 +990,17 @@ class MAPLCompiler(Translator):
         p = Parameter("?f", FunctionType(t_object))
         i_indomain = Predicate("i_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
         #not_indomain = Predicate("not_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
+        p = Parameter("?f", types.FunctionType(t_object))
+        hyp = Predicate("hyp", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
+        p = Parameter("?f", types.FunctionType(t_object))
+        commit = Predicate("commit", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
 
         dom.predicates.add(knowledge)
         dom.predicates.add(direct_knowledge)
         dom.predicates.add(indomain)
         dom.predicates.add(i_indomain)
+        dom.predicates.add(hyp)
+        dom.predicates.add(commit)
 
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
         dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
