@@ -3,40 +3,19 @@
  */
 package motivation.util.castextensions;
 
-import cast.core.logging.ComponentLogger;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 import Ice.ObjectImpl;
-import SpatialData.Place;
-import SpatialData.PlaceStatus;
-import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
-import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
-import cast.UnknownSubarchitectureException;
-import cast.WMException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.cdl.WorkingMemoryPermissions;
-import cast.core.CASTData;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
