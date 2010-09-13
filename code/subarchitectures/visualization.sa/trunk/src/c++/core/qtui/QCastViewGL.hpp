@@ -31,6 +31,50 @@ private:
    float zRot;
    float zoomLevel;
 
+private:
+   struct Vector3
+   {
+      double x, y, z;
+      Vector3(double _x=0, double _y=0, double _z=0) {
+         x = _x;
+         y = _y;
+         z = _z;
+      }
+
+      void set(double _x, double _y, double _z) {
+         x = _x;
+         y = _y;
+         z = _z;
+      }
+
+      Vector3 operator+ (const Vector3& v) {
+         return Vector3( x+v.x, y+v.y, z+v.z );
+      }
+
+      Vector3 operator- (const Vector3& v) {
+         return Vector3( x-v.x, y-v.y, z-v.z );
+      }
+
+      Vector3 dot(const Vector3& v) {
+         return Vector3( x*v.x, y*v.y, z*v.z );
+      }
+
+      Vector3 cross(const Vector3& v) {
+         return Vector3( y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x );
+      }
+   };
+
+   struct Camera {
+      Vector3 eye;
+      Vector3 center;
+      Vector3 up;
+      Camera(): eye(0, 0, 1), up(0, 1, 0), center(0, 0, 0) {}
+      Vector3 normal() {
+         return up.cross(center - eye);
+      }
+   };
+   Camera m_camera;
+
 public:
    QCastViewGL( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
    ~QCastViewGL();

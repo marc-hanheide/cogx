@@ -28,6 +28,7 @@ QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
    yRot = 0;
    zRot = 0;
    zoomLevel = 0;
+   m_camera.eye.set(0, 0, 5);
 }
 
 QCastViewGL::~QCastViewGL()
@@ -156,8 +157,10 @@ void QCastViewGL::paintGL()
    if (pView) {
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
-      gluLookAt(0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-      //glTranslatef(0.0, 0.0, -10.0);
+
+      Vector3 &e = m_camera.eye, &c = m_camera.center, &u = m_camera.up;
+      gluLookAt(e.x, e.y, e.z, c.x, c.y, c.z, u.x, u.y, u.z);
+
       glRotatef(xRot, 1.0, 0.0, 0.0);
       glRotatef(yRot, 0.0, 1.0, 0.0);
       glRotatef(zRot, 0.0, 0.0, 1.0);
@@ -176,6 +179,7 @@ void QCastViewGL::mouseMoveEvent(QMouseEvent *event)
    int dx = event->x() - m_lastPos.x();
    int dy = event->y() - m_lastPos.y();
 
+   // Rotate the scene (not the camera)
    if (event->buttons() & Qt::LeftButton) {
       setXRotation(xRot + dy);
       setYRotation(yRot + dx);
