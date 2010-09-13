@@ -93,6 +93,9 @@ SWatchInfo::SWatchInfo(const std::string &watchDef)
    watchId = -1;
    pConverter = NULL;
 
+   // title#section=converter:path{masks}
+   // title --> object on server
+   // section --> object part on server, if supported by object type
    boost::regex rxWatch ("\\s*(([\\w\\.]+)(#[\\w]+)?\\=)?((\\w+)\\:)?([^{]+)(\\{([^}]+)\\})?\\s*");
    boost::smatch res;
    boost::match_flag_type flags = boost::match_default;
