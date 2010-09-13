@@ -15,10 +15,31 @@ include_directories(${GLUT_INCLUDE_DIRS})
 link_directories(${GLUT_LIBRARY_DIRS})
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
 
-add_cast_component(PlanePopOut PlanePopOut.cpp)
+SET(HEADERS
+	OpenSURF/fasthessian.h
+	OpenSURF/integral.h
+	OpenSURF/ipoint.h
+	OpenSURF/kmeans.h
+	OpenSURF/responselayer.h
+	OpenSURF/surf.h
+	OpenSURF/surflib.h
+	OpenSURF/utils.h
+	PlanePopOut.h
+)
+
+SET(SOURCES 
+	OpenSURF/fasthessian.cpp
+	OpenSURF/integral.cpp
+	OpenSURF/ipoint.cpp
+	OpenSURF/surf.cpp
+	OpenSURF/utils.cpp
+	PlanePopOut.cpp
+)
+
+add_cast_component(PlanePopOut ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} Stereo StereoClient)
 link_cast_component(${CAST_COMPONENT_NAME} GLU glut)
-link_cast_component(${CAST_COMPONENT_NAME} VisionData VideoUtils)
+link_cast_component(${CAST_COMPONENT_NAME} VisionData VideoUtils Video)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENGL_LDFLAGS} ${GLU_LDFLAGS}
     ${GLUT_LDFLAGS} ${VISUALIZATION_LIBRARIES})
 

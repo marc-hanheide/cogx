@@ -824,6 +824,31 @@ void PlanePopOut::runComponent()
   }
 }
 
+IpVec PlanePopOut::GetSurf(VisionData::SurfacePointSeq points, Video::Image img)
+{
+    Video::CameraParameters c = img.camPars;
+    IplImage *iplImage = convertImageToIpl(img);
+    float maxx,maxy,minx,miny;	maxx=0.0; maxy=0.0; minx = 99999.0; miny= 99999.0;
+    for (unsigned int i=0; i<points.size(); i++)
+    {
+	Vector3 v3OneObj = points.at(i).p;
+	Vector2 SOIPointOnImg; SOIPointOnImg = projectPoint(c, v3OneObj);
+	if (SOIPointOnImg.x>maxx)	maxx = SOIPointOnImg.x;
+	if (SOIPointOnImg.y>maxy)	maxy = SOIPointOnImg.y;
+	if (SOIPointOnImg.x<minx)	minx = SOIPointOnImg.x;
+	if (SOIPointOnImg.y<miny)	miny = SOIPointOnImg.y;
+    }
+    CvRect r; r.x = (int)minx; r.y = (int)miny; r.width =(int)(maxx-minx); r.height =(int)(maxy-miny); 
+    IplImage* imgpatch=cvCreateImage(cvSize(r.width,r.height),iplImage->depth,iplImage->nChannels);
+    imgpatch = Video::crop(iplImage,r);
+    IpVec ips;
+    surfDetDes(imgpatch,ips, false, 4, 4, 2, 0.0001f);
+
+    cvReleaseImage(&imgpatch);
+    cvReleaseImage(&iplImage);
+    return ips;
+}
+
 void PlanePopOut::CollectDensePoints(Video::CameraParameters &cam, VisionData::SurfacePointSeq points)
 {
 	CvPoint* points2D = (CvPoint*)malloc( points.size() * sizeof(points2D[0]));
@@ -1255,7 +1280,7 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 		//std::cout << "  too few points to calc plane" << std::endl;
 		return false;
 	};
-	int nRansacs = 100;
+	int nRansacs = 50;
 	int point1 = 0;
 	int point2 = 0;
 	int point3 = 0;
