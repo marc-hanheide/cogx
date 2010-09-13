@@ -4,7 +4,6 @@
 package eu.cogx.perceptmediator.transferfunctions.abstr;
 
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -16,6 +15,9 @@ import cast.cdl.WorkingMemoryChange;
 import cast.core.CASTUtils;
 import cast.interfaces.TimeServerPrx;
 import castutils.castextensions.CASTHelper;
+import castutils.castextensions.WMContentWaiter;
+import castutils.castextensions.WMView;
+import castutils.castextensions.WMContentWaiter.ContentMatchingFunction;
 import castutils.castextensions.WMEntrySynchronizer.TransferFunction;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
@@ -38,32 +40,23 @@ import eu.cogx.beliefs.slice.PerceptBelief;
  * @param <From>
  *            type we generate beliefs from
  */
-public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl>
+public abstract class AugmentDiscreteTransferFunction<From extends Ice.ObjectImpl>
 		extends CASTHelper implements TransferFunction<From, PerceptBelief> {
 
-	public static Object getBeliefTypeFromCastType(
-			Class<? extends Ice.Object> class1) {
-		return getBeliefTypeFromCastType(CASTUtils.typeName(class1));
-	}
-
-	public static String getBeliefTypeFromCastType(String casttype) {
-		StringTokenizer st = new StringTokenizer(casttype, ":");
-		String type = casttype.toLowerCase();
-		while (st.hasMoreTokens())
-			type = st.nextToken();
-		return type;
-	}
-
-	private static TimeServerPrx timeServer = null;
+	protected WMView<PerceptBelief> allBeliefs;
+	WMContentWaiter<PerceptBelief> waitingBeliefReader;
 
 	/**
 	 * constructor
 	 * 
 	 * @param component
 	 */
-	public SimpleDiscreteTransferFunction(ManagedComponent component,
-			Logger logger) {
+	public AugmentDiscreteTransferFunction(ManagedComponent component,
+			WMView<PerceptBelief> allBeliefs, Logger logger) {
 		super(component);
+		this.allBeliefs = allBeliefs;
+		waitingBeliefReader = new WMContentWaiter<PerceptBelief>(
+				this.allBeliefs);
 	}
 
 	/*
@@ -76,27 +69,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	@Override
 	public PerceptBelief create(WorkingMemoryAddress idToCreate,
 			WorkingMemoryChange wmc, From from) {
-
-		try {
-			// // create a simple history with just the link to the percept
-			// CASTBeliefHistory hist = PerceptBuilder
-			// .createNewPerceptHistory(wmc.address);
-			//
-			// // always create a CondIndependentDistribs
-			// CondIndependentDistribs features = BeliefContentBuilder
-			// .createNewCondIndependentDistribs();
-
-			CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief
-					.create(PerceptBelief.class);
-			pb.setId(idToCreate.id);
-			pb.setType(getBeliefTypeFromCastType(wmc.type));
-			pb.setPrivate("robot");
-			return pb.get();
-		} catch (BeliefException e) {
-			component.logException(e);
-			return null;
-		}
-
+		return null;
 	}
 
 	/*
@@ -118,7 +91,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 
 		// update the end time to now!
 		CASTTime starttime = p.getStartTime();
-		p.setTime(starttime, now());
+		p.setTime(starttime, SimpleDiscreteTransferFunction.now());
 
 		IndependentFormulaDistributions features = p.getContent();
 		Map<String, Formula> mapping;
@@ -135,6 +108,25 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 			component.logException(e);
 		}
 		return true;
+	}
+	/**
+	 * this method tries to dereference a referred belief. It waits for the
+	 * referred object to appear and blocks until then.
+	 * 
+	 * @param contentMatchingFunction the matching function to be used
+	 * @see WMContentWaiter
+	 * @return the working memory address that corresponds
+	 * @throws InterruptedException
+	 */
+
+	protected WorkingMemoryAddress getReferredBelief(
+			ContentMatchingFunction<PerceptBelief> contentMatchingFunction)
+			throws InterruptedException {
+		logger.debug("trying to find referred belief");
+		Entry<WorkingMemoryAddress, PerceptBelief> entry = waitingBeliefReader
+				.read(contentMatchingFunction);
+		logger.debug("got it: " + entry.getKey().id);
+		return entry.getKey();
 	}
 
 	/**
@@ -153,9 +145,4 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 			WorkingMemoryChange wmc, From from) throws InterruptedException,
 			BeliefException;
 
-	public static CASTTime now() {
-		if (timeServer == null)
-			timeServer = CASTUtils.getTimeServer();
-		return timeServer.getCASTTime();
-	}
 }
