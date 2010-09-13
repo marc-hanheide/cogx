@@ -15,7 +15,7 @@
  */
 #include "CDisplayClient.hpp"
 
-#include "CDisplayServer.hpp"
+//#include "CDisplayServer.hpp"
  
 
 #include <sstream>
