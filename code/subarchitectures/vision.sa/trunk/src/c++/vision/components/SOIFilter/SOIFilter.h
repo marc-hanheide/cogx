@@ -77,7 +77,12 @@ private:
   IplImage *colorFiltering; //HACK
   bool filterFlag; //HACK
   std::vector<CvScalar> filterList;
-  
+
+  // snapshot support: save video images when -v flag active
+  Video::Image m_LeftImage;
+  Video::Image m_RightImage;
+  int m_idLeftImage;
+  int m_idRightImage;
   
   /**
    * status of SOI persistency
