@@ -17,12 +17,15 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import execution.slice.actions.ActiveVisualSearch;
+import execution.slice.actions.BackgroundModels;
 import execution.slice.actions.ComsysQueryFeature;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
+import execution.slice.actions.ForegroundModels;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
+import execution.slice.actions.RecogniseForegroundedModels;
 import execution.util.ActionInterfaceFrame;
 import execution.util.ActionMonitor;
 
@@ -185,6 +188,29 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
 		act.beliefID = _beliefID;
 		act.featureID = _featureType;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress backgroundModels(String[] _models,
+			ActionMonitor _monitor) throws CASTException {
+		BackgroundModels act = newActionInstance(BackgroundModels.class);
+		act.models = _models;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+	
+	public WorkingMemoryAddress recogniseForegroundedModels(
+			ActionMonitor _monitor) throws CASTException {
+		RecogniseForegroundedModels act = newActionInstance(RecogniseForegroundedModels.class);
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress foregroundModels(String[] _models,
+			ActionMonitor _monitor) throws CASTException {
+		ForegroundModels act = newActionInstance(ForegroundModels.class);
+		act.models = _models;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
