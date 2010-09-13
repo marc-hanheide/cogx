@@ -13,6 +13,8 @@
 #include <VisionData.hpp>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include "OpenSURF/surflib.h"
+
 
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
@@ -137,6 +139,7 @@ public:
 	void Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>& vT, vector<Particle> vFO, VisionData::SurfacePointSeq points, Vector3 cc, double rr);
 	CvPoint ProjectPointOnImage(Vector3 p, const Video::CameraParameters &cam);
 	void CollectDensePoints(Video::CameraParameters &cam, VisionData::SurfacePointSeq points);
+	IpVec GetSurf(VisionData::SurfacePointSeq points, Video::Image img);
 	
 	inline Particle InitialParticle()
 	{
