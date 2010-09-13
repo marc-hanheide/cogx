@@ -31,11 +31,18 @@ public class ComponentActionFactory<ExecutorType extends ActionExecutor>
 	@Override
 	public ActionExecutor getActionExecutor() {
 		try {
+			
+			
+			
 			Constructor<ExecutorType> constructor = m_exeClass
 					.getConstructor(ManagedComponent.class);
 			return constructor.newInstance(m_component);
 
 		} catch (Exception e) {
+			for(Constructor<?> c : m_exeClass.getConstructors()) {
+				m_component.println(c);
+			}
+			
 			m_component.logException(e);
 			throw new RuntimeException(e);
 		}

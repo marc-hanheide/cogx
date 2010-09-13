@@ -13,7 +13,6 @@ import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
-import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.slice.actions.BackgroundModels;
 import execution.slice.actions.DetectObjects;
@@ -95,7 +94,7 @@ public class VisionActionInterface extends ManagedComponent {
 
 	}
 
-	private class ForegroundModelExecutor extends
+	public static class ForegroundModelExecutor extends
 			BlockingActionExecutor<ForegroundModels> {
 
 		public ForegroundModelExecutor(ManagedComponent _component) {
@@ -103,17 +102,22 @@ public class VisionActionInterface extends ManagedComponent {
 		}
 
 		@Override
+		protected VisionActionInterface getComponent() {
+			return (VisionActionInterface) super.getComponent();
+		}
+		
+		@Override
 		public TriBool execute() {
 
 			String[] models = getAction().models;
 			for (String model : models) {
-				if (!m_foregroundedModels.contains(model)) {
+				if (!getComponent().m_foregroundedModels.contains(model)) {
 					ForegroundedModel foreground = new ForegroundedModel(model);
 					WorkingMemoryAddress addr = new WorkingMemoryAddress(
-							newDataID(), getSubarchitectureID());
+							getComponent().newDataID(), getComponent().getSubarchitectureID());
 					try {
-						addToWorkingMemory(addr, foreground);
-						m_foregroundedModels.put(model, addr);
+						getComponent().addToWorkingMemory(addr, foreground);
+						getComponent().m_foregroundedModels.put(model, addr);
 						getComponent().log("Foregrounded model: " + model);
 
 					} catch (CASTException e) {
@@ -131,7 +135,7 @@ public class VisionActionInterface extends ManagedComponent {
 		}
 	}
 
-	private class BackgroundModelExecutor extends
+	public static class BackgroundModelExecutor extends
 			BlockingActionExecutor<BackgroundModels> {
 
 		public BackgroundModelExecutor(ManagedComponent _component) {
@@ -139,14 +143,19 @@ public class VisionActionInterface extends ManagedComponent {
 		}
 
 		@Override
+		protected VisionActionInterface getComponent() {
+			return (VisionActionInterface) super.getComponent();
+		}
+		
+		@Override
 		public TriBool execute() {
 
 			String[] models = getAction().models;
 			for (String model : models) {
-				WorkingMemoryAddress addr = m_foregroundedModels.remove(model);
+				WorkingMemoryAddress addr = getComponent().m_foregroundedModels.remove(model);
 				if (addr != null) {
 					try {
-						deleteFromWorkingMemory(addr);
+						getComponent().deleteFromWorkingMemory(addr);
 						getComponent().log("Backgrounded model: " + model);
 					} catch (CASTException e) {
 						getComponent().logException(e);
