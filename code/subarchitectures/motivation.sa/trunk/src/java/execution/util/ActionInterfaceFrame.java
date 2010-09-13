@@ -6,7 +6,6 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
 import java.util.Map.Entry;
 
 import javax.swing.BoxLayout;
@@ -54,15 +53,25 @@ public class ActionInterfaceFrame extends JFrame {
 	private JTable m_placeTable = null;
 	private DefaultTableModel m_placeTableModel;
 	private JPanel m_placesActionPanel;
-	private JRadioButton m_avsAction;
+	// private JRadioButton m_avsAction;
 	private JRadioButton m_goAction;
 	private JRadioButton m_detectObjectsAction;
 	private JRadioButton m_detectPeopleAction;
-	private JRadioButton m_lookForObjectsAction;
-	private JRadioButton m_lookForPeopleAction;
+	// private JRadioButton m_lookForObjectsAction;
+	// private JRadioButton m_lookForPeopleAction;
 	private JRadioButton m_askForFeatureAction;
 	private JRadioButton m_testFeatureValueAction;
 
+	private JRadioButton m_foregroundModelsAction;
+	private JRadioButton m_backgroundModelsAction;
+	private JRadioButton m_recogniseForegroundedModelsAction;
+
+	//TODO implement behaviour for this
+	private JRadioButton m_generateConesAction;
+	private JRadioButton m_goToConeAction;
+	private JRadioButton m_processConeAction;
+	
+	
 	private GraphicalExecutionManager m_exeMan;
 	private JTable m_beliefTable;
 	private DefaultTableModel m_beliefTableModel;
@@ -239,32 +248,46 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel getObjectsActionPanel() {
 		if (m_objectsActionPanel == null) {
 			m_objectsActionPanel = new JPanel();
+
 			m_objectsActionPanel.setLayout(new GridBagLayout());
-			m_avsAction = new JRadioButton("visual search in");
+			// m_avsAction = new JRadioButton("visual search in");
 			m_detectObjectsAction = new JRadioButton("detect objects");
 			m_detectPeopleAction = new JRadioButton("detect people");
-			m_lookForObjectsAction = new JRadioButton("look for objects");
-			m_lookForPeopleAction = new JRadioButton("look for people");
+			// m_lookForObjectsAction = new JRadioButton("look for objects");
+			// m_lookForPeopleAction = new JRadioButton("look for people");
+			m_foregroundModelsAction = new JRadioButton("foreground models");
+			m_backgroundModelsAction = new JRadioButton("background models");
+			m_recogniseForegroundedModelsAction = new JRadioButton(
+					"recognise foregrounded models");
 
-			m_avsAction.setSelected(true);
+			// m_avsAction.setSelected(true);
+			m_detectObjectsAction.setSelected(true);
 
 			ButtonGroup actionGroup = new ButtonGroup();
-			actionGroup.add(m_avsAction);
+			// actionGroup.add(m_avsAction);
 			actionGroup.add(m_detectObjectsAction);
 			actionGroup.add(m_detectPeopleAction);
-			actionGroup.add(m_lookForObjectsAction);
-			actionGroup.add(m_lookForPeopleAction);
+			// actionGroup.add(m_lookForObjectsAction);
+			// actionGroup.add(m_lookForPeopleAction);
+			actionGroup.add(m_foregroundModelsAction);
+			actionGroup.add(m_backgroundModelsAction);
+			actionGroup.add(m_recogniseForegroundedModelsAction);
 
-			m_objectsActionPanel.add(m_avsAction, new GridBagConstraints());
+			// m_objectsActionPanel.add(m_avsAction, new GridBagConstraints());
 			m_objectsActionPanel.add(m_detectObjectsAction,
 					new GridBagConstraints());
 			m_objectsActionPanel.add(m_detectPeopleAction,
 					new GridBagConstraints());
-			m_objectsActionPanel.add(m_lookForObjectsAction,
+			// // m_objectsActionPanel.add(m_lookForObjectsAction,
+			// new GridBagConstraints());
+			// m_objectsActionPanel.add(m_lookForPeopleAction,
+			// new GridBagConstraints());
+			m_objectsActionPanel.add(m_foregroundModelsAction,
 					new GridBagConstraints());
-			m_objectsActionPanel.add(m_lookForPeopleAction,
+			m_objectsActionPanel.add(m_backgroundModelsAction,
 					new GridBagConstraints());
-
+			m_objectsActionPanel.add(m_recogniseForegroundedModelsAction,
+					new GridBagConstraints());
 		}
 		return m_objectsActionPanel;
 	}
@@ -303,7 +326,7 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private void go() throws CASTException {
 
-		//TODO make more robust to code changes
+		// TODO make more robust to code changes
 		int tabIndex = getTabbedPane().getSelectedIndex();
 
 		if (tabIndex == 0) {
@@ -311,27 +334,38 @@ public class ActionInterfaceFrame extends JFrame {
 				goToPlace();
 			}
 		} else if (tabIndex == 2) {
-			if (m_avsAction.isSelected()) {
-				runAVS();
-			} else if (m_detectObjectsAction.isSelected()) {
+			// if (m_avsAction.isSelected()) {
+			// runAVS();
+			// } else
+			if (m_detectObjectsAction.isSelected()) {
 				detectObjects();
 
 			} else if (m_detectPeopleAction.isSelected()) {
 				detectPeople();
-			} else if (m_lookForObjectsAction.isSelected()) {
-				lookForObjects();
-			} else if (m_lookForPeopleAction.isSelected()) {
-				lookForPeople();
 			}
+
+			// else if (m_lookForObjectsAction.isSelected()) {
+			// lookForObjects();
+			// } else if (m_lookForPeopleAction.isSelected()) {
+			// lookForPeople();
+			// }
+			else if (m_foregroundModelsAction.isSelected()) {
+				foregroundModels();
+			} else if (m_backgroundModelsAction.isSelected()) {
+				backgroundModels();
+			} else if (m_recogniseForegroundedModelsAction.isSelected()) {
+				recogniseForegroundedModels();
+			}
+
 		} else if (tabIndex == 1) {
 			if (m_askForFeatureAction.isSelected()) {
 				askForFeature();
 			} else if (m_testFeatureValueAction.isSelected()) {
 				testFeatureValue();
 			}
-		}
-		else {
-			throw new RuntimeException("No tab selected apparently... " + m_tabbedPane.getSelectedIndex());
+		} else {
+			throw new RuntimeException("No tab selected apparently... "
+					+ m_tabbedPane.getSelectedIndex());
 		}
 	}
 
@@ -511,7 +545,29 @@ public class ActionInterfaceFrame extends JFrame {
 	 * @throws CASTException
 	 */
 	private void detectObjects() throws CASTException {
-		m_exeMan.triggerDetectObjects(getSelectedObjectModels(), new MonitorPanel());
+		m_exeMan.triggerDetectObjects(getSelectedObjectModels(),
+				new MonitorPanel());
+	}
+
+	/**
+	 * @throws CASTException
+	 */
+	private void foregroundModels() throws CASTException {
+		m_exeMan.foregroundModels(getSelectedObjectModels(), new MonitorPanel());
+	}
+
+	/**
+	 * @throws CASTException
+	 */
+	private void backgroundModels() throws CASTException {
+		m_exeMan.backgroundModels(getSelectedObjectModels(), new MonitorPanel());
+	}
+
+	/**
+	 * @throws CASTException
+	 */
+	private void recogniseForegroundedModels() throws CASTException {
+		m_exeMan.recogniseForegroundedModels(new MonitorPanel());
 	}
 
 	/**
@@ -521,13 +577,14 @@ public class ActionInterfaceFrame extends JFrame {
 		m_exeMan.triggerDetectPeople(new MonitorPanel());
 	}
 
-	private void lookForPeople() throws CASTException {
-		m_exeMan.triggerLookForPeople(new MonitorPanel());
-	}
-
-	private void lookForObjects() throws CASTException {
-		m_exeMan.triggerLookForObjects(getSelectedObjectModels(), new MonitorPanel());
-	}
+	// private void lookForPeople() throws CASTException {
+	// m_exeMan.triggerLookForPeople(new MonitorPanel());
+	// }
+	//
+	// private void lookForObjects() throws CASTException {
+	// m_exeMan.triggerLookForObjects(getSelectedObjectModels(),
+	// new MonitorPanel());
+	// }
 
 	/**
 	 * This method initializes m_stopButton
@@ -568,7 +625,6 @@ public class ActionInterfaceFrame extends JFrame {
 		return m_placeTable;
 	}
 
-	
 	/**
 	 * This method initializes m_objectTable
 	 * 
@@ -577,19 +633,19 @@ public class ActionInterfaceFrame extends JFrame {
 	private JTable getObjectTable() {
 		if (m_objectTable == null) {
 			m_objectTable = new JTable(1, 2);
-			m_objectTableModel = new DefaultTableModel(new String[] { "model"}, 0);
+			m_objectTableModel = new DefaultTableModel(
+					new String[] { "model" }, 0);
 			m_objectTable.setModel(m_objectTableModel);
 		}
 		return m_objectTable;
 	}
-	
-	
+
 	public void setObjectModels(String[] _models) {
-		for(String model : _models) {
-			m_objectTableModel.addRow(new Object[]{model});
+		for (String model : _models) {
+			m_objectTableModel.addRow(new Object[] { model });
 		}
 	}
-	
+
 	/**
 	 * This method initializes m_beliefTable
 	 * 
@@ -636,8 +692,9 @@ public class ActionInterfaceFrame extends JFrame {
 		int[] selectedRows = m_objectTable.getSelectedRows();
 		String[] models = new String[selectedRows.length];
 		int modelCount = 0;
-		for(int row : selectedRows) {
-			models[modelCount++] = (String) m_objectTableModel.getValueAt(row, OBJECT_MODEL_COLUMN);
+		for (int row : selectedRows) {
+			models[modelCount++] = (String) m_objectTableModel.getValueAt(row,
+					OBJECT_MODEL_COLUMN);
 		}
 		return models;
 	}
