@@ -18,7 +18,8 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		libboost-iostreams-dev@ubuntu \
 		libqt4-dev@ubuntu \
 		libtolua++5.1-dev@ubuntu \
-		libprotobuf-dev@ubuntu
+		libprotobuf-dev@ubuntu \
+		python-pygraphviz@ubuntu
 
 
 
