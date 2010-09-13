@@ -491,11 +491,15 @@ class State(dict):
         trace_vars -- if True, all StateVariables required to resolve
         the term are written to the read_svars member variable.
         """
+
         if term.__class__ == ConstantTerm:
             return term.object
         if term.__class__ == VariableTerm:
             assert term.is_instantiated(), "%s is not instantiated" % str(term.object)
-            return term.get_instance()
+            inst = term.get_instance()
+            if isinstance(inst, FunctionTerm):
+                return self.evaluate_term(inst, trace_vars)
+            return inst
         if term.__class__ == FunctionVariableTerm:
             assert term.is_instantiated(), "%s is not instantiated" % str(term)
             term = term.get_instance()
@@ -617,7 +621,7 @@ class State(dict):
                 values.append(self.evaluate_term(arg, trace_vars))
         
         pred = literal.predicate
-        if pred in assignment_ops+numeric_ops:
+        if pred in [assign, change, num_change, num_assign, equal_assign, num_equal_assign] + numeric_ops:
             svar = svars[0]
             #hack:
             if svar.function == total_cost and svar not in self:
@@ -774,7 +778,7 @@ class State(dict):
             elif isinstance(cond, conditions.QuantifiedCondition):
                 return restrictionVisitor(cond.condition)
             else:
-                return False
+                return restrictionVisitor(cond.condition)
 
         def dependenciesVisitor(cond):
             if isinstance(cond, conditions.LiteralCondition):
@@ -794,6 +798,8 @@ class State(dict):
                     cond.instantiate(dict(zip(cond.args, c)))
                     dependenciesVisitor(cond.condition)
                     cond.uninstantiate()
+            else:
+                dependenciesVisitor(cond.condition)
                     
         self.read_svars.clear()
         dependenciesVisitor(cond)

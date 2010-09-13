@@ -127,6 +127,7 @@ class Condition(object):
                 return "(exists (%s) %s)" % (args, " ".join(results))
             if cond.__class__ == PreferenceCondition:
                 return "(preference %d %s)" % (cond.penalty, results[0])
+            return str(cond)
         return self.visit(printVisitor)
     
     @staticmethod
