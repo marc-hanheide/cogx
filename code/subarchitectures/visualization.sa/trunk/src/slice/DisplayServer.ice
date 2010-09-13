@@ -8,6 +8,10 @@
 
 module Visualization
 {
+
+   const int V11NSTANDALONEPORT = 10511;
+   const string V11NSTANDALONENAME = "StandaloneDisplayServer";
+
    sequence<byte> ByteSeq;
    sequence<double> FloatSeq;
 
@@ -70,7 +74,8 @@ module Visualization
 
       // Event handlers need to subscribe
       // TODO: parameter: which views to watch
-      void addClient(Ice::Identity ident);
+      // nah: added extra parameters to 
+      void addClient(Ice::Identity ident, string host, int port);
 
       // TODO: a checkbox has an initial value (0, 1, 2)
       void addCheckBox(Ice::Identity ident, string viewId, string ctrlId, string label); // TODO: ActionInfo

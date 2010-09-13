@@ -18,6 +18,11 @@ target_link_libraries(TestVisualizationCore ${CPPUNIT})
 
 
 # Based on VideoViewer
+
+find_package(OpenCV REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIRS})
+link_directories(${OPENCV_LIBRARY_DIRS})
+
 set(SOURCES TestComponent.cpp)
 add_definitions(-DFEAT_VISUALIZATION)
 include_directories( .
@@ -35,7 +40,7 @@ include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autog
 add_cast_component(VisualizationTest ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} 
    VisionData Video VideoUtils
-   DisplayClient VisualizationData
+   DisplayServer DisplayClient VisualizationData
    ${OPENCV_LDFLAGS}
    )
 

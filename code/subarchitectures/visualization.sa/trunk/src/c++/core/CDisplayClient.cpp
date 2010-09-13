@@ -15,11 +15,15 @@
  */
 #include "CDisplayClient.hpp"
 
+//#include "CDisplayServer.hpp"
+ 
+
 #include <sstream>
 #include <sstream>
 #include <Ice/Ice.h>
 #include <IceUtil/IceUtil.h>
 #include <cast/core/CASTUtils.hpp>
+#include <cast/core/CASTComponent.hpp>
 
 using namespace std;
 using namespace cast;
@@ -28,6 +32,7 @@ namespace cogx { namespace display {
 
 CDisplayClient::CDisplayClient()
 {
+   m_standaloneHost = "";
    m_serverName = "display.srv";
    m_pServer = NULL;
    m_pOwner = NULL;
@@ -44,10 +49,13 @@ void CDisplayClient::configureDisplayClient(const map<string,string> & _config)
    if((it = _config.find("--displayserver")) != _config.end()) {
       m_serverName = it->second;
    }
+
+   if((it = _config.find("--standalone-display-host")) != _config.end()) {
+      m_standaloneHost = it->second;      
+   }
 }
 
-void CDisplayClient::connectIceClient(CASTComponent& owner)
-      throw(runtime_error)
+void CDisplayClient::connectIceClient(CASTComponent& owner) throw(runtime_error)
 {
    m_pOwner = &owner;
 
@@ -55,21 +63,41 @@ void CDisplayClient::connectIceClient(CASTComponent& owner)
    if (m_pServer) {
       //throw runtime_error(exceptionMessage(__HERE__,
       //      "CDisplayClient already connected to server."));
-     owner.log("CDisplayClient already connected to server.");
+      owner.log("CDisplayClient already connected to server.");
    }
 
-   if (m_serverName.empty()) {
-      //throw runtime_error(exceptionMessage(__HERE__,
-      //      "DisplayServer server id not set. Use --display-server-id."));
-      owner.println(" *** DisplayServer server id not set. Use --displayserver.");
-   }
+   //look for a standalone host if this is set
+   if(!m_standaloneHost.empty()) {
+      owner.log("CDisplayClient connecting to standalone server on %s", m_standaloneHost.c_str());
+      try {
 
-   try {
-     m_pServer = owner.getIceServer<Visualization::DisplayInterface>(m_serverName);
-     owner.debug("CDisplayClient Connected.");
+         Ice::ObjectPrx prx = owner.getIceServer(Visualization::V11NSTANDALONENAME,
+               m_pOwner->toServantCategory<Visualization::DisplayInterface>(),
+               m_standaloneHost, Visualization::V11NSTANDALONEPORT);
+
+         m_pServer = Visualization::DisplayInterfacePrx::checkedCast(prx);
+         owner.println("CDisplayClient connected to standalone server.");
+      }
+      catch (...) {
+         owner.println(" *** CDisplayClient could not connect standalone server on to '%s'.",
+               m_standaloneHost.c_str());
+      }
+
    }
-   catch (...) {
-     owner.debug(" *** CDisplayClient could not connect to '%s'.", m_serverName.c_str());
+   else {
+      if (m_serverName.empty()) {
+         //throw runtime_error(exceptionMessage(__HERE__,
+         //      "DisplayServer server id not set. Use --display-server-id."));
+         owner.println(" *** DisplayServer server id not set. Use --displayserver.");
+      }
+
+      try {
+         m_pServer = owner.getIceServer<Visualization::DisplayInterface>(m_serverName);
+         owner.debug("CDisplayClient Connected.");
+      }
+      catch (...) {
+         owner.println(" *** CDisplayClient could not connect to '%s'.", m_serverName.c_str());
+      }
    }
 }
 
@@ -96,7 +124,8 @@ void CDisplayClient::installEventReceiver() throw(std::runtime_error)
    debug(id.name + id.category);
    m_pEventReceiverIceSrv = new CEventReceiverI(this);
    m_pOwner->registerIceServer<Visualization::EventReceiver>(id.name, id.category, m_pEventReceiverIceSrv);
-   m_pServer->addClient(id);
+   const string& myHost(m_pOwner->getComponentManager()->getComponentDescription(m_pOwner->getComponentID()).hostName);      
+   m_pServer->addClient(id, myHost, cast::cdl::CPPSERVERPORT);
    debug("CDisplayClient EventReceiver installed.");
 }
 
@@ -131,22 +160,22 @@ void CDisplayClient::setImage(const std::string& id, const Video::Image& image)
 }
 
 void CDisplayClient::setImage(const std::string& id, const std::vector<unsigned char>& data,
-    const std::string &format)
+      const std::string &format)
 {
    if (m_pServer == NULL) return;
    m_pServer->setCompressedImage(id, data, format);
 }
 
 void CDisplayClient::setImage(const std::string& id, int width, int height, int channels,
-     const std::vector<unsigned char>& data)
+      const std::vector<unsigned char>& data)
 {
    if (m_pServer == NULL) return;
    if (width * height * channels != data.size()) {
-     m_pOwner->println(" *** CDisplayClient: raw image size doesn't match the size of the data.");
-     return;
+      m_pOwner->println(" *** CDisplayClient: raw image size doesn't match the size of the data.");
+      return;
    }
    if (channels != 1 && channels != 3) {
-     m_pOwner->println(" *** CDisplayClient: only 1 and 3 channel raw images are supported.");
+      m_pOwner->println(" *** CDisplayClient: only 1 and 3 channel raw images are supported.");
    }
    m_pServer->setRawImage(id, width, height, channels, data);
 }
@@ -166,7 +195,7 @@ void CDisplayClient::setImage(const std::string& id, const IplImage* pImage)
    std::vector<unsigned char> data;
    data.resize(nbytes);
    unsigned char* pvdata = (unsigned char*) &(data[0]);
-  
+
    int rowlen = pImage->width * pImage->nChannels;
    for(int i=0; i < pImage->height; i++) {
       unsigned char* piplrow = pIplData + i * step;
@@ -229,7 +258,7 @@ void CDisplayClient::setHtmlFormData(const std::string& id, const std::string& p
 }
 
 void CDisplayClient::setObjectTransform2D(const std::string& id, const std::string& partId,
-       const std::vector<double>& transform)
+      const std::vector<double>& transform)
 {
    if (m_pServer == NULL) return;
    m_pServer->setObjectTransform2D(id, partId, transform);
@@ -311,7 +340,7 @@ void CDisplayClient::setObjectTransform2D(const std::string& id, const std::stri
 }
 
 void CDisplayClient::setObjectPose3D(const std::string& id, const std::string& partId,
-         const cogx::Math::Vector3& position, const Visualization::Quaternion& rotation)
+      const cogx::Math::Vector3& position, const Visualization::Quaternion& rotation)
 {
    if (m_pServer == NULL) return;
    m_pServer->setObjectPose3D(id, partId, position, rotation);
@@ -333,24 +362,25 @@ void CDisplayClient::addButton(const std::string& viewId, const std::string& ctr
 
 
 #if 0
-void CActiveDisplayClient::installEventReceiver()
-      throw(std::runtime_error)
+   void CActiveDisplayClient::installEventReceiver()
+throw(std::runtime_error)
 {
    if (! m_pOwner || ! m_pServer.get())
       throw runtime_error(exceptionMessage(__HERE__,
-            "CDisplayClient: connectIceClient() must be called before installEventReciever()."));
+               "CDisplayClient: connectIceClient() must be called before installEventReciever()."));
 
    m_pOwner->debug("CDisplayClient installing an EventReceiver.");
    if (m_pEventReceiverIceSrv.get())
       throw runtime_error(exceptionMessage(__HERE__,
-            "CDisplayClient already has an EventReceiver."));
+               "CDisplayClient already has an EventReceiver."));
 
    Ice::Identity id;
    id.name = m_pOwner->getComponentID();
    id.category = "Visualization_EventReceiver";
    m_pEventReceiverIceSrv = new CEventReceiverI(this);
    m_pOwner->registerIceServer<Visualization::EventReceiver>(id.name, id.category, m_pEventReceiverIceSrv);
-   m_pServer->addClient(id);
+   const string & myHost(getComponentManager()->getComponentDescription(getComponentID()).hostName);
+   m_pServer->addClient(id, myHost, cast::cdl::CPPSERVERPORT);
    m_pOwner->debug("CDisplayClient EventReceiver installed.");
 }
 

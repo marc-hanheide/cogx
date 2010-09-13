@@ -17,9 +17,9 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMessageBox>
-#ifdef V11N_OBJECT_HTML_PLUGINS
-#endif
+#ifdef V11N_OBJECT_HTML
 #include <QWebSettings>
+#endif
 
 #include "../convenience.hpp"
 
@@ -253,6 +253,7 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    QStatusBar *pBar = statusBar();
    if (pBar) pBar->setVisible(false);
 
+#ifdef V11N_OBJECT_HTML
 #ifdef V11N_OBJECT_HTML_PLUGINS
    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
 #endif
@@ -260,6 +261,7 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
 
    QWebSettings::globalSettings()->setFontSize(QWebSettings::DefaultFontSize, 12);
+#endif
 }
 
 QCastMainFrame::~QCastMainFrame()

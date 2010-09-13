@@ -108,7 +108,6 @@ void CDisplayServer::configure(const map<string,string> & _config)
 #ifdef V11N_OBJECT_TOMGINE_MODEL
    debug("v11n: Subsystem 'TomGine Model' enabled.");
 #endif
-   CASTComponent::configure(_config);
 
    // TODO: Parse more parameters here
    // map<string,string>::const_iterator it;
@@ -127,37 +126,42 @@ void CDisplayServer::start()
 {
 }
 
+void CDisplayServer::run()
+{
+    debug("CDisplayServer Server: running");
+    
+    debug("Starting EventServer");
+    hIceDisplayServer.get()->startEventServer();
+    debug("EventServer started");
+    
+    int argc=0;
+    char **argv = NULL;
+    QCastApplication app(argc, argv, this);
+    QCastMainFrame* pMainFrame = new QCastMainFrame();
+    
+    debug("Passing the model to MainWindow");
+    pMainFrame->setModel(&m_Model);
+    pMainFrame->setControlDataProxy(this);
+    pMainFrame->show();
+    pMainFrame = NULL; // Owned by QApplication
+    app.exec();
+    //
+    //   debug("CDisplayServer Server: GUI closed.");
+    //
+    while(isRunning()) {
+        sleepComponent(1000);
+    }
+    //
+    //   debug("Stopping EventServer");
+    //   hIceDisplayServer.get()->destroyEventServer();
+    //   debug("EventServer stopped");
+    //
+    //   debug("CDisplayServer Server: Done.");
+}
+    
 void CDisplayServer::runComponent()
 {
-   debug("CDisplayServer Server: running");
-
-   debug("Starting EventServer");
-   hIceDisplayServer.get()->startEventServer();
-   debug("EventServer started");
-
-   int argc=0;
-   char **argv = NULL;
-   QCastApplication app(argc, argv, this);
-   QCastMainFrame* pMainFrame = new QCastMainFrame();
-
-   debug("Passing the model to MainWindow");
-   pMainFrame->setModel(&m_Model);
-   pMainFrame->setControlDataProxy(this);
-   pMainFrame->show();
-   pMainFrame = NULL; // Owned by QApplication
-   app.exec();
-
-   debug("CDisplayServer Server: GUI closed.");
-
-   while(isRunning()) {
-      sleepComponent(1000);
-   }
-
-   debug("Stopping EventServer");
-   hIceDisplayServer.get()->destroyEventServer();
-   debug("EventServer stopped");
-
-   debug("CDisplayServer Server: Done.");
+    run();
 }
 
 void CDisplayServer::setRawImage(const std::string& id, int width, int height,
@@ -896,21 +900,12 @@ void CDisplayServerI::destroyEventServer()
    }
 }
 
-void CDisplayServerI::addClient(const Ice::Identity& ident, const Ice::Current& current)
+void CDisplayServerI::addClient(const Ice::Identity& ident, const std::string& host, Ice::Int port, const Ice::Current& current)
 {
    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-   cout << "v11n: adding client `" << ident.name << ":" << ident.category << "'"<< endl;
-
-   // HACK: The EventReceiver has the same id as the main component, but a different
-   // category; it runs on the same machine as the component.
-   cdl::ComponentDescription desc = m_pDisplayServer->getComponentManager()->
-      getComponentDescription(ident.name);
-
-   const std::string & host(desc.hostName);
-   unsigned int port = cast::languageToPort(desc.language);
-
+   cout << "v11n: adding client `" << ident.name << ":" << ident.category
+      << "'@" << host << ":" << port << endl;
    Ice::ObjectPrx prx = m_pDisplayServer->getIceServer(ident.name, ident.category, host, port);
-   // END OF HACK
 
    Visualization::EventReceiverPrx client = Visualization::EventReceiverPrx::uncheckedCast(prx);
    m_EventClients.insert(client);

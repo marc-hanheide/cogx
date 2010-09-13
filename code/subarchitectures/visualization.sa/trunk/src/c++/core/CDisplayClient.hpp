@@ -35,11 +35,17 @@
 # define _CvMatPtr    void*
 #endif
 
+
+
 namespace cogx { namespace display {
 
 class CDisplayClient
 {
 protected:
+
+  ///if this is not "" then try to connect to a display server outside of CAST on this host
+   std::string m_standaloneHost;
+
    std::string m_serverName;
    Visualization::DisplayInterfacePrx m_pServer;
    cast::CASTComponent* m_pOwner;
