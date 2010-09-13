@@ -8,6 +8,7 @@
 #include "AccessImage.h"
 #include "ConvertImage.h"
 
+
 // define this to use memcpy() instead of looping over image lines and pixels
 // memcpy() is a LOT faster, but will screw up the images if the memory layout
 // (byte per pixel, bytes per line) is not exactly the same.
@@ -254,6 +255,37 @@ void PruneImageArea(IplImage *iplImg_src, IplImage & iplImg_dst, int width, int 
 // 	CvRect rect = cvRect(offsetX, offsetY, width, height);
 // 	cvSetImageROI(iplImg_src, rect);
 //   cvCopyImage(iplImg_src, iplImg_dst);
+}
+
+IplImage* crop( IplImage* src,  CvRect& roi){
+  if (roi.x>src->width-1 || roi.y>src->height-1 || roi.x+roi.width<0 || roi.y+roi.height<0 )
+  {
+      cout<<"ERROR: Wrong rect position in tools/hardware/video/src/c++/utils/ConvertImage.cpp!"<<endl;
+      cout<<"image Size is "<<src->width<<" ,"<<src->height<<endl;
+      cout<<"roi position and size are ("<<roi.x<<" ,"<<roi.y<<") ("<<roi.width<<" ,"<<roi.height<<")"<<endl;
+      exit(0);
+  }
+  //move the roi if they are out of the image
+  if (roi.x<0)	
+      roi.x = 0;
+  if (roi.y<0)
+      roi.y = 0;
+  if ( roi.x+roi.width>src->width-1)
+      roi.x = src->width-1-roi.width;
+  if ( roi.y+roi.height>src->height-1)
+      roi.y = src->height-1-roi.height;
+  
+  // Must have dimensions of output image
+  IplImage* cropped = cvCreateImage( cvSize(roi.width,roi.height), src->depth, src->nChannels );
+
+  // Say what the source region is
+  cvSetImageROI( src, roi );
+
+  // Do the copy
+  cvCopy( src, cropped );
+  cvResetImageROI( src );
+
+  return cropped;
 }
 }
 

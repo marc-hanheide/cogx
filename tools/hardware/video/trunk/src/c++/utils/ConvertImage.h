@@ -11,6 +11,8 @@
 #include <stdexcept>
 #include <vector>
 #include <cv.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 //#include <opencv/cv.h> - this is incorrect according to the pkg-config flags
 #include "Video.hpp"
 
@@ -89,6 +91,8 @@ void SwapRedBlueChannel(Video::Image & img);
  * @param offsetY Offset of y-coordinate of pruning area
  */
 void PruneImageArea(IplImage  *iplImg_src, IplImage & iplImg_dst, int width, int height, int offsetX, int offsetY);
+
+IplImage* crop( IplImage* src,  CvRect& roi);
 }
 
 #endif
