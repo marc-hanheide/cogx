@@ -1,0 +1,14 @@
+# cast config
+
+HOST localhost
+
+#COMPONENT PYTHON v11n.python.test cogxv11n.test.V11nTestDisplayClient --displayserver "display.srv" --debug
+#COMPONENT PYTHON v11n.python.test castmodule.mod_V11nTestDisplayClient --displayserver "display.srv" --debug
+COMPONENT PYTHON v11n.python.test castmodule.cogxv11n.TestClient --displayserver "display.srv" --standalone-display-host localhost --debug
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG display.srv DisplayServer --log true --debug true
+
