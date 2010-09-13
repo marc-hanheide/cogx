@@ -138,7 +138,12 @@ void ObjectRecognizer3D::runComponent(){
 				if(m_rec_cmd->cmd == RECLEARN && m_rec_cmd->visualObjectID.empty()){
   				log("%s: Warning no VisualObject given", m_label.c_str());
   				Math::Pose3 pose;
-  				pose.pos.x = 0.1; pose.pos.y = 0.2; pose.pos.z = 0.0;
+  				setIdentity(pose);
+					// NOTE: useful values for a user presenting an object to the system:
+					// 0.5 meters away and rotated 90 deg around x, so the object stands upright
+					// assuming that the objects local z axis points "up"
+  				pose.pos.x = 0.0; pose.pos.y = 0.0; pose.pos.z = 0.5;
+					fromRotVector(pose.rot, vector3(M_PI/2., 0., 0.));
   				loadVisualModelToWM(m_recEntries[m_label], pose, m_label);
   				m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
   			}
