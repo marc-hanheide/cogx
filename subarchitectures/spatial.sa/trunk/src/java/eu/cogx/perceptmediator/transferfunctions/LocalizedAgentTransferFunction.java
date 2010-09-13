@@ -19,6 +19,7 @@ import de.dfki.lt.tr.beliefs.data.formulas.IntFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.perceptmediator.components.RoomMembershipMediator;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 
@@ -32,7 +33,7 @@ public class LocalizedAgentTransferFunction extends
 	public LocalizedAgentTransferFunction(ManagedComponent component,
 			WMView<PerceptBelief> allBeliefs) {
 		super(component, allBeliefs, Logger
-				.getLogger(LocalizedAgentTransferFunction.class));
+				.getLogger(RoomMembershipMediator.class));
 		// TODO Auto-generated constructor stub
 	}
 
