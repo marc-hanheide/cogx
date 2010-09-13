@@ -78,9 +78,11 @@
 
   SOIFilter::SOIFilter()
   {
-	m_snapshotFiles = "xdata/snapshot/soifilter";
-	m_snapshotFlags = "A";
 	m_LastProtoObject = NULL;
+	m_snapshotFiles = "xdata/snapshot/soifilter";
+	m_snapshotFlags = "psm"; // points, segmented image, mask; no video image
+	m_idLeftImage = 0;
+	m_idRightImage = 1;
   }
 
   void SOIFilter::configure(const map<string,string> & _config)
@@ -170,6 +172,14 @@
 	{
 	  istringstream str(it->second);
 	  str >> m_snapshotFiles;
+	}
+
+	if((it = _config.find("--snapvideo")) != _config.end())
+	{
+	  istringstream str(it->second);
+	  str >> m_idLeftImage;
+	  str >> m_idRightImage;
+	  m_snapshotFlags = m_snapshotFlags + "v";
 	}
 
 
@@ -295,6 +305,11 @@
 
 	if (hasSnapFlag('m'))
 	  saveMask("image mask", string(path + "m.png"), pobj->mask, this);
+
+	if (hasSnapFlag('v')) {
+	  saveImage("left video image", string(path + "vl.png"), m_LeftImage, this);
+	  saveImage("right video image", string(path + "vr.png"), m_RightImage, this);
+	}
   }
 
 #ifdef FEAT_VISUALIZATION
@@ -360,8 +375,17 @@ void SOIFilter::runComponent()
 			log("SOI ID: %s was removed before it could be processed", soi.addr.id.c_str());
 		  }
 		}
-		else if(soi.status == DELETED)
+		else if(soi.status == DELETED) {
 		   log("SOI was removed before it could be processed");
+		  try
+		  { 
+			SOIPtr soiPtr = getMemoryEntry<VisionData::SOI>(soi.addr);
+		  }
+		  catch (DoesNotExistOnWMException e)
+		  {
+			log("SOI ID: %s was removed before it could be processed", soi.addr.id.c_str());
+		  }
+		}
 
 		objToAdd.pop();
 	  }
@@ -1207,6 +1231,11 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   Video::Image fullImage;
   videoServer->getImage(camId, fullImage);
 
+  if (hasSnapFlag('v')) {
+	videoServer->getImage(m_idLeftImage, m_LeftImage);
+	videoServer->getImage(m_idRightImage, m_RightImage);
+  }
+
 #if defined(FEAT_VISUALIZATION)
   ostringstream ss;
 #endif
@@ -1312,7 +1341,9 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   // ROI inside the original image is not exact because the ROI
   // was calculated for an undistorted image (used by the stereo algorithm).
   // With our cameras the distortion should not be significant, though.
-#if 0
+  //
+  // if 1: prepared for VisualLearner; if 0: prepared for ObjectRecognizer
+#if 1
   // Patch from rectified stereo image
   convertImageFromIpl(iplPatch, imgPatch);
 #else
