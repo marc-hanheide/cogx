@@ -3,6 +3,7 @@
  */
 package facades;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -67,7 +68,7 @@ public class ExecutorFacade extends CASTHelper {
 
 	}
 
-	Set<Callable<?>> listeners;
+	final Set<Callable<?>> listeners = new HashSet<Callable<?>>();
 
 	private final static ExecutorService executorService = Executors
 			.newCachedThreadPool();
