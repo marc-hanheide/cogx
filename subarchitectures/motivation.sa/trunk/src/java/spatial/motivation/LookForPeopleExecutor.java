@@ -1,9 +1,11 @@
 package spatial.motivation;
 
+import VisionData.PeopleDetectionCommand;
 import cast.AlreadyExistsOnWMException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryOperation;
+import execution.slice.actions.LookForPeople;
 
 /**
  * Executor which
@@ -11,29 +13,33 @@ import cast.cdl.WorkingMemoryOperation;
  * @author nah
  * 
  */
-public class LookForPeopleExecutor extends TurnAndLookExecutor {
+public class LookForPeopleExecutor extends TurnAndLookExecutor<LookForPeople> {
 
 	public LookForPeopleExecutor(ManagedComponent _component, int _detections) {
-		super(_component, _detections);
+		super(_component, LookForPeople.class, _detections);
 	}
 
 	@Override
 	protected void triggerDetection() {
-		m_component.log("detection triggered");
+		getComponent().log("detection triggered");
 
-		// TODO: put that back in place as soon as we have got the people stuff back in place
 		// Fire off a detection command
-//		PeopleDetectionCommand detect = new PeopleDetectionCommand();
-//		String id = m_component.newDataID();
-//		try {
-//			m_component
-//					.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
-//							WorkingMemoryOperation.DELETE),
-//							getAfterDetectionReceiver());
-//			m_component.addToWorkingMemory(id, detect);
-//		} catch (AlreadyExistsOnWMException e) {
-//			e.printStackTrace();
-//		}
+		PeopleDetectionCommand detect = new PeopleDetectionCommand();
+		String id = getComponent().newDataID();
+		try {
+			getComponent()
+					.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
+							WorkingMemoryOperation.DELETE),
+							getAfterDetectionReceiver());
+			getComponent().addToWorkingMemory(id, detect);
+		} catch (AlreadyExistsOnWMException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	protected boolean acceptAction(LookForPeople _action) {
+		return true;
 	}
 
 }
