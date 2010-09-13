@@ -1,4 +1,4 @@
-package motivation.util.viewer.plugins;
+package castutils.viewer.plugins;
 
 import java.util.Vector;
 
