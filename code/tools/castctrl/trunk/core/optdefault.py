@@ -50,6 +50,7 @@ CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG]
 CMD_PLAYER=player [PLAYER_CONFIG]
 CMD_PEEKABOT=peekabot
 CMD_LOG4J_SERVER=${CMD_JAVA} org.apache.log4j.net.SimpleSocketServer [LOG4J_PORT] [LOG4J_SERVER_CONFIG]
+CMD_DISPLAY_SERVER=output/bin/display-server
 
 """
 cleanup="""

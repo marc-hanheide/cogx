@@ -207,6 +207,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.ui.ckRunPeekabot.setCheckState(ckint("ckRunPeekabot", 2))
         self.ui.ckRunPlayer.setCheckState(ckint("ckRunPlayer", 2))
         self.ui.ckRunLog4jServer.setCheckState(ckint("ckRunLog4jServer", 2))
+        self.ui.ckRunDisplaySrv.setCheckState(ckint("ckRunDisplaySrv", 2))
 
     def _fillMessageFilterCombo(self):
         self.ui.messageSourceCmbx.clear()
@@ -351,6 +352,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager.addProcess(procman.CProcess("cast-cpp", self._options.xe("${CMD_CPP_SERVER}")))
         self._manager.addProcess(procman.CProcess("cast-python", self._options.xe("${CMD_PYTHON_SERVER}")))
         self._manager.addProcess(procman.CProcess("cast-client", self._options.xe("${CMD_CAST_CLIENT}")))
+        self._manager.addProcess(procman.CProcess("display", self._options.xe("${CMD_DISPLAY_SERVER}")))
         self._manager.addProcess(procman.CProcess("player", self._options.xe("${CMD_PLAYER}")))
         self._manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
         self._manager.addProcess(procman.CProcess("log4jServer", self._options.xe("${CMD_LOG4J_SERVER}")))
@@ -402,6 +404,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._options.setOption("ckRunPeekabot", self.ui.ckRunPeekabot.checkState())
             self._options.setOption("ckRunPlayer", self.ui.ckRunPlayer.checkState())
             self._options.setOption("ckRunLog4jServer", self.ui.ckRunLog4jServer.checkState())
+            self._options.setOption("ckRunDisplaySrv", self.ui.ckRunDisplaySrv.checkState())
             self._options.saveHistory(open(self.fnhist, 'w'))
             if not os.path.exists(self.fnconf):
                 self._options.saveConfig(open(self.fnconf, 'w'))
@@ -631,6 +634,9 @@ class CCastControlWnd(QtGui.QMainWindow):
             p = self._manager.getProcess("peekabot")
             if p != None: p.start()
 
+        if self.ui.ckRunDisplaySrv.isChecked():
+            p = self._manager.getProcess("display")
+            if p != None: p.start()
 
     def onStopExternalServers(self):
         p = self._manager.getProcess("player")
@@ -638,6 +644,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         p = self._manager.getProcess("peekabot")
         if p != None: p.stop()
         p = self._manager.getProcess("log4jServer")
+        if p != None: p.stop()
+        p = self._manager.getProcess("display")
         if p != None: p.stop()
 
     def _checkBuidDir(self):
