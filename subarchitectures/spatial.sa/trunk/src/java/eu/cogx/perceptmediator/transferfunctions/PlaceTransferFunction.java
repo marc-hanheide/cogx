@@ -24,7 +24,7 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
 public class PlaceTransferFunction extends SimpleDiscreteTransferFunction<Place> {
 
 	public PlaceTransferFunction(ManagedComponent component) {
-		super(component, Logger.getLogger(ComaRoomTransferFunction.class));
+		super(component, Logger.getLogger(PlaceTransferFunction.class));
 		// TODO Auto-generated constructor stub
 	}
 
