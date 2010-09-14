@@ -90,6 +90,9 @@ class ExecutionCondition(object):
 
         args = []
         for arg in action.args:
+            if arg.name == "?duration":
+                continue
+            
             next = it.get('terminal', "argument").token
             if next.string not in scope:
                 raise ParseError(next, "Unknown identifier: '%s'" % next.string)

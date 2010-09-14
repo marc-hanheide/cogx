@@ -474,11 +474,11 @@ class Parameter(TypedObject):
         (None if it is not instantiated)."""
         return self.instantiated
     
-    def __hash__(self):
-        return hash(id(self))
+    # def __hash__(self):
+    #     return hash(id(self))
 
-    def __eq__(self, other):
-        return id(self) == id(other)
+    # def __eq__(self, other):
+    #     return id(self) == id(other)
 
 
 #basic types for all pddl representations

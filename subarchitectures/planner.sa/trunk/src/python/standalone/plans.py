@@ -64,10 +64,15 @@ class PlanNode(object):
             self.args = args
 
     def is_executable(self):
+        if self.is_virtual():
+            return False
         return self.status == ActionStatusEnum.EXECUTABLE
 
     def is_inprogress(self):
         return self.status == ActionStatusEnum.IN_PROGRESS
+
+    def is_virtual(self):
+        return self.action.name.startswith("select_")
 
     def __str__(self):
         #return "%s(%s)" % (self.action, self.time)

@@ -21,7 +21,7 @@ status_dict = {PlanningStatusEnum.TASK_CHANGED : Planner.Completion.PENDING, \
 
 
 class CASTTask(object):
-    def __init__(self, planning_task, beliefs, domain_fn, component):
+    def __init__(self, planning_task, beliefs, domain_fn, component, problem_fn=None):
         self.component = component
 
         self.id = planning_task.id
@@ -30,11 +30,16 @@ class CASTTask(object):
         self.step = 0
 
         self.load_domain(domain_fn)
-
+        if problem_fn:
+            log.info("Loading predefined problem: %s.", problem_fn)
+            self.add_problem = pddl.load_problem(problem_fn, self.domain)
+        else:
+            self.add_problem = None
+            
         self.state = cast_state.CASTState(beliefs, self.domain)
         self.percepts = []
 
-        cp_problem, self.goaldict = self.state.to_problem(planning_task, deterministic=True, domain=self.cp_domain)
+        cp_problem, self.goaldict = self.state.to_problem(planning_task, deterministic=True, domain=self.cp_domain, add_problem=self.add_problem)
         
         self.cp_task = task.Task(self.id, cp_problem)
         self.waiting_for_action = False
@@ -104,7 +109,12 @@ class CASTTask(object):
         if "partial-observability" in self.domain.requirements:
             log.info("creating dt task")
             self.dt_task = dt_problem.DTProblem(plan, self.domain, self.state)
+
+            for pnode in plan.nodes_iter():
+                if pnode.action.name.startswith("select_"):
+                    pnode.status = plans.ActionStatusEnum.EXECUTED
             
+            self.update_status(self.status)
             if self.dt_planning_active():
                 self.update_status(Planner.Completion.INPROGRESS)
                 self.component.start_dt_planning(self)
@@ -306,7 +316,7 @@ class CASTTask(object):
                 
     def update_state(self, beliefs):
         self.state = cast_state.CASTState(beliefs, self.domain)
-        new_cp_problem, _ = self.state.to_problem(None, deterministic=True, domain=self.cp_domain)
+        new_cp_problem, _ = self.state.to_problem(None, deterministic=True, domain=self.cp_domain, add_problem=self.add_problem)
 
         #check if the goal is still valid
         try:
