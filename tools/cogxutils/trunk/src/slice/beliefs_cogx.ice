@@ -16,10 +16,14 @@ class PerceptBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelie
 class GroundedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
 };
 
-}; // end slice
-}; // end beliefs
-}; // end cogx
-}; // end eu
+}; 
+// end slice
+}; 
+// end beliefs
+}; 
+// end cogx
+}; 
+// end eu
 
 
 #endif
