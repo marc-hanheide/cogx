@@ -12,8 +12,11 @@ module Matlab
 	{
 		longSeq dimensions;
 		doubleSeq data;
-	}; // struct Matrix
-}; // module Matlab
+	}; 
+	// struct Matrix
+
+}; 
+// module Matlab
 
 #endif
 
