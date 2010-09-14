@@ -11,6 +11,9 @@ set(V_SLICE_INCLUDE_DIRS
    /usr/share/slice
    /usr/share/Ice/slice
    /usr/local/share
+   /opt/local/share
+   /opt/local/share/slice
+   /opt/local/share/slice/Ice/
    )
 
 cast_slice2py(SLICE_GEN01 ../slice/DisplayServer.ice ${V_SLICE_INCLUDE_DIRS})
