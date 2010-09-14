@@ -34,7 +34,8 @@ switch req
       if ~isempty(avwp)
 %         [mAV,mDA,mFS]=KDBFupdate(f,avwp,mAV,mDA,mFS);
 %         mAV=MKDBFupdate(f,avwp,mAV);
-         mAV=ODKDEupdate(f,avwp,mAV);
+         c=avw2snf(avwp,currMode.CTT);
+         mAV=ODKDEupdate(f,c,mAV);
       end
       if ~isempty(avwn)
 %         [mAV,mDA,mFS]=KDBFunlearn(f,avwn,mAV,mDA,mFS);

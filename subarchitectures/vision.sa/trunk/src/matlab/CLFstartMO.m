@@ -30,8 +30,7 @@ global ASVon ASVidx
 ASVon=0;
 ASVidx=0;
 
-
-Dirs.data=[Dirs.cogLearn 'Sim/data/objects_newvis'];
+Dirs.data=[Dirs.cogLearn 'Sim/data/objects_newvis/'];
 Data.numImgs=300;
 Data.currImg=1;
 Data.imgFormat='.jpg';
@@ -45,7 +44,6 @@ Params.HEG=.1;
 Params.ING=5;
 Params.MINCONF=3;
 Params.FV=3;
-
 
 %Reload global variables from CONFIG FILE
 confFile='config/cogLearn.config';
@@ -71,6 +69,16 @@ if fid~=-1
    load([Dirs.data Data.cgtName]);
    Data.Cgt=Cgt;
 end;   
+
+%HTML display
+Dirs.disp=[Dirs.cogLearn 'files/disp/'];
+global Disp
+fclose('all');
+delete([Dirs.disp 'mlog.html']);
+Disp.mlog=fopen([Dirs.disp 'mlog.html'],'a');
+Disp.mL=fopen([Dirs.disp 'mL.html'],'w');
+Disp.mR=fopen([Dirs.disp 'mR.html'],'w');
+
 
 %start processes
 
