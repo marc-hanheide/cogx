@@ -25,6 +25,14 @@ module ObjectRecognizerIce {
    };
    sequence<RecognitionResult> RecognitionResultSeq;
 
+   class ObjectRecognitionTask {
+      // REQUEST:
+      cast::cdl::WorkingMemoryAddress protoObjectAddr;
+
+      // RESPONSE
+      RecognitionResultSeq matches;
+   };
+
    interface ObjectRecognizerInterface {
       long LoadObjectModel(string modelPath);
 
