@@ -312,7 +312,6 @@ class ProbabilisticState(State):
             for v in self.problem.get_all_objects(svar.get_type()):
                 if v in excluded:
                     continue
-                print "added", v
                 idvar = svar.as_modality(mapl.i_indomain, [v])
                 s[idvar] = TRUE
 
