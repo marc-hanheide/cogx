@@ -215,7 +215,7 @@ public class DeprecatedScheduler extends ManagedComponent {
 	private int maxPriority(Collection<Motive> collection) {
 		int result = -1;
 		for (Motive m : collection) {
-			result = Math.max(m.priority.value(), result);
+			result = Math.max(m.priority.ordinal(), result);
 		}
 
 		return result;

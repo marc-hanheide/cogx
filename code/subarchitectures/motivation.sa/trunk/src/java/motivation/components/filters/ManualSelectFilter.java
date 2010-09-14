@@ -53,15 +53,15 @@ public class ManualSelectFilter implements MotiveFilter {
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 
 		if (motive instanceof ExploreMotive)
-			return MotivePriority.convert(jExplorePrioritySlider.getValue());
+			return MotivePriority.values()[jExplorePrioritySlider.getValue()];
 		else if (motive instanceof HomingMotive)
-			return MotivePriority.convert(jHomePrioritySlider.getValue());
+			return MotivePriority.values()[jHomePrioritySlider.getValue()];
 		else if (motive instanceof CategorizeRoomMotive)
-			return MotivePriority.convert(jCategorizePrioritySlider.getValue());
+			return MotivePriority.values()[jCategorizePrioritySlider.getValue()];
 		else if (motive instanceof GeneralGoalMotive)
-			return MotivePriority.convert(jGeneralPrioritySlider.getValue());
+			return MotivePriority.values()[jGeneralPrioritySlider.getValue()];
 		else if (motive instanceof PatrolMotive)
-			return MotivePriority.convert(jPatrolPrioritySlider.getValue());
+			return MotivePriority.values()[jPatrolPrioritySlider.getValue()];
 		else
 			return MotivePriority.NORMAL;
 	}
@@ -235,17 +235,17 @@ public class ManualSelectFilter implements MotiveFilter {
 
 	private JSlider createPrioritySlider() {
 		JSlider jSlider = new JSlider(JSlider.HORIZONTAL,
-				MotivePriority.UNSURFACE.value(), MotivePriority.HIGH.value(),
-				MotivePriority.UNSURFACE.value());
+				MotivePriority.UNSURFACE.ordinal(), MotivePriority.HIGH.ordinal(),
+				MotivePriority.UNSURFACE.ordinal());
 		Dictionary<Integer, JComponent> labels;
 		labels = new Hashtable<Integer, JComponent>();
-		labels.put(MotivePriority.UNSURFACE.value(), new JLabel(
+		labels.put(MotivePriority.UNSURFACE.ordinal(), new JLabel(
 				MotivePriority.UNSURFACE.name()));
-		labels.put(MotivePriority.LOW.value(), new JLabel(MotivePriority.LOW
+		labels.put(MotivePriority.LOW.ordinal(), new JLabel(MotivePriority.LOW
 				.name()));
-		labels.put(MotivePriority.NORMAL.value(), new JLabel(
+		labels.put(MotivePriority.NORMAL.ordinal(), new JLabel(
 				MotivePriority.NORMAL.name()));
-		labels.put(MotivePriority.HIGH.value(), new JLabel(MotivePriority.HIGH
+		labels.put(MotivePriority.HIGH.ordinal(), new JLabel(MotivePriority.HIGH
 				.name()));
 		jSlider.setLabelTable(labels);
 		jSlider.setPaintTicks(true);
