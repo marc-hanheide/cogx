@@ -2,7 +2,7 @@
 FIND_LIBRARY(CPPUNIT cppunit)
 FIND_PATH(CPPUNIT_HEADERS cppunit/TestRunner.h)
 IF ( CPPUNIT AND CPPUNIT_HEADERS)
-   MESSAGE("-- Looking for Cppunit - found")
+   #MESSAGE("-- Looking for Cppunit - found")
 ELSE ( CPPUNIT AND CPPUNIT_HEADERS )
    MESSAGE( FATAL_ERROR "-- Looking for Cppunit - not found")
 ENDIF ( CPPUNIT AND CPPUNIT_HEADERS )
