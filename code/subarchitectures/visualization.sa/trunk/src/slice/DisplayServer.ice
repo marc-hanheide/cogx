@@ -24,12 +24,16 @@ module Visualization
 
    struct ActionInfo {
       string label;
-      string iconLabel;   
-      // Optional, defaults to label
-      string iconSvg;     
-      // Optional
-      ByteSeq iconImage;  
-      // Optional, iconSvg takes precedence
+
+      // iconLabel Optional, defaults to label
+      string iconLabel;
+
+      // iconSvg Optional
+      string iconSvg;
+
+      // iconImage Optional, iconSvg takes precedence
+      ByteSeq iconImage;
+
       bool checkable;
    };
 
@@ -77,52 +81,65 @@ module Visualization
 
       // Event handlers need to subscribe
       // TODO: parameter: which views to watch
-      // nah: added extra parameters to 
+      // nah: added extra parameters to
       void addClient(Ice::Identity ident, string host, int port);
 
       // TODO: a checkbox has an initial value (0, 1, 2)
-      void addCheckBox(Ice::Identity ident, string viewId, string ctrlId, string label); 
-	// TODO: ActionInfo
-      void addButton(Ice::Identity ident, string viewId, string ctrlId, string label); 
-	// TODO: ActionInfo
+      // TODO: ActionInfo parameter
+      void addCheckBox(Ice::Identity ident, string viewId, string ctrlId, string label);
+
+      // TODO: ActionInfo parameter
+      void addButton(Ice::Identity ident, string viewId, string ctrlId, string label);
+
       void addToolButton(Ice::Identity ident, string viewId, string ctrlId, ActionInfo info);
       void enableMouseEvents(Ice::Identity ident, string viewId, bool enabled);
    };
 
    enum EEventType
    {
-      evButtonClick,    
-      // A normal button was clicked
-      evCheckBoxChange, 
-      // data = state
-      evDropListChange, 
-      // data = list item text
-      evMouseClick,     
-      // source = view, data = button, (x,y) = position
-      evHtmlOnClick     
-      // An HTML element was clicked
+      // evButtonClick - A normal button was clicked
+      evButtonClick,
+
+      // evCheckBoxChange - data = state
+      evCheckBoxChange,
+
+      // evDropListChange - data = list item text
+      evDropListChange,
+
+      // evMouseClick - source = view, data = button, (x,y) = position
+      evMouseClick,
+
+      // evHtmlOnClick - An HTML element was clicked
+      evHtmlOnClick
    };
 
    struct TEvent
    {
       EEventType type;
-      string objectId;  
-      // viewId from addCheckBox etc. / id from setActiveHtml etc.
-      string partId;    
+
+      // objectId - viewId from addCheckBox etc. / id from setActiveHtml etc.
+      string objectId;
+
       // partId
-      string sourceId;  
-      // ctrlId from addCheckBox etc. / id from @@ONCLICK@@
+      string partId;
+
+      // sourceId - ctrlId from addCheckBox etc. / id from @@ONCLICK@@
+      string sourceId;
+
       string data;
-      float x;
-      float y;          
+
       // Position of the mouse click inside the control
+      float x;
+      float y;
    };
-   
+
    interface EventReceiver
    {
       void handleEvent(TEvent event);
-      string getControlState(string ctrlId); // XXX: maybe add param what; maybe add id, partId
       void handleForm(string id, string partId, TFormFieldMap fields);
+
+      // getControlState XXX: maybe add param what; maybe add id, partId
+      string getControlState(string ctrlId);
 
       // Get data to fill the form when first displayed; returns false if not supported
       bool getFormData(string id, string partId, out TFormFieldMap fields);
