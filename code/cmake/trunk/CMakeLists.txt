@@ -47,13 +47,19 @@ endif(BUILD_BELIEFS)
 
 option(BUILD_SA_BINDING "Build binder subarchitecure" NO)
 if(BUILD_SA_BINDING)
-add_subdirectory (subarchitectures/binder)
+add_subdirectory (subarchitectures/binder.sa)
 endif(BUILD_SA_BINDING)
 
 option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" NO)
 if(BUILD_SA_MOTIVATION)
 add_subdirectory (subarchitectures/motivation.sa)
 endif(BUILD_SA_MOTIVATION)
+
+option(BUILD_SA_EXECUTION "Build execution subarchitecure" NO)
+if(BUILD_SA_EXECUTION)
+add_subdirectory (subarchitectures/execution.sa)
+endif(BUILD_SA_EXECUTION)
+
 
 option(BUILD_SA_DIALOGUE "Build dialogue subarchitecure" NO)
 if(BUILD_SA_DIALOGUE)
