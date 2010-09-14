@@ -9,7 +9,7 @@ CPP TM AlwaysPositiveTaskManager
 
 CPP MG display.srv DisplayServer
 
-CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --setvars "dir=/tmp" --monitor "%(dir)/{popout.show.points}" --log true
+#CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --setvars "dir=/tmp" --monitor "%(dir)/{popout.show.points}" --log true
 #CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --setvars "dir=/tmp" --monitor "PlaneMarkedOnImage=image:%(dir)/{popout.show.image}" --log true
 
 SUBARCHITECTURE vision.sa
