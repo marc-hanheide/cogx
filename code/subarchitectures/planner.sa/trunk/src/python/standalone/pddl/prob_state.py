@@ -283,7 +283,9 @@ class ProbabilisticState(State):
         
         for fact, prob in self.iterfacts(only_nonzero=False):
             #TODO: Handle cases with limited number of alternatives
-            if prob >= upper_threshold:
+            if fact.value == UNKNOWN and prob > lower_threshold:
+                exclude_domains.setdefault(fact.svar,[])
+            elif prob >= upper_threshold:
                 s.set(fact)
             elif prob > lower_threshold:
 #                idvar = fact.svar.as_modality(mapl.not_indomain, [fact.value])
@@ -310,6 +312,7 @@ class ProbabilisticState(State):
             for v in self.problem.get_all_objects(svar.get_type()):
                 if v in excluded:
                     continue
+                print "added", v
                 idvar = svar.as_modality(mapl.i_indomain, [v])
                 s[idvar] = TRUE
 

@@ -118,6 +118,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def __init__(self):
     cast.core.CASTComponent.__init__(self)
     self.domain_fn = TEST_DOMAIN_FN
+    self.problem_fn = None
     self.client = None
     self.dt = None
     self.hfc = None
@@ -161,6 +162,9 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     if "--domain" in config:
       self.domain_fn = join(dirname(__file__), "domains", config["--domain"])
 
+    if "--problem" in config:
+      self.problem_fn = join(dirname(__file__), "domains", config["--problem"])
+      
   def getClient(self):
     if not self.client:
       self.client = self.getIceServer(self.client_name, Planner.CppServer, Planner.CppServerPrx)
@@ -226,7 +230,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     except Exception, e:
         log.warning("Error when calling the HFC server: %s", str(e))
 
-    task = CASTTask(task_desc, self.beliefs, self.domain_fn, self)
+    task = CASTTask(task_desc, self.beliefs, self.domain_fn, self, problem_fn=self.problem_fn)
     self.tasks[task.id] = task
 
     task.run()

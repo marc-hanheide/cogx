@@ -25,10 +25,11 @@ class CASTState(object):
         self.namedict = tp.rename_objects(self.objects)
 
         self.facts = list(tp.tuples2facts(obj_descriptions))
-        self.prob_state = prob_state.ProbabilisticState(self.facts, None)
+        problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
+        self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
         self.state = self.prob_state.determinized_state(0.1, 0.9)
 
-    def to_problem(self, cast_task, deterministic=True, domain=None):
+    def to_problem(self, cast_task, deterministic=True, domain=None, add_problem=None):
         if "action-costs" in self.domain.requirements:
             opt = "minimize"
             opt_func = pddl.FunctionTerm(pddl.builtin.total_cost, [])
@@ -42,9 +43,18 @@ class CASTState(object):
         if deterministic:
             facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.state.iterfacts()]
         else:
-            facts = self.facts
+            facts = self.facts[:]
 
-        problem = pddl.Problem("cogxtask", self.objects, facts, None, domain, opt, opt_func )
+        objects = self.objects
+        if add_problem:
+            objects = set(objects)
+            for obj in add_problem.objects:
+                objects.add(obj)
+            for lit in add_problem.init:
+                facts.append(lit)
+
+
+        problem = pddl.Problem("cogxtask", objects, facts, None, domain, opt, opt_func )
 
         if deterministic:
             self.state.problem = problem

@@ -51,7 +51,7 @@ def instantiate_args(args, state=None):
     """
     if state:
         return [state.evaluate_term(arg) for arg in args]
-    
+
     result = []
     for arg in args:
         if arg.__class__ == VariableTerm:

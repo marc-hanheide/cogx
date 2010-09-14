@@ -1,7 +1,8 @@
 import os
 
+from collections import defaultdict
 from standalone import task, pddl, plans
-from standalone.pddl import dtpddl, mapl, translators, visitors
+from standalone.pddl import state, dtpddl, mapl, translators, visitors
 
 class DTProblem(object):
     def __init__(self, plan, domain, cast_state):
@@ -9,9 +10,11 @@ class DTProblem(object):
         self.domain = domain
         self.state = cast_state
         self.subplan_actions = []
+        self.select_actions = []
         
         self.goals = self.create_goals(plan)
         self.goal_actions = set()
+        self.compute_restrictions()
         
         self.dtdomain = self.create_limited_domain(domain)
         self.goal_actions |= self.create_goal_actions(self.goals, self.dtdomain)
@@ -46,7 +49,16 @@ class DTProblem(object):
         observe_actions = translators.Translator.get_annotations(self.domain).get('observe_effects', [])
         #print observe_actions
         if not observe_actions:
-            return None
+            return []
+
+        def find_restrictions(pnode):
+            for pred in plan.predecessors_iter(pnode, 'depends'):
+                restr = find_restrictions(pred)
+                if pred.action.name.startswith("select_"):
+                    return [pred] + restr
+                if restr:
+                    return restr
+            return []
 
         goal_svars = set()
         #combine consecutive observe actions into one subtask.
@@ -61,11 +73,88 @@ class DTProblem(object):
                     if svar.modality in (mapl.knowledge, mapl.direct_knowledge):
                         goal_svars.add(svar.nonmodal())
                 self.subplan_actions.append(pnode)
-                
+                self.select_actions = [pnode] + find_restrictions(pnode)
+                break # only one action at a time for now
+            
             if pnode.action.name not in observe_actions and self.subplan_actions:
                 break
             
         return goal_svars
+
+    def compute_restrictions(self):
+        layers = []
+        relaxations = set()
+        fixed = set()
+        constraints = defaultdict(set)
+        for pnode in self.select_actions:
+            print "action:",pnode
+            print "cond:",map(str,pnode.preconds)
+            new_fixed = fixed | set(pnode.full_args)
+            new_relaxations = set()
+            new_constraints = defaultdict(set)
+            for svar, val in pnode.preconds:
+                if svar.modality == mapl.commit:
+                    new_relaxations |= set(svar.args+svar.modal_args)
+                    new_relaxations.add(val)
+                elif svar.function.type != pddl.t_number:
+                    for a in svar.args+svar.modal_args:
+                        new_constraints[a].add(state.Fact(svar,val))
+            new_relaxations.discard(pddl.TRUE)
+            new_relaxations.discard(pddl.FALSE)
+            
+            for svar in relaxations:
+                print "trying to relax", svar,"..."
+                if svar in new_relaxations:
+                    print "will be relaxed later"
+                    continue
+                if svar in new_constraints:
+                    print "has some new constraints:", map(str, constraints[svar])
+                    new_fixed.discard(svar)
+                    continue
+                print "is completely free"
+                new_fixed.discard(svar)
+
+            for obj, constr in constraints.iteritems():
+                for c in constr:
+                    if c.value in new_fixed:
+                        new_constraints[obj].add(c)
+                    else:
+                        print obj.name, "constraint", c, "is gone"
+                        
+            
+            print "fixed on this layer:", map(str, new_fixed)
+            c2 = []
+            replace_dict = {}
+            for obj, cset in new_constraints.iteritems():
+                for c in cset:
+                    if obj in replace_dict or obj in new_fixed:
+                        continue
+                    args = []
+                    assert not c.svar.modal_args, "Not yet supported."
+                    for a in c.svar.args:
+                        a2 = pddl.TypedObject("any_%s" % (a.type.name), a.type)
+                        replace_dict[a] = a2
+                        args.append(a2)
+                    val = replace_dict.get(c.value, c.value)
+                    f2 = pddl.state.Fact(pddl.state.StateVariable(c.svar.function, args), val)
+                    if f2 not in c2:
+                        c2.append(f2)
+                
+            layers.append((new_fixed, c2))
+            #print "fixed values:", map(str, fixed)
+            #print "possible relaxations:", map(str, relaxations)
+            fixed = new_fixed
+            relaxations = new_relaxations
+            constraints = new_constraints
+
+        for i,(fixed,constraints) in enumerate(layers):
+            print "Layer",i
+            print "Fixed:", map(str, fixed)
+            # cset = set()
+            # for c in constraints.itervalues():
+            #     cset |= c
+            print "Constraints:", map(str, constraints)
+            print "\n"
             
     def create_goal_actions(self, goals, domain):
         result = set()

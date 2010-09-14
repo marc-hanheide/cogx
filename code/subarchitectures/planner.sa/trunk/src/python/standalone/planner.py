@@ -560,33 +560,27 @@ class TFD(BasePlanner):
             proc, _, translate_err = utils.run_process(cmd, output=output_sas_path, dir=tmp_dir, wait=True)
         
         output.write(translate_err)
-        log.debug("translate output:")
-        log.debug(translate_err)
         
         if proc.returncode != 0:
-            utils.print_errors(proc, cmd, translate_err, "TFD Translate")
+            utils.print_errors(proc, cmd, translate_err, log, "TFD Translate")
             return None
 
         cmd = "%(exec_path)s/preprocess/preprocess" % locals()
         with statistics.time_block_for_statistics(self.main_planner, "preprocess_time"):
             proc, _, prep_err = utils.run_process(cmd, input=output_sas_path, output=output_path, dir=tmp_dir, wait=True)
         output.write(prep_err)
-        log.debug("preprocess output:")
-        log.debug(prep_err)
         
         if proc.returncode != 0:
-            utils.print_errors(proc, cmd, prep_err, "TFD Preprocess")
+            utils.print_errors(proc, cmd, prep_err, log, "TFD Preprocess")
             return None
 
         cmd = "%(exec_path)s/search/search %(search_args)s" % locals()
         with statistics.time_block_for_statistics(self.main_planner, "search_time"):
              proc, _, search_err = utils.run_process(cmd, input=output_path, dir=tmp_dir, wait=True)
         output.write(search_err)
-        log.debug("search output:")
-        log.debug(search_err)
 
         if proc.returncode != 0:
-            utils.print_errors(proc, cmd, search_err, "TFD Search")
+            utils.print_errors(proc, cmd, search_err, log, "TFD Search")
             return None
 
         output.close()
@@ -595,13 +589,13 @@ class TFD(BasePlanner):
             pddl_output = open(plan_path).read()
             print pddl_output
         except IOError:
-            log.warning("Warning: TFD did not find a plan or crashed.")
+            log.warning("Warning: TFD did not find a plan.")
             log.warning("Call was: %s", cmd)
-            log.warning("FD output was:\n\n>>>")
-            log.warning(translate_err)
-            log.warning(prep_err)
-            log.warning(search_err)
-            log.warning("<<<\n")
+            # log.warning("FD output was:\n\n>>>")
+            # log.warning(translate_err)
+            # log.warning(prep_err)
+            # log.warning(search_err)
+            # log.warning("<<<\n")
             return None
         
         pddl_plan = self.parse_tfd_output(pddl_output)

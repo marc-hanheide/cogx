@@ -367,20 +367,22 @@ def run_process(cmd, input=None, output=PIPE, error=PIPE, dir=None, wait=True):
         return process, out, err
     return process
 
-def print_errors(process, cmd, output, name=None):
+def print_errors(process, cmd, output, logger, name=None):
     if not name:
         executable = cmd.split()[0]
         name = os.path.basename(executable)
 
-    print "Warning: %s returned with nonzero exitcode:\n\n>>>" % name
-    print "Call was:", cmd
-    print output
-    print "<<<\n"
     if process.returncode > 0:
-        print "Exit code was %d" % process.returncode
+        logger.warning("%s returned with nonzero %d.", name, process.returncode)
+        lfunc = logger.warning
     else:
-        print "Killed by signal %d" % -process.returncode
-    return None
+        logger.error("%s was killed by signal %d.", name, -process.returncode)
+        lfunc = logger.error
+    lfunc("Call was: %s", cmd)
+    lfunc("Output:")
+    lfunc("=====================================================================")
+    lfunc(output)
+    lfunc("=====================================================================")
 
 def run_unit_tests(args):
     pass

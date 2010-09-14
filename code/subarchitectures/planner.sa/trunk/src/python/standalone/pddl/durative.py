@@ -101,14 +101,17 @@ class DurationConstraint(object):
         
 class DurativeAction(actions.Action):
     def __init__(self, name, args, duration, precondition, effect, domain, replan=None):
-        d = Parameter("?duration", types.t_number)
+        d = types.Parameter("?duration", types.t_number)
         actions.Action.__init__(self, name, args+[d], precondition, effect, domain, replan=replan)
         self.set_tag("durative_action", True) # proper parsing context
         
         self.duration = duration
         for d in self.duration:
             d.set_scope(self)
-        
+            
+    def get_total_cost(self):
+        return self.duration[0].term
+    
     def copy(self, newdomain=None):
         a = actions.Action.copy(self, newdomain)
         a.__class__ = DurativeAction

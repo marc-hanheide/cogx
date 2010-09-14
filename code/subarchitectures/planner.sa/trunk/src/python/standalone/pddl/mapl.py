@@ -319,6 +319,11 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
         mapping["?duration"] = self.duration[0].term.copy_instance()
         actions.Action.instantiate(self, mapping)
 
+    def knowledge_effect(self):
+        effs = [s.knowledge_effect() for s in self.sensors]
+        t_effs = [durative.TimedEffect(e.predicate, e.args, "end", e.get_scope(), e.negated) for e in effs]
+        return effects.ConjunctiveEffect(t_effs)
+        
     def copy(self, newdomain=None):
         a = MAPLAction.copy(self, newdomain)
         a.__class__ = MAPLDurativeAction
@@ -508,8 +513,9 @@ class MAPLWriter(writer.Writer):
         strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
         if params:
             strings += self.section(":parameters", ["(%s)" % self.write_typelist(params)], parens=False)
-        if action.vars:
-            strings += self.section(":variables", ["(%s)" % self.write_typelist(action.vars)], parens=False)
+        vars = [a for a in action.vars if a.name != "?duration"]
+        if vars:
+            strings += self.section(":variables", ["(%s)" % self.write_typelist(vars)], parens=False)
             
         strings += self.section(":duration", self.write_durations(action.duration), parens=False)
         
