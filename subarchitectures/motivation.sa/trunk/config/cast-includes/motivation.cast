@@ -1,9 +1,9 @@
 # motivation ##################################################################
 
 JAVA MG goal.generator motivation.components.generators.PlaceBeliefGoalGenerator --debug
+
 JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
-JAVA MG goal.scheduler motivation.components.managers.DeprecatedScheduler --debug --maxPlannedMotives 1
-JAVA MG goal.manager motivation.components.managers.PlanAllManager --debug
+JAVA MG goal.scheduler motivation.components.managers.Scheduler --debug 
 
 
      #JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(exists (?r - robot) (forall (?h - person) (kval ?r (name ?h))))"
