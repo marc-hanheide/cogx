@@ -39,7 +39,7 @@ long long gethrtime(void)
 #define min_height_of_obj 0.03	//unit cm, due to the error of stereo, >0.01 is suggested
 #define rate_of_centers 0.4	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
-#define Torleration 5		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
+#define Torleration 10		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
 #define MAX_V 0.1
 #define label4initial		-3
@@ -730,7 +730,7 @@ void PlanePopOut::runComponent()
 			OP.pointsInOneSOI = SOIPointsSeq.at(i);
 			OP.BGInOneSOI = BGPointsSeq.at(i);
 			OP.EQInOneSOI = EQPointsSeq.at(i);
-			//OP.surf = GetSurf(SOIPointsSeq.at(i), image);
+			OP.surf = GetSurf(SOIPointsSeq.at(i), image);
 			CurrentObjList.push_back(OP);
 		}
 		SOIManagement();
@@ -760,8 +760,8 @@ void PlanePopOut::SOIManagement()
 	{
 	    if (CurrentObjList.at(i).bComCurrentPre == false)
 	    {
-		//float probability = Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j));
-		if(Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)) == true)
+		float probability = Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j));
+		if(probability >Treshold_Comp2SOI)
 		{
 		    deleteObjFlag = false;
 		    CurrentObjList.at(i).bComCurrentPre = true;
@@ -847,10 +847,12 @@ IpVec PlanePopOut::GetSurf(VisionData::SurfacePointSeq points, Video::Image img)
     IplImage* imgpatch=cvCreateImage(cvSize(r.width,r.height),iplImage->depth,iplImage->nChannels);
     imgpatch = Video::crop(iplImage,r);
     IpVec ips;
+    if (r.width<=16 || r.height<=16)	return ips;
     surfDetDes(imgpatch,ips, false, 4, 4, 2, 0.0001f);
 
     cvReleaseImage(&imgpatch);
     cvReleaseImage(&iplImage);
+    log("Done get surf!");
     return ips;
 }
 
@@ -1483,13 +1485,14 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, Visio
 	return obs;
 }
 
-bool PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
+float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 {
-  /*
     float r = 0.0;	//probability of matching of two objects, 0.0~1.0
     if (obj1.surf.size()== 0 || obj2.surf.size()==0) return r;
     IpPairVec matches;
+    log("Start surf matching! number of surf features are %d, %d", obj1.surf.size(), obj2.surf.size());
     getMatches(obj1.surf,obj2.surf,matches);
+    log("Finish surf matching, there are %d features matched", matches.size());
     if (matches.size()== 0)	return r;
     if(obj1.surf.size()>obj2.surf.size())
 	r = matches.size()/obj1.surf.size();
@@ -1497,12 +1500,12 @@ bool PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
         r = matches.size()/obj2.surf.size();
     return r;
     
-  */
+  /*
 	if (dist(obj1.c,obj2.c)<rate_of_centers*obj1.r)
 		return true; //the same object
 	else
 		return false; //not the same one
-
+*/
 }
 
 void PlanePopOut::AddConvexHullinWM()
