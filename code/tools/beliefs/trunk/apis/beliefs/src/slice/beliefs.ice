@@ -164,7 +164,8 @@ module logicalcontent {
  * Abstract class for a formula
  */
  class dFormula { 
- 	int id;  // nominal (cf. hybrid logic)
+ 	int id;  
+	// nominal (cf. hybrid logic)
  };
 
 
