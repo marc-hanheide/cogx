@@ -379,6 +379,7 @@ module VisionData {
 
  /**
   * Person detected in camera a laser.
+  * @author Nick Hawes
   */
   class Person {        
     // angle and distance from robot
@@ -392,10 +393,23 @@ module VisionData {
     double deltaZ;
   };
 
+ /**
+  * Command to trigger people detection
+  * @author Nick Hawes
+  */
   class PeopleDetectionCommand {
   	//nothing involved here
   };
 
+  /**
+  * 
+  * Model foregrounded for use by recognisers etc.
+  * @author Nick Hawes
+  */
+  class ForegroundedModel {
+    string model;
+  };
+	
 };
 
 #endif
