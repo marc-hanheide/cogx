@@ -162,7 +162,8 @@ class ObjectSearchPlan{
   * @author Patric Jensfelt
   * @see
   */
-  class TopologicalRobotPos { // High-level robot pose
+  class TopologicalRobotPos { 
+    // High-level robot pose
     long areaId;
   };
 
@@ -328,8 +329,10 @@ class ObjectSearchPlan{
   		    GOFORWARD, 
 		    GOBACK, 
 		    PERSONFOLLOW, 
-		    TURN, // relative
-		    TURNTO, // absolute
+		    TURN, 
+		    // relative
+		    TURNTO, 
+		    // absolute
 		    EXPLORE,
 		    EXPLOREFLOOR,
 		    STOP,
@@ -347,11 +350,16 @@ class ObjectSearchPlan{
   * @author Patric Jensfelt
   * @see
   */
-  enum Completion {PENDING,     // hasnt started 
-		   INPROGRESS, // started but not finished
-		   ABORTED,     // aborted due to higher priority command	
-	           FAILED,      // finished unsuccessfully
-		   SUCCEEDED};  // finished successfully
+  enum Completion {PENDING,     
+       		   // hasnt started 
+		   INPROGRESS, 
+		   // started but not finished
+		   ABORTED,     
+		   // aborted due to higher priority command	
+	           FAILED,      
+		   // finished unsuccessfully
+		   SUCCEEDED};  
+		   // finished successfully
 
  /**
   * Error codes for the status information for a command
@@ -372,10 +380,13 @@ class ObjectSearchPlan{
   * @author Patric Jensfelt
   * @see
   */
-  enum Priority {URGENT,   // removes everything else from the queue
-		 HIGH,     // goes to the start of the queue
-		 NORMAL};  // gets done if nothing else of higher priority
-                           // is in the queue.  
+  enum Priority {URGENT,   
+       		 // removes everything else from the queue
+		 HIGH,     
+		 // goes to the start of the queue
+		 NORMAL};  
+		 // gets done if nothing else of higher priority
+                 // is in the queue.  
 
   /**              
    * This is the command that clients wanting to control the robot should write 
@@ -495,7 +506,8 @@ class ObjectSearchPlan{
    * @author Patric Jensfelt
    */
   class Person {
-    cast::cdl::CASTTime  time; // timestamp when last updated
+    cast::cdl::CASTTime  time; 
+    // timestamp when last updated
 
     // Id of the person
     long id;
@@ -523,10 +535,13 @@ class ObjectSearchPlan{
    * @author Patric Jensfelt
    */
   class PersonFollowed {
-    cast::cdl::CASTTime  time; // timestamp when last updated
-    long id;                   // -1 means no person followed
+    cast::cdl::CASTTime  time; 
+    // timestamp when last updated
+    long id;                   
+    // -1 means no person followed
   };
  
 };
 
-#endif // NAVDATA_ICE
+#endif 
+// NAVDATA_ICE
