@@ -1,4 +1,4 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain springtest.mapl --log --nodot
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain dora-explore.mapl --log --nodot
 
 SUBARCHITECTURE planner.sa
 
