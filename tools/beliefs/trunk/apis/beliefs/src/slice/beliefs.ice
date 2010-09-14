@@ -1,4 +1,3 @@
- 
 // =================================================================
 // Copyright (C) 2010 DFKI GmbH Talking Robots 
 // Geert-Jan M. Kruijff (gj@dfki.de), Pierre Lison (pierre.lison@dfki.de) 
@@ -86,8 +85,8 @@ class SpatioTemporalFrame extends AbstractFrame {
 
 
 
-}; // end spatiotemporalframe
-
+}; 
+// end spatiotemporalframe
 
 // ================================
 // EPISTEMIC STATUS
@@ -132,12 +131,12 @@ class SharedEpistemicStatus extends EpistemicStatus{
 	Agents cgagents;
 };
 
-};  // end epstatus
+};  
+// end epstatus
 
 // ================================
 // EPISTEMIC OBJECTS
 // ================================
-
 
 module epobject {
 
@@ -147,10 +146,11 @@ module epobject {
 class EpistemicObject {
 	framing::AbstractFrame frame;
 	epstatus::EpistemicStatus estatus;
-} ;
+};
 
 
-}; // end epobject
+}; 
+// end epobject
 
 
 
@@ -239,7 +239,8 @@ class ComplexFormula extends dFormula {
 };
 
 
-}; // end formulae
+}; 
+// end formulae
 
 
 
@@ -316,7 +317,8 @@ class NormalValues extends DistributionValues {
 	double variance;
 };
  
-}; // end distributions
+}; 
+// end distributions
 
 
 
@@ -331,7 +333,8 @@ module history {
  */
 class AbstractBeliefHistory { };
 
-}; // end history
+}; 
+// end history
 
 
 // ================================
@@ -352,7 +355,8 @@ class dBelief extends epobject::EpistemicObject {
 	history::AbstractBeliefHistory hist; 
 };
 
-}; // end beliefs
+}; 
+// end sitbeliefs
 
 
 // ================================
@@ -376,9 +380,8 @@ class Intention extends epobject::EpistemicObject {
 	AlternativeIntentions content;
 };
 
-}; // end intentions
-
-
+}; 
+// end intentions
 
 // ================================
 // EVENTS
@@ -391,23 +394,18 @@ class Event extends epobject::EpistemicObject {
 	distribs::ProbDistribution content;
 };
 
-}; // end intentions
-
-
+}; 
+// end events
 
 // ================================
 // END SLICE
 // ================================
 
-}; // end slice
-}; // end beliefs
-}; // end tr
-}; // end lt
-}; // end dfki
-}; // end de
-
+}; 
+}; 
+}; 
+};
+}; 
+}; 
 
 #endif
-
-
-
