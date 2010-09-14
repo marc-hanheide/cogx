@@ -337,6 +337,18 @@ module VisionData {
     string visualObjectId;
     string beliefId;
   };
+  
+  
+  class VisualLearningTask {
+  
+    string visualObjectId;
+    string beliefId;
+    
+    string concept;
+    StringSeq labels;
+    DoubleSeq weights;
+  };
+  
 
   struct SegmentMask {
     int width;
@@ -360,22 +372,6 @@ module VisionData {
 
     // List of surface 3D points
     SurfacePointSeq points;
-
-    // time the object was last changed
-    cast::cdl::CASTTime time;
-  };
-
-  /**
-   * Visual Object with recognized attributes
-   */
-  class AttrObject {
-
-    // Source proto object
-    string protoObjectID;
-
-    // Property distribution
-    StringSeq labels;
-    DoubleSeq distribution;
 
     // time the object was last changed
     cast::cdl::CASTTime time;
