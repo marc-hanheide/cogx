@@ -24,9 +24,12 @@ module Visualization
 
    struct ActionInfo {
       string label;
-      string iconLabel;   // Optional, defaults to label
-      string iconSvg;     // Optional
-      ByteSeq iconImage;  // Optional, iconSvg takes precedence
+      string iconLabel;   
+      // Optional, defaults to label
+      string iconSvg;     
+      // Optional
+      ByteSeq iconImage;  
+      // Optional, iconSvg takes precedence
       bool checkable;
    };
 
@@ -78,30 +81,41 @@ module Visualization
       void addClient(Ice::Identity ident, string host, int port);
 
       // TODO: a checkbox has an initial value (0, 1, 2)
-      void addCheckBox(Ice::Identity ident, string viewId, string ctrlId, string label); // TODO: ActionInfo
-      void addButton(Ice::Identity ident, string viewId, string ctrlId, string label); // TODO: ActionInfo
+      void addCheckBox(Ice::Identity ident, string viewId, string ctrlId, string label); 
+	// TODO: ActionInfo
+      void addButton(Ice::Identity ident, string viewId, string ctrlId, string label); 
+	// TODO: ActionInfo
       void addToolButton(Ice::Identity ident, string viewId, string ctrlId, ActionInfo info);
       void enableMouseEvents(Ice::Identity ident, string viewId, bool enabled);
    };
 
    enum EEventType
    {
-      evButtonClick,    // A normal button was clicked
-      evCheckBoxChange, // data = state
-      evDropListChange, // data = list item text
-      evMouseClick,     // source = view, data = button, (x,y) = position
-      evHtmlOnClick     // An HTML element was clicked
+      evButtonClick,    
+      // A normal button was clicked
+      evCheckBoxChange, 
+      // data = state
+      evDropListChange, 
+      // data = list item text
+      evMouseClick,     
+      // source = view, data = button, (x,y) = position
+      evHtmlOnClick     
+      // An HTML element was clicked
    };
 
    struct TEvent
    {
       EEventType type;
-      string objectId;  // viewId from addCheckBox etc. / id from setActiveHtml etc.
-      string partId;    // partId
-      string sourceId;  // ctrlId from addCheckBox etc. / id from @@ONCLICK@@
+      string objectId;  
+      // viewId from addCheckBox etc. / id from setActiveHtml etc.
+      string partId;    
+      // partId
+      string sourceId;  
+      // ctrlId from addCheckBox etc. / id from @@ONCLICK@@
       string data;
       float x;
-      float y;          // Position of the mouse click inside the control
+      float y;          
+      // Position of the mouse click inside the control
    };
    
    interface EventReceiver
