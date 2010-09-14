@@ -12,6 +12,7 @@ cast_slice2cpp(GEN_CPP GEN_HPP DisplayServer.ice ${CAST_SLICE_DIR}
     ${ICE_HOME}/share/slice
     /opt/local/share/Ice/slice
     /opt/local/share/slice
+    /opt/local/share
     ${COGX_ROOT}/tools/math/src/slice
     ${COGX_ROOT}/tools/hardware/video/src/slice
     )
