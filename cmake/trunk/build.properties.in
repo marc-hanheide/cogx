@@ -13,6 +13,7 @@ output.dir=${CMAKE_SOURCE_DIR}/output/classes
 build_sa_binding=${BUILD_SA_BINDING}
 build_sa_fake_motivation=${BUILD_SA_FAKE_MOTIVATION}
 build_sa_motivation=${BUILD_SA_MOTIVATION}
+build_sa_execution=${BUILD_SA_EXECUTION}
 build_sa_planner=${BUILD_SA_PLANNER}
 build_sa_spatial=${BUILD_SA_SPATIAL}
 build_sa_vision=${BUILD_SA_VISION}
