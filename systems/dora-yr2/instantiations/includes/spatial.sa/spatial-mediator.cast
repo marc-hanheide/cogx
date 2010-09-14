@@ -3,12 +3,16 @@
 JAVA MG pm-place	eu.cogx.perceptmediator.components.PlaceMediator --debug
 JAVA MG pm-agent 	eu.cogx.perceptmediator.components.AgentMediator --debug
 
+# property mediators
+JAVA MG pm-gateway 	eu.cogx.perceptmediator.components.GatewayPropertyMediator
+JAVA MG pm-space 	eu.cogx.perceptmediator.components.AssociatedSpacePropertyMediator
+JAVA MG pm-border 	eu.cogx.perceptmediator.components.AssociatedBorderPropertyMediator
+
 # simple tracking (to planner.sa)
 JAVA MG pt-spatial 	eu.cogx.percepttracker.SpatialBeliefTracker --debug --write-to-sa binder
 
 
-# additional features:
-JAVA MG pm-gateway 	eu.cogx.perceptmediator.components.PlaceGatewayMediator --debug
+
 
 # relation mediators:
 JAVA MG pm-place-conn 	eu.cogx.perceptmediator.components.PlaceConnectivityMediator --debug
