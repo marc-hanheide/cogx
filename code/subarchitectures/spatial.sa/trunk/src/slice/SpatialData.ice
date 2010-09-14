@@ -110,10 +110,14 @@ module SpatialData {
    * @author Kristoffer Sjöö
    * @see
    */
-  enum PlaceQueryStatus {PENDING,	//Not processed
-    			 COMPLETED,	//Return value available
-			 PLACEINVALID,  //Failed: place ID invalid
-			 INTERNALERROR};//Failed: could not compute likelihood
+  enum PlaceQueryStatus {PENDING,	
+       			 //Not processed
+    			 COMPLETED,	
+			 //Return value available
+			 PLACEINVALID,  
+			 //Failed: place ID invalid
+			 INTERNALERROR};
+			//Failed: could not compute likelihood
   /**
    * Command struct for querying the likelihood of
    * being in a given Place
@@ -162,11 +166,16 @@ module SpatialData {
    * @author Kristoffer Sjöö
    * @see
    */
-  enum PathQueryStatus {QUERYPENDING,	//Not processed
-    			 QUERYCOMPLETED,	//Return value available
-			 QUERYPLACE1INVALID, //Failed: start place ID invalid
-			 QUERYPLACE2INVALID, //Failed: goal place ID invalid
-			 QUERYINTERNALERROR};//Failed: could not compute value
+  enum PathQueryStatus {QUERYPENDING,	
+       		         //Not processed
+    			 QUERYCOMPLETED,	
+			 //Return value available
+			 QUERYPLACE1INVALID, 
+			 //Failed: start place ID invalid
+			 QUERYPLACE2INVALID, 
+			 //Failed: goal place ID invalid
+			 QUERYINTERNALERROR};
+			 //Failed: could not compute value
   /**
    * Command struct for querying the transition probabilities
    * involved in traversing a path
@@ -227,8 +236,10 @@ module SpatialData {
   		    GOFORWARD, 
 		    GOBACK, 
 		    //PERSONFOLLOW, 
-		    TURN, // relative
-		    TURNTO, // absolute
+		    TURN, 
+		    // relative
+		    TURNTO, 
+		    // absolute
 		    //EXPLORE,
 		    //EXPLOREFLOOR,
 		    STOP,
@@ -245,11 +256,16 @@ module SpatialData {
   * @author Patric Jensfelt
   * @see
   */
-  enum Completion {COMMANDPENDING,     // hasnt started 
-		   COMMANDINPROGRESS, // started but not finished
-		   COMMANDABORTED,     // aborted due to higher priority command	
-	           COMMANDFAILED,      // finished unsuccessfully
-		   COMMANDSUCCEEDED};  // finished successfully
+  enum Completion {COMMANDPENDING,     
+       		   // hasnt started 
+		   COMMANDINPROGRESS, 
+		   // started but not finished
+		   COMMANDABORTED,     
+		   // aborted due to higher priority command	
+	           COMMANDFAILED,      
+		   // finished unsuccessfully
+		   COMMANDSUCCEEDED};  
+		   // finished successfully
 
  /**
   * Error codes for the status information for a command
@@ -270,10 +286,13 @@ module SpatialData {
   * @author Patric Jensfelt
   * @see
   */
-  enum Priority {URGENT,   // removes everything else from the queue
-		 HIGH,     // goes to the start of the queue
-		 NORMAL};  // gets done if nothing else of higher priority
-                           // is in the queue.  
+  enum Priority {URGENT,   
+       		 // removes everything else from the queue
+		 HIGH,     
+		 // goes to the start of the queue
+		 NORMAL};  
+		 // gets done if nothing else of higher priority
+                 // is in the queue.  
 
   /**
    * Command for moving the robot from the current Place
@@ -294,8 +313,10 @@ module SpatialData {
    
     // Target location, in the coordinate system of the Sensory layer
     // (I.e. robocentric, not necessarily robot-relative) (input)
-    DoubleOpt  pose; //(x,y) or (x,y,a); for GOTOPOSITION
-    DoubleOpt angle; //Used for TURN, TURNTO and ROTATEABS
+    DoubleOpt  pose; 
+    //(x,y) or (x,y,a); for GOTOPOSITION
+    DoubleOpt angle; 
+    //Used for TURN, TURNTO and ROTATEABS
     DoubleOpt distance;
 
     // A tolerance can be specified; exact semantics as yet
@@ -315,8 +336,10 @@ module SpatialData {
    * @author Alper Aydemir
    * @see
    */
-  enum AVSAction {PLAN,	//Plan and then execute the generated plan
-    			 STOPAVS};	// Stop the execution of a plan (not pause)
+  enum AVSAction {PLAN,	
+       		  //Plan and then execute the generated plan
+    		  STOPAVS};	
+		  // Stop the execution of a plan (not pause)
 	
   /**
    * Command structure for visual search
@@ -330,9 +353,12 @@ module SpatialData {
   };
 
   class SpatialObject {
-//    int id;	  // This is an ID unique among SpatialObjects
-    string label; // This is the same as in VisualObject
-    cogx::Math::Pose3 pose;   // World coordinates
+    //    int id;	  
+    // This is an ID unique among SpatialObjects
+    string label; 
+    // This is the same as in VisualObject
+    cogx::Math::Pose3 pose;   
+    // World coordinates
   };
 
 
@@ -361,4 +387,5 @@ module SpatialData {
 
 };
 
-#endif // SPATIALDATA_ICE
+#endif 
+// SPATIALDATA_ICE
