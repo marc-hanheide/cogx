@@ -6,13 +6,10 @@ include_directories(.)
 # expects to find .ice file under PROJECT/src/slice e.g. laser/src/slice
 # 
 # latter args are include paths to serach
-message("ice home" ${ICE_HOME})
 cast_slice2cpp(GEN_CPP GEN_HPP DisplayServer.ice ${CAST_SLICE_DIR}
     ${ICE_SLICE_DIR}
     ${ICE_HOME}/share/Ice/slice
     ${ICE_HOME}/share/slice
-    /opt/local/share/Ice/slice
-    /opt/local/share/slice
     ${COGX_ROOT}/tools/math/src/slice
     ${COGX_ROOT}/tools/hardware/video/src/slice
     )
