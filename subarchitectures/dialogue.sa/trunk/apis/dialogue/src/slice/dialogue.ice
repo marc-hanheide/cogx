@@ -38,9 +38,9 @@
 // 
 // This Slice module is used with the dialogue API v6.0
 // 
-// Authors:		Geert-Jan M. Kruijff	<gj@dfki.de>
-//				Pierre Lison			<pierre.lison@dfki.de>
-//				Hendrik Zender			<hendrik.zender@dfki.de>
+// @author Geert-Jan M. Kruijff	<gj@dfki.de>
+// @author Pierre Lison	<pierre.lison@dfki.de>
+// @author Hendrik Zender <hendrik.zender@dfki.de>
 //
 // ===================================================================
 
@@ -79,10 +79,10 @@ module asr {
 	//
 	//	@param boolean	isRecognized		true if something has been recognized by the ASR engine, false otherwise
 	//	@param boolean	isConnectionClosed	true if the connection has been shut down by the caller, false otherwise
-	//	@param string	recString			the string that has been recognized if isRecognized is true, or the empty string otherwise
-	//	@param long		confidence			the confidence value of the result if there is one, or 0.0 otherwise
-	//	@param long		probability			the probability value of the result if there is one, or 0.0 otherwise
-	//	@param string	ipAddress			the IP address of the caller
+	//	@param string	recString		the string that has been recognized if isRecognized is true, or the empty string otherwise
+	//	@param long	confidence		the confidence value of the result if there is one, or 0.0 otherwise
+	//	@param long	probability		the probability value of the result if there is one, or 0.0 otherwise
+	//	@param string	ipAddress		the IP address of the caller
 	// ----------------------------------------------------------------------	
 
 	class RecogResult extends BaseData {
@@ -99,11 +99,11 @@ module asr {
 	// The class PhonString provides information about a phonological string, 
 	// as recognized by a speech recognition engine.
 	//
-	// @param string	wordSequence		The recognized word sequence
-	// @param long		length				The length of the word sequence (number of words)
-	// @param float		confidenceValue		The confidence value
+	// @param string	wordSequence	The recognized word sequence
+	// @param long		length		The length of the word sequence (number of words)
+	// @param float		confidenceValue	The confidence value
 	// @param float     NLconfidenceValue   Confidence value used in feature selection	
-	// @long  param		rank				The rank of a string (in an n-best list)
+	// @long  param		rank		The rank of a string (in an n-best list)
 	// ----------------------------------------------------------------------
 
     class PhonString extends BaseData {
@@ -120,7 +120,8 @@ module asr {
 
 	sequence<PhonString> PhonStrings;
 
-}; // end module asr
+}; 
+// end module asr
 
 // ===================================================================
 // MODULE PARSE
@@ -155,10 +156,10 @@ module parse {
 	//	the logical form(s) that represent interpretations for the (given) 
 	//	PhonString.
 	//
-	//	@param UniqueId	  id					The unique identifier of the object
-	//	@param PhonString phon				The object representing the string (utterance) 
+	//	@param UniqueId	  id			The unique identifier of the object
+	//	@param PhonString phon			The object representing the string (utterance) 
 	//	@param PackedLogicalForm packedLF	The object representing the interpretations
-	//	@param long finalized				Indicator whether the interpretations are finalized (0=unfinished; 1=finished parsing, 2=finished final pruning) 
+	//	@param long finalized			Indicator whether the interpretations are finalized (0=unfinished; 1=finished parsing, 2=finished final pruning) 
 	//---------------------------------------------------------------------------	
 
 	class PackedLFs { 
@@ -170,9 +171,11 @@ module parse {
 		long finalized; 
 		string type;
 		NonStandardRulesAppliedForLFs nonStandardRulesForLF;
-	}; // end PackedLFs
+	}; 
+	// end PackedLFs
 
-}; // end module parse
+}; 
+// end module parse
 
 // ===================================================================
 // MODULE REF
@@ -189,16 +192,19 @@ module ref {
 	// @started	090921
 	// @version	090921
 	//---------------------------------------------------------------------------
-	
-	class RefReading extends BaseData { // outdated
+
+	// outdated
+	class RefReading extends BaseData { 
 		string lfId;
 		stringIds restrictiveTrees;
 		stringIds attributiveTrees;
 	};
 	
-	sequence<RefReading> Readings; // outdated
+	sequence<RefReading> Readings; 
+	// outdated
 
-	class RefReadings extends BaseData { //outdated
+	//outdated
+	class RefReadings extends BaseData { 
 		Readings refRdngs; 
 	};
 
@@ -221,7 +227,8 @@ module ref {
 		NominalRefSeq refs;
 	};
 
-}; // end module
+}; 
+// end module
 
 // ===================================================================
 // MODULE PRODUCE
@@ -236,16 +243,19 @@ module produce {
 	class ContentPlanningGoal { 
 		string cpgid;
 		lf::LogicalForm lform;
-	}; // end ProductionLF
+	}; 
+	// end ProductionLF
 	
 	
 	class ProductionLF { 
 		string plfid;
 		lf::LogicalForm lform;
-	}; // end ProductionLF	
+	}; 
+	// end ProductionLF	
 	
 	
-}; // end module produce
+}; 
+// end module produce
 
 // ===================================================================
 // MODULE SYNTH
@@ -260,21 +270,29 @@ module synthesize {
 
 	class SpokenOutputItem extends BaseData { 
 		string phonString;
-        string inputStreamId ;
-	}; // end SpokenOutputItem 
+	        string inputStreamId ;
+	}; 
+	// end SpokenOutputItem 
 	
-}; // end module synthesize	
+}; 
+// end module synthesize	
 
 
 // ===================================================================
 // END MODULE DEFINITIONS / SLICE FILE
 // ===================================================================
 
-}; // end module slice
-}; // end module dialogue
-}; // end module tr
-}; // end module lt
-}; // end module dfki
-}; // end module de
+}; 
+// end module slice
+}; 
+// end module dialogue
+}; 
+// end module tr
+}; 
+// end module lt
+}; 
+// end module dfki
+}; 
+// end module de
 
 #endif
