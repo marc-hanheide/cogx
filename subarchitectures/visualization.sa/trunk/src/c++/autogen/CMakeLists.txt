@@ -7,8 +7,10 @@ include_directories(.)
 # 
 # latter args are include paths to serach
 cast_slice2cpp(GEN_CPP GEN_HPP DisplayServer.ice ${CAST_SLICE_DIR}
-    ${ICE_HOME}/share/Ice/slice
     ${ICE_SLICE_DIR}
+    # CAST/FindIce.cmake doesn't always work so we add the following ice_home paths.
+    ${ICE_HOME}/share/Ice/slice
+    ${ICE_HOME}/share/slice
     ${COGX_ROOT}/tools/math/src/slice
     ${COGX_ROOT}/tools/hardware/video/src/slice
     )
