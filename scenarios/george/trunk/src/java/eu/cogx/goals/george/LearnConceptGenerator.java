@@ -3,7 +3,7 @@ package eu.cogx.goals.george;
 import java.util.Map;
 
 import motivation.components.generators.AbstractBeliefMotiveGenerator;
-import motivation.slice.ExploreMotive;
+import motivation.slice.GeneralGoalMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
@@ -16,7 +16,7 @@ import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 public abstract class LearnConceptGenerator extends
-		AbstractBeliefMotiveGenerator<ExploreMotive, GroundedBelief> {
+		AbstractBeliefMotiveGenerator<GeneralGoalMotive, GroundedBelief> {
 
 	private static final String OBJECTTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
@@ -30,20 +30,17 @@ public abstract class LearnConceptGenerator extends
 	private static final double MAX_COSTS_TO_DROP = 5 * 60;
 
 	public LearnConceptGenerator() {
-		super(OBJECTTYPE, ExploreMotive.class, GroundedBelief.class);
+		super(OBJECTTYPE, GeneralGoalMotive.class, GroundedBelief.class);
 	}
 
 	@Override
-	protected ExploreMotive checkForAddition(WorkingMemoryAddress adr,
+	protected GeneralGoalMotive checkForAddition(WorkingMemoryAddress adr,
 			GroundedBelief newEntry) {
 		assert (newEntry.type.equals(OBJECTTYPE));
 		log("checkForAddition(): check belief " + newEntry.id + " for addition");
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, newEntry);
-		log("checkForAddition(): placestatus="
-				+ belief.getContent().get("placestatus").getDistribution()
-						.getMostLikely().getProposition());
-		ExploreMotive result = new ExploreMotive();
+		GeneralGoalMotive result = new GeneralGoalMotive();
 		result.created = getCASTTime();
 		result.correspondingUnion = "";
 		result.maxExecutionTime = MAX_EXECUTION_TIME;
@@ -56,8 +53,8 @@ public abstract class LearnConceptGenerator extends
 	}
 
 	@Override
-	protected ExploreMotive checkForUpdate(GroundedBelief newEntry,
-			ExploreMotive motive) {
+	protected GeneralGoalMotive checkForUpdate(GroundedBelief newEntry,
+			GeneralGoalMotive motive) {
 		assert (newEntry.type.equals(OBJECTTYPE));
 		log("check goal " + CASTUtils.toString(motive.thisEntry)
 				+ " for update");
