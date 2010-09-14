@@ -1,4 +1,8 @@
 
+Seems that for the same action and observation, that we are adding the entry twice at a belief.
+
+The observation i nthis case is equal, and yet the pointers are not equajl. So this is a deref issuej. 
+
 
 (label place_0_pt_spatial_data kitchen )
 (label place_0_pt_spatial_data kitchen )

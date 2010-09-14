@@ -57,37 +57,60 @@ void Solver::press__belief_transitions(POMDP_State* pomdp_state,
                                        const POMDP_State::Normalisation_Factors& _normalisation_Factors,
                                        const POMDP_State::Action__to__Observation_to_Belief& _successor_belief_state )
 {
-    INTERACTIVE_VERBOSER(true, 9094, "Adding the following transition information  :: "
+    INTERACTIVE_VERBOSER(true, 10060, "Adding the following transition information  :: "
                          <<_successor_belief_state<<std::endl);
-    
+
+    /* For each action that is (and isn't -- i.e., illegal actions
+     * simply spin ---and can thus be considered as no-ops--- for
+     * POMDPs) executable in the belief state \argument{pomdp_state}.*/
     for(auto action__to__Observation_to_Belief = _successor_belief_state.begin()
             ; action__to__Observation_to_Belief != _successor_belief_state.end()
             ; action__to__Observation_to_Belief++){
         uint action_index = action__to__Observation_to_Belief->first;
+
+        /* For each observation that you can recieve when you execute
+         * that action at the belief state \argument{pomdp_state}.*/
         for(auto observation_to_Belief = action__to__Observation_to_Belief->second.begin()
                 ; observation_to_Belief != action__to__Observation_to_Belief->second.end()
                 ; observation_to_Belief++){
             Observational_State* observation = observation_to_Belief->first;
 
+            /*Allocate some space for the successor state. */
             POMDP_State* successor_pomdp_state = new POMDP_State();
-
+            
             INTERACTIVE_VERBOSER(true, 9086, "Observation was :: "
                                  <<*observation<<std::endl);
-
-//             auto t1 =  _normalisation_Factors.find(action_index);
-//             auto t2 =  t1->second.find(observation);
-//             auto t3 =  t2->second;
+            
             assert(_normalisation_Factors.find(action_index) != _normalisation_Factors.end());
             assert(_normalisation_Factors.find(action_index)->second.find(observation) !=
                    _normalisation_Factors.find(action_index)->second.end());
-            
+
+            /* What is the probability of \local{observation} after an
+             * execution of \local{action_index} at
+             * \argument{pomdp_state}.*/
             double mass_of_belief_successor = _normalisation_Factors.find(action_index)->second.find(observation)->second;
 
-
+            /* In the following loop, this variable
+             * (\local{testing_rational_belief_measure}) should become
+             * 1.0 if we have not made a mistake. We incrementally add
+             * to the value the probabilities of being in successive
+             * MDP states given the execution sequence. What does that
+             * mean exactly. Well, basically, this variable is the sum
+             * of the MDP state probabilities of a successor
+             * belief-state. If we have a rational belief state, this
+             * sum should equal 1.0.*/
             double testing_rational_belief_measure = 0.0;
+            
+            /* For each successor state that is consistent with the
+             * execution sequence just described. */
             for(auto atom = observation_to_Belief->second.begin()
                     ; atom != observation_to_Belief->second.end()
                     ; atom++){
+                
+                /* What is the probability of \local{observation}
+                 * after an execution of \local{action_index} at
+                 * \argument{pomdp_state} given the execution puts us
+                 * in \local{atom}.*/
                 double atom_mass = atom->second / mass_of_belief_successor;
                 
                 INTERACTIVE_VERBOSER(true, 9095, *observation<<std::endl
@@ -97,53 +120,55 @@ void Solver::press__belief_transitions(POMDP_State* pomdp_state,
                                      <<"Normalised :: "<<atom_mass<<std::endl
                                      <<"Via constant :: "<<mass_of_belief_successor<<std::endl);
                 testing_rational_belief_measure += atom_mass;
-                
-//                 if(are_Doubles_Close(1.0, atom_mass)){
-//                     atom_mass = 1.0;
-//                 } else if (are_Doubles_Close(0.0, atom_mass)) {
-//                     atom_mass = 0.0;
-//                 }
-                
+
+                /*Adding an MDP state (i.e., here called as "atom") to the successor POMDP state.*/
                 successor_pomdp_state->add__belief_atom(atom->first, atom_mass);
             }
 
             QUERY_UNRECOVERABLE_ERROR(!are_Doubles_Close(1.0, testing_rational_belief_measure),
                                       "Got a belief state where the sum of atom probabilities sums to :: "
                                       <<testing_rational_belief_measure<<"\n that should be 1.0...");
-            
-            
+
+#ifndef NDEBUG
+            /* Obtain the action symbol associated with the action
+             * index. This is being obtained for the purpose of
+             * debugging.*/
             assert(State_Transformation::
                    ith_exists(reinterpret_cast<ID_TYPE>(problem_Grounding.get()), action_index));
             auto symbol = State_Transformation::
                 make_ith<State_Transformation>
                 (reinterpret_cast<ID_TYPE>(problem_Grounding.get()),
                  action_index);
-//             INTERACTIVE_VERBOSER(true, 9095, "For action :: "<<symbol<<std::endl
-//                                  <<"For Observation :: "<<observation<<std::endl
-//                                  <<"Got a successor belief state :: "<<*successor_pomdp_state);
-            
+#endif
+
+
+            /*Have we encountered the successor state before?*/
             auto belief_state__index = belief_state__space.find(successor_pomdp_state);
             if(belief_state__index == belief_state__space.end()){
                 
-                INTERACTIVE_VERBOSER(true, 9095, "New successor POMDP state :: "
+                INTERACTIVE_VERBOSER(true, 10060, "New successor POMDP state :: "
                                      <<*successor_pomdp_state<<std::endl);
 
                 successor_pomdp_state->set__index(belief_state__space.size());
                 successor_pomdp_state->initialise__prescribed_action_index();
                 belief_state__space.insert(successor_pomdp_state);
-                
+
+                /* We have encountered a new belief-state, and
+                 * therefore should consider futures from that
+                 * state. */
                 expansion_queue.push(successor_pomdp_state);
             } else {
-                INTERACTIVE_VERBOSER(true, 9096, "Repeated successor POMDP state :: "
+                INTERACTIVE_VERBOSER(true, 10060, "Repeated successor POMDP state :: "
                                      <<*successor_pomdp_state<<std::endl);
                 delete successor_pomdp_state;
                 successor_pomdp_state = *belief_state__index;
             }
-            
+
+#ifndef NDEBUG
             INTERACTIVE_VERBOSER(true, 9090, "For action :: "<<symbol<<std::endl
                                  <<"For Observation :: "<<*observation<<std::endl
                                  <<"Got a successor belief state :: "<<*successor_pomdp_state);
-//             INTERACTIVE_VERBOSER(true, 9090, "Adding successor state :: "<<*successor_pomdp_state<<std::endl);
+#endif
             
             pomdp_state->push__successor(action_index, observation, successor_pomdp_state, mass_of_belief_successor);
         }
@@ -297,18 +322,22 @@ void Solver::add_entry(POMDP_State::Normalisation_Factors& _normalisation_Factor
     
 }
 
+/* In the current solution and interaction procedure, this member
+ * function can be called for two reasons: (1) there is an expansion
+ * of the state space, and (2) a state is come about during traversal
+ * of a belief trajectory, and we must ensure that we know what all
+ * the legal successors are, and what their probabilities are.*/
 void Solver::expand_belief_state(POMDP_State* pomdp_state)
-{   
+{
+    INTERACTIVE_VERBOSER(true, 10060, "Expansion of POMDP state procedure :: "<<*pomdp_state<<std::endl);
+    
+    
     auto belief_state = pomdp_state->get__belief_state();
     
     POMDP_State::Action__to__Observation_to_Belief _successor_belief_state ;
     POMDP_State::Normalisation_Factors _normalisation_Factors;
-
-    std::set<uint> legal_actions;
-
-
-
     
+    std::set<uint> legal_actions;    
     
     
     /* For each mdp-state (i.e., atom) in the belief.*/
@@ -495,10 +524,12 @@ bool Solver::expand_belief_state_space()
         return false;
     }
     
+    INTERACTIVE_VERBOSER(true, 10060, "Expansion queue size is :: "<<expansion_queue.size()<<std::endl);
+    
     auto pomdp_state = expansion_queue.front();
     expansion_queue.pop();
 
-    INTERACTIVE_VERBOSER(true, 10003, "Expanding POMDP state :: "<<*pomdp_state<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10060, "Expanding POMDP state :: "<<*pomdp_state<<std::endl);
     
     expand_belief_state(pomdp_state);
     
@@ -509,7 +540,7 @@ bool Solver::expand_belief_state_space()
                   <<"Because you didn't model an action that spins on this state, I assume you want things\n"
                   <<"To fail horribly at this state.\n");
     
-    INTERACTIVE_VERBOSER(true, 10018, "Expanded POMDP state :: "<<*pomdp_state<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10060, "Expanded POMDP state :: "<<*pomdp_state<<std::endl);
 
     return true;
 }

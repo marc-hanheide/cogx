@@ -196,13 +196,21 @@ operator<(const POMDP_State& in) const
     return false;
 }
 
-/* +61400950768 */
 void Partially_Observable_Markov_Decision_Process_State::
 push__successor(uint action_index
                 , Observational_State* observation
                 , POMDP_State* successor_pomdp_state
                 , double probability)
 {
+    
+    INTERACTIVE_VERBOSER(true, 10060, "For state :: "<<this<<std::endl
+                         <<"Adding :: "<<*observation<<std::endl
+                         <<"At the execution of action :: "<<action_index<<std::endl
+                         <<"With probability :: "<<probability<<std::endl);
+    
+    /* IF --- Either this is the first action that we have considered
+     * executing from this belief-state, or otherwise we are
+     * considering a new action in sequence.*/
     if(!action_based_successor_driver.size() ||
        action_based_successor_driver.back() != action_index){
         
@@ -230,18 +238,32 @@ push__successor(uint action_index
             std::vector<double>()
             );
     }
+
+    /* So we are now considering observational entries that correspond
+     * to observations received when we execute the action at
+     * \member{action_based_successor_driver.back()}. */
     
     auto& observations = observation_based_successor_driver.back();
     auto& _successors = successors.back();
     auto& observation_probability = observation_probabilities.back();
     
+    
+    /* At this point we suppose that the observation is the first one
+     * that we have considered for the obove action execution, or
+     * otherwise that we have not considered it before.*/
     if(!observations.size() || observations.back() != observation){
         observations.push_back(observation);
         observation_probability.push_back(probability);
         _successors.push_back(successor_pomdp_state);// std::vector<
 //                        Partially_Observable_Markov_Decision_Process_State*>());
     } else {
-        assert(0);
+        QUERY_UNRECOVERABLE_ERROR(true, "We have a belief-state :: "<<*this<<std::endl
+                                  <<"This has successor information for :: "
+                                  <<observations.size()<<" observations."<<std::endl
+                                  <<"The last observation is :: "<<*observations.back()<<" @"
+                                  <<observations.back()<<std::endl
+                                  <<"The observation we are adding is :: "<<*observation<<" @"
+                                  <<observation<<std::endl);
     }
     
 
