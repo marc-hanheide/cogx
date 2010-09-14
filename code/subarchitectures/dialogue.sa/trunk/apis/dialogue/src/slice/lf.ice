@@ -29,8 +29,8 @@
 // - logical form: LogicalForm, based on LFNominal and LFRelation 
 // - packed logical form: PackedLogicalForm   
 //
-// Authors:		Geert-Jan M. Kruijff	<gj@dfki.de>
-//				Pierre Lison			<pierre.lison@dfki.de>
+// @author Geert-Jan M. Kruijff	<gj@dfki.de>
+// @author Pierre Lison	<pierre.lison@dfki.de>
 //
 // ===================================================================
 
@@ -58,7 +58,8 @@ enum ConnectiveType { NONE, DISJUNCTIVE, CONJUNCTIVE, XDISJUNCTIVE };
 class Proposition { 
 	string prop;
 	ConnectiveType connective;
-}; // end Proposition
+}; 
+// end Proposition
 
 // sequence type declaration
 
@@ -89,7 +90,8 @@ class LFRelation {
 	string mode;
 	string dep;
 	bool coIndexedDep;
-}; // end LFRelation
+}; 
+// end LFRelation
 
 // sequence type declaration
 
@@ -109,7 +111,8 @@ class LFNominal {
 	Proposition prop;
 	Features feats;
 	Relations rels;
-}; // end LFNominal
+}; 
+// end LFNominal
 
 // sequence type declaration
 
@@ -125,7 +128,8 @@ class LogicalForm {
 	float preferenceScore;
 	LFNominal root;
 	long stringPos;
-}; // end LogicalForm
+}; 
+// end LogicalForm
 
 
 // -------------------------------------------------------------------
@@ -135,7 +139,8 @@ class LogicalForm {
 class LFComponent { 
 	string componentName;
 	LogicalForm lf; 
-}; // end LFComponent
+}; 
+// end LFComponent
 
 // sequence type declarations
 
@@ -289,13 +294,20 @@ sequence <string> LogicalFormIds;
 		string root ;
 	};
 
-}; // end module lf
-}; // end module slice
-}; // end module dialogue
-}; // end module tr
-}; // end module lt
-}; // end module dfki
-}; // end module de
+}; 
+// end module lf
+}; 
+// end module slice
+}; 
+// end module dialogue
+}; 
+// end module tr
+}; 
+// end module lt
+}; 
+// end module dfki
+}; 
+// end module de
 
 #endif
 
