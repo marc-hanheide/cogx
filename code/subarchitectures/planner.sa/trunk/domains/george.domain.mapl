@@ -1,0 +1,106 @@
+(define (domain george-yr2)
+
+  (:requirements :mapl :adl :object-fluents) 
+
+  (:types
+    robot - agent
+    visual-object color-name shape-name ident-name - object
+  )
+
+  (:constants
+    george - robot
+    unknown-color - color-name
+    unknown-shape - shape-name
+    unknown-ident - ident-name
+  )
+
+  (:predicates
+    (color-learned ?v - visual-object)
+    (shape-learned ?v - visual-object)
+    (ident-learned ?v - visual-object)
+  )
+ 
+  (:functions
+    (color ?v - visual-object) - color-name
+    (shape ?v - visual-object) - shape-name
+    (ident ?v - visual-object) - ident-name
+  )
+
+  (:action ask-for-an-objects-color-polar
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?c - color-name)
+    :precondition (in-domain (color ?v) ?c)
+    :effect (kval ?a (color ?v))
+  )
+
+  (:action ask-for-an-objects-color-general
+    :agent (?a - robot)
+    :parameters (?v - visual-object)
+    :effect (kval ?a (color ?v))
+  )
+
+  (:action ask-for-an-objects-shape-polar
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?s - shape-name)
+    :precondition (in-domain (shape ?v) ?s)
+    :effect (kval ?a (shape ?v))
+  )
+
+  (:action ask-for-an-objects-shape-general
+    :agent (?a - robot)
+    :parameters (?v - visual-object)
+    :effect (kval ?a (shape ?v))
+  )
+
+  (:action ask-for-an-objects-ident-polar
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?i - ident-name)
+    :precondition (in-domain (ident ?v) ?i)
+    :effect (kval ?a (ident ?v))
+  )
+
+  (:action ask-for-an-objects-ident-general
+    :agent (?a - robot)
+    :parameters (?v - visual-object)
+    :effect (kval ?a (ident ?v))
+  )
+
+  (:action learn-color
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?c - color-name)
+    :precondition 
+      (and
+	(not (color-learned ?v))
+	;;(= (color ?v) ?c)
+	(in-domain (color ?v) ?c)
+	(kval ?a (color ?v))
+      )
+    :effect (color-learned ?v)
+  )
+
+  (:action learn-shape
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?s - shape-name)
+    :precondition 
+      (and
+	(not (shape-learned ?v))
+	;;(= (shape ?v) ?s)
+	(in-domain (shape ?v) ?s)
+	(kval ?a (shape ?v))
+      )
+    :effect (shape-learned ?v)
+  )
+
+  (:action learn-ident
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?i - ident-name)
+    :precondition 
+      (and
+	(not (ident-learned ?v))
+	;;(= (ident ?v) ?i)
+	(in-domain (ident ?v) ?i)
+	(kval ?a (ident ?v))
+      )
+    :effect (ident-learned ?v)
+  )
+)
