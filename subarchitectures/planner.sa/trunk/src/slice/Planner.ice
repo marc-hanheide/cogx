@@ -8,11 +8,16 @@ module autogen {
   module Planner {
 
     enum Completion {
-      PENDING,     // hasn't started yet
-      INPROGRESS,  // started but no plan found yet
-      ABORTED,     // aborted (if e.g a more important query occurs)???
-      FAILED,      // no plan found
-      SUCCEEDED    // plan found
+      PENDING,     
+      // hasn't started yet
+      INPROGRESS,  
+      // started but no plan found yet
+      ABORTED,     
+      // aborted (if e.g a more important query occurs)???
+      FAILED,      
+      // no plan found
+      SUCCEEDED    
+      // plan found
     };
 
     sequence<string> stringSeq;
