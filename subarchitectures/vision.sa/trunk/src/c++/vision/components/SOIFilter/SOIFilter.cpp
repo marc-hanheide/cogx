@@ -35,7 +35,7 @@
 #define MAX_PATCH_SIZE 36000
 
 #define MAX_COLOR_SAMPLE 90
-#define COLOR_FILTERING_THRESHOLD 5
+#define COLOR_FILTERING_THRESHOLD 7
 
 #define COLOR_SAMPLE_IMG_WIDTH 5
 #define COLOR_SAMPLE_IMG_HEIGHT 15
@@ -564,7 +564,7 @@ void SOIFilter::drawProjectedSOIPoints(IplImage *img, const vector<CvPoint> proj
   // draw foreground points
   for(size_t i = 0; i < projPoints.size(); i++)
   {
-	cvCircle(img, cvPoint(projPoints[i].x, projPoints[i].y), 3, CV_RGB(0,255,0));
+	cvCircle(img, cvPoint(projPoints[i].x, projPoints[i].y), 0, CV_RGB(0,255,0));
   }
 
   // draw convex hull
@@ -580,13 +580,13 @@ void SOIFilter::drawProjectedSOIPoints(IplImage *img, const vector<CvPoint> proj
   // draw background points inside SOI
   for(size_t i = 0; i < bgProjPoints.size(); i++)
   {
-	cvCircle(img, cvPoint(bgProjPoints[i].x, bgProjPoints[i].y), 3, CV_RGB(255,0,0));
+	cvCircle(img, cvPoint(bgProjPoints[i].x, bgProjPoints[i].y), 0, CV_RGB(255,0,0));
   }
   
     // draw misprojected points inside SOI
   for(size_t i = 0; i < errProjPoints.size(); i++)
   {
-	cvCircle(img, cvPoint(errProjPoints[i].x, errProjPoints[i].y), 3, CV_RGB(127,127,0));
+	cvCircle(img, cvPoint(errProjPoints[i].x, errProjPoints[i].y), 0, CV_RGB(127,127,0));
   }
 }
 
@@ -614,10 +614,10 @@ void SOIFilter::drawHull(IplImage *img, const vector<CvPoint> projPoints, const 
 
 
 
-static bool hslCompare(CvScalar i, CvScalar j)
-{
-  return (i.val[0] + i.val[2]*0 + i.val[1]*0  <  j.val[0] + j.val[2]*0 + j.val[1]*0);
-}
+//static bool hslCompare(CvScalar i, CvScalar j)
+//{
+//  return (i.val[0] + i.val[2]*0 + i.val[1]*0  <  j.val[0] + j.val[2]*0 + j.val[1]*0);
+//}
 
 
 /*

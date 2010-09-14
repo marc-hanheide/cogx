@@ -216,7 +216,7 @@ void ObjectAnalyzer::runComponent()
 
 		if(data.status == PROTO)
 		{
-		  data.status == OBJECT;
+		  data.status = OBJECT;
 		  try
 		  {
 			ProtoObjectPtr objPtr = getMemoryEntry<VisionData::ProtoObject>(data.addr);
@@ -245,25 +245,23 @@ void ObjectAnalyzer::runComponent()
 	  }
 	  else if(!objToDelete.empty())
 	  {
-		log("A delete proto-object instruction");
+		debug("A delete proto-object instruction");
 		ProtoObjectData &obj = ProtoObjectMap[objToDelete.front()];
 
-		if(obj.status == OBJECT)
+		obj.status= DELETED;
+		
+		try
 		{
-		  obj.status= DELETED;
-		   try
-		   {
-			 deleteFromWorkingMemory(obj.visualObjId); 
-			 CASTTime time=getCASTTime();
-			 obj.deleteTime = time;
-			 log("A VisualObject deleted ID: %s", obj.visualObjId.c_str());
-			 
-//			 ProtoObjectMap.erase(objToDelete.front());
-		   }
-		   catch (DoesNotExistOnWMException e)
-		   {
-			 log("WARNING: Proto-object ID %s already removed", obj.visualObjId.c_str());
-		   }
+		  deleteFromWorkingMemory(obj.visualObjId); 
+		  CASTTime time=getCASTTime();
+		  obj.deleteTime = time;
+		  log("A VisualObject deleted ID: %s", obj.visualObjId.c_str());
+		 
+		   //ProtoObjectMap.erase(objToDelete.front());
+		}
+		catch (DoesNotExistOnWMException e)
+		{
+		  log("WARNING: Proto-object ID %s already removed", obj.visualObjId.c_str());
 		}
 
 		objToDelete.pop();
@@ -340,14 +338,14 @@ void ObjectAnalyzer::deletedProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
 
   ProtoObjectData &obj = ProtoObjectMap[_wmc.address.id];
-  debug("Detected deletion of the ProtoObject ID %s ", obj.addr.id.c_str());
+  debug("Detected deletion of the ProtoObject ID %s", obj.addr.id.c_str());
 
   if(obj.status == OBJECT)
   {
 	objToDelete.push(obj.addr.id);
 	queuesNotEmpty->post();
   }
-  else
+  else //if(obj.status == PROTO)
   {
 	CASTTime time=getCASTTime();
 	obj.status= DELETED;
