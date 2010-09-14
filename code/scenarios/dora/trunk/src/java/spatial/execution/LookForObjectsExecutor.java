@@ -1,30 +1,27 @@
-package spatial.motivation;
+package spatial.execution;
 
-import VisionData.PeopleDetectionCommand;
+import VisionData.DetectionCommand;
 import cast.AlreadyExistsOnWMException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryOperation;
-import execution.slice.actions.LookForPeople;
+import execution.slice.actions.LookForObjects;
 
-/**
- * Executor which
- * 
- * @author nah
- * 
- */
-public class LookForPeopleExecutor extends TurnAndLookExecutor<LookForPeople> {
+public class LookForObjectsExecutor extends TurnAndLookExecutor<LookForObjects> {
 
-	public LookForPeopleExecutor(ManagedComponent _component, int _detections) {
-		super(_component, LookForPeople.class, _detections);
+	private String[] m_labels;
+
+	public LookForObjectsExecutor(ManagedComponent _component, int _detections) {
+		super(_component, LookForObjects.class, _detections);
 	}
+
+
 
 	@Override
 	protected void triggerDetection() {
 		getComponent().log("detection triggered");
-
 		// Fire off a detection command
-		PeopleDetectionCommand detect = new PeopleDetectionCommand();
+		DetectionCommand detect = new DetectionCommand(m_labels);
 		String id = getComponent().newDataID();
 		try {
 			getComponent()
@@ -38,8 +35,10 @@ public class LookForPeopleExecutor extends TurnAndLookExecutor<LookForPeople> {
 	}
 
 	@Override
-	protected boolean acceptAction(LookForPeople _action) {
+	protected boolean acceptAction(LookForObjects _action) {
+		m_labels = _action.labels;
 		return true;
 	}
+
 
 }
