@@ -70,7 +70,7 @@ private:
 	std::vector<ObjPara> CurrentObjList;
 	std::vector<ObjPara> Pre2CurrentList;
 	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, VisionData::SurfacePointSeq psIn1SOI, VisionData::SurfacePointSeq BGpIn1SOI, VisionData::SurfacePointSeq EQpIn1SOI);
-	float Compare2SOI(ObjPara obj1, ObjPara obj2);
+	bool Compare2SOI(ObjPara obj1, ObjPara obj2);
 	//bool Compare2SOI(ObjPara obj1, ObjPara obj2);
 	void AddConvexHullinWM();
 
