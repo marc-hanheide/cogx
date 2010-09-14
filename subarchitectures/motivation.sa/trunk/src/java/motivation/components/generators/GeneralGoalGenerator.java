@@ -9,8 +9,6 @@ import java.util.Map.Entry;
 import motivation.factories.MotiveFactory;
 import motivation.slice.GeneralGoalMotive;
 import motivation.slice.Motive;
-import SpatialData.Place;
-import SpatialData.PlaceStatus;
 import cast.CASTException;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
@@ -60,13 +58,9 @@ public class GeneralGoalGenerator extends AbstractMotiveGenerator {
 	@Override
 	protected boolean checkMotive(Motive motive) throws CASTException {
 		if (!initialized) {
-			Place source = getMemoryEntry(motive.referenceEntry, Place.class);
-			if (source.status == PlaceStatus.TRUEPLACE) {
-				log("  we have a first true place and take it as the home base");
 				initialized = true;
-				write(motive);
 				return true;
-			}
+			
 		}
 		return false;
 	}
@@ -79,7 +73,7 @@ public class GeneralGoalGenerator extends AbstractMotiveGenerator {
 	@Override
 	protected void start() {
 		super.start();
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Ice.Object.class,
 				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
 
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
