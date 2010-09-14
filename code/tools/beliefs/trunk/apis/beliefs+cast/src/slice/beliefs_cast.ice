@@ -58,13 +58,12 @@ class CASTTemporalInterval extends TemporalInterval {
 	cast::cdl::CASTTime end;
  };
 
-}; // end spatiotemporalframe
-
+}; 
+// end spatiotemporalframe
 
 
 // LOGICAL CONTENT
 module logicalcontent {
-
 
 /**
  * Formula consisting of a pointer to another
@@ -95,7 +94,8 @@ class CASTBeliefHistory extends AbstractBeliefHistory{
 	WorkingMemoryAddresses offspring;
  };
 
-}; // end history
+}; 
+// end history
 
 
 
@@ -118,12 +118,18 @@ class CurrentModelStatus extends epobject::EpistemicObject {
 // END SLICE
 // ================================
 
-}; // end slice
-}; // end beliefs
-}; // end tr
-}; // end lt
-}; // end dfki
-}; // end de
+}; 
+// end slice
+}; 
+// end beliefs
+}; 
+// end tr
+}; 
+// end lt
+};
+// end dfki
+}; 
+// end de
 
 
 
