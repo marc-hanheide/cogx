@@ -16,25 +16,35 @@ module VisionData {
    * @author Kai Zhou
    */
   struct OneObj {
-    Vector3Seq pPlane;              // 3D vector sequence, describing the plane ???
-    Vector3Seq pTop;                // 3D vector sequence, describing the object top surface ???
+    Vector3Seq pPlane;              
+	// 3D vector sequence, describing the plane ???
+    Vector3Seq pTop;                
+	// 3D vector sequence, describing the object top surface ???
   };
-  sequence<OneObj> ObjSeq;
+  
+sequence<OneObj> ObjSeq;
 
   /**
    * @brief A convex hull describes ...???
    * @author Kai Zhou
    */
   class ConvexHull {
-    cogx::Math::Pose3 center;       // Pose of the center of the convex hull
+    cogx::Math::Pose3 center;       
+	// Pose of the center of the convex hull
    
-    Vector3Seq PointsSeq;           // points forming convex hull (stereo based) in camera coordinates
-    cast::cdl::CASTTime time;       // cast time
+    Vector3Seq PointsSeq;           
+	// points forming convex hull (stereo based) in camera coordinates
+    cast::cdl::CASTTime time;       
+	// cast time
     
-    double radius;                  // distance between center and farthest point from center
-    double density;                 // ~ number of points in volume
-    ObjSeq Objects;                 // Objects on this plane
-    cogx::Math::Plane3 plane;       // The estimated plane
+    double radius;                  
+	// distance between center and farthest point from center
+    double density;                 
+	// ~ number of points in volume
+    ObjSeq Objects;                 
+	// Objects on this plane
+    cogx::Math::Plane3 plane;       
+	// The estimated plane
  };
 
   sequence<string> IdSeq;
@@ -199,9 +209,12 @@ module VisionData {
   enum TrackingCommandType{ START, STOP, ADDMODEL, REMOVEMODEL, OVERWRITE, LOCK, UNLOCK, GETPOINT3D, RELEASEMODELS, SCREENSHOT };
   class TrackingCommand {
     TrackingCommandType cmd;
-    string visualObjectID;        // for ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D
-    VertexSeq points;             // GETPOINT3D (Input: vec2 texCoord; Output: vec3 pos, vec3 normal)
-    BoolSeq pointOnModel;         // pointOnModel[i] is true if points[i] hits the VisualObject
+    string visualObjectID;        
+	// for ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D
+    VertexSeq points;             
+	// GETPOINT3D (Input: vec2 texCoord; Output: vec3 pos, vec3 normal)
+    BoolSeq pointOnModel;         
+	// pointOnModel[i] is true if points[i] hits the VisualObject
   };
   
   /** 
@@ -257,8 +270,10 @@ module VisionData {
    * @author Andreas Richtsfeld 
    */
   class ReasonerObject {
-    VisualObject obj;         // visual object from stereo detector
-    int frameNr;              // frame number
+    VisualObject obj;         
+	// visual object from stereo detector
+    int frameNr;              
+	// frame number
   };
 
   /**
@@ -275,9 +290,12 @@ module VisionData {
     cast::cdl::CASTTime time;
     // This is a temporary solution only: provide the 3D points that gave rise
     // to this SOI, iff the SOI was created by plane pop-out.
-    SurfacePointSeq points;   // frontground points
-    SurfacePointSeq BGpoints; // background points
-    SurfacePointSeq EQpoints; // equivocal points which either belongs to fg or bg
+    SurfacePointSeq points;   
+	// frontground points
+    SurfacePointSeq BGpoints; 
+	// background points
+    SurfacePointSeq EQpoints; 
+	// equivocal points which either belongs to fg or bg
     int status;
   };
 
@@ -286,12 +304,14 @@ module VisionData {
    */
   class ROI {
     cogx::Math::Rect2 rect;
-    cast::cdl::CASTTime time;   // time the ROI was last changed
+    cast::cdl::CASTTime time;   
+	// time the ROI was last changed
   };
 
   class ObjectRecognitionMatch {
     // ID of the SOI/ProtoObject that was processed
-    string sourceType; // sourceType[0]: "S"-SOI or "P"-ProtoObject, "I"-image
+    string sourceType; 
+	// sourceType[0]: "S"-SOI or "P"-ProtoObject, "I"-image
     cast::cdl::WorkingMemoryAddress sourceId;
 
     // IDs of the internal representation of objects
