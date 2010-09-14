@@ -49,6 +49,7 @@ long long gethrtime(void)
 #define label4ambiguousness	-1
 
 #define SendDensePoints  1 	//0 send sparse points ,1 send dense points (recollect them after the segmentation)
+#define Treshold_Comp2SOI	0.8	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
 
 /**
  * The function called to create a new instance of our component.
@@ -729,99 +730,103 @@ void PlanePopOut::runComponent()
 			OP.pointsInOneSOI = SOIPointsSeq.at(i);
 			OP.BGInOneSOI = BGPointsSeq.at(i);
 			OP.EQInOneSOI = EQPointsSeq.at(i);
+			OP.surf = GetSurf(SOIPointsSeq.at(i), image);
 			CurrentObjList.push_back(OP);
 		}
-		if (PreviousObjList.empty())
-		{
-			for(unsigned int i=0; i<CurrentObjList.size(); i++)
-			{
-			  CurrentObjList.at(i).count++;
-			  PreviousObjList.push_back(CurrentObjList.at(i));
-			}
-		}
-		else
-		{
-		    for (unsigned int k=0; k<PreviousObjList.size(); k++)
-			log("Previous objects center are: object %u center is (%f, %f, %f)", k, PreviousObjList.at(k).c.x, PreviousObjList.at(k).c.y, PreviousObjList.at(k).c.z);
-		    for (unsigned int j=0; j<PreviousObjList.size(); j++)
-		    {
-			bool deleteObjFlag = true; // if this flag is still true after compare, then this object should be deleted from the WM
-			for(unsigned int i=0; i<CurrentObjList.size(); i++)
-			{
-			    if (CurrentObjList.at(i).bComCurrentPre == false)
-			    {
-				if(Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)) == true)
-				{
-				    deleteObjFlag = false;
-				    CurrentObjList.at(i).bComCurrentPre = true;
-				    if(PreviousObjList.at(j).bInWM == true)
-				    {
-					CurrentObjList.at(i).bInWM = true;
-					CurrentObjList.at(i).id = PreviousObjList.at(j).id;
-					CurrentObjList.at(i).count = PreviousObjList.at(j).count;
-					if (dist(CurrentObjList.at(i).c, PreviousObjList.at(j).c)/norm(CurrentObjList.at(i).c) > 1/2)
-					  //(abs((CurrentObjList.at(i).c.y-PreviousObjList.at(j).c.y)/CurrentObjList.at(i).c.y)>0.2)
-					{
-					    //cout<<"Current = "<<CurrentObjList.at(i).c.y<<"  Previous = "<<PreviousObjList.at(j).c.y<<endl;
-					    CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;
-					    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-					    overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
-					    //cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
-					}
-					else
-					{
-					    CurrentObjList.at(i).c = PreviousObjList.at(j).c;
-					}
-				    }
-				    else
-				    {
-					CurrentObjList.at(i).count = PreviousObjList.at(j).count+1;
-					if (CurrentObjList.at(i).count >= Torleration)
-					{
-					    CurrentObjList.at(i).bInWM =true;
-					    CurrentObjList.at(i).id = newDataID();
-					    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-					    addToWorkingMemory(CurrentObjList.at(i).id, obj);
-					    log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
-					    log("objects number = %u",objnumber);
-					    //cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
-					}
-				    }
-				    break;
-				}
-			    }
-			}
-			if (deleteObjFlag == true)
-			{
-			    if (PreviousObjList.at(j).bInWM == true)
-			    {
-				PreviousObjList.at(j).count = PreviousObjList.at(j).count-1;
-				if(PreviousObjList.at(j).count > 0) Pre2CurrentList.push_back(PreviousObjList.at(j));
-				else
-				{
-				  //cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
-				  deleteFromWorkingMemory(PreviousObjList.at(j).id);
-				  //cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
-				}
-			    }
-			}
-		    }
-		    PreviousObjList.clear();
-		    for (unsigned int i=0; i<CurrentObjList.size(); i++)
-		    {
-			if (CurrentObjList.at(i).bComCurrentPre == false)  CurrentObjList.at(i).count ++;
-			PreviousObjList.push_back(CurrentObjList.at(i));
-		    }
-		    if (Pre2CurrentList.size()>0)
-			for (unsigned int i=0; i<Pre2CurrentList.size(); i++)
-			    PreviousObjList.push_back(Pre2CurrentList.at(i));
-		}
+		SOIManagement();
 	}
 
 //cout<<"SOI in the WM = "<<PreviousObjList.size()<<endl;
     // wait a bit so we don't hog the CPU
     sleepComponent(50);
   }
+}
+
+void PlanePopOut::SOIManagement()
+{
+    if (PreviousObjList.empty())
+    {
+	for(unsigned int i=0; i<CurrentObjList.size(); i++)
+	{
+	  CurrentObjList.at(i).count++;
+	  PreviousObjList.push_back(CurrentObjList.at(i));
+	}
+	return;
+    }
+  for (unsigned int j=0; j<PreviousObjList.size(); j++)
+    {
+	bool deleteObjFlag = true; // if this flag is still true after compare, then this object should be deleted from the WM
+	for(unsigned int i=0; i<CurrentObjList.size(); i++)
+	{
+	    if (CurrentObjList.at(i).bComCurrentPre == false)
+	    {
+		float probability = Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j));
+		if(probability >Treshold_Comp2SOI)
+		{
+		    deleteObjFlag = false;
+		    CurrentObjList.at(i).bComCurrentPre = true;
+		    if(PreviousObjList.at(j).bInWM == true)
+		    {
+			CurrentObjList.at(i).bInWM = true;
+			CurrentObjList.at(i).id = PreviousObjList.at(j).id;
+			CurrentObjList.at(i).count = PreviousObjList.at(j).count;
+			if (dist(CurrentObjList.at(i).c, PreviousObjList.at(j).c)/norm(CurrentObjList.at(i).c) > 1/2)
+			  //(abs((CurrentObjList.at(i).c.y-PreviousObjList.at(j).c.y)/CurrentObjList.at(i).c.y)>0.2)
+			{
+			    //cout<<"Current = "<<CurrentObjList.at(i).c.y<<"  Previous = "<<PreviousObjList.at(j).c.y<<endl;
+			    CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;
+			    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+			    overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
+			    //cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
+			}
+			else
+			{
+			    CurrentObjList.at(i).c = PreviousObjList.at(j).c;
+			}
+		    }
+		    else
+		    {
+			CurrentObjList.at(i).count = PreviousObjList.at(j).count+1;
+			if (CurrentObjList.at(i).count >= Torleration)
+			{
+			    CurrentObjList.at(i).bInWM =true;
+			    CurrentObjList.at(i).id = newDataID();
+			    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+			    addToWorkingMemory(CurrentObjList.at(i).id, obj);
+			    log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+			    log("objects number = %u",objnumber);
+			    //cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
+			}
+		    }
+		    break;
+		}
+	    }
+	}
+	if (deleteObjFlag == true)
+	{
+	    if (PreviousObjList.at(j).bInWM == true)
+	    {
+		PreviousObjList.at(j).count = PreviousObjList.at(j).count-1;
+		if(PreviousObjList.at(j).count > 0) Pre2CurrentList.push_back(PreviousObjList.at(j));
+		else
+		{
+		  //cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
+		  deleteFromWorkingMemory(PreviousObjList.at(j).id);
+		  //cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+		}
+	    }
+	}
+    }
+//done the management, now let's copy the currenctSOIs to the previous one
+    PreviousObjList.clear();
+    for (unsigned int i=0; i<CurrentObjList.size(); i++)
+    {
+	if (CurrentObjList.at(i).bComCurrentPre == false)  CurrentObjList.at(i).count ++;
+	PreviousObjList.push_back(CurrentObjList.at(i));
+    }
+    if (Pre2CurrentList.size()>0)
+	for (unsigned int i=0; i<Pre2CurrentList.size(); i++)
+	    PreviousObjList.push_back(Pre2CurrentList.at(i));
 }
 
 IpVec PlanePopOut::GetSurf(VisionData::SurfacePointSeq points, Video::Image img)
@@ -1478,12 +1483,25 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, Visio
 	return obs;
 }
 
-bool PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
+float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 {
+    float r = 0.0;	//probability of matching of two objects, 0.0~1.0
+    if (obj1.surf.size()== 0 || obj2.surf.size()==0) return r;
+    IpPairVec matches;
+    getMatches(obj1.surf,obj2.surf,matches);
+    if (matches.size()== 0)	return r;
+    if(obj1.surf.size()>obj2.surf.size())
+	r = matches.size()/obj1.surf.size();
+    else
+        r = matches.size()/obj2.surf.size();
+    return r;
+    
+  /*
 	if (dist(obj1.c,obj2.c)<rate_of_centers*obj1.r)
 		return true; //the same object
 	else
 		return false; //not the same one
+*/
 }
 
 void PlanePopOut::AddConvexHullinWM()

@@ -40,6 +40,7 @@ typedef struct ObjP
 	VisionData::SurfacePointSeq pointsInOneSOI;
 	VisionData::SurfacePointSeq BGInOneSOI;
 	VisionData::SurfacePointSeq EQInOneSOI;
+	IpVec surf;
 }ObjPara;
 
 typedef struct Particle
@@ -69,7 +70,8 @@ private:
 	std::vector<ObjPara> CurrentObjList;
 	std::vector<ObjPara> Pre2CurrentList;
 	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, VisionData::SurfacePointSeq psIn1SOI, VisionData::SurfacePointSeq BGpIn1SOI, VisionData::SurfacePointSeq EQpIn1SOI);
-	bool Compare2SOI(ObjPara obj1, ObjPara obj2);
+	float Compare2SOI(ObjPara obj1, ObjPara obj2);
+	//bool Compare2SOI(ObjPara obj1, ObjPara obj2);
 	void AddConvexHullinWM();
 
 	vector< VisionData::SurfacePointSeq > SOIPointsSeq;
@@ -140,6 +142,7 @@ public:
 	CvPoint ProjectPointOnImage(Vector3 p, const Video::CameraParameters &cam);
 	void CollectDensePoints(Video::CameraParameters &cam, VisionData::SurfacePointSeq points);
 	IpVec GetSurf(VisionData::SurfacePointSeq points, Video::Image img);
+	void SOIManagement();
 	
 	inline Particle InitialParticle()
 	{
