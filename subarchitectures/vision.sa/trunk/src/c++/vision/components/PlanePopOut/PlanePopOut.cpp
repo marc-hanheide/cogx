@@ -761,7 +761,7 @@ void PlanePopOut::SOIManagement()
 	    if (CurrentObjList.at(i).bComCurrentPre == false)
 	    {
 		//float probability = Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j));
-		if(Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j) == true)
+		if(Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)) == true)
 		{
 		    deleteObjFlag = false;
 		    CurrentObjList.at(i).bComCurrentPre = true;
