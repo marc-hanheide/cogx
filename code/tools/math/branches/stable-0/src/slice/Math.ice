@@ -52,8 +52,8 @@ module Math {
    * [pos.x - size.x/2, pos.x + size.x/2] etc.
    */
   struct Box3 {
-    Vector3 pos;   // position of the center
-    Vector3 size;  // sizes in x, y and z direction
+    Vector3 pos;   
+    Vector3 size;  
   };
 
   // 3D pose consisting of position vector and rotation matrix
