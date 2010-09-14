@@ -1,7 +1,7 @@
 
 ^/code/cmake/trunk					cmake
 
-^/code/subarchitectures/binder/trunk                    subarchitectures/binder
+^/code/subarchitectures/binder/trunk                    subarchitectures/binder.sa
 ^/code/subarchitectures/coma.sa/trunk                   subarchitectures/coma.sa
 ^/code/subarchitectures/dialogue.sa/trunk               subarchitectures/dialogue.sa
 ^/code/subarchitectures/fakemotivation.sa/trunk         subarchitectures/fakemotivation.sa
