@@ -1,13 +1,50 @@
 package coma.components;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeSet;
+
+import SpatialData.Place;
+import SpatialData.PlaceStatus;
+import SpatialProperties.ConnectivityPathProperty;
+import SpatialProperties.GatewayPlaceProperty;
+import SpatialProperties.ObjectPlaceProperty;
+
+import coma.aux.ComaHelper;
+import comadata.ComaReasonerInterfacePrx;
+import comadata.ComaRoom;
+import cast.AlreadyExistsOnWMException;
+import cast.CASTException;
+import cast.ConsistencyException;
+import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
+import cast.UnknownSubarchitectureException;
+import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
+import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTData;
 
 /**
  * This is a simple monitor that replicates spatial WM entries, *PLACES*, inside coma.
+ * 
+ * The current version has been adapted for the Dora Yr2 system and hence does not
+ * contain any binder-related code anymore. However, it still requires the 
+ * CROWL/Jena-based ComaReasoner to be present.
+ * 
  * **IMPORTANT** This must be adapted:
  * As of now, the OLD FNode WMEs are used in order to have access to properties.
  * 
- * This class, for the time being, also contains the interface to the mighty *BINDER*!
  * 
  * @author hendrik
  * CAST file arguments:
@@ -19,12 +56,9 @@ public class PlaceMonitor extends ManagedComponent {
 	public PlaceMonitor() {
 		return;
 	}
-	/*
+	
 	private String m_comareasoner_component_name;
 	private ComaReasonerInterfacePrx m_comareasoner;
-	
-	private String m_marshaller_component_name;
-	private MarshallerPrx m_proxyMarshall;
 	
 	private HashSet<Long> m_placeholders;
 	private HashSet<Long> m_trueplaces;
@@ -43,9 +77,6 @@ public class PlaceMonitor extends ManagedComponent {
 		if (args.containsKey("--reasoner-name")) {
 			m_comareasoner_component_name=args.get("--reasoner-name");
 		}
-		if (args.containsKey("--marshaller-name")) {
-			m_marshaller_component_name=args.get("--marshaller-name");
-		}
 		if (args.containsKey("--dummy-objects")) {
 			if (!args.get("--dummy-objects").equals("false")) {
 				m_createDummyObjects = true;
@@ -61,9 +92,8 @@ public class PlaceMonitor extends ManagedComponent {
 	
 	
 	public void start() {
-		if (m_marshaller_component_name==null) log("No proxy marshaller present. Will ignore proxy creation. (Specify the proxy marshaller component name using --marshaller-name)");
 		if (m_comareasoner_component_name==null) {
-			log("No coma reasoner present. Exiting! (Specify the coma reasoner component name using --reasoner-name)");
+			log("No coma reasoner present. Exiting! (Specify the ComaReasoner component name using --reasoner-name)");
 			System.exit(-1);
 		}
 			
@@ -116,18 +146,6 @@ public class PlaceMonitor extends ManagedComponent {
 			e.printStackTrace();
 			log("Connection to the coma reasoner Ice server at "+ m_comareasoner_component_name + " failed! Exiting. (Specify the coma reasoner component name using --reasoner-name)");
 			System.exit(-1);
-		}	
-		
-		// connection to the proxy marshaller
-		try {
-			if (m_marshaller_component_name!=null) log("initiating connection to Ice server " + m_marshaller_component_name);
-			if (m_marshaller_component_name!=null) m_proxyMarshall = getIceServer(m_marshaller_component_name, Marshaller.class , MarshallerPrx.class);
-			if (m_proxyMarshall!=null) log("initiated marshaller connection");
-			else throw new CASTException();
-		} catch (CASTException e) {
-			e.printStackTrace();
-			log("Connection to the proxy marshaller Ice server at "+ m_marshaller_component_name + " failed! Will ignore proxy creation. (Specify the proxy marshaller component name using --marshaller-name)");
-			m_proxyMarshall=null;
 		}	
 	}
 	
@@ -329,13 +347,14 @@ public class PlaceMonitor extends ManagedComponent {
 		String category = "dora:" + ComaHelper.firstCap(((SpatialProperties.StringValue)_objProp.mapValue).value);
 		String placeIns = "dora:place"+_objProp.placeId;
 		String inRel = "dora:in";
+		String containsRel = "dora:contains";
 		
 		log("createObject of category " + category + " in place " + placeIns + " called.");
 		
 		// check whether the given place already contains an instance of the given category
-		String [] objsInPlace = m_comareasoner.getRelatedInstancesByRelation(placeIns, inRel);
+		String [] objsInPlace = m_comareasoner.getRelatedInstancesByRelation(placeIns, containsRel);
 		for (String obj : objsInPlace) {
-			if (obj.startsWith(":")) obj = "dora:" + obj;
+			if (obj.startsWith(":")) obj = "dora" + obj;
 			if (m_comareasoner.isInstanceOf(obj, category)) {
 				log("object of the given category already exists in the given place - doing nothing else.");
 				return false;
@@ -477,6 +496,7 @@ public class PlaceMonitor extends ManagedComponent {
 	}
 	
 	
+	@SuppressWarnings("unchecked")
 	private void maintainRooms() {
 		log("entering maintainRooms().");
 		try {
@@ -530,7 +550,7 @@ public class PlaceMonitor extends ManagedComponent {
 					// TODO does this really work? i.e., is ID() the correct arg?
 					deleteFromWorkingMemory(comaRoomWME.getID());
 					logRoom(_currentRoomStruct, "deleted obsolete room WME ", comaRoomWME.getID());
-					deleteRoomProxy(_currentRoomStruct, comaRoomWME.getID());
+					// 2010-09-13-YR2 deleteRoomProxy(_currentRoomStruct, comaRoomWME.getID());
 					log("deleted room WME and corresponding room proxy.");
 					m_comareasoner.deleteInstance("dora:room" + _currentRoomStruct.roomId);
 					log("deleted instance dora:room" + _currentRoomStruct.roomId + " from the coma reasoner");
@@ -600,7 +620,7 @@ public class PlaceMonitor extends ManagedComponent {
 						// now overwrite the existing room WME
 						overwriteWorkingMemory(comaRoomWME.getID(),_currentRoomStruct);
 						logRoom(_currentRoomStruct, "updated room WME. ", comaRoomWME.getID());
-						maintainRoomProxy(_currentRoomStruct, comaRoomWME.getID());
+						// 2010-09-13-YR2 maintainRoomProxy(_currentRoomStruct, comaRoomWME.getID());
 					} else {
 						logRoom(_currentRoomStruct, "did not update room WME or proxy. Room hasn't changed. ", comaRoomWME.getID());
 					}
@@ -669,7 +689,7 @@ public class PlaceMonitor extends ManagedComponent {
 					String _newRoomWMEID = newDataID();
 					addToWorkingMemory(_newRoomWMEID, _newRoom);
 					logRoom(_newRoom, "added new room WME. ", _newRoomWMEID);
-					maintainRoomProxy(_newRoom, _newRoomWMEID);
+					// 2010-09-13-YR2 maintainRoomProxy(_newRoom, _newRoomWMEID);
 				} // end else create a new room for non-doorway seeds
 				debug("remaining places: " + _remainingPlaceIds);
 			} // end for each remaining place loop
@@ -692,7 +712,7 @@ public class PlaceMonitor extends ManagedComponent {
 		logInstances("owl:Thing");
 	}
 	
-	private boolean maintainRoomProxy(ComaRoom _comaRoom, String _wmid) {
+	/* private boolean maintainRoomProxy(ComaRoom _comaRoom, String _wmid) {
 		log("maintainRoomProxy() called");
 		
 		if (m_proxyMarshall!=null) {
@@ -790,11 +810,12 @@ public class PlaceMonitor extends ManagedComponent {
 			
 			return true;
 		} else return false;
-	}
+	} */
 	
-	private boolean deleteRoomProxy(ComaRoom _comaRoom, String _wmid) {
+	/* private boolean deleteRoomProxy(ComaRoom _comaRoom, String _wmid) {
 		if (m_proxyMarshall!=null) {
-			// current room UID:
+			// current room UID: * This class, for the time being, also contains the interface to the mighty *BINDER*!
+
 			String _currRoomUID = "area"+_comaRoom.roomId;
 
 			// first delete its relations:
@@ -809,7 +830,7 @@ public class PlaceMonitor extends ManagedComponent {
 			logRoom(_comaRoom, "deleted room proxy for: ", _wmid);
 			return true;
 		} else return false;
-	}
+	} */
 	
 	private void logRoom(ComaRoom _room, String _prefix, String _wmid) {
 		if (_wmid==null) _wmid="";
@@ -833,7 +854,8 @@ public class PlaceMonitor extends ManagedComponent {
 			if (_insertComma) _areaConcepts.append(",");
 			_areaConcepts.append(_rcon);
 			_insertComma=true;
-		}
+		} 
+
 		_areaConcepts.append("]");
 
 		log(_prefix + "[[" +
@@ -844,7 +866,7 @@ public class PlaceMonitor extends ManagedComponent {
 				 (_wmid.equals("") ? " | WME ID: " + _wmid : "") +
 				 "]]");
 	}
-	*/
+	
 
 	
 // register special filters where necessary, so this general filter is not necessary anymore
