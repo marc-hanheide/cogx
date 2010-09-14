@@ -38,6 +38,7 @@
 		<ant target="${target}" dir="apis/sdl" /> 
 		<ant target="${target}" dir="apis/meta" /> 
 <!--		<ant target="${target}" dir="apis/dialmanager" /> -->
+		<ant target="${target}" dir="apis/inference" /> 
 		<ant target="${target}" dir="apis/dialogue" /> 
 		<ant target="${target}" dir="apis/cast" /> 
 		<ant target="${target}" dir="resources" />
