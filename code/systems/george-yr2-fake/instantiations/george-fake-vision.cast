@@ -1,23 +1,21 @@
 HOST localhost
 
 INCLUDE includes/visualization.sa/v11n-base.cast
- # SUBARCHITECTURE visualization.sa 
- # CPP WM SubarchitectureWorkingMemory
- # CPP TM AlwaysPositiveTaskManager
 
- # CPP MG display.srv DisplayServer --log true --debug true
+SUBARCHITECTURE vision.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
 
- SUBARCHITECTURE vision.sa
- JAVA WM cast.architecture.SubarchitectureWorkingMemory
-# CPP WM SubarchitectureWorkingMemory
- CPP TM AlwaysPositiveTaskManager
-
- CPP MG sim.vision SimulatedVision --displayserver "display.srv" --datadir "instantiations/vision-fake"
+CPP MG sim.vision SimulatedVision --displayserver "display.srv" --datadir "instantiations/vision-fake"
 
 JAVA MG vision.mediator eu.cogx.perceptmediator.george.VisualObjectMediatorComponent --debug
 
+JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --debug --subscribe "VisionData.VisualObject"
 
- JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --debug --subscribe "VisionData.VisualObject"
- JAVA MG perceptdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --debug --subscribe "eu.cogx.beliefs.slice.PerceptBelief"
+JAVA MG perceptdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --debug --subscribe "eu.cogx.beliefs.slice.PerceptBelief"
+
 JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"
 
+## Planner and Motivation
+INCLUDE includes/planner.sa/planner-base.cast
+JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
