@@ -13,9 +13,9 @@ public class PriorityComparator implements Comparator<Motive> {
 	 */
 	@Override
 	public int compare(Motive arg0, Motive arg1) {
-		if (arg0.priority.value() < arg1.priority.value())
+		if (arg0.priority.ordinal() < arg1.priority.ordinal())
 			return 1;
-		else if (arg0.priority.value() > arg1.priority.value())
+		else if (arg0.priority.ordinal() > arg1.priority.ordinal())
 			return -1;
 		else
 			return 0;

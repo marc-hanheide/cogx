@@ -171,7 +171,7 @@ public class MotiveFilterManager extends ManagedComponent {
 			if (filterResult == MotivePriority.UNSURFACE)
 				return MotivePriority.UNSURFACE;
 			// otherwise always provide the lowest priority
-			if (filterResult.value() < result.value())
+			if (filterResult.ordinal() < result.ordinal())
 				result = filterResult;
 		}
 		return result;

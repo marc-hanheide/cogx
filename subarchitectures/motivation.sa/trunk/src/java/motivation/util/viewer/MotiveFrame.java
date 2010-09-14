@@ -131,13 +131,13 @@ class MotiveFrame extends JFrame {
 	synchronized void update(WorkingMemoryChange wmc, final Motive motive) {
 		switch (wmc.operation) {
 		case ADD:
-			dsStatus.addValue(motive.status.value() + 1, motive.getClass()
+			dsStatus.addValue(motive.status.ordinal() + 1, motive.getClass()
 					.getSimpleName(), wmc.address.id);
 			dsGainCosts.addValue(motive.informationGain, "gain",
 					wmc.address.id);
 			dsTries.addValue(motive.tries, "tries", wmc.address.id);
 			dsGainCosts.addValue(motive.costs/10, "costs", wmc.address.id);
-			dsTries.addValue(motive.priority.value(), "priority",
+			dsTries.addValue(motive.priority.ordinal(), "priority",
 					wmc.address.id);
 			dsRank.addValue(motive.rank, "", wmc.address.id);
 			break;
@@ -151,13 +151,13 @@ class MotiveFrame extends JFrame {
 			dsRank.removeValue("", wmc.address.id);
 			break;
 		case OVERWRITE:
-			dsStatus.setValue(motive.status.value() + 1, motive.getClass()
+			dsStatus.setValue(motive.status.ordinal() + 1, motive.getClass()
 					.getSimpleName(), wmc.address.id);
 			dsGainCosts.setValue(motive.informationGain, "gain",
 					wmc.address.id);
 			dsTries.setValue(motive.tries, "tries", wmc.address.id);
 			dsGainCosts.setValue(motive.costs/10, "costs", wmc.address.id);
-			dsTries.setValue(motive.priority.value(), "priority",
+			dsTries.setValue(motive.priority.ordinal(), "priority",
 					wmc.address.id);
 			dsRank.setValue(motive.rank, "", wmc.address.id);
 			break;
