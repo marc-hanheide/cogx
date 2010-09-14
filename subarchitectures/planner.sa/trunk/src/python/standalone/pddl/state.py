@@ -777,6 +777,8 @@ class State(dict):
                 return any(imap(restrictionVisitor, cond.parts))
             elif isinstance(cond, conditions.QuantifiedCondition):
                 return restrictionVisitor(cond.condition)
+            elif isinstance(cond, condition.PreferenceCondition):
+                return restrictionVisitor(cond.cond)
             else:
                 return restrictionVisitor(cond.condition)
 
@@ -798,6 +800,8 @@ class State(dict):
                     cond.instantiate(dict(zip(cond.args, c)))
                     dependenciesVisitor(cond.condition)
                     cond.uninstantiate()
+            elif isinstance(cond, condition.PreferenceCondition):
+                dependenciesVisitor(cond.cond)
             else:
                 dependenciesVisitor(cond.condition)
                     
