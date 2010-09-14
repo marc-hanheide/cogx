@@ -2,20 +2,29 @@ HOST localhost
 
 INCLUDE includes/visualization.sa/v11n-base.cast
 
+# vision stuff ################################################################
 SUBARCHITECTURE vision.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-
 CPP MG sim.vision SimulatedVision --displayserver "display.srv" --datadir "instantiations/vision-fake"
+INCLUDE includes/vision.sa/vision-mediators.cast
 
-JAVA MG vision.mediator eu.cogx.perceptmediator.george.VisualObjectMediatorComponent --debug
+# binder ######################################################################
+INCLUDE includes/binder.sa/binder-base.cast
 
-JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --debug --subscribe "VisionData.VisualObject"
-
-JAVA MG perceptdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --debug --subscribe "eu.cogx.beliefs.slice.PerceptBelief"
-
-JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"
-
-## Planner and Motivation
+# planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
+INCLUDE includes/planner.sa/planner.cast
+INCLUDE includes/motivation.sa/motivation.cast
 JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+
+JAVA MG goal.generator.shape eu.cogx.goals.george.LearnShapeGenerator
+JAVA MG goal.generator.color eu.cogx.goals.george.LearnColorGenerator
+
+# viewer stuff ################################################################
+
+JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"
+JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "motivation.slice.Motive"
+
+

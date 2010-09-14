@@ -1,5 +1,6 @@
-JAVA MG PersonMediator		vision.components.mediators.PersonMediator
-JAVA MG VisualObjectMediator  	vision.components.mediators.VisualObjectMediator
+JAVA MG vision.mediator eu.cogx.perceptmediator.george.VisualObjectMediatorComponent 
 
+# simple tracking (to planner.sa)
+JAVA MG pt-spatial 	eu.cogx.percepttracker.george.VisualObjectTracker --debug --write-to-sa binder
 
 
