@@ -93,7 +93,7 @@ namespace Planning
 
         /* Tests if the state has been expanded or not by examining
          * the size of \member{action_based_successor_driver}. If no
-         * actions can be applied at this belief state, then we
+         * actions can be applied at this belief-state, then we
          * suppose it is not expanded. For the moment, because we are
          * dealing, supposedly, with the infinite horizon case, I
          * think this is a reasonable assumption.*/

@@ -60,7 +60,7 @@ namespace Planning
         
         struct digits : plus<digit> {};
         
-        struct Number : ifapply< seq < ifapply<digits, GOT_INTEGER_NUMBER__Action>
+        struct Number : ifapply< seq < opt<one<'-'>>, ifapply<digits, GOT_INTEGER_NUMBER__Action>
                                        , opt< seq<one<'.'>
                                                   , ifapply<digits
                                                             , GOT_REAL_NUMBER__Action > > > >

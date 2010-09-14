@@ -183,12 +183,13 @@ POMDP_State* Solver::take_observation(POMDP_State* current_state,
                                       Observational_State* observation,
                                       uint action_index)
 {
-   
     auto successor_state
         = compute_successor(observation, action_index, current_state);
 
+    if(successor_state->unexpanded()){
+        expand_belief_state(successor_state);
+    }
     
-    expand_belief_state(successor_state);
 
     
     return successor_state;

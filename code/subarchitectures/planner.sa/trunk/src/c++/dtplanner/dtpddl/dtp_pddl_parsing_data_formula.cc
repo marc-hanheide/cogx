@@ -167,7 +167,7 @@ void Formula_Data::report__number_in_formula()
         probability = static_cast<double>(last_number__int);
     } 
     
-    INTERACTIVE_VERBOSER(true, 4110, "At level :: "<<formula_parsing_level
+    INTERACTIVE_VERBOSER(true, 10200, "At level :: "<<formula_parsing_level
                          <<" Got number :: "<<probability<<" in action effect.");
     
     NEW_object_referenced_WRAPPED_deref_visitable_POINTER
@@ -892,10 +892,10 @@ void Formula_Data::add__number (const std::string& str)
     std::istringstream iss(str);
     if(last_number_parsed_was_double){
         iss>>last_number__double;
-        VERBOSER(101, "This was a double with value :: "<<last_number__double<<std::endl);
+        INTERACTIVE_VERBOSER(true, 10200, "This was a double with value :: "<<last_number__double<<std::endl);
     } else  {
         iss>>last_number__int;
-        VERBOSER(101, "This was an int with value :: "<<last_number__int<<std::endl);
+        INTERACTIVE_VERBOSER(true, 10200, "This was an int with value :: "<<last_number__int<<std::endl);
     }
 }
 
