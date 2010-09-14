@@ -6,7 +6,7 @@ INCLUDE includes/spatial.sa/spatial-blobfinder.cast
 INCLUDE includes/spatial.sa/spatial-ptz.cast
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial.cast
-INCLUDE includes/spatial.sa/spatial-peekabot.cast
+#INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter 
 INCLUDE includes/spatial.sa/spatial-mediator.cast
 
@@ -33,7 +33,10 @@ INCLUDE includes/binder.sa/binder-base.cast
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/planner.cast
+
 INCLUDE includes/motivation.sa/motivation.cast
+
+JAVA MG goal.generator motivation.components.generators.PlaceBeliefGoalGenerator --debug
 
 
 
@@ -60,7 +63,7 @@ JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V1
 JAVA MG placedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "SpatialData.Place"
 JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "motivation.slice.Motive"
 
-#JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --mode SVG
+JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --mode SVG
 
 #INCLUDE includes/visualization.sa/v11n-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
