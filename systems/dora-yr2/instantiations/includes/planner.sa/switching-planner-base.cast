@@ -1,4 +1,4 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer --log --debug  --nodot --domain dttest1.mapl 
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain switchtest-tfd.pddl --log --nodot --problem switchtest-tfd-problem.pddl
 COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
 
 SUBARCHITECTURE planner.sa
