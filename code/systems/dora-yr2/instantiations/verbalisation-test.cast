@@ -23,7 +23,7 @@ INCLUDE includes/comsys.sa/comsys.cast
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/planner.cast
+INCLUDE includes/planner.sa/planner-dora.cast
 INCLUDE includes/motivation.sa/motivation.cast
 
 JAVA MG TestGenerator motivation.components.generators.TestGenerator

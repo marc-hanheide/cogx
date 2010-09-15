@@ -21,6 +21,6 @@ JAVA MG perceptmediator binder.components.perceptmediator.PerceptMediatorCompone
 JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, binder.autogen.perceptmanagement.PerceptBeliefMaps, SpatialProperties.ConnectivityPathProperty"
 
 INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/planner.cast
+INCLUDE includes/planner.sa/planner-dora.cast
 
 CPP MG FakeMotivation FakeMotivationSA --goal "(forall (?p - place) (= (placestatus ?p) trueplace))" --log --debug
