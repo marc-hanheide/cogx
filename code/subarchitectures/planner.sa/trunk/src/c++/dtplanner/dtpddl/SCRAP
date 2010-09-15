@@ -1,4 +1,14 @@
 
+
+// State& report__state(State&){
+//     UNRECOVERABLE_ERROR("unimplemented");
+// }
+
+
+//         /* \result is FALSE if the state has already been discovered. */
+//         State& report__state(State&);//{UNRECOVERABLE_ERROR("unimplemented");};
+        
+
 Seems that for the same action and observation, that we are adding the entry twice at a belief.
 
 The observation i nthis case is equal, and yet the pointers are not equajl. So this is a deref issuej. 

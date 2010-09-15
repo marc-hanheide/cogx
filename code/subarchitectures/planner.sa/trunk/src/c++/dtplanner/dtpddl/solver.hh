@@ -51,12 +51,17 @@ namespace Planning
     class Solver
     {
     public:
+        virtual ~Solver(){};
+        
         /*Testing conditions on doubles.*/
         static Are_Doubles_Close are_Doubles_Close;//(1e-9);
-        
+
+        /* When the solver interacts by taking perceptions and
+         * prescribing actions, these are the relevant
+         * data-structures for the receipt of perceptions.*/
         typedef std::vector<std::string> Precept_Arguments;
         typedef std::pair<std::string, Precept_Arguments>  Precept;
-        typedef std::vector<std::pair<std::string, Precept_Arguments>>  Percept_List;
+        typedef std::vector<std::pair<std::string, Precept_Arguments> >  Percept_List;
         
         POMDP_State* take_observation(POMDP_State* current_state,
                                       Observational_State* observation,
@@ -76,12 +81,16 @@ namespace Planning
         get_prescribed_action(POMDP_State* current_state);
         
 
+        virtual void report__new_belief_state(POMDP_State* );
+        virtual POMDP_State* obtain__next_belief_state_for_expansion();
+        virtual POMDP_State* peek__next_belief_state_for_expansion();
+        
+        
         
         /*Problem that is the target of the solution procedure.*/
         Solver(Planning::Parsing::Problem_Data&);
 
         bool operator()(){return true;};
-
         
         void expand_belief_state( POMDP_State*);
         bool expand_belief_state_space();
@@ -131,8 +140,6 @@ namespace Planning
         void expand_optional_transformation(Planning::State*, const State_Transformation*);
 
         
-        
-        std::queue<Planning::POMDP_State*> expansion_queue;
         Planning::Set_Of_State_Pointers state_space;
         Planning::Set_Of_POMDP_State_Pointers belief_state__space;
         Planning::Set_Of_Observational_State_Pointers observation__space;
@@ -152,14 +159,11 @@ namespace Planning
         /* Is this solver in a sane state? */
         bool sanity() const;
 
-        /* \result is FALSE is the state has already been discovered. */
-        State& report__state(State&);//{UNRECOVERABLE_ERROR("unimplemented");};
-        
         
         const std::map<Type, Constants>& get__extensions_of_types() const;
         CXX__PTR_ANNOTATION(Problem_Grounding) get__problem_Grounding();
     private:
-
+        
         /* Compute the problem starting states and add them to
          * \member{expansion_stack} and \member{state_space}.*/
         void generate_starting_state();
@@ -183,6 +187,9 @@ namespace Planning
         void configure__extensions_of_types();
 
     private:
+        /*FIFO queue for simple state expansion.*/
+        std::queue<Planning::POMDP_State*> expansion_queue;
+        
         /* Functionality for obtaining a ground version of the problem
          * at hand.*/
         CXX__PTR_ANNOTATION(Problem_Grounding) problem_Grounding;
