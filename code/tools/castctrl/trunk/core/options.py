@@ -88,6 +88,8 @@ class CCastOptions(object):
         self.confSection = {} # other configuration sections
         self.parseConfigLines(optdefault.log4joptions.split("\n"))
 
+        self.configFileInfo = None
+
     @property
     def environscript(self):
         if self._environscript == None:
@@ -128,6 +130,19 @@ class CCastOptions(object):
         f = open(filename, "r")
         self.parseConfigLines(f.readlines())
         f.close()
+        filename = os.path.abspath(filename)
+        statinfo = os.stat(filename)
+        self.configFileInfo = [filename, statinfo]
+        print self.configFileInfo
+
+    # Check if the config file has changed on disk and reload
+    def checkConfigFile(self):
+        if self.configFileInfo == None: return
+        filename = self.configFileInfo[0]
+        oldstat = self.configFileInfo[1]
+        statinfo = os.stat(filename)
+        if oldstat.st_mtime != statinfo.st_mtime:
+            self.loadConfig(filename)
 
     def loadHistory(self, filename):
         if not os.path.exists(filename): return
