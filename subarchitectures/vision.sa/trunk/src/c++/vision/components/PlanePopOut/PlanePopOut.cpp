@@ -9,6 +9,7 @@
 #include <stack>
 #include <vector>
 #include <VideoUtils.h>
+#include <math.h>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
 #ifdef FEAT_VISUALIZATION
@@ -39,7 +40,7 @@ long long gethrtime(void)
 #define min_height_of_obj 0.03	//unit cm, due to the error of stereo, >0.01 is suggested
 #define rate_of_centers 0.4	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
-#define Torleration 10		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
+#define Torleration 5		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
 #define MAX_V 0.1
 #define label4initial		-3
@@ -730,7 +731,8 @@ void PlanePopOut::runComponent()
 			OP.pointsInOneSOI = SOIPointsSeq.at(i);
 			OP.BGInOneSOI = BGPointsSeq.at(i);
 			OP.EQInOneSOI = EQPointsSeq.at(i);
-			OP.surf = GetSurf(SOIPointsSeq.at(i), image);
+			OP.hist = GetSurfAndHistogram(SOIPointsSeq.at(i), image,OP.surf);
+			//SaveHistogramImg(OP.hist);
 			CurrentObjList.push_back(OP);
 		}
 		SOIManagement();
@@ -740,6 +742,48 @@ void PlanePopOut::runComponent()
     // wait a bit so we don't hog the CPU
     sleepComponent(50);
   }
+}
+
+void PlanePopOut::SaveHistogramImg(CvHistogram* hist)
+{
+    int h_bins = 30, s_bins = 32;
+   
+    int height = 240;
+    int width = (h_bins*s_bins*6);
+    IplImage* hist_img = cvCreateImage( cvSize(width,height), 8, 3 );
+    cvZero( hist_img );
+    float max_value = 0;
+    cvGetMinMaxHistValue( hist, 0, &max_value, 0, 0 );
+
+	/** temp images, for HSV to RGB tranformation */
+	IplImage * hsv_color = cvCreateImage(cvSize(1,1),8,3);
+	IplImage * rgb_color = cvCreateImage(cvSize(1,1),8,3);
+	int bin_w = width / (h_bins * s_bins);
+	for(int h = 0; h < h_bins; h++)
+	{
+		for(int s = 0; s < s_bins; s++)
+		{
+			int i = h*s_bins + s;
+			/** calculate the height of the bar */
+			float bin_val = cvQueryHistValue_2D( hist, h, s );
+			int intensity = cvRound(bin_val*height/max_value);
+ 
+			/** Get the RGB color of this bar */
+			cvSet2D(hsv_color,0,0,cvScalar(h*180.f / h_bins,s*255.f/s_bins,255,0));
+			cvCvtColor(hsv_color,rgb_color,CV_HSV2BGR);
+			CvScalar color = cvGet2D(rgb_color,0,0);
+ 
+			cvRectangle( hist_img, cvPoint(i*bin_w,height),
+				cvPoint((i+1)*bin_w,height - intensity),
+				color, -1, 8, 0 );
+		}
+	}
+    std::string path = "H-S-histogram";
+    path.insert(0,"/tmp/"); path.insert(path.length(),".jpg");
+    cvSaveImage(path.c_str(), hist_img);
+    cvReleaseImage(&hist_img);
+    cvReleaseImage(&hsv_color);
+    cvReleaseImage(&rgb_color);
 }
 
 void PlanePopOut::SOIManagement()
@@ -756,11 +800,13 @@ void PlanePopOut::SOIManagement()
   for (unsigned int j=0; j<PreviousObjList.size(); j++)
     {
 	bool deleteObjFlag = true; // if this flag is still true after compare, then this object should be deleted from the WM
+	//log("there are %d SOI in CurrentObjList", CurrentObjList.size());
 	for(unsigned int i=0; i<CurrentObjList.size(); i++)
 	{
 	    if (CurrentObjList.at(i).bComCurrentPre == false)
 	    {
 		float probability = Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j));
+		log("probability of matching is %f", probability);
 		if(probability >Treshold_Comp2SOI)
 		{
 		    deleteObjFlag = false;
@@ -793,8 +839,8 @@ void PlanePopOut::SOIManagement()
 			    CurrentObjList.at(i).id = newDataID();
 			    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 			    addToWorkingMemory(CurrentObjList.at(i).id, obj);
-			    log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
-			    log("objects number = %u",objnumber);
+			    //log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+			    //log("objects number = %u",objnumber);
 			    //cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
 			}
 		    }
@@ -829,7 +875,7 @@ void PlanePopOut::SOIManagement()
 	    PreviousObjList.push_back(Pre2CurrentList.at(i));
 }
 
-IpVec PlanePopOut::GetSurf(VisionData::SurfacePointSeq points, Video::Image img)
+CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points, Video::Image img, IpVec& ips)
 {
     Video::CameraParameters c = img.camPars;
     IplImage *iplImage = convertImageToIpl(img);
@@ -846,14 +892,44 @@ IpVec PlanePopOut::GetSurf(VisionData::SurfacePointSeq points, Video::Image img)
     CvRect r; r.x = (int)minx; r.y = (int)miny; r.width =(int)(maxx-minx); r.height =(int)(maxy-miny); 
     IplImage* imgpatch=cvCreateImage(cvSize(r.width,r.height),iplImage->depth,iplImage->nChannels);
     imgpatch = Video::crop(iplImage,r);
-    IpVec ips;
-    if (r.width<=16 || r.height<=16)	return ips;
+/*    std::string path = "surfpatch";
+    path.insert(0,"/tmp/"); path.insert(path.length(),".jpg");
+    cvSaveImage(path.c_str(), imgpatch);
+*/
+    if (r.width>16 && r.height>16)
     surfDetDes(imgpatch,ips, false, 4, 4, 2, 0.0001f);
+//---------------------Done the surf detection, now calculate the color histogram-----------------------//
+
+    IplImage* h_plane = cvCreateImage( cvGetSize(imgpatch), 8, 1 );
+    IplImage* s_plane = cvCreateImage( cvGetSize(imgpatch), 8, 1 );
+    IplImage* v_plane = cvCreateImage( cvGetSize(imgpatch), 8, 1 );
+    IplImage* planes[] = { h_plane, s_plane };
+    IplImage* hsv = cvCreateImage( cvGetSize(imgpatch), 8, 3 );
+    int h_bins = 30, s_bins = 32;
+    int hist_size[] = {h_bins, s_bins};
+    /* hue varies from 0 (~0 deg red) to 180 (~360 deg red again) */
+    float h_ranges[] = { 0, 180 };
+    /* saturation varies from 0 (black-gray-white) to 255 (pure spectrum color) */
+    float s_ranges[] = { 0, 255 };
+    float* ranges[] = { h_ranges, s_ranges };
+    CvHistogram* hist;
+    float max_value = 0;
+
+    cvCvtColor( imgpatch, hsv, CV_BGR2HSV );
+    cvCvtPixToPlane( hsv, h_plane, s_plane, v_plane, 0 );
+    hist = cvCreateHist( 2, hist_size, CV_HIST_ARRAY, ranges, 1 );
+    cvCalcHist( planes, hist, 0, 0 );
+    cvGetMinMaxHistValue( hist, 0, &max_value, 0, 0 );
+
 
     cvReleaseImage(&imgpatch);
     cvReleaseImage(&iplImage);
-    log("Done get surf!");
-    return ips;
+    cvReleaseImage(&h_plane);
+    cvReleaseImage(&s_plane);
+    cvReleaseImage(&v_plane);
+    cvReleaseImage(&hsv);
+    //log("Done get surf!");
+    return hist;
 }
 
 void PlanePopOut::CollectDensePoints(Video::CameraParameters &cam, VisionData::SurfacePointSeq points)
@@ -1467,7 +1543,7 @@ double PlanePopOut::Calc_SplitThreshold(VisionData::SurfacePointSeq &points, std
 
 SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, VisionData::SurfacePointSeq psIn1SOI, VisionData::SurfacePointSeq BGpIn1SOI, VisionData::SurfacePointSeq EQpIn1SOI)
 {
-	debug("create an object at (%f, %f, %f) now", center.x, center.y, center.z);
+	//debug("create an object at (%f, %f, %f) now", center.x, center.y, center.z);
 	VisionData::SOIPtr obs = new VisionData::SOI;
 	obs->status = 0;
 	obs->boundingBox.pos.x = obs->boundingSphere.pos.x = center.x;
@@ -1485,27 +1561,70 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, Visio
 	return obs;
 }
 
+// compare two color histogram using Kullback–Leibler divergence
+double PlanePopOut::CompareHistKLD(CvHistogram* h1, CvHistogram* h2)
+{
+    cvNormalizeHist( h1, 1.0 ); // Normalize it
+    cvNormalizeHist( h2, 1.0 ); 
+    int h_bins = 30, s_bins = 32;
+    double KLD = 0.0;
+
+    for(int h = 0; h < h_bins; h++)
+    {
+	    for(int s = 0; s < s_bins; s++)
+	    {
+		    /** calculate the height of the bar */
+		    float bin_val1 = cvQueryHistValue_2D( h1, h, s );
+		    float bin_val2 = cvQueryHistValue_2D( h2, h, s );
+		    if (bin_val1 != 0.0 && bin_val2!= 0.0)	KLD = log10(bin_val1/bin_val2)*bin_val1 + KLD;
+		    //log("Now bin_val = %f, %f", bin_val1, bin_val2);
+		    //log("Now KLD = %f", KLD);
+	    }
+    }
+    return KLD;
+}
+
 float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 {
-    float r = 0.0;	//probability of matching of two objects, 0.0~1.0
-    if (obj1.surf.size()== 0 || obj2.surf.size()==0) return r;
+   //return the probability of matching of two objects, 0.0~1.0
+   
+    float wS, wC, wP; //magic weight for SURF matching, color histogram and Size/Position/Pose
     IpPairVec matches;
-    log("Start surf matching! number of surf features are %d, %d", obj1.surf.size(), obj2.surf.size());
-    getMatches(obj1.surf,obj2.surf,matches);
-    log("Finish surf matching, there are %d features matched", matches.size());
-    if (matches.size()== 0)	return r;
-    if(obj1.surf.size()>obj2.surf.size())
-	r = matches.size()/obj1.surf.size();
+    wP = 0.2;
+    if (obj1.surf.size() == 0 || obj2.surf.size()==0) wS = 0.0;
+    else if (obj1.surf.size() < 40 || obj2.surf.size()<40)
+    {
+	wS = 0.1;
+	getMatches(obj1.surf,obj2.surf,matches);
+    }
     else
-        r = matches.size()/obj2.surf.size();
-    return r;
+    {
+	wS = 0.3;
+	getMatches(obj1.surf,obj2.surf,matches);
+    }
+    wC = 1.0-wS-wP;
+    double dist_histogram = CompareHistKLD(obj1.hist, obj2.hist);
+    double surfmacthingRatio;
+    if (matches.size()== 0)	surfmacthingRatio = 0.0;
+    if(obj1.surf.size()>obj2.surf.size())
+	surfmacthingRatio =1.0-(float)matches.size()/(float)obj1.surf.size();
+    else
+        surfmacthingRatio =1.0- (float)matches.size()/(float)obj2.surf.size();
+/*  
+    log("Finish surf matching, there are %d features matched", matches.size());
+    log("Finish surf matching, there are %d features in obj1", obj1.surf.size());
+    log("Finish surf matching, there are %d features in obj2", obj2.surf.size());
+
+    log("Finish color histogram comparison, the distance is %f",dist_histogram);
+*/   
+    double sizeRatio;
+    if (obj1.r>obj2.r)	sizeRatio = abs(obj1.r-obj2.r)/obj1.r;
+    else sizeRatio = abs(obj1.r-obj2.r)/obj2.r;
     
-  /*
-	if (dist(obj1.c,obj2.c)<rate_of_centers*obj1.r)
-		return true; //the same object
-	else
-		return false; //not the same one
-*/
+    //log("ratio = %f, %f, %f", wS, wC, wP);
+    //log("dist_histogram, surfmacthingRatio, sizeRatio are %f, %f, %f",dist_histogram, surfmacthingRatio, sizeRatio);
+
+    return 1.0-wS*surfmacthingRatio-wC*abs(dist_histogram)-wP*sizeRatio;
 }
 
 void PlanePopOut::AddConvexHullinWM()
@@ -1521,7 +1640,7 @@ void PlanePopOut::AddConvexHullinWM()
 	{
 	    if (mConvexHullPoints.size()>0)
 	    {
-		debug("There are %u points in the convex hull", mConvexHullPoints.size());
+		//debug("There are %u points in the convex hull", mConvexHullPoints.size());
 		CHPtr->PointsSeq = mConvexHullPoints;
 		CHPtr->time = getCASTTime();
 		p3.pos = mCenterOfHull;
@@ -1542,7 +1661,7 @@ void PlanePopOut::AddConvexHullinWM()
 	{
 	    if (mConvexHullPoints.size()>0)
 	    {
-		    debug("There are %u points in the convex hull", mConvexHullPoints.size());
+		    //debug("There are %u points in the convex hull", mConvexHullPoints.size());
 		    CHPtr->PointsSeq = mConvexHullPoints;
 		    CHPtr->time = getCASTTime();
 		    p3.pos = mCenterOfHull;
@@ -1555,7 +1674,7 @@ void PlanePopOut::AddConvexHullinWM()
 		    if (dist(pre_mCenterOfHull, mCenterOfHull) > T_CenterHull)
 		    {
 			  //cout<<"dist = "<<dist(pre_mCenterOfHull, mCenterOfHull)<<"  T = "<<T_CenterHull<<endl;
-			  debug("add sth into WM");
+			  //debug("add sth into WM");
 			  pre_id = newDataID();
 			  addToWorkingMemory(pre_id,CHPtr);
 			  pre_mConvexHullRadius = mConvexHullRadius;
