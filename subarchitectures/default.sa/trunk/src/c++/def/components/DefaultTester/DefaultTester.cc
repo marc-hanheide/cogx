@@ -38,17 +38,17 @@ void DefaultTester::configure(const map<string,string> & _config)
 		_hfcServerName = it->second;
 	}
 
-	// QdlQueryHandler name
-	if((it = _config.find("--test-qqh")) != _config.end())
+	// QueryHandler name
+	if((it = _config.find("--test-qh")) != _config.end())
 	{
-		_qdlQueryHandlerName = it->second;
+		_queryHandlerName = it->second;
 	}
 
 	log("Configuration parameters:");
 	log("-> Test HFCServer: %s", (_hfcServerName.empty())?"No":"Yes");
 	log("-> HFCServer Name: %s", _hfcServerName.c_str());
-	log("-> Test QdlQueryHandler: %s", (_qdlQueryHandlerName.empty())?"No":"Yes");
-	log("-> QdlQueryHandler Name: %s", _qdlQueryHandlerName.c_str());
+	log("-> Test QueryHandler: %s", (_queryHandlerName.empty())?"No":"Yes");
+	log("-> QueryHandler Name: %s", _queryHandlerName.c_str());
 }
 
 
@@ -58,9 +58,9 @@ void DefaultTester::start()
 	// Get the forward chainer interface proxy
 	if (!_hfcServerName.empty())
 		_hfcInterfacePrx = getIceServer<DefaultData::HFCInterface>(_hfcServerName);
-	// Get the QdlQueryHandler interface proxy
-	if (!_qdlQueryHandlerName.empty())
-		_qdlQueryHandlerInterfacePrx= getIceServer<DefaultData::QdlQueryHandlerInterface>(_qdlQueryHandlerName);
+	// Get the QueryHandler interface proxy
+	if (!_queryHandlerName.empty())
+		_queryHandlerInterfacePrx= getIceServer<DefaultData::QueryHandlerInterface>(_queryHandlerName);
 }
 
 
@@ -71,7 +71,7 @@ void DefaultTester::runComponent()
 	_qApp = new QApplication(0,0);
 
 	// Start dialog
-	_dialog = new DefaultTesterDialog(this, !_hfcServerName.empty(), !_qdlQueryHandlerName.empty());
+	_dialog = new DefaultTesterDialog(this, !_hfcServerName.empty(), !_queryHandlerName.empty());
 	_dialog->exec();
 
 	// Thread safe delete
@@ -91,7 +91,7 @@ void DefaultTester::stop()
 
 
 // -------------------------------------------------------
-QueryResults DefaultTester::sendQuery(std::string query, QueryDestination destination)
+QdlQueryResults DefaultTester::sendQuery(std::string query, QueryDestination destination)
 {
 	println("Sending query %s", query.c_str());
 	return _hfcInterfacePrx->querySelect(query);

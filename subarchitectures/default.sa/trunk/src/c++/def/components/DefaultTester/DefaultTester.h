@@ -29,7 +29,7 @@ public:
 
 	/** Where should the query by sent. */
 	enum QueryDestination
-	{QD_HFC_SERVER, QD_QDL_QUERY_HANDLER};
+	{QD_HFC_SERVER, QD_QUERY_HANDLER};
 
 
 public:
@@ -41,7 +41,7 @@ public:
 	virtual ~DefaultTester() {}
 
 	/** Sends a new query. */
-	DefaultData::QueryResults sendQuery(std::string query, QueryDestination destination);
+	DefaultData::QdlQueryResults sendQuery(std::string query, QueryDestination destination);
 
 
 protected:
@@ -63,14 +63,14 @@ private:
 	/** Id of the forward chainer server component.  */
 	std::string _hfcServerName;
 
-	/** Id of the QdlQueryHandler component.  */
-	std::string _qdlQueryHandlerName;
+	/** Id of the QueryHandler component.  */
+	std::string _queryHandlerName;
 
 	/** ICE proxy to the forward chainer server interface. */
 	DefaultData::HFCInterfacePrx _hfcInterfacePrx;
 
-	/** ICE proxy to the QdlQueryHandlerInterface. */
-	DefaultData::QdlQueryHandlerInterfacePrx _qdlQueryHandlerInterfacePrx;
+	/** ICE proxy to the QueryHandlerInterface. */
+	DefaultData::QueryHandlerInterfacePrx _queryHandlerInterfacePrx;
 
 	/** Qt application. */
 	QApplication *_qApp;
