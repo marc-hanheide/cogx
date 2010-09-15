@@ -16,12 +16,10 @@ INCLUDE includes/binder.sa/binder-base.cast
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/planner-george.cast
-INCLUDE includes/motivation.sa/motivation.cast
-JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 
-JAVA MG goal.generator.shape eu.cogx.goals.george.LearnShapeGenerator
-JAVA MG goal.generator.color eu.cogx.goals.george.LearnColorGenerator
+JAVA MG manual-execution george.execution.components.GraphicalExecutionManager
+
+
 
 # viewer stuff ################################################################
 
