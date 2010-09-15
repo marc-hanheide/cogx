@@ -26,6 +26,8 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
 public class ComaRoomTransferFunction extends
 		SimpleDiscreteTransferFunction<ComaRoom> {
 	
+	public static final String ROOM_ID="RoomId";
+	
 	public ComaRoomTransferFunction(ManagedComponent component) {
 		super(component, Logger.getLogger(ComaRoomTransferFunction.class));
 		// TODO Auto-generated constructor stub
@@ -36,7 +38,7 @@ public class ComaRoomTransferFunction extends
 			WorkingMemoryChange wmc, ComaRoom from) throws BeliefException {
 		assert (from != null);
 		Map<String, Formula> result = new HashMap<String, Formula>();
-		result.put("RoomId", IntFormula.create((int) from.roomId)
+		result.put(ROOM_ID, IntFormula.create((int) from.roomId)
 				.getAsFormula());
 		// BoolFormula isExplored =
 		// BoolFormula.create(from.status==PlaceStatus.TRUEPLACE);
