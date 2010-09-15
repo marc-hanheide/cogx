@@ -142,6 +142,7 @@ class CCastOptions(object):
         statinfo = os.stat(filename)
         if oldstat.st_mtime != statinfo.st_mtime:
             self.loadConfig(filename)
+            self.configEnvironment()
 
     def loadHistory(self, filename):
         if not os.path.exists(filename): return
