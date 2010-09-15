@@ -41,6 +41,7 @@ typedef struct ObjP
 	VisionData::SurfacePointSeq BGInOneSOI;
 	VisionData::SurfacePointSeq EQInOneSOI;
 	IpVec surf;
+	CvHistogram* hist;
 }ObjPara;
 
 typedef struct Particle
@@ -141,8 +142,10 @@ public:
 	void Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>& vT, vector<Particle> vFO, VisionData::SurfacePointSeq points, Vector3 cc, double rr);
 	CvPoint ProjectPointOnImage(Vector3 p, const Video::CameraParameters &cam);
 	void CollectDensePoints(Video::CameraParameters &cam, VisionData::SurfacePointSeq points);
-	IpVec GetSurf(VisionData::SurfacePointSeq points, Video::Image img);
+	CvHistogram* GetSurfAndHistogram(VisionData::SurfacePointSeq points, Video::Image img, IpVec& ips);
 	void SOIManagement();
+	void SaveHistogramImg(CvHistogram* hist);
+	double CompareHistKLD(CvHistogram* h1, CvHistogram* h2);
 	
 	inline Particle InitialParticle()
 	{
