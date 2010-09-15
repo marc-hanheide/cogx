@@ -42,6 +42,7 @@ typedef struct ObjP
 	VisionData::SurfacePointSeq EQInOneSOI;
 	IpVec surf;
 	CvHistogram* hist;
+	CvRect rect;
 }ObjPara;
 
 typedef struct Particle
@@ -81,6 +82,8 @@ private:
 	vector< Vector3 > v3center;
 	vector<double> vdradius;
 	vector< Vector3 > v3size;
+	IplImage* previousImg;
+	bool bIsMoving;
 
 #ifdef FEAT_VISUALIZATION
 	bool m_bSendPoints;
@@ -142,10 +145,11 @@ public:
 	void Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>& vT, vector<Particle> vFO, VisionData::SurfacePointSeq points, Vector3 cc, double rr);
 	CvPoint ProjectPointOnImage(Vector3 p, const Video::CameraParameters &cam);
 	void CollectDensePoints(Video::CameraParameters &cam, VisionData::SurfacePointSeq points);
-	CvHistogram* GetSurfAndHistogram(VisionData::SurfacePointSeq points, Video::Image img, IpVec& ips);
+	CvHistogram* GetSurfAndHistogram(VisionData::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r);
 	void SOIManagement();
 	void SaveHistogramImg(CvHistogram* hist);
 	double CompareHistKLD(CvHistogram* h1, CvHistogram* h2);
+	bool IsMoving(IplImage * subimg);
 	
 	inline Particle InitialParticle()
 	{
