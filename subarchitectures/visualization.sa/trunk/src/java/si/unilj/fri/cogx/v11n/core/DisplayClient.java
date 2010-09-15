@@ -109,7 +109,7 @@ public class DisplayClient {
 						DisplayInterface.class, DisplayInterfacePrx.class);
 
 			}
-		} catch (CASTException e) {
+		} catch (Throwable t) {
 			owner.logException(e);
 		}
 	}
