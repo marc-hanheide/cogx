@@ -102,13 +102,71 @@ OpenCvLiveServer::OpenCvLiveServer()
 {
   bayerCvt = CV_COLORCVT_MAX;
   framerateMillis = 0;
-  width = height = 0;
+  captureSize.width = 0;
+  captureSize.height = 0;
 }
 
 OpenCvLiveServer::~OpenCvLiveServer()
 {
   for(size_t i = 0; i < captures.size(); i++)
     cvReleaseCapture(&captures[i]);
+}
+
+void OpenCvLiveServer::getResolution(int camIdx, CvSize &size)
+{
+  int i = camIdx;
+  size.width = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
+  size.height = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
+}
+
+bool OpenCvLiveServer::setResolution(int camIdx, CvSize &size)
+{
+  int i = camIdx;
+  int w = 0, h = 0;
+  bool gotRequestedSize = true;
+
+  // first try the simple set property
+  cvSetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH, size.width);
+  cvSetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT, size.height);
+
+  // check if that worked
+  w = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
+  h = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
+  // if not, use firewire specific set mode
+  if(w != size.width || h != size.height)
+  {
+    log("cvSetCaptureProperty(WIDTH/HEIGHT) didn't work, trying cvSetCaptureProperty(MODE)");
+    if(size.width == 320)
+      cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_320x240_YUV422);
+    else if(size.width == 640)
+      cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_640x480_YUV411);
+    else if(size.width == 800)
+      cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_800x600_MONO8);
+    else if(size.width == 1024)
+      cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_1024x768_RGB8);
+    else if(size.width == 1280)
+      cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_1280x960_RGB8);
+    else if(size.width == 1600)
+      cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_1600x1200_RGB8);
+    else
+      println("Warning: video resolution %d x %d not supported!\n",
+          size.width, size.height);
+
+    // now check again
+    w = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
+    h = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
+
+    // if setting still did not work, use whatever the cameras are set to
+    if(w != size.width || h != size.height)
+    {
+      log("Warning: failed to set resolution to %d x %d, using %d x %d!\n",
+          size.width, size.height, w, h);
+      size.width = w;
+      size.height = h;
+      gotRequestedSize = false;
+    }
+  }
+  return gotRequestedSize;
 }
 
 /**
@@ -169,58 +227,46 @@ void OpenCvLiveServer::init(int dev_class, const vector<int> &dev_nums,
     }
   }
 
+  // if capture size was not set by config, use what is currently set in the
+  // cameras
+  if(captureSize.width == 0 || captureSize.width == 0)
+  {
+    // get currently set resolution of first camera and set it to all other
+    // cameras so all cameras will have same resolution
+    getResolution(0, captureSize);
+    for(size_t i = 1; i < captures.size(); i++)
+      if(!setResolution(i, captureSize))
+        throw runtime_error(exceptionMessage(__HERE__,
+              "failed to set all cameras to identical resolutions"));
+    log("using currently set video resolution %d x %d\n",
+        captureSize.width, captureSize.height);
+  }
+  else
+  {
+    log("setting video resolution to %d x %d\n",
+        captureSize.width, captureSize.height);
+    // set resolution for first camera, where we don't care whether our
+    // requested resolution was actually set
+    setResolution(0, captureSize);
+    // set for all other cameras to the same resolution (whatever it was)
+    // and insist they are the same
+    for(size_t i = 1; i < captures.size(); i++)
+      if(!setResolution(i, captureSize))
+        throw runtime_error(exceptionMessage(__HERE__,
+              "failed to set all cameras to identical resolutions"));
+    log("using available video resolution %d x %d\n", captureSize.width, captureSize.height);
+  }
 
-  // HACK
-	int w=0, h=0;
-  for(size_t i = 0; i < dev_nums.size(); i++)
-	{
-		println("[OpenCvLiveServer::init] setting width x height  %d x %d\n", width, height);
+  // frames per second
+  double fps = cvGetCaptureProperty(captures[0], CV_CAP_PROP_FPS);
 
-		cvSetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH, width);
-		cvSetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT, height);
-
-		w = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
-		h = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
-
-		if(w!=width || h!=height)
-		{
-			println("[OpenCvLiveServer::init] cvSetCaptureProperty(WIDTH, HEIGHT) didn't work, trying cvSetCaptureProperty(MODE)");
-
-			if(width == 320) {
-				cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_320x240_YUV422);
-			}
-			if(width == 640)
-				cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_640x480_YUV411);
-			if(width == 800)
-				cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_800x600_MONO8);
-			if(width == 1024)
-				printf("[OpenCvLiveServer::init] Warning: setting video resolution to %d is not supported by this OpenCV implementation!\n", width);
-			if(width == 1280)
-				cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_1280x960_RGB8);
-			if(width == 1600)
-				cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_1600x1200_RGB8);
-
-			w = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
-			h = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
-
-			if(w!=width)
-				printf("[OpenCvLiveServer::init] Warning: setting video resolution not supported by this OpenCV implementation!\n");
-		}
-		// HACK END
-
-		width = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
-		height = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
-		// frames per second
-		double fps = cvGetCaptureProperty(captures[i], CV_CAP_PROP_FPS);
-
-		if(fps > 0.)
-			// milliseconds per frame
-			framerateMillis = (int)(1000./fps);
-		else
-			// just some huge value (better than 0. as that might result in divides by
-			// zero somewhere)
-			framerateMillis = 1000000;
-	}
+  if(fps > 0.)
+    // milliseconds per frame
+    framerateMillis = (int)(1000./fps);
+  else
+    // just some huge value (better than 0. as that might result in divides by
+    // zero somewhere)
+    framerateMillis = 1000000;
 
   // to make sure we have images in the capture's buffer
   grabFramesInternal();
@@ -267,7 +313,7 @@ void OpenCvLiveServer::configure(const map<string,string> & _config)
   if((it = _config.find("--imgsize")) != _config.end())
   {
     istringstream str(it->second);
-    str >> width >> height;
+    str >> captureSize.width >> captureSize.height;
   }
 
   // if cameras return raw Bayer patterns
@@ -318,13 +364,14 @@ void OpenCvLiveServer::retrieveFrameInternal(int camIdx, int width, int height,
   frame.camPars = camPars[camIdx];
 
   // no size given, use native size
-  if((width == 0 || height == 0) || (width == this->width && height == this->height))
+  if((width == 0 || height == 0) ||
+     (width == captureSize.width && height == captureSize.height))
   {
     copyImage(retrievedImages[camIdx], frame);
     // adjust to native size
     // (note that calibration image size need not be the same as currently set
     // native capture size)
-    changeImageSize(frame.camPars, this->width, this->height);
+    changeImageSize(frame.camPars, captureSize.width, captureSize.height);
   }
   else
   {
@@ -366,13 +413,13 @@ void OpenCvLiveServer::retrieveFrame(int camId, int width, int height,
 
 void OpenCvLiveServer::retrieveHRFrames(std::vector<Video::Image> &frames)
 {
-	printf("OpenCvLiveServer::retrieveHRFrames: not yet implemented.\n");
+	log("OpenCvLiveServer::retrieveHRFrames: not yet implemented.\n");
 }
 
 void OpenCvLiveServer::getImageSize(int &width, int &height)
 {
-  width = this->width;
-  height = this->height;
+  width = captureSize.width;
+  height = captureSize.height;
 }
 
 int OpenCvLiveServer::getFramerateMilliSeconds()

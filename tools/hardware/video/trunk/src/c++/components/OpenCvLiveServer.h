@@ -77,14 +77,29 @@ private:
   int bayerCvt;  
 
   int framerateMillis;
-  int width;
-  int height;
-	
+  CvSize captureSize;
+
   /**
    * Timer to measure actual frame rate.
    */
   Timer timer;
 
+  /**
+   * get video resolution for given camera
+   * @param camIdx which camera
+   * @param size video resolution
+   */
+  void getResolution(int camIdx, CvSize &size);
+  /**
+   * set resolution for given camera
+   * @param camIdx which camera
+   * @param size requested video resolution, on exit contains the actually
+   *        set resolution, which might differ dependig on the cameras
+   *        cpabilities
+   * @return true if the requested resolution could be set, false if another
+   *        reslution was chosen
+   */
+  bool setResolution(int camIdx, CvSize &size);
   void init(int dev_class, const std::vector<int> &dev_nums,
       const std::string &bayer) throw(std::runtime_error);
   /**
