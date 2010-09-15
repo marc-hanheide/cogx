@@ -13,6 +13,7 @@ from core import castagentsrv, remoteproc
 from core import legacy
 from qtui import uimainwindow, uiresources
 from selectcomponentdlg import CSelectComponentsDlg
+from textedit import CTextEditor
 import processtree
 
 LOGGER = messages.CInternalLogger()
@@ -170,6 +171,10 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         # Context menu actions for QTextEdit
         self.ui.buildLogfileTxt.contextActions.append(self.ui.actCtxShowBuildError)
+
+        # Edit actions
+        self.connect(self.ui.actEditUserSettings, QtCore.SIGNAL("triggered()"), self.onEditUserSettings)
+        self.connect(self.ui.actEditCastEnvironment, QtCore.SIGNAL("triggered()"), self.onEditCastEnvironment)
 
         pic = uiresources.createPixmap(uiresources.icon_cogx)
         self.setWindowIcon(QtGui.QIcon(pic))
@@ -749,14 +754,37 @@ class CCastControlWnd(QtGui.QMainWindow):
     def on_ckShowInternalMsgs_stateChanged(self, value):
         self._applyMessageFilter()
 
+    def editFileInternal(self, filename, line=None):
+        LOGGER.log("internal-editor: %s" % (filename))
+        dlg = CTextEditor(self)
+        dlg.editFile(filename, line)
+
     def editFile(self, filename, line=None):
+        if filename == None: return
+        filename = "%s" % filename
+        if filename.strip() == "": return
+
         cmd = self._userOptions.textEditCmd
-        mo = re.search("%l(\[([^\]]+)\])?", cmd)
-        if mo != None:
-            if line == None: lexpr = ""
-            else: lexpr = "%s%d" % (mo.group(2), line)
-            cmd = cmd[:mo.start()] + lexpr + cmd[mo.end():]
-        procman.xrun(cmd % filename)
+        if cmd.startswith("internal"):
+            self.editFileInternal(filename, line)
+        else:
+            mo = re.search("%l(\[([^\]]+)\])?", cmd)
+            if mo != None:
+                if line == None: lexpr = ""
+                else: lexpr = "%s%d" % (mo.group(2), line)
+                cmd = cmd[:mo.start()] + lexpr + cmd[mo.end():]
+            pid = procman.xrun(cmd % filename)
+            if pid == None:
+                LOGGER.error("editFile(): failed to execute '%s' for '%s'" % (cmd, filename))
+                self.editFileInternal(filename, line)
+
+    def onEditUserSettings(self):
+        fn = self._userOptions.configFile
+        self.editFile(fn)
+
+    def onEditCastEnvironment(self):
+        fn = self.fnconf
+        self.editFile(fn)
 
     def on_btEditClientConfig_clicked(self, valid=True):
         if not valid: return

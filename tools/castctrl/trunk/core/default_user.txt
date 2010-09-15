@@ -1,3 +1,4 @@
+EDITOR=internal
 #EDITOR=gvim --servername GVIM --remote-silent %l[+:] %s
 #EDITOR=xemacs %l[+] %s
 #EDITOR=kate %l[-l ] %s
