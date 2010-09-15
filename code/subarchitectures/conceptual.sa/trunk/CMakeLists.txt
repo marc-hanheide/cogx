@@ -15,6 +15,6 @@ add_subdirectory (src/c++/conceptual/autogen)
 include_directories(src/c++/conceptual/autogen)
 
 # Conceptual.SA C++ Components
-add_subdirectory (src/c++/conceptual/components/ConceptualQdlQueryHandler)
+add_subdirectory (src/c++/conceptual/components/ConceptualQueryHandler)
 add_subdirectory (src/c++/conceptual/components/ConceptualChainGraphInferencer)
 
