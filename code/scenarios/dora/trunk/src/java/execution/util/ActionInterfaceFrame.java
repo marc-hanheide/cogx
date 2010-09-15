@@ -33,7 +33,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
-import execution.components.GraphicalExecutionManager;
+import dora.execution.components.GraphicalExecutionManager;
 import execution.slice.Action;
 
 public class ActionInterfaceFrame extends JFrame {
