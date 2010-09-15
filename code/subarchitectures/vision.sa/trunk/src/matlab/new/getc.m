@@ -96,8 +96,15 @@ switch param
          
    case 'numSC'
       val=length(mC);
-   case 'numC'
-      val=length(mC{sc}.class_labels);
+    case 'numC'
+       if exist('sc')
+          val=length(mC{sc}.class_labels);
+       else
+          val=0;
+          for sc=1:getc(mC,'numSC')
+             val=val+getc(mC,sc,'numC');
+          end
+       end
    otherwise
       val='';
       disp('Unknown parameter');

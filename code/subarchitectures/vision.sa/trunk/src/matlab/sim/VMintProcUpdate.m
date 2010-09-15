@@ -24,11 +24,13 @@ else %from VMprocAns
    %beggining of VMprocAns
    if size(ansLr,2)~=1 %from rec.
       
-      if currMode.qnt2qlD==0
-         ansQl = qnt2ql(ansLr, currMode.THRs);
-      else   
-         ansQl = qnt2qlD(ansLr, currMode.THRs, currMode.CTT);
-      end
+%       if currMode.qnt2qlD==0
+%          ansQl = qnt2ql(ansLr, currMode.THRs);
+%       else   
+%          ansQl = qnt2qlD(ansLr, currMode.THRs, currMode.CTT);
+%       end
+      rCpcx=cc2c(ansLr,'trim');
+      ansQl=qnt2ql(rCpcx,currMode.THRs);
       
       
       ansYes=lf2sfa(ansQl,ANSyes);

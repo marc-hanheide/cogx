@@ -22,11 +22,11 @@ if nargin>0
    axis(LRaxRoi,'equal');
    axis(LRaxRoi,'off');        
 
-   set(LRtxFisRoi,'Visible','on');         
+   %set(LRtxFisRoi,'Visible','on');         
    set(LRtxFroi,'String',[num2str(f','%.2g  ') ' ]']);
   
-   set(LRaxPts3d,'Visible','on');
-   axes(LRaxPts3d) ;
+   %set(LRaxPts3d,'Visible','on');
+   %axes(LRaxPts3d) ;
    
    if ~isempty(pts3d)
        if size(pts3d,2) < 6
