@@ -1243,7 +1243,6 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   ss << "segmentObject<br>";
   ss << "rectImage: " << image.width << "x" << image.height << "<br>";
   ss << "fullImage: " << fullImage.width << "x" << fullImage.height << "<br>";
-  m_display.setImage("soif.VideoImage", fullImage);
 #endif
 
   soiPtr->boundingSphere.rad*=DILATE_FACTOR;
