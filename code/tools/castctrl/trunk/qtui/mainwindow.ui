@@ -1345,9 +1345,17 @@
     <addaction name="separator"/>
     <addaction name="actRunMakeClean"/>
    </widget>
+   <widget class="QMenu" name="menu_Edit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="actEditUserSettings"/>
+    <addaction name="actEditCastEnvironment"/>
+   </widget>
    <addaction name="menuCast"/>
    <addaction name="menu_Process"/>
    <addaction name="menu_Build"/>
+   <addaction name="menu_Edit"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidget">
@@ -1639,6 +1647,16 @@
    </property>
    <property name="text">
     <string>Configure With CMake</string>
+   </property>
+  </action>
+  <action name="actEditUserSettings">
+   <property name="text">
+    <string>&amp;User settings</string>
+   </property>
+  </action>
+  <action name="actEditCastEnvironment">
+   <property name="text">
+    <string>&amp;Cast environment settings</string>
    </property>
   </action>
  </widget>

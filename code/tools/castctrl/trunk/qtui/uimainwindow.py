@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Wed Sep 15 14:57:34 2010
+# Created: Wed Sep 15 17:31:01 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -573,6 +573,8 @@ class Ui_MainWindow(object):
         self.menu_Process.setObjectName("menu_Process")
         self.menu_Build = QtGui.QMenu(self.menubar)
         self.menu_Build.setObjectName("menu_Build")
+        self.menu_Edit = QtGui.QMenu(self.menubar)
+        self.menu_Edit.setObjectName("menu_Edit")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -682,6 +684,10 @@ class Ui_MainWindow(object):
         icon11.addPixmap(QtGui.QPixmap(":/icons/res/CMakeSetup128.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.actConfigureWithCMake.setIcon(icon11)
         self.actConfigureWithCMake.setObjectName("actConfigureWithCMake")
+        self.actEditUserSettings = QtGui.QAction(MainWindow)
+        self.actEditUserSettings.setObjectName("actEditUserSettings")
+        self.actEditCastEnvironment = QtGui.QAction(MainWindow)
+        self.actEditCastEnvironment.setObjectName("actEditCastEnvironment")
         self.menuCast.addAction(self.actShowEnv)
         self.menuCast.addSeparator()
         self.menuCast.addAction(self.actQuit)
@@ -699,9 +705,12 @@ class Ui_MainWindow(object):
         self.menu_Build.addAction(self.actConfigureWithCMake)
         self.menu_Build.addSeparator()
         self.menu_Build.addAction(self.actRunMakeClean)
+        self.menu_Edit.addAction(self.actEditUserSettings)
+        self.menu_Edit.addAction(self.actEditCastEnvironment)
         self.menubar.addAction(self.menuCast.menuAction())
         self.menubar.addAction(self.menu_Process.menuAction())
         self.menubar.addAction(self.menu_Build.menuAction())
+        self.menubar.addAction(self.menu_Edit.menuAction())
         self.processBar.addAction(self.actEnableCleanupScript)
         self.processBar.addAction(self.actStartCastServers)
         self.processBar.addAction(self.actStopCastServers)
@@ -796,6 +805,7 @@ class Ui_MainWindow(object):
         self.menuCast.setTitle(QtGui.QApplication.translate("MainWindow", "&Cast", None, QtGui.QApplication.UnicodeUTF8))
         self.menu_Process.setTitle(QtGui.QApplication.translate("MainWindow", "&Process", None, QtGui.QApplication.UnicodeUTF8))
         self.menu_Build.setTitle(QtGui.QApplication.translate("MainWindow", "&Build", None, QtGui.QApplication.UnicodeUTF8))
+        self.menu_Edit.setTitle(QtGui.QApplication.translate("MainWindow", "&Edit", None, QtGui.QApplication.UnicodeUTF8))
         self.dockWidget.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Process tree", None, QtGui.QApplication.UnicodeUTF8))
         self.processBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.buildBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
@@ -828,5 +838,7 @@ class Ui_MainWindow(object):
         self.actRunMakeInstall.setShortcut(QtGui.QApplication.translate("MainWindow", "F8", None, QtGui.QApplication.UnicodeUTF8))
         self.actRunMakeClean.setText(QtGui.QApplication.translate("MainWindow", "Make Clean", None, QtGui.QApplication.UnicodeUTF8))
         self.actConfigureWithCMake.setText(QtGui.QApplication.translate("MainWindow", "Configure With CMake", None, QtGui.QApplication.UnicodeUTF8))
+        self.actEditUserSettings.setText(QtGui.QApplication.translate("MainWindow", "&User settings", None, QtGui.QApplication.UnicodeUTF8))
+        self.actEditCastEnvironment.setText(QtGui.QApplication.translate("MainWindow", "&Cast environment settings", None, QtGui.QApplication.UnicodeUTF8))
 
 import castcontrol_rc

@@ -478,6 +478,7 @@ def xrun(cmdline, workdir=None, env=None):
     # XRUN may create zombies.
     cmds = cmdline.split()
     cwd = os.getcwd()
+    pid = None
     try:
         pid = subp.Popen(cmds, cwd=workdir, env=env).pid
         log("CMD pid=%d: %s" % (pid, cmdline))
@@ -486,6 +487,7 @@ def xrun(cmdline, workdir=None, env=None):
     finally:
         os.chdir(cwd)
     log("")
+    return pid
 
 def xrun_wait(cmdline, workdir=None):
     # XRUN may create zombies.
@@ -508,5 +510,4 @@ def xrun_wait(cmdline, workdir=None):
     finally:
         os.chdir(cwd)
     log("")
-
 
