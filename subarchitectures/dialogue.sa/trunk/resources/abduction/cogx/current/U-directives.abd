@@ -87,11 +87,11 @@ nm_action_effects(S, H, RootNom, Int, Ref, find) <-
 
 nm_action_effects(S, H, RootNom, Int, Ref, bring) <-
 	determine_recipient(RootNom, S, S, H, Recipient),
-	int : post(Int, state(posession, 'Agent'(Recipient), 'Patient'(Ref))) / p(1.0).
+	int : post(Int, state(possession, 'Agent'(Recipient), 'Patient'(Ref))) / p(1.0).
 
 nm_action_effects(S, H, RootNom, Int, Ref, get) <-
 	determine_recipient(RootNom, H, S, H, Recipient),
-	int : post(Int, state(posession, 'Agent'(Recipient), 'Patient'(Ref))) / p(1.0).
+	int : post(Int, state(possession, 'Agent'(Recipient), 'Patient'(Ref))) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
