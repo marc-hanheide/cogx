@@ -16,14 +16,18 @@ switch req
       %avu=MKDBFrec(f,mAV); %recognize AVs considering current models
       avu=ODKDErec(f,mAV); %recognize AVs considering current models
       answ=avu;
-      if currMode.qnt2qlD==0
-         ansQl = qnt2ql(answ, currMode.THRs);
-      else   
-         ansQl = qnt2qlD(answ, currMode.THRs, currMode.CTT);
-      end
+%      if currMode.qnt2qlD==0
+%         ansQl = qnt2ql(answ, currMode.THRs);
+      rCpcx=cc2c(answ,'trim');
+      ansQl=qnt2ql(rCpcx,currMode.THRs);
+%      else   
+%         ansQl = qnt2qlD(answ, currMode.THRs, currMode.CTT);
+%      end
       ansYes = lf2sfa(ansQl, ANSyes);
       ansPy = lf2sfa(ansQl, ANSpy);
-      showRec(ansYes,ansPy,answ,f);
+      %showRec(ansYes,ansPy,answ,f);
+      showRec(ansYes,ansPy,rCpcx,f);
+      dispRec;
    case 2 %update
       %      [mAV,mDA,mFS]=MVBFupdate(f,avw,mAV,mDA,mFS);
 

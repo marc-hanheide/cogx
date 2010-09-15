@@ -74,11 +74,16 @@ end;
 Dirs.disp=[Dirs.cogLearn 'files/disp/'];
 global Disp
 fclose('all');
-delete([Dirs.disp 'mlog.html']);
-Disp.mlog=fopen([Dirs.disp 'mlog.html'],'a');
-Disp.mL=fopen([Dirs.disp 'mL.html'],'w');
-Disp.mR=fopen([Dirs.disp 'mR.html'],'w');
-
+%delete([Dirs.disp 'mlog.html']);
+%Disp.mlog=fopen([Dirs.disp 'mlog.html'],'a');
+%Disp.mL=fopen([Dirs.disp 'mL.html'],'w');
+%Disp.mR=fopen([Dirs.disp 'mR.html'],'w');
+Disp.mL=[Dirs.disp 'mL.png'];
+Disp.mR=[Dirs.disp 'mR.png'];
+%delete(Disp.mL);
+%delete(Disp.mR);
+copyfile([Dirs.disp 'mLinit.png'],Disp.mL); 
+copyfile([Dirs.disp 'mRinit.png'],Disp.mR); 
 
 %start processes
 
@@ -88,8 +93,8 @@ vsHs=VSstart;
 [lrcH LRguiL LRguiR]=LRstart;
 atH=ATstart;
 
-   set(LRguiL,'Visible','On');
-   set(LRguiR,'Visible','On');
+   %set(LRguiL,'Visible','On');
+   %set(LRguiR,'Visible','On');
 
 
 global clfHs;
@@ -125,6 +130,7 @@ for i=1:7
    pos=get(clfHs(i),'Position');
    set(clfHs(i),'Position',[Apos(i,1:2) pos(3:4)]);
 end;   
+
 
 %RLcontrol;
 

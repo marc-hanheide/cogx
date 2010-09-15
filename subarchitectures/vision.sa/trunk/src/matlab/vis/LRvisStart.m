@@ -24,9 +24,9 @@ LRtxRec=findobj(LRguiR, 'Tag','tx_rec');
 LRtxFrec=findobj(LRguiR, 'tag','tx_Frec');
 LRtxFisRec=findobj(LRguiR, 'tag','tx_FisRec');
 LRtxFisRoi=findobj(LRguiR, 'tag','tx_FisRoi');
-f1=figure;
-set(f1,'Visible','off');
-showROI;
+% f1=figure;
+% set(f1,'Visible','off');
+% showROI;
 
 % 
 % 
