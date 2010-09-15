@@ -32,6 +32,8 @@ long long gethrtime(void)
 }
 #endif
 
+#define USE_MOTION_DETECTION
+#define SAVE_SOI_PATCH
 #define USE_PSO	0	//0=use RANSAC, 1=use PSO to estimate multiple planes
 
 #define Shrink_SOI 1
@@ -40,7 +42,7 @@ long long gethrtime(void)
 #define min_height_of_obj 0.03	//unit cm, due to the error of stereo, >0.01 is suggested
 #define rate_of_centers 0.4	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
-#define Torleration 5		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
+#define Torleration 20		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
 #define MAX_V 0.1
 #define label4initial		-3
@@ -50,7 +52,7 @@ long long gethrtime(void)
 #define label4ambiguousness	-1
 
 #define SendDensePoints  1 	//0 send sparse points ,1 send dense points (recollect them after the segmentation)
-#define Treshold_Comp2SOI	0.8	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
+#define Treshold_Comp2SOI	0.6	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
 
 /**
  * The function called to create a new instance of our component.
@@ -414,6 +416,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
   pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
   pre_mConvexHullRadius = 0.0;
   pre_id = "";
+  bIsMoving = false;
 
 #ifdef FEAT_VISUALIZATION
   m_display.configureDisplayClient(_config);
@@ -654,6 +657,21 @@ void PlanePopOut::runComponent()
 
 	Video::Image image;
 	getRectImage(LEFT, stereoWidth, image);
+#ifdef USE_MOTION_DETECTION
+	if (previousImg == NULL)	{previousImg = convertImageToIpl(image); bIsMoving = true;}
+	else
+	{
+	    IplImage* Cimg = convertImageToIpl(image);
+	    IplImage* subimg=cvCreateImage(cvSize(Cimg->width,Cimg->height),Cimg->depth,Cimg->nChannels);
+	    cvAbsDiff(Cimg,previousImg, subimg);
+	    if (IsMoving(subimg))	{bIsMoving = true; log("Motion detected, freeze the 3D analysis");}
+	    else bIsMoving = false;
+	    cvCopy(Cimg,previousImg , NULL);
+	    cvReleaseImage(&Cimg);  
+	    cvReleaseImage(&subimg);
+	}
+#endif
+	if (bIsMoving)	continue;
 	if (points.size() == 0)
 	{
 		points = tempPoints;
@@ -731,7 +749,7 @@ void PlanePopOut::runComponent()
 			OP.pointsInOneSOI = SOIPointsSeq.at(i);
 			OP.BGInOneSOI = BGPointsSeq.at(i);
 			OP.EQInOneSOI = EQPointsSeq.at(i);
-			OP.hist = GetSurfAndHistogram(SOIPointsSeq.at(i), image,OP.surf);
+			OP.hist = GetSurfAndHistogram(SOIPointsSeq.at(i), image,OP.surf, OP.rect);
 			//SaveHistogramImg(OP.hist);
 			CurrentObjList.push_back(OP);
 		}
@@ -742,6 +760,26 @@ void PlanePopOut::runComponent()
     // wait a bit so we don't hog the CPU
     sleepComponent(50);
   }
+}
+
+bool PlanePopOut::IsMoving(IplImage * subimg)
+{
+    IplImage * pImage8uGray=NULL;
+    pImage8uGray=cvCreateImage(cvGetSize(subimg),IPL_DEPTH_8U,1);
+    cvCvtColor(subimg,pImage8uGray,CV_BGR2GRAY);
+    int x, y;
+    for(y = 0; y < pImage8uGray->height; y++){
+        for(x = 0; x < pImage8uGray->width; x++){
+	  int a = ((uchar*)(pImage8uGray->imageData+pImage8uGray->widthStep*y))[x];
+	  if (a>50)	
+	  {
+	      cvReleaseImage(&pImage8uGray);
+	      return true;
+	  }
+	}
+    }
+    cvReleaseImage(&pImage8uGray);
+    return false;
 }
 
 void PlanePopOut::SaveHistogramImg(CvHistogram* hist)
@@ -839,7 +877,17 @@ void PlanePopOut::SOIManagement()
 			    CurrentObjList.at(i).id = newDataID();
 			    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 			    addToWorkingMemory(CurrentObjList.at(i).id, obj);
-			    //log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+			    #ifdef SAVE_SOI_PATCH
+			    std::string path = CurrentObjList.at(i).id;
+			    path.insert(0,"/tmp/"); path.insert(path.length(),".jpg");
+			    IplImage* cropped = cvCreateImage( cvSize(CurrentObjList.at(i).rect.width,CurrentObjList.at(i).rect.height), previousImg->depth, previousImg->nChannels );
+			    cvSetImageROI( previousImg, CurrentObjList.at(i).rect);
+			    cvCopy( previousImg, cropped );
+			    cvResetImageROI( previousImg );
+			    cvSaveImage(path.c_str(), cropped);
+			    cvReleaseImage(&cropped);
+			    #endif
+			    log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 			    //log("objects number = %u",objnumber);
 			    //cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
 			}
@@ -858,8 +906,12 @@ void PlanePopOut::SOIManagement()
 		{
 		  //cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
 		  deleteFromWorkingMemory(PreviousObjList.at(j).id);
-		  //cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+		  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 		}
+	    }
+	    else
+	    {
+		if(PreviousObjList.at(j).count > 0) Pre2CurrentList.push_back(PreviousObjList.at(j));
 	    }
 	}
     }
@@ -867,7 +919,7 @@ void PlanePopOut::SOIManagement()
     PreviousObjList.clear();
     for (unsigned int i=0; i<CurrentObjList.size(); i++)
     {
-	if (CurrentObjList.at(i).bComCurrentPre == false)  CurrentObjList.at(i).count ++;
+	if (CurrentObjList.at(i).bComCurrentPre == false)  CurrentObjList.at(i).count --;
 	PreviousObjList.push_back(CurrentObjList.at(i));
     }
     if (Pre2CurrentList.size()>0)
@@ -875,7 +927,7 @@ void PlanePopOut::SOIManagement()
 	    PreviousObjList.push_back(Pre2CurrentList.at(i));
 }
 
-CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points, Video::Image img, IpVec& ips)
+CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r)
 {
     Video::CameraParameters c = img.camPars;
     IplImage *iplImage = convertImageToIpl(img);
@@ -889,7 +941,7 @@ CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points
 	if (SOIPointOnImg.x<minx)	minx = SOIPointOnImg.x;
 	if (SOIPointOnImg.y<miny)	miny = SOIPointOnImg.y;
     }
-    CvRect r; r.x = (int)minx; r.y = (int)miny; r.width =(int)(maxx-minx); r.height =(int)(maxy-miny); 
+    r.x = (int)minx; r.y = (int)miny; r.width =(int)(maxx-minx); r.height =(int)(maxy-miny); 
     IplImage* imgpatch=cvCreateImage(cvSize(r.width,r.height),iplImage->depth,iplImage->nChannels);
     imgpatch = Video::crop(iplImage,r);
 /*    std::string path = "surfpatch";
@@ -1482,7 +1534,7 @@ void PlanePopOut::SplitPoints(VisionData::SurfacePointSeq &points, std::vector <
 	std::stack <int> objstack;
 	double split_threshold = Calc_SplitThreshold(points, labels);
 	unsigned int obj_number_threshold;
-	obj_number_threshold = 15;
+	obj_number_threshold = 25;
 	while(!candidants.empty())
 	{
 		S_label.at(*candidants.begin()) = objnumber;
