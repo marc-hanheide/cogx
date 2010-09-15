@@ -38,6 +38,12 @@ if(BUILD_GEORGE)
 add_subdirectory (scenarios/george)
 endif(BUILD_GEORGE)
 
+option(BUILD_SCENARIO_SHARED "Build shared scenario code" NO)
+if(BUILD_SCENARIO_SHARED)
+add_subdirectory (scenarios/shared)
+endif(BUILD_SCENARIO_SHARED)
+
+
 option(BUILD_BELIEFS "Build beliefs" YES)
 if(BUILD_BELIEFS)
 add_subdirectory (tools/beliefs/apis/beliefs)
