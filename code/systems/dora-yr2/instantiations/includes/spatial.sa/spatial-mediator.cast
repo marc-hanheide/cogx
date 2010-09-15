@@ -8,8 +8,7 @@ JAVA MG pm-gateway 	eu.cogx.perceptmediator.components.GatewayPropertyMediator
 JAVA MG pm-space 	eu.cogx.perceptmediator.components.AssociatedSpacePropertyMediator
 JAVA MG pm-border 	eu.cogx.perceptmediator.components.AssociatedBorderPropertyMediator
 
-# simple tracking (to planner.sa)
-JAVA MG pt-spatial 	eu.cogx.percepttracker.SpatialBeliefTracker --debug --write-to-sa binder
+
 
 
 

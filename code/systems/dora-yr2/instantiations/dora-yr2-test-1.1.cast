@@ -38,7 +38,7 @@ INCLUDE includes/motivation.sa/motivation.cast
 
 JAVA MG goal.generator motivation.components.generators.PlaceBeliefGoalGenerator --debug
 
-
+INCLUDE includes/planner.sa/viz-plan.cast
 
 
 # exection ####################################################################
@@ -65,8 +65,8 @@ JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N
 
 JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --mode SVG
 
-#INCLUDE includes/visualization.sa/v11n-base.cast
-INCLUDE includes/planner.sa/viz-plan.cast
+
+
 
 
 
