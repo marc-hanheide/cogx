@@ -114,6 +114,7 @@
         <pathelement path="${icelib-slice.dir-alt}"/>
         <pathelement path="${icelib-slice.dir-ubuntu}"/>
         <pathelement path="${slice.dir}"/>
+        <pathelement path="${ice.slice.dir}"/>
       </includepath>
     </slice2java>
   </target>
