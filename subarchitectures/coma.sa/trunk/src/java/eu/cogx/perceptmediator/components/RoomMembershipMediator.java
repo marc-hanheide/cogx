@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import cast.CASTException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
@@ -27,6 +28,7 @@ import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.perceptmediator.transferfunctions.helpers.ComaRoomMatchingFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 
 /**
@@ -40,10 +42,9 @@ public class RoomMembershipMediator extends ManagedComponent {
 
 	WMView<PerceptBelief> allBeliefs;
 	WMContentWaiter<PerceptBelief> waitingBeliefReader;
-	WMEventQueue entryQueue;
+	final WMEventQueue entryQueue = new WMEventQueue();
 
-	public RoomMembershipMediator(ManagedComponent component,
-			WMView<PerceptBelief> allBeliefs) {
+	public RoomMembershipMediator() {
 		this.allBeliefs = WMView.create(this, PerceptBelief.class);
 		this.waitingBeliefReader = new WMContentWaiter<PerceptBelief>(
 				this.allBeliefs);
@@ -62,7 +63,7 @@ public class RoomMembershipMediator extends ManagedComponent {
 	protected WorkingMemoryAddress getReferredBelief(
 			ContentMatchingFunction<PerceptBelief> contentMatchingFunction)
 			throws InterruptedException {
-		getLogger().debug("trying to find referred belief");
+		debug("trying to find referred belief");
 		Entry<WorkingMemoryAddress, PerceptBelief> entry = waitingBeliefReader
 				.read(contentMatchingFunction);
 		debug("got it: " + entry.getKey().id);
@@ -85,7 +86,8 @@ public class RoomMembershipMediator extends ManagedComponent {
 						ComaRoom room = getMemoryEntry(ev.address,
 								ComaRoom.class);
 						addPlaceProperties(room, ev.address);
-						mapRoom2Places.put(ev.address, getContainedPlaceSet(room));
+						mapRoom2Places.put(ev.address,
+								getContainedPlaceSet(room));
 						break;
 					}
 					case OVERWRITE: {
@@ -93,7 +95,8 @@ public class RoomMembershipMediator extends ManagedComponent {
 								ComaRoom.class);
 						removeInvalidPlaceProperties(room, ev.address);
 						addPlaceProperties(room, ev.address);
-						mapRoom2Places.put(ev.address, getContainedPlaceSet(room));
+						mapRoom2Places.put(ev.address,
+								getContainedPlaceSet(room));
 						break;
 					}
 					case DELETE: {
@@ -109,6 +112,78 @@ public class RoomMembershipMediator extends ManagedComponent {
 		} catch (CASTException e) {
 			logException(e);
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cast.core.CASTComponent#start()
+	 */
+	@Override
+	protected void start() {
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(ComaRoom.class,
+				WorkingMemoryOperation.ADD), entryQueue);
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(ComaRoom.class,
+				WorkingMemoryOperation.OVERWRITE), entryQueue);
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(ComaRoom.class,
+				WorkingMemoryOperation.DELETE), entryQueue);
+		try {
+			allBeliefs.start();
+		} catch (UnknownSubarchitectureException e) {
+			logException(e);
+		}
+	}
+
+	private void addPlaceProperties(ComaRoom room, WorkingMemoryAddress roomAddr)
+			throws CASTException, InterruptedException {
+		// TODO Auto-generated method stub
+		Set<WorkingMemoryAddress> newContainedPlaces = getContainedPlaceSet(room);
+		Set<WorkingMemoryAddress> oldContainedPlaces = getStoredPlaceSet(roomAddr);
+
+		for (WorkingMemoryAddress newPlace : newContainedPlaces) {
+			// if it was already in the old set, we have nothing to do
+			if (oldContainedPlaces.contains(newPlace))
+				continue;
+
+			try {
+				lockEntry(newPlace, WorkingMemoryPermissions.LOCKEDOD);
+
+				CASTIndependentFormulaDistributionsBelief<PerceptBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
+						.create(PerceptBelief.class, getMemoryEntry(newPlace,
+								PerceptBelief.class));
+				FormulaDistribution roomProperty = FormulaDistribution.create();
+				WorkingMemoryAddress roomBelief=getReferredBelief(new ComaRoomMatchingFunction(room.roomId));
+				roomProperty.getDistribution().add(
+						WMPointer.create(roomBelief).get(), 1.0);
+				placeBelief.getContent().put(ROOM_PROPERTY, roomProperty);
+				overwriteWorkingMemory(newPlace, placeBelief.get());
+			} finally {
+				unlockEntry(newPlace);
+			}
+
+		}
+
+	}
+
+	private Set<WorkingMemoryAddress> getContainedPlaceSet(ComaRoom room)
+			throws InterruptedException {
+		Set<WorkingMemoryAddress> newContainedPlaces = new HashSet<WorkingMemoryAddress>();
+		for (long place : room.containedPlaceIds) {
+			log("trying to find the place belief for " + place
+					+ " that is part of room " + room.roomId);
+			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
+					place));
+			newContainedPlaces.add(placeWMA);
+		}
+		return newContainedPlaces;
+	}
+
+	private Set<WorkingMemoryAddress> getStoredPlaceSet(
+			WorkingMemoryAddress room) {
+		Set<WorkingMemoryAddress> oldContainedPlaces = mapRoom2Places.get(room);
+		if (oldContainedPlaces == null)
+			oldContainedPlaces = new HashSet<WorkingMemoryAddress>();
+		return oldContainedPlaces;
 	}
 
 	private void removeInvalidPlaceProperties(ComaRoom room,
@@ -146,70 +221,6 @@ public class RoomMembershipMediator extends ManagedComponent {
 			unlockEntry(place);
 		}
 
-	}
-
-	private void addPlaceProperties(ComaRoom room, WorkingMemoryAddress roomAddr)
-			throws CASTException, InterruptedException {
-		// TODO Auto-generated method stub
-		Set<WorkingMemoryAddress> newContainedPlaces = getContainedPlaceSet(room);
-		Set<WorkingMemoryAddress> oldContainedPlaces = getStoredPlaceSet(roomAddr);
-
-		for (WorkingMemoryAddress newPlace : newContainedPlaces) {
-			// if it was already in the old set, we have nothing to do
-			if (oldContainedPlaces.contains(newPlace))
-				continue;
-
-			try {
-				lockEntry(newPlace, WorkingMemoryPermissions.LOCKEDOD);
-
-				CASTIndependentFormulaDistributionsBelief<PerceptBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
-						.create(PerceptBelief.class, getMemoryEntry(newPlace,
-								PerceptBelief.class));
-				FormulaDistribution roomProperty = FormulaDistribution.create();
-				roomProperty.getDistribution().add(
-						WMPointer.create(roomAddr).get(), 1.0);
-				placeBelief.getContent().put(ROOM_PROPERTY, roomProperty);
-				overwriteWorkingMemory(newPlace, placeBelief.get());
-			} finally {
-				unlockEntry(newPlace);
-			}
-
-		}
-
-	}
-
-	private Set<WorkingMemoryAddress> getStoredPlaceSet(
-			WorkingMemoryAddress room) {
-		Set<WorkingMemoryAddress> oldContainedPlaces = mapRoom2Places.get(room);
-		if (oldContainedPlaces == null)
-			oldContainedPlaces = new HashSet<WorkingMemoryAddress>();
-		return oldContainedPlaces;
-	}
-
-	private Set<WorkingMemoryAddress> getContainedPlaceSet(ComaRoom room)
-			throws InterruptedException {
-		Set<WorkingMemoryAddress> newContainedPlaces = new HashSet<WorkingMemoryAddress>();
-		for (long place : room.containedPlaceIds) {
-			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
-					place));
-			newContainedPlaces.add(placeWMA);
-		}
-		return newContainedPlaces;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cast.core.CASTComponent#start()
-	 */
-	@Override
-	protected void start() {
-		addChangeFilter(ChangeFilterFactory.createTypeFilter(ComaRoom.class,
-				WorkingMemoryOperation.ADD), entryQueue);
-		addChangeFilter(ChangeFilterFactory.createTypeFilter(ComaRoom.class,
-				WorkingMemoryOperation.OVERWRITE), entryQueue);
-		addChangeFilter(ChangeFilterFactory.createTypeFilter(ComaRoom.class,
-				WorkingMemoryOperation.DELETE), entryQueue);
 	}
 
 }
