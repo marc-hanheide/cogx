@@ -129,6 +129,15 @@ class SenseEffect(object):
             return None
         return effects.SimpleEffect(direct_knowledge, [predicates.VariableTerm(self.sensor.agents[0]), term])
 
+    def commit_condition(self):
+        if not self.is_boolean():
+            return None
+        term = self.get_term()
+        value = self.get_value()
+        if not term:
+            return None
+        return conditions.LiteralCondition(hyp, [term, value])
+    
     def is_boolean(self):
         return isinstance(self.sense, predicates.Literal)
 
@@ -216,7 +225,7 @@ class MAPLAction(actions.Action):
         agents = [adict[a.name] for a in self.agents]
         vars = [adict[a.name] for a in self.vars]
         params = [a for a in args if a not in agents and a not in vars]
-        
+
         a = MAPLAction(self.name, agents, params, vars, None, None, None, [], newdomain)
         a.args = a.copy_args(self.args)
         
@@ -251,6 +260,10 @@ class MAPLAction(actions.Action):
         effs = [s.knowledge_effect() for s in self.sensors]
         return effects.ConjunctiveEffect(effs)
 
+    def commit_condition(self):
+        conds = filter(None, [s.commit_condition() for s in self.sensors])
+        return conditions.Conjunction(conds)
+    
     def is_pure_sensor(self):
         return not self.effect and self.sensors
     
@@ -307,6 +320,7 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
     def __init__(self, name, agents, params, vars, duration, precondition, replan, effect, sensors, domain):
         d = Parameter("?duration", types.t_number)
         MAPLAction.__init__(self, name, agents, params, vars + [d], precondition, replan, effect, sensors, domain)
+
         self.set_tag("durative_action", True) # proper parsing context
         
         self.duration = duration
@@ -323,7 +337,11 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
         effs = [s.knowledge_effect() for s in self.sensors]
         t_effs = [durative.TimedEffect(e.predicate, e.args, "end", e.get_scope(), e.negated) for e in effs]
         return effects.ConjunctiveEffect(t_effs)
-        
+
+    def commit_condition(self):
+        conds = filter(None, [s.commit_condition() for s in self.sensors])
+        return durative.TimedCondition("start", conditions.Conjunction(conds))
+    
     def copy(self, newdomain=None):
         a = MAPLAction.copy(self, newdomain)
         a.__class__ = MAPLDurativeAction

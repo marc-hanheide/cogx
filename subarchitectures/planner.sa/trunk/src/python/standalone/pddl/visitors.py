@@ -13,6 +13,8 @@ def copy(f):
         result = f(elem, results)
         if result is not None:
             return result
+        if isinstance(elem, effects.ProbabilisticEffect):
+            return elem.copy(new_parts = filter(lambda (p,e): bool(e), results))
         return elem.copy(new_parts = filter(None, results))
     return copy_visitor
 

@@ -374,6 +374,9 @@ class TypedObject(object):
         assert self.type.equal_or_subtype_of(type) or type.equal_or_subtype_of(self.type), "invalid type change from %s to %s." % (str(self.type), str(type))
         self._type = type
         self.hash = hash((self.__class__, self.name, self.type))
+
+    def get_type(self):
+        return self.type
         
     def is_instance_of(self, type):
         """Returns true if this TypedObject's type is equal to "type"

@@ -45,6 +45,8 @@ class Writer(object):
     def write_term(self, term):
         if isinstance(term, (predicates.ConstantTerm, predicates.VariableTerm)):
             if term.get_type().equal_or_subtype_of(types.t_number):
+                if isinstance(term.object.name, float):
+                    return "%.4f" % term.object.name
                 return str(term.object.name)
             return term.object.name
 
@@ -187,9 +189,12 @@ class Writer(object):
         elif isinstance(effect, effects.ProbabilisticEffect):
             strings = []
             for p,e in effect.effects:
-                p_str = self.write_term(p)
                 e_str = self.write_effect(e)
-                strings += self.section(p_str, e_str, parens=False)
+                if p is None:
+                    strings += self.section("", e_str, parens=False)
+                else:
+                    p_str = self.write_term(p)
+                    strings += self.section(p_str, e_str, parens=False)
             return self.section("probabilistic", strings)
         else:
             return effect.write_pddl(self)
@@ -265,7 +270,10 @@ class Writer(object):
     def write_init(self, inits):
         strings = []
         for i in inits:
-            strings.append(self.write_literal(i))
+            if isinstance(i, effects.ProbabilisticEffect):
+                strings += self.write_effect(i)
+            else:
+                strings.append(self.write_literal(i))
 
         return self.section(":init", strings)
     

@@ -280,6 +280,12 @@ class ProbabilisticState(State):
         s = State(prob=self.problem)
         domains = defaultdict(list)
         exclude_domains = defaultdict(list)
+
+        def get_p_svar(svar, value):
+            func = self.problem.functions.get("p-%s" % svar.function.name, svar.args + [value])
+            if not func:
+                return None
+            return StateVariable(func, svar.args+[value])
         
         for fact, prob in self.iterfacts(only_nonzero=False):
             #TODO: Handle cases with limited number of alternatives
@@ -287,9 +293,9 @@ class ProbabilisticState(State):
                 exclude_domains.setdefault(fact.svar,[])
             elif prob >= upper_threshold:
                 s.set(fact)
-            elif prob > lower_threshold:
+            elif prob >= lower_threshold:
 #                idvar = fact.svar.as_modality(mapl.not_indomain, [fact.value])
-                domains[fact.svar].append(fact.value)
+                domains[fact.svar].append((prob, fact.value))
             else:
                 exclude_domains[fact.svar].append(fact.value)
                 
@@ -297,9 +303,12 @@ class ProbabilisticState(State):
             if svar in s and s[svar] != UNKNOWN:
                 #already known
                 continue
-            for v in values:
+            for p,v in values:
                 idvar = svar.as_modality(mapl.i_indomain, [v])
                 s[idvar] = TRUE
+                pvar = get_p_svar(svar, v)
+                if pvar:
+                    s[pvar] = p
 
         for svar, excluded in exclude_domains.iteritems():
             if svar in s and s[svar] != UNKNOWN:

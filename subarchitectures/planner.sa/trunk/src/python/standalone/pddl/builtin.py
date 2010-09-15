@@ -16,6 +16,10 @@ p = Parameter("?f", FunctionType(t_object))
 assign = Predicate("assign", [p, Parameter("?v", ProxyType(p))], builtin=True, function_scope=SCOPE_EFFECT)
 equal_assign = Predicate("=", [Parameter("?f", FunctionType(t_object)), Parameter("?v", t_object)], builtin=True, function_scope=SCOPE_INIT)
 
+p = Parameter("?f", FunctionType(t_object))
+change = Predicate("change", [p, Parameter("?v", ProxyType(p))], builtin=True, function_scope=SCOPE_EFFECT)
+num_change = Predicate("change", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
+
 #numeric predicates
 num_assign = Predicate("assign", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
 num_equal_assign = Predicate("=", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_INIT)
@@ -26,7 +30,7 @@ increase = Predicate("increase", [Parameter("?f", FunctionType(t_number)), Param
 decrease = Predicate("decrease", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
 
 numeric_ops = [num_assign, scale_up, scale_down, increase, decrease]
-assignment_ops = [assign, num_assign, equal_assign, num_equal_assign]
+assignment_ops = [assign, num_assign, equal_assign, num_equal_assign, change, num_change]
 
 gt = Predicate(">", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True, function_scope=SCOPE_CONDITION)
 lt = Predicate("<", [Parameter("?n1", t_number), Parameter("?n2", t_number)], builtin=True, function_scope=SCOPE_CONDITION)

@@ -256,13 +256,13 @@ class JunctionCondition(Condition):
         return fn(self, [p.visit(fn) for p in self.parts])
 
     def copy(self, new_scope=None, new_parts = None, copy_instance=False):
-        if not new_scope:
-            new_scope = self.scope
         if not new_parts:
             new_parts = self.parts
         elif new_scope:
             for p in new_parts:
                 p.set_scope(new_scope)
+        # if not new_scope:
+        #     new_scope = self.scope
         return self.__class__([ p.copy(new_scope, copy_instance=copy_instance) for p in new_parts], new_scope)
 
     def set_scope(self, new_scope):
