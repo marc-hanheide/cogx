@@ -434,7 +434,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             procman.xrun_wait(cmd)
 
     def startServers(self):
-        # if self.ui.ckCleanupScript.isChecked():
+        self._options.checkConfigFile()
         if self.ui.actEnableCleanupScript.isChecked():
             self.runCleanupScript()
         srvs = self.getServers(self._manager)
@@ -557,6 +557,7 @@ class CCastControlWnd(QtGui.QMainWindow):
 
 
     def onStartCastClient(self):
+        self._options.checkConfigFile()
         p = self._manager.getProcess("cast-client")
         if p != None:
             self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
@@ -613,6 +614,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         f.close()
 
     def onStartExternalServers(self):
+        self._options.checkConfigFile()
         if not self.ui.ckRunLog4jServer.isChecked():
             pass # TODO: ln -s log4j configuration for client: one with server, one w/o
         else:

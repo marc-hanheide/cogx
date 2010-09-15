@@ -1,3 +1,4 @@
+# Environment variables
 COGX_ROOT=[PWD]
 
 CAST_DIR=/usr/local
@@ -40,6 +41,12 @@ CLASSPATH=${CLASSPATH}:${ICE_JARS}:${CAST_JAR}:${COGX_CLASS_DIR}:${LOG4_JAR}
 CMD_JAVA=java -ea -classpath ${CLASSPATH}
 
 PYTHONPATH=${PYTHONPATH}:${CAST_PY_DIR}:${COGX_PY_DIR}
+
+# V11N can run standalone when --standalone-display-host is set
+# All clients that use the display server should include the 
+# parmeters: $V11N_STANDALONE $V11N_STANDALONE_HOST 
+V11N_STANDALONE=--standalone-display-host
+V11N_STANDALONE_HOST=localhost
 
 CMD_CPP_SERVER=${CAST_BIN_DIR}/cast-server-c++
 CMD_JAVA_SERVER=${CMD_JAVA} cast.server.ComponentServer
