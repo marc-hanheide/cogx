@@ -52,6 +52,9 @@
 	<condition property="build.george">
 		<equals arg1="${build_george}" arg2="ON" />
 	</condition>
+	<condition property="build.shared">
+		<equals arg1="${build_shared}" arg2="ON" />
+	</condition>
 
 	<target name="sa.binder" if="build.binding_sa">
 	  <ant target="${target}" dir="subarchitectures/binder" />
@@ -85,6 +88,9 @@
 	</target>
 	<target name="george" if="build.george">
 	  <ant target="${target}" dir="scenarios/george" />
+	</target>
+	<target name="shared" if="build.shared">
+	  <ant target="${target}" dir="scenarios/shared" />
 	</target>
 
 	<!-- =========================================
@@ -133,6 +139,9 @@
 		  <param name="target" value="${target}" />
 		</antcall>
 		<antcall target="george">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="shared">
 		  <param name="target" value="${target}" />
 		</antcall>
 	</target>

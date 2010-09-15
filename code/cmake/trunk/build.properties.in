@@ -22,3 +22,4 @@ build_sa_dialogue=${BUILD_SA_DIALOGUE}
 build_sa_visualization=${BUILD_SA_V11N}
 build_dora=${BUILD_DORA}
 build_george=${BUILD_GEORGE}
+build_shared=${BUILD_SCENARIO_SHARED}
