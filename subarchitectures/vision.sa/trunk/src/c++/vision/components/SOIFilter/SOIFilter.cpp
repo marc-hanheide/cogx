@@ -40,6 +40,10 @@
 #define COLOR_SAMPLE_IMG_WIDTH 5
 #define COLOR_SAMPLE_IMG_HEIGHT 15
 
+#ifdef FEAT_VISUALIZATION
+#define ID_OBJ_LAST_SEGMENTATION "soi.Last ROI Segmentation"
+#endif
+
   /**
    * The function called to create a new instance of our component.
    */
@@ -202,7 +206,7 @@
 	m_display.connectIceClient(*this);
     m_display.setClientData(this);
 	m_display.installEventReceiver();
-	m_display.addButton("Last ROI Segmentation", "take.snapshot", "&Snapshot");
+	m_display.addButton(ID_OBJ_LAST_SEGMENTATION, "take.snapshot", "&Snapshot");
 #else
 	if (doDisplay)
 	{
@@ -1433,7 +1437,7 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	cvResetImageROI(tetraPatch);
 	
 #ifdef FEAT_VISUALIZATION
-	m_display.setImage("Last ROI Segmentation", tetraPatch);
+	m_display.setImage(ID_OBJ_LAST_SEGMENTATION, tetraPatch);
 #else
 	cvShowImage("Last ROI Segmentation", tetraPatch);
 #endif
