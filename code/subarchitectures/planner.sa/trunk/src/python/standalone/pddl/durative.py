@@ -1,14 +1,11 @@
 from parser import *
 import mapltypes as types
 import builtin, predicates, actions, conditions, effects
-from builtin import t_object, t_number
+from builtin import t_object, t_number, change, num_change
 from conditions import *
 from scope import SCOPE_EFFECT
 
 pddl_module = True
-
-change = predicates.Predicate("change", [types.Parameter("?f", types.FunctionType(t_object)), types.Parameter("?v", t_object)], builtin=True, function_scope=SCOPE_EFFECT)
-num_change = predicates.Predicate("change", [types.Parameter("?f", types.FunctionType(t_number)), types.Parameter("?v", t_number)], builtin=True, function_scope=SCOPE_EFFECT)
 
 total_time = predicates.Function("total-time", [], t_number, builtin=True)
 

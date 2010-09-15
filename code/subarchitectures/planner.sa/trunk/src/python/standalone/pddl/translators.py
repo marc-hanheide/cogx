@@ -467,7 +467,7 @@ class ObjectFluentNormalizer(Translator):
                     conj.parts.append(conditions.LiteralCondition(equals, [t, Term(arg)]))
                     del termdict[t] #those terms are limited to the current scope. Remove from global termdict
                 return result
-                
+
         return visitors.visit(cond, visitor)
         
     def translate_effect(self, eff, termdict, domain):
@@ -607,7 +607,7 @@ class ObjectFluentCompiler(Translator):
         @visitors.copy
         def effectsVisitor(eff, results):
             if isinstance(eff, effects.SimpleEffect):
-                if eff.predicate == assign:
+                if eff.predicate in (assign, change):
                     assert isinstance(eff.args[0], FunctionTerm) and isinstance(eff.args[1], (VariableTerm, ConstantTerm))
                     term = eff.args[0]
                     value = eff.args[1]
@@ -621,8 +621,9 @@ class ObjectFluentCompiler(Translator):
                                     effs.append(del_eff)
                             else:
                                 #I forgot the reason for this... probably a FD bug
-                                del_cond = conditions.LiteralCondition(equals, [val, value], negated=True)
-                                effs.append(effects.ConditionalEffect(del_cond, del_eff))
+                                #del_cond = conditions.LiteralCondition(equals, [val, value], negated=True)
+                                #effs.append(effects.ConditionalEffect(del_cond, del_eff))
+                                effs.append(del_eff)
                         effs.append(effects.SimpleEffect(new_pred, term.args[:] + [value]))
                     elif term.function.type == t_boolean:
                         if eff.args[1] == TRUE:
@@ -703,13 +704,21 @@ class ObjectFluentCompiler(Translator):
         p2 = problem.Problem(_problem.name, _problem.objects, [], None, domain, _problem.optimization, _problem.opt_func)
         
         p2.goal,_ = self.translate_condition(_problem.goal, p2)
-        
+
+        @visitors.copy
+        def eff_visitor(lit, results):
+            if isinstance(lit, Literal):
+                if lit.predicate in assignment_ops:
+                    if lit.args[0].function.type == t_number:
+                        return False
+                    new_pred = domain.predicates.get(lit.args[0].function.name, lit.args[0].args + lit.args[-1:])
+                    return lit.__class__(new_pred, lit.args[0].args[:] + [lit.args[1]], p2)
+
         for i in _problem.init:
-            if i.predicate == equal_assign:
-                new_pred = domain.predicates.get(i.args[0].function.name, i.args[0].args + i.args[-1:])
-                p2.init.append(effects.SimpleEffect(new_pred, i.args[0].args[:] + [i.args[1]], p2))
-            else:
-                p2.init.append(i.copy(new_scope=p2))
+            lit = i.visit(eff_visitor)
+            if lit:
+                lit.set_scope(p2)
+                p2.init.append(lit)
         
         return p2
         
@@ -899,23 +908,52 @@ class ModalPredicateCompiler(Translator):
         domain = self.translate_domain(_problem.domain)
         p2 = problem.Problem(_problem.name, _problem.objects, [], None, domain, _problem.optimization, _problem.opt_func)
 
-        def cond_visitor(cond, results):
+        @visitors.copy
+        def lit_visitor(cond, results):
             if isinstance(cond, conditions.LiteralCondition):
                 return self.translate_literal(cond, p2)
-            else:
-                return cond.copy(new_parts=results)
 
         if _problem.goal:
-            p2.goal = _problem.goal.visit(cond_visitor).copy(new_scope=p2)
-        
+            p2.goal = _problem.goal.visit(lit_visitor)
+
         for i in _problem.init:
-#            if isinstance(i, effects.ProbabilisticEffect):
-#                p2.init.append(effects.ProbabilisticEffect([(p, [self.translate_literal(eff, p2).copy(new_scope=p2) for eff in e]) for p,e in i.effects]))
-#            else:
-            p2.init.append(self.translate_literal(i, p2).copy(new_scope=p2))
+            p2.init.append(i.visit(lit_visitor))
         
         return p2             
-    
+
+class RemoveTimeCompiler(Translator):
+    def translate_action(self, action, domain=None):
+        import durative
+
+        if domain is None:
+            domain = action.domain
+
+        @visitors.copy
+        def visitor(elem, results):
+            if isinstance(elem, durative.TimedCondition):
+                return results[0]
+            if isinstance(elem, durative.TimedEffect):
+                return effects.SimpleEffect(elem.predicate, elem.args, None, elem.negated)
+        
+        if not isinstance(action, durative.DurativeAction):
+            return action.copy(newdomain=domain)
+        
+        args = [a for a in action.args if a.name != "?duration"]
+        a2 = actions.Action(action.name, args, None, None, domain)
+
+        a2.precondition = visitors.visit(action.precondition, visitor)
+        a2.replan = visitors.visit(action.replan, visitor)
+        a2.effect = visitors.visit(action.effect, visitor)
+
+        if a2.precondition:
+            a2.precondition.set_scope(a2)
+        if a2.replan:
+            a2.replan.set_scope(a2)
+        if a2.effect:
+            a2.effect.set_scope(a2)
+
+        return a2
+        
 
 class MAPLCompiler(Translator):
     def __init__(self, remove_replan=False, **kwargs):
@@ -964,7 +1002,11 @@ class MAPLCompiler(Translator):
                 a2.effect = effects.ConjunctiveEffect([])
             a2.effect.set_scope(a2)
         if isinstance(action, mapl.MAPLAction) and action.sensors:
-            keff = action.knowledge_effect().copy(a2)
+            commit_cond = action.commit_condition().copy(new_scope=a2)
+            a2.precondition = conditions.Conjunction.new(a2.precondition)
+            a2.precondition.parts.append(commit_cond)
+            
+            keff = action.knowledge_effect().copy(new_scope=a2)
             if a2.effect:
                 keff.parts.insert(0, a2.effect)
             a2.effect = keff
@@ -1018,13 +1060,7 @@ class MAPLCompiler(Translator):
         for i in _problem.init:
             #determinise probabilistic init conditions
             if isinstance(i, effects.ProbabilisticEffect):
-                assert False
-                for p, eff in i.effects:
-                    for e in eff.visit(visitors.to_list):
-                        if e.predicate in assignment_ops:
-                            p2.init.append(effects.SimpleEffect(i_indomain, e.args, scope=p2))
-                        else:
-                            p2.init.append(e.copy(new_scope=p2))
+                p2.init.append(i.copy(new_scope=p2))
             elif not i.args or i.args[-1] != builtin.UNKNOWN:
                 p2.init.append(i.copy(new_scope=p2))
 

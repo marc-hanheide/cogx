@@ -145,6 +145,9 @@ class Literal(object):
         else:
             self.args = [Term(a) for a in args]
 
+    def visit(self, fn):
+        return fn(self, [])
+            
     def pddl_str(self, instantiated=True):
         """Return a pddl text representation of this Literal.
         

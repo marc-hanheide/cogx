@@ -54,11 +54,13 @@ def instantiate_args(args, state=None):
 
     result = []
     for arg in args:
-        if arg.__class__ == VariableTerm:
+        if arg.__class__ in (VariableTerm, types.Parameter):
             assert arg.is_instantiated(), "%s is not instantiated" % arg.pddl_str()
             result.append(arg.get_instance())
         elif isinstance(arg, ConstantTerm):
             result.append(arg.object)
+        elif arg.__class__ == types.TypedObject:
+            result.append(arg)
         else:
             raise Exception("couldn't create state variable, %s is a function term and no state was supplied." % str(arg))
     return result
@@ -225,7 +227,7 @@ class StateVariable(object):
         function = None
         litargs = []
         modal_args = []
-        if literal.predicate in assignment_ops + [equals]:
+        if literal.predicate in assignment_ops + [equals, eq]:
             function = literal.args[0].function
             litargs = literal.args[0].args
             modal_args = None
@@ -322,7 +324,7 @@ class Fact(tuple):
         literal -- Literal
         state -- state to look up nested function."""
         value = None
-        if literal.predicate in assignment_ops + [equals]:
+        if literal.predicate in assignment_ops + [equals, eq]:
             value = instantiate_args(literal.args[-1:], state)[0]
         else:
             if literal.negated:
@@ -450,6 +452,8 @@ class State(dict):
         
     def __setitem__(self, svar, value):
         assert isinstance(svar, StateVariable)
+        if isinstance(value, (float, int, long)):
+            value = TypedNumber(value)
         assert value.is_instance_of(svar.get_type()), "type of %s (%s) is incompatible with %s" % (str(svar), str(svar.get_type()), str(value))
         dict.__setitem__(self, svar, value)
 

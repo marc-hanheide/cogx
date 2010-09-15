@@ -27,6 +27,8 @@ class Builder(object):
             return self(*arg, **kwargs)
         if isinstance(arg, predicates.Term):
             return arg.copy(self.scope)
+        if isinstance(arg, predicates.Function):
+            return arg
         if arg in self.scope:
             return self.scope[arg]
         return arg
@@ -66,6 +68,11 @@ class Builder(object):
     def effect(self, *args):
         lit = self(*args, function_scope=SCOPE_EFFECT)
         return effects.SimpleEffect(lit.predicate, lit.args, self.scope, lit.negated)
+
+    def timed_effect(self, *args):
+        import durative
+        lit = self(*args[1:], function_scope=SCOPE_EFFECT)
+        return durative.TimedEffect(lit.predicate, lit.args, args[0], self.scope, lit.negated)
 
     def cond(self, *args):
         lit = self(*args, function_scope=SCOPE_CONDITION)

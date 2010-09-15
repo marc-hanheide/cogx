@@ -1,4 +1,5 @@
 import itertools
+from collections import defaultdict
 
 import predicates, conditions, effects, actions, scope, visitors, translators, writer, domain, mapl
 import mapltypes as types
@@ -288,6 +289,127 @@ class DTPDDLWriter(writer.Writer):
         strings.append(")")
         return strings
 
+class DTRule(scope.Scope):
+    def __init__(self, function, args, add_args, conditions, values, domain):
+        scope.Scope.__init__(self, args+add_args, domain)
+        self.function = function
+        self.args = args
+        self.add_args = add_args
+        self.conditions = [tuple(self.lookup(c)) for c in conditions]
+        self.values = [tuple(self.lookup(c)) for c in values]
+
+    def deps(self):
+        return set(t.function for t,v in self.conditions)
+
+    def instantiate(self, mapping):
+        """Instantiate the Parameters of this action.
+
+        Arguments:
+        mapping -- either a dictionary from Parameters to TypedObjects
+        or a list of TypedObjects. In the latetr case, the list is
+        assumed to be in the order of the Action's Parameters."""
+        if not isinstance(mapping, dict):
+            mapping = dict((param.name, c) for (param, c) in zip(self.args, mapping))
+        Scope.instantiate(self, mapping)
+
+    def instantiate_all(self, mapping):
+        """Instantiate the Parameters of this action.
+
+        Arguments:
+        mapping -- either a dictionary from Parameters to TypedObjects
+        or a list of TypedObjects. In the latetr case, the list is
+        assumed to be in the order of the Action's Parameters."""
+        if not isinstance(mapping, dict):
+            mapping = dict((param.name, c) for (param, c) in zip(self.args+self.add_args, mapping))
+        scope.Scope.instantiate(self, mapping)
+        
+    @staticmethod
+    def from_action(action):
+        @visitors.collect
+        def extract_terms_with_prob(eff, results):
+            if isinstance(eff, effects.SimpleEffect):
+                assert eff.predicate in builtin.assignment_ops
+                term = eff.args[0]
+                value = eff.args[1]
+                return (1, term, value)
+            if isinstance(eff, effects.ProbabilisticEffect):
+                res = []
+                for p, results2 in results:
+                    for p_old, term, value in results2:
+                        if p_old == 1:
+                            res.append((p, term, value))
+                        else:
+                            p_new = predicates.FunctionTerm(builtin.mult, [p, p_old])
+                            res.append((p_new, term, value))
+                return res
+
+        @visitors.collect
+        def extract_conditions(cond, results):
+            if isinstance(cond, conditions.LiteralCondition):
+                assert cond.predicate in (builtin.equals, builtin.eq)
+                term = cond.args[0]
+                value = cond.args[1]
+                return (term, value)
+
+        conds = visitors.visit(action.precondition, extract_conditions, [])
+        
+        values = defaultdict(list)
+        for p, term, value in visitors.visit(action.effect, extract_terms_with_prob, []):
+            values[term].append((p, value))
+
+        rules = []
+        for term, tvals in values.iteritems():
+            term_args = [a.object for a in term.args]
+            other_args = set()
+            rule_values = []
+            for p, val in tvals:
+                rule_values.append((p, val))
+                other_args |= set(val.visit(collect_param_visitor))
+                if p is not None:
+                    other_args |= set(p.visit(collect_param_visitor))
+
+            if len(rule_values) == 2 and rule_values[1][0] is None:
+                #special case for p/1-p distributions
+                rule_values[1] = (predicates.FunctionTerm(builtin.minus, [predicates.Term(1), rule_values[0][0]]), rule_values[1][1])
+                
+            rel_conditions = []
+            changed = True
+            while changed:
+                changed = False
+                for t,v in conds:
+                    if (t,v) in rel_conditions:
+                        continue
+                    cargs = set(t.visit(collect_param_visitor) + v.visit(collect_param_visitor))
+                    if cargs & (set(term_args) | other_args):
+                        other_args |= cargs
+                        rel_conditions.append((t,v))
+                        changed = True
+            rules.append(DTRule(term.function, term_args, list(other_args - set(term_args)), rel_conditions, rule_values, action.parent))
+        return rules
+
+    def __str__(self):
+        cstr = ", ".join("%s = %s" % (t.pddl_str(), v.pddl_str()) for t,v in self.conditions)
+        vstrs = []
+        for p,v in self.values:
+            if p is None:
+                vstrs.append("rest: %s" % v.pddl_str())
+            else:
+                vstrs.append("%s: %s" % (p.pddl_str(), v.pddl_str()))
+                
+        vstr = ", ".join(vstrs)
+        s = "(%s %s) (when %s) %s" % (self.function.name, " ".join(a.name for a in self.args), cstr, vstr)
+        return s
+
+def collect_param_visitor(term, results):
+    """This visitor collects all TypedObjects that occur in this Term
+    (and it's children) and returns them as a list."""
+    
+    if isinstance(term, (predicates.VariableTerm)):
+        return [term.object]
+    if isinstance(term, predicates.FunctionTerm):
+        return sum(results, [])
+    return []
+                                
 
 class DT2MAPLCompiler(translators.Translator):
     def translate_observable(self, observe, domain=None):
@@ -348,7 +470,39 @@ class DT2MAPLCompiler(translators.Translator):
                         a.sensors.append(mapl.SenseEffect(s_atom, a))
                         
             observe.uninstantiate()
-                
+
+    def create_commit_actions(self, rules, domain):
+        import durative
+
+        p_functions = [r.function for r in rules]
+
+        actions = []
+        
+        for r in rules:
+            for i, (p, v) in enumerate(r.values):
+                agent = predicates.Parameter("?a", mapl.t_agent)
+                a = mapl.MAPLDurativeAction("select-%s-%d" % (r.function.name,i), [agent], r.args, r.add_args, [], None, None, None, [], domain)
+                b = Builder(a)
+                dterm = b("*", ("total-p-costs",), ("-", 1, p))
+                a.duration.append(durative.DurationConstraint(dterm))
+                cparts = []
+                for t,val in r.conditions:
+                    if t.function in p_functions:
+                        cparts.append(b.cond("hyp", t, val))
+                    else:
+                        cparts.append(b.cond("=", t, val))
+                a.precondition = conditions.Conjunction([durative.TimedCondition("all", b.cond("not", ("started",))), \
+                                                             durative.TimedCondition("start", conditions.Conjunction([b.cond("not", ("select-locked",))]+cparts))], a)
+
+                acquire_lock = b.timed_effect("start", "select-locked")
+                release_lock = b.timed_effect("end", "not", ("select-locked",))
+                commit_eff = b.timed_effect("end", "commit", b(r.function, *r.args), v)
+                decrease_eff = b.timed_effect("end", "decrease", ("total-p-costs",), "?duration")
+                a.effect = effects.ConjunctiveEffect([acquire_lock, release_lock, commit_eff, decrease_eff], a)
+
+                actions.append(a)
+            
+        return actions
     
     def translate_domain(self, _domain):
         if "partial-observability" not in _domain.requirements:
@@ -356,6 +510,8 @@ class DT2MAPLCompiler(translators.Translator):
 
         if 'observe_effects' not in translators.Translator.get_annotations(_domain):
             translators.Translator.get_annotations(_domain)['observe_effects'] = []
+        if 'dt_rules' not in translators.Translator.get_annotations(_domain):
+            translators.Translator.get_annotations(_domain)['dt_rules'] = []
         self.annotations = translators.Translator.get_annotations(_domain)['observe_effects']
             
         dom = _domain.copy()
@@ -363,6 +519,39 @@ class DT2MAPLCompiler(translators.Translator):
 
         for o in dom.observe:
             self.translate_observable(o, dom)
+
+        prob_functions = set()
+        actions = []
+        rules = []
+        for a in dom.actions:
+            if a.name.startswith("sample_"):
+                new_rules = DTRule.from_action(a)
+                for r in new_rules:
+                    prob_functions.add(r.function)
+                    print r
+                rules += new_rules
+            else:
+                actions.append(a)
+                
+        fdict = dict((r.function, r) for r in rules)
+        for f in dom.functions:
+            if "p-%s" % f.name not in dom.functions:
+                continue
+            args = [predicates.Parameter(a.name, a.type) for a in f.args]
+            varg = predicates.Parameter("?val", f.type)
+            pfunc = dom.functions.get("p-%s" % f.name, args+[varg])
+            if not pfunc:
+                continue
+            pterm = predicates.Term(pfunc, args+[varg])
+            rule = DTRule(f, args, [varg], [], [(pterm, predicates.Term(varg))], dom)
+            print rule
+            rules.append(rule)
+
+        commit_actions = self.create_commit_actions(rules, dom)
+        dom.actions = actions + commit_actions
+                
+        self.dtrules = translators.Translator.get_annotations(_domain)['dt_rules']
+        self.dtrules.extend(rules)
 
         dom.observe = []
         return dom
@@ -421,7 +610,9 @@ class DTPDDLCompiler(translators.Translator):
             dom.predicates.add(builtin.increase)
         except:
             pass
-        dom.predicates.add(builtin.decrease)
+
+        if "decrease" not in dom.predicates:
+            dom.predicates.add(builtin.decrease)
 
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
         dom.observe = [self.translate_action(o, dom) for o in _domain.observe]

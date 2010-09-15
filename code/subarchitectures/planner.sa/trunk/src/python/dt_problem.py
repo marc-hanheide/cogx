@@ -1,8 +1,11 @@
-import os
+import os, time
+import itertools
 
 from collections import defaultdict
-from standalone import task, pddl, plans
-from standalone.pddl import state, dtpddl, mapl, translators, visitors
+from standalone import task, config, pddl, plans
+from standalone.pddl import state, dtpddl, mapl, translators, visitors, effects
+
+log = config.logger("PythonServer")
 
 class DTProblem(object):
     def __init__(self, plan, domain, cast_state):
@@ -14,9 +17,9 @@ class DTProblem(object):
         
         self.goals = self.create_goals(plan)
         self.goal_actions = set()
-        self.compute_restrictions()
+        self.relaxation_layers = self.compute_restrictions()
         
-        self.dtdomain = self.create_limited_domain(domain)
+        self.dtdomain = self.create_dt_domain(domain)
         self.goal_actions |= self.create_goal_actions(self.goals, self.dtdomain)
         self.dtdomain.actions += [a for a in self.goal_actions]
         self.dtdomain.name2action = None
@@ -54,7 +57,7 @@ class DTProblem(object):
         def find_restrictions(pnode):
             for pred in plan.predecessors_iter(pnode, 'depends'):
                 restr = find_restrictions(pred)
-                if pred.action.name.startswith("select_"):
+                if pred.action.name.startswith("select-"):
                     return [pred] + restr
                 if restr:
                     return restr
@@ -136,7 +139,7 @@ class DTProblem(object):
                         replace_dict[a] = a2
                         args.append(a2)
                     val = replace_dict.get(c.value, c.value)
-                    f2 = pddl.state.Fact(pddl.state.StateVariable(c.svar.function, args), val)
+                    f2 = state.Fact(state.StateVariable(c.svar.function, args), val)
                     if f2 not in c2:
                         c2.append(f2)
                 
@@ -155,6 +158,8 @@ class DTProblem(object):
             #     cset |= c
             print "Constraints:", map(str, constraints)
             print "\n"
+            
+        return layers
             
     def create_goal_actions(self, goals, domain):
         result = set()
@@ -176,34 +181,221 @@ class DTProblem(object):
             result.add(a)
         return result
 
-    def create_limited_domain(self, dom):
+    def create_dt_domain(self, dom):
         dtdomain = dom.copy()
         dtdomain.name = "dt-%s" % dom.name
-        all_actions = dtdomain.actions
-        dtdomain.actions = []
-        dtdomain.axioms = []
-
-        observe_preconds = self.get_observe_action_preconditions()
-        for a in all_actions:
-            effects = set(visitors.visit(a.effect, function_visitor, []))
-            if not observe_preconds & effects:
-                dtdomain.actions.append(a)
-
+        dtdomain.annotations =  pddl.translators.Translator.get_annotations(dom)
         return dtdomain
+    
+    # def create_limited_domain(self, dom):
+    #     dtdomain = dom.copy()
+    #     dtdomain.name = "dt-%s" % dom.name
+    #     all_actions = dtdomain.actions
+    #     dtdomain.actions = []
+    #     dtdomain.axioms = []
+
+    #     observe_preconds = self.get_observe_action_preconditions()
+    #     for a in all_actions:
+    #         effects = set(visitors.visit(a.effect, function_visitor, []))
+    #         if not observe_preconds & effects:
+    #             dtdomain.actions.append(a)
+
+    #     return dtdomain
+
+    def limit_state(self, cast_state, fixed_objects, constraints, objects=None):
+        if objects is None:
+            objects = cast_state.objects
+            
+        tdict = defaultdict(set)
+        for obj in fixed_objects:
+            tdict[obj.type].add(obj)
+        for c in constraints:
+            for a in c.svar.args:
+                if a.name.startswith("any_"):
+                    tdict[a.type].add(c)
+
+        def check_object(o):
+            if o.type not in tdict:
+                return True
+            for restriction in tdict[o.type]:
+                if isinstance(restriction, pddl.TypedObject):
+                    return o == restriction
+                #simple case: only one free variable
+                assert len([a for a in restriction.svar.args if a.name.startswith("any_")]) == 1
+                newargs = []
+                for a in restriction.svar.args:
+                    if a.name.startswith("any_"):
+                        assert o.is_instance_of(a.type)
+                        newargs.append(o)
+                    else:
+                        newargs.append(a)
+                newvar = pddl.state.StateVariable(restriction.svar.function, newargs)
+                return cast_state.prob_state[newvar] == restriction.value
+            return True
+                
+        result = set()
+        for o in objects:
+            if check_object(o):
+                result.add(o)
+
+        facts = []
+        for f in cast_state.prob_state.iterdists():
+            if not all(a in objects for a in f.svar.args + f.svar.modal_args):
+                continue
+            
+            vdist = pddl.prob_state.ValueDistribution(dict((d,p) for d,p in f.value.iteritems() if d in result))
+            vdist.normalize()
+            facts.append(pddl.prob_state.ProbFact(f.svar, vdist))
+        return result, facts
 
     def create_problem(self, cast_state, domain):
+        t0 = time.time()
         opt = "maximize"
         opt_func = pddl.FunctionTerm(pddl.dtpddl.reward, [])
 
         if domain is None:
             domain = self.dtdomain
 
-        facts =  [f.to_init() for f in cast_state.prob_state.iterdists()]
+        objects_in_layer = {}
+        facts_in_layer = {}
+        objects_in_layer[len(self.relaxation_layers)] = cast_state.objects
+        for i, (fixed, constraints) in reversed(list(enumerate(self.relaxation_layers))):
+            print "Layer", i
+            objects, facts = self.limit_state(cast_state, fixed, constraints, objects_in_layer[i+1])
+            objects_in_layer[i] = objects
+            facts_in_layer[i] = facts
+            print [o.name for o in objects]
+            print "\n"
+
+        objects = cast_state.objects #for testing
+        
+        dt_rules = pddl.translators.Translator.get_annotations(domain).get('dt_rules', [])
+
+        #
+        # Build dependencies for the rules
+        #
+        prob_functions = set(r.function for r in dt_rules)
+        ruledeps = {}
+        nondep_rules = []
+        
+        for r in dt_rules:
+            r.set_parent(cast_state.prob_state.problem)
+            deps = False
+            prob_deps = r.deps() & prob_functions 
+            assert len(prob_deps) <= 1 # should be enough for now
+            ruledeps[r] = prob_deps
+            if not prob_deps:
+                nondep_rules.append(r)
+
+        substates = defaultdict(list)
+
+        hstate = HierarchicalState([], cast_state.prob_state.problem)
+        for f in cast_state.prob_state.iterdists():
+            detval = None
+            for val, prob in f.value.iteritems():
+                if prob == 1.0:
+                    detval = val
+                    break
+            if detval:
+                hstate[f.svar] = detval
+                continue
+            
+            for val, prob in f.value.iteritems():
+                if prob >= 0.99:
+                    hstate[f.svar] = val
+                if prob > 0.0:
+                    substate = HierarchicalState([state.Fact(f.svar,val)], parent=hstate)
+                    hstate.add_substate(f.svar, val, substate, prob)
+                    substates[f.svar.function].append(substate)
+                    print "create substate for %s = %s (p=%.2f)" % (str(f.svar), str(val), prob)
+
+
+        def apply_rule(st, r, pred):
+            svar = state.StateVariable(r.function, state.instantiate_args(r.args))
+            if svar in st:
+                return
+
+            nondet_conditions = []
+            for t,v in r.conditions:
+                if t.function in prob_functions:
+                    nondet_conditions.append((t,v))
+                    continue # check those later
+                cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
+                val = hstate.evaluate_term(v)
+                if hstate[cvar] != val:
+                    print "not satisfied in top level state: %s = %s" % (str(cvar), str(val))
+                    return
+            if not pred:
+                rel_substates = [st]
+            else:
+                rel_substates = substates[pred]
+            for st2 in rel_substates:
+                sat = True
+                #print "state:", st2
+                for t,v in nondet_conditions:
+                    cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
+                    val = st2.evaluate_term(v)
+                    if st2[cvar] != val:
+                        print "not satisfied: %s = %s" % (str(cvar), str(val))
+                        sat = False
+                        break
+                if not sat:
+                    continue
+                
+                for p,v in r.values:
+                    pval = st2.evaluate_term(p)
+                    if pval == pddl.UNKNOWN or pval.value < 0.01:
+                        continue
+                    val = st2.evaluate_term(v)
+                    if svar in st2 or st2.has_substate(svar, val):
+                        continue
+                    if pval.value > 0.99:
+                        st2[svar] = val
+                        continue
+                    sub = HierarchicalState([state.Fact(svar, val)], parent=st2)
+                    st2.add_substate(svar, val, sub, pval.value)
+                    substates[svar.function].append(sub)
+                    print "create substate for %s = %s (p=%.2f)" % (str(svar), str(val), pval.value)
+            
+                    
+        closed = set()
+        closed_functions = set()
+        open = set(nondep_rules)
+        while open:
+            r = open.pop()
+            print "Rule:", r.function.name
+            if ruledeps[r]:
+                pred = iter(ruledeps[r]).next()
+            else:
+                pred = None
+                
+            combinations = state.product(*map(lambda a: [o for o in objects if o.is_instance_of(a.type)], r.args+r.add_args))
+            for c in combinations:
+                print "(%s %s)" % (r.function.name, " ".join(a.name for a in c))
+                r.instantiate_all(c)
+                apply_rule(hstate, r, pred)
+                r.uninstantiate()
+
+            closed.add(r)
+            closed_functions.add(r.function)
+            
+            for r in dt_rules:
+                #print r, map(str, (r.deps() & prob_functions) - done)
+                if r not in open and r not in closed and not (ruledeps[r] - closed_functions):
+                    open.add(r)
+
+        print "done"
+        #facts = [f.to_init() for f in cast_state.prob_state.iterdists()]
+        facts = hstate.init_facts()
         objects = set(o for o in cast_state.objects if o not in domain.constants)
 
         problem = pddl.Problem("cogxtask", objects, facts, None, domain, opt, opt_func )
         problem.goal = pddl.Conjunction([])
+        log.debug("total time for state creation: %f", time.time()-t0)
         return problem
+
+    def create_prob_state(self, rules, state):
+        pass
     
     def find_observation_actions(self):
         def can_observe(action):
@@ -225,9 +417,42 @@ class DTProblem(object):
             all_prec |= set(visitors.visit(a.precondition, function_visitor, []))
         return all_prec
 
+class ProbADLCompiler(pddl.translators.ADLCompiler):
+    def __init__(self, **kwargs):
+        from standalone.pddl import translators
+        self.depends = [translators.ModalPredicateCompiler(**kwargs), translators.ObjectFluentCompiler(**kwargs), translators.CompositeTypeCompiler(**kwargs), translators.PreferenceCompiler(**kwargs), translators.RemoveTimeCompiler(**kwargs) ]
+        
+    def translate_domain(self, _domain):
+        dom = pddl.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
+        dom.requirements = _domain.requirements.copy()
+        dom.actions += [self.translate_action(a, dom) for a in _domain.actions if not a.name.startswith("sample_")]
+        dom.observe += [self.translate_action(o, dom) for o in _domain.observe]
+        dom.axioms = []
+        dom.name2action = None
+        return dom
+    
+    def translate_problem(self, _problem):
+        domain = self.translate_domain(_problem.domain)
+        p2 = pddl.Problem(_problem.name, _problem.objects, [], _problem.goal, domain, _problem.optimization, _problem.opt_func)
+
+        @visitors.copy
+        def init_visitor(elem, results):
+            if isinstance(elem, pddl.Literal):
+                if elem.negated:
+                    return False
+        
+        for i in _problem.init:
+            lit = i.visit(init_visitor)
+            if lit:
+                lit.set_scope(p2)
+                p2.init.append(lit)
+
+        p2.goal = visitors.visit(p2.goal, pddl.translators.ADLCompiler.condition_visitor)
+        return p2
+        
 class DTPDDLOutput(task.PDDLOutput):
     def __init__(self):
-        self.compiler = pddl.translators.ChainingTranslator(dtpddl.DTPDDLCompiler(), pddl.translators.ADLCompiler())
+        self.compiler = pddl.translators.ChainingTranslator(dtpddl.DTPDDLCompiler(), ProbADLCompiler())
         self.writer = dtpddl.DTPDDLWriter()
 
 @visitors.collect
@@ -242,3 +467,99 @@ def function_visitor(elem, result):
         else:
             return result + sum([t.visit(function_visitor) for t in elem.args], [])
         return result
+
+
+class HierarchicalState(state.State):
+    def __init__(self, facts=[], prob=None, parent=None):
+        """Create a new State object.
+
+        Arguments:
+        facts -- List of Fact objects or (StateVariable, TypedObject) tuples the State should be initialized with.
+        prob -- The PDDL problem description this State is based on.
+        parent -- The parent of this state."""
+
+        self.parent = parent
+        if parent and prob is None:
+            self.problem = parent.problem
+        else:
+            self.problem = prob
+            
+        for f in facts:
+            self.set(f)
+
+        self.read_svars = set()
+        self.written_svars = set()
+        
+        self.substates = defaultdict(dict)
+
+    def add_substate(self, svar, val, state, prob):
+        self.substates[svar][val] = (prob, state)
+
+    def get_substate(self, svar, val):
+        return self.substates[svar][val]
+
+    def has_substate(self, svar, val=None):
+        if val is None:
+            return svar in self.substates and self.substates[svar]
+        return svar in self.substates and val in self.substates[svar]
+    
+    def get_substates(self, svar):
+        return self.substates[svar]
+
+    def init_facts(self):
+        elems = []
+        for f in self.iterfacts():
+            if f.value != pddl.UNKNOWN:
+                eff = f.as_literal(_class=effects.SimpleEffect)
+                if eff.predicate == pddl.builtin.assign:
+                    eff.predicate = pddl.builtin.equal_assign
+                if eff.predicate == pddl.builtin.num_assign:
+                    eff.predicate = pddl.builtin.num_equal_assign
+                elems.append(eff)
+        for varsubs in self.substates.itervalues():
+            tups = []
+            for p, sub in varsubs.itervalues():
+                tups.append((pddl.Term(p), sub.to_effect()))
+            elems.append(effects.ProbabilisticEffect(tups))
+            
+        return elems
+    
+    def to_effect(self):
+        elems = []
+        for f in self.iterfacts():
+            if f.value != pddl.UNKNOWN:
+                elems.append(f.as_literal(_class=effects.SimpleEffect))
+        for varsubs in self.substates.itervalues():
+            tups = []
+            for p, sub in varsubs.itervalues():
+                tups.append((pddl.Term(p), sub.to_effect()))
+            elems.append(effects.ProbabilisticEffect(tups))
+            
+        if len(elems) == 1:
+            return elems[0]
+        return effects.ConjunctiveEffect(elems)
+    
+    def __getitem__(self, key):
+        try:
+            return dict.__getitem__(self, key)
+        except:
+            if self.parent:
+                return self.parent[key]
+            if isinstance(key.function, pddl.Predicate):
+                return pddl.FALSE
+            return pddl.UNKNOWN
+        
+    def __setitem__(self, svar, value):
+        assert isinstance(svar, state.StateVariable)
+        if isinstance(value, (float, int, long)):
+            value = pddl.TypedNumber(value)
+        assert value.is_instance_of(svar.get_type()), "type of %s (%s) is incompatible with %s" % (str(svar), str(svar.get_type()), str(value))
+        dict.__setitem__(self, svar, value)
+
+    def __contains__(self, key):
+        if isinstance(key, state.Fact):
+            return key.svar in self and self[key.svar] == key.value
+        if not dict.__contains__(self, key):
+            if self.parent:
+                return key in self.parent
+            return False

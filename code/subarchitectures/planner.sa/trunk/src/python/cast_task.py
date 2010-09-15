@@ -31,15 +31,16 @@ class CASTTask(object):
 
         self.load_domain(domain_fn)
         if problem_fn:
+            import fake_cast_state
             log.info("Loading predefined problem: %s.", problem_fn)
-            self.add_problem = pddl.load_problem(problem_fn, self.domain)
+            add_problem = pddl.load_problem(problem_fn, self.domain)
+            self.state = fake_cast_state.FakeCASTState(add_problem, self.domain)
         else:
-            self.add_problem = None
+            self.state = cast_state.CASTState(beliefs, self.domain)
             
-        self.state = cast_state.CASTState(beliefs, self.domain)
         self.percepts = []
 
-        cp_problem, self.goaldict = self.state.to_problem(planning_task, deterministic=True, domain=self.cp_domain, add_problem=self.add_problem)
+        cp_problem, self.goaldict = self.state.to_problem(planning_task, deterministic=True, domain=self.cp_domain)
         
         self.cp_task = task.Task(self.id, cp_problem)
         self.waiting_for_action = False
@@ -111,7 +112,7 @@ class CASTTask(object):
             self.dt_task = dt_problem.DTProblem(plan, self.domain, self.state)
 
             for pnode in plan.nodes_iter():
-                if pnode.action.name.startswith("select_"):
+                if pnode.action.name.startswith("select-"):
                     pnode.status = plans.ActionStatusEnum.EXECUTED
             
             self.update_status(self.status)
@@ -316,7 +317,7 @@ class CASTTask(object):
                 
     def update_state(self, beliefs):
         self.state = cast_state.CASTState(beliefs, self.domain)
-        new_cp_problem, _ = self.state.to_problem(None, deterministic=True, domain=self.cp_domain, add_problem=self.add_problem)
+        new_cp_problem, _ = self.state.to_problem(None, deterministic=True, domain=self.cp_domain)
 
         #check if the goal is still valid
         try:
