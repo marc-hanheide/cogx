@@ -133,7 +133,6 @@ class CCastOptions(object):
         filename = os.path.abspath(filename)
         statinfo = os.stat(filename)
         self.configFileInfo = [filename, statinfo]
-        print self.configFileInfo
 
     # Check if the config file has changed on disk and reload
     def checkConfigFile(self):

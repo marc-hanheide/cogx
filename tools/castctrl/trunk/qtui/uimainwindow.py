@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Mon Sep 13 14:40:13 2010
+# Created: Wed Sep 15 14:57:34 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -77,6 +77,9 @@ class Ui_MainWindow(object):
         self.ckShowFlushMsgs.setChecked(True)
         self.ckShowFlushMsgs.setObjectName("ckShowFlushMsgs")
         self.horizontalLayout_21.addWidget(self.ckShowFlushMsgs)
+        self.ckAutoClearLog = QtGui.QCheckBox(self.tabLogs)
+        self.ckAutoClearLog.setObjectName("ckAutoClearLog")
+        self.horizontalLayout_21.addWidget(self.ckAutoClearLog)
         spacerItem1 = QtGui.QSpacerItem(88, 17, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_21.addItem(spacerItem1)
         self.verticalLayout.addLayout(self.horizontalLayout_21)
@@ -728,8 +731,12 @@ class Ui_MainWindow(object):
         self.messageSourceCmbx.setStatusTip(QtGui.QApplication.translate("MainWindow", "Active log", None, QtGui.QApplication.UnicodeUTF8))
         self.btEditFilterComponents.setText(QtGui.QApplication.translate("MainWindow", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.btClearMainLog.setText(QtGui.QApplication.translate("MainWindow", "Clear", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckShowInternalMsgs.setToolTip(QtGui.QApplication.translate("MainWindow", "Show messages produced by CAST Control", None, QtGui.QApplication.UnicodeUTF8))
         self.ckShowInternalMsgs.setText(QtGui.QApplication.translate("MainWindow", "Internal", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckShowFlushMsgs.setToolTip(QtGui.QApplication.translate("MainWindow", "Flush messages from the message queue after a process has terminated", None, QtGui.QApplication.UnicodeUTF8))
         self.ckShowFlushMsgs.setText(QtGui.QApplication.translate("MainWindow", "Flushed", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckAutoClearLog.setToolTip(QtGui.QApplication.translate("MainWindow", "Clear the log output when the client process starts", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckAutoClearLog.setText(QtGui.QApplication.translate("MainWindow", "AutoClear", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabLogs), QtGui.QApplication.translate("MainWindow", "Logs", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabBuildLog), QtGui.QApplication.translate("MainWindow", "Build Log", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("MainWindow", "Hosts", None, QtGui.QApplication.UnicodeUTF8))
