@@ -727,7 +727,7 @@ void PlanePopOut::runComponent()
 			OP.id = "";
 			OP.bComCurrentPre = false;
 			OP.bInWM = false;
-			OP.count = 0;
+			OP.count = 10;
 			OP.pointsInOneSOI = SOIPointsSeq.at(i);
 			OP.BGInOneSOI = BGPointsSeq.at(i);
 			OP.EQInOneSOI = EQPointsSeq.at(i);
