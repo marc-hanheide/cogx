@@ -94,29 +94,32 @@ public class DisplayClient {
 
 	public final void connectIceClient(CASTComponent owner) {
 		m_Owner = owner;
-		try {
 
-			if (m_standaloneHost != null) {
-
+		if (m_standaloneHost != null) {
+			try {
 				ObjectPrx prx = CASTUtils.getIceServer(
-						V11NSTANDALONENAME.value, CASTUtils
-								.toServantCategory(DisplayInterface.class),
-						m_standaloneHost, V11NSTANDALONEPORT.value, m_Owner
-								.getObjectAdapter().getCommunicator());
+						V11NSTANDALONENAME.value,
+					   	CASTUtils.toServantCategory(DisplayInterface.class),
+						m_standaloneHost, V11NSTANDALONEPORT.value,
+					   	m_Owner.getObjectAdapter().getCommunicator());
 
 				m_Server = DisplayInterfacePrxHelper.checkedCast(prx);
 				m_Owner.println("DisplayClient(java) connected to standalone server.");
 
-			} else {
+			} catch (Throwable t) {
+				if (t.toString().indexOf("No description for:") >= 0) {
+					m_Owner.println("*** DisplayClient(java): DisplayServer not found.");
+				}
+				else m_Owner.logException(t);
+			}
+		} else {
+			try {
 				m_Server = owner.getIceServer(m_ServerName,
 						DisplayInterface.class, DisplayInterfacePrx.class);
 
+			} catch (Throwable t) {
+				m_Owner.logException(t);
 			}
-		} catch (Throwable t) {
-			if (t.toString().indexOf("No description for:") >= 0) {
-				m_Owner.println("*** DisplayClient(java): DisplayServer not found.");
-			}
-			else m_Owner.logException(t);
 		}
 	}
 
