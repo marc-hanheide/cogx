@@ -119,6 +119,8 @@ public class FormulaMatcher implements
 		if (beliefTypes != null)
 			if (!beliefTypes.contains(from.type))
 				return 0.0;
+		if (!to.type.equals(from.type)) 
+			return 0.0;
 		try {
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
 					.create(GroundedBelief.class, to);
@@ -160,8 +162,12 @@ public class FormulaMatcher implements
 			throws InterruptedException {
 		for (Entry<String, FormulaDistribution> entry : compareThis.entrySet()) {
 			FormulaDistribution otherEntry = compareTo.get(entry.getKey());
-			if (otherEntry == null)
-				return false;
+			if (otherEntry == null) {
+				logger
+						.debug("couldn't find corresponding formula, we continue to look for more");
+				continue;
+			}
+
 			logger.debug("match " + entry.getKey());
 			// get the most likely value from both; if they match we assume the
 			// formulas do match!
