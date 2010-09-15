@@ -21,15 +21,15 @@ using namespace std;
 
 // ------------------------------------------------------
 DefaultTesterDialog::DefaultTesterDialog(DefaultTester *defaultTester,
-		bool hfcServerDestination, bool qdlQueryHandlerDestination, QWidget *parent):
+		bool hfcServerDestination, bool queryHandlerDestination, QWidget *parent):
     QDialog(parent), _defaultTester(defaultTester)
 {
   // Setup ui
   setupUi(this);
   hfcServerRadioButton->setEnabled(hfcServerDestination);
-  qdlQueryHandlerRadioButton->setEnabled(qdlQueryHandlerDestination);
+  qdlQueryHandlerRadioButton->setEnabled(queryHandlerDestination);
   hfcServerRadioButton->setChecked(hfcServerDestination);
-  qdlQueryHandlerRadioButton->setChecked(!hfcServerDestination && qdlQueryHandlerDestination);
+  qdlQueryHandlerRadioButton->setChecked(!hfcServerDestination && queryHandlerDestination);
 
   // Connect signals to slots
   connect(sendPushButton, SIGNAL(clicked()), this, SLOT(sendButtonClicked()));
@@ -45,10 +45,10 @@ DefaultTesterDialog::DefaultTesterDialog(DefaultTester *defaultTester,
 void DefaultTesterDialog::sendButtonClicked()
 {
 	DefaultTester::QueryDestination destination =
-			(hfcServerRadioButton->isChecked())?DefaultTester::QD_HFC_SERVER:DefaultTester::QD_QDL_QUERY_HANDLER;
+			(hfcServerRadioButton->isChecked())?DefaultTester::QD_HFC_SERVER:DefaultTester::QD_QUERY_HANDLER;
 
 	_query = queryLineEdit->text().toStdString();
-	_queryResults = _defaultTester->sendQuery(_query, destination);
+	_qdlQueryResults = _defaultTester->sendQuery(_query, destination);
 
 	// Emit signal
 	emit queryResultsUpdatedSignal();
@@ -61,8 +61,8 @@ void DefaultTesterDialog::queryResultsUpdated()
 	// Init the table
 	resultsTableWidget->clear();
 	resultsTableWidget->setHorizontalHeaderLabels(QStringList());
-	resultsTableWidget->setColumnCount(_queryResults.bt[0].size());
-	resultsTableWidget->setRowCount(_queryResults.bt.size());
+	resultsTableWidget->setColumnCount(_qdlQueryResults.bt[0].size());
+	resultsTableWidget->setRowCount(_qdlQueryResults.bt.size());
 
 	// Get variables from query
 	QString query;
@@ -73,13 +73,13 @@ void DefaultTesterDialog::queryResultsUpdated()
 	// Map the variables to the right order
 	vector<int> varMap(queryVars.size());
 	for (int i = 0; i < queryVars.size(); ++i)
-		varMap[_queryResults.varPosMap[queryVars.at(i).toStdString()]]=i;
+		varMap[_qdlQueryResults.varPosMap[queryVars.at(i).toStdString()]]=i;
 
 	// Fill the table
 	resultsTableWidget->setHorizontalHeaderLabels(queryVars);
-	for (unsigned int i = 0; i < _queryResults.bt.size(); i++)
+	for (unsigned int i = 0; i < _qdlQueryResults.bt.size(); i++)
 	{
-		vector<string> currLine = _queryResults.bt[i];
+		vector<string> currLine = _qdlQueryResults.bt[i];
 		for (unsigned int j = 0; j < currLine.size(); j++)
 		{
 			QTableWidgetItem *twi = new QTableWidgetItem(currLine[j].c_str());

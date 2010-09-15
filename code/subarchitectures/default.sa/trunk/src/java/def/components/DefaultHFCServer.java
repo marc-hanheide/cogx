@@ -11,7 +11,7 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChangeQueueBehaviour;
 
 import DefaultData.HFCInterface;
-import DefaultData.QueryResults;
+import DefaultData.QdlQueryResults;
 import de.dfki.lt.hfc.QueryParseException;
 
 public class DefaultHFCServer extends ManagedComponent {
@@ -90,8 +90,8 @@ public class DefaultHFCServer extends ManagedComponent {
 		
 		
 		@Override
-		public QueryResults querySelect(String q, Current current) {
-			QueryResults _results = new QueryResults();
+		public QdlQueryResults querySelect(String q, Current current) {
+			QdlQueryResults _results = new QdlQueryResults();
 			
 			if (q.toUpperCase().startsWith("SELECT")) {
 				de.dfki.lt.hfc.BindingTable bt;

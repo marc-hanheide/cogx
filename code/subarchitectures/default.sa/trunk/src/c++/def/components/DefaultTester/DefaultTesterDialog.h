@@ -26,7 +26,7 @@ public:
 
   /** Constructor. */
   DefaultTesterDialog(DefaultTester *defaultTester,
-		  bool hfcServerDestination, bool qdlQueryHandlerDestination,
+		  bool hfcServerDestination, bool queryHandlerDestination,
 		  QWidget *parent = 0);
 
 
@@ -48,8 +48,8 @@ private:
 
   DefaultTester *_defaultTester;
 
-  /** Results of the recent query. */
-  DefaultData::QueryResults _queryResults;
+  /** Results of the recent QDL query. */
+  DefaultData::QdlQueryResults _qdlQueryResults;
 
   /** Recent query. */
   std::string _query;
