@@ -110,7 +110,7 @@ public class DisplayClient {
 
 			}
 		} catch (Throwable t) {
-			owner.logException(e);
+			owner.logException(t);
 		}
 	}
 
