@@ -51,7 +51,10 @@ void CDisplayClient::configureDisplayClient(const map<string,string> & _config)
    }
 
    if((it = _config.find("--standalone-display-host")) != _config.end()) {
-      m_standaloneHost = it->second;      
+      string s = it->second;
+      // trim
+      s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+      m_standaloneHost = s;      
    }
 }
 

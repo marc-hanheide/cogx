@@ -75,13 +75,13 @@ class CDisplayClient:
 
                 self.m_Server = DisplayInterfacePrx.checkedCast(prx)
             except Exception as e:
-                print e
+                print "*** DisplayClient(python): standalone display server not found"
                 self.m_Server = None
         else:
             try:
                 self.m_Server = owner.getIceServer(self.m_ServerName, DisplayInterface, DisplayInterfacePrx)
             except Exception as e:
-                print e
+                print "*** DisplayClient(python): display server component not found"
                 self.m_Server = None
 
     def getComponentId(self):

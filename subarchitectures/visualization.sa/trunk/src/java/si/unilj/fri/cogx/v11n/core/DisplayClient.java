@@ -85,7 +85,10 @@ public class DisplayClient {
 			m_ServerName = config.get("--displayserver");
 		}
 		if (config.containsKey("--standalone-display-host")) {
-			m_standaloneHost = config.get("--standalone-display-host");
+			m_standaloneHost = config.get("--standalone-display-host").trim();
+			if (m_standaloneHost != null && m_standaloneHost.trim().length() == 0) {
+				m_standaloneHost = null;
+			}
 		}
 	}
 
@@ -102,7 +105,7 @@ public class DisplayClient {
 								.getObjectAdapter().getCommunicator());
 
 				m_Server = DisplayInterfacePrxHelper.checkedCast(prx);
-				m_Owner.println("CDisplayClient connected to standalone server.");
+				m_Owner.println("DisplayClient(java) connected to standalone server.");
 
 			} else {
 				m_Server = owner.getIceServer(m_ServerName,
@@ -110,7 +113,10 @@ public class DisplayClient {
 
 			}
 		} catch (Throwable t) {
-			owner.logException(t);
+			if (t.toString().indexOf("No description for:") >= 0) {
+				m_Owner.println("*** DisplayClient(java): DisplayServer not found.");
+			}
+			else m_Owner.logException(t);
 		}
 	}
 
@@ -132,19 +138,19 @@ public class DisplayClient {
 		if (m_Owner == null) {
 			// TODO: throw std::runtime_error(cast::exceptionMessage(__HERE__,
 			// "CDisplayClient: connectIceClient() must be called before installEventReciever()."));
-			System.out.println(" *** Owner is null");
+			System.out.println(" *** DisplayClient(java): Owner is null");
 			return;
 		}
 
 		if (m_Server == null) {
 			// TODO: log("CActiveDisplayClient: server not connected.");
-			System.out.println(" *** Server is null");
+			m_Owner.println(" *** DisplayClient(java): Server is null (not connected)");
 			return;
 		}
 
 		if (m_EventReceiver != null) {
 			// TODO: log("CActiveDisplayClient already has an EventReceiver.");
-			System.out.println(" *** EventReceiver is NOT null");
+			m_Owner.println(" *** DisplayClient(java): EventReceiver already installed");
 			return;
 		}
 
@@ -289,4 +295,4 @@ public class DisplayClient {
 	}
 
 }
-// vim:sw=3:ts=8:et
+// vim:sw=4:ts=4:noet
