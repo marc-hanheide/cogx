@@ -53,6 +53,11 @@
 
 using namespace Planning;
 
+/*VIRTUAL*/ void Solver::report__new_belief_state(POMDP_State* successor_pomdp_state)
+{
+    expansion_queue.push(successor_pomdp_state);  
+}
+
 void Solver::press__belief_transitions(POMDP_State* pomdp_state,
                                        const POMDP_State::Normalisation_Factors& _normalisation_Factors,
                                        const POMDP_State::Action__to__Observation_to_Belief& _successor_belief_state )
@@ -156,7 +161,8 @@ void Solver::press__belief_transitions(POMDP_State* pomdp_state,
                 /* We have encountered a new belief-state, and
                  * therefore should consider futures from that
                  * state. */
-                expansion_queue.push(successor_pomdp_state);
+                report__new_belief_state(successor_pomdp_state);
+                //expansion_queue.push(successor_pomdp_state);
             } else {
                 INTERACTIVE_VERBOSER(true, 10060, "Repeated successor POMDP state :: "
                                      <<*successor_pomdp_state<<std::endl);
@@ -517,17 +523,44 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
                               , _successor_belief_state );
 }
 
-bool Solver::expand_belief_state_space()
+/*VIRTUAL*/ POMDP_State* Solver::obtain__next_belief_state_for_expansion()
 {
+    INTERACTIVE_VERBOSER(true, 10060, "Expansion queue size is :: "<<expansion_queue.size()<<std::endl);
+  
     if(!expansion_queue.size()){
         INTERACTIVE_VERBOSER(true, 10015, "Expty expansion queue :: "<<std::endl);
-        return false;
+        return 0;
     }
-    
-    INTERACTIVE_VERBOSER(true, 10060, "Expansion queue size is :: "<<expansion_queue.size()<<std::endl);
+
     
     auto pomdp_state = expansion_queue.front();
     expansion_queue.pop();
+
+    return pomdp_state;
+}
+
+/*VIRTUAL*/ POMDP_State* Solver::peek__next_belief_state_for_expansion()
+{
+    if(!expansion_queue.size()){
+        WARNING("Asked to peek, however there are no states to peek at.");
+        return 0;
+    }
+    
+    auto pomdp_state = expansion_queue.front();
+
+    return pomdp_state;
+}
+
+bool Solver::expand_belief_state_space()
+{
+    
+
+    auto pomdp_state = obtain__next_belief_state_for_expansion();
+
+    if(0 == pomdp_state){
+        INTERACTIVE_VERBOSER(true, 10015, "No belief states left for expansion :: "<<std::endl);
+        return false;
+    }
 
     INTERACTIVE_VERBOSER(true, 10060, "Expanding POMDP state :: "<<*pomdp_state<<std::endl);
     

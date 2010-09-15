@@ -13,7 +13,7 @@
 	       (handempty)
 	       (holding ?x - block)
 	       )
-
+  
   (:functions (total-cost) - number 
 	      (reward) - number)
 

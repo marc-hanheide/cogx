@@ -272,10 +272,6 @@ Solver::Solver(Planning::Parsing::Problem_Data& problem_Data)
 {
 }
 
-State& report__state(State&){
-    UNRECOVERABLE_ERROR("unimplemented");
-}
-
 void Solver::preprocess()
 {
     if(preprocessed) return;

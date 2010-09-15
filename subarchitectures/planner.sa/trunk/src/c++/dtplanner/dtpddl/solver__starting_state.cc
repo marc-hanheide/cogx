@@ -338,7 +338,8 @@ void Solver::generate_starting_state()
     belief_state__space.insert(starting_belief_state);
     
     
-    expansion_queue.push(starting_belief_state);
+    //expansion_queue.push(starting_belief_state);
+    report__new_belief_state(starting_belief_state);
     INTERACTIVE_VERBOSER(true, 10006, "Starting belief state is :: "
                          <<(*starting_belief_state)<<std::endl);
 }

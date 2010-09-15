@@ -46,13 +46,13 @@
           :precondition  (and  (placestatus ?loc trueplace)
                                (is-in ?a ?loc)
                          )
-          :effect  (and  (visited ?a ?loc))
+          :effect  (and  (visited ?a ?loc) (assign (reward ) 0))
 )
 
 (:action  sense-placelabel
           :parameters  (?a - robot ?loc - place)
           :precondition  (is-in ?a ?loc)
-          :effect  (and  )
+          :effect  (and  (assign (reward ) 0))
 )
 
 (:action  commit-label-place_0_pt_spatial_data
@@ -60,8 +60,10 @@
           :precondition  (not (committed-label place_0_pt_spatial_data))
           :effect  (and  (committed-label place_0_pt_spatial_data)
                          (when  (label place_0_pt_spatial_data ?val)
-                                (assign (reward ) 100)
+			   (assign (reward ) 100)
                          )
+			 (when (not (label place_0_pt_spatial_data ?val)) 
+			   (assign (reward ) 0))
                    )
 )
 

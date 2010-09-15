@@ -171,11 +171,11 @@ void Policy_Iteration::operator()()
 
     
     
-    VERBOSER(10200, "Solving system of equations "<<std::endl);
+    VERBOSER(10501, "Solving system of equations "<<std::endl);
     /* INVERTING  */ if(!matrix_inversion__LU_factorisation(transition__matrix, INVERSE__transition__matrix)){
         /* INVERTING  */     UNRECOVERABLE_ERROR("Unable to take inverse of state-transition matrix.");
         /* INVERTING  */ }
-    VERBOSER(10200, "Done solving system of equations "<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10501, "Done solving system of equations "<<std::endl);
 
     VERBOSER(200, "Matrix is :: "<<transition__matrix<<std::endl);
     VERBOSER(200, "Inverse matrix is :: "<<INVERSE__transition__matrix<<std::endl);
