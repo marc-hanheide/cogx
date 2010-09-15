@@ -1,4 +1,4 @@
-package execution.components;
+package dora.execution.components;
 
 import autogen.Planner.Action;
 import cast.CASTException;
@@ -6,6 +6,7 @@ import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import execution.components.PlanExecutionMediator;
 import execution.slice.ActionExecutionException;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;

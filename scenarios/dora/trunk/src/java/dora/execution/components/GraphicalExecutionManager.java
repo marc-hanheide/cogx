@@ -1,7 +1,7 @@
 /**
  * 
  */
-package execution.components;
+package dora.execution.components;
 
 import java.util.Map;
 
@@ -16,6 +16,7 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import execution.components.AbstractExecutionManager;
 import execution.slice.actions.ActiveVisualSearch;
 import execution.slice.actions.BackgroundModels;
 import execution.slice.actions.ComsysQueryFeature;
