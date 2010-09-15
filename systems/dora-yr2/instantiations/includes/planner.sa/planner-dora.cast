@@ -1,0 +1,3 @@
+
+
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain dora-explore.mapl --log --nodot

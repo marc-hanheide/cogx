@@ -28,7 +28,7 @@ INCLUDE includes/coma.sa/coma-crowl.cast
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/planner.cast
+INCLUDE includes/planner.sa/planner-dora.cast
 #INCLUDE includes/motivation.sa/motivation.cast
 
 

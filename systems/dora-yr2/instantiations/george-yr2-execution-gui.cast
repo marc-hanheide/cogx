@@ -1,26 +1,10 @@
 HOST localhost
 
 
-# spatial #####################################################################
-INCLUDE includes/spatial.sa/spatial-blobfinder.cast
-INCLUDE includes/spatial.sa/spatial-ptz.cast
-INCLUDE includes/spatial.sa/spatial-base.cast
-INCLUDE includes/spatial.sa/spatial.cast
-INCLUDE includes/spatial.sa/spatial-peekabot.cast
-CPP GD self.representer SelfRepresenter 
-INCLUDE includes/spatial.sa/spatial-mediator.cast
 
 # vision ######################################################################
 INCLUDE includes/vision.sa/vision-base+blobs.cast
 INCLUDE includes/vision.sa/vision-execution.cast
-
-#JAVA MG ContinuousDetector  vision.components.ContinuousDetector --label-record1 --label-record2 --label-record3 --label-record4
-
-# coma ######################################################################
-#INCLUDE includes/coma.sa/coma-base.cast
-#JAVA GD FakeComa fakecoma.components.GraphicalComa --debug
-#JAVA MG recorder castutils.components.WorkingMemoryRecorder  --config recorder-filter.txt
-#JAVA MG player castutils.components.WorkingMemoryPlayer  --state --file stored-maps/3rdtask-real/coma.log
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
@@ -32,13 +16,13 @@ INCLUDE includes/binder.sa/binder-base.cast
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
-#INCLUDE includes/planner.sa/planner-dora.cast
+INCLUDE includes/planner.sa/planner-george.cast
 #INCLUDE includes/motivation.sa/motivation.cast
 
 
 # exection ####################################################################
-JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager
-JAVA MG executor dora.execution.components.DoraExecutionMediator
+JAVA MG manual-execution execution.components.GraphicalExecutionManager
+JAVA MG executor execution.components.DoraExecutionMediator
 
 
 # viewing and debugging #######################################################
