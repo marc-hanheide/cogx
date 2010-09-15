@@ -208,6 +208,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.ui.ckRunPlayer.setCheckState(ckint("ckRunPlayer", 2))
         self.ui.ckRunLog4jServer.setCheckState(ckint("ckRunLog4jServer", 2))
         self.ui.ckRunDisplaySrv.setCheckState(ckint("ckRunDisplaySrv", 2))
+        self.ui.ckAutoClearLog.setCheckState(ckint("ckAutoClearLog", 2))
 
     def _fillMessageFilterCombo(self):
         self.ui.messageSourceCmbx.clear()
@@ -405,6 +406,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._options.setOption("ckRunPlayer", self.ui.ckRunPlayer.checkState())
             self._options.setOption("ckRunLog4jServer", self.ui.ckRunLog4jServer.checkState())
             self._options.setOption("ckRunDisplaySrv", self.ui.ckRunDisplaySrv.checkState())
+            self._options.setOption("ckAutoClearLog", self.ui.ckAutoClearLog.checkState())
             self._options.saveHistory(open(self.fnhist, 'w'))
             if not os.path.exists(self.fnconf):
                 self._options.saveConfig(open(self.fnconf, 'w'))
@@ -557,6 +559,8 @@ class CCastControlWnd(QtGui.QMainWindow):
 
 
     def onStartCastClient(self):
+        if self.ui.ckAutoClearLog.isChecked():
+            self.mainLog.clearOutput()
         self._options.checkConfigFile()
         p = self._manager.getProcess("cast-client")
         if p != None:

@@ -122,6 +122,9 @@
             <layout class="QHBoxLayout" name="horizontalLayout_21">
              <item>
               <widget class="QCheckBox" name="ckShowInternalMsgs">
+               <property name="toolTip">
+                <string>Show messages produced by CAST Control</string>
+               </property>
                <property name="text">
                 <string>Internal</string>
                </property>
@@ -132,11 +135,24 @@
              </item>
              <item>
               <widget class="QCheckBox" name="ckShowFlushMsgs">
+               <property name="toolTip">
+                <string>Flush messages from the message queue after a process has terminated</string>
+               </property>
                <property name="text">
                 <string>Flushed</string>
                </property>
                <property name="checked">
                 <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="ckAutoClearLog">
+               <property name="toolTip">
+                <string>Clear the log output when the client process starts</string>
+               </property>
+               <property name="text">
+                <string>AutoClear</string>
                </property>
               </widget>
              </item>
