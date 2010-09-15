@@ -15,8 +15,7 @@ add_subdirectory (src/c++/def/autogen)
 include_directories(src/c++/def/autogen)
 
 # Default.SA C++ Components
-add_subdirectory (src/c++/def/components/DefaultKnowledgeLoader)
-add_subdirectory (src/c++/def/components/DefaultQdlQueryHandler)
+add_subdirectory (src/c++/def/components/DefaultQueryHandler)
 add_subdirectory (src/c++/def/components/DefaultChainGraphInferencer)
 add_subdirectory (src/c++/def/components/DefaultTester)
 
