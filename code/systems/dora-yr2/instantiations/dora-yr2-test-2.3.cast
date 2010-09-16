@@ -9,18 +9,20 @@ CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cure
 CPP GD self.representer SelfRepresenter 
 
 # Default.SA ################################################################
-JAVA MG default.hfcserver def.components.DefaultHFCServer --nsFile subarchitectures/coma.sa/ontologies/dora.ns --ruleFile subarchitectures/coma.sa/ontologies/default.rdl --tupleFile subarchitectures/coma.sa/ontologies/dora_omics_thingloc.nt --log
+JAVA MG default.hfcserver def.components.HFCServer --nsFile subarchitectures/coma.sa/ontologies/dora.ns --ruleFile subarchitectures/coma.sa/ontologies/default.rdl --tupleFile subarchitectures/coma.sa/ontologies/dora_omics_thingloc.nt --log
 #CPP GD default.qh DefaultQueryHandler
 CPP GD default.tester DefaultTester --test-hfc default.hfcserver #--test-qh default.qh
 
 # Conceptual.SA  ############################################################
+CPP GD conceptual.qh ConceptualQueryHandler
+#CPP GD conceptual.tester ConceptualTester --test-qh conceptual.qh
 
 
 # Coma ######################################################################
 INCLUDE includes/coma.sa/coma-base.cast
 
 # Execution #################################################################
-JAVA MG  manual-execution execution.components.GraphicalExecutionManager
+JAVA MG  manual-execution dora.execution.components.GraphicalExecutionManager
 
 # viewing and debugging #######################################################
 #JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, comadata.ComaRoom"
