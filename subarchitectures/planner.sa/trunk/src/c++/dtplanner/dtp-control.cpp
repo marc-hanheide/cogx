@@ -707,14 +707,20 @@ void DTPCONTROL::newTask(Ice::Int id,
     current_state[id] = solvers[id]->peek__next_belief_state_for_expansion();//expansion_queue.front();
     
     Planning::Policy_Iteration policy_Iteration(solvers[id]->belief_state__space);
-    for(uint i = 0; i < 25; i++){
+    for(uint i = 0; i < 100; i++){
         if(!solvers[id]->expand_belief_state_space()){
             break;
             VERBOSER(10017, "No starting state!"<<std::endl);
         } else {
             VERBOSER(10017, "Expanding!"<<std::endl);
-            policy_Iteration();
+//             policy_Iteration();
         }
+    }
+    
+    for(uint i = 0; i < 100; i++){
+        policy_Iteration();
+        VERBOSER(10017, "Expected reward is :: "
+                 <<current_state->get__expected_value()<<std::endl);
     }
     
 //     if(!solvers[id]->expand_belief_state_space()){
