@@ -70,7 +70,7 @@ module DefaultData
 
 	/** Discrete probability distribution returned for
 	    various queries. */
-	struct DiscreteProbabilityDistribution
+	struct ProbabilityDistribution
 	{
 		// Human readable description of the distribution. 
 		string description;
@@ -85,7 +85,7 @@ module DefaultData
 	/** Interface to the def::QueryHandler::Server. */
 	interface QueryHandlerServerInterface
 	{
-		DiscreteProbabilityDistribution query(string queryStr);
+		ProbabilityDistribution query(string queryStr);
 	};
 };
 
