@@ -200,10 +200,26 @@ class GoToCone extends Action {
 
 };
 
+class SingleBeliefAction extends Action {
+	string beliefId;	
+};
+
+class BeliefPlusStringAction extends SingleBeliefAction {
+	string value;	
 };
 
 
 
+class LearnColour extends BeliefPlusStringAction {
+};
+
+class LearnShape extends BeliefPlusStringAction {
+};
+
+class LearnIdentity extends BeliefPlusStringAction {
+};
+
+};
 };
 };
 

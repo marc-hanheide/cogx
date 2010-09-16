@@ -9,7 +9,7 @@ import execution.slice.TriBool;
  * @author nah
  *
  */
-public class DoNothingExecutor extends NonBlockingCompleteOnDeleteExecutor<Action> {
+public class DoNothingExecutor extends NonBlockingCompleteOnOperationExecutor<Action> {
 
 	private class CompleteAction extends SleepyThread {
 		public CompleteAction(long _sleepyTime) {
