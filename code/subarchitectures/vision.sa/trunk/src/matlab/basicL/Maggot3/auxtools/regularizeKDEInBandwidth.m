@@ -8,7 +8,7 @@ function [out_kde, subindicator] = regularizeKDEInBandwidth( input_kde, varargin
 % the value "practicallyZero" in certain directions of the subspace, those
 % directions are regularized to "practicallyZero".
 
-minVal = 1e-10 ;
+minVal = 1e-3 ;
 practicallyZero = [] ;
 % process arguments
 args = varargin;
@@ -40,7 +40,7 @@ if min(s) < minVal
    id_ok = find(s > minVal) ;
    id_notok = find(s <= minVal) ;
    if sum(id_ok) > 0
-       defaultval = mean(s( id_ok ))*1e-3 ;
+       defaultval = min(s( id_ok ))  ;
    else
        defaultval = minVal ;
    end

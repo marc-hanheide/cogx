@@ -98,8 +98,10 @@ if ~isfield(negModel,'precalcStat') || isempty(negModel.precalcStat)
     sigmaPoints.X = X ;
     sigmaPoints.W = W ;
     
-    ppos = evaluatePointsUnderPdf(posModel, X) ;
  
+    ppos = evaluatePointsUnderPdf(posModel, X) ;
+
+        
     % evaluate probabilities of model 1
     p1_z_c0 = ppos*modelPriors.pPos ; % p_x_Cpos ;
     
