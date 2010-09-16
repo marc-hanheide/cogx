@@ -1002,9 +1002,9 @@ class MAPLCompiler(Translator):
                 a2.effect = effects.ConjunctiveEffect([])
             a2.effect.set_scope(a2)
         if isinstance(action, mapl.MAPLAction) and action.sensors:
-            commit_cond = action.commit_condition().copy(new_scope=a2)
-            a2.precondition = conditions.Conjunction.new(a2.precondition)
-            a2.precondition.parts.append(commit_cond)
+            # commit_cond = action.commit_condition().copy(new_scope=a2)
+            # a2.precondition = conditions.Conjunction.new(a2.precondition)
+            # a2.precondition.parts.append(commit_cond)
             
             keff = action.knowledge_effect().copy(new_scope=a2)
             if a2.effect:
