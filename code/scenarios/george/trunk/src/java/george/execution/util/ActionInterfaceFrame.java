@@ -1,5 +1,7 @@
 package george.execution.util;
 
+import george.execution.components.GraphicalExecutionManager;
+
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -15,6 +17,7 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -35,8 +38,14 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import execution.slice.Action;
 import execution.util.ActionMonitor;
-import george.execution.components.GraphicalExecutionManager;
 
+/**
+ * TODO - replace all JDialog crap with JOptionPane things
+ * 
+ * 
+ * @author nah
+ *
+ */
 public class ActionInterfaceFrame extends JFrame {
 
 	private static final int BELIEF_ID_COLUMN = 0;
@@ -191,11 +200,10 @@ public class ActionInterfaceFrame extends JFrame {
 
 			m_learnColourAction.setSelected(true);
 
-
-//			m_beliefsActionPanel.add(m_askForFeatureAction,
-//					new GridBagConstraints());
-//			m_beliefsActionPanel.add(m_testFeatureValueAction,
-//					new GridBagConstraints());
+			// m_beliefsActionPanel.add(m_askForFeatureAction,
+			// new GridBagConstraints());
+			// m_beliefsActionPanel.add(m_testFeatureValueAction,
+			// new GridBagConstraints());
 			m_beliefsActionPanel.add(m_learnColourAction,
 					new GridBagConstraints());
 			m_beliefsActionPanel.add(m_learnShapeAction,
@@ -323,68 +331,71 @@ public class ActionInterfaceFrame extends JFrame {
 				askForFeature();
 			} else if (m_testFeatureValueAction.isSelected()) {
 				testFeatureValue();
+			} else if (m_learnColourAction.isSelected()) {
+				learnColour();
+			} else if (m_learnShapeAction.isSelected()) {
+				learnShape();
+			} else if (m_learnIdentityAction.isSelected()) {
+				learnIdentity();
 			}
-			else if (m_learnColourAction.isSelected()) {
-				learn("colour");
-			}
-			else if (m_learnShapeAction.isSelected()) {
-				learn("shape");
-			}
-			else if (m_learnIdentityAction.isSelected()) {
-				learn("identity");
-			}
-			
+
 		} else {
 			throw new RuntimeException("No tab selected apparently... "
 					+ m_tabbedPane.getSelectedIndex());
 		}
 	}
 
-	private void learn(final String _concept) {
+	private String getSelectedBeliefID() {
+		String beliefID = null;
 		int selectedRow = m_beliefTable.getSelectedRow();
 		if (selectedRow != -1) {
 			Object beliefIDVal = m_beliefTableModel.getValueAt(selectedRow,
 					BELIEF_ID_COLUMN);
-			
 			assert (beliefIDVal != null);
-			final String beliefID = (String) beliefIDVal;
-			final JDialog dialog = new JDialog(this);
-			dialog.setLayout(new FlowLayout());
-			dialog.add(new JLabel("What " + _concept + "     " +
-					"should be learnt for belief " + beliefID + "?"));
-
-			final JTextField textfield = new JTextField(10);
-			dialog.add(textfield);
-
-			ActionListener submit = new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent _e) {
-					submitLearningTask(beliefID, _concept, textfield.getText());
-					dialog.setVisible(false);
-				}
-
-			};
-
-			textfield.addActionListener(submit);
-
-			JButton goButton = new JButton("Go!");
-			goButton.addActionListener(submit);
-
-			dialog.add(goButton);
-			dialog.pack();
-			dialog.setVisible(true);
+			beliefID = (String) beliefIDVal;
 		}
-		
+		return beliefID;
 	}
 
-	private void submitLearningTask(String _beliefID,
-			String _concept, String _value) {
-		m_exeMan.log("triggering learning: " + _value + " for concept: " + _concept);
-		m_exeMan.learningTask(_beliefID, _concept, _value, new MonitorPanel());
+	private void learnColour() throws CASTException {
+		String beliefID = getSelectedBeliefID();
+		if (beliefID != null) {
+			String colour = getFeatureValue(beliefID, "colour");
+			if(colour != null) {
+				m_exeMan.learnColour(beliefID,colour, new MonitorPanel());
+			}
+		}
+	}
+
+	private void learnShape() throws CASTException {
+		String beliefID = getSelectedBeliefID();
+		if (beliefID != null) {
+			String colour = getFeatureValue(beliefID, "shape");
+			if(colour != null) {
+				m_exeMan.learnShape(beliefID,colour, new MonitorPanel());
+			}
+		}
+	}
+
+	private void learnIdentity() throws CASTException {
+		String beliefID = getSelectedBeliefID();
+		if (beliefID != null) {
+			String colour = getFeatureValue(beliefID, "identity");
+			if(colour != null) {
+				m_exeMan.learnShape(beliefID,colour, new MonitorPanel());
+			}
+		}
 	}
 
 	
+	private String getFeatureValue(String _beliefID, String _concept) {
+		String message = "What " + _concept 
+				+ " should be learnt for belief " + _beliefID + "?";
+
+		return (String) JOptionPane.showInputDialog(this, message);
+	}
+
+
 	/**
 	 * Popup
 	 */

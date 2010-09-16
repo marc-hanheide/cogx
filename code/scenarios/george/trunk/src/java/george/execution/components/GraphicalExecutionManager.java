@@ -23,6 +23,9 @@ import execution.slice.actions.ComsysQueryFeature;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ForegroundModels;
+import execution.slice.actions.LearnColour;
+import execution.slice.actions.LearnIdentity;
+import execution.slice.actions.LearnShape;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.RecogniseForegroundedModels;
@@ -185,15 +188,26 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-	public void learningTask(String _beliefID, String _concept, String _value,
-						ActionMonitor _monitorPanel) {
-	
-		
-		
-		
-//		VisualLearnerLearningTask task = new 
-		
-		
+	public WorkingMemoryAddress learnColour(String _beliefID, String _colour, ActionMonitor _monitor) throws CASTException {
+		LearnColour act = newActionInstance(LearnColour.class);
+		act.beliefId = _beliefID;
+		act.value = _colour;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+	public WorkingMemoryAddress learnShape(String _beliefID, String _shape, ActionMonitor _monitor) throws CASTException {
+		LearnShape act = newActionInstance(LearnShape.class);
+		act.beliefId = _beliefID;
+		act.value = _shape;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+	public WorkingMemoryAddress learnIdentity(String _beliefID, String _identity, ActionMonitor _monitor) throws CASTException {
+		LearnIdentity act = newActionInstance(LearnIdentity.class);
+		act.beliefId = _beliefID;
+		act.value = _identity;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
 	}
 
 //	public WorkingMemoryAddress triggerFeatureValueTest(String _beliefID, String _featureLabel,
