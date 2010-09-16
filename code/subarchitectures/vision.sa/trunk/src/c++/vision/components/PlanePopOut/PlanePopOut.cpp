@@ -39,7 +39,7 @@ long long gethrtime(void)
 #define Shrink_SOI 1
 #define Upper_BG 1.5
 #define Lower_BG 1.1	// 1.1-1.5 radius of BoundingSphere
-#define min_height_of_obj 0.03	//unit cm, due to the error of stereo, >0.01 is suggested
+#define min_height_of_obj 0.02	//unit cm, due to the error of stereo, >0.01 is suggested
 #define rate_of_centers 0.4	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
 #define Torleration 20		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
@@ -664,7 +664,11 @@ void PlanePopOut::runComponent()
 	    IplImage* Cimg = convertImageToIpl(image);
 	    IplImage* subimg=cvCreateImage(cvSize(Cimg->width,Cimg->height),Cimg->depth,Cimg->nChannels);
 	    cvAbsDiff(Cimg,previousImg, subimg);
-	    if (IsMoving(subimg))	{bIsMoving = true; log("Motion detected, freeze the 3D analysis");}
+	    if (IsMoving(subimg))
+	    {
+		bIsMoving = true; 
+		//log("Motion detected, freeze the 3D analysis");
+	    }
 	    else bIsMoving = false;
 	    cvCopy(Cimg,previousImg , NULL);
 	    cvReleaseImage(&Cimg);  
@@ -1657,11 +1661,14 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
     wC = 1.0-wS-wP;
     double dist_histogram = CompareHistKLD(obj1.hist, obj2.hist);
     double surfmacthingRatio;
-    if (matches.size()== 0)	surfmacthingRatio = 0.0;
-    if(obj1.surf.size()>obj2.surf.size())
-	surfmacthingRatio =1.0-(float)matches.size()/(float)obj1.surf.size();
-    else
-        surfmacthingRatio =1.0- (float)matches.size()/(float)obj2.surf.size();
+    if (matches.size()== 0 || obj1.surf.size() == 0 || obj2.surf.size()==0)	surfmacthingRatio = 0.0;
+    else 
+    {
+	if(obj1.surf.size()>obj2.surf.size())
+	    surfmacthingRatio =1.0-(float)matches.size()/(float)obj1.surf.size();
+	else
+	    surfmacthingRatio =1.0- (float)matches.size()/(float)obj2.surf.size();
+    }
 /*  
     log("Finish surf matching, there are %d features matched", matches.size());
     log("Finish surf matching, there are %d features in obj1", obj1.surf.size());
@@ -1670,9 +1677,17 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
     log("Finish color histogram comparison, the distance is %f",dist_histogram);
 */   
     double sizeRatio;
-    if (obj1.r>obj2.r)	sizeRatio = abs(obj1.r-obj2.r)/obj1.r;
-    else sizeRatio = abs(obj1.r-obj2.r)/obj2.r;
-    
+    int s1 = obj1.pointsInOneSOI.size();
+    int s2 = obj2.pointsInOneSOI.size();
+    sizeRatio = exp(-(s2-s1)*(s2-s1)*3.14159);
+    /*
+    if (obj1.r== 0 || obj2.r==0) sizeRatio = 0.0;
+    else
+    {
+      if (obj1.r>obj2.r)	sizeRatio = abs(obj1.r-obj2.r)/obj1.r;
+      else sizeRatio = abs(obj1.r-obj2.r)/obj2.r;
+    }
+    */
     //log("ratio = %f, %f, %f", wS, wC, wP);
     //log("dist_histogram, surfmacthingRatio, sizeRatio are %f, %f, %f",dist_histogram, surfmacthingRatio, sizeRatio);
 
