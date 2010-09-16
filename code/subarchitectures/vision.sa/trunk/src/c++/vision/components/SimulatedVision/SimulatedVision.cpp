@@ -2,12 +2,12 @@
  * Author: Marko Mahnič
  * Created: July 2010
  *
- * © Copyright 2010 Marko Mahnič. 
+ * © Copyright 2010 Marko Mahnič.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -227,7 +227,7 @@ void CVisionSimulator::CDisplayClient::createForms()
    //    - list of possible labels; this can grow; (shared with ObjectRecognizerSrv?)
    //    - list of known objects
    //    - (lists could grow during execution -- learn new stuff)
-   
+
    // object form
    {
       struct _local_ {
@@ -371,21 +371,21 @@ void CObjectAttrs::saveIni(std::ostream& ss)
 {
 #define ENDL '\n'
    typeof(m_colors.begin()) it;
-   ss << "[color]" << ENDL; 
+   ss << "[color]" << ENDL;
    for(it = m_colors.begin(); it != m_colors.end(); it++) {
       ss << "@" << it->first << "=" << it->second << ENDL;
    }
    ss << "ambiguity=" << m_ambig_color << ENDL;
    ss << "gain=" << m_gain_color << ENDL;
 
-   ss << ENDL << "[shape]" << ENDL; 
+   ss << ENDL << "[shape]" << ENDL;
    for(it = m_shapes.begin(); it != m_shapes.end(); it++) {
       ss << "@" << it->first << "=" << it->second << ENDL;
    }
    ss << "ambiguity=" << m_ambig_shape << ENDL;
    ss << "gain=" << m_gain_shape << ENDL;
 
-   ss << ENDL << "[label]" << ENDL; 
+   ss << ENDL << "[label]" << ENDL;
    for(it = m_labels.begin(); it != m_labels.end(); it++) {
       ss << "@" << it->first << "=" << it->second << ENDL;
    }
@@ -700,7 +700,7 @@ void CVisionSimulator::updateValueSets()
    for(int i = 0; i < m_defaultLabels.size(); i++) {
       label_vals[m_defaultLabels[i]] = true;
    }
-      
+
    // Find unique values for color, shape, label in loaded objects
    typeof(m_Objects.begin()) it;
    for (it = m_Objects.begin(); it != m_Objects.end(); it++) {
@@ -782,8 +782,9 @@ void CVisionSimulator::applyScene(const std::string& sceneName)
       try {
          VisionData::VisualObjectPtr pvobj = new VisionData::VisualObject();
          pvobj->time = getCASTTime();
-         pvobj->label = obj.m_name;
-         pvobj->labelConfidence = 1.0f;
+         pvobj->identLabels.push_back(obj.m_name);
+         pvobj->identDistrib.push_back(1.0f);
+         pvobj->identAmbiguity = 0.0f;
 
          ss << "<br>" << obj.m_name << ":";
 

@@ -546,12 +546,28 @@ VisualObjectPtr ObjectDetectorFERNS::createVisualObject(size_t i,
   else // mode == DETECT_ONLY
     bbox = calculateObjectBoundingBox(detectors[i]);
 
-  obj->label = model_labels[i];
-  obj->time = image.time;
+  double detectionConfidence;
   if(detectors[i]->pattern_is_detected || last_frame_ok[i])
-    obj->detectionConfidence = 1.;
+    detectionConfidence = 1.;
   else
-    obj->detectionConfidence = 0.;
+    detectionConfidence = 0.;
+
+  // create a very simple distribution: label and unknown
+  obj->identLabels.push_back(model_labels[i]);
+  obj->identLabels.push_back("unknown");
+  // note: distribution must of course sum to 1
+  obj->identDistrib.push_back(detectionConfidence);
+  obj->identDistrib.push_back(1. - detectionConfidence);
+  // the information gain if we know the label, just set to 1, cause we don't
+  // have any alternative thing to do
+  obj->identGain = 1.;
+  // ambiguity in the distribution: we use the distribution's entropy
+  obj->identAmbiguity = 0.;
+  for(size_t i = 0; i < obj->identDistrib.size(); i++)
+    if(fpclassify(obj->identDistrib[i]) != FP_ZERO)
+      obj->identAmbiguity -= obj->identDistrib[i]*::log(obj->identDistrib[i]);
+
+  obj->time = image.time;
 
   // don't have 3D information at this point
   setIdentity(obj->pose);

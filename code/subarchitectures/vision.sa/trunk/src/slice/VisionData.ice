@@ -16,12 +16,12 @@ module VisionData {
    * @author Kai Zhou
    */
   struct OneObj {
-    Vector3Seq pPlane;              
+    Vector3Seq pPlane;
 	// 3D vector sequence, describing the plane ???
-    Vector3Seq pTop;                
+    Vector3Seq pTop;
 	// 3D vector sequence, describing the object top surface ???
   };
-  
+
 sequence<OneObj> ObjSeq;
 
   /**
@@ -29,21 +29,21 @@ sequence<OneObj> ObjSeq;
    * @author Kai Zhou
    */
   class ConvexHull {
-    cogx::Math::Pose3 center;       
+    cogx::Math::Pose3 center;
 	// Pose of the center of the convex hull
-   
-    Vector3Seq PointsSeq;           
+
+    Vector3Seq PointsSeq;
 	// points forming convex hull (stereo based) in camera coordinates
-    cast::cdl::CASTTime time;       
+    cast::cdl::CASTTime time;
 	// cast time
-    
-    double radius;                  
+
+    double radius;
 	// distance between center and farthest point from center
-    double density;                 
+    double density;
 	// ~ number of points in volume
-    ObjSeq Objects;                 
+    ObjSeq Objects;
 	// Objects on this plane
-    cogx::Math::Plane3 plane;       
+    cogx::Math::Plane3 plane;
 	// The estimated plane
  };
 
@@ -146,7 +146,7 @@ sequence<OneObj> ObjSeq;
 
     // The time when the object was last observed, in any view
     cast::cdl::CASTTime time;
-    
+
     // ID of component with latest access to this WM entry
     string componentID;
 
@@ -157,19 +157,16 @@ sequence<OneObj> ObjSeq;
     GeometryModel model;
 
     // The name with which we refer to the object linguistically
-    string label;
-
+    // TODO: label and labelConfidence should be removed as they are now replaced
+    // by the more generic identLabels and identDistrib
+    //string label;
     // a value bwtween 0 and 1 indicating confidence in the label (i.e.
     // typically confidence of the recognition process that produced the label)
-    double labelConfidence;
+    //double labelConfidence;
 
     // a value between 0 and 1
     double salience;
-    
-    // Property "distribution" (colors, shapes, types)
-    IntSeq labels;
-    DoubleSeq distribution;
-    
+
     // Distribution of identity labels (from object recognizer)
     StringSeq identLabels;
     DoubleSeq identDistrib;
@@ -194,7 +191,7 @@ sequence<OneObj> ObjSeq;
     StringSeq labels;
   };
 
-  /** 
+  /**
    * @brief Dominant plane from PlanePopUp component.
    * @author Kai Zhou
    */
@@ -209,15 +206,15 @@ sequence<OneObj> ObjSeq;
   enum TrackingCommandType{ START, STOP, ADDMODEL, REMOVEMODEL, OVERWRITE, LOCK, UNLOCK, GETPOINT3D, RELEASEMODELS, SCREENSHOT };
   class TrackingCommand {
     TrackingCommandType cmd;
-    string visualObjectID;        
+    string visualObjectID;
 	// for ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D
-    VertexSeq points;             
+    VertexSeq points;
 	// GETPOINT3D (Input: vec2 texCoord; Output: vec3 pos, vec3 normal)
-    BoolSeq pointOnModel;         
+    BoolSeq pointOnModel;
 	// pointOnModel[i] is true if points[i] hits the VisualObject
   };
-  
-  /** 
+
+  /**
    * @brief Commands for ObjectRecognizer3D
    * @author Thomas Mörwald
    */
@@ -229,7 +226,7 @@ sequence<OneObj> ObjSeq;
   	double confidence;
   };
 
-  /** 
+  /**
    * @brief Object Detector Commands
    * @author Andreas Richtsfeld
    */
@@ -238,7 +235,7 @@ sequence<OneObj> ObjSeq;
     ObjectDetectionCommandType cmd;
   };
 
-  /** 
+  /**
    * @brief Stereo Flap Detector Commands
    * @author Andreas Richtsfeld
    */
@@ -247,7 +244,7 @@ sequence<OneObj> ObjSeq;
     StereoFlapDetectionCommandType cmd;
   };
 
-  /** 
+  /**
    * @brief Stereo Detector Commands
    * @author Andreas Richtsfeld
    */
@@ -256,7 +253,7 @@ sequence<OneObj> ObjSeq;
     StereoDetectionCommandType cmd;
   };
 
-  /** 
+  /**
    * @brief Stereo Detector Reasoner Commands
    * @author Andreas Richtsfeld
    */
@@ -267,12 +264,12 @@ sequence<OneObj> ObjSeq;
 
   /**
    * @brief Objects for the reasoner component.
-   * @author Andreas Richtsfeld 
+   * @author Andreas Richtsfeld
    */
   class ReasonerObject {
-    VisualObject obj;         
+    VisualObject obj;
 	// visual object from stereo detector
-    int frameNr;              
+    int frameNr;
 	// frame number
   };
 
@@ -290,11 +287,11 @@ sequence<OneObj> ObjSeq;
     cast::cdl::CASTTime time;
     // This is a temporary solution only: provide the 3D points that gave rise
     // to this SOI, iff the SOI was created by plane pop-out.
-    SurfacePointSeq points;   
+    SurfacePointSeq points;
 	// frontground points
-    SurfacePointSeq BGpoints; 
+    SurfacePointSeq BGpoints;
 	// background points
-    SurfacePointSeq EQpoints; 
+    SurfacePointSeq EQpoints;
 	// equivocal points which either belongs to fg or bg
     int status;
   };
@@ -304,13 +301,13 @@ sequence<OneObj> ObjSeq;
    */
   class ROI {
     cogx::Math::Rect2 rect;
-    cast::cdl::CASTTime time;   
+    cast::cdl::CASTTime time;
 	// time the ROI was last changed
   };
 
   class ObjectRecognitionMatch {
     // ID of the SOI/ProtoObject that was processed
-    string sourceType; 
+    string sourceType;
 	// sourceType[0]: "S"-SOI or "P"-ProtoObject, "I"-image
     cast::cdl::WorkingMemoryAddress sourceId;
 
@@ -341,34 +338,34 @@ sequence<OneObj> ObjSeq;
     // RESPONSE
     IntSeq labels;
     DoubleSeq distribution;
-    
-    // ASYNC DATA 
+
+    // ASYNC DATA
     string visualObjectId;
   };
 
   class VisualLearnerLearningTask {
     // REQUEST:
     string protoObjectId;
-    
+
     IntSeq labels;
     DoubleSeq distribution;
 
-    // ASYNC DATA 
+    // ASYNC DATA
     string visualObjectId;
     string beliefId;
   };
-  
-  
+
+
   class VisualLearningTask {
-  
+
     string visualObjectId;
     string beliefId;
-    
+
     string concept;
     StringSeq labels;
     DoubleSeq weights;
   };
-  
+
 
   struct SegmentMask {
     int width;
@@ -401,7 +398,7 @@ sequence<OneObj> ObjSeq;
   * Person detected in camera a laser.
   * @author Nick Hawes
   */
-  class Person {        
+  class Person {
     // angle and distance from robot
     double angle;
     double distance;
@@ -422,14 +419,14 @@ sequence<OneObj> ObjSeq;
   };
 
   /**
-  * 
+  *
   * Model foregrounded for use by recognisers etc.
   * @author Nick Hawes
   */
   class ForegroundedModel {
     string model;
   };
-	
+
 };
 
 #endif

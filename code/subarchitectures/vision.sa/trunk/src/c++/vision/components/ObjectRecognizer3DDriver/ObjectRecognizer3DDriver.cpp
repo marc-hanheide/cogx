@@ -36,11 +36,14 @@ void ObjectRecognizer3DDriver::loadVisualModelToWM(std::string filename, std::st
 	VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
   obj->model = new VisionData::GeometryModel;
 	convertModel2Geometry(model, obj->model);
-	obj->label = filename.c_str();
-	obj->detectionConfidence = 0.0;
+	obj->identLabels.push_back("Testobject");
+	obj->identLabels.push_back("unknown");
+	obj->identDistrib.push_back(1.0);
+	obj->identDistrib.push_back(0.0);
+	obj->identAmbiguity = 0.0;
 	obj->pose = pose;
 
-  log("Add model to working memory: '%s'", obj->label.c_str());
+  log("Add model to working memory: '%s'", obj->identLabels[0].c_str());
   modelID = newDataID();
   addToWorkingMemory(modelID, obj);
 }

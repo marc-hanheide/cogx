@@ -107,8 +107,6 @@ long ObjectAnalyzer::getOrCreateVisualObject(const string &objectId, VisualObjec
   }
   catch (DoesNotExistOnWMException e) {
 	VisualObjectPtr pvobj = new VisualObject;
-	pvobj->label = "unknown";
-	pvobj->labelConfidence = 1.0f;
 	pvobj->protoObjectID = objectId;
 	return NewObject;
   }
@@ -121,19 +119,28 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
   // ProtoObjectData &data = ProtoObjectMap[ptask->protoObjectId];
 
   VisualObjectPtr pvobj = new VisualObject;
-	pvobj->label = "unknown";
-	pvobj->labelConfidence = 1.0f;
+
 	pvobj->protoObjectID = ptask->protoObjectId;
-	
+
   vector<int>::const_iterator plabel;
   for( plabel = ptask->labels.begin(); plabel != ptask->labels.end(); plabel++) {
-    pvobj->labels.push_back(*plabel);
+    /* TODO: need to resolve whether labels are strings or ints
+    pvobj->identLabels.push_back(*plabel);*/
+    pvobj->identLabels.push_back("error");
   }
-  
+
   vector<double>::const_iterator pdbl;
   for( pdbl = ptask->distribution.begin(); pdbl != ptask->distribution.end(); pdbl++) {
-    pvobj->distribution.push_back(*pdbl);
+    pvobj->identDistrib.push_back(*pdbl);
   }
+
+  // ambiguity in the distribution: we use the distribution's entropy
+  pvobj->identAmbiguity = 0.;
+  for(size_t i = 0; i < pvobj->identDistrib.size(); i++)
+    if(fpclassify(pvobj->identDistrib[i]) != FP_ZERO)
+      pvobj->identAmbiguity -= pvobj->identDistrib[i]*::log(pvobj->identDistrib[i]);
+
+  // TODO: what about identGain?
 
   pvobj->time = getCASTTime();
   if(ProtoObjectMap.find(ptask->protoObjectId) != ProtoObjectMap.end())
@@ -182,8 +189,10 @@ void ObjectAnalyzer::onChange_OR_RecognitionTask(const cdl::WorkingMemoryChange 
 	for( plabel = typeLabs.begin(); plabel != typeLabs.end(); plabel++) {
 	  long tid = m_TypeEnumerator.getEnum(*plabel);
 	  if (tid >= 0) {
-		pvobj->labels.push_back(tid);
-		pvobj->distribution.push_back(*pdbl);
+		/* TODO: need to resolve whether labels are strings or ints
+		pvobj->identLabels.push_back(tid);*/
+		pvobj->identLabels.push_back("error");
+		pvobj->identDistrib.push_back(*pdbl);
 	  }
 	  pdbl++;
 	  if (pdbl == typeDist.end()) break;
@@ -209,7 +218,7 @@ void ObjectAnalyzer::runComponent()
 	  log("Got something in my queues");
 
 	  if(!objToAdd.empty())
-	  { 
+	  {
 
 		log("An add object instruction");
 		ProtoObjectData &data = ProtoObjectMap[objToAdd.front()];
@@ -223,8 +232,11 @@ void ObjectAnalyzer::runComponent()
 
 			VisualObjectPtr pvobj = new VisualObject;
 			pvobj->time = getCASTTime();
-			pvobj->label = "unkknown";
-			pvobj->labelConfidence = 1.0f;
+			pvobj->identLabels.push_back("unknown");
+			pvobj->identDistrib.push_back(1.0f);
+			// we are absolutely sure that we dont't know
+			pvobj->identAmbiguity = 0.;
+			// TODO: what about identGain?
 
 			string objId = newDataID();
 			addToWorkingMemory(objId, pvobj);
@@ -232,8 +244,8 @@ void ObjectAnalyzer::runComponent()
 			data.visualObjId = objId;
 
 			log("A visual object added for protoObject ID %s", data.addr.id.c_str());
-			start_OR_RecognitionTask(objPtr, data.addr); 
-			start_VL_RecognitionTask(objPtr, data.addr); 
+			start_OR_RecognitionTask(objPtr, data.addr);
+			start_VL_RecognitionTask(objPtr, data.addr);
 		  }
 		  catch (DoesNotExistOnWMException e)
 		  {
@@ -249,14 +261,14 @@ void ObjectAnalyzer::runComponent()
 		ProtoObjectData &obj = ProtoObjectMap[objToDelete.front()];
 
 		obj.status= DELETED;
-		
+
 		try
 		{
-		  deleteFromWorkingMemory(obj.visualObjId); 
+		  deleteFromWorkingMemory(obj.visualObjId);
 		  CASTTime time=getCASTTime();
 		  obj.deleteTime = time;
 		  log("A VisualObject deleted ID: %s", obj.visualObjId.c_str());
-		 
+
 		   //ProtoObjectMap.erase(objToDelete.front());
 		}
 		catch (DoesNotExistOnWMException e)
@@ -268,7 +280,7 @@ void ObjectAnalyzer::runComponent()
 	  }
 	}
 	//    else
-	//		log("Timeout");   
+	//		log("Timeout");
   }
 
   log("Removing semaphore ...");
@@ -286,7 +298,7 @@ void ObjectAnalyzer::newProtoObject(const cdl::WorkingMemoryChange & _wmc)
   try
   {
 	obj = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
-	
+
   }
   catch(DoesNotExistOnWMException e)
   {
@@ -302,7 +314,7 @@ void ObjectAnalyzer::newProtoObject(const cdl::WorkingMemoryChange & _wmc)
 
   ProtoObjectMap.insert(make_pair(data.addr.id, data));
   objToAdd.push(data.addr.id);
-  debug("A new ProtoObject ID %s ", data.addr.id.c_str());  
+  debug("A new ProtoObject ID %s ", data.addr.id.c_str());
 
   queuesNotEmpty->post();
 }
@@ -313,7 +325,7 @@ void ObjectAnalyzer::updatedProtoObject(const cdl::WorkingMemoryChange & _wmc)
   {
 	ProtoObjectPtr obj =
 	  getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
-	
+
   }
   catch(DoesNotExistOnWMException e)
   {
@@ -351,7 +363,7 @@ void ObjectAnalyzer::deletedProtoObject(const cdl::WorkingMemoryChange & _wmc)
 	obj.status= DELETED;
 	obj.deleteTime = time;
   }
-  	 
+
 }
 
 

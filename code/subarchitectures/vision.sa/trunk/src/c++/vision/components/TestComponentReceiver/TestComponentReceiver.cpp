@@ -66,7 +66,7 @@ void TestComponentReceiver::runComponent()
 void TestComponentReceiver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
 	VisualObjectPtr oPtr = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-	log("received visual object with nr:  %s - %s", oPtr->label.c_str() , _wmc.address.id.c_str());
+	log("received visual object with nr:  %s - %s", oPtr->identLabels[0].c_str() , _wmc.address.id.c_str());
 }
 
 }

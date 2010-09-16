@@ -60,9 +60,9 @@ void TestComponent::runComponent()
 		log("write visual objects to wm");
 		for(unsigned i=0; i<2; i++)
 			WriteNewVisualObject();
-	
+
 		cvWaitKey(1000);
-	
+
 		log("delete all visual objects");
 		DeleteVisualObjectsFromWM();
 
@@ -88,12 +88,12 @@ void TestComponent::WriteNewVisualObject()
 	for(int i=0; i<5; i++)
 	{
 		CreateVisualObject(obj, i);		// create new dummy visual object
-	
+
 		// store object id and add visual object to working memory
 		std::string objectID = newDataID();
 		objectIDs.push_back(objectID);
 		addToWorkingMemory(objectID, obj);
-		log("Add new visual object to working memory: %s - %s", obj->label.c_str(), objectID.c_str());
+		log("Add new visual object to working memory: %s - %s", obj->identLabels[0].c_str(), objectID.c_str());
 
 //		cvWaitKey(250);	/// TODO HACK TODO HACK TODO HACK TODO HACK
 	}
@@ -118,25 +118,25 @@ bool TestComponent::CreateVisualObject(VisionData::VisualObjectPtr &obj, int id)
 	v0.pos.y = 0; // rectangle.surf.vertices[i].p.y;
 	v0.pos.z = 0; // rectangle.surf.vertices[i].p.z;
 	obj->model->vertices.push_back(v0);
-	
+
 	VisionData::Vertex v1;
 	v1.pos.x = 50; // rectangle.surf.vertices[i].p.x;
 	v1.pos.y = 0; // rectangle.surf.vertices[i].p.y;
 	v1.pos.z = 0; // rectangle.surf.vertices[i].p.z;
 	obj->model->vertices.push_back(v1);
-	
+
 	VisionData::Vertex v2;
 	v2.pos.x = 50; // rectangle.surf.vertices[i].p.x;
 	v2.pos.y = 50; // rectangle.surf.vertices[i].p.y;
 	v2.pos.z = 0; // rectangle.surf.vertices[i].p.z;
 	obj->model->vertices.push_back(v2);
-	
+
 	VisionData::Vertex v3;
 	v3.pos.x = 0; // rectangle.surf.vertices[i].p.x;
 	v3.pos.y = 50; // rectangle.surf.vertices[i].p.y;
 	v3.pos.z = 0; // rectangle.surf.vertices[i].p.z;
 	obj->model->vertices.push_back(v3);
-	
+
 	// add faces to the vision model
 	VisionData::Face f;
 	f.vertices.push_back(0);
@@ -152,14 +152,15 @@ bool TestComponent::CreateVisualObject(VisionData::VisualObjectPtr &obj, int id)
 	static unsigned numStereoObjects = 0;
 	char obj_label[32];
 	sprintf(obj_label, "Stereo object %d", numStereoObjects);
-	obj->label = obj_label;
+	obj->identLabels.push_back(obj_label);
+	obj->identDistrib.push_back(1.0);
 	numStereoObjects++;
 
 	return true;
 }
 
 /**
- * @brief Delete all visual objects from the working memory. 
+ * @brief Delete all visual objects from the working memory.
  * The IDs are stored in the vector "objectIDs".
  */
 void TestComponent::DeleteVisualObjectsFromWM()
