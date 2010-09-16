@@ -1,5 +1,5 @@
 #!/bin/bash
-COGX_ROOT=/home/mmarko/Documents/cogxcode/dfki09/systems/ul
+COGX_ROOT=/home/cogx/svn/systems/ul
 CAST_DIR=/usr/local
 
 COGX_BUILD_DIR=${COGX_ROOT}/BUILD
