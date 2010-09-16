@@ -304,7 +304,11 @@ void Solver::preprocess()
                   "Problem has no observation schemata.");
 //     assert(problem_Grounding->get__observations().size());
     
+    INTERACTIVE_VERBOSER(true, 10501, "Calling generation of starting state.")
+                
     generate_starting_state();
+    
+    INTERACTIVE_VERBOSER(true, 10501, "Done generation of starting state, preprocessing completed.")
     
     
     preprocessed = true;

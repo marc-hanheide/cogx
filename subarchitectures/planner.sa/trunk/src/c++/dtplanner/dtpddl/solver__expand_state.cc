@@ -56,8 +56,15 @@ std::vector<Planning::State*> Solver::expand(Planning::State* state)
 {
     
     std::vector<Planning::State*> result(0);
+    INTERACTIVE_VERBOSER(true, 10506, "Testing and applying probabilistic transformations :: "
+                         <<state->count__probabilistic_transformations());
     while(state->count__probabilistic_transformations()){
         auto probabilistic_transformation = state->pop__probabilistic_transformation();
+
+        
+        INTERACTIVE_VERBOSER(true, 10506, "Expanding according to probabilistic transformation :: "
+                             <<probabilistic_transformation<<std::endl);
+        
         std::vector<Planning::State*> successor_states = (*probabilistic_transformation)(state);
 
         
@@ -79,8 +86,10 @@ std::vector<Planning::State*> Solver::expand(Planning::State* state)
         }
     }
     
+    INTERACTIVE_VERBOSER(true, 10506, "DONE :: Applying probabilistic transformations.");
 
     if(result.size() == 0){
+        INTERACTIVE_VERBOSER(true, 10506, "There were no applicable transformation, so we are back where we started.");
         result.push_back(state);
     }
 
@@ -88,17 +97,23 @@ std::vector<Planning::State*> Solver::expand(Planning::State* state)
             ; resulting_state != result.end()
             ; resulting_state++){
         
+        INTERACTIVE_VERBOSER(true, 10506, "Applying the compulsary transformations :: "
+                             <<(*resulting_state)->count__compulsory_transformations());
         while((*resulting_state)->count__compulsory_transformations()){
             auto compulsory_transformation = (*resulting_state)->pop__compulsory_transformation();
-            INTERACTIVE_VERBOSER(true, 9071, "Expanding :: "
+            INTERACTIVE_VERBOSER(true, 10506, "Expanding :: "
                                  <<(*(*resulting_state))<<std::endl
                                  <<"With compulsory transformation :: "<<*compulsory_transformation<<std::endl);
+            
             compulsory_transformation->operator()((*resulting_state));
         }
         
+        INTERACTIVE_VERBOSER(true, 10506, "Applying the compulsary generative transformations :: "
+                             <<(*resulting_state)->count__compulsory_generative_transformations());
+        
         while((*resulting_state)->count__compulsory_generative_transformations()){
             auto compulsory_generative_transformation = (*resulting_state)->pop__compulsory_generative_transformation();
-            INTERACTIVE_VERBOSER(true, 9071, "Expanding :: "
+            INTERACTIVE_VERBOSER(true, 10506, "Expanding :: "
                                  <<(*(*resulting_state))<<std::endl
                                  <<"With compulsory generative transformation :: "<<*compulsory_generative_transformation<<std::endl);
             (*compulsory_generative_transformation)((*resulting_state));
@@ -112,10 +127,13 @@ std::vector<Planning::State*> Solver::expand(Planning::State* state,
                                              const State_Transformation* optional_transformation)
 {
 
-    INTERACTIVE_VERBOSER(true, 9071, "Applying optional transformation :: "<<*optional_transformation<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10506, "Applying optional transformation "<<std::endl);
     assert(!optional_transformation->get__compulsory());
+    INTERACTIVE_VERBOSER(true, 10506, "Waking sleepers on transformation "<<std::endl);
     optional_transformation->wake_sleepers(*state);
+    INTERACTIVE_VERBOSER(true, 10506, "Make the optional transformation compulsary at the state "<<std::endl);
     state->push__compulsory_transformation(optional_transformation);
+    INTERACTIVE_VERBOSER(true, 10506, "Expand the state "<<std::endl);
     auto result = expand(state);
     return std::move<>(result);
 
@@ -174,7 +192,7 @@ void Solver::expand_optional_transformation(Planning::State* state
 {
     Planning::State* new_state = new State(*state);
 
-    INTERACTIVE_VERBOSER(true, 9071, "Expanding :: "
+    INTERACTIVE_VERBOSER(true, 10506, "Expanding :: "
                          <<(*new_state)<<std::endl
                          <<"With action-transformation :: "<<*optional_transformation<<std::endl);
     
@@ -199,7 +217,7 @@ void Solver::expand_optional_transformation(Planning::State* state
             double state_value =  problem_Grounding->get__objective_value(**_successor);
             (*_successor)->set__reward(state_value);
         
-            INTERACTIVE_VERBOSER(true, 9096, "Setting value of state :: "<<(**_successor)<<std::endl
+            INTERACTIVE_VERBOSER(true, 10506, "Setting value of state :: "<<(**_successor)<<std::endl
                                  <<state_value<<std::endl);
         
                 
@@ -256,7 +274,7 @@ void Solver::expand_optional_transformation(Planning::State* state
                                , (*successor)->get__probability_during_expansion());
 
         
-        INTERACTIVE_VERBOSER(true, 10001,
+        INTERACTIVE_VERBOSER(true, 10506,
                              "Expanded state using optional transformation :: "
                              <<optional_transformation->get__id()<<" "
                              <<*optional_transformation<<std::endl);

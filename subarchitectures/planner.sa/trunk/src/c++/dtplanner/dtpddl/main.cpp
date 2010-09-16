@@ -190,30 +190,118 @@ int main(int argc, char** argv)
     
     INTERACTIVE_VERBOSER(true, 10010, "Passed test 1 :: "<<std::endl);
 
+//     uint count_test2 = 0;
+//     while(true){
+        
+//         for(auto problem = Planning::Parsing::problems.begin()
+//                 ; problem != Planning::Parsing::problems.end()
+//                 ; problem++){
+// //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
+//             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
+//             solver->preprocess();
+
+//             assert(0 != solver->peek__next_belief_state_for_expansion());//expansion_queue.size());
+// //             solver->expand_belief_state_space();
+//             auto current_state = solver->peek__next_belief_state_for_expansion();//expansion_queue.front();
+            
+//             INTERACTIVE_VERBOSER(true, 10021, "Current state is :: "
+//                                  <<*current_state<<std::endl
+//                                  <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
+            
+//             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
+//             for(uint i = 0; i < 10; i++){
+//                 if(!solver->expand_belief_state_space()){
+//                     break;
+//                     VERBOSER(10501, "No starting state!"<<std::endl);
+//                 } else {
+//                     VERBOSER(10501, "Expanding (so far we have "
+//                              <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl);
+                    
+// //                     policy_Iteration();
+//                 }
+//             }
+//             for(uint i = 0; i < 10; i++){
+//                 policy_Iteration();
+//                 VERBOSER(10501, "Expected reward is :: "
+//                          <<current_state->get__expected_value()<<std::endl);
+//             }
+            
+
+// //             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
+// //             policy_Iteration();
+            
+//             for(auto i = 0; i < 10; i++){
+            
+//                 INTERACTIVE_VERBOSER(true, 10501, "Current state is :: "
+//                                      <<*current_state<<std::endl
+//                                      <<"First element is :: "
+//                                      <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)
+//                                      <<std::endl);
+                
+//                 std::pair<Planning::Formula::Action_Proposition, uint> _action
+//                     = solver->get_prescribed_action(current_state);
+            
+//                 INTERACTIVE_VERBOSER(true, 10501, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+            
+//                 auto observations = current_state->get__possible_observations_given_action(_action.second);
+            
+//                 auto random_index = random() % observations.size();
+//                 auto observation = observations[random_index];
+            
+//                 Planning::POMDP_State* successor_state
+//                     = solver->take_observation(current_state,
+//                                                observation,
+//                                                _action.second);
+            
+//                 current_state = successor_state;
+            
+//                 INTERACTIVE_VERBOSER(true, 10501, "Current belief state is :: "<<*current_state<<std::endl);
+//             }
+
+        
+//             delete solver;
+//         }
+    
+//         INTERACTIVE_VERBOSER(true, 10004, "Passed test 2 :: "<<++count_test2<<std::endl);
+//     }
+
+
+
+
+
+
+        
     uint count_test2 = 0;
 //     while(true){
         
         for(auto problem = Planning::Parsing::problems.begin()
                 ; problem != Planning::Parsing::problems.end()
                 ; problem++){
-            auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
+//             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
+            auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
+
+            INTERACTIVE_VERBOSER(true, 10601, "Made a solver, starting preprocessing.")
+            
             solver->preprocess();
 
+            INTERACTIVE_VERBOSER(true, 10601, "Done preprocessing, now looking towards state expansion.")
+                
             assert(0 != solver->peek__next_belief_state_for_expansion());//expansion_queue.size());
 //             solver->expand_belief_state_space();
             auto current_state = solver->peek__next_belief_state_for_expansion();//expansion_queue.front();
             
-            INTERACTIVE_VERBOSER(true, 10021, "Current state is :: "
+            INTERACTIVE_VERBOSER(true, 10601, "Current state is :: "
                                  <<*current_state<<std::endl
                                  <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
+
             
             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
             for(uint i = 0; i < 100; i++){
                 if(!solver->expand_belief_state_space()){
                     break;
-                    VERBOSER(10501, "No starting state!"<<std::endl);
+                    VERBOSER(10601, "No starting state!"<<std::endl);
                 } else {
-                    VERBOSER(10501, "Expanding (so far we have "
+                    VERBOSER(10601, "Expanding (so far we have "
                              <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl);
                     
 //                     policy_Iteration();
@@ -221,7 +309,7 @@ int main(int argc, char** argv)
             }
             for(uint i = 0; i < 100; i++){
                 policy_Iteration();
-                VERBOSER(10501, "Expected reward is :: "
+                VERBOSER(10601, "Expected reward is :: "
                          <<current_state->get__expected_value()<<std::endl);
             }
             
@@ -231,7 +319,7 @@ int main(int argc, char** argv)
             
             for(auto i = 0; i < 10; i++){
             
-                INTERACTIVE_VERBOSER(true, 10501, "Current state is :: "
+                INTERACTIVE_VERBOSER(true, 10601, "Current state is :: "
                                      <<*current_state<<std::endl
                                      <<"First element is :: "
                                      <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
@@ -239,7 +327,7 @@ int main(int argc, char** argv)
                 std::pair<Planning::Formula::Action_Proposition, uint> _action
                     = solver->get_prescribed_action(current_state);
             
-                INTERACTIVE_VERBOSER(true, 10501, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+                INTERACTIVE_VERBOSER(true, 10601, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
             
                 auto observations = current_state->get__possible_observations_given_action(_action.second);
             
@@ -253,7 +341,7 @@ int main(int argc, char** argv)
             
                 current_state = successor_state;
             
-                INTERACTIVE_VERBOSER(true, 10501, "Current belief state is :: "<<*current_state<<std::endl);
+                INTERACTIVE_VERBOSER(true, 10601, "Current belief state is :: "<<*current_state<<std::endl);
             }
 
         
@@ -262,7 +350,22 @@ int main(int argc, char** argv)
     
         INTERACTIVE_VERBOSER(true, 10004, "Passed test 2 :: "<<++count_test2<<std::endl);
   //   }
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
     
 //     for(auto problem = Planning::Parsing::problems.begin()
 //             ; problem != Planning::Parsing::problems.end()

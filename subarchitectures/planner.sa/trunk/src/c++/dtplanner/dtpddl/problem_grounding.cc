@@ -314,14 +314,17 @@ Subformula Problem_Grounding::simplify_formula(Planning::Formula::Subformula sub
     /* First step, we convert the formula into a CNF.*/
     CNF::Problem_Data problem_Data;
 
+    VERBOSER(10504, "Trying to convert precondition :: "<<subformula);
+    
     
     /* Try to convert the precondition formula into a CNF. */
     auto precondition_as_cnf = planning_Formula__to__CNF(subformula);//action_Schema.get__precondition());
 
     if(precondition_as_cnf.test_cast<Vacuous>()){
-        return subformula;
+        WARNING("Got a \"vacuous\" precondition.");
+        return precondition_as_cnf;//subformula;
     }
-
+    
     
     QUERY_UNRECOVERABLE_ERROR(!precondition_as_cnf.test_cast<Conjunction>(),
                               "Converted a formula :: "<<subformula<<std::endl

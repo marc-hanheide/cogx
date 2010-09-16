@@ -123,12 +123,29 @@ Planning_Formula__to__NNF::Subformula Planning_Formula__to__NNF::operator()(Conj
     
     auto subformulae = formula.get__subformulae();
 
+    /*Got an empty conjunction in the domain specification, treating this as satisfied.*/
+    if(!subformulae.size()){
+        WARNING("Got an empty conjunction in the domain specification, treating this formula as always satisfied.");
+        
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
+            (formula.get__runtime_Thread()
+             , Planning::Formula::Vacuous
+             , tmp
+             , static_cast<void*>(0));
+
+        return tmp;
+    }
+
+    
+    
     for(auto subformula = subformulae.begin()
             ; subformula != subformulae.end()
             ; subformula++){
         auto tmp = (*this)(*subformula, carrying_negation);
         new_subformulae.push_back(tmp);
     }
+
+    
     
     assert(new_subformulae.size());
     

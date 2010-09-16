@@ -156,6 +156,26 @@ Domain_Observation__to__Problem_Observation
                          <<"and execution precondition"<<execution_preconditions.top());    
 }
 
+bool Domain_Observation__to__Problem_Observation
+::deal_with_a_missing_conjunctive_parent(const Formula::Subformula& input) 
+{
+    if(!list__Listeners.size()){
+                
+        Formula::Subformulae elements;
+        elements.push_back(input);
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
+            (runtime_Thread,
+             Formula::Conjunction,
+             conjunction,
+             elements);
+        (*this)(conjunction);
+                
+        return true;
+    }
+
+    return false;
+}
+
 /*DONE*/
 const Planning::Observation__Pointer&  Domain_Observation__to__Problem_Observation
 ::generate__null_observation(double local_probability) 
@@ -456,6 +476,11 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
         break;/*DONE*/
         case enum_types::state_ground_function:/*DONE*/
         {
+            if(deal_with_a_missing_conjunctive_parent(input)){
+                return;
+            }
+
+            
             assert(effects_lists.size());
             assert(input.test_cast<Planning::Formula::State_Ground_Function>());
             auto _symbol = input.cxx_get<Planning::Formula::State_Ground_Function>();
@@ -534,20 +559,23 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
         break;/*DONE*/
         case enum_types::perceptual_proposition:/*DONE*/
         {
-            /*If this is an effect without a conjunctive parent.*/
-            if(!list__Listeners.size()){
-                
-                Formula::Subformulae elements;
-                elements.push_back(input);
-                NEW_referenced_WRAPPED_deref_visitable_POINTER
-                    (runtime_Thread,
-                     Formula::Conjunction,
-                     conjunction,
-                     elements);
-                (*this)(conjunction);
-                
+            if(deal_with_a_missing_conjunctive_parent(input)){
                 return;
             }
+//             /*If this is an effect without a conjunctive parent.*/
+//             if(!list__Listeners.size()){
+                
+//                 Formula::Subformulae elements;
+//                 elements.push_back(input);
+//                 NEW_referenced_WRAPPED_deref_visitable_POINTER
+//                     (runtime_Thread,
+//                      Formula::Conjunction,
+//                      conjunction,
+//                      elements);
+//                 (*this)(conjunction);
+                
+//                 return;
+//             }
             
             assert(input.test_cast<Planning::Formula::Perceptual_Proposition>());
             
@@ -757,20 +785,23 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
         break;/*DONE*/
         case enum_types::perceptual_predicate:/*DONE*/
         {
-            /*If this is an effect without a conjunctive parent.*/
-            if(!list__Listeners.size()){
-                
-                Formula::Subformulae elements;
-                elements.push_back(input);
-                NEW_referenced_WRAPPED_deref_visitable_POINTER
-                    (runtime_Thread,
-                     Formula::Conjunction,
-                     conjunction,
-                     elements);
-                (*this)(conjunction);
-                
+            if(deal_with_a_missing_conjunctive_parent(input)){
                 return;
             }
+//             /*If this is an effect without a conjunctive parent.*/
+//             if(!list__Listeners.size()){
+                
+//                 Formula::Subformulae elements;
+//                 elements.push_back(input);
+//                 NEW_referenced_WRAPPED_deref_visitable_POINTER
+//                     (runtime_Thread,
+//                      Formula::Conjunction,
+//                      conjunction,
+//                      elements);
+//                 (*this)(conjunction);
+                
+//                 return;
+//             }
             
             /* -- ground it and try again -- */
             assert(input.test_cast<Formula::Perceptual_Predicate>());
@@ -828,20 +859,23 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
         {
             assert(input.test_cast<Formula::Probabilistic>());
 
-            if(level == 0){
-                assert(!list__Listeners.size());
-                
-                Formula::Subformulae elements;
-                elements.push_back(input);
-                NEW_referenced_WRAPPED_deref_visitable_POINTER
-                    (runtime_Thread,
-                     Formula::Conjunction,
-                     conjunction,
-                     elements);
-                (*this)(conjunction);
-                
+            if(deal_with_a_missing_conjunctive_parent(input)){
                 return;
             }
+//             if(level == 0){
+//                 assert(!list__Listeners.size());
+                
+//                 Formula::Subformulae elements;
+//                 elements.push_back(input);
+//                 NEW_referenced_WRAPPED_deref_visitable_POINTER
+//                     (runtime_Thread,
+//                      Formula::Conjunction,
+//                      conjunction,
+//                      elements);
+//                 (*this)(conjunction);
+                
+//                 return;
+//             }
             
             
             assert(level != 0);
@@ -1023,6 +1057,11 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
         case enum_types::conditional_effect:
         {
             assert(input.test_cast<Formula::Conditional_Effect>());
+            
+            if(deal_with_a_missing_conjunctive_parent(input)){
+                return;
+            }
+            
             assert(level != 0);
             
             auto conditional_Effect = input.cxx_get<Formula::Conditional_Effect>();

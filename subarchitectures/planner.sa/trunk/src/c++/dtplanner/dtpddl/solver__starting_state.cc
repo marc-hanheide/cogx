@@ -143,12 +143,15 @@ void Solver::generate_starting_state()
            Planning::Observation::indexed__Traversable_Collection
            .find(problem_Grounding->get__state_Functions().begin()->get__runtime_Thread())->second->size());
     
-    INTERACTIVE_VERBOSER(true, 8060, "Observation count is :: "
+    INTERACTIVE_VERBOSER(true, 10504, "Observation count is :: "
                          <<problem_Grounding->get__observations().size()<<std::endl);
+
+    if(problem_Grounding->get__observations().size()){
+        INTERACTIVE_VERBOSER(true, 10504, "Observation count is :: "
+                             <<Planning::Observation::indexed__Traversable_Collection
+                             .find(problem_Grounding->get__state_Functions().begin()->get__runtime_Thread())->second->size()<<std::endl);
+    }
     
-    INTERACTIVE_VERBOSER(true, 8060, "Observation count is :: "
-                         <<Planning::Observation::indexed__Traversable_Collection
-           .find(problem_Grounding->get__state_Functions().begin()->get__runtime_Thread())->second->size()<<std::endl);
     
     Planning::State* starting_state
         = new Planning::State(*this
@@ -163,6 +166,8 @@ void Solver::generate_starting_state()
                               , problem_Grounding->get__observations().size());
 
     auto& literals = problem_Grounding->get__literals();
+    
+    INTERACTIVE_VERBOSER(true, 10504, "Number of problem literals is  :: "<<literals.size());
     
 #ifndef NDEBUG 
 #ifdef  DEBUG_LEVEL
@@ -220,7 +225,7 @@ void Solver::generate_starting_state()
 #endif 
 #endif 
     
-    INTERACTIVE_VERBOSER(true, 9094, "Number of propositions is :: "
+    INTERACTIVE_VERBOSER(true, 10504, "Number of propositions is :: "
                          <<problem_Grounding->get__state_Propositions().size()<<std::endl);
     
     
@@ -235,7 +240,7 @@ void Solver::generate_starting_state()
 
         auto listeners = (*literal)->get__traversable__listeners();
         if(!listeners.size()){
-            INTERACTIVE_VERBOSER(true, 9092, "Literal has no listeners :: "<<*literal<<std::endl);
+            INTERACTIVE_VERBOSER(true, 10504, "Literal has no listeners :: "<<*literal<<std::endl);
         }
         
         
@@ -244,19 +249,19 @@ void Solver::generate_starting_state()
                 ; listener ++){
             auto listeners2 = listener->cxx_get<State_Formula::Satisfaction_Listener>()->get__traversable__listeners();
             
-            INTERACTIVE_VERBOSER(true, 9092, *literal<<" has listener :: "<<*listener<<std::endl);
+            INTERACTIVE_VERBOSER(true, 10504, *literal<<" has listener :: "<<*listener<<std::endl);
 
             
             for(auto listener2 = listeners2.begin()
                     ; listener2 != listeners2.end()
                     ; listener2 ++){
                 auto listeners3 = listener2->cxx_get<State_Formula::Satisfaction_Listener>()->get__traversable__listeners();
-                INTERACTIVE_VERBOSER(true, 9092, *listener<<" has listener2 :: "<<*listener2<<std::endl);
+                INTERACTIVE_VERBOSER(true, 10504, *listener<<" has listener2 :: "<<*listener2<<std::endl);
             
                 for(auto listener3 = listeners3.begin()
                         ; listener3 != listeners3.end()
                         ; listener3 ++){
-                    INTERACTIVE_VERBOSER(true, 9092, *listener3<<" has listened by :: "<<*listener2<<std::endl);
+                    INTERACTIVE_VERBOSER(true, 10504, *listener3<<" has listened by :: "<<*listener2<<std::endl);
                 }
                 
             }
@@ -264,12 +269,14 @@ void Solver::generate_starting_state()
         }                                                             
     }                                                               
                    
-    INTERACTIVE_VERBOSER(true, 9090, "Adding false literals"<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10504, "Adding false literals"<<std::endl);
     SATISFY_FALSE_PROPOSITIONAL_ATOMS(problem_Grounding->get__literals(), *starting_state);
-    INTERACTIVE_VERBOSER(true, 9090, "DONE :: Adding false literals"<<std::endl);
+    INTERACTIVE_VERBOSER(true, 10504, "DONE :: Adding false literals"<<std::endl);
     
+    INTERACTIVE_VERBOSER(true, 10504, "Getting the action that generates the starting state."<<std::endl);
     starting_state->add__optional_transformation(
         problem_Grounding->get__executable_starting_states_generator().get());
+    INTERACTIVE_VERBOSER(true, 10504, "DONE :: Getting the action that generates the starting state."<<std::endl);
 
 //     auto END_object = problem_Grounding->get__executable_actions_without_preconditions().end();
 //     auto THING_object = problem_Grounding->get__executable_starting_states_generator();
@@ -279,12 +286,20 @@ void Solver::generate_starting_state()
            == problem_Grounding->get__executable_actions_without_preconditions()
            .find(problem_Grounding->get__executable_starting_states_generator()));
     
+    INTERACTIVE_VERBOSER(true, 10504, "Executing action that generates the starting state."<<std::endl);
     expand_optional_transformation
         (starting_state,
          problem_Grounding->get__executable_starting_states_generator().get());
+    INTERACTIVE_VERBOSER(true, 10504, "DONE :: Executing action that generates the starting state."<<std::endl);
+    
     //expand_optional_transformations(starting_state);
 
+    INTERACTIVE_VERBOSER(true, 10504, "Starting to create initial POMDP belief-state."<<std::endl);
     starting_belief_state = new POMDP_State();
+
+    
+    INTERACTIVE_VERBOSER(true, 10504, "Having expanded to the starting belief-states, we have an MDP state count of :: "
+                         << state_space.size()<<std::endl);
 
     
     for(auto state = state_space.begin()
@@ -310,7 +325,7 @@ void Solver::generate_starting_state()
         
         
 //         assert( 0 == (*state)->count__observations() ) ;
-        INTERACTIVE_VERBOSER(true, 10017, "A starting state is :: "
+        INTERACTIVE_VERBOSER(true, 10504, "A starting state is :: "
                              <<**state<<std::endl);
     }
     

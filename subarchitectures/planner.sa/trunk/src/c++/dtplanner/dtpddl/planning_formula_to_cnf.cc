@@ -199,8 +199,8 @@ Planning_Formula__to__CNF::operator()(Subformula _input, bool computed__nnf_inpu
     switch(input->get__type_name()){//get__id()){
         case vacuous:
         {
-            WARNING("Asked to convert \"vacuous\" formula into CNF.");
-            return _input;
+            WARNING("Asked to convert \"vacuous\" formula into CNF :: "<<input);
+            return input;//_input;
         }
         break;
         case conjunction:

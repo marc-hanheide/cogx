@@ -80,7 +80,8 @@ namespace Planning
         /* compulsory ground PDDL observation schema. */
         Observation__Pointer get__answer() const ;
     private:
-
+        bool deal_with_a_missing_conjunctive_parent(const Formula::Subformula&);
+        
         void interpret__as_double_valued_ground_state_function(ID_TYPE);
         
         const Planning::Observation__Pointer& generate__null_observation(double local_probability) ;

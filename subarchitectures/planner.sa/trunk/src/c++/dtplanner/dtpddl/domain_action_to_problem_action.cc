@@ -225,7 +225,7 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             
             double local_probability = probability;
             
-            INTERACTIVE_VERBOSER(true, 10004, "LEVEL ::"<<level
+            INTERACTIVE_VERBOSER(true, 10504, "LEVEL ::"<<level
                                  <<" conjunctive formula :: "<<input);
             
 
@@ -913,7 +913,13 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
         break;
         case enum_types::conditional_effect:
         {
+            
             assert(input.test_cast<Formula::Conditional_Effect>());
+            
+            if(deal_with_a_missing_conjunctive_parent(input)){
+                return;
+            }
+            
             assert(level != 0);
             
             auto conditional_Effect = input.cxx_get<Formula::Conditional_Effect>();
