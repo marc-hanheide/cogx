@@ -1,7 +1,7 @@
 function [pl,avw]=VMprocAns(req,ansLr)
 
 readConstants;
-global currMode currState;
+global currMode currState Params
 
 currState.lastPos=[];
 currState.lastNeg=[];
@@ -14,13 +14,8 @@ if size(ansLr,2)==1 %from update
 else
    fromUpd=0;
 
-%    if currMode.qnt2qlD==0
-%       ansQl = qnt2ql(ansLr, currMode.THRs);
-%    else
-%       ansQl = qnt2qlD(ansLr, currMode.THRs, currMode.CTT);
-%    end   
    rCpcx=cc2c(ansLr,'trim');
-   ansQl=qnt2ql(rCpcx,currMode.THRs);
+   ansQl=qnt2ql(rCpcx,Params.THRs);
       
    ansYes=lf2sfa(ansQl,ANSyes);
    ansPy=lf2sfa(ansQl,ANSpy);

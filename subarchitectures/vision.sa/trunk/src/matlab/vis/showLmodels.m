@@ -32,15 +32,15 @@ for i=1:numCall
    numd=1;%length(mC(i).Fb);
    
    ha=subplot(sphw(1),sphw(2),i,'Parent',hp);
-%  plot(ha,1,1,'*b')
+   %  plot(ha,1,1,'*b')
    
-%    axes(ha);
-%    plot(ha,1,1,'*')
+   %    axes(ha);
+   %    plot(ha,1,1,'*')
    
-%    if getc(mC,sc,ci,'conf')>6%~isempty(mC(i).kde)
-%       executeOperatorIKDEClsfr( mC{sc}, 'showKDE_of_class_index', ci, 'sub_selected_features', 1, 'showkdecolor', 'r') ;
-executeOperatorIKDEClsfr( mC{sc}, 'showKDE_of_class_index', ci, 'showkdecolor', 'r', 'draw_to_these_axes', ha) ;
-%    end
+   %    if getc(mC,sc,ci,'conf')>6%~isempty(mC(i).kde)
+   %       executeOperatorIKDEClsfr( mC{sc}, 'showKDE_of_class_index', ci, 'sub_selected_features', 1, 'showkdecolor', 'r') ;
+   executeOperatorIKDEClsfr( mC{sc}, 'showKDE_of_class_index', ci, 'showkdecolor', 'r', 'draw_to_these_axes', ha) ;
+   %    end
    title(ha,['{\bf' Cnames(getc(mC,sc,ci,'name'),:) '} (' num2str(getc(mC,sc,ci,'conf')) ')']);
    fns=[];%reshape(Fnames(mC(i).Fb,:)',1,numel(Fnames(mC(i).Fb,:)));
    %      title(ha,['{\bf' Cnames(mC(i).name,:) '}\leftrightarrow' fns ' (' num2str(mC(i).conf) ')']);

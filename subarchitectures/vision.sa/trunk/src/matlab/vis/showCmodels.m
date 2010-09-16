@@ -1,9 +1,4 @@
 function showCmodels(mC,Fnames,Cnames,ax)
-%showAssoc(mAV,Fnames,avAcronyms)
-%Show associations between features and atribute values.
-%mAV: model of AVs
-%Fnames: feature names
-%avAcronyms: acronyms of AVs
 
 if nargin<4
    ax=gca

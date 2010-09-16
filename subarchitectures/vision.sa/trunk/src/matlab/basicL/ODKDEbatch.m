@@ -1,22 +1,5 @@
 function mC=ODKDEbatch(F,C)
 
-CCT=.5; % 0.1; %CompressionClusterThreshold
-SEL=2;
-
-%CM=[1:6;1 1 1 1 2 2]'; %concept number -> concept group mapping
-%CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
-%CM=[1:7;1 1 1 1 2 2 2]'; %concept number -> concept group mapping
-%CM=[1:11;1 1 1 1 1 1 1 1 1 2 2]';
-%CM=[1:8;1 1 1 1 2 2 2 2]'; %concept number -> concept group mapping
-
-
-
-global currMode
-if ~isempty(currMode)
-   MDF=currMode.MDF;
-   CM=currMode.CTT;
-end
-
 costThreshold.thReconstructive = 0.01 ;         % thresholds on reconstructive and discriminative compression
 costThreshold.thDiscriminative =  0.05 ;
 

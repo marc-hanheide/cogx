@@ -1,24 +1,24 @@
-function [mAV1,mDA1,mFS1]=MVBNFupdate(F,av,mAV,mDA,mFS)
-%[mAV1,mDA1,mFS1]=MVBFupdate(x,av,mAV,mDA,mFS)
+function [mC1,mDA1,mFS1]=MVBNFupdate(F,av,mC,mDA,mFS)
+%[mC1,mDA1,mFS1]=MVBFupdate(x,av,mC,mDA,mFS)
 %MVBF incremental learning - one update step.
 %x: input images
 %av: attribute values of this image
-%mAV: current model of AVs
+%mC: current model of AVs
 %mDA: current model of detected attributes
 %mFS: current feature statistics
-%mAV1: updated model of AVs
+%mC1: updated model of AVs
 %mDA1: updated model of detected attributes
 %mFS1: updated feature statistics
 
 SEL=2;
 
 if isempty(av) %no av given => do nothing
-   mAV1=mAV;mDA1=mDA;mFS1=mFS;
+   mC1=mC;mDA1=mDA;mFS1=mFS;
 elseif size(F,2)>1   %several feature vectors given
    for i=1:size(F,2) %proces one by one
-      [mAV,mDA,mFS]=MVBFupdate(F(:,i),lf2sf(av(:,i)),mAV,mDA,mFS);
+      [mC,mDA,mFS]=MVBFupdate(F(:,i),lf2sf(av(:,i)),mC,mDA,mFS);
    end;
-   mAV1=mAV;mDA1=mDA;mFS1=mFS;
+   mC1=mC;mDA1=mDA;mFS1=mFS;
 else
 
    if size(av,2)==1 %add 1 weights if not provided
@@ -28,8 +28,8 @@ else
 
    N=size(F,2);
    numF=size(F,1);
-   numAV=length(mAV);
-   if isempty(mAV(1).name), numAV=0; end;
+   numC=length(mC);
+   if isempty(mC(1).name), numC=0; end;
 
    %FS (feature statistics)
 
@@ -53,13 +53,13 @@ else
 
    %update varianaces and means
    AVn=mFS.Fns;
-   oldAVs=[mAV.name];
+   oldAVs=[mC.name];
    for i=1:size(av,1)
       [isOld,idx]=ismember(av(i,1),oldAVs);
       if  isOld %AV exists => update mean and variance
          [AVmeans(idx,:),AVvars(idx,:),AVn(idx)]=updateMV(F,AVmeans(idx,:),AVvars(idx,:),mFS.Fns(idx),av(i,2));
       else %add new AV
-         numAV=numAV+1;
+         numC=numC+1;
          AVmeans=[AVmeans;F'];
          AVvars=[AVvars;zeros(1,numF)];
          AVn=[AVn;av(i,2)];
@@ -72,14 +72,14 @@ else
       %Selection
    %normalize variances - for comarison of different F
    if SEL==1
-      AVnvars=AVvars./repmat(Fvar,numAV,1);
+      AVnvars=AVvars./repmat(Fvar,numC,1);
       [foo,Fbs]=min(AVnvars');
    else
-      dsts=zeros(numAV,numF);
+      dsts=zeros(numC,numF);
 %      tic
       for i=1:numF
-         for j=1:numAV
-            for k=j+1:numAV
+         for j=1:numC
+            for k=j+1:numC
                f1.mu=AVmeans(j,i);
                f1.covariances=AVvars(j,i)+1e-6;
                f1.weights=1;
@@ -100,26 +100,26 @@ else
    
    %AV (attribute values)
    %select the best F for each AV and save the model (mean,var) for each AV
-   mAV1=struct('name', zeros(numAV,1), 'mean', zeros(numAV,1), 'var', zeros(numAV,1), 'Fb', zeros(numAV,1), 'conf', zeros(numAV,1));
-   for i=1:numAV
-      mAV1(i).name=oldAVs(i);
-      mAV1(i).Fb=Fbs(i);
-      mAV1(i).mean=AVmeans(i,mAV1(i).Fb);
-      mAV1(i).var=AVvars(i,mAV1(i).Fb);
-      mAV1(i).conf=AVn(i);
+   mC1=struct('name', zeros(numC,1), 'mean', zeros(numC,1), 'var', zeros(numC,1), 'Fb', zeros(numC,1), 'conf', zeros(numC,1));
+   for i=1:numC
+      mC1(i).name=oldAVs(i);
+      mC1(i).Fb=Fbs(i);
+      mC1(i).mean=AVmeans(i,mC1(i).Fb);
+      mC1(i).var=AVvars(i,mC1(i).Fb);
+      mC1(i).conf=AVn(i);
    end;
 
 
 
    %DA (detected attributes)
    %determine the number of attributes
-   atnames=[mAV.name];
-   usefullF=unique(cat(1,mAV.Fb));
+   atnames=[mC.name];
+   usefullF=unique(cat(1,mC.Fb));
    numDA=length(usefullF);
    mDA1=struct('Fb',zeros(numDA,1),'C',zeros(numDA,1));
    for i=1:numDA
       mDA1(i).Fb=usefullF(i);
-      mDA1(i).C=atnames(find(cat(1,mAV.Fb)==usefullF(i)));
+      mDA1(i).C=atnames(find(cat(1,mC.Fb)==usefullF(i)));
    end
 end;
 

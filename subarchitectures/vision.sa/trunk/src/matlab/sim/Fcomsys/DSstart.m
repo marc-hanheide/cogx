@@ -1,10 +1,6 @@
 function dsHs=DSstart
 
-global avNames senMap txrH lbdH;
-
-%avNames={'red';'green';'blue';'yellow';'small';'large';'square';'circular';'triangular';'rectangular'};
-%avNames={'red';'green';'blue';'yellow';'compact';'elongated'};%;'square';'circular';'triangular';'rectangular'};
-%avNames={'red';'green';'blue';'yellow';'square';'circular';'triangular'};
+global senMap txrH lbdH;
 
 senMap={...
    'What do you see?', '';...//1

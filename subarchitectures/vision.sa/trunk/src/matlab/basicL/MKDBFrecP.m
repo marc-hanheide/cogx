@@ -22,10 +22,10 @@ MINCONF = 3; %minimum number of previously observed objects of the particular ca
 %CM=[1:8;1 1 1 1 2 2 2 2]'; %concept number -> concept group mapping
 
 minThUnk = 0.1 ;
-global currMode
+global currMode Coma Params
 if ~isempty(currMode)
-   MDF=currMode.MDF;
-   CM=currMode.CTT;
+   MDF=Params.MDF;
+   CM=Coma.SCC;
 end
 
 if isempty(mC(1).name)

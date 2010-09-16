@@ -1,16 +1,16 @@
-function [mAV,mDA,mFS]=MVBFbatch(F,AV)
-%[mAV,mDA,mFS]=MVBFbatch(X,AV)
+function [mC,mDA,mFS]=MVBFbatch(F,AV)
+%[mC,mDA,mFS]=MVBFbatch(X,AV)
 %MVBF batch learning.
 %X: input training images
 %AV: given AVs
-%mAV: model of AVs
+%mC: model of AVs
 %mDA: model of detected attributes
 %mFS: feature statistics
 
 SEL=2;
 
-numAV=size(AV,1);
-namesAV=1:numAV;
+numC=size(AV,1);
+namesAV=1:numC;
 N=size(F,2);
 
 %normalize features
@@ -22,10 +22,10 @@ Fvar=var(F,0,2)';
 
 %calculate varianaces and means
 numF=size(F,1);
-Fmeans=zeros(numAV,numF);
-Fvars=zeros(numAV,numF);
-Fns=zeros(numAV,1);
-for i=1:numAV %for all attribute values
+Fmeans=zeros(numC,numF);
+Fvars=zeros(numC,numF);
+Fns=zeros(numC,1);
+for i=1:numC %for all attribute values
    %idxs=ceil(find(AV==namesAV(i))/size(AV,1));
    idxs=find(AV(i,:)==1);
    Fi=F(:,idxs); %all F values when attribute value was i
@@ -39,13 +39,13 @@ mFS=struct('Fmean',Fmean,'Fvar',Fvar,'Fn',N,'Fmeans',Fmeans,'Fvars',Fvars,'Fns',
 %normalize variances - for comarison of different F
 if SEL==1
    Fvar=var(F,0,2)';
-   Fnvars=Fvars./repmat(Fvar,numAV,1);
+   Fnvars=Fvars./repmat(Fvar,numC,1);
    [foo,Fbs]=min(Fnvars');
 else
-   dsts=zeros(numAV,numF);
+   dsts=zeros(numC,numF);
    for i=1:numF
-      for j=1:numAV
-         for k=j+1:numAV
+      for j=1:numC
+         for k=j+1:numC
             f1.mu=Fmeans(j,i);
             f1.covariances=Fvars(j,i);
             f1.weights=1;
@@ -63,23 +63,23 @@ end
 
 %AV (attribute values)
 %select the best F for each AV and save the model (mean,var) for each AV
-mAV=struct('name', zeros(numAV,1), 'mean', zeros(numAV,1), 'var', zeros(numAV,1), 'Fb', zeros(numAV,1), 'conf', zeros(numAV,1));
+mC=struct('name', zeros(numC,1), 'mean', zeros(numC,1), 'var', zeros(numC,1), 'Fb', zeros(numC,1), 'conf', zeros(numC,1));
 %[foo,mins]=min(Fvars');
-for i=1:numAV
-   mAV(i).name=namesAV(i);
-   mAV(i).Fb=Fbs(i);
-% if i<=9, mAV(i).Fb=1; else mAV(i).Fb=6; end;  
-   mAV(i).mean=Fmeans(i,mAV(i).Fb);
-   mAV(i).var=Fvars(i,mAV(i).Fb);
-   mAV(i).conf=Fns(i);
+for i=1:numC
+   mC(i).name=namesAV(i);
+   mC(i).Fb=Fbs(i);
+% if i<=9, mC(i).Fb=1; else mC(i).Fb=6; end;  
+   mC(i).mean=Fmeans(i,mC(i).Fb);
+   mC(i).var=Fvars(i,mC(i).Fb);
+   mC(i).conf=Fns(i);
 end;   
 
 %DA (detected attributes)
 %determine the number of attributes
-usefullF=unique(cat(1,mAV.Fb));
+usefullF=unique(cat(1,mC.Fb));
 numDA=length(usefullF);
 mDA=struct('Fb',zeros(numDA,1),'C',zeros(numDA,1));
 for i=1:numDA
    mDA(i).Fb=usefullF(i);
-   mDA(i).C=find(cat(1,mAV.Fb)==usefullF(i));
+   mDA(i).C=find(cat(1,mC.Fb)==usefullF(i));
 end   

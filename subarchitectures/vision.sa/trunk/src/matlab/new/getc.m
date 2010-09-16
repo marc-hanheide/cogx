@@ -75,6 +75,9 @@ switch param
    case 'Fb'
       if sc>0
          val=mC{sc}.sub_selected_features;
+         if isempty(val)
+            val=1:getc(mC,'numF');
+         end
       else
          numSC=getc(mC,'numSC');
          for sc=1:numSC
@@ -89,9 +92,9 @@ switch param
 %          fprintf('numC: %d,   numComp: %d,    conf: %d\n',getc(mC,sc,'numC'),getc(mC,sc,'numComp'),getc(mC,sc,'conf'));
          fprintf('SC%d ( numC: %d,   numComp: %d,    conf: %d )\n',sc,getc(mC,sc,'numC'),getc(mC,sc,'numComp'),getc(mC,sc,'conf'));
          fprintf('concepts: '); fprintf('%d ',getc(mC,sc,0,'name')); fprintf('\n');
-         fprintf('Fb      : '); fprintf('%d ',getc(mC,sc,0,'Fb')); fprintf('\n');
-         fprintf('numComp : '); fprintf('%d ',getc(mC,sc,0,'numComp')); fprintf('\n');
+         fprintf('numComp : '); fprintf('%2.1f ',getc(mC,sc,0,'numComp')); fprintf('\n');
          fprintf('conf    : '); fprintf('%d ',getc(mC,sc,0,'conf')); fprintf('\n');
+         fprintf('Fb      : '); fprintf('%d ',getc(mC,sc,0,'Fb')); fprintf('\n');
       end;
          
    case 'numSC'
@@ -105,6 +108,8 @@ switch param
              val=val+getc(mC,sc,'numC');
           end
        end
+   case 'numF'
+      val=length(mC{1}.cummulative_feat_costs);
    otherwise
       val='';
       disp('Unknown parameter');

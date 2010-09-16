@@ -2,20 +2,20 @@ function LRevalUpdate
 
 %return;
 
-global Ft AVt mAV mFS currMode ;
+global Ft AVt mC Params
 
-numAV=6;
+numC=6;
 
-%unc=MVBFrec(Ft,mAV,mFS);
-%unc=KDBFrec(Ft,mAV,mFS);
-unc=MKDBFrec(Ft,mAV);
-rAV=qnt2ql(unc,currMode.THRs);
-rAVc=lf2lof(rAV,numAV);
+%unc=MVBFrec(Ft,mC,mFS);
+%unc=KDBFrec(Ft,mC,mFS);
+unc=MKDBFrec(Ft,mC);
+rAV=qnt2ql(unc,Params.THRs);
+rAVc=lf2lof(rAV,numC);
 RR=evalRes(rAVc,AVt);
 rs=RR.rs;
 
-%[avs,confs]=checkAV(mAV);
-[foo,foo,foo,foo,confs]=numConcepts(mAV);
+%[avs,confs]=checkAV(mC);
+[foo,foo,foo,foo,confs]=numConcepts(mC);
 wnu=sum(confs);
 
 global NUs RSs; 

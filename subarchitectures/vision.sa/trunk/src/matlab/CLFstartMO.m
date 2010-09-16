@@ -1,7 +1,8 @@
 function CLFstartMO(opSys)
 
-global CAST
-CAST=0;
+global Settings
+
+Settings.CAST=0;
 
 %set global variables to default values
 % addPaths ;
@@ -11,13 +12,15 @@ CAST=0;
 % cd(pthis) ;
 
 
-global avAcronyms avNames
-avNames={'red';'green';'blue';'yellow';'square';'triangular';'circular'};
-avAcronyms=['Rd';'Gr';'Bl';'Yl';'Sq';'Tr';'Cr'];
+global Coma
+Coma.avNames={'red';'green';'blue';'yellow';'square';'triangular';'circular'};
+Coma.Cnames=['Rd';'Gr';'Bl';'Yl';'Sq';'Tr';'Cr'];
+Coma.Fnames=extAPfeatures;
+Coma.SCnames=['Color';'Shape'];
+Coma.SCC=[1:7;1 1 1 1 2 2 2]';
 
 global currMode
 currMode=struct('learnMode',2,'THRs',[5 1 .5]/100,'wT',1,'wYes',.75,'wPy',.25,'qnt2qlD',0,'CTT',[]);
-currMode.CTT=[1:7;1 1 1 1 2 2 2]';
 
 global Dirs Data 
 if nargin==0 || strcmp(opSys,'win')
@@ -27,13 +30,11 @@ else
    Dirs.cogLearn='./';
 end
 
-global SaveImgs ImgNo
-SaveImgs=0;
-ImgNo=0;
+Settings.SaveImgs=0;
+Settings.Params.ImgNo=0;
 
-global ASVon ASVidx
-ASVon=0;
-ASVidx=0;
+Settings.ASVon=0;
+Settings.Params.ASVidx=0;
 
 Dirs.data=[Dirs.cogLearn 'Sim/data/objects_newvis/'];
 Data.numImgs=300;
@@ -76,6 +77,9 @@ if fid~=-1
    Data.Cgt=Cgt;
 end;   
 
+%How to display
+Settings.Mwindows=1;
+
 %HTML display
 Dirs.disp=[Dirs.cogLearn 'files/disp/'];
 global Disp
@@ -99,9 +103,11 @@ vsHs=VSstart;
 [lrcH LRguiL LRguiR]=LRstart;
 atH=ATstart;
 
-   %set(LRguiL,'Visible','On');
-   %set(LRguiR,'Visible','On');
 
+if Settings.Mwindows
+   set(LRguiL,'Visible','On');
+   set(LRguiR,'Visible','On');
+end;
 
 global clfHs;
 %clfHs=[dsHs lrcH vsHs LRguiL LRguiR atH];

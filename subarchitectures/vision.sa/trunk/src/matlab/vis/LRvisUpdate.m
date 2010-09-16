@@ -1,12 +1,12 @@
 function LRvisUpdate
 
-global avNames avAcronyms
+global Coma
 
-%avAcronyms=['Rd';'Gr';'Bl';'Yl';'Sm';'Lr';'Sq';'Cr';'Tr';'Rc'];
-%avAcronyms=['Rd';'Gr';'Bl';'Yl';'Sm';'Lr'];
-%avAcronyms=['Rd';'Gr';'Bl';'Yl';'Cm';'El'];
-%avNames={'red';'green';'blue';'yellow';'compact';'elongated'};
-Fnames=extAPfeatures;%['Hu';'Sa';'In';'Ar';'Cp';'Ec'];
+%Coma.Cnames=['Rd';'Gr';'Bl';'Yl';'Sm';'Lr';'Sq';'Cr';'Tr';'Rc'];
+%Coma.Cnames=['Rd';'Gr';'Bl';'Yl';'Sm';'Lr'];
+%Coma.Cnames=['Rd';'Gr';'Bl';'Yl';'Cm';'El'];
+%Coma.avNames={'red';'green';'blue';'yellow';'compact';'elongated'};
+%Fnames=extAPfeatures;%['Hu';'Sa';'In';'Ar';'Cp';'Ec'];
 
-global mAV LRguiLH
-showLmodels(mAV,Fnames,avAcronyms,[2 5],LRguiLH);
+global mC LRguiLH
+showLmodels(mC,Coma.Fnames,Coma.Cnames,[2 5],LRguiLH);

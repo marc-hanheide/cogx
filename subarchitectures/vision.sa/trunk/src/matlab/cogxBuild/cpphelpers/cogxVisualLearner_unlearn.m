@@ -1,11 +1,11 @@
 %% UNLEARN %% 
 %**orig**: this->eval(navw.str().c_str());
-%**orig**: this->eval("[mAV,mDA,mFS]=KDBFunlearn(features, avw, mAV, mDA, mFS)");
+%**orig**: this->eval("[mC,mDA,mFS]=KDBFunlearn(features, avw, mC, mDA, mFS)");
 %**orig**: this->eval("mFS.AVmeans");
 %**orig**: this->eval("mFS.AVvars");
 %**orig**: this->eval("LRvisUpdate");
 function cogxVisualLearner_unlearn(avw, X, B, pts3d)
-   global mAV
+   global mC
    
    global Params
    B = double(B);
@@ -13,7 +13,7 @@ function cogxVisualLearner_unlearn(avw, X, B, pts3d)
    X = uint8(X);
    f = extAPfeatures(X,B,Params.FV,pts3d);
 
-   mAV = MKDBFunlearn(f, avw(:,1), mAV);
+   mC = MKDBFunlearn(f, avw(:,1), mC);
    LRvisUpdate;
    asvSave;
    disp(['MATLAB: cogxVisualLearner_unlearn DONE']);
