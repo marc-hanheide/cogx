@@ -12,8 +12,8 @@
 
 module ConceptualData 
 {
-	/** Interface of the ConceptualQueryHandlerInterface */
-	interface QueryHandlerInterface
+	/** Interface to the conceptual::QueryHandler::Server. */
+	interface QueryHandlerServerInterface
 	{
 		DefaultData::DiscreteProbabilityDistribution query(string queryStr);
 	};
