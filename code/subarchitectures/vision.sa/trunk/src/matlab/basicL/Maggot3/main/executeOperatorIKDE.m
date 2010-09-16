@@ -42,6 +42,7 @@ function out_kde = executeOperatorIKDE( input_kde, varargin )
 calculate_bw_always = 1 ;
  
 % force_value_of_maxNumCompsBeforeCompression = [] ;
+draw_to_these_axes = [] ;
 turn_off_splitting = [] ; % turns on/off the splitting in compression
 switchSelectionSeeds = [] ; % whether we will use approximate compression
 selectionSeeds = [] ; % seeds used to (optionally) identify relevent components for compression
@@ -165,7 +166,8 @@ while i <= nargs
         case 'useVbw', useVbw = 1 ; i = i + 1 ;
         case 'type_md_prediction', type_md_prediction = args{i+1} ; i = i + 2 ;
         case 'use_revitalization', use_revitalization = args{i+1} ; i = i + 2 ;
-        case 'switchSelectionSeeds', switchSelectionSeeds = args{i+1} ; i = i + 2 ; 
+        case 'switchSelectionSeeds', switchSelectionSeeds = args{i+1} ; i = i + 2 ;
+        case 'draw_to_these_axes', draw_to_these_axes = args{i+1} ; i = i + 2 ;
         otherwise
             msg = sprintf('Unknown switch "%s"!',args{i});
             error(msg) ;
@@ -1025,7 +1027,7 @@ switch operator_data
              showkdecolor = 'r' ;
          end
          visualizeKDE('kde', input_kde, 'input_data', input_data, 'tabulated',...
-             showTabulated, 'showkdecolor', showkdecolor) ;
+             showTabulated, 'showkdecolor', showkdecolor, 'draw_to_these_axes', draw_to_these_axes) ;
          out_kde = [] ;
 end
  

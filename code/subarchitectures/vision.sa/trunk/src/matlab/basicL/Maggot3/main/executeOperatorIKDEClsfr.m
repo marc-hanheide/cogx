@@ -288,11 +288,13 @@ switch operator_data
         end
         
         % check if there is enough samples per model
+        N_eff = 0 ;
         for i = 1 : length(hyper_input_kde_cl.kde_cl)
-           if  hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff < hyper_input_kde_cl.min_samps_per_model_feat_sel
-               hyper_output_kde_cl = hyper_input_kde_cl ;
-               return ;
-           end
+             N_eff = N_eff + hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff ;             
+        end
+        if  N_eff < hyper_input_kde_cl.min_samps_per_model_feat_sel
+            hyper_output_kde_cl = hyper_input_kde_cl ;
+            return ;
         end
  
         d_before = hyper_input_kde_cl.sub_selected_features ;
@@ -322,9 +324,14 @@ switch operator_data
         pdf_classes.cj = pdf_classes.cj / sum(pdf_classes.cj) ;
   
         % select features                
-        [ Cost, f_sel ] = mixtureFeatureSelection( pdf_classes, fast_search ) ;        
+        [ Cost, f_sel ] = mixtureFeatureSelection( pdf_classes, fast_search ) ;  
+        id_cost = 2 ;
         rslt = Cost(3:size(Cost,1),:) ;
-        indic = rslt(2,:) > hyper_input_kde_cl.min_th_feat_sel ;
+%         
+%         max_v = (rslt(id_cost,size(rslt,2))) ;
+%         
+%         
+        indic = rslt(id_cost,:) > hyper_input_kde_cl.min_th_feat_sel ; %max_v*hyper_input_kde_cl.min_th_feat_sel ;
         frst = 1 ; 
         for i = length(indic) :-1: 1
            if indic(i) == 0 
@@ -341,7 +348,7 @@ switch operator_data
         hyper_output_kde_cl.debug.Cost = Cost ;
         
         [ix, xsrt] = sort(rslt(1,:)) ;
-        cumad = rslt(2,:).*indic ;
+        cumad = rslt(id_cost,:).*(indic+ 0.05*(indic==0)) ;
         hyper_output_kde_cl.cummulative_feat_costs = hyper_output_kde_cl.cummulative_feat_costs + cumad(xsrt) ; 
         
         d_b = sort(d_before)  ;
@@ -447,7 +454,7 @@ switch operator_data
                                            vforwvargin{:}, ...
                                            'compressionClusterThresh', hyper_input_kde_cl.compressionClusterThresh,...
                                            'maxNumCompsBeforeCompression', hyper_input_kde_cl.force_value_init_of_maxNumCompsBeforeCompression) ; 
- 
+  
                 hyper_input_kde_cl.kde_cl = horzcat(hyper_input_kde_cl.kde_cl, kde) ;                
                 hyper_input_kde_cl.class_labels = horzcat(hyper_input_kde_cl.class_labels, class) ;
                 hyper_input_kde_cl.class_labels_names = horzcat(hyper_input_kde_cl.class_labels_names, class_name) ;
@@ -482,8 +489,9 @@ switch operator_data
                 end
                 
                 sub_feats = [] ;
-                if hyper_input_kde_cl.react_compression_to_feature_selection == 1 &&...
-                         hyper_input_kde_cl.Params.minNumDataPointsToFormKDE + 1 > hyper_input_kde_cl.kde_cl{class}.ikdeParams.N_eff
+                if hyper_input_kde_cl.react_compression_to_feature_selection == 1 
+%                     &&...
+%                          hyper_input_kde_cl.Params.minNumDataPointsToFormKDE + 1 > hyper_input_kde_cl.kde_cl{class}.ikdeParams.N_eff
                     sub_feats = hyper_input_kde_cl.sub_selected_features ;
                 end
 %  try
@@ -568,8 +576,11 @@ switch operator_data
 %         end
     case 'unlearn_with_input'         
         for i = 1 : length(input_data)
-            class = input_data{i}.class ;
-            data = input_data{i}.data ;     
+            % check if the label already exists and check for errors
+            [data, class, class_name, class_exists] = parseClassData(hyper_input_kde_cl, input_data{i} ) ;
+            
+%             class = input_data{i}.class ;
+%             data = input_data{i}.data ;     
             
             % create negative classes
             otherClasses = {} ;
@@ -579,10 +590,17 @@ switch operator_data
                                class, size(data,2), use_equalimportance, hyper_input_kde_cl.pair_dist_struct ) ; %input_kde_cl              
             end
 
+           sub_feats = [] ;
+                if hyper_input_kde_cl.react_compression_to_feature_selection == 1 %&&...
+%                          hyper_input_kde_cl.Params.minNumDataPointsToFormKDE + 1 > hyper_input_kde_cl.kde_cl{class}.ikdeParams.N_eff
+                    sub_feats = hyper_input_kde_cl.sub_selected_features ;
+                end
+            
+            
             % unlearn the kde
             hyper_input_kde_cl.kde_cl{class} =...
                         executeOperatorIKDE( hyper_input_kde_cl.kde_cl{class}, 'input_data', ...
-                        data, 'unlearn_with_input', 'otherClasses', otherClasses, vforwvargin{:} ) ;
+                        data, 'unlearn_with_input', 'otherClasses', otherClasses, 'selectSubDimensions', sub_feats, vforwvargin{:} ) ;
 %             hyper_input_kde_cl.kde_cl{class}.pdf.smod.useVbw        
         end        
         hyper_output_kde_cl = hyper_input_kde_cl ; 

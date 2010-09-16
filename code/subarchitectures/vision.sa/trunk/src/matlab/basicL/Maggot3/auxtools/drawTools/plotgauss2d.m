@@ -1,4 +1,4 @@
-function h=plotgauss2d(mu, Sigma, color, sigmaScale )
+function h=plotgauss2d(mu, Sigma, color, sigmaScale, draw_to_these_axes )
 % PLOTGAUSS2D Plot a 2D Gaussian as an ellipse with optional cross hairs
 % h=plotgauss2(mu, Sigma)
 %
@@ -7,7 +7,7 @@ if isempty(color)
     color = 'b' ;
 end
 try
-h = plotcov2(mu, Sigma, color, sigmaScale);
+h = plotcov2(mu, Sigma, color, draw_to_these_axes, sigmaScale);
 catch
     warning('Cant plot because sigularity detected!') ;
 end
@@ -43,7 +43,7 @@ end
 
 % Copyright (C) 2002 Mark A. Paskin
 
-function h = plotcov2(mu, Sigma, colr, varargin)
+function h = plotcov2(mu, Sigma, colr, draw_to_these_axes, varargin)
 vrg = varargin ;
 varargin = {} ;
 
@@ -83,14 +83,14 @@ else
   z = repmat(mu, [1 n]) + w;
   % Plot the major and minor axes.
   L = k * sqrt(abs(diag(D)));
-  h = plot([mu(1); mu(1) + L(1) * V(1, 1)], ...
+  h = plot(draw_to_these_axes, [mu(1); mu(1) + L(1) * V(1, 1)], ...
 	   [mu(2); mu(2) + L(1) * V(2, 1)], 'color', colr);
   hold on;
-  h = [h; plot([mu(1); mu(1) + L(2) * V(1, 2)], ...
+  h = [h; plot(draw_to_these_axes, [mu(1); mu(1) + L(2) * V(1, 2)], ...
 	       [mu(2); mu(2) + L(2) * V(2, 2)], 'color', colr)];
 end
 
-h = [h; plot(z(1, :), z(2, :), 'color', colr, 'LineWidth', 2)];
+h = [h; plot(draw_to_these_axes, z(1, :), z(2, :), 'color', colr, 'LineWidth', 2)];
 if (~holding) hold off; end
 
 %%%%%%%%%%%%
