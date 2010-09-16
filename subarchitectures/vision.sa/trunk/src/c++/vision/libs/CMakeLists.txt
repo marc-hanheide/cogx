@@ -1,6 +1,7 @@
 
 option(LIBBUILD_SIFTGPU "Build SiftGPU library" ON)
 if (LIBBUILD_SIFTGPU)
+   option(LIBBUILD_SIFTGPU_WITH_CUDA "Build SiftGPU library with CUDA support" OFF)
    add_subdirectory(SiftGPU/linux)
 endif(LIBBUILD_SIFTGPU)
 
