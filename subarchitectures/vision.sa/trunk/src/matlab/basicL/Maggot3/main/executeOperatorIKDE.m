@@ -40,7 +40,8 @@ function out_kde = executeOperatorIKDE( input_kde, varargin )
 % enforce_spherical_shapes = 0 ;
 
 calculate_bw_always = 1 ;
-
+ 
+% force_value_of_maxNumCompsBeforeCompression = [] ;
 turn_off_splitting = [] ; % turns on/off the splitting in compression
 switchSelectionSeeds = [] ; % whether we will use approximate compression
 selectionSeeds = [] ; % seeds used to (optionally) identify relevent components for compression
@@ -114,7 +115,8 @@ while i <= nargs
         case 'getSubDimKDE', operator_data = args{i} ; i = i + 1 ;
         case 'evalTypOnData', operator_data = args{i} ; i = i + 1 ;  
         case 'predictMissingVals', operator_data = args{i} ; i = i + 1 ;  
-        case 'showKDE', operator_data = args{i} ; i = i + 1 ;      
+        case 'showKDE', operator_data = args{i} ; i = i + 1 ;  
+        case 'test_if_kde_is_degenerated', operator_data = args{i} ; i = i + 1 ;  
         case 'tabulated', showTabulated = args{i+1} ; i = i + 2 ;
         case 'showkdecolor', showkdecolor = args{i+1} ; i = i + 2 ;        
         case 'initialize', operator_data = args{i} ; input_kde = [] ; i = i + 1 ;             
@@ -417,7 +419,17 @@ end
 % ------ process KDE
 switch operator_data    
     
-    
+    case 'test_if_kde_is_degenerated'
+        [U,S,V] = svd(input_kde.pdf.smod.H) ;
+        
+%         input_kde.ikdeParams.scale.Cov) ;
+        S = diag(S) ;
+        if sum(S<1e-6) > 0
+            out_kde = 1 ;
+        else
+            out_kde = 0 ;
+        end
+        return ;    
     case 'add_input'
         if isequal(type_init,'null') 
             return ;
@@ -503,6 +515,17 @@ switch operator_data
             return ;                    
         end                
                
+        if input_kde.ikdeParams.maxNumCompsBeforeCompression == -1 && ~isempty(obs)        
+                dm = size(obs,1) ;
+%                 if isempty(force_value_of_maxNumCompsBeforeCompression)
+                    input_kde.ikdeParams.maxNumCompsBeforeCompression = ((dm^2-dm)/2+dm+dm+1) ;
+%                 else
+%                     input_kde.ikdeParams.maxNumCompsBeforeCompression = force_value_of_maxNumCompsBeforeCompression ;
+%                 end
+        end
+        
+        
+        
         % turn off the vbkde
         input_kde.pdf.smod.useVbw = 0 ;
         
@@ -569,14 +592,15 @@ switch operator_data
             force_prevent_compression = 1 ;
         end
         
-        if input_kde.ikdeParams.maxNumCompsBeforeCompression == -1 
-            if ~isempty(obs)                
-                dm = size(obs,1) ;
-                input_kde.ikdeParams.maxNumCompsBeforeCompression = ((dm^2-dm)/2+dm+dm+1) ;  %input_kde.ikdeParams.dim_subspace*5 ;
-%                 input_kde.ikdeParams.maxNumCompsBeforeCompression = 20 
+%         if input_kde.ikdeParams.maxNumCompsBeforeCompression == -1 
+%             if ~isempty(obs)                
+%                 dm = size(obs,1) ;
+%                 input_kde.ikdeParams.maxNumCompsBeforeCompression = ((dm^2-dm)/2+dm+dm+1) ;  %input_kde.ikdeParams.dim_subspace*5 ;
+% %                 input_kde.ikdeParams.maxNumCompsBeforeCompression = 12 ;
+% %                 input_kde.ikdeParams.maxNumCompsBeforeCompression = 20 
 %                 input_kde.ikdeParams.maxNumCompsBeforeCompression = 3
-            end            
-        end
+%             end            
+%         end
  
         if ~isempty(selectSubDimensions)
              % backward transform the sample distribution and ikdeParams.scale.Mu
@@ -635,12 +659,13 @@ switch operator_data
   
         else
             %             input_kde.ikdeParams.maxNumCompsBeforeCompression = length(input_kde.pdf.w) ;
-            if ~isempty(obs)
-                dm = size(obs,1) ;
-                input_kde.ikdeParams.maxNumCompsBeforeCompression = ((dm^2-dm)/2+dm+dm+1) ;  %input_kde.ikdeParams.dim_subspace*5 ;
-%                 input_kde.ikdeParams.maxNumCompsBeforeCompression = 20 
+%             if ~isempty(obs)
+%                 dm = size(obs,1) ;
+% %                 input_kde.ikdeParams.maxNumCompsBeforeCompression = ((dm^2-dm)/2+dm+dm+1) ;  %input_kde.ikdeParams.dim_subspace*5 ;
+% %                 input_kde.ikdeParams.maxNumCompsBeforeCompression = 12 ;
+% %                 input_kde.ikdeParams.maxNumCompsBeforeCompression = 20 
 %                 input_kde.ikdeParams.maxNumCompsBeforeCompression = 3
-            end
+%             end
 %             input_kde.ikdeParams.maxNumCompsBeforeCompression = ((dm^2-dm)/2+dm+dm+1) ;
             model_new.idxToref_out = [] ;
         end
@@ -704,7 +729,17 @@ switch operator_data
         input_kde.otherParams.singleGaussApp.Cov = new_Cov ;
         out_kde = input_kde ;
     case 'set_auxiliary_bandwidth'
+        thnull = 1e-6 ;
         
+        % identify the subspace of our kde's H
+        H = input_kde.pdf.smod.H ;
+        [U_h,S_h,V_h] = svd(H) ;
+        
+        s_h = diag(S_h) ; 
+        id_null = s_h < thnull ;
+        s_h(id_null) = 0 ; 
+ 
+        % calculate Ht from all classes
          pdf_tmp.Mu = input_kde.pdf.Mu ;
          pdf_tmp.Cov = input_kde.pdf.smod.ps.Cov ;
          pdf_tmp.w = input_kde.pdf.w*input_kde.ikdeParams.N_eff ;
@@ -718,8 +753,25 @@ switch operator_data
          pdf_tmp.w = pdf_tmp.w / sum(pdf_tmp.w) ;
          [new_mu, new_Cov, w_out] = momentMatchPdf(pdf_tmp.Mu, pdf_tmp.Cov, pdf_tmp.w) ;
          d = size(new_Cov,1) ;
-         H = (new_Cov *(4/((d+2)*N_eff))^(2/(d+4))) ;
-         H = regularizeCovariance( H ) ;
+         Ht = (new_Cov *(4/((d+2)*N_eff))^(2/(d+4))) ;
+         
+        % project Ht into the subspace of H
+        Ht_h = U_h*Ht*U_h' ;
+        
+        % fill the H with Ht where possible
+        s_ht = diag(Ht_h) ;
+        s_h(id_null) = s_ht(id_null) ;
+        id_null = s_h < thnull ;
+        
+        % fill the remaining missing values of H 
+        if sum(id_null) > 0
+           id_not_null = (1 - id_null)==1 ;
+           s_h(id_null) = max([ min(s_h(id_not_null)), 1e-3 ]);
+        end
+        S = diag(s_h) ;
+        
+        H = U_h'*S*U_h ;
+%          H = regularizeCovariance( H ) ;
                   
          out_kde = input_kde ;
          out_kde.pdf.smod.H = H ;
@@ -861,9 +913,16 @@ switch operator_data
         if ~isfield(kde1.otherParams, 'typekdevalid')
             kde1.otherParams.typekdevalid = 'validkde';
         end
-        
+ 
         if isequal(kde1.otherParams.typekdevalid,'validkde')  
-            [kde1_r, subindicator] = regularizeKDEInBandwidth( kde1, 'practicallyZero', 1e-5 ) ;
+            is_kde_degenerate = executeOperatorIKDE( kde1, 'test_if_kde_is_degenerated') ;
+            if is_kde_degenerate == 1 
+                [kde1_r, subindicator] = regularizeKDEInBandwidth( kde1, 'practicallyZero', 1e-5 ) ;
+            else
+               kde1_r = kde1 ;  
+               subindicator = [] ;
+            end
+     
         else
             kde1_r = kde1 ;
             subindicator = [] ;

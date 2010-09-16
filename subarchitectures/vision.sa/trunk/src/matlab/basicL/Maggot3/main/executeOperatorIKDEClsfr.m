@@ -25,6 +25,8 @@ minNumDataPointsToFormKDE = [] ;
 autonomous_update = [] ; 
 exclude_model = [] ;
 
+force_value_init_of_maxNumCompsBeforeCompression = [] ;
+features_to_show = [] ;
 pair_dist_struct_use_approx = [] ;
 random_fselect_threshold = [] ;
 compressionClusterThresh = [] ;
@@ -44,7 +46,7 @@ unknown_model_value = [] ;
 create_clsfr_from_this = [] ;
 ignoreClasses = [] ;
 typeRecDescr = [] ; % type of model: {discriminative, reconstructive}
-operator_data = '' ;
+operator_data = ' ' ;
 input_data = [] ;
 vforwvargin = {} ;
 args = varargin;
@@ -71,6 +73,7 @@ while i <= nargs
         case 'calculate_gains', operator_data = args{i} ; i = i + 1 ;
         case 'unlearn_with_input', operator_data = args{i} ; i = i + 1 ;
         case 'showKDE_of_class_index', operator_data = 'showKDE_of_class_index' ; val_get = args{i+1} ; i = i + 2 ;
+        case 'regularize_all_kdes', operator_data = args{i} ; i = i + 1 ;
         case 'pair_dist_struct_use_approx', pair_dist_struct_use_approx = args{i+1} ; i = i + 2 ;
         case 'exclude_model', exclude_model = args{i+1} ; i = i + 2 ;
         case 'random_fselect_threshold', random_fselect_threshold = args{i+1} ; i = i + 2 ;
@@ -89,9 +92,11 @@ while i <= nargs
         case 'unknown_model_value', unknown_model_value = args{i+1} ; i = i + 2 ; 
         case 'use_unknown_model', use_unknown_model = args{i+1} ; i = i + 2 ; 
         case 'minNumDataPointsToFormKDE', minNumDataPointsToFormKDE = args{i+1} ; i = i + 2 ; 
-        case 'compressionClusterThresh', compressionClusterThresh = args{i+1} ; i = i + 2 ;         
+        case 'compressionClusterThresh', compressionClusterThresh = args{i+1} ; i = i + 2 ;       
+        case 'force_value_init_of_maxNumCompsBeforeCompression', force_value_init_of_maxNumCompsBeforeCompression = args{i+1} ; i = i + 2 ;       
 %         case 'minimal_required_examps_mode', minimal_required_examps_mode
 %         = args{i+1} ; i = i + 2 ;  % not operational
+        case 'features_to_show', features_to_show = args{i+1} ; i = i + 2 ;           
         case 'extensive_answer', extensive_answer = 1 ; i = i + 1 ;         
         case 'useSomeOtherKindOfEstimator', 
             if ~isequal(args{i+1},0)
@@ -129,13 +134,19 @@ if isempty(hyper_input_kde_cl)
     
     hyper_input_kde_cl.compressionClusterThresh.thReconstructive = 0.0500 ;
     hyper_input_kde_cl.compressionClusterThresh.thDiscriminative = 0.0500 ;
-    hyper_input_kde_cl.random_fselect_threshold = 2 ;
+    hyper_input_kde_cl.random_fselect_threshold = 1 ;
     
     pair_dist_struct.dist = [] ;
     pair_dist_struct.dist_th = 4.0 ;
     pair_dist_struct.use_approx = 0 ;
     hyper_input_kde_cl.pair_dist_struct = pair_dist_struct ;
+    hyper_input_kde_cl.force_value_init_of_maxNumCompsBeforeCompression = -1 ;
 %     hyper_input_kde_cl.minimal_required_examps_mode = 0 ;
+end
+
+
+if ~isempty(force_value_init_of_maxNumCompsBeforeCompression)
+    hyper_input_kde_cl.force_value_init_of_maxNumCompsBeforeCompression = force_value_init_of_maxNumCompsBeforeCompression ;
 end
 
 if ~isempty(pair_dist_struct_use_approx)
@@ -271,7 +282,7 @@ switch operator_data
         hyper_output_kde_cl = hyper_input_kde_cl ;
     case 'make_simple_feature_selection'
         r = rand(1) ; 
-        if r < hyper_input_kde_cl.random_fselect_threshold
+        if r > hyper_input_kde_cl.random_fselect_threshold
             hyper_output_kde_cl = hyper_input_kde_cl ;
             return ;
         end
@@ -433,7 +444,9 @@ switch operator_data
             if class_exists == 0                                        
                 % initialize new class   
                 kde = executeOperatorIKDE( [], 'input_data', input_data{i}.data, 'add_input', ...
-                                           vforwvargin{:}, 'compressionClusterThresh', hyper_input_kde_cl.compressionClusterThresh  ) ; 
+                                           vforwvargin{:}, ...
+                                           'compressionClusterThresh', hyper_input_kde_cl.compressionClusterThresh,...
+                                           'maxNumCompsBeforeCompression', hyper_input_kde_cl.force_value_init_of_maxNumCompsBeforeCompression) ; 
  
                 hyper_input_kde_cl.kde_cl = horzcat(hyper_input_kde_cl.kde_cl, kde) ;                
                 hyper_input_kde_cl.class_labels = horzcat(hyper_input_kde_cl.class_labels, class) ;
@@ -463,7 +476,7 @@ switch operator_data
                 elseif isequal(hyper_input_kde_cl.typeRecDescr,'AM')
                     otherClasses = {} ;
                 elseif isequal(hyper_input_kde_cl.typeRecDescr,'dAM')
-                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, class, size(data,2), use_equalimportance, [] ) ; %input_kde_cl  output_kde_cl
+                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, class, size(data,2), use_equalimportance, hyper_input_kde_cl.pair_dist_struct ) ; %input_kde_cl  output_kde_cl
                 else
                     error('Unknown update rule! Either reconstructive or discriminative !') ;
                 end
@@ -473,7 +486,7 @@ switch operator_data
                          hyper_input_kde_cl.Params.minNumDataPointsToFormKDE + 1 > hyper_input_kde_cl.kde_cl{class}.ikdeParams.N_eff
                     sub_feats = hyper_input_kde_cl.sub_selected_features ;
                 end
- 
+%  try
                 % update the kde
                 hyper_input_kde_cl.kde_cl{class} = ...
                                   executeOperatorIKDE( hyper_input_kde_cl.kde_cl{class}, 'input_data', ...
@@ -481,13 +494,18 @@ switch operator_data
                                                        'selectSubDimensions', sub_feats,...
                                                        'kde_w_attenuation', kde_w_attenuation, ...
                                                        vforwvargin{:},...
-                                                       'compressionClusterThresh', hyper_input_kde_cl.compressionClusterThresh ) ;                               
+                                                       'compressionClusterThresh', hyper_input_kde_cl.compressionClusterThresh ) ;      
+                                                   
+%  catch
+%     dfg=8 
+%  end
             end            
         end
 
         % search for degenerate kdes and reapproximate their bandwidths
         for i = 1 : length(hyper_input_kde_cl.kde_cl)
-           if hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
+           is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{i}, 'test_if_kde_is_degenerated') ; 
+           if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
                     otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, i, 0, use_equalimportance, hyper_input_kde_cl.pair_dist_struct ) ; 
                     hyper_input_kde_cl.kde_cl{i} = ...
                                      executeOperatorIKDE( hyper_input_kde_cl.kde_cl{i}, 'set_auxiliary_bandwidth' ,...
@@ -558,7 +576,7 @@ switch operator_data
             if isequal(hyper_input_kde_cl.typeRecDescr,'dKDE')
                 % make negative data model
                 otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl,...
-                               class, size(data,2), use_equalimportance ) ; %input_kde_cl              
+                               class, size(data,2), use_equalimportance, hyper_input_kde_cl.pair_dist_struct ) ; %input_kde_cl              
             end
 
             % unlearn the kde
@@ -577,14 +595,14 @@ switch operator_data
             otherClasses = {} ;
             if isequal(hyper_input_kde_cl.typeRecDescr,'discriminative')
                 % make negative data model
-                otherClasses = makeOtherClasses( output_kde_cl, class ) ; %input_kde_cl
+                otherClasses = makeOtherClasses( output_kde_cl, class, 0, use_equalimportance, hyper_input_kde_cl.pair_dist_struct ) ; %input_kde_cl
             end
             % update the kde
             kde = executeOperatorIKDE( input_kde_cl{class}, 'compress_pdf',...
                                        'otherClasses', otherClasses, vforwvargin{:} ) ;
             output_kde_cl{class} = kde ;
         end
-        hyper_output_kde_cl.kde_cl = output_kde_cl ;        
+        hyper_output_kde_cl.kde_cl = output_kde_cl ;
     case 'classifyData'
         input_kde_cl = hyper_input_kde_cl.kde_cl ;       
         P = zeros(length(input_kde_cl),size(input_data,2)) ;
@@ -607,8 +625,16 @@ switch operator_data
 %                     pdf_t.Cov{ik} = pdf_t.Cov{ik}+1e-2 ;                           
 %                 end
                  reslt.evalpdf = evaluatePointsUnderPdf(pdf_t, input_data) ;        
-            else            
-                reslt = executeOperatorIKDE( input_kde_cl{i}, 'input_data',  input_data, 'evalPdfOnData',...
+            else    
+                
+                % search for degenerate kdes and reapproximate their bandwidths
+            is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{i}, 'test_if_kde_is_degenerated') ;
+            if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
+                    otherClasses = makeOtherClasses( input_kde_cl, i, 0, use_equalimportance, hyper_input_kde_cl.pair_dist_struct  ) ; 
+                    input_kde_cl{i} = executeOperatorIKDE( input_kde_cl{i}, 'set_auxiliary_bandwidth' ,  'otherClasses', otherClasses) ;
+            end
+
+            reslt = executeOperatorIKDE( input_kde_cl{i}, 'input_data',  input_data, 'evalPdfOnData',...
                                              'selectSubDimensions', sub_feats) ;                
             end
             P(i,:) = reslt.evalpdf ; %p ;
@@ -753,18 +779,43 @@ switch operator_data
         if hyper_input_kde_cl.react_compression_to_feature_selection == 1
             sub_feats = hyper_input_kde_cl.sub_selected_features ;
         end
-
+ 
+        if length(sub_feats) > 3
+            sub_feats = sub_feats(1:3) ;                       
+        end
+        
+        if isempty(sub_feats) && size(hyper_input_kde_cl.kde_cl{val_get}.pdf.Mu,1) > 3
+            sub_feats = 1:3 ;  
+        end
+ 
         % search for degenerate kdes and reapproximate their bandwidths
-           if hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
-                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, val_get, 0, use_equalimportance ) ; 
+        is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'test_if_kde_is_degenerated') ;
+        
+        if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
+                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, val_get, 0, use_equalimportance, hyper_input_kde_cl.pair_dist_struct  ) ; 
                     hyper_input_kde_cl.kde_cl{val_get} = ...
                                      executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'set_auxiliary_bandwidth' ,...
                                      'otherClasses', otherClasses) ;
-           end
+        end
         
-        executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'showKDE', 'selectSubDimensions', sub_feats,vforwvargin{:} ) ;
+        executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'showKDE', 'selectSubDimensions', sub_feats, vforwvargin{:} ) ;
         hyper_output_kde_cl = hyper_input_kde_cl.class_labels_names(val_get) ;
         title(hyper_output_kde_cl) ;  
+    case 'regularize_all_kdes'
+        
+        % search for degenerate kdes and reapproximate their bandwidths
+        
+        for val_get = 1 : length(hyper_input_kde_cl.kde_cl)
+            is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'test_if_kde_is_degenerated') ;
+        
+            if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
+                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, val_get, 0, use_equalimportance, hyper_input_kde_cl.pair_dist_struct ) ; 
+                    hyper_input_kde_cl.kde_cl{val_get} = ...
+                                     executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'set_auxiliary_bandwidth' ,...
+                                     'otherClasses', otherClasses) ;
+            end
+        end
+        hyper_output_kde_cl = hyper_input_kde_cl ;
     otherwise
         hyper_output_kde_cl = hyper_input_kde_cl ;
 end
@@ -809,7 +860,7 @@ end
 % ------------------------------------------------------------------ %
 function t = test_for_overlap(Mu_ref, Cov_ref, Mu_t, Cov_t, dist_th) 
 
-C = Cov_ref + Cov_t ;
+C = Cov_ref + Cov_t + eye(size(Cov_ref))*1e-3 ;
 d = Mu_ref - Mu_t ;
 l = sqrt(d'*inv(C)*d) ;
 t = l < dist_th ;

@@ -1,8 +1,8 @@
 function demoClassifier2()
 
 plotting_activated = 1 ;
-num_add_classes = 0 ;
-nfake_dims = 0 ;
+num_add_classes = 5 ;
+nfake_dims = 1;
 dim = nfake_dims + 2 ;
 
 lbl={'r', 'g', 'b', 'c', 'm', 'k', 'y', 'k'} ;
@@ -11,27 +11,32 @@ lbl={'r', 'g', 'b', 'c', 'm', 'k', 'y', 'k'} ;
 switchSelectionSeeds = 0 ;                      % (0) turn off approximative compression
 classifyWithPosterior = 1 ;                     % (1) use posterior info for classification
 typeRecDescr = 'dKDE' ;                         % 'dKDE', 'oKDE', switchess between discriminative and standard oKDE
-% minNumDataPointsToFormKDE = dim + 1 ;           % (int) minimum number of points before forming a KDE
-minNumDataPointsToFormKDE = (dim^2-dim)/2+dim+dim ; % (int) minimum number of points before forming a KDE
+% minNumDataPointsToFormKDE = dim + 1 ;         % (int) minimum number of points before forming a KDE
+minNumDataPointsToFormKDE = 2 ; %(dim^2-dim)/2+dim+dim ; % (int) minimum number of points before forming a KDE
 react_compression_to_feature_selection = 1 ;    % (1) apply compression in subdimension selected by feature selection
 min_samps_per_model_feat_sel = (dim^2-dim)/2+dim+dim ; % (int) minimum number of samples per model observed before applying feature selection
-min_th_feat_sel = 0.1 ;                       % (double) threshold on importance below which a feature is removed
+min_th_feat_sel = 0.1 ;                         % (double) threshold on importance below which a feature is removed
 costThreshold.thReconstructive = 0.01 ;         % thresholds on reconstructive and discriminative compression
-costThreshold.thDiscriminative =  0.02 ;
+costThreshold.thDiscriminative = 0.02 ; %0.02 ;
 autoUpdateThres_upper = 0.1 ;                   % in self verified mode, this is the threshold on entropy for asking
 autoUpdateThres_lower = 1e-2 ;                  % in self verified mode, this is the threshold on entropy for auto update
-random_fselect_threshold = 0.05 ;               % probability of feature selection occuring when called
+random_fselect_threshold = 1 ;0.95 ;               % probability of feature selection occuring when called
 pair_dist_struct_use_approx = 1 ;               % switch for compression: test which classes shuld be taken into account during compression of i-th class
+force_value_init_of_maxNumCompsBeforeCompression = 2 ; % determine initial num of components before compression
 % - end of parameters
-N_init = 5 ;  
+N_init = 1 ;  
 
 % generate test data
 [xc, p_ref ]= generateDots( 1000, 0, nfake_dims, num_add_classes ) ;
 
-
+% save('testing.mat') ;
+% load('testing.mat') ;
 opt_score = testClassifications( p_ref, [], 1, xc ) ;
 % data generated
  
+
+maxNumCompsBeforeCompression = 5 ;
+
 % create a classifier object with selected parameters
 kde_cl = executeOperatorIKDEClsfr( [], 'init', 'compressionClusterThresh', costThreshold,...
                     'typeRecDescr', typeRecDescr, ...
@@ -43,7 +48,8 @@ kde_cl = executeOperatorIKDEClsfr( [], 'init', 'compressionClusterThresh', costT
                     'autoUpdateThres_upper', autoUpdateThres_upper,...
                     'autoUpdateThres_lower', autoUpdateThres_lower,...
                     'random_fselect_threshold', random_fselect_threshold,...
-                    'pair_dist_struct_use_approx', pair_dist_struct_use_approx) ;
+                    'pair_dist_struct_use_approx', pair_dist_struct_use_approx, ...
+                    'force_value_init_of_maxNumCompsBeforeCompression', force_value_init_of_maxNumCompsBeforeCompression ) ;
  
 
 Num_questions = N_init ;
@@ -78,9 +84,9 @@ for i = N_init+1 : 200
   
     % perform a feature selection 
 %     disp('Select features')
-%     tic
+    tic
     kde_cl = executeOperatorIKDEClsfr( kde_cl, 'make_simple_feature_selection') ;
-%     toc
+    toc
     if isfield(kde_cl, 'debug')
         for_plot = kde_cl.debug ;
     else
@@ -89,7 +95,7 @@ for i = N_init+1 : 200
 
     % draw distributions
     if plotting_activated == 1
-        figure(4) ; clf ;
+        figure(1) ; clf ;
         subplot(1,4,1) ; hold on ;
         for i_c = 1 : length(xc)
             plot(xc{i_c}(1,1:i), xc{i_c}(2,1:i), [lbl{i_c},'.']) ; hold on ;
