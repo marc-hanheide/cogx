@@ -5,6 +5,12 @@ CAST=0;
 
 %set global variables to default values
 
+% mylocalMaggot3 = 'D:\Work\Matlab\IncrementalKDE\Maggot3\demo\' ;
+% pthis = pwd ; cd(mylocalMaggot3) ;
+% installEntireMaggot3() ;
+% cd(pthis) ;
+
+
 global avAcronyms avNames
 avNames={'red';'green';'blue';'yellow';'square';'triangular';'circular'};
 avAcronyms=['Rd';'Gr';'Bl';'Yl';'Sq';'Tr';'Cr'];
