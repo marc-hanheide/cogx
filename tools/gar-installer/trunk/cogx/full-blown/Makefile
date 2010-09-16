@@ -20,7 +20,9 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		libtolua++5.1-dev@ubuntu \
 		libprotobuf-dev@ubuntu \
 		python-pygraphviz@ubuntu \
-		libglew1.5-dev@ubuntu
+		libglew1.5-dev@ubuntu \
+		libdevil-dev@ubuntu \
+		nvidia-cg-toolkit@ubuntu
 
 
 
