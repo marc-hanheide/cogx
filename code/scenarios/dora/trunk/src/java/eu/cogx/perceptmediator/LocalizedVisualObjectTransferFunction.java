@@ -50,7 +50,7 @@ public class LocalizedVisualObjectTransferFunction extends
 			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
 					currentPlace.id));
 			result.put("ObjectId", PropositionFormula.create(wmc.address.id).getAsFormula());
-			result.put("label", PropositionFormula.create(from.label).getAsFormula());
+			result.put("label", PropositionFormula.create(from.identLabels[0]).getAsFormula());
 			result.put("is-in", WMPointer.create(placeWMA).getAsFormula());
 		} catch (BeliefException e) {
 			component.logException(e);

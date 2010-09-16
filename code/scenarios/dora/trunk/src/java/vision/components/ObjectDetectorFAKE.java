@@ -87,7 +87,8 @@ public class ObjectDetectorFAKE extends ManagedComponent implements
 			} else {
 				obj.detectionConfidence = getConfidenceForLabel(label);
 			}
-			obj.label = label;
+			obj.identLabels=new String[1];
+			obj.identLabels[0] = label;
 			addToWorkingMemory(newDataID(), obj);
 		}
 
