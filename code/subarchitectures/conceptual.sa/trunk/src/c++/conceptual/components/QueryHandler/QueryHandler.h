@@ -33,7 +33,8 @@ class QueryHandler: public cast::ManagedComponent
 		Server(QueryHandler *queryHandler) : _queryHandler(queryHandler)
 		{}
 
-		virtual DefaultData::DiscreteProbabilityDistribution query(const std::string &queryStr, const Ice::Current &);
+		virtual DefaultData::ProbabilityDistribution
+			query(const std::string &queryStr, const Ice::Current &);
 
 	private:
 
