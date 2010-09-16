@@ -14,6 +14,6 @@ for sc=1:numSC
       indat{1}.class_name=num2str(C(sc));
       mC{sc}=executeOperatorIKDEClsfr( mC{sc}, 'input_data', indat, 'add_input' ) ;
       %mC{sc}=executeOperatorIKDEClsfr( mC{sc},'compress_pdf');
-      %mC{sc}=executeOperatorIKDEClsfr( mC{sc}, 'make_simple_feature_selection') ;
+      mC{sc}=executeOperatorIKDEClsfr( mC{sc}, 'make_simple_feature_selection') ;
    end
 end
