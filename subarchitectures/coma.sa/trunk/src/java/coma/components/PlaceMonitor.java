@@ -602,6 +602,8 @@ public class PlaceMonitor extends ManagedComponent {
 						_hasChanged = true;
 					}
 					
+					// removed for Dora yr2: room categories inferred by Andrzej
+					/*
 					log("checking whether new room concepts are known...");
 					if (!new TreeSet<String>(Arrays.asList(_currentRoomStruct.concepts)).
 							equals(new TreeSet<String>(Arrays.asList(
@@ -611,12 +613,16 @@ public class PlaceMonitor extends ManagedComponent {
 							m_comareasoner.getAllConcepts("dora:room" + _currentRoomStruct.roomId);
 						log("room concept list has changed!");
 						_hasChanged = true;
-					}
+					} */
 					
 					if (_hasChanged) {
 						// update the contained places in the room struct
 						_currentRoomStruct.containedPlaceIds=_arrayOfPlaceIDsInTheSameRoom;
-
+						
+						// new interface for Dora yr2: remove categories when room has changed
+						// so that Andrzej can overwrite it
+						_currentRoomStruct.concepts=new String[0];
+						
 						// now overwrite the existing room WME
 						overwriteWorkingMemory(comaRoomWME.getID(),_currentRoomStruct);
 						logRoom(_currentRoomStruct, "updated room WME. ", comaRoomWME.getID());
@@ -649,7 +655,9 @@ public class PlaceMonitor extends ManagedComponent {
 					log("created new instance " + "dora:room" + _newRoom.roomId +  " of concept dora:PhysicalRoom");
 					
 					// now initialize the room concepts
-					_newRoom.concepts = m_comareasoner.getAllConcepts("dora:room" + _newRoom.roomId);
+					// changed for Dora yr2!
+					//_newRoom.concepts = m_comareasoner.getAllConcepts("dora:room" + _newRoom.roomId);
+					_newRoom.concepts = new String[0];
 					
 					String[] _placesInTheSameRoom = 
 						m_comareasoner.getRelatedInstancesByRelation(_currentplaceInstance,"dora:sameRoomAs");
