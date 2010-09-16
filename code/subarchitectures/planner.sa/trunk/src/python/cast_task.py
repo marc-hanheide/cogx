@@ -288,17 +288,19 @@ class CASTTask(object):
         pddl_action = self.dt_task.problem.get_action(action.name)
 
         log.debug("got action from DT: (%s %s)", action.name, " ".join(action.arguments))
-        log.debug("state is: %s", self.cp_task.get_state())
+        #log.debug("state is: %s", self.cp_task.get_state())
 
         if pddl_action.name in set(a.name for a in self.dt_task.goal_actions):
             log.info("Goal action recieved. DT task completed")
             self.dt_done()
             return
 
-        pddl_action = self.cp_task.mapltask.get_action(action.name)
+        pddl_action = self.domain.get_action(action.name)
+        pddl_action.set_parent(self.cp_task.mapltask)
         
-        #TODO: using the last CP state might be problematic
         state = self.cp_task.get_state().copy()
+        #TODO: using the last CP state might be problematic
+
         pnode = plan_postprocess.getRWDescription(pddl_action, args, state, 1)
         
         self.dt_task.dt_plan.append(pnode)
