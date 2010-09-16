@@ -44,7 +44,6 @@ void QueryHandler::configure(const map<string,string> & _config)
 			new Server(this);
 	registerIceServer<ConceptualData::QueryHandlerServerInterface,
 			ConceptualData::QueryHandlerServerInterface>(queryHandlerServerInterfacePtr);
-
 }
 
 
@@ -63,6 +62,15 @@ void QueryHandler::runComponent()
 // -------------------------------------------------------
 void QueryHandler::stop()
 {
+}
+
+
+// -------------------------------------------------------
+DefaultData::DiscreteProbabilityDistribution QueryHandler::Server::query(
+		const std::string &queryStr, const Ice::Current &)
+{
+	DefaultData::DiscreteProbabilityDistribution d;
+	return d;
 }
 
 
