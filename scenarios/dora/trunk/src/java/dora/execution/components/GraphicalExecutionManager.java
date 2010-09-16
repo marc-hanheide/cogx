@@ -27,8 +27,8 @@ import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.RecogniseForegroundedModels;
-import execution.util.ActionInterfaceFrame;
 import execution.util.ActionMonitor;
+import dora.execution.util.ActionInterfaceFrame;
 
 /**
  * 
