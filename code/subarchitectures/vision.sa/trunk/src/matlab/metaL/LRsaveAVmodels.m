@@ -1,13 +1,13 @@
 function LRsaveAVmodels(fname)
 
-global mAV mDA mFS NUs RSs;
+global mC
 
-%save(fname,'mAV','mFS','mDA');
-%save(fname,'mAV','mFS','mDA','NUs','RSs');
-save(fname,'mAV');
+%save(fname,'mC','mFS','mDA');
+%save(fname,'mC','mFS','mDA','NUs','RSs');
+save(fname,'mC');
 disp(['AV models saved in ' fname ' .']);
-%[numLAV,confs]=checkAV(mAV)
-[nlc,nec,LC,EC,confs]=numConcepts(mAV);
+%[numLAV,confs]=checkAV(mC)
+[nlc,nec,LC,EC,confs]=numConcepts(mC);
 fprintf('nlc=%d nec=%d   confs=', nlc, nec);disp(confs);
 
 

@@ -1,11 +1,8 @@
 function [lrcH LRguiL LRguiR]=LRstart
 
-global mAV mDA mFS;
+global mC
 
-%[mAV,mDA,mFS]=MVBFinit;
-%[mAV,mDA,mFS]=KDBFinit;
-%mAV=MKDBFinit;
-mAV=ODKDEinit;
+mC=ODKDEinit;
 
 lrcH=LRcontrol;
 [LRguiL LRguiR]=LRvisStart;

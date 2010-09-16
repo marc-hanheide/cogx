@@ -1,8 +1,8 @@
 function rAVql=qnt2ql(rAVqnt,THRs)
-%rAV=MVBFrecAV(F,mAV,THRs);
+%rAV=MVBFrecAV(F,mC,THRs);
 %Recognize attribute values
 %F: feature values
-%mAV: models of attribute values
+%mC: models of attribute values
 %THRs: thresholds for learning
 %rAV: recognized AVs in long unordered format (for each AV answer ANSyes or ANSpy, etc.)
 %     Note: only already learned AVs are considered and their numbers (sequence) do not
@@ -18,10 +18,10 @@ readConstants;
 
 rAVqnt=abs(rAVqnt);
 
-numAV=size(rAVqnt,1);
+numC=size(rAVqnt,1);
 N=size(rAVqnt,2)-1;
-rAVql=zeros(numAV,1+N); %determined attribute values
-for j=1:numAV
+rAVql=zeros(numC,1+N); %determined attribute values
+for j=1:numC
    rAVql(j,1)=rAVqnt(j,1);
    for i=1:N
       if ~isinf(rAVqnt(j,i+1))

@@ -1,6 +1,6 @@
 function intProc=VMintProcUpdate(step,pl,avw,ansLr)
 
-global currMode;
+global Params
 
 readConstants;
 
@@ -24,13 +24,8 @@ else %from VMprocAns
    %beggining of VMprocAns
    if size(ansLr,2)~=1 %from rec.
       
-%       if currMode.qnt2qlD==0
-%          ansQl = qnt2ql(ansLr, currMode.THRs);
-%       else   
-%          ansQl = qnt2qlD(ansLr, currMode.THRs, currMode.CTT);
-%       end
       rCpcx=cc2c(ansLr,'trim');
-      ansQl=qnt2ql(rCpcx,currMode.THRs);
+      ansQl=qnt2ql(rCpcx,Params.THRs);
       
       
       ansYes=lf2sfa(ansQl,ANSyes);
@@ -77,8 +72,8 @@ end;
 
 
 function avs=listAVs(avw)
-global avNames
-avs=avNames(avw(:,1));
+global Coma
+avs=Coma.avNames(avw(:,1));
 for i=1:size(avs,1)
    avs1(i,:)={[' ' cell2mat(avs(i,:))]};
 end;

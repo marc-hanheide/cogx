@@ -52,11 +52,11 @@ function DSdialogue_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to DSdialogue (see VARARGIN)
 
-global currMode ;
+global Coma
 
 %Reload global variables from CONFIG FILE
-confFile='config/cogLearn.config';
-loadConfig(confFile);
+%%!!confFile='config/cogLearn.config';
+%%!!loadConfig(confFile);
 
 % Choose default command line output for DSdialogue
 handles.output = hObject;
@@ -72,40 +72,40 @@ guidata(hObject, handles);
 set(handles.lb_dlg, 'String', cell(0));
 set(handles.lb_dlg, 'Value', 1);
 
-lenLabels = length(currMode.avNames)
+lenLabels = length(Coma.avNames);
 for i = 1 : lenLabels
-   avNames={'red';'green';'blue';'yellow';'black'; 'white'; 'orange'; 'pink'; 'compact';'elongated'};
+   %avNames={'red';'green';'blue';'yellow';'black'; 'white'; 'orange'; 'pink'; 'compact';'elongated'};
    
    switch i
        case 1
-           set(handles.pb_av1,'String',currMode.avNames{i}) ;
+           set(handles.pb_av1,'String',Coma.avNames{i}) ;
            set(handles.pb_av1,'Visible','on') ;
        case 2
-           set(handles.pb_av2,'String',currMode.avNames{i}) ;
+           set(handles.pb_av2,'String',Coma.avNames{i}) ;
            set(handles.pb_av2,'Visible','on') ;
        case 3
-           set(handles.pb_av3,'String',currMode.avNames{i}) ;           
+           set(handles.pb_av3,'String',Coma.avNames{i}) ;           
            set(handles.pb_av3,'Visible','on') ;
        case 4
-           set(handles.pb_av4,'String',currMode.avNames{i}) ;
+           set(handles.pb_av4,'String',Coma.avNames{i}) ;
            set(handles.pb_av4,'Visible','on') ;
        case 5
-           set(handles.pb_av5,'String',currMode.avNames{i}) ;
+           set(handles.pb_av5,'String',Coma.avNames{i}) ;
            set(handles.pb_av5,'Visible','on') ;
        case 6
-           set(handles.pb_av6,'String',currMode.avNames{i}) ;
+           set(handles.pb_av6,'String',Coma.avNames{i}) ;
            set(handles.pb_av6,'Visible','on') ;
        case 7
-           set(handles.pb_av7,'String',currMode.avNames{i}) ;
+           set(handles.pb_av7,'String',Coma.avNames{i}) ;
            set(handles.pb_av7,'Visible','on') ;
        case 8
-           set(handles.pb_av8,'String',currMode.avNames{i}) ;
+           set(handles.pb_av8,'String',Coma.avNames{i}) ;
            set(handles.pb_av8,'Visible','on') ;
        case 9
-           set(handles.pb_av9,'String',currMode.avNames{i}) ;           
+           set(handles.pb_av9,'String',Coma.avNames{i}) ;           
            set(handles.pb_av9,'Visible','on') ;
        case 10   
-           set(handles.pb_av10,'String',currMode.avNames{i}) ;
+           set(handles.pb_av10,'String',Coma.avNames{i}) ;
            set(handles.pb_av10,'Visible','on') ;
    end
 end

@@ -60,14 +60,14 @@ guidata(hObject, handles);
 
 % UIWAIT makes LRcontrol wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
-global SaveImgs ASVon
+global Settings Params
 global currMode
-set(handles.cbSaveImages,'Value',SaveImgs);
-set(handles.cbASVon,'Value',ASVon);
+set(handles.cbSaveImages,'Value',Settings.SaveImgs);
+set(handles.cbASVon,'Value',Settings.ASVon);
 set(handles.cbQnt2qlD,'Value',currMode.qnt2qlD);
-set(handles.ed_THRyes,'String',num2str(currMode.THRs(1)));
-set(handles.ed_THRpy,'String',num2str(currMode.THRs(2)));
-set(handles.ed_THRno,'String',num2str(currMode.THRs(3)));
+set(handles.ed_THRyes,'String',num2str(Params.THRs(1)));
+set(handles.ed_THRpy,'String',num2str(Params.THRs(2)));
+set(handles.ed_THRno,'String',num2str(Params.THRs(3)));
 
 
 
@@ -106,7 +106,7 @@ function pb_saveAVm_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 global Dirs;
-[FileName,PathName] = uiputfile('*.mat','Save file name',[Dirs.models 'mAVs.mat']);   
+[FileName,PathName] = uiputfile('*.mat','Save file name',[Dirs.models 'mCs.mat']);   
 if FileName~=0
    fname=[PathName FileName];
    LRsaveAVmodels(fname);
@@ -121,10 +121,10 @@ function pb_undo_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global ASVon ASVidx;
-if ASVon
-   if ASVidx>1
-      ASVidx=ASVidx-1;
+global Settings
+if Settings.ASVon
+   if Settings.Params.ASVidx>1
+      Settings.Params.ASVidx=Settings.Params.ASVidx-1;
    end   
    asvLoad;
 end
@@ -136,9 +136,9 @@ function pb_redo_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global ASVon ASVidx;
-if ASVon
-   ASVidx=ASVidx+1;
+global Settings
+if Settings.ASVon
+   Settings.Params.ASVidx=Settings.Params.ASVidx+1;
    asvLoad;
 end   
 
@@ -151,8 +151,8 @@ function cbSaveImages_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of cbSaveImages
 
-global SaveImgs
-SaveImgs=get(handles.cbSaveImages,'Value')
+global Settings
+Settings.SaveImgs=get(handles.cbSaveImages,'Value')
 
 
 
@@ -163,10 +163,10 @@ function ed_THRyes_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of ed_THRyes as text
 %        str2double(get(hObject,'String')) returns contents of ed_THRyes as a double
-global currMode;
+global Params
 thr=get(handles.ed_THRyes,'String');
-currMode.THRs(1)=str2double(thr);
-currMode
+Params.THRs(1)=str2double(thr);
+Params
 
 
 % --- Executes during object creation, after setting all properties.
@@ -190,10 +190,10 @@ function ed_THRpy_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of ed_THRpy as text
 %        str2double(get(hObject,'String')) returns contents of ed_THRpy as a double
-global currMode;
+global Params;
 thr=get(handles.ed_THRpy,'String');
-currMode.THRs(2)=str2double(thr);
-currMode
+Params.THRs(2)=str2double(thr);
+Params
 
 
 % --- Executes during object creation, after setting all properties.
@@ -217,10 +217,10 @@ function ed_THRno_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of ed_THRno as text
 %        str2double(get(hObject,'String')) returns contents of ed_THRno as a double
-global currMode;
+global Params;
 thr=get(handles.ed_THRno,'String');
-currMode.THRs(3)=str2double(thr);
-currMode
+Params.THRs(3)=str2double(thr);
+Params
 
 
 % --- Executes during object creation, after setting all properties.
@@ -244,8 +244,8 @@ function cbASVon_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of cbASVon
 
-global ASVon
-ASVon=get(handles.cbASVon,'Value')
+global Settings
+Settings.ASVon=get(handles.cbASVon,'Value')
 
 
 % --- Executes on button press in pb_firstAsv.
@@ -254,9 +254,9 @@ function pb_firstAsv_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global ASVon ASVidx;
-if ASVon
-   ASVidx=1;
+global Settings
+if Settings.ASVon
+   Settings.Params.ASVidx=1;
    asvLoad;
 end   
 
@@ -267,9 +267,9 @@ function pb_lastAsv_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global ASVon ASVidx;
-if ASVon
-   ASVidx=-1;
+global Settings
+if Settings.ASVon
+   Settings.Params.ASVidx=-1;
    asvLoad;
 end   
 

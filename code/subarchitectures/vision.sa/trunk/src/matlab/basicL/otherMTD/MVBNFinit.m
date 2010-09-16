@@ -1,7 +1,7 @@
-function [mAV,mDA,mFS]=MVBNFinit
-%[mAV,mDA,mFS]=MVBFinit
+function [mC,mDA,mFS]=MVBNFinit
+%[mC,mDA,mFS]=MVBFinit
 %MVBF initialisation.
-%mAV: model of AVs
+%mC: model of AVs
 %mDA: model of detected attributes
 %mFS: feature statistics
 
@@ -9,7 +9,7 @@ function [mAV,mDA,mFS]=MVBNFinit
 mFS=struct('Fmean',[],'Fvar',[],'Fn',[],'Fmeans',[],'Fvars',[],'Fns',[]);
 
 %AV (attribute values)
-mAV=struct('name', [], 'mean', [], 'var', [], 'Fb', [], 'conf', []);
+mC=struct('name', [], 'mean', [], 'var', [], 'Fb', [], 'conf', []);
 
 %DA (detected attributes)
 mDA=struct('Fb',[],'AV',[]);

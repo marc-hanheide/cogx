@@ -1,16 +1,16 @@
-function [nlc,nec,LC,EC,confs]=numConcepts(mAV)
+function [nlc,nec,LC,EC,confs]=numConcepts(mC)
 
 MINCONF=2;
 
-EC=[mAV.name];
+EC=[mC.name];
 nec=length(EC);
 
 LC=[];
 for j=1:nec 
-   if mAV(j).conf>=MINCONF
-      LC=[LC mAV(j).name];
+   if mC(j).conf>=MINCONF
+      LC=[LC mC(j).name];
    end
 end;   
 nlc=length(LC);
 
-confs=[mAV.conf];
+confs=[mC.conf];

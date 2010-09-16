@@ -1,8 +1,8 @@
-function rAVqnt=ABrec(F,mAV)
-%rAV=MVBFrecAV(F,mAV,THRs);
+function rAVqnt=ABrec(F,mC)
+%rAV=MVBFrecAV(F,mC,THRs);
 %Recognize attribute values
 %F: feature values
-%mAV: models of attribute values
+%mC: models of attribute values
 %THRs: thresholds for learning
 %rAV: recognized AVs in long unordered format (for each AV answer ANSyes or ANSpy, etc.)
 %     Note: only already learned AVs are considered and their numbers (sequence) do not
@@ -14,21 +14,21 @@ cthr=6;
 
 
 [numF,N]=size(F);
-numAV=size(mAV,2);
+numC=size(mC,2);
 
 %model just initialised
-if isempty(mAV(1).name) 
-   numAV=0; 
+if isempty(mC(1).name) 
+   numC=0; 
 end;
 
 %try to recognize all concepts
-rAVqnt=zeros(numAV,1+N); %determined attribute values
-for j=1:numAV
-   rAVqnt(j,1)=mAV(j).name;
+rAVqnt=zeros(numC,1+N); %determined attribute values
+for j=1:numC
+   rAVqnt(j,1)=mC(j).name;
    for i=1:N
-      if mAV(j).conf>=cthr
-         rAVqnt(j,i+1) = sign(Classify(mAV(j).Learners, mAV(j).Weights, F(:,i)));
-%         rAVqnt(j,i+1) = Classify(mAV(j).Learners, mAV(j).Weights, F(:,i));
+      if mC(j).conf>=cthr
+         rAVqnt(j,i+1) = sign(Classify(mC(j).Learners, mC(j).Weights, F(:,i)));
+%         rAVqnt(j,i+1) = Classify(mC(j).Learners, mC(j).Weights, F(:,i));
       else  %if conf<cthr only one sample has been observed => no model yet
          rAVqnt(j,i+1)=Inf;
       end

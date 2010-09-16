@@ -61,10 +61,10 @@ guidata(hObject, handles);
 % UIWAIT makes VMcontrol wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
-global currMode;
-set(handles.ed_THRyes,'String',num2str(currMode.THRs(1)));
-set(handles.ed_THRpy,'String',num2str(currMode.THRs(2)));
-set(handles.ed_THRno,'String',num2str(currMode.THRs(3)));
+global currMode Params
+set(handles.ed_THRyes,'String',num2str(Params.THRs(1)));
+set(handles.ed_THRpy,'String',num2str(Params.THRs(2)));
+set(handles.ed_THRno,'String',num2str(Params.THRs(3)));
 set(handles.ed_wT,'String',num2str(currMode.wT));
 set(handles.ed_wYes,'String',num2str(currMode.wYes));
 set(handles.ed_wPy,'String',num2str(currMode.wPy));
@@ -117,10 +117,10 @@ function ed_THRyes_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of ed_THRyes as text
 %        str2double(get(hObject,'String')) returns contents of ed_THRyes as a double
-global currMode;
+global Params
 thr=get(handles.ed_THRyes,'String');
-currMode.THRs(1)=str2double(thr);
-beep;currMode
+Params.THRs(1)=str2double(thr);
+beep;Params
 
 
 
@@ -145,10 +145,10 @@ function ed_THRpy_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of ed_THRpy as text
 %        str2double(get(hObject,'String')) returns contents of ed_THRpy as a double
-global currMode;
+global Params
 thr=get(handles.ed_THRpy,'String');
-currMode.THRs(2)=str2double(thr);
-beep;currMode
+Params.THRs(2)=str2double(thr);
+beep;Params
 
 
 
@@ -173,10 +173,10 @@ function ed_THRno_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of ed_THRno as text
 %        str2double(get(hObject,'String')) returns contents of ed_THRno as a double
-global currMode;
+global Params
 thr=get(handles.ed_THRno,'String');
-currMode.THRs(3)=str2double(thr);
-beep;currMode
+Params.THRs(3)=str2double(thr);
+beep;Params
 
 
 % --- Executes during object creation, after setting all properties.

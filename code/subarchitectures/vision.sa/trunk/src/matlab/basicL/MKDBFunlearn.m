@@ -16,8 +16,8 @@ end;
 
 global currMode
 if ~isempty(currMode)
-   MDF=currMode.MDF;
-   CM=currMode.CTT;
+   MDF=Params.MDF;
+   CM=Coma.SCC;
 end
 
 

@@ -30,22 +30,22 @@ function [rCqnt] = cogxVisualLearner_recognise(X, B, pts3d)
 
       % Copied from cosyRecogniser_recogise
       readConstants;
-      global mC mAV
+      global mC
       global currMode
       % global ANSyes ANSpy
-      global avAcronyms
+      global Coma 
 
-      rCqnt = MKDBFrec(f, mAV);
+      rCqnt = MKDBFrec(f, mC);
       if currMode.qnt2qlD==0
-        ansQl = qnt2ql(rCqnt, currMode.THRs);
+        ansQl = qnt2ql(rCqnt, Params.THRs);
       else
-        ansQl = qnt2qlD(rCqnt, currMode.THRs, currMode.CTT);
+        ansQl = qnt2qlD(rCqnt, Params.THRs, Coma.SCC);
       end
 
       ansYes = lf2sfa(ansQl, ANSyes);
       ansPy = lf2sfa(ansQl, ANSpy);
 
-      disp(['Recognised: ',idx2name(rCqnt,avAcronyms)]);
+      disp(['Recognised: ',idx2name(rCqnt,Coma.Cnames)]);
       showRec(ansYes,ansPy,rCqnt,f);
       disp(['MATLAB: cogxVisualLearner_recognise DONE']);
       

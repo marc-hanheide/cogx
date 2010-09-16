@@ -17,10 +17,10 @@ end;
 %MDF={1,2,3,1:2,2:3,[1 3],1:3,4,5,6,4:5,5:6,[4,6],4:6};
 %MDF={1,[1 3],1:3,4:6};
 %MDF={1:3,4:6};
-global currMode
+global currMode Coma
 if ~isempty(currMode)
-   MDF=currMode.MDF;
-   CM=currMode.CTT;
+   MDF=Params.MDF;
+   CM=Coma.SCC;
 end
  
 if size(F,2)>1   %several feature vectors given

@@ -1,17 +1,19 @@
 function asvSave
 
-global mAV mDA mFS NUs RSs IPs
+global Settings
+
+global IPs
 global lbipH;
-global ASVon ASVidx Dirs;
+global Dirs;
 
 
-if ASVon
+if Settings.ASVon
    
-   ASVidx=ASVidx+1;
+   Settings.Params.ASVidx=Settings.Params.ASVidx+1;
 
    IPs=get(lbipH,'String');
 
-   fname=[Dirs.asv 'asv' num2str(ASVidx,'%04d') '.mat'];
-   save(fname,'mAV','mFS','mDA','NUs','RSs','IPs');
+   fname=[Dirs.asv 'asv' num2str(Settings.Params.ASVidx,'%04d') '.mat'];
+   save(fname,'mC','mFS','mDA','NUs','RSs','IPs');
 
 end

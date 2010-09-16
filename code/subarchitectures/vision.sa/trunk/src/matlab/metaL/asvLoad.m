@@ -1,20 +1,22 @@
 function asvLoad
 
-global mAV mDA mFS NUs RSs IPs
+global Settings
+
+global IPs
 global lbipH;
-global ASVon ASVidx Dirs
+global Dirs
 
-if ASVon
+if Settings.ASVon
 
-   %disp(ASVidx);
-   fname=[Dirs.asv 'asv' num2str(ASVidx,'%04d') '.mat'];
+   %disp(Settings.Params.ASVidx);
+   fname=[Dirs.asv 'asv' num2str(Settings.Params.ASVidx,'%04d') '.mat'];
    fid = fopen(fname);
    if fid==-1 %go to last
       l=dir([Dirs.asv 'asv*.mat']);
       if length(l)>0
          ln=l(end).name;
-         ASVidx=str2num(ln(4:7));
-         fname=[Dirs.asv 'asv' num2str(ASVidx,'%04d') '.mat'];
+         Settings.Params.ASVidx=str2num(ln(4:7));
+         fname=[Dirs.asv 'asv' num2str(Settings.Params.ASVidx,'%04d') '.mat'];
          fid = fopen(fname);
       end
    end;

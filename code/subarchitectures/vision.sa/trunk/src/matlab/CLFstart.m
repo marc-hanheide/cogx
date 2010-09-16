@@ -1,31 +1,32 @@
 function CLFstart(flag)
 
-global avAcronyms avNames Fnames
-global currState currMode
-global mAV mDA mFS
+global Settings Coma
+
+global currMode
+global mC
 global LRguiL LRguiR
-global CAST
 
-CAST=1;
+Settings.CAST=1;
 
-avNames={'red';'green';'blue';'yellow';'square';'triangular';'circular'};
-avAcronyms=['Rd';'Gr';'Bl';'Yl';'Sq';'Tr';'Cr'];
-Fnames=extAPfeatures;
+Coma.avNames={'red';'green';'blue';'yellow';'square';'triangular';'circular'};
+Coma.Cnames=['Rd';'Gr';'Bl';'Yl';'Sq';'Tr';'Cr'];
+Coma.Fnames=extAPfeatures;
+Coma.SCnames=['Color';'Shape'];
+
 
 currMode=struct('learnMode',2,'THRs',[5 1 .5]/100,'wT',1,'wYes',.75,'wPy',.25,'qnt2qlD',0,'CTT',[]);
-currMode.CTT=[1:7;1 1 1 1 2 2 2]';
+Coma.SCC=[1:7;1 1 1 1 2 2 2]';
 
-global SaveImgs ImgNo Dirs Data
-SaveImgs=0;
-ImgNo=0;
+global Dirs Data
+Settings.SaveImgs=0;
+Settings.Params.ImgNo=0;
 Dirs.images='./imgs/';
 %Dirs.cogLearn='/home/user/localsvn/CosyDevVision/trunk/subarchitectures/vision/src/matlab/';
 Dirs.cogLearn='./subarchitectures/vision.sa/src/matlab';
 Dirs.models = './subarchitectures/vision.sa/src/matlab';
 
-global ASVon ASVidx
-ASVon=0;
-ASVidx=0;
+Settings.ASVon=0;
+Settings.Params.ASVidx=0;
 Dirs.asv=[Dirs.cogLearn 'asv/'];
 
 Dirs.data=[Dirs.cogLearn 'data/'];
@@ -51,8 +52,8 @@ loadConfig(confFile);
 
 %Initialize process
 
-%[mAV,mDA,mFS]=KDBFinit;
-mAV=MKDBFinit;
+%[mC,mDA,mFS]=KDBFinit;
+mC=MKDBFinit;
 
 [LRguiL LRguiR]=LRvisStart;
 
