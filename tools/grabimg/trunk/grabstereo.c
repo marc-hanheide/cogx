@@ -26,9 +26,9 @@ void Usage(const char *argv0)
 {
   printf(
     "Saves stereo image pairs img000-L.bmp, img000-R.bmp, img001-L.bmp ...\n"
-    "Dafault format is grey level BMP (as this is required for SVS calibration\n"
+    "Default format is grey level BMP (as this is required for SVS calibration\n"
     "software) but can be changed to color JPG with option -c\n"
-    "usage: %s [-h] [-f | -v] [-d \"left right\"]\n"
+    "usage: %s [-h] [-f | -v] -c [-d \"left right\"]\n"
     " -h .. this help\n"
     " -d left right .. device IDs for left and right images, e.g. \"0 1\". default is 0 and 1\n"
     " -v .. device class V4L2, i.e. typically USB cameras\n"
