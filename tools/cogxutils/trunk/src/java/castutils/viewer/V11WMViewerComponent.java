@@ -81,7 +81,6 @@ public class V11WMViewerComponent extends ManagedComponent {
 				tableHtml += r;
 			}
 			tableHtml += "</table>";
-			getLogger().info("update View: " + tableHtml);
 
 			displayClient.setHtml(getComponentID() + ".view", "1", tableHtml);
 		}
