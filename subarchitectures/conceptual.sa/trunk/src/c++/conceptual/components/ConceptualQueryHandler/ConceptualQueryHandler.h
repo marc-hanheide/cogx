@@ -1,11 +1,11 @@
 /**
  * @author Andrzej Pronobis
  *
- * Declaration of the ConceptualTester class.
+ * Declaration of the ConceptualQueryHandler class.
  */
 
-#ifndef CONCEPTUALTESTER_H
-#define CONCEPTUALTESTER_H
+#ifndef CONCEPTUALQUERYHANDLER_H
+#define CONCEPTUALQUERYHANDLER_H
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <ConceptualData.hpp>
@@ -15,24 +15,22 @@ class QApplication;
 namespace def
 {
 
-class ConceptualTesterDialog;
 
 /**
  * @author Andrzej Pronobis
  *
- * Tester for the Conceptual.SA
+ * Main query handler for the Conceptual.SA
  */
-class ConceptualTester: public cast::ManagedComponent
+class ConceptualQueryHandler: public cast::ManagedComponent
 {
-
 
 public:
 
 	/** Constructor. */
-	ConceptualTester():_qApp(0), _dialog(0) {}
+	ConceptualQueryHandler() {}
 
 	/** Destructor. */
-	virtual ~ConceptualTester() {}
+	virtual ~ConceptualQueryHandler() {}
 
 	/** Sends a new query. */
 	DefaultData::DiscreteProbabilityDistribution sendQuery(std::string query);
@@ -54,22 +52,11 @@ protected:
 
 private:
 
-	/** Id of the QueryHandler component.  */
-	std::string _queryHandlerName;
 
-	/** ICE proxy to the QueryHandlerInterface. */
-	ConceptualData::QueryHandlerInterfacePrx _queryHandlerInterfacePrx;
-
-	/** Qt application. */
-	QApplication *_qApp;
-
-	/** QT GUI dialog. */
-	ConceptualTesterDialog *_dialog;
-
-}; // class ConceptualTester
+}; // class ConceptualQueryHandler
 } // namespace def
 
-#endif // CONCEPTUALTESTER_H
+#endif // CONCEPTUALQUERYHANDLER_H
 
 
 
