@@ -77,7 +77,7 @@ stl__typed_thing.cc
 turnstyle.cc
 unsigned_integer__status_management.cc)
 
-add_definitions(-std=c++0x -DNDEBUG -O3 -march=native)
+add_definitions(-std=c++0x -DNDEBUG -O3 -march=native -fPIC)
 
 #add_definitions(-pedantic -pg -Wall -Wextra)
 
