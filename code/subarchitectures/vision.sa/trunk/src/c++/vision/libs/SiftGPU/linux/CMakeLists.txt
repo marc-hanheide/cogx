@@ -4,8 +4,7 @@ project(siftgpu)
 include_directories(../include)
 include_directories(/usr/include/Cg)
 
-set(USE_CUDA 1)
-if(USE_CUDA)
+if(LIBBUILD_SIFTGPU_WITH_CUDA)
    find_package(Cuda)
    add_definitions(-DCUDA_SIFTGPU_ENABLED)
    include_directories(${CUDA_INSTALLROOT}/include)
@@ -35,7 +34,7 @@ if(USE_CUDA)
    add_custom_target(SiftProgramCU
       DEPENDS ${OBJ_PROGRAM_CU}
       )
-endif(USE_CUDA)
+endif(LIBBUILD_SIFTGPU_WITH_CUDA)
 
 SET(SOURCES 
    ../src/SiftGPU/FrameBufferObject.cpp
@@ -59,12 +58,12 @@ target_link_libraries(${PROJECT_NAME}
    ${CUDA_LIBRARIES}
    # glut
    )
-if (USE_CUDA)
+if (LIBBUILD_SIFTGPU_WITH_CUDA)
    add_dependencies(${LIBRARY_NAME} SiftProgramCU)
    set_target_properties(${LIBRARY_NAME}
       PROPERTIES
       LINK_FLAGS ${OBJ_PROGRAM_CU}
       )
-endif(USE_CUDA)
+endif(LIBBUILD_SIFTGPU_WITH_CUDA)
 
 INSTALL(TARGETS ${LIBRARY_NAME} LIBRARY DESTINATION lib)
