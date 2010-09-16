@@ -6,7 +6,7 @@ SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "calibration/calib.right.config" #"instantiations/logitech-michael.cal"
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "instantiations/test-images/dora.right.cal" #"instantiations/logitech-michael.cal"
 
 CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
 
