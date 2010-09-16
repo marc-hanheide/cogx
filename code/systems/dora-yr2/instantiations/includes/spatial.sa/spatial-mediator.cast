@@ -9,10 +9,6 @@ JAVA MG pm-space 	eu.cogx.perceptmediator.components.AssociatedSpacePropertyMedi
 JAVA MG pm-border 	eu.cogx.perceptmediator.components.AssociatedBorderPropertyMediator
 
 
-
-
-
-
 # relation mediators:
 JAVA MG pm-place-conn 	eu.cogx.perceptmediator.components.PlaceConnectivityMediator --debug
 #JAVA MG pm-agent-rel 	eu.cogx.perceptmediator.components.PlaceContainmentAgentMediator --debug
