@@ -159,23 +159,66 @@ void CObjectRecognizer::start()
    }
 }
 
-void CObjectRecognizer::onAddRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc)
+void CObjectRecognizer::abortRecognition(CRecognitionRequestWrapper& request, const std::string& cause)
+{
+   // TODO: add status to ObjectRecognitionTask; then overwrite with status=failed & cause
+   deleteFromWorkingMemory(request.wmChange.address);
+}
+
+void CObjectRecognizer::onAddRecognitionTask(const cast::cdl::WorkingMemoryChange& _wmc)
 {
    log("OR: Recognition task recieved.");
 
-   // Lock the queue monitor and add a new request address. The
-   // monitor will unlock on scope-exit. notify() will wake up
-   // the timedWait() in the main loop in runComponent.
-   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_RrqMonitor);
-   m_RrQueue.push_back(_wmc);
-   m_RrqMonitor.notify();
+   orice::ObjectRecognitionTaskPtr pcmd;
+   try {
+      pcmd = getMemoryEntry<orice::ObjectRecognitionTask>(_wmc.address);
+
+      // Lock the queue monitor and add a new request. The monitor will unlock
+      // on scope-exit. notify() will wake up the timedWait() in the main loop
+      // in runComponent.
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_RrqMonitor);
+      m_RrQueue.push_back(CRecognitionRequestWrapper(_wmc, pcmd));
+      m_RrqMonitor.notify();
+   }
+   catch (cast::DoesNotExistOnWMException e) {
+      log("ObjectRecognitionTask {%s} was removed before it could be processed", _wmc.address.id.c_str());
+   }
 }
 
 // Process queued recognition requests
-void CObjectRecognizer::processQueuedTasks(std::vector<cast::cdl::WorkingMemoryChange> &requests)
+void CObjectRecognizer::processQueuedTasks(TRecognitionRequestVector &requests)
 {
+   log("%s recognition requests to process", requests.size());
+
+   TRecognitionRequestVector::iterator it;
+   for (it = requests.begin(); it != requests.end(); it++) {
+      orice::ObjectRecognitionTaskPtr pTask = it->pTask;
+
+      // load from wm the protoobject referenced by the request
+      ProtoObjectPtr pProto;
+      try {
+         pProto = getMemoryEntry<ProtoObject>(pTask->protoObjectAddr);
+         Video::Image img = pProto->image;
+      }
+      catch (cast::DoesNotExistOnWMException e) {
+         log("ProtoObject {%s} was removed before it could be processed", pTask->protoObjectAddr.id.c_str());
+         abortRecognition(*it, "Failed: ProtoObject deleted");
+         continue;
+      }
+
+      // process the protoobject image
+      ObjectRecognizerIce::RecognitionResultSeq results;
+      FindMatchingObjects(pProto->image, 0, 0, 0, 0, results);
+
+      // write the result to recognition request
+      pTask->matches = results;
+      overwriteWorkingMemory(it->wmChange.address, pTask);
+   }
 }
 
+// TODO: learning requests may take precedence over recognition requests so we shouldn't
+// process too many requests in processQueuedTasks (which should probably be renamed to
+// processRecognitionTasks).
 void CObjectRecognizer::runComponent()
 {
    // FIXME: there is (was?) a crash here or in startIceServer:
@@ -186,7 +229,7 @@ void CObjectRecognizer::runComponent()
    debug("CObjectRecognizer Server: running");
    while(isRunning()) {
       if (m_bWmFilters) {
-         std::vector<cast::cdl::WorkingMemoryChange> newRequests;
+         TRecognitionRequestVector newRequests;
 
          {
             // SYNC: Lock the monitor

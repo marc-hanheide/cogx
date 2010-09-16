@@ -35,6 +35,21 @@ struct CModelScore
    }
 };
 
+struct CRecognitionRequestWrapper
+{
+   cast::cdl::WorkingMemoryChange wmChange;
+   ObjectRecognizerIce::ObjectRecognitionTaskPtr pTask;
+   CRecognitionRequestWrapper() {}
+   CRecognitionRequestWrapper(const cast::cdl::WorkingMemoryChange& wmc,
+         const ObjectRecognizerIce::ObjectRecognitionTaskPtr &taskPtr)
+   {
+      wmChange = wmc;
+      pTask = taskPtr;
+   }
+};
+
+typedef std::vector<CRecognitionRequestWrapper> TRecognitionRequestVector;
+
 // CObjectRecognizer is the component that will be created when CAST starts.
 // The ICE server interface (ObjectRecognizerI) will be created in start().
 class CObjectRecognizer:
@@ -54,7 +69,7 @@ private:
 
    // WM recognition request queue with monitor
    IceUtil::Monitor<IceUtil::Mutex> m_RrqMonitor;
-   std::vector<cast::cdl::WorkingMemoryChange> m_RrQueue;
+   TRecognitionRequestVector m_RrQueue;
 
 private:
 #ifdef FEAT_VISUALIZATION
@@ -82,8 +97,9 @@ private:
    void fancyDisplay(std::vector<CObjectModel*>& models, std::vector<CModelScore>& scores);
 
    // WM request processing
+   void abortRecognition(CRecognitionRequestWrapper& request, const std::string& cause="Failed");
    void onAddRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
-   void processQueuedTasks(std::vector<cast::cdl::WorkingMemoryChange> &requests);
+   void processQueuedTasks(TRecognitionRequestVector &requests);
 
 public:
    CObjectRecognizer();
