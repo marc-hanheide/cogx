@@ -10,17 +10,15 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <DefaultData.hpp>
 
-class QApplication;
-
 namespace def
 {
-
-class TesterDialog;
 
 /**
  * @author Andrzej Pronobis
  *
- * Tester for the Default.SA
+ * Tester for the Default.SA. It tests Default.SA
+ * by using its external interfaces in a way external
+ * components should use them.
  */
 class Tester: public cast::ManagedComponent
 {
@@ -28,13 +26,11 @@ class Tester: public cast::ManagedComponent
 public:
 
 	/** Constructor. */
-	Tester():_qApp(0), _dialog(0) {}
+	Tester(): _hfcServerAvailable(false), _queryHandlerAvailable(false)
+	{}
 
 	/** Destructor. */
 	virtual ~Tester() {}
-
-	/** Sends a new query. */
-	DefaultData::QdlQueryResults sendHFCQuery(std::string query);
 
 
 protected:
@@ -52,12 +48,26 @@ protected:
 
 
 private:
+	/** Sends a new query to the QueryHandler. */
+	DefaultData::ProbabilityDistribution sendQueryHandlerQuery(const std::string &query) const;
+
+	/** Sends a new query. */
+	DefaultData::QdlQueryResults sendHFCServerQuery(const std::string &query) const;
+
+
+private:
 
 	/** Id of the forward chainer server component.  */
 	std::string _hfcServerName;
 
+	/** Set to true if the QueryHandler is available. */
+	bool _hfcServerAvailable;
+
 	/** Id of the QueryHandler component.  */
 	std::string _queryHandlerName;
+
+	/** Set to true if the QueryHandler is available. */
+	bool _queryHandlerAvailable;
 
 	/** ICE proxy to the forward chainer server interface. */
 	DefaultData::HFCInterfacePrx _hfcInterfacePrx;
@@ -65,11 +75,6 @@ private:
 	/** ICE proxy to the QueryHandlerInterface. */
 	DefaultData::QueryHandlerServerInterfacePrx _queryHandlerServerInterfacePrx;
 
-	/** Qt application. */
-	QApplication *_qApp;
-
-	/** QT GUI dialog. */
-	TesterDialog *_dialog;
 
 }; // class Tester
 } // namespace def
