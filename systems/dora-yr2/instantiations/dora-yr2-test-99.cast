@@ -10,29 +10,13 @@ INCLUDE includes/spatial.sa/spatial.cast
 CPP GD self.representer SelfRepresenter 
 INCLUDE includes/spatial.sa/spatial-mediator.cast
 
-# vision ######################################################################
-#INCLUDE includes/vision.sa/vision-base+blobs.cast
-#INCLUDE includes/vision.sa/vision-execution.cast
-
-#JAVA MG ContinuousDetector  vision.components.ContinuousDetector --label-record1 --label-record2 --label-record3 --label-record4
-
-# coma ######################################################################
-#INCLUDE includes/coma.sa/coma-base.cast
-#JAVA GD FakeComa fakecoma.components.GraphicalComa --debug
-#JAVA MG recorder castutils.components.WorkingMemoryRecorder  --config recorder-filter.txt
-#JAVA MG player castutils.components.WorkingMemoryPlayer  --state --file stored-maps/3rdtask-real/coma.log
-
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
-#INCLUDE includes/binder.sa/binder.cast
-
-# comsys ######################################################################
-#INCLUDE includes/comsys.sa/comsys-base.cast
-#JAVA MG  comsys-execution comsys.motivation.ComsysActionInterface
+JAVA MG percepttracker.dora 	eu.cogx.percepttracker.DoraBeliefTracker --write-to-sa binder
 
 # planning and motivation #####################################################
-INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/planner-dora.cast
+INCLUDE includes/planner.sa/planner-base.cast
 
 INCLUDE includes/motivation.sa/motivation.cast
 
@@ -43,7 +27,7 @@ INCLUDE includes/planner.sa/viz-plan.cast
 
 # exection ####################################################################
 #JAVA MG manual-execution execution.components.GraphicalExecutionManager
-JAVA MG executor execution.components.DoraExecutionMediator
+#JAVA MG executor execution.components.DoraExecutionMediator
 
 
 # viewing and debugging #######################################################
