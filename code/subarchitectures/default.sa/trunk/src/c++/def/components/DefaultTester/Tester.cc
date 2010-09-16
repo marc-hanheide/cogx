@@ -1,12 +1,12 @@
 /**
  * @author Andrzej Pronobis
  *
- * Definition of the DefaultTester class.
+ * Definition of the def::Tester class.
  */
 
 // Default.SA
-#include "DefaultTester.h"
-#include "DefaultTesterDialog.h"
+#include "Tester.h"
+#include "TesterDialog.h"
 // Qt
 #include <QApplication>
 
@@ -16,7 +16,7 @@ extern "C"
 {
 	cast::CASTComponentPtr newComponent()
 	{
-		return new def::DefaultTester();
+		return new def::Tester();
 	}
 }
 
@@ -28,7 +28,7 @@ using namespace DefaultData;
 
 
 // -------------------------------------------------------
-void DefaultTester::configure(const map<string,string> & _config)
+void Tester::configure(const map<string,string> & _config)
 {
 	map<string,string>::const_iterator it;
 
@@ -53,7 +53,7 @@ void DefaultTester::configure(const map<string,string> & _config)
 
 
 // -------------------------------------------------------
-void DefaultTester::start()
+void Tester::start()
 {
 	// Get the forward chainer interface proxy
 	if (!_hfcServerName.empty())
@@ -65,17 +65,17 @@ void DefaultTester::start()
 
 
 // -------------------------------------------------------
-void DefaultTester::runComponent()
+void Tester::runComponent()
 {
 	// Create application
 	_qApp = new QApplication(0,0);
 
 	// Start dialog
-	_dialog = new DefaultTesterDialog(this, !_hfcServerName.empty(), !_queryHandlerName.empty());
+	_dialog = new TesterDialog(this, !_hfcServerName.empty(), !_queryHandlerName.empty());
 	_dialog->exec();
 
 	// Thread safe delete
-	DefaultTesterDialog *dialog=_dialog;
+	TesterDialog *dialog=_dialog;
 	QApplication *app=_qApp;
 	_dialog=0;
 	delete dialog;
@@ -85,13 +85,13 @@ void DefaultTester::runComponent()
 
 
 // -------------------------------------------------------
-void DefaultTester::stop()
+void Tester::stop()
 {
 }
 
 
 // -------------------------------------------------------
-QdlQueryResults DefaultTester::sendQuery(std::string query, QueryDestination destination)
+QdlQueryResults Tester::sendQuery(std::string query, QueryDestination destination)
 {
 	println("Sending query %s", query.c_str());
 	return _hfcInterfacePrx->querySelect(query);

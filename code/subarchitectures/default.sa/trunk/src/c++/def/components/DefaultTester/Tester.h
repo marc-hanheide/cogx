@@ -1,11 +1,11 @@
 /**
  * @author Andrzej Pronobis
  *
- * Declaration of the DefaultTester class.
+ * Declaration of the def::Tester class.
  */
 
-#ifndef DEFAULTTESTER_H
-#define DEFAULTTESTER_H
+#ifndef DEFAULT_TESTER_H
+#define DEFAULT_TESTER_H
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <DefaultData.hpp>
@@ -15,14 +15,14 @@ class QApplication;
 namespace def
 {
 
-class DefaultTesterDialog;
+class TesterDialog;
 
 /**
  * @author Andrzej Pronobis
  *
  * Tester for the Default.SA
  */
-class DefaultTester: public cast::ManagedComponent
+class Tester: public cast::ManagedComponent
 {
 
 public:
@@ -35,10 +35,10 @@ public:
 public:
 
 	/** Constructor. */
-	DefaultTester():_qApp(0), _dialog(0) {}
+	Tester():_qApp(0), _dialog(0) {}
 
 	/** Destructor. */
-	virtual ~DefaultTester() {}
+	virtual ~Tester() {}
 
 	/** Sends a new query. */
 	DefaultData::QdlQueryResults sendQuery(std::string query, QueryDestination destination);
@@ -76,12 +76,12 @@ private:
 	QApplication *_qApp;
 
 	/** QT GUI dialog. */
-	DefaultTesterDialog *_dialog;
+	TesterDialog *_dialog;
 
-}; // class DefaultTester
+}; // class Tester
 } // namespace def
 
-#endif // DEFAULTTESTER_H
+#endif // DEFAULT_TESTER_H
 
 
 

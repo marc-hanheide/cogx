@@ -1,12 +1,12 @@
 /**
  * @author Andrzej Pronobis
  *
- * Definition of the DefaultTesterDialog class.
+ * Definition of the def::TesterDialog class.
  */
 
 // Default.SA
-#include "DefaultTesterDialog.h"
-#include "DefaultTester.h"
+#include "TesterDialog.h"
+#include "Tester.h"
 // Qt
 #include <QTimer>
 #include <QTableWidgetItem>
@@ -20,9 +20,9 @@ namespace def
 using namespace std;
 
 // ------------------------------------------------------
-DefaultTesterDialog::DefaultTesterDialog(DefaultTester *defaultTester,
+TesterDialog::TesterDialog(Tester *tester,
 		bool hfcServerDestination, bool queryHandlerDestination, QWidget *parent):
-    QDialog(parent), _defaultTester(defaultTester)
+    QDialog(parent), _tester(tester)
 {
   // Setup ui
   setupUi(this);
@@ -42,13 +42,13 @@ DefaultTesterDialog::DefaultTesterDialog(DefaultTester *defaultTester,
 }
 
 // ------------------------------------------------------
-void DefaultTesterDialog::sendButtonClicked()
+void TesterDialog::sendButtonClicked()
 {
-	DefaultTester::QueryDestination destination =
-			(hfcServerRadioButton->isChecked())?DefaultTester::QD_HFC_SERVER:DefaultTester::QD_QUERY_HANDLER;
+	Tester::QueryDestination destination =
+			(hfcServerRadioButton->isChecked())?Tester::QD_HFC_SERVER:Tester::QD_QUERY_HANDLER;
 
 	_query = queryLineEdit->text().toStdString();
-	_qdlQueryResults = _defaultTester->sendQuery(_query, destination);
+	_qdlQueryResults = _tester->sendQuery(_query, destination);
 
 	// Emit signal
 	emit queryResultsUpdatedSignal();
@@ -56,7 +56,7 @@ void DefaultTesterDialog::sendButtonClicked()
 
 
 // ------------------------------------------------------
-void DefaultTesterDialog::queryResultsUpdated()
+void TesterDialog::queryResultsUpdated()
 {
 	// Init the table
 	resultsTableWidget->clear();
@@ -91,9 +91,9 @@ void DefaultTesterDialog::queryResultsUpdated()
 
 
 // ------------------------------------------------------
-void DefaultTesterDialog::exitTimerFired()
+void TesterDialog::exitTimerFired()
 {
-  if (!_defaultTester->isRunning())
+  if (!_tester->isRunning())
   {
     done(0);
   }

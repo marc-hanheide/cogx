@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DefaultTesterDialog</class>
- <widget class="QDialog" name="DefaultTesterDialog">
+ <class>TesterDialog</class>
+ <widget class="QDialog" name="TesterDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -106,7 +106,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="DefaultTester.qrc"/>
+  <include location="Tester.qrc"/>
  </resources>
  <connections/>
 </ui>

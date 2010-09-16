@@ -1,14 +1,14 @@
 /**
  * @author Andrzej Pronobis
  *
- * Declaration of the DefaultTesterDialog class.
+ * Declaration of the def::TesterDialog class.
  */
 
-#ifndef DEFAULTTESTERDIALOG_H
-#define DEFAULTTESTERDIALOG_H
+#ifndef DEFAULT_TESTERDIALOG_H
+#define DEFAULT_TESTERDIALOG_H
 
 // Default.SA
-#include "ui_DefaultTesterDialog.h"
+#include "ui_TesterDialog.h"
 #include "DefaultData.hpp"
 // Qt
 #include <QDialog>
@@ -16,16 +16,16 @@
 namespace def
 {
 
-class DefaultTester;
+class Tester;
 
-class DefaultTesterDialog : public QDialog, public Ui_DefaultTesterDialog
+class TesterDialog : public QDialog, public Ui_TesterDialog
 {
   Q_OBJECT
 
 public:
 
   /** Constructor. */
-  DefaultTesterDialog(DefaultTester *defaultTester,
+  TesterDialog(Tester *tester,
 		  bool hfcServerDestination, bool queryHandlerDestination,
 		  QWidget *parent = 0);
 
@@ -46,7 +46,7 @@ private slots:
 
 private:
 
-  DefaultTester *_defaultTester;
+  Tester *_tester;
 
   /** Results of the recent QDL query. */
   DefaultData::QdlQueryResults _qdlQueryResults;
@@ -58,5 +58,5 @@ private:
 
 }
 
-#endif // DEFAULTTESTERDIALOG_H
+#endif // DEFAULT_TESTERDIALOG_H
 
