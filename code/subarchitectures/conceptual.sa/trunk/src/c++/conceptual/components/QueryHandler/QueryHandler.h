@@ -42,7 +42,6 @@ class QueryHandler: public cast::ManagedComponent
     };
 
 
-
 public:
 
 	/** Constructor. */
@@ -50,9 +49,6 @@ public:
 
 	/** Destructor. */
 	virtual ~QueryHandler() {}
-
-	/** Sends a new query. */
-	DefaultData::DiscreteProbabilityDistribution sendQuery(std::string query);
 
 
 protected:
@@ -67,9 +63,6 @@ protected:
 
 	/** Called by the framework after the run loop finishes. */
 	virtual void stop();
-
-
-private:
 
 
 }; // class ConceptualQueryHandler
