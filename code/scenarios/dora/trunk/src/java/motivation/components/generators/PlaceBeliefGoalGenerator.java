@@ -151,10 +151,11 @@ public class PlaceBeliefGoalGenerator extends
 	}
 
 	float computeImportance(ExploreMotive m) {
-		if (m.informationGain < 0)
-			return -1.0f;
-		else
-			return (float) (m.informationGain * MAX_COSTS_TO_DROP);
+		return -1.0f;
+//		if (m.informationGain < 0)
+//			return -1.0f;
+//		else
+//			return (float) (m.informationGain * MAX_COSTS_TO_DROP);
 	}
 
 }
