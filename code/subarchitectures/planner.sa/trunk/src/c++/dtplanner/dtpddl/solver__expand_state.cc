@@ -77,6 +77,9 @@ std::vector<Planning::State*> Solver::expand(Planning::State* state)
                 ; successor_state++){
             std::vector<Planning::State*> some_results = expand(*successor_state);
 
+            INTERACTIVE_VERBOSER(true, 10507, "Got some results :: "
+                                 <<some_results.size());
+    
             for(auto a_result = some_results.begin()
                     ; a_result != some_results.end()
                     ; a_result++){
@@ -84,6 +87,10 @@ std::vector<Planning::State*> Solver::expand(Planning::State* state)
             }
             
         }
+
+        
+        INTERACTIVE_VERBOSER(true, 10507, "Result so far includes :: "
+                             <<result.size()<<" states.");
     }
     
     INTERACTIVE_VERBOSER(true, 10506, "DONE :: Applying probabilistic transformations.");
