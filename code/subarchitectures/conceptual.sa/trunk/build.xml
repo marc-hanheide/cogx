@@ -36,6 +36,7 @@
 			<includepath>
 				<pathelement path="${slice.dir}" />
 				<pathelement path="${castslice.dir}" />
+				<pathelement path="${basedir}/../../subarchitectures/default.sa/src/slice" />
 				<pathelement path="/opt/local/share" />
 				<pathelement path="/usr/local/share" />
 				<pathelement path="/usr/share" />
