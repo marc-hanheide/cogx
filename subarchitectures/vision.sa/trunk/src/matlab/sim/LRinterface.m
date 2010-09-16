@@ -33,7 +33,7 @@ switch req
 
       %[mAV,mDA,mFS]=KDBFupdate(f,avw,mAV,mDA,mFS);
       avwp=avw(find(avw(:,2)>0),:);
-      avwn=avw(find(avw(:,2)<0),:);avwn=avwn(:,1);
+      avwn=avw(find(avw(:,2)<0),:);%avwn=avwn(:,1);
 
       if ~isempty(avwp)
 %         [mAV,mDA,mFS]=KDBFupdate(f,avwp,mAV,mDA,mFS);
@@ -44,7 +44,9 @@ switch req
       if ~isempty(avwn)
 %         [mAV,mDA,mFS]=KDBFunlearn(f,avwn,mAV,mDA,mFS);
 %         mAV=MKDBFunlearn(f,avwn,mAV);
-         mAV=ODKDEunlearn(f,avwn,mAV);
+%         mAV=ODKDEunlearn(f,avwn,mAV);
+         c=avw2snf(avwn,currMode.CTT);
+         mAV=ODKDEunlearn(f,c,mAV);
       end
       answ=1;%OK
       LRvisUpdate;

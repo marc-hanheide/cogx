@@ -31,7 +31,6 @@ global SaveImgs ImgNo
 SaveImgs=0;
 ImgNo=0;
 
-
 global ASVon ASVidx
 ASVon=0;
 ASVidx=0;
@@ -54,6 +53,7 @@ Params.FV=3;
 %Reload global variables from CONFIG FILE
 confFile='config/cogLearn.config';
 loadConfig(confFile);
+
 loadpredefinedorder = 0 ; 
 Data.allindexes = [] ;
 if loadpredefinedorder == 1
@@ -111,36 +111,29 @@ clfHs=[dsHs vmHs vsHs LRguiL LRguiR lrcH];
 
 
 
-Apos=[250 37;%ds
-   133 4;%vm
-   80 35;%vs
-   186 58;% lrc
-   180 4; %lrv
-   153 36; %lre
-  % 137 64;%at
-   133 4];%lrc
+% Apos=[250 37;%ds
+%    133 4;%vm
+%    80 35;%vs
+%    186 58;% lrc
+%    180 4; %lrv
+%    153 36; %lre
+%   % 137 64;%at
+%    133 4];%lrc
+% 
+% % Apos=[...
+% %    298.6000   48.4615   84.2000   41.5385;%ds
+% %    182.4000   61.8462   43.2000   28.3077;%vmc
+% %    227.6000   47.1538   69.4000   20.8462;%vmip
+% %    238.4000   70.7692   58.2000   19.2308;%vs
+% %    182.6000   45.0769   38.0000   12.9231;%lrc
+% %    286.0000    3.3077   96.4000   38.4615;%lrv
+% % %   176.0000    3.3077  108.0000   38.4615;%lre
+% %    176.0000    3.3077  90.0000   30.4615;%lre
+% %    134.4000   44.9231   45.6000   14.4615];%at
+% %    
+% %    
+% for i=1:7
+%    pos=get(clfHs(i),'Position');
+%    set(clfHs(i),'Position',[Apos(i,1:2) pos(3:4)]);
+% end;   
 
-% Apos=[...
-%    298.6000   48.4615   84.2000   41.5385;%ds
-%    182.4000   61.8462   43.2000   28.3077;%vmc
-%    227.6000   47.1538   69.4000   20.8462;%vmip
-%    238.4000   70.7692   58.2000   19.2308;%vs
-%    182.6000   45.0769   38.0000   12.9231;%lrc
-%    286.0000    3.3077   96.4000   38.4615;%lrv
-% %   176.0000    3.3077  108.0000   38.4615;%lre
-%    176.0000    3.3077  90.0000   30.4615;%lre
-%    134.4000   44.9231   45.6000   14.4615];%at
-%    
-%    
-for i=1:7
-   pos=get(clfHs(i),'Position');
-   set(clfHs(i),'Position',[Apos(i,1:2) pos(3:4)]);
-end;   
-
-
-%RLcontrol;
-
-% global lrraH lrraxH lrrapH
-% lrraH=LRrecAtt;
-% lrraxH=findobj(lrraH, 'Tag','axfig');
-% lrrapH=findobj(lrraH, 'Tag','axprob');
