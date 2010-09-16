@@ -720,7 +720,7 @@ void DTPCONTROL::newTask(Ice::Int id,
     for(uint i = 0; i < 100; i++){
         policy_Iteration();
         VERBOSER(10017, "Expected reward is :: "
-                 <<current_state->get__expected_value()<<std::endl);
+                 <<current_state[id]->get__expected_value()<<std::endl);
     }
     
 //     if(!solvers[id]->expand_belief_state_space()){
