@@ -2,10 +2,10 @@ option(BUILD_SA_DEFAULT_TESTER "Build Default.SA Tester component" YES)
 if(BUILD_SA_DEFAULT_TESTER)
 
     # Sources
-    set(MOC_HEADERS DefaultTesterDialog.h)
-    set(RESOURCES DefaultTester.qrc)
-    set(UIS DefaultTesterDialog.ui)
-    set(SOURCES DefaultTester.cc DefaultTesterDialog.cc)
+    set(MOC_HEADERS TesterDialog.h)
+    set(RESOURCES Tester.qrc)
+    set(UIS TesterDialog.ui)
+    set(SOURCES Tester.cc TesterDialog.cc)
 
     # Qt4 related processing
     find_package( Qt4 REQUIRED )
