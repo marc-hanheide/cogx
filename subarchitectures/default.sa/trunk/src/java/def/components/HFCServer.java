@@ -14,7 +14,7 @@ import DefaultData.HFCInterface;
 import DefaultData.QdlQueryResults;
 import de.dfki.lt.hfc.QueryParseException;
 
-public class DefaultHFCServer extends ManagedComponent {
+public class HFCServer extends ManagedComponent {
 	
 	Identity id;
 		

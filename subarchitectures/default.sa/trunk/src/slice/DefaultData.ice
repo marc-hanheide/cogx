@@ -82,18 +82,11 @@ module DefaultData
 		ProbabilityMassFunction massFunction;		
 	};
 
-	/** Interface of the DefaultQueryHandlerInterface */
-	interface QueryHandlerInterface
+	/** Interface to the def::QueryHandler::Server. */
+	interface QueryHandlerServerInterface
 	{
 		DiscreteProbabilityDistribution query(string queryStr);
 	};
-
-	/** State of the world obtained from other SAs. */
-	struct WorldState
-	{
-		int dummy;
-	};
-
 };
 
 #endif // DEFAULTDATA_ICE

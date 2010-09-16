@@ -26,10 +26,10 @@ TesterDialog::TesterDialog(Tester *tester,
 {
   // Setup ui
   setupUi(this);
-  hfcServerRadioButton->setEnabled(hfcServerDestination);
-  qdlQueryHandlerRadioButton->setEnabled(queryHandlerDestination);
-  hfcServerRadioButton->setChecked(hfcServerDestination);
-  qdlQueryHandlerRadioButton->setChecked(!hfcServerDestination && queryHandlerDestination);
+  hfcRadioButton->setEnabled(hfcServerDestination);
+  queryHandlerRadioButton->setEnabled(queryHandlerDestination);
+  hfcRadioButton->setChecked(hfcServerDestination);
+  queryHandlerRadioButton->setChecked(!hfcServerDestination && queryHandlerDestination);
 
   // Connect signals to slots
   connect(sendPushButton, SIGNAL(clicked()), this, SLOT(sendButtonClicked()));
@@ -44,11 +44,11 @@ TesterDialog::TesterDialog(Tester *tester,
 // ------------------------------------------------------
 void TesterDialog::sendButtonClicked()
 {
-	Tester::QueryDestination destination =
-			(hfcServerRadioButton->isChecked())?Tester::QD_HFC_SERVER:Tester::QD_QUERY_HANDLER;
-
-	_query = queryLineEdit->text().toStdString();
-	_qdlQueryResults = _tester->sendQuery(_query, destination);
+	if (hfcRadioButton->isChecked())
+	{
+		_query = queryLineEdit->text().toStdString();
+		_qdlQueryResults = _tester->sendHFCQuery(_query);
+	}
 
 	// Emit signal
 	emit queryResultsUpdatedSignal();

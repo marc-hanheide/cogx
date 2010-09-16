@@ -27,13 +27,6 @@ class Tester: public cast::ManagedComponent
 
 public:
 
-	/** Where should the query by sent. */
-	enum QueryDestination
-	{QD_HFC_SERVER, QD_QUERY_HANDLER};
-
-
-public:
-
 	/** Constructor. */
 	Tester():_qApp(0), _dialog(0) {}
 
@@ -41,7 +34,7 @@ public:
 	virtual ~Tester() {}
 
 	/** Sends a new query. */
-	DefaultData::QdlQueryResults sendQuery(std::string query, QueryDestination destination);
+	DefaultData::QdlQueryResults sendHFCQuery(std::string query);
 
 
 protected:
@@ -70,7 +63,7 @@ private:
 	DefaultData::HFCInterfacePrx _hfcInterfacePrx;
 
 	/** ICE proxy to the QueryHandlerInterface. */
-	DefaultData::QueryHandlerInterfacePrx _queryHandlerInterfacePrx;
+	DefaultData::QueryHandlerServerInterfacePrx _queryHandlerServerInterfacePrx;
 
 	/** Qt application. */
 	QApplication *_qApp;
