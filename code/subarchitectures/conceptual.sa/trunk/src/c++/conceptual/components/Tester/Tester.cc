@@ -33,14 +33,13 @@ void Tester::configure(const map<string,string> & _config)
 	map<string,string>::const_iterator it;
 
 	// QueryHandler name
-	if((it = _config.find("--test-qh")) != _config.end())
+	if((it = _config.find("--queryhandler")) != _config.end())
 	{
 		_queryHandlerName = it->second;
 	}
 
 	log("Configuration parameters:");
-	log("-> Test QueryHandler: %s", (_queryHandlerName.empty())?"No":"Yes");
-	log("-> QueryHandler Name: %s", _queryHandlerName.c_str());
+	log("-> QueryHandler name: %s", _queryHandlerName.c_str());
 }
 
 
@@ -48,8 +47,16 @@ void Tester::configure(const map<string,string> & _config)
 void Tester::start()
 {
 	// Get the QueryHandler interface proxy
-	if (!_queryHandlerName.empty())
-		_queryHandlerServerInterfacePrx= getIceServer<ConceptualData::QueryHandlerServerInterface>(_queryHandlerName);
+	_queryHandlerAvailable = false;
+	try
+	{
+		_queryHandlerServerInterfacePrx =
+				getIceServer<ConceptualData::QueryHandlerServerInterface>(_queryHandlerName);
+	}
+	catch (CASTException e)
+	{
+		_queryHandlerAvailable = false;
+	}
 }
 
 
