@@ -49,7 +49,6 @@ public class JFreeChartDisplay extends DisplayClient {
 			svgGenerator.stream(sw, true /* use css */);
 			sw.flush();
 			sw.close();
-			logger.info("SVG: " + sw.toString());
 			this.setObject(name, "motives", sw.toString());
 		} catch (SVGGraphics2DIOException e) {
 			logger.error(e);

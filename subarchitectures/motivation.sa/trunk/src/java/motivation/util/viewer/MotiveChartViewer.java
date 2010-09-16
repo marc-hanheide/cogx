@@ -38,7 +38,7 @@ public class MotiveChartViewer extends ManagedComponent implements
 		SVG, GUI
 	}
 
-	private static final long UPDATE_INTERVALL_MS = 1 * 1000;
+	private static final long UPDATE_INTERVALL_MS = 5 * 1000;
 
 	/**
 	 * Starting point for the demonstration application.
