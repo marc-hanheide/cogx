@@ -269,8 +269,15 @@ class CASTTask(object):
         self.process_cp_plan()
 
     def dt_done(self):
-        for pnode in self.dt_task.subplan_actions:
-            pnode.status = plans.ActionStatusEnum.EXECUTED
+        first_action = -1
+        dt_action_found = False
+        for i,pnode in enumerate(self.get_plan().topological_sort()):
+            if pnode in self.dt_task.subplan_actions:
+                pnode.status = plans.ActionStatusEnum.EXECUTED
+                dt_action_found = True
+            elif dt_action_found:
+                first_action = i
+        self.get_plan().execution_position = first_action
         
         self.cp_task.mark_changed()
         self.monitor_cp()
@@ -316,6 +323,10 @@ class CASTTask(object):
         self.component.getClient().updateBeliefState(beliefs)
                 
     def update_state(self, beliefs):
+        import fake_cast_state
+        if isinstance(self.state, fake_cast_state.FakeCASTState):
+            return True
+        
         self.state = cast_state.CASTState(beliefs, self.domain)
         new_cp_problem, _ = self.state.to_problem(None, deterministic=True, domain=self.cp_domain)
 
