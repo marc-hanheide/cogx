@@ -63,9 +63,9 @@ void VisionDriver::runComponent()
 {
   sleepProcess(1000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
-  
+
 	VisionData::ObjectDetectionCommandPtr detect_cmd = new VisionData::ObjectDetectionCommand;
-	
+
 	if(!tracking)
 	{
 	  VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
@@ -74,7 +74,7 @@ void VisionDriver::runComponent()
 		log("tracking start-command sent!");
 		tracking = true;
 	}
-	
+
 	while(isRunning())
 	{
 		sleepProcess(1000);	// detection time
@@ -93,8 +93,8 @@ void VisionDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
   VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
-  log("object detected: '%s'", obj->label.c_str());
-  
+  log("object detected: '%s'", obj->identLabels[0].c_str());
+
   // adding model to Tracker
   VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
   track_cmd->cmd = VisionData::ADDMODEL;
@@ -117,8 +117,8 @@ void VisionDriver::receiveVisualObjectPoseChange(const cdl::WorkingMemoryChange 
 /*
 	VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
-	log("Change of pose of VisualObject '%s' detected: %f %f %f", 
-		obj->label.c_str(), 
+	log("Change of pose of VisualObject '%s' detected: %f %f %f",
+		obj->label.c_str(),
 		obj->pose.pos.x,
 		obj->pose.pos.y,
 		obj->pose.pos.z);

@@ -67,12 +67,12 @@ void DummyDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
   VisionData::VisualObjectPtr obj =
     getMemoryEntry<VisionData::VisualObject>(_wmc.address);
   if(obj->detectionConfidence >= 0.5)
-    log("ok, detected '%s'", obj->label.c_str());
+    log("ok, detected '%s'", obj->identLabels[0].c_str());
   else
-    log("nah, did not detect '%s'", obj->label.c_str());
+    log("nah, did not detect '%s'", obj->identLabels[0].c_str());
 
   VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;
-  cmd->labels.push_back(obj->label);
+  cmd->labels.push_back(obj->identLabels[0]);
   addToWorkingMemory(newDataID(), cmd);
 }
 
