@@ -336,6 +336,8 @@ def print_state_difference(state1, state2, print_fn=None):
   def collect_facts(state):
     facts = defaultdict(set)
     for svar,val in state.iteritems():
+      if not svar.args:
+          continue # those shouldn't appear on the binder but are possible with a fake state
       facts[svar.args[0]].add((svar, val))
     return facts
 
