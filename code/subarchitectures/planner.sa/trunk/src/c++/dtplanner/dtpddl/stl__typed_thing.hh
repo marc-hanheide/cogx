@@ -217,7 +217,10 @@ public:
     typedef std::tr1::tuple<T...> Contents;
     typedef type_wrapper<type_name, T...> THIS;
 
-
+//     static void erase(int type_index)
+//     {
+//     }
+    
     static bool ith_exists(int type_index, ID_TYPE object_index)
     {
         auto _searchable = indexed__Traversable_Collection.find(type_index);
