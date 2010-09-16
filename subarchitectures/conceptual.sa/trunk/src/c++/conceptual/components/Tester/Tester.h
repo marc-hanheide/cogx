@@ -26,7 +26,7 @@ class Tester: public cast::ManagedComponent
 
 public:
 	/** Constructor. */
-	Tester(): {}
+	Tester(): _queryHandlerAvailable(false) {}
 
 	/** Destructor. */
 	virtual ~Tester() {}
@@ -48,7 +48,7 @@ protected:
 
 private:
 	/** Sends a new query to the QueryHandler. */
-	DefaultData::DiscreteProbabilityDistribution sendQueryHandlerQuery(std::string query);
+	DefaultData::ProbabilityDistribution sendQueryHandlerQuery(const std::string &query);
 
 
 private:
@@ -61,7 +61,6 @@ private:
 
 	/** ICE proxy to the QueryHandlerInterface. */
 	ConceptualData::QueryHandlerServerInterfacePrx _queryHandlerServerInterfacePrx;
-
 
 
 }; // class Tester

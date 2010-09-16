@@ -32,9 +32,6 @@ public:
 	/** Destructor. */
 	virtual ~ChainGraphInferencer() {}
 
-	/** Sends a new query. */
-	DefaultData::DiscreteProbabilityDistribution sendQuery(std::string query);
-
 
 protected:
 	/** Called by the framework to configure the component. */
