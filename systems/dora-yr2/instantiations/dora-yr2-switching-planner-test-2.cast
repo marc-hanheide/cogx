@@ -33,9 +33,8 @@ INCLUDE includes/binder.sa/binder-base.cast
 #JAVA MG  comsys-execution comsys.motivation.ComsysActionInterface
 
 # planning and motivation #####################################################
-#INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/switching-planner-base.cast
-INCLUDE includes/planner.sa/planner.cast
+INCLUDE includes/planner.sa/switching-planner.cast
+INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/fake-motivation.cast
 #INCLUDE includes/motivation.sa/motivation.cast
 

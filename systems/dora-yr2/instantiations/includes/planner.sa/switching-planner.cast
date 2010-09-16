@@ -1,0 +1,2 @@
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain switchtest-tfd.pddl --log --nodot --problem switchtest-tfd-problem.pddl
+COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
