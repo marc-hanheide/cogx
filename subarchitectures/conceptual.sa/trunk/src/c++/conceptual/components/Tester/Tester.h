@@ -10,32 +10,26 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <ConceptualData.hpp>
 
-class QApplication;
 
 namespace conceptual
 {
 
-class TesterDialog;
-
 /**
  * @author Andrzej Pronobis
  *
- * Tester for the Conceptual.SA
+ * Tester for the Conceptual.SA. It tests Conceptual.SA
+ * by using its external interfaces in a way external
+ * components should use them.
  */
 class Tester: public cast::ManagedComponent
 {
 
-
 public:
-
 	/** Constructor. */
-	Tester():_qApp(0), _dialog(0) {}
+	Tester(): {}
 
 	/** Destructor. */
 	virtual ~Tester() {}
-
-	/** Sends a new query. */
-	DefaultData::DiscreteProbabilityDistribution sendQuery(std::string query);
 
 
 protected:
@@ -53,18 +47,22 @@ protected:
 
 
 private:
+	/** Sends a new query to the QueryHandler. */
+	DefaultData::DiscreteProbabilityDistribution sendQueryHandlerQuery(std::string query);
+
+
+private:
 
 	/** Id of the QueryHandler component.  */
 	std::string _queryHandlerName;
 
+	/** Set to true if the QueryHandler is available. */
+	bool _queryHandlerAvailable;
+
 	/** ICE proxy to the QueryHandlerInterface. */
 	ConceptualData::QueryHandlerServerInterfacePrx _queryHandlerServerInterfacePrx;
 
-	/** Qt application. */
-	QApplication *_qApp;
 
-	/** QT GUI dialog. */
-	TesterDialog *_dialog;
 
 }; // class Tester
 } // namespace def
