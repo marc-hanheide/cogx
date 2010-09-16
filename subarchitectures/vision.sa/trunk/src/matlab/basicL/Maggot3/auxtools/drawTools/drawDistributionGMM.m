@@ -13,6 +13,7 @@
 %%
 function drawDistributionGMM( varargin )
 
+draw_to_these_axes = [] ;
 maxAlpha = 0.7 ;
 useEdgeColorBlack = 1 ;
 deactivateFaceColor = 0 ;
@@ -35,11 +36,16 @@ for i = 1:2:nargs
         case 'useAlphaWeights', useAlphaWeights = args{i+1} ;
         case 'deactivateFaceColor', deactivateFaceColor = args{i+1} ;
         case 'useEdgeColorBlack', useEdgeColorBlack =  args{i+1} ;
+        case 'draw_to_these_axes', draw_to_these_axes =  args{i+1} ;
     end
 end
 
 if isempty(pdf)
     return ;
+end
+
+if isempty(draw_to_these_axes)
+    draw_to_these_axes = gca ;
 end
 
 % read dimension and number of components
@@ -51,9 +57,9 @@ end
  
 if ( d == 1 )
     if ( ~isempty(color) )
-        showDecomposedPdf( pdf, 'linTypeSum', color, 'decompose', decompose ) ;
+        showDecomposedPdf( pdf, 'linTypeSum', color, 'decompose', decompose, 'draw_to_these_axes', draw_to_these_axes ) ;
     else
-        showDecomposedPdf( pdf, 'decompose', decompose ) ;
+        showDecomposedPdf( pdf, 'decompose', decompose, 'draw_to_these_axes', draw_to_these_axes ) ;
     end
 
     return ;
@@ -78,7 +84,7 @@ else
     EdgeColor = color ;
 end
 
-h = ishold ;
+h = get(draw_to_these_axes,'NextPlot') ;
 FaceColor = color ;
 for i = 1 : N
 %     if weighted == 1
@@ -86,22 +92,24 @@ for i = 1 : N
 %     end
     
     if i == 2 
-        hold on ;
+        set(draw_to_these_axes,'NextPlot','add') ;
+        %hold on ;
     end
 
     switch d
         case 1
 %              plotgauss1d( pdf.Mu(i), pdf.Cov{i}, pdf.w(i) ) ;               
         case 2
-             plotgauss2d( pdf.Mu(:,i), pdf.Cov{i}, color, sigmaPlotBound ) ;
+             plotgauss2d( pdf.Mu(:,i), pdf.Cov{i}, color, sigmaPlotBound, draw_to_these_axes ) ;
         case 3            
             if deactivateFaceColor == 1
                     FaceColor = 'none' ;
             end
             soptds = {'EdgeAlpha', 0.1, 'FaceAlpha', EdgeAlphaVal(i), 'FaceColor',...
                         FaceColor, 'EdgeColor', EdgeColor };  %
-            plotcov3(pdf.Mu(:,i), pdf.Cov{i}  , 'surf-opts', soptds) ;
+            plotcov3(pdf.Mu(:,i), pdf.Cov{i}  , draw_to_these_axes,  'surf-opts', soptds) ;
             box on; grid on ;
     end 
 end
- if ( h == 0 ) hold off ; end    
+%  if ( h == 0 ) hold off ; end    
+set(draw_to_these_axes,'NextPlot',h);

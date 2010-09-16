@@ -48,7 +48,7 @@
 % USA.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [h, s] = plotcov3(mu, Sigma, varargin)
+function [h, s] = plotcov3(mu, Sigma, draw_to_these_axes, varargin)
 
 if size(Sigma) ~= [3 3], error('Sigma must be a 3 by 3 matrix'); end
 if length(mu) ~= 3, error('mu must be a 3 by 1 vector'); end
@@ -102,7 +102,7 @@ else
 % 		[mu(3); mu(3) + L(3) * V(3, 3)], plot_opts{:})];
 end
 
-s = surf(reshape(z(1, :), [(n + 1) (n + 1)]), ...
+s = surf(draw_to_these_axes, reshape(z(1, :), [(n + 1) (n + 1)]), ...
 	 reshape(z(2, :), [(n + 1) (n + 1)]), ...
 	 reshape(z(3, :), [(n + 1) (n + 1)]), ...
 	 surf_opts{:});

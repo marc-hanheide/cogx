@@ -214,7 +214,7 @@ minCov = (1e-15)^2 ;
 % get covariance and mean along all directions for the reference KDE
 [new_mu, Cov_ref, w_out] = momentMatchPdf(kde_ref.pdf.Mu, kde_ref.pdf.Cov, kde_ref.pdf.w) ;
 
-Cov_mod = Cov_ref*10^2 ;
+Cov_mod = Cov_ref*100^2 ;
 
 idsall = ones(1, size(kde_ref.pdf.Mu,1)) ;
 idsall(selectDir) = 0 ;

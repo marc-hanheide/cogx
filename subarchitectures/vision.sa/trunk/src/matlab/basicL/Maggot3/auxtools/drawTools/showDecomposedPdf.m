@@ -9,6 +9,7 @@ function returnBounds = showDecomposedPdf( pdf, varargin )
 % 'linTypeSub'  ... line type of components
 % 
 %
+draw_to_these_axes = [] ;
 applySummation = 1 ;
 linTypeSum = 'r' ;
 linTypeSub = 'k' ;
@@ -31,9 +32,15 @@ for i=1:2:nargs
         case 'linTypeSub', linTypeSub = args{i+1} ;
         case 'enumComps', enumComps = args{i+1} ;
         case 'applySummation', applySummation = args{i+1} ;
+        case 'draw_to_these_axes', draw_to_these_axes = args{i+1} ;
     end
 end
  
+
+if isempty(draw_to_these_axes)
+   draw_to_these_axes = gca ; 
+end
+
 if showDashed == 1 
     linTypeSum = [linTypeSum(1),'--'] ;
 elseif showDashed == 0 
@@ -47,7 +54,7 @@ if isempty(bounds)
     bounds = [bmin,bmax] ;
 end
 
-if returnBounds > 0 & nargout > 0
+if returnBounds > 0 && nargout > 0
     returnBounds = bounds ;
 else
     returnBounds = [] ;
@@ -56,27 +63,26 @@ end
 pdf.w = priorWeight*pdf.w ;
 
 if decompose == 1
-    h = ishold ;     
+    h = get(draw_to_these_axes,'NextPlot') ;     
     for i = 1 : length(pdf.w)
         if i == 2 
-            hold on ; 
+            set(draw_to_these_axes,'NextPlot','add') ;
         end
-        showPdf( bounds, 1000, pdf.Mu(:,i), pdf.Cov{i}, pdf.w(i), linTypeSub, 2) ;
+        showPdf( bounds, 1000, pdf.Mu(:,i), pdf.Cov{i}, pdf.w(i), linTypeSub, 2, draw_to_these_axes) ;
         if ( enumComps == 1 )
            text(pdf.Mu(:,i), 5, num2str(i)) ;%, 'FontSize',16
         end
     end
     if applySummation == 1
-        showPdf( bounds, 1000, pdf.Mu, cell2mat(pdf.Cov)', pdf.w, linTypeSum,2  ) ;
+        showPdf( bounds, 1000, pdf.Mu, cell2mat(pdf.Cov)', pdf.w, linTypeSum,2, draw_to_these_axes  ) ;
     end    
-    if ( h == 0 ) hold off ; end
+%     if ( h == 0 ) hold off ; end
+    set(draw_to_these_axes, 'NextPlot', h) ;
 else
-    showPdf( bounds, 1000, pdf.Mu, cell2mat(pdf.Cov)', pdf.w, linTypeSum, 2  ) ;
+    showPdf( bounds, 1000, pdf.Mu, cell2mat(pdf.Cov)', pdf.w, linTypeSum, 2, draw_to_these_axes  ) ;
 end
-
-
-
-ca = axis ;
+ 
+% ca = axis ;
 %axis([bounds,0,ca(4)]);
 axis tight
 
@@ -116,10 +122,10 @@ axis([[-1,1]*dat_scale,0,ca(4)]);
  
 drawnow ;
 % ----------------------------------------------------------------------- %
-function y_evals = showPdf( bounds, N,centers, covariances, w, color, lw )
+function y_evals = showPdf( bounds, N,centers, covariances, w, color, lw, draw_to_these_axes )
 x_evals = [bounds(1):abs(diff(bounds))/N:bounds(2)] ;
 y_evals = evaluateDistributionAt( centers, w, covariances, x_evals ) ;
-plot ( x_evals, y_evals, color, 'LineWidth',lw )
+plot ( draw_to_these_axes, x_evals, y_evals, color, 'LineWidth',lw )
  
 
 

@@ -2,7 +2,7 @@ function demoClassifier2()
 
 plotting_activated = 1 ;
 num_add_classes = 5 ;
-nfake_dims = 1;
+nfake_dims = 9 ;
 dim = nfake_dims + 2 ;
 
 lbl={'r', 'g', 'b', 'c', 'm', 'k', 'y', 'k'} ;
@@ -18,7 +18,7 @@ min_samps_per_model_feat_sel = (dim^2-dim)/2+dim+dim ; % (int) minimum number of
 min_th_feat_sel = 0.1 ;                         % (double) threshold on importance below which a feature is removed
 costThreshold.thReconstructive = 0.01 ;         % thresholds on reconstructive and discriminative compression
 costThreshold.thDiscriminative = 0.02 ; %0.02 ;
-autoUpdateThres_upper = 0.1 ;                   % in self verified mode, this is the threshold on entropy for asking
+autoUpdateThres_upper = 0.07 ;                   % in self verified mode, this is the threshold on entropy for asking
 autoUpdateThres_lower = 1e-2 ;                  % in self verified mode, this is the threshold on entropy for auto update
 random_fselect_threshold = 1 ;0.95 ;               % probability of feature selection occuring when called
 pair_dist_struct_use_approx = 1 ;               % switch for compression: test which classes shuld be taken into account during compression of i-th class
