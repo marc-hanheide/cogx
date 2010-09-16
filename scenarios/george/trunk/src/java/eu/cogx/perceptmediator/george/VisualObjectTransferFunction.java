@@ -51,9 +51,9 @@ public class VisualObjectTransferFunction implements
 				.getContent(IndependentDistributionFactory.get());
 		FormulaDistribution fd;
 
-		fd = FormulaDistribution.create();
-		fd.add(from.label, from.labelConfidence);
-		distr.put("label", fd.asDistribution());
+//		fd = FormulaDistribution.create();
+//		fd.add(from.label, from.labelConfidence);
+//		distr.put("label", fd.asDistribution());
 
 		fd = FormulaDistribution.create();
 		fd.add((float) from.salience, 1.0);
