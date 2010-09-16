@@ -60,7 +60,8 @@ void Tester::start()
 		_hfcInterfacePrx = getIceServer<DefaultData::HFCInterface>(_hfcServerName);
 	// Get the QueryHandler interface proxy
 	if (!_queryHandlerName.empty())
-		_queryHandlerInterfacePrx= getIceServer<DefaultData::QueryHandlerInterface>(_queryHandlerName);
+		_queryHandlerServerInterfacePrx= getIceServer<DefaultData::QueryHandlerServerInterface>(
+				_queryHandlerName);
 }
 
 
@@ -91,9 +92,9 @@ void Tester::stop()
 
 
 // -------------------------------------------------------
-QdlQueryResults Tester::sendQuery(std::string query, QueryDestination destination)
+QdlQueryResults Tester::sendHFCQuery(std::string query)
 {
-	println("Sending query %s", query.c_str());
+	println("Sending query to HFCServer %s", query.c_str());
 	return _hfcInterfacePrx->querySelect(query);
 }
 

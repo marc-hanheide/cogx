@@ -46,9 +46,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="hfcServerRadioButton">
+         <widget class="QRadioButton" name="hfcRadioButton">
           <property name="text">
-           <string>HFCServer</string>
+           <string>Forward Chainer</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -56,9 +56,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="qdlQueryHandlerRadioButton">
+         <widget class="QRadioButton" name="queryHandlerRadioButton">
           <property name="text">
-           <string>QdlQueryHandler</string>
+           <string>Query Handler</string>
           </property>
          </widget>
         </item>
