@@ -1,0 +1,11 @@
+#!/bin/bash
+cd external
+
+if [ abducer-2.?.? -nt abducer-2.?.?.tar.gz ]; then
+    echo "abducer is up to date"
+else
+    tar xzvf abducer-2.?.?.tar.gz
+    touch abducer-2.?.?
+fi
+
+make -C abducer-2.?.?  ICE_HOME=@ICE_HOME@
