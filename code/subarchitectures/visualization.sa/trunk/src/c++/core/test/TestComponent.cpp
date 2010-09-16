@@ -1,8 +1,8 @@
 /**
- * @author Michael Zillich (original file: VideoViewer)
  * @date February 2009
  *
- * Adapted by Marko Mahnič.
+ * @author Marko Mahnič.
+ * Adapted from VideoViewer component created by Michael Zillich
  */
 
 #include <highgui.h>
