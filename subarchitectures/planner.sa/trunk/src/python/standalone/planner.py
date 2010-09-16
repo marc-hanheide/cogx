@@ -151,7 +151,7 @@ class Planner(object):
         first_invalid_action = None
         for i,pnode in enumerate(plan):
             log.debug("Action: %s (%s)", str(pnode), str(pnode.status))
-            if isinstance(pnode, plans.DummyNode) or pnode.status in (plans.ActionStatusEnum.EXECUTED, plans.ActionStatusEnum.FAILED):
+            if isinstance(pnode, plans.DummyNode) or pnode.status in (plans.ActionStatusEnum.EXECUTED, plans.ActionStatusEnum.FAILED) and not pnode.is_virtual():
                 continue
             
             t1 = time.time()

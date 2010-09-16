@@ -513,6 +513,9 @@ class State(dict):
             values.append(self.evaluate_term(arg, trace_vars))
         func = term.function
 
+        if any(v == UNKNOWN for v in values):
+            return UNKNOWN
+
         if func == plus:
             return TypedNumber(values[0].value + values[1].value)
         elif func == minus:

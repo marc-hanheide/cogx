@@ -72,7 +72,7 @@ class PlanNode(object):
         return self.status == ActionStatusEnum.IN_PROGRESS
 
     def is_virtual(self):
-        return self.action.name.startswith("select_")
+        return self.action.name.startswith("select-")
 
     def __str__(self):
         #return "%s(%s)" % (self.action, self.time)

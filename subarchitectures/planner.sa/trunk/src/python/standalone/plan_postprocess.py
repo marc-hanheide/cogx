@@ -61,7 +61,7 @@ def getRWDescription(action, args, _state, time):
     pnode = plans.PlanNode(action, args, time, plans.ActionStatusEnum.EXECUTABLE)
 
     log.debug("get description for action (%s %s)", action.name, " ".join(a.name for a in action.args))
-    
+
     action.instantiate(args)
 
     #t0 = time.time()

@@ -5,6 +5,8 @@ from collections import defaultdict
 from standalone import task, config, pddl, plans
 from standalone.pddl import state, dtpddl, mapl, translators, visitors, effects
 
+import standalone.globals as global_vars
+
 log = config.logger("PythonServer")
 
 class DTProblem(object):
@@ -85,47 +87,8 @@ class DTProblem(object):
         return goal_svars
 
     def compute_restrictions(self):
-        layers = []
-        relaxations = set()
-        fixed = set()
-        constraints = defaultdict(set)
-        for pnode in self.select_actions:
-            print "action:",pnode
-            print "cond:",map(str,pnode.preconds)
-            new_fixed = fixed | set(pnode.full_args)
-            new_relaxations = set()
-            new_constraints = defaultdict(set)
-            for svar, val in pnode.preconds:
-                if svar.modality == mapl.commit:
-                    new_relaxations |= set(svar.args+svar.modal_args)
-                    new_relaxations.add(val)
-                elif svar.function.type != pddl.t_number:
-                    for a in svar.args+svar.modal_args:
-                        new_constraints[a].add(state.Fact(svar,val))
-            new_relaxations.discard(pddl.TRUE)
-            new_relaxations.discard(pddl.FALSE)
-            
-            for svar in relaxations:
-                print "trying to relax", svar,"..."
-                if svar in new_relaxations:
-                    print "will be relaxed later"
-                    continue
-                if svar in new_constraints:
-                    print "has some new constraints:", map(str, constraints[svar])
-                    new_fixed.discard(svar)
-                    continue
-                print "is completely free"
-                new_fixed.discard(svar)
 
-            for obj, constr in constraints.iteritems():
-                for c in constr:
-                    if c.value in new_fixed:
-                        new_constraints[obj].add(c)
-                    else:
-                        print obj.name, "constraint", c, "is gone"
-                        
-            
-            print "fixed on this layer:", map(str, new_fixed)
+        def transform_constraints(new_fixed, new_constraints):
             c2 = []
             replace_dict = {}
             for obj, cset in new_constraints.iteritems():
@@ -142,13 +105,75 @@ class DTProblem(object):
                     f2 = state.Fact(state.StateVariable(c.svar.function, args), val)
                     if f2 not in c2:
                         c2.append(f2)
-                
-            layers.append((new_fixed, c2))
+            return c2
+            
+        layers = []
+        var_relaxations = set()
+        value_relaxations = set()
+        fixed = set()
+        constraints = defaultdict(set)
+        for pnode in self.select_actions:
+            print "action:",pnode
+            print "cond:",map(str,pnode.preconds)
+            new_fixed = fixed | set(pnode.full_args)
+            new_var_relaxations = set()
+            new_value_relaxations = set()
+            new_constraints = defaultdict(set)
+            for svar, val in pnode.preconds:
+                if svar.modality == mapl.commit:
+                    new_var_relaxations |= set(svar.args)
+                    new_value_relaxations |= set(svar.modal_args)
+                elif svar.function.type != pddl.t_number:
+                    for a in svar.args+svar.modal_args:
+                        new_constraints[a].add(state.Fact(svar,val))
+            new_var_relaxations.discard(pddl.TRUE)
+            new_var_relaxations.discard(pddl.FALSE)
+            new_value_relaxations.discard(pddl.TRUE)
+            new_value_relaxations.discard(pddl.FALSE)
+
+            new_free_vars = set()
+            new_free_values = set()
+            for svar in var_relaxations|value_relaxations:
+                print "trying to relax", svar,"..."
+                if svar in new_var_relaxations | new_value_relaxations:
+                    print "will be relaxed later"
+                    continue
+                if svar in new_constraints:
+                    print "has some new constraints:", map(str, new_constraints[svar])
+                    new_fixed.discard(svar)
+                    continue
+                print "is completely free"
+                if svar in var_relaxations:
+                    new_free_vars.add(svar)
+                else:
+                    new_free_values.add(svar)
+
+            for remove in [None]+list(new_free_values) + list(new_free_vars):
+                combined_constraints = defaultdict(set)
+                combined_constraints.update(new_constraints)
+                if remove:
+                    print "removing:", remove
+                    new_fixed.discard(remove)
+                if new_fixed >= fixed and fixed:
+                    continue
+
+                for obj, constr in constraints.iteritems():
+                    for c in constr:
+                        if c.value in new_fixed:
+                            combined_constraints[obj].add(c)
+                        else:
+                            print obj.name, "constraint", c, "is gone"
+                        
+                print "fixed on this layer:", map(str, new_fixed)
+                c2 = transform_constraints(new_fixed, combined_constraints)
+                layers.append((set(new_fixed), c2))
             #print "fixed values:", map(str, fixed)
             #print "possible relaxations:", map(str, relaxations)
+            print
             fixed = new_fixed
-            relaxations = new_relaxations
-            constraints = new_constraints
+            var_relaxations = new_var_relaxations
+            value_relaxations = new_value_relaxations
+            constraints = combined_constraints
 
         for i,(fixed,constraints) in enumerate(layers):
             print "Layer",i
@@ -238,12 +263,17 @@ class DTProblem(object):
             if check_object(o):
                 result.add(o)
 
+        def check_value(val):
+            if val.type == pddl.t_number:
+                return True
+            return val in result
+                
         facts = []
         for f in cast_state.prob_state.iterdists():
-            if not all(a in objects for a in f.svar.args + f.svar.modal_args):
+            if not all(a in result for a in f.svar.args + f.svar.modal_args):
                 continue
             
-            vdist = pddl.prob_state.ValueDistribution(dict((d,p) for d,p in f.value.iteritems() if d in result))
+            vdist = pddl.prob_state.ValueDistribution(dict((d,p) for d,p in f.value.iteritems() if check_value(d)))
             vdist.normalize()
             facts.append(pddl.prob_state.ProbFact(f.svar, vdist))
         return result, facts
@@ -255,22 +285,52 @@ class DTProblem(object):
 
         if domain is None:
             domain = self.dtdomain
+            
+        dt_rules = pddl.translators.Translator.get_annotations(domain).get('dt_rules', [])
 
+        def type_count(t, objects):
+            return len([o for o in objects if o.is_instance_of(t)])
+
+        def get_rule_size(r, objects):
+            values = set(v for p,v in r.values)
+            num_instances = 1
+            for a in r.args:
+                if isinstance(a, pddl.Parameter):
+                    num_instances *= type_count(a.type, objects)
+            num_values = 0
+            for v in values:
+                if isinstance(v, pddl.VariableTerm):
+                    num_values += type_count(v.object.type, objects)
+                else:
+                    num_values += 1
+            return num_instances, num_values
+        
         objects_in_layer = {}
         facts_in_layer = {}
         objects_in_layer[len(self.relaxation_layers)] = cast_state.objects
+        selected = len(self.relaxation_layers)
         for i, (fixed, constraints) in reversed(list(enumerate(self.relaxation_layers))):
             print "Layer", i
+            selected = i
             objects, facts = self.limit_state(cast_state, fixed, constraints, objects_in_layer[i+1])
             objects_in_layer[i] = objects
             facts_in_layer[i] = facts
             print [o.name for o in objects]
+            
+            total_count = 1
+            for r in dt_rules:
+                inst, values = get_rule_size(r,objects)
+                total_count *= values**inst
+            print "Approx. State size:", total_count
+            if total_count < global_vars.config.dt.max_state_size:
+                print "Selecting layer", i
+                break
             print "\n"
 
-        objects = cast_state.objects #for testing
-        
-        dt_rules = pddl.translators.Translator.get_annotations(domain).get('dt_rules', [])
+        objects = objects_in_layer[selected]# was cast_state.objects #for testing
+        facts = facts_in_layer[selected]
 
+        
         #
         # Build dependencies for the rules
         #
@@ -290,7 +350,7 @@ class DTProblem(object):
         substates = defaultdict(list)
 
         hstate = HierarchicalState([], cast_state.prob_state.problem)
-        for f in cast_state.prob_state.iterdists():
+        for f in facts:
             detval = None
             for val, prob in f.value.iteritems():
                 if prob == 1.0:
@@ -323,7 +383,7 @@ class DTProblem(object):
                 cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
                 val = hstate.evaluate_term(v)
                 if hstate[cvar] != val:
-                    print "not satisfied in top level state: %s = %s" % (str(cvar), str(val))
+                    #print "not satisfied in top level state: %s = %s" % (str(cvar), str(val))
                     return
             if not pred:
                 rel_substates = [st]
@@ -336,7 +396,7 @@ class DTProblem(object):
                     cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
                     val = st2.evaluate_term(v)
                     if st2[cvar] != val:
-                        print "not satisfied: %s = %s" % (str(cvar), str(val))
+                        #print "not satisfied: %s = %s" % (str(cvar), str(val))
                         sat = False
                         break
                 if not sat:
@@ -371,7 +431,7 @@ class DTProblem(object):
                 
             combinations = state.product(*map(lambda a: [o for o in objects if o.is_instance_of(a.type)], r.args+r.add_args))
             for c in combinations:
-                print "(%s %s)" % (r.function.name, " ".join(a.name for a in c))
+                #print "(%s %s)" % (r.function.name, " ".join(a.name for a in c))
                 r.instantiate_all(c)
                 apply_rule(hstate, r, pred)
                 r.uninstantiate()
@@ -386,10 +446,10 @@ class DTProblem(object):
 
         print "done"
         #facts = [f.to_init() for f in cast_state.prob_state.iterdists()]
-        facts = hstate.init_facts()
-        objects = set(o for o in cast_state.objects if o not in domain.constants)
-
-        problem = pddl.Problem("cogxtask", objects, facts, None, domain, opt, opt_func )
+        p_facts = hstate.init_facts()
+        p_objects = set(o for o in objects if o not in domain.constants)
+        
+        problem = pddl.Problem("cogxtask", p_objects, p_facts, None, domain, opt, opt_func )
         problem.goal = pddl.Conjunction([])
         log.debug("total time for state creation: %f", time.time()-t0)
         return problem

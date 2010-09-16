@@ -503,6 +503,13 @@ class DT2MAPLCompiler(translators.Translator):
                 actions.append(a)
             
         return actions
+
+    def translate_action(self, action, domain=None):
+        if action.sensors:
+            commit_cond = action.commit_condition()
+            action.precondition = conditions.Conjunction.new(action.precondition)
+            action.precondition.parts.append(commit_cond)
+        return action
     
     def translate_domain(self, _domain):
         if "partial-observability" not in _domain.requirements:
@@ -531,7 +538,7 @@ class DT2MAPLCompiler(translators.Translator):
                     print r
                 rules += new_rules
             else:
-                actions.append(a)
+                actions.append(self.translate_action(a))
                 
         fdict = dict((r.function, r) for r in rules)
         for f in dom.functions:

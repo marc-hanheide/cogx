@@ -112,7 +112,7 @@ class CASTTask(object):
             self.dt_task = dt_problem.DTProblem(plan, self.domain, self.state)
 
             for pnode in plan.nodes_iter():
-                if pnode.action.name.startswith("select-"):
+                if pnode.is_virtual():
                     pnode.status = plans.ActionStatusEnum.EXECUTED
             
             self.update_status(self.status)
