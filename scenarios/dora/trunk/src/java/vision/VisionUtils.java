@@ -41,8 +41,8 @@ public class VisionUtils {
 				new String[0], 0d, new cogx.Math.Sphere3(newVector3(), 0d),
 				CASTUtils.getTimeServer().getCASTTime(), null,
 				new VisualObjectView[0], new GeometryModel(new Vertex[0],
-						new Face[0]), "", 0d, 0, new int[0], new double[0],
-				new String[0], new double[0], 0, 0, new String[0],
+						new Face[0]),
+				0d, new String[0], new double[0], 0, 0, new String[0],
 				new double[0], 0, 0, new String[0], new double[0], 0, 0, "");
 		return obj;
 	}

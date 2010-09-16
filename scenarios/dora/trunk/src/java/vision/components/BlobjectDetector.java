@@ -79,7 +79,8 @@ public class BlobjectDetector extends ManagedComponent implements
 			for (String label : dc.labels) {
 				// for the time being just fail
 				VisualObject obj = VisionUtils.newVisualObject();
-				obj.label = label;
+				obj.identLabels=new String[1];
+				obj.identLabels[0] = label;
 				obj.detectionConfidence = 0f;
 				addToWorkingMemory(newDataID(), obj);
 			}
@@ -87,8 +88,9 @@ public class BlobjectDetector extends ManagedComponent implements
 			log("there are some blobs around");
 			for (String label : dc.labels) {
 				log("  is it a " + label + "?");
-				VisualObject obj = VisionUtils.newVisualObject();
-				obj.label = label;
+ 				VisualObject obj = VisionUtils.newVisualObject();
+                                obj.identLabels=new String[1];
+                                obj.identLabels[0] = label;
 				// default to not seen (i.e. 0)
 				obj.detectionConfidence = 0f;
 

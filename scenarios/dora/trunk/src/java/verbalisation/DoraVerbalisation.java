@@ -96,7 +96,7 @@ public class DoraVerbalisation extends ManagedComponent {
 		@Override
 		public String toText(VisualObject _i) {
 			if (_i.detectionConfidence > 0.5) {
-				return "That looks like " + _i.label;
+				return "That looks like " + _i.identLabels[0];
 			} else {
 				return "";
 			}
