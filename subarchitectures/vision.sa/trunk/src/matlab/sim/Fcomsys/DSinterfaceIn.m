@@ -1,8 +1,8 @@
 function DSinterfaceIn(answ)
 
-global txrH;
+global Figs
 disp(['DSinterfaceIn: I received [' num2str(answ) ']!']);
 sentence=DScreateSentence(answ);
-set(txrH,'String',sentence);
+set(Figs.dlgH.txrH,'String',sentence);
 
 DSextendDlg(['R: ' sentence]);

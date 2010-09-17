@@ -4,10 +4,10 @@ if nargin<1
    sentence='';
 end;
 
-global lbdH;
-dlg=get(lbdH,'String');
+global Figs
+dlg=get(Figs.dlgH.lbdH,'String');
 dlg1=[dlg; sentence];
-set(lbdH,'String',dlg1);
-set(lbdH,'Value',size(dlg1,1));
+set(Figs.dlgH.lbdH,'String',dlg1);
+set(Figs.dlgH.lbdH,'Value',size(dlg1,1));
 
 

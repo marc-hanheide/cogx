@@ -1,12 +1,14 @@
-function atH=ATstart
+function ATstart
 
-global attOn attOnH attOffH;
+global Figs
+global Settings 
 
 atH=ATcontrol;
+Figs.atH.main=atH;
 
-attOnH=findobj(atH, 'tag','rb_attOn');
-attOffH=findobj(atH, 'tag','rb_attOff');
+Figs.atH.attOnH=findobj(atH, 'tag','rb_attOn');
+Figs.atH.attOffH=findobj(atH, 'tag','rb_attOff');
 
-set(attOnH,'Value',1);
-set(attOffH,'Value',0);
-attOn=1;
+set(Figs.atH.attOnH,'Value',1);
+set(Figs.atH.attOffH,'Value',0);
+Settings.attOn=1;

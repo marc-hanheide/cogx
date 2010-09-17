@@ -97,7 +97,7 @@ function pbNext_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global axCpts3dH ;
+global Figs
 
 VSnextImg;
 
@@ -154,12 +154,12 @@ function pushbutton3_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global axCpts3dH;
+global Figs
 
 % axes(axCpts3dH) ; hold off ;
 
 for i = 1 : 220
-    view(axCpts3dH,[i, 42]) ;
+    view(Figs.vsHs.axCpts3dH,[i, 42]) ;
     drawnow ;
     pause(0.01) ;
 end

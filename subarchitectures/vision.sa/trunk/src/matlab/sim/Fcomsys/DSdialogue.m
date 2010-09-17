@@ -504,12 +504,12 @@ DSinterfaceOut(handles.data);
 handles.data=[];guidata(hObject,handles);
 
 
-global axCpts3dH;
+global Figs
 
-% axes(axCpts3dH) ; hold off ;
+% axes(Figs.vsHs.axCpts3dH) ; hold off ;
 
 for i = 1 : 170    
-    view(axCpts3dH,[i+37, 42]) ;
+    view(Figs.vsHs.axCpts3dH,[i+37, 42]) ;
     drawnow ;
     pause(0.001) ;
 end

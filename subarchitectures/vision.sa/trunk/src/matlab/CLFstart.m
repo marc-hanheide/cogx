@@ -4,7 +4,6 @@ global Settings Coma
 
 global currMode
 global mC
-global LRguiL LRguiR
 
 Settings.CAST=1;
 
@@ -55,11 +54,12 @@ loadConfig(confFile);
 %[mC,mDA,mFS]=KDBFinit;
 mC=MKDBFinit;
 
-[LRguiL LRguiR]=LRvisStart;
+global Figs;
+LRvisStart;
 
 if flag==1
-   set(LRguiL,'Visible','On');
-   set(LRguiR,'Visible','On');
+   set(Figs.LRguiL.main,'Visible','On');
+   set(Figs.LRguiR.main,'Visible','On');
 end;
 
 if length(Data.StartupWithModel) > 0

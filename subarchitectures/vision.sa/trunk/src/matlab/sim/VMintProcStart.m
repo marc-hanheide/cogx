@@ -1,9 +1,10 @@
 function vmipH=VMintProcStart
 
-global lbipH;
+global Figs;
 
 vmipH=VMintProc;
+Figs.vmipH.main=vmipH;
 
-lbipH=findobj(vmipH, 'tag','lb_intProc');
+Figs.vmipH.lbipH=findobj(vmipH, 'tag','lb_intProc');
 
 

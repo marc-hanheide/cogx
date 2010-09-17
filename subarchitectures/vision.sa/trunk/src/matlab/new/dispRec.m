@@ -1,6 +1,8 @@
 function dispRec
 
-global LRguiR Disp
+global Figs Disp Settings
 
-set(LRguiR,'PaperPosition',[0 0 8 2.5]);
-print(LRguiR,Disp.mR,'-dpng', '-r0');
+if Settings.Disp.GR
+   set(Figs.LRguiR.main,'PaperPosition',[0 0 8 2.5]);
+   print(Figs.LRguiR.main,Disp.mR,'-dpng', '-r0');
+end

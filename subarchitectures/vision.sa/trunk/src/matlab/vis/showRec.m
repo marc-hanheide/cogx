@@ -1,9 +1,9 @@
 function showRec(ansYes,ansPy,answ,f)
 %function showRec(answ,f)
 
-global LRguiR Coma Params
-global LRaxRoi LRtxFroi LRaxRec LRtxRec LRtxFrec LRtxFisRec
-global currMode
+global Figs Coma Params
+%global LRaxRoi LRtxFroi LRaxRec LRtxRec LRtxFrec LRtxFisRec
+%global currMode
 
 numC=size(Coma.Cnames,1);
 THRs=Params.THRs;
@@ -18,20 +18,20 @@ if ~isempty(answ)
   if ~isempty(recPy)
      str=[str '    (' recPy ' )'];
   end
-  set(LRtxRec,'String',str);
+  set(Figs.LRguiR.LRtxRec,'String',str);
 
-   bar(LRaxRec,answ(:,2),'b');
-   set(LRaxRec,'XTickLabel',Coma.Cnames(answ(:,1),:));
-   axis(LRaxRec,[0 numC+1 0 MaxTyp]);
+   bar(Figs.LRguiR.LRaxRec,answ(:,2),'b');
+   set(Figs.LRguiR.LRaxRec,'XTickLabel',Coma.Cnames(answ(:,1),:));
+   axis(Figs.LRguiR.LRaxRec,[0 numC+1 0 MaxTyp]);
    
-line([0 numC+1],[THRs(1) THRs(1)],'Color','g','Parent',LRaxRec);
-line([0 numC+1],[THRs(2) THRs(2)],'Color','m','Parent',LRaxRec);
+line([0 numC+1],[THRs(1) THRs(1)],'Color','g','Parent',Figs.LRguiR.LRaxRec);
+line([0 numC+1],[THRs(2) THRs(2)],'Color','m','Parent',Figs.LRguiR.LRaxRec);
 %line([0 numC+1],[THRs(3) THRs(3)],'Color','r','Parent',LRaxRec);
    
    
 end
 
-set(LRtxFisRec,'Visible','on');
-set(LRtxFrec,'String',[num2str(f','%.2g  ') ' ]']);
+set(Figs.LRguiR.LRtxFisRec,'Visible','on');
+set(Figs.LRguiR.LRtxFrec,'String',[num2str(f','%.2g  ') ' ]']);
 
 

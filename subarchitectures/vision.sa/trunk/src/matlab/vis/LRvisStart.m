@@ -1,7 +1,7 @@
-function [LRguiL LRguiR]=LRvisStart
+function LRvisStart
 
 
-global LRguiLH LRguiR LRguiLT
+global Figs 
 global mC
 global Coma
 %Coma.Cnames=['Rd';'Gr';'Bl';'Yl';'Sm';'Lr';'Sq';'Cr';'Tr';'Rc'];
@@ -10,21 +10,22 @@ global Coma
 %Coma.avNames={'red';'green';'blue';'yellow';'compact';'elongated'};
 Coma.Fnames=extAPfeatures;%['Hu';'Sa';'In';'Ar';'Df';'Ec'];
 
-LRguiL=LRlearning;
-LRguiLH=findobj(LRguiL, 'tag','pnModels');
-LRguiLT=findobj(LRguiL, 'tag','tx_Fb');
-showLmodels(mC,Coma.Fnames,Coma.Cnames,[2,4],LRguiLH);
+Figs.LRguiL.main=LRlearning;
+Figs.LRguiL.pnModels=findobj(Figs.LRguiL.main, 'tag','pnModels');
+Figs.LRguiL.tx_Fb=findobj(Figs.LRguiL.main, 'tag','tx_Fb');
+showLmodels(mC,Coma.Fnames,Coma.Cnames,[2,4],Figs.LRguiL);
 
-global LRaxRoi LRtxFroi LRaxRec LRtxRec LRtxFrec LRtxFisRec LRtxFisRoi LRaxPts3d
-LRguiR=LRrecognition;
-LRaxRoi=findobj(LRguiR, 'Tag','ax_roi'); 
-LRaxPts3d=findobj(LRguiR, 'Tag','lrax_pts3d');
-LRtxFroi=findobj(LRguiR, 'tag','tx_Froi');
-LRaxRec=findobj(LRguiR, 'Tag','ax_rec');
-LRtxRec=findobj(LRguiR, 'Tag','tx_rec');
-LRtxFrec=findobj(LRguiR, 'tag','tx_Frec');
-LRtxFisRec=findobj(LRguiR, 'tag','tx_FisRec');
-LRtxFisRoi=findobj(LRguiR, 'tag','tx_FisRoi');
+%global LRaxRoi LRtxFroi LRaxRec LRtxRec LRtxFrec LRtxFisRec LRtxFisRoi LRaxPts3d
+LRguiR=LRrecognition; 
+Figs.LRguiR.main=LRguiR;
+Figs.LRguiR.LRaxRoi=findobj(LRguiR, 'Tag','ax_roi'); 
+Figs.LRguiR.LRaxPts3d=findobj(LRguiR, 'Tag','lrax_pts3d');
+Figs.LRguiR.LRtxFroi=findobj(LRguiR, 'tag','tx_Froi');
+Figs.LRguiR.LRaxRec=findobj(LRguiR, 'Tag','ax_rec');
+Figs.LRguiR.LRtxRec=findobj(LRguiR, 'Tag','tx_rec');
+Figs.LRguiR.LRtxFrec=findobj(LRguiR, 'tag','tx_Frec');
+Figs.LRguiR.LRtxFisRec=findobj(LRguiR, 'tag','tx_FisRec');
+Figs.LRguiR.LRtxFisRoi=findobj(LRguiR, 'tag','tx_FisRoi');
 % f1=figure;
 % set(f1,'Visible','off');
 % showROI;

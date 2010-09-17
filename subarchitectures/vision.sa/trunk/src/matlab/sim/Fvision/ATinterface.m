@@ -1,8 +1,8 @@
 function ATinterface
 
-global attOn;
+global Settings
 
-if attOn
+if Settings.attOn
    disp('ATinterface: Attention!');
    req=-1000; %Att. trigger
    VMinterface(req);

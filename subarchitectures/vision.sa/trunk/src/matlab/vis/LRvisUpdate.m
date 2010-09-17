@@ -8,5 +8,5 @@ global Coma
 %Coma.avNames={'red';'green';'blue';'yellow';'compact';'elongated'};
 %Fnames=extAPfeatures;%['Hu';'Sa';'In';'Ar';'Cp';'Ec'];
 
-global mC LRguiLH
-showLmodels(mC,Coma.Fnames,Coma.Cnames,[2 5],LRguiLH);
+global mC Figs
+showLmodels(mC,Coma.Fnames,Coma.Cnames,[2 5],Figs.LRguiL);
