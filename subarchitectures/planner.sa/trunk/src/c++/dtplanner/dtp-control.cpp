@@ -655,6 +655,79 @@ void DTPCONTROL::configure(const cast::cdl::StringMap& _config, const Ice::Curre
 }
 
 
+void DTPCONTROL::improvePlanQuality(Ice::Int id, const Ice::Current&)
+{
+    METHOD_PREFIX;
+
+    Planning::Policy_Iteration policy_Iteration(solvers[id]->belief_state__space);
+    for(uint i = 0; i < 10; i++){
+        if(!solvers[id]->expand_belief_state_space()){
+            break;
+            VERBOSER(10017, "No starting state!"<<std::endl);
+        } else {
+            VERBOSER(10017, "Expanding!"<<std::endl);
+//             policy_Iteration();
+        }
+    }
+    
+    for(uint i = 0; i < 5; i++){
+        policy_Iteration();
+        VERBOSER(10017, "Expected reward is :: "
+                 <<current_state[id]->get__expected_value()<<std::endl);
+    }
+    
+#ifdef EXPOSING_DTP
+    assert(current_state.find(id) != current_state.end());
+    assert(solvers.find(id) != solvers.end());
+        
+    std::pair<Planning::Formula::Action_Proposition, uint> _action
+        = solvers[id]->get_prescribed_action(current_state[id]);
+
+    auto action = _action.first;
+    action_index[id] = _action.second;
+        
+    assert(action_index.find(id) != action_index.end());
+        
+#else  
+    auto action = Planning::Parsing::problems[pi]->get__prescribed_action();
+#endif
+        
+    auto name = std::tr1::get<0>(action.contents());
+    std::ostringstream oss;
+    oss<<name;
+    auto action_name = oss.str();
+        
+    auto _arguments = std::tr1::get<1>(action.contents());
+    std::vector<std::string> action_arguments;
+
+    VERBOSER(1001, "DTP posting an action :: "<<action_name<<std::endl
+             <<"Arguments are :: "<<_arguments);
+    for(auto argument = _arguments.begin()
+            ; argument != _arguments.end()
+            ; argument++){
+        std::ostringstream oss;
+        oss<<*argument;
+        auto _argument = oss.str();
+            
+        action_arguments.push_back(_argument);
+        VERBOSER(1001, "Arg :: "<<_argument);
+    }
+        
+    /*Moritz, how do I go about this???*/
+    autogen::Planner::PDDLAction* _pddlaction = new autogen::Planner::PDDLAction();
+    autogen::Planner::PDDLActionPtr  pddlaction(_pddlaction);
+    //         pddlaction->name = action_as_string;
+    pddlaction->name = action_name;
+    pddlaction->arguments = action_arguments;
+
+        
+    VERBOSER(1001, "DTP Posting the action :: "<<pddlaction->name);
+    pyServer->deliverAction(id, pddlaction);
+    
+    METHOD_RETURN;
+}
+
+
 void DTPCONTROL::newTask(Ice::Int id,
                          const std::string& problemFile,
                          const std::string& domainFile, const Ice::Current&)
