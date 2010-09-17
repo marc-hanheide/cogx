@@ -55,7 +55,7 @@ void Tester::start()
 	try
 	{
 		_hfcInterfacePrx =
-				getIceServer<DefaultData::HFCInterface>(_hfcServerName);
+				getIceServer<comadata::HFCInterface>(_hfcServerName);
 		_hfcServerAvailable = true;
 	}
 	catch (...)
@@ -86,12 +86,12 @@ void Tester::stop()
 
 
 // -------------------------------------------------------
-QdlQueryResults Tester::sendHFCServerQuery(const std::string &query) const
+comadata::QueryResults Tester::sendHFCServerQuery(const std::string &query) const
 {
 	if (_hfcServerAvailable)
 		return _hfcInterfacePrx->querySelect(query);
 	else
-		return QdlQueryResults();
+		return comadata::QueryResults();
 }
 
 
