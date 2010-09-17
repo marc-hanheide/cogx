@@ -1,5 +1,8 @@
 HOST localhost
 
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
 # Spatial.SA ################################################################
 INCLUDE includes/spatial.sa/spatial-blobfinder.cast
 INCLUDE includes/spatial.sa/spatial-ptz.cast
@@ -24,13 +27,11 @@ INCLUDE includes/conceptual.sa/conceptual-base.cast
 INCLUDE includes/conceptual.sa/conceptual-main.cast
 INCLUDE includes/conceptual.sa/conceptual-test.cast
 
-# Coma ######################################################################
-INCLUDE includes/coma.sa/coma-base.cast
-
 # Execution #################################################################
 JAVA MG  manual-execution dora.execution.components.GraphicalExecutionManager
 
-# viewing and debugging #######################################################
+# WMViewer ##################################################################
+JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, castutils.slice.WMMap, motivation.slice.ExploreMotive, comadata.ComaRoom"
 #JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, comadata.ComaRoom"
 #JAVA MG WMViewerBeliefs  castutils.viewer.ViewerCastComponent --log --subscribe "beliefmodels.autogen.beliefs.StableBelief"
 
