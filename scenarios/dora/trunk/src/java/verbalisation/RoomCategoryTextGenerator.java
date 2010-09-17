@@ -14,6 +14,9 @@ public class RoomCategoryTextGenerator implements TextGenerator<ComaRoom> {
 	@Override
 	public String toText(ComaRoom _i) {
 
+		// commented out for BHAM Yr2 code camp
+		/*
+		
 		// lazy lazy
 		if (m_lastVerbalisedCategory == null) {
 			m_lastVerbalisedCategory = new HashMap<Integer, String>();
@@ -28,7 +31,7 @@ public class RoomCategoryTextGenerator implements TextGenerator<ComaRoom> {
 			return textForMultipleConcepts(_i);
 		} else {
 			return "";
-		}
+		} */ return "";
 	}
 
 	/**
@@ -36,6 +39,8 @@ public class RoomCategoryTextGenerator implements TextGenerator<ComaRoom> {
 	 * @return
 	 */
 	private String textForMultipleConcepts(ComaRoom _i) {
+		// commented out for BHAM Yr2 code camp
+		/*
 		StringBuilder sb = new StringBuilder("I infer that room ");
 		sb.append(_i.roomId);
 		sb.append(" is either a ");
@@ -60,12 +65,15 @@ public class RoomCategoryTextGenerator implements TextGenerator<ComaRoom> {
 		m_lastVerbalisedCategory.put(_i.roomId, verbContent);
 		sb.append(verbContent);
 		return sb.toString();
+		*/ return "";
 	}
 
 	/**
 	 * @param _i
 	 */
 	private String textForSingleConcept(ComaRoom _i) {
+		// commented out for BHAM Yr2 code camp
+		/*
 		for (String type : _i.concepts) {
 			if (!(type.equals(":PhysicalRoom") || type
 					.equals(":Portion_of_space"))) {
@@ -89,7 +97,7 @@ public class RoomCategoryTextGenerator implements TextGenerator<ComaRoom> {
 				}
 				// else say nothing as it's already been said
 			}
-		}
+		} */
 		return "";
 	}
 }
