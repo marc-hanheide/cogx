@@ -14,6 +14,7 @@ import java.util.TreeSet;
 
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
+import SpatialProbabilities.ProbabilityDistribution;
 import SpatialProperties.ConnectivityPathProperty;
 import SpatialProperties.GatewayPlaceProperty;
 import SpatialProperties.ObjectPlaceProperty;
@@ -621,7 +622,7 @@ public class PlaceMonitor extends ManagedComponent {
 						
 						// new interface for Dora yr2: remove categories when room has changed
 						// so that Andrzej can overwrite it
-						_currentRoomStruct.concepts=new String[0];
+						_currentRoomStruct.categories=new ProbabilityDistribution();
 						
 						// now overwrite the existing room WME
 						overwriteWorkingMemory(comaRoomWME.getID(),_currentRoomStruct);
@@ -648,7 +649,7 @@ public class PlaceMonitor extends ManagedComponent {
 					// current place can be a seed for a new room
 					log(_currentplaceInstance + " serving as seed for a new room");
 					// create new room
-					ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new String[0]);
+					ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new ProbabilityDistribution());
 					
 					// create new room on the reasoner
 					m_comareasoner.addInstance("dora:room" + _newRoom.roomId, "dora:PhysicalRoom");
@@ -657,7 +658,7 @@ public class PlaceMonitor extends ManagedComponent {
 					// now initialize the room concepts
 					// changed for Dora yr2!
 					//_newRoom.concepts = m_comareasoner.getAllConcepts("dora:room" + _newRoom.roomId);
-					_newRoom.concepts = new String[0];
+					_newRoom.categories = new ProbabilityDistribution();
 					
 					String[] _placesInTheSameRoom = 
 						m_comareasoner.getRelatedInstancesByRelation(_currentplaceInstance,"dora:sameRoomAs");
@@ -855,6 +856,8 @@ public class PlaceMonitor extends ManagedComponent {
 		_containedPlaces.append("]");
 		
 		// create readable representation of the area concepts
+		// removed for Dora yr2
+		/*
 		StringBuffer _areaConcepts = new StringBuffer();
 		_areaConcepts.append("[");
 		_insertComma=false;
@@ -865,12 +868,13 @@ public class PlaceMonitor extends ManagedComponent {
 		} 
 
 		_areaConcepts.append("]");
+		*/
 
 		log(_prefix + "[[" +
 				"room ID : " + _room.roomId +
 				 " | seed place instance: " + _room.seedPlaceInstance +
 				 " | contained place IDs: " + _containedPlaces +
-				 " | room concepts: " + _areaConcepts +							
+				//  " | room concepts: " + _areaConcepts +							
 				 (_wmid.equals("") ? " | WME ID: " + _wmid : "") +
 				 "]]");
 	}
