@@ -56,7 +56,8 @@ else %from VMprocAns
 
 end;
 
-global lbipH;
+global Figs;
+lbipH=Figs.vmipH.lbipH;
 intProc=get(lbipH,'String');
 intProc=[intProc; ip1];
 set(lbipH,'String',intProc);

@@ -1,12 +1,13 @@
-function [lrcH LRguiL LRguiR]=LRstart
+%function [lrcH LRguiL LRguiR]=LRstart
+function [lrcH]=LRstart
 
 global mC
 
 mC=ODKDEinit;
 
 lrcH=LRcontrol;
-[LRguiL LRguiR]=LRvisStart;
+LRvisStart;
 %lrvH=LRvisStart;
 %lreH=LRevalStart;
 
-lrHs=[lrcH LRguiL LRguiR LRguiL LRguiR];
+lrHs=[lrcH];

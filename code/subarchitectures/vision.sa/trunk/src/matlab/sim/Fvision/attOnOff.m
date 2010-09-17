@@ -1,12 +1,11 @@
 function atOn=attOnOff
 
-global attOn attOnH;
+global Settings
 
-if get(attOnH,'Value')==1
-   attOn=1;
+if get(Figs.atH.attOnH,'Value')==1
+   Settings.attOn=1;
 else
-   attOn=0;
+   Settings.attOn=0;
 end;
 
-atOn=attOn
-
+atOn=attOn;

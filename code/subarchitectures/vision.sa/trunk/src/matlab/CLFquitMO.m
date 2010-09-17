@@ -1,9 +1,15 @@
 function CLFquitMO
 
-global clfHs;
+global Figs;
+clfHs=[
+   Figs.LRguiL.main
+   Figs.LRguiR.main
+   Figs.dlgH.main
+   Figs.vmcH.main
+   Figs.vmipH.main
+   Figs.vsHs.main
+   Figs.atH.main
+];   
 close(clfHs);
 
-global lrraH;
-%close(lrraH);
-
-close all hidden
+%close all hidden

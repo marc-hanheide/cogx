@@ -1,9 +1,10 @@
-function showLmodels(mC,Fnames,Cnames,sphw,hp)
+function showLmodels(mC,Fnames,Cnames,sphw,fig)
 %showLmodels(mC,Fnames,Cnames,sphw,hp)
 %Show learned models
 
 %getc(mC,'info');
 
+hp=fig.pnModels;
 
 if nargin<4
    sphw=[2 ceil(length(mC)/2)];
@@ -53,13 +54,11 @@ for i=1:numCall
    %   set(ha,'ButtonDownFcn',{'showOneModel',mC(i),Fnames,Cnames});
 end
 
-LRguiL=get(hp,'Parent');
 txt=strFromIdxs(mC);
-txFb=findobj(LRguiL, 'tag','tx_Fb')
-global LRguiLT
-set(LRguiLT,'String',txt);
-
-dispLearn(LRguiL);
+if length(txt)>18
+   set(fig.tx_Fb,'String',txt);
+end
+dispLearn(fig.main);
 
 
 

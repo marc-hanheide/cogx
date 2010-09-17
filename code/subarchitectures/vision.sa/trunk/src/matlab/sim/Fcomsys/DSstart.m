@@ -1,6 +1,6 @@
-function dsHs=DSstart
+function DSstart
 
-global senMap txrH lbdH;
+global senMap Figs;% txrH lbdH;
 
 senMap={...
    'What do you see?', '';...//1
@@ -26,9 +26,8 @@ senMap={...
 };
 
 dlgH=DSdialogue;
+Figs.dlgH.main=dlgH;
 
-txrH=findobj(dlgH, 'tag','tx_robot');
-lbdH=findobj(dlgH, 'tag','lb_dlg');
-%lbdH=findobj(dlgH, 'tag','listbox2');
+Figs.dlgH.txrH=findobj(dlgH, 'tag','tx_robot');
+Figs.dlgH.lbdH=findobj(dlgH, 'tag','lb_dlg');
 
-dsHs=dlgH;

@@ -2,8 +2,7 @@ function asvLoad
 
 global Settings
 
-global IPs
-global lbipH;
+global Figs
 global Dirs
 
 if Settings.ASVon
@@ -28,8 +27,8 @@ if Settings.ASVon
       LRvisUpdate;
       %LRevalUpdate;
 
-      set(lbipH,'String',IPs);
-      set(lbipH,'Value',size(IPs,1));
+      set(Figs.vmipH.lbipH,'String',Settings.Params.IPs);
+      set(Figs.vmipH.lbipH,'Value',size(Settings.Params.IPs,1));
    end
 end
 

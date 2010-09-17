@@ -78,68 +78,40 @@ if fid~=-1
 end;   
 
 %How to display
-Settings.Mwindows=1;
+Settings.Mwindows=0;
+Settings.Disp.GL=1;
+Settings.Disp.GR=1;
+Settings.Disp.TL=1;
+Settings.Disp.TR=1;
 
 %HTML display
 Dirs.disp=[Dirs.cogLearn 'files/disp/'];
 global Disp
 fclose('all');
+Disp.mL=[Dirs.disp 'mL.png'];
+copyfile([Dirs.disp 'mLinit.png'],Disp.mL);
+Disp.mR=[Dirs.disp 'mR.png'];
+copyfile([Dirs.disp 'mRinit.png'],Disp.mR);
 %delete([Dirs.disp 'mlog.html']);
 %Disp.mlog=fopen([Dirs.disp 'mlog.html'],'a');
 %Disp.mL=fopen([Dirs.disp 'mL.html'],'w');
 %Disp.mR=fopen([Dirs.disp 'mR.html'],'w');
-Disp.mL=[Dirs.disp 'mL.png'];
-Disp.mR=[Dirs.disp 'mR.png'];
 %delete(Disp.mL);
 %delete(Disp.mR);
-copyfile([Dirs.disp 'mLinit.png'],Disp.mL); 
-copyfile([Dirs.disp 'mRinit.png'],Disp.mR); 
 
 %start processes
 
-dsHs=DSstart;
-vmHs=VMstart;
-vsHs=VSstart;
-[lrcH LRguiL LRguiR]=LRstart;
-atH=ATstart;
+DSstart;
+VMstart;
+ATstart;
+VSstart;
+LRstart;
 
-
+%show windows if requested
+global Figs
 if Settings.Mwindows
-   set(LRguiL,'Visible','On');
-   set(LRguiR,'Visible','On');
+   set(Figs.LRguiL.main,'Visible','On');
+   set(Figs.LRguiR.main,'Visible','On');
 end;
 
-global clfHs;
-%clfHs=[dsHs lrcH vsHs LRguiL LRguiR atH];
-%clfHs=[dsHs vmHs vsHs LRguiL LRguiR atH lrcH];
-clfHs=[dsHs vmHs vsHs LRguiL LRguiR lrcH];
-
-
-
-
-% Apos=[250 37;%ds
-%    133 4;%vm
-%    80 35;%vs
-%    186 58;% lrc
-%    180 4; %lrv
-%    153 36; %lre
-%   % 137 64;%at
-%    133 4];%lrc
-% 
-% % Apos=[...
-% %    298.6000   48.4615   84.2000   41.5385;%ds
-% %    182.4000   61.8462   43.2000   28.3077;%vmc
-% %    227.6000   47.1538   69.4000   20.8462;%vmip
-% %    238.4000   70.7692   58.2000   19.2308;%vs
-% %    182.6000   45.0769   38.0000   12.9231;%lrc
-% %    286.0000    3.3077   96.4000   38.4615;%lrv
-% % %   176.0000    3.3077  108.0000   38.4615;%lre
-% %    176.0000    3.3077  90.0000   30.4615;%lre
-% %    134.4000   44.9231   45.6000   14.4615];%at
-% %    
-% %    
-% for i=1:7
-%    pos=get(clfHs(i),'Position');
-%    set(clfHs(i),'Position',[Apos(i,1:2) pos(3:4)]);
-% end;   
 

@@ -1,17 +1,17 @@
 function showROI(x,b,f,pts3d)
 
-global Settings
-global LRaxRoi LRtxFroi LRaxRec LRtxRec LRtxFrec LRtxFisRec LRtxFisRoi LRaxPts3d
+global Settings Figs
+%global LRaxRoi LRtxFroi LRaxRec LRtxRec LRtxFrec LRtxFisRec LRtxFisRoi LRaxPts3d
 global Dirs
 
-cla(LRaxRec);
-set(LRaxRec,'Visible','off');
-set(LRtxRec,'String','');
-set(LRtxFrec,'String','');
-set(LRaxRoi,'Visible','off');
-set(LRtxFisRec,'Visible','off');
-set(LRtxFisRoi,'Visible','off');
-set(LRaxPts3d,'Visible','off');
+cla(Figs.LRguiR.LRaxRec);
+set(Figs.LRguiR.LRaxRec,'Visible','off');
+set(Figs.LRguiR.LRtxRec,'String','');
+set(Figs.LRguiR.LRtxFrec,'String','');
+set(Figs.LRguiR.LRaxRoi,'Visible','off');
+set(Figs.LRguiR.LRtxFisRec,'Visible','off');
+set(Figs.LRguiR.LRtxFisRoi,'Visible','off');
+set(Figs.LRguiR.LRaxPts3d,'Visible','off');
 
 uselocalcolorifok = 0 ; 
 
@@ -19,9 +19,9 @@ if nargin>0
    x1=cutBG(x,b);
 
    %imshow(x1,'Parent',LRaxRoi);
-   image(size(x1,1),size(x1,2),x1,'Parent',LRaxRoi);
-   axis(LRaxRoi,'equal');
-   axis(LRaxRoi,'off');        
+   image(size(x1,1),size(x1,2),x1,'Parent',Figs.LRguiR.LRaxRoi);
+   axis(Figs.LRguiR.LRaxRoi,'equal');
+   axis(Figs.LRguiR.LRaxRoi,'off');        
 
    %set(LRtxFisRoi,'Visible','on');         
    %%set(LRtxFroi,'String',[num2str(f','%.2g  ') ' ]']);
@@ -39,7 +39,7 @@ if nargin>0
        if uselocalcolorifok == 1
             ptcol = repmat( hsv2rgb(f(1:3)')*255, size(pts3d,1), 1 ) ;
        end
-       showSurfaceFromPoints( pts3d(:,1:3), ptcol, LRaxPts3d ) ;
+       showSurfaceFromPoints( pts3d(:,1:3), ptcol, Figs.LRguiR.LRaxPts3d ) ;
    end
    
    if Settings.SaveImgs
