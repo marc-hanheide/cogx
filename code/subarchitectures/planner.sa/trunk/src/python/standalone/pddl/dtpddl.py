@@ -580,7 +580,7 @@ class DTPDDLCompiler(translators.Translator):
         a2 = action.copy(newdomain=domain)
         b = Builder(a2)
         
-        new_reward_eff = b.effect("decrease", ("reward",), cost_term)
+        new_reward_eff = b.effect("assign", ("reward",), predicates.Term(-cost_term.object.value))
         if isinstance(a2.effect, effects.ConjunctiveEffect):
             a2.effect.parts.append(new_reward_eff)
         else:

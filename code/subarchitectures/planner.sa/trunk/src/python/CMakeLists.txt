@@ -11,7 +11,9 @@ set(GENERATED ${GEN_FILE} ${GEN_FILE2} ${GEN_FILE3})
 if(BUILD_SA_COMA)
 cast_slice2Py(GEN_COMA_ICE ../../subarchitectures/coma.sa/src/slice/ComaData.ice  ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} 
               ${COGX_ROOT}/subarchitectures/spatial.sa/src/slice)
-list(APPEND GENERATED ${GEN_COMA_ICE})
+cast_slice2Py(GEN_SPATIAL_PROB_ICE ../../subarchitectures/spatial.sa/src/slice/SpatialProbabilities.ice  ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} 
+              ${COGX_ROOT}/subarchitectures/spatial.sa/src/slice)
+list(APPEND GENERATED ${GEN_COMA_ICE} ${GEN_SPATIAL_PROB_ICE})
 endif(BUILD_SA_COMA)
 
 add_custom_target(python ALL DEPENDS ${GENERATED})
