@@ -89,9 +89,14 @@ else
     axis equal ; axis tight ; grid off ;
 end
 
-view([37, 42]) ; 
+% view([37, 42]) ; 
+% view([-130, 30]) ;
+% view([-0, 60]) ;
+view([-163, 48]) ;
 box on ; 
 % view([-50, 20]) ; 
+axis equal;axis tight ;
+camproj('orthographic') ;
 set(gca,'XTick',[]) 
 set(gca,'YTick',[]) 
 set(gca,'ZTick',[]) 
