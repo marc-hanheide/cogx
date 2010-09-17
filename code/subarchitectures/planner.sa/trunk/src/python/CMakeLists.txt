@@ -3,13 +3,14 @@ include(Slice2Py)
 
 cast_slice2Py(GEN_FILE Planner.ice ${CAST_SLICE_DIR} ${CAST_SLICE_DIR}/cast/slice ${COGX_ROOT}/subarchitectures/binder/src/slice
   ${COGX_ROOT}/tools/beliefs/apis/beliefs/src/slice
-  ${COGX_ROOT}/tools/beliefs/apis/beliefs+cast/src/slice)
+  ${COGX_ROOT}/tools/beliefs/apis/beliefs+cast/src/slice )
 cast_slice2Py(GEN_FILE2 ../../tools/beliefs/apis/beliefs/src/slice/beliefs.ice ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} )
 cast_slice2Py(GEN_FILE3 ../../tools/beliefs/apis/beliefs+cast/src/slice/beliefs_cast.ice ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} )
 set(GENERATED ${GEN_FILE} ${GEN_FILE2} ${GEN_FILE3})
 
 if(BUILD_SA_COMA)
-cast_slice2Py(GEN_COMA_ICE ../../subarchitectures/coma.sa/src/slice/ComaData.ice  ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} )
+cast_slice2Py(GEN_COMA_ICE ../../subarchitectures/coma.sa/src/slice/ComaData.ice  ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} 
+              ${COGX_ROOT}/subarchitectures/default.sa/src/slice)
 list(APPEND GENERATED ${GEN_COMA_ICE})
 endif(BUILD_SA_COMA)
 
