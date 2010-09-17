@@ -86,21 +86,21 @@ kde_out = reapproximateKDEusingSMO( kde_aug_kde, pdf_kde_res, kde_ref, useCorrec
 
 
 % ----> STEP 5: compress the resulting KDE
-if (unlearning_MakeProperPdf == 1)    
-    if isequal(usehalfHellinger,1)    
-        hellOrig = kde_out.otherParams.compressionClusterThresh ;
-        mod_cost = hellOrig ;
-        mod_cost.thReconstructive = mod_cost.thReconstructive / 1.5 ;
-        mod_cost.thDiscriminative = mod_cost.thDiscriminative / 1.5 ;
-        
-        kde_out = executeOperatorIKDE( kde_out, 'compressionClusterThresh', mod_cost ) ;
-        kde_out = executeOperatorIKDE( kde_out, 'compress_pdf' , 'otherClasses', otherClasses ) ;
-        kde_out = executeOperatorIKDE( kde_out, 'compressionClusterThresh', hellOrig ) ; 
-         kde_out.otherParams.compressionClusterThresh = hellOrig ;
-    else
-        kde_out = executeOperatorIKDE( kde_out, 'compress_pdf' , 'otherClasses', otherClasses ) ;
-    end   
-end
+% if (unlearning_MakeProperPdf == 1)    
+%     if isequal(usehalfHellinger,1)    
+%         hellOrig = kde_out.otherParams.compressionClusterThresh ;
+%         mod_cost = hellOrig ;
+%         mod_cost.thReconstructive = mod_cost.thReconstructive / 1.5 ;
+%         mod_cost.thDiscriminative = mod_cost.thDiscriminative / 1.5 ;
+%         
+%         kde_out = executeOperatorIKDE( kde_out, 'compressionClusterThresh', mod_cost ) ;
+%         kde_out = executeOperatorIKDE( kde_out, 'compress_pdf' , 'otherClasses', otherClasses ) ;
+%         kde_out = executeOperatorIKDE( kde_out, 'compressionClusterThresh', hellOrig ) ; 
+%          kde_out.otherParams.compressionClusterThresh = hellOrig ;
+%     else
+%         kde_out = executeOperatorIKDE( kde_out, 'compress_pdf' , 'otherClasses', otherClasses ) ;
+%     end   
+% end
 % otherClasses = {} ;
 % kde_out = executeOperatorIKDE( kde_out, 'compress_pdf', 'otherClasses', otherClasses ) ;
 

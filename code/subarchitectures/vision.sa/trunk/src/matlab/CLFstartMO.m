@@ -5,7 +5,7 @@ global Settings
 Settings.CAST=0;
 
 %set global variables to default values
-% addPaths ;
+addPaths ;
 % mylocalMaggot3 = 'D:\Work\Matlab\IncrementalKDE\Maggot3\demo\' ;
 % pthis = pwd ; cd(mylocalMaggot3) ;
 % installEntireMaggot3() ;
