@@ -1,7 +1,7 @@
 function [LRguiL LRguiR]=LRvisStart
 
 
-global LRguiLH LRguiR
+global LRguiLH LRguiR LRguiLT
 global mC
 global Coma
 %Coma.Cnames=['Rd';'Gr';'Bl';'Yl';'Sm';'Lr';'Sq';'Cr';'Tr';'Rc'];
@@ -12,6 +12,7 @@ Coma.Fnames=extAPfeatures;%['Hu';'Sa';'In';'Ar';'Df';'Ec'];
 
 LRguiL=LRlearning;
 LRguiLH=findobj(LRguiL, 'tag','pnModels');
+LRguiLT=findobj(LRguiL, 'tag','tx_Fb');
 showLmodels(mC,Coma.Fnames,Coma.Cnames,[2,4],LRguiLH);
 
 global LRaxRoi LRtxFroi LRaxRec LRtxRec LRtxFrec LRtxFisRec LRtxFisRoi LRaxPts3d
