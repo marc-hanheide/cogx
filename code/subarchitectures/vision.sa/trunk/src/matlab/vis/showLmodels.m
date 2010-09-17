@@ -53,5 +53,34 @@ for i=1:numCall
    %   set(ha,'ButtonDownFcn',{'showOneModel',mC(i),Fnames,Cnames});
 end
 
+LRguiL=get(hp,'Parent');
+txt=strFromIdxs(mC);
+txFb=findobj(LRguiL, 'tag','tx_Fb')
+global LRguiLT
+set(LRguiLT,'String',txt);
 
-dispLearn(get(hp,'Parent'));
+dispLearn(LRguiL);
+
+
+
+
+function txt=strFromIdxs(mC)
+
+numSC=getc(mC,'numSC');
+
+global Coma
+
+txt=[];
+for sc=1:numSC
+txt=[txt '['];
+   fb=getc(mC,sc,'Fb');
+   %txt=[txt [Coma.Cnames(fb,:) ' ']];
+   cs=getc(mC,sc,0,'name');
+   sccs=cs';%Coma.SCC(Coma.SCC(cs,2)==sc,1);
+   sccst=[Coma.Cnames(sccs,:) repmat(' ',size(sccs,1),1)];
+   sccst1=reshape(sccst',1,numel(sccst));
+   txt=[txt sccst1 ']: '];
+   
+   fbs=reshape(Coma.Fnames(fb,:)',1,numel(Coma.Fnames(fb,:)));
+   txt=[txt fbs '     '];   
+end
