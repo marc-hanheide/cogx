@@ -10,7 +10,7 @@ set(GENERATED ${GEN_FILE} ${GEN_FILE2} ${GEN_FILE3})
 
 if(BUILD_SA_COMA)
 cast_slice2Py(GEN_COMA_ICE ../../subarchitectures/coma.sa/src/slice/ComaData.ice  ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} 
-              ${COGX_ROOT}/subarchitectures/default.sa/src/slice)
+              ${COGX_ROOT}/subarchitectures/spatial.sa/src/slice)
 list(APPEND GENERATED ${GEN_COMA_ICE})
 endif(BUILD_SA_COMA)
 
