@@ -12,9 +12,14 @@ import VisionData.ForegroundedModel;
 import VisionData.PeopleDetectionCommand;
 import VisionData.VisualLearningTask;
 import cast.CASTException;
+import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
+import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.perceptmediator.george.VisualObjectTransferFunction;
 import execution.slice.TriBool;
 import execution.slice.actions.BackgroundModels;
 import execution.slice.actions.BeliefPlusStringAction;
@@ -240,14 +245,26 @@ public class VisionActionInterface extends ManagedComponent {
 
 		@Override
 		public void executeAction() {
-			String beliefID = m_action.beliefId;
+			try {
+				String beliefID = m_action.beliefId;
 
-			VisualLearningTask cmd = new VisualLearningTask(getComponent()
-					.getVisualObjectID(beliefID), beliefID, getConcept(),
-					new String[] { m_action.value }, new double[] { 1 });
+				VisualLearningTask cmd;
 
-			addThenCompleteOnOverwrite(new WorkingMemoryAddress(getComponent()
-					.newDataID(), getComponent().getSubarchitectureID()), cmd);
+				cmd = new VisualLearningTask(getComponent().getVisualObjectID(
+						beliefID), beliefID, getConcept(),
+						new String[] { m_action.value }, new double[] { 1 });
+
+				getComponent().println("got the vis obj id: " + getComponent().getVisualObjectID(
+						beliefID));
+				
+				addThenCompleteOnOverwrite(new WorkingMemoryAddress(
+						getComponent().newDataID(), getComponent()
+								.getSubarchitectureID()), cmd);
+
+			} catch (CASTException e) {
+				getComponent().logException(e);
+			}
+
 		}
 	}
 
@@ -297,9 +314,15 @@ public class VisionActionInterface extends ManagedComponent {
 	protected void configure(Map<String, String> _config) {
 	}
 
-	private String getVisualObjectID(String _beliefID) {
-		// TODO Auto-generated method stub
-		return null;
+	private String getVisualObjectID(String _beliefID)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+		GroundedBelief belief = getMemoryEntry(_beliefID, "binder",
+				GroundedBelief.class);
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, belief);
+		return pb.getContent()
+				.get(VisualObjectTransferFunction.VISUAL_OBJECT_ID)
+				.getDistribution().getMostLikely().getProposition();
 	}
 
 	private final Hashtable<String, WorkingMemoryAddress> m_foregroundedModels;
