@@ -16,6 +16,8 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <VideoUtils.h>
 #include "ObjectDetectorFERNS.h"
+#include <cast/core/StringMap.hpp>
+
 
 /**
  * The function called to create a new instance of our component.
@@ -31,9 +33,15 @@ extern "C"
 namespace cast
 {
 
+
+
 using namespace std;
 using namespace cogx::Math;
 using namespace VisionData;
+
+  
+  typedef StringMap<int>::map StringIntMap;
+
 
 // font for drawing text into OpenCV windows
 static CvFont font;
@@ -549,9 +557,59 @@ void ObjectDetectorFERNS::postObjectToWM(const string & label,
 void ObjectDetectorFERNS::postObjectsToWM(const vector<string> & labels,
     const Video::Image &image)
 {
-  for(size_t i = 0; i < model_labels.size(); i++)
-    if(find(labels.begin(), labels.end(), model_labels[i]) != labels.end())
-      postObjectToWM_Internal(i, image);
+
+  //assuming labels does not contain duplicates
+
+  //comments/logs added by nah
+  log("posting results to WM");
+
+  StringIntMap foundLabels;
+  StringIntMap notFoundLabels;
+
+  //this goes through a list of all known labels which contains duplicates
+  for(size_t i = 0; i < model_labels.size(); i++) { 
+
+    //this checks that the label was one we were asked for
+    if(find(labels.begin(), labels.end(), model_labels[i]) != labels.end()) {
+      
+      //now let's see if we found one of the labels for this model
+      if(last_frame_ok[i]) {
+	log("found label %s in model %d",model_labels[i].c_str(),i);
+	foundLabels[model_labels[i]] = i;
+      }
+      else {
+	log("did not find label %s in model %d",model_labels[i].c_str(),i);	
+	notFoundLabels[model_labels[i]] = i;      
+      }
+	  
+    }
+  }
+
+  unsigned int posted = 0;
+  
+  //for each of the found, asked-for labels
+  for(StringIntMap::const_iterator i = foundLabels.begin();
+      i != foundLabels.end(); ++i) {
+    //this uses the last found index of any model with asked-for label
+    log("posting positive result for %s",i->first.c_str());
+    postObjectToWM_Internal(i->second, image);
+    posted++;
+  }
+
+  //for each of the not-found, asked-for labels
+  for(StringIntMap::const_iterator i = notFoundLabels.begin();
+      i != notFoundLabels.end(); ++i) {
+
+    //if not also found  (i.e. multiple models per label)
+    if(foundLabels.find(i->first) == foundLabels.end()) {
+      log("posting negative result for %s",i->first.c_str());
+      postObjectToWM_Internal(i->second, image);
+      posted++;
+    }
+  }
+
+  assert(posted == labels.size()); 
+
 }
 
 void ObjectDetectorFERNS::postAllObjectsToWM(const Video::Image &image)
