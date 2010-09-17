@@ -1,0 +1,10 @@
+function getNonlinThresholdFun( pdf, N, alpha )
+
+
+X = sampleMixtureOfGaussians( pdf.mu, pdf.weights, pdf.covariances, N ) ;
+pdf = evaluateDistributionAt( pdf.mu, pdf.weights, pdf.covariances, X ) ;
+
+P = sum(pdf) ;
+pdf = pdf / P ;
+
+pdf = sort(pdf) ;

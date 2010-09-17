@@ -1,0 +1,18 @@
+The list of required frameworks is:
+
+GLUT.framework
+OpenGL.framework
+Cg.framewrok
+
+The Cg framework is installed as part of the Cg toolkit found at http://developer.nvidia.com/object/cg_toolkit.html.
+
+List of required libraries:
+
+libGLEW
+libIL 
+
+Both can be installed through MacPorts or Fink (not tested). Make sure that your DYDL_LIBRARY_PATH is set properly so that the -lIL -lGLEW linker flags function.
+
+The output binaries of the x project are
+ 
+./build/Release/libsiftgpu.so	./build/Release/TestWin	./build/Release/SimpleSIFT 	./build/Release/Speed
