@@ -158,6 +158,12 @@ module autogen {
 	determined.*/
       void deliverAction(int id, PDDLAction action);
 
+//       /* (see \method{deliverAction}). \argument{value} is the
+//        * expected value of executing the current DTP policy
+//        * ---starting with \argument{action}--- at the current
+//        * belief-state.*/
+//       void deliverAction(int id, PDDLAction action, double value);
+
       /*The DT planner can fail for some reason. In this case it
 	informs the \class{PythonServer} by posting a failed status
 	update. */
