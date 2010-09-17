@@ -535,7 +535,6 @@ class DT2MAPLCompiler(translators.Translator):
                 new_rules = DTRule.from_action(a)
                 for r in new_rules:
                     prob_functions.add(r.function)
-                    print r
                 rules += new_rules
             else:
                 actions.append(self.translate_action(a))
@@ -551,7 +550,6 @@ class DT2MAPLCompiler(translators.Translator):
                 continue
             pterm = predicates.Term(pfunc, args+[varg])
             rule = DTRule(f, args, [varg], [], [(pterm, predicates.Term(varg))], dom)
-            print rule
             rules.append(rule)
 
         commit_actions = self.create_commit_actions(rules, dom)
