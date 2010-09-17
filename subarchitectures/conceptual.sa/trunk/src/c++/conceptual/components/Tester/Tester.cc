@@ -51,7 +51,7 @@ void Tester::start()
 				getIceServer<ConceptualData::QueryHandlerServerInterface>(_queryHandlerName);
 		_queryHandlerAvailable = true;
 	}
-	catch (CASTException e)
+	catch (...)
 	{}
 }
 
