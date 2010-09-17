@@ -19,10 +19,18 @@ target_link_libraries(NavData Math)
 install(TARGETS NavData LIBRARY DESTINATION lib)
 
 
+cast_slice2cpp(GEN_CPP_SP GEN_HPP_SP SpatialProbabilities.ice ${CAST_SLICE_DIR})
+add_library(SpatialProbabilities SHARED ${GEN_CPP_SP})
+target_link_libraries(SpatialProbabilities CDL)
+install(TARGETS SpatialProbabilities LIBRARY DESTINATION lib)
+
+
 cast_slice2cpp(GEN_CPP_SP GEN_HPP_SP SpatialProperties.ice ${CAST_SLICE_DIR})
 add_library(SpatialProperties SHARED ${GEN_CPP_SP})
 target_link_libraries(SpatialProperties CDL NavData SpatialData)
 install(TARGETS SpatialProperties LIBRARY DESTINATION lib)
+
+
 
 
 cast_slice2cpp(GEN_CPP_FI GEN_HPP_FI FrontierInterface.ice ${CAST_SLICE_DIR}
