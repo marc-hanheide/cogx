@@ -1,11 +1,11 @@
 /**
  * @author Andrzej Pronobis
  *
- * Declaration of the conceptual::BeliefUpdater class.
+ * Declaration of the conceptual::ComaRoomUpdater class.
  */
 
-#ifndef CONCEPTUAL_BELIEFUPDATER_H
-#define CONCEPTUAL_BELIEFUPDATER_H
+#ifndef CONCEPTUAL_COMAROOMUPDATER_H
+#define CONCEPTUAL_COMAROOMUPDATER_H
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <ConceptualData.hpp>
@@ -21,16 +21,16 @@ namespace conceptual
  *
  * Main query handler for the Conceptual.SA
  */
-class BeliefUpdater: public cast::ManagedComponent
+class ComaRoomUpdater: public cast::ManagedComponent
 {
 
 public:
 
 	/** Constructor. */
-	BeliefUpdater() {}
+	ComaRoomUpdater() {}
 
 	/** Destructor. */
-	virtual ~BeliefUpdater() {}
+	virtual ~ComaRoomUpdater() {}
 
 
 protected:
@@ -50,10 +50,10 @@ protected:
 private:
 
 
-}; // class BeliefUpdater
+}; // class ComaRoomUpdater
 } // namespace def
 
-#endif // CONCEPTUAL_BELIEFUPDATER_H
+#endif // CONCEPTUAL_COMAROOMUPDATER_H
 
 
 
