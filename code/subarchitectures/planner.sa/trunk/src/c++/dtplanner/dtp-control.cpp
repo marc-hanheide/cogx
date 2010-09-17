@@ -586,7 +586,8 @@ void  DTPCONTROL::post_action(Ice::Int id)
 
         
         VERBOSER(1001, "DTP Posting the action :: "<<pddlaction->name);
-        pyServer->deliverAction(id, pddlaction);
+        pyServer->deliverAction(id, pddlaction, current_state[id]->get__expected_value());
+//         pyServer->deliverAction(id, pddlaction);
         VERBOSER(1001, "DTP Done posting the action :: "<<pddlaction->name);
 
 
