@@ -821,19 +821,46 @@ switch operator_data
              kde_neg = executeOperatorIKDE( kde_neg, 'compress_pdf') ;               
          end
          
-      
-%          % construct inputs  
-         out_kde = kdeUnlearnKde( input_kde, kde_neg, ...
+         
+         % remove irrelevant dimensions if required 
+         tmp.H_d = input_kde.pdf.smod.H ;
+         d = size(tmp.H_d,1) ;
+         if ~isempty(selectSubDimensions) && length(selectSubDimensions) ~= d             
+             kde_neg.pdf = marginalizeMixture( kde_neg.pdf, selectSubDimensions, 0 ) ;
+             input_kde.pdf = marginalizeMixture( input_kde.pdf, selectSubDimensions, 0 ) ;
+             %             input_kde = regularizeKDEInBandwidth( input_kde ) ;
+             if ~isempty(otherClasses)
+                 for i_oth= 1 : length(otherClasses.pdfs)
+                     otherClasses.pdfs{i_oth} = marginalizeMixture( otherClasses.pdfs{i_oth}, selectSubDimensions, 0 ) ;
+                 end
+             end
+         end
+            
+        % unlearn
+        out_kde = kdeUnlearnKde( input_kde, kde_neg, ...
                                   'unlearning_MakeProperPdf', unlearning_MakeProperPdf,...
                                   'usehalfHellinger', input_kde.otherParams.usehalfHellingerInCompression,...
-                                  'selectSubDimensions', selectSubDimensions, 'otherClasses', otherClasses) ;
+                                  'selectSubDimensions', [], 'otherClasses', otherClasses) ;
  
- 
-         
-%          % unlearn
+        % reproject back up 
+        if ~isempty(selectSubDimensions) && length(selectSubDimensions) ~= d
+            tmp.Cov = input_kde.ikdeParams.scale.Cov ;
+            tmp.Mu = input_kde.ikdeParams.scale.Mu ;
+            C = tmp.Cov *(4/((d+2)*size(input_kde.pdf.Mu,2)))^(2/(d+4)) ; 
+            out_kde.pdf = demarginalizeMixture( out_kde.pdf, tmp.H_d,  C, tmp.Mu,...
+                                                  selectSubDimensions, [], [], tmp.Cov ) ;
+        end
+      
+        
          [new_mu, new_Cov, w_out] = momentMatchPdf(out_kde.pdf.Mu, out_kde.pdf.Cov, out_kde.pdf.w) ; 
-         input_kde.otherParams.singleGaussApp.Mu = new_mu ;
-         input_kde.otherParams.singleGaussApp.Cov = new_Cov ;
+         out_kde.otherParams.singleGaussApp.Mu = new_mu ;
+         out_kde.otherParams.singleGaussApp.Cov = new_Cov ;
+         
+         
+         [new_mu, new_Cov, w_out] = momentMatchPdf(out_kde.pdf.Mu, out_kde.pdf.smod.ps.Cov, out_kde.pdf.w) ;         
+         out_kde.ikdeParams.scale.Mu = new_mu ;
+         out_kde.ikdeParams.scale.Cov = new_Cov ;
+         return ;
     case 'compress_pdf'    
         % store a precomputed transformation        
          svdRes = [] ;
