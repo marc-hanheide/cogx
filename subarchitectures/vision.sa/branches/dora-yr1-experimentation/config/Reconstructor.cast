@@ -1,0 +1,10 @@
+HOST localhost
+
+# live images
+COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids 0 --devnums 0
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG SfM Reconstructor --videohost localhost --videoname video --camid 0
+

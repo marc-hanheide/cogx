@@ -1,0 +1,9 @@
+function getUnlearning(f, r, r_y_max)
+
+m = productMixture( f, r ) ;
+r_max = evaluateDistributionAt( r.mu, r.weights, r.covariances, r_y_max ) ;
+m.weights = -m.weights/r_max ;
+
+e_c.mu = [f.mu, m.mu] ;
+e_c.weights = [f.weights, m.weights] ;
+e_c.covariances = [f.covariances; ]
