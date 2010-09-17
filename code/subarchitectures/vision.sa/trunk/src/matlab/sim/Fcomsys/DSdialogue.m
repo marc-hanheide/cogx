@@ -509,7 +509,8 @@ global Figs
 % axes(Figs.vsHs.axCpts3dH) ; hold off ;
 
 for i = 1 : 170    
-    view(Figs.vsHs.axCpts3dH,[i+37, 42]) ;
+    %view(axCpts3dH,[i+37, 42]) ;
+    view(axCpts3dH,[i+0, 80]) ;
     drawnow ;
     pause(0.001) ;
 end

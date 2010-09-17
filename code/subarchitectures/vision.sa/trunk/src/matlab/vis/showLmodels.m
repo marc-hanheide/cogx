@@ -41,6 +41,7 @@ for i=1:numCall
    %    if getc(mC,sc,ci,'conf')>6%~isempty(mC(i).kde)
    %       executeOperatorIKDEClsfr( mC{sc}, 'showKDE_of_class_index', ci, 'sub_selected_features', 1, 'showkdecolor', 'r') ;
    executeOperatorIKDEClsfr( mC{sc}, 'showKDE_of_class_index', ci, 'showkdecolor', 'r', 'draw_to_these_axes', ha) ;
+   set(ha, 'box', 'on') ;
    %    end
    title(ha,['{\bf' Cnames(getc(mC,sc,ci,'name'),:) '} (' num2str(getc(mC,sc,ci,'conf')) ')']);
    fns=[];%reshape(Fnames(mC(i).Fb,:)',1,numel(Fnames(mC(i).Fb,:)));
