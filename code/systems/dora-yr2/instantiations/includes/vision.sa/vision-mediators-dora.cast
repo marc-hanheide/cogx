@@ -1,5 +1,2 @@
-JAVA MG PersonMediator		vision.components.mediators.PersonMediator
-JAVA MG VisualObjectMediator  	vision.components.mediators.VisualObjectMediator
-
-
+JAVA MG vision.mediator eu.cogx.perceptmediator.george.VisualObjectMediatorComponent 
 
