@@ -38,7 +38,7 @@
 	    <fileset dir="${slice.dir}" includes="ComaData.ice"/>
 	    <includepath> 
   	    <pathelement path="${slice.dir}"/> 
-	    <pathelement path="${basedir}/../../subarchitectures/default.sa/src/slice" />
+	    <pathelement path="${basedir}/../../subarchitectures/spatial.sa/src/slice" />
   	    <pathelement path="${castslice.dir}"/> 
 	    </includepath>
 	  </slice2java>

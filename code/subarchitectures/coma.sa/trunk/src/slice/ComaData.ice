@@ -1,7 +1,7 @@
 #ifndef COMADATA_ICE
 #define COMADATA_ICE
 
-#include <DefaultData.ice>
+#include <SpatialProbabilities.ice>
 
 module comadata {
     
@@ -44,7 +44,7 @@ module comadata {
     	int roomId;
     	string seedPlaceInstance;
     	PlaceIdSet containedPlaceIds;
-    	DefaultData::ProbabilityDistribution categories;
+    	SpatialProbabilities::ProbabilityDistribution categories;
     };
     
 };
