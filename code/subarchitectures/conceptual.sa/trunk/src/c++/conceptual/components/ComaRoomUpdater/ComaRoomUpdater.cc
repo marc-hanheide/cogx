@@ -1,11 +1,11 @@
 /**
  * @author Andrzej Pronobis
  *
- * Definition of the conceptual::BeliefUpdater class.
+ * Definition of the conceptual::ComaRoomUpdater class.
  */
 
 // Conceptual.SA
-#include "BeliefUpdater.h"
+#include "ComaRoomUpdater.h"
 
 
 /** The function called to create a new instance of our component. */
@@ -13,7 +13,7 @@ extern "C"
 {
 	cast::CASTComponentPtr newComponent()
 	{
-		return new conceptual::BeliefUpdater();
+		return new conceptual::ComaRoomUpdater();
 	}
 }
 
@@ -25,7 +25,7 @@ using namespace ConceptualData;
 
 
 // -------------------------------------------------------
-void BeliefUpdater::configure(const map<string,string> & _config)
+void ComaRoomUpdater::configure(const map<string,string> & _config)
 {
 /*	map<string,string>::const_iterator it;
 
@@ -42,19 +42,19 @@ void BeliefUpdater::configure(const map<string,string> & _config)
 
 
 // -------------------------------------------------------
-void BeliefUpdater::start()
+void ComaRoomUpdater::start()
 {
 }
 
 
 // -------------------------------------------------------
-void BeliefUpdater::runComponent()
+void ComaRoomUpdater::runComponent()
 {
 }
 
 
 // -------------------------------------------------------
-void BeliefUpdater::stop()
+void ComaRoomUpdater::stop()
 {
 }
 
