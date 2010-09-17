@@ -5,7 +5,8 @@ HOST localhost
 
 # vision stuff ################################################################
 INCLUDE includes/vision.sa/vision-base.cast
-INCLUDE includes/vision.sa/vision-mediators-dora.cast 
+INCLUDE includes/vision.sa/vision-mediators-dora.cast
+INCLUDE includes/vision.sa/vision-execution.cast
 
 # live images
 # NOTE: provide your own camera calibration file here
@@ -21,18 +22,20 @@ CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inif
 CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/frosties.ply" --siftfiles "instantiations/sift-models/frosties.sift" --labels "frosties" --log
 
 # mode can be RECOGNIZE or LEARN
-# CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "frosties" --mode RECOGNIZE --log
+#CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "frosties" --mode RECOGNIZE --log
 
 # viewing and debugging
 
 JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "VisionData.VisualObject"
 
-JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --log true --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --log --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"
 
 
 # planning and motivation #####################################################
+
+INCLUDE includes/planner.sa/planner-dora.cast
 INCLUDE includes/planner.sa/planner-base.cast
 
-JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager
+JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --labels "frosties"
 JAVA MG executor dora.execution.components.DoraExecutionMediator
 
