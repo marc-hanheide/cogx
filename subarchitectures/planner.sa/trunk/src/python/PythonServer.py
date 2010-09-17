@@ -304,13 +304,13 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.getDT().newTask(task.id, problem_fn, domain_fn);
 
       
-  def deliverAction(self, taskId, action, current=None):
+  def deliverAction(self, taskId, action, value, current=None):
       if taskId not in self.tasks:
           log.warning("Warning: received action for task %d, but no such task found.", taskId)
           return
     
       log.info("%d: received new action from DT", taskId)
-      
+      log.info("%d: expected value is %.2f", taskId, value)
       task = self.tasks[taskId]
       task.action_delivered(action)
 

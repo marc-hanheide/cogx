@@ -199,7 +199,7 @@ class DTProblem(object):
             a.precondition = pddl.LiteralCondition(dtpddl.committed, [term], a, negated=True)
             commit_effect = pddl.SimpleEffect(dtpddl.committed, [term], a)
             reward_effect = pddl.ConditionalEffect(pddl.LiteralCondition(pddl.equals, [term, val], a), \
-                                                       pddl.SimpleEffect(pddl.builtin.increase, [pddl.Term(dtpddl.reward,[]), 100]))
+                                                       pddl.SimpleEffect(pddl.builtin.num_assign, [pddl.Term(dtpddl.reward,[]), 100]))
             a.effect = pddl.ConjunctiveEffect([commit_effect, reward_effect], a)
             
             result.add(a)
