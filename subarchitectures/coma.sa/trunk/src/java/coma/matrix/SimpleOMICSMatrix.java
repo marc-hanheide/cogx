@@ -151,18 +151,18 @@ public class SimpleOMICSMatrix {
 	public static void main(String args[]) {
 		SimpleOMICSMatrix my_matrix = new SimpleOMICSMatrix();
 		
-		my_matrix.namespaceFile = "dora.ns";
-		my_matrix.tupleFile = "/Users/zender/projects/resources/omics/omics-locations.nt";
-		my_matrix.ruleFile = "default.rdl";
+		my_matrix.namespaceFile = "subarchitectures/coma.sa/ontologies/dora.ns";
+		my_matrix.tupleFile = "subarchitectures/coma.sa/ontologies/omics-locations-coocmatrix-subset1.nt";
+		my_matrix.ruleFile = "subarchitectures/coma.sa/ontologies/default.rdl";
 		
 		my_matrix.init();
 		
-		my_matrix.colQuery = "SELECT DISTINCT ?obj where ?obj <http://dora.cogx.eu/#omicsCooccurrence>  ?loc";
-		my_matrix.rowQuery = "SELECT DISTINCT ?loc where ?obj <http://dora.cogx.eu/#omicsCooccurrence>  ?loc";
+		my_matrix.colQuery = "SELECT DISTINCT ?obj where ?obj <http://dora.cogx.eu#in>  ?loc";
+		my_matrix.rowQuery = "SELECT DISTINCT ?loc where ?obj <http://dora.cogx.eu#in>  ?loc";
 		
 		my_matrix.prepareMatrix();
 		
-		my_matrix.markCooccurrence("SELECT ?obj ?loc where ?obj <http://dora.cogx.eu/#omicsCooccurrence>  ?loc");
+		my_matrix.markCooccurrence("SELECT ?obj ?loc where ?obj <http://dora.cogx.eu#in>  ?loc");
 
 		//try {
 		//	my_matrix.matrix.saveToFile("simpleOmicsMatrix.mtx");
@@ -177,15 +177,16 @@ public class SimpleOMICSMatrix {
 		
 		try{
 		    // Create file 
-		    FileOutputStream fstream = new FileOutputStream("omics-locations-coocmatrix.nt");
+		    FileOutputStream fstream = new FileOutputStream("subarchitectures/coma.sa/ontologies/tmp/omics-locations-coocmatrix.nt");
 		    PrintStream outstream = new PrintStream(fstream);
 		  //  BufferedWriter out = new BufferedWriter(fstream);
 		        for (int a = 0; a < numCols ; a++) {
 		        	for (int b = 0; b < numRows ; b++) {
 		        		boolean _coocDefault = my_matrix.matrix.getCell(a, b);
 		        		outstream.println(my_matrix.matrix.getColLabel(a) + 
-		        				" <http://dora.cogx.eu/#in> " + my_matrix.matrix.getRowLabel(b) +
-		        				" " + (_coocDefault ? "\"0.7\"^^<xsd:float>" : "\"0.1\"^^<xsd:float>"));
+		        				" <http://dora.cogx.eu#in> " + my_matrix.matrix.getRowLabel(b) +
+		        				" " + (_coocDefault ? "\"0.7\"^^<xsd:float>" : "\"0.1\"^^<xsd:float>") +
+		        				" .");
 		        	}
 		        }
 		    outstream.close();
