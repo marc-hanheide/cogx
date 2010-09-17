@@ -72,6 +72,11 @@ if(BUILD_SA_DIALOGUE)
 add_subdirectory (subarchitectures/dialogue.sa)
 endif(BUILD_SA_DIALOGUE)
 
+option(BUILD_SA_COMA "Build sa_coma specific code" NO)
+if(BUILD_SA_COMA)
+add_subdirectory (subarchitectures/coma.sa)
+endif(BUILD_SA_COMA)
+
 option(BUILD_SA_CONCEPTUAL "Build conceptual subarchitecure" NO)
 if(BUILD_SA_CONCEPTUAL)
 add_subdirectory (subarchitectures/conceptual.sa)
@@ -82,10 +87,6 @@ if(BUILD_SA_DEFAULT)
 add_subdirectory (subarchitectures/default.sa)
 endif(BUILD_SA_DEFAULT)
 
-option(BUILD_SA_COMA "Build sa_coma specific code" NO)
-if(BUILD_SA_COMA)
-add_subdirectory (subarchitectures/coma.sa)
-endif(BUILD_SA_COMA)
 
 
 option(BUILD_HAL_ROBOT "Build hardware robotbase" YES)
