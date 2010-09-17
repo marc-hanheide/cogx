@@ -51,7 +51,7 @@ public class VisionActionInterface extends ManagedComponent {
 	 * 
 	 * @author nah
 	 */
-	private class DetectObjectsActionExecutor extends
+	public static class DetectObjectsActionExecutor extends
 			NonBlockingCompleteOnOperationExecutor<DetectObjects> implements
 			WorkingMemoryChangeReceiver {
 
@@ -71,8 +71,8 @@ public class VisionActionInterface extends ManagedComponent {
 		@Override
 		public void executeAction() {
 			DetectionCommand cmd = new DetectionCommand(m_labels);
-			addThenCompleteOnDelete(new WorkingMemoryAddress(newDataID(),
-					getSubarchitectureID()), cmd);
+			addThenCompleteOnDelete(new WorkingMemoryAddress(getComponent().newDataID(),
+					getComponent().getSubarchitectureID()), cmd);
 		}
 
 	}
@@ -82,7 +82,7 @@ public class VisionActionInterface extends ManagedComponent {
 	 * 
 	 * @author nah
 	 */
-	private class DetectPeopleActionExecutor extends
+	public static class DetectPeopleActionExecutor extends
 			NonBlockingCompleteOnOperationExecutor<DetectPeople> implements
 			WorkingMemoryChangeReceiver {
 
@@ -97,10 +97,9 @@ public class VisionActionInterface extends ManagedComponent {
 
 		@Override
 		public void executeAction() {
-			println("execute action");
 			PeopleDetectionCommand cmd = new PeopleDetectionCommand();
-			addThenCompleteOnDelete(new WorkingMemoryAddress(newDataID(),
-					getSubarchitectureID()), cmd);
+			addThenCompleteOnDelete(new WorkingMemoryAddress(getComponent().newDataID(),
+					getComponent().getSubarchitectureID()), cmd);
 		}
 
 	}
