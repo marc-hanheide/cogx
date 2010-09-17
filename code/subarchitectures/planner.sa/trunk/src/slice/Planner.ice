@@ -122,7 +122,11 @@ module autogen {
       */
       void newTask(int id, string probleFile, string domainFile);
 
-
+      /*If the \class{PythonServer} is unhappy with the quality of the
+	policy at \argument{id}, it can ask DTP to try and improve the
+	quality.*/
+      void improvePlanQuality(int id);
+      
       /*\class{PythonServer} can abort planning task
 	\argument{id}. This will kill the THREAD started by the last
 	call to \method{newTask}.*/
