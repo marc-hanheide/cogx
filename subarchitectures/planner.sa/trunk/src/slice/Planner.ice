@@ -155,18 +155,18 @@ module autogen {
       void updateTask(PlanningTask task);
       void updateState(BeliefSeq state, BeliefSeq percepts);
 
-      /*DTP process with ID \argument{id} calls this method when: (1)
-	A useful plan has been found, and execution of that plan
-	commences, OR (2) during plan execution, an observation has
-	been received, and the corresponding action has been
-	determined.*/
-      void deliverAction(int id, PDDLAction action);
+//       /*DTP process with ID \argument{id} calls this method when: (1)
+// 	A useful plan has been found, and execution of that plan
+// 	commences, OR (2) during plan execution, an observation has
+// 	been received, and the corresponding action has been
+// 	determined.*/
+//       void deliverAction(int id, PDDLAction action);
 
-//       /* (see \method{deliverAction}). \argument{value} is the
-//        * expected value of executing the current DTP policy
-//        * ---starting with \argument{action}--- at the current
-//        * belief-state.*/
-//       void deliverAction(int id, PDDLAction action, double value);
+      /* (see \method{deliverAction}). \argument{value} is the
+       * expected value of executing the current DTP policy
+       * ---starting with \argument{action}--- at the current
+       * belief-state.*/
+      void deliverAction(int id, PDDLAction action, double value);
 
       /*The DT planner can fail for some reason. In this case it
 	informs the \class{PythonServer} by posting a failed status
