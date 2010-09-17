@@ -11,6 +11,9 @@
 
 module SpatialProbabilities 
 {
+	/** Just a string to int map. */
+	dictionary<string, int> StringToIntMap;
+
 	/** Abstract class for all discrete variable values. */
 	class RandomVariableValue
 	{
