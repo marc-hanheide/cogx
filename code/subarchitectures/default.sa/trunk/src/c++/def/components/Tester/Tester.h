@@ -9,6 +9,7 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <DefaultData.hpp>
+#include <ComaData.hpp>
 
 namespace def
 {
@@ -52,7 +53,7 @@ private:
 	SpatialProbabilities::ProbabilityDistribution sendQueryHandlerQuery(const std::string &query) const;
 
 	/** Sends a new query. */
-	DefaultData::QdlQueryResults sendHFCServerQuery(const std::string &query) const;
+	comadata::QueryResults sendHFCServerQuery(const std::string &query) const;
 
 
 private:
@@ -70,7 +71,7 @@ private:
 	bool _queryHandlerAvailable;
 
 	/** ICE proxy to the forward chainer server interface. */
-	DefaultData::HFCInterfacePrx _hfcInterfacePrx;
+	comadata::HFCInterfacePrx _hfcInterfacePrx;
 
 	/** ICE proxy to the QueryHandlerInterface. */
 	DefaultData::QueryHandlerServerInterfacePrx _queryHandlerServerInterfacePrx;
