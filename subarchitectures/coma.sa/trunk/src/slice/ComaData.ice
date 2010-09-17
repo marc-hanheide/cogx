@@ -1,6 +1,8 @@
 #ifndef COMADATA_ICE
 #define COMADATA_ICE
 
+#include <DefaultData.ice>
+
 module comadata {
     
     sequence<string> InstanceSet;
@@ -42,7 +44,7 @@ module comadata {
     	int roomId;
     	string seedPlaceInstance;
     	PlaceIdSet containedPlaceIds;
-    	ConceptSet concepts;
+    	DefaultData::ProbabilityDistribution categories;
     };
     
 };
