@@ -10,8 +10,6 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <ConceptualData.hpp>
 
-class QApplication;
-
 namespace conceptual
 {
 

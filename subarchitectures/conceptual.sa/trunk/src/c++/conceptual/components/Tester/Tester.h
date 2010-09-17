@@ -48,7 +48,7 @@ protected:
 
 private:
 	/** Sends a new query to the QueryHandler. */
-	DefaultData::ProbabilityDistribution sendQueryHandlerQuery(const std::string &query);
+	SpatialProbabilities::ProbabilityDistribution sendQueryHandlerQuery(const std::string &query);
 
 
 private:

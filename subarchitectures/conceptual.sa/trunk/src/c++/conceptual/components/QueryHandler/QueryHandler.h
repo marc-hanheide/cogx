@@ -10,7 +10,6 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <ConceptualData.hpp>
 
-class QApplication;
 
 namespace conceptual
 {
@@ -33,7 +32,7 @@ class QueryHandler: public cast::ManagedComponent
 		Server(QueryHandler *queryHandler) : _queryHandler(queryHandler)
 		{}
 
-		virtual DefaultData::ProbabilityDistribution
+		virtual SpatialProbabilities::ProbabilityDistribution
 			query(const std::string &queryStr, const Ice::Current &);
 
 	private:
