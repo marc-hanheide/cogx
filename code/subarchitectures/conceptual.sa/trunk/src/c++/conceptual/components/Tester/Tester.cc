@@ -69,12 +69,12 @@ void Tester::stop()
 
 
 // -------------------------------------------------------
-DefaultData::ProbabilityDistribution Tester::sendQueryHandlerQuery(const std::string &query)
+SpatialProbabilities::ProbabilityDistribution Tester::sendQueryHandlerQuery(const std::string &query)
 {
 	if (_queryHandlerAvailable)
 		return _queryHandlerServerInterfacePrx->query(query);
 	else
-		return DefaultData::ProbabilityDistribution();
+		return SpatialProbabilities::ProbabilityDistribution();
 }
 
 

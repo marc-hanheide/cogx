@@ -66,10 +66,10 @@ void QueryHandler::stop()
 
 
 // -------------------------------------------------------
-DefaultData::ProbabilityDistribution QueryHandler::Server::query(
+SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::query(
 		const std::string &queryStr, const Ice::Current &)
 {
-	DefaultData::ProbabilityDistribution d;
+	SpatialProbabilities::ProbabilityDistribution d;
 	return d;
 }
 

@@ -2,7 +2,7 @@
 #define CONCEPTUALDATA_ICE
 
 #include <cast/slice/CDL.ice>
-#include <DefaultData.ice>
+#include <SpatialProbabilities.ice>
 
 /**
  * Data structures representing the knowledge stored in the conceptual layer
@@ -15,7 +15,7 @@ module ConceptualData
 	/** Interface to the conceptual::QueryHandler::Server. */
 	interface QueryHandlerServerInterface
 	{
-		DefaultData::ProbabilityDistribution query(string queryStr);
+		SpatialProbabilities::ProbabilityDistribution query(string queryStr);
 	};
 
 	/** State of the world obtained from other SAs. */
