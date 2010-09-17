@@ -49,7 +49,7 @@ protected:
 
 private:
 	/** Sends a new query to the QueryHandler. */
-	DefaultData::ProbabilityDistribution sendQueryHandlerQuery(const std::string &query) const;
+	SpatialProbabilities::ProbabilityDistribution sendQueryHandlerQuery(const std::string &query) const;
 
 	/** Sends a new query. */
 	DefaultData::QdlQueryResults sendHFCServerQuery(const std::string &query) const;

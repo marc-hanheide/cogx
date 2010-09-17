@@ -96,12 +96,12 @@ QdlQueryResults Tester::sendHFCServerQuery(const std::string &query) const
 
 
 // -------------------------------------------------------
-ProbabilityDistribution Tester::sendQueryHandlerQuery(const std::string &query) const
+SpatialProbabilities::ProbabilityDistribution Tester::sendQueryHandlerQuery(const std::string &query) const
 {
 	if (_queryHandlerAvailable)
 		return _queryHandlerServerInterfacePrx->query(query);
 	else
-		return ProbabilityDistribution();
+		return SpatialProbabilities::ProbabilityDistribution();
 }
 
 
