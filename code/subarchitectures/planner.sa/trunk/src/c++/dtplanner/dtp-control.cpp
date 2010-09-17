@@ -723,7 +723,7 @@ void DTPCONTROL::improvePlanQuality(Ice::Int id, const Ice::Current&)
 
         
     VERBOSER(1001, "DTP Posting the action :: "<<pddlaction->name);
-    pyServer->deliverAction(id, pddlaction);
+    pyServer->deliverAction(id, pddlaction, current_state[id]->get__expected_value());
     
     METHOD_RETURN;
 }
