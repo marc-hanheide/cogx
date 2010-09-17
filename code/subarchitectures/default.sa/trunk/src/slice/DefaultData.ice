@@ -34,7 +34,7 @@ module DefaultData
 	class RandomVariableValue
 	{
 	};
-	
+
 	/** Value of a random variable represented as a string. */
 	class StringRandomVariableValue extends RandomVariableValue
 	{
@@ -55,7 +55,7 @@ module DefaultData
 
 	/** A sequence of random variable values. */
 	sequence <RandomVariableValue> RandomVariableValues;
-	
+
 	/** Defines probability value of a set of values of 
 	    a joint probability distribution. */
 	struct JointProbabilityValue

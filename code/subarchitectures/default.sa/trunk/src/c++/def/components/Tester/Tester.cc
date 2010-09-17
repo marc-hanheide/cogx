@@ -58,7 +58,7 @@ void Tester::start()
 				getIceServer<DefaultData::HFCInterface>(_hfcServerName);
 		_hfcServerAvailable = true;
 	}
-	catch (CASTException e)
+	catch (...)
 	{}
 
 	// Get the QueryHandler interface proxy
@@ -68,7 +68,7 @@ void Tester::start()
 				getIceServer<DefaultData::QueryHandlerServerInterface>(_queryHandlerName);
 		_queryHandlerAvailable = true;
 	}
-	catch (CASTException e)
+	catch (...)
 	{}
 }
 
