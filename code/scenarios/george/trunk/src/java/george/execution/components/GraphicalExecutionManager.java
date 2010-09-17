@@ -5,8 +5,6 @@ package george.execution.components;
 
 import java.util.Map;
 
-import VisionData.VisualLearnerLearningTask;
-
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -16,7 +14,7 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.components.AbstractExecutionManager;
 import execution.slice.actions.BackgroundModels;
 import execution.slice.actions.ComsysQueryFeature;
@@ -77,36 +75,36 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 		// use these to harvest beliefs
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-				PerceptBelief.class, WorkingMemoryOperation.ADD),
+				GroundedBelief.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
-						addPerceptBelief(_wmc.address, getMemoryEntry(
-								_wmc.address, PerceptBelief.class));
+						addGroundedBelief(_wmc.address, getMemoryEntry(
+								_wmc.address, GroundedBelief.class));
 					}
 				});
 
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-				PerceptBelief.class, WorkingMemoryOperation.DELETE),
+				GroundedBelief.class, WorkingMemoryOperation.DELETE),
 				new WorkingMemoryChangeReceiver() {
 
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
 
-						removePerceptBelief(_wmc.address);
+						removeGroundedBelief(_wmc.address);
 					}
 				});
 
 	}
 
-	private void removePerceptBelief(WorkingMemoryAddress _address) {
+	private void removeGroundedBelief(WorkingMemoryAddress _address) {
 		m_gui.removeBelief(_address);
 	}
 
-	private void addPerceptBelief(WorkingMemoryAddress _address,
-			PerceptBelief _belief) {
+	private void addGroundedBelief(WorkingMemoryAddress _address,
+			GroundedBelief _belief) {
 		m_gui.addBelief(_address, _belief);
 	}
 

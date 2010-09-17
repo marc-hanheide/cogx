@@ -25,6 +25,7 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
 public class VisualObjectTransferFunction implements
 		TransferFunction<VisualObject, PerceptBelief> {
 
+	public static final String VISUAL_OBJECT_ID = "protoObjectID";
 	Logger logger = Logger.getLogger(VisualObjectTransferFunction.class);
 
 	public VisualObjectTransferFunction(ManagedComponent component) {
@@ -59,6 +60,10 @@ public class VisualObjectTransferFunction implements
 		fd.add((float) from.salience, 1.0);
 		distr.put("salience", fd.asDistribution());
 
+		fd = FormulaDistribution.create();
+		fd.add(wmc.address.id, 1.0);
+		distr.put(VISUAL_OBJECT_ID, fd.asDistribution());
+		
 		{ // color
 			fd = FormulaDistribution.create();
 			for (int i = 0; i < from.colorLabels.length; i++) {
