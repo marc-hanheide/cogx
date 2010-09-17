@@ -1,8 +1,8 @@
-option(BUILD_SA_CONCEPTUAL_BELIEF_UPDATER "Build Conceptual.SA BeliefUpdater component" YES)
-if(BUILD_SA_CONCEPTUAL_BELIEF_UPDATER)
+option(BUILD_SA_CONCEPTUAL_COMA_ROOM_UPDATER "Build Conceptual.SA ComaRoomUpdater component" YES)
+if(BUILD_SA_CONCEPTUAL_COMA_ROOM_UPDATER)
 
-    add_cast_component(ConceptualBeliefUpdater BeliefUpdater.cc)
+    add_cast_component(ConceptualComaRoomUpdater ComaRoomUpdater.cc)
     link_cast_component(${CAST_COMPONENT_NAME} ConceptualData)
 
-endif(BUILD_SA_CONCEPTUAL_BELIEF_UPDATER)
+endif(BUILD_SA_CONCEPTUAL_COMA_ROOM_UPDATER)
 
