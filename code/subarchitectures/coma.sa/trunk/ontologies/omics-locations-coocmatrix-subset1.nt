@@ -1,47 +1,47 @@
-<http://dora.cogx.eu#baby_food_jar> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#bag_of_rice> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen_pantry> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#bowl_of_cereal> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#box_of_cookies> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen_pantry> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#box_of_donuts> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#box_of_envelopes> <http://dora.cogx.eu#in> <http://dora.cogx.eu#office> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#box_of_matches> <http://dora.cogx.eu#in> <http://dora.cogx.eu#living_room> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#candy_bowl> <http://dora.cogx.eu#in> <http://dora.cogx.eu#living_room> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#candy_dish> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#candy_dish> <http://dora.cogx.eu#in> <http://dora.cogx.eu#living_room> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#candy> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#can_of_corn> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#can_of_food> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen_pantry> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#cereal_bowl> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#cereal_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#cereal> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen_pantry> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#chocolate_chip_cookie> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#coconut> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#cookie> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#cookies> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> . 
-<http://dora.cogx.eu#corn_chips> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#filing_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#office> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#first_aid_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#bathroom> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#food_bowl> <http://dora.cogx.eu#in> <http://dora.cogx.eu#dining_room> "0.7"^^<xsd:float> . 
-<http://dora.cogx.eu#food_bowl> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#food> <http://dora.cogx.eu#in> <http://dora.cogx.eu#dining_room> "0.7"^^<xsd:float> . 
-<http://dora.cogx.eu#food> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#food_item> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#fortune_cookie> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#game_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#living_room> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#gingerbread_cookies> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#ice_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#kleenex_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#bathroom> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#litter_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#bathroom> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#matchbox> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#meal> <http://dora.cogx.eu#in> <http://dora.cogx.eu#dining_room> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#metal_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#popcorn> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#rice> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#snack> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#steel_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#office> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#sugar_cookie> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#table_for_meal> <http://dora.cogx.eu#in> <http://dora.cogx.eu#dining_room> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#table_for_meal> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#waffle> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#waffle_iron> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
-<http://dora.cogx.eu#waffle_maker> <http://dora.cogx.eu#in> <http://dora.cogx.eu#kitchen> "0.7"^^<xsd:float> .
+<dora:baby_food_jar> <dora:in> <dora:kitchen> .
+<dora:bag_of_rice> <dora:in> <dora:kitchen_pantry> .
+<dora:bowl_of_cereal> <dora:in> <dora:kitchen> .
+<dora:box_of_cookies> <dora:in> <dora:kitchen_pantry> .
+<dora:box_of_donuts> <dora:in> <dora:kitchen> .
+<dora:box_of_envelopes> <dora:in> <dora:office> .
+<dora:box_of_matches> <dora:in> <dora:living_room> .
+<dora:candy_bowl> <dora:in> <dora:living_room> .
+<dora:candy_dish> <dora:in> <dora:kitchen> .
+<dora:candy_dish> <dora:in> <dora:living_room> .
+<dora:candy> <dora:in> <dora:kitchen> .
+<dora:can_of_corn> <dora:in> <dora:kitchen> .
+<dora:can_of_food> <dora:in> <dora:kitchen_pantry> .
+<dora:cereal_bowl> <dora:in> <dora:kitchen> .
+<dora:cereal_box> <dora:in> <dora:kitchen> .
+<dora:cereal> <dora:in> <dora:kitchen_pantry> .
+<dora:chocolate_chip_cookie> <dora:in> <dora:kitchen> .
+<dora:coconut> <dora:in> <dora:kitchen> .
+<dora:cookie> <dora:in> <dora:kitchen> .
+<dora:cookies> <dora:in> <dora:kitchen> . 
+<dora:corn_chips> <dora:in> <dora:kitchen> .
+<dora:filing_box> <dora:in> <dora:office> .
+<dora:first_aid_box> <dora:in> <dora:bathroom> .
+<dora:food_bowl> <dora:in> <dora:dining_room> . 
+<dora:food_bowl> <dora:in> <dora:kitchen> .
+<dora:food> <dora:in> <dora:dining_room> . 
+<dora:food> <dora:in> <dora:kitchen> .
+<dora:food_item> <dora:in> <dora:kitchen> .
+<dora:fortune_cookie> <dora:in> <dora:kitchen> .
+<dora:game_box> <dora:in> <dora:living_room> .
+<dora:gingerbread_cookies> <dora:in> <dora:kitchen> .
+<dora:ice_box> <dora:in> <dora:kitchen> .
+<dora:kleenex_box> <dora:in> <dora:bathroom> .
+<dora:litter_box> <dora:in> <dora:bathroom> .
+<dora:matchbox> <dora:in> <dora:kitchen> .
+<dora:meal> <dora:in> <dora:dining_room> .
+<dora:metal_box> <dora:in> <dora:kitchen> .
+<dora:popcorn> <dora:in> <dora:kitchen> .
+<dora:rice> <dora:in> <dora:kitchen> .
+<dora:snack> <dora:in> <dora:kitchen> .
+<dora:steel_box> <dora:in> <dora:office> .
+<dora:sugar_cookie> <dora:in> <dora:kitchen> .
+<dora:table_for_meal> <dora:in> <dora:dining_room> .
+<dora:table_for_meal> <dora:in> <dora:kitchen> .
+<dora:waffle> <dora:in> <dora:kitchen> .
+<dora:waffle_iron> <dora:in> <dora:kitchen> .
+<dora:waffle_maker> <dora:in> <dora:kitchen> .
