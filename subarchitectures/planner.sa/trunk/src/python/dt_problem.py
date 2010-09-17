@@ -52,7 +52,6 @@ class DTProblem(object):
 
     def create_goals(self, plan):
         observe_actions = translators.Translator.get_annotations(self.domain).get('observe_effects', [])
-        #print observe_actions
         if not observe_actions:
             return []
 
@@ -113,8 +112,8 @@ class DTProblem(object):
         fixed = set()
         constraints = defaultdict(set)
         for pnode in self.select_actions:
-            print "action:",pnode
-            print "cond:",map(str,pnode.preconds)
+            log.debug("action: %s", str(pnode))
+            log.debug("cond: %s", str(map(str,pnode.preconds)))
             new_fixed = fixed | set(pnode.full_args)
             new_var_relaxations = set()
             new_value_relaxations = set()
@@ -134,15 +133,15 @@ class DTProblem(object):
             new_free_vars = set()
             new_free_values = set()
             for svar in var_relaxations|value_relaxations:
-                print "trying to relax", svar,"..."
+                log.debug("trying to relax %s ...", str(svar))
                 if svar in new_var_relaxations | new_value_relaxations:
-                    print "will be relaxed later"
+                    log.debug("will be relaxed later")
                     continue
                 if svar in new_constraints:
-                    print "has some new constraints:", map(str, new_constraints[svar])
+                    log.debug("has some new constraints: %s", str(map(str, new_constraints[svar])))
                     new_fixed.discard(svar)
                     continue
-                print "is completely free"
+                log.debug("is completely free")
                 if svar in var_relaxations:
                     new_free_vars.add(svar)
                 else:
@@ -152,7 +151,7 @@ class DTProblem(object):
                 combined_constraints = defaultdict(set)
                 combined_constraints.update(new_constraints)
                 if remove:
-                    print "removing:", remove
+                    log.debug("removing: %s", str(remove))
                     new_fixed.discard(remove)
                 if new_fixed >= fixed and fixed:
                     continue
@@ -162,27 +161,27 @@ class DTProblem(object):
                         if c.value in new_fixed:
                             combined_constraints[obj].add(c)
                         else:
-                            print obj.name, "constraint", c, "is gone"
+                            log.debug("%s: constraint %s is gone.", obj.name, str(c))
                         
-                print "fixed on this layer:", map(str, new_fixed)
+                log.debug("fixed on this layer: %s", str(map(str, new_fixed)))
                 c2 = transform_constraints(new_fixed, combined_constraints)
                 layers.append((set(new_fixed), c2))
             #print "fixed values:", map(str, fixed)
             #print "possible relaxations:", map(str, relaxations)
-            print
+            log.debug("")
             fixed = new_fixed
             var_relaxations = new_var_relaxations
             value_relaxations = new_value_relaxations
             constraints = combined_constraints
 
         for i,(fixed,constraints) in enumerate(layers):
-            print "Layer",i
-            print "Fixed:", map(str, fixed)
+            log.debug("Layer %d", i)
+            log.debug("Fixed: %s", str(map(str, fixed)))
             # cset = set()
             # for c in constraints.itervalues():
             #     cset |= c
-            print "Constraints:", map(str, constraints)
-            print "\n"
+            log.debug("Constraints: %s", str(map(str, constraints)))
+            log.debug("")
             
         return layers
             
@@ -310,22 +309,22 @@ class DTProblem(object):
         objects_in_layer[len(self.relaxation_layers)] = cast_state.objects
         selected = len(self.relaxation_layers)
         for i, (fixed, constraints) in reversed(list(enumerate(self.relaxation_layers))):
-            print "Layer", i
+            log.debug("Layer %d:", i)
             selected = i
             objects, facts = self.limit_state(cast_state, fixed, constraints, objects_in_layer[i+1])
             objects_in_layer[i] = objects
             facts_in_layer[i] = facts
-            print [o.name for o in objects]
+            log.debug("objects in this layer: %s", ", ".join(o.name for o in objects))
             
             total_count = 1
             for r in dt_rules:
                 inst, values = get_rule_size(r,objects)
                 total_count *= values**inst
-            print "Approx. State size:", total_count
+            log.debug("Approx. State size: %d", total_count)
             if total_count < global_vars.config.dt.max_state_size:
-                print "Selecting layer", i
+                log.info("Selecting layer %d with approx. state size of %d", i, total_count)
                 break
-            print "\n"
+            log.debug("")
 
         objects = objects_in_layer[selected]# was cast_state.objects #for testing
         facts = facts_in_layer[selected]
@@ -367,7 +366,7 @@ class DTProblem(object):
                     substate = HierarchicalState([state.Fact(f.svar,val)], parent=hstate)
                     hstate.add_substate(f.svar, val, substate, prob)
                     substates[f.svar.function].append(substate)
-                    print "create substate for %s = %s (p=%.2f)" % (str(f.svar), str(val), prob)
+                    log.debug("create substate for %s = %s (p=%.2f)", str(f.svar), str(val), prob)
 
 
         def apply_rule(st, r, pred):
@@ -415,7 +414,7 @@ class DTProblem(object):
                     sub = HierarchicalState([state.Fact(svar, val)], parent=st2)
                     st2.add_substate(svar, val, sub, pval.value)
                     substates[svar.function].append(sub)
-                    print "create substate for %s = %s (p=%.2f)" % (str(svar), str(val), pval.value)
+                    log.debug("create substate for %s = %s (p=%.2f)", str(svar), str(val), pval.value)
             
                     
         closed = set()
@@ -423,7 +422,7 @@ class DTProblem(object):
         open = set(nondep_rules)
         while open:
             r = open.pop()
-            print "Rule:", r.function.name
+            log.debug("Rule: %s", r.function.name)
             if ruledeps[r]:
                 pred = iter(ruledeps[r]).next()
             else:
@@ -444,7 +443,6 @@ class DTProblem(object):
                 if r not in open and r not in closed and not (ruledeps[r] - closed_functions):
                     open.add(r)
 
-        print "done"
         #facts = [f.to_init() for f in cast_state.prob_state.iterdists()]
         p_facts = hstate.init_facts()
         p_objects = set(o for o in objects if o not in domain.constants)
