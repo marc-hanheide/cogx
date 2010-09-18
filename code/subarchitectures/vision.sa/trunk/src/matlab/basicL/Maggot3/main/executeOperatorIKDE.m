@@ -707,7 +707,7 @@ switch operator_data
             if ~isempty(selectSubDimensions) && length(selectSubDimensions) ~= d   
                 tmp.Cov = input_kde.ikdeParams.scale.Cov ;
                 tmp.Mu = input_kde.ikdeParams.scale.Mu ;
-                C = tmp.Cov *(4/((d+2)*size(input_kde.pdf.Mu,2)))^(2/(d+4)) ; %/ 2^2 ; %*(4/((d+2)*input_kde.ikdeParams.N_eff))^(2/(d+4)) ; / 4^2
+                C = tmp.Cov *(4/((d+2)*input_kde.ikdeParams.N_eff))^(2/(d+4)) ; %/ 2^2 ; %*(4/((d+2)*input_kde.ikdeParams.N_eff))^(2/(d+4)) ; / 4^2
                 input_kde.pdf = demarginalizeMixture( input_kde.pdf, tmp.H_d,  C, tmp.Mu,...
                                         selectSubDimensions, model_new.idxToref_out, tmp_pdf_for_dims, tmp.Cov ) ;  
             end          
@@ -828,6 +828,12 @@ switch operator_data
          if ~isempty(selectSubDimensions) && length(selectSubDimensions) ~= d             
              kde_neg.pdf = marginalizeMixture( kde_neg.pdf, selectSubDimensions, 0 ) ;
              input_kde.pdf = marginalizeMixture( input_kde.pdf, selectSubDimensions, 0 ) ;
+             
+             tmp_input_kde_ikdeParams_scale.Cov = input_kde.ikdeParams.scale.Cov ;
+             tmp_input_kde_ikdeParams_scale.Mu = input_kde.ikdeParams.scale.Mu ;
+             input_kde.ikdeParams.scale.Cov = input_kde.ikdeParams.scale.Cov(selectSubDimensions,selectSubDimensions) ;
+             input_kde.ikdeParams.scale.Mu = input_kde.ikdeParams.scale.Mu(selectSubDimensions) ;
+             kde_neg.ikdeParams.scale = input_kde.ikdeParams.scale ;
              %             input_kde = regularizeKDEInBandwidth( input_kde ) ;
              if ~isempty(otherClasses)
                  for i_oth= 1 : length(otherClasses.pdfs)
@@ -844,11 +850,12 @@ switch operator_data
  
         % reproject back up 
         if ~isempty(selectSubDimensions) && length(selectSubDimensions) ~= d
-            tmp.Cov = input_kde.ikdeParams.scale.Cov ;
-            tmp.Mu = input_kde.ikdeParams.scale.Mu ;
-            C = tmp.Cov *(4/((d+2)*size(input_kde.pdf.Mu,2)))^(2/(d+4)) ; 
-            out_kde.pdf = demarginalizeMixture( out_kde.pdf, tmp.H_d,  C, tmp.Mu,...
-                                                  selectSubDimensions, [], [], tmp.Cov ) ;
+%             tmp.Cov = input_kde.ikdeParams.scale.Cov ;
+%             tmp.Mu = input_kde.ikdeParams.scale.Mu ;
+            C = tmp_input_kde_ikdeParams_scale.Cov *(4/((d+2)*input_kde.ikdeParams.N_eff))^(2/(d+4)) ; 
+            out_kde.pdf = demarginalizeMixture( out_kde.pdf, tmp.H_d,  C, tmp_input_kde_ikdeParams_scale.Mu,...
+                                                  selectSubDimensions, [], [], tmp_input_kde_ikdeParams_scale.Cov ) ;
+            out_kde.ikdeParams.scale = tmp_input_kde_ikdeParams_scale ;
         end
       
         

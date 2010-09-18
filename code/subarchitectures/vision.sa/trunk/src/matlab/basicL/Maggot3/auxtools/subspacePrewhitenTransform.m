@@ -265,7 +265,7 @@ if ~isempty(additional_data)
    additional_data = additional_data(id_valid,:) ;
 end
 
-
+ 
 
 % if variable bandwidths activated
 if pdf.smod.useVbw == 1
