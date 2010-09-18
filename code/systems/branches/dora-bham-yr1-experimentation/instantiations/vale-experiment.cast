@@ -31,7 +31,7 @@ INCLUDE includes/coma.sa/coma.cast
 # comsys ######################################################################
 # COMMENT BACK IN BELOW TO HAVE SPEECH
 INCLUDE includes/comsys.sa/comsys-base.cast
-INCLUDE includes/comsys.sa/comsys.cast
+INCLUDE includes/comsys.sa/comsys-w-say.cast
 
 
 # planning and motivation #####################################################

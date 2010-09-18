@@ -2,6 +2,6 @@
 JAVA GD contentPlanning comsys.components.realize.cc_ContentPlanning --grammar ./subarchitectures/comsys/grammars/contentPlanning/grammar.xml --redux ./subarchitectures/comsys/grammars/contentPlanning/modelredux.rdx 
 JAVA GD realizer comsys.components.realize.cc_Realizer --ccg ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml #--log
 
-INCLUDE comsys-tts-mary.cast
+INCLUDE comsys-tts-say.cast
 
 
