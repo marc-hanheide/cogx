@@ -647,8 +647,10 @@ switch operator_data
                 
                 % search for degenerate kdes and reapproximate their bandwidths
             is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{i}, 'test_if_kde_is_degenerated') ;
+            tmp_pd_Struct = hyper_input_kde_cl.pair_dist_struct ;
+            tmp_pd_Struct.use_approx = 0 ;
             if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
-                    otherClasses = makeOtherClasses( input_kde_cl, i, 0, use_equalimportance, hyper_input_kde_cl.pair_dist_struct  ) ; 
+                    otherClasses = makeOtherClasses( input_kde_cl, i, 0, use_equalimportance, tmp_pd_Struct  ) ; 
                     input_kde_cl{i} = executeOperatorIKDE( input_kde_cl{i}, 'set_auxiliary_bandwidth' ,  'otherClasses', otherClasses) ;
             end
 
@@ -808,9 +810,10 @@ switch operator_data
  
         % search for degenerate kdes and reapproximate their bandwidths
         is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'test_if_kde_is_degenerated') ;
-        
+        tmp_pd_Struct = hyper_input_kde_cl.pair_dist_struct ;
+        tmp_pd_Struct.use_approx = 0 ;
         if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
-                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, val_get, 0, use_equalimportance, hyper_input_kde_cl.pair_dist_struct  ) ; 
+                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, val_get, 0, use_equalimportance, tmp_pd_Struct  ) ; 
                     hyper_input_kde_cl.kde_cl{val_get} = ...
                                      executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'set_auxiliary_bandwidth' ,...
                                      'otherClasses', otherClasses) ;
@@ -822,12 +825,12 @@ switch operator_data
     case 'regularize_all_kdes'
         
         % search for degenerate kdes and reapproximate their bandwidths
-        
+        tmp_pd_Struct = hyper_input_kde_cl.pair_dist_struct ;
+        tmp_pd_Struct.use_approx = 0 ;
         for val_get = 1 : length(hyper_input_kde_cl.kde_cl)
-            is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'test_if_kde_is_degenerated') ;
-        
+            is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'test_if_kde_is_degenerated') ;            
             if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
-                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, val_get, 0, use_equalimportance, hyper_input_kde_cl.pair_dist_struct ) ; 
+                    otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, val_get, 0, use_equalimportance, tmp_pd_Struct ) ; 
                     hyper_input_kde_cl.kde_cl{val_get} = ...
                                      executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'set_auxiliary_bandwidth' ,...
                                      'otherClasses', otherClasses) ;
