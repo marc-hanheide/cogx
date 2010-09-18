@@ -5,7 +5,7 @@ global Settings
 Settings.CAST=0;
 
 %set global variables to default values
-addPaths ;
+%addPaths ;
 % mylocalMaggot3 = 'D:\Work\Matlab\IncrementalKDE\Maggot3\demo\' ;
 % pthis = pwd ; cd(mylocalMaggot3) ;
 % installEntireMaggot3() ;
@@ -83,21 +83,30 @@ Settings.Disp.GL=1;
 Settings.Disp.GR=1;
 Settings.Disp.TL=1;
 Settings.Disp.TR=1;
+Settings.Disp.GD=1;
+Settings.Disp.TD=1;
 
 %HTML display
-Dirs.disp=[Dirs.cogLearn 'files/disp/'];
 global Disp
+Dirs.disp=[Dirs.cogLearn 'files/disp/'];
 fclose('all');
-Disp.mL=[Dirs.disp 'mL.png'];
-copyfile([Dirs.disp 'mLinit.png'],Disp.mL);
-Disp.mR=[Dirs.disp 'mR.png'];
-copyfile([Dirs.disp 'mRinit.png'],Disp.mR);
+Disp.mGL=[Dirs.disp 'mGL.png'];
+copyfile([Dirs.disp 'mGLinit.png'],Disp.mGL);
+Disp.mGR=[Dirs.disp 'mGR.png'];
+copyfile([Dirs.disp 'mGRinit.png'],Disp.mGR);
+Disp.mGD=[Dirs.disp 'mGD.png'];
+copyfile([Dirs.disp 'mGDinit.png'],Disp.mGD);
 %delete([Dirs.disp 'mlog.html']);
 %Disp.mlog=fopen([Dirs.disp 'mlog.html'],'a');
-%Disp.mL=fopen([Dirs.disp 'mL.html'],'w');
-%Disp.mR=fopen([Dirs.disp 'mR.html'],'w');
-%delete(Disp.mL);
-%delete(Disp.mR);
+Disp.mTL=[Dirs.disp 'mTL.html'];
+copyfile([Dirs.disp 'mTLinit.html'],Disp.mTL);
+Disp.mTR=[Dirs.disp 'mTR.html'];
+copyfile([Dirs.disp 'mTRinit.html'],Disp.mTR);
+Disp.mTD=[Dirs.disp 'mTD.html'];
+copyfile([Dirs.disp 'mTDinit.html'],Disp.mTD);
+%delete(Disp.mTL);
+%delete(Disp.mTR);
+%delete(Disp.mTD);
 
 %start processes
 

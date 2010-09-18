@@ -2,7 +2,7 @@ function answ=LRinterface(req,avw,f)
 
 disp(['LRinterface: I will process [' num2str(req) '] [' num2str(avw(:)') ']!']);
 
-global mC Params Coma
+global mC Params Coma Figs
 readConstants;
 
 global f1;
@@ -17,7 +17,8 @@ switch req
       ansYes = lf2sfa(ansQl, ANSyes);
       ansPy = lf2sfa(ansQl, ANSpy);
       showRec(ansYes,ansPy,rCpcx,f);
-      dispRec;
+      displayTR(ansYes,ansPy,avu);
+      displayG(Figs.LRguiR.main,'GR');
    case 2 %update
       avwp=avw(find(avw(:,2)>0),:);
       avwn=avw(find(avw(:,2)<0),:);%avwn=avwn(:,1);

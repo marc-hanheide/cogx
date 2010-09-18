@@ -1,7 +1,6 @@
 function showROI(x,b,f,pts3d)
 
 global Settings Figs
-%global LRaxRoi LRtxFroi LRaxRec LRtxRec LRtxFrec LRtxFisRec LRtxFisRoi LRaxPts3d
 global Dirs
 
 cla(Figs.LRguiR.LRaxRec);
