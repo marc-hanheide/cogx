@@ -1,0 +1,4 @@
+
+## other voice options: hmm-slt (female hmm voice), hmm-jmk (male hmm voice), us1 (female intonation), us2 (male intonation)
+JAVA GD speech.synth   tts.CommandLineTTS --cmd-prefix "say"
+
