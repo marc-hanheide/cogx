@@ -56,10 +56,13 @@ for i=1:numCall
 end
 
 txt=strFromIdxs(mC);
-if length(txt)>18
+if length(txt)>1%8
    set(fig.tx_Fb,'String',txt);
 end
-dispLearn(fig.main);
+displayG(fig.main,'GL');
+displayTL(mC);
+displayTD(mC);
+displayGD(mC);
 
 
 
