@@ -89,6 +89,11 @@ SelfRepresenter::runComponent()
   while (isRunning()) {
     // Regularly check robot pose
     NavData::FNodePtr curFNode = getCurrentNavNode();
+    if (curFNode==0) {
+      usleep(100000);
+      log("have to wait for novnodes to show up");
+      continue;
+    }
     try {
       SpatialData::PlacePtr curPlace = agg2->getPlaceFromNodeID(curFNode->nodeId);
 
@@ -128,7 +133,7 @@ SelfRepresenter::runComponent()
       prevPlaceID = curPlaceID;
     }
     catch (Ice::Exception e) {
-      log("Unable to get current Place!");
+      log("Unable to get current Place! %s",e.what());
     }
     usleep(500000);
   }
