@@ -54,7 +54,7 @@ IplImage* convertImageToIpl(const Video::Image & img)
 bool convertBytesToIpl(const std::vector<unsigned char>& data, int width, int height, int nchn, IplImage ** iplImg)
 {
   if(*iplImg != 0)
-    if(width != (*iplImg)->width || height != (*iplImg)->height || nchn != (*iplImg)->nChannels != nchn)
+    if(width != (*iplImg)->width || height != (*iplImg)->height || nchn != (*iplImg)->nChannels)
       cvReleaseImage(iplImg);
 
   if (nchn != 1 && nchn != 3) return false;
