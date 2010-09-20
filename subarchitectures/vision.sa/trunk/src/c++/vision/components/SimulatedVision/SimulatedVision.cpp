@@ -108,6 +108,9 @@ namespace cogx { namespace vision {
 #define ID_CMD_SCENE_SUBMIT_SAVE "!scene.submit+save"
 
 #define ID_CHUNK_INFO  "003.sim.info"
+#define ID_CHUNK_HELP  "900.sim.help"
+
+#define MAX_SCENE_OBJECT_COUNT 6
 
 void CVisionSimulator::CDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
@@ -278,10 +281,12 @@ void CVisionSimulator::CDisplayClient::createForms()
          ss << "<option>" << pSim->m_objectNames[i] << "</option>";
       }
       ss << "</select>";
+      ss << "Select an object, edit its properties and save it.";
       ss << "</div>";
       m_FormObject.add(new cxd::CFormValues::field(IDC_FORM_OBJECT_NAME));
 
-      ss << "<table><tr><td>";
+      ss << "<table><tr><td>color</td><td>shape</td><td>type/identity</td></tr>";
+      ss << "<tr><td>";
 
       // up to 3 colors for an object
       ss << "<table>";
@@ -326,6 +331,7 @@ void CVisionSimulator::CDisplayClient::createForms()
          ss << "<option>" << pSim->m_sceneNames[i] << "</option>";
       }
       ss << "</select>";
+      ss << "Load a predefined scene.<br>Select the objects that will be on the scene.";
       ss << "</div>";
       m_FormScene.add(new cxd::CFormValues::field(IDC_FORM_SCENE_NAME));
 
@@ -334,12 +340,13 @@ void CVisionSimulator::CDisplayClient::createForms()
          objids << "<option>" << pSim->m_objectNames[i] << "</option>";
       }
 
-      // up to 5 objects in a scene
-      for(int i = 0; i < 5; i++) {
+      // up to MAX_SCENE_OBJECT_COUNT objects in a scene
+      for(int i = 0; i < MAX_SCENE_OBJECT_COUNT; i++) {
          std::string fldname = "sceneobj" + _str_(i);
          ss << "<select name='" << fldname << "' >";
          ss << objids.str();
-         ss << "</select>" << "<br/>";
+         ss << "</select>";
+         if (i % 3 == 2) ss << "<br/>";
          m_FormScene.add(new cxd::CFormValues::choice(fldname, pSim->m_objectNames));
       }
 
@@ -591,14 +598,14 @@ void CSceneAttrs::toForm(cogx::display::CFormValues& form)
       std::string fldname = "sceneobj" + _str_(i);
       form.setValue(fldname + "/" + *it, "1");
       i++;
-      if (i >= 5) break;
+      if (i >= MAX_SCENE_OBJECT_COUNT) break;
    }
 }
 
 void CSceneAttrs::fromForm(cogx::display::CFormValues& form)
 {
    m_objects.clear();
-   for(int i = 0; i < 5; i++) {
+   for(int i = 0; i < MAX_SCENE_OBJECT_COUNT; i++) {
       std::string fldname = "sceneobj" + _str_(i);
       std::string val = _s_::strip(form.get(fldname));
       if (val.size() < 1) continue;
@@ -871,6 +878,8 @@ void CVisionSimulator::start()
       std::cout << " ***  toform " << scn.m_name << std::endl;
       scn.toForm(m_display.m_FormScene);
    }
+
+   m_display.setHtml(ID_V11N_OBJECT, ID_CHUNK_HELP, "<hr>Data directory: " + m_DataDir);
 }
 
 void CVisionSimulator::destroy()
