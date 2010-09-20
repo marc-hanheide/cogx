@@ -1,18 +1,7 @@
 # cast config
-
 HOST localhost
 
-# SUBARCHITECTURE binder
-# JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
-# JAVA WM binder.components.BindingWorkingMemory #--log
-
-# JAVA MG bmvisualizer beliefmodels.util.viewer.BeliefModelChartViewer #--log
-
-SUBARCHITECTURE visualization.sa 
-CPP WM SubarchitectureWorkingMemory
-CPP TM AlwaysPositiveTaskManager
-
-CPP MG display.srv DisplayServer --log true --debug true
+INCLUDE v11n_base.cast.inc
 
 SUBARCHITECTURE somethingelse
 JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
