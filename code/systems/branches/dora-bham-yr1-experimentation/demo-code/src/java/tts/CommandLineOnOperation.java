@@ -24,7 +24,7 @@ public abstract class CommandLineOnOperation<CommandType extends Ice.Object>
 	 *            Object from WM. Will be null on delete operation.
 	 * @return
 	 */
-	protected abstract String getCommand(CommandType _cmd);
+	protected abstract ProcessBuilder getProcess(CommandType _cmd);
 
 	public CommandLineOnOperation(WorkingMemoryOperation _operation,
 			Class<CommandType> _cls) {
@@ -44,13 +44,14 @@ public abstract class CommandLineOnOperation<CommandType extends Ice.Object>
 
 				try {
 					if (_wmc.operation == WorkingMemoryOperation.DELETE) {
-						executeCommandLine(getCommand(null));
+						executeProcess(getProcess(null));
 					} else {
-						executeCommandLine(getCommand(getMemoryEntry(
-								_wmc.address, m_class)));
+						executeProcess(getProcess(getMemoryEntry(_wmc.address,
+								m_class)));
 					}
 				} catch (Exception e) {
-					CASTException ce = new CASTException("Failure when executing on command line");
+					CASTException ce = new CASTException(
+							"Failure when executing on command line");
 					ce.initCause(e);
 					throw ce;
 				}
@@ -59,12 +60,11 @@ public abstract class CommandLineOnOperation<CommandType extends Ice.Object>
 		});
 	}
 
-	protected int executeCommandLine(String _command) throws IOException, InterruptedException {
-
-		Runtime rt = Runtime.getRuntime();
-		Process pr = rt.exec(_command);
-		int status  = pr.waitFor();
-		log("executed: " + _command + " returned status: " + status);		
+	protected int executeProcess(ProcessBuilder _proc) throws IOException,
+			InterruptedException {
+		Process pr = _proc.start();
+		int status = pr.waitFor();
+		log("executed: " + _proc.command() + " returned status: " + status);
 		return status;
 	}
 
