@@ -1,11 +1,5 @@
 HOST localhost
 
-# SUBARCHITECTURE binder
-# JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
-# JAVA WM binder.components.BindingWorkingMemory #--log
-
-# JAVA MG bmvisualizer beliefmodels.util.viewer.BeliefModelChartViewer #--log
-
 SUBARCHITECTURE somethingelse
 JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
 JAVA WM cast.architecture.SubarchitectureWorkingMemory #--log
