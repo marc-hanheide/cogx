@@ -219,7 +219,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     #         log.info("%d: done", tid)
     #     return
 
-    query = "SELECT ?x ?y where ?x <dora:typicalObjectInRoom> ?y";
+    query = "SELECT ?x ?y ?z where ?x ?y ?z";
     try:
         results = self.getHFC().querySelect(query)
         log.debug("Query: %s", results.query)
@@ -311,6 +311,11 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     
       log.info("%d: received new action from DT", taskId)
       log.info("%d: expected value is %.2f", taskId, value)
+      # if value < 50:
+      #     log.info("%d: expected value is not good enough, requesting improvement.", taskId)
+      #     self.getDT().improvePlanQuality(taskId)
+      #     return
+      
       task = self.tasks[taskId]
       task.action_delivered(action)
 
