@@ -1,0 +1,4 @@
+HOST localhost
+
+INCLUDE includes/comsys.sa/comsys-base.cast
+INCLUDE includes/comsys.sa/comsys-tts-say.cast
