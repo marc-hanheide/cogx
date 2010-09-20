@@ -10,6 +10,7 @@
 #include <vector>
 #include <VideoUtils.h>
 #include <math.h>
+#include <algorithm>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
 #ifdef FEAT_VISUALIZATION
@@ -39,11 +40,12 @@ long long gethrtime(void)
 #define Shrink_SOI 1
 #define Upper_BG 1.5
 #define Lower_BG 1.1	// 1.1-1.5 radius of BoundingSphere
-#define min_height_of_obj 0.02	//unit cm, due to the error of stereo, >0.01 is suggested
+#define min_height_of_obj 0.04	//unit cm, due to the error of stereo, >0.01 is suggested
 #define rate_of_centers 0.4	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
-#define Torleration 20		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
+#define Torleration 10		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
+#define AgonalTime  100		//The dying object could be "remembered" for "AgonalTime" of framse
 #define MAX_V 0.1
 #define label4initial		-3
 #define label4plane		0	//0, -10, -20, -30... for multiple planes
@@ -417,6 +419,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
   pre_mConvexHullRadius = 0.0;
   pre_id = "";
   bIsMoving = false;
+  CurrentBestDistSquared = 999999.0;
 
 #ifdef FEAT_VISUALIZATION
   m_display.configureDisplayClient(_config);
@@ -749,7 +752,7 @@ void PlanePopOut::runComponent()
 			OP.id = "";
 			OP.bComCurrentPre = false;
 			OP.bInWM = false;
-			OP.count = 10;
+			OP.count = 0;
 			OP.pointsInOneSOI = SOIPointsSeq.at(i);
 			OP.BGInOneSOI = BGPointsSeq.at(i);
 			OP.EQInOneSOI = EQPointsSeq.at(i);
@@ -905,7 +908,7 @@ void PlanePopOut::SOIManagement()
 	    if (PreviousObjList.at(j).bInWM == true)
 	    {
 		PreviousObjList.at(j).count = PreviousObjList.at(j).count-1;
-		if(PreviousObjList.at(j).count > 0) Pre2CurrentList.push_back(PreviousObjList.at(j));
+		if(PreviousObjList.at(j).count > Torleration-AgonalTime) Pre2CurrentList.push_back(PreviousObjList.at(j));
 		else
 		{
 		  //cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
@@ -936,6 +939,7 @@ CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points
     Video::CameraParameters c = img.camPars;
     IplImage *iplImage = convertImageToIpl(img);
     float maxx,maxy,minx,miny;	maxx=0.0; maxy=0.0; minx = 99999.0; miny= 99999.0;
+    IplImage* tmp = cvCreateImage(cvSize(1, (int)points.size()), 8, 3);
     for (unsigned int i=0; i<points.size(); i++)
     {
 	Vector3 v3OneObj = points.at(i).p;
@@ -944,6 +948,13 @@ CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points
 	if (SOIPointOnImg.y>maxy)	maxy = SOIPointOnImg.y;
 	if (SOIPointOnImg.x<minx)	minx = SOIPointOnImg.x;
 	if (SOIPointOnImg.y<miny)	miny = SOIPointOnImg.y;
+	
+	VisionData::ColorRGB rgb = points.at(i).c;
+	CvScalar v;	  
+	v.val[0] = rgb.b;
+	v.val[1] = rgb.g;
+	v.val[2] = rgb.r;
+	cvSet2D(tmp, i, 0, v);
     }
     r.x = (int)minx; r.y = (int)miny; r.width =(int)(maxx-minx); r.height =(int)(maxy-miny); 
     IplImage* imgpatch=cvCreateImage(cvSize(r.width,r.height),iplImage->depth,iplImage->nChannels);
@@ -955,12 +966,12 @@ CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points
     if (r.width>16 && r.height>16)
     surfDetDes(imgpatch,ips, false, 4, 4, 2, 0.0001f);
 //---------------------Done the surf detection, now calculate the color histogram-----------------------//
-
-    IplImage* h_plane = cvCreateImage( cvGetSize(imgpatch), 8, 1 );
-    IplImage* s_plane = cvCreateImage( cvGetSize(imgpatch), 8, 1 );
-    IplImage* v_plane = cvCreateImage( cvGetSize(imgpatch), 8, 1 );
+   
+    IplImage* h_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
+    IplImage* s_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
+    IplImage* v_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
     IplImage* planes[] = { h_plane, s_plane };
-    IplImage* hsv = cvCreateImage( cvGetSize(imgpatch), 8, 3 );
+    IplImage* hsv = cvCreateImage( cvGetSize(tmp), 8, 3 );
     int h_bins = 30, s_bins = 32;
     int hist_size[] = {h_bins, s_bins};
     /* hue varies from 0 (~0 deg red) to 180 (~360 deg red again) */
@@ -971,7 +982,7 @@ CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points
     CvHistogram* hist;
     float max_value = 0;
 
-    cvCvtColor( imgpatch, hsv, CV_BGR2HSV );
+    cvCvtColor( tmp, hsv, CV_BGR2HSV );
     cvCvtPixToPlane( hsv, h_plane, s_plane, v_plane, 0 );
     hist = cvCreateHist( 2, hist_size, CV_HIST_ARRAY, ranges, 1 );
     cvCalcHist( planes, hist, 0, 0 );
@@ -984,8 +995,57 @@ CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points
     cvReleaseImage(&s_plane);
     cvReleaseImage(&v_plane);
     cvReleaseImage(&hsv);
+    cvReleaseImage(&tmp);
     //log("Done get surf!");
     return hist;
+}
+
+Vector3 PlanePopOut::PixelRGB2HSV(VisionData::ColorRGB rgb)
+{
+    CvScalar v;	  
+    v.val[0] = rgb.r;
+    v.val[1] = rgb.g;
+    v.val[2] = rgb.b;
+    double r,g,b; r=v.val[0]/255.0; g=v.val[1]/255.0; b=v.val[2]/255.0;
+    double maxC = b;
+    if (maxC < g) maxC = g;
+    if (maxC < r) maxC = r;
+    double minC = b;
+    if (minC > g) minC = g;
+    if (minC > r) minC = r;
+
+    double delta = maxC - minC;
+
+    double V = maxC;
+    double S = 0;
+    double H = 0;
+
+    if (delta == 0)
+    {
+	    H = 0;
+	    S = 0;
+    }
+    else
+    {
+	    S = delta / maxC;
+	    double dR = 60*(maxC - r)/delta + 180;
+	    double dG = 60*(maxC - g)/delta + 180;
+	    double dB = 60*(maxC - b)/delta + 180;
+	    if (r == maxC)
+		    H = dB - dG;
+	    else if (g == maxC)
+		    H = 120 + dR - dB;
+	    else
+		    H = 240 + dG - dR;
+    }
+
+    if (H<0)
+	    H+=360;
+    if (H>=360)
+	    H-=360;
+    
+    Vector3 hsv; hsv.x=H; hsv.y=S; hsv.z=V;
+    return hsv;
 }
 
 void PlanePopOut::CollectDensePoints(Video::CameraParameters &cam, VisionData::SurfacePointSeq points)
@@ -1419,7 +1479,7 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 		//std::cout << "  too few points to calc plane" << std::endl;
 		return false;
 	};
-	int nRansacs = 50;
+	int nRansacs = 100;
 	int point1 = 0;
 	int point2 = 0;
 	int point3 = 0;
@@ -1472,12 +1532,23 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 		}
 	}
 ////////////////////////////////use three points to cal plane////
-	para_a = ( (R_points.at(point2).p.y-R_points.at(point1).p.y)*(R_points.at(point3).p.z-R_points.at(point1).p.z)-(R_points.at(point2).p.z-R_points.at(point1).p.z)*(R_points.at(point3).p.y-R_points.at(point1).p.y) );
-	para_b = ( (R_points.at(point2).p.z-R_points.at(point1).p.z)*(R_points.at(point3).p.x-R_points.at(point1).p.x)-(R_points.at(point2).p.x-R_points.at(point1).p.x)*(R_points.at(point3).p.z-R_points.at(point1).p.z) );
-	para_c = ( (R_points.at(point2).p.x-R_points.at(point1).p.x)*(R_points.at(point3).p.y-R_points.at(point1).p.y)-(R_points.at(point2).p.y-R_points.at(point1).p.y)*(R_points.at(point3).p.x-R_points.at(point1).p.x) );
-	para_d = ( 0-(para_a*R_points.at(point1).p.x+para_b*R_points.at(point1).p.y+para_c*R_points.at(point1).p.z) );
+	if(dBestDistSquared<CurrentBestDistSquared)
+	{
+	    para_a = ( (R_points.at(point2).p.y-R_points.at(point1).p.y)*(R_points.at(point3).p.z-R_points.at(point1).p.z)-(R_points.at(point2).p.z-R_points.at(point1).p.z)*(R_points.at(point3).p.y-R_points.at(point1).p.y) );
+	    para_b = ( (R_points.at(point2).p.z-R_points.at(point1).p.z)*(R_points.at(point3).p.x-R_points.at(point1).p.x)-(R_points.at(point2).p.x-R_points.at(point1).p.x)*(R_points.at(point3).p.z-R_points.at(point1).p.z) );
+	    para_c = ( (R_points.at(point2).p.x-R_points.at(point1).p.x)*(R_points.at(point3).p.y-R_points.at(point1).p.y)-(R_points.at(point2).p.y-R_points.at(point1).p.y)*(R_points.at(point3).p.x-R_points.at(point1).p.x) );
+	    para_d = ( 0-(para_a*R_points.at(point1).p.x+para_b*R_points.at(point1).p.y+para_c*R_points.at(point1).p.z) );
+	    CurrentBestDistSquared = dBestDistSquared;
+	}
+	else
+	{
+	    para_a = A;
+	    para_b = B;
+	    para_c = C;
+	    para_d = D;
+	}
 /////////////////////////////////end parameters calculation/////////////
-// Done the ransacs, now collect the supposed inlier set
+
 	if (para_d<0)
 	{
 		para_a = -para_a;
@@ -1492,7 +1563,43 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 		C = para_c;
 		D = para_d;
 	}
-
+// refine the RANSAC result
+/*
+	std::vector < double > vddis;
+	vddis.assign(nPoints, 0.0);
+	for(unsigned int i=0; i<nPoints; i++)
+	{
+	    Vector3 v3Diff = R_points.at(i).p - v3BestMean;
+	    double dNormDist = fabs(dot(v3Diff, v3BestNormal));
+	    vddis.at(i) = dNormDist;
+	}
+	sort(vddis.begin(),vddis.end());
+	double step_density = 0.0;
+	double step = 0.001;
+	double thre = 0.0;
+	double max_density= 0.0;
+	for (double d=0.5*min_height_of_obj; d<3.0*min_height_of_obj; d=d+step)
+	{
+	    int num= 0; double tmp = 0;
+	    for (unsigned int i=0; i<vddis.size(); i++)
+		if (vddis.at(i)>d+step) {num = i; break;}
+		else	tmp = vddis.at(i)+tmp;
+	    tmp = num/(d+step); 
+	    if (tmp>max_density) max_density = tmp;
+	    //log("the density of window = %f, the num is %d, the previous density is %f", tmp, num, step_density);
+	    //log("Now the d = %f", d);
+	    if (step_density == 0.0 || tmp>step_density)	step_density = tmp;
+	    else
+	    {
+		if ((max_density-tmp)/max_density>1-1/sqrt(3))
+		{thre = d+step; break;}
+		else step_density = tmp;
+	    }
+	}
+	if (thre<min_height_of_obj) thre=min_height_of_obj;
+	//log("the refined min_height_of_obj = %f", thre);
+*/
+//----------------------- now collect the supposed inlier set-----------------//
 	double dmin = 9999.0;
 	double dmax = 0.0;
 
@@ -1646,7 +1753,7 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
    
     float wS, wC, wP; //magic weight for SURF matching, color histogram and Size/Position/Pose
     IpPairVec matches;
-    wP = 0.2;
+    wP = 0.1;
     if (obj1.surf.size() == 0 || obj2.surf.size()==0) wS = 0.0;
     else if (obj1.surf.size() < 40 || obj2.surf.size()<40)
     {
@@ -1655,7 +1762,7 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
     }
     else
     {
-	wS = 0.3;
+	wS = 0.4;
 	getMatches(obj1.surf,obj2.surf,matches);
     }
     wC = 1.0-wS-wP;
@@ -1677,9 +1784,10 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
     log("Finish color histogram comparison, the distance is %f",dist_histogram);
 */   
     double sizeRatio;
-    int s1 = obj1.pointsInOneSOI.size();
-    int s2 = obj2.pointsInOneSOI.size();
-    sizeRatio = exp(-(s2-s1)*(s2-s1)*3.14159);
+//    int s1 = obj1.pointsInOneSOI.size();
+//    int s2 = obj2.pointsInOneSOI.size();
+    double s1, s2; s1 = obj1.r; s2 = obj2.r;	double smax; if (s1>s2) smax=s1; else smax=s2;
+    sizeRatio = exp(-(s2-s1)*(s2-s1)*3.14159/smax);
     /*
     if (obj1.r== 0 || obj2.r==0) sizeRatio = 0.0;
     else
