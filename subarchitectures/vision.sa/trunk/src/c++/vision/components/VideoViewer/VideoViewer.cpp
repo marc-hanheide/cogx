@@ -97,10 +97,10 @@ void VideoViewer::start()
 #ifdef FEAT_VISUALIZATION
 void VideoViewer::CVvDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
-  debug(event.data + " (received by VideoViewer)");
+  //debug(event.data + " (received by VideoViewer)");
   if (event.type == Visualization::evCheckBoxChange) {
     if (event.sourceId == "toggle.viewer.running") {
-      debug(std::string("Time: ") + sfloat (fclocks()));
+      //debug(std::string("Time: ") + sfloat (fclocks()));
       bool newrcv = (event.data != "0");
       if (newrcv != pViewer->receiving) {
         if(pViewer->receiving) {
