@@ -52,7 +52,7 @@ public abstract class Proxy<T extends Ice.Object> {
 		try {
 			_content = class1.cast(content);
 		} catch (ClassCastException e) {
-			_logger.fatal("Proxy: tried to cast "
+			_logger.warn("Proxy: tried to cast "
 					+ content.getClass().getName() + " into "
 					+ _proxyFor.getName() + " which is not valid!", e);
 			throw (e);
