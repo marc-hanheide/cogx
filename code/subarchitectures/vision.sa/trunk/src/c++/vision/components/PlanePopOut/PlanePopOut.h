@@ -84,6 +84,7 @@ private:
 	vector< Vector3 > v3size;
 	IplImage* previousImg;
 	bool bIsMoving;
+	double CurrentBestDistSquared;
 
 #ifdef FEAT_VISUALIZATION
 	bool m_bSendPoints;
@@ -150,6 +151,7 @@ public:
 	void SaveHistogramImg(CvHistogram* hist);
 	double CompareHistKLD(CvHistogram* h1, CvHistogram* h2);
 	bool IsMoving(IplImage * subimg);
+	Vector3 PixelRGB2HSV(VisionData::ColorRGB rgb);
 	
 	inline Particle InitialParticle()
 	{
