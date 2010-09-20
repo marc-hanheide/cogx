@@ -17,8 +17,10 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTUtils;
 import castutils.castextensions.WMEntrySet;
 import castutils.castextensions.WMEntrySet.ChangeHandler;
+import castutils.viewer.plugins.ObjectImplInfo;
 import castutils.viewer.plugins.Plugin;
 
 /**
@@ -30,7 +32,9 @@ public class V11WMViewerComponent extends ManagedComponent {
 	final WMEntrySet entrySet;
 	final private MyDisplayClient displayClient = new MyDisplayClient();
 	final Map<Class<?>, Plugin> objectDispatcherMap = new HashMap<Class<?>, Plugin>();
-
+	public boolean addGenericCol = false;
+	private final ObjectImplInfo genericPlugin=new ObjectImplInfo();
+	
 	private class MyDisplayClient extends DisplayClient implements
 			ChangeHandler {
 		final Map<WorkingMemoryAddress, String> rows = Collections
@@ -40,8 +44,6 @@ public class V11WMViewerComponent extends ManagedComponent {
 		public void entryChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
 				WorkingMemoryChange wmc, ObjectImpl newEntry,
 				ObjectImpl oldEntry) throws CASTException {
-			getLogger().info("entryChanged");
-
 			switch (wmc.operation) {
 			case ADD:
 			case OVERWRITE:
@@ -63,6 +65,11 @@ public class V11WMViewerComponent extends ManagedComponent {
 				String logString = "";
 				for (Object o : row) {
 					logString += "<td>" + o.toString() + "</td>";
+				}
+				if (addGenericCol ) {
+					String genericText=(String) genericPlugin.toVector(newEntry).get(0);
+					logString += "<td>" + genericText + "</td>";
+					getLogger().info(CASTUtils.toString(wmc) +genericText);
 				}
 				rows.put(wmc.address, "<tr>" + logString + "</tr>");
 				break;
@@ -148,6 +155,9 @@ public class V11WMViewerComponent extends ManagedComponent {
 							+ className);
 				}
 			}
+		}
+		if (arg0.get("--generic-col")!=null) {
+			addGenericCol=true;
 		}
 		displayClient.configureDisplayClient(arg0);
 	}

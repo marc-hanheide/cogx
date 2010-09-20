@@ -15,7 +15,7 @@ import de.dfki.lt.tr.beliefs.util.ProbFormula;
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class dBeliefInfo implements Plugin {
+public class dBeliefInfo extends ObjectImplInfo {
 
 	@Override
 	public Vector<Object> toVector(Ice.ObjectImpl iceObject) {
@@ -30,7 +30,6 @@ public class dBeliefInfo implements Plugin {
 		try {
 			CASTIndependentFormulaDistributionsBelief<dBelief> assumedBelief = CASTIndependentFormulaDistributionsBelief
 					.create(dBelief.class, (dBelief) iceObject);
-			extraInfo.add("duration=" + assumedBelief.duration());
 			String distrStr = "";
 			for (Entry<String, FormulaDistribution> distr : assumedBelief
 					.getContent().entrySet()) {
@@ -49,8 +48,9 @@ public class dBeliefInfo implements Plugin {
 
 			}
 			extraInfo.add(distrStr);
+//			extraInfo.addAll(super.toVector(iceObject));
 		} catch (ClassCastException e) {
-			extraInfo.add("no special info");
+			return super.toVector(iceObject);
 		}
 
 		// String offsprings = "";
