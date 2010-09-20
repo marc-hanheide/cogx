@@ -13,7 +13,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+
 #include "CDisplayServer.hpp"
+
 extern "C"
 {
    cast::CASTComponentPtr newComponent()
@@ -57,6 +59,7 @@ CDisplayServer::CDisplayServer()
 {
    pMainFrame = NULL;
    hIceDisplayServer = NULL;
+   m_standaloneHost = "";
 }
 
 CDisplayServer::~CDisplayServer()
@@ -66,7 +69,6 @@ CDisplayServer::~CDisplayServer()
 
 void CDisplayServer::startIceServer()
 {
-   //Visualization::DisplayInterfacePtr hIceDisplayServer = new CDisplayServerI(this);
    hIceDisplayServer = new CDisplayServerI(this);
    registerIceServer<Visualization::DisplayInterface, CDisplayServerI>(hIceDisplayServer);
 }
@@ -76,45 +78,51 @@ void CDisplayServer::configure(const map<string,string> & _config)
 {
    debug("CDisplayServer Server: configuring");
 
+   map<string,string>::const_iterator it;
+   if((it = _config.find("--standalone-display-host")) != _config.end()) {
+      string s = it->second;
+      // trim
+      s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+      m_standaloneHost = s;      
+   }
+
+   if (isUsingRemoteHost()) {
+      println("Clients will use a remote display server that should be running on: '%s'", m_standaloneHost.c_str());
+   }
+   else {
 #ifdef V11N_OBJECT_HTML
-   debug("v11n: Subsystem 'HTML' enabled.");
-   setHtml("@info.DisplayServer", "001", "CogX Display Server<br>");
-   setHtml("@info.DisplayServer", "002", "Version 0.5<br><br>");
-   setHtml("@info.DisplayServer", "010", "Subsystem 'HTML' enabled.<br>");
+      debug("v11n: Subsystem 'HTML' enabled.");
+      setHtml("@info.DisplayServer", "001", "CogX Display Server<br>");
+      setHtml("@info.DisplayServer", "002", "Version 0.5<br><br>");
+      setHtml("@info.DisplayServer", "010", "Subsystem 'HTML' enabled.<br>");
 #ifdef V11N_OBJECT_HTML_PLUGINS
-   setHtml("@info.DisplayServer", "011", "Subsystem 'HTML Plugins' enabled.<br>");
+      setHtml("@info.DisplayServer", "011", "Subsystem 'HTML Plugins' enabled.<br>");
 #endif
-   /* XXX: This was probably fixed (customguipanel didn't remove m_pView from observers)
-   setHtmlHead("@info.DisplayServer.bugs", "css001",
+      /* XXX: This was probably fixed (customguipanel didn't remove m_pView from observers)
+         setHtmlHead("@info.DisplayServer.bugs", "css001",
          "<style> .em { color: red; } </style>");
-   setHtml("@info.DisplayServer.bugs", "900",
+         setHtml("@info.DisplayServer.bugs", "900",
          "<br><span class='em'>WARNING</span>: Closing windows may crash the CAST system, "
          "especially if they display objects that change frequently.<br>");
-   setHtml("@info.DisplayServer.bugs", "901",
+         setHtml("@info.DisplayServer.bugs", "901",
          "<br><span class='em'>WARNING</span>: 'Restore Window Layout' may crash the CAST system. "
          "It should be safe to use it at the beginning of a run.<br>");
-   */
+         */
 #ifdef V11N_OBJECT_LUA_GL
-   setHtml("@info.DisplayServer", "020", "Subsystem 'LuaGlScript' enabled.<br>");
+      setHtml("@info.DisplayServer", "020", "Subsystem 'LuaGlScript' enabled.<br>");
 #endif
 #ifdef V11N_OBJECT_TOMGINE_MODEL
-   setHtml("@info.DisplayServer", "030", "Subsystem 'TomGine Model' enabled.<br>");
+      setHtml("@info.DisplayServer", "030", "Subsystem 'TomGine Model' enabled.<br>");
 #endif
 #endif
 
 #ifdef V11N_OBJECT_LUA_GL
-   debug("v11n: Subsystem 'LuaGlScript' enabled.");
+      debug("v11n: Subsystem 'LuaGlScript' enabled.");
 #endif
 #ifdef V11N_OBJECT_TOMGINE_MODEL
-   debug("v11n: Subsystem 'TomGine Model' enabled.");
+      debug("v11n: Subsystem 'TomGine Model' enabled.");
 #endif
-
-   // TODO: Parse more parameters here
-   // map<string,string>::const_iterator it;
-   // if((it = _config.find("--setting")) != _config.end()) {
-   //    istringstream istr(it->second);
-   //    istr >> m_Setting;
-   // }
+   }
 
    // The servers have to be started before all other components
    // so we start them in configure() instead of in start()
@@ -128,31 +136,33 @@ void CDisplayServer::start()
 
 void CDisplayServer::run()
 {
-   debug("Starting EventServer");
-   hIceDisplayServer.get()->startEventServer();
-   debug("EventServer started");
+   if (! isUsingRemoteHost()) {
+      debug("Starting EventServer");
+      hIceDisplayServer.get()->startEventServer();
+      debug("EventServer started");
 
-   int argc=0;
-   char **argv = NULL;
-   QCastApplication app(argc, argv, this);
-   QCastMainFrame* pMainFrame = new QCastMainFrame();
+      int argc=0;
+      char **argv = NULL;
+      QCastApplication app(argc, argv, this);
+      QCastMainFrame* pMainFrame = new QCastMainFrame();
 
-   debug("Passing the model to MainWindow");
-   pMainFrame->setModel(&m_Model);
-   pMainFrame->setControlDataProxy(this);
-   pMainFrame->show();
-   pMainFrame = NULL; // Owned by QApplication
-   app.exec();
+      debug("Passing the model to MainWindow");
+      pMainFrame->setModel(&m_Model);
+      pMainFrame->setControlDataProxy(this);
+      pMainFrame->show();
+      pMainFrame = NULL; // Owned by QApplication
+      app.exec();
 
-   debug("CDisplayServer Server: GUI closed.");
+      debug("CDisplayServer Server: GUI closed.");
+
+      debug("Stopping EventServer");
+      hIceDisplayServer.get()->destroyEventServer();
+      debug("EventServer stopped");
+   }
 
    while(isRunning()) {
       sleepComponent(1000);
    }
-
-   debug("Stopping EventServer");
-   hIceDisplayServer.get()->destroyEventServer();
-   debug("EventServer stopped");
 }
     
 void CDisplayServer::runComponent()
