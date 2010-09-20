@@ -128,40 +128,38 @@ void CDisplayServer::start()
 
 void CDisplayServer::run()
 {
-    debug("CDisplayServer Server: running");
-    
-    debug("Starting EventServer");
-    hIceDisplayServer.get()->startEventServer();
-    debug("EventServer started");
-    
-    int argc=0;
-    char **argv = NULL;
-    QCastApplication app(argc, argv, this);
-    QCastMainFrame* pMainFrame = new QCastMainFrame();
-    
-    debug("Passing the model to MainWindow");
-    pMainFrame->setModel(&m_Model);
-    pMainFrame->setControlDataProxy(this);
-    pMainFrame->show();
-    pMainFrame = NULL; // Owned by QApplication
-    app.exec();
-    //
-    //   debug("CDisplayServer Server: GUI closed.");
-    //
-    while(isRunning()) {
-        sleepComponent(1000);
-    }
-    //
-    //   debug("Stopping EventServer");
-    //   hIceDisplayServer.get()->destroyEventServer();
-    //   debug("EventServer stopped");
-    //
-    //   debug("CDisplayServer Server: Done.");
+   debug("Starting EventServer");
+   hIceDisplayServer.get()->startEventServer();
+   debug("EventServer started");
+
+   int argc=0;
+   char **argv = NULL;
+   QCastApplication app(argc, argv, this);
+   QCastMainFrame* pMainFrame = new QCastMainFrame();
+
+   debug("Passing the model to MainWindow");
+   pMainFrame->setModel(&m_Model);
+   pMainFrame->setControlDataProxy(this);
+   pMainFrame->show();
+   pMainFrame = NULL; // Owned by QApplication
+   app.exec();
+
+   debug("CDisplayServer Server: GUI closed.");
+
+   while(isRunning()) {
+      sleepComponent(1000);
+   }
+
+   debug("Stopping EventServer");
+   hIceDisplayServer.get()->destroyEventServer();
+   debug("EventServer stopped");
 }
     
 void CDisplayServer::runComponent()
 {
-    run();
+   debug("CDisplayServer Server: Running");
+   run();
+   debug("CDisplayServer Server: Done.");
 }
 
 void CDisplayServer::setRawImage(const std::string& id, int width, int height,
@@ -928,5 +926,5 @@ void CDisplayServerI::addOperation(CQueuedOperation* pOperation)
 }
 
 }} // namespace
-// vim:set fileencoding=utf-8 sw=3 ts=8 et:vim
+// vim:fileencoding=utf-8:sw=3:ts=8:et
 
