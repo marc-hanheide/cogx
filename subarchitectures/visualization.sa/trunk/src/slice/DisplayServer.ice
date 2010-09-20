@@ -41,6 +41,9 @@ module Visualization
 
    interface DisplayInterface
    {
+      // Get the parameters to connect to a remote Display Server
+      void getStandaloneHost(out string hostname);
+
       void setObject(string id, string partId, string svgObject);
       void setObjectTransform2D(string id, string partId, FloatSeq matrix33);
 

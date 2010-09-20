@@ -15,15 +15,12 @@
  */
 #include "CDisplayClient.hpp"
 
-//#include "CDisplayServer.hpp"
- 
-
-#include <sstream>
-#include <sstream>
 #include <Ice/Ice.h>
 #include <IceUtil/IceUtil.h>
 #include <cast/core/CASTUtils.hpp>
 #include <cast/core/CASTComponent.hpp>
+
+#include <sstream>
 
 using namespace std;
 using namespace cast;

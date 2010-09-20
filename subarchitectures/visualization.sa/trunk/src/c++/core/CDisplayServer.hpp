@@ -47,6 +47,23 @@ private:
    CDisplayModel m_Model;
    QCastMainFrame *pMainFrame;
    CDisplayServerIPtr hIceDisplayServer;
+   
+   // Standalone Display Server TCP/IP host name.
+   // TODO: support the form hostname:port for standalone display server
+   //
+   // The display server can run in a standalone process on a remote machine.
+   // A client can connect to the server if it knows the IP/name of the
+   // remote machine. To configure a client the option --standalone-display-host
+   // was intially used, but this may be too hard to manage.
+   //
+   // An alternative is to run the display server with the same option. Then
+   // a client that connects to this server first checks if it should connect
+   // to a remote server instead (getRemoteHost() returns a nonempty string).
+   // The client should then break the current connection and establishe a
+   // new one to the remote host.
+   //
+   // The default value is empty, which means: use this server.
+   std::string m_standaloneHost;
 
 protected:
    // CASTComponent methods
@@ -55,16 +72,17 @@ protected:
    virtual void start();
    virtual void runComponent();
 
+   bool isUsingRemoteHost() {
+      return m_standaloneHost.size() > 0;
+   }
 
 public:
    CDisplayServer();
    ~CDisplayServer();
 
-    
-    /// nah: extra method to allow standalone server access to functionality.
-    virtual void run(); 
-    
-    
+   /// nah: extra method to allow standalone server access to functionality.
+   virtual void run(); 
+
    // TODO: CDisplayServer Methods
    // These methods will be called by the ICE server to perform the real work.
    // The methods have the same prototype as the methods created by slice2cpp,
@@ -97,6 +115,9 @@ public:
          const std::string& ctrlId, const std::string& label);
    void addButton(const Ice::Identity& ident, const std::string& viewId,
          const std::string& ctrlId, const std::string& label);
+   std::string getStandaloneHost(std::string& hostname) {
+      hostname = m_standaloneHost;
+   }
 
 private:
    void startIceServer();
@@ -186,7 +207,7 @@ public:
       m_pDisplayServer->setHtmlForm(ident, id, partId, htmlData);
    }
 
-   void setHtmlFormData(const std::string& id, const std::string& partId,
+   virtual void setHtmlFormData(const std::string& id, const std::string& partId,
          const std::map<std::string, std::string>& fields, const Ice::Current&)
    {
       m_pDisplayServer->setHtmlFormData(id, partId, fields);
@@ -237,6 +258,11 @@ public:
          bool enable, const Ice::Current&)
    {
       // TODO m_pDisplayServer->enableMouseEvents(ident, viewId, ctrlId, enable);
+   }
+
+   virtual void getStandaloneHost(std::string& hostname, const Ice::Current&)
+   {
+      m_pDisplayServer->getStandaloneHost(hostname);
    }
 
    //-----------------------------------------------------------------
