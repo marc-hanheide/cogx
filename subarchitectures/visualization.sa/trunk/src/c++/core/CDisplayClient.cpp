@@ -55,7 +55,26 @@ void CDisplayClient::configureDisplayClient(const map<string,string> & _config)
    }
 }
 
-void CDisplayClient::connectIceClient(CASTComponent& owner) throw(runtime_error)
+void CDisplayClient::connectToStandaloneHost(CASTComponent &owner)
+{
+   owner.log("CDisplayClient connecting to standalone server.");
+   try {
+
+      Ice::ObjectPrx prx = owner.getIceServer(Visualization::V11NSTANDALONENAME,
+            owner.toServantCategory<Visualization::DisplayInterface>(),
+            m_standaloneHost, Visualization::V11NSTANDALONEPORT);
+
+      m_pServer = Visualization::DisplayInterfacePrx::checkedCast(prx);
+      owner.println("CDisplayClient connected to standalone server on '%s'.",
+            m_standaloneHost.c_str());
+   }
+   catch (...) {
+      owner.println(" *** CDisplayClient could not connect standalone server on to '%s'.",
+            m_standaloneHost.c_str());
+   }
+}
+
+void CDisplayClient::connectIceClient(CASTComponent& owner)
 {
    m_pOwner = &owner;
 
@@ -63,40 +82,43 @@ void CDisplayClient::connectIceClient(CASTComponent& owner) throw(runtime_error)
    if (m_pServer) {
       //throw runtime_error(exceptionMessage(__HERE__,
       //      "CDisplayClient already connected to server."));
-      owner.log("CDisplayClient already connected to server.");
+      owner.log("CDisplayClient already connected to a display server.");
    }
 
    //look for a standalone host if this is set
    if(!m_standaloneHost.empty()) {
-      owner.log("CDisplayClient connecting to standalone server on %s", m_standaloneHost.c_str());
-      try {
-
-         Ice::ObjectPrx prx = owner.getIceServer(Visualization::V11NSTANDALONENAME,
-               m_pOwner->toServantCategory<Visualization::DisplayInterface>(),
-               m_standaloneHost, Visualization::V11NSTANDALONEPORT);
-
-         m_pServer = Visualization::DisplayInterfacePrx::checkedCast(prx);
-         owner.println("CDisplayClient connected to standalone server.");
-      }
-      catch (...) {
-         owner.println(" *** CDisplayClient could not connect standalone server on to '%s'.",
-               m_standaloneHost.c_str());
-      }
-
+      connectToStandaloneHost(owner);
    }
    else {
       if (m_serverName.empty()) {
          //throw runtime_error(exceptionMessage(__HERE__,
-         //      "DisplayServer server id not set. Use --display-server-id."));
+         //      "DisplayServer server id not set. Use --displayserver"));
          owner.println(" *** DisplayServer server id not set. Use --displayserver.");
       }
 
       try {
          m_pServer = owner.getIceServer<Visualization::DisplayInterface>(m_serverName);
-         owner.debug("CDisplayClient Connected.");
       }
       catch (...) {
          owner.println(" *** CDisplayClient could not connect to '%s'.", m_serverName.c_str());
+         m_pServer = NULL;
+      }
+
+      if (m_pServer.get() != NULL) {
+         try {
+            m_pServer = owner.getIceServer<Visualization::DisplayInterface>(m_serverName);
+            m_pServer->getStandaloneHost(m_standaloneHost);
+            if(m_standaloneHost.empty())
+               owner.debug("CDisplayClient Connected.");
+            else {
+               m_pServer = NULL;
+               owner.debug("CDisplayClient Redirecting connection to standalone display server.");
+               connectToStandaloneHost(owner);
+            }
+         }
+         catch (...) {
+            owner.println("CDisplayClient: Unknown error during getStandaloneHost/redirection.");
+         }
       }
    }
 }

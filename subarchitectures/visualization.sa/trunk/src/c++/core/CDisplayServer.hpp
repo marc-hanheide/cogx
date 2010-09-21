@@ -56,11 +56,19 @@ private:
    // remote machine. To configure a client the option --standalone-display-host
    // was intially used, but this may be too hard to manage.
    //
-   // An alternative is to run the display server with the same option. Then
-   // a client that connects to this server first checks if it should connect
-   // to a remote server instead (getRemoteHost() returns a nonempty string).
-   // The client should then break the current connection and establishe a
-   // new one to the remote host.
+   // An alternative is to run the display server with a similar option. Then a
+   // client that connects to this server first checks if it should connect to
+   // a remote server instead (getStandaloneHost() returns a nonempty string;
+   // configured with the server option --redirect-to-host).  The client should
+   // then break the current connection and establish a new one to the remote
+   // host.
+   //
+   // The order of connection attempts on the client:
+   //   1) if set: connect to --standalone-display-host or die
+   //   2) if set: connect to --displayserver or die
+   //   2.1) if getStandaloneHost(): disconnect & connect to getStandaloneHost() or die
+   //   2.2) else: keep this connection
+   // * die: the client still runs, but is not connected (a dead connection)
    //
    // The default value is empty, which means: use this server.
    std::string m_standaloneHost;
@@ -90,6 +98,10 @@ public:
    // Example:
    //    virtual int AddOne(int value) { return value+1; }
 
+   void getStandaloneHost(std::string& hostname) {
+      hostname = m_standaloneHost;
+   }
+
    // TODO: (maybe) create a different image implementation for client/server comm.
    void setRawImage(const std::string& id, int width, int height, int channels,
          const std::vector<unsigned char>& data);
@@ -115,9 +127,6 @@ public:
          const std::string& ctrlId, const std::string& label);
    void addButton(const Ice::Identity& ident, const std::string& viewId,
          const std::string& ctrlId, const std::string& label);
-   std::string getStandaloneHost(std::string& hostname) {
-      hostname = m_standaloneHost;
-   }
 
 private:
    void startIceServer();

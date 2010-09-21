@@ -92,33 +92,59 @@ public class DisplayClient {
 		}
 	}
 
+	private final void connectToStandaloneHost(CASTComponent owner) {
+		try {
+			ObjectPrx prx = CASTUtils.getIceServer(
+					V11NSTANDALONENAME.value,
+					CASTUtils.toServantCategory(DisplayInterface.class),
+					m_standaloneHost, V11NSTANDALONEPORT.value,
+					owner.getObjectAdapter().getCommunicator());
+
+			m_Server = DisplayInterfacePrxHelper.checkedCast(prx);
+			owner.println("DisplayClient(java) connected to standalone server on '" + m_standaloneHost + "'.");
+
+		} catch (Throwable t) {
+			if (t.toString().indexOf("No description for:") >= 0) {
+				owner.println("*** DisplayClient(java): DisplayServer not found.");
+			}
+			else owner.logException(t);
+		}
+	}
+
+	/// Connect to the client to a display server.
+	/// For the connection parameters and procedure see: CDisplayServer::m_standaloneHost (c++).
 	public final void connectIceClient(CASTComponent owner) {
+		assert(owner != null);
 		m_Owner = owner;
 
 		if (m_standaloneHost != null) {
-			try {
-				ObjectPrx prx = CASTUtils.getIceServer(
-						V11NSTANDALONENAME.value,
-					   	CASTUtils.toServantCategory(DisplayInterface.class),
-						m_standaloneHost, V11NSTANDALONEPORT.value,
-					   	m_Owner.getObjectAdapter().getCommunicator());
-
-				m_Server = DisplayInterfacePrxHelper.checkedCast(prx);
-				m_Owner.println("DisplayClient(java) connected to standalone server.");
-
-			} catch (Throwable t) {
-				if (t.toString().indexOf("No description for:") >= 0) {
-					m_Owner.println("*** DisplayClient(java): DisplayServer not found.");
-				}
-				else m_Owner.logException(t);
-			}
+			connectToStandaloneHost(owner);
 		} else {
 			try {
 				m_Server = owner.getIceServer(m_ServerName,
 						DisplayInterface.class, DisplayInterfacePrx.class);
-
 			} catch (Throwable t) {
 				m_Owner.logException(t);
+				m_Server = null;
+			}
+
+			if (m_Server != null) {
+				try {
+					Ice.StringHolder hostname = new Ice.StringHolder();
+					m_Server.getStandaloneHost(hostname);
+
+					if (hostname.value == null || hostname.value.length() == 0) {
+						owner.debug("DisplayClient(java) connected.");
+					}
+					else {
+						m_standaloneHost = hostname.value;
+						m_Server = null;
+						owner.debug("DisplayClient(java) Redirecting connection to standalone display server.");
+						connectToStandaloneHost(owner);
+					}
+				} catch (Throwable t) {
+					m_Owner.logException(t);
+				}
 			}
 		}
 	}
