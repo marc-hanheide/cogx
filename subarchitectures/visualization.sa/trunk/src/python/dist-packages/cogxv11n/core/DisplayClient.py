@@ -63,6 +63,7 @@ class CDisplayClient:
             print self.m_ServerName
         if config.has_key("--standalone-display-host"):
            self.m_ServerHost = config["--standalone-display-host"].strip()
+           if self.m_ServerHost == "/no": self.m_ServerHost = ""
            print self.m_ServerHost
 
     def connectToStandaloneHost(self, owner):

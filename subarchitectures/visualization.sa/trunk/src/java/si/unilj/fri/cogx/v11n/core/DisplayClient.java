@@ -86,8 +86,10 @@ public class DisplayClient {
 		}
 		if (config.containsKey("--standalone-display-host")) {
 			m_standaloneHost = config.get("--standalone-display-host").trim();
-			if (m_standaloneHost != null && m_standaloneHost.trim().length() == 0) {
-				m_standaloneHost = null;
+			if (m_standaloneHost != null) {
+				m_standaloneHost = m_standaloneHost.trim();
+				if (m_standaloneHost.length() == 0) m_standaloneHost = null;
+				else if (m_standaloneHost == "/no") m_standaloneHost = null;
 			}
 		}
 	}
