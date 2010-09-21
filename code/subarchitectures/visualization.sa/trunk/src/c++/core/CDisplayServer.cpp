@@ -83,7 +83,7 @@ void CDisplayServer::configure(const map<string,string> & _config)
       string s = it->second;
       // trim
       s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-      if (s == "no!") s = "";
+      if (s == "/no") s = "";
       m_standaloneHost = s;      
    }
 
