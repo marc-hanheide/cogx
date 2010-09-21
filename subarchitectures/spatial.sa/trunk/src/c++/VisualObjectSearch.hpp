@@ -11,7 +11,6 @@
 #include "LaserRayTracer.hh"
 #include "SpatialGridMap.hh"
 #include "BloxelFunctors.hh"
-#include "PBVisualization.hh"
 #include "ObjGridLineRayTracer.hh"
 #include <Map/TransformedOdomPoseProvider.hh>
 #include <SensorData/SensorPose.hh>
@@ -26,8 +25,9 @@
 #include <VisionData.hpp>
 #include <SpatialData.hpp>
 #include "DensitySampling.hpp"
-
+#include "AVS/src/AVSPolicyManager.hh"
 #include "XVector3D.h"
+#include "PBVisualization.hh"
 namespace spatial
 {
   typedef Cure::LocalGridMap<double> CurePDFMap;
@@ -35,8 +35,8 @@ namespace spatial
 
   class VisualObjectSearch : public cast::ManagedComponent,
   public Scan2dReceiver,
-  public OdometryReceiver
-
+  public OdometryReceiver,
+  public EvaluatePolicy
   {
     public:
       VisualObjectSearch();
@@ -55,6 +55,11 @@ namespace spatial
 	double totalprob;
       };
 
+      void writeStringToFile(std::string str);
+      // warning: this is only used at the start of policy execution
+      // hence don't rely on it!
+      int m_currentRoom;
+      int m_policyRoom;
       struct ObjectPairRelation{
 	FrontierInterface::ObjectRelation relation;
 	std::string primaryobject;
@@ -68,10 +73,16 @@ namespace spatial
 	    return false;
 	}
       };
-
-      double tryLoadStepCost(const std::vector<ObjectPairRelation> &step);
-      void cacheStepCost(const std::vector<ObjectPairRelation> &step, double cost);
-      
+ void owtARTagCommand(const cast::cdl::WorkingMemoryChange &objID); 
+ 
+      void addARTagCommand(std::string label);
+      double GetGraphPathLength(double xS, double yS, double aS, double xG, double yG, double aG);
+      AVSPolicyManager m_policyManager;
+      double GetStrategyCost(std::list<std::string> policy); 
+       double tryLoadStepCost(const std::vector<ObjectPairRelation> &step);
+      void cacheStepCost(const std::vector<ObjectPairRelation> &step, double cost,std::string end = "");
+     
+      std::string printPolicy(std::vector<std::string> policy);
       void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void receiveScan2d(const Laser::Scan2d &castScan);
       void receiveOdometry(const Robotbase::Odometry &castOdom);
@@ -81,9 +92,8 @@ namespace spatial
 	  &map, spatial::Object *object);
 
       vector<ObjectPairRelation> getStrategyStep(vector<string> &policy, int step);
-      double GetCostForSingleStrategy(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* tmpMap, std::string targetObject, double pout, double threshold);
+      double GetCostForSingleStrategy(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* tmpMap, std::string targetObject,double threshold, bool ishypo);
       double GetStrategyCost(std::vector<std::string> policy);
-      void FindBestPolicy(const vector<vector<string> > &policies);
       void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
       void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
       void PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
@@ -130,7 +140,7 @@ namespace spatial
       std::map<int, SpatialGridMap::GridMap<SpatialGridMap::GridMapData>*> m_maps;
       std::map<int, CureObstMap*> m_lgms;
 
-
+      double GetPathLength(Cure::Pose3D start, Cure::Pose3D destination, CureObstMap* lgm = 0);
 
       ObjectPairRelation GetSecondaryObject(std::string name);
       SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* m_map;
@@ -148,6 +158,7 @@ namespace spatial
 	STOP,
 	EVALUATE_POLICIES,
 	ASK_FOR_DISTRIBUTION,
+	GOTOROOM,
 	RECOGNIZE,
 	NEXT_NBV,
 	WAITING,
@@ -164,7 +175,8 @@ namespace spatial
 	PAUSED,
 	STOPPED
       };
-
+      
+      double m_totalprob;
       FrontierInterface::ObjectPriorRequestPtr m_priorreq;
       bool m_bSimulation;
       bool m_bEvaluation;
@@ -174,9 +186,10 @@ namespace spatial
       std::string targetObject;
       std::vector<std::string> currentSearchPolicy;
       int currentPolicyStep;
+      std::string failedPolicyStep;
       std::vector<ObjectPairRelation> searchChain;
       int searchChainPos;
-
+      int maxnumberofcones;
       std::string m_PbHost;
       std::vector<std::string> m_objectlist;
 
