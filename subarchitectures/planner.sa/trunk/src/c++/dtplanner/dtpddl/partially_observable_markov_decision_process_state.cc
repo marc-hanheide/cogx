@@ -338,6 +338,50 @@ get_observation_probabilities_at_prescribed_action() const
     return observation_probabilities[prescribed_action_index];//get__prescribed_action()];
 }
 
+void
+Partially_Observable_Markov_Decision_Process_State::
+accept_values(boost::numeric::ublas::compressed_vector< double >& values)
+{
+   
+    bool assigned_score = false;
+    double best_score = 1e-100;
+    
+    assert(successors.size() == action_based_successor_driver.size());
+    assert(successors.size() == observation_based_successor_driver.size());
+    assert(successors.size() == observation_probabilities.size());
+    
+    for( uint driver_index = 0
+             ; driver_index < successors.size()
+             ; driver_index++){
+
+        auto& driven_successors = successors[driver_index];
+        auto& probabilities = observation_probabilities[driver_index];
+//         auto& observations = observation_based_successor_driver[driver_index];
+
+        assert(driven_successors.size() == probabilities.size());
+//         assert(observations.size() == driven_successors.size());
+        
+        double local_score = 0.0;
+        for(uint successor_index = 0
+                ; successor_index < probabilities.size()
+                ; successor_index++){
+            auto successor = driven_successors[successor_index];
+            auto probability = probabilities[successor_index];
+
+            assert(successor->get__index() < values.size());
+            local_score += probability * values(static_cast<int>(successor->get__index()));//[successor->get__index()];
+        }
+        
+        if(local_score > best_score){
+           prescribed_action_index = driver_index;
+           best_score = local_score;
+        }
+    }
+
+    expected_value = best_score;  
+}
+
+
 void 
 Partially_Observable_Markov_Decision_Process_State::
 accept_values(boost::numeric::ublas::vector<double>& values)

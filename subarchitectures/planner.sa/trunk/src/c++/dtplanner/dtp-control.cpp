@@ -660,7 +660,9 @@ void DTPCONTROL::improvePlanQuality(Ice::Int id, const Ice::Current&)
 {
     METHOD_PREFIX;
 
-    Planning::Policy_Iteration policy_Iteration(solvers[id]->belief_state__space);
+    
+//     Planning::Policy_Iteration policy_Iteration(solvers[id]->belief_state__space);
+    Planning::Policy_Iteration__GMRES policy_Iteration(solvers[id]->belief_state__space);
     for(uint i = 0; i < 10; i++){
         if(!solvers[id]->expand_belief_state_space()){
             break;
@@ -780,7 +782,8 @@ void DTPCONTROL::newTask(Ice::Int id,
 //     current_state[id] = solvers[id]->expansion_queue.front();
     current_state[id] = solvers[id]->peek__next_belief_state_for_expansion();//expansion_queue.front();
     
-    Planning::Policy_Iteration policy_Iteration(solvers[id]->belief_state__space);
+//     Planning::Policy_Iteration policy_Iteration(solvers[id]->belief_state__space);
+    Planning::Policy_Iteration__GMRES policy_Iteration(solvers[id]->belief_state__space);
     for(uint i = 0; i < 100; i++){
         if(!solvers[id]->expand_belief_state_space()){
             break;

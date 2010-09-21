@@ -44,6 +44,7 @@
 #include "solver.hh"
 #include "simple_online_solver.hh"
 #include "policy_iteration_over_information_state_space.hh"
+#include "policy_iteration_over_information_state_space__GMRES.hh"
 
 using std::endl;
 
@@ -280,36 +281,52 @@ int main(int argc, char** argv)
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
 
-            INTERACTIVE_VERBOSER(true, 10601, "Made a solver, starting preprocessing.")
+            INTERACTIVE_VERBOSER(true, 10908, "Made a solver, starting preprocessing.")
             
             solver->preprocess();
 
-            INTERACTIVE_VERBOSER(true, 10601, "Done preprocessing, now looking towards state expansion.")
+            INTERACTIVE_VERBOSER(true, 10908, "Done preprocessing, now looking towards state expansion.")
                 
             assert(0 != solver->peek__next_belief_state_for_expansion());//expansion_queue.size());
 //             solver->expand_belief_state_space();
             auto current_state = solver->peek__next_belief_state_for_expansion();//expansion_queue.front();
             
-            INTERACTIVE_VERBOSER(true, 10601, "Current state is :: "
+            INTERACTIVE_VERBOSER(true, 10908, "Current state is :: "
                                  <<*current_state<<std::endl
                                  <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
 
             
-            Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
-            for(uint i = 0; i < 100; i++){
+//             Planning::Policy_Iteration
+            Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space);
+//             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
+            for(uint i = 0; i < 200; i++){
                 if(!solver->expand_belief_state_space()){
                     break;
-                    VERBOSER(10601, "No starting state!"<<std::endl);
+                    VERBOSER(10908, "No starting state!"<<std::endl);
                 } else {
-                    VERBOSER(10601, "Expanding (so far we have "
-                             <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl);
-                    
-//                     policy_Iteration();
+                    VERBOSER(10908, "Expanding (so far we have "
+                             <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl
+                             <<"Expected reward is :: "
+                             <<current_state->get__expected_value()<<std::endl);
+                
+                    policy_Iteration();
                 }
             }
+
+            exit(0);
+            
+//             double old_expected_reward = -1000000.0;
+            
             for(uint i = 0; i < 100; i++){
                 policy_Iteration();
-                VERBOSER(10601, "Expected reward is :: "
+//                 if(old_expected_reward != current_state->get__expected_value()){
+//                      old_expected_reward = current_state->get__expected_value();
+//                 } else {
+//                     break;
+//                 }
+                
+                
+                VERBOSER(10908, "Expected reward is :: "
                          <<current_state->get__expected_value()<<std::endl);
             }
             
@@ -319,7 +336,7 @@ int main(int argc, char** argv)
             
             for(auto i = 0; i < 10; i++){
             
-                INTERACTIVE_VERBOSER(true, 10601, "Current state is :: "
+                INTERACTIVE_VERBOSER(true, 10908, "Current state is :: "
                                      <<*current_state<<std::endl
                                      <<"First element is :: "
                                      <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
@@ -327,7 +344,7 @@ int main(int argc, char** argv)
                 std::pair<Planning::Formula::Action_Proposition, uint> _action
                     = solver->get_prescribed_action(current_state);
             
-                INTERACTIVE_VERBOSER(true, 10601, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+                INTERACTIVE_VERBOSER(true, 10908, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
             
                 auto observations = current_state->get__possible_observations_given_action(_action.second);
             
@@ -341,7 +358,7 @@ int main(int argc, char** argv)
             
                 current_state = successor_state;
             
-                INTERACTIVE_VERBOSER(true, 10601, "Current belief state is :: "<<*current_state<<std::endl);
+                INTERACTIVE_VERBOSER(true, 10908, "Current belief state is :: "<<*current_state<<std::endl);
             }
 
         

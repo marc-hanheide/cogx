@@ -41,6 +41,9 @@
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 
+/*Value of states can be reported from this module.*/
+#include "gmres.hh"
+
 #include "markov_decision_process_state.hh"
 
 #include "planning_observation.hh"
@@ -99,7 +102,9 @@ namespace Planning
          * think this is a reasonable assumption.*/
         bool unexpanded() const;
 
+        
         void accept_values(boost::numeric::ublas::vector<double>& values);
+        void accept_values(boost::numeric::ublas::compressed_vector< double >& values);
         
         double get__expected_value() const;
         void set__expected_value(double) ;

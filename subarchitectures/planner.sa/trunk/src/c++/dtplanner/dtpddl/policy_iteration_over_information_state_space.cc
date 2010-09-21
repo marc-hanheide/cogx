@@ -73,11 +73,68 @@ Policy_Iteration::Policy_Iteration(Set_Of_POMDP_State_Pointers& states, double d
 {
 }
 
- boost::numeric::ublas::matrix<double> Policy_Iteration::get_transition_matrix()
+boost::numeric::ublas::matrix<double> Policy_Iteration::get_transition_matrix2()
 {    
+    //boost::numeric::ublas::matrix<double> transition_matrix(dimension, dimension);
     boost::numeric::ublas::matrix<double> transition_matrix(dimension, dimension);
     transition_matrix.assign(identity_matrix<double>(dimension));
-    transition_matrix -= transition_matrix;/*Crappy way of getting a zeroed matrix.*/
+//     transition_matrix.assign(boost::numeric::ublas::zero_matrix<double>(dimension, dimension));
+//     transition_matrix -= transition_matrix;/*Crappy way of getting a zeroed matrix.*/
+
+    for(auto _state = states.begin()
+            ; _state != states.end()
+            ; _state++){
+        auto state = *_state;
+        auto starting_index = state->get__index();
+        
+        /*Fringe states go to the sink.*/
+        if(state->unexpanded()){
+            transition_matrix(starting_index, dimension-1) -= discount_factor;
+            
+//             if(starting_index != (dimension-1)){
+//                 transition_matrix(starting_index, dimension-1) = 0.0 - discount_factor;
+//             } else {
+//                 transition_matrix(starting_index, dimension-1) = 1.0 - discount_factor;
+//             }
+//             transition_matrix(starting_index, dimension-1) = 1.0;
+            continue;
+        }
+        
+        
+        
+        auto& probabilities = state->get_observation_probabilities_at_prescribed_action();
+        auto& successors = state->get_successors_at_prescribed_action();
+        
+        assert(successors.size() == probabilities.size());
+
+        for(uint successor_index = 0; successor_index < successors.size(); successor_index++){
+
+            transition_matrix(starting_index, successors[successor_index]->get__index())
+                -=  discount_factor * probabilities[successor_index];
+            
+//             transition_matrix
+//                 (starting_index,
+//                  successors[successor_index]->get__index())
+//                 = probabilities[successor_index];
+        }
+
+    }
+
+    /*Sink state transition probabilities.*/
+//     transition_matrix(dimension-1, dimension-1) = 1.0;
+    transition_matrix(dimension-1, dimension-1) -= discount_factor;
+
+//     cerr<<transition_matrix<<std::endl;
+    
+    return std::move(transition_matrix);
+}
+
+boost::numeric::ublas::matrix<double> Policy_Iteration::get_transition_matrix()
+{    
+    //boost::numeric::ublas::matrix<double> transition_matrix(dimension, dimension);
+    boost::numeric::ublas::matrix<double> transition_matrix(dimension, dimension);
+    transition_matrix.assign(boost::numeric::ublas::zero_matrix<double>(dimension, dimension));
+//     transition_matrix -= transition_matrix;/*Crappy way of getting a zeroed matrix.*/
 
     for(auto _state = states.begin()
             ; _state != states.end()
@@ -115,6 +172,7 @@ Policy_Iteration::Policy_Iteration(Set_Of_POMDP_State_Pointers& states, double d
 
 boost::numeric::ublas::vector<double> Policy_Iteration::get_reward_vector()
 {
+    
     boost::numeric::ublas::vector<double> reward_vector(dimension);
     
     for(auto _state = states.begin()
@@ -138,6 +196,8 @@ boost::numeric::ublas::vector<double> Policy_Iteration::get_reward_vector()
 
 void Policy_Iteration::press_greedy_policy()
 {
+//     std::cerr<<value_vector;
+    
     for(auto _state = states.begin()
             ; _state != states.end()
             ; _state++){
@@ -154,10 +214,13 @@ void Policy_Iteration::operator()()
     /*adding a sink state that spins on zero reward.*/
     dimension = states.size() + 1;
     
-    state_transition_matrix = get_transition_matrix();
+//     state_transition_matrix = get_transition_matrix();
+
+    if(instantanious_reward_vector.size() != dimension){
+        instantanious_reward_vector
+            = get_reward_vector();
+    }
     
-    instantanious_reward_vector
-        = get_reward_vector();
     
     value_vector
         = boost::numeric::ublas::vector<double>(zero_vector<double>(dimension));
@@ -165,10 +228,17 @@ void Policy_Iteration::operator()()
  
     boost::numeric::ublas::matrix<double> INVERSE__transition__matrix(dimension, dimension);
      
-    /* INVERTING (I - A) */  boost::numeric::ublas::matrix<double> transition__matrix(dimension, dimension);
-    /* INVERTING (I - A) */ transition__matrix.assign(identity_matrix<double>(dimension));
-    /* INVERTING (I - A) */ transition__matrix -= (discount_factor * state_transition_matrix);
+    /* INVERTING (I - A) */  boost::numeric::ublas::matrix<double> transition__matrix = get_transition_matrix2();// (dimension, dimension);
+//     /* INVERTING (I - A) */ transition__matrix.assign(identity_matrix<double>(dimension));
+//     /* INVERTING (I - A) */ transition__matrix -= (discount_factor * state_transition_matrix);
 
+//     auto some = get_transition_matrix2();
+//     cerr<<state_transition_matrix<<std::endl<<std::endl;
+//     cerr<<some<<std::endl<<std::endl;
+//     cerr<<transition__matrix<<std::endl<<std::endl;
+//     cerr<<some - transition__matrix<<std::endl<<std::endl;
+//     exit(0);
+    
     
     
     VERBOSER(10501, "Solving system of equations "<<std::endl);
@@ -185,6 +255,12 @@ void Policy_Iteration::operator()()
     /* \MEMBER{value_vector} ---- (I - A)^{-1} * R */
     value_vector.assign(prod(INVERSE__transition__matrix, instantanious_reward_vector));
 
+    
+//     cerr<<transition__matrix<<std::endl<<std::endl;
+//     cerr<<value_vector<<std::endl<<std::endl;
+
+//     exit(0);
+    
     press_greedy_policy();
     
     VERBOSER(2000, "Instantanious reward vector is :: "<<instantanious_reward_vector<<std::endl);

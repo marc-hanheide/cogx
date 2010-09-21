@@ -91,11 +91,11 @@
             (observed-ex-in-room ?l - object ?r - object ?v - boolean)
 )
 
-(:functions  (p-is-in ?c - cone) - number
-             (total-p-costs ) - number
-             (p-category ?r - room ?c - category) - number
-             (reward ) - number
-             (p-ex-in-room ?l - label ?c - category) - number
+(:functions (p-is-in ?c - cone) - number
+	    (total-p-costs ) - number
+	    (p-category ?r - room ?c - category) - number
+	    (reward ) - number
+	    (p-ex-in-room ?l - label ?c - category) - number
 )
 
 (:constants  o-cf - visualobject)
@@ -110,7 +110,8 @@
           :effect  (and  (not (is-in ?a ?from))
                          (is-in ?a ?to)
                          (started )
-                         (decrease (reward ) 1.0000)
+			 (assign (reward) -1.0)
+;;                          (decrease (reward ) 1.0000)
                    )
 )
 
@@ -118,7 +119,8 @@
           :parameters  (?a - robot ?o - visualobject ?c - cone)
           :precondition  (and  )
           :effect  (and  (started )
-                         (decrease (reward ) 2.0000)
+;;                          (decrease (reward ) 2.0000)
+                         (assign (reward ) -2.0000)
                    )
 )
 
@@ -127,8 +129,11 @@
           :precondition  (not (committed-is-in o-cf))
           :effect  (and  (committed-is-in o-cf)
                          (when  (is-in o-cf ?val)
-                                (increase (reward ) 100)
-                         )
+                                (assign (reward ) 10000)
+				)
+			 (when  (not (is-in o-cf ?val))
+                                (assign (reward ) -100)
+				)
                    )
 )
 
