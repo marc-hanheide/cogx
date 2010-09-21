@@ -11,6 +11,7 @@
 )
 
 (:init  (label o-cf cornflakes)
+	(= (some) 100)
         (is-in dora p1a)
         (room p1b rb)
         (room c2b rb)

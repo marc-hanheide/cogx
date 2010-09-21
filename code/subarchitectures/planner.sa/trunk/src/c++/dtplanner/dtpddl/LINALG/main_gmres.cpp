@@ -22,12 +22,12 @@ using namespace std;
 int main(int argc, char *argv[])
 {
 
-  typedef boost::numeric::ublas::compressed_vector< double > cmp;
+    typedef boost::numeric::ublas::compressed_vector< double > Vector;//cmp;
   typedef boost::numeric::ublas::compressed_matrix< double, boost::numeric::ublas::column_major > cmp_m;
   typedef boost::numeric::ublas::matrix< double, boost::numeric::ublas::column_major > mat_dense;
   typedef boost::numeric::ublas::banded_matrix< double, boost::numeric::ublas::column_major > band_matr;
 
-  typedef boost::numeric::ublas::vector<double> Vector;
+//   typedef boost::numeric::ublas::vector<double> cmp;//Vector;
     
   int N = 200;  //the matrix size
 
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 
 
   // set up linear operator T
-  LinOp< band_matr > T(A);
+  LinOp< cmp_m > T(A);
 
   // set up a simple preconditioner
   DiagonalPreconditioner< band_matr > prec(A);
@@ -81,9 +81,9 @@ int main(int argc, char *argv[])
   // inital guess: solution = rhs
   x = b;
 
-  // run GMRes and use \c mat_dense as type of temporary matrices
-  niter = gmres_short< mat_dense >(T, x, b, prec, 20, 3*N, tol); 
-
+  // run GMRes and use \c cmp_m as type of temporary matrices
+  niter = gmres_short< cmp_m >(T, x, b, prec, 20, 3*N, tol); 
+  
   cout << "\nCPU time GMRES(short) = " << t_gmres.elapsed() << " (" << niter << ")" << endl;
 
   if (N < 10) cout << "x = " << x << endl;
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
   // the standard GMRes procedure with restarts after 20 steps, at most
   // 3 restarts are allowed
   x = b;
-  niter = gmres_restarts< mat_dense >(T, x, b, prec, 20, 3*N/20, tol);
+  niter = gmres_restarts< cmp_m >(T, x, b, prec, 20, 3*N/20, tol);
   cout << "\nCPU time GMRES  Restarts = " << t_gmres.elapsed() << " (" << niter << ")"  << endl;
   if (N < 10) cout << "x = " << x << endl;
 
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
   // the test for the general GMRes algorithm, we allow no restarts
   // but up to N iterations which guarantees convergence
   x = b;
-  niter = gmres_restarts< mat_dense >(T, x, b, prec, N-1, 0, tol);
+  niter = gmres_restarts< cmp_m >(T, x, b, prec, N-1, 0, tol);
   cout << "\nCPU time GMRES = " << t_gmres.elapsed() <<" (" << niter << ")" << endl;
   if (N < 10) cout << "x = " << x << endl;
 

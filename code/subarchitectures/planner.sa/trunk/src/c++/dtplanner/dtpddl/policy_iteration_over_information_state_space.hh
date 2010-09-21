@@ -54,6 +54,7 @@ namespace Planning
     private:
         void press_greedy_policy();
         boost::numeric::ublas::vector<double> get_reward_vector();
+        boost::numeric::ublas::matrix<double> get_transition_matrix2();
         boost::numeric::ublas::matrix<double> get_transition_matrix();
         
         Set_Of_POMDP_State_Pointers& states;
