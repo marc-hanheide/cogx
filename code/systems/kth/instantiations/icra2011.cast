@@ -1,0 +1,58 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 #--log
+
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory #--debug
+CPP TM AlwaysPositiveTaskManager
+CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
+CPP MG cameramounttest CameraMountTest --pan "0" --tilt "-0.25"
+CPP MG VideoServer PointGreyServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/kthimcal.ini:L subarchitectures/vision.sa/config/kthimcal.ini:R" --log
+#CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "subarchitectures/vision.sa/config/test-recognizer3D/tm.calb"
+
+#CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 #--log
+
+#CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --learnmode --plyfile "subarchitectures/vision.sa/config/test-recognizer3D/krispies.ply" --siftfile "subarchitectures/vision.sa/config/test-recognizer3D/krispies.sift" --log
+#CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "subarchitectures/vision.sa/config/test-recognizer3D/rice.ply" --siftfiles "subarchitectures/vision.sa/config/test-recognizer3D/rice.sift" --labels "rice" --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --plyfiles "instantiations/ply-models/dell.ply instantiations/ply-models/table1.ply instantiations/ply-models/bookcase_sm.ply instantiations/ply-models/bookcase_lg.ply instantiations/ply-models/book.ply instantiations/ply-models/metalbox.ply instantiations/ply-models/shelves.ply instantiations/ply-models/table2.ply" --siftfiles "instantiations/ply-models/dell.sift instantiations/ply-models/table1.sift instantiations/ply-models/bookcase_sm.sift instantiations/ply-models/bookcase_lg.sift  instantiations/ply-models/book.sift instantiations/ply-models/metalbox.sift instantiations/ply-models/shelves.sift instantiations/ply-models/table2.sift" --labels "dell table1 bookcase_sm bookcase_lg book metalbox shelves table2" --log #--display 
+#CPP MG ARTAAAG ARTagRecognizer --videoname VideoServer --camid "0" --log
+CPP MG ARTAAAG ARTagRecognizer --videoname VideoServer --camid "0" --log --tagpath "/home/cogx/projects/kthsys/subarchitectures/vision.sa/config/ARData/Data/" --cfgfilename "ARConfig"
+#CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --plyfile --labels "rovio bookcase_sm" --log
+
+#CPP WM SubarchitectureWorkingMemory
+#CPP TM AlwaysPositiveTaskManager
+#CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
+#CPP MG cameramounttest CameraMountTest --pan "0.0" --tilt "0"
+#CPP MG VideoServer PointGreyServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/kthimcal.ini:L subarchitectures/vision.sa/config/kthimcal.ini:R" --log
+#CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 3 #--log
+#CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --plyfiles "instantiations/ply-models/rovio.ply" --siftfiles "instantiations/ply-models/rovio.sift" --labels "rovio" --log
+
+SUBARCHITECTURE spatial.sa
+CPP WM SubarchitectureWorkingMemory #--log #--debug
+CPP TM AlwaysPositiveTaskManager
+CPP MG spatial.translation SpatialTranslation  #--log #--debug
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph --no-file-output
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf #--no-x-window --log #--debug
+CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric #--no-file-output
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf --no-sois --no-nodeclass --no-areaclass --no-walls --read-ptu #--log
+#CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --laser-range 1.0 --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --log --load-nodemap #--save-nodemap #--load-nodemap #--debug
+
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-tentative-window  --no-local-map-window --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --load-nodemap #--debug
+CPP GD relation.manager ObjectRelationManager -c instantiations/cureconfig/cogxp3.ccf --log --no-vision #--display-objects-in-pb --no-vision #--debug #--no-ptz #--debug
+CPP GD visual.search VisualObjectSearch -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --relations-file instantiations/objectrelations.avs --curemap-file mapbak/2roommap/curemap.txt --samplesize 100 --tiltinterval 15 --savemap --ctrl-ptu --gridsize 500 --cellsize 0.05  --kernel-width-factor 0.7 --objects "book dell bookcase_sm bookcase_lg table1 table2 metalbox shelves" --sampleawayfromobs 0.45 --log #--simulate #--debug --showconemap 
+
+
+#SUBARCHITECTURE vision.sa
+#CPP WM SubarchitectureWorkingMemory
+#CPP TM AlwaysPositiveTaskManager
+#CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.000 0.060 0.150][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.080 0.000 1.300][0 0 0]"
+#CPP MG cameramounttest CameraMountTest --pan "0.0" --tilt "-0.75"
+#CPP MG VideoServer PointGreyServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/kthimcal.ini:L subarchitectures/vision.sa/config/kthimcal.ini:R" --log
+#CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo --globalPoints 0 #--display
