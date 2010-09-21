@@ -84,7 +84,7 @@ The library provides a display server that displays objects created by its
 clients.  The objects that are on the display server are grouped into views.
 Initially every new object is displayed in its own view that has the same name
 as the object.
-\todo{(TODO: It will be posible to define additional views that display multiple objects)}
+\todo{(TODO: It will be possible to define additional views that display multiple objects)}
 The display server creates rendering contexts in which the views are displayed.
 There are three types of contexts: 2D, OpenGL and HTML.
 % (TODO: additional contexts: eg. tabular)
@@ -107,6 +107,101 @@ state of the object.
 
 (2010-06-09: at this time only two types of UI elements are provided: a button
 and a checkbox).
+
+\subsection{CAST Configuration}
+
+The display server can run either as a component inside a CAST c++ process or
+as a standalone server. If it is used as a component it can be configured to
+redirect the clients to a standalone display server. In this case the display
+server will not create any GUI. If multiple display server components are
+created inside a c++ process, only one can be configured to create a GUI,
+otherwise the system will most likely crash during an attempt to create a
+second Qt application object. On some systems it is not possible to run the
+display server as a CAST component because the Qt implementation may require
+that the application object is created in the main thread. In this case a
+standalone display server should be used and possibly a display server
+component that will redirect the clients to the standalone server.
+
+When a display server runs as a CAST component it accepts the parameter
+\code{--redirect\--to\--host "hostname"}. When this parameter is not empty the
+server will redirect the clients that connect to it to a standalone display
+server running on the computer named \code{hostname}.
+
+Two parameters are used to configure the clients. The parameter
+\code{--displayserver "id"} takes an id of the display server component to
+connect to. The parameter \code{--standalone\--display\--host "hostname"} can
+be used to connect to a standalone display server.
+
+Wherever \code{"hostname"} is required an empty value can be used or the value
+\code{"/no"} which is translated to an empty string internally. Using an empty
+value or the equivalent \code{"/no"} has the same effect as not specifying the
+parameter at all.
+
+The preferred way to configure the use of standalone display servers is by
+using the parameters \code{--displayserver} and \code{--redirect\--to\--host
+"hostname"}. This way only one change has to be made to \code{.cast} filed when
+the location of the display server has to be changed.
+
+It is possible to configure the clients so that each client connects to a
+different display server with the parameter \code{--standalone\--display\--host
+"hostname"}. A better alternative is to define multiple display server
+components (each with a different id and possibly a different host in
+\code{--redirect\--to\--host}) and use only \code{--displayserver} for clients.
+
+\subsubsection*{Case 1: Use a standalone display server}
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   CPP MG display.srv DisplayServer --redirect-to-host localhost
+   CPP MG visualization.test VisualizationTest --displayserver "display.srv" ...
+\end{Verbatim}
+
+The redirection is configured in the DisplayServer component. The client
+connects to the server "display.srv", obtains remote server parameters (ie
+localhost), drops the connection to "display.srv" and creates a new connection
+to the standalone display server running on "localhost".
+
+\subsubsection*{Case 2: Use a standalone display server for a component}
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   CPP MG visualization.test VisualizationTest --displayserver "display.srv"
+         --standalone-display-host localhost
+\end{Verbatim}
+
+The redirection is configured in the client component. Although the parameter
+\code{--displayserver} is used, the client doesn't try to connect to a
+component named "display.srv". Instead it uses the parameters for the
+standalone display server and tries to connect directly. In a sense
+\code{--standalone\--display\--host} takes precedence over
+\code{--redirect\--to\--host}.
+
+\subsubsection*{Case 3: use the display server as a component}
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   CPP MG display.srv DisplayServer
+   CPP MG visualization.test VisualizationTest --displayserver "display.srv" ...
+\end{Verbatim}
+
+Equivalent alternatives using the parameter --redirect-to-host:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   CPP MG display.srv DisplayServer --redirect-to-host ""
+   CPP MG display.srv DisplayServer --redirect-to-host "/no"
+\end{Verbatim}
+
+With these two forms it is easy to configure the display with an environment
+variable:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   CPP MG display.srv DisplayServer --redirect-to-host $V11N_STANDALONE_HOST
+\end{Verbatim}
+
+Set the environment variable \code{V11N\_STANDALONE\_HOST} as desired:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   export V11N_STANDALONE_HOST=localhost
+   export V11N_STANDALONE_HOST=/no
+   ...
+\end{Verbatim}
 
 \section{Sending data to the server}
 
