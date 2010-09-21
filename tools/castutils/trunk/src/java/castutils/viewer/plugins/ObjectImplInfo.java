@@ -6,8 +6,6 @@ package castutils.viewer.plugins;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.Map.Entry;
@@ -18,6 +16,8 @@ import org.apache.log4j.Logger;
 
 import Ice.ObjectImpl;
 import castutils.XMLTag;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
@@ -38,7 +38,8 @@ public class ObjectImplInfo implements Plugin {
 	@Override
 	public Vector<Object> toVector(ObjectImpl iceObject) {
 		Vector<Object> extraInfo = new Vector<Object>();
-		extraInfo.add("<pre>" + toXML(iceObject).toPlainString() + "</pre>");
+		extraInfo.add("<pre>" + toJSON(iceObject)+ "</pre>");
+		//extraInfo.add("<pre>" + toXML(iceObject).toPlainString() + "</pre>");
 		return extraInfo;
 	}
 
@@ -176,6 +177,40 @@ public class ObjectImplInfo implements Plugin {
 			return false;
 		}
 	}
+	
+	
+	private String toJSON(Object o) {
+		XStream xstream = new XStream();
+		xstream.setMode(XStream.NO_REFERENCES);
+		return escapeString(xstream.toXML(o));
+		
+//		GsonBuilder builder = new GsonBuilder();
+//		Gson gson=builder.setPrettyPrinting().create();
+//		return gson.toJson(o);
+		
+	}
+
+	/** list of the illegal xml chars and their replacements */
+	private static final String[][] XML_ESCAPES = {
+			{ "&", "&amp;" }, // Ampersand escape should stay before all others
+			{ "<", "&lt;" }, { ">", "&gt;" }, { "\"", "&quot;" },
+			{ "'", "&apos;" } };
+
+	/**
+	 * Escapes a string for XML
+	 * 
+	 * @param s
+	 *            string to be escaped
+	 * @see #XML_ESCAPES
+	 * @return a XML safe string
+	 */
+	public static String escapeString(String s) {
+		for (String[] escape : XML_ESCAPES) {
+			s = s.replaceAll(escape[0], escape[1]);
+		}
+		return s;
+	}
+
 
 	private XMLTag handleIterator(Field fld, Object arr) {
 		XMLTag entry = new XMLTag("Iterable");
