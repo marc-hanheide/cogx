@@ -36,6 +36,7 @@ namespace spatial
   VisualObjectSearch::VisualObjectSearch() {
     // TODO Auto-generated constructor stub
     // If we're not building the map it means we're using an already built one. Hence, read it.		         
+    m_bEvaluation = false;
   }
   VisualObjectSearch::~VisualObjectSearch() {
     // TODO Auto-generated destructor stub
@@ -45,12 +46,17 @@ namespace spatial
 
   spatial::VisualObjectSearch* AVSComponentPtr;
   void VisualObjectSearch::configure(const std::map<std::string, std::string>& _config){
-
+  
+    m_currentRoom = 1;
+    m_totalprob = 0;
+   maxnumberofcones = 10; 
+    m_policyManager.m_CurrentRoom=0;
     isRunComponent = false;
-    targetObject = "book";
     m_totalViewPoints = 0;
     isSearchFinished = false;
     AVSComponentPtr = this;
+    m_policyManager.m_evalpol = this;
+    failedPolicyStep = "Unknown";
     map<string,string>::const_iterator it = _config.find("-c");
     if (it== _config.end()) {
       println("configure(...) Need config file (use -c option)\n");
@@ -94,10 +100,10 @@ namespace spatial
     }
 
     m_sampleawayfromobs= 0.2;
-    it = _config.find("--m_sampleawayfromobs");
+    it = _config.find("--sampleawayfromobs");
     if (it != _config.end()) {
       m_sampleawayfromobs= (atof(it->second.c_str()));
-      log("Distance to nearest obs for samples set to: %d", m_sampleawayfromobs);
+      log("Distance to nearest obs for samples set to: %f", m_sampleawayfromobs);
     }
 
     m_best3DConeRatio = 0.1;
@@ -223,7 +229,7 @@ namespace spatial
       istr >> m_curemapfile;
     }
 
-    m_pout = 0.3;
+    m_pout = 0.001;
     log("Cure map file: %s", m_curemapfile.c_str());
     GridMapData def;
     def.occupancy = UNKNOWN;
@@ -233,11 +239,12 @@ namespace spatial
     def.pdf = 0;
     m_tempmap = new SpatialGridMap::GridMap<GridMapData>(m_gridsize, m_gridsize, m_cellsize, m_minbloxel, 0, m_mapceiling, 0, 0, 0, def);
     m_map = new SpatialGridMap::GridMap<GridMapData>(m_gridsize, m_gridsize, m_cellsize, m_minbloxel, 0, m_mapceiling, 0, 0, 0, def);
-    m_tracer = new LaserRayTracer<GridMapData>(m_map,1.0);
+    //m_tracer = new LaserRayTracer<GridMapData>(m_map,1.0);
     pbVis = new VisualPB_Bloxel(m_PbHost,5050,m_gridsize,m_gridsize,m_cellsize,1,true);//host,port,xsize,ysize,cellsize,scale, redraw whole map every time
 
     m_lgm = new CureObstMap(m_gridsize/2, m_cellsize, '2', CureObstMap::MAP1);
-    m_Glrt  = new Cure::ObjGridLineRayTracer<unsigned char>(*m_lgm);
+    
+   // m_Glrt  = new Cure::ObjGridLineRayTracer<unsigned char>(*m_lgm);
     pbVis->connectPeekabot();
 
     if (m_usePTZ) {
@@ -260,6 +267,14 @@ namespace spatial
 
   }
 
+  double VisualObjectSearch::GetGraphPathLength(double xS, double yS, double aS, double xG, double yG, double aG){
+
+    NavData::NavGraphInterfacePrx agg(getIceServer<NavData::NavGraphInterface>("navgraph.process"));
+    double d = agg->getPathLength(xS,yS,aS,xG,yG,aG);
+    return d;
+  }
+
+  
   void VisualObjectSearch::IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm  ){
     log("icemap.size: %d, icemap.data.size %d, icemap.cellSize: %f, centerx,centery: %f,%f",icemap.size, icemap.data.size(), icemap.cellSize, icemap.xCenter, icemap.yCenter);
     int lp = 0;
@@ -280,7 +295,7 @@ namespace spatial
     // Get the combined map of room1
     SpatialData::PlaceIDSeq placestosearch;
 
-    for (int i=0; i < 2; i++)
+    for (int i=0; i < 11; i++)
       placestosearch.push_back(i);
     log("creating placeinterface proxy");
     FrontierInterface::LocalGridMap combined_lgm;
@@ -313,7 +328,7 @@ namespace spatial
 
     // Get the combined map of room2
     placestosearch.clear();
-    for (int i=19; i < 27; i++)
+    for (int i=17; i < 24; i++)
       placestosearch.push_back(i);
     combined_lgm = agg2->getCombinedGridMap(placestosearch);
     log("have combined lgm");
@@ -329,8 +344,8 @@ namespace spatial
 	}
       }
     }
-    //  pbVis->Display2DCureMap(m_lgms[1],"room1"); 
-    //  pbVis->Display2DCureMap(m_lgms[2],"room2"); 
+      pbVis->Display2DCureMap(m_lgms[1],"room1"); 
+      pbVis->Display2DCureMap(m_lgms[2],"room2"); 
   }
 
   void VisualObjectSearch::start() {
@@ -365,6 +380,12 @@ namespace spatial
 	VisionData::Recognizer3DCommand> (cdl::OVERWRITE),
 	new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
 	  &VisualObjectSearch::owtRecognizer3DCommand));
+
+    addChangeFilter(createGlobalTypeFilter<
+	VisionData::ARTagCommand> (cdl::OVERWRITE),
+	new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
+	  &VisualObjectSearch::owtARTagCommand));
+
 
     addChangeFilter(createGlobalTypeFilter<
 	FrontierInterface::ObjectPriorRequest> (cdl::OVERWRITE),
@@ -432,19 +453,54 @@ namespace spatial
     }
   }
 
-  double VisualObjectSearch::GetCostForSingleStrategy(GridMap<GridMapData>* tmpMap, std::string targetObject, double pout, double threshold){
+  double VisualObjectSearch::GetCostForSingleStrategy(GridMap<GridMapData>* tmpMap, std::string targetObject, double threshold, bool ishypo){
     SetCurrentTarget(targetObject);
-    m_pout = 0.3; 
+    m_pout = 0.001; 
     double totalprob = 0; 
     double cost = 0;
-    while (totalprob <= 0.7){
+    int count = 1;
+    vector<SensingAction> plan;
+    Cure::Pose3D start,dest;
+    while (totalprob <= threshold){
       log("total prob mass of cones for strategy step so far: %f", totalprob);
       SensingAction nbv = SampleAndSelect(tmpMap);
+      plan.push_back(nbv);
       totalprob += nbv.totalprob;
       UnsuccessfulDetection(nbv, tmpMap);
-      cost++;
+      dest.setX(nbv.pos[0]);
+      dest.setY(nbv.pos[1]);
+      dest.setTheta(nbv.pan);
+      if(count != 0){
+	if (!ishypo){
+	  cost += GetGraphPathLength(start.getX(),start.getY(),start.getTheta(),
+	      dest.getX(), dest.getY(), dest.getTheta());}
+	else{
+	  log("hypothetical fully empty map, calling BM");
+	  cost += GetPathLength(start,dest);
+	}
+      }
+      else
+      {
+	log("first nbv");
+      }
+      log("total cost at %dth cone so far %3.2f", count, cost);
+      start = dest;
+      count++;
+      if(count > maxnumberofcones){
+	double averageprob = totalprob / count;
+	double averagecost = cost / count;
+	log("# of cones maxed out avprob: %3.2f avcost: %3.2f",averageprob, averagecost);
+	double addcost = 0;
+	for (double f = totalprob; f < threshold; f = f + averageprob){
+	  addcost += averagecost;
+	}
+	log("addcost: %3.2f starting from totalprob: %3.2f", addcost, totalprob);
+	cost += addcost;
+	break;
+      }
     }
-    return cost; 
+       log("Returning cost: %3.2f with totalprob: %3.2f at %dth cone",cost,totalprob,count);
+       return cost; 
   }
 
   void VisualObjectSearch::ChangeMaps(std::string roomid){
@@ -462,16 +518,19 @@ namespace spatial
   {
     string filename("cached_cost_");
     filename += step.back().primaryobject;
-    for (std::vector<ObjectPairRelation>::const_iterator it = step.begin(); 
-	it != step.end(); it++) {
-      filename += (it->relation == FrontierInterface::ON ? "_ON_" : "_IN_");
-      filename += it->secobject;
+    for(int i = step.size() -1 ; i >= 0; i--){
+  //  for (std::vector<ObjectPairRelation>::const_iterator it = step.back(); 
+//	it != step.begin(); it--) {
+      filename += (step[i].relation == FrontierInterface::ON ? "_ON_" : "_IN_");
+      filename += step[i].secobject;
     }
     filename += ".cst";
 
+    log("looking for cached file %s", filename.c_str());
     ifstream infile(filename.c_str(), ios::in);
 
     if (!infile.good()) {
+      log("cost does not exists in cache calculating");
       return 0.0;
     }
 
@@ -479,21 +538,24 @@ namespace spatial
 
     infile >> ret;
 
+    log("read cost from file: %3.2f", ret);
+    infile.close();
     return ret;
   }
 
-  void VisualObjectSearch::cacheStepCost(const std::vector<ObjectPairRelation> &step,
-      double cost)
-  {
-    string filename("cached_cost_");
-    filename += step.back().primaryobject;
-    for (std::vector<ObjectPairRelation>::const_iterator it = step.begin();
-	it != step.end(); it++) {
-      filename += (it->relation == FrontierInterface::ON ? "_ON_" : "_IN_");
-      filename += it->secobject;
-    }
+    void VisualObjectSearch::cacheStepCost(const std::vector<ObjectPairRelation> &step, double cost, std::string end)
+    {
+      string filename("cached_cost_");
+      filename += step.back().primaryobject;
+      for(int i = step.size() -1 ; i >= 0; i--){
+	//  for (std::vector<ObjectPairRelation>::const_iterator it = step.back(); 
+	//	it != step.begin(); it--) {
+	filename += (step[i].relation == FrontierInterface::ON ? "_ON_" : "_IN_");
+	filename += step[i].secobject;
+      }
+      filename += end;
     filename += ".cst";
-
+    log("caching step cost: %s",filename.c_str());
     ofstream outfile(filename.c_str(), ios::out);
 
     if (!outfile.good()) {
@@ -525,11 +587,15 @@ namespace spatial
     return strategyStep;
   }
 
+  double VisualObjectSearch::GetStrategyCost(std::list<std::string> policy){
+    std::vector<std::string> pol(policy.begin(),policy.end());
+    return GetStrategyCost(pol);
+  }
   double VisualObjectSearch::GetStrategyCost(std::vector<std::string> policy){
-    double StrategyCost;
+    double StrategyCost = 0;
+    double threshold = 0.7;
     std::string room = policy[0];
     log("got room: %s", room.c_str());
-    ChangeMaps(room);
 
     // we always execute the first policy
     for (unsigned int i=1; i < policy.size(); i++){
@@ -539,6 +605,7 @@ namespace spatial
       double	costThisStep = tryLoadStepCost(strategyStep);
       if (costThisStep == 0) {
 	log("novel # of relations: %d", strategyStep.size() );
+	ChangeMaps(room);
 
 	// Set up query
 	std::vector<std::string> labels;
@@ -585,8 +652,9 @@ namespace spatial
 	    InitializePDFForObject(1.0, strategyStep[0].primaryobject, &tmpMap);
 	    pbVis->AddPDF(tmpMap);
 	    double cost = 0.0;
-	    cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
+	    cost = GetCostForSingleStrategy(&tmpMap, topObject,threshold,false);
 	    costThisStep = cost;
+	    cacheStepCost(strategyStep,costThisStep);
 	  }
 	  else {
 	    log("strategy contains room and has more than 1 step");
@@ -604,16 +672,16 @@ namespace spatial
 	    {
 	      unlockComponent();
 	      addToWorkingMemory(newDataID(), objreq);
+	      gotPC = false;
 	      while(!gotPC)
 		usleep(2500);
 	      log("got PC for direct search");
 	    }
 
 	    lockComponent();
-
 	    FrontierInterface::WeightedPointCloudPtr cloud =
 	      m_priorreq->outCloud;
-
+	    log("got point cloud with height %f", cloud->center.z);
 	    vector<pair<int, int> >obstacleCells;
 	    const unsigned int nTargetKernelSamples = 100;
 	    const int step1 = 20;
@@ -671,8 +739,9 @@ namespace spatial
 
 	    double cost = 0.0;
 	    //FIXME: get lgmpdf as an arg
-	    cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
+	    cost = GetCostForSingleStrategy(&tmpMap, topObject, threshold, false);
 	    costThisStep = cost;
+	    cacheStepCost(strategyStep,costThisStep, "_IN_" + policy[0]);
 	  }
 
 	}
@@ -702,29 +771,22 @@ namespace spatial
 	      baseObject == "bookcase_lg" ||
 	      baseObject == "shelves" ||
 	      baseObject == "desk"){
-	    getRandomSampleCircle(orientations, 6);
+	    getRandomSampleCircle(orientations, 1);
 	  }
 	  else {
 	    vector<Matrix33> orientations;
-	    if (//FIXME
-		baseObject == "table" ||
-		baseObject == "bookcase_sm" ||
-		baseObject == "bookcase_lg" ||
-		baseObject == "desk"){
-	      getRandomSampleCircle(orientations, 6);
-	    }
-	    else {
-	      vector<Matrix33> orientations;
-	      getRandomSampleSphere(orientations, 5);
-	    }
-	    for (vector<Matrix33>::iterator it = orientations.begin();
-		it != orientations.end(); it++) {
-	      tmpPose.rot = *it;
+	    getRandomSampleSphere(orientations, 1);
+	  }
+	  for (vector<Matrix33>::iterator it = orientations.begin();
+	      it != orientations.end(); it++) {
+	    tmpPose.rot = *it;
 	      baseObjectPoses.push_back(tmpPose);
 	    }
 
 	    for (vector<Pose3>::iterator it = baseObjectPoses.begin(); 
 		it != baseObjectPoses.end(); it++) {
+	      
+	      log("looping over hypothetical case (once again?) for hypothetical case");
 	      // Fill in the hypothetical pose in question
 	      objreq->baseObjectPose.clear();
 	      objreq->baseObjectPose.push_back(*it);
@@ -734,7 +796,7 @@ namespace spatial
 	      {
 		unlockComponent();
 		addToWorkingMemory(newDataID(), objreq);
-
+		gotPC = false;
 		while(!gotPC)
 		  usleep(2500);
 		log("got PC for a hypothetical pose");
@@ -793,21 +855,19 @@ namespace spatial
 	      // the spread of the point cloud and the maximum cone length
 	      // FIXME get lgmpdf as arg
 	      double cost = 0.0;
-	      cost = GetCostForSingleStrategy(&tmpMap, strategyStep.front().primaryobject, 0.3, 0.4);
+	      cost = GetCostForSingleStrategy(&tmpMap, topObject,threshold, true);
 	      costThisStep += cost / baseObjectPoses.size();
 	      m_lgm = backupRoomLGM;
 	    }
-
-	  }
+	cacheStepCost(strategyStep,costThisStep);
 
 	}
-	cacheStepCost(strategyStep,costThisStep);
       }
       StrategyCost += costThisStep;
     }	 
     return StrategyCost;
   }
-
+  
   void 
     VisualObjectSearch::newSpatialObject(const cast::cdl::WorkingMemoryChange &objID)
     {
@@ -817,6 +877,10 @@ namespace spatial
 
 	spatial::Object *model = generateNewObjectModel(newObj->label);
 	log("Got Spatial Object: %s", newObj->label.c_str());
+	m_recognizedobjects.push_back(newObj->label.c_str());
+	char buffer[256];
+	sprintf(buffer, "Object %s detected.", newObj->label.c_str());
+	writeStringToFile((string)buffer);
 	model->pose = newObj->pose;
 
 	putObjectInMap(*m_map, model);
@@ -827,6 +891,10 @@ namespace spatial
 	delete model;
 	if (newObj->label == targetObject){
 	  log("target object detected, stopping search");
+	  char buffer[1024];
+	  sprintf(buffer,"Success, target Object %s detected. Policy Step completed: %s, total # of VCones for this step: %d", targetObject.c_str(), currentSearchPolicy[currentPolicyStep].c_str(), m_totalViewPoints);
+	  writeStringToFile((string)buffer);
+
 	  DetectionComplete(true,newObj->label);
 	  return;
 	}
@@ -835,7 +903,7 @@ namespace spatial
 	if (!waitingForDetection.empty() || !waitingForObjects.empty()) {
 
 	  if (newObj->label == currentTarget) {
-	    log("an indirect middle object");
+	    log("Current Target detected.");
 	    waitingForDetection.clear();
 	    waitingForObjects.clear();
 	    DetectionComplete(true,newObj->label);
@@ -1025,6 +1093,7 @@ namespace spatial
 	  log("Error! Unsupported object type in puObjectInMap!");
 	  return;
       }
+      log("returning");
     }
 
   void VisualObjectSearch::SaveCureMapToFile() {
@@ -1072,26 +1141,33 @@ namespace spatial
     if (map == 0)
       map = m_map;
     double height;
+    bool isspecial = false;
     if (label == "table1") {
       height = 0.45-0.225;
+      isspecial = true;
     }
-    if (label == "table2") {
+    else if (label == "table2") {
+      isspecial = true;
       height = 0.72-0.36;
     }
     else if (label == "bookcase_sm") {
+      isspecial = true;
       height = 0.75+0.08;
     }
     else if (label == "bookcase_lg") {
+      isspecial = true;
       height = 0.965+0.08;
     }
     else if (label == "shelves") {
+      isspecial = true;
       height = 1.075+0.00;
     }
     else if (label == "desk") {
+      isspecial = true;
       height = 0.75-0.05;
     }
     else {
-      return;
+      log("initializing PDF for object %s, as a uniform distribution.", label.c_str());
     }
 
     GDProbSet resetter(0.0);
@@ -1107,11 +1183,16 @@ namespace spatial
 	  // For each "high" obstacle cell, assign a uniform probability density to its immediate neighbors
 	  // (Only neighbors which are not unknown in the Cure map. Unknown 3D
 	  // space is still assigned, though)
+	  
 	  for(int i = -1; i <= 1; i++){
 	    for (int j=-1; j <= 1; j++){
 	      if((*m_lgm)(x+i,y+j) == '0' && (bloxelX+i <= map->getMapSize().first && bloxelX+i > 0 ) 
-		  && (bloxelY+i <= map->getMapSize().second && bloxelY+i > 0 ))
-		map->boxSubColumnModifier(bloxelX+i,bloxelY+j, height, 2*m_minbloxel,initfunctor);
+		  && (bloxelY+i <= map->getMapSize().second && bloxelY+i > 0 )){
+		if(isspecial)
+		  map->boxSubColumnModifier(bloxelX+i,bloxelY+j, height, 2*m_minbloxel,initfunctor);
+		else
+		  map->boxSubColumnModifier(bloxelX+i,bloxelY+j, m_mapceiling/2, m_mapceiling,initfunctor);
+	      }
 	    }
 	  }
 	}
@@ -1124,39 +1205,53 @@ namespace spatial
 
   void VisualObjectSearch::savemap( GtkWidget *widget,gpointer data )
   {
-    AVSComponentPtr->SaveCureMapToFile();
-  }
+    //AVSComponentPtr->MovePanTilt(0, -10*M_PI/180,0.08);
+    while(true){
+    AVSComponentPtr->addARTagCommand("metalbox");
+    AVSComponentPtr->addARTagCommand("table1");
+    AVSComponentPtr->addARTagCommand("table2");
+    AVSComponentPtr->addARTagCommand("shelves");
+  sleep(1);
+    }
+    }
   void VisualObjectSearch::readmap( GtkWidget *widget, gpointer data )
   {
-    AVSComponentPtr->InitializeMaps();
+    AVSComponentPtr->isRunComponent = true;
   }
   void VisualObjectSearch::selectdu( GtkWidget *widget, gpointer data )
   {
-    AVSComponentPtr->isRunComponent = true;
-    /* std::vector<std::string> policy;
-       policy.push_back("room1");
-       policy.push_back("dell ON table IN room1");
-       policy.push_back("book IN dell ON table IN room1");
-       AVSComponentPtr->GetStrategyCost(policy);*/
-    //AVSComponentPtr->LookforObjectWithStrategy(DIRECT_UNINFORMED);
+    AVSComponentPtr->writeStringToFile("Search started.");
+    AVSComponentPtr->LookforObjectWithStrategy();
   }
   void VisualObjectSearch::selectdi( GtkWidget *widget, gpointer data )
   {
-    AVSComponentPtr->targetObject = "book";
-    AVSComponentPtr->LookforObjectWithStrategy();
+    AVSComponentPtr->m_totalprob= 0.93;
+   // AVSComponentPtr->targetObject = "book";
+  //  AVSComponentPtr->LookforObjectWithStrategy();
   }
   void VisualObjectSearch::selectind( GtkWidget *widget, gpointer data )
   {
-    AVSComponentPtr->targetObject = "book";
-    AVSComponentPtr->LookforObjectWithStrategy();
   }
 
 
-
+  void VisualObjectSearch::writeStringToFile(std::string str){
+  time_t rawtime;
+  struct tm * timeinfo;
+  time(&rawtime);
+  timeinfo = localtime(&rawtime);
+  std::string timenow(asctime(timeinfo));
+    ofstream out("SearchLog.txt", ios::app);
+  out << "> " << str <<  " -- " << timenow;
+  out.close();
+    //   out << currentSearchMode << " took " << m_totalViewPoints<< " view points" << ", with result:  " << result << " m_pout: " << m_pout << " " << " time: " << buffer << endl;
+    //   out.close();
+  }
   void VisualObjectSearch::runComponent(){
     m_command = IDLE;
 
+    log("I am running");
     if(m_savemapmode){
+      
       int argc= 0;
       char** argv = NULL;
 
@@ -1168,11 +1263,11 @@ namespace spatial
 
       //window cannot hold more than 1 button, thus ad a box
       hbox = gtk_hbox_new (FALSE, 5);
-      savebutton = gtk_button_new_with_label ("Save Map");
+      savebutton = gtk_button_new_with_label ("Ask ARTag");
       readbutton = gtk_button_new_with_label ("Load Map");
-      direct_uninformed = gtk_button_new_with_label ("Direct Uninformed");
-      direct_informed = gtk_button_new_with_label ("Direct Informed");
-      indirect = gtk_button_new_with_label ("Indirect");
+      direct_uninformed = gtk_button_new_with_label ("Start");
+      direct_informed = gtk_button_new_with_label ("Fail Policy");
+      indirect = gtk_button_new_with_label ("");
 
 
 
@@ -1209,7 +1304,7 @@ namespace spatial
 
       gtk_widget_show (direct_uninformed);
       gtk_widget_show (direct_informed);
-      gtk_widget_show (indirect);
+      //gtk_widget_show (indirect);
       gtk_widget_show (readbutton);
       gtk_widget_show (savebutton);
       gtk_widget_show (window);
@@ -1222,28 +1317,17 @@ namespace spatial
     while(true){
       while(gtk_events_pending())
 	gtk_main_iteration();
-      if (isRunComponent){
+	if(isRunComponent){
 	lockComponent();
 	//      pbVis->DisplayMap(*m_map);
-	pbVis->Display2DCureMap(m_lgm);
-	if(m_lgms.size() == 0 )
+	pbVis->Display2DCureMap(m_lgm,"current_m_lgm");
+	if(m_lgms.size() == 0 ){
 	  InitializeMaps();
+	  m_policyManager.preCompute("book");
+	}
 	InterpretCommand();
-	log("Outside probability: %f, at viewpoint %d", m_pout, m_totalViewPoints);
-	std::vector<std::string> policy;
-	policy.push_back("room1");
-	policy.push_back("table IN room1");
-	policy.push_back("book ON table IN room1");
-	double policycost = GetStrategyCost(policy);
-	log("policy cost: %3.2f", policycost);
-
-	policy.clear();
-	policy.push_back("room1");
-	policy.push_back("table IN room1");
-	policycost = GetStrategyCost(policy);
-	log("policy cost: %3.2f", policycost);
 	unlockComponent();
-      }
+	}
       sleep(1);
     }
   }
@@ -1297,23 +1381,16 @@ namespace spatial
     return obj;
   }
 
-  void VisualObjectSearch::FindBestPolicy(const vector<vector<string> > &policies)
-  {
-    unsigned int bestPolicyNo;
-    double bestCost = DBL_MAX;
-
-    for (unsigned int i = 0; i < policies.size(); i++) {
-      double cost = GetStrategyCost(policies[i]);
-      if (cost < bestCost) {
-	bestCost = cost;
-	bestPolicyNo = i;
-      }
-    }
-
-    currentSearchPolicy = policies[bestPolicyNo];
-    currentPolicyStep = 0;
+  std::string VisualObjectSearch::printPolicy(vector<string> policy){
+  string pol= "";
+    for(vector<string>::iterator it = policy.begin(); it != policy.end(); it++){
+    pol += *it;
+    pol += "->";
+      cout<< it->c_str() << "->" ; 
   }
-
+    cout<< endl;
+    return pol;
+}
   void VisualObjectSearch::InterpretCommand(){
     switch (m_command)
     {
@@ -1331,13 +1408,79 @@ namespace spatial
 		 }
       case EVALUATE_POLICIES:{
 				  log("Command: EVALUATE_POLICIES");
+				  // target object is given hence we hard code here
+				  targetObject = "book";
 				  vector<vector<string> >policies;
-				  // TODO: Actually get policies from configurations
-				  FindBestPolicy(policies);
-				  m_command = ASK_FOR_DISTRIBUTION;
+				  list<string> listpolicy;
+				  vector<string> policy;
+				  m_policyManager.m_CostCredit = 9;
+				  m_policyManager.m_ExpectedCost = 30;
+				  m_policyManager.m_Type = 2;
+				  char buffer[1024];
+				  sprintf(buffer,"Selecting best policy with parameters, failedPolicyStep: %s, currentRoom: %ld, CostCredit: %f, ExpectedCost: %f, m_Type: %d", failedPolicyStep.c_str(),m_policyManager.m_CurrentRoom, m_policyManager.m_CostCredit, m_policyManager.m_ExpectedCost, m_policyManager.m_Type);
+				  writeStringToFile((string)buffer);
+				  if (m_policyManager.nextNearlyBestPolicy(listpolicy,failedPolicyStep,0.1,0.9)){
+				    log("AAAAA best policy found");
+				    vector<string> tmp(listpolicy.begin(),listpolicy.end()); 
+				    policy = tmp;
+				    writeStringToFile( "Best policy " + printPolicy(policy));
+				  }
+				  else{
+				    m_command = STOP;
+				    log("No other best policy found. Stopping");
+				    writeStringToFile("No other best policy found. Stopping and exiting");
+				    exit(0);
+				  }
+				  //policy.push_back("room1");
+				  //policy.push_back("bookcase_sm IN room1");
+				  //policy.push_back("dell ON bookcase_sm IN room1");
+				  policies.push_back(policy);
+				  currentSearchPolicy = policies[0];
+				  currentPolicyStep = 0;
+				  const char* id = &policy[0][policy[0].size() -1];
+				  m_policyRoom = atoi(id);
+				  
+				  m_command = GOTOROOM;
 				  break;
-				}
+			     }
+      case GOTOROOM:{
+		      log("command: GOTOROOM");
+		    
+		      if(m_policyRoom != m_currentRoom){
+		      //TODO: Check which room we are
+		      SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand;
+		      
+		      // hard coded room nodes
+		      cmd->destId.resize(1);
+		      if (m_currentRoom == 1){
+			m_policyManager.m_CurrentRoom = 0;
+			cmd->destId[0] = 1;
+		      }
+		      else{
+			m_policyManager.m_CurrentRoom = 1;
+			cmd->destId[0] =  17;
+		      }
+		      cmd->cmd = SpatialData::GOTOPLACE;
+		      cmd->status = SpatialData::NONE;
+		      cmd->comp = SpatialData::COMMANDPENDING;
+		      cmd->prio = SpatialData::NORMAL;
+		      addToWorkingMemory(newDataID(),cmd);
+		      m_command = IDLE;
+		      }
+		      else{
+			char buffer[256];
+			sprintf(buffer,"We are already at room %d", m_currentRoom);
+			writeStringToFile((string)buffer);
+			log("Already at room %d", m_currentRoom);
+			ChangeMaps(currentSearchPolicy[currentPolicyStep]); 
+			currentPolicyStep++;
+			m_command = ASK_FOR_DISTRIBUTION;
+		      }
+		      break;
+		    }
       case ASK_FOR_DISTRIBUTION:{
+				  pbVis->DisplayMap(*m_map);
+				  pbVis->Display2DCureMap(m_lgm);
 				  log("Command: ASK_FOR_DIST");
 				  m_command = IDLE;
 				  AskForDistribution();
@@ -1345,12 +1488,16 @@ namespace spatial
 				}
       case NEXT_NBV:{
 		      if (m_bSimulation) {
-			if(m_pout > 0.7 || m_totalViewPoints > 15){
+			if(m_pout > 0.7 || m_totalViewPoints > 2){
+	
+			  m_totalViewPoints = 0;
+			  m_pout = 0.3;
 			  isSearchFinished = true;
 			  m_command = STOP;
 			  log("Search stopped m_pout: %f",m_pout);
 			  SaveSearchPerformance("NOT FOUND");
-			  break;}
+			  break;
+			}
 			  m_command = RECOGNIZE;
 
 			  PopulateLGMap();
@@ -1359,11 +1506,24 @@ namespace spatial
 		      }
 
 		      else {
-			if(m_pout > 0.7 || m_totalViewPoints > 15){
-			  isSearchFinished = true;
-			  m_command = STOP;
-			  log("Search stopped m_pout: %f",m_pout);
-			  SaveSearchPerformance("NOT FOUND");
+			if(m_totalprob > 0.9 || m_totalViewPoints > maxnumberofcones){
+			  log("policy %s failed, asking for next one", currentSearchPolicy[currentPolicyStep].c_str()); 
+			  failedPolicyStep = currentSearchPolicy[currentPolicyStep];
+			  if (m_totalprob > 0.7){
+			    char buffer[1024];
+			    sprintf(buffer, "Policy Step failed, cause: max total covered prob. reached: %f, policy was: %s , total view cones in this step: %d", m_totalprob, failedPolicyStep.c_str(), m_totalViewPoints);
+			    writeStringToFile((string)buffer);
+			  }
+			  else if(m_totalViewPoints > maxnumberofcones){
+			 char buffer[1024];
+			    sprintf(buffer, "Policy Step failed, cause: maxed out # of VCones, policy step was: %s , total view cones in this step: %d", failedPolicyStep.c_str(), m_totalViewPoints);
+			    writeStringToFile((string)buffer);
+			  }
+			  
+			  m_totalprob = 0;
+			  m_totalViewPoints = 0;
+			  m_pout = 0.3;
+			  m_command = EVALUATE_POLICIES;
 			  break;}
 			  log("Command: NEXT_NBV");
 			  m_command = WAITING; //Wait to get in position
@@ -1380,6 +1540,7 @@ namespace spatial
 		    }
       case RECOGNIZE:{
 		       log("Command: Recognize");
+		       log("At %dth viewpoint", m_totalViewPoints);
 		       if (m_bSimulation) {
 			 m_command = NEXT_NBV; //Default, but may change in DetectionComplete
 			 // TODO more code logic could go here
@@ -1502,6 +1663,14 @@ namespace spatial
       SpatialData::NavCommandPtr cmd(getMemoryEntry<
 	  SpatialData::NavCommand> (objID.address));
       if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
+	// if we were at the first policy step we just moved to a room
+	if (currentPolicyStep == 0){
+	  m_currentRoom = m_policyRoom;
+	  ChangeMaps(currentSearchPolicy[currentPolicyStep]); 
+	  currentPolicyStep++;
+	  m_command = ASK_FOR_DISTRIBUTION;
+	  return;
+	}
 	log("NavCommand succeeded.");
 	m_totalViewPoints++;	
 	MovePanTilt(0.0,m_nbv.tilt,0.08);
@@ -1509,7 +1678,13 @@ namespace spatial
       }
       else if (cmd->comp == SpatialData::COMMANDFAILED){
 	log("NavCommand failed.Getting next view.");
-	m_command=NEXT_NBV;
+	if(currentPolicyStep == 0){
+	  // we could not reach to room try again
+	  m_command = GOTOROOM;
+	}
+	else{
+	  m_command=NEXT_NBV;
+	}
       }
       else if (cmd->comp == SpatialData::COMMANDPENDING){
 	log("NavCommand pending.");
@@ -1571,15 +1746,15 @@ namespace spatial
     log("Asking for distribution");
 
     //if informed direct, get search chain, construct distribution parameters and ask for it
-    double queryProbabilityMass = 1.0;
-
+    m_pout = 0.0001;
     vector<ObjectPairRelation> strategyStep = 
       getStrategyStep(currentSearchPolicy, currentPolicyStep);
 
     std::string topObject = strategyStep.back().primaryobject;
     SetCurrentTarget(topObject);
+//FIXME: if topObject is already detected than do not as for dist again
 
-    // Set up query
+// Set up query
     std::vector<std::string> labels;
     std::vector<FrontierInterface::ObjectRelation> relations;
     labels.push_back(topObject);
@@ -1593,6 +1768,16 @@ namespace spatial
       logstring = logstring + strategyStep[i].secobject;
     }
     log(logstring.c_str());
+    writeStringToFile(logstring);
+    if (find(m_recognizedobjects.begin(), m_recognizedobjects.end(), topObject) != m_recognizedobjects.end()){
+      log("we have already found this object");
+      char buffer[256];
+      sprintf(buffer,"We have already found object: %s, asking for the next step.", topObject.c_str());
+      writeStringToFile((string)buffer);
+      currentPolicyStep++;
+      m_command = ASK_FOR_DISTRIBUTION;
+      return;
+    }
     FrontierInterface::WeightedPointCloudPtr queryCloud = 
       new FrontierInterface::WeightedPointCloud;
     FrontierInterface::ObjectPriorRequestPtr objreq =
@@ -1608,7 +1793,7 @@ namespace spatial
 
     if (baseObject.find("room") != string::npos) {
       if (strategyStep.size() == 1) {
-	log("strategy contains room and has 1 step.");
+	log("strategy contains room and has 1 step. Initing PDF for %s",strategyStep[0].primaryobject.c_str());
 	InitializePDFForObject(1.0, strategyStep[0].primaryobject, m_map);
 	PopulateLGMap();
 	pbVis->AddPDF(*m_map);
@@ -1617,6 +1802,10 @@ namespace spatial
       }
 
       else {
+	GDProbScale reset(0.0);
+	m_map->universalQuery(reset, true);
+	log("strategy contains more than one relation");
+	log("removing the room relation and then asking");
 	// There's more than one relation. 
 	// Strip off the "in room" relation from the policy for purposes
 	// of relation query
@@ -1632,11 +1821,14 @@ namespace spatial
       }
     }
     else {
+      GDProbScale reset(0.0);
+      m_map->universalQuery(reset, true);
+      log("strategy does not contain room");
       addToWorkingMemory(newDataID(), objreq);
       m_command = IDLE;
     }
 
-//    if (currentSearchMode == DIRECT_INFORMED){
+    //    if (currentSearchMode == DIRECT_INFORMED){
 //      vector<FrontierInterface::ObjectRelation> relations;
 //      vector<string> labels;
 //      ObjectPairRelation rel;
@@ -1710,6 +1902,8 @@ namespace spatial
 //      objreq->outCloud = queryCloud;	// Data struct to receive output
 //      addToWorkingMemory(newDataID(), objreq);
 //    }
+pbVis->AddPDF(*m_map);
+m_map->clearDirty();
   }
 
   void
@@ -1887,34 +2081,31 @@ namespace spatial
     return true;
   }
 
+bool pathgridseen = false;
+double VisualObjectSearch::GetPathLength(Cure::Pose3D start, Cure::Pose3D destination, CureObstMap* lgm){
 
-  std::vector<Cure::Pose3D> VisualObjectSearch::Sample2DGrid() {
-    srand (
-	time(NULL));
-    std::vector<double> angles;
-
-    std::vector<Cure::Pose3D> samples;
-    log("Sampling Grid");
-    /*Sampling free space BEGIN*/
-    /*Checking if a point in x,y is reachable */
+  if (lgm == 0)
+    lgm = m_lgm;
+  /*Checking if a point in x,y is reachable */
 
     /// Binary grid that is 0 for foree space and 1 for occupied
     Cure::BinaryMatrix m_NonFreeSpace;
 
     // We make the number of columns of the BinaryMatrix a multiple
+    
     // of 32 so that we get the benefit of the representation.
     // Here m_LGMap is assumed to be the LocalGridMap
-    int rows = 2 * m_lgm->getSize() + 1;
-    int cols = ((2 * m_lgm->getSize() + 1) / 32 + 1) * 32;
+    int rows = 2 * lgm->getSize() + 1;
+    int cols = ((2 * lgm->getSize() + 1) / 32 + 1) * 32;
     m_NonFreeSpace.reallocate(rows, cols);
     m_NonFreeSpace = 0; // Set all cells to zero
 
     // First we create a binary matrix where all cells that
     // corresponds to known obstacles are set to "1".
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	if ((*m_lgm)(x, y) == '1') { // occupied OR Plane
-	  m_NonFreeSpace.setBit(x + m_lgm->getSize(), y + m_lgm->getSize(),
+    for (int x = -lgm->getSize(); x <= lgm->getSize(); x++) {
+      for (int y = -lgm->getSize(); y <= lgm->getSize(); y++) {
+	if ((*lgm)(x, y) == '1') { // occupied OR Plane
+	  m_NonFreeSpace.setBit(x + lgm->getSize(), y + lgm->getSize(),
 	      true);
 	}
       }
@@ -1927,9 +2118,8 @@ namespace spatial
 
     // Grow each occupied cell to account for the size of the
     // robot. We put the result in another binary matrix, m_PathGrid
-    m_NonFreeSpace.growInto(m_PathGrid, 0.5 * 0.45 / m_lgm->getCellSize(), // 0.45 is robot width hard coded here.
-	true);
-
+    m_NonFreeSpace.growInto(m_PathGrid, 0.5 * 0.01 / lgm->getCellSize(),true);
+	// 0.45 is robot width hard coded here.
     // We treat all unknown cells as occupied so that the robot only
     // uses paths that it knowns to be free. Note that we perfom this
     // operation directly on the m_PathGrid, i.e. the grid with the
@@ -1939,55 +2129,26 @@ namespace spatial
     // they might end up inside an obstacle (could happen now as well
     // from expanding the occupied cell but then it is known not to be
     // reachable).
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	if ((*m_lgm)(x, y) == '2') {
-	  m_PathGrid.setBit(x + m_lgm->getSize(), y + m_lgm->getSize(), true);
+    for (int x = -lgm->getSize(); x <= lgm->getSize(); x++) {
+      for (int y = -lgm->getSize(); y <= lgm->getSize(); y++) {
+	if ((*lgm)(x, y) == '2') {
+	  m_PathGrid.setBit(x + lgm->getSize(), y + lgm->getSize(), true);
 	}
       }
     }
+   // if(!pathgridseen)
+  //  pbVis->Display2DBinaryMap(m_PathGrid, lgm);
+    
+//	pathgridseen = true;
+	/*Checking if a point in x,y is reachable */
 
-    /*Checking if a point in x,y is reachable */
-
-    for (double rad = 0; rad < M_PI * 2; rad = rad + M_PI / 18) {
-      angles.push_back(rad);
-    }
-    int i = 0;
-    int randx, randy;
-    double xW, yW, angle;
-    //log("for sample size");
-    bool haspoint;
-    Cure::Pose3D singlesample;
-    while (i < m_samplesize) {
-      haspoint = false;
-      randx = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
-      randy = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
-      int the = (int) (rand() % angles.size());
-      angle = angles[the];
-      //if we have that point already, skip.
-      /* for (int j = 0; j < i; j++) {
-	 if (samples[2 * j] == randx && m_samples[2 * j + 1] == randy
-	 && m_samplestheta[j] == angle) {
-      //log("we already have this point.");
-      haspoint = true;
-      break;
-      }
-      }*/
-      m_lgm->index2WorldCoords(randx, randy, xW, yW);
-      std::pair<int,int> sample;
-      sample.first = randx;
-      sample.second = randy;
-
-      if (!haspoint && (*m_lgm)(randx, randy) == '0' && isCircleFree2D(*m_lgm, xW, yW, m_sampleawayfromobs)) {
-	/*if reachable*/
 	// Get the indices of the destination coordinates
-	//	log("point reachable");
+//		log("point reachable");
 	int rS, cS, rE, cE;
 	//log("robotpose: %f,%f", lastRobotPose->x,lastRobotPose->y);
 	//log("1");
-	if (m_lgm->worldCoords2Index(lastRobotPose->x, lastRobotPose->y, rS, cS)
-	    == 0 && m_lgm->worldCoords2Index(xW, yW, rE, cE) == 0) {
-	  //  log("check if point is reachable");
+	if (m_lgm->worldCoords2Index(start.getX(), start.getY(), rS, cS)
+	    == 0  && m_lgm->worldCoords2Index(destination.getX(), destination.getY(), rE, cE) == 0) {
 	  // Compensate for the fact that the PathGrid is just a normal matrix where the cells are numbers from the corner
 	  cS += m_lgm->getSize();
 	  rS += m_lgm->getSize();
@@ -1996,27 +2157,74 @@ namespace spatial
 	  rE += m_lgm->getSize();
 
 	  Cure::ShortMatrix path;
-	  double d = (m_PathGrid.path(rS, cS, rE, cE, path, 20
+	  double d = (m_PathGrid.path(rS, cS, rE, cE, path, 100
 		* m_lgm->getSize()) * m_lgm->getCellSize());
-
-	  if (d > 0) {
-	    // There is a path to this destination
-	    //  log("there's a path to this destination");
-	    singlesample.setX(randx);
-	    singlesample.setY(randy);
-	    singlesample.setTheta(angle);
-	    samples.push_back(singlesample);
-	    i++;
-	  }
-	  else {
-	    //  log("there's no path to here.");
-	  }
-	  /*if reachable*/
+	  return d;
 	}
+	else{
+	  return -1;
+	}
+
+}
+std::vector<Cure::Pose3D> VisualObjectSearch::Sample2DGrid() {
+  srand (
+      time(NULL));
+  std::vector<double> angles;
+
+  std::vector<Cure::Pose3D> samples;
+  log("Sampling Grid");
+  /*Sampling free space BEGIN*/
+
+  for (double rad = 0; rad < M_PI * 2; rad = rad + M_PI / 18) {
+    angles.push_back(rad);
+  }
+  int i = 0;
+  int randx, randy;
+  double xW, yW, angle;
+  //log("for sample size");
+  bool haspoint;
+  Cure::Pose3D singlesample;
+  while (i < m_samplesize) {
+    haspoint = false;
+    randx = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
+    randy = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
+    int the = (int) (rand() % angles.size());
+    angle = angles[the];
+    //if we have that point already, skip.
+    /* for (int j = 0; j < i; j++) {
+       if (samples[2 * j] == randx && m_samples[2 * j + 1] == randy
+       && m_samplestheta[j] == angle) {
+    //log("we already have this point.");
+    haspoint = true;
+    break;
+    }
+    }*/
+    m_lgm->index2WorldCoords(randx, randy, xW, yW);
+    std::pair<int,int> sample;
+    sample.first = randx;
+    sample.second = randy;
+
+      if (!haspoint && (*m_lgm)(randx, randy) == '0' && isCircleFree2D(*m_lgm, xW, yW, m_sampleawayfromobs)) {
+	Cure::Pose3D start,dest;
+	start.setX(lastRobotPose->x);
+	start.setY(lastRobotPose->y);
+	dest.setX(xW);
+	dest.setX(yW);
+
+	double d = GetPathLength(start,dest,m_lgm);
+//	log ("path to here: %3.2f", d);
+	// There is a path to this destination
+	//	    log("there's a path to this destination");
+	if (d > 0 || true){
+	  singlesample.setX(randx);
+	  singlesample.setY(randy);
+	  singlesample.setTheta(angle);
+	  samples.push_back(singlesample);
+	  i++;}
 
       }
       else {
-	//log("point either non free space or seen.");
+	//	log("point either non free space or seen.");
       }
     }
     log("Displaying VP samples in PB");
@@ -2208,7 +2416,7 @@ namespace spatial
 	  }
 	}
 	if(!inserted){
-	  log("pushing back");
+//	  log("pushing back");
 	  orderedVClist.push_back(make_pair(i,sum));
 	}
       }
@@ -2273,7 +2481,7 @@ namespace spatial
 	/*m_map->coneModifier(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan,samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, makeobstacle,makeobstacle);*/
 	map->coneQuery(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan, samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells, m_minDistance);
 	log("cone query done.");
-	cout << "cone #" << i  << " " << viewpoint.pos[0] << " " << viewpoint.pos[1] << " " <<viewpoint.pos[2] << "" << viewpoint.pan << " " << viewpoint.tilt << " pdfsum: " << sumcells.getResult() << endl;
+	cout << "cone #" << i  << " " << viewpoint.pos[0] << " " << viewpoint.pos[1] << " " <<viewpoint.pos[2] << " " << viewpoint.pan << " " << viewpoint.tilt << " pdfsum: " << sumcells.getResult() << endl;
 
 	//    /* Show view cone on a temporary map, display the map and wipe it*/
 
@@ -2305,6 +2513,55 @@ namespace spatial
     }
     return maxindex;
   }
+
+  void
+    VisualObjectSearch::owtARTagCommand(const cast::cdl::WorkingMemoryChange &objID) {
+      try{
+	VisionData::ARTagCommandPtr cmd = (getMemoryEntry<
+	    VisionData::ARTagCommand> (objID.address));
+
+	log("got ARTag overwrite command: %s", cmd->label.c_str());
+	// First of all check if we have found the holy grail
+
+	if(waitingForDetection.find(cmd->label) != waitingForDetection.end() ){
+	  //We were waiting for detection results on this object
+	  log("ARTag owt: erasing %s from the list", cmd->label.c_str());
+	  waitingForDetection.erase(cmd->label);
+
+	  string logString(" Recognizer Waiting list: ");
+	  for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
+	    logString += *it + " ";
+	  }
+	  logString += " / ";
+	  for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
+	    logString += *it + " ";
+	  }
+	  log(logString.c_str());
+
+	  if (waitingForObjects.empty() && waitingForDetection.empty()) {
+	    DetectionComplete(false);
+	  }
+
+	}
+	else{
+	  log("this is not the object we looked for: %s",cmd->label.c_str());
+	  string logString(" Recognizer Waiting list: ");
+	  for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
+	    logString += *it + " ";
+	  }
+	  logString += " / ";
+	  for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
+	    logString += *it + " ";
+	  }
+	  log(logString.c_str());
+
+	  // m_command = NEXT_NBV;
+	}
+      }
+      catch (const CASTException &e) {
+	log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+      }
+    }
 
 
   void
@@ -2403,9 +2660,9 @@ namespace spatial
 	sleep(1);
       }
     }
-
   void VisualObjectSearch::Recognize() {
     log("Recognize called");
+    sleep(10);
     //    waitingForDetection.insert(currentTarget);
     //    isWaitingForDetection = true;
     //DetectionComplete(false);
@@ -2423,13 +2680,25 @@ namespace spatial
      */
     for(unsigned int i = 0; i < m_objectlist.size(); i++){
       if (find(m_recognizedobjects.begin(), m_recognizedobjects.end(),m_objectlist[i]) == m_recognizedobjects.end()){
+
+	if(m_objectlist[i] == "metalbox" || m_objectlist[i] == "table1" || m_objectlist[i] == "table2"
+	   || m_objectlist[i] == "shelves" ){
+	  log("asking to ARTag for object %s", m_objectlist[i].c_str());
+	  addARTagCommand(m_objectlist[i]);
+	  waitingForDetection.insert(m_objectlist[i]);
+	}
+	else{
 	addRecognizer3DCommand(VisionData::RECOGNIZE,m_objectlist[i],"");
 	waitingForDetection.insert(m_objectlist[i]);
       }
     }
   }
-
-
+  }
+void VisualObjectSearch::addARTagCommand(std::string label){
+    VisionData::ARTagCommandPtr cmd = new VisionData::ARTagCommand;
+    cmd->label = label;
+   AVSComponentPtr->addToWorkingMemory(AVSComponentPtr->newDataID(),"vision.sa",cmd);
+}
   void VisualObjectSearch::DetectionComplete(bool isDetected, std::string detectedObject){
     waitingForDetection.clear();
     waitingForObjects.clear();
@@ -2446,11 +2715,16 @@ namespace spatial
       if(greatSuccess){
 	isSearchFinished = true;
 	m_command = STOP;
-	SaveSearchPerformance("OBJECT FOUND.");
+
 	log("Object Detected, Mission Completed.");
 	return;
       }
 
+      char buffer[1024];
+      sprintf(buffer,"Object %s detected. Policy Step completed: %s, total # of VCones for this step: %d, (next step: %s)", detectedObject.c_str(), currentSearchPolicy[currentPolicyStep].c_str(), m_totalViewPoints, currentSearchPolicy[currentPolicyStep + 1].c_str());
+      writeStringToFile((string)buffer);
+
+      m_totalViewPoints = 0;
       currentPolicyStep++;
 
       m_command = ASK_FOR_DISTRIBUTION;
@@ -2522,7 +2796,7 @@ namespace spatial
       }
       m_minDistance = 0.5*objectSize/tan(0.5*m_vertangle);
       //      if (m_minDistance < 0.5) m_minDistance = 0.5;
-      m_conedepth = m_minDistance * 4;
+      m_conedepth = m_minDistance * 6;
       if (m_conedepth > 5.0) m_conedepth = 5.0;
       log("Current target changed to: %s, conedepth %f" , currentTarget.c_str(), m_conedepth);
     }
@@ -2531,12 +2805,14 @@ namespace spatial
     VisualObjectSearch::newVisualObject(const cast::cdl::WorkingMemoryChange &objID) {
 
       try{
-	debug("new visual object");
+	log("new visual object");
 	VisionData::VisualObjectPtr visualobject(getMemoryEntry<
 	    VisionData::VisualObject> (objID.address));
-	//log("new visual object %s", visualobject->label.c_str());
+	log("new visual object %s", visualobject->label.c_str());
 	if (waitingForDetection.find(visualobject->label) != waitingForDetection.end()) {
+	  //m_recognizedobjects.push_back(visualobject->label); 
 	  //This was an object we were looking for
+	log("deleting object %s from list", visualobject->label.c_str());
 	  waitingForDetection.erase(visualobject->label);
 	  waitingForObjects.insert(visualobject->label);
 
@@ -2563,6 +2839,9 @@ namespace spatial
     if (map == 0) 
       map = m_map;
 
+    m_totalprob += m_nbv.totalprob;
+    log("total prob covered so far %f", m_totalprob);
+    
     double sensingProb = 0.8;
     GDProbSum sumcells;
     GDIsObstacle isobstacle;
@@ -2664,6 +2943,7 @@ namespace spatial
 
   void VisualObjectSearch::receiveScan2d(const Laser::Scan2d &castScan)
   {
+    return;
     lockComponent();
     debug("Got scan with n=%d and t=%ld.%06ld",
 	castScan.ranges.size(), 
@@ -2681,18 +2961,18 @@ namespace spatial
 	lpW.add(scanPose, m_LaserPoseR);
 	//add tracer
 	vector<double> LaserPose;
-	LaserPose.push_back(lpW.getX()); //lpW.getY(), 0.4 , lpW.getTheta()};
+	LaserPose.push_back(lpW.getX()); 
 	LaserPose.push_back(lpW.getY());
 	LaserPose.push_back(lpW.getZ());
 	LaserPose.push_back(lpW.getTheta());
 
 	debug("Adding scan..");
-	m_tracer->addScanStationarySensor(castScan,LaserPose,obstacle,makefree,makeobstacle);
-	m_Glrt->addScan(cureScan, lpW,1.0);
+	//m_tracer->addScanStationarySensor(castScan,LaserPose,obstacle,makefree,makeobstacle);
+	//m_Glrt->addScan(cureScan, lpW,1.0);
+      }
     }
+    unlockComponent();
   }
-  unlockComponent();
-}
 
 void VisualObjectSearch::PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype) {
   SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand();
