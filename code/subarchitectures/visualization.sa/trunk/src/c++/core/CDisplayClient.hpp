@@ -35,15 +35,14 @@
 # define _CvMatPtr    void*
 #endif
 
-
-
 namespace cogx { namespace display {
 
 class CDisplayClient
 {
 protected:
 
-  ///if this is not "" then try to connect to a display server outside of CAST on this host
+   /// if this is not "" then try to connect to a display server outside of CAST on this host
+   /// See also: CDisplayServer::m_standaloneHost 
    std::string m_standaloneHost;
 
    std::string m_serverName;
@@ -66,12 +65,20 @@ protected:
    void log(const std::string& message) {
       if (m_pOwner) m_pOwner->log(message);
    }
+   void println(const std::string& message) {
+      if (m_pOwner) m_pOwner->println(message);
+   }
+
+   void connectToStandaloneHost(cast::CASTComponent& owner);
 
 public:
    CDisplayClient();
    virtual ~CDisplayClient();
    void configureDisplayClient(const std::map<std::string,std::string> & _config);
-   void connectIceClient(cast::CASTComponent& owner) throw(std::runtime_error);
+
+   /// Connect to the client to a display server.
+   /// For the connection parameters and procedure see: CDisplayServer::m_standaloneHost.
+   void connectIceClient(cast::CASTComponent& owner);
 
    // -----------------------------------------------------------------
    // CDisplayClient Methods

@@ -65,24 +65,40 @@ class CDisplayClient:
            self.m_ServerHost = config["--standalone-display-host"].strip()
            print self.m_ServerHost
 
+    def connectToStandaloneHost(self, owner):
+        try:
+            dispCategory = castServantCategory(DisplayInterface)
+            prx = owner.getIceServerManual(
+                V11NSTANDALONENAME, dispCategory, self.m_ServerHost, V11NSTANDALONEPORT)
+
+            self.m_Server = DisplayInterfacePrx.checkedCast(prx)
+            owner.println("DisplayClient(python) connected to standalone server on '%s'" % (m_ServerHost));
+        except Exception as e:
+            owner.println(
+                "*** DisplayClient(python): standalone server not found on host '%s'" % (m_ServerHost))
+            self.m_Server = None
+
     def connectIceClient(self, owner):
         self.m_Owner = owner
         if len(self.m_ServerHost) > 0:
-            try:
-                dispCategory = castServantCategory(DisplayInterface)
-                prx = owner.getIceServerManual(
-                    V11NSTANDALONENAME, dispCategory, self.m_ServerHost, V11NSTANDALONEPORT)
+            self.connectToStandaloneHost(owner)
+            return
 
-                self.m_Server = DisplayInterfacePrx.checkedCast(prx)
-            except Exception as e:
-                print "*** DisplayClient(python): standalone display server not found"
-                self.m_Server = None
-        else:
+        try:
+            self.m_Server = owner.getIceServer(self.m_ServerName, DisplayInterface, DisplayInterfacePrx)
+        except Exception as e:
+            owner.println("*** DisplayClient(python): DisplayServer component not found")
+            self.m_Server = None
+
+        if self.m_Server != None:
             try:
-                self.m_Server = owner.getIceServer(self.m_ServerName, DisplayInterface, DisplayInterfacePrx)
+                self.m_ServerHost = self.m_Server.getStandaloneHost()
+                if len(self.m_ServerHost) > 0:
+                    self.m_Server = None
+                    owner.debug("DisplayClient(python) Redirecting connection to standalone display server.")
+                    self.connectToStandaloneHost(owner)
             except Exception as e:
-                print "*** DisplayClient(python): display server component not found"
-                self.m_Server = None
+                pass
 
     def getComponentId(self):
         if self.m_Owner == None: return "[None]"
@@ -98,12 +114,12 @@ class CDisplayClient:
 
     def installEventReceiver(self):
         if self.m_Owner == None:
-            raise Exception("CDisplayClient: connectIceClient() must be called before installEventReciever().")
+            raise Exception("CDisplayClient(python): connectIceClient() must be called before installEventReciever().")
         if self.m_Server == None:
-            print (" *** CDisplayClient: Server not connected.")
+            self.m_Owner.println(" *** CDisplayClient(python): Server not connected.")
             return
         if self.m_EventReceiver != None:
-            print (" *** CDisplayClient: The client already has an EventReceiver.")
+            self.m_Owner.println(" *** CDisplayClient(python): The client already has an EventReceiver.")
             return
 
         iceid = self.getEventClientId()

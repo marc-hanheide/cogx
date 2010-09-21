@@ -79,10 +79,11 @@ void CDisplayServer::configure(const map<string,string> & _config)
    debug("CDisplayServer Server: configuring");
 
    map<string,string>::const_iterator it;
-   if((it = _config.find("--standalone-display-host")) != _config.end()) {
+   if((it = _config.find("--redirect-to-host")) != _config.end()) {
       string s = it->second;
       // trim
       s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+      if (s == "no!") s = "";
       m_standaloneHost = s;      
    }
 
