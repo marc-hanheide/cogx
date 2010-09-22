@@ -36,7 +36,7 @@ class Condition(object):
         self.scope = new_scope
 
     def get_scope(self):
-        """Return the Scope obect that this Condition resides in."""
+        """Return the Scope object that this Condition resides in."""
         return self.scope
     
     def free(self):

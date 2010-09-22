@@ -322,6 +322,13 @@ class DTRule(scope.Scope):
         if not isinstance(mapping, dict):
             mapping = dict((param.name, c) for (param, c) in zip(self.args+self.add_args, mapping))
         scope.Scope.instantiate(self, mapping)
+
+    def get_value_args(self):
+        result = set()
+        for t,v in self.values:
+            if isinstance(v, predicates.VariableTerm):
+                result.add(v.object)
+        return result
         
     @staticmethod
     def from_action(action):
