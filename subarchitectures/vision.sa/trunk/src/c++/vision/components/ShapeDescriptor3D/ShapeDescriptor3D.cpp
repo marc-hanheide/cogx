@@ -188,7 +188,14 @@ void ShapeDescriptor3D::calculateDescriptor(ProtoObject &pobj)
   cvSet(trans, cvScalar(0));
   // note: dshape expects mm, we have m. also it expects a negative x
   // (probably stemming from an error in SVS valib file)
-  cvmSet(trans, 0, 0, -1000.*image[RIGHT].camPars.pose.pos.y);
+  cvmSet(trans, 0, 0, 1000.*image[RIGHT].camPars.pose.pos.x);
+
+  cvSave("intr-L.xml", intrinsic[LEFT]);
+  cvSave("intr-R.xml", intrinsic[RIGHT]);
+  cvSave("dist-L.xml", distortion[LEFT]);
+  cvSave("dist-R.xml", distortion[RIGHT]);
+  cvSave("rot-R.xml", rot);
+  cvSave("trans-R.xml", trans);
 
   dshape.SetDebugImage(iplDebug[LEFT], iplDebug[RIGHT]);
   dshape.SetCameraParameter(intrinsic[LEFT], intrinsic[RIGHT],
@@ -222,23 +229,6 @@ void ShapeDescriptor3D::calculateDescriptor(ProtoObject &pobj)
   cvReleaseImage(&iplMask);
   cvReleaseMat(&rot);
   cvReleaseMat(&trans);
-
-  /*
-  // List of source SOIs
-  IdSeq SOIList;
-
-  // 2D image patch
-  Video::Image image;
-
-  // Segmentation mask;
-  SegmentMask mask;
-
-  // List of surface 3D points
-  SurfacePointSeq points;
-
-  // time the object was last changed
-  cast::cdl::CASTTime time;
-  */
 }
 
 #ifdef FEAT_VISUALIZATION
@@ -274,7 +264,9 @@ void ShapeDescriptor3D::Redraw3D()
   std::ostringstream str;
   P::Scene3D scene;
   dshape.GetScene(scene);
+  str << "function render()\n";
   DrawScene3D(str, scene, displayColors);
+  str << "end\n";
   m_display.setLuaGlObject(ID_OBJECT_3D, "3D planes", str.str());
 }
 
@@ -282,10 +274,13 @@ void DrawLine3D(std::ostringstream &str,
                 double x1, double y1, double z1, 
                 double x2, double y2, double z2, P::RGBColor col)
 {
-  str << "glColor4ub(r,g,b, a)\n";
+  double s = 10.;
+  str << "glColor(" << (double)col.r/255. << ", "
+      << (double)col.g/255. << ", "
+      << (double)col.b/255. << ")\n";
   str << "glBegin(GL_LINES)\n";
-  str << "glVertex3d(x1, y1, z1)\n";
-  str << "glVertex3d(x2, y2, z2)\n";
+  str << "glVertex(" << s*x1 << ", " << s*y1 << ", " << s*z1 << ")\n";
+  str << "glVertex(" << s*x2 << ", " << s*y2 << ", " << s*z2 << ")\n";
   str << "glEnd()\n";
 }
 
