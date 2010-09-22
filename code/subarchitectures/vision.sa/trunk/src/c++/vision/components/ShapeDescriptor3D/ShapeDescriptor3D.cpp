@@ -50,6 +50,9 @@ ShapeDescriptor3D::ShapeDescriptor3D()
   : camId(0)
 {
   stereoWidth = STEREO_WIDTH_DEF;
+#ifdef FEAT_VISUALIZATION
+  m_display.setClientData(this);
+#endif
 }
 
 ShapeDescriptor3D::~ShapeDescriptor3D()
@@ -61,10 +64,6 @@ void ShapeDescriptor3D::configure(const std::map<std::string,std::string> & _con
   // first let the base classes configure themselves
   configureStereoCommunication(_config);
 
-#ifdef FEAT_VISUALIZATION
-	m_display.configureDisplayClient(_config);
-#endif
-
   map<string,string>::const_iterator it;
 
   if((it = _config.find("--stereoWidth")) != _config.end())
@@ -72,6 +71,10 @@ void ShapeDescriptor3D::configure(const std::map<std::string,std::string> & _con
     istringstream str(it->second);
     str >> stereoWidth;
   }
+
+#ifdef FEAT_VISUALIZATION
+	m_display.configureDisplayClient(_config);
+#endif
 }
 
 void ShapeDescriptor3D::start()
@@ -87,7 +90,6 @@ void ShapeDescriptor3D::start()
 
 #ifdef FEAT_VISUALIZATION
   m_display.connectIceClient(*this);
-  m_display.setClientData(this);
   m_display.installEventReceiver();
   //m_display.addCheckBox(ID_OBJECT_3D, IDC_POINTS, "Show 3D points");
 
