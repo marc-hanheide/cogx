@@ -3,6 +3,8 @@ function showROI(x,b,f,pts3d)
 global Settings Figs
 global Dirs
 
+Figs
+
 cla(Figs.LRguiR.LRaxRec);
 set(Figs.LRguiR.LRaxRec,'Visible','off');
 set(Figs.LRguiR.LRtxRec,'String','');
