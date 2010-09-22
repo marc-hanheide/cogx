@@ -6,8 +6,10 @@
 #ifndef ACCESS_IMAGE_H
 #define ACCESS_IMAGE_H
 
-//#include <cv.h>
-#include <opencv/cv.h>
+#include <cv.h>
+//Please do not include OpenCV in the following way:
+//#include <opencv/cv.h>
+//Instead, make sure pkg-config can find it correctly
 #include "Video.hpp"
 
 namespace Video
