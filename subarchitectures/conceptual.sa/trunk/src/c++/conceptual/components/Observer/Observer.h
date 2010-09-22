@@ -10,15 +10,15 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <ConceptualData.hpp>
 
-
 namespace conceptual
 {
-
 
 /**
  * @author Andrzej Pronobis
  *
- * Main query handler for the Conceptual.SA
+ * Component observing changes on other working memories
+ * which correspond to changes in spatial knowledge represented
+ * by other layers of the representation.
  */
 class Observer: public cast::ManagedComponent
 {
@@ -26,13 +26,16 @@ class Observer: public cast::ManagedComponent
 public:
 
 	/** Constructor. */
-	Observer() {}
+	Observer()
+	{}
 
 	/** Destructor. */
-	virtual ~Observer() {}
+	virtual ~Observer()
+	{}
 
 
 protected:
+
 	/** Called by the framework to configure the component. */
 	virtual void configure(const std::map<std::string,std::string> & _config);
 
@@ -48,9 +51,30 @@ protected:
 
 private:
 
+	/** Initializes the world state. */
+	void initializeWorldState();
+
+	/** Adds the worldstate to the working memory. */
+	void addInitialWorldState();
+
+	/** Updates the world state on the WM. */
+	void updateWorldState();
+
+	/** Executed when coma room changes. */
+	void comaRoomChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+
+private:
+
+	/** Current state of the world as much as
+	 * the conceptual.sa is concerned. */
+	ConceptualData::WorldStatePtr _worldStatePtr;
+
+	/** Working memory ID of the world state struct. */
+	std::string _worldStateId;
 
 }; // class Observer
-} // namespace def
+} // namespace
 
 #endif // CONCEPTUAL_OBSERVER_H
 
