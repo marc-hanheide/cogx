@@ -9,6 +9,44 @@ import standalone.globals as global_vars
 
 log = config.logger("PythonServer")
 
+class PartialProblem(object):
+    def __init__(self, objects, facts, rules, domain):
+        self.objects = objects
+        self.facts = facts
+        
+        self.initialize(rules, domain)
+
+    def initialize(self, rules, domain):
+        self.objects_by_type = {}
+        for t in domain.types.itervalues():
+            self.objects_by_type[t] = set(o for o in self.objects if o.is_instance_of(t))
+
+        def get_rule_size(r):
+            values = set(v for p,v in r.values)
+            num_instances = 1
+            for a in r.args:
+                if isinstance(a, pddl.Parameter):
+                    num_instances *= len(self.objects_by_type[a.type])
+            num_values = 0
+            for v in values:
+                if isinstance(v, pddl.VariableTerm):
+                    num_values += len(self.objects_by_type[v.object.type])
+                else:
+                    num_values += 1
+            return num_instances, num_values
+
+        total_count = 1
+        for r in rules:
+            inst, values = get_rule_size(r)
+            #print r, inst, values
+            total_count *= values**inst
+
+        self.size = total_count
+
+    def get_objects(self, type):
+        return self.objects_by_type.get(type, [])
+        
+
 class DTProblem(object):
     def __init__(self, plan, domain, cast_state):
         self.plan = plan
@@ -20,12 +58,14 @@ class DTProblem(object):
         self.goals = self.create_goals(plan)
         self.goal_actions = set()
         self.relaxation_layers = self.compute_restrictions()
+        self.dt_rules = pddl.translators.Translator.get_annotations(domain).get('dt_rules', [])
         
         self.dtdomain = self.create_dt_domain(domain)
         self.goal_actions |= self.create_goal_actions(self.goals, self.dtdomain)
         self.dtdomain.actions += [a for a in self.goal_actions]
         self.dtdomain.name2action = None
         
+        self.subproblems = self.compute_subproblems(self.state)
         self.problem = self.create_problem(self.state, self.dtdomain)
         self.dt_plan = []
 
@@ -187,6 +227,9 @@ class DTProblem(object):
             
     def create_goal_actions(self, goals, domain):
         result = set()
+
+        confirm_score = 100
+        
         for svar in goals:
             term = pddl.Term(svar.function, svar.get_args())
             domain.constants |= set(svar.get_args())
@@ -195,14 +238,47 @@ class DTProblem(object):
             val = pddl.Parameter("?val", svar.function.type)
             name = "commit-%s-%s" % (svar.function.name, "-".join(a.name for a in svar.get_args()))
             a = pddl.Action(name, [val], None, None, domain)
+            b = pddl.builder.Builder(a)
             
-            a.precondition = pddl.LiteralCondition(dtpddl.committed, [term], a, negated=True)
-            commit_effect = pddl.SimpleEffect(dtpddl.committed, [term], a)
-            reward_effect = pddl.ConditionalEffect(pddl.LiteralCondition(pddl.equals, [term, val], a), \
-                                                       pddl.SimpleEffect(pddl.builtin.num_assign, [pddl.Term(dtpddl.reward,[]), 100]))
-            a.effect = pddl.ConjunctiveEffect([commit_effect, reward_effect], a)
+            a.precondition = b.cond('not', (dtpddl.committed, [term]))
+            commit_effect = b.effect(dtpddl.committed, [term])
+            reward_effect = b('when', ('=', term, val), ('assign', ('reward',), confirm_score))
+            a.effect = b.effect('and', commit_effect, reward_effect)
             
             result.add(a)
+
+        disconfirm = []
+        for pnode in self.select_actions:
+            for svar, val in pnode.effects:
+                if svar.modality == mapl.commit:
+                    nmvar = svar.nonmodal()
+                    if nmvar not in goals:
+                        disconfirm.append((nmvar, svar.modal_args[0]))
+
+        dis_score = float(confirm_score)/len(disconfirm)
+        for svar, val in disconfirm:
+            term = pddl.Term(svar.function, svar.get_args())
+            domain.constants |= set(svar.get_args() + [val])
+            domain.add(svar.get_args() + [val])
+            
+            name = "disconfirm-%s-%s" % (svar.function.name, "-".join(a.name for a in svar.get_args()))
+            a = pddl.Action(name, [], None, None, domain)
+            b = pddl.builder.Builder(a)
+
+            conds = [b.cond('not', (dtpddl.committed, term))]
+            for gvar in goals:
+                gterm = pddl.Term(gvar.function, gvar.get_args())
+                conds.append(b.cond('not', (dtpddl.committed, gterm)))
+            
+            a.precondition = pddl.Conjunction(conds, a)
+            
+            commit_effect = b.effect(dtpddl.committed, term)
+            reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_score))
+            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -2*dis_score))
+            a.effect = pddl.ConjunctiveEffect([commit_effect, reward_effect, penalty_effect], a)
+            
+            result.add(a)
+                        
         return result
 
     def create_dt_domain(self, dom):
@@ -274,70 +350,53 @@ class DTProblem(object):
             
             vdist = pddl.prob_state.ValueDistribution(dict((d,p) for d,p in f.value.iteritems() if check_value(d)))
             vdist.normalize()
+            # if len(vdist) != len(f.value):
+            #     log.debug("Possible values were left out for %s!", str(f.svar))
             facts.append(pddl.prob_state.ProbFact(f.svar, vdist))
         return result, facts
+
+    def compute_subproblems(self, cast_state):
+        prob_by_layer = {}
+        prob_by_layer[len(self.relaxation_layers)] = PartialProblem(cast_state.objects, list(cast_state.prob_state.iterdists()), self.dt_rules, self.domain)
+        for i, (fixed, constraints) in reversed(list(enumerate(self.relaxation_layers))):
+            log.debug("Layer %d:", i)
+            objects, facts = self.limit_state(cast_state, fixed, constraints, prob_by_layer[i+1].objects)
+            log.debug("objects in this layer: %s", ", ".join(o.name for o in objects))
+            prob_by_layer[i] = PartialProblem(objects, facts, self.dt_rules, self.domain)
+            log.debug("")
+            
+        return prob_by_layer
+        
 
     def create_problem(self, cast_state, domain):
         t0 = time.time()
         opt = "maximize"
         opt_func = pddl.FunctionTerm(pddl.dtpddl.reward, [])
 
-        if domain is None:
-            domain = self.dtdomain
-            
-        dt_rules = pddl.translators.Translator.get_annotations(domain).get('dt_rules', [])
-
-        def type_count(t, objects):
-            return len([o for o in objects if o.is_instance_of(t)])
-
-        def get_rule_size(r, objects):
-            values = set(v for p,v in r.values)
-            num_instances = 1
-            for a in r.args:
-                if isinstance(a, pddl.Parameter):
-                    num_instances *= type_count(a.type, objects)
-            num_values = 0
-            for v in values:
-                if isinstance(v, pddl.VariableTerm):
-                    num_values += type_count(v.object.type, objects)
-                else:
-                    num_values += 1
-            return num_instances, num_values
-        
-        objects_in_layer = {}
-        facts_in_layer = {}
-        objects_in_layer[len(self.relaxation_layers)] = cast_state.objects
         selected = len(self.relaxation_layers)
-        for i, (fixed, constraints) in reversed(list(enumerate(self.relaxation_layers))):
+        for i in xrange(len(self.relaxation_layers), 0, -1):
             log.debug("Layer %d:", i)
             selected = i
-            objects, facts = self.limit_state(cast_state, fixed, constraints, objects_in_layer[i+1])
-            objects_in_layer[i] = objects
-            facts_in_layer[i] = facts
-            log.debug("objects in this layer: %s", ", ".join(o.name for o in objects))
-            
-            total_count = 1
-            for r in dt_rules:
-                inst, values = get_rule_size(r,objects)
-                total_count *= values**inst
-            log.debug("Approx. State size: %d", total_count)
-            if total_count < global_vars.config.dt.max_state_size:
-                log.info("Selecting layer %d with approx. state size of %d", i, total_count)
+            prob = self.subproblems[i]
+            log.debug("Approx. State size: %d", prob.size)
+            if prob.size < global_vars.config.dt.max_state_size:
+                log.info("Selecting layer %d with approx. state size of %d", i, prob.size)
                 break
             log.debug("")
 
-        objects = objects_in_layer[selected]# was cast_state.objects #for testing
-        facts = facts_in_layer[selected]
-
+        base_problem = self.subproblems[len(self.relaxation_layers)]
+        problem = self.subproblems[selected]
+        objects = problem.objects
+        facts = problem.facts
         
         #
         # Build dependencies for the rules
         #
-        prob_functions = set(r.function for r in dt_rules)
+        prob_functions = set(r.function for r in self.dt_rules)
         ruledeps = {}
         nondep_rules = []
         
-        for r in dt_rules:
+        for r in self.dt_rules:
             r.set_parent(cast_state.prob_state.problem)
             deps = False
             prob_deps = r.deps() & prob_functions 
@@ -368,8 +427,21 @@ class DTProblem(object):
                     substates[f.svar.function].append(substate)
                     log.debug("create substate for %s = %s (p=%.2f)", str(f.svar), str(val), prob)
 
+        marginal_substates = []
+        marginal_objects = defaultdict(set)
+        
+        for f in base_problem.facts:
+            if hstate.has_substate(f.svar):
+                for val, prob in f.value.iteritems():
+                    if prob > 0.0 and not hstate.has_substate(f.svar, val):
+                        substate = HierarchicalState([state.Fact(f.svar,val)], parent=hstate)
+                        hstate.add_substate(f.svar, val, substate, prob)
+                        substates[f.svar.function].append(substate)
+                        log.debug("create marginal substate for %s = %s (p=%.2f)", str(f.svar), str(val), prob)
+                        marginal_substates.append((hstate, f.svar, val))
+                        marginal_objects[val.type].add(val)
 
-        def apply_rule(st, r, pred):
+        def apply_rule(st, r, pred, marginal=False):
             svar = state.StateVariable(r.function, state.instantiate_args(r.args))
             if svar in st:
                 return
@@ -395,14 +467,14 @@ class DTProblem(object):
                     cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
                     val = st2.evaluate_term(v)
                     if st2[cvar] != val:
-                        #print "not satisfied: %s = %s" % (str(cvar), str(val))
+                        print "not satisfied: %s = %s" % (str(cvar), str(val))
                         sat = False
                         break
                 if not sat:
                     continue
                 
                 for p,v in r.values:
-                    pval = st2.evaluate_term(p)
+                    pval = cast_state.prob_state.evaluate_term(p) # evaluate in original state because probs for marginals could be gone in this partial state
                     if pval == pddl.UNKNOWN or pval.value < 0.01:
                         continue
                     val = st2.evaluate_term(v)
@@ -415,6 +487,10 @@ class DTProblem(object):
                     st2.add_substate(svar, val, sub, pval.value)
                     substates[svar.function].append(sub)
                     log.debug("create substate for %s = %s (p=%.2f)", str(svar), str(val), pval.value)
+                    if marginal:
+                        log.debug("This is a marginal state")
+                        marginal_substates.append((st2, svar, val))
+                        marginal_objects[val.type].add(val)
             
                     
         closed = set()
@@ -427,22 +503,46 @@ class DTProblem(object):
                 pred = iter(ruledeps[r]).next()
             else:
                 pred = None
-                
-            combinations = state.product(*map(lambda a: [o for o in objects if o.is_instance_of(a.type)], r.args+r.add_args))
+
+            print marginal_objects
+            combinations = state.product(*map(lambda a: problem.get_objects(a.type) | marginal_objects[a.type], r.args+r.add_args))
             for c in combinations:
-                #print "(%s %s)" % (r.function.name, " ".join(a.name for a in c))
+                print "(%s %s)" % (r.function.name, " ".join(a.name for a in c))
                 r.instantiate_all(c)
                 apply_rule(hstate, r, pred)
                 r.uninstantiate()
 
+            value_args = r.get_value_args()
+            if value_args:
+                def get_values_for_marginals(arg):
+                    if arg in value_args:
+                        return base_problem.get_objects(arg.type) - problem.get_objects(arg.type)
+                    return problem.get_objects(arg.type)
+                
+                combinations = state.product(*map(lambda a: get_values_for_marginals(a), r.args+r.add_args))
+                for c in combinations:
+                    #print "marginal: (%s %s)" % (r.function.name, " ".join(a.name for a in c))
+                    r.instantiate_all(c)
+                    apply_rule(hstate, r, pred, marginal=True)
+                    r.uninstantiate()
+
             closed.add(r)
             closed_functions.add(r.function)
             
-            for r in dt_rules:
+            for r in self.dt_rules:
                 #print r, map(str, (r.deps() & prob_functions) - done)
                 if r not in open and r not in closed and not (ruledeps[r] - closed_functions):
                     open.add(r)
 
+        marginals_per_svar = defaultdict(set)
+        for st, svar, val in marginal_substates:
+            marginals_per_svar[st, svar].add(val)
+
+        for (st, svar), vals in marginals_per_svar.iteritems():
+            for v in vals:
+                p, sub = st.get_substate(svar, v)
+                del sub[svar]
+                            
         #facts = [f.to_init() for f in cast_state.prob_state.iterdists()]
         p_facts = hstate.init_facts()
         p_objects = set(o for o in objects if o not in domain.constants)
@@ -545,6 +645,8 @@ class HierarchicalState(state.State):
         for f in facts:
             self.set(f)
 
+        self.hash = hash(tuple(facts) + (parent, ))
+
         self.read_svars = set()
         self.written_svars = set()
         
@@ -555,6 +657,9 @@ class HierarchicalState(state.State):
 
     def get_substate(self, svar, val):
         return self.substates[svar][val]
+
+    def delete_substate(self, svar, val):
+        del self.substates[svar][val]
 
     def has_substate(self, svar, val=None):
         if val is None:
@@ -596,6 +701,12 @@ class HierarchicalState(state.State):
         if len(elems) == 1:
             return elems[0]
         return effects.ConjunctiveEffect(elems)
+
+    def __hash__(self):
+        return self.hash
+
+    def __eq__(self, o):
+        return o.__class__  == self.__class__ and o.hash == self.hash
     
     def __getitem__(self, key):
         try:

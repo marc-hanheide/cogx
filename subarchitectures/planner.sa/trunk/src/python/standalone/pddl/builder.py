@@ -27,15 +27,18 @@ class Builder(object):
             return self(*arg, **kwargs)
         if isinstance(arg, predicates.Term):
             return arg.copy(self.scope)
-        if isinstance(arg, predicates.Function):
-            return arg
-        if arg in self.scope:
+        if isinstance(arg, (types.TypedObject, str)) and arg in self.scope:
             return self.scope[arg]
         return arg
         
     def __call__(self, *args, **kwargs):
         function_scope = kwargs.get("function_scope", SCOPE_ALL)
-        
+
+        if args[0] == "when":
+            cond = self(*args[1], function_scope=SCOPE_CONDITION)
+            eff = self(*args[2], function_scope=SCOPE_EFFECT)
+            return effects.ConditionalEffect(cond, eff, self.scope)
+
         args = [self.get_arg(a, **kwargs) for a in args]
 
         if args[0] == "not":
@@ -59,6 +62,10 @@ class Builder(object):
             func = func[0]
             
         if isinstance(func, predicates.Predicate):
+            if function_scope & SCOPE_CONDITION and not function_scope & SCOPE_EFFECT:
+                return conditions.LiteralCondition(func, args[1:], self.scope)
+            elif not function_scope & SCOPE_CONDITION and function_scope & SCOPE_EFFECT:
+                return effects.SimpleEffect(func, args[1:], self.scope)
             return predicates.Literal(func, args[1:], self.scope)
         else:
             return predicates.FunctionTerm(func, args[1:], self.scope)
@@ -66,8 +73,7 @@ class Builder(object):
         assert(False)
 
     def effect(self, *args):
-        lit = self(*args, function_scope=SCOPE_EFFECT)
-        return effects.SimpleEffect(lit.predicate, lit.args, self.scope, lit.negated)
+        return self(*args, function_scope=SCOPE_EFFECT)
 
     def timed_effect(self, *args):
         import durative
@@ -75,8 +81,7 @@ class Builder(object):
         return durative.TimedEffect(lit.predicate, lit.args, args[0], self.scope, lit.negated)
 
     def cond(self, *args):
-        lit = self(*args, function_scope=SCOPE_CONDITION)
-        return conditions.LiteralCondition(lit.predicate, lit.args, self.scope, lit.negated)
+        return self(*args, function_scope=SCOPE_CONDITION)
 
     def neg(self, arg):
         return self.get_arg(arg).negate()
