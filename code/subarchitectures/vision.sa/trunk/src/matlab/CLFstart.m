@@ -56,7 +56,7 @@ end;
 
 %Load models if requested
 if ~isempty(Settings.initModel)
-   LRloadAVmodels(Settings.initModel);
+   LRloadAVmodels([Dirs.models Settings.initModel]);
 end;
 
 disp('CLF Start');

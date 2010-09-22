@@ -6,14 +6,16 @@ switch type
    
    case 'GL'
       if Settings.Disp.GL
-         set(hp,'PaperPosition',[0 0 8 4.3]);
+%         set(hp,'PaperPosition',[0 0 8 4.3]);
+         set(hp,'PaperPosition',[0 0 10 4.8]);
          print(hp,Disp.mGL,'-dpng', '-r0');
       end
       
    case 'GR'
       
       if Settings.Disp.GR
-         set(hp,'PaperPosition',[0 0 8 2.5]);
+%         set(hp,'PaperPosition',[0 0 8 2.5]);
+         set(hp,'PaperPosition',[0 0 10 3]);
          print(hp,Disp.mGR,'-dpng', '-r0');
       end
       
