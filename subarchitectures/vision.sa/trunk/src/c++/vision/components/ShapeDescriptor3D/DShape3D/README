@@ -1,0 +1,68 @@
+*********************************************************
+* 3D shape description based on pairwise turning angles
+* between planar surfaces.
+*********************************************************
+
+Author: Johann Prankl (Vienna University of Technology)
+Email: prankl@acin.tuwien.ac.at
+
+
+REQUIREMENTS
+
+levmar v2.4 (Lourakis)
+get from:
+  http://www.ics.forth.gr/~lourakis/levmar
+note: on 64 Bit machines, you have to add the -fPIC compiler option in
+levmar-2.5/Makefile:
+  CFLAGS=$(CONFIGFLAGS) $(ARCHFLAGS) -O3 -funroll-loops -Wall -fPIC #-ffast-math #-pg
+note: if you get the error
+/usr/lib/gcc/x86_64-linux-gnu/4.4.1/../../../../lib/libf2c.so: undefined
+reference to `MAIN__'
+comment out libf2c in the Makefile:
+  LAPACKLIBS=-llapack -lblas #-lf2c
+
+homest v1.3 (Lourakis)
+get from:
+  http://www.ics.forth.gr/~lourakis/homest
+note: on 64 Bit machines, you have to add the -fPIC compiler option in
+homest-1.3/Makefile:
+  CFLAGS=$(INCLUDES) -O3 -funroll-loops -Wall -fPIC #-pg
+note: if you get the error
+/usr/lib/gcc/x86_64-linux-gnu/4.4.1/../../../../lib/libf2c.so: undefined
+reference to `MAIN__'
+comment out libf2c in the Makefile:
+  LAPACKLIBS=-llapack -lblas #-lf2c
+
+TomGine/Blort (ACIN)
+get from:  
+
+OpenCv 2.1
+
+
+INSTALLATION
+
+In CMakeLists.txt set the paths to levmar, homest and blort:
+SET(LEVMAR_PATH "/usr/local/src/levmar-2.5")  # "path to Lourakis' levmar v2.5" 
+SET(HOMEST_PATH  "/usr/local/src/homest-1.3")  # "path to Lourakis' homest v1.3"
+SET(BLORT_PATH "/home/mz/work/Blort")  # "path to ACIN Blort" 
+
+goto BUILD
+cmake ..
+make
+
+
+TESTING
+
+goto install directory and run
+  BUILD/dshape cfg/config.txt
+This opens a left and right image window and a 3D window with the extracted
+planar surfaces.
+The program also outputs the extracted shape descriptor, i.e. the bins of its
+histogram:
+--
+0 0 0 0 0 0 0 0 0 0 0.111111 0.111111 0.111111 0 0 0 0.222222 0.222222 0.222222
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+--
+End the program by pressing <ESC>
+
