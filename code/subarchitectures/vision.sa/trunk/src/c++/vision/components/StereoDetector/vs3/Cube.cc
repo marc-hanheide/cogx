@@ -207,7 +207,27 @@ bool Cube::IsInside(unsigned cube)
  */
 void Cube::Draw(int detail)
 {
-	if (detail == 0 || detail == 1 || detail == 2)
+	if (detail == 0)
+	{
+		// draw first transparent lines
+		DrawLine2D(cornerPoint[6].x, cornerPoint[6].y, cornerPoint[7].x, cornerPoint[7].y);
+		DrawLine2D(cornerPoint[7].x, cornerPoint[7].y, cornerPoint[2].x, cornerPoint[2].y);
+		DrawLine2D(cornerPoint[7].x, cornerPoint[7].y, cornerPoint[4].x, cornerPoint[4].y);
+
+		DrawLine2D(cornerPoint[0].x, cornerPoint[0].y, cornerPoint[3].x, cornerPoint[3].y);
+		DrawLine2D(cornerPoint[1].x, cornerPoint[1].y, cornerPoint[2].x, cornerPoint[2].y);
+		DrawLine2D(cornerPoint[4].x, cornerPoint[4].y, cornerPoint[5].x, cornerPoint[5].y);
+
+		DrawLine2D(cornerPoint[4].x, cornerPoint[4].y, cornerPoint[3].x, cornerPoint[3].y);
+		DrawLine2D(cornerPoint[5].x, cornerPoint[5].y, cornerPoint[0].x, cornerPoint[0].y);
+		DrawLine2D(cornerPoint[6].x, cornerPoint[6].y, cornerPoint[1].x, cornerPoint[1].y);
+
+		DrawLine2D(cornerPoint[2].x, cornerPoint[2].y, cornerPoint[3].x, cornerPoint[3].y);
+		DrawLine2D(cornerPoint[1].x, cornerPoint[1].y, cornerPoint[0].x, cornerPoint[0].y);
+		DrawLine2D(cornerPoint[6].x, cornerPoint[6].y, cornerPoint[5].x, cornerPoint[5].y);
+
+	}
+	if (detail == 1 || detail == 2)
 	{
 		// draw first transparent lines
 		DrawLine2D(cornerPoint[6].x, cornerPoint[6].y,
@@ -237,7 +257,6 @@ void Cube::Draw(int detail)
 							 cornerPoint[0].x, cornerPoint[0].y, RGBColor::red);
 		DrawLine2D(cornerPoint[6].x, cornerPoint[6].y,
 							 cornerPoint[5].x, cornerPoint[5].y, RGBColor::red);
-
 	}
 
   if (detail == 1)

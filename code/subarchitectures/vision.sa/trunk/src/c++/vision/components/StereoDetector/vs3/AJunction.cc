@@ -1,18 +1,19 @@
 /**
- * $Id: AJunction.cc,v 1.2 2010/05/26 12:03:44 mz Exp mz $
- */
+ * @file AJunction.cc
+ * @author Zillich, Richtsfeld
+ * @date 2009, May 2010
+ * @version 0.1
+ * @brief Gestalt class arc-junction.
+ **/
 
 #include <stdio.h>
-#include "Arc.hh"
-#include "AJunction.hh"
 #include <cstdio>
+#include "AJunction.hh"
 
 namespace Z
 {
 
-AJunction::AJunction(VisionCore *vc, Arc *arc_i, Arc *arc_j, int end_i,
-    int end_j)
-: Gestalt(vc, A_JUNCTION)
+AJunction::AJunction(VisionCore *vc, Arc *arc_i, Arc *arc_j, int end_i, int end_j) : Gestalt(vc, A_JUNCTION)
 {
   // if the END of arc i is conneced to the START of arc j, then this junction
   // (being in the middle) has i as START, j as END

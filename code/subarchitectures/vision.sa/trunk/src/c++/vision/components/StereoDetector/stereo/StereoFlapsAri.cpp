@@ -197,8 +197,8 @@ void StereoFlapsAri::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoFlapsAri::DrawSingleMatched(int side, int id, int detail)
 {
-	flaps[side][id].surf[0].Draw(RGBColor::red);
-	flaps[side][id].surf[1].Draw(RGBColor::red);
+	flaps[side][id].surf[0].Draw();
+	flaps[side][id].surf[1].Draw();
 }
 
 

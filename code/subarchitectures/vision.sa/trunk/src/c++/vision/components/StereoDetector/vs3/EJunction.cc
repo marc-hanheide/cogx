@@ -33,7 +33,7 @@ EJunction::EJunction(VisionCore *vc, Line *l, Ellipse *e, unsigned lE, unsigned 
 	}
 	catch (exception &e)
   {
-		printf("EJunction::EJunction: Lines do not intersect exception.\n\n");
+		printf("EJunction::EJunction: Lines do not intersect exception.\n");
     cout << e.what() << endl;
   }
 
@@ -68,25 +68,28 @@ void EJunction::UpdateColLines(Line *l, unsigned lE)
 	}
 }
 
+/**
+ * @brief Draw the E-junction
+ * @param detail Degree of detail.
+ */
 void EJunction::Draw(int detail)
 {
 	if(detail == 0)
 	{
-		ellipse->Draw(detail);
-		line->Draw(detail);
-		DrawPoint2D(isct.x, isct.y, RGBColor::blue);
+		DrawPoint2D(isct.x, isct.y);
 	}
   else if(detail == 1)
   {
-		ellipse->Draw(detail);
-		line->Draw(detail);
+		ellipse->Draw();
+		line->Draw();
+		DrawPoint2D(isct.x, isct.y, RGBColor::blue);
 	}
   else if(detail == 2)
   {
-		ellipse->Draw(detail-1);
-		line->Draw(detail-1);
+		ellipse->Draw(1);
+		line->Draw(1);
 		for(unsigned i=0; i<colLines.Size(); i++)
-			colLines[i]->Draw(detail-1);
+			colLines[i]->Draw(1);
 	}
 	else if(detail == 3)
   {
@@ -100,7 +103,8 @@ void EJunction::Draw(int detail)
   {
 		ellipse->Draw(0);
 		line->Draw(0);
-		DrawVotes();
+		ellipse->DrawVotes();
+		line->DrawVotes();							/// TODO TODO TODO Wie kann man die line votes zeichnen?
   }
   else if(detail >= 5)
   {
@@ -114,60 +118,10 @@ void EJunction::Draw(int detail)
 	}
 }
 
-/*
-**																				TODO ARI: obsolete?
-**																				Wenn draw-votes für ellipsen und lines 
-*/
-void EJunction::DrawVotes()
-{
-  VoteImage *vi = ((FormEJunctions*)(core->Principles(GestaltPrinciple::FORM_E_JUNCTIONS)))->vote_img;
-	unsigned baseIndex = ((FormEJunctions*)(core->Principles(GestaltPrinciple::FORM_E_JUNCTIONS)))->baseIndex;
-	unsigned baseOffset = ((FormEJunctions*)(core->Principles(GestaltPrinciple::FORM_E_JUNCTIONS)))->baseOffset;
-	
-  if(vi == 0)
-    return;
-  for(int x = 0; x < vi->width; x++)
-	{
-    for(int y = 0; y < vi->height; y++)
-    {
-      VoteImage::Elem *el = vi->Pixel(x, y);
-      while(el != 0)
-      {
-        if((el->id/baseIndex == ellipse->ID()+baseOffset) ||
-					 (el->id/baseIndex == line->ID()))
-        {
-          unsigned vtype = el->id%8;
-          switch(vtype)
-          {
-            case VOTE_TS:
-              DrawPoint2D(x, y, RGBColor::magenta);
-              break;
-            case VOTE_TE:
-              DrawPoint2D(x, y, RGBColor::cyan);
-              break;
-						case VOTE_EOTL:
-							DrawPoint2D(x, y, RGBColor::magenta);
-							break;
-						case VOTE_EOTR:
-							DrawPoint2D(x, y, RGBColor::magenta);
-							break;
-						case VOTE_EITL:
-							DrawPoint2D(x, y, RGBColor::cyan);
-							break;
-						case VOTE_EITR:
-							DrawPoint2D(x, y, RGBColor::cyan);
-							break;
-            default: // line itself
-							DrawPoint2D(x, y, RGBColor::white);
-              break;
-          }
-        }
-        el = el->next;
-      }
-    }
-	}
-}
-
+/**
+ * @brief Get Gestalt information.
+ * @return Returns the Gestalt information as string.
+ */
 const char* EJunction::GetInfo()
 {
   const unsigned info_size = 10000;
@@ -189,6 +143,12 @@ const char* EJunction::GetInfo()
 	return info_text;
 }
 
+/**
+ * @brief Checks, if the Gesalt is at given position.
+ * @param x x-coordinate
+ * @param y y-coordinate
+ * @return Returns true, if Gestalt is at given position.
+ */
 bool EJunction::IsAtPosition(int x, int y)
 {
   if (line->IsAtPosition(x, y) || ellipse->IsAtPosition(x, y))
@@ -196,8 +156,12 @@ bool EJunction::IsAtPosition(int x, int y)
   return false;
 }
 
+/**
+ * @brief Calculate the significance of the Gestalt.
+ */
 void EJunction::CalculateSignificance()
 {
+	// TODO implement
 }
 
 /**

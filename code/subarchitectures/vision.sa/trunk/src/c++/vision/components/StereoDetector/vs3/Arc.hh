@@ -1,22 +1,25 @@
 /**
- * $Id: Arc.hh,v 1.18 2006/11/24 13:47:03 mxz Exp mxz $
+ * @file Arc.cc
+ * @author Andreas Richtsfeld, Michael Zillich
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Header file of Gestalt Arc.
  */
 
 #ifndef Z_ARC_HH
 #define Z_ARC_HH
 
-#include "Vector2.hh"
+#include "Vector.hh"
 #include "VisionCore.hh"
 #include "Gestalt.hh"
-#include "Segment.hh"
 
 namespace Z
 {
-
 class AJunction;
+class Segment;
 
 /**
- * A circular arc.
+ * @brief Class of a circular arc.
  */
 class Arc : public Gestalt
 {
@@ -61,7 +64,7 @@ public:
   virtual void DrawInfo();
   virtual const char* GetInfo();
   virtual bool IsAtPosition(int x, int y);
-  void DrawTangents();
+  void DrawSearchLines();
   unsigned NumEdgels() {return idx[END] - idx[START] + 1;}
   double Radius() {return radius;}
   double ArcLength() {return angular_span*radius;}

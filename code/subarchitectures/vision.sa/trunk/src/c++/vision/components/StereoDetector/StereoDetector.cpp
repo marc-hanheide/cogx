@@ -16,6 +16,8 @@
 #include "StereoBase.h"
 #include "Draw.hh"
 
+#include "Mouse.cpp"
+
 
 using namespace std;
 using namespace VisionData;
@@ -33,52 +35,6 @@ extern "C" {
 
 namespace cast
 {
-	
-// Gobal variables: Can't solve this in another way
-bool mouseEvent = false;				///< Flag for mouse events
-int mouseX = 0, mouseY = 0;			///< Coordinates from mouse event
-int mouseSide = 0;							///< Left / right side of stereo
-
-/**
- * @brief Mouse handler for the two stereo images.
- * @param event Mouse event.
- * @param x x-coordinate
- * @param y y-coordinate
- * @param flags 
- * @param param 
- */
-void LeftMouseHandler(int event, int x, int y, int flags, void* param)
-{
-	switch(event){
-		case CV_EVENT_LBUTTONUP:
-			mouseEvent = true;
-			mouseX = x;
-			mouseY = y;
-			mouseSide = 0;
-			break;
-	}
-}
-
-/**
- * @brief Mouse handler for the two stereo images.
- * @param event Mouse event.
- * @param x x-coordinate
- * @param y y-coordinate
- * @param flags 
- * @param param 
- */
-void RightMouseHandler(int event, int x, int y, int flags, void* param)
-{
-	switch(event){
-		case CV_EVENT_LBUTTONUP:
-			mouseEvent = true;
-			mouseX = x;
-			mouseY = y;
-			mouseSide = 1;
-			break;
-	}
-}
-
 /**
  *	@brief Destructor of class StereoDetector
  */
@@ -523,7 +479,6 @@ void StereoDetector::receiveImages(const std::vector<Video::Image>& images)
 void StereoDetector::processImage()
 {
 	log("Process new images with runtime: %ums", runtime);
-
 	score->ClearResults();
 	GetImages();
 
@@ -678,14 +633,14 @@ void StereoDetector::ShowImages(bool convertNewIpl)
 	// stereo results (2, 3, 4)
 	if(showAllStereoMatched || showStereoMatched || showSingleStereo)
 	{
-		if(showStereoType != Z::StereoBase::UNDEF)
+		if(showStereoType != Z::StereoBase::UNDEF || showAllStereoMatched)
 			score->DrawStereoResults(showStereoType, iplImage_l, iplImage_r, showAllStereoMatched, showSingleStereo, showID, detail);
 		if(showSingleStereo) log("show single stereo match: %u", showID);
 	}
 
 	// get rectified image from stereo server
 	Video::Image image;
-	getRectImage(0, image);						// 0 = left image
+	getRectImage(0, 640, image);						// 0 = left image / 640 = width
 	IplImage *rImg;
 	rImg = convertImageToIpl(image);
 	
@@ -772,14 +727,14 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 			std::string objectID = newDataID();
 			objectIDs.push_back(objectID);
 
-			VisionData::ReasonerObjectPtr reaObj = new VisionData::ReasonerObject;																							/// TODO TODO TODO Write ReasonerObject!!!
+			VisionData::ReasonerObjectPtr reaObj = new VisionData::ReasonerObject;																	/// TODO TODO TODO Write ReasonerObject!!!
 			reaObj->obj = obj;
 			reaObj->frameNr = frameNumber;
 			addToWorkingMemory(objectID, reaObj);
 
 			cvWaitKey(20);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
 
-			log("Add new visual object to working memory: %s - %s", obj->label.c_str(), objectID.c_str());
+			debug("Add new visual object to working memory: %s - %s", obj->label.c_str(), objectID.c_str());
 		}
 	}
 	
@@ -787,7 +742,7 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 	VisionData::SDReasonerCommandPtr newFrame = new VisionData::SDReasonerCommand;
 	newFrame->cmd = VisionData::NEWFRAME;
 	addToWorkingMemory(newDataID(), newFrame);
-	log("NewFrame command sent!");
+	debug("NewFrame command sent!");																																						/// TODO wird auch gesendet, wenn Ansicht geändert wird!
 
 	frameNumber++;
 }
@@ -963,12 +918,12 @@ void StereoDetector::SingleShotMode()
 			if(showAllStereo) 
 			{
 				showAllStereo = false;
-				printf("StereoDetector: Szene: Show ALL stereo features at virtual scene: OFF\n");
+				log("Szene: Show ALL stereo features at virtual scene: OFF");
 			}
 			else
 			{ 
 				showAllStereo = true;
-				printf("StereoDetector: Szene: Show ALL stereo features at virtual scene: ON\n");
+				log("Szene: Show ALL stereo features at virtual scene: ON");
 			}
 			WriteVisualObjects();
 			break;
@@ -976,12 +931,12 @@ void StereoDetector::SingleShotMode()
 			if(showAllStereoMatched) 
 			{
 				showAllStereoMatched = false;
-				printf("StereoDetector: Stereo: Draw ALL MATCHED stereo features: OFF\n");
+				log("Stereo: Draw ALL MATCHED stereo features: OFF");
 			}
 			else
 			{ 
 				showAllStereoMatched = true;
-				printf("StereoDetector: Stereo: Draw ALL MATCHED stereo features: ON\n");
+				log("Stereo: Draw ALL MATCHED stereo features: ON");
 			}
 			if(showImages) ShowImages(true);
 			break;
@@ -989,12 +944,12 @@ void StereoDetector::SingleShotMode()
 			if(showStereoMatched) 
 			{
 				showStereoMatched = false;
-				printf("StereoDetector: Stereo: Draw MATCHED stereo features: OFF\n");
+				log("Stereo: Draw MATCHED stereo features: OFF");
 			}
 			else
 			{ 
 				showStereoMatched = true;
-				printf("StereoDetector: Stereo: Draw MATCHED stereo features: ON\n");
+				log("Stereo: Draw MATCHED stereo features: ON");
 			}
 			if(showImages) ShowImages(true);
 			break;
@@ -1002,12 +957,12 @@ void StereoDetector::SingleShotMode()
 			if(showSingleStereo)
 			{
 				showSingleStereo = false;
-				printf("StereoDetector: Stereo: Show single stereo match: OFF\n");
+				log("Stereo: Show single stereo match: OFF");
 			}
 			else
 			{
 				showSingleStereo = true;
-				printf("StereoDetector: Stereo: Show single stereo match: ON\n");
+				log("Stereo: Show single stereo match: ON");
 			}
 			ShowImages(true);
 			break;
@@ -1015,12 +970,12 @@ void StereoDetector::SingleShotMode()
 			if(showSegments)
 			{
 				showSegments = false;
-				printf("StereoDetector: Mono: Show edge segments: OFF\n");
+				log("Mono: Show edge segments: OFF");
 			}
 			else
 			{
 				showSegments = true;
-				printf("StereoDetector: Mono: Show edge segments: ON\n");
+				log("Mono: Show edge segments: ON");
 			}
 			ShowImages(true);
 			break;
@@ -1028,12 +983,12 @@ void StereoDetector::SingleShotMode()
 			if(showDetected)
 			{
 				showDetected = false;
-				printf("StereoDetector: Mono: Draw all detected features: OFF\n");
+				log("Mono: Draw all detected features: OFF");
 			}
 			else
 			{
 				showDetected = true;
-				printf("StereoDetector: Mono: Draw all detected features: ON\n");
+				log("Mono: Draw all detected features: ON");
 			}
 			ShowImages(true);
 			break;
@@ -1041,12 +996,12 @@ void StereoDetector::SingleShotMode()
 			if(showMasked)
 			{
 				showMasked = false;
-				printf("StereoDetector: Mono: Draw all MASKED features: OFF\n");
+				log("Mono: Draw all MASKED features: OFF");
 			}
 			else
 			{
 				showMasked = true;
-				printf("StereoDetector: Mono: Draw all MASKED features: ON\n");
+				log("Mono: Draw all MASKED features: ON");
 			}
 			ShowImages(true);
 			break;
@@ -1054,12 +1009,12 @@ void StereoDetector::SingleShotMode()
 			if(showSingleGestalt)
 			{
 				showSingleGestalt = false;
-				printf("StereoDetector: Mono: Show single Gestalts: OFF\n");
+				log("Mono: Show single Gestalts: OFF");
 			}
 			else
 			{
 				showSingleGestalt = true;
-				printf("StereoDetector: Mono: Show single Gestalts: ON\n");
+				log("Mono: Show single Gestalts: ON");
 			}
 			ShowImages(true);
 			break;
@@ -1067,12 +1022,12 @@ void StereoDetector::SingleShotMode()
 			if(showROIs)
 			{
 				showROIs = false;
-				printf("StereoDetector: Show ROIs: OFF\n");
+				log("Show ROIs: OFF");
 			}
 			else
 			{
 				showROIs = true;
-				printf("StereoDetector: Show ROIs: ON\n");
+				log("Show ROIs: ON");
 			}
 			ShowImages(true);
 			break;
@@ -1080,7 +1035,7 @@ void StereoDetector::SingleShotMode()
 			if(detail < 15)
 			{
 				detail++;
-				printf("StereoDetector: Increased degree of display detail to: %u\n", detail);
+				log("Increased degree of display detail to: %u", detail);
 				ShowImages(true);
 			}
 			break;
@@ -1088,7 +1043,7 @@ void StereoDetector::SingleShotMode()
 			if(detail > 0)
 			{
 				detail--;
-				printf("StereoDetector: Decreased degree of display detail to: %u\n", detail);
+				log("Decreased degree of display detail to: %u", detail);
 				ShowImages(true);
 			}
 			break;
@@ -1107,63 +1062,63 @@ void StereoDetector::SingleShotMode()
 			break;
 
 		case 'q':
-			printf("StereoDetector: Show SEGMENTS\n");
+			log("Show SEGMENTS");
 			showType = Z::Gestalt::SEGMENT;
 			showStereoType = Z::StereoBase::UNDEF;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 'w':
-			printf("StereoDetector: Show LINES\n");
+			log("Show LINES");
 			showType = Z::Gestalt::LINE;
 			showStereoType = Z::StereoBase::UNDEF;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 'e':
-			printf("StereoDetector: Show COLLINEARITIES\n");
+			log("Show COLLINEARITIES");
 			showType = Z::Gestalt::COLLINEARITY;
 			showStereoType = Z::StereoBase::UNDEF;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 'r':
-			printf("StereoDetector: Show L-JUNCTIONS\n");
+			log("Show L-JUNCTIONS");
 			showType = Z::Gestalt::L_JUNCTION;
 			showStereoType = Z::StereoBase::STEREO_LJUNCTION;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 't':
-			printf("StereoDetector: Show CLOSURES\n");
+			log("Show CLOSURES");
 			showType = Z::Gestalt::CLOSURE;
 			showStereoType = Z::StereoBase::STEREO_CLOSURE;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 'z':
-			printf("StereoDetector: Show RECTANGLES\n");
+			log("Show RECTANGLES");
 			showType = Z::Gestalt::RECTANGLE;
 			showStereoType = Z::StereoBase::STEREO_RECTANGLE;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 'u':
-			printf("StereoDetector: Show FLAPS\n");
+			log("Show FLAPS");
 			showType = Z::Gestalt::FLAP;
 			showStereoType = Z::StereoBase::STEREO_FLAP;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 'i':
-			printf("StereoDetector: Show FLAPS_ARI\n");
+			log("Show FLAPS_ARI");
 			showType = Z::Gestalt::FLAP_ARI;
 			showStereoType = Z::StereoBase::STEREO_FLAP_ARI;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 'o':
-			printf("StereoDetector: Show CUBES\n");
+			log("Show CUBES");
 			showType = Z::Gestalt::CUBE;
 			showStereoType = Z::StereoBase::STEREO_CUBE;
 			ShowImages(true);
@@ -1171,28 +1126,28 @@ void StereoDetector::SingleShotMode()
 			break;
 
 		case 'a':
-			printf("StereoDetector: Show ARCS\n");
+			log("Show ARCS");
 			showType = Z::Gestalt::ARC;
 			showStereoType = Z::StereoBase::UNDEF;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 's':
-			printf("StereoDetector: Show A-JUNCTIONS\n");
+			log("Show A-JUNCTIONS");
 			showType = Z::Gestalt::A_JUNCTION;
 			showStereoType = Z::StereoBase::UNDEF;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 'd':
-			printf("StereoDetector: Show CONVEX ARC-GROUPS\n");
+			log("Show CONVEX ARC-GROUPS");
 			showType = Z::Gestalt::CONVEX_ARC_GROUP;
 			showStereoType = Z::StereoBase::UNDEF;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 'f':
-			printf("StereoDetector: Show ELLIPSES\n");
+			log("Show ELLIPSES");
 			showType = Z::Gestalt::ELLIPSE;
 			showStereoType = Z::StereoBase::STEREO_ELLIPSE;
 			ShowImages(true);
@@ -1200,14 +1155,14 @@ void StereoDetector::SingleShotMode()
 			break;
 			
 		case 'g':
-			printf("StereoDetector: Show E-JUNCTIONS\n");
+			log("Show E-JUNCTIONS");
 			showType = Z::Gestalt::E_JUNCTION;
 			showStereoType = Z::StereoBase::UNDEF;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 'h':
-			printf("StereoDetector: Show EXT-ELLIPSES: not yet implemented\n");
+			log("Show EXT-ELLIPSES: not yet implemented");
 // 			showType = Z::Gestalt::EXTELLIPSE;
 // 			showStereoType = Z::StereoBase::UNDEF;
 // 			overlays = 204;
@@ -1215,22 +1170,22 @@ void StereoDetector::SingleShotMode()
 // 			WriteVisualObjects();
 			break;
 		case 'j':
-			printf("StereoDetector: Show CYLINDERS\n");
+			log("Show CYLINDERS");
 			showType = Z::Gestalt::CYLINDER;
 			showStereoType = Z::StereoBase::UNDEF;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 'k':
-			printf("StereoDetector: Show CONES\n");
+			log("Show CONES");
 			showType = Z::Gestalt::CONE;
 			showStereoType = Z::StereoBase::UNDEF;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
 		case 'l':
-			printf("StereoDetector: Show SPHERES\n");
-			showType = Z::Gestalt::SPHERE;
+			log("Show CIRCLES");
+			showType = Z::Gestalt::CIRCLE;
 			showStereoType = Z::StereoBase::UNDEF;
 			ShowImages(true);
 			WriteVisualObjects();
@@ -1281,7 +1236,7 @@ void StereoDetector::MouseEvent()
 	}
 
 	if (showID < 0) return;
-	log("show feature with id=%u at position (%u/%u).", showID, mouseX, mouseY);
+	debug("show feature with id=%u at position (%u/%u).", showID, mouseX, mouseY);
 	ShowImages(true);
 }
 
@@ -1438,7 +1393,7 @@ bool StereoDetector::PlausibleROI(ROIData *roiData)
 
 	// calculate scale between stereo and video server (get stereo image => TODO this needs time (do it once))
 	Video::Image image;
-	getRectImage(0, image);
+	getRectImage(0, 640, image);
 	roiData->roiScale = image_l.width / image.width;
 
 	int leftShift = image_l.width/6;		// TODO TODO TODO Besser lösen

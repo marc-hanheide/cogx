@@ -165,7 +165,7 @@ void LJunction::Recalc()
 void LJunction::Draw(int detail)
 {
 
-  if(detail >= 1)
+  if(detail >= 1 && detail < 6)
   {
 		// draw arms of junction
 		Vector2 pl = line[LEFT]->point[near_point[LEFT]];
@@ -188,7 +188,7 @@ void LJunction::Draw(int detail)
   }
 
   // draw intersection point
-  DrawPoint2D(isct.x, isct.y, RGBColor::blue);
+  DrawPoint2D(isct.x, isct.y);
 }
 
 /**

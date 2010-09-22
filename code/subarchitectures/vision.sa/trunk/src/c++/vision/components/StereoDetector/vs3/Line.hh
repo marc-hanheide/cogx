@@ -76,6 +76,7 @@ protected:
 
 public:
   virtual void Draw(int detail = 0);
+  void DrawVotes();
   virtual void DrawInfo();
   virtual const char* GetInfo();
   double Length() {return len;}																		///< Return length of line TODO stimmt?
@@ -97,7 +98,6 @@ class VisibleLine : public Line
 private:
   void CalculateSignificance();
   virtual void CalculateColors();
-  void DrawVotes();
   unsigned FindSplitIdx(const Vector2 &p);
 
 public:

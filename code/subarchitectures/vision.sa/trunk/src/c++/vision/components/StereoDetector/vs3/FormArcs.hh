@@ -23,8 +23,6 @@ public:
   int FIT_METHOD;												///< fit method
  
 private:
-  bool done;
-
   void Create();
   void Rank();
   bool EdgelsOnCircle(Array<Edgel> &edgels, unsigned i, unsigned j, unsigned k);
@@ -35,8 +33,7 @@ private:
 public:
   FormArcs(VisionCore *vc);
   virtual void Reset();
-  virtual void Operate(bool incremental);
-  virtual bool NeedsOperate() {return !done;}
+  virtual void PreOperate();
 };
  
 }

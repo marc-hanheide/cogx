@@ -188,8 +188,8 @@ void Cylinder::Draw(int detail)
 {
 	if (detail <= 2)
 	{
-		DrawLine2D(vertex[0][0].x, vertex[0][0].y, vertex[1][0].x, vertex[1][0].y, RGBColor::blue);
-		DrawLine2D(vertex[0][1].x, vertex[0][1].y, vertex[1][1].x, vertex[1][1].y, RGBColor::blue);
+		DrawLine2D(vertex[0][0].x, vertex[0][0].y, vertex[1][0].x, vertex[1][0].y);
+		DrawLine2D(vertex[0][1].x, vertex[0][1].y, vertex[1][1].x, vertex[1][1].y);
 	}
 	if (detail == 0)
   {

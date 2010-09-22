@@ -45,7 +45,7 @@ double FormParallelLineGroups::AngularResolution()
     return M_PI;  // some pointless angular resolution
 }
 
-void FormParallelLineGroups::Operate()
+void FormParallelLineGroups::PostOperate()
 {
 	StartRunTime();
   Create();

@@ -43,7 +43,7 @@ public:
   FormSegments(VisionCore *vc);
   virtual ~FormSegments();
   virtual void Reset();
-  virtual void Operate(bool incremental);
+  virtual void PreOperate();
   virtual bool NeedsOperate() {return !done;}
   virtual void SetCanny(float a, float o);
 };

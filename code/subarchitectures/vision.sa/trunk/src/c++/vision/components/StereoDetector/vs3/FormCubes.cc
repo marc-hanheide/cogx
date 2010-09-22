@@ -104,15 +104,6 @@ void FormCubes::InformNewGestalt(Gestalt::Type type, unsigned idx)
 
 
 /**
- * @brief Operate call.
- * @param incremental Operate incremental or non-incremental
- */
-void FormCubes::Operate(bool incremental)
-{
-}
-
-
-/**
  * @brief Try to create new cubes.
  * @param flap Id of flap
  */

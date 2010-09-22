@@ -115,7 +115,7 @@ void StereoLJunctions::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoLJunctions::DrawSingleMatched(int side, int id, int detail)
 {
-	ljcts[side][id].point2D.Draw(RGBColor::red);
+	ljcts[side][id].point2D.Draw();
 }
 
 /**

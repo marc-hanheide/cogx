@@ -130,9 +130,9 @@ bool Vertex2D::IsAtPosition(int x, int y) const
  * @brief Draw the surface unrectified.
  * @param col RGB color
  */
-void Vertex2D::Draw(RGBColor col)
+void Vertex2D::Draw()
 {
-	DrawPoint2D(p.x, p.y, col);
+	DrawPoint2D(p.x, p.y);
 }
 
 //----------------------------------------------------------------//
@@ -363,14 +363,14 @@ bool Surf2D::IsAtPosition(int x, int y) const
  * @brief Draw the surface unrectified.
  * @param col RGB color
  */
-void Surf2D::Draw(RGBColor col)
+void Surf2D::Draw()
 {
 	unsigned m, s = p.size();
 	for(unsigned i = 0; i < s; i++)
 	{
 		m = i+1; 
 		if(s <= m) m = 0;
-		DrawLine2D(p[i].x, p[i].y, p[m].x, p[m].y, col);
+		DrawLine2D(p[i].x, p[i].y, p[m].x, p[m].y);
 	}
 }
 

@@ -1,5 +1,9 @@
 /**
- * $Id: ConvexArcGroup.hh,v 1.14 2006/11/24 13:47:03 mxz Exp mxz $
+ * @file ConvexArcGroup.hh
+ * @author Andreas Richtsfeld, Michael Zillich
+ * @date 2006, 2010
+ * @version 0.1
+ * @brief Header file of Gestalt ConvexArcGroup.
  */
 
 #ifndef Z_CONVEX_ARC_GROUP_HH
@@ -15,6 +19,9 @@ namespace Z
 
 class Arc;
 
+/**
+ * @brief Class ConvexArcGroup
+ */
 class ConvexArcGroup : public Gestalt
 {
 public:
@@ -28,8 +35,8 @@ private:
   void CalculateSignificance();
 
 public:
-  ConvexArcGroup(VisionCore *c);
-  ConvexArcGroup(VisionCore *c, Array<Arc*> &a, unsigned l, unsigned u,
+  ConvexArcGroup(VisionCore *vc);
+  ConvexArcGroup(VisionCore *vc, Array<Arc*> &a, unsigned l, unsigned u,
       double s = -HUGE);
   virtual void Draw(int detail = 0);
   virtual const char* GetInfo();

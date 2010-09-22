@@ -55,9 +55,9 @@ void Cone::Draw(int detail)
 {
 	if(detail == 0)
 	{
-		DrawEllipse2D(ejct[0]->ellipse->x, ejct[0]->ellipse->y, ejct[0]->ellipse->a, ejct[0]->ellipse->b, ejct[0]->ellipse->phi, RGBColor::red);
-		DrawLine2D(ljct->isct.x, ljct->isct.y, ejct[0]->ellipse->vertex[LEFT].x, ejct[0]->ellipse->vertex[LEFT].y, RGBColor::red);
-		DrawLine2D(ljct->isct.x, ljct->isct.y, ejct[0]->ellipse->vertex[RIGHT].x, ejct[0]->ellipse->vertex[RIGHT].y, RGBColor::red);
+		DrawEllipse2D(ejct[0]->ellipse->x, ejct[0]->ellipse->y, ejct[0]->ellipse->a, ejct[0]->ellipse->b, ejct[0]->ellipse->phi);
+		DrawLine2D(ljct->isct.x, ljct->isct.y, ejct[0]->ellipse->vertex[LEFT].x, ejct[0]->ellipse->vertex[LEFT].y);
+		DrawLine2D(ljct->isct.x, ljct->isct.y, ejct[0]->ellipse->vertex[RIGHT].x, ejct[0]->ellipse->vertex[RIGHT].y);
 	}
 	else if(detail ==1)
 	{

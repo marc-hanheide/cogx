@@ -27,8 +27,7 @@ static int CmpEllipses(const void *a, const void *b)
  * @brief Constructor of class FormEllipses.
  */
 FormEllipses::FormEllipses(VisionCore *vc) : GestaltPrinciple(vc)
-{
-}
+{}
 
 /**
  * @brief Inform new Gestalt.
@@ -59,9 +58,11 @@ void FormEllipses::HaveNewArcGroup(unsigned idx)
 {
   double x, y, a, b, phi;
   ConvexArcGroup *group = ConvexArcGroups(core, idx);
+	
   // HACK: do we really want to reject if angular coverage smaller pi?
-  if(group->ang_cover < M_PI)
-    return;
+//   if(group->ang_cover < M_PI)
+//     return;
+
   if(FitEllipse(group->arcs, x, y, a, b, phi))
   {
     // note: in FormArcs we defined MIN_RADIUS for an arc, thus

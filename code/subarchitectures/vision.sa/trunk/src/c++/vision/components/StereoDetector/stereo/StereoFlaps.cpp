@@ -197,7 +197,7 @@ void StereoFlaps::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoFlaps::DrawSingleMatched(int side, int id, int detail)
 {
-	flaps[side][id].surf[0].Draw(RGBColor::red);
+	flaps[side][id].surf[0].Draw();
 }
 
 

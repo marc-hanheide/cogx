@@ -1,6 +1,10 @@
 /**
- * $Id: FormJunctions.cc,v 1.34 2007/04/14 20:50:59 mxz Exp mxz $
- *
+ * @file FormJunctions.cc
+ * @author Zillich, Richtsfeld
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Class file of Gestalt principle FormJunctions.
+ * 
  * TODO: remember and ignore search lines which reached the image border => do it not
  * TODO: avoid collinearity C(ac)    ----- ------ ------
  *                                     a      b      c
@@ -11,18 +15,11 @@
  *       early as possible, right after detection of search line intersection
  */
 
-#include <assert.h>
-#include "Segment.hh"
-#include "Line.hh"
-#include "LJunction.hh"
-#include "TJunction.hh"
-#include "Collinearity.hh"
-#include "Closure.hh"
 #include "FormJunctions.hh"
-// #include "HCF.hh"
 
 namespace Z
 {
+
 
 // Minimal line length. A line of 2 pixels is per definition always a line and
 // therefore totally insignificant. Any meaningful line must be at least 3
@@ -129,155 +126,18 @@ static bool NoCollinearityYet(Line *l_i, int end_i, Line *l_j)
 // ----------------------------------------------------------------------------//
 // ------------------------------ FormJunctions -------------------------------//
 // ----------------------------------------------------------------------------//
-
-VoteImage *FormJunctions::vote_img = 0;						///< Vote image for junctions
-
 /**
  * @brief Constructor of FormJunctions
  * @param vc Vision core
  */
 FormJunctions::FormJunctions(VisionCore *vc) : GestaltPrinciple(vc)
-{
-  next_principles.PushBack(FORM_CLOSURES);
-  vote_img = 0;
-  first_op = true;
-  SetupAdmissibilityMatrix();
-}
+{}
 
 /**
  * @brief Destructor of FormJunctions
  */
 FormJunctions::~FormJunctions()
-{
-  delete vote_img;
-}
-
-/**
- * @brief Setup the admissibility matrax for the vote image.
- */
-void FormJunctions::SetupAdmissibilityMatrix()
-{
-  int i, j;
-  for(i = 0; i < 8; i++)
-    for(j = 0; j < 8; j++)
-      isct_ok[i][j] = false;
-  // note: We fill out the upper right side of the matrix. It is important to
-  // keep in mind the numbers corresponding to the symbolic names.
-  // I.e. in isct_ok[i][j] i must be <= j.
-  // tangents/edge
-  isct_ok[VOTE_E][VOTE_TS] = true;
-  isct_ok[VOTE_E][VOTE_TE] = true;
-  // tangents/tangents
-  isct_ok[VOTE_TS][VOTE_TE] = true;
-  isct_ok[VOTE_TS][VOTE_TS] = true;
-  isct_ok[VOTE_TE][VOTE_TE] = true;
-  // tangents/normals
-  isct_ok[VOTE_TS][VOTE_NLS] = true;
-  isct_ok[VOTE_TS][VOTE_NLE] = true;
-  isct_ok[VOTE_TS][VOTE_NRS] = true;
-  isct_ok[VOTE_TS][VOTE_NRE] = true;
-  isct_ok[VOTE_TE][VOTE_NLS] = true;
-  isct_ok[VOTE_TE][VOTE_NLE] = true;
-  isct_ok[VOTE_TE][VOTE_NRS] = true;
-  isct_ok[VOTE_TE][VOTE_NRE] = true;
-  // now mirror along diagonal to fill lower left side of matrix
-  for(i = 0; i < 8; i++)
-    for(j = i + 1; j < 8; j++)
-      isct_ok[j][i] = isct_ok[i][j];
-}
-
-/**
- * @brief Reset FormJunctions class.
- */
-void FormJunctions::Reset()
-{
-  if(core->HaveImage())
-  {
-    if(vote_img != 0 &&
-       !(vote_img->width == core->GetImage()->width &&
-         vote_img->height == core->GetImage()->height))
-    {
-      delete vote_img;
-      vote_img = 0;
-    }
-    if(vote_img == 0)
-      vote_img = new VoteImage(core->GetImage()->width,
-          core->GetImage()->height);
-  }
-  vote_img->Clear();
-  first_op = true;
-}
-
-/**
- * @brief Create collinearities, L-junction and T-junctions.
- * If incremental, search lines grow incrementally with each call.
- * If not incremental, search lines of length l (= line length) are drawn in one
- * step and then all junctions created. Note that this can take _very_ long.
- */
-void FormJunctions::Operate(bool incremental)
-{
-	StartRunTime();
-	
-  if(incremental)
-  {
-    if(first_op)
-    {
-      // in first call just init search lines, don't create junctions
-      vote_img->SetNumLines(NumLines(core)*8);
-      for(unsigned r = 0; r < NumLines(core); r++)
-        InitSearchLines((Line*)core->RankedGestalts(Gestalt::LINE, r));
-      first_op = false;
-    }
-    else
-    {
-      // for all subsequent calls 
-      // try to be smart about growing search lines
-      if(grow_method == GROW_SMART)
-      {
-        int r = ExpSelect(NumLines(core) - 1);
-        ExtendSmartLines((Line*)core->RankedGestalts(Gestalt::LINE, r));
-      }
-      // lines grow probabilistically according to length
-      else if(grow_method == GROW_WEIGHTED)
-      {
-        int r = ExpSelect(NumLines(core) - 1);
-        ExtendSearchLines((Line*)core->RankedGestalts(Gestalt::LINE, r));
-      }
-      // all search lines grow equally, this is less "anytime-ish"
-      else if(grow_method == GROW_EQUAL)
-      {
-        for(unsigned r = 0; r < NumLines(core); r++)
-        {
-          ExtendSearchLines((Line*)core->RankedGestalts(Gestalt::LINE, r));
-        }
-      }
-    }
-  }
-  else
-  {
-    if(first_op)  // do only once
-    {
-      // note that the number of lines grows as T-jcts are formed and lines
-      // split. remember the original number of lines.
-      unsigned nlines = NumLines(core);
-      vote_img->SetNumLines(nlines*8);
-      for(unsigned r = 0; r < nlines; r++)
-      {
-        Line *l = (Line*)core->RankedGestalts(Gestalt::LINE, r);
-        int len = (int)l->Length();
-        InitSearchLines(l);
-        // draw all search lines to a length of l
-        for(int j = 0; j < len; j++)
-        {
-          ExtendSearchLines(l);
-        }
-      }
-      first_op = false;
-    }
-  }
-  
-  StopRunTime();
-}
+{}
 
 /**
  * @brief Rank junctions.
@@ -290,211 +150,34 @@ void FormJunctions::Rank()
   RankGestalts(Gestalt::LINE, CmpLines);
 }
 
-/**
- * @brief Init the search lines for the vote-image.
- * @param l Lines
- */
-void FormJunctions::InitSearchLines(Line *l)
-{
-  double len = 1000; // TODO: replace this by "until image border"
-  unsigned sline = l->ID()*8;  // search line base index for this line
-
-  // draw edge itself
-  vote_img->DrawLine(l->point[START], l->point[END],
-      /*Gestalt::LINE,*/ sline + VOTE_E);
-  // initialise tangents for growing
-  vote_img->InitLine(l->point[START], l->point[START] - len*l->dir,
-      /*Gestalt::LINE,*/ sline + VOTE_TS);
-  vote_img->InitLine(l->point[END], l->point[END] + len*l->dir,
-      /*Gestalt::LINE,*/ sline + VOTE_TE);
-  // initialise normals for growing
-  vote_img->InitLine(l->point[START],
-      l->point[START] + len*l->dir.NormalAntiClockwise(),
-      /*Gestalt::LINE,*/ sline + VOTE_NLS);
-  vote_img->InitLine(l->point[END],
-      l->point[END] + len*l->dir.NormalAntiClockwise(),
-      /*Gestalt::LINE,*/ sline + VOTE_NLE);
-  vote_img->InitLine(l->point[START],
-      l->point[START] - len*l->dir.NormalAntiClockwise(),
-      /*Gestalt::LINE,*/ sline + VOTE_NRS);
-  vote_img->InitLine(l->point[END],
-      l->point[END] - len*l->dir.NormalAntiClockwise(),
-      /*Gestalt::LINE,*/ sline + VOTE_NRE);
-}
 
 /**
- * 
- * @param l 
- */
-void FormJunctions::ExtendSearchLines(Line *l)
-{
-  // lines created by splitting have no vote lines
-  if(l->defer_vote == l)
-  {
-    unsigned sline = l->ID()*8 + VOTE_TS;
-    unsigned smax = l->ID()*8 + VOTE_NRE;
-    for(; sline <= smax; sline++)
-      if(vote_img->ExtendLine(sline, iscts) > 0)
-        CreateLineJunctions(sline, iscts);
-  }
-}
-
-/**
- * @brief
- * Be somewhat smart about extending search lines.
- * Prefer tangential search lines and open line ends, boost neighbouring lines.
- * @param l 
- */
-void FormJunctions::ExtendSmartLines(Line *l)
-{
-  // Selecting which end to extend is given by the number of junctions already
-  // present at that end: p(START)/p(END) = n(END)/n(START).
-  // Regarding T-junctions: Each T-jct at one end is accompanied by two L-jcts.
-  // Therefore reduce the count of jcts at this side by two.
-  // Furthermore add 1 to the jct count on the other end to further favour this
-  // end.
-  int n_t[2] = {(l->t_jct[START] != 0 ? 1 : 0), (l->t_jct[END] != 0 ? 1 : 0)};
-  int n_s = 1 + l->coll[START].Size() + l->l_jct[START][LEFT].Size() +
-    l->l_jct[START][RIGHT].Size() - 2*n_t[START] + n_t[END];
-  int n_e = 1 + l->coll[END].Size() + l->l_jct[END][LEFT].Size() +
-    l->l_jct[END][RIGHT].Size() - 2*n_t[END] + n_t[START];
-  int r = RandInt()%(n_s + n_e);
-  int end;
-  if(r < n_s)  // 0 .. n_s - 1
-    end = END;
-  else         // n_s .. n_s + n_e - 1
-    end = START;
-  FollowEnd(l, end, l);
-}
-
-/**
- * TODO: maybe following scheme taking into account completed Closures:
- * line itself and T-jct vote for line itself
- * completed closures (of which line is part) vote for any other line
- * L and C vote for hopping
- * P(other) : P(self) : P(hop) = n_clos : 1 + n_t : n_c + n_l + n_r
- * plus: take into accound significances: e.g. a highly significant T-jct votes
- * for tangential extension
- */
-void FormJunctions::FollowEnd(Line *line, int end, Line *stop_line)
-{
-  int n_c = line->coll[end].Size();
-  int n_l = line->l_jct[end][LEFT].Size();
-  int n_r = line->l_jct[end][RIGHT].Size();
-  int n_t = (line->t_jct[end] != 0 ? 1 : 0);
-
-  // extend line itself if no junctions at all
-  if(n_c + n_l + n_r == 0)
-  {
-    ExtendEnd(line, end);
-  }
-  else
-  {
-    // favour extension of this line if there is a T-jct
-    int n_self = 1 + n_t;
-    // note: L-jcts belonging to a T-jct do not count -> -2*n_t
-    int n_hop = n_c + n_l + n_r - 2*n_t;
-    int w = RandInt()%(n_self + n_hop);
-    if(w < n_self)
-    {
-      ExtendEnd(line, end);
-    }
-    else
-    {
-      int i = 0;
-      Line *fline = 0;
-      int fend = UNDEF_ID;
-
-      w = RandInt()%(n_c + n_l + n_r);
-      // if one of the collinearities
-      if(w < n_c)
-      {
-        i = w;
-        fline = line->coll[end][i]->OtherLine(line);
-        fend = Other(line->coll[end][i]->WhichEndIs(fline));
-      }
-      // if one of the left L-jcts
-      else if(w < n_c + n_l)
-      {
-        i = w - n_c;
-        fline = line->l_jct[end][LEFT][i]->line[RIGHT];
-        fend = Other(line->l_jct[end][LEFT][i]->near_point[RIGHT]);
-      }
-      // if on of the right L-jcts
-      else
-      {
-        i = w - n_c - n_l;
-        fline = line->l_jct[end][RIGHT][i]->line[LEFT];
-        fend = Other(line->l_jct[end][RIGHT][i]->near_point[LEFT]);
-      }
-      // avoid infinite loops
-      if(fline != stop_line)
-        FollowEnd(fline, fend, stop_line);
-      else
-      {
-        // select any line at random (ignoring rank)
-        fline = Lines(core, RandInt()%NumLines(core));
-        fend = RandInt()%2;
-        FollowEnd(fline, fend, fline);
-      } 
-    }
-  }
-}
-
-/**
- * @brief 
- * @param line 
- * @param end 
- */
-void FormJunctions::ExtendEnd(Line *line, int end)
-{
-  int r = RandInt();
-  // factor for tangent extension: equal chance for open end, favour tangents
-  // if T-junction (look for amodal completion)
-  int t = 1 + (line->t_jct[end] != 0 ? 1 : 0);
-  // factor for normal extension
-  int n = 1;
-  Line *voteline = line;
-  unsigned sline;
-
-  // lines created by splitting defer voting to their original lines
-  while(voteline->defer_vote != voteline)
-    voteline = voteline->defer_vote;
-  sline = voteline->ID()*8;
-  if(r%(t + n) < t) // tangent
-  {
-    sline += (end == START ? VOTE_TS : VOTE_TE);
-  }
-  else  // normal
-  {
-    int side = (r/(t + n))%2;  // equal chance
-    if(side == LEFT)
-      sline += (end == START ? VOTE_NLS : VOTE_NLE);
-    else
-      sline += (end == START ? VOTE_NRS : VOTE_NRE);
-  }
-  if(vote_img->ExtendLine(sline, iscts) > 0)
-    CreateLineJunctions(sline, iscts);
-}
-
-/**
+ * @brief Create new line junctions from delivered intersections.
+ * @param sline Search line id
  * sline is the search line which triggered the new intersections, it is
  * therefore a tangent or normal vote line.
- * @param sline 
- * @param iscts 
+ * @param iscts Intersection element
  */
-void FormJunctions::CreateLineJunctions(unsigned sline, Array<VoteImage::Elem> &iscts)
+void FormJunctions::CreateJunctions(unsigned sline, Array<VoteImage::Elem> iscts)
 {
+// printf("FormJunctions::CreateJunctions: Try to create junctions from intersections\n");
+	
+	unsigned baseIndex = core->VI()->GetBaseIndex();
   for(unsigned k = 0; k < iscts.Size(); k++)
   {
-    unsigned i = sline/8, vtype_i = sline%8;
-    unsigned j = iscts[k].id/8, vtype_j = iscts[k].id%8;
-    Line *line_i = Lines(core, i);
-    Line *line_j = Lines(core, j);
+    unsigned i = sline/baseIndex;
+		unsigned vtype_i = sline%baseIndex;
+    unsigned j = iscts[k].id/baseIndex;
+		unsigned vtype_j = iscts[k].id%baseIndex;
     // check if the intersection between vote line tyes is admissible
     // TODO: this admissibility check could go into VoteImage
-    if(isct_ok[vtype_i][vtype_j])
+    if(core->VI()->IsctTypeAdmissible(vtype_i, vtype_j) == 1)
     {
+// printf("FormJunctions::CreateJunctions 1: line-sline: %u-%u - vtypes: %u\n", i, sline, vtype_i);
+// printf("FormJunctions::CreateJunctions 2: line-sline: %u-%u - vtypes: %u\n", j, iscts[k].id, vtype_j);
+      Line *line_i = Lines(core, i);
+      Line *line_j = Lines(core, j);
+// printf("FormJunctions::CreateJunctions: lines: %u-%u - votes: %u-%u\n", i, j, vtype_i, vtype_j);
       // TODO: After a T-jct there can be no further T-jcts or type1
       // collinearities. -> really?
       if(vtype_j == VOTE_E)
@@ -509,6 +192,7 @@ void FormJunctions::CreateLineJunctions(unsigned sline, Array<VoteImage::Elem> &
         else
           CreateL(line_i, vtype_i, line_j, vtype_j);
       }
+// printf("FormJunctions::CreateJunctions: end\n");
       /*else if(VOTE_IS_TANGENT(vtype_i) && VOTE_IS_TANGENT(vtype_j))
         CreateL(i, vtype_i, j, vtype_j);
       else if((VOTE_IS_NORMAL(vtype_i) && VOTE_IS_TANGENT(vtype_j)) ||
@@ -519,7 +203,7 @@ void FormJunctions::CreateLineJunctions(unsigned sline, Array<VoteImage::Elem> &
 }
 
 /**
- * Creates a T-junction between lines i and j.
+ * @brief Creates a T-junction between lines i and j.
  * The extension of line i at given end meets line j. I.e. line i is the pole of
  * the T, Line j is the bar.
  * Line j is split into left and right bar and L-junctions with the pole are
@@ -531,9 +215,12 @@ void FormJunctions::CreateLineJunctions(unsigned sline, Array<VoteImage::Elem> &
  *               | i
  *
  * TODO: a line which is already pole of a T-jct can not become arm of a T-jct
+ * @param line_i First line i
+ * @param vtype_i Type of search line (vote line type)
+ * @param line_j Second line j
+ * @param vtype_j Type of search line (vote line type)
  */
-void FormJunctions::CreateT(Line *line_i, int vtype_i, Line *line_j,
-    int vtype_j)
+void FormJunctions::CreateT(Line *line_i, int vtype_i, Line *line_j, int vtype_j)
 {
   try
   {
@@ -595,14 +282,13 @@ void FormJunctions::CreateT(Line *line_i, int vtype_i, Line *line_j,
 }
 
 /**
- * 
- * @param line_i 
- * @param vtype_i 
- * @param line_j 
- * @param vtype_j 
+ * @brief Create a new L-junction
+ * @param line_i First line i
+ * @param vtype_i Type of search line (vote line type)
+ * @param line_j Second line j
+ * @param vtype_j Type of search line (vote line type)
  */
-void FormJunctions::CreateL(Line *line_i, int vtype_i, Line *line_j,
-    int vtype_j)
+void FormJunctions::CreateL(Line *line_i, int vtype_i, Line *line_j, int vtype_j)
 {
   int end_i = VOTE_END(vtype_i);
   int end_j = VOTE_END(vtype_j);
@@ -615,6 +301,8 @@ void FormJunctions::CreateL(Line *line_i, int vtype_i, Line *line_j,
   if(end_j == END)
     while(line_j->next != 0)
       line_j = line_j->next;
+
+// printf("FormJunctions::CreateL: lines: %u-%u - votes: %u-%u\n", line_i->ID(), line_j->ID(), vtype_i, vtype_j);
 
   LJunction *new_l = NewL(line_i, line_j, end_i, end_j);
 
@@ -668,14 +356,13 @@ void FormJunctions::CreateL(Line *line_i, int vtype_i, Line *line_j,
 }
 
 /**
- * 
- * @param line_i 
- * @param vtype_i 
- * @param line_j 
- * @param vtype_j 
+ * @brief Create a new collinearity junction.
+ * @param line_i First line i
+ * @param vtype_i Type of search line (vote line type)
+ * @param line_j Second line j
+ * @param vtype_j Type of search line (vote line type)
  */
-void FormJunctions::CreateC(Line *line_i, int vtype_i, Line *line_j,
-    int vtype_j)
+void FormJunctions::CreateC(Line *line_i, int vtype_i, Line *line_j, int vtype_j)
 {
   int end_i = VOTE_END(vtype_i);
   int end_j = VOTE_END(vtype_j);
@@ -732,10 +419,10 @@ void FormJunctions::CreateC(Line *line_i, int vtype_i, Line *line_j,
 
 /**
  * @brief Do some checks and if ok create collinearity.
- * @param line_i 
- * @param line_j 
- * @param end_i 
- * @param end_j 
+ * @param line_i First line i
+ * @param vtype_i Type of search line (vote line type)
+ * @param line_j Second line j
+ * @param vtype_j Type of search line (vote line type) 
  * @param inform Inform the system of new L-jct. Normally this will be true.\n
  * But not if coll. is created tue to a line split.
  * @return Collinearity
@@ -773,12 +460,12 @@ Collinearity* FormJunctions::NewCollinearity(Line *line_i, Line *line_j, int end
 }
 
 /**
- * 
- * @param line_i 
- * @param line_j 
- * @param end_i 
- * @param end_j 
- * @return 
+ * @brief Create new Gestalt L-junction.
+ * @param line_i First line i
+ * @param vtype_i Type of search line (vote line type)
+ * @param line_j Second line j
+ * @param vtype_j Type of search line (vote line type)
+ * @return L-junction
  */
 LJunction* FormJunctions::NewL(Line *line_i, Line *line_j, int end_i, int end_j)
 {
@@ -788,10 +475,10 @@ LJunction* FormJunctions::NewL(Line *line_i, Line *line_j, int end_i, int end_j)
     Vector2 inter = LineIntersection(
         line_i->point[end_i], line_i->tang[end_i],
         line_j->point[end_j], line_j->tang[end_j], &si, &sj);
-    if(NoLJunctionYet(line_i, end_i, line_j) &&
-       NoCollinearityYet(line_i, end_i, line_j))
+    if(NoLJunctionYet(line_i, end_i, line_j) && NoCollinearityYet(line_i, end_i, line_j))
     {
       LJunction *new_l = new LJunction(core, line_i, line_j, end_i, end_j, inter);
+// if(new_l->r > 40) printf("    => wide L-junction: %u - lines: %u-%u with %4.0f\n", new_l->ID(), line_i->ID(), line_j->ID(), new_l->r);
       core->NewGestalt(GestaltPrinciple::FORM_JUNCTIONS, new_l);
       return new_l;
     }
@@ -799,13 +486,14 @@ LJunction* FormJunctions::NewL(Line *line_i, Line *line_j, int end_i, int end_j)
 	catch (exception &e)
 	{
     // if tangents are parallel -> no L-jct
+		printf("FormJunctions::NewL: Unknown exception!\n");
 	}
 
   return 0;
 }
 
-/**
- * 
+/** 																// TODO Description!
+ * @brief Create new T-junction
  * @param pole 
  * @param left 
  * @param right 
@@ -817,9 +505,7 @@ LJunction* FormJunctions::NewL(Line *line_i, Line *line_j, int end_i, int end_j)
  * @param ljct_r 
  * @return 
  */
-TJunction* FormJunctions::NewT(Line *pole, Line *left, Line *right,
-    int end_p, int end_l, int end_r,
-    Collinearity *coll, LJunction *ljct_l, LJunction *ljct_r)
+TJunction* FormJunctions::NewT(Line *pole, Line *left, Line *right, int end_p, int end_l, int end_r, Collinearity *coll, LJunction *ljct_l, LJunction *ljct_r)
 {
   try
   {
@@ -844,8 +530,8 @@ TJunction* FormJunctions::NewT(Line *pole, Line *left, Line *right,
   return 0;
 }
 
-/**
- * 
+/**									/// TODO Description
+ * @brief Split a line, when T-junction appears: Create 2 L-junctions and a collinearity from T.
  * @param l 
  * @param inter 
  * @param dir 
@@ -855,9 +541,7 @@ TJunction* FormJunctions::NewT(Line *pole, Line *left, Line *right,
  * @param end_right 
  * @param c_new 
  */
-void FormJunctions::SplitLine(Line *l, const Vector2 &inter,
-    const Vector2 &dir, Line **l_left, Line **l_right,
-    int *end_left, int *end_right, Collinearity **c_new)
+void FormJunctions::SplitLine(Line *l, const Vector2 &inter, const Vector2 &dir, Line **l_left, Line **l_right, int *end_left, int *end_right, Collinearity **c_new)
 {
   Line *l_new = SplitLine(l, inter, c_new);
   if(LeftOf(dir, l->point[START] - inter))
@@ -876,8 +560,8 @@ void FormJunctions::SplitLine(Line *l, const Vector2 &inter,
   }
 }
 
-/**
- * 
+/**																					/// TODO Description
+ * @brief Split 
  * @param l 
  * @param p 
  * @param c_new 
@@ -901,11 +585,11 @@ Line* FormJunctions::SplitLine(Line *l, const Vector2 &p, Collinearity **c_new)
 }
 
 /**
- * Line l1 has been split in to l1 and l2 with a colliinearity between them.
+ * @brief Line l1 has been split in to l1 and l2 with a colliinearity between them.
  * Update all closures which l1 is part of accordingly.
- * @param l1 
- * @param l2 
- * @param coll 
+ * @param l1 Line, which is now splitted
+ * @param l2 New line
+ * @param coll New collinearty between line.
  */
 void FormJunctions::UpdateClosures(Line *l1, Line *l2, Collinearity *coll)
 {

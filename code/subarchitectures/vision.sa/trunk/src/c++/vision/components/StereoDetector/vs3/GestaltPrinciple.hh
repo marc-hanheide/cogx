@@ -11,11 +11,12 @@
 
 #include "Config.hh"
 #include "Gestalt.hh"
+#include "VoteImage.hh"
 
 namespace Z
 {
 
-class VisionCore;
+// class VisionCore;
 
 /**
  * @brief Class GestaltPrinciple
@@ -32,7 +33,7 @@ public:
     FORM_ARC_JUNCTIONS,
     FORM_CONVEX_ARC_GROUPS,
     FORM_ELLIPSES,
-    FORM_SPHERES,
+    FORM_CIRCLES,
     FORM_EXT_ELLIPSES,
     FORM_CYLINDERS,
     FORM_CONES,
@@ -123,6 +124,13 @@ public:
    * @param idx Index of Gestalt
    */
   virtual void InformNewGestalt(Gestalt::Type type, unsigned idx) {}
+
+  /**
+   * @brief Inform Gestalt principle about new lower-level Gestalts
+   * @param type Type of Gestalt
+   * @param idx Index of Gestalt
+   */
+  virtual void CreateJunctions(unsigned sline, Array<VoteImage::Elem> iscts) {}
 
   /**
    * @brief Draw Gestalt principle

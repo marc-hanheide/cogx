@@ -19,7 +19,6 @@ namespace Z
  */
 Corner::Corner(VisionCore *vc, Array<LJunction*> j, Array<Line*> l, Array<unsigned> np) : Gestalt(vc, CORNER)
 {
-printf("Corner::Corner: New corner created!\n");
 	ljcts = j;
 	lines = l;
 	near_points = np;

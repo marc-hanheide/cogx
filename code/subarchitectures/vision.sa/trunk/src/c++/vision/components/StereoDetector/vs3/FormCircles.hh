@@ -1,13 +1,13 @@
 /**
- * @file FormSpheres.cc
+ * @file FormCircles.cc
  * @author Andreas Richtsfeld
  * @date 2010
  * @version 0.1
- * @brief Header file of Gestalt-principle FormSpheres
+ * @brief Header file of Gestalt-principle FormCircles
 **/
 
-#ifndef Z_FORM_SPHERE_HH
-#define Z_FORM_SPHERE_HH
+#ifndef Z_FORM_CIRCLES_HH
+#define Z_FORM_CIRCLES_HH
 
 #include "GestaltPrinciple.hh"
 #include "VisionCore.hh"
@@ -18,7 +18,7 @@ namespace Z
 /**
  *	@brief Class of Gestalt principle FormSpheres
  */
-class FormSpheres : public GestaltPrinciple
+class FormCircles : public GestaltPrinciple
 {
 private:
 	double minRadius;
@@ -29,8 +29,7 @@ private:
 	void Create(unsigned ellID);
 
 public:
-	FormSpheres(VisionCore *vc);
-  virtual bool NeedsOperate();
+	FormCircles(VisionCore *vc);
 	virtual void PostOperate();
   virtual void InformNewGestalt(Gestalt::Type type, unsigned idx);
 

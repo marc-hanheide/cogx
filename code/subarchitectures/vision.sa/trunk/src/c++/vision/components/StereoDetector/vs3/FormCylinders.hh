@@ -39,7 +39,6 @@ private:
 
 public:
   FormCylinders(VisionCore *vc);
-//   virtual void Operate(bool incremental);
 	virtual void PostOperate();
   virtual bool NeedsOperate();
   virtual void InformNewGestalt(Gestalt::Type type, unsigned idx);

@@ -34,48 +34,40 @@ static int CmpArcs(const void *a, const void *b)
     return 1 ;  // b is first
 }
 
-FormArcs::FormArcs(VisionCore *vc)
-: GestaltPrinciple(vc)
+FormArcs::FormArcs(VisionCore *vc) : GestaltPrinciple(vc)
 {
   // RANSAC is the default method of: SPLIT, GROW, RANSAC
   core->GetConfig().AddItem("ARC_FIT_METHOD", "RANSAC");
-  done = false;
 }
 
 void FormArcs::Reset()
 {
-  done = false;
 }
 
 /**
  * We produce arcs from generic segments.
  * TODO: prepare for incremental mode!
  */
-void FormArcs::Operate(bool incremental)
+void FormArcs::PreOperate()
 {
 	StartRunTime();
-
-  // note: we only want to run this once for repeated calls to Operate()
-  if(!done)
-  {
-    if(core->GetConfig().GetValueString("ARC_FIT_METHOD") == "SPLIT")
-      FIT_METHOD = FIT_ARCS_SPLIT;
-    else if(core->GetConfig().GetValueString("ARC_FIT_METHOD") == "GROW")
-      FIT_METHOD = FIT_ARCS_GROW;
-    else if(core->GetConfig().GetValueString("ARC_FIT_METHOD") == "RANSAC")
-      FIT_METHOD = FIT_ARCS_RANSAC;
-    else
-    {
-      fprintf(stderr, "* arcs: unkown fit method: %s\n",
-          core->GetConfig().GetValueString("ARC_FIT_METHOD").c_str());
-      return;
-    }
-    Create();
-    Rank();
-    done = true;
-  }
-  
-  StopRunTime();
+	
+	if(core->GetConfig().GetValueString("ARC_FIT_METHOD") == "SPLIT")
+		FIT_METHOD = FIT_ARCS_SPLIT;
+	else if(core->GetConfig().GetValueString("ARC_FIT_METHOD") == "GROW")
+		FIT_METHOD = FIT_ARCS_GROW;
+	else if(core->GetConfig().GetValueString("ARC_FIT_METHOD") == "RANSAC")
+		FIT_METHOD = FIT_ARCS_RANSAC;
+	else
+	{
+		fprintf(stderr, "* arcs: unkown fit method: %s\n",
+				core->GetConfig().GetValueString("ARC_FIT_METHOD").c_str());
+		return;
+	}
+	Create();
+	Rank();
+	
+	StopRunTime();
 }
 
 /**

@@ -25,7 +25,7 @@ private:
   void Mask();
 
 public:
-  FormFlaps(VisionCore *core);
+  FormFlaps(VisionCore *vc);
   virtual void InformNewGestalt(Gestalt::Type type, unsigned idx);
 };
 

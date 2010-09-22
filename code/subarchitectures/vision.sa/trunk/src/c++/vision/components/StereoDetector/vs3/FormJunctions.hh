@@ -1,16 +1,16 @@
 /**
- * $Id: FormJunctions.hh,v 1.20 2007/03/25 21:35:57 mxz Exp mxz $
- */
+ * @file FormJunctions.hh
+ * @author Zillich, Richtsfeld
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Header file of Gestalt principle FormJunctions.
+ **/
 
 #ifndef Z_FORM_JUNCTIONS_HH
 #define Z_FORM_JUNCTIONS_HH
 
-#include "VoteImage.hh"
-#include "Line.hh"
 #include "LJunction.hh"
-#include "TJunction.hh"
 #include "Collinearity.hh"
-#include "GestaltPrinciple.hh"
 
 namespace Z
 {
@@ -19,17 +19,8 @@ class FormJunctions : public GestaltPrinciple
 {
 private:
   Array<VoteImage::Elem> iscts;
-  bool isct_ok[8][8];
-  bool first_op;
 
-  void SetupAdmissibilityMatrix();
   void Rank();
-  void InitSearchLines(Line *l);
-  void ExtendSearchLines(Line *l);
-  void ExtendSmartLines(Line *l);
-  void FollowEnd(Line *line, int end, Line *stop_line);
-  void ExtendEnd(Line *line, int end);
-  void CreateLineJunctions(unsigned sline, Array<VoteImage::Elem> &iscts);
   void CreateL(Line *line_i, int vtype_i, Line *line_j, int vtype_j);
   void CreateC(Line *line_i, int vtype_i, Line *line_j, int vtype_j);
   void CreateT(Line *line_i, int vtype_i, Line *line_j, int vtype_j);
@@ -47,12 +38,10 @@ private:
       Collinearity *coll, LJunction *ljct_l, LJunction *ljct_r);
 
 public:
-  static VoteImage *vote_img;
 
   FormJunctions(VisionCore *vc);
   virtual ~FormJunctions();
-  virtual void Reset();
-  virtual void Operate(bool incremental);
+  virtual void CreateJunctions(unsigned sline, Array<VoteImage::Elem> iscts);
 };
 
 }
