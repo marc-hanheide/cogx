@@ -946,6 +946,18 @@ void PointGreyServer::retrieveFrame(int camId, int width, int height, Video::Ima
 }
 
 /**
+ * @brief Retrieve frame
+ * @param camId Camera id
+ * @param width Image width
+ * @param height Image height
+ * @param frame Video frame
+ */
+void PointGreyServer::retrieveHRFrames(std::vector<Video::Image> &frames)
+{
+	printf("PointGreyServer::retrieveHRFrames: Not yet implemented!\n");
+}
+
+/**
  * @brief Get image size.
  * @param width Image width
  * @param height Image height
