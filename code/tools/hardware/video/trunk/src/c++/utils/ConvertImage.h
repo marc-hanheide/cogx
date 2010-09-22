@@ -11,8 +11,8 @@
 #include <stdexcept>
 #include <vector>
 #include <cv.h>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+#include <cv.h>
+#include <highgui.h>
 //#include <opencv/cv.h> - this is incorrect according to the pkg-config flags
 #include "Video.hpp"
 
