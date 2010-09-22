@@ -16,6 +16,7 @@ switch req
       ansQl=qnt2ql(rCpcx,Params.THRs);
       ansYes = lf2sfa(ansQl, ANSyes);
       ansPy = lf2sfa(ansQl, ANSpy);
+      disp(['Recognised: ',idx2name(ansYes,Coma.Cnames)]);
       showRec(ansYes,ansPy,rCpcx,f);
       displayTR(ansYes,ansPy,avu);
       displayG(Figs.LRguiR.main,'GR');

@@ -7,5 +7,6 @@ numSC=getc(mC,'numSC');
 for sc=1:numSC
    rslt = executeOperatorIKDEClsfr( mC{sc}, 'input_data', F, 'classifyData', 'use_unknown_model',1   ) ;         
    pcx{sc}=[[getc(mC,sc,0,'name')';0] rslt.P];
+   %rslt = executeOperatorIKDEClsfr( mC{sc}, 'input_data', F, 'calculate_gains'  )  ; 
 end
 
