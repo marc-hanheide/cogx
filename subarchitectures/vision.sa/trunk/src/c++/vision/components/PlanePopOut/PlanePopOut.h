@@ -15,6 +15,7 @@
 #include <opencv/highgui.h>
 #include "OpenSURF/surflib.h"
 
+#undef FEAT_VISUALIZATION
 
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
@@ -176,6 +177,7 @@ public:
 		para_b = 0.0;
 		para_c = 0.0;
 		para_d = 0.0;
+		previousImg = 0;
 	}
   virtual ~PlanePopOut() {}
 };
