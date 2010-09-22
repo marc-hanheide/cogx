@@ -963,6 +963,8 @@
   <entry word="researchers" macros="@s-pl-unsp @full" pos="Noun" stem="researcher-noun-n" class="person" pred="researcher"/>
   <entry word="pirate" macros="@s-sg @full" pos="Noun" stem="pirate-noun-n" class="person" pred="pirate"/>
   <entry word="pirates" macros="@s-pl-unsp @full" pos="Noun" stem="pirate-noun-n" class="person" pred="pirate"/>
+  <entry word="victim" macros="@s-sg @full" pos="Noun" stem="victim-noun-n" class="person" pred="victim"/>
+  <entry word="victims" macros="@s-pl-unsp @full" pos="Noun" stem="victim-noun-n" class="person" pred="victim"/>
   <entry word="GJ" macros="@s-sg @3rd @full" pos="Bare-np" stem="GJ-name" class="person" pred="GJ"/>
   <entry word="GJ" macros="@fin-full" pos="du" stem="GJxx-du" class="person" pred="GJ"/>
   <entry word="Trevor" macros="@s-sg @3rd @full" pos="Bare-np" stem="Trevor-name" class="person" pred="Trevor"/>

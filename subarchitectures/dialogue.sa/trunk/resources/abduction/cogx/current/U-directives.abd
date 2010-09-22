@@ -39,6 +39,18 @@ understand : event : utter(S, H, Nom) <-
 	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
 	understand : wh_query_scope(S, H, Int, SubjNom, ScopeNom).
 
+% what is the X of Y
+understand : event : utter(S, H, Nom) <-
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+	i : rel_Subject(Nom, SubjNom),
+		i : rel_Owner(SubjNom, ScopeNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : topic(S, H, EpSt, Int, SubjNom, ScopeNom),
+	understand : wh_query_scope(S, H, Int, SubjNom, SubjNom).
+
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 understand : wh_query_scope(S, H, Int, Ref, Nom) <-
@@ -69,9 +81,9 @@ understand : event : utter(S, H, Nom) <-
 % find/bring X
 understand : event : utter(S, H, Nom) <-
 	i : sort(Nom, 'action-non-motion'),
-	i : 'feat_Mood'(Nom, imp),
+%	i : 'feat_Mood'(Nom, imp),  % "could you please" is in int here
 	i : 'rel_Actor'(Nom, ActorNom),
-		i : prop(ActorNom, addressee),
+%		i : prop(ActorNom, addressee),  % TODO:
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
 	find_patient(Nom, RefNom),
@@ -90,6 +102,10 @@ nm_action_effects(S, H, RootNom, Int, Ref, bring) <-
 	int : post(Int, state(possession, 'Agent'(Recipient), 'Patient'(Ref))) / p(1.0).
 
 nm_action_effects(S, H, RootNom, Int, Ref, get) <-
+	determine_recipient(RootNom, H, S, H, Recipient),
+	int : post(Int, state(possession, 'Agent'(Recipient), 'Patient'(Ref))) / p(1.0).
+
+nm_action_effects(S, H, RootNom, Int, Ref, give) <-
 	determine_recipient(RootNom, H, S, H, Recipient),
 	int : post(Int, state(possession, 'Agent'(Recipient), 'Patient'(Ref))) / p(1.0).
 
@@ -121,9 +137,9 @@ determine_recipient(Nom, _Default, Speaker, _, Speaker) <-
 % go to X
 understand : event : utter(S, H, Nom) <-
 	i : sort(Nom, 'action-motion'),
-	i : feat_Mood(Nom, imp),
+%	i : feat_Mood(Nom, imp),
 	i : rel_Actor(Nom, ActorNom),
-		i : prop(ActorNom, addressee),
+%		i : prop(ActorNom, addressee),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
 	i : rel_Modifier(Nom, ModifNom),
@@ -142,5 +158,56 @@ m_action_effects(S, H, Int, Ref, move) <-
 
 m_action_effects(S, H, Int, Ref, turn) <-
 	int : post(Int, state('orientation-towards', 'Agent'(H), 'Location'(Ref))) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% go DIRECTION
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, 'action-motion'),
+%	i : feat_Mood(Nom, imp),
+	i : rel_Actor(Nom, ActorNom),
+%		i : prop(ActorNom, addressee),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	i : rel_Modifier(Nom, ModifNom),
+		understand : direction(ModifNom, Dir),
+	i : prop(Nom, ActionProp),
+	m_action_effects_direction(S, H, Int, Dir, ActionProp).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : direction(Nom, Dir) <-
+%	i : sort(Nom, 'm-direction'),  % m-whereto
+	i : prop(Nom, Prop),
+	valid_direction(Prop, Dir).
+
+valid_direction(forward, forward).
+valid_direction(back, back).
+valid_direction(left, left).
+valid_direction(right, right).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+m_action_effects_direction(S, H, Int, Dir, go) <-
+	int : post(Int, state(motion, 'Agent'(H), 'Direction'(Dir))) / p(1.0).  % XXX
+
+m_action_effects_direction(S, H, Int, Dir, move) <-
+	m_action_effects_direction(S, H, Int, Dir, go).
+
+m_action_effects_direction(S, H, Int, Dir, turn) <-
+	int : post(Int, state(turn, 'Agent'(H), 'Direction'(Dir))) / p(1.0).  % XXX
+
+%-------------------------------------------------------------------------
+
+% stop
+understand : event : utter(S, H, Nom) <-
+%	i : sort(Nom, 'action-motion'),
+	i : feat_Mood(Nom, imp),
+	i : prop(Nom, stop),
+%	i : rel_Actor(Nom, ActorNom),
+%		i : prop(ActorNom, addressee),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, state('stop-motion', 'Agent'(H))) / p(1.0).  % XXX
 
 %-------------------------------------------------------------------------

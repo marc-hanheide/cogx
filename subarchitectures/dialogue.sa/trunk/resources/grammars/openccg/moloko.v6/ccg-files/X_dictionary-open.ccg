@@ -75,6 +75,7 @@
   noun(student, person,)
   noun(researcher, person,)
   noun(pirate, person,)
+  noun(victim, person,)
 
   name+vocative(GJ, person,)
   name+vocative(Trevor, person,)	

@@ -68,6 +68,7 @@
     <member stem="student-noun-n" pred="student"/>
     <member stem="researcher-noun-n" pred="researcher"/>
     <member stem="pirate-noun-n" pred="pirate"/>
+    <member stem="victim-noun-n" pred="victim"/>
     <member stem="rowboat-noun-n" pred="Robot"/>
     <member stem="Borland-noun-n" pred="Borland"/>
     <member stem="dog-noun-n" pred="dog"/>
