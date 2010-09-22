@@ -325,6 +325,13 @@ void StereoServer::getRectImage(int side, int imgWidth, Video::Image& image)
   StereoCamera *stereoCam = stereoCams[res];
   ImageSet &imgSet = imgSets[res];
 
+  vector<Video::Image> images;
+  // HACK: we should actually send the list of cam ids and not just assume
+  // that the video server has precisely two cameras in the right order
+  videoServer->getScaledImages(stereoSizes[res].width, stereoSizes[res].height, images);
+  convertImageToIpl(images[side], &imgSet.colorImg[side]);
+  stereoCam->RectifyImage(imgSet.colorImg[side], imgSet.rectColorImg[side], side);
+
   convertImageFromIpl(imgSet.rectColorImg[side], image);
   initCameraParameters(image.camPars);
   image.camPars.id = side;
@@ -430,7 +437,7 @@ void StereoServer::receiveImages(const vector<Video::Image>& images)
 
 void StereoServer::runComponent()
 {
-#ifdef HAVE_GPU_STEREO
+/*#ifdef HAVE_GPU_STEREO
   // allocate the actual stereo matcher with given max disparity
   census = new CensusGPU(maxDisp);
 #endif
@@ -450,7 +457,7 @@ void StereoServer::runComponent()
 
 #ifdef HAVE_GPU_STEREO
   delete census;
-#endif
+#endif*/
 }
 
 }
