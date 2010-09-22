@@ -366,7 +366,7 @@ void SOIFilter::runComponent()
 			
 			  soi.objectTime = getCASTTime();
 			  soi.objId = objId;
-
+saveSnapshot(); // HACK
 			  log("A proto-object added ID %s",
 				  objId.c_str(), soi.updCount);
 			}
@@ -1230,7 +1230,7 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
 bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask, vector<SurfacePoint> &segPoints)
 {
   Video::Image image;
-  StereoClient::getRectImage(LEFT, 320, image);
+  StereoClient::getRectImage(LEFT, 640, image);
 
   Video::Image fullImage;
   videoServer->getImage(camId, fullImage);
