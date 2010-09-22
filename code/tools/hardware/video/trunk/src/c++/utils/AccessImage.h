@@ -6,7 +6,8 @@
 #ifndef ACCESS_IMAGE_H
 #define ACCESS_IMAGE_H
 
-#include <cv.h>
+//#include <cv.h>
+#include <opencv/cv.h>
 #include "Video.hpp"
 
 namespace Video
