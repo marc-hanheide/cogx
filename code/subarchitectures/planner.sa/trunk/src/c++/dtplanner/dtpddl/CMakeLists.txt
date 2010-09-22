@@ -58,6 +58,7 @@ planning_observation_schema.cc
 planning_state.cc
 planning_symbols.cc
 policy_iteration_over_information_state_space.cc
+policy_iteration_over_information_state_space__GMRES.cc
 probability_during_expansion__state.cc
 problem_grounding__actions.cc
 problem_grounding.cc
@@ -75,7 +76,8 @@ stl__deref_tools.cc
 stl__modifiers.cc
 stl__typed_thing.cc
 turnstyle.cc
-unsigned_integer__status_management.cc)
+unsigned_integer__status_management.cc
+gmres.cc)
 
 add_definitions(-std=c++0x -DNDEBUG -O3 -march=native -fPIC)
 
