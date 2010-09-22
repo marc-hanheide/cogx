@@ -178,6 +178,11 @@ if(BUILD_SA_VISION_SOI2ROI)
 add_subdirectory (src/c++/vision/components/SOI2ROI)
 endif(BUILD_SA_VISION_SOI2ROI)
 
+option(BUILD_SA_VISION_SHAPEDESCRIPTOR_3D "build 3D shape descriptor" NO)
+if(BUILD_SA_VISION_SHAPEDESCRIPTOR_3D)
+add_subdirectory (src/c++/vision/components/ShapeDescriptor3D)
+endif(BUILD_SA_VISION_SHAPEDESCRIPTOR_3D)
+
 if(BUILD_PYTHON_COMPONENTS)
    add_subdirectory (src/python)
 endif(BUILD_PYTHON_COMPONENTS)
