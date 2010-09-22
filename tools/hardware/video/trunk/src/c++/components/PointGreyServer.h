@@ -1,5 +1,5 @@
 /**
- * @file PointGrayServer.h
+ * @file PointGreyServer.h
  * @author Andreas Richtsfeld, Michael Zillich
  * @date Februrary 2010, Februar 2009
  * @version 0.1
@@ -139,7 +139,7 @@ private:
   virtual void retrieveFrames(const std::vector<int> &camIds, int width, int height, std::vector<Video::Image> &frames);
   virtual void retrieveFrames(int width, int height, std::vector<Video::Image> &frames);
   virtual void retrieveFrame(int camId, int width, int height, Video::Image &frame);
-	virtual void retrieveHRFrames(std::vector<Video::Image> &frames) {log("retrieveHRFrames not implemented");}
+	virtual void retrieveHRFrames(std::vector<Video::Image> &frames);
 
 public:
   PointGreyServer();
