@@ -4,6 +4,7 @@
 #include <cast/slice/CDL.ice>
 #include <SpatialProbabilities.ice>
 
+
 /**
  * Data structures representing the knowledge stored in the conceptual layer
  * and interfaces used to access that knowledge.
@@ -18,10 +19,24 @@ module ConceptualData
 		SpatialProbabilities::ProbabilityDistribution query(string queryStr);
 	};
 
-	/** State of the world obtained from other SAs. */
-	struct WorldState
+	/** Sequence of place IDs. */
+	sequence<long> PlaceIdSeq;
+
+	/** Relevant information about a coma room. */
+	struct ComaRoomInfo
 	{
-		int dummy;
+		cast::cdl::WorkingMemoryAddress wmAddress;
+    	int roomId;
+	    PlaceIdSeq containedPlaceIds;
+	};
+
+	/** Map of room IDs to room structs. */
+	dictionary<int, ComaRoomInfo> RoomSet;
+	
+	/** State of the world obtained from other SAs. */
+	class WorldState
+	{
+		RoomSet rooms;
 	};
 
 };

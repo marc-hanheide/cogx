@@ -13,11 +13,11 @@
 namespace conceptual
 {
 
-
 /**
  * @author Andrzej Pronobis
  *
- * Main query handler for the Conceptual.SA
+ * Updates the coma room structs on the coma.sa WM with
+ * information about room categories.
  */
 class ComaRoomUpdater: public cast::ManagedComponent
 {
@@ -25,13 +25,14 @@ class ComaRoomUpdater: public cast::ManagedComponent
 public:
 
 	/** Constructor. */
-	ComaRoomUpdater() {}
+	ComaRoomUpdater();
 
 	/** Destructor. */
-	virtual ~ComaRoomUpdater() {}
+	virtual ~ComaRoomUpdater();
 
 
 protected:
+
 	/** Called by the framework to configure the component. */
 	virtual void configure(const std::map<std::string,std::string> & _config);
 
@@ -47,9 +48,23 @@ protected:
 
 private:
 
+	/** World state changed, infer and then update the coma room structs. */
+	void worldStateChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+
+private:
+
+	  pthread_cond_t _worldStateChangedSignalCond;
+	  pthread_mutex_t _worldStateChangedSignalMutex;
+
+	  /** True if the world state has changed since the last time we checked. */
+	  bool _worldStateChanged;
+
+	  /** Most recent set of rooms from the world state. */
+	  ConceptualData::RoomSet _rooms;
 
 }; // class ComaRoomUpdater
-} // namespace def
+} // namespace
 
 #endif // CONCEPTUAL_COMAROOMUPDATER_H
 
