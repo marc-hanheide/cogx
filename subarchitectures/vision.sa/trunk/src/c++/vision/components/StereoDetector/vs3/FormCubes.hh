@@ -36,10 +36,9 @@ private:
 
 
 public:
-  FormCubes(VisionCore *core);
+  FormCubes(VisionCore *vc);
   virtual void Reset();
-  virtual void Operate(bool incremental);
-  virtual bool NeedsOperate();
+	virtual bool NeedsOperate();
   virtual void InformNewGestalt(Gestalt::Type type, unsigned idx);
 };
 

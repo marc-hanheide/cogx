@@ -6,11 +6,13 @@
  * @brief Header file of Gestalt-principle FormFlapsAri: Form flaps from rectangles, instead of closures.
  **/
 
-#ifndef Z_FORM_FLAP_ARI_HH
-#define Z_FORM_FLAP_ARI_HH
+#ifndef Z_FORM_FLAPS_ARI_HH
+#define Z_FORM_FLAPS_ARI_HH
 
 #include "GestaltPrinciple.hh"
 #include "Rectangle.hh"
+#include "Line.hh"
+#include "Vector.hh"
 
 namespace Z
 {
@@ -30,9 +32,7 @@ private:
   double MeanGap(Rectangle *rectangle[2], Vector2 *orderedIsctR0, Vector2 *orderedIsctR1);
 
 public:
-  FormFlapsAri(VisionCore *core);
-  virtual void Operate(bool incremental);
-  virtual bool NeedsOperate();
+  FormFlapsAri(VisionCore *vc);
   virtual void InformNewGestalt(Gestalt::Type type, unsigned idx);
 };
 

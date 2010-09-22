@@ -1,20 +1,25 @@
 /**
- * $Id: Vector2.ic,v 1.15 2006/11/24 13:47:03 mxz Exp mxz $
- *
- * Michael Zillich, 2004-3-04
- */
+ * @file Vector2.ic
+ * @author Richtsfeld Andreas, Michael Zillich
+ * @date 2004, 2010
+ * @version 0.1
+ * @brief 2D Vector functions, implemented as inline functions.
+ * 
+ * TODO Doxygen description
+ **/
 
 #ifndef VEC_VECTOR2_IC
 #define VEC_VECTOR2_IC
 
 #include <math.h>
 #include <sstream>
+#include <cstdio>
 
 namespace VEC
 {
 
 /**
- * Fast constructor e.g. for constructing large arrays of vectors.
+ * @brief Fast constructor e.g. for constructing large arrays of vectors.
  * values are uninitialised
  */
 inline Vector2::Vector2()
@@ -87,7 +92,7 @@ inline Vector2 Vector2::Normal()
 }
 
 /**
- * Clockwise (mathematically negative) rotation, i.e. rotation to the right.
+ * @brief Clockwise (mathematically negative) rotation, i.e. rotation to the right.
  * ATTENTION: For typical image co-ordinate systems with x-axis pointiing to
  * the right and y-axis pointing downwards things are reversed: clockwise
  * rotation in this case means rotation to the left.
@@ -98,7 +103,7 @@ inline Vector2 Vector2::NormalClockwise()
 }
 
 /**
- * Anti-clockwise (mathematically positive) rotation, i.e. rotation to the left.
+ * @brief Anti-clockwise (mathematically positive) rotation, i.e. rotation to the left.
  * ATTENTION: For typical image co-ordinate systems with x-axis pointiing to
  * the right and y-axis pointing downwards things are reversed: anti-clockwise
  * rotation in this case means rotation to the right.
@@ -172,7 +177,7 @@ inline double Dot(const Vector2 &a, const Vector2 &b)
 }
 
 /**
- * Vector cross product.
+ * @brief Vector cross product.
  * note: positive cross product a x b means b counterclockwise (i.e. left) to a
  */
 inline double Cross(const Vector2 &a, const Vector2 &b)
@@ -181,7 +186,7 @@ inline double Cross(const Vector2 &a, const Vector2 &b)
 }
 
 /**
- * Returns true if b is left of a.
+ * @brief Returns true if b is left of a.
  * Same as counterclockwise.
  */
 inline bool LeftOf(const Vector2 &a, const Vector2 &b)
@@ -190,7 +195,7 @@ inline bool LeftOf(const Vector2 &a, const Vector2 &b)
 }
 
 /**
- * Returns true if b is counterclockwise to a.
+ * @brief Returns true if b is counterclockwise to a.
  * Same as left of.
  */
 inline bool CounterClockwiseTo(const Vector2 &a, const Vector2 &b)
@@ -199,7 +204,7 @@ inline bool CounterClockwiseTo(const Vector2 &a, const Vector2 &b)
 }
 
 /**
- * Returns true if b is right of a.
+ * @brief Returns true if b is right of a.
  * Same as clockwise.
  */
 inline bool RightOf(const Vector2 &a, const Vector2 &b)
@@ -208,7 +213,7 @@ inline bool RightOf(const Vector2 &a, const Vector2 &b)
 }
 
 /**
- * Returns true if b is clockwise to a.
+ * @brief Returns true if b is clockwise to a.
  * Same as right of.
  */
 inline bool ClockwiseTo(const Vector2 &a, const Vector2 &b)
@@ -228,8 +233,8 @@ inline double Distance(const Vector2 &a, const Vector2 &b)
 //  return sqrt(sqr(a.x - b.x) + sqr(a.y - b.y));
 }
 
-/*
- * Calculate center of circle from 3 points.
+/**
+ * @brief Calculate center of circle from 3 points.
  * note: throws an exception if center cannot be calculated.
  */
 inline Vector2 CircleCenter(const Vector2 &pi, const Vector2 &pj, const Vector2 &pk)
@@ -243,7 +248,7 @@ inline Vector2 CircleCenter(const Vector2 &pi, const Vector2 &pj, const Vector2 
 }
 
 /**
- * Returns signed distance of point q from line defined by point p and unit
+ * @brief Returns signed distance of point q from line defined by point p and unit
  * direction vector d.
  */
 inline double DistPointToLine(const Vector2 &q, const Vector2 &p, const Vector2 &d)
@@ -269,7 +274,7 @@ inline Vector2 MidPoint(const Vector2 &a, const Vector2 &b)
 }
 
 /**
- * Print a vector to a stream: '[x y]`
+ * @brief Print a vector to a stream: '[x y]`
  */
 inline std::ostream& operator<<(std::ostream &os, const Vector2 &v)
 {
@@ -277,7 +282,7 @@ inline std::ostream& operator<<(std::ostream &os, const Vector2 &v)
 }
 
 /**
- * Read a vector from a stream.
+ * @brief Read a vector from a stream.
  * The expected format is: '[x y]', white spaces are ignored.
  */
 inline std::istream& operator>>(std::istream &is, Vector2 &v) throw (std::runtime_error)
@@ -296,7 +301,7 @@ inline std::istream& operator>>(std::istream &is, Vector2 &v) throw (std::runtim
 }
 
 /**
- * Append a vector to a string: '[x y]`
+ * @brief Append a vector to a string: '[x y]`
  * Actually You should use stringstreams instead.
  */
 inline std::string& operator<<(std::string &s, const Vector2 &v)
@@ -308,7 +313,7 @@ inline std::string& operator<<(std::string &s, const Vector2 &v)
 }
 
 /**
- * Reads a point from the BEGINNING of a string. Subsequent calls of operator<<
+ * @brief Reads a point from the BEGINNING of a string. Subsequent calls of operator<<
  * will always return the same point.
  * The expected format is: '[x y]', white spaces are ignored.
  * Actually You should use stringstreams instead.
@@ -323,31 +328,49 @@ inline const std::string& operator>>(const std::string &s, Vector2 &v)
 
 
 /**
- * Returns intersection of lines defined by point p and direction d (needs not
- * be a unit vector).
+ * @brief Returns intersection of lines defined by point p and direction d.
+ * @param p1 Point on first line
+ * @param d1 Direction of first line (unit vector!)
+ * @param p2 Point on second line
+ * @param d2 Direction of second line (unit vector!)
+ * @return Returns the intersect point.
  */
 inline Vector2 LineIntersection(const Vector2 &p1, const Vector2 &d1,
     const Vector2 &p2, const Vector2 &d2) throw (std::runtime_error)
 {
   double d = Cross(d2, d1);
-  if(d == 0.)
+//   if(d == 0.)
+// 	{
+//     printf("Vector2::LineIntersection: data: point 1: %4.2f/%4.2f with dir: %4.2f/%4.2f\n", p1.x, p1.y, d1.x, d1.y);
+//     printf("Vector2::LineIntersection: data: point 2: %4.2f/%4.2f with dir: %4.2f/%4.2f\n", p2.x, p2.y, d2.x, d2.y);
+// 	}
+  if(d == 0.)    
     throw std::runtime_error("Vector2::LineIntersection: lines do not intersect exception");
   double l = Cross(d2, p2 - p1)/d;
   return Vector2(p1.x + l*d1.x, p1.y + l*d1.y);
 }
 
 /**
- * Returns intersection of lines defined by point p and direction d (needs not
- * be a unit vector).
- * l1 and l2 contain the lengths along the lines where the intersection lies,
- * measured in lengths of d1 and d2.
- * So if You want l1 and l2 in pixels, d1 and d2 must be unit vectors.
+ * @brief Returns intersection of lines defined by point p and direction d.
+ * @param p1 Point on first line
+ * @param d1 Direction of first line (unit vector!)
+ * @param p2 Point on second line
+ * @param d2 Direction of second line (unit vector!)
+ * @param l1 and l2 contain the lengths along the lines where the intersection lies,
+ * measured in lengths of d1 and d2. So if You want l1 and l2 in pixels, d1 and d2 must be unit vectors.
+ * @param l2 see l1
+ * @return Returns the intersection point.
  */
 inline Vector2 LineIntersection(const Vector2 &p1, const Vector2 &d1,
     const Vector2 &p2, const Vector2 &d2, double *l1, double *l2) throw (std::runtime_error)
 {
   double d = Cross(d2, d1);
-  if(d == 0.)
+//   if(d == 0.)
+// 	{
+//     printf("Vector2::LineIntersection: data: point 1: %4.2f/%4.2f with dir: %4.2f/%4.2f\n", p1.x, p1.y, d1.x, d1.y);
+//     printf("Vector2::LineIntersection: data: point 2: %4.2f/%4.2f with dir: %4.2f/%4.2f\n", p2.x, p2.y, d2.x, d2.y);
+// 	}
+  if(d == 0.)    
     throw std::runtime_error("Vector2::LineIntersection: lines do not intersect exception");
   Vector2 p12 = p2 - p1;
   *l1 = Cross(d2, p12)/d;
@@ -356,10 +379,14 @@ inline Vector2 LineIntersection(const Vector2 &p1, const Vector2 &d1,
 }
 
 /**
- * Checks wheter lines a and b defined by their end points intersect.
+ * @brief Checks wheter lines a and b defined by their end points intersect.
+ * @param a1 Start point of first line.
+ * @param a2 End point of first line.
+ * @param b1 Start point of second line.
+ * @param b2 End point of second line.
+ * @return Returns true, when the lines intersect.
  */
-inline bool LinesIntersecting(const Vector2 &a1, const Vector2 &a2,
-    const Vector2 &b1, const Vector2 &b2)
+inline bool LinesIntersecting(const Vector2 &a1, const Vector2 &a2, const Vector2 &b1, const Vector2 &b2)
 {
   double l1 = 0., l2 = 0.;
   LineIntersection(a1, a2 - a1, b1, b2 - b1, &l1, &l2);

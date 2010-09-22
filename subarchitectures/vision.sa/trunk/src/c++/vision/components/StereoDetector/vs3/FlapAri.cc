@@ -125,8 +125,14 @@ bool FlapAri::IsInside(unsigned flap)
 void FlapAri::Draw(int detail)
 {
 	// show flap, based on ordered flap junctions
-  if(detail == 0 || detail == 1 || detail == 4)
+  if(detail == 0)
   {
+    for(unsigned i = 0; i < 6; i++)
+      DrawLine2D(isct[i].x, isct[i].y, isct[(i<5?i+1:0)].x, isct[(i<5?i+1:0)].y);
+		DrawLine2D( isct[0].x, isct[0].y, isct[3].x, isct[3].y);
+	}
+  else if(detail == 1 || detail == 4)
+	{
     for(unsigned i = 0; i < 6; i++)
       DrawLine2D(isct[i].x, isct[i].y, isct[(i<5?i+1:0)].x, isct[(i<5?i+1:0)].y, RGBColor::yellow);
 		DrawLine2D( isct[0].x, isct[0].y, isct[3].x, isct[3].y, RGBColor::yellow);

@@ -85,7 +85,7 @@ static bool JunctionsCoincide(unsigned rect1, unsigned rect2, unsigned line)
  * @brief Constructor FormFlaps
  * @param core Vision core
  */
-FormFlaps::FormFlaps(VisionCore *core) : GestaltPrinciple(core)
+FormFlaps::FormFlaps(VisionCore *vc) : GestaltPrinciple(vc)
 {
 }
 

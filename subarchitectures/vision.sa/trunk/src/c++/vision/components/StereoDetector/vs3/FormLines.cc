@@ -1,6 +1,11 @@
 /**
- * $Id: FormLines.cc,v 1.22 2007/02/18 18:02:48 mxz Exp mxz $
+ * @file FormLines.cc
+ * @author Zillich, Richtsfeld
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Class file of Gestalt principle FormLines.
  */
+
 #include <opencv/cv.h>
 #include "Segment.hh"
 #include "Line.hh"
@@ -22,7 +27,6 @@ FormLines::FormLines(VisionCore *vc) : GestaltPrinciple(vc)
 {
   done = false;
   next_principles.PushBack(FORM_JUNCTIONS);
-  //next_principles.PushBack(FORM_PARALLEL_LINES);
 }
 
 void FormLines::Reset()
@@ -30,19 +34,17 @@ void FormLines::Reset()
   done = false;
 }
 
-void FormLines::Operate(bool incremental)
+void FormLines::PreOperate()
 { 
-	StartRunTime();
-	
   // note: we only want to run this once for repeated calls to Operate()
   if(!done)
   {
+		StartRunTime();
     Create();
     Rank();
     done = true;
+		StopRunTime();
   }
-  
-  StopRunTime();
 }
 
 /**

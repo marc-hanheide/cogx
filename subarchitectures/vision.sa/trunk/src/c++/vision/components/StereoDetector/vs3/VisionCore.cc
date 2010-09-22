@@ -21,7 +21,7 @@
 //#include "FormParallelLineGroups.hh"
 #include "FormConvexArcGroups.hh"
 #include "FormEllipses.hh"
-#include "FormSpheres.hh"
+#include "FormCircles.hh"
 #include "FormJunctions.hh"
 #include "FormCorners.hh"
 #include "FormArcJunctions.hh"
@@ -67,6 +67,7 @@ VisionCore::VisionCore(const string &config_name)
 {
   InitMath();
   img = 0;
+	vote_img = 0;
   p_e = 0.;
   p_ee = 0.;
   roi_center = Vector2(0., 0.);
@@ -97,25 +98,26 @@ void VisionCore::InitGestaltPrinciples()
     principles[i] = 0;
 
 	principles[GestaltPrinciple::FORM_SEGMENTS] = new FormSegments(this);
-
-  principles[GestaltPrinciple::FORM_E_JUNCTIONS] = new FormEJunctions(this);
+  principles[GestaltPrinciple::FORM_LINES] = new FormLines(this);
 	principles[GestaltPrinciple::FORM_ARCS] = new FormArcs(this);
+
   principles[GestaltPrinciple::FORM_CONVEX_ARC_GROUPS] = new FormConvexArcGroups(this);
   principles[GestaltPrinciple::FORM_ARC_JUNCTIONS] = new FormArcJunctions(this);
   principles[GestaltPrinciple::FORM_ELLIPSES] = new FormEllipses(this);
-	principles[GestaltPrinciple::FORM_SPHERES] = new FormSpheres(this);
-// 	principles[GestaltPrinciple::FORM_EXT_ELLIPSES] = new FormExtEllipses(this);
-	principles[GestaltPrinciple::FORM_CYLINDERS] = new FormCylinders(this);
-	principles[GestaltPrinciple::FORM_CONES] = new FormCones(this);
+  principles[GestaltPrinciple::FORM_E_JUNCTIONS] = new FormEJunctions(this);
+//  principles[GestaltPrinciple::FORM_EXT_ELLIPSES] = new FormExtEllipses(this);
+  principles[GestaltPrinciple::FORM_CYLINDERS] = new FormCylinders(this);
+  principles[GestaltPrinciple::FORM_CONES] = new FormCones(this);
+  principles[GestaltPrinciple::FORM_CIRCLES] = new FormCircles(this);
 
-  principles[GestaltPrinciple::FORM_LINES] = new FormLines(this);
-	principles[GestaltPrinciple::FORM_JUNCTIONS] = new FormJunctions(this);
-	principles[GestaltPrinciple::FORM_CORNERS] = new FormCorners(this);
+  principles[GestaltPrinciple::FORM_JUNCTIONS] = new FormJunctions(this);
+  principles[GestaltPrinciple::FORM_CORNERS] = new FormCorners(this);
   principles[GestaltPrinciple::FORM_CLOSURES] = new FormClosures(this);
   principles[GestaltPrinciple::FORM_RECTANGLES] = new FormRectangles(this);
   principles[GestaltPrinciple::FORM_FLAPS] = new FormFlaps(this);
   principles[GestaltPrinciple::FORM_FLAPS_ARI] = new FormFlapsAri(this);
   principles[GestaltPrinciple::FORM_CUBES] = new FormCubes(this);
+
   for(unsigned i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
     config.AddItem(GestaltPrinciple::TypeName((GestaltPrinciple::Type)i), "0");
 }
@@ -173,6 +175,7 @@ void VisionCore::ClearGestalts()
     gestalts[i].Clear();
     ranked_gestalts[i].Clear();
   }
+	if (vote_img != 0) vote_img->Clear();
 }
 
 /**
@@ -189,11 +192,12 @@ void VisionCore::NewImage(const IplImage *new_img)
       principles[i]->Reset();
       principles[i]->ResetRunTime();
     }
+  vote_img = new VoteImage(this, img->width, img->height);
 }
 
 /**
- * @brief Process the current image incrementally for a given amount of time.
- * @param runtime_ms  amount of time to run, in microseconds.
+ * @brief Process the current image incrementally for a given processing time.
+ * @param runtime_ms  Processing time for incremental part, in microseconds.
  * @param ca Canny alpha value
  * @param co Canny omega value
  * TODO try-catch hier weg und nur mehr exception werfen
@@ -202,42 +206,41 @@ void VisionCore::NewImage(const IplImage *new_img)
 void VisionCore::ProcessImage(int runtime_ms, float ca, float co) //throw Except() TODO
 {
   // set parameter for canny edge detector
-  Principles(GestaltPrinciple::FORM_SEGMENTS)->SetCanny(ca, co);			// TODO only for Matas Canny!!!
+  Principles(GestaltPrinciple::FORM_SEGMENTS)->SetCanny(ca, co);
 
   struct timespec start, cur;
   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
   try
   {
-		
-		// pre-operate
+		// ----------------------------- //
+		// -------- pre-operate -------- //
+		// ----------------------------- //
 		for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
 			if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i))
 				principles[i]->PreOperate();
 
-// printf("VisionCore::ProcessImage: after pre-operate.\n");
-
-		// incremental operations
-    do
+		// ------------------------------------------------------------- //
+		// -------- incremental processing: extend search lines -------- //
+		// ------------------------------------------------------------- //
+printf("VisionCore::ProcessImage: start incremental processing!\n");
+		vote_img->Initialize();			// initialize vote image after creating arcs and lines!
+		do // start
     {
-      for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
-      {
-        if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i) && principles[i]->NeedsOperate())
-        {
-// printf("VisionCore::ProcessImage: principle[%u]->Operate()\n", i);
-          principles[i]->Operate(true);
-        }
-      }
+			Array<VoteImage::Elem> iscts;
+			unsigned sline;
+			for(unsigned i=0; i<=100; i++)
+				if(vote_img->Extend(sline, iscts))
+					InformNewIntersection(sline, iscts);
       clock_gettime(CLOCK_THREAD_CPUTIME_ID, &cur);
     } while(timespec_diff(&cur, &start) < (double)runtime_ms/1000.);
+printf("VisionCore::ProcessImage: stop incremental processing after: %4.2f\n", timespec_diff(&cur, &start));
 
-// printf("VisionCore::ProcessImage: after operate.\n");
-
-		// post-operate
+		// ------------------------------ //
+		// -------- post-operate -------- //
+		// ------------------------------ //
 		for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
 			if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i))
 				principles[i]->PostOperate();
-
-// printf("VisionCore::ProcessImage: after post-operate.\n");
   }
 	catch (exception &e)
   {
@@ -358,7 +361,6 @@ const char* VisionCore::GetInfo(Gestalt::Type type, int id)
 	const char* text = (Gestalts(type, id))->GetInfo();
 	return text;
 }
-
 
 /**
  * @brief Get the name of a Gestalt type.  
@@ -486,8 +488,8 @@ void VisionCore::InformNewGestalt(Gestalt::Type type, unsigned id)
 		case Gestalt::ELLIPSE:
       if(VisionCore::config.GetValueInt("FORM_E_JUNCTIONS") == 1)
         Principles(GestaltPrinciple::FORM_E_JUNCTIONS)->InformNewGestalt(type, id);   
-			if(VisionCore::config.GetValueInt("FORM_SPHERES") == 1)
-        Principles(GestaltPrinciple::FORM_SPHERES)->InformNewGestalt(type, id);
+			if(VisionCore::config.GetValueInt("FORM_CIRCLES") == 1)
+        Principles(GestaltPrinciple::FORM_CIRCLES)->InformNewGestalt(type, id);
       break;
 		case Gestalt::E_JUNCTION:
       if(VisionCore::config.GetValueInt("FORM_CYLINDERS") == 1)
@@ -525,6 +527,21 @@ void VisionCore::InformNewGestalt(Gestalt::Type type, unsigned id)
     default:
       break;
   }
+}
+
+/**
+ * @brief Inform Gestalt principles about new intersection, found in the vote image
+ * @param sline Number of search line
+ * @param iscts Found intersections
+ */
+void VisionCore::InformNewIntersection(unsigned sline, Array<VoteImage::Elem> iscts)
+{
+	if(VisionCore::config.GetValueInt("FORM_JUNCTIONS") == 1)
+		Principles(GestaltPrinciple::FORM_JUNCTIONS)->CreateJunctions(sline, iscts);
+	if(VisionCore::config.GetValueInt("FORM_ARC_JUNCTIONS") == 1)
+		Principles(GestaltPrinciple::FORM_ARC_JUNCTIONS)->CreateJunctions(sline, iscts);
+	if(VisionCore::config.GetValueInt("FORM_E_JUNCTIONS") == 1)
+		Principles(GestaltPrinciple::FORM_E_JUNCTIONS)->CreateJunctions(sline, iscts);
 }
 
 /**

@@ -25,6 +25,7 @@
 #include "Vector.hh"
 #include "Gestalt.hh"
 #include "GestaltPrinciple.hh"
+#include "VoteImage.hh"
 
 namespace Z
 {
@@ -39,6 +40,8 @@ private:
   Config config;																								///< configuration of the perceptual grouping
   const IplImage *img;																					///< iplImage
   double realRuntime;																						///< Estimated runtime
+	VoteImage *vote_img;																					///< Vote image for all Gestalt principles.
+
 
   GestaltPrinciple* principles[GestaltPrinciple::MAX_TYPE];			///< principle list 
   Array<Gestalt*> gestalts[Gestalt::MAX_TYPE];									///< gestalt list 
@@ -92,6 +95,7 @@ public:
   void SetROI(const Vector2 center, double sigma);
   void NewGestalt(GestaltPrinciple::Type type, Z::Gestalt* g, bool inform = true);
   void InformNewGestalt(Gestalt::Type type, unsigned id);
+  void InformNewIntersection(unsigned sline, Array<VoteImage::Elem> iscts);
 
   unsigned IW() {return img->width;}																															///< Returns the width of the image in pixel (unsigned).
   unsigned IH() {return img->height;}																															///< Returns the height of the image in pixel (integer).
@@ -102,6 +106,7 @@ public:
   Gestalt* RankedGestalts(Gestalt::Type type, unsigned id) {return ranked_gestalts[type][id];}		///< Returns ranked Gestat of "type" and "id"
   unsigned NumGestalts(Gestalt::Type type) {return gestalts[type].Size();}												///< Ruturns number of Gestalts of "type"
   GestaltPrinciple* Principles(GestaltPrinciple::Type type) {return principles[type];}						///< Returns Gestalt principle of "type"
+	VoteImage* VI() {return vote_img;}
 };
 
 }

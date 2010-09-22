@@ -1,5 +1,9 @@
 /**
- * $Id: ConvexArcGroup.cc,v 1.18 2006/11/24 13:47:03 mxz Exp mxz $
+ * @file ConvexArcGroup.cc
+ * @author Andreas Richtsfeld, Michael Zillich
+ * @date 2006, 2010
+ * @version 0.1
+ * @brief Class file of Gestalt ConvexArcGroup.
  */
 
 #include <cstdio>
@@ -11,6 +15,14 @@
 namespace Z
 {
 
+/**
+ * @brief Calculate
+ * @param arcs Array of arcs
+ * @param l
+ * @param u
+ * @param p
+ * @return Returns true, if ... TODO
+ */
 static bool Inside(Array<Arc*> &arcs, unsigned l, unsigned u, Vector2 &p)
 {
   for(unsigned i = l; i <= u; i++)
@@ -19,14 +31,23 @@ static bool Inside(Array<Arc*> &arcs, unsigned l, unsigned u, Vector2 &p)
   return true;
 }
 
-ConvexArcGroup::ConvexArcGroup(VisionCore *c)
-  : Gestalt(c, CONVEX_ARC_GROUP)
-{
-}
+/**
+ * @brief Constructor of class ConvexArcGroup.
+ * @param c Vision core
+ */
+ConvexArcGroup::ConvexArcGroup(VisionCore *vc) : Gestalt(vc, CONVEX_ARC_GROUP)
+{}
 
-ConvexArcGroup::ConvexArcGroup(VisionCore *c, Array<Arc*> &a, unsigned l,
-    unsigned u, double s)
-  : Gestalt(c, CONVEX_ARC_GROUP)
+/**
+ * @brief Constructor of class ConvexArcGroup.
+ * @param c Vision core
+ * @param a Arcs array
+ * @param l 
+ * @param u
+ * @param s TODO
+ */
+ConvexArcGroup::ConvexArcGroup(VisionCore *vc, Array<Arc*> &a, unsigned l, unsigned u, double s)
+  : Gestalt(vc, CONVEX_ARC_GROUP)
 {
   if(u >= l)
   {
@@ -49,7 +70,11 @@ ConvexArcGroup::ConvexArcGroup(VisionCore *c, Array<Arc*> &a, unsigned l,
     CalculateSignificance();
 }
 
-static Vector2 cmp_mean;
+
+/**
+ * @brief Compare the centers of the convex arc group
+ */
+static Vector2 cmp_mean;																/// TODO Static variable neccessary?
 static int CmpCenters(const void *a, const void *b)
 {
   if(Distance(cmp_mean, *((Vector2*)a)) < Distance(cmp_mean, *((Vector2*)b)))
@@ -59,7 +84,7 @@ static int CmpCenters(const void *a, const void *b)
 }
 
 /**
- * Draw the convex arc group.
+ * @brief Draw the convex arc group.
  * If detail >= 1 also draw stuff of the forming gestalt principle.
  */
 void ConvexArcGroup::Draw(int detail)
@@ -90,6 +115,7 @@ void ConvexArcGroup::Draw(int detail)
       {
         j = (i + n/3)%n;
         k = (i + (2*n)/3)%n;
+        if(i==j || j==k || k==i) break; // not the same lines
         weight[i] = 1.;
         m1 = MidPoint(p[i], p[j]);
         t1 = LineIntersection(p[i], t[i], p[j], t[j]);
@@ -111,8 +137,8 @@ void ConvexArcGroup::Draw(int detail)
       }
       catch (exception &e)
       {
-        printf("ConvexArcGroup::Draw: unknown exception during processing of images.\n");
-        cout << e.what() << endl;
+//         printf("ConvexArcGroup::Draw: Exception during processing.\n");
+//         cout << e.what() << endl;
       }
     }
     if(sum_weight > 0.)
@@ -146,15 +172,12 @@ void ConvexArcGroup::Draw(int detail)
   }
 }
 
+/**
+ * @brief Get information about the convex arc group as string.
+ * @return Returns information about the convex arc group as string.
+ */
 const char* ConvexArcGroup::GetInfo()
 {
-	//   int n=0;
-//   n += snprintf(info_text, info_size, "%s\nellipse: %u\nextLines: ",
-//     Gestalt::GetInfo(), ellipse);
-
-
-	
-	
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
 	int n = 0;
@@ -171,6 +194,12 @@ const char* ConvexArcGroup::GetInfo()
   return info_text;
 }
 
+/**
+ * @brief Check, if Gestalt is at position x,y
+ * @param x x-coordinate in pixel
+ * @param y y-coordinate in pixel
+ * @return Returns true, if Gestalt is at position x,y
+ */
 bool ConvexArcGroup::IsAtPosition(int x, int y)
 {
   for(unsigned i = 0; i < arcs.Size(); i++)
@@ -179,15 +208,20 @@ bool ConvexArcGroup::IsAtPosition(int x, int y)
   return false;
 }
 
+/**
+ * @brief Check, if convex arc group already contains the arc.
+ * @return Returns true, if ConvexArcGroup contains already the arc.
+ */
 bool ConvexArcGroup::HasArc(Arc *arc)
 {
   return arcs.Contains(arc);
 }
 
 /**
- * Returns true if the group is still convex when the given arc is added.
+ * @brief Returns true if the group is still convex when the given arc is added.
  * TODO: When appending an arc it is sufficient to check for convecity with the
  * first arc of the group. When prepending, with the last arc of the group.
+ * @param arc Arc
  */
 bool ConvexArcGroup::StillConvex(Arc *arc)
 {
@@ -197,12 +231,16 @@ bool ConvexArcGroup::StillConvex(Arc *arc)
   return true;
 }
 
+/**
+ * @brief Calculate significance of the Gestalt.
+ */
 void ConvexArcGroup::CalculateSignificance()
 {
   sig = ArcGroupSignificance(core, arcs, 0, arcs.Size() - 1);
 }
 
 /**
+ * @brief Calculate arc group significance.
  * TODO: significance of a single arc should be > 0. if arc coverage is large
  * enough
  */
@@ -283,6 +321,11 @@ double ArcGroupSignificance(VisionCore *core, Array<Arc*> &arcs, unsigned l, uns
     return 0.;
 }
 
+/**
+ * @brief Get information about the convex arc group as string.
+ * @param arcs Array of arc group arcs
+ * @return Returns the gap, between the arcs in pixel.
+ */
 double ArcGroupClosedness(Array<Arc*> &arcs)
 {
   unsigned i, j;
@@ -297,9 +340,11 @@ double ArcGroupClosedness(Array<Arc*> &arcs)
 }
 
 /**
- * Calculates the angular coverage (= total angular span) of a group of arcs.
+ * @brief Calculates the angular coverage (= total angular span) of a group of arcs.
  * The angular span is just two pi minus the largest gap in the group of arcs.
  * Arcs must be sorted in ascending start angle order.
+ * @param arcs Array of arc group arcs
+ * @return Returns the coverage in pixel.
  */
 double ArcGroupAngularCoverage(Array<Arc*> &arcs)
 {
@@ -307,8 +352,10 @@ double ArcGroupAngularCoverage(Array<Arc*> &arcs)
 }
 
 /**
- * Calculates the largest angular gap in the group of arcs.
+ * @brief Calculates the largest angular gap in the group of arcs.
  * Arcs must be sorted in ascending start angle order.
+ * @param arcs Array of arc group arcs
+ * @return Returns the angular gap.
  */
 double ArcGroupLargestAngularGap(Array<Arc*> &arcs)
 {
@@ -347,12 +394,23 @@ double ArcGroupLargestAngularGap(Array<Arc*> &arcs)
   }
 }
 
+/**
+ * @brief Calculate arc group area
+ * TODO Not yet implemented
+ * @param arcs Array of arc group arcs
+ * @return Returns the area of the arc group.
+ */
 double ArcGroupArea(Array<Arc*> &arcs)
 {
-  // TODO: continue
+	printf("ConvexArcGroup: ArcGroupArea: Not yet implemented!\n");
   return 0.;
 }
 
+/**
+ * @brief Calculate the group gap area ratio.
+ * @param arcs Array of arc group arcs
+ * @return Returns the arc group gap area ratio.
+ */
 double ArcGroupGapAreaRatio(Array<Arc*> &arcs)
 {
   unsigned i, j;

@@ -55,12 +55,6 @@ void FormExtEllipses::InformNewGestalt(Gestalt::Type type, unsigned idx)
   StopRunTime();
 }
 
-/**
- * @brief Call
- */
-void FormExtEllipses::Operate(bool incremental)
-{
-}
 
 /**
  * @brief NewEJunction

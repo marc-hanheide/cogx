@@ -9,7 +9,6 @@
 #ifndef Z_FORM_E_JUNCTIONS_HH
 #define Z_FORM_E_JUNCTIONS_HH
 
-#include "VoteImage.hh"
 #include "Line.hh"
 #include "Ellipse.hh"
 #include "EJunction.hh"
@@ -26,38 +25,30 @@ class FormEJunctions : public GestaltPrinciple
 {
 private:
   Array<VoteImage::Elem> iscts;
-  bool isct_ok[8][8];
-  bool first_op;
-
-  void SetupAdmissibilityMatrix();
-  bool SetNumLines();
-  bool IsctTypeAdmissible(int type_i, int type_j) {return isct_ok[type_i][type_j];}
-  void CreateJunctions(unsigned sline, Array<VoteImage::Elem> &iscts);
+	bool init;
+	Array<Gestalt::Type> typ;
+	Array<unsigned> id;
+	bool initialized;
 	
 	void PrintCreateJunctions(unsigned sline, Array<VoteImage::Elem> &iscts);		/// TODO only for debugging
-	
-  void OperateIncremental();
-  void OperateNonIncremental();
-  void InitLineSearchLines(Line *line);
-  void InitEllipseSearchLines(Ellipse *ell);
-	void ExtendSmartLines(Gestalt::Type type, unsigned idx);
-  void ExtendSearchLines(Line *line);
-  void ExtendSearchLines(Ellipse *ell);
 	bool NoEJunctionYet(Line *line, Ellipse *ellipse);
 	void Mask();
+	void CreateJunction(unsigned sline, VoteImage::Elem &isct);
 
 public:
-	unsigned baseIndex;			///< Number of different search lines (from vote image)
-	unsigned baseOffset;		///< Offset for ellipse search lines (= number of unsplitted lines)
-  VoteImage *vote_img;		///< Vote image for forming junctions between ellipses and lines
+//	unsigned baseIndex;			///< Number of different search lines (from vote image)
+//	unsigned baseOffset;		///< Offset for ellipse search lines (= number of unsplitted lines)
+//  VoteImage *vote_img;		///< Vote image for forming junctions between ellipses and lines
 
   FormEJunctions(VisionCore *vc);
   virtual ~FormEJunctions();
 	virtual void InformNewGestalt(Gestalt::Type type, unsigned idx);
+	void Initialize();
   virtual void Reset();
-  virtual void Operate(bool incremental);
   virtual void PostOperate();
-  void UpdateEJunctions(unsigned idx);
+	virtual void CreateJunctions(unsigned sline, Array<VoteImage::Elem> iscts);
+
+	void UpdateEJunctions(unsigned idx);
 };
 
 }

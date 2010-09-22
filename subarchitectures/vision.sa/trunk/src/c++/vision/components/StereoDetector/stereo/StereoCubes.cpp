@@ -190,9 +190,9 @@ void StereoCubes::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoCubes::DrawSingleMatched(int side, int id, int detail)
 {
-	cubes[side][id].surf[0].Draw(RGBColor::red);
-	cubes[side][id].surf[1].Draw(RGBColor::red);
-	cubes[side][id].surf[2].Draw(RGBColor::red);
+	cubes[side][id].surf[0].Draw();
+	cubes[side][id].surf[1].Draw();
+	cubes[side][id].surf[2].Draw();
 }
 
 

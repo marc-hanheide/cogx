@@ -44,9 +44,6 @@ static int CmpSegments(const void *a, const void *b)
 FormSegments::FormSegments(VisionCore *vc) : GestaltPrinciple(vc)
 {
   done = false;
-
-//  next_principles.PushBack(FORM_LINES);																							/// TODO TODO Was machen diese Sachen hier?
-//  next_principles.PushBack(FORM_ARCS);
 }
 
 /**
@@ -95,22 +92,19 @@ void FormSegments::Reset()
  * all edge segments in a segment array.
  * @param incremental Calculate the segments incremental.
  */
-void FormSegments::Operate(bool incremental)
+void FormSegments::PreOperate()
 {
-	StartRunTime();
-	
-  // note: we only want to run this once for repeated calls to Operate()
   if(!done)
   {
+    StartRunTime();
     Create();
     Rank();
     unsigned n = core->NumGestalts(Gestalt::SEGMENT);
     for(unsigned i = 0; i < n; i++)
       DrawToEdgeImage((Segment*)core->Gestalts(Gestalt::SEGMENT, i));
     done = true;
+    StopRunTime();
   }
-  
-  StopRunTime();
 }
 
 /**

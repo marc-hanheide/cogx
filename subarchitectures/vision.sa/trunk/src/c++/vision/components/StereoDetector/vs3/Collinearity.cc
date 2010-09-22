@@ -1,5 +1,9 @@
 /**
- * $Id: Collinearity.cc,v 1.19 2007/04/14 20:50:59 mxz Exp mxz $
+ * @file Collinearity.hh
+ * @author Andreas Richtsfeld, Michael Zillich
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief The vote image controls the extension of search lines.
  */
 
 #include "Draw.hh"
@@ -12,10 +16,15 @@ namespace Z
 {
 
 /**
- * TODO: use one function recalc()
+ * @brief Constructor of Gestalt class Collinearity
+ * @param vc Vision core
+ * @param line_i First line of collinearity
+ * @param line_j Second line of collinearity
+ * @param end_i Line end of first line
+ * @param end_j Line end of second line
  */
-Collinearity::Collinearity(VisionCore *c, Line *line_i, Line *line_j, int end_i, int end_j)
-  : Gestalt(c, COLLINEARITY)
+Collinearity::Collinearity(VisionCore *vc, Line *line_i, Line *line_j, int end_i, int end_j)
+  : Gestalt(vc, COLLINEARITY)
 {
   // line 0 is to be the longer, line 1 the shorter line
   if(line_i->Length() >= line_j->Length())
@@ -32,16 +41,20 @@ Collinearity::Collinearity(VisionCore *c, Line *line_i, Line *line_j, int end_i,
     near_point[0] = end_j;
     near_point[1] = end_i;
   }
-  line[0]->AddCollinearity(near_point[0], this);
+  line[0]->AddCollinearity(near_point[0], this);											// After recalculation is this value maybe false!
   line[1]->AddCollinearity(near_point[1], this);
-  gap = max(1., Distance(line[0]->point[near_point[0]],
-        line[1]->point[near_point[1]]));
-  vertex = (line[0]->point[near_point[0]] + line[1]->point[near_point[1]])/2.;
-  CorrectGap();
-  CalculateColors();
-  CalculateSignificance();
+	
+	Recalc();
+//   gap = max(1., Distance(line[0]->point[near_point[0]], line[1]->point[near_point[1]]));
+//   vertex = (line[0]->point[near_point[0]] + line[1]->point[near_point[1]])/2.;
+//   CorrectGap();
+//   CalculateColors();
+//   CalculateSignificance();
 }
 
+/**
+ * @brief Recalculate the col-properties after line splitting.
+ */
 void Collinearity::Recalc()
 {
   // line 0 is to be the longer, line 1 the shorter line
@@ -50,14 +63,17 @@ void Collinearity::Recalc()
     Swap(line[0], line[1]);
     Swap(near_point[0], near_point[1]);
   }
-  gap = max(1., Distance(line[0]->point[near_point[0]],
-        line[1]->point[near_point[1]]));
+  gap = max(1., Distance(line[0]->point[near_point[0]], line[1]->point[near_point[1]]));
   vertex = (line[0]->point[near_point[0]] + line[1]->point[near_point[1]])/2.;
   CorrectGap();
   CalculateColors();
   CalculateSignificance();
 }
 
+/**
+ * @brief Draw Gestalt.
+ * @param detail Degree of detail.
+ */
 void Collinearity::Draw(int detail)
 {
   Vector2 p[2];
@@ -73,10 +89,14 @@ void Collinearity::Draw(int detail)
   }
   for(unsigned i = 0; i <= 1; i++)
     p[i] = line[i]->point[near_point[i]];
-  DrawLine2D(p[0].x, p[0].y, p[1].x, p[1].y, RGBColor::dark_yellow);
-  DrawPoint2D(vertex.x, vertex.y, RGBColor::blue);
+	
+  DrawLine2D(p[0].x, p[0].y, p[1].x, p[1].y);
+  DrawPoint2D(vertex.x, vertex.y);
 }
 
+/**
+ * @brief Draw some information about the Gestalt.
+ */
 void Collinearity::DrawInfo()
 {
   char str[100];
@@ -110,16 +130,26 @@ void Collinearity::DrawInfo()
   DrawText2D(str, 0.55, 0.6, RGBColor::green);
 }
 
+/**
+ * @brief Get information about the Gestalt as string.
+ * @return Returns information about the Gestalt as string.
+ */
 const char* Collinearity::GetInfo()
 {
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
   snprintf(info_text, info_size,
-      "%slines: %u %u\ngap: %f (corrected %f)\ncol dist: %f\n",
+      "%s  lines: %u %u\n  gap: %f (corrected %f)\n  col dist: %f",
       Gestalt::GetInfo(), line[0]->ID(), line[1]->ID(), gap, gap_cor, col_dist);
   return info_text;
 }
 
+/**
+ * @brief Checks, if Gestalt is at this position.
+ * @param x x-coordinate
+ * @param y y-coordinate
+ * @return Returns true, if Gestalt is at this position.
+ */
 bool Collinearity::IsAtPosition(int x, int y)
 {
   return line[0]->IsAtPosition(x, y) ||
@@ -127,7 +157,7 @@ bool Collinearity::IsAtPosition(int x, int y)
 }
 
 /**
- * Calculate color difference.
+ * @brief Calculate color difference.
  */
 void Collinearity::CalculateColors()
 {
@@ -144,7 +174,7 @@ void Collinearity::CalculateColors()
 }
 
 /**
- * Calculate accidentalness and significance.
+ * @brief Calculate accidentalness and significance.
  * Assume endpoints are distributed following a Poisson process with parameter
  * p_lep in space R2 (p_lep = prob. of line endpoints).
  * Be g the vector from the endpoint of the longer line 0 to the endpoint of the
@@ -211,6 +241,9 @@ void Collinearity::CalculateSignificance()
   sig = max(sig, 1e-6);  // TODO: properly
 }
 
+/**
+ * @brief Correct the gap, if at both ends is a T-junction.
+ */
 void Collinearity::CorrectGap()
 {
   TJunction *t[2];
@@ -227,6 +260,10 @@ void Collinearity::CorrectGap()
     gap_cor = gap;
 }
 
+/**
+ * @brief Check which line is at which position.
+ * @return Returns the number in the line array [0/1]
+ */
 int Collinearity::WhichLineIs(Line *l) throw(std::runtime_error)
 {
   if(l == line[0])
@@ -236,16 +273,26 @@ int Collinearity::WhichLineIs(Line *l) throw(std::runtime_error)
   else
 	{
 		char buffer [100];
-		sprintf(buffer, "Collinearity::WhichLineIs: line %u is not part of collinearity %u.", l, id);
+		sprintf(buffer, "Collinearity::WhichLineIs: line %u is not part of collinearity %u.", l->ID(), ID());
     throw std::runtime_error(buffer);
 	}
 }
 
+/**
+ * @brief Get the other line of the collinearity.
+ * @param l Known line
+ * @return Returns the other line of the collinearity
+ */
 Line* Collinearity::OtherLine(Line *l)
 {
   return line[Other(WhichLineIs(l))];
 }
 
+/**
+ * @brief Checks, at which line end the collinearity is.
+ * @param l Line
+ * @return Returns the line end, on which the collinearity is [START/END]
+ */
 int Collinearity::WhichEndIs(Line *l)
 {
   return near_point[WhichLineIs(l)];

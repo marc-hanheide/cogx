@@ -1,7 +1,7 @@
 /**
  * @file Vector2.hh
  * @author Zillich, Richtsfeld
- * @date 2006, 2010
+ * @date 2004, 2010
  * @version 0.1
  * @brief 2D Vector class.
  */
@@ -75,8 +75,6 @@ const std::string& operator>>(const std::string &s, Vector2 &v);
 Vector2 LineIntersection(const Vector2 &p1, const Vector2 &d1, const Vector2 &p2, const Vector2 &d2) throw (std::runtime_error);
 Vector2 LineIntersection(const Vector2 &p1, const Vector2 &d1, const Vector2 &p2, const Vector2 &d2, double *l1, double *l2) throw (std::runtime_error);
 bool LinesIntersecting(const Vector2 &a1, const Vector2 &a2, const Vector2 &b1, const Vector2 &b2);
-
-
 
 }
 

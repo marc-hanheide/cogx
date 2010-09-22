@@ -1,6 +1,10 @@
 /**
- * $Id: FormConvexArcGroups.cc,v 1.28 2007/02/04 23:53:03 mxz Exp mxz $
- */
+ * @file FormConvexArcGroups.cc
+ * @author Zillich, Richtsfeld
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Header file of Gestalt principle FormConvexArcGroups.
+ **/
 
 #include <assert.h>
 #include <algorithm>
@@ -69,8 +73,7 @@ static bool Contains(Array<Arc*> &arcs, unsigned l, unsigned u, Arc *arc)
 }
 
 
-FormConvexArcGroups::FormConvexArcGroups(VisionCore *vc)
-: GestaltPrinciple(vc), arcs(1000)
+FormConvexArcGroups::FormConvexArcGroups(VisionCore *vc) : GestaltPrinciple(vc), arcs(1000)
 {
   // COCURV is the default of: COCURV, YUEN, ELL
   core->GetConfig().AddItem("CONVEXARCS_STRONG_CONVEXITY", "1");
@@ -231,8 +234,7 @@ void FormConvexArcGroups::ExhaustiveSearch(Arc *arc, Array<Arc*> &arcs,
   //NewGestalt(new ConvexArcGroup(arcs_opt, 0, size_opt -1));
 }*/
 
-void FormConvexArcGroups::GreedySearch(Arc *arc, Arc *forced_next,
-    Array<Arc*> &arcs)
+void FormConvexArcGroups::GreedySearch(Arc *arc, Arc *forced_next, Array<Arc*> &arcs)
 {
   double sig;
   unsigned l = arcs.Size()/2, u = l, hash;
@@ -259,13 +261,21 @@ void FormConvexArcGroups::Rank()
 */
 
 /**
- * Draw the vote  image.
- * detail has no effect. 
+ * @brief Draw from the vote image.
+ * @param detail Degree of detail.
  */
 void FormConvexArcGroups::Draw(int detail)
 {
 }
 
+/**
+ * @brief Find the next end.
+ * @param arcs
+ * @param l
+ * @param u
+ * @param end
+ * @param criterion
+ */
 Arc* FormConvexArcGroups::NextEnd(Array<Arc*> &arcs, unsigned l,
    unsigned u, int &end, int criterion)
 {
@@ -355,7 +365,11 @@ double FormConvexArcGroups::Evaluate(Array<Arc*> &arcs, unsigned l, unsigned u, 
 }
 
 /**
- * Grow end with best arc.
+ * @brief Grow end with best arc.
+ * @param arcs
+ * @param l
+ * @param u
+ * @return 
  */
 double FormConvexArcGroups::GrowBest(Array<Arc*> &arcs, unsigned &l,
     unsigned &u)

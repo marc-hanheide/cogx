@@ -34,7 +34,7 @@ StereoCore::StereoCore(const string &stereocal_file) throw(std::runtime_error)
 		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARC_JUNCTIONS);
 		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONVEX_ARC_GROUPS);
 		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ELLIPSES);
-		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_SPHERES);
+		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CIRCLES);
 		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_E_JUNCTIONS);
 		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_EXT_ELLIPSES);
 		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CYLINDERS);
@@ -148,18 +148,14 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
 // printf("StereoCore::ProcessStereoImage\n");
 	SetImages(iIl, iIr);
 
-// printf("StereoCore::ProcessStereoImage 1\n");
   // do monocular processing for each stereo image
-		try 
+	try 
 	{
-  for(int side = LEFT; side <= RIGHT; side++)
-  {
-// printf("StereoCore::ProcessStereoImage: vs3-core %u\n", side);
-    vcore[side]->NewImage(side == LEFT ? img_l : img_r);
-// printf("StereoCore::ProcessStereoImage: vs3-core 1\n");
-    vcore[side]->ProcessImage(runtime_ms, ca, co);
-// printf("StereoCore::ProcessStereoImage: vse-core end\n");
-	}
+		for(int side = LEFT; side <= RIGHT; side++)
+		{
+			vcore[side]->NewImage(side == LEFT ? img_l : img_r);
+			vcore[side]->ProcessImage(runtime_ms, ca, co);
+		}
 	}
 	catch (exception &e)
   {
@@ -167,7 +163,6 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
     cout << e.what() << endl;
   }
 	
-// printf("StereoCore::ProcessStereoImage 2\n");
 	// do stereo processing for enabled stereo principles
 	try 
 	{
@@ -181,7 +176,6 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
 					stereoGestalts[i]->Process();
 			}
 		}
-// 		printf("StereoCore::ProcessStereoImage: process image ended.\n");
   }
 	catch (exception &e)
   {
@@ -193,7 +187,7 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
 	PrintResults();
 
 //	PrintJunctions2File();																				/// TODO Print junctions to file => For Odense project.
-	PrintCorners2File();																						/// TODO Print corners to file => For Odense project.
+//	PrintCorners2File();																					/// TODO Print corners to file => For Odense project.
 
 // printf("StereoCore::ProcessStereoImage end\n");
 }
@@ -276,7 +270,7 @@ bool StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iI
 	if(!single)
 		for(int side = LEFT; side <= RIGHT; side++)
 		{
-			SetColor(RGBColor::blue);
+			SetColor(RGBColor::red);
 			SetActiveDrawAreaSide(side);
 			int numGestalts = NumMonoGestalts(type, side);
 			if (id > numGestalts) return false;
@@ -294,7 +288,7 @@ bool StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iI
 
 	if(single)
 	{
-		SetColor(RGBColor::red);
+		SetColor(RGBColor::white);
 		SetActiveDrawAreaSide(singleSide);
 		int numGestalts = NumMonoGestalts(type, singleSide);
 		if (id >= numGestalts) return false;
@@ -324,6 +318,7 @@ void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImag
 																	 bool showAllStereoMatched, bool single, int id, int detail)
 {
 	SetImages(iIl, iIr);
+	SetColor(RGBColor::blue);
 	if(!single)
 	{
 		if(!showAllStereoMatched)

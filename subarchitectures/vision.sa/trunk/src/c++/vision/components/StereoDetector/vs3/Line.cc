@@ -78,7 +78,7 @@ void Line::CalculateParameters()
  */
 void Line::Draw(int detail)
 {
-  DrawLine2D(point[START].x, point[START].y, point[END].x, point[END].y, RGBColor::red);
+  DrawLine2D(point[START].x, point[START].y, point[END].x, point[END].y);
   if(detail >= 1)
   {
     char id_str[20];
@@ -103,6 +103,49 @@ void Line::Draw(int detail)
   }*/
 }
 
+
+/**
+ * @brief Draw vote lines of a visible line.
+ */
+void Line::DrawVotes()
+{
+  VoteImage *vi = core->VI();
+  if(vi == 0)
+    return;
+  for(int x = 0; x < vi->width; x++)
+    for(int y = 0; y < vi->height; y++)
+    {
+      VoteImage::Elem *el = vi->Pixel(x, y);
+      while(el != 0)
+      {
+        if(el->id/vi->GetBaseIndex() == id)
+        {
+          unsigned vtype = el->id%vi->GetBaseIndex();
+          switch(vtype)
+          {
+            case VOTE_TS:
+            case VOTE_NLS:
+            case VOTE_NRS:
+              DrawPoint2D(x, y, RGBColor::magenta);
+              break;
+            case VOTE_TE:
+            case VOTE_NLE:
+            case VOTE_NRE:
+              DrawPoint2D(x, y, RGBColor::cyan);
+              break;
+            default:
+              DrawPoint2D(x, y, RGBColor::white);
+              break;
+          }
+        }
+        el = el->next;
+      }
+    }
+}
+
+/**
+ * @brief Draw info.
+ */
 void Line::DrawInfo()
 {
   char str[100];
@@ -359,46 +402,6 @@ const char* VisibleLine::GetInfo()
 //   for(unsigned i = 0; i < rectangles.Size(); i++)
 //     n += snprintf(info_text + n, info_size - n, " %u", rectangles[i]->ID());  return info_text;
   return info_text;
-}
-
-/**
- * 																											TODO Wo passiert der Fehler mit dem vertauschen der Vote images: gar nicht => ist statisch
- * @brief Draw vote lines of a visible line.
- */
-void VisibleLine::DrawVotes()
-{
-  VoteImage *vi = FormJunctions::vote_img;
-  if(vi == 0)
-    return;
-  for(int x = 0; x < vi->width; x++)
-    for(int y = 0; y < vi->height; y++)
-    {
-      VoteImage::Elem *el = vi->Pixel(x, y);
-      while(el != 0)
-      {
-        if(el->id/8 == id)
-        {
-          unsigned vtype = el->id%8;
-          switch(vtype)
-          {
-            case VOTE_TS:
-            case VOTE_NLS:
-            case VOTE_NRS:
-              DrawPoint2D(x, y, RGBColor::magenta);
-              break;
-            case VOTE_TE:
-            case VOTE_NLE:
-            case VOTE_NRE:
-              DrawPoint2D(x, y, RGBColor::cyan);
-              break;
-            default:
-              DrawPoint2D(x, y, RGBColor::white);
-              break;
-          }
-        }
-        el = el->next;
-      }
-    }
 }
 
 /**

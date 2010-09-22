@@ -1,35 +1,35 @@
 /**
- * @file FormSpheres.cc
+ * @file FormCircles.cc
  * @author Andreas Richtsfeld
  * @date 2010
  * @version 0.1
- * @brief Implementation of Gestalt-principle FormSpheres
+ * @brief Class file of Gestalt-principle FormCircles
  **/
 
-#include "FormSpheres.hh"
-#include "Sphere.hh"
+#include "FormCircles.hh"
+#include "Circle.hh"
 #include "Ellipse.hh"
 
 namespace Z
 {
 
-static int CmpSpheres(const void *a, const void *b)
+static int CmpCircles(const void *a, const void *b)
 {
-  if( (*(Sphere**)a)->sig > (*(Sphere**)b)->sig )
+  if( (*(Circle**)a)->sig > (*(Circle**)b)->sig )
     return -1;  // a is first
   else
     return 1 ;  // b is first
 }
 
-void FormSpheres::Rank()
+void FormCircles::Rank()
 {
-  RankGestalts(Gestalt::SPHERE, CmpSpheres);
+  RankGestalts(Gestalt::CIRCLE, CmpCircles);
 }
 
 /**
  *	@brief Masking bad results of spheres
  */
-void FormSpheres::Mask()											// TODO masking!
+void FormCircles::Mask()											// TODO masking!
 {
 //   for(unsigned i=0; i<NumCones(); i++)
 //   {
@@ -47,18 +47,12 @@ void FormSpheres::Mask()											// TODO masking!
 //   }
 
 	// Mask all spheres, which using a masked ellipse.
-	for(unsigned i=0; i<NumSpheres(core); i++)
+	for(unsigned i=0; i<NumCircles(core); i++)
 	{
-		Sphere *sphere = (Sphere*)core->RankedGestalts(Gestalt::SPHERE, i);
+		Circle *sphere = (Circle*)core->RankedGestalts(Gestalt::CIRCLE, i);
 		if(sphere->ellipse->IsMasked())
 			sphere->Mask(10000);
 	}
-
-}
-
-bool FormSpheres::NeedsOperate()
-{ 
-  return false;	
 }
 
 
@@ -66,7 +60,7 @@ bool FormSpheres::NeedsOperate()
  * @brief Constructor of Gestalt-principle FormSpheres: Creates the Gestalt Sphere from
  * the underlying Gestalts ellipses.
  */
-FormSpheres::FormSpheres(VisionCore *vc) : GestaltPrinciple(vc)
+FormCircles::FormCircles(VisionCore *vc) : GestaltPrinciple(vc)
 {
 	minRadius = 2.;				// minimum radius
 	roundness = 0.15;			// required roundness of the sphere (arbitrary threshold)
@@ -77,7 +71,7 @@ FormSpheres::FormSpheres(VisionCore *vc) : GestaltPrinciple(vc)
  * @param type Type of Gestalt
  * @param idx Index of Gestalt
  */
-void FormSpheres::InformNewGestalt(Gestalt::Type type, unsigned idx)
+void FormCircles::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
 	StartRunTime();
 
@@ -92,19 +86,19 @@ void FormSpheres::InformNewGestalt(Gestalt::Type type, unsigned idx)
  * Creation of shperes depends on "roundness" and minimum radius.
  * @param ellID Index of Gestalt ellipse.
  */
-void FormSpheres::Create(unsigned ellID)
+void FormCircles::Create(unsigned ellID)
 {
 	Ellipse *ell = Ellipses(core, ellID);
 	double ratio = (ell->a / ell->b);
 	double radius = (ell->a + ell->b)/2.;
 	if (ratio >= (1-roundness) && ratio <= (1+roundness) && radius > minRadius)	
-		core->NewGestalt(GestaltPrinciple::FORM_SPHERES, new Sphere(core, ell, radius, ratio));
+		core->NewGestalt(GestaltPrinciple::FORM_CIRCLES, new Circle(core, ell, radius, ratio));
 }
 
 /**
- * @brief Inform principle about new Gestalt.
+ * @brief Post operation procedure.
  */
-void FormSpheres::PostOperate()
+void FormCircles::PostOperate()
 {
 	Rank();
 	Mask();

@@ -1,5 +1,10 @@
 /**
- * $Id: FormConvexArcGroups.hh,v 1.20 2007/02/04 23:53:03 mxz Exp mxz $
+ * @file FormConvexArcGroups.hh
+ * @author Zillich, Richtsfeld
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Header file of Gestalt principle FormConvexArcGroups.
+ * 
  * TODO:
  * - create tangents with the expected number of intersections, so that no
  *   later resizing of the arrays is necessary.
@@ -10,7 +15,6 @@
 #define Z_FORM_CONVEX_ARC_GROUPS_HH
 
 #include "Array.hh"
-#include "VoteImage.hh"
 #include "Gestalt.hh"
 #include "Arc.hh"
 #include "ConvexArcGroup.hh"
@@ -63,7 +67,7 @@ private:
   void HaveNewArc(unsigned idx);
 
 public:
-  static VoteImage *vote_img;
+//   static VoteImage *vote_img;
 
   FormConvexArcGroups(VisionCore *vc);
   virtual ~FormConvexArcGroups();

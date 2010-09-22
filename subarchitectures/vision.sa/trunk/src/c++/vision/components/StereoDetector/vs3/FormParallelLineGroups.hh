@@ -22,7 +22,7 @@ private:
 
 public:
   FormParallelLineGroups(Config *cfg);
-  virtual void Operate();
+  virtual void PostOperate();
 };
 
 }

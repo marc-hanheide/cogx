@@ -1,5 +1,9 @@
 /**
- * $Id: Arc.cc,v 1.23 2007/02/04 23:53:03 mxz Exp mxz $
+ * @file Arc.cc
+ * @author Andreas Richtsfeld, Michael Zillich
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Class file of Gestalt arc.
  */
 
 #include <stdio.h>
@@ -10,9 +14,6 @@
 // }
 #include "Math.hh"
 #include "Draw.hh"
-#include "VisionCore.hh"
-#include "Segment.hh"
-#include "AJunction.hh"
 #include "Arc.hh"
 #include "FormSegments.hh"
 #include "FormArcJunctions.hh"
@@ -23,9 +24,18 @@ namespace Z
 
 int Arc::STRICT_CONVEXITY = 0;
  
+/**
+ * @brief Constructor of class Arc.
+ * @param vc Vision core
+ * @param s Edge segment
+ * @param i
+ * @param j
+ * @param k
+ * @param cent
+ * @param rad
+ */
 Arc::Arc(VisionCore  *vc, Segment *s, unsigned i, unsigned j, unsigned k,
-    const Vector2 &cent, double rad)
-: Gestalt(vc, ARC)
+    const Vector2 &cent, double rad) : Gestalt(vc, ARC)
 {
   seg = s;
   idx[START] = i;
@@ -52,10 +62,10 @@ Arc::Arc(VisionCore  *vc, Segment *s, unsigned i, unsigned j, unsigned k,
   CalculateSignificance();
 }
 
-extern unsigned peek;
+extern unsigned peek;																																	/// TODO TODO TODO was ist das?
 
 /**
- * Draw the arc.
+ * @brief Draw the arc.
  * Details are:
  * 1: draw translucent "pie"
  * 2: draw edgels of arc and tangents
@@ -65,36 +75,29 @@ extern unsigned peek;
 void Arc::Draw(int detail)
 {
   char id_str[20];
-  if(detail >= 4)
-    seg->Draw();
-  if(detail >= 2)
+
+	if(detail == 1)
+    TransparentArc2D(center.x, center.y, radius, start_angle, angular_span, RGBColor::red);
+  if(detail == 2)
   {
     for(unsigned i = idx[START]; i <= idx[END]; i++)
       DrawPoint2D(seg->edgels[i].p.x,
           seg->edgels[i].p.y, RGBColor::green);
   }
-  if(detail >= 1)
-    TransparentArc2D(center.x, center.y, radius, start_angle, angular_span,
-        RGBColor::red);
-  DrawArc2D(center.x, center.y, radius, start_angle, angular_span,
-      RGBColor::red);
-  if(detail >= 3)
+	DrawArc2D(center.x, center.y, radius, start_angle, angular_span);
+ 
+	if(detail == 3) // Normal
   {
-    /*DrawPoint2D(tang_pt[0].x, tang_pt[0].y, RGBColor::magenta);
-    DrawLine2D(tang_pt[0].x, tang_pt[0].y,
-      tang_pt[0].x + 20.*tang[0].x, tang_pt[0].y + 20.*tang[0].y,
-      RGBColor::magenta);
-    DrawPoint2D(tang_pt[1].x, tang_pt[1].y, RGBColor::magenta);
-    DrawLine2D(tang_pt[1].x, tang_pt[1].y,
-      tang_pt[1].x + 20.*tang[1].x, tang_pt[1].y + 20.*tang[1].y,
-      RGBColor::magenta);*/
     Vector2 p = point[MID];
     Vector2 d = norm[MID].NormalClockwise();
-    DrawLine2D(p.x - 100*d.x, p.y - 100*d.y, p.x + 100*d.x, p.y + 100*d.y,
-        RGBColor::yellow);
+    DrawLine2D(p.x - 100*d.x, p.y - 100*d.y, p.x + 100*d.x, p.y + 100*d.y, RGBColor::yellow);
   }
-  if(detail >= 4)
-    DrawTangents();
+
+	if(detail >= 4)	// Segment and search lines
+	{
+		seg->Draw();
+    DrawSearchLines();
+	}
   if(detail >= 5)
   {
     snprintf(id_str, 20, "%u", id);
@@ -116,8 +119,7 @@ void Arc::Draw(int detail)
       // find the point halfway between arc and next edge
       x1 = (int)seg->edgels[i].p.x;
       y1 = (int)seg->edgels[i].p.y;
-      if(FormSegments::edge_img->FindLineEnd(x1, y1,
-          (int)center.x, (int)center.y, &x2, &y2))
+      if(FormSegments::edge_img->FindLineEnd(x1, y1, (int)center.x, (int)center.y, &x2, &y2))
         DrawPoint2D(x2, y2, RGBColor::blue);
     }
     for(j = 0; j < NUM_SAMPLES; j++)
@@ -127,17 +129,19 @@ void Arc::Draw(int detail)
       // find the point halfway between arc and next edge
       x1 = (int)seg->edgels[i].p.x;
       y1 = (int)seg->edgels[i].p.y;
-      if(FormSegments::edge_img->FindLineEnd(x1, y1,
-          x1 + (int)d.x, y1 + (int)d.y, &x2, &y2))
+      if(FormSegments::edge_img->FindLineEnd(x1, y1, x1 + (int)d.x, y1 + (int)d.y, &x2, &y2))
         DrawPoint2D(x2, y2, RGBColor::blue);
     }
     //!!! end temp
   }
 }
 
-void Arc::DrawTangents()
+/**
+ * @brief Draw the search lines from the arc.
+ */
+void Arc::DrawSearchLines()
 {
-  VoteImage *vi = FormArcJunctions::vote_img;
+  VoteImage *vi = core->VI();
   int x, y;
   VoteImage::Elem *el;
   if(vi == 0)
@@ -148,19 +152,19 @@ void Arc::DrawTangents()
       el = vi->Pixel(x, y);
       while(el != 0)
       {
-        if(el->id/8 == id)
+        if((el->id/vi->GetBaseIndex()-vi->GetArcOffset()) == id)
         {
-          unsigned vtype = el->id%8;
+          unsigned vtype = el->id%vi->GetBaseIndex();
           switch(vtype)
           {
-            case VOTE_TS:
-            case VOTE_NLS:
-            case VOTE_NRS:
+            case VOTE_ATS:
+            case VOTE_ANLS:
+            case VOTE_ANRS:
               DrawPoint2D(x, y, RGBColor::magenta);
               break;
-            case VOTE_TE:
-            case VOTE_NLE:
-            case VOTE_NRE:
+            case VOTE_ATE:
+            case VOTE_ANLE:
+            case VOTE_ANRE:
               DrawPoint2D(x, y, RGBColor::cyan);
               break;
             default:
@@ -173,36 +177,53 @@ void Arc::DrawTangents()
     }
 }
 
+/**
+ * @brief Draw arc info.
+ */
 void Arc::DrawInfo()
 {
-  //col_hist_inside.Draw(0., 0., 1., 1.);
-  FillRect2D(0., 0., 0.5, 1., mean_col_inside);
-  DrawText2D("inside", 0.1, 0.8, RGBColor::green);
-  FillRect2D(0.5, 0., 1., 1., mean_col_outside);
-  DrawText2D("outside", 0.6, 0.8, RGBColor::green);
+	printf("Arc::DrawInfo: Not yet implemented!\n");
+//   //col_hist_inside.Draw(0., 0., 1., 1.);
+//   FillRect2D(0., 0., 0.5, 1., mean_col_inside);
+//   DrawText2D("inside", 0.1, 0.8, RGBColor::green);
+//   FillRect2D(0.5, 0., 1., 1., mean_col_outside);
+//   DrawText2D("outside", 0.6, 0.8, RGBColor::green);
 }
 
+/**
+ * @brief Get arc informations.
+ * @return Returns the information about the arc as string.
+ */
 const char* Arc::GetInfo()
 {
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
   snprintf(info_text, info_size,
-      "%sedgels: %u\nspan: %f\nlength: %f\nradius: %f\nseg: %u %u-%u",
+      "%s  edgels: %u\n  span: %f\n  length: %f\n  radius: %f\n  seg: %u %u-%u",
       Gestalt::GetInfo(), NumEdgels(), angular_span, ArcLength(), Radius(),
       seg->ID(), idx[START], idx[END]);
   return info_text;
 }
 
+/**
+ * @brief Returns true, if arc is at this possition.
+ * @param x x-coordinate
+ * @param y y-coordinate
+ * @return Returns true, if arc is at this possition.
+ */
 bool Arc::IsAtPosition(int x, int y)
 {
   double xd = (double)x, yd = (double)y;
   for(unsigned i = idx[START]; i <= idx[END]; i++)
-    if(IsEqual(xd, seg->edgels[i].p.x) &&
-       IsEqual(yd, seg->edgels[i].p.y))
+    if(IsEqual(xd, seg->edgels[i].p.x) && IsEqual(yd, seg->edgels[i].p.y))
       return true;
   return false;
 }
 
+
+/**
+ * @brief Calculate parameters.
+ */
 void Arc::CalculateParams()
 {
 printf("Arc::CalculateParams: Not yet implemented!\n");
@@ -218,14 +239,18 @@ printf("Arc::CalculateParams: Not yet implemented!\n");
 //   delete[] y;
 }
 
-/*
- * Order the given angles such that a,b,c are in counter clockwise order (i.e.
+/**
+ * @brief Order the given angles such that a,b,c are in counter clockwise order (i.e.
  * ascending in mathematical sense). The angles are either clockwise already
  * (then b - a > 0) or counterclockwise (then b - a < 0). If so, swap a and c.
  * Returns true if angles were already clockwise, false otherwise.
  * Note that since the sum of all angles is <= 2 pi and b is in the middle of
  * a and c, differences b - a and c - b can only be <= pi -> differences are
  * unique.
+ * @param a
+ * @param b
+ * @param c
+ * @return
  */
 bool Arc::OrderAnglesCounterClockwise(double &a, double &b, double &c)
 {
@@ -239,7 +264,7 @@ bool Arc::OrderAnglesCounterClockwise(double &a, double &b, double &c)
 }
 
 /**
- * Calculate start, mid and end angle.
+ * @brief Calculate start, mid and end angle.
  * Note: START and END points (and normals etc.) might be swapped according to
  * angles!
  */
@@ -269,7 +294,7 @@ void Arc::CalculateAngles()
 }
 
 /**
- * Calculate tangents at two points at 1/3 and 2/3 of arc length.
+ * @brief Calculate tangents at two points at 1/3 and 2/3 of arc length.
  */
 void Arc::CalculateTangents()
 {
@@ -280,7 +305,7 @@ void Arc::CalculateTangents()
 }
 
 /**
- * Calculate mean colors inside and outside of arc.
+ * @brief Calculate mean colors inside and outside of arc.
  */
 void Arc::CalculateColors()
 {
@@ -327,7 +352,7 @@ void Arc::CalculateColors()
 }
 
 /**
- * Returns true if arc b lies "inside" this arc a, false otherwise
+ * @brief Returns true if arc b lies "inside" this arc a, false otherwise
  *  b inside a:    b not inside a:
  *
  *   /    \          \   \
@@ -347,9 +372,10 @@ bool Arc::HasInside(Arc *b)
     return HasInsideWeak(b);
 }
 
-/*
- * Strong convexity criterion.
+/**
+ * @brief Strong convexity criterion.
  * Checks against half-planes at end points.
+ * @param b Arc
  */
 bool Arc::HasInsideStrong(Arc *b)
 {
@@ -397,8 +423,10 @@ bool Arc::HasInsideStrong(Arc *b)
 }
 
 /**
- * Weak convexity criterion.
+ * @brief Weak convexity criterion.
  * Checks against half-plane at midpoint.
+ * @param b Arc
+ * @return Returns true, if ...?	TODO
  */
 bool Arc::HasInsideWeak(Arc *b)
 {
@@ -467,7 +495,7 @@ bool Arc::HasInside(Vector2 &p)
 }
 
 /**
- * Returns true if two arcs are convex (form a convex pair), false otherwise
+ * @brief Returns true if two arcs are convex (form a convex pair), false otherwise
  *
  * TODO: try using weak convexity for near points, strong convexity for far
  * points.
@@ -477,6 +505,9 @@ bool Arc::HasInside(Vector2 &p)
  *   /    \          \    /
  *  |     |          |   |
  *   \   /          /     \
+ *  
+ * @param b Arc
+ * @return Returns true, when convex.
  */
 bool Arc::ConvexWith(Arc *b)
 {
@@ -485,7 +516,9 @@ bool Arc::ConvexWith(Arc *b)
 
 
 /**
- * A "soft" inside criterion.
+ * @brief A "soft" inside criterion.
+ * @param Arc
+ * @return Returns a (double) significance value for "insideness"
  */
 double Arc::Insideness(Arc *b)
 {
@@ -498,7 +531,9 @@ double Arc::Insideness(Arc *b)
 }
 
 /**
- * A "soft" convexity criterion.
+ * @brief A "soft" convexity criterion.
+ * @param b Arc
+ * @return Returns true, when ...? TODO
  */
 double Arc::Convexity(Arc *b)
 {
@@ -506,8 +541,10 @@ double Arc::Convexity(Arc *b)
 }
 
 /**
- * Returns true if point p lies inside the "wedge" defined by center and
+ * @brief Returns true if point p lies inside the "wedge" defined by center and
  * endpoints.
+ * @param b Arc
+ * @return Returns true, when ...? TODO
  */
 bool Arc::HasInsideWedge(Arc *b)
 {
@@ -525,6 +562,11 @@ bool Arc::HasInsideWedge(Arc *b)
   return false;
 }
 
+/**
+ * @brief	TODO
+ * @param b Arc
+ * @return Returns true, when ...? TODO
+ */
 bool Arc::HasInsideBeam(Arc *b)
 {
   Vector2 m0 = point[MID] - center;
@@ -543,7 +585,9 @@ bool Arc::HasInsideBeam(Arc *b)
 }
 
 /**
- * Returns true if there is a coaxial overlap between the two arcs.
+ * @brief Returns true if there is a coaxial overlap between the two arcs.
+ * @param b Arc
+ * @return Returns true if there is a coaxial overlap between the two arcs.
  */
 bool Arc::CoaxialOverlap(Arc *b)
 {
@@ -551,6 +595,9 @@ bool Arc::CoaxialOverlap(Arc *b)
   //return this->HasInsideBeam(b) || b->HasInsideBeam(this);
 }
 
+/**
+ * @brief Calculates significance value for the Gestalt.
+ */
 void Arc::CalculateSignificance()
 {
   //int l = NumEdgels();//(int)(2.*M_PI*Radius());
@@ -558,6 +605,11 @@ void Arc::CalculateSignificance()
 	sig = -log(pow(core->p_ee, (double)NumEdgels()));
 }
 
+/**
+ * @brief Add a junction (AJunction) to the arc (as additional information).
+ * @param end Which arc end [START/END]
+ * @param j AJunction
+ */
 void Arc::AddJunction(int end, AJunction *j)
 {
   jct[end].PushBack(j);

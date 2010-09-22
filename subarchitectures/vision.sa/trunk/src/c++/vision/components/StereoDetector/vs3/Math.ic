@@ -1,11 +1,16 @@
 /**
- * $Id: Math.ic,v 1.13 2007/03/25 21:35:57 mxz Exp mxz $
- *
- * Michael Zillich, 2004-3-04
- */
+ * @file Math.ic
+ * @author Richtsfeld Andreas, Michael Zillich
+ * @date 2004, 2010
+ * @version 0.1
+ * @brief Math definitions and inline functions.
+ * 
+ * TODO Doxygen description
+ **/
 
 #include <stdlib.h>
 #include <math.h>
+#include <cstdio>
 
 namespace Z
 {
@@ -45,7 +50,7 @@ static const unsigned gray[16] = {
 };
 
 /**
- * Returns true if the value is near zero (+/- epsilon)
+ * @brief Returns true if the value is near zero (+/- epsilon)
  * Our epsion is 1e-12
  */
 inline bool IsZero(double d)
@@ -54,7 +59,7 @@ inline bool IsZero(double d)
 }
 
 /**
- * Returns true if the values are equal (+/- epsilon)
+ * @brief Returns true if the values are equal (+/- epsilon)
  * Our epsion is 1e-12
  */
 inline bool IsEqual(double a, double b)
@@ -63,7 +68,7 @@ inline bool IsEqual(double a, double b)
 }
 
 /**
- * Return whether value is a 'reasonable' number
+ * @brief Return whether value is a 'reasonable' number
  */
 inline bool IsReasonable(double d)
 {
@@ -125,7 +130,7 @@ inline int RandInt()
 }
 
 /**
- * Scale angle to [0..2pi[
+ * @brief Scale angle to [0..2pi[
  */
 inline double ScaleAngle_0_2pi(double a)
 {
@@ -135,7 +140,7 @@ inline double ScaleAngle_0_2pi(double a)
 }
 
 /**
- * Scale angle to [-pi..pi[
+ * @brief Scale angle to [-pi..pi[
  */
 inline double ScaleAngle_mpi_pi(double a)
 {
@@ -145,7 +150,7 @@ inline double ScaleAngle_mpi_pi(double a)
 }
 
 /**
- * Scale angle to [0..pi[
+ * @brief Scale angle to [0..pi[
  */
 inline double ScaleAngle_0_pi(double a)
 {
@@ -155,7 +160,7 @@ inline double ScaleAngle_0_pi(double a)
 }
 
 /**
- * Difference of two angles b - a. The resulting angle is scaled to [-pi..pi[
+ * @brief Difference of two angles b - a. The resulting angle is scaled to [-pi..pi[
  */
 inline double DiffAngle_mpi_pi(double b, double a)
 {
@@ -163,7 +168,7 @@ inline double DiffAngle_mpi_pi(double b, double a)
 }
 
 /**
- * Difference of two angles b - a. The resulting angle is scaled to [0..2pi[
+ * @brief Difference of two angles b - a. The resulting angle is scaled to [0..2pi[
  */
 inline double DiffAngle_0_2pi(double b, double a)
 {
@@ -171,7 +176,7 @@ inline double DiffAngle_0_2pi(double b, double a)
 }
 
 /**
- * Angles between (undirected) lines. The result is scaled to [0..pi/2[
+ * @brief Angles between (undirected) lines. The result is scaled to [0..pi/2[
  * The difference is always positive and the smaller of the two possible
  * differences is returned, i.e. diff is [0..pi/2[
  * Note that we never return a difference of 0 but rather the angular
@@ -192,7 +197,7 @@ inline double AngleBetweenLines(double b, double a)
 }
 
 /**
- * Scale an integer angle to [0..8[
+ * @brief Scale an integer angle to [0..8[
  */
 inline int ScaleIntAngle_0_8(int a)
 {
@@ -202,7 +207,7 @@ inline int ScaleIntAngle_0_8(int a)
 }
 
 /**
- * Return the given binary number in gray code.
+ * @brief Return the given binary number in gray code.
  * Note: only converts 4 bit numbers, i.e. 0 - 15
  */
 inline unsigned BinaryToGray(unsigned b) throw(std::runtime_error)
@@ -218,7 +223,7 @@ inline int CityblockDistance(int x1, int y1, int x2, int y2)
 }
 
 /**
- * V = 4 pi r^3 / 3
+ * @brief V = 4 pi r^3 / 3
  */
 inline double SphereVolume(double r)
 {
@@ -227,7 +232,7 @@ inline double SphereVolume(double r)
 }
 
 /**
- * A = pi r^2
+ * @brief A = pi r^2
  */
 inline double CircleArea(double r)
 {
@@ -235,7 +240,7 @@ inline double CircleArea(double r)
 }
 
 /**
- * Bivariate Gaussian (Normal) probability density function.
+ * @brief Bivariate Gaussian (Normal) probability density function.
  * Note that: sigma_x = sigma_y = s, rho = 0
  */
 inline double BivariateGaussianPDF(double mx, double my, double s,
@@ -248,7 +253,7 @@ inline double BivariateGaussianPDF(double mx, double my, double s,
 }
 
 /**
- * Returns a pseudo random number in [0.0, 1.0]
+ * @brief Returns a pseudo random number in [0.0, 1.0]
  */
 inline float FRand()
 {
@@ -263,6 +268,7 @@ inline float ExpPdf(float lambda)
   while (dum == 0.);
   return -log(dum)/lambda;
 }
+
 
 inline int ExpSelect(int max)
 {

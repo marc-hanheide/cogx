@@ -1,6 +1,10 @@
 /**
- * $Id: AJunction.hh,v 1.2 2009/04/24 11:38:50 mz Exp mz $
- */
+ * @file AJunction.hh
+ * @author Zillich, Richtsfeld
+ * @date 2009, May 2010
+ * @version 0.1
+ * @brief Header file of Gestalt class arc-junction.
+ **/
 
 #ifndef Z_A_JUNCTION_HH
 #define Z_A_JUNCTION_HH
@@ -8,17 +12,16 @@
 #include "VisionCore.hh"
 #include "Gestalt.hh"
 #include "Segment.hh"
-#include "Vector2.hh"
+#include "Vector.hh"
+#include "Arc.hh"
 
 namespace Z
 {
 
-class Arc;
-
+/** @brief Gestalt class: arc junction */
 class AJunction : public Gestalt
 {
 private:
-  //void CalculateSignificance();
 
 public:
   Arc *arc[2];   ///< START and END arc

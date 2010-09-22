@@ -82,7 +82,7 @@ public:
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
-	void Draw(RGBColor col);
+	void Draw();
 };
 
 //----------------------------------------------------------------//
@@ -114,7 +114,7 @@ public:
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
-	void Draw(RGBColor col);
+	void Draw();
 };
 
 

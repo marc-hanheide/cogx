@@ -1,5 +1,9 @@
 /**
- * $Id: Collinearity.hh,v 1.10 2007/02/11 10:59:14 mxz Exp mxz $
+ * @file Collinearity.hh
+ * @author Andreas Richtsfeld, Michael Zillich
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Header file of Gestalt class collinearity.
  */
 
 #ifndef Z_COLLINEARITY_HH
@@ -13,6 +17,9 @@ namespace Z
 
 class Line;
 
+/**
+ * @brief Gestalt class Collinearity
+ */
 class Collinearity : public Gestalt
 {
 private:
@@ -20,14 +27,14 @@ private:
   void CalculateSignificance();
 
 public:
-  Line* line[2];					///< line 0 is the longer, line 1 the shorter one
-  int near_point[2];			///< TODO The nearer point to the collinearity
-  double gap;      				///< distance between endpoints
-  double gap_cor;  				///< corrected distance if coll terminated by T-jcts
-  double col_dist;
-  Vector2 vertex;  				// TODO: change name to midpoint or something
+  Line* line[2];					///< Line 0 is the longer, line 1 the shorter one
+  int near_point[2];			///< The line end, which is nearer to the collinearity
+  double gap;      				///< TODO: Distance between endpoints?? or sum of distances between end points and intersection?
+  double gap_cor;  				///< Corrected distance if coll terminated by T-jcts
+  double col_dist;				///< Colour distance
+  Vector2 vertex;  				///< TODO: change name to midpoint or something
 
-  Collinearity(VisionCore *c, Line *line_i, Line *line_j, int end_i, int end_j);
+  Collinearity(VisionCore *vc, Line *line_i, Line *line_j, int end_i, int end_j);
   virtual void Draw(int detail = 0);
   virtual void DrawInfo();
   virtual const char* GetInfo();

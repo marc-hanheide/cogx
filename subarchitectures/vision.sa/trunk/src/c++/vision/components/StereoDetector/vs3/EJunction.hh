@@ -46,7 +46,6 @@ public:
 	bool IsColLine(Line *l);
 	
   virtual void Draw(int detail = 0);
-  void DrawVotes();
   virtual const char* GetInfo();
   virtual bool IsAtPosition(int x, int y);
 };

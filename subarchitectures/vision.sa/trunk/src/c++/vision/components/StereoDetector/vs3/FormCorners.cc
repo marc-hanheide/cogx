@@ -19,11 +19,6 @@ static int CmpCorners(const void *a, const void *b)
     return 1 ;  // b is first
 }
 
-bool FormCorners::NeedsOperate()
-{
-	return false;
-}
-
 /**
  * @brief Rank corners.
  */
@@ -59,15 +54,6 @@ void FormCorners::InformNewGestalt(Gestalt::Type type, unsigned idx)
   Rank();
   StopRunTime();
 }
-
-
-/**
- * @brief Operate call.
- * @param incremental Operate incremental or non-incremental
- */
-void FormCorners::Operate(bool incremental)
-{}
-
 
 /**
  * @brief Create a new corner, when a new L-Junction appears.

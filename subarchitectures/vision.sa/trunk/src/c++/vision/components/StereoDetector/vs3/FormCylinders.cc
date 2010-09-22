@@ -88,15 +88,6 @@ void FormCylinders::InformNewGestalt(Gestalt::Type type, unsigned idx)
 }
 
 /**
- * @brief Operate()
- * @param bool Incremental function
- */
-// void FormCylinders::Operate(bool incremental)
-// {
-// 	
-// }
-
-/**
  * @brief Operate Gestalt principle after incremental processing.
  * This is a non-incemental implementation!
  */

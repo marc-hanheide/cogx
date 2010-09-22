@@ -55,28 +55,12 @@ void FormFlapsAri::Mask()
 						FlapsAri(core, i)->Mask(j);		 
 }
 
-/**
- * @brief NeedsOperate
- */
-bool FormFlapsAri::NeedsOperate()
-{
-  return false;
-}
-
 
 /**
  * @brief Constructor of FormFlapsAri
  * @param core Vision core
  */
-FormFlapsAri::FormFlapsAri(VisionCore *core) : GestaltPrinciple(core)
-{
-}
-
-/**
- * @brief Operate
- * @param incremental Operate incremental or non-incremental.
- */
-void FormFlapsAri::Operate(bool incremental)
+FormFlapsAri::FormFlapsAri(VisionCore *vc) : GestaltPrinciple(vc)
 {
 }
 

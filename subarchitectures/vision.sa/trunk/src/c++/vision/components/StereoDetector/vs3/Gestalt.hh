@@ -32,7 +32,7 @@ public:
     ARC,
     CONVEX_ARC_GROUP,
     ELLIPSE,
-    SPHERE,
+    CIRCLE,
     COLLINEARITY,
     T_JUNCTION,
     L_JUNCTION,

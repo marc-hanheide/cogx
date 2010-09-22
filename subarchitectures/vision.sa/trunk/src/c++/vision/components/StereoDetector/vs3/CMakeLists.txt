@@ -2,105 +2,6 @@ PROJECT(SDvs3)
 
 include_directories(.)
 
-# Set the headers.
-SET(HEADERS
-#	fitcircle.h
-#	fitellipse.h
-	nrutil.h
-	Arc.hh
-#	BallDefinition.hh
-	BestResult.hh
-#	Camera.hh
-	CEdge.hh
-	Closure.hh
-	Collinearity.hh
-	Cone.hh
-	ConeDefinition.hh
-	ConvexArcGroup.hh
-	Corner.hh
-	Cube.hh
-	CubeDefninition.hh
-	Edgel.hh
-	EJunction.hh
-	Ellipse.hh
-	Exit.hh
-	ExitDefinition.hh
-	ExtClosure.hh
-	ExtEllipse.hh
-	ExtRectangle.hh
-	FileVideo.hh
-	FireVideo.hh
-	FlapAri.hh
-	Flap.hh
-	FlapDefinition.hh
-	FormArcs.hh
-	FormBestResults.hh
-	FormClosures.hh
-	FormCones.hh
-	FormConvexArcGroups.hh
-	FormCorners.hh
-	FormCubes.hh
-	FormEJunctions.hh
-	FormCylinders.hh
-	FormEllipses.hh
-	FormExits.hh
-	FormExtClosures.hh
-	FormExtEllipses.hh
-	FormExtRectangles.hh
-	FormFlapsAri.hh
-	FormFlaps.hh
-	FormJunctions.hh
-	FormLines.hh
-	FormMotionField.hh
-#	FormParallelLineGroups.hh
-	FormRectangles.hh
-	FormSegments.hh
-	FormSpheres.hh
-	FormWallLines.hh
-	FormWalls.hh
-	Gestalt.hh
-	GestaltPrinciple.hh
-	HCF.hh
-#	IceInterface.hh
-	IdImage.hh
-	Image.hh
-	Line.hh
-#	LiveVideo.hh
-	LJunction.hh
-	LJunctionDefinition.hh
-#	MainWin.hh
-	Math.hh
-	MotionDefinition.hh
-	MotionField.hh
-	MotionFieldElement.hh
-	Namespace.hh
-	Object.hh
-	ObjectTracker.hh
-#	OpenCvVideo.hh
-	ParallelLineGroup.hh
-	Rectangle.hh
-	RectangleDefinition.hh
-	rosin_arcline.hh
-	rosin_lines.hh
-	Segment.hh
-	Sphere.hh
-	TCubeDefinition.hh
-	TFlapDefinition.hh
-	TJunction.hh
-	TObject.hh
-	TrackCubes.hh
-	TrackFlaps.hh
-	TrackRectangles.hh
-	TrktCube.hh
-	TrktFlap.hh
-	TrktRectangle.hh
-#	Vector2.hh
-	VisionCore.hh
-	VoteImage.hh
-	Wall.hh
-	WallDefinition.hh
-	WallLine.hh)
-
 SET(SOURCES 
 	betacf.c
 	betai.c
@@ -115,6 +16,7 @@ SET(SOURCES
 #	BestResult.cc
 #	Camera.cc
 	CEdge.cc
+	Circle.cc
 	Closure.cc
 	Collinearity.cc
 	Cone.cc
@@ -135,12 +37,13 @@ SET(SOURCES
 	FormArcJunctions.cc
 	FormArcs.cc
 #	FormBestResults.cc
+	FormCircles.cc
 	FormClosures.cc
 	FormCones.cc
 	FormConvexArcGroups.cc
-	FormEllipses.cc
 	FormCorners.cc
 	FormCubes.cc
+	FormEllipses.cc
 	FormEJunctions.cc
 	FormCylinders.cc
 #	FormEllipses.cc
@@ -156,7 +59,6 @@ SET(SOURCES
 #	FormParallelLineGroups.cc
 	FormRectangles.cc
 	FormSegments.cc
-	FormSpheres.cc
 #	FormWallLines.cc
 #	FormWalls.cc
 	Gestalt.cc
@@ -187,7 +89,6 @@ SET(SOURCES
 #	rosin_arcs.cc			=> in FormArcs.cc direkt eingebunden!
 	rosin_lines.cc
 	Segment.cc
-	Sphere.cc
 	TJunction.cc
 #	TObject.cc
 #	TrackCubes.cc

@@ -48,7 +48,6 @@ private:
 
 public:
   FormRectangles(VisionCore *vc);
-//  virtual void Reset(const Image *img);
   virtual bool NeedsOperate(); 
   virtual void InformNewGestalt(Gestalt::Type type, unsigned idx);
 };

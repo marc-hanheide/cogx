@@ -33,9 +33,6 @@ private:
 
 public:
   FormCorners(VisionCore *vc);
-//   void InformNewCandidate(unsigned l, unsigned side);
-  virtual void Operate(bool incremental);
-  virtual bool NeedsOperate();
   virtual void InformNewGestalt(Gestalt::Type type, unsigned idx);
 };
 

@@ -1,5 +1,9 @@
 /**
- * $Id: FormLines.hh,v 1.12 2007/02/18 18:02:48 mxz Exp mxz $
+ * @file FormLines.hh
+ * @author Zillich, Richtsfeld
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Header file of Gestalt principle FormLines.
  */
 
 #ifndef Z_FORM_LINES_HH
@@ -23,7 +27,7 @@ private:
 public:
   FormLines(VisionCore *vc);
   virtual void Reset();
-  virtual void Operate(bool incremental);
+  virtual void PreOperate();
   virtual bool NeedsOperate() {return !done;}
 };
 

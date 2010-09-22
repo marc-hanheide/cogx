@@ -37,6 +37,7 @@ private:
     ContourPoint(int xi, int yi, double erri)
       : x(xi), y(yi), err(erri), id(UNDEF_ID), dir(0.), supports(false) {}
   };
+	
   Array<ContourPoint> contour;
   double a2, b2, a4, b4;  // a^2 etc., stored for Distance()
 
@@ -73,6 +74,7 @@ public:
   Ellipse(VisionCore *vc, ConvexArcGroup *grp_in, double x_in, double y_in,
       double a_in, double b_in, double phi_in);
   virtual void Draw(int detail = 0);
+  void DrawVotes();
   virtual const char* GetInfo();
   virtual bool IsAtPosition(int x, int y);
   double Circumference();
