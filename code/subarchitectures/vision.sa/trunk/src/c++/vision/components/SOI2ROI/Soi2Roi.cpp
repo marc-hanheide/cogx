@@ -79,7 +79,7 @@ void Soi2Roi::receiveSOI(const cdl::WorkingMemoryChange & _wmc)
 
 	SOIPtr soi = getMemoryEntry<SOI>(_wmc.address);
 	Video::Image image;
-	getRectImage(0, image);	// 0 = left image
+	getRectImage(0, 640, image);	// 0 = left / 640 = width
 	ROIPtr roiPtr = projectSOI(image.camPars, *soi);
 
 	ROIData roiData;
@@ -129,7 +129,7 @@ void Soi2Roi::updatedSOI(const cdl::WorkingMemoryChange & _wmc)
 
 	SOIPtr soi = getMemoryEntry<SOI>(_wmc.address);
 	Video::Image image;
-	getRectImage(0, image);	// 0 = left image
+	getRectImage(0, 640, image);
 	ROIPtr roiPtr = projectSOI(image.camPars, *soi);
 
 	// get data from map and enter new ROI
