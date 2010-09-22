@@ -189,9 +189,15 @@ public class DisplayClient {
 		m_EventReceiver = new EventReceiverImpl(this);
 		m_Owner.registerIceServer(Visualization.EventReceiver.class,
 				m_EventReceiver);
-		String myHost = m_Owner.getComponentManager().getComponentDescription(
-				m_Owner.getComponentID()).hostName;
-		m_Server.addClient(id, myHost, JAVASERVERPORT.value);
+		String myHost;
+		try {
+			myHost = m_Owner.getComponentManager().getComponentDescription(
+					m_Owner.getComponentID()).hostName;
+			m_Server.addClient(id, myHost, JAVASERVERPORT.value);
+		} catch (CASTException e) {
+			m_Owner.logException(e);
+		}
+
 	}
 
 	public final void setImage(String id, int width, int height, int channels,
