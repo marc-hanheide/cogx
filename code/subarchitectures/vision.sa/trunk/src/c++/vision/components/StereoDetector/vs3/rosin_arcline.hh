@@ -1,8 +1,6 @@
 #ifndef ROSIN_ARCLINE_HH
 #define ROSIN_ARCLINE_HH
 
-#include "Namespace.hh"
-
 namespace Z
 {
 

@@ -6,8 +6,8 @@
  * @brief Gestalt principle class for forming segments.
  **/
 
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+#include <cv.h>
+#include <highgui.h>
 extern "C" {
 #include "canny.h"
 #include "vector2.h"

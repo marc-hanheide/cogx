@@ -29,15 +29,15 @@ class Ellipse;
 class EJunction : public Gestalt
 {
 public:
-	Ellipse *ellipse;							// E-junction ellipse
-	unsigned vertex; 							// LEFT vertex between 0-180°, RIGHT vertex between 180°-360°
-  Line *line;										// E-junction line
-  unsigned lineEnd;							// line end (START/END) with ellipse intersection
-	Vector2 isct;									// intersection point of search-lines
-	double gap[2]; 								// gap between line (ellipse) and intersection point (isct)
+	Ellipse *ellipse;							///< E-junction ellipse
+	unsigned vertex; 							///< LEFT vertex between 0-180°, RIGHT vertex between 180°-360°
+  Line *line;										///< E-junction line
+  unsigned lineEnd;							///< line end (START/END) with ellipse intersection
+	Vector2 isct;									///< intersection point of search-lines
+	double gap[2]; 								///< gap between line (ellipse) and intersection point (isct)
 	
-	Array<Line*> colLines;				// all lines which are connected via a collinearity
-	Array<unsigned> colLinesEnd;	// the nearer line end
+	Array<Line*> colLines;				///< all lines which are connected via a collinearity
+	Array<unsigned> colLinesEnd;	///< the nearer line end
 
   EJunction(VisionCore *vc, Line *l, Ellipse *e, unsigned lE, unsigned vtx);
   void UpdateColLines(Line* l, unsigned lE);

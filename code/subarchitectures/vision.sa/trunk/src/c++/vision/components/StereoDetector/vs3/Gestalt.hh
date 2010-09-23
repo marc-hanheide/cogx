@@ -10,7 +10,7 @@
 #define Z_GESTALT_HH
 
 #include <cstdio>
-#include "Namespace.hh"
+// #include "Namespace.hh"
 #include "Array.hh"
 // #include "VisionCore.hh"
 

@@ -11,8 +11,8 @@
 #include <algorithm>
 #include <cstdio>
 #ifdef USE_OPENCV_ELLFIT
-#include <opencv/cv.h>
-#include <opencv/cvtypes.h>
+#include <cv.h>
+#include <cvtypes.h>
 #else
 // extern "C" for FitEllipse_b2ac
 // {

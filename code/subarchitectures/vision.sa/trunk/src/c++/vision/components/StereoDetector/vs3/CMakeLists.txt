@@ -65,7 +65,7 @@ SET(SOURCES
 	GestaltPrinciple.cc
 #	HCF2.cc
 #	IceInterface.cc
-	IdImage.cc
+ 	IdImage.cc
 #	Image.cc
 	Line.cc
 #	LiveVideo.cc
