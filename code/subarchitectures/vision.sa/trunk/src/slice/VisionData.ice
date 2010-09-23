@@ -374,6 +374,20 @@ sequence<OneObj> ObjSeq;
   };
 
   /**
+   * Relative Angle and Scale (RAS) - a coarse 3D shape descriptor.
+   * It encodes turning angles between adjacent planar patches of object surface.
+   * Angles range from 0..2 pi, where angles > pi represent concavities.
+   * (note: relative scale has been taken out for now)
+   * @author Hannes Prankl (prankl@acin.tuwien.ac.at)
+   * @author Michael Zillich (zillich@acin.tuwien.ac.at)
+   */
+  struct RASShapeDescriptor {
+    // normalised histogram of angles
+    // bin size is 2 pi / size
+    DoubleSeq angleHistogram;
+  };
+
+  /**
    * Proto Object
    */
   class ProtoObject {
@@ -389,6 +403,9 @@ sequence<OneObj> ObjSeq;
 
     // List of surface 3D points
     SurfacePointSeq points;
+    
+    // RAS shape descriptor
+    RASShapeDescriptor rasShapeDesc;
 
     // time the object was last changed
     cast::cdl::CASTTime time;
