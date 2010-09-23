@@ -13,10 +13,11 @@
 #include <stdlib.h>
 #include <string>
 #include <map>
-#include "Namespace.hh"
+// #include "Namespace.hh"
 
 namespace Z
 {
+	using namespace std;
 
 /**
  * @brief Class Config

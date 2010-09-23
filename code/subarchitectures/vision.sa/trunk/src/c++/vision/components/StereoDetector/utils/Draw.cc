@@ -8,7 +8,7 @@
 
 
 #include "Draw.hh"
-#include <opencv/highgui.h>
+#include <highgui.h>
 
 #include <math.h>
 
