@@ -11,7 +11,7 @@
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
-#include <opencv/highgui.h>
+#include <highgui.h>
 #include "StereoDetector.h"
 #include "StereoBase.h"
 #include "Draw.hh"
@@ -53,6 +53,8 @@ void StereoDetector::configure(const map<string,string> & _config)
 	cannyAlpha = 0.8;							// Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
 	cannyOmega = 0.001;
 
+	activeReasoner = true;				// activate reasoner
+	
 	receiveImagesStarted = false;
 	haveImage = false;
 	haveHRImage = false;
@@ -76,7 +78,6 @@ void StereoDetector::configure(const map<string,string> & _config)
 	showStereoType = Z::StereoBase::STEREO_CLOSURE;
 	showSegments = false;
 	showROIs = false;
-
 
   map<string,string>::const_iterator it;
 	if((it = _config.find("--videoname")) != _config.end())
@@ -112,6 +113,8 @@ void StereoDetector::configure(const map<string,string> & _config)
 		log("single shot modus on.");
 		single = true;
 	}
+	
+	reasoner = new Z::Reasoner();
 }
 
 /**
@@ -436,22 +439,55 @@ void StereoDetector::receiveProtoObject(const cdl::WorkingMemoryChange & _wmc)
 }
 
 /**
- *	@brief Receive a new created convex hull.
+ *	@brief Receive a new created convex hull. Copy it to a visual object.
  *	@param wmc Working memory change.
  */
 void StereoDetector::receiveConvexHull(const cdl::WorkingMemoryChange & _wmc)
 {
-	printf("StereoDetector::receiveConvexHull:\n");
+	log("Process new convex hull");
 	ConvexHullPtr chPtr = getMemoryEntry<VisionData::ConvexHull>(_wmc.address);
+
+	// Create a visual object for the plane as mesh and recalculate point sequence 
+	// of convex hull in respect to the center.
+	VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+	obj->pose = chPtr->center;
+	VEC::Vector3 p;
+	std::vector<VEC::Vector3> points;
+	for(unsigned i=0; i< chPtr->PointsSeq.size(); i++)
+	{
+		p.x = chPtr->PointsSeq[i].x - obj->pose.pos.x;	// shift the plane in respect to the pose
+		p.y = chPtr->PointsSeq[i].y - obj->pose.pos.y;
+		p.z = chPtr->PointsSeq[i].z - obj->pose.pos.z;
+		points.push_back(p);
+	}
 	
-	printf("  center position: %4.2f / %4.2f / %4.2f\n", chPtr->center.pos.x, chPtr->center.pos.y, chPtr->center.pos.z);
-	printf("  center rotation matrix:\n    %4.2f / %4.2f / %4.2f\n    %4.2f / %4.2f / %4.2f\n    %4.2f / %4.2f / %4.2f\n", 
-				 chPtr->center.rot.m00, chPtr->center.rot.m01, chPtr->center.rot.m02, 
-				 chPtr->center.rot.m10, chPtr->center.rot.m11, chPtr->center.rot.m12, 
-				 chPtr->center.rot.m20, chPtr->center.rot.m21, chPtr->center.rot.m22);
-	printf("  radius: %4.2f\n", chPtr->radius);
-	printf("  plane: %4.2f / %4.2f / %4.2f / %4.2f\n", chPtr->plane.a, chPtr->plane.b, chPtr->plane.c, chPtr->plane.d);
-	printf("  objects on plane: %u\n", chPtr->Objects.size());
+	VEC::Vector3 pos;				// center position of the plane
+	pos.x = obj->pose.pos.x;
+	pos.y = obj->pose.pos.y;
+	pos.z = obj->pose.pos.z;
+	double radius = chPtr->radius;
+	
+	if(activeReasoner)
+	{
+		reasoner->ProcessConvexHull(pos, radius, points);
+		
+		// add visual object to working memory
+		if(reasoner->GetPlane(obj))
+		{
+			planeID = newDataID();
+			addToWorkingMemory(planeID, obj);
+			log("Wrote new plane as visual object to working memory: %s", planeID.c_str());
+		}
+	}
+
+// 	printf("  center position: %4.2f / %4.2f / %4.2f\n", chPtr->center.pos.x, chPtr->center.pos.y, chPtr->center.pos.z);
+// 	printf("  center rotation matrix:\n    %4.2f / %4.2f / %4.2f\n    %4.2f / %4.2f / %4.2f\n    %4.2f / %4.2f / %4.2f\n", 
+// 				 chPtr->center.rot.m00, chPtr->center.rot.m01, chPtr->center.rot.m02, 
+// 				 chPtr->center.rot.m10, chPtr->center.rot.m11, chPtr->center.rot.m12, 
+// 				 chPtr->center.rot.m20, chPtr->center.rot.m21, chPtr->center.rot.m22);
+// 	printf("  radius: %4.2f\n", chPtr->radius);
+// 	printf("  plane: %4.2f / %4.2f / %4.2f / %4.2f\n", chPtr->plane.a, chPtr->plane.b, chPtr->plane.c, chPtr->plane.d);
+// 	printf("  objects on plane: %u\n", chPtr->Objects.size());
 }
 
 /**
@@ -494,9 +530,21 @@ void StereoDetector::processImage()
     cout << e.what() << endl;
   }
 
-	WriteVisualObjects();
-	ShowImages(false);
+	// do the reasoner things!
+	if(activeReasoner)
+	{
+		if(reasoner->Process(score))
+		{
+			printf("StereoDetector::processImage: Get results of reasoner!\n");
+			reasoner->GetResults();
 
+			printf("StereoDetector::processImage: Write results of reasoner to working memory!\n");
+			// WriteToWM(results);
+		}
+	}
+	else WriteVisualObjects();
+		
+	ShowImages(false);
 	log("Processing of stereo images ended.");
 }
 
@@ -707,7 +755,7 @@ void StereoDetector::WriteVisualObjects()
 void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 {
 	static unsigned frameNumber = 0;
-	static unsigned numStereoObjects = 0;
+// 	static unsigned numStereoObjects = 0;
 	VisionData::VisualObjectPtr obj;
 
 	for(int i=0; i<score->NumStereoMatches((Z::StereoBase::Type) type); i++)
@@ -718,10 +766,10 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 		if(success)
 		{
 			// label object with incremtal raising number
-			char obj_label[32];
-			sprintf(obj_label, "Stereo object %d", numStereoObjects);
-			obj->label = obj_label;
-			numStereoObjects++;
+// 			char obj_label[32];
+// 			sprintf(obj_label, "Stereo object %d", numStereoObjects);
+// 			obj->label = obj_label;
+// 			numStereoObjects++;
 		
 			// add visual object to working memory
 			std::string objectID = newDataID();
@@ -734,7 +782,7 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 
 			cvWaitKey(20);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
 
-			debug("Add new visual object to working memory: %s - %s", obj->label.c_str(), objectID.c_str());
+			debug("Add new visual object to working memory: %s", objectID.c_str());
 		}
 	}
 	

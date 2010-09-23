@@ -13,21 +13,21 @@
 
 #include "DoxyMain.h"
 
-#include <cast/architecture/ManagedComponent.hpp>
-#include <VideoClient.h>
-#include <VisionData.hpp>
-#include <VideoUtils.h>
 #include <vector>
 #include <stdexcept>
 
+#include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
+#include <VideoClient.h>
 #include <StereoClient.h>
+#include <VideoUtils.h>
 #include <../../VisionUtils.h>
 
 #include "StereoCore.hh"
 #include "Pose3.h"
 #include "StereoBase.h"
 #include "Gestalt.hh"
+#include "Reasoner.h"
 
 namespace cast
 {
@@ -44,6 +44,7 @@ private:
 
 	int runtime;																///< Overall processing runtime for one image (pair)
 	Z::StereoCore *score;												///< Stereo core
+	Z::Reasoner *reasoner;											///< Reasoner (and Filter)
 	float cannyAlpha, cannyOmega;								///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?
 	std::vector<int> camIds;										///< Which cameras to get images from
 	std::string videoServerName;								///< Component ID of the video server to connect to
@@ -67,6 +68,9 @@ private:
 		int roiScale;															///< Scale between video and stereo image (normally 4(:1))
 	};
 	std::map<std::string, ROIData> rcvROIs;			///< Received stable region of interests (ROIs), stored with WM address
+
+	bool activeReasoner;												///< Initialize, when reasoner should work!
+	std::string planeID;												///< Plane (from reasoner): address on working memory
 
 	bool receiveImagesStarted;									///< True, when videoServer->startReceiveImages() was called.
 	int mode7;																	///< Mode for PointGrey cameras (1,0 = resizing/pruning)
