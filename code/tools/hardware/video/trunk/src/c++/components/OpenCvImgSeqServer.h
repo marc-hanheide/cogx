@@ -38,6 +38,11 @@ private:
   int frameCnt;
   int framerateMillis;
   int width, height;
+
+  // Number of times each frame is repeated; default = 1
+  int frameRepeatCnt;
+  int frameRepeatPos;
+
   /**
    * Integer factor for downsampling.
    * NOTE: ignored for now!

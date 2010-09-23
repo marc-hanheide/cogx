@@ -34,6 +34,7 @@ OpenCvImgSeqServer::OpenCvImgSeqServer()
   frameCnt = 0;
   downsampleFactor = 1;
   width = height = 0;
+  frameRepeatCnt = 1;
 }
 
 OpenCvImgSeqServer::~OpenCvImgSeqServer()
@@ -155,7 +156,13 @@ void OpenCvImgSeqServer::grabFramesInternal() throw(runtime_error)
   cdl::CASTTime time = getCASTTime();
   for(size_t i = 0; i < grabTimes.size(); i++)
     grabTimes[i] = time;
-  frameCnt++;
+
+  if (frameRepeatPos > frameRepeatCnt) frameRepeatPos = frameRepeatCnt;
+  frameRepeatPos--;
+  if (frameRepeatPos <= 0) {
+    frameRepeatPos = frameRepeatCnt;
+    frameCnt++;
+  }
 }
 
 void OpenCvImgSeqServer::grabFrames()
@@ -288,6 +295,13 @@ void OpenCvImgSeqServer::configure(const map<string,string> & _config)
     str >> step;
     if(step <= 0)
       step = 1;
+  }
+  if((it = _config.find("--repeatframe")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> frameRepeatCnt;
+    if(frameRepeatCnt <= 0)
+      frameRepeatCnt = 1;
   }
   if((it = _config.find("--framerate_ms")) != _config.end())
   {
