@@ -9,7 +9,7 @@
 #ifndef Z_COLOR_HH
 #define Z_COLOR_HH
 
-#include "Namespace.hh"
+// #include "Namespace.hh"
 
 namespace Z
 {

@@ -11,10 +11,12 @@
 
 #include <string>
 #include <fstream>
-#include "Namespace.hh"
+// #include "Namespace.hh"
 
 namespace Z
 {
+
+using namespace std;
 
 /**
  * @brief Class Work with configurations from a config file.
