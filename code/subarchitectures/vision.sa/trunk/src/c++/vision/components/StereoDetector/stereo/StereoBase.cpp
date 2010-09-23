@@ -244,7 +244,7 @@ void Surf2D::Init(Rectangle *rectangle)
  */
 void Surf2D::Init(Cube *cube, int side)
 {
-	printf("StereoBase: Surf2D::Init(Cube *cube, int side): Implemented, but untested\n");
+// printf("StereoBase: Surf2D::Init(Cube *cube, int side): Implemented, but untested\n");
 
   p.resize(4);
   pr.resize(4);

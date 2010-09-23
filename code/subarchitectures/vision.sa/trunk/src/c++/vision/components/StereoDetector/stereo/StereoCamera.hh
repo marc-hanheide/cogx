@@ -9,7 +9,7 @@
 #ifndef STEREO_CAMERA_HH
 #define STEREO_CAMERA_HH
 
-#include "Namespace.hh"
+// #include "Namespace.hh"
 //#include "Pose3.hh"
 #include "Math.hh"
 
