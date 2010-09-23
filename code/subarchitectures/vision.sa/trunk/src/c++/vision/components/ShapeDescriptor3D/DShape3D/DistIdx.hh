@@ -24,7 +24,7 @@ public:
 /**
  * for sorting an array increasing dists
  */
-static int CmpDistIdxAsc(const void *a, const void *b)
+inline int CmpDistIdxAsc(const void *a, const void *b)
 { 
   if ( ((DistIdx*)a)->dist < ((DistIdx*)b)->dist)
     return -1;  // a is first
@@ -35,7 +35,8 @@ static int CmpDistIdxAsc(const void *a, const void *b)
 /**
  * for sorting an array decreasing dists
  */
-static int CmpDistIdxDsc(const void *a, const void *b)
+
+inline int CmpDistIdxDsc(const void *a, const void *b)
 { 
   if ( ((DistIdx*)a)->dist > ((DistIdx*)b)->dist)
     return -1;  // a is first

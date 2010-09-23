@@ -274,6 +274,7 @@ void DrawLine3D(std::ostringstream &str,
                 double x1, double y1, double z1, 
                 double x2, double y2, double z2, P::RGBColor col)
 {
+  // scale graphics output cauas right now i can't zoom in the viewer
   double s = 10.;
   str << "glColor(" << (double)col.r/255. << ", "
       << (double)col.g/255. << ", "
