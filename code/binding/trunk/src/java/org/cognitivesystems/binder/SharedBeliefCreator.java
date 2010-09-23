@@ -191,7 +191,13 @@ public class SharedBeliefCreator extends ManagedComponent {
 	
 		
 	
-	
+	/**
+	 * Note: I still need to include the pointer to the shared belief!!!
+	 * 
+	 * @param privateBelief
+	 * @param sharedFeatures
+	 * @return
+	 */
 	private dBelief createSharedBelief (dBelief privateBelief, Vector<String> sharedFeatures) {
 		
 		dBelief sharedBelief = new dBelief();
