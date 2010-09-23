@@ -30,6 +30,9 @@ using namespace VisionData;
 // default stereo image width
 #define STEREO_WIDTH_DEF 320
 
+// default size of angle histogram for RAS shape descriptor
+#define HISTOGRAM_SIZE_DEF 24
+
 #ifdef FEAT_VISUALIZATION
   // display objects
   #define ID_OBJECT_3D      "ShapeDescriptor3D.3D"
@@ -50,6 +53,8 @@ ShapeDescriptor3D::ShapeDescriptor3D()
   : camId(0)
 {
   stereoWidth = STEREO_WIDTH_DEF;
+  histogramSize = HISTOGRAM_SIZE_DEF;
+  logImages = false;
 #ifdef FEAT_VISUALIZATION
   m_display.setClientData(this);
 #endif
@@ -70,6 +75,18 @@ void ShapeDescriptor3D::configure(const std::map<std::string,std::string> & _con
   {
     istringstream str(it->second);
     str >> stereoWidth;
+  }
+
+  if((it = _config.find("--histogramSize")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> histogramSize;
+    assert(histogramSize > 0);
+  }
+
+  if((it = _config.find("--logImages")) != _config.end())
+  {
+    logImages = true;
   }
 
 #ifdef FEAT_VISUALIZATION
@@ -141,10 +158,6 @@ void ShapeDescriptor3D::calculateDescriptor(ProtoObject &pobj)
 
   // prepare mask image with white ROI on black background
   cvSet(iplMask, cvScalar(0));
-  //int xstart = max(0, (int)(roiPtr->rect.pos.x - roiPtr->rect.width/2));
-  //int xend = min(iplMask->width - 1, (int)(roiPtr->rect.pos.x + roiPtr->rect.width/2));
-  //int ystart = max(0, (int)(roiPtr->rect.pos.y - roiPtr->rect.height/2));
-  //int yend = min(iplMask->height - 1, (int)(roiPtr->rect.pos.y + roiPtr->rect.height/2));
   int xoffs = (int)(roiPtr->rect.pos.x - roiPtr->rect.width/2);
   int yoffs = (int)(roiPtr->rect.pos.y - roiPtr->rect.height/2);
   for(int y = 0; y < pobj.mask.height; y++)
@@ -157,14 +170,8 @@ void ShapeDescriptor3D::calculateDescriptor(ProtoObject &pobj)
         if(xx >= 0 && xx < iplMask->width && yy >= 0 && yy < iplMask->height)
           iplMask->imageData[yy*iplMask->width + xx] = 255;
       }
-  /*cvRectangle(iplMask,
-      cvPoint(roiPtr->rect.pos.x - roiPtr->rect.width/2, roiPtr->rect.pos.y - roiPtr->rect.height/2),
-      cvPoint(roiPtr->rect.pos.x + roiPtr->rect.width/2, roiPtr->rect.pos.y + roiPtr->rect.height/2),
-      cvScalar(255),
-      CV_FILLED);*/
 
   // pepare camera parameters in format expected by dshape
-  cout << image[LEFT].camPars.pose << endl << image[RIGHT].camPars.pose << endl;  // HACK
   CvMat *intrinsic[2];
   CvMat *distortion[2];
   CvMat *rot = cvCreateMat(3, 3, CV_32FC1);
@@ -200,14 +207,22 @@ void ShapeDescriptor3D::calculateDescriptor(ProtoObject &pobj)
   dshape.SetDebugImage(iplDebug[LEFT], iplDebug[RIGHT]);
   dshape.SetCameraParameter(intrinsic[LEFT], intrinsic[RIGHT],
       distortion[LEFT], distortion[RIGHT], rot, trans);
-  dshape.Operate(iplImage[LEFT], iplImage[RIGHT], ras, iplMask);
+  // note: we do not use relative scale between planes, therefore sizeScale = 1
+  dshape.Operate(iplImage[LEFT], iplImage[RIGHT], ras, histogramSize, 1, iplMask);
 
-  // HACK: debug only
-  cvSaveImage("shape-mask.jpg", iplMask);
-  cvSaveImage("shape-img-L.jpg", iplImage[LEFT]);
-  cvSaveImage("shape-img-R.jpg", iplImage[RIGHT]);
-  cvSaveImage("shape-debug-L.jpg", iplDebug[LEFT]);
-  cvSaveImage("shape-debug-R.jpg", iplDebug[RIGHT]);
+  // set shape descriptpr of proto object
+  pobj.rasShapeDesc.angleHistogram.resize(ras.Size());
+  for(unsigned i=0; i < ras.Size(); i++)
+    pobj.rasShapeDesc.angleHistogram[i] = ras.data[i];
+
+  if(logImages)
+  {
+    cvSaveImage("shape-mask.jpg", iplMask);
+    cvSaveImage("shape-img-L.jpg", iplImage[LEFT]);
+    cvSaveImage("shape-img-R.jpg", iplImage[RIGHT]);
+    cvSaveImage("shape-debug-L.jpg", iplDebug[LEFT]);
+    cvSaveImage("shape-debug-R.jpg", iplDebug[RIGHT]);
+  }
 
   // HACK
   cout<<"--"<<endl;

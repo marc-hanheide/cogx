@@ -36,9 +36,17 @@ private:
    */
   int stereoWidth;
   /**
+   * size of the angle histogram of the RAS shape descriptor
+   */
+  int histogramSize;
+  /**
    * actual shape description class
    */
   P::DShapeCore dshape;
+  /**
+   * whether to log images to files
+   */
+  bool logImages;
 
 #ifdef FEAT_VISUALIZATION
 	class MyDisplayClient: public display::CDisplayClient
