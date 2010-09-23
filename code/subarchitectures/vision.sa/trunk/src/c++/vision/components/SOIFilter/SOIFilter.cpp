@@ -366,7 +366,7 @@ void SOIFilter::runComponent()
 			
 			  soi.objectTime = getCASTTime();
 			  soi.objId = objId;
-saveSnapshot(); // HACK
+
 			  log("A proto-object added ID %s",
 				  objId.c_str(), soi.updCount);
 			}
