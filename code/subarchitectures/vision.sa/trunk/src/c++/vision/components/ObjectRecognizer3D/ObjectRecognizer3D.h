@@ -38,20 +38,20 @@ class ObjectRecognizer3D : public VideoClient, public ManagedComponent
 {
 private:
 	VisionData::Recognizer3DCommandType m_task;
-	
+
 	P::Array<P::KeypointDescriptor*> m_image_keys;
 	P::Array<P::KeypointDescriptor*> m_temp_keys;
 	P::ModelObject3D	sift_model_learner;
 	P::ODetect3D*			m_detect;
-  
+
   IplImage *m_iplImage;
   IplImage *m_iplGray;
-  
+
   std::vector<VisionData::Recognizer3DCommandPtr> m_recCommandList;
   std::vector<std::string> m_recCommandID;
   VisionData::Recognizer3DCommandPtr m_rec_cmd;
   std::string m_rec_cmd_id;
-  
+
   Video::Image m_image;
   int m_width;
   int m_height;
@@ -59,11 +59,11 @@ private:
   std::vector<int> camIds;								///< Which cameras to get images from
   std::string videoServerName;
   Video::VideoInterfacePrx videoServer;
-  
+
   struct RecEntry{
   	std::string siftfile;
   	std::string plyfile;
-  	P::Object3D* object;  	
+  	P::Object3D* object;
   	std::string visualObjectID;
   	bool learn;
   	RecEntry(){
@@ -73,20 +73,21 @@ private:
   };
 	std::map<std::string,RecEntry> m_recEntries;
 	std::string m_label;
-	
+
 	float m_confidence;
-	
+
   bool m_starttask;
   bool m_wait4data;
   bool m_showCV;
-  
+
   void loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Pose3 pose, std::string label);
   void addTrackerCommand(VisionData::TrackingCommandType cmd, std::string& modelID);
   void get3DPointFromTrackerModel(std::string& modelID, VisionData::VertexSeq& vertexlist);
-  
+
   void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
+  void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
   void receiveRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc);
-  
+
   void init();
   void learnSiftModel(std::string& modelID, std::string& label);
   void learnSiftModel(P::DetectGPUSIFT &sift);
@@ -96,20 +97,20 @@ protected:
 
   /** @brief called by the framework to configure our component */
   virtual void configure(const std::map<std::string,std::string> & _config);
-  
+
   /** @brief called by the framework after configuration, before run loop */
   virtual void start();
-  
+
   /** @brief called by the framework upon deletion of the component */
   virtual void destroy();
-  
+
   /** @brief called by the framework to start compnent run loop */
   virtual void runComponent();
- 
+
 public:
 	ObjectRecognizer3D();
   virtual ~ObjectRecognizer3D();
-  
+
   virtual void receiveImages(const std::vector<Video::Image>& images);
 };
 
