@@ -48,7 +48,6 @@ public class dBeliefInfo extends ObjectImplInfo {
 
 			}
 			extraInfo.add(distrStr);
-//			extraInfo.addAll(super.toVector(iceObject));
 		} catch (ClassCastException e) {
 			return super.toVector(iceObject);
 		}
