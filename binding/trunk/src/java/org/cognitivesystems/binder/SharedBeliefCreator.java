@@ -56,6 +56,12 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
  * If such pair of belief is found, a new shared belief is created with the subsumed 
  * feature(s), pointing to the private belief.
  * 
+ * TODO:
+ * - add a slice file with the pointer label constant
+ * - instead of always creating a new shared belief, check whether one exists already
+ * - testing and debugging...
+ * 
+ * 
  * @author Pierre Lison (plison@dfki.de)
  * @version 23/08/2010
  * 
