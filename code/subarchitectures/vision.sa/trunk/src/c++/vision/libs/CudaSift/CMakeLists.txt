@@ -51,9 +51,15 @@ set(CUDA_HEADERS
 set(CUDA_DEPS ${CUDA_HEADERS} cudaSiftD.cu)
 nvcc_compile(CUDA_OBJS CUDA_SOURCES CUDA_DEPS)
 
+link_directories(
+   ${CUDA_INSTALLROOT}/lib
+   )
 add_library(${LIBNAME} SHARED
    cudaSift_gold.cpp
    ${CUDA_OBJS}
+   )
+target_link_libraries(${LIBNAME}
+   cudart
    )
 
 install(TARGETS ${LIBNAME} DESTINATION ${COGX_ROOT}/output/lib)
