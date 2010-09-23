@@ -1,4 +1,4 @@
-function [rCqnt] = cogxVisualLearner_recognise(X, B, pts3d)
+function [rCpcx,gain] = cogxVisualLearner_recognise(X, B, pts3d)
    % X - image - byte_array
    % B - segmentation mask - byte_array
 
@@ -42,8 +42,12 @@ function [rCqnt] = cogxVisualLearner_recognise(X, B, pts3d)
       ansYes = lf2sfa(ansQl, ANSyes);
       ansPy = lf2sfa(ansQl, ANSpy);
       disp(['Recognised: ',idx2name(ansYes,Coma.Cnames)]);
+      
+      g=ODKDEgain(f,mC);
+      gain=cc2c(g);
+      
       showRec(ansYes,ansPy,rCpcx,f);
-      displayTR(ansYes,ansPy,avu);
+      displayTR(ansYes,ansPy,avu,g);
       displayG(Figs.LRguiR.main,'GR');                 
       
       disp(['MATLAB: cogxVisualLearner_recognise DONE']);
