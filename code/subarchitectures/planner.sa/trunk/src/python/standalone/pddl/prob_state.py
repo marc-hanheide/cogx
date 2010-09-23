@@ -205,7 +205,7 @@ class ProbabilisticState(State):
             dict.__setitem__(self, svar, vdist)
         else:
             assert value.is_instance_of(svar.get_type()), "type of %s (%s) is incompatible with %s" % (str(svar), str(svar.get_type()), str(value))
-            dict.__setitem__(self, ValueDistribution(value))
+            dict.__setitem__(self, svar, ValueDistribution(value))
 
     def __contains__(self, key):
         if isinstance(key, Fact):
@@ -282,7 +282,7 @@ class ProbabilisticState(State):
         exclude_domains = defaultdict(list)
 
         def get_p_svar(svar, value):
-            func = self.problem.functions.get("p-%s" % svar.function.name, svar.args + [value])
+            func = self.problem.functions.get("p-%s" % svar.function.name, list(svar.args) + [value])
             if not func:
                 return None
             return StateVariable(func, svar.args+[value])
