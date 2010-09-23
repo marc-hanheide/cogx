@@ -58,7 +58,7 @@ inline void RASDescriptor::Set(int sizeAngle, int sizeScale)
 
 inline void RASDescriptor::Clear()
 {
-  for (int i=0; i<Size(); i++)
+  for (unsigned  i=0; i<Size(); i++)
     data[i] = 0.;
 }
 
@@ -114,11 +114,11 @@ inline void RASDescriptor::Insert(double relAngle, double relScale)
 inline void RASDescriptor::Normalise()
 {
   float sum=0;
-  for (int i=0; i<Size(); i++)
+  for (unsigned i=0; i<Size(); i++)
     sum += data[i];
 
   if (sum>0.)
-    for (int i=0; i<Size(); i++) 
+    for (unsigned i=0; i<Size(); i++) 
       data[i] /= sum;
 }
 

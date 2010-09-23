@@ -27,7 +27,7 @@ double DShapeCore::SIZE_SURF = 10;
 double DShapeCore::MAX_DIST_SURF = .35;
 double DShapeCore::MAX_DIST_SIFT = .35;
 
-int DShapeCore::RAS_SIZE_ANGLE = 72;//36;//24;
+int DShapeCore::RAS_SIZE_ANGLE = 24; //72;//36;//24;
 int DShapeCore::RAS_SIZE_SCALE = 1;
 
 
