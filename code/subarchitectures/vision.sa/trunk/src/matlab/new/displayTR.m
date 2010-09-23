@@ -1,4 +1,4 @@
-function displayTR(ansYes,ansPy,avu)
+function displayTR(ansYes,ansPy,avu,g)
 
 global Coma Disp Settings
 
@@ -20,7 +20,7 @@ if Settings.Disp.TR
       cs1=[cs repmat('    ',numC,1)];
       cs2=reshape(cs1',1,numel(cs1));
       aps=avu{sc}(:,2);
-      gain=aps;
+      gain=g{sc}(:,2);
       
       fprintf(fid,'<u>%s:</u> <BR>\n',Coma.SCnames(sc,:));
       fprintf(fid,'    C:  ');

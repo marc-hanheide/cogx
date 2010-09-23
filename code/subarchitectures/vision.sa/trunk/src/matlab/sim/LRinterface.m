@@ -17,8 +17,13 @@ switch req
       ansYes = lf2sfa(ansQl, ANSyes);
       ansPy = lf2sfa(ansQl, ANSpy);
       disp(['Recognised: ',idx2name(ansYes,Coma.Cnames)]);
+      
+      g=ODKDEgain(f,mC);
+      gain=cc2c(g);
+
+      
       showRec(ansYes,ansPy,rCpcx,f);
-      displayTR(ansYes,ansPy,avu);
+      displayTR(ansYes,ansPy,avu,g);
       displayG(Figs.LRguiR.main,'GR');
    case 2 %update
       avwp=avw(find(avw(:,2)>0),:);
