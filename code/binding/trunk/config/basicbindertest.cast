@@ -1,0 +1,7 @@
+HOST localhost
+SUBARCHITECTURE binder
+
+JAVA WM			cast.architecture.SubarchitectureWorkingMemory
+JAVA TM			cast.architecture.AlwaysPositiveTaskManager
+JAVA GD	beliefcreator	org.cognitivesystems.binder.SharedBeliefCreator --log true
+JAVA GD	test1	org.cognitivesystems.binder.SharedBeliefCreatorTest --log true
