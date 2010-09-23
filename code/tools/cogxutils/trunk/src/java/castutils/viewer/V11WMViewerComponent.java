@@ -66,7 +66,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 				for (Object o : row) {
 					logString += "<td>" + o.toString() + "</td>";
 				}
-				if (addGenericCol ) {
+				if (addGenericCol) {
 					String genericText=(String) genericPlugin.toVector(newEntry).get(0);
 					logString += "<td>" + genericText + "</td>";
 					getLogger().info(CASTUtils.toString(wmc) +genericText);
