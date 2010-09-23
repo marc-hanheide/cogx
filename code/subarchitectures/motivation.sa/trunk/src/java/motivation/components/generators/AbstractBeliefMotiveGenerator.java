@@ -6,7 +6,10 @@ package motivation.components.generators;
 import java.util.HashMap;
 import java.util.Map;
 
+import motivation.slice.GeneralGoalMotive;
 import motivation.slice.Motive;
+import motivation.slice.MotivePriority;
+import motivation.slice.MotiveStatus;
 import cast.CASTException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
@@ -25,6 +28,8 @@ import eu.cogx.beliefs.WMBeliefView;
 public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends dBelief>
 		extends ManagedComponent implements ChangeHandler<T> {
 
+	private static final int DEFAULT_MAX_EXECUTION_TIME = 60 * 5;
+	private static final int DEFAULT_MAX_PLANNING_TIME = 10;
 	final WMView<T> beliefView;
 	final Map<WorkingMemoryAddress, WorkingMemoryAddress> bel2motiveMap = new HashMap<WorkingMemoryAddress, WorkingMemoryAddress>();
 	final Class<M> motiveClass;
@@ -117,6 +122,16 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 		}
 		}
 
+	}
+
+	protected <T2 extends Motive> T2 fillDefault(T2 result) {
+		result.created = getCASTTime();
+		result.correspondingUnion = "";
+		result.maxExecutionTime = DEFAULT_MAX_EXECUTION_TIME;
+		result.maxPlanningTime = DEFAULT_MAX_PLANNING_TIME;
+		result.priority = MotivePriority.UNSURFACE;
+		result.status = MotiveStatus.UNSURFACED;
+		return result;
 	}
 
 	protected abstract M checkForUpdate(T newEntry, M motive);
