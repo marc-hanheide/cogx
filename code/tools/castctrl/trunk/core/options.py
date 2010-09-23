@@ -6,6 +6,7 @@
 import os, os.path
 import re
 import optdefault
+import glob
 
 regSimple = re.compile (r"\$([a-z_0-9]+)", re.IGNORECASE)
 regSimpleBrace = re.compile (r"\${([a-z_0-9]+)}", re.IGNORECASE)
@@ -36,12 +37,25 @@ class CUserOptions(object):
     def __init__(self):
         self.textEditCmd = "gvim --servername GVIM --remote-silent %l[+:] %s"
         self.terminalCmd = "gnome-terminal --working-directory='%s'" 
+        self.maxMainLogLines = 500
+        self.maxBuildLogLines = 500
         self._config = ["[USEROPTIONS]"] + optdefault.useroptions.split("\n")
         self.modified = False
 
     @property
     def configFile(self):
         return os.path.join(CONFIG_DIR, "user.conf")
+
+    def _getString(self, line):
+        return line[line.find("=")+1:].strip()
+
+    def _getInt(self, line, vmin=None, vmax=None):
+        s = line[line.find("=")+1:].strip()
+        try: v = int(s)
+        except: v = 0
+        if vmin != None and v < vmin: v = vmin
+        if vmax != None and v > vmax: v = vmax
+        return v
 
     def loadConfig(self):
         filename = self.configFile
@@ -59,8 +73,10 @@ class CUserOptions(object):
             elif l.startswith('['): section = None
             else:
                 if section == "USER":
-                    if ln.startswith("EDITOR="): self.textEditCmd = ln[7:].strip()
-                    if ln.startswith("TERMINAL="): self.terminalCmd = ln[9:].strip()
+                    if ln.startswith("EDITOR="): self.textEditCmd = self._getString(ln)
+                    if ln.startswith("TERMINAL="): self.terminalCmd = self._getString(ln)
+                    if ln.startswith("MAINLOGLINES="): self.maxMainLogLines = self._getInt(ln, 100, 10000)
+                    if ln.startswith("BUILDLOGLINES="): self.maxBuildLogLines = self._getInt(ln, 100, 10000)
 
     def saveConfig(self):
         filename = self.configFile
@@ -79,9 +95,10 @@ class CCastOptions(object):
         self.mruCfgCast = []
         self.mruCfgHosts = []
         self.options = {}
-        self.environmentDefault = [s.lstrip() for s in optdefault.environment.split("\n")]
+        self.environmentDefault = [s for s in optdefault.environment.split("\n")]
         self._environscript = None
         self._xenviron = None
+        self._tempNewEnv = None # temp environ used for merging
         self.cleanupScript = [s.lstrip() for s in optdefault.cleanup.split("\n")]
         self.codeRootDir = os.path.abspath('.')
 
@@ -189,10 +206,6 @@ class CCastOptions(object):
             for ln in v:
                 f.write(ln); f.write("\n")
 
-        # FIXME: temporary location for user options; move to a file in home dir
-        #f.write("[USEROPTIONS]\n")
-        #f.write(optdefault.useroptions)
-
 
     def saveHistory(self, afile):
         f = afile
@@ -209,20 +222,41 @@ class CCastOptions(object):
         for k,v in self.options.iteritems():
             f.write("%s=%s\n" % (k,v))
 
+    def _globFileList(self, globTag):
+        globTag = globTag.replace("<glob>", "").replace("</glob>", "")
+        globExpr = _xe(globTag, self._tempNewEnv)
+        return glob.glob(globExpr)
+
+    def _readPathList(self, lineIterator, separator=":"):
+        paths = []
+        for stm in lineIterator:
+            stm = stm.split('#')[0]
+            stm = stm.strip()
+            if len(stm) < 1: continue
+            if stm == "</pathlist>": break
+            if stm.startswith("<glob>"):
+                paths += self._globFileList(stm)
+            else: paths.append(stm)
+        return separator.join(paths).replace("::", ":")
+
     def _mergeEnvironment(self, env, expressionList):
-        newenv = env.copy()
-        for stm in expressionList:
+        self._tempNewEnv = env.copy()
+        iexpr = expressionList.__iter__()
+        for stm in iexpr:
             stm = stm.split('#')[0]
             stm = stm.strip()
             if len(stm) < 1: continue
             mo = regVarSet.match(stm)
             if mo != None:
-                rhs = _xe(mo.group(2), newenv)
+                lhs, rhs = mo.group(1), mo.group(2)
+                if rhs == "<pathlist>":
+                    rhs = self._readPathList(iexpr)
+                rhs = _xe(rhs, self._tempNewEnv)
                 rhs = rhs.replace("[PWD]", self.codeRootDir)
-                newenv[mo.group(1)] = rhs
+                self._tempNewEnv[lhs] = rhs
             else: print "Invalid ENV expression:", stm
 
-        return newenv
+        return self._tempNewEnv
 
     def configEnvironment(self):
         newenv = self.environ

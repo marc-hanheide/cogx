@@ -37,6 +37,10 @@ class CLogDisplayer:
         text = self.reWarning.sub(r'<span style="background-color: #ddddff;"> \1 </span>', text)
         return text
 
+    def setMaxBlockCount(self, count):
+        doc = self.qtext.document()
+        doc.setMaximumBlockCount(count)
+
     def pullLogs(self):
         mods = False
         self.log.merge()
@@ -117,9 +121,11 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.tabOldInterface))
 
         self.mainLog  = CLogDisplayer(self.ui.mainLogfileTxt)
+        self.mainLog.setMaxBlockCount(self._userOptions.maxMainLogLines)
         self.mainLog.log.addSource(LOGGER)
 
         self.buildLog  = CLogDisplayer(self.ui.buildLogfileTxt)
+        self.buildLog.setMaxBlockCount(self._userOptions.maxBuildLogLines)
         self.buildLog.showFlush = True
 
         self._processModel = processtree.CProcessTreeModel()

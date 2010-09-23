@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Wed Sep 15 17:31:01 2010
+# Created: Wed Sep 22 13:03:37 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -345,9 +345,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_16.addLayout(self.horizontalLayout_19)
         self.verticalLayout_15.addWidget(self.log4jConfigPanel)
         self.verticalLayout_2.addWidget(self.frame_8)
-        self.label_17 = QtGui.QLabel(self.tabConfigure)
-        self.label_17.setObjectName("label_17")
-        self.verticalLayout_2.addWidget(self.label_17)
         spacerItem6 = QtGui.QSpacerItem(20, 235, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem6)
         self.tabWidget.addTab(self.tabConfigure, "")
@@ -565,7 +562,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.frame_6)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 883, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 883, 21))
         self.menubar.setObjectName("menubar")
         self.menuCast = QtGui.QMenu(self.menubar)
         self.menuCast.setObjectName("menuCast")
@@ -782,7 +779,6 @@ class Ui_MainWindow(object):
         self.label_12.setText(QtGui.QApplication.translate("MainWindow", "Console:", None, QtGui.QApplication.UnicodeUTF8))
         self.log4jConsoleLevelCmbx.setStatusTip(QtGui.QApplication.translate("MainWindow", "Player configuration file", None, QtGui.QApplication.UnicodeUTF8))
         self.label_16.setText(QtGui.QApplication.translate("MainWindow", "XML File:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_17.setText(QtGui.QApplication.translate("MainWindow", "NOTE: Preferred editor and terminal are configured in ~/.config/CASTControl/user.conf", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabConfigure), QtGui.QApplication.translate("MainWindow", "Configure", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("MainWindow", "Servers", None, QtGui.QApplication.UnicodeUTF8))
         self.btServerStart.setText(QtGui.QApplication.translate("MainWindow", "Start", None, QtGui.QApplication.UnicodeUTF8))
@@ -805,7 +801,7 @@ class Ui_MainWindow(object):
         self.menuCast.setTitle(QtGui.QApplication.translate("MainWindow", "&Cast", None, QtGui.QApplication.UnicodeUTF8))
         self.menu_Process.setTitle(QtGui.QApplication.translate("MainWindow", "&Process", None, QtGui.QApplication.UnicodeUTF8))
         self.menu_Build.setTitle(QtGui.QApplication.translate("MainWindow", "&Build", None, QtGui.QApplication.UnicodeUTF8))
-        self.menu_Edit.setTitle(QtGui.QApplication.translate("MainWindow", "&Edit", None, QtGui.QApplication.UnicodeUTF8))
+        self.menu_Edit.setTitle(QtGui.QApplication.translate("MainWindow", "&Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.dockWidget.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Process tree", None, QtGui.QApplication.UnicodeUTF8))
         self.processBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.buildBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))

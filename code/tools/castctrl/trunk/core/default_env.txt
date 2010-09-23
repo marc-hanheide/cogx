@@ -22,25 +22,44 @@ CAST_LIB_PREFIX=lib/cast
 CAST_LIB_DIR=${CAST_INSTALL_ROOT}/${CAST_LIB_PREFIX}
 CAST_PY_DIR=${CAST_LIB_DIR}/python
 
-CAST_JAR=${CAST_INSTALL_ROOT}/share/java/cast.jar
-
 CAST_CONFIG_PATH=share/cast/config/cast_ice_config
 CAST_ICE_CONFIG=${CAST_INSTALL_ROOT}/${CAST_CONFIG_PATH}
 
 ICE_CONFIG=${CAST_ICE_CONFIG}
-ICE_JARS=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar
 
-LOG4_JAR=/usr/share/java/log4j-1.2.jar
+PATH=<pathlist>
+   ${COGX_ROOT}/output/bin
+   ${CUDA_ROOT}/bin
+   ${MERCURY_ROOT}/bin
+   ${PATH}
+</pathlist>
 
-PATH=${COGX_ROOT}/output/bin:${CUDA_ROOT}/bin:${MERCURY_ROOT}/bin:${PATH}
-LD_LIB_EXTRA=${CAST_LIB_DIR}:${COGX_LIB_DIR}:${CURE_LIB_DIR}:${CUDA_ROOT}/lib:${MATLAB_RUNTIME_DIR}
-LD_LIBRARY_PATH=${LD_LIB_EXTRA}:${LD_LIBRARY_PATH}
-DYLD_LIBRARY_PATH=${LD_LIB_EXTRA}:${DYLD_LIBRARY_PATH}
+LD_LIBRARY_PATH=<pathlist>
+   ${LD_LIBRARY_PATH}
+   ${CAST_LIB_DIR}
+   ${COGX_LIB_DIR}
+   ${CURE_LIB_DIR}
+   ${CUDA_ROOT}/lib
+   ${MATLAB_RUNTIME_DIR}
+</pathlist>
+DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
 
-CLASSPATH=${CLASSPATH}:${ICE_JARS}:${CAST_JAR}:${COGX_CLASS_DIR}:${LOG4_JAR}
-CMD_JAVA=java -ea -classpath ${CLASSPATH}
+CLASSPATH=<pathlist>
+   ${CLASSPATH}
+   ${CAST_INSTALL_ROOT}/share/java/cast.jar
+   ${COGX_CLASS_DIR}
+   <glob>${COGX_CLASS_DIR}/coma.libs/*.jar</glob> # glob expressions must be on one line
+   /usr/share/java/Ice.jar
+   /usr/share/java/ant-ice.jar
+   /usr/share/java/log4j-1.2.jar
+   /usr/share/java/xstream-1.3.1.jar
+</pathlist>
 
-PYTHONPATH=${PYTHONPATH}:${CAST_PY_DIR}:${COGX_PY_DIR}
+PYTHONPATH=<pathlist>
+   ${CAST_PY_DIR}
+   ${COGX_PY_DIR}
+   ${PYTHONPATH}
+</pathlist>
 
 # V11N can run standalone when --standalone-display-host is set
 # All clients that use the display server should include the 
@@ -48,6 +67,7 @@ PYTHONPATH=${PYTHONPATH}:${CAST_PY_DIR}:${COGX_PY_DIR}
 V11N_STANDALONE=--standalone-display-host
 V11N_STANDALONE_HOST=localhost
 
+CMD_JAVA=java -ea -classpath ${CLASSPATH}
 CMD_CPP_SERVER=${CAST_BIN_DIR}/cast-server-c++
 CMD_JAVA_SERVER=${CMD_JAVA} cast.server.ComponentServer
 CMD_PYTHON_SERVER=python -m ComponentServer
@@ -55,5 +75,8 @@ CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG]
 CMD_PLAYER=player [PLAYER_CONFIG]
 CMD_PEEKABOT=peekabot
 CMD_LOG4J_SERVER=${CMD_JAVA} org.apache.log4j.net.SimpleSocketServer [LOG4J_PORT] [LOG4J_SERVER_CONFIG]
-CMD_DISPLAY_SERVER=output/bin/display-server
+CMD_DISPLAY_SERVER=${COGX_ROOT}/output/bin/display-server
+
+
+
 
