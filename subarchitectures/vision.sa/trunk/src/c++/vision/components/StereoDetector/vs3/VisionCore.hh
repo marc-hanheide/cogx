@@ -17,7 +17,7 @@
 #define Z_VISION_CORE_HH
 
 #include <vector>
-#include <opencv/cv.h>
+#include <cv.h>
 //#include "Namespace.hh"
 #include "Array.hh"
 #include "Config.hh"

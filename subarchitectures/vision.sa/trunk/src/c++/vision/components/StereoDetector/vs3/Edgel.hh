@@ -9,7 +9,7 @@
 #ifndef Z_EDGEL_HH
 #define Z_EDGEL_HH
 
-#include "Namespace.hh"
+// #include "Namespace.hh"
 #include "Vector.hh"
 
 namespace Z

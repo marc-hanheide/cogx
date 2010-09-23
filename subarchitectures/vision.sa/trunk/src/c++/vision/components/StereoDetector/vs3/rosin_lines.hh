@@ -1,7 +1,7 @@
 #ifndef ROSIN_LINES_HH
 #define ROSIN_LINES_HH
 
-#include "Namespace.hh"
+// #include "Namespace.hh"
 #include "VisionCore.hh"
 #include "Segment.hh"
 

@@ -6,7 +6,6 @@
 #define Z_ID_IMAGE_HH
 
 #include <math.h>
-#include "Namespace.hh"
 #include "Vector.hh"
 
 namespace Z

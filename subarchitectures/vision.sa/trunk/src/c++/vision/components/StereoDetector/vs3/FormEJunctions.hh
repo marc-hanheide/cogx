@@ -36,11 +36,8 @@ private:
 	void CreateJunction(unsigned sline, VoteImage::Elem &isct);
 
 public:
-//	unsigned baseIndex;			///< Number of different search lines (from vote image)
-//	unsigned baseOffset;		///< Offset for ellipse search lines (= number of unsplitted lines)
-//  VoteImage *vote_img;		///< Vote image for forming junctions between ellipses and lines
 
-  FormEJunctions(VisionCore *vc);
+	FormEJunctions(VisionCore *vc);
   virtual ~FormEJunctions();
 	virtual void InformNewGestalt(Gestalt::Type type, unsigned idx);
 	void Initialize();
