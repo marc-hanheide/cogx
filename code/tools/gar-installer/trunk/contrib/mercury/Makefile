@@ -10,6 +10,9 @@ MASTER_SITES = http://www.mercury.csse.unimelb.edu.au/download/files/
 # no parallel build due to problems of player make scheme
 #MFLAGS=$(MFLAGS_NUMCPU)
 
+DEB_PACKAGES=\
+	bison@ubuntu flex@ubuntu
+
 DESCRIPTION = mercury
 define BLURB
   playerdef
@@ -21,5 +24,5 @@ INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
 CONFIGURE_ARGS = $(DIRPATHS) --enable-libgrades=hlc.gc,hlc.gc.prof,hlc.gc.memprof,hlc.gc.tr,hlc.par.gc
 
-include ../../gar.mk
+include ../../gar.extend.mk
 
