@@ -95,6 +95,10 @@ void ObjectRecognizer3D::start(){
   addChangeFilter(createLocalTypeFilter<VisionData::Recognizer3DCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
         &ObjectRecognizer3D::receiveRecognizer3DCommand));
+
+  addChangeFilter(createLocalTypeFilter<VisionData::DetectionCommand>(cdl::ADD),
+      new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
+        &ObjectRecognizer3D::receiveDetectionCommand));
 }
 
 void ObjectRecognizer3D::runComponent(){
@@ -140,9 +144,9 @@ void ObjectRecognizer3D::runComponent(){
   				Math::Pose3 pose;
   				setIdentity(pose);
 					// NOTE: useful values for a user presenting an object to the system:
-					// 0.5 meters away and rotated 90 deg around x, so the object stands upright
+					// 1.0 meters away and rotated 90 deg around x, so the object stands upright
 					// assuming that the objects local z axis points "up"
-  				pose.pos.x = 0.0; pose.pos.y = 0.0; pose.pos.z = 0.5;
+  				pose.pos.x = 0.0; pose.pos.y = 0.0; pose.pos.z = 1.0;
 					fromRotVector(pose.rot, vector3(M_PI/2., 0., 0.));
   				loadVisualModelToWM(m_recEntries[m_label], pose, m_label);
   				m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
@@ -175,11 +179,33 @@ void ObjectRecognizer3D::receiveImages(const std::vector<Video::Image>& images){
     throw runtime_error(exceptionMessage(__HERE__, "image list is empty"));
 }
 
+/**
+ * A slight hack for now: the execution layer sende DetectObject commands, which contain
+ * a list of labels. Translate from onw DetectObject command to several
+ * Recognizer3DCommands with one label each.
+ */
+void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc){
+	log("Receiving receiveDetectionCommand");
+  DetectionCommandPtr det_cmd = getMemoryEntry<DetectionCommand>(_wmc.address);
+
+	for(size_t i = 0; i < det_cmd->labels.size(); i++)
+	{
+    if(m_recEntries.find(det_cmd->labels[i]) != m_recEntries.end())
+    {
+      Recognizer3DCommandPtr rec_cmd = new Recognizer3DCommand();
+      rec_cmd->cmd = RECOGNIZE;
+      rec_cmd->label = det_cmd->labels[i];
+      m_recCommandList.push_back(rec_cmd);
+      m_recCommandID.push_back(_wmc.address.id);
+    }
+	}
+}
+
 void ObjectRecognizer3D::receiveRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc){
 	log("Receiving Recognizer3DCommand");
 	Recognizer3DCommandPtr rec_cmd = getMemoryEntry<Recognizer3DCommand>(_wmc.address);
 
-	if(m_recEntries.find(rec_cmd->label)==m_recEntries.end())
+	if(m_recEntries.find(rec_cmd->label) == m_recEntries.end())
 		return;
 
 	m_recCommandList.push_back(rec_cmd);
@@ -501,7 +527,9 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 // 	addTrackerCommand(VisionData::UNLOCK, m_recEntries[m_label].visualObjectID);
 
 	// Send result to WM
-	overwriteWorkingMemory(m_rec_cmd_id, m_rec_cmd);
+	//overwriteWorkingMemory(m_rec_cmd_id, m_rec_cmd);
+	// note: execution layer expects the comand to be deleted as a signal of completion
+	deleteFromWorkingMemory(m_rec_cmd_id);
 
 	// Clean up
   cvReleaseImage(&m_iplImage);
