@@ -598,13 +598,14 @@ void DShapeCore::FitPlanes3D(Array<Plane*> &planes)
 /**
  * compute relative angle shape descriptor
  */
-void DShapeCore::ComputeRAShapeDescriptor(Array<Plane*> &planes, RASDescriptor &ras)
+void DShapeCore::ComputeRAShapeDescriptor(Array<Plane*> &planes, RASDescriptor &ras,
+  int sizeAngle, int sizeScale)
 {
   //test angles
   double relAngle, relScale;
   Vector3 l1, l2;
 
-  ras.Set(RAS_SIZE_ANGLE, RAS_SIZE_SCALE);
+  ras.Set(sizeAngle, sizeScale);
   ras.Clear();  
 
   for (unsigned i=0; i<planes.Size(); i++)
@@ -651,7 +652,8 @@ void DShapeCore::ComputeRAShapeDescriptor(Array<Plane*> &planes, RASDescriptor &
  * @param ras Resulting histogram angles between planes
  * @param mask1 mask of the object to reconstruct (img1, 0..background, 255..foreground)
  */
-void DShapeCore::Operate(IplImage* img1, IplImage *img2, RASDescriptor &ras, IplImage *mask1)
+void DShapeCore::Operate(IplImage* img1, IplImage *img2, RASDescriptor &ras,
+  int sizeAngle, int sizeScale, IplImage *mask1)
 {
   DeletePlanes(planes);
   InitImages(img1, img2, mask1);
@@ -666,7 +668,7 @@ void DShapeCore::Operate(IplImage* img1, IplImage *img2, RASDescriptor &ras, Ipl
 
   splane.DetectPlanes(keys2, planes);
   FitPlanes3D(planes);
-  ComputeRAShapeDescriptor(planes, ras);
+  ComputeRAShapeDescriptor(planes, ras, sizeAngle, sizeScale);
 
 
   #ifdef DEBUG
