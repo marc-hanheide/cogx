@@ -1,0 +1,4 @@
+CPP MG VideoClient ObjectDetectorFERNS --videohost localhost --videoname VideoServer --camid 0 --models "./subarchitectures/vision.sa/config/test-ferns/tea.jpg" --mode DETECT_ONLY --displaylevel 2 --log
+
+#CPP MG VideoClient ObjectDetectorFERNS --videohost localhost --videoname VideoServer --camid 0 --models "ferns/frosties.jpg" --mode DETECT_ONLY --displaylevel 2 --log
+

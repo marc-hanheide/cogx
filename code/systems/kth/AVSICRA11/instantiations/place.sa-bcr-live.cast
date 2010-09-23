@@ -1,0 +1,8 @@
+HOST localhost
+
+INCLUDE includes/place.sa/base-bcr-live.cast
+INCLUDE includes/place.sa/servers.cast
+INCLUDE includes/place.sa/aux-bcr.cast
+
+
+#INCLUDE includes/place.sa/spatial-db.cast
