@@ -7,14 +7,14 @@ SUBARCHITECTURE vision.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG sim.vision SimulatedVision --displayserver "display.srv" --datadir "instantiations/vision-fake"
-INCLUDE includes/vision.sa/vision-mediators.cast
+INCLUDE includes/vision.sa/vision-mediators-george.cast
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
 
 # planning and motivation #####################################################
-INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/planner-george.cast
+INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/motivation.sa/motivation.cast
 JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 
@@ -26,5 +26,23 @@ JAVA MG goal.generator.color eu.cogx.goals.george.LearnColorGenerator
 JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"
 JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"
 JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "motivation.slice.Motive"
+
+
+# dialogue stuff ##############################################################
+
+SUBARCHITECTURE dialogue
+
+JAVA WM			cast.architecture.SubarchitectureWorkingMemory
+JAVA TM			cast.architecture.AlwaysPositiveTaskManager
+JAVA MG	gui	de.dfki.lt.tr.cast.dialogue.DialogueGUI --log true
+JAVA MG	parser	de.dfki.lt.tr.cast.dialogue.IncrStringParser --grammar ./subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml --log true
+JAVA MG parseselect	de.dfki.lt.tr.cast.dialogue.ParseSelection --log true
+JAVA MG refmonitor	de.dfki.lt.tr.cast.dialogue.ReferenceMonitor --dumpfile /tmp/generated.abd --log true
+JAVA MG	refresolve	de.dfki.lt.tr.cast.dialogue.ReferenceResolution --ruleset-construct ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/index-construct.txt --dumpfile /tmp/generated.abd --correlfile ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/correlations.abd --appendfile ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/reference-resolution.abd --log true
+JAVA MG	irecog	de.dfki.lt.tr.cast.dialogue.IntentionManager --ruleset ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/index.txt --log true
+
+JAVA MG goal.generator eu.cogx.goals.george.IntentionGoalGenerator --debug
+
+
 
 
