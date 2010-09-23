@@ -430,8 +430,8 @@ void StereoCore::PrintResults()
 //   printf("StereoFlaps: flaps left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::FLAP), vcore[RIGHT]->NumGestalts(Gestalt::FLAP));
 //   printf("Stereo:FLAPS: matches: %d\n", stereoGestalts[StereoBase::STEREO_FLAP]->NumStereoMatches()); 
 
- 	printf("Stereo:L_JUNCTIONS: matches: %d\n", stereoGestalts[StereoBase::STEREO_LJUNCTION]->NumStereoMatches()); 
-  printf("Stereo:ELLIPSES: matches: %d\n", stereoGestalts[StereoBase::STEREO_ELLIPSE]->NumStereoMatches()); 
+//  	printf("Stereo:L_JUNCTIONS: matches: %d\n", stereoGestalts[StereoBase::STEREO_LJUNCTION]->NumStereoMatches()); 
+//   printf("Stereo:ELLIPSES: matches: %d\n", stereoGestalts[StereoBase::STEREO_ELLIPSE]->NumStereoMatches()); 
 }
 
 /**
@@ -489,20 +489,14 @@ void StereoCore::PrintJunctions2File()
 void StereoCore::PrintCorners2File()
 {
 	printf("StereoCore::PrintCorners2File()\n");
-	printf("Error 1\n");
 
 	FILE *file = fopen("junction_cache_5_L_filer_2.csv", "w");
-printf("Error 1\n");
 	fprintf(file,"%u\n", vcore[0]->NumGestalts(Gestalt::CORNER));							// number of corners
-printf("Error 2\n");
 	fprintf(file,"%u %u\n", vcore[0]->IW(), vcore[0]->IH());									// image width and height
 	
-printf("Error 3\n");
 	for(unsigned i=0; i<vcore[0]->NumGestalts(Gestalt::CORNER); i++)
 	{
-printf("Error 4\n");
 		Corner *cor = (Corner*) vcore[0]->Gestalts(Gestalt::CORNER)[i];
-printf("Error 5\n");
 		
 		// calculate bin for the 3 angles:
 		if(cor->angle.Size() > 2)
@@ -510,38 +504,28 @@ printf("Error 5\n");
 			double angle_0 = ScaleAngle_0_2pi(cor->angle[0] + M_PI/2.) * 180/M_PI;
 			double angle_1 = ScaleAngle_0_2pi(cor->angle[1] + M_PI/2.) * 180/M_PI;
 			double angle_2 = ScaleAngle_0_2pi(cor->angle[2] + M_PI/2.) * 180/M_PI;
-printf("Error 6\n");
-// 		double angle_1 = ScaleAngle_0_2pi(PolarAngle(lj->dir[1]) + M_PI/2.) * 180/M_PI;
+
+		// 		double angle_1 = ScaleAngle_0_2pi(PolarAngle(lj->dir[1]) + M_PI/2.) * 180/M_PI;
 		int bin_0 = (int) (64.*angle_0/360.);
 		int bin_1 = (int) (64.*angle_1/360.);
 		int bin_2 = (int) (64.*angle_2/360.);
-printf("Error 7\n");
+
 		fprintf(file,"%u %u 3 %u %u %u\n", (int) cor->isct.x, (int) cor->isct.y, bin_0, bin_1, bin_2);					// image width and height
-printf("Error 8\n");
 		}
 		else
 			printf("StereoCore::PrintCorners2File: ACHTUNG: WENIGER ALS 3 ANGLES IM CORNER!\n");
 	}
-	
-printf("Error 9\n");
 	fprintf(file, "\n");
   fclose(file);
-printf("Error 10\n");
 	
 	
-printf("Error 11\n");
 	file = fopen("junction_cache_5_R_filer_2.csv", "w");
-printf("Error 12\n");
 	fprintf(file,"%u\n", vcore[1]->NumGestalts(Gestalt::CORNER));							// number of corners
-printf("Error 13\n");
 	fprintf(file,"%u %u\n", vcore[1]->IW(), vcore[1]->IH());									// image width and height
-printf("Error 14\n");
 	
 	for(unsigned i=0; i<vcore[1]->NumGestalts(Gestalt::CORNER); i++)
 	{
-printf("Error 15\n");
 		Corner *cor = (Corner*) vcore[1]->Gestalts(Gestalt::CORNER)[i];
-printf("Error 16\n");
 		
 		// calculate bin for the 3 angles:
 		if(cor->angle.Size() > 2)
@@ -549,13 +533,11 @@ printf("Error 16\n");
 			double angle_0 = ScaleAngle_0_2pi(cor->angle[0] + M_PI/2.) * 180/M_PI;
 			double angle_1 = ScaleAngle_0_2pi(cor->angle[1] + M_PI/2.) * 180/M_PI;
 			double angle_2 = ScaleAngle_0_2pi(cor->angle[2] + M_PI/2.) * 180/M_PI;
-// 		double angle_1 = ScaleAngle_0_2pi(PolarAngle(lj->dir[1]) + M_PI/2.) * 180/M_PI;
-printf("Error 17\n");
+
 			int bin_0 = (int) (64.*angle_0/360.);
 			int bin_1 = (int) (64.*angle_1/360.);
 			int bin_2 = (int) (64.*angle_2/360.);
 			fprintf(file,"%u %u 3 %u %u %u\n", (int) cor->isct.x, (int) cor->isct.y, bin_0, bin_1, bin_2);					// image width and height
-printf("Error 18\n");
 		}
 		else
 			printf("StereoCore::PrintCorners2File: ACHTUNG: WENIGER ALS 3 ANGLES IM CORNER!\n");
@@ -563,7 +545,6 @@ printf("Error 18\n");
 	
 	fprintf(file, "\n");
   fclose(file);
-
 }
 
 } 
