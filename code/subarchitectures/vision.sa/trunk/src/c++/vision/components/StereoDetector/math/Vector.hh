@@ -11,7 +11,7 @@
 
 #include "Vector2.hh"		// 2D Vector class
 #include "Vector3.hh"		// 3D Vector class
-#include "Pose3.hh"			// 3D Pose vector class
+#include "Pose3.hh"		// 3D Pose vector class
 
 using namespace VEC;
 

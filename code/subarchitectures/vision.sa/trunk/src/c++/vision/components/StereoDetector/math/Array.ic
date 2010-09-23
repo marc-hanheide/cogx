@@ -129,7 +129,7 @@ void Array<Elem>::EnsureCapacity(unsigned need_size) throw(std::runtime_error)
 {
   if(need_size > capacity)
   {
-    capacity = max(need_size, capacity > 0 ? 2*capacity : DEFAULT_SIZE);
+    capacity = std::max(need_size, capacity > 0 ? 2*capacity : DEFAULT_SIZE);
     Elem *new_array = new Elem[capacity];
     if(new_array == 0)
       throw std::runtime_error("Array::EnsureCapacity: failed to allocate array");
