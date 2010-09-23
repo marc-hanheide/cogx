@@ -23,22 +23,16 @@ package org.cognitivesystems.binder;
 
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Vector;
 
+import cast.AlreadyExistsOnWMException;
 import cast.DoesNotExistOnWMException;
-import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.core.CASTData;
-import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
-import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
-import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
@@ -51,6 +45,7 @@ import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.GenericPointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
@@ -67,166 +62,304 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
  */
 public class SharedBeliefCreator extends ManagedComponent {
 
-  
-	 
-	/*
-	 * Starting up the CAST component by registering filters on the insertion or modification
-	 * of attributed beliefs
-	 * 
-	 * @see cast.architecture.abstr.WorkingMemoryReaderProcess#start()
+
+
+	public static final String POINTER_LABEL = "about";
+
+
+	/**
+	 * Adds two change filters on beliefs
 	 */
 	@Override
 	public void start() {
 
-			addChangeFilter(
-					ChangeFilterFactory.createLocalTypeFilter(dBelief.class,  WorkingMemoryOperation.ADD),
-					new WorkingMemoryChangeReceiver() {
+		// add a filter on newly inserted beliefs
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(dBelief.class,  WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
 
-						public void workingMemoryChanged(
-								WorkingMemoryChange _wmc) {
-							try {
-								dBelief belief = getMemoryEntry(_wmc.address, dBelief.class);
-								if (belief.estatus instanceof AttributedEpistemicStatus) {
-									checkMatchWithPrivateBelief(belief);
-								}
-							} catch (DoesNotExistOnWMException e) {
-								e.printStackTrace();
-							} catch (UnknownSubarchitectureException e) {
-								e.printStackTrace();
-							}
-						}
-					});
-			 
-			addChangeFilter(
-					ChangeFilterFactory.createLocalTypeFilter(dBelief.class,  WorkingMemoryOperation.OVERWRITE),
-					new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(
+							WorkingMemoryChange _wmc) {
+						try {
+							dBelief belief = getMemoryEntry(_wmc.address, dBelief.class);
 
-						public void workingMemoryChanged(
-								WorkingMemoryChange _wmc) {
-							try {
-								dBelief belief = getMemoryEntry(_wmc.address, dBelief.class);
-								if (belief.estatus instanceof AttributedEpistemicStatus) {
-									checkMatchWithPrivateBelief(belief);
-								}
-							} catch (DoesNotExistOnWMException e) {
-								e.printStackTrace();
-							} catch (UnknownSubarchitectureException e) {
-								e.printStackTrace();
+							// if the belief is attributed, check a possible match with a private belief
+							if (belief.estatus instanceof AttributedEpistemicStatus) {
+								checkMatchWithPrivateBelief(belief);
 							}
+						} catch (DoesNotExistOnWMException e) {
+							e.printStackTrace();
+						} catch (UnknownSubarchitectureException e) {
+							e.printStackTrace();
 						}
-					});	
+					}
+				});
+
+		// add a filter on overwritten beliefs
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(dBelief.class,  WorkingMemoryOperation.OVERWRITE),
+				new WorkingMemoryChangeReceiver() {
+
+					public void workingMemoryChanged(
+							WorkingMemoryChange _wmc) {
+						try {
+							dBelief belief = getMemoryEntry(_wmc.address, dBelief.class);
+							if (belief.estatus instanceof AttributedEpistemicStatus) {
+								// if the belief is attributed, check a possible match with a private belief
+								checkMatchWithPrivateBelief(belief);
+							}
+						} catch (DoesNotExistOnWMException e) {
+							e.printStackTrace();
+						} catch (UnknownSubarchitectureException e) {
+							e.printStackTrace();
+						}
+					}
+				});	
 
 	}
 
-	
+
+
 	/**
-	 * Fires when a new attributed belief has been detected on the local
-	 * working memory
+	 * Extract the generic pointer formula contained in the belief, if any (else, returns null)
+	 * 
+	 * @param belief the belief
+	 * @return the generic pointer formula if any is provided, null otherwise
+	 */
+	private GenericPointerFormula extractPointer (dBelief belief) {
+
+		if (!(belief.content instanceof CondIndependentDistribs)) {
+			debug("only cond independent distribs are supported at the moment");
+			return null;
+		}
+
+		CondIndependentDistribs attrContent = (CondIndependentDistribs) belief.content;
+
+		if (attrContent.distribs.containsKey(POINTER_LABEL)) { 
+			if (attrContent.distribs.get(POINTER_LABEL) instanceof BasicProbDistribution) {
+				DistributionValues pointerVals = ((BasicProbDistribution)attrContent.distribs.get(POINTER_LABEL)).values;
+				dFormula mostLikelyVal = getHighestProbValue(pointerVals);
+				if (mostLikelyVal instanceof GenericPointerFormula) {
+					return(GenericPointerFormula) mostLikelyVal;
+				}
+
+			}
+		}
+		return null;
+	}
+
+
+	/**
+	 * Check whether the attributed belief has any common features with the
+	 * private belief it points towards
 	 * 
 	 * @param belief the attributed belief
 	 */
 	protected void checkMatchWithPrivateBelief(dBelief attrBelief) {
-		
+
 		if (!(attrBelief.content instanceof CondIndependentDistribs)) {
+			debug("only cond independent distribs are supported at the moment");
 			return ;
 		}
-		
-		try {
-			CASTData<dBelief>[] all = getWorkingMemoryEntries (dBelief.class);
-			
-			for (CASTData<dBelief> d : all) {
-				dBelief belief2 = d.getData();
-				
-				Vector<String> shared = compareBeliefs (attrBelief, belief2);
-				
-				if (shared.size() > 0) {
-					dBelief sharedBelief = createSharedBelief (belief2, shared);
-					addToWorkingMemory(newDataID(), sharedBelief);
-				}
-				
-			}
-			
-		} catch (SubarchitectureComponentException e) {
-			e.printStackTrace();
-		}
-		
-	}
-	
-	
-	private Vector<String> compareBeliefs (dBelief attrBelief, dBelief privateBelief) {
-		
-		Vector<String> sharedFeatures = new Vector<String>();
-		
-		CondIndependentDistribs attrContent = (CondIndependentDistribs) attrBelief.content;
 
-		if (privateBelief.estatus instanceof PrivateEpistemicStatus && 
-				privateBelief.content instanceof CondIndependentDistribs) {
-			
-			CondIndependentDistribs privateContent = (CondIndependentDistribs) privateBelief.content;
-			
-			for (String feature : attrContent.distribs.keySet()) {
-				
-				if (attrContent.distribs.get(feature) instanceof BasicProbDistribution) {
-					
-					DistributionValues attrVals = ((BasicProbDistribution)attrContent.distribs.get(feature)).values;
-											dFormula attrValue = getHighestProbValue (attrVals);
-						
-						if (privateContent.distribs.containsKey(feature) && 
-								privateContent.distribs.get(feature) instanceof BasicProbDistribution) {
-							
-							DistributionValues privateVals = ((BasicProbDistribution)privateContent.distribs.get(feature)).values;
-							
-								dFormula privateValue = getHighestProbValue (privateVals);
-								
-								if (isEqualTo(attrValue, privateValue)) {
-									sharedFeatures.add(feature);
-								}						
+		// extracting the pointer
+		GenericPointerFormula pointer = extractPointer (attrBelief);
+
+		if (pointer != null) {	
+
+			try {
+				// extracting the belief itself
+				dBelief privateBelief = getMemoryEntry(pointer.pointer,dBelief.class);
+
+				// checking if the belief is indeed private
+				if (privateBelief.estatus instanceof PrivateEpistemicStatus) {
+
+					// comparing the two belief and determining which features are shared
+					Vector<BasicProbDistribution> sharedFeats = compareBeliefs (attrBelief, privateBelief);
+
+					if (sharedFeats.size() > 0) {
+
+						// creating a shared belief
+						Vector<String> agents = getAgents(attrBelief);
+						dBelief sharedBelief = createSharedBelief (agents, pointer, sharedFeats);
+
+						// adding it into the working memory
+						try {
+							addToWorkingMemory(newDataID(), sharedBelief);
+						} catch (AlreadyExistsOnWMException e) {
+							e.printStackTrace();
 						}
+					}
 				}
 			}
+			catch (DoesNotExistOnWMException e) {
+				debug("Warning: belief: " + pointer.pointer + " does not seem to exist");
+			}
 		}
-		
-		return sharedFeatures;
+
 	}
-	
-		
-	
+
+
+
 	/**
-	 * Note: I still need to include the pointer to the shared belief!!!
+	 * Compare two beliefs, and try to find the features which are shared.
+	 * The outcome is a vector of features (defined as BasicProbDistributions) 
+	 * which are subsumed by both beliefs
 	 * 
-	 * @param privateBelief
-	 * @param sharedFeatures
+	 * @param belief1 the first belief
+	 * @param belief2 the second belief
 	 * @return
 	 */
-	private dBelief createSharedBelief (dBelief privateBelief, Vector<String> sharedFeatures) {
+	private Vector<BasicProbDistribution> compareBeliefs (dBelief belief1, dBelief belief2) {
+
+		// initialise the vector
+		Vector<BasicProbDistribution> sharedFeatures = new Vector<BasicProbDistribution>();
+
+		// check if the two belief content are cond. independent distributions
+		if (belief1.content instanceof CondIndependentDistribs && 
+				belief2.content instanceof CondIndependentDistribs) {
+
+			CondIndependentDistribs content1 = (CondIndependentDistribs) belief1.content;
+			CondIndependentDistribs content2 = (CondIndependentDistribs) belief2.content;
+
+			// looping on the features of the first belief
+			for (String feature : content1.distribs.keySet()) {
+
+				// checking if the second belief also contains the feature
+				if (content2.distribs.containsKey(feature) && 
+						content1.distribs.get(feature) instanceof BasicProbDistribution &&
+						content2.distribs.get(feature) instanceof BasicProbDistribution) {
+
+					// extracting the feature values
+					DistributionValues values1 = ((BasicProbDistribution)content1.distribs.get(feature)).values;
+					dFormula mostLikelyVal1 = getHighestProbValue (values1);
+
+					DistributionValues values2 = ((BasicProbDistribution)content2.distribs.get(feature)).values;
+					dFormula mostLikelyVal2 = getHighestProbValue (values2);
+
+					// and checking if the feature values match
+					if (isEqualTo(mostLikelyVal1, mostLikelyVal2)) {
+						
+						// create a new basic distribution with the subsumed feature
+						FormulaValues newValues = new FormulaValues(new LinkedList<FormulaProbPair>());				
+						float prob = Math.min(getProbability(values1,mostLikelyVal1), getProbability(values1,mostLikelyVal1));				
+						newValues.values.add(new FormulaProbPair(mostLikelyVal1, prob));
+						BasicProbDistribution newDistrib = new BasicProbDistribution(feature, newValues);
+						
+						// and add it to the set
+						sharedFeatures.add(newDistrib);
+					}						
+				}
+
+			}
+		}
+
+		return sharedFeatures;
+	}
+
+
+
+	/**
+	 * Returns the probability of a formula specified in a FormulaValues
+	 * (0.0f otherwise)
+	 * 
+	 * @param values the values
+	 * @param form the formula to search
+	 * @return
+	 */
+	private float getProbability (DistributionValues values, dFormula form) {
 		
-		dBelief sharedBelief = new dBelief();
-		LinkedList<String> agents = new LinkedList<String>();
-		agents.add("human");
-		agents.add("robot");
-		sharedBelief.estatus = new SharedEpistemicStatus(agents);
+		if (values instanceof FormulaValues) {
+		for (FormulaProbPair pair: ((FormulaValues)values).values) {
+			if (pair.val.equals(form)) {
+				return pair.prob;
+			}
+		}
+		}
+		return 0.0f;
+	}
+	
+	
+	
+	/**
+	 * Extract the agents name (both private and attributed) in a given
+	 * attributed belief 
+	 * 
+	 * @param attrBelief the belief
+	 * @return a vector containing the name of all agents
+	 */
+	private Vector<String> getAgents (dBelief attrBelief) {
+		
+		Vector<String> agents = new Vector<String>();
+		
+		if (attrBelief.estatus instanceof AttributedEpistemicStatus) {
 			
+			agents.add(((AttributedEpistemicStatus)attrBelief.estatus).agent);
+			agents.addAll(((AttributedEpistemicStatus)attrBelief.estatus).attribagents);
+		}
+		
+		return agents;
+	}
+	
+
+	/**
+	 * Create a new shared belief given a set of agents, a pointer to the private belief,
+	 * and a set of shared features
+	 * 
+	 * @param agents the set of agents
+	 * @param pointer the pointer
+	 * @param sharedFeatures the set of shared features
+	 * @return a new belief
+	 */
+	private dBelief createSharedBelief (Vector<String> agents, GenericPointerFormula pointer, 
+			Vector<BasicProbDistribution> sharedFeatures) {
+
+		dBelief sharedBelief = new dBelief();
+
+		sharedBelief.estatus = new SharedEpistemicStatus(agents);
+
 		sharedBelief.content = new CondIndependentDistribs();
 		((CondIndependentDistribs)sharedBelief.content).distribs = new HashMap<String,ProbDistribution>();	
-		
-		for (String feat : sharedFeatures) {
-			
-			DistributionValues values = ((BasicProbDistribution)((CondIndependentDistribs)privateBelief.content).distribs.get(feat)).values;
-			BasicProbDistribution distrib = new BasicProbDistribution (feat, values);
-			((CondIndependentDistribs)sharedBelief.content).distribs.put(feat, distrib);
 
+		for (BasicProbDistribution distrib : sharedFeatures) {
+			((CondIndependentDistribs)sharedBelief.content).distribs.put(distrib.key, distrib);
 		}
+
+		addPointerFeature(sharedBelief, pointer);
 		
 		return sharedBelief;
 	}
+
 	
-	
-	private dFormula getHighestProbValue (DistributionValues values) {
+	/**
+	 * Add a new pointer feature to the given belief
+	 * 
+	 * @param belief the belief
+	 * @param pointer the pointer
+	 */
+	private void addPointerFeature (dBelief belief, GenericPointerFormula pointer) {
+		FormulaValues pointerValues = new FormulaValues(new LinkedList<FormulaProbPair>());
+		pointerValues.values.add(new FormulaProbPair(pointer, 1.0f));
+		BasicProbDistribution pointerDistrib = new BasicProbDistribution (POINTER_LABEL, pointerValues);
 		
+		((CondIndependentDistribs)belief.content).distribs.put(POINTER_LABEL, pointerDistrib);
+	}
+
+	
+	
+	/**
+	 * Returns the formula value with the highest probability in the set of 
+	 * possible values
+	 * 
+	 * @param values
+	 * @return
+	 */
+	private dFormula getHighestProbValue (DistributionValues values) {
+
 		if (! (values instanceof FormulaValues)) {
 			return null;
 		}
-		
+
 		float curMaxProb = 0.0f;
 		dFormula bestForm = null;
 		for (FormulaProbPair pair : ((FormulaValues)values).values) {
@@ -234,37 +367,44 @@ public class SharedBeliefCreator extends ManagedComponent {
 				bestForm = pair.val;
 			}
 		}
-		
+
 		return bestForm;
 	}
-	
-	
+
+
+	/**
+	 * Returns true if the two formulae have identifical content, false otherwise
+	 * 
+	 * @param form1 the first formula
+	 * @param form2 the second formule
+	 * @return
+	 */
 	private boolean isEqualTo (dFormula form1, dFormula form2) {
-		
+
 		if (!form1.getClass().equals(form2.getClass())) {
 			return false;
 		}
-		
+
 		if (form1 instanceof ElementaryFormula &&
-			((ElementaryFormula)form1).prop.equals(((ElementaryFormula)form2).prop)) {
-				return true;
+				((ElementaryFormula)form1).prop.equals(((ElementaryFormula)form2).prop)) {
+			return true;
 		}
-		
+
 		if (form1 instanceof BooleanFormula &&
 				((BooleanFormula)form1).val == ((BooleanFormula)form2).val) {
-					return true;
-			}
-		
+			return true;
+		}
+
 		if (form1 instanceof FloatFormula &&
 				((FloatFormula)form1).val == ((FloatFormula)form2).val ) {
-					return true;
-			}
-		
+			return true;
+		}
+
 		if (form1 instanceof IntegerFormula &&
 				((IntegerFormula)form1).val == ((IntegerFormula)form2).val ) {
-					return true;
-			}
-		
+			return true;
+		}
+
 		return false;
 	}
 
