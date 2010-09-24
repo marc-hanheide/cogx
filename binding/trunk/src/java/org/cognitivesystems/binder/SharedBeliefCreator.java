@@ -25,14 +25,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Vector;
 
-import cast.AlreadyExistsOnWMException;
+
 import cast.DoesNotExistOnWMException;
+import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTData;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
@@ -43,12 +45,17 @@ import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.GenericPointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+
 
 /**
  * Simple CAST component listening to the local working memory for pairs of beliefs
@@ -124,36 +131,8 @@ public class SharedBeliefCreator extends ManagedComponent {
 
 	}
 
-
-
-	/**
-	 * Extract the generic pointer formula contained in the belief, if any (else, returns null)
-	 * 
-	 * @param belief the belief
-	 * @return the generic pointer formula if any is provided, null otherwise
-	 */
-	private GenericPointerFormula extractPointer (dBelief belief) {
-
-		if (!(belief.content instanceof CondIndependentDistribs)) {
-			debug("only cond independent distribs are supported at the moment");
-			return null;
-		}
-
-		CondIndependentDistribs attrContent = (CondIndependentDistribs) belief.content;
-
-		if (attrContent.distribs.containsKey(POINTER_LABEL)) { 
-			if (attrContent.distribs.get(POINTER_LABEL) instanceof BasicProbDistribution) {
-				DistributionValues pointerVals = ((BasicProbDistribution)attrContent.distribs.get(POINTER_LABEL)).values;
-				dFormula mostLikelyVal = getHighestProbValue(pointerVals);
-				if (mostLikelyVal instanceof GenericPointerFormula) {
-					return(GenericPointerFormula) mostLikelyVal;
-				}
-
-			}
-		}
-		return null;
-	}
-
+	
+	
 
 	/**
 	 * Check whether the attributed belief has any common features with the
@@ -162,6 +141,8 @@ public class SharedBeliefCreator extends ManagedComponent {
 	 * @param belief the attributed belief
 	 */
 	protected void checkMatchWithPrivateBelief(dBelief attrBelief) {
+
+		debug("checking match with associated private belief...");
 
 		if (!(attrBelief.content instanceof CondIndependentDistribs)) {
 			debug("only cond independent distribs are supported at the moment");
@@ -172,6 +153,8 @@ public class SharedBeliefCreator extends ManagedComponent {
 		GenericPointerFormula pointer = extractPointer (attrBelief);
 
 		if (pointer != null) {	
+
+			debug("pointer to private belief successfully extracted");
 
 			try {
 				// extracting the belief itself
@@ -189,10 +172,19 @@ public class SharedBeliefCreator extends ManagedComponent {
 						Vector<String> agents = getAgents(attrBelief);
 						dBelief sharedBelief = createSharedBelief (agents, pointer, sharedFeats);
 
-						// adding it into the working memory
 						try {
-							addToWorkingMemory(newDataID(), sharedBelief);
-						} catch (AlreadyExistsOnWMException e) {
+							// if an shared belief already exists, overwrite it
+							String existingSharedBeliefID = getExistingSharedBelief(pointer.pointer);
+							if (existingSharedBeliefID != null) {
+								overwriteWorkingMemory (existingSharedBeliefID, sharedBelief);
+							}
+
+							// else, add it into the working memory
+							else {
+								addToWorkingMemory(newDataID(), sharedBelief);
+							}
+						} 
+						catch (Exception e) {
 							e.printStackTrace();
 						}
 					}
@@ -202,8 +194,49 @@ public class SharedBeliefCreator extends ManagedComponent {
 				debug("Warning: belief: " + pointer.pointer + " does not seem to exist");
 			}
 		}
+		else {
+			debug ("warning, no pointer to a private belief");
+		}
 
 	}
+
+
+
+	/**
+	 * Extract the generic pointer formula contained in the belief, if any 
+	 * (else, returns null)
+	 * 
+	 * @param belief the belief
+	 * @return the generic pointer formula if any is provided, null otherwise
+	 */
+	private GenericPointerFormula extractPointer (dBelief belief) {
+
+		if (!(belief.content instanceof CondIndependentDistribs)) {
+			debug("only cond independent distribs are supported at the moment");
+			return null;
+		}
+
+		CondIndependentDistribs attrContent = (CondIndependentDistribs) belief.content;
+
+		debug("attributed belief contains pointer feature: " + attrContent.distribs.containsKey(POINTER_LABEL));
+		
+		if (attrContent.distribs.containsKey(POINTER_LABEL)) { 
+					
+			if (attrContent.distribs.get(POINTER_LABEL) instanceof BasicProbDistribution) {
+				DistributionValues pointerVals = ((BasicProbDistribution)attrContent.distribs.get(POINTER_LABEL)).values;
+				dFormula mostLikelyVal = getHighestProbValue(pointerVals);
+				
+				debug("type of pointer value: " + mostLikelyVal.getClass().getSimpleName());
+				
+				if (mostLikelyVal instanceof GenericPointerFormula) {
+					return(GenericPointerFormula) mostLikelyVal;
+				}
+
+			}
+		}
+		return null;
+	}
+
 
 
 
@@ -244,7 +277,7 @@ public class SharedBeliefCreator extends ManagedComponent {
 					dFormula mostLikelyVal2 = getHighestProbValue (values2);
 
 					// and checking if the feature values match
-					if (FormulaUtils.isEqualTo(mostLikelyVal1, mostLikelyVal2)) {
+					if (isEqualTo(mostLikelyVal1, mostLikelyVal2)) {
 						
 						// create a new basic distribution with the subsumed feature
 						FormulaValues newValues = new FormulaValues(new LinkedList<FormulaProbPair>());				
@@ -264,6 +297,74 @@ public class SharedBeliefCreator extends ManagedComponent {
 	}
 
 
+	
+
+	/**
+	 * Create a new shared belief given a set of agents, a pointer to the private belief,
+	 * and a set of shared features
+	 * 
+	 * @param agents the set of agents
+	 * @param pointer the pointer
+	 * @param sharedFeatures the set of shared features
+	 * @return a new belief
+	 */
+	private dBelief createSharedBelief (Vector<String> agents, GenericPointerFormula pointer, 
+			Vector<BasicProbDistribution> sharedFeatures) {
+
+		dBelief sharedBelief = new dBelief();
+
+		sharedBelief.estatus = new SharedEpistemicStatus(agents);
+
+		sharedBelief.content = new CondIndependentDistribs();
+		((CondIndependentDistribs)sharedBelief.content).distribs = new HashMap<String,ProbDistribution>();	
+
+		for (BasicProbDistribution distrib : sharedFeatures) {
+			((CondIndependentDistribs)sharedBelief.content).distribs.put(distrib.key, distrib);
+		}
+
+		addPointerFeature(sharedBelief, pointer);
+		
+		return sharedBelief;
+	}
+	
+	
+	
+	/**
+	 * If an existing shared belief is already associated to the given private
+	 * belief, return its memory id
+	 * 
+	 * @param privBeliefId the memory id of the private belief
+	 * @return the memory id if an existing shared belief is found, or null otherwise
+	 */
+	public String getExistingSharedBelief (String privBeliefId) {
+		
+		try {
+			CASTData<dBelief>[] beliefs = getWorkingMemoryEntries(dBelief.class);
+			
+			for (int i = 0 ; i < beliefs.length ; i++) {
+				
+				dBelief curBelief = beliefs[i].getData();
+				
+				if (curBelief.estatus instanceof SharedEpistemicStatus) {
+					
+					GenericPointerFormula pointer = extractPointer (curBelief);
+					
+					if (pointer != null && pointer.pointer.equals(privBeliefId)) {
+						return beliefs[i].getID();
+					}
+				}
+			}
+			
+		} catch (SubarchitectureComponentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			
+		
+		return null;
+	}
+	
+	
 
 	/**
 	 * Returns the probability of a formula specified in a FormulaValues
@@ -307,35 +408,103 @@ public class SharedBeliefCreator extends ManagedComponent {
 		return agents;
 	}
 	
-
+	
+	 
 	/**
-	 * Create a new shared belief given a set of agents, a pointer to the private belief,
-	 * and a set of shared features
-	 * 
-	 * @param agents the set of agents
-	 * @param pointer the pointer
-	 * @param sharedFeatures the set of shared features
-	 * @return a new belief
+	 * Returns true if the content of form1 is equal to the content form2, 
+	 * and false otherwise
+	 *  
+	 * @param form1 the first formula
+	 * @param form2 the second formula
+	 * @return true if contents are equal, false otherwise
 	 */
-	private dBelief createSharedBelief (Vector<String> agents, GenericPointerFormula pointer, 
-			Vector<BasicProbDistribution> sharedFeatures) {
-
-		dBelief sharedBelief = new dBelief();
-
-		sharedBelief.estatus = new SharedEpistemicStatus(agents);
-
-		sharedBelief.content = new CondIndependentDistribs();
-		((CondIndependentDistribs)sharedBelief.content).distribs = new HashMap<String,ProbDistribution>();	
-
-		for (BasicProbDistribution distrib : sharedFeatures) {
-			((CondIndependentDistribs)sharedBelief.content).distribs.put(distrib.key, distrib);
-		}
-
-		addPointerFeature(sharedBelief, pointer);
+	public static boolean isEqualTo (dFormula form1, dFormula form2)  {
 		
-		return sharedBelief;
+		if (form1 instanceof ElementaryFormula && form2 instanceof ElementaryFormula) {
+			if (((ElementaryFormula)form1).prop.toLowerCase().equals(((ElementaryFormula)form2).prop.toLowerCase())) {
+				return true;
+			}
+		}
+		else if (form1 instanceof ComplexFormula && form2 instanceof ComplexFormula) {
+			return compare ((ComplexFormula)form1, (ComplexFormula)form2);
+		}
+		else if (form1 instanceof ModalFormula && form2 instanceof ModalFormula) {
+			return compare ((ModalFormula)form1, (ModalFormula)form2);
+		}
+		
+		else if (form1 instanceof IntegerFormula && form2 instanceof IntegerFormula) {
+			return ((IntegerFormula)form1).val == ((IntegerFormula)form2).val;
+		}
+		
+		else if (form1 instanceof FloatFormula && form2 instanceof FloatFormula) {
+			return ((FloatFormula)form1).val == ((FloatFormula)form2).val;
+		}
+		
+		else if (form1 instanceof GenericPointerFormula && form2 instanceof GenericPointerFormula) {
+			return ((GenericPointerFormula)form1).pointer.equals(((GenericPointerFormula)form2).pointer);
+		}
+		
+		else if (form1 instanceof BooleanFormula && form2 instanceof BooleanFormula) {
+			return ((BooleanFormula)form1).val == ((BooleanFormula)form2).val;
+		}
+		
+		else if (form1 instanceof UnderspecifiedFormula || form2 instanceof UnderspecifiedFormula) {
+			return true;
+		}
+		else if (form1 instanceof UnknownFormula && form2 instanceof UnknownFormula) {
+			return true;
+		}
+		
+		return form1.toString().equals(form2.toString());
 	}
-
+	
+	
+	/**
+	 * returns true if the content of form1 is equal to the content of form2,
+	 * false otherwise
+	 * 
+	 * @param form1 the first formula
+	 * @param form2 the second formula
+	 * @return true if contents are equal, false otherwise
+	 */
+	private static boolean compare (ModalFormula form1, ModalFormula form2) {
+		
+		if (!form1.op.equals(form2.op)) {
+			return false;
+		}
+		
+		return (isEqualTo(form1.form, form2.form));
+	}
+	
+	/**
+	 * returns true if the content of form1 is equal to the content of form2,
+	 * false otherwise
+	 * 
+	 * @param form1 the first formula
+	 * @param form2 the second formula
+	 * @return true if contents are equal, false otherwise
+	 */
+	private static boolean compare (ComplexFormula form1, ComplexFormula form2) {
+		
+		if ((form1.forms.size() != form2.forms.size()) || !(form1.op.equals(form2.op))) {
+			return false;
+		}
+		
+		for (dFormula subform1 : form1.forms) {		
+			boolean foundMatch = false;
+			for (dFormula subform2 : form2.forms) {
+				if (isEqualTo(subform1, subform2)) {
+					foundMatch = true;
+				}
+			}
+			if (!foundMatch) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	
 	
 	/**
 	 * Add a new pointer feature to the given belief
