@@ -25,7 +25,6 @@ module SpatialData {
 
   struct ViewPoint{
     cogx::Math::Vector3 pose;
-    double pan;
     double tilt;
     double probability;
   };
