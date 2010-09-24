@@ -63,11 +63,6 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
  * of identical features.  If such pair of belief is found, a new shared belief is created 
  * with the subsumed feature(s), pointing to the private belief.
  * 
- * TODO:
- * - add a slice file with the pointer label constant
- * - instead of always creating a new shared belief, check whether one exists already
- * - extending, testing and debugging...
- * 
  * 
  * @author Pierre Lison (plison@dfki.de)
  * @version 23/08/2010
@@ -76,8 +71,6 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 public class SharedBeliefCreator extends ManagedComponent {
 
 
-
-	public static final String POINTER_LABEL = "about";
 
 
 	/**
@@ -218,12 +211,12 @@ public class SharedBeliefCreator extends ManagedComponent {
 
 		CondIndependentDistribs attrContent = (CondIndependentDistribs) belief.content;
 
-		debug("attributed belief contains pointer feature: " + attrContent.distribs.containsKey(POINTER_LABEL));
+		debug("attributed belief contains pointer feature: " + attrContent.distribs.containsKey(POINTERLABEL.value));
 		
-		if (attrContent.distribs.containsKey(POINTER_LABEL)) { 
+		if (attrContent.distribs.containsKey(POINTERLABEL.value)) { 
 					
-			if (attrContent.distribs.get(POINTER_LABEL) instanceof BasicProbDistribution) {
-				DistributionValues pointerVals = ((BasicProbDistribution)attrContent.distribs.get(POINTER_LABEL)).values;
+			if (attrContent.distribs.get(POINTERLABEL.value) instanceof BasicProbDistribution) {
+				DistributionValues pointerVals = ((BasicProbDistribution)attrContent.distribs.get(POINTERLABEL.value)).values;
 				dFormula mostLikelyVal = getHighestProbValue(pointerVals);
 				
 				debug("type of pointer value: " + mostLikelyVal.getClass().getSimpleName());
@@ -515,9 +508,9 @@ public class SharedBeliefCreator extends ManagedComponent {
 	private void addPointerFeature (dBelief belief, GenericPointerFormula pointer) {
 		FormulaValues pointerValues = new FormulaValues(new LinkedList<FormulaProbPair>());
 		pointerValues.values.add(new FormulaProbPair(pointer, 1.0f));
-		BasicProbDistribution pointerDistrib = new BasicProbDistribution (POINTER_LABEL, pointerValues);
+		BasicProbDistribution pointerDistrib = new BasicProbDistribution (POINTERLABEL.value, pointerValues);
 		
-		((CondIndependentDistribs)belief.content).distribs.put(POINTER_LABEL, pointerDistrib);
+		((CondIndependentDistribs)belief.content).distribs.put(POINTERLABEL.value, pointerDistrib);
 	}
 
 	

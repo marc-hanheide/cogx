@@ -99,9 +99,17 @@
                 </includepath>
               </slice2java>
             </target>
+	
+	
+
+    <target name="slice-binder" depends="prepare" description="generates source from slice">
+              <slice2java tie="true" outputdir="${src.dir}">
+                <fileset dir="${slice.dir}" includes="binder.ice"/>
+              </slice2java>
+            </target>
 
 	
-	<target name="slice" depends = "slice-beliefs" description="generates source from slice">
+	<target name="slice" depends = "slice-beliefs, slice-binder" description="generates source from slice">
 
 	</target>
 
