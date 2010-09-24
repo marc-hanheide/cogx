@@ -36,7 +36,13 @@ class ObjectSearchPlan{
 	PointCloudLabels plabels;
   };
   
-  
+
+
+ interface NavGraphInterface{
+    double getPathLength(double xS, double yS, double aS,
+	                 double xG, double yG, double aG);
+  };
+
   sequence<double> DoubleOpt;
   sequence<string> StringOpt;
   sequence<long> LongOpt;
