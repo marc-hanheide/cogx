@@ -41,7 +41,7 @@
 #define COLOR_SAMPLE_IMG_HEIGHT 15
 
 #ifdef FEAT_VISUALIZATION
-#define ID_OBJ_LAST_SEGMENTATION "soi.Last ROI Segmentation"
+#define ID_OBJ_LAST_SEGMENTATION "soif.Last ROI Segmentation"
 #endif
 
   /**
