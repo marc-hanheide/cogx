@@ -134,9 +134,6 @@
 
     <target name="compile-java-production" depends="expandlibs,slice" 
     	description="compiles the production source code">
-    	  <javac srcdir="tools/beliefs/${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}"
-    	         optimize="${optimize}" debuglevel="lines,vars,source">
-    	           <classpath refid="build.classpath"/></javac>
         <javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" 
         	optimize="${optimize}" debuglevel="lines,vars,source">
                <classpath refid="build.classpath"/>
