@@ -7,10 +7,6 @@ set(BASE_PLANNER_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/src/base_planners")
 
 # add a subdirectory containing another CMakeLists.txt file
 add_subdirectory(src/c++)
-
-#add_ant_dependencies("ant-compile-slice-planner.sa" "ant-compile-slice-binder")
-#slice_done()
-
 add_subdirectory(src/base_planners)
 add_subdirectory(src/python)
 
