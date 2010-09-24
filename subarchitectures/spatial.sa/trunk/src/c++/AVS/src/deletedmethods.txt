@@ -1,0 +1,221 @@
+/*
+bool AVSPolicyManager::nextConsensusPolicy(std::list<std::string> &pol, 
+					    std::string &currCfg,
+					    double threshold,
+					    double percentage) 
+{
+  update(currCfg,percentage);
+  long restorepolicy=m_CurrentPolicy;
+  long restoreroom=m_CurrentRoom;
+  PolicyPath restorePath;
+  allocate(restorePath,1);
+  save(restorePath);
+  long bestpol=-1;
+  double q,best;
+  Cure::LongArray pols;
+  std::list<std::string> policy;
+  std::string currentCfg="Unknown";
+  pols.grow(0);
+  while(nextGreedyRatioPolicy(policy,
+			      currentCfg,
+			      threshold,percentage)){
+    pols.add(0,m_CurrentPolicy);
+    for (std::list<std::string>::iterator pi = policy.begin();
+       pi != policy.end(); pi++) {
+
+      currentCfg=(*pi);
+    }
+  }
+  double ec=expectedCost(q,pols,percentage);
+  if (q>=0)
+    if ((bestpol==-1)||(best>ec)){
+      bestpol=pols(0,0);
+      best=ec;
+    }
+  restore(restorePath);
+  m_CurrentPolicy=restorepolicy;
+  m_CurrentRoom=restoreroom;
+  pols.grow(0);
+  while(nextGreedyCostPolicy(policy,
+			      currentCfg,
+			      threshold,percentage)){
+    pols.add(0,m_CurrentPolicy);
+    for (std::list<std::string>::iterator pi = policy.begin();
+       pi != policy.end(); pi++) {
+      currentCfg=(*pi);
+    }
+  }
+  ec=expectedCost(q,pols,percentage);
+  if (q>=0)
+    if ((bestpol==-1)||(best>ec)){
+      bestpol=pols(0,0);
+      best=ec;
+    }
+  restore(restorePath);
+  m_CurrentPolicy=restorepolicy;
+  m_CurrentRoom=restoreroom;
+  pols.grow(0);
+  while(next1StepPolicy(policy,
+			      currentCfg,
+			      threshold,percentage)){
+    pols.add(0,m_CurrentPolicy);
+    for (std::list<std::string>::iterator pi = policy.begin();
+       pi != policy.end(); pi++) {
+      currentCfg=(*pi);
+    }
+  }
+
+  ec=expectedCost(q,pols,percentage);
+  if (q>=0)
+    if ((bestpol==-1)||(best>ec)){
+      bestpol=pols(0,0);
+      best=ec;
+    }
+  restore(restorePath);
+  m_CurrentPolicy=restorepolicy;
+  m_CurrentRoom=restoreroom;
+  pols.grow(0);
+  while(next2StepPolicy(policy,
+			      currentCfg,
+			      threshold,percentage)){
+    pols.add(0,m_CurrentPolicy);
+    for (std::list<std::string>::iterator pi = policy.begin();
+	 pi != policy.end(); pi++) {
+      currentCfg=(*pi);
+    }
+  }
+
+  ec=expectedCost(q,pols,percentage);
+  if (q>=0)
+    if ((bestpol==-1)||(best>ec)){
+      bestpol=pols(0,0);
+      best=ec;
+    }
+  restore(restorePath);
+  m_CurrentPolicy=restorepolicy;
+  m_CurrentRoom=restoreroom;
+  pols.grow(0);
+  while(next3StepPolicy(policy,
+			      currentCfg,
+			      threshold,percentage)){
+    pols.add(0,m_CurrentPolicy);
+    for (std::list<std::string>::iterator pi = policy.begin();
+	 pi != policy.end(); pi++) {
+      currentCfg=(*pi);
+    }
+  }
+  ec=expectedCost(q,pols,percentage);
+  if (q>=0)
+    if ((bestpol==-1)||(best>ec)){
+      bestpol=pols(0,0);
+      best=ec;
+    }
+
+  restore(restorePath);
+  m_CurrentPolicy=restorepolicy;
+  m_CurrentRoom=restoreroom;
+  pols.grow(0);
+  while(next4StepPolicy(policy,
+			      currentCfg,
+			      threshold,percentage)){
+    pols.add(0,m_CurrentPolicy);
+    for (std::list<std::string>::iterator pi = policy.begin();
+       pi != policy.end(); pi++) {
+      currentCfg=(*pi);
+    }
+  }
+
+  ec=expectedCost(q,pols,percentage);
+  if (q>=0)
+    if ((bestpol==-1)||(best>ec)){
+      bestpol=pols(0,0);
+      best=ec;
+    }
+
+  restore(restorePath);
+  m_CurrentPolicy=restorepolicy;
+  m_CurrentRoom=restoreroom;
+  pols.grow(0);
+  short t=m_Type;
+  m_Type=1;
+  while(nextNearlyBestPolicy(policy,
+			      currentCfg,
+			      threshold,percentage)){
+    pols.add(0,m_CurrentPolicy);
+    for (std::list<std::string>::iterator pi = policy.begin();
+       pi != policy.end(); pi++) {
+      currentCfg=(*pi);
+
+    }
+  }
+
+  ec=expectedCost(q,pols,percentage);
+  if (q>=0)
+    if ((bestpol==-1)||(best>ec)){
+      bestpol=pols(0,0);
+      best=ec;
+    }
+
+  restore(restorePath);
+  m_CurrentPolicy=restorepolicy;
+  m_CurrentRoom=restoreroom;
+  pols.grow(0);
+  m_Type=2;
+  while(nextNearlyBestPolicy(policy,
+			      currentCfg,
+			      threshold,percentage)){
+    pols.add(0,m_CurrentPolicy);
+    for (std::list<std::string>::iterator pi = policy.begin();
+       pi != policy.end(); pi++) {
+      currentCfg=(*pi);
+
+    }
+  }
+
+  m_Type=t;
+
+  ec=expectedCost(q,pols,percentage);
+  if (q>=0)
+    if ((bestpol==-1)||(best>ec)){
+      bestpol=pols(0,0);
+      best=ec;
+    }
+
+  restore(restorePath);
+  m_CurrentPolicy=restorepolicy;
+  m_CurrentRoom=restoreroom;
+  pols.grow(0);
+  m_Type=4;
+  while(nextNearlyBestPolicy(policy,
+			      currentCfg,
+			      threshold,percentage)){
+    pols.add(0,m_CurrentPolicy);
+    for (std::list<std::string>::iterator pi = policy.begin();
+       pi != policy.end(); pi++) {
+      currentCfg=(*pi);
+
+    }
+  }
+
+  m_Type=t;
+
+  ec=expectedCost(q,pols,percentage);
+  if (q>=0)
+    if ((bestpol==-1)||(best>ec)){
+      bestpol=pols(0,0);
+      best=ec;
+    }
+
+  restore(restorePath);
+  m_CurrentPolicy=restorepolicy;
+  m_CurrentRoom=restoreroom;
+  pols.grow(0);
+
+  
+
+  if (bestpol==-1)return false; 
+  getPolicy(bestpol,pol);
+  m_CurrentPolicy=bestpol;
+  return true;
+}
+*/
