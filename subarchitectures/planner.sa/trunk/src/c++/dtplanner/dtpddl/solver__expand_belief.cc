@@ -55,6 +55,11 @@ using namespace Planning;
 
 /*VIRTUAL*/ void Solver::report__new_belief_state(POMDP_State* successor_pomdp_state)
 {
+    if(successor_pomdp_state->useless()){
+        INTERACTIVE_VERBOSER(true,  10908, "Got a useless belief-state :: "<<*successor_pomdp_state);
+        return;
+    }
+    
     expansion_queue.push(successor_pomdp_state);  
 }
 
@@ -553,8 +558,6 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
 
 bool Solver::expand_belief_state_space()
 {
-    
-
     auto pomdp_state = obtain__next_belief_state_for_expansion();
 
     if(0 == pomdp_state){

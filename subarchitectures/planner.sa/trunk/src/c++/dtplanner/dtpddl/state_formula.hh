@@ -57,7 +57,11 @@ namespace Planning
             
             void wake_sleepers_that_require_forcing(State& state) const;
             bool does_require_explicit_forced_waking() const;
-
+ 
+            /* Call if this element has been found to be statically
+             * unsatisfiable in the \argument{state}. If so, then all
+             * the children are also deemed statically unsatisfiable*/
+            virtual void set__statically_false(State& state) const;
             
             virtual void forced_wake(State&) const {assert(0);};
             
@@ -92,11 +96,11 @@ namespace Planning
             
             /* A sleeper is an object whose satisfaction is not
              * altered by this, however whose relevance only applies
-             * when this is satisfied.*/
+             * when this is satisfied. An action for example, where
+             * this is an action precondition.*/
             List__Listeners list__Sleepers;
             Listeners sleepers;
-
-            
+         
         };
         
         template<int type_name, typename... T>

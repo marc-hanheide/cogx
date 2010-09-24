@@ -100,6 +100,7 @@ namespace Planning
         void ground_starting_states();
         
         void ground_objective_function();
+        uint get__objective_index() const;
         double get__objective_value(const State& state) const;
         bool is_a_numeric_objective;
         bool integer_valued_objective;
@@ -124,6 +125,11 @@ namespace Planning
         const Action_Literals& get__action_Literals() const;
         const Action_Conjunctive_Normal_Form_Formulae& get__action_Conjunctive_Normal_Form_Formulae() const;
         const Action_Disjunctive_Clauses& get__action_Disjunctive_Clauses() const ;
+
+
+        const std::map<Formula::Action_Proposition
+                       , State_Transformation__Pointer>&
+        get__action_symbol__to__state_transformation() const;
         
 //         const & get__() const;
 //         const & get__() const;

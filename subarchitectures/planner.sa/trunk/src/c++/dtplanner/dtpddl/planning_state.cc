@@ -47,6 +47,39 @@
 
 using namespace Planning;
 
+void State::decrement__obtainable_rewards_value(int val)
+{
+    obtainable_rewards_value -= val;
+}
+
+void State::increment__obtainable_rewards_value(int val)
+{
+    obtainable_rewards_value += val;
+}
+
+int State::get__obtainable_rewards_value() const
+{
+    return obtainable_rewards_value;
+}
+
+
+void State::decrement__obtainable_rewards_count()
+{
+    assert(obtainable_rewards_count);
+    obtainable_rewards_count--;
+}
+
+void State::increment__obtainable_rewards_count()
+{
+    obtainable_rewards_count++;
+}
+
+uint State::get__obtainable_rewards_count() const
+{
+    return obtainable_rewards_count;
+}
+
+
 bool State::operator==(const State&in) const
 {
     return Markov_Decision_Process_State::operator==(in);
@@ -76,7 +109,9 @@ State::State(Solver& solver,
      Action_Executability__State(actions_count),
      Observational__State(observations_count),
      solver(solver),
-     observational_state_during_expansion(0)
+     observational_state_during_expansion(0),
+     obtainable_rewards_count(0),
+     obtainable_rewards_value(0)
 {
     
     INTERACTIVE_VERBOSER(true, 8060, "Observation state has size :: "
@@ -213,6 +248,9 @@ std::ostream& State::operator<<(std::ostream&o) const
     o<<"}"<<std::endl;
 
     o<<"VALUE :: "<<this->get__reward()<<std::endl;
+
+    o<<"POTENTIAL ELEMENTS VALUE :: "<<this->get__obtainable_rewards_count()<<std::endl;
+    o<<"ESTIMATED POTENTIAL VALUE :: "<<this->get__obtainable_rewards_value()<<std::endl;
 
     return o;
 }

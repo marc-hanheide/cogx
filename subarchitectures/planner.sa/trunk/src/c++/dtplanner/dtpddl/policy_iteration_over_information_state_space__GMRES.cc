@@ -80,7 +80,7 @@ void Policy_Iteration__GMRES::configure_transition_matrix()
     
     
 //     /*Sink state transition probabilities.*/
-    assert(state_transition_matrix(dimension-1, dimension-1) == 0.0);
+    assert(state_transition_matrix(dimension-1, dimension-1) == 1.0);
     state_transition_matrix(dimension-1, dimension-1) -= discount_factor;
     
 //     state_transition_matrix(dimension-1, dimension-1) = 0.0;
@@ -98,7 +98,7 @@ void Policy_Iteration__GMRES::configure_reward_vector()
         auto index = state->get__index();
 
 
-        assert(index < reward_vector.size());
+        assert(index < instantanious_reward_vector.size());
         instantanious_reward_vector[index] = state->get__expected_reward();
     }
 

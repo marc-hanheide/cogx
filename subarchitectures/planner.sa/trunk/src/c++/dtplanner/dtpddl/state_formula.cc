@@ -72,6 +72,27 @@ void Satisfaction_Listener::wake_sleepers(State& state) const
     }
 }
 
+
+void Satisfaction_Listener::set__statically_false(State& state) const
+{
+    /* Doesn't matter if it is a listener or a sleeper, it cannot be
+     * satisfying if one of the clauses that constitute its
+     * precondition are statically false.*/
+    
+    for(auto listener = list__Listeners.begin()
+            ; listener != list__Listeners.end()
+            ; listener++){
+        (*listener).cxx_get<Satisfaction_Listener>()->set__statically_false(state);
+    }
+    
+    for(auto listener = list__Sleepers.begin()
+            ; listener != list__Sleepers.end()
+            ; listener++){
+        (*listener).cxx_get<Satisfaction_Listener>()->set__statically_false(state);
+    }
+}
+
+
 // void Satisfaction_Listener::forced_wake_sleepers(State& state) const
 // {
 //     for(auto listener = list__sleepers.begin()

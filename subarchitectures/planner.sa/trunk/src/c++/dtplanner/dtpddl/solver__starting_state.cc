@@ -51,6 +51,8 @@
 
 #include "state_formula.hh"
 
+#include "action__simple_numeric_change.hh"
+
 using namespace Planning;
 // using namespace Planning::Parsing;
 
@@ -269,6 +271,27 @@ void Solver::generate_starting_state()
         }                                                             
     }                                                               
                    
+    INTERACTIVE_VERBOSER(true, 10909, "Initialising the count of rewarding action elements."<<std::endl);
+    {
+        
+        auto& the_actions =  problem_Grounding->get__action_symbol__to__state_transformation();
+        for(auto p = the_actions.begin()
+                ; p != the_actions.end()
+                ; p++){
+            auto transformation = p->second;
+
+            INTERACTIVE_VERBOSER(true, 10908, "Trying for :: "<<p->first);
+            
+            count_reward_assignments_at_state(State_Formula::Satisfaction_Listener__Pointer(transformation)
+                                              , *starting_state
+                                              , problem_Grounding->get__objective_index());
+        }
+    }
+    INTERACTIVE_VERBOSER(true, 10909, "DONE :: Initialising the count of rewarding action elements :: "
+                         <<starting_state->get__obtainable_rewards_count()<<std::endl);
+
+
+    
     INTERACTIVE_VERBOSER(true, 10504, "Adding false literals"<<std::endl);
     SATISFY_FALSE_PROPOSITIONAL_ATOMS(problem_Grounding->get__literals(), *starting_state);
     INTERACTIVE_VERBOSER(true, 10504, "DONE :: Adding false literals"<<std::endl);

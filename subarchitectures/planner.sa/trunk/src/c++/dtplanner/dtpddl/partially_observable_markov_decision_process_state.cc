@@ -48,6 +48,23 @@ namespace Planning
 
 using namespace Planning;
 
+bool Partially_Observable_Markov_Decision_Process_State::
+useless() const
+{
+    for(auto _mdp_state = belief_State.begin()
+            ; _mdp_state != belief_State.end()
+            ; _mdp_state++){
+        auto mdp_state = _mdp_state->first;
+        assert(dynamic_cast<Planning::State*>(mdp_state));
+        if(dynamic_cast<Planning::State*>(mdp_state)
+           ->get__obtainable_rewards_count() != 0){
+            return false;
+        }        
+    }
+
+    return true;
+}
+
 
 const std::vector<Observational_State*>&
 Partially_Observable_Markov_Decision_Process_State::

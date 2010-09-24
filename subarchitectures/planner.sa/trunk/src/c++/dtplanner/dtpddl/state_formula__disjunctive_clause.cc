@@ -118,12 +118,6 @@ void Disjunctive_Clause::report__newly_satisfied_literal(State& state) const
     if(!is_satisfied(state)){
         set__satisfied(state);
         satisfy_listeners(state);
-//         auto listeners = get__traversable__listeners();
-//         for(auto listener = listeners.begin()
-//                 ; listener != listeners.end()
-//                 ; listener++){
-//             (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
-//         }
     }   
 }
 
@@ -131,18 +125,35 @@ void Disjunctive_Clause::report__newly_unsatisfied_literal(State& state) const
 {
     decrement__level_of_satisfaction(state);
 
+    assert(get__traversable__listeners().size());
+    
     if(0 == get__number_of_satisfied_literals(state)){
         set__unsatisfied(state);
         unsatisfy_listeners(state);
-//         auto listeners = get__traversable__listeners();
-//         for(auto listener = listeners.begin()
-//                 ; listener != listeners.end()
-//                 ; listener++){
-//             (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
-//         }
+
+        {/* Code for the case that the constituent literals become
+          * statically false. Running this code every time is not
+          * efficient. FIX :: store the result
+          * \local{found_to_be_statically_false}. */    
+            bool found_to_be_statically_false = true;
+            auto& literals = get__literals();//get__traversable__listeners();
+            for(auto literal  = literals.begin()
+                    ; literal != literals.end()
+                    ; literal++){
+                
+                if(!(*literal)->get__can_only_be_flipped_once()){
+                    found_to_be_statically_false = false;
+                    break;
+                }
+            }
+            
+            if(found_to_be_statically_false){
+                set__statically_false(state);
+            }
+        }
+        
     }
 }
-
 
 
 const Literal& Disjunctive_Clause::get__literal(int i) const

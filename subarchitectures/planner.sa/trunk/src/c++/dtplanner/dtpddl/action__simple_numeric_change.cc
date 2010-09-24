@@ -35,6 +35,7 @@
 
 #include "planning_state.hh"
 
+
 namespace Planning
 {
     template<>
@@ -45,12 +46,13 @@ namespace Planning
         return std::tr1::get<0>(contents());
     }
 
+//     //FIX here :: No idea at the moment why the compiler is complaining when this is uncommented.
     template<>
     ID_TYPE 
     Simple_Numeric_Transformation<int, enum_types::simple_int_transformation>::
     get__change_index() const
     {
-        return std::tr1::get<1>(contents());
+        return std::tr1::get<1>(Parent::contents());
     }
 
     template<>
@@ -188,7 +190,6 @@ namespace Planning
     {
         this->operator()(&state);
     }
-    
 //     template<>
 //     void Simple_Numeric_Transformation<int, enum_types::simple_int_transformation>::
 //     report__newly_unsatisfied(State&) const
@@ -290,6 +291,15 @@ namespace Planning
     
 }
 
+void Planning::Simple_Int_Transformation::set__statically_false(State& state) const
+{
+    INTERACTIVE_VERBOSER(true, 10909, "Reporting statically false element.");
+    assert(state.get__obtainable_rewards_count());
+    state.decrement__obtainable_rewards_count();
+    state.decrement__obtainable_rewards_value(get__modification_value());
+    INTERACTIVE_VERBOSER(true, 10909, "State is now :: "<<state);
+}
+
 namespace std
 {
     std::ostream& operator<<(std::ostream&o
@@ -302,6 +312,64 @@ namespace std
                              , const Planning::Simple_Double_Transformation&in)
     {
         return o<<in;
+    }
+    
+}
+
+#include "action_basics.hh"
+#include "action__state_transformation.hh"
+
+void Planning::count_reward_assignments_at_state
+(Planning::State_Formula::Satisfaction_Listener__Pointer satisfaction_Listener
+ , Planning::State& state
+ , uint reward_index)
+{
+    assert(satisfaction_Listener.test_cast<basic_type>());
+    
+    if(satisfaction_Listener.test_cast<Planning::Simple_Int_Transformation>()){
+        
+        INTERACTIVE_VERBOSER(true, 10908, "Got integer transformation!");
+        auto input = satisfaction_Listener.cxx_get<Planning::Simple_Int_Transformation>();
+        INTERACTIVE_VERBOSER(true, 10908, "Value is :: "<<input->get__modification_value());
+        if(input->get__change_index() == reward_index){
+            state.increment__obtainable_rewards_count();
+            state.increment__obtainable_rewards_value(input->get__modification_value());
+        }
+    }
+//     if(satisfaction_Listener.test_cast<Planning::Simple_Double_Transformation>()){
+        
+//         INTERACTIVE_VERBOSER(true, 10908, "Got double transformation!");
+//         auto input = satisfaction_Listener.cxx_get<Planning::Simple_Int_Transformation>();
+//         if(input->get__change_index() == reward_index){
+//             state.increment__obtainable_rewards_count();
+//         }
+//     }
+
+    
+    VERBOSER(10908, "Non-Integer transformation :: "<<satisfaction_Listener);
+
+    {
+        auto& traversable__listeners = satisfaction_Listener
+            .cxx_get<State_Formula::Satisfaction_Listener>()
+            ->get__traversable__listeners();
+        
+        for(auto listener = traversable__listeners.begin()
+                ; listener != traversable__listeners.end()
+                ; listener++){
+            Planning::count_reward_assignments_at_state(*listener, state, reward_index);
+        }
+    }
+    
+    {
+        auto& traversable__listeners = satisfaction_Listener
+            .cxx_get<State_Formula::Satisfaction_Listener>()
+            ->get__traversable__sleepers();
+        
+        for(auto listener = traversable__listeners.begin()
+                ; listener != traversable__listeners.end()
+                ; listener++){
+            Planning::count_reward_assignments_at_state(*listener, state, reward_index);
+        }
     }
     
 }

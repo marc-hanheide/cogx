@@ -105,14 +105,6 @@ void Literal::report__newly_satisfied(State& state) const
     
     
     satisfy_listeners(state);
-//     auto listeners = get__traversable__listeners();
-//     for(auto listener = listeners.begin()
-//             ; listener != listeners.end()
-//             ; listener++){
-//         INTERACTIVE_VERBOSER(true, 7002, "Just SATISFIED literal  :: "<<*this<<std::endl
-//                              <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
-//         (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
-//     }
 }
 
 void Literal::report__newly_unsatisfied(State& state) const
@@ -120,14 +112,6 @@ void Literal::report__newly_unsatisfied(State& state) const
     INTERACTIVE_VERBOSER(true, 10006, "Decreasing satisfaction of  :: "
                          <<*this<<std::endl);
     unsatisfy_listeners(state);
-//     auto listeners = get__traversable__listeners();
-//     for(auto listener = listeners.begin()
-//             ; listener != listeners.end()
-//             ; listener++){
-//         INTERACTIVE_VERBOSER(true, 7002, "Just UNSATISFIED literal  :: "<<*this<<std::endl
-//                              <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
-//         (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
-//     }
 }
 
 
@@ -203,6 +187,18 @@ configure__complement(const Literal__Pointer& _this,
         has_complement = false;
     }
 }
+
+bool Literal::get__can_only_be_flipped_once() const
+{
+    return can_only_be_flipped_once;
+}
+
+void Literal::set__can_only_be_flipped_once(bool in)
+{
+    can_only_be_flipped_once = in;
+}
+
+
 
 void Literal::set__complement(const Literal__Pointer& _complement)
 {

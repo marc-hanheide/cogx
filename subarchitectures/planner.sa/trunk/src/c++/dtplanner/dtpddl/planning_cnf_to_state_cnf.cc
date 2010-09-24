@@ -39,6 +39,9 @@
 #include "state_formula__disjunctive_clause.hh"
 #include "state_formula__conjunctive_normal_form_formula.hh"
 
+#include "dtp_pddl_parsing_data_domain.hh"
+
+
 using namespace Planning;
 using namespace Planning::State_Formula;
 
@@ -63,6 +66,37 @@ State_Formula::Conjunctive_Normal_Form_Formula__Pointer Planning_CNF__to__State_
 {
     return answer;
 }
+
+
+
+bool Planning_CNF__to__State_CNF::flipped_once(const Planning::Formula::State_Proposition& fact, bool sign)
+{
+    auto& domain_Data = *problem_Data.get__domain_Data();
+
+    if(!sign){/*positive -- i.e., NOT \member{processing_negative}.*/
+        if(!domain_Data.in_add_effect(fact.get__name())){
+            /* If it is false in the starting state, then
+             * \argument{fact} should not be here. If \argument{fact}
+             * is true in the starting state, and it is flipped, then
+             * it is made false. At this point, it can never be made
+             * true again.*/
+            
+            return true;
+        }
+    } else {
+        if(!domain_Data.in_delete_effect(fact.get__name())){
+            /* If it is true in the starting state, then
+             * \argument{fact} should not be here. If \argument{fact}
+             * is flase in the starting state, and it is flipped, then
+             * it is made true. At this point, it can never be made
+             * false again.*/
+            return true;
+        }
+    }
+
+    return false;
+}
+
 
 
 IMPLEMENTATION__STRICT_SHARED_UNARY_VISITOR(Planning_CNF__to__State_CNF,
@@ -221,6 +255,12 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             auto literal__pointer = *_literal__pointer;
             
             literal__pointer->configure__complement(literal__pointer, problem__literals);
+            literal__pointer->set__can_only_be_flipped_once(flipped_once(proposition, processing_negative));
+
+            INTERACTIVE_VERBOSER(literal__pointer->get__can_only_be_flipped_once()
+                                 , 10908
+                                 , literal__pointer<<" can only have its truth value changed once.");
+            
             
             if(clause__as_set.find(literal__pointer) != clause__as_set.end()){
                 INTERACTIVE_VERBOSER(true, 3124,

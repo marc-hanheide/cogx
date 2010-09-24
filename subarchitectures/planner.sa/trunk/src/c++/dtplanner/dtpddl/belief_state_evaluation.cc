@@ -34,10 +34,81 @@
  */
 
 #include "belief_state_evaluation.hh"
+#include "planning_state.hh"
 
 using namespace Planning;
 
-double Belief_State_Value::operator()(POMDP_State* state)
+double Belief_State_Value::operator()(POMDP_State* state) const
 {
     return state->get__expected_reward(); 
+}
+
+
+int Greedy_Heuristic::operator()(POMDP_State* state) const
+{
+    
+    double expected_rewards_count = 0.0;
+    double expected_rewards_value = 0.0;
+    auto& belief_State = state->get__belief_state(); 
+    for(auto _mdp_state = belief_State.begin()
+            ; _mdp_state != belief_State.end()
+            ; _mdp_state++){
+        auto mdp_state = _mdp_state->first;
+        double probability = _mdp_state->second;
+        assert(dynamic_cast<Planning::State*>(mdp_state));
+
+        double count = static_cast<double>(dynamic_cast<Planning::State*>(mdp_state)
+                                           ->get__obtainable_rewards_count());
+        
+        double value = static_cast<double>(dynamic_cast<Planning::State*>(mdp_state)
+                                           ->get__obtainable_rewards_value());
+        
+        expected_rewards_count += probability * count;
+        
+        expected_rewards_value += probability * value;
+    }
+
+    
+    return static_cast<int>(state->get__expected_reward()) // +
+//         expected_rewards_count +
+//         expected_rewards_value)
+        ;
+}
+
+double Obtainable_Value::operator()(POMDP_State* state) const
+{
+    double answer = 0.0;
+    auto& belief_State = state->get__belief_state(); 
+    for(auto _mdp_state = belief_State.begin()
+            ; _mdp_state != belief_State.end()
+            ; _mdp_state++){
+        auto mdp_state = _mdp_state->first;
+        auto probability = _mdp_state->second;
+        assert(dynamic_cast<Planning::State*>(mdp_state));
+
+        answer += probability * static_cast<double>(
+            dynamic_cast<Planning::State*>(mdp_state)
+            ->get__obtainable_rewards_count());
+    }
+    
+    return answer; 
+}
+
+double Obtainable_Values_Count::operator()(POMDP_State* state) const
+{
+    double answer = 0.0;
+    auto& belief_State = state->get__belief_state(); 
+    for(auto _mdp_state = belief_State.begin()
+            ; _mdp_state != belief_State.end()
+            ; _mdp_state++){
+        auto mdp_state = _mdp_state->first;
+        auto probability = _mdp_state->second;
+        assert(dynamic_cast<Planning::State*>(mdp_state));
+
+        answer += probability * static_cast<double>(
+            dynamic_cast<Planning::State*>(mdp_state)
+            ->get__obtainable_rewards_value());
+    }
+    
+    return answer; 
 }

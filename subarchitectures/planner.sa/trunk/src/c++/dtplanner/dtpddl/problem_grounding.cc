@@ -188,8 +188,13 @@ void Problem_Grounding::ground_objective_function()
     auto objective_function = problem_Data.get__objective_function();
 
     if(!objective_function.use_count()){/*"potentially" expensive.*/
+        WARNING("I have been given a DTP domain that doesn't seem to have a numeric objective.\n"
+                <<"I suspect this is because the problem description does not have a:\n"
+                <<"(:metric maximize (reward )) element, or equivalent.");
         is_a_numeric_objective = false;
+        return;
     }
+    
     is_a_numeric_objective = true;
     
     basic_type::Runtime_Thread formula_runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
@@ -197,6 +202,7 @@ void Problem_Grounding::ground_objective_function()
             
     integer_valued_objective = false;
     double_valued_objective = false;
+
     
     switch(objective_function->get__type_name()){
         case enum_types::state_ground_function:
@@ -240,6 +246,11 @@ void Problem_Grounding::ground_objective_function()
     } else if (domain_Data->is_type__int(function_symbol.get__name()) || domain_Data->is_type__number(function_symbol.get__name())) {
         integer_valued_objective = true;;
     } 
+}
+
+uint Problem_Grounding::get__objective_index() const
+{
+    return objective_index;
 }
 
 double Problem_Grounding::get__objective_value(const State& state) const
@@ -557,4 +568,11 @@ const State_Transformations& Problem_Grounding::get__executable_actions_without_
 const Probabilistic_State_Transformations& Problem_Grounding::get__probabilistic_actions() const
 {
     return probabilistic_actions;
+}
+
+const std::map<Formula::Action_Proposition
+               , State_Transformation__Pointer>&
+Problem_Grounding::get__action_symbol__to__state_transformation() const
+{
+    return action_symbol__to__state_transformation;
 }

@@ -64,7 +64,11 @@ namespace Planning
             /* Sign of this literal (false is positive, true is negative). */
             bool get__sign() const;
 
-
+            /*(see \member{can_only_be_flipped_once})*/
+            bool get__can_only_be_flipped_once() const;
+            /*(see \member{can_only_be_flipped_once})*/
+            void set__can_only_be_flipped_once(bool = true);
+            
             
             void configure__complement(const Literal__Pointer&, const Literals&);
         private:
@@ -75,11 +79,9 @@ namespace Planning
             /* The complement of this literal.*/
             bool has_complement;
             Literal__Pointer complement;
-            
-//             /* Set the subject variable to have the truth value "TRUE".*/
-//             void flip_variable_on(State&) const;
-//             /* Set the subject variable to have the truth value "FALSE".*/
-//             void flip_variable_off(State&) const;
+
+            /* After the first change, this literal's Boolean value is fixed.*/
+            bool can_only_be_flipped_once;
         };
  
     }

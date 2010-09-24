@@ -104,6 +104,19 @@ namespace Planning
         std::set<const State_Transformation*> get__optional_transformations();
         void add__optional_transformation(const State_Transformation*);
         void remove__optional_transformation(const State_Transformation*);
+
+
+        void decrement__obtainable_rewards_count();
+        void increment__obtainable_rewards_count();
+        uint get__obtainable_rewards_count() const;
+
+        /* Subtract value \argument{int} from
+         * \member{obtainable_rewards_value}.*/
+        void decrement__obtainable_rewards_value(int);
+        /* Add value \argument{int} from
+         * \member{obtainable_rewards_value}.*/
+        void increment__obtainable_rewards_value(int);
+        int get__obtainable_rewards_value() const;
     private:  
         
         /*Pending probabilistic transformations. All such transformations are compulsory.*/
@@ -119,19 +132,19 @@ namespace Planning
         std::set<const State_Transformation*> applicable_optional_transformations;
 
     private:
-        
+        /* As a plannign state is generated, we keep track of the
+         * observational consequences of the transition here.*/
         Observational_State* observational_state_during_expansion;
+
+        /* Number of rewards that are not statically-unachievable
+         * (note the double negative) from this state.*/
+        uint obtainable_rewards_count;
         
-//         /* For each action in
-//          * \member{Markov_Decision_Process_State::successor_driver},
-//          * we kept the expected value of executing that action. */
-//         std::vector<double> expected_successor_value;
-
-//         /* Index to the maximum value in \member{expected_successor_value}.*/
-//         uint index__max_expected_successor_value;
-
-//         /* Value of the maximum entry in \member{expected_successor_value}.*/
-//         double value__max_expected_successor_value;
+        /* Sum of the values of rewards that are not
+         * statically-unachievable (note the double negative) from
+         * this state. This can be used as a heuristic, or as part of
+         * a heuristic during state expansion.*/
+        int obtainable_rewards_value;
     };
     
     /*State pointers.*/

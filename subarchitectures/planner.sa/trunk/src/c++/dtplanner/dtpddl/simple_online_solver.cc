@@ -48,6 +48,37 @@ Simple_Online_Solver::Simple_Online_Solver(Planning::Parsing::Problem_Data& in)
 
 void Simple_Online_Solver::report__new_belief_state(POMDP_State* state)
 {
+    decltype(ordered_Stack_Of_States) _ordered_Stack_Of_States = this->ordered_Stack_Of_States;
+    while(_ordered_Stack_Of_States.size()){
+        auto thing = _ordered_Stack_Of_States.pop();
+
+        
+        double answer = 0.0;
+        double answer2 = 0.0;
+        auto& belief_State = thing->get__belief_state(); 
+        for(auto _mdp_state = belief_State.begin()
+                ; _mdp_state != belief_State.end()
+                ; _mdp_state++){
+            auto mdp_state = _mdp_state->first;
+            auto probability = _mdp_state->second;
+            assert(dynamic_cast<Planning::State*>(mdp_state));
+
+            answer += probability * static_cast<double>(
+                dynamic_cast<Planning::State*>(mdp_state)
+                ->get__obtainable_rewards_value());
+            
+            answer2 += probability * static_cast<double>(
+                dynamic_cast<Planning::State*>(mdp_state)
+                ->get__obtainable_rewards_count());
+        }
+    
+        
+        cerr<<thing<<" "<<answer<<" "<<answer2<<" "<<thing->get__expected_reward()<<std::endl;
+        
+    }
+     cerr<<std::endl;
+     {char ch; cin>>ch;}
+    
     ordered_Stack_Of_States.push_back(state);
 }
 

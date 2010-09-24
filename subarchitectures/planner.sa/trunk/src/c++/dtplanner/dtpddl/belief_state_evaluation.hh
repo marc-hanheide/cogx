@@ -43,8 +43,29 @@ namespace Planning
     class Belief_State_Value
     {
     public:
-        double operator()(POMDP_State*);
+        double operator()(POMDP_State*) const;
     };
+    
+    class Obtainable_Value
+    {
+    public:
+        double operator()(POMDP_State*) const;
+    };
+
+    class Obtainable_Values_Count
+    {
+    public:
+        double operator()(POMDP_State*) const;
+    };
+
+    class Greedy_Heuristic
+    {
+    public:
+        int operator()(POMDP_State*) const;
+    };
+
+    
+    
     
 //     class Proximity_To_Potential_Value
 //     {
