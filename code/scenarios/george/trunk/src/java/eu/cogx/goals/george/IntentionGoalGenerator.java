@@ -1,16 +1,23 @@
 package eu.cogx.goals.george;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import motivation.components.generators.AbstractBeliefMotiveGenerator;
 import motivation.slice.GeneralGoalMotive;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Node;
 import nu.xom.Nodes;
+import VisionData.VisualObject;
 import autogen.Planner.Goal;
+import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.IceXMLSerializer;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 public class IntentionGoalGenerator extends
 		AbstractBeliefMotiveGenerator<GeneralGoalMotive, dBelief> {
@@ -60,6 +67,22 @@ public class IntentionGoalGenerator extends
 								+ attributedForms.toString());
 				return null;
 			}
+
+			// HACK TO FIND A VALID OBJECT
+			List<GroundedBelief> entries = new ArrayList<GroundedBelief>();
+			try {
+				getMemoryEntries(GroundedBelief.class, entries,"binder");
+				for (GroundedBelief belief : entries) {
+					if (belief.type.equals(SimpleDiscreteTransferFunction
+							.getBeliefTypeFromCastType(VisualObject.class))) {
+						objectId = belief.id;
+						log("found an object grounded belief to fake reference resolution");
+					}
+				}
+			} catch (UnknownSubarchitectureException e) {
+				logException(e);
+			}
+			// END OF HACK
 
 			String concept = "";
 			String prop = "";
