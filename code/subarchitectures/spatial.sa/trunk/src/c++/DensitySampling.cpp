@@ -7,7 +7,7 @@
 #include <fstream>
 #include "SpatialGridMap.hh"
 #include "KDEFunctors.hh"
-
+#include <iostream>
 using namespace std;
 using namespace cogx::Math;
 
@@ -588,7 +588,7 @@ DensitySampler::sampleBinaryRelationSystematically(
 	cloud = tryLoadCloudFromFile(supportObjectLabel, onObjectLabel, relationType);
 	if (cloud == 0) {
 	  // Failed to load cloud from file
-
+	  cout << "failed to get cloud doing something else.." << endl;
 	  // Randomize orientations for involved objects, unless we already have such
 	  if (m_objectOrientations.find(supportObjectLabel) == m_objectOrientations.end()) {
 	    if (!tryLoadOrientationsFromFile(supportObjectLabel)) {
@@ -629,7 +629,7 @@ DensitySampler::sampleBinaryRelationSystematically(
 	  // Save it for next time
 	  writeCloudToFile(cloud, supportObjectLabel, onObjectLabel, relationType);
 	}
-
+	cout << "pushing cloud to list"<< endl;
 	SampleCloudContainer tmp = {cloud, supportObjectLabel, onObjectLabel};
 	m_sampleClouds.push_back(tmp);
       }
@@ -1385,10 +1385,11 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
 
   double total = 0.0;
   // Loop over columns in bounding box
-  cout << "Finding correct KDE weight...";
+  cout << "Finding correct KDE weight...\n";
 
   for (int x = mapMin.first; x <= mapMax.first; x++) {
     cout << (100*x)/(mapMax.first - mapMin.first + 1) << "% ";
+    cout.flush();
     for (int y = mapMin.second; y <= mapMax.second; y++) {
       // Column center world coords
       pair<double, double> columnWorldXY =
@@ -1453,7 +1454,7 @@ DensitySampler::kernelDensityEstimation3D(SpatialGridMap::GridMap<SpatialGridMap
     }
   }
 
-  cout << "Summed KDE adjusted volume: " << total;
+  cout << "\nSummed KDE adjusted volume: " << total;
 
   const double adjustmentMultiplier = totalWeight/total;
 

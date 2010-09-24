@@ -447,7 +447,7 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
   // Visualize Viewplan boost::shared_ptr<CASTData<NavData::NavCommand> >
   boost::shared_ptr<CASTData<NavData::ObjectSearchPlan> > oobj =
     getWorkingMemoryEntry<NavData::ObjectSearchPlan>(objID.address);
-  
+
   NavData::ObjectSearchPlanPtr plan = oobj->getData();
 
   m_ProxyViewPoints.add(m_PeekabotClient, "root.viewpoints",peekabot::REPLACE_ON_CONFLICT);
@@ -456,21 +456,21 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
   // each nodeID and finally put ordered numbers on top of nodes that
   // are in the plan.
   char path[32];
-if(plan->planlist.size() > 0)
-    {
-		
-		 double color[3];
-  color[0] = 0.9;
-  color[1] = 0.1;
-  color[2] = 0.1;
-		for (unsigned int i = 0; i < plan->planlist.size(); i++){
-			sprintf(path,"viewpoint_%i",i);
-			createFOV(m_ProxyViewPoints, path, m_FovH, m_FovV, color, 0.5, plan->planlist[i], false);
-			
-		}
-		
-	}
-  
+  if(plan->planlist.size() > 0)
+  {
+
+    double color[3];
+    color[0] = 0.9;
+    color[1] = 0.1;
+    color[2] = 0.1;
+    for (unsigned int i = 0; i < plan->planlist.size(); i++){
+      sprintf(path,"viewpoint_%i",i);
+      createFOV(m_ProxyViewPoints, path, m_FovH, m_FovV, color, 0.5, plan->planlist[i], false);
+
+    }
+
+  }
+
 }
 
 

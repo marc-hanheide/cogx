@@ -214,6 +214,9 @@ protected:
   double m_standingStillThreshold;
   cast::cdl::CASTTime m_lastTimeMoved;
 
+  int m_mapsize;
+  double m_cellsize;
+  bool m_loadNodeLgms,m_saveNodeLgms;
 private:
   void receiveScan2d(const Laser::Scan2d &castScan);
   void receiveOdometry(const Robotbase::Odometry &castOdom);
@@ -231,6 +234,8 @@ private:
   void PaintPolygon(const VisionData::Vector3Seq &points);
   void readPlaneObjectsFromFile();
   void readPlaneModelsFromFile(double CellSize);
+  void SaveNodeGridMaps();
+  void LoadNodeGridMaps(std::string filename);
 };
 }; // namespace spatial
 

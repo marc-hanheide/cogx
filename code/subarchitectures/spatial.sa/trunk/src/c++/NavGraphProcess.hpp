@@ -98,6 +98,15 @@ protected:
 
 
 private:
+   class NavGraphServer : public NavData::NavGraphInterface{
+      virtual double getPathLength(double xS, double yS, double aS, double xG, double yG, double aG,const Ice::Current &_context);
+      NavGraphProcess *m_pOwner;
+      NavGraphServer(NavGraphProcess *owner) : m_pOwner(owner)
+      {}
+      friend class NavGraphProcess;
+    };
+    friend class NavGraphServer;
+
 
   void areaIdConflict(Cure::NavGraphNode &currNode, Cure::NavGraphGateway &gw);
   void changedArea(int aid);

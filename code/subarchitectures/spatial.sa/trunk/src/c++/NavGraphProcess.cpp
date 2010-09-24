@@ -169,6 +169,9 @@ void NavGraphProcess::saveGraphToFile(const std::string &filename)
 
 void NavGraphProcess::configure(const map<string,string>& _config) 
 {
+  NavData::NavGraphInterfacePtr mapservant = new NavGraphServer(this);
+  registerIceServer<NavData::NavGraphInterface, NavData::NavGraphInterface>(mapservant);
+
   m_WriteFirstTopologicalPose = false;
   m_WriteFirstGraph = false;
   m_NavGraphWMid = "";
@@ -184,6 +187,7 @@ void NavGraphProcess::configure(const map<string,string>& _config)
 
   // You can instruct the graph to automatically try to merge areas
   bool autofix = (_config.find("--auto-merge-areas") != _config.end());
+  
   m_cureNavGraph.setAutoFix(autofix);
   if (autofix) {
     log("Will autofix area merging");
@@ -256,6 +260,14 @@ void NavGraphProcess::configure(const map<string,string>& _config)
   m_cureNavGraph.addEventListener(this);
 }
 
+double  NavGraphProcess::NavGraphServer::getPathLength(double xS, double yS, double aS, double xG, double yG, double aG,const Ice::Current &_context){
+  std::list<Cure::NavGraphNode> path;
+  double d;
+  m_pOwner->lockComponent();
+  m_pOwner->m_cureNavGraph.findPath(xS,yS,aS,xG,yG,aG, path, &d);
+  m_pOwner->unlockComponent();
+  return d;
+}
 void NavGraphProcess::loadGraphFromFile(const std::string &filename)
 {
   // Load the cure part of the file
