@@ -6,6 +6,15 @@ if ~exist('param')
    param='';
 end
 
+%quick fix for empty model
+numSC=length(CC);
+for sc=1:numSC
+   if length(CC{sc})<2
+      CC{sc}=[0 0];
+   end
+end
+
+
 if strcmp(param,'trim')
    numSC=length(CC);
    for sc=1:numSC
