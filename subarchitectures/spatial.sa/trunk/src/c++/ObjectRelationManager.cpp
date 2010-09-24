@@ -41,7 +41,6 @@ using namespace cast;
 using namespace boost;
 using namespace spatial;
 using namespace cogx::Math;
-
 /**
  * The function called to create a new instance of our component.
  *
@@ -59,8 +58,8 @@ ObjectRelationManager::ObjectRelationManager()
   m_bRecognitionIssuedThisStop = false;
   m_maxObjectCounter = 0;
   m_standingStillThreshold = 0.2;
-  m_recognitionTimeThreshold = 5.0;
-  m_trackerTimeThreshold = 3.0;
+  m_recognitionTimeThreshold = DBL_MAX;
+  m_trackerTimeThreshold = 1.0;
   m_timeSinceLastMoved = 0.0;
 
 }
@@ -261,8 +260,8 @@ void ObjectRelationManager::start()
   if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness
       || m_bTestInness) {
     while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
-      sleep(m_RetryDelay);
       connectPeekabot();
+      sleep(m_RetryDelay);
     }
 
     peekabot::GroupProxy root;
@@ -270,7 +269,7 @@ void ObjectRelationManager::start()
     if (m_bDisplayPlaneObjectsInPB) {
       m_planeProxies.add(root, "plane_objects", peekabot::REPLACE_ON_CONFLICT);
     }
-    if (m_bDisplayPlaneObjectsInPB || m_bTestOnness || m_bTestInness) {
+    if (m_bDisplayVisualObjectsInPB || m_bTestOnness || m_bTestInness) {
       m_objectProxies.add(root, "visual_objects", peekabot::REPLACE_ON_CONFLICT);
     }
     if (m_bTestOnness) {
@@ -1011,11 +1010,11 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
     VisionData::VisualObjectPtr observedObject =
       getMemoryEntry<VisionData::VisualObject>(wmc.address);
 
-    if (m_timeSinceLastMoved > m_trackerTimeThreshold) {
-//      log("Got VisualObject: %s (%f,%f,%f)", observedObject->label.c_str(),
-//	  observedObject->pose.pos.x,
-//	  observedObject->pose.pos.y,
-//	  observedObject->pose.pos.z);
+   // if (m_timeSinceLastMoved > m_trackerTimeThreshold) {
+      log("Got VisualObject: %s (%f,%f,%f)", observedObject->label.c_str(),
+	  observedObject->pose.pos.x,
+	  observedObject->pose.pos.y,
+	  observedObject->pose.pos.z);
 
       Pose3 pose = observedObject->pose;
       //Get robot pose
@@ -1032,6 +1031,12 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	robotTransform.pos.y = 0.0;
       }
       transform(robotTransform, pose, pose);
+
+      //FIXME: if tag objects don't do this
+      if(observedObject->label == "metalbox" || observedObject->label == "table1" || observedObject->label == "table2" 
+	  || observedObject->label == "shelves" ){
+	pose = observedObject->pose;
+      }
 
       string obsLabel = observedObject->label;
 
@@ -1066,13 +1071,13 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 
       spatial::Object *obsObject = m_objectModels[obsLabel];
 
-      //    log("2");
+          log("2");
 
       double diff = length(m_objects[obsLabel]->pose.pos - pose.pos);
       diff += length(getRow(m_objects[obsLabel]->pose.rot - pose.rot, 1));
       diff += length(getRow(m_objects[obsLabel]->pose.rot - pose.rot, 2));
       if (diff > 0.01 || bNewObject) {
-	//      log("3");
+	      log("3");
 	if (obsObject->type == OBJECT_PLANE ||
 	    //FIXME
 	      obsLabel == "table1" ||
@@ -1111,11 +1116,29 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	    return;
 	  }
 	}
-	//    log("4");
+	    log("4");
 
 	if (m_bDisplayVisualObjectsInPB && m_objectProxies.is_assigned()) {
+	  log("5");
 	  if (obsObject->type == OBJECT_BOX) {
 	    BoxObject *box = (BoxObject*)obsObject;
+	    peekabot::CubeProxy theobjectproxy;
+	    peekabot::GroupProxy root;
+	    root.assign(m_PeekabotClient, "root");
+	    theobjectproxy.add(m_objectProxies, m_objects[obsLabel]->label, peekabot::REPLACE_ON_CONFLICT);
+	    theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
+	    double angle;
+	    Vector3 axis;
+	    toAngleAxis(pose.rot, angle, axis);
+	    log("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
+		pose.pos.x, pose.pos.y, pose.pos.z, angle, 
+		axis.x, axis.y, axis.z);
+	    theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
+	    theobjectproxy.set_scale(box->radius1*2, box->radius2*2,
+		box->radius3*2);
+	  }
+	  else if (obsObject->type == OBJECT_HOLLOW_BOX){
+	    HollowBoxObject *box = (HollowBoxObject*)obsObject;
 	    peekabot::CubeProxy theobjectproxy;
 	    peekabot::GroupProxy root;
 	    root.assign(m_PeekabotClient, "root");
@@ -1160,7 +1183,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	//   Need access to representation of object models
 	//   
       }
-    }
+    //}
   }
   catch (DoesNotExistOnWMException) {
     log("Error! new Object missing on WM!");
@@ -1763,6 +1786,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       sampleBinaryRelationSystematically(relations, objectChain,
 	  request->objects, request->cellSize, cloud);
 
+    log("got cloud.");
     supportObject->pose = tmpPose;
 
     cloud.compact();
@@ -1773,6 +1797,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	request->outCloud->yExtent,
 	request->outCloud->zExtent,
 	request->outCloud->values);
+    log("made point cloud.");
 
     if (request->outCloud->isBaseObjectKnown) {
       request->outCloud->center += m_objects[supportObjectLabel]->pose.pos;
@@ -1798,6 +1823,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     }
 
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
+    log("overwrote point cloud.");
   }
 
   catch (DoesNotExistOnWMException) {

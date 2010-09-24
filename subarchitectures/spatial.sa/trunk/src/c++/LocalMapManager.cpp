@@ -51,7 +51,7 @@ LocalMapManager::LocalMapManager():m_planeProcessingCooldown(true)
 }
 
 LocalMapManager::~LocalMapManager() 
-{ 
+{
   delete m_Displaylgm1;
   delete m_Displaylgm2;
 //  delete m_DisplayPlaneMap;
@@ -88,6 +88,7 @@ LocalMapManager::~LocalMapManager()
 
 void LocalMapManager::configure(const map<string,string>& _config) 
 {
+  log("configure...");
   map<string,string>::const_iterator it = _config.find("-c");
   if (it== _config.end()) {
     println("configure(...) Need config file (use -c option)\n");
@@ -106,7 +107,18 @@ void LocalMapManager::configure(const map<string,string>& _config)
     println("configure(...) Failed to get sensor pose for laser");
     std::abort();
   } 
-  
+
+  m_loadNodeLgms = false;
+  m_saveNodeLgms = false;
+  if (_config.find("--save-nodemap") != _config.end()) {
+    m_saveNodeLgms = true;
+  }
+
+  if (_config.find("--load-nodemap") != _config.end()) {
+    m_loadNodeLgms = true;
+    m_saveNodeLgms = false;
+  }
+
   m_bNoPlaces = false;
   if (_config.find("--no-places") != _config.end()) {
     m_bNoPlaces = true;
@@ -197,7 +209,8 @@ void LocalMapManager::configure(const map<string,string>& _config)
   if (it != _config.end()) {
     CellSize = (atof(it->second.c_str()));
   }
-
+  m_mapsize = MapSize;
+  m_cellsize = CellSize;
   PlaneData mpty;
   m_planeMap = new PlaneMap(MapSize, CellSize, mpty, PlaneMap::MAP1);
 
@@ -242,6 +255,12 @@ void LocalMapManager::configure(const map<string,string>& _config)
     m_planeHeights.reserve(m_maxNumberOfClusters);
   }
 
+
+  if(m_loadNodeLgms)
+  {
+    m_nodeGridMaps.clear();
+    LoadNodeGridMaps("NodeGridMaps.txt");
+  }
 
   m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
       m_RobotServerHost);
@@ -313,7 +332,13 @@ void LocalMapManager::runComponent()
 
   NavData::FNodePtr curNode = getCurrentNavNode();
   int prevNode = -1;
+  int count = 0;
   while(isRunning()){
+  if(m_saveNodeLgms && count  == 12){
+    SaveNodeGridMaps();
+    count = 0;
+  }
+  count++;
     debug("lock in isRunning");
     lockComponent(); //Don't allow any interface calls while processing a callback
     curNode = getCurrentNavNode();
@@ -331,13 +356,13 @@ void LocalMapManager::runComponent()
 	  m_lgm2->moveCenterTo(curNode->x, curNode->y);
 	  m_lgm1 = m_lgm2;
 	  log("Allocatin'");
-	  m_lgm2 = new CharMap(70, 0.1, '2', CharMap::MAP1, curNode->x, curNode->y);
+	  m_lgm2 = new CharMap(m_mapsize, m_cellsize, '2', CharMap::MAP1, curNode->x, curNode->y);
 
 	  if (m_isUsingSeparateGridMaps) {
 	    m_nodeGridMapsAlt[curNode->nodeId] = m_lgm2_alt;
 	    m_lgm2_alt->moveCenterTo(curNode->x, curNode->y);
 	    m_lgm1_alt = m_lgm2_alt;
-	    m_lgm2_alt = new CharMap(70, 0.1, '2', CharMap::MAP1, curNode->x, curNode->y);
+	    m_lgm2_alt = new CharMap(m_mapsize, m_cellsize, '2', CharMap::MAP1, curNode->x, curNode->y);
 	  }
 	}
 	else {
@@ -420,6 +445,68 @@ void LocalMapManager::runComponent()
   }
 }
 
+void LocalMapManager::SaveNodeGridMaps(){
+  log("Saving node gridmaps");
+  ofstream fout("NodeGridMaps.txt");
+ for (map<int, CharMap *>::iterator it =
+      m_nodeGridMaps.begin(); it != m_nodeGridMaps.end(); it++) {
+  log("saving nodeid %d", (*it).first);
+   // first write node id
+    fout << (*it).first;
+    fout << endl;
+  // then map center
+    fout<<(*it).second->getCentXW();
+    fout << " " ;
+    fout << (*it).second->getCentYW();
+    fout << endl;
+    fout << endl;
+    //after an empty line go for the map data
+    for (int x = -(*it).second->getSize(); x <= (*it).second->getSize(); x++) {
+      for (int y = -(*it).second->getSize(); y <= (*it).second->getSize(); y++) {
+	fout <<(* ((*it).second))(x, y);
+      }
+      //fout << endl;
+    }
+    fout << endl;
+  }
+    fout.close();
+}
+void LocalMapManager::LoadNodeGridMaps(std::string filename){
+  ifstream file(filename.c_str());
+  if (!file.good()){
+    log("Could not read node grid map file, exiting.");
+    exit(0);
+  }
+  string line,tmp;
+  int nodeid;
+  double cx,cy;
+  while(getline(file,line)){
+   log("loading node lgms from file");
+    nodeid = atoi(line.c_str());
+   log("nodeid; %d",nodeid);
+    getline(file,line); 
+    istringstream istr(line); 
+    istr >> tmp;
+    cx = atof(tmp.c_str());
+    istr >> tmp;
+    cy = atof(tmp.c_str());
+log("node cx, cy: %3.2f, %3.2f",cx,cy);
+    getline(file,line); 
+    getline(file,line);
+    int count = 0;
+    CharMap* newMap = new CharMap(m_mapsize, m_cellsize, '2',
+      CharMap::MAP1, cx, cy);
+ for (int x = -newMap->getSize(); x <= newMap->getSize(); x++) {
+      for (int y = -newMap->getSize(); y <= newMap->getSize(); y++) {
+	char c = line[count];
+	(*newMap)(x,y) = c;
+	count++;
+      }
+ }
+    m_nodeGridMaps[nodeid] = newMap; 
+  }
+log("loaded %d maps",m_nodeGridMaps.size());
+}
 void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
   double oldX = 0.0;
@@ -827,11 +914,13 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
       lp++;
     }
   }
-  Cure::XDisplayLocalGridMap<unsigned char>* m_Displaykrsjlgm;
+  
+  /*Cure::XDisplayLocalGridMap<unsigned char>* m_Displaykrsjlgm;
   m_Displaykrsjlgm = new Cure::XDisplayLocalGridMap<unsigned char>(newMap2);
-  m_Displaykrsjlgm->updateDisplay();
+  m_Displaykrsjlgm->updateDisplay();*/
 
 }
+
 
 void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
 				   &objID){
