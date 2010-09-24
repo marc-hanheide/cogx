@@ -25,22 +25,20 @@ package org.cognitivesystems.binder;
 import java.util.LinkedList;
 
 import cast.AlreadyExistsOnWMException;
-import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import de.dfki.lt.tr.beliefs.data.Belief;
-import de.dfki.lt.tr.beliefs.data.IndependentDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentDistributionBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
+import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.GenericPointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 
@@ -119,16 +117,21 @@ public class SharedBeliefCreatorTest extends ManagedComponent{
 		test3();
 		test4();
 		test5();
+		test6();
+		test7();
+		test8();
 	}
 	
 	
 	
 	public void test1() {
-		dBelief privateBelief = createPrivateBelief("red");
-		String privBeliefID = addBeliefToWM (privateBelief);
+		IndependentFormulaDistributionsBelief<dBelief> privateBelief = createPrivateBelief();
+		addFeatureToBelief(privateBelief, "colour", "red");
+		String privBeliefID = addBeliefToWM (privateBelief.get());
 		
-		dBelief attributedBelief = createAttributedBelief("red", privBeliefID);
-		addBeliefToWM (attributedBelief);
+		IndependentFormulaDistributionsBelief<dBelief> attributedBelief = createAttributedBelief(privBeliefID);
+		addFeatureToBelief(attributedBelief, "colour", "red");
+		addBeliefToWM (attributedBelief.get());
 	
 		sleepComponent(100);
 		
@@ -144,10 +147,13 @@ public class SharedBeliefCreatorTest extends ManagedComponent{
 	
 
 	public void test2() {
-		dBelief privateBelief = createPrivateBelief("red");
+		IndependentFormulaDistributionsBelief<dBelief> privateBelief = createPrivateBelief();
+		addFeatureToBelief(privateBelief, "colour", "red");
+		String privBeliefID = addBeliefToWM (privateBelief.get());
 		
-		dBelief attributedBelief = createAttributedBelief("red", "another ID");
-		addBeliefToWM (attributedBelief);
+		IndependentFormulaDistributionsBelief<dBelief> attributedBelief = createAttributedBelief("unrelatedID");
+		addFeatureToBelief(attributedBelief, "colour", "red");
+		addBeliefToWM (attributedBelief.get());
 	
 		sleepComponent(100);
 		
@@ -163,11 +169,13 @@ public class SharedBeliefCreatorTest extends ManagedComponent{
 
 	
 	public void test3() {
-		dBelief privateBelief = createPrivateBelief("red");
-		String privBeliefID = addBeliefToWM (privateBelief);
+		IndependentFormulaDistributionsBelief<dBelief> privateBelief = createPrivateBelief();
+		addFeatureToBelief(privateBelief, "colour", "red");
+		String privBeliefID = addBeliefToWM (privateBelief.get());
 		
-		dBelief attributedBelief = createAttributedBelief("blue", privBeliefID);
-		addBeliefToWM (attributedBelief);
+		IndependentFormulaDistributionsBelief<dBelief> attributedBelief = createAttributedBelief(privBeliefID);
+		addFeatureToBelief(attributedBelief, "colour", "blue");
+		addBeliefToWM (attributedBelief.get());
 	
 		sleepComponent(100);
 		
@@ -185,8 +193,9 @@ public class SharedBeliefCreatorTest extends ManagedComponent{
 	public void test4() {
 		String privBeliefID = newDataID();
 		
-		dBelief attributedBelief = createAttributedBelief("blue", privBeliefID);
-		addBeliefToWM (attributedBelief);
+		IndependentFormulaDistributionsBelief<dBelief> attributedBelief = createAttributedBelief(privBeliefID);
+		addFeatureToBelief(attributedBelief, "colour", "red");
+		addBeliefToWM (attributedBelief.get());
 	
 		sleepComponent(100);
 		
@@ -202,18 +211,20 @@ public class SharedBeliefCreatorTest extends ManagedComponent{
 	
 
 	public void test5() {
-		dBelief privateBelief = createPrivateBelief("red");
-		String privBeliefID = addBeliefToWM (privateBelief);
+		IndependentFormulaDistributionsBelief<dBelief> privateBelief = createPrivateBelief();
+		addFeatureToBelief(privateBelief, "colour", "red");
+		String privBeliefID = addBeliefToWM (privateBelief.get());
 		
-		dBelief attributedBelief = createAttributedBelief("red", privBeliefID);
-		String attrBeliefID = addBeliefToWM (attributedBelief);
+		IndependentFormulaDistributionsBelief<dBelief> attributedBelief = createAttributedBelief(privBeliefID);
+		addFeatureToBelief(attributedBelief, "colour", "red");
+		String attrBeliefID = addBeliefToWM (attributedBelief.get());
 	
 		sleepComponent(100);
 		
 		detectedSharedBelief = false;
 		
 		try {
-			overwriteWorkingMemory(attrBeliefID, attributedBelief);
+			overwriteWorkingMemory(attrBeliefID, attributedBelief.get());
 		} catch (Exception e) {
 			e.printStackTrace();
 		} 
@@ -230,65 +241,238 @@ public class SharedBeliefCreatorTest extends ManagedComponent{
 		detectedOverwrittenBelief = false;
 	}
 	
-	
-	
+
+
 
 	public void test6() {
 		sharedBeliefId = null;
-		dBelief privateBelief = createPrivateBelief("red");
-		String privBeliefID = addBeliefToWM (privateBelief);
 		
-		dBelief attributedBelief = createAttributedBelief("red", privBeliefID);
-		addBeliefToWM (attributedBelief);
-	
+		IndependentFormulaDistributionsBelief<dBelief> privateBelief = createPrivateBelief();
+		addFeatureToBelief(privateBelief, "colour", "red");
+		String privBeliefID = addBeliefToWM (privateBelief.get());
+		
+		IndependentFormulaDistributionsBelief<dBelief> attributedBelief = createAttributedBelief(privBeliefID);
+		addFeatureToBelief(attributedBelief, "colour", "red");
+		addBeliefToWM (attributedBelief.get());
+
 		sleepComponent(100);
-		
-		if (detectedSharedBelief) {
-			
-			log("Test 6: OK");
+
+		try {
+			if (sharedBeliefId != null) {
+				dBelief sharedBelief = getMemoryEntry (sharedBeliefId, dBelief.class);
+				if (sharedBelief.content instanceof CondIndependentDistribs) {
+
+					if (((CondIndependentDistribs)sharedBelief.content).distribs.
+							containsKey(POINTERLABEL.value)) {
+
+						if (((CondIndependentDistribs)sharedBelief.content).distribs.
+								get(POINTERLABEL.value) instanceof BasicProbDistribution) {
+							
+							BasicProbDistribution pointerDistrib = (BasicProbDistribution)
+								((CondIndependentDistribs)sharedBelief.content).distribs.get(POINTERLABEL.value);
+							
+							if (pointerDistrib.values instanceof FormulaValues) {
+								
+								if (((FormulaValues)pointerDistrib.values).values.size() > 0) {
+									
+									if (((FormulaValues)pointerDistrib.values).values.get(0).val instanceof GenericPointerFormula) {
+										
+										if (((GenericPointerFormula)((FormulaValues)pointerDistrib.values).
+												values.get(0).val).pointer.equals(privBeliefID)) {
+											log("Test 6: OK");
+											detectedSharedBelief = false;
+											return;
+										}
+									}
+									
+									else {
+										debug("shared belief contains a pointer, but is not a generic pointer formula");
+									}
+									
+								}
+						}
+							
+						}
+					}
+					else {
+						debug("shared belief does not contain a pointer");
+					}
+				}
+				else {
+					debug("sharedBelief content is not a CondIndependentDistribs");
+				}
+			}
+			else {
+				debug("sharedBelief is null");
+			}
+		} catch (DoesNotExistOnWMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		else {
-			log("Test 6: FAIL");
-		}
+		log("Test 6: FAIL");
+
 		detectedSharedBelief = false;
 	}
+
+
 	
 	
+
+
+	public void test7() {
+		sharedBeliefId = null;
+		
+		IndependentFormulaDistributionsBelief<dBelief> privateBelief = createPrivateBelief();
+		addFeatureToBelief(privateBelief, "colour", "red");
+		String privBeliefID = addBeliefToWM (privateBelief.get());
+		
+		IndependentFormulaDistributionsBelief<dBelief> attributedBelief = createAttributedBelief(privBeliefID);
+		addFeatureToBelief(attributedBelief, "colour", "red");
+		addBeliefToWM (attributedBelief.get());
+
+		sleepComponent(100);
+
+		try {
+			if (sharedBeliefId != null) {
+				dBelief sharedBelief = getMemoryEntry (sharedBeliefId, dBelief.class);
+				if (sharedBelief.content instanceof CondIndependentDistribs) {
+
+					if (((CondIndependentDistribs)sharedBelief.content).distribs.
+							containsKey("colour")) {
+
+						if (((CondIndependentDistribs)sharedBelief.content).distribs.
+								get("colour") instanceof BasicProbDistribution) {
+							
+							BasicProbDistribution colourDistrib = (BasicProbDistribution)
+								((CondIndependentDistribs)sharedBelief.content).distribs.get("colour");
+							
+							if (colourDistrib.values instanceof FormulaValues) {
+								
+								if (((FormulaValues)colourDistrib.values).values.size() > 0) {
+									
+									if (((FormulaValues)colourDistrib.values).values.get(0).val instanceof ElementaryFormula) {
+										
+										if (((ElementaryFormula)((FormulaValues)colourDistrib.values).
+												values.get(0).val).prop.equals("red")) {
+											log("Test 7: OK");
+											detectedSharedBelief = false;
+											return;
+										}
+									}
+									
+									else {
+										debug("shared belief contains a colour, but is not an elementary formula");
+									}
+									
+								}
+						}
+							
+						}
+					}
+					else {
+						debug("shared belief does not contain a colour");
+					}
+				}
+				else {
+					debug("sharedBelief content is not a CondIndependentDistribs");
+				}
+			}
+			else {
+				debug("sharedBelief is null");
+			}
+		} catch (DoesNotExistOnWMException e) {
+			e.printStackTrace();
+		}
+		log("Test 7: FAIL");
+
+		detectedSharedBelief = false;
+	}
+
+
+
+
+
+	public void test8() {
+		sharedBeliefId = null;
+		
+		IndependentFormulaDistributionsBelief<dBelief> privateBelief = createPrivateBelief();
+		addFeatureToBelief(privateBelief, "colour", "red");
+		addFeatureToBelief(privateBelief, "shape", "cubic");
+		String privBeliefID = addBeliefToWM (privateBelief.get());
+		
+		IndependentFormulaDistributionsBelief<dBelief> attributedBelief = createAttributedBelief(privBeliefID);
+		addFeatureToBelief(attributedBelief, "colour", "red");
+		addFeatureToBelief(attributedBelief, "shape", "cubic");
+		addBeliefToWM (attributedBelief.get());
+
+		sleepComponent(100);
+
+		try {
+			if (sharedBeliefId != null) {
+				dBelief sharedBelief = getMemoryEntry (sharedBeliefId, dBelief.class);
+				if (sharedBelief.content instanceof CondIndependentDistribs) {
+
+					if (((CondIndependentDistribs)sharedBelief.content).distribs.keySet().size() == 3) {
+						log("Test 8: OK");
+						detectedSharedBelief = false;
+						return;
+					}
+					else {
+						debug("number of features in distribution: " + ((CondIndependentDistribs)sharedBelief.content).distribs.keySet().size());
+					}
+				}
+				else {
+					debug("sharedBelief content is not a CondIndependentDistribs");
+				}
+			}
+			else {
+				debug("sharedBelief is null");
+			}
+		} catch (DoesNotExistOnWMException e) {
+			e.printStackTrace();
+		}
+		log("Test 8: FAIL");
+
+		detectedSharedBelief = false;
+	}
+
+
 	
-	
-	private dBelief createPrivateBelief (String colourValue) {
+	private IndependentFormulaDistributionsBelief<dBelief> createPrivateBelief () {
 
 		IndependentFormulaDistributionsBelief<dBelief> beliefTest = 
 			IndependentFormulaDistributionsBelief.create(dBelief.class);
-					
-		FormulaDistribution colours = FormulaDistribution.create();	
-		colours.addAll(new Object[][] { { colourValue, 0.8 } });
-
-		beliefTest.getContent().put("colour", colours);
+							
+		return beliefTest;
+	}
+	
+	private IndependentFormulaDistributionsBelief<dBelief> addFeatureToBelief
+		(IndependentFormulaDistributionsBelief<dBelief> belief, String label, String value) {
 		
-		return beliefTest.get();
+		FormulaDistribution colours = FormulaDistribution.create();	
+		colours.addAll(new Object[][] { { value, 0.8 } });
+
+		belief.getContent().put(label, colours);
+		return belief;
 	}
 	
 	
-	private dBelief createAttributedBelief  (String colourValue, String privBeliefID) {
+	private IndependentFormulaDistributionsBelief<dBelief> createAttributedBelief  (String privBeliefID) {
 
 		IndependentFormulaDistributionsBelief<dBelief> beliefTest = 
 			IndependentFormulaDistributionsBelief.create(dBelief.class);
-					
-		FormulaDistribution colours = FormulaDistribution.create();	
-		colours.add(colourValue, 0.8);
-		beliefTest.getContent().put("colour", colours);
+	
 		
 		FormulaDistribution pointerVals = FormulaDistribution.create();	
 		pointerVals.add(new GenericPointerFormula(0,privBeliefID), 1.0);
-		beliefTest.getContent().put(SharedBeliefCreator.POINTER_LABEL, pointerVals);
+		beliefTest.getContent().put(POINTERLABEL.value, pointerVals);
 		
 		String attributingAgent = "self";
 		LinkedList<String> attributedAgents = new LinkedList<String>();
 		attributedAgents.add("human");
 		beliefTest.setAttributed(attributingAgent, attributedAgents);
 		
-		return beliefTest.get();
+		return beliefTest;
 	}
 	
 	
