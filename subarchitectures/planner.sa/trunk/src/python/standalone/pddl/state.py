@@ -72,7 +72,7 @@ class StateVariable(object):
     (ground) arguments. Additionally a state variable may have a
     modality and a list of arguments specific to that modality."""
     
-    def __init__(self, function, args, modality=None, modal_args=[]):
+    def __init__(self, function, args, modality=None, modal_args=tuple()):
         """Return a new StateVariable.
 
         Arguments:
@@ -85,11 +85,11 @@ class StateVariable(object):
         assert len(function.args) == len(args)
         for a, fa in zip(args, function.args):
             assert a.is_instance_of(fa.type), "%s not of type %s" % (str(a), str(fa))
-        self.args = args
+        self.args = tuple(args)
 
         self.modality = modality
-        self.modal_args = modal_args
-        self.hash = hash((self.function,self.modality)+ tuple(self.args)+tuple(self.modal_args))
+        self.modal_args = tuple(modal_args)
+        self.hash = hash((self.function, self.modality) + self.args + self.modal_args)
 
     def get_type(self):
         """Return the type of this state variable. If a modality is
@@ -131,7 +131,7 @@ class StateVariable(object):
         arguments. Otherwise, it will be the list of modal arguments
         with a FunctionTerm inserted at the appropriate Position."""
         if not self.modality:
-            return self.args
+            return list(self.args)
         fterm = FunctionTerm(self.function, [ConstantTerm(a) for a in self.args])
         args = []
         it = iter(self.modal_args)
@@ -694,7 +694,7 @@ class State(dict):
         """
         import logging
         def instantianteAndCheck(cond, params):
-            cond.instantiate(dict(zip(cond.args, params)))
+            cond.instantiate(dict(zip(cond.args, params)), self.problem)
             result = checkConditionVisitor(cond.condition)
             cond.uninstantiate()
             return result
@@ -804,7 +804,7 @@ class State(dict):
                 combinations = product(*map(lambda a: self.problem.get_all_objects(a.type), cond.args))
                 result = []
                 for c in combinations:
-                    cond.instantiate(dict(zip(cond.args, c)))
+                    cond.instantiate(dict(zip(cond.args, c)), self.problem)
                     dependenciesVisitor(cond.condition)
                     cond.uninstantiate()
             elif isinstance(cond, conditions.PreferenceCondition):
@@ -836,7 +836,7 @@ class State(dict):
         if isinstance(effect, effects.UniversalEffect):
             combinations = product(*map(lambda a: list(self.problem.get_all_objects(a.type)), effect.args))
             for params in combinations:
-                effect.instantiate(dict(zip(effect.args, params)))
+                effect.instantiate(dict(zip(effect.args, params)), self.problem)
                 facts.update(self.get_effect_facts(effect.effect, trace_vars))
                 effect.uninstantiate()
                 
@@ -877,7 +877,7 @@ class State(dict):
                 new_objects.append(obj)
                 self.problem.add_object(obj)
 
-            effect.instantiate(dict(zip(effect.args, new_objects)))
+            effect.instantiate(dict(zip(effect.args, new_objects)), self.problem)
             facts.update(self.get_effect_facts(effect.effect, trace_vars))
             effect.uninstantiate()
 
@@ -930,7 +930,7 @@ class State(dict):
         """
         t0 = time.time()
         pred_to_axioms = defaultdict(set)
-        for a in self.problem.axioms:
+        for a in self.problem.domain.axioms:
             pred_to_axioms[a.predicate].add(a)
         derived = pred_to_axioms.keys()
 
@@ -940,9 +940,9 @@ class State(dict):
             while open:
                 sv = open.pop()
                 closed.add(sv)
-                for ax in self.problem.axioms:
+                for ax in self.problem.domain.axioms:
                     if ax.predicate == sv.get_predicate():
-                        ax.instantiate(sv.get_args())
+                        ax.instantiate(sv.get_args(), self.problem)
                         for dep in self.get_relevant_vars(ax.condition, derived):
                             if dep.get_predicate() in derived and dep not in closed:
                                 open.add(dep)
@@ -971,7 +971,7 @@ class State(dict):
         import logging
         
         t0 = time.time()
-        for level, preds in sorted(self.problem.stratification.iteritems()):
+        for level, preds in sorted(self.problem.domain.stratification.iteritems()):
             logging.getLogger().debug("level: %d, %s", level, map(str, preds))
             t1 = time.time()
             axioms = set()
@@ -1003,7 +1003,7 @@ class State(dict):
                     gen = (Literal(a.predicate, c, self.problem) for c in combinations if is_valid(c))
                     
                 for atom in gen:
-                    if a.predicate in self.problem.nonrecursive:
+                    if a.predicate in self.problem.domain.nonrecursive:
                         nonrecursive_atoms.add(atom)
                     else:
                         recursive_atoms.add(atom)
@@ -1025,7 +1025,7 @@ class State(dict):
                 for atom in open:
                     #t3 = time.time()
                     for ax in pred_to_axioms[atom.predicate]:
-                        if ax.tryInstantiate(atom.args):
+                        if ax.tryInstantiate(atom.args, self.problem):
                             if getReasons:
                                 vars = []
                                 universal = []
@@ -1061,16 +1061,17 @@ class State(dict):
         return ex_state
 
     def apply_init_rules(self, domain=None, rules=None):
-        prules = []
-        if domain:
-            prules = [r.copy(newdomain = self.problem) for r in domain.init_rules]
-        if rules:
-            prules += [r.copy(newdomain = self.problem) for r in rules]
+        if not domain:
+            domain = self.problem.domain
             
+        prules = domain.init_rules[:]
+        if rules:
+            prules += rules
+
         for rule in prules:
             combinations = list(product(*map(lambda arg: list(self.problem.get_all_objects(arg.type)), rule.args)))
             for c in combinations:
-                rule.instantiate(c)
+                rule.instantiate(c, self.problem)
                 if rule.precondition is None or self.is_satisfied(rule.precondition):
                     self.apply_effect(rule.effect)
                 rule.uninstantiate()

@@ -74,15 +74,15 @@ class DynamicTest(common.PddlTest):
     def testCreateEffect(self):
         """Testing application of create effects"""
         dom, prob = self.load("testdata/logistics.domain.mapl", "testdata/logistics.p1.mapl")
-        prob.add_requirement("dynamic-objects")
+        dom.add_requirement("dynamic-objects")
         
-        a_create = Parser.parse_as(create.split("\n"), mapl.MAPLAction, prob)
+        a_create = Parser.parse_as(create.split("\n"), mapl.MAPLAction, dom)
         
         self.assert_("package0" not in prob)
         
         st = state.State.from_problem(prob)
         oldlen = len(prob)
-        a_create.instantiate([prob["agent"], prob["tru1"]])
+        a_create.instantiate([prob["agent"], prob["tru1"]], prob)
         st.apply_effect(a_create.effect)
 
         b = Builder(prob)

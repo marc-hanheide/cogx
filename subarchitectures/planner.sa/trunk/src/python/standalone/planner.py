@@ -124,7 +124,7 @@ class Planner(object):
 
         action = pnode.action
         if cond:
-            action.instantiate(pnode.full_args)
+            action.instantiate(pnode.full_args, state.problem)
             extstate = state.get_extended_state(state.get_relevant_vars(cond))
             result = extstate.is_satisfied(cond)
             action.uninstantiate()
@@ -139,7 +139,7 @@ class Planner(object):
             elif isinstance(pnode.action, plans.DummyAction):
                 continue
             else:
-                pnode.action = mapltask.get_action(pnode.action.name)
+                pnode.action = mapltask.domain.get_action(pnode.action.name)
 
     def is_plan_valid(self, plan, goal_node, init_state):
         log.debug("checking plan validity.")

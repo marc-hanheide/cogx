@@ -8,6 +8,10 @@ import parser, writer, domain, problem
 
 test_path = abspath(dirname(__file__)) 
 
+import sys, logging
+if "-v" in sys.argv:
+    logging.basicConfig(level=logging.DEBUG)
+
 class PddlTest(unittest.TestCase):
     
     def load(self, domfile, probfile=None):

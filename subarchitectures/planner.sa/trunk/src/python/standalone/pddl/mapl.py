@@ -56,6 +56,9 @@ default_types = mapl_types
 default_constants = [builtin.TRUE, builtin.FALSE, builtin.UNKNOWN]
 default_predicates = mapl_predicates
 
+default_compiler = translators.MAPLCompiler
+dependencies = ['modal-predicates']
+
 #MAPL axioms
 
 kval_axiom = """
@@ -327,11 +330,11 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
         for d in self.duration:
             d.set_scope(self)
 
-    def instantiate(self, mapping):
+    def instantiate(self, mapping, parent=None):
         if not isinstance(mapping, dict):
             mapping = dict((param.name, c) for (param, c) in zip(self.args, mapping))
         mapping["?duration"] = self.duration[0].term.copy_instance()
-        actions.Action.instantiate(self, mapping)
+        actions.Action.instantiate(self, mapping, parent)
 
     def knowledge_effect(self):
         effs = [s.knowledge_effect() for s in self.sensors]
@@ -666,4 +669,3 @@ class MAPLObjectFluentNormalizer(translators.ObjectFluentNormalizer):
 
     #     return sensors.Sensor(sensor.name, agents, args, vars, pre, senses, domain)
     
-

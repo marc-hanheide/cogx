@@ -33,6 +33,8 @@ univ_load = """
                                 ))
 """
 
+adl_support = ["strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated"]
+
 class TranslateTests(common.PddlTest):
 
     def testMAPLFluentNormalisation(self):
@@ -154,6 +156,102 @@ class TranslateTests(common.PddlTest):
         
         self.roundtrip(dom2, prob2)
 
+    def testMDTTPDDLtoMAPL(self):
+        """Testing compilation of DTPDDL/MAPL to MAPL"""
+        import dtpddl
+        
+        dom, prob = self.load("testdata/switchtest-tfd.pddl", "testdata/switchtest-tfd-problem.pddl")
+
+        t = dtpddl.DT2MAPLCompiler()
+        dom2 = t.translate(dom)
+        prob2 = t.translate(prob)
+
+        self.assertEqual(len(dom2.observe), 0)
+        
+        self.roundtrip(dom2, prob2)
+        
+    def testMDTTPDDLtoDTPDDL(self):
+        """Testing compilation of DTPDDL/MAPL to DTPDDL"""
+        import dtpddl
+        
+        dom, prob = self.load("testdata/switchtest-tfd.pddl", "testdata/switchtest-tfd-problem.pddl")
+
+        supported = adl_support + ['action-costs', 'partial-observability', 'fluents', 'mapl']
+        t1 = dom.compile_to(supported)
+        t2 = dtpddl.DTPDDLCompiler()
+        t = translators.ChainingTranslator(t1, t2)
+        
+        dom2 = t.translate(dom)
+        prob2 = t.translate(prob)
+
+        self.assertEqual(len(dom2.observe), 1)
+        
+        self.roundtrip(dom2, prob2)
+
+    def testMDTTPDDLtoSimpleDTPDDL(self):
+        """Testing compilation of DTPDDL/MAPL to DTPDDL/ADL"""
+        import dtpddl
+        
+        dom, prob = self.load("testdata/switchtest-tfd.pddl", "testdata/switchtest-tfd-problem.pddl")
+
+        supported = adl_support + ['action-costs', 'partial-observability', 'fluents', 'mapl']
+        t1 = dom.compile_to(supported)
+        t2 = dtpddl.DTPDDLCompiler()
+        t3 = dtpddl.ProbADLCompiler()
+        t = translators.ChainingTranslator(t1, t2, t3)
+
+        dom2 = t.translate(dom)
+        prob2 = t.translate(prob)
+
+        self.assertEqual(len(dom2.observe), 1)
+        
+        self.roundtrip(dom2, prob2)
+        
+        
+    def testRequirementCompilation(self):
+        """Testing selective compilation of requirements"""
+
+        dom, prob = self.load("testdata/logistics.domain.mapl", "testdata/logistics.p1.mapl")
+
+        t1 = dom.compile_to(['adl', 'modal-predicates', 'fluents'])
+        prob1 = t1.translate(prob)
+        self.assert_('mapl' not in prob1.domain.requirements)
+        self.assert_('modal-predicates' in prob1.domain.requirements)
+        self.assert_('object-fluents' in prob1.domain.requirements)
+        self.assert_('numeric-fluents' in prob1.domain.requirements)
+        
+        t2 = dom.compile_to(['adl', 'fluents'])
+        prob2 = t2.translate(prob)
+        self.assert_('mapl' not in prob2.domain.requirements)
+        self.assert_('modal-predicates' not in prob2.domain.requirements)
+        self.assert_('object-fluents' in prob2.domain.requirements)
+        self.assert_('numeric-fluents' in prob2.domain.requirements)
+        
+        t3 = dom.compile_to(['adl', 'numeric-fluents'])
+        prob3 = t3.translate(prob)
+        self.assert_('mapl' not in prob3.domain.requirements)
+        self.assert_('modal-predicates' not in prob3.domain.requirements)
+        self.assert_('object-fluents' not in prob3.domain.requirements)
+        self.assert_('numeric-fluents' in prob3.domain.requirements)
+        
+        dom, prob = self.load("testdata/rovers.domain.mapl", "testdata/rovers.problem.mapl")
+
+        t4 = dom.compile_to(['adl', 'durative-actions', 'fluents'])
+        prob4 = t4.translate(prob)
+        self.assert_('mapl' not in prob4.domain.requirements)
+        self.assert_('modal-predicates' not in prob4.domain.requirements)
+        self.assert_('durative-actions' in prob4.domain.requirements)
+        self.assert_('object-fluents' in prob4.domain.requirements)
+
+        t5 = dom.compile_to(['adl', 'fluents'])
+        prob5 = t5.translate(prob)
+        self.assert_('mapl' not in prob5.domain.requirements)
+        self.assert_('modal-predicates' not in prob5.domain.requirements)
+        self.assert_('durative-actions' not in prob5.domain.requirements)
+        self.assert_('object-fluents' in prob5.domain.requirements)
+        
+        
+        
     # def testMAPLtoSAS(self):
     #     """Testing compilation of MAPL to simple SAS"""
         

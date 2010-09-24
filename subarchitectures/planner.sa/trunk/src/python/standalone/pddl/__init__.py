@@ -1,6 +1,6 @@
 import mapltypes as types
 import parser
-import predicates, conditions, effects, actions, axioms, domain, problem, scenario, writer, translators, state, prob_state, visitors
+import predicates, conditions, effects, actions, axioms, domain, problem, scenario, writer, translators, state, prob_state, visitors, builder
 
 from mapltypes import Type, TypedObject, Parameter
 from predicates import Predicate, Function, Literal, Term, FunctionTerm, VariableTerm, ConstantTerm
@@ -9,6 +9,7 @@ from effects import SimpleEffect, ConjunctiveEffect, UniversalEffect, Conditiona
 from actions import Action
 from domain import Domain
 from problem import Problem
+from builder import Builder
 
 from builtin import t_object, t_boolean, t_number
 from builtin import TRUE, FALSE, UNKNOWN

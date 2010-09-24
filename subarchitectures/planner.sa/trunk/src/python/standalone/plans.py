@@ -98,7 +98,7 @@ class GoalAction(DummyAction):
         self.name = "goal"
         self.replan = None
         self.precondition = goal
-    def instantiate(self, x):
+    def instantiate(self, x, y):
         pass
     def uninstantiate(self):
         pass

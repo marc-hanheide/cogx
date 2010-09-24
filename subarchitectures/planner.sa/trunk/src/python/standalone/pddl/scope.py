@@ -183,6 +183,7 @@ class Scope(dict):
         """
         
         self.set_parent(parent)
+        self.original_parent = None
         self.termcache = {}
 
         self.tags = {}
@@ -252,7 +253,7 @@ class Scope(dict):
                 
     #         dict.__setitem__(self, entry.name, entry)
 
-    def tryInstantiate(self, mapping):
+    def tryInstantiate(self, mapping, parent=None):
         """Try to instantiate parameters in this scope. If
         instantiation fails (see instantiate() method), this method
         will return False, otherwise True.
@@ -260,13 +261,13 @@ class Scope(dict):
         Arguments:
         mapping -- dictionary from parameter to object."""
         try:
-            self.instantiate(mapping)
+            self.instantiate(mapping, parent)
         except:
             self.uninstantiate()
             return False
         return True
             
-    def instantiate(self, mapping):
+    def instantiate(self, mapping, parent=None):
         """Instantiate Parameters. All parameters and values must be
         defined in this Scope or one of its ancestors. An exception is
         instantiating a functional variable with a FunctionTerm, here
@@ -275,8 +276,14 @@ class Scope(dict):
         If any of the objects are not defined, an Exception will be raised.
 
         Arguments:
-        mapping -- dictionary from parameter to object."""
+        mapping -- dictionary from parameter to object.
+        parent -- scope object (usually a pddl.Problem) that should be the base for instantiation"""
         self.uninstantiate()
+
+        if parent:
+            self.original_parent = self.parent
+            self.set_parent(parent)
+        
         nonfunctions = []
         #instantiate function variables first, as they can affect the types of other parameters
         for key, val in mapping.iteritems():
@@ -300,6 +307,9 @@ class Scope(dict):
         for val in self.itervalues():
             if isinstance(val, types.Parameter):
                 val.instantiate(None)
+        if self.original_parent:
+            self.set_parent(self.original_parent)
+            self.original_parent = None
 
     def uniquify_variables(self):
         """Rename objects to that there are no name collisions."""

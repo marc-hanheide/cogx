@@ -206,7 +206,7 @@ class DynamicObjectsCompiler(translators.Translator):
         dyntypes = ctypes | dtypes
         
         dom.actions += [self.translate_action(a, dyntypes, dom) for a in _domain.actions]
-#        dom.observe += [self.translate_action(o, types, dom) for o in _domain.observe]
+        dom.observe += [self.translate_action(o, dyntypes, dom) for o in _domain.observe]
         dom.axioms += [self.translate_axiom(a, dyntypes, dom) for a in _domain.axioms]
         dom.stratify_axioms()
         dom.name2action = None
@@ -226,3 +226,5 @@ class DynamicObjectsCompiler(translators.Translator):
                 p2.init.append(b("unused", obj))
                 
         return p2
+
+default_compiler = DynamicObjectsCompiler

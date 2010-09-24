@@ -9,9 +9,10 @@ import task_preprocessor as tp
 
 log = config.logger("PythonServer")
 BINDER_SA = "binder"
+TOTAL_P_COSTS = 200
 
 class CASTState(object):
-    def __init__(self, beliefs, domain):
+    def __init__(self, beliefs, domain, oldstate=None):
         self.domain = domain
         self.beliefs = beliefs
         self.beliefdict = dict((b.id, b) for b in beliefs)
@@ -27,7 +28,57 @@ class CASTState(object):
         self.facts = list(tp.tuples2facts(obj_descriptions))
         problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
         self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
+        self.prob_state.apply_init_rules(domain = self.domain)
+        self.generated_objects = set(problem.objects) - self.objects
         self.state = self.prob_state.determinized_state(0.05, 0.95)
+        if oldstate:
+            self.match_generated_objects(oldstate)
+
+    def match_generated_objects(self, oldstate):
+        # This will only match single new objects (i.e. no several new
+        # objects referring to each other), but that should be enough
+        # for now.
+        def repl(a):
+            if a == gen:
+                return obj
+            return a
+        new_objects = self.objects - oldstate.objects
+        matches = {}
+        for gen in oldstate.generated_objects:
+            facts = []
+            for f in oldstate.state.iterfacts():
+                if any(a == gen for a in f.svar.args + f.svar.modal_args):
+                    facts.append(f)
+                
+            for obj in new_objects:
+                if obj in matches or obj.type != gen.type:
+                    continue
+                match = True
+                for svar, val in facts:
+                    newvar = pddl.state.StateVariable(svar.function, [repl(a) for a in svar.args], svar.modality,  [repl(a) for a in svar.modal_args])
+                    if self.state[newvar] != val:
+                        match = False
+                if match:
+                    matches[obj] = gen
+                    break
+
+        if matches:
+            for obj, gen in matches.iteritems():
+                log.debug("Matching generated object %s to new object %s.", gen.name, obj.name)
+                belname = self.namedict[obj.name]
+                del self.namedict[obj.name]
+                del self.namedict[belname]
+                
+                obj.rename(gen.name)
+                namedict[belname] = obj.name
+                namedict[obj.name] = belname
+                
+            problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
+            self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
+            self.prob_state.apply_init_rules(domain = self.domain)
+            self.generated_objects = set(problem.objects) - self.objects
+            self.state = self.prob_state.determinized_state(0.05, 0.95)
+
 
     def to_problem(self, cast_task, deterministic=True, domain=None):
         if "action-costs" in self.domain.requirements:
@@ -42,10 +93,13 @@ class CASTState(object):
 
         if deterministic:
             facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.state.iterfacts()]
+            if 'numeric-fluents' in domain.requirements:
+                b = pddl.Builder(domain)
+                facts.append(b.init('=', (pddl.dtpddl.total_p_cost,), TOTAL_P_COSTS))
         else:
             facts = self.facts
 
-        problem = pddl.Problem("cogxtask", self.objects, facts, None, domain, opt, opt_func )
+        problem = pddl.Problem("cogxtask", self.objects | self.generated_objects, facts, None, domain, opt, opt_func )
 
         if deterministic:
             self.state.problem = problem

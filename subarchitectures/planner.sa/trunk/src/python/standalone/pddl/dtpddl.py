@@ -1,7 +1,7 @@
 import itertools
 from collections import defaultdict
 
-import predicates, conditions, effects, actions, scope, visitors, translators, writer, domain, mapl
+import predicates, conditions, effects, actions, scope, visitors, translators, writer, domain, problem, mapl
 import mapltypes as types
 import builtin
 
@@ -18,6 +18,9 @@ p = Parameter("?f", types.FunctionType(t_object))
 committed = Predicate("committed", [p], builtin=True)
 
 reward = Function("reward", [], t_number, builtin=True)
+
+total_p_cost = Function("total-p-cost", [], t_number)
+p_cost_value = 200
 
 pddl_module = True
 
@@ -269,7 +272,7 @@ class DTPDDLWriter(writer.Writer):
         
         if domain.constants:
             strings.append("")
-            const = [c for c in domain.constants if c not in (types.TRUE, types.FALSE, types.UNKNOWN)]
+            const = [c for c in domain.constants if c not in (types.UNKNOWN, )]
             strings += self.write_objects("constants", const)
 
         for a in domain.axioms:
@@ -301,7 +304,7 @@ class DTRule(scope.Scope):
     def deps(self):
         return set(t.function for t,v in self.conditions)
 
-    def instantiate(self, mapping):
+    def instantiate(self, mapping, parent=None):
         """Instantiate the Parameters of this action.
 
         Arguments:
@@ -310,9 +313,9 @@ class DTRule(scope.Scope):
         assumed to be in the order of the Action's Parameters."""
         if not isinstance(mapping, dict):
             mapping = dict((param.name, c) for (param, c) in zip(self.args, mapping))
-        Scope.instantiate(self, mapping)
+        Scope.instantiate(self, mapping, parent)
 
-    def instantiate_all(self, mapping):
+    def instantiate_all(self, mapping, parent=None):
         """Instantiate the Parameters of this action.
 
         Arguments:
@@ -321,7 +324,7 @@ class DTRule(scope.Scope):
         assumed to be in the order of the Action's Parameters."""
         if not isinstance(mapping, dict):
             mapping = dict((param.name, c) for (param, c) in zip(self.args+self.add_args, mapping))
-        scope.Scope.instantiate(self, mapping)
+        scope.Scope.instantiate(self, mapping, parent)
 
     def get_value_args(self):
         result = set()
@@ -490,7 +493,7 @@ class DT2MAPLCompiler(translators.Translator):
                 agent = predicates.Parameter("?a", mapl.t_agent)
                 a = mapl.MAPLDurativeAction("select-%s-%d" % (r.function.name,i), [agent], r.args, r.add_args, [], None, None, None, [], domain)
                 b = Builder(a)
-                dterm = b("*", ("total-p-costs",), ("-", 1, p))
+                dterm = b("*", (total_p_cost,), ("-", 1, p))
                 a.duration.append(durative.DurationConstraint(dterm))
                 cparts = []
                 for t,val in r.conditions:
@@ -504,7 +507,7 @@ class DT2MAPLCompiler(translators.Translator):
                 acquire_lock = b.timed_effect("start", "select-locked")
                 release_lock = b.timed_effect("end", "not", ("select-locked",))
                 commit_eff = b.timed_effect("end", "commit", b(r.function, *r.args), v)
-                decrease_eff = b.timed_effect("end", "decrease", ("total-p-costs",), "?duration")
+                decrease_eff = b.timed_effect("end", "decrease", (total_p_cost,), "?duration")
                 a.effect = effects.ConjunctiveEffect([acquire_lock, release_lock, commit_eff, decrease_eff], a)
 
                 actions.append(a)
@@ -530,6 +533,9 @@ class DT2MAPLCompiler(translators.Translator):
             
         dom = _domain.copy()
         dom.requirements.discard("partial-observability")
+
+        if 'total-p-cost' not in dom.functions:
+            dom.functions.add(total_p_cost)
 
         for o in dom.observe:
             self.translate_observable(o, dom)
@@ -569,15 +575,15 @@ class DT2MAPLCompiler(translators.Translator):
         return dom
 
     def translate_problem(self, _problem):
-        domain = self.translate_domain(_problem.domain)
-        if domain == _problem.domain:
-            return _problem
-        p2 = problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
+        p2 = translators.Translator.translate_problem(self, _problem)
+        b = Builder(p2)
+        p2.init.append(b.init('=', (total_p_cost,), p_cost_value))
         return p2
-
+        
 class DTPDDLCompiler(translators.Translator):
-    def __init__(self, **kwargs):
-        self.depends = [translators.MAPLCompiler(**kwargs)]
+    def __init__(self, copy=True, **kwargs):
+        self.depends = [translators.MAPLCompiler(copy=copy, **kwargs)]
+        self.copy = False
 
     def translate_action(self, action, domain):
         cost_term = action.get_total_cost()
@@ -585,6 +591,7 @@ class DTPDDLCompiler(translators.Translator):
             return action.copy(newdomain=domain)
 
         a2 = action.copy(newdomain=domain)
+        a2.set_total_cost(None)
         b = Builder(a2)
         
         new_reward_eff = b.effect("assign", ("reward",), predicates.Term(-cost_term.object.value))
@@ -598,34 +605,18 @@ class DTPDDLCompiler(translators.Translator):
         
     def translate_domain(self, _domain):
         if "partial-observability" not in _domain.requirements:
-            return _domain
+            return translators.Translator.translate_domain(self, _domain)
         
         dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), _domain.predicates.copy(), _domain.functions.copy(), [], [])
         dom.requirements = _domain.requirements.copy()
-
-        for func in default_predicates:
-            dom.predicates.remove(func)
-        for func in default_functions:
-            dom.functions.remove(func)
-
-        reward = Function("reward", [], t_number, builtin=False)
-        dom.functions.add(reward)
-            
-        p = Parameter("?f", types.FunctionType(t_object))
-        observed = Predicate("observed", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
-        p = Parameter("?f", types.FunctionType(t_object))
-        committed = Predicate("committed", [p], builtin=False)
-
-        dom.predicates.add(observed)
-        dom.predicates.add(committed)
-        try:
+        translators.change_builtin_functions(dom.predicates, default_predicates)
+        translators.change_builtin_functions(dom.functions, default_functions)
+        
+        if "increase" not in dom.predicates:
             dom.predicates.add(builtin.increase)
-        except:
-            pass
-
         if "decrease" not in dom.predicates:
             dom.predicates.add(builtin.decrease)
-
+            
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
         dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
@@ -633,3 +624,49 @@ class DTPDDLCompiler(translators.Translator):
         dom.name2action = None
         return dom
 
+    def translate_problem(self, _problem):
+        p2 = translators.Translator.translate_problem(self, _problem)
+        p2.optimization = 'maximize'
+        p2.opt_func = Builder(p2)('reward')
+        return p2
+
+
+class ProbADLCompiler(translators.ADLCompiler):
+    def __init__(self, copy=True, **kwargs):
+        self.depends = [translators.ObjectFluentCompiler(copy=copy, **kwargs), translators.CompositeTypeCompiler(copy=False, **kwargs) ]
+        self.copy = False
+
+    def translate_action(self, action, domain=None):
+        a2 = translators.Translator.translate_action(self, action, domain)
+        a2.precondition = visitors.visit(a2.precondition, translators.ADLCompiler.condition_visitor)
+        a2.replan = visitors.visit(a2.replan, translators.ADLCompiler.condition_visitor)
+        return a2
+        
+    def translate_domain(self, _domain):
+        dom = translators.Translator.translate_domain(self, _domain)
+        dom.actions = [a for a in dom.actions if not a.name.startswith("sample_")]
+        dom.axioms = []
+        dom.name2action = None
+        return dom
+    
+    def translate_problem(self, _problem):
+        domain = self.translate_domain(_problem.domain)
+        p2 = problem.Problem(_problem.name, _problem.objects, [], _problem.goal, domain, _problem.optimization, _problem.opt_func)
+
+        @visitors.copy
+        def init_visitor(elem, results):
+            if isinstance(elem, predicates.Literal):
+                if elem.negated:
+                    return False
+                
+        for i in _problem.init:
+            lit = i.visit(init_visitor)
+            if lit:
+                lit.set_scope(p2)
+                p2.init.append(lit)
+
+        p2.goal = visitors.visit(p2.goal, translators.ADLCompiler.condition_visitor)
+        return p2
+    
+
+compilers = {'mapl' : DT2MAPLCompiler}

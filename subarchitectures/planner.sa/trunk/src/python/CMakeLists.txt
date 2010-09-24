@@ -6,7 +6,8 @@ cast_slice2Py(GEN_FILE Planner.ice ${CAST_SLICE_DIR} ${CAST_SLICE_DIR}/cast/slic
   ${COGX_ROOT}/tools/beliefs/apis/beliefs+cast/src/slice )
 cast_slice2Py(GEN_FILE2 ../../tools/beliefs/apis/beliefs/src/slice/beliefs.ice ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} )
 cast_slice2Py(GEN_FILE3 ../../tools/beliefs/apis/beliefs+cast/src/slice/beliefs_cast.ice ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} )
-set(GENERATED ${GEN_FILE} ${GEN_FILE2} ${GEN_FILE3})
+cast_slice2Py(GEN_FILE4 ../../tools/cogxutils/src/slice/beliefs_cogx.ice ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} )
+set(GENERATED ${GEN_FILE} ${GEN_FILE2} ${GEN_FILE3} ${GEN_FILE4})
 
 if(BUILD_SA_COMA)
 cast_slice2Py(GEN_COMA_ICE ../../subarchitectures/coma.sa/src/slice/ComaData.ice  ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} 

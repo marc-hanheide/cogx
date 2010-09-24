@@ -87,7 +87,7 @@
 	   :precondition (and
 			  (in-domain (name ?loc) ?n)
 			  )
-	   :replan (kval ?a (name ?loc))
+;	   :replan (kval ?a (name ?loc))
 	   :effect;; (kval ?a (is-in ?obj))
 	   (assign (name ?loc) ?n)
 	   )
