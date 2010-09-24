@@ -121,7 +121,8 @@ module Video {
   struct Image {
     int width;
     int height;
-    ByteSeq data;  // 3*width*height bytes of data
+    // data: 3*width*height bytes of data
+    ByteSeq data;
     cast::cdl::CASTTime time;
     int camId;
     CameraParameters camPars;
