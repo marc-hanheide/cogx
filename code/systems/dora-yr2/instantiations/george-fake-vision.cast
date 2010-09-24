@@ -20,12 +20,7 @@ JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 
 JAVA MG goal.generator.shape eu.cogx.goals.george.LearnShapeGenerator
 JAVA MG goal.generator.color eu.cogx.goals.george.LearnColorGenerator
-
-# viewer stuff ################################################################
-
-JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"
-JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"
-JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "motivation.slice.Motive"
+JAVA MG goal.generator.intention eu.cogx.goals.george.IntentionGoalGenerator --debug
 
 
 # dialogue stuff ##############################################################
@@ -41,8 +36,13 @@ JAVA MG refmonitor	de.dfki.lt.tr.cast.dialogue.ReferenceMonitor --dumpfile /tmp/
 JAVA MG	refresolve	de.dfki.lt.tr.cast.dialogue.ReferenceResolution --ruleset-construct ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/index-construct.txt --dumpfile /tmp/generated.abd --correlfile ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/correlations.abd --appendfile ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/reference-resolution.abd --log true
 JAVA MG	irecog	de.dfki.lt.tr.cast.dialogue.IntentionManager --ruleset ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/index.txt --log true
 
-JAVA MG goal.generator eu.cogx.goals.george.IntentionGoalGenerator --debug
 
 
+
+# viewer stuff ################################################################
+
+JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"
+JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "motivation.slice.Motive"
 
 
