@@ -61,7 +61,8 @@ private:
 	MyDisplayClient m_display;
   map<unsigned, P::RGBColor> displayColors;
 
-  void Redraw3D();
+  void redrawHistogram(const ProtoObject &pobj);
+  void redraw3D();
 #endif
 
   /**

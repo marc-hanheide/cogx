@@ -36,10 +36,11 @@ using namespace VisionData;
 #ifdef FEAT_VISUALIZATION
   // display objects
   #define ID_OBJECT_3D      "ShapeDescriptor3D.3D"
-  #define ID_OBJECT_IMAGE   "ShapeDescriptor3D.Image"
+  #define ID_OBJECT_HIST    "ShapeDescriptor3D.Hist"
+  //#define ID_OBJECT_IMAGE   "ShapeDescriptor3D.Image"
 
   // display controls
-  #define IDC_POINTS "ShapeDescriptor3D.show.points"
+  //#define IDC_POINTS "ShapeDescriptor3D.show.points"
 #endif
 
 static void DrawLine3D(std::ostringstream &str,
@@ -101,9 +102,9 @@ void ShapeDescriptor3D::start()
   addChangeFilter(createLocalTypeFilter<VisionData::ProtoObject>(cdl::ADD),
     new MemberFunctionChangeReceiver<ShapeDescriptor3D>(this,
       &ShapeDescriptor3D::newProtoObject));
-  addChangeFilter(createLocalTypeFilter<VisionData::ProtoObject>(cdl::OVERWRITE),
+  /*addChangeFilter(createLocalTypeFilter<VisionData::ProtoObject>(cdl::OVERWRITE),
     new MemberFunctionChangeReceiver<ShapeDescriptor3D>(this,
-      &ShapeDescriptor3D::updatedProtoObject));
+      &ShapeDescriptor3D::updatedProtoObject));*/
 
 #ifdef FEAT_VISUALIZATION
   m_display.connectIceClient(*this);
@@ -113,6 +114,7 @@ void ShapeDescriptor3D::start()
   // Object displays (m_bXX) are set to off: we need to create dummy display objects
   // on the server so that we can activate displays through GUI
   m_display.setLuaGlObject(ID_OBJECT_3D, "3D planes", "function render()\nend\n");
+  m_display.setLuaGlObject(ID_OBJECT_HIST, "angle histogram", "function render()\nend\n");
 #endif
 }
 
@@ -122,13 +124,16 @@ void ShapeDescriptor3D::runComponent()
 
 void ShapeDescriptor3D::newProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
-  ProtoObjectPtr pobj = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
-  calculateDescriptor(*pobj);
+  ProtoObjectPtr pobjPtr = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
+  calculateDescriptor(*pobjPtr);
+  overwriteWorkingMemory(_wmc.address, pobjPtr);
 }
 
 void ShapeDescriptor3D::updatedProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
-  ProtoObjectPtr pobj = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
+  ProtoObjectPtr pobjPtr = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
+  calculateDescriptor(*pobjPtr);
+  overwriteWorkingMemory(_wmc.address, pobjPtr);
 }
 
 void ShapeDescriptor3D::calculateDescriptor(ProtoObject &pobj)
@@ -231,7 +236,8 @@ void ShapeDescriptor3D::calculateDescriptor(ProtoObject &pobj)
   cout<<endl<<"--"<<endl;
 
 #ifdef FEAT_VISUALIZATION
-  Redraw3D();
+  redraw3D();
+  redrawHistogram(pobj);
 #endif
 
   for(int i = LEFT; i <= RIGHT; i++)
@@ -274,7 +280,61 @@ std::string ShapeDescriptor3D::MyDisplayClient::getControlState(const std::strin
 	return "";
 }
 
-void ShapeDescriptor3D::Redraw3D()
+void ShapeDescriptor3D::redrawHistogram(const ProtoObject &pobj)
+{
+  //int w = 100, h = 100;
+  std::ostringstream str;
+  str << "function render()\n";
+  //str << "glViewport(0, 0, " <<  w << ", " << h << ")\n";
+  str << "glMatrixMode(GL_PROJECTION)\n";
+  str << "glLoadIdentity()\n";
+  str << "gluOrtho2D(0, 1, 0, 1)\n";
+  str << "glPixelZoom(1.0, 1.0)\n";
+  str << "glMatrixMode(GL_MODELVIEW)\n";
+  str << "glLoadIdentity()\n";
+  
+  // draw a few grid lines
+  str << "glColor(0.5, 0.5, 0.5)\n";
+  str << "glBegin(GL_LINES)\n";
+  for(double x = 0.0; x <= 1.0; x += 0.25)
+  {
+    // steps of pi/2
+    str << "glVertex(" << x << ", " << 0.0 << ")\n";
+    str << "glVertex(" << x << ", " << 1.0 << ")\n";
+  }
+  str << "glEnd()\n";
+  str << "glLineStipple(1, 0x00ff)\n";
+  str << "glEnable(GL_LINE_STIPPLE)\n";
+  str << "glBegin(GL_LINES)\n";
+  for(double x = 0.0; x <= 1.0; x += 0.125)
+  {
+    // steps of pi/4
+    str << "glVertex(" << x << ", " << 0.0 << ")\n";
+    str << "glVertex(" << x << ", " << 1.0 << ")\n";
+  }
+  str << "glEnd()\n";
+  str << "glDisable(GL_LINE_STIPPLE)\n";
+
+  // draw the histogram
+  str << "glColor(0.0, 0.0, 1.0)\n";
+  str << "glBegin(GL_QUADS)\n";
+  double w = 1./(double)pobj.rasShapeDesc.angleHistogram.size();
+  for(size_t i = 0; i < pobj.rasShapeDesc.angleHistogram.size(); i++)
+  {
+    double x = (double)i/(double)pobj.rasShapeDesc.angleHistogram.size();
+    double y = pobj.rasShapeDesc.angleHistogram[i];
+    str << "glVertex(" << x << ", " << 0 << ")\n";
+    str << "glVertex(" << x + w << ", " << 0 << ")\n";
+    str << "glVertex(" << x + w << ", " << y << ")\n";
+    str << "glVertex(" << x << ", " << y << ")\n";
+  }
+  str << "glEnd()\n";
+
+  str << "end\n";
+  m_display.setLuaGlObject(ID_OBJECT_HIST, "angle histogram", str.str());
+}
+
+void ShapeDescriptor3D::redraw3D()
 {
   std::ostringstream str;
   P::Scene3D scene;
