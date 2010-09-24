@@ -109,7 +109,7 @@
             </target>
 
 	
-	<target name="slice" depends = "slice-beliefs, slice-binder" description="generates source from slice">
+	<target name="slice" depends = "slice-binder" description="generates source from slice">
 
 	</target>
 
