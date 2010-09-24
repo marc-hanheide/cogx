@@ -64,7 +64,7 @@ inline double* Get(Vector3 &a)
 inline double get(const Vector3 &a, int idx) throw(runtime_error)
 {
   if(idx < 0 || idx > 2)
-    throw runtime_error(exceptionMessage(__HERE__, 
+    throw runtime_error(cast::exceptionMessage(__HERE__, 
           "invlaid index %d must be [0,2]", idx));
   return (&a.x)[idx];
 }
@@ -75,7 +75,7 @@ inline double get(const Vector3 &a, int idx) throw(runtime_error)
 inline void set(Vector3 &a, int idx, double d) throw(runtime_error)
 {
   if(idx < 0 || idx > 2)
-    throw runtime_error(exceptionMessage(__HERE__, 
+    throw runtime_error(cast::exceptionMessage(__HERE__, 
           "invlaid index %d must be [0,2]", idx));
   (&a.x)[idx] = d;
 }
@@ -113,7 +113,7 @@ inline void get(const Vector3 &a, vector<float> &v, size_t offset = 0)
   throw(runtime_error)
 {
   if(v.size() < offset + 3)
-    throw runtime_error(exceptionMessage(__HERE__,
+    throw runtime_error(cast::exceptionMessage(__HERE__,
           "vector not big enough: %d <  %d", (int)v.size(), (int)offset + 3));
   v[offset] = (float)a.x;
   v[offset + 1] = (float)a.y;
@@ -129,7 +129,7 @@ inline void get(const Vector3 &a, vector<double> &v, size_t offset = 0)
   throw(runtime_error)
 {
   if(v.size() < offset + 3)
-    throw runtime_error(exceptionMessage(__HERE__,
+    throw runtime_error(cast::exceptionMessage(__HERE__,
           "vector not big enough: %d <  %d", (int)v.size(), (int)offset + 3));
   v[offset] = a.x;
   v[offset + 1] = a.y;
@@ -189,7 +189,7 @@ inline void set(Vector3 &a, const vector<float> &v, size_t offset = 0)
   throw(runtime_error)
 {
   if(v.size() < offset + 3)
-    throw runtime_error(exceptionMessage(__HERE__,
+    throw runtime_error(cast::exceptionMessage(__HERE__,
           "vector not big enough: %d <  %d", (int)v.size(), (int)offset + 3));
   a.x = (double)v[offset];
   a.y = (double)v[offset + 1];
@@ -205,7 +205,7 @@ inline void set(Vector3 &a, const vector<double> &v, size_t offset = 0)
   throw(runtime_error)
 {
   if(v.size() < offset + 3)
-    throw runtime_error(exceptionMessage(__HERE__,
+    throw runtime_error(cast::exceptionMessage(__HERE__,
           "vector not big enough: %d <  %d", (int)v.size(), (int)offset + 3));
   a.x = (double)v[offset];
   a.y = (double)v[offset + 1];
@@ -288,7 +288,7 @@ inline Vector3& operator *= (Vector3 &a, double f)
 inline Vector3& operator /= (Vector3 &a, double f) throw(runtime_error)
 {
   if(iszero(f))
-    throw runtime_error(exceptionMessage(__HERE__, "division by zero"));
+    throw runtime_error(cast::exceptionMessage(__HERE__, "division by zero"));
   a.x /= f;
   a.y /= f;
   a.z /= f;
@@ -315,11 +315,11 @@ inline void readText(istream &is, Vector3 &a) throw(runtime_error)
   {
     is >> a.x >> a.y >> a.z >> c;
     if(c != ']')
-      throw runtime_error(exceptionMessage(__HERE__,
+      throw runtime_error(cast::exceptionMessage(__HERE__,
             "error reading Vector3: ']' expected"));
   }
   else
-    throw runtime_error(exceptionMessage(__HERE__,
+    throw runtime_error(cast::exceptionMessage(__HERE__,
           "error reading Vector3: '[' expected"));
 }
 
@@ -398,7 +398,7 @@ inline Vector3 operator * (const Vector3& v, double f)
 inline Vector3 operator / (const Vector3& v, double f) throw(runtime_error)
 {
   if(iszero(f))
-    throw runtime_error(exceptionMessage(__HERE__, "division by zero"));
+    throw runtime_error(cast::exceptionMessage(__HERE__, "division by zero"));
   return vector3(v.x/f, v.y/f, v.z/f);
 }
 
