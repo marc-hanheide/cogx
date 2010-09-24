@@ -86,6 +86,9 @@ namespace spatial
       void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
       void receiveScan2d(const Laser::Scan2d &castScan);
       void receiveOdometry(const Robotbase::Odometry &castOdom);
+      
+void newViewPointGenerationCommand(const cast::cdl::WorkingMemoryChange &objID);
+void newProcessViewPointCommand(const cast::cdl::WorkingMemoryChange &objID);
 
       void newSpatialObject(const cast::cdl::WorkingMemoryChange &objID);
       void putObjectInMap(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>
@@ -133,7 +136,7 @@ namespace spatial
       bool isPointSameSide(XVector3D p1,XVector3D p2,XVector3D a,XVector3D b);
       bool isPointInsideTriangle(XVector3D p,XVector3D a,XVector3D b,XVector3D c);
       void FindBoundingRectangle(XVector3D a,XVector3D b,XVector3D c,int* rectangle);
-      void InitializeMaps();
+      void InitializeMaps(SpatialData::PlaceIDSeq placestosearch);
       void IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm);
       void ChangeMaps(std::string roomid);
       // keyed with room id
@@ -175,7 +178,9 @@ namespace spatial
 	PAUSED,
 	STOPPED
       };
-      
+
+double m_tilt;     
+bool m_publishSimCones; 
       double m_totalprob;
       FrontierInterface::ObjectPriorRequestPtr m_priorreq;
       bool m_bSimulation;

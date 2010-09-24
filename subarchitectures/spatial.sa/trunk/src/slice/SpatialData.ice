@@ -18,23 +18,6 @@ module SpatialData {
   sequence<long> LongOpt;
   sequence<cogx::Math::Vector3> PlanePointSeq;
 
-
-  /**
-    * Class for exposing AVS plan to planner
-    */
-
-  struct ViewPoint{
-    cogx::Math::Vector3 pose;
-    double tilt;
-    double probability;
-  };
-  
-  sequence<ViewPoint> ViewPointSeq;
- 
-  class SearchPlan{
-    ViewPointSeq plan;
-  };
-
  /**
    * Struct for passing 3D points belonging to a plane
    * Mainly for visualization on PB to compare against the
@@ -367,9 +350,28 @@ module SpatialData {
    */
   class ViewPointGenerationCommand {
     ///Object to generate the viewpoints for. TODO: what should this label contain?
-    string objectName;
+     PlaceIDSeq placestosearch; 
+     string label;
   };
 
+
+
+  /**
+    * Class for exposing AVS plan to planner
+    */
+
+  class ViewPoint{
+    cogx::Math::Vector3 pose;
+    double tilt;
+    double probability;
+    string label;
+  };
+  
+  sequence<ViewPoint> ViewPointSeq;
+ 
+  class SearchPlan{
+    ViewPointSeq plan;
+  };
 
 
   /**
@@ -378,8 +380,7 @@ module SpatialData {
    */
   class ProcessViewPointCommand {
     ///The view point to process
-    cast::cdl::WorkingMemoryAddress viewPointAddress;
-
+ViewPoint vp;
     ///The objects that should be identified from the view point
     cast::cdl::StringSeq objectModels;
   };
