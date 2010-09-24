@@ -157,7 +157,8 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
     for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
         state.push_back(i->second);
     }
-    pyServer->updateState(state, PerceptList());
+    pyServer->updateState(state, m_percepts);
+    m_percepts.clear();
     
     pyServer->registerTask(task);
 

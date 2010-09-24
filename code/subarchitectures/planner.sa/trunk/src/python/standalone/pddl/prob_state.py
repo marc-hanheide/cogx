@@ -275,6 +275,9 @@ class ProbabilisticState(State):
             else:
                 self[svar] = val
 
+    def __str__(self):
+        elems = sorted("%s = %s" % (str(k), str(v)) for k,v in self.iteritems())
+        return "\n".join(elems)
 
     def determinized_state(self, lower_threshold, upper_threshold):
         s = State(prob=self.problem)
@@ -282,10 +285,10 @@ class ProbabilisticState(State):
         exclude_domains = defaultdict(list)
 
         def get_p_svar(svar, value):
-            func = self.problem.functions.get("p-%s" % svar.function.name, list(svar.args) + [value])
+            func = self.problem.functions.get("p-%s" % svar.function.name, svar.args + (value,))
             if not func:
                 return None
-            return StateVariable(func, svar.args+[value])
+            return StateVariable(func, svar.args+(value,))
         
         for fact, prob in self.iterfacts(only_nonzero=False):
             #TODO: Handle cases with limited number of alternatives

@@ -1,6 +1,6 @@
 from parser import *
 import mapltypes as types
-import builtin, predicates, actions, conditions, effects
+import builtin, predicates, actions, conditions, effects, translators
 from builtin import t_object, t_number, change, num_change
 from conditions import *
 from scope import SCOPE_EFFECT
@@ -11,6 +11,8 @@ total_time = predicates.Function("total-time", [], t_number, builtin=True)
 
 default_predicates = [change, num_change]
 default_functions = [total_time]
+
+default_compiler = translators.RemoveTimeCompiler
 
 strict_mode = True
 

@@ -186,6 +186,7 @@ class Task(object):
 class PDDLOutput(object):
     def __init__(self, writer=None, compiler=None):
         self.compiler = compiler
+        self.supported = None
             
         if writer:
             self.writer = writer
@@ -193,17 +194,25 @@ class PDDLOutput(object):
             self.writer = pddl.writer.Writer()
 
     def translate(self, problem, domain=None):
-        if not self.compiler:
+        if not self.compiler and not self.supported:
             if not domain:
                 domain = problem.domain
             return domain, problem
+
+        compiler = self.compiler
+        if self.supported:
+            t = problem.domain.compile_to(self.supported)
+            if t.depends and self.compiler:
+                compiler = pddl.translators.ChainingTranslator(t, self.compiler)
+            elif t.depends:
+                compiler = t
         
         t0 = time.time()
         if domain is not None and domain != problem.domain:
-            tr_dom = self.compiler.translate(domain)
-            tr_prob = self.compiler.translate(problem)
+            tr_dom = compiler.translate(domain)
+            tr_prob = compiler.translate(problem)
         else:
-            tr_prob = self.compiler.translate(problem)
+            tr_prob = compiler.translate(problem)
             tr_dom = tr_prob.domain
         log.debug("total time for translation: %f", time.time()-t0)
         return tr_dom, tr_prob
@@ -228,20 +237,25 @@ class PDDLOutput(object):
 
         return dom_str, prob_str
 
+adl_support = ["strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated"]
+    
 class ADLOutput(PDDLOutput):
     def __init__(self):
         self.writer = pddl.writer.Writer()
         self.compiler = pddl.translators.ADLCompiler()
+        self.supported = adl_support
     
 class TFDOutput(PDDLOutput):
     def __init__(self):
         self.writer = pddl.writer.Writer()
         self.compiler = TemporalTranslator()
+        self.supported = adl_support + ['durative-actions', 'fluents']
 
 class FDOutput(PDDLOutput):
     def __init__(self):
         self.writer = pddl.writer.Writer()
         self.compiler = pddl.translators.ADLCompiler()
+        self.supported = adl_support + ['action-costs']
         
     def write(self, problem, domain=None, domain_fn=None, problem_fn=None, mutex_fn=None):
         tr_dom, tr_prob = self.translate(problem, domain)
@@ -299,11 +313,12 @@ class FDOutput(PDDLOutput):
         
 
 class TemporalTranslator(pddl.translators.Translator):
-    def __init__(self):
-        self.depends = [pddl.translators.ModalPredicateCompiler(remove_replan=True), pddl.translators.PreferenceCompiler()]
+    def __init__(self, copy=True):
+        self.depends = [pddl.translators.ModalPredicateCompiler(copy=True, remove_replan=True), pddl.translators.PreferenceCompiler(copy=False)]
         self.lock_pred = pddl.Predicate("locked", [])
         self.ended_pred = pddl.Predicate("ended", [])
         self.do_locking = False
+        self.copy = False
 
     def translate_action(self, action, domain=None):
         tct = pddl.Term(pddl.builtin.total_cost,[])
@@ -407,5 +422,7 @@ class TemporalTranslator(pddl.translators.Translator):
         return dom
     
     def translate_problem(self, _problem):
-        domain = self.translate_domain(_problem.domain)
-        return pddl.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, None, None)
+        p2 = pddl.translators.Translator.translate_problem(self, _problem)
+        p2.optimization = None
+        p2.opt_func = None
+        return p2

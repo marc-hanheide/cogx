@@ -83,6 +83,9 @@ class Builder(object):
     def cond(self, *args):
         return self(*args, function_scope=SCOPE_CONDITION)
 
+    def init(self, *args):
+        return self(*args, function_scope=SCOPE_INIT)
+    
     def neg(self, arg):
         return self.get_arg(arg).negate()
     def con(self, *args):

@@ -85,6 +85,7 @@ from standalone import config
 config.set_logging_factory(CASTLoggerProxy)
 
 import beliefs_cast_ice
+import beliefs_cogx_ice
 import beliefs_ice
 #import de.dfki.lt.tr.beliefs.slice ## must be imported *before* Planner
 from autogen import Planner
@@ -112,7 +113,25 @@ extend_pythonpath()
 TEST_DOMAIN_FN = join(dirname(__file__), "domains/springtest.mapl")
 
 log = config.logger()
-        
+
+def pdbdebug(fn):
+    def decorated_method(self, *args, **kwargs):
+        try:
+            return fn(self, *args, **kwargs)
+        except Exception, e:
+            if self.start_pdb:
+                import debug, traceback
+                traceback.print_exception(*sys.exc_info())
+                print "Entering debugger..."
+                debug.post_mortem()
+            else:
+                raise
+            
+    decorated_method.__name__ = fn.__name__
+    decorated_method.__dict__ = fn.__dict__
+    decorated_method.__doc__ = fn.__doc__
+    return decorated_method
+
 class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   
   def __init__(self):
@@ -148,6 +167,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.dt_name = config.get("--dt", "PlannerDTServer")
     self.coma_name = config.get("--coma", "hfcserver")
     self.show_dot = "--nodot" not in config
+    self.start_pdb = "--pdb" in config
 
     if "--dtdomain" in config:
         self.dtdomain_fn = join(dirname(__file__), "dtdomains", config["--dtdomain"])
@@ -199,6 +219,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.m_display.installEventReceiver()
       self.m_display.init_html()
 
+  @pdbdebug
   def registerTask(self, task_desc, current=None):
     log.info("Planner PythonServer: New PlanningTask received:")
 
@@ -235,11 +256,13 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     task.run()
     
+  @pdbdebug
   def deliver_plan(self, task, slice_plan):
       task.status = Planner.Completion.SUCCEEDED
       self.m_display.update_task(task)
       self.getClient().deliverPlan(task.id, slice_plan, task.slice_goals);
 
+  @pdbdebug
   def updateState(self, state, percepts, current=None):
       log.debug("recieved state update.")
       self.beliefs = state
@@ -248,6 +271,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           if task.status == Planner.Completion.PENDING:
               self.updateWaitingTask(task)
 
+  @pdbdebug
   def updateWaitingTask(self, task):
       old_state = task.state.state
       
@@ -259,6 +283,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       print_state_difference(old_state, task.state.state)
       task.monitor_cp(pending_updates=True)
       
+  @pdbdebug
   def updateTask(self, task_desc, current=None):
       if task_desc.id not in self.tasks:
           log.warning("Warning: received update for task %d, but no such task found.", task_desc.id)
@@ -289,6 +314,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           task.action_executed_cp(task_desc.plan)
 
     
+  @pdbdebug
   def start_dt_planning(self, task):
       planning_tmp_dir =  standalone.globals.config.tmp_dir
       tmp_dir = standalone.planner.get_planner_tempdir(planning_tmp_dir)
@@ -304,6 +330,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.getDT().newTask(task.id, problem_fn, domain_fn);
 
       
+  @pdbdebug
   def deliverAction(self, taskId, action, value, current=None):
       if taskId not in self.tasks:
           log.warning("Warning: received action for task %d, but no such task found.", taskId)
@@ -320,6 +347,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       task.action_delivered(action)
 
       
+  @pdbdebug
   def updateStatus(self, taskId, status, message, current=None):
       if taskId not in self.dttasks:
           log.warning("Warning: received state update for task %d, but no such task found.", taskId)

@@ -16,25 +16,44 @@ from scope import Scope, FunctionTable
 from actions import Action
 from axioms import Axiom
 
-supported = set(["modal-predicates", "strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated", "fluents", "numeric-fluents", "object-fluents", "action-costs"])
+supported = set(["modal-predicates", "strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated", "fluents", "numeric-fluents", "object-fluents", "action-costs", "preferences"])
 
 support_depends = {"adl" : ["typing", "negative-preconditions", "disjunctive-preconditions", "quantified-preconditions", "equality", "conditional-effects"],
                    "fluents" : ["numeric-fluents", "object-fluents"]}
 
-class ModuleDescription(object):
-    def __init__(self, module):
-        self.dependencies = module.__dict__.get("dependencies", [])
-        self.types = module.__dict__.get("default_types", [])
-        self.constants = module.__dict__.get("default_constants", [])
-        self.predicates = module.__dict__.get("default_predicates", [])
-        self.functions = module.__dict__.get("default_functions", [])
+registered_modules = {}
 
-        self.prepare_domain = module.__dict__.get("prepare_domain", None)
-        self.parse_handlers = module.__dict__.get("parse_handlers", [])
-        self.post_parse = module.__dict__.get("post_parse", None)
+class ModuleDescription(object):
+    def __init__(self, module, **kwargs):
+        d = {}
+        if module:
+            d.update(module.__dict__)
+        d.update(kwargs)
+        
+        self.dependencies = d.get("dependencies", [])
+        self.types = d.get("default_types", [])
+        self.constants = d.get("default_constants", [])
+        self.predicates = d.get("default_predicates", [])
+        self.functions = d.get("default_functions", [])
+
+        self.prepare_domain = d.get("prepare_domain", None)
+        self.parse_handlers = d.get("parse_handlers", [])
+        self.post_parse = d.get("post_parse", None)
+        self.default_compiler = d.get("default_compiler", None)
+        self.compilers = d.get("compilers", {})
+
+    @staticmethod
+    def create_module(name, **kwargs):
+        desc = ModuleDescription(None, **kwargs)
+        desc.name = name
+        desc.modulename = None
+        registered_modules[name] = desc
         
     @staticmethod
-    def import_module(name):
+    def get_module(name):
+        if name in registered_modules:
+            return registered_modules[name]
+        
         modulename = name.replace("-", "_")
         try:
             exec("import %s as _pddl_module" % modulename)
@@ -43,11 +62,11 @@ class ModuleDescription(object):
             desc = ModuleDescription(_pddl_module)
             desc.name = name
             desc.modulename = modulename
+            registered_modules[name] = desc
             return desc
         except ImportError, e:
             return False
 
-        
 class Domain(Scope):
     """This class represents a PDDL domain."""
     
@@ -114,7 +133,7 @@ class Domain(Scope):
 
     def add_requirement(self, req):
         if req not in supported:
-            module = ModuleDescription.import_module(req)
+            module = ModuleDescription.get_module(req)
             assert module, "%s is not supported." % req
             
             for r in module.dependencies:
@@ -132,7 +151,52 @@ class Domain(Scope):
             if module.prepare_domain:
                 module.prepare_domain(self)
             
-        self.requirements.add(req)    
+        self.requirements.add(req)
+
+    def compile_to(self, supported, **kwargs):
+        """Returns a translator that compiles to the given set of supported features (if possible)"""
+
+        import translators
+        
+        new = set(supported)
+        for s in supported:
+            if s in support_depends:
+                new |= set(support_depends[s])
+                
+        remove = list(self.requirements - new)
+        deps = defaultdict(set)
+        for r in remove:
+            desc = ModuleDescription.get_module(r)
+            if not desc:
+                #print "not found:",r
+                continue
+            for d in desc.dependencies:
+                if d not in new:
+                    deps[d].add(r)
+            
+        compile_seq = []
+        while remove:
+            req = remove.pop(0)
+            if deps[req] & set(remove): #only compile things away that nothing else depends on
+                remove.append(req)
+                continue
+            desc = ModuleDescription.get_module(req)
+            if not desc:
+                print "not found:",r
+                continue
+
+            compiler = None
+            for target, comp in desc.compilers:
+                if target in supported:
+                    compiler = comp
+            if not compiler:
+                compiler = desc.default_compiler
+            if compiler:
+                compile_seq.append(compiler)
+
+        compilers = [c(**kwargs) for c in compile_seq]
+        t = translators.ChainingTranslator(*compilers)
+        return t
         
     @staticmethod
     def parse(root, supp = supported):
@@ -141,11 +205,13 @@ class Domain(Scope):
         j = iter(it.get(list, "(domain 'domain identifier')"))
         j.get("domain")
         domname = j.get(None, "domain identifier").token.string
-        
+
         typeDict = dict((t.name, t) for t in builtin.default_types)
         constants = set()
         preds = FunctionTable([builtin.equals, builtin.assign, builtin.equal_assign])
         functions = FunctionTable()
+
+        default_functions = []
 
         modules = []
         
@@ -158,7 +224,7 @@ class Domain(Scope):
             requirement = r.token.string[1:]
             requirements.append(requirement)
             if requirement  not in supp:
-                module = ModuleDescription.import_module(requirement)
+                module = ModuleDescription.get_module(requirement)
                 if not module:
                     raise ParseError(r.token, "%s is not supported." % r.token.string)
                 modules.append(module)
@@ -173,6 +239,7 @@ class Domain(Scope):
             constants |= set(module.constants)
             preds.add(module.predicates)
             functions.add(module.functions)
+            default_functions += module.predicates + module.functions
 
         if "fluents" in requirements or "numeric-fluents" in requirements:
             typeDict[builtin.t_number.name] = builtin.t_number
@@ -187,6 +254,7 @@ class Domain(Scope):
             except:
                 pass
             functions.add(builtin.total_cost)
+            default_functions.append(builtin.total_cost)
         
         domain = None
         
@@ -234,11 +302,22 @@ class Domain(Scope):
 
                     constants.add(TypedObject(key.string, typeDict[value.string]))
 
+                if domain:
+                    domain.constants = set(constants)
+                    for c in constants:
+                        if c not in domain:
+                            domain.add(c)
+
             elif type == ":predicates":
                 for elem in j:
                     if elem.is_terminal():
                         raise UnexpectedTokenError(elem, "predicate declaration")
-                    preds.add(predicates.Predicate.parse(iter(elem), typeDict))
+                    f = predicates.Predicate.parse(iter(elem), typeDict)
+                    try:
+                        preds.add(f)
+                    except Exception, e:
+                        if f not in default_functions:
+                            raise e
                 
             elif type == ":functions":
                 def leftFunc(elem):
@@ -250,7 +329,12 @@ class Domain(Scope):
 
                 for funcs, type in parser.parse_typed_list(j, leftFunc, rightFunc, "function declarations", "type specification", True):
                     for elem in funcs:
-                        functions.add(predicates.Function.parse(iter(elem), type, typeDict))
+                        f = predicates.Function.parse(iter(elem), type, typeDict)
+                        try:
+                            functions.add(f)
+                        except Exception, e:
+                            if f not in default_functions:
+                                raise e
 
             elif type == ":action":
                 domain.actions.append(Action.parse(j.reset(), domain))
@@ -271,5 +355,8 @@ class Domain(Scope):
         for m in modules:
             if m.post_parse:
                 m.post_parse(domain)
-                    
+                
+        domain.stratify_axioms()
+
         return domain
+    

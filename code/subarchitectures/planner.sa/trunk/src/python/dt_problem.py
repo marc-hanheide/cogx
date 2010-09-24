@@ -21,12 +21,16 @@ class PartialProblem(object):
         for t in domain.types.itervalues():
             self.objects_by_type[t] = set(o for o in self.objects if o.is_instance_of(t))
 
+        # print map(str, self.objects)
+        # for t, objs in self.objects_by_type.iteritems():
+        #     print "%s: %d (%s)" % (t.name, len(objs), ", ".join(o.name for o in objs))
+            
         def get_rule_size(r):
             values = set(v for p,v in r.values)
             num_instances = 1
             for a in r.args:
                 if isinstance(a, pddl.Parameter):
-                    num_instances *= len(self.objects_by_type[a.type])
+                    num_instances *= len(self.objects_by_type[a.type]) - 1
             num_values = 0
             for v in values:
                 if isinstance(v, pddl.VariableTerm):
@@ -38,8 +42,10 @@ class PartialProblem(object):
         total_count = 1
         for r in rules:
             inst, values = get_rule_size(r)
-            #print r, inst, values
+            print r, inst, values
             total_count *= values**inst
+        #print "=", total_count
+        #print
 
         self.size = total_count
 
@@ -277,7 +283,7 @@ class DTProblem(object):
             penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -2*dis_score))
             a.effect = pddl.ConjunctiveEffect([commit_effect, reward_effect, penalty_effect], a)
             
-            result.add(a)
+            #result.add(a)
                         
         return result
 
@@ -357,7 +363,8 @@ class DTProblem(object):
 
     def compute_subproblems(self, cast_state):
         prob_by_layer = {}
-        prob_by_layer[len(self.relaxation_layers)] = PartialProblem(cast_state.objects, list(cast_state.prob_state.iterdists()), self.dt_rules, self.domain)
+        all_objects = cast_state.objects | cast_state.generated_objects | self.domain.constants
+        prob_by_layer[len(self.relaxation_layers)] = PartialProblem(all_objects , list(cast_state.prob_state.iterdists()), self.dt_rules, self.domain)
         for i, (fixed, constraints) in reversed(list(enumerate(self.relaxation_layers))):
             log.debug("Layer %d:", i)
             objects, facts = self.limit_state(cast_state, fixed, constraints, prob_by_layer[i+1].objects)
@@ -374,7 +381,7 @@ class DTProblem(object):
         opt_func = pddl.FunctionTerm(pddl.dtpddl.reward, [])
 
         selected = len(self.relaxation_layers)
-        for i in xrange(len(self.relaxation_layers), 0, -1):
+        for i in xrange(len(self.relaxation_layers) - 1, -1, -1):
             log.debug("Layer %d:", i)
             selected = i
             prob = self.subproblems[i]
@@ -421,7 +428,7 @@ class DTProblem(object):
             for val, prob in f.value.iteritems():
                 if prob >= 0.99:
                     hstate[f.svar] = val
-                if prob > 0.0:
+                if prob > 0.0 and val != pddl.UNKNOWN:
                     substate = HierarchicalState([state.Fact(f.svar,val)], parent=hstate)
                     hstate.add_substate(f.svar, val, substate, prob)
                     substates[f.svar.function].append(substate)
@@ -467,7 +474,7 @@ class DTProblem(object):
                     cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
                     val = st2.evaluate_term(v)
                     if st2[cvar] != val:
-                        print "not satisfied: %s = %s" % (str(cvar), str(val))
+                        #print "not satisfied: %s = %s" % (str(cvar), str(val))
                         sat = False
                         break
                 if not sat:
@@ -504,11 +511,11 @@ class DTProblem(object):
             else:
                 pred = None
 
-            print marginal_objects
+            #print marginal_objects
             combinations = state.product(*map(lambda a: problem.get_objects(a.type) | marginal_objects[a.type], r.args+r.add_args))
             for c in combinations:
-                print "(%s %s)" % (r.function.name, " ".join(a.name for a in c))
-                r.instantiate_all(c)
+                #print "(%s %s)" % (r.function.name, " ".join(a.name for a in c))
+                r.instantiate_all(c, cast_state.prob_state.problem)
                 apply_rule(hstate, r, pred)
                 r.uninstantiate()
 
@@ -522,7 +529,7 @@ class DTProblem(object):
                 combinations = state.product(*map(lambda a: get_values_for_marginals(a), r.args+r.add_args))
                 for c in combinations:
                     #print "marginal: (%s %s)" % (r.function.name, " ".join(a.name for a in c))
-                    r.instantiate_all(c)
+                    r.instantiate_all(c, cast_state.prob_state.problem)
                     apply_rule(hstate, r, pred, marginal=True)
                     r.uninstantiate()
 
@@ -541,12 +548,15 @@ class DTProblem(object):
         for (st, svar), vals in marginals_per_svar.iteritems():
             for v in vals:
                 p, sub = st.get_substate(svar, v)
-                del sub[svar]
+                if svar in sub:
+                    del sub[svar]
                             
         #facts = [f.to_init() for f in cast_state.prob_state.iterdists()]
         p_facts = hstate.init_facts()
         p_objects = set(o for o in objects if o not in domain.constants)
-        
+
+        # print map(str, p_objects)
+        # print map(str, p_facts)
         problem = pddl.Problem("cogxtask", p_objects, p_facts, None, domain, opt, opt_func )
         problem.goal = pddl.Conjunction([])
         log.debug("total time for state creation: %f", time.time()-t0)
@@ -574,44 +584,12 @@ class DTProblem(object):
         for a in self.find_observation_actions():
             all_prec |= set(visitors.visit(a.precondition, function_visitor, []))
         return all_prec
-
-class ProbADLCompiler(pddl.translators.ADLCompiler):
-    def __init__(self, **kwargs):
-        from standalone.pddl import translators
-        self.depends = [translators.ModalPredicateCompiler(**kwargs), translators.ObjectFluentCompiler(**kwargs), translators.CompositeTypeCompiler(**kwargs), translators.PreferenceCompiler(**kwargs), translators.RemoveTimeCompiler(**kwargs) ]
-        
-    def translate_domain(self, _domain):
-        dom = pddl.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
-        dom.requirements = _domain.requirements.copy()
-        dom.actions += [self.translate_action(a, dom) for a in _domain.actions if not a.name.startswith("sample_")]
-        dom.observe += [self.translate_action(o, dom) for o in _domain.observe]
-        dom.axioms = []
-        dom.name2action = None
-        return dom
-    
-    def translate_problem(self, _problem):
-        domain = self.translate_domain(_problem.domain)
-        p2 = pddl.Problem(_problem.name, _problem.objects, [], _problem.goal, domain, _problem.optimization, _problem.opt_func)
-
-        @visitors.copy
-        def init_visitor(elem, results):
-            if isinstance(elem, pddl.Literal):
-                if elem.negated:
-                    return False
-        
-        for i in _problem.init:
-            lit = i.visit(init_visitor)
-            if lit:
-                lit.set_scope(p2)
-                p2.init.append(lit)
-
-        p2.goal = visitors.visit(p2.goal, pddl.translators.ADLCompiler.condition_visitor)
-        return p2
         
 class DTPDDLOutput(task.PDDLOutput):
     def __init__(self):
-        self.compiler = pddl.translators.ChainingTranslator(dtpddl.DTPDDLCompiler(), ProbADLCompiler())
+        self.compiler = pddl.translators.ChainingTranslator(dtpddl.DTPDDLCompiler(), dtpddl.ProbADLCompiler())
         self.writer = dtpddl.DTPDDLWriter()
+        self.supported = task.adl_support + ['action-costs', 'partial-observability', 'fluents', 'mapl']
 
 @visitors.collect
 def function_visitor(elem, result):
@@ -732,3 +710,4 @@ class HierarchicalState(state.State):
             if self.parent:
                 return key in self.parent
             return False
+        return True

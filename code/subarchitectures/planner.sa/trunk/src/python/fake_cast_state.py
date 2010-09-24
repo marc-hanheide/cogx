@@ -24,10 +24,12 @@ class FakeCASTState(cast_state.CASTState):
   
         #obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(beliefs))))
   
-        self.objects = problem.objects
+        self.objects = set(problem.objects)
         self.namedict = {}
         
         self.prob_state = prob_state.ProbabilisticState.from_problem(problem)
+        self.prob_state.apply_init_rules(domain = self.domain)
+        self.generated_objects = problem.objects - self.objects
         self.state = self.prob_state.determinized_state(0.05, 0.95)
 
     def convert_percepts(self, percepts):

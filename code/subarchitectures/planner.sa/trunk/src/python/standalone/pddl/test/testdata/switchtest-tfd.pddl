@@ -20,7 +20,7 @@
   (:functions
    (is-in ?o - movable) - place
    (really-is-in ?o - movable) - place
-   (in-room ?p - place) - room
+   (room ?p - place) - room
    (category ?r - room) - category
    (label ?o - visualobject) - label
    (cone-label ?c - cone) - label
@@ -47,7 +47,7 @@
   (:action sample_is_in
            :agent (?a - agent)
            :parameters (?l - label ?r - room ?c - cone ?o - visualobject)
-           :precondition (and (= (in-room ?c) ?r)
+           :precondition (and (= (room ?c) ?r)
                               (= (label ?o) ?l)
                               (= (ex-in-room ?l ?r) true))
            :effect (probabilistic (p-is-in ?c) (assign (is-in ?o) ?c))

@@ -39,7 +39,7 @@ class Action(Scope):
         if self.effect:
             self.effect.set_scope(self)
 
-    def instantiate(self, mapping):
+    def instantiate(self, mapping, parent=None):
         """Instantiate the Parameters of this action.
 
         Arguments:
@@ -48,7 +48,7 @@ class Action(Scope):
         assumed to be in the order of the Action's Parameters."""
         if not isinstance(mapping, dict):
             mapping = dict((param.name, c) for (param, c) in zip(self.args, mapping))
-        Scope.instantiate(self, mapping)
+        Scope.instantiate(self, mapping, parent)
 
     def to_pddl(self):
         pass

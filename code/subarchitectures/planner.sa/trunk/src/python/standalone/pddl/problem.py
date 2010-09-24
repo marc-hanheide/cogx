@@ -7,7 +7,7 @@ import mapltypes as types
 import builtin
 import predicates, conditions, actions, effects, domain
 
-from scope import SCOPE_INIT
+from scope import Scope, SCOPE_INIT
 from parser import ParseError, UnexpectedTokenError
 from actions import Action
 
@@ -19,24 +19,12 @@ def product(*iterables):
         else:
             yield (el,)
 
-class Problem(domain.Domain):
+class Problem(Scope):
     def __init__(self, name, objects, init, goal, _domain, optimization=None, opt_func=None):
-        domain.Domain.__init__(self, name, _domain.types, _domain.constants, _domain.predicates, _domain.functions, [], [])
+        Scope.__init__(self, objects, _domain)
         self.set_tag("only-simple-effects", True, inherit=False)
-        
-        self.actions = [a.copy(self) for a in _domain.actions]
-        self.axioms = [a.copy(self) for a in _domain.axioms]
-        if _domain.observe:
-            self.observe = [o.copy(self) for o in _domain.observe]
-            
-        self.stratify_axioms()
-        self.name2action = None
-        
-        for o in objects:
-            self.add(o)
-            
-        self.domain = _domain
-        self.requirements = self.domain.requirements
+
+        self.name = name
 
         self.objects = set(o for o in objects)
         self.init = [l.copy(self) for l in init]
@@ -45,6 +33,10 @@ class Problem(domain.Domain):
             self.goal = goal.copy(self)
         self.optimization = optimization
         self.opt_func = opt_func
+
+    @property
+    def domain(self):
+        return self.parent
 
     def copy(self):
         return self.__class__(self.name, self.objects, self.init, self.goal, self.domain, self.optimization, self.opt_func)
@@ -72,7 +64,7 @@ class Problem(domain.Domain):
                         #print FunctionTerm(func, c, self.problem)
                         yield predicates.FunctionTerm(func, c, self)
         else:
-            for obj in itertools.chain(self.objects, self.constants):
+            for obj in itertools.chain(self.objects, self.domain.constants):
                 if obj.is_instance_of(type) and obj != builtin.UNKNOWN:
                     yield obj
         

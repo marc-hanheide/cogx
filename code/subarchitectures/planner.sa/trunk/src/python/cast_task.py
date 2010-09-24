@@ -154,20 +154,23 @@ class CASTTask(object):
 
         failed_actions = []
         finished_actions = []
-        
+
         #Failed dt action causes all actions resulting in the subplan to fail
-        if dt_action.status == Planner.Completion.ABORTED or Planner.Completion.FAILED:
+        if dt_action.status == Planner.Completion.ABORTED or dt_action.status == Planner.Completion.FAILED:
             for pnode in self.dt_task.subplan_actions:
                 pnode.status = plans.ActionStatusEnum.FAILED
                 failed_actions.append(pnode)
             self.cp_task.mark_changed()
-            failed_actions.append(self.dt_task.plan[-1])
+            failed_actions.append(self.dt_task.dt_plan[-1])
         elif dt_action.status == Planner.Completion.SUCCEEDED:
-            finished_actions.append(self.dt_task.plan[-1])
+            finished_actions.append(self.dt_task.dt_plan[-1])
         
         if finished_actions or failed_actions:
             self.action_feedback(finished_actions, failed_actions)
 
+        if failed_actions:
+            self.monitor_cp()
+            return
         self.monitor_dt()
             
     def action_executed_cp(self, slice_plan):
@@ -232,6 +235,9 @@ class CASTTask(object):
             pred = "observed-%s" % fact.svar.function.name
             obs = Planner.Observation(pred, [a.name for a in fact.svar.args] + [fact.value.name])
             log.info("%d: delivered observation %s", self.id, str(obs))
+
+        import debug
+        debug.Rdb().set_trace()
             
         self.component.getDT().deliverObservation(self.id, observations)
 
@@ -285,7 +291,7 @@ class CASTTask(object):
     def action_delivered(self, action):
         log.debug("raw action: (%s %s)", action.name, " ".join(action.arguments))
         args = [self.cp_task.mapltask[a] for a in action.arguments]
-        pddl_action = self.dt_task.problem.get_action(action.name)
+        pddl_action = self.dt_task.dtdomain.get_action(action.name)
 
         log.debug("got action from DT: (%s %s)", action.name, " ".join(action.arguments))
         #log.debug("state is: %s", self.cp_task.get_state())
@@ -294,9 +300,6 @@ class CASTTask(object):
             log.info("Goal action recieved. DT task completed")
             self.dt_done()
             return
-
-        pddl_action = self.domain.get_action(action.name)
-        pddl_action.set_parent(self.cp_task.mapltask)
         
         state = self.cp_task.get_state().copy()
         #TODO: using the last CP state might be problematic
@@ -308,12 +311,13 @@ class CASTTask(object):
         self.percepts = []
         
         #create featurevalues
-        uargs = [self.state.featvalue_from_object(a) for a in args]
+        uargs = [self.state.featvalue_from_object(a) for a in pnode.args]
     
         fullname = action.name + " ".join(action.arguments)
         outplan = [Planner.Action(self.id, action.name, uargs, fullname, float(pnode.cost), Planner.Completion.PENDING)]
 
         log.info("%d: First action: %s", self.id, fullname)
+        
         self.component.deliver_plan(self, outplan)
         
     def action_feedback(self, finished_actions, failed_actions):
@@ -329,7 +333,7 @@ class CASTTask(object):
         if isinstance(self.state, fake_cast_state.FakeCASTState):
             return True
         
-        self.state = cast_state.CASTState(beliefs, self.domain)
+        self.state = cast_state.CASTState(beliefs, self.domain, self.state)
         new_cp_problem, _ = self.state.to_problem(None, deterministic=True, domain=self.cp_domain)
 
         #check if the goal is still valid

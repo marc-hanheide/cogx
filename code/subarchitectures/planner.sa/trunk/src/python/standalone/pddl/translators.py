@@ -13,11 +13,13 @@ class TranslatorAnnotations(dict):
     pass
 
 class Translator(object):
-    def __init__(self, **kwargs):
+    def __init__(self, copy=True, **kwargs):
         self.depends = []
+        self.copy = copy
         
     def translate(self, entity, **kwargs):
         t0 = time.time()
+        #print "preorder:", type(self), type(entity)
         for translator in self.depends:
             entity._original = Translator.get_original(entity)
             original = entity
@@ -26,6 +28,7 @@ class Translator(object):
             entity._original = original._original
         #print "total time for %s: %f" % (type(self), time.time()-t0)
             
+        #print "postorder:", type(self), type(entity)
         if isinstance(entity, actions.Action):
             return self.translate_action(entity, **kwargs)
         elif isinstance(entity, axioms.Axiom):
@@ -49,37 +52,96 @@ class Translator(object):
         return entity.annotations
 
     def translate_action(self, action, domain=None):
-        return action.copy(newdomain=domain)
+        if self.copy:
+            return action.copy(newdomain=domain)
+        if domain:
+            action.set_parent(domain)
+        return action
 
     def translate_axiom(self, axiom, domain=None):
-        return axiom.copy(newdomain=domain)
+        if self.copy:
+            return axiom.copy(newdomain=domain)
+        if domain:
+            axiom.set_parent(domain)
+        return axiom
     
     def translate_domain(self, _domain):
-        dom = domain.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
+        if self.copy:
+            dom = domain.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
+        else:
+            dom = _domain
+            
         dom.requirements = _domain.requirements.copy()
-        dom.actions += [self.translate_action(a, dom) for a in _domain.actions]
-        dom.observe += [self.translate_action(o, dom) for o in _domain.observe]
-        dom.axioms += [self.translate_axiom(a, dom) for a in _domain.axioms]
+        actions = _domain.actions
+        observe = _domain.observe
+        axioms = _domain.axioms
+        dom.actions = []
+        dom.observe = []
+        dom.axioms = []
+        dom.actions += [self.translate_action(a, dom) for a in actions]
+        dom.observe += [self.translate_action(o, dom) for o in observe]
+        dom.axioms += [self.translate_axiom(a, dom) for a in axioms]
         dom.stratify_axioms()
         dom.name2action = None
         return dom
 
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
-        return problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
+        if self.copy:
+            return problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
+        _problem.set_parent(domain)
+        return _problem
 
+def change_builtin_functions(table, functions=None):
+    if functions is not None:
+        fnew = set()
+        for f in functions:
+            if isinstance(f, Function):
+                fnew.add(f.name)
+            else:
+                fnew.add(f)
+        functions = fnew
+        
+    changes = []
+    for f in table:
+        if f.builtin and (functions is None or f.name in functions):
+            changes.append(f)
+
+    for f in changes:
+        table.remove(f)
+        pdict = {}
+        newargs = []
+        for a in f.args:
+            if isinstance(a.type, types.ProxyType):
+                a2 = types.Parameter(a.name, types.ProxyType(pdict[a.type.parameter.name]))
+            else:
+                a2 = types.Parameter(a.name, a.type)
+            newargs.append(a2)
+            pdict[a.name] = a2
+        table.add(f.__class__(f.name, newargs, f.type, builtin=False, function_scope=f.function_scope))
+            
+    
 class ChainingTranslator(Translator):
-    def __init__(self, *deps):
+    def __init__(self, *deps, **kwargs):
+        copy = kwargs.get('copy', True)
         self.depends = deps
 
+        if deps:
+            self.depends[0].copy = copy
+            for d in self.depends[1:]:
+                d.copy = False
+            self.copy = False
+        else:
+            self.copy = copy
+
 class IntermediateCompiler(Translator):
-    def __init__(self, **kwargs):
+    def __init__(self, copy=True, **kwargs):
         self.depends = []
         self.counter = 0
+        self.copy = copy
 
     def translate_problem(self, _problem):
-        domain = self.translate_domain(_problem.domain)
-        p2 = problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
+        p2 = Translator.translate_problem(self, _problem)
 
         self.counter = 0
 
@@ -115,12 +177,13 @@ class IntermediateCompiler(Translator):
         return p2
 
 class PreferenceCompiler(Translator):
-    def __init__(self, **kwargs):
-        self.depends = [IntermediateCompiler(**kwargs)]
+    def __init__(self, copy=True, **kwargs):
+        self.depends = [IntermediateCompiler(copy=copy, **kwargs)]
         self.counter = 0
         self.costIncrease = 0
         self.prefCondScope = None
         self.prefFound = False
+        self.copy = False
 
     def translate_action(self, action, domain):
         self.prefFound = False
@@ -163,8 +226,7 @@ class PreferenceCompiler(Translator):
         return action1
 
     def translate_problem(self, _problem):
-        domain = self.translate_domain(_problem.domain)
-        p2 = problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
+        p2 = Translator.translate_problem(self, _problem)
 
         if 'soft_goals' not in Translator.get_annotations(_problem):
             Translator.get_annotations(_problem)['soft_goals'] = []
@@ -200,12 +262,12 @@ class PreferenceCompiler(Translator):
 
         p2.goal = p2.goal.visit(visitor)
         return p2
-
         
     
 class ADLCompiler(Translator):
-    def __init__(self, **kwargs):
-        self.depends = [ModalPredicateCompiler(**kwargs), ObjectFluentCompiler(**kwargs), CompositeTypeCompiler(**kwargs), PreferenceCompiler(**kwargs)]
+    def __init__(self, copy=True, **kwargs):
+        self.depends = [ModalPredicateCompiler(copy=copy, **kwargs), ObjectFluentCompiler(copy=False, **kwargs), CompositeTypeCompiler(copy=False, **kwargs), PreferenceCompiler(copy=False, **kwargs)]
+        self.copy = False
 
     @staticmethod
     def condition_visitor(cond, parts):
@@ -214,7 +276,7 @@ class ADLCompiler(Translator):
         return visitors.flatten(cond, parts)
         
     def translate_action(self, action, domain=None):
-        a2 = action.copy(newdomain=domain)
+        a2 = Translator.translate_action(self, action, domain)
 
         if "action-costs" in domain.requirements:
             if a2.get_total_cost() == None:
@@ -226,13 +288,14 @@ class ADLCompiler(Translator):
         return a2
 
     def translate_axiom(self, axiom, domain=None):
-        a2 = axiom.copy(newdomain=domain)
+        a2 = Translator.translate_axiom(self, axiom, domain)
         a2.condition = visitors.visit(a2.condition, ADLCompiler.condition_visitor)
         return a2
 
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
         p2 = problem.Problem(_problem.name, _problem.objects, [], _problem.goal, domain, _problem.optimization, _problem.opt_func)
+        
         for i in _problem.init:
             if not i.negated:
                 p2.init.append(i.copy(new_scope=p2))
@@ -296,7 +359,7 @@ class CompositeTypeCompiler(Translator):
             elem.condition.visit(CompositeTypeCompiler.type_visitor)
 
     def translate_action(self, action, domain=None):
-        a2 = action.copy(newdomain=domain)
+        a2 = Translator.translate_action(self, action, domain)
         CompositeTypeCompiler.replace_args(a2)
         
         visitors.visit(a2.precondition, CompositeTypeCompiler.type_visitor)
@@ -305,7 +368,7 @@ class CompositeTypeCompiler(Translator):
         return a2
 
     def translate_axiom(self, axiom, domain=None):
-        a2 = axiom.copy(newdomain=domain)
+        a2 = Translator.translate_axiom(self, axiom, domain)
         CompositeTypeCompiler.replace_args(a2)
         
         a2.condition.visit(CompositeTypeCompiler.type_visitor)
@@ -561,8 +624,9 @@ class ObjectFluentNormalizer(Translator):
         return a2
 
 class ObjectFluentCompiler(Translator):
-    def __init__(self, **kwargs):
-        self.depends = [ModalPredicateCompiler(**kwargs), ObjectFluentNormalizer(**kwargs)]
+    def __init__(self, copy=True, **kwargs):
+        self.depends = [ModalPredicateCompiler(copy=copy, **kwargs), ObjectFluentNormalizer(copy=False, **kwargs)]
+        self.copy = False
         
     def translate_condition(self, cond, scope):
         if cond is None:
@@ -691,7 +755,11 @@ class ObjectFluentCompiler(Translator):
 
         dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), predicates, functions, [], [])
         dom.requirements = _domain.requirements.copy()
-        dom.requirements.discard("object-fluents")
+        dom.requirements.discard('object-fluents')
+        if 'fluents' in dom.requirements:
+            dom.requirements.discard('fluents')
+            dom.requirements.add('numeric-fluents')
+            
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
         dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
@@ -723,8 +791,9 @@ class ObjectFluentCompiler(Translator):
         return p2
         
 class ModalPredicateCompiler(Translator):
-    def __init__(self, **kwargs):
-        self.depends = [MAPLCompiler(**kwargs)]
+    def __init__(self, copy=True, **kwargs):
+        self.depends = [MAPLCompiler(copy=copy, **kwargs)]
+        self.copy = False
         
     def compile_modal_args(self, args, functions):
         func_arg = None
@@ -842,6 +911,9 @@ class ModalPredicateCompiler(Translator):
         return a2
         
     def translate_domain(self, _domain):
+        if 'modal-predicates' not in _domain.requirements:
+            return Translator.translate_domain(self, _domain)
+        
         import dtpddl
         import durative
         
@@ -910,7 +982,7 @@ class ModalPredicateCompiler(Translator):
 
         @visitors.copy
         def lit_visitor(cond, results):
-            if isinstance(cond, conditions.LiteralCondition):
+            if isinstance(cond, predicates.Literal):
                 return self.translate_literal(cond, p2)
 
         if _problem.goal:
@@ -928,12 +1000,24 @@ class RemoveTimeCompiler(Translator):
         if domain is None:
             domain = action.domain
 
+        if not isinstance(action, durative.DurativeAction):
+            return Translator.translate_action(self, action, domain)
+
+        duration_term = action.duration[0].term
+
         @visitors.copy
         def visitor(elem, results):
             if isinstance(elem, durative.TimedCondition):
                 return results[0]
             if isinstance(elem, durative.TimedEffect):
-                return effects.SimpleEffect(elem.predicate, elem.args, None, elem.negated)
+                return effects.SimpleEffect(elem.predicate, [a.copy_instance() for a in elem.args], None, elem.negated)
+            elif isinstance(elem, effects.SimpleEffect) and elem.predicate in (change, num_change):
+                if elem.predicate == change:
+                    pred = assign
+                else:
+                    pred = num_assign
+                return effects.SimpleEffect(pred, [a.copy_instance() for a in elem.args], None, elem.negated)
+                
         
         if not isinstance(action, durative.DurativeAction):
             return action.copy(newdomain=domain)
@@ -941,10 +1025,15 @@ class RemoveTimeCompiler(Translator):
         args = [a for a in action.args if a.name != "?duration"]
         a2 = actions.Action(action.name, args, None, None, domain)
 
+        action.instantiate({'?duration' : duration_term})
+        action.set_total_cost(duration_term)
+        
         a2.precondition = visitors.visit(action.precondition, visitor)
         a2.replan = visitors.visit(action.replan, visitor)
         a2.effect = visitors.visit(action.effect, visitor)
 
+        action.uninstantiate()
+        
         if a2.precondition:
             a2.precondition.set_scope(a2)
         if a2.replan:
@@ -953,7 +1042,12 @@ class RemoveTimeCompiler(Translator):
             a2.effect.set_scope(a2)
 
         return a2
-        
+
+    def translate_domain(self, domain):
+        dom = Translator.translate_domain(self, domain)
+        dom.requirements.discard('durative-actions')
+        dom.requirements.add('action-costs')
+        return dom
 
 class MAPLCompiler(Translator):
     def __init__(self, remove_replan=False, **kwargs):
@@ -1066,3 +1160,11 @@ class MAPLCompiler(Translator):
 
         return p2
 
+
+#
+# Create default modules
+#
+
+domain.ModuleDescription.create_module("object-fluents", default_compiler=ObjectFluentCompiler)
+domain.ModuleDescription.create_module("modal-predicates", default_compiler=ModalPredicateCompiler)
+domain.ModuleDescription.create_module("preferences", default_compiler=PreferenceCompiler)

@@ -11,7 +11,7 @@ log = config.logger("planner")
 def MAPLAction(action, task):
     elmts = action.split()
     action, args = elmts[0], elmts[1:]
-    actions = dict((a.name,a) for a in task._mapltask.actions)
+    actions = dict((a.name,a) for a in task._mapldomain.actions)
     assert action in actions
     action_def = actions[action]
     args = [task._mapltask[a] for a in args[:len(action_def.args)]]
@@ -62,7 +62,7 @@ def getRWDescription(action, args, _state, time):
 
     log.debug("get description for action (%s %s)", action.name, " ".join(a.name for a in action.args))
 
-    action.instantiate(args)
+    action.instantiate(args, _state.problem)
 
     #t0 = time.time()
     if action.replan:
