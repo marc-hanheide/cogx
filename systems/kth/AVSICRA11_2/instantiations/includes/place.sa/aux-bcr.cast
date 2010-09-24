@@ -1,0 +1,2 @@
+CPP GD Place.Monitor PlaceMonitor --config instantiations/place.sa/bcr.cfg
+CPP GD Place.PeekabotClient PlacePeekabotClient --config instantiations/place.sa/bcr.cfg

@@ -1,0 +1,10 @@
+SUBARCHITECTURE place.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP GD Place.Controller PlaceController --config instantiations/place.sa/bcr.cfg --start false --log
+CPP GD Place.DataProvider PlaceDataProvider --config instantiations/place.sa/bcr.cfg --load instantiations/place.sa/data/bcr_sunny_env1_mapfull.data --startservers true
+
+CPP GD Place.VisualProcessor PlaceVisualProcessor --config instantiations/place.sa/bcr.cfg
+CPP GD Place.LaserProcessor PlaceLaserProcessor --config instantiations/place.sa/bcr.cfg
+CPP GD Place.CueIntegrator PlaceCueIntegrator --config instantiations/place.sa/bcr.cfg
