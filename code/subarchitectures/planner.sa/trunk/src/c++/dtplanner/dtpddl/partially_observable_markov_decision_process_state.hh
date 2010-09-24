@@ -71,6 +71,10 @@ namespace Planning
         public Expandable
     {
     public:
+        /* A POMDP state is useless iff no rewards (negative or
+         * positive) can be received in any future from the belief.*/
+        bool useless() const;
+        
         Partially_Observable_Markov_Decision_Process_State();
         Partially_Observable_Markov_Decision_Process_State(const Partially_Observable_Markov_Decision_Process_State&) = delete;
 

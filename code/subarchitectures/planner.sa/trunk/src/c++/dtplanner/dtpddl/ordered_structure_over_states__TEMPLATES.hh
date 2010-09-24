@@ -224,13 +224,22 @@ namespace Planning
 
         auto& most_promising_states_list = value__To__States.rbegin()->second;
         
-	auto most_promising_states_value = value__To__States.rbegin()->first;
+	double most_promising_states_value = value__To__States.rbegin()->first;
 
 	INTERACTIVE_VERBOSER(true, 10800, "POP :: Choosing most_promising_state_value :: "
                              <<most_promising_states_value<<std::endl);
 
 	assert(most_promising_states_list.size() > 0);
 
+#ifndef NDEBUG
+        for(auto element = most_promising_states_list.begin()
+                ; element != most_promising_states_list.end()
+                ; element++){
+            assert(state_evaluator(*element) == most_promising_states_value);
+        }
+        
+#endif
+        
         /*FIFO*/
 	uint index = 0;//random() % most_promising_states_list.size();
 
@@ -239,7 +248,23 @@ namespace Planning
 	State_Type* result = most_promising_states_list[index];
     
 	assert(result);
-	assert(state_evaluator(result) == most_promising_states_value);
+
+//         std::set<double> things;
+//         while(true){
+//             things.insert(state_evaluator(result));
+
+//             assert(*things.begin() == state_evaluator(result));
+//             if(things.size() != 1) exit(0);
+//         }
+        
+        
+        Are_Doubles_Close are_Doubles_Close(1e-9);
+        QUERY_UNRECOVERABLE_ERROR(state_evaluator(result) != most_promising_states_value,
+                                  "Most promising value is :: "<<most_promising_states_value<<std::endl
+                                  <<"Yet we get a promising state value of :: "<<state_evaluator(result)<<std::endl);
+        
+// 	assert(state_evaluator(result) == most_promising_states_value);
+        
 	if(state__To__Index.find(result) == state__To__Index.end()){
 	    VERBOSER(23, "State :: "<<*result<<std::endl
 		     <<"at index :: "<<index<<std::endl

@@ -49,7 +49,11 @@ namespace Planning
     public:
         Simple_Online_Solver(Planning::Parsing::Problem_Data&);
         
-        Ordered_Stack_Of_States<POMDP_State, Belief_State_Value> ordered_Stack_Of_States;
+        Ordered_Stack_Of_States<POMDP_State, Greedy_Heuristic, int> ordered_Stack_Of_States;
+        
+//         Ordered_Stack_Of_States<POMDP_State, Belief_State_Value> ordered_Stack_Of_States;
+//         Ordered_Stack_Of_States<POMDP_State, Obtainable_Values_Count> ordered_Stack_Of_States;
+//         Ordered_Stack_Of_States<POMDP_State, Obtainable_Value> ordered_Stack_Of_States;
         
         void report__new_belief_state(POMDP_State* );
         POMDP_State* obtain__next_belief_state_for_expansion();

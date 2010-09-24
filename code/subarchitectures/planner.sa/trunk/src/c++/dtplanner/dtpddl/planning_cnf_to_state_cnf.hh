@@ -57,6 +57,11 @@ namespace Planning
         
         State_Formula::Conjunctive_Normal_Form_Formula__Pointer get__answer() const ;
     private:
+        /*Is the literal \argument{fact} with sign \argument{sign}
+         * only able to have it's truth value changed once in a valid
+         * plan. */
+        bool flipped_once(const Planning::Formula::State_Proposition& fact, bool sign);
+    
         Formula::State_Propositions& problem__state_Propositions;
         State_Formula::Literals& problem__literals;
         State_Formula::Disjunctive_Clauses& problem__clauses;

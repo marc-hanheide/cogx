@@ -36,11 +36,42 @@
 
 #include "planning_formula.hh"
 #include "state_formula.hh"
+#include "state_basics.hh"
 #include "planning_types_enum.hh"
 
 
 namespace Planning
 {
+    
+    /* Supposing the \argument{formula} is an action description, we
+     * count how many parts of that action description could cause
+     * reward to be allocated at a successor state should that action
+     * be executed. The result is cumulatively added to
+     * \argument{state} via
+     * \member{increment__obtainable_rewards_count}.
+     *
+     * \argument{reward_index} is the index of the reward function
+     * evaluation at MDP planning states (see \module{markov_decision_process_state}).
+     *
+     * \argument{state} is the planning state at which we are counting
+     * available rewards at formula. Indeed, the number of available
+     * rewards from \argument{formula} are accumulated in
+     * \argument{state}.
+     *
+     * The rewards that are made possible at this state by the action
+     * formula \argument{formula} are accumulated at \argument{state}
+     * \member{obtainable_rewards_value}.
+     */
+    void count_reward_assignments_at_state(State_Formula::Satisfaction_Listener__Pointer formula,
+                                           State& state,
+                                           uint reward_index = 0);
+}
+
+
+namespace Planning
+{
+
+    
     template<typename Range_Type, int type_id>
     class Simple_Numeric_Transformation :
         public State_Formula::
@@ -51,14 +82,25 @@ namespace Planning
                                , int/*enum*/>
     {PRINTING;
     public:
+        
+        typedef  State_Formula::
+        _Satisfaction_Listener<type_id
+                               , Formula::Action_Proposition
+                               , ID_TYPE /* Index to change */
+                               , Range_Type
+                               , int/*enum*/> Parent;
+
+        
+        
         const Formula::Action_Proposition& get__identifier() const;
-        ID_TYPE get__change_index() const;
+        ID_TYPE get__change_index() const;// {return std::tr1::get<1>(Parent::contents());};
         Range_Type get__modification_value() const;
         int get__modification_type() const;
         
         void forced_wake(State&) const;
         
         State* operator()(State*) const;
+        
         
         void report__newly_satisfied(State&) const{assert(0);};
         void report__newly_unsatisfied(State&) const{assert(0);};
@@ -67,13 +109,21 @@ namespace Planning
     class Simple_Int_Transformation
     : public Simple_Numeric_Transformation<
         int
-        , enum_types::simple_int_transformation> {};
+        , enum_types::simple_int_transformation>
+    {
+    public:
+        
+        void set__statically_false(State& state) const;
+    };
     
     class Simple_Double_Transformation
     : public Simple_Numeric_Transformation<
         double
         , enum_types::simple_double_transformation> {};
+
+
 }
+
 
 
 #endif
