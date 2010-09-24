@@ -29,7 +29,7 @@ INCLUDE includes/binder.sa/binder-base.cast
 JAVA MG percepttracker.dora     eu.cogx.percepttracker.DoraBeliefTracker --write-to-sa binder
 
 # planning and motivation #####################################################
-INCLUDE includes/planner.sa/switching-planner.cast
+INCLUDE includes/planner.sa/switching-planner-dora.cast
 INCLUDE includes/planner.sa/planner-base.cast
 #INCLUDE includes/planner.sa/fake-motivation.cast
 #INCLUDE includes/motivation.sa/motivation.cast
