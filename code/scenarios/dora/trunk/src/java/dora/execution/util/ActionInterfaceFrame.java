@@ -33,9 +33,9 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import dora.execution.components.GraphicalExecutionManager;
 import execution.slice.Action;
 import execution.util.ActionMonitor;
-import dora.execution.components.GraphicalExecutionManager;
 
 public class ActionInterfaceFrame extends JFrame {
 
@@ -58,7 +58,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_goAction;
 	private JRadioButton m_detectObjectsAction;
 	private JRadioButton m_detectPeopleAction;
-	// private JRadioButton m_lookForObjectsAction;
+	private JRadioButton m_lookForObjectsAction;
 	// private JRadioButton m_lookForPeopleAction;
 	private JRadioButton m_askForFeatureAction;
 	private JRadioButton m_testFeatureValueAction;
@@ -67,12 +67,11 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_backgroundModelsAction;
 	private JRadioButton m_recogniseForegroundedModelsAction;
 
-	//TODO implement behaviour for this
+	// TODO implement behaviour for this
 	private JRadioButton m_generateConesAction;
 	private JRadioButton m_goToConeAction;
 	private JRadioButton m_processConeAction;
-	
-	
+
 	private GraphicalExecutionManager m_exeMan;
 	private JTable m_beliefTable;
 	private DefaultTableModel m_beliefTableModel;
@@ -254,7 +253,7 @@ public class ActionInterfaceFrame extends JFrame {
 			// m_avsAction = new JRadioButton("visual search in");
 			m_detectObjectsAction = new JRadioButton("detect objects");
 			m_detectPeopleAction = new JRadioButton("detect people");
-			// m_lookForObjectsAction = new JRadioButton("look for objects");
+			m_lookForObjectsAction = new JRadioButton("look for objects");
 			// m_lookForPeopleAction = new JRadioButton("look for people");
 			m_foregroundModelsAction = new JRadioButton("foreground models");
 			m_backgroundModelsAction = new JRadioButton("background models");
@@ -268,7 +267,7 @@ public class ActionInterfaceFrame extends JFrame {
 			// actionGroup.add(m_avsAction);
 			actionGroup.add(m_detectObjectsAction);
 			actionGroup.add(m_detectPeopleAction);
-			// actionGroup.add(m_lookForObjectsAction);
+			 actionGroup.add(m_lookForObjectsAction);
 			// actionGroup.add(m_lookForPeopleAction);
 			actionGroup.add(m_foregroundModelsAction);
 			actionGroup.add(m_backgroundModelsAction);
@@ -279,8 +278,8 @@ public class ActionInterfaceFrame extends JFrame {
 					new GridBagConstraints());
 			m_objectsActionPanel.add(m_detectPeopleAction,
 					new GridBagConstraints());
-			// // m_objectsActionPanel.add(m_lookForObjectsAction,
-			// new GridBagConstraints());
+			m_objectsActionPanel.add(m_lookForObjectsAction,
+					new GridBagConstraints());
 			// m_objectsActionPanel.add(m_lookForPeopleAction,
 			// new GridBagConstraints());
 			m_objectsActionPanel.add(m_foregroundModelsAction,
@@ -327,9 +326,13 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private void go() throws CASTException {
 
+
+		
 		// TODO make more robust to code changes
 		int tabIndex = getTabbedPane().getSelectedIndex();
 
+		m_exeMan.println("go() called: " + tabIndex);
+		
 		if (tabIndex == 0) {
 			if (m_goAction.isSelected()) {
 				goToPlace();
@@ -345,9 +348,10 @@ public class ActionInterfaceFrame extends JFrame {
 				detectPeople();
 			}
 
-			// else if (m_lookForObjectsAction.isSelected()) {
-			// lookForObjects();
-			// } else if (m_lookForPeopleAction.isSelected()) {
+			else if (m_lookForObjectsAction.isSelected()) {
+				lookForObjects();
+			}
+			// else if (m_lookForPeopleAction.isSelected()) {
 			// lookForPeople();
 			// }
 			else if (m_foregroundModelsAction.isSelected()) {
@@ -546,6 +550,7 @@ public class ActionInterfaceFrame extends JFrame {
 	 * @throws CASTException
 	 */
 	private void detectObjects() throws CASTException {
+		m_exeMan.log("detectObjects");
 		m_exeMan.triggerDetectObjects(getSelectedObjectModels(),
 				new MonitorPanel());
 	}
@@ -582,10 +587,11 @@ public class ActionInterfaceFrame extends JFrame {
 	// m_exeMan.triggerLookForPeople(new MonitorPanel());
 	// }
 	//
-	// private void lookForObjects() throws CASTException {
-	// m_exeMan.triggerLookForObjects(getSelectedObjectModels(),
-	// new MonitorPanel());
-	// }
+	private void lookForObjects() throws CASTException {
+		m_exeMan.log("lookForObjects");
+		m_exeMan.triggerLookForObjects(getSelectedObjectModels(),
+				new MonitorPanel());
+	}
 
 	/**
 	 * This method initializes m_stopButton

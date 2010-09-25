@@ -2,8 +2,6 @@ package spatial.execution;
 
 import java.util.Stack;
 
-import org.apache.log4j.Logger;
-
 import SpatialData.CommandType;
 import SpatialData.Completion;
 import SpatialData.NavCommand;
@@ -30,8 +28,6 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 	private final WorkingMemoryChangeReceiver m_afterTurn;
 	private String m_navCmdID;
 
-	static Logger logger = Logger.getLogger(TurnAndLookExecutor.class);
-
 	public TurnAndLookExecutor(ManagedComponent _component, Class<ActionType> _actCls,
 			final int _detections) {
 		
@@ -40,7 +36,9 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 		m_detections = _detections;
 		m_remainingCommands = new Stack<NavCommand>();
 
-		logger.info("new TurnAndLookExecutor for " + m_detections
+		
+		
+		log("new TurnAndLookExecutor for " + m_detections
 				+ " detections.");
 
 		double increment = (2 * Math.PI) / m_detections;
@@ -57,7 +55,7 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 					throws CASTException {
 				getComponent().removeChangeFilter(this);
-				logger.debug("afterDetectListener triggered: "
+				log("afterDetectListener triggered: "
 						+ CASTUtils.toString(_wmc));
 
 				if (!m_remainingCommands.empty()) {
@@ -80,7 +78,7 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 					throws CASTException {
 
-				logger.debug("afterTurnListener triggered: "
+				log("afterTurnListener triggered: "
 						+ CASTUtils.toString(_wmc));
 
 				// read in the nav cmd
@@ -89,7 +87,7 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 
 				NavCommand cmd = getComponent().getMemoryEntry(_wmc.address,
 						NavCommand.class);
-				logger.debug("nav command status: " + cmd.comp.name());
+				log("nav command status: " + cmd.comp.name());
 
 				// if this command failed, fail the whole thing
 				if (cmd.comp == Completion.COMMANDFAILED) {
@@ -99,7 +97,7 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 					executionComplete(TriBool.TRIFALSE);
 
 				} else if (cmd.comp == Completion.COMMANDSUCCEEDED) {
-					logger.debug("time to detect now, triggerDetection()");
+					log("time to detect now, triggerDetection()");
 					m_navCmdID = null;
 					getComponent().removeChangeFilter(this);
 					getComponent().deleteFromWorkingMemory(_wmc.address);
@@ -121,7 +119,7 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 
 	@Override
 	public void executeAction() {
-		logger.debug("execute action!");
+		log("execute action!");
 
 		triggerDetection();
 	}
@@ -137,7 +135,7 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 		// remove overwrite receiver
 
 		try {
-			logger.debug("aborting execution if not already stopped");
+			log("aborting execution if not already stopped");
 
 			m_remainingCommands.clear();
 			getComponent().removeChangeFilter(m_afterTurn);
