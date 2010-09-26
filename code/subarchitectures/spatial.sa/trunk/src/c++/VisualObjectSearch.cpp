@@ -208,11 +208,11 @@ m_samplesize = 100;
     m_minDistance = m_conedepth / 4.0;
     if (m_minDistance < 0.5) m_minDistance = 0.5;
 
-    m_savemapmode = false;
-    it = _config.find("--savemap");
+    m_showgui = false;
+    it = _config.find("--showgui");
     if (it != _config.end()) {
-      m_savemapmode = true; 
-      if(m_savemapmode)
+      m_showgui = true; 
+      if(m_showgui)
 	log("Save map mode : on");
       else
 	log("Save map mode : off");
@@ -349,9 +349,10 @@ m_samplesize = 100;
 	  }
 	}
       }
-    }
+      pbVis->Display2DCureMap(m_lgms[1],"room1"); 
+      pbVis->Display2DCureMap(m_lgms[2],"room2");  }
     else{
-      log("creating placeinterface proxy");
+      log("creating placeinterface proxy for specific areas");
       FrontierInterface::LocalGridMap combined_lgm;
       log("getting combined lgm");
       FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<FrontierInterface::LocalMapInterface>("map.manager"));
@@ -364,6 +365,7 @@ m_samplesize = 100;
       IcetoCureLGM(combined_lgm,m_lgms[1]);
 
       // Fill in Bloxel Map 
+      log("filling in Bloxel map");
       GridMapData def;
       def.occupancy = UNKNOWN;
       def.pdf = 0;
@@ -378,9 +380,9 @@ m_samplesize = 100;
 	  }
 	}
       }
-    }
     pbVis->Display2DCureMap(m_lgms[1],"room1"); 
-    pbVis->Display2DCureMap(m_lgms[2],"room2"); 
+    }
+     
   }
 
   void VisualObjectSearch::start() {
@@ -453,10 +455,9 @@ m_samplesize = 100;
   void 
     VisualObjectSearch::newProcessViewPointCommand(const cast::cdl::WorkingMemoryChange &objID)
     {
+      log("got new ProcessViewPointCommand");
       SpatialData::ProcessViewPointCommandPtr newProcessVP= 
 	getMemoryEntry<SpatialData::ProcessViewPointCommand>(objID.address);
-
-
       m_objectlist = newProcessVP->objectModels; 
       m_tilt = newProcessVP->vp->tilt;
       Cure::Pose3D pos;
@@ -470,6 +471,7 @@ m_samplesize = 100;
     VisualObjectSearch::newViewPointGenerationCommand(const cast::cdl::WorkingMemoryChange &objID)
     {
       try {
+	log("got new ViewPointGenerationCommand");
 	SpatialData::ViewPointGenerationCommandPtr newVPCommand= 
 	  getMemoryEntry<SpatialData::ViewPointGenerationCommand>(objID.address);
 
@@ -489,12 +491,17 @@ m_samplesize = 100;
 	policyManager.m_ExpectedCost = 30;
 	policyManager.m_Type = 2;
 	string filename = "configs_"+ newVPCommand->label + ".txt";	
-	ofstream out(filename.c_str(), ios::app);
-	out << newVPCommand->label << endl;
-	out << 0.8 << newVPCommand->label << "IN room1";
-	out.close();
+	ifstream ifile(filename.c_str());
+	if (!ifile) {
+	  // The file exists, and is open for input
 
+	  ofstream out(filename.c_str());
+	  out << newVPCommand->label << endl;
+	  out << 0.8 << " " << newVPCommand->label << " IN room1";
+	  out.close();
+	}
 	policyManager.m_ConfigurationsFilename = filename;
+
 	policyManager.preCompute(newVPCommand->label);
 
 
@@ -585,7 +592,7 @@ m_samplesize = 100;
       log("total cost at %dth cone so far %3.2f", count, cost);
       start = dest;
       if(m_publishSimCones){
-	log("adding nbv to working memory");
+	log("Adding View cone to WM for planner");
 	SpatialData::ViewPointPtr vp = new SpatialData::ViewPoint;
 	vp->pose.x = nbv.pos[0];
 	vp->pose.y = nbv.pos[1];
@@ -713,7 +720,7 @@ m_samplesize = 100;
 	    getStrategyStep(policy, i);
 
 	  double	costThisStep = tryLoadStepCost(strategyStep);
-	  if (costThisStep == 0) {
+	  if (costThisStep == 0 || m_publishSimCones) {
 	    log("novel # of relations: %d", strategyStep.size() );
 	    ChangeMaps(room);
 
@@ -764,7 +771,8 @@ m_samplesize = 100;
 		double cost = 0.0;
 		cost = GetCostForSingleStrategy(&tmpMap, topObject,threshold,false);
 		costThisStep = cost;
-		cacheStepCost(strategyStep,costThisStep);
+		if (!m_publishSimCones)
+		  cacheStepCost(strategyStep,costThisStep);
 	      }
 	      else {
 		log("strategy contains room and has more than 1 step");
@@ -985,6 +993,8 @@ m_samplesize = 100;
 	    SpatialData::SpatialObjectPtr newObj = 
 	      getMemoryEntry<SpatialData::SpatialObject>(objID.address);
 
+	    if(m_publishSimCones)
+	      return;
 	    spatial::Object *model = generateNewObjectModel(newObj->label);
 	    log("Got Spatial Object: %s", newObj->label.c_str());
 	    m_recognizedobjects.push_back(newObj->label.c_str());
@@ -1315,14 +1325,15 @@ m_samplesize = 100;
 
       void VisualObjectSearch::savemap( GtkWidget *widget,gpointer data )
       {
+	AVSComponentPtr->addProcessViewPointCommand();
 	//AVSComponentPtr->MovePanTilt(0, -10*M_PI/180,0.08);
-	while(true){
-	  AVSComponentPtr->addARTagCommand("metalbox");
-	  AVSComponentPtr->addARTagCommand("table1");
-	  AVSComponentPtr->addARTagCommand("table2");
-	  AVSComponentPtr->addARTagCommand("shelves");
-	  sleep(1);
-	}
+//	while(true){
+//	  AVSComponentPtr->addARTagCommand("metalbox");
+//	  AVSComponentPtr->addARTagCommand("table1");
+//	  AVSComponentPtr->addARTagCommand("table2");
+//	  AVSComponentPtr->addARTagCommand("shelves");
+//	  sleep(1);
+//	}
       }
       void VisualObjectSearch::readmap( GtkWidget *widget, gpointer data )
       {
@@ -1341,9 +1352,28 @@ m_samplesize = 100;
       }
       void VisualObjectSearch::selectind( GtkWidget *widget, gpointer data )
       {
+	AVSComponentPtr->addViewPointGenerationCommand();
       }
 
 
+      void VisualObjectSearch::addProcessViewPointCommand(){
+	SpatialData::ProcessViewPointCommandPtr cmd = new SpatialData::ProcessViewPointCommand;
+	SpatialData::ViewPointPtr vp= new SpatialData::ViewPoint;
+	cmd->vp = vp;
+	cmd->vp->pose.x = 0;
+	cmd->vp->pose.y = 0.5;
+	cmd->vp->pose.z = 45*M_PI/180;
+	cmd->vp->tilt = -25*M_PI/180;
+	cmd->objectModels.push_back("bookcase_sm");
+	cmd->objectModels.push_back("book");
+	addToWorkingMemory(newDataID(),cmd);
+      }
+      void VisualObjectSearch::addViewPointGenerationCommand(){
+	SpatialData::ViewPointGenerationCommandPtr cmd = new SpatialData::ViewPointGenerationCommand;
+	cmd->label = "book";
+	cmd->placestosearch.push_back(1);
+	addToWorkingMemory(newDataID(),cmd);
+      }
       void VisualObjectSearch::writeStringToFile(std::string str){
 	time_t rawtime;
 	struct tm * timeinfo;
@@ -1360,7 +1390,7 @@ m_samplesize = 100;
 	m_command = IDLE;
 
 	log("I am running");
-	if(m_savemapmode){
+	if(m_showgui){
 
 	  int argc= 0;
 	  char** argv = NULL;
@@ -1373,11 +1403,11 @@ m_samplesize = 100;
 
 	  //window cannot hold more than 1 button, thus ad a box
 	  hbox = gtk_hbox_new (FALSE, 5);
-	  savebutton = gtk_button_new_with_label ("Ask ARTag");
+	  savebutton = gtk_button_new_with_label ("Ask to Execute VC");
 	  readbutton = gtk_button_new_with_label ("Load Map");
 	  direct_uninformed = gtk_button_new_with_label ("Start");
 	  direct_informed = gtk_button_new_with_label ("Fail Policy");
-	  indirect = gtk_button_new_with_label ("");
+	  indirect = gtk_button_new_with_label ("Ask for View Cones");
 
 
 
@@ -1414,7 +1444,7 @@ m_samplesize = 100;
 
 	  gtk_widget_show (direct_uninformed);
 	  gtk_widget_show (direct_informed);
-	  //gtk_widget_show (indirect);
+	  gtk_widget_show (indirect);
 	  gtk_widget_show (readbutton);
 	  gtk_widget_show (savebutton);
 	  gtk_widget_show (window);
@@ -1786,10 +1816,11 @@ m_samplesize = 100;
 	    m_totalViewPoints++;	
 	    if(m_publishSimCones){
 	      MovePanTilt(0.0,m_tilt,0.08);
+	      Recognize();
 	    }else{	    
 	      MovePanTilt(0.0,m_nbv.tilt,0.08);
-	    }
 	    m_command = RECOGNIZE;
+	    }
 	  }
 	  else if (cmd->comp == SpatialData::COMMANDFAILED){
 	    log("NavCommand failed.Getting next view.");
@@ -2287,7 +2318,7 @@ m_samplesize = 100;
 	std::vector<double> angles;
 
 	std::vector<Cure::Pose3D> samples;
-	log("Sampling Grid");
+	log("Sampling first in in 2D grid.");
 	/*Sampling free space BEGIN*/
 
 	for (double rad = 0; rad < M_PI * 2; rad = rad + M_PI / 18) {
@@ -2357,7 +2388,7 @@ m_samplesize = 100;
 	  point.push_back(1.4);
 	  sampled2Dpoints.push_back(point);
 	}
-	// pbVis->Add3DPointCloud(sampled2Dpoints);
+	pbVis->Add3DPointCloud(sampled2Dpoints);
 	/*   m_lgm->index2WorldCoords(m_samples[1 * 2], m_samples[1 * 2 + 1], xW1, yW1);
 	     Cure::Pose3D pos;
 	     pos.setX(xW1);
@@ -2372,7 +2403,7 @@ m_samplesize = 100;
 
       std::vector<std::vector<pair <int,int> > >
 	VisualObjectSearch::GetViewCones(std::vector<Cure::Pose3D> samples2D ) {
-	  log("Calculating view cones for generated samples");
+	  log("Calculating 3D view cones for generated 2D samples");
 	  Cure::Pose3D candidatePose;
 	  XVector3D a;
 	  std::vector<pair<int,int> > tpoints;
@@ -2489,7 +2520,6 @@ m_samplesize = 100;
 	  tmpMap = m_map;
 	CurePDFMap* lgmpdf = PopulateLGMap(tmpMap); 
 	double cameraheight = 1.4;
-	debug("Sampling Grid.");
 
 	double lgmpdfsum = 0;
 	for (int x = -lgmpdf->getSize(); x <= lgmpdf->getSize(); x++) {
@@ -2499,11 +2529,8 @@ m_samplesize = 100;
 	}
 	cout<< "lgmpdf map sums to: " << lgmpdfsum << endl;
 	std::vector<std::vector<pair<int,int> > > VCones;
-	log("sampling grid");
 	std::vector<Cure::Pose3D> samples2D = Sample2DGrid();
-	log("getting view cones");
 	VCones = GetViewCones(samples2D);
-	log("got view cones");
 	double sum;
 	int x, y;
 	vector< pair<unsigned int,double> > orderedVClist, tmp;
@@ -2580,7 +2607,7 @@ m_samplesize = 100;
 
       int VisualObjectSearch::GetViewConeSums(std::vector <SensingAction> &samplepoints, GridMap<GridMapData> *map){
 	log("Getting view cone sums");
-	log("Cone range is %f to %f", m_minDistance, m_conedepth);
+//	log("Cone range is %f to %f", m_minDistance, m_conedepth);
 
 	if (map == 0) 
 	  map = m_map;
@@ -2595,8 +2622,8 @@ m_samplesize = 100;
 	    SensingAction viewpoint = samplepoints[i];
 	    /*m_map->coneModifier(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan,samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, makeobstacle,makeobstacle);*/
 	    map->coneQuery(samplepoints[i].pos[0],samplepoints[i].pos[1],samplepoints[i].pos[2], samplepoints[i].pan, samplepoints[i].tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, sumcells,sumcells, m_minDistance);
-	    log("cone query done.");
-	    cout << "cone #" << i  << " " << viewpoint.pos[0] << " " << viewpoint.pos[1] << " " <<viewpoint.pos[2] << " " << viewpoint.pan << " " << viewpoint.tilt << " pdfsum: " << sumcells.getResult() << endl;
+	  //  log("cone query done.");
+	    cout << "cone #" << i  << " " << viewpoint.pos[0] << " " << viewpoint.pos[1] << " " <<viewpoint.pos[2] << " " << viewpoint.pan << " " << viewpoint.tilt << " pdfsum of cone: " << sumcells.getResult() << endl;
 
 	    //    /* Show view cone on a temporary map, display the map and wipe it*/
 
@@ -2684,6 +2711,8 @@ m_samplesize = 100;
 	    VisionData::Recognizer3DCommandPtr cmd(getMemoryEntry<
 		VisionData::Recognizer3DCommand> (objID.address));
 
+	    if(m_publishSimCones)
+	      return;
 	    log("got recognizer3D overwrite command: %s", cmd->label.c_str());
 	    // First of all check if we have found the holy grail
 
@@ -2814,6 +2843,8 @@ m_samplesize = 100;
 	      AVSComponentPtr->addToWorkingMemory(AVSComponentPtr->newDataID(),"vision.sa",cmd);
 	      }*/
       void VisualObjectSearch::DetectionComplete(bool isDetected, std::string detectedObject){
+	if(m_publishSimCones)
+	  return;
 	waitingForDetection.clear();
 	waitingForObjects.clear();
 
@@ -2963,23 +2994,23 @@ m_samplesize = 100;
 	GDProbSum conesum;
 	map->coneQuery(viewcone.pos[0],viewcone.pos[1],
 	    viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, conesum, conesum, m_minDistance);
-	cout << "cone sums to " << conesum.getResult() << endl;
+//	cout << "cone sums to " << conesum.getResult() << endl;
 
 	/* DEBUG */
 
-	cout << "m_pout before update  is:" <<m_pout << endl;
+//	cout << "m_pout before update  is:" <<m_pout << endl;
 	//to get the denominator first sum all cells
 	map->universalQuery(sumcells); 
 
 	double mapsum = 0;
 	mapsum = sumcells.getResult();
-	cout << "whole map PDF sums to: " << mapsum << endl;
+//	cout << "whole map PDF sums to: " << mapsum << endl;
 	// then deal with those bloxels that belongs to this cone
 	GDMeasUpdateGetDenominator getnormalizer(sensingProb,mapsum);
 	map->coneQuery(viewcone.pos[0],viewcone.pos[1],
 	    viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, getnormalizer,getnormalizer, m_minDistance);
 	double normalizer = getnormalizer.getResult() + m_pout;
-	cout << "normalizer is: " << normalizer << endl;
+//	cout << "normalizer is: " << normalizer << endl;
 
 	GDProbScale scalefunctor(1.0/normalizer);
 	map->universalQuery(scalefunctor,false);
@@ -2989,8 +3020,8 @@ m_samplesize = 100;
 
 	m_pout = m_pout / normalizer;
 	map->universalQuery(sumcells);    
-	cout << "m_pout after update  is:" <<m_pout << endl;
-	cout << "map sums to: " << sumcells.getResult() << endl;
+//	cout << "m_pout after update  is:" <<m_pout << endl;
+//	cout << "map sums to: " << sumcells.getResult() << endl;
 
 	normalizePDF(*map,(1- m_pout));
 

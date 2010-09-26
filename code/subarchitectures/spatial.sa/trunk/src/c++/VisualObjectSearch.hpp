@@ -73,9 +73,11 @@ namespace spatial
 	    return false;
 	}
       };
- void owtARTagCommand(const cast::cdl::WorkingMemoryChange &objID); 
- 
-      void addARTagCommand(std::string label);
+ //void owtARTagCommand(const cast::cdl::WorkingMemoryChange &objID); 
+ void addProcessViewPointCommand();
+
+ void addViewPointGenerationCommand();
+  //    void addARTagCommand(std::string label);
       double GetGraphPathLength(double xS, double yS, double aS, double xG, double yG, double aG);
       AVSPolicyManager m_policyManager;
       double GetStrategyCost(std::list<std::string> policy); 
@@ -168,6 +170,7 @@ void newProcessViewPointCommand(const cast::cdl::WorkingMemoryChange &objID);
 	IDLE
       };
 
+      bool m_showgui;
       enum AVSStatus{
 	PLANNING,
 	EXECUTINGPLAN,

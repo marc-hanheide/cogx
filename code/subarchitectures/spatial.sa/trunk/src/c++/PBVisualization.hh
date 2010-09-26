@@ -214,7 +214,6 @@ void VisualPB_Bloxel::DisplayPCMap(const SpatialGridMap::GridMap<MapData> &map, 
 }
 */
 
-#ifdef PEEKABOT_OG3D 
 void VisualPB_Bloxel::Add3DPointCloud(std::vector< std::vector<double> > point){
   try{
     peekabot::OccupancyGrid3DProxy ogproxy;
@@ -234,8 +233,6 @@ void VisualPB_Bloxel::Add3DPointCloud(std::vector< std::vector<double> > point){
     exit(-1);
   }
 }
-#endif
-
 
 int fallsWhere(std::vector < std::pair<double,double> > thresholdvalues, double value){
 
