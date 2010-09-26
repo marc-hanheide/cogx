@@ -1009,9 +1009,10 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
   try {
     VisionData::VisualObjectPtr observedObject =
       getMemoryEntry<VisionData::VisualObject>(wmc.address);
+      string obsLabel = observedObject->identLabels[0];
 
    // if (m_timeSinceLastMoved > m_trackerTimeThreshold) {
-      log("Got VisualObject: %s (%f,%f,%f)", observedObject->label.c_str(),
+      log("Got VisualObject: %s (%f,%f,%f)", obsLabel.c_str(),
 	  observedObject->pose.pos.x,
 	  observedObject->pose.pos.y,
 	  observedObject->pose.pos.z);
@@ -1033,12 +1034,11 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
       transform(robotTransform, pose, pose);
 
       //FIXME: if tag objects don't do this
-      if(observedObject->label == "metalbox" || observedObject->label == "table1" || observedObject->label == "table2" 
-	  || observedObject->label == "shelves" ){
+      if(obsLabel == "metalbox" || obsLabel == "table1" || obsLabel == "table2" 
+	  || obsLabel == "shelves" ){
 	pose = observedObject->pose;
       }
 
-      string obsLabel = observedObject->label;
 
       // For now, assume each label represents a unique object
       map<std::string, SpatialObjectPtr>::iterator it = m_objects.find(obsLabel);
@@ -1316,7 +1316,7 @@ ObjectRelationManager::connectPeekabot()
     log("Trying to connect to Peekabot (again) on host %s and port %d",
         m_PbHost.c_str(), m_PbPort);
 
-    m_PeekabotClient.connect(m_PbHost, m_PbPort, true);
+    m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
   } catch(std::exception &e) {
     log("Caught exception when connecting to peekabot (%s)",

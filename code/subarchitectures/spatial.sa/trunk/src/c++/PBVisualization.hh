@@ -129,7 +129,7 @@ VisualPB_Bloxel::~VisualPB_Bloxel(){
 bool VisualPB_Bloxel::connectPeekabot(){
 try{
   printf("Trying to connect to Peekabot on host %s and port %d \n", host.c_str(), port);
-  client.connect(host, port, true);
+  client.connect(host, port);
   printf("Connection to Peekabot established! \n");
   // eieiAssign root
   root.assign(client, "root");

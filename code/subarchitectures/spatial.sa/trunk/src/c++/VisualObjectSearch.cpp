@@ -2953,13 +2953,16 @@ m_samplesize = 100;
 	    log("new visual object");
 	    VisionData::VisualObjectPtr visualobject(getMemoryEntry<
 		VisionData::VisualObject> (objID.address));
-	    log("new visual object %s", visualobject->label.c_str());
-	    if (waitingForDetection.find(visualobject->label) != waitingForDetection.end()) {
+	    
+	    //FIXME: is the below true ?
+            string objLabel = visualobject->identLabels[0];
+            log("new visual object %s", objLabel.c_str());
+	    if (waitingForDetection.find(objLabel) != waitingForDetection.end()) {
 	      //m_recognizedobjects.push_back(visualobject->label); 
 	      //This was an object we were looking for
-	      log("deleting object %s from list", visualobject->label.c_str());
-	      waitingForDetection.erase(visualobject->label);
-	      waitingForObjects.insert(visualobject->label);
+	      log("deleting object %s from list", objLabel.c_str());
+	      waitingForDetection.erase(objLabel);
+	      waitingForObjects.insert(objLabel);
 
 	      string logString("Waiting list: ");
 	      for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
