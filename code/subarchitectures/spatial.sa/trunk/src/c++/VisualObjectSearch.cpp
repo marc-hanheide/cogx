@@ -118,6 +118,7 @@ namespace spatial
       log("Best 3D cone ratio set to: %d", m_best3DConeRatio);
     }
 
+
     m_tiltinterval = 10*M_PI/180 ;
     it = _config.find("--tiltinterval");
     if (it != _config.end()) {
@@ -125,8 +126,9 @@ namespace spatial
       log("Tilt Interval set to: %f", m_tiltinterval);
     }
     log("Tilt Interval set to: %f", m_tiltinterval);
+    
 
-    m_samplesize = 100;
+m_samplesize = 100;
     it = _config.find("--samplesize");
     if (it != _config.end()) {
       m_samplesize = (atof(it->second.c_str()));
