@@ -214,7 +214,7 @@ void VisualPB_Bloxel::DisplayPCMap(const SpatialGridMap::GridMap<MapData> &map, 
 }
 */
 
-#ifndef NO_COGX_DEPENDENCIES
+#ifdef PEEKABOT_OG3D 
 void VisualPB_Bloxel::Add3DPointCloud(std::vector< std::vector<double> > point){
   try{
     peekabot::OccupancyGrid3DProxy ogproxy;
