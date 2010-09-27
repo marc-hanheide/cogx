@@ -249,7 +249,8 @@ class DTProblem(object):
             a.precondition = b.cond('not', (dtpddl.committed, [term]))
             commit_effect = b.effect(dtpddl.committed, [term])
             reward_effect = b('when', ('=', term, val), ('assign', ('reward',), confirm_score))
-            a.effect = b.effect('and', commit_effect, reward_effect)
+            penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -2*confirm_score))
+            a.effect = b.effect('and', commit_effect, reward_effect, penalty_effect)
             
             result.add(a)
 
@@ -283,7 +284,7 @@ class DTProblem(object):
             penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -2*dis_score))
             a.effect = pddl.ConjunctiveEffect([commit_effect, reward_effect, penalty_effect], a)
             
-            #result.add(a)
+            result.add(a)
                         
         return result
 
