@@ -3,7 +3,7 @@
 
 #include "FunctorTypes.hh"
 #include "ConeSlicer.hh"
-#include <opencv/cv.h>
+#include <cv.h>
 #include <cstdlib> 
 #include <vector>
 #include <iostream>

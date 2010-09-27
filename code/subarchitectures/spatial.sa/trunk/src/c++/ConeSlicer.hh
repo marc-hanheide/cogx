@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 #include <deque>
-#include <opencv/cv.h>
+#include <cv.h>
 #include <cast/core/CASTUtils.hpp>
 #include <Math.hpp>
 #include "Matrix33.h"

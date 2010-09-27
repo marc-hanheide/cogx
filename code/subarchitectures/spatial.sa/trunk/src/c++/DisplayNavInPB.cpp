@@ -1525,7 +1525,7 @@ void DisplayNavInPB::connectPeekabot()
     log("Trying to connect to Peekabot (again?) on host %s and port %d",
         m_PbHost.c_str(), m_PbPort);
 
-    m_PeekabotClient.connect(m_PbHost, m_PbPort, true);
+    m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
     m_ProxyRoot.assign(m_PeekabotClient, "root");    
 
