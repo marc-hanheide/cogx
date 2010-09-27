@@ -457,7 +457,8 @@ m_samplesize = 100;
     {
       log("got new ProcessViewPointCommand");
       SpatialData::ProcessViewPointCommandPtr newProcessVP= 
-	getMemoryEntry<SpatialData::ProcessViewPointCommand>(objID.address);
+	      getMemoryEntry<SpatialData::ProcessViewPointCommand>(objID.address);
+      m_ProcessVPID = objID.address.id;     
       m_objectlist = newProcessVP->objectModels; 
       m_tilt = newProcessVP->vp->tilt;
       Cure::Pose3D pos;
@@ -474,7 +475,8 @@ m_samplesize = 100;
 	log("got new ViewPointGenerationCommand");
 	SpatialData::ViewPointGenerationCommandPtr newVPCommand= 
 	  getMemoryEntry<SpatialData::ViewPointGenerationCommand>(objID.address);
-
+newVPCommand->status = SpatialData::SUCCESS;
+	overwriteWorkingMemory<SpatialData::ViewPointGenerationCommand>(objID.address, newVPCommand);
 	/** 1. Change Maps
 	  2. Set policy manager
 	  3. GetBestPolicy
@@ -503,7 +505,9 @@ m_samplesize = 100;
 	policyManager.m_ConfigurationsFilename = filename;
 
 	policyManager.preCompute(newVPCommand->label);
-
+	// overwrite the command
+	newVPCommand->status = SpatialData::SUCCESS;
+	overwriteWorkingMemory<SpatialData::ViewPointGenerationCommand>(objID.address, newVPCommand);
 
       }catch (DoesNotExistOnWMException e) {
 	log("Error! SpatialObject disappeared from WM!");
@@ -2749,6 +2753,9 @@ m_samplesize = 100;
 
 	      // m_command = NEXT_NBV;
 	    }
+	    SpatialData::ProcessViewPointCommandPtr VPcmd= new SpatialData::ProcessViewPointCommand;
+	    VPcmd->status = SpatialData::SUCCESS;
+	    overwriteWorkingMemory(m_ProcessVPID,VPcmd);
 	  }
 	  catch (const CASTException &e) {
 	    log("failed to delete SpatialDataCommand: %s", e.message.c_str());
@@ -2805,7 +2812,6 @@ m_samplesize = 100;
 	}
       void VisualObjectSearch::Recognize() {
 	log("Recognize called");
-	sleep(10);
 	//    waitingForDetection.insert(currentTarget);
 	//    isWaitingForDetection = true;
 	//DetectionComplete(false);
@@ -3097,9 +3103,6 @@ m_samplesize = 100;
 	    castScan.ranges.size(), 
 	    (long)castScan.time.s, (long)castScan.time.us);
 
-	GDIsObstacle obstacle;
-	GDMakeObstacle makeobstacle;
-	GDMakeFree makefree;
 	Cure::LaserScan2d cureScan;
 	CureHWUtils::convScan2dToCure(castScan, cureScan);
 	if (m_TOPP.isTransformDefined()) {
