@@ -42,7 +42,7 @@ class PartialProblem(object):
         total_count = 1
         for r in rules:
             inst, values = get_rule_size(r)
-            print r, inst, values
+            #print r, inst, values
             total_count *= values**inst
         #print "=", total_count
         #print
@@ -319,31 +319,46 @@ class DTProblem(object):
         if objects is None:
             objects = cast_state.objects
             
-        tdict = defaultdict(set)
+        fixed_by_type = defaultdict(set)
         for obj in fixed_objects:
-            tdict[obj.type].add(obj)
+            fixed_by_type[obj.type].add(obj)
+        constraint_by_type = defaultdict(list)
         for c in constraints:
-            for a in c.svar.args:
+            if isinstance(c, state.Fact):
+                svar = c.svar
+            else:
+                svar = c[0].svar
+            for a in svar.args:
                 if a.name.startswith("any_"):
-                    tdict[a.type].add(c)
+                    constraint_by_type[a.type].append(c)
 
         def check_object(o):
-            if o.type not in tdict:
-                return True
-            for restriction in tdict[o.type]:
-                if isinstance(restriction, pddl.TypedObject):
-                    return o == restriction
-                #simple case: only one free variable
-                assert len([a for a in restriction.svar.args if a.name.startswith("any_")]) == 1
-                newargs = []
-                for a in restriction.svar.args:
-                    if a.name.startswith("any_"):
-                        assert o.is_instance_of(a.type)
-                        newargs.append(o)
+            if o.type in fixed_by_type:
+                if not any(o == f for f in fixed_by_type[o.type]):
+                    return False
+            if o.type in constraint_by_type:
+                for restriction in constraint_by_type[o.type]:
+                    if isinstance(restriction, state.Fact):
+                        svar = restriction.svar
+                        vals = [restriction.value]
+                    elif isinstance(restriction, list):
+                        svar = restriction[0].svar
+                        assert all(r.svar == svar for r in restriction)
+                        vals = [r.value for r in restriction]
                     else:
-                        newargs.append(a)
-                newvar = pddl.state.StateVariable(restriction.svar.function, newargs)
-                return cast_state.prob_state[newvar] == restriction.value
+                        assert False
+                    #simple case: only one free variable
+                    assert len([a for a in svar.args if a.name.startswith("any_")]) == 1
+                    newargs = []
+                    for a in svar.args:
+                        if a.name.startswith("any_"):
+                            assert o.is_instance_of(a.type)
+                            newargs.append(o)
+                        else:
+                            newargs.append(a)
+                    newvar = pddl.state.StateVariable(svar.function, newargs)
+                    if not cast_state.prob_state[newvar] in vals:
+                        return False
             return True
                 
         result = set()
@@ -369,17 +384,54 @@ class DTProblem(object):
         return result, facts
 
     def compute_subproblems(self, cast_state):
+        # import debug
+        # debug.set_trace()
+        
         prob_by_layer = {}
+        problems =  []
         all_objects = cast_state.objects | cast_state.generated_objects | self.domain.constants
-        prob_by_layer[len(self.relaxation_layers)] = PartialProblem(all_objects , list(cast_state.prob_state.iterdists()), self.dt_rules, self.domain)
-        for i, (fixed, constraints) in reversed(list(enumerate(self.relaxation_layers))):
-            log.debug("Layer %d:", i)
-            objects, facts = self.limit_state(cast_state, fixed, constraints, prob_by_layer[i+1].objects)
-            log.debug("objects in this layer: %s", ", ".join(o.name for o in objects))
-            prob_by_layer[i] = PartialProblem(objects, facts, self.dt_rules, self.domain)
-            log.debug("")
+        problems.append(PartialProblem(all_objects , list(cast_state.prob_state.iterdists()), self.dt_rules, self.domain))
+        i = len(self.relaxation_layers)-1
+        j = 1
+        prev_fixed = set()
+        prev_constraints = set()
+        for fixed, constraints in reversed(self.relaxation_layers):
+            # Iterate over relaxation layers first (from most to least relaxed)
+            log.debug("Next layer %d:", i)
+            new_fixed = fixed - prev_fixed
+            fixed_types = set(o.type for o in new_fixed)
+            log.debug("New fixed: %s", ", ".join(o.name for o in new_fixed))
+
+            generic_constraints = []
+            for t,v in constraints:
+                if v in new_fixed:
+                    generic_constraints.append((t,v))
+
+            log.debug("Generic constraints: %s", ", ".join("%s = %s" % (str(t), v.name) for t,v in generic_constraints))
+            to_remove = set(o for o in problems[-1].objects if o.type in fixed_types and o not in fixed)
             
-        return prob_by_layer
+            log.debug("Removing the following objects: %s", ", ".join(o.name for o in to_remove))
+            while to_remove:
+                #compute possible intermediate problems between two layers
+                rem = to_remove.pop()             
+                new_constraints = []
+                for t,v in generic_constraints:
+                    c2 = []
+                    new_constraints.append(c2)
+                    c2.append(state.Fact(t,v))
+                    for o in to_remove:
+                        if o.type == v.type:
+                            c2.append(state.Fact(t,o))
+                objects, facts = self.limit_state(cast_state, fixed | to_remove, new_constraints, problems[-1].objects)
+                log.debug("problem %d: %s", j, ", ".join(o.name for o in objects))
+                problems.append(PartialProblem(objects, facts, self.dt_rules, self.domain))
+                j += 1
+                    
+            i -= 1
+            prev_fixed = fixed
+            prev_constraints = set(constraints)
+
+        return problems
         
 
     def create_problem(self, cast_state, domain):
@@ -387,18 +439,15 @@ class DTProblem(object):
         opt = "maximize"
         opt_func = pddl.FunctionTerm(pddl.dtpddl.reward, [])
 
-        selected = len(self.relaxation_layers)
-        for i in xrange(len(self.relaxation_layers) - 1, -1, -1):
-            log.debug("Layer %d:", i)
+        selected = 0
+        for i, prob in enumerate(self.subproblems):
             selected = i
-            prob = self.subproblems[i]
-            log.debug("Approx. State size: %d", prob.size)
+            log.debug("Problem %i: approx. State size: %d", i, prob.size)
             if prob.size < global_vars.config.dt.max_state_size:
                 log.info("Selecting layer %d with approx. state size of %d", i, prob.size)
                 break
-            log.debug("")
 
-        base_problem = self.subproblems[len(self.relaxation_layers)]
+        base_problem = self.subproblems[0]
         problem = self.subproblems[selected]
         objects = problem.objects
         facts = problem.facts
