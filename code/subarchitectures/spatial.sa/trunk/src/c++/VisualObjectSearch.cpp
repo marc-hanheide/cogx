@@ -489,6 +489,7 @@ m_samplesize = 100;
 	log("got new ViewPointGenerationCommand");
 	SpatialData::ViewPointGenerationCommandPtr newVPCommand= 
 	  getMemoryEntry<SpatialData::ViewPointGenerationCommand>(objID.address);
+
 	/** 1. Change Maps
 	  2. Set policy manager
 	  3. GetBestPolicy
@@ -520,6 +521,7 @@ m_samplesize = 100;
 	// overwrite the command
 	newVPCommand->status = SpatialData::SUCCESS;
 	overwriteWorkingMemory<SpatialData::ViewPointGenerationCommand>(objID.address, newVPCommand);
+       
 
       }catch (DoesNotExistOnWMException e) {
 	log("Error! SpatialObject disappeared from WM!");
@@ -1016,6 +1018,8 @@ m_samplesize = 100;
 
 	    if(m_publishSimCones)
 	      return;
+
+
 	    spatial::Object *model = generateNewObjectModel(newObj->label);
 	    log("Got Spatial Object: %s", newObj->label.c_str());
 	    m_recognizedobjects.push_back(newObj->label.c_str());
@@ -1414,6 +1418,9 @@ m_samplesize = 100;
 	log("I am running");
 	if(m_showgui){
 
+	  log("showing GUI");
+
+
 	  int argc= 0;
 	  char** argv = NULL;
 
@@ -1430,9 +1437,6 @@ m_samplesize = 100;
 	  direct_uninformed = gtk_button_new_with_label ("Start");
 	  direct_informed = gtk_button_new_with_label ("Fail Policy");
 	  indirect = gtk_button_new_with_label ("Ask for View Cones");
-
-
-
 
 	  //parent: window, child: hbox
 	  gtk_container_add (GTK_CONTAINER (window), hbox);
@@ -1476,23 +1480,32 @@ m_samplesize = 100;
 
 	viewCount = 0; //Init viewcount
 
-	while(true){
-	  while(gtk_events_pending())
+	if(m_showgui){
+	while(isRunning()){
+	  
+	  
+	  while(gtk_events_pending()) {
 	    gtk_main_iteration();
+	  }
+	  
 	  /* if(isRunComponent){
 	     lockComponent();
-	  //      pbVis->DisplayMap(*m_map);
-	  pbVis->Display2DCureMap(m_lgm,"current_m_lgm");
-	  if(m_lgms.size() == 0 ){
-	  //InitializeMaps();
-	  m_policyManager.preCompute("book");
-	  }
-	  InterpretCommand();
-	  unlockComponent();
-	  }*/
-	  sleep(1);
+	     //      pbVis->DisplayMap(*m_map);
+	     pbVis->Display2DCureMap(m_lgm,"current_m_lgm");
+	     if(m_lgms.size() == 0 ){
+	     //InitializeMaps();
+	     m_policyManager.preCompute("book");
+	     }
+	     InterpretCommand();
+	     unlockComponent();
+	     }*/
+	  
+ 	  sleep(1);
+ 	}
 	}
       }
+  
+
       //void
       //VisualObjectSearch::AskForDistribution(const vector<string> &objectLabels,
       //    const vector<SpatialData::ObjectRelationPtr> &relations)
@@ -2742,8 +2755,11 @@ if(m_usePeekabot)
 	    VisionData::Recognizer3DCommandPtr cmd(getMemoryEntry<
 		VisionData::Recognizer3DCommand> (objID.address));
 
-	    if(m_publishSimCones)
-	      return;
+	    //FIXME: nah took the below out, otherwise planner never gets told anything
+// 	    if(m_publishSimCones)
+// 	      return;
+
+
 	    log("got recognizer3D overwrite command: %s", cmd->label.c_str());
 	    // First of all check if we have found the holy grail
 
@@ -2792,12 +2808,15 @@ if(m_usePeekabot)
 
       void
 	VisualObjectSearch::MovePanTilt(double pan, double tilt, double tolerance) {
+
+
 	  if (m_usePTZ) {
 	    log(" Moving pantilt to: %f %f with %f tolerance", pan, tilt, tolerance);
 	    ptz::PTZPose p;
 	    ptz::PTZReading ptuPose;
 	    p.pan = pan;
 	    p.tilt = tilt;
+
 	    p.zoom = 0;
 	    m_ptzInterface->setPose(p);
 	    bool run = true;
@@ -2875,67 +2894,70 @@ if(m_usePeekabot)
 	      cmd->label = label;
 	      AVSComponentPtr->addToWorkingMemory(AVSComponentPtr->newDataID(),"vision.sa",cmd);
 	      }*/
-      void VisualObjectSearch::DetectionComplete(bool isDetected, std::string detectedObject){
-	if(m_publishSimCones)
-	  return;
-	waitingForDetection.clear();
-	waitingForObjects.clear();
 
-	cout << "Detection complete" << endl;
-	if (isDetected){
-	  m_recognizedobjects.push_back(currentTarget);
-	  log("Object Detected.");
-	  // check for success
-	  bool greatSuccess = false;
-	  if(targetObject == detectedObject) {
-	    greatSuccess = true;
-	  }
-	  if(greatSuccess){
-	    isSearchFinished = true;
-	    m_command = STOP;
+  void VisualObjectSearch::DetectionComplete(bool isDetected, std::string detectedObject){
+    if(m_publishSimCones) {
+      return;
+    }
 
-	    log("Object Detected, Mission Completed.");
-	    return;
-	  }
-
-	  char buffer[1024];
-	  sprintf(buffer,"Object %s detected. Policy Step completed: %s, total # of VCones for this step: %d, (next step: %s)", detectedObject.c_str(), currentSearchPolicy[currentPolicyStep].c_str(), m_totalViewPoints, currentSearchPolicy[currentPolicyStep + 1].c_str());
-	  writeStringToFile((string)buffer);
-
-	  m_totalViewPoints = 0;
-	  currentPolicyStep++;
-
-	  m_command = ASK_FOR_DISTRIBUTION;
-
-	}
-	//      // if we are doing indirect search then ask & initialize next object
-	//      if(currentSearchMode == INDIRECT){
-	//
-	//	// if we are doing indirect search and happen to find the middle object
-	//	// then set the current target to middle object so that we will as for distribution of primary object SR middle object
-	//	if(detectedObject == indirect_middle_object){
-	//	  SetCurrentTarget(targetObject);
-	//	}
-	//
-	//      }
-	//      for(unsigned int i=0; i<searchChain.size(); i++){
-	//	if(searchChain[i].secobject == currentTarget){
-	//
-	//	  SetCurrentTarget(searchChain[i].primaryobject);
-	//
-	//	}
-	//	log("Object Detected, new target is %s", currentTarget.c_str());
-	//	m_command = ASK_FOR_DISTRIBUTION;
-	//      }
-	else {
-	  // if we are not yet finished Go to NBV
-	  log("Object not detected");
-	  UnsuccessfulDetection(m_nbv);  
-	  m_command = NEXT_NBV;
-	}
+    waitingForDetection.clear();
+    waitingForObjects.clear();
+    
+    cout << "Detection complete" << endl;
+    if (isDetected){
+      m_recognizedobjects.push_back(currentTarget);
+      log("Object Detected.");
+      // check for success
+      bool greatSuccess = false;
+      if(targetObject == detectedObject) {
+	greatSuccess = true;
       }
-
-      void
+      if(greatSuccess){
+	isSearchFinished = true;
+	m_command = STOP;
+	
+	log("Object Detected, Mission Completed.");
+	return;
+      }
+      
+      char buffer[1024];
+      sprintf(buffer,"Object %s detected. Policy Step completed: %s, total # of VCones for this step: %d, (next step: %s)", detectedObject.c_str(), currentSearchPolicy[currentPolicyStep].c_str(), m_totalViewPoints, currentSearchPolicy[currentPolicyStep + 1].c_str());
+      writeStringToFile((string)buffer);
+      
+      m_totalViewPoints = 0;
+      currentPolicyStep++;
+      
+      m_command = ASK_FOR_DISTRIBUTION;
+      
+    }
+    //      // if we are doing indirect search then ask & initialize next object
+    //      if(currentSearchMode == INDIRECT){
+    //
+    //	// if we are doing indirect search and happen to find the middle object
+    //	// then set the current target to middle object so that we will as for distribution of primary object SR middle object
+    //	if(detectedObject == indirect_middle_object){
+    //	  SetCurrentTarget(targetObject);
+    //	}
+    //
+    //      }
+    //      for(unsigned int i=0; i<searchChain.size(); i++){
+    //	if(searchChain[i].secobject == currentTarget){
+    //
+    //	  SetCurrentTarget(searchChain[i].primaryobject);
+    //
+    //	}
+    //	log("Object Detected, new target is %s", currentTarget.c_str());
+    //	m_command = ASK_FOR_DISTRIBUTION;
+    //      }
+    else {
+      // if we are not yet finished Go to NBV
+      log("Object not detected");
+      UnsuccessfulDetection(m_nbv);  
+      m_command = NEXT_NBV;
+    }
+  }
+  
+  void
 	VisualObjectSearch::SetCurrentTarget(const string &label) {
 	  currentTarget = label;
 	  double objectSize = 0.5;
