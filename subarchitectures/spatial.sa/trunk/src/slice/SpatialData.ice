@@ -319,8 +319,8 @@ module SpatialData {
    * @see
    */
   enum AVSStatus {INPROGRESS,	
-    		  SUCCESS,
-		 FAILED
+    		   SUCCESS,
+		   FAILED
 };	
 	
 
@@ -340,9 +340,9 @@ module SpatialData {
    */
   class ViewPointGenerationCommand {
     ///Object to generate the viewpoints for. TODO: what should this label contain?
-AVSStatus status;     
-PlaceIDSeq placestosearch; 
      string label;
+     PlaceIDSeq placestosearch; 
+     AVSStatus status;     
   };
 
 
