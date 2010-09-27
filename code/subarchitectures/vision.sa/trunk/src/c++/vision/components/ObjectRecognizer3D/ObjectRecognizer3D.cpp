@@ -185,20 +185,20 @@ void ObjectRecognizer3D::receiveImages(const std::vector<Video::Image>& images){
  * Recognizer3DCommands with one label each.
  */
 void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc){
-	log("Receiving receiveDetectionCommand");
+  log("Receiving receiveDetectionCommand");
   DetectionCommandPtr det_cmd = getMemoryEntry<DetectionCommand>(_wmc.address);
-
-	for(size_t i = 0; i < det_cmd->labels.size(); i++)
-	{
-    if(m_recEntries.find(det_cmd->labels[i]) != m_recEntries.end())
+  
+  for(size_t i = 0; i < det_cmd->labels.size(); i++)
     {
-      Recognizer3DCommandPtr rec_cmd = new Recognizer3DCommand();
-      rec_cmd->cmd = RECOGNIZE;
-      rec_cmd->label = det_cmd->labels[i];
-      m_recCommandList.push_back(rec_cmd);
-      m_recCommandID.push_back(_wmc.address.id);
-    }
+      if(m_recEntries.find(det_cmd->labels[i]) != m_recEntries.end())
+	{
+	  Recognizer3DCommandPtr rec_cmd = new Recognizer3DCommand();
+	  rec_cmd->cmd = RECOGNIZE;
+	  rec_cmd->label = det_cmd->labels[i];
+	  m_recCommandList.push_back(rec_cmd);
+	  m_recCommandID.push_back(_wmc.address.id);
 	}
+    }
 }
 
 void ObjectRecognizer3D::receiveRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc){
@@ -529,7 +529,14 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	// Send result to WM
 	//overwriteWorkingMemory(m_rec_cmd_id, m_rec_cmd);
 	// note: execution layer expects the comand to be deleted as a signal of completion
-	deleteFromWorkingMemory(m_rec_cmd_id);
+
+	try {
+	  deleteFromWorkingMemory(m_rec_cmd_id);
+	}
+	catch(CASTException &e) {
+	  println("exception while deleting command: " + e.message);
+	}
+
 
 	// Clean up
   cvReleaseImage(&m_iplImage);
