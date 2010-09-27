@@ -127,49 +127,50 @@ VisualPB_Bloxel::~VisualPB_Bloxel(){
 }
 
 bool VisualPB_Bloxel::connectPeekabot(){
-try{
-  printf("Trying to connect to Peekabot on host %s and port %d \n", host.c_str(), port);
-  client.connect(host, port);
-  printf("Connection to Peekabot established! \n");
-  // eieiAssign root
-  root.assign(client, "root");
-  pb_map.add(root,"map",peekabot::REPLACE_ON_CONFLICT);
-
-  pdf.add(root, "pdf", peekabot::REPLACE_ON_CONFLICT);
-
-  // Add 15 levels for pdf-visualization
-  maxLevels = 15;
-  thresholds.push_back(1.0);
-  for(int i=0; i<maxLevels; i++){
+  try{
+    printf("Trying to connect to Peekabot on host %s and port %d \n", host.c_str(), port);
+    client.connect(host, port);
+    printf("Connection to Peekabot established! \n");
+    // eieiAssign root
+    root.assign(client, "root");
+    pb_map.add(root,"map",peekabot::REPLACE_ON_CONFLICT);
+    
+    pdf.add(root, "pdf", peekabot::REPLACE_ON_CONFLICT);
+    
+    // Add 15 levels for pdf-visualization
+    maxLevels = 15;
+    thresholds.push_back(1.0);
+    for(int i=0; i<maxLevels; i++){
       thresholds.push_back(thresholds.back()/2);
-
+      
       char buf[256];
       sprintf(buf, "distribution_%4.5f_%4.5f", thresholds[i],thresholds[i+1]);
       std::string s(buf);
       std::replace(s.begin(),s.end(),'.',',');
       strcpy(buf,s.c_str());
-
+      
       peekabot::GroupProxy level;
       level.add(pdf, buf, peekabot::REPLACE_ON_CONFLICT);
       pdflevels.push_back(level);
+    }
+    
+    // Add GridMap for pdf-tracking
+    
+    //  OGProxy.add(client, "root.og3d", 0.1, peekabot::REPLACE_ON_CONFLICT);
+    /* peekabot::CubeProxy cube;
+       cube.add(pb_map, std::string("cube"), peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+       cube.set_position(-1,-1, 0);
+       cube.set_scale(scale,scale,scale);*/
+    
   }
-
-  // Add GridMap for pdf-tracking
-
-//  OGProxy.add(client, "root.og3d", 0.1, peekabot::REPLACE_ON_CONFLICT);
-  /* peekabot::CubeProxy cube;
-  cube.add(pb_map, std::string("cube"), peekabot::AUTO_ENUMERATE_ON_CONFLICT);
-  cube.set_position(-1,-1, 0);
-  cube.set_scale(scale,scale,scale);*/
-
-}
-catch(std::exception& e){
-  printf("Caught exception when connecting to peekabot (%s). \n", e.what());
-  client.disconnect();
-  exit(-1);
-}
-return true;
-return true;
+  catch(std::exception& e){
+    printf("Caught exception when connecting to peekabot (%s). \n", e.what());
+    client.disconnect();
+    //nah: wtf! isn't this why you have a return value?!
+    //exit(-1);
+    return false;
+  }
+  return true;
 }
 
 /*
