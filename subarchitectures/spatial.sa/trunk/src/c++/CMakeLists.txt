@@ -123,21 +123,41 @@ link_cast_component(${CAST_COMPONENT_NAME} DLIB)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 # add_cast_component(Pusher Pusher.cpp)
 # link_cast_component(${CAST_COMPONENT_NAME} NavData)
+
 option(BUILD_AVS NO)
+
 if(BUILD_AVS)
+
 #add_cast_component(AdvObjectSearch AdvObjectSearch.cpp)
 #link_cast_component(${CAST_COMPONENT_NAME} peekabot NavData SpatialData VisionData Laser Robotbase RobotbaseClientUtils Scan2dReceiver OdometryReceiver PTZ)
 #link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface)
 #link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 #link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES} ${OPENCV_LDFLAGS})
-Find_package(GTK2 REQUIRED)
+
+Find_package(GTK2 REQUIRED gtk)
 include_directories(${GTK2_INCLUDE_DIRS})
-  link_directories(${GTK2_LIBRARIES})
+link_directories(${GTK2_LIBRARIES})
+
+
+IF(APPLE)
+#nah: the Find_package call doesn't seem to work for me
+pkg_search_module(GTK2_FIX REQUIRED gtk+-2.0)
+include_directories(${GTK2_FIX_INCLUDE_DIRS})
+link_directories(${GTK2_FIX_LIBRARY_DIRS})
+ENDIF(APPLE)
+
+
+
   add_cast_component(VisualObjectSearch VisualObjectSearch.cpp DensitySampling.cpp RelationEvaluation.cpp InnessEvaluation.cpp OnnessEvaluation.cpp ConeSlicer.cpp ./AVS/src/AVSPolicyManager.cc)
   link_cast_component(${CAST_COMPONENT_NAME} ${GTK2_LIBRARIES} peekabot NavData SpatialData VisionData Laser Robotbase RobotbaseClientUtils Scan2dReceiver OdometryReceiver PTZ)
   link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface)
   link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES} ${OPENCV_LDFLAGS})
+
+IF(APPLE)
+link_cast_component(${CAST_COMPONENT_NAME} ${GTK2_FIX_LIBRARIES})
+ENDIF(APPLE)
+
 
 add_cast_component(ObjectRelationManager ObjectRelationManager.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialProperties peekabot PTZ FrontierInterface)

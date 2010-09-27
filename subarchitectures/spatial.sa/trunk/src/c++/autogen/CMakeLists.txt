@@ -33,6 +33,7 @@ install(TARGETS SpatialProperties LIBRARY DESTINATION lib)
 
 
 
+
 cast_slice2cpp(GEN_CPP_FI GEN_HPP_FI FrontierInterface.ice ${CAST_SLICE_DIR}
     ${COGX_ROOT}/subarchitectures/nav.sa/src/slice
     ${COGX_ROOT}/tools/math/src/slice)
