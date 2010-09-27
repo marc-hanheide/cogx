@@ -44,11 +44,25 @@ double Belief_State_Value::operator()(POMDP_State* state) const
 }
 
 
-int Greedy_Heuristic::operator()(POMDP_State* state) const
+Greedy_Heuristic::Greedy_Heuristic()
+    :configured__expected_rewards_count__cache(false),
+     configured__expected_rewards_value__cache(false)
 {
+}
+
+
+float Greedy_Heuristic::operator()(POMDP_State* state) const
+{
+
+    INTERACTIVE_VERBOSER(true, 900, "Configuration status is :: "
+                         <<configured__expected_rewards_count__cache<<" "<<expected_rewards_count__cache<<" "
+                         <<configured__expected_rewards_value__cache<<" "<<expected_rewards_value__cache<<std::endl);
+    
+    assert(configured__expected_rewards_count__cache == configured__expected_rewards_value__cache);
     
     double expected_rewards_count = 0.0;
     double expected_rewards_value = 0.0;
+    
     auto& belief_State = state->get__belief_state(); 
     for(auto _mdp_state = belief_State.begin()
             ; _mdp_state != belief_State.end()
@@ -69,7 +83,40 @@ int Greedy_Heuristic::operator()(POMDP_State* state) const
     }
 
     
-    return static_cast<int>(state->get__expected_reward()) // +
+//     std::cerr<<"Starting configuration test."<<std::endl;
+    if(!configured__expected_rewards_count__cache){
+        INTERACTIVE_VERBOSER(true, 900, "Not configured yet."<<std::endl);
+        
+        expected_rewards_count__cache = expected_rewards_count;
+        expected_rewards_value__cache = expected_rewards_value;
+
+        INTERACTIVE_VERBOSER(true, 900, "CONFIGURED "<<expected_rewards_count__cache<<" "
+                             <<expected_rewards_value__cache<<" "<<std::endl);
+        
+        
+        configured__expected_rewards_count__cache
+            = configured__expected_rewards_value__cache
+            = true;
+    }
+
+    float answer =  static_cast<float>(state->get__expected_reward());
+//                                        + (expected_rewards_count / expected_rewards_count__cache)
+//                                        + (expected_rewards_value / expected_rewards_value__cache));
+
+    INTERACTIVE_VERBOSER(true, 900, "EVALUATION :: "<<answer<<std::endl
+                         <<" Reward :: "<<state->get__expected_reward()<<"\n"
+                         <<" Reward element counting :: "<<expected_rewards_count
+                         <<" -- "<<expected_rewards_count__cache<<" -- "
+                         <<(expected_rewards_count / expected_rewards_count__cache)<<"\n"
+                         <<" Reward values counting :: "<<expected_rewards_value
+                         <<" "<<expected_rewards_value__cache<<" "
+                         <<(expected_rewards_value / expected_rewards_value__cache)<<" "<<std::endl);
+
+     return answer;// static_cast<float>(state->get__expected_reward()
+//                               + (expected_rewards_count / expected_rewards_count__cache)
+//                               + (expected_rewards_value / expected_rewards_value__cache));
+    
+    //return static_cast<int>(state->get__expected_reward()) // +
 //         expected_rewards_count +
 //         expected_rewards_value)
         ;

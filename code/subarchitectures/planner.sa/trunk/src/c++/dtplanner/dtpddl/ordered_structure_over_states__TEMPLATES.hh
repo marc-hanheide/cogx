@@ -90,7 +90,7 @@ namespace Planning
 	}
     
 	LOCAL_ASSERTION(state__To__Index, value__To__States);
-	double state_value = state_evaluator(state);
+	auto state_value = state_evaluator(state);
     
 	if(value__To__States.find(state_value) == value__To__States.end()) {
 	    UNRECOVERABLE_ERROR("REMOVE :: Failed no value__To__States with state_value "<<state_value<<std::endl);
@@ -224,7 +224,7 @@ namespace Planning
 
         auto& most_promising_states_list = value__To__States.rbegin()->second;
         
-	double most_promising_states_value = value__To__States.rbegin()->first;
+	auto most_promising_states_value = value__To__States.rbegin()->first;
 
 	INTERACTIVE_VERBOSER(true, 10800, "POP :: Choosing most_promising_state_value :: "
                              <<most_promising_states_value<<std::endl);
@@ -235,7 +235,12 @@ namespace Planning
         for(auto element = most_promising_states_list.begin()
                 ; element != most_promising_states_list.end()
                 ; element++){
-            assert(state_evaluator(*element) == most_promising_states_value);
+            if(state_evaluator(*element) != most_promising_states_value){
+//                 assert(static_cast<float>(state_evaluator(*element)) == static_cast<float>(most_promising_states_value));
+                std::cerr<<std::scientific<<state_evaluator(*element)<<" "<<most_promising_states_value<<std::endl;
+            }
+            
+//             assert(state_evaluator(*element) == most_promising_states_value);
         }
         
 #endif
@@ -257,8 +262,6 @@ namespace Planning
 //             if(things.size() != 1) exit(0);
 //         }
         
-        
-        Are_Doubles_Close are_Doubles_Close(1e-9);
         QUERY_UNRECOVERABLE_ERROR(state_evaluator(result) != most_promising_states_value,
                                   "Most promising value is :: "<<most_promising_states_value<<std::endl
                                   <<"Yet we get a promising state value of :: "<<state_evaluator(result)<<std::endl);

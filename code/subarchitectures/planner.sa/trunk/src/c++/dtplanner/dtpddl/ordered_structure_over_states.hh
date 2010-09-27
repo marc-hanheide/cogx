@@ -82,7 +82,7 @@ namespace Planning
 	 * domain element that maps to it.*/
         Value__To__States value__To__States;
 
-        
+        /*Computes the heuristic value of a state.*/
         Evaluator_Type state_evaluator;
     };
 }

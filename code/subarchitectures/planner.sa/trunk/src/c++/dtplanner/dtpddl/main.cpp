@@ -189,7 +189,7 @@ int main(int argc, char** argv)
         }
     }
     
-    INTERACTIVE_VERBOSER(true, 10010, "Passed test 1 :: "<<std::endl);
+    INTERACTIVE_VERBOSER(true, 11000, "Passed test 1 :: "<<std::endl);
 
 //     uint count_test2 = 0;
 //     while(true){
@@ -281,7 +281,7 @@ int main(int argc, char** argv)
             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
 //             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
-
+            
             INTERACTIVE_VERBOSER(true, 11000, "Made a solver, starting preprocessing.")
             
             solver->preprocess();
@@ -304,7 +304,7 @@ int main(int argc, char** argv)
 //             Planning::Policy_Iteration
             Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space);
 //             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
-            for(uint i = 0; i < 50; i++){
+            for(uint i = 0; i < 100; i++){
                 if(!solver->expand_belief_state_space()){
                     break;
                     VERBOSER(11000, "No starting state!"<<std::endl);
