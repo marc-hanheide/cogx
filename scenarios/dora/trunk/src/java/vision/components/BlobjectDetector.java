@@ -5,11 +5,13 @@ import java.util.Map;
 
 import vision.VisionUtils;
 import VisionData.DetectionCommand;
+import VisionData.Recognizer3DCommand;
 import VisionData.VisualObject;
 import blobfinder.BlobFinderInterface;
 import blobfinder.BlobFinderInterfacePrx;
 import blobfinder.BlobInfo;
 import blobfinder.ColorRGB;
+import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -30,8 +32,7 @@ import cast.cdl.WorkingMemoryOperation;
  * @author nah
  * 
  */
-public class BlobjectDetector extends ManagedComponent implements
-		WorkingMemoryChangeReceiver {
+public class BlobjectDetector extends ManagedComponent {
 
 	private BlobFinderInterfacePrx m_blobFinder;
 	private static final String LABEL_CONFIG_PREFIX = "--label-";
@@ -56,17 +57,63 @@ public class BlobjectDetector extends ManagedComponent implements
 		}
 
 		addChangeFilter(ChangeFilterFactory.createTypeFilter(
-				DetectionCommand.class, WorkingMemoryOperation.ADD), this);
+				DetectionCommand.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _arg0)
+							throws CASTException {
+						newDetectionCommand(_arg0);
+					}
+				});
+
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(
+				Recognizer3DCommand.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _arg0)
+							throws CASTException {
+						newRecognizer3DCommand(_arg0);
+					}
+				});
 
 	}
 
-	public void workingMemoryChanged(WorkingMemoryChange _wmc)
+	public void newRecognizer3DCommand(WorkingMemoryChange _wmc)
+			throws CASTException {
+		Recognizer3DCommand cmd = getMemoryEntry(_wmc.address, Recognizer3DCommand.class);
+		
+		// do detection
+		detectObjectsForLabels(new String[]{cmd.label});
+
+		// executed the command, results (if any) are on working memory,
+		// now delete command as not needed anymore
+		overwriteWorkingMemory(_wmc.address,cmd);
+	}
+
+	public void newDetectionCommand(WorkingMemoryChange _wmc)
 			throws CASTException {
 
 		// load command
 		DetectionCommand dc = getMemoryEntry(_wmc.address,
 				DetectionCommand.class);
 
+		// do detection
+		detectObjectsForLabels(dc.labels);
+
+		// executed the command, results (if any) are on working memory,
+		// now delete command as not needed anymore
+		deleteFromWorkingMemory(_wmc.address);
+
+	}
+
+	/**
+	 * @param dc
+	 * @throws AlreadyExistsOnWMException
+	 */
+	private void detectObjectsForLabels(String[] _labels)
+			throws AlreadyExistsOnWMException {
 		// because vision is never this quick...
 		sleepComponent(500);
 
@@ -76,21 +123,21 @@ public class BlobjectDetector extends ManagedComponent implements
 		if (blobs.length == 0) {
 			log("see no blobs around here");
 			// we don't see anything
-			for (String label : dc.labels) {
+			for (String label : _labels) {
 				// for the time being just fail
 				VisualObject obj = VisionUtils.newVisualObject();
-				obj.identLabels=new String[1];
+				obj.identLabels = new String[1];
 				obj.identLabels[0] = label;
 				obj.detectionConfidence = 0f;
 				addToWorkingMemory(newDataID(), obj);
 			}
 		} else {
 			log("there are some blobs around");
-			for (String label : dc.labels) {
+			for (String label : _labels) {
 				log("  is it a " + label + "?");
- 				VisualObject obj = VisionUtils.newVisualObject();
-                                obj.identLabels=new String[1];
-                                obj.identLabels[0] = label;
+				VisualObject obj = VisionUtils.newVisualObject();
+				obj.identLabels = new String[1];
+				obj.identLabels[0] = label;
 				// default to not seen (i.e. 0)
 				obj.detectionConfidence = 0f;
 
@@ -114,11 +161,6 @@ public class BlobjectDetector extends ManagedComponent implements
 				addToWorkingMemory(newDataID(), obj);
 			}
 		}
-
-		// executed the command, results (if any) are on working memory,
-		// now delete command as not needed anymore
-		deleteFromWorkingMemory(_wmc.address);
-
 	}
 
 	@Override

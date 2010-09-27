@@ -9,12 +9,16 @@ import java.util.Map;
 
 import SpatialData.AVSAction;
 import SpatialData.AVSCommand;
+import SpatialData.AVSStatus;
 import SpatialData.CommandType;
 import SpatialData.Completion;
 import SpatialData.NavCommand;
 import SpatialData.Place;
 import SpatialData.Priority;
+import SpatialData.ProcessViewPointCommand;
 import SpatialData.StatusError;
+import SpatialData.ViewPoint;
+import SpatialData.ViewPointGenerationCommand;
 import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
@@ -31,13 +35,17 @@ import cast.cdl.WorkingMemoryPermissions;
 import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.slice.actions.ActiveVisualSearch;
+import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
+import execution.slice.actions.ProcessCone;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
+import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
+import execution.util.NonBlockingCompleteOnOperationExecutor;
 
 /**
  * Component to listen to planner actions the trigger the spatial sa as
@@ -73,6 +81,62 @@ public class SpatialActionInterface extends ManagedComponent {
 		public void stopExecution() {
 		}
 
+	}
+
+	public static class ViewConeGenerationExecutor extends
+			NonBlockingCompleteOnOperationExecutor<CreateConesForModel> {
+
+		private long[] m_placesToSearch;
+		private String m_model;
+
+		public ViewConeGenerationExecutor(ManagedComponent _component) {
+			super(_component, CreateConesForModel.class);
+		}
+
+		@Override
+		protected boolean acceptAction(CreateConesForModel _action) {
+			m_model = _action.model;
+			m_placesToSearch = _action.placeIDs;
+			return true;
+		}
+
+		@Override
+		public void executeAction() {
+			ViewPointGenerationCommand cmd = new ViewPointGenerationCommand(
+					m_model, m_placesToSearch, AVSStatus.INPROGRESS);
+			addThenCompleteOnOverwrite(newWorkingMemoryAddress(), cmd);
+		}
+	}
+
+	public static class ViewConeProcessExecutor extends
+			NonBlockingCompleteOnOperationExecutor<ProcessCone> {
+
+		// private long[] m_placesToSearch;
+		// private String m_model;
+
+		private ViewPoint m_vp;
+
+		public ViewConeProcessExecutor(ManagedComponent _component) {
+			super(_component, ProcessCone.class);
+		}
+
+		@Override
+		protected boolean acceptAction(ProcessCone _action) {
+			try {
+				m_vp = getComponent().getMemoryEntry(_action.coneAddress, ViewPoint.class);
+			} catch (CASTException e) {
+				logException(e);
+				return false;
+			}
+			return true;
+		}
+
+		@Override
+		public void executeAction() {
+			println("WARNING: ONLY PROCESSING VIEW CONE FOR BOOK - FIX ME");
+			ProcessViewPointCommand cmd = new ProcessViewPointCommand(AVSStatus.INPROGRESS, m_vp, new String[]{"book"});
+			addThenCompleteOnOverwrite(newWorkingMemoryAddress(), cmd);
+		}
 	}
 
 	private class AVSExecutor extends Thread implements ActionExecutor,
@@ -411,6 +475,14 @@ public class SpatialActionInterface extends ManagedComponent {
 		m_actionStateManager.registerActionType(LookForPeople.class,
 				new LookForPeopleExecutorFactory(this));
 
+		m_actionStateManager.registerActionType(CreateConesForModel.class,
+				new ComponentActionFactory<ViewConeGenerationExecutor>(this,
+						ViewConeGenerationExecutor.class));
+
+		m_actionStateManager.registerActionType(ProcessCone.class,
+				new ComponentActionFactory<ViewConeProcessExecutor>(this,
+						ViewConeProcessExecutor.class));
+		
 		// add a listener to check for place ids, for checking purposes
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
 				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {

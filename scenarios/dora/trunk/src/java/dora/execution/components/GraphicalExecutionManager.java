@@ -6,6 +6,7 @@ package dora.execution.components;
 import java.util.Map;
 
 import SpatialData.Place;
+import SpatialData.ViewPoint;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -16,19 +17,20 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import dora.execution.util.ActionInterfaceFrame;
 import execution.components.AbstractExecutionManager;
-import execution.slice.actions.ActiveVisualSearch;
 import execution.slice.actions.BackgroundModels;
 import execution.slice.actions.ComsysQueryFeature;
+import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ForegroundModels;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
+import execution.slice.actions.ProcessCone;
 import execution.slice.actions.RecogniseForegroundedModels;
 import execution.util.ActionMonitor;
-import dora.execution.util.ActionInterfaceFrame;
 
 /**
  * 
@@ -107,7 +109,44 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 						removeStableBelief(_wmc.address);
 					}
 				});
+		
+		//and view cones for now (until they're beliefs)
 
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				ViewPoint.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+						addViewPoint(_wmc.address, getMemoryEntry(
+								_wmc.address, ViewPoint.class));
+					}
+				});
+
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				ViewPoint.class, WorkingMemoryOperation.DELETE),
+				new WorkingMemoryChangeReceiver() {
+
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+
+						removeViewPoint(_wmc.address);
+					}
+				});
+		
+	}
+
+	protected void removeViewPoint(WorkingMemoryAddress _address) {
+		m_gui.removeCone(_address);
+		
+	}
+
+	protected void addViewPoint(WorkingMemoryAddress _address,
+			ViewPoint _cone) {
+		println("got a ViewPoint");
+		m_gui.addCone(_address, _cone);
+		
 	}
 
 	private void removeStableBelief(WorkingMemoryAddress _address) {
@@ -120,7 +159,7 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 	}
 
 	private void addPlace(WorkingMemoryAddress _address, Place _memoryEntry) {
-		m_gui.addPlace(_memoryEntry.id);
+		m_gui.addPlace(_memoryEntry.id, _memoryEntry.status);
 	}
 
 	public WorkingMemoryAddress triggerGoToAction(long _placeID,
@@ -131,10 +170,18 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-	public WorkingMemoryAddress triggerAVSAction(long[] _placeIDs,
+	public WorkingMemoryAddress triggerConeGeneration(String _model, long[] _placeIDs,
 			ActionMonitor _monitor) throws CASTException {
-		ActiveVisualSearch act = newActionInstance(ActiveVisualSearch.class);
+		CreateConesForModel act = newActionInstance(CreateConesForModel.class);
+		act.model = _model;
 		act.placeIDs = _placeIDs;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+	
+	public WorkingMemoryAddress triggerProccesCone(WorkingMemoryAddress _coneAddr, ActionMonitor _monitor) throws CASTException {
+		ProcessCone act = newActionInstance(ProcessCone.class);
+		act.coneAddress = _coneAddr;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
@@ -215,6 +262,8 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
+
+
 
 //	public WorkingMemoryAddress triggerFeatureValueTest(String _beliefID, String _featureLabel,
 //			FeatureValue _fv, ActionMonitor _monitor) throws CASTException {
