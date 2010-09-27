@@ -147,6 +147,7 @@ void newProcessViewPointCommand(const cast::cdl::WorkingMemoryChange &objID);
 
       double GetPathLength(Cure::Pose3D start, Cure::Pose3D destination, CureObstMap* lgm = 0);
 
+std::string m_ProcessVPID;
       ObjectPairRelation GetSecondaryObject(std::string name);
       SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* m_map;
       SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* m_tempmap;
