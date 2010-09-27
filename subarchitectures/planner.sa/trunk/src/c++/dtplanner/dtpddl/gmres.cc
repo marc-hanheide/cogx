@@ -33,6 +33,13 @@
 
 #include "gmres.hh"
 
+GMRES::GMRES()
+    :A(0),
+     b(0)
+{
+}
+
+
 void GMRES::set_matrix(Matrix* in)
 {
     this->A = in;
@@ -52,11 +59,20 @@ GMRES::Vector* GMRES::get_answer()
     
 void GMRES::operator()()
 {
-  LinOp< Matrix > T(*A);  
-  DiagonalPreconditioner< Matrix > prec(*A);
-  x = *b;
-  
-  gmres_restarts< Matrix >(T, x, *b, prec, A->size1()-1, 0, 1.0e-8);
+    assert(A);
+    assert(b);
+    
+    INTERACTIVE_VERBOSER(true, 900, "Making linear operator :: "<<std::endl);
+    LinOp< Matrix > T(*A);  
+    INTERACTIVE_VERBOSER(true, 900, "Making preconditioner :: "<<std::endl);
+    DiagonalPreconditioner< Matrix > prec(*A);
+    INTERACTIVE_VERBOSER(true, 900, "Initialising answer :: "<<std::endl);
+    x = *b;
+    
+    INTERACTIVE_VERBOSER(true, 900, "Solving system :: "<<std::endl);
+    disable_type_check<bool>::value = true;
+    gmres_restarts< Matrix >(T, x, *b, prec, A->size1()-1, 0, 1.0e-8);
+    disable_type_check<bool>::value = false;
 
 //   cerr<<x;
   

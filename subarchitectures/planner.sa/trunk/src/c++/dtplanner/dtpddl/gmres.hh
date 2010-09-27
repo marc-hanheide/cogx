@@ -43,6 +43,8 @@
 class GMRES
 {
 public:
+
+    GMRES();
     
     typedef boost::numeric::ublas::compressed_vector< double > Vector;
     typedef boost::numeric::ublas::compressed_matrix< double, boost::numeric::ublas::column_major > Matrix;

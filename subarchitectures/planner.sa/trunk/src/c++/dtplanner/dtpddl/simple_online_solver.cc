@@ -46,8 +46,11 @@ Simple_Online_Solver::Simple_Online_Solver(Planning::Parsing::Problem_Data& in)
 }
 
 
+Greedy_Heuristic some_Greedy_Heuristic;
+
 void Simple_Online_Solver::report__new_belief_state(POMDP_State* state)
 {
+#ifndef NDEBUG
     decltype(ordered_Stack_Of_States) _ordered_Stack_Of_States = this->ordered_Stack_Of_States;
     while(_ordered_Stack_Of_States.size()){
         auto thing = _ordered_Stack_Of_States.pop();
@@ -72,12 +75,13 @@ void Simple_Online_Solver::report__new_belief_state(POMDP_State* state)
                 ->get__obtainable_rewards_count());
         }
     
-        
-        cerr<<thing<<" "<<answer<<" "<<answer2<<" "<<thing->get__expected_reward()<<std::endl;
+//         some_Greedy_Heuristic(thing);
+//         cerr<<some_Greedy_Heuristic(thing)<<" "<<thing<<" "<<answer<<" "<<answer2<<" "<<thing->get__expected_reward()<<std::endl;
         
     }
-     cerr<<std::endl;
-     {char ch; cin>>ch;}
+//      cerr<<std::endl;
+//      {char ch; cin>>ch;}
+#endif
     
     ordered_Stack_Of_States.push_back(state);
 }

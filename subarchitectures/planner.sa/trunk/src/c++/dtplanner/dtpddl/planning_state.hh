@@ -117,7 +117,7 @@ namespace Planning
          * \member{obtainable_rewards_value}.*/
         void increment__obtainable_rewards_value(int);
         int get__obtainable_rewards_value() const;
-    private:  
+    private:
         
         /*Pending probabilistic transformations. All such transformations are compulsory.*/
         std::stack<const Probabilistic_State_Transformation*> probabilistic_transformations;

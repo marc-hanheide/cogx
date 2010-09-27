@@ -95,9 +95,10 @@ push__successor(uint _operator_index,
             found = true; break;
         }
     }
-    QUERY_WARNING(!found,
-                              "Action :: "<<_operator_index<<std::endl
-                              <<"Is not available at state unless it is always executable :: "<<*tmp<<std::endl);
+    INTERACTIVE_VERBOSER(!found,
+                         10014, 
+                         "Action :: "<<_operator_index<<std::endl
+                         <<"Is not available at state unless it is always executable :: "<<*tmp<<std::endl);
 
     INTERACTIVE_VERBOSER(true, 10014,
                          "Pushing action  :: "<<_operator_index<<std::endl

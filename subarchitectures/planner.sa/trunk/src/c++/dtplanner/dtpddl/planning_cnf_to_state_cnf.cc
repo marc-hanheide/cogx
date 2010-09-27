@@ -125,7 +125,10 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
                 }
             }
 
-            assert(no_spurious_constants);
+            QUERY_WARNING(!no_spurious_constants,
+                          "Was not expecting constant symbols from :: "<<*__proposition);
+            
+//             assert(no_spurious_constants);
             
             if(!no_spurious_constants){
                 constant_Arguments = Constant_Arguments(arguments.size());

@@ -61,7 +61,16 @@ namespace Planning
     class Greedy_Heuristic
     {
     public:
-        int operator()(POMDP_State*) const;
+        Greedy_Heuristic();
+        
+        
+        float operator()(POMDP_State*) const;
+    private:
+        mutable bool configured__expected_rewards_count__cache;
+        mutable double expected_rewards_count__cache;
+
+        mutable bool configured__expected_rewards_value__cache;
+        mutable double expected_rewards_value__cache;
     };
 
     
