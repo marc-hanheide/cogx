@@ -6,6 +6,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.Map.Entry;
 
 import javax.swing.BoxLayout;
@@ -15,6 +16,7 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -23,6 +25,8 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
+import SpatialData.PlaceStatus;
+import SpatialData.ViewPoint;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
@@ -51,10 +55,15 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel m_buttonPanel = null;
 	private JButton m_goButton = null;
 	private JButton m_stopButton = null;
+
 	private JTable m_placeTable = null;
 	private DefaultTableModel m_placeTableModel;
+	private JTable m_coneTable = null;
+	private DefaultTableModel m_coneTableModel;
+
 	private JPanel m_placesActionPanel;
-	// private JRadioButton m_avsAction;
+	private JRadioButton m_generateConesAction;
+	private JRadioButton m_processConeAction;
 	private JRadioButton m_goAction;
 	private JRadioButton m_detectObjectsAction;
 	private JRadioButton m_detectPeopleAction;
@@ -67,11 +76,6 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_backgroundModelsAction;
 	private JRadioButton m_recogniseForegroundedModelsAction;
 
-	// TODO implement behaviour for this
-	private JRadioButton m_generateConesAction;
-	private JRadioButton m_goToConeAction;
-	private JRadioButton m_processConeAction;
-
 	private GraphicalExecutionManager m_exeMan;
 	private JTable m_beliefTable;
 	private DefaultTableModel m_beliefTableModel;
@@ -83,9 +87,11 @@ public class ActionInterfaceFrame extends JFrame {
 	private JTabbedPane m_tabbedPane;
 	private JTable m_objectTable;
 	private DefaultTableModel m_objectTableModel;
+	private final HashMap<String, WorkingMemoryAddress> m_cones;
 	private static final Class<?>[] FEATURE_VALUE_TYPES = {
 			ElementaryFormula.class, IntegerFormula.class, FloatFormula.class,
 			BooleanFormula.class };
+	private static final int CONE_ID_COLUMN = 0;
 
 	/**
 	 * This is the default constructor
@@ -97,6 +103,7 @@ public class ActionInterfaceFrame extends JFrame {
 		super();
 		m_exeMan = _graphicalExecutionManager;
 		initialize();
+		m_cones = new HashMap<String, WorkingMemoryAddress>();
 	}
 
 	/**
@@ -114,6 +121,7 @@ public class ActionInterfaceFrame extends JFrame {
 		if (m_placesPanel == null) {
 			m_placesPanel = new JPanel();
 			m_placesPanel.add(new JScrollPane(getPlaceTable()));
+			m_placesPanel.add(new JScrollPane(getConeTable()));
 			m_placesPanel.add(getPlacesActionPanel());
 		}
 		return m_placesPanel;
@@ -172,9 +180,9 @@ public class ActionInterfaceFrame extends JFrame {
 		return m_tabbedPane;
 	}
 
-	public void addPlace(long _id) {
+	public void addPlace(long _id, PlaceStatus _status) {
 		// 1Model.addRow(new Object[] { _id, true });
-		m_placeTableModel.addRow(new Object[] { _id });
+		m_placeTableModel.addRow(new Object[] { _id, _status });
 		pack();
 	}
 
@@ -205,12 +213,26 @@ public class ActionInterfaceFrame extends JFrame {
 		if (m_placesActionPanel == null) {
 			m_placesActionPanel = new JPanel();
 			m_placesActionPanel.setLayout(new GridBagLayout());
+
 			m_goAction = new JRadioButton("go to place");
+			m_generateConesAction = new JRadioButton(
+					"generate cones in selected places");
+
+			m_processConeAction = new JRadioButton("process selected cone");
+
 			m_goAction.setSelected(true);
 
 			ButtonGroup actionGroup = new ButtonGroup();
 			actionGroup.add(m_goAction);
+			actionGroup.add(m_generateConesAction);
+
+			actionGroup.add(m_processConeAction);
+
 			m_placesActionPanel.add(m_goAction, new GridBagConstraints());
+			m_placesActionPanel.add(m_generateConesAction,
+					new GridBagConstraints());
+			m_placesActionPanel.add(m_processConeAction,
+					new GridBagConstraints());
 		}
 		return m_placesActionPanel;
 	}
@@ -250,7 +272,6 @@ public class ActionInterfaceFrame extends JFrame {
 			m_objectsActionPanel = new JPanel();
 
 			m_objectsActionPanel.setLayout(new GridBagLayout());
-			// m_avsAction = new JRadioButton("visual search in");
 			m_detectObjectsAction = new JRadioButton("detect objects");
 			m_detectPeopleAction = new JRadioButton("detect people");
 			m_lookForObjectsAction = new JRadioButton("look for objects");
@@ -264,16 +285,14 @@ public class ActionInterfaceFrame extends JFrame {
 			m_detectObjectsAction.setSelected(true);
 
 			ButtonGroup actionGroup = new ButtonGroup();
-			// actionGroup.add(m_avsAction);
 			actionGroup.add(m_detectObjectsAction);
 			actionGroup.add(m_detectPeopleAction);
-			 actionGroup.add(m_lookForObjectsAction);
+			actionGroup.add(m_lookForObjectsAction);
 			// actionGroup.add(m_lookForPeopleAction);
 			actionGroup.add(m_foregroundModelsAction);
 			actionGroup.add(m_backgroundModelsAction);
 			actionGroup.add(m_recogniseForegroundedModelsAction);
 
-			// m_objectsActionPanel.add(m_avsAction, new GridBagConstraints());
 			m_objectsActionPanel.add(m_detectObjectsAction,
 					new GridBagConstraints());
 			m_objectsActionPanel.add(m_detectPeopleAction,
@@ -326,21 +345,21 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private void go() throws CASTException {
 
-
-		
 		// TODO make more robust to code changes
 		int tabIndex = getTabbedPane().getSelectedIndex();
 
 		m_exeMan.println("go() called: " + tabIndex);
-		
+
 		if (tabIndex == 0) {
-			if (m_goAction.isSelected()) {
+			if (m_generateConesAction.isSelected()) {
+				generateCones();
+			} else if (m_processConeAction.isSelected()) {
+				processCone();
+			} else if (m_goAction.isSelected()) {
 				goToPlace();
 			}
 		} else if (tabIndex == 2) {
-			// if (m_avsAction.isSelected()) {
-			// runAVS();
-			// } else
+
 			if (m_detectObjectsAction.isSelected()) {
 				detectObjects();
 
@@ -519,16 +538,43 @@ public class ActionInterfaceFrame extends JFrame {
 	/**
 	 * @throws CASTException
 	 */
-	private void runAVS() throws CASTException {
+	private void generateCones() throws CASTException {
 		int[] selectedRows = m_placeTable.getSelectedRows();
 		if (selectedRows.length > 0) {
 			long[] placeIDs = new long[selectedRows.length];
 			for (int i = 0; i < selectedRows.length; ++i) {
-				placeIDs[i] = (Long) m_placeTableModel.getValueAt(
-						selectedRows[i], PLACE_ID_COLUMN);
-			}
-			m_exeMan.triggerAVSAction(placeIDs, new MonitorPanel());
 
+				Object placeIDVal = m_placeTableModel.getValueAt(
+						selectedRows[i], PLACE_ID_COLUMN);
+				assert (placeIDVal != null);
+				placeIDs[i] = (Long) placeIDVal;
+			}
+			m_exeMan.triggerConeGeneration((String) JOptionPane
+					.showInputDialog(this,
+							"What object should the cones be generated for?"),
+					placeIDs, new MonitorPanel());
+
+		} else {
+			m_exeMan.println("no places selected, doing nothing");
+		}
+	}
+
+	/**
+	 * @throws CASTException
+	 */
+	private void processCone() throws CASTException {
+		int selectedRow = m_coneTable.getSelectedRow();
+		if (selectedRow != -1) {
+			m_exeMan.log("processCone()");
+			Object coneIDVal = m_coneTableModel.getValueAt(selectedRow,
+					CONE_ID_COLUMN);
+			assert (coneIDVal != null);
+			String coneID = (String) coneIDVal;
+			WorkingMemoryAddress coneAddr = m_cones.get(coneID);
+			assert(coneAddr != null);
+			m_exeMan.triggerProccesCone(coneAddr, new MonitorPanel());
+		} else {
+			m_exeMan.println("no cone selected, doing nothing");
 		}
 	}
 
@@ -622,14 +668,30 @@ public class ActionInterfaceFrame extends JFrame {
 	 */
 	private JTable getPlaceTable() {
 		if (m_placeTable == null) {
-			// m_placeTable = new JTable(1, 2);
-			// m_placeTableModel = new DefaultTableModel(new String[] { "id",
-			// "explored" }, 0);
-			m_placeTable = new JTable(1, 1);
-			m_placeTableModel = new DefaultTableModel(new String[] { "id" }, 0);
+
+			m_placeTable = new JTable(1, 2);
+			m_placeTableModel = new DefaultTableModel(new String[] { "id",
+					"status" }, 0);
 			m_placeTable.setModel(m_placeTableModel);
 		}
 		return m_placeTable;
+	}
+
+	/**
+	 * This method initializes m_coneTable
+	 * 
+	 * @return javax.swing.JTable
+	 */
+	private JTable getConeTable() {
+		if (m_coneTable == null) {
+			// m_coneTable = new JTable(1, 2);
+			// m_coneTableModel = new DefaultTableModel(new String[] { "id",
+			// "explored" }, 0);
+			m_coneTable = new JTable(1, 1);
+			m_coneTableModel = new DefaultTableModel(new String[] { "id" }, 0);
+			m_coneTable.setModel(m_coneTableModel);
+		}
+		return m_coneTable;
 	}
 
 	/**
@@ -704,6 +766,16 @@ public class ActionInterfaceFrame extends JFrame {
 					OBJECT_MODEL_COLUMN);
 		}
 		return models;
+	}
+
+	public void addCone(WorkingMemoryAddress _address, ViewPoint _cone) {
+		m_coneTableModel.addRow(new Object[] { _address.id });
+		m_cones.put(_address.id, _address);
+		pack();
+	}
+
+	public void removeCone(WorkingMemoryAddress _address) {
+		// TODO Auto-generated method stub
 	}
 
 }
