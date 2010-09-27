@@ -475,8 +475,6 @@ m_samplesize = 100;
 	log("got new ViewPointGenerationCommand");
 	SpatialData::ViewPointGenerationCommandPtr newVPCommand= 
 	  getMemoryEntry<SpatialData::ViewPointGenerationCommand>(objID.address);
-newVPCommand->status = SpatialData::SUCCESS;
-	overwriteWorkingMemory<SpatialData::ViewPointGenerationCommand>(objID.address, newVPCommand);
 	/** 1. Change Maps
 	  2. Set policy manager
 	  3. GetBestPolicy
