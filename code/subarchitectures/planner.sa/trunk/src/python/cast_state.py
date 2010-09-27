@@ -137,16 +137,20 @@ class CASTState(object):
         tp.belief_dict = {}
         percept2bel = {}
 
-        for p in percepts:
-            if p.hist.offspring is not None and p.hist.offspring.id in self.beliefdict:
-                percept2bel[p] = self.beliefdict[p.hist.offspring.id]
+        for b in self.beliefs:
+            tp.belief_dict[b.id] = b
+            if isinstance(b.hist, bm.history.CASTBeliefHistory):
+                #TODO: OFFSPRING IS REALLY ANCESTORS! FIX THIS AS SOON AS IT'S CHANGED IN THE TRACKER!
+                for wma in b.hist.offspring:
+                    tp.belief_dict[wma.id] = b
+                    percept2bel[wma.id] = b
 
         obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(percepts))))
         p_objects = tp.infer_types(obj_descriptions)
         facts = list(tp.tuples2facts(obj_descriptions))
 
         def replace_object(obj):
-            if obj.name not in perceptdict:
+            if obj.name not in percept2bel:
                 return objdict.get(obj.name, None)
             bel = percept2bel.get(obj.name, None)
             if not bel:
