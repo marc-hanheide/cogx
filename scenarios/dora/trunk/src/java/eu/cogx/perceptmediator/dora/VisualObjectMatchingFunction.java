@@ -1,4 +1,4 @@
-package eu.cogx.perceptmediator;
+package eu.cogx.perceptmediator.dora;
 
 import VisionData.VisualObject;
 import castutils.castextensions.WMContentWaiter.ContentMatchingFunction;
@@ -9,12 +9,12 @@ import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistribution
 import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
-public class ObjectMatchingFunction implements
+public class VisualObjectMatchingFunction implements
 		ContentMatchingFunction<PerceptBelief> {
 
 	private String objectId;
 
-	public ObjectMatchingFunction(String id) {
+	public VisualObjectMatchingFunction(String id) {
 		objectId = id;
 	}
 

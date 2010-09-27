@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eu.cogx.perceptmediator;
+package eu.cogx.perceptmediator.dora;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,13 +29,13 @@ import facades.SpatialFacade;
  * @author marc
  * 
  */
-public class LocalizedVisualObjectTransferFunction extends
+public class VisualObjectTransferFunction extends
 		DependentDiscreteTransferFunction<VisualObject> {
 
-	public LocalizedVisualObjectTransferFunction(ManagedComponent component,
+	public VisualObjectTransferFunction(ManagedComponent component,
 			WMView<PerceptBelief> allBeliefs) {
 		super(component, allBeliefs, Logger
-				.getLogger(LocalizedVisualObjectTransferFunction.class));
+				.getLogger(VisualObjectTransferFunction.class));
 		// TODO Auto-generated constructor stub
 	}
 
