@@ -83,7 +83,7 @@ class PointerFormula extends dFormula {
 
 module history {
 
-sequence<cast::cdl::WorkingMemoryAddress> WorkingMemoryAddresses;
+["java:type:java.util.ArrayList<cast.cdl.WorkingMemoryAddress>"] sequence<cast::cdl::WorkingMemoryAddress> WorkingMemoryAddresses;
 
 
 /**
