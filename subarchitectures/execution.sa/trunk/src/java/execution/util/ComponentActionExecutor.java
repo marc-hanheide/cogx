@@ -1,11 +1,12 @@
 package execution.util;
 
 import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
 
 public abstract class ComponentActionExecutor implements ActionExecutor {
 
 	private final ManagedComponent m_component;
-	
+
 	public void debug(Object _o, Throwable _t) {
 		m_component.debug(_o, _t);
 	}
@@ -41,14 +42,14 @@ public abstract class ComponentActionExecutor implements ActionExecutor {
 	protected void log(Object _o) {
 		m_component.log(_o);
 	}
-	
+
 	protected void println(Object _o) {
 		m_component.println(_o);
 	}
 
-
-
+	protected WorkingMemoryAddress newWorkingMemoryAddress() {
+		return new WorkingMemoryAddress(getComponent().newDataID(),
+				getComponent().getSubarchitectureID());
+	}
 
 }
-
-
