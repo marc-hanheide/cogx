@@ -87,6 +87,12 @@ namespace spatial
     if (_config.find("--simulate") != _config.end()) 
       m_bSimulation = true;
 
+
+    m_usePeekabot = false;
+    if (_config.find("--usepeekabot") != _config.end()) 
+      m_usePeekabot= true;
+
+
     m_publishSimCones = false;
     if (_config.find("--publishsimcones") != _config.end()) 
       m_publishSimCones = true;
@@ -247,13 +253,17 @@ m_samplesize = 100;
     m_tempmap = new SpatialGridMap::GridMap<GridMapData>(m_gridsize, m_gridsize, m_cellsize, m_minbloxel, 0, m_mapceiling, 0, 0, 0, def);
     m_map = new SpatialGridMap::GridMap<GridMapData>(m_gridsize, m_gridsize, m_cellsize, m_minbloxel, 0, m_mapceiling, 0, 0, 0, def);
     //m_tracer = new LaserRayTracer<GridMapData>(m_map,1.0);
-    pbVis = new VisualPB_Bloxel(m_PbHost,5050,m_gridsize,m_gridsize,m_cellsize,1,true);//host,port,xsize,ysize,cellsize,scale, redraw whole map every time
 
     m_lgm = new CureObstMap(m_gridsize/2, m_cellsize, '2', CureObstMap::MAP1);
 
     // m_Glrt  = new Cure::ObjGridLineRayTracer<unsigned char>(*m_lgm);
-    pbVis->connectPeekabot();
-
+    if(m_usePeekabot){
+      pbVis = new VisualPB_Bloxel(m_PbHost,5050,m_gridsize,m_gridsize,m_cellsize,1,true);//host,port,xsize,ysize,cellsize,scale, redraw whole map every time
+      pbVis->connectPeekabot();
+    }
+    else{
+    pbVis = 0;
+    }
     if (m_usePTZ) {
       log("connecting to PTU");
       Ice::CommunicatorPtr ic = getCommunicator();
@@ -349,8 +359,10 @@ m_samplesize = 100;
 	  }
 	}
       }
-      pbVis->Display2DCureMap(m_lgms[1],"room1"); 
-      pbVis->Display2DCureMap(m_lgms[2],"room2");  }
+      if(m_usePeekabot){
+	pbVis->Display2DCureMap(m_lgms[1],"room1"); 
+	pbVis->Display2DCureMap(m_lgms[2],"room2"); }
+    }
     else{
       log("creating placeinterface proxy for specific areas");
       FrontierInterface::LocalGridMap combined_lgm;
@@ -380,7 +392,9 @@ m_samplesize = 100;
 	  }
 	}
       }
-    pbVis->Display2DCureMap(m_lgms[1],"room1"); 
+    
+      if(m_usePeekabot)
+      pbVis->Display2DCureMap(m_lgms[1],"room1"); 
     }
      
   }
@@ -629,8 +643,10 @@ m_samplesize = 100;
     m_lgm = m_lgms[atoi(id)];
 
     log("Changed current room id to: %d, pointing maps to this.", atoi(id));
+    if(m_usePeekabot){
     pbVis->Display2DCureMap(m_lgm);
     pbVis->DisplayMap(*m_map);
+    }
   }
 
   double VisualObjectSearch::tryLoadStepCost(const std::vector<ObjectPairRelation> &step)
@@ -769,7 +785,9 @@ m_samplesize = 100;
 		// If so, do uniform search without asking for a point cloud
 		log("strategy contains room and has 1 step.");
 		InitializePDFForObject(1.0, strategyStep[0].primaryobject, &tmpMap);
+		if(m_usePeekabot){
 		pbVis->AddPDF(tmpMap);
+		}
 		double cost = 0.0;
 		cost = GetCostForSingleStrategy(&tmpMap, topObject,threshold,false);
 		costThisStep = cost;
@@ -855,6 +873,7 @@ m_samplesize = 100;
 		    1.0,
 		    m_lgm);
 		normalizePDF(tmpMap,1.0);
+		if(m_usePeekabot)
 		pbVis->AddPDF(tmpMap);
 
 		double cost = 0.0;
@@ -1007,6 +1026,7 @@ m_samplesize = 100;
 
 	    putObjectInMap(*m_map, model);
 
+		if(m_usePeekabot)
 	    pbVis->DisplayMap(*m_map);
 	    m_map->clearDirty();
 
@@ -1621,8 +1641,11 @@ m_samplesize = 100;
 			  break;
 			}
 	  case ASK_FOR_DISTRIBUTION:{
+				      
+		if(m_usePeekabot){
 				      pbVis->DisplayMap(*m_map);
 				      pbVis->Display2DCureMap(m_lgm);
+		}
 				      log("Command: ASK_FOR_DIST");
 				      m_command = IDLE;
 				      AskForDistribution();
@@ -1779,7 +1802,8 @@ m_samplesize = 100;
 	GDIsObstacle isobstacle;
 	if (m_showconemap){
 	  m_tempmap->coneModifier(m_nbv.pos[0],m_nbv.pos[1],m_nbv.pos[2], m_nbv.pan,m_nbv.tilt, m_horizangle, m_vertangle, m_conedepth, 5, 5, isobstacle, makeobstacle,makeobstacle);
-	  pbVis->DisplayMap(*m_tempmap, "lastconemap");
+	  if(m_usePeekabot)
+	    pbVis->DisplayMap(*m_tempmap, "lastconemap");
 
 	  GridMapData def;
 	  def.occupancy = UNKNOWN;
@@ -1944,6 +1968,7 @@ m_samplesize = 100;
 	    log("strategy contains room and has 1 step. Initing PDF for %s",strategyStep[0].primaryobject.c_str());
 	    InitializePDFForObject(1.0, strategyStep[0].primaryobject, m_map);
 	    PopulateLGMap();
+	   if(m_usePeekabot) 
 	    pbVis->AddPDF(*m_map);
 	    m_map->clearDirty();
 	    m_command = NEXT_NBV;
@@ -2050,6 +2075,7 @@ m_samplesize = 100;
 	//      objreq->outCloud = queryCloud;	// Data struct to receive output
 	//      addToWorkingMemory(newDataID(), objreq);
 	//    }
+	if(m_usePeekabot)
 	pbVis->AddPDF(*m_map);
 	m_map->clearDirty();
       }
@@ -2170,7 +2196,8 @@ m_samplesize = 100;
 	    //	thresholds.push_back(make_pair(5e-3,1e-2));
 	    //	thresholds.push_back(make_pair(1e-2,5e-2));
 	    //	thresholds.push_back(make_pair(5e-2,1e2));
-	    pbVis->AddPDF(*m_map);
+	    if(m_usePeekabot)
+	      pbVis->AddPDF(*m_map);
 	    m_map->clearDirty();
 	  }
 	  catch (DoesNotExistOnWMException excp) {
@@ -2390,6 +2417,7 @@ m_samplesize = 100;
 	  point.push_back(1.4);
 	  sampled2Dpoints.push_back(point);
 	}
+if(m_usePeekabot)	
 	pbVis->Add3DPointCloud(sampled2Dpoints);
 	/*   m_lgm->index2WorldCoords(m_samples[1 * 2], m_samples[1 * 2 + 1], xW1, yW1);
 	     Cure::Pose3D pos;
@@ -2634,6 +2662,7 @@ m_samplesize = 100;
 	      GDIsObstacle isobstacle; 
 	      m_tempmap = map;
 	      m_tempmap->coneModifier(viewpoint.pos[0],viewpoint.pos[1],viewpoint.pos[2], viewpoint.pan,viewpoint.tilt, m_horizangle, m_vertangle, 3.0, 5, 5, isobstacle, makeobstacle,makeobstacle);
+	      if(m_usePeekabot)
 	      pbVis->DisplayMap(*m_tempmap, "lastconemap");
 	      sleepComponent(5000);
 
@@ -3039,6 +3068,7 @@ m_samplesize = 100;
 	//thresholds.push_back(make_pair(1e-2,5e-2));
 	//thresholds.push_back(make_pair(5e-2,1e2));
 
+	if(m_usePeekabot)
 	pbVis->AddPDF(*map);
 	map->clearDirty();
       }
