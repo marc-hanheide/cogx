@@ -9,6 +9,10 @@ import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
 
 /**
  * 
+ * Simple command-line TTS component for systems which can't run Mary. Can be
+ * used with espeak (linux, osx), say (osx) and any other tool that gnerates
+ * speech from text on the command line.
+ * 
  * Should be configured with comma-separated list of arguments which will be
  * combined to make the tts command. E.g.
  * 
@@ -17,6 +21,9 @@ import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
  * will result in the command
  * 
  * say -v Alex {@link SpokenOutputItem}.phonString.
+ * 
+ * 
+ * 
  * 
  * @author nah
  * 
