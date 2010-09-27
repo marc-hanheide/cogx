@@ -38,7 +38,7 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 
 		
 		
-		log("new TurnAndLookExecutor for " + m_detections
+		getComponent().log("new TurnAndLookExecutor for " + m_detections
 				+ " detections.");
 
 		double increment = (2 * Math.PI) / m_detections;
@@ -55,7 +55,7 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 					throws CASTException {
 				getComponent().removeChangeFilter(this);
-				log("afterDetectListener triggered: "
+				getComponent().log("afterDetectListener triggered: "
 						+ CASTUtils.toString(_wmc));
 
 				if (!m_remainingCommands.empty()) {
@@ -78,7 +78,7 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 					throws CASTException {
 
-				log("afterTurnListener triggered: "
+				getComponent().log("afterTurnListener triggered: "
 						+ CASTUtils.toString(_wmc));
 
 				// read in the nav cmd
@@ -87,7 +87,7 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 
 				NavCommand cmd = getComponent().getMemoryEntry(_wmc.address,
 						NavCommand.class);
-				log("nav command status: " + cmd.comp.name());
+				getComponent().log("nav command status: " + cmd.comp.name());
 
 				// if this command failed, fail the whole thing
 				if (cmd.comp == Completion.COMMANDFAILED) {
@@ -97,7 +97,7 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 					executionComplete(TriBool.TRIFALSE);
 
 				} else if (cmd.comp == Completion.COMMANDSUCCEEDED) {
-					log("time to detect now, triggerDetection()");
+					getComponent().log("time to detect now, triggerDetection()");
 					m_navCmdID = null;
 					getComponent().removeChangeFilter(this);
 					getComponent().deleteFromWorkingMemory(_wmc.address);
@@ -119,7 +119,7 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 
 	@Override
 	public void executeAction() {
-		log("execute action!");
+		getComponent().log("execute action!");
 
 		triggerDetection();
 	}
@@ -135,7 +135,7 @@ public abstract class TurnAndLookExecutor<ActionType extends Action> extends Non
 		// remove overwrite receiver
 
 		try {
-			log("aborting execution if not already stopped");
+			getComponent().log("aborting execution if not already stopped");
 
 			m_remainingCommands.clear();
 			getComponent().removeChangeFilter(m_afterTurn);
