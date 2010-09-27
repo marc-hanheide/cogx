@@ -18,6 +18,7 @@ INCLUDE includes/spatial.sa/spatial-mediator.cast
 INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-blobs-dora.cast
 INCLUDE includes/vision.sa/vision-execution.cast
+INCLUDE includes/vision.sa/vision-mediators-dora.cast
 
 # coma ######################################################################
 INCLUDE includes/coma.sa/coma-base.cast
