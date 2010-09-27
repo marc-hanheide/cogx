@@ -1,9 +1,8 @@
 package eu.cogx.percepttracker;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import cast.CASTException;
 import cast.SubarchitectureComponentException;
@@ -21,6 +20,7 @@ import castutils.castextensions.CASTHelper;
 import castutils.castextensions.PointerMap;
 import castutils.castextensions.WMEventQueue;
 import castutils.castextensions.WMView;
+import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
@@ -178,7 +178,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 	 */
 	protected final Class<From> fromType;
 
-	private ExecutorService executor;
+	// private ExecutorService executor;
 
 	/**
 	 * the to type
@@ -217,7 +217,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 		this.wm2wmMap = wm2wmMap;
 		this.allTrackedBeliefs = WMView.create(this.component, toType);
 		this.createInSA = inSA;
-		this.executor = Executors.newCachedThreadPool();
+		// this.executor = Executors.newCachedThreadPool();
 	}
 
 	/*
@@ -342,6 +342,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 					log("have created new belief with type=" + to.type + " ("
 							+ toWMA.id + ")");
 					matcherFunction.update(ev, from, to);
+					manageHistory(ev, from, to);
 					log("have filled with values:" + to.type + " (" + toWMA.id
 							+ "), ready to write to WM now.");
 					component.addToWorkingMemory(toWMA, to);
@@ -363,6 +364,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 					To to = component.getMemoryEntry(matchingWMA, toType);
 					log("updating belief " + CASTUtils.toString(matchingWMA));
 					matcherFunction.update(ev, from, to);
+					manageHistory(ev, from, to);
 					component.overwriteWorkingMemory(matchingWMA, to);
 					wm2wmMap.put(ev.address, matchingWMA);
 				} finally {
@@ -377,6 +379,16 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 		// }
 		// });
 
+	}
+
+	private void manageHistory(WorkingMemoryChange ev, From from, To to) {
+		if (!(to.hist instanceof CASTBeliefHistory)) {
+			to.hist = new CASTBeliefHistory(
+					new ArrayList<WorkingMemoryAddress>(),
+					new ArrayList<WorkingMemoryAddress>());
+		}
+		CASTBeliefHistory bh = (CASTBeliefHistory) to.hist;
+		bh.offspring.add(ev.address);
 	}
 
 	private void handleOverwriteObservation(final WorkingMemoryChange ev,
@@ -395,6 +407,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 			component.lockEntry(matchingWMA, WorkingMemoryPermissions.LOCKEDOD);
 			To to = component.getMemoryEntry(matchingWMA, toType);
 			matcherFunction.update(ev, from, to);
+			manageHistory(ev, from, to);
 			component.overwriteWorkingMemory(matchingWMA, to);
 		} catch (IncompatibleAssignmentException e) {
 			logger.error("during update:", e);
