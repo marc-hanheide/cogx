@@ -190,14 +190,20 @@ class RecogniseForegroundedModels extends Action {
 * Generate view cones for a particular model
 */
 class CreateConesForModel extends Action {
-
+  
+  ///The object to look generate cones for
+  string model;
+  ///The IDs of the places to search
+  LongSeq placeIDs;      
 };
 
 /**
 * Go to a particular view cone.
 */
-class GoToCone extends Action {
-
+class ProcessCone extends Action {
+  ///I think this should be the belief which refers to a particular cone
+  //  string beliefID;
+  cast::cdl::WorkingMemoryAddress coneAddress;
 };
 
 class SingleBeliefAction extends Action {
