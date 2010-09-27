@@ -6,23 +6,24 @@ switch type
    
    case 'GL'
       if Settings.Disp.GL
-%         set(hp,'PaperPosition',[0 0 8 4.3]);
-         set(hp,'PaperPosition',[0 0 10 4.8]);
-         print(hp,Disp.mGL,'-dpng', '-r0');
+         set(hp,'PaperPositionMode', 'auto');
+         dpi = ['-r' num2str(Settings.Disp.printDpi)];
+         print(hp, Disp.mGL, '-noui', '-dpng', dpi);
       end
       
    case 'GR'
       
       if Settings.Disp.GR
-%         set(hp,'PaperPosition',[0 0 8 2.5]);
-         set(hp,'PaperPosition',[0 0 10 3]);
-         print(hp,Disp.mGR,'-dpng', '-r0');
+         set(hp, 'PaperPositionMode', 'auto');
+         dpi = ['-r' num2str(Settings.Disp.printDpi)];
+         print(hp, Disp.mGR, '-noui', '-dpng', dpi);
       end
       
    case 'GD'
       if Settings.Disp.GD
-         set(hp,'PaperPosition',[0 0 8 2.5]);
-         print(hp,Disp.mGD,'-dpng', '-r0');
+         set(hp,'PaperPositionMode', 'auto');
+         dpi = ['-r' num2str(Settings.Disp.printDpi)];
+         print(hp, Disp.mGD, '-noui', '-dpng', dpi);
       end
       
 end

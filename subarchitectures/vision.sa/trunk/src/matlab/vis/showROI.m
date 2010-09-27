@@ -3,7 +3,9 @@ function showROI(x,b,f,pts3d)
 global Settings Figs
 global Dirs
 
+disp('showROI');
 Figs
+disp('end Figs');
 
 cla(Figs.LRguiR.LRaxRec);
 set(Figs.LRguiR.LRaxRec,'Visible','off');

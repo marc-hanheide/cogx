@@ -7,6 +7,7 @@ SET(SOURCES
    initlib.cpp  
    MatlabHelper.cpp
    VisualLearnerProxy.cpp
+   Enumerator.cpp
    )
 SET(HEADERS initlib.h RecogniserP.h)
 add_library(VisualLearnerProxy SHARED ${SOURCES})

@@ -1,19 +1,16 @@
-function CLFstart
+function CLFstart(absConfFile)
 
 global Settings Dirs Figs Disp
 global mC
 
-confFile='config/cogLearn.config';
-%confFile='./subarchitectures/vision.sa/config/test-vislearner/cogLearn.config';
-%confFile='./subarchitectures/vision.sa/config/test-vislearner/cmLearn.config';
-
-%Root directory;
+% Default root directory
 Dirs.cogLearn=[pwd '/'];
 
-%Load default parameters
+% Load default parameters
 loadDefaultParams;
 
-%Reload global variables from CONFIG FILE
+% Reload global variables from CONFIG FILE
+confFile = absConfFile
 loadConfig(confFile);
 
 %Set initial parameters
@@ -21,11 +18,13 @@ Settings.Params.ImgNo=0;
 Settings.Params.ASVidx=0;
 
 %Initialize data
+disp('Will init data');
 if ~Settings.CAST
    initData;
 end
 
 %Initialize HTML display
+disp('Will copy files');
 fclose('all');
 copyfile([Dirs.disp 'mGLinit.png'],Disp.mGL);
 copyfile([Dirs.disp 'mGRinit.png'],Disp.mGR);
@@ -34,7 +33,9 @@ copyfile([Dirs.disp 'mTLinit.html'],Disp.mTL);
 copyfile([Dirs.disp 'mTRinit.html'],Disp.mTR);
 copyfile([Dirs.disp 'mTDinit.html'],Disp.mTD);
 
+
 %Initialize models
+disp('Will ODKDEinit');
 mC=ODKDEinit;
 
 %Start GUIs
@@ -46,20 +47,24 @@ if ~Settings.CAST
    LRcontrol;
 end
 
+disp('Will LRvisStart');
 LRvisStart;
+disp('Done LRvisStart');
 
 %Show windows if requested
 if Settings.Mwindows
+   disp('Will Show Windows');
    set(Figs.LRguiL.main,'Visible','On');
    set(Figs.LRguiR.main,'Visible','On');
 end;
 
 %Load models if requested
 if ~isempty(Settings.initModel)
+   disp('Will Load Models');
    LRloadAVmodels([Dirs.models Settings.initModel]);
 end;
 
-disp('CLF Start');
+disp('CLF Start Done');
 
 
 
@@ -79,6 +84,7 @@ Settings.Disp.TL=1;
 Settings.Disp.TR=1;
 Settings.Disp.GD=1;
 Settings.Disp.TD=1;
+Settings.Disp.printDpi=72; % This affects the size of PNG images
 Settings.SaveImgs=0;
 Settings.ASVon=0;
 Settings.initModel='';

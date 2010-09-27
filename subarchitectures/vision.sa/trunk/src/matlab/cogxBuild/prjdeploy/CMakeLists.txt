@@ -6,7 +6,7 @@
 ##      2. run MCC -F project file
 ##      3. install the resulting CTF/SO/DLL/LIB/H to destination
 ##
-## When mcc/mbuild is not available, try to use precompiled binaries from SVN
+## When mcc/mbuild is not available, the script tries to use the precompiled binaries from SVN
 
 SET(CAN_BUILD_CTF "No")
 IF (BUILD_SA_VISION_VISLEARNER_CTF)
@@ -15,6 +15,7 @@ IF (BUILD_SA_VISION_VISLEARNER_CTF)
    ENDIF (MATLAB_BIN_MCC AND MATLAB_BIN_MBUILD)
 ENDIF (BUILD_SA_VISION_VISLEARNER_CTF)
 
+# The CTF file can be either separate or included in the executable (so/dll).
 SET(SEPARATE_CTF "false")
 
 PROJECT(VisualLearnerCtf)
