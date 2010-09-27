@@ -62,12 +62,12 @@ class DTProblem(object):
         self.select_actions = []
         
         self.goals = self.create_goals(plan)
-        self.goal_actions = set()
+        self.goal_actions = []
         self.relaxation_layers = self.compute_restrictions()
         self.dt_rules = pddl.translators.Translator.get_annotations(domain).get('dt_rules', [])
         
         self.dtdomain = self.create_dt_domain(domain)
-        self.goal_actions |= self.create_goal_actions(self.goals, self.dtdomain)
+        self.goal_actions += self.create_goal_actions(self.goals, self.dtdomain)
         self.dtdomain.actions += [a for a in self.goal_actions]
         self.dtdomain.name2action = None
         
@@ -232,7 +232,7 @@ class DTProblem(object):
         return layers
             
     def create_goal_actions(self, goals, domain):
-        result = set()
+        commit_actions = []
 
         confirm_score = 100
         
@@ -246,13 +246,13 @@ class DTProblem(object):
             a = pddl.Action(name, [val], None, None, domain)
             b = pddl.builder.Builder(a)
             
-            a.precondition = b.cond('not', (dtpddl.committed, [term]))
+            a.precondition = b.cond('and', ('not', (dtpddl.committed, [term])))
             commit_effect = b.effect(dtpddl.committed, [term])
             reward_effect = b('when', ('=', term, val), ('assign', ('reward',), confirm_score))
             penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -2*confirm_score))
-            a.effect = b.effect('and', commit_effect, reward_effect, penalty_effect)
+            a.effect = b.effect('and', commit_effect, reward_effect)#, penalty_effect)
             
-            result.add(a)
+            commit_actions.append(a)
 
         disconfirm = []
         for pnode in self.select_actions:
@@ -263,6 +263,7 @@ class DTProblem(object):
                         disconfirm.append((nmvar, svar.modal_args[0]))
 
         dis_score = float(confirm_score)/len(disconfirm)
+        disconfirm_actions = []
         for svar, val in disconfirm:
             term = pddl.Term(svar.function, svar.get_args())
             domain.constants |= set(svar.get_args() + [val])
@@ -274,19 +275,24 @@ class DTProblem(object):
 
             conds = [b.cond('not', (dtpddl.committed, term))]
             for gvar in goals:
+                # don't allow this goal after a commit has been done
                 gterm = pddl.Term(gvar.function, gvar.get_args())
                 conds.append(b.cond('not', (dtpddl.committed, gterm)))
+            for ca in commit_actions:
+                # don't allow commit actions after any disconfirm
+                ca.precondition.parts.append(b.cond('not', (dtpddl.committed, term)))
             
             a.precondition = pddl.Conjunction(conds, a)
             
             commit_effect = b.effect(dtpddl.committed, term)
             reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_score))
             penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -2*dis_score))
-            a.effect = pddl.ConjunctiveEffect([commit_effect, reward_effect, penalty_effect], a)
+            #a.effect = pddl.ConjunctiveEffect([commit_effect, reward_effect, penalty_effect], a)
+            a.effect = pddl.ConjunctiveEffect([commit_effect, reward_effect], a)
             
-            result.add(a)
+            disconfirm_actions.append(a)
                         
-        return result
+        return commit_actions + disconfirm_actions
 
     def create_dt_domain(self, dom):
         dtdomain = dom.copy()
