@@ -1,15 +1,16 @@
-package eu.cogx.perceptmediator;
+package eu.cogx.perceptmediator.dora;
 
 import VisionData.VisualObject;
+import eu.cogx.perceptmediator.PerceptBindingMediator;
 import eu.cogx.perceptmediator.components.abstr.ReferringPerceptMediatorComponent;
 
-public class LocalizedVisualObjectMediatorComponent extends
+public class VisualObjectMediatorComponent extends
 		ReferringPerceptMediatorComponent {
 
 	@Override
 	protected PerceptBindingMediator<VisualObject> getMediator() {
 		return PerceptBindingMediator.create(this, VisualObject.class,
-				new LocalizedVisualObjectTransferFunction(this, perceptBeliefsView));
+				new VisualObjectTransferFunction(this, perceptBeliefsView));
 	}
 
 }

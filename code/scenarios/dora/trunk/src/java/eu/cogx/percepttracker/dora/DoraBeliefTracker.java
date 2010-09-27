@@ -1,7 +1,7 @@
 /**
  * @author Marc Hanheide (marc@hanheide.de)
  */
-package eu.cogx.percepttracker;
+package eu.cogx.percepttracker.dora;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +18,8 @@ import castutils.slice.WMTrackedBeliefMap;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
+import eu.cogx.percepttracker.FormulaMatcher;
+import eu.cogx.percepttracker.WMTracker;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
