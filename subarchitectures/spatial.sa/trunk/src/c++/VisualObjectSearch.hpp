@@ -171,6 +171,7 @@ std::string m_ProcessVPID;
 	IDLE
       };
 
+      bool m_usePeekabot;
       bool m_showgui;
       enum AVSStatus{
 	PLANNING,
