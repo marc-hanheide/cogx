@@ -1,7 +1,7 @@
 
 # simple mediators:
-JAVA MG pm-place	eu.cogx.perceptmediator.components.PlaceMediator --debug
-JAVA MG pm-agent 	eu.cogx.perceptmediator.components.AgentMediator --debug
+JAVA MG pm-place	eu.cogx.perceptmediator.components.PlaceMediator 
+JAVA MG pm-agent 	eu.cogx.perceptmediator.components.AgentMediator 
 
 # property mediators
 JAVA MG pm-gateway 	eu.cogx.perceptmediator.components.GatewayPropertyMediator
@@ -10,5 +10,5 @@ JAVA MG pm-border 	eu.cogx.perceptmediator.components.AssociatedBorderPropertyMe
 
 
 # relation mediators:
-JAVA MG pm-place-conn 	eu.cogx.perceptmediator.components.PlaceConnectivityMediator --debug
-#JAVA MG pm-agent-rel 	eu.cogx.perceptmediator.components.PlaceContainmentAgentMediator --debug
+JAVA MG pm-place-conn 	eu.cogx.perceptmediator.components.PlaceConnectivityMediator 
+#JAVA MG pm-agent-rel 	eu.cogx.perceptmediator.components.PlaceContainmentAgentMediator 
