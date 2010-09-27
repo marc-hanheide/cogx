@@ -318,21 +318,11 @@ module SpatialData {
    * @author Alper Aydemir
    * @see
    */
-  enum AVSAction {PLAN,	
-       		  //Plan and then execute the generated plan
-    		  STOPAVS};	
-		  // Stop the execution of a plan (not pause)
+  enum AVSStatus {INPROGRESS,	
+    		  SUCCESS,
+		 FAILED
+};	
 	
-  /**
-   * Command structure for visual search
-   * 
-   * @author Alper Aydemir
-   * @see
-   */	
-  class AVSCommand {
-    PlaceIDSeq placestosearch;
-    AVSAction cmd;
-  };
 
   class SpatialObject {
     //    int id;	  
@@ -350,27 +340,28 @@ module SpatialData {
    */
   class ViewPointGenerationCommand {
     ///Object to generate the viewpoints for. TODO: what should this label contain?
-     PlaceIDSeq placestosearch; 
+AVSStatus status;     
+PlaceIDSeq placestosearch; 
      string label;
   };
 
 
 
   /**
-    * Class for exposing AVS plan to planner
-    */
+   * Class for exposing AVS plan to planner
+   */
 
   class ViewPoint{
-    cogx::Math::Vector3 pose;
-    double tilt;
-    double probability;
-    string label;
+	  cogx::Math::Vector3 pose;
+	  double tilt;
+	  double probability;
+	  string label;
   };
-  
+
   sequence<ViewPoint> ViewPointSeq;
- 
+
   class SearchPlan{
-    ViewPointSeq plan;
+	  ViewPointSeq plan;
   };
 
 
@@ -378,11 +369,13 @@ module SpatialData {
    * Command to process to viewpoint at the given WM address with the given object models (which should be sent to the recogniser).
    * @author Nick Hawes
    */
-  class ProcessViewPointCommand {
-    ///The view point to process
-ViewPoint vp;
-    ///The objects that should be identified from the view point
-    cast::cdl::StringSeq objectModels;
+class ProcessViewPointCommand {
+	AVSStatus status;     
+	///The view point to process
+	ViewPoint vp;
+	///The objects that should be identified from the view point
+	cast::cdl::StringSeq objectModels;
+
   };
 
 };
