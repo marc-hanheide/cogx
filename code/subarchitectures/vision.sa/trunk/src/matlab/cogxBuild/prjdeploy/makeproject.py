@@ -86,7 +86,7 @@ class Options():
                 elif opt in ("--cppexport"):
                     self.cppexportlist = os.path.abspath(arg)
                 elif opt in ("--separatectf"):
-                    self.separatectf = os.path.abspath(arg)
+                    self.separatectf = arg
                 else:
                     print "Unhandled option %s" % opt
                     self.Usage()

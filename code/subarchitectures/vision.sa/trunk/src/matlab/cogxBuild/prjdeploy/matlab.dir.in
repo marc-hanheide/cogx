@@ -8,6 +8,7 @@
 %(MATLABROOT)s/toolbox/matlab/matfun
 %(MATLABROOT)s/toolbox/matlab/datafun
 %(MATLABROOT)s/toolbox/matlab/polyfun
+%(MATLABROOT)s/toolbox/matlab/polyfun
 %(MATLABROOT)s/toolbox/matlab/funfun
 %(MATLABROOT)s/toolbox/matlab/sparfun
 %(MATLABROOT)s/toolbox/matlab/scribe

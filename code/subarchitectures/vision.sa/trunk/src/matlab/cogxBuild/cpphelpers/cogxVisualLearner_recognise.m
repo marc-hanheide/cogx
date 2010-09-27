@@ -1,6 +1,7 @@
 function [rCpcx,gain] = cogxVisualLearner_recognise(X, B, pts3d)
    % X - image - byte_array
    % B - segmentation mask - byte_array
+   global Figs
 
    B = double(B); % TODO: is it really necessary to convert the mask to double?
    B = (B==1);

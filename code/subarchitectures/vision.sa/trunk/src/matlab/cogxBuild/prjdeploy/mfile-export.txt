@@ -12,8 +12,17 @@ LRloadAVmodels
 LRvisUpdate
 KDBFupdate
 KDBFunlearn
+
+# 2010
+ODKDEbatch
+ODKDEinit
+ODKDErec
+ODKDEunlearn
+ODKDEupdate
+
 # some glue
 cogxMatlabWarnings
 cogxVisualLearner_recognise
 cogxVisualLearner_update
 cogxVisualLearner_unlearn
+

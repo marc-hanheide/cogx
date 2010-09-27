@@ -20,6 +20,9 @@
 using namespace std;
 using namespace VisionData;
 
+cogx::CTypeEnumerator Enumerator;
+std::string ClfStartConfig;
+
 class CInitializer
 {
 public:
@@ -27,15 +30,34 @@ public:
       printf("VisualLearnerProxy initializing\n");
       InitVisualLearnerLib();
 
-      // Load global variables (was: R_RunComponent)
-      mwArray flag(1); // 1 - show dialogs
-      CLFstart(flag);
+      printf("ClfStartConfig='%s'\n", ClfStartConfig.c_str());
+
+      // Load global variables 
+      mwArray clfConfig(ClfStartConfig.c_str());
+      CLFstart(clfConfig);
    }
    ~CInitializer() {
       printf("VisualLearnerProxy terminating\n");
       TermVisualLearnerLib();
    }
+
+   void initEnumeration() {
+      Enumerator.clear();
+      Enumerator.addMapping("red", 1);
+      Enumerator.addMapping("green", 2);
+      Enumerator.addMapping("blue", 3);
+      Enumerator.addMapping("yellow", 4);
+      Enumerator.addMapping("magenta", 5);
+      Enumerator.addMapping("orange", 6);
+      Enumerator.addMapping("white", 7);
+      Enumerator.addMapping("black", 8);
+
+      Enumerator.addMapping("compact", 9);
+      Enumerator.addMapping("elongated", 10);
+   }
+
 } *pInitializer=NULL;
+
 class CTerminator
 {
 public:
@@ -44,15 +66,17 @@ public:
       pInitializer = NULL;
    }
 } Terminator;
+
 static void CheckInit()
 {
    if (!pInitializer) {
       pInitializer = new CInitializer();
-      // cvNamedWindow("vlproxy");
+      pInitializer->initEnumeration();
    }
 }
 
-static void addLabels(mwArray &ans, double weight, vector<int> &labels, vector<double> &probs)
+
+static void addLabels(mwArray &ans, double weight, vector<string> &labels, vector<double> &probs)
 {
    unsigned n_dims = ans.NumberOfDimensions();
    // TODO: assert n_dims = 1
@@ -60,12 +84,12 @@ static void addLabels(mwArray &ans, double weight, vector<int> &labels, vector<d
    double dim0 = dims.Get(mwSize(1), 1);
    for (int i = 0; i < dim0; i++) {
       double label = ans.Get(mwSize(1), i+1);
-      labels.push_back((int)label);
+      labels.push_back(Enumerator.getName((int)label));
       probs.push_back(weight);
    }
 }
 
-static void copyLabels(const mwArray &ans, vector<int> &labels, vector<double> &probs)
+static void copyLabels(const mwArray &ans, vector<string> &labels, vector<double> &probs)
 {
    unsigned n_dims = ans.NumberOfDimensions();
    // TODO: assert n_dims = 2
@@ -74,7 +98,7 @@ static void copyLabels(const mwArray &ans, vector<int> &labels, vector<double> &
    for (int i = 0; i < dim0; i++) {
       double label  = ans.Get(mwSize(2), i+1, 1);
       double weight = ans.Get(mwSize(2), i+1, 2);
-      labels.push_back((int)label);
+      labels.push_back(Enumerator.getName((int)label));
       probs.push_back(weight);
    }
 }
@@ -125,8 +149,20 @@ void VL_LoadAvModels(const char* filename)
    LRloadAVmodels(fname);
 }
 
+void VL_setEnumeration(const cogx::CTypeEnumerator& typeEnum)
+{
+   Enumerator = typeEnum;
+}
+
+void VL_setClfStartConfig(const std::string& absConfigPath)
+{
+   ClfStartConfig = absConfigPath;
+   CheckInit();
+}
+
 //void FE_recognise_attributes(ROI &Roi)
-void VL_recognise_attributes(const ProtoObject &Object, vector<int> &labels, vector<double> &probs)
+void VL_recognise_attributes(const ProtoObject &Object, vector<string> &labels,
+      vector<double> &probs, vector<double> &gains)
 {
    CheckInit();
 
@@ -160,15 +196,28 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<int> &labels, vec
 #endif /* END-DEBUG */
 
    // Extract features and recognise.
-   mwArray rCqnt;
-   cogxVisualLearner_recognise(1, rCqnt, image, mask, pts3d);
+   mwArray rCqnt, mlGain;
+   cogxVisualLearner_recognise(2, rCqnt, mlGain, image, mask, pts3d);
 
    labels.clear();
    probs.clear();
-   copyLabels(rCqnt, labels, probs);
+   gains.clear();
+
+   unsigned n_dims = rCqnt.NumberOfDimensions();
+   // TODO: assert n_dims = 2; assert gain.size == rCqnt.size
+   dims = rCqnt.GetDimensions();
+   dim0 = dims.Get(mwSize(1), 1);
+   for (int i = 0; i < dim0; i++) {
+      double label = rCqnt.Get(mwSize(2), i+1, 1);
+      double fprob = rCqnt.Get(mwSize(2), i+1, 2);
+      double fgain = mlGain.Get(mwSize(2), i+1, 2);
+      labels.push_back(Enumerator.getName((int)label));
+      probs.push_back(fprob);
+      gains.push_back(fgain);
+   }
 }
 
-void VL_update_model(ProtoObject &Object, std::vector<int> &labels, std::vector<double> &distribution)
+void VL_update_model(ProtoObject &Object, std::vector<string> &labels, std::vector<double> &weights)
 {
    CheckInit();
    mwArray image, mask, pts3d;
@@ -176,17 +225,17 @@ void VL_update_model(ProtoObject &Object, std::vector<int> &labels, std::vector<
 
    long cntPlus = 0, cntMinus = 0;
    for (unsigned i = 0; i < labels.size(); i++) {
-      if (distribution[i] > 0) cntPlus++;
-      if (distribution[i] < 0) cntMinus++;
+      if (weights[i] > 0) cntPlus++;
+      if (weights[i] < 0) cntMinus++;
    }
 
    if (cntPlus > 0) {
       mwArray avw(cntPlus, 2, mxDOUBLE_CLASS, mxREAL);
       int row = 1;
       for (unsigned i = 0; i < labels.size(); i++) {
-        if (distribution[i] > 0) {
-           avw(row, 1) =  (double) labels[i];
-           avw(row, 2) =  (double) distribution[i];
+        if (weights[i] > 0) {
+           avw(row, 1) =  Enumerator.getEnum(labels[i]);
+           avw(row, 2) =  (double) weights[i];
            row++;
         }
       }
@@ -197,9 +246,9 @@ void VL_update_model(ProtoObject &Object, std::vector<int> &labels, std::vector<
       mwArray avw(cntMinus, 2, mxDOUBLE_CLASS, mxREAL);
       int row = 1;
       for (unsigned i = 0; i < labels.size(); i++) {
-        if (distribution[i] < 0) {
-           avw(row, 1) =  (double) labels[i];
-           avw(row, 2) =  (double) - distribution[i];
+        if (weights[i] < 0) {
+           avw(row, 1) =  Enumerator.getEnum(labels[i]);
+           avw(row, 2) =  (double) -weights[i];
            row++;
         }
       }
