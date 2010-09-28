@@ -3,7 +3,6 @@ package eu.cogx.goals.george;
 import java.util.ArrayList;
 import java.util.List;
 
-import motivation.components.generators.AbstractBeliefMotiveGenerator;
 import motivation.components.generators.AbstractIntentionMotiveGenerator;
 import motivation.slice.GeneralGoalMotive;
 import nu.xom.Document;
@@ -17,7 +16,6 @@ import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.IceXMLSerializer;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
-import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
