@@ -89,11 +89,12 @@
 	<!-- =================================================================== -->
 	<!-- Cleanup                                                             -->
 	<!-- =================================================================== -->
-	<property name="generated.dir" value="${src.dir}/execution/slice" />
+	<property name="generated.dir" value="execution/slice" />
 
 	<target name="clean">
 		<delete file="${src.dir}/.depend" />
-		<delete dir="${generated.dir}" />
+		<delete dir="${src.dir}/${generated.dir}" />
+		<delete dir="${output.dir}/${generated.dir}" />
 	</target>
 
 
