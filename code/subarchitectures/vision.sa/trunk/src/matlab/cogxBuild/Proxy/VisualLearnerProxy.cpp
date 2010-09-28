@@ -43,17 +43,32 @@ public:
 
    void initEnumeration() {
       Enumerator.clear();
-      Enumerator.addMapping("red", 1);
-      Enumerator.addMapping("green", 2);
-      Enumerator.addMapping("blue", 3);
-      Enumerator.addMapping("yellow", 4);
-      Enumerator.addMapping("magenta", 5);
-      Enumerator.addMapping("orange", 6);
-      Enumerator.addMapping("white", 7);
-      Enumerator.addMapping("black", 8);
-
-      Enumerator.addMapping("compact", 9);
-      Enumerator.addMapping("elongated", 10);
+      try {
+         Enumerator.clear();
+         mwArray arr;
+         getGlobalArray(1, arr, "Coma", "Coma.avNames");
+         mwArray dims = arr.GetDimensions();
+         double dim0 = dims.Get(mwSize(1), 1);
+         for (int i = 0; i < dim0; i++) {
+            mwString mws = arr.Get(mwSize(1), i+1).ToString();
+            Enumerator.addMapping((const char*)mws, i+1);
+            printf(" ... %d .. %s\n", i+1, (const char*)mws);
+         }
+      }
+      catch (...) {
+         printf(" **** FAILED to extract from Matlab: Coma.avNames\n");
+         Enumerator.clear();
+         Enumerator.addMapping("red", 1);
+         Enumerator.addMapping("green", 2);
+         Enumerator.addMapping("blue", 3);
+         Enumerator.addMapping("yellow", 4);
+         Enumerator.addMapping("black", 5);
+         Enumerator.addMapping("white", 6);
+         Enumerator.addMapping("orange", 7);
+         Enumerator.addMapping("pink", 8);
+         Enumerator.addMapping("compact", 9);
+         Enumerator.addMapping("elongated", 10);
+      }
    }
 
 } *pInitializer=NULL;
