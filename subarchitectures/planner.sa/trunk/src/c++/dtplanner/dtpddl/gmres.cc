@@ -70,9 +70,13 @@ void GMRES::operator()()
     x = *b;
     
     INTERACTIVE_VERBOSER(true, 900, "Solving system :: "<<std::endl);
+#ifndef DNDEBUG
     disable_type_check<bool>::value = true;
+#endif
     gmres_restarts< Matrix >(T, x, *b, prec, A->size1()-1, 0, 1.0e-8);
+#ifndef DNDEBUG
     disable_type_check<bool>::value = false;
+#endif
 
 //   cerr<<x;
   
