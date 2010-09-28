@@ -23,6 +23,9 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
  */
 public class ViewPointTransferFunction extends SimpleDiscreteTransferFunction<ViewPoint> {
 
+	public static final String OBJECT_PROBABILITY_ID = "probability";
+	public static final String OBJECT_LABEL_ID = "label";
+
 	public ViewPointTransferFunction(ManagedComponent component) {
 		super(component, Logger.getLogger(ViewPointTransferFunction.class));
 	}
@@ -34,10 +37,10 @@ public class ViewPointTransferFunction extends SimpleDiscreteTransferFunction<Vi
 		Map<String, Formula> result = new HashMap<String, Formula>();
 
 		//the object which can be found from this cone
-		result.put("label", PropositionFormula.create(from.label).getAsFormula());
+		result.put(OBJECT_LABEL_ID, PropositionFormula.create(from.label).getAsFormula());
 
 		//the 
-		result.put("probability", DoubleFormula.create(from.probability).getAsFormula());
+		result.put(OBJECT_PROBABILITY_ID, DoubleFormula.create(from.probability).getAsFormula());
 		return result;
 	}
 
