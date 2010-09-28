@@ -23,6 +23,9 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
  */
 public class PlaceTransferFunction extends SimpleDiscreteTransferFunction<Place> {
 
+	public static final String PLACE_ID_ID = "PlaceId";
+	public static final String PLACE_STATUS_ID = "placestatus";
+
 	public PlaceTransferFunction(ManagedComponent component) {
 		super(component, Logger.getLogger(PlaceTransferFunction.class));
 		// TODO Auto-generated constructor stub
@@ -33,9 +36,9 @@ public class PlaceTransferFunction extends SimpleDiscreteTransferFunction<Place>
 	Map<String, Formula> getFeatureValueMapping(WorkingMemoryChange wmc, Place from) throws BeliefException {
 		assert(from != null);
 		Map<String, Formula> result = new HashMap<String, Formula>();
-		result.put("PlaceId", IntFormula.create((int) from.id).getAsFormula());
+		result.put(PLACE_ID_ID, IntFormula.create((int) from.id).getAsFormula());
 //		BoolFormula isExplored = BoolFormula.create(from.status==PlaceStatus.TRUEPLACE);
-		result.put("placestatus", PropositionFormula.create(from.status.name()).getAsFormula());
+		result.put(PLACE_STATUS_ID, PropositionFormula.create(from.status.name()).getAsFormula());
 //		result.put("explored", isExplored.getAsFormula());
 		return result;
 	}
