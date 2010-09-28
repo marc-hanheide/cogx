@@ -6,7 +6,6 @@ package motivation.components.generators;
 import java.util.HashMap;
 import java.util.Map;
 
-import motivation.slice.GeneralGoalMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
