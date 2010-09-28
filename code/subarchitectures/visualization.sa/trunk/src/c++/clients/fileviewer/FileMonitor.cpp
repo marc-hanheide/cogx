@@ -253,9 +253,6 @@ void CFileMonitor::configure(const std::map<std::string,std::string> & _config)
          }
          else {
             m_watches.push_back(pinfo);
-            std::ostringstream wtch;
-            pinfo->dump(wtch);
-            debug("%s", wtch.str().c_str());
          }
       }
    }
@@ -309,7 +306,7 @@ void describeEvent(inotify_event *event)
 }
 #endif
 
-// processFileChange should be called when after a file that has been modified
+// processFileChange should be called after a file that has been modified
 // is closed.
 void CFileMonitor::processFileChange(int watchId, const std::string &fname)
 {
@@ -453,7 +450,7 @@ public:
       if (m_fd >= 0) close(m_fd);
       m_fd = -1;
       if (m_buffer) delete m_buffer;
-      m_buffer == NULL;
+      m_buffer = NULL;
       m_bufLen = 0;
    }
 
@@ -569,6 +566,14 @@ void CFileMonitor::runComponent()
 #endif
 
    monitor.installWatches();
+
+   debug("Registered watches (-1 = failed to initilaize)");
+   for (typeof(m_watches.begin()) it = m_watches.begin(); it != m_watches.end(); it++) {
+      SWatchInfo* pinfo = *it;
+      std::ostringstream wtch;
+      pinfo->dump(wtch);
+      debug("%s", wtch.str().c_str());
+   }
 
    while (isRunning()) {
       monitor.pollWatches();

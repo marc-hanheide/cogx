@@ -1,8 +1,9 @@
 # In this test the clients are configured with a switch that is parsed
 # by a CAST component and passed to the clients when connected.
 # The component is a CDisplayServer; when it is run with a nonempty
-# --standalone-display-host it doesn't create any UI, but it may still
-# accept objects.
+# --redirect-to-host it doesn't create any UI, but it may still
+# accept objects -- and fail if it receives an object that requires
+# a running QApplication during conversion.
 
 HOST localhost
 
