@@ -51,13 +51,10 @@ private:
 
   IplImage *dbg1, *dbg2;
   CvMat *cameraMatrix1, *cameraMatrix2;
-  CvMat *newCameraMatrix1, *newCameraMatrix2;
   CvMat *distCoeffs1, *distCoeffs2;
   CvMat *camR12, *camT12;
 
   IplImage *imgRect1, *imgRect2, *rmask1;
-  CvMat *map11, *map12, *map21, *map22;
-  CvMat *matRect1, *matRect2, *matProj1, *matProj2, *matQ;
 
   IplImage *eig, *temp;
 
@@ -83,7 +80,7 @@ private:
   void ComputeSurfDescriptor(IplImage *img, Array<KeypointDescriptor*> &ks);
   void RefineAffine(IplImage *prevGrey, IplImage *grey, Array<KeypointDescriptor*> &ks2, double maxError=100000);
 
-  void ReconstructPoints(Array<KeypointDescriptor*> &ks, CvMat *Q);
+  void ReconstructPoints(Array<KeypointDescriptor*> &ks);
   void FitPlanes3D(Array<Plane*> &planes);
   void ComputeRAShapeDescriptor(Array<Plane*> &planes, RASDescriptor &ras, int sizeAngle, int sizeScale);
 
