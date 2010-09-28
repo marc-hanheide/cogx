@@ -67,6 +67,11 @@ ShapeDescriptor3D::~ShapeDescriptor3D()
 
 void ShapeDescriptor3D::configure(const std::map<std::string,std::string> & _config)
 {
+  P::RASDescriptor ras;
+  log("configure: ras size %d", ras.size);
+  for (unsigned i=0; i<ras.Size(); i++)
+    log(" %f", ras.data[i]);
+
   // first let the base classes configure themselves
   configureStereoCommunication(_config);
 
@@ -230,10 +235,9 @@ void ShapeDescriptor3D::calculateDescriptor(ProtoObject &pobj)
   }
 
   // HACK
-  cout<<"--"<<endl;
+  log("calculate descr: ras size %d", ras.size);
   for (unsigned i=0; i<ras.Size(); i++)
-    cout<<ras.data[i]<<" ";
-  cout<<endl<<"--"<<endl;
+    log(" %f", ras.data[i]);
 
 #ifdef FEAT_VISUALIZATION
   redraw3D();

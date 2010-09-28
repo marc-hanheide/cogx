@@ -41,17 +41,8 @@ DShapeCore::DShapeCore()
  : dbg1(0), dbg2(0), cameraMatrix1(0), cameraMatrix2(0), distCoeffs1(0), distCoeffs2(0), 
    camR12(0), camT12(0),
    imgRect1(0), imgRect2(0), rmask1(0), 
-   map11(0), map12(0), map21(0), map22(0),
    eig(0), temp(0)
 {
-  matRect1 = cvCreateMat(3, 3, CV_64F );
-  matRect2 = cvCreateMat(3, 3, CV_64F );
-  matProj1 = cvCreateMat(3, 4, CV_64F );
-  matProj2 = cvCreateMat(3, 4, CV_64F );
-  matQ = cvCreateMat(4, 4, CV_64F );
-  newCameraMatrix1 = cvCreateMat(3, 3, CV_64F );
-  newCameraMatrix2 = cvCreateMat(3, 3, CV_64F );
-
   points[0] = (CvPoint2D32f*)cvAlloc(SIZE_POINT_CONTAINER*sizeof(points[0][0]));
   points[1] = (CvPoint2D32f*)cvAlloc(SIZE_POINT_CONTAINER*sizeof(points[0][0]));
   status = (char*)cvAlloc(SIZE_POINT_CONTAINER);
@@ -67,14 +58,6 @@ DShapeCore::~DShapeCore()
   if (camT12!=0) cvReleaseMat(&camT12);
   if (distCoeffs1!=0) cvReleaseMat(&distCoeffs1);
   if (distCoeffs2!=0) cvReleaseMat(&distCoeffs2);
-
-  cvReleaseMat(&matRect1);
-  cvReleaseMat(&matRect2);
-  cvReleaseMat(&matProj1);
-  cvReleaseMat(&matProj2);
-  cvReleaseMat(&matQ);
-  cvReleaseMat(&newCameraMatrix1);
-  cvReleaseMat(&newCameraMatrix2);
 
   if (points[0]!=0) cvFree(&points[0]);
   if (points[1]!=0) cvFree(&points[1]);
@@ -99,15 +82,10 @@ void DShapeCore::ReleaseImages()
   if (rmask1!=0) cvReleaseImage(&rmask1);
   if (imgRect1!=0) cvReleaseImage(&imgRect1);
   if (imgRect2!=0) cvReleaseImage(&imgRect2);
-  if (map11!=0) cvReleaseMat(&map11);
-  if (map12!=0) cvReleaseMat(&map12);
-  if (map21!=0) cvReleaseMat(&map21);
-  if (map22!=0) cvReleaseMat(&map22);
   if (eig!=0) cvReleaseImage(&eig);
   if (temp!=0) cvReleaseImage(&temp);
 
   rmask1 = imgRect1 = imgRect2 = 0;
-  map11 = map12 = map21 = map22 = 0;
   eig = temp = 0;
 }
 
@@ -140,24 +118,15 @@ void DShapeCore::InitImages(IplImage* img1, IplImage *img2, IplImage *mask1)
     eig = cvCreateImage ( cvGetSize ( img1 ), 32, 1 );
     temp = cvCreateImage ( cvGetSize ( img1 ), 32, 1 );
 
-    map11 = cvCreateMat(img1->height,  img1->width, CV_32F );
-    map12 = cvCreateMat(img1->height,  img1->width, CV_32F );
-    map21 = cvCreateMat(img1->height,  img1->width, CV_32F );
-    map22 = cvCreateMat(img1->height,  img1->width, CV_32F );
-
     imgSize = cvGetSize(img1);
-    cvStereoRectify(cameraMatrix2, cameraMatrix1, distCoeffs2, distCoeffs1, imgSize, 
-                    camR12, camT12, matRect1, matRect2, matProj1, matProj2, matQ);     
-    cvInitUndistortRectifyMap(cameraMatrix1, distCoeffs1, matRect1, matProj1, map11, map12);
-    cvInitUndistortRectifyMap(cameraMatrix2, distCoeffs2, matRect2, matProj2, map21, map22);
   }
 
-  cvRemap(img2, imgRect2, map11, map12);
-  cvRemap(img1, imgRect1, map21, map22);
+  cvCopy(img2, imgRect2);
+  cvCopy(img1, imgRect1);
 
   if (mask1!=0)
   {
-    cvRemap(mask1, rmask1, map21, map22);
+    cvCopy(mask1, rmask1);
     cvThreshold(rmask1,rmask1,128,255,0);
   }
 
@@ -502,30 +471,27 @@ void DShapeCore::TrackKeypoints3(IplImage *img1, IplImage *img2, Array<KeypointD
 /**
  * Set 3d points to matched keys using the difference of the x-coordinates (disparity)
  */
-void DShapeCore::ReconstructPoints(Array<KeypointDescriptor*> &ks, CvMat *Q)
+void DShapeCore::ReconstructPoints(Array<KeypointDescriptor*> &ks)
 {
-  double p3[4];  //3d point
-  double p2d[4]; //2d point and disparity
-  CvMat matP3 = cvMat(4,1, CV_64F, p3);
-  CvMat matP2d = cvMat(4,1, CV_64F, p2d);
- 
-  p2d[3]=1.;
+  double p3[4];
 
   for (unsigned i=0; i<ks.Size(); i++)
   {
     if (ks[i]->fw!=0)
     {
-      p2d[0] = ks[i]->p.x;
-      p2d[1] = ks[i]->p.y;
-      p2d[2] = ks[i]->p.x - ks[i]->fw->p.x;
-      
-      cvMatMul(Q,&matP2d,&matP3);
+      double d = ks[i]->p.x - ks[i]->fw->p.x;
+      assert(fpclassify(d) != FP_ZERO);
+      double tx = cvmGet(camT12, 0, 0);
+      p3[0] = ks[i]->p.x - cvmGet(cameraMatrix1, 0, 2);
+      p3[1] = ks[i]->p.y - cvmGet(cameraMatrix1, 1, 2);
+      p3[2] = cvmGet(cameraMatrix1, 0, 0);
+      p3[3] = -d/tx;
+      // SVS calibration uses mm, we want m -> divide by 1000
+      p3[3] *= 1000.;
+      p3[0] /= p3[3];
+      p3[1] /= p3[3];
+      p3[2] /= p3[3];
 
-      p3[3]*=1000.;
-      p3[0]/=p3[3];
-      p3[1]/=p3[3];
-      p3[2]/=p3[3];
-      
       ks[i]->Set3D(p3);
     }
   }
@@ -663,8 +629,7 @@ void DShapeCore::Operate(IplImage* img1, IplImage *img2, RASDescriptor &ras,
   //TrackKeypoints2(imgRect1, imgRect2, keys1, keys2); //match points (templates)
   //TrackKeypoints3(imgRect1, imgRect2, keys1, keys2); //match points (surf)
   //TrackKeypoints4(imgRect1, imgRect2, keys1, keys2); //match points (sift)
-
-  ReconstructPoints(keys1, matQ);
+  ReconstructPoints(keys1);
 
   splane.DetectPlanes(keys2, planes);
   FitPlanes3D(planes);
