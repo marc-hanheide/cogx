@@ -19,6 +19,7 @@ import castutils.castextensions.CASTHelper;
 import castutils.castextensions.WMEntrySynchronizer.TransferFunction;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
+import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
@@ -41,6 +42,20 @@ import eu.cogx.beliefs.slice.PerceptBelief;
 public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl>
 		extends CASTHelper implements TransferFunction<From, PerceptBelief> {
 
+	public static final String SOURCE_ADDR_ID = "source-addr";
+	private static final String SEPARATOR = " ";
+	
+	public static String toPropositionString(WorkingMemoryAddress _wma) {
+		return _wma.id + SEPARATOR + _wma.subarchitecture;
+	}
+	
+	public static WorkingMemoryAddress addressFromPropositionString(String _address) {
+		String[] split = _address.split(SEPARATOR);
+		assert(split.length == 2);
+		return new WorkingMemoryAddress(split[0], split[1]);
+	}
+	
+	
 	public static Object getBeliefTypeFromCastType(
 			Class<? extends Ice.Object> class1) {
 		return getBeliefTypeFromCastType(CASTUtils.typeName(class1));
@@ -124,6 +139,8 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		Map<String, Formula> mapping;
 		try {
 			mapping = getFeatureValueMapping(wmc, from);
+			addUniversalMappings(wmc, from, mapping);
+			
 			for (Entry<String, Formula> fvm : mapping.entrySet()) {
 				FormulaDistribution fd = FormulaDistribution.create();
 				fd.add(fvm.getValue().get(), 1.0);
@@ -135,6 +152,17 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 			component.logException(e);
 		}
 		return true;
+	}
+
+	/**
+	 * Add things to the mapping which are used for all beliefs.
+	 * 
+	 * @param _from 
+	 * @param _wmc 
+	 * @param _mapping
+	 */
+	private void addUniversalMappings(WorkingMemoryChange _wmc, From _from, Map<String, Formula> _mapping) {
+		_mapping.put(SOURCE_ADDR_ID, PropositionFormula.create(toPropositionString(_wmc.address)).getAsFormula());
 	}
 
 	/**
