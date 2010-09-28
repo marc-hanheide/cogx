@@ -86,6 +86,20 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 		});
 
+
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
+				WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
+
+			@Override
+			public void workingMemoryChanged(WorkingMemoryChange _arg0)
+					throws CASTException {
+				updatePlace(_arg0.address, getMemoryEntry(_arg0.address,
+						Place.class));
+			}
+
+		});
+
+		
 		// use these to harvest beliefs
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				dBelief.class, WorkingMemoryOperation.ADD),
@@ -159,9 +173,18 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 	}
 
 	private void addPlace(WorkingMemoryAddress _address, Place _memoryEntry) {
-		m_gui.addPlace(_memoryEntry.id, _memoryEntry.status);
+		m_gui.addPlace(_address, _memoryEntry.id, _memoryEntry.status);
 	}
 
+	private void updatePlace(WorkingMemoryAddress _address, Place _memoryEntry) {
+		m_gui.updatePlace(_address, _memoryEntry.id, _memoryEntry.status);
+	}
+	
+
+	private void removePlace(WorkingMemoryAddress _address) {
+		m_gui.removePlace(_address);
+	}
+	
 	public WorkingMemoryAddress triggerGoToAction(long _placeID,
 			ActionMonitor _monitor) throws CASTException {
 		GoToPlace act = newActionInstance(GoToPlace.class);
