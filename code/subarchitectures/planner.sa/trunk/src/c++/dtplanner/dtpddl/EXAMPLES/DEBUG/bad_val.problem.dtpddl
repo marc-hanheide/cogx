@@ -23,7 +23,9 @@
         (in-room c2b rb)
         (label visualobject4 cornflakes)
         (in-room p1b rb)
-        (probabilistic  0.2000  (and  (probabilistic  0.1000  (and  (ex-in-room cornflakes rb true)
+;; 	(ex-in-room cornflakes rb true)
+	(probabilistic 0.0001 (ex-in-room cornflakes rb true))
+        (probabilistic  0.2000  (and  (probabilistic  0.1000  (and  
                                                                     (probabilistic  0.1500  (is-in visualobject4 c3b)
                                                                                     0.6000  (is-in visualobject4 c1b)
                                                                                     0.2000  (is-in visualobject4 c2b)

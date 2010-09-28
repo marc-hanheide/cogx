@@ -262,11 +262,22 @@ POMDP_State* Solver::take_observation(POMDP_State* current_state,
     return take_observation(current_state, observation, action_index);
 }
 
-Solver::Solver(Planning::Parsing::Problem_Data& problem_Data)
+double Solver::get__sink_state_penalty() const
+{
+    return sink_state_penalty;
+}
+
+void Solver::set__sink_state_penalty(double in)
+{
+    sink_state_penalty = in;
+}
+
+Solver::Solver(Planning::Parsing::Problem_Data& problem_Data, double sink_state_penalty)
     :problem_Data(problem_Data),
      preprocessed(false),
      starting_belief_state(0),
-     null_observation(0)// ,
+     null_observation(0),
+     sink_state_penalty(sink_state_penalty)// ,
 //      constants_Description(0),
 //      constants(0)
 {

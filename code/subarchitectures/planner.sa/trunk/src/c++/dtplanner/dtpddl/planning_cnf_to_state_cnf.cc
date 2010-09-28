@@ -249,7 +249,7 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
 #endif 
 #endif 
                 
-                INTERACTIVE_VERBOSER(true, 9093, "Adding new problem literal :: "
+                INTERACTIVE_VERBOSER(true, 11000, "Adding new problem literal :: "
                                      <<literal->get__runtime_Thread()<<"::"<<literal<<std::endl);
                 
                 problem__literals.insert(literal);
@@ -261,7 +261,7 @@ void Planning_CNF__to__State_CNF::operator()(const Formula::Subformula& input)
             literal__pointer->set__can_only_be_flipped_once(flipped_once(proposition, processing_negative));
 
             INTERACTIVE_VERBOSER(literal__pointer->get__can_only_be_flipped_once()
-                                 , 10908
+                                 , 11000
                                  , literal__pointer<<" can only have its truth value changed once.");
             
             

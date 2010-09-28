@@ -52,6 +52,12 @@ namespace Planning
     {
     public:
         virtual ~Solver(){};
+
+        
+        /*Penalty for ending up in an illegal state.*/
+        double get__sink_state_penalty() const;
+        /*Penalty for ending up in an illegal state.*/
+        void set__sink_state_penalty(double);
         
         /*Testing conditions on doubles.*/
         static Are_Doubles_Close are_Doubles_Close;//(1e-9);
@@ -88,13 +94,13 @@ namespace Planning
         
         
         /*Problem that is the target of the solution procedure.*/
-        Solver(Planning::Parsing::Problem_Data&);
+        Solver(Planning::Parsing::Problem_Data&, double sink_state_penalty = 0.0);//-1e6);
 
         bool operator()(){return true;};
         
         void expand_belief_state( POMDP_State*);
         bool expand_belief_state_space();
-        /*\argument{action_index} does not indicate a legal action at
+        /* \argument{action_index} does not indicate a legal action at
          * \argument{successor_state}.*/
         void fill_illegals(POMDP_State::Normalisation_Factors& _normalisation_Factors
                    , POMDP_State::Action__to__Observation_to_Belief& _successor_belief_state
@@ -219,6 +225,8 @@ namespace Planning
         /*An observation of nothing.*/
         Observational_State* null_observation;
 
+        /*Penalty for ending up in an illegal state.*/
+        double sink_state_penalty;
     };
 }
 

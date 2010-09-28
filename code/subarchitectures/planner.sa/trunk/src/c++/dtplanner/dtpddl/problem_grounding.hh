@@ -102,6 +102,9 @@ namespace Planning
         void ground_objective_function();
         uint get__objective_index() const;
         double get__objective_value(const State& state) const;
+        void set__objective_value(State& state, double) const;
+        void set__objective_value(State& state, int) const;
+        
         bool is_a_numeric_objective;
         bool integer_valued_objective;
         bool double_valued_objective;

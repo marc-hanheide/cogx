@@ -646,6 +646,7 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             }
             auto literal__pointer = *_literal__pointer;
             
+            literal__pointer->configure__complement(literal__pointer, problem__literals);
             literals_at_levels.top().push_back(literal__pointer);
             
             return;
@@ -929,18 +930,26 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
 
             /* If this condition is statically not executable.*/
             if(std::tr1::get<1>(_condition) == false){
-                WARNING("Got case "<<action_Proposition
-                        <<" where conditional effect is statically impossible :: "<<input);
+
+                /*This could be a warning. But it is untested as such...*/
+                UNRECOVERABLE_ERROR("Got case "<<action_Proposition
+                                   <<" where conditional effect is statically impossible :: "<<input);
+//                 exit(0);
                 return;
+            } else {
+                
+                INTERACTIVE_VERBOSER(true, 11000, "Got a conditional element :: "
+                                     <<std::tr1::get<0>(_condition)<<std::endl);
             }
+            
+            
             auto condition = std::tr1::get<0>(_condition);
             if(enum_types::formula_false == condition->get__type_name()){
-                WARNING("Got case "<<action_Proposition
-                        <<" where conditional effect is statically impossible :: "<<input);
+                /*This could be a warning. But it is untested as such...*/
+                UNRECOVERABLE_ERROR("Got case "<<action_Proposition
+                                    <<" where conditional effect is statically impossible :: "<<input);
                 return ;
             }
-
-            
 
             
             auto _effect = conditional_Effect->get__effect();
@@ -963,7 +972,7 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
             
             State_Formula::Conjunctive_Normal_Form_Formula__Pointer cnf_condition;
             if (enum_types::formula_true == condition->get__type_name()) {
-                INTERACTIVE_VERBOSER(true, 3110, "Got case "<<action_Proposition
+                INTERACTIVE_VERBOSER(true, 11000, "Got case "<<action_Proposition
                                      <<" where conditional effect is statically satisfied :: "<<input);
                 cnf_condition = true_cnf;
             } else {
@@ -981,8 +990,8 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
 
                 cnf_condition = planning_CNF__to__State_CNF.get__answer();
                 
-                INTERACTIVE_VERBOSER(true, 3120, "Conditional state transformation with precondition :: ");
-                INTERACTIVE_VERBOSER(true, 3120, ""<<cnf_condition);
+                INTERACTIVE_VERBOSER(true, 11000, "Conditional state transformation with precondition :: ");
+                INTERACTIVE_VERBOSER(true, 11000, ""<<cnf_condition);
             }
 
             level++;

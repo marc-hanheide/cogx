@@ -92,14 +92,14 @@ CNF_Assignment_Applicator(basic_type::Runtime_Thread _runtime_Thread,
 Result CNF_Assignment_Applicator::satisfiable(Fact fact)
 {
     if(!domain_Data.in_add_effect(fact->get__name())){
-        INTERACTIVE_VERBOSER(true, 10017, "Got UN-MAKEABLE first-order fact :: "<<fact);
+        INTERACTIVE_VERBOSER(true, 11000, "Got UN-MAKEABLE first-order fact :: "<<fact);
 
         if(problem_Data.statically_false__starting_always_false(fact)){
             if(!processing_negative){
-                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial FALSE) UN-MAKEABLE needed to be TRUE in STARTING STATES but wasn't :: "<<fact);
+                INTERACTIVE_VERBOSER(true, 11000, " --  (trivial FALSE) UN-MAKEABLE needed to be TRUE in STARTING STATES but wasn't :: "<<fact);
                 return Result(formula__false, false);
             } else {
-                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial TRUE) UN-MAKEABLE always false in STARTING STATE :: "<<fact);
+                INTERACTIVE_VERBOSER(true, 11000, " --  (trivial TRUE) UN-MAKEABLE always false in STARTING STATE :: "<<fact);
                 return Result(formula__true, true);
             }
         }
@@ -107,21 +107,21 @@ Result CNF_Assignment_Applicator::satisfiable(Fact fact)
     
     
     if(!domain_Data.in_delete_effect(fact->get__name())){
-        INTERACTIVE_VERBOSER(true, 10017, " Got UN-BREAKABLE first-order fact :: "<<fact);
+        INTERACTIVE_VERBOSER(true, 11000, " Got UN-BREAKABLE first-order fact :: "<<fact);
 
         if(problem_Data.statically_true__starting_always_true(fact)){
             if(!processing_negative){
-                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial TRUE)  UN-BREAKABLE always true in STARTING STATE  :: "<<fact);
+                INTERACTIVE_VERBOSER(true, 11000, " --  (trivial TRUE)  UN-BREAKABLE always true in STARTING STATE  :: "<<fact);
                 return Result(formula__true, true);
             } else {
-                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial FALSE) UN-BREAKABLE needed to be false in STARTING STATES but wasn't :: "<<fact);
+                INTERACTIVE_VERBOSER(true, 11000, " --  (trivial FALSE) UN-BREAKABLE needed to be false in STARTING STATES but wasn't :: "<<fact);
                 return Result(formula__false, false);
             }
         }
     }
 
     
-    INTERACTIVE_VERBOSER(true, 10017, "Got satisfiable first-order fact :: "<<fact);
+    INTERACTIVE_VERBOSER(true, 11000, "Got satisfiable first-order fact :: "<<fact);
     
     return Result(Subformula(fact), true);
 
@@ -136,31 +136,39 @@ Result CNF_Assignment_Applicator::satisfiable(Ground_Fact ground_Fact)
 
         if(problem_Data.statically_false__starting_always_false(ground_Fact)){
             if(!processing_negative){
-                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial FALSE) UN-MAKEABLE needed to be TRUE in STARTING STATES but wasn't :: "<<ground_Fact);
+                INTERACTIVE_VERBOSER(true, 11000, " --  (trivial FALSE) UN-MAKEABLE needed to be TRUE in STARTING STATES but wasn't :: "<<ground_Fact);
                 return Result(formula__false, false);
             } else {
-                INTERACTIVE_VERBOSER(true, 10017, " -- (trivial TRUE) UN-MAKEABLE always false in STARTING STATE :: "<<ground_Fact);
+                INTERACTIVE_VERBOSER(true, 11000, " -- (trivial TRUE) UN-MAKEABLE always false in STARTING STATE :: "<<ground_Fact);
                 return Result(formula__true, true);
             }
+            
+//             INTERACTIVE_VERBOSER(true, 11000, " --  (trivial FALSE) UN-MAKEABLE and requested truth value in STARTING STATES :: "<<ground_Fact);
+
+//             return Result(formula__false, false);
         }
     }
     
     
     if(!domain_Data.in_delete_effect(ground_Fact->get__name())){
-        INTERACTIVE_VERBOSER(true, 10017, " Got UN-BREAKABLE ground fact :: "<<ground_Fact);
+        INTERACTIVE_VERBOSER(true, 11000, " Got UN-BREAKABLE ground fact :: "<<ground_Fact);
 
         if(problem_Data.statically_true__starting_always_true(ground_Fact)){
             if(!processing_negative){
-                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial TRUE)  UN-BREAKABLE always true in STARTING STATE  :: "<<ground_Fact);
+                INTERACTIVE_VERBOSER(true, 11000, " --  (trivial TRUE)  UN-BREAKABLE always true in STARTING STATE  :: "<<ground_Fact);
                 return Result(formula__true, true);
             } else {
-                INTERACTIVE_VERBOSER(true, 10017, " --  (trivial FALSE) UN-BREAKABLE needed to be false in STARTING STATES but wasn't :: "<<ground_Fact);
+                INTERACTIVE_VERBOSER(true, 11000, " --  (trivial FALSE) UN-BREAKABLE needed to be false in STARTING STATES but wasn't :: "<<ground_Fact);
                 return Result(formula__false, false);
             }
+
+            
+//             INTERACTIVE_VERBOSER(true, 11000, " --  (trivial TRUE)  UN-BREAKABLE and requested truth value in STARTING STATES  :: "<<ground_Fact);
+//             return Result(formula__true, true);
         }
     }
     
-    INTERACTIVE_VERBOSER(true, 10017, "Got possible ground ground_Fact :: "<<ground_Fact);
+    INTERACTIVE_VERBOSER(true, 11000, "Got possible ground ground_Fact :: "<<ground_Fact);
     
     return Result(Subformula(ground_Fact), true);
 }
@@ -252,7 +260,7 @@ Result CNF_Assignment_Applicator::operator()(Disjunct disjunct, const Planning::
     return Result(disjunctive_formula, true);
 }
 
-Result CNF_Assignment_Applicator::operator()(Nagative negative, const Planning::Assignment& assignment)
+Result CNF_Assignment_Applicator::operator()(Negative negative, const Planning::Assignment& assignment)
 {
     processing_negative = true;
 
@@ -261,9 +269,9 @@ Result CNF_Assignment_Applicator::operator()(Nagative negative, const Planning::
     processing_negative = false;
     
     if(std::tr1::get<0>(result) == formula__true){
-        return Result(formula__false, false);
+        return result;//Result(formula__false, false);
     } else if (std::tr1::get<0>(result) == formula__false) {
-        return Result(formula__true, true);
+        return result;//Result(formula__true, true);
     }
     
     NEW_referenced_WRAPPED_deref_visitable_POINTER
@@ -486,7 +494,7 @@ Result CNF_Assignment_Applicator::operator()(Fact fact, const Planning::Assignme
              , fact->get__name()
              , argument_List);
         
-        INTERACTIVE_VERBOSER(true, 10017, "Testing satisfiability of :: "<<predicate<<std::endl);
+        INTERACTIVE_VERBOSER(true, 11000, "Testing satisfiability of :: "<<predicate<<std::endl);
         
         return satisfiable(Fact(predicate));
     }
@@ -598,7 +606,7 @@ Result CNF_Assignment_Applicator::operator()(Subformula input,
         case enum_types::negation:
         {
             assert(input.test_cast<Negation>());
-            return (*this)(Nagative(input), assignment);
+            return (*this)(Negative(input), assignment);
         }
         break;
         case enum_types::action_proposition:
@@ -633,9 +641,9 @@ Result CNF_Assignment_Applicator::operator()(Subformula input,
                                      <<*action_proposition<<" at thread :: "<<actions_validator.first<<std::endl);
                 
                 
-                if(processing_negative){
+                if(processing_negative){/*Truth value of negated symbol.*/
                     return Result(formula__true, true);
-                } else {
+                } else {/*Truth value of symbol.*/
                     return Result(formula__false, false);
                 }
             }
