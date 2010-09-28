@@ -388,7 +388,8 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 					new ArrayList<WorkingMemoryAddress>());
 		}
 		CASTBeliefHistory bh = (CASTBeliefHistory) to.hist;
-		bh.offspring.add(ev.address);
+		if (!bh.ancestors.contains(ev.address))
+			bh.ancestors.add(ev.address);
 	}
 
 	private void handleOverwriteObservation(final WorkingMemoryChange ev,
