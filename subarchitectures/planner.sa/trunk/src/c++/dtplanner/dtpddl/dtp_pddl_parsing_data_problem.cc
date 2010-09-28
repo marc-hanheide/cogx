@@ -144,21 +144,60 @@ bool Problem_Data::statically_true__starting_always_true(CXX__deref__shared_ptr<
 
 bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_ptr<Planning::Formula::State_Proposition>& ground_Fact) const
 {
-    INTERACTIVE_VERBOSER(true, 3102, "TESTING statically_false__starting_always_false :: "<<ground_Fact);
+    INTERACTIVE_VERBOSER(true, 11000, "TESTING statically_false__starting_always_false :: "<<ground_Fact);
         
     auto predicate_Name = ground_Fact->get__name();
 
+    if(!get__state_propositions__parsed().size()){
+        /*It cannot be made true, and now we find it is not true in the starting state.*/
+        return true;
+    }
+    
+
+#ifndef NDEBUG
+    bool debug_answer = false;
+    for(auto p = get__state_propositions__parsed().begin()
+            ; p != get__state_propositions__parsed().end()
+            ; p++){
+        std::ostringstream oss1;
+        std::ostringstream oss2;
+        
+        oss1<<predicate_Name;
+        oss2<<p->first;
+        
+        std::string pred_name = oss1.str();
+        std::string other_pred_name = oss2.str();
+
+        if(pred_name == other_pred_name){
+            INTERACTIVE_VERBOSER(true, 11000, "In starting state :: "<<p->first<<" "<<p->first.get__runtime_Thread()<<std::endl
+                                 <<"Required :: "<<predicate_Name<<" "<<predicate_Name.get__runtime_Thread()<<std::endl);
+            debug_answer = true;
+
+            assert(get__state_propositions__parsed().find(predicate_Name) != get__state_propositions__parsed().end());
+            
+            break;
+        }
+    }
+#endif
+    
     auto _prop_indices = get__state_propositions__parsed().find(predicate_Name);
         
     /* If we parsed no ground fact instances in the starting
      * state, and we require it to be true.*/
     if(_prop_indices ==
        get__state_propositions__parsed().end()){
-        INTERACTIVE_VERBOSER(true, 3102, "RESULT fact :: "<<ground_Fact<<" can never be satisfied.");
+
+        
+#ifndef NDEBUG
+        assert(!debug_answer);
+#endif
+        
+        INTERACTIVE_VERBOSER(true, 11000, "NO symbol "<<predicate_Name<<" mentioned in starting state. \n"
+                             <<"1 - RESULT fact :: "<<ground_Fact<<" can never be satisfied.");
         
         WARNING("getting no occurences of static predicate :: "<<predicate_Name<<std::endl
                 <<"in the starting state."<<std::endl);
-        {char ch; std::cin>>ch;}
+//         {char ch; std::cin>>ch;}
         return true;
     }
 
@@ -168,7 +207,7 @@ bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_pt
     if(ground_Fact->get__runtime_Thread()
        == reinterpret_cast<basic_type::Runtime_Thread>(dynamic_cast<const Formula_Data*>(this))){
         if(prop_indices.end() == prop_indices.find(ground_Fact->get__id())){/*Not in starting state.*/
-            INTERACTIVE_VERBOSER(true, 3102, "RESULT fact :: "<<ground_Fact<<" can never be satisfied.");
+            INTERACTIVE_VERBOSER(true, 11000, "2 - RESULT fact :: "<<ground_Fact<<" can never be satisfied.");
     
             return true;
         }
@@ -181,12 +220,12 @@ bool Problem_Data::statically_false__starting_always_false(CXX__deref__shared_pt
                                , ground_Fact->get__arguments());
 
         if(prop_indices.end() == prop_indices.find(proposition.get__id())){/*Not in starting state.*/
-            INTERACTIVE_VERBOSER(true, 3102, "RESULT fact :: "<<ground_Fact<<" can never be satisfied.");
+            INTERACTIVE_VERBOSER(true, 11000, "3 - RESULT fact :: "<<ground_Fact<<" can never be satisfied.");
             return true;
         }
     }
     
-    INTERACTIVE_VERBOSER(true, 3102, "RESULT fact :: "<<ground_Fact<<" MIGHT be satisfied.");
+    INTERACTIVE_VERBOSER(true, 11000, "RESULT fact :: "<<ground_Fact<<" MIGHT be satisfied.");
     return false;
 }
 

@@ -71,7 +71,7 @@ namespace Planning
         typedef std::vector<Conjunct> Conjuncts;
         typedef CXX__deref__shared_ptr<Disjunction> Disjunct;
         typedef std::vector<Disjunct> Disjuncts;
-        typedef CXX__deref__shared_ptr<Negation> Nagative;
+        typedef CXX__deref__shared_ptr<Negation> Negative;
         typedef CXX__deref__shared_ptr<State_Predicate> Fact;
         typedef CXX__deref__shared_ptr<Action_Predicate> Action_Fact;
         typedef CXX__deref__shared_ptr<State_Proposition> Ground_Fact;
@@ -125,7 +125,7 @@ namespace Planning
         
         Result operator()(Conjunct, const Planning::Assignment&);
         Result operator()(Disjunct, const Planning::Assignment&);
-        Result operator()(Nagative, const Planning::Assignment&);
+        Result operator()(Negative, const Planning::Assignment&);
         Result operator()(Fact, const Planning::Assignment&);
         Result operator()(Action_Fact, const Planning::Assignment&);
         Result operator()(Ground_Fact, const Planning::Assignment&);
@@ -158,7 +158,7 @@ namespace Planning
         std::pair<basic_type::Runtime_Thread, ID_TYPE>& actions_validator;
         
         /* Are we processing a negative literal (see
-         * \member{operator()(Nagative, ...}).
+         * \member{operator()(Negative, ...}).
          *
          * INITIALLY :: false
          */

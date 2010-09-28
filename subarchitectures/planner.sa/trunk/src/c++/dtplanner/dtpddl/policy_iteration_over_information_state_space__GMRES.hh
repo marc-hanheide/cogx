@@ -45,7 +45,9 @@ namespace Planning
     class Policy_Iteration__GMRES
     {
     public:
-        Policy_Iteration__GMRES(Set_Of_POMDP_State_Pointers&, double discount_factor = 0.98);
+        Policy_Iteration__GMRES(Set_Of_POMDP_State_Pointers&,
+                                double sink_state_penalty,
+                                double discount_factor = 0.98);
 
         void operator()();
         
@@ -60,7 +62,8 @@ namespace Planning
 
         uint dimension;
 
-        double discount_factor;// = 0.98;
+        double discount_factor;
+        double sink_state_penalty;
         
         GMRES::Vector instantanious_reward_vector;
 

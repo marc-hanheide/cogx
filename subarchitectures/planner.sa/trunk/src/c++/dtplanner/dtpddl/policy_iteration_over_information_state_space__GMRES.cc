@@ -35,8 +35,12 @@
 
 using namespace Planning;
 
-Policy_Iteration__GMRES::Policy_Iteration__GMRES(Set_Of_POMDP_State_Pointers& states, double discount_factor)
+Policy_Iteration__GMRES::
+Policy_Iteration__GMRES(Set_Of_POMDP_State_Pointers& states, 
+                        double sink_state_penalty,
+                        double discount_factor)
     :states(states),
+     sink_state_penalty(sink_state_penalty),
      discount_factor(discount_factor)
 {
 }
@@ -106,6 +110,8 @@ void Policy_Iteration__GMRES::configure_reward_vector()
     assert(dimension == instantanious_reward_vector.size());
     assert(states.size() < dimension);
     assert(instantanious_reward_vector[states.size()] == 0.0);
+    assert(states.size() < instantanious_reward_vector.size());
+    instantanious_reward_vector[states.size()] = sink_state_penalty;
 //     instantanious_reward_vector[states.size()] = 0.0;
 }
 

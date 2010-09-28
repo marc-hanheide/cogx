@@ -272,6 +272,40 @@ double Problem_Grounding::get__objective_value(const State& state) const
     return 0.0;
 }
 
+void Problem_Grounding::set__objective_value(State& state, double value) const
+{
+    if(!is_a_numeric_objective){
+        return ;
+    }
+    
+    if(integer_valued_objective){
+        assert(static_cast<int>(value) <= std::numeric_limits<int>::max());
+        state.set__int(objective_index, static_cast<int>(value));
+    }
+
+    if(double_valued_objective){
+        state.set__float(objective_index, value);
+    }
+
+}
+
+void Problem_Grounding::set__objective_value(State& state, int value) const
+{
+    if(!is_a_numeric_objective){
+        return ;
+    }
+    
+    if(integer_valued_objective){
+        state.set__int(objective_index, value);
+    }
+
+    if(double_valued_objective){
+        state.set__float(objective_index, static_cast<double>(value));
+    }
+}
+
+
+
 const State_Transformation__Pointer& Problem_Grounding::
 get__executable_starting_states_generator() const
 {

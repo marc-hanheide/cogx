@@ -192,7 +192,7 @@ void Solver::fill_illegals(POMDP_State::Normalisation_Factors& _normalisation_Fa
                            , MDP_State* successor_state
                            , double probability)
 {
-    if(!null_observation){
+    if(!null_observation){/*If \member{null_observation} has not yet been configured.*/
         INTERACTIVE_VERBOSER(true, 9094, " ** Making NULL observation for the first and last time. ** ");
         Observational_State* new_observation
             = new Observational_State(problem_Grounding->get__perceptual_Propositions().size());
@@ -360,7 +360,7 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
         auto starting_state_probability = atom->second;
 
         
-        INTERACTIVE_VERBOSER(true, 10017, "Looking at successors of  :: "
+        INTERACTIVE_VERBOSER(true, 11000, "Looking at successors of  :: "
                              <<*starting_state<<std::endl
                              <<"That occurs in a belief with probability :: "<<starting_state_probability<<std::endl);
         
@@ -369,11 +369,11 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
         if(!starting_state->get__has_been_expanded()){
             assert(dynamic_cast<const State*>(starting_state));
             
-            INTERACTIVE_VERBOSER(true, 10017, "START Expanding MDP-state  :: "
+            INTERACTIVE_VERBOSER(true, 11000, "START Expanding MDP-state  :: "
                                  <<*starting_state<<std::endl);
             
             expand_optional_transformations(dynamic_cast<State*>(starting_state));
-            INTERACTIVE_VERBOSER(true, 10017, "DONE Expanding MDP-state  :: "
+            INTERACTIVE_VERBOSER(true, 11000, "DONE Expanding MDP-state  :: "
                                  <<*starting_state<<std::endl);
         }
         
@@ -442,7 +442,7 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
                 
                 assert(observation_probabilities.size() == observations.size());
                 
-                INTERACTIVE_VERBOSER(true, 10017, "Unwinding :: "<<observations.size()<<" observations.");
+                INTERACTIVE_VERBOSER(true, 11000, "Unwinding :: "<<observations.size()<<" observations.");
                 
                 for(uint observation_index = 0
                         ; observation_index < observations.size()
@@ -459,7 +459,7 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
                         (reinterpret_cast<ID_TYPE>(problem_Grounding.get()),
                          action_index);
                     
-                    INTERACTIVE_VERBOSER(true, 10017, "Starting at state with probability :: "<<starting_state_probability<<std::endl
+                    INTERACTIVE_VERBOSER(true, 11000, "Starting at state with probability :: "<<starting_state_probability<<std::endl
                                          <<"Got a successor  :: "
                                          <<*successor_state<<std::endl
                                          <<"Occurring with probability :: "<<successor_state__probability<<std::endl
@@ -478,7 +478,7 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
 //                                          << (state_probability * successor_state__probability * observation_probability)
 //                                          << " " <<action_index<<std::endl);
                     
-                    INTERACTIVE_VERBOSER(true, 10017, "Pushing observation :: "<<*observation
+                    INTERACTIVE_VERBOSER(true, 11000, "Pushing observation :: "<<*observation
                                          <<" p:= "<<observation_probability<<std::endl);
                     
                     add_entry(_normalisation_Factors
@@ -492,7 +492,21 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
         }
     }
 
+#ifndef NDEBUG
+    for(auto atom = belief_state.begin()
+            ; atom != belief_state.end()
+            ; atom++){
+        std::cerr<<atom->second<<" "<<*atom->first<<std::endl;
+    }
+#endif
+    INTERACTIVE_VERBOSER(true, 11000, "Got a new belief state with :: ");
+    
 
+    /* For each \local{atom} in the belief state, find the actions
+     * that are executable at the \argument{pomdp_state} belief-state,
+     * not at \local{atom}. The default behaviour here is to cause a
+     * transition to a logically equivalent state with a severe
+     * penalty. */
     auto _legal_actions = std::vector<uint>(legal_actions.begin(), legal_actions.end());
     for(auto atom = belief_state.begin()
             ; atom != belief_state.end()
@@ -509,18 +523,57 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
                                              sorted__successor_Drivers.begin(), sorted__successor_Drivers.end(),
                                              difference.begin()
                                              );
+
+        /* If there are no actions available at \argument{pomdp_state}
+         * that are illegal at \local{atom}, continue to a different
+         * atom.*/
+        if(!difference.size()) {
+
+            INTERACTIVE_VERBOSER(true, 11000, "No illegal states at :: "
+                                 <<*starting_state<<std::endl);
+            
+            
+            continue;
+        }
+        
+        
+        assert(dynamic_cast<Planning::State*>(starting_state));
+        Planning::State* _cloned_state_with_penalty
+            = new Planning::State(*dynamic_cast<Planning::State*>(starting_state));
+        problem_Grounding->set__objective_value(*_cloned_state_with_penalty, sink_state_penalty);
+        _cloned_state_with_penalty->set__reward(sink_state_penalty);
+        
+        auto cloned_state_with_penalty__index = state_space.find(_cloned_state_with_penalty);
+        if(cloned_state_with_penalty__index == state_space.end()){/*Created a new penalty state*/
+            state_space.insert(_cloned_state_with_penalty);
+            cloned_state_with_penalty__index = state_space.find(_cloned_state_with_penalty);
+            assert(cloned_state_with_penalty__index != state_space.end());
+        } else {
+            delete _cloned_state_with_penalty;/*Repeated construction of a penalty state.*/
+        }
+
+        auto cloned_state_with_penalty = *cloned_state_with_penalty__index;
+        
         
         for(auto action_index = difference.begin()
             ; action_index != difference_end
             ; action_index++){
+
+            INTERACTIVE_VERBOSER(true, 11000, "Adding transiton to illegal state :: "
+                                 <<*cloned_state_with_penalty<<std::endl
+                                 <<"form state :: "<<*starting_state<<std::endl
+                                 <<"with probability :: "<<starting_state_probability);
+            
+            
             
             fill_illegals(_normalisation_Factors
                           , _successor_belief_state
                           , *action_index
-                          , starting_state
-                          ,  starting_state_probability);
+                          , dynamic_cast<MDP_State*>(cloned_state_with_penalty)
+                          , starting_state_probability);
         }
     }
+    
     
     
     press__belief_transitions(pomdp_state

@@ -129,7 +129,7 @@ void Literal::flip(State& state) const
 {
     assert(state.get__number_of_atoms() >= get__variable());
     
-    INTERACTIVE_VERBOSER(true, 7002, "Flipping satisfaction of literal  :: "<<*this);
+    INTERACTIVE_VERBOSER(true, 11000, "Flipping satisfaction of literal  :: "<<*this);
     
     if(is_satisfied(state)){
         if(has_complement){
@@ -145,20 +145,26 @@ void Literal::flip(State& state) const
             assert(complement->is_satisfied(state));
         }
     } else {
+        INTERACTIVE_VERBOSER(true, 11000, "This was previously not satisfied :: "<<*this);
         assert(!is_satisfied(state));
         
         if(has_complement){
+            INTERACTIVE_VERBOSER(true, 11000, "Its complement :: "<<*complement<<std::endl
+                                 <<" might have been previously satisfied, and now will be made unsatisfied :: "<<*this);
+            
             complement->set__unsatisfied(state);
 
             
+            INTERACTIVE_VERBOSER(true, 11000, "Reporting to be newly satisfied :: "<<*this);
             report__newly_satisfied(state);
-
         } else {
+            INTERACTIVE_VERBOSER(true, 11000, "Doesn't have a complement. Setting to satisfied :: "<<*this);
             set__satisfied(state);
         }
         
         assert(is_satisfied(state));
         if(has_complement){
+            INTERACTIVE_VERBOSER(true, 11000, "Testing that complement is unsatisfied :: "<<*complement);
             assert(!complement->is_satisfied(state));
         }
     }

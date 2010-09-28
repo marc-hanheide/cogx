@@ -360,7 +360,7 @@ Partially_Observable_Markov_Decision_Process_State::
 accept_values(boost::numeric::ublas::compressed_vector< double >& values)
 {
    
-    bool assigned_score = false;
+//     bool assigned_score = false;
     double best_score = 1e-100;
     
     assert(successors.size() == action_based_successor_driver.size());
@@ -403,7 +403,7 @@ void
 Partially_Observable_Markov_Decision_Process_State::
 accept_values(boost::numeric::ublas::vector<double>& values)
 {
-    bool assigned_score = false;
+//     bool assigned_score = false;
     double best_score = 1e-100;
     
     assert(successors.size() == action_based_successor_driver.size());

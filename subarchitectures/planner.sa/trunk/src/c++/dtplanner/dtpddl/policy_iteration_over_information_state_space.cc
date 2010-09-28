@@ -67,8 +67,11 @@ bool matrix_inversion__LU_factorisation (const boost::numeric::ublas::matrix<T>&
     return true;
 }
 
-Policy_Iteration::Policy_Iteration(Set_Of_POMDP_State_Pointers& states, double discount_factor)
+Policy_Iteration::Policy_Iteration(Set_Of_POMDP_State_Pointers& states, 
+                                   double sink_state_penalty,
+                                   double discount_factor)
     :states(states),
+     sink_state_penalty(sink_state_penalty), 
      discount_factor(discount_factor)
 {
 }
@@ -189,7 +192,8 @@ boost::numeric::ublas::vector<double> Policy_Iteration::get_reward_vector()
     assert(dimension == states.size() + 1);
     assert(dimension == reward_vector.size());
     assert(states.size() < dimension);
-    reward_vector[states.size()] = 0.0;
+//     reward_vector[states.size()] = 0.0;
+    reward_vector[states.size()] = sink_state_penalty;
     
     return std::move(reward_vector);
 }
