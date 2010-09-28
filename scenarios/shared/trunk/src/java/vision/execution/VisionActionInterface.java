@@ -315,6 +315,7 @@ public class VisionActionInterface extends ManagedComponent {
 
 	private String getVisualObjectID(String _beliefID)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+
 		GroundedBelief belief = getMemoryEntry(_beliefID, "binder",
 				GroundedBelief.class);
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
