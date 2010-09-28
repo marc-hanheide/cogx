@@ -10,6 +10,7 @@ import java.util.Map;
 import comadata.ComaRoom;
 
 import SpatialData.Place;
+import SpatialData.ViewPoint;
 import SpatialProperties.GatewayPlaceProperty;
 import cast.architecture.ManagedComponent;
 import cast.core.CASTUtils;
@@ -34,9 +35,11 @@ public class DoraBeliefTracker extends ManagedComponent {
 					.typeName(GatewayPlaceProperty.class));
 	private static final String COMAROOMTYPE = SimpleDiscreteTransferFunction
 	.getBeliefTypeFromCastType(CASTUtils.typeName(ComaRoom.class));
+	private static final String VIEWPOINTTYPE = SimpleDiscreteTransferFunction
+	.getBeliefTypeFromCastType(CASTUtils.typeName(ViewPoint.class));
 
 	private static final List<String> types = Arrays.asList(PLACETYPE,
-			GATEWAYTYPE, "relation", "Robot", COMAROOMTYPE);
+			GATEWAYTYPE, "relation", "Robot", COMAROOMTYPE, VIEWPOINTTYPE);
 
 	WMTracker<PerceptBelief, GroundedBelief> tracker = null;
 

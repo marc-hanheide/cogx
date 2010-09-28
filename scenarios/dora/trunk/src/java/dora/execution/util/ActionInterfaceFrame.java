@@ -88,6 +88,8 @@ public class ActionInterfaceFrame extends JFrame {
 	private JTable m_objectTable;
 	private DefaultTableModel m_objectTableModel;
 	private final HashMap<String, WorkingMemoryAddress> m_cones;
+	private final HashMap<String, Long> m_places;
+//	private final HashMap<String, Strng> m_beliefs;
 	private static final Class<?>[] FEATURE_VALUE_TYPES = {
 			ElementaryFormula.class, IntegerFormula.class, FloatFormula.class,
 			BooleanFormula.class };
@@ -104,6 +106,7 @@ public class ActionInterfaceFrame extends JFrame {
 		m_exeMan = _graphicalExecutionManager;
 		initialize();
 		m_cones = new HashMap<String, WorkingMemoryAddress>();
+		m_places = new HashMap<String, Long>();
 	}
 
 	/**
@@ -180,11 +183,7 @@ public class ActionInterfaceFrame extends JFrame {
 		return m_tabbedPane;
 	}
 
-	public void addPlace(long _id, PlaceStatus _status) {
-		// 1Model.addRow(new Object[] { _id, true });
-		m_placeTableModel.addRow(new Object[] { _id, _status });
-		pack();
-	}
+	
 
 	public void removePlace(long _placeID) {
 		// m_placeTableModel.removeRow(row)
@@ -571,7 +570,7 @@ public class ActionInterfaceFrame extends JFrame {
 			assert (coneIDVal != null);
 			String coneID = (String) coneIDVal;
 			WorkingMemoryAddress coneAddr = m_cones.get(coneID);
-			assert(coneAddr != null);
+			assert (coneAddr != null);
 			m_exeMan.triggerProccesCone(coneAddr, new MonitorPanel());
 		} else {
 			m_exeMan.println("no cone selected, doing nothing");
@@ -733,21 +732,6 @@ public class ActionInterfaceFrame extends JFrame {
 		return m_beliefTable;
 	}
 
-	public void addBelief(WorkingMemoryAddress _address, dBelief _belief) {
-		println(_belief.type);
-		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
-				.create(dBelief.class, _belief);
-
-		IndependentFormulaDistributions cid = b.getContent();
-
-		for (Entry<String, FormulaDistribution> featureType : cid.entrySet()) {
-			println(featureType.getValue().get());
-		}
-		m_beliefTableModel.addRow(new Object[] { _address.id, _belief.type });
-		pack();
-
-	}
-
 	private void println(Object _o) {
 		m_exeMan.println(_o);
 	}
@@ -775,7 +759,73 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 	public void removeCone(WorkingMemoryAddress _address) {
-		// TODO Auto-generated method stub
+		for (int row = 0; row < m_coneTableModel.getRowCount(); row++) {
+			String coneID = (String) m_coneTableModel.getValueAt(row,
+					CONE_ID_COLUMN);
+			if (coneID.equals(_address.id)) {
+				m_coneTableModel.removeRow(row);
+				m_cones.remove(coneID);
+				return;
+			}
+		}
+
+	}
+
+	public void addBelief(WorkingMemoryAddress _address, dBelief _belief) {
+		println(_belief.type);
+		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
+				.create(dBelief.class, _belief);
+
+		IndependentFormulaDistributions cid = b.getContent();
+
+		for (Entry<String, FormulaDistribution> featureType : cid.entrySet()) {
+			println(featureType.getValue().get());
+		}
+		m_beliefTableModel.addRow(new Object[] { _address.id, _belief.type });
+		pack();
+
+	}
+
+	
+	public void addPlace(WorkingMemoryAddress _address, long _id,
+			PlaceStatus _status) {
+		m_placeTableModel.addRow(new Object[] { _id, _status });
+		m_places.put(_address.id, _id);
+		pack();
+	}
+	
+	public void updatePlace(WorkingMemoryAddress _address, long _id,
+			PlaceStatus _status) {
+		println("trying to update place");
+		for (int row = 0; row < m_placeTableModel.getRowCount(); row++) {
+			long placeID = (Long) m_placeTableModel.getValueAt(row,
+					PLACE_ID_COLUMN);
+			if (placeID == _id) {
+				m_placeTableModel.removeRow(row);
+				m_placeTableModel.addRow(new Object[] { _id, _status });
+				println("done");
+				pack();
+				return;
+			}
+		}
+	}
+
+	public void removePlace(WorkingMemoryAddress _address) {
+		long id = m_places.get(_address.id);
+		println("trying to remove place");
+		
+		for (int row = 0; row < m_placeTableModel.getRowCount(); row++) {
+			long placeID = (Long) m_placeTableModel.getValueAt(row,
+					PLACE_ID_COLUMN);
+			if (placeID == id) {
+				m_placeTableModel.removeRow(row);
+				m_places.remove(_address.id);
+				pack();
+				println("done");
+
+				return;
+			}
+		}
 	}
 
 }
