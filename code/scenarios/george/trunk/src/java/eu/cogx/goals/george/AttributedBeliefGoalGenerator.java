@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import motivation.components.generators.AbstractBeliefMotiveGenerator;
-import motivation.components.generators.AbstractIntentionMotiveGenerator;
 import motivation.slice.GeneralGoalMotive;
 import nu.xom.Document;
 import nu.xom.Element;
@@ -16,13 +15,12 @@ import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.IceXMLSerializer;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
-import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
-public class IntentionGoalGenerator extends
-		AbstractIntentionMotiveGenerator<GeneralGoalMotive, Intention> {
+public class AttributedBeliefGoalGenerator extends
+		AbstractBeliefMotiveGenerator<GeneralGoalMotive, dBelief> {
 
 	public final static String XPATH_SELECT_FORMULAS = "/*[estatus/attribagents/string/text()='human']/content/values/values/*/val/forms";
 	public final static String XPATH_SELECT_REFERRED_OBJECT = "*[op/text()='LingRef']/form/prop/text()";
@@ -35,13 +33,13 @@ public class IntentionGoalGenerator extends
 	 * @see cast.core.CASTComponent#runComponent()
 	 */
 
-	public IntentionGoalGenerator() {
-		super("fact", GeneralGoalMotive.class, Intention.class);
+	public AttributedBeliefGoalGenerator() {
+		super("fact", GeneralGoalMotive.class, dBelief.class);
 	}
 
 	@Override
 	protected GeneralGoalMotive checkForAddition(WorkingMemoryAddress addr,
-			Intention newEntry) {
+			dBelief newEntry) {
 		if (newEntry.estatus instanceof AttributedEpistemicStatus) {
 			// only attributed beliefs contain intentions
 			Document xmlDoc = IceXMLSerializer.toXomDom(newEntry);
@@ -121,7 +119,7 @@ public class IntentionGoalGenerator extends
 	}
 
 	@Override
-	protected GeneralGoalMotive checkForUpdate(Intention newEntry,
+	protected GeneralGoalMotive checkForUpdate(dBelief newEntry,
 			GeneralGoalMotive motive) {
 		motive.updated = getCASTTime();
 		// initially this costs are taken as -1, corresponding to an ultimate
