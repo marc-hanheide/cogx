@@ -167,7 +167,6 @@ class IntermediateCompiler(Translator):
                 costIncrease = predicates.Term(0.0)
                 helpAct.set_total_cost(costIncrease)
                 p2.domain.actions.append(helpAct)
-                p2.actions.append(helpAct)
 
                 self.counter += 1
                 return goalToken
@@ -255,7 +254,6 @@ class PreferenceCompiler(Translator):
                 help_act.set_total_cost(cost_increase)
 
                 p2.domain.actions.append(help_act)
-                p2.actions.append(help_act)
 
                 self.counter += 1
                 return goal_dis
