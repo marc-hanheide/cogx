@@ -6,8 +6,6 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.Map.Entry;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -25,12 +23,15 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
+import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import SpatialData.ViewPoint;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
-import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
+import cast.core.CASTUtils;
+
+import comadata.ComaRoom;
+
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
@@ -38,6 +39,9 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import dora.execution.components.GraphicalExecutionManager;
+import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
+import eu.cogx.perceptmediator.transferfunctions.ViewPointTransferFunction;
+import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 import execution.slice.Action;
 import execution.util.ActionMonitor;
 
@@ -87,13 +91,20 @@ public class ActionInterfaceFrame extends JFrame {
 	private JTabbedPane m_tabbedPane;
 	private JTable m_objectTable;
 	private DefaultTableModel m_objectTableModel;
-	private final HashMap<String, WorkingMemoryAddress> m_cones;
-	private final HashMap<String, Long> m_places;
-//	private final HashMap<String, Strng> m_beliefs;
+
 	private static final Class<?>[] FEATURE_VALUE_TYPES = {
 			ElementaryFormula.class, IntegerFormula.class, FloatFormula.class,
 			BooleanFormula.class };
-	private static final int CONE_ID_COLUMN = 0;
+	private static final int CONE_ADDR_COLUMN = 2;
+
+	private static final String PLACETYPE = SimpleDiscreteTransferFunction
+			.getBeliefTypeFromCastType(CASTUtils.typeName(Place.class));
+
+	private static final String COMAROOMTYPE = SimpleDiscreteTransferFunction
+			.getBeliefTypeFromCastType(CASTUtils.typeName(ComaRoom.class));
+
+	private static final String VIEWPOINTTYPE = SimpleDiscreteTransferFunction
+			.getBeliefTypeFromCastType(CASTUtils.typeName(ViewPoint.class));
 
 	/**
 	 * This is the default constructor
@@ -105,8 +116,6 @@ public class ActionInterfaceFrame extends JFrame {
 		super();
 		m_exeMan = _graphicalExecutionManager;
 		initialize();
-		m_cones = new HashMap<String, WorkingMemoryAddress>();
-		m_places = new HashMap<String, Long>();
 	}
 
 	/**
@@ -175,15 +184,13 @@ public class ActionInterfaceFrame extends JFrame {
 		if (m_tabbedPane == null) {
 
 			m_tabbedPane = new JTabbedPane();
-			m_tabbedPane.addTab("Places", getPlacesPanel());
-			m_tabbedPane.addTab("Beliefs", getBeliefsPanel());
-			m_tabbedPane.addTab("Objects", getObjectsPanel());
+			m_tabbedPane.addTab("Spatial", getPlacesPanel());
+			m_tabbedPane.addTab("Vision", getObjectsPanel());
+			// m_tabbedPane.addTab("Beliefs", getBeliefsPanel());
 
 		}
 		return m_tabbedPane;
 	}
-
-	
 
 	public void removePlace(long _placeID) {
 		// m_placeTableModel.removeRow(row)
@@ -357,7 +364,7 @@ public class ActionInterfaceFrame extends JFrame {
 			} else if (m_goAction.isSelected()) {
 				goToPlace();
 			}
-		} else if (tabIndex == 2) {
+		} else if (tabIndex == 1) {
 
 			if (m_detectObjectsAction.isSelected()) {
 				detectObjects();
@@ -380,12 +387,12 @@ public class ActionInterfaceFrame extends JFrame {
 				recogniseForegroundedModels();
 			}
 
-		} else if (tabIndex == 1) {
-			if (m_askForFeatureAction.isSelected()) {
-				askForFeature();
-			} else if (m_testFeatureValueAction.isSelected()) {
-				testFeatureValue();
-			}
+			// } else if (tabIndex ==2) {
+			// if (m_askForFeatureAction.isSelected()) {
+			// askForFeature();
+			// } else if (m_testFeatureValueAction.isSelected()) {
+			// testFeatureValue();
+			// }
 		} else {
 			throw new RuntimeException("No tab selected apparently... "
 					+ m_tabbedPane.getSelectedIndex());
@@ -537,17 +544,29 @@ public class ActionInterfaceFrame extends JFrame {
 	/**
 	 * @throws CASTException
 	 */
-	private void generateCones() throws CASTException {
+	private long[] getSelectedPlaces() {
 		int[] selectedRows = m_placeTable.getSelectedRows();
-		if (selectedRows.length > 0) {
-			long[] placeIDs = new long[selectedRows.length];
-			for (int i = 0; i < selectedRows.length; ++i) {
+		long[] placeIDs = new long[selectedRows.length];
 
-				Object placeIDVal = m_placeTableModel.getValueAt(
-						selectedRows[i], PLACE_ID_COLUMN);
-				assert (placeIDVal != null);
-				placeIDs[i] = (Long) placeIDVal;
-			}
+		for (int i = 0; i < selectedRows.length; ++i) {
+
+			Object placeIDVal = m_placeTableModel.getValueAt(selectedRows[i],
+					PLACE_ID_COLUMN);
+			assert (placeIDVal != null);
+			placeIDs[i] = (Long) placeIDVal;
+		}
+
+		return placeIDs;
+	}
+
+	/**
+	 * @throws CASTException
+	 */
+	private void generateCones() throws CASTException {
+
+		long[] placeIDs = getSelectedPlaces();
+		if (placeIDs.length > 0) {
+
 			m_exeMan.triggerConeGeneration((String) JOptionPane
 					.showInputDialog(this,
 							"What object should the cones be generated for?"),
@@ -564,13 +583,12 @@ public class ActionInterfaceFrame extends JFrame {
 	private void processCone() throws CASTException {
 		int selectedRow = m_coneTable.getSelectedRow();
 		if (selectedRow != -1) {
-			m_exeMan.log("processCone()");
-			Object coneIDVal = m_coneTableModel.getValueAt(selectedRow,
-					CONE_ID_COLUMN);
-			assert (coneIDVal != null);
-			String coneID = (String) coneIDVal;
-			WorkingMemoryAddress coneAddr = m_cones.get(coneID);
-			assert (coneAddr != null);
+			Object coneAddrVal = m_coneTableModel.getValueAt(selectedRow,
+					CONE_ADDR_COLUMN);
+			assert (coneAddrVal != null);
+			String coneAddrString = (String) coneAddrVal;
+			WorkingMemoryAddress coneAddr = SimpleDiscreteTransferFunction
+					.addressFromPropositionString(coneAddrString);
 			m_exeMan.triggerProccesCone(coneAddr, new MonitorPanel());
 		} else {
 			m_exeMan.println("no cone selected, doing nothing");
@@ -669,8 +687,8 @@ public class ActionInterfaceFrame extends JFrame {
 		if (m_placeTable == null) {
 
 			m_placeTable = new JTable(1, 2);
-			m_placeTableModel = new DefaultTableModel(new String[] { "id",
-					"status" }, 0);
+			m_placeTableModel = new DefaultTableModel(new String[] {
+					"place id", "status", "belief address" }, 0);
 			m_placeTable.setModel(m_placeTableModel);
 		}
 		return m_placeTable;
@@ -687,7 +705,8 @@ public class ActionInterfaceFrame extends JFrame {
 			// m_coneTableModel = new DefaultTableModel(new String[] { "id",
 			// "explored" }, 0);
 			m_coneTable = new JTable(1, 1);
-			m_coneTableModel = new DefaultTableModel(new String[] { "id" }, 0);
+			m_coneTableModel = new DefaultTableModel(new String[] { "object",
+					"prob", "cone address" }, 0);
 			m_coneTable.setModel(m_coneTableModel);
 		}
 		return m_coneTable;
@@ -752,80 +771,105 @@ public class ActionInterfaceFrame extends JFrame {
 		return models;
 	}
 
-	public void addCone(WorkingMemoryAddress _address, ViewPoint _cone) {
-		m_coneTableModel.addRow(new Object[] { _address.id });
-		m_cones.put(_address.id, _address);
+	public void addConeBelief(WorkingMemoryAddress _address,
+			IndependentFormulaDistributionsBelief<dBelief> _belief) {
+
+		String label = _belief.getContent()
+				.get(ViewPointTransferFunction.OBJECT_LABEL_ID)
+				.getDistribution().getMostLikely().getProposition();
+
+		Double prob = _belief.getContent()
+				.get(ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
+				.getDistribution().getMostLikely().getDouble();
+
+		String addr = _belief.getContent()
+				.get(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID)
+				.getDistribution().getMostLikely().getProposition();
+
+		m_coneTableModel.addRow(new Object[] { label, prob, addr });
+
 		pack();
+
 	}
 
 	public void removeCone(WorkingMemoryAddress _address) {
-		for (int row = 0; row < m_coneTableModel.getRowCount(); row++) {
-			String coneID = (String) m_coneTableModel.getValueAt(row,
-					CONE_ID_COLUMN);
-			if (coneID.equals(_address.id)) {
-				m_coneTableModel.removeRow(row);
-				m_cones.remove(coneID);
-				return;
-			}
-		}
+		// for (int row = 0; row < m_coneTableModel.getRowCount(); row++) {
+		// String coneID = (String) m_coneTableModel.getValueAt(row,
+		// CONE_ID_COLUMN);
+		// if (coneID.equals(_address.id)) {
+		// m_coneTableModel.removeRow(row);
+		// m_cones.remove(coneID);
+		// return;
+		// }
+		// }
 
 	}
 
-	public void addBelief(WorkingMemoryAddress _address, dBelief _belief) {
-		println(_belief.type);
-		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
-				.create(dBelief.class, _belief);
+	public void addBelief(WorkingMemoryAddress _address,
+			IndependentFormulaDistributionsBelief<dBelief> _belief) {
 
-		IndependentFormulaDistributions cid = b.getContent();
-
-		for (Entry<String, FormulaDistribution> featureType : cid.entrySet()) {
-			println(featureType.getValue().get());
+		if (_belief.getType().equals(PLACETYPE)) {
+			addPlaceBelief(_address, _belief);
 		}
-		m_beliefTableModel.addRow(new Object[] { _address.id, _belief.type });
+		if (_belief.getType().equals(VIEWPOINTTYPE)) {
+			addConeBelief(_address, _belief);
+		}
+
 		pack();
 
 	}
 
-	
-	public void addPlace(WorkingMemoryAddress _address, long _id,
-			PlaceStatus _status) {
-		m_placeTableModel.addRow(new Object[] { _id, _status });
-		m_places.put(_address.id, _id);
+	public void addPlaceBelief(WorkingMemoryAddress _address,
+			IndependentFormulaDistributionsBelief<dBelief> _belief) {
+
+		long placeID = _belief.getContent()
+				.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+				.getMostLikely().getInteger();
+
+		String status = _belief.getContent()
+				.get(PlaceTransferFunction.PLACE_STATUS_ID).getDistribution()
+				.getMostLikely().getProposition();
+
+		String addr = _belief.getContent()
+				.get(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID)
+				.getDistribution().getMostLikely().getProposition();
+
+		m_placeTableModel.addRow(new Object[] { placeID, status, addr });
 		pack();
 	}
-	
+
 	public void updatePlace(WorkingMemoryAddress _address, long _id,
 			PlaceStatus _status) {
-		println("trying to update place");
-		for (int row = 0; row < m_placeTableModel.getRowCount(); row++) {
-			long placeID = (Long) m_placeTableModel.getValueAt(row,
-					PLACE_ID_COLUMN);
-			if (placeID == _id) {
-				m_placeTableModel.removeRow(row);
-				m_placeTableModel.addRow(new Object[] { _id, _status });
-				println("done");
-				pack();
-				return;
-			}
-		}
+		// println("trying to update place");
+		// for (int row = 0; row < m_placeTableModel.getRowCount(); row++) {
+		// long placeID = (Long) m_placeTableModel.getValueAt(row,
+		// PLACE_ID_COLUMN);
+		// if (placeID == _id) {
+		// m_placeTableModel.removeRow(row);
+		// m_placeTableModel.addRow(new Object[] { _id, _status });
+		// println("done");
+		// pack();
+		// return;
+		// }
+		// }
 	}
 
 	public void removePlace(WorkingMemoryAddress _address) {
-		long id = m_places.get(_address.id);
-		println("trying to remove place");
-		
-		for (int row = 0; row < m_placeTableModel.getRowCount(); row++) {
-			long placeID = (Long) m_placeTableModel.getValueAt(row,
-					PLACE_ID_COLUMN);
-			if (placeID == id) {
-				m_placeTableModel.removeRow(row);
-				m_places.remove(_address.id);
-				pack();
-				println("done");
-
-				return;
-			}
-		}
+		// long id = m_places.get(_address.id);
+		// println("trying to remove place");
+		//
+		// for (int row = 0; row < m_placeTableModel.getRowCount(); row++) {
+		// long placeID = (Long) m_placeTableModel.getValueAt(row,
+		// PLACE_ID_COLUMN);
+		// if (placeID == id) {
+		// m_placeTableModel.removeRow(row);
+		// m_places.remove(_address.id);
+		// pack();
+		// println("done");
+		//
+		// return;
+		// }
+		// }
 	}
 
 }
