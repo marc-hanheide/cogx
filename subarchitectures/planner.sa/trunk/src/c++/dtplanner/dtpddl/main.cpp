@@ -200,7 +200,7 @@ int main(int argc, char** argv)
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
-            solver->set__sink_state_penalty(-0.1);
+            solver->set__sink_state_penalty(-1.0);
             
             INTERACTIVE_VERBOSER(true, 12000, "Made a solver, starting preprocessing.")
             
@@ -216,7 +216,7 @@ int main(int argc, char** argv)
 //             solver->expand_belief_state_space();
             auto current_state = solver->peek__next_belief_state_for_expansion();//expansion_queue.front();
             
-            INTERACTIVE_VERBOSER(true, 12000, "Current state is :: "
+            INTERACTIVE_VERBOSER(true, 13000, "Current state is :: "
                                  <<*current_state<<std::endl
                                  <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
 
@@ -224,17 +224,17 @@ int main(int argc, char** argv)
 //             Planning::Policy_Iteration
             Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space, solver->get__sink_state_penalty());
 //             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space, solver->get__sink_state_penalty());
-            for(uint i = 0; i < 20; i++){
+            for(uint i = 0; i < 200; i++){
                 if(!solver->expand_belief_state_space()){
                     break;
-                    VERBOSER(12000, "No starting state!"<<std::endl);
+                    VERBOSER(13000, "No starting state!"<<std::endl);
                 } else {
-                    VERBOSER(12000, "Expanding (so far we have "
+                    VERBOSER(13000, "Expanding (so far we have "
                              <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl
                              <<"Expected reward is :: "
                              <<current_state->get__expected_value()<<std::endl);
                 
-                    policy_Iteration();
+//                     policy_Iteration();
                 }
             }
 
@@ -251,7 +251,7 @@ int main(int argc, char** argv)
 //                 }
                 
                 
-                VERBOSER(12000, "Expected reward is :: "
+                VERBOSER(13000, "Expected reward is :: "
                          <<current_state->get__expected_value()<<std::endl);
             }
             
@@ -261,7 +261,7 @@ int main(int argc, char** argv)
             
             for(auto i = 0; i < 10; i++){
             
-                INTERACTIVE_VERBOSER(true, 12000, "Current state is :: "
+                INTERACTIVE_VERBOSER(true, 13000, "Current state is :: "
                                      <<*current_state<<std::endl
                                      <<"First element is :: "
                                      <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
@@ -269,7 +269,7 @@ int main(int argc, char** argv)
                 std::pair<Planning::Formula::Action_Proposition, uint> _action
                     = solver->get_prescribed_action(current_state);
             
-                INTERACTIVE_VERBOSER(true, 12000, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+                INTERACTIVE_VERBOSER(true, 13000, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
             
                 auto observations = current_state->get__possible_observations_given_action(_action.second);
             
@@ -283,7 +283,7 @@ int main(int argc, char** argv)
             
                 current_state = successor_state;
             
-                INTERACTIVE_VERBOSER(true, 12000, "Current belief state is :: "<<*current_state<<std::endl);
+                INTERACTIVE_VERBOSER(true, 13000, "Current belief state is :: "<<*current_state<<std::endl);
             }
 
         
@@ -294,333 +294,6 @@ int main(int argc, char** argv)
     
     return 0;
 }
-
-// int main(int argc, char** argv)
-// {    
-//     /*Some preliminary testing.*/
-//     Turnstyle::test__turnstyle_hh();//turnstyle.hh
-    
-//     assert(command_Line_Arguments.size() == 0);
-//     command_Line_Arguments = Command_Line_Arguments(argc, argv);
-    
-//     int seed = 2010;
-//     srandom(seed);
-//     srand(seed);
-
-//     while(read_in__domain_description()){};
-    
-//     while(read_in__problem_description()){};
-    
-//     assert(Planning::Parsing::domains.size() > 0);
-
-// //     for(auto domain = Planning::Parsing::domains.begin()
-// //             ; domain != Planning::Parsing::domains.end()
-// //             ; domain++){
-// //         std::cout<<*domain->second<<std::endl;
-// //     }
-    
-//     /*Testing exposure Wed Aug 25 15:41:33 BST 2010 ---*/
-    
-//     for(auto problem = Planning::Parsing::problems.begin()
-//             ; problem != Planning::Parsing::problems.end()
-//             ; problem++){
-            
-//         std::cout<<*problem->second->get__domain_Data()<<std::endl;
-//         std::cout<<*problem->second<<std::endl;
-        
-//         for(int i =0 ; i < 100; i++){
-//             std::cout<<problem->second->get__prescribed_action()<<std::endl;
-//         }
-//     }
-    
-//     INTERACTIVE_VERBOSER(true, 12000, "Passed test 1 :: "<<std::endl);
-
-// //     uint count_test2 = 0;
-// //     while(true){
-        
-// //         for(auto problem = Planning::Parsing::problems.begin()
-// //                 ; problem != Planning::Parsing::problems.end()
-// //                 ; problem++){
-// // //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
-// //             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
-// //             solver->preprocess();
-
-// //             assert(0 != solver->peek__next_belief_state_for_expansion());//expansion_queue.size());
-// // //             solver->expand_belief_state_space();
-// //             auto current_state = solver->peek__next_belief_state_for_expansion();//expansion_queue.front();
-            
-// //             INTERACTIVE_VERBOSER(true, 10021, "Current state is :: "
-// //                                  <<*current_state<<std::endl
-// //                                  <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
-            
-// //             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
-// //             for(uint i = 0; i < 10; i++){
-// //                 if(!solver->expand_belief_state_space()){
-// //                     break;
-// //                     VERBOSER(10501, "No starting state!"<<std::endl);
-// //                 } else {
-// //                     VERBOSER(10501, "Expanding (so far we have "
-// //                              <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl);
-                    
-// // //                     policy_Iteration();
-// //                 }
-// //             }
-// //             for(uint i = 0; i < 10; i++){
-// //                 policy_Iteration();
-// //                 VERBOSER(10501, "Expected reward is :: "
-// //                          <<current_state->get__expected_value()<<std::endl);
-// //             }
-            
-
-// // //             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
-// // //             policy_Iteration();
-            
-// //             for(auto i = 0; i < 10; i++){
-            
-// //                 INTERACTIVE_VERBOSER(true, 10501, "Current state is :: "
-// //                                      <<*current_state<<std::endl
-// //                                      <<"First element is :: "
-// //                                      <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)
-// //                                      <<std::endl);
-                
-// //                 std::pair<Planning::Formula::Action_Proposition, uint> _action
-// //                     = solver->get_prescribed_action(current_state);
-            
-// //                 INTERACTIVE_VERBOSER(true, 10501, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
-            
-// //                 auto observations = current_state->get__possible_observations_given_action(_action.second);
-            
-// //                 auto random_index = random() % observations.size();
-// //                 auto observation = observations[random_index];
-            
-// //                 Planning::POMDP_State* successor_state
-// //                     = solver->take_observation(current_state,
-// //                                                observation,
-// //                                                _action.second);
-            
-// //                 current_state = successor_state;
-            
-// //                 INTERACTIVE_VERBOSER(true, 10501, "Current belief state is :: "<<*current_state<<std::endl);
-// //             }
-
-        
-// //             delete solver;
-// //         }
-    
-// //         INTERACTIVE_VERBOSER(true, 10004, "Passed test 2 :: "<<++count_test2<<std::endl);
-// //     }
-
-
-
-
-
-
-        
-//     uint count_test2 = 0;
-// //     while(true){
-        
-//         for(auto problem = Planning::Parsing::problems.begin()
-//                 ; problem != Planning::Parsing::problems.end()
-//                 ; problem++){
-//             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
-// //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
-// //             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
-            
-//             INTERACTIVE_VERBOSER(true, 12000, "Made a solver, starting preprocessing.")
-            
-//             solver->preprocess();
-
-//             INTERACTIVE_VERBOSER(true, 12000, "Done preprocessing, now looking towards state expansion.");
-            
-//             QUERY_UNRECOVERABLE_ERROR(0 == solver->peek__next_belief_state_for_expansion()
-//                                       , "There is no starting belief state.\n"
-//                                       <<"This might be because no rewards are available in the problem.");
-            
-//             assert(0 != solver->peek__next_belief_state_for_expansion());//expansion_queue.size());
-// //             solver->expand_belief_state_space();
-//             auto current_state = solver->peek__next_belief_state_for_expansion();//expansion_queue.front();
-            
-//             INTERACTIVE_VERBOSER(true, 12000, "Current state is :: "
-//                                  <<*current_state<<std::endl
-//                                  <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
-
-            
-// //             Planning::Policy_Iteration
-//             Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space);
-// //             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
-//             for(uint i = 0; i < 100; i++){
-//                 if(!solver->expand_belief_state_space()){
-//                     break;
-//                     VERBOSER(12000, "No starting state!"<<std::endl);
-//                 } else {
-//                     VERBOSER(12000, "Expanding (so far we have "
-//                              <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl
-//                              <<"Expected reward is :: "
-//                              <<current_state->get__expected_value()<<std::endl);
-                
-//                     policy_Iteration();
-//                 }
-//             }
-
-// //             exit(0);
-            
-// //             double old_expected_reward = -1000000.0;
-            
-//             for(uint i = 0; i < 50; i++){
-//                 policy_Iteration();
-// //                 if(old_expected_reward != current_state->get__expected_value()){
-// //                      old_expected_reward = current_state->get__expected_value();
-// //                 } else {
-// //                     break;
-// //                 }
-                
-                
-//                 VERBOSER(12000, "Expected reward is :: "
-//                          <<current_state->get__expected_value()<<std::endl);
-//             }
-            
-
-// //             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
-// //             policy_Iteration();
-            
-//             for(auto i = 0; i < 10; i++){
-            
-//                 INTERACTIVE_VERBOSER(true, 12000, "Current state is :: "
-//                                      <<*current_state<<std::endl
-//                                      <<"First element is :: "
-//                                      <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
-                
-//                 std::pair<Planning::Formula::Action_Proposition, uint> _action
-//                     = solver->get_prescribed_action(current_state);
-            
-//                 INTERACTIVE_VERBOSER(true, 12000, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
-            
-//                 auto observations = current_state->get__possible_observations_given_action(_action.second);
-            
-//                 auto random_index = random() % observations.size();
-//                 auto observation = observations[random_index];
-            
-//                 Planning::POMDP_State* successor_state
-//                     = solver->take_observation(current_state,
-//                                                observation,
-//                                                _action.second);
-            
-//                 current_state = successor_state;
-            
-//                 INTERACTIVE_VERBOSER(true, 12000, "Current belief state is :: "<<*current_state<<std::endl);
-//             }
-
-        
-// //             delete solver;
-//         }
-    
-//         INTERACTIVE_VERBOSER(true, 10004, "Passed test 2 :: "<<++count_test2<<std::endl);
-//   //   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-    
-// //     for(auto problem = Planning::Parsing::problems.begin()
-// //             ; problem != Planning::Parsing::problems.end()
-// //             ; problem++){
-// //         Planning::Solver* solver = new Planning::Solver(*problem->second);
-// //         solver->preprocess();
-// //         solver->expand_belief_state_space();
-// //         auto current_state = solver->expansion_queue.front();
-// //         if(!solver->expand_belief_state_space()){
-// //             UNRECOVERABLE_ERROR("No starting state!"<<std::endl);
-// //         }
-        
-// //         for(auto i = 0; i < 10; i++){
-            
-// //             std::pair<Planning::Formula::Action_Proposition, uint> _action
-// //                 = solver->get_prescribed_action(current_state);
-            
-// //             INTERACTIVE_VERBOSER(true, 10002, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
-            
-// //             auto observations = current_state->get__possible_observations_given_action(_action.second);
-            
-// //             auto random_index = random() % observations.size();
-// //             auto observation = observations[random_index];
-            
-// //             Planning::POMDP_State* successor_state
-// //                 = solver->take_observation(current_state,
-// //                                            observation,
-// //                                            _action.second);
-            
-// //             current_state = successor_state;
-            
-// //             INTERACTIVE_VERBOSER(true, 10002, "Current belief state is :: "<<*current_state<<std::endl);
-// //         }
-
-        
-// //         delete solver;
-// //     }
-    
-//     INTERACTIVE_VERBOSER(true, 10004, "Passed test2 :: "<<std::endl);
-    
-// //     for(auto problem = Planning::Parsing::problems.begin()
-// //             ; problem != Planning::Parsing::problems.end()
-// //             ; problem++){
-        
-// //         INTERACTIVE_VERBOSER(true, 10004, "Making new solver :: "<<std::endl);
-// //         Planning::Solver* solver = new Planning::Solver(*problem->second);
-// //         INTERACTIVE_VERBOSER(true, 10004, "Made new solver, now preprocessing :: "<<std::endl);
-        
-// //         solver->preprocess();
-// //         INTERACTIVE_VERBOSER(true, 10004, "Done preprocessing, now expanding belief space :: "<<std::endl);
-// //         solver->expand_belief_state_space();
-// //         INTERACTIVE_VERBOSER(true, 10004, "Done belief expansion, now running PI :: "<<std::endl);
-        
-// //         Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
-// //         while(solver->expand_belief_state_space()){
-// //             INTERACTIVE_VERBOSER(true, 10004, "Expanded belief for state count :: "
-// //                                  <<solver->belief_state__space.size()<<std::endl);
-// //             policy_Iteration();
-// //         }
-        
-// //         delete solver;
-// //     }
-
-    
-// //     for(auto problem = Planning::Parsing::problems.begin()
-// //             ; problem != Planning::Parsing::problems.end()
-// //             ; problem++){
-        
-// //         std::cout<<*problem->second->get__domain_Data()<<std::endl;
-// //         std::cout<<*problem->second<<std::endl;
-        
-// //         for(int i =0 ; i < 100; i++){
-// //             std::cout<<problem->second->get__prescribed_action()<<std::endl;
-// //         }
-        
-// //         Planning::Solver solver(*problem->second);
-// //         solver.preprocess();
-// //         while(solver.expand_belief_state_space()){
-// //             INTERACTIVE_VERBOSER(true, 9096, "Expanding POMDP state"<<std::endl);
-// //         };
-        
-// //         std::cout<<*problem->second->get__domain_Data()<<std::endl;
-// //         std::cout<<*problem->second<<std::endl;
-// //     }
-
-
-    
-//     return 0;
-// }
 
 /* 
  *   With the organic tactility, refreshing scent and minimalist

@@ -56,7 +56,7 @@ namespace Planning
         
 	/* Copy construction makes state with \member{data} cloning
          * \argument{vector}.*/
-	explicit Integer_State(const std::vector<ELEM_TYPE>&);
+	explicit Integer_State(const std::vector<int>&);
 
 	/* This clones the same elements as the copy constructor.*/
 	Integer_State& operator=(const Integer_State&);
@@ -66,11 +66,15 @@ namespace Planning
 	bool operator==(const Integer_State& state) const;
 	bool operator<(const Integer_State& state) const;
         
-        void write(uint, ELEM_TYPE);
+        void write(uint, int);
         void increment(uint);
         void decrement(uint);
-        uint read(uint) const;
-        bool is_equal(uint, ELEM_TYPE) const;
+
+        /*What is the entry at index \argument{uint}.*/
+        int read(uint) const;
+
+        /*Is the entry at index \argument{uint} equal to \argument{int}.*/
+        bool is_equal(uint, int) const;
         
 	/* Hashing is either via \library{boost} or \library{TR1}. The
 	 * hash is generated from \member{data}.*/
@@ -78,14 +82,14 @@ namespace Planning
 
 	/* Same as \member{hash_value()} but allows to pass a reference
 	 * to an external std::vector of data elements.*/
-	std::size_t hash_value(const std::vector<ELEM_TYPE>&);
+	std::size_t hash_value(const std::vector<int>&);
 
         /*(see \member{data.size()})*/
         uint size() const;
     protected:
 	/* \macro{SIZE_ELEM} bits per element in this std::vector, each bit
 	 * represents the truth value of a proposition.*/
-	std::vector<ELEM_TYPE> data;
+	std::vector<int> data;
     };
 }
 
