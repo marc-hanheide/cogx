@@ -22,7 +22,6 @@
 #include "policy_iteration_over_information_state_space.hh"
 #include "policy_iteration_over_information_state_space__GMRES.hh"
 
-
 using namespace autogen::Planner;
 
 #include <pthread.h>
