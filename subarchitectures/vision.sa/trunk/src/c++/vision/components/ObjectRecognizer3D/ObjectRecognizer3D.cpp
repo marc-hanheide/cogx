@@ -134,6 +134,7 @@ void ObjectRecognizer3D::runComponent(){
   			m_task = m_rec_cmd->cmd;
   			m_label = m_rec_cmd->label;
 
+
 				if(m_rec_cmd->cmd == RECOGNIZE && m_recEntries[m_label].learn){
 					log("%s: Warning no Sift file available: starting to learn", m_label.c_str());
 					m_rec_cmd->cmd = RECLEARN;
@@ -151,7 +152,31 @@ void ObjectRecognizer3D::runComponent(){
   				loadVisualModelToWM(m_recEntries[m_label], pose, m_label);
   				m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
   			}
-
+  			// HACK
+  			// (this must be one of the ugliest hacks I have ever perpetrated)
+  			// if we received a detection command with several labels, we created a corresponding
+  			// number of single-label recognition commands in m_recCommandList with identical
+  			// IDs in m_recCommandID, which is the ID of the original *detection* command.
+  			// Now we only want to delete this detection command from WM (within recognizeSiftModel()) when
+  			// the last of these single-label recognition commands was executed, i.e. when the
+  			// complete original detection command was executed.
+  			// So we remember here whether the next command ID is different or it was the last command ID,
+  			// and only then do the delete from WM (in recognizeSiftModel())
+				if(m_rec_cmd->cmd == RECOGNIZE)
+				{
+          if(m_recCommandID.empty())
+          {
+            m_delete_command_from_wm = true;
+          }
+          else
+          {
+            std::string next_cmd_id = m_recCommandID.front();
+            if(next_cmd_id != m_rec_cmd_id)
+              m_delete_command_from_wm = true;
+            else
+              m_delete_command_from_wm = false;
+          }
+				}
   			m_starttask = true;
   			unlockComponent();
   		}
@@ -333,6 +358,7 @@ void ObjectRecognizer3D::init(){
 
 	m_task = RECSTOP;
   m_wait4data = false;
+  m_delete_command_from_wm = false;
 
   if(m_showCV){
 		cvNamedWindow("ObjectRecognizer3D", 1 );
@@ -531,7 +557,10 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	// note: execution layer expects the comand to be deleted as a signal of completion
 
 	try {
-	  deleteFromWorkingMemory(m_rec_cmd_id);
+	  if(m_delete_command_from_wm) {
+      deleteFromWorkingMemory(m_rec_cmd_id);
+      m_delete_command_from_wm = false;
+	  }
 	}
 	catch(CASTException &e) {
 	  println("exception while deleting command: " + e.message);
