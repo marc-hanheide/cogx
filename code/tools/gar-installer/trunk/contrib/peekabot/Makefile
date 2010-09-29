@@ -1,9 +1,9 @@
 GARNAME = peekabot
-GARVERSION = 0.8.0
+GARVERSION = 0.8.1
 CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.bz2
 MAINTAINER = mhanheid
-PATCHFILES= gar-base.diff
+#PATCHFILES= gar-base.diff
 
 MASTER_SITES = http://heanet.dl.sourceforge.net/sourceforge/peekabot/
 
@@ -12,7 +12,7 @@ LIBDEPS =
 MFLAGS=$(MFLAGS_NUMCPU)
 
 DEB_PACKAGES=\
-	libboost-all-dev@ubuntu libfltk1.1-dev@ubuntu libpng12-dev@ubuntu libxerces-c2-dev@ubuntu bzr@ubuntu libfreetype6-dev@ubuntu libglut3-dev@ubuntu libtool@ubuntu automake@ubuntu autoconf@ubuntu libgtkglextmm-x11-1.2-dev@ubuntu
+	libboost-all-dev@ubuntu libfltk1.1-dev@ubuntu libpng12-dev@ubuntu libxerces-c2-dev@ubuntu bzr@ubuntu libfreetype6-dev@ubuntu libglut3-dev@ubuntu libtool@ubuntu automake@ubuntu autoconf@ubuntu libgtkglextmm-x11-1.2-dev@ubuntu libgtkmm-2.4-dev@ubuntu
 
 CONFIGURE_SCRIPTS = $(WORKSRC)/configure
 BUILD_SCRIPTS = $(WORKSRC)/Makefile
