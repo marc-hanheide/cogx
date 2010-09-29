@@ -9,8 +9,10 @@ CAST_INSTALL_ROOT=${CAST_DIR}
 CUDA_ROOT=/usr/local/cuda
 CURE_LIB_DIR=/usr/local/lib/cure
 MERCURY_ROOT=/usr/local/lib/mercury
-MATLAB_RUNTIME_DIR=/opt/MATLAB/MATLAB_Compiler_Runtime/v78/runtime/glnx86
-# MATLAB_RUNTIME_DIR=/usr/share/matlabR2008a/bin/glnx86
+#MATLAB_ARCH=glnx86
+MATLAB_ARCH=glnxa64
+MATLAB_RUNTIME_DIR=/opt/MATLAB/MATLAB_Compiler_Runtime/v78/runtime/${MATLAB_ARCH}
+# MATLAB_RUNTIME_DIR=/usr/share/matlabR2008a/bin/${MATLAB_ARCH}
 
 COGX_BUILD_DIR=${COGX_ROOT}/BUILD
 COGX_LIB_DIR=${COGX_ROOT}/output/lib
@@ -79,7 +81,14 @@ CMD_PEEKABOT=peekabot
 CMD_LOG4J_SERVER=${CMD_JAVA} org.apache.log4j.net.SimpleSocketServer [LOG4J_PORT] [LOG4J_SERVER_CONFIG]
 CMD_DISPLAY_SERVER=${COGX_ROOT}/output/bin/display-server
 
-
+# Abducer Server
+ABDUCER_ROOT=${COGX_ROOT}/subarchitectures/dialogue.sa/external/abducer-2.0.0
+CMD_ABDUCER_SERVER=<multiline>
+   ${ABDUCER_ROOT}/bin/abducer-server-bin
+   -n "AbducerServer"
+   -e "default -p 10000"
+   -a ${ABDUCER_ROOT}/bin/abduction-engine
+</multiline>
 
 
 """
