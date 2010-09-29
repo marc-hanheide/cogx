@@ -29,6 +29,7 @@ public class DoNothingExecutor extends NonBlockingCompleteOnOperationExecutor<Ac
 
 	@Override
 	public void executeAction() {
+		getComponent().println("Doing nothing for 3 seconds. I hope that's OK");
 		new CompleteAction(3000).start();
 	}
 
