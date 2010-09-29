@@ -577,7 +577,9 @@ public abstract class ConversionUtils {
 		// we need to add a new belief
 		String newId = idGen.newIdentifier();
 		dBelief b = emptyCondIndepDistribBelief(newId, epst);
-		foldTermAsContent(epst, lingRef, t, b);  // XXX we should actually check success...
+		// XXX we should actually check success here
+		foldTermAsContent(epst, lingRef, TermAtomFactory.term("fv", new Term[] {TermAtomFactory.term("ling_ref"), TermAtomFactory.term(lingRef)}), b);
+		foldTermAsContent(epst, lingRef, t, b);
 		bel.add(b);
 		return newId;
 	}

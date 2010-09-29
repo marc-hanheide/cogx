@@ -61,25 +61,25 @@ understand : topic(S, H, EpSt, Int, Ref, Nom) <-
 	i : prop(Nom, it),
 	i : feat_Num(Nom, sg),
 	% XXX: have the epst bound dynamically depending on the refexp
-	int : pre(Int, belief(shared(S, H), rpv(Ref, 'Saliency', salient))) / p(1.0).
+	int : pre(Int, belief(Ref, shared(S, H), fv(saliency, salient))) / p(1.0).
 
 % colour
 understand : topic(S, H, EpSt, Int, Ref, Nom) <-
 	i : sort(Nom, 'q-color'),
 	i : prop(Nom, Prop),
-	int : pre(Int, belief(EpSt, rpv(Ref, 'Color', Prop))) / p(1.0).
+	int : pre(Int, belief(Ref, EpSt, fv(color, Prop))) / p(1.0).
 
 % size
 understand : topic(S, H, EpSt, Int, Ref, Nom) <-
 	i : sort(Nom, 'q-size'),
 	i : prop(Nom, Prop),
-	int : pre(Int, belief(EpSt, rpv(Ref, 'Size', Prop))) / p(1.0).
+	int : pre(Int, belief(Ref, EpSt, fv(size, Prop))) / p(1.0).
 
 % shape
 understand : topic(S, H, EpSt, Int, Ref, Nom) <-
 	i : sort(Nom, 'q-shape'),
 	i : prop(Nom, Prop),
-	int : pre(Int, belief(EpSt, rpv(Ref, 'Shape', Prop))) / p(1.0).
+	int : pre(Int, belief(Ref, EpSt, fv(shape, Prop))) / p(1.0).
 
 % place
 understand : topic(S, H, EpSt, Int, Ref, Nom) <-
@@ -89,14 +89,14 @@ understand : topic(S, H, EpSt, Int, Ref, Nom) <-
 	i : feat_Num(Nom, sg),
 	i : feat_Quantification(Nom, specific),
 	assert_modifier(S, H, Int, Ref, Nom),
-	int : pre(Int, belief(EpSt, rpv(Ref, 'PlaceType', Prop))) / p(1.0).
+	int : pre(Int, belief(Ref, EpSt, fv(placetype, Prop))) / p(1.0).
 
 % material
 understand : topic(S, H, EpSt, Int, Ref, Nom) <-
 	i : sort(Nom, _Sort),
 	i : prop(Nom, Prop),
 	Prop = cornflakes,
-	int : pre(Int, belief(EpSt, rpv(Ref, 'Material', Prop))) / p(1.0).
+	int : pre(Int, belief(Ref, EpSt, fv(material, Prop))) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -105,7 +105,7 @@ try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom) <-
 
 try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom) <-
 	understand : resolves_to_belief(Ref, BId, EpSt) / reference_resolution,
-	int : pre(Int, belief(EpSt, rpv(Ref, 'Belief', BId))) / p(1.0).
+	int : pre(Int, belief(Ref, EpSt, fv(belief, BId))) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -116,7 +116,7 @@ try_topic_objecttype(S, H, EpSt, Int, Ref, Nom) <-
 	i : sort(Nom, Sort),
 	i : prop(Nom, Prop),
 	valid_objecttype(Sort, Prop, Type),
-	int : pre(Int, belief(EpSt, rpv(Ref, 'ObjectType', Prop))) / p(1.0).
+	int : pre(Int, belief(Ref, EpSt, fv(type, Prop))) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -125,7 +125,7 @@ try_topic_proximity(S, H, EpSt, Int, Ref, Nom) <-
 
 try_topic_proximity(S, H, EpSt, Int, Ref, Nom) <-
 	i : feat_Proximity(Nom, Proximity),
-	int : pre(Int, belief(EpSt, rpv(Ref, 'Proximity', Proximity))) / p(1.0).
+	int : pre(Int, belief(Ref, EpSt, fv(proximity, Proximity))) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -153,22 +153,22 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, 'q-color'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
-	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'Color', PolarProp))) / p(1.0),
-	int : post(Int, belief(shared(S, H), rpv(Ref, 'Color', PolarProp))) / p(1.0).
+	int : pre(Int, belief(Ref, attrib(H, S), fv(color, PolarProp))) / p(1.0),
+	int : post(Int, belief(Ref, shared(S, H), fv(color, PolarProp))) / p(1.0).
 
 understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, 'q-shape'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
-	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'Shape', PolarProp))) / p(1.0),
-	int : post(Int, belief(shared(S, H), rpv(Ref, 'Shape', PolarProp))) / p(1.0).
+	int : pre(Int, belief(Ref, attrib(H, S), fv(Ref, shape, PolarProp))) / p(1.0),
+	int : post(Int, belief(Ref, shared(S, H), fv(Ref, shape, PolarProp))) / p(1.0).
 
 understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, 'q-size'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
-	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'Size', PolarProp))) / p(1.0),
-	int : post(Int, belief(shared(S, H), rpv(Ref, 'Size', PolarProp))) / p(1.0).
+	int : pre(Int, belief(Ref, attrib(H, S), fv(size, PolarProp))) / p(1.0),
+	int : post(Int, belief(Ref, shared(S, H), fv(size, PolarProp))) / p(1.0).
 
 understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, thing),
@@ -179,7 +179,7 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	try_scope_modifier(S, H, Int, Ref, Polarity, Nom),
 	try_scope_compound(S, H, Int, Ref, Polarity, Nom),
 	polarprop(Prop, Polarity, PolarProp),
-	int : pre(Int, belief(shared(S, H), rpv(Ref, 'ObjectType', PolarProp))) / p(1.0).
+	int : pre(Int, belief(Ref, shared(S, H), fv(type, PolarProp))) / p(1.0).
 
 understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, thing),
@@ -190,22 +190,22 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	try_scope_modifier(S, H, Int, Ref, Polarity, Nom),
 	try_scope_compound(S, H, Int, Ref, Polarity, Nom),
 	polarprop(Prop, Polarity, PolarProp),
-	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'ObjectType', PolarProp))) / p(1.0),
-	int : post(Int, belief(shared(S, H), rpv(Ref, 'ObjectType', PolarProp))) / p(1.0).
+	int : pre(Int, belief(Ref, attrib(H, S), fv(type, PolarProp))) / p(1.0),
+	int : post(Int, belief(Ref, shared(S, H), fv(type, PolarProp))) / p(1.0).
 
 understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, 'e-place'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
-	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'PlaceType', PolarProp))) / p(1.0),
-	int : post(Int, belief(shared(S, H), rpv(Ref, 'PlaceType', PolarProp))) / p(1.0).
+	int : pre(Int, belief(Ref, attrib(H, S), fv(placetype, PolarProp))) / p(1.0),
+	int : post(Int, belief(Ref, shared(S, H), fv(placetype, PolarProp))) / p(1.0).
 
 understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, 'm-location'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
-	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'Location', PolarProp))) / p(1.0),
-	int : post(Int, belief(shared(S, H), rpv(Ref, 'Location', PolarProp))) / p(1.0).
+	int : pre(Int, belief(Ref, attrib(H, S), fv(location, PolarProp))) / p(1.0),
+	int : post(Int, belief(Ref, shared(S, H), fv(location, PolarProp))) / p(1.0).
 
 % cornflakes
 understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
@@ -213,8 +213,8 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : prop(Nom, Prop),
 	Prop = cornflakes,
 	polarprop(Prop, Polarity, PolarProp),
-	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'Material', PolarProp))) / p(1.0),
-	int : post(Int, belief(shared(S, H), rpv(Ref, 'Material', PolarProp))) / p(1.0).
+	int : pre(Int, belief(Ref, attrib(H, S), fv(material, PolarProp))) / p(1.0),
+	int : post(Int, belief(Ref, shared(S, H), fv(material, PolarProp))) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
