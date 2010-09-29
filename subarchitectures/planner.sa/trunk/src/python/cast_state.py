@@ -1,3 +1,5 @@
+from itertools import chain
+
 from standalone import pddl, config
 from standalone.pddl import state, prob_state
 
@@ -70,10 +72,13 @@ class CASTState(object):
                 del self.namedict[belname]
                 
                 obj.rename(gen.name)
-                namedict[belname] = obj.name
-                namedict[obj.name] = belname
-                
-            problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
+                self.namedict[belname] = obj
+                self.namedict[obj.name] = belname
+
+            for f in self.facts:
+                f.svar.rehash()
+
+            problem = pddl.Problem("cogxtask", self.objects, [], None, self.domain)
             self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
             self.prob_state.apply_init_rules(domain = self.domain)
             self.generated_objects = set(problem.objects) - self.objects
@@ -133,15 +138,14 @@ class CASTState(object):
         return problem, goaldict
 
     def convert_percepts(self, percepts):
-        objdict = dict((o.name, o) for o in self.objects)
+        objdict = dict((o.name, o) for o in chain(self.objects, self.domain.constants))
         tp.belief_dict = {}
         percept2bel = {}
 
         for b in self.beliefs:
             tp.belief_dict[b.id] = b
             if isinstance(b.hist, bm.history.CASTBeliefHistory):
-                #TODO: OFFSPRING IS REALLY ANCESTORS! FIX THIS AS SOON AS IT'S CHANGED IN THE TRACKER!
-                for wma in b.hist.offspring:
+                for wma in b.hist.ancestors:
                     tp.belief_dict[wma.id] = b
                     percept2bel[wma.id] = b
 
@@ -150,12 +154,16 @@ class CASTState(object):
         facts = list(tp.tuples2facts(obj_descriptions))
 
         def replace_object(obj):
-            if obj.name not in percept2bel:
-                return objdict.get(obj.name, None)
-            bel = percept2bel.get(obj.name, None)
-            if not bel:
-                return None
-            return self.namedict.get(bel.name)
+            if obj.name in objdict:
+                return objdict[obj.name]
+            elif obj.name in self.namedict:
+                return self.namedict[obj.name]
+            elif obj.name in percept2bel:
+                bel = percept2bel[obj.name]
+                return self.namedict[bel.id]
+            else:
+                log.warning("Percept %s has no matching grounded belief.", obj.name)
+                return None 
 
         filtered_facts = []
         for svar, value in facts:
@@ -171,7 +179,7 @@ class CASTState(object):
     def featvalue_from_object(self, arg):
         if arg in self.namedict:
             #arg is provided by the binder
-            name = self.namedict[arg]
+            name = self.namedict[arg.name]
         else:
             #arg is a domain constant
             name = arg.name
@@ -257,7 +265,7 @@ class CASTState(object):
             if len(svar.args) == 1:
                 obj = svar.args[0]
                 try:
-                    bel = self.beliefdict[self.namedict[obj]]
+                    bel = self.beliefdict[self.namedict[obj.name]]
                 except:
                     log.warning("tried to find belief for %s, but failed", str(obj))
                     continue

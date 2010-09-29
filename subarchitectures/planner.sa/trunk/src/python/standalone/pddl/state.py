@@ -91,6 +91,10 @@ class StateVariable(object):
         self.modal_args = tuple(modal_args)
         self.hash = hash((self.function, self.modality) + self.args + self.modal_args)
 
+    def rehash(self):
+        #the existence of this function is really a hack. A good design shouldn't require this
+        self.hash = hash((self.function, self.modality) + self.args + self.modal_args)
+
     def get_type(self):
         """Return the type of this state variable. If a modality is
         defined, the result will be the type of the modality,

@@ -326,6 +326,28 @@ class DTRule(scope.Scope):
             mapping = dict((param.name, c) for (param, c) in zip(self.args+self.add_args, mapping))
         scope.Scope.instantiate(self, mapping, parent)
 
+    def get_probability(args, value, parent=None):
+        varg = None
+        pterm = None
+        for p, v in self.values:
+            if isinstance(v, predicates.ConstantTerm) and v.object == value:
+                pterm = p
+                varg = v.object
+                break
+            elif isinstance(v, predicates.VariableTerm) and value.is_instance_of(v.get_type()):
+                pterm = p
+                varg = v.object
+                break
+        if varg is None:
+            return predicates.Term(0)
+        mapping = dict((param.name, c) for (param,c ) in zip(self.args, args))
+        if isinstance(varg, Parameter):
+            mapping[varg.name] = value
+        self.instantiate(mapping, parent)
+        result = p.copy_instance()
+        self.uninstantiate()
+        return result
+                
     def get_value_args(self):
         result = set()
         for t,v in self.values:
@@ -501,14 +523,17 @@ class DT2MAPLCompiler(translators.Translator):
                         cparts.append(b.cond("hyp", t, val))
                     else:
                         cparts.append(b.cond("=", t, val))
+                lock_cond = b.cond("not", ("select-locked",))
                 a.precondition = conditions.Conjunction([durative.TimedCondition("all", b.cond("not", ("started",))), \
-                                                             durative.TimedCondition("start", conditions.Conjunction([b.cond("not", ("select-locked",))]+cparts))], a)
+                                                             durative.TimedCondition("start", conditions.Conjunction(cparts))], a)
+#                                                             durative.TimedCondition("start", conditions.Conjunction([lock_cond]+cparts))], a)
 
-                acquire_lock = b.timed_effect("start", "select-locked")
-                release_lock = b.timed_effect("end", "not", ("select-locked",))
+                #acquire_lock = b.timed_effect("start", "select-locked")
+                #release_lock = b.timed_effect("end", "not", ("select-locked",))
                 commit_eff = b.timed_effect("end", "commit", b(r.function, *r.args), v)
                 decrease_eff = b.timed_effect("end", "decrease", (total_p_cost,), "?duration")
-                a.effect = effects.ConjunctiveEffect([acquire_lock, release_lock, commit_eff, decrease_eff], a)
+                #a.effect = effects.ConjunctiveEffect([acquire_lock, release_lock, commit_eff, decrease_eff], a)
+                a.effect = effects.ConjunctiveEffect([commit_eff, decrease_eff], a)
 
                 actions.append(a)
             
