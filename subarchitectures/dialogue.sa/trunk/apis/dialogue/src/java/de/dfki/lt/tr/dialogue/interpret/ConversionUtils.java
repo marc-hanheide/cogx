@@ -37,6 +37,8 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
+import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
+import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.util.Counter;
@@ -49,7 +51,10 @@ import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
 import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
 import de.dfki.lt.tr.infer.weigabd.slice.Modality;
 import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -90,7 +95,7 @@ public abstract class ConversionUtils {
 			log("adding fact: " + MercuryUtils.modalisedAtomToString(amf));
 			result.add(amf);
 
-			for (String id : IntentionUtils.collectBeliefIdsInDFormula(itc.preconditions)) {
+			for (String id : BeliefIntentionUtils.collectBeliefIdsInDFormula(itc.preconditions)) {
 				ModalisedAtom mf = TermAtomFactory.modalisedAtom(
 						new Modality[] {
 							Modality.Truth,
@@ -104,7 +109,7 @@ public abstract class ConversionUtils {
 				result.add(mf);
 			}
 
-			for (String id : IntentionUtils.collectBeliefIdsInDFormula(itc.postconditions)) {
+			for (String id : BeliefIntentionUtils.collectBeliefIdsInDFormula(itc.postconditions)) {
 				ModalisedAtom mf = TermAtomFactory.modalisedAtom(
 						new Modality[] {
 							Modality.Truth,
@@ -186,18 +191,34 @@ public abstract class ConversionUtils {
 //				log("  adding pre");
 				FunctionTerm idTerm = (FunctionTerm) ma.a.args[0];
 				FunctionTerm argTerm = (FunctionTerm) ma.a.args[1];
+
 				if (argTerm.functor.equals("belief")) {
+					String lingRef = ((FunctionTerm)argTerm.args[0]).functor;
+					EpistemicStatus es = termToEpistemicStatus((FunctionTerm)argTerm.args[1]);
+
+					IntentionalContent itc = rIts.get(idTerm.functor);
+
+					String newId = foldIntoBeliefs(idGen, es, lingRef, (FunctionTerm)argTerm.args[2], bels_pre);
+					if (newId != null) {
+						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newElementaryFormula(newId));  // XXX here a PointerFormula
+						itc.preconditions = combineDFormulas(itc.preconditions, refF);
+					}
+
+/*
 					FunctionTerm epstTerm = (FunctionTerm) argTerm.args[0];
 					Term contentTerm = argTerm.args[1];
 					if (!rIts.containsKey(idTerm.functor)) {
 						rIts.put(idTerm.functor, newIntentionalContent());
 					}
+					EpistemicStatus epst = termToEpistemicStatus(epstTerm);
+
 					IntentionalContent itc = rIts.get(idTerm.functor);
 					dBelief b = termsToBelief(idGen, epstTerm, contentTerm);
 					if (!mergeBeliefInto(b, bels_pre)) {
 						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newElementaryFormula(b.id));
 						itc.preconditions = combineDFormulas(itc.preconditions, refF);
 					}
+ */
 				}
 				if (argTerm.functor.equals("state")) {
 					List<dFormula> args = new LinkedList<dFormula>();
@@ -221,7 +242,19 @@ public abstract class ConversionUtils {
 //				log("  adding post");
 				FunctionTerm idTerm = (FunctionTerm) ma.a.args[0];
 				FunctionTerm argTerm = (FunctionTerm) ma.a.args[1];
+
 				if (argTerm.functor.equals("belief")) {
+					String lingRef = ((FunctionTerm)argTerm.args[0]).functor;
+					EpistemicStatus es = termToEpistemicStatus((FunctionTerm)argTerm.args[1]);
+
+					IntentionalContent itc = rIts.get(idTerm.functor);
+
+					String newId = foldIntoBeliefs(idGen, es, lingRef, (FunctionTerm)argTerm.args[2], bels_post);
+					if (newId != null) {
+						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newElementaryFormula(newId));  // XXX here a PointerFormula
+						itc.postconditions = combineDFormulas(itc.postconditions, refF);
+					}
+/*
 					FunctionTerm epstTerm = (FunctionTerm) argTerm.args[0];
 					Term contentTerm = argTerm.args[1];
 
@@ -235,7 +268,7 @@ public abstract class ConversionUtils {
 						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newElementaryFormula(b.id));
 						itc.postconditions = combineDFormulas(itc.postconditions, refF);
 					}
-
+*/
 				}
 				if (argTerm.functor.equals("state")) {
 					List<dFormula> args = new LinkedList<dFormula>();
@@ -476,6 +509,19 @@ public abstract class ConversionUtils {
 		return b;
 	}
 
+	private static dBelief emptyCondIndepDistribBelief(String id, EpistemicStatus epst) {
+		dBelief b = new dBelief();
+		b.frame = new AbstractFrame();
+		b.id = id;
+		b.estatus = epst;
+		b.type = "fact";
+		b.hist = new AbstractBeliefHistory();
+		CondIndependentDistribs ds = new CondIndependentDistribs();
+		ds.distribs = new HashMap<String, ProbDistribution>();
+		b.content = ds;
+		return b;
+	}
+
 	public static FunctionTerm epistemicStatusToTerm(EpistemicStatus epst) {
 		if (epst instanceof PrivateEpistemicStatus) {
 			PrivateEpistemicStatus p = (PrivateEpistemicStatus)epst;
@@ -511,12 +557,77 @@ public abstract class ConversionUtils {
 	}
 
 	private static dFormula termToContent(FunctionTerm t) {
-		if (t.functor.equals("rpv")) {
-			ModalFormula rF = BeliefFormulaFactory.newModalFormula(IntentionManagement.discRefModality, BeliefFormulaFactory.newElementaryFormula(((FunctionTerm)t.args[0]).functor));
-			ModalFormula pvF = BeliefFormulaFactory.newModalFormula(((FunctionTerm)t.args[1]).functor, termToContentFormula((FunctionTerm)t.args[2]));
-			return BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, rF, pvF);
+		if (t.functor.equals("fv")) {
+//			ModalFormula rF = BeliefFormulaFactory.newModalFormula(IntentionManagement.discRefModality, BeliefFormulaFactory.newElementaryFormula(((FunctionTerm)t.args[0]).functor));
+			ModalFormula pvF = BeliefFormulaFactory.newModalFormula(((FunctionTerm)t.args[0]).functor, termToContentFormula((FunctionTerm)t.args[1]));
+			return pvF;
+//			return BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, rF, pvF);
 		}
 		return null;
+	}
+
+	private static String foldIntoBeliefs(IdentifierGenerator idGen, EpistemicStatus epst, String lingRef, FunctionTerm t, List<dBelief> bel) {
+		Iterator<dBelief> it = bel.iterator();
+		while (it.hasNext()) {
+			dBelief xb = it.next();
+			if (foldTermAsContent(epst, lingRef, t, xb)) {
+				return null;
+			}
+		}
+		// we need to add a new belief
+		String newId = idGen.newIdentifier();
+		dBelief b = emptyCondIndepDistribBelief(newId, epst);
+		foldTermAsContent(epst, lingRef, t, b);  // XXX we should actually check success...
+		bel.add(b);
+		return newId;
+	}
+
+	/**
+	 * Fold the interpretation of the term as a feature-value specification
+	 * into a belief. Return false when this isn't possible, true otherwise.
+	 *
+	 * @param epst epistemic status
+	 * @param lingRef linguistic referent
+	 * @param t the term
+	 * @param bel the belief
+	 * @return false if this didn't happen, true otherwise
+	 */
+	private static boolean foldTermAsContent(EpistemicStatus epst, String lingRef, FunctionTerm t, dBelief bel) {
+		String featureName = "";
+		dFormula featureValue;
+		if (t.functor.equals("fv")) {
+			featureName = ((FunctionTerm)t.args[0]).functor;
+			featureValue = termToContentFormula((FunctionTerm)t.args[1]);
+
+			Comparator<EpistemicStatus> cmp = new EpistemicStatusComparator();
+			if (cmp.compare(bel.estatus, epst) != 0) {
+				return false;
+			}
+
+			if (bel.content instanceof CondIndependentDistribs) {
+				CondIndependentDistribs ds = (CondIndependentDistribs)bel.content;
+				ds.distribs.put(featureName, logicalBasicProbDistribution(featureName, featureValue));
+				return true;
+			}
+		}
+ 		return false;
+	}
+
+	private static BasicProbDistribution logicalBasicProbDistribution(String featName, dFormula featValue) {
+		BasicProbDistribution bpd = new BasicProbDistribution();
+		bpd.key = featName;
+
+		FormulaProbPair log = new FormulaProbPair();
+		log.prob = 1.0f;
+		log.val = featValue;
+
+		FormulaValues fv = new FormulaValues();
+		fv.values = new LinkedList<FormulaProbPair>();
+		fv.values.add(log);
+
+		bpd.values = fv;
+
+		return bpd;
 	}
 
 	private static dFormula termToContentFormula(FunctionTerm t) {
@@ -635,4 +746,82 @@ public abstract class ConversionUtils {
 			System.out.println("\033[32m[Conversion]\t" + str + "\033[0m");
 	}
 
+}
+
+final class EpistemicStatusComparator implements Comparator<EpistemicStatus> {
+
+	@Override
+	public int compare(EpistemicStatus e1, EpistemicStatus e2) {
+
+		if (e2 == null) {
+			return -1;
+		}
+		if (e1 == null) {
+			return +1;
+		}
+
+		if (e1 instanceof PrivateEpistemicStatus) {
+			if (e2 instanceof PrivateEpistemicStatus) {
+				PrivateEpistemicStatus p1 = (PrivateEpistemicStatus)e1;
+				PrivateEpistemicStatus p2 = (PrivateEpistemicStatus)e2;
+				return p1.agent.compareTo(p2.agent);
+			}
+			else {
+				return +1;
+			}
+		}
+
+		else if (e1 instanceof AttributedEpistemicStatus) {
+			if (e2 instanceof PrivateEpistemicStatus) {
+				return -1;
+			}
+			else if (e2 instanceof AttributedEpistemicStatus) {
+				AttributedEpistemicStatus a1 = (AttributedEpistemicStatus)e1;
+				AttributedEpistemicStatus a2 = (AttributedEpistemicStatus)e2;
+				int tmp = a1.agent.compareTo(a2.agent);
+
+				if (tmp == 0) {
+					List<String> ags1 = new ArrayList<String>(a1.attribagents);
+					List<String> ags2 = new ArrayList<String>(a2.attribagents);
+					Collections.sort(ags1);
+					Collections.sort(ags2);
+					if (ags1.containsAll(ags2)) {
+						if (ags2.containsAll(ags1)) {
+							return 0;
+						}
+						return -1;
+					}
+					return +1;
+				}
+				else {
+					return tmp;
+				}
+			}
+			else {
+				return +1;
+			}
+		}
+
+		else if (e1 instanceof SharedEpistemicStatus) {
+			if (e2 instanceof SharedEpistemicStatus) {
+				SharedEpistemicStatus s1 = (SharedEpistemicStatus)e1;
+				SharedEpistemicStatus s2 = (SharedEpistemicStatus)e2;
+				List<String> ags1 = new ArrayList<String>(s1.cgagents);
+				List<String> ags2 = new ArrayList<String>(s2.cgagents);
+				Collections.sort(ags1);
+				Collections.sort(ags2);
+				if (ags1.containsAll(ags2)) {
+					if (ags2.containsAll(ags1)) {
+						return 0;
+					}
+					return -1;
+				}
+				return +1;
+			}
+			else {
+				return -1;
+			}
+		}
+		return -1;  // shouldn't really happen
+	}
 }

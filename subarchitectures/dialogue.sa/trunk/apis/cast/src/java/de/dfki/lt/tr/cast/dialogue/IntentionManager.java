@@ -32,7 +32,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagement;
-import de.dfki.lt.tr.dialogue.interpret.IntentionUtils;
+import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.ref.RefLogicalForm;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
@@ -205,13 +205,13 @@ extends AbstractDialogueComponent {
 						for (EpistemicObject eo : eos) {
 							if (eo instanceof Intention) {
 								Intention i = (Intention)eo;
-								log("adding intention to working memory [" + i.id + "]:\n" + IntentionUtils.intentionToString(i));
+								log("adding intention to working memory [" + i.id + "]:\n" + BeliefIntentionUtils.intentionToString(i));
 								addToWorkingMemory(i.id, i);
 								epObjs.put(i.id, i);
 							}
 							if (eo instanceof dBelief) {
 								dBelief b = (dBelief)eo;
-								log("adding belief to working memory [" + b.id + "]:\n" + IntentionUtils.logicalBeliefToString(b));
+								log("adding belief to working memory [" + b.id + "]:\n" + BeliefIntentionUtils.beliefToString(b));
 								addToWorkingMemory(b.id, b);
 								epObjs.put(b.id, b);
 							}
@@ -229,7 +229,7 @@ extends AbstractDialogueComponent {
 			if (body instanceof Intention) {
 				Intention itn = (Intention) body;
 				log("processing an intention");
-				LinkedList<String> belIds = IntentionUtils.collectBeliefIdsInIntention(itn);
+				LinkedList<String> belIds = BeliefIntentionUtils.collectBeliefIdsInIntention(itn);
 				LinkedList<dBelief> bels = new LinkedList<dBelief>();
 				for (String id : belIds) {
 					dBelief b = retrieveBeliefById(id);
