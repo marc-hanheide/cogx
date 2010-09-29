@@ -26,13 +26,11 @@ class Plane
 private:
 	std::vector<VisionData::Vertex> p_vertices;				///< list of vertices, relativ to position
 	std::vector<VisionData::Face> p_faces;						///< list of faces
-
 	std::vector<Vector3> points;											///< points of the plane, relativ to position
-
 	double radius;																		///< radius from center to farthest point
 
 public:
-	Vector3 position;																	///< point on the plane
+	Vector3 position;																	///< point on the plane (center?)
 	Vector3 normal;																		///< normal of the plane
 
 	Plane(Vector3 pos, double rad, std::vector<Vector3> p);
