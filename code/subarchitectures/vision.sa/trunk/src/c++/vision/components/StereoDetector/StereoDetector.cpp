@@ -52,7 +52,7 @@ void StereoDetector::configure(const map<string,string> & _config)
 	nr_p_score = 0;								// start with first processing score
 	
 	runtime = 1600;								// processing time for left AND right image
-	cannyAlpha = 0.6;							// Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
+	cannyAlpha = 0.8;							// Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
 	cannyOmega = 0.001;
 
 	activeReasoner = true;				// activate reasoner
