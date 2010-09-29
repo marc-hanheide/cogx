@@ -26,6 +26,7 @@ public class AttributedBeliefGoalGenerator extends
 	public final static String XPATH_SELECT_REFERRED_OBJECT = "*[op/text()='LingRef']/form/prop/text()";
 	public final static String XPATH_SELECT_COLOR = "*[op/text()='Color']/form/prop/text()";
 	public final static String XPATH_SELECT_SHAPE = "*[op/text()='Shape']/form/prop/text()";
+	public final static String XPATH_SELECT_IDENTITY = "*[op/text()='Identity']/form/prop/text()";
 
 	/*
 	 * (non-Javadoc)
@@ -86,15 +87,20 @@ public class AttributedBeliefGoalGenerator extends
 
 			String concept = "";
 			String prop = "";
+			
 
 			Node color = queryFirst(attributedForms, XPATH_SELECT_COLOR);
 			Node shape = queryFirst(attributedForms, XPATH_SELECT_SHAPE);
+			Node identity = queryFirst(attributedForms, XPATH_SELECT_IDENTITY);
 			if (color != null) {
 				concept = "Color";
 				prop = color.getValue();
 			} else if (shape != null) {
 				concept = "Shape";
 				prop = shape.getValue();
+			} else if (identity != null) {
+				concept = "Identity";
+				prop = identity.getValue();
 			}
 			log("attributed information to generate goal for concept "
 					+ concept + ", prop= " + prop);
