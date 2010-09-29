@@ -8,5 +8,6 @@ if getc(mC,'numSC')>=2
       bar([c1;c2]');
    end
    displayG(fh,'GD');
+   close(fh);
 end
 

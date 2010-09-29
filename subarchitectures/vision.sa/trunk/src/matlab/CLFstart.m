@@ -3,6 +3,10 @@ function CLFstart(absConfFile)
 global Settings Dirs Figs Disp
 global mC
 
+if nargin<1
+    absConfFile='./config/cogLearn.config';
+end
+
 % Default root directory
 Dirs.cogLearn=[pwd '/'];
 
@@ -144,6 +148,8 @@ checkInitVal('Params.SCC', '[1:8; 1 1 1 1 2 2 2 2]');%AP8
 checkInitVal('Params.MDF', '{[1 3],1:3,4:6}');
 checkInitVal('Params.deterministic ', '0'); 
 checkInitVal('currMode', 'struct(''learnMode'',2,''THRs'',[5 1 .5]/100,''wT'',1,''wYes'',.75,''wPy'',.25,''qnt2qlD'',0,''CTT'',[])');
+currMode=struct('learnMode',2,'THRs',[5 1 .5]/100,'wT',1,'wYes',.75,'wPy',.25,'qnt2qlD',0,'CTT',[]);
+
 
 
 function initData
