@@ -177,12 +177,14 @@ bool Reasoner::HackFilter(VisionData::VisualObjectPtr &obj)
 	if(Length(v[0]-v[1]) < 0.05 || Length(v[0]-v[1]) > 0.12)
 	{
 		printf("    => Höhe: FALSE: %4.4f\n", Length(v[0]-v[1]));
+		return false;
 	}
 	else printf("    => Höhe TRUE: %4.4f\n", Length(v[0]-v[1]));
 		
 	if(Length(v[1]-v[2]) < 0.02 || Length(v[1]-v[2]) > 0.10)
 	{
 		printf("    => Radius: FALSE: %4.4f\n", Length(v[1]-v[2]));
+		return false;
 	}
 	else printf("    => Radius TRUE: %4.4f\n", Length(v[1]-v[2]));
 		
