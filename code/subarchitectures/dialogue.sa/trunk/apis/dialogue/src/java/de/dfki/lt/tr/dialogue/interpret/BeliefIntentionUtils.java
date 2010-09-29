@@ -20,9 +20,13 @@
 
 package de.dfki.lt.tr.dialogue.interpret;
 
+import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
+import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
+import de.dfki.lt.tr.beliefs.slice.distribs.NormalValues;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
@@ -39,7 +43,7 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public abstract class IntentionUtils {
+public abstract class BeliefIntentionUtils {
 
 	/**
 	 * Convert an epistemic status to a string.
@@ -127,13 +131,70 @@ public abstract class IntentionUtils {
 		return null;
 	}
 
+	public static String beliefToString(dBelief b) {
+		String s = "B{" + epistemicStatusToString(b.estatus) + "}:\n";
+		String cs = probDistributionToString(b.content);
+		if (cs != null) {
+			s += cs;
+		}
+		return s;
+	}
+
+	public static String probDistributionToString(ProbDistribution pd) {
+		if (pd instanceof BasicProbDistribution) {
+			return basicProbDistributionToString((BasicProbDistribution)pd);
+		}
+		else if(pd instanceof CondIndependentDistribs) {
+			return condIndependentDistribsToString((CondIndependentDistribs)pd);
+		}
+		else {
+			return "UNKNOWN-PROB-DISTRIB";
+		}
+	}
+
+	public static String basicProbDistributionToString(BasicProbDistribution bpd) {
+		return "(basic '" + bpd.key + "' " + distributionValuesToString(bpd.values) + ")";
+	}
+	
+	public static String condIndependentDistribsToString(CondIndependentDistribs cids) {
+		String s = "(condind";
+		s += "\n";
+		for (String key : cids.distribs.keySet()) {
+			s += "\t'" + key + "' -> " + probDistributionToString(cids.distribs.get(key));
+			s += "\n";
+		}
+		s += ")";
+		return s;
+	}
+
+	public static String distributionValuesToString(DistributionValues dv) {
+		if (dv instanceof FormulaValues) {
+			return formulaValuesToString((FormulaValues) dv);
+		}
+		else if (dv instanceof NormalValues) {
+			return "NORMAL-VALUES";
+		}
+		else {
+			return "UNKNOWN-DISTRIB-VALUES";
+		}
+	}
+
+	public static String formulaValuesToString(FormulaValues fvs) {
+		String s = "{";
+		for (FormulaProbPair fpp : fvs.values) {
+			s += "(" + dFormulaToString(fpp.val) + " @ p=" + fpp.prob + ") ";
+		}
+		s += "}";
+		return s;
+	}
+
 	/**
 	 * Return a string representation of a formula.
 	 *
 	 * @param f
 	 * @return the string representation of f
 	 */
-	private static String dFormulaToString(dFormula f) {
+	public static String dFormulaToString(dFormula f) {
 		String s = "";
 		if (f instanceof ComplexFormula) {
 			ComplexFormula cplxF = (ComplexFormula) f;
