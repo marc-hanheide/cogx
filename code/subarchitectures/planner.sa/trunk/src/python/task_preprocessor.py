@@ -46,13 +46,13 @@ def rename_objects(objects):
     obj.rename(new_name)
   
     namedict[oldname] = obj
-    namedict[obj] = oldname
+    namedict[obj.name] = oldname
     
   return namedict
 
 def transform_goal_string(goal, namedict):
   for name, obj in namedict.iteritems():
-    if not isinstance(name, str):
+    if not isinstance(obj, pddl.TypedObject):
       continue
     goal=goal.replace("'%s'" % name, obj.name)
 

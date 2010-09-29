@@ -122,7 +122,7 @@ def pdbdebug(fn):
             if self.start_pdb:
                 import debug, traceback
                 traceback.print_exception(*sys.exc_info())
-                print "Entering debugger..."
+                print "Entering debugger, please telnet to localhost:4444"
                 debug.post_mortem()
             else:
                 raise
@@ -281,7 +281,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           return
 
       print_state_difference(old_state, task.state.state)
-      task.monitor_cp(pending_updates=True)
+      if task.dt_planning_active():
+          task.monitor_dt(pending_updates=True)
+      else:
+          task.monitor_cp(pending_updates=True)
       
   @pdbdebug
   def updateTask(self, task_desc, current=None):

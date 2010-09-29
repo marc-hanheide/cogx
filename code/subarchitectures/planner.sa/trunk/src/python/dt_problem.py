@@ -6,52 +6,10 @@ from standalone import task, config, pddl, plans
 from standalone.pddl import state, dtpddl, mapl, translators, visitors, effects
 
 import standalone.globals as global_vars
+import partial_problem
 
 log = config.logger("PythonServer")
 
-class PartialProblem(object):
-    def __init__(self, objects, facts, rules, domain):
-        self.objects = objects
-        self.facts = facts
-        
-        self.initialize(rules, domain)
-
-    def initialize(self, rules, domain):
-        self.objects_by_type = {}
-        for t in domain.types.itervalues():
-            self.objects_by_type[t] = set(o for o in self.objects if o.is_instance_of(t))
-
-        # print map(str, self.objects)
-        # for t, objs in self.objects_by_type.iteritems():
-        #     print "%s: %d (%s)" % (t.name, len(objs), ", ".join(o.name for o in objs))
-            
-        def get_rule_size(r):
-            values = set(v for p,v in r.values)
-            num_instances = 1
-            for a in r.args:
-                if isinstance(a, pddl.Parameter):
-                    num_instances *= len(self.objects_by_type[a.type]) - 1
-            num_values = 0
-            for v in values:
-                if isinstance(v, pddl.VariableTerm):
-                    num_values += len(self.objects_by_type[v.object.type])
-                else:
-                    num_values += 1
-            return num_instances, num_values
-
-        total_count = 1
-        for r in rules:
-            inst, values = get_rule_size(r)
-            #print r, inst, values
-            total_count *= values**inst
-        #print "=", total_count
-        #print
-
-        self.size = total_count
-
-    def get_objects(self, type):
-        return self.objects_by_type.get(type, [])
-        
 
 class DTProblem(object):
     def __init__(self, plan, domain, cast_state):
@@ -62,6 +20,9 @@ class DTProblem(object):
         self.select_actions = []
         
         self.goals = self.create_goals(plan)
+        if not self.goals:
+            return
+        
         self.goal_actions = []
         self.relaxation_layers = self.compute_restrictions()
         self.dt_rules = pddl.translators.Translator.get_annotations(domain).get('dt_rules', [])
@@ -147,9 +108,9 @@ class DTProblem(object):
                         replace_dict[a] = a2
                         args.append(a2)
                     val = replace_dict.get(c.value, c.value)
-                    f2 = state.Fact(state.StateVariable(c.svar.function, args), val)
-                    if f2 not in c2:
-                        c2.append(f2)
+                    constr = partial_problem.FunctionConstraint(c.svar.function, args, [val])
+                    if constr not in c2:
+                        c2.append(constr)
             return c2
             
         layers = []
@@ -211,7 +172,8 @@ class DTProblem(object):
                         
                 log.debug("fixed on this layer: %s", str(map(str, new_fixed)))
                 c2 = transform_constraints(new_fixed, combined_constraints)
-                layers.append((set(new_fixed), c2))
+                fc = partial_problem.ObjectsConstraint(new_fixed)
+                layers.append([fc]+c2)
             #print "fixed values:", map(str, fixed)
             #print "possible relaxations:", map(str, relaxations)
             log.debug("")
@@ -220,13 +182,13 @@ class DTProblem(object):
             value_relaxations = new_value_relaxations
             constraints = combined_constraints
 
-        for i,(fixed,constraints) in enumerate(layers):
+        for i, constraints in enumerate(layers):
             log.debug("Layer %d", i)
-            log.debug("Fixed: %s", str(map(str, fixed)))
+            log.debug("Fixed: %s", str(constraints[0]))
             # cset = set()
             # for c in constraints.itervalues():
             #     cset |= c
-            log.debug("Constraints: %s", str(map(str, constraints)))
+            log.debug("Constraints: %s", str(map(str, constraints[1:])))
             log.debug("")
             
         return layers
@@ -250,7 +212,7 @@ class DTProblem(object):
             commit_effect = b.effect(dtpddl.committed, [term])
             reward_effect = b('when', ('=', term, val), ('assign', ('reward',), confirm_score))
             penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -2*confirm_score))
-            a.effect = b.effect('and', commit_effect, reward_effect)#, penalty_effect)
+            a.effect = b.effect('and', commit_effect, reward_effect, penalty_effect)
             
             commit_actions.append(a)
 
@@ -262,6 +224,9 @@ class DTProblem(object):
                     if nmvar not in goals:
                         disconfirm.append((nmvar, svar.modal_args[0]))
 
+        if not disconfirm:
+            return commit_actions
+                        
         dis_score = float(confirm_score)/len(disconfirm)
         disconfirm_actions = []
         for svar, val in disconfirm:
@@ -287,8 +252,7 @@ class DTProblem(object):
             commit_effect = b.effect(dtpddl.committed, term)
             reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_score))
             penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -2*dis_score))
-            #a.effect = pddl.ConjunctiveEffect([commit_effect, reward_effect, penalty_effect], a)
-            a.effect = pddl.ConjunctiveEffect([commit_effect, reward_effect], a)
+            a.effect = b.effect('and', commit_effect, reward_effect, penalty_effect)
             
             disconfirm_actions.append(a)
                         
@@ -315,73 +279,76 @@ class DTProblem(object):
 
     #     return dtdomain
 
-    def limit_state(self, cast_state, fixed_objects, constraints, objects=None):
-        if objects is None:
-            objects = cast_state.objects
-            
-        fixed_by_type = defaultdict(set)
-        for obj in fixed_objects:
-            fixed_by_type[obj.type].add(obj)
-        constraint_by_type = defaultdict(list)
-        for c in constraints:
-            if isinstance(c, state.Fact):
-                svar = c.svar
-            else:
-                svar = c[0].svar
-            for a in svar.args:
-                if a.name.startswith("any_"):
-                    constraint_by_type[a.type].append(c)
 
-        def check_object(o):
-            if o.type in fixed_by_type:
-                if not any(o == f for f in fixed_by_type[o.type]):
-                    return False
-            if o.type in constraint_by_type:
-                for restriction in constraint_by_type[o.type]:
-                    if isinstance(restriction, state.Fact):
-                        svar = restriction.svar
-                        vals = [restriction.value]
-                    elif isinstance(restriction, list):
-                        svar = restriction[0].svar
-                        assert all(r.svar == svar for r in restriction)
-                        vals = [r.value for r in restriction]
-                    else:
-                        assert False
-                    #simple case: only one free variable
-                    assert len([a for a in svar.args if a.name.startswith("any_")]) == 1
-                    newargs = []
-                    for a in svar.args:
-                        if a.name.startswith("any_"):
-                            assert o.is_instance_of(a.type)
-                            newargs.append(o)
-                        else:
-                            newargs.append(a)
-                    newvar = pddl.state.StateVariable(svar.function, newargs)
-                    if not cast_state.prob_state[newvar] in vals:
-                        return False
-            return True
-                
-        result = set()
-        for o in objects:
-            if check_object(o):
-                result.add(o)
+    def compute_removal_order(self, to_remove, fixed, st):
+        OT_VALUE = 0 
+        OT_CORRELATED = 1 
 
-        def check_value(val):
-            if val.type == pddl.t_number:
-                return True
-            return val in result
-                
-        facts = []
-        for f in cast_state.prob_state.iterdists():
-            if not all(a in result for a in f.svar.args + f.svar.modal_args):
-                continue
+        types = set(o.type for o in to_remove)
+        fixed_types = set(o.type for o in fixed)
+
+        # the value to remove occurs as a value of an already fixed feature
+        value_order_rules = defaultdict(set)
+        # the value to remove occurs as a parameter together with an already fixed feature
+        corr_order_rules = defaultdict(set)
+        for t in types:
+            for r in self.dt_rules:
+                for _,v in r.values:
+                    if t.equal_or_subtype_of(v.get_type()):
+                        value_order_rules[t].add(r)
+                        break
+                for a in r.args:
+                    if t.equal_or_subtype_of(a.type):
+                        if any(ft.equal_or_subtype_of(a2.type) for ft in fixed_types for a2 in r.args if a2 != a):
+                            corr_order_rules[t].add(r)
+                            break
+        sorted_by_type = dict((t, [o for o in to_remove if o.type == t]) for t in types)
+        for t, rules in value_order_rules.iteritems():
+            log.debug("ordering %s by probability", str(t))
+            obj_by_prob = []
+            for o in to_remove:
+                if t != o.type:
+                    continue
+                p_total = 0
+                p_count = 0
+                for r in rules:
+                    combinations = state.product(*map(lambda a: [o for o in fixed if o.is_instance_of(a.type)], r.args))
+                    for c in combinations:
+                        p = r.get_probability(c, o)
+                        pval = st.evaluate_term(p)
+                        if pval != UNKNOWN:
+                            p_total += p.value
+                            p_count +=1
+                p_avg = p_total/p_count
+                obj_by_prob.append((o,p_avg))
+            sorted_by_type[t] = sorted(obj_by_prob, key=lambda (o,p): p)
+
+        for t, rules in corr_order_rules.iteritems():
+            log.debug("ordering %s by disambiguation power", str(t))
+            obj_by_prob = []
+            for o in to_remove:
+                if t != o.type:
+                    continue
+                p_total = 0
+                p_count = 0
+                for r in rules:
+                    combinations = state.product(*map(lambda a: [o for o in fixed if o.is_instance_of(a.type)], r.args))
+                    for c in combinations:
+                        p = r.get_probability(c, o)
+                        pval = st.evaluate_term(p)
+                        if pval != UNKNOWN:
+                            p_total += p.value
+                            p_count +=1
+                p_avg = p_total/p_count
+                obj_by_prob.append((o,p_avg))
+            sorted_by_type[t] = sorted(obj_by_prob, key=lambda (o,p): p)
             
-            vdist = pddl.prob_state.ValueDistribution(dict((d,p) for d,p in f.value.iteritems() if check_value(d)))
-            vdist.normalize()
-            # if len(vdist) != len(f.value):
-            #     log.debug("Possible values were left out for %s!", str(f.svar))
-            facts.append(pddl.prob_state.ProbFact(f.svar, vdist))
-        return result, facts
+
+        for t, rules in corr_order_rules.iteritems():
+            log.debug("%ss should be ordered by disambiguation power", str(t))
+                
+        return list(to_remove)
+        
 
     def compute_subproblems(self, cast_state):
         # import debug
@@ -390,46 +357,50 @@ class DTProblem(object):
         prob_by_layer = {}
         problems =  []
         all_objects = cast_state.objects | cast_state.generated_objects | self.domain.constants
-        problems.append(PartialProblem(all_objects , list(cast_state.prob_state.iterdists()), self.dt_rules, self.domain))
+        problems.append(partial_problem.PartialProblem(cast_state.prob_state, all_objects,  [], [], self.dt_rules, self.domain))
         i = len(self.relaxation_layers)-1
-        j = 1
-        prev_fixed = set()
-        prev_constraints = set()
-        for fixed, constraints in reversed(self.relaxation_layers):
+        #j = 1
+        #prev_fixed = set()
+        prev_constraints = []
+        for constraints in reversed(self.relaxation_layers):
             # Iterate over relaxation layers first (from most to least relaxed)
             log.debug("Next layer %d:", i)
-            new_fixed = fixed - prev_fixed
-            fixed_types = set(o.type for o in new_fixed)
-            log.debug("New fixed: %s", ", ".join(o.name for o in new_fixed))
+            problems.append(partial_problem.PartialProblem(cast_state.prob_state, problems[-1].objects, prev_constraints, constraints, self.dt_rules, self.domain))
+            # new_fixed = fixed - prev_fixed
+            # fixed_types = set(o.type for o in new_fixed)
+            # #log.debug("New fixed: %s", ", ".join(o.name for o in new_fixed))
 
-            generic_constraints = []
-            for t,v in constraints:
-                if v in new_fixed:
-                    generic_constraints.append((t,v))
+            # generic_constraints = []
+            # for t,v in constraints:
+            #     if v in new_fixed:
+            #         generic_constraints.append((t,v))
 
-            log.debug("Generic constraints: %s", ", ".join("%s = %s" % (str(t), v.name) for t,v in generic_constraints))
-            to_remove = set(o for o in problems[-1].objects if o.type in fixed_types and o not in fixed)
+            # # log.debug("Generic constraints: %s", ", ".join("%s = %s" % (str(t), v.name) for t,v in generic_constraints))
+            # alt_objects = set(o for o in problems[-1].objects if o.type in fixed_types and o not in fixed)
+            # #to_remove = self.compute_removal_order(to_remove, fixed, cast_state.prob_state)
             
-            log.debug("Removing the following objects: %s", ", ".join(o.name for o in to_remove))
-            while to_remove:
-                #compute possible intermediate problems between two layers
-                rem = to_remove.pop()             
-                new_constraints = []
-                for t,v in generic_constraints:
-                    c2 = []
-                    new_constraints.append(c2)
-                    c2.append(state.Fact(t,v))
-                    for o in to_remove:
-                        if o.type == v.type:
-                            c2.append(state.Fact(t,o))
-                objects, facts = self.limit_state(cast_state, fixed | to_remove, new_constraints, problems[-1].objects)
-                log.debug("problem %d: %s", j, ", ".join(o.name for o in objects))
-                problems.append(PartialProblem(objects, facts, self.dt_rules, self.domain))
-                j += 1
+            # log.debug("Removing the following objects: %s", ", ".join(o.name for o in alt_objects))
+            # objects, facts = self.limit_state(cast_state, fixed | set(alt_objects), constraints, problems[-1].objects)
+            # problems.append(PartialProblem(objects - alt_objects, alt_objects, facts, self.dt_rules, self.domain))
+            # while to_remove:
+            #     #compute possible intermediate problems between two layers
+            #     rem = to_remove.pop(0)
+            #     new_constraints = []
+            #     for t,v in generic_constraints:
+            #         c2 = []
+            #         new_constraints.append(c2)
+            #         c2.append(state.Fact(t,v))
+            #         for o in to_remove:
+            #             if o.type == v.type:
+            #                 c2.append(state.Fact(t,o))
+            #     objects, facts = self.limit_state(cast_state, fixed | set(to_remove), new_constraints, problems[-1].objects)
+            #     log.debug("problem %d: %s", j, ", ".join(o.name for o in objects))
+            #     problems.append(PartialProblem(objects, facts, self.dt_rules, self.domain))
+            #     j += 1
                     
             i -= 1
-            prev_fixed = fixed
-            prev_constraints = set(constraints)
+            #prev_fixed = fixed
+            prev_constraints = constraints
 
         return problems
         
@@ -442,9 +413,10 @@ class DTProblem(object):
         selected = 0
         for i, prob in enumerate(self.subproblems):
             selected = i
-            log.debug("Problem %i: approx. State size: %d", i, prob.size)
-            if prob.size < global_vars.config.dt.max_state_size:
-                log.info("Selecting layer %d with approx. state size of %d", i, prob.size)
+            #log.debug("Problem %i: approx. State size: %d - %d", i, prob.size, prob.max_size)
+            log.debug("Problem %i: %s", i, str(prob))
+            if prob.min_size < global_vars.config.dt.max_state_size:
+                log.info("Selecting layer %d with minimal approx. state size of %d", i, prob.min_size)
                 break
 
         base_problem = self.subproblems[0]
@@ -606,7 +578,12 @@ class DTProblem(object):
                 p, sub = st.get_substate(svar, v)
                 if svar in sub:
                     del sub[svar]
-                            
+
+        #reduce the problem some more if neccessary
+        while problem.max_size > global_vars.config.dt.max_state_size:
+            if not problem.reduce(hstate):
+                assert False
+        
         #facts = [f.to_init() for f in cast_state.prob_state.iterdists()]
         p_facts = hstate.init_facts()
         p_objects = set(o for o in objects if o not in domain.constants)
@@ -685,6 +662,80 @@ class HierarchicalState(state.State):
         self.written_svars = set()
         
         self.substates = defaultdict(dict)
+
+    def get_joint_prob(self, svars):
+        detvars = {}
+        for svar in svars:
+            if svar in self and svar != pddl.UNKNOWN:
+                detvars[svar] = self[svar]
+        remaining = [svar for svar in svars if svar not in detvars]
+        sub_result = {(pddl.UNKNOWN,)*len(remaining) : 1.0}
+        for d in self.substates.itervalues():
+            res = defaultdict(lambda: 0.0)
+            for p, state in d.itervalues():
+                for vals, p2 in state.get_joint_prob(remaining):
+                    if p2 > 0.0 and any(v != pddl.UNKNOWN for v in vals):
+                        res[vals] += p*p2
+            if res:
+                sub_result = res
+                break
+        
+        result = []
+        for vals, p in sub_result.iteritems():
+            entry = []
+            for svar in svars:
+                if svar in detvars:
+                    entry.append(detvars[svar])
+                else:
+                    entry.append(vals[remaining.index(svar)])
+            result.append((tuple(entry), p))
+        return result
+        
+
+    def get_prob(self, svar, value=None):
+        if svar in self and svar != pddl.UNKNOWN:
+            if value is None:
+                return [(self[svar], 1.0)]
+            elif self[svar] == value:
+                return 1.0
+            else:
+                return 0.0
+        for d in self.substates.itervalues():
+            if value is None:
+                res = defaultdict(lambda: 0.0)
+                for p, state in d.itervalues():
+                    for val, p2 in state.get_prob(svar):
+                        if p2 > 0.0:
+                            res[val] += p*p2
+                if res:
+                    return list(d.iteritems())
+            else:
+                p_total = 0.0
+                for p, state in d.itervalues():
+                    p_total += p * state.get_prob(svar, value)
+                if p_total > 0.0:
+                    return p_total
+        if value is None:
+            return []
+        return 0.0
+
+    def is_empty(self):
+        if any(val != pddl.UNKNOWN for val in self.itervalues()):
+            return False
+        for d in self.substates.itervalues():
+            if any(not sub.is_empty() for p,sub in d.itervalues()):
+                return False
+        return True
+
+    def cleanup(self):
+        to_delete = []
+        for svar, d in self.substates.iteritems():
+            if all(sub.is_empty() for p, sub in d.itervalues()):
+                to_delete.append(svar)
+            for p, sub in d.itervalues():
+                sub.cleanup()
+        for svar in to_delete:
+            del self.substates[svar]
 
     def add_substate(self, svar, val, state, prob):
         self.substates[svar][val] = (prob, state)

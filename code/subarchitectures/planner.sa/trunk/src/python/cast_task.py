@@ -6,6 +6,25 @@ from autogen import Planner
 from standalone import task, plans, plan_postprocess, pddl, config
 from standalone.task import PlanningStatusEnum
 
+from standalone.utils import Enum
+
+TaskStateEnum = Enum("INITIALISED",
+                     "PROCESSING",
+                     "WAITING_FOR_ACTION",
+                     "WAITING_FOR_BELIEF",
+                     "WAITING_FOR_DT",
+                     "FAILED",
+                     "COMPLETED")
+
+status_dict = {TaskStateEnum.INITIALISED : Planner.Completion.PENDING, \
+                   TaskStateEnum.PROCESSING : Planner.Completion.INPROGRESS, \
+                   TaskStateEnum.WAITING_FOR_ACTION : Planner.Completion.PENDING, \
+                   TaskStateEnum.WAITING_FOR_BELIEF : Planner.Completion.PENDING, \
+                   TaskStateEnum.WAITING_FOR_DT : Planner.Completion.INPROGRESS, \
+                   TaskStateEnum.FAILED : Planner.Completion.FAILED, \
+                   TaskStateEnum.COMPLETED : Planner.Completion.SUCCEEDED }
+                   
+                   
 log = config.logger("PythonServer")
 
 PLANNER_CP = 0
@@ -13,11 +32,11 @@ PLANNER_DT = 1
 
 WAIT_FOR_ACTION_TIMEOUT = 2000
 
-status_dict = {PlanningStatusEnum.TASK_CHANGED : Planner.Completion.PENDING, \
-                   PlanningStatusEnum.RUNNING : Planner.Completion.INPROGRESS, \
-                   PlanningStatusEnum.PLAN_AVAILABLE : Planner.Completion.SUCCEEDED, \
-                   PlanningStatusEnum.PLANNING_FAILURE : Planner.Completion.FAILED, \
-                   PlanningStatusEnum.INTERRUPTED : Planner.Completion.ABORTED }
+# status_dict = {PlanningStatusEnum.TASK_CHANGED : Planner.Completion.PENDING, \
+#                    PlanningStatusEnum.RUNNING : Planner.Completion.INPROGRESS, \
+#                    PlanningStatusEnum.PLAN_AVAILABLE : Planner.Completion.SUCCEEDED, \
+#                    PlanningStatusEnum.PLANNING_FAILURE : Planner.Completion.FAILED, \
+#                    PlanningStatusEnum.INTERRUPTED : Planner.Completion.ABORTED }
 
 
 class CASTTask(object):
@@ -46,7 +65,8 @@ class CASTTask(object):
         self.waiting_for_action = False
         component.planner.register_task(self.cp_task)
         
-        self.update_status(Planner.Completion.PENDING)
+        self.internal_state = TaskStateEnum.INITIALISED
+        self.update_status(TaskStateEnum.INITIALISED)
 
         problem_fn = abspath(join(self.component.get_path(), "problem%d.mapl" % self.id))
         self.write_cp_problem(problem_fn)
@@ -57,7 +77,8 @@ class CASTTask(object):
         
         
     def update_status(self, status):
-        self.status = status
+        self.internal_state = status
+        self.status = status_dict[status]
         self.component.getClient().updateStatus(self.id, self.status)
         self.component.m_display.update_task(self)
 
@@ -87,7 +108,7 @@ class CASTTask(object):
             os.system("%s %s" % (show_dot_script, dot_fn))
 
     def run(self):
-        self.update_status(Planner.Completion.INPROGRESS)
+        self.update_status(TaskStateEnum.PROCESSING)
         self.cp_task.replan()
         self.process_cp_plan()
 
@@ -95,7 +116,7 @@ class CASTTask(object):
         plan = self.get_plan()
 
         if plan is None:
-            self.update_status(Planner.Completion.FAILED)
+            self.update_status(TaskStateEnum.FAILED)
             return
 
         for sg in plan.goal_node.satisfied_softgoals:
@@ -115,9 +136,9 @@ class CASTTask(object):
                 if pnode.is_virtual():
                     pnode.status = plans.ActionStatusEnum.EXECUTED
             
-            self.update_status(self.status)
+            #self.update_status(self.status)
             if self.dt_planning_active():
-                self.update_status(Planner.Completion.INPROGRESS)
+                self.update_status(TaskStateEnum.WAITING_FOR_DT)
                 self.component.start_dt_planning(self)
                 return
             
@@ -146,9 +167,12 @@ class CASTTask(object):
             log.info("Plan is empty")
         plan.execution_position = first_action
 
+        self.internal_state = TaskStateEnum.WAITING_FOR_ACTION
         self.component.deliver_plan(self, outplan)
 
     def action_executed_dt(self, slice_plan):
+        assert self.internal_state in (TaskStateEnum.WAITING_FOR_ACTION, TaskStateEnum.WAITING_FOR_BELIEF)
+        
         assert len(slice_plan) == 1
         dt_action = slice_plan[0]
 
@@ -174,6 +198,8 @@ class CASTTask(object):
         self.monitor_dt()
             
     def action_executed_cp(self, slice_plan):
+        assert self.internal_state in (TaskStateEnum.WAITING_FOR_ACTION, TaskStateEnum.WAITING_FOR_BELIEF)
+        
         plan = self.get_plan()
 
         finished_actions = []
@@ -220,7 +246,9 @@ class CASTTask(object):
             
         self.monitor_cp()
 
-    def monitor_dt(self):
+    def monitor_dt(self, pending_updates=False):
+        assert self.internal_state in (TaskStateEnum.WAITING_FOR_ACTION, TaskStateEnum.WAITING_FOR_BELIEF)
+        
         #test if the dt goals are satisfied:
         sat = True
         for pnode in self.dt_task.subplan_actions:
@@ -234,16 +262,32 @@ class CASTTask(object):
         for fact in self.state.convert_percepts(self.percepts):
             pred = "observed-%s" % fact.svar.function.name
             obs = Planner.Observation(pred, [a.name for a in fact.svar.args] + [fact.value.name])
+            observations.append(obs)
             log.info("%d: delivered observation %s", self.id, str(obs))
 
-        import debug
-        debug.Rdb().set_trace()
+        if not observations:
+            if not pending_updates and self.internal_state == TaskStateEnum.WAITING_FOR_BELIEF:
+                # dummy observation as the dt planner terminates upon getting an empty observation
+                log.info("Got no observations from %s", str(self.dt_task.dt_plan[-1]))
+                observations.append(Planner.Observation("null", []))
+            elif not pending_updates and self.internal_state != TaskStateEnum.WAITING_FOR_BELIEF:
+                #TODO: only do the waiting if we really expect an observation (e.g. not for move)
+                log.info("Waiting for observations from %s", str(self.dt_task.dt_plan[-1]))
+                self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
+                self.component.getClient().waitForChanges(self.id, WAIT_FOR_ACTION_TIMEOUT/2)
+                return
+            elif pending_updates:
+                log.info("Still waiting for observations from %s...", str(self.dt_task.dt_plan[-1]))
+                return
             
+        self.update_status(TaskStateEnum.WAITING_FOR_DT)
         self.component.getDT().deliverObservation(self.id, observations)
-
-        self.update_status(Planner.Completion.INPROGRESS)
   
     def monitor_cp(self, pending_updates=False):
+        assert self.internal_state in (TaskStateEnum.PROCESSING, TaskStateEnum.WAITING_FOR_ACTION, TaskStateEnum.WAITING_FOR_BELIEF)
+        if pending_updates:
+            assert self.internal_state == TaskStateEnum.WAITING_FOR_BELIEF
+            
         if self.dt_planning_active():
             self.process_cp_plan()
             return
@@ -251,10 +295,10 @@ class CASTTask(object):
         if not pending_updates and self.waiting_for_action:
             #timeout reached, give up
             self.cp_task.set_plan(None, update_status=True)
-            self.update_status(Planner.Completion.FAILED)
+            self.update_status(TaskStateEnum.FAILED)
             return
 
-        self.update_status(Planner.Completion.INPROGRESS)
+        self.update_status(TaskStateEnum.PROCESSING)
 
         problem_fn = abspath(join(self.component.get_path(), "problem%d.mapl" % (self.id)))
         self.write_cp_problem(problem_fn)
@@ -265,9 +309,8 @@ class CASTTask(object):
             if pending_updates:
                 log.info("Still waiting for effects of %s to appear", str(self.cp_task.pending_action))
                 return
-            self.waiting_for_action = True
             log.info("Waiting for effects of %s to appear", str(self.cp_task.pending_action))
-            self.update_status(Planner.Completion.PENDING)
+            self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
             self.component.getClient().waitForChanges(self.id, WAIT_FOR_ACTION_TIMEOUT)
             return
         
@@ -284,11 +327,17 @@ class CASTTask(object):
             elif dt_action_found:
                 first_action = i
         self.get_plan().execution_position = first_action
+        self.update_status(TaskStateEnum.PROCESSING)
+
+        # import debug
+        # debug.set_trace()
         
         self.cp_task.mark_changed()
         self.monitor_cp()
 
     def action_delivered(self, action):
+        assert self.internal_state == TaskStateEnum.WAITING_FOR_DT
+        
         log.debug("raw action: (%s %s)", action.name, " ".join(action.arguments))
         args = [self.cp_task.mapltask[a] for a in action.arguments]
         pddl_action = self.dt_task.dtdomain.get_action(action.name)
@@ -317,7 +366,7 @@ class CASTTask(object):
         outplan = [Planner.Action(self.id, action.name, uargs, fullname, float(pnode.cost), Planner.Completion.PENDING)]
 
         log.info("%d: First action: %s", self.id, fullname)
-        
+        self.internal_state = TaskStateEnum.WAITING_FOR_ACTION
         self.component.deliver_plan(self, outplan)
         
     def action_feedback(self, finished_actions, failed_actions):
@@ -329,6 +378,8 @@ class CASTTask(object):
         self.component.getClient().updateBeliefState(beliefs)
                 
     def update_state(self, beliefs):
+        assert self.internal_state in (TaskStateEnum.WAITING_FOR_ACTION, TaskStateEnum.WAITING_FOR_BELIEF)
+        
         import fake_cast_state
         if isinstance(self.state, fake_cast_state.FakeCASTState):
             return True

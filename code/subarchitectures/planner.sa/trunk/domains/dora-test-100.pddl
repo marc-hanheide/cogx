@@ -24,7 +24,7 @@
    (category ?r - room) - category
    (label ?o - visualobject) - label
 ;   (cone-label ?c - cone) - label
-   (ex-in-room ?l ?r) - boolean
+   (ex-in-room ?l - label ?r - room) - boolean
    (p-is-in ?p - place) - number
    (p-ex-in-room ?l - label ?c - category ) - number
    (p-category ?r - room ?c - category ) - number

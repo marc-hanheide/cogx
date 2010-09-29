@@ -12,7 +12,7 @@
 
   (:predicates
    (connected ?p1 ?p2 - place)
-   (cones_created ?l ?r)
+   (cones_created ?l - label ?r - room)
    (started)
    (select-locked)
    )
@@ -24,7 +24,7 @@
    (category ?r - room) - category
    (label ?o - visualobject) - label
    (cone-label ?c - cone) - label
-   (ex-in-room ?l ?r) - boolean
+   (ex-in-room ?l - label ?r - room) - boolean
    (p-is-in ?c - cone) - number
    (p-ex-in-room ?l - label ?c - category ) - number
    (p-category ?r - room ?c - category ) - number
