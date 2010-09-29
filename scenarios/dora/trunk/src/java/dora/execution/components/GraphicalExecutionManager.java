@@ -6,6 +6,7 @@ package dora.execution.components;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import SpatialData.ViewPoint;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -22,7 +23,6 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import dora.execution.util.ActionInterfaceFrame;
 import execution.components.AbstractExecutionManager;
 import execution.slice.actions.BackgroundModels;
-import execution.slice.actions.ComsysQueryFeature;
 import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
@@ -76,32 +76,32 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 	@Override
 	protected void start() {
-//		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
-//				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
-//
-//			@Override
-//			public void workingMemoryChanged(WorkingMemoryChange _arg0)
-//					throws CASTException {
-//				addPlace(_arg0.address, getMemoryEntry(_arg0.address,
-//						Place.class));
-//			}
-//
-//		});
-//
-//
-//		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
-//				WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
-//
-//			@Override
-//			public void workingMemoryChanged(WorkingMemoryChange _arg0)
-//					throws CASTException {
-//				updatePlace(_arg0.address, getMemoryEntry(_arg0.address,
-//						Place.class));
-//			}
-//
-//		});
+		// addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
+		// WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
+		//
+		// @Override
+		// public void workingMemoryChanged(WorkingMemoryChange _arg0)
+		// throws CASTException {
+		// addPlace(_arg0.address, getMemoryEntry(_arg0.address,
+		// Place.class));
+		// }
+		//
+		// });
+		//
+		//
+		// addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
+		// WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver()
+		// {
+		//
+		// @Override
+		// public void workingMemoryChanged(WorkingMemoryChange _arg0)
+		// throws CASTException {
+		// updatePlace(_arg0.address, getMemoryEntry(_arg0.address,
+		// Place.class));
+		// }
+		//
+		// });
 
-		
 		// use these to harvest beliefs
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				dBelief.class, WorkingMemoryOperation.ADD),
@@ -109,8 +109,8 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
-						addStableBelief(_wmc.address, getMemoryEntry(
-								_wmc.address, dBelief.class));
+						addStableBelief(_wmc.address,
+								getMemoryEntry(_wmc.address, dBelief.class));
 					}
 				});
 
@@ -125,52 +125,52 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 						removeStableBelief(_wmc.address);
 					}
 				});
-		
-		//and view cones for now (until they're beliefs)
 
-//		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-//				ViewPoint.class, WorkingMemoryOperation.ADD),
-//				new WorkingMemoryChangeReceiver() {
-//					@Override
-//					public void workingMemoryChanged(WorkingMemoryChange _wmc)
-//							throws CASTException {
-//						addViewPoint(_wmc.address, getMemoryEntry(
-//								_wmc.address, ViewPoint.class));
-//					}
-//				});
-//
-//		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-//				ViewPoint.class, WorkingMemoryOperation.DELETE),
-//				new WorkingMemoryChangeReceiver() {
-//
-//					@Override
-//					public void workingMemoryChanged(WorkingMemoryChange _wmc)
-//							throws CASTException {
-//
-//						removeViewPoint(_wmc.address);
-//					}
-//				});
-		
+		// and view cones for now (until they're beliefs)
+
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				ViewPoint.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+						println("cone prob: " + _wmc.address.id + " "
+								+ getMemoryEntry(_wmc.address, ViewPoint.class).probability);
+					}
+				});
+		//
+		// addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+		// ViewPoint.class, WorkingMemoryOperation.DELETE),
+		// new WorkingMemoryChangeReceiver() {
+		//
+		// @Override
+		// public void workingMemoryChanged(WorkingMemoryChange _wmc)
+		// throws CASTException {
+		//
+		// removeViewPoint(_wmc.address);
+		// }
+		// });
+
 	}
-//
-//	protected void removeViewPoint(WorkingMemoryAddress _address) {
-//		m_gui.removeCone(_address);
-//		
-//	}
-//
-//	protected void addViewPoint(WorkingMemoryAddress _address,
-//			ViewPoint _cone) {
-//		println("got a ViewPoint");
-//		m_gui.addCone(_address, _cone);
-//		
-//	}
+
+	//
+	// protected void removeViewPoint(WorkingMemoryAddress _address) {
+	// m_gui.removeCone(_address);
+	//
+	// }
+	//
+	// protected void addViewPoint(WorkingMemoryAddress _address,
+	// ViewPoint _cone) {
+	// println("got a ViewPoint");
+	// m_gui.addCone(_address, _cone);
+	//
+	// }
 
 	private void removeStableBelief(WorkingMemoryAddress _address) {
 		m_gui.removeBelief(_address);
 	}
 
-	private void addStableBelief(WorkingMemoryAddress _address,
-			dBelief _belief) {
+	private void addStableBelief(WorkingMemoryAddress _address, dBelief _belief) {
 		println("GraphicalExecutionManager.addStableBelief()");
 		println(_belief.type);
 		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
@@ -180,23 +180,25 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 		for (Entry<String, FormulaDistribution> featureType : cid.entrySet()) {
 			println(featureType.getValue().asDistribution());
-		}		
+		}
 		m_gui.addBelief(_address, b);
 	}
 
-//	private void addPlace(WorkingMemoryAddress _address, Place _memoryEntry) {
-//		m_gui.addPlace(_address, _memoryEntry.id, _memoryEntry.status);
-//	}
-//
-//	private void updatePlace(WorkingMemoryAddress _address, Place _memoryEntry) {
-//		m_gui.updatePlace(_address, _memoryEntry.id, _memoryEntry.status);
-//	}
-//	
-//
-//	private void removePlace(WorkingMemoryAddress _address) {
-//		m_gui.removePlace(_address);
-//	}
-	
+	// private void addPlace(WorkingMemoryAddress _address, Place _memoryEntry)
+	// {
+	// m_gui.addPlace(_address, _memoryEntry.id, _memoryEntry.status);
+	// }
+	//
+	// private void updatePlace(WorkingMemoryAddress _address, Place
+	// _memoryEntry) {
+	// m_gui.updatePlace(_address, _memoryEntry.id, _memoryEntry.status);
+	// }
+	//
+	//
+	// private void removePlace(WorkingMemoryAddress _address) {
+	// m_gui.removePlace(_address);
+	// }
+
 	public WorkingMemoryAddress triggerGoToAction(long _placeID,
 			ActionMonitor _monitor) throws CASTException {
 		GoToPlace act = newActionInstance(GoToPlace.class);
@@ -205,26 +207,28 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-	public WorkingMemoryAddress triggerConeGeneration(String _model, long[] _placeIDs,
-			ActionMonitor _monitor) throws CASTException {
+	public WorkingMemoryAddress triggerConeGeneration(String _model,
+			long[] _placeIDs, ActionMonitor _monitor) throws CASTException {
 		CreateConesForModel act = newActionInstance(CreateConesForModel.class);
 		act.model = _model;
 		act.placeIDs = _placeIDs;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
-	
-	public WorkingMemoryAddress triggerProccesCone(WorkingMemoryAddress _coneAddr, ActionMonitor _monitor) throws CASTException {
+
+	public WorkingMemoryAddress triggerProccesCone(
+			WorkingMemoryAddress _coneAddr, ActionMonitor _monitor)
+			throws CASTException {
 		ProcessCone act = newActionInstance(ProcessCone.class);
 		act.coneAddress = _coneAddr;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
 
-	public WorkingMemoryAddress triggerDetectObjects(String[] _models, ActionMonitor _monitor)
-			throws CASTException {
+	public WorkingMemoryAddress triggerDetectObjects(String[] _models,
+			ActionMonitor _monitor) throws CASTException {
 		DetectObjects act = newActionInstance(DetectObjects.class);
-		act.labels =_models;
+		act.labels = _models;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
@@ -236,14 +240,13 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-	public WorkingMemoryAddress triggerLookForObjects(String[] _models, ActionMonitor _monitor)
-			throws CASTException {
+	public WorkingMemoryAddress triggerLookForObjects(String[] _models,
+			ActionMonitor _monitor) throws CASTException {
 		LookForObjects act = newActionInstance(LookForObjects.class);
-		act.labels =_models;
+		act.labels = _models;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
-
 
 	public WorkingMemoryAddress triggerLookForPeople(ActionMonitor _monitor)
 			throws CASTException {
@@ -251,7 +254,7 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
-	
+
 	public boolean stopCurrentAction() throws PermissionException,
 			UnknownSubarchitectureException {
 		if (m_currentActionAddress == null) {
@@ -266,14 +269,7 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 	}
 
-	public WorkingMemoryAddress triggerAskForFeatureAction(String _beliefID,
-			String _featureType, ActionMonitor _monitor) throws CASTException {
-		ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
-		act.beliefID = _beliefID;
-		act.featureID = _featureType;
-		m_currentActionAddress = triggerExecution(act, _monitor);
-		return m_currentActionAddress;
-	}
+	
 
 	public WorkingMemoryAddress backgroundModels(String[] _models,
 			ActionMonitor _monitor) throws CASTException {
@@ -282,7 +278,7 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
-	
+
 	public WorkingMemoryAddress recogniseForegroundedModels(
 			ActionMonitor _monitor) throws CASTException {
 		RecogniseForegroundedModels act = newActionInstance(RecogniseForegroundedModels.class);
@@ -298,17 +294,16 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-
-
-//	public WorkingMemoryAddress triggerFeatureValueTest(String _beliefID, String _featureLabel,
-//			FeatureValue _fv, ActionMonitor _monitor) throws CASTException {
-//		ComsysTestFeatureValue act = newActionInstance(ComsysTestFeatureValue.class);
-//		act.beliefID = _beliefID;
-//		act.featureType = _featureLabel;
-//		act.featureValue = _fv;
-//		m_currentActionAddress = triggerExecution(act, _monitor);
-//		return m_currentActionAddress;		
-//	}
-
+	// public WorkingMemoryAddress triggerFeatureValueTest(String _beliefID,
+	// String _featureLabel,
+	// FeatureValue _fv, ActionMonitor _monitor) throws CASTException {
+	// ComsysTestFeatureValue act =
+	// newActionInstance(ComsysTestFeatureValue.class);
+	// act.beliefID = _beliefID;
+	// act.featureType = _featureLabel;
+	// act.featureValue = _fv;
+	// m_currentActionAddress = triggerExecution(act, _monitor);
+	// return m_currentActionAddress;
+	// }
 
 }
