@@ -30,8 +30,10 @@ Object::Object(Vector3 pos, VisionData::VertexSeq vertices, VisionData::FaceSeq 
  */
 void Object::ProjectToPlane(Z::Plane *plane)
 {
+	printf("Object::ProjectToPlane: start");
 	sucProj = true;
 	for(unsigned i=0; i<o_vertices.size(); i++)
+// 	for(unsigned i=o_vertices.size()-1; i>=0; i--)				// change vertice ordering
 	{
 		Vector3 isct, point, dir;
 		point.x = o_vertices[i].pos.x + position.x;		// we need absolute position
@@ -48,6 +50,7 @@ void Object::ProjectToPlane(Z::Plane *plane)
 		vtx.pos.z = isct.z - position.z;
 		o_vertices_p.push_back(vtx);
 	}
+	printf("Object::ProjectToPlane: end");
 }
 
 /**
@@ -59,6 +62,10 @@ bool Object::GetVisualObject(VisionData::VisualObjectPtr &obj)
 {
 	obj->model = new VisionData::GeometryModel;
 
+	obj->pose.pos.x = position.x;
+	obj->pose.pos.y = position.y;
+	obj->pose.pos.z = position.z;
+	
 	for(unsigned i=0; i<o_vertices.size(); i++)
 		obj->model->vertices.push_back(o_vertices[i]);
 	for(unsigned i=0; i<o_faces.size(); i++)
@@ -78,6 +85,10 @@ bool Object::GetVisualObjectProjected(VisionData::VisualObjectPtr &obj)
 	
 	obj->model = new VisionData::GeometryModel;
 
+	obj->pose.pos.x = position.x;
+	obj->pose.pos.y = position.y;
+	obj->pose.pos.z = position.z;
+	
 	// save original and projected vertices
 	for(unsigned i=0; i<o_vertices.size(); i++)
 	{
