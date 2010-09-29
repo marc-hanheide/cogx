@@ -78,6 +78,7 @@ private:
 
   bool m_starttask;
   bool m_wait4data;
+  bool m_delete_command_from_wm;
   bool m_showCV;
 
   void loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Pose3 pose, std::string label);
