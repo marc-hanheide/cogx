@@ -37,6 +37,16 @@
 #include "planning_state.hh"
 #include "solver.hh"
 
+// /*HERE DELETE*/
+// #include "action__state_transformation.hh"
+// #include "action__probabilistic_state_transformation.hh"
+// #include "planning_state.hh"
+// #include "state_formula__literal.hh"
+// #include "state_formula__disjunctive_clause.hh"
+// #include "state_formula__conjunctive_normal_form_formula.hh"
+
+
+
 namespace Planning
 {
     std::size_t hash_value(const Planning::Partially_Observable_Markov_Decision_Process_State& in)
@@ -355,13 +365,17 @@ get_observation_probabilities_at_prescribed_action() const
     return observation_probabilities[prescribed_action_index];//get__prescribed_action()];
 }
 
+// extern size_t extern_runtime_thread_thingi;
+
 void
 Partially_Observable_Markov_Decision_Process_State::
 accept_values(boost::numeric::ublas::compressed_vector< double >& values)
 {
    
-//     bool assigned_score = false;
-    double best_score = 1e-100;
+    INTERACTIVE_VERBOSER(true, 14000, "Given values :: "<<values);
+    
+    bool assigned_score = false;
+    double best_score = -1e100;
     
     assert(successors.size() == action_based_successor_driver.size());
     assert(successors.size() == observation_based_successor_driver.size());
@@ -371,6 +385,8 @@ accept_values(boost::numeric::ublas::compressed_vector< double >& values)
              ; driver_index < successors.size()
              ; driver_index++){
 
+        INTERACTIVE_VERBOSER(true, 13000, "Looking at driver :: "<<driver_index);
+    
         auto& driven_successors = successors[driver_index];
         auto& probabilities = observation_probabilities[driver_index];
 //         auto& observations = observation_based_successor_driver[driver_index];
@@ -385,17 +401,49 @@ accept_values(boost::numeric::ublas::compressed_vector< double >& values)
             auto successor = driven_successors[successor_index];
             auto probability = probabilities[successor_index];
 
+            INTERACTIVE_VERBOSER(true, 13000, "Got successor contribution :: "
+                                 <<probability * values(static_cast<int>(successor->get__index())));
+            
             assert(successor->get__index() < values.size());
             local_score += probability * values(static_cast<int>(successor->get__index()));//[successor->get__index()];
         }
         
+        INTERACTIVE_VERBOSER(true, 14000, "Total successor contribution :: "
+                             <<local_score<<std::endl
+                             <<"Baseline :: "<<best_score<<std::endl
+                             <<"Query 1st > 2dn :: "<<(local_score > best_score));
+            
         if(local_score > best_score){
            prescribed_action_index = driver_index;
            best_score = local_score;
+           assigned_score = true;
+
+
+//     QUERY_UNRECOVERABLE_ERROR(!State_Transformation::
+//                               ith_exists(extern_runtime_thread_thingi, action_based_successor_driver[prescribed_action_index])
+//                               , "Could not find a ground symbol associated with index :: "
+//                               << action_based_successor_driver[prescribed_action_index]
+//                               <<"At thread :: "<<extern_runtime_thread_thingi<<std::endl);
+    
+//     INTERACTIVE_VERBOSER(true, 14000,
+//                          "Got optimal successor driver :: "<<action_based_successor_driver[prescribed_action_index]<<" "
+//                          <<State_Transformation::
+//                          make_ith<State_Transformation>
+//                          (extern_runtime_thread_thingi,
+//                           action_based_successor_driver[prescribed_action_index]).get__identifier()<<std::endl);
+    
+           VERBOSER(14000, "Got improved score :: "<<best_score<<std::endl
+                    <<"from action at planning index :: "
+                    <<action_based_successor_driver[prescribed_action_index]<<" ");
         }
     }
 
-    expected_value = best_score;  
+    if(assigned_score){
+        expected_value = best_score;  
+        INTERACTIVE_VERBOSER(true, 13000, "Made score assignment :: "<<expected_value);
+    }
+    
+    VERBOSER(14000, "Accepted values.");
 }
 
 
@@ -403,8 +451,9 @@ void
 Partially_Observable_Markov_Decision_Process_State::
 accept_values(boost::numeric::ublas::vector<double>& values)
 {
-//     bool assigned_score = false;
-    double best_score = 1e-100;
+    VERBOSER(14000, "Given values from direct inverse :: "<<values);
+    bool assigned_score = false;
+    double best_score = -1e100;
     
     assert(successors.size() == action_based_successor_driver.size());
     assert(successors.size() == observation_based_successor_driver.size());
@@ -435,10 +484,15 @@ accept_values(boost::numeric::ublas::vector<double>& values)
         if(local_score > best_score){
            prescribed_action_index = driver_index;
            best_score = local_score;
+           assigned_score = true;
         }
     }
 
-    expected_value = best_score; 
+    if(assigned_score){
+        expected_value = best_score; 
+    }
+    
+    VERBOSER(14000, "Accepted values.");
 }
 
 bool

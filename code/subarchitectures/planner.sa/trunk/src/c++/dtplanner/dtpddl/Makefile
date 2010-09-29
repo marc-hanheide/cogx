@@ -13,7 +13,7 @@ WARNINGS := -Wall -Wextra
 
 CPPFLAGS := $(OPTIMISE) -DNDEBUG -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic
  
-# CPPFLAGS := -ggdb $(OPTIMISE) -pg -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic
+#CPPFLAGS := -ggdb $(OPTIMISE) -pg -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic
 
 
 LDFLAGS := -L/data/private/grettonc/lib/ -lz  -lm -lpthread #-lglpk -lltdl -lClp -lCoinUtils

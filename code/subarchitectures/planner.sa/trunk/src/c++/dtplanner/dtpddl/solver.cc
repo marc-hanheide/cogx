@@ -55,12 +55,16 @@ using namespace Planning::Parsing;
 
 Are_Doubles_Close Solver::are_Doubles_Close(1e-9);
 
+// size_t extern_runtime_thread_thingi;
+
 
 std::pair<Planning::Formula::Action_Proposition, uint>
 Solver::get_prescribed_action(POMDP_State* state)
 {
     basic_type::Runtime_Thread runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
         (dynamic_cast<const Planning::Problem_Grounding*>(problem_Grounding.get()));
+// extern_runtime_thread_thingi = runtime_Thread;
+
 
     auto prescribed_action_index = state->get__prescribed_action();
     

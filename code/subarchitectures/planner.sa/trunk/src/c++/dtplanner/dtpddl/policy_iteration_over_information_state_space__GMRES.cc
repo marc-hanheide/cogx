@@ -111,8 +111,8 @@ void Policy_Iteration__GMRES::configure_reward_vector()
     assert(states.size() < dimension);
     assert(instantanious_reward_vector[states.size()] == 0.0);
     assert(states.size() < instantanious_reward_vector.size());
-    instantanious_reward_vector[states.size()] = sink_state_penalty;
-//     instantanious_reward_vector[states.size()] = 0.0;
+//     instantanious_reward_vector[states.size()] = sink_state_penalty;
+    instantanious_reward_vector[states.size()] = 0.0;
 }
 
 void Policy_Iteration__GMRES::press_greedy_policy()
@@ -136,6 +136,11 @@ void Policy_Iteration__GMRES::operator()()
     configure_transition_matrix();
     configure_reward_vector();
 
+    INTERACTIVE_VERBOSER(true, 14000, "Given rewards :: "<<instantanious_reward_vector);
+
+    INTERACTIVE_VERBOSER(true, 14000, "Given transitions :: "<<state_transition_matrix);
+    
+    
     gmres.set_matrix(&state_transition_matrix);
     gmres.set_vector(&instantanious_reward_vector);
     gmres();
