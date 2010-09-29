@@ -49,11 +49,14 @@ void StereoDetector::configure(const map<string,string> & _config)
 	// first let the base classes configure themselves (for getRectImage)
 	configureStereoCommunication(_config);
 
-	runtime = 1000;								// processing time for left AND right image
-	cannyAlpha = 0.8;							// Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
+	nr_p_score = 0;								// start with first processing score
+	
+	runtime = 1600;								// processing time for left AND right image
+	cannyAlpha = 0.6;							// Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
 	cannyOmega = 0.001;
 
 	activeReasoner = true;				// activate reasoner
+	activeReasonerPlane = true;		// activate plane C
 	
 	receiveImagesStarted = false;
 	haveImage = false;
@@ -78,6 +81,8 @@ void StereoDetector::configure(const map<string,string> & _config)
 	showStereoType = Z::StereoBase::STEREO_CLOSURE;
 	showSegments = false;
 	showROIs = false;
+	showReasoner = true;
+	showReasonerUnprojected = false;
 
   map<string,string>::const_iterator it;
 	if((it = _config.find("--videoname")) != _config.end())
@@ -90,6 +95,9 @@ void StereoDetector::configure(const map<string,string> & _config)
 		try
 		{
 			score = new Z::StereoCore(camconfig);
+			p_score[0] = new Z::StereoCore(camconfig);
+			p_score[1] = new Z::StereoCore(camconfig);
+			p_score[2] = new Z::StereoCore(camconfig);
 		}
 		catch (exception &e)
 		{
@@ -467,16 +475,14 @@ void StereoDetector::receiveConvexHull(const cdl::WorkingMemoryChange & _wmc)
 	pos.z = obj->pose.pos.z;
 	double radius = chPtr->radius;
 	
-	if(activeReasoner)
+	if(activeReasonerPlane)
 	{
 		reasoner->ProcessConvexHull(pos, radius, points);
-		
-		// add visual object to working memory
 		if(reasoner->GetPlane(obj))
 		{
 			planeID = newDataID();
 			addToWorkingMemory(planeID, obj);
-			log("Wrote new plane as visual object to working memory: %s", planeID.c_str());
+			log("Wrote new dominant plane as visual object to working memory: %s", planeID.c_str());
 		}
 	}
 
@@ -515,14 +521,15 @@ void StereoDetector::receiveImages(const std::vector<Video::Image>& images)
 void StereoDetector::processImage()
 {
 	log("Process new images with runtime: %ums", runtime);
-	score->ClearResults();
+//	score->ClearResults();
+	p_score[nr_p_score]->ClearResults();
 	GetImages();
+
+	log("Got images.");
 
 	try 
 	{
-// 		log("Calculation of stereo images!");
-		score->ProcessStereoImage(runtime/2, cannyAlpha, cannyOmega, iplImage_l, iplImage_r);
-// 		log("Calculation of stereo images ended!");
+		p_score[nr_p_score]->ProcessStereoImage(runtime/2, cannyAlpha, cannyOmega, iplImage_l, iplImage_r);
 	}
   catch (exception &e)
   {
@@ -530,21 +537,33 @@ void StereoDetector::processImage()
     cout << e.what() << endl;
   }
 
-	// do the reasoner things!
-	if(activeReasoner)
-	{
-		if(reasoner->Process(score))
-		{
-			printf("StereoDetector::processImage: Get results of reasoner!\n");
-			reasoner->GetResults();
+	log("Processed images.");
+	score = p_score[nr_p_score];			// copy processed score to main score for displaying
+	log("Copied processed score to main.");
 
-			printf("StereoDetector::processImage: Write results of reasoner to working memory!\n");
-			// WriteToWM(results);
-		}
-	}
-	else WriteVisualObjects();
+	if(activeReasoner)	// do the reasoner things!
+	{
+		log("Start reasoner.");
+		reasoner->Process(score);
 		
+// 		if(reasoner->Process(score))														/// TODO delete
+// 		{
+// 			log("Get results.");
+// 			Z::Array<VisionData::VisualObjectPtr> objects;
+// 			reasoner->GetResults(objects);
+// 
+// 			log("Write results to working memory!");
+// 			WriteToWM(objects);
+// 		}
+// 		log("End reasoner.");
+	}
+// 	else WriteVisualObjects();
+	
+	WriteVisualObjects();
 	ShowImages(false);
+	
+	nr_p_score++;
+	if(nr_p_score > 2) nr_p_score=0;
 	log("Processing of stereo images ended.");
 }
 
@@ -746,6 +765,14 @@ void StereoDetector::WriteVisualObjects()
 		if(showStereoType != Z::StereoBase::UNDEF)
 			WriteToWM(showStereoType);
 	}
+	
+	if(showReasoner)
+	{
+		Z::Array<VisionData::VisualObjectPtr> objects;
+		reasoner->GetResults(objects, showReasonerUnprojected);
+// 		log("Write reasoner results to working memory!");
+		WriteToWM(objects);
+	}
 }
 
 /**
@@ -765,34 +792,51 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 
 		if(success)
 		{
-			// label object with incremtal raising number
-// 			char obj_label[32];
-// 			sprintf(obj_label, "Stereo object %d", numStereoObjects);
-// 			obj->label = obj_label;
-// 			numStereoObjects++;
-		
 			// add visual object to working memory
 			std::string objectID = newDataID();
 			objectIDs.push_back(objectID);
 
-			VisionData::ReasonerObjectPtr reaObj = new VisionData::ReasonerObject;																	/// TODO TODO TODO Write ReasonerObject!!!
-			reaObj->obj = obj;
-			reaObj->frameNr = frameNumber;
-			addToWorkingMemory(objectID, reaObj);
+// 			VisionData::ReasonerObjectPtr reaObj = new VisionData::ReasonerObject;						/// TODO TODO TODO Write to Reasoner COMPONENT => delete later
+// 			reaObj->obj = obj;
+// 			reaObj->frameNr = frameNumber;
+// 			addToWorkingMemory(objectID, reaObj);
 
-			cvWaitKey(20);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
+			addToWorkingMemory(objectID, obj);																									/// TODO TODO TODO Write Visual Object!!!
 
-			debug("Add new visual object to working memory: %s", objectID.c_str());
+			cvWaitKey(200);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
+
+			log("Add new visual object to working memory: %s", objectID.c_str());
 		}
 	}
 	
-	// Send newFrame command
+	// Send newFrame command for Reasoner component => delete later
 	VisionData::SDReasonerCommandPtr newFrame = new VisionData::SDReasonerCommand;
 	newFrame->cmd = VisionData::NEWFRAME;
 	addToWorkingMemory(newDataID(), newFrame);
 	debug("NewFrame command sent!");																																						/// TODO wird auch gesendet, wenn Ansicht geändert wird!
 
 	frameNumber++;
+}
+
+/**																																					TODO New version!
+ * @brief Write visual objects to the working memory.
+ * First delete all the old ones!
+ * @param objects Write this visual objects
+ */
+void StereoDetector::WriteToWM(Z::Array<VisionData::VisualObjectPtr> objects)
+{
+	VisionData::VisualObjectPtr obj;
+	for(unsigned i=0; i< objects.Size(); i++)
+	{
+		obj = new VisionData::VisualObject;
+		obj = objects[i];
+		std::string objectID = newDataID();
+		objectIDs.push_back(objectID);
+		addToWorkingMemory(objectID, obj);
+
+		cvWaitKey(200);			/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
+		log("New visual object to WM: %s", objectID.c_str());
+	}
 }
 
 /**
@@ -852,6 +896,10 @@ void StereoDetector::DeleteVisualObjectsFromWM()
  *   key:	j ... Show CYLINDERS \n
  *   key:	k ... Show CONES \n
  *   key:	l ... Show SPHERES \n
+ *   
+ *   key: y ... Show REASONER results \n
+ *   
+ *   key: < ... Switch to older frames \n
  */
 void StereoDetector::SingleShotMode()
 {
@@ -907,7 +955,11 @@ void StereoDetector::SingleShotMode()
 						"    h ... Show EXT-ELLIPSES: not yet implemented\n"
 						"    j ... Show CYLINDERS\n"
 						"    k ... Show CONES\n"
-						"    l ... Show SPHERES\n");
+						"    l ... Show SPHERES\n\n"
+
+						"    y ... Show REASONER results\n\n"
+
+						"    < ... Switch to older frames\n");
 
 	if (key == 65471 || key == 1114047)	// F2
 	{
@@ -1238,7 +1290,43 @@ void StereoDetector::SingleShotMode()
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
-		default: break;
+
+		case 'y':
+			if(showReasoner)
+			{
+				showReasoner = false;
+				log("Show REASONER results: OFF");
+			}
+			else
+			{
+				showReasoner = true;
+				log("Show REASONER results:: ON");
+			}
+			ShowImages(true);
+			break;
+
+		case 'c':
+			if(showReasonerUnprojected)
+			{
+				showReasonerUnprojected = false;
+				log("Show unprojected REASONER results: OFF");
+			}
+			else
+			{
+				showReasonerUnprojected = true;
+				log("Show unprojected REASONER results:: ON");
+			}
+			ShowImages(true);
+			break;
+
+		case '<':
+			showFrame--;
+			if(showFrame < 0) showFrame = 2;
+			log("Switch to older frames: %u", showFrame);
+			score = p_score[showFrame];
+			ShowImages(true);
+			break;
+default: break;
 	}
 }
 
