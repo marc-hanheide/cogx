@@ -54,22 +54,22 @@ find_ref_features(BId, Nom) <-
 	i : sort(Nom, thing),
 	i : prop(Nom, it),
 	i : feat_Num(Nom, sg),
-	bel : fv(BId, 'Saliency', salient) / 0.0.
+	bel : fv(BId, 'saliency', salient) / 0.0.
 
 find_ref_features(BId, Nom) <-
 	i : sort(Nom, 'q-color'),
 	i : prop(Nom, Prop),
-	bel : fv(BId, 'Color', Prop) / 0.0.
+	bel : fv(BId, 'color', Prop) / 0.0.
 
 find_ref_features(BId, Nom) <-
 	i : sort(Nom, 'q-size'),
 	i : prop(Nom, Prop),
-	bel : fv(BId, 'Size', Prop) / 0.0.
+	bel : fv(BId, 'size', Prop) / 0.0.
 
 find_ref_features(BId, Nom) <-
 	i : sort(Nom, 'q-shape'),
 	i : prop(Nom, Prop),
-	bel : fv(BId, 'Shape', Prop) / 0.0.
+	bel : fv(BId, 'shape', Prop) / 0.0.
 
 %-------------------------------------------------------------------------
 
@@ -80,7 +80,7 @@ try_objecttype(BId, Nom) <-
 	i : sort(Nom, Sort),
 	i : prop(Nom, Prop),
 	valid_objecttype(Sort, Prop, Type),
-	bel : fv(BId, 'ObjectType', Type) / 0.0.
+	bel : fv(BId, 'objecttype', Type) / 0.0.
 
 %-------------------------------------------------------------------------
 
@@ -98,4 +98,4 @@ try_proximity(BId, Nom) <-
 
 try_proximity(BId, Nom) <-
 	i : feat_Proximity(Nom, Proximity),
-	bel : fv(BId, 'Proximity', Proximity) / 0.0.
+	bel : fv(BId, 'proximity', Proximity) / 0.0.

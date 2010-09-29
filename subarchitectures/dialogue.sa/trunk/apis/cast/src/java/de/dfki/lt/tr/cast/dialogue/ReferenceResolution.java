@@ -191,11 +191,13 @@ extends AbstractDialogueComponent {
 						log(nr.hypos.length + " hypos for ["
 								+ PresupposedBeliefConstruction.presupToString(nom, eos.get(nom)) + "]");
 
+/*
 						for (RefHypo hypo : nr.hypos) {
 							log("  " + hypo.beliefId + " @ p=" + hypo.prob);
 						}
+ */
 					}
-					log("NOTE: the references have already been added to the intention recognition engine");
+					log("reference hypotheses added to the intention recognition engine");
 				}
 				else {
 					log("found no beliefs to resolve");

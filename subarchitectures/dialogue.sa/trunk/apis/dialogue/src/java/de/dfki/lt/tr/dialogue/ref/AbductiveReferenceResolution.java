@@ -92,6 +92,7 @@ public class AbductiveReferenceResolution {
 			for (int i = 0; i < proof.length; i++) {
 				ModalisedAtom rma = extractResolvesMAtom(proof[i].proof);
 				if (rma != null && intentionEngine != null) {
+					log("adding reference hypothesis: " + MercuryUtils.modalisedAtomToString(rma) + " @ p=" + proof[i].cost);
 					intentionEngine.getProxy().addAssumable("reference_resolution", rma, proof[i].cost);
 				}
 
@@ -112,7 +113,7 @@ public class AbductiveReferenceResolution {
 		for (MarkedQuery q : qs) {
 			ModalisedAtom ma = q.atom;
 			if (ma.m.length > 0 && ma.m[0] == Modality.Understanding && ma.a.predSym.equals("resolves_to_belief")) {
-				log(MercuryUtils.modalisedAtomToString(ma));
+//				log(MercuryUtils.modalisedAtomToString(ma));
 				return ma;
 			}
 		}
