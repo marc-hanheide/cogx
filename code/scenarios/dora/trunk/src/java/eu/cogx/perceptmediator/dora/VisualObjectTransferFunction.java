@@ -16,9 +16,11 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import castutils.castextensions.WMView;
+import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
@@ -46,21 +48,44 @@ public class VisualObjectTransferFunction extends
 		Map<String, Formula> result = new HashMap<String, Formula>();
 		// TODO: we should use a DoubleValue here!
 		try {
-			Place currentPlace = SpatialFacade.get(component).getPlace();
-			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
-					currentPlace.id));
-			result.put("ObjectId", PropositionFormula.create(wmc.address.id).getAsFormula());
-			result.put("label", PropositionFormula.create(from.identLabels[0]).getAsFormula());
-			result.put("is-in", WMPointer.create(placeWMA).getAsFormula());
+			result.put("ObjectId", PropositionFormula.create(wmc.address.id)
+					.getAsFormula());
+			result.put("label", PropositionFormula.create(from.identLabels[0])
+					.getAsFormula());
 		} catch (BeliefException e) {
-			component.logException(e);
-		} catch (CASTException e) {
-			component.logException(e);
-		} catch (InterruptedException e) {
 			component.logException(e);
 		}
 
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see eu.cogx.perceptmediator.transferfunctions.abstr.
+	 * SimpleDiscreteTransferFunction#fillBelief(de.dfki.lt.tr.beliefs.data.
+	 * CASTIndependentFormulaDistributionsBelief, cast.cdl.WorkingMemoryChange,
+	 * Ice.ObjectImpl)
+	 */
+	@Override
+	protected void fillBelief(
+			CASTIndependentFormulaDistributionsBelief<PerceptBelief> belief,
+			WorkingMemoryChange wmc, VisualObject from) {
+		FormulaDistribution fd = FormulaDistribution.create();
+		Place currentPlace;
+		try {
+			currentPlace = SpatialFacade.get(component).getPlace();
+			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
+					currentPlace.id));
+			WMPointer wmp = WMPointer.create(placeWMA);
+			fd.add(wmp.get(), from.identDistrib[0]);
+			belief.getContent().put("is-in", fd);
+		} catch (CASTException e) {
+			component.logException(e);
+		} catch (InterruptedException e) {
+			component.logException(e);
+		} catch (BeliefException e) {
+			component.logException(e);
+		}
+	}
 }
