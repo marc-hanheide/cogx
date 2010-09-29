@@ -10,6 +10,7 @@
 #^/code/subarchitectures/binder/branches/release6/	 subarchitectures/binder
 ^/code/subarchitectures/binder/trunk             subarchitectures/binder.sa
 ^/code/subarchitectures/dialogue.sa/trunk        subarchitectures/dialogue.sa
+^/code/subarchitectures/visualization.sa/trunk   subarchitectures/visualization.sa
 #^/code/subarchitectures/coma.sa/trunk		 	 subarchitectures/coma.sa
 
 #^/code/tools/castctrl/trunk                             tools/castctrl
@@ -17,7 +18,7 @@
 
 
 
-#^/code/tools/hardware/video/trunk			tools/hardware/video              
+^/code/tools/hardware/video/trunk			tools/hardware/video              
 #^/code/tools/hardware/stereo/trunk			tools/hardware/stereo              
 #^/code/tools/hardware/config/trunk			tools/hardware/config
 #^/code/tools/hardware/laser/trunk			tools/hardware/laser
@@ -32,12 +33,13 @@
 #^/code/tools/d-lib/trunk				tools/d-lib
 #^/code/tools/genroi/trunk				tools/genroi
 #^/code/tools/grabimg/trunk				tools/grabimg
-#^/code/tools/math/trunk					tools/math
+^/code/tools/math/branches/stable-0					tools/math
 #^/code/tools/scripts/trunk				tools/scripts
 #^/code/tools/testing/trunk				tools/testing
 
 #^/code/tools/interconnectivity				tools/interconnectivity
-^/code/tools/beliefs/trunk/apis/beliefs 				tools/beliefs
+^/code/tools/beliefs/trunk           tools/beliefs
 #^/code/tools/mary				tools/mary
 ^/code/tools/castutils/trunk				tools/castutils
+^/code/tools/cogxutils/trunk				tools/cogxutils
 
