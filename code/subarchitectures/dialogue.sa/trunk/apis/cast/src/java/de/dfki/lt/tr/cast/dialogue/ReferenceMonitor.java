@@ -23,10 +23,13 @@ package de.dfki.lt.tr.cast.dialogue;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
+import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
@@ -61,7 +64,7 @@ extends AbstractDialogueComponent {
 //	private AbductiveReferenceResolution arr;
 	private String dumpfile = "/dev/null";
 
-	HashMap<String, dBelief> bm = new HashMap<String, dBelief>();
+	HashMap<WorkingMemoryAddress, dBelief> bm = new HashMap<WorkingMemoryAddress, dBelief>();
 
 	@Override
 	public void start() {
@@ -110,7 +113,7 @@ extends AbstractDialogueComponent {
 		try {
 			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
 			dBelief belief = (dBelief)data.getData();
-			bm.put(_wmc.address.id, belief);
+			bm.put(_wmc.address, belief);
 			triggerRulefileRewrite();
 		}
 		catch (SubarchitectureComponentException e) {
@@ -122,7 +125,7 @@ extends AbstractDialogueComponent {
 		try {
 			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
 			dBelief belief = (dBelief)data.getData();
-			bm.remove(_wmc.address.id);
+			bm.remove(_wmc.address);
 			triggerRulefileRewrite();
 		}
 		catch (SubarchitectureComponentException e) {
@@ -138,6 +141,17 @@ extends AbstractDialogueComponent {
 		proposeInformationProcessingTask(taskID, taskGoal);
 	}
 
+	private static Term wmAddressToTerm(WorkingMemoryAddress addr) {
+		return TermAtomFactory.term("ptr", new Term[] {
+				TermAtomFactory.term(addr.subarchitecture),
+				TermAtomFactory.term(addr.id)
+		});
+	}
+
+	private static String wmAddressToTermString(WorkingMemoryAddress addr) {
+		return MercuryUtils.termToString(wmAddressToTerm(addr));
+	}
+
 	// FIXME: this has to be as efficient as possible!
 	private void rewriteRulefile(String filename) {
 		log("dumping the current belief model to " + filename);
@@ -146,10 +160,11 @@ extends AbstractDialogueComponent {
 
 		// populate epistemic statuses
 		List<String> args = new LinkedList<String>();
-		for (dBelief bel : bm.values()) {
+		for (WorkingMemoryAddress addr : bm.keySet()) {
+			dBelief bel = bm.get(addr);
 			args.add("bel : " + MercuryUtils.atomToString(TermAtomFactory.atom("epistemic_status",
 						new Term[] {
-							TermAtomFactory.term(bel.id),
+							wmAddressToTerm(addr),
 							ConversionUtils.epistemicStatusToTerm(bel.estatus)
 						} ))
 					+ ".");
@@ -160,8 +175,9 @@ extends AbstractDialogueComponent {
 
 		// populate belief_exist
 		args.clear();
-		for (dBelief bel : bm.values()) {
-			args.add("(bel : b('" + bel.id + "')) = p(1.0)");  // FIXME: how to get belief existence prob?
+		for (WorkingMemoryAddress addr : bm.keySet()) {
+			dBelief bel = bm.get(addr);
+			args.add("(bel : b(" + wmAddressToTermString(addr) + ")) = p(1.0)");  // FIXME: get belief existence prob?
 		}
 		sb.append("belief_exist = [\n\t").append(join(",\n\t", args)).append("\n].\n");
 
@@ -171,43 +187,45 @@ extends AbstractDialogueComponent {
 		args.clear();
 		List<String> disjoints = new LinkedList<String>();
 		List<String> dd = new LinkedList<String>();
+		List<String> rules = new LinkedList<String>();
 
-		for (dBelief bel : bm.values()) {
-			if (bel.content instanceof BasicProbDistribution) {
-				BasicProbDistribution bpd = (BasicProbDistribution)bel.content;
+		for (WorkingMemoryAddress addr : bm.keySet()) {
+			dBelief bel = bm.get(addr);
 
-				dd.clear();
-				if (bpd.values instanceof FormulaValues) {
-					FormulaValues fv = (FormulaValues)bpd.values;
-					for (FormulaProbPair fp : fv.values) {
-						args.add("(bel : w('" + bel.id + "','" + bpd.key + "')) = p(" + fp.prob + ")");
-						dd.add("bel : w('" + bel.id + "','" + bpd.key + "')");
+			if (bel.content instanceof CondIndependentDistribs) {
+				CondIndependentDistribs cdd = (CondIndependentDistribs)bel.content;
+
+				for (ProbDistribution pd : cdd.distribs.values()) {
+					if (pd instanceof BasicProbDistribution) {
+						BasicProbDistribution bpd = (BasicProbDistribution)pd;
+
+						dd.clear();
+						if (bpd.values instanceof FormulaValues) {
+							FormulaValues fv = (FormulaValues)bpd.values;
+							int idx = 1;
+							for (FormulaProbPair fp : fv.values) {
+								String worldId = bpd.key + idx;
+								args.add("(bel : w(" + wmAddressToTermString(addr) + ", '" + worldId + "')) = p(" + fp.prob + ")");
+								dd.add("bel : w(" + wmAddressToTermString(addr) + ", '" + worldId + "')");
+
+								String tail = " <- bel : w(" + wmAddressToTermString(addr) + ", '" + worldId + "') / world_exist, bel : b(" + wmAddressToTermString(addr) + ") / belief_exist.";
+								expandFormulaToArgsWithIdTail(bpd.key, fp.val, rules, wmAddressToTermString(addr), tail);
+
+								idx++;
+							}
+						}
+						disjoints.add("disjoint([" + join(", ", dd) + "]).\n");
 					}
+
 				}
-				disjoints.add("disjoint([" + join(", ", dd) + "]).\n");
 			}
+
 		}
 		sb.append("world_exist = [\n\t").append(join(",\n\t", args)).append("\n].\n");
 		sb.append("\n");
 		sb.append(join("", disjoints));
 		sb.append("\n");
-
-		// examine each world and properties it implies
-		args.clear();
-		for (dBelief bel : bm.values()) {
-			if (bel.content instanceof BasicProbDistribution) {
-				BasicProbDistribution bpd = (BasicProbDistribution)bel.content;
-
-				if (bpd.values instanceof FormulaValues) {
-					FormulaValues fv = (FormulaValues)bpd.values;
-					for (FormulaProbPair fp : fv.values) {
-						String tail = " <- bel : w('" + bel.id + "', '" + bpd.key + "') / world_exist, bel : b('" + bel.id + "') / belief_exist.";
-						expandFormulaToArgsWithIdTail(fp.val, args, bel.id, tail);
-					}
-				}
-			}
-		}
-		sb.append(join("\n", args));
+		sb.append(join("\n", rules));
 
 		try {
 			BufferedWriter f = new BufferedWriter(new FileWriter(dumpfile));
@@ -219,13 +237,19 @@ extends AbstractDialogueComponent {
 		}
 	}
 
-	private void expandFormulaToArgsWithIdTail(dFormula val, List<String> args, String id, String tail) {
+	private void expandFormulaToArgsWithIdTail(String modality, dFormula val, List<String> args, String id, String tail) {
 		if (val instanceof ComplexFormula && ((ComplexFormula)val).op == BinaryOp.conj) {
 			ComplexFormula cF = (ComplexFormula)val;
 			for (dFormula subF : cF.forms) {
-				expandFormulaToArgsWithIdTail(subF, args, id, tail);
+				expandFormulaToArgsWithIdTail(modality, subF, args, id, tail);
 			}
 		}
+		else if (val instanceof ElementaryFormula) {
+			ElementaryFormula eF = (ElementaryFormula)val;
+			String s = MercuryUtils.termStringEscape(modality) + "(" + id + ", '" + eF.prop + "')";
+			args.add(s + tail);
+		}
+/*
 		else if (val instanceof ModalFormula) {
 			ModalFormula mF = (ModalFormula)val;
 			if (mF.form instanceof ElementaryFormula) {
@@ -234,6 +258,7 @@ extends AbstractDialogueComponent {
 				args.add(s + tail);
 			}
 		}
+ */
 	}
 
 	// Sun should burn in hell for not having such a function in the standard library!

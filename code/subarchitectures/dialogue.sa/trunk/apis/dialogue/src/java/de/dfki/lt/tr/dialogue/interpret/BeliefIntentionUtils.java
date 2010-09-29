@@ -38,6 +38,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import java.util.Iterator;
@@ -90,17 +91,17 @@ public abstract class BeliefIntentionUtils {
 	public static String intentionToString(Intention it) {
 		String s = "";
 
-		s += "\tB{" + epistemicStatusToString(it.estatus) + "}:\n";
+		s += "B{" + epistemicStatusToString(it.estatus) + "}:\n";
 
 		for (IntentionalContent itc : it.content) {
-			s += "\t\tI(";
+			s += "\tI(";
 			for (Iterator<String> i = itc.agents.iterator(); i.hasNext(); ) {
 				s += i.next();
 				if (i.hasNext()) { s += ","; }
 			}
 			s += "):\n";
-			s += "\t\t\t <Pre>" + dFormulaToString(itc.preconditions) + " ^\n";
-			s += "\t\t\t<Post>" + dFormulaToString(itc.postconditions) + "\n\t\t@ p=" + itc.probValue + "\n";
+			s += "\t\t <Pre>" + dFormulaToString(itc.preconditions) + " ^\n";
+			s += "\t\t<Post>" + dFormulaToString(itc.postconditions) + "\n\t\t@ p=" + itc.probValue + "\n";
 		}
 
 		return s;
@@ -222,6 +223,11 @@ public abstract class BeliefIntentionUtils {
 		if (f instanceof ModalFormula) {
 			ModalFormula mF = (ModalFormula) f;
 			s += "<" + mF.op + ">" + dFormulaToString(mF.form);
+			return s;
+		}
+		if (f instanceof PointerFormula) {
+			PointerFormula pF = (PointerFormula) f;
+			s += "[" + pF.pointer.subarchitecture + "," + pF.pointer.id + "]";
 			return s;
 		}
 		return "DFORMULA";
