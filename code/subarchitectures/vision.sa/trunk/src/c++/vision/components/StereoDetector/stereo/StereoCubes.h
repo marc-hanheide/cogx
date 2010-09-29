@@ -31,8 +31,8 @@ public:
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
-  void Fuddle(unsigned off0, unsigned off1, bool swap);
-  bool IsValid() {return surf[0].is_valid && surf[1].is_valid;}
+  void Fuddle(unsigned off0, unsigned off1, unsigned off2, unsigned ass0, unsigned ass1, unsigned ass2);
+  bool IsValid() {return surf[0].is_valid && surf[1].is_valid && surf[2].is_valid;}
 };
 
 
@@ -42,7 +42,8 @@ public:
 class Cube3D
 {
 public:
-  Surf3D surf[3];											///< 3D surfaces (unordered?)
+  Surf3D surf_vis[3];								///< The visible 3D surfaces (ordered clockwise)			/// TODO TomGine needs the vertices counter clockwise
+  Surf3D surf_hid[3];								///< The hidden 3D surfaces (ordered counter-clockwise)
 
   bool Reconstruct(StereoCamera *stereo_cam, TmpCube &left, TmpCube &right);
 };
@@ -63,11 +64,13 @@ private:
 	bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
 #endif
 	void RecalculateCoordsystem(Cube3D &cube, Pose3 &pose);
-
-  double MatchingScore(TmpCube &left_cube, TmpCube &right_cube, unsigned &off_0, unsigned &off_1, bool &cross);
+  double MatchingScore(TmpCube &left_cube, TmpCube &right_cube, 
+                       unsigned &off_0, unsigned &off_1, unsigned &off_2, 
+                       unsigned &assign_0, unsigned &assign_1, unsigned &assign_2);
   unsigned FindMatchingCube(TmpCube &left_cube, Array<TmpCube> &right_cubes, unsigned l);
   void MatchCubes(Array<TmpCube> &left_cubes, Array<TmpCube> &right_cubes, int &matches);
-  void Calculate3DCubes(Array<TmpCube> &left_cubes, Array<TmpCube> &right_cubes, int &cubeMatches, Array<Cube3D> &cube3ds);
+  void Calculate3DCubes(Array<TmpCube> &left_cubes, Array<TmpCube> &right_cubes, 
+                        int &cubeMatches, Array<Cube3D> &cube3ds);
 	void DrawSingleMatched(int side, int id, int detail);
 
 public:

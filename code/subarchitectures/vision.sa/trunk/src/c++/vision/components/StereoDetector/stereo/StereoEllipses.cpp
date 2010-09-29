@@ -399,6 +399,23 @@ bool Ellipse3D::Reconstruct(StereoCamera *stereo_cam, TmpEllipse &left, TmpEllip
 }
 
 
+/**
+ * @brief Compare two ellipses for filtering.
+ * @param ell 3D ellipse to compare
+ * @return Return certainty value for equality [0,100]
+ */
+double Ellipse3D::Compare(Ellipse3D &ell)
+{
+	/// use center and radius
+	
+	/// distance between center points
+	double dist = Length(center.p - ell.center.p) + fabs(radius-ell.radius);
+	
+// 	printf("  Ellipse3D::Compare: dist: %4.2f\n", dist);
+	
+	return dist;
+}
+	
 //-------------------------------------------------------------------//
 //------------------------- StereoEllipses --------------------------//
 //-------------------------------------------------------------------//

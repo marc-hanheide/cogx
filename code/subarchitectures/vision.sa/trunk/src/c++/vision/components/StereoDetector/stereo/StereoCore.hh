@@ -63,7 +63,8 @@ public:
   StereoCore(const string &stereocal_file) throw(std::runtime_error);
   ~StereoCore();
 
-  VisionCore* GetMonoCore(int side) {return vcore[side];}				///< Return single vision core [LEFT/RIGHT]
+  VisionCore* GetMonoCore(int side) {return vcore[side];}										///< Return single vision core [LEFT/RIGHT]
+	StereoBase* GetStereoGestalts(int type) {return stereoGestalts[type];}		///< Return the stereo results
 
   void ClearResults();
 	void ProcessStereoImage(int runtime_ms, float ca, float co, IplImage *iIl, IplImage *iIr);

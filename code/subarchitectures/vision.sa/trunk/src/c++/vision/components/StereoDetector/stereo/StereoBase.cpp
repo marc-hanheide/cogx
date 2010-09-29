@@ -363,7 +363,7 @@ bool Surf2D::IsAtPosition(int x, int y) const
  * @brief Draw the surface unrectified.
  * @param col RGB color
  */
-void Surf2D::Draw()
+void Surf2D::Draw(unsigned detail)
 {
 	unsigned m, s = p.size();
 	for(unsigned i = 0; i < s; i++)
@@ -371,6 +371,13 @@ void Surf2D::Draw()
 		m = i+1; 
 		if(s <= m) m = 0;
 		DrawLine2D(p[i].x, p[i].y, p[m].x, p[m].y);
+
+		if(detail == 2)
+		{
+			char text[20];
+			snprintf(text, 20, "%u", i);
+			DrawText2D(text, p[i].x, p[i].y-5, RGBColor::blue);
+		}
 	}
 }
 

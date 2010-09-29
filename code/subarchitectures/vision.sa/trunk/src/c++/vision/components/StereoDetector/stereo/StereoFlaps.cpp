@@ -93,7 +93,7 @@ void TmpFlap::Fuddle(unsigned off0, unsigned off1, bool swap)
 //---------------------------- Flap3D ----------------------------//
 //----------------------------------------------------------------//
 
-/**
+/** TODO diese Funktion sollte auch in Calculate3DFlaps verwendet werden, oder?
  * @brief Reconstruct the flap in 3D
  * @param left Left TmpFlap
  * @param right Right TmpFlap
@@ -101,6 +101,8 @@ void TmpFlap::Fuddle(unsigned off0, unsigned off1, bool swap)
  */
 bool Flap3D::Reconstruct(StereoCamera *stereo_cam, TmpFlap &left, TmpFlap &right)
 {
+printf("Flap3D::Reconstruct: We never use this function, right?\n");
+printf("  Flap3D::Reconstruct: Reconstruct in Calculate3DFlaps with surfaces!\n");
   bool ok0 = surf[0].Reconstruct(stereo_cam, left.surf[0], right.surf[0], true);
   bool ok1 = surf[1].Reconstruct(stereo_cam, left.surf[1], right.surf[1], true);
   return ok0 && ok1;
@@ -123,27 +125,6 @@ StereoFlaps::StereoFlaps(VisionCore *vc[2], StereoCamera *sc) : StereoBase()
 	stereo_cam = sc;
   flapMatches = 0;
 }
-
-/**
- * @brief Number of Surfaces in 2D 
- * @param side LEFT/RIGHT side of stereo rig.
- */
-// int StereoFlaps::NumSurfaces2D(int side)
-// {
-//   assert(side == LEFT || side == RIGHT);
-//   return surfs[side].Size();
-// }
-
-/**
- * @brief Delivers 2D tmp. surface.
- * @param side LEFT/RIGHT side of stereo rig.
- * @param i Position of the surface in the array.
- */
-// const Surf2D &StereoFlaps::Surfaces2D(int side, int i)
-// {
-//   assert(side == LEFT || side == RIGHT);
-//   return surfs[side][i];
-// }
 
 /**
  * @brief Number of Flaps in 2D 
@@ -197,7 +178,7 @@ void StereoFlaps::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoFlaps::DrawSingleMatched(int side, int id, int detail)
 {
-	flaps[side][id].surf[0].Draw();
+	flaps[side][id].surf[0].Draw(detail);
 }
 
 

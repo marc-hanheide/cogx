@@ -39,8 +39,9 @@ public:
 };
 
 
-/**
- * @brief Class Ellipse3D: Hypothesis of a circle!
+/**																														/// TODO Base class for all 3D-Gestalts?
+ * @brief Class Ellipse3D
+ * NOTE: Hypothesis of a circle!
  */
 class Ellipse3D
 {
@@ -75,6 +76,7 @@ private:
 
 public:
   bool Reconstruct(StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right);
+	double Compare(Ellipse3D &ell);
 };
 
 
@@ -109,9 +111,8 @@ public:
 	int NumEllipsesRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::ELLIPSE);}	///< 
 
 	const TmpEllipse &Ellipses2D(int side, int i);
-	const Ellipse3D &Ellipses(int i) {return ellipse3ds[i];}												///<
-
-	int NumStereoMatches() {return ellMatches;}																			///<
+	const Ellipse3D &Ellipses(int i) {return ellipse3ds[i];}												///< Return a matched stereo ellipse.
+	int NumStereoMatches() {return ellMatches;}																			///< Return the number of stereo matched ellipses
 	void DrawMatched(int side, bool single, int id, int detail);
 	void ClearResults();
 	void Process();
