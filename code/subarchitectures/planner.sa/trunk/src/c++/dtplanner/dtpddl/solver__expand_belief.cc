@@ -499,14 +499,14 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
         std::cerr<<atom->second<<" "<<*atom->first<<std::endl;
     }
 #endif
-    INTERACTIVE_VERBOSER(true, 11000, "Got a new belief state with :: ");
+    INTERACTIVE_VERBOSER(true, 11000, "Got a new belief state with the above configuration.");
     
 
     /* For each \local{atom} in the belief state, find the actions
      * that are executable at the \argument{pomdp_state} belief-state,
      * not at \local{atom}. The default behaviour here is to cause a
      * transition to a logically equivalent state with a severe
-     * penalty. */
+     * reward penalty. */
     auto _legal_actions = std::vector<uint>(legal_actions.begin(), legal_actions.end());
     for(auto atom = belief_state.begin()
             ; atom != belief_state.end()
@@ -518,7 +518,7 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
         auto sorted__successor_Drivers = starting_state->get__sorted__successor_Driver();
         
         std::vector<uint> difference(_legal_actions.size());//std::max(sorted__successor_Drivers.size(), _legal_actions.size()));
-        
+
         auto difference_end = set_difference(_legal_actions.begin(), _legal_actions.end(),
                                              sorted__successor_Drivers.begin(), sorted__successor_Drivers.end(),
                                              difference.begin()
@@ -527,15 +527,35 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
         /* If there are no actions available at \argument{pomdp_state}
          * that are illegal at \local{atom}, continue to a different
          * atom.*/
-        if(!difference.size()) {
+        if(difference.begin() == difference_end) {
 
-            INTERACTIVE_VERBOSER(true, 11000, "No illegal states at :: "
-                                 <<*starting_state<<std::endl);
+#ifndef NDEBUG
+            for(auto p = _legal_actions.begin()
+                    ; p != _legal_actions.end()
+                    ; p++){
+                bool found  = false;
+                for(auto q = sorted__successor_Drivers.begin()
+                        ; q != sorted__successor_Drivers.end()
+                        ; q++){
+                    if(*p == *q){
+                        found = true;
+                    }
+                    
+                }
+                assert(found);
+            }
             
+#endif
+            
+            INTERACTIVE_VERBOSER(true, 13000, "No illegal transitions at :: "
+                                 <<*dynamic_cast<Planning::State*>(starting_state)<<std::endl);
             
             continue;
         }
         
+        INTERACTIVE_VERBOSER(true, 13000, "Got illegal transitions at :: "
+                             <<*dynamic_cast<Planning::State*>(starting_state)<<std::endl);
+
         
         assert(dynamic_cast<Planning::State*>(starting_state));
         Planning::State* _cloned_state_with_penalty
@@ -548,21 +568,35 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
             state_space.insert(_cloned_state_with_penalty);
             cloned_state_with_penalty__index = state_space.find(_cloned_state_with_penalty);
             assert(cloned_state_with_penalty__index != state_space.end());
+            INTERACTIVE_VERBOSER(true, 11000, "New cloned state with a penalty is :: "
+                                 <<**cloned_state_with_penalty__index<<std::endl);
         } else {
+            INTERACTIVE_VERBOSER(true, 11000, "Deleting duplicate cloned state with a penalty :: "
+                                 <<*_cloned_state_with_penalty<<std::endl);
             delete _cloned_state_with_penalty;/*Repeated construction of a penalty state.*/
         }
 
         auto cloned_state_with_penalty = *cloned_state_with_penalty__index;
         
+        INTERACTIVE_VERBOSER(true, 12000, "Working with a POMDP transition to cloned state :: "
+                             <<cloned_state_with_penalty<<std::endl);
+
         
+        INTERACTIVE_VERBOSER(true, 13000, "Adding transiton to illegal state :: "
+                             <<*cloned_state_with_penalty<<std::endl
+                             <<"form state :: "<<*starting_state<<std::endl
+                             <<"with probability :: "<<starting_state_probability<<std::endl
+                             <<"under action :: "<<0);
+            
         for(auto action_index = difference.begin()
             ; action_index != difference_end
             ; action_index++){
-
-            INTERACTIVE_VERBOSER(true, 11000, "Adding transiton to illegal state :: "
+            
+            INTERACTIVE_VERBOSER(true, 13000, "Adding transiton to illegal state :: "
                                  <<*cloned_state_with_penalty<<std::endl
                                  <<"form state :: "<<*starting_state<<std::endl
-                                 <<"with probability :: "<<starting_state_probability);
+                                 <<"with probability :: "<<starting_state_probability<<std::endl
+                                 <<"under action :: "<<*action_index);
             
             
             
@@ -572,6 +606,10 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
                           , dynamic_cast<MDP_State*>(cloned_state_with_penalty)
                           , starting_state_probability);
         }
+
+        
+        INTERACTIVE_VERBOSER(true, 13000, "Done working with a POMDP transition to cloned state :: "
+                             <<cloned_state_with_penalty<<std::endl);
     }
     
     

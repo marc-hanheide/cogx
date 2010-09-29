@@ -56,7 +56,7 @@ Integer_State::Integer_State(const Integer_State& integer_State)
 {
 }
 
-Integer_State::Integer_State(const std::vector<ELEM_TYPE>& input_data)
+Integer_State::Integer_State(const std::vector<int>& input_data)
     :data(input_data)
 {
 }
@@ -89,7 +89,7 @@ bool Integer_State::operator<(const Integer_State& state) const
     return false;
 }
         
-void Integer_State::write(uint index, ELEM_TYPE value)
+void Integer_State::write(uint index, int value)
 {
     assert(index < data.size());
     data[index] = value;
@@ -104,18 +104,18 @@ void Integer_State::increment(uint index)
 void Integer_State::decrement(uint index)
 {
     assert(index < data.size());
-    assert(data[index] > 0);
+//     assert(data[index] > 0);
     data[index]--;
 }
 
-uint Integer_State::read(uint index) const
+int Integer_State::read(uint index) const
 {
     assert(index < data.size());
 
     return data[index];
 }
 
-bool Integer_State::is_equal(uint index, ELEM_TYPE value) const
+bool Integer_State::is_equal(uint index, int value) const
 {
     assert(index < data.size());
 
@@ -129,7 +129,7 @@ std::size_t Integer_State::hash_value() const
 }
 
 
-std::size_t Integer_State::hash_value(const std::vector<ELEM_TYPE>& input)
+std::size_t Integer_State::hash_value(const std::vector<int>& input)
 {
     return boost::hash_range(input.begin(), input.end());
 }

@@ -9,9 +9,9 @@ OPTIMISE := -O3 -march=native
 
 WARNINGS := -Wall -Wextra
 
-CPPFLAGS := -ggdb $(WARNINGS) -pg -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic
+# CPPFLAGS := -ggdb $(WARNINGS) -pg -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic
 
-# CPPFLAGS := $(OPTIMISE) -DNDEBUG -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic
+CPPFLAGS := $(OPTIMISE) -DNDEBUG -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic
  
 # CPPFLAGS := -ggdb $(OPTIMISE) -pg -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic
 
