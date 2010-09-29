@@ -44,18 +44,18 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 
 	public static final String SOURCE_ADDR_ID = "source-addr";
 	private static final String SEPARATOR = " ";
-	
+
 	public static String toPropositionString(WorkingMemoryAddress _wma) {
 		return _wma.id + SEPARATOR + _wma.subarchitecture;
 	}
-	
-	public static WorkingMemoryAddress addressFromPropositionString(String _address) {
+
+	public static WorkingMemoryAddress addressFromPropositionString(
+			String _address) {
 		String[] split = _address.split(SEPARATOR);
-		assert(split.length == 2);
+		assert (split.length == 2);
 		return new WorkingMemoryAddress(split[0], split[1]);
 	}
-	
-	
+
 	public static Object getBeliefTypeFromCastType(
 			Class<? extends Ice.Object> class1) {
 		return getBeliefTypeFromCastType(CASTUtils.typeName(class1));
@@ -140,7 +140,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		try {
 			mapping = getFeatureValueMapping(wmc, from);
 			addUniversalMappings(wmc, from, mapping);
-			
+
 			for (Entry<String, Formula> fvm : mapping.entrySet()) {
 				FormulaDistribution fd = FormulaDistribution.create();
 				fd.add(fvm.getValue().get(), 1.0);
@@ -157,12 +157,14 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	/**
 	 * Add things to the mapping which are used for all beliefs.
 	 * 
-	 * @param _from 
-	 * @param _wmc 
+	 * @param _from
+	 * @param _wmc
 	 * @param _mapping
 	 */
-	private void addUniversalMappings(WorkingMemoryChange _wmc, From _from, Map<String, Formula> _mapping) {
-		_mapping.put(SOURCE_ADDR_ID, PropositionFormula.create(toPropositionString(_wmc.address)).getAsFormula());
+	private void addUniversalMappings(WorkingMemoryChange _wmc, From _from,
+			Map<String, Formula> _mapping) {
+		_mapping.put(SOURCE_ADDR_ID, PropositionFormula.create(
+				toPropositionString(_wmc.address)).getAsFormula());
 	}
 
 	/**
@@ -180,6 +182,18 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	protected abstract Map<String, Formula> getFeatureValueMapping(
 			WorkingMemoryChange wmc, From from) throws InterruptedException,
 			BeliefException;
+
+	/**
+	 * is being called after getFeatureValueMapping() and can be used in a
+	 * subclass to populate the belief with more fine-controlled values that
+	 * cannot be achieved by the simple mapping.
+	 * 
+	 * @param belief the belief to be modified
+	 */
+	protected void fillBelief(
+			CASTIndependentFormulaDistributionsBelief<PerceptBelief> belief, WorkingMemoryChange wmc, From from) {
+
+	}
 
 	public static CASTTime now() {
 		if (timeServer == null)
