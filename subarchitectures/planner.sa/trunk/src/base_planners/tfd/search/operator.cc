@@ -118,6 +118,10 @@ bool Operator::is_applicable(const TimeStampedState &state) const {
 	return false;
     }
 
+    if (g_force_sequential && !state.operators.empty()) {
+        return false;
+    }
+
     for(int i = 0; i < prevail_start.size(); i++)
 	if(!prevail_start[i].is_applicable(state))
 	    return false;

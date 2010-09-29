@@ -63,6 +63,8 @@ extern bool g_greedy;
 extern int g_timeout;
 extern string g_planMonitorFileName;
 
+extern bool g_force_sequential;
+
 extern Operator *g_let_time_pass;
 extern Operator *g_wait_operator;
 
