@@ -1,0 +1,4 @@
+JAVA MG goal.generator.shape eu.cogx.goals.george.LearnShapeGenerator
+JAVA MG goal.generator.color eu.cogx.goals.george.LearnColorGenerator
+JAVA MG goal.generator.intention eu.cogx.goals.george.AttributedBeliefGoalGenerator
+

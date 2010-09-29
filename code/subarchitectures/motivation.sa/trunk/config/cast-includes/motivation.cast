@@ -3,15 +3,3 @@
 JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
 JAVA MG goal.scheduler motivation.components.managers.Scheduler --debug 
 
-
-     #JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(exists (?r - robot) (forall (?h - person) (kval ?r (name ?h))))"
-
-     #JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (visited ?p))"
-
-     #JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
-
-     #JAVA MG MotivationScheduler motivation.components.managers.Scheduler  --maxPlannedMotives 1 --orderPolicy  PriorityCostGain #JoinedGainCost 
-
-     #JAVA MG MotivationPlanAllManager motivation.components.managers.PlanAllManager 
-
-     #JAVA MG MotiveChartViewer motivation.util.viewer.MotiveChartViewer
