@@ -1,7 +1,7 @@
 HOST localhost
 
 # visualization ###############################################################
-# INCLUDE includes/visualization.sa/v11n-base.cast
+INCLUDE includes/visualization.sa/v11n-base.cast
 
 
 # spatial #####################################################################
