@@ -71,7 +71,7 @@ public class AttributedBeliefGoalGenerator extends
 			// HACK TO FIND A VALID OBJECT
 			List<GroundedBelief> entries = new ArrayList<GroundedBelief>();
 			try {
-				getMemoryEntries(GroundedBelief.class, entries,"binder");
+				getMemoryEntries(GroundedBelief.class, entries, "binder");
 				for (GroundedBelief belief : entries) {
 					if (belief.type.equals(SimpleDiscreteTransferFunction
 							.getBeliefTypeFromCastType(VisualObject.class))) {
@@ -102,8 +102,8 @@ public class AttributedBeliefGoalGenerator extends
 			GeneralGoalMotive goal = new GeneralGoalMotive();
 			super.fillDefault(goal);
 			goal.referenceEntry = addr;
-			goal.goal = new Goal(-1, "(been-used-for-learning-sample '"
-					+ objectId + "' " + concept + ")", false);
+			goal.goal = new Goal(-1, "(" + concept.toLowerCase() + "-learned '"
+					+ objectId + ")", false);
 			log("goal generated: " + goal.goal.goalString);
 			return goal;
 		}
@@ -121,16 +121,7 @@ public class AttributedBeliefGoalGenerator extends
 	@Override
 	protected GeneralGoalMotive checkForUpdate(dBelief newEntry,
 			GeneralGoalMotive motive) {
-		motive.updated = getCASTTime();
-		// initially this costs are taken as -1, corresponding to an ultimate
-		// goal.
-		motive.costs = -1;
-		motive.informationGain = 1;
-
-		motive.goal = new Goal(computeImportance(motive),
-				"(been-used-for-learning-sample '" + "DUMMY" + "' "
-						+ "CONCEPT_TO_BE_INFERRED_FROM_INTENTION" + ")", false);
-		log("updated goal to " + motive.goal.goalString);
+		// TODO
 		return motive;
 	}
 

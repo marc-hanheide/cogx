@@ -85,8 +85,7 @@ public abstract class LearnConceptGenerator extends
 				.getDouble();
 
 		motive.goal = new Goal(computeImportance(motive),
-				"(been-used-for-learning-sample '" + belief.getId() + "' "
-						+ getConceptName() + ")", false);
+				"("+getConceptName().toLowerCase()+"-learned '" + belief.getId() + ")", false);
 		log("updated goal to " + motive.goal.goalString);
 	}
 
