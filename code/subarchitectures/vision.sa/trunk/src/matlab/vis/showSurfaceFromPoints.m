@@ -1,8 +1,8 @@
-%%
+%
 % Originally a part of: curiousDanijel (developed within EU project CogX)
 % Author: Matej Kristan, 2009 (matej.kristan@fri.uni-lj.si; http://vicos.fri.uni-lj.si/matejk/)
 % Last revised: 2009
-%%
+%
 function showSurfaceFromPoints( x, rgb3d, LRaxRoi )
 
 if isempty(x)
@@ -22,7 +22,12 @@ end
 
 x(:,3) = -x(:,3) ;
 if turnoffDelaunay == 0
-    TRI = delaunay(x(:,1),x(:,2));
+    try
+        x1=unique(x(:,1:2)','rows')';
+        TRI = delaunay(x1(:,1),x1(:,2));
+    catch
+        TRI = [];
+    end
 else
     TRI = [] ;
 end
