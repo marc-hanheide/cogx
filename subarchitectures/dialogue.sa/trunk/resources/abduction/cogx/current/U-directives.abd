@@ -19,7 +19,7 @@ understand : event : utter(S, H, Nom) <-
 
 understand : polar_query_scope(S, H, Int, Ref, Nom) <-
 	polar_query_prop(Nom, Prop, Value),
-	int : pre(Int, belief(attrib(S, H), rpv(Ref, Prop, not(unknown)))) / p(1.0),
+	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
 	int : post(Int, state('question-answered', 'Agent'(H), 'LingRef'(Ref), 'Property'(Prop), 'Hypo'(Value))) / p(1.0).
 
 %-------------------------------------------------------------------------
@@ -55,7 +55,7 @@ understand : event : utter(S, H, Nom) <-
 
 understand : wh_query_scope(S, H, Int, Ref, Nom) <-
 	wh_query_prop(Nom, Prop),
-	int : pre(Int, belief(attrib(S, H), rpv(Ref, Prop, not(unknown)))) / p(1.0),
+	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
 	int : post(Int, state('question-answered', 'Agent'(H), 'LingRef'(Ref), 'Property'(Prop))) / p(1.0).
 
 %-------------------------------------------------------------------------
@@ -94,8 +94,8 @@ understand : event : utter(S, H, Nom) <-
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 nm_action_effects(S, H, RootNom, Int, Ref, find) <-
-	int : pre(Int, belief(attrib(H, S), rpv(Ref, 'Location', unknown))) / p(1.0),
-	int : post(Int, belief(shared(S, H), rpv(Ref, 'Location', not(unknown)))) / p(1.0).
+	int : pre(Int, belief(Ref, attrib(H, S), fv(location, unknown))) / p(1.0),
+	int : post(Int, belief(Ref, shared(S, H), fv(location, not(unknown)))) / p(1.0).
 
 nm_action_effects(S, H, RootNom, Int, Ref, bring) <-
 	determine_recipient(RootNom, S, S, H, Recipient),
