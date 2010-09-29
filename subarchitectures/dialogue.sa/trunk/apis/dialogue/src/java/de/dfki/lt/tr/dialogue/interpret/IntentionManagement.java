@@ -65,9 +65,9 @@ public class IntentionManagement {
 	public static final String thisAgent = "robot";
 	public static final String humanAgent = "human";
 
-	public static final String discRefModality = "LingRef";
-	public static final String stateModality = "State";
-	public static final String beliefLinkModality = "Belief";
+	public static final String discRefModality = "lingref";
+	public static final String stateModality = "state";
+	public static final String beliefLinkModality = "belief";
 
 	/**
 	 * Initialise the abducer and prepare for action.
@@ -91,7 +91,7 @@ public class IntentionManagement {
 	 * @param plf the utterance
 	 * @return recognised intentions and beliefs when successful, null if error occurred
 	 */
-	public LinkedList<EpistemicObject> logicalFormToEpistemicObjects(LogicalForm lf) {
+	public RecognisedIntention logicalFormToEpistemicObjects(LogicalForm lf) {
 //		log("expanding LF into facts");
 		for (ModalisedAtom fact : AbducerUtils.lfToFacts(new Modality[] {Modality.Truth}, lf)) {
 //			log("  add fact: " + MercuryUtils.modalisedAtomToString(fact));

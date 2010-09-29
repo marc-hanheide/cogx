@@ -20,11 +20,13 @@
 
 package de.dfki.lt.tr.dialogue.interpret;
 
+import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import java.util.Arrays;
 import java.util.List;
@@ -80,6 +82,13 @@ public abstract class BeliefFormulaFactory {
 		cplxF.forms = new LinkedList<dFormula>();
 		cplxF.forms.addAll(fs);
 		return cplxF;
+	}
+
+	public static PointerFormula newPointerFormula(String subarch, String id) {
+		PointerFormula pF = new PointerFormula();
+		pF.id = -1;
+		pF.pointer = new WorkingMemoryAddress(id, subarch);
+		return pF;
 	}
 
 }

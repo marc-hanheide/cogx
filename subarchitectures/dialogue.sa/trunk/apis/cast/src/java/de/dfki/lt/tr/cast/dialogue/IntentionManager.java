@@ -20,7 +20,9 @@
 
 package de.dfki.lt.tr.cast.dialogue;
 
+import cast.AlreadyExistsOnWMException;
 import cast.SubarchitectureComponentException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
@@ -33,6 +35,7 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagement;
 import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
+import de.dfki.lt.tr.dialogue.interpret.RecognisedIntention;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.ref.RefLogicalForm;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
@@ -198,10 +201,40 @@ extends AbstractDialogueComponent {
 			if (body instanceof RefLogicalForm) {
 				RefLogicalForm rlf = (RefLogicalForm) body;
 				LogicalForm lf = rlf.lform;
-				LinkedList<EpistemicObject> eos = im.logicalFormToEpistemicObjects(lf);
-				if (eos != null && !eos.isEmpty()) {
-					log("recognised " + eos.size() + " epistemic objects");
-					try {
+				RecognisedIntention eos = im.logicalFormToEpistemicObjects(lf);
+				if (eos != null) {
+					log("recognised " + eos.ints.size() + " intentions and " + (eos.pre.size() + eos.post.size()) + " beliefs");
+					for (dBelief b : eos.pre) {
+						log("adding belief " + b.id + " to binder WM:\n" + BeliefIntentionUtils.beliefToString(b));
+						try {
+							addToWorkingMemory(b.id, "binder", b);
+						}
+						catch (AlreadyExistsOnWMException ex) {
+							ex.printStackTrace();
+						}
+						catch (UnknownSubarchitectureException ex) {
+							ex.printStackTrace();
+						}
+					}
+					for (dBelief b : eos.post) {
+						log("adding belief " + b.id + " to dialogue WM:\n" + BeliefIntentionUtils.beliefToString(b));
+						try {
+							addToWorkingMemory(b.id, b);
+						}
+						catch (AlreadyExistsOnWMException ex) {
+							ex.printStackTrace();
+						}
+					}
+					for (Intention i : eos.ints) {
+						log("adding intention " + i.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(i));
+						try {
+							addToWorkingMemory(i.id, i);
+						}
+						catch (AlreadyExistsOnWMException ex) {
+							ex.printStackTrace();
+						}
+					}
+/*
 						for (EpistemicObject eo : eos) {
 							if (eo instanceof Intention) {
 								Intention i = (Intention)eo;
@@ -215,17 +248,13 @@ extends AbstractDialogueComponent {
 								addToWorkingMemory(b.id, b);
 								epObjs.put(b.id, b);
 							}
-						}
-					}
-					catch (Exception e) {
-						e.printStackTrace();
-						throw new DialogueException(e.getMessage());
-					} // end try..catch overwriting working memory
+ */
 				}
 				else {
 					log("no epistemic object recognised");
 				}
 			}
+/*
 			if (body instanceof Intention) {
 				Intention itn = (Intention) body;
 				log("processing an intention");
@@ -254,6 +283,7 @@ extends AbstractDialogueComponent {
 					log("no proto-LF generated");
 				}
 			}
+ */
 		}
 		else {
 			log("no data for processing");

@@ -148,11 +148,13 @@ public abstract class ConversionUtils {
 		return result;
 	}
 
-	public static LinkedList<EpistemicObject> proofToEpistemicObjects(IdentifierGenerator idGen, String attribAgent, MarkedQuery[] proof) {
+	public static RecognisedIntention proofToEpistemicObjects(IdentifierGenerator idGen, String attribAgent, MarkedQuery[] proof) {
 
 		LinkedList<EpistemicObject> results = new LinkedList<EpistemicObject>();
 		List<dBelief> bels_pre = new LinkedList<dBelief>();
 		List<dBelief> bels_post = new LinkedList<dBelief>();
+
+		RecognisedIntention ri = new RecognisedIntention();
 
 		ModalisedAtom[] imfs = ProofUtils.filterStripByModalityPrefix(
 				ProofUtils.stripMarking(ProofUtils.filterAssumed(proof)),
@@ -200,7 +202,7 @@ public abstract class ConversionUtils {
 
 					String newId = foldIntoBeliefs(idGen, es, lingRef, (FunctionTerm)argTerm.args[2], bels_pre);
 					if (newId != null) {
-						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newElementaryFormula(newId));  // XXX here a PointerFormula
+						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula("binder", newId));
 						itc.preconditions = combineDFormulas(itc.preconditions, refF);
 					}
 
@@ -251,7 +253,7 @@ public abstract class ConversionUtils {
 
 					String newId = foldIntoBeliefs(idGen, es, lingRef, (FunctionTerm)argTerm.args[2], bels_post);
 					if (newId != null) {
-						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newElementaryFormula(newId));  // XXX here a PointerFormula
+						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula("dialogue", newId));
 						itc.postconditions = combineDFormulas(itc.postconditions, refF);
 					}
 /*
@@ -311,16 +313,17 @@ public abstract class ConversionUtils {
 				if (itc.postconditions == null) {
 					itc.postconditions = BeliefFormulaFactory.newElementaryFormula("nil");
 				}
-				results.add(it);
+				ri.ints.add(it);
 			}
 			else {
 				log("discarding [" + it.id + "]: incomplete");
 			}
 		}
 
-		results.addAll(bels_pre);
-		results.addAll(bels_post);
-		return results;
+		ri.pre.addAll(bels_pre);
+		ri.post.addAll(bels_post);
+
+		return ri;
 	}
 
 	private static dFormula extractFormulaFromBelief(dBelief b) {
@@ -578,7 +581,7 @@ public abstract class ConversionUtils {
 		String newId = idGen.newIdentifier();
 		dBelief b = emptyCondIndepDistribBelief(newId, epst);
 		// XXX we should actually check success here
-		foldTermAsContent(epst, lingRef, TermAtomFactory.term("fv", new Term[] {TermAtomFactory.term("ling_ref"), TermAtomFactory.term(lingRef)}), b);
+		foldTermAsContent(epst, lingRef, TermAtomFactory.term("fv", new Term[] {TermAtomFactory.term(IntentionManagement.discRefModality), TermAtomFactory.term(lingRef)}), b);
 		foldTermAsContent(epst, lingRef, t, b);
 		bel.add(b);
 		return newId;
@@ -633,6 +636,10 @@ public abstract class ConversionUtils {
 	}
 
 	private static dFormula termToContentFormula(FunctionTerm t) {
+		if (t.functor.equals("ptr") && t.args.length == 2) {
+			// it's a pointer
+			return BeliefFormulaFactory.newPointerFormula(((FunctionTerm) t.args[0]).functor, ((FunctionTerm) t.args[1]).functor);
+		}
 		if (t.functor.equals("not") && t.args.length == 1) {
 			return BeliefFormulaFactory.newNegatedFormula(termToContentFormula((FunctionTerm)t.args[0]));
 		}
