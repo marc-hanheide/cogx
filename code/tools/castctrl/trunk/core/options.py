@@ -239,6 +239,16 @@ class CCastOptions(object):
             else: paths.append(stm)
         return separator.join(paths).replace("::", ":")
 
+    def _readMultiLine(self, lineIterator):
+        res = []
+        for stm in lineIterator:
+            stm = stm.split('#')[0]
+            stm = stm.strip()
+            if len(stm) < 1: continue
+            if stm == "</multiline>": break
+            res.append(stm)
+        return " ".join(res)
+
     def _mergeEnvironment(self, env, expressionList):
         self._tempNewEnv = env.copy()
         iexpr = expressionList.__iter__()
@@ -251,6 +261,8 @@ class CCastOptions(object):
                 lhs, rhs = mo.group(1), mo.group(2)
                 if rhs == "<pathlist>":
                     rhs = self._readPathList(iexpr)
+                elif rhs == "<multiline>":
+                    rhs = self._readMultiLine(iexpr)
                 rhs = _xe(rhs, self._tempNewEnv)
                 rhs = rhs.replace("[PWD]", self.codeRootDir)
                 self._tempNewEnv[lhs] = rhs
