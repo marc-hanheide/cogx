@@ -73,6 +73,8 @@ int main(int argc, const char **argv) {
 		cyclic_cg_preferred_operators = true;
 	    } else if(*c == 'n') {
 		no_heuristic = true;
+	    } else if(*c == 's') {
+		g_force_sequential = true;
 	    } else {
 		if(i == argc-1) {
 		    plan_name = string(argv[i]);

@@ -170,6 +170,8 @@ bool g_greedy;
 int g_timeout = 0;
 string g_planMonitorFileName;
 
+bool g_force_sequential = false;
+
 Operator *g_let_time_pass;
 Operator *g_wait_operator;
 
