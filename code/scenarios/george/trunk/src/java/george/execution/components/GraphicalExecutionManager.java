@@ -17,7 +17,6 @@ import cast.cdl.WorkingMemoryOperation;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.components.AbstractExecutionManager;
 import execution.slice.actions.BackgroundModels;
-import execution.slice.actions.ComsysQueryFeature;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ForegroundModels;
@@ -154,14 +153,14 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 	}
 
-	public WorkingMemoryAddress triggerAskForFeatureAction(String _beliefID,
-			String _featureType, ActionMonitor _monitor) throws CASTException {
-		ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
-		act.beliefID = _beliefID;
-		act.featureID = _featureType;
-		m_currentActionAddress = triggerExecution(act, _monitor);
-		return m_currentActionAddress;
-	}
+//	public WorkingMemoryAddress triggerAskForFeatureAction(String _beliefID,
+//			String _featureType, ActionMonitor _monitor) throws CASTException {
+//		AskForFeatureValue act = newActionInstance(AskForFeatureValue.class);
+//		act.beliefID = _beliefID;
+//		act.featureID = _featureType;
+//		m_currentActionAddress = triggerExecution(act, _monitor);
+//		return m_currentActionAddress;
+//	}
 
 	public WorkingMemoryAddress backgroundModels(String[] _models,
 			ActionMonitor _monitor) throws CASTException {
@@ -186,23 +185,23 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-	public WorkingMemoryAddress learnColour(String _beliefID, String _colour, ActionMonitor _monitor) throws CASTException {
+	public WorkingMemoryAddress learnColour(WorkingMemoryAddress _beliefID, String _colour, ActionMonitor _monitor) throws CASTException {
 		LearnColour act = newActionInstance(LearnColour.class);
-		act.beliefId = _beliefID;
+		act.beliefAddress = _beliefID;
 		act.value = _colour;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
-	public WorkingMemoryAddress learnShape(String _beliefID, String _shape, ActionMonitor _monitor) throws CASTException {
+	public WorkingMemoryAddress learnShape(WorkingMemoryAddress _beliefID, String _shape, ActionMonitor _monitor) throws CASTException {
 		LearnShape act = newActionInstance(LearnShape.class);
-		act.beliefId = _beliefID;
+		act.beliefAddress = _beliefID;
 		act.value = _shape;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
-	public WorkingMemoryAddress learnIdentity(String _beliefID, String _identity, ActionMonitor _monitor) throws CASTException {
+	public WorkingMemoryAddress learnIdentity(WorkingMemoryAddress _beliefID, String _identity, ActionMonitor _monitor) throws CASTException {
 		LearnIdentity act = newActionInstance(LearnIdentity.class);
-		act.beliefId = _beliefID;
+		act.beliefAddress = _beliefID;
 		act.value = _identity;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;

@@ -328,7 +328,7 @@ public class ActionInterfaceFrame extends JFrame {
 
 		} else if (tabIndex == 0) {
 			if (m_askForFeatureAction.isSelected()) {
-				askForFeature();
+//				askForFeature();
 			} else if (m_testFeatureValueAction.isSelected()) {
 				testFeatureValue();
 			} else if (m_learnColourAction.isSelected()) {
@@ -362,7 +362,7 @@ public class ActionInterfaceFrame extends JFrame {
 		if (beliefID != null) {
 			String colour = getFeatureValue(beliefID, "colour");
 			if(colour != null) {
-				m_exeMan.learnColour(beliefID,colour, new MonitorPanel());
+				m_exeMan.learnColour(new WorkingMemoryAddress(beliefID,"binder"), colour, new MonitorPanel());
 			}
 		}
 	}
@@ -372,7 +372,7 @@ public class ActionInterfaceFrame extends JFrame {
 		if (beliefID != null) {
 			String colour = getFeatureValue(beliefID, "shape");
 			if(colour != null) {
-				m_exeMan.learnShape(beliefID,colour, new MonitorPanel());
+				m_exeMan.learnShape(new WorkingMemoryAddress(beliefID,"binder"),colour, new MonitorPanel());
 			}
 		}
 	}
@@ -382,7 +382,7 @@ public class ActionInterfaceFrame extends JFrame {
 		if (beliefID != null) {
 			String colour = getFeatureValue(beliefID, "identity");
 			if(colour != null) {
-				m_exeMan.learnShape(beliefID,colour, new MonitorPanel());
+				m_exeMan.learnShape(new WorkingMemoryAddress(beliefID,"binder"),colour, new MonitorPanel());
 			}
 		}
 	}
@@ -396,43 +396,43 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 
-	/**
-	 * Popup
-	 */
-	private void askForFeature() {
-		int selectedRow = m_beliefTable.getSelectedRow();
-		if (selectedRow != -1) {
-			Object beliefIDVal = m_beliefTableModel.getValueAt(selectedRow,
-					BELIEF_ID_COLUMN);
-			assert (beliefIDVal != null);
-			final String beliefID = (String) beliefIDVal;
-
-			final JDialog dialog = new JDialog(this);
-			dialog.setLayout(new FlowLayout());
-			dialog.add(new JLabel("What feature do you want to ask about?"));
-
-			final JTextField textfield = new JTextField(10);
-			dialog.add(textfield);
-
-			ActionListener submit = new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent _e) {
-					submitFeatureQuery(beliefID, dialog, textfield);
-					dialog.setVisible(false);
-				}
-			};
-
-			textfield.addActionListener(submit);
-
-			JButton goButton = new JButton("Go!");
-			goButton.addActionListener(submit);
-
-			dialog.add(goButton);
-			dialog.pack();
-			dialog.setVisible(true);
-		}
-	}
+//	/**
+//	 * Popup
+//	 */
+//	private void askForFeature() {
+//		int selectedRow = m_beliefTable.getSelectedRow();
+//		if (selectedRow != -1) {
+//			Object beliefIDVal = m_beliefTableModel.getValueAt(selectedRow,
+//					BELIEF_ID_COLUMN);
+//			assert (beliefIDVal != null);
+//			final String beliefID = (String) beliefIDVal;
+//
+//			final JDialog dialog = new JDialog(this);
+//			dialog.setLayout(new FlowLayout());
+//			dialog.add(new JLabel("What feature do you want to ask about?"));
+//
+//			final JTextField textfield = new JTextField(10);
+//			dialog.add(textfield);
+//
+//			ActionListener submit = new ActionListener() {
+//
+//				@Override
+//				public void actionPerformed(ActionEvent _e) {
+//					submitFeatureQuery(beliefID, dialog, textfield);
+//					dialog.setVisible(false);
+//				}
+//			};
+//
+//			textfield.addActionListener(submit);
+//
+//			JButton goButton = new JButton("Go!");
+//			goButton.addActionListener(submit);
+//
+//			dialog.add(goButton);
+//			dialog.pack();
+//			dialog.setVisible(true);
+//		}
+//	}
 
 	/**
 	 * Popup
@@ -519,24 +519,24 @@ public class ActionInterfaceFrame extends JFrame {
 
 	}
 
-	/**
-	 * @param beliefID
-	 * @param dialog
-	 * @param textfield
-	 */
-	private void submitFeatureQuery(final String beliefID,
-			final JDialog dialog, final JTextField textfield) {
-		dialog.setVisible(false);
-		String featureType = textfield.getText();
-		if (featureType.length() > 0) {
-			try {
-				m_exeMan.triggerAskForFeatureAction(beliefID, featureType,
-						new MonitorPanel());
-			} catch (CASTException e) {
-				m_exeMan.logException(e);
-			}
-		}
-	}
+//	/**
+//	 * @param beliefID
+//	 * @param dialog
+//	 * @param textfield
+//	 */
+//	private void submitFeatureQuery(final String beliefID,
+//			final JDialog dialog, final JTextField textfield) {
+//		dialog.setVisible(false);
+//		String featureType = textfield.getText();
+//		if (featureType.length() > 0) {
+//			try {
+//				m_exeMan.triggerAskForFeatureAction(new WorkingMemoryAddress(beliefID,"binder"), featureType,
+//						new MonitorPanel());
+//			} catch (CASTException e) {
+//				m_exeMan.logException(e);
+//			}
+//		}
+//	}
 
 	/**
 	 * @throws CASTException
