@@ -3,6 +3,7 @@ GARVERSION = 0.8.0
 CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.bz2
 MAINTAINER = mhanheid
+PATCHFILES= gar-base.diff
 
 MASTER_SITES = http://heanet.dl.sourceforge.net/sourceforge/peekabot/
 
