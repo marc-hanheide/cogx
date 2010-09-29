@@ -123,7 +123,7 @@ void StereoClosures::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoClosures::DrawSingleMatched(int side, int id, int detail)
 {
-	closures[side][id].surf.Draw();
+	closures[side][id].surf.Draw(detail);
 }
 
 

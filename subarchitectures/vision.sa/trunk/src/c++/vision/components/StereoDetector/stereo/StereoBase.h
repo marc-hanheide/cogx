@@ -114,10 +114,8 @@ public:
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
-	void Draw();
+	void Draw(unsigned detail);
 };
-
-
 
 //--------------------------------------------------------------//
 //-------------------------- Vertex3D --------------------------//
@@ -160,8 +158,6 @@ private:
 public:
   bool Reconstruct(StereoCamera *stereo_cam, Surf2D &left, Surf2D &right, bool refine);
 };
-
-
 
 //----------------------------------------------------------------//
 //-------------------------- StereoBase --------------------------//
@@ -209,11 +205,12 @@ public:
   static Type EnumType(const char *type_name);
 
 	StereoBase();
-
-  double MatchingScoreSurf(Surf2D &left_surf, Surf2D &right_surf, unsigned &match_offs);		/// TODO Gehört eigentlich zu den Stereo's oder zu 2D-3D's?
-  double MatchingScorePoint(Vertex2D &left_point, Vertex2D &right_point);											/// TODO Gehört eigentlich zu den Stereo's oder zu 2D-3D's?
 	void EnablePrinciple(bool status);
 	bool IsEnabled() {return enabled;}
+
+  double MatchingScoreSurf(Surf2D &left_surf, Surf2D &right_surf, unsigned &match_offs);			/// TODO Gehört eigentlich zu den Stereo's oder zu 2D-3D's?
+  double MatchingScorePoint(Vertex2D &left_point, Vertex2D &right_point);											/// TODO Gehört eigentlich zu den Stereo's oder zu 2D-3D's?
+	
 
 	// virtual functions for the stereo classes.
 	virtual int NumStereoMatches() = 0;
@@ -221,7 +218,6 @@ public:
 	virtual bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id) = 0;
 #endif
 	virtual void Draw(int side, bool masked = false) {}																					/// TODO Sollten alle pure virtual (=0) sein.
-// 	virtual void DrawMatched(int side) {}
 	virtual void DrawMatched(int side, bool single, int id, int detail) = 0;
 	virtual void Process() = 0;
 	virtual void Process(int oX, int oY, int sc) = 0;

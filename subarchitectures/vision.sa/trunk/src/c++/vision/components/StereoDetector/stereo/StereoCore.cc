@@ -145,7 +145,7 @@ void StereoCore::SetActiveDrawAreaSide(int side)
  */
 void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage *iIl, IplImage *iIr)
 {
-// printf("StereoCore::ProcessStereoImage\n");
+printf("StereoCore::ProcessStereoImage: Start\n");
 	SetImages(iIl, iIr);
 
   // do monocular processing for each stereo image
@@ -153,8 +153,10 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
 	{
 		for(int side = LEFT; side <= RIGHT; side++)
 		{
+printf("StereoCore::ProcessStereoImage: Start mono\n");
 			vcore[side]->NewImage(side == LEFT ? img_l : img_r);
 			vcore[side]->ProcessImage(runtime_ms, ca, co);
+printf("StereoCore::ProcessStereoImage: Mono finished: %u\n", side);
 		}
 	}
 	catch (exception &e)
@@ -163,6 +165,8 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
     cout << e.what() << endl;
   }
 	
+printf("StereoCore::ProcessStereoImage: monocular image processed.\n");
+
 	// do stereo processing for enabled stereo principles
 	try 
 	{
@@ -182,6 +186,8 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
 		printf("StereoCore::ProcessStereoImage: Exception during processing of stereo images");
     cout << e.what() << endl;
   }
+
+printf("StereoCore::ProcessStereoImage: stereo images processed.\n");
 
 	/// HACK Print results
 	PrintResults();
@@ -432,6 +438,8 @@ void StereoCore::PrintResults()
 
 //  	printf("Stereo:L_JUNCTIONS: matches: %d\n", stereoGestalts[StereoBase::STEREO_LJUNCTION]->NumStereoMatches()); 
 //   printf("Stereo:ELLIPSES: matches: %d\n", stereoGestalts[StereoBase::STEREO_ELLIPSE]->NumStereoMatches()); 
+
+printf("StereoCore: cube matches: %d\n", stereoGestalts[StereoBase::STEREO_CUBE]->NumStereoMatches()); 
 }
 
 /**

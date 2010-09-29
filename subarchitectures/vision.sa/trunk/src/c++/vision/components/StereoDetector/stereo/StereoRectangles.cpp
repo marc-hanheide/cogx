@@ -123,7 +123,7 @@ void StereoRectangles::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoRectangles::DrawSingleMatched(int side, int id, int detail)
 {
-	rectangles[side][id].surf.Draw();
+	rectangles[side][id].surf.Draw(detail);
 }
 
 /**
