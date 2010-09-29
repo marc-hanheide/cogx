@@ -10,3 +10,7 @@ JAVA MG parseselect	de.dfki.lt.tr.cast.dialogue.ParseSelection --log true
 JAVA MG refmonitor	de.dfki.lt.tr.cast.dialogue.ReferenceMonitor --dumpfile /tmp/generated.abd --log true
 JAVA MG	refresolve	de.dfki.lt.tr.cast.dialogue.ReferenceResolution --ruleset-construct ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/index-construct.txt --dumpfile /tmp/generated.abd --correlfile ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/correlations.abd --appendfile ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/reference-resolution.abd --log true
 JAVA MG	irecog	de.dfki.lt.tr.cast.dialogue.IntentionManager --ruleset ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/index.txt --log true
+
+SUBARCHITECTURE binder
+JAVA WM   cast.architecture.SubarchitectureWorkingMemory
+JAVA TM   cast.architecture.AlwaysPositiveTaskManager
