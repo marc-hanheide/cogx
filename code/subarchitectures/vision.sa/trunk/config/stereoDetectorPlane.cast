@@ -20,9 +20,9 @@ CPP TM AlwaysPositiveTaskManager
 
 #CPP MG VideoServer OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/mug/img%03d-L.bmp instantiations/tuw/mug/img%03d-R.bmp" --start 0 --end 0 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100520.ini:L subarchitectures/vision.sa/config/tuw_stereo_100520.ini:R"
 
-CPP MG VideoServer OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/TableScene/img%03d-L.jpg instantiations/tuw/TableScene/img%03d-R.jpg" --start 5 --end 5 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100520.ini:L subarchitectures/vision.sa/config/tuw_stereo_100520.ini:R"
+#CPP MG VideoServer OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/TableScene/img%03d-L.jpg instantiations/tuw/TableScene/img%03d-R.jpg" --start 5 --end 5 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100520.ini:L subarchitectures/vision.sa/config/tuw_stereo_100520.ini:R"
 
-#CPP MG VideoServer OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/TableScene100929/img%03d-L.jpg instantiations/tuw/TableScene100929/img%03d-R.jpg" --start 0 --end 0 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100929.ini:L subarchitectures/vision.sa/config/tuw_stereo_100929.ini:R"
+CPP MG VideoServer OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/TableScene100929/img%03d-L.jpg instantiations/tuw/TableScene100929/img%03d-R.jpg" --start 0 --end 0 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100929.ini:L subarchitectures/vision.sa/config/tuw_stereo_100929.ini:R"
 
 ##### OpenCvLiveServer #####
 #CPP MG VideoServer OpenCvLiveServer --videoname video --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100520.ini:L subarchitectures/vision.sa/config/tuw_stereo_100520.ini:R"
