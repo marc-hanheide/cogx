@@ -399,43 +399,43 @@ public class ActionInterfaceFrame extends JFrame {
 		}
 	}
 
-	/**
-	 * Popup
-	 */
-	private void askForFeature() {
-		int selectedRow = m_beliefTable.getSelectedRow();
-		if (selectedRow != -1) {
-			Object beliefIDVal = m_beliefTableModel.getValueAt(selectedRow,
-					BELIEF_ID_COLUMN);
-			assert (beliefIDVal != null);
-			final String beliefID = (String) beliefIDVal;
-
-			final JDialog dialog = new JDialog(this);
-			dialog.setLayout(new FlowLayout());
-			dialog.add(new JLabel("What feature do you want to ask about?"));
-
-			final JTextField textfield = new JTextField(10);
-			dialog.add(textfield);
-
-			ActionListener submit = new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent _e) {
-					submitFeatureQuery(beliefID, dialog, textfield);
-					dialog.setVisible(false);
-				}
-			};
-
-			textfield.addActionListener(submit);
-
-			JButton goButton = new JButton("Go!");
-			goButton.addActionListener(submit);
-
-			dialog.add(goButton);
-			dialog.pack();
-			dialog.setVisible(true);
-		}
-	}
+//	/**
+//	 * Popup
+//	 */
+//	private void askForFeature() {
+//		int selectedRow = m_beliefTable.getSelectedRow();
+//		if (selectedRow != -1) {
+//			Object beliefIDVal = m_beliefTableModel.getValueAt(selectedRow,
+//					BELIEF_ID_COLUMN);
+//			assert (beliefIDVal != null);
+//			final String beliefID = (String) beliefIDVal;
+//
+//			final JDialog dialog = new JDialog(this);
+//			dialog.setLayout(new FlowLayout());
+//			dialog.add(new JLabel("What feature do you want to ask about?"));
+//
+//			final JTextField textfield = new JTextField(10);
+//			dialog.add(textfield);
+//
+//			ActionListener submit = new ActionListener() {
+//
+//				@Override
+//				public void actionPerformed(ActionEvent _e) {
+//					submitFeatureQuery(beliefID, dialog, textfield);
+//					dialog.setVisible(false);
+//				}
+//			};
+//
+//			textfield.addActionListener(submit);
+//
+//			JButton goButton = new JButton("Go!");
+//			goButton.addActionListener(submit);
+//
+//			dialog.add(goButton);
+//			dialog.pack();
+//			dialog.setVisible(true);
+//		}
+//	}
 
 	/**
 	 * Popup
@@ -522,24 +522,24 @@ public class ActionInterfaceFrame extends JFrame {
 
 	}
 
-	/**
-	 * @param beliefID
-	 * @param dialog
-	 * @param textfield
-	 */
-	private void submitFeatureQuery(final String beliefID,
-			final JDialog dialog, final JTextField textfield) {
-		dialog.setVisible(false);
-		String featureType = textfield.getText();
-		if (featureType.length() > 0) {
-			try {
-				m_exeMan.triggerAskForFeatureAction(beliefID, featureType,
-						new MonitorPanel());
-			} catch (CASTException e) {
-				m_exeMan.logException(e);
-			}
-		}
-	}
+//	/**
+//	 * @param beliefID
+//	 * @param dialog
+//	 * @param textfield
+//	 */
+//	private void submitFeatureQuery(final String beliefID,
+//			final JDialog dialog, final JTextField textfield) {
+//		dialog.setVisible(false);
+//		String featureType = textfield.getText();
+//		if (featureType.length() > 0) {
+//			try {
+//				m_exeMan.triggerAskForFeatureAction(new WorkingMemoryAddress(beliefID,"binder"), featureType,
+//						new MonitorPanel());
+//			} catch (CASTException e) {
+//				m_exeMan.logException(e);
+//			}
+//		}
+//	}
 
 	/**
 	 * @throws CASTException
