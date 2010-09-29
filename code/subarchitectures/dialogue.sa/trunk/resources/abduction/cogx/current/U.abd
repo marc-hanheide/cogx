@@ -116,7 +116,7 @@ try_topic_objecttype(S, H, EpSt, Int, Ref, Nom) <-
 	i : sort(Nom, Sort),
 	i : prop(Nom, Prop),
 	valid_objecttype(Sort, Prop, Type),
-	int : pre(Int, belief(Ref, EpSt, fv(type, Prop))) / p(1.0).
+	int : pre(Int, belief(Ref, EpSt, fv(objecttype, Prop))) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -179,7 +179,7 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	try_scope_modifier(S, H, Int, Ref, Polarity, Nom),
 	try_scope_compound(S, H, Int, Ref, Polarity, Nom),
 	polarprop(Prop, Polarity, PolarProp),
-	int : pre(Int, belief(Ref, shared(S, H), fv(type, PolarProp))) / p(1.0).
+	int : pre(Int, belief(Ref, shared(S, H), fv(objecttype, PolarProp))) / p(1.0).
 
 understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, thing),
@@ -190,8 +190,8 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	try_scope_modifier(S, H, Int, Ref, Polarity, Nom),
 	try_scope_compound(S, H, Int, Ref, Polarity, Nom),
 	polarprop(Prop, Polarity, PolarProp),
-	int : pre(Int, belief(Ref, attrib(H, S), fv(type, PolarProp))) / p(1.0),
-	int : post(Int, belief(Ref, shared(S, H), fv(type, PolarProp))) / p(1.0).
+	int : pre(Int, belief(Ref, attrib(H, S), fv(objecttype, PolarProp))) / p(1.0),
+	int : post(Int, belief(Ref, shared(S, H), fv(objecttype, PolarProp))) / p(1.0).
 
 understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, 'e-place'),
@@ -238,19 +238,19 @@ try_scope_compound(S, H, Int, Ref, Polarity, Nom) <-
 % QUESTIONS
 %-------------------------------------------------------------------------
 
-polar_query_prop(Nom, 'Color', PropValue) <-
+polar_query_prop(Nom, color, PropValue) <-
 	i : sort(Nom, 'q-color'),
 	i : prop(Nom, PropValue).
 
-polar_query_prop(Nom, 'Shape', PropValue) <-
+polar_query_prop(Nom, shape, PropValue) <-
 	i : sort(Nom, 'q-shape'),
 	i : prop(Nom, PropValue).
 
-polar_query_prop(Nom, 'Size', PropValue) <-
+polar_query_prop(Nom, size, PropValue) <-
 	i : sort(Nom, 'q-size'),
 	i : prop(Nom, PropValue).
 
-polar_query_prop(Nom, 'ObjectType', PropValue) <-
+polar_query_prop(Nom, objecttype, PropValue) <-
 	i : sort(Nom, thing),
 	i : prop(Nom, PropValue),
 	i : feat_Delimitation(Nom, existential),
@@ -259,28 +259,28 @@ polar_query_prop(Nom, 'ObjectType', PropValue) <-
 
 %-------------------------------------------------------------------------
 
-wh_query_prop(Nom, 'Color') <-
+wh_query_prop(Nom, color) <-
 	i : sort(Nom, 'q-color').
 
-wh_query_prop(Nom, 'Color') <-
+wh_query_prop(Nom, color) <-
 %	i : sort(Nom, quality),
 	i : prop(Nom, color).
 
-wh_query_prop(Nom, 'Shape') <-
+wh_query_prop(Nom, shape) <-
 	i : sort(Nom, 'q-shape').
 
-wh_query_prop(Nom, 'Shape') <-
+wh_query_prop(Nom, shape) <-
 %	i : sort(Nom, quality),
 	i : prop(Nom, shape).
 
-wh_query_prop(Nom, 'Size') <-
+wh_query_prop(Nom, size) <-
 	i : sort(Nom, 'q-size').
 
-wh_query_prop(Nom, 'Size') <-
+wh_query_prop(Nom, size) <-
 %	i : sort(Nom, quality),
 	i : prop(Nom, size).
 
-wh_query_prop(Nom, 'ObjectType') <-
+wh_query_prop(Nom, objecttype) <-
 	i : sort(Nom, thing),
 %	i : prop(Nom, PropValue),
 %	i : feat_Delimitation(Nom, existential),
