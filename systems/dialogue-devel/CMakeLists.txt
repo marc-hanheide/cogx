@@ -26,10 +26,10 @@ add_definitions(-Wall)
 
 #add_subdirectory (tools/d-lib)
 
-#option(BUILD_SA_BINDING "Build binder subarchitecure" YES)
-#if(BUILD_SA_BINDING)
-#add_subdirectory (subarchitectures/binder)
-#endif(BUILD_SA_BINDING)
+option(BUILD_SA_BINDING "Build binder subarchitecure" YES)
+if(BUILD_SA_BINDING)
+add_subdirectory (subarchitectures/binder.sa)
+endif(BUILD_SA_BINDING)
 
 option(BUILD_SA_DIALOGUE "Build dialogue subarchitecture" YES)
 if(BUILD_SA_DIALOGUE)

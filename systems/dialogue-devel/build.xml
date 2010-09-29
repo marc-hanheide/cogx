@@ -31,6 +31,7 @@
 		<echo>Executing &quot;${target}&quot; target for tools/cast module...</echo>
  		<!--ant target="${target}" dir="tools/interconnectivity" /-->
 		<ant target="${target}" dir="tools/beliefs" /> 
+		<ant target="${target}" dir="tools/castutils" /> 
 		<!--ant target="${target}" dir="tools/math" /--> 
 		<ant target="${target}" dir="subarchitectures/dialogue.sa" /> 
 		<!--ant target="${target}" dir="subarchitectures/comsys" />
@@ -69,7 +70,7 @@
 	<!-- =================================================================== -->
 	<!-- Compiles all subdirs                                                -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="init">
+	<target name="compile" depends="init,slice">
 		<echo>compiling all builds</echo>
 		<antcall target="template">
 			<param name="target" value="compile" />
