@@ -121,9 +121,10 @@ namespace Planning
         double
         , enum_types::simple_double_transformation> {};
 
-
 }
 
-
-
 #endif
+
+/* On June 12, 1979 the Gossamer Albatross completed a successful
+ * crossing of the English Channel to win the second Kremer prize. It
+ * was an aircraft that was powered by the cyclist Bryan Allen. */

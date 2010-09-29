@@ -119,3 +119,10 @@ namespace Planning
 
 
 #endif
+
+/* When a distinguished but elderly scientist states that something is
+ * possible, he is almost certainly right. When he states that
+ * something is impossible, he is probably wrong.
+ *
+ * Arthur C. Clarke's first law of prediction
+ */
