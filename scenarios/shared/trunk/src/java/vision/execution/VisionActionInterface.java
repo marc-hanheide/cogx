@@ -245,12 +245,12 @@ public class VisionActionInterface extends ManagedComponent {
 		@Override
 		public void executeAction() {
 			try {
-				String beliefID = m_action.beliefId;
+				WorkingMemoryAddress beliefID = m_action.beliefAddress;
 
 				VisualLearningTask cmd;
 
 				cmd = new VisualLearningTask(getComponent().getVisualObjectID(
-						beliefID), beliefID, getConcept(),
+						beliefID), beliefID.id, getConcept(),
 						new String[] { m_action.value }, new double[] { 1 });
 
 				getComponent().println("got the vis obj id: " + getComponent().getVisualObjectID(
@@ -313,10 +313,10 @@ public class VisionActionInterface extends ManagedComponent {
 	protected void configure(Map<String, String> _config) {
 	}
 
-	private String getVisualObjectID(String _beliefID)
+	private String getVisualObjectID(WorkingMemoryAddress _beliefID)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 
-		GroundedBelief belief = getMemoryEntry(_beliefID, "binder",
+		GroundedBelief belief = getMemoryEntry(_beliefID,
 				GroundedBelief.class);
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, belief);
