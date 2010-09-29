@@ -1,18 +1,13 @@
 <!-- Top level make file for CogX system -->
 <project name="cogx" default="all">
-
-	<property name="castslice.dir" value="/usr/local/share/" />
-	<property name="cast.jar" value="/usr/local/share/java/cast.jar" />
-	<property name="ice.jar" value="/usr/share/java/Ice.jar" />
-	<property name="plannerslice.dir" value="${basedir}/subarchitectures/planner.sa/src/slice" />
-	<property name="binderslice.dir" value="${basedir}/subarchitectures/binder/src/slice" />
-
-	<property name="output.dir" value="${basedir}/output/classes" />
+	<property name="projectroot.dir" value="${basedir}" />
+	<property file="build.properties" />
 
 	<!-- =================================================================== -->
 	<!-- Init build system                                                   -->
 	<!-- =================================================================== -->
 	<target name="init" description="compiles the source code">
+	  <tstamp/>
 	</target>
 
 	<!-- =================================================================== -->
@@ -21,6 +16,94 @@
 	<target name="all" depends="compile" description="compiles the source code">
 	</target>
 
+	<!-- =================================================================== -->
+	<!-- conditions taken from build.properties (cmake generated)            -->
+	<!-- =================================================================== -->
+	<condition property="build.binding_sa">
+		<equals arg1="${build_sa_binding}" arg2="ON" />
+	</condition>
+	<condition property="build.motivation_sa">
+		<equals arg1="${build_sa_motivation}" arg2="ON" />
+	</condition>
+	<condition property="build.execution_sa">
+		<equals arg1="${build_sa_execution}" arg2="ON" />
+	</condition>
+	<condition property="build.spatial_sa">
+		<equals arg1="${build_sa_spatial}" arg2="ON" />
+	</condition>
+	<condition property="build.planner_sa">
+		<equals arg1="${build_sa_planner}" arg2="ON" />
+	</condition>
+	<condition property="build.vision_sa">
+		<equals arg1="${build_sa_vision}" arg2="ON" />
+	</condition>
+	<condition property="build.coma_sa">
+		<equals arg1="${build_sa_coma}" arg2="ON" />
+	</condition>
+	<condition property="build.default_sa">
+		<equals arg1="${build_sa_default}" arg2="ON" />
+	</condition>
+	<condition property="build.conceptual_sa">
+		<equals arg1="${build_sa_conceptual}" arg2="ON" />
+	</condition>
+	<condition property="build.dialogue_sa">
+		<equals arg1="${build_sa_dialogue}" arg2="ON" />
+	</condition>
+	<condition property="build.visualization_sa">
+		<equals arg1="${build_sa_visualization}" arg2="ON" />
+	</condition>
+	<condition property="build.dora">
+		<equals arg1="${build_dora}" arg2="ON" />
+	</condition>
+	<condition property="build.george">
+		<equals arg1="${build_george}" arg2="ON" />
+	</condition>
+	<condition property="build.shared">
+		<equals arg1="${build_shared}" arg2="ON" />
+	</condition>
+
+	<target name="sa.binder" if="build.binding_sa">
+	  <ant target="${target}" dir="subarchitectures/binder.sa" />
+	</target>
+	<target name="sa.spatial" if="build.spatial_sa">
+	  <ant target="${target}" dir="subarchitectures/spatial.sa" />
+	</target>
+	<target name="sa.coma" if="build.coma_sa">
+	  <ant target="${target}" dir="subarchitectures/coma.sa" />
+	</target>
+	<target name="sa.default" if="build.default_sa">
+	  <ant target="${target}" dir="subarchitectures/default.sa" />
+	</target>
+	<target name="sa.conceptual" if="build.conceptual_sa">
+	  <ant target="${target}" dir="subarchitectures/conceptual.sa" />
+	</target>
+	<target name="sa.dialogue" if="build.dialogue_sa">
+	  <ant target="${target}" dir="subarchitectures/dialogue.sa" />
+	</target>
+	<target name="sa.vision" if="build.vision_sa">
+	  <ant target="${target}" dir="subarchitectures/vision.sa" />
+	</target>
+	<target name="sa.visualization" if="build.visualization_sa">
+	  <ant target="${target}" dir="subarchitectures/visualization.sa" />
+	</target>
+	<target name="sa.planner" if="build.planner_sa">
+	  <ant target="${target}" dir="subarchitectures/planner.sa" />
+	</target>
+	<target name="sa.motivation" if="build.motivation_sa">
+	  <ant target="${target}" dir="subarchitectures/motivation.sa" />
+	</target>
+	<target name="sa.execution" if="build.execution_sa">
+	  <ant target="${target}" dir="subarchitectures/execution.sa" />
+	</target>	
+	<target name="dora" if="build.dora">
+	  <ant target="${target}" dir="scenarios/dora" />
+	</target>
+	<target name="george" if="build.george">
+	  <ant target="${target}" dir="scenarios/george" />
+	</target>
+	<target name="shared" if="build.shared">
+	  <ant target="${target}" dir="scenarios/shared" />
+	</target>
 
 	<!-- =========================================
 	     Template target.  Never called explicitly, 
@@ -29,20 +112,56 @@
 	     ========================================= -->
 	<target name="template" depends="init">
 		<echo>Executing &quot;${target}&quot; target for tools/cast module...</echo>
- 		<!--ant target="${target}" dir="tools/interconnectivity" /-->
-		<ant target="${target}" dir="tools/beliefs" /> 
-		<ant target="${target}" dir="tools/castutils" /> 
-		<!--ant target="${target}" dir="tools/math" /--> 
-		<ant target="${target}" dir="subarchitectures/dialogue.sa" /> 
-		<!--ant target="${target}" dir="subarchitectures/comsys" />
-
+		<ant target="${target}" dir="tools/math" />
+		<ant target="${target}" dir="tools/castutils" />
+		<ant target="${target}" dir="tools/beliefs" />
 		<ant target="${target}" dir="tools/hardware/video" />
-		<ant target="${target}" dir="subarchitectures/vision.sa" /> 
-		<ant target="${target}" dir="subarchitectures/nav.sa" /> 
-		<ant target="${target}" dir="subarchitectures/planner.sa" />  
-		<ant target="${target}" dir="subarchitectures/spatial.sa" /> 
- 		<ant target="${target}" dir="subarchitectures/coma.sa" />
-		<ant target="${target}" dir="subarchitectures/motivation.sa"/-->  
+<!--		<ant target="${target}" dir="tools/hardware/blobfinder" /> -->
+
+		<antcall target="sa.visualization">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<ant target="${target}" dir="tools/cogxutils" />
+
+		<antcall target="sa.binder">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.spatial">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.coma">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.default">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.conceptual">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.dialogue">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.vision">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.planner">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.motivation">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.execution">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="dora">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="george">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="shared">
+		  <param name="target" value="${target}" />
+		</antcall>
 	</target>
 
 
@@ -50,28 +169,38 @@
 	<!-- Cleans all subdirs                                                  -->
 	<!-- =================================================================== -->
 	<target name="clean" depends="init">
-	  <echo>Cleaning all builds</echo>
-	  <delete dir="${output.dir}"/>
-	  <antcall target="template">
-	    <param name="target" value="clean" />
-	    </antcall>
-	  </target>
+		<echo>Cleaning all builds"</echo>
+		<delete dir="output/classes" />
+		<antcall target="template">
+			<param name="target" value="clean" />
+		</antcall>
+	</target>
 
 	<!-- =================================================================== -->
 	<!-- Generates source from slice in all subdirs                          -->
 	<!-- =================================================================== -->
 	<target name="slice" depends="init">
-		<echo>doing slice2java for all builds</echo>
+		<echo>doing slice2java for all builds"</echo>
 		<antcall target="template">
 			<param name="target" value="slice" />
 		</antcall>
 	</target>
 
 	<!-- =================================================================== -->
+	<!-- Compiles all autogenerated classes                                  -->
+	<!-- =================================================================== -->
+	<target name="compile-slice" depends="slice">
+		<echo>compiling all builds"</echo>
+		<antcall target="template">
+			<param name="target" value="compile-slice" />
+		</antcall>
+	</target>
+
+	<!-- =================================================================== -->
 	<!-- Compiles all subdirs                                                -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="init,slice">
-		<echo>compiling all builds</echo>
+	<target name="compile" depends="compile-slice">
+		<echo>compiling all builds"</echo>
 		<antcall target="template">
 			<param name="target" value="compile" />
 		</antcall>

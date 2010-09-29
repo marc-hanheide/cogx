@@ -22,6 +22,8 @@ set(CMAKE_MODULE_PATH "${COGX_ROOT}/cmake;${CAST_CMAKE_DIR}" ${CMAKE_MODULE_PATH
 
 add_definitions(-Wall)
 
+include(subarchitectures/visualization.sa/cmake/v11n.cmake)
+
 # UNCOMMENT THE FOLLOWING FOR THE NAVIGATION SUBARCHITECTURE
 
 #add_subdirectory (tools/d-lib)
@@ -82,12 +84,12 @@ endif(BUILD_SA_DIALOGUE)
 
 # UNCOMMENT THE FOLLOWING FOR THE VISION SUBARCHITECTURE
 
-#add_subdirectory (tools/math)
+add_subdirectory (tools/math)
 
-#option(BUILD_HAL_VIDEO "Build hardware video" YES)
-#if(BUILD_HAL_VIDEO)
-#add_subdirectory (tools/hardware/video)
-#endif(BUILD_HAL_VIDEO)
+option(BUILD_HAL_VIDEO "Build hardware video" YES)
+if(BUILD_HAL_VIDEO)
+add_subdirectory (tools/hardware/video)
+endif(BUILD_HAL_VIDEO)
 
 #option(BUILD_HAL_STEREO "Build hardware stereo" NO)
 #if(BUILD_HAL_STEREO)
@@ -101,10 +103,12 @@ endif(BUILD_SA_DIALOGUE)
 
 # Beliefs
 
-option(BUILD_BELIEF_MODELS "Build belief models" YES)
-if(BUILD_BELIEF_MODELS)
-add_subdirectory (tools/beliefs)
-endif(BUILD_BELIEF_MODELS)
+option(BUILD_BELIEFS "Build beliefs" YES)
+if(BUILD_BELIEFS)
+add_subdirectory (tools/beliefs/apis/beliefs)
+add_subdirectory (tools/beliefs/apis/beliefs+cast)
+add_subdirectory (tools/cogxutils)
+endif(BUILD_BELIEFS)
 
 # Spatial
 #option(BUILD_SA_SPATIAL "Build spatial subarchitecure" YES)
@@ -131,12 +135,14 @@ endif(BUILD_BELIEF_MODELS)
 
 #add_subdirectory(tools/scripts)
 
+configure_file(${CMAKE_SOURCE_DIR}/cmake/build.properties.in ${CMAKE_SOURCE_DIR}/build.properties)
+
 option(DO_ANT "automatically compile the ant stuff" YES)
 if(DO_ANT)
 ADD_CUSTOM_TARGET( ant_build ALL )
 	ADD_CUSTOM_COMMAND(
 		TARGET  ant_build
-		COMMAND ant WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMAND ant -Dcastslice.dir=${CAST_SLICE_DIR} -Dcast.jar=${CAST_INSTALL_ROOT}/share/java/cast.jar -Dice.jar=${ICE_HOME}/share/java/Ice.jar WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
      	)
 endif(DO_ANT)
 
