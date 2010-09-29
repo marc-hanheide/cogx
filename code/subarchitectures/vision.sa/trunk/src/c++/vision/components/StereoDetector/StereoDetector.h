@@ -28,6 +28,7 @@
 #include "StereoBase.h"
 #include "Gestalt.hh"
 #include "Reasoner.h"
+#include "Array.hh"
 
 namespace cast
 {
@@ -44,7 +45,11 @@ private:
 
 	int runtime;																///< Overall processing runtime for one image (pair)
 	Z::StereoCore *score;												///< Stereo core
+	Z::StereoCore *p_score[3];									///< Processing stereo cores for three frames
+	int nr_p_score;															///< Actual number of processing score
+	int showFrame;															///< Show another frame (p_score[showFrame])
 	Z::Reasoner *reasoner;											///< Reasoner (and Filter)
+	
 	float cannyAlpha, cannyOmega;								///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?
 	std::vector<int> camIds;										///< Which cameras to get images from
 	std::string videoServerName;								///< Component ID of the video server to connect to
@@ -69,7 +74,8 @@ private:
 	};
 	std::map<std::string, ROIData> rcvROIs;			///< Received stable region of interests (ROIs), stored with WM address
 
-	bool activeReasoner;												///< Initialize, when reasoner should work!
+	bool activeReasoner;												///< Initialize true, when reasoner should work.
+	bool activeReasonerPlane;										///< Initialize true, when reasoner should calculate dominant plane.
 	std::string planeID;												///< Plane (from reasoner): address on working memory
 
 	bool receiveImagesStarted;									///< True, when videoServer->startReceiveImages() was called.
@@ -93,6 +99,8 @@ private:
 	bool showSegments;													///< Show the edges on the stereo image
 	bool showMasked;														///< Show masked features in stereo images
 	bool showROIs;															///< Show the ROIs at the display
+	bool showReasoner;													///< Show reasoner results
+	bool showReasonerUnprojected;								///< Show also the unprojected results
 	std::vector<std::string> objectIDs;					///< IDs of the currently stored visual objects
 	Z::Gestalt::Type showType;									///< Show this type of Gestalt
 	Z::StereoBase::Type showStereoType;					///< Show this type of stereo matched Gestalt
@@ -114,6 +122,7 @@ private:
 	void ShowImages(bool convertNewIpl);
 	void WriteVisualObjects();
 	void WriteToWM(Z::StereoBase::Type type);
+	void WriteToWM(Z::Array<VisionData::VisualObjectPtr> objects);
 	void DeleteVisualObjectsFromWM();
 
 	void SingleShotMode();
