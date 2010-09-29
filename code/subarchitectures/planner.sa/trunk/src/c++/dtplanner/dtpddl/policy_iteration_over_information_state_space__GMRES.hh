@@ -77,3 +77,7 @@ namespace Planning
 
 
 #endif
+
+/* On July 7, 1981 the Solar Challenger, piloted by Steve Ptacek, flew
+ * from Paris to Manston in the UK. This aircraft used solar energy as
+ * its power source. */
