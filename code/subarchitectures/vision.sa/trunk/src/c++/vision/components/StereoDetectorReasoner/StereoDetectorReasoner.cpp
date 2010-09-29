@@ -105,19 +105,19 @@ void StereoDetectorReasoner::receiveConvexHull(const cdl::WorkingMemoryChange & 
 	plane = new Z::Plane(pos, radius, points);
 	if(plane->GetVisualObject(obj))
 	{
-		char obj_label[32];
-		sprintf(obj_label, "Plane");
-		obj->label = obj_label;
+// antiquated
+// 		char obj_label[32];
+// 		sprintf(obj_label, "Plane");
+// 		obj->label = obj_label;
 
 		// add visual object to working memory
 		planeID = newDataID();
 		addToWorkingMemory(planeID, obj);
 
-		log("Wrote new plane as visual object to working memory: %s - %s", obj->label.c_str(), planeID.c_str());
+		log("Wrote new plane as visual object to working memory: %s", planeID.c_str());
 	}
 	havePlane = true;
 }
-
 
 
 /**
@@ -126,7 +126,7 @@ void StereoDetectorReasoner::receiveConvexHull(const cdl::WorkingMemoryChange & 
  */
 void StereoDetectorReasoner::deleteConvexHull(const cdl::WorkingMemoryChange & _wmc)
 {
-	printf("StereoDetectorReasoner::deleteConvexHull:\n");
+	printf("StereoDetectorReasoner::deleteConvexHull: not yet implemented!\n");
 }
 
 
@@ -136,7 +136,7 @@ void StereoDetectorReasoner::deleteConvexHull(const cdl::WorkingMemoryChange & _
  */
 void StereoDetectorReasoner::receiveReasonerObject(const cdl::WorkingMemoryChange & _wmc)
 {
-	log("Received ReasonerObject");
+	log("StereoDetectorReasoner::receiveReasonerObject");
 	
 	ReasonerObjectPtr roPtr = getMemoryEntry<VisionData::ReasonerObject>(_wmc.address);
 	VisionData::VisualObjectPtr obj = roPtr->obj;
@@ -153,31 +153,20 @@ void StereoDetectorReasoner::receiveReasonerObject(const cdl::WorkingMemoryChang
 	
 	if(o->GetVisualObjectProjected(obj))		// GetVisualObject prjected to ground plane
 	{
-		char obj_label[32];
-		sprintf(obj_label, "Object");
-		obj->label = obj_label;
-
-		// add visual object to working memory
 		std::string objectID = newDataID();
 		objectIDs.push_back(objectID);
 		addToWorkingMemory(objectID, obj);
 
-		log("Wrote new plane as projected visual object to working memory: %s - %s", obj->label.c_str(), objectID.c_str());
+		log("Wrote new plane as projected visual object to working memory: %s", objectID.c_str());
 	}
 	else																		// GetVisualObject
 	{
 		o->GetVisualObject(obj);
-		
-		char obj_label[32];
-		sprintf(obj_label, "Object");
-		obj->label = obj_label;
-
-		// add visual object to working memory
 		std::string objectID = newDataID();
 		objectIDs.push_back(objectID);
 		addToWorkingMemory(objectID, obj);
 
-		log("Wrote new plane as visual object to working memory: %s - %s", obj->label.c_str(), objectID.c_str());
+		log("Wrote new plane as visual object to working memory: %s", objectID.c_str());
 	}
 }
 
@@ -189,7 +178,7 @@ void StereoDetectorReasoner::receiveReasonerObject(const cdl::WorkingMemoryChang
  */
 void StereoDetectorReasoner::receiveSDReasonerCommand(const cdl::WorkingMemoryChange & _wmc)
 {
-	log("Command received!");
+	log("StereoDetectorReasoner::receiveSDReasonerCommand: not yet implemented!");
 }
 
 }
