@@ -1,0 +1,43 @@
+^/code/cmake/trunk cmake
+
+#^/code/subarchitectures/motivation.sa/trunk 	 	 subarchitectures/motivation.sa
+#^/code/subarchitectures/fakemotivation.sa/trunk 	 subarchitectures/fakemotivation.sa
+#^/code/subarchitectures/vision.sa/trunk  	 	 subarchitectures/vision.sa
+#^/code/subarchitectures/vision.sa/branches/stable-0 subarchitectures/vision.sa
+#^/code/subarchitectures/spatial.sa/trunk 	 	 subarchitectures/spatial.sa
+#^/code/subarchitectures/nav.sa/trunk  	 	 	 subarchitectures/nav.sa
+#^/code/subarchitectures/planner.sa/trunk		 subarchitectures/planner.sa
+#^/code/subarchitectures/binder/branches/release6/	 subarchitectures/binder
+^/code/subarchitectures/binder/trunk             subarchitectures/binder.sa
+^/code/subarchitectures/dialogue.sa/trunk        subarchitectures/dialogue.sa
+#^/code/subarchitectures/coma.sa/trunk		 	 subarchitectures/coma.sa
+
+#^/code/tools/castctrl/trunk                             tools/castctrl
+#^/code/tools/python/trunk                               tools/python
+
+
+
+#^/code/tools/hardware/video/trunk			tools/hardware/video              
+#^/code/tools/hardware/stereo/trunk			tools/hardware/stereo              
+#^/code/tools/hardware/config/trunk			tools/hardware/config
+#^/code/tools/hardware/laser/trunk			tools/hardware/laser
+#^/code/tools/hardware/robotbase/trunk			tools/hardware/robotbase
+#^/code/tools/hardware/sonar/trunk			tools/hardware/sonar
+#^/code/tools/hardware/tests/trunk			tools/hardware/tests
+#^/code/tools/hardware/tts/trunk				tools/hardware/tts
+#^/code/tools/hardware/ptz/trunk				tools/hardware/ptz
+#^/code/tools/hardware/utils/trunk			tools/hardware/utils
+
+#^/code/tools/camcalb2/trunk				tools/camcalb2
+#^/code/tools/d-lib/trunk				tools/d-lib
+#^/code/tools/genroi/trunk				tools/genroi
+#^/code/tools/grabimg/trunk				tools/grabimg
+#^/code/tools/math/trunk					tools/math
+#^/code/tools/scripts/trunk				tools/scripts
+#^/code/tools/testing/trunk				tools/testing
+
+#^/code/tools/interconnectivity				tools/interconnectivity
+^/code/tools/beliefs/trunk/apis/beliefs 				tools/beliefs
+#^/code/tools/mary				tools/mary
+^/code/tools/castutils/trunk				tools/castutils
+
