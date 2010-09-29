@@ -1,7 +1,5 @@
 HOST localhost
 
-#INCLUDE includes/visualization.sa/v11n-base.cast
-
 # vision stuff ################################################################
 SUBARCHITECTURE vision.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
@@ -15,28 +13,18 @@ INCLUDE includes/binder.sa/binder-base.cast
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-george.cast
 INCLUDE includes/planner.sa/planner-base.cast
+INCLUDE includes/planner.sa/viz-plan.cast
+
 INCLUDE includes/motivation.sa/motivation.cast
+INCLUDE includes/motivation.sa/motivation-goals-george.cast
+
 JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 
-JAVA MG goal.generator.shape eu.cogx.goals.george.LearnShapeGenerator
-JAVA MG goal.generator.color eu.cogx.goals.george.LearnColorGenerator
-JAVA MG goal.generator.intention eu.cogx.goals.george.AttributedBeliefGoalGenerator --debug
 
 
 # dialogue stuff ##############################################################
-
-SUBARCHITECTURE dialogue
-
-JAVA WM			cast.architecture.SubarchitectureWorkingMemory
-JAVA TM			cast.architecture.AlwaysPositiveTaskManager
-JAVA MG	gui	de.dfki.lt.tr.cast.dialogue.DialogueGUI --log true
-JAVA MG	parser	de.dfki.lt.tr.cast.dialogue.IncrStringParser --grammar ./subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml --log true
-JAVA MG parseselect	de.dfki.lt.tr.cast.dialogue.ParseSelection --log true
-JAVA MG refmonitor	de.dfki.lt.tr.cast.dialogue.ReferenceMonitor --dumpfile /tmp/generated.abd --log true
-JAVA MG	refresolve	de.dfki.lt.tr.cast.dialogue.ReferenceResolution --ruleset-construct ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/index-construct.txt --dumpfile /tmp/generated.abd --correlfile ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/correlations.abd --appendfile ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/reference-resolution.abd --log true
-JAVA MG	irecog	de.dfki.lt.tr.cast.dialogue.IntentionManager --ruleset ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/index.txt --log true
-
-
+INCLUDE includes/dialogue.sa/dialogue-base.cast
+INCLUDE includes/dialogue.sa/dialogue-george.cast
 
 
 # viewer stuff ################################################################
