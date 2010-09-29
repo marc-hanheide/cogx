@@ -1,0 +1,13 @@
+diff --speed-large-files --minimal -ru peekabot-0.8.0.orig/src/peekabot.hh peekabot-0.8.0/src/peekabot.hh
+--- peekabot-0.8.0.orig/src/peekabot.hh	2010-09-08 12:52:48.000000000 +0100
++++ peekabot-0.8.0/src/peekabot.hh	2010-09-29 14:09:48.000000000 +0100
+@@ -82,8 +82,6 @@
+     using client::OccupancySet3D;
+     using client::IndexSet;
+ 
+-    // For easier porting from 0.7.x
+-    typedef Vector3f Vector3 PEEKABOT_DEPRECATED;
+ }
+ 
+ 
+Only in peekabot-0.8.0/src: peekabot.hh~
