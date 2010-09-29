@@ -31,6 +31,9 @@ public:
   Vector3& operator-=(const Vector3 &v);
   Vector3& operator*=(double s);
   Vector3& operator/=(double s) throw (std::runtime_error);
+
+  double Norm() const;
+  bool Normalise();
 };
 
 Vector3 operator-(const Vector3 &v);
