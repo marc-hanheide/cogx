@@ -165,3 +165,17 @@ namespace Planning
 }
 
 #endif
+
+
+/* CogX email interaction from Wednesday, September 29, 2010 at 10:35
+ * AMI.
+ *
+ * Hendrik Zender writes a detailed question: "...performed a full svn
+ * up just a minute ago. Any hints what I should do to make it all
+ * compile?"
+ *
+ *
+ * Nick Hawes writes concise and expertly response: "Yup, update CAST
+ * to the latest tag."
+ * 
+ */
