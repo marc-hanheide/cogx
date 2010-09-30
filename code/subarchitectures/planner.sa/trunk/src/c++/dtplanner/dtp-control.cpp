@@ -771,6 +771,8 @@ void DTPCONTROL::newTask(Ice::Int id,
     auto actual_problem = Planning::Parsing::problems.find(pi);
     VERBOSER(10050, "Problem is :: "<<*actual_problem->second<<std::endl);
     solvers[id] = new Planning::Solver(*actual_problem->second);//thread_to_problem[id]);
+    solvers[id]->set__sink_state_penalty(0);
+    
     solvers[id]->preprocess();
     
     
