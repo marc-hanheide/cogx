@@ -47,8 +47,6 @@ public class VisualObjectTransferFunction extends
 		Map<String, Formula> result = new HashMap<String, Formula>();
 		// TODO: we should use a DoubleValue here!
 		try {
-			result.put("ObjectId", PropositionFormula.create(wmc.address.id)
-					.getAsFormula());
 			result.put("label", PropositionFormula.create(from.identLabels[0])
 					.getAsFormula());
 		} catch (BeliefException e) {
