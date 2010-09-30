@@ -200,7 +200,7 @@ int main(int argc, char** argv)
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
-            solver->set__sink_state_penalty(0);//-1e6);
+            solver->set__sink_state_penalty(0); //-1234.0);//-1e6);
             
             INTERACTIVE_VERBOSER(true, 12000, "Made a solver, starting preprocessing.")
             
@@ -234,7 +234,7 @@ int main(int argc, char** argv)
                              <<"Expected reward is :: "
                              <<current_state->get__expected_value()<<std::endl);
                 
-//                     policy_Iteration();
+                    policy_Iteration();
                 }
             }
 
@@ -242,7 +242,7 @@ int main(int argc, char** argv)
             
 //             double old_expected_reward = -1000000.0;
             
-            for(uint i = 0; i < 500; i++){
+            for(uint i = 0; i < 50; i++){
                 policy_Iteration();
 //                 if(old_expected_reward != current_state->get__expected_value()){
 //                      old_expected_reward = current_state->get__expected_value();
@@ -251,7 +251,7 @@ int main(int argc, char** argv)
 //                 }
                 
                 
-                INTERACTIVE_VERBOSER(true, 15000, "Expected reward is :: "
+                VERBOSER(15000, "Expected reward is :: "
                          <<current_state->get__expected_value()<<std::endl);
             }
             
