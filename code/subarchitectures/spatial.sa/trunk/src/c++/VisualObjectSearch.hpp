@@ -100,7 +100,7 @@ void newProcessViewPointCommand(const cast::cdl::WorkingMemoryChange &objID);
       double GetCostForSingleStrategy(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* tmpMap, std::string targetObject,double threshold, bool ishypo);
       double GetStrategyCost(std::vector<std::string> policy);
       void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
-      void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
+     void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
       void PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
       void PostViewCone(const SensingAction &nbv);
       void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID);
@@ -246,12 +246,24 @@ bool m_publishSimCones;
       static void selectdi( GtkWidget *widget, gpointer   data );
       static void selectind( GtkWidget *widget, gpointer   data );
 
-
-
-
       GtkWidget *window;
       GtkWidget *savebutton,*readbutton,*direct_uninformed, *direct_informed,*indirect;
       GtkWidget *hbox;
+      /**
+       * Local receiver type to manage nav command execution.
+       */
+
+SpatialData::NavCommandPtr newNavCommand();
+      class NavCommandReceiver: public cast::WorkingMemoryChangeReceiver {
+	      public:
+
+		      NavCommandReceiver(VisualObjectSearch & _component, SpatialData::NavCommandPtr _cmd);
+
+		      void workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc);
+	      private:
+		      VisualObjectSearch & m_component;
+		      SpatialData::NavCommandPtr m_cmd;
+      };
 
       bool m_showconemap;
       bool m_usePTZ;

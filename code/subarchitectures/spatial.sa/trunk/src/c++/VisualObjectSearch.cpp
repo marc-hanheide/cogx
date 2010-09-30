@@ -416,11 +416,10 @@ m_samplesize = 100;
 	new MemberFunctionChangeReceiver<VisualObjectSearch>(this,
 	  &VisualObjectSearch::newRobotPose));
 
-    addChangeFilter(createLocalTypeFilter<
+    /*addChangeFilter(createLocalTypeFilter<
 	SpatialData::NavCommand> (cdl::OVERWRITE),
 	new MemberFunctionChangeReceiver<VisualObjectSearch> (this,
-	  &VisualObjectSearch::owtNavCommand));
-
+	  &VisualObjectSearch::owtNavCommand));*/
 
     /* addChangeFilter(createLocalTypeFilter<
        FrontierInterface::ObjectTiltAngleRequest> (cdl::OVERWRITE),
@@ -481,7 +480,8 @@ m_samplesize = 100;
       pos.setTheta(newProcessVP->vp->pose.z);
       log("posting nav command");
       PostNavCommand(pos, SpatialData::GOTOPOSITION);
-    }
+
+}
   void 
     VisualObjectSearch::newViewPointGenerationCommand(const cast::cdl::WorkingMemoryChange &objID)
     {
@@ -617,6 +617,7 @@ m_samplesize = 100;
 	vp->pose.z = nbv.pan;
 	vp->tilt = nbv.tilt;
 	vp->label = targetObject;
+	vp->probability = nbv.totalprob;	
 	addToWorkingMemory(newDataID(),vp);      
       }
       count++;
@@ -1834,61 +1835,7 @@ m_samplesize = 100;
 	log("posting nav command");
 	PostNavCommand(pos, SpatialData::GOTOPOSITION);
       }
-      void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &objID){
-	try{
-	  if(isSearchFinished)
-	    return;
-	  log("nav command overwritten");
-	  SpatialData::NavCommandPtr cmd(getMemoryEntry<
-	      SpatialData::NavCommand> (objID.address));
-	  if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
-	    // if we were at the first policy step we just moved to a room
-	    if (currentPolicyStep == 0 && !m_publishSimCones){
-	      log("arrived at the room");	      
-	      m_currentRoom = m_policyRoom;
-	      ChangeMaps(currentSearchPolicy[currentPolicyStep]); 
-	      currentPolicyStep++;
-	      m_command = ASK_FOR_DISTRIBUTION;
-	      return;
-	    }
-	    log("NavCommand succeeded.");
-	    m_totalViewPoints++;	
-	    if(m_publishSimCones){
-	      MovePanTilt(0.0,m_tilt,0.08);
-	      Recognize();
-	    }else{	    
-	      MovePanTilt(0.0,m_nbv.tilt,0.08);
-	    m_command = RECOGNIZE;
-	    }
-	  }
-	  else if (cmd->comp == SpatialData::COMMANDFAILED){
-	    log("NavCommand failed.Getting next view.");
-	    if(currentPolicyStep == 0){
-	      // we could not reach to room try again
-	      m_command = GOTOROOM;
-	    }
-	    else{
-	      m_command=NEXT_NBV;
-	    }
-	  }
-	  else if (cmd->comp == SpatialData::COMMANDPENDING){
-	    log("NavCommand pending.");
-	  }
-	  else if (cmd->comp == SpatialData::COMMANDINPROGRESS){
-	    log("NavCommand in progress");
-	  }
-	  else if(cmd->comp == SpatialData::COMMANDABORTED){
-	    log("NavCommand aborted.");
-	  }
-
-	}
-	catch (const CASTException &e) {
-	  //log("failed to delete SpatialDataCommand: %s", e.message.c_str());
-	  log("CASTException in VisualObjectSearch::owtNavCommand");
-	}
-      }
-
-      void VisualObjectSearch::LookforObjectWithStrategy(){
+          void VisualObjectSearch::LookforObjectWithStrategy(){
 	//ask   
 	m_command = EVALUATE_POLICIES;
 
@@ -3187,8 +3134,7 @@ if(m_usePeekabot)
 	cmd->tolerance[0] = 0.1;
 	cmd->status = SpatialData::NONE;
 	cmd->comp = SpatialData::COMMANDPENDING;
-
-	addToWorkingMemory(newDataID(), cmd);
+	new NavCommandReceiver(*this,cmd);	
 	log("posted nav command");
       }
 
@@ -3203,4 +3149,89 @@ if(m_usePeekabot)
 	addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
 	log("added to WM");
       }
+
+VisualObjectSearch::NavCommandReceiver::NavCommandReceiver(VisualObjectSearch & _component, SpatialData::NavCommandPtr _cmd) :
+  m_component(_component), m_cmd(_cmd) {
+  m_component.log("received NavCommandReceiver notification");
+  string id(m_component.newDataID());
+  m_component.log("ID post: %s",id.c_str());
+
+  m_component.addChangeFilter(createIDFilter(id,cdl::OVERWRITE),this);  
+  m_component.addToWorkingMemory<SpatialData::NavCommand>(id, m_cmd);  
+
+  }
+void VisualObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &objID){
+	try{
+		if(isSearchFinished)
+			return;
+		log("nav command overwritten");
+		SpatialData::NavCommandPtr cmd(getMemoryEntry<
+				SpatialData::NavCommand> (objID.address));
+		if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
+			// if we were at the first policy step we just moved to a room
+			if (currentPolicyStep == 0 && !m_publishSimCones){
+				log("arrived at the room");	      
+				m_currentRoom = m_policyRoom;
+				ChangeMaps(currentSearchPolicy[currentPolicyStep]); 
+				currentPolicyStep++;
+				m_command = ASK_FOR_DISTRIBUTION;
+				return;
+			}
+			log("NavCommand succeeded.");
+			m_totalViewPoints++;	
+			if(m_publishSimCones){
+				MovePanTilt(0.0,m_tilt,0.08);
+				Recognize();
+			}else{	    
+				MovePanTilt(0.0,m_nbv.tilt,0.08);
+				m_command = RECOGNIZE;
+			}
+		}
+		else if (cmd->comp == SpatialData::COMMANDFAILED){
+			log("NavCommand failed.Getting next view.");
+			if(currentPolicyStep == 0){
+				// we could not reach to room try again
+				m_command = GOTOROOM;
+			}
+			else{
+				m_command=NEXT_NBV;
+			}
+		}
+		else if (cmd->comp == SpatialData::COMMANDPENDING){
+			log("NavCommand pending.");
+		}
+		else if (cmd->comp == SpatialData::COMMANDINPROGRESS){
+			log("NavCommand in progress");
+		}
+		else if(cmd->comp == SpatialData::COMMANDABORTED){
+			log("NavCommand aborted.");
+		}
+	}
+catch (const CASTException &e) {
+	//log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+	log("CASTException in VisualObjectSearch::owtNavCommand");
+}
+}
+
+
+void VisualObjectSearch::NavCommandReceiver::workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc) {
+  m_component.log("received inner notification");
+    try { 
+	  m_component.owtNavCommand(_wmc);
+    }	    
+    catch(const CASTException &e) {
+//      log("failed to delete SpatialDataCommand: %s", e.message.c_str());
     }
+  
+}
+
+SpatialData::NavCommandPtr VisualObjectSearch::newNavCommand() {
+  SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand();
+  cmd->prio = SpatialData::NORMAL;
+  cmd->cmd = SpatialData::STOP;
+  cmd->status = SpatialData::NONE;
+  cmd->comp = SpatialData::COMMANDPENDING;
+  return cmd;
+}
+
+}
