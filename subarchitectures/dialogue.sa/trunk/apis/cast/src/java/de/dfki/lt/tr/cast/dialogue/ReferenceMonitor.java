@@ -23,6 +23,7 @@ package de.dfki.lt.tr.cast.dialogue;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.FilterRestriction;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
@@ -45,6 +46,7 @@ import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
 import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
 import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -99,6 +101,33 @@ extends AbstractDialogueComponent {
 						handleBeliefDelete(_wmc);
 					}
 				});
+
+		addChangeFilter(
+				ChangeFilterFactory.createChangeFilter(dBelief.class, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleBeliefAddOverwrite(_wmc);
+					}
+				});
+
+		addChangeFilter(
+				ChangeFilterFactory.createChangeFilter(dBelief.class, WorkingMemoryOperation.OVERWRITE, "", "", "binder", FilterRestriction.ALLSA),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleBeliefAddOverwrite(_wmc);
+					}
+				});
+
+		addChangeFilter(
+				ChangeFilterFactory.createChangeFilter(dBelief.class, WorkingMemoryOperation.DELETE, "", "", "binder", FilterRestriction.ALLSA),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleBeliefDelete(_wmc);
+					}
+				});
 	}
 
 	@Override
@@ -111,7 +140,7 @@ extends AbstractDialogueComponent {
 
 	private void handleBeliefAddOverwrite(WorkingMemoryChange _wmc) {
 		try {
-			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
+			CASTData data = getWorkingMemoryEntry(_wmc.address);
 			dBelief belief = (dBelief)data.getData();
 			bm.put(_wmc.address, belief);
 			triggerRulefileRewrite();
@@ -123,7 +152,7 @@ extends AbstractDialogueComponent {
 
 	private void handleBeliefDelete(WorkingMemoryChange _wmc) {
 		try {
-			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
+			CASTData data = getWorkingMemoryEntry(_wmc.address);
 			dBelief belief = (dBelief)data.getData();
 			bm.remove(_wmc.address);
 			triggerRulefileRewrite();
