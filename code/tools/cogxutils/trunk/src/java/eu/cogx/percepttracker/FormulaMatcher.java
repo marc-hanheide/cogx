@@ -3,7 +3,9 @@
  */
 package eu.cogx.percepttracker;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -26,6 +28,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.util.ProbFormula;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 /**
  * this is a generic matcher that matches any
@@ -46,6 +49,8 @@ public class FormulaMatcher implements
 	/** the very small epsilon to test doubles for equality */
 	private static final double EPSILON_EQUALITY = 1e-10;
 
+	private Set<String> ignoredKeys = new HashSet<String>();
+
 	private Logger logger;
 
 	/**
@@ -62,6 +67,8 @@ public class FormulaMatcher implements
 		this.beliefTypes = types;
 		wm2wmMap = map;
 		logger = Logger.getLogger(FormulaMatcher.class);
+		// always ignore the source-address!
+		ignoredKeys.add(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID);
 	}
 
 	protected final List<String> beliefTypes;
@@ -119,7 +126,7 @@ public class FormulaMatcher implements
 		if (beliefTypes != null)
 			if (!beliefTypes.contains(from.type))
 				return 0.0;
-		if (!to.type.equals(from.type)) 
+		if (!to.type.equals(from.type))
 			return 0.0;
 		try {
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
@@ -161,6 +168,11 @@ public class FormulaMatcher implements
 			IndependentFormulaDistributions compareTo)
 			throws InterruptedException {
 		for (Entry<String, FormulaDistribution> entry : compareThis.entrySet()) {
+			// if the current key is in the set of keys to ignore, we ignore it!
+			if (ignoredKeys.contains(entry.getKey())) {
+				logger.debug("ignore feature " + entry.getKey());
+				continue;
+			}
 			FormulaDistribution otherEntry = compareTo.get(entry.getKey());
 			if (otherEntry == null) {
 				logger
