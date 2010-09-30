@@ -29,6 +29,30 @@ def error(msg):
     if LOGGER != None: LOGGER.error(msg)
     else: print "!!!", msg
 
+def cmdlineToArray(cmd):
+    cmd = cmd.split()
+    res = []
+    icmd = iter(cmd)
+    for p in icmd:
+        cp = p
+        if p.startswith('"') and not p.endswith('"'):
+            cp = p
+            for p in icmd:
+                cp = cp + " " + p
+                if p.endswith('"'): break
+        elif p.startswith("'") and not p.endswith("'"):
+            cp = p
+            for p in icmd:
+                cp = cp + " " + p
+                if p.endswith("'"): break
+
+        if (cp.startswith('"') and cp.endswith('"')) or (cp.startswith("'") and cp.endswith("'")):
+            cp = cp[1:-1]
+
+        res.append(cp)
+
+    return res
+
 class CProcessObserver(object):
     def notifyStatusChange(self, process, old, new):
         pass
@@ -155,8 +179,8 @@ class CProcess(CProcessBase):
         if params != None:
             for par in params.iterkeys():
                 command = command.replace("[%s]" % par, params[par])
-        command = command.split()
-        log("CMD=%s" % " ".join(command))
+        log("CMD=%s" % command)
+        command = cmdlineToArray(command)
         if self.workdir != None: log("PWD=%s" % self.workdir)
         try:
             self._setStatus(CProcessBase.STARTING)
@@ -476,7 +500,7 @@ class CProcessManager(object):
 
 def xrun(cmdline, workdir=None, env=None):
     # XRUN may create zombies.
-    cmds = cmdline.split()
+    cmds = cmdlineToArray(cmdline)
     cwd = os.getcwd()
     pid = None
     try:
@@ -491,7 +515,7 @@ def xrun(cmdline, workdir=None, env=None):
 
 def xrun_wait(cmdline, workdir=None):
     # XRUN may create zombies.
-    cmds = cmdline.split()
+    cmds = cmdlineToArray(cmdline)
     log("CMD: %s" % (cmdline))
     cwd = os.getcwd()
     try:
