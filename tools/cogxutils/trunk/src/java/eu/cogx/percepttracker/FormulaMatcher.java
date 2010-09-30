@@ -3,6 +3,7 @@
  */
 package eu.cogx.percepttracker;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,6 +70,11 @@ public class FormulaMatcher implements
 		logger = Logger.getLogger(FormulaMatcher.class);
 		// always ignore the source-address!
 		ignoredKeys.add(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID);
+	}
+	
+	public FormulaMatcher(List<String> types, PointerMap<?> map, Collection<String> ignoreKeys) {
+		this(types, map);
+		this.ignoredKeys.addAll(ignoreKeys);
 	}
 
 	protected final List<String> beliefTypes;
@@ -185,6 +191,10 @@ public class FormulaMatcher implements
 			// formulas do match!
 			Formula ft = entry.getValue().getDistribution().getMostLikely();
 			Formula fo = otherEntry.getDistribution().getMostLikely();
+			
+			// if any Formula didn't have a likely value, we take this as acceptable and continue
+			if (ft==null || fo==null)
+				continue;
 			logger.debug("ft=" + ft.toString() + ", fo=" + fo.toString());
 
 			// try {
