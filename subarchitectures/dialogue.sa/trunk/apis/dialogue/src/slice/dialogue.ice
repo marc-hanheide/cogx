@@ -222,7 +222,7 @@ module ref {
 
 	sequence<NominalRef> NominalRefSeq;
 
-	class RefLogicalForm extends BaseData {
+	class ResolvedLogicalForm extends BaseData {
 		lf::LogicalForm lform;
 		NominalRefSeq refs;
 	};

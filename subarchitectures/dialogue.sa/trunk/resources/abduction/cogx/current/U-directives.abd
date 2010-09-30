@@ -20,7 +20,7 @@ understand : event : utter(S, H, Nom) <-
 understand : polar_query_scope(S, H, Int, Ref, Nom) <-
 	polar_query_prop(Nom, Prop, Value),
 	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
-	int : post(Int, state('question-answered', 'Agent'(H), 'LingRef'(Ref), 'Property'(Prop), 'Hypo'(Value))) / p(1.0).
+	int : post(Int, state('question-answered', 'agent'(H), 'lingref'(Ref), 'property'(Prop), 'hypo'(Value))) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ understand : event : utter(S, H, Nom) <-
 understand : wh_query_scope(S, H, Int, Ref, Nom) <-
 	wh_query_prop(Nom, Prop),
 	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
-	int : post(Int, state('question-answered', 'Agent'(H), 'LingRef'(Ref), 'Property'(Prop))) / p(1.0).
+	int : post(Int, state('question-answered', 'agent'(H), 'lingref'(Ref), 'property'(Prop))) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -72,7 +72,7 @@ understand : event : utter(S, H, Nom) <-
 		i : prop(WhNom, what),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
-	int : post(Int, state('scene-description', 'Agent'(H))) / p(1.0).
+	int : post(Int, state('scene-description', 'agent'(H))) / p(1.0).
 
 %-------------------------------------------------------------------------
 % COMMAND: ACTION-NON-MOTION
@@ -99,15 +99,15 @@ nm_action_effects(S, H, RootNom, Int, Ref, find) <-
 
 nm_action_effects(S, H, RootNom, Int, Ref, bring) <-
 	determine_recipient(RootNom, S, S, H, Recipient),
-	int : post(Int, state(possession, 'Agent'(Recipient), 'Patient'(Ref))) / p(1.0).
+	int : post(Int, state(possession, 'agent'(Recipient), 'patient'(Ref))) / p(1.0).
 
 nm_action_effects(S, H, RootNom, Int, Ref, get) <-
 	determine_recipient(RootNom, H, S, H, Recipient),
-	int : post(Int, state(possession, 'Agent'(Recipient), 'Patient'(Ref))) / p(1.0).
+	int : post(Int, state(possession, 'agent'(Recipient), 'patient'(Ref))) / p(1.0).
 
 nm_action_effects(S, H, RootNom, Int, Ref, give) <-
 	determine_recipient(RootNom, H, S, H, Recipient),
-	int : post(Int, state(possession, 'Agent'(Recipient), 'Patient'(Ref))) / p(1.0).
+	int : post(Int, state(possession, 'agent'(Recipient), 'patient'(Ref))) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -151,13 +151,13 @@ understand : event : utter(S, H, Nom) <-
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 m_action_effects(S, H, Int, Ref, go) <-
-	int : post(Int, state(position, 'Agent'(H), 'Location'(Ref))) / p(1.0).
+	int : post(Int, state(position, 'agent'(H), 'location'(Ref))) / p(1.0).
 
 m_action_effects(S, H, Int, Ref, move) <-
 	m_action_effect(S, H, Int, Ref, go).
 
 m_action_effects(S, H, Int, Ref, turn) <-
-	int : post(Int, state('orientation-towards', 'Agent'(H), 'Location'(Ref))) / p(1.0).
+	int : post(Int, state('orientation-towards', 'agent'(H), 'location'(Ref))) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -189,13 +189,13 @@ valid_direction(right, right).
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 m_action_effects_direction(S, H, Int, Dir, go) <-
-	int : post(Int, state(motion, 'Agent'(H), 'Direction'(Dir))) / p(1.0).  % XXX
+	int : post(Int, state(motion, 'agent'(H), 'direction'(Dir))) / p(1.0).  % XXX
 
 m_action_effects_direction(S, H, Int, Dir, move) <-
 	m_action_effects_direction(S, H, Int, Dir, go).
 
 m_action_effects_direction(S, H, Int, Dir, turn) <-
-	int : post(Int, state(turn, 'Agent'(H), 'Direction'(Dir))) / p(1.0).  % XXX
+	int : post(Int, state(turn, 'agent'(H), 'direction'(Dir))) / p(1.0).  % XXX
 
 %-------------------------------------------------------------------------
 
@@ -208,6 +208,6 @@ understand : event : utter(S, H, Nom) <-
 %		i : prop(ActorNom, addressee),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
-	int : post(Int, state('stop-motion', 'Agent'(H))) / p(1.0).  % XXX
+	int : post(Int, state('stop-motion', 'agent'(H))) / p(1.0).  % XXX
 
 %-------------------------------------------------------------------------
