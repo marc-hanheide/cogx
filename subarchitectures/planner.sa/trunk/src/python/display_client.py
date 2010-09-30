@@ -87,16 +87,20 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
         else:
             html += "<p>Continual planner is active:</p>"
 
-        if task.cp_task.planning_status == PlanningStatusEnum.PLAN_AVAILABLE:
-            def action_row(pnode):
-                args = [a.name for a in pnode.args]
-                name = "(%s %s)" % (pnode.action.name, " ".join(args))
-                return (str(pnode.status).lower(), name, float(pnode.cost), pnode.status)
+        def action_row(pnode):
+            args = [a.name for a in pnode.args]
+            name = "(%s %s)" % (pnode.action.name, " ".join(args))
+            return (str(pnode.status).lower(), name, float(pnode.cost), pnode.status)
             
+        if task.cp_task.planning_status == PlanningStatusEnum.PLAN_AVAILABLE:
             ordered_plan = task.cp_task.get_plan().topological_sort()
             html += make_html_table(["Action", "Cost", "State"], (action_row(a) for a in ordered_plan), ["class", "%s", "%.2f", "%s"])
         elif task.cp_task.planning_status == PlanningStatusEnum.RUNNING:
             html += "<p>Planning...</p>"
+        elif task.dt_planning_active():
+            dt_plan = task.dt_task.dt_plan
+            html += "DT plan:"
+            html += make_html_table(["Action", "Cost", "State"], (action_row(a) for a in dt_plan), ["class", "%s", "%.2f", "%s"])
         else:
             html += "<p>No plan found</p>"
 

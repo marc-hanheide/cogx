@@ -27,7 +27,7 @@ status_dict = {TaskStateEnum.INITIALISED : Planner.Completion.PENDING, \
                    TaskStateEnum.COMPLETED : Planner.Completion.SUCCEEDED }
                    
                    
-log = config.logger("PythonServer")
+log = config.logger("plan-control")
 
 PLANNER_CP = 0
 PLANNER_DT = 1
@@ -277,7 +277,7 @@ class CASTTask(object):
             pred = "observed-%s" % fact.svar.function.name
             obs = Planner.Observation(pred, [a.name for a in fact.svar.args] + [fact.value.name])
             observations.append(obs)
-            log.info("%d: delivered observation %s", self.id, str(obs))
+            log.info("%d: delivered observation (%s %s)", self.id, obs.predicate, " ".join(a for a in obs.arguments))
 
         if not observations:
             if not pending_updates and self.internal_state == TaskStateEnum.WAITING_FOR_BELIEF:
@@ -390,7 +390,7 @@ class CASTTask(object):
         self.component.getClient().updateBeliefState(beliefs)
                 
     def update_state(self, beliefs):
-        assert self.internal_state in (TaskStateEnum.WAITING_FOR_ACTION, TaskStateEnum.WAITING_FOR_BELIEF)
+        assert self.internal_state in (TaskStateEnum.WAITING_FOR_ACTION, TaskStateEnum.WAITING_FOR_BELIEF, TaskStateEnum.FAILED)
         
         import fake_cast_state
         if isinstance(self.state, fake_cast_state.FakeCASTState):

@@ -8,7 +8,7 @@ from standalone.pddl import state, dtpddl, mapl, translators, visitors, effects
 import standalone.globals as global_vars
 import partial_problem
 
-log = config.logger("PythonServer")
+log = config.logger("dt")
 
 
 class DTProblem(object):
@@ -251,7 +251,7 @@ class DTProblem(object):
             
             commit_effect = b.effect(dtpddl.committed, term)
             reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_score))
-            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -2*dis_score))
+            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -10*dis_score))
             a.effect = b.effect('and', commit_effect, reward_effect, penalty_effect)
             
             disconfirm_actions.append(a)
