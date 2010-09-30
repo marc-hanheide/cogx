@@ -177,7 +177,7 @@ class CASTState(object):
         return filtered_facts
 
     def featvalue_from_object(self, arg):
-        if arg in self.namedict:
+        if arg.name in self.namedict:
             #arg is provided by the binder
             name = self.namedict[arg.name]
         else:

@@ -98,7 +98,7 @@ from standalone.pddl import state
 from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
 
-from cast_task import CASTTask
+from cast_task import CASTTask, TaskStateEnum
 from display_client import PlannerDisplayClient
 
 this_path = abspath(dirname(__file__))
@@ -268,7 +268,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.beliefs = state
       for task in self.tasks.itervalues():
           task.percepts += percepts
-          if task.status == Planner.Completion.PENDING:
+          if task.internal_state == TaskStateEnum.WAITING_FOR_BELIEF:
               self.updateWaitingTask(task)
 
   @pdbdebug
