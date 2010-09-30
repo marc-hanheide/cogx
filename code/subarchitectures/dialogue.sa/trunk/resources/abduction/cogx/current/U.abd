@@ -39,7 +39,7 @@ understand : topic(S, H, _EpSt0, Int, Ref, Nom) <-
 	try_topic_proximity(S, H, EpSt, Int, Ref, Nom),
 	try_restr_modifier(S, H, EpSt, Int, Ref, Nom),
 	try_restr_compound(S, H, EpSt, Int, Ref, Nom),
-	try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom).
+	try_topic_reference_resolution(EpSt, Int, Ref, Nom).
 
 % a X
 understand : topic(S, H, _EpSt0, Int, Ref, Nom) <-
@@ -53,7 +53,7 @@ understand : topic(S, H, _EpSt0, Int, Ref, Nom) <-
 	try_topic_proximity(S, H, EpSt, Int, Ref, Nom),
 	try_restr_modifier(S, H, EpSt, Int, Ref, Nom),
 	try_restr_compound(S, H, EpSt, Int, Ref, Nom),
-	try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom).
+	try_topic_reference_resolution(EpSt, Int, Ref, Nom).
 
 % "it"
 understand : topic(S, H, EpSt, Int, Ref, Nom) <-
@@ -100,12 +100,17 @@ understand : topic(S, H, EpSt, Int, Ref, Nom) <-
 
 %-------------------------------------------------------------------------
 
-try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom) <-
+try_topic_reference_resolution(EpSt, Int, Ref, Nom) <-
 	is_not_reference(Ref) / p(0.3).  % effectively the threshold for ref
 
-try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom) <-
-	understand : resolves_to_belief(Ref, BId, EpSt) / reference_resolution,
-	int : pre(Int, belief(Ref, EpSt, fv(belief, BId))) / p(1.0).
+try_topic_reference_resolution(EpSt, Int, Ref, Nom) <-
+	about(Ref, BId),
+	int : pre(Int, belief(Ref, EpSt, fv(about, BId))) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+about(Ref, BId) <-
+	understand : resolves_to_belief(Ref, BId) / reference_resolution.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -160,8 +165,8 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, 'q-shape'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
-	int : pre(Int, belief(Ref, attrib(H, S), fv(Ref, shape, PolarProp))) / p(1.0),
-	int : post(Int, belief(Ref, shared(S, H), fv(Ref, shape, PolarProp))) / p(1.0).
+	int : pre(Int, belief(Ref, attrib(H, S), fv(shape, PolarProp))) / p(1.0),
+	int : post(Int, belief(Ref, shared(S, H), fv(shape, PolarProp))) / p(1.0).
 
 understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, 'q-size'),

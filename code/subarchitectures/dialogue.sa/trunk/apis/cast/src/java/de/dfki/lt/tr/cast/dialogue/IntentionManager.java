@@ -37,7 +37,7 @@ import de.dfki.lt.tr.dialogue.interpret.IntentionManagement;
 import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.interpret.RecognisedIntention;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
-import de.dfki.lt.tr.dialogue.slice.ref.RefLogicalForm;
+import de.dfki.lt.tr.dialogue.slice.ref.ResolvedLogicalForm;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
@@ -114,11 +114,11 @@ extends AbstractDialogueComponent {
 		}
 
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(RefLogicalForm.class, WorkingMemoryOperation.ADD),
+				ChangeFilterFactory.createLocalTypeFilter(ResolvedLogicalForm.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handleRefLogicalForm(_wmc);
+						handleResolvedLogicalForm(_wmc);
 					}
 		});
 
@@ -141,13 +141,13 @@ extends AbstractDialogueComponent {
 	}
 
 
-	private void handleRefLogicalForm(WorkingMemoryChange _wmc) {
+	private void handleResolvedLogicalForm(WorkingMemoryChange _wmc) {
 
 //		String id = _wmc.address.id;
 
 		try {
 			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
-			RefLogicalForm arg = (RefLogicalForm)data.getData();
+			ResolvedLogicalForm arg = (ResolvedLogicalForm)data.getData();
 			String taskID = newTaskID();
 			ProcessingData pd = new ProcessingData(newProcessingDataId());
 			pd.add(data);
@@ -198,8 +198,8 @@ extends AbstractDialogueComponent {
 		if (iter.hasNext()) {
 			Object body = iter.next().getData();
 
-			if (body instanceof RefLogicalForm) {
-				RefLogicalForm rlf = (RefLogicalForm) body;
+			if (body instanceof ResolvedLogicalForm) {
+				ResolvedLogicalForm rlf = (ResolvedLogicalForm) body;
 				LogicalForm lf = rlf.lform;
 				RecognisedIntention eos = im.logicalFormToEpistemicObjects(lf);
 				if (eos != null) {

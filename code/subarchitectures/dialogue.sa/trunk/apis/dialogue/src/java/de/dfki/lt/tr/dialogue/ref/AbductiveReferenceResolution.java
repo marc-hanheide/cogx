@@ -27,6 +27,7 @@ import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
 import de.dfki.lt.tr.infer.weigabd.ProofUtils;
 import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
 import de.dfki.lt.tr.infer.weigabd.slice.Atom;
+import de.dfki.lt.tr.infer.weigabd.slice.DisjointDeclaration;
 import de.dfki.lt.tr.infer.weigabd.slice.FileReadErrorException;
 import de.dfki.lt.tr.infer.weigabd.slice.FunctionTerm;
 import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
@@ -35,9 +36,12 @@ import de.dfki.lt.tr.infer.weigabd.slice.Modality;
 import de.dfki.lt.tr.infer.weigabd.slice.ProofWithCost;
 import de.dfki.lt.tr.infer.weigabd.slice.SyntaxErrorException;
 import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -82,18 +86,32 @@ public class AbductiveReferenceResolution {
 				TermAtomFactory.atom("resolves_main", new Term[] {
 					TermAtomFactory.term(nom),
 					TermAtomFactory.var("Bel"),
-					TermAtomFactory.var("EpSt"),
+//					TermAtomFactory.var("EpSt"),
 					propertiesToListTerm(fvPairs)
 				}));
 
 		List<RefHypo> hypos = new LinkedList<RefHypo>();
 		ProofWithCost[] proof = allAbductiveProofs(ProofUtils.newUnsolvedProof(g));
+
+		Map<String, Set<ModalisedAtom>> disj = new HashMap<String, Set<ModalisedAtom>>();
+
 		if (proof != null) {
 			for (int i = 0; i < proof.length; i++) {
 				ModalisedAtom rma = extractResolvesMAtom(proof[i].proof);
 				if (rma != null && intentionEngine != null) {
-					log("adding reference hypothesis: " + MercuryUtils.modalisedAtomToString(rma) + " @ p=" + proof[i].cost);
+					log("adding reference hypothesis: " + MercuryUtils.modalisedAtomToString(rma) + " @ cost=" + proof[i].cost + " (p=" + Math.exp(-proof[i].cost) + ")");
 					intentionEngine.getProxy().addAssumable("reference_resolution", rma, proof[i].cost);
+
+					String n = ((FunctionTerm)rma.a.args[0]).functor;
+					Set<ModalisedAtom> dj = disj.get(n);
+					if (dj != null) {
+						dj.add(rma);
+					}
+					else {
+						dj = new HashSet<ModalisedAtom>();
+						dj.add(rma);
+						disj.put(n, dj);
+					}
 				}
 
 				RefHypo hypo = new RefHypo();
@@ -105,15 +123,28 @@ public class AbductiveReferenceResolution {
 			}
 		}
 
+		// add disjoint declarations
+		if (intentionEngine != null) {
+			for (String n : disj.keySet()) {
+				Set<ModalisedAtom> dj = disj.get(n);
+				DisjointDeclaration dd = new DisjointDeclaration();
+				dd.atoms = dj.toArray(new ModalisedAtom[0]);
+				log("adding a disjoint declaration for " + n + " (" + dj.size() + " entries)");
+				intentionEngine.getProxy().addDisjointDeclaration(dd);
+			}
+		}
+
 		result.hypos = hypos.toArray(new RefHypo[0]);
 		return result;
 	}
 
-	private ModalisedAtom extractResolvesMAtom(MarkedQuery[] qs) {
+	public static ModalisedAtom extractResolvesMAtom(MarkedQuery[] qs) {
 		for (MarkedQuery q : qs) {
 			ModalisedAtom ma = q.atom;
 			if (ma.m.length > 0 && ma.m[0] == Modality.Understanding && ma.a.predSym.equals("resolves_to_belief")) {
 //				log(MercuryUtils.modalisedAtomToString(ma));
+//				ModalisedAtom copy = TermAtomFactory.modalisedAtom(new Modality[] {Modality.Understanding}, TermAtomFactory.atom("resolves_to_belief", new Term[] {ma.a.args[0], ma.a.args[1]}));
+//				return copy;
 				return ma;
 			}
 		}

@@ -39,7 +39,7 @@ import de.dfki.lt.tr.dialogue.slice.parse.PackedLFs;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalRef;
 import de.dfki.lt.tr.dialogue.slice.ref.RefHypo;
-import de.dfki.lt.tr.dialogue.slice.ref.RefLogicalForm;
+import de.dfki.lt.tr.dialogue.slice.ref.ResolvedLogicalForm;
 import de.dfki.lt.tr.dialogue.slice.ref.RefReadings;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
@@ -179,7 +179,7 @@ extends AbstractDialogueComponent {
 				LogicalForm lf = (LogicalForm) body;
 				Map<String, Map<String, String>> eos = pbc.extractPresuppositions(lf);
 
-				RefLogicalForm rlf = new RefLogicalForm();
+				ResolvedLogicalForm rlf = new ResolvedLogicalForm();
 				rlf.lform = lf;
 				rlf.refs = new NominalRef[0];
 				List<NominalRef> nrs = new LinkedList<NominalRef>();
