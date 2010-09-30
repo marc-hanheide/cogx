@@ -36,12 +36,10 @@ def cmdlineToArray(cmd):
     for p in icmd:
         cp = p
         if p.startswith('"') and not p.endswith('"'):
-            cp = p
             for p in icmd:
                 cp = cp + " " + p
                 if p.endswith('"'): break
         elif p.startswith("'") and not p.endswith("'"):
-            cp = p
             for p in icmd:
                 cp = cp + " " + p
                 if p.endswith("'"): break
