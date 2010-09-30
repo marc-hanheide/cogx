@@ -553,9 +553,13 @@ void Solver::expand_belief_state(POMDP_State* pomdp_state)
             continue;
         }
         
-        INTERACTIVE_VERBOSER(true, 13000, "Got illegal transitions at :: "
+        INTERACTIVE_VERBOSER(true, 14000, "Got illegal transitions at :: "
                              <<*dynamic_cast<Planning::State*>(starting_state)<<std::endl);
 
+//         /*HERE HERE HERE*/
+//         /*PLEASE DELETE*/UNRECOVERABLE_ERROR("*************Got an action that was not executable at a state.");
+//         /*DELETE*/exit(0);/*HERE HERE HERE --- Actually, I should not expect this to be called, so I can get rid of these lines. Because, in moritz domain, the action is executable only once. It will be executed in every state, not just some states. So there will never be a situation where it is sometimes executable. TOMORROW I should deal with restarting and memory releasing. */
+//         /*HERE HERE HERE*/
         
         assert(dynamic_cast<Planning::State*>(starting_state));
         Planning::State* _cloned_state_with_penalty

@@ -406,7 +406,6 @@ Planning::Formula::Action_Proposition Problem_Data::get__prescribed_action()
 
     auto action_index = (random() % action_Schemas.size());
 
-    auto i = 0;
     auto _action_Schema = action_Schemas.begin();
     for(uint i = 0; i != action_index; i++,_action_Schema++);
     auto action_Schema = *_action_Schema;

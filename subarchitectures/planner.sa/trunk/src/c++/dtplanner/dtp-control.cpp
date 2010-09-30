@@ -792,11 +792,11 @@ void DTPCONTROL::newTask(Ice::Int id,
             VERBOSER(10017, "No starting state!"<<std::endl);
         } else {
             VERBOSER(10017, "Expanding!"<<std::endl);
-//             policy_Iteration();
+            policy_Iteration();
         }
     }
     
-    for(uint i = 0; i < 100; i++){
+    for(uint i = 0; i < 50; i++){
         policy_Iteration();
         VERBOSER(10017, "Expected reward is :: "
                  <<current_state[id]->get__expected_value()<<std::endl);

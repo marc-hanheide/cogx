@@ -12,7 +12,7 @@ include_directories(./dtpddl)
 
 add_definitions(-std=c++0x -mno-align-stringops -minline-all-stringops -march=native -fPIC)
 
-add_definitions(-pedantic -pg -Wall -Wextra)
+#add_definitions(-pedantic -pg -Wall -Wextra)
 
 add_cast_component(DTPCONTROL dtp-control.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Planner)
