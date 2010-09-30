@@ -19,7 +19,8 @@ INCLUDE includes/planner.sa/planner-base.cast
 
 JAVA MG manual-execution george.execution.components.GraphicalExecutionManager
 
-
+# used to simulate what the learner would do to the task (overwrite on completion)
+JAVA MG overwrite.learner castutils.components.SimpleOperationPerformer --output-operation OVERWRITE --class VisionData.VisualLearningTask
 
 # viewer stuff ################################################################
 
