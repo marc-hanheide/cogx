@@ -3,16 +3,11 @@
  */
 package motivation.components.generators;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import motivation.slice.Motive;
-import motivation.slice.MotivePriority;
-import motivation.slice.MotiveStatus;
 import cast.CASTException;
 import cast.UnknownSubarchitectureException;
-import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryPermissions;
@@ -26,52 +21,34 @@ import eu.cogx.beliefs.WMBeliefView;
  * 
  */
 public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends dBelief>
-		extends ManagedComponent implements ChangeHandler<T> {
+		extends AbstractEpistemicObjectMotiveGenerator<M, T> implements
+		ChangeHandler<T> {
 
-	private static final int DEFAULT_MAX_EXECUTION_TIME = 60 * 5;
-	private static final int DEFAULT_MAX_PLANNING_TIME = 10;
 	final WMView<T> beliefView;
-	final Map<WorkingMemoryAddress, WorkingMemoryAddress> bel2motiveMap = new HashMap<WorkingMemoryAddress, WorkingMemoryAddress>();
-	final Class<M> motiveClass;
-	private WorkingMemoryAddress robotBeliefAddr=null;
 
 	/**
 	 * 
 	 */
 	protected AbstractBeliefMotiveGenerator(String beliefType,
 			Class<M> motiveClass, Class<T> beliefClass) {
+		super(motiveClass, beliefClass);
 		beliefView = WMBeliefView.create(this, beliefClass, beliefType);
-		this.motiveClass = motiveClass;
 		beliefView.registerHandler(this);
 	}
-	
-	protected WorkingMemoryAddress getRobotBeliefAddr() {
-		if (robotBeliefAddr==null) {
-			for (Entry<WorkingMemoryAddress, T> beliefEntry : beliefView.entrySet()) {
-				if (beliefEntry.getValue().type.equals("Robot")) {
-					robotBeliefAddr=beliefEntry.getKey();
-					break;
-				}
-			}
-			getLogger().warn("unable to find belief 'Robot'");
-		}
-		return robotBeliefAddr;
-	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see motivation.components.generators.AbstractMotiveGenerator#start()
-	 */
-	@Override
-	protected void start() {
-		super.start();
-		try {
-			beliefView.start();
-		} catch (UnknownSubarchitectureException e) {
-			logException("could not start view", e);
-		}
-	}
+	// protected WorkingMemoryAddress getRobotBeliefAddr() {
+	// if (robotBeliefAddr==null) {
+	// for (Entry<WorkingMemoryAddress, T> beliefEntry : beliefView.entrySet())
+	// {
+	// if (beliefEntry.getValue().type.equals("Robot")) {
+	// robotBeliefAddr=beliefEntry.getKey();
+	// break;
+	// }
+	// }
+	// getLogger().warn("unable to find belief 'Robot'");
+	// }
+	// return robotBeliefAddr;
+	// }
 
 	/*
 	 * (non-Javadoc)
@@ -138,18 +115,23 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 
 	}
 
-	protected <T2 extends Motive> T2 fillDefault(T2 result) {
-		result.created = getCASTTime();
-		result.correspondingUnion = "";
-		result.maxExecutionTime = DEFAULT_MAX_EXECUTION_TIME;
-		result.maxPlanningTime = DEFAULT_MAX_PLANNING_TIME;
-		result.priority = MotivePriority.UNSURFACE;
-		result.status = MotiveStatus.UNSURFACED;
-		return result;
-	}
+	protected abstract M checkForAddition(WorkingMemoryAddress addr, T newEntry);
 
 	protected abstract M checkForUpdate(T newEntry, M motive);
 
-	protected abstract M checkForAddition(WorkingMemoryAddress addr, T newEntry);
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see motivation.components.generators.AbstractMotiveGenerator#start()
+	 */
+	@Override
+	protected void start() {
+		super.start();
+		try {
+			beliefView.start();
+		} catch (UnknownSubarchitectureException e) {
+			logException("could not start view", e);
+		}
+	}
 
 }
