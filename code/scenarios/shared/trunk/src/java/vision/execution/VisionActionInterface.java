@@ -12,12 +12,15 @@ import VisionData.ForegroundedModel;
 import VisionData.PeopleDetectionCommand;
 import VisionData.VisualLearningTask;
 import cast.CASTException;
+import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.george.VisualObjectTransferFunction;
 import execution.slice.TriBool;
@@ -71,8 +74,8 @@ public class VisionActionInterface extends ManagedComponent {
 		@Override
 		public void executeAction() {
 			DetectionCommand cmd = new DetectionCommand(m_labels);
-			addThenCompleteOnDelete(new WorkingMemoryAddress(getComponent().newDataID(),
-					getComponent().getSubarchitectureID()), cmd);
+			addThenCompleteOnDelete(new WorkingMemoryAddress(getComponent()
+					.newDataID(), getComponent().getSubarchitectureID()), cmd);
 		}
 
 	}
@@ -98,8 +101,8 @@ public class VisionActionInterface extends ManagedComponent {
 		@Override
 		public void executeAction() {
 			PeopleDetectionCommand cmd = new PeopleDetectionCommand();
-			addThenCompleteOnDelete(new WorkingMemoryAddress(getComponent().newDataID(),
-					getComponent().getSubarchitectureID()), cmd);
+			addThenCompleteOnDelete(new WorkingMemoryAddress(getComponent()
+					.newDataID(), getComponent().getSubarchitectureID()), cmd);
 		}
 
 	}
@@ -223,15 +226,12 @@ public class VisionActionInterface extends ManagedComponent {
 	public static abstract class LearnInstructionExecutor<ActionType extends BeliefPlusStringAction>
 			extends NonBlockingCompleteOnOperationExecutor<ActionType> {
 
-		private ActionType m_action;
-
 		public LearnInstructionExecutor(ManagedComponent _component,
 				Class<ActionType> _actCls) {
 			super(_component, _actCls);
 		}
 
 		protected boolean acceptAction(ActionType _action) {
-			m_action = _action;
 			return true;
 		}
 
@@ -245,17 +245,18 @@ public class VisionActionInterface extends ManagedComponent {
 		@Override
 		public void executeAction() {
 			try {
-				WorkingMemoryAddress beliefID = m_action.beliefAddress;
+				WorkingMemoryAddress beliefID = getAction().beliefAddress;
 
 				VisualLearningTask cmd;
 
 				cmd = new VisualLearningTask(getComponent().getVisualObjectID(
 						beliefID), beliefID.id, getConcept(),
-						new String[] { m_action.value }, new double[] { 1 });
+						new String[] { getAction().value }, new double[] { 1 });
 
-				getComponent().println("got the vis obj id: " + getComponent().getVisualObjectID(
-						beliefID));
-				
+				getComponent().println(
+						"got the vis obj id: "
+								+ getComponent().getVisualObjectID(beliefID));
+
 				addThenCompleteOnOverwrite(new WorkingMemoryAddress(
 						getComponent().newDataID(), getComponent()
 								.getSubarchitectureID()), cmd);
@@ -263,7 +264,16 @@ public class VisionActionInterface extends ManagedComponent {
 			} catch (CASTException e) {
 				getComponent().logException(e);
 			}
+		}
 
+		@Override
+		protected void actionComplete() {
+			try {
+				getComponent().addBooleanFeature(getAction().beliefAddress,
+						getConcept() + "-learned", true);
+			} catch (CASTException e) {
+				logException(e);
+			}
 		}
 	}
 
@@ -276,7 +286,7 @@ public class VisionActionInterface extends ManagedComponent {
 
 		@Override
 		protected String getConcept() {
-			return "colour";
+			return "color";
 		}
 
 	}
@@ -304,7 +314,7 @@ public class VisionActionInterface extends ManagedComponent {
 
 		@Override
 		protected String getConcept() {
-			return "identity";
+			return "ident";
 		}
 
 	}
@@ -316,13 +326,29 @@ public class VisionActionInterface extends ManagedComponent {
 	private String getVisualObjectID(WorkingMemoryAddress _beliefID)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 
-		GroundedBelief belief = getMemoryEntry(_beliefID,
-				GroundedBelief.class);
+		GroundedBelief belief = getMemoryEntry(_beliefID, GroundedBelief.class);
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, belief);
 		return pb.getContent()
 				.get(VisualObjectTransferFunction.VISUAL_OBJECT_ID)
 				.getDistribution().getMostLikely().getProposition();
+	}
+
+	private void addBooleanFeature(WorkingMemoryAddress _beliefAddress,
+			String _feature, boolean _value) throws DoesNotExistOnWMException,
+			ConsistencyException, PermissionException,
+			UnknownSubarchitectureException {
+
+		GroundedBelief belief = getMemoryEntry(_beliefAddress,
+				GroundedBelief.class);
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, belief);
+
+		FormulaDistribution fd = FormulaDistribution.create();
+		fd.add(_value, 1);
+
+		pb.getContent().put(_feature, fd);
+		overwriteWorkingMemory(_beliefAddress, pb.get());
 	}
 
 	private final Hashtable<String, WorkingMemoryAddress> m_foregroundedModels;
