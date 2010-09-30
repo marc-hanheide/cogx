@@ -14,6 +14,16 @@ CPP GD relation.manager ObjectRelationManager -c instantiations/cureconfig/cogxp
 CPP GD visual.search VisualObjectSearch -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 100 --tiltinterval 15  --gridsize 500 --cellsize 0.05  --kernel-width-factor 0.7 --sampleawayfromobs 0.45 --publishsimcones #--showgui --ctrl-ptu --simulate --showconemap 
 
 
+# Default.SA ################################################################
+INCLUDE includes/default.sa/default-base.cast
+INCLUDE includes/coma.sa/coma-defaultsa.cast
+INCLUDE includes/default.sa/default-main.cast
+INCLUDE includes/default.sa/default-test.cast
+
+# Conceptual.SA  ############################################################
+INCLUDE includes/conceptual.sa/conceptual-base.cast
+INCLUDE includes/conceptual.sa/conceptual-main.cast
+INCLUDE includes/conceptual.sa/conceptual-test.cast
 
 # vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
