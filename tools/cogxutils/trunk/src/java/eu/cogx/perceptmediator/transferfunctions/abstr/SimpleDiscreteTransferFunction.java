@@ -146,6 +146,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 				fd.add(fvm.getValue().get(), 1.0);
 				features.put(fvm.getKey(), fd);
 			}
+			fillBelief(p, wmc, from);
 		} catch (InterruptedException e) {
 			component.logException(e);
 		} catch (BeliefException e) {
