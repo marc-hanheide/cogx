@@ -28,7 +28,7 @@ public class ComaBeliefGoalGenerator extends
 	 * the maximum costs to drop we assign if information gain is really high
 	 * (~1) in seconds
 	 */
-	private static final double MAX_COSTS_TO_DROP = 5*60;
+	private static final double MAX_COSTS_TO_DROP = 5 * 60;
 
 	public ComaBeliefGoalGenerator() {
 		super(PLACETYPE, CategorizeRoomMotive.class, GroundedBelief.class);
@@ -73,17 +73,9 @@ public class ComaBeliefGoalGenerator extends
 				+ " for update");
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, newEntry);
-		boolean isExplored = belief.getContent().get("placestatus")
-				.getDistribution().getMostLikely().getProposition()
-				.equalsIgnoreCase(PlaceStatus.TRUEPLACE.name());
-		// if that is a place holder
-		if (!isExplored) {
-			log("place is not yet explored, so it is a goal");
-			fillValues(belief, motive);
-			return motive;
-		} else {
-			return null;
-		}
+		// TODO: check for existing category is still missing:
+		fillValues(belief, motive);
+		return motive;
 	}
 
 	/*
@@ -104,8 +96,10 @@ public class ComaBeliefGoalGenerator extends
 		// goal.
 		motive.costs = -1;
 		motive.informationGain = 1.0;
-		assert(getRobotBeliefAddr()!=null);
-		motive.goal = new Goal(computeImportance(motive), "(kval '"+getRobotBeliefAddr()+"' (areaclass '"+ belief.getId() + "'))", false);
+		assert (getRobotBeliefAddr() != null);
+		motive.goal = new Goal(computeImportance(motive), "(kval '"
+				+ getRobotBeliefAddr() + "' (areaclass '" + belief.getId()
+				+ "'))", false);
 		log("updated goal to " + motive.goal.goalString);
 	}
 
