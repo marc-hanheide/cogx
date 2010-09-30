@@ -9,8 +9,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import cast.architecture.ManagedComponent;
-import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import castutils.castextensions.IceXMLSerializer;
 
 import comadata.ComaRoom;
 
@@ -40,6 +40,8 @@ public class ComaRoomTransferFunction extends
 		Map<String, Formula> result = new HashMap<String, Formula>();
 		result.put(ROOM_ID, IntFormula.create((int) from.roomId)
 				.getAsFormula());
+
+		component.getLogger().info(IceXMLSerializer.toXMLString(from));
 		// BoolFormula isExplored =
 		// BoolFormula.create(from.status==PlaceStatus.TRUEPLACE);
 		// result.put("placestatus",
