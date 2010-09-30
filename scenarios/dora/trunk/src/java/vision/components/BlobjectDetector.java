@@ -82,14 +82,15 @@ public class BlobjectDetector extends ManagedComponent {
 
 	public void newRecognizer3DCommand(WorkingMemoryChange _wmc)
 			throws CASTException {
-		Recognizer3DCommand cmd = getMemoryEntry(_wmc.address, Recognizer3DCommand.class);
-		
+		Recognizer3DCommand cmd = getMemoryEntry(_wmc.address,
+				Recognizer3DCommand.class);
+
 		// do detection
-		detectObjectsForLabels(new String[]{cmd.label});
+		detectObjectsForLabels(new String[] { cmd.label });
 
 		// executed the command, results (if any) are on working memory,
 		// now delete command as not needed anymore
-		overwriteWorkingMemory(_wmc.address,cmd);
+		overwriteWorkingMemory(_wmc.address, cmd);
 	}
 
 	public void newDetectionCommand(WorkingMemoryChange _wmc)
@@ -128,6 +129,10 @@ public class BlobjectDetector extends ManagedComponent {
 				VisualObject obj = VisionUtils.newVisualObject();
 				obj.identLabels = new String[1];
 				obj.identLabels[0] = label;
+
+				obj.identDistrib = new double[1];
+				obj.identDistrib[0] = 0;
+
 				obj.detectionConfidence = 0f;
 				addToWorkingMemory(newDataID(), obj);
 			}
@@ -138,6 +143,9 @@ public class BlobjectDetector extends ManagedComponent {
 				VisualObject obj = VisionUtils.newVisualObject();
 				obj.identLabels = new String[1];
 				obj.identLabels[0] = label;
+				obj.identDistrib = new double[1];
+				obj.identDistrib[0] = 0;
+
 				// default to not seen (i.e. 0)
 				obj.detectionConfidence = 0f;
 
@@ -154,6 +162,7 @@ public class BlobjectDetector extends ManagedComponent {
 						if (blob.colour.equals(rgb)) {
 							println("  YES, found an object");
 							obj.detectionConfidence = 1f;
+							obj.identDistrib[0] = 1;
 							break;
 						}
 					}
