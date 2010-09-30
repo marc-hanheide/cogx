@@ -1,4 +1,4 @@
-<!-- Inner build file for a module in the CogX system -->
+<!-- Inner build file for the coma.sa module in the CogX system -->
 <project name="coma.sa" default="compile" basedir=".">
 
         <!-- =================================================================== -->
@@ -31,6 +31,23 @@
 	</target>
 
 	<!-- =================================================================== -->
+ 	<!-- Expand libraries                                                    -->
+	<!-- =================================================================== -->
+	<target name="expandlibs" depends="prepare">
+	    <echo message="Expanding external libraries for coma.sa to output/classes"/>
+	    <unzip dest="${output.dir}" src="./lib/arq.jar"/>
+	    <unzip dest="${output.dir}" src="./lib/trove-2.1.0.jar"/>
+	    <unzip dest="${output.dir}" src="./lib/concurrent.jar"/>
+	    <unzip dest="${output.dir}" src="./lib/crowl.jar"/>
+	    <unzip dest="${output.dir}" src="./lib/hfc.jar"/>
+	    <unzip dest="${output.dir}" src="./lib/icu4j_3_4.jar"/>
+	    <unzip dest="${output.dir}" src="./lib/iri.jar"/>
+	    <unzip dest="${output.dir}" src="./lib/jena.jar"/>
+	    <unzip dest="${output.dir}" src="./lib/xercesImpl.jar"/>
+<!--	    <unzip dest="${output.dir}" src="./lib/log4j-1.2.12.jar"/> -->
+<!--	    <unzip dest="${output.dir}" src="./lib/commons-logging-1.1.jar"/> --> 	</target>
+
+<!-- =================================================================== -->
 	<!-- Source generation                                                   -->
 	<!-- =================================================================== -->
 	<target name="slice" depends="prepare" description="generates source from slice">
@@ -54,7 +71,7 @@
 	<!-- =================================================================== -->
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="slice" description="compiles the source code">
+	<target name="compile" depends="slice,prepare,expandlibs" description="compiles the source code">
 		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
 		<classpath refid="build.classpath"/> </javac>
 		<mkdir  dir="${output.dir}/coma.libs"/>
