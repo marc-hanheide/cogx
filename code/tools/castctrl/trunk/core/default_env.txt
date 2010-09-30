@@ -82,10 +82,10 @@ CMD_DISPLAY_SERVER=${COGX_ROOT}/output/bin/display-server
 # Abducer Server
 ABDUCER_ROOT=${COGX_ROOT}/subarchitectures/dialogue.sa/external/abducer-2.0.0
 CMD_ABDUCER_SERVER=<multiline>
-   ${ABDUCER_ROOT}/bin/abducer-server-bin
+   ${ABDUCER_ROOT}/abducer-server-bin
    -n "AbducerServer"
    -e "default -p 10000"
-   -a ${ABDUCER_ROOT}/bin/abduction-engine
+   -a ${ABDUCER_ROOT}/abduction-engine
 </multiline>
 
 
