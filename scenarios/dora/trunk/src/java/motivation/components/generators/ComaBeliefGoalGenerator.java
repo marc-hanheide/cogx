@@ -3,9 +3,6 @@ package motivation.components.generators;
 import java.util.Map;
 
 import motivation.slice.CategorizeRoomMotive;
-import motivation.slice.MotivePriority;
-import motivation.slice.MotiveStatus;
-import SpatialData.PlaceStatus;
 import autogen.Planner.Goal;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
@@ -19,10 +16,8 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
 public class ComaBeliefGoalGenerator extends
 		AbstractBeliefMotiveGenerator<CategorizeRoomMotive, GroundedBelief> {
 
-	private static final String PLACETYPE = SimpleDiscreteTransferFunction
+	private static final String COMATYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(ComaRoom.class));
-	private static final int MAX_EXECUTION_TIME = 60 * 5;
-	private static final int MAX_PLANNING_TIME = 10;
 
 	/**
 	 * the maximum costs to drop we assign if information gain is really high
@@ -31,51 +26,47 @@ public class ComaBeliefGoalGenerator extends
 	private static final double MAX_COSTS_TO_DROP = 5 * 60;
 
 	public ComaBeliefGoalGenerator() {
-		super(PLACETYPE, CategorizeRoomMotive.class, GroundedBelief.class);
+		super(COMATYPE, CategorizeRoomMotive.class, GroundedBelief.class);
 	}
 
 	@Override
 	protected CategorizeRoomMotive checkForAddition(WorkingMemoryAddress adr,
 			GroundedBelief newEntry) {
-		assert (newEntry.type.equals(PLACETYPE));
+		assert (newEntry.type.equals(COMATYPE));
 		log("checkForAddition(): check belief " + newEntry.id + " for addition");
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, newEntry);
-		// get the most likely status
-		boolean isExplored = belief.getContent().get("placestatus")
-				.getDistribution().getMostLikely().getProposition()
-				.equalsIgnoreCase(PlaceStatus.TRUEPLACE.name());
-		log("checkForAddition(): placestatus="
-				+ belief.getContent().get("placestatus").getDistribution()
-						.getMostLikely().getProposition());
-		// if that is a place holder
-		if (!isExplored) {
-			log("place is not yet explored, so it is a goal");
+		if (!isCategorized(belief)) {
+			log("room not yet categorized, so it is a goal");
 			CategorizeRoomMotive result = new CategorizeRoomMotive();
-			result.created = getCASTTime();
-			result.correspondingUnion = "";
-			result.maxExecutionTime = MAX_EXECUTION_TIME;
-			result.maxPlanningTime = MAX_PLANNING_TIME;
-			result.priority = MotivePriority.UNSURFACE;
-			result.referenceEntry = adr;
-			result.status = MotiveStatus.UNSURFACED;
+			fillDefault(result);
 			fillValues(belief, result);
 			return result;
 		}
 		return null;
 	}
 
+	private boolean isCategorized(
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	@Override
 	protected CategorizeRoomMotive checkForUpdate(GroundedBelief newEntry,
 			CategorizeRoomMotive motive) {
-		assert (newEntry.type.equals(PLACETYPE));
+		assert (newEntry.type.equals(COMATYPE));
 		log("check goal " + CASTUtils.toString(motive.thisEntry)
 				+ " for update");
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, newEntry);
-		// TODO: check for existing category is still missing:
-		fillValues(belief, motive);
-		return motive;
+		if (!isCategorized(belief)) {
+			fillValues(belief, motive);
+			return motive;
+		}else {
+			return null;
+		}
+
 	}
 
 	/*
