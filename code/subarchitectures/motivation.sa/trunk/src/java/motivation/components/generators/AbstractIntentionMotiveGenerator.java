@@ -33,8 +33,8 @@ public abstract class AbstractIntentionMotiveGenerator<M extends Motive, T exten
 	/**
 	 * 
 	 */
-	protected AbstractIntentionMotiveGenerator(String beliefType,
-			Class<M> motiveClass, Class<T> intentClass) {
+	protected AbstractIntentionMotiveGenerator(Class<M> motiveClass,
+			Class<T> intentClass) {
 		this.motiveClass = motiveClass;
 		this.intentClass = intentClass;
 	}
