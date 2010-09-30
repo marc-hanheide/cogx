@@ -5,6 +5,7 @@ package motivation.components.generators;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
@@ -32,6 +33,7 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 	final WMView<T> beliefView;
 	final Map<WorkingMemoryAddress, WorkingMemoryAddress> bel2motiveMap = new HashMap<WorkingMemoryAddress, WorkingMemoryAddress>();
 	final Class<M> motiveClass;
+	private WorkingMemoryAddress robotBeliefAddr=null;
 
 	/**
 	 * 
@@ -41,6 +43,19 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 		beliefView = WMBeliefView.create(this, beliefClass, beliefType);
 		this.motiveClass = motiveClass;
 		beliefView.registerHandler(this);
+	}
+	
+	protected WorkingMemoryAddress getRobotBeliefAddr() {
+		if (robotBeliefAddr==null) {
+			for (Entry<WorkingMemoryAddress, T> beliefEntry : beliefView.entrySet()) {
+				if (beliefEntry.getValue().type.equals("Robot")) {
+					robotBeliefAddr=beliefEntry.getKey();
+					break;
+				}
+			}
+			getLogger().warn("unable to find belief 'Robot'");
+		}
+		return robotBeliefAddr;
 	}
 
 	/*
