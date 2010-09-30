@@ -11,7 +11,7 @@ from standalone.pddl import state, prob_state
 from de.dfki.lt.tr.beliefs.slice.sitbeliefs import dBelief
 from de.dfki.lt.tr.beliefs.slice import logicalcontent, distribs
 
-log = standalone.config.logger("PythonServer")
+log = standalone.config.logger("belief-preprocessor")
 
 forbidden_letters = "-: "
 replace_chr = "_"
@@ -116,13 +116,13 @@ def gen_fact_tuples(beliefs):
           for valpair in value.values:
             val = feature_val_to_object(valpair.val)
             if val is not None:
-              log.debug("%s = %s:%.2f", feat, val, valpair.prob)
+              #log.debug("%s = %s:%.2f", feat, val, valpair.prob)
               result.append((feat, val, valpair.prob))
         elif isinstance(value, distribs.NormalValues):
           #TODO: discretize?
           val = feature_val_to_object(value.mean)
           if val is not None:
-            log.debug("%s = %s", feat, val)
+            #log.debug("%s = %s", feat, val)
             result.append((feat, val , 1.0))
       return result
     assert False, "class %s of %s not supported" % (str(type(dist)), str(dist))
@@ -135,7 +135,7 @@ def gen_fact_tuples(beliefs):
     if bel.type != "relation":
       obj = belief_to_object(bel)
       for feat,vals in factdict.iteritems():
-        log.debug("(%s %s) = %s : %f", feat, obj, val, prob)
+        #log.debug("(%s %s) = %s : %f", feat, obj, val, prob)
         yield SVarDistribution(feat, [obj], vals)
     else:
       elems = []
@@ -149,15 +149,16 @@ def gen_fact_tuples(beliefs):
       for feat,vals in factdict.iteritems():
         if feat.startswith("val"):
           continue
-        log.debug("(%s %s) = %s : %f", feat, " ".join(map(str, elems)), vals[0][0], vals[0][1])
+        #log.debug("(%s %s) = %s : %f", feat, " ".join(map(str, elems)), vals[0][0], vals[0][1])
         yield SVarDistribution(feat, elems, vals)
 
 def filter_unknown_preds(fact_tuples):
   for ft in fact_tuples:
     if ft.feature not in current_domain.functions and \
           ft.feature not in current_domain.predicates:
-      log.debug("filtering feature assignment %s, because '%s' is not part of the planning domain", \
-                    str(ft), str(ft.feature))
+      pass
+      #log.debug("filtering feature assignment %s, because '%s' is not part of the planning domain", \
+      #              str(ft), str(ft.feature))
     else:
       #print "using", map(str, ft)
       yield ft
@@ -175,7 +176,7 @@ def tuples2facts(fact_tuples):
       log.warning("Error looking up %s(%s), got %s", feature_label, ", ".join(map(str, ftup.args)), str(func))
       continue
       
-    if len(ftup.values) == 1:
+    if len(ftup.values) == 1 and ftup.values[0][1] == 1.0:
       yield state.Fact(state.StateVariable(func, ftup.args), ftup.values[0][0])
     else:
       vdist = prob_state.ValueDistribution(dict(ftup.values))

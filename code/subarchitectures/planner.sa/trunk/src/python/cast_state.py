@@ -9,7 +9,7 @@ import cast.cdl
 
 import task_preprocessor as tp
 
-log = config.logger("PythonServer")
+log = config.logger("cast-state")
 BINDER_SA = "binder"
 TOTAL_P_COSTS = 200
 
@@ -165,10 +165,24 @@ class CASTState(object):
                 log.warning("Percept %s has no matching grounded belief.", obj.name)
                 return None 
 
+        # import debug
+        # debug.set_trace()
+        
         filtered_facts = []
         for svar, value in facts:
             assert svar.modality is None
             n_args = [replace_object(a) for a in svar.args]
+            
+            if isinstance(value, pddl.prob_state.ValueDistribution):
+                # only return the percept with the highest probability > 0
+                highest = None
+                for val, p in value.iteritems():
+                    if p > value.get(highest, 0.0):
+                        highest = val
+                if highest is None:
+                    continue
+                value = highest
+                    
             nval = replace_object(value)
             if all(a is not None for a in n_args) and nval is not None:
                 fact = state.Fact(state.StateVariable(svar.function, n_args), nval)

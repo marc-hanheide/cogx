@@ -206,7 +206,7 @@ class PartialProblem(object):
                     for c in combinations:
                         svar = state.StateVariable(f, c)
                         p = hstate.get_prob(svar, o)
-                        p_total += p.value
+                        p_total += p
                         p_count +=1
                 p_avg = p_total/p_count
                 obj_by_prob.append((o,p_avg))
