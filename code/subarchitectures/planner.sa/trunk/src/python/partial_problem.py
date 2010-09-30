@@ -188,6 +188,7 @@ class PartialProblem(object):
         remaining = set(o for o in self.objects if all(c.matches(o, self.state) for c in obj_constraints))
         to_remove = set(o for o in self.objects if not all(c.matches(o, self.state) for c in obj_constraints))
         log.debug("candidates for removal: %s", ", ".join(a.name for a in to_remove))
+        assert to_remove
         vo_rules, co_rules = self.compute_removal_criterions(to_remove, remaining)
 
         sorted_by_type = dict((t, [o for o in to_remove if o.type == t]) for t in chain(vo_rules.iterkeys(), co_rules.iterkeys()))

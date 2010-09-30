@@ -1,12 +1,14 @@
 import os
 from os.path import abspath, dirname, join, isdir
 
-import cast_state, dt_problem
+from de.dfki.lt.tr.beliefs.slice import logicalcontent
 from autogen import Planner
+
 from standalone import task, plans, plan_postprocess, pddl, config
 from standalone.task import PlanningStatusEnum
-
 from standalone.utils import Enum
+
+import cast_state, dt_problem
 
 TaskStateEnum = Enum("INITIALISED",
                      "PROCESSING",
@@ -38,6 +40,18 @@ WAIT_FOR_ACTION_TIMEOUT = 2000
 #                    PlanningStatusEnum.PLANNING_FAILURE : Planner.Completion.FAILED, \
 #                    PlanningStatusEnum.INTERRUPTED : Planner.Completion.ABORTED }
 
+def fval_to_str(fval):
+    if fval.__class__ == logicalcontent.ElementaryFormula:
+        return "'%s'" % fval.prop
+    elif fval.__class__ == logicalcontent.PointerFormula:
+        return "%s@%s" % (fval.pointer.id, fval.pointer.subarchitecture)
+    elif fval.__class__ == logicalcontent.IntegerFormula:
+        return str(fval.val)
+    elif fval.__class__ == logicalcontent.BooleanFormula:
+        return str(fval.val)
+    elif fval.__class__ == logicalcontent.UnknownFormula:
+        return "UNKNOWN"
+    assert False
 
 class CASTTask(object):
     def __init__(self, planning_task, beliefs, domain_fn, component, problem_fn=None):
@@ -158,7 +172,7 @@ class CASTTask(object):
 
             uargs = [self.state.featvalue_from_object(arg) for arg in pnode.args]
 
-            fullname = str(pnode)
+            fullname = "%s %s" % (pnode.action.name, " ".join(fval_to_str(a) for a in uargs))
             outplan.append(Planner.Action(self.id, pnode.action.name, uargs, fullname, float(pnode.cost), Planner.Completion.PENDING))
 
         if outplan:
@@ -306,11 +320,11 @@ class CASTTask(object):
         self.step += 1
         self.cp_task.replan()
         if self.cp_task.planning_status == PlanningStatusEnum.WAITING:
+            self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
             if pending_updates:
                 log.info("Still waiting for effects of %s to appear", str(self.cp_task.pending_action))
                 return
             log.info("Waiting for effects of %s to appear", str(self.cp_task.pending_action))
-            self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
             self.component.getClient().waitForChanges(self.id, WAIT_FOR_ACTION_TIMEOUT)
             return
         
@@ -329,9 +343,6 @@ class CASTTask(object):
         self.get_plan().execution_position = first_action
         self.update_status(TaskStateEnum.PROCESSING)
 
-        # import debug
-        # debug.set_trace()
-        
         self.cp_task.mark_changed()
         self.monitor_cp()
 
@@ -362,10 +373,11 @@ class CASTTask(object):
         #create featurevalues
         uargs = [self.state.featvalue_from_object(a) for a in pnode.args]
     
-        fullname = action.name + " ".join(action.arguments)
+        fullname = "%s %s" % (pnode.action.name, " ".join(fval_to_str(a) for a in uargs))
         outplan = [Planner.Action(self.id, action.name, uargs, fullname, float(pnode.cost), Planner.Completion.PENDING)]
 
         log.info("%d: First action: %s", self.id, fullname)
+        
         self.internal_state = TaskStateEnum.WAITING_FOR_ACTION
         self.component.deliver_plan(self, outplan)
         
