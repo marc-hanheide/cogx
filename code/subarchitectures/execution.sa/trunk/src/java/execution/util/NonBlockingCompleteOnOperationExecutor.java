@@ -63,11 +63,19 @@ public abstract class NonBlockingCompleteOnOperationExecutor<ActionType extends 
 	public void stopExecution() {
 		// can't stop this one
 	}
+	
+	/**
+	 * Called when the action has completed to allow any cleanup
+	 */
+	protected void actionComplete() {
+		
+	}
 
 	@Override
 	public void workingMemoryChanged(WorkingMemoryChange _wmc)
 			throws CASTException {
 		// always succeed, regardless of actual detections.
+		actionComplete();
 		executionComplete(TriBool.TRITRUE);
 	}
 
