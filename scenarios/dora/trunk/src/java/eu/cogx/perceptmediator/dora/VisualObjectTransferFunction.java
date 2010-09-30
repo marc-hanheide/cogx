@@ -38,7 +38,6 @@ public class VisualObjectTransferFunction extends
 			WMView<PerceptBelief> allBeliefs) {
 		super(component, allBeliefs, Logger
 				.getLogger(VisualObjectTransferFunction.class));
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -78,6 +77,7 @@ public class VisualObjectTransferFunction extends
 			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
 					currentPlace.id));
 			WMPointer wmp = WMPointer.create(placeWMA);
+			component.log("size of from.identDistrib: "+ from.identDistrib.length);
 			fd.add(wmp.get(), from.identDistrib[0]);
 			belief.getContent().put("is-in", fd);
 		} catch (CASTException e) {
