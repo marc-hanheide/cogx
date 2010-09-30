@@ -1,1 +1,1 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer $V11N_STANDALONE $V11N_STANDALONE_HOST  --domain george.domain.mapl --log
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain george.domain.mapl 
