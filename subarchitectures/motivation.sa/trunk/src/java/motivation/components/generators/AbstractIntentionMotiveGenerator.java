@@ -3,19 +3,25 @@
  */
 package motivation.components.generators;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
 import cast.CASTException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryPermissions;
+import cast.core.CASTData;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
+import eu.cogx.beliefs.slice.GroundedBelief;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
@@ -24,12 +30,15 @@ import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 public abstract class AbstractIntentionMotiveGenerator<M extends Motive, T extends Intention>
 		extends ManagedComponent implements WorkingMemoryChangeReceiver {
 
+	private static final String ROBOT_BELIEF_TYPE = "Robot";
+	public static final String BINDER_SA = "binder";
 	private static final int DEFAULT_MAX_EXECUTION_TIME = 60 * 5;
 	private static final int DEFAULT_MAX_PLANNING_TIME = 10;
 	final Class<M> motiveClass;
 	final Class<T> intentClass;
 	final Map<WorkingMemoryAddress, WorkingMemoryAddress> intent2motiveMap = new HashMap<WorkingMemoryAddress, WorkingMemoryAddress>();
-
+	private WorkingMemoryAddress robotBeliefAddr=null;
+	
 	/**
 	 * 
 	 */
@@ -39,6 +48,29 @@ public abstract class AbstractIntentionMotiveGenerator<M extends Motive, T exten
 		this.intentClass = intentClass;
 	}
 
+	protected WorkingMemoryAddress getRobotBeliefAddr() {
+		if (robotBeliefAddr==null) {
+			List<CASTData<GroundedBelief>> groundedBeliefs = new  ArrayList<CASTData<GroundedBelief>>();
+			try {
+				getMemoryEntriesWithData(GroundedBelief.class, groundedBeliefs,BINDER_SA,0);
+			} catch (UnknownSubarchitectureException e) {
+				logException(e);
+				return null;
+			}
+			
+			for (CASTData<GroundedBelief> beliefEntry : groundedBeliefs) {
+				if (beliefEntry.getData().type.equals(ROBOT_BELIEF_TYPE)) {
+					robotBeliefAddr=new WorkingMemoryAddress(beliefEntry.getID(), BINDER_SA);
+					break;
+				}
+			}
+			getLogger().warn("unable to find belief 'Robot'");
+		}
+		return robotBeliefAddr;
+	}
+
+
+	
 	protected <T2 extends Motive> T2 fillDefault(T2 result) {
 		result.created = getCASTTime();
 		result.correspondingUnion = "";
