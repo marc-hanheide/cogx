@@ -34,7 +34,7 @@ public class IntentionGoalGenerator extends
 	 */
 
 	public IntentionGoalGenerator() {
-		super("fact", GeneralGoalMotive.class, Intention.class);
+		super(GeneralGoalMotive.class, Intention.class);
 	}
 
 	@Override
