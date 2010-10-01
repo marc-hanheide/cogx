@@ -26,27 +26,15 @@ extern "C"
    }
 }
 
-// Convenience
 #include <string>
 #include <sstream>
 #include <fstream>
 #include <iostream>
 #include <iomanip>
 #include <ctime>
-
-std::string sfloat(double f, int precision=6)
-{
-   std::ostringstream out;
-   out << std::fixed << std::setprecision(precision) << f;
-   return out.str();
-}
-
-std::string sint(long long i)
-{
-   std::ostringstream out;
-   out << i;
-   return out.str();
-}
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 double fclocks()
 {
@@ -124,15 +112,25 @@ void CVideoGrabber::CVvDisplayClient::createForms()
       ;
    setHtmlHead(IDOBJ_SETTINGS, IDPART_SETTIGS_FORM, head);
    std::ostringstream ss;
-   ss << "<table>";
-   ss << "<tr><td>Directory: </td><td>";
-   ss << "<input type='text' name='directory" << "' style='width:20em;' />";
-   ss << "</td></tr>";
+   ss <<
+      "<table>"
+      "<tr><td>Directory: </td><td>"
+      "<input type='text' name='directory' style='width:20em;' />"
+      "</td><td>"
+      "<input type='checkbox' name='createdir' value='on' />Create dir"
+      "</td></tr>"
+      "<tr><td>&nbsp;</td>"
+      "<td><span class='info'>'Create dir' can only create one (the last) level."
+      "</span></td></tr>"
+      "</table>";
    m_frmSettings.add(new cxd::CFormValues::field("directory"));
+   m_frmSettings.add(new cxd::CFormValues::set("createdir", cxd::CFormValues::valuelist() << "on"));
 
-   ss << "<tr><td>Filename: </td><td>";
-   ss << "<input type='text' name='filename" << "' style='width:20em;' />";
-   ss << "</td><tr><td>&nbsp;</td>"
+   ss <<
+      "<table>"
+      "<tr><td>Filename: </td><td>"
+      "<input type='text' name='filename' style='width:20em;' />"
+      "</td><tr><td>&nbsp;</td>"
       "<td><span class='info'>Filename to save to. Use '%c' to place the counter. "
       "Use '%d' to place the device name.</span></td></tr>";
    m_frmSettings.add(new cxd::CFormValues::field("filename"));
@@ -140,29 +138,39 @@ void CVideoGrabber::CVvDisplayClient::createForms()
 
    ss << "<table>";
    vector<string> cntValues;
-   ss << "<tr><td>Counter digits: </td><td>";
-   ss << "<select name='countersize' >";
+   ss << "<tr><td>Counter digits: </td><td>"
+      "<select name='countersize' >";
    for(int i = 1; i < 10; i++) {
       ss << "<option>" << i << "</option>";
-      cntValues.push_back(sint(i));
+      cntValues.push_back(_str_(i));
    }
    ss << "</select>";
-   ss << "</td><td>Next value: <td>";
-   ss << "<input type='text' name='countervalue' style='width:5em;' />";
-   ss << "</td></tr>";
+
+   ss <<
+      "</td><td>Next value: <td>"
+      "<input type='text' name='countervalue' style='width:5em;' />"
+      "</td></tr>";
    m_frmSettings.add(new cxd::CFormValues::field("countervalue"));
    m_frmSettings.add(new cxd::CFormValues::choice("countersize", cxd::CFormValues::valuelist(cntValues)));
    ss << "</table>";
 
-   ss << "<table>";
-   ss << "<tr><td>Device names: </td><td>";
-   ss << "<input type='text' name='devicenames' style='width:10em;' />";
-   ss << "</td></tr>";
-   ss << "<tr><td>&nbsp;</td>"
+   ss <<
+      "<table>"
+      "<tr><td>Device names: </td><td>"
+      "<input type='text' name='devicenames' style='width:10em;' />"
+      "</td></tr>"
+      "<tr><td>&nbsp;</td>"
       "<td><span class='info'>Space delimited list of device names (for paramerer '%d')."
       "</span></td></tr>";
    m_frmSettings.add(new cxd::CFormValues::field("devicenames"));
    ss << "</table>";
+
+   ss << 
+      "<div class='info'>"
+      "If you change anything, don't forget to 'Apply'.<br>"
+      "You can 'Save' current values for later use.<br>"
+      "After you 'Load' the saved values, press 'Apply'."
+      "</div>";
 
    // Set form defaults
    setDirectory("xdata/grab");
@@ -183,6 +191,11 @@ std::string CVideoGrabber::CVvDisplayClient::getDirectory()
 void CVideoGrabber::CVvDisplayClient::setDirectory(const std::string& dirname)
 {
    m_frmSettings.setValue("directory", dirname);
+}
+
+bool CVideoGrabber::CVvDisplayClient::getCreateDirectory()
+{
+   return _s_::strip(m_frmSettings.get("createdir")) == "on";
 }
 
 std::string CVideoGrabber::CVvDisplayClient::getImageFilenamePatt()
@@ -232,7 +245,7 @@ void CVideoGrabber::CVvDisplayClient::handleEvent(const Visualization::TEvent &e
    //debug(event.data + " (received by VideoViewer)");
    if (event.type == Visualization::evCheckBoxChange) {
       if (event.sourceId == IDCTRL_STREAMING) {
-         //debug(std::string("Time: ") + sfloat (fclocks()));
+         //debug(std::string("Time: ") + _str_(fclocks()));
          bool newrcv = (event.data != "0");
          if (newrcv != pViewer->m_bReceiving) {
             if(pViewer->m_bReceiving) {
@@ -308,7 +321,7 @@ void CVideoGrabber::receiveImages(const std::vector<Video::Image>& images)
       w = (int) (w * factor);
       h = (int) (h * factor);
    }
-   // TODO: every image has its own factor
+   // TODO: every image has its own scale factor
 
    CvFont font;
    cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0, 0, 2);
@@ -320,12 +333,9 @@ void CVideoGrabber::receiveImages(const std::vector<Video::Image>& images)
       IplImage *iplImage = convertImageToIpl(images[i]);
       int wi = (int) (images[i].width * factor);
       int hi = (int) (images[i].height * factor);
-      IplImage *pSmall = cvCreateImage(cvSize(wi, hi), IPL_DEPTH_8U, 3);
-      cvResize(iplImage, pSmall);
-      cvReleaseImage(&iplImage);
       cvSetImageROI(pDisp, cvRect(0, vp, wi, vp+hi));
-      cvCopy(pSmall, pDisp);
-      cvReleaseImage(&pSmall);
+      cvResize(iplImage, pDisp);
+      cvReleaseImage(&iplImage);
       std::string camid = _str_(i);
       if (i < devnames.size()) camid += ":" + devnames[i];
       cvPutText (pDisp, camid.c_str(), cvPoint(10, 25), &font, cvScalar(255,255,0));
@@ -354,6 +364,14 @@ std::vector<std::string> CVideoGrabber::getDeviceNames()
 void CVideoGrabber::saveImages()
 {
    std::string dir = m_display.getDirectory();
+   if (m_display.getCreateDirectory()) {
+      struct stat finfo;
+      int rv = stat(dir.c_str(), &finfo);
+      bool exists = rv == 0;
+      if (! exists) {
+         mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+      }
+   }
    std::string fname = m_display.getImageFilenamePatt();
    std::vector<std::string> devnames = getDeviceNames();
    long digits = m_display.getCounterDigits();
@@ -375,7 +393,6 @@ void CVideoGrabber::saveImages()
       cvReleaseImage(&iplImage);
    }
 }
-
 
 void CVideoGrabber::runComponent()
 {
