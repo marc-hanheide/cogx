@@ -174,6 +174,8 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, 'q-shape'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
+	int : pre(Int, belief(Ref, attrib(H, S), fv(mark, assertion))) / p(1.0),
+	int : pointer(given, assertion, 'referring-expression') / p(1.0),
 	int : pre(Int, belief(Ref, attrib(H, S), fv(shape, PolarProp))) / p(1.0),
 	int : post(Int, belief(Ref, shared(S, H), fv(shape, PolarProp))) / p(1.0).
 
@@ -181,6 +183,8 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, 'q-size'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
+	int : pre(Int, belief(Ref, attrib(H, S), fv(mark, assertion))) / p(1.0),
+	int : pointer(given, assertion, 'referring-expression') / p(1.0),
 	int : pre(Int, belief(Ref, attrib(H, S), fv(size, PolarProp))) / p(1.0),
 	int : post(Int, belief(Ref, shared(S, H), fv(size, PolarProp))) / p(1.0).
 
@@ -193,6 +197,8 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	try_scope_modifier(S, H, Int, Ref, Polarity, Nom),
 	try_scope_compound(S, H, Int, Ref, Polarity, Nom),
 	polarprop(Prop, Polarity, PolarProp),
+	int : pre(Int, belief(Ref, attrib(H, S), fv(mark, assertion))) / p(1.0),
+	int : pointer(given, assertion, 'referring-expression') / p(1.0),
 	int : pre(Int, belief(Ref, shared(S, H), fv(objecttype, PolarProp))) / p(1.0).
 
 understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
@@ -204,6 +210,8 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	try_scope_modifier(S, H, Int, Ref, Polarity, Nom),
 	try_scope_compound(S, H, Int, Ref, Polarity, Nom),
 	polarprop(Prop, Polarity, PolarProp),
+	int : pre(Int, belief(Ref, attrib(H, S), fv(mark, assertion))) / p(1.0),
+	int : pointer(given, assertion, 'referring-expression') / p(1.0),
 	int : pre(Int, belief(Ref, attrib(H, S), fv(objecttype, PolarProp))) / p(1.0),
 	int : post(Int, belief(Ref, shared(S, H), fv(objecttype, PolarProp))) / p(1.0).
 
