@@ -120,6 +120,7 @@ if isempty(hyper_input_kde_cl)
     hyper_input_kde_cl.typeRecDescr = 'discriminative' ; % {discriminative, reconstructive}
     hyper_input_kde_cl.class_labels = [] ;
     hyper_input_kde_cl.class_labels_names = {} ;
+    hyper_input_kde_cl.class_gains = [] ;
     hyper_input_kde_cl.unknown_model_value = 0 ;
     hyper_input_kde_cl.use_unknown_model = 0 ;
     hyper_input_kde_cl.Params.minNumDataPointsToFormKDE = 2 ;
@@ -130,7 +131,7 @@ if isempty(hyper_input_kde_cl)
     hyper_input_kde_cl.sub_feature_sel_forgetting = 0 ;
     hyper_input_kde_cl.cummulative_feat_costs = [] ;
     hyper_input_kde_cl.autoUpdateThres.upper = 0.15 ;
-    hyper_input_kde_cl.autoUpdateThres.lower = -1 ;
+    hyper_input_kde_cl.autoUpdateThres.lower = -1 ;    
     
     hyper_input_kde_cl.compressionClusterThresh.thReconstructive = 0.0500 ;
     hyper_input_kde_cl.compressionClusterThresh.thDiscriminative = 0.0500 ;
