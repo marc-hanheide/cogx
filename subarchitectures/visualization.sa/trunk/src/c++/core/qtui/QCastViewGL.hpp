@@ -55,6 +55,10 @@ private:
          return Vector3( x-v.x, y-v.y, z-v.z );
       }
 
+      Vector3 operator* (double s) {
+         return Vector3( s*x, s*y, s*z );
+      }
+
       Vector3 dot(const Vector3& v) {
          return Vector3( x*v.x, y*v.y, z*v.z );
       }
@@ -65,12 +69,12 @@ private:
    };
 
    struct Camera {
-      Vector3 eye;
-      Vector3 center;
-      Vector3 up;
-      Camera(): eye(0, 0, 1), up(0, 1, 0), center(0, 0, 0) {}
+      Vector3 eye;  // eye point = origin of camera
+      Vector3 view; // view direction of the camera (unit vector)
+      Vector3 up;   // up vector of the camera (unit vector)
+      Camera(): eye(0, 0, 0), up(0, 1, 0), view(0, 0, 1) {}
       Vector3 normal() {
-         return up.cross(center - eye);
+         return up.cross(view);
       }
    };
    Camera m_camera;
@@ -88,11 +92,13 @@ public:
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView); /*override*/
 
 public slots:
+   void setCameraEye(const Vector3 &e);
    void setXRotation(float angle);
    void setYRotation(float angle);
    void setZRotation(float angle);
 
 signals:
+   void cameraEyeChanged(const Vector3 &e);
    void xRotationChanged(float angle);
    void yRotationChanged(float angle);
    void zRotationChanged(float angle);
