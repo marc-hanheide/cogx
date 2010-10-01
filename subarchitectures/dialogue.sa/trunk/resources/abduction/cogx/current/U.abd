@@ -104,8 +104,15 @@ try_topic_reference_resolution(EpSt, Int, Ref, Nom) <-
 	is_not_reference(Ref) / p(0.3).  % effectively the threshold for ref
 
 try_topic_reference_resolution(EpSt, Int, Ref, Nom) <-
+	get_topic_referent(EpSt, Int, Ref, Nom, _BId).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+get_topic_referent(EpSt, Int, Ref, Nom, BId) <-
 	about(Ref, BId),
-	int : pre(Int, belief(Ref, EpSt, fv(about, BId))) / p(1.0).
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'referring-expression'))) / p(1.0).
+%	int : pre(Int, belief(Ref, EpSt, fv(about, BId))) / p(1.0),
+%	int : pre(Int, belief(Ref, EpSt, mark(refexp))) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -158,6 +165,8 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, 'q-color'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
+	int : pre(Int, belief(Ref, attrib(H, S), fv(mark, assertion))) / p(1.0),
+	int : pointer(given, assertion, 'referring-expression') / p(1.0),
 	int : pre(Int, belief(Ref, attrib(H, S), fv(color, PolarProp))) / p(1.0),
 	int : post(Int, belief(Ref, shared(S, H), fv(color, PolarProp))) / p(1.0).
 

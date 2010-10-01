@@ -157,6 +157,9 @@ public abstract class ConversionUtils {
 		List<dBelief> bels_pre = new LinkedList<dBelief>();
 		List<dBelief> bels_post = new LinkedList<dBelief>();
 
+		Map<String, dBelief> marks = new HashMap<String, dBelief>();
+		List<InterBeliefPointer> pointers = new LinkedList<InterBeliefPointer>();
+
 		RecognisedIntention ri = new RecognisedIntention();
 
 		Map<String, WorkingMemoryAddress> usedRefs = new HashMap<String, WorkingMemoryAddress>();
@@ -205,10 +208,22 @@ public abstract class ConversionUtils {
 					String lingRef = ((FunctionTerm)argTerm.args[0]).functor;
 					EpistemicStatus es = termToEpistemicStatus((FunctionTerm)argTerm.args[1]);
 
-					String newId = foldIntoBeliefs(idGen, es, lingRef, usedRefs, (FunctionTerm)argTerm.args[2], bels_pre);
-					if (newId != null) {
-						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "binder")));
-						itc.preconditions = combineDFormulas(itc.preconditions, refF);
+					FunctionTerm action = (FunctionTerm)argTerm.args[2];
+
+					if (action.functor.equals("fv")) {
+						String newId = foldIntoBeliefs(idGen, es, lingRef, usedRefs, action, bels_pre);
+						if (newId != null) {
+							dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "binder")));
+							itc.preconditions = combineDFormulas(itc.preconditions, refF);
+						}
+					}
+					else if (action.functor.equals("mark")) {
+						String marking = ((FunctionTerm)action.args[0]).functor;
+						String newId = foldIntoBeliefs(idGen, es, lingRef, usedRefs, action, bels_pre);
+						if (newId != null) {
+							dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "binder")));
+							itc.preconditions = combineDFormulas(itc.preconditions, refF);
+						}
 					}
 				}
 				if (argTerm.functor.equals("state")) {
@@ -293,6 +308,9 @@ public abstract class ConversionUtils {
 
 	private static dFormula uniTermToFormula(FunctionTerm ft) {
 		if (ft.args.length > 0) {
+			if (ft.functor.equals("ptr")) {
+				return BeliefFormulaFactory.newPointerFormula(termToWorkingMemoryAddress(ft));
+			}
 			// this is a modal formula
 			List<dFormula> args = new LinkedList<dFormula>();
 			for (int i = 0; i < ft.args.length; i++) {
@@ -428,6 +446,9 @@ public abstract class ConversionUtils {
 				ds.distribs.put(featureName, logicalBasicProbDistribution(featureName, featureValue));
 				return true;
 			}
+		}
+		if (t.functor.equals("mark")) {
+			return true;
 		}
  		return false;
 	}
