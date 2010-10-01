@@ -132,8 +132,8 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		assert (perceptBelief.content != null);
 		assert (perceptBelief.content instanceof CondIndependentDistribs);
 
-		CASTIndependentFormulaDistributionsBelief<PerceptBelief> p = CASTIndependentFormulaDistributionsBelief
-				.create(PerceptBelief.class, perceptBelief);
+		CASTIndependentFormulaDistributionsBelief<To> p = CASTIndependentFormulaDistributionsBelief
+				.create(beliefClass, perceptBelief);
 
 		// update the end time to now!
 		CASTTime starttime = p.getStartTime();
@@ -196,7 +196,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	 * @param belief the belief to be modified
 	 */
 	protected void fillBelief(
-			CASTIndependentFormulaDistributionsBelief<PerceptBelief> belief, WorkingMemoryChange wmc, From from) {
+			CASTIndependentFormulaDistributionsBelief<To> belief, WorkingMemoryChange wmc, From from) {
 
 	}
 

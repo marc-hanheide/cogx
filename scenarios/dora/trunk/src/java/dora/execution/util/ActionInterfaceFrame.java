@@ -165,7 +165,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel getJContentPane() {
 		if (jContentPane == null) {
 			jContentPane = new JPanel();
-			jContentPane.setLayout(new GridLayout(2, 1));
+			jContentPane.setLayout(new GridLayout(1, 1));
 			JPanel middlePanel = new JPanel();
 			middlePanel.setLayout(new BoxLayout(middlePanel, BoxLayout.Y_AXIS));
 			middlePanel.add(getTabbedPane(), null);
@@ -218,7 +218,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel getPlacesActionPanel() {
 		if (m_placesActionPanel == null) {
 			m_placesActionPanel = new JPanel();
-			m_placesActionPanel.setLayout(new GridBagLayout());
+			m_placesActionPanel.setLayout(new GridLayout(0, 1));
 
 			m_goAction = new JRadioButton("go to place");
 			m_generateConesAction = new JRadioButton(
@@ -234,11 +234,9 @@ public class ActionInterfaceFrame extends JFrame {
 
 			actionGroup.add(m_processConeAction);
 
-			m_placesActionPanel.add(m_goAction, new GridBagConstraints());
-			m_placesActionPanel.add(m_generateConesAction,
-					new GridBagConstraints());
-			m_placesActionPanel.add(m_processConeAction,
-					new GridBagConstraints());
+			m_placesActionPanel.add(m_goAction);
+			m_placesActionPanel.add(m_generateConesAction);
+			m_placesActionPanel.add(m_processConeAction);
 		}
 		return m_placesActionPanel;
 	}
