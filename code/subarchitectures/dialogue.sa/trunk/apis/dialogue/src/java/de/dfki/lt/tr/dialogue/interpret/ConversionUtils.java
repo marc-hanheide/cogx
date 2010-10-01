@@ -61,6 +61,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.cognitivesystems.binder.POINTERLABEL;
 
 public abstract class ConversionUtils {
 
@@ -158,12 +159,17 @@ public abstract class ConversionUtils {
 
 		RecognisedIntention ri = new RecognisedIntention();
 
-		Map<String, WorkingMemoryAddress> usedrefs = new HashMap<String, WorkingMemoryAddress>();
+		Map<String, WorkingMemoryAddress> usedRefs = new HashMap<String, WorkingMemoryAddress>();
 		ModalisedAtom[] rrs = ProofUtils.stripMarking(ProofUtils.filterAssumed(proof));
 
 		for (ModalisedAtom ma : Arrays.asList(rrs)) {
-			// find belief references used in the proof
-			// fold them in the beliefs based on the lingref feature
+			if (ma.m.length == 1 && ma.m[0] == Modality.Understanding && ma.a.predSym.equals("resolves_to_belief") && ma.a.args.length == 2) {
+				String n = ((FunctionTerm)ma.a.args[0]).functor;
+				WorkingMemoryAddress wma = termToWorkingMemoryAddress(ma.a.args[1]);
+				if (wma != null) {
+					usedRefs.put(n, wma);
+				}
+			}
 		}
 
 		ModalisedAtom[] imfs = ProofUtils.filterStripByModalityPrefix(
@@ -199,9 +205,9 @@ public abstract class ConversionUtils {
 					String lingRef = ((FunctionTerm)argTerm.args[0]).functor;
 					EpistemicStatus es = termToEpistemicStatus((FunctionTerm)argTerm.args[1]);
 
-					String newId = foldIntoBeliefs(idGen, es, lingRef, (FunctionTerm)argTerm.args[2], bels_pre);
+					String newId = foldIntoBeliefs(idGen, es, lingRef, usedRefs, (FunctionTerm)argTerm.args[2], bels_pre);
 					if (newId != null) {
-						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula("binder", newId));
+						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "binder")));
 						itc.preconditions = combineDFormulas(itc.preconditions, refF);
 					}
 				}
@@ -231,9 +237,9 @@ public abstract class ConversionUtils {
 					String lingRef = ((FunctionTerm)argTerm.args[0]).functor;
 					EpistemicStatus es = termToEpistemicStatus((FunctionTerm)argTerm.args[1]);
 
-					String newId = foldIntoBeliefs(idGen, es, lingRef, (FunctionTerm)argTerm.args[2], bels_post);
+					String newId = foldIntoBeliefs(idGen, es, lingRef, usedRefs, (FunctionTerm)argTerm.args[2], bels_post);
 					if (newId != null) {
-						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula("dialogue", newId));
+						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "dialogue")));
 						itc.postconditions = combineDFormulas(itc.postconditions, refF);
 					}
 				}
@@ -374,7 +380,7 @@ public abstract class ConversionUtils {
 		return itc;
 	}
 
-	private static String foldIntoBeliefs(IdentifierGenerator idGen, EpistemicStatus epst, String lingRef, FunctionTerm t, List<dBelief> bel) {
+	private static String foldIntoBeliefs(IdentifierGenerator idGen, EpistemicStatus epst, String lingRef, Map<String, WorkingMemoryAddress> usedRefs, FunctionTerm t, List<dBelief> bel) {
 		Iterator<dBelief> it = bel.iterator();
 		while (it.hasNext()) {
 			dBelief xb = it.next();
@@ -387,6 +393,9 @@ public abstract class ConversionUtils {
 		dBelief b = emptyCondIndepDistribBelief(newId, epst);
 		// XXX we should actually check success here
 		foldTermAsContent(epst, lingRef, TermAtomFactory.term("fv", new Term[] {TermAtomFactory.term(IntentionManagement.discRefModality), TermAtomFactory.term(lingRef)}), b);
+		if (usedRefs.containsKey(lingRef)) {
+			foldTermAsContent(epst, lingRef, TermAtomFactory.term("fv", new Term[] {TermAtomFactory.term(POINTERLABEL.value), workingMemoryAddressToTerm(usedRefs.get(lingRef))}), b);
+		}
 		foldTermAsContent(epst, lingRef, t, b);
 		bel.add(b);
 		return newId;
@@ -441,9 +450,11 @@ public abstract class ConversionUtils {
 	}
 
 	private static dFormula termToContentFormula(FunctionTerm t) {
-		if (t.functor.equals("ptr") && t.args.length == 2) {
-			// it's a pointer
-			return BeliefFormulaFactory.newPointerFormula(((FunctionTerm) t.args[0]).functor, ((FunctionTerm) t.args[1]).functor);
+		if (t.functor.equals("ptr")) {
+			WorkingMemoryAddress wma = termToWorkingMemoryAddress(t);
+			if (wma != null) {
+				return BeliefFormulaFactory.newPointerFormula(wma);
+			}
 		}
 		if (t.functor.equals("not") && t.args.length == 1) {
 			return BeliefFormulaFactory.newNegatedFormula(termToContentFormula((FunctionTerm)t.args[0]));
@@ -454,6 +465,22 @@ public abstract class ConversionUtils {
 		else {
 			return BeliefFormulaFactory.newElementaryFormula(t.functor);
 		}
+	}
+
+	private static WorkingMemoryAddress termToWorkingMemoryAddress(Term t) {
+		if (t instanceof FunctionTerm) {
+			FunctionTerm ft = (FunctionTerm) t;
+			if (ft.functor.equals("ptr") && ft.args.length == 2 && ft.args[0] instanceof FunctionTerm && ft.args[1] instanceof FunctionTerm) {
+				String subarch = ((FunctionTerm) ft.args[0]).functor;
+				String id = ((FunctionTerm) ft.args[1]).functor;
+				return new WorkingMemoryAddress(id, subarch);
+			}
+		}
+		return null;
+	}
+
+	private static Term workingMemoryAddressToTerm(WorkingMemoryAddress wma) {
+		return TermAtomFactory.term("ptr", new Term[] { TermAtomFactory.term(wma.subarchitecture), TermAtomFactory.term(wma.id)});
 	}
 
 	private static dFormula combineDFormulas(dFormula oldF, dFormula newF) {
