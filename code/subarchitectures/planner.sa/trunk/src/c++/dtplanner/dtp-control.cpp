@@ -771,7 +771,7 @@ void DTPCONTROL::newTask(Ice::Int id,
     auto actual_problem = Planning::Parsing::problems.find(pi);
     VERBOSER(10050, "Problem is :: "<<*actual_problem->second<<std::endl);
     solvers[id] = new Planning::Solver(*actual_problem->second);//thread_to_problem[id]);
-    solvers[id]->set__sink_state_penalty(0);
+    solvers[id]->set__sink_state_penalty(-1.0);
     
     solvers[id]->preprocess();
     
@@ -788,13 +788,15 @@ void DTPCONTROL::newTask(Ice::Int id,
 //     Planning::Policy_Iteration policy_Iteration(solvers[id]->belief_state__space);
     Planning::Policy_Iteration__GMRES policy_Iteration(solvers[id]->belief_state__space
                                                        , solvers[id]->get__sink_state_penalty());
-    for(uint i = 0; i < 100; i++){
+    for(uint i = 0; i < 200; i++){
         if(!solvers[id]->expand_belief_state_space()){
             break;
             VERBOSER(10017, "No starting state!"<<std::endl);
         } else {
             VERBOSER(10017, "Expanding!"<<std::endl);
             policy_Iteration();
+            policy_Iteration.reset__converged();
+//             if(!(i % 10))policy_Iteration();
         }
     }
     
