@@ -3,7 +3,7 @@ include_directories(.)
 Find_package(Cure)
 include_directories(${CURE_INSTALLROOT}/include/cure)
 link_directories(${CURE_INSTALLROOT}/lib/cure)
-include_directories(${COGX_ROOT}/subarchitectures/nav.sa/src/c++/autogen)
+include_directories(${COGX_ROOT}/subarchitectures/spatial.sa/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/autogen)
 
 # Set the sources.
