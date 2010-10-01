@@ -28,7 +28,7 @@ QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
    yRot = 0;
    zRot = 0;
    zoomLevel = 0;
-   m_camera.eye.set(0, 0, 5);
+   //m_camera.eye.set(0, 0, 5);
 }
 
 QCastViewGL::~QCastViewGL()
@@ -61,6 +61,13 @@ static void qNormalizeAngle(float &angle)
 {
    angle = fmod(angle, 360);
    if (angle < 0) angle += 360;
+}
+
+void QCastViewGL::setCameraEye(const Vector3 &e)
+{
+   m_camera.eye = e;
+   emit cameraEyeChanged(e);
+   updateGL();
 }
 
 void QCastViewGL::setXRotation(float angle)
@@ -158,8 +165,8 @@ void QCastViewGL::paintGL()
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
 
-      Vector3 &e = m_camera.eye, &c = m_camera.center, &u = m_camera.up;
-      gluLookAt(e.x, e.y, e.z, c.x, c.y, c.z, u.x, u.y, u.z);
+      Vector3 &e = m_camera.eye, &v = m_camera.view, &u = m_camera.up;
+      gluLookAt(e.x, e.y, e.z, e.x + v.x, e.y + v.y, e.z + v.z, u.x, u.y, u.z);
 
       glRotatef(xRot, 1.0, 0.0, 0.0);
       glRotatef(yRot, 0.0, 1.0, 0.0);
@@ -176,19 +183,21 @@ void QCastViewGL::mousePressEvent(QMouseEvent *event)
 
 void QCastViewGL::mouseMoveEvent(QMouseEvent *event)
 {
-   int dx = event->x() - m_lastPos.x();
-   int dy = event->y() - m_lastPos.y();
+   double trans_scale = 0.01, rot_scale = 1.;
+   double dx = (double)(event->x() - m_lastPos.x());
+   double dy = (double)(event->y() - m_lastPos.y());
 
-   // Rotate the scene (not the camera)
    if (event->buttons() & Qt::LeftButton) {
-      setXRotation(xRot + dy);
-      setYRotation(yRot + dx);
+      setCameraEye(m_camera.eye + (m_camera.up*dy + m_camera.normal()*dx)*trans_scale);
    }
-   else if (event->buttons() & Qt::RightButton) {
-      setXRotation(xRot + dy);
-      setZRotation(zRot + dx);
+   else if(event->buttons() & Qt::MidButton) {
+      setCameraEye(m_camera.eye - m_camera.view*dy*trans_scale);
    }
-
+   else if(event->buttons() & Qt::RightButton) {
+      // Rotate the scene (not the camera)
+      setXRotation(xRot - dy*rot_scale);
+      setYRotation(yRot + dx*rot_scale);
+   }
    m_lastPos = event->pos();
 }
 
