@@ -421,6 +421,8 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
   // TODO: timing seems to be wrong
   timespec start, stop;
   clock_gettime(CLOCK_REALTIME, &start);
+  stereoCam->SetMatchingAlgoritm(StereoCamera::SEMI_GLOBAL_BLOCK_MATCH);
+  //stereoCam->SetMatchingAlgoritm(StereoCamera::BLOCK_MATCH);
   stereoCam->CalculateDisparity(imgSet.rectGreyImg[LEFT], imgSet.rectGreyImg[RIGHT], imgSet.disparityImg);
   clock_gettime(CLOCK_REALTIME, &stop);
   log("OpenCV runtime / framerate: %lf s / %lf", timespec_diff(&stop, &start), 1./timespec_diff(&stop, &start));
@@ -482,6 +484,25 @@ void StereoServer::runComponent()
   delete census;
 #endif*/
 }
+
+/*void StereoServer::redraw3D(vector<VisionData::SurfacePoint> &points)
+{
+  std::ostringstream str;
+  str << "function render()\n";
+  str << "glDisable(GL_LIGHTING)\n";
+  str << "glPointSize(2);\n";
+  str << "glBegin(GL_POINTS)\n";
+  for(size_t i = 0; i < points.size(); i++)
+  {
+    str << "glColor(" << (double)((unsigned char)points[i].c.r)/255. << ", "
+        << (double)((unsigned char)points[i].c.g)/255. << ", "
+        << (double)((unsigned char)points[i].c.b)/255. << ")\n";
+    str << "glVertex(" << points[i].p.x << ", " << points[i].p.y << ", " << points[i].p.z << ")\n";
+  }
+  str << "glEnd()\n";
+  str << "end\n";
+  m_display.setLuaGlObject(ID_OBJECT_3D, "stereo", str.str());
+}*/
 
 }
 
