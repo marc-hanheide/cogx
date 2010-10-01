@@ -69,7 +69,12 @@ static double timespec_diff(struct timespec *x, struct timespec *y)
 
 void StereoServerI::getPoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points, const Ice::Current&)
 {
-  stereoSrv->getPoints(transformToGlobal, imgWidth, points);
+  stereoSrv->getPoints(transformToGlobal, imgWidth, points, false);
+}
+
+void StereoServerI::getCompletePoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points, const Ice::Current&)
+{
+  stereoSrv->getPoints(transformToGlobal, imgWidth, points, true);
 }
 
 void StereoServerI::getRectImage(Ice::Int side, int imgWidth, Video::Image& image, const Ice::Current&)
@@ -147,9 +152,13 @@ void StereoServer::configure(const map<string,string> & _config)
   if((it = _config.find("--maxdisp")) != _config.end())
   {
     istringstream str(it->second);
+#ifdef HAVE_GPU_STEREO
+    str >> maxDisp;
+#else
     int disp;
     while(str >> disp)
       maxDisps.push_back(disp);
+#endif
   }
 
 #ifdef HAVE_GPU_STEREO
@@ -274,7 +283,8 @@ int StereoServer::findClosestResolution(int imgWidth)
   return idx;
 }
 
-void StereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<VisionData::SurfacePoint> &points)
+void StereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<VisionData::SurfacePoint> &points,
+  bool complete)
 {
   lockComponent();
 
@@ -305,6 +315,19 @@ void StereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<Vision
         if(transformToGlobal)
           // now get from left cam coord sys to global coord sys
           p.p = transform(global_left_pose, p.p);
+        VisionData::ColorRGB *c =
+          (VisionData::ColorRGB*)Video::cvAccessImageData(imgSet.rectColorImg[LEFT], x, y);
+        p.c = *c;
+        points.push_back(p);
+      }
+      else if(complete)
+      {
+        /*stereoCam->ReconstructPoint((double)x, (double)y, 64,
+           p.p.x, p.p.y, p.p.z);
+        if(transformToGlobal)
+          // now get from left cam coord sys to global coord sys
+          p.p = transform(global_left_pose, p.p);*/
+        p.p = vector3(0., 0., 0.);
         VisionData::ColorRGB *c =
           (VisionData::ColorRGB*)Video::cvAccessImageData(imgSet.rectColorImg[LEFT], x, y);
         p.c = *c;

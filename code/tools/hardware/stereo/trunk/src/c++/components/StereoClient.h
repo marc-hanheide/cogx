@@ -45,6 +45,8 @@ public:
    */
   void getPoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points);
 
+  void getCompletePoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points);
+
   void getRectImage(int side, int imgWidth, Video::Image& image);
 
   void getDisparityImage(int imgWidth, Video::Image& image);
