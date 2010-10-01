@@ -799,7 +799,7 @@ void DTPCONTROL::newTask(Ice::Int id,
 //             if(!(i % 10))policy_Iteration();
         }
         
-        if(solver->belief_state__space.size() > 10000)break;
+        if(solvers[id]->belief_state__space.size() > 10000)break;
     }
     
     for(uint i = 0; i < 100; i++){
