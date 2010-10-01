@@ -399,43 +399,43 @@ public class ActionInterfaceFrame extends JFrame {
 		}
 	}
 
-//	/**
-//	 * Popup
-//	 */
-//	private void askForFeature() {
-//		int selectedRow = m_beliefTable.getSelectedRow();
-//		if (selectedRow != -1) {
-//			Object beliefIDVal = m_beliefTableModel.getValueAt(selectedRow,
-//					BELIEF_ID_COLUMN);
-//			assert (beliefIDVal != null);
-//			final String beliefID = (String) beliefIDVal;
-//
-//			final JDialog dialog = new JDialog(this);
-//			dialog.setLayout(new FlowLayout());
-//			dialog.add(new JLabel("What feature do you want to ask about?"));
-//
-//			final JTextField textfield = new JTextField(10);
-//			dialog.add(textfield);
-//
-//			ActionListener submit = new ActionListener() {
-//
-//				@Override
-//				public void actionPerformed(ActionEvent _e) {
-//					submitFeatureQuery(beliefID, dialog, textfield);
-//					dialog.setVisible(false);
-//				}
-//			};
-//
-//			textfield.addActionListener(submit);
-//
-//			JButton goButton = new JButton("Go!");
-//			goButton.addActionListener(submit);
-//
-//			dialog.add(goButton);
-//			dialog.pack();
-//			dialog.setVisible(true);
-//		}
-//	}
+	// /**
+	// * Popup
+	// */
+	// private void askForFeature() {
+	// int selectedRow = m_beliefTable.getSelectedRow();
+	// if (selectedRow != -1) {
+	// Object beliefIDVal = m_beliefTableModel.getValueAt(selectedRow,
+	// BELIEF_ID_COLUMN);
+	// assert (beliefIDVal != null);
+	// final String beliefID = (String) beliefIDVal;
+	//
+	// final JDialog dialog = new JDialog(this);
+	// dialog.setLayout(new FlowLayout());
+	// dialog.add(new JLabel("What feature do you want to ask about?"));
+	//
+	// final JTextField textfield = new JTextField(10);
+	// dialog.add(textfield);
+	//
+	// ActionListener submit = new ActionListener() {
+	//
+	// @Override
+	// public void actionPerformed(ActionEvent _e) {
+	// submitFeatureQuery(beliefID, dialog, textfield);
+	// dialog.setVisible(false);
+	// }
+	// };
+	//
+	// textfield.addActionListener(submit);
+	//
+	// JButton goButton = new JButton("Go!");
+	// goButton.addActionListener(submit);
+	//
+	// dialog.add(goButton);
+	// dialog.pack();
+	// dialog.setVisible(true);
+	// }
+	// }
 
 	/**
 	 * Popup
@@ -522,24 +522,25 @@ public class ActionInterfaceFrame extends JFrame {
 
 	}
 
-//	/**
-//	 * @param beliefID
-//	 * @param dialog
-//	 * @param textfield
-//	 */
-//	private void submitFeatureQuery(final String beliefID,
-//			final JDialog dialog, final JTextField textfield) {
-//		dialog.setVisible(false);
-//		String featureType = textfield.getText();
-//		if (featureType.length() > 0) {
-//			try {
-//				m_exeMan.triggerAskForFeatureAction(new WorkingMemoryAddress(beliefID,"binder"), featureType,
-//						new MonitorPanel());
-//			} catch (CASTException e) {
-//				m_exeMan.logException(e);
-//			}
-//		}
-//	}
+	// /**
+	// * @param beliefID
+	// * @param dialog
+	// * @param textfield
+	// */
+	// private void submitFeatureQuery(final String beliefID,
+	// final JDialog dialog, final JTextField textfield) {
+	// dialog.setVisible(false);
+	// String featureType = textfield.getText();
+	// if (featureType.length() > 0) {
+	// try {
+	// m_exeMan.triggerAskForFeatureAction(new
+	// WorkingMemoryAddress(beliefID,"binder"), featureType,
+	// new MonitorPanel());
+	// } catch (CASTException e) {
+	// m_exeMan.logException(e);
+	// }
+	// }
+	// }
 
 	/**
 	 * @throws CASTException
@@ -583,13 +584,22 @@ public class ActionInterfaceFrame extends JFrame {
 	private void processCone() throws CASTException {
 		int selectedRow = m_coneTable.getSelectedRow();
 		if (selectedRow != -1) {
-			Object coneAddrVal = m_coneTableModel.getValueAt(selectedRow,
+			Object beliefAddrVal = m_coneTableModel.getValueAt(selectedRow,
 					CONE_ADDR_COLUMN);
-			assert (coneAddrVal != null);
-			String coneAddrString = (String) coneAddrVal;
-			WorkingMemoryAddress coneAddr = SimpleDiscreteTransferFunction
-					.addressFromPropositionString(coneAddrString);
-			m_exeMan.triggerProccesCone(coneAddr, new MonitorPanel());
+			assert (beliefAddrVal != null);
+			WorkingMemoryAddress beliefAddress = SimpleDiscreteTransferFunction
+					.addressFromPropositionString((String) beliefAddrVal);
+
+			IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
+					.create(dBelief.class, m_exeMan.getMemoryEntry(
+							beliefAddress, dBelief.class));
+
+			WorkingMemoryAddress coneAddress = SimpleDiscreteTransferFunction
+					.addressFromPropositionString(b.getContent()
+							.get(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID)
+							.getDistribution().getMostLikely().getProposition());
+
+			m_exeMan.triggerProccesCone(coneAddress, new MonitorPanel());
 		} else {
 			m_exeMan.println("no cone selected, doing nothing");
 		}
@@ -706,7 +716,7 @@ public class ActionInterfaceFrame extends JFrame {
 			// "explored" }, 0);
 			m_coneTable = new JTable(1, 1);
 			m_coneTableModel = new DefaultTableModel(new String[] { "object",
-					"prob", "cone address" }, 0);
+					"prob", "belief address" }, 0);
 			m_coneTable.setModel(m_coneTableModel);
 		}
 		return m_coneTable;
@@ -755,11 +765,6 @@ public class ActionInterfaceFrame extends JFrame {
 		m_exeMan.println(_o);
 	}
 
-	public void removeBelief(WorkingMemoryAddress _address) {
-		// TODO Auto-generated method stub
-
-	}
-
 	public String[] getSelectedObjectModels() {
 		int[] selectedRows = m_objectTable.getSelectedRows();
 		String[] models = new String[selectedRows.length];
@@ -782,9 +787,8 @@ public class ActionInterfaceFrame extends JFrame {
 				.get(ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
 				.getDistribution().getMostLikely().getDouble();
 
-		String addr = _belief.getContent()
-				.get(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID)
-				.getDistribution().getMostLikely().getProposition();
+		String addr = SimpleDiscreteTransferFunction
+				.toPropositionString(_address);
 
 		m_coneTableModel.addRow(new Object[] { label, prob, addr });
 
@@ -819,6 +823,50 @@ public class ActionInterfaceFrame extends JFrame {
 
 	}
 
+	private boolean removeConeBelief(WorkingMemoryAddress _address) {
+
+		println("input addr: " + CASTUtils.toString(_address));
+
+		for (int row = 0; row < m_coneTableModel.getRowCount(); row++) {
+			WorkingMemoryAddress coneAddr = SimpleDiscreteTransferFunction
+					.addressFromPropositionString((String) m_coneTableModel
+							.getValueAt(row, CONE_ADDR_COLUMN));
+
+			println("table addr: " + CASTUtils.toString(coneAddr));
+
+			if (coneAddr.equals(_address)) {
+				println("removed it");
+				m_coneTableModel.removeRow(row);
+				pack();
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean removePlaceBelief(WorkingMemoryAddress _address) {
+		for (int row = 0; row < m_placeTableModel.getRowCount(); row++) {
+			WorkingMemoryAddress placeAddr = SimpleDiscreteTransferFunction
+					.addressFromPropositionString((String) m_placeTableModel
+							.getValueAt(row, CONE_ADDR_COLUMN));
+			if (placeAddr.equals(_address)) {
+				m_placeTableModel.removeRow(row);
+				pack();
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void removeBelief(WorkingMemoryAddress _address) {
+		if (removeConeBelief(_address)) {
+			return;
+		} else if (removePlaceBelief(_address)) {
+			return;
+		}
+
+	}
+
 	public void addPlaceBelief(WorkingMemoryAddress _address,
 			IndependentFormulaDistributionsBelief<dBelief> _belief) {
 
@@ -830,9 +878,8 @@ public class ActionInterfaceFrame extends JFrame {
 				.get(PlaceTransferFunction.PLACE_STATUS_ID).getDistribution()
 				.getMostLikely().getProposition();
 
-		String addr = _belief.getContent()
-				.get(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID)
-				.getDistribution().getMostLikely().getProposition();
+		String addr = SimpleDiscreteTransferFunction
+				.toPropositionString(_address);
 
 		m_placeTableModel.addRow(new Object[] { placeID, status, addr });
 		pack();
