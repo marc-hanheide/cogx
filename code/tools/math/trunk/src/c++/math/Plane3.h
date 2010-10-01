@@ -82,6 +82,91 @@ inline double distPointToPlane(const Vector3 &p, const Plane3 &pl)
 }
 
 /**
+ * Project a point to a plane.
+ */
+inline Vector3 projectPointToPlane(const Plane3 &pl, const Vector3 &p)
+{
+  // let plane origin o = [-a*d -b*d -c*d] and normal vector n = [a b c]
+  // (plane equation is normalised)
+  // then p' = p - ((p - o)*n)*n
+  return vector3(p.x*(1. - sqr(pl.a)) - pl.a*(pl.b*p.y + pl.c*p.z + pl.d),
+                 p.y*(1. - sqr(pl.b)) - pl.b*(pl.a*p.x + pl.c*p.z + pl.d),
+                 p.z*(1. - sqr(pl.c)) - pl.c*(pl.a*p.x + pl.b*p.y + pl.d));
+}
+
+/**
+ * Define a 'nice' coordinate system for a plane.
+ * origin in [-a*d -b*d -c*d]
+ * z = n = [a b c]
+ * x and y defined parallel to global x or y
+ */
+inline void definePlaneCoordSys(const Plane3 &pl, Pose3 &pose)
+{
+  // first find the major direction of the plane normal vector (its largest
+  // component)
+  int majorDir = 0;
+  if(fabs(pl.b) > fabs(pl.a))
+  {
+    if(fabs(pl.c) > fabs(pl.b))
+      majorDir = 2;
+    else
+      majorDir = 1;
+  }
+  else
+  {
+    if(fabs(pl.c) > fabs(pl.a))
+      majorDir = 2;
+    else
+      majorDir = 0;
+  }
+
+  // orgin of the plane coordsys is along a ray normal to the plane and passing
+  // through world origin (note: plane equation is normalised)
+  Vector3 o = vector3(-pl.a*pl.d, -pl.b*pl.d, -pl.c*pl.d);
+  // z axis of the plane coordsys is always along plane normal vector
+  Vector3 z = vector3(pl.a, pl.b, pl.c);
+  // x axis of the plane coordsys is defined to be parallel to either xy, yz or
+  // xz plane, depending on the major direction of the normal vector
+  Vector3 x;
+  // y axis follows as cross product
+  Vector3 y;
+  // if plane is mostly parallel to yz plane, x is major dir and thus guaranteed
+  // nonzero
+  if(majorDir == 0)
+  {
+    // if plane is more parallel to y axis than to z axis
+    if(fabs(pl.b) < fabs(pl.c))
+      // then x is parallel to global xy plane
+      x = vector3(-pl.b/pl.a, 1., 0.);
+    else
+      // x is parallel to global xz plane
+      x = vector3(-pl.c/pl.a, 0., 1.);
+  }
+  else if(majorDir == 1)
+  {
+    if(fabs(pl.a) < fabs(pl.c))
+      x = vector3(1., -pl.a/pl.b, 0.);
+    else
+      x = vector3(0., -pl.c/pl.b, 1.);
+  }
+  else // majorDir == 2
+  {
+    if(fabs(pl.a) < fabs(pl.b))
+      x = vector3(1., 0., -pl.a/pl.c);
+    else
+      x = vector3(0., 1., -pl.b/pl.c);
+  }
+  normalise(x);
+  y = cross(z, x);
+
+  // now set pose elements
+  pose.pos = o;
+  setColumn(pose.rot, 0, x);
+  setColumn(pose.rot, 1, y);
+  setColumn(pose.rot, 2, z);
+}
+
+/**
  * Print a plane in text form to a stream: '[a b c d]`
  */
 inline void writeText(ostream &os, const Plane3 &p)
