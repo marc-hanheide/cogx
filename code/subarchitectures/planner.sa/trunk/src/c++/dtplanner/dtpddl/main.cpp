@@ -247,8 +247,10 @@ int main(int argc, char** argv)
 //                 policy_Iteration();
 //                     if(!(i % 10))policy_Iteration();
 
-                    policy_Iteration.reset__converged();
+//                     policy_Iteration.reset__converged();
                 }
+
+                if(solver->belief_state__space.size() > 10000)break;
             }
 
             INTERACTIVE_VERBOSER(true, 15000, "Done state expansions :: "
@@ -261,7 +263,7 @@ int main(int argc, char** argv)
                          <<current_state->get__expected_value()<<std::endl);
             }
             
-            for(auto i = 0; i < 10; i++){
+            for(auto i = 0; i < 20; i++){
             
                 INTERACTIVE_VERBOSER(true, 15000, "Current state is :: "
                                      <<*current_state<<std::endl
