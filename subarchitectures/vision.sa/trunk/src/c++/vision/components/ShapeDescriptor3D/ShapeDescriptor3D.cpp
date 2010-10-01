@@ -297,7 +297,7 @@ void ShapeDescriptor3D::calculateDescriptor(ProtoObject &pobj)
 
 void ShapeDescriptor3D::calculateDescriptor2(ProtoObject &pobj)
 {
-  vector<Plane3> planes;
+  vector<PlanarPatch> planes;
   int n = (int)pobj.points.size();
   P::RASDescriptor ras;
 
@@ -314,39 +314,17 @@ void ShapeDescriptor3D::calculateDescriptor2(ProtoObject &pobj)
   for(size_t i = 0; i < planes.size(); i++)
   {
     P::Plane *rasPlane = new P::Plane;
-
-    vector<CvPoint2D32f> planePoints;
-    Pose3 planePose;
-    definePlaneCoordSys(planes[i], planePose);
-    for(size_t j = 0; j < pobj.points.size(); j++)
-    {
-      // if inlier
-      if(fabs(distPointToPlane(pobj.points[j].p, planes[i])) < ransacThr)
-      {
-        Vector3 q = transformInverse(planePose, pobj.points[j].p);
-        planePoints.push_back(cvPoint2D32f(q.x, q.y));
-      }
-    }
-    int *hull = (int*)malloc(planePoints.size() * sizeof(hull[0]));
-    CvMat hullMat = cvMat(1, planePoints.size(), CV_32SC1, hull);
-    CvMat pointMat = cvMat(1, planePoints.size(), CV_32FC2, &planePoints[0]);
-    cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
-
-    rasPlane->p = P::Vector3(planePose.pos.x, planePose.pos.y, planePose.pos.z);
-    Vector3 n = getColumn(planePose.rot, 2);
+    rasPlane->p = P::Vector3(planes[i].pose.pos.x, planes[i].pose.pos.y, planes[i].pose.pos.z);
+    Vector3 n = getColumn(planes[i].pose.rot, 2);
     rasPlane->n = P::Vector3(n.x, n.y, n.z);
-    for(int j = 0; j < hullMat.cols; j++)
+    for(int j = 0; j < planes[i].convexHull.size(); j++)
     {
-      Vector3 q = transform(planePose,
-        vector3(planePoints[hull[j]].x, planePoints[hull[j]].y, 0.));
-      rasPlane->contour.PushBack(P::Vector3(q.x, q.y, q.z));
+      rasPlane->contour.PushBack(
+        P::Vector3(planes[i].convexHull[j].x,
+                   planes[i].convexHull[j].y,
+                   planes[i].convexHull[j].z));
     }
-
-    free(hull);
-
     rasPlanes.PushBack(rasPlane);
-
-    cout << "plane " << i << ": " << planes[i] << endl;
   }
 
   dshape.ComputeRAShapeDescriptor(rasPlanes, ras, histogramSize, 1);
@@ -368,13 +346,14 @@ void ShapeDescriptor3D::calculateDescriptor2(ProtoObject &pobj)
  * accordingly. So after call to this function points[0..n-1] are all outliers.
  */
 void ShapeDescriptor3D::removeInliers(SurfacePointSeq &points, int &n,
-    const Plane3 &plane, double thr)
+    const PlanarPatch &plane, double thr)
 {
   SurfacePoint t;
   for(int i = 0; i < n; )
   {
     // if inlier
-    if(fabs(distPointToPlane(points[i].p, plane)) < thr)
+    if(plane.isPointInside(points[i].p) &&
+       fabs(distPointToPlane(points[i].p, plane.plane)) < thr)
     {
       // move point i to end of points and decrease n
       t = points[i];
@@ -389,14 +368,16 @@ void ShapeDescriptor3D::removeInliers(SurfacePointSeq &points, int &n,
   }
 }
 
-void ShapeDescriptor3D::findPlanes(vector<Plane3> &planes, SurfacePointSeq &points, int &n)
+void ShapeDescriptor3D::findPlanes(vector<PlanarPatch> &planes, SurfacePointSeq &points, int &n)
 {
   PlaneRANSAC planeDetector(ransacThr, planeMinPoints);
   Plane3 plane;
   while(planeDetector.detectPlane(points, n, vector3(0, 0, 0), false, plane))
   {
-    removeInliers(points, n, plane, 2.*ransacThr);
-    planes.push_back(plane);
+    PlanarPatch patch(plane);
+    patch.findConvexHull(points, n, ransacThr);
+    removeInliers(points, n, patch, 10.*ransacThr);
+    planes.push_back(patch);
   }
 }
 

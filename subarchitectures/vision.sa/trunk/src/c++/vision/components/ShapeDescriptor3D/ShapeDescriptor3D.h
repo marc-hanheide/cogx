@@ -13,6 +13,7 @@
 #include <CDisplayClient.hpp>
 #endif
 #include "DShapeCore.hh"
+#include "PlanarPatch.h"
 
 namespace cast
 {
@@ -95,8 +96,8 @@ private:
   void calculateDescriptor(ProtoObject &pobj);
   
   void calculateDescriptor2(ProtoObject &pobj);
-  void removeInliers(SurfacePointSeq &points, int &n, const Plane3 &plane, double thr);
-  void findPlanes(vector<Plane3> &planes, SurfacePointSeq &points, int &n);
+  void removeInliers(SurfacePointSeq &points, int &n, const PlanarPatch &plane, double thr);
+  void findPlanes(vector<PlanarPatch> &planes, SurfacePointSeq &points, int &n);
 
 protected:
   /**
