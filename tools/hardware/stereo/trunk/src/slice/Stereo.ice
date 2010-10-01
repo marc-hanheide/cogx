@@ -14,6 +14,7 @@ module Stereo {
    */
   interface StereoInterface {
     void getPoints(bool transformToGlobal, int imgWidth, out VisionData::SurfacePointSeq points);
+    void getCompletePoints(bool transformToGlobal, int imgWidth, out VisionData::SurfacePointSeq points);
     void getRectImage(int side, int imgWidth, out Video::Image img);
     void getDisparityImage(int imgWidth, out Video::Image img);
   };

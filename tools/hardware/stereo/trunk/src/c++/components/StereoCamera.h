@@ -9,6 +9,7 @@
 
 #include <string>
 #include <opencv/cv.h>
+#include <opencv/cv.hpp>
 #include <cogxmath.h>
 
 namespace cast
@@ -82,6 +83,8 @@ public:
   double sy;
   MatchingAlgorithm matchAlgorithm;
   CvStereoBMState *stereo_bm_state;
+  cv::StereoBM *stereoBM;
+  cv::StereoSGBM *stereoSGBM;
 
 public:
   StereoCamera();

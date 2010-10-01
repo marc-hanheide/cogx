@@ -45,8 +45,11 @@ StereoCamera::StereoCamera()
   sx = sy = 1.;
   inImgSize.width = 0;
   inImgSize.height = 0;
+  //matchAlgorithm = SEMI_GLOBAL_BLOCK_MATCH;
   matchAlgorithm = BLOCK_MATCH;
   stereo_bm_state = cvCreateStereoBMState(CV_STEREO_BM_BASIC);
+  stereoBM = new cv::StereoBM();
+  stereoSGBM = new cv::StereoSGBM(0, 64, 21);  // HACK: disparity range
 }
 
 StereoCamera::~StereoCamera()
@@ -57,6 +60,8 @@ StereoCamera::~StereoCamera()
   cvReleaseImage(&mapy[LEFT]);
   cvReleaseImage(&mapy[RIGHT]);
   cvReleaseStereoBMState(&stereo_bm_state);
+  delete stereoBM;
+  delete stereoSGBM;
 }
 
 /**
@@ -361,7 +366,23 @@ void StereoCamera::CalculateDisparity(const IplImage *left, const IplImage *righ
   assert(left != 0 && right != 0 && disp != 0);
   if(matchAlgorithm == BLOCK_MATCH)
   {
-    cvFindStereoCorrespondenceBM(left, right, disp, stereo_bm_state);
+    //cvFindStereoCorrespondenceBM(left, right, disp, stereo_bm_state);
+    stereoBM->init(cv::StereoBM::BASIC_PRESET, stereo_bm_state->numberOfDisparities);
+    cv::Mat leftM(left, false);
+    cv::Mat rightM(right, false);
+    cv::Mat dispM(disp, false);
+    (*stereoBM)(leftM, rightM, dispM, CV_32F);
+  }
+  else if(matchAlgorithm == SEMI_GLOBAL_BLOCK_MATCH)
+  {
+    // it is safe to directly access the settings values of cv::StereoSGBM
+    stereoSGBM->numberOfDisparities = stereo_bm_state->numberOfDisparities;
+    cv::Mat leftM(left, false);
+    cv::Mat rightM(right, false);
+    cv::Mat dispM(disp, false);
+    cv::Mat dispM_short(dispM.rows, dispM.cols, CV_16S);
+    (*stereoSGBM)(leftM, rightM, dispM_short);
+    dispM_short.convertTo(dispM, CV_32F, 1./(double)stereoSGBM->DISP_SCALE);
   }
   else
     assert("only supports BLOCK_MATCH for now" == 0);

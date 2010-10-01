@@ -62,6 +62,11 @@ void StereoClient::getPoints(bool transformToGlobal, int imgWidth, VisionData::S
   stereoServer->getPoints(transformToGlobal, imgWidth, points);
 }
 
+void StereoClient::getCompletePoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points)
+{
+  stereoServer->getCompletePoints(transformToGlobal, imgWidth, points);
+}
+
 void StereoClient::getRectImage(int side, int imgWidth, Video::Image& image)
 {
   stereoServer->getRectImage(side, imgWidth, image);
