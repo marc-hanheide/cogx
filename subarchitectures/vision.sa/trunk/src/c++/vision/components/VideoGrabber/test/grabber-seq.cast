@@ -5,18 +5,15 @@ SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-# live images
-# CPP MG VideoServer OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE
-
 # reading stored images
 VARDEFAULT video_camconfigFile = xdata/TestVisLrn/c1/castinput/ul_stereo_201009.ini
 VARDEFAULT video_staticImgDir = xdata/TestVisLrn/c1/castinput/640
 VARDEFAULT video_staticImgFile = %(video_staticImgDir)/img-%03d
 VARDEFAULT params_VideoServer = <multiline>
-   --camids "0 1"
-   --files "%(video_staticImgFile)-L.png  %(video_staticImgFile)-R.png"
-   --start 0 --end 7 --repeatframe 5 --framerate_ms 200 
-   --camconfigs "%(video_camconfigFile):L  %(video_camconfigFile):R"
+  --camids "0 1"
+  --files "%(video_staticImgFile)-L.png  %(video_staticImgFile)-R.png"
+  --start 0 --end 7 --repeatframe 5 --framerate_ms 200 
+  --camconfigs "%(video_camconfigFile):L  %(video_camconfigFile):R"
 </multiline>
 CPP MG VideoServer OpenCvImgSeqServer %(params_VideoServer)
 
