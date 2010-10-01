@@ -159,7 +159,7 @@ private:
 
   peekabot::PeekabotClient m_PeekabotClient;
 
-  peekabot::ObjectProxy m_ProxyRoot;
+  //peekabot::ObjectProxy m_ProxyRoot;
   
   peekabot::GroupProxy m_ProxyRobot;
   peekabot::GroupProxy m_ProxyLaser;

@@ -1463,16 +1463,16 @@ m_samplesize = 100;
 
 	  //add buttons to box
 	  gtk_box_pack_start (GTK_BOX (hbox), readbutton, TRUE, TRUE, 0);
-	  gtk_box_pack_start (GTK_BOX (hbox), savebutton, TRUE, TRUE, 0);
 
 	  gtk_box_pack_start (GTK_BOX (hbox), direct_uninformed, TRUE, TRUE, 0);
 	  gtk_box_pack_start (GTK_BOX (hbox), direct_informed, TRUE, TRUE, 0);
 	  gtk_box_pack_start (GTK_BOX (hbox), indirect, TRUE, TRUE, 0);
+	  gtk_box_pack_start (GTK_BOX (hbox), savebutton, TRUE, TRUE, 0);
 
 	  gtk_widget_show (direct_uninformed);
 	  gtk_widget_show (direct_informed);
-	  gtk_widget_show (indirect);
 	  gtk_widget_show (readbutton);
+	  gtk_widget_show (indirect);
 	  gtk_widget_show (savebutton);
 	  gtk_widget_show (window);
 	}
