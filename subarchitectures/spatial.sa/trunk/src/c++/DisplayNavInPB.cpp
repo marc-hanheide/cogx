@@ -440,7 +440,7 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID){
 #endif
 
 void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
-  log("VPnodelist called"); 
+  debug("VPnodelist called"); 
 
   if (!m_PeekabotClient.is_connected()) return;
 
@@ -705,7 +705,7 @@ void DisplayNavInPB::runComponent() {
 
         peekabot::GroupProxy walls;
         walls.add(m_PeekabotClient,
-                  "root.walls",
+                  "root/walls",
                   peekabot::REPLACE_ON_CONFLICT);
         
         for (unsigned int i = 0; i < m_LineMap->lines.size(); i++) {
@@ -921,8 +921,10 @@ void DisplayNavInPB::newArea(const cdl::WorkingMemoryChange &objID)
       {
         peekabot::CylinderProxy acp;
         char name2[32];
-        sprintf(name2, "node%ld.area_class", (*ni).second.m_Id);
-        acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
+        sprintf(name2, "node%ld/area_class", (*ni).second.m_Id);
+        log("adding: %s", name2);
+	sleep(1);
+	acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
         acp.set_scale(0.5, 0.5, 0.0);
         acp.set_position(0,0,0);
         acp.set_opacity(0.2);
@@ -1127,7 +1129,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
   std::map<long,Node>::iterator n = m_Nodes.find(fnode->nodeId);
 
   if (n == m_Nodes.end()) {  // Node does not exist
-    log("Node %d new", (int)fnode->nodeId);
+    debug("Node %d new", (int)fnode->nodeId);
 
     DisplayNavInPB::Node node;
     node.m_Id = fnode->nodeId;
@@ -1198,7 +1200,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 	    // add translucent area circle
         peekabot::CylinderProxy acp;
         char name2[32];
-        sprintf(name2, "node%ld.area_class", (long)fnode->nodeId);
+        sprintf(name2, "node%ld/area_class", (long)fnode->nodeId);
         acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
         acp.set_scale(0.5, 0.5, 0.0);
         acp.set_position(0,0,0);
@@ -1280,7 +1282,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
     {
         peekabot::CylinderProxy acp;
         char name2[32];
-        sprintf(name2, "node%ld.area_class", (long)fnode->nodeId);
+        sprintf(name2, "node%ld/area_class", (long)fnode->nodeId);
         acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
         acp.set_scale(0.5, 0.5, 0.0);
         acp.set_position(0,0,0);
@@ -1478,7 +1480,7 @@ void DisplayNavInPB::displayEdge(const DisplayNavInPB::Node &node1,
     sprintf(name, "edge%06ld", node2.m_Id*1000+node1.m_Id);
   }
 
-  log("Adding edge between (%f,%f) %ld and (%f,%f) %ld", 
+  debug("Adding edge between (%f,%f) %ld and (%f,%f) %ld", 
       node1.m_X, node1.m_Y, node1.m_Id, 
       node2.m_X, node2.m_Y, node2.m_Id);
 
@@ -1527,20 +1529,26 @@ void DisplayNavInPB::connectPeekabot()
 
     m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
-    m_ProxyRoot.assign(m_PeekabotClient, "root");    
+ //   m_PeekabotClient.assign(m_PeekabotClient, "root");    
+    peekabot::Status s0,s1, s2, s3,s4;
 
-    m_ProxyRobot.add(m_ProxyRoot, 
-                     m_PbRobotName,
-                     peekabot::REPLACE_ON_CONFLICT);
-
-    peekabot::Status s1, s2, s3,s4;
+    s0 = m_ProxyRobot.add(m_PeekabotClient, 
+	m_PbRobotName,
+	peekabot::REPLACE_ON_CONFLICT).status();
+    if (s0.failed())
+      log("failed to add robot");
+    else
+      log("added robot.");
     
-    s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
+      log("Loading robot file \"%s\"", 
+              m_PbRobotFile.c_str());
+    
+   s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
     if( s1.failed() ) {
       log("Could not load robot file \"%s\"", 
               m_PbRobotFile.c_str());
       peekabot::CubeProxy cube;
-      cube.add(m_ProxyRobot, m_PbRobotName, peekabot::REPLACE_ON_CONFLICT);
+      cube.add(m_PeekabotClient, m_PbRobotName, peekabot::REPLACE_ON_CONFLICT);
       cube.set_scale(0.4, 0.3, 0.2);
       cube.set_position(0,0,0.1);
       cube.set_color(0,1,0);
@@ -1555,21 +1563,21 @@ void DisplayNavInPB::connectPeekabot()
       if (m_PbRobotFile == "CogXp3.xml" ||
 	  m_PbRobotFile == "CogX_base_arm.xml" ||
 	  m_PbRobotFile == "CogX_base.xml") {
-        s2 = m_ProxyLaser.assign(m_ProxyRobot, "chassis.rangefinder").status();
+        s2 = m_ProxyLaser.assign(m_ProxyRobot, "chassis/rangefinder").status();
         m_ScanAngFOV = M_PI/180.0*240;
         m_ScanMaxRange = 5.6;
 		
-		std::string path = "root.robot.chassis.superstructure.ptu.pan.tilt.baseline.cam_left";
+		std::string path = "robot/chassis/superstructure/ptu/pan/tilt/baseline/cam_left";
 		s4 = m_ProxyCam.assign(m_PeekabotClient, path).status();
 		if(s4.failed()){
 			log("cam proxy failed.");
 		}
 		
-		s4 = m_ProxyPan.assign(m_PeekabotClient, "root.robot.chassis.superstructure.ptu.pan").status();
+		s4 = m_ProxyPan.assign(m_PeekabotClient, "robot/chassis/superstructure/ptu/pan").status();
 		if(s4.failed()){
 			log("cam proxy failed.");
 		}
-		s4 = m_ProxyTilt.assign(m_PeekabotClient, "root.robot.chassis.superstructure.ptu.pan.tilt").status();
+		s4 = m_ProxyTilt.assign(m_PeekabotClient, "robot/chassis/superstructure/ptu/pan/tilt").status();
 		if(s4.failed()){
 			log("cam proxy failed.");
 		}
@@ -1578,11 +1586,11 @@ void DisplayNavInPB::connectPeekabot()
 		
 		
       } else if (m_PbRobotFile == "B21.xml") {
-        s2 = m_ProxyLaser.assign(m_ProxyRobot, "model.rangefinder").status();
+        s2 = m_ProxyLaser.assign(m_ProxyRobot, "model/rangefinder").status();
         m_ScanAngFOV = M_PI/180.0*180;
         m_ScanMaxRange = 8.0;
       } else {
-        s2 = m_ProxyLaser.assign(m_ProxyRobot, "peoplebot_base.rangefinder").status();
+        s2 = m_ProxyLaser.assign(m_ProxyRobot, "peoplebot_base/rangefinder").status();
         m_ScanAngFOV = M_PI/180.0*180;
         m_ScanMaxRange = 8.0;
       }
@@ -1598,7 +1606,7 @@ void DisplayNavInPB::connectPeekabot()
       }
     }
  
-    m_ProxyGraph.add(m_ProxyRoot,
+    m_ProxyGraph.add(m_PeekabotClient,
                      "graph",
                      peekabot::REPLACE_ON_CONFLICT);
 
@@ -1617,7 +1625,7 @@ void DisplayNavInPB::connectPeekabot()
     m_ProxyObjectLabels.add(m_ProxyGraph,
                        "labels",
                        peekabot::REPLACE_ON_CONFLICT);
-    m_ProxyViewPoints.add(m_PeekabotClient, "root.viewpoints",peekabot::REPLACE_ON_CONFLICT);
+    m_ProxyViewPoints.add(m_PeekabotClient, "viewpoints",peekabot::REPLACE_ON_CONFLICT);
 
     createRobotFOV();
     log("Connection to Peekabot established");

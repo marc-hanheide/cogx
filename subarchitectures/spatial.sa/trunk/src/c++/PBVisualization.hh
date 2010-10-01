@@ -47,7 +47,7 @@ class VisualPB_Bloxel{
     peekabot::GroupProxy pb_map;
     char * obsCount;
 
-    peekabot::ObjectProxy root;
+    //peekabot::ObjectProxy root;
 
     peekabot::GroupProxy pdf;
     int maxLevels;
@@ -62,7 +62,7 @@ class VisualPB_Bloxel{
 void VisualPB_Bloxel::Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap, std::string name){
   peekabot::OccupancyGrid2DProxy og2d;
  peekabot::OccupancySet2D cells;
- og2d.add(client, "root." + name , curemap->getCellSize(),0.3,0.3,0,1,0,0,peekabot::REPLACE_ON_CONFLICT); 
+ og2d.add(client, name , curemap->getCellSize(),0.3,0.3,0,1,0,0,peekabot::REPLACE_ON_CONFLICT); 
  og2d.translate(0,0,-0.005);
  
  for (int x = -curemap->getSize(); x < curemap->getSize(); x++){
@@ -83,7 +83,7 @@ void VisualPB_Bloxel::Display2DCureMap(const Cure::LocalGridMap<unsigned char>* 
 void VisualPB_Bloxel::Display2DBinaryMap(const Cure::BinaryMatrix &binmap, const Cure::LocalGridMap<unsigned char>* curemap, std::string name){
   peekabot::OccupancyGrid2DProxy og2d;
  peekabot::OccupancySet2D cells;
- og2d.add(client, "root." + name , curemap->getCellSize(),0.3,0.3,0,1,0,0,peekabot::REPLACE_ON_CONFLICT); 
+ og2d.add(client, name , curemap->getCellSize(),0.3,0.3,0,1,0,0,peekabot::REPLACE_ON_CONFLICT); 
  og2d.translate(0,0,-0.005);
  
  for (int x = -curemap->getSize(); x < curemap->getSize(); x++){
@@ -132,10 +132,9 @@ bool VisualPB_Bloxel::connectPeekabot(){
     client.connect(host, port);
     printf("Connection to Peekabot established! \n");
     // eieiAssign root
-    root.assign(client, "root");
-    pb_map.add(root,"map",peekabot::REPLACE_ON_CONFLICT);
+    pb_map.add(client,"map",peekabot::REPLACE_ON_CONFLICT);
     
-    pdf.add(root, "pdf", peekabot::REPLACE_ON_CONFLICT);
+    pdf.add(client, "pdf", peekabot::REPLACE_ON_CONFLICT);
     
     // Add 15 levels for pdf-visualization
     maxLevels = 15;
@@ -218,7 +217,7 @@ void VisualPB_Bloxel::DisplayPCMap(const SpatialGridMap::GridMap<MapData> &map, 
 void VisualPB_Bloxel::Add3DPointCloud(std::vector< std::vector<double> > point){
   try{
     peekabot::OccupancyGrid3DProxy ogproxy;
-    ogproxy.add(client, "root.extrapoints", 0.05, peekabot::REPLACE_ON_CONFLICT);
+    ogproxy.add(client, "extrapoints", 0.05, 0.05, peekabot::REPLACE_ON_CONFLICT);
     peekabot::OccupancySet3D cells;
     for (unsigned int i = 0; i < point.size(); i++){
       cells.set_cell(point[i][0],point[i][1], point[i][2],1);
