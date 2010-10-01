@@ -21,7 +21,7 @@ understand : polar_query_scope(S, H, Int, Ref, Nom) <-
 	polar_query_prop(Nom, Prop, Value),
 	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
 	get_topic_referent(EpSt, Int, SubjNom, RestrNom, BId),
-	int : post(Int, state('question-answered', agent(H), about(BId), property(Prop), hypo(Value))) / p(1.0).
+	int : post(Int, state('question-answered', agent(H), about(BId), feature(Prop), hypo(Value))) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ understand : wh_query_scope(S, H, Int, Ref, Nom) <-
 	wh_query_prop(Nom, Prop),
 	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
 	get_topic_referent(EpSt, Int, SubjNom, RestrNom, BId),
-	int : post(Int, state('question-answered', agent(H), about(BId), property(Prop))) / p(1.0).
+	int : post(Int, state('question-answered', agent(H), about(BId), feature(Prop))) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -158,15 +158,15 @@ understand : event : utter(S, H, Nom) <-
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 m_action_effects(S, H, EpSt, Int, Ref, go) <-
-	get_topic_referent(EpSt, Int, Ref, Ref, BId),
-	int : post(Int, state(position, agent(H), 'location-of'(BId))) / p(1.0).  % XXX argh doesn't work!
+	get_topic_referent(shared(S, H), Int, Ref, Ref, BId),  % XXX the presupposed belief not constructed
+	int : post(Int, state(position, agent(H), 'location-of'(BId))) / p(1.0).
 
 m_action_effects(S, H, EpSt, Int, Ref, move) <-
 	m_action_effect(S, H, Int, Ref, go).
 
 m_action_effects(S, H, EpSt, Int, Ref, turn) <-
-	get_topic_referent(EpSt, Int, Ref, Ref, BId),
-	int : post(Int, state('orientation-towards', agent(H), 'location-of'(BId))) / p(1.0).  % XXX argh doesn't work!
+	get_topic_referent(EpSt, Int, Ref, Ref, BId),  % XXX the presupposed belief not constructed
+	int : post(Int, state('orientation-towards', agent(H), 'location-of'(BId))) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -192,6 +192,7 @@ understand : direction(Nom, Dir) <-
 
 valid_direction(forward, forward).
 valid_direction(back, back).
+valid_direction(around, back).
 valid_direction(left, left).
 valid_direction(right, right).
 

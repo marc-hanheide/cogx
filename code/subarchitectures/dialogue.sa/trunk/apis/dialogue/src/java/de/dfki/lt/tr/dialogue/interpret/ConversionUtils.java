@@ -217,6 +217,7 @@ public abstract class ConversionUtils {
 							itc.preconditions = combineDFormulas(itc.preconditions, refF);
 						}
 					}
+/*
 					else if (action.functor.equals("mark")) {
 						String marking = ((FunctionTerm)action.args[0]).functor;
 						String newId = foldIntoBeliefs(idGen, es, lingRef, usedRefs, action, bels_pre);
@@ -225,6 +226,7 @@ public abstract class ConversionUtils {
 							itc.preconditions = combineDFormulas(itc.preconditions, refF);
 						}
 					}
+ */
 				}
 				if (argTerm.functor.equals("state")) {
 					List<dFormula> args = new LinkedList<dFormula>();
@@ -272,6 +274,35 @@ public abstract class ConversionUtils {
 			}
 		}
 
+		for (ModalisedAtom ma : Arrays.asList(rrs)) {
+			if (ma.m.length == 1 && ma.m[0] == Modality.Intention && ma.a.predSym.equals("pointer") && ma.a.args.length == 3) {
+				String featName = ((FunctionTerm)ma.a.args[0]).functor;
+				String markFrom = ((FunctionTerm)ma.a.args[1]).functor;
+				String markTo = ((FunctionTerm)ma.a.args[2]).functor;
+
+				dBelief from = findMarkedBelief(bels_pre, markFrom);
+//				if (from == null) {
+//					from = findMarkedBelief(bels_post, markFrom);
+//				}
+
+				dBelief to = findMarkedBelief(bels_pre, markTo);
+//				if (to == null) {
+//					to = findMarkedBelief(bels_post, markTo);
+//				}
+
+				if (from != null && to != null) {
+					addFeature(from, featName, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(to.id, "binder")));  // FIXME: this is *very* hacky!
+				}
+			}
+		}
+
+		for (dBelief b : bels_pre) {
+			removeFeature(b, "mark");
+		}
+		for (dBelief b : bels_post) {
+			removeFeature(b, "mark");
+		}
+
 		Iterator<String> iter = rIts.keySet().iterator();
 		while (iter.hasNext()) {
 			Intention it = new Intention();
@@ -306,10 +337,61 @@ public abstract class ConversionUtils {
 		return ri;
 	}
 
+	private static dBelief findMarkedBelief(List<dBelief> bels, String mark) {
+		for (dBelief b : bels) {
+			if (b.content instanceof CondIndependentDistribs) {
+				CondIndependentDistribs cnt = (CondIndependentDistribs) b.content;
+				ProbDistribution pd = cnt.distribs.get("mark");
+				if (pd != null && pd instanceof BasicProbDistribution) {
+					BasicProbDistribution bpd = (BasicProbDistribution) pd;
+					if (bpd.values instanceof FormulaValues) {
+						FormulaValues fvs = (FormulaValues) bpd.values;
+						for (FormulaProbPair fpp : fvs.values) {
+							if (fpp.val instanceof ElementaryFormula && ((ElementaryFormula)fpp.val).prop.equals(mark)) {
+								return b;
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	private static void addFeature(dBelief b, String featName, dFormula f) {
+		if (b.content instanceof CondIndependentDistribs) {
+			CondIndependentDistribs cnt = (CondIndependentDistribs) b.content;
+
+			FormulaProbPair fpp = new FormulaProbPair();
+			fpp.prob = 1.0f;
+			fpp.val = f;
+
+			FormulaValues fvs = new FormulaValues();
+			fvs.values = new LinkedList<FormulaProbPair>();
+			fvs.values.add(fpp);
+
+			BasicProbDistribution bpd = new BasicProbDistribution();
+			bpd.key = featName;
+			bpd.values = fvs;
+
+			cnt.distribs.put(featName, bpd);
+		}
+	}
+
+	private static void removeFeature(dBelief b, String featName) {
+		if (b.content instanceof CondIndependentDistribs) {
+			CondIndependentDistribs cnt = (CondIndependentDistribs) b.content;
+			cnt.distribs.remove(featName);
+		}
+	}
+
 	private static dFormula uniTermToFormula(FunctionTerm ft) {
 		if (ft.args.length > 0) {
 			if (ft.functor.equals("ptr")) {
-				return BeliefFormulaFactory.newPointerFormula(termToWorkingMemoryAddress(ft));
+				WorkingMemoryAddress wma = termToWorkingMemoryAddress(ft);
+				if (wma != null) {
+					return BeliefFormulaFactory.newPointerFormula(wma);
+				}
 			}
 			// this is a modal formula
 			List<dFormula> args = new LinkedList<dFormula>();
