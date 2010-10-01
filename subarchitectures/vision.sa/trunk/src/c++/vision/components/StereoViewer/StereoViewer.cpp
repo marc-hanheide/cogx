@@ -13,7 +13,7 @@
 // if true, draw overlaid reprojected points in green (i.e. use
 // only their green channel) to distinguish from original image
 // pixels
-static bool OVERLAY_IN_GREEN = true;
+static bool OVERLAY_IN_GREEN = false;
 
 /**
  * The function called to create a new instance of our component.
@@ -220,6 +220,8 @@ static void DrawOverlays()
 
 static void DrawPoints()
 {
+  glDisable(GL_LIGHTING);
+  glDisable(GL_COLOR_MATERIAL);
   glPointSize(2.);
   glBegin(GL_POINTS);
   for(size_t i = 0; i < points.size(); i++)
@@ -237,18 +239,16 @@ static void DrawPoints()
 
     glColor3ub(255, 0, 0);
 
-    glDisable(GL_LIGHTING);
-    glDisable(GL_COLOR_MATERIAL);
     snprintf(text, 100, "%.3f", length(points[i].p));
     DrawText3D(text, points[i].p.x, points[i].p.y, points[i].p.z);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_COLOR_MATERIAL);
 
     glPushMatrix();
     glTranslatef(points[i].p.x, points[i].p.y, points[i].p.z);
     glutWireSphere(0.01, 10, 10);
     glPopMatrix();
   }
+  glEnable(GL_LIGHTING);
+  glEnable(GL_COLOR_MATERIAL);
 }
 
 static void DisplayWin()
