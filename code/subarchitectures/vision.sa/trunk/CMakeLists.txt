@@ -29,12 +29,12 @@ if (BUILD_SA_VISION_FERNS)
 add_subdirectory (src/c++/vision/components/ObjectDetectorFERNS)
 endif (BUILD_SA_VISION_FERNS)
 
-option(BUILD_SA_VISION_UTIL_COMPS "build dummy driver and video viewer" YES)
+option(BUILD_SA_VISION_UTIL_COMPS "build dummy driver, video viewer, video grabber" YES)
 if (BUILD_SA_VISION_UTIL_COMPS)
 add_subdirectory (src/c++/vision/components/DummyDriver)
 add_subdirectory (src/c++/vision/components/VideoViewer)
+add_subdirectory (src/c++/vision/components/VideoGrabber)
 endif (BUILD_SA_VISION_UTIL_COMPS)
-
 
 option(BUILD_SA_VISION_STEREOVIEWER "build stereo viewer (needs hardware/stereo)" YES)
 if(BUILD_SA_VISION_STEREOVIEWER)
