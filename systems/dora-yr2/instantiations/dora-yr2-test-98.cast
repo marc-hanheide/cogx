@@ -18,7 +18,7 @@ INCLUDE includes/coma.sa/coma-mediators.cast
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
-JAVA MG percepttracker.dora 	eu.cogx.percepttracker.DoraBeliefTracker --write-to-sa binder
+JAVA MG percepttracker.dora 	eu.cogx.percepttracker.dora.DoraBeliefTracker --write-to-sa binder
 
 # planning and motivation #####################################################
 #INCLUDE includes/planner.sa/planner-base.cast
