@@ -52,6 +52,7 @@ private:
       // Access form variables
       std::string getDirectory();
       void setDirectory(const std::string& name);
+      bool getCreateDirectory();
       std::string getDeviceNames();
       void setDeviceNames(const std::string& name);
       std::string getImageFilenamePatt();
