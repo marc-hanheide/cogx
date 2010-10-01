@@ -24,16 +24,22 @@ if Settings.Disp.TR
          gain=g{sc}(:,2);
          
          fprintf(fid,'<u>%s:</u> <BR>\n',Coma.SCnames(sc,:));
-         fprintf(fid,'    C:  ');
-         fprintf(fid,' %sUK',cs2);
-         fprintf(fid,'<BR>\n');
-         fprintf(fid,'   AP:  ');
-         fprintf(fid,'%4.2f  ',aps);
-         fprintf(fid,'<BR>\n');
-         fprintf(fid,' Gain:  ');
-         fprintf(fid,'%4.2f  ',gain);
-         fprintf(fid,'<BR>\n');
-         fprintf(fid,'<BR>\n');
+         fprintf(fid, '<table border="1"> <tr>') ;fprintf(fid,'\n');
+         fprintf(fid,'<td>') ; fprintf(fid,'    C:  '); fprintf(fid,'</td>') ; fprintf(fid,'\n');
+         for nam = 1 : size(cs1,1)
+             fprintf(fid, '<td>%s</td>', cs1(nam,:)) ;
+         end
+         fprintf(fid,'<td>UK</td>'); fprintf(fid, '\n <tr> \n') ; 
+%          fprintf(fid,'<td>%s</td><td>UK</td>',cs2); fprintf('\n<tr>\n') ; 
+%          fprintf(fid,'<BR>\n');
+         fprintf(fid,'<td>') ; fprintf(fid,'   AP:  '); fprintf(fid,'</td>') ; fprintf(fid,'\n');
+         fprintf(fid,'<td>%4.2f</td>',aps); fprintf(fid, '\n <tr>\n') ;
+%          fprintf(fid,'<BR>\n');
+         fprintf(fid,'<td>') ;fprintf(fid,' Gain:  '); fprintf(fid,'</td>') ; fprintf(fid,'\n');
+         fprintf(fid,'<td>%4.2f</td>',gain); fprintf(fid, '\n <tr> \n') ;
+%          fprintf(fid,'<BR>\n');
+%          fprintf(fid,'<BR>\n');
+        fprintf(fid, '</table> ') ;
       end
    end
    
