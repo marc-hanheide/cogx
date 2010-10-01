@@ -58,6 +58,12 @@ namespace Planning
         double operator()(POMDP_State*) const;
     };
 
+    class Entropy_Heuristic
+    {
+    public:
+        float operator()(POMDP_State*) const;
+    };
+
     class Greedy_Heuristic
     {
     public:

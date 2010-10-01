@@ -90,6 +90,10 @@ namespace Planning
                                , Range_Type
                                , int/*enum*/> Parent;
 
+        Simple_Numeric_Transformation()
+            :call_count(0)
+        {
+        }
         
         
         const Formula::Action_Proposition& get__identifier() const;
@@ -104,6 +108,8 @@ namespace Planning
         
         void report__newly_satisfied(State&) const{assert(0);};
         void report__newly_unsatisfied(State&) const{assert(0);};
+    protected:
+        mutable uint call_count;
     };
     
     class Simple_Int_Transformation

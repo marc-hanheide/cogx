@@ -44,6 +44,43 @@ double Belief_State_Value::operator()(POMDP_State* state) const
 }
 
 
+float Entropy_Heuristic::operator()(POMDP_State* state) const
+{
+//     /*If there is no possibility of future positive rewards.*/
+//     if(state->get__obtainable_positive_rewards_count() == 0){
+//         return -1.0;
+//     }
+    
+    auto& belief = state->get__belief_state();
+    uint possibly_obtainable_positive_rewards_count = 0;
+    double answer = 0.0;
+    for(auto _atom = belief.begin()
+            ; _atom != belief.end()
+            ; _atom++){
+        double probability = _atom->second;
+
+        assert(dynamic_cast<State*>(_atom->first));
+
+        possibly_obtainable_positive_rewards_count += dynamic_cast<State*>(_atom->first)
+            ->get__obtainable_positive_rewards_count();
+
+        answer += probability * log(probability);
+//         double local_contribution = probability * log(probability);//probability * (log(1/probability)) / log(2);
+//         answer += local_contribution;
+    }
+
+    if(possibly_obtainable_positive_rewards_count == 0){
+//         cerr<<-1.0<<std::endl;
+        
+        return -1e10;
+    }
+    
+    assert(-answer >= 0.0);
+    
+//     cerr<<-answer<<std::endl;
+    return static_cast<float>(answer);
+}
+
 Greedy_Heuristic::Greedy_Heuristic()
     :configured__expected_rewards_count__cache(false),
      configured__expected_rewards_value__cache(false)
@@ -99,9 +136,9 @@ float Greedy_Heuristic::operator()(POMDP_State* state) const
             = true;
     }
 
-    float answer =  static_cast<float>(state->get__expected_reward());
+    float answer =  static_cast<float>(-expected_rewards_value -state->get__expected_reward());
 //                                        + (expected_rewards_count / expected_rewards_count__cache)
-//                                        + (expected_rewards_value / expected_rewards_value__cache));
+//                                        + (expected_rewards_value /*/ expected_rewards_value__cache*/));
 
     INTERACTIVE_VERBOSER(true, 900, "EVALUATION :: "<<answer<<std::endl
                          <<" Reward :: "<<state->get__expected_reward()<<"\n"

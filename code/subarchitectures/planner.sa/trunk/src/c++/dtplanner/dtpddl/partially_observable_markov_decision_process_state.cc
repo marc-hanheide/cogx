@@ -167,22 +167,48 @@ Partially_Observable_Markov_Decision_Process_State()
 
 
 bool Partially_Observable_Markov_Decision_Process_State::
-operator==(const POMDP_State& in) const
+operator==(const POMDP_State& in) const/*BLACK FRIDAY*/
 {
     INTERACTIVE_VERBOSER(true, 9085, "Comparing :: "<<in<<" "<<*this<<std::endl);
     
     INTERACTIVE_VERBOSER(true, 9081, "Comparing :: "<<in.expected_value);
     INTERACTIVE_VERBOSER(true, 9081, "Comparing :: "<<this->expected_reward<<std::endl);
-    
-    if(in.expected_reward == this->expected_reward){
+
+    if(Solver::are_Doubles_Close(in.expected_reward, this->expected_reward )){
         if(in.belief_State.size() == this->belief_State.size()){
-            if(in.belief_State == this->belief_State){
-                return true;
-            }  
+            bool are_equal = true;
+            for(int i = 0; i < belief_State.size(); i++){
+
+                if(in.belief_State[i].first == this->belief_State[i].first){
+                    if(!Solver::are_Doubles_Close
+                       (in.belief_State[i].second,
+                        this->belief_State[i].second))
+                    {
+                        
+                        are_equal = false;
+                        break;
+                    }   
+                } else {
+                    are_equal = false;
+                    break;
+                }
+            }
+            
+            return are_equal;
         }
     }
-
+    
     return false;
+    
+//     if(in.expected_reward == this->expected_reward){
+//         if(in.belief_State.size() == this->belief_State.size()){
+//             if(in.belief_State == this->belief_State){
+//                 return true;
+//             }  
+//         }
+//     }
+
+//     return false;
     
 //     return ( (in.expected_value == expected_value) &&
 //              (in.belief_State.size() == belief_State.size()) &&
@@ -190,13 +216,14 @@ operator==(const POMDP_State& in) const
 }
 
 bool Partially_Observable_Markov_Decision_Process_State::
-operator<(const POMDP_State& in) const
+operator<(const POMDP_State& in) const/*BLACK FRIDAY*/
 {
     if(this->expected_reward < in.expected_reward){
         return true;
-    } else if (this->expected_reward == in.expected_reward) {
+    } else if (Solver::are_Doubles_Close(this->expected_reward, in.expected_reward)) {
 
         if(belief_State.size() < in.belief_State.size()){
+            return true;
         } else if (belief_State.size() == in.belief_State.size()) {
             auto atom_lhs = belief_State.begin();
             auto atom_rhs = in.belief_State.begin();
@@ -205,7 +232,7 @@ operator<(const POMDP_State& in) const
                     ; atom_lhs++, atom_rhs++){
                 if(atom_lhs->second < atom_rhs->second){
                     return true;
-                } else if (atom_lhs->second == atom_rhs->second) {
+                } else if (Solver::are_Doubles_Close(atom_lhs->second, atom_rhs->second)) {
                     if(static_cast< void*>(atom_lhs->first) <
                        static_cast< void*>(atom_rhs->first)){
                     } else if (atom_lhs->first == atom_rhs->first) {
@@ -221,6 +248,35 @@ operator<(const POMDP_State& in) const
     }
 
     return false;
+//     if(this->expected_reward < in.expected_reward){
+//         return true;
+//     } else if (this->expected_reward == in.expected_reward) {
+
+//         if(belief_State.size() < in.belief_State.size()){
+//         } else if (belief_State.size() == in.belief_State.size()) {
+//             auto atom_lhs = belief_State.begin();
+//             auto atom_rhs = in.belief_State.begin();
+//             for(
+//                     ; atom_lhs != belief_State.end()
+//                     ; atom_lhs++, atom_rhs++){
+//                 if(atom_lhs->second < atom_rhs->second){
+//                     return true;
+//                 } else if (atom_lhs->second == atom_rhs->second) {
+//                     if(static_cast< void*>(atom_lhs->first) <
+//                        static_cast< void*>(atom_rhs->first)){
+//                     } else if (atom_lhs->first == atom_rhs->first) {
+//                         continue;
+//                     } else {
+//                         return false;
+//                     }
+//                 } else {
+//                     return false;
+//                 }
+//             }
+//         }
+//     }
+
+//     return false;
 }
 
 void Partially_Observable_Markov_Decision_Process_State::
@@ -561,13 +617,29 @@ get__belief_state() const
 
 
 std::size_t  Partially_Observable_Markov_Decision_Process_State::
-hash_value() const
+hash_value() const/*BLACK FRIDAY*/
 {   
     INTERACTIVE_VERBOSER(true, 9085, "Hash value of :: "
                          <<*this<<" = "
                          <<boost::hash_range(belief_State.begin(), belief_State.end())
                          <<std::endl);
-    return boost::hash_range(belief_State.begin(), belief_State.end());
+    //return boost::hash_range(belief_State.begin(), belief_State.end());
+
+    std::vector<MDP_State*> states;
+    std::vector<float> probs;
+    
+    for(auto p = belief_State.begin()
+            ; p != belief_State.end()
+            ; p++){
+        states.push_back(p->first);
+        probs.push_back(static_cast<float>(p->second));
+    }
+
+    size_t seed = boost::hash_range(states.begin(), states.end());
+    boost::hash_combine(seed, boost::hash_range(probs.begin(), probs.end()));
+
+    return seed;
+    
 }
 
 

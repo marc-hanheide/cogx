@@ -49,7 +49,8 @@ namespace Planning
     public:
         Simple_Online_Solver(Planning::Parsing::Problem_Data&);
         
-        Ordered_Stack_Of_States<POMDP_State, Greedy_Heuristic, float> ordered_Stack_Of_States;
+        Ordered_Stack_Of_States<POMDP_State, Entropy_Heuristic, float> ordered_Stack_Of_States;
+//         Ordered_Stack_Of_States<POMDP_State, Greedy_Heuristic, float> ordered_Stack_Of_States;
         
 //         Ordered_Stack_Of_States<POMDP_State, Belief_State_Value> ordered_Stack_Of_States;
 //         Ordered_Stack_Of_States<POMDP_State, Obtainable_Values_Count> ordered_Stack_Of_States;
