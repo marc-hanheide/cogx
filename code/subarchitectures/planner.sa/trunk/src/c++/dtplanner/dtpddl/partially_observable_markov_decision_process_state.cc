@@ -625,20 +625,32 @@ hash_value() const/*BLACK FRIDAY*/
                          <<std::endl);
     //return boost::hash_range(belief_State.begin(), belief_State.end());
 
-    std::vector<MDP_State*> states;
-    std::vector<float> probs;
+    size_t seed = 0;
     
     for(auto p = belief_State.begin()
             ; p != belief_State.end()
             ; p++){
-        states.push_back(p->first);
-        probs.push_back(static_cast<float>(p->second));
-    }
-
-    size_t seed = boost::hash_range(states.begin(), states.end());
-    boost::hash_combine(seed, boost::hash_range(probs.begin(), probs.end()));
+        boost::hash_combine(seed, p->first);
+        boost::hash_combine(seed, static_cast<float>(p->second));
+     }
 
     return seed;
+    
+//     std::vector<MDP_State*> states;
+//     std::vector<float> probs;
+    
+//     for(auto p = belief_State.begin()
+//             ; p != belief_State.end()
+//             ; p++){
+//         states.push_back(p->first);
+//         probs.push_back(static_cast<float>(p->second));
+//     }
+    
+
+//     size_t seed = boost::hash_range(states.begin(), states.end());
+//     boost::hash_combine(seed, boost::hash_range(probs.begin(), probs.end()));
+
+//     return seed;
     
 }
 
