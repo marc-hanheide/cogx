@@ -47,10 +47,11 @@ namespace Planning
     public:
         Policy_Iteration__GMRES(Set_Of_POMDP_State_Pointers&,
                                 double sink_state_penalty,
-                                double discount_factor = 0.98);
+                                double discount_factor = 0.8);
 
         void operator()();
         
+        void reset__converged();
     private:
         GMRES gmres;
         
@@ -71,6 +72,11 @@ namespace Planning
         GMRES::Matrix state_transition_matrix;
         
         GMRES::Vector* value_vector;
+
+        uint old__state_space_size;
+        GMRES::Vector old__value_vector;
+        bool converged;
+        
     };
         
 }

@@ -122,6 +122,10 @@ void Solver::press__belief_transitions(POMDP_State* pomdp_state,
                  * \argument{pomdp_state} given the execution puts us
                  * in \local{atom}.*/
                 double atom_mass = atom->second / mass_of_belief_successor;
+
+                if(atom_mass < 1e-20){/*BLACK FRIDAY*/
+                    continue;
+                }
                 
                 INTERACTIVE_VERBOSER(true, 9095, *observation<<std::endl
                                      <<"Adding to belief state :: "

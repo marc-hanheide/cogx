@@ -47,6 +47,25 @@
 
 using namespace Planning;
 
+void State::decrement__obtainable_positive_rewards_count()
+{
+    INTERACTIVE_VERBOSER(true, 14000, "Positive rewards :: "<<obtainable_positive_rewards_count);
+    assert(obtainable_positive_rewards_count > 0);
+    obtainable_positive_rewards_count--;
+}
+
+void State::increment__obtainable_positive_rewards_count()
+{
+    obtainable_positive_rewards_count++;
+    INTERACTIVE_VERBOSER(true, 14000, "Positive rewards :: "<<obtainable_positive_rewards_count);
+}
+
+uint State::get__obtainable_positive_rewards_count() const
+{
+    
+    return obtainable_positive_rewards_count;
+}
+
 void State::decrement__obtainable_rewards_value(int val)
 {
     obtainable_rewards_value -= val;
@@ -111,6 +130,7 @@ State::State(Solver& solver,
      solver(solver),
      observational_state_during_expansion(0),
      obtainable_rewards_count(0),
+     obtainable_positive_rewards_count(0),
      obtainable_rewards_value(0)
 {
     

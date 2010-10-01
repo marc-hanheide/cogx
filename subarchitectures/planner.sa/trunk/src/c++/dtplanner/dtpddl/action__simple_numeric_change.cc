@@ -293,8 +293,28 @@ namespace Planning
 
 void Planning::Simple_Int_Transformation::set__statically_false(State& state) const
 {
-    INTERACTIVE_VERBOSER(true, 10909, "Reporting statically false element.");
+    INTERACTIVE_VERBOSER(true, 14000, "Reporting statically false element.");
     assert(state.get__obtainable_rewards_count());
+    
+    call_count++;
+    if(call_count > 1){
+        return;
+        UNRECOVERABLE_ERROR("Bad call count :: "<<call_count);
+    }
+    
+    
+    /*If the reward is positive.*/
+    if( ((enum_types::increase == get__modification_type())
+         && (get__modification_value() > 0)) ||
+        ((enum_types::assign == get__modification_type())
+         && (get__modification_value() > 0)) ||
+        ((enum_types::decrease == get__modification_type())
+         && (get__modification_value() < 0))){
+
+        /*Making a positive reward change at a state.*/
+        state.decrement__obtainable_positive_rewards_count();
+    }
+    
     state.decrement__obtainable_rewards_count();
     state.decrement__obtainable_rewards_value(get__modification_value());
     INTERACTIVE_VERBOSER(true, 10909, "State is now :: "<<state);
@@ -332,6 +352,20 @@ void Planning::count_reward_assignments_at_state
         auto input = satisfaction_Listener.cxx_get<Planning::Simple_Int_Transformation>();
         INTERACTIVE_VERBOSER(true, 10908, "Value is :: "<<input->get__modification_value());
         if(input->get__change_index() == reward_index){
+            
+            /*If the reward is positive.*/
+            if( ((enum_types::increase == input->get__modification_type())
+                 && (input->get__modification_value() > 0)) ||
+                ((enum_types::assign == input->get__modification_type())
+                 && (input->get__modification_value() > 0)) ||
+                ((enum_types::decrease == input->get__modification_type())
+                 && (input->get__modification_value() < 0))){
+
+                /*Making a positive reward change at a state.*/
+                state.increment__obtainable_positive_rewards_count();
+            }
+            
+            
             state.increment__obtainable_rewards_count();
             state.increment__obtainable_rewards_value(input->get__modification_value());
         }

@@ -200,7 +200,7 @@ int main(int argc, char** argv)
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
-            solver->set__sink_state_penalty(0); //-1234.0);//-1e6);
+            solver->set__sink_state_penalty(-1.0); //-1234.0);//-1e6);
             
             INTERACTIVE_VERBOSER(true, 12000, "Made a solver, starting preprocessing.")
             
@@ -218,13 +218,24 @@ int main(int argc, char** argv)
             
             INTERACTIVE_VERBOSER(true, 15000, "Current state is :: "
                                  <<*current_state<<std::endl
-                                 <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
+//                                  <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl
+                                 );
 
+
+//             for(auto p = current_state->get__belief_state().begin()
+//                     ; p != current_state->get__belief_state().end()
+//                     ; p++){
+//                 auto state = p->first;
+                
+//                 INTERACTIVE_VERBOSER(true, 15000, "An atom is :: "
+//                                      <<*dynamic_cast<const Planning::State*>(state)<<std::endl);
+//             }
+            
             
 //             Planning::Policy_Iteration
             Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space, solver->get__sink_state_penalty());
 //             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space, solver->get__sink_state_penalty());
-            for(uint i = 0; i < 100; i++){
+            for(uint i = 0; i < 100000; i++){
                 if(!solver->expand_belief_state_space()){
                     break;
                     VERBOSER(15000, "No starting state!"<<std::endl);
@@ -233,31 +244,22 @@ int main(int argc, char** argv)
                              <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl
                              <<"Expected reward is :: "
                              <<current_state->get__expected_value()<<std::endl);
-                
-                    policy_Iteration();
+//                 policy_Iteration();
+//                     if(!(i % 10))policy_Iteration();
+
+                    policy_Iteration.reset__converged();
                 }
             }
 
-//             exit(0);
+            INTERACTIVE_VERBOSER(true, 15000, "Done state expansions :: "
+                     <<current_state->get__expected_value()<<std::endl);
             
-//             double old_expected_reward = -1000000.0;
-            
-            for(uint i = 0; i < 50; i++){
+            for(uint i = 0; i < 100; i++){
                 policy_Iteration();
-//                 if(old_expected_reward != current_state->get__expected_value()){
-//                      old_expected_reward = current_state->get__expected_value();
-//                 } else {
-//                     break;
-//                 }
-                
                 
                 VERBOSER(15000, "Expected reward is :: "
                          <<current_state->get__expected_value()<<std::endl);
             }
-            
-
-//             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
-//             policy_Iteration();
             
             for(auto i = 0; i < 10; i++){
             
@@ -272,8 +274,19 @@ int main(int argc, char** argv)
                 INTERACTIVE_VERBOSER(true, 15000, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
             
                 auto observations = current_state->get__possible_observations_given_action(_action.second);
+
+                auto random_index = 0;
+                for(auto observation = observations.begin()
+                        ; observation != observations.end()
+                        ; observation++){
+                    INTERACTIVE_VERBOSER(true, 15000, "Observation :: "<<*observations[random_index]<<" "<<_action.second<<std::endl);
             
-                auto random_index = random() % observations.size();
+                    {char ch; std::cin>>ch; if(ch == 'y')break;}
+                    random_index++;
+                }
+                
+                
+                //auto random_index = random() % observations.size();
                 auto observation = observations[random_index];
             
                 Planning::POMDP_State* successor_state

@@ -110,6 +110,10 @@ namespace Planning
         void increment__obtainable_rewards_count();
         uint get__obtainable_rewards_count() const;
 
+        void decrement__obtainable_positive_rewards_count();
+        void increment__obtainable_positive_rewards_count();
+        uint get__obtainable_positive_rewards_count() const;
+
         /* Subtract value \argument{int} from
          * \member{obtainable_rewards_value}.*/
         void decrement__obtainable_rewards_value(int);
@@ -139,6 +143,11 @@ namespace Planning
         /* Number of rewards that are not statically-unachievable
          * (note the double negative) from this state.*/
         uint obtainable_rewards_count;
+        
+        /* Number of positive rewards that are not
+         * statically-unachievable (note the double negative) from
+         * this state.*/
+        uint obtainable_positive_rewards_count;
         
         /* Sum of the values of rewards that are not
          * statically-unachievable (note the double negative) from

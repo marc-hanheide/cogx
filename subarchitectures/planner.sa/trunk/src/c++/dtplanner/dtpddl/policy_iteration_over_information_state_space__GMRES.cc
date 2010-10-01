@@ -41,7 +41,9 @@ Policy_Iteration__GMRES(Set_Of_POMDP_State_Pointers& states,
                         double discount_factor)
     :states(states),
      sink_state_penalty(sink_state_penalty),
-     discount_factor(discount_factor)
+     discount_factor(discount_factor),
+     old__state_space_size(0),
+     converged(false)
 {
 }
 
@@ -59,7 +61,8 @@ void Policy_Iteration__GMRES::configure_transition_matrix()
         
         /*Fringe states go to the sink.*/
         if(state->unexpanded()){
-            state_transition_matrix(starting_index, dimension-1) -= discount_factor;
+//             state_transition_matrix(starting_index, dimension-1) -= discount_factor;
+            state_transition_matrix(starting_index, starting_index) -= discount_factor;
             
             continue;
         }
@@ -111,8 +114,8 @@ void Policy_Iteration__GMRES::configure_reward_vector()
     assert(states.size() < dimension);
     assert(instantanious_reward_vector[states.size()] == 0.0);
     assert(states.size() < instantanious_reward_vector.size());
-//     instantanious_reward_vector[states.size()] = sink_state_penalty;
-    instantanious_reward_vector[states.size()] = 0.0;
+    instantanious_reward_vector[states.size()] = sink_state_penalty;
+//     instantanious_reward_vector[states.size()] = 0.0;
 }
 
 void Policy_Iteration__GMRES::press_greedy_policy()
@@ -127,11 +130,23 @@ void Policy_Iteration__GMRES::press_greedy_policy()
     }
 }
 
+void Policy_Iteration__GMRES::reset__converged()
+{
+    converged = false;
+}
+
+
 /*Child's play, but should do for the moment.*/
 void Policy_Iteration__GMRES::operator()()
 {
+    if(converged){
+        WARNING("Converged!");
+        return;
+    }
+    
     /*adding a sink state that spins on zero reward.*/
     dimension = states.size() + 1;
+    
     
     configure_transition_matrix();
     configure_reward_vector();
@@ -150,6 +165,33 @@ void Policy_Iteration__GMRES::operator()()
 //     cerr<<state_transition_matrix<<std::endl<<std::endl;
 //     cerr<<*value_vector<<std::endl<<std::endl;
 //     exit(0);
+
+    
+
+    if((old__state_space_size == dimension)){
+        bool values_unchanged = false;
+        for(uint i = 0;i < dimension; i++){
+            assert(i < old__value_vector.size());
+            assert(i < (*value_vector).size());
+            if(old__value_vector(i) != (*value_vector)(i)){
+                values_unchanged = true;
+                break;
+            }
+        }
+        
+        if(!values_unchanged){
+            converged = true;
+            return ;
+        } else {
+            old__state_space_size = dimension;
+            old__value_vector = *value_vector;
+        }
+    } else {
+        old__state_space_size = dimension;
+        old__value_vector = *value_vector;
+    }
+    
+    
     
     press_greedy_policy();
 }
