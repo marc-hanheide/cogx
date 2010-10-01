@@ -23,6 +23,7 @@ import org.xml.sax.SAXNotSupportedException;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -70,23 +71,25 @@ public class WebsiteScanner {
 			if (this.m_numHits==null) this.m_numHits = 0;
 		} catch (SAXException e) {
 			System.err.println (e);
-			BufferedReader reader;
+			if (!(e.toString().contains("&"))) return new Integer (-1);
 			try {
+				BufferedReader reader;
 				if (websiteAddress.startsWith("http")) reader = new BufferedReader(new InputStreamReader(new URL(websiteAddress).openStream()));
 				else reader = new BufferedReader(new InputStreamReader(new FileInputStream(websiteAddress)));
+
 				String line = reader.readLine();
 				DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss:SSS");
-		        Date date = new Date();
-		        String currDateID = dateFormat.format(date);
-		        
-		        String cacheFileName = "websiteScanner"+currDateID+".cache";
+				Date date = new Date();
+				String currDateID = dateFormat.format(date);
+
+				String cacheFileName = "caches/websiteScanner"+currDateID+".cache";
 				FileOutputStream fstream = new FileOutputStream(cacheFileName);
-			    PrintStream outstream = new PrintStream(fstream);
+				PrintStream outstream = new PrintStream(fstream);
 				while (line != null) {
-					outstream.println(line.replaceAll("&", "").replaceAll("match(/<script", ""));
-							//replaceAll("&&", "&amp;&amp;").replaceAll(" & ", " &amp; ").
-							//replaceAll("&(#[1-9][0-9]{1,3}|[0-9A-Za-z]+)[^;]+[:blank:]"," &amp; "));
-							//replaceAll("&[^;]+[:blank:]", ""));
+					outstream.println(line.replaceAll("&", "").replaceAll("/<script", ""));
+					//replaceAll("&&", "&amp;&amp;").replaceAll(" & ", " &amp; ").
+					//replaceAll("&(#[1-9][0-9]{1,3}|[0-9A-Za-z]+)[^;]+[:blank:]"," &amp; "));
+					//replaceAll("&[^;]+[:blank:]", ""));
 					line = reader.readLine(); 
 				}
 				System.out.println("TRYING TO PARSE LOCAL FILE!");
@@ -99,8 +102,12 @@ public class WebsiteScanner {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (IOException e) {
-			System.err.println (e);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		Integer returnNumber = (this.m_numHits != null ? this.m_numHits : new Integer(-1));
 		this.m_numHits = null;

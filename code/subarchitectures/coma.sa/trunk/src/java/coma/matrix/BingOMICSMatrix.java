@@ -157,7 +157,7 @@ public class BingOMICSMatrix {
 					String object = this.matrix.getColLabel(a);
 					String location = this.matrix.getRowLabel(b);
 
-					String bingImagesQuery = "http://www.bing.com/images/search?q="+object.split("#")[1].replace(">", "").replace("_", "+")+"+in+the+"+location.split("#")[1].replace(">", "").replace("_", "+");
+					String bingImagesQuery = "http://www.bing.com/images/search?q=%22"+object.split("#")[1].replace(">", "").replace("_", "+")+"%22+in+the+%22"+location.split("#")[1].replace(">", "").replace("_", "+")+"%22";
 
 					System.out.println(bingImagesQuery);
 					Integer numHits = bingImagesScanner.scanForHits(bingImagesQuery);
