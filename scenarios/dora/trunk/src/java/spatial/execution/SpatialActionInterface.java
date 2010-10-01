@@ -4,8 +4,11 @@
 package spatial.execution;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import SpatialData.AVSAction;
 import SpatialData.AVSCommand;
@@ -86,33 +89,31 @@ public class SpatialActionInterface extends ManagedComponent {
 	public static class ViewConeGenerationExecutor extends
 			NonBlockingCompleteOnOperationExecutor<CreateConesForModel> {
 
-		private long[] m_placesToSearch;
-		private String m_model;
-
 		public ViewConeGenerationExecutor(ManagedComponent _component) {
 			super(_component, CreateConesForModel.class);
 		}
 
 		@Override
 		protected boolean acceptAction(CreateConesForModel _action) {
-			m_model = _action.model;
-			m_placesToSearch = _action.placeIDs;
 			return true;
 		}
 
 		@Override
 		public void executeAction() {
+			// first delete all cones from previous object call
+			((SpatialActionInterface) getComponent())
+					.removeObjectViewPoints(getAction().model);
+
+			// the generate new ones
 			ViewPointGenerationCommand cmd = new ViewPointGenerationCommand(
-					m_model, m_placesToSearch, AVSStatus.INPROGRESS);
+					getAction().model, getAction().placeIDs,
+					AVSStatus.INPROGRESS);
 			addThenCompleteOnOverwrite(newWorkingMemoryAddress(), cmd);
 		}
 	}
 
 	public static class ViewConeProcessExecutor extends
 			NonBlockingCompleteOnOperationExecutor<ProcessCone> {
-
-		// private long[] m_placesToSearch;
-		// private String m_model;
 
 		private ViewPoint m_vp;
 
@@ -123,7 +124,8 @@ public class SpatialActionInterface extends ManagedComponent {
 		@Override
 		protected boolean acceptAction(ProcessCone _action) {
 			try {
-				m_vp = getComponent().getMemoryEntry(_action.coneAddress, ViewPoint.class);
+				m_vp = getComponent().getMemoryEntry(_action.coneAddress,
+						ViewPoint.class);
 			} catch (CASTException e) {
 				logException(e);
 				return false;
@@ -133,8 +135,8 @@ public class SpatialActionInterface extends ManagedComponent {
 
 		@Override
 		public void executeAction() {
-			println("WARNING: ONLY PROCESSING VIEW CONE FOR BOOK - FIX ME");
-			ProcessViewPointCommand cmd = new ProcessViewPointCommand(AVSStatus.INPROGRESS, m_vp, new String[]{"book"});
+			ProcessViewPointCommand cmd = new ProcessViewPointCommand(
+					AVSStatus.INPROGRESS, m_vp, new String[] { m_vp.label });
 			addThenCompleteOnOverwrite(newWorkingMemoryAddress(), cmd);
 		}
 	}
@@ -416,6 +418,8 @@ public class SpatialActionInterface extends ManagedComponent {
 
 	private int m_detections;
 
+	private HashMap<String, HashSet<WorkingMemoryAddress>> m_viewPoints;
+
 	public SpatialActionInterface() {
 		m_detections = 4;
 	}
@@ -482,7 +486,7 @@ public class SpatialActionInterface extends ManagedComponent {
 		m_actionStateManager.registerActionType(ProcessCone.class,
 				new ComponentActionFactory<ViewConeProcessExecutor>(this,
 						ViewConeProcessExecutor.class));
-		
+
 		// add a listener to check for place ids, for checking purposes
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
 				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
@@ -507,6 +511,85 @@ public class SpatialActionInterface extends ManagedComponent {
 				addPlace(place);
 			}
 		});
+
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				ViewPoint.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+						addViewPoint(_wmc.address);
+					}
+				});
+
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				ViewPoint.class, WorkingMemoryOperation.DELETE),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+						removeViewPoint(_wmc.address);
+					}
+				});
+	}
+
+	private void removeViewPoint(WorkingMemoryAddress _address) {
+		if (m_viewPoints != null) {
+
+			Set<Entry<String, HashSet<WorkingMemoryAddress>>> entrySet = m_viewPoints
+					.entrySet();
+			for (Entry<String, HashSet<WorkingMemoryAddress>> entry : entrySet) {
+				if (entry.getValue().remove(_address)) {
+					return;
+				}
+			}
+		}
+
+	}
+
+	private void addViewPoint(WorkingMemoryAddress _address) {
+		if (m_viewPoints == null) {
+			m_viewPoints = new HashMap<String, HashSet<WorkingMemoryAddress>>();
+		}
+		try {
+			String objectLabel = getMemoryEntry(_address, ViewPoint.class).label;
+			HashSet<WorkingMemoryAddress> objectSet = m_viewPoints
+					.get(objectLabel);
+			if (objectSet == null) {
+				objectSet = new HashSet<WorkingMemoryAddress>();
+				m_viewPoints.put(objectLabel, objectSet);
+			}
+			objectSet.add(_address);
+		} catch (CASTException e) {
+			logException(e);
+		}
+	}
+
+	private void removeObjectViewPoints(String _label) {
+		assert (_label != null);
+		// needed because the non-block action is run in a thread
+		lockComponent();
+
+		if (m_viewPoints != null) {
+			HashSet<WorkingMemoryAddress> viewPointAddressess = m_viewPoints
+					.remove(_label);
+			if (viewPointAddressess == null) {
+				println("no stored cones for object label: " + _label);
+			} else {
+				for (WorkingMemoryAddress addr : viewPointAddressess) {
+					try {
+						deleteFromWorkingMemory(addr);
+					} catch (CASTException e) {
+						logException(e);
+					}
+				}
+
+			}
+		} else {
+			println("no stored cones for object label: " + _label);
+		}
+
+		unlockComponent();
 
 	}
 
