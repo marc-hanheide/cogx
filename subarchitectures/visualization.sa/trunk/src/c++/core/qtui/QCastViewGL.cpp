@@ -29,6 +29,7 @@ QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
    zRot = 0;
    zoomLevel = 0;
    //m_camera.eye.set(0, 0, 5);
+   //m_camera.view.set(0, 0, -1);
 }
 
 QCastViewGL::~QCastViewGL()
@@ -195,8 +196,15 @@ void QCastViewGL::mouseMoveEvent(QMouseEvent *event)
    }
    else if(event->buttons() & Qt::RightButton) {
       // Rotate the scene (not the camera)
-      setXRotation(xRot - dy*rot_scale);
-      setYRotation(yRot + dx*rot_scale);
+      // TODO: directions (signs) may change depending on m_camera position
+      if (event->modifiers() & Qt::ControlModifier) {
+         setXRotation(xRot - dy*rot_scale);
+         setZRotation(zRot + dx*rot_scale);
+      }
+      else {
+         setXRotation(xRot - dy*rot_scale);
+         setYRotation(yRot + dx*rot_scale);
+      }
    }
    m_lastPos = event->pos();
 }
