@@ -24,7 +24,7 @@ CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf 
 CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf #--no-x-window --log #--debug
 CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5
 CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric #--no-file-output
-CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf --no-sois --no-nodeclass --no-areaclass --no-walls --read-ptu #--log
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf --no-sois --no-nodeclass --no-areaclass --read-ptu #--log
 CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-tentative-window  --no-local-map-window --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --load-nodemap #--debug
 CPP GD relation.manager ObjectRelationManager -c instantiations/cureconfig/cogxp3.ccf --log --no-vision #--display-objects-in-pb --no-vision #--debug #--no-ptz #--debug
 CPP GD visual.search VisualObjectSearch -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 100 --tiltinterval 15 --showgui --ctrl-ptu --gridsize 500 --cellsize 0.05  --kernel-width-factor 0.7 --sampleawayfromobs 0.45 --publishsimcones --log #--simulate #--debug --showconemap 
