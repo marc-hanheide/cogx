@@ -17,7 +17,7 @@ namespace P
 
 int DShapeCore::HALF_WIN_SIZE = 10;
 int DShapeCore::SIZE_POINT_CONTAINER = 2000;
-double DShapeCore::QUALITY = 0.01;
+double DShapeCore::QUALITY = 0.01;  // TUNING KLT feature quality threshold, maybe use looser 0.005
 double DShapeCore::MIN_DISTANCE = 5;//10;
 int DShapeCore::USE_HARRIS = 0;
 bool DShapeCore::REFINE_CORNER_SUBPIX = false;

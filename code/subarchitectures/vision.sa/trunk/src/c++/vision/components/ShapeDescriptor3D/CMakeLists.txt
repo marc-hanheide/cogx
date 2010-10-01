@@ -11,7 +11,7 @@ INCLUDE_DIRECTORIES(${LEVMAR_PATH})
 LINK_DIRECTORIES(${HOMEST_PATH})
 LINK_DIRECTORIES(${LEVMAR_PATH})
 
-add_cast_component(ShapeDescriptor3D ShapeDescriptor3D.cpp)
+add_cast_component(ShapeDescriptor3D ShapeDescriptor3D.cpp PlaneRANSAC.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Stereo StereoClient)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData VideoUtils DShape3D)
 link_cast_component(${CAST_COMPONENT_NAME} ${VISUALIZATION_LIBRARIES})

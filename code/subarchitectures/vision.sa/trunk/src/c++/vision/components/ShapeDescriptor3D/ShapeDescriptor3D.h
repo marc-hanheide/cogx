@@ -44,6 +44,24 @@ private:
    */
   P::DShapeCore dshape;
   /**
+   * current proto object
+   */
+  ProtoObjectPtr pobjPtr;
+  /**
+   * if true, use stereo matching of keypoints and plane detection based on homographies
+   * if false, use 3D points from stereo point cloud and detect planes in 3D
+   * The latter tends to get better results when there is no strong "keypoint-ish" texture,
+   * where no keypoints are found but dense stereo still has enough texture to reconstruct
+   * a proper surface.
+   */
+  bool useKeyPoints;
+  /**
+   * current set of planes detected in 3D points (only used if useKeypoints == false)
+   */
+  P::Array<P::Plane*> rasPlanes;
+  double ransacThr;
+  int planeMinPoints;
+  /**
    * whether to log images to files
    */
   bool logImages;
@@ -75,6 +93,10 @@ private:
   void updatedProtoObject(const cdl::WorkingMemoryChange & _wmc);
 
   void calculateDescriptor(ProtoObject &pobj);
+  
+  void calculateDescriptor2(ProtoObject &pobj);
+  void removeInliers(SurfacePointSeq &points, int &n, const Plane3 &plane, double thr);
+  void findPlanes(vector<Plane3> &planes, SurfacePointSeq &points, int &n);
 
 protected:
   /**
