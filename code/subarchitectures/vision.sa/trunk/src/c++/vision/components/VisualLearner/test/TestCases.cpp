@@ -128,7 +128,7 @@ void CTestCase_Learning::onStart()
       );
 
    m_pOwner->addChangeFilter(
-     createLocalTypeFilter<VisualLearnerLearningTask>(cdl::OVERWRITE),
+     createLocalTypeFilter<VisualLearningTask>(cdl::OVERWRITE),
      new MemberFunctionChangeReceiver<CTestCase_Learning>(
         this, &CTestCase_Learning::onChange_LearningTask)
      );
@@ -146,17 +146,24 @@ bool intLower (int i, int j)
 {
    return (i<j);
 }
+
+static
+bool cmpStrLower (string i, string j)
+{
+   return (i<j);
+}
+
 void CTestCase_Learning::onChange_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
    if (m_stepsComplete == 0) {
       VisualLearnerRecognitionTaskPtr pTask = m_pOwner->getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
-      std::vector<int>::iterator plabel;
+      std::vector<string>::iterator plabel;
       std::vector<double>::iterator pdbl;
       labels.clear();
       for( plabel = pTask->labels.begin(); plabel != pTask->labels.end(); plabel++) {
          labels.push_back(*plabel);
       }
-      std::sort(labels.begin(), labels.end(), intLower);
+      std::sort(labels.begin(), labels.end(), cmpStrLower);
    }
 
    m_pOwner->sleepComponent(100);
@@ -181,45 +188,46 @@ void CTestCase_Learning::performLearningStep(int issued, string protoId)
       string reqId(m_pOwner->newDataID());
       m_pOwner->addToWorkingMemory(reqId, ptask);
    }
-   else if (issued == 2) {
-      m_pOwner->log("STEP %d: LEARNING", issued);
-      VisualLearnerLearningTaskPtr ptask = new VisualLearnerLearningTask();
-      ptask->protoObjectId = protoId;
-      std::vector<double> &distrib = ptask->distribution;
+   // TODO: TestCases for learning task, replace ProtoObject with VisualObject
+   //else if (issued == 2) {
+   //   m_pOwner->log("STEP %d: LEARNING", issued);
+   //   VisualLearningTaskPtr ptask = new VisualLearningTask();
+   //   ptask->protoObjectId = protoId;
+   //   std::vector<double> &distrib = ptask->distribution;
 
-      double sum = 0;
-      for( plabel = labels.begin(); plabel != labels.end(); plabel++) {
-         ptask->labels.push_back(*plabel);
-         n = rand() % 100;
-         distrib.push_back(n);
-         sum += n;
-      }
-      for (n = 0; n < distrib.size(); n++) distrib[n] = distrib[n] / sum;
+   //   double sum = 0;
+   //   for( plabel = labels.begin(); plabel != labels.end(); plabel++) {
+   //      ptask->labels.push_back(*plabel);
+   //      n = rand() % 100;
+   //      distrib.push_back(n);
+   //      sum += n;
+   //   }
+   //   for (n = 0; n < distrib.size(); n++) distrib[n] = distrib[n] / sum;
 
-      string reqId(m_pOwner->newDataID());
-      m_pOwner->addToWorkingMemory(reqId, ptask);
-   }
-   else if (issued == 4) {
-      m_pOwner->log("STEP %d: UNLEARNING", issued);
-      VisualLearnerLearningTaskPtr ptask = new VisualLearnerLearningTask();
-      ptask->protoObjectId = protoId;
-      std::vector<double> &distrib = ptask->distribution;
+   //   string reqId(m_pOwner->newDataID());
+   //   m_pOwner->addToWorkingMemory(reqId, ptask);
+   //}
+   //else if (issued == 4) {
+   //   m_pOwner->log("STEP %d: UNLEARNING", issued);
+   //   VisualLearningTaskPtr ptask = new VisualLearningTask();
+   //   ptask->protoObjectId = protoId;
+   //   std::vector<double> &distrib = ptask->distribution;
 
-      double sum = 0;
-      for( plabel = labels.begin(); plabel != labels.end(); plabel++) {
-         ptask->labels.push_back(*plabel);
-         n = rand() % 100;
-         distrib.push_back(n);
-         sum += n;
-      }
-      for (n = 0; n < distrib.size(); n++) {
-         distrib[n] = distrib[n] / sum;
-         if (n % 2 == 0) distrib[n] = -distrib[n];
-      }
+   //   double sum = 0;
+   //   for( plabel = labels.begin(); plabel != labels.end(); plabel++) {
+   //      ptask->labels.push_back(*plabel);
+   //      n = rand() % 100;
+   //      distrib.push_back(n);
+   //      sum += n;
+   //   }
+   //   for (n = 0; n < distrib.size(); n++) {
+   //      distrib[n] = distrib[n] / sum;
+   //      if (n % 2 == 0) distrib[n] = -distrib[n];
+   //   }
 
-      string reqId(m_pOwner->newDataID());
-      m_pOwner->addToWorkingMemory(reqId, ptask);
-   }
+   //   string reqId(m_pOwner->newDataID());
+   //   m_pOwner->addToWorkingMemory(reqId, ptask);
+   //}
 }
 
 void CTestCase_Learning::runOneStep()

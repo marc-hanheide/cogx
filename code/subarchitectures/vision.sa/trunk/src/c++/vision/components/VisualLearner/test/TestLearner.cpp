@@ -67,19 +67,19 @@ void CTestRecognizer::start()
      );
 
    addChangeFilter(
-      createLocalTypeFilter<VisualLearnerLearningTask>(cdl::ADD),
+      createLocalTypeFilter<VisualLearningTask>(cdl::ADD),
       new MemberFunctionChangeReceiver<CTestRecognizer>(
          this, &CTestRecognizer::onAdd_LearningTask)
       );
 
    addChangeFilter(
-      createLocalTypeFilter<VisualLearnerLearningTask>(cdl::DELETE),
+      createLocalTypeFilter<VisualLearningTask>(cdl::DELETE),
       new MemberFunctionChangeReceiver<CTestRecognizer>(
          this, &CTestRecognizer::onDelete_LearningTask)
       );
 
    addChangeFilter(
-     createLocalTypeFilter<VisualLearnerLearningTask>(cdl::OVERWRITE),
+     createLocalTypeFilter<VisualLearningTask>(cdl::OVERWRITE),
      new MemberFunctionChangeReceiver<CTestRecognizer>(
         this, &CTestRecognizer::onChange_LearningTask)
      );
@@ -160,12 +160,12 @@ void CTestRecognizer::onChange_RecognitionTask(const cast::cdl::WorkingMemoryCha
    log("Recognition task %s modified. %d requests in WM.", descAddr(_wmc.address).c_str(), m_RecogTasks);
    if (dumpChanged_RecogTask) {
       VisualLearnerRecognitionTaskPtr pTask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
-      std::vector<int>::iterator plabel;
+      std::vector<string>::iterator plabel;
       std::vector<double>::iterator pdbl;
 
       pdbl = pTask->distribution.begin();
       for( plabel = pTask->labels.begin(); plabel != pTask->labels.end(); plabel++) {
-         log("Label '%d' Distr '%f'", *plabel, pdbl != pTask->distribution.end() ? *pdbl : -1);
+         log("Label '%s' Distr '%f'", plabel->c_str(), pdbl != pTask->distribution.end() ? *pdbl : -1);
          if (pdbl != pTask->distribution.end()) pdbl++;
       }
    }
@@ -176,9 +176,9 @@ void CTestRecognizer::onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & 
    m_LearnTasks++;
    log("Learning task %s added. %d requests in WM.", descAddr(_wmc.address).c_str(), m_LearnTasks);
    if (dumpNew_LearningTask) {
-      VisualLearnerLearningTaskPtr pTask = getMemoryEntry<VisualLearnerLearningTask>(_wmc.address);
+      VisualLearningTaskPtr pTask = getMemoryEntry<VisualLearningTask>(_wmc.address);
 
-      std::vector<int>::iterator plabel;
+      std::vector<string>::iterator plabel;
       std::vector<double>::iterator pdbl;
       ostringstream ostr;
       ostr << "Labels: ";
@@ -188,8 +188,8 @@ void CTestRecognizer::onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & 
       log(ostr.str());
 
       ostringstream ostr2;
-      ostr2 << "Distr: ";
-      for( pdbl = pTask->distribution.begin(); pdbl != pTask->distribution.end(); pdbl++) {
+      ostr2 << "Weights: ";
+      for( pdbl = pTask->weights.begin(); pdbl != pTask->weights.end(); pdbl++) {
          ostr2 << *pdbl << " ";
       }
       log(ostr2.str());
