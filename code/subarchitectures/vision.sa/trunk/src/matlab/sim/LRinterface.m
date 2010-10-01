@@ -37,6 +37,9 @@ switch req
          c=avw2snf(avwn,Coma.SCC);
          mC=ODKDEunlearn(f,c,mC);
       end
+      [g,mC]=ODKDEintrospect(mC);
+      gain=cc2c(g);
+
       answ=1;%OK
       LRvisUpdate;
 %      LRevalUpdate;
