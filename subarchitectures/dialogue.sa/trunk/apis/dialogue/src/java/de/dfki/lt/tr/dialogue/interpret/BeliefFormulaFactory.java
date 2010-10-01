@@ -84,10 +84,9 @@ public abstract class BeliefFormulaFactory {
 		return cplxF;
 	}
 
-	public static PointerFormula newPointerFormula(String subarch, String id) {
+	public static PointerFormula newPointerFormula(WorkingMemoryAddress wma) {
 		PointerFormula pF = new PointerFormula();
-		pF.id = -1;
-		pF.pointer = new WorkingMemoryAddress(id, subarch);
+		pF.pointer = wma;
 		return pF;
 	}
 
