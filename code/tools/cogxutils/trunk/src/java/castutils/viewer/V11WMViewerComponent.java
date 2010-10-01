@@ -33,8 +33,8 @@ public class V11WMViewerComponent extends ManagedComponent {
 	final private MyDisplayClient displayClient = new MyDisplayClient();
 	final Map<Class<?>, Plugin> objectDispatcherMap = new HashMap<Class<?>, Plugin>();
 	public boolean addGenericCol = false;
-	private final ObjectImplInfo genericPlugin=new ObjectImplInfo();
-	
+	private final ObjectImplInfo genericPlugin = new ObjectImplInfo();
+
 	private class MyDisplayClient extends DisplayClient implements
 			ChangeHandler {
 		final Map<WorkingMemoryAddress, String> rows = Collections
@@ -44,41 +44,50 @@ public class V11WMViewerComponent extends ManagedComponent {
 		public void entryChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
 				WorkingMemoryChange wmc, ObjectImpl newEntry,
 				ObjectImpl oldEntry) throws CASTException {
-			switch (wmc.operation) {
-			case ADD:
-			case OVERWRITE:
-				Plugin pluginToCall = findPlugin(newEntry.getClass());
+			try {
+				switch (wmc.operation) {
+				case ADD:
+				case OVERWRITE:
+					Plugin pluginToCall = findPlugin(newEntry.getClass());
 
-				Vector<Object> row = new Vector<Object>();
-				// mark additions
-				if (wmc.operation == WorkingMemoryOperation.ADD)
-					row.add("*");
-				else
-					row.add("");
-				row.add(addrToString(wmc.address));
-				row.add(newEntry.getClass().getSimpleName());
-				if (pluginToCall != null) { // if we have a plugin for this
-					// object
-					Vector<Object> extraInfo = pluginToCall.toVector(newEntry);
-					row.addAll(extraInfo);
+					Vector<Object> row = new Vector<Object>();
+					// mark additions
+					if (wmc.operation == WorkingMemoryOperation.ADD)
+						row.add("*");
+					else
+						row.add("");
+					row.add(addrToString(wmc.address));
+					row.add(newEntry.getClass().getSimpleName());
+					if (pluginToCall != null) { // if we have a plugin for this
+						// object
+						Vector<Object> extraInfo = pluginToCall
+								.toVector(newEntry);
+						row.addAll(extraInfo);
+					}
+					String logString = "";
+					for (Object o : row) {
+						logString += "<td>" + o.toString() + "</td>";
+					}
+					if (addGenericCol) {
+						String genericText = (String) genericPlugin.toVector(
+								newEntry).get(0);
+						logString += "<td>" + genericText + "</td>";
+						getLogger().info(CASTUtils.toString(wmc) + genericText);
+					}
+					rows.put(wmc.address, "<tr>" + logString + "</tr>");
+					break;
+				case DELETE:
+					rows.remove(wmc.address);
+					break;
 				}
-				String logString = "";
-				for (Object o : row) {
-					logString += "<td>" + o.toString() + "</td>";
-				}
-				if (addGenericCol) {
-					String genericText=(String) genericPlugin.toVector(newEntry).get(0);
-					logString += "<td>" + genericText + "</td>";
-					getLogger().info(CASTUtils.toString(wmc) +genericText);
-				}
-				rows.put(wmc.address, "<tr>" + logString + "</tr>");
-				break;
-			case DELETE:
-				rows.remove(wmc.address);
-				break;
+
+				updateView();
+			} catch (Exception e) {
+				getLogger()
+						.warn(
+								"there was an exception in the viewer but we happily ignore that for now: ",
+								e);
 			}
-
-			updateView();
 		}
 
 		public void updateView() {
@@ -156,8 +165,8 @@ public class V11WMViewerComponent extends ManagedComponent {
 				}
 			}
 		}
-		if (arg0.get("--generic-col")!=null) {
-			addGenericCol=true;
+		if (arg0.get("--generic-col") != null) {
+			addGenericCol = true;
 		}
 		displayClient.configureDisplayClient(arg0);
 	}
