@@ -17,9 +17,11 @@ if Settings.Disp.TL
       fprintf(fid, '<table border="1"> <tr>') ;fprintf(fid,'\n');
       fprintf(fid,'<td>concepts: </td>'); fprintf(fid,'<td>%d</td>',getc(mC,sc,0,'name')); %fprintf(fid,'<BR>\n');
       fprintf(fid,'\n<tr>\n') ;
-      fprintf(fid,'<td>numComp :</td>'); fprintf(fid,'<td>%2.1f</td>',getc(mC,sc,0,'numComp')); %fprintf(fid,'<BR>\n');
+      fprintf(fid,'<td>numComp :</td>'); fprintf(fid,'<td>%d</td>',getc(mC,sc,0,'numComp')); %fprintf(fid,'<BR>\n');
       fprintf(fid,'\n<tr>\n') ;
       fprintf(fid,'<td>conf    :</td>'); fprintf(fid,'<td>%d</td>',getc(mC,sc,0,'conf')); %fprintf(fid,'<BR>\n');
+      fprintf(fid,'\n<tr>\n') ;
+      fprintf(fid,'<td>gains   :</td>'); fprintf(fid,'<td>%3.2f</td>',getc(mC,sc,0,'gains')); %fprintf(fid,'<BR>\n');
       fprintf(fid,'\n<tr>\n') ;
       fprintf(fid,'<td>Fb      :</td>'); fprintf(fid,'<td>%d</td>',getc(mC,sc,0,'Fb')); %fprintf(fid,'<BR>\n');
       fprintf(fid, '</table> ') ;

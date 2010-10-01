@@ -110,6 +110,8 @@ switch param
        end
    case 'numF'
       val=length(mC{1}.cummulative_feat_costs);
+   case 'gains'
+       val=mC{sc}.class_gains;
    otherwise
       val='';
       disp('Unknown parameter');
