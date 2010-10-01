@@ -1,17 +1,18 @@
 package eu.cogx.perceptmediator.components;
 
+import SpatialProperties.GatewayPlaceProperty;
+import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.PerceptBindingMediator;
 import eu.cogx.perceptmediator.components.abstr.ReferringPerceptMediatorComponent;
 import eu.cogx.perceptmediator.transferfunctions.GatewayTransferFunction;
-import Ice.ObjectImpl;
-import SpatialProperties.GatewayPlaceProperty;
 
 public class PlaceGatewayMediator extends ReferringPerceptMediatorComponent {
 
 	@Override
-	protected PerceptBindingMediator<? extends ObjectImpl> getMediator() {
+	protected PerceptBindingMediator<GatewayPlaceProperty, PerceptBelief> getMediator() {
 		return PerceptBindingMediator.create(this, GatewayPlaceProperty.class,
-				new GatewayTransferFunction(this, perceptBeliefsView));
+				PerceptBelief.class, new GatewayTransferFunction(this,
+						perceptBeliefsView));
 	}
 
 }

@@ -8,6 +8,7 @@ import java.util.Map;
 import Ice.ObjectImpl;
 import cast.architecture.ManagedComponent;
 import castutils.castextensions.WMEntrySynchronizer.TransferFunction;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.perceptmediator.PerceptBindingMediator;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
@@ -35,7 +36,7 @@ public abstract class PerceptMediatorComponent extends ManagedComponent {
 	/**
 	 * the mediator to be used by the component.
 	 */
-	PerceptBindingMediator<? extends Ice.ObjectImpl> mediator = null;
+	PerceptBindingMediator<? extends Ice.ObjectImpl, ? extends dBelief> mediator = null;
 	
 	/**
 	 * the mediator runs in a separate thread.
@@ -55,7 +56,7 @@ public abstract class PerceptMediatorComponent extends ManagedComponent {
 	/** to be implemented to specialize for certain types
 	 * @return the {@link PerceptBindingMediator} to be used by this class.
 	 */
-	protected abstract PerceptBindingMediator<? extends ObjectImpl> getMediator();
+	protected abstract PerceptBindingMediator<? extends Ice.ObjectImpl, ? extends dBelief> getMediator();
 
 	/*
 	 * (non-Javadoc)

@@ -24,7 +24,7 @@ import eu.cogx.beliefs.slice.PerceptBelief;
  *            the type to transfer from
  */
 public abstract class DependentDiscreteTransferFunction<From extends Ice.ObjectImpl>
-		extends SimpleDiscreteTransferFunction<From> {
+		extends SimpleDiscreteTransferFunction<From, PerceptBelief> {
 
 	protected WMView<PerceptBelief> allBeliefs;
 	WMContentWaiter<PerceptBelief> waitingBeliefReader;
@@ -40,7 +40,7 @@ public abstract class DependentDiscreteTransferFunction<From extends Ice.ObjectI
 	 */
 	public DependentDiscreteTransferFunction(ManagedComponent component,
 			WMView<PerceptBelief> allBeliefs, Logger logger) {
-		super(component, logger);
+		super(component, logger, PerceptBelief.class);
 		this.allBeliefs = allBeliefs;
 		waitingBeliefReader = new WMContentWaiter<PerceptBelief>(
 				this.allBeliefs);

@@ -15,19 +15,20 @@ import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 /**
  * @author marc
  *
  */
-public class ViewPointTransferFunction extends SimpleDiscreteTransferFunction<ViewPoint> {
+public class ViewPointTransferFunction extends SimpleDiscreteTransferFunction<ViewPoint, GroundedBelief> {
 
 	public static final String OBJECT_PROBABILITY_ID = "probability";
 	public static final String OBJECT_LABEL_ID = "label";
 
 	public ViewPointTransferFunction(ManagedComponent component) {
-		super(component, Logger.getLogger(ViewPointTransferFunction.class));
+		super(component, Logger.getLogger(ViewPointTransferFunction.class), GroundedBelief.class);
 	}
 
 	@Override
