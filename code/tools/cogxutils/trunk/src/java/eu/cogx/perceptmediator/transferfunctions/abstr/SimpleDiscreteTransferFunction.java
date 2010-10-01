@@ -23,6 +23,7 @@ import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.PerceptBelief;
 
@@ -39,8 +40,8 @@ import eu.cogx.beliefs.slice.PerceptBelief;
  * @param <From>
  *            type we generate beliefs from
  */
-public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl>
-		extends CASTHelper implements TransferFunction<From, PerceptBelief> {
+public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl, To extends dBelief>
+		extends CASTHelper implements TransferFunction<From, To> {
 
 	public static final String SOURCE_ADDR_ID = "source-addr";
 	private static final String SEPARATOR = " ";
@@ -70,15 +71,18 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	}
 
 	private static TimeServerPrx timeServer = null;
+	Class<To> beliefClass;
 
 	/**
 	 * constructor
 	 * 
 	 * @param component
+	 * @param beliefType TODO
 	 */
 	public SimpleDiscreteTransferFunction(ManagedComponent component,
-			Logger logger) {
+			Logger logger, Class<To> beliefType) {
 		super(component);
+		this.beliefClass=beliefType;
 	}
 
 	/*
@@ -89,7 +93,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	 * lang.String, cast.cdl.CASTTime)
 	 */
 	@Override
-	public PerceptBelief create(WorkingMemoryAddress idToCreate,
+	public To create(WorkingMemoryAddress idToCreate,
 			WorkingMemoryChange wmc, From from) {
 
 		try {
@@ -101,8 +105,8 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 			// CondIndependentDistribs features = BeliefContentBuilder
 			// .createNewCondIndependentDistribs();
 
-			CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief
-					.create(PerceptBelief.class);
+			CASTIndependentFormulaDistributionsBelief<To> pb = CASTIndependentFormulaDistributionsBelief
+					.create(beliefClass);
 			pb.setId(idToCreate.id);
 			pb.setType(getBeliefTypeFromCastType(wmc.type));
 			pb.setPrivate("robot");
@@ -123,7 +127,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	 */
 	@Override
 	public boolean transform(WorkingMemoryChange wmc, From from,
-			PerceptBelief perceptBelief) {
+			To perceptBelief) {
 		assert (perceptBelief != null);
 		assert (perceptBelief.content != null);
 		assert (perceptBelief.content instanceof CondIndependentDistribs);

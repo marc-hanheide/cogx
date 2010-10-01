@@ -22,10 +22,10 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
  * @author marc
  *
  */
-public class AgentTransferFunction extends SimpleDiscreteTransferFunction<PlaceContainmentAgentProperty> {
+public class AgentTransferFunction extends SimpleDiscreteTransferFunction<PlaceContainmentAgentProperty, PerceptBelief> {
 
 	public AgentTransferFunction(ManagedComponent component) {
-		super(component, Logger.getLogger(AgentTransferFunction.class));
+		super(component, Logger.getLogger(AgentTransferFunction.class), PerceptBelief.class);
 		// TODO Auto-generated constructor stub
 	}
 

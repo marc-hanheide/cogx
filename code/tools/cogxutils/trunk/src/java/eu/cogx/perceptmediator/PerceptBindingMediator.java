@@ -6,11 +6,10 @@ package eu.cogx.perceptmediator;
 import java.util.EnumSet;
 import java.util.Set;
 
-import Ice.ObjectImpl;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.WMEntrySynchronizer;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 
 /**
  * This implements a monitor for specifc types of low-level percepts that are
@@ -20,34 +19,35 @@ import eu.cogx.beliefs.slice.PerceptBelief;
  * @author marc
  * 
  */
-public class PerceptBindingMediator<T extends Ice.ObjectImpl> extends
-		WMEntrySynchronizer<T, PerceptBelief> {
+public class PerceptBindingMediator<T extends Ice.ObjectImpl, B extends dBelief> extends
+		WMEntrySynchronizer<T, B> {
 
-	public static <FromS extends ObjectImpl> PerceptBindingMediator<FromS> create(
-			ManagedComponent component, Class<FromS> fromType,
-			TransferFunction<FromS, PerceptBelief> tf) {
+	public static <FromS extends Ice.ObjectImpl, B2 extends dBelief> PerceptBindingMediator<FromS, B2> create(
+			ManagedComponent component, Class<FromS> fromType, Class<B2> beliefType,
+			TransferFunction<FromS, B2> tf) {
 		Set<WorkingMemoryOperation> ops = EnumSet
 				.allOf(WorkingMemoryOperation.class);
 
-		return new PerceptBindingMediator<FromS>(component, fromType,
+		return new PerceptBindingMediator<FromS,B2>(component, fromType, beliefType,
 				tf, ops);
 	}
 
-	public static <FromS extends ObjectImpl> PerceptBindingMediator<FromS> create(
-			ManagedComponent component, Class<FromS> fromType,
-			TransferFunction<FromS, PerceptBelief> tf,
+	public static <FromS extends Ice.ObjectImpl, B2 extends dBelief> PerceptBindingMediator<FromS,B2> create(
+			ManagedComponent component, Class<FromS> fromType, Class<B2> beliefType,
+			TransferFunction<FromS, B2> tf,
 			Set<WorkingMemoryOperation> wmOps) {
 
-		return new PerceptBindingMediator<FromS>(component, fromType,
+		return new PerceptBindingMediator<FromS,B2>(component, fromType, beliefType,
 				tf, wmOps);
 	}
 
 	protected PerceptBindingMediator(
 			ManagedComponent c,
 			Class<T> fromType,
-			castutils.castextensions.WMEntrySynchronizer.TransferFunction<T, PerceptBelief> transferFunction,
+			Class<B> beliefType,
+			castutils.castextensions.WMEntrySynchronizer.TransferFunction<T, B> transferFunction,
 			Set<WorkingMemoryOperation> ops) {
-		super(c, fromType, PerceptBelief.class, transferFunction, ops);
+		super(c, fromType, beliefType, transferFunction, ops);
 
 	}
 

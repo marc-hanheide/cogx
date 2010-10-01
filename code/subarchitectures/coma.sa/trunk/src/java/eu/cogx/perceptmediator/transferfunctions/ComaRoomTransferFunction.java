@@ -17,6 +17,7 @@ import comadata.ComaRoom;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.IntFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
+import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 /**
@@ -24,12 +25,13 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
  * 
  */
 public class ComaRoomTransferFunction extends
-		SimpleDiscreteTransferFunction<ComaRoom> {
-	
-	public static final String ROOM_ID="RoomId";
-	
+		SimpleDiscreteTransferFunction<ComaRoom, PerceptBelief> {
+
+	public static final String ROOM_ID = "RoomId";
+
 	public ComaRoomTransferFunction(ManagedComponent component) {
-		super(component, Logger.getLogger(ComaRoomTransferFunction.class));
+		super(component, Logger.getLogger(ComaRoomTransferFunction.class),
+				PerceptBelief.class);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -38,8 +40,9 @@ public class ComaRoomTransferFunction extends
 			WorkingMemoryChange wmc, ComaRoom from) throws BeliefException {
 		assert (from != null);
 		Map<String, Formula> result = new HashMap<String, Formula>();
-		result.put(ROOM_ID, IntFormula.create((int) from.roomId)
-				.getAsFormula());
+		result
+				.put(ROOM_ID, IntFormula.create((int) from.roomId)
+						.getAsFormula());
 
 		component.getLogger().info(IceXMLSerializer.toXMLString(from));
 		// BoolFormula isExplored =
