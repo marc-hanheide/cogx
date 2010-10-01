@@ -305,62 +305,26 @@ sequence<OneObj> ObjSeq;
 	// time the ROI was last changed
   };
 
-  class ObjectRecognitionMatch {
-    // ID of the SOI/ProtoObject that was processed
-    string sourceType;
-	// sourceType[0]: "S"-SOI or "P"-ProtoObject, "I"-image
-    cast::cdl::WorkingMemoryAddress sourceId;
-
-    // IDs of the internal representation of objects
-    StringSeq objectId;
-
-    // Probability of object match. Same order as objectId.
-    DoubleSeq probability;
-  };
-  sequence<ObjectRecognitionMatch> ObjectRecognitionMatchSeq;
-
-  class ObjectRecognitionTask {
-    // REQUEST:
-    //    1. If protoObjectAddress set, process a ProtoObject
-    //    2. If soiIds set, process SOIs
-    //    3. Otherwise process the image from whole camera
-    cast::cdl::WorkingMemoryAddress protoObjectAddr;
-    IdSeq soiIds;
-
-    // RESPONSE
-    ObjectRecognitionMatchSeq matches;
-  };
-
   class VisualLearnerRecognitionTask {
     // REQUEST:
     string protoObjectId;
 
     // RESPONSE
-    IntSeq labels;
+    StringSeq labels;
+    IntSeq labelConcepts;
     DoubleSeq distribution;
+    DoubleSeq gain;
 
     // ASYNC DATA
     string visualObjectId;
   };
-
-  class VisualLearnerLearningTask {
-    // REQUEST:
-    string protoObjectId;
-
-    IntSeq labels;
-    DoubleSeq distribution;
-
-    // ASYNC DATA
-    string visualObjectId;
-    string beliefId;
-  };
-
 
   class VisualLearningTask {
 
     string visualObjectId;
     string beliefId;
 
+    // color, shape, type; maybe also shape3D
     string concept;
     StringSeq labels;
     DoubleSeq weights;

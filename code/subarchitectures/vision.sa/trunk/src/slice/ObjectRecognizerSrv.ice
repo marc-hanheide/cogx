@@ -36,7 +36,7 @@ module ObjectRecognizerIce {
    interface ObjectRecognizerInterface {
       long LoadObjectModel(string modelPath);
 
-      // Finds SIFT features in the image using (Py)SiftGPU.
+      // Finds SIFT features in the image using SiftGPU.
       // Returns the number of features found. The features are stored in:
       //    out features: array with 4*n elements (order: X, Y, Scale, Rotation)
       //    out descriptors: array with 128*n elements (values in range: 0-0.5)
@@ -47,6 +47,11 @@ module ObjectRecognizerIce {
       void FindMatchingObjects(Video::Image image,
             int left, int top, int width, int height,
             out RecognitionResultSeq recognized);
+
+      // update the model modelName with features extracted from the image
+      // TODO: add image area to process (box)
+      // TODO: add object pose relative to camera position/orientation
+      void UpdateModel(string modelName, Video::Image image);
    };
 };
 
