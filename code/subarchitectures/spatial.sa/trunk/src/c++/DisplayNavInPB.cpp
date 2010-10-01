@@ -311,12 +311,10 @@ void DisplayNavInPB::newPlanePointCloud(const cast::cdl::WorkingMemoryChange &ob
     m(2,0) = 1; m(2,1) = 0; m(2,2) = 0;
 
 
-    peekabot::GroupProxy root;
-    root.assign(m_PeekabotClient, "root");
     peekabot::PointCloudProxy pcloud;
     char tmp[256];
     sprintf(tmp, "planepoints%s", objID.address.id.c_str());
-    pcloud.add(root,tmp, peekabot::REPLACE_ON_CONFLICT);
+    pcloud.add(m_PeekabotClient,tmp, peekabot::REPLACE_ON_CONFLICT);
 
     numeric::ublas::vector<double> v (3);
     numeric::ublas::vector<double> t (3);
@@ -450,7 +448,7 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
 
   NavData::ObjectSearchPlanPtr plan = oobj->getData();
 
-  m_ProxyViewPoints.add(m_PeekabotClient, "root.viewpoints",peekabot::REPLACE_ON_CONFLICT);
+  m_ProxyViewPoints.add(m_PeekabotClient, "viewpoints",peekabot::REPLACE_ON_CONFLICT);
 
   // Get nodeIDs stated in the plan, and search through navGraph to
   // each nodeID and finally put ordered numbers on top of nodes that
@@ -616,9 +614,7 @@ void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
     //  m(1,0) = 0; m(1,1) = 0; m(1,2) = -1;
     //  m(2,0) = 1; m(2,1) = 0; m(2,2) = 0;
     peekabot::PointCloudProxy pcloud;
-    peekabot::GroupProxy root;
-    root.assign(m_PeekabotClient, "root");
-    pcloud.add(root,"planepopout", peekabot::REPLACE_ON_CONFLICT);
+    pcloud.add(m_PeekabotClient,"planepopout", peekabot::REPLACE_ON_CONFLICT);
 
 
 
@@ -705,7 +701,7 @@ void DisplayNavInPB::runComponent() {
 
         peekabot::GroupProxy walls;
         walls.add(m_PeekabotClient,
-                  "root/walls",
+                  "walls",
                   peekabot::REPLACE_ON_CONFLICT);
         
         for (unsigned int i = 0; i < m_LineMap->lines.size(); i++) {
@@ -819,7 +815,7 @@ void DisplayNavInPB::displayPeople()
 {
   peekabot::GroupProxy people;
   people.add(m_PeekabotClient,
-             "root.people",
+             "people",
              peekabot::REPLACE_ON_CONFLICT);
 
   for (unsigned int i = 0; i < m_People.size(); i++) {
