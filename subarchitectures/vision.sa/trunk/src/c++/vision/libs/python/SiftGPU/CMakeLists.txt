@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.6)
 project(PythonSiftGpu)
 
 find_package(PythonLibs)
-find_package(Cuda)
+if (LIBBUILD_CUDASIFT)
+   find_package(Cuda)
+endif (LIBBUILD_CUDASIFT)
 
 
 #set(SIFTGPU_SRCDIR ../../libsiftgpu/SiftGPU)
