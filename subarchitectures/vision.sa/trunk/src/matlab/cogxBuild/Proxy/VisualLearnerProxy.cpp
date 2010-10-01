@@ -45,7 +45,7 @@ public:
    }
 
    void initEnumeration() {
-      {
+      try {
          Enumerator.clear();
          labelConceptMap.clear();
          mwArray avNames, scConcept;
@@ -62,8 +62,8 @@ public:
             printf(" ... %d .. %s .. c%d \n", i+1, label.c_str(), concept);
          }
       }
-      if (0) {
-         printf(" **** FAILED to extract from Matlab: Coma.avNames\n");
+      catch (...) {
+         printf(" **** FAILED to extract from Matlab: Coma.avNames, Coma.SCC\n");
          Enumerator.clear();
          Enumerator.addMapping("red", 1);
          Enumerator.addMapping("green", 2);

@@ -226,7 +226,7 @@ bool VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
    // TODO: lock pProtoObj
 
    matlab::VL_recognise_attributes(*pProtoObj, _pTask->labels, _pTask->labelConcepts,
-         _pTask->distribution, _pTask->gain);
+         _pTask->distribution, _pTask->gains);
 
    // TODO: unlock pProtoObj
    return true;
