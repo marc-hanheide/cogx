@@ -313,21 +313,30 @@ sequence<OneObj> ObjSeq;
     StringSeq labels;
     IntSeq labelConcepts;
     DoubleSeq distribution;
-    DoubleSeq gain;
+    DoubleSeq gains;
 
     // ASYNC DATA
     string visualObjectId;
   };
 
   class VisualLearningTask {
-
     string visualObjectId;
     string beliefId;
 
-    // color, shape, type; maybe also shape3D
+    // superConcept: color, shape, type; maybe also shape3D
     string concept;
+    // concepts: red, compact, box
     StringSeq labels;
     DoubleSeq weights;
+  };
+
+  class VisualConceptModelStatus {
+    // superConcept: color, shape, type; maybe also shape3D
+    string concept;
+
+    // concepts: red, compact, box
+    IntSeq labels;
+    DoubleSeq gains;
   };
 
 
@@ -411,4 +420,4 @@ sequence<OneObj> ObjSeq;
 };
 
 #endif
-
+// vim:set sw=2 ts=8 et ai:
