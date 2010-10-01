@@ -21,6 +21,7 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
+#include <ObjectRecognizerSrv.hpp>
 
 #include "../../VisionUtils.h"
 #include "VTypeMapper.h"

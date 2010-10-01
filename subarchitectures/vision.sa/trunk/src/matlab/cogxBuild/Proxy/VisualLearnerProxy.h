@@ -7,9 +7,11 @@
 #include "Enumerator.h"
 #include <vector>
 
+namespace matlab {
 extern void VL_recognise_attributes(
       const VisionData::ProtoObject &Object,
       std::vector<std::string> &labels,
+      std::vector<int> &labelConcepts,
       std::vector<double> &probs,
       std::vector<double> &gains);
 
@@ -22,3 +24,5 @@ extern void VL_LoadAvModels(const char* filename);
 
 extern void VL_setEnumeration(const cogx::CTypeEnumerator& typeEnum);
 extern void VL_setClfStartConfig(const std::string& absConfigPath);
+
+} // namespace

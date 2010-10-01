@@ -36,7 +36,7 @@ class CTestCase_Learning: public CTestCase
    int m_stepsComplete;
    int m_issued;
    std::vector<std::string> m_protoIDs;
-   std::vector<int> labels;
+   std::vector<std::string> labels;
    void performLearningStep(int issued, std::string protoId);
    void onChange_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
    void onChange_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);

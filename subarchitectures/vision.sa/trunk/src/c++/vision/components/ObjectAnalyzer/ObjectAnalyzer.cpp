@@ -25,6 +25,7 @@ using namespace cast;
 using namespace std;
 using namespace cdl;
 using namespace VisionData;
+using namespace ObjectRecognizerIce;
 
 using namespace boost::interprocess;
 using namespace boost::posix_time;
@@ -78,7 +79,7 @@ void ObjectAnalyzer::start()
 	  new MemberFunctionChangeReceiver<ObjectAnalyzer>(this,
 		&ObjectAnalyzer::onChange_VL_RecognitionTask));
 
-  addChangeFilter(createLocalTypeFilter<VisionData::ObjectRecognitionTask>(cdl::OVERWRITE),
+  addChangeFilter(createLocalTypeFilter<ObjectRecognizerIce::ObjectRecognitionTask>(cdl::OVERWRITE),
 	  new MemberFunctionChangeReceiver<ObjectAnalyzer>(this,
 		&ObjectAnalyzer::onChange_OR_RecognitionTask));
 
@@ -107,7 +108,7 @@ long ObjectAnalyzer::getOrCreateVisualObject(const string &objectId, VisualObjec
   }
   catch (DoesNotExistOnWMException e) {
 	VisualObjectPtr pvobj = new VisualObject;
-	pvobj->protoObjectID = objectId;
+	//pvobj->protoObjectID = objectId;
 	return NewObject;
   }
 }
@@ -120,18 +121,29 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
 
   VisualObjectPtr pvobj = new VisualObject;
 
-	pvobj->protoObjectID = ptask->protoObjectId;
+  pvobj->protoObjectID = ptask->protoObjectId;
 
-  vector<int>::const_iterator plabel;
-  for( plabel = ptask->labels.begin(); plabel != ptask->labels.end(); plabel++) {
-    /* TODO: need to resolve whether labels are strings or ints
-    pvobj->identLabels.push_back(*plabel);*/
-    pvobj->identLabels.push_back("error");
-  }
-
-  vector<double>::const_iterator pdbl;
-  for( pdbl = ptask->distribution.begin(); pdbl != ptask->distribution.end(); pdbl++) {
-    pvobj->identDistrib.push_back(*pdbl);
+  vector<string>::const_iterator plabel = ptask->labels.begin();
+  vector<int>::const_iterator pconcpt = ptask->labelConcepts.begin();
+  vector<double>::const_iterator pdbl = ptask->distribution.begin();
+  for(; plabel != ptask->labels.end() && pconcpt != ptask->labelConcepts.end() &&
+	  pdbl != ptask->distribution.end();
+	  plabel++, pconcpt++, pdbl++)
+  {
+	// Concept mapping is done in Matlab
+	if (*pconcpt == 1){ // color concept
+	  pvobj->colorLabels.push_back(*plabel);
+	  pvobj->colorDistrib.push_back(*pdbl);
+	  // TODO: color: write gain for each label to VisualObject
+	}
+	else if (*pconcpt == 2) { // shape concept
+	  pvobj->shapeLabels.push_back(*plabel);
+	  pvobj->shapeDistrib.push_back(*pdbl);
+	  // TODO: shape: write gain for each label to VisualObject
+	}
+	else {
+	  println(" *** VL_Recognizer Invalid concept ID: %d", *pconcpt);
+	}
   }
 
   // ambiguity in the distribution: we use the distribution's entropy
@@ -168,35 +180,19 @@ void ObjectAnalyzer::onChange_OR_RecognitionTask(const cdl::WorkingMemoryChange 
   VisualObjectPtr pvobj;
   string objid = ProtoObjectMap[ptask->protoObjectAddr.id].visualObjId;
   long mode = getOrCreateVisualObject(objid, pvobj);
-  ObjectRecognitionMatchPtr pmatch = ptask->matches[0]; // TODO: error checking, array boundaries
+  if (mode == NewObject) {
+	pvobj->protoObjectID = ptask->protoObjectAddr.id;
+  }
+
+  pvobj->identLabels.clear();
+  pvobj->identDistrib.clear();
 
   // Identity labels: separate fields in VisualObject
-  TStringVector::const_iterator plabel;
-  for( plabel = pmatch->objectId.begin(); plabel != pmatch->objectId.end(); plabel++) {
-    pvobj->identLabels.push_back(*plabel);
-  }
-  TDoubleVector::const_iterator pdbl;
-  for( pdbl = pmatch->probability.begin(); pdbl != pmatch->probability.end(); pdbl++) {
-    pvobj->identDistrib.push_back(*pdbl);
-  }
-
-  // Type labels: identity-labels=>type-labels, type-labels=>type-enum
-  if (m_TypeMapper.enabled()) {
-	TStringVector typeLabs;
-	TDoubleVector typeDist;
-	m_TypeMapper.mapLabels(pmatch->objectId, pmatch->probability, typeLabs, typeDist);
-	pdbl = typeDist.begin();
-	for( plabel = typeLabs.begin(); plabel != typeLabs.end(); plabel++) {
-	  long tid = m_TypeEnumerator.getEnum(*plabel);
-	  if (tid >= 0) {
-		/* TODO: need to resolve whether labels are strings or ints
-		pvobj->identLabels.push_back(tid);*/
-		pvobj->identLabels.push_back("error");
-		pvobj->identDistrib.push_back(*pdbl);
-	  }
-	  pdbl++;
-	  if (pdbl == typeDist.end()) break;
-	}
+  std::vector<RecognitionResult>::iterator pres;
+  for (pres = ptask->matches.begin(); pres != ptask->matches.end(); pres++) {
+    pvobj->identLabels.push_back(pres->label);
+    pvobj->identDistrib.push_back(pres->probability);
+	// TODO: copy pose distribution if available (from recog-result to visual object)
   }
 
   if (mode == NewObject) {
@@ -368,5 +364,5 @@ void ObjectAnalyzer::deletedProtoObject(const cdl::WorkingMemoryChange & _wmc)
 
 
 }
-/* vim:set fileencoding=utf-8 sw=2 ts=4 noet:vim */
+/* vim: set fileencoding=utf-8 sw=2 ts=4 noet: */
 

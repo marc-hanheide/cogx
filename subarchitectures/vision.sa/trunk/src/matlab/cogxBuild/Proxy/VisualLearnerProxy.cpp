@@ -20,7 +20,10 @@
 using namespace std;
 using namespace VisionData;
 
+namespace matlab {
+
 cogx::CTypeEnumerator Enumerator;
+std::map<std::string, int> labelConceptMap; // name -> 1=color, 2=shape
 std::string ClfStartConfig;
 
 class CInitializer
@@ -42,20 +45,24 @@ public:
    }
 
    void initEnumeration() {
-      Enumerator.clear();
-      try {
+      {
          Enumerator.clear();
-         mwArray arr;
-         getGlobalArray(1, arr, "Coma", "Coma.avNames");
-         mwArray dims = arr.GetDimensions();
+         labelConceptMap.clear();
+         mwArray avNames, scConcept;
+         getGlobalArray(1, avNames, "Coma", "Coma.avNames");
+         getGlobalArray(1, scConcept, "Coma", "Coma.SCC");
+         mwArray dims = avNames.GetDimensions();
          double dim0 = dims.Get(mwSize(1), 1);
          for (int i = 0; i < dim0; i++) {
-            mwString mws = arr.Get(mwSize(1), i+1).ToString();
-            Enumerator.addMapping((const char*)mws, i+1);
-            printf(" ... %d .. %s\n", i+1, (const char*)mws);
+            mwString mws = avNames.Get(mwSize(1), i+1).ToString();
+            int concept = scConcept.Get(mwSize(2), i+1, 2);
+            string label((const char*)mws);
+            Enumerator.addMapping(label, i+1);
+            labelConceptMap[label] = concept;
+            printf(" ... %d .. %s .. c%d \n", i+1, label.c_str(), concept);
          }
       }
-      catch (...) {
+      if (0) {
          printf(" **** FAILED to extract from Matlab: Coma.avNames\n");
          Enumerator.clear();
          Enumerator.addMapping("red", 1);
@@ -177,7 +184,7 @@ void VL_setClfStartConfig(const std::string& absConfigPath)
 
 //void FE_recognise_attributes(ROI &Roi)
 void VL_recognise_attributes(const ProtoObject &Object, vector<string> &labels,
-      vector<double> &probs, vector<double> &gains)
+      vector<int> &labelConcepts, vector<double> &probs, vector<double> &gains)
 {
    CheckInit();
 
@@ -226,7 +233,9 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<string> &labels,
       double label = rCqnt.Get(mwSize(2), i+1, 1);
       double fprob = rCqnt.Get(mwSize(2), i+1, 2);
       double fgain = mlGain.Get(mwSize(2), i+1, 2);
-      labels.push_back(Enumerator.getName((int)label));
+      string strLabel = Enumerator.getName((int)label);
+      labels.push_back(strLabel);
+      labelConcepts.push_back(labelConceptMap[strLabel]);
       probs.push_back(fprob);
       gains.push_back(fgain);
    }
@@ -270,6 +279,8 @@ void VL_update_model(ProtoObject &Object, std::vector<string> &labels, std::vect
       cogxVisualLearner_unlearn(avw, image, mask, pts3d);
    }
 }
+
+} // namespace
 
 // typedef unsigned char BYTE;
 
