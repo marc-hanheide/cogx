@@ -788,19 +788,21 @@ void DTPCONTROL::newTask(Ice::Int id,
 //     Planning::Policy_Iteration policy_Iteration(solvers[id]->belief_state__space);
     Planning::Policy_Iteration__GMRES policy_Iteration(solvers[id]->belief_state__space
                                                        , solvers[id]->get__sink_state_penalty());
-    for(uint i = 0; i < 200; i++){
+    for(uint i = 0; i < 100000; i++){
         if(!solvers[id]->expand_belief_state_space()){
             break;
             VERBOSER(10017, "No starting state!"<<std::endl);
         } else {
             VERBOSER(10017, "Expanding!"<<std::endl);
-            policy_Iteration();
-            policy_Iteration.reset__converged();
+            //policy_Iteration();
+//             policy_Iteration.reset__converged();
 //             if(!(i % 10))policy_Iteration();
         }
+        
+        if(solver->belief_state__space.size() > 10000)break;
     }
     
-    for(uint i = 0; i < 50; i++){
+    for(uint i = 0; i < 100; i++){
         policy_Iteration();
         VERBOSER(10017, "Expected reward is :: "
                  <<current_state[id]->get__expected_value()<<std::endl);
