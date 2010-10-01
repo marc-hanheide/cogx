@@ -9,7 +9,7 @@
 
 //#define DEBUG
 
-#define SP_INL_DIST 1. //1.3 //1.5
+#define SP_INL_DIST 1. //1.3 //1.5  // TUNING maybe use 0.8
 #define SP_SELECT_POINTS 2       //method: 1=random, 2=NAP
 #define SP_NUM_RAND_HYPOTHESES 10
 #define SP_DET_THR 10

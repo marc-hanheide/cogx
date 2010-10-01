@@ -82,14 +82,8 @@ private:
 
   void ReconstructPoints(Array<KeypointDescriptor*> &ks);
   void FitPlanes3D(Array<Plane*> &planes);
-  void ComputeRAShapeDescriptor(Array<Plane*> &planes, RASDescriptor &ras, int sizeAngle, int sizeScale);
-
-
-
 
   inline double CompareSURFDescriptors( const float* d1, const float* d2, double best, int length );
-
-
 
 public:
   DShapeCore();
@@ -97,7 +91,7 @@ public:
 
   void SetCameraParameter(CvMat *C1, CvMat *C2, CvMat *D1, CvMat *D2, CvMat *R, CvMat *T);
   void Operate(IplImage* img1, IplImage* img2, RASDescriptor &ras, int sizeAngle, int sizeScale, IplImage* mask1=0);
-
+  void ComputeRAShapeDescriptor(Array<Plane*> &planes, RASDescriptor &ras, int sizeAngle, int sizeScale);
 
   void GetScene(Scene3D &scene);
 

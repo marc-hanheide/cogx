@@ -6,6 +6,7 @@
 #include <sstream>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <../../VisionUtils.h>
+#include "PlaneRANSAC.h"
 #include "ShapeDescriptor3D.h"
 
 /**
@@ -43,6 +44,8 @@ using namespace VisionData;
   //#define IDC_POINTS "ShapeDescriptor3D.show.points"
 #endif
 
+static void DrawPoint3D(std::ostringstream &str,
+                double x, double y, double z, P::RGBColor col);
 static void DrawLine3D(std::ostringstream &str,
                 double x1, double y1, double z1, 
                 double x2, double y2, double z2, P::RGBColor col);;
@@ -55,6 +58,9 @@ ShapeDescriptor3D::ShapeDescriptor3D()
 {
   stereoWidth = STEREO_WIDTH_DEF;
   histogramSize = HISTOGRAM_SIZE_DEF;
+  useKeyPoints = false;
+  ransacThr = 0.005;
+  planeMinPoints = 100;
   logImages = false;
 #ifdef FEAT_VISUALIZATION
   m_display.setClientData(this);
@@ -88,6 +94,32 @@ void ShapeDescriptor3D::configure(const std::map<std::string,std::string> & _con
     istringstream str(it->second);
     str >> histogramSize;
     assert(histogramSize > 0);
+  }
+
+  // note: use either --useKeyPoints or --use3DPoints
+  if((it = _config.find("--useKeyPoints")) != _config.end())
+  {
+    useKeyPoints = true;
+  }
+
+  // note: use either --useKeyPoints or --use3DPoints
+  if((it = _config.find("--use3DPoints")) != _config.end())
+  {
+    useKeyPoints = false;
+  }
+
+  if((it = _config.find("--planeDistThr")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> ransacThr;
+    assert(ransacThr > 0.);
+  }
+
+  if((it = _config.find("--planeMinPoints")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> planeMinPoints;
+    assert(planeMinPoints > 0);
   }
 
   if((it = _config.find("--logImages")) != _config.end())
@@ -129,15 +161,21 @@ void ShapeDescriptor3D::runComponent()
 
 void ShapeDescriptor3D::newProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
-  ProtoObjectPtr pobjPtr = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
-  calculateDescriptor(*pobjPtr);
+  pobjPtr = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
+  if(useKeyPoints)
+    calculateDescriptor(*pobjPtr);
+  else
+    calculateDescriptor2(*pobjPtr);
   overwriteWorkingMemory(_wmc.address, pobjPtr);
 }
 
 void ShapeDescriptor3D::updatedProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
-  ProtoObjectPtr pobjPtr = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
-  calculateDescriptor(*pobjPtr);
+  pobjPtr = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
+  if(useKeyPoints)
+    calculateDescriptor(*pobjPtr);
+  else
+    calculateDescriptor2(*pobjPtr);
   overwriteWorkingMemory(_wmc.address, pobjPtr);
 }
 
@@ -163,7 +201,8 @@ void ShapeDescriptor3D::calculateDescriptor(ProtoObject &pobj)
   SOIPtr soiPtr = getMemoryEntry<VisionData::SOI>(soiAddr);
   // HACK: 1.3 is the ominous dilate factor of SOIFilter
   // super shitty hack
-  soiPtr->boundingSphere.rad *= 1.3;
+  //soiPtr->boundingSphere.rad *= 1.3;
+  // HACK note: this is done in SOIFilter and the SOI is updated on WM!
   ROIPtr roiPtr = projectSOI(image[LEFT].camPars, *soiPtr);
 
   // prepare mask image with white ROI on black background
@@ -256,6 +295,111 @@ void ShapeDescriptor3D::calculateDescriptor(ProtoObject &pobj)
   cvReleaseMat(&trans);
 }
 
+void ShapeDescriptor3D::calculateDescriptor2(ProtoObject &pobj)
+{
+  vector<Plane3> planes;
+  int n = (int)pobj.points.size();
+  P::RASDescriptor ras;
+
+  log("using 3D points, planeDistThr: %lf, planeMinPoints: %d", ransacThr, planeMinPoints);
+
+  findPlanes(planes, pobj.points, n);
+
+  for(size_t i = 0; i < rasPlanes.Size(); i++)
+    delete rasPlanes[i];
+  rasPlanes.Clear();
+
+  // copy cogx plane representation to RAS plane representation
+  // note: we only fill parts of the RAS plane structure
+  for(size_t i = 0; i < planes.size(); i++)
+  {
+    P::Plane *rasPlane = new P::Plane;
+
+    vector<CvPoint2D32f> planePoints;
+    Pose3 planePose;
+    definePlaneCoordSys(planes[i], planePose);
+    for(size_t j = 0; j < pobj.points.size(); j++)
+    {
+      // if inlier
+      if(fabs(distPointToPlane(pobj.points[j].p, planes[i])) < ransacThr)
+      {
+        Vector3 q = transformInverse(planePose, pobj.points[j].p);
+        planePoints.push_back(cvPoint2D32f(q.x, q.y));
+      }
+    }
+    int *hull = (int*)malloc(planePoints.size() * sizeof(hull[0]));
+    CvMat hullMat = cvMat(1, planePoints.size(), CV_32SC1, hull);
+    CvMat pointMat = cvMat(1, planePoints.size(), CV_32FC2, &planePoints[0]);
+    cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
+
+    rasPlane->p = P::Vector3(planePose.pos.x, planePose.pos.y, planePose.pos.z);
+    Vector3 n = getColumn(planePose.rot, 2);
+    rasPlane->n = P::Vector3(n.x, n.y, n.z);
+    for(int j = 0; j < hullMat.cols; j++)
+    {
+      Vector3 q = transform(planePose,
+        vector3(planePoints[hull[j]].x, planePoints[hull[j]].y, 0.));
+      rasPlane->contour.PushBack(P::Vector3(q.x, q.y, q.z));
+    }
+
+    free(hull);
+
+    rasPlanes.PushBack(rasPlane);
+
+    cout << "plane " << i << ": " << planes[i] << endl;
+  }
+
+  dshape.ComputeRAShapeDescriptor(rasPlanes, ras, histogramSize, 1);
+
+  // set shape descriptpr of proto object
+  pobj.rasShapeDesc.angleHistogram.resize(ras.Size());
+  for(unsigned i=0; i < ras.Size(); i++)
+    pobj.rasShapeDesc.angleHistogram[i] = ras.data[i];
+  
+#ifdef FEAT_VISUALIZATION
+  redraw3D();
+  redrawHistogram(pobj);
+#endif
+}
+
+/**ŗŘ
+ * Removes inliers from points.
+ * To pe precise: inliers are moved to end of points array and n decreased
+ * accordingly. So after call to this function points[0..n-1] are all outliers.
+ */
+void ShapeDescriptor3D::removeInliers(SurfacePointSeq &points, int &n,
+    const Plane3 &plane, double thr)
+{
+  SurfacePoint t;
+  for(int i = 0; i < n; )
+  {
+    // if inlier
+    if(fabs(distPointToPlane(points[i].p, plane)) < thr)
+    {
+      // move point i to end of points and decrease n
+      t = points[i];
+      points[i] = points[n - 1];
+      points[n - 1] = t;
+      n--;
+    }
+    else
+    {
+      i++;
+    }
+  }
+}
+
+void ShapeDescriptor3D::findPlanes(vector<Plane3> &planes, SurfacePointSeq &points, int &n)
+{
+  PlaneRANSAC planeDetector(ransacThr, planeMinPoints);
+  Plane3 plane;
+  while(planeDetector.detectPlane(points, n, vector3(0, 0, 0), false, plane))
+  {
+    removeInliers(points, n, plane, 2.*ransacThr);
+    planes.push_back(plane);
+  }
+}
+
 #ifdef FEAT_VISUALIZATION
 void ShapeDescriptor3D::MyDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
@@ -345,11 +489,43 @@ void ShapeDescriptor3D::redraw3D()
   dshape.GetScene(scene);
   str << "function render()\n";
   DrawScene3D(str, scene, displayColors);
+  
+  for(size_t i = 0; i < rasPlanes.Size(); i++)
+  {
+    for(size_t j = 0; j < rasPlanes[i]->contour.Size(); j++)
+    {
+      P::Vector3 &p1 = rasPlanes[i]->contour[j];
+      P::Vector3 &p2 = (j+1 < rasPlanes[i]->contour.Size() ? rasPlanes[i]->contour[j+1] : rasPlanes[i]->contour[0]);
+      DrawLine3D(str, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, P::RGBColor(255, 255, 255));
+    }
+  }
+
+  for(size_t i = 0; i < pobjPtr->points.size(); i++)
+  {
+    DrawPoint3D(str, pobjPtr->points[i].p.x, pobjPtr->points[i].p.y, pobjPtr->points[i].p.z,
+      P::RGBColor((unsigned char)pobjPtr->points[i].c.r,
+                  (unsigned char)pobjPtr->points[i].c.g,
+                  (unsigned char)pobjPtr->points[i].c.b));
+  }
   str << "end\n";
   m_display.setLuaGlObject(ID_OBJECT_3D, "3D planes", str.str());
 }
 
-void DrawLine3D(std::ostringstream &str, 
+void DrawPoint3D(std::ostringstream &str,
+                 double x, double y, double z, P::RGBColor col)
+{
+  // scale graphics output cauas right now i can't zoom in the viewer
+  double s = 10.;
+  str << "glPointSize(2);\n";
+  str << "glColor(" << (double)col.r/255. << ", "
+      << (double)col.g/255. << ", "
+      << (double)col.b/255. << ")\n";
+  str << "glBegin(GL_POINTS)\n";
+  str << "glVertex(" << s*x << ", " << s*y << ", " << s*z << ")\n";
+  str << "glEnd()\n";
+}
+
+void DrawLine3D(std::ostringstream &str,
                 double x1, double y1, double z1, 
                 double x2, double y2, double z2, P::RGBColor col)
 {
