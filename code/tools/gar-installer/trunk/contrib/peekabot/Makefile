@@ -1,11 +1,11 @@
 GARNAME = peekabot
-GARVERSION = 0.8.1
+GARVERSION = 0.8.x
 CATEGORIES = bootstrap
-DISTFILES = $(GARNAME)-$(GARVERSION).tar.bz2
+DISTFILES = $(GARNAME)-$(GARVERSION).tgz
 MAINTAINER = mhanheid
 #PATCHFILES= gar-base.diff
 
-MASTER_SITES = http://heanet.dl.sourceforge.net/sourceforge/peekabot/
+#MASTER_SITES = http://heanet.dl.sourceforge.net/sourceforge/peekabot/
 
 LIBDEPS = 
 
@@ -22,4 +22,7 @@ include ../../gar.extend.mk
 
 CONFIGURE_ARGS = $(DIRPATHS) 
 
+pre-configure:
+	cd $(WORKSRC) && autoreconf -i
+	$(MAKECOOKIE)
 
