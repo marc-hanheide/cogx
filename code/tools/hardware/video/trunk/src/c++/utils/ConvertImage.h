@@ -74,6 +74,23 @@ void convertImageToGrayBytes(const Video::Image & image, std::vector<unsigned ch
  */
 void convertImageFromIpl(const IplImage *iplImg, Video::Image &img)
   throw(runtime_error);
+  
+  
+/**
+ * @brief Converts an OpenCV image type (IplImage) to a raw image data (bytes). \n
+ * @param iplImg OpenCv IplImage
+ * @param data Raw Image data
+ */  
+void convertIplToBytes(const IplImage *iplImg, std::vector<unsigned char>& data)
+	throw(runtime_error);
+	
+/**
+ * @brief Converts an OpenCV image type (IplImage) to a raw image data (bytes). \n
+ * @param iplImg OpenCv IplImage
+ * @return Return data Raw Image data
+ */  
+std::vector<unsigned char> convertIplToBytes(const IplImage *iplImg)
+	throw(runtime_error);
 
 /**
  * @brief Swap red and blue channel.
