@@ -16,18 +16,18 @@
   // Segmentation costants
 
 #define SMOOTH_COST 30
-#define HUE_K_RATIO 40 // Number of nearest neighbours taken when calculating the cost for hue
+#define HSL_K_RATIO 40 // Number of nearest neighbours taken when calculating the cost for hls
 
-#define OBJ_HUE_TOLERANCE 23
-#define BG_HUE_TOLERANCE 24
+#define OBJ_HSL_TOLERANCE 23
+#define BG_HSL_TOLERANCE 24
 
 #define OBJ_DIST_TOLERANCE 60
 #define BG_DIST_TOLERANCE 9999
 
 #define LABEL_FIX_COST 24
 
-#define MAX_HUE_VAL 180
-#define MIN_HUE_VAL 0
+#define MAX_HSL_VAL 180
+#define MIN_HSL_VAL 0
 
 #define EXPAND_ITERS 3
 #define SWAP_ITERS 2
@@ -41,7 +41,7 @@
 #define COLOR_SAMPLE_IMG_HEIGHT 15
 
 #ifdef FEAT_VISUALIZATION
-#define ID_OBJ_LAST_SEGMENTATION "soif.Last ROI Segmentation"
+#define ID_OBJ_LAST_SEGMENTATION "soif@Last ROI Segmentation"
 #endif
 
   /**
@@ -70,7 +70,7 @@
   //	int numLab;
   //	int k;
   //	std::list<int>
-  //	const IplImage *hueImg;
+  //	const IplImage *hlsImg;
   //	};
 
   static long smoothFn(int p1, int p2, int l1, int l2)
@@ -100,9 +100,9 @@
 	timeThr = TIME_THR_DEFAULT;
 	camId = CAM_ID_DEFAULT;
 	doDisplay = false;
-	objHueTolerance = OBJ_HUE_TOLERANCE;
+	objHueTolerance = OBJ_HSL_TOLERANCE;
 	objDistTolerance = OBJ_DIST_TOLERANCE;
-	bgHueTolerance = BG_HUE_TOLERANCE;
+	bgHueTolerance = BG_HSL_TOLERANCE;
 	bgDistTolerance = BG_DIST_TOLERANCE;
 	lblFixCost = LABEL_FIX_COST;
 	smoothCost = SMOOTH_COST;
@@ -617,48 +617,7 @@ void SOIFilter::drawHull(IplImage *img, const vector<CvPoint> projPoints, const 
 }
 
 
-
-//static bool hslCompare(CvScalar i, CvScalar j)
-//{
-//  return (i.val[0] + i.val[2]*0 + i.val[1]*0  <  j.val[0] + j.val[2]*0 + j.val[1]*0);
-//}
-
-
-/*
-   static int hslAbsDiff(CvScalar i, CvScalar j, float hueOverflow, float norm)
-   {
-
-   float hueDiff = (float) abs((i.val[0] - j.val[0]));
-
-   if (hueDiff > hueOverflow)
-   hueDiff = hueOverflow*2 - hueDiff;
-
-   if (hueDiff > norm)
-   hueDiff = norm;
-
-   hueDiff/=norm;
-
-   float satDiff = (float) abs(i.val[2] - j.val[2])/255;
-   float lumDiff = (float) abs(i.val[1] - j.val[1])/255;
-
-   float satAvg = (float) (i.val[2] + j.val[2])/510;
-
-   float hlDiff = satAvg*hueDiff*hueDiff + (1-satAvg)*lumDiff*lumDiff;
-   float hlsDiff =  pow(satDiff, 3) + (1 - satDiff)*hlDiff;
-
-   if (i.val[1] >200 && j.val[1] > 200)
-   {
-   printf("huei %f huej %f lumi %f lumj %f sati %f satj %f \n", i.val[0], j.val[0], i.val[1], j.val[1], i.val[2], j.val[2]);
-   printf("hueDiff %f lumDiff %f satDiff %f \n", hueDiff, lumDiff,  satDiff);
-   printf("satAvg %f hlDiff %f hlsDiff %f \n", satAvg, hlDiff, hlsDiff);
-   }
-
-   return (int) (sqrt(hlsDiff) * norm * 3);
-   }
-   */
-
-
-static int hslAbsDiff(CvScalar i, CvScalar j, float hueOverflow, float norm)
+static int hlsAbsDiff(CvScalar i, CvScalar j, float hueOverflow, float norm)
 {
 
   float hueDiff = (float) abs((i.val[0] - j.val[0]));
@@ -724,14 +683,14 @@ vector<CvScalar> SOIFilter::getSortedHlsList(vector<SurfacePoint> surfPoints)
   } 
 
   //safety check --- points inside calculated ROI might be outside the actual ROI (outside image patch)
-  //	  if(it->x < hueImg->width && it->y < hueImg->height && it->x >= 0 && it->y >= 0) 
-  //	    hueList.push_back(cvGet2D(hueImg, it->y, it->x).val[0]);
+  //	  if(it->x < hlsImg->width && it->y < hlsImg->height && it->x >= 0 && it->y >= 0) 
+  //	    hlsList.push_back(cvGet2D(hlsImg, it->y, it->x).val[0]);
 
   //	sort(hlsList.begin(), hlsList.end(), hslCompare);
 
   //	list<int>::iterator itr;	
   //	printf("HueList: ");	
-  //	for( itr=hueList.begin(); itr!=hueList.end(); itr++)
+  //	for( itr=hlsList.begin(); itr!=hlsList.end(); itr++)
   //		printf("%i ", *itr);
   //		printf("\n");
   cvResize(src, srcL, CV_INTER_NN);
@@ -763,36 +722,10 @@ vector<CvScalar> SOIFilter::getSortedHlsList(vector<SurfacePoint> surfPoints)
   return hlsList;
 }
 
-/*
-   int SOIFilter::getHlsDiff(vector<CvScalar> hlsList, CvScalar hls, int k)
-   {
-   int domainwdt = MAX_HUE_VAL - MIN_HUE_VAL;
-   int overflow = domainwdt/2;
-   int maxdiff = domainwdt/6;	
-
-   list<int> costs;
-
-   for(vector<CvScalar>::iterator it=hlsList.begin(); it != hlsList.end(); it++)
-   {	
-   costs.push_back(hslAbsDiff(hls, *it, overflow, maxdiff));
-   }	
-
-   long totalCost = 0;
-
-   for (int i=0; i < k && i < costs.size(); i++)
-   {
-   list<int>::iterator min = min_element(costs.begin(), costs.end());
-   totalCost += *min;
-   costs.erase(min);
-   }
-
-   return totalCost/k;
-   }
-   */
 
 int SOIFilter::getHlsDiff(vector<CvScalar> hlsList, CvScalar hls, int k)
 {
-  int domainwdt = MAX_HUE_VAL - MIN_HUE_VAL;
+  int domainwdt = MAX_HSL_VAL - MIN_HSL_VAL;
   int overflow = domainwdt/2;
   int maxdiff = domainwdt/6;	
 
@@ -804,7 +737,7 @@ int SOIFilter::getHlsDiff(vector<CvScalar> hlsList, CvScalar hls, int k)
 
   for(vector<CvScalar>::iterator it=hlsList.begin(); it != hlsList.end(); it++)
   {	
-	int cost =	hslAbsDiff(hls, *it, overflow, maxdiff);
+	int cost =	hlsAbsDiff(hls, *it, overflow, maxdiff);
 
 	if(cost < *maxmin)
 	{
@@ -826,7 +759,7 @@ int SOIFilter::getHlsDiff(vector<CvScalar> hlsList, CvScalar hls, int k)
 /*
    int SOIFilter::getHlsDiff(vector<CvScalar> hlsList, CvScalar hls, int k)
    {
-   int domainwdt = MAX_HUE_VAL - MIN_HUE_VAL;
+   int domainwdt = MAX_HSL_VAL - MIN_HSL_VAL;
    int overflow = domainwdt/2;
    int maxdiff = domainwdt/6;	
 
@@ -852,7 +785,7 @@ int SOIFilter::getHlsDiff(vector<CvScalar> hlsList, CvScalar hls, int k)
    else {
 
    itl--;
-   int diff = hslAbsDiff(hls, *itl, overflow, maxdiff, 0.4, 0.4); //hls.val[0] - itl->val[0];
+   int diff = hlsAbsDiff(hls, *itl, overflow, maxdiff, 0.4, 0.4); //hls.val[0] - itl->val[0];
    cost+= diff;	  	
 
    if(itl == ordsamp.begin())
@@ -866,7 +799,7 @@ int SOIFilter::getHlsDiff(vector<CvScalar> hlsList, CvScalar hls, int k)
    }  
 
    mincost = cost;
-// printf("hue %i cost %i \n ", hue, cost);	  
+// printf("hls %i cost %i \n ", hls, cost);	  
 while (cost <= mincost && ith!=ordsamp.end()) {
 mincost = cost;
 
@@ -877,11 +810,11 @@ r--;
 }
 else {
 
-int diff = hslAbsDiff(hls, *itl, overflow, maxdiff, 0.4, 0.4); //abs(itl->val[0] - hls.val[0]);  		
+int diff = hlsAbsDiff(hls, *itl, overflow, maxdiff, 0.4, 0.4); //abs(itl->val[0] - hls.val[0]);  		
 itl++;	
 cost-= diff;		
 }	 
-int diff = hslAbsDiff(hls, *itl, overflow, maxdiff, 0.4, 0.4); //abs(ith->val[0] - hls.val[0]); 
+int diff = hlsAbsDiff(hls, *itl, overflow, maxdiff, 0.4, 0.4); //abs(ith->val[0] - hls.val[0]); 
 cost+= diff;
 ith++;
 
@@ -890,92 +823,8 @@ mincost/=k;
 
 return mincost;
 }
-/*
 
-
-vector<int> SOIFilter::getHueDiffList(vector<CvScalar> hlsList, int k)
-{
-vector<int> hueCostList;
-
-int domainwdt = MAX_HUE_VAL - MIN_HUE_VAL;
-int overflow = domainwdt/2;
-int maxdiff = domainwdt/6;
-
-for(int hue=MIN_HUE_VAL; hue < MAX_HUE_VAL; hue++)
-hueCostList.push_back(getHlsDiff(hlsList, cvScalar(hue, 0, 0), k));
-
-//	    vector<int>::iterator itr;
-//	    int h = 0;
-//	    printf("HueCostList: \n");	
-//	    for( int i=MIN_HUE_VAL; i < MAX_HUE_VAL; i++)
-//	   			printf("h:%i c:%i\n", i, hueCostList[i]);
-//	    printf("\n");
-
-return hueCostList;
-}
-
-
-/*
-IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, vector<SurfacePoint> surfPoints, float hueSigma, float distSigma, bool distcost)
-{
-IplImage *huePatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);  
-IplImage *samplePatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
-IplImage *distPatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_32F, 1);
-IplImage *distScaledPatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
-IplImage *costImg = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
-
-cvSetImageCOI(iplPatchHLS, 1);
-cvCopy(iplPatchHLS, huePatch);
-
-int hueKval = surfPoints.size()/HUE_K_RATIO;
-log("%i hue neighbours", hueKval);
-
-if(distcost)
-{
-cvSet(samplePatch,cvScalar(1));
-vector<CvPoint>::iterator itr;
-
-for(itr = projPoints.begin(); itr != projPoints.end(); itr++)
-{ 
-//safety check --- points inside calculated ROI might be outside the actual ROI (outside image patch)
-if(itr->x < samplePatch->width && itr->y < samplePatch->height && itr->x >= 0 && itr->y >= 0)
-cvSet2D(samplePatch, itr->y, itr->x, cvScalar(0));
-else log("WARNING: point <%i, %i> outside ROI <%i, %i>)", itr->y, itr->x, samplePatch->height, samplePatch->width);
-
-}
-
-cvDistTransform(samplePatch, distPatch, CV_DIST_C);
-}
-else
-cvSet(distScaledPatch, cvScalar(0));
-
-cvConvertScale(distPatch, distScaledPatch, 1, 0);	
-
-vector<int> hueCostList = getHueDiffList(getSortedHlsList(surfPoints), hueKval);  
-
-float hueSigma2 = 2*sqr(hueSigma);
-float distSigma2 = 2*sqr(distSigma);
-float norm = 100;
-
-for(int i=0; i < costImg->height; i++)
-for(int j=0; j < costImg->width; j++) {
-
-int hueDiff = hueCostList[cvGet2D(huePatch, i, j).val[0]];
-float hueP = exp(-sqr((float) hueDiff)/hueSigma2);
-int distDiff = cvGet2D(distScaledPatch, i, j).val[0];
-float distP = exp(-sqr((float) distDiff)/distSigma2);
-int cost = (int) ((1 - hueP*distP)*norm);
-
-cvSet2D(costImg, i, j, cvScalar(cost));
-}
-
-cvReleaseImage(&huePatch);      
-cvReleaseImage(&samplePatch);
-cvReleaseImage(&distPatch);      
-cvReleaseImage(&distScaledPatch);
-
-return costImg;
-}*/
+*/
 
 
 vector<CvScalar> SOIFilter::colorFilter( vector<CvScalar> colors, vector<CvScalar> filterColors, int k, int tolerance)
@@ -1028,11 +877,11 @@ vector<SurfacePoint> SOIFilter::sample3DPoints(vector<SurfacePoint> points, int 
 }
 
 
-IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, vector<SurfacePoint> allSurfPoints, float hueSigma, float distSigma, bool distcost)
+IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, vector<SurfacePoint> allSurfPoints, float hlsSigma, float distSigma, bool distcost)
 {
   IplImage *hlsPatch; // = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 3);
   CvSize size = cvGetSize(iplPatchHLS);
-  debug("1, size=%dx%d", size.width, size.height);
+
   IplImage *samplePatch = cvCreateImage(size, IPL_DEPTH_8U, 1);
   IplImage *distPatch = cvCreateImage(size, IPL_DEPTH_32F, 1);
   IplImage *distScaledPatch = cvCreateImage(size, IPL_DEPTH_8U, 1);
@@ -1071,14 +920,12 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
   {
 	if (surfPoints.size() > MAX_COLOR_SAMPLE)
 	  surfPoints = sample3DPoints(surfPoints, MAX_COLOR_SAMPLE);
-//	  surfPoints.resize(MAX_COLOR_SAMPLE);
   }
   else
 	if (surfPoints.size() > MAX_COLOR_SAMPLE*3/4)
 	  surfPoints = sample3DPoints(surfPoints, MAX_COLOR_SAMPLE*3/4);
-//	  surfPoints.resize(MAX_COLOR_SAMPLE*3/4);
 
-  int colorKval = min(surfPoints.size(), (size_t) MAX_COLOR_SAMPLE)/HUE_K_RATIO + 1;
+  int colorKval = min(surfPoints.size(), (size_t) MAX_COLOR_SAMPLE)/HSL_K_RATIO + 1;
   
   vector<CvScalar> sortHlsList = getSortedHlsList(surfPoints); 
 
@@ -1087,10 +934,10 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
   else
   {	
 	int size = sortHlsList.size();
-	int k = filterList.size()/HUE_K_RATIO + 1;
+	int k = filterList.size()/HSL_K_RATIO + 1;
 	sortHlsList = colorFilter(sortHlsList, filterList, k, COLOR_FILTERING_THRESHOLD);
 
-	colorKval = sortHlsList.size()/HUE_K_RATIO + 1;
+	colorKval = sortHlsList.size()/HSL_K_RATIO + 1;
 
 	log("Filtered out %i color samples", size - sortHlsList.size());
 
@@ -1121,18 +968,18 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 
   log("%i color neighbours", colorKval);
 
-  float hueSigma2 = 2*sqr(hueSigma);
+  float hlsSigma2 = 2*sqr(hlsSigma);
   float distSigma2 = 2*sqr(distSigma);
   float norm = 100;
 
   for(int i=0; i < costImg->height; i++)
 	for(int j=0; j < costImg->width; j++) {
 
-	  int hueDiff = getHlsDiff(sortHlsList, cvGet2D(hlsPatch, i, j), colorKval);
-	  float hueP = exp(-sqr((float) hueDiff)/hueSigma2);
+	  int hlsDiff = getHlsDiff(sortHlsList, cvGet2D(hlsPatch, i, j), colorKval);
+	  float hlsP = exp(-sqr((float) hlsDiff)/hlsSigma2);
 	  int distDiff = cvGet2D(distScaledPatch, i, j).val[0];
 	  float distP = exp(-sqr((float) distDiff)/distSigma2);
-	  int cost = (int) ((1 - hueP*distP)*norm);
+	  int cost = (int) ((1 - hlsP*distP)*norm);
 
 	  cvSet2D(costImg, i, j, cvScalar(cost));
 	}
@@ -1160,9 +1007,9 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
 	// set up the needed data to pass to function for the data costs
 
 	//gCutData toFn;
-	//toFn.hueList= hueList;
+	//toFn.hslList= hslList;
 	//toFn.numLab = num_labels;
-	//toFn.hueImg = hueImg;
+	//toFn.hslImg = hslImg;
 	//toFn.k = k;
 
 	//gc->setDataCost(&dataFn, &toFn);
@@ -1229,8 +1076,9 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
 
 bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask, vector<SurfacePoint> &segPoints)
 {
-  Video::Image image;
-  StereoClient::getRectImage(LEFT, 640, image);
+  Video::Image image, imageLarge;
+  StereoClient::getRectImage(LEFT, 640, imageLarge);
+  StereoClient::getRectImage(LEFT, 320, image);
 
   Video::Image fullImage;
   videoServer->getImage(camId, fullImage);
@@ -1329,11 +1177,38 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   filterFlag = true;
   IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, objHueTolerance, objDistTolerance, true);
 
-  segMask.width = iplPatchHLS->width;
-  segMask.height = iplPatchHLS->height;
+  SegmentMask smallSegMask;
+  smallSegMask.width = iplPatchHLS->width;
+  smallSegMask.height = iplPatchHLS->height;
 
-  segMask.data = graphCut(segMask.width, segMask.height, 3, costPatch, bgCostPatch);
-  segPoints = filter3DPoints(soiPtr->points, projPoints, errProjPoints, segMask);
+  smallSegMask.data = graphCut(smallSegMask.width, smallSegMask.height, 3, costPatch, bgCostPatch);
+  
+  segPoints = filter3DPoints(soiPtr->points, projPoints, errProjPoints, smallSegMask);
+
+  segMask.width = smallSegMask.width*2;
+  segMask.height = smallSegMask.height*2;
+  
+  IplImage *smallIplMask = convertBytesToIpl(smallSegMask.data, smallSegMask.width, smallSegMask.height, 1);
+  IplImage *largeIplMask = cvCreateImage( cvSize(segMask.width, segMask.height), IPL_DEPTH_8U, 1);
+  cvResize(smallIplMask, largeIplMask, CV_INTER_NN);
+  
+  segMask.data = convertIplToBytes(largeIplMask);
+  
+  //Make the small and large segmentation masks displayable
+  bool protoObj = false;
+  for(int y = 0; y < smallIplMask->height; y++)
+    for(int x = 0; x < smallIplMask->width; x++)
+    {
+      if(smallIplMask->imageData[y*smallIplMask->widthStep + x] == 1)
+  		protoObj = true;
+  	  smallIplMask->imageData[y*smallIplMask->widthStep + x]*=120;
+    }
+    
+  for(int y = 0; y < largeIplMask->height; y++)
+    for(int x = 0; x < largeIplMask->width; x++)
+    {
+  	  largeIplMask->imageData[y*largeIplMask->widthStep + x]*=120;
+    }
 
   // The VisualLearner application works well with small images so 
   // we add imgPatch, the patch from the small image to the ProtoObject.
@@ -1346,7 +1221,7 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   // With our cameras the distortion should not be significant, though.
   //
   // if 1: prepared for VisualLearner; if 0: prepared for ObjectRecognizer
-#if 1
+#if 0
   // Patch from rectified stereo image
   convertImageFromIpl(iplPatch, imgPatch);
 #else
@@ -1381,27 +1256,6 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   }
 #endif
 
-  sz = cvGetSize(iplPatchHLS);
-  IplImage *segPatch = cvCreateImage(sz, IPL_DEPTH_8U, 1);
-
-  // TODO: possible error: lines of IplImage are aligned to 4 bytes, while Image has no alignment!
-  bool protoObj = false;
-  for(int i=0; i < segMask.data.size(); i++)
-  {
-	segPatch->imageData[i] = segMask.data[i]*120;
-	if(segMask.data[i]==1)
-	  protoObj = true;
-  }
-  
-  int idx = 0;
-  for (int i = 0; i < segMask.height; i++) {
-	int lineoffs = i * segPatch->widthStep;
-	for (int j = 0; j < segMask.width; j++) {
-	  segPatch->imageData[lineoffs + j] = segMask.data[idx++]*120;
-	}
-  }
-  
-
   if (doDisplay)
   {
 	drawProjectedSOIPoints(iplPatch, projPoints, bgProjPoints, errProjPoints, hullPoints);
@@ -1428,7 +1282,7 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	cvSetImageROI(tetraPatch, cvRect( 0, 0, size.width, size.height) );
 	cvCopyImage(iplPatch, tetraPatch);
 	cvSetImageROI(tetraPatch, cvRect( size.width, 0, size.width, size.height) );
-	cvCvtColor(segPatch, tetraPatch, CV_GRAY2RGB);
+	cvCvtColor(smallIplMask, tetraPatch, CV_GRAY2RGB);
 	cvSetImageROI(tetraPatch, cvRect( 0, size.height, size.width, size.height) );
 	cvCvtColor(costPatch, tetraPatch, CV_GRAY2RGB);
 	cvSetImageROI(tetraPatch, cvRect( size.width, size.height, size.width, size.height) );
@@ -1438,6 +1292,7 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	
 #ifdef FEAT_VISUALIZATION
 	m_display.setImage(ID_OBJ_LAST_SEGMENTATION, tetraPatch);
+	m_display.setImage("Large segmentation mask", largeIplMask);
 #else
 	cvShowImage("Last ROI Segmentation", tetraPatch);
 #endif
