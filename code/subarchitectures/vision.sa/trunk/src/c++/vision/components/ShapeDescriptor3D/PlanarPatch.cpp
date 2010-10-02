@@ -23,6 +23,7 @@ void PlanarPatch::findConvexHull(std::vector<VisionData::SurfacePoint> &points, 
     // if inlier
     if(fabs(distPointToPlane(points[j].p, plane)) < distThr)
     {
+      surfPoints.push_back(points[j]);
       Vector3 q = transformInverse(pose, points[j].p);
       planePoints.push_back(cvPoint2D32f(q.x, q.y));
     }

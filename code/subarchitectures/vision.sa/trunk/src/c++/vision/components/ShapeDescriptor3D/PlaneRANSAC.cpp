@@ -31,6 +31,10 @@ PlaneRANSAC::PlaneRANSAC(double _thr, int _minPoints, int _maxIter)
   assert(minSupportPoints > 0);
 }
 
+// HACK: collect statistics for samples
+/*static int distCnt = 0;
+static double distMean = 0.;*/
+
 /**
  * Randomly select a minimum sample set of 3 points.
  * If horizontal is true then only (roughly) horizonal plane hypotheses will
@@ -69,7 +73,7 @@ bool PlaneRANSAC::selectSample(const SurfacePointSeq &points, int nPoints,
     {
       Vector3 pq = q - p;
       // if vector p-q is not normal to up vector then reject choice of j
-      // HACK: get rid of stupit threshold 0.01!
+      // HACK: get rid of stupid threshold 0.01!
       if(isZero(pq) || dot(up, pq) > 0.01)
         j = i;
     }
@@ -88,17 +92,31 @@ bool PlaneRANSAC::selectSample(const SurfacePointSeq &points, int nPoints,
     }
     cnt++;
   }
+  // HACK
+  /*if(cnt < nPoints)
+  {
+    distMean += dist(p, q);
+    distMean += dist(q, r);
+    distMean += dist(r, p);
+    distCnt += 3;
+  }*/
   return cnt < nPoints;
 }
 
 /**
  * Select a minimum sample set of 3 points, where the second and third point
- * are chosen near the first and the 3 rd is chosen such that the 3 points are
- * not too collinear.
+ * are chosen "near" the first (and the 3rd should be chosen such that the 3 points are
+ * not too collinear).
+ * NOTE: does not noticably improve results. especially choosing sample points to be too
+ * near to each other degrades performance.
  */
 bool PlaneRANSAC::selectSampleNear(const SurfacePointSeq &points, int nPoints,
     Vector3 &p, Vector3 &q, Vector3 &r)
 {
+  // note: we don't want the sample points to be "too near", as then the estimated
+  // plane hypothesis is unstable. therefore chose a "good" distance (which should
+  // evantually be estimated from the data, e.g. from average distance)
+  double d_ideal = 0.02;
   int i, j, k, cnt;
   i = rand()%nPoints;
   j = i;
@@ -116,15 +134,16 @@ bool PlaneRANSAC::selectSampleNear(const SurfacePointSeq &points, int nPoints,
       {
         q = points[j].p;
         d = dist(p, q);
-        if(d < d_min)
+        if(fabs(d - d_ideal) < d_min)
         {
           d_min = d;
           j_min = j;
         }
       }
-      cnt++;
     }
+    cnt++;
     j = j_min;
+    q = points[j_min].p;
   }
   while(cnt < nPoints && (k == i || k == j))
   {
@@ -137,16 +156,25 @@ bool PlaneRANSAC::selectSampleNear(const SurfacePointSeq &points, int nPoints,
       {
         r = points[k].p;
         d = dist(p, r);
-        if(d < d_min)
+        if(fabs(d - d_ideal) < d_min)
         {
           d_min = d;
           k_min = k;
         }
       }
-      cnt++;
     }
+    cnt++;
     k = k_min;
+    r = points[k_min].p;
   }
+  // HACK
+  /*if(cnt < nPoints)
+  {
+    distMean += dist(p, q);
+    distMean += dist(q, r);
+    distMean += dist(r, p);
+    distCnt += 3;
+  }*/
   return cnt < nPoints;
 }
 
@@ -175,7 +203,7 @@ bool PlaneRANSAC::computeModel(const Vector3 &p, const Vector3 &q,
  */
 double PlaneRANSAC::fitError(const SurfacePointSeq &points, int nPoints,
     const Plane3 &plane, int &nInliers)
-{
+{ 
   double sumErr = 0.;
   nInliers = 0;
   // note: using MSAC, i.e. summing errors instead of counting inliers
@@ -218,13 +246,17 @@ bool PlaneRANSAC::detectPlane(SurfacePointSeq &points, int &nPoints, const Vecto
   if(nPoints < 3)
     return false;
 
+  // HACK
+  /*distMean = 0.;
+  distCnt = 0;*/
+
   // while the probability of failure is still too high (and - as a safeguard -
   // we haven't yet reached the absolute maximum number of iteratrions)
   while(pow(1. - pow(eps, 2.), (double)k) >= eta0 && k < maxIter)
   {
     Vector3 p, q, r;
-    //if(selectSample(points, nPoints, up, horizontal, p, q, r))
-    if(selectSampleNear(points, nPoints, p, q, r))
+    if(selectSample(points, nPoints, up, horizontal, p, q, r))
+    //if(selectSampleNear(points, nPoints, p, q, r))
     {
       Plane3 planeHyp;
       if(computeModel(p, q, r, planeHyp))
@@ -243,6 +275,9 @@ bool PlaneRANSAC::detectPlane(SurfacePointSeq &points, int &nPoints, const Vecto
     k = k + 1;
   }
   //printf("RANSAC iterations: %d, inlier ratio: %.2f\n", k, eps);
+  // HACK
+  /*distMean /= (double)distCnt;
+  printf("mean sample point distance of %d: %lf\n", distCnt, distMean);*/
 
   // if we have a solution
   if(nInliersOpt > minSupportPoints)

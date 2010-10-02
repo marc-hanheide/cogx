@@ -325,6 +325,10 @@ void ShapeDescriptor3D::calculateDescriptor2(ProtoObject &pobj)
                    planes[i].convexHull[j].z));
     }
     rasPlanes.PushBack(rasPlane);
+    
+    pobj.surfacePatches.push_back(SurfacePatch());
+    pobj.surfacePatches.back().pose = planes[i].pose;
+    pobj.surfacePatches.back().points = planes[i].surfPoints;
   }
 
   dshape.ComputeRAShapeDescriptor(rasPlanes, ras, histogramSize, 1);
@@ -465,6 +469,7 @@ void ShapeDescriptor3D::redrawHistogram(const ProtoObject &pobj)
 
 void ShapeDescriptor3D::redraw3D()
 {
+  bool drawAllPoints = false;
   std::ostringstream str;
   P::Scene3D scene;
   dshape.GetScene(scene);
@@ -481,12 +486,28 @@ void ShapeDescriptor3D::redraw3D()
     }
   }
 
-  for(size_t i = 0; i < pobjPtr->points.size(); i++)
+  if(drawAllPoints)
   {
-    DrawPoint3D(str, pobjPtr->points[i].p.x, pobjPtr->points[i].p.y, pobjPtr->points[i].p.z,
-      P::RGBColor((unsigned char)pobjPtr->points[i].c.r,
-                  (unsigned char)pobjPtr->points[i].c.g,
-                  (unsigned char)pobjPtr->points[i].c.b));
+    for(size_t i = 0; i < pobjPtr->points.size(); i++)
+    {
+      SurfacePoint &p = pobjPtr->points[i];
+      DrawPoint3D(str, p.p.x, p.p.y, p.p.z,
+        P::RGBColor((unsigned char)p.c.r,
+                    (unsigned char)p.c.g,
+                    (unsigned char)p.c.b));
+    }
+  }
+  else
+  {
+    for(size_t i = 0; i < pobjPtr->surfacePatches.size(); i++)
+      for(size_t j = 0; j < pobjPtr->surfacePatches[i].points.size(); j++)
+      {
+        SurfacePoint &p = pobjPtr->surfacePatches[i].points[j];
+        DrawPoint3D(str, p.p.x, p.p.y, p.p.z,
+          P::RGBColor((unsigned char)p.c.r,
+                      (unsigned char)p.c.g,
+                      (unsigned char)p.c.b));
+      }
   }
   str << "end\n";
   m_display.setLuaGlObject(ID_OBJECT_3D, "3D planes", str.str());
