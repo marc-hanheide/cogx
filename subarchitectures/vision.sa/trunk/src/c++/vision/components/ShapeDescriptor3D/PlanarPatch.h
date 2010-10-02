@@ -17,6 +17,7 @@ public:
   cogx::Math::Pose3 pose;
   std::vector<cogx::Math::Vector3> convexHull;
   std::vector<cogx::Math::Vector2> projectedConvexHull;
+  std::vector<VisionData::SurfacePoint> surfPoints;
 
   PlanarPatch(cogx::Math::Plane3 &p);
   void findConvexHull(std::vector<VisionData::SurfacePoint> &points, int nPoints, double distThr);
