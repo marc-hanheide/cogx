@@ -24,6 +24,7 @@
 #include <VideoClient.h>
 #include <StereoClient.h>
 #include <../../VisionUtils.h>
+#include <ConvertImage.h>
 
 #include <VisionData.hpp>
 
@@ -64,7 +65,7 @@ private:
   bool doDisplay;
   
   /**
-  * Segmentation tolerances for distance and hue
+  * Segmentation tolerances for distance and hsl
   *(gaussian dispersion)
   */
   float objHueTolerance;
@@ -200,7 +201,7 @@ private:
 
   
   IplImage* getCostImage(IplImage *iplPatchHLS, std::vector<CvPoint> projPoints,
-                    std::vector<VisionData::SurfacePoint> surfPoints, float huemod, float distmod, bool distcost);
+                    std::vector<VisionData::SurfacePoint> surfPoints, float hslmod, float distmod, bool distcost);
 
   std::vector<CvScalar> colorFilter(std::vector<CvScalar> colors, std::vector<CvScalar> filterColors, int k, int tolerance);
 
