@@ -66,27 +66,20 @@ sequence<OneObj> ObjSeq;
 
   sequence<SurfacePoint> SurfacePointSeq;
 
-  // A planar surface patch
-  // An oriented disk of a certain size, which lies in the local x-y plane.
-  class SurfacePatch {
+  /**
+   * A planar surface patch
+   * @author Michael Zillich
+   */
+  struct SurfacePatch {
     // note: the z-axis of the local coordinate system is the outwards pointing
     // normal vector
     cogx::Math::Pose3 pose;
 
-    // pose covariance matrix
-    // PoseVar3 var;
-
-    // size (diameter) of patch
-    double size;
-
-    // image patch on the surface (warped onto the surface from one of the
-    // cameras)
-    Video::Image image;
-
-    // all the features we need (SIFT, MSER, ...)
-    //Feature1 feature1;
-    //Feature2 feature2;
+    // 3D points used to estimate this patch
+    SurfacePointSeq points;
   };
+  
+  sequence<SurfacePatch> SurfacePatchSeq;
 
   /**
    * @brief ???
@@ -374,12 +367,15 @@ sequence<OneObj> ObjSeq;
     // Segmentation mask;
     SegmentMask mask;
 
-    // List of surface 3D points
+    // List of all surface 3D points
     SurfacePointSeq points;
-    
+
     // RAS shape descriptor
     RASShapeDescriptor rasShapeDesc;
 
+    // segmented planar surface patches
+    SurfacePatchSeq surfacePatches;
+  
     // time the object was last changed
     cast::cdl::CASTTime time;
   };
