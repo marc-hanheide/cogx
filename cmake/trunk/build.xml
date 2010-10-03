@@ -63,7 +63,7 @@
 	</condition>
 
 	<target name="sa.binder" if="build.binding_sa">
-	  <ant target="${target}" dir="subarchitectures/binder" />
+	  <ant target="${target}" dir="subarchitectures/binder.sa" />
 	</target>
 	<target name="sa.spatial" if="build.spatial_sa">
 	  <ant target="${target}" dir="subarchitectures/spatial.sa" />

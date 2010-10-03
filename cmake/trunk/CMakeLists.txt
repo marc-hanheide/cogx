@@ -53,7 +53,7 @@ endif(BUILD_BELIEFS)
 
 option(BUILD_SA_BINDING "Build binder subarchitecure" NO)
 if(BUILD_SA_BINDING)
-add_subdirectory (subarchitectures/binder)
+add_subdirectory (subarchitectures/binder.sa)
 endif(BUILD_SA_BINDING)
 
 option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" NO)
