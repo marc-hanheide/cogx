@@ -20,29 +20,17 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <../../VisionUtils.h>
 
-#include <BindingWorkingMemoryWriter.hpp>
-#include <BindingWorkingMemoryReader.hpp>
-#include <BinderEssentials.hpp>
-#include <Beliefs.hpp>
-#include <DomainModel.hpp>
+#include <beliefs_cast.hpp>
 
 using namespace de::dfki::lt::tr::beliefs::slice;
 
 namespace cast
 {
 
-class RRLearner :  
-  public binder::BindingWorkingMemoryWriter,
-  public binder::BindingWorkingMemoryReader
+class RRLearner :  public ManagedComponent
 
 {
  private:
-
-  /**
-   * Time and update thresholds
-   *(part of the ROI persistency criteria)
-   */
-  int updateThr;
   bool doDisplay;
   
   /**
@@ -56,71 +44,63 @@ class RRLearner :
   std::string m_salientObjID;
   bool first; 
 
-  /**
-   * status of VisualObject persistency
-   */
-  enum VisualObjectStatus {
-   OBJECT,
-   PROXY,
-   DELETED };
-
+  enum learnTaskStatus {
+   SAMPLE,
+   LEARNED};
   /** 
    * VisualObject data, contains also data used to evaluate VisualObject persistency
    */	
-  struct VisualObjectData {
+  struct learnTaskData {
    cdl::WorkingMemoryAddress addr;
-   VisualObjectStatus status;
-   std::string proxyId;
+   learnTaskStatus status;
+   std::string attrBeliefId;
    cdl::CASTTime addedTime;
-   cdl::CASTTime lastUpdateTime;
    cdl::CASTTime deleteTime;
   };
 
-  std::map<std::string, VisualObjectData>VisualObjectMap;
+  std::map<std::string, std::string>learnTaskMap;
   
-  std::map<std::string, cast::WorkingMemoryChangeReceiver*>TaskFilterMap;
-
-  std::queue<std::string> proxyToAdd;
-  std::queue<std::string> proxyToDelete;
-  std::queue<std::string> proxyToUpdate;
+  std::queue<std::string> learnTaskQueue;
 
   boost::interprocess::named_semaphore* queuesNotEmpty;
 
   /**
-   * callback function called whenever a new VisualObject appears
-   */
-  void newVisualObject(const cdl::WorkingMemoryChange & _wmc);
-
-  /**
-   * callback function called whenever a VisualObject changes
-   */
-  void updatedVisualObject(const cdl::WorkingMemoryChange & _wmc);
-
-  /**
-   * callback function called whenever a VisualObject is deleted
-   */
-  void deletedVisualObject(const cdl::WorkingMemoryChange & _wmc);
-
-  /**
    * callback function called whenever a Belief changes
    */
-  void updatedBelief(const cdl::WorkingMemoryChange & _wmc);
+  void newBelief(const cdl::WorkingMemoryChange & _wmc);
   
-    /**
-   * callback function called whenever a learning task is overwritten
+  /**
+   * find a labeled reference CAST WM address
    */
-  void updatedLearningTask(const cdl::WorkingMemoryChange & _wmc);
-
-//  bool unionRef(beliefmodels::domainmodel::cogx::SuperFormulaPtr f, std::string &unionID);
-
-  bool unionRef(beliefmodels::adl::FormulaPtr f, std::string &unionID);
+  bool pointedCASTAddr(std::string key, std::map<string,ProbDistribution> distibutions, cast::cdl::WorkingMemoryAddress &refWmaAddr);
   
+  bool pointedCASTAddr(std::string key, distribs::ProbDistribution distribution, cast::cdl::WorkingMemoryAddress &refWmaAddr);
+  
+  bool pointedCASTAddr(std::string key, dBelief sitbeliefs::belief, cast::cdl::WorkingMemoryAddress &refWmaAddr);
+  
+  /**
+   * checks if the epistemic status is T
+   */			    
+  bool epistemicStatus<T>(epobject::EpistemicObject obj)
+  {
+	EpistemicStatus *eps = &(obj.epistemicStatus);
+	debug("The epistemic status class is %s", typeid(*eps).name());
+
+	if(typeid(*eps) == typeid(T))
+	  return true;
+	else
+	  return false;
+  };
+  
+  /**
+   * 
+   */
   bool findAsserted(beliefmodels::adl::FormulaPtr fp, 
 					std::vector<beliefmodels::domainmodel::cogx::Color> &colors,
 					std::vector<beliefmodels::domainmodel::cogx::Shape> &shapes,
 					std::vector<float> &colorDist, std::vector<float> &shapeDist);
-					
-  bool AttrAgent(beliefmodels::adl::AgentStatusPtr ags);
+
+
   
   void addFeatureListToProxy(binder::autogen::core::ProxyPtr proxy, VisionData::IntSeq labels,
 							 VisionData::DoubleSeq distribution);
