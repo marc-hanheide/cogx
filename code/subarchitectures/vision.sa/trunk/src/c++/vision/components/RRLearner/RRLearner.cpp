@@ -27,7 +27,9 @@ using namespace VisionData;
 using namespace boost::interprocess;
 using namespace boost::posix_time;
 
-using namespace de::dfki::lt::tr::beliefs::slice; 
+using namespace de::dfki::lt::tr::beliefs::slice;
+using namespace de::dfki::lt::tr::beliefs::slice::distribs;
+using namespace de::dfki::lt::tr::beliefs::slice::logicalcontent;
 
 void RRLearner::configure(const map<string,string> & _config)
 {
@@ -66,11 +68,11 @@ void RRLearner::start()
  // filters for belief updates
   addChangeFilter(createGlobalTypeFilter<Belief>(cdl::ADD),
 	  new MemberFunctionChangeReceiver<RRLearner>(this,
-		&RRLearner::updatedBelief));
+		&RRLearner::newdBelief));
   
-  addChangeFilter(createGlobalTypeFilter<Belief>(cdl::OVERWRITE),
-	  new MemberFunctionChangeReceiver<RRLearner>(this,
-		&RRLearner::updatedBelief));
+//  addChangeFilter(createGlobalTypeFilter<Belief>(cdl::OVERWRITE),
+//	  new MemberFunctionChangeReceiver<RRLearner>(this,
+//		&RRLearner::updatedBelief));
 }
 
 void RRLearner::runComponent()
@@ -87,7 +89,7 @@ void RRLearner::runComponent()
   ComplexFormulaPtr cf = new ComplexFormula();
   
   UnionRefPropertyPtr un =  new UnionRefProperty();
-  un->unionRef = "whatever";
+  un->beliefRef = "whatever";
   
   cf->formulae.push_back(un);
   
@@ -116,7 +118,7 @@ void RRLearner::runComponent()
   cf = new ComplexFormula();
   
   un =  new UnionRefProperty();
-  un->unionRef = "whatever";
+  un->beliefRef = "whatever";
   
   cf->formulae.push_back(un);
   
@@ -152,7 +154,7 @@ void RRLearner::runComponent()
 		  data.status = PROXY;
 		  try
 		  {
-			VisualObjectPtr objPtr = getMemoryEntry<VisionData::VisualObject>(data.addr);
+			VisualObjectPtr objPtr = getMemoryEntry<VisionData::VisualObject>(datattributedEpiStatusa.addr);
 
 			WorkingMemoryPointerPtr origin = createWorkingMemoryPointer(getSubarchitectureID(), data.addr.id, "VisualObject");
 
@@ -311,113 +313,74 @@ void RRLearner::runComponent()
   }
 }
 
-void RRLearner::newVisualObject(const cdl::WorkingMemoryChange & _wmc)
-{
-  VisualObjectPtr obj =
-	getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
-  VisualObjectData data;
-
-  data.addr = _wmc.address;
-  data.addedTime = obj->time;
-  data.status = OBJECT;
-
-  VisualObjectMap.insert(make_pair(data.addr.id, data));
-  proxyToAdd.push(data.addr.id);
-  debug("A new VisualObject ID %s ", data.addr.id.c_str());  
-
-  queuesNotEmpty->post();
-}
-
-void RRLearner::updatedVisualObject(const cdl::WorkingMemoryChange & _wmc)
-{
-  VisionData::VisualObjectPtr obj =
-	getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-
-  VisualObjectData &data = VisualObjectMap[_wmc.address.id];
-
-  CASTTime time=getCASTTime();
-
-//  data.status= STABLE;
-  data.lastUpdateTime = time;
-  proxyToUpdate.push(data.addr.id);
-  debug("A VisualObject ID %s ",data.addr.id.c_str());
-  
-  queuesNotEmpty->post();
-}
-
-void RRLearner::deletedVisualObject(const cdl::WorkingMemoryChange & _wmc)
-{
-
-  VisualObjectData &obj = VisualObjectMap[_wmc.address.id];
-  log("Detected deletion if the VisualObject ID %s ", obj.addr.id.c_str());
-  
-  if(obj.status == PROXY)
-  {
-	proxyToDelete.push(obj.addr.id);
-	queuesNotEmpty->post();
-  }
-  else
-  {
-	obj.status= DELETED;
-	CASTTime time=getCASTTime();
-	obj.deleteTime = time;
-  }
-  		 
-}
-
-
-void RRLearner::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
+void RRLearner::newBelief(const cdl::WorkingMemoryChange & _wmc)
 {
   log("A belief was updated. ID: %s SA: %s", _wmc.address.id.c_str(), _wmc.address.subarchitecture.c_str());
   
-  BeliefPtr obj; 
+  dBeliefPtr belief; 
   
   try {
-	obj = getMemoryEntry<Belief>(_wmc.address);
+	belief = getMemoryEntry<dBelief>(_wmc.address);
   }
   catch (DoesNotExistOnWMException e) {
-	log("WARNING: belief ID %s was removed before it could be processed", _wmc.address.id.c_str());
+	log("WARNING: belief ID %s was removed before it could be processed.", _wmc.address.id.c_str());
 	return;
   }
-  	
+  		
+  debug("Got a belief from WM. ID: %s", _wmc.address.id.c_str());  
+
+  if(!epistemicStatus<SharedEpistemicStatus>(belief))
+  {
+	log("The epistemic status is not a shared one - no learning case.");
+	return;
+  }
+  
+  cdl::WorkingMemoryAddress refWmaAddr;
+  
+  if(pointedCASTAddr("about", belief, refWmaAddr))
+  {
+	debug("Found reference to WM addr %s in the shared belief.", refWmaAddr.c_str());
+
+	dBeliefPtr refBelief; 
+  
+	try {
+	  refBelief = getMemoryEntry<dBelief>(refWmaAddr);
+	}
+	catch (DoesNotExistOnWMException e) {
+	  log("WARNING: referenced belief ID %s not in working memory.", refWmaAddr.id.c_str());
+	  return;
+	}
 	
-  debug("Got a belief from WM. ID: %s", _wmc.address.id.c_str());
-  
-  string unionID;
-  string visObjID;
-  
-  if(! AttrAgent(obj->ags))
-  {
-	log("The agent status is not an attributed one - will not learn what I already know");
-	return;
-  }
-  
-  if(unionRef(obj->phi, unionID))
-  {
-	debug("Found reference to union ID %s SA %s in belief", unionID.c_str(), m_bindingSA.c_str());
+	if(!epistemicStatus<PrivateEpistemicStatus>(belief))
+	{
+	  log("WARNING: The epistemic status of the referenced is not a private one.");
+	  return;
+	}
+	
+	
+	
+	
 
-	UnionPtr uni;
-
-	if(m_currentUnions.find(unionID) != m_currentUnions.end())
-	  uni = m_currentUnions[unionID];
+	if(m_currentUnions.find(refBeliefId) != m_currentUnions.end())
+	  uni = m_currentUnions[refBeliefId];
 	else
 	{
 	  if(m_haveAddr)
 	  {
 		addrFetchThenExtract(m_currentUnionsAddr);
 
-		if(m_currentUnions.find(unionID) != m_currentUnions.end())
-		  uni = m_currentUnions[unionID];
+		if(m_currentUnions.find(refBeliefId) != m_currentUnions.end())
+		  uni = m_currentUnions[refBeliefId];
 		else
 		{
-		  log("Union ID %s not in the current configuration. There are %i unions in the configuration.", unionID.c_str(), m_currentUnions.size());
+		  log("Union ID %s not in the current configuration. There are %i unions in the configuration.", refBeliefId.c_str(), m_currentUnions.size());
 		  return;
 		}    
 	  }
 	  else
 	  {
-		log("Union ID %s not in the current configuration. There are %i unions in the configuration.", unionID.c_str(), m_currentUnions.size());
+		log("Union ID %s not in the current configuration. There are %i unions in the configuration.", refBeliefId.c_str(), m_currentUnions.size());
 		return;
 	  }
 	}
@@ -446,7 +409,7 @@ void RRLearner::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
   }
   else
   {
-	log("No reference to a binding union");
+	log("No reference to a belief");
 	return;
   }
 	
@@ -469,7 +432,7 @@ void RRLearner::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
   }
 }
 
-
+/*
 void RRLearner::updatedLearningTask(const cdl::WorkingMemoryChange & _wmc)
 {
   log("A learning Task was updated. ID: %s SA: %s", _wmc.address.id.c_str(), _wmc.address.subarchitecture.c_str());
@@ -506,40 +469,45 @@ void RRLearner::updatedLearningTask(const cdl::WorkingMemoryChange & _wmc)
   removeChangeFilter(TaskFilterMap[_wmc.address.id]);
   TaskFilterMap.erase(_wmc.address.id);
 }
+*/
 
 
-bool RRLearner::unionRef(FormulaPtr fp, string &unionID)
+bool RRLearner::pointedCASTAddr(std::string key, map<string,ProbDistribution> distibutions, cast::cdl::WorkingMemoryAddress &refWmaAddr)
 {
-  Formula *f = &(*fp);
-
-  if(typeid(*f) == typeid(UnionRefProperty))
-  {
-	UnionRefPropertyPtr unif = dynamic_cast<UnionRefProperty*>(f);
-	unionID =  unif->unionRef;	
-
-	return true;
-  }
-  else if(typeid(*f) == typeid(ComplexFormula))
-  {
-	ComplexFormulaPtr unif = dynamic_cast<ComplexFormula*>(f);
-	vector<SuperFormulaPtr>::iterator it; 
-
-	for(it = unif->formulae.begin(); it != unif->formulae.end(); it++)
-	{
-	  SuperFormulaPtr sf = *it;
+  // BasicProbDistribution
+  map<string,ProbDistribution>::iterator bpd = distributions.find(key);
   
-	  if(unionRef(sf, unionID))
-		return true;
-	}  
-	unionID = "";
-	return false;	
-  }
+  if(bpd==distributions.end())
+	return false;
+  else if(bpd->key==key)
+	{
+	  refWmaAddr=bpd->values->values.begin().val->pointer;
+	  return true;
+	}
+	else
+	{
+	  log("Basic distribution key did not match the Distributions key");
+	  return false;
+	}	  
+}
+
+
+bool RRLearner::pointedCASTAddr(std::string key, ProbDistribution distribution, cast::cdl::WorkingMemoryAddress &refWmaAddr)
+{
+  ProbDistribution *pd= &(*distribution);
+  
+  if(typeid(*pd) == typeid(CondIndependentDistribs))
+	return pointedCASTAddr(key, pd->distributions, refWmaAddr)
   else
   {
-	unionID = "";
+	log("UNEXPECTED STRUCTURE in belief content");
 	return false;
   }
+}
 
+bool RRLearner::pointedCASTAddr(std::string key, dBelief belief, cast::cdl::WorkingMemoryAddress &refWmaAddr)
+{
+  return pointedCASTAddr(key, belief->content, refWmaAddr);
 }
 
 
@@ -584,7 +552,7 @@ bool RRLearner::findAsserted(FormulaPtr fp, vector<Color> &colors, vector<Shape>
 	else
 	  return false;
   }
-  else if(typeid(*f) == typeid(ComplexFormula))
+  else if(typeid(*f) == typeid(ComplexFormula))epistemicStatus
   {
 	ComplexFormulaPtr unif = dynamic_cast<ComplexFormula*>(f);
 	vector<SuperFormulaPtr>::iterator it;
@@ -604,24 +572,6 @@ bool RRLearner::findAsserted(FormulaPtr fp, vector<Color> &colors, vector<Shape>
   }
   else
 	return false;
-
-}
-
-
-bool RRLearner::AttrAgent(AgentStatusPtr ags)
-{
-  AgentStatus *as = &(*ags);
-  
-  debug("The agent status class is %s", typeid(*as).name());
-
-  if(typeid(*as) == typeid(AttributedAgentStatus))
-  {
-	return true;
-  }
-  else
-  {
-	return false;
-  }
 
 }
 
@@ -874,7 +824,7 @@ void RRLearner::checkDistribution4Clarification(string proxyID, IntSeq labels, D
 	}
   }
   
-  string unionID;
+  string refBeliefId;
   
   if(nc > 0 || ns > 0 ) 
   { 
@@ -890,7 +840,7 @@ void RRLearner::checkDistribution4Clarification(string proxyID, IntSeq labels, D
 	  for(itp = proxySeq.begin(); itp != proxySeq.end(); itp++)
 		if((*itp)->entityID == proxyID)
 		{
-		  unionID = (*itu).first;
+		  refBeliefId = (*itu).first;
 		  found = true;
 		  break;
 		}
@@ -962,7 +912,7 @@ void RRLearner::checkDistribution4Clarification(string proxyID, IntSeq labels, D
 	cr->about = formula;
 	cr->clarificationNeed = formula;
 	cr->sourceModality = getSubarchitectureID();
-	cr->sourceEntityID = unionID;
+	cr->sourceEntityID = refBeliefId;
 	
 	addToWorkingMemory(newDataID(), "comsys", cr);
 	log("Submitted clarification request for colour");
@@ -1010,7 +960,7 @@ void RRLearner::checkDistribution4Clarification(string proxyID, IntSeq labels, D
 	cr->about = formula;
 	cr->clarificationNeed = formula;
 	cr->sourceModality = getSubarchitectureID();
-	cr->sourceEntityID = unionID;
+	cr->sourceEntityID = refBeliefId;
 	
 	addToWorkingMemory(newDataID(), "comsys", cr);
 	log("Submitted clarification request for shape");
