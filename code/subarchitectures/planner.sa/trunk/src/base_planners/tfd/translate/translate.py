@@ -142,6 +142,8 @@ def translate_operator_duration(duration, dictionary):
     for timed_duration in duration:
         timed_sas_durations = []
         for dur in timed_duration:
+            if dictionary.get(dur[1]) is None:
+                return None
             var, val = dictionary.get(dur[1])[0]
             timed_sas_durations.append(sas_tasks.SASDuration(dur[0],var))
         sas_durations.append(timed_sas_durations)
@@ -360,7 +362,7 @@ def translate_temporal_strips_operator(operator, dictionary, ranges, comp_axioms
     duration = translate_operator_duration(operator.duration, dictionary)
     condition = translate_strips_conditions(operator.conditions, 
                                 dictionary, ranges, comp_axioms, True)
-    if condition is None:
+    if condition is None or duration is None:
         return None
 
     effect = []
