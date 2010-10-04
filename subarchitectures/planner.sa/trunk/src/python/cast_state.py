@@ -1,4 +1,5 @@
 from itertools import chain
+import re
 
 from standalone import pddl, config
 from standalone.pddl import state, prob_state
@@ -13,8 +14,11 @@ log = config.logger("cast-state")
 BINDER_SA = "binder"
 TOTAL_P_COSTS = 200
 
+QDL_NUMBER_RE = re.compile("\"([0-9\.]+)\"\^\^<xsd:float>")
+QDL_VALUE = re.compile("<dora:(.*)>")
+
 class CASTState(object):
-    def __init__(self, beliefs, domain, oldstate=None):
+    def __init__(self, beliefs, domain, oldstate=None, component=None):
         self.domain = domain
         self.beliefs = beliefs
         self.beliefdict = dict((b.id, b) for b in beliefs)
@@ -28,6 +32,9 @@ class CASTState(object):
         self.namedict = tp.rename_objects(self.objects)
 
         self.facts = list(tp.tuples2facts(obj_descriptions))
+        if component:
+            self.get_coma_data(component)
+            
         problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
         self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
         self.prob_state.apply_init_rules(domain = self.domain)
@@ -35,6 +42,43 @@ class CASTState(object):
         self.state = self.prob_state.determinized_state(0.05, 0.95)
         if oldstate:
             self.match_generated_objects(oldstate)
+
+    def get_coma_data(self, component):
+        for f in chain(self.domain.predicates, self.domain.functions):
+            if not f.name.startswith("dora__"):
+                continue
+            assert len(f.args) == 2
+            query = "SELECT ?x ?y ?p where ?x <%s> ?y ?p" % f.name.replace("__",":");
+            try:
+                results = component.getHFC().querySelect(query)
+            except Exception, e:
+                log.warning("Error when calling the HFC server: %s", str(e))
+                return
+            
+            for elem in results.bt:
+                a1_str = QDL_VALUE.search(elem[results.varPosMap['?x']]).group(1)
+                a2_str = QDL_VALUE.search(elem[results.varPosMap['?y']]).group(1)
+                p_str = QDL_NUMBER_RE.search(elem[results.varPosMap['?p']]).group(1)
+                a1 = pddl.TypedObject(a1_str, f.args[0].type)
+                a2 = pddl.TypedObject(a2_str, f.args[1].type)
+                p = float(p_str)
+                
+                for a in (a1,a2):
+                    if a not in self.objects and a not in self.domain.constants:
+                        self.objects.add(a)
+                if f.type.equal_or_subtype_of(pddl.t_number):
+                    val = pddl.types.TypedNumber(p)
+                elif f.type == pddl.t_boolean:
+                    if p > 0.0:
+                        val = pddl.TRUE
+                    else:
+                        val = pddl.FALSE
+                else:
+                    assert False
+                    
+                fact = state.Fact(state.StateVariable(f, [a1, a2]), val)
+                self.facts.append(fact)
+                log.debug("added fact: %s", fact)
 
     def match_generated_objects(self, oldstate):
         # This will only match single new objects (i.e. no several new

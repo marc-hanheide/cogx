@@ -138,6 +138,8 @@ class ProbabilisticState(State):
 
         self.read_svars = set()
         self.written_svars = set()
+        self.extstate = None
+        self.derived = set()
         
         self.random = random.Random()
 

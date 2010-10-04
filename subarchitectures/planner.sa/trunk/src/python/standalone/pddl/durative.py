@@ -172,9 +172,10 @@ class DurativeAction(actions.Action):
         return action
 
 class TimedCondition(conditions.Condition):
-    def __init__(self, time, condition):
+    def __init__(self, time, condition, scope=None):
         assert time in ("start", "end", "all")
         self.time = time
+        self.scope = scope
         self.condition = condition
 
     def visit(self, fn):
@@ -182,8 +183,8 @@ class TimedCondition(conditions.Condition):
 
     def copy(self, new_scope=None, new_parts=None, copy_instance=False):
         if new_parts:
-            return TimedCondition(self.time, new_parts[0].copy(new_scope, copy_instance=copy_instance))
-        return TimedCondition(self.time, self.condition.copy(new_scope, copy_instance=copy_instance))
+            return TimedCondition(self.time, new_parts[0].copy(new_scope, copy_instance=copy_instance), new_scope)
+        return TimedCondition(self.time, self.condition.copy(new_scope, copy_instance=copy_instance), new_scope)
     
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.time == other.time and self.condition == other.condition

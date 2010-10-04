@@ -4,6 +4,7 @@
   (:types
    place room - object
    cone - place
+   dummy-cone - place
    visualobject - movable
    robot - agent
    robot - movable
@@ -11,10 +12,11 @@
    )
 
   (:predicates
-   (connected ?p1 ?p2 - place)
    (cones_created ?l - label ?r - room)
+   (connected ?p1 ?p2 - place)
    (started)
-   (select-locked)
+;   (select-locked)
+   (cones-exist ?l - label ?r - room)
    )
 
   (:functions
@@ -26,22 +28,42 @@
    (cone-label ?c - cone) - label
    (ex-in-room ?l - label ?r - room) - boolean
    (p-is-in ?c - cone) - number
-   (p-ex-in-room ?l - label ?c - category ) - number
+   (dora__in ?l - label ?c - category ) - number
    (p-category ?r - room ?c - category ) - number
    (total-p-costs) - number
    )
+
+  (:constants 
+   dummy-cone - label
+  )
 
   (:init-rule objects
               :effect (forall (?l - label) (create (?o - visualobject)
                                                    (assign (label ?o) ?l)))
               )
 
+  (:init-rule cones
+              :effect (forall (?r - room) (and
+                                           (create (?c - cone) (and
+                                                                (assign (in-room ?c) ?r)
+                                                                (assign (cone-label ?c) dummy-cone)))
+                                           (create (?c - cone) (and
+                                                                (assign (in-room ?c) ?r)
+                                                                (assign (cone-label ?c) dummy-cone)))
+                                           ))
+              )
+
+  (:derived (cones-exist ?l - label ?r - room)
+            (exists (?c - cone) (and (= (in-room ?c) ?r)
+                                     (= (cone-label ?c) ?l)))
+            )
+
   (:action sample_existence
            :agent (?a - agent)
            :parameters (?l - label ?r - room ?c - category)
            :precondition (= (category ?r) ?c)
-           :effect (probabilistic (p-ex-in-room ?l ?c) (assign (ex-in-room ?l ?r) true) 
-                                                       (assign (ex-in-room ?l ?r) false))
+           :effect (probabilistic (dora__in ?l ?c) (assign (ex-in-room ?l ?r) true) 
+                                                   (assign (ex-in-room ?l ?r) false))
            )
 
   (:action sample_is_in
@@ -49,8 +71,20 @@
            :parameters (?l - label ?r - room ?c - cone ?o - visualobject)
            :precondition (and (= (in-room ?c) ?r)
                               (= (label ?o) ?l)
+                              (= (cone-label ?c) ?l)
                               (= (ex-in-room ?l ?r) true))
            :effect (probabilistic (p-is-in ?c) (assign (is-in ?o) ?c))
+           )
+
+  (:action sample_is_in_dummy
+           :agent (?a - agent)
+           :parameters (?l - label ?r - room ?c - cone ?o - visualobject)
+           :precondition (and (= (in-room ?c) ?r)
+                              (= (label ?o) ?l)
+                              (= (cone-label ?c) dummy-cone)
+                              (not (cones-exist ?l ?r))
+                              (= (ex-in-room ?l ?r) true))
+           :effect (probabilistic 0.5 (assign (is-in ?o) ?c))
            )
 
 
@@ -98,12 +132,56 @@
                      :effect (and (change (is-in ?a) ?to)
                                   (at start (started)))
                      )
+
+   (:durative-action create_cones
+                     :agent (?a - robot)
+                     :parameters (?l - label ?r - room)
+                     :variables (?p - place)
+                     :duration (= ?duration 10)
+                     :condition (and (over all (and (= (is-in ?a) ?p)
+                                                    (= (in-room ?p) ?r)
+                                                    (hyp (ex-in-room ?l ?r) true)))
+                                     )
+                     :effect (and (at end (cones_created ?l ?r))
+                                  (at start (started)))
+                     )
+
+   ;; (:observe new_cone
+   ;;           :agent (?a - robot)
+   ;;           :parameters (?o - visualobject ?l - label ?r - room ?p - place)
+   ;;           :execution (create_cones ?a ?l ?r ?p)
+   ;;           :effect (when (= (ex-in-room ?l ?r) true)
+   ;;                     (probabilistic 0.9 (observed (is-in ?o) dummy-cone)))
+   ;;           )
+
+   (:durative-action look_at_object_in_dummy_cone
+                     :agent (?a - robot)
+                     :parameters (?o - visualobject ?l - label ?r - room ?c - cone)
+                     :duration (= ?duration 1)
+                     :condition (over all (and (cones_created ?l ?r)
+                                               (= (label ?o) ?l)
+                                               (= (cone-label ?c) dummy-cone)));(over all (= (is-in ?a) ?c))
+                                     ;(at start (hyp (is-in ?o) ?c)))
+                     :effect (and ;;(at end (assign (really-is-in ?o) ?c))
+                                  ;;(at end (kval ?a (is-in ?o)))
+                                  (at start (started)))
+                     )
+
+   (:observe visual_object_in_dummy
+             :agent (?a - robot)
+             :parameters (?o - visualobject ?l - label ?r - room ?c - cone)
+             :execution (look_at_object_in_dummy_cone ?a ?o ?l ?r ?c )
+             :effect (when (= (is-in ?o) ?c)
+                       (probabilistic 0.8 (observed (is-in ?o) ?c)))
+             )
                      
    (:durative-action look_at_object
                      :agent (?a - robot)
-                     :parameters (?o - visualobject ?c - cone)
+                     :parameters (?o - visualobject ?l - label ?c - cone)
                      :duration (= ?duration 1)
-                     :condition (and );(over all (= (is-in ?a) ?c))
+                     :condition (over all (and (= (cone-label ?c) ?l)
+                                               (= (label ?o) ?l)))
+                                        ;(over all (= (is-in ?a) ?c))
                                      ;(at start (hyp (is-in ?o) ?c)))
                      :effect (and ;;(at end (assign (really-is-in ?o) ?c))
                                   ;;(at end (kval ?a (is-in ?o)))
@@ -112,8 +190,8 @@
 
    (:observe visual_object
              :agent (?a - robot)
-             :parameters (?o - visualobject ?c - cone)
-             :execution (look_at_object ?a ?o ?c)
+             :parameters (?o - visualobject ?l - label ?c - cone)
+             :execution (look_at_object ?a ?o ?l ?c)
              :effect (when (= (is-in ?o) ?c)
                        (probabilistic 0.8 (observed (is-in ?o) ?c)))
              )

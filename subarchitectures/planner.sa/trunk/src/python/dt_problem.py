@@ -18,6 +18,7 @@ class DTProblem(object):
         self.state = cast_state
         self.subplan_actions = []
         self.select_actions = []
+        self.selected_subproblem = -1
         
         self.goals = self.create_goals(plan)
         if not self.goals:
@@ -63,13 +64,14 @@ class DTProblem(object):
             return []
 
         def find_restrictions(pnode):
+            others = []
             for pred in plan.predecessors_iter(pnode, 'depends'):
                 restr = find_restrictions(pred)
                 if pred.action.name.startswith("select-"):
                     return [pred] + restr
                 if restr:
-                    return restr
-            return []
+                    others = restr
+            return others
 
         goal_svars = set()
         #combine consecutive observe actions into one subtask.
@@ -91,6 +93,18 @@ class DTProblem(object):
                 break
             
         return goal_svars
+    
+
+    def replanning_neccessary(self, new_state):
+        if self.selected_subproblem == -1:
+            return True
+        new_objects = new_state.objects - self.state.objects
+        problem = self.subproblems[self.selected_subproblem]
+        for o in new_objects:
+            if all(c.matches(o, self.state.prob_state) for c in problem.constraints):
+                return True
+        return False
+    
 
     def compute_restrictions(self):
 
@@ -121,6 +135,14 @@ class DTProblem(object):
         for pnode in self.select_actions:
             log.debug("action: %s", str(pnode))
             log.debug("cond: %s", str(map(str,pnode.preconds)))
+            supporter = {}
+            for pred in self.plan.predecessors_iter(pnode, link_type='depends'):
+                for e in self.plan[pred][pnode].itervalues():
+                    for svar, val in pnode.preconds:
+                        if e['svar'] == svar:
+                            supporter[svar] = pred
+                            break
+                        
             new_fixed = fixed | set(pnode.full_args)
             new_var_relaxations = set()
             new_value_relaxations = set()
@@ -129,6 +151,9 @@ class DTProblem(object):
                 if svar.modality == mapl.commit:
                     new_var_relaxations |= set(svar.args)
                     new_value_relaxations |= set(svar.modal_args)
+                elif supporter[svar] != self.plan.init_node:
+                    new_var_relaxations |= set(svar.args)
+                    new_value_relaxations.add(val)
                 elif svar.function.type != pddl.t_number:
                     for a in svar.args+svar.modal_args:
                         new_constraints[a].add(state.Fact(svar,val))
@@ -211,7 +236,7 @@ class DTProblem(object):
             a.precondition = b.cond('and', ('not', (dtpddl.committed, [term])))
             commit_effect = b.effect(dtpddl.committed, [term])
             reward_effect = b('when', ('=', term, val), ('assign', ('reward',), confirm_score))
-            penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -2*confirm_score))
+            penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -confirm_score))
             a.effect = b.effect('and', commit_effect, reward_effect, penalty_effect)
             
             commit_actions.append(a)
@@ -251,7 +276,7 @@ class DTProblem(object):
             
             commit_effect = b.effect(dtpddl.committed, term)
             reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_score))
-            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -10*dis_score))
+            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -2*dis_score))
             a.effect = b.effect('and', commit_effect, reward_effect, penalty_effect)
             
             disconfirm_actions.append(a)
@@ -263,92 +288,11 @@ class DTProblem(object):
         dtdomain.name = "dt-%s" % dom.name
         dtdomain.annotations =  pddl.translators.Translator.get_annotations(dom)
         return dtdomain
-    
-    # def create_limited_domain(self, dom):
-    #     dtdomain = dom.copy()
-    #     dtdomain.name = "dt-%s" % dom.name
-    #     all_actions = dtdomain.actions
-    #     dtdomain.actions = []
-    #     dtdomain.axioms = []
 
-    #     observe_preconds = self.get_observe_action_preconditions()
-    #     for a in all_actions:
-    #         effects = set(visitors.visit(a.effect, function_visitor, []))
-    #         if not observe_preconds & effects:
-    #             dtdomain.actions.append(a)
-
-    #     return dtdomain
-
-
-    def compute_removal_order(self, to_remove, fixed, st):
-        OT_VALUE = 0 
-        OT_CORRELATED = 1 
-
-        types = set(o.type for o in to_remove)
-        fixed_types = set(o.type for o in fixed)
-
-        # the value to remove occurs as a value of an already fixed feature
-        value_order_rules = defaultdict(set)
-        # the value to remove occurs as a parameter together with an already fixed feature
-        corr_order_rules = defaultdict(set)
-        for t in types:
-            for r in self.dt_rules:
-                for _,v in r.values:
-                    if t.equal_or_subtype_of(v.get_type()):
-                        value_order_rules[t].add(r)
-                        break
-                for a in r.args:
-                    if t.equal_or_subtype_of(a.type):
-                        if any(ft.equal_or_subtype_of(a2.type) for ft in fixed_types for a2 in r.args if a2 != a):
-                            corr_order_rules[t].add(r)
-                            break
-        sorted_by_type = dict((t, [o for o in to_remove if o.type == t]) for t in types)
-        for t, rules in value_order_rules.iteritems():
-            log.debug("ordering %s by probability", str(t))
-            obj_by_prob = []
-            for o in to_remove:
-                if t != o.type:
-                    continue
-                p_total = 0
-                p_count = 0
-                for r in rules:
-                    combinations = state.product(*map(lambda a: [o for o in fixed if o.is_instance_of(a.type)], r.args))
-                    for c in combinations:
-                        p = r.get_probability(c, o)
-                        pval = st.evaluate_term(p)
-                        if pval != UNKNOWN:
-                            p_total += p.value
-                            p_count +=1
-                p_avg = p_total/p_count
-                obj_by_prob.append((o,p_avg))
-            sorted_by_type[t] = sorted(obj_by_prob, key=lambda (o,p): p)
-
-        for t, rules in corr_order_rules.iteritems():
-            log.debug("ordering %s by disambiguation power", str(t))
-            obj_by_prob = []
-            for o in to_remove:
-                if t != o.type:
-                    continue
-                p_total = 0
-                p_count = 0
-                for r in rules:
-                    combinations = state.product(*map(lambda a: [o for o in fixed if o.is_instance_of(a.type)], r.args))
-                    for c in combinations:
-                        p = r.get_probability(c, o)
-                        pval = st.evaluate_term(p)
-                        if pval != UNKNOWN:
-                            p_total += p.value
-                            p_count +=1
-                p_avg = p_total/p_count
-                obj_by_prob.append((o,p_avg))
-            sorted_by_type[t] = sorted(obj_by_prob, key=lambda (o,p): p)
-            
-
-        for t, rules in corr_order_rules.iteritems():
-            log.debug("%ss should be ordered by disambiguation power", str(t))
-                
-        return list(to_remove)
-        
+    def recompute_problem(self, new_state):
+        self.state = new_state
+        self.subproblems = self.compute_subproblems(self.state)
+        self.problem = self.create_problem(self.state, self.dtdomain)
 
     def compute_subproblems(self, cast_state):
         # import debug
@@ -359,47 +303,13 @@ class DTProblem(object):
         all_objects = cast_state.objects | cast_state.generated_objects | self.domain.constants
         problems.append(partial_problem.PartialProblem(cast_state.prob_state, all_objects,  [], [], self.dt_rules, self.domain))
         i = len(self.relaxation_layers)-1
-        #j = 1
-        #prev_fixed = set()
         prev_constraints = []
         for constraints in reversed(self.relaxation_layers):
             # Iterate over relaxation layers first (from most to least relaxed)
             log.debug("Next layer %d:", i)
             problems.append(partial_problem.PartialProblem(cast_state.prob_state, problems[-1].objects, prev_constraints, constraints, self.dt_rules, self.domain))
-            # new_fixed = fixed - prev_fixed
-            # fixed_types = set(o.type for o in new_fixed)
-            # #log.debug("New fixed: %s", ", ".join(o.name for o in new_fixed))
-
-            # generic_constraints = []
-            # for t,v in constraints:
-            #     if v in new_fixed:
-            #         generic_constraints.append((t,v))
-
-            # # log.debug("Generic constraints: %s", ", ".join("%s = %s" % (str(t), v.name) for t,v in generic_constraints))
-            # alt_objects = set(o for o in problems[-1].objects if o.type in fixed_types and o not in fixed)
-            # #to_remove = self.compute_removal_order(to_remove, fixed, cast_state.prob_state)
-            
-            # log.debug("Removing the following objects: %s", ", ".join(o.name for o in alt_objects))
-            # objects, facts = self.limit_state(cast_state, fixed | set(alt_objects), constraints, problems[-1].objects)
-            # problems.append(PartialProblem(objects - alt_objects, alt_objects, facts, self.dt_rules, self.domain))
-            # while to_remove:
-            #     #compute possible intermediate problems between two layers
-            #     rem = to_remove.pop(0)
-            #     new_constraints = []
-            #     for t,v in generic_constraints:
-            #         c2 = []
-            #         new_constraints.append(c2)
-            #         c2.append(state.Fact(t,v))
-            #         for o in to_remove:
-            #             if o.type == v.type:
-            #                 c2.append(state.Fact(t,o))
-            #     objects, facts = self.limit_state(cast_state, fixed | set(to_remove), new_constraints, problems[-1].objects)
-            #     log.debug("problem %d: %s", j, ", ".join(o.name for o in objects))
-            #     problems.append(PartialProblem(objects, facts, self.dt_rules, self.domain))
-            #     j += 1
                     
             i -= 1
-            #prev_fixed = fixed
             prev_constraints = constraints
 
         return problems
@@ -423,162 +333,14 @@ class DTProblem(object):
         problem = self.subproblems[selected]
         objects = problem.objects
         facts = problem.facts
-        
-        #
-        # Build dependencies for the rules
-        #
-        prob_functions = set(r.function for r in self.dt_rules)
-        ruledeps = {}
-        nondep_rules = []
-        
-        for r in self.dt_rules:
-            r.set_parent(cast_state.prob_state.problem)
-            deps = False
-            prob_deps = r.deps() & prob_functions 
-            assert len(prob_deps) <= 1 # should be enough for now
-            ruledeps[r] = prob_deps
-            if not prob_deps:
-                nondep_rules.append(r)
 
-        substates = defaultdict(list)
+        self.selected_subproblem = selected
 
+        trees = StateTreeNode.create_root(cast_state.prob_state, objects, self.dt_rules)
         hstate = HierarchicalState([], cast_state.prob_state.problem)
-        for f in facts:
-            detval = None
-            for val, prob in f.value.iteritems():
-                if prob == 1.0:
-                    detval = val
-                    break
-            if detval:
-                hstate[f.svar] = detval
-                continue
+        for t in trees:
+            t.create_state(hstate)
             
-            for val, prob in f.value.iteritems():
-                if prob >= 0.99:
-                    hstate[f.svar] = val
-                if prob > 0.0 and val != pddl.UNKNOWN:
-                    substate = HierarchicalState([state.Fact(f.svar,val)], parent=hstate)
-                    hstate.add_substate(f.svar, val, substate, prob)
-                    substates[f.svar.function].append(substate)
-                    log.debug("create substate for %s = %s (p=%.2f)", str(f.svar), str(val), prob)
-
-        marginal_substates = []
-        marginal_objects = defaultdict(set)
-        
-        for f in base_problem.facts:
-            if hstate.has_substate(f.svar):
-                for val, prob in f.value.iteritems():
-                    if prob > 0.0 and not hstate.has_substate(f.svar, val):
-                        substate = HierarchicalState([state.Fact(f.svar,val)], parent=hstate)
-                        hstate.add_substate(f.svar, val, substate, prob)
-                        substates[f.svar.function].append(substate)
-                        log.debug("create marginal substate for %s = %s (p=%.2f)", str(f.svar), str(val), prob)
-                        marginal_substates.append((hstate, f.svar, val))
-                        marginal_objects[val.type].add(val)
-
-        def apply_rule(st, r, pred, marginal=False):
-            svar = state.StateVariable(r.function, state.instantiate_args(r.args))
-            if svar in st:
-                return
-
-            nondet_conditions = []
-            for t,v in r.conditions:
-                if t.function in prob_functions:
-                    nondet_conditions.append((t,v))
-                    continue # check those later
-                cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
-                val = hstate.evaluate_term(v)
-                if hstate[cvar] != val:
-                    #print "not satisfied in top level state: %s = %s" % (str(cvar), str(val))
-                    return
-            if not pred:
-                rel_substates = [st]
-            else:
-                rel_substates = substates[pred]
-            for st2 in rel_substates:
-                sat = True
-                #print "state:", st2
-                for t,v in nondet_conditions:
-                    cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
-                    val = st2.evaluate_term(v)
-                    if st2[cvar] != val:
-                        #print "not satisfied: %s = %s" % (str(cvar), str(val))
-                        sat = False
-                        break
-                if not sat:
-                    continue
-                
-                for p,v in r.values:
-                    pval = cast_state.prob_state.evaluate_term(p) # evaluate in original state because probs for marginals could be gone in this partial state
-                    if pval == pddl.UNKNOWN or pval.value < 0.01:
-                        continue
-                    val = st2.evaluate_term(v)
-                    if svar in st2 or st2.has_substate(svar, val):
-                        continue
-                    if pval.value > 0.99:
-                        st2[svar] = val
-                        continue
-                    sub = HierarchicalState([state.Fact(svar, val)], parent=st2)
-                    st2.add_substate(svar, val, sub, pval.value)
-                    substates[svar.function].append(sub)
-                    log.debug("create substate for %s = %s (p=%.2f)", str(svar), str(val), pval.value)
-                    if marginal:
-                        log.debug("This is a marginal state")
-                        marginal_substates.append((st2, svar, val))
-                        marginal_objects[val.type].add(val)
-            
-                    
-        closed = set()
-        closed_functions = set()
-        open = set(nondep_rules)
-        while open:
-            r = open.pop()
-            log.debug("Rule: %s", r.function.name)
-            if ruledeps[r]:
-                pred = iter(ruledeps[r]).next()
-            else:
-                pred = None
-
-            #print marginal_objects
-            combinations = state.product(*map(lambda a: problem.get_objects(a.type) | marginal_objects[a.type], r.args+r.add_args))
-            for c in combinations:
-                #print "(%s %s)" % (r.function.name, " ".join(a.name for a in c))
-                r.instantiate_all(c, cast_state.prob_state.problem)
-                apply_rule(hstate, r, pred)
-                r.uninstantiate()
-
-            value_args = r.get_value_args()
-            if value_args:
-                def get_values_for_marginals(arg):
-                    if arg in value_args:
-                        return base_problem.get_objects(arg.type) - problem.get_objects(arg.type)
-                    return problem.get_objects(arg.type)
-                
-                combinations = state.product(*map(lambda a: get_values_for_marginals(a), r.args+r.add_args))
-                for c in combinations:
-                    #print "marginal: (%s %s)" % (r.function.name, " ".join(a.name for a in c))
-                    r.instantiate_all(c, cast_state.prob_state.problem)
-                    apply_rule(hstate, r, pred, marginal=True)
-                    r.uninstantiate()
-
-            closed.add(r)
-            closed_functions.add(r.function)
-            
-            for r in self.dt_rules:
-                #print r, map(str, (r.deps() & prob_functions) - done)
-                if r not in open and r not in closed and not (ruledeps[r] - closed_functions):
-                    open.add(r)
-
-        marginals_per_svar = defaultdict(set)
-        for st, svar, val in marginal_substates:
-            marginals_per_svar[st, svar].add(val)
-
-        for (st, svar), vals in marginals_per_svar.iteritems():
-            for v in vals:
-                p, sub = st.get_substate(svar, v)
-                if svar in sub:
-                    del sub[svar]
-
         #reduce the problem some more if neccessary
         while problem.max_size > global_vars.config.dt.max_state_size:
             if not problem.reduce(hstate):
@@ -586,7 +348,7 @@ class DTProblem(object):
         
         #facts = [f.to_init() for f in cast_state.prob_state.iterdists()]
         p_facts = hstate.init_facts()
-        p_objects = set(o for o in objects if o not in domain.constants)
+        p_objects = set(o for o in problem.objects if o not in domain.constants)
 
         # print map(str, p_objects)
         # print map(str, p_facts)
@@ -637,6 +399,136 @@ def function_visitor(elem, result):
             return result + sum([t.visit(function_visitor) for t in elem.args], [])
         return result
 
+class StateTreeNode(dict):
+    def __init__(self, rule, st, objects, all_rules, cache, fact=None):
+        self.rule = rule
+        self.state = st
+        self.all_rules = all_rules
+        self.objects = objects
+            
+        self.cache = cache
+        
+        if fact is not None:
+            self.svar = fact.svar
+            rules_for_fact = [r for r in all_rules if r.function == self.svar.function]
+            if rules_for_fact:
+                self.rule = rules_for_fact[0]
+            else:
+                self.rule = None
+                
+            if isinstance(fact.value, pddl.TypedObject):
+                self.create_subtree(1.0, fact.value, marginal=(val not in objects))
+            else:
+                for val, p in fact.value.iteritems():
+                    self.create_subtree(p, val, marginal=(val not in objects))
+            return
+            
+        #assume that the rule is instantiated
+        self.svar = state.StateVariable(rule.function, state.instantiate_args(rule.args))
+        
+        log.debug("creating subtree for %s", str(self.svar))
+        for p, value in rule.values:
+            pval = self.state.evaluate_term(p) # evaluate in original state because probs for marginals could be gone in this partial state
+            if pval == pddl.UNKNOWN or pval.value < 0.01:
+                continue
+            val = self.state.evaluate_term(value)
+            self.create_subtree(pval.value, val, marginal=(val not in objects))
+
+    def create_state(self, st):
+        for val, (subtrees, p, marginal) in self.iteritems():
+            if p == 1.0:
+                sub = st
+            else:
+                sub = HierarchicalState([], parent=st)
+                st.add_substate(self.svar, val, sub, p)
+            if not marginal:
+                sub[self.svar] = val
+            for t in subtrees:
+                t.create_state(sub)
+
+
+    def create_subtree(self, prob, value, marginal=False):
+        log.debug("creating subtrees for %s=%s (marginal=%s)", str(self.svar), value, str(marginal))
+        fact = state.Fact(self.svar, value)
+        if fact in self.cache:
+            print "cache hit"
+            self[value] = (self.cache[fact], prob, marginal)
+            return
+
+        if self.rule is None:
+            self[value] = ([], prob, marginal)
+            return
+
+        rules = [r for r in self.all_rules if r.depends_on(self.rule)]
+        log.debug("rules depending on this: %s", ", ".join(r.function.name for r in rules))
+        
+        subtrees = []
+        for r in rules:
+            matched_cond = None
+            matched_args = {}
+            for t,v in r.conditions:
+                if t.function == self.rule.function:
+                    matched_cond = t
+                    for a, a2 in zip(t.args + [v], self.svar.args + (value,)):
+                        matched_args[a.object] = a2
+                    break
+            if matched_cond and any(a.__class__ == a2.__class__ == pddl.TypedObject and a != a2 for a,a2 in matched_args.iteritems()):
+                continue
+
+            def get_objects(arg):
+                if arg in matched_args:
+                    return [matched_args[arg]]
+                if arg in r.get_value_args():
+                    return list(self.state.problem.get_all_objects(arg.type))
+                return [o for o in self.objects if o.is_instance_of(arg.type)]
+
+
+            args = r.args+r.add_args
+            for mapping in r.smart_instantiate(r.get_inst_func(self.state, matched_cond), args, [get_objects(a) for a in args], self.state.problem):
+                subtrees.append(StateTreeNode(r, self.state, self.objects, self.all_rules, self.cache))
+        
+        self.cache[fact] = subtrees
+        self[value] = (subtrees, prob, marginal)
+
+    @staticmethod
+    def create_from_fact(fact, st, objects, all_rules, cache):
+        return StateTreeNode(None, st, objects, all_rules, cache, fact=fact)
+
+    @staticmethod
+    def create_root(st, objects, rules, cache=None):
+        nodep_rules = []
+        for r in rules:
+            if all(not r.depends_on(r2) for r2 in rules):
+                nodep_rules.append(r)
+
+        if cache is None:
+            cache = {}
+
+        subtrees = []
+        done = set()
+        for fact in st.iterdists():
+            if any(a not in objects for a in fact.svar.args):
+                continue
+            sub = StateTreeNode.create_from_fact(fact, st, objects, rules, cache)
+            if sub is not None:
+                subtrees.append(sub)
+                done.add(sub.svar)
+                
+        for r in nodep_rules:
+            def get_objects(arg):
+                if arg in r.get_value_args():
+                    return list(st.problem.get_all_objects(arg.type))
+                return [o for o in objects if o.is_instance_of(arg.type)]
+            
+            args = r.args+r.add_args
+            for mapping in r.smart_instantiate(r.get_inst_func(st), args, [get_objects(a) for a in args], st.problem):
+                svar = state.StateVariable(r.function, state.instantiate_args(r.args))
+                if svar in done:
+                    continue
+                subtrees.append(StateTreeNode(r, st, objects, rules, cache))
+
+        return subtrees
+        
 
 class HierarchicalState(state.State):
     def __init__(self, facts=[], prob=None, parent=None):
@@ -718,6 +610,15 @@ class HierarchicalState(state.State):
         if value is None:
             return []
         return 0.0
+
+    def size(self):
+        size = 1
+        for d in self.substates.itervalues():
+            subsize = 0
+            for p, sub in d.itervalues():
+                subsize += sub.size()
+            size *= subsize
+        return size
 
     def is_empty(self):
         if any(val != pddl.UNKNOWN for val in self.itervalues()):

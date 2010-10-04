@@ -223,34 +223,6 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def registerTask(self, task_desc, current=None):
     log.info("Planner PythonServer: New PlanningTask received:")
 
-    # # test the DT interface
-    # if self.dtdomain_fn and self.dtproblem_fn:
-    #     self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
-    #     for i in xrange(0, 3):
-    #         tid = self.max_dt_id
-    #         self.max_dt_id += 1
-            
-    #         task = Task(tid)
-    #         task.dt_orig_id = task_desc.id
-    #         self.tasks[task_desc.id] = task
-    #         self.dttasks[tid] = task
-    #         task.dt_calls = 1
-    #         log.info("%d: Calling DT planner with problem '%s' and domain '%s'", tid, self.dtproblem_fn, self.dtdomain_fn)
-    #         self.getDT().newTask(tid, self.dtproblem_fn, self.dtdomain_fn);
-    #         log.info("%d: done", tid)
-    #     return
-
-    query = "SELECT ?x ?y ?z where ?x ?y ?z";
-    try:
-        results = self.getHFC().querySelect(query)
-        log.debug("Query: %s", results.query)
-        log.debug("Variable to array position mapping: %s", ", ".join("%s=%d" % (k,v) for k,v in results.varPosMap.iteritems()))
-        log.debug("Variable result bindings: ")
-        for line in results.bt:
-            log.debug(" ".join(line))
-    except Exception, e:
-        log.warning("Error when calling the HFC server: %s", str(e))
-
     task = CASTTask(task_desc, self.beliefs, self.domain_fn, self, problem_fn=self.problem_fn)
     self.tasks[task.id] = task
 
@@ -310,8 +282,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           return
 
       print_state_difference(old_state, task.state.state)
-
-      if task.dt_planning_active():
+      
+      if task.internal_state == TaskStateEnum.FAILED:
+          task.retry()
+      elif task.dt_planning_active():
           task.action_executed_dt(task_desc.plan)
       else:
           task.action_executed_cp(task_desc.plan)
