@@ -75,6 +75,11 @@ else
 %          in
       end; %saturated intensity values...
 
+      if isnan(hu)
+        hu = -1 ;
+        sa = -1 ;
+        in = -1 ;
+      end
       
       %GET SHAPE FEATURES
       if FV <3
