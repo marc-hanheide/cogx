@@ -13,7 +13,7 @@ log = config.logger("PythonServer")
 BINDER_SA = "binder"
 
 class FakeCASTState(cast_state.CASTState):
-    def __init__(self, problem, domain):
+    def __init__(self, problem, domain, component=None):
         self.domain = domain
         self.problem = problem
         #self.beliefs = beliefs
@@ -26,12 +26,27 @@ class FakeCASTState(cast_state.CASTState):
   
         self.objects = set(problem.objects)
         self.namedict = {}
-        
+
         self.prob_state = prob_state.ProbabilisticState.from_problem(problem)
+
+        if component:
+            self.facts = []
+            self.get_coma_data(component)
+            for o in self.objects:
+                if o not in problem.objects:
+                    problem.add_object(o)
+                    
+            for f in self.facts:
+                self.prob_state.set(f)
+                problem.init.append(f.as_literal(useEqual=True))
+
+        # import debug
+        # debug.set_trace()
+                
         self.prob_state.apply_init_rules(domain = self.domain)
         self.generated_objects = problem.objects - self.objects
         self.state = self.prob_state.determinized_state(0.05, 0.95)
-
+        
     def convert_percepts(self, percepts):
         return []
 

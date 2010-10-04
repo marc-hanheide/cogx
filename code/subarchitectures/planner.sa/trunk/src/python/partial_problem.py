@@ -73,6 +73,7 @@ class PartialProblem(object):
         self.objects = objects
         self.min_constraints = min_constraints
         self.max_constraints = max_constraints
+        self.constraints = min_constraints
         self.rules = rules
         self.domain = domain
         self.objects, self.facts = self.limit(min_constraints)
@@ -120,10 +121,10 @@ class PartialProblem(object):
         total_count_max = 1
         for r in rules:
             inst, values = get_rule_size(r)
-            #print r, inst, values
             total_count *= values**inst
             inst, values = get_rule_size(r, alt=True)
             total_count_max *= values**inst
+            #print r, inst, values
 
         self.min_size = total_count
         self.max_size = total_count_max
@@ -263,7 +264,7 @@ class PartialProblem(object):
         if not self.reduction_order:
             return False
             
-        log.debug("objects: %s", ", ".join(o.name for o in self.objects))
+        #log.debug("objects: %s", ", ".join(o.name for o in self.objects))
         rem = self.reduction_order.pop(0)
         log.debug("removing: %s", rem.name)
 
@@ -273,14 +274,16 @@ class PartialProblem(object):
                 cnew.append(ObjectsConstraint(c.objects | set(self.reduction_order)))
             else:
                 cnew.append(c.generalize(self.min_objects | set(self.reduction_order)))
+        self.constraints = cnew
 
-        for c in cnew:
-            print c
+        # for c in cnew:
+        #     print c
 
         self.old_objects = set(self.objects)
         self.objects, self.facts = self.limit(cnew)
-        self.initialize(self.rules, self.domain)
-        log.debug("remaining objects: %s", ", ".join(o.name for o in self.objects))
+        #self.initialize(self.rules, self.domain)
+        self.max_size = hstate.size()
+        #log.debug("remaining objects: %s", ", ".join(o.name for o in self.objects))
         log.debug("size is now: %d", self.max_size)
 
         def delete_object(obj, st):

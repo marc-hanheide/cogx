@@ -22,6 +22,7 @@ def getGoalDescription(goal, gnode, _state):
     
     read_vars = []
     universal_args = []
+    _state.clear_axiom_cache()
     extstate, reasons, universalReasons = _state.get_extended_state(_state.get_relevant_vars(goal), getReasons=True)
         
     sat = extstate.is_satisfied(goal, read_vars, universal_args)
@@ -68,6 +69,7 @@ def getRWDescription(action, args, _state, time):
     if action.replan:
         read_vars = []
         universal_args = []
+        _state.clear_axiom_cache()
         extstate, reasons, universalReasons = _state.get_extended_state(_state.get_relevant_vars(action.replan), getReasons=True)
         sat = extstate.is_satisfied(action.replan, read_vars, universal_args), "%s: %s" % (str(pnode), action.replan.pddl_str())
         assert sat
@@ -89,6 +91,7 @@ def getRWDescription(action, args, _state, time):
         read_vars = []
         universal_args = []
         rel = _state.get_relevant_vars(action.precondition)
+        _state.clear_axiom_cache()
         extstate, reasons, universalReasons = _state.get_extended_state(rel, getReasons=True)
         sat = extstate.is_satisfied(action.precondition, read_vars, universal_args)
         assert sat,  "%s: %s" % (str(pnode), action.precondition.pddl_str())
@@ -172,17 +175,12 @@ def make_po_plan(actions, task):
             ignored_soft_goals.add(int(action))
             continue
 
-        if action.startswith("ignore-preferences-"):
-            action = action[len("ignore-preferences-"):]
-
         if action.startswith("fullfill-intermediate-"):
             continue
 
         action, args = MAPLAction(action, task)
         pnode = getRWDescription(action, args, state, starttime)
         plan.add_node(pnode)
-        #linear plan for now
-        #plan.add_link(previous, pnode)
 
         if not pnode.replanconds and not pnode.preconds:
             plan.add_link(plan.init_node, pnode, "started", pddl.TRUE)

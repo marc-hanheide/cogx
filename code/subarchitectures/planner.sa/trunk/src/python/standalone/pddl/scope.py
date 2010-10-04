@@ -301,6 +301,60 @@ class Scope(dict):
             val = self[val]
             key.instantiate(val)
 
+    def smart_instantiate(self, func, args, arglists, parent=None):
+        self.uninstantiate()
+
+        if parent:
+            self.original_parent = self.parent
+            self.set_parent(parent)
+            
+        values = dict((a, list(l)) for a,l in zip(args, arglists))
+        if any(not l for l in arglists):
+            return
+        mapping = {}
+        stack = []
+        curr_arg = None
+        curr_index = -1
+        remaining = set(args)
+        while True:
+            next, nextval = func(mapping, [s[0] for s in stack])
+            if next == True and len(stack) == len(args):
+                assert len(stack) == len(args)
+#                print ["%s=%s" % (s[0].name, mapping[s[0]]) for s in stack]
+                yield mapping
+                next = False
+            elif nextval:
+                if nextval not in values[next]:
+                    next = False
+                else:
+                    curr_arg = next
+                    curr_index == -1
+            elif next:
+                if next == True:
+                    next = iter(remaining).next()
+                curr_arg = next
+                curr_index = 0
+                nextval = values[curr_arg][curr_index]
+                
+            if not next:
+                curr_index = -1
+                while (curr_index == -1 or curr_index >= len(values[curr_arg])):
+                    if not stack:
+                        self.uninstantiate()
+                        return
+                    curr_arg, curr_index = stack.pop()
+                    del mapping[curr_arg]
+                    remaining.add(curr_arg)
+                    curr_arg.instantiate(None)
+                    if curr_index != -1:
+                        curr_index += 1
+                nextval = values[curr_arg][curr_index]
+
+            assert curr_arg not in set(s[0] for s in stack)
+            mapping[curr_arg] = nextval
+            curr_arg.instantiate(nextval)
+            remaining.discard(curr_arg)
+            stack.append((curr_arg, curr_index))
             
     def uninstantiate(self):
         """Uninstantiate all Parameters defined in this Scope."""

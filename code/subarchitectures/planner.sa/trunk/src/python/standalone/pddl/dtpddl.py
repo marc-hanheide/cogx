@@ -8,7 +8,7 @@ import builtin
 from builder import Builder
 from parser import ParseError, UnexpectedTokenError
 from mapltypes import Type, TypedObject, Parameter
-from predicates import Predicate, Function
+from predicates import Predicate, Function, VariableTerm
 from builtin import t_object, t_boolean, t_number
 
 p = Parameter("?f", types.FunctionType(t_object))
@@ -304,6 +304,12 @@ class DTRule(scope.Scope):
     def deps(self):
         return set(t.function for t,v in self.conditions)
 
+    def depends_on(self, other):
+        for t,v in self.conditions:
+            if t.function == other.function:
+                return True
+        return False
+
     def instantiate(self, mapping, parent=None):
         """Instantiate the Parameters of this action.
 
@@ -326,6 +332,40 @@ class DTRule(scope.Scope):
             mapping = dict((param.name, c) for (param, c) in zip(self.args+self.add_args, mapping))
         scope.Scope.instantiate(self, mapping, parent)
 
+    def get_inst_func(self, st, ignored_cond=None):
+        import state
+        def inst_func(mapping, args):
+            next_candidates = []
+            #print [a.name for a in mapping.iterkeys()]
+            forced = None
+            for t,v in self.conditions:
+                if t == ignored_cond:
+                    continue
+                if all(a.object in args[:-1] for a in t.args + [v] if isinstance(a, VariableTerm)):
+                    continue # checked before
+
+                if all(a.is_instantiated() for a in t.args if isinstance(a, VariableTerm)) and isinstance(v, VariableTerm):
+                    if not v.is_instantiated():
+                        cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
+                        forced = v.object, st[cvar]
+
+                if all(a.is_instantiated() for a in t.args + [v] if isinstance(a, VariableTerm)):
+                    cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
+                    exst = st.get_extended_state([cvar])
+                    val = st.evaluate_term(v)
+                    if exst[cvar] != val:
+                        return None, None
+                else:
+                    next_candidates.append([a.object for a in t.args if isinstance(a, VariableTerm)])
+
+            if forced:
+                return forced
+            if next_candidates:
+                next_candidates = sorted(next_candidates, key=lambda l: len(l))
+                return next_candidates[0][0], None
+            return True, None
+        return inst_func
+        
     def get_probability(args, value, parent=None):
         varg = None
         pterm = None
@@ -347,7 +387,7 @@ class DTRule(scope.Scope):
         result = p.copy_instance()
         self.uninstantiate()
         return result
-                
+
     def get_value_args(self):
         result = set()
         for t,v in self.values:
@@ -378,9 +418,15 @@ class DTRule(scope.Scope):
         @visitors.collect
         def extract_conditions(cond, results):
             if isinstance(cond, conditions.LiteralCondition):
-                assert cond.predicate in (builtin.equals, builtin.eq)
-                term = cond.args[0]
-                value = cond.args[1]
+                if cond.predicate in (builtin.equals, builtin.eq):
+                    term = cond.args[0]
+                    value = cond.args[1]
+                else:
+                    term = predicates.FunctionTerm(cond.predicate, cond.args)
+                    if cond.negated:
+                        value = predicates.Term(builtin.FALSE)
+                    else:
+                        value = predicates.Term(builtin.TRUE)
                 return (term, value)
 
         conds = visitors.visit(action.precondition, extract_conditions, [])
@@ -509,10 +555,13 @@ class DT2MAPLCompiler(translators.Translator):
         p_functions = [r.function for r in rules]
 
         actions = []
+        action_count = defaultdict(lambda: 0)
         
         for r in rules:
-            for i, (p, v) in enumerate(r.values):
+            for p, v in r.values:
                 agent = predicates.Parameter("?a", mapl.t_agent)
+                i = action_count[r.function]
+                action_count[r.function] += 1
                 a = mapl.MAPLDurativeAction("select-%s-%d" % (r.function.name,i), [agent], r.args, r.add_args, [], None, None, None, [], domain)
                 b = Builder(a)
                 dterm = b("*", (total_p_cost,), ("-", 1, p))
@@ -522,8 +571,14 @@ class DT2MAPLCompiler(translators.Translator):
                     if t.function in p_functions:
                         cparts.append(b.cond("hyp", t, val))
                     else:
-                        cparts.append(b.cond("=", t, val))
-                lock_cond = b.cond("not", ("select-locked",))
+                        if isinstance(t.function, Predicate):
+                            c = b.cond(t.function, *t.args)
+                            if val == builtin.FALSE:
+                                c = c.negate()
+                        else:
+                            c = b.cond("=", t, val)
+                        cparts.append(c)
+                #lock_cond = b.cond("not", ("select-locked",))
                 a.precondition = conditions.Conjunction([durative.TimedCondition("all", b.cond("not", ("started",))), \
                                                              durative.TimedCondition("start", conditions.Conjunction(cparts))], a)
 #                                                             durative.TimedCondition("start", conditions.Conjunction([lock_cond]+cparts))], a)

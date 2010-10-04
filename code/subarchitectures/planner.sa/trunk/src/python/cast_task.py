@@ -67,9 +67,9 @@ class CASTTask(object):
             import fake_cast_state
             log.info("Loading predefined problem: %s.", problem_fn)
             add_problem = pddl.load_problem(problem_fn, self.domain)
-            self.state = fake_cast_state.FakeCASTState(add_problem, self.domain)
+            self.state = fake_cast_state.FakeCASTState(add_problem, self.domain, component=component)
         else:
-            self.state = cast_state.CASTState(beliefs, self.domain)
+            self.state = cast_state.CASTState(beliefs, self.domain, component=component)
             
         self.percepts = []
 
@@ -122,6 +122,12 @@ class CASTTask(object):
             os.system("%s %s" % (show_dot_script, dot_fn))
 
     def run(self):
+        self.update_status(TaskStateEnum.PROCESSING)
+        self.cp_task.replan()
+        self.process_cp_plan()
+
+    def retry(self):
+        self.cp_task.set_plan(None)
         self.update_status(TaskStateEnum.PROCESSING)
         self.cp_task.replan()
         self.process_cp_plan()
@@ -272,6 +278,15 @@ class CASTTask(object):
         if sat:
             self.dt_done()
 
+        if self.dt_task.replanning_neccessary(self.state):
+            log.info("DT task requires replanning")
+            #send empty observations to terminate previous task
+            self.component.getDT().deliverObservation(self.id, [])
+            self.component.getDT().cancelTask(self.id);
+            self.dt_task.recompute_problem(self.state)
+            self.update_status(TaskStateEnum.WAITING_FOR_DT)
+            self.component.start_dt_planning(self)
+
         observations = []
         for fact in self.state.convert_percepts(self.percepts):
             pred = "observed-%s" % fact.svar.function.name
@@ -396,7 +411,7 @@ class CASTTask(object):
         if isinstance(self.state, fake_cast_state.FakeCASTState):
             return True
         
-        self.state = cast_state.CASTState(beliefs, self.domain, self.state)
+        self.state = cast_state.CASTState(beliefs, self.domain, self.state, component=self.component)
         new_cp_problem, _ = self.state.to_problem(None, deterministic=True, domain=self.cp_domain)
 
         #check if the goal is still valid

@@ -413,6 +413,8 @@ class State(dict):
 
         self.read_svars = set()
         self.written_svars = set()
+        self.extstate = None
+        self.derived = set()
         
         self.random = random.Random()
 
@@ -915,6 +917,10 @@ class State(dict):
             if trace_vars:
                 self.written_svars.add(svar)
             self[svar] = val
+
+    def clear_axiom_cache(self):
+        self.extstate = None
+        self.derived = set()
             
     def get_extended_state(self, svars=None, getReasons=False):
         """Return a copy of this state with evaluated derived predicates.
@@ -933,6 +939,14 @@ class State(dict):
         getReasons -- also return from which variable each derived predicate was derived.
         """
         t0 = time.time()
+
+        if not getReasons and svars is not None and self.extstate is not None:
+            svars = set(svars)
+            if svars < self.derived:
+                return self.extstate
+            svars = svars - self.derived
+            self.derived |= svars
+        
         pred_to_axioms = defaultdict(set)
         for a in self.problem.domain.axioms:
             pred_to_axioms[a.predicate].add(a)
@@ -970,7 +984,8 @@ class State(dict):
 
         #print "finding releveant:", time.time()-t0
 
-        ex_state = State(self.iterfacts(), self.problem)
+        if self.extstate is None:
+            self.extstate = self.copy()
 
         import logging
         
@@ -1037,11 +1052,11 @@ class State(dict):
                                 vars = None
                                 universal = None
                                 
-                            if ex_state.is_satisfied(ax.condition, vars, universal):
+                            if self.extstate.is_satisfied(ax.condition, vars, universal):
                                 #logging.getLogger().debug("set to true: %s", atom.pddl_str())
 
                                 true_atoms.add(atom)
-                                ex_state[StateVariable.from_literal(atom)] = TRUE
+                                self.extstate[StateVariable.from_literal(atom)] = TRUE
                                 changed = True
                                 if getReasons:
                                     this_svar = StateVariable.from_literal(atom)
@@ -1060,9 +1075,9 @@ class State(dict):
         
         #print "total:", time.time()-t0
         if getReasons:
-            return ex_state, reasons, universalReasons
+            return self.extstate, reasons, universalReasons
         
-        return ex_state
+        return self.extstate
 
     def apply_init_rules(self, domain=None, rules=None):
         if not domain:
