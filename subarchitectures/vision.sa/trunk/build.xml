@@ -31,7 +31,7 @@
 	<!-- =================================================================== -->
 	<target name="slice" depends="prepare" description="generates source from slice">
 		<slice2java tie="true" outputdir="${src.dir}">
-			<fileset dir="${slice.dir}" includes="VisionData.ice" />
+			<fileset dir="${slice.dir}" includes="VisionData.ice ObjectRecognizerSrv.ice" />
 			<includepath>
 				<pathelement path="${basedir}/../../tools/hardware/video/src/slice" />
 				<pathelement path="${basedir}/../../tools/math/src/slice" />
@@ -48,7 +48,7 @@
 	<!-- slice file compilation                                              -->
 	<!-- =================================================================== -->
 	<target name="compile-slice" depends="slice" description="compiles the source code">
-		<javac srcdir="${src.dir}/VisionData" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+		<javac srcdir="${src.dir}" includes="VisionData/** ObjectRecognizerSrv/**" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
 			<classpath refid="build.classpath" />
 		</javac>
 	</target>
@@ -68,6 +68,7 @@
 	<!-- =================================================================== -->
 	<target name="clean">
 		<delete dir="${src.dir}/VisionData/**" />
+		<delete dir="${src.dir}/ObjectRecognizerSrv/**" />
 		<delete dir="${src.dir}/.depend" />
 	</target>
 
