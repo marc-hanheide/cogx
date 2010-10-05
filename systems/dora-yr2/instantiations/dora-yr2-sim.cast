@@ -41,6 +41,10 @@ INCLUDE includes/coma.sa/coma-mediators.cast
 INCLUDE includes/binder.sa/binder-base.cast
 JAVA MG percepttracker.dora     eu.cogx.percepttracker.dora.DoraBeliefTracker --write-to-sa binder
 
+# dialogue stuff ##############################################################
+INCLUDE includes/dialogue.sa/dialogue-base.cast
+INCLUDE includes/dialogue.sa/dialogue-dora.cast
+
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/switching-planner-dora.cast
 INCLUDE includes/planner.sa/planner-base.cast
@@ -68,4 +72,8 @@ JAVA MG display.places castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V
 JAVA MG display.goals castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "motivation.slice.Motive" --generic-col
 
 JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --mode SVG
+
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief" --generic-col
+JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "motivation.slice.Motive"
+JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.Intention" --generic-col
 
