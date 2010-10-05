@@ -229,19 +229,20 @@ bool Policy_Iteration__GMRES::operator()()
 //     exit(0);
 
     
-
+    Are_Doubles_Close are_Doubles_Close(1e-5);
     if((old__state_space_size == dimension)){
-        bool values_unchanged = false;
+        bool values_unchanged = true;
         for(uint i = 0;i < dimension; i++){
             assert(i < old__value_vector.size());
             assert(i < (*value_vector).size());
-            if(old__value_vector(i) != (*value_vector)(i)){
-                values_unchanged = true;
+            if(!are_Doubles_Close(old__value_vector(i),
+                                  (*value_vector)(i))){//old__value_vector(i) != (*value_vector)(i)){
+                values_unchanged = false;
                 break;
             }
         }
         
-        if(!values_unchanged){
+        if(values_unchanged){
             converged = true;
             return false;
         } else {

@@ -445,7 +445,7 @@ POMDP_State* Solver::solve__for_new_starting_state(Planning::POMDP_State* succes
                      <<current_state->get__expected_value()<<std::endl);
         }
 
-        if(this->belief_state__space.size() > 2000)break;
+        if(this->belief_state__space.size() > 1000)break;
     }
     
     while(policy_Iteration()){

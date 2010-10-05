@@ -60,9 +60,24 @@ float MDP_Heuristic::operator()(POMDP_State* state) const
     }
 
     
-    if(possibly_obtainable_positive_rewards_count == 0){
-        return -1e10;
+    double entropy = 0.0;
+    for(auto _atom = belief.begin()
+            ; _atom != belief.end()
+            ; _atom++){
+        double probability = _atom->second;
+
+        assert(dynamic_cast<State*>(_atom->first));
+
+        possibly_obtainable_positive_rewards_count += dynamic_cast<State*>(_atom->first)
+            ->get__obtainable_positive_rewards_count();
+
+        entropy += probability * log(probability);
     }
+    
+    
+//     if(possibly_obtainable_positive_rewards_count == 0){
+//         return -1e10;
+//     }
 
 //     cerr<<expected_value<<" "
 //         <<static_cast<float>(static_cast<long long>(expected_value))<<std::endl;
