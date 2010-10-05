@@ -68,6 +68,8 @@ private:
    * whether to use stereo points in global or left camear coord system.
    */
 	bool useGlobalPoints;
+	// unit m, due to the error of stereo, >0.01 is suggested
+	double min_height_of_obj;
 	double Calc_SplitThreshold(VisionData::SurfacePointSeq &points, std::vector <int> &label);
 	std::vector<ObjPara> PreviousObjList;
 	std::vector<ObjPara> CurrentObjList;
@@ -178,6 +180,7 @@ public:
 		para_c = 0.0;
 		para_d = 0.0;
 		previousImg = 0;
+		min_height_of_obj = 0.01;
 	}
   virtual ~PlanePopOut() {}
 };
