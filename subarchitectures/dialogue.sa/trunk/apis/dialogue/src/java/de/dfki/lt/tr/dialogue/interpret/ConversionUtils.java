@@ -254,10 +254,14 @@ public abstract class ConversionUtils {
 					String lingRef = ((FunctionTerm)argTerm.args[0]).functor;
 					EpistemicStatus es = termToEpistemicStatus((FunctionTerm)argTerm.args[1]);
 
-					String newId = foldIntoBeliefs(idGen, es, lingRef, usedRefs, (FunctionTerm)argTerm.args[2], bels_post);
-					if (newId != null) {
-						dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "dialogue")));
-						itc.postconditions = combineDFormulas(itc.postconditions, refF);
+					FunctionTerm action = (FunctionTerm)argTerm.args[2];
+
+					if (action.functor.equals("fv")) {
+						String newId = foldIntoBeliefs(idGen, es, lingRef, usedRefs, action, bels_post);
+						if (newId != null) {
+							dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "dialogue")));
+							itc.postconditions = combineDFormulas(itc.postconditions, refF);
+						}
 					}
 				}
 				if (argTerm.functor.equals("state")) {
@@ -316,7 +320,7 @@ public abstract class ConversionUtils {
 			it.content = new LinkedList<IntentionalContent>();
 			IntentionalContent itc = rIts.get(iter.next());
 			it.content.add(itc);
-			if (itc.agents != null) {
+			if (itc.agents != null && !itc.agents.isEmpty()) {
 
 				if (itc.preconditions == null) {
 					itc.preconditions = BeliefFormulaFactory.newElementaryFormula("nil");
@@ -327,7 +331,7 @@ public abstract class ConversionUtils {
 				ri.ints.add(it);
 			}
 			else {
-				log("discarding [" + it.id + "]: incomplete");
+				log("discarding [" + it.id + "]: incomplete (agent list empty)");
 			}
 		}
 

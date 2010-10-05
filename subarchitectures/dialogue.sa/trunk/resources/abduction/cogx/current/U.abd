@@ -222,12 +222,25 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	int : pre(Int, belief(Ref, attrib(H, S), fv(placetype, PolarProp))) / p(1.0),
 	int : post(Int, belief(Ref, shared(S, H), fv(placetype, PolarProp))) / p(1.0).
 
-understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
-	i : sort(Nom, 'm-location'),
-	i : prop(Nom, Prop),
-	polarprop(Prop, Polarity, PolarProp),
-	int : pre(Int, belief(Ref, attrib(H, S), fv(location, PolarProp))) / p(1.0),
-	int : post(Int, belief(Ref, shared(S, H), fv(location, PolarProp))) / p(1.0).
+%understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
+%	i : sort(Nom, 'm-location'),
+%	i : prop(Nom, Prop),
+%	polarprop(Prop, Polarity, PolarProp),
+%	int : pre(Int, belief(Ref, attrib(H, S), fv(location, PolarProp))) / p(1.0),
+%	int : post(Int, belief(Ref, shared(S, H), fv(location, PolarProp))) / p(1.0).
+
+%mod_location_sort('m-location').
+%mod_location_sort('m-whereto').
+%
+%understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
+%	i : sort(Nom, Sort),
+%		mod_location_sort(Sort),
+%	i : prop(Nom, context),
+%		i : feat_Proximity(Nom, 'm-proximal'),
+%	Prop = here,
+%	polarprop(Prop, Polarity, PolarProp),
+%	int : pre(Int, belief(Ref, attrib(H, S), fv(location, PolarProp))) / p(1.0),
+%	int : post(Int, belief(Ref, shared(S, H), fv(location, PolarProp))) / p(1.0).
 
 % cornflakes
 understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-

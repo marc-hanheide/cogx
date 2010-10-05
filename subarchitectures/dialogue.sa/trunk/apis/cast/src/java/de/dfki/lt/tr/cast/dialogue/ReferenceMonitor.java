@@ -75,6 +75,7 @@ extends AbstractDialogueComponent {
 
 		rewriteRulefile(dumpfile);
 
+/*
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(dBelief.class,  WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
@@ -101,6 +102,8 @@ extends AbstractDialogueComponent {
 						handleBeliefDelete(_wmc);
 					}
 				});
+
+ */
 
 		addChangeFilter(
 				ChangeFilterFactory.createChangeFilter(dBelief.class, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),

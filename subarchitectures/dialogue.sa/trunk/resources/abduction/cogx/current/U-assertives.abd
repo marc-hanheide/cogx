@@ -40,11 +40,11 @@ understand : event : utter(S, H, Nom) <-
 understand : event : utter(S, H, Nom) <-
 	i : sort(Nom, perception),
 	i : prop(Nom, see),
-	i : prop(Nom, ind),
+	i : feat_Mood(Nom, ind),
 	i : rel_Patient(Nom, PatNom),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
-	int : pre(Int, state(see, 'agent'(S), 'patient'(PatNom))) / p(1.0),
+%	int : pre(Int, state(see, agent(S), patient(PatNom))) / p(1.0),
 	understand : assertion_effect(S, H, Int, PatNom, pos, PatNom).
 
 %-------------------------------------------------------------------------
