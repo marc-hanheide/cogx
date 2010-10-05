@@ -11,9 +11,11 @@ import java.util.Map;
 import motivation.slice.Motive;
 import cast.CASTException;
 import cast.UnknownSubarchitectureException;
+import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTData;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
@@ -36,6 +38,12 @@ public abstract class AbstractIntentionMotiveGenerator<M extends Motive, T exten
 	protected AbstractIntentionMotiveGenerator(Class<M> motiveClass,
 			Class<T> intentClass) {
 		super(motiveClass, intentClass);
+	}
+
+	@Override
+	protected void start() {
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(Intention.class,
+				WorkingMemoryOperation.ADD), this);
 	}
 
 	/*
