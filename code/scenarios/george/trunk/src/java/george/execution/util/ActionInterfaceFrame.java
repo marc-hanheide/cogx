@@ -137,7 +137,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel getJContentPane() {
 		if (jContentPane == null) {
 			jContentPane = new JPanel();
-			jContentPane.setLayout(new GridLayout(2, 1));
+			//jContentPane.setLayout(new GridLayout(2, 1));
 			JPanel middlePanel = new JPanel();
 			middlePanel.setLayout(new BoxLayout(middlePanel, BoxLayout.Y_AXIS));
 			middlePanel.add(getTabbedPane(), null);
@@ -189,7 +189,8 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel getBeliefsActionPanel() {
 		if (m_beliefsActionPanel == null) {
 			m_beliefsActionPanel = new JPanel();
-			m_beliefsActionPanel.setLayout(new GridBagLayout());
+			//m_beliefsActionPanel.setLayout(new GridBagLayout());
+			m_beliefsActionPanel.setLayout(new BoxLayout(m_beliefsActionPanel, BoxLayout.Y_AXIS));
 
 			m_askForFeatureAction = new JRadioButton("ask for feature");
 			m_testFeatureValueAction = new JRadioButton("test a feature value");
@@ -205,11 +206,14 @@ public class ActionInterfaceFrame extends JFrame {
 			// m_beliefsActionPanel.add(m_testFeatureValueAction,
 			// new GridBagConstraints());
 			m_beliefsActionPanel.add(m_learnColourAction,
-					new GridBagConstraints());
+					//new GridBagConstraints());
+					null);
 			m_beliefsActionPanel.add(m_learnShapeAction,
-					new GridBagConstraints());
+					//new GridBagConstraints());
+					null);
 			m_beliefsActionPanel.add(m_learnIdentityAction,
-					new GridBagConstraints());
+					//new GridBagConstraints());
+					null);
 		}
 		return m_beliefsActionPanel;
 	}
@@ -222,7 +226,9 @@ public class ActionInterfaceFrame extends JFrame {
 		if (m_objectsActionPanel == null) {
 			m_objectsActionPanel = new JPanel();
 
-			m_objectsActionPanel.setLayout(new GridBagLayout());
+			//m_objectsActionPanel.setLayout(new GridBagLayout());
+			m_objectsActionPanel.setLayout(new BoxLayout(m_objectsActionPanel, BoxLayout.Y_AXIS));
+
 			// m_avsAction = new JRadioButton("visual search in");
 			m_detectObjectsAction = new JRadioButton("detect objects");
 			m_detectPeopleAction = new JRadioButton("detect people");
@@ -248,19 +254,24 @@ public class ActionInterfaceFrame extends JFrame {
 
 			// m_objectsActionPanel.add(m_avsAction, new GridBagConstraints());
 			m_objectsActionPanel.add(m_detectObjectsAction,
-					new GridBagConstraints());
+					//new GridBagConstraints());
+					null);
 			m_objectsActionPanel.add(m_detectPeopleAction,
-					new GridBagConstraints());
+					//new GridBagConstraints());
+					null);
 			// // m_objectsActionPanel.add(m_lookForObjectsAction,
 			// new GridBagConstraints());
 			// m_objectsActionPanel.add(m_lookForPeopleAction,
 			// new GridBagConstraints());
 			m_objectsActionPanel.add(m_foregroundModelsAction,
-					new GridBagConstraints());
+					//new GridBagConstraints());
+					null);
 			m_objectsActionPanel.add(m_backgroundModelsAction,
-					new GridBagConstraints());
+					//new GridBagConstraints());
+					null);
 			m_objectsActionPanel.add(m_recogniseForegroundedModelsAction,
-					new GridBagConstraints());
+					//new GridBagConstraints());
+					null);
 		}
 		return m_objectsActionPanel;
 	}
