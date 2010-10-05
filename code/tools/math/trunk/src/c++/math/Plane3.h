@@ -94,13 +94,7 @@ inline Vector3 projectPointToPlane(const Plane3 &pl, const Vector3 &p)
                  p.z*(1. - sqr(pl.c)) - pl.c*(pl.a*p.x + pl.b*p.y + pl.d));
 }
 
-/**
- * Define a 'nice' coordinate system for a plane.
- * origin in [-a*d -b*d -c*d]
- * z = n = [a b c]
- * x and y defined parallel to global x or y
- */
-inline void definePlaneCoordSys(const Plane3 &pl, Pose3 &pose)
+inline void definePlaneAxes(const Plane3 &pl, Matrix33 &rot)
 {
   // first find the major direction of the plane normal vector (its largest
   // component)
@@ -120,9 +114,6 @@ inline void definePlaneCoordSys(const Plane3 &pl, Pose3 &pose)
       majorDir = 0;
   }
 
-  // orgin of the plane coordsys is along a ray normal to the plane and passing
-  // through world origin (note: plane equation is normalised)
-  Vector3 o = vector3(-pl.a*pl.d, -pl.b*pl.d, -pl.c*pl.d);
   // z axis of the plane coordsys is always along plane normal vector
   Vector3 z = vector3(pl.a, pl.b, pl.c);
   // x axis of the plane coordsys is defined to be parallel to either xy, yz or
@@ -160,10 +151,23 @@ inline void definePlaneCoordSys(const Plane3 &pl, Pose3 &pose)
   y = cross(z, x);
 
   // now set pose elements
-  pose.pos = o;
-  setColumn(pose.rot, 0, x);
-  setColumn(pose.rot, 1, y);
-  setColumn(pose.rot, 2, z);
+  setColumn(rot, 0, x);
+  setColumn(rot, 1, y);
+  setColumn(rot, 2, z);
+}
+
+/**
+ * Define a 'nice' coordinate system for a plane.
+ * origin in [-a*d -b*d -c*d]
+ * z = n = [a b c]
+ * x and y defined parallel to global x or y
+ */
+inline void definePlaneCoordSys(const Plane3 &pl, Pose3 &pose)
+{
+  // orgin of the plane coordsys is along a ray normal to the plane and passing
+  // through world origin (note: plane equation is normalised)
+  pose.pos = vector3(-pl.a*pl.d, -pl.b*pl.d, -pl.c*pl.d);
+  definePlaneAxes(pl, pose.rot);
 }
 
 /**
