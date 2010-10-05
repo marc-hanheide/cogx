@@ -8,9 +8,10 @@ import os.path
 import math
 from PyQt4 import QtCore, QtGui
 
-import opencv.cv as cv
-import opencv.highgui as hg
-import opencv.adaptors as cvada
+#import opencv.cv as cv
+#import opencv.highgui as hg
+#import opencv.adaptors as cvada
+import cv
 
 import pymodulepaths
 # import siftgpu
