@@ -333,7 +333,7 @@ class TemporalTranslator(pddl.translators.Translator):
                 dc = pddl.durative.DurationConstraint(pddl.Term(1))
 
             args = [pddl.Parameter(p.name, p.type) for p in action.args]
-            pddl.durative.DurativeAction(action.name, args, [dc], None, None, domain)
+            a2 = pddl.durative.DurativeAction(action.name, args, [dc], None, None, domain)
 
         def condition_visitor(cond, results):
             if isinstance(cond, pddl.durative.TimedCondition):
@@ -364,7 +364,7 @@ class TemporalTranslator(pddl.translators.Translator):
                 eff2.condition = eff.condition.visit(condition_visitor)
                 return eff2
 
-        a2.precondition, is_timed = pddl.visitors.visit(action.precondition, condition_visitor)
+        a2.precondition, is_timed = pddl.visitors.visit(action.precondition, condition_visitor, default=(None, True))
         if not is_timed:
             a2.precondition = pddl.durative.TimedCondition("start", a2.precondition, a2)
         a2.effect = pddl.visitors.visit(action.effect, effect_visitor)
