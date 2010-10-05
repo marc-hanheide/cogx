@@ -394,10 +394,13 @@ def remove_object_functions(task):
             if conjunction_parts == []:
                 return condition
             elif len(conjunction_parts) == 1 and condition.predicate == "=":
-                new_args = tuple(condition.args)
-                if new_args[0] not in conjunction_parts[0].args:
-                    new_args = reversed(new_args)
-                return condition.__class__(condition.predicate, new_args)
+                nargs = conjunction_parts[0].args[:-1]
+                if conjunction_parts[0].args[-1] == new_args[0]:
+                  a2 = new_args[1]
+                else:
+                  a2 = new_args[0]
+                used_variables.remove(conjunction_parts[0].args[-1].name)
+                return condition.__class__(conjunction_parts[0].predicate, nargs + (a2,) )
             else:
                 new_literal = condition.__class__(condition.predicate,new_args)
                 conjunction_parts.append(new_literal)
