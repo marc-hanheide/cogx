@@ -101,7 +101,7 @@ understand : topic(S, H, EpSt, Int, Ref, Nom) <-
 %-------------------------------------------------------------------------
 
 try_topic_reference_resolution(EpSt, Int, Ref, Nom) <-
-	is_not_reference(Ref) / p(0.3).  % effectively the threshold for ref
+	is_not_reference(Ref) / p(0.05).  % effectively the threshold for ref
 
 try_topic_reference_resolution(EpSt, Int, Ref, Nom) <-
 	get_topic_referent(EpSt, Int, Ref, Nom, _BId).
