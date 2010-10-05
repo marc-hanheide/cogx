@@ -56,10 +56,10 @@ void VisualLearner::start()
    debug("::start");
    ManagedComponent::start();
 
-   addChangeFilter(createLocalTypeFilter<VisualLearnerRecognitionTask>(cdl::ADD),
+   addChangeFilter(createGlobalTypeFilter<VisualLearnerRecognitionTask>(cdl::ADD),
          new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onAdd_RecognitionTask));
 
-   addChangeFilter(createLocalTypeFilter<VisualLearningTask>(cdl::ADD),
+   addChangeFilter(createGlobalTypeFilter<VisualLearningTask>(cdl::ADD),
          new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onAdd_LearningTask));
 }
 
@@ -79,7 +79,7 @@ void VisualLearner::onAdd_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
          m_RecogTaskId_Queue.push_back(_wmc.address);
          m_RrqMonitor.notify();
       }
-      log("Request addr pushed: %s", descAddr(_wmc.address).c_str());
+      log("VL RecognitionTask addr pushed: %s", descAddr(_wmc.address).c_str());
    }
    catch(cast::DoesNotExistOnWMException){
       log("VisualLearner.OnAdd: VL_RecognitionTask deleted while working...");
@@ -103,7 +103,7 @@ void VisualLearner::onAdd_LearningTask(const cdl::WorkingMemoryChange & _wmc)
          m_LearnTaskId_Queue.push_back(_wmc.address);
          m_RrqMonitor.notify();
       }
-      log("Request addr pushed: %s", descAddr(_wmc.address).c_str());
+      log("VL LearningTask addr pushed: %s", descAddr(_wmc.address).c_str());
    }
    catch(cast::DoesNotExistOnWMException){
       log("VisualLearner.OnAdd: VL_LearningTask deleted while working...");
@@ -114,10 +114,12 @@ void VisualLearner::onAdd_LearningTask(const cdl::WorkingMemoryChange & _wmc)
 void VisualLearner::runComponent()
 {
    debug("::runComponent");
-   sleepComponent(3011);
+   sleepComponent(1011);
 
    if (m_ClfConfigFile.size() > 0)
       matlab::VL_setClfStartConfig(m_ClfConfigFile.c_str());
+
+   updateWmModelStatus();
 
    TWmAddressVector::iterator pwma;
    while (isRunning()) {
@@ -223,12 +225,12 @@ bool VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
       log("VisualLearner.recogAttr: ProtoObject %s deleted while working...", descAddr(addr).c_str());
       return false;
    };
-   // TODO: lock pProtoObj
+   // XXX: lock pProtoObj
 
    matlab::VL_recognise_attributes(*pProtoObj, _pTask->labels, _pTask->labelConcepts,
          _pTask->distribution, _pTask->gains);
 
-   // TODO: unlock pProtoObj
+   // XXX: unlock pProtoObj
    return true;
 
    // Now write this back into working memory, this will manage the memory for us.
@@ -267,7 +269,96 @@ bool VisualLearner::updateModel(VisualLearningTaskPtr _pTask)
 
    matlab::VL_update_model(*pProtoObj, _pTask->labels, _pTask->weights);
 
+   // Introspect, write to VisualConceptModelStatus
+   updateWmModelStatus();
+
    return true;
+}
+
+
+// The VisualConceptModelStatus for the VisualLearner is represented with 2 entries in WM.
+// One entry is for colors, the other for shapes.
+// The function overwrites both erntries every time it is called.
+// If it fails to read the current status from WM, it creates a new status entry.
+void VisualLearner::updateWmModelStatus()
+{
+   struct _l_ {
+      // read or create
+      static void getWmStatus(VisualLearner* pComponent,
+            VisualConceptModelStatusPtr& pStatus, cdl::WorkingMemoryAddress& addr)
+      {
+         if (addr.id.length() != 0 && addr.subarchitecture.length() != 0) {
+            try{
+               pStatus = pComponent->getMemoryEntry<VisualConceptModelStatus>(addr);
+               return;
+            }
+            catch(cast::DoesNotExistOnWMException){
+               pComponent->log("VisualConceptModelStatus was deleted unexpectedly ...");
+            };
+         }
+
+         addr.id = "";
+         addr.subarchitecture = "";
+         pStatus = new VisualConceptModelStatus();
+      }
+      // overwrite or add
+      static void writeWmStatus(VisualLearner* pComponent,
+            VisualConceptModelStatusPtr& pStatus, cdl::WorkingMemoryAddress& addr)
+      {
+         if (addr.id.length() != 0 && addr.subarchitecture.length() != 0) {
+            try{
+               pComponent->overwriteWorkingMemory(addr, pStatus);
+               pComponent->log("VisualConceptModelStatus overwritten ...");
+               return;
+            }
+            catch(cast::DoesNotExistOnWMException){
+               pComponent->log("VisualConceptModelStatus was deleted unexpectedly ...");
+            };
+         }
+
+         addr.id = pComponent->newDataID();
+         addr.subarchitecture = pComponent->getSubarchitectureID();
+         pComponent->addToWorkingMemory(addr, pStatus);
+         pComponent->log("VisualConceptModelStatus added ...");
+      }
+   };
+
+   debug("::updateWmModelStatus");
+   VisualConceptModelStatusPtr stColor, stShape;
+
+   _l_::getWmStatus(this, stColor, m_addrColorStatus);
+   stColor->concept = "color";
+   _l_::getWmStatus(this, stShape, m_addrShapeStatus);
+   stShape->concept = "shape";
+
+   vector<string> labels;
+   vector<int> labelConcepts;
+   vector<double> gains;
+   matlab::VL_introspect(labels, labelConcepts, gains);
+
+   vector<string>::const_iterator plabel = labels.begin();
+   vector<int>::const_iterator pconcpt = labelConcepts.begin();
+   vector<double>::const_iterator pgain = gains.begin();
+   for(; plabel != labels.end() && pconcpt != labelConcepts.end() && pgain != gains.end();
+         plabel++, pconcpt++, pgain++)
+   {
+      // Concept mapping is done in Matlab
+      if (*pconcpt == 1){ // color concept
+         stColor->labels.push_back(*plabel);
+         stColor->gains.push_back(*pgain);
+      }
+      else if (*pconcpt == 2) { // shape concept
+         stShape->labels.push_back(*plabel);
+         stShape->gains.push_back(*pgain);
+      }
+      else {
+         println(" *** VisualLearner/updateWmModelStatus Invalid concept ID: %d", *pconcpt);
+      }
+   }
+
+   _l_::writeWmStatus(this, stColor, m_addrColorStatus);
+   _l_::writeWmStatus(this, stShape, m_addrShapeStatus);
+
 }
 
 } // namespace
