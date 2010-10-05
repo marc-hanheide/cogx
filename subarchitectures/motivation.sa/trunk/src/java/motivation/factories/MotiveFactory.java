@@ -53,6 +53,6 @@ public class MotiveFactory {
 	}
 	public static GeneralGoalMotive createGeneralGoalMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new GeneralGoalMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0,  new Goal(-1, "", false),0.0,10,Integer.MAX_VALUE,"");
+		return new GeneralGoalMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0,  new Goal(-1, "", false),0.0,10,Integer.MAX_VALUE);
 	}
 }
