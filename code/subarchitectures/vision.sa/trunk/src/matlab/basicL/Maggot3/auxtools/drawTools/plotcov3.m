@@ -61,7 +61,7 @@ if length(mu) ~= 3, error('mu must be a 3 by 1 vector'); end
 			                'plot-opts', {}, ...
 			                'surf-opts', {});
 h = [];
-holding = ishold;
+% holding = get(draw_to_these_axes,'NextPlot') ;
 if (Sigma == zeros(3, 3))
   z = mu;
 else
@@ -107,4 +107,5 @@ s = surf(draw_to_these_axes, reshape(z(1, :), [(n + 1) (n + 1)]), ...
 	 reshape(z(3, :), [(n + 1) (n + 1)]), ...
 	 surf_opts{:});
 
-if (~holding) hold off; end
+% if (~holding) hold off; end
+% set(draw_to_these_axes,'NextPlot',holding);

@@ -1050,6 +1050,7 @@ switch operator_data
          out_kde.subRegularized = subindicator ;
          out_kde.distance_nloglik = distance_nloglik ;
     case 'showKDE'
+        return ;
          if ~isempty(selectSubDimensions)             
             input_kde.pdf = marginalizeMixture( input_kde.pdf, selectSubDimensions, 0 ) ;            
          end
