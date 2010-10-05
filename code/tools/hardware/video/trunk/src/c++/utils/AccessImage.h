@@ -51,7 +51,9 @@ public:
   AccessImage(const IplImage* img=0) {imgp=img;}
   ~AccessImage(){imgp=0;}
   void operator=(IplImage* img) {imgp=img;}
-  const T* operator[](const int rowIndx) const {
+  //const T* operator[](const int rowIndx) const {
+  //  return ((T *)(imgp->imageData + rowIndx*imgp->widthStep));}
+  T* operator[](const int rowIndx) const {
     return ((T *)(imgp->imageData + rowIndx*imgp->widthStep));}
 };
 
