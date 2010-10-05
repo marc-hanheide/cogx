@@ -31,7 +31,7 @@ import org.junit.Before;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.actions.VoidAction;
-import de.dfki.lt.tr.dialmanagement.data.observations.ShallowObservation;
+import de.dfki.lt.tr.dialmanagement.data.observations.Observation;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
 
 /**
@@ -49,9 +49,9 @@ public class DialogueManagerTest {
 	public static boolean DEBUG = false;
 	
 	// the configuration files
-	public static String POLICYFILE = "config/policies/simplepolicy.txt";
-	public static String OBSFILE = "config/policies/simpleobservations.txt";
-	public static String ACTIONSFILE = "config/policies/simpleactions.txt";
+	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/simplepolicy.txt";
+	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/simpleobservations.txt";
+	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/simpleactions.txt";
 
 	// the dialogue manager
 	public DialogueManager manager;
@@ -80,11 +80,11 @@ public class DialogueManagerTest {
 	public void testPolicy() throws DialogueException {
 		
 		log("init node" + manager.getCurrentAction().toString());
-		ShallowObservation obs1 = new ShallowObservation("one", 1.0f, 1.0f);
+		Observation obs1 = new Observation("one", 1.0f);
 		log("observing " + obs1);
 		manager.nextAction(obs1);
 		log("cur action: " + manager.getCurrentAction());
-		ShallowObservation obs4 = new ShallowObservation("four", 1.0f, 1.0f);
+		Observation obs4 = new Observation("four", 1.0f);
 		log("observing " + obs4);
 		manager.nextAction(obs4);
 		log("cur action: " + manager.getCurrentAction());
@@ -101,7 +101,7 @@ public class DialogueManagerTest {
 		
 		log("init node" + manager.getCurrentAction().toString());
 	
-		ShallowObservation obs1 = new ShallowObservation("six", 1.0f, 1.0f);
+		Observation obs1 = new Observation("six",1.0f);
 		
 		assertTrue (manager.nextAction(obs1) instanceof VoidAction);
 		

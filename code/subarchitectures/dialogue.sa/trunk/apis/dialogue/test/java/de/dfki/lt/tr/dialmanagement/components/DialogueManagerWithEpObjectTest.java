@@ -58,9 +58,9 @@ public class DialogueManagerWithEpObjectTest {
 	public static boolean DEBUG = false;
 	
 	// the configuration files
-	public static String POLICYFILE = "config/policies/policyExampleDora.txt";
-	public static String OBSFILE = "config/policies/observationsDora.txt";
-	public static String ACTIONSFILE = "config/policies/actionsDora.txt";
+	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/policyExampleDora.txt";
+	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/observationsDora.txt";
+	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/actionsDora.txt";
 
 	// the dialogue manager
 	public DialogueManager manager;
