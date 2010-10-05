@@ -1,3 +1,4 @@
+
 # Parameter descriptions:
 #    <parameter>     mandatory
 #    <parameter?>    optional
@@ -5,19 +6,19 @@
 
 # Define host names
 # HOST <id>  <ip>//<hostname>
-HOST  Robot          192.168.33.125
-HOST  Remote         192.168.33.126
+# HOST  Robot          192.168.33.125
+# HOST  Remote         192.168.33.126
 
 # All subarchitectures executed on the same host
 # SA  <sa_id>  [<host_id>]//<ip>//<hostname>  <enabled?>
-SA    none           [Robot]  # This is for the default HOST in .cast file (ie. no SA defined yet)
+# SA    none           [Robot]  # This is for the default HOST in .cast file (ie. no SA defined yet)
 #SA    binder         [Robot]
 #SA    coma.sa        [Robot]
 #SA    comsys         [Robot]
 #SA    fakemotivation.sa [Robot]
 #SA    motivation.sa  [Robot]
 #SA    nav.sa         [Robot]
-SA    planner.sa     [Remote]
+# SA    planner.sa     [Remote]
 #SA    spatial.sa     [Robot]
 #SA    vision.sa      [Robot]
 
