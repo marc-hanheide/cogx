@@ -77,8 +77,7 @@ public class IntentionGoalGenerator extends
 					return null;
 				}
 				WMPointer referredPrivate = WMPointer
-						.create(preAttributedBelief.getContent().get(
-								POINTERLABEL.value).getDistribution()
+						.create(aboutPointerFD.getDistribution()
 								.getMostLikely().get());
 				log("got referred private belief: "
 						+ referredPrivate.getVal().id);
