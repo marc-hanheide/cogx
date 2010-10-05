@@ -1,5 +1,9 @@
 package motivation.components.generators;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
 import motivation.slice.TutorInitiativeMotive;
 import nu.xom.Document;
 import nu.xom.Node;
@@ -16,13 +20,18 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 
+@SuppressWarnings("serial")
 public class DoraIntentionGoalGenerator extends
 		AbstractIntentionMotiveGenerator<TutorInitiativeMotive, Intention> {
 
 	public final static String XPATH_SELECT_PRECONDITIONS = "/*/content/*/preconditions/forms/*";
 	public final static String XPATH_SELECT_POSTCONDITIONS = "/*/content/*/preconditions/forms/*";
 	public final static String XPATH_SELECT_POINTER_PREFIX = "form/pointer";
-	private final static String[] GOALCONDITIONS_TO_PARSE = new String[] { "location" };
+	private static final Map<String, String> DLG_TO_PLANNER_MAPPING = new HashMap<String, String>() {
+		{
+			put("box", "cornflakes");
+		}
+	};
 
 	/*
 	 * (non-Javadoc)
@@ -51,9 +60,15 @@ public class DoraIntentionGoalGenerator extends
 						.create(dBelief.class, getMemoryEntry(preBelief,
 								dBelief.class));
 				String concept = null;
-				for (String c : GOALCONDITIONS_TO_PARSE) {
-					if (preAttributedBelief.getContent().get(c) != null)
-						concept = c;
+				// look for "unknown" values in all the properties:
+				for (Entry<String, FormulaDistribution> f : preAttributedBelief
+						.getContent().entrySet()) {
+					String mostLikely = f.getValue().getDistribution()
+							.getMostLikely().getProposition();
+					if (mostLikely.equals("unknown")) {
+						concept = f.getKey();
+						break;
+					}
 				}
 				if (concept == null) {
 					getLogger()
@@ -75,14 +90,17 @@ public class DoraIntentionGoalGenerator extends
 					String objectType = objecttypeFD.getDistribution()
 							.getMostLikely().getProposition();
 
+					objectType = DLG_TO_PLANNER_MAPPING.get(objectType);
+
 					TutorInitiativeMotive goal = new TutorInitiativeMotive();
 					super.fillDefault(goal);
+					
 					goal.referenceEntry = addr;
 					// (and (exists (?o - visualobject) (and (= (label ?o)
 					// cereal_box) (kval dora (is-in ?o))))
 					String robotBel = getRobotBeliefAddr().id;
 					goal.goal = new Goal(-1,
-							"(and (exists (?o - visualobject) (and (= (label ?o) "
+							"(exists (?o - visualobject) (and (= (label ?o) "
 									+ objectType + ") (kval '" + robotBel
 									+ "' (is-in ?o))))", false);
 					log("goal generated: " + goal.goal.goalString);
