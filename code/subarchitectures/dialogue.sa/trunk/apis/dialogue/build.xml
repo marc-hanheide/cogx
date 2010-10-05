@@ -26,10 +26,6 @@
 
   <property name="slice.dir" value="./src/slice" />
 
-  <property name="icelib-slice.dir" value="/opt/local/share/slice" />
-  <property name="icelib-slice.dir-alt" value="/opt/local/share/ice/slice" />
-  <property name="icelib-slice.dir-ubuntu" value="/usr/share/Ice/slice" />
-
   <property name="test.dir" value="./test/java"/>
 
 
@@ -110,9 +106,6 @@
       <fileset dir="${slice.dir}" includes="asr.ice"/>
       <fileset dir="${slice.dir}" includes="asr-loquendo.ice"/>
       <includepath>
-        <pathelement path="${icelib-slice.dir}"/>
-        <pathelement path="${icelib-slice.dir-alt}"/>
-        <pathelement path="${icelib-slice.dir-ubuntu}"/>
         <pathelement path="${slice.dir}"/>
         <pathelement path="${ice.slice.dir}"/>
       </includepath>
