@@ -84,6 +84,7 @@
               (hyp-in-room ?p - place ?v - room)
               (really-is-in ?o - movable ?value - place)
               (cones_created ?l - label ?r - room)
+	      (committed)
 )
 
 (:percepts  (observed-really-is-in ?o - movable ?v - place)
@@ -111,7 +112,8 @@
 
 (:action  move
           :parameters  (?a - robot ?from - place ?to - place)
-          :precondition  (and  (or  (connected ?from ?to)
+          :precondition  (and  (not (committed))
+			       (or  (connected ?from ?to)
                                     (connected ?to ?from)
                                )
                                (is-in ?a ?from)
@@ -119,25 +121,28 @@
           :effect  (and  (not (is-in ?a ?from))
                          (is-in ?a ?to)
                          (started )
-                         (assign (reward ) -2.0000)
+                         (assign (reward ) -1.0000)
                    )
 )
 
 (:action  create_cones
           :parameters  (?a - robot ?l - label ?r - room ?p - place)
-          :precondition  (and  (is-in ?a ?p)
+          :precondition  (and  (not (committed))
+			       (is-in ?a ?p)
                                (in-room ?p ?r)
                                (hyp-ex-in-room ?l ?r true)
                          )
-          :effect  (and  (cones_created ?l ?r)
+          :effect  (and  
+		    (cones_created ?l ?r)
                          (started )
-                         (assign (reward ) -10.0000)
+                         (assign (reward ) -1.0000)
                    )
 )
 
 (:action  look_at_object_in_dummy_cone
           :parameters  (?a - robot ?o - visualobject ?l - label ?r - room ?c - cone)
-          :precondition  (and  (cones_created ?l ?r)
+          :precondition  (and  (not (committed))
+			       (cones_created ?l ?r)
                                (label ?o ?l)
                                (cone-label ?c dummy-cone)
                          )
@@ -148,7 +153,8 @@
 
 (:action  look_at_object
           :parameters  (?a - robot ?o - visualobject ?l - label ?c - cone)
-          :precondition  (and  (cone-label ?c ?l)
+          :precondition  (and  (not (committed))
+			       (cone-label ?c ?l)
                                (label ?o ?l)
                          )
           :effect  (and  (started )
@@ -158,11 +164,13 @@
 
 (:action  commit-is-in-visualobject17
           :parameters  (?val - place)
-          :precondition  (and  (not (committed-is-in visualobject17))
+          :precondition  (and  (not (committed))
+			       (not (committed-is-in visualobject17))
                                (not (committed-ex-in-room cereal_box rb))
                                (not (committed-category rb))
                          )
-          :effect  (and  (committed-is-in visualobject17)
+          :effect  (and  (committed)
+			 (committed-is-in visualobject17)
                          (when  (is-in visualobject17 ?val)
                                 (assign (reward ) 100)
                          )
@@ -173,10 +181,12 @@
 )
 
 (:action  disconfirm-ex-in-room-cereal_box-rb
-          :precondition  (and  (not (committed-ex-in-room cereal_box rb))
+          :precondition  (and  (not (committed))
+			       (not (committed-ex-in-room cereal_box rb))
                                (not (committed-is-in visualobject17))
                          )
-          :effect  (and  (committed-ex-in-room cereal_box rb)
+          :effect  (and  (committed)
+			 (committed-ex-in-room cereal_box rb)
                          (when  (not (ex-in-room cereal_box rb true))
                                 (assign (reward ) 50.0000)
                          )
@@ -187,10 +197,12 @@
 )
 
 (:action  disconfirm-category-rb
-          :precondition  (and  (not (committed-category rb))
+          :precondition  (and  (not (committed))
+			       (not (committed-category rb))
                                (not (committed-is-in visualobject17))
                          )
-          :effect  (and  (committed-category rb)
+          :effect  (and  (committed)
+			 (committed-category rb)
                          (when  (not (category rb kitchen))
                                 (assign (reward ) 50.0000)
                          )

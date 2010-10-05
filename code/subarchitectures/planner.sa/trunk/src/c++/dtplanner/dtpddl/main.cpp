@@ -271,6 +271,7 @@ int main(int argc, char** argv)
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
+            //#define CHANGE_PHASE 1
 //             auto solver = new Planning::Two_Phase_Solver(*problem->second);//Planning::Solver*
             solver->set__sink_state_penalty(-1.0); //-1234.0);//-1e6);
             
@@ -331,7 +332,10 @@ int main(int argc, char** argv)
                 }
 
                 solver->reset__pomdp_state_hash_table();
-                //solver->change_phase();//HERE -- MONDAY
+
+#ifdef CHANGE_PHASE
+                solver->change_phase();//HERE -- MONDAY
+#endif
                 
                 solver->reinstate__starting_belief_state();
             }/*STOP -- TRYING THE MDP HEURISTIC.*/

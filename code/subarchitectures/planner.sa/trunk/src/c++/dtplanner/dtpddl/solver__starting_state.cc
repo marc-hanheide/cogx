@@ -364,6 +364,10 @@ void Solver::generate_starting_state()
         
         INTERACTIVE_VERBOSER(true, 10004, "A starting state is :: "
                              <<*state<<std::endl);
+
+        if(probability < 1e-15){/*BLACK FRIDAY*/
+                    continue;
+        }
         
         starting_belief_state
             ->add__belief_atom(state, probability);

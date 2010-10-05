@@ -498,7 +498,7 @@ accept_values(boost::numeric::ublas::compressed_vector< double >& values)
     
     if(assigned_score){// && new_expected_value > expected_value){
         expected_value = new_expected_value;//best_score + expected_reward;
-        INTERACTIVE_VERBOSER(true, 13000, "Made score assignment :: "<<expected_value);
+        INTERACTIVE_VERBOSER(true, 14000, "Made score assignment :: "<<expected_value);
 
         return true;
     }

@@ -123,7 +123,7 @@ void Solver::press__belief_transitions(POMDP_State* pomdp_state,
                  * in \local{atom}.*/
                 double atom_mass = atom->second / mass_of_belief_successor;
 
-                if(atom_mass < 1e-20){/*BLACK FRIDAY*/
+                if(atom_mass < 1e-15){/*BLACK FRIDAY*/
                     continue;
                 }
                 

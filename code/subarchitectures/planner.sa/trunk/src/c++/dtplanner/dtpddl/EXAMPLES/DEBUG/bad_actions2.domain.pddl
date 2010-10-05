@@ -118,49 +118,49 @@
 ;; 	 :precondition (committed)
 ;; )
 
-(:action  look-for-object-1
-          :parameters  (?a - robot ?l - label ?o - visualobject ?p - place)
-          :precondition  (and    (not (committed))
-				 (not (looked-for-object-1 ?p))
-				 (is-in ?a ?p)
-				 (label ?o ?l)
-                         )
-          :effect  (and  (looked-for-object-1 ?p)
-			 (started )
-                         (assign (reward ) -10.0)
-
-;; 			 (when (is-in ?o ?p) (assign (reward) -1.0))
-;; 			 (when (not (is-in ?o ?p)) (assign (reward) -100.0))
-                   )
-)
-
-(:action  look-for-object-2
-          :parameters  (?a - robot ?l - label ?o - visualobject ?p - place)
-          :precondition  (and    (started )
-				 (not (committed))
-				 (not (looked-for-object-1 ?p))
-				 (not (looked-for-object-2 ?p))
-				 (is-in ?a ?p)
-				 (label ?o ?l)
-                         )
-          :effect  (and  (looked-for-object-2 ?p)
-			 
-;; 			 (when (is-in ?o ?p) (assign (reward) -1.0))
-;; 			 (when (not (is-in ?o ?p)) (assign (reward) -100.0))
-                         (assign (reward ) -4)
-                   )
-)
-
-;; (:action  look-for-object
+;; (:action  look-for-object-1
 ;;           :parameters  (?a - robot ?l - label ?o - visualobject ?p - place)
-;;           :precondition  (and  (not (committed))
-;; 			       (is-in ?a ?p)
-;;                                (label ?o ?l)
+;;           :precondition  (and    (not (committed))
+;; 				 (not (looked-for-object-1 ?p))
+;; 				 (is-in ?a ?p)
+;; 				 (label ?o ?l)
 ;;                          )
-;;           :effect  (and  (started )
-;;                          (assign (reward ) -1.0000)
+;;           :effect  (and  (looked-for-object-1 ?p)
+;; 			 (started )
+;;                          (assign (reward ) -10.0)
+
+;; ;; 			 (when (is-in ?o ?p) (assign (reward) -1.0))
+;; ;; 			 (when (not (is-in ?o ?p)) (assign (reward) -100.0))
 ;;                    )
 ;; )
+
+;; (:action  look-for-object-2
+;;           :parameters  (?a - robot ?l - label ?o - visualobject ?p - place)
+;;           :precondition  (and    (started )
+;; 				 (not (committed))
+;; 				 (not (looked-for-object-1 ?p))
+;; 				 (not (looked-for-object-2 ?p))
+;; 				 (is-in ?a ?p)
+;; 				 (label ?o ?l)
+;;                          )
+;;           :effect  (and  (looked-for-object-2 ?p)
+			 
+;; ;; 			 (when (is-in ?o ?p) (assign (reward) -1.0))
+;; ;; 			 (when (not (is-in ?o ?p)) (assign (reward) -100.0))
+;;                          (assign (reward ) -4)
+;;                    )
+;; )
+
+(:action  look-for-object
+          :parameters  (?a - robot ?l - label ?o - visualobject ?p - place)
+          :precondition  (and  (not (committed))
+			       (is-in ?a ?p)
+                               (label ?o ?l)
+                         )
+          :effect  (and  (started )
+                         (assign (reward ) -1.0000)
+                   )
+)
 
 (:action  commit-is-in-visualobject2
           :parameters  (?val - place)
@@ -202,31 +202,31 @@
                    )
 )
 
-(:observe  visual_object-1
-           :parameters  (?a - robot ?o - visualobject ?l - label ?p - place)
-           :execution  (look-for-object-1 ?a ?l ?o ?p)
-           :precondition  (and  )
-           :effect  (when  (is-in ?o ?p)
-                           (probabilistic  0.8000  (observed-is-in ?o ?p))
-                    )
-)
-
-(:observe  visual_object-2
-           :parameters  (?a - robot ?o - visualobject ?l - label ?p - place)
-           :execution  (look-for-object-2 ?a ?l ?o ?p)
-           :precondition  (and  )
-           :effect  (when  (is-in ?o ?p)
-                           (probabilistic  0.8000  (observed-is-in ?o ?p))
-                    )
-)
-
-;; (:observe  visual_object
+;; (:observe  visual_object-1
 ;;            :parameters  (?a - robot ?o - visualobject ?l - label ?p - place)
-;;            :execution  (look-for-object ?a ?l ?o ?p)
+;;            :execution  (look-for-object-1 ?a ?l ?o ?p)
 ;;            :precondition  (and  )
 ;;            :effect  (when  (is-in ?o ?p)
 ;;                            (probabilistic  0.8000  (observed-is-in ?o ?p))
 ;;                     )
 ;; )
+
+;; (:observe  visual_object-2
+;;            :parameters  (?a - robot ?o - visualobject ?l - label ?p - place)
+;;            :execution  (look-for-object-2 ?a ?l ?o ?p)
+;;            :precondition  (and  )
+;;            :effect  (when  (is-in ?o ?p)
+;;                            (probabilistic  0.8000  (observed-is-in ?o ?p))
+;;                     )
+;; )
+
+(:observe  visual_object
+           :parameters  (?a - robot ?o - visualobject ?l - label ?p - place)
+           :execution  (look-for-object ?a ?l ?o ?p)
+           :precondition  (and  )
+           :effect  (when  (is-in ?o ?p)
+                           (probabilistic  0.8000  (observed-is-in ?o ?p))
+                    )
+)
 
 )
