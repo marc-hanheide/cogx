@@ -41,7 +41,7 @@
 #define COLOR_SAMPLE_IMG_HEIGHT 15
 
 #ifdef FEAT_VISUALIZATION
-#define ID_OBJ_LAST_SEGMENTATION "soif@Last ROI Segmentation"
+#define ID_OBJ_LAST_SEGMENTATION "soif.Last ROI Segmentation"
 #endif
 
   /**
@@ -1077,13 +1077,17 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
 bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask, vector<SurfacePoint> &segPoints)
 {
   Video::Image image, imageLarge;
-  StereoClient::getRectImage(LEFT, 640, imageLarge);
+  // The large image for the ProtoObject should be as large as possible
+  StereoClient::getRectImage(LEFT, 1280, imageLarge);
+  // Segmentation is optimized for 320; this could be scaled down from imageLarge
   StereoClient::getRectImage(LEFT, 320, image);
 
-  Video::Image fullImage;
-  videoServer->getImage(camId, fullImage);
+  // The scale is used to scale the patch and mask calculated on image
+  // to the size of imageLarge.
+  double inputScale = 1.0 * imageLarge.width / image.width;
 
   if (hasSnapFlag('v')) {
+	// These images are only for snapshots; not used otherwise
 	videoServer->getImage(m_idLeftImage, m_LeftImage);
 	videoServer->getImage(m_idRightImage, m_RightImage);
   }
@@ -1093,11 +1097,11 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 #endif
 #if 1 && defined(FEAT_VISUALIZATION)
   ss << "segmentObject<br>";
-  ss << "rectImage: " << image.width << "x" << image.height << "<br>";
-  ss << "fullImage: " << fullImage.width << "x" << fullImage.height << "<br>";
+  ss << "Image for segmentation: " << image.width << "x" << image.height << "<br>";
+  ss << "Image for ProtoObject:" << imageLarge.width << "x" << imageLarge.height << "<br>";
 #endif
 
-  soiPtr->boundingSphere.rad*=DILATE_FACTOR;
+  soiPtr->boundingSphere.rad *= DILATE_FACTOR;
 
   ROIPtr roiPtr = projectSOI(image.camPars, *soiPtr);
 
@@ -1112,8 +1116,10 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 
   rect.width = roiPtr->rect.width;
   rect.height = roiPtr->rect.height;
-  rect.x = roiPtr->rect.pos.x - rect.width/2;
-  rect.y = roiPtr->rect.pos.y - rect.height/2;	
+  rect.x = roiPtr->rect.pos.x - rect.width / 2;
+  rect.y = roiPtr->rect.pos.y - rect.height / 2;	
+
+  cvSetImageROI(iplImg, rect);
 
   log("Calculated ROI x=%i, y=%i, width=%i, height=%i",
 	  rect.x, rect.y, rect.width, rect.height);
@@ -1122,41 +1128,33 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
    	<< " w=" << rect.width << " h=" << rect.height << "<br>";
 #endif
 
-  cvSetImageROI(iplImg, rect);
 
-  float ratio = cvGetSize(iplImg).width * cvGetSize(iplImg).height;
+  double patchScale = 1.0; // Strange: = 1.0 * cvGetSize(iplImg).width / cvGetSize(iplImg).height;
+  //if ( patchScale > MAX_PATCH_SIZE) patchScale = sqrt(MAX_PATCH_SIZE / patchScale);
+  //else patchScale = 1.0;
 
-  //if ( ratio > MAX_PATCH_SIZE)
-  //  ratio = sqrt(MAX_PATCH_SIZE / ratio);
-  //else
-	ratio = 1;
+  CvSize sz = cvGetSize(iplImg); // actually this is the size of ROI(=rect), not of the whole image
+  sz.width  *= patchScale;
+  sz.height *= patchScale;
 
-  CvSize sz = cvGetSize(iplImg);
-  sz.width *= ratio;
-  sz.height *= ratio;
-  debug("size(*ratio)=%dx%d", sz.width, sz.height);
+  // iplPatch: The patch obtained from the SOI
   IplImage *iplPatch = cvCreateImage(sz, iplImg->depth, iplImg->nChannels);;
-
   cvResize(iplImg, iplPatch, CV_INTER_LINEAR );
 
-  IplImage *iplPatchHLS = cvCreateImage(sz, IPL_DEPTH_8U, iplPatch->nChannels);
-
-  cvCvtColor(iplPatch, iplPatchHLS, CV_RGB2HLS);
-
-  log("Actual ROI width=%i, height=%i", iplPatchHLS->width, iplPatchHLS->height);
+  debug("Adjusted ROI size(*patchScale)=%dx%d", sz.width, sz.height);
 #if 1 && defined(FEAT_VISUALIZATION)
-  CvRect rtest = cvGetImageROI(iplImg);
-  ss << "setRoi-> ROI x=" << rtest.x << " y=" << rtest.y
-   	<< " w=" << rtest.width << " h=" << rtest.height << "<br>";
-  ss << "Actual ROI w=" << iplPatchHLS->width << " h=" << iplPatchHLS->height << "<br>";
+  ss << "Adjusted ROI: " << " w=" << sz.width << " h=" << sz.height << "<br>";
 #endif
+
+  IplImage *iplPatchHLS = cvCreateImage(sz, IPL_DEPTH_8U, iplPatch->nChannels);
+  cvCvtColor(iplPatch, iplPatchHLS, CV_RGB2HLS);
 
   vector<CvPoint> projPoints, bgProjPoints, errProjPoints;
   vector<int>  hullPoints;    
 
   //projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
-  project3DPoints(soiPtr->points, *roiPtr, ratio, image.camPars, projPoints, hullPoints);
-  project3DPoints(soiPtr->BGpoints, *roiPtr, ratio, image.camPars, bgProjPoints, hullPoints);
+  project3DPoints(soiPtr->points, *roiPtr, patchScale, image.camPars, projPoints, hullPoints);
+  project3DPoints(soiPtr->BGpoints, *roiPtr, patchScale, image.camPars, bgProjPoints, hullPoints);
   
   log("window size %i vs %i vs %i", soiPtr->BGpoints.size(), soiPtr->points.size(), MAX_COLOR_SAMPLE);
   CvSize colSize = cvSize(
@@ -1178,83 +1176,78 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, objHueTolerance, objDistTolerance, true);
 
   SegmentMask smallSegMask;
-  smallSegMask.width = iplPatchHLS->width;
-  smallSegMask.height = iplPatchHLS->height;
+  smallSegMask.width  = iplPatch->width;   // == rect.width  * patchScale
+  smallSegMask.height = iplPatch->height;  // == rect.height * patchScale
 
   smallSegMask.data = graphCut(smallSegMask.width, smallSegMask.height, 3, costPatch, bgCostPatch);
   
   segPoints = filter3DPoints(soiPtr->points, projPoints, errProjPoints, smallSegMask);
 
-  segMask.width = smallSegMask.width*2;
-  segMask.height = smallSegMask.height*2;
+  segMask.width  = smallSegMask.width  * (inputScale / patchScale);
+  segMask.height = smallSegMask.height * (inputScale / patchScale);
   
   IplImage *smallIplMask = convertBytesToIpl(smallSegMask.data, smallSegMask.width, smallSegMask.height, 1);
   IplImage *largeIplMask = cvCreateImage( cvSize(segMask.width, segMask.height), IPL_DEPTH_8U, 1);
   cvResize(smallIplMask, largeIplMask, CV_INTER_NN);
   
-  segMask.data = convertIplToBytes(largeIplMask);
+  convertIplToBytes(largeIplMask, segMask.data);
+
+#if 1 && defined(FEAT_VISUALIZATION)
+	ss << "--- Scale mask ---<br>";
+	ss << "Small Patch Size w=" << smallSegMask.width << " h=" << smallSegMask.height << "<br>";
+	ss << "Full Patch Size w=" << segMask.width << " h=" << segMask.height << "<br>";
+#endif
   
   //Make the small and large segmentation masks displayable
   bool protoObj = false;
-  for(int y = 0; y < smallIplMask->height; y++)
-    for(int x = 0; x < smallIplMask->width; x++)
-    {
-      if(smallIplMask->imageData[y*smallIplMask->widthStep + x] == 1)
-  		protoObj = true;
-  	  smallIplMask->imageData[y*smallIplMask->widthStep + x]*=120;
-    }
-    
-  for(int y = 0; y < largeIplMask->height; y++)
-    for(int x = 0; x < largeIplMask->width; x++)
-    {
-  	  largeIplMask->imageData[y*largeIplMask->widthStep + x]*=120;
-    }
+  for(int y = 0; y < smallIplMask->height; y++) {
+	int iRow = y*smallIplMask->widthStep;
+	int i = iRow;
+	for(int x = 0; x < smallIplMask->width; x++) {
+	  if(smallIplMask->imageData[i] == 1) protoObj = true;
+	  smallIplMask->imageData[i] *= 120;
+	  i++;
+	}
+  }
 
-  // The VisualLearner application works well with small images so 
-  // we add imgPatch, the patch from the small image to the ProtoObject.
-  //
-  // OTOH ObjectRecognizer requires higher resolutions so we add a
-  // patch from the fullImage to the ProtoObject. In this case the dimensions
-  // of the mask and the patch don't match. Also the position of the
-  // ROI inside the original image is not exact because the ROI
-  // was calculated for an undistorted image (used by the stereo algorithm).
-  // With our cameras the distortion should not be significant, though.
-  //
-  // if 1: prepared for VisualLearner; if 0: prepared for ObjectRecognizer
-#if 0
-  // Patch from rectified stereo image
-  convertImageFromIpl(iplPatch, imgPatch);
-#else
-  // Patch from "original" video image
+  for(int y = 0; y < largeIplMask->height; y++) {
+	int iRow = y*largeIplMask->widthStep;
+	int i = iRow;
+	for(int x = 0; x < largeIplMask->width; x++) {
+	  largeIplMask->imageData[i] *= 120;
+	  i++;
+	}
+  }
+
   {
-	IplImage *iplFull = convertImageToIpl(fullImage);
-	double sx = fullImage.width / image.width;
-	double sy = fullImage.height / image.height;
-	CvRect rect;
-	rect.width = roiPtr->rect.width * sx;
-	rect.height = roiPtr->rect.height * sy;
-	rect.x = roiPtr->rect.pos.x*sx - rect.width/2;
-	rect.y = roiPtr->rect.pos.y*sy - rect.height/2;	
+	// XXX We assume that inputScale >= 1.0; otherwise the scaling will loose data
+	IplImage *iplFull = convertImageToIpl(imageLarge);
+	// Calculate rectLarge (in imageLarge) from rect (in image/small)
+	CvRect rectLarge;
+	rectLarge.x = rect.x * inputScale;
+	rectLarge.y = rect.y * inputScale;
+	rectLarge.width  = segMask.width;  // == rect.width  * inputScale
+	rectLarge.height = segMask.height; // == rect.height * inputScale
 
 	CvSize sz = cvGetSize(iplFull);
 #if 1 && defined(FEAT_VISUALIZATION)
+	ss << "--- Scale patch ---<br>";
 	ss << "Full Image getSize w=" << sz.width << " h=" << sz.height << "<br>";
-	ss << "Full Image ROI x=" << rect.x << " y=" << rect.y
-	  << " w=" << rect.width << " h=" << rect.height << "<br>";
+	ss << "Full Image ROI x=" << rectLarge.x << " y=" << rectLarge.y
+	  << " w=" << rectLarge.width << " h=" << rectLarge.height << "<br>";
 #endif
 
-	cvSetImageROI(iplFull, rect);
+	cvSetImageROI(iplFull, rectLarge);
 	sz = cvGetSize(iplFull);
 #if 1 && defined(FEAT_VISUALIZATION)
-	ss << "Full Image getSize w=" << sz.width << " h=" << sz.height << "<br>";
+	ss << "Full Patch Size w=" << sz.width << " h=" << sz.height << "<br>";
 #endif
-	IplImage *iplPatch = cvCreateImage(sz, iplFull->depth, iplFull->nChannels);
-	cvResize(iplFull, iplPatch, CV_INTER_LINEAR );
-	convertImageFromIpl(iplPatch, imgPatch);
+	IplImage *iplPatchFull = cvCreateImage(sz, iplFull->depth, iplFull->nChannels);
+	cvResize(iplFull, iplPatchFull, CV_INTER_LINEAR );
+	convertImageFromIpl(iplPatchFull, imgPatch);
 	cvReleaseImage(&iplFull);
-	cvReleaseImage(&iplPatch);
+	cvReleaseImage(&iplPatchFull);
   }
-#endif
 
   if (doDisplay)
   {
@@ -1292,7 +1285,7 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	
 #ifdef FEAT_VISUALIZATION
 	m_display.setImage(ID_OBJ_LAST_SEGMENTATION, tetraPatch);
-	m_display.setImage("Large segmentation mask", largeIplMask);
+	m_display.setImage("soif.Large segmentation mask", largeIplMask);
 #else
 	cvShowImage("Last ROI Segmentation", tetraPatch);
 #endif
@@ -1325,8 +1318,8 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   cvReleaseImage(&iplPatch);
   cvReleaseImage(&iplImg);
   cvReleaseImage(&iplPatchHLS);
-  //	cvReleaseImage(&iplImgBGR);
-  //	cvReleaseImage(&segPatch);
+  cvReleaseImage(&smallIplMask);
+  cvReleaseImage(&largeIplMask);
   cvReleaseImage(&costPatch);
   cvReleaseImage(&bgCostPatch);
   cvReleaseImage(&colorFiltering);
