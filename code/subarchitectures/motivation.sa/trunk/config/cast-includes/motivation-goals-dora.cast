@@ -1,1 +1,3 @@
-JAVA MG goal.generator motivation.components.generators.PlaceBeliefGoalGenerator
+JAVA MG goal.generator.explore motivation.components.generators.PlaceBeliefGoalGenerator
+JAVA MG goal.generator.human motivation.components.generators.DoraIntentionGoalGenerator 
+
