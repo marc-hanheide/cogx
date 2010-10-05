@@ -47,11 +47,7 @@ public class IntentionGoalGenerator extends
 			// only attributed beliefs contain intentions
 			Document xmlDoc = IceXMLSerializer.toXomDom(newEntry);
 			// get intention
-			// TODO: something smart has to be done here...
-			// I have to access from the struct
-			// ... which object is referred to (the GroundedBelief)
-			// ... which concept is given (Colour, Shape)
-			// ... have to check whether this is new information or not
+
 			Nodes preconditions = xmlDoc.query(XPATH_SELECT_PRECONDITIONS);
 			WorkingMemoryAddress preBelief = findAttributedPrecondition(preconditions);
 
@@ -65,15 +61,19 @@ public class IntentionGoalGenerator extends
 					if (preAttributedBelief.getContent().get(c) != null)
 						concept = c;
 				}
-				if (concept==null) {
-					getLogger().warn("the concept in the attributed belief was none of the ones we know about.");
+				if (concept == null) {
+					getLogger()
+							.warn(
+									"the concept in the attributed belief was none of the ones we know about.");
 					return null;
 				}
 				log("inferred concept from attributed belief: " + concept);
-				FormulaDistribution aboutPointerFD= preAttributedBelief.getContent().get(
-						POINTERLABEL.value);
-				if (aboutPointerFD==null) {
-					getLogger().warn("couldn't find any referring pointer, most likelz ref resolution didn't work");
+				FormulaDistribution aboutPointerFD = preAttributedBelief
+						.getContent().get(POINTERLABEL.value);
+				if (aboutPointerFD == null) {
+					getLogger()
+							.warn(
+									"couldn't find any referring pointer, most likelz ref resolution didn't work");
 					return null;
 				}
 				WMPointer referredPrivate = WMPointer
@@ -110,8 +110,8 @@ public class IntentionGoalGenerator extends
 			CASTIndependentFormulaDistributionsBelief<dBelief> preAttributedBelief;
 			try {
 				preAttributedBelief = CASTIndependentFormulaDistributionsBelief
-						.create(dBelief.class, getMemoryEntry(pf,
-								dBelief.class));
+						.create(dBelief.class,
+								getMemoryEntry(pf, dBelief.class));
 				if (preAttributedBelief.isAttributed()) {
 					return pf;
 				}
@@ -121,14 +121,6 @@ public class IntentionGoalGenerator extends
 			}
 		}
 		return null;
-	}
-
-	private Node queryFirst(Node node, String xpath) {
-		Nodes res = node.query(xpath);
-		if (res.size() != 1)
-			return null;
-		else
-			return res.get(0);
 	}
 
 	@Override
@@ -142,10 +134,6 @@ public class IntentionGoalGenerator extends
 
 		log("updated goal to " + motive.goal.goalString);
 		return motive;
-	}
-
-	private float computeImportance(GeneralGoalMotive motive) {
-		return -1f;
 	}
 
 }

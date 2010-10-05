@@ -131,8 +131,5 @@ public class AttributedBeliefGoalGenerator extends
 		return motive;
 	}
 
-	private float computeImportance(GeneralGoalMotive motive) {
-		return -1f;
-	}
 
 }
