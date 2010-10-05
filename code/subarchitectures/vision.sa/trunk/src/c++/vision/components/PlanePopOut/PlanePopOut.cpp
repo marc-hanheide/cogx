@@ -40,7 +40,6 @@ long long gethrtime(void)
 #define Shrink_SOI 1
 #define Upper_BG 1.5
 #define Lower_BG 1.1	// 1.1-1.5 radius of BoundingSphere
-#define min_height_of_obj 0.04	//unit cm, due to the error of stereo, >0.01 is suggested
 #define rate_of_centers 0.4	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
 #define Torleration 10		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
@@ -411,6 +410,11 @@ void PlanePopOut::configure(const map<string,string> & _config)
   if((it = _config.find("--display")) != _config.end())
   {
 	doDisplay = true;
+  }
+  if((it = _config.find("--minObjHeight")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> min_height_of_obj;
   }
   println("use global points: %d", (int)useGlobalPoints);
   m_torleration = 0;
