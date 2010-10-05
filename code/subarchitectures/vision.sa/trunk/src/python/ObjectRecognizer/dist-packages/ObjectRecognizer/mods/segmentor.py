@@ -2,7 +2,8 @@
 # vim: set fileencoding=utf-8 sw=4 ts=8 et:vim
 # Author:  Marko Mahnič
 # Created: april 2009 
-import opencv as cv
+#import opencv as cv
+import cv
 import numpy as np
 import capture
 import time

@@ -2,8 +2,9 @@
 # vim:set fileencoding=utf-8 sw=4 ts=8 et:vim
 # Author:  Marko Mahnič
 # Created: jan 2009 
-import opencv.cv as cv
-import opencv.highgui as hg
+#import opencv.cv as cv
+#import opencv.highgui as hg
+import cv
 
 def copyFrame(frame, copyData=True):
     copy = cv.cvCreateImage(cv.cvSize(frame.width, frame.height), frame.depth, frame.nChannels)

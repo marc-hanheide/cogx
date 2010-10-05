@@ -33,7 +33,7 @@ def makedb(dboutput="xdata/test.db"):
             id          integer primary key,
             modelid     integer,
             imagefile   text,
-            isLocated   integer,
+            hasPose     integer,
             phi         float,
             lambda      float,
             rotation    float,
