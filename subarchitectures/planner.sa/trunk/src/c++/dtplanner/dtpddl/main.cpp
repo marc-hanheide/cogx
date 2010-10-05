@@ -270,9 +270,9 @@ int main(int argc, char** argv)
                 ; problem++){
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
-//             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
-#define CHANGE_PHASE 1
-            auto solver = new Planning::Two_Phase_Solver(*problem->second);//Planning::Solver*
+            auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
+            //#define CHANGE_PHASE 1
+//             auto solver = new Planning::Two_Phase_Solver(*problem->second);//Planning::Solver*
             solver->set__sink_state_penalty(-1.0); //-1234.0);//-1e6);
             
             INTERACTIVE_VERBOSER(true, 12000, "Made a solver, starting preprocessing.")
@@ -348,8 +348,11 @@ int main(int argc, char** argv)
 
 
             auto current_state = solver->peek__next_belief_state_for_expansion();
+#ifdef LAO_STAR
             solver->lao_star();
-//             current_state = solver->solve__for_new_starting_state(current_state);
+#else
+            current_state = solver->solve__for_new_starting_state(current_state);
+#endif
             
             for(auto i = 0; i < 20; i++){
             

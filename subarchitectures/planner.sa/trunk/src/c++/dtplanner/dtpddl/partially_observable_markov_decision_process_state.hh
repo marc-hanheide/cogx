@@ -106,6 +106,10 @@ namespace Planning
          * think this is a reasonable assumption.*/
         bool unexpanded() const;
 
+#ifdef LAO_STAR
+        bool get__expansion_attempted() const;
+        void set__expansion_attempted();
+#endif
         
         void accept_values(boost::numeric::ublas::vector<double>& values);
         bool accept_values(boost::numeric::ublas::compressed_vector< double >& values);
@@ -168,6 +172,11 @@ namespace Planning
 
         /*Policy identifier.*/
         uint prescribed_action_index;
+        
+#ifdef LAO_STAR
+        /* Have we attempted to expand this state?*/
+        bool expansion_attempted;
+#endif
     };
 
 
