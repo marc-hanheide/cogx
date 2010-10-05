@@ -91,29 +91,29 @@ understand : event : utter(S, H, Nom) <-
 	find_patient(Nom, RefNom),
 	understand : topic(S, H, EpSt, Int, RefNom, RefNom),
 	i : prop(Nom, ActionProp),
-	nm_action_effects(S, H, Nom, Int, RefNom, ActionProp).
+	nm_action_effects(S, H, EpSt, Nom, Int, RefNom, ActionProp).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-nm_action_effects(S, H, RootNom, Int, Ref, find) <-
+nm_action_effects(S, H, EpSt, RootNom, Int, Ref, find) <-
 	int : pre(Int, belief(Ref, attrib(H, S), fv(location, unknown))) / p(1.0),
 	int : post(Int, belief(Ref, shared(S, H), fv(location, not(unknown)))) / p(1.0),
-	get_topic_referent(shared(S, H), Int, Ref, Ref, BId),
+	get_topic_referent(EpSt, Int, Ref, Ref, BId),
 	int : post(Int, state(found, agent(H), patient(BId))) / p(1.0).
 
-nm_action_effects(S, H, RootNom, Int, Ref, bring) <-
+nm_action_effects(S, H, EpSt, RootNom, Int, Ref, bring) <-
 	determine_recipient(RootNom, S, S, H, Recipient),
-	get_topic_referent(shared(S, H), Int, Ref, Ref, BId),
+	get_topic_referent(EpSt, Int, Ref, Ref, BId),
 	int : post(Int, state(possession, agent(Recipient), patient(BId))) / p(1.0).
 
-nm_action_effects(S, H, RootNom, Int, Ref, get) <-
+nm_action_effects(S, H, EpSt, RootNom, Int, Ref, get) <-
 	determine_recipient(RootNom, H, S, H, Recipient),
-	get_topic_referent(shared(S, H), Int, Ref, Ref, BId),
+	get_topic_referent(EpSt, Int, Ref, Ref, BId),
 	int : post(Int, state(possession, agent(Recipient), patient(BId))) / p(1.0).
 
-nm_action_effects(S, H, RootNom, Int, Ref, give) <-
+nm_action_effects(S, H, EpSt, RootNom, Int, Ref, give) <-
 	determine_recipient(RootNom, H, S, H, Recipient),
-	get_topic_referent(shared(S, H), Int, Ref, Ref, BId),
+	get_topic_referent(EpSt, Int, Ref, Ref, BId),
 	int : post(Int, state(possession, agent(Recipient), patient(BId))) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
