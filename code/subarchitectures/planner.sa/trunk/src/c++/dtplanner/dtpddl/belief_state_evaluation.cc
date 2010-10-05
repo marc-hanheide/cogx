@@ -38,6 +38,41 @@
 
 using namespace Planning;
 
+
+
+float MDP_Heuristic::operator()(POMDP_State* state) const
+{
+    auto& belief = state->get__belief_state();
+    uint possibly_obtainable_positive_rewards_count = 0;
+    double expected_value = 0.0;
+    for(auto _atom = belief.begin()
+            ; _atom != belief.end()
+            ; _atom++){
+        double probability = _atom->second;
+
+        assert(dynamic_cast<State*>(_atom->first));
+
+        possibly_obtainable_positive_rewards_count += dynamic_cast<State*>(_atom->first)
+            ->get__obtainable_positive_rewards_count();
+
+        expected_value += probability * dynamic_cast<State*>(_atom->first)
+            ->get__value();
+    }
+
+    
+    if(possibly_obtainable_positive_rewards_count == 0){
+        return -1e10;
+    }
+
+//     cerr<<expected_value<<" "
+//         <<static_cast<float>(static_cast<long long>(expected_value))<<std::endl;
+
+    assert(sizeof(long long) == sizeof(double));
+    
+    return static_cast<float>(static_cast<long long>(expected_value));
+}
+
+
 double Belief_State_Value::operator()(POMDP_State* state) const
 {
     return state->get__expected_reward(); 

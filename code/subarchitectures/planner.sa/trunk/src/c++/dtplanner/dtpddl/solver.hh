@@ -165,14 +165,38 @@ namespace Planning
         /* Is this solver in a sane state? */
         bool sanity() const;
 
+
+        /* Delete and remove all entries from
+         * \member{belief_state__space}. Then add the starting state
+         * (belief state) to that set.*/
+        void reset__pomdp_state_hash_table();
+        
+        /*Puts the starting belief state back on to the OPEN LISP.*/
+        virtual void reinstate__starting_belief_state();
+
+        /*Sets the OPEN LIST to have no elements in it.*/
+        virtual void empty__belief_states_for_expansion();
+
+        /* Puts all the MDP states that occure in the initial belief
+         * state into the OPEN LIST.*/
+        void generate_markov_decision_process_starting_states();
+
         
         const std::map<Type, Constants>& get__extensions_of_types() const;
         CXX__PTR_ANNOTATION(Problem_Grounding) get__problem_Grounding();
+
+        const Planning::POMDP_State* get__starting_belief_state()const;
+        
+    protected:
+        /*Initial POMDP state.*/
+        Planning::POMDP_State* starting_belief_state;
     private:
         
         /* Compute the problem starting states and add them to
          * \member{expansion_stack} and \member{state_space}.*/
         void generate_starting_state();
+
+        
         
         /* - Add \member{domain_Data::constants} and associated data to
          * \member{problem_Data}.
@@ -214,9 +238,6 @@ namespace Planning
         
         /*(see \member{preprocess})*/
         bool preprocessed;
-
-        /*Initial POMDP state.*/
-        Planning::POMDP_State* starting_belief_state;
         
         /* Domain data associated with \member{problem} (see
          * \member{preprocess}).*/

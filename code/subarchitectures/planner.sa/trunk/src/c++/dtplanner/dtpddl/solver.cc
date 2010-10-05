@@ -329,7 +329,67 @@ void Solver::preprocess()
     preprocessed = true;
 }
 
+void Solver::empty__belief_states_for_expansion()
+{
+    INTERACTIVE_VERBOSER(true, 15000, "Emptying the expansion queue."<<std::endl);
+    
+    expansion_queue = std::queue<Planning::POMDP_State*>();
 
+
+    assert(expansion_queue.size() == 0);
+}
+
+void Solver::reset__pomdp_state_hash_table()
+{
+
+    VERBOSER(15000, "Reseting the POMDP hash table."<<std::endl);
+    
+    /*Clean up some of the memory used in the first phase. */
+    for(auto bstate = belief_state__space.begin()
+            ; bstate != belief_state__space.end()
+            ; bstate++){
+        if(*bstate != starting_belief_state){
+            delete *bstate;
+        }
+        
+    }
+    
+    
+    belief_state__space = Planning::Set_Of_POMDP_State_Pointers();
+    belief_state__space.insert(starting_belief_state);
+}
+
+
+
+void Solver::reinstate__starting_belief_state()
+{
+    assert(expansion_queue.size() == 0);
+    expansion_queue.push(starting_belief_state);
+}
+
+void Solver::generate_markov_decision_process_starting_states()
+{
+    assert(expansion_queue.size() == 0);
+    auto belief_states = starting_belief_state->get__belief_state();
+    for(auto belief_state = belief_states.begin()
+            ; belief_state != belief_states.end()
+            ; belief_state++){
+        auto mdp_state = belief_state->first;
+
+        auto state = new POMDP_State();
+        state->add__belief_atom(mdp_state, 1.0);
+        state->set__index(belief_state__space.size());
+        state->initialise__prescribed_action_index();
+        belief_state__space.insert(state);
+        report__new_belief_state(state);
+    }
+}
+
+
+const Planning::POMDP_State* Solver::get__starting_belief_state()const
+{
+    return starting_belief_state;
+}
 
 void Solver::domain_constants__to__problem_objects()
 {

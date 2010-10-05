@@ -120,6 +120,12 @@ namespace Planning
         /*Get the element index of entry \argument{action_id} in \member{action_to_observation}.*/
         uint get__action_to_observation__index(uint action_id) const;
         bool action_to_observation__includes_index(uint action_id) const;
+
+        /* The \member{value} gives the discounted cumulative reward
+         * that an be expected over an infinite horizon, assuming
+         * rewards are discounted geometrically into the future. */
+        double get__value() const;
+        void set__value(double);
         
     protected:
         Markov_Decision_Process_State(const Markov_Decision_Process_State&);// = delete;
@@ -150,6 +156,11 @@ namespace Planning
 
         /*Reward associated with being in this MDP state.*/
         double reward;
+
+        /* Value associated with this MDP state. If meaningful, this
+         * should have been computed by some kind of DP, or stochastic
+         * DP. */
+        double value;
         
         /* Functions into the reals. */
         Float_State float_State;
