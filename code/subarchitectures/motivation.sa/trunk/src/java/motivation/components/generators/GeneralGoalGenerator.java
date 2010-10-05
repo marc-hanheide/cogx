@@ -6,6 +6,8 @@ package motivation.components.generators;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import autogen.Planner.Goal;
+
 import motivation.factories.MotiveFactory;
 import motivation.slice.GeneralGoalMotive;
 import motivation.slice.Motive;
@@ -58,9 +60,9 @@ public class GeneralGoalGenerator extends AbstractMotiveGenerator {
 	@Override
 	protected boolean checkMotive(Motive motive) throws CASTException {
 		if (!initialized) {
-				initialized = true;
-				return true;
-			
+			initialized = true;
+			return true;
+
 		}
 		return false;
 	}
@@ -73,33 +75,34 @@ public class GeneralGoalGenerator extends AbstractMotiveGenerator {
 	@Override
 	protected void start() {
 		super.start();
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Ice.Object.class,
-				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				Ice.Object.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
 
-			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-				debug(CASTUtils.toString(_wmc));
-				// create a new motive from this node...
-				if (!initialized) { // if home base is not set yet
-					GeneralGoalMotive newMotive = MotiveFactory
-							.createGeneralGoalMotive(_wmc.address);
-					newMotive.internalGoal = goalString;
-					newMotive.informationGain = constantGain;
-					newMotive.costs = (float) constantCosts;
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						debug(CASTUtils.toString(_wmc));
+						// create a new motive from this node...
+						if (!initialized) { // if home base is not set yet
+							GeneralGoalMotive newMotive = MotiveFactory
+									.createGeneralGoalMotive(_wmc.address);
+							newMotive.goal = new Goal(-1, goalString, false);
+							newMotive.informationGain = constantGain;
+							newMotive.costs = (float) constantCosts;
 
-					newMotive.maxPlanningTime = maxPlanningTime;
-					// wait at most 5 minutes
-					newMotive.maxExecutionTime = maxExecutionTime;
+							newMotive.maxPlanningTime = maxPlanningTime;
+							// wait at most 5 minutes
+							newMotive.maxExecutionTime = maxExecutionTime;
 
-					scheduleCheckMotive(newMotive);
-				} else { // if we have this one already
-					try {
-						removeChangeFilter(this);
-					} catch (SubarchitectureComponentException e) {
-						logException(e);
+							scheduleCheckMotive(newMotive);
+						} else { // if we have this one already
+							try {
+								removeChangeFilter(this);
+							} catch (SubarchitectureComponentException e) {
+								logException(e);
+							}
+						}
 					}
-				}
-			}
-		});
+				});
 	}
 
 	/*
