@@ -44,7 +44,8 @@ import org.junit.Test;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
-import de.dfki.lt.tr.dialmanagement.data.observations.IntentionObservation;
+import de.dfki.lt.tr.dialmanagement.data.observations.Observation;
+import de.dfki.lt.tr.dialmanagement.data.observations.ObservationContent;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
 
@@ -67,9 +68,9 @@ public class InteractiveDoraTest {
 
 
 	// configuration files
-	public static String POLICYFILE = "config/policies/policyExampleDora.txt";
-	public static String OBSFILE = "config/policies/observationsDora.txt";
-	public static String ACTIONSFILE = "config/policies/actionsDora.txt";
+	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/policyExampleDora.txt";
+	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/observationsDora.txt";
+	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/actionsDora.txt";
 
 	// the dialogue manager
 	public DialogueManager manager;
@@ -215,7 +216,7 @@ public class InteractiveDoraTest {
 		// navigate through the policy
 		while (!test.manager.isFinished()) {
 			String text = test.getGUIPhonString();
-			IntentionObservation intent = new IntentionObservation(FormulaUtils.constructFormula(text), 1.0f, 1.0f);
+			Observation intent = new Observation(FormulaUtils.constructFormula(text), ObservationContent.INTENTION, 1.0f);
 			AbstractAction action = test.manager.nextAction(intent);
 			System.out.println("REACTION: " + action.toString());
 		}

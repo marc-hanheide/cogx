@@ -29,8 +29,8 @@ import org.junit.Before;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
-import de.dfki.lt.tr.dialmanagement.data.observations.EventObservation;
-import de.dfki.lt.tr.dialmanagement.data.observations.IntentionObservation;
+import de.dfki.lt.tr.dialmanagement.data.observations.Observation;
+import de.dfki.lt.tr.dialmanagement.data.observations.ObservationContent;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
 
@@ -50,9 +50,9 @@ public class DialogueManagerMiniTest {
 	public static boolean DEBUG = false;
 	
 	// the configuration files
-	public static String POLICYFILE = "config/policies/minipolicy.txt";
-	public static String OBSFILE = "config/policies/miniobservation.txt";
-	public static String ACTIONSFILE = "config/policies/miniaction.txt";
+	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/minipolicy.txt";
+	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/miniobservation.txt";
+	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/miniaction.txt";
 
 	// the dialogue manager
 	public DialogueManager manager;
@@ -81,8 +81,8 @@ public class DialogueManagerMiniTest {
 	@Test
 	public void testPolicyDirect1() throws DialogueException {
 		
-		IntentionObservation intent = 
-			new IntentionObservation(FormulaUtils.constructFormula("<Belief>(<Ref>context1_1 ^ <ObjectType>ball)"), 1.0f);
+		Observation intent = 
+			new Observation(FormulaUtils.constructFormula("<Belief>(<Ref>context1_1 ^ <ObjectType>ball)"), ObservationContent.INTENTION, 1.0f);
 		AbstractAction action1 = manager.nextAction(intent);
 		assertEquals(action1.toString(), "I[okay]");
 		

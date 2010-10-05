@@ -29,8 +29,7 @@ import org.junit.Before;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
-import de.dfki.lt.tr.dialmanagement.data.observations.EventObservation;
-import de.dfki.lt.tr.dialmanagement.data.observations.IntentionObservation;
+import de.dfki.lt.tr.dialmanagement.data.observations.Observation;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
 
@@ -50,9 +49,9 @@ public class DialogueManagerDoraTest {
 	public static boolean DEBUG = false;
 	
 	// the configuration files
-	public static String POLICYFILE = "config/policies/policyExampleDora.txt";
-	public static String OBSFILE = "config/policies/observationsDora.txt";
-	public static String ACTIONSFILE = "config/policies/actionsDora.txt";
+	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/policyExampleDora.txt";
+	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/observationsDora.txt";
+	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/actionsDora.txt";
 
 	// the dialogue manager
 	public DialogueManager manager;
@@ -81,7 +80,7 @@ public class DialogueManagerDoraTest {
 	@Test
 	public void testPolicyDirect1() throws DialogueException {
 		
-		IntentionObservation intent = new IntentionObservation(FormulaUtils.constructFormula("\"Please find the cornflakes box\""), 1.0f);
+		Observation intent = new Observation("Please find the cornflakes box", 1.0f);
 		AbstractAction action1 = manager.nextAction(intent);
 		assertEquals(action1.toString(), "I[\"okay, searching for the cornflakes box!\"]");
 		
@@ -94,7 +93,7 @@ public class DialogueManagerDoraTest {
 	@Test
 	public void testPolicyDirect2() throws DialogueException {
 		
-		IntentionObservation intent = new IntentionObservation(FormulaUtils.constructFormula("\"Please find the mug\""), 1.0f);
+		Observation intent = new Observation("Please find the mug", 1.0f);
 		AbstractAction action1 = manager.nextAction(intent);
 		assertEquals(action1.toString(), "I[\"okay, searching for the mug!\"]");
 		
@@ -107,10 +106,10 @@ public class DialogueManagerDoraTest {
 	@Test
 	public void testPolicyConfirm() throws DialogueException {
 		
-		IntentionObservation intent = new IntentionObservation(FormulaUtils.constructFormula("\"Please find the cornflakes box\""), 0.4f, .4f);
+		Observation intent = new Observation("Please find the cornflakes box", 0.4f);
 		AbstractAction action1 = manager.nextAction(intent);
 		assertEquals(action1.toString(), "I[\"sorry, should I search for the cornflaxes box?\"]");
-		IntentionObservation intent2 = new IntentionObservation(FormulaUtils.constructFormula("yes"), 0.8f,0.8f);
+		Observation intent2 = new Observation("yes", 0.8f);
 		AbstractAction action2 = manager.nextAction(intent2);
 		assertEquals(action2.toString(), "I[\"okay, searching for the cornflakes box!\"]");
 	}
@@ -122,10 +121,10 @@ public class DialogueManagerDoraTest {
 	@Test
 	public void testPolicyDisprove() throws DialogueException {
 		
-		IntentionObservation intent = new IntentionObservation(FormulaUtils.constructFormula("\"Please find the cornflakes box\""), 0.4f, .4f);
+		Observation intent = new Observation("Please find the cornflakes box", 0.4f);
 		AbstractAction action1 = manager.nextAction(intent);
 		assertEquals(action1.toString(), "I[\"sorry, should I search for the cornflaxes box?\"]");
-		IntentionObservation intent2 = new IntentionObservation(FormulaUtils.constructFormula("no"), 0.8f,0.8f);
+		Observation intent2 = new Observation("no", 0.8f);
 		AbstractAction action2 = manager.nextAction(intent2);
 		assertEquals(action2.toString(), "I[\"sorry, could you repeat please?\"]");
 		testPolicyDirect2();
@@ -138,7 +137,7 @@ public class DialogueManagerDoraTest {
 	@Test
 	public void testPolicyRepeat() throws DialogueException {
 		
-		IntentionObservation i = new IntentionObservation(FormulaUtils.constructFormula("?"), 0.8f, 0.8f);
+		Observation i = new Observation("?", 0.8f);
 		AbstractAction action1 = manager.nextAction(i);
 		assertEquals(action1.toString(), "I[\"sorry, could you repeat please?\"]");
 		testPolicyConfirm();
@@ -152,7 +151,7 @@ public class DialogueManagerDoraTest {
 	@Test
 	public void testPolicyRepeat2() throws DialogueException {
 		
-		IntentionObservation i = new IntentionObservation(FormulaUtils.constructFormula("\"bla bla bla\""), 0.8f, 0.8f);
+		Observation i = new Observation("bla bla bla", 0.8f);
 		AbstractAction action1 = manager.nextAction(i);
 		assertEquals(action1.toString(), "I[\"sorry, could you repeat please?\"]");
 		testPolicyConfirm();
@@ -165,10 +164,10 @@ public class DialogueManagerDoraTest {
 	@Test
 	public void testPolicyFailure() throws DialogueException {
 		
-		IntentionObservation i1 = new IntentionObservation(FormulaUtils.constructFormula("?"), 0.8f, 0.8f);
+		Observation i1 = new Observation("?", 0.8f);
 		AbstractAction action1 = manager.nextAction(i1);
 		assertEquals(action1.toString(), "I[\"sorry, could you repeat please?\"]");
-		IntentionObservation i2 = new IntentionObservation(FormulaUtils.constructFormula("?"), 0.8f, 0.8f);
+		Observation i2 = new Observation("?", 0.8f);
 		AbstractAction action2 = manager.nextAction(i2);
 		assertEquals(action2.toString(), "I[\"sorry I couldn't understand you\"]");
 	}
