@@ -137,6 +137,10 @@ namespace Planning
         const std::vector<Observational_State*>& get__possible_observations_given_action(uint action_index) const;
         POMDP_State* get__successor(uint action_index
                                     , Observational_State*);
+
+        
+        const std::vector<POMDP_State*>& get__successors(uint action_index);
+        
     private:
         std::vector<uint> action_based_successor_driver;
 

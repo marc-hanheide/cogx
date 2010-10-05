@@ -270,9 +270,9 @@ int main(int argc, char** argv)
                 ; problem++){
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
-            auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
-            //#define CHANGE_PHASE 1
-//             auto solver = new Planning::Two_Phase_Solver(*problem->second);//Planning::Solver*
+//             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
+#define CHANGE_PHASE 1
+            auto solver = new Planning::Two_Phase_Solver(*problem->second);//Planning::Solver*
             solver->set__sink_state_penalty(-1.0); //-1234.0);//-1e6);
             
             INTERACTIVE_VERBOSER(true, 12000, "Made a solver, starting preprocessing.")
@@ -283,7 +283,7 @@ int main(int argc, char** argv)
 
 
 
-            if(false){/*START -- TRYING THE MDP HEURISTIC.*/
+            if(true){/*START -- TRYING THE MDP HEURISTIC.*/
 
                 
                 solver->empty__belief_states_for_expansion();
@@ -340,12 +340,16 @@ int main(int argc, char** argv)
                 solver->reinstate__starting_belief_state();
             }/*STOP -- TRYING THE MDP HEURISTIC.*/
             
-
-
+            
+#ifdef CHANGE_PHASE
+            INTERACTIVE_VERBOSER(true, 15000, "Done MDP state expansion :: "<<std::endl);
+#endif
+                
 
 
             auto current_state = solver->peek__next_belief_state_for_expansion();
-            current_state = solver->solve__for_new_starting_state(current_state);
+            solver->lao_star();
+//             current_state = solver->solve__for_new_starting_state(current_state);
             
             for(auto i = 0; i < 20; i++){
             
@@ -382,7 +386,7 @@ int main(int argc, char** argv)
             
                 current_state = successor_state;
                 
-                current_state = solver->solve__for_new_starting_state(successor_state);//expand_for_new_state<>(successor_state, solver);
+                //HERE HERE HEREcurrent_state = solver->solve__for_new_starting_state(successor_state);//expand_for_new_state<>(successor_state, solver);
                 
                 INTERACTIVE_VERBOSER(true, 15000, "Current belief state is :: "<<*current_state<<std::endl);
             }
