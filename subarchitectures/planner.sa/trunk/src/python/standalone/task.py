@@ -321,89 +321,137 @@ class TemporalTranslator(pddl.translators.Translator):
         self.copy = False
 
     def translate_action(self, action, domain=None):
-        tct = pddl.Term(pddl.builtin.total_cost,[])
+        if isinstance(action, pddl.durative.DurativeAction):
+            a2 = pddl.translators.Translator.translate_action(self, action, domain)
+        else:
+            total_costs = action.get_total_cost()
+            if total_costs == 0:
+                dc = pddl.durative.DurationConstraint(pddl.Term(0.001))
+            elif total_costs:
+                dc = pddl.durative.DurationConstraint(total_costs)
+            else:
+                dc = pddl.durative.DurationConstraint(pddl.Term(1))
 
-        affected_vars = set()
-        cond_effects = []
-        
+            args = [pddl.Parameter(p.name, p.type) for p in action.args]
+            pddl.durative.DurativeAction(action.name, args, [dc], None, None, domain)
+
+        def condition_visitor(cond, results):
+            if isinstance(cond, pddl.durative.TimedCondition):
+                return cond, True
+            if isinstance(cond, pddl.Literal) and cond.predicate == pddl.builtin.change:
+                return cond, True
+            if all(timed == False for r, timed in results):
+                return cond, False
+            if all(timed == True for r, timed in results):
+                return cond, True
+            timed_parts = [r for r,timed in results if timed == True]
+            untimed_parts = [r for r,timed in results if timed == False]
+            timed_cond = pddl.durative.TimedCondition("start", cond.copy(new_parts=untimed_parts), cond.get_scope())
+            timed_parts.append(timed_cond)
+            return cond.copy(new_parts=timed_parts), True
+
+        tct = pddl.Term(pddl.builtin.total_cost,[])
         @pddl.visitors.copy
         def effect_visitor(eff, results):
             if isinstance(eff, pddl.SimpleEffect):
                 if eff.predicate == pddl.builtin.increase and eff.args[0] == tct:
                     return False
-                if eff.predicate == pddl.assign:
-                    affected_vars.add((eff.args[0].function, ) + tuple(eff.args[0].args))
-                    return pddl.SimpleEffect(pddl.durative.change, eff.args[:])
-                if eff.predicate == pddl.builtin.num_assign:
-                    affected_vars.add((eff.args[0].function, ) + tuple(eff.args[0].args))
-                    return pddl.SimpleEffect(pddl.durative.num_change, eff.args[:])
-                affected_vars.add((eff.predicate, ) + tuple(eff.args))
+                if eff.predicate == pddl.builtin.change:
+                    return eff
                 return pddl.durative.TimedEffect(eff.predicate, eff.args[:], "end", negated=eff.negated)
             if isinstance(eff, pddl.ConditionalEffect):
                 eff2 = pddl.ConditionalEffect(None, results[0])
-                eff2.condition = pddl.durative.TimedCondition("all", eff.condition.copy())
-                cond_effects.append(eff2)
+                eff2.condition = eff.condition.visit(condition_visitor)
                 return eff2
 
-        if isinstance(action, pddl.durative.DurativeAction):
-            return action.copy(newdomain=domain)
-
-        total_costs = action.get_total_cost()
-        if total_costs == 0:
-            dc = pddl.durative.DurationConstraint(pddl.Term(0.001))
-        elif total_costs:
-            dc = pddl.durative.DurationConstraint(total_costs)
-        else:
-            dc = pddl.durative.DurationConstraint(pddl.Term(1))
-            
-        args = [pddl.Parameter(p.name, p.type) for p in action.args]
-        a2 = pddl.durative.DurativeAction(action.name, args, [dc], None, None, domain)
-
-        lock_cond = pddl.durative.TimedCondition("start", pddl.LiteralCondition(self.lock_pred, [], a2, negated=True))
-        ended_cond = pddl.durative.TimedCondition("all", pddl.LiteralCondition(self.ended_pred, [], a2, negated=True))
-
-        ended_effect = pddl.durative.TimedEffect(self.ended_pred, [], "start", a2, negated=False)
-        acquire_lock = pddl.durative.TimedEffect(self.lock_pred, [], "start", a2, negated=False)
-        release_lock = pddl.durative.TimedEffect(self.lock_pred, [], "end", a2, negated=True)
-        
-        if action.replan:
-            a2.replan = action.replan.copy(new_scope=a2)
-
-        add_conds = []
-        add_effects = []
-
-        if action.name.startswith("ignore-preference") and "fullfill" not in action.name:
-            add_conds.append(lock_cond)
-            add_effects += [ended_effect, acquire_lock, release_lock]
-        else:
-            add_conds.append(ended_cond)
-
-        cond = None
-        if add_conds:
-            cond = pddl.Conjunction(add_conds, a2)
-        if action.precondition:
-            orig = pddl.durative.TimedCondition("start", action.precondition.copy(new_scope=a2))
-            if cond:
-                cond.parts.append(orig)
-            else:
-                cond = orig
-
-        effect = None
-        if add_effects:
-            effect = pddl.ConjunctiveEffect(add_effects, a2)
-        if action.effect:
-            orig = action.effect.visit(effect_visitor)
-            if effect:
-                effect.parts.append(orig)
-            else:
-                effect = orig
-
-        a2.precondition = cond
-        a2.precondition.set_scope(a2)
-        a2.effect = effect
-        a2.effect.set_scope(a2)
-            
+        a2.precondition, is_timed = pddl.visitors.visit(action.precondition, condition_visitor)
+        if not is_timed:
+            a2.precondition = pddl.durative.TimedCondition("start", a2.precondition, a2)
+        a2.effect = pddl.visitors.visit(action.effect, effect_visitor)
         return a2
+        # 
+
+        # affected_vars = set()
+        # cond_effects = []
+        
+        # @pddl.visitors.copy
+        # def effect_visitor(eff, results):
+        #     if isinstance(eff, pddl.SimpleEffect):
+        #         if eff.predicate == pddl.builtin.increase and eff.args[0] == tct:
+        #             return False
+        #         if eff.predicate == pddl.assign:
+        #             affected_vars.add((eff.args[0].function, ) + tuple(eff.args[0].args))
+        #             return pddl.SimpleEffect(pddl.durative.change, eff.args[:])
+        #         if eff.predicate == pddl.builtin.num_assign:
+        #             affected_vars.add((eff.args[0].function, ) + tuple(eff.args[0].args))
+        #             return pddl.SimpleEffect(pddl.durative.num_change, eff.args[:])
+        #         affected_vars.add((eff.predicate, ) + tuple(eff.args))
+        #         return pddl.durative.TimedEffect(eff.predicate, eff.args[:], "end", negated=eff.negated)
+        #     if isinstance(eff, pddl.ConditionalEffect):
+        #         eff2 = pddl.ConditionalEffect(None, results[0])
+        #         eff2.condition = pddl.durative.TimedCondition("all", eff.condition.copy())
+        #         cond_effects.append(eff2)
+        #         return eff2
+
+        # if isinstance(action, pddl.durative.DurativeAction):
+        #     return action.copy(newdomain=domain)
+
+        # total_costs = action.get_total_cost()
+        # if total_costs == 0:
+        #     dc = pddl.durative.DurationConstraint(pddl.Term(0.001))
+        # elif total_costs:
+        #     dc = pddl.durative.DurationConstraint(total_costs)
+        # else:
+        #     dc = pddl.durative.DurationConstraint(pddl.Term(1))
+            
+        # args = [pddl.Parameter(p.name, p.type) for p in action.args]
+        # a2 = pddl.durative.DurativeAction(action.name, args, [dc], None, None, domain)
+
+        # lock_cond = pddl.durative.TimedCondition("start", pddl.LiteralCondition(self.lock_pred, [], a2, negated=True))
+        # ended_cond = pddl.durative.TimedCondition("all", pddl.LiteralCondition(self.ended_pred, [], a2, negated=True))
+
+        # ended_effect = pddl.durative.TimedEffect(self.ended_pred, [], "start", a2, negated=False)
+        # acquire_lock = pddl.durative.TimedEffect(self.lock_pred, [], "start", a2, negated=False)
+        # release_lock = pddl.durative.TimedEffect(self.lock_pred, [], "end", a2, negated=True)
+        
+        # if action.replan:
+        #     a2.replan = action.replan.copy(new_scope=a2)
+
+        # add_conds = []
+        # add_effects = []
+
+        # if action.name.startswith("ignore-preference") and "fullfill" not in action.name:
+        #     add_conds.append(lock_cond)
+        #     add_effects += [ended_effect, acquire_lock, release_lock]
+        # else:
+        #     add_conds.append(ended_cond)
+
+        # cond = None
+        # if add_conds:
+        #     cond = pddl.Conjunction(add_conds, a2)
+        # if action.precondition:
+        #     orig = pddl.durative.TimedCondition("start", action.precondition.copy(new_scope=a2))
+        #     if cond:
+        #         cond.parts.append(orig)
+        #     else:
+        #         cond = orig
+
+        # effect = None
+        # if add_effects:
+        #     effect = pddl.ConjunctiveEffect(add_effects, a2)
+        # if action.effect:
+        #     orig = action.effect.visit(effect_visitor)
+        #     if effect:
+        #         effect.parts.append(orig)
+        #     else:
+        #         effect = orig
+
+        # a2.precondition = cond
+        # a2.precondition.set_scope(a2)
+        # a2.effect = effect
+        # a2.effect.set_scope(a2)
+            
+        # return a2
 
     def translate_domain(self, _domain):
         dom = pddl.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
