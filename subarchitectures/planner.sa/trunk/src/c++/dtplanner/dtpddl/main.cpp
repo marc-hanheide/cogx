@@ -44,7 +44,7 @@
 #include "solver.hh"
 #include "simple_online_solver.hh"
 #include "two_phase_solver.hh"
-#include "policy_iteration_over_information_state_space.hh"
+// #include "policy_iteration_over_information_state_space.hh"
 #include "policy_iteration_over_information_state_space__GMRES.hh"
 
 using std::endl;
@@ -151,76 +151,76 @@ bool read_in__problem_description()
     return true;
 }
 
-template<typename T_Solver>
-Planning::POMDP_State* expand_for_new_state(Planning::POMDP_State* successor_state,
-                          T_Solver* solver)
-{
-    //successor_state = const_cast<Planning::POMDP_State*>(solver->get__starting_belief_state());
+// template<typename T_Solver>
+// Planning::POMDP_State* expand_for_new_state(Planning::POMDP_State* successor_state,
+//                           T_Solver* solver)
+// {
+//     //successor_state = const_cast<Planning::POMDP_State*>(solver->get__starting_belief_state());
     
-    auto new_starting_belief_state = new Planning::POMDP_State();
-    auto belief = successor_state->get__belief_state();
-    for(auto atom = belief.begin()
-            ; atom != belief.end()
-            ; atom++){
-        double prob = atom->second;
-        auto state = atom->first;
+//     auto new_starting_belief_state = new Planning::POMDP_State();
+//     auto belief = successor_state->get__belief_state();
+//     for(auto atom = belief.begin()
+//             ; atom != belief.end()
+//             ; atom++){
+//         double prob = atom->second;
+//         auto state = atom->first;
 
         
-        INTERACTIVE_VERBOSER(true, 14000, "Creating new belief state with atom :: "
-                             <<*state<<std::endl
-                             );
+//         INTERACTIVE_VERBOSER(true, 14000, "Creating new belief state with atom :: "
+//                              <<*state<<std::endl
+//                              );
         
-        new_starting_belief_state->add__belief_atom(state, prob);
-    }
+//         new_starting_belief_state->add__belief_atom(state, prob);
+//     }
 
     
-    new_starting_belief_state->set__index(0);
-    new_starting_belief_state->initialise__prescribed_action_index();
+//     new_starting_belief_state->set__index(0);
+//     new_starting_belief_state->initialise__prescribed_action_index();
     
-    solver->empty__belief_states_for_expansion();
-    solver->instate__starting_belief_state(new_starting_belief_state);/*Alters the starting state.*/
-    solver->reset__pomdp_state_hash_table();
-    solver->reinstate__starting_belief_state();
+//     solver->empty__belief_states_for_expansion();
+//     solver->instate__starting_belief_state(new_starting_belief_state);/*Alters the starting state.*/
+//     solver->reset__pomdp_state_hash_table();
+//     solver->reinstate__starting_belief_state();
     
-    auto current_state = solver->peek__next_belief_state_for_expansion();//expansion_queue.front();
+//     auto current_state = solver->peek__next_belief_state_for_expansion();//expansion_queue.front();
     
-    Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space,
-                                                       solver->get__sink_state_penalty());
+//     Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space,
+//                                                        solver->get__sink_state_penalty());
     
-    INTERACTIVE_VERBOSER(true, 15000, "Current state is :: "
-                         <<*current_state<<std::endl
-                         );
+//     INTERACTIVE_VERBOSER(true, 15000, "Current state is :: "
+//                          <<*current_state<<std::endl
+//                          );
 
     
-    for(uint i = 0; i < 100000; i++){
-        if(!solver->expand_belief_state_space()){
-            break;
-            VERBOSER(15000, "No starting state!"<<std::endl);
-        } else {
-            VERBOSER(15000, "Expanding (so far we have "
-                     <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl
-                     <<"Expected reward is :: "
-                     <<current_state->get__expected_value()<<std::endl);
-            //                 policy_Iteration();
-            //                     if(!(i % 10))policy_Iteration();
+//     for(uint i = 0; i < 100000; i++){
+//         if(!solver->expand_belief_state_space()){
+//             break;
+//             VERBOSER(15000, "No starting state!"<<std::endl);
+//         } else {
+//             VERBOSER(15000, "Expanding (so far we have "
+//                      <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl
+//                      <<"Expected reward is :: "
+//                      <<current_state->get__expected_value()<<std::endl);
+//             //                 policy_Iteration();
+//             //                     if(!(i % 10))policy_Iteration();
 
-            //                     policy_Iteration.reset__converged();
-        }
+//             //                     policy_Iteration.reset__converged();
+//         }
 
-        if(solver->belief_state__space.size() > 2000)break;
-    }
+//         if(solver->belief_state__space.size() > 2000)break;
+//     }
     
-    int counter = 0;
-    while(policy_Iteration() && counter < 10){
+//     int counter = 0;
+//     while(policy_Iteration() && counter < 10){
         
-        VERBOSER(15000, "PI.. Expected reward is :: "
-                 <<current_state->get__expected_value()<<std::endl);
+//         VERBOSER(15000, "PI.. Expected reward is :: "
+//                  <<current_state->get__expected_value()<<std::endl);
 
-        counter++;
-    }
+//         counter++;
+//     }
 
-    return current_state;// new_starting_belief_state;
-}
+//     return current_state;// new_starting_belief_state;
+// }
 
 int main(int argc, char** argv)
 {    
@@ -340,65 +340,8 @@ int main(int argc, char** argv)
 
 
 
-            
-
-            
-            INTERACTIVE_VERBOSER(true, 12000, "Done preprocessing, now looking towards state expansion.");
-            
-            QUERY_UNRECOVERABLE_ERROR(0 == solver->peek__next_belief_state_for_expansion()
-                                      , "There is no starting belief state.\n"
-                                      <<"This might be because no rewards are available in the problem.");
-            
-            assert(0 != solver->peek__next_belief_state_for_expansion());//expansion_queue.size());
-//             solver->expand_belief_state_space();
-            auto current_state = solver->peek__next_belief_state_for_expansion();//expansion_queue.front();
-            
-            INTERACTIVE_VERBOSER(true, 15000, "Current state is :: "
-                                 <<*current_state<<std::endl
-//                                  <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl
-                                 );
-
-
-//             for(auto p = current_state->get__belief_state().begin()
-//                     ; p != current_state->get__belief_state().end()
-//                     ; p++){
-//                 auto state = p->first;
-                
-//                 INTERACTIVE_VERBOSER(true, 15000, "An atom is :: "
-//                                      <<*dynamic_cast<const Planning::State*>(state)<<std::endl);
-//             }
-            
-            
-//             Planning::Policy_Iteration
-            Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space, solver->get__sink_state_penalty());
-//             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space, solver->get__sink_state_penalty());
-            for(uint i = 0; i < 100000; i++){
-                if(!solver->expand_belief_state_space()){
-                    break;
-                    VERBOSER(15000, "No starting state!"<<std::endl);
-                } else {
-                    VERBOSER(15000, "Expanding (so far we have "
-                             <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl
-                             <<"Expected reward is :: "
-                             <<current_state->get__expected_value()<<std::endl);
-//                 policy_Iteration();
-//                     if(!(i % 10))policy_Iteration();
-
-//                     policy_Iteration.reset__converged();
-                }
-
-                if(solver->belief_state__space.size() > 2000)break;
-            }
-
-            INTERACTIVE_VERBOSER(true, 15000, "Done state expansions :: "
-                     <<current_state->get__expected_value()<<std::endl);
-            
-            for(uint i = 0; i < 100; i++){
-                policy_Iteration();
-                
-                VERBOSER(15000, "Expected reward is :: "
-                         <<current_state->get__expected_value()<<std::endl);
-            }
+            auto current_state = solver->peek__next_belief_state_for_expansion();
+            current_state = solver->solve__for_new_starting_state(current_state);
             
             for(auto i = 0; i < 20; i++){
             
@@ -435,7 +378,7 @@ int main(int argc, char** argv)
             
                 current_state = successor_state;
                 
-                current_state = expand_for_new_state<>(successor_state, solver);
+                current_state = solver->solve__for_new_starting_state(successor_state);//expand_for_new_state<>(successor_state, solver);
                 
                 INTERACTIVE_VERBOSER(true, 15000, "Current belief state is :: "<<*current_state<<std::endl);
             }

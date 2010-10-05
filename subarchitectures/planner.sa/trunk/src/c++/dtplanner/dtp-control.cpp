@@ -447,6 +447,7 @@ void DTPCONTROL::get_observation(Ice::Int id,
                                         action_index[id]);
 
     current_state[id] = successor_state;
+    current_state[id] = solvers[id]->solve__for_new_starting_state(successor_state);
     
 #else
     std::vector<std::string> observations;
@@ -784,34 +785,35 @@ void DTPCONTROL::newTask(Ice::Int id,
     
 //     current_state[id] = solvers[id]->expansion_queue.front();
     current_state[id] = solvers[id]->peek__next_belief_state_for_expansion();//expansion_queue.front();
+    current_state[id] = solvers[id]->solve__for_new_starting_state(current_state[id]);
     
-//     Planning::Policy_Iteration policy_Iteration(solvers[id]->belief_state__space);
-    Planning::Policy_Iteration__GMRES policy_Iteration(solvers[id]->belief_state__space
-                                                       , solvers[id]->get__sink_state_penalty());
-    for(uint i = 0; i < 100000; i++){
-        if(!solvers[id]->expand_belief_state_space()){
-            break;
-            VERBOSER(10017, "No starting state!"<<std::endl);
-        } else {
-            VERBOSER(10017, "Expanding!"<<std::endl);
-            //policy_Iteration();
-//             policy_Iteration.reset__converged();
-//             if(!(i % 10))policy_Iteration();
-        }
+// //     Planning::Policy_Iteration policy_Iteration(solvers[id]->belief_state__space);
+//     Planning::Policy_Iteration__GMRES policy_Iteration(solvers[id]->belief_state__space
+//                                                        , solvers[id]->get__sink_state_penalty());
+//     for(uint i = 0; i < 100000; i++){
+//         if(!solvers[id]->expand_belief_state_space()){
+//             break;
+//             VERBOSER(10017, "No starting state!"<<std::endl);
+//         } else {
+//             VERBOSER(10017, "Expanding!"<<std::endl);
+//             //policy_Iteration();
+// //             policy_Iteration.reset__converged();
+// //             if(!(i % 10))policy_Iteration();
+//         }
         
-        if(solvers[id]->belief_state__space.size() > 10000)break;
-    }
-    
-    for(uint i = 0; i < 100; i++){
-        policy_Iteration();
-        VERBOSER(10017, "Expected reward is :: "
-                 <<current_state[id]->get__expected_value()<<std::endl);
-    }
-    
-//     if(!solvers[id]->expand_belief_state_space()){
-//         UNRECOVERABLE_ERROR("I don't seem to have a starting state on the expansion queue."<<std::endl
-//                             <<*actual_problem->second<<std::endl);
+//         if(solvers[id]->belief_state__space.size() > 10000)break;
 //     }
+    
+//     for(uint i = 0; i < 100; i++){
+//         policy_Iteration();
+//         VERBOSER(10017, "Expected reward is :: "
+//                  <<current_state[id]->get__expected_value()<<std::endl);
+//     }
+    
+// //     if(!solvers[id]->expand_belief_state_space()){
+// //         UNRECOVERABLE_ERROR("I don't seem to have a starting state on the expansion queue."<<std::endl
+// //                             <<*actual_problem->second<<std::endl);
+// //     }
 #endif
     
     VERBOSER(1001, "DTP Spawning the thread that posts actions to Moritz's system."<<std::endl);

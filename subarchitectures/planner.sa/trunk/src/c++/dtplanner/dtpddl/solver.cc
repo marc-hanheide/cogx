@@ -49,6 +49,9 @@
 #include "state_formula__disjunctive_clause.hh"
 #include "state_formula__conjunctive_normal_form_formula.hh"
 
+/*Get rid of this if you stop doing policy iteration in the solver.*/
+#include "policy_iteration_over_information_state_space__GMRES.hh"
+
 using namespace Planning;
 using namespace Planning::Parsing;
 
@@ -331,7 +334,7 @@ void Solver::preprocess()
 
 void Solver::empty__belief_states_for_expansion()
 {
-    INTERACTIVE_VERBOSER(true, 15000, "Emptying the expansion queue."<<std::endl);
+    INTERACTIVE_VERBOSER(true, 14000, "Emptying the expansion queue."<<std::endl);
     
     expansion_queue = std::queue<Planning::POMDP_State*>();
 
@@ -342,7 +345,7 @@ void Solver::empty__belief_states_for_expansion()
 void Solver::reset__pomdp_state_hash_table()
 {
 
-    VERBOSER(15000, "Reseting the POMDP hash table."<<std::endl);
+    VERBOSER(14000, "Reseting the POMDP hash table."<<std::endl);
     
     /*Clean up some of the memory used in the first phase. */
     for(auto bstate = belief_state__space.begin()
@@ -390,6 +393,69 @@ void Solver::generate_markov_decision_process_starting_states()
         belief_state__space.insert(state);
         report__new_belief_state(state);
     }
+}
+
+
+POMDP_State* Solver::solve__for_new_starting_state(Planning::POMDP_State* successor_state)
+{
+    
+    auto new_starting_belief_state = new Planning::POMDP_State();
+    auto belief = successor_state->get__belief_state();
+    for(auto atom = belief.begin()
+            ; atom != belief.end()
+            ; atom++){
+        double prob = atom->second;
+        auto state = atom->first;
+
+        
+        INTERACTIVE_VERBOSER(true, 14000, "Creating new belief state with atom :: "
+                             <<*state<<std::endl
+                             );
+        
+        new_starting_belief_state->add__belief_atom(state, prob);
+    }
+
+    
+    new_starting_belief_state->set__index(0);
+    new_starting_belief_state->initialise__prescribed_action_index();
+    
+    this->empty__belief_states_for_expansion();
+    this->instate__starting_belief_state(new_starting_belief_state);/*Alters the starting state.*/
+    this->reset__pomdp_state_hash_table();
+    this->reinstate__starting_belief_state();
+    
+    auto current_state = this->peek__next_belief_state_for_expansion();//expansion_queue.front();
+    
+    Planning::Policy_Iteration__GMRES policy_Iteration(this->belief_state__space,
+                                                       this->get__sink_state_penalty());
+    
+    INTERACTIVE_VERBOSER(true, 14000, "Current state is :: "
+                         <<*current_state<<std::endl
+                         );
+
+    
+    for(uint i = 0; i < 100000; i++){
+        if(!this->expand_belief_state_space()){
+            break;
+            VERBOSER(14000, "No starting state!"<<std::endl);
+        } else {
+            VERBOSER(14000, "Expanding (so far we have "
+                     <<this->belief_state__space.size()<<" beliefs)!"<<std::endl
+                     <<"Expected reward is :: "
+                     <<current_state->get__expected_value()<<std::endl);
+        }
+
+        if(this->belief_state__space.size() > 2000)break;
+    }
+    
+    while(policy_Iteration()){
+        
+        VERBOSER(14000, "PI.. Expected reward is :: "
+                 <<current_state->get__expected_value()<<std::endl);
+
+    }
+
+    return current_state;
 }
 
 
