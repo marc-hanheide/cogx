@@ -62,6 +62,8 @@ private:
   P::Array<P::Plane*> rasPlanes;
   double ransacThr;
   int planeMinPoints;
+  bool findConnectedRegions;
+  PlaneRANSAC *planeDetector;
   /**
    * whether to log images to files
    */
@@ -96,7 +98,7 @@ private:
   void calculateDescriptor(ProtoObject &pobj);
   
   void calculateDescriptor2(ProtoObject &pobj);
-  void removeInliers(SurfacePointSeq &points, int &n, const PlanarPatch &plane, double thr);
+
   void findPlanes(vector<PlanarPatch> &planes, SurfacePointSeq &points, int &n);
 
 protected:

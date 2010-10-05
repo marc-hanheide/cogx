@@ -9,49 +9,6 @@
 
 using namespace cogx::Math;
 
-PlanarPatch::PlanarPatch(Plane3 &p)
-{
-  plane = p;
-  definePlaneCoordSys(plane, pose);
-}
-
-void PlanarPatch::findConvexHull(std::vector<VisionData::SurfacePoint> &points, int nPoints, double distThr)
-{
-  std::vector<CvPoint2D32f> planePoints;
-  for(size_t j = 0; j < nPoints; j++)
-  {
-    // if inlier
-    if(fabs(distPointToPlane(points[j].p, plane)) < distThr)
-    {
-      surfPoints.push_back(points[j]);
-      Vector3 q = transformInverse(pose, points[j].p);
-      planePoints.push_back(cvPoint2D32f(q.x, q.y));
-    }
-  }
-  int *hull = (int*)malloc(planePoints.size() * sizeof(hull[0]));
-  CvMat hullMat = cvMat(1, planePoints.size(), CV_32SC1, hull);
-  CvMat pointMat = cvMat(1, planePoints.size(), CV_32FC2, &planePoints[0]);
-  cvConvexHull2(&pointMat, &hullMat, CV_COUNTER_CLOCKWISE, 0);
-
-  for(int j = 0; j < hullMat.cols; j++)
-  {
-    Vector3 q = vector3(planePoints[hull[j]].x, planePoints[hull[j]].y, 0.);
-    convexHull.push_back(transform(pose, q));
-    projectedConvexHull.push_back(vector2(q.x, q.y));
-  }
-
-  free(hull);
-
-  // HACK test
-  Vector3 m = vector3(0,0,0);
-  for(size_t i = 0; i < convexHull.size(); i++)
-  {
-    m += convexHull[i];
-  }
-  m /= (double)convexHull.size();
-  std::cout << "PlanarPatch::findConvexHull, check center inside? " << isPointInside(m) << endl;
-}
-
 bool PlanarPatch::isPointInside(Vector3 &q) const
 {
   int i, j;

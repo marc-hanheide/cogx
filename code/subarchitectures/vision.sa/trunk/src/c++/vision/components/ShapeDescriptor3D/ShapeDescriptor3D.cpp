@@ -59,8 +59,10 @@ ShapeDescriptor3D::ShapeDescriptor3D()
   stereoWidth = STEREO_WIDTH_DEF;
   histogramSize = HISTOGRAM_SIZE_DEF;
   useKeyPoints = false;
+  findConnectedRegions = false;
   ransacThr = 0.005;
   planeMinPoints = 100;
+  planeDetector = 0;
   logImages = false;
 #ifdef FEAT_VISUALIZATION
   m_display.setClientData(this);
@@ -69,6 +71,7 @@ ShapeDescriptor3D::ShapeDescriptor3D()
 
 ShapeDescriptor3D::~ShapeDescriptor3D()
 {
+  delete planeDetector;
 }
 
 void ShapeDescriptor3D::configure(const std::map<std::string,std::string> & _config)
@@ -108,6 +111,11 @@ void ShapeDescriptor3D::configure(const std::map<std::string,std::string> & _con
     useKeyPoints = false;
   }
 
+  if((it = _config.find("--planeConnectedRegions")) != _config.end())
+  {
+    findConnectedRegions = true;
+  }
+
   if((it = _config.find("--planeDistThr")) != _config.end())
   {
     istringstream str(it->second);
@@ -130,6 +138,8 @@ void ShapeDescriptor3D::configure(const std::map<std::string,std::string> & _con
 #ifdef FEAT_VISUALIZATION
 	m_display.configureDisplayClient(_config);
 #endif
+
+  planeDetector = new PlaneRANSAC(ransacThr, findConnectedRegions, planeMinPoints);
 }
 
 void ShapeDescriptor3D::start()
@@ -317,7 +327,7 @@ void ShapeDescriptor3D::calculateDescriptor2(ProtoObject &pobj)
     rasPlane->p = P::Vector3(planes[i].pose.pos.x, planes[i].pose.pos.y, planes[i].pose.pos.z);
     Vector3 n = getColumn(planes[i].pose.rot, 2);
     rasPlane->n = P::Vector3(n.x, n.y, n.z);
-    for(int j = 0; j < planes[i].convexHull.size(); j++)
+    for(size_t j = 0; j < planes[i].convexHull.size(); j++)
     {
       rasPlane->contour.PushBack(
         P::Vector3(planes[i].convexHull[j].x,
@@ -344,44 +354,18 @@ void ShapeDescriptor3D::calculateDescriptor2(ProtoObject &pobj)
 #endif
 }
 
-/**ŗŘ
- * Removes inliers from points.
- * To pe precise: inliers are moved to end of points array and n decreased
- * accordingly. So after call to this function points[0..n-1] are all outliers.
- */
-void ShapeDescriptor3D::removeInliers(SurfacePointSeq &points, int &n,
-    const PlanarPatch &plane, double thr)
-{
-  SurfacePoint t;
-  for(int i = 0; i < n; )
-  {
-    // if inlier
-    if(plane.isPointInside(points[i].p) &&
-       fabs(distPointToPlane(points[i].p, plane.plane)) < thr)
-    {
-      // move point i to end of points and decrease n
-      t = points[i];
-      points[i] = points[n - 1];
-      points[n - 1] = t;
-      n--;
-    }
-    else
-    {
-      i++;
-    }
-  }
-}
-
 void ShapeDescriptor3D::findPlanes(vector<PlanarPatch> &planes, SurfacePointSeq &points, int &n)
 {
-  PlaneRANSAC planeDetector(ransacThr, planeMinPoints);
-  Plane3 plane;
-  while(planeDetector.detectPlane(points, n, vector3(0, 0, 0), false, plane))
+  PlanarPatch plane;
+  //int cnt = 0; // HACK
+  while(planeDetector->detectPlane(points, n, vector3(0, 0, 0), false, plane))
   {
-    PlanarPatch patch(plane);
-    patch.findConvexHull(points, n, ransacThr);
-    removeInliers(points, n, patch, 10.*ransacThr);
-    planes.push_back(patch);
+    planeDetector->removeInliers(points, n, plane, 1.);
+    planes.push_back(plane);
+    // HACK
+    //cnt++;
+    //if(cnt == 1)
+    //  return;  // HACK
   }
 }
 
@@ -469,7 +453,7 @@ void ShapeDescriptor3D::redrawHistogram(const ProtoObject &pobj)
 
 void ShapeDescriptor3D::redraw3D()
 {
-  bool drawAllPoints = false;
+  bool drawAllPoints = true;
   std::ostringstream str;
   P::Scene3D scene;
   dshape.GetScene(scene);
