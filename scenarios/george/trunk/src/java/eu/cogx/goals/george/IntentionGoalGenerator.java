@@ -1,7 +1,7 @@
 package eu.cogx.goals.george;
 
 import motivation.components.generators.AbstractIntentionMotiveGenerator;
-import motivation.slice.GeneralGoalMotive;
+import motivation.slice.TutorInitiativeMotive;
 import nu.xom.Document;
 import nu.xom.Node;
 import nu.xom.Nodes;
@@ -22,7 +22,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 
 public class IntentionGoalGenerator extends
-		AbstractIntentionMotiveGenerator<GeneralGoalMotive, Intention> {
+		AbstractIntentionMotiveGenerator<TutorInitiativeMotive, Intention> {
 
 	public final static String XPATH_SELECT_PRECONDITIONS = "/*/content/*/preconditions/forms/*";
 	public final static String XPATH_SELECT_POSTCONDITIONS = "/*/content/*/preconditions/forms/*";
@@ -37,11 +37,11 @@ public class IntentionGoalGenerator extends
 	 */
 
 	public IntentionGoalGenerator() {
-		super(GeneralGoalMotive.class, Intention.class);
+		super(TutorInitiativeMotive.class, Intention.class);
 	}
 
 	@Override
-	protected GeneralGoalMotive checkForAddition(WorkingMemoryAddress addr,
+	protected TutorInitiativeMotive checkForAddition(WorkingMemoryAddress addr,
 			Intention newEntry) {
 		if (newEntry.estatus instanceof AttributedEpistemicStatus) {
 			// only attributed beliefs contain intentions
@@ -83,7 +83,7 @@ public class IntentionGoalGenerator extends
 				log("got referred private belief: "
 						+ referredPrivate.getVal().id);
 
-				GeneralGoalMotive goal = new GeneralGoalMotive();
+				TutorInitiativeMotive goal = new TutorInitiativeMotive();
 				super.fillDefault(goal);
 				goal.referenceEntry = addr;
 				goal.goal = new Goal(-1, "(" + concept.toLowerCase()
@@ -124,8 +124,8 @@ public class IntentionGoalGenerator extends
 	}
 
 	@Override
-	protected GeneralGoalMotive checkForUpdate(Intention newEntry,
-			GeneralGoalMotive motive) {
+	protected TutorInitiativeMotive checkForUpdate(Intention newEntry,
+			TutorInitiativeMotive motive) {
 		motive.updated = getCASTTime();
 		// initially this costs are taken as -1, corresponding to an ultimate
 		// goal.
