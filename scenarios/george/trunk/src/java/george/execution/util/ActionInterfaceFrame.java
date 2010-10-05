@@ -137,7 +137,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel getJContentPane() {
 		if (jContentPane == null) {
 			jContentPane = new JPanel();
-			//jContentPane.setLayout(new GridLayout(2, 1));
+			jContentPane.setLayout(new GridLayout(1, 1));
 			JPanel middlePanel = new JPanel();
 			middlePanel.setLayout(new BoxLayout(middlePanel, BoxLayout.Y_AXIS));
 			middlePanel.add(getTabbedPane(), null);
