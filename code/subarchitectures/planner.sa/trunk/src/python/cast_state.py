@@ -78,7 +78,7 @@ class CASTState(object):
                     
                 fact = state.Fact(state.StateVariable(f, [a1, a2]), val)
                 self.facts.append(fact)
-                log.debug("added fact: %s", fact)
+                #log.debug("added fact: %s", fact)
 
     def match_generated_objects(self, oldstate):
         # This will only match single new objects (i.e. no several new

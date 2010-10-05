@@ -579,8 +579,8 @@ class DT2MAPLCompiler(translators.Translator):
                             c = b.cond("=", t, val)
                         cparts.append(c)
                 #lock_cond = b.cond("not", ("select-locked",))
-                a.precondition = conditions.Conjunction([durative.TimedCondition("all", b.cond("not", ("started",))), \
-                                                             durative.TimedCondition("start", conditions.Conjunction(cparts))], a)
+                a.precondition = conditions.Conjunction([durative.TimedCondition("start", conditions.Conjunction(cparts))], a)
+                                                             #durative.TimedCondition("all", b.cond("not", ("started",))), \
 #                                                             durative.TimedCondition("start", conditions.Conjunction([lock_cond]+cparts))], a)
 
                 #acquire_lock = b.timed_effect("start", "select-locked")

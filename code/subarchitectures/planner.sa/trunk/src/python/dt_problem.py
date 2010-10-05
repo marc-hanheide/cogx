@@ -615,8 +615,12 @@ class HierarchicalState(state.State):
         size = 1
         for d in self.substates.itervalues():
             subsize = 0
+            p_total = 0
             for p, sub in d.itervalues():
+                p_total += p
                 subsize += sub.size()
+            if p_total < 0.99:
+                subsize += 1
             size *= subsize
         return size
 
