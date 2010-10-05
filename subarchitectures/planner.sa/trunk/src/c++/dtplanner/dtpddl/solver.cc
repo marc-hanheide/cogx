@@ -396,6 +396,52 @@ void Solver::generate_markov_decision_process_starting_states()
 }
 
 
+
+void Solver::prioritise(Planning::POMDP_State* state,
+                        Planning::Set_Of_POMDP_State_Pointers& locally_traversed)
+{
+    if(locally_traversed.find(state) == locally_traversed.end()){
+        return;
+    }
+
+    locally_traversed.insert(state);
+    
+    
+    if(state->unexpanded()){
+        report__new_belief_state(state);
+        return;
+    }
+    
+    auto prescribed_action_index = state->get__prescribed_action();
+    auto& atoms = state->get__successors(prescribed_action_index);
+
+    for(auto atom = atoms.begin()
+            ; atom != atoms.end()
+            ; atom++){
+        Solver::prioritise(*atom, locally_traversed);
+    }
+}
+
+void Solver::lao_star()
+{
+    Planning::Policy_Iteration__GMRES policy_Iteration(this->belief_state__space,
+                                                       this->get__sink_state_penalty());
+    
+    while(this->expand_belief_state_space()){
+        policy_Iteration();
+
+        
+        INTERACTIVE_VERBOSER(true, 15000, "Iterating LAO."<<this->belief_state__space.size()<<std::endl);
+        
+        Planning::Set_Of_POMDP_State_Pointers locally_traversed;
+        this->empty__belief_states_for_expansion();
+        prioritise(starting_belief_state, locally_traversed);
+        
+        if(this->belief_state__space.size() > 1000) break;
+    }
+}
+
+
 POMDP_State* Solver::solve__for_new_starting_state(Planning::POMDP_State* successor_state)
 {
     
