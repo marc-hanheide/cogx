@@ -4,9 +4,10 @@
 # Created: jan 2009 
 
 from PyQt4 import QtCore, QtGui
-import opencv.cv as cv
-import opencv.highgui as hg
-import opencv.adaptors as cvada
+#import opencv.cv as cv
+#import opencv.highgui as hg
+#import opencv.adaptors as cvada
+import cv
 import numpy as np
 
 def qtImageFromIpl(image):

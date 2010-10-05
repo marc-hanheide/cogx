@@ -6,8 +6,9 @@
 import os, sys
 import re
 import gzip, pickle
-import opencv as cv
-import opencv.highgui as hg
+#import opencv as cv
+#import opencv.highgui as hg
+import cv
 import numpy as np
 
 import mods.cameraview as camview

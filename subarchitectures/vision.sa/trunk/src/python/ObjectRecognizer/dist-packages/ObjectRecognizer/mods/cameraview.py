@@ -4,9 +4,10 @@
 # Created: march 2009 
 import os, sys
 import gzip, pickle
-import opencv as cv
-import opencv.highgui as hg
-import opencv.adaptors as cvada
+#import opencv as cv
+#import opencv.highgui as hg
+#import opencv.adaptors as cvada
+import cv
 import numpy as np
 import scipy as sci
 import scipy.stats as stat
@@ -232,12 +233,12 @@ class CViewPoint(object):
 
     def loadImage(self, filename):
         if os.path.exists(filename):
-            img = hg.cvLoadImage(filename)
+            img = cv.LoadImage(filename)
             self.setImage(img)
 
     def loadPreview(self, filename):
         if os.path.exists(filename):
-            self._preview = hg.cvLoadImage(filename)
+            self._preview = cv.LoadImage(filename)
 
     def savePreview(self, filename):
         if self.preview != None:

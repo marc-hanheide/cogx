@@ -4,9 +4,10 @@
 import os, sys, time
 import os.path
 from PyQt4 import QtCore, QtGui
-import opencv.cv as cv
-import opencv.highgui as hg
-import opencv.adaptors as cvada
+#import opencv.cv as cv
+#import opencv.highgui as hg
+#import opencv.adaptors as cvada
+import cv
 from qtui import uiSelectCamera
 import qtimage
 
@@ -27,7 +28,8 @@ class CCameraList:
         return len(self.items)
 
     def refreshList(self): # OPENCV only
-        subs = [hg.CV_CAP_V4L2, hg.CV_CAP_IEEE1394]
+        # cv 1.9 subs = [cv.CV_CAP_V4L2, cv.CV_CAP_IEEE1394]
+        subs = [ 0, 100 ]
         devnames = [("/dev/video%d",), ("/dev/video1394/%d", "/dev/video1394-%d")]
         subnames = ["V4L2", "IEEE1394"]
         nids = 4
@@ -35,18 +37,19 @@ class CCameraList:
         for si, sub in enumerate(subs):
             for idev in xrange(nids):
                 try:
+                    camid = sub + idev
+                    print camid
                     hasdev = False
                     for dev in devnames[si]:
                         if os.path.exists(dev % idev): hasdev = True
                     cap = None
                     if hasdev:
-                        camid = sub + idev
-                        cap = hg.cvCreateCameraCapture(camid)
+                        cap = cv.CaptureFromCAM(camid)
                         # can't set properties for firewire :(
                         #hg.cvSetCaptureProperty(cap, hg.CV_CAP_PROP_FRAME_WIDTH, 320.0)
                         #hg.cvSetCaptureProperty(cap, hg.CV_CAP_PROP_FRAME_HEIGHT, 240.0)
                         #hg.cvSetCaptureProperty(cap, hg.CV_CAP_PROP_MODE, 75)
-                        img = hg.cvQueryFrame(cap)
+                        img = cv.QueryFrame(cap)
                         if img != None:
                             # hg.cvSaveImage("%s-%d.png" % (subnames[si], idev), img)
                             name = "%s-%d (cvid=%d) %dx%dx%d (%d bit)" % (
@@ -55,8 +58,13 @@ class CCameraList:
                                 )
                             thumb = qtimage.qtImageThumbFromIpl(img, height=120)
                             self.items.append(CCameraInfo(camid, thumb, name))
-                    if cap != None: hg.cvReleaseCapture(cap)
-                except Exception:
+                            print name
+                        else:
+                            print "No image from ", camid, dev % idev
+                    #if cap != None: cv.ReleaseCapture(cap)
+                except Exception as e:
+                    print "Failed with ", camid, dev % idev
+                    print e
                     pass
 
 class CCameraListModel(QtCore.QAbstractListModel):
