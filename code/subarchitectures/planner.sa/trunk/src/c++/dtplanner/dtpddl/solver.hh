@@ -190,7 +190,8 @@ namespace Planning
         CXX__PTR_ANNOTATION(Problem_Grounding) get__problem_Grounding();
 
         const Planning::POMDP_State* get__starting_belief_state()const;
-        
+
+        POMDP_State* solve__for_new_starting_state(Planning::POMDP_State* successor_state);
     protected:
         /*Initial POMDP state.*/
         Planning::POMDP_State* starting_belief_state;
