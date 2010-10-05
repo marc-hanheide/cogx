@@ -204,20 +204,20 @@ public class BingOMICSAbsoluteFreqs {
 		// % java -cp output/classes/:hfc-hz.jar:./subarchitectures/coma.sa/lib/trove-2.1.0.jar:subarchitectures/coma.sa/lib/xercesImpl.jar -Xms800m -Xmx6200m  coma.matrix.BingOMICSMatrix
 
 		
-		BingOMICSMatrix my_matrix = new BingOMICSMatrix();
+		BingOMICSAbsoluteFreqs my_counter = new BingOMICSAbsoluteFreqs();
 
-		my_matrix.namespaceFile = "dora.ns";
-		my_matrix.tupleFile = "/Users/zender/projects/resources/omics/omics-locations.nt";
-		my_matrix.ruleFile = "default.rdl";
+		my_counter.namespaceFile = "dora.ns";
+		my_counter.tupleFile = "/Users/zender/projects/resources/omics/omics-locations.nt";
+		my_counter.ruleFile = "default.rdl";
 
-		my_matrix.init();
+		my_counter.init();
 
-		my_matrix.colQuery = "SELECT DISTINCT ?obj where ?obj <http://dora.cogx.eu/#omicsCooccurrence>  ?loc";
-		my_matrix.rowQuery = "SELECT DISTINCT ?loc where ?obj <http://dora.cogx.eu/#omicsCooccurrence>  ?loc";
+		my_counter.colQuery = "SELECT DISTINCT ?obj where ?obj <http://dora.cogx.eu/#omicsCooccurrence>  ?loc";
+		my_counter.rowQuery = "SELECT DISTINCT ?loc where ?obj <http://dora.cogx.eu/#omicsCooccurrence>  ?loc";
 
-		my_matrix.prepareMatrix();
+		my_counter.prepareLists();
 
-		my_matrix.markNumHits();
+		my_counter.markNumHits();
 		// my_matrix.markCooccurrence("SELECT ?obj ?loc where ?obj <http://dora.cogx.eu/#omicsCooccurrence>  ?loc");
 
 		//try {
