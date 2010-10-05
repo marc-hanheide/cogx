@@ -78,20 +78,13 @@ void convertImageFromIpl(const IplImage *iplImg, Video::Image &img)
   
 /**
  * @brief Converts an OpenCV image type (IplImage) to a raw image data (bytes). \n
+ * The number of channels remains unchanged.
  * @param iplImg OpenCv IplImage
- * @param data Raw Image data
+ * @param (out) data Raw Image data
  */  
 void convertIplToBytes(const IplImage *iplImg, std::vector<unsigned char>& data)
 	throw(runtime_error);
 	
-/**
- * @brief Converts an OpenCV image type (IplImage) to a raw image data (bytes). \n
- * @param iplImg OpenCv IplImage
- * @return Return data Raw Image data
- */  
-std::vector<unsigned char> convertIplToBytes(const IplImage *iplImg)
-	throw(runtime_error);
-
 /**
  * @brief Swap red and blue channel.
  * @param img Image

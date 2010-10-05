@@ -200,6 +200,8 @@ void convertImageToGrayBytes(const Video::Image & img, std::vector<unsigned char
 }
 
 
+// Convert IplImage pixel data contiguous bytes.
+// The number of channels remains unchanged.
 void convertIplToBytes(const IplImage *iplImg, std::vector<unsigned char>& data)
   throw(runtime_error)
 {
@@ -223,60 +225,50 @@ void convertIplToBytes(const IplImage *iplImg, std::vector<unsigned char>& data)
       // works irrespective of the image memory layouts (e.g. line padding)
       AccessRgbImage accImg(iplImg);
       int x, y;
-      for(y = 0; y < iplImg->height; y++)
-        for(x = 0; x < iplImg->width; x++)
-        {
+      for(y = 0; y < iplImg->height; y++) {
+	int irow = 3*y*iplImg->width;
+        for(x = 0; x < iplImg->width; x++) {
           // note: AccessRgbPixel has order b, g, r
           const AccessRgbPixel &pix = accImg[y][x];
-          // Video::Image's always have 3 channels
-          int i = 3*(y*iplImg->width + x);
+          int i = irow + 3*x;
           data[i] = pix.b;
           data[i+1] = pix.g;
           data[i+2] = pix.r;
         }
+      }
     }
   }
   else if(iplImg->nChannels == 1 && iplImg->depth == IPL_DEPTH_32F)
   {
     AccessBwImageFloat accImg(iplImg);
     int x, y;
-    for(y = 0; y < iplImg->height; y++)
-      for(x = 0; x < iplImg->width; x++)
-      {
-        // Video::Image's always have 3 channels
-        int i = 3*(y*iplImg->width + x);
-        float f = accImg[y][x];
-        data[i] = (unsigned char)f;
-        data[i+1] = (unsigned char)f;
-        data[i+2] = (unsigned char)f;
+    for(y = 0; y < iplImg->height; y++) {
+      int irow = y*iplImg->width;
+      int i = irow;
+      for(x = 0; x < iplImg->width; x++) {
+        data[i] = (unsigned char)accImg[y][x];
+	i++;
       }
+    }
   }
   else if(iplImg->nChannels == 1 &&
   	(iplImg->depth == (int)IPL_DEPTH_8U || iplImg->depth == (int)IPL_DEPTH_8S))
   {
     AccessBwImage accImg(iplImg);
     int x, y;
-    for(y = 0; y < iplImg->height; y++)
-      for(x = 0; x < iplImg->width; x++)
-      {
-        int i = iplImg->width + x;
+    for(y = 0; y < iplImg->height; y++) {
+      int irow = y*iplImg->width;
+      int i = irow;
+      for(x = 0; x < iplImg->width; x++) {
         data[i] = accImg[y][x];
+	i++;
       }
+    }
   }
   else 
     throw runtime_error(exceptionMessage(__HERE__,
-      "can not handle %d channel %d bit images", iplImg->nChannels, iplImg->depth));
+      "Can not handle %d channel %d bit images", iplImg->nChannels, iplImg->depth));
 }
-
-
-std::vector<unsigned char> convertIplToBytes(const IplImage *iplImg)
-  throw(runtime_error)
-{
-	vector<unsigned char> data;
-	convertIplToBytes(iplImg, data);
-	return data;	
-}
-
 
 void SwapRedBlueChannel(Video::Image & img)
 {
