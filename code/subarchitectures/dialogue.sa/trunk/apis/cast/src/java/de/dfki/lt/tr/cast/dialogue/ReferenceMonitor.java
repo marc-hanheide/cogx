@@ -106,6 +106,16 @@ extends AbstractDialogueComponent {
  */
 
 		addChangeFilter(
+				ChangeFilterFactory.createChangeFilter(GroundedBelief.class, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleBeliefAddOverwrite(_wmc);
+					}
+				});
+
+/*
+		addChangeFilter(
 				ChangeFilterFactory.createChangeFilter(dBelief.class, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
 				new WorkingMemoryChangeReceiver() {
 					@Override
@@ -131,6 +141,7 @@ extends AbstractDialogueComponent {
 						handleBeliefDelete(_wmc);
 					}
 				});
+ */
 	}
 
 	@Override
