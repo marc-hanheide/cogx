@@ -87,7 +87,7 @@ public class IntentionGoalGenerator extends
 				super.fillDefault(goal);
 				goal.referenceEntry = addr;
 				goal.goal = new Goal(-1, "(" + concept.toLowerCase()
-						+ "-learned '" + referredPrivate.getVal().id + ")",
+						+ "-learned '" + referredPrivate.getVal().id + "')",
 						false);
 				log("goal generated: " + goal.goal.goalString);
 				return goal;
