@@ -56,7 +56,8 @@ if length(mu) ~= 2, error('mu must be a 2 by 1 vector'); end
 					'num-pts', 100);
  
 h = [];
-holding = ishold;
+% holding = ishold;
+% holding = get(draw_to_these_axes,'NextPlot') ;
 if (Sigma == zeros(2, 2))
   z = mu;
 else
@@ -91,7 +92,8 @@ else
 end
 
 h = [h; plot(draw_to_these_axes, z(1, :), z(2, :), 'color', colr, 'LineWidth', 2)];
-if (~holding) hold off; end
+% if (~holding) hold off; end
+% set(draw_to_these_axes,'NextPlot',holding);
 
 %%%%%%%%%%%%
 
