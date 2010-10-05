@@ -174,6 +174,19 @@ get__successor(uint action_index
     return successors[index_to_actions][index_to_observations];
 }
 
+
+#ifdef LAO_STAR
+bool Partially_Observable_Markov_Decision_Process_State::get__expansion_attempted() const
+{
+    return expansion_attempted;
+}
+
+void Partially_Observable_Markov_Decision_Process_State::set__expansion_attempted()
+{
+    expansion_attempted = true;
+}
+#endif
+
 Partially_Observable_Markov_Decision_Process_State::
 Partially_Observable_Markov_Decision_Process_State()
     :Expandable()
@@ -182,6 +195,9 @@ Partially_Observable_Markov_Decision_Process_State()
     expected_value = -1e100;//0.0;
     expected_reward = 0.0;
     belief_State = Belief_State(0);
+#ifdef LAO_STAR
+    expansion_attempted = false;
+#endif
 }
 
 

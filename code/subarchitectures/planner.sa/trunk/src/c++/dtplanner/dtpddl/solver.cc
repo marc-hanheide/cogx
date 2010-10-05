@@ -396,21 +396,30 @@ void Solver::generate_markov_decision_process_starting_states()
 }
 
 
-
+#ifdef LAO_STAR
 void Solver::prioritise(Planning::POMDP_State* state,
                         Planning::Set_Of_POMDP_State_Pointers& locally_traversed)
 {
-    if(locally_traversed.find(state) == locally_traversed.end()){
+    if(locally_traversed.find(state) != locally_traversed.end()){
         return;
     }
 
     locally_traversed.insert(state);
     
+    INTERACTIVE_VERBOSER(true, 15000, "Testing new state :: "<<*state<<std::endl
+                         <<!state->get__expansion_attempted()<<std::endl);
     
-    if(state->unexpanded()){
+    if(!state->get__expansion_attempted()){
+        
+        INTERACTIVE_VERBOSER(true, 15000, "Reporting new state :: "<<*state<<std::endl);
         report__new_belief_state(state);
         return;
     }
+    
+    if(state->unexpanded()){
+        return;
+    }
+    
     
     auto prescribed_action_index = state->get__prescribed_action();
     auto& atoms = state->get__successors(prescribed_action_index);
@@ -424,23 +433,26 @@ void Solver::prioritise(Planning::POMDP_State* state,
 
 void Solver::lao_star()
 {
-    Planning::Policy_Iteration__GMRES policy_Iteration(this->belief_state__space,
-                                                       this->get__sink_state_penalty());
-    
-    while(this->expand_belief_state_space()){
-        policy_Iteration();
 
+    while(this->expand_belief_state_space()){
         
-        INTERACTIVE_VERBOSER(true, 15000, "Iterating LAO."<<this->belief_state__space.size()<<std::endl);
+        Planning::Policy_Iteration__GMRES policy_Iteration(this->belief_state__space,
+                                                           this->get__sink_state_penalty());
+        while(policy_Iteration()){}
+        
+        VERBOSER(15000, "Iterating LAO."<<this->belief_state__space.size()<<std::endl);
+
         
         Planning::Set_Of_POMDP_State_Pointers locally_traversed;
         this->empty__belief_states_for_expansion();
         prioritise(starting_belief_state, locally_traversed);
         
+        INTERACTIVE_VERBOSER(true, 15000, "Iterating LAO locality :: "<<locally_traversed.size()<<std::endl);
+        
         if(this->belief_state__space.size() > 1000) break;
     }
 }
-
+#endif
 
 POMDP_State* Solver::solve__for_new_starting_state(Planning::POMDP_State* successor_state)
 {
@@ -485,7 +497,7 @@ POMDP_State* Solver::solve__for_new_starting_state(Planning::POMDP_State* succes
             break;
             VERBOSER(14000, "No starting state!"<<std::endl);
         } else {
-            VERBOSER(14000, "Expanding (so far we have "
+            VERBOSER(15000, "Expanding (so far we have "
                      <<this->belief_state__space.size()<<" beliefs)!"<<std::endl
                      <<"Expected reward is :: "
                      <<current_state->get__expected_value()<<std::endl);
@@ -496,7 +508,7 @@ POMDP_State* Solver::solve__for_new_starting_state(Planning::POMDP_State* succes
     
     while(policy_Iteration()){
         
-        VERBOSER(14000, "PI.. Expected reward is :: "
+        VERBOSER(15000, "PI.. Expected reward is :: "
                  <<current_state->get__expected_value()<<std::endl);
 
     }

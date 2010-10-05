@@ -61,8 +61,11 @@ void Policy_Iteration__GMRES::configure_transition_matrix()
         
         /*Fringe states go to the sink.*/
         if(state->unexpanded()){
-//             state_transition_matrix(starting_index, dimension-1) -= discount_factor;
+#ifdef LAO_STAR
+            state_transition_matrix(starting_index, dimension-1) -= discount_factor;
+#else
             state_transition_matrix(starting_index, starting_index) -= discount_factor;
+#endif
             
             continue;
         }
@@ -104,6 +107,26 @@ void Policy_Iteration__GMRES::configure_reward_vector()
         auto state = *_state;
         auto index = state->get__index();
 
+#ifdef LAO_STAR
+        if(state->unexpanded()){
+            
+            auto& belief = state->get__belief_state();
+            double expected_value = 0.0;
+            for(auto _atom = belief.begin()
+                    ; _atom != belief.end()
+                    ; _atom++){
+                double probability = _atom->second;
+                
+                assert(dynamic_cast<State*>(_atom->first));
+                
+                expected_value += probability * _atom->first->get__value();
+            }
+            
+            instantanious_reward_vector[index] = expected_value;
+            continue;
+        }
+#endif
+        
 
         assert(index < instantanious_reward_vector.size());
         instantanious_reward_vector[index] = state->get__expected_reward();
@@ -114,7 +137,13 @@ void Policy_Iteration__GMRES::configure_reward_vector()
     assert(states.size() < dimension);
     assert(instantanious_reward_vector[states.size()] == 0.0);
     assert(states.size() < instantanious_reward_vector.size());
+    
+#ifdef LAO_STAR 
+    instantanious_reward_vector[states.size()] = 0.0;
+#else
     instantanious_reward_vector[states.size()] = sink_state_penalty;
+#endif
+    
 //     instantanious_reward_vector[states.size()] = 0.0;
 }
 

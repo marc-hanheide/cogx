@@ -666,6 +666,10 @@ bool Solver::expand_belief_state_space()
 
     INTERACTIVE_VERBOSER(true, 14000, "Expanding POMDP state :: "<<*pomdp_state<<std::endl);
     
+#ifdef LAO_STAR
+    pomdp_state->set__expansion_attempted();
+#endif
+    
     expand_belief_state(pomdp_state);
     
     QUERY_WARNING(false, //pomdp_state->unexpanded(),

@@ -145,10 +145,11 @@ namespace Planning
         void expand_optional_transformations(Planning::State*);
         void expand_optional_transformation(Planning::State*, const State_Transformation*);
 
-
+#ifdef LAO_STAR
         void lao_star();
         void prioritise(Planning::POMDP_State* state,
                         Planning::Set_Of_POMDP_State_Pointers& locally_traversed);
+#endif
         
         Planning::Set_Of_State_Pointers state_space;
         Planning::Set_Of_POMDP_State_Pointers belief_state__space;
