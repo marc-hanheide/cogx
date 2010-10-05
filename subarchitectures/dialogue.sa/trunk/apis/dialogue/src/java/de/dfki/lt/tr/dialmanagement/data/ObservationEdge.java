@@ -21,7 +21,8 @@
 package de.dfki.lt.tr.dialmanagement.data;
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
-import de.dfki.lt.tr.dialmanagement.data.observations.AbstractObservation;
+import de.dfki.lt.tr.dialmanagement.data.observations.Observation;
+import de.dfki.lt.tr.dialmanagement.data.observations.ObservationContent;
 
 /**
  * Observation edge in a dialogue policy
@@ -32,6 +33,13 @@ import de.dfki.lt.tr.dialmanagement.data.observations.AbstractObservation;
 
 public class ObservationEdge {
 
+
+	// logging mode
+	public static boolean LOGGING = true;
+
+	// debugging mode
+	public static boolean DEBUG = true;
+	
 	// the (unique) identifier for the edge
 	private String id;
 	
@@ -41,9 +49,14 @@ public class ObservationEdge {
 	// Outgoing (=destination) action node
 	private ActionNode out;
 	
-	// Observation contained in the edge
-	private AbstractObservation obs;
+	// Observation content contained in the edge
+	private ObservationContent content;
 	
+	// minimum probability for the observation
+	float minProb;
+	
+	// maximum probability for the observation
+	float maxProb;
 	
 	/**
 	 * Constructs a new observation edge from an incoming action node, an outgoing action node, and an observation
@@ -52,20 +65,51 @@ public class ObservationEdge {
 	 * @param in the incoming node
 	 * @param out the outgoing node
 	 * @param obs the observation
+	 * @param the minimum probability
+	 * @param the maximum probability
 	 * @throws DialogueException if one of the parameters is a null value
 	 */
-	public ObservationEdge (String id, ActionNode in, ActionNode out, AbstractObservation obs) throws DialogueException {
-			
+	public ObservationEdge (String id, ActionNode in, ActionNode out, ObservationContent obs, float minProb, float maxProb) throws DialogueException {
+		
+		this.minProb = minProb;
+		this.maxProb = maxProb;
+		
 		if (id != null && in != null && out != null && obs != null) {
 			this.id = id;
 			this.in = in;
 			this.out = out;
-			this.obs = obs;
+			this.content = obs;
 		}
 		else {
 			throw new DialogueException("ERROR: cannot enter null values in observation edge");
 		}
 	}
+	
+	
+	public ObservationEdge (ObservationContent obs, float minProb, float maxProb) {
+		
+		this.minProb = minProb;
+		this.maxProb = maxProb;
+		this.content = obs;
+	}
+	
+	public ObservationEdge copy () throws DialogueException {
+		return new ObservationEdge(content,minProb,maxProb);
+	}
+	
+	
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	public void setSourceNode(ActionNode in) {
+		this.in = in;
+	}
+	
+	public void setTargetNode(ActionNode out) {
+		this.out = out;
+	}
+	
 	
 	/**
 	 * Returns the incoming action node (i.e. the origin of the edge)
@@ -87,8 +131,8 @@ public class ObservationEdge {
 	 * Returns the observation contained in the edge
 	 * @return the observation
 	 */
-	public AbstractObservation getObservation() {
-		return obs;
+	public ObservationContent getObservation() {
+		return content;
 	}
 	
 	/**
@@ -127,14 +171,40 @@ public class ObservationEdge {
 	 * @param obs the new observation
 	 * @throws DialogueException if the observation is a null value
 	 */
-	public void setObservation(AbstractObservation obs) throws DialogueException {
+	public void setObservation(ObservationContent obs) throws DialogueException {
 		if (obs != null) {
-			this.obs = obs;
+			this.content = obs;
 		}
 		else {
 			throw new DialogueException("ERROR: cannot enter null values in observation edge");
 		}
 	}
+	
+	
+	public boolean matchesWithObservation (Observation obs) {
+		
+		for (ObservationContent alternative : obs.getAlternatives()) {
+			if (alternative.equals(content) && 
+					obs.getProbability(alternative) >= minProb && 
+					obs.getProbability(alternative) <= maxProb) {				
+				return true;
+			}
+			else if (obs.getProbability(alternative) == 0.8f){
+				debug("alternative: " + alternative.toString());
+				debug("content: " + content);
+				debug("prob: " + obs.getProbability(alternative));
+				debug ("min: " + minProb);
+				debug("max: " + maxProb);
+			}
+		}
+		return false;
+	}
+	
+	
+	public String toString () {
+		return content.toString() + " (" + minProb + ", " + maxProb + ")";
+	}
+	
 	
 	/**
 	 * Returns the edge identifier
@@ -142,5 +212,26 @@ public class ObservationEdge {
 	 */
 	public String getId() {
 		return id;
+	}
+	
+	
+	/**
+	 * Logging
+	 * @param s
+	 */
+	private static void log (String s) {
+		if (LOGGING) {
+			System.out.println("[Dialogue policy] " + s);
+		}
+	}
+	
+	/**
+	 * Debugging
+	 * @param s
+	 */
+	private static void debug (String s) {
+		if (DEBUG) {
+			System.out.println("[Dialogue policy] " + s);
+		}
 	}
 } 

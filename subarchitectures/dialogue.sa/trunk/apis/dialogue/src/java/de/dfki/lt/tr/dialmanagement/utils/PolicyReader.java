@@ -27,13 +27,11 @@ import java.util.HashMap;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.ActionNode;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
+import de.dfki.lt.tr.dialmanagement.data.ObservationEdge;
 import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
 import de.dfki.lt.tr.dialmanagement.data.actions.IntentionAction;
 import de.dfki.lt.tr.dialmanagement.data.actions.ShallowAction;
-import de.dfki.lt.tr.dialmanagement.data.observations.AbstractObservation;
-import de.dfki.lt.tr.dialmanagement.data.observations.EventObservation;
-import de.dfki.lt.tr.dialmanagement.data.observations.IntentionObservation;
-import de.dfki.lt.tr.dialmanagement.data.observations.ShallowObservation;
+import de.dfki.lt.tr.dialmanagement.data.observations.ObservationContent;
 
 /**
  * Utility for constructing a new dialogue policy from a finite-state specification
@@ -68,7 +66,7 @@ public class PolicyReader {
 
 		try {
 			// extracting the observations
-			HashMap<String,AbstractObservation> observations = extractObservations (FileUtils.readfile(obsFile));
+			HashMap<String,ObservationEdge> observations = extractObservations (FileUtils.readfile(obsFile));
 
 			// extracting the actions
 			HashMap<String,AbstractAction> actions = extractActions (FileUtils.readfile(actionsFile));
@@ -94,11 +92,11 @@ public class PolicyReader {
 	 * @return a hashmap containing the observations, indexed by their identifier
 	 * @throws DialogueException if the specification text is ill-formated
 	 */
-	public static HashMap<String,AbstractObservation> extractObservations (String obsText) throws DialogueException {
+	public static HashMap<String,ObservationEdge> extractObservations (String obsText) throws DialogueException {
 
 		String[] lines = obsText.split("\n");
 
-		HashMap<String,AbstractObservation> totalObs = new HashMap<String, AbstractObservation>();
+		HashMap<String,ObservationEdge> totalObs = new HashMap<String, ObservationEdge>();
 
 		for (int i = 0 ; i < lines.length ; i++) {
 			String line = lines[i];
@@ -108,7 +106,9 @@ public class PolicyReader {
 			if (tabs.length == 2) {
 				String obsSymbol = tabs[0].replace("=", "").trim();
 				String obs = tabs[1].trim();
-				totalObs.put(obsSymbol, extractObservation(obs));		
+				ObservationEdge edge = extractObservation(obs);
+				edge.setId(obsSymbol);
+				totalObs.put(obsSymbol, edge);		
 			}
 			else if (line.trim().length() > 0) {
 				throw new DialogueException("ERROR: observation file is ill-formated at line: " + i);
@@ -156,7 +156,7 @@ public class PolicyReader {
 	 * @return the constructed observation
 	 * @throws DialogueException if the line is ill-formatted
 	 */
-	public static AbstractObservation extractObservation (String str) throws DialogueException {
+	public static ObservationEdge extractObservation (String str) throws DialogueException {
 
 		str = str.trim();
 		if (str.contains("[") != str.contains("]")) {
@@ -176,19 +176,22 @@ public class PolicyReader {
 		// event observation
 		if (str.substring(0,2).equals("E[")) {
 			String eventcontent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new EventObservation (FormulaUtils.constructFormula(eventcontent), minmaxProbs[0], minmaxProbs[1]);
+			ObservationContent content = new ObservationContent (FormulaUtils.constructFormula(eventcontent), ObservationContent.EVENT);
+			return new ObservationEdge (content, minmaxProbs[0], minmaxProbs[1]);
 		}
 
 		// intention observation
 		else if (str.substring(0,2).equals("I[")) {
 			String intentContent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new IntentionObservation (FormulaUtils.constructFormula(intentContent), minmaxProbs[0], minmaxProbs[1]);
+			ObservationContent content = new ObservationContent (FormulaUtils.constructFormula(intentContent), ObservationContent.INTENTION);
+			return new ObservationEdge (content, minmaxProbs[0], minmaxProbs[1]);
 		}
 
 		// else, we assume it is a shallow observation
 		else {
 			String internalcontent = str.split("\\(")[0];
-			return new ShallowObservation (internalcontent.replace("\"", ""), minmaxProbs[0], minmaxProbs[1]);
+			ObservationContent content = new ObservationContent (internalcontent.replace("\"", ""));
+			return new ObservationEdge (content, minmaxProbs[0], minmaxProbs[1]);
 		}
 	}
 
@@ -260,7 +263,7 @@ public class PolicyReader {
 	 * @return
 	 * @throws DialogueException if the policy text is not well formatted
 	 */
-	public static DialoguePolicy constructPolicy (String text, HashMap<String, AbstractObservation> observations, 
+	public static DialoguePolicy constructPolicy (String text, HashMap<String, ObservationEdge> observations, 
 			HashMap<String, AbstractAction> actions) throws DialogueException {
 
 		String[] lines = text.split("\n");
@@ -326,7 +329,7 @@ public class PolicyReader {
 	 *         refers to actions or observations not in the list
 	 */
 	public static void addEdgeAndNodesToPolicy (String line, DialoguePolicy policy, 
-			HashMap<String, AbstractObservation> observations, 
+			HashMap<String, ObservationEdge> observations, 
 			HashMap<String, AbstractAction> actions) 
 	throws DialogueException {
 
@@ -365,8 +368,10 @@ public class PolicyReader {
 				targetNode = policy.getNode(targetNodeId);
 			}
 
-			policy.addEdge(edgeId, observations.get(edgeId), sourceNode, targetNode);
-
+			ObservationEdge newEdge = observations.get(edgeId).copy();
+			newEdge.setSourceNode(sourceNode);
+			newEdge.setTargetNode(targetNode);		
+			policy.addEdge(newEdge, sourceNode, targetNode);
 		}
 		else {
 			throw new DialogueException("ERROR: line not well formatted");

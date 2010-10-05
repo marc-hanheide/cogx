@@ -21,6 +21,7 @@
 package de.dfki.lt.tr.dialmanagement.components;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
@@ -32,8 +33,8 @@ import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
 import de.dfki.lt.tr.dialmanagement.data.actions.VoidAction;
-import de.dfki.lt.tr.dialmanagement.data.observations.AbstractObservation;
-import de.dfki.lt.tr.dialmanagement.data.observations.IntentionObservation;
+import de.dfki.lt.tr.dialmanagement.data.observations.Observation;
+import de.dfki.lt.tr.dialmanagement.data.observations.ObservationContent;
 import de.dfki.lt.tr.dialmanagement.data.ActionNode;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.ObservationEdge;
@@ -90,21 +91,22 @@ public class DialogueManager {
 	 *         is ill-formatted
 	 */
 	public AbstractAction nextAction(Intention intention) throws DialogueException {
+	
+	//	List<IntentionalContent> content = 
+	//		EpistemicObjectUtils.sortIntentionalContent(intention.content);
 
-		List<IntentionalContent> content = 
-			EpistemicObjectUtils.sortIntentionalContent(intention.content);
-
+		Observation obs = new Observation();
+		for (IntentionalContent icontent : intention.content) {
+			obs.addAlternative(icontent.postconditions, ObservationContent.INTENTION, icontent.probValue);
+		}
+	
 		for (boolean underspecification : Arrays.asList(false, true)) {
 
-			for (IntentionalContent i : content) {
-				IntentionObservation observ = new IntentionObservation (i.postconditions, i.probValue);
-				debug("testing observation: " + observ.toString());
-				AbstractAction nextAction = nextAction (observ, underspecification);
+				AbstractAction nextAction = nextAction (obs, underspecification);
 				if (!(nextAction instanceof VoidAction)) {
 					return nextAction;
 				}
 			}
-		}
 
 		// else, return a void action
 		return new VoidAction();
@@ -129,9 +131,9 @@ public class DialogueManager {
 	 */
 	public AbstractAction nextAction(Event event) throws DialogueException {
 
-		ProbDistribution content = 
-			EpistemicObjectUtils.sortDiscreteDistribution(event.content);
-
+// 		ProbDistribution content = 
+//			EpistemicObjectUtils.sortDiscreteDistribution(event.content);
+/**
 		for (boolean underspecification : Arrays.asList(false, true)) {
 			
 			for (FormulaProbPair pair : EpistemicObjectUtils.getFormulaProbPairs(content)) {
@@ -145,10 +147,10 @@ public class DialogueManager {
 			}
 		}
 
-
+ 	*/
 		// else, return a void action
-		return new VoidAction();
-	}
+		return new VoidAction(); 
+	} 
 
 
 
@@ -170,56 +172,45 @@ public class DialogueManager {
 	 *         
 	 * @throws DialogueException exception thrown if the policy or the observation is ill-formed
 	 */
-	public AbstractAction nextAction (AbstractObservation obs) throws DialogueException {
-		if (curNode.hasOutgoingObservation(obs)) {
-			ObservationEdge edge = curNode.getOutgoingObservation(obs);
-			curNode = edge.getOutgoingAction();
-			return curNode.getAction();
-		}
-		else if (curNode.hasUnderspecifiedOutgoingObservation(obs)) {
-			debug("using underspecified observations for obs: " + obs.toString());
-			ObservationEdge edge = curNode.getUnderspecifiedOutgoingObservation(obs);
-			curNode = edge.getOutgoingAction();
-			return curNode.getAction();
-		}
-		else {
-			debug("Warning: observation " + obs.toString() + " not applicable from node " + curNode.getId());
-			debug("available observations: " );
-			for (ObservationEdge edge : curNode.getAllOutgoingObservations()) {
-				debug ("obs: " + edge.getObservation().toString());
+	public AbstractAction nextAction (Observation obs) throws DialogueException {
+		
+		for (boolean underspecification : Arrays.asList(false, true)) {
+			
+			AbstractAction nextAction = nextAction (obs, underspecification);
+			if (!(nextAction instanceof VoidAction)) {
+				return nextAction;
 			}
-			return new VoidAction();
 		}
+		
+		// else, return a void action
+		return new VoidAction();
 	}
 
 
-	
-	
+
+
 
 	/**
-	 * (Same as above, but including a flag to activate or deactive the use of underspecified 
+	 * (Same as above, but including a flag to activate or deactivate the use of underspecified 
 	 * observations)
 	 */
-	private AbstractAction nextAction (AbstractObservation obs, boolean underspecification) throws DialogueException {
-		if (curNode.hasOutgoingObservation(obs)) {
-			ObservationEdge edge = curNode.getOutgoingObservation(obs);
-			curNode = edge.getOutgoingAction();
-			return curNode.getAction();
-		}
-		else if (underspecification && curNode.hasUnderspecifiedOutgoingObservation(obs)) {
-			debug("using underspecified observations for obs: " + obs.toString());
-			ObservationEdge edge = curNode.getUnderspecifiedOutgoingObservation(obs);
-			curNode = edge.getOutgoingAction();
-			return curNode.getAction();
-		}
-		else {
-			debug("Warning: observation " + obs.toString() + " not applicable from node " + curNode.getId());
-			debug("available observations: " );
-			for (ObservationEdge edge : curNode.getAllOutgoingObservations()) {
-				debug ("obs: " + edge.getObservation().toString());
+	private AbstractAction nextAction (Observation obs, boolean underspecification) throws DialogueException {
+		Collection<ObservationEdge> matchingEdges = curNode.getMatchingOutgoingObservations(obs);
+		for (ObservationEdge matchingEdge : matchingEdges) {
+			if (underspecification || !matchingEdge.getObservation().isUnderspecified()) {
+				curNode = matchingEdge.getOutgoingAction();
+				debug("FOUND! now going to " + curNode.getId());
+				debug(policy.toString());
+				return curNode.getAction();
 			}
-			return new VoidAction();
 		}
+
+		debug("Warning: observation " + obs.toString() + " not applicable from node " + curNode.getId());
+		debug(policy.toString());
+		for (ObservationEdge edge : curNode.getAllOutgoingObservations()) {
+			debug ("obs: " + edge.getObservation().toString());
+		}
+		return new VoidAction();
 	}
 
 

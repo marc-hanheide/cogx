@@ -24,10 +24,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
-import de.dfki.lt.tr.dialmanagement.data.observations.AbstractObservation;
+import de.dfki.lt.tr.dialmanagement.data.observations.Observation;
 
 /**
  * An action node in a dialogue policy
@@ -48,7 +49,7 @@ public class ActionNode {
 
 
 	// the collection of fully specified outgoing observation edges
-	private HashMap<AbstractObservation,ObservationEdge> outgoingEdges;
+	private Vector<ObservationEdge> outgoingEdges;
 
 	// the (dialogue) action encapsulated by the node
 	private AbstractAction action;
@@ -70,7 +71,7 @@ public class ActionNode {
 	 */
 	public ActionNode(String identifier, AbstractAction action) throws DialogueException {
 		id = identifier;
-		outgoingEdges = new HashMap<AbstractObservation,ObservationEdge>();
+		outgoingEdges = new Vector<ObservationEdge>();
 		if (action != null) {
 			this.action = action;
 		}
@@ -95,7 +96,7 @@ public class ActionNode {
 
 		if (action != null && outgoingEdges != null) {
 
-			this.outgoingEdges = new HashMap<AbstractObservation,ObservationEdge>();
+			this.outgoingEdges = new Vector<ObservationEdge>();
 
 			addOutgoingEdges(outgoingEdges);
 
@@ -128,22 +129,19 @@ public class ActionNode {
 	 */
 	public void addOutgoingEdge (ObservationEdge edge) throws DialogueException {
 		
-		if (edge != null && edge.getObservation() != null) {
-
-				if (!outgoingEdges.containsKey(edge.getObservation())) {
-					outgoingEdges.put(edge.getObservation(), edge);
-					if (edge.getObservation().isUnderspecified()) {
-						debug("yoohoo, underspecified edge!!");
-					}
-				}
-				else {
-					throw new DialogueException("ERROR, observation already in outgoing edges");
-				}
-			}
-
-		else {
+		if (edge==null || edge.getObservation() == null) {
 			throw new DialogueException("ERROR, edge is a null value");
 		}
+		
+	/**	for (ObservationEdge existingEdge : outgoingEdges)  {
+			if (edge.getObservation().equals(existingEdge.getObservation()) && 
+					!existingEdge.getObservation().isUnderspecified() && 
+					!edge.getObservation().isUnderspecified()) {
+				throw new DialogueException("ERROR, observation " + edge.getObservation().toString() +  "already in outgoing edges");
+			}
+		}  */
+			
+		outgoingEdges.add(edge);
 	}
 
 
@@ -156,7 +154,7 @@ public class ActionNode {
 	 * @param obs the observation
 	 * @throws DialogueException if null value
 	 */
-	public void removeOutgoingEdge (AbstractObservation obs) throws DialogueException {
+	public void removeOutgoingEdge (ObservationEdge obs) throws DialogueException {
 
 		if (obs != null) {
 			outgoingEdges.remove(obs);
@@ -212,26 +210,17 @@ public class ActionNode {
 	 * @param obs the observation
 	 * @return true if observation found, false otherwise
 	 */
-	public boolean hasOutgoingObservation (AbstractObservation obs) {
-		return outgoingEdges.containsKey(obs);
-	}
-	
-	
-	/**
-	 * Returns true if observation compatible with one underspecified outgoing edge, false
-	 * otherwise 
-	 * 
-	 * @param obs the observation to be matched
-	 * @return true if observation compatible with a underspecified outgoing edge, else false
-	 */
-	public boolean hasUnderspecifiedOutgoingObservation (AbstractObservation obs) {
-		for (ObservationEdge e: outgoingEdges.values()) {
-			if (obs.equals(e.getObservation())) {
+	public boolean hasOutgoingObservation (Observation obs) {
+		
+		for (ObservationEdge edge: outgoingEdges) {
+			
+			if (obs.equals(edge.getObservation())) {
 				return true;
 			}
 		}
 		return false;
 	}
+	
 
 
 	/**
@@ -242,13 +231,15 @@ public class ActionNode {
 	 * @return the outgoing observation edge
 	 * @throws DialogueException if no edge corresponds to the observation
 	 */
-	public ObservationEdge getOutgoingObservation (AbstractObservation obs) throws DialogueException {
-		if (outgoingEdges.containsKey(obs)) {
-			return outgoingEdges.get(obs);
+	public Collection<ObservationEdge> getMatchingOutgoingObservations (Observation obs) throws DialogueException {
+	
+		Vector<ObservationEdge> edges = new Vector<ObservationEdge>();
+		for (ObservationEdge edge: outgoingEdges) {
+			if (edge.matchesWithObservation(obs)) {
+				edges.add(edge);
+			}
 		}
-		else {
-			throw new DialogueException ("ERROR: observation not found in outgoing edges");
-		}
+		return edges;
 	}
 
 
@@ -257,30 +248,10 @@ public class ActionNode {
 	 * @return all outgoing observation edges
 	 */
 	public Collection<ObservationEdge> getAllOutgoingObservations () {
-		return outgoingEdges.values();
+		return outgoingEdges;
 	}
 
 	
-
-
-
-	/**
-	 * Returns the underspecified outgoing observation edge, identified by its observation.  If none found, throws
-	 * an exception
-	 * 
-	 * @param obs the observation
-	 * @return the underspecified outgoing observation edge
-	 * @throws DialogueException if no edge corresponds to the observation
-	 */
-	public ObservationEdge getUnderspecifiedOutgoingObservation (AbstractObservation obs) throws DialogueException {
-		for (ObservationEdge e: outgoingEdges.values()) {
-			if (obs.equals(e.getObservation())) {
-				return e;
-			}
-		}
-		throw new DialogueException ("ERROR: underspecified observation not found in outgoing edges");
-	}
-
 
 	
 	/**

@@ -29,7 +29,7 @@ import java.util.Vector;
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
-import de.dfki.lt.tr.dialmanagement.data.observations.AbstractObservation;
+import de.dfki.lt.tr.dialmanagement.data.observations.Observation;
 
 /**
  * Representation of a dialogue policy as a finite-state controller, constituted of 
@@ -179,7 +179,7 @@ public class DialoguePolicy {
 	 * 
 	 * @throws DialogueException if one of the two nodes does not exist
 	 */
-	public void addEdge (String edgeId, AbstractObservation obs, ActionNode curActionNode, ActionNode nextActionNode) 
+	public void addEdge (ObservationEdge edge, ActionNode curActionNode, ActionNode nextActionNode) 
 		throws DialogueException {
 		
 		if (!nodes.containsKey(curActionNode.getId())) {
@@ -190,9 +190,8 @@ public class DialoguePolicy {
 			throw new DialogueException("ERROR: nextAction not present in nodes set");
 		}
 		
-		ObservationEdge edge = new ObservationEdge(edgeId, curActionNode, nextActionNode, obs);
 		curActionNode.addOutgoingEdge(edge);
-		debug("Adding outgoing edge : " + obs.toString() + " from " + curActionNode.getId() + " to " + nextActionNode.getId());
+		debug("Adding outgoing edge : " + edge.toString() + " from " + curActionNode.getId() + " to " + nextActionNode.getId());
 	}
 	
 	
@@ -208,11 +207,11 @@ public class DialoguePolicy {
      * 
 	 * @throws DialogueException if the curActionNode does not exist
 	 */
-	public ActionNode addEdgeAndNextAction (String edgeId, AbstractObservation obs, ActionNode curActionNode, 
+	public ActionNode addEdgeAndNextAction (ObservationEdge edge, ActionNode curActionNode, 
 			String nextNodeId, AbstractAction nextAction) throws DialogueException {
 		
 		ActionNode nextActionNode = addNode(nextNodeId, nextAction);
-		addEdge (edgeId, obs, curActionNode, nextActionNode);
+		addEdge (edge, curActionNode, nextActionNode);
 		return nextActionNode;
 	}
 	
@@ -296,8 +295,22 @@ public class DialoguePolicy {
 	 */
 	@Override
 	public String toString() {
-		//TODO: textual representation of a policy
-		return "";
+		String result = "Nodes = {";
+		
+		for (String nodeId : nodes.keySet()) {
+			result += nodeId + ", ";
+		}
+		result = result.substring(0, result.length() -2) + "} \n\n";
+		
+		result += "Edges: \n";
+		for (String nodeId : nodes.keySet()) {
+			ActionNode node = nodes.get(nodeId);		
+			for (ObservationEdge edge: node.getAllOutgoingObservations()) {			
+				result += edge.getIncomingAction().getId() + " -- " + edge.getObservation().toString() + 
+				" --> " + edge.getOutgoingAction().getId() + "\n";			
+			}
+		}
+		return result;
 	}
 	
 	/**
