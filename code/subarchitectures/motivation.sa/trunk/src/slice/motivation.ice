@@ -81,8 +81,14 @@ module motivation {
     	};
 
     	class GeneralGoalMotive extends Motive {
-    		string internalGoal;
     	};
+
+    	class RobotInitiativeMotive extends Motive {
+    	};
+
+    	class TutorInitiativeMotive extends Motive {
+    	};
+
 
     	class ExploreMotive extends Motive {
     		/**

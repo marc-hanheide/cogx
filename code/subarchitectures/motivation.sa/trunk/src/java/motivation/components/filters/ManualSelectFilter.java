@@ -20,6 +20,8 @@ import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.PatrolMotive;
+import motivation.slice.RobotInitiativeMotive;
+import motivation.slice.TutorInitiativeMotive;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryChange;
 
@@ -49,6 +51,8 @@ public class ManualSelectFilter implements MotiveFilter {
 	private JSlider jPatrolPrioritySlider = null;
 
 	private JSlider jGeneralPrioritySlider = null;
+	private JSlider jRobotInitiativePrioritySlider = null;
+	private JSlider jTutorInitiativePrioritySlider = null;
 	
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 
@@ -62,6 +66,10 @@ public class ManualSelectFilter implements MotiveFilter {
 			return MotivePriority.values()[jGeneralPrioritySlider.getValue()];
 		else if (motive instanceof PatrolMotive)
 			return MotivePriority.values()[jPatrolPrioritySlider.getValue()];
+		else if (motive instanceof RobotInitiativeMotive)
+			return MotivePriority.values()[jRobotInitiativePrioritySlider.getValue()];
+		else if (motive instanceof TutorInitiativeMotive)
+			return MotivePriority.values()[jTutorInitiativePrioritySlider.getValue()];
 		else
 			return MotivePriority.NORMAL;
 	}
@@ -133,8 +141,8 @@ public class ManualSelectFilter implements MotiveFilter {
 	 */
 	private JPanel getJMotivesPanel() {
 		if (jMotivesPanel == null) {
-			GridLayout gridLayout = new GridLayout(0, 1);
-			gridLayout.setColumns(1);
+			GridLayout gridLayout = new GridLayout(0, 2);
+			//gridLayout.setColumns(1);
 			jMotivesPanel = new JPanel();
 			jMotivesPanel.setLayout(gridLayout);
 			jMotivesPanel.add(new JLabel("General Goal"));
@@ -149,6 +157,10 @@ public class ManualSelectFilter implements MotiveFilter {
 			// jMotivesPanel.add(getJSliderTest());
 			jMotivesPanel.add(new JLabel("Homing"));
 			jMotivesPanel.add(getJSliderHome());
+			jMotivesPanel.add(new JLabel("Robot Init."));
+			jMotivesPanel.add(getJSliderRobotInitiative());
+			jMotivesPanel.add(new JLabel("Tutor Init."));
+			jMotivesPanel.add(getJSliderTutorInitiative());
 			jMotivesPanel.add(getPresetPanel());
 		}
 		return jMotivesPanel;
@@ -220,6 +232,8 @@ public class ManualSelectFilter implements MotiveFilter {
 					jHomePrioritySlider.setValue(0);
 					jPatrolPrioritySlider.setValue(0);
 					jGeneralPrioritySlider.setValue(0);
+					jRobotInitiativePrioritySlider.setValue(0);
+					jTutorInitiativePrioritySlider.setValue(0);
 					component.checkAll();
 				} catch (CASTException e1) {
 					component.println("unexpected exception in checkAll: ");
@@ -229,6 +243,28 @@ public class ManualSelectFilter implements MotiveFilter {
 			}
 		});
 		presetPanel.add(nullButton);
+		
+		JButton doraButton = new JButton("Dora def");
+		doraButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					jExplorePrioritySlider.setValue(2);
+					jCategorizePrioritySlider.setValue(2);
+					jHomePrioritySlider.setValue(0);
+					jPatrolPrioritySlider.setValue(1);
+					jGeneralPrioritySlider.setValue(2);
+					jRobotInitiativePrioritySlider.setValue(2);
+					jTutorInitiativePrioritySlider.setValue(3);
+					component.checkAll();
+				} catch (CASTException e1) {
+					component.println("unexpected exception in checkAll: ");
+					e1.printStackTrace();
+				}
+
+			}
+		});
+		presetPanel.add(doraButton);
 
 		return presetPanel;
 	}
@@ -315,11 +351,35 @@ public class ManualSelectFilter implements MotiveFilter {
 		return jHomePrioritySlider;
 	}
 
+	/**
+	 * This method initializes jExplorePrioritySlider
+	 * 
+	 * @return javax.swing.JSlider
+	 */
+	private JSlider getJSliderRobotInitiative() {
+		if (jRobotInitiativePrioritySlider == null) {
+			jRobotInitiativePrioritySlider = createPrioritySlider();
+		}
+		return jRobotInitiativePrioritySlider;
+	}
+	/**
+	 * This method initializes jExplorePrioritySlider
+	 * 
+	 * @return javax.swing.JSlider
+	 */
+	private JSlider getJSliderTutorInitiative() {
+		if (jTutorInitiativePrioritySlider == null) {
+			jTutorInitiativePrioritySlider = createPrioritySlider();
+		}
+		return jTutorInitiativePrioritySlider;
+	}
+
+	
 	@Override
 	public void start() {
 		jFrame.setVisible(true);
 		jFrame.pack();
-		jFrame.setSize(500, 500);
+		jFrame.setSize(800, 600);
 	}
 
 } // @jve:decl-index=0:visual-constraint="583,36"
