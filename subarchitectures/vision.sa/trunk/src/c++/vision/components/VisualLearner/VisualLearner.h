@@ -28,6 +28,8 @@ private:
    TWmAddressVector m_RecogTaskId_Queue;
    TWmAddressVector m_LearnTaskId_Queue;
    IceUtil::Monitor<IceUtil::Mutex> m_RrqMonitor;
+   cast::cdl::WorkingMemoryAddress m_addrColorStatus;
+   cast::cdl::WorkingMemoryAddress m_addrShapeStatus;
 
    // CLFStart configuration file (evaluated by MCR)
    std::string m_ClfConfigFile;
@@ -36,6 +38,7 @@ private:
    void onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
    bool recogniseAttributes(VisionData::VisualLearnerRecognitionTaskPtr _pTask);
    bool updateModel(VisionData::VisualLearningTaskPtr _pTask);
+   void updateWmModelStatus();
 
    //string allowedSoiSource;
    //void quip(CASTData<ComedyEssentials::Joke> *_pData);
