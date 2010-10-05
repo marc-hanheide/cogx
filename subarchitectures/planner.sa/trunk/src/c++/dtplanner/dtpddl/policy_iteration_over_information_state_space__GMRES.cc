@@ -136,12 +136,73 @@ void Policy_Iteration__GMRES::reset__converged()
 }
 
 
-/*Child's play, but should do for the moment.*/
-void Policy_Iteration__GMRES::operator()()
+
+
+// /*Child's play, but should do for the moment.*/
+// void Policy_Iteration__GMRES::operator()()
+// {
+//     if(converged){
+//         WARNING("Converged!");
+//         return;
+//     }
+    
+//     /*adding a sink state that spins on zero reward.*/
+//     dimension = states.size() + 1;
+    
+    
+//     configure_transition_matrix();
+//     configure_reward_vector();
+
+//     INTERACTIVE_VERBOSER(true, 14000, "Given rewards :: "<<instantanious_reward_vector);
+
+//     INTERACTIVE_VERBOSER(true, 14000, "Given transitions :: "<<state_transition_matrix);
+    
+    
+//     gmres.set_matrix(&state_transition_matrix);
+//     gmres.set_vector(&instantanious_reward_vector);
+//     gmres();
+
+    
+//     value_vector = gmres.get_answer();
+// //     cerr<<state_transition_matrix<<std::endl<<std::endl;
+// //     cerr<<*value_vector<<std::endl<<std::endl;
+// //     exit(0);
+
+    
+
+//     if((old__state_space_size == dimension)){
+//         bool values_unchanged = false;
+//         for(uint i = 0;i < dimension; i++){
+//             assert(i < old__value_vector.size());
+//             assert(i < (*value_vector).size());
+//             if(old__value_vector(i) != (*value_vector)(i)){
+//                 values_unchanged = true;
+//                 break;
+//             }
+//         }
+        
+//         if(!values_unchanged){
+//             converged = true;
+//             return ;
+//         } else {
+//             old__state_space_size = dimension;
+//             old__value_vector = *value_vector;
+//         }
+//     } else {
+//         old__state_space_size = dimension;
+//         old__value_vector = *value_vector;
+//     }
+    
+    
+    
+//     press_greedy_policy();
+// }
+
+bool Policy_Iteration__GMRES::operator()()
 {
     if(converged){
         WARNING("Converged!");
-        return;
+        return false;
     }
     
     /*adding a sink state that spins on zero reward.*/
@@ -181,7 +242,7 @@ void Policy_Iteration__GMRES::operator()()
         
         if(!values_unchanged){
             converged = true;
-            return ;
+            return false;
         } else {
             old__state_space_size = dimension;
             old__value_vector = *value_vector;
@@ -194,5 +255,7 @@ void Policy_Iteration__GMRES::operator()()
     
     
     press_greedy_policy();
+
+    return true;
 }
 

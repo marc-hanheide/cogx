@@ -43,6 +43,7 @@
 
 #include "solver.hh"
 #include "simple_online_solver.hh"
+#include "two_phase_solver.hh"
 #include "policy_iteration_over_information_state_space.hh"
 #include "policy_iteration_over_information_state_space__GMRES.hh"
 
@@ -199,13 +200,79 @@ int main(int argc, char** argv)
                 ; problem++){
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
-            auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
+//             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
+            auto solver = new Planning::Two_Phase_Solver(*problem->second);//Planning::Solver*
             solver->set__sink_state_penalty(-1.0); //-1234.0);//-1e6);
             
             INTERACTIVE_VERBOSER(true, 12000, "Made a solver, starting preprocessing.")
             
             solver->preprocess();
 
+
+
+
+
+            {/*START -- TRYING THE MDP HEURISTIC.*/
+
+                
+                solver->empty__belief_states_for_expansion();
+                solver->generate_markov_decision_process_starting_states();
+
+                Planning::Policy_Iteration__GMRES policy_Iteration__for_MDP_states
+                    (solver->belief_state__space, solver->get__sink_state_penalty());
+
+                auto current_state = solver->peek__next_belief_state_for_expansion();
+                
+                INTERACTIVE_VERBOSER(true, 15000, "MDP state expansion :: "<<*current_state<<std::endl);
+                
+
+                while(solver->expand_belief_state_space()){
+                    
+                    VERBOSER(15000, "MDP state expansion :: "<<solver->belief_state__space.size()<<std::endl);
+                }
+
+                
+                while(policy_Iteration__for_MDP_states()){
+                    VERBOSER(15000, "Policy iteration."<<std::endl);
+                }
+                
+                for(auto mdp_state = solver->belief_state__space.begin()
+                        ; mdp_state != solver->belief_state__space.end()
+                        ; mdp_state++){
+
+                    if(*mdp_state == solver->get__starting_belief_state()){
+                        continue;
+                    }
+
+                    double state_value = (*mdp_state)->get__expected_value();
+
+                    auto& belief = (*mdp_state)->get__belief_state();
+
+                    QUERY_UNRECOVERABLE_ERROR(belief.size() != 1,
+                                              "Each belief state should contain one element, but we have "
+                                              <<*mdp_state<<std::endl
+                                              <<"That contains :: "<<belief.size()<<std::endl);
+                    /*This is an MDP state, so there should only be one atom in the belief.*/
+                    assert(1 == belief.size());
+
+                    auto state = belief.begin();
+                    assert(dynamic_cast<Planning::State*>(state->first));
+                    state->first->set__value(state_value);
+                }
+
+                solver->reset__pomdp_state_hash_table();
+                solver->change_phase();
+                
+                solver->reinstate__starting_belief_state();
+            }/*STOP -- TRYING THE MDP HEURISTIC.*/
+            
+
+
+
+
+            
+
+            
             INTERACTIVE_VERBOSER(true, 12000, "Done preprocessing, now looking towards state expansion.");
             
             QUERY_UNRECOVERABLE_ERROR(0 == solver->peek__next_belief_state_for_expansion()
@@ -250,7 +317,7 @@ int main(int argc, char** argv)
 //                     policy_Iteration.reset__converged();
                 }
 
-                if(solver->belief_state__space.size() > 10000)break;
+                if(solver->belief_state__space.size() > 2000)break;
             }
 
             INTERACTIVE_VERBOSER(true, 15000, "Done state expansions :: "

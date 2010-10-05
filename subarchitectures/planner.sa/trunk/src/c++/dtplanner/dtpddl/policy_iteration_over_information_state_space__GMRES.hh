@@ -49,7 +49,8 @@ namespace Planning
                                 double sink_state_penalty,
                                 double discount_factor = 0.8);
 
-        void operator()();
+//         void operator()();
+        bool operator()();
         
         void reset__converged();
     private:

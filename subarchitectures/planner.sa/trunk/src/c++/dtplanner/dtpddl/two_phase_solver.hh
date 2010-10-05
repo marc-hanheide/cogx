@@ -33,68 +33,40 @@
  *
  */
 
-#ifndef BELIEF_STATE_EVALUATION_HH
-#define BELIEF_STATE_EVALUATION_HH
 
-#include "partially_observable_markov_decision_process_state.hh"
+#ifndef TWO_PHASE_SOLVER_HH
+#define TWO_PHASE_SOLVER_HH
+
+#include "solver.hh"
+
+#include "ordered_structure_over_states.hh"
+#include "belief_state_evaluation.hh"
 
 namespace Planning
 {
-    class MDP_Heuristic
+    class Two_Phase_Solver : public Planning::Solver
     {
     public:
-        float operator()(POMDP_State*) const;
-    };
-    
-    class Belief_State_Value
-    {
-    public:
-        double operator()(POMDP_State*) const;
-    };
-    
-    class Obtainable_Value
-    {
-    public:
-        double operator()(POMDP_State*) const;
-    };
+        Two_Phase_Solver(Planning::Parsing::Problem_Data&);
 
-    class Obtainable_Values_Count
-    {
-    public:
-        double operator()(POMDP_State*) const;
-    };
+        typedef Ordered_Stack_Of_States<POMDP_State, MDP_Heuristic, float> LOCAL__Ordered_Stack_Of_States;
+        
+        LOCAL__Ordered_Stack_Of_States ordered_Stack_Of_States;
+        
+        void report__new_belief_state(POMDP_State* );
+        POMDP_State* obtain__next_belief_state_for_expansion();
+        POMDP_State* peek__next_belief_state_for_expansion();
 
-    class Entropy_Heuristic
-    {
-    public:
-        float operator()(POMDP_State*) const;
-    };
-
-    class Greedy_Heuristic
-    {
-    public:
-        Greedy_Heuristic();
+        /* Flip between phases (see \member{phase_one})*/
+        void change_phase();
         
         
-        float operator()(POMDP_State*) const;
+        void empty__belief_states_for_expansion();
+        void reinstate__starting_belief_state();
     private:
-        mutable bool configured__expected_rewards_count__cache;
-        mutable double expected_rewards_count__cache;
-
-        mutable bool configured__expected_rewards_value__cache;
-        mutable double expected_rewards_value__cache;
+        bool phase_one;
     };
-
-    
-    
-    
-//     class Proximity_To_Potential_Value
-//     {
-//     public:
-//         double operator()(POMDP_State*);
-//     };
 }
-
 
 
 #endif
