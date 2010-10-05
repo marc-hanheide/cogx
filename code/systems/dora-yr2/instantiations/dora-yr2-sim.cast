@@ -18,12 +18,11 @@ CPP GD visual.search VisualObjectSearch -c instantiations/cureconfig/cogxp3.ccf 
 INCLUDE includes/default.sa/default-base.cast
 INCLUDE includes/coma.sa/coma-defaultsa.cast
 INCLUDE includes/default.sa/default-main.cast
-INCLUDE includes/default.sa/default-test.cast
+# INCLUDE includes/default.sa/default-test.cast
 
 # Conceptual.SA  ############################################################
 INCLUDE includes/conceptual.sa/conceptual-base.cast
-INCLUDE includes/conceptual.sa/conceptual-main.cast
-INCLUDE includes/conceptual.sa/conceptual-test.cast
+# INCLUDE includes/conceptual.sa/conceptual-main.cast
 
 # vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
