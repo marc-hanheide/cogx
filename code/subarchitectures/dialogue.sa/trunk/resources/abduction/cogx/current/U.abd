@@ -24,11 +24,11 @@ person(S, H, Nom, H) <-
 % TOPIC
 %-------------------------------------------------------------------------
 
-understand : topic(S, H, _EpSt, Int, Ref, Nom) <-
+understand : topic(S, H, shared(S, H), Int, Ref, Nom) <-
 	does_not_specify_topic(Nom) / p(0.001).
 
 % the X
-understand : topic(S, H, _EpSt0, Int, Ref, Nom) <-
+understand : topic(S, H, EpSt, Int, Ref, Nom) <-
 %	i : sort(Nom, thing),
 %	i : prop(Nom, Prop),
 	i : feat_Delimitation(Nom, unique),
@@ -42,7 +42,7 @@ understand : topic(S, H, _EpSt0, Int, Ref, Nom) <-
 	try_topic_reference_resolution(EpSt, Int, Ref, Nom).
 
 % a X
-understand : topic(S, H, _EpSt0, Int, Ref, Nom) <-
+understand : topic(S, H, EpSt, Int, Ref, Nom) <-
 %	i : sort(Nom, thing),
 %	i : prop(Nom, Prop),
 	i : feat_Delimitation(Nom, existential),
@@ -108,7 +108,10 @@ try_topic_reference_resolution(EpSt, Int, Ref, Nom) <-
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-get_topic_referent(EpSt, Int, Ref, Nom, BId) <-
+get_topic_referent(attrib(S, H), Int, Ref, Nom, 'XXX-attrib-belief-id') <-
+	is_not_reference(Ref) / p(1.0).
+
+get_topic_referent(shared(S, H), Int, Ref, Nom, BId) <-
 	about(Ref, BId),
 	int : pre(Int, belief(Ref, EpSt, fv(mark, 'referring-expression'))) / p(1.0).
 %	int : pre(Int, belief(Ref, EpSt, fv(about, BId))) / p(1.0),
