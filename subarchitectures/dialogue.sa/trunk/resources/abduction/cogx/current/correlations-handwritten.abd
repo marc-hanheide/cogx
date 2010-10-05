@@ -1,0 +1,18 @@
+correlation = [
+	(ling_to_observed(color(red), color(red))) = p(0.8),
+	(ling_to_observed(color(red), color(green))) = p(0.1),
+	(ling_to_observed(color(red), color(blue))) = p(0.1),
+	(ling_to_observed(color(green), color(red))) = p(0.1),
+	(ling_to_observed(color(green), color(green))) = p(0.8),
+	(ling_to_observed(color(green), color(blue))) = p(0.1),
+	(ling_to_observed(color(blue), color(red))) = p(0.1),
+	(ling_to_observed(color(blue), color(green))) = p(0.1),
+	(ling_to_observed(color(blue), color(blue))) = p(0.8),
+
+	(ling_to_observed(color(orange), color(orange))) = p(0.8),
+
+	(ling_to_observed(objecttype(box), objecttype(box))) = p(0.8),
+	(ling_to_observed(objecttype(box), objecttype(ball))) = p(0.2),
+	(ling_to_observed(objecttype(ball), objecttype(box))) = p(0.2),
+	(ling_to_observed(objecttype(ball), objecttype(ball))) = p(0.8)
+].
