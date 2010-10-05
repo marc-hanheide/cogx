@@ -152,19 +152,27 @@ void VisualLearner::runComponent()
             // get the data from working memory
             pTaskData = getMemoryEntry<VisualLearnerRecognitionTask>(addr);
 
-            // TODO: check if pTaskData is valid
-            // TODO: lock pTaskData in WM
+            // XXX: check if pTaskData is valid
+            // XXX: lock pTaskData in WM
             if (recogniseAttributes(pTaskData)) {
                debug("Will overwrite task: %s", descAddr(addr).c_str());
                // sleepComponent(100);
-               overwriteWorkingMemory(addr, pTaskData);
+               try {
+                  overwriteWorkingMemory(addr, pTaskData);
+               }
+               catch (cast::ConsistencyException) {
+                  log("Learner/Recognition Task overwritten elsewhere: %s", descAddr(addr).c_str());
+                  // The task was changed in WM, but we don't care
+                  VisualLearnerRecognitionTaskPtr pData = getMemoryEntry<VisualLearnerRecognitionTask>(addr);
+                  overwriteWorkingMemory(addr, pTaskData);
+               }
             }
-            // TODO: unlock pTaskData in WM
+            // XXX: unlock pTaskData in WM
          }
          catch(cast::DoesNotExistOnWMException){
             log("run: VisualLearnerRecognitionTask deleted while working...");
          };
-         // TODO: catch other stuff from Matlab Proxy
+         // XXX: catch other stuff from Matlab Proxy
 
          log("VL_Recognition Task processed");
       } // while
@@ -180,19 +188,27 @@ void VisualLearner::runComponent()
             // get the data from working memory
             pTaskData = getMemoryEntry<VisualLearningTask>(addr);
 
-            // TODO: check if pTaskData is valid
-            // TODO: lock pTaskData
+            // XXX: check if pTaskData is valid
+            // XXX: lock pTaskData
             if (updateModel(pTaskData)) {
                debug("Will overwrite task: %s", descAddr(addr).c_str());
                // sleepComponent(100);
-               overwriteWorkingMemory(addr, pTaskData); // Not changed, but write to notify owner!
+               try {
+                  overwriteWorkingMemory(addr, pTaskData); // Not changed, but write to notify owner!
+               }
+               catch (cast::ConsistencyException) {
+                  log("Learner/Learning Task overwritten elsewhere: %s", descAddr(addr).c_str());
+                  // The task was changed in WM, but we don't care
+                  VisualLearningTaskPtr pData = getMemoryEntry<VisualLearningTask>(addr);
+                  overwriteWorkingMemory(addr, pTaskData);
+               }
             }
-            // TODO: unlock pTaskData
+            // XXX: unlock pTaskData
          }
          catch(cast::DoesNotExistOnWMException){
             log("VisualLearner.run: VisualLearnerLearningTask deleted while working...");
          };
-         // TODO: catch other stuff from Matlab Proxy
+         // XXX: catch other stuff from Matlab Proxy
 
          log("VL_Learning Task processed");
       }
@@ -290,6 +306,7 @@ void VisualLearner::updateWmModelStatus()
          if (addr.id.length() != 0 && addr.subarchitecture.length() != 0) {
             try{
                pStatus = pComponent->getMemoryEntry<VisualConceptModelStatus>(addr);
+               pComponent->debug("VisualConceptModelStatus read ... %s", descAddr(addr).c_str());
                return;
             }
             catch(cast::DoesNotExistOnWMException){
@@ -305,10 +322,11 @@ void VisualLearner::updateWmModelStatus()
       static void writeWmStatus(VisualLearner* pComponent,
             VisualConceptModelStatusPtr& pStatus, cdl::WorkingMemoryAddress& addr)
       {
+         //pComponent->log("Writing: VisualConceptModelStatus ...%s", descAddr(addr).c_str());
          if (addr.id.length() != 0 && addr.subarchitecture.length() != 0) {
             try{
                pComponent->overwriteWorkingMemory(addr, pStatus);
-               pComponent->log("VisualConceptModelStatus overwritten ...");
+               pComponent->log("VisualConceptModelStatus overwritten ...%s", descAddr(addr).c_str());
                return;
             }
             catch(cast::DoesNotExistOnWMException){
@@ -319,7 +337,7 @@ void VisualLearner::updateWmModelStatus()
          addr.id = pComponent->newDataID();
          addr.subarchitecture = pComponent->getSubarchitectureID();
          pComponent->addToWorkingMemory(addr, pStatus);
-         pComponent->log("VisualConceptModelStatus added ...");
+         pComponent->log("VisualConceptModelStatus added ... %s", descAddr(addr).c_str());
       }
    };
 
