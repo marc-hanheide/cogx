@@ -160,7 +160,7 @@ Partially_Observable_Markov_Decision_Process_State()
     :Expandable()
 //     :expected_value(0.0)
 {
-    expected_value = 0.0;
+    expected_value = -1e100;//0.0;
     expected_reward = 0.0;
     belief_State = Belief_State(0);
 }
@@ -423,7 +423,7 @@ get_observation_probabilities_at_prescribed_action() const
 
 // extern size_t extern_runtime_thread_thingi;
 
-void
+bool
 Partially_Observable_Markov_Decision_Process_State::
 accept_values(boost::numeric::ublas::compressed_vector< double >& values)
 {
@@ -494,11 +494,16 @@ accept_values(boost::numeric::ublas::compressed_vector< double >& values)
         }
     }
 
-    if(assigned_score){
-        expected_value = best_score + expected_reward;
+    double new_expected_value = best_score + expected_reward;
+    
+    if(assigned_score){// && new_expected_value > expected_value){
+        expected_value = new_expected_value;//best_score + expected_reward;
         INTERACTIVE_VERBOSER(true, 13000, "Made score assignment :: "<<expected_value);
+
+        return true;
     }
     
+    return false;
     VERBOSER(14000, "Accepted values.");
 }
 

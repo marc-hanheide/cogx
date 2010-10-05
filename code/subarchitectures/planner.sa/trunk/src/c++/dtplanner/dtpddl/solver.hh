@@ -174,6 +174,10 @@ namespace Planning
         /*Puts the starting belief state back on to the OPEN LISP.*/
         virtual void reinstate__starting_belief_state();
 
+        /* Changes the starting belief state to correspond with
+         * \argument{pomdp_state}.*/
+        void instate__starting_belief_state(Planning::POMDP_State* pomdp_state);
+    
         /*Sets the OPEN LIST to have no elements in it.*/
         virtual void empty__belief_states_for_expansion();
 

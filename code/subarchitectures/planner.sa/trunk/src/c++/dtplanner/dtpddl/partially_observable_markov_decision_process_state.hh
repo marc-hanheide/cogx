@@ -108,7 +108,7 @@ namespace Planning
 
         
         void accept_values(boost::numeric::ublas::vector<double>& values);
-        void accept_values(boost::numeric::ublas::compressed_vector< double >& values);
+        bool accept_values(boost::numeric::ublas::compressed_vector< double >& values);
         
         double get__expected_value() const;
         void set__expected_value(double) ;

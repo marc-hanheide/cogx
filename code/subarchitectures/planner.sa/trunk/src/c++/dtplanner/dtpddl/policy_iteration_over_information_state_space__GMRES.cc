@@ -120,6 +120,7 @@ void Policy_Iteration__GMRES::configure_reward_vector()
 
 void Policy_Iteration__GMRES::press_greedy_policy()
 {
+    bool convergence = true;
     for(auto _state = states.begin()
             ; _state != states.end()
             ; _state++){
