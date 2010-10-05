@@ -151,6 +151,76 @@ bool read_in__problem_description()
     return true;
 }
 
+template<typename T_Solver>
+Planning::POMDP_State* expand_for_new_state(Planning::POMDP_State* successor_state,
+                          T_Solver* solver)
+{
+    //successor_state = const_cast<Planning::POMDP_State*>(solver->get__starting_belief_state());
+    
+    auto new_starting_belief_state = new Planning::POMDP_State();
+    auto belief = successor_state->get__belief_state();
+    for(auto atom = belief.begin()
+            ; atom != belief.end()
+            ; atom++){
+        double prob = atom->second;
+        auto state = atom->first;
+
+        
+        INTERACTIVE_VERBOSER(true, 14000, "Creating new belief state with atom :: "
+                             <<*state<<std::endl
+                             );
+        
+        new_starting_belief_state->add__belief_atom(state, prob);
+    }
+
+    
+    new_starting_belief_state->set__index(0);
+    new_starting_belief_state->initialise__prescribed_action_index();
+    
+    solver->empty__belief_states_for_expansion();
+    solver->instate__starting_belief_state(new_starting_belief_state);/*Alters the starting state.*/
+    solver->reset__pomdp_state_hash_table();
+    solver->reinstate__starting_belief_state();
+    
+    auto current_state = solver->peek__next_belief_state_for_expansion();//expansion_queue.front();
+    
+    Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space,
+                                                       solver->get__sink_state_penalty());
+    
+    INTERACTIVE_VERBOSER(true, 15000, "Current state is :: "
+                         <<*current_state<<std::endl
+                         );
+
+    
+    for(uint i = 0; i < 100000; i++){
+        if(!solver->expand_belief_state_space()){
+            break;
+            VERBOSER(15000, "No starting state!"<<std::endl);
+        } else {
+            VERBOSER(15000, "Expanding (so far we have "
+                     <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl
+                     <<"Expected reward is :: "
+                     <<current_state->get__expected_value()<<std::endl);
+            //                 policy_Iteration();
+            //                     if(!(i % 10))policy_Iteration();
+
+            //                     policy_Iteration.reset__converged();
+        }
+
+        if(solver->belief_state__space.size() > 2000)break;
+    }
+    
+    int counter = 0;
+    while(policy_Iteration() && counter < 10){
+        
+        VERBOSER(15000, "PI.. Expected reward is :: "
+                 <<current_state->get__expected_value()<<std::endl);
+
+        counter++;
+    }
+
+    return current_state;// new_starting_belief_state;
+}
 
 int main(int argc, char** argv)
 {    
@@ -200,8 +270,8 @@ int main(int argc, char** argv)
                 ; problem++){
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
-//             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
-            auto solver = new Planning::Two_Phase_Solver(*problem->second);//Planning::Solver*
+            auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
+//             auto solver = new Planning::Two_Phase_Solver(*problem->second);//Planning::Solver*
             solver->set__sink_state_penalty(-1.0); //-1234.0);//-1e6);
             
             INTERACTIVE_VERBOSER(true, 12000, "Made a solver, starting preprocessing.")
@@ -212,7 +282,7 @@ int main(int argc, char** argv)
 
 
 
-            {/*START -- TRYING THE MDP HEURISTIC.*/
+            if(false){/*START -- TRYING THE MDP HEURISTIC.*/
 
                 
                 solver->empty__belief_states_for_expansion();
@@ -261,7 +331,7 @@ int main(int argc, char** argv)
                 }
 
                 solver->reset__pomdp_state_hash_table();
-                solver->change_phase();
+                //solver->change_phase();//HERE -- MONDAY
                 
                 solver->reinstate__starting_belief_state();
             }/*STOP -- TRYING THE MDP HEURISTIC.*/
@@ -364,7 +434,9 @@ int main(int argc, char** argv)
                                                _action.second);
             
                 current_state = successor_state;
-            
+                
+                current_state = expand_for_new_state<>(successor_state, solver);
+                
                 INTERACTIVE_VERBOSER(true, 15000, "Current belief state is :: "<<*current_state<<std::endl);
             }
 
