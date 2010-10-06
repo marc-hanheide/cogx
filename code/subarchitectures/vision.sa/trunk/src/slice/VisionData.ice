@@ -165,16 +165,20 @@ sequence<OneObj> ObjSeq;
     DoubleSeq identDistrib;
     double identGain;
     double identAmbiguity;
+    // TODO: (maybe) gains same as with colors
 
     StringSeq colorLabels;
     DoubleSeq colorDistrib;
     double colorGain;
     double colorAmbiguity;
+    // TODO: colorGain --> colorGains is a list (DoubleSeq), for each label
+    // TODO: colorTGain = max(colorGains) ... for now
 
     StringSeq shapeLabels;
     DoubleSeq shapeDistrib;
     double shapeGain;
     double shapeAmbiguity;
+    // TODO: gains same as with colors
 
     // Source proto object
     string protoObjectID;
@@ -328,7 +332,7 @@ sequence<OneObj> ObjSeq;
     string concept;
 
     // concepts: red, compact, box
-    IntSeq labels;
+    StringSeq labels;
     DoubleSeq gains;
   };
 
