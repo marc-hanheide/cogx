@@ -13,6 +13,7 @@ action__probabilistic_state_transformation.cc
 action__simple_numeric_change.cc
 action__state_transformation.cc
 assignment_applicator.cc
+belief_state_evaluation.cc
 boolean__satisfaction_status_management.cc
 boolean_state.cc
 cnf__state.cc
@@ -39,11 +40,13 @@ dtp_pddl_parsing_interface_problem.cc
 expandable.cc
 float_state.cc
 global.cc
+gmres.cc
 integer_state.cc
 markov_decision_process_state.cc
 observational__state.cc
 observation.cc
 observation__probabilistic.cc
+ordered_structure_over_states.cc
 partially_observable_markov_decision_process_state.cc
 planning_action_schema.cc
 planning_cnf_to_action_cnf.cc
@@ -63,6 +66,7 @@ probability_during_expansion__state.cc
 problem_grounding__actions.cc
 problem_grounding.cc
 problem_grounding__observations.cc
+simple_online_solver.cc
 solver.cc
 solver__expand_belief.cc
 solver__expand_observation.cc
@@ -76,8 +80,8 @@ stl__deref_tools.cc
 stl__modifiers.cc
 stl__typed_thing.cc
 turnstyle.cc
-unsigned_integer__status_management.cc
-gmres.cc)
+two_phase_solver.cc
+unsigned_integer__status_management.cc)
 
 add_definitions(-std=c++0x -DNDEBUG -O3 -march=native -fPIC)
 
