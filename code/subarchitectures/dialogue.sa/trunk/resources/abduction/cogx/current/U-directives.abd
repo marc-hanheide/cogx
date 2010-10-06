@@ -13,13 +13,14 @@ understand : event : utter(S, H, Nom) <-
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
 	understand : topic(S, H, EpSt, Int, SubjNom, RestrNom),
-	understand : polar_query_scope(S, H, Int, SubjNom, ScopeNom).
+	understand : polar_query_scope(S, H, EpSt, Int, SubjNom, ScopeNom).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-understand : polar_query_scope(S, H, Int, Ref, Nom) <-
+understand : polar_query_scope(S, H, EpSt, Int, Ref, Nom) <-
 	polar_query_prop(Nom, Prop, Value),
 	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
 	get_topic_referent(EpSt, Int, SubjNom, RestrNom, BId),
 	int : post(Int, state(['question-answered', agent(H), about(BId), feature(Prop), hypo(Value)])) / p(1.0).
 
@@ -50,13 +51,14 @@ understand : event : utter(S, H, Nom) <-
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
 	understand : topic(S, H, EpSt, Int, SubjNom, ScopeNom),
-	understand : wh_query_scope(S, H, Int, SubjNom, SubjNom).
+	understand : wh_query_scope(S, H, EpSt, Int, SubjNom, SubjNom).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-understand : wh_query_scope(S, H, Int, Ref, Nom) <-
+understand : wh_query_scope(S, H, EpSt, Int, Ref, Nom) <-
 	wh_query_prop(Nom, Prop),
 	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
 	get_topic_referent(EpSt, Int, SubjNom, RestrNom, BId),
 	int : post(Int, state(['question-answered', agent(H), about(BId), feature(Prop)])) / p(1.0).
 
@@ -97,26 +99,26 @@ understand : event : utter(S, H, Nom) <-
 
 nm_action_effects(S, H, EpSt, RootNom, Int, Ref, find) <-
 	int : pre(Int, belief(Ref, attrib(H, S), fv(location, unknown))) / p(1.0),
-	int : pre(Int, belief(Ref, EpSt, fv(mark, patient))) / p(1.0),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
 %	int : post(Int, belief(Ref, shared(S, H), fv(location, not(unknown)))) / p(1.0),
 	get_topic_referent(EpSt, Int, Ref, Ref, BId),
 	int : post(Int, state([found, agent(H), patient(BId)])) / p(1.0).
 
 nm_action_effects(S, H, EpSt, RootNom, Int, Ref, bring) <-
 	determine_recipient(RootNom, S, S, H, Recipient),
-	int : pre(Int, belief(Ref, EpSt, fv(mark, patient))) / p(1.0),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
 	get_topic_referent(EpSt, Int, Ref, Ref, BId),
 	int : post(Int, state([possession, agent(Recipient), patient(BId)])) / p(1.0).
 
 nm_action_effects(S, H, EpSt, RootNom, Int, Ref, get) <-
 	determine_recipient(RootNom, H, S, H, Recipient),
-	int : pre(Int, belief(Ref, EpSt, fv(mark, patient))) / p(1.0),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
 	get_topic_referent(EpSt, Int, Ref, Ref, BId),
 	int : post(Int, state([possession, agent(Recipient), patient(BId)])) / p(1.0).
 
 nm_action_effects(S, H, EpSt, RootNom, Int, Ref, give) <-
 	determine_recipient(RootNom, H, S, H, Recipient),
-	int : pre(Int, belief(Ref, EpSt, fv(mark, patient))) / p(1.0),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
 	get_topic_referent(EpSt, Int, Ref, Ref, BId),
 	int : post(Int, state([possession, agent(Recipient), patient(BId)])) / p(1.0).
 

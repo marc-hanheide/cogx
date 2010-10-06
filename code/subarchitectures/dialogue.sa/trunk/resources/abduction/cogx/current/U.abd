@@ -108,7 +108,7 @@ try_topic_reference_resolution(EpSt, Int, Ref, Nom) <-
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-get_topic_referent(attrib(S, H), Int, Ref, Nom, 'pointer-to'(patient)) <-
+get_topic_referent(attrib(S, H), Int, Ref, Nom, 'pointer-to'('topic-referent')) <-
 	is_not_reference(Ref) / p(1.0).
 
 get_topic_referent(shared(S, H), Int, Ref, Nom, BId) <-
