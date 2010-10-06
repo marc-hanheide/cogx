@@ -213,7 +213,7 @@ void CTestCase_WmResponder::runOneStep()
    //}
 
    string id(m_pOwner->newDataID());
-   ObjectRecognitionTaskPtr task = new ObjectRecognitionTask();
+   orice::ObjectRecognitionTaskPtr task = new orice::ObjectRecognitionTask();
    m_pOwner->println("Adding new task");
    m_pOwner->addToWorkingMemory(id, m_pOwner->getSubarchitectureID(), task);
    m_pOwner->sleepComponent(5000);

@@ -75,11 +75,21 @@ void CObjectRecognizer::loadModels(const std::string& from, const std::vector<st
       log(" *** CObjectRecognizer: Could not open %s", from.c_str());
       return;
    }
+
+   std::vector<std::string> models;
    CModelLoader loader;
-   for(size_t i = 0; i < modelnames.size(); i++) {
+
+   if (modelnames.size() == 0 || modelnames[0] == "*") {
+      loader.listModels(db, models);
+   }
+   else {
+      models = modelnames;
+   }
+
+   for(size_t i = 0; i < models.size(); i++) {
       CObjectModel *pModel = new CObjectModel();
       try {
-         loader.loadModel(db, modelnames[i], *pModel);
+         loader.loadModel(db, models[i], *pModel);
       }
       catch (Exception& e) {
          log("ERROR: %s", e.what());
@@ -87,11 +97,11 @@ void CObjectRecognizer::loadModels(const std::string& from, const std::vector<st
       }
       if (pModel->m_id > 0) {
          m_models.push_back(pModel);
-         log("Read model: %s", modelnames[i].c_str());
+         log("Read model: %s", models[i].c_str());
       }
       else {
          delete pModel;
-         log("Read model FAILED: %s", modelnames[i].c_str());
+         log("Read model FAILED: %s", models[i].c_str());
       }
    }
 
@@ -110,17 +120,18 @@ void CObjectRecognizer::configure(const map<string,string> & _config)
    string modeldb;
    vector<string> modelnames;
 
-   if ((it = _config.find("--modeldir")) != _config.end())
-   {
+   if ((it = _config.find("--modeldir")) != _config.end()) {
       istringstream istr(it->second);
       istr >> modeldb;
    }
 
-   if ((it = _config.find("--models")) != _config.end())
-   {
+   if ((it = _config.find("--models")) != _config.end()) {
       istringstream istr(it->second);
       string label;
       while(istr >> label) modelnames.push_back(label);
+   }
+   else {
+      modelnames.push_back(string("*"));
    }
 
 #ifdef FEAT_VISUALIZATION
@@ -152,7 +163,7 @@ void CObjectRecognizer::start()
    // (ID set in CAST file, subarchitecture entry)
    if (m_bWmFilters) {
       addChangeFilter(
-            cast::createLocalTypeFilter<ObjectRecognitionTask>(cast::cdl::ADD),
+            cast::createLocalTypeFilter<orice::ObjectRecognitionTask>(cast::cdl::ADD),
             new cast::MemberFunctionChangeReceiver<CObjectRecognizer>(this,
                &CObjectRecognizer::onAddRecognitionTask)
             );
@@ -188,7 +199,7 @@ void CObjectRecognizer::onAddRecognitionTask(const cast::cdl::WorkingMemoryChang
 // Process queued recognition requests
 void CObjectRecognizer::processQueuedTasks(TRecognitionRequestVector &requests)
 {
-   log("%s recognition requests to process", requests.size());
+   log("%d recognition requests to process", requests.size());
 
    TRecognitionRequestVector::iterator it;
    for (it = requests.begin(); it != requests.end(); it++) {
