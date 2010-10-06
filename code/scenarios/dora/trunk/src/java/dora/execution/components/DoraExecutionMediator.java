@@ -6,6 +6,7 @@ import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import execution.components.PlanExecutionMediator;
 import execution.slice.ActionExecutionException;
 import execution.slice.actions.DetectObjects;
@@ -63,10 +64,12 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 
 			return act;
 		} else if (_plannedAction.name.equals("look-for-object")) {
-			assert _plannedAction.arguments.length == 1 : "look-for-object action arity is expected to be 1";
+			assert _plannedAction.arguments.length == 2 : "look-for-object action arity is expected to be 2";
+			String label = ((ElementaryFormula) _plannedAction.arguments[1]).prop;
 
 			DetectObjects act = newActionInstance(DetectObjects.class);
-			act.labels = DEFAULT_LABELS;
+			String[] labels = { label };
+			act.labels = labels;
 			return act;
 		} else if (_plannedAction.name.equals("look-for-people")) {
 			assert _plannedAction.arguments.length == 1 : "look-for-people action arity is expected to be 1";
