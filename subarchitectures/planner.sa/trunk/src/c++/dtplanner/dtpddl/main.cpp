@@ -272,9 +272,11 @@ int main(int argc, char** argv)
 //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
 #ifdef LAO_STAR
 #define CHANGE_PHASE 1
-            auto solver = new Planning::Two_Phase_Solver(*problem->second);//Planning::Solver*
+            auto solver = new Planning::Two_Phase_Solver(*problem->second);
+            
+//             auto solver = new Planning::Solver(*problem->second);
 #else       
-            auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
+            auto solver = new Planning::Solver(*problem->second);
 #endif
             
             solver->set__sink_state_penalty(-1.0); //-1234.0);//-1e6);
@@ -355,7 +357,7 @@ int main(int argc, char** argv)
             current_state = solver->solve__for_new_starting_state(current_state);
 #endif
             
-            for(auto i = 0; i < 0; i++){
+            for(auto i = 0; i < 20; i++){
             
                 INTERACTIVE_VERBOSER(true, 15000, "Current state is :: "
                                      <<*current_state<<std::endl

@@ -125,6 +125,11 @@
                    )
 )
 
+
+(:action spin 
+	 :precondition (committed)
+	 :effect (and (assign (reward) 0.0)))
+
 (:action  create_cones
           :parameters  (?a - robot ?l - label ?r - room ?p - place)
           :precondition  (and  (not (committed))
