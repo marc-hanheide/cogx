@@ -1,13 +1,13 @@
 %% INTROSPECT %%
 function gain = cogxVisualLearner_introspect
 
-global mC
+   global mC
 
-[g,mC]=ODKDEintrospect(mC);
-gain=cc2c(g);
+   [g,mC]=ODKDEintrospect(mC);
+   gain=cc2c(g);
 
-displayTL(mC);
-%LRvisUpdate;
-%asvSave;
-disp(['MATLAB: cogxVisualLearner_introspect DONE']);
+   displayTL(mC);
+   %LRvisUpdate;
+   %asvSave;
+   disp(['MATLAB: cogxVisualLearner_introspect DONE']);
 end
