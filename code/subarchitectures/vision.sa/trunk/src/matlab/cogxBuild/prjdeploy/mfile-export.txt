@@ -25,4 +25,5 @@ cogxMatlabWarnings
 cogxVisualLearner_recognise
 cogxVisualLearner_update
 cogxVisualLearner_unlearn
+cogxVisualLearner_introspect
 getGlobalArray

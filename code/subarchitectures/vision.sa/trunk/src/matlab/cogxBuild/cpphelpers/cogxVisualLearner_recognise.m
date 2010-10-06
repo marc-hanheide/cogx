@@ -7,6 +7,8 @@ function [rCpcx,gain] = cogxVisualLearner_recognise(X, B, pts3d)
    B = (B==1);
    if sum(B(:)) == 0
       rCqnt = [];
+      rCpcx = [];
+      gain = [];
    else
       disp(['MATLAB: cogxVisualLearner_recognise']);
       % Copied from cosyFeatureExtractor_extract

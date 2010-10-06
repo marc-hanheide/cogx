@@ -100,7 +100,7 @@ static void CheckInit()
 
 static void addLabels(mwArray &ans, double weight, vector<string> &labels, vector<double> &probs)
 {
-   unsigned n_dims = ans.NumberOfDimensions();
+   //unsigned n_dims = ans.NumberOfDimensions();
    // TODO: assert n_dims = 1
    mwArray dims = ans.GetDimensions();
    double dim0 = dims.Get(mwSize(1), 1);
@@ -113,7 +113,7 @@ static void addLabels(mwArray &ans, double weight, vector<string> &labels, vecto
 
 static void copyLabels(const mwArray &ans, vector<string> &labels, vector<double> &probs)
 {
-   unsigned n_dims = ans.NumberOfDimensions();
+   //unsigned n_dims = ans.NumberOfDimensions();
    // TODO: assert n_dims = 2
    mwArray dims = ans.GetDimensions();
    double dim0 = dims.Get(mwSize(1), 1);
@@ -225,7 +225,7 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<string> &labels,
    probs.clear();
    gains.clear();
 
-   unsigned n_dims = rCqnt.NumberOfDimensions();
+   //unsigned n_dims = rCqnt.NumberOfDimensions();
    // TODO: assert n_dims = 2; assert gain.size == rCqnt.size
    dims = rCqnt.GetDimensions();
    dim0 = dims.Get(mwSize(1), 1);
@@ -241,7 +241,7 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<string> &labels,
    }
 }
 
-void VL_update_model(ProtoObject &Object, std::vector<string> &labels, std::vector<double> &weights)
+void VL_update_model(ProtoObject &Object, std::vector<string>& labels, std::vector<double>& weights)
 {
    CheckInit();
    mwArray image, mask, pts3d;
@@ -277,6 +277,29 @@ void VL_update_model(ProtoObject &Object, std::vector<string> &labels, std::vect
         }
       }
       cogxVisualLearner_unlearn(avw, image, mask, pts3d);
+   }
+}
+
+void VL_introspect(vector<string>& labels, vector<int>& labelConcepts, vector<double>& gains)
+{
+   CheckInit();
+   mwArray newGains;
+   cogxVisualLearner_introspect(1, newGains);
+
+   labels.clear();
+   labelConcepts.clear();
+   gains.clear();
+   mwArray dims = newGains.GetDimensions();
+   int dim0 = dims.Get(mwSize(1), 1);
+   for (int i = 0; i < dim0; i++) {
+      double label = newGains.Get(mwSize(2), i+1, 1);
+      double fgain = newGains.Get(mwSize(2), i+1, 2);
+      string strLabel = Enumerator.getName((int)label);
+      labels.push_back(strLabel);
+      labelConcepts.push_back(labelConceptMap[strLabel]);
+      gains.push_back(fgain);
+
+      printf(" ... label '%s' gain %lf\n", strLabel.c_str(), fgain);
    }
 }
 
