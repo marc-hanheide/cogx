@@ -30,13 +30,12 @@ class FakeCASTState(cast_state.CASTState):
         self.prob_state = prob_state.ProbabilisticState.from_problem(problem)
 
         if component:
-            self.facts = []
-            self.get_coma_data(component)
-            for o in self.objects:
+            coma_facts, coma_objects = self.get_coma_data(component)
+            for o in coma_objects:
                 if o not in problem.objects:
                     problem.add_object(o)
                     
-            for f in self.facts:
+            for f in coma_facts:
                 self.prob_state.set(f)
                 problem.init.append(f.as_literal(useEqual=True))
 

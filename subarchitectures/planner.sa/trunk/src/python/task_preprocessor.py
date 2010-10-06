@@ -34,9 +34,11 @@ class SVarDistribution(tuple):
     valstr = " ".join("%.2f: %s" % (v[1], v[0]) for v in self.values)
     return "(%s %s) = [%s]" % (self.feature, " ".join(a.name for a in self.args), valstr)
 
-def rename_objects(objects):
+def rename_objects(objects, existing=set()):
   namedict = {}
   for obj in objects:
+    if obj in existing:
+      continue
     oldname = obj.name
     new_name = "%s_%s" % (obj.type, obj.name.translate(trans_tbl))
     #the cast ids are case sensitive, so we have to replace uppercase chars

@@ -17,11 +17,11 @@
    (started)
 ;   (select-locked)
    (cones-exist ?l - label ?r - room)
+   (done)
    )
 
   (:functions
    (is-in ?o - movable) - place
-   (really-is-in ?o - movable) - place
    (in-room ?p - place) - room
    (category ?r - room) - category
    (label ?o - visualobject) - label
@@ -37,20 +37,26 @@
    dummy-cone - label
   )
 
+  ;; (:init-rule objects
+  ;;             :effect (forall (?l - label) (create (?o - visualobject)
+  ;;                                                  (assign (label ?o) ?l)))
+  ;;             )
   (:init-rule objects
-              :effect (forall (?l - label) (create (?o - visualobject)
-                                                   (assign (label ?o) ?l)))
+              :parameters(?l - label)
+              :effect (create (?o - visualobject)
+                              (assign (label ?o) ?l))
               )
 
   (:init-rule cones
-              :effect (forall (?r - room) (and
-                                           (create (?c - cone) (and
-                                                                (assign (in-room ?c) ?r)
-                                                                (assign (cone-label ?c) dummy-cone)))
-                                           (create (?c - cone) (and
-                                                                (assign (in-room ?c) ?r)
-                                                                (assign (cone-label ?c) dummy-cone)))
-                                           ))
+              :parameters(?r - room)
+              :effect (and
+                       ;; (create (?c - cone) (and
+                       ;;                      (assign (in-room ?c) ?r)
+                       ;;                      (assign (cone-label ?c) dummy-cone)))
+                       (create (?c - cone) (and
+                                            (assign (in-room ?c) ?r)
+                                            (assign (cone-label ?c) dummy-cone)))
+                       )
               )
 
   (:derived (cones-exist ?l - label ?r - room)
@@ -62,8 +68,8 @@
            :agent (?a - agent)
            :parameters (?l - label ?r - room ?c - category)
            :precondition (= (category ?r) ?c)
-           :effect (probabilistic (dora__in ?l ?c) (assign (ex-in-room ?l ?r) true) 
-                                                   (assign (ex-in-room ?l ?r) false))
+           :effect (probabilistic (dora__in ?l ?c) (assign (ex-in-room ?l ?r) true))
+                               ;;(assign (ex-in-room ?l ?r) false))
            )
 
   (:action sample_is_in
@@ -84,7 +90,7 @@
                               (= (cone-label ?c) dummy-cone)
                               (not (cones-exist ?l ?r))
                               (= (ex-in-room ?l ?r) true))
-           :effect (probabilistic 0.5 (assign (is-in ?o) ?c))
+           :effect (probabilistic 0.9 (assign (is-in ?o) ?c))
            )
 
 
@@ -128,6 +134,7 @@
                      :condition (and (over all (or (connected ?from ?to)
                                                    (connected ?to ?from)
                                                    ))
+                                     (over all (not (done)))
                                      (at start (= (is-in ?a) ?from)))
                      :effect (and (change (is-in ?a) ?to)
                                   (at start (started)))
@@ -140,7 +147,8 @@
                      :duration (= ?duration 10)
                      :condition (and (over all (and (= (is-in ?a) ?p)
                                                     (= (in-room ?p) ?r)
-                                                    (hyp (ex-in-room ?l ?r) true)))
+                                                    (hyp (ex-in-room ?l ?r) true)
+                                                    (not (done))))
                                      )
                      :effect (and (at end (cones_created ?l ?r))
                                   (at start (started)))
@@ -158,8 +166,10 @@
                      :agent (?a - robot)
                      :parameters (?o - visualobject ?l - label ?r - room ?c - cone)
                      :duration (= ?duration 1)
-                     :condition (over all (and (cones_created ?l ?r)
+                     :condition (over all (and (not (done))
+                                               (cones_created ?l ?r)
                                                (= (label ?o) ?l)
+                                               (= (in-room ?c) ?r)
                                                (= (cone-label ?c) dummy-cone)));(over all (= (is-in ?a) ?c))
                                      ;(at start (hyp (is-in ?o) ?c)))
                      :effect (and ;;(at end (assign (really-is-in ?o) ?c))
@@ -179,7 +189,8 @@
                      :agent (?a - robot)
                      :parameters (?o - visualobject ?l - label ?c - cone)
                      :duration (= ?duration 1)
-                     :condition (over all (and (= (cone-label ?c) ?l)
+                     :condition (over all (and (not (done))
+                                               (= (cone-label ?c) ?l)
                                                (= (label ?o) ?l)))
                                         ;(over all (= (is-in ?a) ?c))
                                      ;(at start (hyp (is-in ?o) ?c)))

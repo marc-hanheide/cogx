@@ -22,28 +22,79 @@ class CASTState(object):
         self.domain = domain
         self.beliefs = beliefs
         self.beliefdict = dict((b.id, b) for b in beliefs)
+        
+        self.coma_facts = []
+        self.coma_objects = set()
+        if oldstate and oldstate.coma_facts is not None:
+            self.coma_facts = oldstate.coma_facts
+            self.coma_objects = oldstate.coma_objects
+        elif component:
+            self.coma_facts, self.coma_objects = self.get_coma_data(component)
+            
         #TODO: make this less ugly
         tp.current_domain = self.domain
         tp.belief_dict = self.beliefdict
   
         obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(beliefs))))
   
-        self.objects = tp.infer_types(obj_descriptions)
-        self.namedict = tp.rename_objects(self.objects)
+        objects = tp.infer_types(obj_descriptions)
+        self.namedict = tp.rename_objects(objects, self.coma_objects|domain.constants )
+        self.objects = set(list(objects)) # force rehashing
 
         self.facts = list(tp.tuples2facts(obj_descriptions))
-        if component:
-            self.get_coma_data(component)
+        self.objects |= self.coma_objects
+        self.facts += self.coma_facts
             
         problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
         self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
-        self.prob_state.apply_init_rules(domain = self.domain)
-        self.generated_objects = set(problem.objects) - self.objects
+        # self.prob_state.apply_init_rules(domain = self.domain) # TODO: this is pretty flakey, as we don't really guarantee
+        #                                                        #       that e.g. generated objects have the same names
+
+        self.generated_facts, self.generated_objects = self.generate_init_facts(problem, oldstate)
+        self.facts += self.generated_facts
+        for f in self.generated_facts:
+            self.prob_state.set(f)
+        self.objects |= self.generated_objects
+        
         self.state = self.prob_state.determinized_state(0.05, 0.95)
         if oldstate:
             self.match_generated_objects(oldstate)
 
+    def generate_init_facts(self, problem, oldstate=None):
+        generated_facts = []
+        generated_objects = set()
+        new_objects = set(self.objects)
+        if oldstate and oldstate.generated_facts is not None:
+            generated_facts = oldstate.generated_facts
+            generated_objects = oldstate.generated_objects
+            new_objects -= oldstate.objects
+
+        # import debug
+        # debug.set_trace()
+        for rule in self.domain.init_rules:
+            def inst_func(mapping, args):
+                if len(args) != len(rule.args):
+                    return True, None
+                elif len(rule.args) == 0 and oldstate is None:
+                    return True, None
+                elif any(a in new_objects for a in mapping.itervalues()):
+                    return True, None
+                return None, None
+            
+            #combinations = list(product(*map(lambda arg: list(self.problem.get_all_objects(arg.type)), rule.args)))
+            for mapping in rule.smart_instantiate(inst_func, rule.args, [problem.get_all_objects(a.type) for a in rule.args], problem):
+            #for c in combinations:
+            #    rule.instantiate(c, self.problem)
+                if rule.precondition is None or self.prob_state.is_satisfied(rule.precondition):
+                    facts = self.prob_state.get_effect_facts(rule.effect)
+                    generated_facts += [pddl.state.Fact(svar, val) for svar, val in facts.iteritems()] 
+            #    rule.uninstantiate()
+        generated_objects |= (problem.objects - self.objects)
+        return generated_facts, generated_objects
+
     def get_coma_data(self, component):
+        coma_objects = set()
+        coma_facts = []
         for f in chain(self.domain.predicates, self.domain.functions):
             if not f.name.startswith("dora__"):
                 continue
@@ -53,7 +104,7 @@ class CASTState(object):
                 results = component.getHFC().querySelect(query)
             except Exception, e:
                 log.warning("Error when calling the HFC server: %s", str(e))
-                return
+                return coma_facts, coma_objects
             
             for elem in results.bt:
                 a1_str = QDL_VALUE.search(elem[results.varPosMap['?x']]).group(1)
@@ -64,8 +115,8 @@ class CASTState(object):
                 p = float(p_str)
                 
                 for a in (a1,a2):
-                    if a not in self.objects and a not in self.domain.constants:
-                        self.objects.add(a)
+                    if a not in self.domain.constants:
+                        coma_objects.add(a)
                 if f.type.equal_or_subtype_of(pddl.t_number):
                     val = pddl.types.TypedNumber(p)
                 elif f.type == pddl.t_boolean:
@@ -77,8 +128,9 @@ class CASTState(object):
                     assert False
                     
                 fact = state.Fact(state.StateVariable(f, [a1, a2]), val)
-                self.facts.append(fact)
+                coma_facts.append(fact)
                 #log.debug("added fact: %s", fact)
+        return coma_facts, coma_objects
 
     def match_generated_objects(self, oldstate):
         # This will only match single new objects (i.e. no several new
@@ -110,6 +162,7 @@ class CASTState(object):
 
         if matches:
             for obj, gen in matches.iteritems():
+                self.objects.discard(obj)
                 log.debug("Matching generated object %s to new object %s.", gen.name, obj.name)
                 belname = self.namedict[obj.name]
                 del self.namedict[obj.name]
@@ -124,8 +177,8 @@ class CASTState(object):
 
             problem = pddl.Problem("cogxtask", self.objects, [], None, self.domain)
             self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
-            self.prob_state.apply_init_rules(domain = self.domain)
-            self.generated_objects = set(problem.objects) - self.objects
+            #self.prob_state.apply_init_rules(domain = self.domain)
+            #self.generated_objects = set(problem.objects) - self.objects
             self.state = self.prob_state.determinized_state(0.05, 0.95)
 
 
@@ -161,13 +214,15 @@ class CASTState(object):
         goaldict = {}
         problem.goal = pddl.conditions.Conjunction([], problem)
         for goal in cast_task.goals:
-            try:
-                goalstrings = tp.transform_goal_string(goal.goalString, self.namedict).split("\n")
-                pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
-            except pddl.parser.ParseError,e:
-                log.error("Could not parse goal: %s", goal.goalString)
-                log.error("Error: %s", e.message)
-                continue
+            goalstrings = tp.transform_goal_string(goal.goalString, self.namedict).split("\n")
+            pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
+            # try:
+            #     goalstrings = tp.transform_goal_string(goal.goalString, self.namedict).split("\n")
+            #     pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
+            # except pddl.parser.ParseError,e:
+            #     log.error("Could not parse goal: %s", goal.goalString)
+            #     log.error("Error: %s", e.message)
+            #     continue
             
             goaldict[pddl_goal] = goal
             goaldict[goal.goalString] = pddl_goal

@@ -233,11 +233,13 @@ class DTProblem(object):
             a = pddl.Action(name, [val], None, None, domain)
             b = pddl.builder.Builder(a)
             
-            a.precondition = b.cond('and', ('not', (dtpddl.committed, [term])))
-            commit_effect = b.effect(dtpddl.committed, [term])
+            #a.precondition = b.cond('and', ('not', (dtpddl.committed, [term])))
+            a.precondition = b.cond('not', ('done', ))
+            #commit_effect = b.effect(dtpddl.committed, [term])
             reward_effect = b('when', ('=', term, val), ('assign', ('reward',), confirm_score))
             penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -confirm_score))
-            a.effect = b.effect('and', commit_effect, reward_effect, penalty_effect)
+            done_effect = b.effect('done')
+            a.effect = b.effect('and', reward_effect, penalty_effect, done_effect)
             
             commit_actions.append(a)
 
@@ -263,21 +265,24 @@ class DTProblem(object):
             a = pddl.Action(name, [], None, None, domain)
             b = pddl.builder.Builder(a)
 
-            conds = [b.cond('not', (dtpddl.committed, term))]
-            for gvar in goals:
-                # don't allow this goal after a commit has been done
-                gterm = pddl.Term(gvar.function, gvar.get_args())
-                conds.append(b.cond('not', (dtpddl.committed, gterm)))
-            for ca in commit_actions:
-                # don't allow commit actions after any disconfirm
-                ca.precondition.parts.append(b.cond('not', (dtpddl.committed, term)))
+            #conds = [b.cond('not', (dtpddl.committed, term))]
+            conds = [b.cond('not', ('done',))]
+            # for gvar in goals:
+            #     # don't allow this goal after a commit has been done
+            #     gterm = pddl.Term(gvar.function, gvar.get_args())
+            #     conds.append(b.cond('not', (dtpddl.committed, gterm)))
+            # for ca in commit_actions:
+            #     # don't allow commit actions after any disconfirm
+            #     ca.precondition.parts.append(b.cond('not', (dtpddl.committed, term)))
             
-            a.precondition = pddl.Conjunction(conds, a)
+            #a.precondition = pddl.Conjunction(conds, a)
+            a.precondition = b.cond('not', ('done', ))
             
-            commit_effect = b.effect(dtpddl.committed, term)
+            #commit_effect = b.effect(dtpddl.committed, term)
             reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_score))
             penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -2*dis_score))
-            a.effect = b.effect('and', commit_effect, reward_effect, penalty_effect)
+            done_effect = b.effect('done')
+            a.effect = b.effect('and', reward_effect, penalty_effect, done_effect)
             
             disconfirm_actions.append(a)
                         
