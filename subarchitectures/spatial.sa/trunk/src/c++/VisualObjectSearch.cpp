@@ -291,6 +291,21 @@ m_samplesize = 100;
     return d;
   }
 
+  int VisualObjectSearch::GetClosestNodeId(double x, double y, double a){
+
+    NavData::NavGraphInterfacePrx agg(getIceServer<NavData::NavGraphInterface>("navgraph.process"));
+    int d = agg->getClosestNodeId(x,y,a,3);
+    return d;
+  }
+
+
+  int VisualObjectSearch::GetAreaId(double x, double y, double a){
+
+    NavData::NavGraphInterfacePrx agg(getIceServer<NavData::NavGraphInterface>("navgraph.process"));
+    int d = agg->getAreaId(x,y,a,3);
+    return d;
+  }
+
 
   void VisualObjectSearch::IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm  ){
     log("icemap.size: %d, icemap.data.size %d, icemap.cellSize: %f, centerx,centery: %f,%f",icemap.size, icemap.data.size(), icemap.cellSize, icemap.xCenter, icemap.yCenter);
@@ -618,6 +633,8 @@ m_samplesize = 100;
 	vp->tilt = nbv.tilt;
 	vp->label = targetObject;
 	vp->probability = nbv.totalprob;	
+	vp->closestPlaceId = GetClosestNodeId(vp->pose.x, vp->pose.y, vp->pose.z); 
+	vp->areaId = GetAreaId(vp->pose.x, vp->pose.y, vp->pose.z); 
 	addToWorkingMemory(newDataID(),vp);      
       }
       count++;

@@ -98,8 +98,10 @@ protected:
 
 
 private:
-   class NavGraphServer : public NavData::NavGraphInterface{
-      virtual double getPathLength(double xS, double yS, double aS, double xG, double yG, double aG,const Ice::Current &_context);
+  class NavGraphServer : public NavData::NavGraphInterface{
+    virtual double getPathLength(double xS, double yS, double aS, double xG, double yG, double aG, const Ice::Current &_context);
+    virtual  int getAreaId(double x, double y, double a, double maxDist , const Ice::Current &_context);
+    virtual int getClosestNodeId(double x, double y, double a, double maxDist ,const Ice::Current &_context);
       NavGraphProcess *m_pOwner;
       NavGraphServer(NavGraphProcess *owner) : m_pOwner(owner)
       {}

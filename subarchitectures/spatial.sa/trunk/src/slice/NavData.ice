@@ -38,13 +38,15 @@ class ObjectSearchPlan{
   
 
 
- interface NavGraphInterface{
-    double getPathLength(double xS, double yS, double aS,
-	                 double xG, double yG, double aG);
-  };
+interface NavGraphInterface{
+  double getPathLength(double xS, double yS, double aS,
+      double xG, double yG, double aG);
+  int getAreaId(double x, double y, double a, double maxDist);
+  int getClosestNodeId(double x, double y, double a, double maxDist);
+};
 
-  sequence<double> DoubleOpt;
-  sequence<string> StringOpt;
+    sequence<double> DoubleOpt;
+    sequence<string> StringOpt;
   sequence<long> LongOpt;
 
   /**
