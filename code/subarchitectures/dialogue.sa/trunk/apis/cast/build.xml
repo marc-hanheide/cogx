@@ -78,8 +78,8 @@
 
     <target name="expandlibs" depends="prepare">
            <echo message="Expanding external libraries for the Dialogue API CAST extension to output/classes"/>
-            <unzip dest="${output.dir}" src="./lib/vcomsc.jar"/>
-	    <unzip dest="${output.dir}" src="./lib/nsc.jar"/>
+    <!--        <unzip dest="${output.dir}" src="./lib/vcomsc.jar"/>
+	    <unzip dest="${output.dir}" src="./lib/nsc.jar"/> -->
     </target>
 
 

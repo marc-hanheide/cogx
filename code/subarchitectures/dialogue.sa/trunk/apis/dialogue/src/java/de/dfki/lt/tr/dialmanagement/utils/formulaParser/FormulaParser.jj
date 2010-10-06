@@ -39,6 +39,9 @@ TOKEN :
 | <INTEGER: ( ["0"-"9"] )+>
 | <FLOAT: ( ["0"-"9"] )+ "." (["0"-"9"] )+ "f">
 | <BOOLEAN: "true"|"false">
+| <KLEENE_STAR: "*">
+| <ARGUMENT: "%" ( ["0"-"9"] )+>
+| <INTERROGATION_MARK: "?">
 | <LAND: "^">
 | <LOR: "v">
 | <QUOTE: "\"">
@@ -103,6 +106,31 @@ Token tok;
 }
 
 
+
+UnknownFormula UnknownFormula():
+{
+Token tok;
+}
+{
+( tok=<INTERROGATION_MARK>
+  {return new UnknownFormula(0); }
+  )
+}
+
+
+UnderspecifiedFormula UnderspecifiedFormula():
+{
+Token tok;
+}
+{
+( tok=<KLEENE_STAR>
+  {return new UnderspecifiedFormula(0);}
+  | tok=<ARGUMENT>
+  {return new UnderspecifiedFormula(Integer.parseInt(tok.toString().replace("%",""))); }
+  )
+}
+
+
 ComplexFormula CFormulaConj():
 {
 List<dFormula> subFormulae = new LinkedList<dFormula>();
@@ -153,6 +181,10 @@ dFormula formulaIn;
 	|
 	formula = FloatFormula()	
 	|
+	formula = UnknownFormula()	
+	|
+	formula = UnderspecifiedFormula()
+	|
 	formula = IntegerFormula()	
 	|
    formula = ElemFormula()	
@@ -200,7 +232,11 @@ dFormula formulaIn;
 	|
 	formula = BooleanFormula()	
 	|
-	formula = FloatFormula()	
+	formula = FloatFormula()
+	|
+	formula = UnderspecifiedFormula()	
+	|
+	formula = UnknownFormula()	
 	|
 	formula = IntegerFormula()	
 	|

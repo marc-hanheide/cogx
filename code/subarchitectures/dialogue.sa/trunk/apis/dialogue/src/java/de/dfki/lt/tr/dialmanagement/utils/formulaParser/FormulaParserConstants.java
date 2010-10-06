@@ -12,10 +12,13 @@ public interface FormulaParserConstants {
   int INTEGER = 10;
   int FLOAT = 11;
   int BOOLEAN = 12;
-  int LAND = 13;
-  int LOR = 14;
-  int QUOTE = 15;
-  int WORD = 16;
+  int KLEENE_STAR = 13;
+  int ARGUMENT = 14;
+  int INTERROGATION_MARK = 15;
+  int LAND = 16;
+  int LOR = 17;
+  int QUOTE = 18;
+  int WORD = 19;
 
   int DEFAULT = 0;
 
@@ -33,6 +36,9 @@ public interface FormulaParserConstants {
     "<INTEGER>",
     "<FLOAT>",
     "<BOOLEAN>",
+    "\"*\"",
+    "<ARGUMENT>",
+    "\"?\"",
     "\"^\"",
     "\"v\"",
     "\"\\\"\"",

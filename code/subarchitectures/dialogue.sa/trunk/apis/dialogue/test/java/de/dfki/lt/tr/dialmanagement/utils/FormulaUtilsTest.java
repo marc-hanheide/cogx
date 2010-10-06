@@ -32,6 +32,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 
@@ -280,7 +281,7 @@ public class FormulaUtilsTest {
 		String str2 = "blabla2 ^ blabla1";
 		dFormula formula2 = FormulaUtils.constructFormula(str2);
 		
-		assertTrue(FormulaUtils.isEqualTo(formula1, formula2));
+		assertTrue(FormulaUtils.subsumes(formula1, formula2));
 	}
 	
 	@Test
@@ -292,7 +293,7 @@ public class FormulaUtilsTest {
 		String str2 = "bloblo1 v bloblo2";
 		dFormula formula2 = FormulaUtils.constructFormula(str2);
 		
-		assertFalse(FormulaUtils.isEqualTo(formula1, formula2));
+		assertFalse(FormulaUtils.subsumes(formula1, formula2));
 	}
 	
 	@Test
@@ -305,7 +306,7 @@ public class FormulaUtilsTest {
 		String str2 = "<Op1>(blabla2 v blabla1 v (blabla4 ^ blabla3)) ^ blabla5";
 		dFormula formula2 = FormulaUtils.constructFormula(str2);
 		
-		assertTrue(FormulaUtils.isEqualTo(formula1, formula2));
+		assertTrue(FormulaUtils.subsumes(formula1, formula2));
 	}
 	
 
@@ -319,7 +320,7 @@ public class FormulaUtilsTest {
 		String str2 = "<Op1>(blabla6 v blabla1 v (blabla4 ^ blabla2)) ^ blabla5";
 		dFormula formula2 = FormulaUtils.constructFormula(str2);
 		
-		assertFalse(FormulaUtils.isEqualTo(formula1, formula2));
+		assertFalse(FormulaUtils.subsumes(formula1, formula2));
 	}
 	
 	
@@ -332,7 +333,34 @@ public class FormulaUtilsTest {
 		String str2 = "<Belief>(<Position>(<XCoord>0.3 ^ <YCoord>2.5) ^ <Colour>Blue ^ <Shape>Cylindrical)";
 		dFormula formula2 = FormulaUtils.constructFormula(str2);
 		
-		assertTrue(FormulaUtils.isEqualTo(formula1, formula2));
+		assertTrue(FormulaUtils.subsumes(formula1, formula2));
+	}
+	
+	@Test
+	public void underspecifiedFormulaWithArgument1() throws DialogueException {
+		String str = "*";
+		dFormula formula = FormulaUtils.constructFormula(str);
+		
+		assertTrue(formula instanceof UnderspecifiedFormula);
+	}
+	
+	@Test
+	public void underspecifiedFormulaWithArgument2() throws DialogueException {
+		String str = "%1";
+		dFormula formula = FormulaUtils.constructFormula(str);
+		
+		assertTrue(formula instanceof UnderspecifiedFormula);
+		assertEquals(((UnderspecifiedFormula)formula).id, 1);
+	}
+	
+	@Test
+	public void underspecifiedFormulaWithArgument3() throws DialogueException {
+		String str = "Test ^ %1";
+		dFormula formula = FormulaUtils.constructFormula(str);
+		
+		assertTrue(formula instanceof ComplexFormula);
+		assertTrue (((ComplexFormula)formula).forms.get(1) instanceof UnderspecifiedFormula);
+		assertEquals(((UnderspecifiedFormula)((ComplexFormula)formula).forms.get(1)).id, 1);
 	}
 		
 }
