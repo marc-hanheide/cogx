@@ -66,7 +66,6 @@ static double timespec_diff(struct timespec *x, struct timespec *y)
     (double)(x->tv_nsec - y->tv_nsec)/1000000000.;
 }
 
-
 void StereoServerI::getPoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points, const Ice::Current&)
 {
   stereoSrv->getPoints(transformToGlobal, imgWidth, points, false);
@@ -407,7 +406,9 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
   // census->printTiming();
   census->getDisparityMap(imgSet.disparityImg);
   clock_gettime(CLOCK_REALTIME, &stop);
-  log("gpustereo runtime / framerate: %lf s / %lf", timespec_diff(&stop, &start), 1./timespec_diff(&stop, &start));
+  log("gpustereo for %d x %d: runtime / framerate: %lf s / %lf",
+    imgSet.disparityImg->width, imgSet.disparityImg->height,
+    timespec_diff(&stop, &start), 1./timespec_diff(&stop, &start));
 
   if(medianSize > 0)
   {
@@ -425,12 +426,9 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
   //stereoCam->SetMatchingAlgoritm(StereoCamera::BLOCK_MATCH);
   stereoCam->CalculateDisparity(imgSet.rectGreyImg[LEFT], imgSet.rectGreyImg[RIGHT], imgSet.disparityImg);
   clock_gettime(CLOCK_REALTIME, &stop);
-  log("OpenCV runtime / framerate: %lf s / %lf", timespec_diff(&stop, &start), 1./timespec_diff(&stop, &start));
-
-  //clock_gettime(CLOCK_REALTIME, &start);
-  //usleep(1000);
-  //clock_gettime(CLOCK_REALTIME, &stop);
-  //log("usleep 1000: %lf s / %lf", timespec_diff(&stop, &start), 1./timespec_diff(&stop, &start));
+  log("OpenCV for %d x %d: runtime / framerate: %lf s / %lf",
+    imgSet.disparityImg->width, imgSet.disparityImg->height,
+    timespec_diff(&stop, &start), 1./timespec_diff(&stop, &start));
 #endif
 
   // TODO: this does not work nicely with
