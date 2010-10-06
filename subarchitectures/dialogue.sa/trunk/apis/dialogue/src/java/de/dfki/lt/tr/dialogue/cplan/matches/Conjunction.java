@@ -23,8 +23,8 @@ public class Conjunction extends Match {
   }
 
   @Override
-  public boolean match(DagEdge input, Bindings bindings) {
-    return (_left.match(input, bindings) && _right.match(input, bindings));
+  protected boolean match(DagEdge input, Bindings bindings) {
+    return _left.matches(input, bindings) && _right.matches(input, bindings);
   }
 
   private void collectRec(List<Match> leaves, List<Conjunction> nodes){

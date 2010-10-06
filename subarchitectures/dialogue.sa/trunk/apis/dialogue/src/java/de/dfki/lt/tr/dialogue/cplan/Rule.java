@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import de.dfki.lt.tr.dialogue.cplan.actions.Action;
+import de.dfki.lt.tr.dialogue.cplan.util.Position;
 
 public class Rule {
 
@@ -19,41 +20,40 @@ public class Rule {
   /** The right hand side of the rule */
   private List<Action> _replace;
 
-  /** An object to trace matching / application of rules */
-  private static RuleTracer _tracer;
-
-  public static void setTracing(RuleTracer t) {
-    _tracer = t;
-  }
-
-  public static RuleTracer getTracing() {
-    return _tracer;
-  }
+  /** Where was this rule defined */
+  private Position _position;
 
   /** Create a new rule: bind the left and right hand side */
-  public Rule(List<VarMatch> match, List<Action> right) {
+  public Rule(List<VarMatch> match, List<Action> right, Position pos) {
     _matches = match;
     _replace = right;
+    _position = pos;
   }
 
-  public static void matchesToString(StringBuilder sb,
-      List<VarMatch> matches) {
-    for (VarMatch vm : matches) {
+  public StringBuilder appendMatches(StringBuilder sb) {
+    for (VarMatch vm : _matches) {
       sb.append(vm);
     }
+    return sb;
   }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    matchesToString(sb, _matches);
-    sb.append(" -> ");
+  public StringBuilder appendActions(StringBuilder sb) {
     Iterator<Action> it = _replace.iterator();
     sb.append(it.next());
     while (it.hasNext()) {
       sb.append(", ").append(it.next());
     }
-    return sb.toString();
+    return sb;
+  }
+
+  public Position getPosition() {
+    return _position;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    return appendActions(appendMatches(sb).append(" -> ")).toString();
   }
 
   public boolean matches(DagEdge here, Bindings bindings) {
@@ -63,28 +63,19 @@ public class Rule {
       result = varMatch.match(here, bindings);
       if (! result) break;
     }
-    if (result && _tracer != null) {
-      _tracer.traceMatch(here, _matches, bindings);
-    }
     return result;
   }
 
   public boolean executeActions(DagEdge current, Bindings bindings) {
     for (Action action : _replace) {
-      if (_tracer != null) {
-        _tracer.traceBeforeApplication(current, action);
-      }
       if (! action.apply(current, bindings)) {
-        assert(false);
         DagNode.invalidate();
         if (WARN_APPLY_FAILURE) {
           logger.warn("Unification failure in application phase of " + this
               + " to " + current);
         }
+        assert(false);
         return false;
-      }
-      if (_tracer != null) {
-        _tracer.traceAfterApplication(current, action);
       }
     }
     return true;
@@ -95,7 +86,7 @@ public class Rule {
    *  a sequence before copying the result, using applyLocally for a single
    *  application.
    */
-  public DagNode applyLocallyAndCopy(DagNode currentNode) {
+  DagNode applyLocallyAndCopy(DagNode currentNode) {
     DagEdge current = new DagEdge((short) -1, currentNode);
     Bindings bindings = new Bindings();
     DagNode result = null;
@@ -111,7 +102,7 @@ public class Rule {
   /** A function to test the matching part of the rule, only for test
    *  purposes.
    */
-  public boolean match(DagNode lf) {
+  boolean match(DagNode lf) {
     return matches(new DagEdge((short)-1, lf), new Bindings());
   }
 }

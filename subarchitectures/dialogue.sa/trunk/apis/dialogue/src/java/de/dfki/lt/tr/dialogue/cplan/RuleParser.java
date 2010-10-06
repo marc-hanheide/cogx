@@ -47,10 +47,12 @@ import de.dfki.lt.tr.dialogue.cplan.Path;
 import de.dfki.lt.tr.dialogue.cplan.matches.*;
 import de.dfki.lt.tr.dialogue.cplan.actions.*;
 
+ @SuppressWarnings({"unchecked", "fallthrough", "unused"})
+
 
 
 /* Line 33 of lalr1.java  */
-/* Line 54 of "RuleParser.java"  */
+/* Line 56 of "RuleParser.java"  */
 
 /**
  * A Bison parser, automatically generated from <tt>RuleParser.y</tt>.
@@ -304,7 +306,7 @@ public class RuleParser
   if (yyn == 2)
     
 /* Line 353 of lalr1.java  */
-/* Line 85 of "RuleParser.y"  */
+/* Line 92 of "RuleParser.y"  */
     { if ((( Rule )(yystack.valueAt (3-(1)))) != null) _ruleStore.add(0, (( Rule )(yystack.valueAt (3-(1)))));  };
   break;
     
@@ -313,7 +315,7 @@ public class RuleParser
   if (yyn == 3)
     
 /* Line 353 of lalr1.java  */
-/* Line 86 of "RuleParser.y"  */
+/* Line 93 of "RuleParser.y"  */
     { if ((( Rule )(yystack.valueAt (2-(1)))) != null) _ruleStore.add((( Rule )(yystack.valueAt (2-(1))))); };
   break;
     
@@ -322,8 +324,8 @@ public class RuleParser
   if (yyn == 4)
     
 /* Line 353 of lalr1.java  */
-/* Line 89 of "RuleParser.y"  */
-    { yyval = new Rule((List<VarMatch>)(( List )(yystack.valueAt (3-(1)))), (( List )(yystack.valueAt (3-(3))))); };
+/* Line 96 of "RuleParser.y"  */
+    { yyval = newRule((( List )(yystack.valueAt (3-(1)))), (( List )(yystack.valueAt (3-(3))))); };
   break;
     
 
@@ -331,7 +333,7 @@ public class RuleParser
   if (yyn == 5)
     
 /* Line 353 of lalr1.java  */
-/* Line 90 of "RuleParser.y"  */
+/* Line 97 of "RuleParser.y"  */
     { yyval = null; };
   break;
     
@@ -340,7 +342,7 @@ public class RuleParser
   if (yyn == 6)
     
 /* Line 353 of lalr1.java  */
-/* Line 93 of "RuleParser.y"  */
+/* Line 100 of "RuleParser.y"  */
     { (( List )(yystack.valueAt (2-(2)))).add(0, new VarMatch(null, (( Match )(yystack.valueAt (2-(1)))))); yyval = (( List )(yystack.valueAt (2-(2)))); };
   break;
     
@@ -349,7 +351,7 @@ public class RuleParser
   if (yyn == 7)
     
 /* Line 353 of lalr1.java  */
-/* Line 96 of "RuleParser.y"  */
+/* Line 103 of "RuleParser.y"  */
     { (( List )(yystack.valueAt (3-(3)))).add(0, (( VarMatch )(yystack.valueAt (3-(2))))); yyval = (( List )(yystack.valueAt (3-(3)))); };
   break;
     
@@ -358,7 +360,7 @@ public class RuleParser
   if (yyn == 8)
     
 /* Line 353 of lalr1.java  */
-/* Line 97 of "RuleParser.y"  */
+/* Line 104 of "RuleParser.y"  */
     { yyval = new LinkedList<VarMatch>(); };
   break;
     
@@ -367,7 +369,7 @@ public class RuleParser
   if (yyn == 9)
     
 /* Line 353 of lalr1.java  */
-/* Line 99 of "RuleParser.y"  */
+/* Line 106 of "RuleParser.y"  */
     { yyval = new VarMatch(new GlobalVar((( String )(yystack.valueAt (3-(1))))), (( Match )(yystack.valueAt (3-(3))))); };
   break;
     
@@ -376,7 +378,7 @@ public class RuleParser
   if (yyn == 10)
     
 /* Line 353 of lalr1.java  */
-/* Line 100 of "RuleParser.y"  */
+/* Line 107 of "RuleParser.y"  */
     { yyval = new VarMatch((( MatchLVal )(yystack.valueAt (3-(1)))), (( Match )(yystack.valueAt (3-(3))))); };
   break;
     
@@ -385,7 +387,7 @@ public class RuleParser
   if (yyn == 11)
     
 /* Line 353 of lalr1.java  */
-/* Line 103 of "RuleParser.y"  */
+/* Line 110 of "RuleParser.y"  */
     { yyval = new Conjunction((( Match )(yystack.valueAt (3-(1)))), (( Match )(yystack.valueAt (3-(3))))); };
   break;
     
@@ -394,7 +396,7 @@ public class RuleParser
   if (yyn == 12)
     
 /* Line 353 of lalr1.java  */
-/* Line 104 of "RuleParser.y"  */
+/* Line 111 of "RuleParser.y"  */
     { yyval = new Disjunction((( Match )(yystack.valueAt (3-(1)))), (( Match )(yystack.valueAt (3-(3))))); };
   break;
     
@@ -403,7 +405,7 @@ public class RuleParser
   if (yyn == 14)
     
 /* Line 353 of lalr1.java  */
-/* Line 109 of "RuleParser.y"  */
+/* Line 116 of "RuleParser.y"  */
     { yyval = new FeatVal((( Match )(yystack.valueAt (4-(2)))), (( Match )(yystack.valueAt (4-(4))))); };
   break;
     
@@ -412,7 +414,7 @@ public class RuleParser
   if (yyn == 15)
     
 /* Line 353 of lalr1.java  */
-/* Line 110 of "RuleParser.y"  */
+/* Line 117 of "RuleParser.y"  */
     { yyval = new FeatVal((( Match )(yystack.valueAt (3-(2)))), null); };
   break;
     
@@ -421,7 +423,7 @@ public class RuleParser
   if (yyn == 16)
     
 /* Line 353 of lalr1.java  */
-/* Line 111 of "RuleParser.y"  */
+/* Line 118 of "RuleParser.y"  */
     { yyval = (( Match )(yystack.valueAt (1-(1)))); };
   break;
     
@@ -430,7 +432,7 @@ public class RuleParser
   if (yyn == 17)
     
 /* Line 353 of lalr1.java  */
-/* Line 114 of "RuleParser.y"  */
+/* Line 121 of "RuleParser.y"  */
     { yyval = (( Match )(yystack.valueAt (1-(1)))); };
   break;
     
@@ -439,7 +441,7 @@ public class RuleParser
   if (yyn == 18)
     
 /* Line 353 of lalr1.java  */
-/* Line 115 of "RuleParser.y"  */
+/* Line 122 of "RuleParser.y"  */
     { yyval = new Conjunction((( Match )(yystack.valueAt (2-(1)))),
                                    new FeatVal(DagNode.TYPE_FEAT_ID, (( Match )(yystack.valueAt (2-(2)))))); };
   break;
@@ -449,7 +451,7 @@ public class RuleParser
   if (yyn == 19)
     
 /* Line 353 of lalr1.java  */
-/* Line 117 of "RuleParser.y"  */
+/* Line 124 of "RuleParser.y"  */
     { yyval = new FeatVal(DagNode.TYPE_FEAT_ID, (( Match )(yystack.valueAt (2-(2))))); };
   break;
     
@@ -458,7 +460,7 @@ public class RuleParser
   if (yyn == 20)
     
 /* Line 353 of lalr1.java  */
-/* Line 118 of "RuleParser.y"  */
+/* Line 125 of "RuleParser.y"  */
     { yyval = new FeatVal(DagNode.PROP_FEAT_ID, (( Match )(yystack.valueAt (1-(1))))); };
   break;
     
@@ -467,8 +469,8 @@ public class RuleParser
   if (yyn == 21)
     
 /* Line 353 of lalr1.java  */
-/* Line 119 of "RuleParser.y"  */
-    { yyval = new Negation((( Match )(yystack.valueAt (2-(2))))); };
+/* Line 126 of "RuleParser.y"  */
+    { (( Match )(yystack.valueAt (2-(2)))).setNegated(true); yyval = (( Match )(yystack.valueAt (2-(2)))); };
   break;
     
 
@@ -476,7 +478,7 @@ public class RuleParser
   if (yyn == 22)
     
 /* Line 353 of lalr1.java  */
-/* Line 120 of "RuleParser.y"  */
+/* Line 127 of "RuleParser.y"  */
     { yyval = (( Match )(yystack.valueAt (3-(2)))); };
   break;
     
@@ -485,7 +487,7 @@ public class RuleParser
   if (yyn == 23)
     
 /* Line 353 of lalr1.java  */
-/* Line 126 of "RuleParser.y"  */
+/* Line 133 of "RuleParser.y"  */
     { yyval = new FeatVal(DagNode.ID_FEAT_ID, new Atom((( String )(yystack.valueAt (2-(1)))))); };
   break;
     
@@ -494,7 +496,7 @@ public class RuleParser
   if (yyn == 24)
     
 /* Line 353 of lalr1.java  */
-/* Line 127 of "RuleParser.y"  */
+/* Line 134 of "RuleParser.y"  */
     { yyval = new LocalVar((( String )(yystack.valueAt (2-(1)))));  };
   break;
     
@@ -503,7 +505,7 @@ public class RuleParser
   if (yyn == 25)
     
 /* Line 353 of lalr1.java  */
-/* Line 128 of "RuleParser.y"  */
+/* Line 135 of "RuleParser.y"  */
     { yyval = new GlobalVar((( String )(yystack.valueAt (2-(1))))); };
   break;
     
@@ -512,7 +514,7 @@ public class RuleParser
   if (yyn == 26)
     
 /* Line 353 of lalr1.java  */
-/* Line 131 of "RuleParser.y"  */
+/* Line 138 of "RuleParser.y"  */
     { yyval = new LocalVar((( String )(yystack.valueAt (1-(1))))); };
   break;
     
@@ -521,7 +523,7 @@ public class RuleParser
   if (yyn == 27)
     
 /* Line 353 of lalr1.java  */
-/* Line 132 of "RuleParser.y"  */
+/* Line 139 of "RuleParser.y"  */
     { yyval = new Atom((( String )(yystack.valueAt (1-(1))))); };
   break;
     
@@ -530,10 +532,8 @@ public class RuleParser
   if (yyn == 28)
     
 /* Line 353 of lalr1.java  */
-/* Line 134 of "RuleParser.y"  */
-    { yyval = getNewFunCall((( String )(yystack.valueAt (4-(1)))), (( List )(yystack.valueAt (4-(3)))));
-                             if (yyval == null) return YYERROR ;
-                           };
+/* Line 141 of "RuleParser.y"  */
+    { yyval = (( Match )(yystack.valueAt (1-(1)))); };
   break;
     
 
@@ -541,10 +541,8 @@ public class RuleParser
   if (yyn == 29)
     
 /* Line 353 of lalr1.java  */
-/* Line 137 of "RuleParser.y"  */
-    { yyval = getNewFunCall((( String )(yystack.valueAt (3-(1)))), null);
-                             if (yyval == null) return YYERROR ;
-                           };
+/* Line 142 of "RuleParser.y"  */
+    { (( Match )(yystack.valueAt (2-(2)))).setNegated(true); yyval = (( Match )(yystack.valueAt (2-(2)))); };
   break;
     
 
@@ -552,7 +550,56 @@ public class RuleParser
   if (yyn == 30)
     
 /* Line 353 of lalr1.java  */
-/* Line 159 of "RuleParser.y"  */
+/* Line 143 of "RuleParser.y"  */
+    { yyval = (( Match )(yystack.valueAt (3-(2)))); };
+  break;
+    
+
+  case 31:
+  if (yyn == 31)
+    
+/* Line 353 of lalr1.java  */
+/* Line 146 of "RuleParser.y"  */
+    { yyval = (( Match )(yystack.valueAt (1-(1)))); };
+  break;
+    
+
+  case 32:
+  if (yyn == 32)
+    
+/* Line 353 of lalr1.java  */
+/* Line 147 of "RuleParser.y"  */
+    { yyval = new Disjunction((( Match )(yystack.valueAt (3-(1)))), (( Match )(yystack.valueAt (3-(3))))); };
+  break;
+    
+
+  case 33:
+  if (yyn == 33)
+    
+/* Line 353 of lalr1.java  */
+/* Line 150 of "RuleParser.y"  */
+    { yyval = getNewFunCall((( String )(yystack.valueAt (4-(1)))), (( List )(yystack.valueAt (4-(3)))));
+                             if (yyval == null) return YYERROR ;
+                           };
+  break;
+    
+
+  case 34:
+  if (yyn == 34)
+    
+/* Line 353 of lalr1.java  */
+/* Line 153 of "RuleParser.y"  */
+    { yyval = getNewFunCall((( String )(yystack.valueAt (3-(1)))), null);
+                             if (yyval == null) return YYERROR ;
+                           };
+  break;
+    
+
+  case 35:
+  if (yyn == 35)
+    
+/* Line 353 of lalr1.java  */
+/* Line 175 of "RuleParser.y"  */
     {
             List<Action> result  = new LinkedList<Action>();
             result.add((( Action )(yystack.valueAt (1-(1)))));
@@ -561,20 +608,20 @@ public class RuleParser
   break;
     
 
-  case 31:
-  if (yyn == 31)
+  case 36:
+  if (yyn == 36)
     
 /* Line 353 of lalr1.java  */
-/* Line 164 of "RuleParser.y"  */
+/* Line 180 of "RuleParser.y"  */
     { (( List )(yystack.valueAt (3-(3)))).add(0, (( Action )(yystack.valueAt (3-(1))))); yyval = (( List )(yystack.valueAt (3-(3)))); };
   break;
     
 
-  case 32:
-  if (yyn == 32)
+  case 37:
+  if (yyn == 37)
     
 /* Line 353 of lalr1.java  */
-/* Line 168 of "RuleParser.y"  */
+/* Line 184 of "RuleParser.y"  */
     {
          DagNode rval = (((( DagNode )(yystack.valueAt (4-(4)))) != null) ? (( DagNode )(yystack.valueAt (4-(4)))).copyResult(false) : null);
          DagNode.invalidate();
@@ -583,11 +630,11 @@ public class RuleParser
   break;
     
 
-  case 33:
-  if (yyn == 33)
+  case 38:
+  if (yyn == 38)
     
 /* Line 353 of lalr1.java  */
-/* Line 174 of "RuleParser.y"  */
+/* Line 190 of "RuleParser.y"  */
     {
          DagNode rval = (((( DagNode )(yystack.valueAt (4-(4)))) != null) ? (( DagNode )(yystack.valueAt (4-(4)))).copyResult(false) : null);
          DagNode.invalidate();
@@ -596,57 +643,12 @@ public class RuleParser
   break;
     
 
-  case 34:
-  if (yyn == 34)
-    
-/* Line 353 of lalr1.java  */
-/* Line 182 of "RuleParser.y"  */
-    { yyval = new Deletion((( VarDagNode )(yystack.valueAt (6-(1)))), (( Path )(yystack.valueAt (6-(2)))), new DagNode((( String )(yystack.valueAt (6-(5)))), new DagNode())); };
-  break;
-    
-
-  case 35:
-  if (yyn == 35)
-    
-/* Line 353 of lalr1.java  */
-/* Line 185 of "RuleParser.y"  */
-    { yyval = new VarDagNode((( String )(yystack.valueAt (1-(1)))), Bindings.LOCAL); };
-  break;
-    
-
-  case 36:
-  if (yyn == 36)
-    
-/* Line 353 of lalr1.java  */
-/* Line 186 of "RuleParser.y"  */
-    { yyval = new VarDagNode("#", Bindings.LOCAL); };
-  break;
-    
-
-  case 37:
-  if (yyn == 37)
-    
-/* Line 353 of lalr1.java  */
-/* Line 187 of "RuleParser.y"  */
-    { yyval = new VarDagNode((( String )(yystack.valueAt (1-(1)))), Bindings.GLOBAL); };
-  break;
-    
-
-  case 38:
-  if (yyn == 38)
-    
-/* Line 353 of lalr1.java  */
-/* Line 191 of "RuleParser.y"  */
-    { yyval = (( Path )(yystack.valueAt (4-(4)))).addToFront((( String )(yystack.valueAt (4-(2))))); };
-  break;
-    
-
   case 39:
   if (yyn == 39)
     
 /* Line 353 of lalr1.java  */
-/* Line 192 of "RuleParser.y"  */
-    { yyval = new Path(); };
+/* Line 198 of "RuleParser.y"  */
+    { yyval = new Deletion((( VarDagNode )(yystack.valueAt (6-(1)))), (( Path )(yystack.valueAt (6-(2)))), new DagNode((( String )(yystack.valueAt (6-(5)))), new DagNode())); };
   break;
     
 
@@ -654,8 +656,8 @@ public class RuleParser
   if (yyn == 40)
     
 /* Line 353 of lalr1.java  */
-/* Line 195 of "RuleParser.y"  */
-    { (( DagNode )(yystack.valueAt (3-(1)))).add((( DagNode )(yystack.valueAt (3-(3))))); (( DagNode )(yystack.valueAt (3-(1)))).setNominal(); yyval = (( DagNode )(yystack.valueAt (3-(1)))); };
+/* Line 201 of "RuleParser.y"  */
+    { yyval = new VarDagNode((( String )(yystack.valueAt (1-(1)))), Bindings.LOCAL); };
   break;
     
 
@@ -663,8 +665,8 @@ public class RuleParser
   if (yyn == 41)
     
 /* Line 353 of lalr1.java  */
-/* Line 196 of "RuleParser.y"  */
-    { yyval = (( DagNode )(yystack.valueAt (1-(1)))); };
+/* Line 202 of "RuleParser.y"  */
+    { yyval = new VarDagNode("#", Bindings.LOCAL); };
   break;
     
 
@@ -672,8 +674,8 @@ public class RuleParser
   if (yyn == 42)
     
 /* Line 353 of lalr1.java  */
-/* Line 199 of "RuleParser.y"  */
-    { yyval = new DagNode((( String )(yystack.valueAt (4-(2)))), (( DagNode )(yystack.valueAt (4-(4))))).setNominal(); };
+/* Line 203 of "RuleParser.y"  */
+    { yyval = new VarDagNode((( String )(yystack.valueAt (1-(1)))), Bindings.GLOBAL); };
   break;
     
 
@@ -681,8 +683,8 @@ public class RuleParser
   if (yyn == 43)
     
 /* Line 353 of lalr1.java  */
-/* Line 200 of "RuleParser.y"  */
-    { yyval = (( DagNode )(yystack.valueAt (1-(1)))); };
+/* Line 207 of "RuleParser.y"  */
+    { yyval = (( Path )(yystack.valueAt (4-(4)))).addToFront((( String )(yystack.valueAt (4-(2))))); };
   break;
     
 
@@ -690,8 +692,8 @@ public class RuleParser
   if (yyn == 44)
     
 /* Line 353 of lalr1.java  */
-/* Line 203 of "RuleParser.y"  */
-    { yyval = (( DagNode )(yystack.valueAt (1-(1)))); };
+/* Line 208 of "RuleParser.y"  */
+    { yyval = new Path(); };
   break;
     
 
@@ -699,9 +701,8 @@ public class RuleParser
   if (yyn == 45)
     
 /* Line 353 of lalr1.java  */
-/* Line 204 of "RuleParser.y"  */
-    { (( DagNode )(yystack.valueAt (2-(1)))).add(new DagNode(DagNode.TYPE_FEAT_ID, (( DagNode )(yystack.valueAt (2-(2))))));
-                            yyval = (( DagNode )(yystack.valueAt (2-(1)))); };
+/* Line 211 of "RuleParser.y"  */
+    { (( DagNode )(yystack.valueAt (3-(1)))).add((( DagNode )(yystack.valueAt (3-(3))))); (( DagNode )(yystack.valueAt (3-(1)))).setNominal(); yyval = (( DagNode )(yystack.valueAt (3-(1)))); };
   break;
     
 
@@ -709,10 +710,8 @@ public class RuleParser
   if (yyn == 46)
     
 /* Line 353 of lalr1.java  */
-/* Line 206 of "RuleParser.y"  */
-    { yyval = new DagNode(DagNode.TYPE_FEAT_ID, (( DagNode )(yystack.valueAt (2-(2)))))
-                                    .setNominal();
-                          };
+/* Line 212 of "RuleParser.y"  */
+    { yyval = (( DagNode )(yystack.valueAt (1-(1)))); };
   break;
     
 
@@ -720,8 +719,8 @@ public class RuleParser
   if (yyn == 47)
     
 /* Line 353 of lalr1.java  */
-/* Line 209 of "RuleParser.y"  */
-    { yyval = new DagNode(DagNode.PROP_FEAT_ID, (( DagNode )(yystack.valueAt (1-(1))))); };
+/* Line 215 of "RuleParser.y"  */
+    { yyval = new DagNode((( String )(yystack.valueAt (4-(2)))), (( DagNode )(yystack.valueAt (4-(4))))).setNominal(); };
   break;
     
 
@@ -729,8 +728,8 @@ public class RuleParser
   if (yyn == 48)
     
 /* Line 353 of lalr1.java  */
-/* Line 210 of "RuleParser.y"  */
-    { yyval = (( DagNode )(yystack.valueAt (3-(2)))).setNominal(); };
+/* Line 216 of "RuleParser.y"  */
+    { yyval = (( DagNode )(yystack.valueAt (1-(1)))); };
   break;
     
 
@@ -738,10 +737,8 @@ public class RuleParser
   if (yyn == 49)
     
 /* Line 353 of lalr1.java  */
-/* Line 211 of "RuleParser.y"  */
-    { yyval = getNewFunCallDagNode((( String )(yystack.valueAt (4-(1)))), (( List )(yystack.valueAt (4-(3)))));
-                            if (yyval == null) return YYERROR ;
-                          };
+/* Line 219 of "RuleParser.y"  */
+    { yyval = (( DagNode )(yystack.valueAt (1-(1)))); };
   break;
     
 
@@ -749,10 +746,9 @@ public class RuleParser
   if (yyn == 50)
     
 /* Line 353 of lalr1.java  */
-/* Line 214 of "RuleParser.y"  */
-    { yyval = getNewFunCallDagNode((( String )(yystack.valueAt (3-(1)))), null);
-                            if (yyval == null) return YYERROR ;
-                          };
+/* Line 220 of "RuleParser.y"  */
+    { (( DagNode )(yystack.valueAt (2-(1)))).add(new DagNode(DagNode.TYPE_FEAT_ID, (( DagNode )(yystack.valueAt (2-(2))))));
+                            yyval = (( DagNode )(yystack.valueAt (2-(1)))); };
   break;
     
 
@@ -760,10 +756,10 @@ public class RuleParser
   if (yyn == 51)
     
 /* Line 353 of lalr1.java  */
-/* Line 219 of "RuleParser.y"  */
-    {
-             yyval = new DagNode(DagNode.ID_FEAT_ID, (( DagNode )(yystack.valueAt (2-(1))))).setNominal();
-         };
+/* Line 222 of "RuleParser.y"  */
+    { yyval = new DagNode(DagNode.TYPE_FEAT_ID, (( DagNode )(yystack.valueAt (2-(2)))))
+                                    .setNominal();
+                          };
   break;
     
 
@@ -771,8 +767,8 @@ public class RuleParser
   if (yyn == 52)
     
 /* Line 353 of lalr1.java  */
-/* Line 224 of "RuleParser.y"  */
-    { (( List )(yystack.valueAt (3-(3)))).add(0, (( DagNode )(yystack.valueAt (3-(1))))); yyval = (( List )(yystack.valueAt (3-(3)))); };
+/* Line 225 of "RuleParser.y"  */
+    { yyval = new DagNode(DagNode.PROP_FEAT_ID, (( DagNode )(yystack.valueAt (1-(1))))); };
   break;
     
 
@@ -780,11 +776,8 @@ public class RuleParser
   if (yyn == 53)
     
 /* Line 353 of lalr1.java  */
-/* Line 225 of "RuleParser.y"  */
-    { List<DagNode> result = new LinkedList<DagNode>();
-                           result.add((( DagNode )(yystack.valueAt (1-(1)))));
-                           yyval = result;
-                         };
+/* Line 226 of "RuleParser.y"  */
+    { yyval = (( DagNode )(yystack.valueAt (3-(2)))).setNominal(); };
   break;
     
 
@@ -792,8 +785,10 @@ public class RuleParser
   if (yyn == 54)
     
 /* Line 353 of lalr1.java  */
-/* Line 231 of "RuleParser.y"  */
-    { yyval = (( DagNode )(yystack.valueAt (1-(1)))); };
+/* Line 235 of "RuleParser.y"  */
+    {
+             yyval = new DagNode(DagNode.ID_FEAT_ID, (( DagNode )(yystack.valueAt (2-(1))))).setNominal();
+         };
   break;
     
 
@@ -801,8 +796,8 @@ public class RuleParser
   if (yyn == 55)
     
 /* Line 353 of lalr1.java  */
-/* Line 232 of "RuleParser.y"  */
-    { yyval = new DagNode((( String )(yystack.valueAt (1-(1))))); };
+/* Line 240 of "RuleParser.y"  */
+    { (( List )(yystack.valueAt (3-(3)))).add(0, (( DagNode )(yystack.valueAt (3-(1))))); yyval = (( List )(yystack.valueAt (3-(3)))); };
   break;
     
 
@@ -810,8 +805,11 @@ public class RuleParser
   if (yyn == 56)
     
 /* Line 353 of lalr1.java  */
-/* Line 233 of "RuleParser.y"  */
-    { yyval = new VarDagNode("#", Bindings.LOCAL); };
+/* Line 241 of "RuleParser.y"  */
+    { List<DagNode> result = new LinkedList<DagNode>();
+                           result.add((( DagNode )(yystack.valueAt (1-(1)))));
+                           yyval = result;
+                         };
   break;
     
 
@@ -819,8 +817,8 @@ public class RuleParser
   if (yyn == 57)
     
 /* Line 353 of lalr1.java  */
-/* Line 236 of "RuleParser.y"  */
-    { yyval = new DagNode((( String )(yystack.valueAt (1-(1))))); };
+/* Line 247 of "RuleParser.y"  */
+    { yyval = (( DagNode )(yystack.valueAt (1-(1)))); };
   break;
     
 
@@ -828,8 +826,8 @@ public class RuleParser
   if (yyn == 58)
     
 /* Line 353 of lalr1.java  */
-/* Line 237 of "RuleParser.y"  */
-    { yyval = new VarDagNode((( String )(yystack.valueAt (1-(1)))), Bindings.LOCAL); };
+/* Line 248 of "RuleParser.y"  */
+    { yyval = new DagNode((( String )(yystack.valueAt (1-(1))))); };
   break;
     
 
@@ -837,15 +835,64 @@ public class RuleParser
   if (yyn == 59)
     
 /* Line 353 of lalr1.java  */
-/* Line 238 of "RuleParser.y"  */
+/* Line 249 of "RuleParser.y"  */
+    { yyval = new VarDagNode("#", Bindings.LOCAL); };
+  break;
+    
+
+  case 60:
+  if (yyn == 60)
+    
+/* Line 353 of lalr1.java  */
+/* Line 252 of "RuleParser.y"  */
+    { yyval = new DagNode((( String )(yystack.valueAt (1-(1))))); };
+  break;
+    
+
+  case 61:
+  if (yyn == 61)
+    
+/* Line 353 of lalr1.java  */
+/* Line 253 of "RuleParser.y"  */
+    { yyval = new VarDagNode((( String )(yystack.valueAt (1-(1)))), Bindings.LOCAL); };
+  break;
+    
+
+  case 62:
+  if (yyn == 62)
+    
+/* Line 353 of lalr1.java  */
+/* Line 254 of "RuleParser.y"  */
     { yyval = new VarDagNode((( String )(yystack.valueAt (1-(1)))), Bindings.GLOBAL); };
+  break;
+    
+
+  case 63:
+  if (yyn == 63)
+    
+/* Line 353 of lalr1.java  */
+/* Line 255 of "RuleParser.y"  */
+    { yyval = getNewFunCallDagNode((( String )(yystack.valueAt (4-(1)))), (( List )(yystack.valueAt (4-(3)))));
+                               if (yyval == null) return YYERROR ;
+                             };
+  break;
+    
+
+  case 64:
+  if (yyn == 64)
+    
+/* Line 353 of lalr1.java  */
+/* Line 258 of "RuleParser.y"  */
+    { yyval = getNewFunCallDagNode((( String )(yystack.valueAt (3-(1)))), null);
+                               if (yyval == null) return YYERROR ;
+                             };
   break;
     
 
 
 
 /* Line 353 of lalr1.java  */
-/* Line 849 of "RuleParser.java"  */
+/* Line 896 of "RuleParser.java"  */
 	default: break;
       }
 
@@ -1198,20 +1245,21 @@ public class RuleParser
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
-  private static final byte yypact_ninf_ = -61;
+  private static final byte yypact_ninf_ = -65;
   private static final byte yypact_[] =
   {
-        55,   -61,   -12,     4,    18,    11,    11,    60,    60,     7,
-      38,    45,    51,    33,   -61,    11,   -61,   -61,   -61,   -61,
-     -61,   -61,    48,   -61,   -61,    49,   -61,     5,    37,    24,
-     -61,    60,    60,   -61,    60,   -61,   -61,   -61,   -61,   -61,
-     -61,    59,    61,    69,    82,    51,    84,   -61,   -61,   -61,
-      37,    93,    78,     8,    60,   -61,    60,   -61,    73,    75,
-      85,    75,   -61,   -61,   -61,   -61,   -61,   -61,    81,    90,
-     -61,   -61,   -61,    61,    86,    98,    80,    75,   -61,    91,
-     -61,    80,    89,   102,   -61,   -61,    46,   -61,    35,    92,
-     -61,    94,    75,   -61,   -61,    95,   -61,   -61,    96,    75,
-     -61,   -61,   -61,   -61,   -61
+        63,   -65,   -12,    -5,    20,    13,    86,    68,    68,    25,
+      29,    34,    41,    58,   -65,    86,   -65,   -65,   -65,   -65,
+     -65,   -65,    30,    86,    86,   -65,   -65,   -65,    56,   -65,
+      42,    57,    26,   -65,    68,    68,   -65,    68,   -65,    48,
+      64,   -65,   -65,   -65,   -65,   -65,   -65,    65,    78,    84,
+      94,    41,    95,   -65,   -65,   -65,    86,   -65,    57,   105,
+      88,     4,    68,   -65,    68,   -65,   -65,    96,    83,    98,
+      83,    92,   -65,   -65,   -65,   -65,   -65,    97,   102,   -65,
+     -65,   -65,    78,   110,    89,    83,   -65,   103,   -65,    89,
+     101,   114,   -65,    45,   -65,    10,   -65,   104,   -65,   106,
+      83,   -65,   -65,   107,   -65,   108,   -65,    83,   -65,   -65,
+     -65,   -65,   -65
   };
 
   /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
@@ -1221,32 +1269,33 @@ public class RuleParser
   {
          0,     5,    27,    26,     0,     0,     0,     0,     0,     0,
        0,     0,     8,    13,    16,    17,    20,    23,    24,    25,
-      27,    26,     0,    19,    21,     0,     1,     0,     0,     0,
-       6,     0,     0,    18,    15,    22,     2,    35,    37,    36,
-       4,    30,    39,     0,     0,     8,     0,    11,    12,    14,
-       0,     0,     0,     0,     0,     7,     0,    31,     0,     0,
-       0,     0,    57,    58,    59,    55,    29,    56,     0,    53,
-      54,     9,    10,    39,    57,     0,     0,     0,    33,    41,
-      43,    44,    47,     0,    32,    28,     0,    38,     0,     0,
-      46,     0,     0,    45,    51,     0,    52,    50,     0,     0,
-      48,    40,    34,    49,    42
+      27,    26,     0,     0,     0,    28,    19,    21,     0,     1,
+       0,     0,     0,     6,     0,     0,    18,    15,    29,    31,
+       0,    22,     2,    40,    42,    41,     4,    35,    44,     0,
+       0,     8,     0,    11,    12,    14,     0,    30,     0,     0,
+       0,     0,     0,     7,     0,    32,    36,     0,     0,     0,
+       0,    60,    61,    62,    58,    34,    59,     0,    56,    57,
+       9,    10,    44,     0,     0,     0,    38,    46,    48,    49,
+      52,     0,    37,     0,    33,     0,    43,     0,    51,     0,
+       0,    50,    54,     0,    64,     0,    55,     0,    53,    45,
+      39,    63,    47
   };
 
   /* YYPGOTO[NTERM-NUM].  */
   private static final byte yypgoto_[] =
   {
-       -61,    83,   -61,   -61,    62,   -61,    -8,    -3,   -61,   -61,
-      76,   -61,    58,   -61,   -61,    40,   -60,    12,   -61,   -61,
-     -52,   -61,   -51
+       -65,    90,   -65,   -65,    71,   -65,    -8,    -3,   -65,   -65,
+      -4,    17,    67,   -65,    61,   -65,   -65,    43,   -64,    21,
+     -65,   -65,     2,   -65,   -56
   };
 
   /* YYDEFGOTO[NTERM-NUM].  */
   private static final byte
   yydefgoto_[] =
   {
-        -1,     9,    10,    11,    30,    45,    12,    13,    14,    15,
-      16,    46,    40,    41,    42,    52,    78,    79,    80,    81,
-      68,    69,    82
+        -1,     9,    10,    11,    33,    51,    12,    13,    14,    15,
+      16,    39,    40,    52,    46,    47,    48,    60,    86,    87,
+      88,    89,    77,    78,    90
   };
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -1256,36 +1305,38 @@ public class RuleParser
   private static final byte
   yytable_[] =
   {
-        25,    84,    70,    17,    24,    -3,     1,    26,     2,     3,
-       4,    62,    63,    64,    20,    21,    65,    91,     5,    18,
-       6,     7,     8,    47,    48,    90,    66,    43,    67,    44,
-      93,    49,   101,    19,    96,    70,    98,    70,    62,    63,
-      64,    37,    38,    65,    31,    32,    71,    27,    72,    62,
-      63,    64,    28,    97,    65,    67,     1,    39,     2,     3,
-       4,    29,    34,     2,     3,     4,    67,    35,     5,    50,
-       6,     7,     8,     5,    51,     6,     7,     8,    74,    63,
-      64,    22,    23,    62,    63,    64,    53,    73,    75,    59,
-      76,    33,    77,    54,    60,    56,    58,    61,    83,    85,
-      86,    89,    92,    88,    94,    95,    99,    55,    57,   102,
-      36,   104,   100,    87,   103
+        28,    22,    25,    17,    27,    79,    92,    71,    72,    73,
+      18,    25,    74,    71,    72,    73,    20,    21,    74,    25,
+      25,    99,    75,    26,    76,    29,    53,    54,    98,    49,
+      76,    50,    36,   101,    55,    19,   109,    79,    30,    79,
+      38,    31,    -3,     1,    37,     2,     3,     4,    71,    72,
+      73,    32,    25,    74,    80,     5,    81,     6,     7,     8,
+      56,    43,    44,   104,     1,    76,     2,     3,     4,    34,
+      35,     2,     3,     4,    41,    58,     5,    45,     6,     7,
+       8,     5,    57,     6,     7,     8,    71,    72,    73,    20,
+      21,    59,    71,    72,    73,   105,    83,   106,    84,    68,
+      85,    61,    23,    24,    69,    62,    64,    70,    67,    93,
+      82,    91,    95,    97,   100,    94,   102,   103,   107,    66,
+      42,   110,    63,    65,   108,    96,   111,     0,   112
   };
 
   /* YYCHECK.  */
   private static final byte
   yycheck_[] =
   {
-         8,    61,    53,    15,     7,     0,     1,     0,     3,     4,
-       5,     3,     4,     5,     3,     4,     8,    77,    13,    15,
-      15,    16,    17,    31,    32,    76,    18,     3,    20,     5,
-      81,    34,    92,    15,    86,    86,    88,    88,     3,     4,
-       5,     4,     5,     8,    11,    12,    54,     9,    56,     3,
-       4,     5,     7,    18,     8,    20,     1,    20,     3,     4,
-       5,    10,    14,     3,     4,     5,    20,    18,    13,    10,
-      15,    16,    17,    13,    13,    15,    16,    17,     3,     4,
-       5,     5,     6,     3,     4,     5,    17,    14,    13,    11,
-      15,    15,    17,    11,    16,    11,     3,    19,    13,    18,
-      10,     3,    11,    17,    15,     3,    14,    45,    50,    14,
-      27,    99,    18,    73,    18
+         8,     5,     6,    15,     7,    61,    70,     3,     4,     5,
+      15,    15,     8,     3,     4,     5,     3,     4,     8,    23,
+      24,    85,    18,     6,    20,     0,    34,    35,    84,     3,
+      20,     5,    15,    89,    37,    15,   100,    93,     9,    95,
+      23,     7,     0,     1,    14,     3,     4,     5,     3,     4,
+       5,    10,    56,     8,    62,    13,    64,    15,    16,    17,
+      12,     4,     5,    18,     1,    20,     3,     4,     5,    11,
+      12,     3,     4,     5,    18,    10,    13,    20,    15,    16,
+      17,    13,    18,    15,    16,    17,     3,     4,     5,     3,
+       4,    13,     3,     4,     5,    93,    13,    95,    15,    11,
+      17,    17,    16,    17,    16,    11,    11,    19,     3,    17,
+      14,    13,    10,     3,    11,    18,    15,     3,    14,    58,
+      30,    14,    51,    56,    18,    82,    18,    -1,   107
   };
 
   /* STOS_[STATE-NUM] -- The (internal number of the) accessing
@@ -1295,15 +1346,16 @@ public class RuleParser
   {
          0,     1,     3,     4,     5,    13,    15,    16,    17,    22,
       23,    24,    27,    28,    29,    30,    31,    15,    15,    15,
-       3,     4,    31,    31,    28,    27,     0,     9,     7,    10,
-      25,    11,    12,    31,    14,    18,    22,     4,     5,    20,
-      33,    34,    35,     3,     5,    26,    32,    27,    27,    28,
-      10,    13,    36,    17,    11,    25,    11,    33,     3,    11,
-      16,    19,     3,     4,     5,     8,    18,    20,    41,    42,
-      43,    27,    27,    14,     3,    13,    15,    17,    37,    38,
-      39,    40,    43,    13,    37,    18,    10,    36,    17,     3,
-      43,    37,    11,    43,    15,     3,    41,    18,    41,    14,
-      18,    37,    14,    18,    38
+       3,     4,    31,    16,    17,    31,    32,    28,    27,     0,
+       9,     7,    10,    25,    11,    12,    32,    14,    32,    32,
+      33,    18,    22,     4,     5,    20,    35,    36,    37,     3,
+       5,    26,    34,    27,    27,    28,    12,    18,    10,    13,
+      38,    17,    11,    25,    11,    33,    35,     3,    11,    16,
+      19,     3,     4,     5,     8,    18,    20,    43,    44,    45,
+      27,    27,    14,    13,    15,    17,    39,    40,    41,    42,
+      45,    13,    39,    17,    18,    10,    38,     3,    45,    39,
+      11,    45,    15,     3,    18,    43,    43,    14,    18,    39,
+      14,    18,    40
   };
 
   /* TOKEN_NUMBER_[YYLEX-NUM] -- Internal symbol number corresponding
@@ -1323,9 +1375,10 @@ public class RuleParser
          0,    21,    22,    22,    23,    23,    24,    25,    25,    26,
       26,    27,    27,    27,    28,    28,    28,    29,    29,    29,
       29,    29,    29,    30,    30,    30,    31,    31,    32,    32,
-      33,    33,    34,    34,    34,    35,    35,    35,    36,    36,
-      37,    37,    38,    38,    39,    39,    39,    39,    39,    39,
-      39,    40,    41,    41,    42,    42,    42,    43,    43,    43
+      32,    33,    33,    34,    34,    35,    35,    36,    36,    36,
+      37,    37,    37,    38,    38,    39,    39,    40,    40,    41,
+      41,    41,    41,    41,    42,    43,    43,    44,    44,    44,
+      45,    45,    45,    45,    45
   };
 
   /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -1334,10 +1387,11 @@ public class RuleParser
   {
          0,     2,     3,     2,     3,     1,     2,     3,     0,     3,
        3,     3,     3,     1,     4,     3,     1,     1,     2,     2,
-       1,     2,     3,     2,     2,     2,     1,     1,     4,     3,
-       1,     3,     4,     4,     6,     1,     1,     1,     4,     0,
-       3,     1,     4,     1,     1,     2,     2,     1,     3,     4,
-       3,     2,     3,     1,     1,     1,     1,     1,     1,     1
+       1,     2,     3,     2,     2,     2,     1,     1,     1,     2,
+       3,     1,     3,     4,     3,     1,     3,     4,     4,     6,
+       1,     1,     1,     4,     0,     3,     1,     4,     1,     1,
+       2,     2,     1,     3,     2,     3,     1,     1,     1,     1,
+       1,     1,     1,     4,     3
   };
 
   /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
@@ -1348,32 +1402,33 @@ public class RuleParser
   "ARROW", "STRING", "'.'", "','", "'^'", "'|'", "'<'", "'>'", "':'",
   "'!'", "'('", "')'", "'='", "'#'", "$accept", "rules", "rule", "matches",
   "gmatches", "gmatch", "expr", "term", "feature", "nominal", "id_lvar",
-  "funcall", "actions", "action", "lval", "path", "rexpr", "rterm",
-  "rfeat", "rnominal", "rargs", "rarg", "r_id_var", null
+  "iv_term", "iv_expr", "funcall", "actions", "action", "lval", "path",
+  "rexpr", "rterm", "rfeat", "rnominal", "rargs", "rarg", "r_id_var", null
   };
 
   /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
   private static final byte yyrhs_[] =
   {
         22,     0,    -1,    23,     9,    22,    -1,    23,     9,    -1,
-      24,     7,    33,    -1,     1,    -1,    27,    25,    -1,    10,
-      26,    25,    -1,    -1,     5,    11,    27,    -1,    32,    11,
+      24,     7,    35,    -1,     1,    -1,    27,    25,    -1,    10,
+      26,    25,    -1,    -1,     5,    11,    27,    -1,    34,    11,
       27,    -1,    28,    11,    27,    -1,    28,    12,    27,    -1,
       28,    -1,    13,    31,    14,    28,    -1,    13,    31,    14,
-      -1,    29,    -1,    30,    -1,    30,    31,    -1,    15,    31,
+      -1,    29,    -1,    30,    -1,    30,    32,    -1,    15,    32,
       -1,    31,    -1,    16,    28,    -1,    17,    27,    18,    -1,
        3,    15,    -1,     4,    15,    -1,     5,    15,    -1,     4,
-      -1,     3,    -1,     3,    17,    41,    18,    -1,     3,    17,
-      18,    -1,    34,    -1,    34,    10,    33,    -1,    35,    36,
-      19,    37,    -1,    35,    36,    11,    37,    -1,    35,    36,
-      16,    13,     3,    14,    -1,     4,    -1,    20,    -1,     5,
-      -1,    13,     3,    14,    36,    -1,    -1,    38,    11,    37,
-      -1,    38,    -1,    13,     3,    14,    38,    -1,    39,    -1,
-      40,    -1,    40,    43,    -1,    15,    43,    -1,    43,    -1,
-      17,    37,    18,    -1,     3,    17,    41,    18,    -1,     3,
-      17,    18,    -1,    43,    15,    -1,    42,    10,    41,    -1,
-      42,    -1,    43,    -1,     8,    -1,    20,    -1,     3,    -1,
-       4,    -1,     5,    -1
+      -1,     3,    -1,    31,    -1,    16,    32,    -1,    17,    33,
+      18,    -1,    32,    -1,    32,    12,    33,    -1,     3,    17,
+      43,    18,    -1,     3,    17,    18,    -1,    36,    -1,    36,
+      10,    35,    -1,    37,    38,    19,    39,    -1,    37,    38,
+      11,    39,    -1,    37,    38,    16,    13,     3,    14,    -1,
+       4,    -1,    20,    -1,     5,    -1,    13,     3,    14,    38,
+      -1,    -1,    40,    11,    39,    -1,    40,    -1,    13,     3,
+      14,    40,    -1,    41,    -1,    42,    -1,    42,    45,    -1,
+      15,    45,    -1,    45,    -1,    17,    39,    18,    -1,    45,
+      15,    -1,    44,    10,    43,    -1,    44,    -1,    45,    -1,
+       8,    -1,    20,    -1,     3,    -1,     4,    -1,     5,    -1,
+       3,    17,    43,    18,    -1,     3,    17,    18,    -1
   };
 
   /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
@@ -1382,21 +1437,23 @@ public class RuleParser
   {
          0,     0,     3,     7,    10,    14,    16,    19,    23,    24,
       28,    32,    36,    40,    42,    47,    51,    53,    55,    58,
-      61,    63,    66,    70,    73,    76,    79,    81,    83,    88,
-      92,    94,    98,   103,   108,   115,   117,   119,   121,   126,
-     127,   131,   133,   138,   140,   142,   145,   148,   150,   154,
-     159,   163,   166,   170,   172,   174,   176,   178,   180,   182
+      61,    63,    66,    70,    73,    76,    79,    81,    83,    85,
+      88,    92,    94,    98,   103,   107,   109,   113,   118,   123,
+     130,   132,   134,   136,   141,   142,   146,   148,   153,   155,
+     157,   160,   163,   165,   169,   172,   176,   178,   180,   182,
+     184,   186,   188,   190,   195
   };
 
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
   private static final short yyrline_[] =
   {
-         0,    85,    85,    86,    89,    90,    93,    96,    97,    99,
-     100,   103,   104,   106,   109,   110,   111,   114,   115,   117,
-     118,   119,   120,   126,   127,   128,   131,   132,   134,   137,
-     159,   164,   167,   173,   181,   185,   186,   187,   191,   192,
-     195,   196,   199,   200,   203,   204,   206,   209,   210,   211,
-     214,   219,   224,   225,   231,   232,   233,   236,   237,   238
+         0,    92,    92,    93,    96,    97,   100,   103,   104,   106,
+     107,   110,   111,   113,   116,   117,   118,   121,   122,   124,
+     125,   126,   127,   133,   134,   135,   138,   139,   141,   142,
+     143,   146,   147,   150,   153,   175,   180,   183,   189,   197,
+     201,   202,   203,   207,   208,   211,   212,   215,   216,   219,
+     220,   222,   225,   226,   235,   240,   241,   247,   248,   249,
+     252,   253,   254,   255,   258
   };
 
   // Report on the debug stream that the rule yyrule is going to be reduced.
@@ -1458,10 +1515,10 @@ public class RuleParser
       return yyundef_token_;
   }
 
-  private static final int yylast_ = 114;
-  private static final int yynnts_ = 23;
+  private static final int yylast_ = 128;
+  private static final int yynnts_ = 25;
   private static final int yyempty_ = -2;
-  private static final int yyfinal_ = 26;
+  private static final int yyfinal_ = 29;
   private static final int yyterror_ = 1;
   private static final int yyerrcode_ = 256;
   private static final int yyntokens_ = 21;
@@ -1473,7 +1530,7 @@ public class RuleParser
 /* Unqualified %code blocks.  */
 
 /* Line 875 of lalr1.java  */
-/* Line 21 of "RuleParser.y"  */
+/* Line 23 of "RuleParser.y"  */
 
   private List<Rule> _ruleStore;
 
@@ -1489,6 +1546,11 @@ public class RuleParser
     reset();
     ((de.dfki.lt.tr.dialogue.cplan.Lexer)this.yylexer)
       .setInputReader(inputDescription, input);
+  }
+
+  private Rule newRule(List matches, List actions) {
+    return new Rule((List<VarMatch>) matches, (List<Action>) actions,
+      ((de.dfki.lt.tr.dialogue.cplan.Lexer)this.yylexer).getCurrentPosition());
   }
 
   private FunCall getNewFunCall(String name, List args) {
@@ -1514,7 +1576,7 @@ public class RuleParser
 
 
 /* Line 875 of lalr1.java  */
-/* Line 1518 of "RuleParser.java"  */
+/* Line 1580 of "RuleParser.java"  */
 
 }
 

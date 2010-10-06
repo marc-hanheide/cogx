@@ -1,20 +1,17 @@
 package de.dfki.lt.tr.dialogue.cplan.io;
 
-import gnu.trove.TObjectIntHashMap;
 import de.dfki.lt.tr.dialogue.cplan.DagEdge;
 import de.dfki.lt.tr.dialogue.cplan.DagNode;
 import de.dfki.lt.tr.dialogue.cplan.SpecialDagNode;
 
-public class LFDagPrinter implements DagPrinter {
-
-  private int _nextNominal;
+public class LFDagPrinter extends DagPrinter {
 
   private String newNominalName(int corefNo) {
-    return "nom" + ((corefNo == 0) ? (++ _nextNominal) : Math.abs(corefNo));
+    return "nom" + ((corefNo == 0) ? ++_maxCoref : Math.abs(corefNo));
   }
 
-  public void toStringRec(DagNode here, boolean readable, StringBuilder sb,
-      TObjectIntHashMap<DagNode> corefs) {
+  @Override
+  public void toStringRec(DagNode here, boolean readable, StringBuilder sb) {
     if (here == null) return;
 
     here = here.dereference();
@@ -51,31 +48,32 @@ public class LFDagPrinter implements DagPrinter {
         }
       }
 
-      int corefNo = corefs.get(here);
-      String idName =
-        ((id != null) ? id.getTypeName() : newNominalName(corefNo));
-
-      if (corefNo < 0) { // already printed, only id
+      int corefNo = getCorefNo(here);
+      if (corefNo < 0) { // already printed, only id:type
+        String idName =
+          ((id != null) ? id.getTypeName() : newNominalName(-corefNo));
         sb.append(idName).append(':');
         if (type != null) {
-          toStringRec(type, readable, sb, corefs);
+          toStringRec(type, readable, sb);
         }
         return;
       }
-      corefs.put(here, -corefNo);
+
+      String idName =
+        ((id != null) ? id.getTypeName() : newNominalName(corefNo));
 
       boolean printCaret = false;
       if (root) {
         sb.append('@').append(idName).append(':');
         if (type != null) {
-          toStringRec(type, readable, sb, corefs);
+          toStringRec(type, readable, sb);
         }
         sb.append('(');
       }
       else {
         sb.append('(').append(idName).append(':');
         if (type != null) {
-          toStringRec(type, readable, sb, corefs);
+          toStringRec(type, readable, sb);
         }
         printCaret = true;
       }
@@ -85,7 +83,7 @@ public class LFDagPrinter implements DagPrinter {
           sb.append(" ^ ");
         else
           printCaret = true;
-        toStringRec(prop, readable, sb, corefs);
+        toStringRec(prop, readable, sb);
       }
 
       //sb.append(readable ? here.getTypeName() : here.getType());
@@ -97,7 +95,7 @@ public class LFDagPrinter implements DagPrinter {
         sb.append("<")
         .append(readable ? edge.getName() : edge.getFeature())
         .append(">");
-        toStringRec(edge.getValue(), readable, sb, corefs);
+        toStringRec(edge.getValue(), readable, sb);
         if (it.hasNext()) {
           edge = it.next();
         } else {
@@ -121,10 +119,5 @@ public class LFDagPrinter implements DagPrinter {
         sb.append(here.getTypeName());
       }
     }
- }
-
-  @Override
-  public void maxCoref(int corefs) {
-    _nextNominal = corefs;
   }
 }

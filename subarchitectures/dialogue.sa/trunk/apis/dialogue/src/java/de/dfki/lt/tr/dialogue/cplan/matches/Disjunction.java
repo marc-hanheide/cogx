@@ -15,12 +15,12 @@ public class Disjunction extends Match {
 
   @Override
   public String toString() {
-    return _left + " |" + _right;
+    return "(" + _left + " | " + _right + ")";
   }
 
   @Override
   public boolean match(DagEdge input, Bindings bindings) {
-    return (_left.match(input,bindings) || _right.match(input,bindings));
+    return (_left.matches(input,bindings) || _right.matches(input,bindings));
   }
 
   @Override

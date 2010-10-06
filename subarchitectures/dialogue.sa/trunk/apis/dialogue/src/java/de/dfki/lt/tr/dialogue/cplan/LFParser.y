@@ -4,7 +4,7 @@
 import java.io.Reader;
 import java.util.HashMap;
 
-import de.dfki.lt.tr.dialogue.cplan.matches.Match;
+@SuppressWarnings({"fallthrough", "unused"})
 }
 
 %language "Java"
@@ -102,8 +102,9 @@ lfterm : '<' ID '>' '(' lfconj ')' { $$ = newLF($2, $5).setNominal(); }
        | '<' ID '>' ID ':' ID
                         { $$ = newLF($2,
                                      unify(getNewLF($4).setNominal(),
-                                           newLF(DagNode.TYPE_FEAT_ID, $6))) ;}
-
+                                           newLF(DagNode.TYPE_FEAT_ID, $6)))
+                            .setNominal();
+                        }
        | ID ':' ID      { $$ = unify(getNewLF($1).setNominal(),
                                      newLF(DagNode.TYPE_FEAT_ID, $3));
                         }
