@@ -771,11 +771,81 @@ void DTPCONTROL::newTask(Ice::Int id,
 #ifdef EXPOSING_DTP
     auto actual_problem = Planning::Parsing::problems.find(pi);
     VERBOSER(10050, "Problem is :: "<<*actual_problem->second<<std::endl);
-    solvers[id] = new Planning::Solver(*actual_problem->second);//thread_to_problem[id]);
+
+#ifdef LAO_STAR
+#define CHANGE_PHASE 1
+            solvers[id] = new Planning::Two_Phase_Solver(*actual_problem->second);//Planning::Solver*
+#else       
+            solvers[id] = new Planning::Solver(*actual_problem->second);//Planning::Solver*
+#endif
+//     solvers[id] = new Planning::Solver(*actual_problem->second);//thread_to_problem[id]);
+            
     solvers[id]->set__sink_state_penalty(-1.0);
     
     solvers[id]->preprocess();
     
+    
+#ifdef LAO_STAR
+            if(true){/*START -- TRYING THE MDP HEURISTIC.*/            
+                solvers[id]->empty__belief_states_for_expansion();
+                solvers[id]->generate_markov_decision_process_starting_states();
+
+                Planning::Policy_Iteration__GMRES policy_Iteration__for_MDP_states
+                    (solvers[id]->belief_state__space, solvers[id]->get__sink_state_penalty(), .65);
+
+                auto current_state = solvers[id]->peek__next_belief_state_for_expansion();
+                
+                INTERACTIVE_VERBOSER(true, 15000, "MDP state expansion :: "<<*current_state<<std::endl);
+                
+
+                while(solvers[id]->expand_belief_state_space()){
+                    
+                    VERBOSER(15000, "MDP state expansion :: "<<solvers[id]->belief_state__space.size()<<std::endl);
+                }
+                
+                
+                while(policy_Iteration__for_MDP_states()){
+                    VERBOSER(15000, "Policy iteration."<<std::endl);
+                }
+                
+                for(auto mdp_state = solvers[id]->belief_state__space.begin()
+                        ; mdp_state != solvers[id]->belief_state__space.end()
+                        ; mdp_state++){
+
+                    if(*mdp_state == solvers[id]->get__starting_belief_state()){
+                        continue;
+                    }
+
+                    double state_value = (*mdp_state)->get__expected_value();
+
+                    auto& belief = (*mdp_state)->get__belief_state();
+
+                    QUERY_UNRECOVERABLE_ERROR(belief.size() != 1,
+                                              "Each belief state should contain one element, but we have "
+                                              <<*mdp_state<<std::endl
+                                              <<"That contains :: "<<belief.size()<<std::endl);
+                    /*This is an MDP state, so there should only be one atom in the belief.*/
+                    assert(1 == belief.size());
+
+                    auto state = belief.begin();
+                    assert(dynamic_cast<Planning::State*>(state->first));
+                    state->first->set__value(state_value);
+                }
+
+                solvers[id]->reset__pomdp_state_hash_table();
+
+#ifdef CHANGE_PHASE
+                solvers[id]->change_phase();//HERE -- MONDAY
+#endif
+                
+                solvers[id]->reinstate__starting_belief_state();
+            }/*STOP -- TRYING THE MDP HEURISTIC.*/
+#endif
+            
+#ifdef CHANGE_PHASE
+            INTERACTIVE_VERBOSER(true, 15000, "Done MDP state expansion :: "<<std::endl);
+#endif
+
     
     QUERY_UNRECOVERABLE_ERROR(0 == solvers[id]->peek__next_belief_state_for_expansion()//!solvers[id]->expansion_queue.size()
                               , "The problem is NULL, there is no starting state."<<std::endl
@@ -785,7 +855,14 @@ void DTPCONTROL::newTask(Ice::Int id,
     
 //     current_state[id] = solvers[id]->expansion_queue.front();
     current_state[id] = solvers[id]->peek__next_belief_state_for_expansion();//expansion_queue.front();
-    current_state[id] = solvers[id]->solve__for_new_starting_state(current_state[id]);
+//     current_state[id] = solvers[id]->solve__for_new_starting_state(current_state[id]);
+
+#ifdef LAO_STAR
+            while(solvers[id]->lao_star()){};
+#else
+            current_state[id] = solvers[id]->solve__for_new_starting_state(current_state[id]);
+#endif
+
     
 // //     Planning::Policy_Iteration policy_Iteration(solvers[id]->belief_state__space);
 //     Planning::Policy_Iteration__GMRES policy_Iteration(solvers[id]->belief_state__space

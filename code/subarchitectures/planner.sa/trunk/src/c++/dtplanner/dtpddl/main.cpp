@@ -291,7 +291,7 @@ int main(int argc, char** argv)
                 solver->generate_markov_decision_process_starting_states();
 
                 Planning::Policy_Iteration__GMRES policy_Iteration__for_MDP_states
-                    (solver->belief_state__space, solver->get__sink_state_penalty());
+                    (solver->belief_state__space, solver->get__sink_state_penalty(), .65);
 
                 auto current_state = solver->peek__next_belief_state_for_expansion();
                 

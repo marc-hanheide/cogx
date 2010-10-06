@@ -7,6 +7,9 @@ include_directories(${COGX_ROOT}/tools/cogxutils/src/c++/autogen)
 include(Slice2Cpp)
 
 
+add_definitions(-DLAO_STAR)
+
+
 cast_slice2cpp(GEN_CPP GEN_HPP Planner.ice ${CAST_SLICE_DIR} 
   ${COGX_ROOT}/tools/beliefs/apis/beliefs/src/slice
   ${COGX_ROOT}/tools/beliefs/apis/beliefs+cast/src/slice)

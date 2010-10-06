@@ -19,6 +19,7 @@
 #include "planning_symbols.hh"
 
 #include "solver.hh"
+#include "two_phase_solver.hh"
 #include "policy_iteration_over_information_state_space.hh"
 #include "policy_iteration_over_information_state_space__GMRES.hh"
 
@@ -126,7 +127,11 @@ private:
 
 #ifdef EXPOSING_DTP
     /*Solver on each thread.*/
+#ifdef LAO_STAR
+    std::map<Ice::Int, Planning::Two_Phase_Solver*> solvers;
+#else
     std::map<Ice::Int, Planning::Solver*> solvers;
+#endif
 
     /*Current information-state on each thread.*/
     std::map<Ice::Int, Planning::POMDP_State*> current_state;
