@@ -41,6 +41,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
@@ -79,6 +80,19 @@ public class InteractiveDoraTest {
 	public void dummy() { };
 
 
+	
+	private static Observation createSimpleObservation (String s) throws DialogueException {
+		return createSimpleObservation(s, 1.0f);
+	}
+	
+
+	private static Observation createSimpleObservation (String s, float f) throws DialogueException {
+		Observation intent = new Observation (Observation.INTENTION);
+		intent.addAlternative(s, f);
+		intent.addAlternative(new UnknownFormula(0), 1-f);
+		return intent;
+	}
+	
 	/**
 	 * Construct a new dialogue policy based on the configuration files
 	 * 
@@ -215,7 +229,7 @@ public class InteractiveDoraTest {
 		// navigate through the policy
 		while (!test.manager.isFinished()) {
 			String text = test.getGUIPhonString();
-			Observation intent = new Observation(FormulaUtils.constructFormula(text), DialoguePolicy.INTENTION, 1.0f);
+			Observation intent = createSimpleObservation(text);
 			PolicyAction action = test.manager.nextAction(intent);
 			System.out.println("REACTION: " + action.toString());
 		}
