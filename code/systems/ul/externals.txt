@@ -2,7 +2,7 @@
 ^/code/cmake/trunk					cmake
 
 ^/code/subarchitectures/binder/trunk                    subarchitectures/binder.sa
-^/code/subarchitectures/coma.sa/trunk                   subarchitectures/coma.sa
+#^/code/subarchitectures/coma.sa/trunk                   subarchitectures/coma.sa
 ^/code/subarchitectures/dialogue.sa/trunk               subarchitectures/dialogue.sa
 ^/code/subarchitectures/fakemotivation.sa/trunk         subarchitectures/fakemotivation.sa
 ^/code/subarchitectures/motivation.sa/trunk             subarchitectures/motivation.sa
@@ -10,9 +10,11 @@
 ^/code/subarchitectures/spatial.sa/trunk                subarchitectures/spatial.sa
 ^/code/subarchitectures/vision.sa/trunk                 subarchitectures/vision.sa
 ^/code/subarchitectures/visualization.sa/trunk          subarchitectures/visualization.sa
+^/code/subarchitectures/execution.sa/trunk              subarchitectures/execution.sa
+
 
 ^/code/tools/alchemy                              tools/alchemy
-^/code/tools/beliefmodels/trunk                   tools/beliefmodels
+#^/code/tools/beliefmodels/trunk                   tools/beliefmodels
 ^/code/tools/beliefs/trunk                        tools/beliefs
 ^/code/tools/camcalb2/trunk                       tools/camcalb2
 ^/code/tools/castctrl/trunk                       tools/castctrl
@@ -43,9 +45,9 @@
 # Scenarios
 ^/code/scenarios/george/trunk			scenarios/george
 ^/code/scenarios/dora/trunk			scenarios/dora
+^/code/scenarios/shared/trunk       scenarios/shared
 
 # Obsolete
 # ^/code/subarchitectures/comsys/trunk                    subarchitectures/comsys
 # ^/code/subarchitectures/nav.sa/trunk                    subarchitectures/nav.sa
-
 
