@@ -260,13 +260,29 @@ void NavGraphProcess::configure(const map<string,string>& _config)
   m_cureNavGraph.addEventListener(this);
 }
 
-double  NavGraphProcess::NavGraphServer::getPathLength(double xS, double yS, double aS, double xG, double yG, double aG,const Ice::Current &_context){
+double  NavGraphProcess::NavGraphServer::getPathLength(double xS, double yS, double aS, double xG, double yG, double aG, const Ice::Current &_context){
   std::list<Cure::NavGraphNode> path;
   double d;
   m_pOwner->lockComponent();
   m_pOwner->m_cureNavGraph.findPath(xS,yS,aS,xG,yG,aG, path, &d);
   m_pOwner->unlockComponent();
   return d;
+}
+
+int NavGraphProcess::NavGraphServer::getAreaId(double x, double y, double a, double maxDist, const Ice::Current &_context){
+  int id;
+  m_pOwner->lockComponent();
+  id = m_pOwner->m_cureNavGraph.getClosestNode(x,y,a,maxDist)->getAreaId();
+  m_pOwner->unlockComponent();
+  return id;
+}
+
+int NavGraphProcess::NavGraphServer::getClosestNodeId(double x, double y, double a, double maxDist, const Ice::Current &_context){
+  int id;
+  m_pOwner->lockComponent();
+  id = m_pOwner->m_cureNavGraph.getClosestNode(x,y,a,maxDist)->getId();
+  m_pOwner->unlockComponent();
+  return id;
 }
 void NavGraphProcess::loadGraphFromFile(const std::string &filename)
 {

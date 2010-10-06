@@ -342,7 +342,7 @@ module SpatialData {
     ///Object to generate the viewpoints for. TODO: what should this label contain?
      string label;
      PlaceIDSeq placestosearch; 
-     AVSStatus status;     
+     AVSStatus status;
   };
 
 
@@ -356,6 +356,8 @@ module SpatialData {
 	  double tilt;
 	  double probability;
 	  string label;
+	  int closestPlaceId;
+	  int areaId;
   };
 
   sequence<ViewPoint> ViewPointSeq;

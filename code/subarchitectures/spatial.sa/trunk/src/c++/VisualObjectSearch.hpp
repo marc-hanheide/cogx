@@ -79,6 +79,8 @@ namespace spatial
  void addViewPointGenerationCommand();
   //    void addARTagCommand(std::string label);
       double GetGraphPathLength(double xS, double yS, double aS, double xG, double yG, double aG);
+  int GetClosestNodeId(double x, double y, double a);
+  int GetAreaId(double x, double y, double a);
       AVSPolicyManager m_policyManager;
       double GetStrategyCost(std::list<std::string> policy); 
        double tryLoadStepCost(const std::vector<ObjectPairRelation> &step);
