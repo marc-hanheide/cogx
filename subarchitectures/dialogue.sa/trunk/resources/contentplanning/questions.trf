@@ -1,0 +1,58 @@
+// QUESTIONS: Prompting humans for aid/information
+
+// "I need some X"
+/*
+:dvp ^ <SpeechAct>directive ^ <Goal>(:cognition ^ need) ^ <Target>(#h1:entity ^ #h1value) ^ <Content>(#c1:)
+->
+#c1 = :cognition ^ need ^
+                <Mood>ind ^
+                <Tense>pres ^
+                <Actor>(#i1:person ^ I ^
+                        <Num>sg) ^
+                <Patient>(#h1 ^ #h1value ^
+                          <Delimitation>existential ^
+                          <Quantification>unspecific) ^
+                <Subject>#i1.
+*/
+:dvp ^ <SpeechAct>directive ^ <Goal>(:cognition ^ need)
+     ^ <Target>(#h1:entity ^ #h1value) ^ <Content>(#c1:)
+->
+#c1 = :cognition ^ need ^
+                <Mood>ind ^
+                <Tense>pres ^
+                <Actor>(#i1:person ^ I ^
+                        <Num>sg) ^
+                <Patient>(#h1: ^ #h1value ^
+                          <Delimitation>existential ^
+                          <Quantification>unspecific) ^
+                <Subject>#i1:.
+
+/*
+// "What X is this?"
+:dvp ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <Salient>true ^ #o1:object ^ <InfoStatus>familiar) ^ <Type>(#b3:thing ^ <Questioned>true ^ #o1 ))
+->
+#c1 = :ascription ^ be ^
+            <Mood>int ^
+            <Subject>(c1:entity ^ context ^
+                      <Delimitation>unique ^
+                      <Num>sg ^
+                      <Proximity>proximal ^
+                      <Quantification>specific) ^
+            <Wh-Restr>(w1:specifier ^ what ^
+                       <Scope>(#b3: ^ #o1 ^
+                               <Delimitation>unique ^
+                               <Num>sg ^
+                               <Quantification>specific)).
+*/
+
+
+:dvp ^ <SpeechAct>question
+     ^ <Content>(#cont:ascription ^
+                 <Subject>(#subj:entity ^ <Delimitation>unique
+                                        ^ <Quantification>specific) ^
+                 <Cop-Scope>(#cop-scope:#type ^ #prop ^ <Questioned>true))
+->
+#cont ^ be ^ <Wh-Restr>(:specifier ^ what ^ <Scope> #cop-scope:),
+#subj ^ context ^ <Proximity> proximal,
+#cop-scope ! <Questioned>,
+#cop-scope ^ <Delimitation>unique ^ <Quantification>specific ^ <Num> sg.

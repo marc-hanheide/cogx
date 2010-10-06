@@ -4,7 +4,8 @@
 
 :dvp ^ ! <Content>
 -> 
-# ^ <Content> ( #v: ).
+# ^ <Content> ( #v:top ),
+##noInitialContent = true.
 
 // SPEECHACT: Set the global variable for recording the speech act
 

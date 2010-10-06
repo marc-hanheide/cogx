@@ -40,6 +40,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.util.Counter;
@@ -77,79 +78,6 @@ public abstract class ConversionUtils {
 	private static final String privateEpStFunctor = "private";
 	private static final String attributedEpStFunctor = "attrib";
 	private static final String sharedEpStFunctor = "shared";
-
-	public static List<ModalisedAtom> intentionToFacts(Intention itn) {
-		LinkedList<ModalisedAtom> result = new LinkedList<ModalisedAtom>();
-		for (IntentionalContent itc : itn.content) {
-
-			LinkedList<FunctionTerm> args = new LinkedList<FunctionTerm>();
-			args.add(TermAtomFactory.term(itn.id));
-			for (String ag : itc.agents) {
-				args.add(TermAtomFactory.term(ag));
-			}
-
-			ModalisedAtom amf = TermAtomFactory.modalisedAtom(
-					new Modality[] {
-						Modality.Truth,
-						Modality.Intention
-					},
-					TermAtomFactory.atom(agentPredSym, args.toArray(new Term[0])));
-
-			log("adding fact: " + MercuryUtils.modalisedAtomToString(amf));
-			result.add(amf);
-
-			for (String id : BeliefIntentionUtils.collectBeliefIdsInDFormula(itc.preconditions)) {
-				ModalisedAtom mf = TermAtomFactory.modalisedAtom(
-						new Modality[] {
-							Modality.Truth,
-							Modality.Intention
-						},
-						TermAtomFactory.atom(preconditionPredSym, new Term[] {
-							TermAtomFactory.term(itn.id),
-							TermAtomFactory.term(id)
-						}));
-				log("adding fact: " + MercuryUtils.modalisedAtomToString(mf));
-				result.add(mf);
-			}
-
-			for (String id : BeliefIntentionUtils.collectBeliefIdsInDFormula(itc.postconditions)) {
-				ModalisedAtom mf = TermAtomFactory.modalisedAtom(
-						new Modality[] {
-							Modality.Truth,
-							Modality.Intention
-						},
-						TermAtomFactory.atom(postconditionPredSym, new Term[] {
-							TermAtomFactory.term(itn.id),
-							TermAtomFactory.term(id)
-						}));
-				log("adding fact: " + MercuryUtils.modalisedAtomToString(mf));
-				result.add(mf);
-			}
-		}
-		return result;
-	}
-
-	public static List<ModalisedAtom> beliefToFacts(dBelief b) {
-		LinkedList<ModalisedAtom> result = new LinkedList<ModalisedAtom>();
-		FunctionTerm rvp = dFormulaToRPV(getFirstLogicalContent(b));
-		if (rvp != null) {
-			ModalisedAtom mf = TermAtomFactory.modalisedAtom(
-					new Modality[] {
-						Modality.Belief
-					},
-					TermAtomFactory.atom(beliefPredSym, new Term[] {
-						TermAtomFactory.term(b.id),
-						epistemicStatusToTerm(b.estatus),
-						rvp
-					}));
-			log("adding fact: " + MercuryUtils.modalisedAtomToString(mf));
-			result.add(mf);
-		}
-		else {
-			log("failed to generate RVP");
-		}
-		return result;
-	}
 
 	public static RecognisedIntention proofToEpistemicObjects(IdentifierGenerator idGen, String attribAgent, MarkedQuery[] proof) {
 
@@ -204,7 +132,7 @@ public abstract class ConversionUtils {
 				}
 				IntentionalContent itc = rIts.get(idTerm.functor);
 
-				if (argTerm.functor.equals("belief")) {
+				if (argTerm.functor.equals(IntentionManagementConstants.beliefLinkModality)) {
 					String lingRef = ((FunctionTerm)argTerm.args[0]).functor;
 					EpistemicStatus es = termToEpistemicStatus((FunctionTerm)argTerm.args[1]);
 
@@ -228,16 +156,8 @@ public abstract class ConversionUtils {
 					}
  */
 				}
-				if (argTerm.functor.equals("state")) {
-					List<dFormula> args = new LinkedList<dFormula>();
-					for (int i = 0; i < argTerm.args.length; i++) {
-						if (argTerm.args[i] instanceof FunctionTerm) {
-							args.add(uniTermToFormula((FunctionTerm) argTerm.args[i]));
-						}
-					}
-					dFormula stateF = BeliefFormulaFactory.newModalFormula(IntentionManagementConstants.stateModality,
-							BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, args));
-
+				if (argTerm.functor.equals(IntentionManagementConstants.stateModality) && argTerm.args.length == 1) {
+					dFormula stateF = BeliefFormulaFactory.newModalFormula(IntentionManagementConstants.stateModality, uniTermToFormula((FunctionTerm) argTerm.args[0]));
 					itc.preconditions = combineDFormulas(itc.preconditions, stateF);
 				}
 			}
@@ -250,7 +170,7 @@ public abstract class ConversionUtils {
 				}
 				IntentionalContent itc = rIts.get(idTerm.functor);
 
-				if (argTerm.functor.equals("belief")) {
+				if (argTerm.functor.equals(IntentionManagementConstants.beliefLinkModality)) {
 					String lingRef = ((FunctionTerm)argTerm.args[0]).functor;
 					EpistemicStatus es = termToEpistemicStatus((FunctionTerm)argTerm.args[1]);
 
@@ -264,15 +184,8 @@ public abstract class ConversionUtils {
 						}
 					}
 				}
-				if (argTerm.functor.equals("state")) {
-					List<dFormula> args = new LinkedList<dFormula>();
-					for (int i = 0; i < argTerm.args.length; i++) {
-						if (argTerm.args[i] instanceof FunctionTerm) {
-							args.add(uniTermToFormula((FunctionTerm) argTerm.args[i]));
-						}
-					}
-					dFormula stateF = BeliefFormulaFactory.newModalFormula(IntentionManagementConstants.stateModality,
-							BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, args));
+				if (argTerm.functor.equals(IntentionManagementConstants.stateModality) && argTerm.args.length == 1) {
+					dFormula stateF = BeliefFormulaFactory.newModalFormula(IntentionManagementConstants.stateModality, uniTermToFormula((FunctionTerm) argTerm.args[0]));
 					itc.postconditions = combineDFormulas(itc.postconditions, stateF);
 				}
 			}
@@ -631,7 +544,7 @@ public abstract class ConversionUtils {
 		return null;
 	}
 
-	private static Term workingMemoryAddressToTerm(WorkingMemoryAddress wma) {
+	public static Term workingMemoryAddressToTerm(WorkingMemoryAddress wma) {
 		return TermAtomFactory.term("ptr", new Term[] { TermAtomFactory.term(wma.subarchitecture), TermAtomFactory.term(wma.id)});
 	}
 
@@ -732,6 +645,165 @@ public abstract class ConversionUtils {
 			}
 		}
 		return null;
+	}
+
+
+	public static Term listToTerm(List<Term> ts) {
+		return iteratorToTerm(ts.iterator());
+	}
+
+	public static FunctionTerm iteratorToTerm(Iterator<Term> i) {
+		if (i.hasNext()) {
+			Term t = i.next();
+			FunctionTerm ft = TermAtomFactory.term("[|]", new Term[] { t, iteratorToTerm(i) });
+			return ft;
+		}
+		else {
+			return TermAtomFactory.term("[]");
+		}
+	}
+
+	public static List<ModalisedAtom> intentionToFacts(Term itIdTerm, Intention it) {
+		final Modality[] ms = new Modality[] {
+			Modality.Truth,
+			Modality.Intention
+		};
+
+		List<ModalisedAtom> result = new LinkedList<ModalisedAtom>();
+
+		for (IntentionalContent itc : it.content) {
+
+			List<Term> tmp = new LinkedList<Term>();
+			for (String ag : itc.agents) {
+				tmp.add(TermAtomFactory.term(ag));
+			}
+
+			List<Term> args = new LinkedList<Term>();
+			args.add(itIdTerm);
+			args.add(listToTerm(tmp));
+
+			ModalisedAtom amf = TermAtomFactory.modalisedAtom(
+					new Modality[] {
+						Modality.Truth,
+						Modality.Intention
+					},
+					TermAtomFactory.atom(agentPredSym, args));
+
+			log("adding fact: " + MercuryUtils.modalisedAtomToString(amf));
+			result.add(amf);
+
+			for (ModalisedAtom ma : intentionFormulaToFacts(itIdTerm, itc.preconditions, ms, preconditionPredSym)) {
+				log("adding fact: " + MercuryUtils.modalisedAtomToString(ma));
+				result.add(ma);
+			}
+
+			for (ModalisedAtom ma : intentionFormulaToFacts(itIdTerm, itc.postconditions, ms, postconditionPredSym)) {
+				log("adding fact: " + MercuryUtils.modalisedAtomToString(ma));
+				result.add(ma);
+			}
+		}
+		return result;
+	}
+
+	private static List<ModalisedAtom> intentionFormulaToFacts(Term itIdTerm, dFormula f, Modality[] modality, String atomPrefix) {
+		List<ModalisedAtom> result = new LinkedList<ModalisedAtom>();
+
+		if (f instanceof ComplexFormula) {
+			ComplexFormula cf = (ComplexFormula) f;
+			assert (cf.op == BinaryOp.conj);
+			for (dFormula ff : cf.forms) {
+				result.addAll(intentionFormulaToFacts(itIdTerm, ff, modality, atomPrefix));
+			}
+		}
+
+		if (f instanceof ModalFormula) {
+			ModalFormula mf = (ModalFormula) f;
+			if (mf.op.equals(IntentionManagementConstants.beliefLinkModality)) {
+				if (mf.form instanceof PointerFormula) {
+					// link to a belief
+					PointerFormula pf = (PointerFormula) mf.form;
+					FunctionTerm ft = TermAtomFactory.term(IntentionManagementConstants.beliefLinkModality, new Term[] {workingMemoryAddressToTerm(pf.pointer)});
+					result.add(TermAtomFactory.modalisedAtom(modality, TermAtomFactory.atom(atomPrefix, new Term[] {itIdTerm, ft})));
+				}
+			}
+
+			if (mf.op.equals(IntentionManagementConstants.stateModality)) {
+				if (mf.form instanceof ComplexFormula) {
+					// a state
+					ComplexFormula cf = (ComplexFormula) mf.form;
+					assert (cf.op == BinaryOp.conj);
+					FunctionTerm ft = TermAtomFactory.term(IntentionManagementConstants.stateModality, new Term[] {listToTerm(stateFormulaToTerms(cf.forms))});
+					result.add(TermAtomFactory.modalisedAtom(modality, TermAtomFactory.atom(atomPrefix, new Term[] {itIdTerm, ft})));
+				}
+			}
+		}
+
+		return result;
+	}
+
+	private static List<Term> stateFormulaToTerms(List<dFormula> fs) {
+		List<Term> result = new LinkedList<Term>();
+		for (dFormula f : fs) {
+			Term t = stateFormulaToTerm(f);
+			if (t != null) {
+				result.add(t);
+			}
+		}
+		return result;
+	}
+
+	private static Term stateFormulaToTerm(dFormula f) {
+		if (f instanceof ComplexFormula) {
+			ComplexFormula cf = (ComplexFormula) f;
+			assert (cf.op == BinaryOp.conj);
+			List<Term> ts = new LinkedList<Term>();
+			for (dFormula ff : cf.forms) {
+				Term t = stateFormulaToTerm(ff);
+				if (t != null) {
+					ts.add(t);
+				}
+			}
+			return listToTerm(ts);
+		}
+		if (f instanceof ModalFormula) {
+			ModalFormula mf = (ModalFormula) f;
+			Term t = stateFormulaToTerm(mf.form);
+			if (t != null) {
+				return TermAtomFactory.term(mf.op, new Term[] { t });
+			}
+		}
+		if (f instanceof ElementaryFormula) {
+			ElementaryFormula ef = (ElementaryFormula) f;
+			return TermAtomFactory.term(ef.prop);
+		}
+		if (f instanceof PointerFormula) {
+			PointerFormula pf = (PointerFormula) f;
+			return workingMemoryAddressToTerm(pf.pointer);
+		}
+
+		return null;
+	}
+
+	public static List<ModalisedAtom> beliefToFacts(dBelief b) {
+		LinkedList<ModalisedAtom> result = new LinkedList<ModalisedAtom>();
+		FunctionTerm rvp = dFormulaToRPV(getFirstLogicalContent(b));
+		if (rvp != null) {
+			ModalisedAtom mf = TermAtomFactory.modalisedAtom(
+					new Modality[] {
+						Modality.Belief
+					},
+					TermAtomFactory.atom(beliefPredSym, new Term[] {
+						TermAtomFactory.term(b.id),
+						epistemicStatusToTerm(b.estatus),
+						rvp
+					}));
+			log("adding fact: " + MercuryUtils.modalisedAtomToString(mf));
+			result.add(mf);
+		}
+		else {
+			log("failed to generate RVP");
+		}
+		return result;
 	}
 
 	private static void log(String str) {

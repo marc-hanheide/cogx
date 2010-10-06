@@ -23,6 +23,7 @@ package de.dfki.lt.tr.cast.dialogue;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
@@ -159,12 +160,14 @@ extends AbstractDialogueComponent {
 
 		Iterator<CASTData> iter = data.getData();
 		if (iter.hasNext()) {
-			Object body = iter.next().getData();
+			CASTData d = iter.next();
+			Object body = d.getData();
+			WorkingMemoryAddress wma = new WorkingMemoryAddress(d.getID(), "dialogue");
 
 			if (body instanceof Intention) {
-				Intention itn = (Intention) body;
+				Intention it = (Intention) body;
 				log("processing an intention");
-				LinkedList<String> belIds = BeliefIntentionUtils.collectBeliefIdsInIntention(itn);
+				LinkedList<String> belIds = BeliefIntentionUtils.collectBeliefIdsInIntention(it);
 				LinkedList<dBelief> bels = new LinkedList<dBelief>();
 				for (String id : belIds) {
 					dBelief b = retrieveBeliefById(id);
@@ -174,7 +177,7 @@ extends AbstractDialogueComponent {
 					}
 				}
 
-				ContentPlanningGoal protoLF = ireal.epistemicObjectsToProtoLF(itn, bels);
+				ContentPlanningGoal protoLF = ireal.epistemicObjectsToProtoLF(wma, it, bels);
 				if (protoLF != null) {
 					try {
 						log("adding proto-LF to working memory: " + LFUtils.lfToString(protoLF.lform));

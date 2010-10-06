@@ -3,16 +3,19 @@
 // SETTING FLAGS
 // This isn't done the best way here: one flag covers all, which is not too good. 
 
-
-(:entity | :thing) ^ <Salient> 
-->
-##Salient = true.
-
 (:entity | :thing) ^ !<Salient>,
 ##Salient ^ false
 -> 
 ##Salient = false.
 
+(:entity | :thing) ^ <Salient>true 
+->
+##Salient = true.
+
+(:entity | :thing) ^ <Salient>false,
+##Salient ^ false
+-> 
+##Salient = false.
 
 // ==============================================
 // DELIMITATION, QUANTIFICATION
@@ -31,10 +34,17 @@
 -> 
 # ^ <Delimitation>existential. 
 
-:thing ^ !<InfoStatus> ^ !<Salient>
+(:entity | :thing) ^ <InfoStatus>new ^ !<Salient>
 -> 
-# ^ <Delimitation>existential. 
+# ^ <Delimitation>existential.
 
+//(:entity | :thing) ^ !<InfoStatus> ^ !<Salient>
+//-> 
+//# ^ <Delimitation>existential. 
+
+(:entity | :thing) ^ <InfoStatus>familiar ^ !<Salient>
+-> 
+# ^ <Delimitation>unique. 
 
 (:entity | :thing) ^ !<InfoStatus> ^ <Salient>true
 ->
@@ -44,6 +54,9 @@
 ->
 # ^ <Delimitation>unique.
 
+(:entity | :thing) ^ <InfoStatus>new ^ !<Salient> 
+-> 
+# ^ <Quantification>specific.
 
 (:entity | :thing) ^ <InfoStatus>familiar ^ !<Salient> 
 -> 
