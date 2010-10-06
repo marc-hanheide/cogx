@@ -180,7 +180,7 @@ public:
 		para_c = 0.0;
 		para_d = 0.0;
 		previousImg = 0;
-		min_height_of_obj = 0.01;
+		min_height_of_obj = 0.04;
 	}
   virtual ~PlanePopOut() {}
 };
