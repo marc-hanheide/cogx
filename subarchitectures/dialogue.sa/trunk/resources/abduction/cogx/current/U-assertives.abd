@@ -44,7 +44,7 @@ understand : event : utter(S, H, Nom) <-
 	i : rel_Patient(Nom, PatNom),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
-%	int : pre(Int, state(see, agent(S), patient(PatNom))) / p(1.0),
+%	int : pre(Int, state([see, agent(S), patient(PatNom)])) / p(1.0),
 	understand : assertion_effect(S, H, Int, PatNom, pos, PatNom).
 
 %-------------------------------------------------------------------------
@@ -59,7 +59,7 @@ understand : event : utter(S, H, Nom) <-
 	marker_to_state_type(Prop, StateType),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
-	int : post(Int, state(StateType)) / p(1.0).
+	int : post(Int, state([StateType])) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

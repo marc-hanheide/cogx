@@ -21,7 +21,7 @@ understand : polar_query_scope(S, H, Int, Ref, Nom) <-
 	polar_query_prop(Nom, Prop, Value),
 	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
 	get_topic_referent(EpSt, Int, SubjNom, RestrNom, BId),
-	int : post(Int, state('question-answered', agent(H), about(BId), feature(Prop), hypo(Value))) / p(1.0).
+	int : post(Int, state(['question-answered', agent(H), about(BId), feature(Prop), hypo(Value)])) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ understand : wh_query_scope(S, H, Int, Ref, Nom) <-
 	wh_query_prop(Nom, Prop),
 	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
 	get_topic_referent(EpSt, Int, SubjNom, RestrNom, BId),
-	int : post(Int, state('question-answered', agent(H), about(BId), feature(Prop))) / p(1.0).
+	int : post(Int, state(['question-answered', agent(H), about(BId), feature(Prop)])) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -74,7 +74,7 @@ understand : event : utter(S, H, Nom) <-
 		i : prop(WhNom, what),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
-	int : post(Int, state('scene-description', 'agent'(H))) / p(1.0).
+	int : post(Int, state(['scene-description', agent(H)])) / p(1.0).
 
 %-------------------------------------------------------------------------
 % COMMAND: ACTION-NON-MOTION
@@ -97,24 +97,28 @@ understand : event : utter(S, H, Nom) <-
 
 nm_action_effects(S, H, EpSt, RootNom, Int, Ref, find) <-
 	int : pre(Int, belief(Ref, attrib(H, S), fv(location, unknown))) / p(1.0),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, patient))) / p(1.0),
 %	int : post(Int, belief(Ref, shared(S, H), fv(location, not(unknown)))) / p(1.0),
 	get_topic_referent(EpSt, Int, Ref, Ref, BId),
-	int : post(Int, state(found, agent(H), patient(BId))) / p(1.0).
+	int : post(Int, state([found, agent(H), patient(BId)])) / p(1.0).
 
 nm_action_effects(S, H, EpSt, RootNom, Int, Ref, bring) <-
 	determine_recipient(RootNom, S, S, H, Recipient),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, patient))) / p(1.0),
 	get_topic_referent(EpSt, Int, Ref, Ref, BId),
-	int : post(Int, state(possession, agent(Recipient), patient(BId))) / p(1.0).
+	int : post(Int, state([possession, agent(Recipient), patient(BId)])) / p(1.0).
 
 nm_action_effects(S, H, EpSt, RootNom, Int, Ref, get) <-
 	determine_recipient(RootNom, H, S, H, Recipient),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, patient))) / p(1.0),
 	get_topic_referent(EpSt, Int, Ref, Ref, BId),
-	int : post(Int, state(possession, agent(Recipient), patient(BId))) / p(1.0).
+	int : post(Int, state([possession, agent(Recipient), patient(BId)])) / p(1.0).
 
 nm_action_effects(S, H, EpSt, RootNom, Int, Ref, give) <-
 	determine_recipient(RootNom, H, S, H, Recipient),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, patient))) / p(1.0),
 	get_topic_referent(EpSt, Int, Ref, Ref, BId),
-	int : post(Int, state(possession, agent(Recipient), patient(BId))) / p(1.0).
+	int : post(Int, state([possession, agent(Recipient), patient(BId)])) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -159,14 +163,14 @@ understand : event : utter(S, H, Nom) <-
 
 m_action_effects(S, H, EpSt, Int, Ref, go) <-
 	get_topic_referent(shared(S, H), Int, Ref, Ref, BId),  % XXX the presupposed belief not constructed
-	int : post(Int, state(position, agent(H), 'location-of'(BId))) / p(1.0).
+	int : post(Int, state([position, agent(H), 'location-of'(BId)])) / p(1.0).
 
 m_action_effects(S, H, EpSt, Int, Ref, move) <-
 	m_action_effect(S, H, Int, Ref, go).
 
 m_action_effects(S, H, EpSt, Int, Ref, turn) <-
 	get_topic_referent(EpSt, Int, Ref, Ref, BId),  % XXX the presupposed belief not constructed
-	int : post(Int, state('orientation-towards', agent(H), 'location-of'(BId))) / p(1.0).
+	int : post(Int, state(['orientation-towards', agent(H), 'location-of'(BId)])) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -199,13 +203,13 @@ valid_direction(right, right).
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 m_action_effects_direction(S, H, Int, Dir, go) <-
-	int : post(Int, state(motion, 'agent'(H), 'direction'(Dir))) / p(1.0).  % XXX
+	int : post(Int, state([motion, 'agent'(H), 'direction'(Dir)])) / p(1.0).  % XXX
 
 m_action_effects_direction(S, H, Int, Dir, move) <-
 	m_action_effects_direction(S, H, Int, Dir, go).
 
 m_action_effects_direction(S, H, Int, Dir, turn) <-
-	int : post(Int, state(turn, 'agent'(H), 'direction'(Dir))) / p(1.0).  % XXX
+	int : post(Int, state([turn, 'agent'(H), 'direction'(Dir)])) / p(1.0).  % XXX
 
 %-------------------------------------------------------------------------
 
@@ -218,6 +222,6 @@ understand : event : utter(S, H, Nom) <-
 %		i : prop(ActorNom, addressee),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
-	int : post(Int, state('stop-motion', 'agent'(H))) / p(1.0).  % XXX
+	int : post(Int, state(['stop-motion', agent(H)])) / p(1.0).  % XXX
 
 %-------------------------------------------------------------------------

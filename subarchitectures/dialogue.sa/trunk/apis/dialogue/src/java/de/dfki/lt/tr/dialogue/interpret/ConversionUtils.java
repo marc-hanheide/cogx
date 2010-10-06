@@ -300,13 +300,6 @@ public abstract class ConversionUtils {
 			}
 		}
 
-		for (dBelief b : bels_pre) {
-			removeFeature(b, "mark");
-		}
-		for (dBelief b : bels_post) {
-			removeFeature(b, "mark");
-		}
-
 		Iterator<String> iter = rIts.keySet().iterator();
 		while (iter.hasNext()) {
 			Intention it = new Intention();
@@ -322,12 +315,12 @@ public abstract class ConversionUtils {
 			it.content.add(itc);
 			if (itc.agents != null && !itc.agents.isEmpty()) {
 
-				if (itc.preconditions == null) {
-					itc.preconditions = BeliefFormulaFactory.newElementaryFormula("nil");
-				}
-				if (itc.postconditions == null) {
-					itc.postconditions = BeliefFormulaFactory.newElementaryFormula("nil");
-				}
+				// replace pointers in the formulas
+				replacePointersInFormula(itc.preconditions, bels_pre, "binder");
+				replacePointersInFormula(itc.preconditions, bels_post, "dialogue");
+				replacePointersInFormula(itc.postconditions, bels_pre, "binder");
+				replacePointersInFormula(itc.postconditions, bels_post, "dialogue");
+
 				ri.ints.add(it);
 			}
 			else {
@@ -335,10 +328,46 @@ public abstract class ConversionUtils {
 			}
 		}
 
+		for (dBelief b : bels_pre) {
+			removeFeature(b, "mark");
+		}
+		for (dBelief b : bels_post) {
+			removeFeature(b, "mark");
+		}
+
 		ri.pre.addAll(bels_pre);
 		ri.post.addAll(bels_post);
 
 		return ri;
+	}
+
+	private static dFormula replacePointersInFormula(dFormula f, List<dBelief> bels, String subarch) {
+		if (f instanceof ComplexFormula) {
+			ComplexFormula cF = (ComplexFormula) f;
+			for (dFormula ff : cF.forms) {
+				dFormula repl = replacePointersInFormula(ff, bels, subarch);
+				if (repl != null) {
+					ff = repl;
+				}
+			}
+		}
+		if (f instanceof ModalFormula) {
+			ModalFormula mF = (ModalFormula) f;
+			if (mF.op.equals("pointer-to") && mF.form instanceof ElementaryFormula) {
+				ElementaryFormula eF = (ElementaryFormula) mF.form;
+				dBelief to = findMarkedBelief(bels, eF.prop);
+				if (to != null) {
+					return BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(to.id, subarch));
+				}
+			}
+			else {
+				dFormula repl =	replacePointersInFormula(mF.form, bels, subarch);
+				if (repl != null) {
+					mF.form = repl;
+				}
+			}
+		}
+		return null;
 	}
 
 	private static dBelief findMarkedBelief(List<dBelief> bels, String mark) {
@@ -390,26 +419,42 @@ public abstract class ConversionUtils {
 	}
 
 	private static dFormula uniTermToFormula(FunctionTerm ft) {
-		if (ft.args.length > 0) {
-			if (ft.functor.equals("ptr")) {
-				WorkingMemoryAddress wma = termToWorkingMemoryAddress(ft);
-				if (wma != null) {
-					return BeliefFormulaFactory.newPointerFormula(wma);
-				}
-			}
-			// this is a modal formula
-			List<dFormula> args = new LinkedList<dFormula>();
-			for (int i = 0; i < ft.args.length; i++) {
-				if (ft.args[i] instanceof FunctionTerm) {
-					args.add(uniTermToFormula((FunctionTerm) ft.args[i]));
-				}
-			}
-			return BeliefFormulaFactory.newModalFormula(ft.functor, BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, args));
+
+		// empty list
+		if (ft.functor.equals("[]") && ft.args.length == 0) {
+			return BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, new LinkedList<dFormula>());
 		}
-		else {
-			// this is a proposition
+
+		// list head
+		if (ft.functor.equals("[|]") && ft.args.length == 2) {
+			List<dFormula> lfs = new LinkedList<dFormula>();
+			lfs.add(uniTermToFormula((FunctionTerm) ft.args[0]));
+			dFormula tail = uniTermToFormula((FunctionTerm) ft.args[1]);
+			assert (tail instanceof ComplexFormula);
+			ComplexFormula cF = (ComplexFormula) tail;
+			lfs.addAll(cF.forms);
+			return BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, lfs);
+		}
+
+		// pointer to an address
+		if (ft.functor.equals("ptr")) {
+			WorkingMemoryAddress wma = termToWorkingMemoryAddress(ft);
+			if (wma != null) {
+				return BeliefFormulaFactory.newPointerFormula(wma);
+			}
+		}
+
+		// modal formula
+		if (ft.args.length == 1) {
+			return BeliefFormulaFactory.newModalFormula(ft.functor, uniTermToFormula((FunctionTerm) ft.args[0]));
+		}
+
+		// elementary formula
+		if (ft.args.length == 0) {
 			return BeliefFormulaFactory.newElementaryFormula(ft.functor);
 		}
+
+		return BeliefFormulaFactory.newElementaryFormula("nil");
  	}
 
 	public static EpistemicStatus termToEpistemicStatus(FunctionTerm epstT) {

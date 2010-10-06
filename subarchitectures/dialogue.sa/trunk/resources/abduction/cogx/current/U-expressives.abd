@@ -6,7 +6,7 @@ understand : event : utter(S, H, Nom) <-
 	i : sort(Nom, greeting),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
-	int : post(Int, state('engagement-open', agent(S), agent(H))) / p(1.0).
+	int : post(Int, state(['engagement-open', agent(S), agent(H)])) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -14,7 +14,7 @@ understand : event : utter(S, H, Nom) <-
 	i : sort(Nom, closing),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
-	int : post(Int, state('engagement-closed', agent(S), agent(H))) / p(1.0).
+	int : post(Int, state(['engagement-closed', agent(S), agent(H)])) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -23,7 +23,7 @@ understand : event : utter(S, H, Nom) <-
 	i : prop(Nom, thank),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
-	int : post(Int, state(thanking, agent(S), patient(H))) / p(1.0).
+	int : post(Int, state([thanked, agent(S), patient(H)])) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -37,6 +37,6 @@ understand : event : utter(S, H, Nom) <-
 	appreciation_marker(Prop),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
-	int : post(Int, state(appreciation, agent(S), patient(H))) / p(1.0).
+	int : post(Int, state([appreciated, agent(S), patient(H)])) / p(1.0).
 
 %-------------------------------------------------------------------------
