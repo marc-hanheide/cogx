@@ -93,12 +93,12 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         self.fnconf = "castcontrol.conf"
         self.fnhist = "castcontrol.hist"
-        self._options = options.CCastOptions()
+        self._options = options.getCastOptions()
         self._options.loadConfig(self.fnconf)
         if os.path.exists(self.fnhist): self._options.loadHistory(self.fnhist)
         else: self._options.loadHistory(self.fnconf) # old place for history
         self._options.configEnvironment()
-        self._userOptions = options.CUserOptions()
+        self._userOptions = options.getUserOptions()
         self._userOptions.loadConfig()
         self.componentFilter = []
 

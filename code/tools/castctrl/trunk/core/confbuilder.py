@@ -10,6 +10,7 @@
 import os, sys
 import re
 import messages
+import options
 
 LOGGER = messages.CInternalLogger()
 
@@ -150,7 +151,16 @@ class CCastConfig:
         Fixes the localchost IP. Distributes the components to remote machines
         according to rules.
         """
-        lines = self.readConfig(filename)
+        lines = []
+        # TODO: Checking for CAST_HAS_SETVAR is temporary; remove when a new latest is published
+        # (after 2010-10-06; latest should point to trunk/rev >= 13671)
+        opts = options.getCastOptions()
+        hasSetVar = opts.xe("$CAST_HAS_SETVAR") == "1"
+        if hasSetVar:
+            lines += [ "SETVAR CONFIG_DIR=%s" % os.path.dirname(os.path.abspath(filename)) ]
+        # ----
+
+        lines += self.readConfig(filename)
         self.subarch = ""
         for line in lines:
             mo = CCastConfig.reSubarch.match(line)

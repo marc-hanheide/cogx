@@ -20,6 +20,22 @@ elif startup_environ.has_key("HOME"): CONFIG_DIR=startup_environ["HOME"] + "/.co
 else: CONFIG_DIR="~/.config"
 CONFIG_DIR = os.path.abspath(os.path.join(CONFIG_DIR, "CASTControl"))
 
+# Factory methods for global singletons with settings
+_castOptions = None
+def getCastOptions():
+    global _castOptions
+    if _castOptions == None:
+        _castOptions = CCastOptions()
+    return _castOptions
+
+_userOptions = None
+def getUserOptions():
+    global _userOptions
+    if _userOptions == None:
+        _userOptions = CUserOptions()
+    return _userOptions
+
+# Env-var expander
 def _xe(shexpr, env=None):
     if env == None: env = startup_environ
     for rx in [regSimple, regSimpleBrace]:
@@ -31,7 +47,6 @@ def _xe(shexpr, env=None):
             shexpr = shexpr.replace(m.group(0), v)
 
     return shexpr
-
 
 class CUserOptions(object):
     def __init__(self):
