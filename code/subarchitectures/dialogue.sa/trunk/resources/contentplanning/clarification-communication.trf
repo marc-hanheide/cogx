@@ -1,0 +1,249 @@
+// CLARIFICATION - COMMUNICATION
+// Various types of clarification of misunderstanding in linguistic communication, incl. speech errors. 
+// Clarification is a [ <SpeechAct>Clarification ] with a modality, e.g. [ <Modality>speech ]
+// Any specific content that needs to be verified is given in a <Content> structure
+
+// Clarification: failure to process speech signal
+// Goal: @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech)
+// Variants: "sorry what did you say" (1), "I didn't understand what you said" (2) 
+
+// Variant (1) "sorry what did you say
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top),
+random(1,2,3) ^ 1
+-> 
+#c1 =:d-units ^ list ^ <First>(s1:marker ^ sorry) ^ <Next>(s2:communication ^ say ^ <Mood>int ^ <Tense>past ^ <Actor>(y1:person ^ you ^ <Num>sg) ^ <Event>(w1:event ^ what) ^ <Subject>y1:person ^ <Wh-Restr>w1:event).
+
+// Variant (2) "I did not understand what you said"
+
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top),
+random(1,2,3) ^ 2
+-> 
+#c1 = :cognition ^ understand ^ 
+                <Mood>ind ^ 
+                <Polarity>neg ^ 
+                <Tense>past ^ 
+                <Actor>(i1:person ^ I ^ 
+                        <Num>sg) ^ 
+                <Event>(w1:event ^ what ^ 
+                        <Scope-in>(s1:communication ^ say ^ 
+                                   <Tense>past ^ 
+                                   <Actor>(y1:person ^ you ^ 
+                                           <Num>sg) ^ 
+                                   <Event>w1:event ^ 
+                                   <Subject>y1:person)) ^ 
+                <Subject>i1:person.
+
+
+// Variant (3) "Sorry, could you say again?"
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top),
+random(1,2,3) ^ 3
+-> 
+#c1 = :communication ^ say ^ 
+                <Mood>int ^  
+                <Actor>(y1:person ^ you ^ 
+                        <Num>sg) ^  
+                <Subject>y1:person.
+
+
+// Clarification: failure to process what property was said
+// Goal: @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(c1:q-PROPERTY)), e.g. q-color, q-shape, q-size
+// Variants: "what PROPERTY did you just say"
+
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-color)
+-> 
+#c1 =:communication ^ say ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Actor>(y1:person ^ you ^ 
+                            <Num>sg) ^ 
+                    <Event>x1:event ^ 
+                    <Modifier>(j1:m-time ^ just) ^ 
+                    <Subject>y1:person ^ 
+                    <Wh-Restr>(w1:specifier ^ what ^ 
+                               <Scope>(s2:quality ^ color)). 
+
+
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-shape)
+-> 
+#c1 =:communication ^ say ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Actor>(y1:person ^ you ^ 
+                            <Num>sg) ^ 
+                    <Event>x1:event ^ 
+                    <Modifier>(j1:m-time ^ just) ^ 
+                    <Subject>y1:person ^ 
+                    <Wh-Restr>(w1:specifier ^ what ^ 
+                               <Scope>(s2:quality ^ shape)). 
+
+
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-size)
+-> 
+#c1 =:communication ^ say ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Actor>(y1:person ^ you ^ 
+                            <Num>sg) ^ 
+                    <Event>x1:event ^ 
+                    <Modifier>(j1:m-time ^ just) ^ 
+                    <Subject>y1:person ^ 
+                    <Wh-Restr>(w1:specifier ^ what ^ 
+                               <Scope>(s2:quality ^ size)). 
+
+
+// Clarification: failure to understand what property value was just said
+// Goal: @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-PROPERTY ^ VALUE))
+// Variants: "did you say it is VALUE" (1), "did you say the PROPERTY is VALUE" (2)
+
+// Variant (1): "did you say it is VALUE"
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-color ^ #c1value),
+random(1,2) ^ 1
+->
+#c1 = :communication ^ say ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Actor>(y1:person ^ you ^ 
+                            <Num>sg) ^ 
+                    <Event>(b1:ascription ^ be ^ 
+                            <Mood>ind ^ 
+                            <Tense>pres ^ 
+                            <Cop-Restr>(i1:thing ^ it ^ 
+                                        <Num>sg) ^ 
+                            <Cop-Scope>(b2:q-color ^ #c1value) ^ 
+                            <Subject>i1:thing) ^ 
+                    <Subject>y1:person.
+
+// Variant (2): "did you say the color is VALUE?"
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-color ^ #c1value),
+random(1,2) ^ 2
+->
+#c1 =  :communication ^ say ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Actor>(y1:person ^ you ^ 
+                            <Num>sg) ^ 
+                    <Event>(b1:ascription ^ be ^ 
+                            <Mood>ind ^ 
+                            <Tense>pres ^ 
+                            <Cop-Restr>(c1:entity ^ color ^ 
+                                        <Delimitation>unique ^ 
+                                        <Num>sg ^ 
+                                        <Quantification>specific) ^ 
+                            <Cop-Scope>(b2:q-color ^ #c1value) ^ 
+                            <Subject>c1:entity) ^ 
+                    <Subject>y1:person.
+
+
+// Variant (1) "did you say it is VALUE"
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-shape ^ #c1value),
+random(1,2) ^ 1 
+->
+#c1 = :communication ^ say ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Actor>(y1:person ^ you ^ 
+                            <Num>sg) ^ 
+                    <Event>(b1:ascription ^ be ^ 
+                            <Mood>ind ^ 
+                            <Tense>pres ^ 
+                            <Cop-Restr>(i1:thing ^ it ^ 
+                                        <Num>sg) ^ 
+                            <Cop-Scope>(b2:q-shape ^ #c1value) ^ 
+                            <Subject>i1:thing) ^ 
+                    <Subject>y1:person.
+
+// Variant (2) "did you say the shape is VALUE"
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-shape ^ #c1value),
+random(1,2) ^ 2
+->
+#c1 =  :communication ^ say ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Actor>(y1:person ^ you ^ 
+                            <Num>sg) ^ 
+                    <Event>(b1:ascription ^ be ^ 
+                            <Mood>ind ^ 
+                            <Tense>pres ^ 
+                            <Cop-Restr>(c1:entity ^ shape ^ 
+                                        <Delimitation>unique ^ 
+                                        <Num>sg ^ 
+                                        <Quantification>specific) ^ 
+                            <Cop-Scope>(b2:q-shape ^ #c1value) ^ 
+                            <Subject>c1:entity) ^ 
+                    <Subject>y1:person.
+
+// Variant (1) "did you it is VALUE"
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-size ^ #c1value) 
+->
+#c1 = :communication ^ say ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Actor>(y1:person ^ you ^ 
+                            <Num>sg) ^ 
+                    <Event>(b1:ascription ^ be ^ 
+                            <Mood>ind ^ 
+                            <Tense>pres ^ 
+                            <Cop-Restr>(i1:thing ^ it ^ 
+                                        <Num>sg) ^ 
+                            <Cop-Scope>(b2:q-size ^ #c1value) ^ 
+                            <Subject>i1:thing) ^ 
+                    <Subject>y1:person.
+
+// Variant (2) "did you say the size is VALUE"
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-size ^ #c1value),
+random(1,2) ^ 2
+->
+#c1 =  :communication ^ say ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Actor>(y1:person ^ you ^ 
+                            <Num>sg) ^ 
+                    <Event>(b1:ascription ^ be ^ 
+                            <Mood>ind ^ 
+                            <Tense>pres ^ 
+                            <Cop-Restr>(c1:entity ^ size ^ 
+                                        <Delimitation>unique ^ 
+                                        <Num>sg ^ 
+                                        <Quantification>specific) ^ 
+                            <Cop-Scope>(b2:q-size ^ #c1value) ^ 
+                            <Subject>c1:entity) ^ 
+                    <Subject>y1:person.
+
+
+// "Did you say it is the LOCATION"
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#k1:e-place ^ #v1)
+->
+#k1 = :communication ^ say ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Actor>(y1:person ^ you ^ 
+                            <Num>sg) ^ 
+                    <Event>(b1:ascription ^ be ^ 
+                            <Mood>ind ^ 
+                            <Tense>pres ^ 
+                            <Cop-Restr>(i1:thing ^ it ^ 
+                                        <Num>sg) ^ 
+                            <Cop-Scope>(k2:e-place ^ #v1) ^ 
+                            <Subject>i1:thing) ^ 
+                    <Subject>y1:person.
+
+
+// INPUT: @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech ^ <Goal>find ^ <Target>(b2:thing ^ <InfoStatus>familiar ^ thing))
+// OUTPUT: "did you say I should search for the THING?"
+
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Goal>find ^ (<Target> #t:(entity|thing)) ^ <Content> ( #c1 )
+->
+#c1 =:communication ^ say ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Actor>(y1:person ^ you ^ 
+                            <Num>sg) ^
+                    <Event>(b1:action-non-motion ^ find ^ 
+                        <Mood>ind ^
+			<Modifier>(s1:modal ^ should) ^ 
+			<Actor>(#i:person ^ I ^ <Num> sg) ^
+                        <Patient>#t2 ^
+                        <Subject>#i:person) ^ 
+                    <Subject>y1:person. 
+
+

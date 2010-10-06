@@ -1,0 +1,210 @@
+Information Structure Assignment
+
+Intonation assignment in the grammar needs the following IS features on all nominals in the LF going to the realizer:
+
+-- Theme or Rheme
+-- Focus
+-- Commitment
+-- Ownership
+
+Example:
+
+(the box)Th (is blue)Rh
+the box_L+H* LH% is blue_H* LL%
+
+Parse 2: du : 
+  @be1_0:ascription(be ^ 
+                    <Commitment>e-uncontentious ^ 
+                    <Focus>e-focus-false ^ 
+                    <Mood>ind ^ 
+                    <Rheme>e-rheme-false ^ 
+                    <RhOwner>rh-speaker ^ 
+                    <Tense>pres ^ 
+                    <ThOwner>th-hearer ^ 
+                    <Cop-Restr>(box1_0:thing ^ box ^ 
+                                <Commitment>t-uncontentious ^ 
+                                <Delimitation>unique ^ 
+                                <Focus>t-focus-true ^ 
+                                <Num>sg ^ 
+                                <Quantification>specific ^ 
+                                <Rheme>t-rheme-false) ^ 
+                    <Cop-Scope>(blue1_0:q-color ^ blue ^ 
+                                <Commitment>m-uncontentious ^ 
+                                <Focus>m-focus-true ^ 
+                                <Rheme>m-rheme-true) ^ 
+                    <Subject>box1_0:thing)
+
+tccg> :r
+[1.000] the box_L+H* LH% is blue_H* LL% 
+
+
+Assignment of IS features in utterance planning
+
+Theme/Rheme
+
+Theme == aboutness
+Rheme == something about (pertaining to) the Theme 
+
+It is often assumed/claimed that very utterance has a Rheme; realization of Theme is optional. Some special cases of all-Theme utterances are discussed/proposed by Steedman; unresolved research issue. 
+
+In the CogX target dialogues we are dealing with Theme-Rheme or all-Rheme utterances.
+
+Ideally, we would have a notion of discourse topic, i.e., an entity (concrete or abstract, single or multiple), about which the dialogue is at some point. This entity would be a good candidate for Theme.  Research issue: relationship between discourse topic and question under discussion. 
+Approximation: entity (most) recently mentioned ("recently" - TBD) or entity most salient in the visual scene.
+
+
+Assertions: 
+If an assertion is a response to a question, 
+then match its IS to the question: Theme is derived from the question, Rheme is what answers the question. Rheme is obligatory, Theme often is not.  
+Ex: 
+  Q. What is the color of the ball?
+  A. (The ball is) red.
+
+  Q. Which object is red?
+  A. (The ball)Rh (is red)Th.
+
+In the previous version of the UP, the matching of an answer's IS to the question was facilitated by marking an assertion as an answer and including "question type" as an attribute in the proto-LF. 
+
+(Note: We could conceive of all assertions as answers to underlying/implicit questions. But then we'd have to plan these questions in the first place.)
+
+Otherwise (assertions that are not responses to a question)
+if an assertion addresses the discourse topic, 
+then this entity is a good candidate for Theme.
+
+Ex. 
+The ball is red. (The ball)Th is round. 
+
+Otherwise/generally the default is to conflate Theme with Subject. Or alternatively, plan an all-Rheme utterance. 
+
+Ex. 
+The ball is red. (The box)Th is blue.
+(Where can I find a fridge?) There is a fridge in the kitchen. The kitchen also has a coffee-machine and a water-kettle.
+
+
+Yes/no questions: 
+
+Proceed like above for assertions (note that a YNQ could also be a response to a question!).
+
+Ex.
+  Q. What is the color of the ball?
+  A. Is (the ball)Th red?
+
+  Q. Which object is red?
+  A. Is (the ball)Rh is red?
+
+Ex. 
+H. The ball is red. 
+R. (The ball)Th is red?
+R'. Is (the ball)Th red?
+
+But: echo clarification requests and reiterations/repetitions! (see below)
+ 
+ 
+Wh-questions: 
+
+Like above, if addressing the discourse topic,
+then this entity is a good candidate for Theme.
+
+Ex. 
+(What COLOR is)Rh (the box)Th?
+(The box)Th (has what COLOR)Rh?
+
+But if shifting to a new discourse topic, 
+then this entity should be the Rheme.
+
+Ex. 
+(What color)Th (is the box)Rh?  or
+(What color is the Box)Rh?
+
+But: echo clarification requests and reiterations/repetitions! (see below)
+
+
+Theme/Rheme Assignment in Echo clarification requests
+
+What I mean by ECR are utterances which echo an immediately preceding utterance because a part of it could not be grounded and there is doubt whether the utterance was understood properly.
+
+Ex. 
+Yes/No ECRs:
+H. The ball is red.
+R. The ball is RED?
+
+H. The ball is red.
+R. The BALL is red?
+
+Wh-ECRs:
+H. The ball is red.
+R. The ball is WHAT color?
+R'. WHAT color is the ball?
+
+
+Theme/Rheme Assignment in Reiterations
+
+What I mean by reiterations are utterances which repeat a previously raised request/question, because an answer has net been received.
+
+Ex. Yes/No reiterations
+
+R. Is the ball red?
+H. The ball is round.
+R. Is the ball red?
+
+Ex. Wh-Reiterations
+
+R. What color is the ball?
+H. The ball is round.
+R. What COLOR is the ball? 
+
+Yes/No reiterations seem to have the same IS (intonation) as the initial request, but in wh-reiterations there maybe a shift to a wh-Rheme. This can be covered by the rule saying that a discourse topic becomes a Theme.
+
+
+Heretic question: (When) are we dealing with Theme-Rheme (discourse topic becomes unmarked Theme) vs. all-Rheme (discourse topic gets no accentuation)???
+
+
+
+Focus assignment
+
+Focus assignment should be based on kontrast between alternatives available/salient in the context, either visual or linguistic.  An alternative to an entity x1 is an entity x2 which belongs to the same higher type as x1 but differs in at least one property from x1. E.g., blue ball -- red ball, blue ball -- blue box, blue ball -- red box are all alternatives: they are visible objects that differ in some properties; on the other hand,  blue ball and blue kitchen or ball and pushing are not alternatives.
+
+Ex.
+I push a BLUE BALL. Then I push a blue BOX.
+I push a BLUE BALL. Then I push a RED ball.
+I push a BLUE BALL. Then I push a RED BOX.
+I go to the BLUE KITCHEN. I pick up a BLUE BALL. 
+
+Special case: entities mentioned in conjunction or disjunction within the same utterance unit can always be considered alternatives, irrespective of their types.
+
+Ex. Do you mean the blue/BLUE KITCHEN or the blue BALL?
+
+There must always be at least one focus-marked nominal in a Rheme.  A Theme need not contain a Focus-marked nominal unless it's an all-Theme utterance. 
+
+In order to assign Focus in the UP, the port LF should contain a feature <Kontrast> on nominals. 
+
+
+Commitment assignment
+
+What is called "commitment" in the grammar should in fact be called "agreement".  It reflects whether a belief is (considered) mutual/shared or not, in other words, uncontentious or contentious.  A belief p of agent A would be considered contentious when A believes that another agent B believes not-p. When A believes that B does not hold either belief p or belief not-p than A is free to present p as an uncontentious belief or as a (potentially) contentious one. 
+
+In order to assign this, the proto LF should contain for each relevant nominal a feature <Agreement> with one of the three values: contentious, uncontentious, unknown (can be the default). 
+
+
+Ownership
+
+Ownership reflects which agent is (considered) committed to a belief or in a position to resolve the validity of a belief. It can either be the speaker or the hearer.  In Steedman's approach, falling intonation corresponds to Speaker-ownership, rising intonation to Hearer-ownership.  Alternative proposals in the literature attribute rising/falling intonation to the notion of assertiveness/dominance (cf. Bartels) or epistemic (un)certainty (cf. Nilsenova). There are unresolved research questions here about how it all fits together.
+
+To simplify for the purposes of the CogX scenarios, and without a claim for explanation of the phenomena, we stick to the prototypical intonation patterns for different types of utterances, for the time being:  an assertion is realized with falling intonation (Speaker-Ownership), a yes/no question with rising intonation (Hearer-Ownership) and a (non-echo) wh-question with falling intonation (Speaker-Ownership). Utterance type is derived straightforwardly from <SpeechAct> and the information about what type of question we're generating. 
+
+
+Proto-LF Features
+
+To summarize, these features are crucial for the planning of IS:
+
+- discourse topic
+- kontrast
+- speech act and relation
+- question type
+- agreement
+
+We used to use proof status, that should not be needed if we have agreement.
+
+For examples of proto-LFs see cogx-testbed-infoStruct from last year.
+
+

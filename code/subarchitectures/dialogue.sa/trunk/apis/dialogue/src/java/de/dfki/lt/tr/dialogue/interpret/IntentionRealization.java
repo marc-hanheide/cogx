@@ -20,6 +20,7 @@
 
 package de.dfki.lt.tr.dialogue.interpret;
 
+import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
@@ -65,14 +66,16 @@ public class IntentionRealization {
 	 * Try to find a proto-LF that realises the intention and the underlying
 	 * beliefs.
 	 *
-	 * @param itn communicative intention
+	 * @param it communicative intention
 	 * @param bels beliefs needed by itn
 	 * @return a proto-LF if successful, null if not
 	 */
-	public ContentPlanningGoal epistemicObjectsToProtoLF(Intention itn, List<dBelief> bels) {
+	public ContentPlanningGoal epistemicObjectsToProtoLF(WorkingMemoryAddress itWma, Intention it, List<dBelief> bels) {
+
+		Term itIdTerm = ConversionUtils.workingMemoryAddressToTerm(itWma);
 
 		// update the abduction context
-		for (ModalisedAtom mf : ConversionUtils.intentionToFacts(itn)) {
+		for (ModalisedAtom mf : ConversionUtils.intentionToFacts(itIdTerm, it)) {  // XXX
 			abd_realize.getProxy().addFact(mf);
 		}
 		for (dBelief b : bels) {
@@ -89,7 +92,7 @@ public class IntentionRealization {
 				TermAtomFactory.atom("utter", new Term[] {
 					TermAtomFactory.term(IntentionManagementConstants.thisAgent),
 					TermAtomFactory.term(IntentionManagementConstants.humanAgent),
-					TermAtomFactory.term(itn.id)
+					itIdTerm
 				}));
 
 		MarkedQuery[] proof = AbducerUtils.bestAbductiveProof(abd_realize, ProofUtils.newUnsolvedProof(g), 250);

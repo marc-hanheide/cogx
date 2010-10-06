@@ -1,0 +1,167 @@
+%-------------------------------------------------------------------------
+% FIXME: this will eventually have to be use probabilities exclusively.
+% For now, let's just use negative weights where we care about having
+% the given query/nominal in the resulting proof.
+%-------------------------------------------------------------------------
+
+% The following dummy facts are bound to nominals in the rules for generation.
+dummy_nom1(dn1_1).
+dummy_nom2(dn1_2).
+dummy_nom3(dn1_3).
+dummy_nom4(dn1_4).
+dummy_nom5(dn1_5).
+dummy_nom6(dn1_6).
+
+%-------------------------------------------------------------------------
+
+utt_head(Nom) <-
+	dummy_nom1(Nom),
+	i : sort(Nom, dvp) / p(1.0),
+	i : prop(Nom, 'c-goal') / p(1.0).
+
+generate : event : utter(robot, H, Nom, Int) <-
+	utt_head(Nom),
+	i : feat_CannedText(Nom, 'I_do_not_know_how_to_say_this') / p(1.0),
+	event : produce(r, Nom) / 20.0.
+
+%-------------------------------------------------------------------------
+
+propname_to_questiontype('ObjectType', type).
+propname_to_questiontype('Color', color).
+propname_to_questiontype('Shape', shape).
+propname_to_questiontype('Size', size).
+
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, S),
+	i : int : post(Int, BId),
+	bel : belief(BId, shared(X, Y), rpv(Ref, PROP, VALUE)),
+
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(PropNom),
+%	propname_to_questiontype(PROP, QuestionType),
+	i : feat_SpeechAct(Nom, assertion) / -1.0,
+%	i : feat_QuestionType(Nom, QuestionType) / -1.0,
+	i : feat_Relation(Nom, answer) / -1.0,
+	i : rel_Content(Nom, ContentNom) / -1.0,
+		i : sort(ContentNom, ascription) / -1.0,
+		i : prop(ContentNom, be) / -1.0,
+		i : rel_Target(ContentNom, TargetNom) / -1.0,
+			generate : target(TargetNom, Int, Ref),
+		add_prop_value_to_protolf(ContentNom, PropNom, PROP, VALUE, Ref),
+	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+
+add_prop_value_to_protolf(Nom, UsedNom, 'Color', PolValue, Ref) <-
+	bel : polarity(PolValue, Value, Pol),
+	generate : polarity_flag(Nom, Pol),
+	i : rel_Color(Nom, UsedNom) / -1.0,
+		i : sort(UsedNom, quality) / -1.0,
+		i : prop(UsedNom, Value) / -1.0.
+
+add_prop_value_to_protolf(Nom, UsedNom, 'Shape', PolValue, Ref) <-
+	bel : polarity(PolValue, Value, Pol),
+	generate : polarity_flag(Nom, Pol),
+	i : rel_Shape(Nom, UsedNom) / -1.0,
+		i : sort(UsedNom, quality) / -1.0,
+		i : prop(UsedNom, Value) / -1.0.
+
+add_prop_value_to_protolf(Nom, UsedNom, 'Size', PolValue, Ref) <-
+	bel : polarity(PolValue, Value, Pol),
+	generate : polarity_flag(Nom, Pol),
+	i : rel_Size(Nom, UsedNom) / -1.0,
+		i : sort(UsedNom, quality) / -1.0,
+		i : prop(UsedNom, Value) / -1.0.
+
+add_prop_value_to_protolf(Nom, UsedNom, 'ObjectType', PolValue, Ref) <-
+	bel : polarity(PolValue, Value, Pol),
+	generate : polarity_flag(Nom, Pol),
+	i : rel_Type(Nom, UsedNom) / -1.0,
+		i : sort(UsedNom, thing) / -1.0,  % XXX why not entity?
+		i : prop(UsedNom, Value) / -2.5,
+	add_assert_feature(UsedNom, Int, Ref).
+
+add_prop_value_to_protolf(Nom, UsedNom, 'PlaceType', Value, Ref) <-
+	bel : polarity(PolValue, Value, Pol),
+	generate : polarity_flag(Nom, Pol),
+	i : rel_Type(Nom, UsedNom) / -1.0,
+		i : sort(UsedNom, 'entity') / -1.0,
+		i : prop(UsedNom, Value) / -1.0.
+
+%-------------------------------------------------------------------------
+
+get_bel_polar_value(BId, EpSt, Ref, Prop, Value, Pol) <-
+	bel : belief(BId, EpSt, rpv(Ref, Prop, PolValue)),
+	bel : polarity(PolValue, Value, Pol).
+
+bel : polarity(not(X), X, neg).
+bel : polarity(X, X, pos) <-
+	bel : assume_positive_polarity(X) / p(1.0).
+
+generate : polarity_flag(Nom, pos).
+generate : polarity_flag(Nom, neg) <-
+	i : feat_Polarity(Nom, neg) / -1.0.
+
+%-------------------------------------------------------------------------
+
+add_assert_feature(Nom, Int, Ref).
+
+add_assert_feature(Nom, Int, Ref) <-
+	bel : belief(BId, shared(X, Y), rpv(Ref, 'Color', PolValue)),
+	bel : polarity(PolValue, Value, Pol),
+	i : int : post(Int, BId),
+	i : feat_Color(Nom, Value) / -4.6.
+
+add_assert_feature(Nom, Int, Ref) <-
+	bel : belief(BId, shared(X, Y), rpv(Ref, 'Size', Value)),
+	i : int : post(Int, BId),
+	i : feat_Size(Nom, Value) / -4.5.
+
+add_assert_feature(Nom, Int, Ref) <-
+	bel : belief(BId, shared(X, Y), rpv(Ref, 'Shape', Value)),
+	i : int : post(Int, BId),
+	i : feat_Shape(Nom, Value) / -4.4.
+
+%-------------------------------------------------------------------------
+
+add_descr_feature(Nom, Int, Ref).
+
+add_descr_feature(Nom, Int, Ref) <-
+	bel : belief(BId, shared(X, Y), rpv(Ref, 'Color', Value)),
+	i : int : pre(Int, BId),
+	i : feat_Color(Nom, Value) / -3.6.
+
+add_descr_feature(Nom, Int, Ref) <-
+	bel : belief(BId, shared(X, Y), rpv(Ref, 'Size', Value)),
+	i : int : pre(Int, BId),  % XXX why can't this be before the belief?
+	i : feat_Size(Nom, Value) / -3.5.
+
+add_descr_feature(Nom, Int, Ref) <-
+	bel : belief(BId, shared(X, Y), rpv(Ref, 'Shape', Value)),
+	i : int : pre(Int, BId),
+	i : feat_Shape(Nom, Value) / -3.4.
+
+%-------------------------------------------------------------------------
+
+generate : this(Nom) <-
+	i : sort(Nom, entity) / -1.0,
+	i : prop(Nom, object) / -1.0,  % will be suppressed anyway
+	i : feat_Salient(Nom, true) / -1.0.
+%	i : feat_InfoStatus(Nom, familiar) / -1.0.
+
+%-------------------------------------------------------------------------
+
+generate : target(Nom, Int, Ref) <-
+	i : sort(Nom, thing) / -1.0,  % XXX why not entity?
+	i : int : pre(Int, BId),
+	bel : belief(BId, shared(X, Y), rpv(Ref, 'ObjectType', TypeValue)),
+	i : prop(Nom, TypeValue) / -4.0,
+	i : feat_InfoStatus(Nom, familiar) / -1.0,
+	add_descr_feature(Nom, Int, Ref).
+
+generate : target(Nom, Int, Ref) <-
+	generate : this(Nom).

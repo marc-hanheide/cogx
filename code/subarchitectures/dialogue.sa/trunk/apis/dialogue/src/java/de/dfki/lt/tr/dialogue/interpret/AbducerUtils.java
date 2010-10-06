@@ -7,6 +7,7 @@ import de.dfki.lt.tr.dialogue.slice.lf.Feature;
 import de.dfki.lt.tr.dialogue.slice.lf.LFRelation;
 
 import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
+import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
 import de.dfki.lt.tr.infer.weigabd.ProofUtils;
 import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
 import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
@@ -19,6 +20,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public abstract class AbducerUtils {
+
+	public static boolean logging = true;
 
 	/** Convert a logical form to an array of modalised atoms -- facts
      *  for the abducer.
@@ -181,23 +184,27 @@ public abstract class AbducerUtils {
 	}
 
 	public static MarkedQuery[] bestAbductiveProof(AbductionEngineConnection abd, MarkedQuery[] goal, int timeout) {
-/*
 		String listGoalsStr = "";
 		for (int i = 0; i < goal.length; i++) {
 			listGoalsStr += MercuryUtils.modalisedAtomToString(goal[i].atom);
 			if (i < goal.length - 1) listGoalsStr += ", ";
 		}
-		log("proving: [" + listGoalsStr + "]");
-*/
+		log("abducer:" + abd.getEngineName(), "proving: [" + listGoalsStr + "]");
+
 		abd.getProxy().startProving(goal);
 		ProofWithCost[] result = abd.getProxy().getProofs(timeout);
 		if (result.length > 0) {
-//			log("found " + result.length + " proofs, picking the best one");
+			log("abducer:" + abd.getEngineName(), "found " + result.length + " proofs, picking the best one");
 			return result[0].proof;
 		}
 		else {
 			return null;
 		}
+	}
+
+	private static void log(String logname, String str) {
+		if (logging)
+			System.out.println("\033[31m[" + logname + "]\t" + str + "\033[0m");
 	}
 
 }

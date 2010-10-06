@@ -1,0 +1,59 @@
+// SEARCHING
+// Hold: @d1:dvp(c-goal ^ <SpeechAct>directive ^ <Goal>find ^ (<Target> (#t:entity) | <Target> (#t2:thing))  )
+// Output: @d1:dvp(c-goal ^ <SpeechAct>directive ^ <Goal>find ^ (<Target> (#t:entity) | <Target> (#t2:thing))  )
+//  		^ <Content> (LF for "Find #t")
+// Realize: "Find #t"
+
+:dvp ^ <SpeechAct>directive ^ <Goal>find ^ <Target>#t:(entity|thing) ^ <Content> ( #c1 )
+->
+#c1 =  :action-non-motion ^ find ^
+                        <Mood>imp ^
+			<Actor>(#a1:entity ^ addressee) ^
+                        <Patient>#t: ^
+                        <Subject>#a1:entity.
+
+// Hold: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Goal>(find ^ <Complete>false ^ <Active>true) ^ (<Target> (#t:entity) | <Target> (#t2:thing)) )
+// Output: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Goal>(find ^ <Complete>false ^ <Active>true) ^ (<Target> (#t:entity) | <Target> (#t2:thing)) )
+//  		^ <Content> (LF for "Finding #t")
+// Realize: "Finding #t"
+
+:dvp ^ <SpeechAct>assertion ^ <Goal>(find ^ <Complete>false ^ <Active>true) ^ <Target>(:entity | :thing) ^ <Target> #t: ^ <Content> ( #c1: )
+->
+#c1 =  :action-non-motion ^ find ^
+                        <Mood>ind ^
+			<Actor>(#i:person ^ I ^ <Num> sg) ^
+                        <Patient>#t: ^
+                        <Subject>#i:person.
+
+// Hold: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Goal>(find ^ <Complete>true) ^ (<Target> (#t:entity) | <Target> (#t2:thing)) )
+// Output: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Goal>(find ^ <Complete>true) ^ (<Target> (#t:entity) | <Target> (#t2:thing)) )
+//  		^ <Content> (LF for "Found #t")
+// Realize: "Found #t"
+
+:dvp ^ <SpeechAct>assertion ^ <Goal>(find ^ <Complete>true) ^ <Target>(:entity | :thing) ^ <Target> #t: ^ <Content> ( #c1: )
+->
+#c1 =  :action-non-motion ^ find ^
+                        <Mood>ind ^
+			<Tense>past ^
+			<Actor>(#i:person ^ I ^ <Num> sg) ^
+                        <Patient>#t: ^
+                        <Subject>#i:person.
+
+// If an entity has a non-null location, then it is automatically found
+:dvp ^ <SpeechAct>assertion ^ <Goal>(find ^ !<Complete>#b1:true) ^ <Target>(<Location>)
+->
+#b1 = true.
+
+//If a task is not defined as (in)complete, complete is FALSE
+:action ^ !<Complete>
+->
+# ^<Complete>false.
+
+//If a task is not explicitly active, then Active is FALSE
+:action ^ !<Active>
+->
+##Active = false.
+
+//TODO: automatically fill-in LOCATION attribute given "next-to", "near", etc. atts
+
+
