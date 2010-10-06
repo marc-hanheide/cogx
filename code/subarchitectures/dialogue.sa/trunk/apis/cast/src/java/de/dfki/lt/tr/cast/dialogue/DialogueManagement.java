@@ -25,8 +25,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.components.DialogueManager;
-import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
-import de.dfki.lt.tr.dialmanagement.data.actions.IntentionAction;
+import de.dfki.lt.tr.dialmanagement.data.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
@@ -156,14 +155,14 @@ public class DialogueManagement extends ManagedComponent {
 			String formAsString = FormulaUtils.getString(augmentedIntention.content.get(0).postconditions);
 			debug("augmented intention: " + formAsString);	
 
-			AbstractAction action = manager.nextAction(augmentedIntention);
+			PolicyAction action = manager.nextAction(augmentedIntention);
 			
 			debug(action);
 			log("action chosen: " + action.getClass().getCanonicalName());
 			
-			if (action instanceof IntentionAction) {
+			if (!action.isVoid()) {
 				Intention response = 
-					EpistemicObjectUtils.createSimplePrivateIntention(((IntentionAction)action).getFormula(), 1.0f);
+					EpistemicObjectUtils.createSimplePrivateIntention((action).getContent(), 1.0f);
 				addToWorkingMemory(newDataID(), response);
 			}
 		
@@ -186,10 +185,10 @@ public class DialogueManagement extends ManagedComponent {
 	 */
 	public void newEventReceived (Event event) {
 		try {
-			AbstractAction action = manager.nextAction(event);
-			if (action instanceof IntentionAction) {
+			PolicyAction action = manager.nextAction(event);
+			if (!action.isVoid()) {
 				Intention response = 
-					EpistemicObjectUtils.createSimplePrivateIntention(((IntentionAction)action).getFormula(), 1.0f);
+					EpistemicObjectUtils.createSimplePrivateIntention((action).getContent(), 1.0f);
 				addToWorkingMemory(newDataID(), response);
 			}
 		
