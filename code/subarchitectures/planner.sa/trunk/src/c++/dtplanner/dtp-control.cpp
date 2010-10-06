@@ -396,6 +396,7 @@ void DTPCONTROL::get_observation(Ice::Int id,
     /* Task is being killed.*/
     if(observationSeq.size() == 0){
         thread_statuus[id] = false;
+        delete solvers[id];
         VERBOSER(2000, "DTP observation was to kill task "<<id);
 //         pthread_mutex_unlock(thread_mutex[id].get());
         swap_turn(id, Turn::observer);

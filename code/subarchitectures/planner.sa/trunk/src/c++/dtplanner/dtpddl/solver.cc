@@ -59,6 +59,24 @@ using namespace Planning::Parsing;
 Are_Doubles_Close Solver::are_Doubles_Close(1e-9);
 
 // size_t extern_runtime_thread_thingi;
+Solver::~Solver()
+{
+    for(auto state = state_space.begin()
+            ; state != state_space.end()
+            ; state++){
+        delete *state;
+    }
+    for(auto state = belief_state__space.begin()
+            ; state != belief_state__space.end()
+            ; state++){
+        delete *state;
+    }
+    for(auto state = observation__space.begin()
+            ; state != observation__space.end()
+            ; state++){
+        delete *state;
+    }
+}
 
 
 std::pair<Planning::Formula::Action_Proposition, uint>

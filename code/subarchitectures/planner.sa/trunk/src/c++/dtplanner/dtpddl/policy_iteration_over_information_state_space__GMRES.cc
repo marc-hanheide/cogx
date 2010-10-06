@@ -117,7 +117,7 @@ void Policy_Iteration__GMRES::configure_reward_vector()
                     ; _atom++){
                 double probability = _atom->second;
                 
-                assert(dynamic_cast<State*>(_atom->first));
+                //assert(dynamic_cast<Planning::State*>(_atom->first));
                 
                 expected_value += probability * _atom->first->get__value();
             }
