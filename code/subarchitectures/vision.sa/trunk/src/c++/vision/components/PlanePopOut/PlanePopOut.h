@@ -15,7 +15,7 @@
 #include <opencv/highgui.h>
 #include "OpenSURF/surflib.h"
 
-#undef FEAT_VISUALIZATION
+//#undef FEAT_VISUALIZATION
 
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
