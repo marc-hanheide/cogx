@@ -81,4 +81,6 @@ public class DialogueGoals {
 
 	public static final String BELIEF_MODEL_UPDATE_TASK = "beliefModelUpdate";
 
+	public static final String INTENTION_MIRRORING_TASK = "intentionMirroringTask";
+
 } // end class

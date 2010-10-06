@@ -6,10 +6,13 @@ import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.lf.Feature;
 import de.dfki.lt.tr.dialogue.slice.lf.LFRelation;
 
+import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
 import de.dfki.lt.tr.infer.weigabd.ProofUtils;
 import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
+import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
 import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
 import de.dfki.lt.tr.infer.weigabd.slice.Modality;
+import de.dfki.lt.tr.infer.weigabd.slice.ProofWithCost;
 import de.dfki.lt.tr.infer.weigabd.slice.Term;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -175,6 +178,26 @@ public abstract class AbducerUtils {
 		//System.err.println(LFUtils.lfToString(lf));
 
 		return lf;
+	}
+
+	public static MarkedQuery[] bestAbductiveProof(AbductionEngineConnection abd, MarkedQuery[] goal, int timeout) {
+/*
+		String listGoalsStr = "";
+		for (int i = 0; i < goal.length; i++) {
+			listGoalsStr += MercuryUtils.modalisedAtomToString(goal[i].atom);
+			if (i < goal.length - 1) listGoalsStr += ", ";
+		}
+		log("proving: [" + listGoalsStr + "]");
+*/
+		abd.getProxy().startProving(goal);
+		ProofWithCost[] result = abd.getProxy().getProofs(timeout);
+		if (result.length > 0) {
+//			log("found " + result.length + " proofs, picking the best one");
+			return result[0].proof;
+		}
+		else {
+			return null;
+		}
 	}
 
 }

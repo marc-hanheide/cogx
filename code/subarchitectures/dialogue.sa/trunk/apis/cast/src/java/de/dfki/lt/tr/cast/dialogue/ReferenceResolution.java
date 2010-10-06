@@ -32,6 +32,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
+import de.dfki.lt.tr.dialogue.interpret.IntentionRecognition;
 import de.dfki.lt.tr.dialogue.ref.AbductiveReferenceResolution;
 import de.dfki.lt.tr.dialogue.ref.PresupposedBeliefConstruction;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
@@ -108,7 +109,7 @@ extends AbstractDialogueComponent {
 
 		intentionEngine = new AbductionEngineConnection();
 		intentionEngine.connectToServer("AbducerServer", "default -p 10000");
-		intentionEngine.bindToEngine("IntentionManagementEngine");
+		intentionEngine.bindToEngine(IntentionRecognition.INTENTION_RECOGNITION_ENGINE);
 
 		arr = new AbductiveReferenceResolution(toAbsolutePath(dumpfile), toAbsolutePath(appendfile), intentionEngine);
 		if (correlfile != null) {

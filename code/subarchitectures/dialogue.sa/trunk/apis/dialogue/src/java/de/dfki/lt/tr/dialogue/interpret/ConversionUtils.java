@@ -213,7 +213,7 @@ public abstract class ConversionUtils {
 					if (action.functor.equals("fv")) {
 						String newId = foldIntoBeliefs(idGen, es, lingRef, usedRefs, action, bels_pre);
 						if (newId != null) {
-							dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "binder")));
+							dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagementConstants.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "binder")));
 							itc.preconditions = combineDFormulas(itc.preconditions, refF);
 						}
 					}
@@ -235,7 +235,7 @@ public abstract class ConversionUtils {
 							args.add(uniTermToFormula((FunctionTerm) argTerm.args[i]));
 						}
 					}
-					dFormula stateF = BeliefFormulaFactory.newModalFormula(IntentionManagement.stateModality,
+					dFormula stateF = BeliefFormulaFactory.newModalFormula(IntentionManagementConstants.stateModality,
 							BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, args));
 
 					itc.preconditions = combineDFormulas(itc.preconditions, stateF);
@@ -259,7 +259,7 @@ public abstract class ConversionUtils {
 					if (action.functor.equals("fv")) {
 						String newId = foldIntoBeliefs(idGen, es, lingRef, usedRefs, action, bels_post);
 						if (newId != null) {
-							dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "dialogue")));
+							dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagementConstants.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "dialogue")));
 							itc.postconditions = combineDFormulas(itc.postconditions, refF);
 						}
 					}
@@ -271,7 +271,7 @@ public abstract class ConversionUtils {
 							args.add(uniTermToFormula((FunctionTerm) argTerm.args[i]));
 						}
 					}
-					dFormula stateF = BeliefFormulaFactory.newModalFormula(IntentionManagement.stateModality,
+					dFormula stateF = BeliefFormulaFactory.newModalFormula(IntentionManagementConstants.stateModality,
 							BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, args));
 					itc.postconditions = combineDFormulas(itc.postconditions, stateF);
 				}
@@ -306,7 +306,7 @@ public abstract class ConversionUtils {
 			it.id = idGen.newIdentifier();
 			it.frame = new AbstractFrame();
 			AttributedEpistemicStatus epst = new AttributedEpistemicStatus();
-			epst.agent = IntentionManagement.thisAgent;
+			epst.agent = IntentionManagementConstants.thisAgent;
 			epst.attribagents = new LinkedList<String>();
 			epst.attribagents.add(attribAgent);
 			it.estatus = epst;
@@ -541,7 +541,7 @@ public abstract class ConversionUtils {
 		String newId = idGen.newIdentifier();
 		dBelief b = emptyCondIndepDistribBelief(newId, epst);
 		// XXX we should actually check success here
-		foldTermAsContent(epst, lingRef, TermAtomFactory.term("fv", new Term[] {TermAtomFactory.term(IntentionManagement.discRefModality), TermAtomFactory.term(lingRef)}), b);
+		foldTermAsContent(epst, lingRef, TermAtomFactory.term("fv", new Term[] {TermAtomFactory.term(IntentionManagementConstants.discRefModality), TermAtomFactory.term(lingRef)}), b);
 		if (usedRefs.containsKey(lingRef)) {
 			foldTermAsContent(epst, lingRef, TermAtomFactory.term("fv", new Term[] {TermAtomFactory.term(POINTERLABEL.value), workingMemoryAddressToTerm(usedRefs.get(lingRef))}), b);
 		}
@@ -698,7 +698,7 @@ public abstract class ConversionUtils {
 				if (arg1 instanceof ModalFormula && arg2 instanceof ModalFormula) {
 					ModalFormula m1 = (ModalFormula)arg1;
 					ModalFormula m2 = (ModalFormula)arg2;
-					if (m1.op.equals(IntentionManagement.discRefModality) && m1.form instanceof ElementaryFormula) {
+					if (m1.op.equals(IntentionManagementConstants.discRefModality) && m1.form instanceof ElementaryFormula) {
 						ElementaryFormula eF = (ElementaryFormula)m1.form;
 						objRef = eF.prop;
 					}
