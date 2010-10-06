@@ -51,7 +51,7 @@ namespace Planning
     class Solver
     {
     public:
-        virtual ~Solver(){};
+        virtual ~Solver();//{};
 
         
         /*Penalty for ending up in an illegal state.*/

@@ -355,7 +355,7 @@ int main(int argc, char** argv)
             current_state = solver->solve__for_new_starting_state(current_state);
 #endif
             
-            for(auto i = 0; i < 20; i++){
+            for(auto i = 0; i < 0; i++){
             
                 INTERACTIVE_VERBOSER(true, 15000, "Current state is :: "
                                      <<*current_state<<std::endl
@@ -397,7 +397,7 @@ int main(int argc, char** argv)
             }
 
         
-//             delete solver;
+            delete solver;
         }
     
     INTERACTIVE_VERBOSER(true, 10004, "Passed test2 :: "<<std::endl);
