@@ -28,6 +28,24 @@ include(subarchitectures/visualization.sa/cmake/v11n.cmake)
 
 add_subdirectory (tools/d-lib)
 
+
+# ------------ <ROCS> ------------
+option(BUILD_ROCS "Build the internal version of the ROCS library." YES)
+if(BUILD_ROCS)
+	# We don't want the ROCS build system to define its own build options. We will set them as variables.
+	set(ROCS_DONT_DEFINE_OPTIONS yes)
+	# Now, set the build options of ROCS
+	set(ROCS_BUILD_MODULE_CORE yes)
+	set(ROCS_BUILD_MODULE_MATH yes)
+	set(ROCS_BUILD_MODULE_CV yes)
+	# Set the directory where ROCS should be installed
+	set(ROCS_DIR ${OUTPUT}/rocs)
+	# Finally, add ROCS
+	add_subdirectory(tools/rocs)
+endif(BUILD_ROCS)
+# ------------ </ROCS> ------------
+
+
 option(BUILD_DORA "Build dora specific code" NO)
 if(BUILD_DORA)
 add_subdirectory (scenarios/dora)
