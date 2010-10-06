@@ -4,6 +4,6 @@ JAVA MG parseselect	de.dfki.lt.tr.cast.dialogue.ParseSelection --log true
 JAVA MG refmonitor	de.dfki.lt.tr.cast.dialogue.ReferenceMonitor --dumpfile /tmp/belief-model.abd --log true
 JAVA MG	refresolve	de.dfki.lt.tr.cast.dialogue.ReferenceResolution --ruleset-construct ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.construct.txt --dumpfile /tmp/belief-model.abd --correlfile ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/correlations.abd --appendfile ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/reference-resolution.abd --log true
 JAVA MG	irecog	de.dfki.lt.tr.cast.dialogue.IntentionRecognizer --ruleset ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.U.txt --log true
-JAVA MG	irecog	de.dfki.lt.tr.cast.dialogue.IntentionRealizer --ruleset ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.G.txt --log true
+#JAVA MG	irealize	de.dfki.lt.tr.cast.dialogue.IntentionRealizer --ruleset ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.G.txt --log true
 
 JAVA MG diag-exe dialogue.execution.DialogueActionInterface
