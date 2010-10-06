@@ -54,6 +54,7 @@ public class AbductiveReferenceResolution {
 	private AbductionEngineConnection intentionEngine = null;
 	private String dumpfile;
 	private String appendfile;
+	public static final String REFERENCE_RESOLUTION_ENGINE = "ReferenceResolution";
 
 	public AbductiveReferenceResolution(String dumpfile_, String appendfile_, AbductionEngineConnection intentionEngine_) {
 		init();
@@ -65,7 +66,7 @@ public class AbductiveReferenceResolution {
 	private void init() {
 		refresEngine = new AbductionEngineConnection();
 		refresEngine.connectToServer("AbducerServer", "default -p 10000");
-		refresEngine.bindToEngine("ReferenceResolutionEngine");
+		refresEngine.bindToEngine(REFERENCE_RESOLUTION_ENGINE);
 		refresEngine.getProxy().clearContext();
 	}
 

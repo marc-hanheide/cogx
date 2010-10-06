@@ -30,7 +30,7 @@ import de.dfki.lt.tr.dialmanagement.data.actions.IntentionAction;
 import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
-import de.dfki.lt.tr.dialogue.interpret.IntentionManagement;
+import de.dfki.lt.tr.dialogue.interpret.IntentionRecognition;
 import java.util.HashMap;
 
 
@@ -219,7 +219,7 @@ public class DialogueManagement extends ManagedComponent {
 		if (initIntention!=null && initIntention.content.size() > 0)  {
 
 			if (initIntention.content.get(0).postconditions instanceof ModalFormula &&
-					((ModalFormula)initIntention.content.get(0).postconditions).op.equals(IntentionManagement.beliefLinkModality)) {
+					((ModalFormula)initIntention.content.get(0).postconditions).op.equals(IntentionRecognition.beliefLinkModality)) {
 
 				String beliefID = FormulaUtils.getString(
 						((ModalFormula)initIntention.content.get(0).postconditions).form);
@@ -236,7 +236,7 @@ public class DialogueManagement extends ManagedComponent {
 						HashMap<dFormula,Float> mapPairs = new HashMap<dFormula,Float>();
 
 						for (FormulaProbPair pair : ((FormulaValues)((BasicProbDistribution)b.content).values).values) {
-							FormulaProbPair newPair = new FormulaProbPair(new ModalFormula(0, IntentionManagement.beliefLinkModality, pair.val), pair.prob);
+							FormulaProbPair newPair = new FormulaProbPair(new ModalFormula(0, IntentionRecognition.beliefLinkModality, pair.val), pair.prob);
 //							newPairs.add(newPair);
 							mapPairs.put(newPair.val, newPair.prob);
 						}

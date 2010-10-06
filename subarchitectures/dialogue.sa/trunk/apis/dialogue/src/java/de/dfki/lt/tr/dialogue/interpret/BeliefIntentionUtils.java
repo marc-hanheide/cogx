@@ -264,7 +264,7 @@ public abstract class BeliefIntentionUtils {
 		}
 		else if (f instanceof ModalFormula) {
 			ModalFormula mF = (ModalFormula)f;
-			if (mF.op.equals(IntentionManagement.beliefLinkModality)) {
+			if (mF.op.equals(IntentionManagementConstants.beliefLinkModality)) {
 				if (mF.form instanceof ElementaryFormula) {
 					ElementaryFormula eF = (ElementaryFormula)mF.form;
 					eos.add(eF.prop);

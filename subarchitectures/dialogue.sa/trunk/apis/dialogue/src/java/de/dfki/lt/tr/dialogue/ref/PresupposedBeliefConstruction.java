@@ -48,6 +48,8 @@ public class PresupposedBeliefConstruction {
 	public boolean logging = true;
 	private AbductionEngineConnection abd;
 
+	public static final String BELIEF_CONSTRUCTION_ENGINE = "BeliefConstruction";
+
 	public PresupposedBeliefConstruction() {
 		init();
 	}
@@ -55,7 +57,7 @@ public class PresupposedBeliefConstruction {
 	private void init() {
 		abd = new AbductionEngineConnection();
 		abd.connectToServer("AbducerServer", "default -p 10000");
-		abd.bindToEngine("BeliefConstructionEngine");
+		abd.bindToEngine(BELIEF_CONSTRUCTION_ENGINE);
 		abd.getProxy().clearContext();
 	}
 
