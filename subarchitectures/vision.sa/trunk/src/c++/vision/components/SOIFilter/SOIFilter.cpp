@@ -84,7 +84,7 @@
   {
 	m_LastProtoObject = NULL;
 	m_snapshotFiles = "xdata/snapshot/soifilter";
-	m_snapshotFlags = "psm"; // points, segmented image, mask; no video image
+	m_snapshotFlags = "psmh"; // points, segmented image, mask, shape descriptor histogram; no video image
 	m_idLeftImage = 0;
 	m_idRightImage = 1;
   }
@@ -288,20 +288,42 @@
 	std::string path = ss.str();
 
 	if (hasSnapFlag('p')) try {
-	  ofstream fpoints;
-	  fpoints.exceptions ( ofstream::eofbit | ofstream::failbit | ofstream::badbit );
-	  fpoints.open(string(path + "p.txt").c_str(), ofstream::out);
-	  fpoints << ";;r\tg\tb\tx\ty\tz" << endl;
-	  typeof(pobj->points.begin()) it;
-	  for (it = pobj->points.begin(); it != pobj->points.end(); it++) {
-		fpoints << (unsigned int)it->c.r << "\t" << (unsigned int)it->c.g << "\t" << (unsigned int)it->c.b << "\t";
-		fpoints << it->p.x << "\t" << it->p.y << "\t" << it->p.z << endl;
+	  int cnt=1;
+	  for (vector<SurfacePatch>::iterator it1 = pobj->surfacePatches.begin(); it1 != pobj->surfacePatches.end(); it1++) {
+		
+	  	ofstream fpoints;
+	  	fpoints.exceptions ( ofstream::eofbit | ofstream::failbit | ofstream::badbit );
+	  	std::stringstream filename;
+	  	filename << "points" << cnt << ".txt";
+	  	fpoints.open(string(path + filename.str()).c_str(), ofstream::out);
+	  	fpoints << ";;r\tg\tb\tx\ty\tz" << endl;
+	  	typeof(it1->points.begin()) it;
+	  	for (it = it1->points.begin(); it != it1->points.end(); it++) {
+	  	      fpoints << (unsigned int)it->c.r << "\t" << (unsigned int)it->c.g << "\t" << (unsigned int)it->c.b << "\t";
+	  	      fpoints << it->p.x << "\t" << it->p.y << "\t" << it->p.z << endl;
+	  	}
+	  	fpoints.close();
+	  	cnt++;
+	  	log("Saved points to '%sp.txt'", path.c_str());
 	  }
-	  fpoints.close();
-	  log("Saved points to '%sp.txt'", path.c_str());
 	}
 	catch (...) {
 	  println("Failed to save points to '%sp.txt'", path.c_str());
+	}
+
+	if (hasSnapFlag('h')) try {
+	  ofstream fhist;
+	  fhist.exceptions ( ofstream::eofbit | ofstream::failbit | ofstream::badbit );
+	  fhist.open(string(path + "h.txt").c_str(), ofstream::out);
+	  typeof(pobj->rasShapeDesc.angleHistogram.begin()) it;
+	  for (it = pobj->rasShapeDesc.angleHistogram.begin(); it != pobj->rasShapeDesc.angleHistogram.end(); it++) {
+	  	fhist << (double)it[1] << " ";
+	  }
+	  fhist.close();
+	  log("Saved shape descriptor histogram to '%sh.txt'", path.c_str());
+	}
+	catch (...) {
+	  println("Failed to save shape descriptor histogram to '%sh.txt'", path.c_str());
 	}
 
 	if (hasSnapFlag('s'))
