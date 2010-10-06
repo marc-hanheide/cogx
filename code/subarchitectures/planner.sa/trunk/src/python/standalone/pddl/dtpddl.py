@@ -14,8 +14,8 @@ from builtin import t_object, t_boolean, t_number
 p = Parameter("?f", types.FunctionType(t_object))
 observed = Predicate("observed", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 
-p = Parameter("?f", types.FunctionType(t_object))
-committed = Predicate("committed", [p], builtin=True)
+# p = Parameter("?f", types.FunctionType(t_object))
+# committed = Predicate("committed", [p], builtin=True)
 
 reward = Function("reward", [], t_number, builtin=True)
 
@@ -24,7 +24,7 @@ p_cost_value = 200
 
 pddl_module = True
 
-default_predicates = [observed, committed]
+default_predicates = [observed]
 default_functions = [reward]
 
 def prepare_domain(domain):
@@ -667,7 +667,7 @@ class DTPDDLCompiler(translators.Translator):
 
     def translate_action(self, action, domain):
         cost_term = action.get_total_cost()
-        if cost_term is None or cost_term == 0 :
+        if cost_term is None:
             return action.copy(newdomain=domain)
 
         a2 = action.copy(newdomain=domain)

@@ -347,15 +347,17 @@ class CASTTask(object):
         self.process_cp_plan()
 
     def dt_done(self):
-        first_action = -1
+        last_dt_action = -1
         dt_action_found = False
         for i,pnode in enumerate(self.get_plan().topological_sort()):
             if pnode in self.dt_task.subplan_actions:
                 pnode.status = plans.ActionStatusEnum.EXECUTED
                 dt_action_found = True
+                last_dt_action = i
             elif dt_action_found:
-                first_action = i
-        self.get_plan().execution_position = first_action
+                break
+            
+        self.get_plan().execution_position = last_dt_action
         self.update_status(TaskStateEnum.PROCESSING)
 
         self.cp_task.mark_changed()
