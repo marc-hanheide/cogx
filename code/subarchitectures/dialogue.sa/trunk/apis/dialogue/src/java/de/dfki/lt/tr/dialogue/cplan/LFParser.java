@@ -42,7 +42,7 @@ package de.dfki.lt.tr.dialogue.cplan;
 import java.io.Reader;
 import java.util.HashMap;
 
-import de.dfki.lt.tr.dialogue.cplan.matches.Match;
+@SuppressWarnings({"fallthrough", "unused"})
 
 
 
@@ -372,7 +372,9 @@ public class LFParser
 /* Line 103 of "LFParser.y"  */
     { yyval = newLF((( String )(yystack.valueAt (6-(2)))),
                                      unify(getNewLF((( String )(yystack.valueAt (6-(4))))).setNominal(),
-                                           newLF(DagNode.TYPE_FEAT_ID, (( String )(yystack.valueAt (6-(6))))))) ;};
+                                           newLF(DagNode.TYPE_FEAT_ID, (( String )(yystack.valueAt (6-(6)))))))
+                            .setNominal();
+                        };
   break;
     
 
@@ -380,7 +382,7 @@ public class LFParser
   if (yyn == 10)
     
 /* Line 353 of lalr1.java  */
-/* Line 107 of "LFParser.y"  */
+/* Line 108 of "LFParser.y"  */
     { yyval = unify(getNewLF((( String )(yystack.valueAt (3-(1))))).setNominal(),
                                      newLF(DagNode.TYPE_FEAT_ID, (( String )(yystack.valueAt (3-(3))))));
                         };
@@ -391,7 +393,7 @@ public class LFParser
   if (yyn == 11)
     
 /* Line 353 of lalr1.java  */
-/* Line 110 of "LFParser.y"  */
+/* Line 111 of "LFParser.y"  */
     { yyval = getNewLF((( String )(yystack.valueAt (2-(1))))).setNominal(); };
   break;
     
@@ -400,7 +402,7 @@ public class LFParser
   if (yyn == 12)
     
 /* Line 353 of lalr1.java  */
-/* Line 111 of "LFParser.y"  */
+/* Line 112 of "LFParser.y"  */
     { yyval = newLF(DagNode.TYPE_FEAT_ID, (( String )(yystack.valueAt (2-(2))))).setNominal(); };
   break;
     
@@ -409,7 +411,7 @@ public class LFParser
   if (yyn == 13)
     
 /* Line 353 of lalr1.java  */
-/* Line 112 of "LFParser.y"  */
+/* Line 113 of "LFParser.y"  */
     { yyval = newLF(DagNode.PROP_FEAT_ID, (( String )(yystack.valueAt (1-(1))))); };
   break;
     
@@ -417,7 +419,7 @@ public class LFParser
 
 
 /* Line 353 of lalr1.java  */
-/* Line 421 of "LFParser.java"  */
+/* Line 423 of "LFParser.java"  */
 	default: break;
       }
 
@@ -892,7 +894,7 @@ public class LFParser
   private static final byte yyrline_[] =
   {
          0,    82,    82,    87,    91,    94,    95,    98,    99,   102,
-     107,   110,   111,   112
+     108,   111,   112,   113
   };
 
   // Report on the debug stream that the rule yyrule is going to be reduced.
@@ -1021,7 +1023,7 @@ public class LFParser
 
 
 /* Line 875 of lalr1.java  */
-/* Line 1025 of "LFParser.java"  */
+/* Line 1027 of "LFParser.java"  */
 
 }
 

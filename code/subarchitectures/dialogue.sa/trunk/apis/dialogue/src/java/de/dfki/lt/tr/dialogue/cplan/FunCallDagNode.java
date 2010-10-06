@@ -68,9 +68,11 @@ public class FunCallDagNode extends SpecialDagNode {
   @Override
   public DagNode evaluate(DagNode input, Bindings bindings) {
     Object o = _function.apply(getActualParameters(_args, input, bindings));
-    return ((! (o instanceof DagNode))
-        ? new DagNode(PROP_FEAT_ID, new DagNode(o.toString()))
-        : (DagNode) o);
+    DagNode dag =
+      ((o instanceof DagNode)
+          ? ((DagNode) o)
+              : new DagNode(PROP_FEAT_ID, new DagNode(o.toString())));
+    return dag;
   }
 
 }

@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import de.dfki.lt.tr.dialogue.cplan.Path;
 import de.dfki.lt.tr.dialogue.cplan.matches.*;
 import de.dfki.lt.tr.dialogue.cplan.actions.*;
+
+ @SuppressWarnings({"unchecked", "fallthrough", "unused"})
 }
 
 %language "Java"
@@ -33,6 +35,11 @@ import de.dfki.lt.tr.dialogue.cplan.actions.*;
     reset();
     ((de.dfki.lt.tr.dialogue.cplan.Lexer)this.yylexer)
       .setInputReader(inputDescription, input);
+  }
+
+  private Rule newRule(List matches, List actions) {
+    return new Rule((List<VarMatch>) matches, (List<Action>) actions,
+      ((de.dfki.lt.tr.dialogue.cplan.Lexer)this.yylexer).getCurrentPosition());
   }
 
   private FunCall getNewFunCall(String name, List args) {
@@ -63,7 +70,7 @@ import de.dfki.lt.tr.dialogue.cplan.actions.*;
 %token < String >  ARROW      262
 %token < String >  STRING     263
 
-%type < Match > expr term feature nominal id_lvar
+%type < Match > expr term feature nominal id_lvar iv_expr iv_term
 %type < DagNode > rexpr rterm rfeat r_id_var rnominal rarg
 %type < Path > path
 
@@ -86,7 +93,7 @@ rules : rule '.' rules   { if ($1 != null) _ruleStore.add(0, $1);  }
       | rule '.'         { if ($1 != null) _ruleStore.add($1); }
       ;
 
-rule : matches ARROW actions  { $$ = new Rule((List<VarMatch>)$1, $3); }
+rule : matches ARROW actions  { $$ = newRule($1, $3); }
      | error                  { $$ = null; }
      ;
 
@@ -112,11 +119,11 @@ term : '<' id_lvar '>' term     { $$ = new FeatVal($2, $4); }
      ;
 
 feature : nominal         { $$ = $1; }
-        | nominal id_lvar { $$ = new Conjunction($1,
+        | nominal iv_term { $$ = new Conjunction($1,
                                    new FeatVal(DagNode.TYPE_FEAT_ID, $2)); }
-        | ':' id_lvar     { $$ = new FeatVal(DagNode.TYPE_FEAT_ID, $2); }
+        | ':' iv_term     { $$ = new FeatVal(DagNode.TYPE_FEAT_ID, $2); }
         | id_lvar         { $$ = new FeatVal(DagNode.PROP_FEAT_ID, $1); }
-        | '!' term        { $$ = new Negation($2); }
+        | '!' term        { $2.setNegated(true); $$ = $2; }
         | '(' expr ')'    { $$ = $2; }
 // Not needed anymore, the matching against function return values has all the
 // functionality that is possible here
@@ -130,6 +137,15 @@ nominal : ID ':'     { $$ = new FeatVal(DagNode.ID_FEAT_ID, new Atom($1)); }
 
 id_lvar : VAR      { $$ = new LocalVar($1); }
         | ID       { $$ = new Atom($1); }
+
+iv_term : id_lvar           { $$ = $1; }
+        | '!' iv_term       { $2.setNegated(true); $$ = $2; }
+        | '(' iv_expr ')'   { $$ = $2; }
+        ;
+
+iv_expr : iv_term               { $$ = $1; }
+        | iv_term '|' iv_expr   { $$ = new Disjunction($1, $3); }
+        ;
 
 funcall : ID '(' rargs ')' { $$ = getNewFunCall($1, $3);
                              if ($$ == null) return YYERROR ;
@@ -208,12 +224,12 @@ rfeat : rnominal          { $$ = $1; }
                           }
       | r_id_var          { $$ = new DagNode(DagNode.PROP_FEAT_ID, $1); }
       | '(' rexpr ')'     { $$ = $2.setNominal(); }
-      | ID '(' rargs ')'  { $$ = getNewFunCallDagNode($1, $3);
-                            if ($$ == null) return YYERROR ;
-                          }
-      | ID '(' ')'        { $$ = getNewFunCallDagNode($1, null);
-                            if ($$ == null) return YYERROR ;
-                          }
+      // | ID '(' rargs ')'  { $$ = getNewFunCallDagNode($1, $3);
+      //                       if ($$ == null) return YYERROR ;
+      //                     }
+      // | ID '(' ')'        { $$ = getNewFunCallDagNode($1, null);
+      //                       if ($$ == null) return YYERROR ;
+      //                     }
       ;
 
 rnominal : r_id_var ':' {
@@ -236,4 +252,10 @@ rarg  : r_id_var  { $$ = $1; }
 r_id_var : ID     { $$ = new DagNode($1); }
          | VAR    { $$ = new VarDagNode($1, Bindings.LOCAL); }
          | GVAR   { $$ = new VarDagNode($1, Bindings.GLOBAL); }
+         | ID '(' rargs ')'  { $$ = getNewFunCallDagNode($1, $3);
+                               if ($$ == null) return YYERROR ;
+                             }
+         | ID '(' ')'        { $$ = getNewFunCallDagNode($1, null);
+                               if ($$ == null) return YYERROR ;
+                             }
          ;

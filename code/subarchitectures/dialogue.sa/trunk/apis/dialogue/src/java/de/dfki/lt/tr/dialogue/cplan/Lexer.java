@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import de.dfki.lt.tr.dialogue.cplan.util.Position;
 
 public class Lexer implements RuleParser.Lexer, LFParser.Lexer  {
@@ -25,6 +27,9 @@ public class Lexer implements RuleParser.Lexer, LFParser.Lexer  {
 
   /** print errors or only collect them */
   private boolean _quiet = false;
+
+  /** log parsing errors to this logger, if not null */
+  private Logger _logger = null;
 
   /** Information to generate useful error messages: input location */
   private String _inputDescription;
@@ -85,11 +90,18 @@ public class Lexer implements RuleParser.Lexer, LFParser.Lexer  {
     _quiet = q;
   }
 
+  public void setErrorLogger(Logger logger) {
+    _logger = logger;
+  }
+
   public void yyerror (String msg) {
     _lastErrors.add(new Position(_line, _column,
         _inputDescription + ":" + _line + ":" + _column + ": " + msg));
-    if (! _quiet) {
+    if (! _quiet && _logger == null) {
       System.out.println(getLastErrorPosition().msg);
+    }
+    else if (_logger != null) {
+      _logger.error(getLastErrorPosition().msg);
     }
   }
 
@@ -256,7 +268,14 @@ public class Lexer implements RuleParser.Lexer, LFParser.Lexer  {
     return _lval;
   }
 
+  public Position getCurrentPosition() {
+    return new Position(_line, _column, _inputDescription);
+  }
+
   public Position getLastErrorPosition() {
+    if (_lastErrors.isEmpty()) {
+      return null;
+    }
     return _lastErrors.get(_lastErrors.size() - 1);
   }
 

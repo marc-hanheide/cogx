@@ -1,13 +1,10 @@
 package de.dfki.lt.tr.dialogue.cplan;
 
-import gnu.trove.THashMap;
-import gnu.trove.TObjectHashingStrategy;
-import gnu.trove.TObjectIntHashMap;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,19 +18,6 @@ import de.dfki.lt.tr.dialogue.cplan.io.LFDagPrinter;
 import de.dfki.lt.tr.dialogue.cplan.io.LFDebugPrinter;
 import de.dfki.lt.tr.dialogue.cplan.util.IntIDMap;
 import de.dfki.lt.tr.dialogue.cplan.util.ShortIDMap;
-
-@SuppressWarnings("serial")
-class DagNodeHashStrategy implements TObjectHashingStrategy<DagNode> {
-  @Override
-  public int computeHashCode(DagNode object) {
-    return ((Object)object).hashCode();
-  }
-  @Override
-  public boolean equals(DagNode o1, DagNode o2) {
-    return o1 == o2;
-  }
-}
-
 
 public class DagNode {
 
@@ -72,7 +56,7 @@ public class DagNode {
   public static short TYPE_FEAT_ID = -1;
 
   private static final String[] featureOrder =
-    { "__ID", "__PROP", "__TYPE", "Cop-Restr" };
+    { "__ID", "__TYPE", "__PROP", "Cop-Restr", "Cop-Scope" };
 
   private static final int _useLfPrinter = 1;
 
@@ -619,6 +603,9 @@ public class DagNode {
       }
       while (feat1 > feat2) { // feature in 2 missing in 1: add to compArcs
         arc1It.add(arc2);
+        if (arc2._value._isNominal) {
+          this._isNominal = true;
+        }
         feat2 = (arc2It.hasNext() ? (arc2 = arc2It.next())._feature : NO_FEAT);
       }
       if (feat1 == feat2 && feat1 != NO_FEAT) {
@@ -903,7 +890,7 @@ public class DagNode {
    */
   private boolean
   equalsCrossCheck(List<DagNode> equals1, List<DagNode> equals2,
-      THashMap<DagNode, THashMap<DagNode, Boolean>> eqClasses) {
+      IdentityHashMap<DagNode, IdentityHashMap<DagNode, Boolean>> eqClasses) {
     boolean result = false;
     for (int i = 0; i < equals1.size(); ++i) {
       for (int j = i; j < equals1.size(); ++j) {
@@ -922,13 +909,13 @@ public class DagNode {
    */
   @SuppressWarnings("null")
   private boolean equalsRecMulti(DagNode in2,
-      THashMap<DagNode, THashMap<DagNode, Boolean>> eqClasses) {
-    THashMap<DagNode, Boolean> eqToThis = eqClasses.get(this);
+      IdentityHashMap<DagNode, IdentityHashMap<DagNode, Boolean>> eqClasses) {
+    IdentityHashMap<DagNode, Boolean> eqToThis = eqClasses.get(this);
     if (eqToThis == null) {
-      eqToThis = new THashMap<DagNode, Boolean>(new DagNodeHashStrategy());
+      eqToThis = new IdentityHashMap<DagNode, Boolean>();
       eqClasses.put(this, eqToThis);
     } else {
-      if (eqToThis.contains(in2))
+      if (eqToThis.containsKey(in2))
         return eqToThis.get(in2);
     }
 
@@ -1007,23 +994,23 @@ public class DagNode {
   @Override
   public boolean equals(Object obj) {
     if (! (obj instanceof DagNode)) return false;
-    THashMap<DagNode, THashMap<DagNode, Boolean>> eqClasses =
-      new THashMap<DagNode, THashMap<DagNode, Boolean>>(new DagNodeHashStrategy());
+    IdentityHashMap<DagNode, IdentityHashMap<DagNode, Boolean>> eqClasses =
+      new IdentityHashMap<DagNode, IdentityHashMap<DagNode, Boolean>>();
     boolean result = equalsRecMulti((DagNode) obj, eqClasses);
     if (result) {
       int size = eqClasses.size();
       // check if we find a proper match for eqClasses
       // create a bipartite graph from the equality classes
       BipartiteGraph bg = new BipartiteGraph(size, size);
-      THashMap<DagNode, Integer> nodeNumbering =
-        new THashMap<DagNode, Integer>(new DagNodeHashStrategy());
+      IdentityHashMap<DagNode, Integer> nodeNumbering =
+        new IdentityHashMap<DagNode, Integer>();
       int nextSourceNumber = 0;
       for(DagNode source : eqClasses.keySet()) {
         int nodeNumber = nextSourceNumber++;
-        THashMap<DagNode, Boolean> targets = eqClasses.get(source);
+        IdentityHashMap<DagNode, Boolean> targets = eqClasses.get(source);
         for (DagNode target : targets.keySet()) {
           int targetNumber = 0;
-          if (nodeNumbering.contains(target)) {
+          if (nodeNumbering.containsKey(target)) {
             targetNumber = nodeNumbering.get(target);
           }
           else {
@@ -1157,8 +1144,8 @@ public class DagNode {
    *  zero.
    *  @return the number of nodes that were referenced more than once.
    */
-  private int
-  countCorefsLocal(TObjectIntHashMap<DagNode> corefs, int nextCorefNo) {
+  public int
+  countCorefsLocal(IdentityHashMap<DagNode, Integer> corefs, int nextCorefNo) {
     DagNode here = dereference();
     if (! corefs.containsKey(here)) { // visited for the first time
       corefs.put(here, 0);
@@ -1326,7 +1313,7 @@ public class DagNode {
   // *************************************************************************
 
   private void toStringRec(boolean readable, StringBuilder sb,
-                           TObjectIntHashMap<DagNode> corefs) {
+                           IdentityHashMap<DagNode, Integer> corefs) {
     DagNode here = this.dereference();
     int corefNo = corefs.get(here);
     if (corefNo < 0) { // already printed, only coref
@@ -1356,8 +1343,8 @@ public class DagNode {
   /** print fs in jxchg format */
   @Override
   public final String toString() {
-    TObjectIntHashMap<DagNode> corefMap =
-      new TObjectIntHashMap<DagNode>(new DagNodeHashStrategy());
+    IdentityHashMap<DagNode, Integer> corefMap =
+      new IdentityHashMap<DagNode, Integer>();
     int corefs = 0;
     corefs = countCorefsLocal(corefMap, corefs);
     StringBuilder sb = new StringBuilder();
@@ -1366,8 +1353,8 @@ public class DagNode {
     }
     else {
       if (_DEFAULT_PRINTER != null) {
-        _DEFAULT_PRINTER.maxCoref(corefs);
-        _DEFAULT_PRINTER.toStringRec(this, PRINT_READABLE, sb, corefMap);
+        _DEFAULT_PRINTER.getCorefs(this);
+        _DEFAULT_PRINTER.toStringRec(this, PRINT_READABLE, sb);
       }
       else {
         toStringRec(PRINT_READABLE, sb, corefMap);

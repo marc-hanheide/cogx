@@ -1,5 +1,6 @@
 package de.dfki.lt.tr.dialogue.cplan.matches;
 
+import java.util.Iterator;
 import java.util.List;
 
 import de.dfki.lt.tr.dialogue.cplan.Bindings;
@@ -35,9 +36,21 @@ public class FunCall implements MatchLVal {
     _args = args;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public String toString() {
-    return " " + _name + "(" + _args + ")";
+    StringBuilder sb = new StringBuilder();
+    sb.append(_name).append("(");
+    if (! _args.isEmpty()) {
+      sb.append(_args.get(0));
+    }
+    Iterator it = _args.iterator();
+    it.next();
+    while (it.hasNext()) {
+      sb.append(' ').append(it.next());
+    }
+    sb.append(")");
+    return sb.toString();
   }
 
   /* We don't support this until somebody REALLY needs it */

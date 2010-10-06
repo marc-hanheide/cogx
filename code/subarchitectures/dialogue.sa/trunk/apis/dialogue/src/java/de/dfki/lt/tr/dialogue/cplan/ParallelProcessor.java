@@ -11,6 +11,18 @@ public class ParallelProcessor implements Processor {
 
   private List<Rule> _rules;
 
+  /** An object to trace matching / application of rules */
+  private RuleTracer _tracer;
+
+  public void setTracing(RuleTracer t) {
+    _tracer = t;
+  }
+
+  public RuleTracer getTracing() {
+    return _tracer;
+  }
+
+  /** Constructor: initialize the processor with a list of rules */
   public ParallelProcessor(List<Rule> rules) {
     _rules = rules;
   }
@@ -60,6 +72,9 @@ public class ParallelProcessor implements Processor {
         // apply rules to the node under path in the modified structure
         for (Rule r : _rules) {
           if (r.matches(path.lastElement(), bindings)) {
+            if (_tracer != null) {
+              _tracer.traceMatch(path.lastElement(), r, bindings);
+            }
             result.add(new RuleAction(r, path, bindings));
           }
         }
@@ -77,7 +92,13 @@ public class ParallelProcessor implements Processor {
     List<RuleAction> actions = computeMatches(lfEdge, bindings);
     if (actions != null) {
       for (RuleAction action : actions) {
+        if (_tracer != null) {
+          _tracer.traceBeforeApplication(action._applicationPoint, action._rule);
+        }
         action.apply(bindings);
+        if (_tracer != null) {
+          _tracer.traceAfterApplication(action._applicationPoint, action._rule);
+        }
       }
       return lfEdge.getValue().copyResult(false);
     }

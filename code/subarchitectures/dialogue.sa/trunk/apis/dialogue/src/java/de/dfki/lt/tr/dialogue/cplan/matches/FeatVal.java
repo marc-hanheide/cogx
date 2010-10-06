@@ -78,7 +78,7 @@ public class FeatVal extends Match {
       // _value == null tests only for feature existence
       if (_value == null) return true;
       while (subEdges.hasNext()) {
-        if (_value.match(subEdges.next(), bindings)) return true;
+        if (_value.matches(subEdges.next(), bindings)) return true;
       }
       return false;
     }

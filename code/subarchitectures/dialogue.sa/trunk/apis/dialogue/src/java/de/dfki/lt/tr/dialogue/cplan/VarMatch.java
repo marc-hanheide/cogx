@@ -28,16 +28,16 @@ public class VarMatch {
     return current;
   }
 
-  public boolean match(DagEdge here, Bindings bindings) {
+  protected boolean match(DagEdge here, Bindings bindings) {
     if (_lval == null) {
-      if (_match.match(here, bindings)) {
+      if (_match.startMatch(here, bindings)) {
         // bind the current location locally to "#"
         bindings.bind("#", here, Bindings.LOCAL);
         return true;
       }
       return false;
     }
-    return _match.match(getLVal(bindings), bindings);
+    return _match.startMatch(getLVal(bindings), bindings);
   }
 
   @Override
