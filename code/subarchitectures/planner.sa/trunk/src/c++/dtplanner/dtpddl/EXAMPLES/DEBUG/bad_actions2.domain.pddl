@@ -158,9 +158,13 @@
                                (label ?o ?l)
                          )
           :effect  (and  (started )
-                         (assign (reward ) -1.0000)
+                         (assign (reward ) -1.0)
                    )
 )
+
+(:action spin 
+	 :precondition (committed)
+	 :effect (and (assign (reward) 0.0)))
 
 (:action  commit-is-in-visualobject2
           :parameters  (?val - place)
@@ -168,10 +172,10 @@
                          )
           :effect  (and  (committed)
                          (when  (is-in visualobject2 ?val)
-                                (assign (reward ) 5000)
+                                (assign (reward ) 50)
                          )
                          (when  (not (is-in visualobject2 ?val))
-                                (assign (reward ) -5000)
+                                (assign (reward ) -50)
                          )
                    )
 )

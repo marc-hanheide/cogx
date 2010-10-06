@@ -397,6 +397,7 @@ void Solver::generate_markov_decision_process_starting_states()
 
 
 #ifdef LAO_STAR
+
 void Solver::prioritise(Planning::POMDP_State* state,
                         Planning::Set_Of_POMDP_State_Pointers& locally_traversed)
 {
@@ -406,12 +407,11 @@ void Solver::prioritise(Planning::POMDP_State* state,
 
     locally_traversed.insert(state);
     
-    INTERACTIVE_VERBOSER(true, 15000, "Testing new state :: "<<*state<<std::endl
+    INTERACTIVE_VERBOSER(true, 14000, "Testing new state :: "<<*state<<std::endl
                          <<!state->get__expansion_attempted()<<std::endl);
     
-    if(!state->get__expansion_attempted()){
-        
-        INTERACTIVE_VERBOSER(true, 15000, "Reporting new state :: "<<*state<<std::endl);
+    if(!state->get__expansion_attempted()){    
+        INTERACTIVE_VERBOSER(true, 14000, "Reporting new state :: "<<*state<<std::endl);
         report__new_belief_state(state);
         return;
     }
@@ -431,30 +431,129 @@ void Solver::prioritise(Planning::POMDP_State* state,
     }
 }
 
-void Solver::lao_star()
+bool Solver::lao_star()
 {
+    //if(this->belief_state__space.size() > 1000) return false;
 
-    while(this->expand_belief_state_space()){
-        
-        Planning::Policy_Iteration__GMRES policy_Iteration(this->belief_state__space,
-                                                           this->get__sink_state_penalty());
-        while(policy_Iteration()){}
-        
-        VERBOSER(15000, "Iterating LAO."<<this->belief_state__space.size()<<std::endl);
-
-        
-        Planning::Set_Of_POMDP_State_Pointers locally_traversed;
-        this->empty__belief_states_for_expansion();
-        prioritise(starting_belief_state, locally_traversed);
-        
-        INTERACTIVE_VERBOSER(true, 15000, "Iterating LAO locality :: "<<locally_traversed.size()<<std::endl);
-        
-        if(this->belief_state__space.size() > 1000) break;
+    std::vector<Planning::POMDP_State*> states_to_expand;
+    Planning::POMDP_State* some_state;
+    while(some_state = obtain__next_belief_state_for_expansion()){
+        states_to_expand.push_back(some_state);
     }
+    if(states_to_expand.size() == 0) return false;
+
+    
+    
+    VERBOSER(15000, "Iterating LAO. Expanding a number of states :: "
+             <<states_to_expand.size()<<std::endl);
+    
+    for(auto state = states_to_expand.begin()
+            ; state != states_to_expand.end()
+            ; state++){
+        QUERY_UNRECOVERABLE_ERROR((*state)->get__expansion_attempted(),
+                                  "Expanding a state for the second time...");
+        (*state)->set__expansion_attempted();
+        
+        expand_belief_state(*state);
+    }
+    
+    
+//     if(!this->expand_belief_state_space()){
+//         return false;
+//     }
+
+//     /*Expand the whole fringe.*/
+//     while(this->expand_belief_state_space()){
+//     }
+    
+    Planning::Policy_Iteration__GMRES policy_Iteration(this->belief_state__space,
+                                                       this->get__sink_state_penalty(),
+                                                       .6);
+
+    while(policy_Iteration()){};
+    
+    VERBOSER(15000, "Iterating LAO with a number of belief state :: "<<this->belief_state__space.size()<<std::endl);
+    
+    Planning::Set_Of_POMDP_State_Pointers locally_traversed;
+    this->empty__belief_states_for_expansion();
+    prioritise(starting_belief_state, locally_traversed);
+    
+    VERBOSER(15000, "Iterating LAO locality :: "<<locally_traversed.size()<<std::endl);
+
+    return true;
 }
+
 #endif
 
-POMDP_State* Solver::solve__for_new_starting_state(Planning::POMDP_State* successor_state)
+
+#ifdef LAO_STAR
+
+/*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*/
+/*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*/
+/*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*/
+/*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*/
+/*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*/
+/*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*/
+
+
+POMDP_State* /*LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POMDP_State* successor_state)
+{
+    
+    auto new_starting_belief_state = new Planning::POMDP_State();
+    auto belief = successor_state->get__belief_state();
+    for(auto atom = belief.begin()
+            ; atom != belief.end()
+            ; atom++){
+        double prob = atom->second;
+        auto state = atom->first;
+
+        
+        INTERACTIVE_VERBOSER(true, 14000, "Creating new belief state with atom :: "
+                             <<*state<<std::endl
+                             );
+        
+        new_starting_belief_state->add__belief_atom(state, prob);
+    }
+
+    
+    new_starting_belief_state->set__index(0);
+    new_starting_belief_state->initialise__prescribed_action_index();
+    
+    this->empty__belief_states_for_expansion();
+    this->instate__starting_belief_state(new_starting_belief_state);/*Alters the starting state.*/
+    this->reset__pomdp_state_hash_table();
+    this->reinstate__starting_belief_state();
+    
+    auto current_state = this->peek__next_belief_state_for_expansion();//expansion_queue.front();
+    
+    INTERACTIVE_VERBOSER(true, 14000, "Current state is :: "
+                         <<*current_state<<std::endl
+                         );
+
+    while(lao_star()){
+    }
+    
+
+    return current_state;
+}
+
+/*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*/
+/*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*/
+/*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*/
+/*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*/
+/*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*/
+/*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*//*LAO_STAR*/
+
+
+#else
+
+/*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*/
+/*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*/
+/*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*/
+/*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*/
+/*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*/
+
+POMDP_State* /*NON-LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POMDP_State* successor_state)
 {
     
     auto new_starting_belief_state = new Planning::POMDP_State();
@@ -516,6 +615,11 @@ POMDP_State* Solver::solve__for_new_starting_state(Planning::POMDP_State* succes
     return current_state;
 }
 
+/*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*/
+/*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*/
+/*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*/
+/*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*//*NON-LAO_STAR*/
+#endif
 
 const Planning::POMDP_State* Solver::get__starting_belief_state()const
 {

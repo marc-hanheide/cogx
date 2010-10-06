@@ -146,7 +146,7 @@ namespace Planning
         void expand_optional_transformation(Planning::State*, const State_Transformation*);
 
 #ifdef LAO_STAR
-        void lao_star();
+        bool lao_star();
         void prioritise(Planning::POMDP_State* state,
                         Planning::Set_Of_POMDP_State_Pointers& locally_traversed);
 #endif

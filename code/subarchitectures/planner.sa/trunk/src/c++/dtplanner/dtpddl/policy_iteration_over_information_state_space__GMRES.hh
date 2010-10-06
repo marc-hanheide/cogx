@@ -47,7 +47,7 @@ namespace Planning
     public:
         Policy_Iteration__GMRES(Set_Of_POMDP_State_Pointers&,
                                 double sink_state_penalty,
-                                double discount_factor = 0.8);
+                                double discount_factor = 0.95);
 
 //         void operator()();
         bool operator()();
