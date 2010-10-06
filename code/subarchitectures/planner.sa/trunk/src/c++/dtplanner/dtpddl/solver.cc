@@ -362,7 +362,6 @@ void Solver::empty__belief_states_for_expansion()
 
 void Solver::reset__pomdp_state_hash_table()
 {
-
     VERBOSER(14000, "Reseting the POMDP hash table."<<std::endl);
     
     /*Clean up some of the memory used in the first phase. */
@@ -453,24 +452,46 @@ bool Solver::lao_star()
 {
     if(this->belief_state__space.size() > 500) return false;
 
-    std::vector<Planning::POMDP_State*> states_to_expand;
+    std::vector<Planning::POMDP_State*> local__states_to_expand;
     Planning::POMDP_State* some_state;
     while(some_state = obtain__next_belief_state_for_expansion()){
-        states_to_expand.push_back(some_state);
+        if(some_state->get__expansion_attempted()) continue;
+
+        
+        QUERY_UNRECOVERABLE_ERROR(some_state->get__expansion_attempted(),
+                                  "#1Expanding a state for the second time...");
+        
+        local__states_to_expand.push_back(some_state);
     }
-    if(states_to_expand.size() == 0) return false;
+    if(local__states_to_expand.size() == 0) return false;
 
     
     
     VERBOSER(15000, "Iterating LAO. Expanding a number of states :: "
-             <<states_to_expand.size()<<std::endl);
+             <<local__states_to_expand.size()<<std::endl);
+
     
-    for(auto state = states_to_expand.begin()
-            ; state != states_to_expand.end()
+//     Planning::Set_Of_POMDP_State_Pointers local_test_set;
+    for(auto state = local__states_to_expand.begin()
+            ; state != local__states_to_expand.end()
             ; state++){
+        
+
+//         if((*state)->get__expansion_attempted()){
+//             QUERY_UNRECOVERABLE_ERROR(*state != starting_belief_state,
+//                                       "Non starting state double expansion :: "
+//                                       <<(**state == *starting_belief_state));
+//             continue;
+//         }
+        
+//         QUERY_UNRECOVERABLE_ERROR(local_test_set.find(*state) != local_test_set.end(),
+//                                   "Same state twice...");
+        
         QUERY_UNRECOVERABLE_ERROR((*state)->get__expansion_attempted(),
-                                  "Expanding a state for the second time...");
+                                  "#2Expanding a state for the second time...");
         (*state)->set__expansion_attempted();
+
+//         local_test_set.insert(*state);
         
         expand_belief_state(*state);
     }
@@ -495,6 +516,7 @@ bool Solver::lao_star()
     
     Planning::Set_Of_POMDP_State_Pointers locally_traversed;
     this->empty__belief_states_for_expansion();
+    assert(!obtain__next_belief_state_for_expansion());
     prioritise(starting_belief_state, locally_traversed);
     
     VERBOSER(15000, "Iterating LAO locality :: "<<locally_traversed.size()<<std::endl);
@@ -538,8 +560,9 @@ POMDP_State* /*LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POMDP_S
     new_starting_belief_state->set__index(0);
     new_starting_belief_state->initialise__prescribed_action_index();
     
-    this->empty__belief_states_for_expansion();
     this->instate__starting_belief_state(new_starting_belief_state);/*Alters the starting state.*/
+    this->empty__belief_states_for_expansion();
+    
     this->reset__pomdp_state_hash_table();
     this->reinstate__starting_belief_state();
     
@@ -595,8 +618,11 @@ POMDP_State* /*NON-LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POM
     new_starting_belief_state->set__index(0);
     new_starting_belief_state->initialise__prescribed_action_index();
     
-    this->empty__belief_states_for_expansion();
     this->instate__starting_belief_state(new_starting_belief_state);/*Alters the starting state.*/
+    
+    this->empty__belief_states_for_expansion();
+
+    
     this->reset__pomdp_state_hash_table();
     this->reinstate__starting_belief_state();
     
