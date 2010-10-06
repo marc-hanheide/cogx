@@ -433,7 +433,7 @@ void Solver::prioritise(Planning::POMDP_State* state,
 
 bool Solver::lao_star()
 {
-    //if(this->belief_state__space.size() > 1000) return false;
+    if(this->belief_state__space.size() > 500) return false;
 
     std::vector<Planning::POMDP_State*> states_to_expand;
     Planning::POMDP_State* some_state;
@@ -468,8 +468,9 @@ bool Solver::lao_star()
     
     Planning::Policy_Iteration__GMRES policy_Iteration(this->belief_state__space,
                                                        this->get__sink_state_penalty(),
-                                                       .6);
+                                                       .95);
 
+    //policy_Iteration();
     while(policy_Iteration()){};
     
     VERBOSER(15000, "Iterating LAO with a number of belief state :: "<<this->belief_state__space.size()<<std::endl);

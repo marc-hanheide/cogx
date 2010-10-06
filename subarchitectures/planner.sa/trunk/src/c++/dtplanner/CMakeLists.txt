@@ -10,7 +10,9 @@ include_directories(./dtpddl)
 
 # link_directories(${CMAKEDEMO_BINARY_DIR}/w01-intro)
 
-add_definitions(-std=c++0x -mno-align-stringops -minline-all-stringops -march=native -fPIC)
+# add_definitions(-std=c++0x -mno-align-stringops -minline-all-stringops -march=native -fPIC)
+
+add_definitions(-DLAO_STAR -std=c++0x -mno-align-stringops -minline-all-stringops -march=native -fPIC)
 
 #add_definitions(-pedantic -pg -Wall -Wextra)
 
