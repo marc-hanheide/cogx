@@ -424,6 +424,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
   pre_id = "";
   bIsMoving = false;
   CurrentBestDistSquared = 999999.0;
+  previousImg=cvCreateImage(cvSize(1,1),8,3);
 
 #ifdef FEAT_VISUALIZATION
   m_display.configureDisplayClient(_config);
@@ -445,7 +446,7 @@ void PlanePopOut::start()
 {
   startStereoCommunication(*this);
 #ifdef FEAT_VISUALIZATION
-  m_bSendPoints = false;
+  m_bSendPoints = true;
   m_bSendPlaneGrid = false;
   m_bSendImage = true;
   m_display.connectIceClient(*this);
@@ -639,7 +640,7 @@ void PlanePopOut::runComponent()
   int argc = 1;
   char argv0[] = "PlanePopOut";
   char *argv[1] = {argv0};
-  int stereoWidth = 320;
+  int stereoWidth = 640;
   if (doDisplay)
   {
   glutInit(&argc, argv);
@@ -665,7 +666,7 @@ void PlanePopOut::runComponent()
 	Video::Image image;
 	getRectImage(LEFT, stereoWidth, image);
 #ifdef USE_MOTION_DETECTION
-	if (previousImg == NULL)	{previousImg = convertImageToIpl(image); bIsMoving = true;}
+	if (previousImg->width == 1)	{previousImg = convertImageToIpl(image); bIsMoving = true;}
 	else
 	{
 	    IplImage* Cimg = convertImageToIpl(image);
