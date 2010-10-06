@@ -20,30 +20,27 @@
 
 package de.dfki.lt.tr.dialmanagement.components;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
-import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
-import de.dfki.lt.tr.beliefs.slice.epobject.EpistemicObject;
+import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.events.Event;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
-import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
-import de.dfki.lt.tr.dialmanagement.data.actions.VoidAction;
-import de.dfki.lt.tr.dialmanagement.data.observations.Observation;
-import de.dfki.lt.tr.dialmanagement.data.observations.ObservationContent;
-import de.dfki.lt.tr.dialmanagement.data.ActionNode;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.ObservationEdge;
-import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
+import de.dfki.lt.tr.dialmanagement.data.Observation;
+import de.dfki.lt.tr.dialmanagement.data.PolicyAction;
+import de.dfki.lt.tr.dialmanagement.data.PolicyEdge;
+import de.dfki.lt.tr.dialmanagement.data.PolicyNode;
+import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
 
 
 /**
  * A simple, FSA-based dialogue manager.  The manager revolves around a dialogue policy and
- * a pointer to the current node in the policy.  The traversal of the policy is realised
+ * a pointer to the current node in the policy.  The traversal of the policy is implemented
  * with the nexAction method, which takes an observation as argument, and jumps to the
  * appropriate next action.
  * 
@@ -53,16 +50,15 @@ import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
  */
 public class DialogueManager {
 
-
+	// logging and debugging
 	public static boolean LOGGING = true;
-
 	public static boolean DEBUG = true;
 
 	// the dialogue policy
 	DialoguePolicy policy;
 
 	// the current action node
-	ActionNode curNode;
+	PolicyNode curNode;
 
 	/**
 	 * Create a new dialogue manager based on a dialogue policy
@@ -78,38 +74,25 @@ public class DialogueManager {
 
 	/**
 	 * Jumps to the next appropriate action given the intention provided as argument.  
-	 * The method extracts all alternative intentional contents and sorts them by decreasing 
-	 * probability.  It then checks whether an observation matching the intentional content
-	 * is available.  
+	 * The method extracts all alternative intentional contents to create an observation,
+	 * and then checks whether a policy edge matching this observation can be found
 	 * 
-	 * If one exists, the method assigns curNode to be the node pointed by the observation edge,
-	 * and returns it. Otherwise, a VoidAction is returned.
+	 * If one exists, the method assigns curNode to be the node pointed by the edge,
+	 * and returns it. Otherwise, a void action is returned.
 	 *   
 	 * @param intention the intention
 	 * @return the next action if one is available, or else a void action 
 	 * @throws DialogueException if the content of the intention or the dialogue policy
 	 *         is ill-formatted
 	 */
-	public AbstractAction nextAction(Intention intention) throws DialogueException {
-	
-	//	List<IntentionalContent> content = 
-	//		EpistemicObjectUtils.sortIntentionalContent(intention.content);
+	public PolicyAction nextAction(Intention intention) throws DialogueException {
 
-		Observation obs = new Observation();
+		Observation obs = new Observation(Observation.INTENTION);
 		for (IntentionalContent icontent : intention.content) {
-			obs.addAlternative(icontent.postconditions, ObservationContent.INTENTION, icontent.probValue);
+			obs.addAlternative(icontent.postconditions, icontent.probValue);
 		}
-	
-		for (boolean underspecification : Arrays.asList(false, true)) {
 
-				AbstractAction nextAction = nextAction (obs, underspecification);
-				if (!(nextAction instanceof VoidAction)) {
-					return nextAction;
-				}
-			}
-
-		// else, return a void action
-		return new VoidAction();
+		return nextAction(obs);
 	}
 
 
@@ -117,39 +100,29 @@ public class DialogueManager {
 
 	/**
 	 * Jumps to the next appropriate action given the event provided as argument.  
-	 * The method extracts all alternative contents for the event and sorts them by decreasing 
-	 * probability.  It then checks whether an observation matching the content
-	 * is available.  
+	 * The method extracts all alternative event descriptions to create an observation,
+	 * and then checks whether a policy edge matching this observation can be found
 	 * 
-	 * If one exists, the method assigns curNode to be the node pointed by the observation edge,
-	 * and returns it. Otherwise, a VoidAction is returned.
+	 * If one exists, the method assigns curNode to be the node pointed by the edge,
+	 * and returns it. Otherwise, a void action is returned.
 	 *   
 	 * @param event the event
 	 * @return the next action if one is available, or else a void action 
 	 * @throws DialogueException if the content of the event or the dialogue policy
 	 *         is ill-formatted
 	 */
-	public AbstractAction nextAction(Event event) throws DialogueException {
+	public PolicyAction nextAction(Event event) throws DialogueException {
 
-// 		ProbDistribution content = 
-//			EpistemicObjectUtils.sortDiscreteDistribution(event.content);
-/**
-		for (boolean underspecification : Arrays.asList(false, true)) {
-			
-			for (FormulaProbPair pair : EpistemicObjectUtils.getFormulaProbPairs(content)) {
-				
-				IntentionObservation observ = new IntentionObservation (pair.val, pair.prob);
-				debug("testing observation: " + observ.toString());
-				AbstractAction nextAction = nextAction (observ,underspecification);
-				if (!(nextAction instanceof VoidAction)) {
-					return nextAction;
-				}
+		// we assume here that the event content is a BasicProbDistribution
+		Observation obs = new Observation(Observation.EVENT);
+		if (event.content instanceof BasicProbDistribution && 
+				((BasicProbDistribution)event.content).values instanceof FormulaValues) {
+			for (FormulaProbPair pair : ((FormulaValues)((BasicProbDistribution)event.content).values).values) {
+				obs.addAlternative(pair.val, pair.prob);
 			}
 		}
 
- 	*/
-		// else, return a void action
-		return new VoidAction(); 
+		return nextAction(obs);
 	} 
 
 
@@ -160,57 +133,41 @@ public class DialogueManager {
 	 * - if the dialogue policy has an outgoing observation edge starting from curNode and
 	 *   whose content matches the content in obs, then assigns curNode to be the node pointed by 
 	 *   the edge, and returns it
-	 * - if no such observation edge is available from curNode, then returns a VoidAction,
+	 * - if no such observation edge is available from curNode, then returns a void action,
 	 *   and keep the curNode as it is
 	 * 
-	 * @param obs the observation (which might be a ShallowObservation, an EventObservation,
-	 *            or an IntentionObservation)
-	 *            
+	 * @param obs the observation           
 	 * @return if a node jump is available at the current node with the given observation, returns
-	 *         the next action.   Else, returns a VoidAction
-	 * @throws DialogueException 
-	 *         
+	 *         the next action.   Else, returns a void action         
 	 * @throws DialogueException exception thrown if the policy or the observation is ill-formed
 	 */
-	public AbstractAction nextAction (Observation obs) throws DialogueException {
+	public PolicyAction nextAction (Observation obs) throws DialogueException {
+
+		// get matching edges
+		Collection<PolicyEdge> matchingEdges = curNode.getMatchingEdges(obs);
 		
-		for (boolean underspecification : Arrays.asList(false, true)) {
+		// sort the edges by preferential order
+		List<PolicyEdge> sortedEdges = PolicyUtils.sortEdges(matchingEdges);
+		if (sortedEdges.size() > 0) {
+
+			// select the best edge
+			PolicyEdge selectedEdge = sortedEdges.get(0);
+			curNode = selectedEdge.getOutgoingAction();
 			
-			AbstractAction nextAction = nextAction (obs, underspecification);
-			if (!(nextAction instanceof VoidAction)) {
-				return nextAction;
-			}
-		}
-		
-		// else, return a void action
-		return new VoidAction();
-	}
-
-
-
-
-
-	/**
-	 * (Same as above, but including a flag to activate or deactivate the use of underspecified 
-	 * observations)
-	 */
-	private AbstractAction nextAction (Observation obs, boolean underspecification) throws DialogueException {
-		Collection<ObservationEdge> matchingEdges = curNode.getMatchingOutgoingObservations(obs);
-		for (ObservationEdge matchingEdge : matchingEdges) {
-			if (underspecification || !matchingEdge.getObservation().isUnderspecified()) {
-				curNode = matchingEdge.getOutgoingAction();
-				debug("FOUND! now going to " + curNode.getId());
-				debug(policy.toString());
-				return curNode.getAction();
-			}
+			// if the outgoing action is underspecified, fill the arguments
+			if (curNode.getAction().isUnderspecified()) {
+				curNode.getAction().fillActionArguments(PolicyUtils.extractFilledArguments(obs, selectedEdge));
+			} 
+			
+			// and return the action to perform
+			return curNode.getAction();
 		}
 
 		debug("Warning: observation " + obs.toString() + " not applicable from node " + curNode.getId());
-		debug(policy.toString());
-		for (ObservationEdge edge : curNode.getAllOutgoingObservations()) {
-			debug ("obs: " + edge.getObservation().toString());
-		}
-		return new VoidAction();
+		debug("Policy: " + policy.toString());
+	
+		// else, return a void action
+		return new PolicyAction();
 	}
 
 
@@ -220,7 +177,7 @@ public class DialogueManager {
 	 * 
 	 * @return the current action
 	 */
-	public AbstractAction getCurrentAction () {
+	public PolicyAction getCurrentAction () {
 		return curNode.getAction();
 	}
 

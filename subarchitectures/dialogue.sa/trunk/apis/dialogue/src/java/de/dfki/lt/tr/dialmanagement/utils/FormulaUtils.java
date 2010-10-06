@@ -1,9 +1,32 @@
+
+// =================================================================                                                        
+// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+//                                                                                                                          
+// This library is free software; you can redistribute it and/or                                                            
+// modify it under the terms of the GNU Lesser General Public License                                                       
+// as published by the Free Software Foundation; either version 2.1 of                                                      
+// the License, or (at your option) any later version.                                                                      
+//                                                                                                                          
+// This library is distributed in the hope that it will be useful, but                                                      
+// WITHOUT ANY WARRANTY; without even the implied warranty of                                                               
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                                                         
+// Lesser General Public License for more details.                                                                          
+//                                                                                                                          
+// You should have received a copy of the GNU Lesser General Public                                                         
+// License along with this program; if not, write to the Free Software                                                      
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA                                                                
+// 02111-1307, USA.                                                                                                         
+// =================================================================                                                        
+
 package de.dfki.lt.tr.dialmanagement.utils;
 
 import java.io.ByteArrayInputStream;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
@@ -35,6 +58,7 @@ public class FormulaUtils {
 	
 	private static FormulaParser parser;
 
+	
 	/**
 	 * Returns a text representation of the formula
 	 * 
@@ -52,7 +76,7 @@ public class FormulaUtils {
 			return "?";
 		}
 		else if (formula instanceof ModalFormula) {
-			return "<" + ((ModalFormula)formula).op + ">" + getString(((ModalFormula)formula).form);
+			return "<" + ((ModalFormula)formula).op + ">(" + getString(((ModalFormula)formula).form) + ")";
 		}
 	
 		else if (formula instanceof ComplexFormula) {
@@ -64,7 +88,8 @@ public class FormulaUtils {
 				return getString (cform.forms.get(0));
 			}
 			else {
-				String str = "(";
+				String str = "";
+		//		String str = "(";
 				for (dFormula subform : cform.forms) {
 					str += getString(subform) ;
 					if (!subform.equals(cform.forms.get(cform.forms.size() - 1))) {
@@ -75,7 +100,7 @@ public class FormulaUtils {
 						}
 					}
 				}
-				str += ")";
+		//		str += ")";
 				return str;
 			}
 		}
@@ -95,17 +120,10 @@ public class FormulaUtils {
 	 */
 	public static dFormula constructFormula (String s) throws DialogueException {
 
-		if (s.trim().equals("*")) {
-			return new UnderspecifiedFormula(0);
-		}
-		else if (s.trim().equals("?")) {
-			return new UnknownFormula(0);
-		} 
 		if (s.length() > 0) {
 		try {
 			String formattedString = s.trim().replace("\"", " \" ").replace("<", " < ")
 				.replace(">", " > ").replace("!(", "! (").replace("(", " ( ").replace(")", " ) ");
-			log("STRING TO PROCESS: " + formattedString);
 			return getFormulaFromString(formattedString);
 		} 
 		catch (ParseException e) 
@@ -142,14 +160,14 @@ public class FormulaUtils {
 		
 	 
 	/**
-	 * Returns true if the content of form1 is equal to the content form2, 
+	 * Returns true if the content of form1 subsumes the content form2, 
 	 * and false otherwise
 	 *  
 	 * @param form1 the first formula
 	 * @param form2 the second formula
-	 * @return true if contents are equal, false otherwise
+	 * @return true if contents are *, false otherwise
 	 */
-	public static boolean isEqualTo (dFormula form1, dFormula form2)  {
+	public static boolean subsumes (dFormula form1, dFormula form2)  {
 		
 		if (form1 instanceof ElementaryFormula && form2 instanceof ElementaryFormula) {
 			if (((ElementaryFormula)form1).prop.toLowerCase().equals(((ElementaryFormula)form2).prop.toLowerCase())) {
@@ -191,6 +209,7 @@ public class FormulaUtils {
 	}
 	
 	
+	
 	/**
 	 * returns true if the content of form1 is equal to the content of form2,
 	 * false otherwise
@@ -205,7 +224,7 @@ public class FormulaUtils {
 			return false;
 		}
 		
-		return (isEqualTo(form1.form, form2.form));
+		return (subsumes(form1.form, form2.form));
 	}
 	
 	/**
@@ -222,11 +241,13 @@ public class FormulaUtils {
 			return false;
 		}
 		
-		for (dFormula subform1 : form1.forms) {		
+		for (dFormula subform1 : form1.forms) {	
+			Vector<dFormula> alreadyMatched = new Vector<dFormula>();
 			boolean foundMatch = false;
 			for (dFormula subform2 : form2.forms) {
-				if (isEqualTo(subform1, subform2)) {
+				if (!alreadyMatched.contains(subform2) && subsumes(subform1, subform2)) {
 					foundMatch = true;
+					alreadyMatched.add(subform2);
 				}
 			}
 			if (!foundMatch) {
@@ -235,6 +256,9 @@ public class FormulaUtils {
 		}
 		return true;
 	}
+	
+
+	
 	
 	
 	private static void log (String s) {

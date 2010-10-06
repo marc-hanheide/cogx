@@ -1,5 +1,4 @@
 
-
 // =================================================================                                                        
 // Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
 //                                                                                                                          
@@ -31,9 +30,6 @@ import org.junit.Test;
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
-import de.dfki.lt.tr.dialmanagement.data.actions.ShallowAction;
-import de.dfki.lt.tr.dialmanagement.data.observations.ObservationContent;
 import static org.junit.Assert.*;
 
 
@@ -67,11 +63,14 @@ public class DialoguePolicyTest {
 	public void minimalPolicyConstruction () throws DialogueException {
 		DialoguePolicy policy = new DialoguePolicy();
 				
-		ActionNode an1 = policy.addNode("start", new ShallowAction("start"));
+		PolicyNode an1 = policy.addNode("start", new PolicyAction("start"));
 		policy.setNodeAsInitial(an1);
 
-		
-		ActionNode an2 = policy.addEdgeAndNextAction(new ObservationEdge(new ObservationContent("edge"), 1.0f, 1.0f), an1, "end", new ShallowAction("end"));
+		PolicyNode an2 = policy.addNode("end", new PolicyAction("end"));
+		PolicyEdge newEdge = new PolicyEdge(new FormulaWrapper("edge"), 1.0f, 1.0f);
+		newEdge.setIncomingAction(an1);
+		newEdge.setOutgoingAction(an2);
+		policy.addEdge(newEdge, an1, an2);
 		policy.setNodeAsFinal(an2);
 		
 		policy.ensureWellFormedPolicy();
@@ -103,7 +102,7 @@ public class DialoguePolicyTest {
 	private void randomPolicyConstruction (int maxLeaves, int maxDepth) throws DialogueException {
 		DialoguePolicy policy = new DialoguePolicy();
 				
-		ActionNode an1 = policy.addNode("start", new ShallowAction(getNewId()));
+		PolicyNode an1 = policy.addNode("start", new PolicyAction(getNewId()));
 		policy.setNodeAsInitial(an1);
 		debug("initial node: " + an1);
 
@@ -123,15 +122,19 @@ public class DialoguePolicyTest {
 	 * @param depth the maximum depth
 	 * @throws DialogueException
 	 */
-	private void expandRandomSubTree (DialoguePolicy policy, ActionNode curNode, int maxNbLeaves, int depth) throws DialogueException {
+	private void expandRandomSubTree (DialoguePolicy policy, PolicyNode curNode, int maxNbLeaves, int depth) throws DialogueException {
 		
 	    Random generator = new Random();
 	    int nbLeaves = generator.nextInt(maxNbLeaves);
 	    
 	    for (int i = 0; i < nbLeaves && depth > 0 ; i++) {
 	    	
-	    	ObservationEdge nextObs = new ObservationEdge(new ObservationContent(getNewId()), 1.0f, 1.0f);
-			ActionNode nextNode = policy.addEdgeAndNextAction(nextObs, curNode, getNewId(), new ShallowAction(getNewId()));
+	    	PolicyEdge nextObs = new PolicyEdge(new FormulaWrapper(getNewId()), 1.0f, 1.0f);
+	    	PolicyNode nextNode = policy.addNode(getNewId(), new PolicyAction(getNewId()));
+	    	nextObs.setOutgoingAction(nextNode);
+	    	nextObs.setIncomingAction(curNode);
+			policy.addEdge(nextObs, curNode, nextNode);
+			
 			debug("creating new observation " + nextObs + " between node " + curNode + " and node " + nextNode);
 	    	expandRandomSubTree(policy, nextNode, maxNbLeaves, depth -1);
 	    }

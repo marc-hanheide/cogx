@@ -26,11 +26,11 @@ import org.junit.Test;
 
 import org.junit.Before;
 
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
-import de.dfki.lt.tr.dialmanagement.data.observations.Observation;
-import de.dfki.lt.tr.dialmanagement.data.observations.ObservationContent;
+import de.dfki.lt.tr.dialmanagement.data.Observation;
+import de.dfki.lt.tr.dialmanagement.data.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
 
@@ -73,6 +73,18 @@ public class DialogueManagerMiniTest {
 		manager = new DialogueManager(policy);
 	}
 	
+
+	private Observation createSimpleObservation (String s) throws DialogueException {
+		return createSimpleObservation(s, 1.0f);
+	}
+	
+
+	private Observation createSimpleObservation (String s, float f) throws DialogueException {
+		Observation intent = new Observation (Observation.INTENTION);
+		intent.addAlternative(s, f);
+		intent.addAlternative(new UnknownFormula(0), 1-f);
+		return intent;
+	}
 	
 	/**
 	 * Test the policy with a single, high-confidence utterance
@@ -81,9 +93,8 @@ public class DialogueManagerMiniTest {
 	@Test
 	public void testPolicyDirect1() throws DialogueException {
 		
-		Observation intent = 
-			new Observation(FormulaUtils.constructFormula("<Belief>(<Ref>context1_1 ^ <ObjectType>ball)"), ObservationContent.INTENTION, 1.0f);
-		AbstractAction action1 = manager.nextAction(intent);
+		Observation intent = createSimpleObservation("<Belief>(<Ref>context1_1 ^ <ObjectType>ball)");
+		PolicyAction action1 = manager.nextAction(intent);
 		assertEquals(action1.toString(), "I[okay]");
 		
 	}

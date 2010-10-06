@@ -35,8 +35,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
-import de.dfki.lt.tr.dialmanagement.data.actions.IntentionAction;
+import de.dfki.lt.tr.dialmanagement.data.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
@@ -88,8 +87,8 @@ public class DialogueManagerWithEpObjectTest {
 		Intention intention1 = EpistemicObjectUtils.createSimpleAttributedIntention(
 				FormulaUtils.constructFormula("\"Please find the cornflakes box\""), 0.8f);
 		
-		AbstractAction action1 = manager.nextAction(intention1);
-		assertEquals(action1, new IntentionAction(FormulaUtils.constructFormula("\"okay, searching for the cornflakes box!\"")));
+		PolicyAction action1 = manager.nextAction(intention1);
+		assertEquals(action1, new PolicyAction(FormulaUtils.constructFormula("\"okay, searching for the cornflakes box!\"")));
 	}
 	
 	
@@ -101,8 +100,8 @@ public class DialogueManagerWithEpObjectTest {
 		postconditions.put(FormulaUtils.constructFormula("\"Please find the cornflakes box\""), 0.3f);
 		
 		Intention intention1 = EpistemicObjectUtils.createAttributedIntention(postconditions);
-		AbstractAction action1 = manager.nextAction(intention1);
-		assertEquals(action1, new IntentionAction(FormulaUtils.constructFormula("\"sorry, should I search for the cornflaxes box?\"")));
+		PolicyAction action1 = manager.nextAction(intention1);
+		assertEquals(action1, new PolicyAction(FormulaUtils.constructFormula("\"sorry, should I search for the cornflaxes box?\"")));
 	}
 	
 	

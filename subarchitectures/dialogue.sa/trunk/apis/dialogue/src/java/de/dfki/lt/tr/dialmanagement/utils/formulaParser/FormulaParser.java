@@ -63,6 +63,32 @@ Token tok;
     throw new Error("Missing return statement in function");
   }
 
+  static final public UnknownFormula UnknownFormula() throws ParseException {
+Token tok;
+    tok = jj_consume_token(INTERROGATION_MARK);
+   {if (true) return new UnknownFormula(0);}
+    throw new Error("Missing return statement in function");
+  }
+
+  static final public UnderspecifiedFormula UnderspecifiedFormula() throws ParseException {
+Token tok;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case KLEENE_STAR:
+      tok = jj_consume_token(KLEENE_STAR);
+   {if (true) return new UnderspecifiedFormula(0);}
+      break;
+    case ARGUMENT:
+      tok = jj_consume_token(ARGUMENT);
+   {if (true) return new UnderspecifiedFormula(Integer.parseInt(tok.toString().replace("%","")));}
+      break;
+    default:
+      jj_la1[1] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    throw new Error("Missing return statement in function");
+  }
+
   static final public ComplexFormula CFormulaConj() throws ParseException {
 List<dFormula> subFormulae = new LinkedList<dFormula>();
 dFormula formula;
@@ -78,7 +104,7 @@ dFormula formula;
         ;
         break;
       default:
-        jj_la1[1] = jj_gen;
+        jj_la1[2] = jj_gen;
         break label_2;
       }
     }
@@ -101,7 +127,7 @@ dFormula formula;
         ;
         break;
       default:
-        jj_la1[2] = jj_gen;
+        jj_la1[3] = jj_gen;
         break label_3;
       }
     }
@@ -134,6 +160,13 @@ dFormula formulaIn;
     case FLOAT:
       formula = FloatFormula();
       break;
+    case INTERROGATION_MARK:
+      formula = UnknownFormula();
+      break;
+    case KLEENE_STAR:
+    case ARGUMENT:
+      formula = UnderspecifiedFormula();
+      break;
     case INTEGER:
       formula = IntegerFormula();
       break;
@@ -141,7 +174,7 @@ dFormula formulaIn;
       formula = ElemFormula();
       break;
     default:
-      jj_la1[3] = jj_gen;
+      jj_la1[4] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -175,11 +208,14 @@ dFormula underFormula;
       case INTEGER:
       case FLOAT:
       case BOOLEAN:
+      case KLEENE_STAR:
+      case ARGUMENT:
+      case INTERROGATION_MARK:
       case WORD:
         underFormula = SubFormula();
         break;
       default:
-        jj_la1[4] = jj_gen;
+        jj_la1[5] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -216,6 +252,13 @@ dFormula formulaIn;
       case FLOAT:
         formula = FloatFormula();
         break;
+      case KLEENE_STAR:
+      case ARGUMENT:
+        formula = UnderspecifiedFormula();
+        break;
+      case INTERROGATION_MARK:
+        formula = UnknownFormula();
+        break;
       case INTEGER:
         formula = IntegerFormula();
         break;
@@ -226,7 +269,7 @@ dFormula formulaIn;
         formula = ElemFormulaExtended();
         break;
       default:
-        jj_la1[5] = jj_gen;
+        jj_la1[6] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -292,8 +335,74 @@ dFormula formula;
     finally { jj_save(6, xla); }
   }
 
-  static final private boolean jj_3R_25() {
+  static final private boolean jj_3R_23() {
+    if (jj_3R_29()) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_29() {
     if (jj_scan_token(BOOLEAN)) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_22() {
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_21() {
+    if (jj_scan_token(NEG)) return true;
+    if (jj_scan_token(LBRACKET)) return true;
+    if (jj_3R_7()) return true;
+    if (jj_scan_token(RBRACKET)) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_20() {
+    if (jj_scan_token(LBRACKET)) return true;
+    if (jj_3R_7()) return true;
+    if (jj_scan_token(RBRACKET)) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_8() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_20()) {
+    jj_scanpos = xsp;
+    if (jj_3R_21()) {
+    jj_scanpos = xsp;
+    if (jj_3R_22()) {
+    jj_scanpos = xsp;
+    if (jj_3R_23()) {
+    jj_scanpos = xsp;
+    if (jj_3R_24()) {
+    jj_scanpos = xsp;
+    if (jj_3R_25()) {
+    jj_scanpos = xsp;
+    if (jj_3R_26()) {
+    jj_scanpos = xsp;
+    if (jj_3R_27()) {
+    jj_scanpos = xsp;
+    if (jj_3R_28()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  static final private boolean jj_3R_33() {
+    if (jj_scan_token(INTEGER)) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_34() {
+    if (jj_scan_token(WORD)) return true;
     return false;
   }
 
@@ -303,8 +412,8 @@ dFormula formula;
     return false;
   }
 
-  static final private boolean jj_3R_11() {
-    if (jj_3R_8()) return true;
+  static final private boolean jj_3R_38() {
+    if (jj_scan_token(WORD)) return true;
     return false;
   }
 
@@ -319,63 +428,45 @@ dFormula formula;
     return false;
   }
 
-  static final private boolean jj_3_3() {
-    if (jj_scan_token(LBRACKET)) return true;
-    if (jj_3R_6()) return true;
-    if (jj_scan_token(RBRACKET)) return true;
+  static final private boolean jj_3R_19() {
+    if (jj_3R_35()) return true;
     return false;
   }
 
-  static final private boolean jj_3_2() {
-    if (jj_scan_token(LBRACKET)) return true;
-    if (jj_3R_5()) return true;
-    if (jj_scan_token(RBRACKET)) return true;
+  static final private boolean jj_3R_18() {
+    if (jj_3R_34()) return true;
     return false;
   }
 
-  static final private boolean jj_3_1() {
-    if (jj_scan_token(LBRACKET)) return true;
-    if (jj_3R_4()) return true;
-    if (jj_scan_token(RBRACKET)) return true;
-    return false;
-  }
-
-  static final private boolean jj_3R_6() {
-    if (jj_scan_token(LANGLE)) return true;
-    if (jj_scan_token(WORD)) return true;
-    if (jj_scan_token(RANGLE)) return true;
+  static final private boolean jj_3R_35() {
+    if (jj_scan_token(QUOTE)) return true;
     Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_1()) {
-    jj_scanpos = xsp;
-    if (jj_3_2()) {
-    jj_scanpos = xsp;
-    if (jj_3_3()) {
-    jj_scanpos = xsp;
-    if (jj_3R_11()) return true;
+    if (jj_3R_38()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_38()) { jj_scanpos = xsp; break; }
     }
-    }
-    }
-    return false;
-  }
-
-  static final private boolean jj_3R_27() {
-    if (jj_scan_token(INTEGER)) return true;
+    if (jj_scan_token(QUOTE)) return true;
     return false;
   }
 
   static final private boolean jj_3R_17() {
-    if (jj_3R_29()) return true;
+    if (jj_3R_33()) return true;
     return false;
   }
 
   static final private boolean jj_3R_16() {
-    if (jj_3R_28()) return true;
+    if (jj_3R_32()) return true;
     return false;
   }
 
   static final private boolean jj_3R_15() {
-    if (jj_3R_27()) return true;
+    if (jj_3R_31()) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_14() {
+    if (jj_3R_30()) return true;
     return false;
   }
 
@@ -385,18 +476,13 @@ dFormula formula;
     return false;
   }
 
-  static final private boolean jj_3R_23() {
-    if (jj_3R_27()) return true;
+  static final private boolean jj_3R_13() {
+    if (jj_3R_29()) return true;
     return false;
   }
 
-  static final private boolean jj_3R_14() {
-    if (jj_3R_26()) return true;
-    return false;
-  }
-
-  static final private boolean jj_3R_22() {
-    if (jj_3R_26()) return true;
+  static final private boolean jj_3R_12() {
+    if (jj_3R_6()) return true;
     return false;
   }
 
@@ -411,41 +497,6 @@ dFormula formula;
     return false;
   }
 
-  static final private boolean jj_3R_13() {
-    if (jj_3R_25()) return true;
-    return false;
-  }
-
-  static final private boolean jj_3R_28() {
-    if (jj_scan_token(WORD)) return true;
-    return false;
-  }
-
-  static final private boolean jj_3R_24() {
-    if (jj_3R_28()) return true;
-    return false;
-  }
-
-  static final private boolean jj_3R_21() {
-    if (jj_3R_25()) return true;
-    return false;
-  }
-
-  static final private boolean jj_3R_12() {
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  static final private boolean jj_3R_30() {
-    if (jj_scan_token(WORD)) return true;
-    return false;
-  }
-
-  static final private boolean jj_3R_20() {
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
   static final private boolean jj_3_7() {
     if (jj_3R_5()) return true;
     return false;
@@ -453,14 +504,6 @@ dFormula formula;
 
   static final private boolean jj_3_6() {
     if (jj_3R_4()) return true;
-    return false;
-  }
-
-  static final private boolean jj_3R_19() {
-    if (jj_scan_token(NEG)) return true;
-    if (jj_scan_token(LBRACKET)) return true;
-    if (jj_3R_7()) return true;
-    if (jj_scan_token(RBRACKET)) return true;
     return false;
   }
 
@@ -500,7 +543,13 @@ dFormula formula;
     jj_scanpos = xsp;
     if (jj_3R_16()) {
     jj_scanpos = xsp;
-    if (jj_3R_17()) return true;
+    if (jj_3R_17()) {
+    jj_scanpos = xsp;
+    if (jj_3R_18()) {
+    jj_scanpos = xsp;
+    if (jj_3R_19()) return true;
+    }
+    }
     }
     }
     }
@@ -513,52 +562,103 @@ dFormula formula;
     return false;
   }
 
-  static final private boolean jj_3R_29() {
-    if (jj_scan_token(QUOTE)) return true;
+  static final private boolean jj_3R_37() {
+    if (jj_scan_token(ARGUMENT)) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_36() {
+    if (jj_scan_token(KLEENE_STAR)) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_31() {
     Token xsp;
-    if (jj_3R_30()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_30()) { jj_scanpos = xsp; break; }
+    xsp = jj_scanpos;
+    if (jj_3R_36()) {
+    jj_scanpos = xsp;
+    if (jj_3R_37()) return true;
     }
-    if (jj_scan_token(QUOTE)) return true;
     return false;
   }
 
-  static final private boolean jj_3R_18() {
+  static final private boolean jj_3R_11() {
+    if (jj_3R_8()) return true;
+    return false;
+  }
+
+  static final private boolean jj_3_3() {
     if (jj_scan_token(LBRACKET)) return true;
-    if (jj_3R_7()) return true;
+    if (jj_3R_6()) return true;
     if (jj_scan_token(RBRACKET)) return true;
     return false;
   }
 
-  static final private boolean jj_3R_8() {
+  static final private boolean jj_3R_32() {
+    if (jj_scan_token(INTERROGATION_MARK)) return true;
+    return false;
+  }
+
+  static final private boolean jj_3_2() {
+    if (jj_scan_token(LBRACKET)) return true;
+    if (jj_3R_5()) return true;
+    if (jj_scan_token(RBRACKET)) return true;
+    return false;
+  }
+
+  static final private boolean jj_3_1() {
+    if (jj_scan_token(LBRACKET)) return true;
+    if (jj_3R_4()) return true;
+    if (jj_scan_token(RBRACKET)) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_6() {
+    if (jj_scan_token(LANGLE)) return true;
+    if (jj_scan_token(WORD)) return true;
+    if (jj_scan_token(RANGLE)) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_18()) {
+    if (jj_3_1()) {
     jj_scanpos = xsp;
-    if (jj_3R_19()) {
+    if (jj_3_2()) {
     jj_scanpos = xsp;
-    if (jj_3R_20()) {
+    if (jj_3_3()) {
     jj_scanpos = xsp;
-    if (jj_3R_21()) {
-    jj_scanpos = xsp;
-    if (jj_3R_22()) {
-    jj_scanpos = xsp;
-    if (jj_3R_23()) {
-    jj_scanpos = xsp;
-    if (jj_3R_24()) return true;
-    }
-    }
-    }
+    if (jj_3R_11()) return true;
     }
     }
     }
     return false;
   }
 
-  static final private boolean jj_3R_26() {
+  static final private boolean jj_3R_30() {
     if (jj_scan_token(FLOAT)) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_27() {
+    if (jj_3R_33()) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_26() {
+    if (jj_3R_31()) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_28() {
+    if (jj_3R_34()) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_25() {
+    if (jj_3R_32()) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_24() {
+    if (jj_3R_30()) return true;
     return false;
   }
 
@@ -572,13 +672,13 @@ dFormula formula;
   static public boolean lookingAhead = false;
   static private boolean jj_semLA;
   static private int jj_gen;
-  static final private int[] jj_la1 = new int[6];
+  static final private int[] jj_la1 = new int[7];
   static private int[] jj_la1_0;
   static {
       jj_la1_0();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x10000,0x2000,0x4000,0x11ea0,0x11ea0,0x19c20,};
+      jj_la1_0 = new int[] {0x80000,0x6000,0x10000,0x20000,0x8fea0,0x8fea0,0xcfc20,};
    }
   static final private JJCalls[] jj_2_rtns = new JJCalls[7];
   static private boolean jj_rescan = false;
@@ -600,7 +700,7 @@ dFormula formula;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -613,7 +713,7 @@ dFormula formula;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -630,7 +730,7 @@ dFormula formula;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -640,7 +740,7 @@ dFormula formula;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -656,7 +756,7 @@ dFormula formula;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -665,7 +765,7 @@ dFormula formula;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -776,15 +876,15 @@ dFormula formula;
 
   static public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[17];
-    for (int i = 0; i < 17; i++) {
+    boolean[] la1tokens = new boolean[20];
+    for (int i = 0; i < 20; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 7; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -793,7 +893,7 @@ dFormula formula;
         }
       }
     }
-    for (int i = 0; i < 17; i++) {
+    for (int i = 0; i < 20; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

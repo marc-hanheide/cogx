@@ -24,6 +24,7 @@
 // =================================================================
 
 #include <lf.ice>
+#include <beliefs.ice>
 
 // ===================================================================
 // MODULE: de.dfki.lt.tr.dialogue.slice
@@ -286,6 +287,24 @@ module synthesize {
 // end module slice
 }; 
 // end module dialogue
+
+
+module beliefs {
+module slice {
+module intentions {
+
+
+class CommunicativeIntention extends epobject::EpistemicObject {
+	string id;
+	AlternativeIntentions content;
+	logicalcontent::dFormula interpretationStatus;
+};
+
+
+};
+} ;
+} ;
+
 }; 
 // end module tr
 }; 

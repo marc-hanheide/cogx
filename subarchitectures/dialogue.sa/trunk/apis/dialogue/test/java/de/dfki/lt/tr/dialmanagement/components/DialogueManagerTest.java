@@ -28,10 +28,10 @@ import org.junit.Test;
 
 import org.junit.Before;
 
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.actions.VoidAction;
-import de.dfki.lt.tr.dialmanagement.data.observations.Observation;
+import de.dfki.lt.tr.dialmanagement.data.Observation;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
 
 /**
@@ -56,6 +56,8 @@ public class DialogueManagerTest {
 	// the dialogue manager
 	public DialogueManager manager;
 	
+	
+	
 	/**
 	 * Construct the policy based on the configuration files
 	 * 
@@ -72,6 +74,19 @@ public class DialogueManagerTest {
 	}
 	
 	
+
+	private Observation createSimpleObservation (String s) throws DialogueException {
+		return createSimpleObservation(s, 1.0f);
+	}
+	
+
+	private Observation createSimpleObservation (String s, float f) throws DialogueException {
+		Observation intent = new Observation (Observation.INTENTION);
+		intent.addAlternative(s, f);
+		intent.addAlternative(new UnknownFormula(0), 1-f);
+		return intent;
+	}
+	
 	/**
 	 * Test the policy with a simple traversal
 	 * @throws DialogueException
@@ -80,11 +95,11 @@ public class DialogueManagerTest {
 	public void testPolicy() throws DialogueException {
 		
 		log("init node" + manager.getCurrentAction().toString());
-		Observation obs1 = new Observation("one", 1.0f);
+		Observation obs1 = createSimpleObservation("one");
 		log("observing " + obs1);
 		manager.nextAction(obs1);
 		log("cur action: " + manager.getCurrentAction());
-		Observation obs4 = new Observation("four", 1.0f);
+		Observation obs4 = createSimpleObservation("four");
 		log("observing " + obs4);
 		manager.nextAction(obs4);
 		log("cur action: " + manager.getCurrentAction());
@@ -101,9 +116,9 @@ public class DialogueManagerTest {
 		
 		log("init node" + manager.getCurrentAction().toString());
 	
-		Observation obs1 = new Observation("six",1.0f);
+		Observation obs1 = createSimpleObservation("six");
 		
-		assertTrue (manager.nextAction(obs1) instanceof VoidAction);
+		assertTrue (manager.nextAction(obs1).isVoid());
 		
 		
 	}

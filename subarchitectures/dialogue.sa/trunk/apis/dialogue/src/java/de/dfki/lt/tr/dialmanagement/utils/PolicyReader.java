@@ -25,13 +25,11 @@ import java.util.HashMap;
 
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
-import de.dfki.lt.tr.dialmanagement.data.ActionNode;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.ObservationEdge;
-import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
-import de.dfki.lt.tr.dialmanagement.data.actions.IntentionAction;
-import de.dfki.lt.tr.dialmanagement.data.actions.ShallowAction;
-import de.dfki.lt.tr.dialmanagement.data.observations.ObservationContent;
+import de.dfki.lt.tr.dialmanagement.data.FormulaWrapper;
+import de.dfki.lt.tr.dialmanagement.data.PolicyAction;
+import de.dfki.lt.tr.dialmanagement.data.PolicyEdge;
+import de.dfki.lt.tr.dialmanagement.data.PolicyNode;
 
 /**
  * Utility for constructing a new dialogue policy from a finite-state specification
@@ -66,10 +64,10 @@ public class PolicyReader {
 
 		try {
 			// extracting the observations
-			HashMap<String,ObservationEdge> observations = extractObservations (FileUtils.readfile(obsFile));
+			HashMap<String,PolicyEdge> observations = extractObservations (FileUtils.readfile(obsFile));
 
 			// extracting the actions
-			HashMap<String,AbstractAction> actions = extractActions (FileUtils.readfile(actionsFile));
+			HashMap<String,PolicyNode> actions = extractActions (FileUtils.readfile(actionsFile));
 
 			// constructing the policy
 			String policyText = FileUtils.readfile(policyFile);
@@ -92,11 +90,11 @@ public class PolicyReader {
 	 * @return a hashmap containing the observations, indexed by their identifier
 	 * @throws DialogueException if the specification text is ill-formated
 	 */
-	public static HashMap<String,ObservationEdge> extractObservations (String obsText) throws DialogueException {
+	public static HashMap<String,PolicyEdge> extractObservations (String obsText) throws DialogueException {
 
 		String[] lines = obsText.split("\n");
 
-		HashMap<String,ObservationEdge> totalObs = new HashMap<String, ObservationEdge>();
+		HashMap<String,PolicyEdge> totalObs = new HashMap<String, PolicyEdge>();
 
 		for (int i = 0 ; i < lines.length ; i++) {
 			String line = lines[i];
@@ -106,7 +104,7 @@ public class PolicyReader {
 			if (tabs.length == 2) {
 				String obsSymbol = tabs[0].replace("=", "").trim();
 				String obs = tabs[1].trim();
-				ObservationEdge edge = extractObservation(obs);
+				PolicyEdge edge = extractObservation(obs);
 				edge.setId(obsSymbol);
 				totalObs.put(obsSymbol, edge);		
 			}
@@ -126,11 +124,11 @@ public class PolicyReader {
 	 * @return the list of actions
 	 * @throws DialogueException if the specification text is ill-formatted
 	 */
-	public static HashMap<String,AbstractAction> extractActions (String actionsText) throws DialogueException {
+	public static HashMap<String,PolicyNode> extractActions (String actionsText) throws DialogueException {
 
 		String[] lines = actionsText.split("\n");
 
-		HashMap<String,AbstractAction> totalActions = new HashMap<String, AbstractAction>();
+		HashMap<String,PolicyNode> totalActions = new HashMap<String, PolicyNode>();
 
 		for (int i = 0 ; i < lines.length ; i++) {
 			String line = lines[i];
@@ -140,7 +138,7 @@ public class PolicyReader {
 			if (tabs.length == 2) {
 				String actionsSymbol = tabs[0].replace("=", "").trim();
 				String content = tabs[1].trim();
-				totalActions.put(actionsSymbol, extractAction(content));
+				totalActions.put(actionsSymbol, new PolicyNode(actionsSymbol, extractAction(content)));
 			}
 			else if (line.trim().length() > 0) {
 				throw new DialogueException("ERROR: action file is ill-formated at line: " + i);
@@ -156,7 +154,7 @@ public class PolicyReader {
 	 * @return the constructed observation
 	 * @throws DialogueException if the line is ill-formatted
 	 */
-	public static ObservationEdge extractObservation (String str) throws DialogueException {
+	public static PolicyEdge extractObservation (String str) throws DialogueException {
 
 		str = str.trim();
 		if (str.contains("[") != str.contains("]")) {
@@ -176,22 +174,22 @@ public class PolicyReader {
 		// event observation
 		if (str.substring(0,2).equals("E[")) {
 			String eventcontent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			ObservationContent content = new ObservationContent (FormulaUtils.constructFormula(eventcontent), ObservationContent.EVENT);
-			return new ObservationEdge (content, minmaxProbs[0], minmaxProbs[1]);
+			FormulaWrapper content = new FormulaWrapper (FormulaUtils.constructFormula(eventcontent));
+			return new PolicyEdge (content, minmaxProbs[0], minmaxProbs[1]);
 		}
 
 		// intention observation
 		else if (str.substring(0,2).equals("I[")) {
 			String intentContent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			ObservationContent content = new ObservationContent (FormulaUtils.constructFormula(intentContent), ObservationContent.INTENTION);
-			return new ObservationEdge (content, minmaxProbs[0], minmaxProbs[1]);
+			FormulaWrapper content = new FormulaWrapper (FormulaUtils.constructFormula(intentContent));
+			return new PolicyEdge (content, minmaxProbs[0], minmaxProbs[1]);
 		}
 
 		// else, we assume it is a shallow observation
 		else {
 			String internalcontent = str.split("\\(")[0];
-			ObservationContent content = new ObservationContent (internalcontent.replace("\"", ""));
-			return new ObservationEdge (content, minmaxProbs[0], minmaxProbs[1]);
+			FormulaWrapper content = new FormulaWrapper (internalcontent.replace("\"", ""));
+			return new PolicyEdge (content, minmaxProbs[0], minmaxProbs[1]);
 		}
 	}
 
@@ -235,7 +233,7 @@ public class PolicyReader {
 	 * @return the extracted action
 	 * @throws DialogueException 
 	 */
-	public static AbstractAction extractAction (String str) throws DialogueException {
+	public static PolicyAction extractAction (String str) throws DialogueException {
 		
 		str = str.trim();
 		if (str.contains("[") != str.contains("]")) {
@@ -245,12 +243,12 @@ public class PolicyReader {
 		// intention action
 		if (str.length() > 3 && str.substring(0,2).equals("I[")) {
 			String intentcontent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new IntentionAction(FormulaUtils.constructFormula(intentcontent));
+			return new PolicyAction(intentcontent);
 		}
 		
 		// by default, shallow dialogue action
 		else {
-			return new ShallowAction(str);
+			return new PolicyAction(str);
 		}
 	}
 
@@ -263,8 +261,8 @@ public class PolicyReader {
 	 * @return
 	 * @throws DialogueException if the policy text is not well formatted
 	 */
-	public static DialoguePolicy constructPolicy (String text, HashMap<String, ObservationEdge> observations, 
-			HashMap<String, AbstractAction> actions) throws DialogueException {
+	public static DialoguePolicy constructPolicy (String text, HashMap<String, PolicyEdge> observations, 
+			HashMap<String, PolicyNode> actions) throws DialogueException {
 
 		String[] lines = text.split("\n");
 
@@ -329,8 +327,8 @@ public class PolicyReader {
 	 *         refers to actions or observations not in the list
 	 */
 	public static void addEdgeAndNodesToPolicy (String line, DialoguePolicy policy, 
-			HashMap<String, ObservationEdge> observations, 
-			HashMap<String, AbstractAction> actions) 
+			HashMap<String, PolicyEdge> observations, 
+			HashMap<String, PolicyNode> actions) 
 	throws DialogueException {
 
 		String[] tabs = line.split("\t");
@@ -352,23 +350,23 @@ public class PolicyReader {
 				throw new DialogueException("ERROR: " + edgeId + " is not in the specified observations list");
 			}
 
-			ActionNode sourceNode;
+			PolicyNode sourceNode;
 			if (!policy.hasNode(sourceNodeId)) {
-				sourceNode = policy.addNode(sourceNodeId, actions.get(sourceNodeId));
+				sourceNode = policy.addNode(sourceNodeId, actions.get(sourceNodeId).getAction());
 			}
 			else {
 				sourceNode = policy.getNode(sourceNodeId);
 			}
 
-			ActionNode targetNode;
+			PolicyNode targetNode;
 			if (!policy.hasNode(targetNodeId)  && actions.containsKey(targetNodeId)) {
-				targetNode = policy.addNode(targetNodeId, actions.get(targetNodeId));
+				targetNode = policy.addNode(targetNodeId, actions.get(targetNodeId).getAction());
 			}
 			else {
 				targetNode = policy.getNode(targetNodeId);
 			}
 
-			ObservationEdge newEdge = observations.get(edgeId).copy();
+			PolicyEdge newEdge = observations.get(edgeId).copy();
 			newEdge.setSourceNode(sourceNode);
 			newEdge.setTargetNode(targetNode);		
 			policy.addEdge(newEdge, sourceNode, targetNode);
