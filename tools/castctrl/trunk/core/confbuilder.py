@@ -153,7 +153,7 @@ class CCastConfig:
         """
         lines = []
         # TODO: Checking for CAST_HAS_SETVAR is temporary; remove when a new latest is published
-        # (after 2010-10-06; latest should point to trunk/rev >= 13671)
+        # (after 2010-10-06; latest should point to trunk/rev >= 13571)
         opts = options.getCastOptions()
         if opts.xe("$CAST_HAS_SETVAR") == "1":
             lines += [ "SETVAR CONFIG_DIR=%s" % os.path.dirname(os.path.abspath(filename)) ]
