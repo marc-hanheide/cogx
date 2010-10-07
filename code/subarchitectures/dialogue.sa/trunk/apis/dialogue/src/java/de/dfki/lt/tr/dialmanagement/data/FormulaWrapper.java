@@ -22,7 +22,6 @@
 package de.dfki.lt.tr.dialmanagement.data;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Vector;
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
@@ -33,10 +32,26 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 
+/**
+ * Wrapper around the formula of an epistemic object, to provide some additional
+ * functionalities
+ *  
+ * @author Pierre Lison
+ * @version 7/10/2010
+ *
+ */
 public class FormulaWrapper {
 	
+	// the content, as a formula
 	protected dFormula content;
 	
+	
+	/**
+	 * Construct a formula wrapper given the string representation
+	 * of the formula
+	 * 
+	 * @param utterance the string for the formula
+	 */
 	public FormulaWrapper (String utterance) {		
 		try {
 			content = FormulaUtils.constructFormula(utterance);
@@ -45,22 +60,42 @@ public class FormulaWrapper {
 		}
 	}
 	
-
+	/**
+	 * Construct a formula wrapper given the formula
+	 * 
+	 * @param formula the formula
+	 */
 	public FormulaWrapper (dFormula formula) {
 		content = formula;
 	}
 	
 
-	
+	/**
+	 * Returns true if the formula contains underspecified subformulae,
+	 * false otherwise
+	 * 
+	 * @return true if partly or fully underspecified, false otherwise
+	 */
 	public boolean isUnderspecified () {
 		return (getUnderspecifiedArguments().size() > 0);
 	}
 	
+	/**
+	 * Returns true if the formula is unknown, else false
+	 * 
+	 * @return true if unknown, false otherwise
+	 */
 	public boolean isUnknown() {
 		return (content instanceof UnknownFormula);
 	}
 	
 	
+	/**
+	 * Returns true if the formula subsumes the formula given as argument,
+	 * else returns false
+	 * 
+	 */
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof FormulaWrapper) {
 			return FormulaUtils.subsumes(content, ((FormulaWrapper)obj).content);
@@ -69,15 +104,31 @@ public class FormulaWrapper {
 		return false;
 	}
 
+	/**
+	 * Returns the content of the wrapper
+	 * 
+	 * @return the formula
+	 */
 	public dFormula getContent() {
 		return content;
 	}
 
+	/**
+	 * Returns the underspecified subformulae contained in the wrapper
+	 * 
+	 * @return a collection of underspecified subformulae
+	 */
 	public Collection<UnderspecifiedFormula> getUnderspecifiedArguments () {
 		return getUnderspecifiedArguments(content);
 	}
 
 	
+	/**
+	 * Returns the underspecified subformulae contained in the formula
+	 * 
+	 * @param formula the formula to visit
+	 * @return a collection of underspecified subformulae
+	 */
 	private Collection<UnderspecifiedFormula> getUnderspecifiedArguments (dFormula formula) {
 		Vector<UnderspecifiedFormula> uforms = new Vector<UnderspecifiedFormula>();
 		
@@ -96,6 +147,9 @@ public class FormulaWrapper {
 	}
 	
 	
+	/**
+	 * Returns a string version of the formula
+	 */
 	@Override
 	public String toString () {
 		return FormulaUtils.getString(content);

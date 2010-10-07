@@ -30,22 +30,31 @@ import de.dfki.lt.tr.beliefs.slice.events.Event;
 import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
-import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
-import de.dfki.lt.tr.dialmanagement.data.PolicyAction;
-import de.dfki.lt.tr.dialmanagement.data.PolicyEdge;
-import de.dfki.lt.tr.dialmanagement.data.PolicyNode;
+import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
+import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
+import de.dfki.lt.tr.dialmanagement.data.policies.PolicyEdge;
+import de.dfki.lt.tr.dialmanagement.data.policies.PolicyNode;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
 
 
 /**
- * A simple, FSA-based dialogue manager.  The manager revolves around a dialogue policy and
- * a pointer to the current node in the policy.  The traversal of the policy is implemented
- * with the nexAction method, which takes an observation as argument, and jumps to the
- * appropriate next action.
+ * A simple, FSA-based dialogue manager.  The manager is based on (1) a dialogue policy, and
+ * (2) a pointer to the current node in the policy.  
+ * 
+ * The traversal of the policy is implemented with the nexAction method, which takes an observation
+ * as argument, and jumps to the appropriate next action.  If no appropriate action is found,
+ * the manager remains on the same position and outputs a void action.
+ * 
+ * The current dialogue manager features:
+ * - the ability to handle intentions or events encoding arbitrarily complex formulae;
+ * - the ability to process intention or events with multiple alternatives;
+ * - the ability of partially or fully underspecifying observations;
+ * - the ability of passing arguments from observations to actions;
+ * - the ability to provide lower and higher bounds on the observation probabilities.
  * 
  * @author Pierre Lison (plison@dfki.de)
- * @version 3/10/2010
+ * @version 7/10/2010
  *
  */
 public class DialogueManager {
@@ -73,14 +82,14 @@ public class DialogueManager {
 
 
 	/**
-	 * Jumps to the next appropriate action given the intention provided as argument.  
+	 * Jumps to the next appropriate communicative action given the intention provided as argument.  
 	 * The method extracts all alternative intentional contents to create an observation,
 	 * and then checks whether a policy edge matching this observation can be found
 	 * 
 	 * If one exists, the method assigns curNode to be the node pointed by the edge,
 	 * and returns it. Otherwise, a void action is returned.
 	 *   
-	 * @param intention the intention
+	 * @param intention the communicative intention
 	 * @return the next action if one is available, or else a void action 
 	 * @throws DialogueException if the content of the intention or the dialogue policy
 	 *         is ill-formatted
@@ -99,7 +108,7 @@ public class DialogueManager {
 
 
 	/**
-	 * Jumps to the next appropriate action given the event provided as argument.  
+	 * Jumps to the next appropriate communicative action given the event provided as argument.  
 	 * The method extracts all alternative event descriptions to create an observation,
 	 * and then checks whether a policy edge matching this observation can be found
 	 * 
@@ -164,6 +173,10 @@ public class DialogueManager {
 		}
 
 		debug("Warning: observation " + obs.toString() + " not applicable from node " + curNode.getId());
+		debug("number of edges from node: " + curNode.getAllOutgoingObservations().size());
+		for (PolicyEdge matchingEdge: matchingEdges) {
+			debug("Matching edge: " + matchingEdge.toString());
+		}
 		debug("Policy: " + policy.toString());
 	
 		// else, return a void action

@@ -25,11 +25,12 @@ import java.util.HashMap;
 
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
-import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.FormulaWrapper;
-import de.dfki.lt.tr.dialmanagement.data.PolicyAction;
-import de.dfki.lt.tr.dialmanagement.data.PolicyEdge;
-import de.dfki.lt.tr.dialmanagement.data.PolicyNode;
+import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
+import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
+import de.dfki.lt.tr.dialmanagement.data.policies.PolicyEdge;
+import de.dfki.lt.tr.dialmanagement.data.policies.PolicyNode;
+import de.dfki.lt.tr.dialmanagement.data.policies.PolicyObservation;
 
 /**
  * Utility for constructing a new dialogue policy from a finite-state specification
@@ -174,29 +175,25 @@ public class PolicyReader {
 		// event observation
 		if (str.substring(0,2).equals("E[")) {
 			String eventcontent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			FormulaWrapper content = new FormulaWrapper (FormulaUtils.constructFormula(eventcontent));
-			return new PolicyEdge (content, minmaxProbs[0], minmaxProbs[1]);
+			return new PolicyEdge (new PolicyObservation(eventcontent, minmaxProbs[0], minmaxProbs[1]));
 		}
 
 		// intention observation
 		else if (str.substring(0,3).equals("CI[")) {
 			String intentContent = str.substring(3,str.length()).split("]")[0].replace("]", "");
-			FormulaWrapper content = new FormulaWrapper (FormulaUtils.constructFormula(intentContent));
-			return new PolicyEdge (content, minmaxProbs[0], minmaxProbs[1]);
+			return new PolicyEdge (new PolicyObservation(intentContent, minmaxProbs[0], minmaxProbs[1]));
 		}
 		
 		// intention observation
 		else if (str.substring(0,2).equals("I[")) {
 			String intentContent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			FormulaWrapper content = new FormulaWrapper (FormulaUtils.constructFormula(intentContent));
-			return new PolicyEdge (content, minmaxProbs[0], minmaxProbs[1]);
+			return new PolicyEdge (new PolicyObservation(intentContent, minmaxProbs[0], minmaxProbs[1]));
 		}
 
 		// else, we assume it is a shallow observation
 		else {
 			String internalcontent = str.split("\\(")[0];
-			FormulaWrapper content = new FormulaWrapper (internalcontent.replace("\"", ""));
-			return new PolicyEdge (content, minmaxProbs[0], minmaxProbs[1]);
+			return new PolicyEdge (new PolicyObservation(internalcontent.replace("\"", ""), minmaxProbs[0], minmaxProbs[1]));
 		}
 	}
 
