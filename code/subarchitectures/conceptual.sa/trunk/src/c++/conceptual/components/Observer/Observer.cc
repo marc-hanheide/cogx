@@ -52,11 +52,7 @@ void Observer::configure(const std::map<std::string,std::string> & _config)
 void Observer::start()
 {
 	// Global filter on comadata::ComaRoom
-	addChangeFilter(createGlobalTypeFilter<comadata::ComaRoom>(cdl::ADD),
-			new MemberFunctionChangeReceiver<Observer>(this,
-					&Observer::comaRoomChanged));
-
-	addChangeFilter(createGlobalTypeFilter<comadata::ComaRoom>(cdl::OVERWRITE),
+	addChangeFilter(createGlobalTypeFilter<comadata::ComaRoom>(cdl::WILDCARD),
 			new MemberFunctionChangeReceiver<Observer>(this,
 					&Observer::comaRoomChanged));
 }
@@ -65,8 +61,8 @@ void Observer::start()
 // -------------------------------------------------------
 void Observer::runComponent()
 {
-	addInitialWorldState();
-
+  addInitialWorldState();
+	
 //    while (isRunning())
 //    {
 //    	sleepComponent(1000);
@@ -118,13 +114,14 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 
 	// Lock the world state first
 	lockEntry(_worldStateId, cdl::LOCKEDODR);
-	comadata::ComaRoomPtr comaRoomPtr = getMemoryEntry<comadata::ComaRoom>(wmChange.address);
 
 	// Decide what change has been made
 	switch (wmChange.operation)
 	{
 	case cdl::ADD:
 	{ // Room added
+	        comadata::ComaRoomPtr comaRoomPtr = getMemoryEntry<comadata::ComaRoom>(wmChange.address);
+
 		ConceptualData::ComaRoomInfo &cri = _worldStatePtr->rooms[comaRoomPtr->roomId];
 		cri.wmAddress = wmChange.address;
 		cri.roomId = comaRoomPtr->roomId;
@@ -135,6 +132,8 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 
 	case cdl::OVERWRITE:
 	{
+	  	comadata::ComaRoomPtr comaRoomPtr = getMemoryEntry<comadata::ComaRoom>(wmChange.address);
+
 		ConceptualData::ComaRoomInfo &cri = _worldStatePtr->rooms[comaRoomPtr->roomId];
 		if (cri.containedPlaceIds != comaRoomPtr->containedPlaceIds)
 		{
