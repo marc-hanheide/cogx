@@ -46,7 +46,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	public static final String SOURCE_ADDR_ID = "source-addr";
 
 
-	public static Object getBeliefTypeFromCastType(
+	public static String getBeliefTypeFromCastType(
 			Class<? extends Ice.Object> class1) {
 		return getBeliefTypeFromCastType(CASTUtils.typeName(class1));
 	}
