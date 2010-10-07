@@ -18,21 +18,23 @@ public abstract class NonBlockingActionExecutor<ActionType extends Action>
 	private ExecutionCompletionCallback m_callback;
 	private final Class<ActionType> m_actCls;
 	private Action m_action;
-	
-	
-	public NonBlockingActionExecutor(ManagedComponent _component, Class<ActionType> _actCls) {
+
+	public NonBlockingActionExecutor(ManagedComponent _component,
+			Class<ActionType> _actCls) {
 		super(_component);
 		m_actCls = _actCls;
 	}
 
-	protected abstract boolean acceptAction(ActionType _action);
+	protected boolean acceptAction(ActionType _action) {
+		return true;
+	}
 
 	@Override
-	public boolean accept(Action _action) {
+	public final boolean accept(Action _action) {
 		m_action = _action;
 		return acceptAction(getAction());
 	}
-	
+
 	protected ActionType getAction() {
 		return m_actCls.cast(m_action);
 	}
