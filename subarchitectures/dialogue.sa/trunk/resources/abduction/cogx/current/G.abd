@@ -39,10 +39,37 @@ generate : event : utter(S, H, Int) <-
 
 generate : event : utter(S, H, Int) <-
 	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(PropNom),
 	i : int : agent(Int, [S]),
-	i : int : post(Int, state(['question-answered', agent(H), about(X)|T])),
-	i : feat_CannedText(Nom, 'i_would_like_to_ask_a_question') / -1.0,
+	i : int : post(Int, state(['question-answered', agent(H), about(X), feature(Feat), hypo(Hypo)|T])),
+%	i : feat_CannedText(Nom, 'i_would_like_to_ask_a_question') / -1.0,
+	i : feat_SpeechAct(Nom, question) / -1.0,
+	i : rel_Content(Nom, ContentNom) / -1.0,
+		i : sort(ContentNom, ascription) / -1.0,
+		i : rel_Target(ContentNom, TargetNom) / -1.0,
+			generate : this(TargetNom),
+		add_prop_value_to_protolf(ContentNom, PropNom, Feat, Hypo),
+			i : feat_Questioned(PropNom, true) / -1.0,
 	event : produce(r, Nom) / -1.0.
+
+add_prop_value_to_protolf(Nom, UsedNom, color, Hypo) <-
+	i : rel_Color(Nom, UsedNom) / -1.0,
+		i : sort(UsedNom, quality) / -1.0,
+		i : prop(UsedNom, Hypo) / -1.0.
+
+add_prop_value_to_protolf(Nom, UsedNom, shape, Hypo) <-
+	i : rel_Shape(Nom, UsedNom) / -1.0,
+		i : sort(UsedNom, quality) / -1.0,
+		i : prop(UsedNom, Hypo) / -1.0.
+
+%-------------------------------------------------------------------------
+
+generate : this(Nom) <-
+	i : sort(Nom, entity) / -1.0,
+	i : feat_Salient(Nom, true) / -1.0,
+	i : feat_InfoStatus(Nom, familiar) / -1.0.
 
 %-------------------------------------------------------------------------
 
