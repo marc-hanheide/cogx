@@ -70,7 +70,7 @@ public class WMContentWaiter<T extends Ice.ObjectImpl> implements
 	 * @return an {@link Entry} of the found content.
 	 * @throws InterruptedException
 	 */
-	public Entry<WorkingMemoryAddress, T> read(ContentMatchingFunction<T> cmf)
+	public Entry<WorkingMemoryAddress, T> read(ContentMatchingFunction<? super T> cmf)
 			throws InterruptedException {
 
 		view.registerHandler(this);
