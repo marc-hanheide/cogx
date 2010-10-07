@@ -17,6 +17,7 @@ import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.IntFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
@@ -26,13 +27,16 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
  * @author marc
  * 
  */
-public class LocalizedAgentTransferFunction extends
-		DependentDiscreteTransferFunction<PlaceContainmentAgentProperty> {
+public class LocalizedAgentTransferFunction<To extends dBelief> extends
+		DependentDiscreteTransferFunction<PlaceContainmentAgentProperty, To> {
+
+	public static final String AGENT_ID = "AgentId";
+	public static final String IS_IN = "is-in";
 
 	public LocalizedAgentTransferFunction(ManagedComponent component,
-			WMView<PerceptBelief> allBeliefs) {
+			WMView<To> allBeliefs, Class<To> classType) {
 		super(component, allBeliefs, Logger
-				.getLogger(LocalizedAgentTransferFunction.class));
+				.getLogger(LocalizedAgentTransferFunction.class), classType);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -45,10 +49,10 @@ public class LocalizedAgentTransferFunction extends
 	 * Ice.ObjectImpl)
 	 */
 	@Override
-	public PerceptBelief create(WorkingMemoryAddress idToCreate,
+	public To create(WorkingMemoryAddress idToCreate,
 			WorkingMemoryChange wmc, PlaceContainmentAgentProperty from) {
 		// TODO Auto-generated method stub
-		PerceptBelief pb = super.create(idToCreate, wmc, from);
+		To pb = super.create(idToCreate, wmc, from);
 		pb.type = "Robot";
 		return pb;
 	}
@@ -66,8 +70,8 @@ public class LocalizedAgentTransferFunction extends
 			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
 					currentPlace));
 			log("  the corresponding PerceptBelief is " + placeWMA);
-			result.put("AgentId", IntFormula.create((int) from.agentID).getAsFormula());
-			result.put("is-in", WMPointer.create(placeWMA).getAsFormula());
+			result.put(AGENT_ID, IntFormula.create((int) from.agentID).getAsFormula());
+			result.put(IS_IN, WMPointer.create(placeWMA).getAsFormula());
 		} catch (InterruptedException e) {
 			component.logException(e);
 		}

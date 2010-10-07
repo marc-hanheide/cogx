@@ -19,7 +19,7 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransfer
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 
 public class ConnectivityTransferFunction extends
-		DependentDiscreteTransferFunction<ConnectivityPathProperty> {
+		DependentDiscreteTransferFunction<ConnectivityPathProperty, PerceptBelief> {
 
 	static final String ATTR_CONNECTED = "connected";
 
@@ -29,7 +29,7 @@ public class ConnectivityTransferFunction extends
 	public ConnectivityTransferFunction(ManagedComponent component,
 			WMView<PerceptBelief> perceptBeliefs) {
 		super(component, perceptBeliefs, Logger
-				.getLogger(ConnectivityTransferFunction.class));
+				.getLogger(ConnectivityTransferFunction.class), PerceptBelief.class);
 
 	}
 

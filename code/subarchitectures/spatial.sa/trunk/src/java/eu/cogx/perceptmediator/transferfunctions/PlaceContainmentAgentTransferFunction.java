@@ -28,12 +28,12 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
  * 
  */
 public class PlaceContainmentAgentTransferFunction extends
-		DependentDiscreteTransferFunction<PlaceContainmentAgentProperty> {
+		DependentDiscreteTransferFunction<PlaceContainmentAgentProperty, PerceptBelief> {
 
 	public PlaceContainmentAgentTransferFunction(ManagedComponent component,
 			WMView<PerceptBelief> allBeliefs) {
 		super(component, allBeliefs, Logger
-				.getLogger(PlaceContainmentAgentTransferFunction.class));
+				.getLogger(PlaceContainmentAgentTransferFunction.class), PerceptBelief.class);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -44,7 +44,7 @@ public class PlaceContainmentAgentTransferFunction extends
 		bel.type = "relation";
 		return bel;
 	}
-
+ 
 	@Override
 	protected Map<String, Formula> getFeatureValueMapping(
 			WorkingMemoryChange wmc, PlaceContainmentAgentProperty from)

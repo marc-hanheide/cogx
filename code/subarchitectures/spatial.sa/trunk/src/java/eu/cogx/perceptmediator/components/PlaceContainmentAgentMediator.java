@@ -7,14 +7,18 @@ import eu.cogx.perceptmediator.components.abstr.ReferringPerceptMediatorComponen
 import eu.cogx.perceptmediator.transferfunctions.PlaceContainmentAgentTransferFunction;
 
 public class PlaceContainmentAgentMediator extends
-		ReferringPerceptMediatorComponent {
+		ReferringPerceptMediatorComponent<PerceptBelief> {
+
+	public PlaceContainmentAgentMediator() {
+		super(PerceptBelief.class);
+	}
 
 	@Override
 	protected PerceptBindingMediator<PlaceContainmentAgentProperty, PerceptBelief> getMediator() {
 		return PerceptBindingMediator.create(this,
 				PlaceContainmentAgentProperty.class, PerceptBelief.class,
 				new PlaceContainmentAgentTransferFunction(this,
-						perceptBeliefsView));
+						allBeliefs));
 	}
 
 }

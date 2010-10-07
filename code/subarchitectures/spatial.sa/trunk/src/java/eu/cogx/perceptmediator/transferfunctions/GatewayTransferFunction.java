@@ -20,14 +20,14 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 
 public class GatewayTransferFunction
 		extends
-		DependentDiscreteTransferFunction<GatewayPlaceProperty> {
+		DependentDiscreteTransferFunction<GatewayPlaceProperty, PerceptBelief> {
 
 	
 	/**
 	 * @param perceptBeliefs
 	 */
 	public GatewayTransferFunction(ManagedComponent component, WMView<PerceptBelief> perceptBeliefs) {
-		super(component, perceptBeliefs, Logger.getLogger(GatewayTransferFunction.class));
+		super(component, perceptBeliefs, Logger.getLogger(GatewayTransferFunction.class), PerceptBelief.class);
 
 	}
 
