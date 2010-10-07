@@ -41,7 +41,7 @@ generate : event : utter(S, H, Int) <-
 	utt_head(Nom),
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['question-answered', agent(H), about(X)|T])),
-	i : feat_CannedText(Nom, 'i_would_like_to_ask_you_something') / -1.0,
+	i : feat_CannedText(Nom, 'i_would_like_to_ask_a_question') / -1.0,
 	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------

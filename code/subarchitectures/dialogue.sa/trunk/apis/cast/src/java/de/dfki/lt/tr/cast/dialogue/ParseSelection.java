@@ -27,12 +27,18 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
+import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
+import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.events.Event;
+import de.dfki.lt.tr.beliefs.slice.framing.AbstractFrame;
 import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.parseselection.SimpleParseSelection;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parse.PackedLFs;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
+import java.util.HashMap;
 import java.util.Iterator;
 
 public class ParseSelection
@@ -97,8 +103,24 @@ extends AbstractDialogueComponent {
 						ex.printStackTrace();
 					}
 				}
+				else {
+					log("no parse found, should generate an event here!");
+				}
 			}
 		}
 	}
 
+/*
+	public Event createParseErrorEvent() {
+		Event e = new Event();
+		PrivateEpistemicStatus epst = new PrivateEpistemicStatus();
+		epst.agent = "robot";
+		e.estatus = epst;
+		e.frame = new AbstractFrame();
+		CondIndependentDistribs cids = new CondIndependentDistribs();
+		cids.distribs = new HashMap<String, ProbDistribution>();
+		cids.distribs.put
+		return e;
+	}
+ */
 }

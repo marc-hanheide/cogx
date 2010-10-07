@@ -20,25 +20,30 @@
 
 package de.dfki.lt.tr.cast.dialogue;
 
+import cast.AlreadyExistsOnWMException;
 import cast.SubarchitectureComponentException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import de.dfki.lt.tr.beliefs.slice.epobject.EpistemicObject;
+import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
-import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
+import de.dfki.lt.tr.dialogue.interpret.IntentionRecognition;
 import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
-import de.dfki.lt.tr.dialogue.interpret.IntentionRealization;
-import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
+import de.dfki.lt.tr.dialogue.interpret.RecognisedIntention;
+import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
+import de.dfki.lt.tr.dialogue.slice.ref.ResolvedLogicalForm;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
-import de.dfki.lt.tr.dialogue.util.LFUtils;
+import eu.cogx.beliefs.slice.AssertedBelief;
+import eu.cogx.beliefs.slice.PresupposedBelief;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -46,7 +51,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 
 /**
@@ -64,10 +68,10 @@ import java.util.Map;
  *
  * @author Miroslav Janicek
  */
-public class IntentionRealizer
+public class CommunicativeIntentionRecognizer
 extends AbstractDialogueComponent {
 
-	private IntentionRealization ireal;
+	private IntentionRecognition irecog;
 	private String rulesetFile = "/dev/null";
 	private HashMap<String, EpistemicObject> epObjs = new HashMap<String, EpistemicObject>();
 
@@ -75,7 +79,7 @@ extends AbstractDialogueComponent {
 	public void start() {
 		super.start();
 
-		ireal = new IntentionRealization(new IdentifierGenerator() {
+		irecog = new IntentionRecognition(new IdentifierGenerator() {
 			@Override
 			public String newIdentifier() {
 				return newDataID();
@@ -94,7 +98,7 @@ extends AbstractDialogueComponent {
 				while ((file = f.readLine()) != null) {
 					file = parentAbsPath + File.separator + file;
 					log("adding file " + file);
-					ireal.loadFile(file);
+					irecog.loadFile(file);
 				}
 				f.close();
 			}
@@ -111,11 +115,11 @@ extends AbstractDialogueComponent {
 		}
 
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(CommunicativeIntention.class, WorkingMemoryOperation.ADD),
+				ChangeFilterFactory.createLocalTypeFilter(ResolvedLogicalForm.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handleCommunicativeIntention(_wmc);
+						handleResolvedLogicalForm(_wmc);
 					}
 		});
 	}
@@ -128,30 +132,16 @@ extends AbstractDialogueComponent {
 		}
 	}
 
-	private void handleCommunicativeIntention(WorkingMemoryChange _wmc) {
+	private void handleResolvedLogicalForm(WorkingMemoryChange _wmc) {
 		try {
 			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
-
-			CommunicativeIntention cit = (CommunicativeIntention)data.getData();
-			if (cit.intent.content.size() > 1) {
-				log("don't know how to handle an intention with " + cit.intent.content.size() + " alternative contents");
-				return;
-			}
-			else {
-				IntentionalContent itnc = cit.intent.content.get(0);
-				if (itnc.agents.size() == 1 && itnc.agents.get(0).equals("robot")) {
-					log("got a private intention, will try to realise it");
-					String taskID = newTaskID();
-					ProcessingData pd = new ProcessingData(newProcessingDataId());
-					pd.add(data);
-					m_proposedProcessing.put(taskID, pd);
-					String taskGoal = DialogueGoals.INTENTION_REALISATION_TASK;
-					proposeInformationProcessingTask(taskID, taskGoal);
-				}
-				else {
-					log("ignoring a communicative intention that is not the robot's");
-				}
-			}
+			ResolvedLogicalForm arg = (ResolvedLogicalForm)data.getData();
+			String taskID = newTaskID();
+			ProcessingData pd = new ProcessingData(newProcessingDataId());
+			pd.add(data);
+			m_proposedProcessing.put(taskID, pd);
+			String taskGoal = DialogueGoals.INTENTION_RECOGNITION_TASK;
+			proposeInformationProcessingTask(taskID, taskGoal);
 		}
 		catch (SubarchitectureComponentException e) {
 			e.printStackTrace();
@@ -164,36 +154,51 @@ extends AbstractDialogueComponent {
 
 		Iterator<CASTData> iter = data.getData();
 		if (iter.hasNext()) {
-			CASTData d = iter.next();
-			Object body = d.getData();
-			WorkingMemoryAddress wma = new WorkingMemoryAddress(d.getID(), "dialogue");
+			Object body = iter.next().getData();
 
-			if (body instanceof CommunicativeIntention) {
-				CommunicativeIntention cit = (CommunicativeIntention) body;
-				log("processing an intention");
-				LinkedList<String> belIds = BeliefIntentionUtils.collectBeliefIdsInIntention(cit.intent);
-				LinkedList<dBelief> bels = new LinkedList<dBelief>();
-				for (String id : belIds) {
-					dBelief b = retrieveBeliefById(id);
-					if (b != null) {
-						log("will use belief [" + b.id + "]");
-						bels.add(b);
+			if (body instanceof ResolvedLogicalForm) {
+				ResolvedLogicalForm rlf = (ResolvedLogicalForm) body;
+				LogicalForm lf = rlf.lform;
+				RecognisedIntention eos = irecog.logicalFormToEpistemicObjects(lf);
+				if (eos != null) {
+					log("recognised " + eos.ints.size() + " intentions and " + (eos.pre.size() + eos.post.size()) + " beliefs");
+					for (dBelief b : eos.pre) {
+						log("adding belief " + b.id + " to binder WM:\n" + BeliefIntentionUtils.beliefToString(b));
+						try {
+							dBelief db = upCastPrecondition(b);
+							addToWorkingMemory(b.id, "binder", db);
+						}
+						catch (AlreadyExistsOnWMException ex) {
+							ex.printStackTrace();
+						}
+						catch (UnknownSubarchitectureException ex) {
+							ex.printStackTrace();
+						}
 					}
-				}
-
-				ContentPlanningGoal protoLF = ireal.epistemicObjectsToProtoLF(wma, cit.intent, bels);
-				if (protoLF != null) {
-					try {
-						log("adding proto-LF to working memory: " + LFUtils.lfToString(protoLF.lform));
-						addToWorkingMemory(newDataID(), protoLF);
+					for (dBelief b : eos.post) {
+						log("adding belief " + b.id + " to dialogue WM:\n" + BeliefIntentionUtils.beliefToString(b));
+						try {
+							addToWorkingMemory(b.id, b);
+						}
+						catch (AlreadyExistsOnWMException ex) {
+							ex.printStackTrace();
+						}
 					}
-					catch (Exception e) {
-						e.printStackTrace();
-						throw new DialogueException(e.getMessage());
+					for (Intention i : eos.ints) {
+						log("adding communicative intention " + i.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(i));
+						try {
+							CommunicativeIntention cit = new CommunicativeIntention();
+							cit.intent = i;
+							addToWorkingMemory(newDataID(), cit);
+//							addToWorkingMemory(i.id, i);
+						}
+						catch (AlreadyExistsOnWMException ex) {
+							ex.printStackTrace();
+						}
 					}
 				}
 				else {
-					log("no proto-LF generated");
+					log("no epistemic object recognised");
 				}
 			}
 		}
@@ -202,14 +207,28 @@ extends AbstractDialogueComponent {
 		}
 	}
 
-	private dBelief retrieveBeliefById(String id) {
-		if (epObjs.containsKey(id)) {
-			EpistemicObject eo = epObjs.get(id);
-			if (eo instanceof dBelief) {
-				return (dBelief)eo;
-			}
+	public dBelief upCastPrecondition(dBelief b) {
+		if (b.estatus instanceof AttributedEpistemicStatus) {
+			AssertedBelief ab = new AssertedBelief();
+			ab.content = b.content;
+			ab.estatus = b.estatus;
+			ab.frame = b.frame;
+			ab.hist = b.hist;
+			ab.id = b.id;
+			ab.type = b.type;
+			return ab;
 		}
-		return null;
+		if (b.estatus instanceof SharedEpistemicStatus) {
+			PresupposedBelief pb = new PresupposedBelief();
+			pb.content = b.content;
+			pb.estatus = b.estatus;
+			pb.frame = b.frame;
+			pb.hist = b.hist;
+			pb.id = b.id;
+			pb.type = b.type;
+			return pb;
+		}
+		return b;
 	}
 
 }
