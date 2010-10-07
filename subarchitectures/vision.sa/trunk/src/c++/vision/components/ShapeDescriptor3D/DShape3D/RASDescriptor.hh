@@ -68,12 +68,41 @@ inline void RASDescriptor::Clear()
  */
 inline void RASDescriptor::Insert(double relAngle, double relScale)
 {
-  int a[3], s[3];
+  double a = ScaleAngle_0_2pi(relAngle)*((double)sa)/two_pi;
+  // bin into which value falls
+  int i = (int)floor(a);
+  int i1, i2;
+  double w1, w2;
+  // if value left of center of bin
+  if(a - (double)i <= 0.5)
+  {
+    // consider bin[i] and its left neighbour
+    i2 = i;
+    i1 = (i == 0 ? sa - 1 : i - 1);
+    w2 = a - (double)i + 0.5;
+    w1 = 1. - w2;
+  }
+  // if value right of center of bin
+  else
+  {
+    // consider bin[i] and its right neighbour
+    i1 = i;
+    i2 = (i == sa - 1 ? 0 : i + 1);
+    w1 = (double)(i + 1) - a + 0.5;
+    w2 = 1. - w1;
+  }
+  // NOTE: the above could be made more elegant
+  // HACK: here we assume that we don't use scale, i.e. ss == 1
+  assert(ss == 1);
+  data[i1] += w1;
+  data[i2] += w2;
+
+  /*int a[3], s[3];
 
   a[1] = (int)(ScaleAngle_0_2pi(relAngle)*((double)sa)/two_pi);
   a[0] = (a[1]==0?sa-1:a[1]-1);
   a[2] = (a[1]==sa-1?0:a[1]+1);
-
+printf("insert angle %lf -> %d\n", relAngle, a[1]);
   relScale = fabs(relScale);
   s[1] = (int)(relScale<1. ? ((double)ss)*relScale : ((double)ss)*(1./relScale));
   s[0] = (s[1]==0?INT_MAX:s[1]-1);
@@ -82,7 +111,7 @@ inline void RASDescriptor::Insert(double relAngle, double relScale)
   for (unsigned i=0; i<3; i++)
     for (unsigned j=0; j<3; j++)
       if (s[i]!=INT_MAX)
-        data[s[i]*sa + a[j]] += 1.;
+        data[s[i]*sa + a[j]] += 1.;*/
 }
 
 /**

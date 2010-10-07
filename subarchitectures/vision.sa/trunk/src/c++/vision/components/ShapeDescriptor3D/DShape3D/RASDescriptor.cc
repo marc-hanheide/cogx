@@ -38,7 +38,7 @@ float RASDescriptor::Compare(RASDescriptor *ras1, RASDescriptor *ras2)
   float dif;
   float distsq = 0;
 
-  for (int i = 0; i < ras1->Size(); i++) 
+  for (unsigned i = 0; i < ras1->Size(); i++) 
   {
     dif = ras1->data[i] - ras2->data[i];
     distsq += dif * dif;
@@ -60,7 +60,7 @@ void RASDescriptor::SaveDescriptor(ofstream &os, RASDescriptor *ras, char *name)
 
   os<<ras->sa<<" "<<ras->ss<<" ";
 
-  for (int i=0; i<ras->Size(); i++)
+  for (unsigned i=0; i<ras->Size(); i++)
     os<<ras->data[i]<<" ";
   os<<'\n';
 }
@@ -78,7 +78,7 @@ void RASDescriptor::LoadDescriptor(ifstream &is, RASDescriptor *ras, string &nam
 
   ras->Set(sa,ss);
   
-  for (int i=0; i<ras->Size(); i++)
+  for (unsigned i=0; i<ras->Size(); i++)
     is>>ras->data[i];
 }
 
