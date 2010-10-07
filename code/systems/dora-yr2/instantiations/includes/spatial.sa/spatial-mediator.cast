@@ -2,7 +2,7 @@
 # simple mediators:
 JAVA MG pm-place	eu.cogx.perceptmediator.components.PlaceMediator 
 JAVA MG pm-agent 	eu.cogx.perceptmediator.components.AgentMediator 
-JAVA MG pm-viewpoint 	eu.cogx.perceptmediator.components.ViewPointMediator 
+JAVA MG pm-viewpoint 	eu.cogx.perceptmediator.dora.ViewPointMediator 
 
 # property mediators
 JAVA MG pm-gateway 	eu.cogx.perceptmediator.components.GatewayPropertyMediator
