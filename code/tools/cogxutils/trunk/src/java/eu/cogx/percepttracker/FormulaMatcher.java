@@ -6,8 +6,8 @@ package eu.cogx.percepttracker;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -26,17 +26,16 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.ProbFormula;
-import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 /**
  * this is a generic matcher that matches any
  * {@link CASTIndependentFormulaDistributionsBelief} of type
- * {@link PerceptBelief} to {@link GroundedBelief}. It compares all contained
+ * {@link dBelief} to {@link dBelief} (e.g. PerceptBelief to GroundedBelief). It compares all contained
  * Formulas and if the most likely ones are matching in the
- * {@link PerceptBelief} and the {@link GroundedBelief} they are assumed to be
+ * from belief and the to belief they are assumed to be
  * matching. There must be a match for all formulas in the PerceptBelief, but
  * it's ok if the GroundedBelief has some more than are not corresponding. To be
  * used with a {@link WMTracker}.
@@ -44,8 +43,8 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class FormulaMatcher implements
-		WMTracker.MatcherFunction<PerceptBelief, GroundedBelief> {
+public class FormulaMatcher<From extends dBelief, To extends dBelief> implements
+		WMTracker.MatcherFunction<From, To> {
 
 	/** the very small epsilon to test doubles for equality */
 	private static final double EPSILON_EQUALITY = 1e-10;
@@ -53,6 +52,10 @@ public class FormulaMatcher implements
 	private Set<String> ignoredKeys = new HashSet<String>();
 
 	private Logger logger;
+
+	private final Class<From> m_fromCls;
+
+	private final Class<To> m_toCls;
 
 	/**
 	 * create a new FormulaMatcher
@@ -63,17 +66,20 @@ public class FormulaMatcher implements
 	 *            they will never match and an update will cause an
 	 *            {@link IncompatibleAssignmentException}
 	 */
-	public FormulaMatcher(List<String> types, PointerMap<?> map) {
+	public FormulaMatcher(List<String> types, PointerMap<?> map, Class<From> _fromCls, Class<To> _toCls) {
 		super();
 		this.beliefTypes = types;
 		wm2wmMap = map;
 		logger = Logger.getLogger(FormulaMatcher.class);
+		m_fromCls = _fromCls;
+		m_toCls = _toCls;
+		
 		// always ignore the source-address!
 		ignoredKeys.add(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID);
 	}
 	
-	public FormulaMatcher(List<String> types, PointerMap<?> map, Collection<String> ignoreKeys) {
-		this(types, map);
+	public FormulaMatcher(List<String> types, PointerMap<?> map, Collection<String> ignoreKeys, Class<From> _fromCls, Class<To> _toCls) {
+		this(types, map, _fromCls, _toCls);
 		this.ignoredKeys.addAll(ignoreKeys);
 	}
 
@@ -88,8 +94,8 @@ public class FormulaMatcher implements
 	 * WorkingMemoryAddress, cast.cdl.WorkingMemoryChange, Ice.ObjectImpl)
 	 */
 	@Override
-	public GroundedBelief create(WorkingMemoryAddress idToCreate,
-			WorkingMemoryChange wmc, PerceptBelief from)
+	public To create(WorkingMemoryAddress idToCreate,
+			WorkingMemoryChange wmc, From from)
 			throws IncompatibleAssignmentException {
 		logger.debug("create new belief for PerceptBelief " + wmc.address.id);
 		if (beliefTypes != null)
@@ -97,10 +103,10 @@ public class FormulaMatcher implements
 				return null;
 			}
 		try {
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
-					.create(GroundedBelief.class);
-			CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief
-					.create(PerceptBelief.class, from);
+			CASTIndependentFormulaDistributionsBelief<To> gb = CASTIndependentFormulaDistributionsBelief
+					.create(m_toCls);
+			CASTIndependentFormulaDistributionsBelief<From> pb = CASTIndependentFormulaDistributionsBelief
+					.create(m_fromCls, from);
 
 			gb.setType(pb.getType());
 			gb.setTime(pb.getStartTime(), pb.getEndTime());
@@ -108,7 +114,7 @@ public class FormulaMatcher implements
 			return gb.get();
 		} catch (ClassCastException e) {
 			throw (new IncompatibleAssignmentException(
-					"cannot create new GroundedBelief due to incompatible data types"));
+					"cannot create new " + m_toCls + " due to incompatible data types"));
 		}
 	}
 
@@ -125,8 +131,8 @@ public class FormulaMatcher implements
 	 * WorkingMemoryChange, Ice.ObjectImpl, Ice.ObjectImpl)
 	 */
 	@Override
-	public double match(WorkingMemoryChange wmc, PerceptBelief from,
-			GroundedBelief to) {
+	public double match(WorkingMemoryChange wmc, From from,
+			To to) {
 		logger.debug("match new belief for PerceptBelief " + from.id
 				+ " with existing GroundedBelief " + to.id);
 		if (beliefTypes != null)
@@ -135,10 +141,10 @@ public class FormulaMatcher implements
 		if (!to.type.equals(from.type))
 			return 0.0;
 		try {
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
-					.create(GroundedBelief.class, to);
-			CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief
-					.create(PerceptBelief.class, from);
+			CASTIndependentFormulaDistributionsBelief<To> gb = CASTIndependentFormulaDistributionsBelief
+					.create(m_toCls, to);
+			CASTIndependentFormulaDistributionsBelief<From> pb = CASTIndependentFormulaDistributionsBelief
+					.create(m_fromCls, from);
 			// if the content matches we can assume this is matching
 			if (matches(pb.getContent(), gb.getContent())) {
 				logger.debug("  => 1.0");
@@ -205,7 +211,7 @@ public class FormulaMatcher implements
 			// in the universe of the GroundedBeliefs to match
 			if (ft.get() instanceof PointerFormula) {
 				PointerFormula wmPointer = (PointerFormula) ft.get();
-				// look up the corresponding value of the groundedbelief for
+				// look up the corresponding value of the belief for
 				// this pointer
 				WorkingMemoryAddress lookUpGroundedBelief;
 				lookUpGroundedBelief = wm2wmMap.waitFor(wmPointer.pointer);
@@ -240,12 +246,10 @@ public class FormulaMatcher implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @seeeu.cogx.percepttracker.WMTracker.MatcherFunction#update(cast.cdl.
-	 * WorkingMemoryChange, Ice.ObjectImpl, Ice.ObjectImpl)
 	 */
 	@Override
-	public void update(WorkingMemoryChange wmc, PerceptBelief from,
-			GroundedBelief to) throws IncompatibleAssignmentException {
+	public void update(WorkingMemoryChange wmc, From from,
+			To to) throws IncompatibleAssignmentException {
 		if (beliefTypes != null) {
 			if (!beliefTypes.contains(from.type))
 				throw (new IncompatibleAssignmentException(
@@ -254,15 +258,15 @@ public class FormulaMatcher implements
 				throw (new IncompatibleAssignmentException(
 						"cannot update with to type " + to.type));
 		}
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> groundedBelief = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, to);
-		CASTIndependentFormulaDistributionsBelief<PerceptBelief> perceptBelief = CASTIndependentFormulaDistributionsBelief
-				.create(PerceptBelief.class, from);
-		groundedBelief.setTime(groundedBelief.getStartTime(), perceptBelief
+		CASTIndependentFormulaDistributionsBelief<To> toBelief = CASTIndependentFormulaDistributionsBelief
+				.create(m_toCls, to);
+		CASTIndependentFormulaDistributionsBelief<From> fromBelief = CASTIndependentFormulaDistributionsBelief
+				.create(m_fromCls, from);
+		toBelief.setTime(toBelief.getStartTime(), fromBelief
 				.getEndTime());
-		groundedBelief.getContent().putAll(perceptBelief.getContent());
+		toBelief.getContent().putAll(fromBelief.getContent());
 		try {
-			for (Entry<String, FormulaDistribution> entry : groundedBelief
+			for (Entry<String, FormulaDistribution> entry : toBelief
 					.getContent().entrySet()) {
 				for (ProbFormula f : entry.getValue().getDistribution()) {
 					// propagate any PointerFormulas to PerceptBeliefs to
@@ -288,7 +292,7 @@ public class FormulaMatcher implements
 	}
 
 	@Override
-	public boolean canHandle(PerceptBelief from) {
+	public boolean canHandle(From from) {
 		if (beliefTypes == null)
 			return true;
 		else
