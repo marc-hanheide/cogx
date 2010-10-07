@@ -101,7 +101,7 @@ public class SpatialActionInterface extends ManagedComponent {
 			ViewPointGenerationCommand cmd = new ViewPointGenerationCommand(
 					getAction().model, getAction().placeIDs,
 					AVSStatus.INPROGRESS);
-			addThenCompleteOnOverwrite(newWorkingMemoryAddress(), cmd);
+			addThenCompleteOnOverwrite(cmd);
 		}
 	}
 
@@ -130,7 +130,7 @@ public class SpatialActionInterface extends ManagedComponent {
 		public void executeAction() {
 			ProcessViewPointCommand cmd = new ProcessViewPointCommand(
 					AVSStatus.INPROGRESS, m_vp, new String[] { m_vp.label });
-			addThenCompleteOnOverwrite(newWorkingMemoryAddress(), cmd);
+			addThenCompleteOnOverwrite(cmd);
 		}
 	}
 
