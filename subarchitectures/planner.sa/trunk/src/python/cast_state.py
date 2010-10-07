@@ -6,6 +6,7 @@ from standalone.pddl import state, prob_state
 
 import de.dfki.lt.tr.beliefs.slice as bm
 from de.dfki.lt.tr.beliefs.slice import logicalcontent, distribs
+import eu.cogx.beliefs.slice as eubm
 import cast.cdl
 
 import task_preprocessor as tp
@@ -20,8 +21,17 @@ QDL_VALUE = re.compile("<dora:(.*)>")
 class CASTState(object):
     def __init__(self, beliefs, domain, oldstate=None, component=None):
         self.domain = domain
-        self.beliefs = beliefs
-        self.beliefdict = dict((b.id, b) for b in beliefs)
+        self.beliefs = []
+        for b in beliefs:
+            if isinstance(b, eubm.GroundedBelief) or isinstance(b.estatus, bm.epstatus.AttributedEpistemicStatus):
+                self.beliefs.append(b)
+
+        #self.beliefs = beliefs
+        self.beliefdict = dict((b.id, b) for b in self.beliefs)
+
+        #self.attr_beliefdict = dict((b.id, b) for b in self.attributed_beliefs)
+        #self.beliefdict.update(dict((b.id, b) for b in self.attributed_beliefs))
+
         
         self.coma_facts = []
         self.coma_objects = set()
@@ -34,13 +44,21 @@ class CASTState(object):
         #TODO: make this less ugly
         tp.current_domain = self.domain
         tp.belief_dict = self.beliefdict
+
+        #self.all_beliefs = self.beliefs
+        #self.all_beliefs.extend(self.attributed_beliefs)
+        obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(self.beliefs))))
   
-        obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(beliefs))))
-  
+        #obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(self.beliefs))))
+        #attr_obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(self.attributed_beliefs))))
+        #print "attr_objs:"
+        #for at in attr_obj_descriptions:
+        #    print at
+        #print "end attr_objs"
+
         objects = tp.infer_types(obj_descriptions)
         self.namedict = tp.rename_objects(objects, self.coma_objects|domain.constants )
         self.objects = set(list(objects)) # force rehashing
-
         self.facts = list(tp.tuples2facts(obj_descriptions))
         self.objects |= self.coma_objects
         self.facts += self.coma_facts

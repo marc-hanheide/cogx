@@ -32,7 +32,21 @@ class SVarDistribution(tuple):
 
   def __str__(self):
     valstr = " ".join("%.2f: %s" % (v[1], v[0]) for v in self.values)
-    return "(%s %s) = [%s]" % (self.feature, " ".join(a.name for a in self.args), valstr)
+    return "(%s %s) = [%s]" % (self.feature, " ".join(a.name for a in
+    self.args), valstr)
+
+class AttributedSVarDistribution(SVarDistribution):
+  def __new__(_class, agent, feat, args, value):
+    return tuple.__new__(_class, [agent, feat] + args + [value])
+
+  agent = property(lambda self: self[0])
+  feature = property(lambda self: self[1])
+  args = property(lambda self: self[2:-1])
+  values = property(lambda self: self[-1])
+
+  def __str__(self):
+    valstr = " ".join("%.2f: %s" % (v[1], v[0]) for v in self.values)
+    return "(attributed %s (%s %s)) = [%s]" % (self.agent, self.feature, " ".join(a.name for a in self.args), valstr)
 
 def rename_objects(objects, existing=set()):
   namedict = {}
@@ -110,6 +124,8 @@ def gen_fact_tuples(beliefs):
     if isinstance(dist, distribs.CondIndependentDistribs):
       result = []
       for feat, fval_dist in dist.distribs.iteritems():
+        if feat == "given":
+          continue
         assert isinstance(fval_dist, distribs.BasicProbDistribution)
         assert feat == fval_dist.key
         value = fval_dist.values
@@ -131,14 +147,22 @@ def gen_fact_tuples(beliefs):
 
   for bel in beliefs:
     factdict = defaultdict(list)
+    attributed_object = None
     for feat, val, prob in extract_features(bel.content):
+      if feat == "about":
+        attributed_object = val
       factdict[str(feat)].append((val, prob))
       
     if bel.type != "relation":
-      obj = belief_to_object(bel)
-      for feat,vals in factdict.iteritems():
-        #log.debug("(%s %s) = %s : %f", feat, obj, val, prob)
-        yield SVarDistribution(feat, [obj], vals)
+      if attributed_object is not None:
+        agent = pddl.TypedObject("tutor",pddl.mapl.t_agent)
+        for feat,vals in factdict.iteritems():
+          yield AttributedSVarDistribution(agent, feat, [attributed_object], vals)
+      else:
+        obj = belief_to_object(bel)
+        for feat,vals in factdict.iteritems():
+          #log.debug("(%s %s) = %s : %f", feat, obj, val, prob)
+          yield SVarDistribution(feat, [obj], vals)
     else:
       elems = []
       i=0
@@ -179,7 +203,11 @@ def tuples2facts(fact_tuples):
       continue
       
     if len(ftup.values) == 1 and ftup.values[0][1] == 1.0:
-      yield state.Fact(state.StateVariable(func, ftup.args), ftup.values[0][0])
+      if isinstance(ftup, AttributedSVarDistribution):
+        yield state.Fact(state.StateVariable(func, ftup.args,\
+                                              modality=pddl.mapl.attributed, modal_args = [ftup.agent,ftup.values[0][0]]),pddl.TRUE)
+      else:
+        yield state.Fact(state.StateVariable(func, ftup.args), ftup.values[0][0])
     else:
       vdist = prob_state.ValueDistribution(dict(ftup.values))
       yield prob_state.ProbFact(state.StateVariable(func, ftup.args), vdist)
@@ -202,7 +230,16 @@ def unify_objects(obj_descriptions):
         namedict[obj.name] = obj
         values.append((obj, prob))
 
-    yield SVarDistribution(ftup.feature, args, values)
+    if isinstance(ftup, AttributedSVarDistribution):
+      if ftup.agent in namedict:
+        agent = namedict[ftup.agent.name]
+      else:
+        namedict[ftup.agent.name] = ftup.agent
+        agent = ftup.agent
+      yield AttributedSVarDistribution(agent, ftup.feature, args, values)
+    else:
+      yield SVarDistribution(ftup.feature, args, values)
+    
       
 def infer_types(obj_descriptions):
   constraints = defaultdict(set)
