@@ -104,8 +104,10 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 					lockEntry(correspondingWMA,
 							WorkingMemoryPermissions.LOCKEDOD);
 					deleteFromWorkingMemory(correspondingWMA);
-				} finally {
+				} catch(CASTException e) {
+					logException(e);
 					unlockEntry(correspondingWMA);
+					throw(e);
 				}
 				bel2motiveMap.remove(wmc.address);
 			}
