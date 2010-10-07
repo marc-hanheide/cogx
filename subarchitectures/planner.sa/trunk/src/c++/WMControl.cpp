@@ -55,7 +55,7 @@ void WMControl::start() {
     addChangeFilter(cast::createLocalTypeFilter<Action>(cast::cdl::OVERWRITE), 
 		    new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::actionChanged));
 
-    addChangeFilter(cast::createGlobalTypeFilter<GroundedBelief>(cast::cdl::WILDCARD),
+    addChangeFilter(cast::createGlobalTypeFilter<dBelief>(cast::cdl::WILDCARD),
             new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::stateChanged));
 
     addChangeFilter(cast::createGlobalTypeFilter<PerceptBelief>(cast::cdl::ADD),
