@@ -84,7 +84,7 @@
               )
 
   (:init-rule places
-              :effect (forall (?p - place) (assign (p-is-in ?p) 0.8))
+              :effect (forall (?p - place) (assign (p-is-in ?p) 0.3))
               )
 
   (:action sample_existence
@@ -115,17 +115,18 @@
   ;;          :effect (probabilistic 0.9 (assign (is-in ?o) ?c))
   ;;          )
 
-   (:durative-action spin
-                     :agent (?a - robot)
-                     :duration (= ?duration 0)
-                     :condition (over all (done))
-                     :effect (and)
-                     )
+   ;; (:durative-action spin
+   ;;                   :agent (?a - robot)
+   ;;                   :duration (= ?duration 0)
+   ;;                   :condition (over all (done))
+   ;;                   :effect (and)
+   ;;                   )
 
    (:durative-action move
                      :agent (?a - robot)
-                     :parameters (?from - place ?to - place)
-                     :duration (= ?duration 2)
+                     :parameters (?to - place)
+                     :variables (?from - place)
+                     :duration (= ?duration 5)
                      :condition (and (over all (or (connected ?from ?to)
                                                    (connected ?to ?from)
                                                    ))
@@ -139,7 +140,7 @@
                      :agent (?a - robot)
                      :parameters (?l - label)
                      :variables (?o - visualobject ?p - place)
-                     :duration (= ?duration 1)
+                     :duration (= ?duration 2)
                      :condition (and (over all (and (not (done))
                                                     (= (is-in ?a) ?p)
                                                     (= (label ?o) ?l))))

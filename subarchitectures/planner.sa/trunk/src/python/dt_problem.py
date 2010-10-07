@@ -44,6 +44,13 @@ class DTProblem(object):
     def write_dt_input(self, domain_fn, problem_fn):
         DTPDDLOutput().write(self.problem, domain_fn=domain_fn, problem_fn=problem_fn)
 
+    def observation_expected(self, action):
+        for o in self.domain.observe:
+            for e in o.execution:
+                if e.action.name == action.name:
+                    return True
+        return False
+
     def subplan_active(self, plan):
         if not self.subplan_actions:
             return False

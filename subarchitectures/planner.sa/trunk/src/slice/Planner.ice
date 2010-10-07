@@ -153,6 +153,7 @@ module autogen {
       void registerTask(PlanningTask task);
       void executeTask(PlanningTask task);
       void updateTask(PlanningTask task);
+      void taskTimedOut(PlanningTask task);
       void updateState(BeliefSeq state, BeliefSeq percepts);
 
 //       /*DTP process with ID \argument{id} calls this method when: (1)

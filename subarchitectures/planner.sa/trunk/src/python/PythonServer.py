@@ -253,10 +253,16 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           return
 
       print_state_difference(old_state, task.state.state)
-      if task.dt_planning_active():
-          task.monitor_dt(pending_updates=True)
-      else:
-          task.monitor_cp(pending_updates=True)
+      task.wait_update()
+
+  @pdbdebug
+  def taskTimedOut(self, task_desc, current=None):
+      if task_desc.id not in self.tasks:
+          log.warning("Warning: received update for task %d, but no such task found.", task_desc.id)
+          return
+      
+      task = self.tasks[task_desc.id]
+      task.wait_timeout()
       
   @pdbdebug
   def updateTask(self, task_desc, current=None):

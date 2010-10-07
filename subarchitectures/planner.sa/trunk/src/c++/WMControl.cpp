@@ -22,6 +22,7 @@ extern "C" {
 static const int MAX_PLANNING_RETRIES = 1;
 static const int MAX_EXEC_RETRIES = 1;
 static const int REPLAN_DELAY = 3000;
+static const int PLANNER_UPDATE_DELAY = 200;
 
 static const string BINDER_SA = "binder";
 
@@ -83,29 +84,39 @@ void WMControl::connectToPythonServer() {
 void WMControl::runComponent() {
     log("Planner WMControl: running");
     std::vector<int> execute;
+    std::vector<int> timed_out;
     while (isRunning()) {
         m_queue_mutex.lock();
         bool waiting = !m_waiting_tasks.empty();
-        if (!m_runqueue.empty()) {
+        if (!m_runqueue.empty() || !m_waiting_tasks.empty()) {
             log("planning is scheduled");
             timeval tval;
             gettimeofday(&tval, NULL);
-            std::map<int, timeval>::iterator it=m_runqueue.begin();
-            for(; it != m_runqueue.end(); ++it) {
+            
+            for(std::map<int, timeval>::iterator it=m_runqueue.begin(); it != m_runqueue.end(); ++it) {
                 if ((it->second.tv_sec < tval.tv_sec) 
                     || ((it->second.tv_sec == tval.tv_sec) 
                         && (it->second.tv_usec < tval.tv_usec))) {
                     execute.push_back(it->first);
                 }
             }
+            for(std::map<int, timeval>::iterator it=m_waiting_tasks.begin(); it != m_waiting_tasks.end(); ++it) {
+                if ((it->second.tv_sec < tval.tv_sec) 
+                    || ((it->second.tv_sec == tval.tv_sec) 
+                        && (it->second.tv_usec < tval.tv_usec))) {
+                    timed_out.push_back(it->first);
+                }
+            }
             for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
                 m_runqueue.erase(*it);
+            }
+            for (std::vector<int>::iterator it=timed_out.begin(); it != timed_out.end(); ++it) {
                 m_waiting_tasks.erase(*it);
             }
         }
         m_queue_mutex.unlock();
 
-        if (!execute.empty() || (waiting && m_new_updates)) {
+        if (!execute.empty() || !timed_out.empty() || (waiting && m_new_updates)) {
             lockComponent();
             m_new_updates = false;
             vector<dBeliefPtr> state;
@@ -123,7 +134,14 @@ void WMControl::runComponent() {
                 pyServer->updateTask(task);
                 log("returning..:");
             }
+            for (std::vector<int>::iterator it=timed_out.begin(); it != timed_out.end(); ++it) {
+                lockComponent();
+                PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it]);
+                unlockComponent();
+                pyServer->taskTimedOut(task);
+            }
             execute.clear();
+            timed_out.clear();
         }
         sleepComponent(200);
     }
@@ -236,7 +254,7 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         }
         overwriteWorkingMemory(activeTasks[task->id], task);
         //pyServer->updateTask(task);
-        dispatchPlanning(task, 0);
+        dispatchPlanning(task, PLANNER_UPDATE_DELAY);
     }
     else if (action->status == SUCCEEDED) {
         /*task->plan.erase(task->plan.begin());
@@ -252,7 +270,7 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         //generateState(task);
         overwriteWorkingMemory(activeTasks[task->id], task);
         //pyServer->updateTask(task);
-        dispatchPlanning(task, 0);
+        dispatchPlanning(task, PLANNER_UPDATE_DELAY);
     }
 }
 
@@ -496,11 +514,14 @@ void WMControl::setChangeFilter(int id, const StateChangeFilterPtr& filter) {
 
 void WMControl::waitForChanges(int id, int timeout) {
     assert(activeTasks.find(id) != activeTasks.end());
-    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
+    timeval tval;
+    gettimeofday(&tval, NULL);
+    tval.tv_sec += timeout / 1000;
+    tval.tv_usec += 1000 * (timeout % 1000);
     m_queue_mutex.lock();
-    m_waiting_tasks.insert(id);
+    log("set timeout to: %ld / %ld", tval.tv_sec, tval.tv_usec);
+    m_waiting_tasks[id] = tval;
     m_queue_mutex.unlock();
-    dispatchPlanning(task, timeout);
 }
 
 void WMControl::writeAction(ActionPtr& action, PlanningTaskPtr& task) {
