@@ -1,5 +1,5 @@
 // =================================================================
-// Copyright (C) 2007-2008 Geert-Jan M. Kruijff (gj@dfki.de)
+// Copyright (C) 2007-2010 Geert-Jan M. Kruijff (gj@dfki.de)
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License
@@ -98,12 +98,14 @@ import java.util.*;
  * <li> <tt>--ccg FILENAME</tt>: specifies the location of the CCG grammar (grammar.xml file) to be used (REQUIRED)
  * <li> <tt>--contentBody LABEL</tt>: specifies the LABEL of the relation under the root of a logical form, under which 
  * the content to be realized can be found (DEFAULT: "Content")
+ * <li> <tt>--cannedText LABEL</tt>: specifies the LABEL of the relation under the root of a logical form, under which 
+ * cannedText to be synthesized directly can be found (DEFAULT: "CannedText")
  * <li> <tt>--ngrams FILENAME</tt>: specifies the location of the Ngrams corpus to be used for the statistical realizer (OPTIONAL)
  * <li> <tt>--packedlf BOOL</tt>: specifies whether to output a (packed) logical form of the produced surface form to working memory (OPTIONAL, DEFAULT:false)
  * </ul> 
  *
  * @author	Geert-Jan M. Kruijff (gj@dfki.de)
- * @version 100609 
+ * @version 101007 
  */
 
 
@@ -135,7 +137,11 @@ public class CCGRealizer
 		Realizer realizer; 
 		NgramScorer ngramScorer; 
 		
+		/* Relation for the content body */
 		String contentBody = "";
+		
+		/* Relation for the canned text */
+		String cannedText  = "";
 		
 		// Boolean flag to determine whether or not to write out a packed LF 
 		// of the generated surface form 
@@ -336,45 +342,50 @@ public class CCGRealizer
 					ProductionLF productionLF = (ProductionLF) data.getData();
 					// Get the logical form
 					LogicalForm logicalForm = productionLF.lform;
-					// Retrieve the content subtree
-					LFRelation content = LFUtils.lfNominalGetRelation(logicalForm.root,contentBody);
-					String contentRoot = "";
-					if (content != null) {
-						contentRoot = content.dep;
-					} else {
-						contentRoot = logicalForm.root.nomVar;
-					} 
-					LFNominal contentRootNom  = LFUtils.lfGetNominal(logicalForm,contentRoot);
-					LogicalForm planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);					
-					// Translate the planLF logical form into XML for OpenCCG
-					LF lf = LFUtils.convertToLF(planLF);
-					// Realize the XML-based logical form
-					if (ngramScorer == null) { 
-						try {
-						realizer.realize(lf);
-						}
-						catch (RuntimeException e) {
-							e.printStackTrace();
-						}
-					} else {
-						realizer.realize(lf,ngramScorer);
-					} 
-					// Get the best string out of the results
-					opennlp.ccg.realize.Chart chart = realizer.getChart();
-					String bestRealization = "";
-					List bestEdges = chart.bestEdges();
-					for (Iterator beIter = bestEdges.iterator(); beIter.hasNext(); ) {
-						opennlp.ccg.realize.Edge edge = (opennlp.ccg.realize.Edge) beIter.next(); 
-						// Sign sign = edge.getSign();
-						bestRealization = bestRealization+edge.toString()+"\n";
-					} // end for over best edges
-					log("Best realization: "+bestRealization);
-					int start = bestRealization.indexOf("]");
-					int end   = bestRealization.indexOf(":-");
+					// Initialize the return string
 					String realString = "I am sorry I am lost for words on this one";
-					if (start != -1 && end != -1) { 
-						realString = bestRealization.substring(start+1,end);
-					}
+					LogicalForm planLF = null;
+					// Check whether there is canned text OR a content body
+					String canned = LFUtils.lfNominalGetFeature(logicalForm.root, cannedText);
+					log("Canned text feature value: "+canned);
+					if (!canned.equals("")) 
+					{
+						realString = canned.replaceAll("_"," ");		
+					} else { 
+						// Retrieve the content subtree
+						LFRelation content = LFUtils.lfNominalGetRelation(logicalForm.root,contentBody);
+						String contentRoot = "";
+						if (content != null) {
+							contentRoot = content.dep;
+						} else {
+							contentRoot = logicalForm.root.nomVar;
+						} 
+						LFNominal contentRootNom  = LFUtils.lfGetNominal(logicalForm,contentRoot);
+						planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);					
+						// Translate the planLF logical form into XML for OpenCCG
+						LF lf = LFUtils.convertToLF(planLF);
+						// Realize the XML-based logical form
+						if (ngramScorer == null) { 
+							realizer.realize(lf);
+						} else {
+							realizer.realize(lf,ngramScorer);
+						} 
+						// Get the best string out of the results
+						opennlp.ccg.realize.Chart chart = realizer.getChart();
+						String bestRealization = "";
+						List bestEdges = chart.bestEdges();
+						for (Iterator beIter = bestEdges.iterator(); beIter.hasNext(); ) {
+							opennlp.ccg.realize.Edge edge = (opennlp.ccg.realize.Edge) beIter.next(); 
+							// Sign sign = edge.getSign();
+							bestRealization = bestRealization+edge.toString()+"\n";
+						} // end for over best edges
+						log("Best realization: "+bestRealization);
+						int start = bestRealization.indexOf("]");
+						int end   = bestRealization.indexOf(":-");
+						if (start != -1 && end != -1) { 
+							realString = bestRealization.substring(start+1,end);
+						}
+					} // end if..else
 					// Forward the string to WM, to be synthesized
 					try { 
 						log("Sending on for synthesis: ["+realString+"]");
@@ -387,7 +398,7 @@ public class CCGRealizer
 						log("ERROR: "+se.getMessage());						
 					}
 					// if opted for, write out the packed lf of the surface form
-					if (writeOutPackedLF) 
+					if (writeOutPackedLF && planLF != null) 
 					{
 						addNewPLFToWorkingMemory(planLF, realString);
 					}
@@ -523,11 +534,19 @@ public class CCGRealizer
 				grammarfile = "./subarchitectures/comsys.mk4/grammars/openccg/moloko.v5/grammar.xml";
 			} // end if..else check for command-line argument
 			
+			// Set the relation label for content body
 			if (_config.containsKey("--contentBody")) { 
 				contentBody = _config.get("--contentBody");
 			} else { 
 				contentBody = "Content";
 			}				
+
+			// Set the label for canned text
+			if (_config.containsKey("--cannedText")) { 
+				cannedText = _config.get("--cannedText");
+			} else { 
+				cannedText = "CannedText";
+			}	
 			
 			if (_config.containsKey("--ngrams")) { 
 				String ngramsCorpus = _config.get("--ngrams");

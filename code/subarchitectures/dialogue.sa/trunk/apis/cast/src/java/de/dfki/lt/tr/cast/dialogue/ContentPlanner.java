@@ -77,6 +77,8 @@ import java.util.Iterator;
 public class ContentPlanner
 extends AbstractDialogueComponent
 {
+	/* Relation for the canned text */
+	private String cannedText  = "";
 
 	private CPlanWrapper planner = null;
 	private	String contentRel = null;
@@ -145,6 +147,13 @@ extends AbstractDialogueComponent
     	{
     		contentRel = _config.get("--contentRel");
     	}
+    	if (_config.containsKey("--cannedText"))
+    	{
+    		cannedText = _config.get("--cannedText");
+    	} else {
+    		cannedText = "CannedText";
+    	}
+    
     } // end
 
     /**
@@ -165,20 +174,22 @@ extends AbstractDialogueComponent
 	    		// Get the proto structure from the data
 				CASTData pdata = iter.next();
 				ContentPlanningGoal goal = (ContentPlanningGoal) pdata.getData();
+				String canned = LFUtils.lfNominalGetFeature(goal.lform.root, cannedText);
+				log("Canned text feature value ["+goal.lform.root.nomVar+"]: "+canned);
 				// Put the goal to the content planner
-				if (planner != null)
+				if (planner != null && canned.equals(""))
 				{
-					LogicalForm output = planner.callContentPlanner(goal.lform);
+					LogicalForm output = planner.callContentPlanner(goal.lform);				
 					ProductionLF productionLF = new ProductionLF();
 					if (contentRel != null)
 					{
 						try {
-						// retrieve the subtree from under the contentRel relation under the root of the LF
-						LFRelation crel = LFUtils.lfNominalGetRelation(output.root,contentRel);
-						LFNominal croot = LFUtils.lfGetNominal(output,crel.dep);
-						LogicalForm content = LFUtils.lfConstructSubtree(croot,output);
-						// store it in the production LF
-						productionLF.lform = content;
+							// retrieve the subtree from under the contentRel relation under the root of the LF
+							LFRelation crel = LFUtils.lfNominalGetRelation(output.root,contentRel);
+							LFNominal croot = LFUtils.lfGetNominal(output,crel.dep);
+							LogicalForm content = LFUtils.lfConstructSubtree(croot,output);
+							// store it in the production LF
+							productionLF.lform = content;
 						} catch (NullPointerException npe) {
 							System.out.println(npe.getStackTrace());
 						}
@@ -186,11 +197,17 @@ extends AbstractDialogueComponent
 						productionLF.lform = output;
 					}
 					productionLF.plfid = newId("cp");
-				// Put the resulting logical form onto WM
-				log("adding the production LF to the WM: " + LFUtils.lfToString(productionLF.lform));
-				addToWorkingMemory(newDataID(),productionLF);
-				}
-			}
+					// Put the resulting logical form onto WM
+					log("adding the production LF to the WM: " + LFUtils.lfToString(productionLF.lform));
+					addToWorkingMemory(newDataID(),productionLF);
+				} else {
+					// Put the resulting logical form onto WM
+					ProductionLF productionLF = new ProductionLF();
+					productionLF.lform = goal.lform;
+					log("adding the canned text LF to the WM: " + LFUtils.lfToString(productionLF.lform));
+					addToWorkingMemory(newDataID(),productionLF);
+				} // if ..else check for canned text
+			} // end while
     	}
     	catch (Exception e) {
     		e.printStackTrace();
