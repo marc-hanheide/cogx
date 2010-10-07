@@ -306,8 +306,10 @@ void VisualLearner::updateWmModelStatus()
          if (addr.id.length() != 0 && addr.subarchitecture.length() != 0) {
             try{
                pStatus = pComponent->getMemoryEntry<VisualConceptModelStatus>(addr);
-               pComponent->debug("VisualConceptModelStatus read ... %s", descAddr(addr).c_str());
-               return;
+               if (pStatus != NULL) {
+                  pComponent->debug("VisualConceptModelStatus read ... %s", descAddr(addr).c_str());
+                  return;
+               }
             }
             catch(cast::DoesNotExistOnWMException){
                pComponent->log("VisualConceptModelStatus was deleted unexpectedly ...");
@@ -322,11 +324,17 @@ void VisualLearner::updateWmModelStatus()
       static void writeWmStatus(VisualLearner* pComponent,
             VisualConceptModelStatusPtr& pStatus, cdl::WorkingMemoryAddress& addr)
       {
+         if (pStatus == NULL) {
+            pComponent->log("Trying to write NULL VisualConceptModelStatusPtr to WM ... %s",
+                  descAddr(addr).c_str());
+            return;
+         }
+
          //pComponent->log("Writing: VisualConceptModelStatus ...%s", descAddr(addr).c_str());
          if (addr.id.length() != 0 && addr.subarchitecture.length() != 0) {
             try{
                pComponent->overwriteWorkingMemory(addr, pStatus);
-               pComponent->log("VisualConceptModelStatus overwritten ...%s", descAddr(addr).c_str());
+               pComponent->log("VisualConceptModelStatus overwritten ... %s", descAddr(addr).c_str());
                return;
             }
             catch(cast::DoesNotExistOnWMException){
