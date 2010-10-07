@@ -14,7 +14,7 @@
                  <Tense>pres ^ 
                  <Cop-Restr>(#i1:person ^ I ^ 
                              <Num>sg) ^ 
-                 <Cop-Scope>(#s1:q-attitude ^ sorry) ^ 
+                 <Cop-Scope>(#s1:q-attitude ^ BLABLABLABLABLA) ^ 
                  <Subject>#i1:).
 
 
