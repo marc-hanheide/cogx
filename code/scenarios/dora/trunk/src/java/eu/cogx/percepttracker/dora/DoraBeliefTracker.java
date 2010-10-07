@@ -31,28 +31,29 @@ public class DoraBeliefTracker extends ManagedComponent {
 
 	private static final String PLACETYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(Place.class));
-	
+
 	private static final String GATEWAYTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils
 					.typeName(GatewayPlaceProperty.class));
 
 	private static final String COMAROOMTYPE = SimpleDiscreteTransferFunction
-	.getBeliefTypeFromCastType(CASTUtils.typeName(ComaRoom.class));
-	
+			.getBeliefTypeFromCastType(CASTUtils.typeName(ComaRoom.class));
+
 	private static final String VIEWPOINTTYPE = SimpleDiscreteTransferFunction
-	.getBeliefTypeFromCastType(CASTUtils.typeName(ViewPoint.class));
+			.getBeliefTypeFromCastType(CASTUtils.typeName(ViewPoint.class));
 
 	private static final String VISUALOBJECTTYPE = SimpleDiscreteTransferFunction
-	.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
+			.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
 
 	private static final List<String> types = Arrays.asList(PLACETYPE,
-			GATEWAYTYPE, "relation", "Robot", COMAROOMTYPE, VIEWPOINTTYPE, VISUALOBJECTTYPE);
+			GATEWAYTYPE, "relation", "Robot", COMAROOMTYPE, VIEWPOINTTYPE,
+			VISUALOBJECTTYPE);
 
 	WMTracker<PerceptBelief, GroundedBelief> tracker = null;
 
 	/**
-	 * configure the component
-	 *  --write-to-sa <subarchitectureID> the SA to write to
+	 * configure the component --write-to-sa <subarchitectureID> the SA to write
+	 * to
 	 * 
 	 * @see cast.core.CASTComponent#configure(java.util.Map)
 	 */
@@ -63,14 +64,14 @@ public class DoraBeliefTracker extends ManagedComponent {
 			wm2wmMap = new PointerMap<WMTrackedBeliefMap>(this,
 					WMTrackedBeliefMap.class);
 			tracker = WMTracker.create(this, PerceptBelief.class,
-					GroundedBelief.class, new FormulaMatcher(types, wm2wmMap),
+					GroundedBelief.class, new FormulaMatcher(types, wm2wmMap,
+							PerceptBelief.class, GroundedBelief.class),
 					wm2wmMap, config.get("--write-to-sa"));
 		} catch (InstantiationException e) {
 			logException("cannot create PointerMap and tracker", e);
 		} catch (IllegalAccessException e) {
 			logException("cannot create PointerMap and tracker", e);
 		}
-
 
 	}
 
