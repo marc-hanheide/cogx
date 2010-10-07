@@ -1,1 +1,1 @@
-propagation = I[Say ^ <Object>(%1)]
+propagation = CI[Say ^ <Object>(%1)]

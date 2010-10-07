@@ -350,7 +350,12 @@ public class CCGRealizer
 					LF lf = LFUtils.convertToLF(planLF);
 					// Realize the XML-based logical form
 					if (ngramScorer == null) { 
+						try {
 						realizer.realize(lf);
+						}
+						catch (RuntimeException e) {
+							e.printStackTrace();
+						}
 					} else {
 						realizer.realize(lf,ngramScorer);
 					} 

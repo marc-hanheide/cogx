@@ -179,6 +179,13 @@ public class PolicyReader {
 		}
 
 		// intention observation
+		else if (str.substring(0,3).equals("CI[")) {
+			String intentContent = str.substring(3,str.length()).split("]")[0].replace("]", "");
+			FormulaWrapper content = new FormulaWrapper (FormulaUtils.constructFormula(intentContent));
+			return new PolicyEdge (content, minmaxProbs[0], minmaxProbs[1]);
+		}
+		
+		// intention observation
 		else if (str.substring(0,2).equals("I[")) {
 			String intentContent = str.substring(2,str.length()).split("]")[0].replace("]", "");
 			FormulaWrapper content = new FormulaWrapper (FormulaUtils.constructFormula(intentContent));
@@ -241,7 +248,11 @@ public class PolicyReader {
 		}
 
 		// intention action
-		if (str.length() > 3 && str.substring(0,2).equals("I[")) {
+		if (str.length() > 4 && str.substring(0,3).equals("CI[")) {
+			String intentcontent = str.substring(3,str.length()).split("]")[0].replace("]", "");
+			return new PolicyAction(intentcontent);
+		}
+		else if (str.length() > 3 && str.substring(0,2).equals("I[")) {
 			String intentcontent = str.substring(2,str.length()).split("]")[0].replace("]", "");
 			return new PolicyAction(intentcontent);
 		}

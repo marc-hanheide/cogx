@@ -1,2 +1,2 @@
 start = wait
-end = I[Said ^ <Object>(%1)]
+end = CI[Said ^ <Object>(%1)]

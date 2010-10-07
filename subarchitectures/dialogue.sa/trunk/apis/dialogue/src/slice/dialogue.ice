@@ -294,11 +294,7 @@ module slice {
 module intentions {
 
 
-class CommunicativeIntention extends epobject::EpistemicObject {
-	string id;
-	AlternativeIntentions content;
-	logicalcontent::dFormula interpretationStatus;
-};
+class CommunicativeIntention extends Intention { };
 
 
 };

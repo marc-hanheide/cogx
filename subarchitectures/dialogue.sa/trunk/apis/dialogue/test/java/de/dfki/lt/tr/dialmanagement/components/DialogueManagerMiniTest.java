@@ -95,7 +95,7 @@ public class DialogueManagerMiniTest {
 		
 		Observation intent = createSimpleObservation("<Belief>(<Ref>context1_1 ^ <ObjectType>ball)");
 		PolicyAction action1 = manager.nextAction(intent);
-		assertEquals(action1.toString(), "I[okay]");
+		assertEquals(action1.toString(), "CI[okay]");
 		
 	}
 	

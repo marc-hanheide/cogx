@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.junit.Before;
 
 
-import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
+import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
@@ -84,7 +84,7 @@ public class DialogueManagerWithEpObjectTest {
 	@Test
 	public void testPolicyWithSimpleIntention() throws DialogueException {
 			
-		Intention intention1 = EpistemicObjectUtils.createSimpleAttributedIntention(
+		CommunicativeIntention intention1 = EpistemicObjectUtils.createSimpleAttributedCommunicativeIntention(
 				FormulaUtils.constructFormula("\"Please find the cornflakes box\""), 0.8f);
 		
 		PolicyAction action1 = manager.nextAction(intention1);
@@ -99,7 +99,7 @@ public class DialogueManagerWithEpObjectTest {
 		postconditions.put(FormulaUtils.constructFormula("\"bla bla bla\""), 0.7f);
 		postconditions.put(FormulaUtils.constructFormula("\"Please find the cornflakes box\""), 0.3f);
 		
-		Intention intention1 = EpistemicObjectUtils.createAttributedIntention(postconditions);
+		CommunicativeIntention intention1 = EpistemicObjectUtils.createAttributedCommunicativeIntention(postconditions);
 		PolicyAction action1 = manager.nextAction(intention1);
 		assertEquals(action1, new PolicyAction(FormulaUtils.constructFormula("\"sorry, should I search for the cornflaxes box?\"")));
 	}
