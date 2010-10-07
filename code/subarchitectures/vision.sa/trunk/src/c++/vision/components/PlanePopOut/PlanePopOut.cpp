@@ -11,10 +11,9 @@
 #include <VideoUtils.h>
 #include <math.h>
 #include <algorithm>
+#include <time.h>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
-#ifdef FEAT_VISUALIZATION
-#include <time.h>
 long long gethrtime(void)
 {
   struct timespec sp;
@@ -31,7 +30,6 @@ long long gethrtime(void)
   v+=sp.tv_nsec;
   return v;
 }
-#endif
 
 #define USE_MOTION_DETECTION
 #define SAVE_SOI_PATCH
@@ -658,6 +656,7 @@ void PlanePopOut::runComponent()
 #endif
   while(isRunning())
   {
+	long long t0 = gethrtime();
 	VisionData::SurfacePointSeq tempPoints = points;
 	points.resize(0);
 
@@ -767,7 +766,9 @@ void PlanePopOut::runComponent()
 		}
 		SOIManagement();
 	}
-
+	long long t1 = gethrtime();
+	double dt = (t1 - t0) * 1e-9;
+	log("run time / frame rate: %lf / %lf", dt, 1./dt);
 //cout<<"SOI in the WM = "<<PreviousObjList.size()<<endl;
     // wait a bit so we don't hog the CPU
     sleepComponent(50);
