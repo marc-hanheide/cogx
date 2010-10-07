@@ -15,15 +15,12 @@ random(1,2) ^ 2
 #c1 = :greeting ^ random(hi).
 
 // if the speech act is a closing, say "goodbye" (TODO: make more abstract, randomise closing to more than just goodbye)
-:dvp ^ <SpeechAct>closing ^ <Content> (#c1:),
-random(1,2) ^ 1
+:dvp ^ <SpeechAct>closing ^ <Content> (#c1:)
 -> 
-#c1 = :closing ^ goodbye.
-
-:dvp ^ <SpeechAct>closing ^ <Content> (#c1:),
-random(1,2) ^ 2
--> 
-#c1 = :closing ^ goodbye.
+// #c1 = :closing ^ bye.
+#c1 = :d-units ^ list ^ 
+              <First>(b1:closing ^ bye) ^ 
+              <Next>(b2:closing ^ bye).
 
 // Thanking (TODO: Is this even necessary??)
 :dvp ^ <SpeechAct>thanking ^ <Content> (#c1:)
