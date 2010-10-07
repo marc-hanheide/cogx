@@ -7,42 +7,15 @@
 // Goal: @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech)
 // Variants: "sorry what did you say" (1), "I didn't understand what you said" (2) 
 
-// Variant (1) "sorry what did you say
-//:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top),
-//random(1,2,3) ^ 1
-//-> 
-//#c1 =:d-units ^ list ^ <First>(s1:marker ^ sorry) ^ <Next>(s2:communication ^ say ^ <Mood>int ^ <Tense>past ^ <Actor>(y1:person ^ you ^ <Num>sg) ^ <Event>(w1:event ^ what) ^ <Subject>y1:person ^ <Wh-Restr>w1:event).
-
-// Variant (2) "I did not understand what you said"
-
-:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top) //,
-//random(1,2,3) ^ 2
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top) 
 -> 
-#c1 = :cognition ^ understand ^ 
-                <Mood>ind ^ 
-                <Polarity>neg ^ 
-                <Tense>past ^ 
-                <Actor>(i1:person ^ I ^ 
-                        <Num>sg) ^ 
-                <Event>(w1:event ^ what ^ 
-                        <Scope-in>(s1:communication ^ say ^ 
-                                   <Tense>past ^ 
-                                   <Actor>(y1:person ^ you ^ 
-                                           <Num>sg) ^ 
-                                   <Event>w1:event ^ 
-                                   <Subject>y1:person)) ^ 
-                <Subject>i1:person.
-
-
-// Variant (3) "Sorry, could you say again?"
-//:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top),
-//random(1,2,3) ^ 3
-//-> 
-//#c1 = :communication ^ say ^ 
-//                <Mood>int ^  
-//                <Actor>(y1:person ^ you ^ 
-//                        <Num>sg) ^  
-//                <Subject>y1:person.
+#c1 = :ascription(be ^ 
+                 <Mood>ind ^ 
+                 <Tense>pres ^ 
+                 <Cop-Restr>(#i1:person ^ I ^ 
+                             <Num>sg) ^ 
+                 <Cop-Scope>(#s1:q-attitude ^ sorry) ^ 
+                 <Subject>#i1:).
 
 
 // Clarification: failure to process what property was said
@@ -54,13 +27,13 @@
 #c1 =:communication ^ say ^ 
                     <Mood>int ^ 
                     <Tense>past ^ 
-                    <Actor>(y1:person ^ you ^ 
+                    <Actor>(#y1:person ^ you ^ 
                             <Num>sg) ^ 
-                    <Event>x1:event ^ 
-                    <Modifier>(j1:m-time ^ just) ^ 
-                    <Subject>y1:person ^ 
-                    <Wh-Restr>(w1:specifier ^ what ^ 
-                               <Scope>(s2:quality ^ color)). 
+                    <Event>#x1:event ^ 
+                    <Modifier>(#j1:m-time ^ just) ^ 
+                    <Subject>#y1: ^ 
+                    <Wh-Restr>(#w1:specifier ^ what ^ 
+                               <Scope>(#s2:quality ^ color)). 
 
 
 :dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-shape)
@@ -68,13 +41,13 @@
 #c1 =:communication ^ say ^ 
                     <Mood>int ^ 
                     <Tense>past ^ 
-                    <Actor>(y1:person ^ you ^ 
+                    <Actor>(#y1:person ^ you ^ 
                             <Num>sg) ^ 
-                    <Event>x1:event ^ 
-                    <Modifier>(j1:m-time ^ just) ^ 
-                    <Subject>y1:person ^ 
-                    <Wh-Restr>(w1:specifier ^ what ^ 
-                               <Scope>(s2:quality ^ shape)). 
+                    <Event>:event ^ 
+                    <Modifier>(:m-time ^ just) ^ 
+                    <Subject>#y1: ^ 
+                    <Wh-Restr>(:specifier ^ what ^ 
+                               <Scope>(:quality ^ shape)). 
 
 
 :dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-size)
@@ -82,13 +55,13 @@
 #c1 =:communication ^ say ^ 
                     <Mood>int ^ 
                     <Tense>past ^ 
-                    <Actor>(y1:person ^ you ^ 
+                    <Actor>(#y1:person ^ you ^ 
                             <Num>sg) ^ 
-                    <Event>x1:event ^ 
-                    <Modifier>(j1:m-time ^ just) ^ 
-                    <Subject>y1:person ^ 
-                    <Wh-Restr>(w1:specifier ^ what ^ 
-                               <Scope>(s2:quality ^ size)). 
+                    <Event>:event ^ 
+                    <Modifier>(:m-time ^ just) ^ 
+                    <Subject>#y1: ^ 
+                    <Wh-Restr>(:specifier ^ what ^ 
+                               <Scope>(:quality ^ size)). 
 
 
 // Clarification: failure to understand what property value was just said
@@ -102,15 +75,15 @@ random(1,2) ^ 1
 #c1 = :communication ^ say ^ 
                     <Mood>int ^ 
                     <Tense>past ^ 
-                    <Actor>(y1:person ^ you ^ 
+                    <Actor>(#y1:person ^ you ^ 
                             <Num>sg) ^ 
-                    <Event>(b1:ascription ^ be ^ 
+                    <Event>(#b1:ascription ^ be ^ 
                             <Mood>ind ^ 
                             <Tense>pres ^ 
-                            <Cop-Restr>(i1:thing ^ it ^ 
+                            <Cop-Restr>(#i1:thing ^ it ^ 
                                         <Num>sg) ^ 
-                            <Cop-Scope>(b2:q-color ^ #c1value) ^ 
-                            <Subject>i1:thing) ^ 
+                            <Cop-Scope>(#b2:q-color ^ #c1value) ^ 
+                            <Subject>#i1:) ^ 
                     <Subject>y1:person.
 
 // Variant (2): "did you say the color is VALUE?"
@@ -120,17 +93,17 @@ random(1,2) ^ 2
 #c1 =  :communication ^ say ^ 
                     <Mood>int ^ 
                     <Tense>past ^ 
-                    <Actor>(y1:person ^ you ^ 
+                    <Actor>(#y1:person ^ you ^ 
                             <Num>sg) ^ 
-                    <Event>(b1:ascription ^ be ^ 
+                    <Event>(#b1:ascription ^ be ^ 
                             <Mood>ind ^ 
                             <Tense>pres ^ 
-                            <Cop-Restr>(c1:entity ^ color ^ 
+                            <Cop-Restr>(#c1:entity ^ color ^ 
                                         <Delimitation>unique ^ 
                                         <Num>sg ^ 
                                         <Quantification>specific) ^ 
-                            <Cop-Scope>(b2:q-color ^ #c1value) ^ 
-                            <Subject>c1:entity) ^ 
+                            <Cop-Scope>(#b2:q-color ^ #c1value) ^ 
+                            <Subject>#c1:) ^ 
                     <Subject>y1:person.
 
 
@@ -141,15 +114,15 @@ random(1,2) ^ 1
 #c1 = :communication ^ say ^ 
                     <Mood>int ^ 
                     <Tense>past ^ 
-                    <Actor>(y1:person ^ you ^ 
+                    <Actor>(#y1:person ^ you ^ 
                             <Num>sg) ^ 
-                    <Event>(b1:ascription ^ be ^ 
+                    <Event>(#b1:ascription ^ be ^ 
                             <Mood>ind ^ 
                             <Tense>pres ^ 
-                            <Cop-Restr>(i1:thing ^ it ^ 
+                            <Cop-Restr>(#i1:thing ^ it ^ 
                                         <Num>sg) ^ 
-                            <Cop-Scope>(b2:q-shape ^ #c1value) ^ 
-                            <Subject>i1:thing) ^ 
+                            <Cop-Scope>(#b2:q-shape ^ #c1value) ^ 
+                            <Subject>#i1:) ^ 
                     <Subject>y1:person.
 
 // Variant (2) "did you say the shape is VALUE"
@@ -159,18 +132,18 @@ random(1,2) ^ 2
 #c1 =  :communication ^ say ^ 
                     <Mood>int ^ 
                     <Tense>past ^ 
-                    <Actor>(y1:person ^ you ^ 
+                    <Actor>(#y1:person ^ you ^ 
                             <Num>sg) ^ 
-                    <Event>(b1:ascription ^ be ^ 
+                    <Event>(#b1:ascription ^ be ^ 
                             <Mood>ind ^ 
                             <Tense>pres ^ 
-                            <Cop-Restr>(c1:entity ^ shape ^ 
-                                        <Delimitation>unique ^ 
+                            <Cop-Restr>(#c1:entity ^ shape ^ 
                                         <Num>sg ^ 
+                                        <Delimitation>unique ^ 
                                         <Quantification>specific) ^ 
-                            <Cop-Scope>(b2:q-shape ^ #c1value) ^ 
-                            <Subject>c1:entity) ^ 
-                    <Subject>y1:person.
+                            <Cop-Scope>(#b2:q-shape ^ #c1value) ^ 
+                            <Subject>#c1:) ^ 
+                    <Subject>#y1:.
 
 // Variant (1) "did you it is VALUE"
 :dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-size ^ #c1value) 
@@ -178,16 +151,16 @@ random(1,2) ^ 2
 #c1 = :communication ^ say ^ 
                     <Mood>int ^ 
                     <Tense>past ^ 
-                    <Actor>(y1:person ^ you ^ 
+                    <Actor>(#y1:person ^ you ^ 
                             <Num>sg) ^ 
-                    <Event>(b1:ascription ^ be ^ 
+                    <Event>(#b1:ascription ^ be ^ 
                             <Mood>ind ^ 
                             <Tense>pres ^ 
-                            <Cop-Restr>(i1:thing ^ it ^ 
+                            <Cop-Restr>(#i1:thing ^ it ^ 
                                         <Num>sg) ^ 
-                            <Cop-Scope>(b2:q-size ^ #c1value) ^ 
-                            <Subject>i1:thing) ^ 
-                    <Subject>y1:person.
+                            <Cop-Scope>(#b2:q-size ^ #c1value) ^ 
+                            <Subject>#i1:) ^ 
+                    <Subject>#y1:.
 
 // Variant (2) "did you say the size is VALUE"
 :dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-size ^ #c1value),
@@ -196,18 +169,18 @@ random(1,2) ^ 2
 #c1 =  :communication ^ say ^ 
                     <Mood>int ^ 
                     <Tense>past ^ 
-                    <Actor>(y1:person ^ you ^ 
+                    <Actor>(#y1:person ^ you ^ 
                             <Num>sg) ^ 
-                    <Event>(b1:ascription ^ be ^ 
+                    <Event>(#b1:ascription ^ be ^ 
                             <Mood>ind ^ 
                             <Tense>pres ^ 
-                            <Cop-Restr>(c1:entity ^ size ^ 
+                            <Cop-Restr>(#c1:entity ^ size ^ 
                                         <Delimitation>unique ^ 
                                         <Num>sg ^ 
                                         <Quantification>specific) ^ 
-                            <Cop-Scope>(b2:q-size ^ #c1value) ^ 
-                            <Subject>c1:entity) ^ 
-                    <Subject>y1:person.
+                            <Cop-Scope>(#b2:q-size ^ #c1value) ^ 
+                            <Subject>#c1:) ^ 
+                    <Subject>#y1:.
 
 
 // "Did you say it is the LOCATION"
@@ -216,16 +189,16 @@ random(1,2) ^ 2
 #k1 = :communication ^ say ^ 
                     <Mood>int ^ 
                     <Tense>past ^ 
-                    <Actor>(y1:person ^ you ^ 
+                    <Actor>(#y1:person ^ you ^ 
                             <Num>sg) ^ 
-                    <Event>(b1:ascription ^ be ^ 
+                    <Event>(#b1:ascription ^ be ^ 
                             <Mood>ind ^ 
                             <Tense>pres ^ 
-                            <Cop-Restr>(i1:thing ^ it ^ 
+                            <Cop-Restr>(#i1:thing ^ it ^ 
                                         <Num>sg) ^ 
-                            <Cop-Scope>(k2:e-place ^ #v1) ^ 
-                            <Subject>i1:thing) ^ 
-                    <Subject>y1:person.
+                            <Cop-Scope>(#k2:e-place ^ #v1) ^ 
+                            <Subject>#i1:) ^ 
+                    <Subject>#y1:.
 
 
 // INPUT: @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech ^ <Goal>find ^ <Target>(b2:thing ^ <InfoStatus>familiar ^ thing))
@@ -236,14 +209,14 @@ random(1,2) ^ 2
 #c1 =:communication ^ say ^ 
                     <Mood>int ^ 
                     <Tense>past ^ 
-                    <Actor>(y1:person ^ you ^ 
+                    <Actor>(#y1:person ^ you ^ 
                             <Num>sg) ^
-                    <Event>(b1:action-non-motion ^ find ^ 
+                    <Event>(#b1:action-non-motion ^ find ^ 
                         <Mood>ind ^
-			<Modifier>(s1:modal ^ should) ^ 
+			<Modifier>(#s1:modal ^ should) ^ 
 			<Actor>(#i:person ^ I ^ <Num> sg) ^
                         <Patient>#t2 ^
                         <Subject>#i:person) ^ 
-                    <Subject>y1:person. 
+                    <Subject>#y1:. 
 
 
