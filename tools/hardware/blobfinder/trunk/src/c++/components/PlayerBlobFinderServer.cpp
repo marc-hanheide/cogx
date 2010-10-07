@@ -94,8 +94,8 @@ namespace blobfinder {
       blob.area = playerBlob.area;
 
       //0,0 is top-left of camera image
-      blob.boundingBox.pos.x = playerBlob.x;
-      blob.boundingBox.pos.y = playerBlob.y;
+      blob.boundingBox.pos.x = playerBlob.x + 0.001; // a position of 0.0 causes a div by zero so add epsilon here
+      blob.boundingBox.pos.y = playerBlob.y + 0.001;
       blob.boundingBox.width = playerBlob.right - playerBlob.left;
       blob.boundingBox.height = playerBlob.bottom - playerBlob.top;
 
