@@ -43,7 +43,8 @@ public class VisualObjectTracker extends ManagedComponent {
 			wm2wmMap = new PointerMap<WMTrackedBeliefMap>(this,
 					WMTrackedBeliefMap.class);
 			tracker = WMTracker.create(this, PerceptBelief.class,
-					GroundedBelief.class, new FormulaMatcher(types, wm2wmMap),
+					GroundedBelief.class, new FormulaMatcher(types, wm2wmMap, PerceptBelief.class,
+							GroundedBelief.class),
 					wm2wmMap, config.get("--write-to-sa"));
 		} catch (InstantiationException e) {
 			logException("cannot create PointerMap and tracker", e);
