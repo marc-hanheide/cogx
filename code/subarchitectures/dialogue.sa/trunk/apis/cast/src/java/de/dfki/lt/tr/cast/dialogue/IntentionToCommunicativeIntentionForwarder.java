@@ -66,7 +66,7 @@ extends AbstractDialogueComponent {
 			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
 
 			Intention it = (Intention)data.getData();
-			if (it.content.size() == 1 && it.content.get(0).agents.size() == 1 && it.content.get(0).agents.get(0).equals(IntentionManagementConstants.humanAgent) && it.estatus instanceof AttributedEpistemicStatus) {
+			if (it.content.size() == 1 && it.content.get(0).agents.size() == 1 && it.content.get(0).agents.get(0).equals(IntentionManagementConstants.thisAgent) && it.estatus instanceof PrivateEpistemicStatus) {
 				String taskID = newTaskID();
 				ProcessingData pd = new ProcessingData(newProcessingDataId());
 				pd.add(data);
