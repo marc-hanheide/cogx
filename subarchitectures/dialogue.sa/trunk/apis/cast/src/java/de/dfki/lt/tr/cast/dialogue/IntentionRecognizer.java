@@ -29,6 +29,8 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import de.dfki.lt.tr.beliefs.slice.epobject.EpistemicObject;
+import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
@@ -39,6 +41,8 @@ import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.ref.ResolvedLogicalForm;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
+import eu.cogx.beliefs.slice.AssertedBelief;
+import eu.cogx.beliefs.slice.PresupposedBelief;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -160,7 +164,8 @@ extends AbstractDialogueComponent {
 					for (dBelief b : eos.pre) {
 						log("adding belief " + b.id + " to binder WM:\n" + BeliefIntentionUtils.beliefToString(b));
 						try {
-							addToWorkingMemory(b.id, "binder", b);
+							dBelief db = upCastPrecondition(b);
+							addToWorkingMemory(b.id, "binder", db);
 						}
 						catch (AlreadyExistsOnWMException ex) {
 							ex.printStackTrace();
@@ -197,4 +202,29 @@ extends AbstractDialogueComponent {
 			log("no data for processing");
 		}
 	}
+
+	public dBelief upCastPrecondition(dBelief b) {
+		if (b.estatus instanceof AttributedEpistemicStatus) {
+			AssertedBelief ab = new AssertedBelief();
+			ab.content = b.content;
+			ab.estatus = b.estatus;
+			ab.frame = b.frame;
+			ab.hist = b.hist;
+			ab.id = b.id;
+			ab.type = b.type;
+			return ab;
+		}
+		if (b.estatus instanceof SharedEpistemicStatus) {
+			PresupposedBelief pb = new PresupposedBelief();
+			pb.content = b.content;
+			pb.estatus = b.estatus;
+			pb.frame = b.frame;
+			pb.hist = b.hist;
+			pb.id = b.id;
+			pb.type = b.type;
+			return pb;
+		}
+		return b;
+	}
+
 }
