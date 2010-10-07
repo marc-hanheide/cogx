@@ -169,16 +169,17 @@ sequence<OneObj> ObjSeq;
 
     StringSeq colorLabels;
     DoubleSeq colorDistrib;
+    DoubleSeq colorGains;
+    // colorGain = max(colorGains) ... for now;
     double colorGain;
     double colorAmbiguity;
-    // TODO: colorGain --> colorGains is a list (DoubleSeq), for each label
-    // TODO: colorTGain = max(colorGains) ... for now
 
     StringSeq shapeLabels;
     DoubleSeq shapeDistrib;
+    DoubleSeq shapeGains;
+    // shapeGain = max(shapeGains) ... for now;
     double shapeGain;
     double shapeAmbiguity;
-    // TODO: gains same as with colors
 
     // Source proto object
     string protoObjectID;
