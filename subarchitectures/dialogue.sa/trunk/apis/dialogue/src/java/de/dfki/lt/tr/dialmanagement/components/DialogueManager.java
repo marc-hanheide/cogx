@@ -27,7 +27,7 @@ import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.events.Event;
-import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
+import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
@@ -85,10 +85,10 @@ public class DialogueManager {
 	 * @throws DialogueException if the content of the intention or the dialogue policy
 	 *         is ill-formatted
 	 */
-	public PolicyAction nextAction(Intention intention) throws DialogueException {
+	public PolicyAction nextAction(CommunicativeIntention intention) throws DialogueException {
 
 		Observation obs = new Observation(Observation.INTENTION);
-		for (IntentionalContent icontent : intention.content) {
+		for (IntentionalContent icontent : intention.intent.content) {
 			obs.addAlternative(icontent.postconditions, icontent.probValue);
 		}
 

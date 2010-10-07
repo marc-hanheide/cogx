@@ -38,6 +38,7 @@ import de.dfki.lt.tr.beliefs.slice.events.Event;
 import de.dfki.lt.tr.beliefs.slice.framing.SpatioTemporalFrame;
 import de.dfki.lt.tr.beliefs.slice.framing.TemporalInterval;
 import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
+import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
@@ -173,7 +174,7 @@ public class EpistemicObjectUtils {
 		for (dFormula formula: postconditions.keySet()) {
 			intents.add((new IntentionalContent(Arrays.asList("robot"), FormulaUtils.constructFormula(""), formula, postconditions.get(formula))));
 		}
-		return new CommunicativeIntention(frame, attrib, forgeNewId(), intents);
+		return new CommunicativeIntention(new Intention(frame, attrib, forgeNewId(), intents));
 	}
 	
 	
@@ -197,7 +198,7 @@ public class EpistemicObjectUtils {
 		for (FormulaProbPair pair: pairs) {
 			intents.add((new IntentionalContent(Arrays.asList("robot"), FormulaUtils.constructFormula(""), pair.val, pair.prob)));
 		}
-		return new CommunicativeIntention(frame, attrib, forgeNewId(), intents);
+		return new CommunicativeIntention(new Intention(frame, attrib, forgeNewId(), intents));
 	}
 	
 
@@ -219,7 +220,7 @@ public class EpistemicObjectUtils {
 		for (dFormula formula: postconditions.keySet()) {
 			intents.add((new IntentionalContent(Arrays.asList("robot"), FormulaUtils.constructFormula(""), formula, postconditions.get(formula))));
 		}
-		return new CommunicativeIntention(frame, priv, forgeNewId(), intents);
+		return new CommunicativeIntention(new Intention(frame, priv, forgeNewId(), intents));
 	}
 	
 	

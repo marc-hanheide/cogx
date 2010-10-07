@@ -294,7 +294,9 @@ module slice {
 module intentions {
 
 
-class CommunicativeIntention extends Intention { };
+class CommunicativeIntention {
+	Intention intent;
+};
 
 
 };

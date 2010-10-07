@@ -111,7 +111,7 @@ public class DialogueManagement extends ManagedComponent {
 							WorkingMemoryChange _wmc) {
 						try {
 							CommunicativeIntention initIntention = getMemoryEntry(_wmc.address, CommunicativeIntention.class);
-							if (initIntention.estatus instanceof AttributedEpistemicStatus) {
+							if (initIntention.intent.estatus instanceof AttributedEpistemicStatus) {
 								newIntentionReceived(initIntention);
 							}
 						} catch (DoesNotExistOnWMException e) {
@@ -177,7 +177,7 @@ public class DialogueManagement extends ManagedComponent {
 			
 			CommunicativeIntention augmentedIntention = createAugmentedIntention(intention);
 			
-			String formAsString = FormulaUtils.getString(augmentedIntention.content.get(0).postconditions);
+			String formAsString = FormulaUtils.getString(augmentedIntention.intent.content.get(0).postconditions);
 			debug("augmented intention: " + formAsString);	
 
 			PolicyAction action = manager.nextAction(augmentedIntention);
@@ -250,13 +250,13 @@ public class DialogueManagement extends ManagedComponent {
 	public CommunicativeIntention createAugmentedIntention (CommunicativeIntention initIntention) 
 	throws DialogueException, DoesNotExistOnWMException {
 
-		if (initIntention!=null && initIntention.content.size() > 0)  {
+		if (initIntention!=null && initIntention.intent.content.size() > 0)  {
 
-			if (initIntention.content.get(0).postconditions instanceof ModalFormula &&
-					((ModalFormula)initIntention.content.get(0).postconditions).op.equals(IntentionManagementConstants.beliefLinkModality)) {
+			if (initIntention.intent.content.get(0).postconditions instanceof ModalFormula &&
+					((ModalFormula)initIntention.intent.content.get(0).postconditions).op.equals(IntentionManagementConstants.beliefLinkModality)) {
 
 				String beliefID = FormulaUtils.getString(
-						((ModalFormula)initIntention.content.get(0).postconditions).form);
+						((ModalFormula)initIntention.intent.content.get(0).postconditions).form);
 
 				if (existsOnWorkingMemory(beliefID)) {
 					dBelief b = getMemoryEntry(beliefID, dBelief.class);
