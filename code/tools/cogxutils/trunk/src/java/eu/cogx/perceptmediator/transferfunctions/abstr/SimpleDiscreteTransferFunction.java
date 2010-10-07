@@ -4,8 +4,8 @@
 package eu.cogx.perceptmediator.transferfunctions.abstr;
 
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.StringTokenizer;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -19,7 +19,7 @@ import castutils.castextensions.CASTHelper;
 import castutils.castextensions.WMEntrySynchronizer.TransferFunction;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
-import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
+import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
@@ -158,8 +158,9 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	private void addUniversalMappings(WorkingMemoryChange _wmc, From _from,
 			Map<String, Formula> _mapping) {
 		//TODO make this work with the proper type
-//		_mapping.put(SOURCE_ADDR_ID, WMPointer.create(_wmc.address).getAsFormula());
-		_mapping.put(SOURCE_ADDR_ID, PropositionFormula.create(_wmc.address.id + " " + _wmc.address.subarchitecture).getAsFormula());
+		component.getLogger().warn("addUniversalMappings");
+		_mapping.put(SOURCE_ADDR_ID, WMPointer.create(_wmc.address).getAsFormula());
+//		_mapping.put(SOURCE_ADDR_ID, PropositionFormula.create(_wmc.address.id + " " + _wmc.address.subarchitecture).getAsFormula());
 	}
 
 	/**

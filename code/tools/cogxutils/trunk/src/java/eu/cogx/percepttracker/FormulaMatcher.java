@@ -49,7 +49,7 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 	/** the very small epsilon to test doubles for equality */
 	private static final double EPSILON_EQUALITY = 1e-10;
 
-	private Set<String> ignoredKeys = new HashSet<String>();
+	protected Set<String> ignoredKeys = new HashSet<String>();
 
 	private Logger logger;
 
@@ -77,6 +77,7 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 
 		// always ignore the source-address!
 		ignoredKeys.add(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID);
+		ignoreForPointerPropagationSet.add(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID);
 	}
 
 	public FormulaMatcher(List<String> types, PointerMap<?> map,
@@ -90,6 +91,10 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 
 	protected final PointerMap<?> wm2wmMap;
 
+	protected final Set<String> ignoreForPointerPropagationSet = new HashSet<String>();
+
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -185,7 +190,8 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 			}
 			FormulaDistribution otherEntry = compareTo.get(entry.getKey());
 			if (otherEntry == null) {
-				logger.debug("couldn't find corresponding formula, we continue to look for more");
+				logger
+						.debug("couldn't find corresponding formula, we continue to look for more");
 				continue;
 			}
 
@@ -241,12 +247,15 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 		return true;
 	}
 
-	protected final CASTIndependentFormulaDistributionsBelief<To> createToBeliefProxy(To to) {
+	protected final CASTIndependentFormulaDistributionsBelief<To> createToBeliefProxy(
+			To to) {
 		return CASTIndependentFormulaDistributionsBelief.create(m_toCls, to);
 	}
-	
-	protected final CASTIndependentFormulaDistributionsBelief<From> createFromBeliefProxy(From from) {
-		return CASTIndependentFormulaDistributionsBelief.create(m_fromCls, from);
+
+	protected final CASTIndependentFormulaDistributionsBelief<From> createFromBeliefProxy(
+			From from) {
+		return CASTIndependentFormulaDistributionsBelief
+				.create(m_fromCls, from);
 	}
 
 	/*
@@ -265,31 +274,49 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 		}
 		CASTIndependentFormulaDistributionsBelief<To> toBelief = createToBeliefProxy(to);
 		CASTIndependentFormulaDistributionsBelief<From> fromBelief = createFromBeliefProxy(from);
-		toBelief.setTime(toBelief.getStartTime(), fromBelief.getEndTime());
-		toBelief.getContent().putAll(fromBelief.getContent());
-		try {
-			for (Entry<String, FormulaDistribution> entry : toBelief
-					.getContent().entrySet()) {
-				for (ProbFormula f : entry.getValue().getDistribution()) {
-					// propagate any PointerFormulas to PerceptBeliefs to
-					// GroundedBeliefs
-					if (f.getFormula().get() instanceof PointerFormula) {
-						WMPointer wmp = WMPointer.create((Ice.Object) f
-								.getFormula().get());
-						WorkingMemoryAddress lookUpGroundedBelief;
 
-						lookUpGroundedBelief = wm2wmMap.waitFor(wmp.getVal());
-						logger.info("update " + entry.getKey() + " formula "
-								+ f.getFormula().toString() + " to "
-								+ CASTUtils.toString(lookUpGroundedBelief));
-						wmp.setVal(lookUpGroundedBelief);
-						logger.info("new val: " + entry.getKey() + " formula "
-								+ f.getFormula().toString());
-					}
-				}
-			}
+		fillBeliefs(wmc, fromBelief, toBelief);
+	}
+
+	protected void fillBeliefs(WorkingMemoryChange wmc, 
+			CASTIndependentFormulaDistributionsBelief<From> fromBelief,
+			CASTIndependentFormulaDistributionsBelief<To> toBelief) {
+
+		try {
+			toBelief.setTime(toBelief.getStartTime(), fromBelief.getEndTime());
+			toBelief.getContent().putAll(fromBelief.getContent());
+			propagatePointers(toBelief, ignoreForPointerPropagationSet);
 		} catch (InterruptedException e) {
 			logger.error("interrupted", e);
+		}
+	}
+
+	protected void propagatePointers(
+			CASTIndependentFormulaDistributionsBelief<To> toBelief,
+			Set<String> ignoreProperties) throws InterruptedException {
+		for (Entry<String, FormulaDistribution> entry : toBelief.getContent()
+				.entrySet()) {
+			// if we have properties to ignore, we do this now!
+			if (ignoreProperties != null
+					&& ignoreProperties.contains(entry.getKey()))
+				continue;
+			for (ProbFormula f : entry.getValue().getDistribution()) {
+				// propagate any PointerFormulas to PerceptBeliefs to
+				// GroundedBeliefs
+				if (f.getFormula().get() instanceof PointerFormula) {
+					WMPointer wmp = WMPointer.create((Ice.Object) f
+							.getFormula().get());
+					WorkingMemoryAddress lookUpGroundedBelief;
+
+					lookUpGroundedBelief = wm2wmMap.waitFor(wmp.getVal());
+					logger.info("update " + entry.getKey() + " formula "
+							+ f.getFormula().toString() + " to "
+							+ CASTUtils.toString(lookUpGroundedBelief));
+					wmp.setVal(lookUpGroundedBelief);
+					logger.info("new val: " + entry.getKey() + " formula "
+							+ f.getFormula().toString());
+				}
+			}
 		}
 	}
 
