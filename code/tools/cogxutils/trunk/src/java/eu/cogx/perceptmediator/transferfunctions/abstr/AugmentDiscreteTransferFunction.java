@@ -12,8 +12,6 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
-import cast.core.CASTUtils;
-import cast.interfaces.TimeServerPrx;
 import castutils.castextensions.CASTHelper;
 import castutils.castextensions.WMContentWaiter;
 import castutils.castextensions.WMView;

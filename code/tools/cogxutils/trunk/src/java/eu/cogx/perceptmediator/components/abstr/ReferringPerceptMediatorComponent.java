@@ -6,22 +6,24 @@ package eu.cogx.perceptmediator.components.abstr;
 
 import cast.UnknownSubarchitectureException;
 import castutils.castextensions.WMView;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 
 /**
  * @author marc
  * 
  */
-public abstract class ReferringPerceptMediatorComponent extends
+public abstract class ReferringPerceptMediatorComponent<To extends dBelief> extends
 		PerceptMediatorComponent {
 
-	final protected WMView<PerceptBelief> perceptBeliefsView;
-
+	final protected WMView<To> allBeliefs;
+	final protected Class<To> belClass;
+	
 	/**
 	 * 
 	 */
-	public ReferringPerceptMediatorComponent() {
-		perceptBeliefsView = WMView.create(this, PerceptBelief.class);
+	public ReferringPerceptMediatorComponent(Class<To> belClass) {
+		this.belClass=belClass;
+		allBeliefs = WMView.create(this, belClass);
 	}
 
 	/*
@@ -32,9 +34,9 @@ public abstract class ReferringPerceptMediatorComponent extends
 	@Override
 	protected void start() {
 		try {
-			perceptBeliefsView.start();
+			allBeliefs.start();
 		} catch (UnknownSubarchitectureException e) {
-			getLogger().error("trying to start WMView<PerceptBelief>", e);
+			getLogger().error("trying to start WMView<To>", e);
 		}
 
 		super.start();
