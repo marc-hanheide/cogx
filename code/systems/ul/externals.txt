@@ -3,14 +3,16 @@
 
 ^/code/subarchitectures/binder/trunk                    subarchitectures/binder.sa
 ^/code/subarchitectures/coma.sa/trunk                   subarchitectures/coma.sa
+^/code/subarchitectures/conceptual.sa/trunk             subarchitectures/conceptual.sa
+^/code/subarchitectures/default.sa/trunk                subarchitectures/default.sa
 ^/code/subarchitectures/dialogue.sa/trunk               subarchitectures/dialogue.sa
+^/code/subarchitectures/execution.sa/trunk              subarchitectures/execution.sa
 ^/code/subarchitectures/fakemotivation.sa/trunk         subarchitectures/fakemotivation.sa
 ^/code/subarchitectures/motivation.sa/trunk             subarchitectures/motivation.sa
 ^/code/subarchitectures/planner.sa/trunk                subarchitectures/planner.sa
 ^/code/subarchitectures/spatial.sa/trunk                subarchitectures/spatial.sa
 ^/code/subarchitectures/vision.sa/trunk                 subarchitectures/vision.sa
 ^/code/subarchitectures/visualization.sa/trunk          subarchitectures/visualization.sa
-^/code/subarchitectures/execution.sa/trunk              subarchitectures/execution.sa
 
 
 ^/code/tools/alchemy                              tools/alchemy
