@@ -9,13 +9,13 @@
 
 :dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top) 
 -> 
-#c1 = :ascription(be ^ 
+#c1 = :ascription ^ be ^ 
                  <Mood>ind ^ 
                  <Tense>pres ^ 
                  <Cop-Restr>(#i1:person ^ I ^ 
                              <Num>sg) ^ 
-                 <Cop-Scope>(#s1:q-attitude ^ BLABLABLABLABLA) ^ 
-                 <Subject>#i1:).
+                 <Cop-Scope>(#s1:q-attitude ^ sorry) ^ 
+                 <Subject>#i1:.
 
 
 // Clarification: failure to process what property was said
