@@ -118,7 +118,10 @@ def change_builtin_functions(table, functions=None):
                 a2 = types.Parameter(a.name, a.type)
             newargs.append(a2)
             pdict[a.name] = a2
-        table.add(f.__class__(f.name, newargs, f.type, builtin=False, function_scope=f.function_scope))
+        if f.__class__ == Predicate:
+            table.add(f.__class__(f.name, newargs, builtin=False, function_scope=f.function_scope))
+        else:
+            table.add(f.__class__(f.name, newargs, f.type, builtin=False, function_scope=f.function_scope))
             
     
 class ChainingTranslator(Translator):
@@ -1114,28 +1117,8 @@ class MAPLCompiler(Translator):
         dom.requirements.discard("mapl")
         dom.constants.discard(types.UNKNOWN)
 
-        for func in mapl.modal_predicates:
-            dom.predicates.remove(func)
+        change_builtin_functions(dom.predicates, mapl.modal_predicates)
         
-        knowledge = Predicate("kval", [Parameter("?a", mapl.t_agent), Parameter("?f", FunctionType(t_object))], builtin=False)
-        direct_knowledge = Predicate("kd", [Parameter("?a", mapl.t_agent), Parameter("?f", FunctionType(t_object))], builtin=False)
-        p = Parameter("?f", FunctionType(t_object))
-        indomain = Predicate("in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
-        p = Parameter("?f", FunctionType(t_object))
-        i_indomain = Predicate("i_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
-        #not_indomain = Predicate("not_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
-        p = Parameter("?f", types.FunctionType(t_object))
-        hyp = Predicate("hyp", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
-        p = Parameter("?f", types.FunctionType(t_object))
-        commit = Predicate("commit", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
-
-        dom.predicates.add(knowledge)
-        dom.predicates.add(direct_knowledge)
-        dom.predicates.add(indomain)
-        dom.predicates.add(i_indomain)
-        dom.predicates.add(hyp)
-        dom.predicates.add(commit)
-
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
         dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
