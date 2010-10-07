@@ -80,6 +80,9 @@ StereoServer::StereoServer()
 
 StereoServer::~StereoServer()
 {
+#ifdef HAVE_GPU_STEREO
+  delete census;
+#endif
   for(size_t i = 0; i < stereoCams.size(); i++)
     delete stereoCams[i];
   if(doDisplay)
@@ -217,6 +220,11 @@ void StereoServer::configure(const map<string,string> & _config)
   // configuration consistent?
   if(camIds.size() != 2)
     throw runtime_error(exceptionMessage(__HERE__, "need exactly 2 camera IDs"));
+
+#ifdef HAVE_GPU_STEREO
+  // allocate the actual stereo matcher with given max disparity
+  census = new CensusGPU(maxDisp);
+#endif
 
   setupMyIceCommunication();
 }
@@ -392,10 +400,6 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
   // census->printTiming();
   // census->printTiming();
   census->getDisparityMap(imgSet.disparityImg);
-  log("gpustereo for %d x %d: runtime / framerate: %lf s / %lf",
-    imgSet.disparityImg->width, imgSet.disparityImg->height,
-    stop - start, 1./(stop - start));
-
   if(medianSize > 0)
   {
     IplImage *tmp = cvCloneImage(imgSet.disparityImg);
