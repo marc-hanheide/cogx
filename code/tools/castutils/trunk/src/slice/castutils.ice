@@ -13,6 +13,9 @@ module castutils {
 		};		
     
     	class WMTrackedBeliefMap extends WMMap {};
+
+    	class GroundedToSharedBeliefMap extends WMMap {};
+
     
         class WMMutex {
               string name;
