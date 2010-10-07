@@ -21,9 +21,8 @@ utt_head(Nom) <-
 
 generate : event : utter(robot, H, Int) <-
 	utt_head(Nom),
-	i : feat_CannedText(Nom, 'sorry_mate_i_have_no_clue_what_you_are_talking_about') / -1.0,
-%	i : feat_SpeechAct(Nom, clarification) / -1.0,
-%	i : feat_Modality(Nom, speech) / -1.0,
+	i : feat_SpeechAct(Nom, clarification) / -1.0,
+	i : feat_Modality(Nom, speech) / -1.0,
 	event : produce(r, Nom) / 20.0.
 
 %-------------------------------------------------------------------------
@@ -34,6 +33,15 @@ generate : event : utter(S, H, Int) <-
 	i : int : post(Int, state(['error-reported'|T])),
 	i : feat_SpeechAct(Nom, clarification) / -1.0,
 	i : feat_Modality(Nom, speech) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['question-answered', agent(H), about(X)|T])),
+	i : feat_CannedText(Nom, 'i_would_like_to_ask_you_something') / -1.0,
 	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------

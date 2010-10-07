@@ -31,6 +31,7 @@ import cast.core.CASTData;
 import de.dfki.lt.tr.beliefs.slice.epobject.EpistemicObject;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
@@ -184,9 +185,12 @@ extends AbstractDialogueComponent {
 						}
 					}
 					for (Intention i : eos.ints) {
-						log("adding intention " + i.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(i));
+						log("adding communicative intention " + i.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(i));
 						try {
-							addToWorkingMemory(i.id, i);
+							CommunicativeIntention cit = new CommunicativeIntention();
+							cit.intent = i;
+							addToWorkingMemory(newDataID(), cit);
+//							addToWorkingMemory(i.id, i);
 						}
 						catch (AlreadyExistsOnWMException ex) {
 							ex.printStackTrace();

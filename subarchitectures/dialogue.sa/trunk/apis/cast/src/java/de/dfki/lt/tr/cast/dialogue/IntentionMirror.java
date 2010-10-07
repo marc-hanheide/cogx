@@ -28,6 +28,7 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
@@ -51,20 +52,21 @@ extends AbstractDialogueComponent {
 		super.start();
 
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(Intention.class, WorkingMemoryOperation.ADD),
+				ChangeFilterFactory.createLocalTypeFilter(CommunicativeIntention.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handleIntention(_wmc);
+						handleCommunicativeIntention(_wmc);
 					}
 		});
 	}
 
-	private void handleIntention(WorkingMemoryChange _wmc) {
+	private void handleCommunicativeIntention(WorkingMemoryChange _wmc) {
 		try {
 			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
 
-			Intention it = (Intention)data.getData();
+			CommunicativeIntention cit = (CommunicativeIntention)data.getData();
+			Intention it = cit.intent;
 			if (it.content.size() == 1 && it.content.get(0).agents.size() == 1 && it.content.get(0).agents.get(0).equals(IntentionManagementConstants.humanAgent) && it.estatus instanceof AttributedEpistemicStatus) {
 				String taskID = newTaskID();
 				ProcessingData pd = new ProcessingData(newProcessingDataId());
@@ -72,6 +74,9 @@ extends AbstractDialogueComponent {
 				m_proposedProcessing.put(taskID, pd);
 				String taskGoal = DialogueGoals.INTENTION_MIRRORING_TASK;
 				proposeInformationProcessingTask(taskID, taskGoal);
+			}
+			else {
+				log("ignoring a communicative intention");
 			}
 		}
 		catch (SubarchitectureComponentException e) {
@@ -86,9 +91,10 @@ extends AbstractDialogueComponent {
 		if (iter.hasNext()) {
 			Object body = iter.next().getData();
 
-			if (body instanceof Intention) {
-				Intention it = (Intention) body;
-//				log("mirroring an intention");
+			if (body instanceof CommunicativeIntention) {
+				CommunicativeIntention cit = (CommunicativeIntention) body;
+				Intention it = cit.intent;
+				log("mirroring a communicative intention");
 
 				// set private epistemic status
 				it.id = newDataID();
@@ -107,13 +113,17 @@ extends AbstractDialogueComponent {
 				}
 
 				try {
-					log("adding intention " + it.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(it));
-					addToWorkingMemory(it.id, it);
+					log("adding communicative intention " + it.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(it));
+					addToWorkingMemory(newDataID(), cit);
+//					addToWorkingMemory(it.id, it);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
 					throw new DialogueException(e.getMessage());
 				}
+			}
+			else {
+				log("oops! got a " + body.getClass().getCanonicalName() + " in the intention mirror");
 			}
 		}
 		else {

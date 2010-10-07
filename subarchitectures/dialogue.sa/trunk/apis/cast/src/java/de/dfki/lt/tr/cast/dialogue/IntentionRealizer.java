@@ -28,6 +28,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import de.dfki.lt.tr.beliefs.slice.epobject.EpistemicObject;
+import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
@@ -110,11 +111,11 @@ extends AbstractDialogueComponent {
 		}
 
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(Intention.class, WorkingMemoryOperation.ADD),
+				ChangeFilterFactory.createLocalTypeFilter(CommunicativeIntention.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handleIntention(_wmc);
+						handleCommunicativeIntention(_wmc);
 					}
 		});
 	}
@@ -127,17 +128,17 @@ extends AbstractDialogueComponent {
 		}
 	}
 
-	private void handleIntention(WorkingMemoryChange _wmc) {
+	private void handleCommunicativeIntention(WorkingMemoryChange _wmc) {
 		try {
 			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
 
-			Intention itn = (Intention)data.getData();
-			if (itn.content.size() > 1) {
-				log("don't know how to handle an intention with " + itn.content.size() + " alternative contents");
+			CommunicativeIntention cit = (CommunicativeIntention)data.getData();
+			if (cit.intent.content.size() > 1) {
+				log("don't know how to handle an intention with " + cit.intent.content.size() + " alternative contents");
 				return;
 			}
 			else {
-				IntentionalContent itnc = itn.content.get(0);
+				IntentionalContent itnc = cit.intent.content.get(0);
 				if (itnc.agents.size() == 1 && itnc.agents.get(0).equals("robot")) {
 					log("got a private intention, will try to realise it");
 					String taskID = newTaskID();
@@ -148,7 +149,7 @@ extends AbstractDialogueComponent {
 					proposeInformationProcessingTask(taskID, taskGoal);
 				}
 				else {
-					log("Warning, problem with the agents expressed in the intention");
+					log("ignoring a communicative intention that is not the robot's");
 				}
 			}
 		}
@@ -167,10 +168,10 @@ extends AbstractDialogueComponent {
 			Object body = d.getData();
 			WorkingMemoryAddress wma = new WorkingMemoryAddress(d.getID(), "dialogue");
 
-			if (body instanceof Intention) {
-				Intention it = (Intention) body;
+			if (body instanceof CommunicativeIntention) {
+				CommunicativeIntention cit = (CommunicativeIntention) body;
 				log("processing an intention");
-				LinkedList<String> belIds = BeliefIntentionUtils.collectBeliefIdsInIntention(it);
+				LinkedList<String> belIds = BeliefIntentionUtils.collectBeliefIdsInIntention(cit.intent);
 				LinkedList<dBelief> bels = new LinkedList<dBelief>();
 				for (String id : belIds) {
 					dBelief b = retrieveBeliefById(id);
@@ -180,7 +181,7 @@ extends AbstractDialogueComponent {
 					}
 				}
 
-				ContentPlanningGoal protoLF = ireal.epistemicObjectsToProtoLF(wma, it, bels);
+				ContentPlanningGoal protoLF = ireal.epistemicObjectsToProtoLF(wma, cit.intent, bels);
 				if (protoLF != null) {
 					try {
 						log("adding proto-LF to working memory: " + LFUtils.lfToString(protoLF.lform));
