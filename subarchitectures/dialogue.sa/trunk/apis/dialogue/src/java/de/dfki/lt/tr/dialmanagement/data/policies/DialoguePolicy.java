@@ -19,7 +19,7 @@
 // =================================================================                                                        
 
   
-package de.dfki.lt.tr.dialmanagement.data;
+package de.dfki.lt.tr.dialmanagement.data.policies;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -34,7 +34,7 @@ import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
  * action nodes and observation edges between them
  * 
  * @author Pierre Lison (plison@dfki.de)
- * @version 13/06/2010
+ * @version 7/10/2010
  */ 
 public class DialoguePolicy {
 
@@ -52,10 +52,6 @@ public class DialoguePolicy {
 	
 	// identifier for the final nodes
 	private Collection<String> finalNodes;
-
-	
-	public static final int INTENTION = 0;
-	public static final int EVENT = 1;
 	
 	
 	/**
@@ -64,6 +60,7 @@ public class DialoguePolicy {
 	public DialoguePolicy() {
 		this (new LinkedList<PolicyNode>());
 	}
+	
 	
 	/**
 	 * Create a new dialogue policy with a set of nodes

@@ -18,9 +18,11 @@
 // 02111-1307, USA.                                                                                                         
 // =================================================================                                                        
 
-package de.dfki.lt.tr.dialmanagement.data;
+package de.dfki.lt.tr.dialmanagement.data.policies;
 
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
+import de.dfki.lt.tr.dialmanagement.data.Observation;
 
 /**
  * Observation edge in a dialogue policy
@@ -46,17 +48,8 @@ public class PolicyEdge {
 	
 	// Outgoing (=destination) action node
 	private PolicyNode out;
-	
-	// Observation content contained in the edge
-	private FormulaWrapper content;
-	
-	private int type;
-	
-	// minimum probability for the observation
-	float minProb;
-	
-	// maximum probability for the observation
-	float maxProb;
+
+	private PolicyObservation obs;
 	
 	/**
 	 * Constructs a new observation edge from an incoming action node, an outgoing action node, and an observation
@@ -69,33 +62,28 @@ public class PolicyEdge {
 	 * @param the maximum probability
 	 * @throws DialogueException if one of the parameters is a null value
 	 */
-	public PolicyEdge (String id, PolicyNode in, PolicyNode out, FormulaWrapper obs, float minProb, float maxProb) throws DialogueException {
+	public PolicyEdge (String id, PolicyNode in, PolicyNode out, PolicyObservation obs) throws DialogueException {
 		
-		this.minProb = minProb;
-		this.maxProb = maxProb;
+		this.obs = obs;
 		
 		if (id != null && in != null && out != null && obs != null) {
 			this.id = id;
 			this.in = in;
 			this.out = out;
-			this.content = obs;
 		}
 		else {
 			throw new DialogueException("ERROR: cannot enter null values in observation edge");
 		}
 	}
 	
-	
-	public PolicyEdge (FormulaWrapper obs, float minProb, float maxProb) {
-		
-		this.minProb = minProb;
-		this.maxProb = maxProb;
-		this.content = obs;
+	public PolicyEdge (PolicyObservation obs) {
+		this.obs = obs;
 	}
+	
 	
 	public PolicyEdge copy () throws DialogueException {
-		return new PolicyEdge(content,minProb,maxProb);
-	}
+		return new PolicyEdge(obs);
+	} 
 	
 	
 	public void setId(String id) {
@@ -131,8 +119,8 @@ public class PolicyEdge {
 	 * Returns the observation contained in the edge
 	 * @return the observation
 	 */
-	public FormulaWrapper getObservation() {
-		return content;
+	public PolicyObservation getObservation() {
+		return obs;
 	}
 	
 	/**
@@ -171,9 +159,9 @@ public class PolicyEdge {
 	 * @param obs the new observation
 	 * @throws DialogueException if the observation is a null value
 	 */
-	public void setObservation(FormulaWrapper obs) throws DialogueException {
+	public void setObservation(dFormula obs) throws DialogueException {
 		if (obs != null) {
-			this.content = obs;
+			this.obs = new PolicyObservation(obs);
 		}
 		else {
 			throw new DialogueException("ERROR: cannot enter null values in observation edge");
@@ -181,22 +169,13 @@ public class PolicyEdge {
 	}
 	
 	
-	public boolean matchesWithObservation (Observation obs) {
-		
-		for (FormulaWrapper alternative : obs.getAlternatives()) {
-			if (alternative.equals(content) && 
-					obs.getProbability(alternative) >= minProb && 
-					obs.getProbability(alternative) <= maxProb) {				
-				return true;
-			}
-		}
-		return false;
+	public boolean matchesWithObservation (Observation runtimeObs) {
+		return obs.matchesWithObservation(runtimeObs);
 	}
 	
 	
-	public String toString () {
-		return content.toString() + " (" + minProb + ", " + maxProb + ")";
-	}
+	
+	
 	
 	
 	/**
@@ -205,6 +184,11 @@ public class PolicyEdge {
 	 */
 	public String getId() {
 		return id;
+	}
+	
+	
+	public String toString() {
+		return obs.toString();
 	}
 	
 	

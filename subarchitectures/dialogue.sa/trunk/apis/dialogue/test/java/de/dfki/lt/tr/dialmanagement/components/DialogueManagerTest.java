@@ -30,8 +30,8 @@ import org.junit.Before;
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
-import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
+import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
 
 /**

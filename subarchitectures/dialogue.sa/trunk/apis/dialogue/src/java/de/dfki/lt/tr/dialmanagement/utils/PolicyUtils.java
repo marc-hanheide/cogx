@@ -31,7 +31,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.data.FormulaWrapper;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
-import de.dfki.lt.tr.dialmanagement.data.PolicyEdge;
+import de.dfki.lt.tr.dialmanagement.data.policies.PolicyEdge;
 
 public class PolicyUtils {
 

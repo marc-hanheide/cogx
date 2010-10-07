@@ -18,7 +18,7 @@
 // 02111-1307, USA.                                                                                                         
 // =================================================================                                                        
 
-package de.dfki.lt.tr.dialmanagement.data;
+package de.dfki.lt.tr.dialmanagement.data.policies;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Vector;
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
+import de.dfki.lt.tr.dialmanagement.data.Observation;
 
 /**
  * An action node in a dialogue policy
@@ -59,7 +60,7 @@ public class PolicyNode {
 	private boolean isFinal = false;
 
 
-
+ 
 	/**
 	 * Constructs a new action node, given an action
 	 * 

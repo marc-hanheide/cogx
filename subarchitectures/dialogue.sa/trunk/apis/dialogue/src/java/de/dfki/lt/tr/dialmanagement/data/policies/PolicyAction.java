@@ -19,18 +19,23 @@
 // =================================================================                                                        
 
 
-package de.dfki.lt.tr.dialmanagement.data;
+package de.dfki.lt.tr.dialmanagement.data.policies;
 
 import java.util.HashMap;
-import java.util.Vector;
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import de.dfki.lt.tr.dialmanagement.data.FormulaWrapper;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 
 
+/**
+ * The action 
+ * @author plison
+ *
+ */
 public class PolicyAction extends FormulaWrapper {
 
 	private boolean isVoid = false;

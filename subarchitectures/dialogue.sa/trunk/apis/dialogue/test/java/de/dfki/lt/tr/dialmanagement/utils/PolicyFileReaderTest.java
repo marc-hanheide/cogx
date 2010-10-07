@@ -29,7 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
-import de.dfki.lt.tr.dialmanagement.data.DialoguePolicy;
+import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
 
 
 import static org.junit.Assert.*;
