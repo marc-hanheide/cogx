@@ -67,8 +67,8 @@
 	<!-- Cleanup                                                             -->
 	<!-- =================================================================== -->
 	<target name="clean">
-		<delete dir="${src.dir}/ConceptualData/**" />
-		<delete dir="${src.dir}/.depend" />
+		<delete dir="${src.dir}/ConceptualData" />
+		<delete file="${src.dir}/.depend" />
 	</target>
 
 
