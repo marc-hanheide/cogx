@@ -32,38 +32,18 @@ using namespace std;
 using namespace cogx;
 using namespace cogx::Math;
 
-/**
- * Returns timespecs x - y as double.
- */
-static double timespec_diff(struct timespec *x, struct timespec *y)
+static double gethrtime_d()
 {
-  /*timespec res = {x->tv_sec - y->tv_sec, x->tv_nsec - y->tv_nsec};
-  if(res.tv_nsec >= 1000000000)
-  {
-    res.tv_nsec -= 1000000000;
-    res.tv_sec++;
-  }
-  if(res.tv_nsec < 0)
-  {
-    res.tv_nsec += 1000000000;
-  }
-  return (double)res.tv_sec + 1e-9*(double)res.tv_nsec;*/
-  /* TODO: make the above clearer version handle nsec overflows of more than one
-   * sec, see below*/
-  if(x->tv_nsec < y->tv_nsec)
-  {
-    int nsec = (y->tv_nsec - x->tv_nsec) / 1000000000 + 1;
-    y->tv_nsec -= 1000000000 * nsec;
-    y->tv_sec += nsec;
-  }
-  if(x->tv_nsec - y->tv_nsec > 1000000000)
-  {
-    int nsec = (x->tv_nsec - y->tv_nsec) / 1000000000;
-    y->tv_nsec += 1000000000 * nsec;
-    y->tv_sec -= nsec;
-  }
-  return (double)(x->tv_sec - y->tv_sec) +
-    (double)(x->tv_nsec - y->tv_nsec)/1000000000.;
+  struct timespec ts;
+  int ret;
+#ifdef CLOCK_MONOTONIC_HR
+  ret = clock_gettime(CLOCK_MONOTONIC_HR, &ts);
+#else
+  ret = clock_gettime(CLOCK_MONOTONIC, &ts);
+#endif
+  if(ret != 0)
+    return 0;
+  return (double)ts.tv_sec + 1e-9*(double)ts.tv_nsec;
 }
 
 void StereoServerI::getPoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points, const Ice::Current&)
@@ -292,10 +272,13 @@ void StereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<Vision
   ImageSet &imgSet = imgSets[res];
 
   vector<Video::Image> images;
+  double t1 = gethrtime_d();
   // HACK: we should actually send the list of cam ids and not just assume
   // that the video server has precisely two cameras in the right order
   videoServer->getScaledImages(stereoSizes[res].width, stereoSizes[res].height, images);
+  double t2 = gethrtime_d();
   stereoProcessing(stereoCam, imgSet, images);
+  double t3 = gethrtime_d();
 
   Pose3 global_left_pose;
   if(transformToGlobal)
@@ -333,6 +316,9 @@ void StereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<Vision
         points.push_back(p);
       }
     }
+  double t4 = gethrtime_d();
+  log("run time: get images: %lf, stereo: %lf, reconstruct: %lf - total: %lf / frame rate: %lf",
+    t2 - t1, t3 - t2, t4 - t3, t4 - t1, 1./(t4 - t1));
 
   unlockComponent();
 }
@@ -387,28 +373,28 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
   // save the head pose for this pair of images
   stereoCam->pose = images[LEFT].camPars.pose;
 
+  double t1 = gethrtime_d();
+
   for(int i = LEFT; i <= RIGHT; i++)
   {
     convertImageToIpl(images[i], &imgSet.colorImg[i]);
     stereoCam->RectifyImage(imgSet.colorImg[i], imgSet.rectColorImg[i], i);
     cvCvtColor(imgSet.rectColorImg[i], imgSet.rectGreyImg[i], CV_RGB2GRAY);
   }
-
   cvSet(imgSet.disparityImg, cvScalar(0));
 
+  double t2 = gethrtime_d();
+
 #ifdef HAVE_GPU_STEREO
-  timespec start, stop;
-  clock_gettime(CLOCK_REALTIME, &start);
   census->setImages(imgSet.rectGreyImg[LEFT], imgSet.rectGreyImg[RIGHT]);
   census->match();
   // in case we are interested how blazingly fast the matching is :)
   // census->printTiming();
   // census->printTiming();
   census->getDisparityMap(imgSet.disparityImg);
-  clock_gettime(CLOCK_REALTIME, &stop);
   log("gpustereo for %d x %d: runtime / framerate: %lf s / %lf",
     imgSet.disparityImg->width, imgSet.disparityImg->height,
-    timespec_diff(&stop, &start), 1./timespec_diff(&stop, &start));
+    stop - start, 1./(stop - start));
 
   if(medianSize > 0)
   {
@@ -419,19 +405,13 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
   }
 #else
   // use OpenCV stereo matching provided inside the stereo camera
-  // TODO: timing seems to be wrong
-  timespec start, stop;
-  clock_gettime(CLOCK_REALTIME, &start);
   stereoCam->SetMatchingAlgoritm(StereoCamera::SEMI_GLOBAL_BLOCK_MATCH);
   //stereoCam->SetMatchingAlgoritm(StereoCamera::BLOCK_MATCH);
   stereoCam->CalculateDisparity(imgSet.rectGreyImg[LEFT], imgSet.rectGreyImg[RIGHT], imgSet.disparityImg);
-  clock_gettime(CLOCK_REALTIME, &stop);
-  log("OpenCV for %d x %d: runtime / framerate: %lf s / %lf",
-    imgSet.disparityImg->width, imgSet.disparityImg->height,
-    timespec_diff(&stop, &start), 1./timespec_diff(&stop, &start));
 #endif
 
-  // TODO: this does not work nicely with
+  double t3 = gethrtime_d();
+
   if(logImages)
   {
     for(int i = LEFT; i <= RIGHT; i++)
@@ -449,6 +429,17 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
     cvShowImage("disparity", imgSet.disparityImg);
     cvWaitKey(10);
   }
+
+  double t4 = gethrtime_d();
+
+  log("%s at %d x %d: copy/rectify/convert images: %lf, stereo: %lf, log/display images: %lf - total: %lf / frame rate: %lf",
+#ifdef HAVE_GPU_STEREO
+      "gpustereo",
+#else
+      "OpenCV stereo",
+#endif
+    imgSet.disparityImg->width, imgSet.disparityImg->height,
+    t2 - t1, t3 - t2, t4 - t3, t4 - t1, 1./(t4 - t1));
 }
 
 void StereoServer::receiveImages(const vector<Video::Image>& images)
