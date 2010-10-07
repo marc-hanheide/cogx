@@ -23,7 +23,7 @@ if Settings.Disp.TL
       fprintf(fid,'\n<tr>\n') ;
       fprintf(fid,'<td>gains   :</td>'); fprintf(fid,'<td>%3.2f</td>',getc(mC,sc,0,'gains')); %fprintf(fid,'<BR>\n');
       fprintf(fid,'\n<tr>\n') ;
-      fprintf(fid,'<td>Fb      :</td>'); fprintf(fid,'<td>%d</td>',getc(mC,sc,0,'Fb')); %fprintf(fid,'<BR>\n');
+      fprintf(fid,'<td>Fb      :</td>'); fprintf(fid,'<td>') ; fprintf(fid,'%d, ',getc(mC,sc,0,'Fb')); fprintf(fid,'</td>') ;%fprintf(fid,'<BR>\n');
       fprintf(fid, '</table> ') ;
 %       fprintf(fid,'<BR>\n');
    end
