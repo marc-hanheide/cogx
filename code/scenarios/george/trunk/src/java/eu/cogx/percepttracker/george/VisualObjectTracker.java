@@ -46,6 +46,8 @@ public class VisualObjectTracker extends ManagedComponent {
 					GroundedBelief.class, new FormulaMatcher(types, wm2wmMap, PerceptBelief.class,
 							GroundedBelief.class),
 					wm2wmMap, config.get("--write-to-sa"));
+			// TODO check whether we really want the visual objects to be removed on deletion
+			tracker.setShouldPropagateDeletion(true);
 		} catch (InstantiationException e) {
 			logException("cannot create PointerMap and tracker", e);
 		} catch (IllegalAccessException e) {
