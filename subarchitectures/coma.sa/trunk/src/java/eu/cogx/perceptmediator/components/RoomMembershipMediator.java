@@ -37,7 +37,7 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
  */
 public class RoomMembershipMediator extends ManagedComponent {
 
-	private static final String ROOM_PROPERTY = "in-room";
+	public static final String ROOM_PROPERTY = "in-room";
 	final Map<WorkingMemoryAddress, Set<WorkingMemoryAddress>> mapRoom2Places = new HashMap<WorkingMemoryAddress, Set<WorkingMemoryAddress>>();
 
 	WMView<PerceptBelief> allBeliefs;
@@ -61,7 +61,7 @@ public class RoomMembershipMediator extends ManagedComponent {
 	 * @throws InterruptedException
 	 */
 	protected WorkingMemoryAddress getReferredBelief(
-			ContentMatchingFunction<PerceptBelief> contentMatchingFunction)
+			ContentMatchingFunction<? super PerceptBelief> contentMatchingFunction)
 			throws InterruptedException {
 		debug("trying to find referred belief");
 		Entry<WorkingMemoryAddress, PerceptBelief> entry = waitingBeliefReader
