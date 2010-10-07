@@ -123,23 +123,30 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
 
   pvobj->protoObjectID = ptask->protoObjectId;
 
+  // NOTE: we are assuming that all the lists have the same length
+  // so we stop copying when the shortest list ends.
   vector<string>::const_iterator plabel = ptask->labels.begin();
   vector<int>::const_iterator pconcpt = ptask->labelConcepts.begin();
-  vector<double>::const_iterator pdbl = ptask->distribution.begin();
+  vector<double>::const_iterator pdistr = ptask->distribution.begin();
+  vector<double>::const_iterator pgain = ptask->gains.begin();
+  pvobj->colorGain = 0.0;
+  pvobj->shapeGain = 0.0;
   for(; plabel != ptask->labels.end() && pconcpt != ptask->labelConcepts.end() &&
-	  pdbl != ptask->distribution.end();
-	  plabel++, pconcpt++, pdbl++)
+	  pdistr != ptask->distribution.end() && pgain != ptask->gains.end();
+	  plabel++, pconcpt++, pdistr++, pgain++)
   {
 	// Concept mapping is done in Matlab
 	if (*pconcpt == 1){ // color concept
 	  pvobj->colorLabels.push_back(*plabel);
-	  pvobj->colorDistrib.push_back(*pdbl);
-	  // TODO: color: write gain for each label to VisualObject
+	  pvobj->colorDistrib.push_back(*pdistr);
+	  pvobj->colorGains.push_back(*pgain);
+	  if (*pgain > pvobj->colorGain) pvobj->colorGain = *pgain;
 	}
 	else if (*pconcpt == 2) { // shape concept
 	  pvobj->shapeLabels.push_back(*plabel);
-	  pvobj->shapeDistrib.push_back(*pdbl);
-	  // TODO: shape: write gain for each label to VisualObject
+	  pvobj->shapeDistrib.push_back(*pdistr);
+	  pvobj->shapeGains.push_back(*pgain);
+	  if (*pgain > pvobj->shapeGain) pvobj->shapeGain = *pgain;
 	}
 	else {
 	  println(" *** VL_Recognizer Invalid concept ID: %d", *pconcpt);
