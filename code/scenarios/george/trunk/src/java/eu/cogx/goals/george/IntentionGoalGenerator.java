@@ -1,12 +1,12 @@
 package eu.cogx.goals.george;
 
+import org.cognitivesystems.binder.POINTERLABEL;
+
 import motivation.components.generators.AbstractIntentionMotiveGenerator; 
 import motivation.slice.TutorInitiativeMotive;
 import nu.xom.Document;
 import nu.xom.Node;
 import nu.xom.Nodes;
-
-import org.cognitivesystems.binder.POINTERLABEL; 
 
 import autogen.Planner.Goal;
 import cast.CASTException;
@@ -69,7 +69,7 @@ public class IntentionGoalGenerator extends
 				}
 				log("inferred concept from attributed belief: " + concept);
 				FormulaDistribution aboutPointerFD = preAttributedBelief
-						.getContent().get(POINTERLABEL.value);
+						.getContent().get(POINTERLABEL.value); 
 				if (aboutPointerFD == null) {
 					getLogger()
 							.warn(
