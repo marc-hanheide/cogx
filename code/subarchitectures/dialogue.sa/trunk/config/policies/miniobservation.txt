@@ -1,1 +1,1 @@
-thisisaball = I[<Belief>(<Ref>context1_1 ^ <ObjectType>ball)]
+thisisaball = CI[<Belief>(<Ref>context1_1 ^ <ObjectType>ball)]

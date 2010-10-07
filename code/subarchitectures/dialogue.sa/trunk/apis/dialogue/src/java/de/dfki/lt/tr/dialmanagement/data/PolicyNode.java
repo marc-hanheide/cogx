@@ -187,9 +187,6 @@ public class PolicyNode {
 	 */
 	public void setAsFinalNode () throws DialogueException {
 		isFinal = true;
-		if (outgoingEdges.size() > 0 ) {
-			throw new DialogueException("ERROR, cannot be initial: existing outgoing edges");
-		}
 	}
 
 	/**

@@ -82,7 +82,7 @@ public class PolicyAction extends FormulaWrapper {
 			return "VoidAction";
 		}
 		else {
-			return "I[" + FormulaUtils.getString(content) + "]";
+			return "CI[" + FormulaUtils.getString(content) + "]";
 		}
 	}
 }

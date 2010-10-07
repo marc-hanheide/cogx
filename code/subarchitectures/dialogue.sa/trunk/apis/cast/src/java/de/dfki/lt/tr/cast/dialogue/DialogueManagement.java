@@ -19,7 +19,7 @@ import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.events.Event;
-import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
+import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
@@ -48,9 +48,9 @@ public class DialogueManagement extends ManagedComponent {
 	DialogueManager manager;
 	
 	// default parameters for the dialogue manager
-	final String policyFile = "config/policies/minipolicy.txt";
-	final String actionsFile = "config/policies/miniaction.txt";
-	final String observationsFile = "config/policies/miniobservation.txt";
+	String policyFile = "subarchitectures/dialogue.sa/config/policies/yr2/testpolicy.txt";
+	String actionsFile = "subarchitectures/dialogue.sa/config/policies/yr2/testaction.txt";
+	String observationsFile = "subarchitectures/dialogue.sa/config/policies/yr2/testobservation.txt";
 	
 	
 	/**
@@ -79,12 +79,15 @@ public class DialogueManagement extends ManagedComponent {
 			(_config.containsKey("--actions")) && 
 			(_config.containsKey("--observations"))) {
 				try {
-					manager = new DialogueManager(PolicyReader.constructPolicy(_config.get("--policy"), _config.get("--actions"), _config.get("--observations")));
+					log("Provided parameters: policy=" + _config.get("--policy") + ", actions=" + _config.get("--actions") + ", observations=" + _config.get("--observations"));
+					policyFile = _config.get("--policy");
+					observationsFile = _config.get("--observations") ;
+					actionsFile = _config.get("--actions");
+					manager = new DialogueManager(PolicyReader.constructPolicy(policyFile,observationsFile, actionsFile));
 				} catch (DialogueException e) {
 					log(e.getMessage());
 					e.printStackTrace();
-				} 
-					
+				} 	
 			}
 	}
 	
@@ -98,6 +101,28 @@ public class DialogueManagement extends ManagedComponent {
 	public void start() {
 
 		//try {
+		
+		
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(CommunicativeIntention.class,  WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+
+					public void workingMemoryChanged(
+							WorkingMemoryChange _wmc) {
+						try {
+							CommunicativeIntention initIntention = getMemoryEntry(_wmc.address, CommunicativeIntention.class);
+							if (initIntention.estatus instanceof AttributedEpistemicStatus) {
+								newIntentionReceived(initIntention);
+							}
+						} catch (DoesNotExistOnWMException e) {
+							e.printStackTrace();
+						} catch (UnknownSubarchitectureException e) {
+							e.printStackTrace();
+						}
+					}
+				});
+		
+		/**
 			addChangeFilter(
 					ChangeFilterFactory.createLocalTypeFilter(Intention.class,  WorkingMemoryOperation.ADD),
 					new WorkingMemoryChangeReceiver() {
@@ -115,9 +140,9 @@ public class DialogueManagement extends ManagedComponent {
 								e.printStackTrace();
 							}
 						}
-					});
+					}); */
 			 
-			
+	
 			addChangeFilter(
 					ChangeFilterFactory.createLocalTypeFilter(Event.class,  WorkingMemoryOperation.ADD),
 					new WorkingMemoryChangeReceiver() {
@@ -147,10 +172,10 @@ public class DialogueManagement extends ManagedComponent {
 	 * @param intention the (attributed) intention received as observation
 	 * 
 	 */
-	public void newIntentionReceived (Intention intention) {
+	public void newIntentionReceived (CommunicativeIntention intention) {
 		try {
 			
-			Intention augmentedIntention = createAugmentedIntention(intention);
+			CommunicativeIntention augmentedIntention = createAugmentedIntention(intention);
 			
 			String formAsString = FormulaUtils.getString(augmentedIntention.content.get(0).postconditions);
 			debug("augmented intention: " + formAsString);	
@@ -158,12 +183,17 @@ public class DialogueManagement extends ManagedComponent {
 			PolicyAction action = manager.nextAction(augmentedIntention);
 			
 			debug(action);
-			log("action chosen: " + action.getClass().getCanonicalName());
+			log("action chosen: " + action.toString());
 			
 			if (!action.isVoid()) {
-				Intention response = 
-					EpistemicObjectUtils.createSimplePrivateIntention((action).getContent(), 1.0f);
+				CommunicativeIntention response = 
+					EpistemicObjectUtils.createSimplePrivateCommunicativeIntention((action).getContent(), 1.0f);
 				addToWorkingMemory(newDataID(), response);
+				log("new private intention successfully added to working memory");
+		/**		if (manager.isFinished()) {
+					log("restarting the policy...");
+					manager = new DialogueManager(PolicyReader.constructPolicy(policyFile,observationsFile, actionsFile));
+				} */
 			}
 		
 		} catch (Exception e) {
@@ -172,6 +202,11 @@ public class DialogueManagement extends ManagedComponent {
 		}
 	}
 	
+	
+	
+	@Override
+	public void run () {
+	}
 	
   
 	   
@@ -187,8 +222,8 @@ public class DialogueManagement extends ManagedComponent {
 		try {
 			PolicyAction action = manager.nextAction(event);
 			if (!action.isVoid()) {
-				Intention response = 
-					EpistemicObjectUtils.createSimplePrivateIntention((action).getContent(), 1.0f);
+				CommunicativeIntention response = 
+					EpistemicObjectUtils.createSimplePrivateCommunicativeIntention((action).getContent(), 1.0f);
 				addToWorkingMemory(newDataID(), response);
 			}
 		
@@ -212,7 +247,7 @@ public class DialogueManagement extends ManagedComponent {
 	 * @throws DialogueException
 	 * @throws DoesNotExistOnWMException
 	 */
-	public Intention createAugmentedIntention (Intention initIntention) 
+	public CommunicativeIntention createAugmentedIntention (CommunicativeIntention initIntention) 
 	throws DialogueException, DoesNotExistOnWMException {
 
 		if (initIntention!=null && initIntention.content.size() > 0)  {
@@ -240,7 +275,7 @@ public class DialogueManagement extends ManagedComponent {
 							mapPairs.put(newPair.val, newPair.prob);
 						}
 
-						Intention forgedIntention = EpistemicObjectUtils.createAttributedIntention(mapPairs);
+						CommunicativeIntention forgedIntention = EpistemicObjectUtils.createAttributedCommunicativeIntention(mapPairs);
 
 						return forgedIntention;
 					}

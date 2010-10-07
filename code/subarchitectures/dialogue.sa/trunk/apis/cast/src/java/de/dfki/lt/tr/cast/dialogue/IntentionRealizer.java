@@ -147,6 +147,9 @@ extends AbstractDialogueComponent {
 					String taskGoal = DialogueGoals.INTENTION_REALISATION_TASK;
 					proposeInformationProcessingTask(taskID, taskGoal);
 				}
+				else {
+					log("Warning, problem with the agents expressed in the intention");
+				}
 			}
 		}
 		catch (SubarchitectureComponentException e) {

@@ -90,7 +90,7 @@ public void testPolicyBasic() throws DialogueException {
 	
 	Observation intent = createSimpleObservation("Say ^ <Object>(Blabla)");
 	PolicyAction action1 = manager.nextAction(intent);
-	assertEquals("I[Said ^ <Object>(Blabla)]", action1.toString());
+	assertEquals("CI[Said ^ <Object>(Blabla)]", action1.toString());
 	
 }
 

@@ -1,2 +1,2 @@
 start = wait
-end = I[okay]
+end = CI[okay]

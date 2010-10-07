@@ -34,9 +34,10 @@ import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.events.Event;
 import de.dfki.lt.tr.beliefs.slice.framing.SpatioTemporalFrame;
 import de.dfki.lt.tr.beliefs.slice.framing.TemporalInterval;
-import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
+import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
@@ -130,11 +131,11 @@ public class EpistemicObjectUtils {
 	 * @return the newly constructed attributed intention
 	 * @throws DialogueException 
 	 */
-	public static Intention createSimpleAttributedIntention (dFormula postcondition, float prob) throws DialogueException {
+	public static CommunicativeIntention createSimpleAttributedCommunicativeIntention (dFormula postcondition, float prob) throws DialogueException {
 		
 		HashMap<dFormula,Float> postconditions = new HashMap<dFormula,Float>();
 		postconditions.put(postcondition, prob);
-		return createAttributedIntention(postconditions);
+		return createAttributedCommunicativeIntention(postconditions);
 	}
 	 
 	
@@ -146,11 +147,11 @@ public class EpistemicObjectUtils {
 	 * @return the newly constructed private intention
 	 * @throws DialogueException 
 	 */
-	public static Intention createSimplePrivateIntention (dFormula postcondition, float prob) throws DialogueException {
+	public static CommunicativeIntention createSimplePrivateCommunicativeIntention (dFormula postcondition, float prob) throws DialogueException {
 		
 		HashMap<dFormula,Float> postconditions = new HashMap<dFormula,Float>();
 		postconditions.put(postcondition, prob);
-		return createPrivateIntention(postconditions);
+		return createPrivateCommunicativeIntention(postconditions);
 	}
 	
 	
@@ -162,7 +163,7 @@ public class EpistemicObjectUtils {
 	 * @throws DialogueException 
 	 * @return the newly constructed attributed intention
 	 */
-	public static Intention createAttributedIntention (HashMap<dFormula,Float> postconditions) throws DialogueException {
+	public static CommunicativeIntention createAttributedCommunicativeIntention (HashMap<dFormula,Float> postconditions) throws DialogueException {
 		
 	    SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
 		AttributedEpistemicStatus attrib = new AttributedEpistemicStatus ("robot", Arrays.asList("human"));
@@ -172,7 +173,7 @@ public class EpistemicObjectUtils {
 		for (dFormula formula: postconditions.keySet()) {
 			intents.add((new IntentionalContent(Arrays.asList("robot"), FormulaUtils.constructFormula(""), formula, postconditions.get(formula))));
 		}
-		return new Intention(frame, attrib, forgeNewId(), intents);
+		return new CommunicativeIntention(frame, attrib, forgeNewId(), intents);
 	}
 	
 	
@@ -186,7 +187,7 @@ public class EpistemicObjectUtils {
 	 * @throws DialogueException 
 	 * @return the newly constructed attributed intention
 	 */
-	public static Intention createAttributedIntention (List<FormulaProbPair> pairs) throws DialogueException {
+	public static CommunicativeIntention createAttributedCommunicativeIntention (List<FormulaProbPair> pairs) throws DialogueException {
 		
 	    SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(), 1.0f);
 		AttributedEpistemicStatus attrib = new AttributedEpistemicStatus ("robot", Arrays.asList("human"));
@@ -196,7 +197,7 @@ public class EpistemicObjectUtils {
 		for (FormulaProbPair pair: pairs) {
 			intents.add((new IntentionalContent(Arrays.asList("robot"), FormulaUtils.constructFormula(""), pair.val, pair.prob)));
 		}
-		return new Intention(frame, attrib, forgeNewId(), intents);
+		return new CommunicativeIntention(frame, attrib, forgeNewId(), intents);
 	}
 	
 
@@ -208,7 +209,7 @@ public class EpistemicObjectUtils {
 	 * @throws DialogueException 
 	 * @returnthe newly constructed private intention
 	 */
-	public static Intention createPrivateIntention (HashMap<dFormula,Float> postconditions) throws DialogueException {
+	public static CommunicativeIntention createPrivateCommunicativeIntention (HashMap<dFormula,Float> postconditions) throws DialogueException {
 		
 	    SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
 		PrivateEpistemicStatus priv = new PrivateEpistemicStatus ("robot");
@@ -216,11 +217,38 @@ public class EpistemicObjectUtils {
 		List<IntentionalContent> intents = new LinkedList<IntentionalContent>();
 		
 		for (dFormula formula: postconditions.keySet()) {
-			intents.add((new IntentionalContent(Arrays.asList("human"), FormulaUtils.constructFormula(""), formula, postconditions.get(formula))));
+			intents.add((new IntentionalContent(Arrays.asList("robot"), FormulaUtils.constructFormula(""), formula, postconditions.get(formula))));
 		}
-		return new Intention(frame, priv, forgeNewId(), intents);
+		return new CommunicativeIntention(frame, priv, forgeNewId(), intents);
 	}
 	
+	
+	public static Event createEvent (HashMap<dFormula,Float> events) throws DialogueException {
+		
+	    SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
+		PrivateEpistemicStatus priv = new PrivateEpistemicStatus ("robot");
+		
+		List<FormulaProbPair> content = new LinkedList<FormulaProbPair>();
+		
+		for (dFormula formula: events.keySet()) {
+			content.add((new FormulaProbPair(formula, events.get(formula))));
+		}
+		return new Event(frame, priv, forgeNewId(), new BasicProbDistribution("content", new FormulaValues(content)));
+	}
+	
+	
+	public static Event createSimpleEvent (dFormula event, float prob) throws DialogueException {
+		HashMap<dFormula,Float> events = new HashMap<dFormula,Float>();
+		events.put(event, prob);
+		return createEvent(events);
+	}
+	
+	
+	public static Event createSimpleEvent (String eventstr, float prob) throws DialogueException {
+		HashMap<dFormula,Float> events = new HashMap<dFormula,Float>();
+		events.put(FormulaUtils.constructFormula(eventstr), prob);
+		return createEvent(events);
+	}
 	
 
 	/**
