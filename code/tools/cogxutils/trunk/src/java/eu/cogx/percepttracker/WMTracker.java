@@ -195,6 +195,8 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 
 	protected String createInSA = null;
 
+	protected boolean shouldPropagateDeletion=false;
+
 	/**
 	 * create new synchronizer only for given memory operations
 	 * 
@@ -269,6 +271,19 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 						break;
 					}
 					case DELETE: {
+						
+						if (shouldPropagateDeletion) {
+							WorkingMemoryAddress adr = wm2wmMap.get(ev.address);
+							try {
+								component.lockEntry(adr,
+										WorkingMemoryPermissions.LOCKEDODR);
+								component.deleteFromWorkingMemory(adr);
+								log("deleted belief " + CASTUtils.toString(adr));
+							} catch(CASTException e) {
+								component.unlockEntry(adr);
+							}
+
+						}
 						wm2wmMap.remove(ev.address);
 						break;
 					}
@@ -423,6 +438,20 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 		}
 	}
 	// });
+
+	/**
+	 * @return the shouldPropagateDeletion
+	 */
+	public boolean isShouldPropagateDeletion() {
+		return shouldPropagateDeletion;
+	}
+
+	/**
+	 * @param shouldPropagateDeletion the shouldPropagateDeletion to set
+	 */
+	public void setShouldPropagateDeletion(boolean shouldPropagateDeletion) {
+		this.shouldPropagateDeletion = shouldPropagateDeletion;
+	}
 
 	// }
 
