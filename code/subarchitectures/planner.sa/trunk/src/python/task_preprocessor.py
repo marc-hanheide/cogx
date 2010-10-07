@@ -131,6 +131,8 @@ def gen_fact_tuples(beliefs):
         value = fval_dist.values
         
         if isinstance(value, distribs.FormulaValues):
+          if len(value.values) == 0:
+              result.append((feat, pddl.UNKNOWN, 1.0))
           for valpair in value.values:
             val = feature_val_to_object(valpair.val)
             if val is not None:
