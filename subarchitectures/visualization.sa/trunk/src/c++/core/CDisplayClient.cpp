@@ -233,6 +233,7 @@ void CDisplayClient::setImage(const std::string& id, const IplImage* pImage)
    }
 
    m_pServer->setRawImage(id, pImage->width, pImage->height, pImage->nChannels, data);
+   data.resize(0);
 }
 
 void CDisplayClient::setObject(const std::string& id, const std::string& partId, const std::string& xmlData)
