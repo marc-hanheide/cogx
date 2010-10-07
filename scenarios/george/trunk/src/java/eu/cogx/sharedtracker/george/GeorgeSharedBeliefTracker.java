@@ -15,7 +15,7 @@ import castutils.slice.WMTrackedBeliefMap;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.SharedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
-import eu.cogx.percepttracker.FormulaMatcher;
+import eu.cogx.percepttracker.ThresholdedBeliefMatcher;
 import eu.cogx.percepttracker.WMTracker;
 
 /**
@@ -45,7 +45,7 @@ public class GeorgeSharedBeliefTracker extends ManagedComponent {
 			wm2wmMap = new PointerMap<WMTrackedBeliefMap>(this,
 					WMTrackedBeliefMap.class);
 			tracker = WMTracker.create(this, GroundedBelief.class,
-					SharedBelief.class, new FormulaMatcher(types, wm2wmMap,
+					SharedBelief.class, new ThresholdedBeliefMatcher(types, wm2wmMap,
 							GroundedBelief.class, SharedBelief.class),
 					wm2wmMap, config.get("--write-to-sa"));
 		} catch (InstantiationException e) {
