@@ -184,7 +184,7 @@ void QCastViewGL::mousePressEvent(QMouseEvent *event)
 
 void QCastViewGL::mouseMoveEvent(QMouseEvent *event)
 {
-   double trans_scale = 0.01, rot_scale = 1.;
+   double trans_scale = 0.01, rot_scale = 1.0;
    double dx = (double)(event->x() - m_lastPos.x());
    double dy = (double)(event->y() - m_lastPos.y());
 
@@ -206,18 +206,20 @@ void QCastViewGL::mouseMoveEvent(QMouseEvent *event)
          setYRotation(yRot + dx*rot_scale);
       }
    }
+   //printf("dx: %lf, dy: %lf, xRot: %f, yRot: %f, zRot: %f\n", dx, dy, xRot, yRot, zRot);
    m_lastPos = event->pos();
 }
 
 void QCastViewGL::wheelEvent(QWheelEvent *e)
 {
+   double trans_scale = 0.01, zoom_scale = 1.0;
    if (e->modifiers() & Qt::ControlModifier) {
       const double lvlmin = -5;
       const double lvlmax = 5;
       double lvl = zoomLevel;
 
-      if (e->delta() > 0) zoomLevel += 1;
-      else zoomLevel -= 1;
+      if (e->delta() > 0) zoomLevel += zoom_scale;
+      else zoomLevel -= zoom_scale;
       if (zoomLevel < lvlmin) zoomLevel = lvlmin;
       if (zoomLevel > lvlmax) zoomLevel = lvlmax;
 
@@ -227,5 +229,7 @@ void QCastViewGL::wheelEvent(QWheelEvent *e)
       }
    }
    else {
+      double dz = (double) e->delta();
+      setCameraEye(m_camera.eye + m_camera.view * dz * trans_scale);
    }
 }
