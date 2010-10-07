@@ -45,7 +45,6 @@ public class ViewerCastComponent extends ManagedComponent {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void configure(Map<String, String> arg0) {
-		// TODO Auto-generated method stub
 		super.configure(arg0);
 		String subscrStr = arg0.get("--subscribe");
 		if (subscrStr != null) {
