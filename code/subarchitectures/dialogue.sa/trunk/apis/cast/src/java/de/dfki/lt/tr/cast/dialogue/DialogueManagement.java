@@ -18,8 +18,10 @@ import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.events.Event;
 import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
+import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
@@ -122,7 +124,7 @@ public class DialogueManagement extends ManagedComponent {
 					}
 				});
 		
-		/**
+		
 			addChangeFilter(
 					ChangeFilterFactory.createLocalTypeFilter(Intention.class,  WorkingMemoryOperation.ADD),
 					new WorkingMemoryChangeReceiver() {
@@ -131,16 +133,19 @@ public class DialogueManagement extends ManagedComponent {
 								WorkingMemoryChange _wmc) {
 							try {
 								Intention initIntention = getMemoryEntry(_wmc.address, Intention.class);
-								if (initIntention.estatus instanceof AttributedEpistemicStatus) {
-									newIntentionReceived(initIntention);
+								if (initIntention.estatus instanceof PrivateEpistemicStatus) {
+									addToWorkingMemory(newDataID(), new CommunicativeIntention(initIntention));
 								}
 							} catch (DoesNotExistOnWMException e) {
 								e.printStackTrace();
 							} catch (UnknownSubarchitectureException e) {
 								e.printStackTrace();
 							}
+							catch (AlreadyExistsOnWMException e) {
+								e.printStackTrace();
+							} 
 						}
-					}); */
+					}); 
 			 
 	
 			addChangeFilter(
