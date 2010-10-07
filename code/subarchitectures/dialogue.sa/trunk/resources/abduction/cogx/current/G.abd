@@ -21,9 +21,20 @@ utt_head(Nom) <-
 
 generate : event : utter(robot, H, Int) <-
 	utt_head(Nom),
+%	i : feat_CannedText(Nom, 'I_did_not_understand_what_you_meant') / -1.0,
 	i : feat_SpeechAct(Nom, clarification) / -1.0,
 	i : feat_Modality(Nom, speech) / -1.0,
 	event : produce(r, Nom) / 20.0.
+
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['error-reported'|T])),
+	i : feat_SpeechAct(Nom, clarification) / -1.0,
+	i : feat_Modality(Nom, speech) / -1.0,
+	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
 
