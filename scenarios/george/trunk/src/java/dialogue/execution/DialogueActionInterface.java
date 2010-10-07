@@ -1,6 +1,7 @@
 package dialogue.execution;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 
@@ -50,6 +51,8 @@ public class DialogueActionInterface extends ManagedComponent {
 	private LocalActionStateManager m_actionStateManager;
 	private GroundedToSharedBeliefMap m_groundedToShared;
 
+	private boolean m_fakeIt;
+	
 	public static class DirectColourAnswer extends
 			BlockingActionExecutor<AskForColour> {
 
@@ -92,7 +95,7 @@ public class DialogueActionInterface extends ManagedComponent {
 			WorkingMemoryAddress groundedBeliefAddress = getAction().beliefAddress;
 			WorkingMemoryAddress sharedBeliefAddress = ((DialogueActionInterface) getComponent())
 					.getSharedBeliefAddress(groundedBeliefAddress);
-			
+
 			if (sharedBeliefAddress == null) {
 				println("Giving up because no shared belief yet for: "
 						+ groundedBeliefAddress);
@@ -107,33 +110,129 @@ public class DialogueActionInterface extends ManagedComponent {
 				robotIntention.frame = CASTFrame.create().get();
 				robotIntention.estatus = new PrivateEpistemicStatus("robot");
 
-				//actual content
+				// actual content
 				IntentionalContent content = new IntentionalContent();
 				content.probValue = 1f;
 				content.agents = new ArrayList<String>();
 				content.agents.add("human");
 
 				// precondition
-				ComplexFormula preconditions = new ComplexFormula(-1, new ArrayList<dFormula>(1), BinaryOp.conj);
-				preconditions.forms.add(new ModalFormula(-1, "belief", WMPointer.create(sharedBeliefAddress).get()));
+				ComplexFormula preconditions = new ComplexFormula(-1,
+						new ArrayList<dFormula>(1), BinaryOp.conj);
+				preconditions.forms.add(new ModalFormula(-1, "belief",
+						WMPointer.create(sharedBeliefAddress).get()));
 				content.preconditions = preconditions;
 
 				// postcondition
-				ComplexFormula postconditions = new ComplexFormula(-1, new ArrayList<dFormula>(4), BinaryOp.conj);
-				postconditions.forms.add(PropositionFormula.create("question-answered").get());
-				postconditions.forms.add(new ModalFormula(-1, "agent", PropositionFormula.create("human").get()));
-				postconditions.forms.add(new ModalFormula(-1, "about", WMPointer.create(groundedBeliefAddress).get()));
-				postconditions.forms.add(new ModalFormula(-1, "feature", PropositionFormula.create("color").get()));
+				ComplexFormula postconditions = new ComplexFormula(-1,
+						new ArrayList<dFormula>(4), BinaryOp.conj);
+				postconditions.forms.add(PropositionFormula.create(
+						"question-answered").get());
+				postconditions.forms.add(new ModalFormula(-1, "agent",
+						PropositionFormula.create("human").get()));
+				postconditions.forms.add(new ModalFormula(-1, "about",
+						WMPointer.create(groundedBeliefAddress).get()));
+				postconditions.forms.add(new ModalFormula(-1, "feature",
+						PropositionFormula.create("color").get()));
 				content.postconditions = postconditions;
-				
+
 				robotIntention.content = new ArrayList<IntentionalContent>(1);
 				robotIntention.content.add(content);
-				
+
 				addThenCompleteOnOverwrite(robotIntention);
 			}
 
 		}
 
+	}
+
+	public abstract static class AskForFeatureValueDialogue<T extends SingleBeliefAction>
+			extends NonBlockingCompleteOnOperationExecutor<T> {
+
+		private final String m_feature;
+
+		public AskForFeatureValueDialogue(ManagedComponent _component,
+				Class<T> _cls, String _feature) {
+			super(_component, _cls);
+			m_feature = _feature;
+		}
+
+		@Override
+		public void executeAction() {
+
+			WorkingMemoryAddress groundedBeliefAddress = getAction().beliefAddress;
+			WorkingMemoryAddress sharedBeliefAddress = ((DialogueActionInterface) getComponent())
+					.getSharedBeliefAddress(groundedBeliefAddress);
+
+			if (sharedBeliefAddress == null) {
+				println("Giving up because no shared belief yet for: "
+						+ groundedBeliefAddress);
+				executionComplete(TriBool.TRIFALSE);
+			} else {
+
+				// as copied from
+				// http://codex.cs.bham.ac.uk/trac/cogx/wiki/documents/scenarios/beliefs/lingproduction
+
+				// TODO sweet-talk marc into writing proxies for this too
+				Intention robotIntention = new Intention();
+				robotIntention.frame = CASTFrame.create().get();
+				robotIntention.estatus = new PrivateEpistemicStatus("robot");
+
+				// actual content
+				IntentionalContent content = new IntentionalContent();
+				content.probValue = 1f;
+				content.agents = new ArrayList<String>();
+				content.agents.add("robot");
+
+				// precondition
+				ComplexFormula preconditions = new ComplexFormula(-1,
+						new ArrayList<dFormula>(1), BinaryOp.conj);
+				preconditions.forms.add(new ModalFormula(-1, "belief",
+						WMPointer.create(sharedBeliefAddress).get()));
+				content.preconditions = preconditions;
+
+				// postcondition
+				ComplexFormula postconditions = new ComplexFormula(-1,
+						new ArrayList<dFormula>(4), BinaryOp.conj);
+				postconditions.forms.add(PropositionFormula.create(
+						"question-answered").get());
+				postconditions.forms.add(new ModalFormula(-1, "agent",
+						PropositionFormula.create("human").get()));
+				postconditions.forms.add(new ModalFormula(-1, "about",
+						WMPointer.create(groundedBeliefAddress).get()));
+				postconditions.forms.add(new ModalFormula(-1, "feature",
+						PropositionFormula.create(m_feature).get()));
+				content.postconditions = postconditions;
+
+				robotIntention.content = new ArrayList<IntentionalContent>(1);
+				robotIntention.content.add(content);
+
+				addThenCompleteOnOverwrite(robotIntention);
+			}
+
+		}
+
+	}
+
+	public static class AskForColourValueDialogue extends
+			AskForFeatureValueDialogue<AskForColour> {
+		public AskForColourValueDialogue(ManagedComponent _component) {
+			super(_component, AskForColour.class, "color");
+		}
+	}
+
+	public static class AskForShapeValueDialogue extends
+			AskForFeatureValueDialogue<AskForShape> {
+		public AskForShapeValueDialogue(ManagedComponent _component) {
+			super(_component, AskForShape.class, "shape");
+		}
+	}
+
+	public static class AskForIdentityValueDialogue extends
+			AskForFeatureValueDialogue<AskForIdentity> {
+		public AskForIdentityValueDialogue(ManagedComponent _component) {
+			super(_component, AskForIdentity.class, "identity");
+		}
 	}
 
 	public static class DirectShapeAnswer extends
@@ -229,39 +328,62 @@ public class DialogueActionInterface extends ManagedComponent {
 		// DoNothingActionExecutorFactory(
 		// this);
 
-		m_actionStateManager.registerActionType(AskForColour.class,
-				new ComponentActionFactory<DirectColourAnswer>(this,
-						DirectColourAnswer.class));
+		if (m_fakeIt) {
+			m_actionStateManager.registerActionType(AskForColour.class,
+					new ComponentActionFactory<DirectColourAnswer>(this,
+							DirectColourAnswer.class));
 
-		m_actionStateManager.registerActionType(AskForShape.class,
-				new ComponentActionFactory<AskForShapeDialogue>(this,
-						AskForShapeDialogue.class));
+			m_actionStateManager.registerActionType(AskForShape.class,
+					new ComponentActionFactory<DirectShapeAnswer>(this,
+							DirectShapeAnswer.class));
 
-		m_actionStateManager.registerActionType(AskForIdentity.class,
-				new ComponentActionFactory<DirectIdentityAnswer>(this,
-						DirectIdentityAnswer.class));
+			m_actionStateManager.registerActionType(AskForIdentity.class,
+					new ComponentActionFactory<DirectIdentityAnswer>(this,
+							DirectIdentityAnswer.class));
 
-		// TODO replace this with one of Marc's magic thingys
-		WorkingMemoryChangeReceiver updater = new WorkingMemoryChangeReceiver() {
+		} else {
 
-			@Override
-			public void workingMemoryChanged(WorkingMemoryChange _wmc)
-					throws CASTException {
-				m_groundedToShared = getMemoryEntry(_wmc.address,
-						GroundedToSharedBeliefMap.class);
-			}
-		};
+			m_actionStateManager.registerActionType(AskForColour.class,
+					new ComponentActionFactory<AskForColourValueDialogue>(this,
+							AskForColourValueDialogue.class));
 
-		// look for the map between grounded and shared beliefs
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-				GroundedToSharedBeliefMap.class, WorkingMemoryOperation.ADD),
-				updater);
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-				GroundedToSharedBeliefMap.class,
-				WorkingMemoryOperation.OVERWRITE), updater);
+			m_actionStateManager.registerActionType(AskForShape.class,
+					new ComponentActionFactory<AskForShapeValueDialogue>(this,
+							AskForShapeValueDialogue.class));
+
+			m_actionStateManager.registerActionType(AskForIdentity.class,
+					new ComponentActionFactory<AskForIdentityValueDialogue>(
+							this, AskForIdentityValueDialogue.class));
+
+			// TODO replace this with one of Marc's magic thingys
+			WorkingMemoryChangeReceiver updater = new WorkingMemoryChangeReceiver() {
+
+				@Override
+				public void workingMemoryChanged(WorkingMemoryChange _wmc)
+						throws CASTException {
+					m_groundedToShared = getMemoryEntry(_wmc.address,
+							GroundedToSharedBeliefMap.class);
+				}
+			};
+
+			// look for the map between grounded and shared beliefs
+			addChangeFilter(
+					ChangeFilterFactory.createGlobalTypeFilter(
+							GroundedToSharedBeliefMap.class,
+							WorkingMemoryOperation.ADD), updater);
+			addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+					GroundedToSharedBeliefMap.class,
+					WorkingMemoryOperation.OVERWRITE), updater);
+
+		}
 
 	}
 
+	@Override
+	protected void configure(Map<String, String> _config) {
+		m_fakeIt = _config.containsKey("--fake-it");
+	}
+	
 	private WorkingMemoryAddress getSharedBeliefAddress(
 			WorkingMemoryAddress _groundedBeliefAddress) {
 		WorkingMemoryAddress addr = null;
