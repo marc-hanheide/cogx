@@ -76,11 +76,6 @@ ShapeDescriptor3D::~ShapeDescriptor3D()
 
 void ShapeDescriptor3D::configure(const std::map<std::string,std::string> & _config)
 {
-  P::RASDescriptor ras;
-  log("configure: ras size %d", ras.size);
-  for (unsigned i=0; i<ras.Size(); i++)
-    log(" %f", ras.data[i]);
-
   // first let the base classes configure themselves
   configureStereoCommunication(_config);
 
@@ -211,9 +206,18 @@ void ShapeDescriptor3D::calculateDescriptor(ProtoObject &pobj)
   SOIPtr soiPtr = getMemoryEntry<VisionData::SOI>(soiAddr);
   // HACK: 1.3 is the ominous dilate factor of SOIFilter
   // super shitty hack
-  //soiPtr->boundingSphere.rad *= 1.3;
-  // HACK note: this is done in SOIFilter and the SOI is updated on WM!
+  soiPtr->boundingSphere.rad *= 1.3;
   ROIPtr roiPtr = projectSOI(image[LEFT].camPars, *soiPtr);
+
+  // HACK
+  CvRect rect;
+  rect.width = roiPtr->rect.width;
+  rect.height = roiPtr->rect.height;
+  rect.x = roiPtr->rect.pos.x - rect.width / 2;
+  rect.y = roiPtr->rect.pos.y - rect.height / 2;	
+  log("Calculated ROI x=%i, y=%i, width=%i, height=%i",
+	  rect.x, rect.y, rect.width, rect.height);
+  // HACK END
 
   // prepare mask image with white ROI on black background
   cvSet(iplMask, cvScalar(0));
@@ -282,11 +286,6 @@ void ShapeDescriptor3D::calculateDescriptor(ProtoObject &pobj)
     cvSaveImage("shape-debug-L.jpg", iplDebug[LEFT]);
     cvSaveImage("shape-debug-R.jpg", iplDebug[RIGHT]);
   }
-
-  // HACK
-  log("calculate descr: ras size %d", ras.size);
-  for (unsigned i=0; i<ras.Size(); i++)
-    log(" %f", ras.data[i]);
 
 #ifdef FEAT_VISUALIZATION
   redraw3D();
@@ -399,10 +398,8 @@ std::string ShapeDescriptor3D::MyDisplayClient::getControlState(const std::strin
 
 void ShapeDescriptor3D::redrawHistogram(const ProtoObject &pobj)
 {
-  //int w = 100, h = 100;
   std::ostringstream str;
   str << "function render()\n";
-  //str << "glViewport(0, 0, " <<  w << ", " << h << ")\n";
   str << "glMatrixMode(GL_PROJECTION)\n";
   str << "glLoadIdentity()\n";
   str << "gluOrtho2D(0, 1, 0, 1)\n";
@@ -462,6 +459,12 @@ void ShapeDescriptor3D::redraw3D()
   
   for(size_t i = 0; i < rasPlanes.Size(); i++)
   {
+    double l = 0.03;
+    DrawLine3D(str, rasPlanes[i]->p.x, rasPlanes[i]->p.y, rasPlanes[i]->p.z,
+      rasPlanes[i]->p.x + l*rasPlanes[i]->n.x,
+      rasPlanes[i]->p.y + l*rasPlanes[i]->n.y,
+      rasPlanes[i]->p.z + l*rasPlanes[i]->n.z,
+      P::RGBColor(255, 255, 255));
     for(size_t j = 0; j < rasPlanes[i]->contour.Size(); j++)
     {
       P::Vector3 &p1 = rasPlanes[i]->contour[j];
