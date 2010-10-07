@@ -258,7 +258,7 @@ void VL_update_model(ProtoObject &Object, std::vector<string>& labels, std::vect
       int row = 1;
       for (unsigned i = 0; i < labels.size(); i++) {
         if (weights[i] > 0) {
-           avw(row, 1) =  Enumerator.getEnum(labels[i]);
+           avw(row, 1) =  (double) Enumerator.getEnum(labels[i]);
            avw(row, 2) =  (double) weights[i];
            row++;
         }
@@ -271,7 +271,7 @@ void VL_update_model(ProtoObject &Object, std::vector<string>& labels, std::vect
       int row = 1;
       for (unsigned i = 0; i < labels.size(); i++) {
         if (weights[i] < 0) {
-           avw(row, 1) =  Enumerator.getEnum(labels[i]);
+           avw(row, 1) =  (double) Enumerator.getEnum(labels[i]);
            avw(row, 2) =  (double) -weights[i];
            row++;
         }
