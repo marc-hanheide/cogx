@@ -9,7 +9,7 @@
 
 #include "DShapeCore.hh"
 
-#define DEBUG
+//#define DEBUG
 
 
 namespace P 
