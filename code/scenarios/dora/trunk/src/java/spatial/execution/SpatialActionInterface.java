@@ -3,15 +3,12 @@
  */
 package spatial.execution;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import SpatialData.AVSAction;
-import SpatialData.AVSCommand;
 import SpatialData.AVSStatus;
 import SpatialData.CommandType;
 import SpatialData.Completion;
@@ -23,11 +20,8 @@ import SpatialData.StatusError;
 import SpatialData.ViewPoint;
 import SpatialData.ViewPointGenerationCommand;
 import cast.CASTException;
-import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
 import cast.SubarchitectureComponentException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -37,7 +31,6 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
 import execution.slice.Action;
 import execution.slice.TriBool;
-import execution.slice.actions.ActiveVisualSearch;
 import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
@@ -141,131 +134,133 @@ public class SpatialActionInterface extends ManagedComponent {
 		}
 	}
 
-	private class AVSExecutor extends Thread implements ActionExecutor,
-			WorkingMemoryChangeReceiver {
-
-		private WorkingMemoryAddress m_avsAddr;
-		private AVSCommand m_avsCmd;
-		private long[] m_avsPlaceIDs;
-		private ExecutionCompletionCallback m_callback;
-		private boolean m_isStopped;
-
-		public AVSExecutor() {
-			m_isStopped = false;
-		}
-
-		@Override
-		public boolean accept(Action _action) {
-			m_avsPlaceIDs = ((ActiveVisualSearch) _action).placeIDs;
-			return true;
-		}
-
-		@Override
-		public TriBool execute() {
-			return null;
-		}
-
-		@Override
-		public void execute(ExecutionCompletionCallback _callback) {
-
-			log("running AVS on places: " + Arrays.toString(m_avsPlaceIDs));
-
-			// avs never returns, so just just keep listening
-			m_avsCmd = new AVSCommand(m_avsPlaceIDs, AVSAction.PLAN);
-			m_avsAddr = new WorkingMemoryAddress(newDataID(),
-					getSubarchitectureID());
-			try {
-				addChangeFilter(ChangeFilterFactory.createAddressFilter(
-						m_avsAddr, WorkingMemoryOperation.DELETE), this);
-				addToWorkingMemory(m_avsAddr, m_avsCmd);
-				m_callback = _callback;
-				if (useAVSTimeout()) {
-					start();
-				}
-			} catch (CASTException e) {
-				println(e.message);
-				e.printStackTrace();
-				_callback.executionComplete(TriBool.TRIFALSE);
-			}
-		}
-
-		@Override
-		public boolean isBlockingAction() {
-			return false;
-		}
-
-		@Override
-		public void run() {
-			// sleep for the timeout
-			if (useAVSTimeout()) {
-				try {
-					Thread.sleep(m_avsTimeoutMillis);
-					if (!m_isStopped) {
-						log("halting AVS after timeout");
-						// stop avs
-						m_avsCmd.cmd = AVSAction.STOPAVS;
-						overwriteWorkingMemory(m_avsAddr, m_avsCmd);
-						removeChangeFilter(this);
-						m_callback.executionComplete(TriBool.TRITRUE);
-					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				} catch (DoesNotExistOnWMException e) {
-					e.printStackTrace();
-				} catch (ConsistencyException e) {
-					e.printStackTrace();
-				} catch (PermissionException e) {
-					e.printStackTrace();
-				} catch (UnknownSubarchitectureException e) {
-					e.printStackTrace();
-				} catch (SubarchitectureComponentException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-
-		@Override
-		public void stopExecution() {
-			if (!m_isStopped) {
-				try {
-					m_isStopped = true;
-					m_avsCmd.cmd = AVSAction.STOPAVS;
-					overwriteWorkingMemory(m_avsAddr, m_avsCmd);
-					removeChangeFilter(this);
-
-				} catch (DoesNotExistOnWMException e) {
-					e.printStackTrace();
-				} catch (ConsistencyException e) {
-					e.printStackTrace();
-				} catch (PermissionException e) {
-					e.printStackTrace();
-				} catch (UnknownSubarchitectureException e) {
-					e.printStackTrace();
-				} catch (SubarchitectureComponentException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		@Override
-		public void workingMemoryChanged(WorkingMemoryChange _arg0)
-				throws CASTException {
-			// only called when command has been deleted, i.e. avs has finished
-			// for some reason
-			if (!m_isStopped) {
-				println("AVS finished on its own");
-				m_isStopped = true;
-				m_callback.executionComplete(TriBool.TRITRUE);
-				try {
-					removeChangeFilter(this);
-				} catch (SubarchitectureComponentException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-	}
+	
+	//not used in year 2
+//	private class AVSExecutor extends Thread implements ActionExecutor,
+//			WorkingMemoryChangeReceiver {
+//
+//		private WorkingMemoryAddress m_avsAddr;
+//		private AVSCommand m_avsCmd;
+//		private long[] m_avsPlaceIDs;
+//		private ExecutionCompletionCallback m_callback;
+//		private boolean m_isStopped;
+//
+//		public AVSExecutor() {
+//			m_isStopped = false;
+//		}
+//
+//		@Override
+//		public boolean accept(Action _action) {
+//			m_avsPlaceIDs = ((ActiveVisualSearch) _action).placeIDs;
+//			return true;
+//		}
+//
+//		@Override
+//		public TriBool execute() {
+//			return null;
+//		}
+//
+//		@Override
+//		public void execute(ExecutionCompletionCallback _callback) {
+//
+//			log("running AVS on places: " + Arrays.toString(m_avsPlaceIDs));
+//
+//			// avs never returns, so just just keep listening
+//			m_avsCmd = new AVSCommand(m_avsPlaceIDs, AVSAction.PLAN);
+//			m_avsAddr = new WorkingMemoryAddress(newDataID(),
+//					getSubarchitectureID());
+//			try {
+//				addChangeFilter(ChangeFilterFactory.createAddressFilter(
+//						m_avsAddr, WorkingMemoryOperation.DELETE), this);
+//				addToWorkingMemory(m_avsAddr, m_avsCmd);
+//				m_callback = _callback;
+//				if (useAVSTimeout()) {
+//					start();
+//				}
+//			} catch (CASTException e) {
+//				println(e.message);
+//				e.printStackTrace();
+//				_callback.executionComplete(TriBool.TRIFALSE);
+//			}
+//		}
+//
+//		@Override
+//		public boolean isBlockingAction() {
+//			return false;
+//		}
+//
+//		@Override
+//		public void run() {
+//			// sleep for the timeout
+//			if (useAVSTimeout()) {
+//				try {
+//					Thread.sleep(m_avsTimeoutMillis);
+//					if (!m_isStopped) {
+//						log("halting AVS after timeout");
+//						// stop avs
+//						m_avsCmd.cmd = AVSAction.STOPAVS;
+//						overwriteWorkingMemory(m_avsAddr, m_avsCmd);
+//						removeChangeFilter(this);
+//						m_callback.executionComplete(TriBool.TRITRUE);
+//					}
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				} catch (DoesNotExistOnWMException e) {
+//					e.printStackTrace();
+//				} catch (ConsistencyException e) {
+//					e.printStackTrace();
+//				} catch (PermissionException e) {
+//					e.printStackTrace();
+//				} catch (UnknownSubarchitectureException e) {
+//					e.printStackTrace();
+//				} catch (SubarchitectureComponentException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//
+//		@Override
+//		public void stopExecution() {
+//			if (!m_isStopped) {
+//				try {
+//					m_isStopped = true;
+//					m_avsCmd.cmd = AVSAction.STOPAVS;
+//					overwriteWorkingMemory(m_avsAddr, m_avsCmd);
+//					removeChangeFilter(this);
+//
+//				} catch (DoesNotExistOnWMException e) {
+//					e.printStackTrace();
+//				} catch (ConsistencyException e) {
+//					e.printStackTrace();
+//				} catch (PermissionException e) {
+//					e.printStackTrace();
+//				} catch (UnknownSubarchitectureException e) {
+//					e.printStackTrace();
+//				} catch (SubarchitectureComponentException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//
+//		@Override
+//		public void workingMemoryChanged(WorkingMemoryChange _arg0)
+//				throws CASTException {
+//			// only called when command has been deleted, i.e. avs has finished
+//			// for some reason
+//			if (!m_isStopped) {
+//				println("AVS finished on its own");
+//				m_isStopped = true;
+//				m_callback.executionComplete(TriBool.TRITRUE);
+//				try {
+//					removeChangeFilter(this);
+//				} catch (SubarchitectureComponentException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//
+//	}
 
 	private class GoToPlaceExecutor implements ActionExecutor,
 			WorkingMemoryChangeReceiver {
@@ -458,13 +453,13 @@ public class SpatialActionInterface extends ManagedComponent {
 					}
 				});
 
-		m_actionStateManager.registerActionType(ActiveVisualSearch.class,
-				new ActionExecutorFactory() {
-					@Override
-					public ActionExecutor getActionExecutor() {
-						return new AVSExecutor();
-					}
-				});
+//		m_actionStateManager.registerActionType(ActiveVisualSearch.class,
+//				new ActionExecutorFactory() {
+//					@Override
+//					public ActionExecutor getActionExecutor() {
+//						return new AVSExecutor();
+//					}
+//				});
 
 		m_actionStateManager.registerActionType(ExplorePlace.class,
 				new ActionExecutorFactory() {
