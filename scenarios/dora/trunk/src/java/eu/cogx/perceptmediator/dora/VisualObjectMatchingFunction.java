@@ -5,12 +5,11 @@ import castutils.castextensions.WMContentWaiter.ContentMatchingFunction;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
-
-import eu.cogx.beliefs.slice.PerceptBelief;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 public class VisualObjectMatchingFunction implements
-		ContentMatchingFunction<PerceptBelief> {
+		ContentMatchingFunction<dBelief> {
 
 	private String objectId;
 
@@ -19,11 +18,11 @@ public class VisualObjectMatchingFunction implements
 	}
 
 	@Override
-	public boolean matches(PerceptBelief r) {
+	public boolean matches(dBelief r) {
 		if (r.type.equals(SimpleDiscreteTransferFunction
 				.getBeliefTypeFromCastType(VisualObject.class))) {
-			IndependentFormulaDistributionsBelief<PerceptBelief> b = IndependentFormulaDistributionsBelief
-					.create(PerceptBelief.class, r);
+			IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
+					.create(dBelief.class, r);
 			FormulaDistribution fv = b.getContent().get("ObjectId");
 			Formula mostLikelyPlace = fv.getDistribution().getMostLikely();
 			return mostLikelyPlace.getProposition().equals(objectId);

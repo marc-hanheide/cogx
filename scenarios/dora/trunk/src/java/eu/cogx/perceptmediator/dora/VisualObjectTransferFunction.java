@@ -32,12 +32,12 @@ import facades.SpatialFacade;
  * 
  */
 public class VisualObjectTransferFunction extends
-		DependentDiscreteTransferFunction<VisualObject> {
+		DependentDiscreteTransferFunction<VisualObject, PerceptBelief> {
 
 	public VisualObjectTransferFunction(ManagedComponent component,
 			WMView<PerceptBelief> allBeliefs) {
 		super(component, allBeliefs, Logger
-				.getLogger(VisualObjectTransferFunction.class));
+				.getLogger(VisualObjectTransferFunction.class), PerceptBelief.class);
 	}
 
 	@Override
