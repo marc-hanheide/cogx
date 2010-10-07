@@ -19,6 +19,12 @@ class GroundedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBeli
 class SharedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
 };
 
+class PresupposedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
+};
+
+class AssertedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
+};
+
 }; 
 // end slice
 }; 
