@@ -52,7 +52,11 @@ void Observer::configure(const std::map<std::string,std::string> & _config)
 void Observer::start()
 {
 	// Global filter on comadata::ComaRoom
-	addChangeFilter(createGlobalTypeFilter<comadata::ComaRoom>(cdl::WILDCARD),
+	addChangeFilter(createGlobalTypeFilter<comadata::ComaRoom>(cdl::ADD),
+			new MemberFunctionChangeReceiver<Observer>(this,
+					&Observer::comaRoomChanged));
+
+	addChangeFilter(createGlobalTypeFilter<comadata::ComaRoom>(cdl::OVERWRITE),
 			new MemberFunctionChangeReceiver<Observer>(this,
 					&Observer::comaRoomChanged));
 }
