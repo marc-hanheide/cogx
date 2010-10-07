@@ -43,7 +43,7 @@ public class VisionUtils {
 				new VisualObjectView[0], new GeometryModel(new Vertex[0],
 						new Face[0]),
 				0d, new String[0], new double[0], 0, 0, new String[0],
-				new double[0], 0, 0, new String[0], new double[0], 0, 0, "");
+				new double[0], new double[0], 0, 0, new String[0], new double[0],  new double[0], 0, 0, "");
 		return obj;
 	}
 
