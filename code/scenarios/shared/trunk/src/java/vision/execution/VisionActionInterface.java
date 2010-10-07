@@ -74,8 +74,7 @@ public class VisionActionInterface extends ManagedComponent {
 		@Override
 		public void executeAction() {
 			DetectionCommand cmd = new DetectionCommand(m_labels);
-			addThenCompleteOnDelete(new WorkingMemoryAddress(getComponent()
-					.newDataID(), getComponent().getSubarchitectureID()), cmd);
+			addThenCompleteOnDelete(cmd);
 		}
 
 	}
@@ -101,8 +100,7 @@ public class VisionActionInterface extends ManagedComponent {
 		@Override
 		public void executeAction() {
 			PeopleDetectionCommand cmd = new PeopleDetectionCommand();
-			addThenCompleteOnDelete(new WorkingMemoryAddress(getComponent()
-					.newDataID(), getComponent().getSubarchitectureID()), cmd);
+			addThenCompleteOnDelete(cmd);
 		}
 
 	}
@@ -217,8 +215,7 @@ public class VisionActionInterface extends ManagedComponent {
 			DetectionCommand cmd = new DetectionCommand(
 					new String[foregroundedModels.size()]);
 			cmd.labels = foregroundedModels.toArray(cmd.labels);
-			addThenCompleteOnDelete(new WorkingMemoryAddress(getComponent()
-					.newDataID(), getComponent().getSubarchitectureID()), cmd);
+			addThenCompleteOnDelete(cmd);
 		}
 
 	}
@@ -257,9 +254,7 @@ public class VisionActionInterface extends ManagedComponent {
 						"got the vis obj id: "
 								+ getComponent().getVisualObjectID(beliefID));
 
-				addThenCompleteOnOverwrite(new WorkingMemoryAddress(
-						getComponent().newDataID(), getComponent()
-								.getSubarchitectureID()), cmd);
+				addThenCompleteOnOverwrite(cmd);
 
 			} catch (CASTException e) {
 				getComponent().logException(e);
