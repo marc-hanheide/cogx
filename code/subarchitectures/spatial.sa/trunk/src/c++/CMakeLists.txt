@@ -165,18 +165,6 @@ link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
 endif(BUILD_AVS)
 
-option(BUILD_DUMBED_DOWN_AVS NO)
-if(BUILD_DUMBED_DOWN_AVS)
-  add_cast_component(DumbedDownVisualObjectSearch DumbedDownVisualObjectSearch.cpp)
-  link_cast_component(${CAST_COMPONENT_NAME} ${GTK2_LIBRARIES} peekabot NavData SpatialData VisionData Laser Robotbase RobotbaseClientUtils Scan2dReceiver OdometryReceiver PTZ)
-  link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface)
-  link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
-link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES} ${OPENCV_LDFLAGS})
-
-
-endif(BUILD_DUMBED_DOWN_AVS)
-
-
 option(DISPLAY_COMA_PB NO)
 if(DISPLAY_COMA_PB)
      add_definitions(-DDISPLAY_COMA)
