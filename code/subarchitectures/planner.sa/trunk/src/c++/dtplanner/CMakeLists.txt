@@ -9,10 +9,14 @@ include_directories(./dtpddl)
 #link_directories(./dtpddl)
 
 # link_directories(${CMAKEDEMO_BINARY_DIR}/w01-intro)
+option(DT_PLANNER_LAO_STAR "Use LAO* heuristic in dt planner" YES)
+if(DT_PLANNER_LAO_STAR)
+  add_definitions(-DLAO_STAR)
+endif(DT_PLANNER_LAO_STAR)
 
-# add_definitions(-std=c++0x -mno-align-stringops -minline-all-stringops -march=native -fPIC)
+add_definitions(-std=c++0x -mno-align-stringops -minline-all-stringops -march=native -fPIC)
 
-add_definitions(-DLAO_STAR -std=c++0x -mno-align-stringops -minline-all-stringops -march=native -fPIC)
+#add_definitions(-DLAO_STAR -std=c++0x -mno-align-stringops -minline-all-stringops -march=native -fPIC)
 
 #add_definitions(-pedantic -pg -Wall -Wextra)
 
