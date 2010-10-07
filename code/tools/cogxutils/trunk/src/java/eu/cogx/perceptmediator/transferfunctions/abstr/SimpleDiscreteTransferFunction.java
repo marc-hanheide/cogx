@@ -19,7 +19,7 @@ import castutils.castextensions.CASTHelper;
 import castutils.castextensions.WMEntrySynchronizer.TransferFunction;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
-import de.dfki.lt.tr.beliefs.data.formulas.WMAddressFormula;
+import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
@@ -157,7 +157,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	 */
 	private void addUniversalMappings(WorkingMemoryChange _wmc, From _from,
 			Map<String, Formula> _mapping) {
-		_mapping.put(SOURCE_ADDR_ID, WMAddressFormula.create(_wmc.address).getAsFormula());
+		_mapping.put(SOURCE_ADDR_ID, WMPointer.create(_wmc.address).getAsFormula());
 	}
 
 	/**
