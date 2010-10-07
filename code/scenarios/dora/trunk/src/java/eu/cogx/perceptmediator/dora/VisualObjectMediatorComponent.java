@@ -6,12 +6,17 @@ import eu.cogx.perceptmediator.PerceptBindingMediator;
 import eu.cogx.perceptmediator.components.abstr.ReferringPerceptMediatorComponent;
 
 public class VisualObjectMediatorComponent extends
-		ReferringPerceptMediatorComponent {
+		ReferringPerceptMediatorComponent<PerceptBelief> {
+
+	public VisualObjectMediatorComponent() {
+		super(PerceptBelief.class);
+	}
 
 	@Override
 	protected PerceptBindingMediator<VisualObject, PerceptBelief> getMediator() {
-		return PerceptBindingMediator.create(this, VisualObject.class, PerceptBelief.class,
-				new VisualObjectTransferFunction(this, perceptBeliefsView));
+		return PerceptBindingMediator.create(this, VisualObject.class,
+				PerceptBelief.class, new VisualObjectTransferFunction(this,
+						allBeliefs));
 	}
 
 }
