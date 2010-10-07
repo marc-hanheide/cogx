@@ -2,6 +2,7 @@ import castinit    # this will add stuff to sys.path
 import cast.core
 import cogxv11n.core.DisplayClient as DisplayClient
 
+import standalone
 from standalone.task import PlanningStatusEnum
 from autogen import Planner
 
@@ -69,7 +70,7 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
     def update_task(self, task):
         id = "%04d" % task.id
         
-        html = "<h2>Planning Task %d (%s)</h2>" % (task.id, task.status)
+        html = "<h2>Planning Task %d (%s)</h2>" % (task.id, task.internal_state)
 
         def goal_row(g):
             if task.status == Planner.Completion.SUCCEEDED:
@@ -91,19 +92,35 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
             args = [a.name for a in pnode.args]
             name = "(%s %s)" % (pnode.action.name, " ".join(args))
             return (str(pnode.status).lower(), name, float(pnode.cost), pnode.status)
-            
-        if task.cp_task.planning_status == PlanningStatusEnum.PLAN_AVAILABLE:
+
+        if task.cp_task.planning_status == PlanningStatusEnum.PLANNING_FAILURE:
+            html += "<p>No plan found</p>"
+        elif task.cp_task.get_plan():
             ordered_plan = task.cp_task.get_plan().topological_sort()
             html += make_html_table(["Action", "Cost", "State"], (action_row(a) for a in ordered_plan), ["class", "%s", "%.2f", "%s"])
-        elif task.cp_task.planning_status == PlanningStatusEnum.RUNNING:
-            html += "<p>Planning...</p>"
-        elif task.dt_planning_active():
-            dt_plan = task.dt_task.dt_plan
-            html += "DT plan:"
-            html += make_html_table(["Action", "Cost", "State"], (action_row(a) for a in dt_plan), ["class", "%s", "%.2f", "%s"])
         else:
-            html += "<p>No plan found</p>"
+            html += "<p>Planning (Continual)...</p>"
+            
+        if task.dt_planning_active():
+            dt_plan = task.dt_task.dt_plan
+            if dt_plan:
+                html += "DT plan:"
+                html += make_html_table(["Action", "Cost", "State"], (action_row(a) for a in dt_plan), ["class", "%s", "%.2f", "%s"])
+            else:
+                html += "<p>Planning (DT)...</p>"
 
+        if task.plan_history:
+            html += "<a3>Plan history</a3>"
+            for elem in task.plan_history:
+                if elem is None:
+                    html += '<p>No plan found</p>'
+                else:
+                    if isinstance(elem, standalone.plans.MAPLPlan):
+                        ordered_plan = elem.topological_sort()
+                    else:
+                        ordered_plan = elem.dt_plan
+                    html += make_html_table(["Action", "Cost", "State"], (action_row(a) for a in ordered_plan), ["class", "%s", "%.2f", "%s"])
+                
         
         # A multi-part HTML document.
         # Parts will be added every time the form (setHtmlForm below) is submitted (see handleForm).

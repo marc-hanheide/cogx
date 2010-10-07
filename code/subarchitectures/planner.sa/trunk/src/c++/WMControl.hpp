@@ -60,7 +60,6 @@ private:
 
     typedef std::tr1::unordered_map<int,cast::cdl::WorkingMemoryAddress> taskMap;
     taskMap activeTasks;
-    std::set<int> m_waiting_tasks;
 
     typedef std::tr1::unordered_map< std::string, ::de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBeliefPtr > BeliefMap;
     typedef std::vector< ::de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBeliefPtr > PerceptList;
@@ -71,6 +70,7 @@ private:
     bool m_new_updates;
 
     std::map<int, timeval> m_runqueue;
+    std::map<int, timeval> m_waiting_tasks;
     boost::mutex m_queue_mutex;
 
     std::string m_python_server;
