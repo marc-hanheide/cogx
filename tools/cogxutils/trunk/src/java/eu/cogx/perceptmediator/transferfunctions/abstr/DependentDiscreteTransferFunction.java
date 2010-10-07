@@ -6,11 +6,12 @@ import org.apache.log4j.Logger;
 
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
+import castutils.castextensions.BeliefWaiter;
 import castutils.castextensions.WMContentWaiter;
 import castutils.castextensions.WMView;
 import castutils.castextensions.WMContentWaiter.ContentMatchingFunction;
 import castutils.castextensions.WMEntrySynchronizer.TransferFunction;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 
 /**
  * a more complex abstract {@link TransferFunction} required to realize
@@ -23,11 +24,11 @@ import eu.cogx.beliefs.slice.PerceptBelief;
  * @param <From>
  *            the type to transfer from
  */
-public abstract class DependentDiscreteTransferFunction<From extends Ice.ObjectImpl>
-		extends SimpleDiscreteTransferFunction<From, PerceptBelief> {
+public abstract class DependentDiscreteTransferFunction<From extends Ice.ObjectImpl, To extends dBelief>
+		extends SimpleDiscreteTransferFunction<From, To> {
 
-	protected WMView<PerceptBelief> allBeliefs;
-	WMContentWaiter<PerceptBelief> waitingBeliefReader;
+	protected WMView<To> allBeliefs;
+	BeliefWaiter<To> waitingBeliefReader;
 
 	/**
 	 * constructor. Requires a {@link WMView} of all {@link PerceptBelief} to
@@ -39,10 +40,10 @@ public abstract class DependentDiscreteTransferFunction<From extends Ice.ObjectI
 	 * @param logger
 	 */
 	public DependentDiscreteTransferFunction(ManagedComponent component,
-			WMView<PerceptBelief> allBeliefs, Logger logger) {
-		super(component, logger, PerceptBelief.class);
+			WMView<To> allBeliefs, Logger logger, Class<To> beliefClass) {
+		super(component, logger, beliefClass);
 		this.allBeliefs = allBeliefs;
-		waitingBeliefReader = new WMContentWaiter<PerceptBelief>(
+		waitingBeliefReader = new BeliefWaiter<To>(
 				this.allBeliefs);
 	}
 
@@ -56,10 +57,10 @@ public abstract class DependentDiscreteTransferFunction<From extends Ice.ObjectI
 	 * @throws InterruptedException
 	 */
 	protected WorkingMemoryAddress getReferredBelief(
-			ContentMatchingFunction<PerceptBelief> contentMatchingFunction)
+			ContentMatchingFunction<? super To> contentMatchingFunction)
 			throws InterruptedException {
 		logger.debug("trying to find referred belief");
-		Entry<WorkingMemoryAddress, PerceptBelief> entry = waitingBeliefReader
+		Entry<WorkingMemoryAddress, To> entry = waitingBeliefReader
 				.read(contentMatchingFunction);
 		logger.debug("got it: " + entry.getKey().id);
 		return entry.getKey();
