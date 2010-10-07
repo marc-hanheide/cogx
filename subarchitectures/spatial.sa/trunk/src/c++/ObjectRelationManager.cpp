@@ -1017,6 +1017,11 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	  observedObject->pose.pos.y,
 	  observedObject->pose.pos.z);
 
+      if (observedObject->pose.pos.x == 0.0 && observedObject->pose.pos.x == 0.0 && observedObject->pose.pos.x == 0.0)
+      {
+	log("Warning: object has invalid pose, returning without doing anything");
+	return;
+      }
       Pose3 pose = observedObject->pose;
       //Get robot pose
       Pose3 robotTransform;
