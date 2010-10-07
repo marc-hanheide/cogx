@@ -1,12 +1,12 @@
 package eu.cogx.goals.george;
 
-import motivation.components.generators.AbstractIntentionMotiveGenerator;
+import motivation.components.generators.AbstractIntentionMotiveGenerator; 
 import motivation.slice.TutorInitiativeMotive;
 import nu.xom.Document;
 import nu.xom.Node;
 import nu.xom.Nodes;
 
-import org.cognitivesystems.binder.POINTERLABEL;
+import org.cognitivesystems.binder.POINTERLABEL; 
 
 import autogen.Planner.Goal;
 import cast.CASTException;
