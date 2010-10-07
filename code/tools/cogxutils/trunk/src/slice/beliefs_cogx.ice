@@ -16,6 +16,9 @@ class PerceptBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelie
 class GroundedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
 };
 
+class SharedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
+};
+
 }; 
 // end slice
 }; 
