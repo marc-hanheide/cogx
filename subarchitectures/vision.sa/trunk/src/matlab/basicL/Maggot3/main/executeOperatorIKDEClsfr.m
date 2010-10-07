@@ -822,7 +822,7 @@ switch operator_data
         
         executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'showKDE', 'selectSubDimensions', sub_feats, vforwvargin{:} ) ;
         hyper_output_kde_cl = hyper_input_kde_cl.class_labels_names(val_get) ;
-        title(hyper_output_kde_cl) ;  
+%         title(hyper_output_kde_cl) ;  
     case 'regularize_all_kdes'
         
         % search for degenerate kdes and reapproximate their bandwidths
