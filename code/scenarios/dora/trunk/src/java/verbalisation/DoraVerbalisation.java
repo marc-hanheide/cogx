@@ -7,8 +7,6 @@ import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.slice.PatrolMotive;
-import castutils.castextensions.Accessor;
-import SpatialData.AVSCommand;
 import SpatialData.NavCommand;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
@@ -17,6 +15,7 @@ import SpatialProperties.ObjectPlaceProperty;
 import VisionData.DetectionCommand;
 import VisionData.VisualObject;
 import cast.architecture.ManagedComponent;
+import castutils.castextensions.Accessor;
 
 
 
@@ -197,8 +196,8 @@ public class DoraVerbalisation extends ManagedComponent {
 		// "Starting plan execution.");
 
 		// when AVS is triggered
-		m_verbals.verbaliseCannedTextOnAddition(AVSCommand.class,
-				"Having a look around");
+//		m_verbals.verbaliseCannedTextOnAddition(AVSCommand.class,
+//				"Having a look around");
 
 		// when a recognition command is triggered�
 		m_verbals.verbaliseOnAddition(DetectionCommand.class,
