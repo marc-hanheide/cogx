@@ -32,19 +32,19 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
 
 /**
  * this is a generic matcher that matches any
- * {@link CASTIndependentFormulaDistributionsBelief} of type
- * {@link dBelief} to {@link dBelief} (e.g. PerceptBelief to GroundedBelief). It compares all contained
- * Formulas and if the most likely ones are matching in the
- * from belief and the to belief they are assumed to be
- * matching. There must be a match for all formulas in the PerceptBelief, but
- * it's ok if the GroundedBelief has some more than are not corresponding. To be
- * used with a {@link WMTracker}.
+ * {@link CASTIndependentFormulaDistributionsBelief} of type {@link dBelief} to
+ * {@link dBelief} (e.g. PerceptBelief to GroundedBelief). It compares all
+ * contained Formulas and if the most likely ones are matching in the from
+ * belief and the to belief they are assumed to be matching. There must be a
+ * match for all formulas in the PerceptBelief, but it's ok if the
+ * GroundedBelief has some more than are not corresponding. To be used with a
+ * {@link WMTracker}.
  * 
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class FormulaMatcher<From extends dBelief, To extends dBelief> implements
-		WMTracker.MatcherFunction<From, To> {
+public class FormulaMatcher<From extends dBelief, To extends dBelief>
+		implements WMTracker.MatcherFunction<From, To> {
 
 	/** the very small epsilon to test doubles for equality */
 	private static final double EPSILON_EQUALITY = 1e-10;
@@ -66,19 +66,22 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief> implements
 	 *            they will never match and an update will cause an
 	 *            {@link IncompatibleAssignmentException}
 	 */
-	public FormulaMatcher(List<String> types, PointerMap<?> map, Class<From> _fromCls, Class<To> _toCls) {
+	public FormulaMatcher(List<String> types, PointerMap<?> map,
+			Class<From> _fromCls, Class<To> _toCls) {
 		super();
 		this.beliefTypes = types;
 		wm2wmMap = map;
 		logger = Logger.getLogger(FormulaMatcher.class);
 		m_fromCls = _fromCls;
 		m_toCls = _toCls;
-		
+
 		// always ignore the source-address!
 		ignoredKeys.add(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID);
 	}
-	
-	public FormulaMatcher(List<String> types, PointerMap<?> map, Collection<String> ignoreKeys, Class<From> _fromCls, Class<To> _toCls) {
+
+	public FormulaMatcher(List<String> types, PointerMap<?> map,
+			Collection<String> ignoreKeys, Class<From> _fromCls,
+			Class<To> _toCls) {
 		this(types, map, _fromCls, _toCls);
 		this.ignoredKeys.addAll(ignoreKeys);
 	}
@@ -94,9 +97,8 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief> implements
 	 * WorkingMemoryAddress, cast.cdl.WorkingMemoryChange, Ice.ObjectImpl)
 	 */
 	@Override
-	public To create(WorkingMemoryAddress idToCreate,
-			WorkingMemoryChange wmc, From from)
-			throws IncompatibleAssignmentException {
+	public To create(WorkingMemoryAddress idToCreate, WorkingMemoryChange wmc,
+			From from) throws IncompatibleAssignmentException {
 		logger.debug("create new belief for PerceptBelief " + wmc.address.id);
 		if (beliefTypes != null)
 			if (!beliefTypes.contains(from.type)) {
@@ -105,16 +107,15 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief> implements
 		try {
 			CASTIndependentFormulaDistributionsBelief<To> gb = CASTIndependentFormulaDistributionsBelief
 					.create(m_toCls);
-			CASTIndependentFormulaDistributionsBelief<From> pb = CASTIndependentFormulaDistributionsBelief
-					.create(m_fromCls, from);
+			CASTIndependentFormulaDistributionsBelief<From> pb = createFromBeliefProxy(from);
 
 			gb.setType(pb.getType());
 			gb.setTime(pb.getStartTime(), pb.getEndTime());
 			gb.setId(idToCreate.id);
 			return gb.get();
 		} catch (ClassCastException e) {
-			throw (new IncompatibleAssignmentException(
-					"cannot create new " + m_toCls + " due to incompatible data types"));
+			throw (new IncompatibleAssignmentException("cannot create new "
+					+ m_toCls + " due to incompatible data types"));
 		}
 	}
 
@@ -131,8 +132,7 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief> implements
 	 * WorkingMemoryChange, Ice.ObjectImpl, Ice.ObjectImpl)
 	 */
 	@Override
-	public double match(WorkingMemoryChange wmc, From from,
-			To to) {
+	public double match(WorkingMemoryChange wmc, From from, To to) {
 		logger.debug("match new belief for PerceptBelief " + from.id
 				+ " with existing GroundedBelief " + to.id);
 		if (beliefTypes != null)
@@ -141,10 +141,8 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief> implements
 		if (!to.type.equals(from.type))
 			return 0.0;
 		try {
-			CASTIndependentFormulaDistributionsBelief<To> gb = CASTIndependentFormulaDistributionsBelief
-					.create(m_toCls, to);
-			CASTIndependentFormulaDistributionsBelief<From> pb = CASTIndependentFormulaDistributionsBelief
-					.create(m_fromCls, from);
+			CASTIndependentFormulaDistributionsBelief<To> gb = createToBeliefProxy(to);
+			CASTIndependentFormulaDistributionsBelief<From> pb = createFromBeliefProxy(from);
 			// if the content matches we can assume this is matching
 			if (matches(pb.getContent(), gb.getContent())) {
 				logger.debug("  => 1.0");
@@ -187,8 +185,7 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief> implements
 			}
 			FormulaDistribution otherEntry = compareTo.get(entry.getKey());
 			if (otherEntry == null) {
-				logger
-						.debug("couldn't find corresponding formula, we continue to look for more");
+				logger.debug("couldn't find corresponding formula, we continue to look for more");
 				continue;
 			}
 
@@ -197,9 +194,10 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief> implements
 			// formulas do match!
 			Formula ft = entry.getValue().getDistribution().getMostLikely();
 			Formula fo = otherEntry.getDistribution().getMostLikely();
-			
-			// if any Formula didn't have a likely value, we take this as acceptable and continue
-			if (ft==null || fo==null)
+
+			// if any Formula didn't have a likely value, we take this as
+			// acceptable and continue
+			if (ft == null || fo == null)
 				continue;
 			logger.debug("ft=" + ft.toString() + ", fo=" + fo.toString());
 
@@ -243,13 +241,20 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief> implements
 		return true;
 	}
 
+	protected final CASTIndependentFormulaDistributionsBelief<To> createToBeliefProxy(To to) {
+		return CASTIndependentFormulaDistributionsBelief.create(m_toCls, to);
+	}
+	
+	protected final CASTIndependentFormulaDistributionsBelief<From> createFromBeliefProxy(From from) {
+		return CASTIndependentFormulaDistributionsBelief.create(m_fromCls, from);
+	}
+
 	/*
 	 * (non-Javadoc)
-	 * 
 	 */
 	@Override
-	public void update(WorkingMemoryChange wmc, From from,
-			To to) throws IncompatibleAssignmentException {
+	public void update(WorkingMemoryChange wmc, From from, To to)
+			throws IncompatibleAssignmentException {
 		if (beliefTypes != null) {
 			if (!beliefTypes.contains(from.type))
 				throw (new IncompatibleAssignmentException(
@@ -258,12 +263,9 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief> implements
 				throw (new IncompatibleAssignmentException(
 						"cannot update with to type " + to.type));
 		}
-		CASTIndependentFormulaDistributionsBelief<To> toBelief = CASTIndependentFormulaDistributionsBelief
-				.create(m_toCls, to);
-		CASTIndependentFormulaDistributionsBelief<From> fromBelief = CASTIndependentFormulaDistributionsBelief
-				.create(m_fromCls, from);
-		toBelief.setTime(toBelief.getStartTime(), fromBelief
-				.getEndTime());
+		CASTIndependentFormulaDistributionsBelief<To> toBelief = createToBeliefProxy(to);
+		CASTIndependentFormulaDistributionsBelief<From> fromBelief = createFromBeliefProxy(from);
+		toBelief.setTime(toBelief.getStartTime(), fromBelief.getEndTime());
 		toBelief.getContent().putAll(fromBelief.getContent());
 		try {
 			for (Entry<String, FormulaDistribution> entry : toBelief
