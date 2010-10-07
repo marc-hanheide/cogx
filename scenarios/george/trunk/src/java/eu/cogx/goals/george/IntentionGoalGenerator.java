@@ -50,7 +50,8 @@ public class IntentionGoalGenerator extends
 
 			Nodes preconditions = xmlDoc.query(XPATH_SELECT_PRECONDITIONS);
 			WorkingMemoryAddress preBelief = findAttributedPrecondition(preconditions);
-
+			if (preBelief==null)
+				return null;
 			CASTIndependentFormulaDistributionsBelief<dBelief> preAttributedBelief;
 			try {
 				preAttributedBelief = CASTIndependentFormulaDistributionsBelief
