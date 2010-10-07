@@ -106,6 +106,19 @@ public class ActionInterfaceFrame extends JFrame {
 	private static final String VIEWPOINTTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(ViewPoint.class));
 
+	private static final String SEPARATOR = " ";
+
+	private static String toAddressString(WorkingMemoryAddress _wma) {
+		return _wma.id + SEPARATOR + _wma.subarchitecture;
+	}
+
+	private static WorkingMemoryAddress addressFromString(
+			String _address) {
+		String[] split = _address.split(SEPARATOR);
+		assert (split.length == 2);
+		return new WorkingMemoryAddress(split[0], split[1]);
+	}
+
 	/**
 	 * This is the default constructor
 	 * 
@@ -585,17 +598,16 @@ public class ActionInterfaceFrame extends JFrame {
 			Object beliefAddrVal = m_coneTableModel.getValueAt(selectedRow,
 					CONE_ADDR_COLUMN);
 			assert (beliefAddrVal != null);
-			WorkingMemoryAddress beliefAddress = SimpleDiscreteTransferFunction
-					.addressFromPropositionString((String) beliefAddrVal);
+			WorkingMemoryAddress beliefAddress = addressFromString((String) beliefAddrVal);
 
 			IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
 					.create(dBelief.class, m_exeMan.getMemoryEntry(
 							beliefAddress, dBelief.class));
 
-			WorkingMemoryAddress coneAddress = SimpleDiscreteTransferFunction
-					.addressFromPropositionString(b.getContent()
-							.get(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID)
-							.getDistribution().getMostLikely().getProposition());
+			WorkingMemoryAddress coneAddress = addressFromString(b
+					.getContent()
+					.get(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID)
+					.getDistribution().getMostLikely().getProposition());
 
 			m_exeMan.triggerProccesCone(coneAddress, new MonitorPanel());
 		} else {
@@ -785,8 +797,7 @@ public class ActionInterfaceFrame extends JFrame {
 				.get(ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
 				.getDistribution().getMostLikely().getDouble();
 
-		String addr = SimpleDiscreteTransferFunction
-				.toPropositionString(_address);
+		String addr = toAddressString(_address);
 
 		m_coneTableModel.addRow(new Object[] { label, prob, addr });
 
@@ -826,9 +837,8 @@ public class ActionInterfaceFrame extends JFrame {
 		println("input addr: " + CASTUtils.toString(_address));
 
 		for (int row = 0; row < m_coneTableModel.getRowCount(); row++) {
-			WorkingMemoryAddress coneAddr = SimpleDiscreteTransferFunction
-					.addressFromPropositionString((String) m_coneTableModel
-							.getValueAt(row, CONE_ADDR_COLUMN));
+			WorkingMemoryAddress coneAddr = addressFromString((String) m_coneTableModel
+					.getValueAt(row, CONE_ADDR_COLUMN));
 
 			println("table addr: " + CASTUtils.toString(coneAddr));
 
@@ -844,9 +854,8 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private boolean removePlaceBelief(WorkingMemoryAddress _address) {
 		for (int row = 0; row < m_placeTableModel.getRowCount(); row++) {
-			WorkingMemoryAddress placeAddr = SimpleDiscreteTransferFunction
-					.addressFromPropositionString((String) m_placeTableModel
-							.getValueAt(row, CONE_ADDR_COLUMN));
+			WorkingMemoryAddress placeAddr = addressFromString((String) m_placeTableModel
+					.getValueAt(row, CONE_ADDR_COLUMN));
 			if (placeAddr.equals(_address)) {
 				m_placeTableModel.removeRow(row);
 				pack();
@@ -876,8 +885,7 @@ public class ActionInterfaceFrame extends JFrame {
 				.get(PlaceTransferFunction.PLACE_STATUS_ID).getDistribution()
 				.getMostLikely().getProposition();
 
-		String addr = SimpleDiscreteTransferFunction
-				.toPropositionString(_address);
+		String addr = toAddressString(_address);
 
 		m_placeTableModel.addRow(new Object[] { placeID, status, addr });
 		pack();
