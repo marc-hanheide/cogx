@@ -56,12 +56,12 @@ extends AbstractDialogueComponent {
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handleCommunicativeIntention(_wmc);
+						handleIntention(_wmc);
 					}
 		});
 	}
 
-	private void handleCommunicativeIntention(WorkingMemoryChange _wmc) {
+	private void handleIntention(WorkingMemoryChange _wmc) {
 		try {
 			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
 
