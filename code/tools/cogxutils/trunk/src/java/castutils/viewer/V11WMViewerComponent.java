@@ -72,7 +72,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 						String genericText = (String) genericPlugin.toVector(
 								newEntry).get(0);
 						logString += "<td>" + genericText + "</td>";
-						getLogger().info(CASTUtils.toString(wmc) + genericText);
+//						getLogger().info(CASTUtils.toString(wmc) + genericText);
 					}
 					rows.put(wmc.address, "<tr>" + logString + "</tr>");
 					break;

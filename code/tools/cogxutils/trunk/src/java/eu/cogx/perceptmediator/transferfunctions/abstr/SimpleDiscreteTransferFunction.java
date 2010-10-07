@@ -4,8 +4,8 @@
 package eu.cogx.perceptmediator.transferfunctions.abstr;
 
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 
@@ -19,7 +19,7 @@ import castutils.castextensions.CASTHelper;
 import castutils.castextensions.WMEntrySynchronizer.TransferFunction;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
-import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
+import de.dfki.lt.tr.beliefs.data.formulas.WMAddressFormula;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
@@ -44,18 +44,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		extends CASTHelper implements TransferFunction<From, To> {
 
 	public static final String SOURCE_ADDR_ID = "source-addr";
-	private static final String SEPARATOR = " ";
 
-	public static String toPropositionString(WorkingMemoryAddress _wma) {
-		return _wma.id + SEPARATOR + _wma.subarchitecture;
-	}
-
-	public static WorkingMemoryAddress addressFromPropositionString(
-			String _address) {
-		String[] split = _address.split(SEPARATOR);
-		assert (split.length == 2);
-		return new WorkingMemoryAddress(split[0], split[1]);
-	}
 
 	public static Object getBeliefTypeFromCastType(
 			Class<? extends Ice.Object> class1) {
@@ -168,8 +157,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	 */
 	private void addUniversalMappings(WorkingMemoryChange _wmc, From _from,
 			Map<String, Formula> _mapping) {
-		_mapping.put(SOURCE_ADDR_ID, PropositionFormula.create(
-				toPropositionString(_wmc.address)).getAsFormula());
+		_mapping.put(SOURCE_ADDR_ID, WMAddressFormula.create(_wmc.address).getAsFormula());
 	}
 
 	/**
