@@ -323,8 +323,9 @@ void CVideoGrabber::receiveImages(const std::vector<Video::Image>& images)
    }
    // TODO: every image has its own scale factor
 
-   CvFont font;
-   cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0, 0, 2);
+   CvFont fntSimplex, fntPlain;
+   cvInitFont(&fntSimplex, CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0, 0, 2);
+   cvInitFont(&fntPlain, CV_FONT_HERSHEY_PLAIN, 1.0, 1.0, 0, 1.5);
    std::vector<std::string> devnames = getDeviceNames();
    int vp = 0;
    IplImage *pDisp;
@@ -336,9 +337,14 @@ void CVideoGrabber::receiveImages(const std::vector<Video::Image>& images)
       cvSetImageROI(pDisp, cvRect(0, vp, wi, vp+hi));
       cvResize(iplImage, pDisp);
       cvReleaseImage(&iplImage);
-      std::string camid = _str_(i);
-      if (i < devnames.size()) camid += ":" + devnames[i];
-      cvPutText (pDisp, camid.c_str(), cvPoint(10, 25), &font, cvScalar(255,255,0));
+
+      std::string sMsg = _str_(i);
+      if (i < devnames.size()) sMsg += ":" + devnames[i];
+      cvPutText (pDisp, sMsg.c_str(), cvPoint(10, 25), &fntSimplex, cvScalar(255,255,0));
+      
+      sMsg = _str_(images[i].width) + "x" + _str_(images[i].height);
+      cvPutText (pDisp, sMsg.c_str(), cvPoint(10, hi-2), &fntPlain, cvScalar(255,255,0));
+
       cvResetImageROI(pDisp);
       vp += hi;
    }
