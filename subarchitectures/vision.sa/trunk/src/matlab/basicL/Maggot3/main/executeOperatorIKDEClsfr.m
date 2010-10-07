@@ -635,7 +635,7 @@ switch operator_data
             sub_feats = [] ;
             if hyper_input_kde_cl.react_compression_to_feature_selection == 1
                 sub_feats = hyper_input_kde_cl.sub_selected_features ;
-            end
+            end 
             
             
             if isequal(hyper_input_kde_cl.typeRecDescr,'AM') || isequal(hyper_input_kde_cl.typeRecDescr,'dAM')
@@ -654,9 +654,9 @@ switch operator_data
                     otherClasses = makeOtherClasses( input_kde_cl, i, 0, use_equalimportance, tmp_pd_Struct  ) ; 
                     input_kde_cl{i} = executeOperatorIKDE( input_kde_cl{i}, 'set_auxiliary_bandwidth' ,  'otherClasses', otherClasses) ;
             end
-
             reslt = executeOperatorIKDE( input_kde_cl{i}, 'input_data',  input_data, 'evalPdfOnData',...
                                              'selectSubDimensions', sub_feats) ;                
+    
             end
             P(i,:) = reslt.evalpdf ; %p ;
         end
@@ -775,22 +775,57 @@ switch operator_data
     case 'introspect'
         % generate samples from each model, classify them and compute the
         % confusion matrix Con_matrix
-        N_samps = 100 ; 
+        use_missclassification_in_gains = 1 ;
+        % get auxilliary bandwidth
+        w = [] ; Mu = [] ; Cov = {} ; Neff = 0 ;
+        for i = 1 : length(hyper_input_kde_cl.kde_cl)
+            w = [w, hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff*hyper_input_kde_cl.kde_cl{i}.pdf.w] ;
+            Mu = [Mu, hyper_input_kde_cl.kde_cl{i}.pdf.Mu] ;
+            Cov = horzcat(Cov, hyper_input_kde_cl.kde_cl{i}.pdf.Cov) ;    
+            Neff = Neff + hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff ;
+        end
+        w = w / sum(w) ;
+        
+        % replace bandwidths if necessary
+        d = size(Mu,1) ;
+        [new_mu, new_Cov, w_out] = momentMatchPdf(Mu, Cov, w) ;
+        nH = new_Cov *(4/((d+2)*Neff))^(2/(d+4)) ;
+        for i = 1 : length(hyper_input_kde_cl.kde_cl)
+%             if (hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff/4 < min([d,length(hyper_input_kde_cl.sub_selected_features)])) 
+            lmb = min([d,length(hyper_input_kde_cl.sub_selected_features)]) ;
+                w1 = exp(- hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff/ lmb ) ;
+                w2 = 1 - w1 ;
+               hyper_input_kde_cl.kde_cl{i}.pdf.smod.H = nH*w1 + hyper_input_kde_cl.kde_cl{i}.pdf.smod.H*w2 ; 
+               hyper_input_kde_cl.kde_cl{i}.pdf = getKDEfromSampleDistribution( hyper_input_kde_cl.kde_cl{i}.pdf ) ;                  
+%             end           
+        end
+  
+
+        N_samps = 100*max([1,length(hyper_input_kde_cl.sub_selected_features)]) ; 
         idx_unknown = length(hyper_input_kde_cl.kde_cl) + 1 ;
         Con_matrix = zeros(length(hyper_input_kde_cl.kde_cl), idx_unknown) ;
         Conf_array = zeros(1, length(hyper_input_kde_cl.kde_cl)) ;
-        for i = 1 : length(hyper_input_kde_cl.kde_cl)
+        for i = 1 : length(hyper_input_kde_cl.kde_cl)         
             x_tmp = sampleGaussianMixture( hyper_input_kde_cl.kde_cl{i}.pdf, N_samps ) ;
-            rslt = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', x_tmp, 'classifyData', 'use_unknown_model', 1, 'extensive_answer', 1  ) ;%'use_unknown_model', 0
+            rslt = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', x_tmp, ...
+                      'classifyData', 'use_unknown_model', 1, 'extensive_answer', 1  ) ;%'use_unknown_model', 0
             for j = 1 : length(hyper_input_kde_cl.kde_cl)                               
                Con_matrix(i,j) = sum(rslt.C == j)/N_samps ;                
             end  
-            Conf_array(i) = median(rslt.H ) ; 
+            H = sort(rslt.H, 'ascend') ;            
+            Conf_array(i) = mean( H ) ;%H(round(N_samps/2):length(H)) ) ; 
             Con_matrix(i,idx_unknown) = sum(rslt.C == -1)/N_samps ;
         end
+        
+        if use_missclassification_in_gains == 1 
+            CC = Con_matrix(1:length(hyper_input_kde_cl.kde_cl), 1:length(hyper_input_kde_cl.kde_cl)) ;
+            Conf_array = 1 - diag( CC )' ;
+        end
+        
         hyper_output_kde_cl.Conf_array = Conf_array ;
         hyper_output_kde_cl.N_samps = N_samps ;
         hyper_output_kde_cl.Con_matrix = Con_matrix ;
+        
     case 'showKDE_of_class_index'        
         if val_get > length(hyper_input_kde_cl.class_labels)
             return ;
