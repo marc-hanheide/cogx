@@ -44,7 +44,7 @@ import execution.util.ActionMonitor;
  * 
  * 
  * @author nah
- *
+ * 
  */
 public class ActionInterfaceFrame extends JFrame {
 
@@ -62,9 +62,6 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private JRadioButton m_detectObjectsAction;
 	private JRadioButton m_detectPeopleAction;
-
-	private JRadioButton m_askForFeatureAction;
-	private JRadioButton m_testFeatureValueAction;
 
 	private JRadioButton m_learnColourAction;
 	private JRadioButton m_learnShapeAction;
@@ -84,6 +81,9 @@ public class ActionInterfaceFrame extends JFrame {
 	private JTabbedPane m_tabbedPane;
 	private JTable m_objectTable;
 	private DefaultTableModel m_objectTableModel;
+	private JRadioButton m_askForColourAction;
+	private JRadioButton m_askForShapeAction;
+	private JRadioButton m_askForIdentityAction;
 	private static final Class<?>[] FEATURE_VALUE_TYPES = {
 			ElementaryFormula.class, IntegerFormula.class, FloatFormula.class,
 			BooleanFormula.class };
@@ -189,31 +189,33 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel getBeliefsActionPanel() {
 		if (m_beliefsActionPanel == null) {
 			m_beliefsActionPanel = new JPanel();
-			//m_beliefsActionPanel.setLayout(new GridBagLayout());
-			m_beliefsActionPanel.setLayout(new BoxLayout(m_beliefsActionPanel, BoxLayout.Y_AXIS));
-
-			m_askForFeatureAction = new JRadioButton("ask for feature");
-			m_testFeatureValueAction = new JRadioButton("test a feature value");
+			m_beliefsActionPanel.setLayout(new BoxLayout(m_beliefsActionPanel,
+					BoxLayout.Y_AXIS));
 
 			m_learnColourAction = new JRadioButton("learn colour");
 			m_learnShapeAction = new JRadioButton("learn shape");
 			m_learnIdentityAction = new JRadioButton("learn identity");
+			m_askForColourAction = new JRadioButton("ask for colour");
+			m_askForShapeAction = new JRadioButton("ask for shape");
+			m_askForIdentityAction = new JRadioButton("ask for identity");
 
-			m_learnColourAction.setSelected(true);
+			ButtonGroup actionGroup = new ButtonGroup();
+			actionGroup.add(m_learnColourAction);
+			actionGroup.add(m_learnShapeAction);
+			actionGroup.add(m_learnIdentityAction);
+			actionGroup.add(m_askForColourAction);
+			actionGroup.add(m_askForShapeAction);
+			actionGroup.add(m_askForIdentityAction);
 
-			// m_beliefsActionPanel.add(m_askForFeatureAction,
-			// new GridBagConstraints());
-			// m_beliefsActionPanel.add(m_testFeatureValueAction,
-			// new GridBagConstraints());
-			m_beliefsActionPanel.add(m_learnColourAction,
-					//new GridBagConstraints());
-					null);
-			m_beliefsActionPanel.add(m_learnShapeAction,
-					//new GridBagConstraints());
-					null);
-			m_beliefsActionPanel.add(m_learnIdentityAction,
-					//new GridBagConstraints());
-					null);
+			m_askForShapeAction.setSelected(true);
+
+			m_beliefsActionPanel.add(m_learnColourAction, null);
+			m_beliefsActionPanel.add(m_learnShapeAction, null);
+			m_beliefsActionPanel.add(m_learnIdentityAction, null);
+
+			m_beliefsActionPanel.add(m_askForColourAction, null);
+			m_beliefsActionPanel.add(m_askForShapeAction, null);
+			m_beliefsActionPanel.add(m_askForIdentityAction, null);
 		}
 		return m_beliefsActionPanel;
 	}
@@ -226,8 +228,9 @@ public class ActionInterfaceFrame extends JFrame {
 		if (m_objectsActionPanel == null) {
 			m_objectsActionPanel = new JPanel();
 
-			//m_objectsActionPanel.setLayout(new GridBagLayout());
-			m_objectsActionPanel.setLayout(new BoxLayout(m_objectsActionPanel, BoxLayout.Y_AXIS));
+			// m_objectsActionPanel.setLayout(new GridBagLayout());
+			m_objectsActionPanel.setLayout(new BoxLayout(m_objectsActionPanel,
+					BoxLayout.Y_AXIS));
 
 			// m_avsAction = new JRadioButton("visual search in");
 			m_detectObjectsAction = new JRadioButton("detect objects");
@@ -254,23 +257,23 @@ public class ActionInterfaceFrame extends JFrame {
 
 			// m_objectsActionPanel.add(m_avsAction, new GridBagConstraints());
 			m_objectsActionPanel.add(m_detectObjectsAction,
-					//new GridBagConstraints());
+			// new GridBagConstraints());
 					null);
 			m_objectsActionPanel.add(m_detectPeopleAction,
-					//new GridBagConstraints());
+			// new GridBagConstraints());
 					null);
 			// // m_objectsActionPanel.add(m_lookForObjectsAction,
 			// new GridBagConstraints());
 			// m_objectsActionPanel.add(m_lookForPeopleAction,
 			// new GridBagConstraints());
 			m_objectsActionPanel.add(m_foregroundModelsAction,
-					//new GridBagConstraints());
+			// new GridBagConstraints());
 					null);
 			m_objectsActionPanel.add(m_backgroundModelsAction,
-					//new GridBagConstraints());
+			// new GridBagConstraints());
 					null);
 			m_objectsActionPanel.add(m_recogniseForegroundedModelsAction,
-					//new GridBagConstraints());
+			// new GridBagConstraints());
 					null);
 		}
 		return m_objectsActionPanel;
@@ -310,6 +313,8 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private void go() throws CASTException {
 
+		println("go()");
+		
 		// TODO make more robust to code changes
 		int tabIndex = getTabbedPane().getSelectedIndex();
 
@@ -338,16 +343,29 @@ public class ActionInterfaceFrame extends JFrame {
 			}
 
 		} else if (tabIndex == 0) {
-			if (m_askForFeatureAction.isSelected()) {
-//				askForFeature();
-			} else if (m_testFeatureValueAction.isSelected()) {
-				testFeatureValue();
-			} else if (m_learnColourAction.isSelected()) {
+			println("go() tab 0");
+
+			if (m_learnColourAction.isSelected()) {
+				println("go() opt 1");
 				learnColour();
 			} else if (m_learnShapeAction.isSelected()) {
+				println("go() opt 2");
+
 				learnShape();
 			} else if (m_learnIdentityAction.isSelected()) {
+				println("go() opt 3");
+
 				learnIdentity();
+			} else if (m_askForColourAction.isSelected()) {
+				println("go() opt 4");
+
+				askForColour();
+			} else if (m_askForShapeAction.isSelected()) {
+				println("go() go()");
+				askForShape();
+			} else if (m_askForIdentityAction.isSelected()) {
+				println("go() go() go()");
+				askForIdentity();
 			}
 
 		} else {
@@ -372,8 +390,9 @@ public class ActionInterfaceFrame extends JFrame {
 		String beliefID = getSelectedBeliefID();
 		if (beliefID != null) {
 			String colour = getFeatureValue(beliefID, "colour");
-			if(colour != null) {
-				m_exeMan.learnColour(new WorkingMemoryAddress(beliefID,"binder"), colour, new MonitorPanel());
+			if (colour != null) {
+				m_exeMan.learnColour(new WorkingMemoryAddress(beliefID,
+						"binder"), colour, new MonitorPanel());
 			}
 		}
 	}
@@ -382,8 +401,10 @@ public class ActionInterfaceFrame extends JFrame {
 		String beliefID = getSelectedBeliefID();
 		if (beliefID != null) {
 			String colour = getFeatureValue(beliefID, "shape");
-			if(colour != null) {
-				m_exeMan.learnShape(new WorkingMemoryAddress(beliefID,"binder"),colour, new MonitorPanel());
+			if (colour != null) {
+				m_exeMan.learnShape(
+						new WorkingMemoryAddress(beliefID, "binder"), colour,
+						new MonitorPanel());
 			}
 		}
 	}
@@ -392,58 +413,85 @@ public class ActionInterfaceFrame extends JFrame {
 		String beliefID = getSelectedBeliefID();
 		if (beliefID != null) {
 			String colour = getFeatureValue(beliefID, "identity");
-			if(colour != null) {
-				m_exeMan.learnShape(new WorkingMemoryAddress(beliefID,"binder"),colour, new MonitorPanel());
+			if (colour != null) {
+				m_exeMan.learnShape(
+						new WorkingMemoryAddress(beliefID, "binder"), colour,
+						new MonitorPanel());
 			}
 		}
 	}
 
-	
+	private void askForColour() throws CASTException {
+		String beliefID = getSelectedBeliefID();
+		if (beliefID != null) {
+			m_exeMan.askForColour(new WorkingMemoryAddress(beliefID, "binder"),
+					new MonitorPanel());
+		}
+	}
+
+	private void askForShape() throws CASTException {
+		String beliefID = getSelectedBeliefID();
+		if (beliefID != null) {
+			m_exeMan.askForShape(new WorkingMemoryAddress(beliefID, "binder"),
+					new MonitorPanel());
+		}
+		else {
+			println("BELIEF IF IS NULL");
+		}
+	}
+
+	private void askForIdentity() throws CASTException {
+		String beliefID = getSelectedBeliefID();
+		if (beliefID != null) {
+			m_exeMan.askForShape(new WorkingMemoryAddress(beliefID, "binder"),
+					new MonitorPanel());
+		}
+	}
+
 	private String getFeatureValue(String _beliefID, String _concept) {
-		String message = "What " + _concept 
-				+ " should be learnt for belief " + _beliefID + "?";
+		String message = "What " + _concept + " should be learnt for belief "
+				+ _beliefID + "?";
 
 		return (String) JOptionPane.showInputDialog(this, message);
 	}
 
-
-//	/**
-//	 * Popup
-//	 */
-//	private void askForFeature() {
-//		int selectedRow = m_beliefTable.getSelectedRow();
-//		if (selectedRow != -1) {
-//			Object beliefIDVal = m_beliefTableModel.getValueAt(selectedRow,
-//					BELIEF_ID_COLUMN);
-//			assert (beliefIDVal != null);
-//			final String beliefID = (String) beliefIDVal;
-//
-//			final JDialog dialog = new JDialog(this);
-//			dialog.setLayout(new FlowLayout());
-//			dialog.add(new JLabel("What feature do you want to ask about?"));
-//
-//			final JTextField textfield = new JTextField(10);
-//			dialog.add(textfield);
-//
-//			ActionListener submit = new ActionListener() {
-//
-//				@Override
-//				public void actionPerformed(ActionEvent _e) {
-//					submitFeatureQuery(beliefID, dialog, textfield);
-//					dialog.setVisible(false);
-//				}
-//			};
-//
-//			textfield.addActionListener(submit);
-//
-//			JButton goButton = new JButton("Go!");
-//			goButton.addActionListener(submit);
-//
-//			dialog.add(goButton);
-//			dialog.pack();
-//			dialog.setVisible(true);
-//		}
-//	}
+	// /**
+	// * Popup
+	// */
+	// private void askForFeature() {
+	// int selectedRow = m_beliefTable.getSelectedRow();
+	// if (selectedRow != -1) {
+	// Object beliefIDVal = m_beliefTableModel.getValueAt(selectedRow,
+	// BELIEF_ID_COLUMN);
+	// assert (beliefIDVal != null);
+	// final String beliefID = (String) beliefIDVal;
+	//
+	// final JDialog dialog = new JDialog(this);
+	// dialog.setLayout(new FlowLayout());
+	// dialog.add(new JLabel("What feature do you want to ask about?"));
+	//
+	// final JTextField textfield = new JTextField(10);
+	// dialog.add(textfield);
+	//
+	// ActionListener submit = new ActionListener() {
+	//
+	// @Override
+	// public void actionPerformed(ActionEvent _e) {
+	// submitFeatureQuery(beliefID, dialog, textfield);
+	// dialog.setVisible(false);
+	// }
+	// };
+	//
+	// textfield.addActionListener(submit);
+	//
+	// JButton goButton = new JButton("Go!");
+	// goButton.addActionListener(submit);
+	//
+	// dialog.add(goButton);
+	// dialog.pack();
+	// dialog.setVisible(true);
+	// }
+	// }
 
 	/**
 	 * Popup
@@ -530,24 +578,25 @@ public class ActionInterfaceFrame extends JFrame {
 
 	}
 
-//	/**
-//	 * @param beliefID
-//	 * @param dialog
-//	 * @param textfield
-//	 */
-//	private void submitFeatureQuery(final String beliefID,
-//			final JDialog dialog, final JTextField textfield) {
-//		dialog.setVisible(false);
-//		String featureType = textfield.getText();
-//		if (featureType.length() > 0) {
-//			try {
-//				m_exeMan.triggerAskForFeatureAction(new WorkingMemoryAddress(beliefID,"binder"), featureType,
-//						new MonitorPanel());
-//			} catch (CASTException e) {
-//				m_exeMan.logException(e);
-//			}
-//		}
-//	}
+	// /**
+	// * @param beliefID
+	// * @param dialog
+	// * @param textfield
+	// */
+	// private void submitFeatureQuery(final String beliefID,
+	// final JDialog dialog, final JTextField textfield) {
+	// dialog.setVisible(false);
+	// String featureType = textfield.getText();
+	// if (featureType.length() > 0) {
+	// try {
+	// m_exeMan.triggerAskForFeatureAction(new
+	// WorkingMemoryAddress(beliefID,"binder"), featureType,
+	// new MonitorPanel());
+	// } catch (CASTException e) {
+	// m_exeMan.logException(e);
+	// }
+	// }
+	// }
 
 	/**
 	 * @throws CASTException
