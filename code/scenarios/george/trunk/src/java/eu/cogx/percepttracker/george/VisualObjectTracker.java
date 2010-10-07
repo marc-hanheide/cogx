@@ -31,8 +31,8 @@ public class VisualObjectTracker extends ManagedComponent {
 	WMTracker<PerceptBelief, GroundedBelief> tracker = null;
 
 	/**
-	 * configure the component
-	 *  --write-to-sa <subarchitectureID> the SA to write to
+	 * configure the component --write-to-sa <subarchitectureID> the SA to write
+	 * to
 	 * 
 	 * @see cast.core.CASTComponent#configure(java.util.Map)
 	 */
@@ -42,18 +42,20 @@ public class VisualObjectTracker extends ManagedComponent {
 		try {
 			wm2wmMap = new PointerMap<WMTrackedBeliefMap>(this,
 					WMTrackedBeliefMap.class);
-			tracker = WMTracker.create(this, PerceptBelief.class,
-					GroundedBelief.class, new FormulaMatcher(types, wm2wmMap, PerceptBelief.class,
-							GroundedBelief.class),
-					wm2wmMap, config.get("--write-to-sa"));
-			// TODO check whether we really want the visual objects to be removed on deletion
+			tracker = WMTracker
+					.create(this, PerceptBelief.class, GroundedBelief.class,
+							new FormulaMatcher<PerceptBelief, GroundedBelief>(
+									types, wm2wmMap, PerceptBelief.class,
+									GroundedBelief.class), wm2wmMap, config
+									.get("--write-to-sa"));
+			// TODO check whether we really want the visual objects to be
+			// removed on deletion
 			tracker.setShouldPropagateDeletion(true);
 		} catch (InstantiationException e) {
 			logException("cannot create PointerMap and tracker", e);
 		} catch (IllegalAccessException e) {
 			logException("cannot create PointerMap and tracker", e);
 		}
-
 
 	}
 

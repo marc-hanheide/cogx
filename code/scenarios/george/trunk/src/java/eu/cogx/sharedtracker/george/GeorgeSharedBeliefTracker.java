@@ -24,17 +24,16 @@ import eu.cogx.percepttracker.WMTracker;
  */
 public class GeorgeSharedBeliefTracker extends ManagedComponent {
 
-
 	private static final String VISUALOBJECTTYPE = SimpleDiscreteTransferFunction
-	.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
+			.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
 
 	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE);
 
 	WMTracker<GroundedBelief, SharedBelief> tracker = null;
 
 	/**
-	 * configure the component
-	 *  --write-to-sa <subarchitectureID> the SA to write to
+	 * configure the component --write-to-sa <subarchitectureID> the SA to write
+	 * to
 	 * 
 	 * @see cast.core.CASTComponent#configure(java.util.Map)
 	 */
@@ -45,15 +44,16 @@ public class GeorgeSharedBeliefTracker extends ManagedComponent {
 			wm2wmMap = new PointerMap<GroundedToSharedBeliefMap>(this,
 					GroundedToSharedBeliefMap.class);
 			tracker = WMTracker.create(this, GroundedBelief.class,
-					SharedBelief.class, new ThresholdedBeliefMatcher(types, wm2wmMap,
-							GroundedBelief.class, SharedBelief.class),
-					wm2wmMap, config.get("--write-to-sa"));
+					SharedBelief.class,
+					new ThresholdedBeliefMatcher<GroundedBelief, SharedBelief>(
+							types, wm2wmMap, GroundedBelief.class,
+							SharedBelief.class), wm2wmMap, config
+							.get("--write-to-sa"));
 		} catch (InstantiationException e) {
 			logException("cannot create PointerMap and tracker", e);
 		} catch (IllegalAccessException e) {
 			logException("cannot create PointerMap and tracker", e);
 		}
-
 
 	}
 
