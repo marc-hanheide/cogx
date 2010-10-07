@@ -44,7 +44,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class IntentionMirror
+public class CommunicativeIntentionMirror
 extends AbstractDialogueComponent {
 
 	@Override
