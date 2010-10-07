@@ -1,5 +1,7 @@
 package dialogue.execution;
 
+import java.util.ArrayList;
+
 import javax.swing.JOptionPane;
 
 import cast.CASTException;
@@ -7,9 +9,25 @@ import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
+import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
+import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
+import castutils.slice.GroundedToSharedBeliefMap;
+import de.dfki.lt.tr.beliefs.data.CASTFrame;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
+import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
+import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
+import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.slice.TriBool;
 import execution.slice.actions.AskForColour;
@@ -19,6 +37,7 @@ import execution.slice.actions.SingleBeliefAction;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
+import execution.util.NonBlockingCompleteOnOperationExecutor;
 
 /**
  * Receives actions from the execution system and interfaces with the rest of
@@ -29,6 +48,7 @@ import execution.util.LocalActionStateManager;
  */
 public class DialogueActionInterface extends ManagedComponent {
 	private LocalActionStateManager m_actionStateManager;
+	private GroundedToSharedBeliefMap m_groundedToShared;
 
 	public static class DirectColourAnswer extends
 			BlockingActionExecutor<AskForColour> {
@@ -41,7 +61,8 @@ public class DialogueActionInterface extends ManagedComponent {
 		public TriBool execute() {
 			TriBool result = TriBool.TRIFALSE;
 			try {
-				((DialogueActionInterface)getComponent()).askForFeatureThenSetDirect("color",getAction());
+				((DialogueActionInterface) getComponent())
+						.askForFeatureThenSetDirect("color", getAction());
 				result = TriBool.TRITRUE;
 
 			} catch (CASTException e) {
@@ -49,6 +70,68 @@ public class DialogueActionInterface extends ManagedComponent {
 			}
 
 			return result;
+		}
+
+	}
+
+	public static class AskForShapeDialogue extends
+			NonBlockingCompleteOnOperationExecutor<AskForShape> {
+
+		public AskForShapeDialogue(ManagedComponent _component) {
+			super(_component, AskForShape.class);
+		}
+
+		@Override
+		protected boolean acceptAction(AskForShape _action) {
+			return true;
+		}
+
+		@Override
+		public void executeAction() {
+
+			WorkingMemoryAddress groundedBeliefAddress = getAction().beliefAddress;
+			WorkingMemoryAddress sharedBeliefAddress = ((DialogueActionInterface) getComponent())
+					.getSharedBeliefAddress(groundedBeliefAddress);
+			
+			if (sharedBeliefAddress == null) {
+				println("Giving up because no shared belief yet for: "
+						+ groundedBeliefAddress);
+				executionComplete(TriBool.TRIFALSE);
+			} else {
+
+				// as copied from
+				// http://codex.cs.bham.ac.uk/trac/cogx/wiki/documents/scenarios/beliefs/lingproduction
+
+				// TODO sweet-talk marc into writing proxies for this too
+				Intention robotIntention = new Intention();
+				robotIntention.frame = CASTFrame.create().get();
+				robotIntention.estatus = new PrivateEpistemicStatus("robot");
+
+				//actual content
+				IntentionalContent content = new IntentionalContent();
+				content.probValue = 1f;
+				content.agents = new ArrayList<String>();
+				content.agents.add("human");
+
+				// precondition
+				ComplexFormula preconditions = new ComplexFormula(-1, new ArrayList<dFormula>(1), BinaryOp.conj);
+				preconditions.forms.add(new ModalFormula(-1, "belief", WMPointer.create(sharedBeliefAddress).get()));
+				content.preconditions = preconditions;
+
+				// postcondition
+				ComplexFormula postconditions = new ComplexFormula(-1, new ArrayList<dFormula>(4), BinaryOp.conj);
+				postconditions.forms.add(PropositionFormula.create("question-answered").get());
+				postconditions.forms.add(new ModalFormula(-1, "agent", PropositionFormula.create("human").get()));
+				postconditions.forms.add(new ModalFormula(-1, "about", WMPointer.create(groundedBeliefAddress).get()));
+				postconditions.forms.add(new ModalFormula(-1, "feature", PropositionFormula.create("color").get()));
+				content.postconditions = postconditions;
+				
+				robotIntention.content = new ArrayList<IntentionalContent>(1);
+				robotIntention.content.add(content);
+				
+				addThenCompleteOnOverwrite(robotIntention);
+			}
+
 		}
 
 	}
@@ -65,7 +148,8 @@ public class DialogueActionInterface extends ManagedComponent {
 
 			TriBool result = TriBool.TRIFALSE;
 			try {
-				((DialogueActionInterface)getComponent()).askForFeatureThenSetDirect("shape",getAction());
+				((DialogueActionInterface) getComponent())
+						.askForFeatureThenSetDirect("shape", getAction());
 				result = TriBool.TRITRUE;
 
 			} catch (CASTException e) {
@@ -90,7 +174,8 @@ public class DialogueActionInterface extends ManagedComponent {
 
 			TriBool result = TriBool.TRIFALSE;
 			try {
-				((DialogueActionInterface)getComponent()).askForFeatureThenSetDirect("ident",getAction());
+				((DialogueActionInterface) getComponent())
+						.askForFeatureThenSetDirect("ident", getAction());
 				result = TriBool.TRITRUE;
 
 			} catch (CASTException e) {
@@ -103,8 +188,8 @@ public class DialogueActionInterface extends ManagedComponent {
 
 	}
 
-	private void addFeatureDirectly(SingleBeliefAction _action, String _feature,
-			String _value) throws DoesNotExistOnWMException,
+	private void addFeatureDirectly(SingleBeliefAction _action,
+			String _feature, String _value) throws DoesNotExistOnWMException,
 			ConsistencyException, PermissionException,
 			UnknownSubarchitectureException {
 		GroundedBelief belief = getMemoryEntry(_action.beliefAddress,
@@ -149,12 +234,43 @@ public class DialogueActionInterface extends ManagedComponent {
 						DirectColourAnswer.class));
 
 		m_actionStateManager.registerActionType(AskForShape.class,
-				new ComponentActionFactory<DirectShapeAnswer>(this,
-						DirectShapeAnswer.class));
+				new ComponentActionFactory<AskForShapeDialogue>(this,
+						AskForShapeDialogue.class));
 
 		m_actionStateManager.registerActionType(AskForIdentity.class,
 				new ComponentActionFactory<DirectIdentityAnswer>(this,
 						DirectIdentityAnswer.class));
 
+		// TODO replace this with one of Marc's magic thingys
+		WorkingMemoryChangeReceiver updater = new WorkingMemoryChangeReceiver() {
+
+			@Override
+			public void workingMemoryChanged(WorkingMemoryChange _wmc)
+					throws CASTException {
+				m_groundedToShared = getMemoryEntry(_wmc.address,
+						GroundedToSharedBeliefMap.class);
+			}
+		};
+
+		// look for the map between grounded and shared beliefs
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				GroundedToSharedBeliefMap.class, WorkingMemoryOperation.ADD),
+				updater);
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				GroundedToSharedBeliefMap.class,
+				WorkingMemoryOperation.OVERWRITE), updater);
+
 	}
+
+	private WorkingMemoryAddress getSharedBeliefAddress(
+			WorkingMemoryAddress _groundedBeliefAddress) {
+		WorkingMemoryAddress addr = null;
+		if (m_groundedToShared != null) {
+			addr = m_groundedToShared.map.get(_groundedBeliefAddress);
+		} else {
+			println("trying to get shared belief address before map has been generated");
+		}
+		return addr;
+	}
+
 }

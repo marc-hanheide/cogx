@@ -16,6 +16,9 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.components.AbstractExecutionManager;
+import execution.slice.actions.AskForColour;
+import execution.slice.actions.AskForIdentity;
+import execution.slice.actions.AskForShape;
 import execution.slice.actions.BackgroundModels;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
@@ -79,8 +82,10 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
-						addGroundedBelief(_wmc.address, getMemoryEntry(
-								_wmc.address, GroundedBelief.class));
+						addGroundedBelief(
+								_wmc.address,
+								getMemoryEntry(_wmc.address,
+										GroundedBelief.class));
 					}
 				});
 
@@ -107,11 +112,10 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		m_gui.addBelief(_address, _belief);
 	}
 
-
-	public WorkingMemoryAddress triggerDetectObjects(String[] _models, ActionMonitor _monitor)
-			throws CASTException {
+	public WorkingMemoryAddress triggerDetectObjects(String[] _models,
+			ActionMonitor _monitor) throws CASTException {
 		DetectObjects act = newActionInstance(DetectObjects.class);
-		act.labels =_models;
+		act.labels = _models;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
@@ -123,14 +127,13 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-	public WorkingMemoryAddress triggerLookForObjects(String[] _models, ActionMonitor _monitor)
-			throws CASTException {
+	public WorkingMemoryAddress triggerLookForObjects(String[] _models,
+			ActionMonitor _monitor) throws CASTException {
 		LookForObjects act = newActionInstance(LookForObjects.class);
-		act.labels =_models;
+		act.labels = _models;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
-
 
 	public WorkingMemoryAddress triggerLookForPeople(ActionMonitor _monitor)
 			throws CASTException {
@@ -138,7 +141,7 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
-	
+
 	public boolean stopCurrentAction() throws PermissionException,
 			UnknownSubarchitectureException {
 		if (m_currentActionAddress == null) {
@@ -153,14 +156,14 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 	}
 
-//	public WorkingMemoryAddress triggerAskForFeatureAction(String _beliefID,
-//			String _featureType, ActionMonitor _monitor) throws CASTException {
-//		AskForFeatureValue act = newActionInstance(AskForFeatureValue.class);
-//		act.beliefID = _beliefID;
-//		act.featureID = _featureType;
-//		m_currentActionAddress = triggerExecution(act, _monitor);
-//		return m_currentActionAddress;
-//	}
+	// public WorkingMemoryAddress triggerAskForFeatureAction(String _beliefID,
+	// String _featureType, ActionMonitor _monitor) throws CASTException {
+	// AskForFeatureValue act = newActionInstance(AskForFeatureValue.class);
+	// act.beliefID = _beliefID;
+	// act.featureID = _featureType;
+	// m_currentActionAddress = triggerExecution(act, _monitor);
+	// return m_currentActionAddress;
+	// }
 
 	public WorkingMemoryAddress backgroundModels(String[] _models,
 			ActionMonitor _monitor) throws CASTException {
@@ -169,7 +172,7 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
-	
+
 	public WorkingMemoryAddress recogniseForegroundedModels(
 			ActionMonitor _monitor) throws CASTException {
 		RecogniseForegroundedModels act = newActionInstance(RecogniseForegroundedModels.class);
@@ -185,21 +188,26 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-	public WorkingMemoryAddress learnColour(WorkingMemoryAddress _beliefID, String _colour, ActionMonitor _monitor) throws CASTException {
+	public WorkingMemoryAddress learnColour(WorkingMemoryAddress _beliefID,
+			String _colour, ActionMonitor _monitor) throws CASTException {
 		LearnColour act = newActionInstance(LearnColour.class);
 		act.beliefAddress = _beliefID;
 		act.value = _colour;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
-	public WorkingMemoryAddress learnShape(WorkingMemoryAddress _beliefID, String _shape, ActionMonitor _monitor) throws CASTException {
+
+	public WorkingMemoryAddress learnShape(WorkingMemoryAddress _beliefID,
+			String _shape, ActionMonitor _monitor) throws CASTException {
 		LearnShape act = newActionInstance(LearnShape.class);
 		act.beliefAddress = _beliefID;
 		act.value = _shape;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
-	public WorkingMemoryAddress learnIdentity(WorkingMemoryAddress _beliefID, String _identity, ActionMonitor _monitor) throws CASTException {
+
+	public WorkingMemoryAddress learnIdentity(WorkingMemoryAddress _beliefID,
+			String _identity, ActionMonitor _monitor) throws CASTException {
 		LearnIdentity act = newActionInstance(LearnIdentity.class);
 		act.beliefAddress = _beliefID;
 		act.value = _identity;
@@ -207,15 +215,28 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-//	public WorkingMemoryAddress triggerFeatureValueTest(String _beliefID, String _featureLabel,
-//			FeatureValue _fv, ActionMonitor _monitor) throws CASTException {
-//		ComsysTestFeatureValue act = newActionInstance(ComsysTestFeatureValue.class);
-//		act.beliefID = _beliefID;
-//		act.featureType = _featureLabel;
-//		act.featureValue = _fv;
-//		m_currentActionAddress = triggerExecution(act, _monitor);
-//		return m_currentActionAddress;		
-//	}
+	public WorkingMemoryAddress askForColour(WorkingMemoryAddress _beliefID,
+			ActionMonitor _monitor) throws CASTException {
+		AskForColour act = newActionInstance(AskForColour.class);
+		act.beliefAddress = _beliefID;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
 
+	public WorkingMemoryAddress askForShape(WorkingMemoryAddress _beliefID,
+			ActionMonitor _monitor) throws CASTException {
+		AskForShape act = newActionInstance(AskForShape.class);
+		act.beliefAddress = _beliefID;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress askForIdentity(WorkingMemoryAddress _beliefID,
+			ActionMonitor _monitor) throws CASTException {
+		AskForIdentity act = newActionInstance(AskForIdentity.class);
+		act.beliefAddress = _beliefID;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
 
 }

@@ -11,7 +11,7 @@ import VisionData.VisualObject;
 import cast.architecture.ManagedComponent;
 import cast.core.CASTUtils;
 import castutils.castextensions.PointerMap;
-import castutils.slice.WMTrackedBeliefMap;
+import castutils.slice.GroundedToSharedBeliefMap;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.SharedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
@@ -40,10 +40,10 @@ public class GeorgeSharedBeliefTracker extends ManagedComponent {
 	 */
 	@Override
 	protected void configure(Map<String, String> config) {
-		PointerMap<WMTrackedBeliefMap> wm2wmMap;
+		PointerMap<GroundedToSharedBeliefMap> wm2wmMap;
 		try {
-			wm2wmMap = new PointerMap<WMTrackedBeliefMap>(this,
-					WMTrackedBeliefMap.class);
+			wm2wmMap = new PointerMap<GroundedToSharedBeliefMap>(this,
+					GroundedToSharedBeliefMap.class);
 			tracker = WMTracker.create(this, GroundedBelief.class,
 					SharedBelief.class, new ThresholdedBeliefMatcher(types, wm2wmMap,
 							GroundedBelief.class, SharedBelief.class),
