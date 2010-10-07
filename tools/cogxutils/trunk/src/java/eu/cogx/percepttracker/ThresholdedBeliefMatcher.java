@@ -8,7 +8,7 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import castutils.castextensions.PointerMap;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
+import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
@@ -57,8 +57,10 @@ public class ThresholdedBeliefMatcher<From extends dBelief, To extends dBelief>
 		CASTIndependentFormulaDistributionsBelief<From> fromProxy = createFromBeliefProxy(from);
 
 		// add pointer back to belief this was generated from
-		WMPointer formula = WMPointer.create(wmc.address);
-//		PropositionFormula formula = PropositionFormula.create(wmc.address.id + " " + wmc.address.subarchitecture);	
+
+		//TODO put this back in and find out why it breaks things
+		//		WMPointer formula = WMPointer.create(wmc.address);
+		PropositionFormula formula = PropositionFormula.create(wmc.address.id + " " + wmc.address.subarchitecture);	
 		FormulaDistribution fd = FormulaDistribution.create();
 		fd.add(formula.get(), 1d);
 		fromProxy.getContent().put(SOURCE_BELIEF_ID, fd);
