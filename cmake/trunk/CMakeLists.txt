@@ -1,6 +1,17 @@
 cmake_minimum_required (VERSION 2.6)
+
+# ------------ <CCache> ------------
+if(USE_CCACHE)
+	set(CMAKE_CXX_COMPILER "ccache")
+	set(CMAKE_CXX_COMPILER_ARG1 "g++")
+	set(CMAKE_C_COMPILER "ccache")
+	set(CMAKE_C_COMPILER_ARG1 "gcc")
+endif(USE_CCACHE)
+# ------------ </CCache> ------------
+
 project (CogX)
 
+#message(${CMAKE_CXX_COMPILER})
 get_filename_component(COGX_ROOT . ABSOLUTE)
 
 # set the output directory.
