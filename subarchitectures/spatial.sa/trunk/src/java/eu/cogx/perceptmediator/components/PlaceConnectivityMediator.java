@@ -7,13 +7,17 @@ import eu.cogx.perceptmediator.components.abstr.ReferringPerceptMediatorComponen
 import eu.cogx.perceptmediator.transferfunctions.ConnectivityTransferFunction;
 
 public class PlaceConnectivityMediator extends
-		ReferringPerceptMediatorComponent {
+		ReferringPerceptMediatorComponent<PerceptBelief> {
+ 
+	public PlaceConnectivityMediator() {
+		super(PerceptBelief.class);
+	}
 
 	@Override
 	protected PerceptBindingMediator<ConnectivityPathProperty, PerceptBelief> getMediator() {
 		return PerceptBindingMediator.create(this,
 				ConnectivityPathProperty.class, PerceptBelief.class,
-				new ConnectivityTransferFunction(this, perceptBeliefsView));
+				new ConnectivityTransferFunction(this, allBeliefs));
 	}
 
 }

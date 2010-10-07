@@ -6,13 +6,17 @@ import eu.cogx.perceptmediator.PerceptBindingMediator;
 import eu.cogx.perceptmediator.components.abstr.ReferringPerceptMediatorComponent;
 import eu.cogx.perceptmediator.transferfunctions.GatewayTransferFunction;
 
-public class PlaceGatewayMediator extends ReferringPerceptMediatorComponent {
+public class PlaceGatewayMediator extends ReferringPerceptMediatorComponent<PerceptBelief> {
+
+	public PlaceGatewayMediator() {
+		super(PerceptBelief.class);
+	}
 
 	@Override
 	protected PerceptBindingMediator<GatewayPlaceProperty, PerceptBelief> getMediator() {
 		return PerceptBindingMediator.create(this, GatewayPlaceProperty.class,
 				PerceptBelief.class, new GatewayTransferFunction(this,
-						perceptBeliefsView));
+						allBeliefs));
 	}
 
 }

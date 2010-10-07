@@ -19,6 +19,7 @@ import castutils.castextensions.WMContentWaiter.ContentMatchingFunction;
 import de.dfki.lt.tr.beliefs.data.formulas.BoolFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
@@ -34,8 +35,8 @@ import facades.SpatialFacade;
  * @param <From>
  *            the type to generate percepts from
  */
-public abstract class LocalizedRelationTransferFunction<From extends Ice.ObjectImpl>
-		extends DependentDiscreteTransferFunction<From> {
+public abstract class LocalizedRelationTransferFunction<From extends Ice.ObjectImpl, To extends dBelief>
+		extends DependentDiscreteTransferFunction<From, To> {
 
 	/**
 	 * constructor
@@ -46,8 +47,8 @@ public abstract class LocalizedRelationTransferFunction<From extends Ice.ObjectI
 	 * @param logger
 	 */
 	public LocalizedRelationTransferFunction(ManagedComponent component,
-			WMView<PerceptBelief> allBeliefs, Logger logger) {
-		super(component, allBeliefs, logger);
+			WMView<To> allBeliefs, Logger logger, Class<To> beliefClass) {
+		super(component, allBeliefs, logger, beliefClass);
 
 	}
 
@@ -60,9 +61,9 @@ public abstract class LocalizedRelationTransferFunction<From extends Ice.ObjectI
 	 * Ice.ObjectImpl)
 	 */
 	@Override
-	public PerceptBelief create(WorkingMemoryAddress newAddr,
+	public To create(WorkingMemoryAddress newAddr,
 			WorkingMemoryChange wmc, From from) {
-		PerceptBelief bel = super.create(newAddr, wmc, from);
+		To bel = super.create(newAddr, wmc, from);
 		bel.type = "relation";
 		return bel;
 	}
@@ -110,7 +111,7 @@ public abstract class LocalizedRelationTransferFunction<From extends Ice.ObjectI
 	 * @return an instance of a {@link ContentMatchingFunction} that is used for
 	 *         matching
 	 */
-	protected abstract ContentMatchingFunction<PerceptBelief> getMatchingFunction(
+	protected abstract ContentMatchingFunction<? super To> getMatchingFunction(
 			String id);
 
 }
