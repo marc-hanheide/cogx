@@ -8,15 +8,15 @@
 // Variants: "sorry what did you say" (1), "I didn't understand what you said" (2) 
 
 // Variant (1) "sorry what did you say
-:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top),
-random(1,2,3) ^ 1
--> 
-#c1 =:d-units ^ list ^ <First>(s1:marker ^ sorry) ^ <Next>(s2:communication ^ say ^ <Mood>int ^ <Tense>past ^ <Actor>(y1:person ^ you ^ <Num>sg) ^ <Event>(w1:event ^ what) ^ <Subject>y1:person ^ <Wh-Restr>w1:event).
+//:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top),
+//random(1,2,3) ^ 1
+//-> 
+//#c1 =:d-units ^ list ^ <First>(s1:marker ^ sorry) ^ <Next>(s2:communication ^ say ^ <Mood>int ^ <Tense>past ^ <Actor>(y1:person ^ you ^ <Num>sg) ^ <Event>(w1:event ^ what) ^ <Subject>y1:person ^ <Wh-Restr>w1:event).
 
 // Variant (2) "I did not understand what you said"
 
-:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top),
-random(1,2,3) ^ 2
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top) //,
+//random(1,2,3) ^ 2
 -> 
 #c1 = :cognition ^ understand ^ 
                 <Mood>ind ^ 
@@ -35,14 +35,14 @@ random(1,2,3) ^ 2
 
 
 // Variant (3) "Sorry, could you say again?"
-:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top),
-random(1,2,3) ^ 3
--> 
-#c1 = :communication ^ say ^ 
-                <Mood>int ^  
-                <Actor>(y1:person ^ you ^ 
-                        <Num>sg) ^  
-                <Subject>y1:person.
+//:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:top),
+//random(1,2,3) ^ 3
+//-> 
+//#c1 = :communication ^ say ^ 
+//                <Mood>int ^  
+//                <Actor>(y1:person ^ you ^ 
+//                        <Num>sg) ^  
+//                <Subject>y1:person.
 
 
 // Clarification: failure to process what property was said
