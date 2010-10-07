@@ -146,7 +146,7 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 
 	case cdl::DELETE:
 	{
-		_worldStatePtr->rooms.erase(comaRoomPtr->roomId);
+	  //		_worldStatePtr->rooms.erase(comaRoomPtr->roomId);
 		updateWorldState();
 		break;
 	}
