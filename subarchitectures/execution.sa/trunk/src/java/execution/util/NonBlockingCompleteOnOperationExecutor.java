@@ -6,7 +6,6 @@ import cast.CASTException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import execution.slice.Action;
@@ -31,21 +30,16 @@ public abstract class NonBlockingCompleteOnOperationExecutor<ActionType extends 
 		super(_component, _actCls);
 	}
 
-	protected <T extends ObjectImpl> void addThenCompleteOnDelete(
-			WorkingMemoryAddress _workingMemoryAddress, T _command) {
-		addThenCompleteOnOperation(_workingMemoryAddress, _command,
-				WorkingMemoryOperation.DELETE);
+	protected <T extends ObjectImpl> void addThenCompleteOnDelete(T _command) {
+		addThenCompleteOnOperation(_command, WorkingMemoryOperation.DELETE);
 	}
 
-	protected <T extends ObjectImpl> void addThenCompleteOnOverwrite(
-			WorkingMemoryAddress _workingMemoryAddress, T _command) {
-		addThenCompleteOnOperation(_workingMemoryAddress, _command,
-				WorkingMemoryOperation.OVERWRITE);
+	protected <T extends ObjectImpl> void addThenCompleteOnOverwrite(T _command) {
+		addThenCompleteOnOperation(_command, WorkingMemoryOperation.OVERWRITE);
 	}
 
 	protected <T extends ObjectImpl> void addThenCompleteOnOperation(
-			WorkingMemoryAddress _workingMemoryAddress, T _command,
-			WorkingMemoryOperation _operation) {
+			T _command, WorkingMemoryOperation _operation) {
 		assert (_operation == WorkingMemoryOperation.DELETE || _operation == WorkingMemoryOperation.OVERWRITE);
 
 		m_cmdID = getComponent().newDataID();
@@ -63,12 +57,12 @@ public abstract class NonBlockingCompleteOnOperationExecutor<ActionType extends 
 	public void stopExecution() {
 		// can't stop this one
 	}
-	
+
 	/**
 	 * Called when the action has completed to allow any cleanup
 	 */
 	protected void actionComplete() {
-		
+
 	}
 
 	@Override
