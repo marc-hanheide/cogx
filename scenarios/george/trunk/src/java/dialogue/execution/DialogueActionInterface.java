@@ -16,6 +16,7 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTUtils;
 import castutils.slice.GroundedToSharedBeliefMap;
 import de.dfki.lt.tr.beliefs.data.CASTFrame;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
@@ -30,6 +31,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.slice.SharedBelief;
 import execution.slice.TriBool;
 import execution.slice.actions.AskForColour;
 import execution.slice.actions.AskForIdentity;
@@ -125,7 +127,7 @@ public class DialogueActionInterface extends ManagedComponent {
 				ComplexFormula preconditions = new ComplexFormula(-1,
 						new ArrayList<dFormula>(1), BinaryOp.conj);
 				preconditions.forms.add(new ModalFormula(-1, "belief",
-						WMPointer.create(sharedBeliefAddress).get()));
+						WMPointer.create(sharedBeliefAddress, CASTUtils.typeName(SharedBelief.class)).get()));
 				content.preconditions = preconditions;
 
 				// postcondition
@@ -136,7 +138,7 @@ public class DialogueActionInterface extends ManagedComponent {
 				postconditions.forms.add(new ModalFormula(-1, "agent",
 						PropositionFormula.create("human").get()));
 				postconditions.forms.add(new ModalFormula(-1, "about",
-						WMPointer.create(groundedBeliefAddress).get()));
+						WMPointer.create(groundedBeliefAddress, CASTUtils.typeName(GroundedBelief.class)).get()));
 				postconditions.forms.add(new ModalFormula(-1, "feature",
 						PropositionFormula.create("color").get()));
 				content.postconditions = postconditions;
@@ -180,7 +182,7 @@ public class DialogueActionInterface extends ManagedComponent {
 			ComplexFormula preconditions = new ComplexFormula(-1,
 					new ArrayList<dFormula>(1), BinaryOp.conj);
 			preconditions.forms.add(new ModalFormula(-1, "belief", WMPointer
-					.create(_sharedBeliefAddress).get()));
+					.create(_sharedBeliefAddress, CASTUtils.typeName(SharedBelief.class)).get()));
 			content.preconditions = preconditions;
 
 			// postcondition
@@ -191,7 +193,7 @@ public class DialogueActionInterface extends ManagedComponent {
 			postconditions.forms.add(new ModalFormula(-1, "agent",
 					PropositionFormula.create("human").get()));
 			postconditions.forms.add(new ModalFormula(-1, "about", WMPointer
-					.create(_groundedBeliefAddress).get()));
+					.create(_groundedBeliefAddress,CASTUtils.typeName(GroundedBelief.class)).get()));
 			postconditions.forms.add(new ModalFormula(-1, "feature",
 					PropositionFormula.create(m_feature).get()));
 
