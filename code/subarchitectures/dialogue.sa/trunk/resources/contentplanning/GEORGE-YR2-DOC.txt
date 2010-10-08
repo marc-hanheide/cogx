@@ -8,7 +8,7 @@ H: what do you see?
 R: sorry, what did you say?
 H: I said: what do you see?
 R: I see an object	@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Modality>vision ^ <Actor>(i:person ^ I) ^ <Target>#b2:entity)
-H: what is the colour of the object?
+H: what is the colour of the object? 
 R: I don't know
 H: it is blue
 R: did you say it's blue?
