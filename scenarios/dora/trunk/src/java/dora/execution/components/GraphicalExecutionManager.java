@@ -18,6 +18,7 @@ import cast.cdl.WorkingMemoryOperation;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import dora.execution.util.ActionInterfaceFrame;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.components.AbstractExecutionManager;
 import execution.slice.actions.BackgroundModels;
 import execution.slice.actions.CreateConesForModel;
@@ -55,6 +56,7 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 	public GraphicalExecutionManager() {
 		m_gui = new ActionInterfaceFrame(this);
 		m_gui.pack();
+		m_gui.setSize(500, 500);
 		m_gui.setVisible(true);
 
 	}
@@ -76,7 +78,7 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		
 		// use these to harvest beliefs
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-				dBelief.class, WorkingMemoryOperation.ADD),
+				GroundedBelief.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
@@ -89,7 +91,7 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		
 		// use these to harvest beliefs
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-				dBelief.class, WorkingMemoryOperation.OVERWRITE),
+				GroundedBelief.class, WorkingMemoryOperation.OVERWRITE),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
@@ -102,7 +104,7 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 				});
 		
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-				dBelief.class, WorkingMemoryOperation.DELETE),
+				GroundedBelief.class, WorkingMemoryOperation.DELETE),
 				new WorkingMemoryChangeReceiver() {
 
 					@Override

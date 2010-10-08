@@ -1,5 +1,7 @@
 package dora.execution.util;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -112,8 +114,7 @@ public class ActionInterfaceFrame extends JFrame {
 		return _wma.id + SEPARATOR + _wma.subarchitecture;
 	}
 
-	private static WorkingMemoryAddress addressFromString(
-			String _address) {
+	private static WorkingMemoryAddress addressFromString(String _address) {
 		String[] split = _address.split(SEPARATOR);
 		assert (split.length == 2);
 		return new WorkingMemoryAddress(split[0], split[1]);
@@ -144,28 +145,25 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private JPanel getPlacesPanel() {
 		if (m_placesPanel == null) {
-			m_placesPanel = new JPanel();
+			m_placesPanel = new JPanel(new GridLayout(1,0));
 			m_placesPanel.add(new JScrollPane(getPlaceTable()));
+			getPlaceTable().setPreferredScrollableViewportSize(
+					new Dimension(200, 300));
 			m_placesPanel.add(new JScrollPane(getConeTable()));
+			getConeTable().setPreferredScrollableViewportSize(
+					new Dimension(200, 300));
 			m_placesPanel.add(getPlacesActionPanel());
 		}
 		return m_placesPanel;
 	}
 
-	private JPanel getBeliefsPanel() {
-		if (m_beliefsPanel == null) {
-			m_beliefsPanel = new JPanel();
-			m_beliefsPanel.add(new JScrollPane(getBeliefTable()));
-			m_beliefsPanel.add(getBeliefsActionPanel());
-		}
-		return m_beliefsPanel;
-	}
-
 	private JPanel getObjectsPanel() {
 		if (m_objectsPanel == null) {
-			m_objectsPanel = new JPanel();
+			m_objectsPanel = new JPanel(new GridLayout(1,0));
 			m_objectsPanel.add(new JScrollPane(getObjectTable()));
 			m_objectsPanel.add(getObjectsActionPanel());
+			getObjectTable().setPreferredScrollableViewportSize(
+					new Dimension(200, 300));
 		}
 		return m_objectsPanel;
 	}
@@ -286,9 +284,8 @@ public class ActionInterfaceFrame extends JFrame {
 	 */
 	private JPanel getObjectsActionPanel() {
 		if (m_objectsActionPanel == null) {
-			m_objectsActionPanel = new JPanel();
+			m_objectsActionPanel = new JPanel(new GridLayout(0, 1));
 
-			m_objectsActionPanel.setLayout(new GridBagLayout());
 			m_detectObjectsAction = new JRadioButton("detect objects");
 			m_detectPeopleAction = new JRadioButton("detect people");
 			m_lookForObjectsAction = new JRadioButton("look for objects");
@@ -461,7 +458,9 @@ public class ActionInterfaceFrame extends JFrame {
 
 			final JDialog dialog = new JDialog(this);
 			dialog.setLayout(new FlowLayout());
-			dialog.add(new JLabel("What feature TYPE do you want to ask about?"));
+			dialog
+					.add(new JLabel(
+							"What feature TYPE do you want to ask about?"));
 			final JTextField textfield = new JTextField(10);
 			dialog.add(textfield);
 
@@ -493,7 +492,7 @@ public class ActionInterfaceFrame extends JFrame {
 			goButton.addActionListener(submit);
 
 			dialog.add(goButton);
-			dialog.pack();
+			// dialog.pack();
 			dialog.setVisible(true);
 
 		}
@@ -503,7 +502,8 @@ public class ActionInterfaceFrame extends JFrame {
 	private void submitFeatureValueTest(String _beliefID, String _featureLabel,
 			Object _valueType, String _value) {
 		if (_featureLabel.isEmpty() || _value.isEmpty()) {
-			m_exeMan.println("Missing values for feature test. Please fill in all the fields");
+			m_exeMan
+					.println("Missing values for feature test. Please fill in all the fields");
 			return;
 		}
 
@@ -604,8 +604,7 @@ public class ActionInterfaceFrame extends JFrame {
 					.create(dBelief.class, m_exeMan.getMemoryEntry(
 							beliefAddress, dBelief.class));
 
-			WorkingMemoryAddress coneAddress = addressFromString(b
-					.getContent()
+			WorkingMemoryAddress coneAddress = addressFromString(b.getContent()
 					.get(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID)
 					.getDistribution().getMostLikely().getProposition());
 
@@ -642,14 +641,16 @@ public class ActionInterfaceFrame extends JFrame {
 	 * @throws CASTException
 	 */
 	private void foregroundModels() throws CASTException {
-		m_exeMan.foregroundModels(getSelectedObjectModels(), new MonitorPanel());
+		m_exeMan
+				.foregroundModels(getSelectedObjectModels(), new MonitorPanel());
 	}
 
 	/**
 	 * @throws CASTException
 	 */
 	private void backgroundModels() throws CASTException {
-		m_exeMan.backgroundModels(getSelectedObjectModels(), new MonitorPanel());
+		m_exeMan
+				.backgroundModels(getSelectedObjectModels(), new MonitorPanel());
 	}
 
 	/**
@@ -705,8 +706,8 @@ public class ActionInterfaceFrame extends JFrame {
 	 */
 	private JTable getPlaceTable() {
 		if (m_placeTable == null) {
-
 			m_placeTable = new JTable(1, 2);
+
 			m_placeTableModel = new DefaultTableModel(new String[] {
 					"place id", "status", "belief address" }, 0);
 			m_placeTable.setModel(m_placeTableModel);
@@ -789,19 +790,19 @@ public class ActionInterfaceFrame extends JFrame {
 	public void addConeBelief(WorkingMemoryAddress _address,
 			IndependentFormulaDistributionsBelief<dBelief> _belief) {
 
-		String label = _belief.getContent()
-				.get(ViewPointTransferFunction.OBJECT_LABEL_ID)
-				.getDistribution().getMostLikely().getProposition();
+		String label = _belief.getContent().get(
+				ViewPointTransferFunction.OBJECT_LABEL_ID).getDistribution()
+				.getMostLikely().getProposition();
 
-		Double prob = _belief.getContent()
-				.get(ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
+		Double prob = _belief.getContent().get(
+				ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
 				.getDistribution().getMostLikely().getDouble();
 
 		String addr = toAddressString(_address);
 
 		m_coneTableModel.addRow(new Object[] { label, prob, addr });
 
-		pack();
+		// pack();
 
 	}
 
@@ -828,7 +829,7 @@ public class ActionInterfaceFrame extends JFrame {
 			addConeBelief(_address, _belief);
 		}
 
-		pack();
+		// pack();
 
 	}
 
@@ -845,7 +846,7 @@ public class ActionInterfaceFrame extends JFrame {
 			if (coneAddr.equals(_address)) {
 				println("removed it");
 				m_coneTableModel.removeRow(row);
-				pack();
+				// pack();
 				return true;
 			}
 		}
@@ -858,7 +859,7 @@ public class ActionInterfaceFrame extends JFrame {
 					.getValueAt(row, CONE_ADDR_COLUMN));
 			if (placeAddr.equals(_address)) {
 				m_placeTableModel.removeRow(row);
-				pack();
+				// pack();
 				return true;
 			}
 		}
@@ -877,18 +878,18 @@ public class ActionInterfaceFrame extends JFrame {
 	public void addPlaceBelief(WorkingMemoryAddress _address,
 			IndependentFormulaDistributionsBelief<dBelief> _belief) {
 
-		long placeID = _belief.getContent()
-				.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+		long placeID = _belief.getContent().get(
+				PlaceTransferFunction.PLACE_ID_ID).getDistribution()
 				.getMostLikely().getInteger();
 
-		String status = _belief.getContent()
-				.get(PlaceTransferFunction.PLACE_STATUS_ID).getDistribution()
+		String status = _belief.getContent().get(
+				PlaceTransferFunction.PLACE_STATUS_ID).getDistribution()
 				.getMostLikely().getProposition();
 
 		String addr = toAddressString(_address);
 
 		m_placeTableModel.addRow(new Object[] { placeID, status, addr });
-		pack();
+		// pack();
 	}
 
 	public void updatePlace(WorkingMemoryAddress _address, long _id,
