@@ -7,6 +7,9 @@ import execution.slice.ActionExecutionException;
 import execution.slice.actions.AskForColour;
 import execution.slice.actions.AskForIdentity;
 import execution.slice.actions.AskForShape;
+import execution.slice.actions.AskPolarColour;
+import execution.slice.actions.AskPolarIdentity;
+import execution.slice.actions.AskPolarShape;
 import execution.slice.actions.LearnColour;
 import execution.slice.actions.LearnIdentity;
 import execution.slice.actions.LearnShape;
@@ -18,8 +21,8 @@ import execution.util.ActionConverter;
  * @author nah
  * 
  */
-public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator implements
-		ActionConverter {
+public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
+		implements ActionConverter {
 
 	public GeorgeExecutionMediator() {
 	}
@@ -52,6 +55,21 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator im
 			assert _plannedAction.arguments.length == 2 : "ask-for-an-objects-ident-general is expected to be of artity 2";
 			return createSingleBeliefAction(AskForIdentity.class,
 					_plannedAction.arguments[1]);
+		} else if (_plannedAction.name.equals("ask-for-an-objects-color-polar")) {
+
+			assert _plannedAction.arguments.length == 3 : "ask-for-an-objects-color-polar is expected to be of artity 2";
+			return createBeliefPlusStringAction(AskPolarColour.class,
+					_plannedAction.arguments[1], _plannedAction.arguments[2]);
+		} else if (_plannedAction.name.equals("ask-for-an-objects-shape-polar")) {
+
+			assert _plannedAction.arguments.length == 3 : "ask-for-an-objects-shape-polar is expected to be of artity 2";
+			return createBeliefPlusStringAction(AskPolarShape.class,
+					_plannedAction.arguments[1], _plannedAction.arguments[2]);
+		} else if (_plannedAction.name.equals("ask-for-an-objects-ident-polar")) {
+
+			assert _plannedAction.arguments.length == 3 : "ask-for-an-objects-ident-polar is expected to be of artity 2";
+			return createBeliefPlusStringAction(AskPolarIdentity.class,
+					_plannedAction.arguments[1], _plannedAction.arguments[2]);
 		}
 		else if (_plannedAction.name.equals("learn-color")) {
 
@@ -59,14 +77,13 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator im
 			return createBeliefPlusStringAction(LearnColour.class,
 					_plannedAction.arguments[1], _plannedAction.arguments[2]);
 
-		}
-		else if (_plannedAction.name.equals("learn-shape")) {
+		} else if (_plannedAction.name.equals("learn-shape")) {
 
 			assert _plannedAction.arguments.length == 3 : "learn-shape is expected to be of artity 3";
 			return createBeliefPlusStringAction(LearnShape.class,
 					_plannedAction.arguments[1], _plannedAction.arguments[2]);
 
-		}		else if (_plannedAction.name.equals("learn-ident")) {
+		} else if (_plannedAction.name.equals("learn-ident")) {
 
 			assert _plannedAction.arguments.length == 3 : "learn-ident is expected to be of artity 3";
 			return createBeliefPlusStringAction(LearnIdentity.class,
@@ -77,8 +94,6 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator im
 		throw new ActionExecutionException("No conversion available for: "
 				+ _plannedAction.fullName);
 	}
-
-	
 
 	@Override
 	public ActionConverter getActionConverter() {

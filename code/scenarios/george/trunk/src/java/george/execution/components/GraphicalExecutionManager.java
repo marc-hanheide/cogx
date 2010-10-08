@@ -19,6 +19,9 @@ import execution.components.AbstractExecutionManager;
 import execution.slice.actions.AskForColour;
 import execution.slice.actions.AskForIdentity;
 import execution.slice.actions.AskForShape;
+import execution.slice.actions.AskPolarColour;
+import execution.slice.actions.AskPolarIdentity;
+import execution.slice.actions.AskPolarShape;
 import execution.slice.actions.BackgroundModels;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
@@ -239,6 +242,32 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-	
+	public WorkingMemoryAddress askPolarColour(WorkingMemoryAddress _beliefID,
+			String _value, ActionMonitor _monitor) throws CASTException {
+		AskPolarColour act = newActionInstance(AskPolarColour.class);
+		act.beliefAddress = _beliefID;
+		act.value = _value;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress askPolarShape(WorkingMemoryAddress _beliefID,
+			String _value, ActionMonitor _monitor) throws CASTException {
+		AskPolarShape act = newActionInstance(AskPolarShape.class);
+		act.beliefAddress = _beliefID;
+		act.value = _value;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress askPolarIdentity(
+			WorkingMemoryAddress _beliefID, String _value,
+			ActionMonitor _monitor) throws CASTException {
+		AskPolarIdentity act = newActionInstance(AskPolarIdentity.class);
+		act.beliefAddress = _beliefID;
+		act.value = _value;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
 
 }

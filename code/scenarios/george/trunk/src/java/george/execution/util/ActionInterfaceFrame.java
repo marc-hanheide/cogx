@@ -2,6 +2,7 @@ package george.execution.util;
 
 import george.execution.components.GraphicalExecutionManager;
 
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -81,9 +82,15 @@ public class ActionInterfaceFrame extends JFrame {
 	private JTabbedPane m_tabbedPane;
 	private JTable m_objectTable;
 	private DefaultTableModel m_objectTableModel;
+
 	private JRadioButton m_askForColourAction;
 	private JRadioButton m_askForShapeAction;
 	private JRadioButton m_askForIdentityAction;
+
+	private JRadioButton m_askPolarColourAction;
+	private JRadioButton m_askPolarShapeAction;
+	private JRadioButton m_askPolarIdentityAction;
+
 	private static final Class<?>[] FEATURE_VALUE_TYPES = {
 			ElementaryFormula.class, IntegerFormula.class, FloatFormula.class,
 			BooleanFormula.class };
@@ -116,6 +123,9 @@ public class ActionInterfaceFrame extends JFrame {
 			m_beliefsPanel = new JPanel();
 			m_beliefsPanel.add(new JScrollPane(getBeliefTable()));
 			m_beliefsPanel.add(getBeliefsActionPanel());
+
+			getBeliefTable().setPreferredScrollableViewportSize(
+					new Dimension(200, 300));
 		}
 		return m_beliefsPanel;
 	}
@@ -125,6 +135,8 @@ public class ActionInterfaceFrame extends JFrame {
 			m_objectsPanel = new JPanel();
 			m_objectsPanel.add(new JScrollPane(getObjectTable()));
 			m_objectsPanel.add(getObjectsActionPanel());
+			getObjectTable().setPreferredScrollableViewportSize(
+					new Dimension(200, 300));
 		}
 		return m_objectsPanel;
 	}
@@ -199,6 +211,10 @@ public class ActionInterfaceFrame extends JFrame {
 			m_askForShapeAction = new JRadioButton("ask for shape");
 			m_askForIdentityAction = new JRadioButton("ask for identity");
 
+			m_askPolarColourAction = new JRadioButton("ask polar colour");
+			m_askPolarShapeAction = new JRadioButton("ask polar shape");
+			m_askPolarIdentityAction = new JRadioButton("ask polar identity");
+
 			ButtonGroup actionGroup = new ButtonGroup();
 			actionGroup.add(m_learnColourAction);
 			actionGroup.add(m_learnShapeAction);
@@ -206,6 +222,9 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_askForColourAction);
 			actionGroup.add(m_askForShapeAction);
 			actionGroup.add(m_askForIdentityAction);
+			actionGroup.add(m_askPolarColourAction);
+			actionGroup.add(m_askPolarShapeAction);
+			actionGroup.add(m_askPolarIdentityAction);
 
 			m_askForShapeAction.setSelected(true);
 
@@ -216,6 +235,10 @@ public class ActionInterfaceFrame extends JFrame {
 			m_beliefsActionPanel.add(m_askForColourAction, null);
 			m_beliefsActionPanel.add(m_askForShapeAction, null);
 			m_beliefsActionPanel.add(m_askForIdentityAction, null);
+
+			m_beliefsActionPanel.add(m_askPolarColourAction, null);
+			m_beliefsActionPanel.add(m_askPolarShapeAction, null);
+			m_beliefsActionPanel.add(m_askPolarIdentityAction, null);
 		}
 		return m_beliefsActionPanel;
 	}
@@ -314,7 +337,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private void go() throws CASTException {
 
 		println("go()");
-		
+
 		// TODO make more robust to code changes
 		int tabIndex = getTabbedPane().getSelectedIndex();
 
@@ -343,29 +366,25 @@ public class ActionInterfaceFrame extends JFrame {
 			}
 
 		} else if (tabIndex == 0) {
-			println("go() tab 0");
 
 			if (m_learnColourAction.isSelected()) {
-				println("go() opt 1");
 				learnColour();
 			} else if (m_learnShapeAction.isSelected()) {
-				println("go() opt 2");
-
 				learnShape();
 			} else if (m_learnIdentityAction.isSelected()) {
-				println("go() opt 3");
-
 				learnIdentity();
 			} else if (m_askForColourAction.isSelected()) {
-				println("go() opt 4");
-
 				askForColour();
 			} else if (m_askForShapeAction.isSelected()) {
-				println("go() go()");
 				askForShape();
 			} else if (m_askForIdentityAction.isSelected()) {
-				println("go() go() go()");
 				askForIdentity();
+			} else if (m_askPolarColourAction.isSelected()) {
+				askPolarColour();
+			} else if (m_askPolarShapeAction.isSelected()) {
+				askPolarShape();
+			} else if (m_askPolarIdentityAction.isSelected()) {
+				askPolarIdentity();
 			}
 
 		} else {
@@ -389,7 +408,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private void learnColour() throws CASTException {
 		String beliefID = getSelectedBeliefID();
 		if (beliefID != null) {
-			String colour = getFeatureValue(beliefID, "colour");
+			String colour = getFeatureValue(beliefID, "colour", "learnt");
 			if (colour != null) {
 				m_exeMan.learnColour(new WorkingMemoryAddress(beliefID,
 						"binder"), colour, new MonitorPanel());
@@ -400,7 +419,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private void learnShape() throws CASTException {
 		String beliefID = getSelectedBeliefID();
 		if (beliefID != null) {
-			String colour = getFeatureValue(beliefID, "shape");
+			String colour = getFeatureValue(beliefID, "shape", "learnt");
 			if (colour != null) {
 				m_exeMan.learnShape(
 						new WorkingMemoryAddress(beliefID, "binder"), colour,
@@ -412,7 +431,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private void learnIdentity() throws CASTException {
 		String beliefID = getSelectedBeliefID();
 		if (beliefID != null) {
-			String colour = getFeatureValue(beliefID, "identity");
+			String colour = getFeatureValue(beliefID, "identity", "learnt");
 			if (colour != null) {
 				m_exeMan.learnShape(
 						new WorkingMemoryAddress(beliefID, "binder"), colour,
@@ -434,8 +453,7 @@ public class ActionInterfaceFrame extends JFrame {
 		if (beliefID != null) {
 			m_exeMan.askForShape(new WorkingMemoryAddress(beliefID, "binder"),
 					new MonitorPanel());
-		}
-		else {
+		} else {
 			println("BELIEF IF IS NULL");
 		}
 	}
@@ -448,9 +466,39 @@ public class ActionInterfaceFrame extends JFrame {
 		}
 	}
 
-	private String getFeatureValue(String _beliefID, String _concept) {
-		String message = "What " + _concept + " should be learnt for belief "
-				+ _beliefID + "?";
+	private void askPolarColour() throws CASTException {
+		String beliefID = getSelectedBeliefID();
+		if (beliefID != null) {
+			m_exeMan.askPolarColour(
+					new WorkingMemoryAddress(beliefID, "binder"),
+					getFeatureValue(beliefID, "colour", "asked for"),
+					new MonitorPanel());
+		}
+	}
+
+	private void askPolarShape() throws CASTException {
+		String beliefID = getSelectedBeliefID();
+		if (beliefID != null) {
+			m_exeMan.askPolarShape(
+					new WorkingMemoryAddress(beliefID, "binder"),
+					getFeatureValue(beliefID, "shape", "asked for"),
+					new MonitorPanel());
+		}
+	}
+
+	private void askPolarIdentity() throws CASTException {
+		String beliefID = getSelectedBeliefID();
+		if (beliefID != null) {
+			m_exeMan.askPolarIdentity(new WorkingMemoryAddress(beliefID,
+					"binder"),
+					getFeatureValue(beliefID, "identity", "asked for"),
+					new MonitorPanel());
+		}
+	}
+
+	private String getFeatureValue(String _beliefID, String _concept, String _op) {
+		String message = "What " + _concept + " should be " + _op
+				+ " for belief " + _beliefID + "?";
 
 		return (String) JOptionPane.showInputDialog(this, message);
 	}
