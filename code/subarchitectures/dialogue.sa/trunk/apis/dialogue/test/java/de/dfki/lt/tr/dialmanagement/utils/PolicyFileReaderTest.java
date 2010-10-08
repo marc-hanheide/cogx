@@ -38,9 +38,9 @@ import static org.junit.Assert.*;
 
 public class PolicyFileReaderTest {
 
-	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/simplepolicy.txt";
-	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/simpleobservations.txt";
-	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/simpleactions.txt";
+	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/simplepolicy.txt";
+	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/simpleobservations.txt";
+	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/simpleactions.txt";
 
 	
 	@Test

@@ -68,9 +68,9 @@ public class InteractiveDoraTest {
 
 
 	// configuration files
-	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/policyExampleDora.txt";
-	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/observationsDora.txt";
-	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/actionsDora.txt";
+	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/policyExampleDora.txt";
+	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/observationsDora.txt";
+	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/actionsDora.txt";
 
 	// the dialogue manager
 	public DialogueManager manager;

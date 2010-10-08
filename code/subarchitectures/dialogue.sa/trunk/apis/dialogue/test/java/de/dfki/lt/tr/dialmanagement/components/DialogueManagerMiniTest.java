@@ -50,9 +50,9 @@ public class DialogueManagerMiniTest {
 	public static boolean DEBUG = false;
 	
 	// the configuration files
-	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/minipolicy.txt";
-	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/miniobservation.txt";
-	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/miniaction.txt";
+	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/minipolicy.txt";
+	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/miniobservation.txt";
+	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/miniaction.txt";
 
 	// the dialogue manager
 	public DialogueManager manager;

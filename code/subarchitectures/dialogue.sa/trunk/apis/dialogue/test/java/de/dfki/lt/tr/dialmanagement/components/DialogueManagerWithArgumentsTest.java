@@ -43,9 +43,9 @@ public static boolean LOGGING = true;
 public static boolean DEBUG = false;
 
 // the configuration files
-public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/propagationPolicy.txt";
-public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/propObservations.txt";
-public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/propActions.txt";
+public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/propagationPolicy.txt";
+public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/propObservations.txt";
+public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/propActions.txt";
 
 // the dialogue manager
 public DialogueManager manager;
