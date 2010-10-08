@@ -88,7 +88,7 @@ public class DialogueManagerWithEpObjectTest {
 				FormulaUtils.constructFormula("\"Please find the cornflakes box\""), 0.8f);
 		
 		PolicyAction action1 = manager.nextAction(intention1);
-		assertEquals(action1, new PolicyAction(FormulaUtils.constructFormula("\"okay, searching for the cornflakes box!\"")));
+		assertEquals(action1, new PolicyAction("", FormulaUtils.constructFormula("\"okay, searching for the cornflakes box!\"")));
 	}
 	
 	
@@ -101,7 +101,7 @@ public class DialogueManagerWithEpObjectTest {
 		
 		CommunicativeIntention intention1 = EpistemicObjectUtils.createAttributedCommunicativeIntention(postconditions);
 		PolicyAction action1 = manager.nextAction(intention1);
-		assertEquals(action1, new PolicyAction(FormulaUtils.constructFormula("\"sorry, should I search for the cornflaxes box?\"")));
+		assertEquals(action1, new PolicyAction("", FormulaUtils.constructFormula("\"sorry, should I search for the cornflaxes box?\"")));
 	}
 	
 	

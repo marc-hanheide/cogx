@@ -105,7 +105,7 @@ public class PolicyReader {
 			if (tabs.length == 2) {
 				String obsSymbol = tabs[0].replace("=", "").trim();
 				String obs = tabs[1].trim();
-				PolicyEdge edge = extractObservation(obs);
+				PolicyEdge edge = extractObservation(obsSymbol, obs);
 				edge.setId(obsSymbol);
 				totalObs.put(obsSymbol, edge);		
 			}
@@ -139,7 +139,7 @@ public class PolicyReader {
 			if (tabs.length == 2) {
 				String actionsSymbol = tabs[0].replace("=", "").trim();
 				String content = tabs[1].trim();
-				totalActions.put(actionsSymbol, new PolicyNode(actionsSymbol, extractAction(content)));
+				totalActions.put(actionsSymbol, new PolicyNode(actionsSymbol, extractAction(actionsSymbol, content)));
 			}
 			else if (line.trim().length() > 0) {
 				throw new DialogueException("ERROR: action file is ill-formated at line: " + i);
@@ -155,7 +155,7 @@ public class PolicyReader {
 	 * @return the constructed observation
 	 * @throws DialogueException if the line is ill-formatted
 	 */
-	public static PolicyEdge extractObservation (String str) throws DialogueException {
+	public static PolicyEdge extractObservation (String obsSymbol, String str) throws DialogueException {
 
 		str = str.trim();
 		if (str.contains("[") != str.contains("]")) {
@@ -175,25 +175,25 @@ public class PolicyReader {
 		// event observation
 		if (str.substring(0,2).equals("E[")) {
 			String eventcontent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new PolicyEdge (new PolicyObservation(eventcontent, minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyEdge (new PolicyObservation(obsSymbol, eventcontent, minmaxProbs[0], minmaxProbs[1]));
 		}
 
 		// intention observation
 		else if (str.substring(0,3).equals("CI[")) {
 			String intentContent = str.substring(3,str.length()).split("]")[0].replace("]", "");
-			return new PolicyEdge (new PolicyObservation(intentContent, minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyEdge (new PolicyObservation(obsSymbol, intentContent, minmaxProbs[0], minmaxProbs[1]));
 		}
 		
 		// intention observation
 		else if (str.substring(0,2).equals("I[")) {
 			String intentContent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new PolicyEdge (new PolicyObservation(intentContent, minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyEdge (new PolicyObservation(obsSymbol, intentContent, minmaxProbs[0], minmaxProbs[1]));
 		}
 
 		// else, we assume it is a shallow observation
 		else {
 			String internalcontent = str.split("\\(")[0];
-			return new PolicyEdge (new PolicyObservation(internalcontent.replace("\"", ""), minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyEdge (new PolicyObservation(obsSymbol, internalcontent.replace("\"", ""), minmaxProbs[0], minmaxProbs[1]));
 		}
 	}
 
@@ -237,7 +237,7 @@ public class PolicyReader {
 	 * @return the extracted action
 	 * @throws DialogueException 
 	 */
-	public static PolicyAction extractAction (String str) throws DialogueException {
+	public static PolicyAction extractAction (String actionSymbol, String str) throws DialogueException {
 		
 		str = str.trim();
 		if (str.contains("[") != str.contains("]")) {
@@ -247,16 +247,16 @@ public class PolicyReader {
 		// intention action
 		if (str.length() > 4 && str.substring(0,3).equals("CI[")) {
 			String intentcontent = str.substring(3,str.length()).split("]")[0].replace("]", "");
-			return new PolicyAction(intentcontent);
+			return new PolicyAction(actionSymbol, intentcontent);
 		}
 		else if (str.length() > 3 && str.substring(0,2).equals("I[")) {
 			String intentcontent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new PolicyAction(intentcontent);
+			return new PolicyAction(actionSymbol, intentcontent);
 		}
 		
 		// by default, shallow dialogue action
 		else {
-			return new PolicyAction(str);
+			return PolicyAction.createVoidAction();
 		}
 	}
 

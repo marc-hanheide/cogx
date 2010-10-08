@@ -42,10 +42,12 @@ public class DialoguePolicy {
 	public static boolean LOGGING = true;
 
 	// debugging mode
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	
 	// set of action nodes
 	private HashMap<String,PolicyNode> nodes;
+	
+	private HashMap<String,PolicyEdge> edges;
 	
 	// identifier for the initial node
 	private String initNode;
@@ -69,6 +71,7 @@ public class DialoguePolicy {
 	public DialoguePolicy(Collection<PolicyNode> nodes) {
 		
 		this.nodes = new HashMap<String,PolicyNode>();
+		edges = new HashMap<String,PolicyEdge>();
 		
 		for (PolicyNode n: nodes) {
 			this.nodes.put(n.getId(), n);
@@ -190,6 +193,7 @@ public class DialoguePolicy {
 		}
 		
 		curPolicyNode.addOutgoingEdge(edge);
+		edges.put(edge.getId(), edge);
 		debug("Adding outgoing edge : " + edge.toString() + " from " + curPolicyNode.getId() + " to " + nextPolicyNode.getId());
 	}
 	
@@ -248,6 +252,9 @@ public class DialoguePolicy {
 	}
 	
 		
+	public Collection<PolicyEdge> getEdges () {
+		return edges.values();
+	}
 	
 	/**
 	 * Returns the node anchored by the identifier (if no node exists, returns null)
@@ -276,6 +283,12 @@ public class DialoguePolicy {
 		return nodes.get(initNode);
 	}
 	
+	
+	public Collection<PolicyNode> getNodes () {
+		return nodes.values();
+	}
+	
+	 
 	/**
 	 * Returns a textual representation of the dialogue policy
 	 */
@@ -286,9 +299,9 @@ public class DialoguePolicy {
 		for (String nodeId : nodes.keySet()) {
 			result += nodeId + ", ";
 		}
-		result = result.substring(0, result.length() -2) + "} \n\n";
+		result = result.substring(0, result.length() -2) + "} \n";
 		
-		result += "Edges: \n";
+		result += "Edges = \n";
 		for (String nodeId : nodes.keySet()) {
 			PolicyNode node = nodes.get(nodeId);		
 			for (PolicyEdge edge: node.getAllOutgoingObservations()) {			
@@ -296,6 +309,12 @@ public class DialoguePolicy {
 				" --> " + edge.getOutgoingAction().getId() + "\n";			
 			}
 		}
+		
+		result += "Actions = \n";
+		for (String nodeId : nodes.keySet()) {
+			result += nodeId + " : " + nodes.get(nodeId).getAction().toString() + " \n";
+		}
+		
 		return result;
 	}
 	

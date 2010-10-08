@@ -71,7 +71,7 @@ public class DialoguePolicyTest {
 		policy.setNodeAsInitial(an1);
 
 		PolicyNode an2 = policy.addNode("end", new PolicyAction("end"));
-		PolicyEdge newEdge = new PolicyEdge(new PolicyObservation("edge", 1.0f, 1.0f));
+		PolicyEdge newEdge = new PolicyEdge(new PolicyObservation("","edge", 1.0f, 1.0f));
 		newEdge.setIncomingAction(an1);
 		newEdge.setOutgoingAction(an2);
 		policy.addEdge(newEdge, an1, an2);
@@ -133,7 +133,7 @@ public class DialoguePolicyTest {
 	    
 	    for (int i = 0; i < nbLeaves && depth > 0 ; i++) {
 	    	
-	    	PolicyEdge nextObs = new PolicyEdge(new PolicyObservation(getNewId(), 1.0f, 1.0f));
+	    	PolicyEdge nextObs = new PolicyEdge(new PolicyObservation("",getNewId(), 1.0f, 1.0f));
 	    	PolicyNode nextNode = policy.addNode(getNewId(), new PolicyAction(getNewId()));
 	    	nextObs.setOutgoingAction(nextNode);
 	    	nextObs.setIncomingAction(curNode);
