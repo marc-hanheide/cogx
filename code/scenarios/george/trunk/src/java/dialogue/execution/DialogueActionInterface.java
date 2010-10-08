@@ -33,6 +33,7 @@ import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.slice.TriBool;
 import execution.slice.actions.AskForColour;
 import execution.slice.actions.AskForIdentity;
+import execution.slice.actions.AskForObjectWithFeatureValue;
 import execution.slice.actions.AskForShape;
 import execution.slice.actions.AskPolarColour;
 import execution.slice.actions.AskPolarIdentity;
@@ -427,6 +428,19 @@ public class DialogueActionInterface extends ManagedComponent {
 		}
 	}
 
+	public static class DirectAskForObject extends
+			BlockingActionExecutor<AskForObjectWithFeatureValue> {
+		public DirectAskForObject(ManagedComponent _component) {
+			super(_component, AskForObjectWithFeatureValue.class);
+		}
+
+		@Override
+		public TriBool execute() {
+			JOptionPane.showMessageDialog(null, "OI YOU! Add a new object that looks " +getAction().value + " DO AS I SAY! .... please xxx");
+			return TriBool.TRITRUE;
+		}
+	}
+
 	private void addFeatureDirectly(SingleBeliefAction _action,
 			String _feature, String _value, double _prob)
 			throws DoesNotExistOnWMException, ConsistencyException,
@@ -521,6 +535,10 @@ public class DialogueActionInterface extends ManagedComponent {
 			m_actionStateManager.registerActionType(AskPolarIdentity.class,
 					new ComponentActionFactory<DirectPolarIdentityAnswer>(this,
 							DirectPolarIdentityAnswer.class));
+			
+			m_actionStateManager.registerActionType(AskForObjectWithFeatureValue.class,
+					new ComponentActionFactory<DirectAskForObject>(this,
+							DirectAskForObject.class));
 
 		} else {
 
