@@ -105,7 +105,7 @@ import opennlp.ccg.parse.ParseException;
 	 * @version 100608
 	 * @started 070813
 	 * @author  Geert-Jan M. Kruijff (gj@dfki.de)
-	 * @author  Pierre Lison (pierre.lison@dfki.de)
+	 * @author  Pierre Lison (plison@dfki.de)
 	*/ 
 
 

@@ -1,5 +1,5 @@
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -36,16 +36,18 @@ import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
 /**
  * Test class for a simple Dora-style interaction
  * 
+ * TODO: change the name of the tests
+ * TODO: have a more elegant way to provide the policy files 
+ * 
  * @author Pierre Lison (plison@dfki.de)
  * @version 04/07/2010
  *
  */
 public class DialogueManagerDoraTest {
 
-
+	// logging and debugging
 	public static boolean LOGGING = true;
-	
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 	
 	// the configuration files
 	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/policyExampleDora.txt";

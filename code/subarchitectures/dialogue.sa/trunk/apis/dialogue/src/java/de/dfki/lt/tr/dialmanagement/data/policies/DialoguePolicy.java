@@ -1,6 +1,6 @@
 
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -30,19 +30,20 @@ import java.util.Vector;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 
 /**
- * Representation of a dialogue policy as a finite-state controller, constituted of 
+ * Representation of a dialogue policy as a finite-state controller, made of 
  * action nodes and observation edges between them
  * 
+ * TODO: refactor to have a policy also well-formed during the incremental construction?
+ * TODO: check whether the node, edge, action and observation identifiers are unique
+ * 
  * @author Pierre Lison (plison@dfki.de)
- * @version 7/10/2010
+ * @version 8/10/2010
  */ 
 public class DialoguePolicy {
 
-	// logging mode
+	// logging and debugging
 	public static boolean LOGGING = true;
-
-	// debugging mode
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 	
 	// set of action nodes
 	private HashMap<String,PolicyNode> nodes;
@@ -78,11 +79,172 @@ public class DialoguePolicy {
 		}
 		
 		finalNodes = new Vector<String>();
-
+	}
+	
+	
+	/**
+	 * Add an edge between two existing action nodes 
+	 * 
+	 * @param edgeId the edge identifier
+	 * @param obs the observation to create and set between the two nodes
+	 * @param curPolicyNode the incoming action node
+	 * @param nextPolicyNode the outgoing action node
+	 * 
+	 * @throws DialogueException if one of the two nodes does not exist
+	 */
+	public void addEdge (PolicyEdge edge, PolicyNode curPolicyNode, PolicyNode nextPolicyNode) 
+		throws DialogueException {
+		
+		if (!nodes.containsKey(curPolicyNode.getId())) {
+			throw new DialogueException("ERROR: curAction not present in nodes set");
+		}
+		
+		if (!nodes.containsKey(nextPolicyNode.getId())) {
+			throw new DialogueException("ERROR: nextAction not present in nodes set");
+		}
+		
+		curPolicyNode.addOutgoingEdge(edge);
+		edges.put(edge.getId(), edge);
+		debug("Adding outgoing edge : " + edge.toString() + " from " + curPolicyNode.getId() + " to " + nextPolicyNode.getId());
+	}
+	
+	
+	/**
+	 * Adding a new node in the policy
+	 * 
+	 * @param node the node to add
+	 */
+	public void addNode (PolicyNode node) {
+		if (node != null) {
+			nodes.put(node.getId(), node);
+		}
+	}
+	
+	
+	/**
+	 * Set node as being initial
+	 * @param node
+	 */
+	public void setNodeAsInitial(PolicyNode node) {
+		initNode = node.getId();
+		node.setAsInitialNode();
+	}
+	
+	
+	/**
+	 * Set node as being final
+	 * @param node
+	 */
+	public void setNodeAsFinal(PolicyNode node) {
+		finalNodes.add(node.getId());
+		node.setAsFinalNode();
+	}
+	
+	
+	/**
+	 * Returns true if one node in the policy has the identifier nodeId, false otherwise
+	 * 
+	 * @param nodeId the identifier to check
+	 * @return
+	 */
+	public boolean hasNode(String nodeId) {
+		return nodes.containsKey(nodeId);
+	}
+	
+		
+	/**
+	 * Returns the set of edges in the policy
+	 * 
+	 * @return the edges collection
+	 */
+	public Collection<PolicyEdge> getEdges () {
+		return edges.values();
+	}
+	
+	
+	/**
+	 * Returns the node anchored by the identifier (if no node exists, returns null)
+	 * 
+	 * @param nodeId
+	 * @return
+	 */
+	public PolicyNode getNode(String nodeId) {
+		return nodes.get(nodeId);
+	}
+		
+	/**
+	 * Returns true if the node is a final node, else (or if the node does not
+	 * exist in the policy) false
+	 * 
+	 * @param node the node to check
+	 * @return true if node is final, false otherwise
+	 */
+	public boolean isFinalNode(PolicyNode node) {
+		return finalNodes.contains(node.getId());
+	}
+	
+	
+	/**
+	 * Returns true if the node is the initial node, else (or if the node does not
+	 * exist in the policy) false
+	 * 
+	 * @param node the node to check
+	 * @return true if node is final, false otherwise
+	 */
+	public boolean isInitNode(PolicyNode node) {
+		return initNode.equals(node.getId());
+	}
+	 
+	
+	/**
+	 * Returns the initial node
+	 * @return the initial node
+	 */
+	public PolicyNode getInitNode() {
+		return nodes.get(initNode);
+	}
+	
+	/**
+	 * Returns the collection of nodes
+	 * @return
+	 */
+	public Collection<PolicyNode> getNodes () {
+		return nodes.values();
+	}
+	
+	 
+	/**
+	 * Returns a textual representation of the dialogue policy
+	 */
+	@Override
+	public String toString() {
+		String result = "Nodes = {";
+		
+		for (String nodeId : nodes.keySet()) {
+			result += nodeId + ", ";
+		}
+		result = result.substring(0, result.length() -2) + "} \n";
+		
+		result += "Edges = \n";
+		for (String nodeId : nodes.keySet()) {
+			PolicyNode node = nodes.get(nodeId);		
+			for (PolicyEdge edge: node.getAllOutgoingObservations()) {			
+				result += edge.getSourceNode().getId() + " -- " + edge.getObservation().toString() + 
+				" --> " + edge.getTargetNode().getId() + "\n";			
+			}
+		}
+		
+		result += "Actions = \n";
+		for (String nodeId : nodes.keySet()) {
+			result += nodeId + " : " + nodes.get(nodeId).getAction().toString() + " \n";
+		}
+		
+		return result;
 	}
 	
 	
 	
+
 	/**
 	 * Checks that the policy is well-formed
 	 * @throws DialogueException if the policy is not well-formed for some reason
@@ -125,11 +287,17 @@ public class DialoguePolicy {
 			if (a.getAction() == null) {
 				throw new DialogueException("Warning: no action specified in node");
 			}
-			
 		
 		if (!isNodeLeadingToFinal(initNode, 0)) {
 			throw new DialogueException("Warning: initial node not leading to any final node");
 		}
+		}
+		
+		for (PolicyEdge e : edges.values()) {
+			
+			if (e.getObservation() == null) {
+				throw new DialogueException("Warning: no observation specified in edge");
+			}
 		}
 	}
 
@@ -160,7 +328,7 @@ public class DialoguePolicy {
 		Collections.shuffle(observations);
 		
 		for (PolicyEdge e: observations) {
-			PolicyNode nextNode = e.getOutgoingAction();
+			PolicyNode nextNode = e.getTargetNode();
 			if (finalNodes.contains(nextNode.getId())) {
 				return true;
 			}
@@ -171,152 +339,6 @@ public class DialoguePolicy {
 		return false;
 	}
 	
-	/**
-	 * Add an edge between two existing action nodes 
-	 * 
-	 * @param edgeId the edge identifier
-	 * @param obs the observation to create and set between the two nodes
-	 * @param curPolicyNode the incoming action node
-	 * @param nextPolicyNode the outgoing action node
-	 * 
-	 * @throws DialogueException if one of the two nodes does not exist
-	 */
-	public void addEdge (PolicyEdge edge, PolicyNode curPolicyNode, PolicyNode nextPolicyNode) 
-		throws DialogueException {
-		
-		if (!nodes.containsKey(curPolicyNode.getId())) {
-			throw new DialogueException("ERROR: curAction not present in nodes set");
-		}
-		
-		if (!nodes.containsKey(nextPolicyNode.getId())) {
-			throw new DialogueException("ERROR: nextAction not present in nodes set");
-		}
-		
-		curPolicyNode.addOutgoingEdge(edge);
-		edges.put(edge.getId(), edge);
-		debug("Adding outgoing edge : " + edge.toString() + " from " + curPolicyNode.getId() + " to " + nextPolicyNode.getId());
-	}
-	
-	
-	/**
-	 * Add a new action node to the policy
-	 * 
-	 * @param nextNodeId the node identifier
-	 * @param action the new action
-	 * @return the node encapsulating the action
-	 * @throws DialogueException 
-	 */
-	public PolicyNode addNode (String nodeId, PolicyAction action) throws DialogueException {
-		PolicyNode node = new PolicyNode(nodeId, action);
-		nodes.put(nodeId,node);
-		return node;
-	}
-	
-	
-	public void addNode (PolicyNode node) {
-		if (node != null) {
-			nodes.put(node.getId(), node);
-		}
-	}
-	
-	
-	/**
-	 * Set node as being initial
-	 * @param node
-	 * @throws DialogueException
-	 */
-	public void setNodeAsInitial(PolicyNode node) throws DialogueException {
-		initNode = node.getId();
-		node.setAsInitialNode();
-	}
-	
-	/**
-	 * Set node as being final
-	 * @param node
-	 * @throws DialogueException
-	 */
-	public void setNodeAsFinal(PolicyNode node) throws DialogueException {
-		finalNodes.add(node.getId());
-		node.setAsFinalNode();
-	}
-	
-	
-	/**
-	 * Returns true if one node in the policy has the identifier nodeId, false otherwise
-	 * 
-	 * @param nodeId the identifier to check
-	 * @return
-	 */
-	public boolean hasNode(String nodeId) {
-		return nodes.containsKey(nodeId);
-	}
-	
-		
-	public Collection<PolicyEdge> getEdges () {
-		return edges.values();
-	}
-	
-	/**
-	 * Returns the node anchored by the identifier (if no node exists, returns null)
-	 * 
-	 * @param nodeId
-	 * @return
-	 */
-	public PolicyNode getNode(String nodeId) {
-		return nodes.get(nodeId);
-	}
-		
-	
-	public boolean isFinalNode(PolicyNode node) {
-		return finalNodes.contains(node.getId());
-	}
-	
-	public boolean isInitNode(PolicyNode node) {
-		return initNode.equals(node.getId());
-	}
-	 
-	/**
-	 * Returns the initial node
-	 * @return the initial node
-	 */
-	public PolicyNode getInitNode() {
-		return nodes.get(initNode);
-	}
-	
-	
-	public Collection<PolicyNode> getNodes () {
-		return nodes.values();
-	}
-	
-	 
-	/**
-	 * Returns a textual representation of the dialogue policy
-	 */
-	@Override
-	public String toString() {
-		String result = "Nodes = {";
-		
-		for (String nodeId : nodes.keySet()) {
-			result += nodeId + ", ";
-		}
-		result = result.substring(0, result.length() -2) + "} \n";
-		
-		result += "Edges = \n";
-		for (String nodeId : nodes.keySet()) {
-			PolicyNode node = nodes.get(nodeId);		
-			for (PolicyEdge edge: node.getAllOutgoingObservations()) {			
-				result += edge.getIncomingAction().getId() + " -- " + edge.getObservation().toString() + 
-				" --> " + edge.getOutgoingAction().getId() + "\n";			
-			}
-		}
-		
-		result += "Actions = \n";
-		for (String nodeId : nodes.keySet()) {
-			result += nodeId + " : " + nodes.get(nodeId).getAction().toString() + " \n";
-		}
-		
-		return result;
-	}
 	
 	/**
 	 * Logging
@@ -324,7 +346,7 @@ public class DialoguePolicy {
 	 */
 	private static void log (String s) {
 		if (LOGGING) {
-			System.out.println("[Dialogue policy] " + s);
+			System.out.println("[dialpolicy] " + s);
 		}
 	}
 	
@@ -334,7 +356,7 @@ public class DialoguePolicy {
 	 */
 	private static void debug (String s) {
 		if (DEBUG) {
-			System.out.println("[Dialogue policy] " + s);
+			System.out.println("[dialpolicy] " + s);
 		}
 	}
 }

@@ -1,5 +1,5 @@
 //=================================================================
-//Copyright (C) 2010 Pierre Lison (pierre.lison@dfki.de)
+//Copyright (C) 2010 Pierre Lison (plison@dfki.de)
 
 //This library is free software; you can redistribute it and/or
 //modify it under the terms of the GNU Lesser General Public License
@@ -35,7 +35,7 @@ import java.util.Vector;
  * LHS : RHS. A RHS is a sequence of String symbols, and can be associated with a weights map. 
  * Weights provide a weighted link from a previous rule (i.e. a LHS, used as key) to the current RHS. 
  * 
- * @author Pierre Lison (pierre.lison@dfki.de)
+ * @author Pierre Lison (plison@dfki.de)
  * @version 100608
  */
 

@@ -1,5 +1,5 @@
 //=================================================================
-//Copyright (C) 2010 Pierre Lison (pierre.lison@dfki.de)
+//Copyright (C) 2010 Pierre Lison (plison@dfki.de)
 
 //This library is free software; you can redistribute it and/or
 //modify it under the terms of the GNU Lesser General Public License

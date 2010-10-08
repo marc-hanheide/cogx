@@ -1,6 +1,6 @@
 
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -37,17 +37,17 @@ import de.dfki.lt.tr.dialmanagement.data.policies.PolicyObservation;
  * in the AT&T FSM format, associated with a file describing the actions and a
  * file describing the observations
  * 
+ * TODO: change to textpolicyreader
+ * 
  * @author Pierre Lison (plison@dfki.de)
  * @version 10/06/2010
  */
 
 public class PolicyReader {
 
-	// logging mode
+	// logging and debugging
 	public static boolean LOGGING = true;
-
-	// debugging mode
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 
 
 	/**
@@ -175,25 +175,25 @@ public class PolicyReader {
 		// event observation
 		if (str.substring(0,2).equals("E[")) {
 			String eventcontent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new PolicyEdge (new PolicyObservation(obsSymbol, eventcontent, minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyEdge (obsSymbol, new PolicyObservation(obsSymbol, eventcontent, minmaxProbs[0], minmaxProbs[1]));
 		}
 
 		// intention observation
 		else if (str.substring(0,3).equals("CI[")) {
 			String intentContent = str.substring(3,str.length()).split("]")[0].replace("]", "");
-			return new PolicyEdge (new PolicyObservation(obsSymbol, intentContent, minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyEdge (obsSymbol, new PolicyObservation(obsSymbol, intentContent, minmaxProbs[0], minmaxProbs[1]));
 		}
 		
 		// intention observation
 		else if (str.substring(0,2).equals("I[")) {
 			String intentContent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new PolicyEdge (new PolicyObservation(obsSymbol, intentContent, minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyEdge (obsSymbol, new PolicyObservation(obsSymbol, intentContent, minmaxProbs[0], minmaxProbs[1]));
 		}
 
 		// else, we assume it is a shallow observation
 		else {
 			String internalcontent = str.split("\\(")[0];
-			return new PolicyEdge (new PolicyObservation(obsSymbol, internalcontent.replace("\"", ""), minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyEdge (obsSymbol, new PolicyObservation(obsSymbol, internalcontent.replace("\"", ""), minmaxProbs[0], minmaxProbs[1]));
 		}
 	}
 
@@ -360,7 +360,8 @@ public class PolicyReader {
 
 			PolicyNode sourceNode;
 			if (!policy.hasNode(sourceNodeId)) {
-				sourceNode = policy.addNode(sourceNodeId, actions.get(sourceNodeId).getAction());
+				sourceNode = new PolicyNode(sourceNodeId, actions.get(sourceNodeId).getAction());
+				policy.addNode(sourceNode);
 			}
 			else {
 				sourceNode = policy.getNode(sourceNodeId);
@@ -368,7 +369,8 @@ public class PolicyReader {
 
 			PolicyNode targetNode;
 			if (!policy.hasNode(targetNodeId)  && actions.containsKey(targetNodeId)) {
-				targetNode = policy.addNode(targetNodeId, actions.get(targetNodeId).getAction());
+				targetNode = new PolicyNode(targetNodeId, actions.get(targetNodeId).getAction());
+				policy.addNode(targetNode);
 			}
 			else {
 				targetNode = policy.getNode(targetNodeId);

@@ -1,6 +1,6 @@
 
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -20,98 +20,122 @@
 
 package de.dfki.lt.tr.dialmanagement.data.policies;
 
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
-import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
 
 /**
- * Observation edge in a dialogue policy
+ * Representation of an edge in the dialogue policy.  An edge is made of
+ * four elements: 
+ * (1) an identifier, 
+ * (2) a source node, 
+ * (3) a target node,
+ * and (4) an associated observation.
+ * 
+ * TODO: have a method to verify that the edge if complete
  * 
  * @author Pierre Lison (plison@dfki.de)
- * @version 10/06/2010
+ * @version 8/10/2010
  */
 
 public class PolicyEdge {
-
-
-	// logging mode
-	public static boolean LOGGING = true;
-
-	// debugging mode
-	public static boolean DEBUG = true;
 	
+	// logging and debugging
+	public static boolean LOGGING = true;
+	public static boolean DEBUG = true;
+		
 	// the (unique) identifier for the edge
 	private String id;
 	
-	// Incoming (=origin) action node
+	// the source node
 	private PolicyNode in;
 	
-	// Outgoing (=destination) action node
+	// the target node
 	private PolicyNode out;
 
+	// the observation associated with the edge
 	private PolicyObservation obs;
 	
+	
 	/**
-	 * Constructs a new observation edge from an incoming action node, an outgoing action node, and an observation
+	 * Constructs a new edge from an identifier, a source node, a target node, and an observation
 	 * 
 	 * @param id the edge identifier
-	 * @param in the incoming node
-	 * @param out the outgoing node
+	 * @param in the source node
+	 * @param out the target node
 	 * @param obs the observation
-	 * @param the minimum probability
-	 * @param the maximum probability
-	 * @throws DialogueException if one of the parameters is a null value
 	 */
-	public PolicyEdge (String id, PolicyNode in, PolicyNode out, PolicyObservation obs) throws DialogueException {
-		
-		this.obs = obs;
-		
-		if (id != null && in != null && out != null && obs != null) {
-			this.id = id;
-			this.in = in;
-			this.out = out;
-		}
-		else {
-			throw new DialogueException("ERROR: cannot enter null values in observation edge");
-		}
-	}
-	
-	
-	public PolicyEdge (String id, PolicyNode in, PolicyNode out) throws DialogueException {
-		
-		if (id != null && in != null && out != null) {
-			this.id = id;
-			this.in = in;
-			this.out = out;
-		}
-		else {
-			throw new DialogueException("ERROR: cannot enter null values in observation edge");
-		}
-	}
-	
-	
-	public PolicyEdge (PolicyObservation obs) {
+	public PolicyEdge (String id, PolicyNode in, PolicyNode out, PolicyObservation obs)  {			
+		this.id = id;
+		this.in = in;
+		this.out = out;
 		this.obs = obs;
 	}
 	
+	/**
+	 * Constructs a new edge with an identifier, a source node and a target node
+	 * 
+	 * @param id the edge identifier
+	 * @param in the source node
+	 * @param out the target node
+	 */
+	public PolicyEdge (String id, PolicyNode in, PolicyNode out) {
+		this(id,in,out,null);
+	}
 	
-	public PolicyEdge copy () throws DialogueException {
-		return new PolicyEdge(obs);
-	} 
+	/**
+	 * Constructs a new edge with an identifier and an observation
+	 * 
+	 * @param id the edge identifier
+	 * @param obs the observation
+	 */
+	public PolicyEdge (String id, PolicyObservation obs){
+		this(id,null,null,obs);
+	}
+		
+	/**
+	 * Returns a copy of the edge
+	 * 
+	 * @return the edge copy
+	 */
+	public PolicyEdge copy () {
+		return new PolicyEdge(id, in, out, obs);
+	}
 	
-	
+	/**
+	 * Set a new identifier to the edge
+	 * 
+	 * @param id the new identifier
+	 */
 	public void setId(String id) {
 		this.id = id;
 	}
 	
+	/**
+	 * Set the source node for the edge
+	 * 
+	 * @param in the source node
+	 */
 	public void setSourceNode(PolicyNode in) {
 		this.in = in;
 	}
 	
+	/**
+	 * Set the target node for the edge
+	 * 
+	 * @param out
+	 */
 	public void setTargetNode(PolicyNode out) {
 		this.out = out;
 	}
 	
+	
+	/**
+	 * Sets the policy observation for the edge
+	 * 
+	 * @param obs the observation
+	 */
+	public void setObservation(PolicyObservation obs) {
+		this.obs = obs;
+	}
 	
 	/**
 	 * Returns the incoming action node (i.e. the origin of the edge)
@@ -121,13 +145,23 @@ public class PolicyEdge {
 		return in;
 	}
 	
+	
 	/**
-	 * Returns the outgoing action node (i.e. the destination of the edge)
-	 * @return the outgoing action node
+	 * Returns the source node
+	 * @return the source node
 	 */
-	public PolicyNode getOutgoingAction() {
+	public PolicyNode getSourceNode() {
+		return in;
+	}
+	
+	/**
+	 * Returns the target node
+	 * @return the target node
+	 */
+	public PolicyNode getTargetNode() {
 		return out;
 	}
+	
 	
 	/**
 	 * Returns the observation contained in the edge
@@ -137,61 +171,19 @@ public class PolicyEdge {
 		return obs;
 	}
 	
-	/**
-	 * Set the incoming action node of the edge (overriding the existing one)
-	 * 
-	 * @param in the new incoming action node
-	 * @throws DialogueException if the action node is a null value
-	 */
-	public void setIncomingAction(PolicyNode in) throws DialogueException {
-		if (in != null) {
-			this.in = in;
-		}
-		else {
-			throw new DialogueException("ERROR: cannot enter null values in observation edge");
-		}
-	}
 	
 	/**
-	 * Set the outgoing action node of the edge (overriding the existing one)
+	 * Returns true if the policy observation contained in the edge
+	 * matches the full observation passed as argument
 	 * 
-	 * @param in the new outgoing action node
-	 * @throws DialogueException if the action node is a null value
+	 * @param fullObs the full, runtime observation
+	 * @return true if the two observations match, false otherwise
 	 */
-	public void setOutgoingAction(PolicyNode out) throws DialogueException {
-		if (out != null) {
-			this.out = out;
-		}
-		else {
-			throw new DialogueException("ERROR: cannot enter null values in observation edge");
-		}
+	public boolean matchesWithObservation (Observation fullObs) {
+		return obs.matchesWithObservation(fullObs);
 	}
 	
-	/**
-	 * Set the observation contained in the edge (overriding the existing one)
-	 * 
-	 * @param obs the new observation
-	 * @throws DialogueException if the observation is a null value
-	 */
-	public void setObservation(PolicyObservation obs) throws DialogueException {
-		if (obs != null) {
-			this.obs = obs;
-		}
-		else {
-			throw new DialogueException("ERROR: cannot enter null values in observation edge");
-		}
-	}
-	
-	
-	public boolean matchesWithObservation (Observation runtimeObs) {
-		return obs.matchesWithObservation(runtimeObs);
-	}
-	
-	
-	
-	
-	
-	
+		
 	/**
 	 * Returns the edge identifier
 	 * @return the identifier, as a string
@@ -200,13 +192,15 @@ public class PolicyEdge {
 		return id;
 	}
 	
-	
+	/**
+	 * Returns a string representation of the edge
+	 */
 	public String toString() {
 		if (obs != null) {
 		return obs.toString();
 		}
 		else {
-			return "";
+			return "voidEdge";
 		}
 	}
 	
@@ -217,7 +211,7 @@ public class PolicyEdge {
 	 */
 	private static void log (String s) {
 		if (LOGGING) {
-			System.out.println("[Dialogue policy] " + s);
+			System.out.println("[policyedge] " + s);
 		}
 	}
 	
@@ -227,7 +221,7 @@ public class PolicyEdge {
 	 */
 	private static void debug (String s) {
 		if (DEBUG) {
-			System.out.println("[Dialogue policy] " + s);
+			System.out.println("[policyedge] " + s);
 		}
 	}
 } 

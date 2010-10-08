@@ -1,6 +1,6 @@
 // =================================================================
 // Copyright (C) 2010 DFKI GmbH Talking Robots 
-// Pierre Lison (pierre.lison@dfki.de)
+// Pierre Lison (plison@dfki.de)
 // Geert-Jan M. Kruijff (gj@dfki.de)
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or
@@ -56,7 +56,7 @@ import de.dfki.lt.tr.dialogue.util.DialogueInvalidOperationException;
  * </pre><p>
  * 
  *
- * @author 	Pierre Lison (pierre.lison@dfki.de)
+ * @author 	Pierre Lison (plison@dfki.de)
  * @author  Geert-Jan M. Kruijff (gj@dfki.de)
  * @version 100607
  * @since   080909 

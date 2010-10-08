@@ -34,7 +34,7 @@ import de.dfki.lt.tr.dialogue.slice.asr.RecogResult;
  * and the raw data in which Nuance (v8.5) provides its speech recognition 
  * results. 
  * 
- * @author  Pierre Lison (pierre.lison@dfki.de)
+ * @author  Pierre Lison (plison@dfki.de)
  * @version	100607
  * @since	061210
  */

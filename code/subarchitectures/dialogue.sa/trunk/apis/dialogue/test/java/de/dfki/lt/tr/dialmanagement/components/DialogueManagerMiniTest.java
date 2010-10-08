@@ -1,5 +1,23 @@
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+//                                                                                                                          
+// This library is free software; you can redistribute it and/or                                                            
+// modify it under the terms of the GNU Lesser General Public License                                                       
+// as published by the Free Software Foundation; either version 2.1 of                                                      
+// the License, or (at your option) any later version.                                                                      
+//                                                                                                                          
+// This library is distributed in the hope that it will be useful, but                                                      
+// WITHOUT ANY WARRANTY; without even the implied warranty of                                                               
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                                                         
+// Lesser General Public License for more details.                                                                          
+//                                                                                                                          
+// You should have received a copy of the GNU Lesser General Public                                                         
+// License along with this program; if not, write to the Free Software                                                      
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA                                                                
+// 02111-1307, USA.                                                                                                         
+// =================================================================                                                        
+// =================================================================                                                        
+// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -17,6 +35,7 @@
 // 02111-1307, USA.                                                                                                         
 // =================================================================                                                        
 
+
 package de.dfki.lt.tr.dialmanagement.components;
 
 import static org.junit.Assert.*;
@@ -31,7 +50,6 @@ import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
-import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
 
 
@@ -44,10 +62,10 @@ import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
  */
 public class DialogueManagerMiniTest {
 
-
+	// logging and debugging
 	public static boolean LOGGING = true;
+	public static boolean DEBUG = true;
 	
-	public static boolean DEBUG = false;
 	
 	// the configuration files
 	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/minipolicy.txt";

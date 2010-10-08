@@ -1,5 +1,5 @@
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -37,6 +37,10 @@ import java.util.HashMap;
 
 public class Observation {
 
+	// logging and debugging
+	public static boolean LOGGING = true;
+	public static boolean DEBUG = true;
+	
 	// the set of alternatives
 	private HashMap<FormulaWrapper,Float> alternatives ;
 	

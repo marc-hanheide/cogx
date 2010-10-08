@@ -1,7 +1,7 @@
 //=================================================================
 // Copyright (C) 2006-2010 DFKI GmbH Talking Robots
 // Geert-Jan M. Kruijff (gj@dfki.de)
-// Pierre Lison (pierre.lison@dfki.de)
+// Pierre Lison (plison@dfki.de)
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License
@@ -61,7 +61,7 @@ import de.dfki.lt.tr.dialogue.util.LFPacking;
  * @see IncrCCGWordLatticeParser#parse(WordRecognitionLattice)
  * @see IncrCCGWordLatticeParser#incrParse(WordRecognitionLattice)
  * @see de.dfki.lt.tr.dialogue.asr.WordRecognitionLattice
- * @author Pierre Lison (pierre.lison@dfki.de)
+ * @author Pierre Lison (plison@dfki.de)
  * @author Geert-Jan M. Kruijff (gj@dfki.de)
  * @version 100608
  */
