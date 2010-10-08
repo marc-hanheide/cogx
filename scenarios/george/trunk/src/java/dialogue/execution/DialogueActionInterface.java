@@ -34,6 +34,10 @@ import execution.slice.TriBool;
 import execution.slice.actions.AskForColour;
 import execution.slice.actions.AskForIdentity;
 import execution.slice.actions.AskForShape;
+import execution.slice.actions.AskPolarColour;
+import execution.slice.actions.AskPolarIdentity;
+import execution.slice.actions.AskPolarShape;
+import execution.slice.actions.BeliefPlusStringAction;
 import execution.slice.actions.SingleBeliefAction;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
@@ -52,7 +56,7 @@ public class DialogueActionInterface extends ManagedComponent {
 	private GroundedToSharedBeliefMap m_groundedToShared;
 
 	private boolean m_fakeIt;
-	
+
 	public static class DirectColourAnswer extends
 			BlockingActionExecutor<AskForColour> {
 
@@ -191,7 +195,7 @@ public class DialogueActionInterface extends ManagedComponent {
 						WMPointer.create(sharedBeliefAddress).get()));
 				content.preconditions = preconditions;
 
-				// postcondition								
+				// postcondition
 				ComplexFormula postconditions = new ComplexFormula(-1,
 						new ArrayList<dFormula>(4), BinaryOp.conj);
 				postconditions.forms.add(PropositionFormula.create(
@@ -202,16 +206,16 @@ public class DialogueActionInterface extends ManagedComponent {
 						WMPointer.create(groundedBeliefAddress).get()));
 				postconditions.forms.add(new ModalFormula(-1, "feature",
 						PropositionFormula.create(m_feature).get()));
-				
-				ModalFormula state = new ModalFormula(-1, "state", postconditions);
-				
+
+				ModalFormula state = new ModalFormula(-1, "state",
+						postconditions);
+
 				ComplexFormula states = new ComplexFormula(-1,
 						new ArrayList<dFormula>(1), BinaryOp.conj);
 				states.forms.add(state);
-				
+
 				content.postconditions = states;
 
-				
 				robotIntention.content = new ArrayList<IntentionalContent>(1);
 				robotIntention.content.add(content);
 
@@ -295,17 +299,95 @@ public class DialogueActionInterface extends ManagedComponent {
 
 	}
 
+	public static class DirectPolarShapeAnswer extends
+			BlockingActionExecutor<AskPolarShape> {
+
+		public DirectPolarShapeAnswer(ManagedComponent _component) {
+			super(_component, AskPolarShape.class);
+		}
+
+		@Override
+		public TriBool execute() {
+
+			TriBool result = TriBool.TRIFALSE;
+			try {
+
+				((DialogueActionInterface) getComponent())
+						.askPolarFeatureThenSetDirect("shape", getAction());
+				result = TriBool.TRITRUE;
+
+			} catch (CASTException e) {
+				logException(e);
+			}
+
+			return result;
+
+		}
+	}
+
+	public static class DirectPolarColourAnswer extends
+			BlockingActionExecutor<AskPolarColour> {
+
+		public DirectPolarColourAnswer(ManagedComponent _component) {
+			super(_component, AskPolarColour.class);
+		}
+
+		@Override
+		public TriBool execute() {
+
+			TriBool result = TriBool.TRIFALSE;
+			try {
+
+				((DialogueActionInterface) getComponent())
+						.askPolarFeatureThenSetDirect("color", getAction());
+				result = TriBool.TRITRUE;
+
+			} catch (CASTException e) {
+				logException(e);
+			}
+
+			return result;
+
+		}
+	}
+
+	public static class DirectPolarIdentityAnswer extends
+			BlockingActionExecutor<AskPolarIdentity> {
+
+		public DirectPolarIdentityAnswer(ManagedComponent _component) {
+			super(_component, AskPolarIdentity.class);
+		}
+
+		@Override
+		public TriBool execute() {
+
+			TriBool result = TriBool.TRIFALSE;
+			try {
+
+				((DialogueActionInterface) getComponent())
+						.askPolarFeatureThenSetDirect("identity", getAction());
+				result = TriBool.TRITRUE;
+
+			} catch (CASTException e) {
+				logException(e);
+			}
+
+			return result;
+
+		}
+	}
+
 	private void addFeatureDirectly(SingleBeliefAction _action,
-			String _feature, String _value) throws DoesNotExistOnWMException,
-			ConsistencyException, PermissionException,
-			UnknownSubarchitectureException {
+			String _feature, String _value, double _prob)
+			throws DoesNotExistOnWMException, ConsistencyException,
+			PermissionException, UnknownSubarchitectureException {
 		GroundedBelief belief = getMemoryEntry(_action.beliefAddress,
 				GroundedBelief.class);
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, belief);
 
 		FormulaDistribution fd = FormulaDistribution.create();
-		fd.add(_value, 1);
+		fd.add(_value, _prob);
 		pb.getContent().put(_feature, fd);
 		overwriteWorkingMemory(_action.beliefAddress, pb.get());
 	}
@@ -313,6 +395,16 @@ public class DialogueActionInterface extends ManagedComponent {
 	private static String askForFeatureValue(String _feature) {
 		return (String) JOptionPane.showInputDialog(null, "What " + _feature
 				+ " is the object?");
+	}
+
+	private static boolean askPolarFeatureValue(String _feature, String _value) {
+		String answer = (String) JOptionPane.showInputDialog(null, "Is the "
+				+ _feature + " " + _value + "?");
+		if (answer.toLowerCase().startsWith("y")) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -325,7 +417,26 @@ public class DialogueActionInterface extends ManagedComponent {
 			SingleBeliefAction _action) throws DoesNotExistOnWMException,
 			ConsistencyException, PermissionException,
 			UnknownSubarchitectureException {
-		addFeatureDirectly(_action, _feature, askForFeatureValue(_feature));
+		addFeatureDirectly(_action, _feature, askForFeatureValue(_feature), 1d);
+	}
+
+	/**
+	 * @throws DoesNotExistOnWMException
+	 * @throws ConsistencyException
+	 * @throws PermissionException
+	 * @throws UnknownSubarchitectureException
+	 */
+	private boolean askPolarFeatureThenSetDirect(String _feature,
+			BeliefPlusStringAction _action) throws DoesNotExistOnWMException,
+			ConsistencyException, PermissionException,
+			UnknownSubarchitectureException {
+		if (askPolarFeatureValue(_feature, _action.value)) {
+			addFeatureDirectly(_action, _feature, _action.value, 1d);
+			return true;
+		} else {
+			addFeatureDirectly(_action, _feature, _action.value, 0d);
+		}
+		return false;
 	}
 
 	@Override
@@ -348,6 +459,18 @@ public class DialogueActionInterface extends ManagedComponent {
 			m_actionStateManager.registerActionType(AskForIdentity.class,
 					new ComponentActionFactory<DirectIdentityAnswer>(this,
 							DirectIdentityAnswer.class));
+
+			m_actionStateManager.registerActionType(AskPolarColour.class,
+					new ComponentActionFactory<DirectPolarColourAnswer>(this,
+							DirectPolarColourAnswer.class));
+
+			m_actionStateManager.registerActionType(AskPolarShape.class,
+					new ComponentActionFactory<DirectPolarShapeAnswer>(this,
+							DirectPolarShapeAnswer.class));
+
+			m_actionStateManager.registerActionType(AskPolarIdentity.class,
+					new ComponentActionFactory<DirectPolarIdentityAnswer>(this,
+							DirectPolarIdentityAnswer.class));
 
 		} else {
 
@@ -391,7 +514,7 @@ public class DialogueActionInterface extends ManagedComponent {
 	protected void configure(Map<String, String> _config) {
 		m_fakeIt = _config.containsKey("--fake-it");
 	}
-	
+
 	private WorkingMemoryAddress getSharedBeliefAddress(
 			WorkingMemoryAddress _groundedBeliefAddress) {
 		WorkingMemoryAddress addr = null;
