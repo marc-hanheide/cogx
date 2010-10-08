@@ -78,6 +78,12 @@ public class PolicyNode {
 			throw new DialogueException("ERROR, action is a null value");
 		}
 	}
+	
+	
+	public PolicyNode(String identifier) {
+		id = identifier;
+		outgoingEdges = new Vector<PolicyEdge>();
+	}
 
 
 	/**
@@ -186,7 +192,7 @@ public class PolicyNode {
 	 * 
 	 * @throws DialogueException if the node contains one or more outgoing edges
 	 */
-	public void setAsFinalNode () throws DialogueException {
+	public void setAsFinalNode () {
 		isFinal = true;
 	}
 
