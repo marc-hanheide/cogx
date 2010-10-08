@@ -24,7 +24,7 @@ INCLUDE includes/planner.sa/planner-base.cast
 
 JAVA MG manual-execution george.execution.components.GraphicalExecutionManager
 
-JAVA MG shared.tracker eu.cogx.sharedtracker.george.GeorgeSharedBeliefTracker --write-to-sa binder
+JAVA MG shared.tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
 
 
 # used to simulate what the learner would do to the task (overwrite on completion)
