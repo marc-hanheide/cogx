@@ -71,6 +71,7 @@ module logicalcontent {
  */
 class PointerFormula extends dFormula {
       cast::cdl::WorkingMemoryAddress pointer;
+      string type;
 };
 
 
