@@ -13,8 +13,8 @@ INCLUDE includes/vision.sa/vision-execution.cast
 # dialogue stuff ##############################################################
 INCLUDE includes/dialogue.sa/dialogue-base.cast
 INCLUDE includes/dialogue.sa/dialogue-george.cast
+#INCLUDE includes/dialogue.sa/dialogue-george-exe.cast
 INCLUDE includes/dialogue.sa/dialogue-george-exe-fake.cast
-
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
