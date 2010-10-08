@@ -28,8 +28,6 @@ import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import SpatialData.ViewPoint;
 import cast.CASTException;
-import cast.DoesNotExistOnWMException;
-import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
@@ -37,7 +35,6 @@ import cast.core.CASTUtils;
 import comadata.ComaRoom;
 
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
@@ -632,8 +629,6 @@ public class ActionInterfaceFrame extends JFrame {
 					.create(GroundedBelief.class, m_exeMan.getMemoryEntry(
 							roomBeliefAddress, GroundedBelief.class));
 
-			// TODO source-address or what now to get original ComaRoom from
-			// GroundedBelief?
 			IndependentFormulaDistributionsBelief<PerceptBelief> pb = BeliefUtils.getMostRecentPerceptBeliefAncestor(m_exeMan, gb);
 
 			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(m_exeMan,pb, ComaRoom.class);
