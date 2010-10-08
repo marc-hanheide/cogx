@@ -291,6 +291,11 @@ m_samplesize = 100;
     return d;
   }
 
+  double VisualObjectSearch::GetPlaceIdFromNodeId(int nodeId){
+    FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("navgraph.process"));
+    int d = agg->getPlaceFromNodeID(nodeId);
+    return d;
+  }
   int VisualObjectSearch::GetClosestNodeId(double x, double y, double a){
 
     NavData::NavGraphInterfacePrx agg(getIceServer<NavData::NavGraphInterface>("navgraph.process"));
@@ -633,7 +638,7 @@ m_samplesize = 100;
 	vp->tilt = nbv.tilt;
 	vp->label = targetObject;
 	vp->probability = nbv.totalprob;	
-	vp->closestPlaceId = GetClosestNodeId(vp->pose.x, vp->pose.y, vp->pose.z); 
+	vp->closestPlaceId = GetPlaceIdFromNodeId(GetClosestNodeId(vp->pose.x, vp->pose.y, vp->pose.z)); 
 	vp->areaId = GetAreaId(vp->pose.x, vp->pose.y, vp->pose.z); 
 	addToWorkingMemory(newDataID(),vp);      
       }
@@ -1524,41 +1529,6 @@ m_samplesize = 100;
       }
   
 
-      //void
-      //VisualObjectSearch::AskForDistribution(const vector<string> &objectLabels,
-      //    const vector<SpatialData::ObjectRelationPtr> &relations)
-      //{
-      //    FrontierInterface::WeightedPointCloudPtr queryCloud
-      //      = new FrontierInterface::WeightedPointCloud;
-      //
-      //    //write lgm to WM
-      //    FrontierInterface::ObjectPriorRequestPtr objreq =
-      //        new FrontierInterface::ObjectPriorRequest;
-      //    objreq->relationTypes = relations; // ON or IN or whatnot
-      //    objreq->objects = objectLabels;	// Names of objects, starting with the query object
-      //    objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
-      //    objreq->outCloud = queryCloud;	// Data struct to receive output
-      //    addToWorkingMemory(newDataID(), objreq);
-      //}
-
-      //void
-      //VisualObjectSearch::owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID) {
-      //  try {
-      //    FrontierInterface::WeightedPointCloudPtr cloud =
-      //      getMemoryEntry<FrontierInterface::WeightedPointCloud>(objID.address);
-      //
-      //    m_sampler.kernelDensityEstimation3D(m_map, cloud->center,
-      //	cloud->interval,
-      //	cloud->xExtent,
-      //	cloud->yExtent,
-      //	cloud->zExtent,
-      //	cloud->values);
-      //  }
-      //  catch (DoesNotExistOnWMException excp) {
-      //    log("Error!  WeightedPointCloud does not exist on WM!");
-      //    return;
-      //  }
-      //}
 
       VisualObjectSearch::ObjectPairRelation 
 	VisualObjectSearch::GetSecondaryObject(string name){

@@ -143,6 +143,7 @@ void newProcessViewPointCommand(const cast::cdl::WorkingMemoryChange &objID);
       void InitializeMaps(SpatialData::PlaceIDSeq placestosearch);
       void IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm);
       void ChangeMaps(std::string roomid);
+      double GetPlaceIdFromNodeId(int nodeId);
       // keyed with room id
       std::map<int, SpatialGridMap::GridMap<SpatialGridMap::GridMapData>*> m_maps;
       std::map<int, CureObstMap*> m_lgms;
