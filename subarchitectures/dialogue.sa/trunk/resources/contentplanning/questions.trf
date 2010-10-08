@@ -16,7 +16,27 @@
                     <Wh-Restr>(:specifier ^ what ^ 
                                <Scope>(#c:)). 
 
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-shape)
+-> 
+#c1 =:ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Cop-Restr>(#t:) ^ 
+                    <Subject>#t: ^ 
+                    <Cop-Scope>(#c:quality ^ shape) ^
+                    <Wh-Restr>(:specifier ^ what ^ 
+                               <Scope>(#c:)). 
                                
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-size)
+-> 
+#c1 =:ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Cop-Restr>(#t:) ^ 
+                    <Subject>#t: ^ 
+                    <Cop-Scope>(#c:quality ^ size) ^
+                    <Wh-Restr>(:specifier ^ what ^ 
+                               <Scope>(#c:)).                                                               
                                
 
 
