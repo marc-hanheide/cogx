@@ -23,7 +23,7 @@ public final class IceXMLSerializer {
 		
 	}
 
-	public static String toXMLString(Ice.Object o) {
+	public static String toXMLString(Object o) {
 		return xstream.toXML(o);
 	}
 

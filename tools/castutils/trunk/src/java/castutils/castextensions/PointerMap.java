@@ -220,7 +220,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 		}
 	}
 
-	public WorkingMemoryAddress waitFor(Object key) throws InterruptedException {
+	public WorkingMemoryAddress waitFor(WorkingMemoryAddress key) throws InterruptedException {
 		WorkingMemoryAddress result = null;
 		while (result == null) {
 			logger.debug("content " + this.toString());
@@ -230,7 +230,10 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 						+ CASTUtils.toString((WorkingMemoryAddress) key));
 
 				synchronized (addr) {
-					addr.wait();
+					long ms=System.currentTimeMillis();
+					addr.wait(11000);
+					if (System.currentTimeMillis()-ms>10000)
+						logger.warn("already for more than 10 seconds for a value for "+CASTUtils.toString(key));
 				}
 
 			}
