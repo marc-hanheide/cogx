@@ -1,4 +1,72 @@
+
 // QUESTIONS: Prompting humans for aid/information
+
+// Clarification: failure to process what property was said
+// Goal: @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t) ^ <Content>(c1:q-PROPERTY)), e.g. q-color, q-shape, q-size
+// Variants: "what PROPERTY is the TARGET"
+
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-color)
+-> 
+#c1 =:ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Cop-Restr>(#t:) ^ 
+                    <Subject>#t: ^ 
+                    <Cop-Scope>(#c:quality ^ color) ^
+                    <Wh-Restr>(:specifier ^ what ^ 
+                               <Scope>(#c:)). 
+
+                               
+                               
+
+
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-shape)
+-> 
+#c1 =:communication ^ say ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Actor>(#y1:person ^ you ^ 
+                            <Num>sg) ^ 
+                    <Event>:event ^ 
+                    <Modifier>(:m-time ^ just) ^ 
+                    <Subject>#y1: ^ 
+                    <Wh-Restr>(:specifier ^ what ^ 
+                               <Scope>(:quality ^ shape)). 
+
+
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-size)
+-> 
+#c1 =:communication ^ say ^ 
+                    <Mood>int ^ 
+                    <Tense>past ^ 
+                    <Actor>(#y1:person ^ you ^ 
+                            <Num>sg) ^ 
+                    <Event>:event ^ 
+                    <Modifier>(:m-time ^ just) ^ 
+                    <Subject>#y1: ^ 
+                    <Wh-Restr>(:specifier ^ what ^ 
+                               <Scope>(:quality ^ size)). 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // "I need some X"
 /*

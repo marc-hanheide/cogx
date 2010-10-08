@@ -7,9 +7,8 @@
 #c1 = :greeting ^ random(hello, hi).
 
 // if the speech act is a closing, say "goodbye" (TODO: make more abstract, randomise closing to more than just goodbye)
-:dvp ^ <SpeechAct>closing ^ <Content> (#c1:)
+:dvp ^ <SpeechAct>closing ^ <Content> (#c1:top)
 -> 
-// #c1 = :closing ^ bye.
 #c1 = :d-units ^ list ^ 
               <First>(b1:closing ^ bye) ^ 
               <Next>(b2:closing ^ bye).
