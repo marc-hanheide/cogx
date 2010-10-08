@@ -28,7 +28,6 @@ private:
     * Which camera to get images from
     */
    std::vector<int> m_camIds;
-   std::vector<Video::Image>m_images;
 
    /**
     * component ID of the video server to connect to
@@ -38,12 +37,21 @@ private:
     * our ICE proxy to the video server
     */
    Video::VideoInterfacePrx m_pVideoServer;
+
    /**
     * wether we are currently receiving images from the server
     */
    bool m_bReceiving;
 
+   int m_frameGrabCount;       // how many frames to save
+
 #ifdef FEAT_VISUALIZATION
+   IplImage* m_pDisplayCanvas; // Image for the DisplayServer
+   std::vector<unsigned char> m_DisplayBuffer; // For transfering data to the server;
+
+   void prepareCanvas(int width, int height);
+   void releaseCanvas();
+   
    class CVvDisplayClient: public cogx::display::CDisplayClient
    {
       CVideoGrabber* pViewer;
@@ -86,11 +94,18 @@ protected:
 public:
    CVideoGrabber()
    {
+      m_frameGrabCount = 0;
 #ifdef FEAT_VISUALIZATION
+      m_pDisplayCanvas = NULL;
       m_display.setClientData(this);
 #endif
    }
-   virtual ~CVideoGrabber() {}
+   virtual ~CVideoGrabber()
+   {
+#ifdef FEAT_VISUALIZATION
+      releaseCanvas();
+#endif
+   }
    /**
     * The callback function for images pushed by the image server.
     * To be overwritten by derived classes.
@@ -98,7 +113,7 @@ public:
    virtual void receiveImages(const std::vector<Video::Image>& images);
 
    std::vector<std::string> getDeviceNames();
-   void saveImages();
+   void saveImages(const std::vector<Video::Image>& images);
 };
 
 } // namespace
