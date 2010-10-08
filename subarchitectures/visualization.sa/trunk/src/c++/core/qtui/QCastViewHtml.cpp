@@ -17,6 +17,10 @@
 #include "html/formcap.hpp"
 #include <QWebFrame>
 #include <QFile>
+#include <QAction>
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QMessageBox>
 
 #ifdef DEBUG_TRACE
 // #undef DEBUG_TRACE
@@ -63,6 +67,18 @@ QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
       connect(this, SIGNAL(loadFinished(bool)),
             this, SLOT(finishLoading(bool)));
    }
+
+   QAction* actFindText = new QAction(this);
+   actFindText->setShortcut(QKeySequence(tr("Ctrl+F", "Edit|Find on page...")));
+   actFindText->setText(QKeySequence(tr("Edit|Find on page...")));
+   connect(actFindText, SIGNAL(triggered()), this, SLOT(onFindOnPage()));
+   addAction(actFindText);
+
+   QAction* actFindAgain = new QAction(this);
+   actFindAgain->setShortcut(QKeySequence(tr("Ctrl+G", "Edit|Find agian on page...")));
+   actFindAgain->setText(QKeySequence(tr("Edit|Find again on page...")));
+   connect(actFindAgain, SIGNAL(triggered()), this, SLOT(onFindAgainOnPage()));
+   addAction(actFindAgain);
 }
 
 QCastViewHtml::~QCastViewHtml()
@@ -117,6 +133,37 @@ void QCastViewHtml::finishLoading(bool)
          QString js = QString("CogxJsFillForm('#%1');").arg(QString::fromStdString(pForm->htmlid()));
          pFrame->evaluateJavaScript(js);
       }
+   }
+}
+
+void QCastViewHtml::onFindOnPage()
+{
+   QWebPage* pPage = page();
+   if (pPage) {
+      bool ok;
+      QString text = QInputDialog::getText(
+            this, tr("Find - CAST Viewer"),
+            tr("Find text on page:"), QLineEdit::Normal,
+            m_TextToFind, &ok);
+   
+      if (ok) {
+         m_TextToFind = text;
+         onFindAgainOnPage();
+      }
+   }
+}
+
+void QCastViewHtml::onFindAgainOnPage()
+{
+   QWebPage* pPage = page();
+   if (pPage) {
+      if (m_TextToFind.length() < 1) {
+         QMessageBox msgBox;
+         msgBox.setText("The search string is empty. Use Ctrl-F to set it.");
+         msgBox.exec();
+         return;
+      }
+      pPage->findText(m_TextToFind);
    }
 }
 
