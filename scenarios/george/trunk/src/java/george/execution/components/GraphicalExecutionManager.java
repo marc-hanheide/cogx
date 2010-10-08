@@ -18,6 +18,7 @@ import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.components.AbstractExecutionManager;
 import execution.slice.actions.AskForColour;
 import execution.slice.actions.AskForIdentity;
+import execution.slice.actions.AskForObjectWithFeatureValue;
 import execution.slice.actions.AskForShape;
 import execution.slice.actions.AskPolarColour;
 import execution.slice.actions.AskPolarIdentity;
@@ -265,6 +266,14 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 			ActionMonitor _monitor) throws CASTException {
 		AskPolarIdentity act = newActionInstance(AskPolarIdentity.class);
 		act.beliefAddress = _beliefID;
+		act.value = _value;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress askForObject(String _value,
+			ActionMonitor _monitor) throws CASTException {
+		AskForObjectWithFeatureValue act = newActionInstance(AskForObjectWithFeatureValue.class);
 		act.value = _value;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;

@@ -91,6 +91,8 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_askPolarShapeAction;
 	private JRadioButton m_askPolarIdentityAction;
 
+	private JRadioButton m_askForObjectAction;
+
 	private static final Class<?>[] FEATURE_VALUE_TYPES = {
 			ElementaryFormula.class, IntegerFormula.class, FloatFormula.class,
 			BooleanFormula.class };
@@ -215,6 +217,9 @@ public class ActionInterfaceFrame extends JFrame {
 			m_askPolarShapeAction = new JRadioButton("ask polar shape");
 			m_askPolarIdentityAction = new JRadioButton("ask polar identity");
 
+			m_askForObjectAction = new JRadioButton(
+					"hey mister, got a BLANK object?");
+
 			ButtonGroup actionGroup = new ButtonGroup();
 			actionGroup.add(m_learnColourAction);
 			actionGroup.add(m_learnShapeAction);
@@ -225,6 +230,7 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_askPolarColourAction);
 			actionGroup.add(m_askPolarShapeAction);
 			actionGroup.add(m_askPolarIdentityAction);
+			actionGroup.add(m_askForObjectAction);
 
 			m_askForShapeAction.setSelected(true);
 
@@ -239,6 +245,8 @@ public class ActionInterfaceFrame extends JFrame {
 			m_beliefsActionPanel.add(m_askPolarColourAction, null);
 			m_beliefsActionPanel.add(m_askPolarShapeAction, null);
 			m_beliefsActionPanel.add(m_askPolarIdentityAction, null);
+
+			m_beliefsActionPanel.add(m_askForObjectAction);
 		}
 		return m_beliefsActionPanel;
 	}
@@ -385,6 +393,9 @@ public class ActionInterfaceFrame extends JFrame {
 				askPolarShape();
 			} else if (m_askPolarIdentityAction.isSelected()) {
 				askPolarIdentity();
+
+			} else if (m_askForObjectAction.isSelected()) {
+				askForObject();
 			}
 
 		} else {
@@ -494,6 +505,12 @@ public class ActionInterfaceFrame extends JFrame {
 					getFeatureValue(beliefID, "identity", "asked for"),
 					new MonitorPanel());
 		}
+	}
+
+	private void askForObject() throws CASTException {
+		m_exeMan.askForObject((String) JOptionPane.showInputDialog(this,
+				"What do you want your object to look like?"),
+				new MonitorPanel());
 	}
 
 	private String getFeatureValue(String _beliefID, String _concept, String _op) {
