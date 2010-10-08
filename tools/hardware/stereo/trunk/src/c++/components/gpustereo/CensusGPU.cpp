@@ -2,7 +2,7 @@
 
 
 
-CensusGPU::CensusGPU(int _disp_max) {
+CensusGPU::CensusGPU() {
 	iWidth = 0;
 	iHeight = 0;
 	async = false;
@@ -10,7 +10,7 @@ CensusGPU::CensusGPU(int _disp_max) {
 	asyncImgMatchNr = 0;
 
 	disp_min = 0;
-	disp_max = _disp_max;
+	disp_max = 32;  // some default
 	disp_step = 1;
 	sparse = true;
 	blockSize = 5;

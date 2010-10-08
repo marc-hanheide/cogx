@@ -72,7 +72,6 @@ StereoServer::StereoServer()
   census = 0;
   // normally it's a good idea to do median filering on the disparity image
   medianSize = 5;
-  maxDisp = 64;
 #endif
   doDisplay = false;
   logImages = false;
@@ -134,13 +133,9 @@ void StereoServer::configure(const map<string,string> & _config)
   if((it = _config.find("--maxdisp")) != _config.end())
   {
     istringstream str(it->second);
-#ifdef HAVE_GPU_STEREO
-    str >> maxDisp;
-#else
     int disp;
     while(str >> disp)
       maxDisps.push_back(disp);
-#endif
   }
 
 #ifdef HAVE_GPU_STEREO
@@ -223,7 +218,7 @@ void StereoServer::configure(const map<string,string> & _config)
 
 #ifdef HAVE_GPU_STEREO
   // allocate the actual stereo matcher with given max disparity
-  census = new CensusGPU(maxDisp);
+  census = new CensusGPU();
 #endif
 
   setupMyIceCommunication();
@@ -394,6 +389,9 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
   double t2 = gethrtime_d();
 
 #ifdef HAVE_GPU_STEREO
+  int res = findClosestResolution(imgSet.disparityImg->width);
+  census->setOptions(0,               // min disp
+                     maxDisps[res]);  // max disp
   census->setImages(imgSet.rectGreyImg[LEFT], imgSet.rectGreyImg[RIGHT]);
   census->match();
   // in case we are interested how blazingly fast the matching is :)
@@ -455,27 +453,6 @@ void StereoServer::receiveImages(const vector<Video::Image>& images)
 
 void StereoServer::runComponent()
 {
-/*#ifdef HAVE_GPU_STEREO
-  // allocate the actual stereo matcher with given max disparity
-  census = new CensusGPU(maxDisp);
-#endif
-
-  // NOTE: stupid polling runloop is still necessary
-  // push interface does not work for stereo server, probably some threading
-  // issue with cuda or whatever
-  vector<Video::Image> images;
-  while(isRunning())
-  {
-    // HACK: we should actually sent the list of cam ids and not just assume
-    // that the video server has precisely two cameras in the right order
-    videoServer->getScaledImages(stereoSizes[0].width, stereoSizes[0].height, images);
-    receiveImages(images);
-    sleepComponent(100);
-  }
-
-#ifdef HAVE_GPU_STEREO
-  delete census;
-#endif*/
 }
 
 /*void StereoServer::redraw3D(vector<VisionData::SurfacePoint> &points)
