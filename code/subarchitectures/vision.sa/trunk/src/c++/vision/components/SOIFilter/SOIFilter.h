@@ -84,6 +84,7 @@ private:
   Video::Image m_RightImage;
   int m_idLeftImage;
   int m_idRightImage;
+  bool m_bAutoSnapshot;
   
   /**
    * status of SOI persistency
