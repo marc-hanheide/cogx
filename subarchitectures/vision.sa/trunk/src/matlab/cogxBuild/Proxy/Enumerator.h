@@ -14,7 +14,7 @@
 #include <string>
 #include <map>
 
-namespace cogx
+namespace matlab
 {
 
 typedef std::vector<std::string> TStringVector;

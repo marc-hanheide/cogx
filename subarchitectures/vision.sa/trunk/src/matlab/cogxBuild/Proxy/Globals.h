@@ -8,7 +8,7 @@
 
 namespace matlab {
 
-extern cogx::CTypeEnumerator Enumerator;
+extern CTypeEnumerator Enumerator;
 extern std::map<std::string, int> labelConceptMap; // name -> 1=color, 2=shape
 extern std::string ClfStartConfig;
 extern void CheckInit();

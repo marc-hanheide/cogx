@@ -8,6 +8,10 @@ using namespace std;
 
 namespace matlab {
 
+CTypeEnumerator Enumerator;
+std::map<std::string, int> labelConceptMap; // name -> 1=color, 2=shape
+std::string ClfStartConfig;
+
 class CInitializer
 {
 public:

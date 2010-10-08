@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace cogx {
+namespace matlab {
 
 //################################################################# 
 CTypeEnumerator::CTypeEnumerator(bool bAllowDupNames)
