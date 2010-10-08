@@ -68,6 +68,7 @@ maybe_add_hypo(Nom, [], question).
 
 %-------------------------------------------------------------------------
 
+% XXX HACK XXX
 generate : event : utter(S, H, Int) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
@@ -79,7 +80,28 @@ generate : event : utter(S, H, Int) <-
 	i : rel_Target(Nom, TargetNom) / -1.0,
 		generate : this(TargetNom),
 	i : rel_Content(Nom, ContentNom) / -1.0,
-		i : sort(ContentNom, 'q-color') / -1.0,
+		i : sort(ContentNom, 'q-size') / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+
+% XXX HACK XXX
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(PropNom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['possession' | T])),
+	i : feat_SpeechAct(Nom, assertion) / -1.0,
+	i : feat_Relation(Nom, answer) / -1.0,
+	i : rel_Content(Nom, ContentNom) / -1.0,
+		i : sort(ContentNom, 'ascription') / -1.0,
+		i : rel_Target(ContentNom, TargetNom) / -1.0,
+			generate : it(TargetNom),
+		i : rel_Color(ContentNom, PropNom) / -1.0,
+			i : sort(PropNom, quality) / -1.0,
+			i : prop(PropNom, blue) / -1.0,
 	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
@@ -87,12 +109,19 @@ generate : event : utter(S, H, Int) <-
 % CAREFUL: "box" is a "thing"
 
 generate : this(Nom) <-
-%	i : sort(Nom, entity) / -1.0,
-%	i : prop(Nom, context) / -1.0,
-	i : sort(Nom, thing) / -1.0,
-	i : prop(Nom, box) / -1.0,
-	i : feat_Salient(Nom, true) / -1.0.
+	i : sort(Nom, entity) / -1.0,
+	i : prop(Nom, context) / -1.0,
+%	i : sort(Nom, thing) / -1.0,
+%	i : prop(Nom, box) / -1.0,
+	i : feat_Salient(Nom, true) / -1.0,
+	i : feat_Proximity(Nom, proximal) / -1.0.  % when default, "it" doesn't work
 %	i : feat_InfoStatus(Nom, familiar) / -1.0.
+
+generate : it(Nom) <-
+	i : sort(Nom, entity) / -1.0,
+	i : prop(Nom, context) / -1.0,
+	i : feat_Salient(Nom, true) / -1.0,
+	i : feat_InfoStatus(Nom, familiar) / -1.0.
 
 %-------------------------------------------------------------------------
 
