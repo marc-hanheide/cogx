@@ -29,7 +29,7 @@
                 <Tense>pres ^ 
                 <Actor>(#i1:person ^ I ^ 
                         <Num>sg) ^ 
-                <Modifier>(#n1:m-time-point ^ now) ^ 
+                <Polarity>neg ^
                 <Patient>(#c:entity ^ #value ^ 
                           <Delimitation>unique ^ 
                           <Num>sg ^ 
@@ -41,37 +41,8 @@
 // Variants: "I do not know" (1), "I do not know that" (2), "sorry I do not know that" (3)
 
 
-// "I do not know" (reject)
-:dvp ^ <SpeechAct>reject ^ <AcknoModality>cognition ^ !<Target> ^ <Content> (#c1:top),
-random(1,2,3) ^ 1
-->
-#c1 = :cognition ^ know ^ 
-				<Mood>ind ^ 
-                <Tense>pres ^ 
-                <Polarity>neg ^ 
-                <Actor>(#i1:person ^ I ^ 
-                        <Num>sg) ^ 
-                <Subject>#i1:.
-
- // "I do not know that" (reject)
-:dvp ^ <SpeechAct>reject ^ <AcknoModality>cognition ^ !<Target> ^ <Content> (#c1:top),
-random(1,2,3) ^ 2
-->              
-#c1 = :cognition ^ know ^ 
-            <Mood>ind ^ 
-            <Polarity>neg ^ 
-            <Tense>pres ^ 
-            <Actor>(#i1:person ^ I ^ 
-                    <Num>sg) ^ 
-            <Event>(#c1:event ^ context ^ 
-                    <Delimitation>unique ^ 
-                    <Proximity>distal ^ 
-                    <Quantification>specific) ^ 
-            <Subject>#i1:.
-
 // "Sorry I do not know that" (reject)
-:dvp ^ <SpeechAct>reject ^ <AcknoModality>cognition ^ !<Target> ^ <Content> (#c1:top),
-random(1,2,3) ^ 3            
+:dvp ^ <SpeechAct>reject ^ <AcknoModality>cognition ^ !<Target> ^ <Content> (#c1:top)         
 -> 
 #c1 = :d-units ^ list ^ 
         <First>(#s1:q-attitude ^ sorry) ^ 
@@ -84,7 +55,7 @@ random(1,2,3) ^ 3
                        <Delimitation>unique ^ 
                        <Proximity>distal ^ 
                        <Quantification>specific) ^ 
-               <Modifier>(#n1:m-time-point ^ now) ^ 
+               <Polarity>neg  ^
                <Subject>#i1:).
 
             

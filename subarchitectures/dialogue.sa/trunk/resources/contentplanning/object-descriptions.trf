@@ -83,15 +83,14 @@
 -> 
 # ! <Salient>.
 
+//==============================================
+//PRONOMINALIZATION, DEICTIC
+//An object gets pronominalized if is both familiar and salient, 
+//AND WE ARE DEALING WITH AN ASCRIPTION. 
+//Both Salient and InfoStatus features are deleted, and the object proposition is replaced.
+//An object becomes a deictic if it is only Salient. 
 
-// ==============================================
-// PRONOMINALIZATION, DEICTIC
-// An object gets pronominalized if is both familiar and salient, 
-// AND WE ARE DEALING WITH AN ASCRIPTION. 
-// Both Salient and InfoStatus features are deleted, and the object proposition is replaced.
-// An object becomes a deictic if it is only Salient. 
-
-(:entity | :thing) ^ <InfoStatus>familiar ^ <Salient>true ^ !<Num>, 
+:entity ^ context ^ <InfoStatus>familiar ^ <Salient>true ^ !<Num>, 
 ##ascription ^ true
 ->
 # ^ it,
@@ -113,17 +112,12 @@
 # ^ context ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific,
 # !<Salient>.
 
-:entity ^ context ^ !<Proximity>
--> 
-# ^ <Proximity>proximal.
-
-
 
 // ==============================================
 // NUMBER
 // The number for an entity is as specified, else it defaults to singular. 
 
-(:entity | :thing) ^ !<Num>
+(:entity | :thing) ^ !<Num> ^ !<InfoStatus>
 ->
 # ^ <Num>sg.
 
