@@ -12,7 +12,7 @@ import castutils.castextensions.IceXMLSerializer;
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class ObjectImplInfo implements Plugin {
+public class DefaultXMLInfo implements Plugin {
 
 	/*
 	 * (non-Javadoc)
