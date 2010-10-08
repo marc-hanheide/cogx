@@ -26,4 +26,5 @@ cogxVisualLearner_recognise
 cogxVisualLearner_update
 cogxVisualLearner_unlearn
 cogxVisualLearner_introspect
+cogxAffordanceLearner_getFeatures
 getGlobalArray
