@@ -114,6 +114,7 @@ void ComaRoomUpdater::runComponent()
 			// Update the coma rooms
 			for (map<int, cdl::WorkingMemoryAddress>::iterator it=rooms.begin(); it!=rooms.end(); it++)
 			{
+				debug("Updating ComaRoom ID:%d with room category information ...", it->first);
 				try
 				{
 					lockEntry(it->second, cdl::LOCKEDODR);
@@ -141,6 +142,8 @@ void ComaRoomUpdater::runComponent()
 					// Update the coma room
 					overwriteWorkingMemory(it->second, comaRoomPtr);
 					unlockEntry(it->second);
+
+					debug("ComaRoom ID:%d updated!", it->first);
 				}
 				catch(DoesNotExistOnWMException)
 				{
