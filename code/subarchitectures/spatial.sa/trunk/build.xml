@@ -73,6 +73,13 @@
 	<!-- =================================================================== -->
 	<target name="clean">
 		<delete file="${src.dir}/.depend" />
+		<delete dir="${src.dir}/SpatialData" />
+		<delete dir="${src.dir}/FrontierInterface" />
+		<delete dir="${src.dir}/NavData" />
+		<delete dir="${src.dir}/SpatialProbabilities" />
+		<delete dir="${src.dir}/SpatialProperties" />
+
+
 	</target>
 
 
