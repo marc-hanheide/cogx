@@ -163,7 +163,7 @@ void QCastViewHtml::onFindAgainOnPage()
          msgBox.exec();
          return;
       }
-      pPage->findText(m_TextToFind);
+      bool found = pPage->findText(m_TextToFind, QWebPage::FindWrapsAroundDocument);
    }
 }
 
