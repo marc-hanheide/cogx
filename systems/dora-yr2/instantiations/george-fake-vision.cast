@@ -24,7 +24,7 @@ INCLUDE includes/planner.sa/viz-plan.cast
 INCLUDE includes/motivation.sa/motivation.cast
 INCLUDE includes/motivation.sa/motivation-goals-george.cast
 
-JAVA MG shared.tracker eu.cogx.sharedtracker.george.GeorgeSharedBeliefTracker --write-to-sa binder
+JAVA MG shared.tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
 
 JAVA MG exe-mediator george.execution.components.GeorgeExecutionMediator
 
