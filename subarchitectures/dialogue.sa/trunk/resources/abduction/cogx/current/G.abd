@@ -37,6 +37,8 @@ generate : event : utter(S, H, Int) <-
 
 %-------------------------------------------------------------------------
 
+% XXX INCOMPLETE XXX
+% object description missing
 generate : event : utter(S, H, Int) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
@@ -69,6 +71,7 @@ maybe_add_hypo(Nom, [], question).
 %-------------------------------------------------------------------------
 
 % XXX HACK XXX
+% find me a box -> what size is this
 generate : event : utter(S, H, Int) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
@@ -86,6 +89,7 @@ generate : event : utter(S, H, Int) <-
 %-------------------------------------------------------------------------
 
 % XXX HACK XXX
+% find me a box -> it is blue
 generate : event : utter(S, H, Int) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
@@ -102,6 +106,29 @@ generate : event : utter(S, H, Int) <-
 		i : rel_Color(ContentNom, PropNom) / -1.0,
 			i : sort(PropNom, quality) / -1.0,
 			i : prop(PropNom, blue) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+
+% XXX HACK XXX
+% go left -> please show me something red
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+%	dummy_nom2(ContentNom),
+%	dummy_nom3(TargetNom),
+%	dummy_nom4(PropNom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['motion' | T])),
+%	i : feat_SpeechAct(Nom, assertion) / -1.0,
+%	i : feat_Relation(Nom, answer) / -1.0,
+%	i : rel_Content(Nom, ContentNom) / -1.0,
+%		i : sort(ContentNom, 'ascription') / -1.0,
+%		i : rel_Target(ContentNom, TargetNom) / -1.0,
+%			generate : it(TargetNom),
+%		i : rel_Color(ContentNom, PropNom) / -1.0,
+%			i : sort(PropNom, quality) / -1.0,
+%			i : prop(PropNom, blue) / -1.0,
+	i : feat_CannedText(Nom, todo_please_show_me_something_red) / -1.0,
 	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
@@ -127,6 +154,8 @@ generate : the_box(Nom) <-
 	i : feat_InfoStatus(Nom, familiar) / -1.0,
 	i : feat_Salient(Nom, true) / -1.0.
 
+%-------------------------------------------------------------------------
+% ENGAGEMENT
 %-------------------------------------------------------------------------
 
 generate : event : utter(S, H, Int) <-
