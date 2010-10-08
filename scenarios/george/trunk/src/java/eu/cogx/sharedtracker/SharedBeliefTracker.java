@@ -1,7 +1,7 @@
 /**
  * @author Marc Hanheide (marc@hanheide.de)
  */
-package eu.cogx.sharedtracker.george;
+package eu.cogx.sharedtracker;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +22,7 @@ import eu.cogx.percepttracker.WMTracker;
  * @author Nick Hawes, but copied from Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class GeorgeSharedBeliefTracker extends ManagedComponent {
+public class SharedBeliefTracker extends ManagedComponent {
 
 	private static final String VISUALOBJECTTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
