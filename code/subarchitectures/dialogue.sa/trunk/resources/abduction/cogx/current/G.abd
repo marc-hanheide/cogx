@@ -42,7 +42,7 @@ generate : event : utter(S, H, Int) <-
 	dummy_nom2(ContentNom),
 	dummy_nom3(TargetNom),
 	i : int : agent(Int, [S]),
-	i : int : post(Int, state(['question-answered', agent(H), about(X), feature(Feat)|T])),
+	i : int : post(Int, state(['question-answered', agent(H), about(X), feature(Feat) | T])),
 	i : feat_SpeechAct(Nom, clarification) / -1.0,
 	i : feat_Modality(Nom, vision) / -1.0,
 	i : rel_Target(Nom, TargetNom) / -1.0,
@@ -50,6 +50,7 @@ generate : event : utter(S, H, Int) <-
 	i : rel_Content(Nom, ContentNom) / -1.0,
 		feat_to_sort(Feat, FeatSort),
 		i : sort(ContentNom, FeatSort) / -1.0,
+		maybe_add_hypo(ContentNom, T),
 	event : produce(r, Nom) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -58,13 +59,36 @@ feat_to_sort(color, 'q-color').
 feat_to_sort(shape, 'q-shape').
 feat_to_sort(size, 'q-size').
 
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+maybe_add_hypo(Nom, [hypo(Hypo)|T]) <-
+	i : prop(Nom, Hypo) / -1.0.
+
+maybe_add_hypo(Nom, []).
+
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['found' | T])),
+	i : feat_SpeechAct(Nom, clarification) / -1.0,
+	i : feat_Modality(Nom, vision) / -1.0,
+	i : rel_Target(Nom, TargetNom) / -1.0,
+		generate : this(TargetNom),
+	i : rel_Content(Nom, ContentNom) / -1.0,
+		i : sort(ContentNom, 'q-color') / -1.0,
+	event : produce(r, Nom) / -1.0.
+
 %-------------------------------------------------------------------------
 
 generate : this(Nom) <-
 	i : sort(Nom, entity) / -1.0,
-	i : prop(Nom, object) / -1.0,
-	i : feat_Salient(Nom, true) / -1.0,
-	i : feat_InfoStatus(Nom, familiar) / -1.0.
+	i : prop(Nom, context) / -1.0,
+	i : feat_Salient(Nom, true) / -1.0.
+%	i : feat_InfoStatus(Nom, familiar) / -1.0.
 
 %-------------------------------------------------------------------------
 
