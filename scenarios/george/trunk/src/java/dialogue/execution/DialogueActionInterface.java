@@ -191,7 +191,7 @@ public class DialogueActionInterface extends ManagedComponent {
 						WMPointer.create(sharedBeliefAddress).get()));
 				content.preconditions = preconditions;
 
-				// postcondition
+				// postcondition								
 				ComplexFormula postconditions = new ComplexFormula(-1,
 						new ArrayList<dFormula>(4), BinaryOp.conj);
 				postconditions.forms.add(PropositionFormula.create(
@@ -202,8 +202,16 @@ public class DialogueActionInterface extends ManagedComponent {
 						WMPointer.create(groundedBeliefAddress).get()));
 				postconditions.forms.add(new ModalFormula(-1, "feature",
 						PropositionFormula.create(m_feature).get()));
-				content.postconditions = postconditions;
+				
+				ModalFormula state = new ModalFormula(-1, "state", postconditions);
+				
+				ComplexFormula states = new ComplexFormula(-1,
+						new ArrayList<dFormula>(1), BinaryOp.conj);
+				states.forms.add(state);
+				
+				content.postconditions = states;
 
+				
 				robotIntention.content = new ArrayList<IntentionalContent>(1);
 				robotIntention.content.add(content);
 
