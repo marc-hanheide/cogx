@@ -22,7 +22,7 @@ import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.perceptmediator.george.VisualObjectTransferFunction;
+import eu.cogx.perceptmediator.transferfunctions.VisualObjectTransferFunction;
 import execution.slice.TriBool;
 import execution.slice.actions.BackgroundModels;
 import execution.slice.actions.BeliefPlusStringAction;
