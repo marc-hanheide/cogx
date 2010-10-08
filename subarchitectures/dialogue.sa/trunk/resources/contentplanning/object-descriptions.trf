@@ -113,6 +113,12 @@
 # ^ context ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific,
 # !<Salient>.
 
+:entity ^ context ^ !<Proximity>
+-> 
+# ^ <Proximity>proximal.
+
+
+
 // ==============================================
 // NUMBER
 // The number for an entity is as specified, else it defaults to singular. 
