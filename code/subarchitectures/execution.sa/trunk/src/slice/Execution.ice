@@ -174,6 +174,10 @@ module execution {
 	string value;	
       };
 
+      class SingleStringAction extends Action {
+	string value;	
+      };
+
 
       class AskForColour extends SingleBeliefAction {
       };
@@ -203,6 +207,8 @@ module execution {
       class LearnIdentity extends BeliefPlusStringAction {
       };
 
+      class AskForObjectWithFeatureValue extends SingleStringAction {
+      };    
 
       /**
        * comsys action
