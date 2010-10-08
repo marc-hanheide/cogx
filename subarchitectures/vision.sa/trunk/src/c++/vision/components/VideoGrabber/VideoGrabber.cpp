@@ -262,7 +262,7 @@ void CVideoGrabber::CVvDisplayClient::handleEvent(const Visualization::TEvent &e
    }
    else if (event.type == Visualization::evButtonClick) {
       if (event.sourceId == IDCMD_GRAB) {
-         pViewer->saveImages();
+         pViewer->m_frameGrabCount++; // XXX: not thread safe
          setCounterValue(getCounterValue() + 1);
 
          std::map<std::string, std::string> fields;
@@ -299,6 +299,53 @@ bool CVideoGrabber::CVvDisplayClient::getFormData(const std::string& id,
    return false;
 }
 
+void CVideoGrabber::releaseCanvas()
+{
+   if (m_pDisplayCanvas) {
+      // HACK: Share data between IplImage and vector
+      m_pDisplayCanvas->imageData = NULL;
+      m_pDisplayCanvas->imageDataOrigin = NULL;
+      cvReleaseImage(&m_pDisplayCanvas);
+   }
+}
+
+void CVideoGrabber::prepareCanvas(int width, int height)
+{
+   if (m_pDisplayCanvas == NULL
+         || m_pDisplayCanvas->width != width || m_pDisplayCanvas->height != height)
+   {
+      releaseCanvas();
+      // HACK: Share data between IplImage and vector
+      m_pDisplayCanvas = cvCreateImageHeader(cvSize(width, height), IPL_DEPTH_8U, 3);
+      m_DisplayBuffer.resize(width * height * 3);
+      m_pDisplayCanvas->imageData = (char*) &(m_DisplayBuffer[0]);
+      m_pDisplayCanvas->imageDataOrigin = m_pDisplayCanvas->imageData;
+      m_pDisplayCanvas->widthStep = width * 3;
+      m_pDisplayCanvas->imageSize = m_pDisplayCanvas->widthStep * height;
+   }
+}
+
+IplImage* cloneVideoImage(const Video::Image &img)
+{
+   // HACK: Share data between IplImage and vector
+   IplImage* pImg = cvCreateImageHeader(cvSize(img.width, img.height), IPL_DEPTH_8U, 3);
+   pImg->imageData = (char*) &(img.data[0]);
+   pImg->imageDataOrigin = pImg->imageData;
+   pImg->widthStep = img.width * 3;
+   pImg->imageSize = pImg->widthStep * img.height;
+}
+
+void releaseClonedImage(IplImage** pImagePtr)
+{
+   if (!pImagePtr) return;
+   if (*pImagePtr) {
+      // HACK: Share data between IplImage and vector
+      (*pImagePtr)->imageData = NULL;
+      (*pImagePtr)->imageDataOrigin = NULL;
+      cvReleaseImage(pImagePtr);
+   }
+}
+
 #endif
 
 void CVideoGrabber::destroy()
@@ -307,9 +354,12 @@ void CVideoGrabber::destroy()
 
 void CVideoGrabber::receiveImages(const std::vector<Video::Image>& images)
 {
+   if (m_frameGrabCount > 0) {
+      saveImages(images);
+      m_frameGrabCount--; // XXX: not thread safe
+   }
 #ifdef FEAT_VISUALIZATION
    //m_display.setImage(IDOBJ_GRABBER, images[0]);
-   m_images = images;
    int w = 0, h = 0;
    double factor = 1.0;
    for (int i = 0; i < images.size(); i++) {
@@ -328,15 +378,18 @@ void CVideoGrabber::receiveImages(const std::vector<Video::Image>& images)
    cvInitFont(&fntPlain, CV_FONT_HERSHEY_PLAIN, 1.0, 1.0, 0, 1.5);
    std::vector<std::string> devnames = getDeviceNames();
    int vp = 0;
-   IplImage *pDisp;
-   pDisp = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
+   //pDisp = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
+   prepareCanvas(w, h);
+   IplImage *pDisp = m_pDisplayCanvas;
    for (int i = 0; i < images.size(); i++) {
-      IplImage *iplImage = convertImageToIpl(images[i]);
+      //IplImage *iplImage = convertImageToIpl(images[i]);
+      IplImage *iplImage = cloneVideoImage(images[i]);
       int wi = (int) (images[i].width * factor);
       int hi = (int) (images[i].height * factor);
       cvSetImageROI(pDisp, cvRect(0, vp, wi, vp+hi));
       cvResize(iplImage, pDisp);
-      cvReleaseImage(&iplImage);
+      //cvReleaseImage(&iplImage);
+      releaseClonedImage(&iplImage);
 
       std::string sMsg = _str_(i);
       if (i < devnames.size()) sMsg += ":" + devnames[i];
@@ -348,8 +401,9 @@ void CVideoGrabber::receiveImages(const std::vector<Video::Image>& images)
       cvResetImageROI(pDisp);
       vp += hi;
    }
-   m_display.setImage(IDOBJ_GRABBER, pDisp);
-   cvReleaseImage(&pDisp);
+   m_display.setImage(IDOBJ_GRABBER, w, h, 3, m_DisplayBuffer);
+   //m_display.setImage(IDOBJ_GRABBER, pDisp);
+   //cvReleaseImage(&pDisp);
 #else
    IplImage *iplImage = convertImageToIpl(images[0]);
    cvShowImage(getComponentID().c_str(), iplImage);
@@ -367,7 +421,7 @@ std::vector<std::string> CVideoGrabber::getDeviceNames()
    return devnames;
 }
 
-void CVideoGrabber::saveImages()
+void CVideoGrabber::saveImages(const std::vector<Video::Image>& images)
 {
    std::string dir = m_display.getDirectory();
    if (m_display.getCreateDirectory()) {
@@ -389,12 +443,12 @@ void CVideoGrabber::saveImages()
  
    // TODO: conversion to GS when saving;
    // TODO: compression parameters for jpeg and png
-   for (int i = 0; i < m_images.size(); i++) {
+   for (int i = 0; i < images.size(); i++) {
       std::string fullname = fname;
       _s_::replace(fullname, "%d", devnames[i]);
       fullname = dir + "/" + fullname;
       println("Saving image: %s", fullname.c_str());
-      IplImage *iplImage = convertImageToIpl(m_images[i]);
+      IplImage *iplImage = convertImageToIpl(images[i]);
       cvSaveImage(fullname.c_str(), iplImage);
       cvReleaseImage(&iplImage);
    }
