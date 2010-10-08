@@ -13,6 +13,7 @@ import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.core.CASTUtils;
 import castutils.castextensions.WMContentWaiter;
 import castutils.castextensions.WMView;
 import castutils.castextensions.WMContentWaiter.ContentMatchingFunction;
@@ -89,8 +90,8 @@ public abstract class LocalizedRelationTransferFunction<From extends Ice.ObjectI
 			WorkingMemoryAddress wmaFrom = getReferredBelief(getMatchingFunction(wmc.address.id));
 			result
 					.put("is-in", BoolFormula.create(true).getAsFormula());
-			result.put("val0", WMPointer.create(wmaFrom).getAsFormula());
-			result.put("val1", WMPointer.create(wmaPlace).getAsFormula());
+			result.put("val0", WMPointer.create(wmaFrom, CASTUtils.typeName(this.beliefClass)).getAsFormula());
+			result.put("val1", WMPointer.create(wmaPlace, CASTUtils.typeName(this.beliefClass)).getAsFormula());
 
 		} catch (CASTException e) {
 			component

@@ -13,6 +13,7 @@ import SpatialProperties.PlaceContainmentAgentProperty;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.IntFormula;
@@ -71,7 +72,7 @@ public class LocalizedAgentTransferFunction<To extends dBelief> extends
 					currentPlace));
 			log("  the corresponding PerceptBelief is " + placeWMA);
 			result.put(AGENT_ID, IntFormula.create((int) from.agentID).getAsFormula());
-			result.put(IS_IN, WMPointer.create(placeWMA).getAsFormula());
+			result.put(IS_IN, WMPointer.create(placeWMA, CASTUtils.typeName(this.beliefClass)).getAsFormula());
 		} catch (InterruptedException e) {
 			component.logException(e);
 		}

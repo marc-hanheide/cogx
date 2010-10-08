@@ -13,6 +13,7 @@ import SpatialProperties.PlaceContainmentAgentProperty;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.formulas.BoolFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
@@ -57,8 +58,8 @@ public class PlaceContainmentAgentTransferFunction extends
 		WorkingMemoryAddress wmaPlace = getReferredBelief(new PlaceMatchingFunction(
 				((IntegerValue) from.mapValue).value));
 
-		result.put("val0", WMPointer.create(wmaAgent).getAsFormula());
-		result.put("val1", WMPointer.create(wmaPlace).getAsFormula());
+		result.put("val0", WMPointer.create(wmaAgent, CASTUtils.typeName(this.beliefClass)).getAsFormula());
+		result.put("val1", WMPointer.create(wmaPlace, CASTUtils.typeName(this.beliefClass)).getAsFormula());
 		result.put("is-in", BoolFormula.create(true).getAsFormula());
 
 		return result;
