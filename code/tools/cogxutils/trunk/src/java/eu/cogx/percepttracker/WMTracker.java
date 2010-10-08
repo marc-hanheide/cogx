@@ -1,8 +1,12 @@
 package eu.cogx.percepttracker;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import cast.CASTException;
 import cast.SubarchitectureComponentException;
@@ -47,6 +51,9 @@ import eu.cogx.beliefs.slice.PerceptBelief;
  */
 public class WMTracker<From extends dBelief, To extends dBelief> extends
 		CASTHelper implements Runnable {
+
+	final Set<WorkingMemoryAddress> lockedAddresses = Collections
+			.synchronizedSet(new HashSet<WorkingMemoryAddress>());
 
 	/**
 	 * an interface to be implemented by classes that should serve as a
@@ -136,6 +143,20 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 				transferFunction, wm2wm, null);
 	}
 
+	private void lock(WorkingMemoryAddress wma) throws InterruptedException {
+
+		while (lockedAddresses.contains(wma)) {
+			lockedAddresses.wait();
+		}
+		lockedAddresses.add(wma);
+	}
+
+	private void unlock(WorkingMemoryAddress wma) throws InterruptedException {
+		lockedAddresses.remove(wma);
+		lockedAddresses.notifyAll();
+	}
+
+	
 	/**
 	 * create new synchronizer only for given memory operations
 	 * 
@@ -196,7 +217,9 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 
 	protected String createInSA = null;
 
-	protected boolean shouldPropagateDeletion=false;
+	protected boolean shouldPropagateDeletion = false;
+
+	private ExecutorService executor = Executors.newCachedThreadPool();
 
 	/**
 	 * create new synchronizer only for given memory operations
@@ -272,7 +295,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 						break;
 					}
 					case DELETE: {
-						
+
 						if (shouldPropagateDeletion) {
 							WorkingMemoryAddress adr = wm2wmMap.get(ev.address);
 							try {
@@ -280,7 +303,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 										WorkingMemoryPermissions.LOCKEDODR);
 								component.deleteFromWorkingMemory(adr);
 								log("deleted belief " + CASTUtils.toString(adr));
-							} catch(CASTException e) {
+							} catch (CASTException e) {
 								component.unlockEntry(adr);
 							}
 
@@ -338,62 +361,66 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 		if (!matcherFunction.canHandle(from))
 			return;
 		final WorkingMemoryAddress matchingWMA = bestMatch(ev, from);
-		// executor.submit(new Runnable() {
-		//
-		// @Override
-		// public void run() {
-		try {
-			if (matchingWMA == null) {
-				log("found no match for observation "
-						+ CASTUtils.toString(ev.address));
-				String id = component.newDataID();
+		executor.submit(new Runnable() {
 
-				WorkingMemoryAddress toWMA = new WorkingMemoryAddress(id,
-						createInSA);
-				log("creating new tracked belief with "
-						+ CASTUtils.toString(toWMA));
-
-				To to = matcherFunction.create(toWMA, ev, from);
-				if (to != null) {
-					log("have created new belief with type=" + to.type + " ("
-							+ toWMA.id + ")");
-					matcherFunction.update(ev, from, to);
-					manageHistory(ev, from, to);
-					log("have filled with values:" + to.type + " (" + toWMA.id
-							+ "), ready to write to WM now.");
-					component.addToWorkingMemory(toWMA, to);
-					log("written to WM, insert into map now:" + to.type + " ("
-							+ toWMA.id + ")");
-					wm2wmMap.put(ev.address, toWMA);
-				} else {
-					logger.warn("failed to create a corresponding belief for "
-							+ from.type);
-				}
-			} else {
+			@Override
+			public void run() {
 				try {
-					log("found match " + CASTUtils.toString(matchingWMA)
-							+ " for observation "
-							+ CASTUtils.toString(ev.address));
-					// make sure we have exclusive access
-					component.lockEntry(matchingWMA,
-							WorkingMemoryPermissions.LOCKEDODR);
-					To to = component.getMemoryEntry(matchingWMA, toType);
-					log("updating belief " + CASTUtils.toString(matchingWMA));
-					matcherFunction.update(ev, from, to);
-					manageHistory(ev, from, to);
-					component.overwriteWorkingMemory(matchingWMA, to);
-					wm2wmMap.put(ev.address, matchingWMA);
-				} finally {
-					component.unlockEntry(matchingWMA);
+					if (matchingWMA == null) {
+						log("found no match for observation "
+								+ CASTUtils.toString(ev.address));
+						String id = component.newDataID();
+
+						WorkingMemoryAddress toWMA = new WorkingMemoryAddress(
+								id, createInSA);
+						log("creating new tracked belief with "
+								+ CASTUtils.toString(toWMA));
+
+						To to = matcherFunction.create(toWMA, ev, from);
+						if (to != null) {
+							log("have created new belief with type=" + to.type
+									+ " (" + toWMA.id + ")");
+							matcherFunction.update(ev, from, to);
+							manageHistory(ev, from, to);
+							log("have filled with values:" + to.type + " ("
+									+ toWMA.id + "), ready to write to WM now.");
+							component.addToWorkingMemory(toWMA, to);
+							log("written to WM, insert into map now:" + to.type
+									+ " (" + toWMA.id + ")");
+							wm2wmMap.put(ev.address, toWMA);
+						} else {
+							logger
+									.warn("failed to create a corresponding belief for "
+											+ from.type);
+						}
+					} else {
+						try {
+							log("found match "
+									+ CASTUtils.toString(matchingWMA)
+									+ " for observation "
+									+ CASTUtils.toString(ev.address));
+							// make sure we have exclusive access
+							component.lockEntry(matchingWMA,
+									WorkingMemoryPermissions.LOCKEDODR);
+							To to = component.getMemoryEntry(matchingWMA,
+									toType);
+							log("updating belief "
+									+ CASTUtils.toString(matchingWMA));
+							matcherFunction.update(ev, from, to);
+							manageHistory(ev, from, to);
+							component.overwriteWorkingMemory(matchingWMA, to);
+							wm2wmMap.put(ev.address, matchingWMA);
+						} finally {
+							component.unlockEntry(matchingWMA);
+						}
+					}
+				} catch (IncompatibleAssignmentException e) {
+					logger.error("during update:", e);
+				} catch (CASTException e) {
+					logger.error("during update:", e);
 				}
 			}
-		} catch (IncompatibleAssignmentException e) {
-			logger.error("during update:", e);
-		} catch (CASTException e) {
-			logger.error("during update:", e);
-		}
-		// }
-		// });
+		});
 
 	}
 
@@ -417,30 +444,51 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 		if (!matcherFunction.canHandle(from))
 			return;
 
-		// executor.submit(new Runnable() {
-		//
-		// @Override
-		// public void run() {
-		try {
-			// make sure we have exclusive access
-			component.lockEntry(matchingWMA, WorkingMemoryPermissions.LOCKEDOD);
-			To to = component.getMemoryEntry(matchingWMA, toType);
-			matcherFunction.update(ev, from, to);
-			manageHistory(ev, from, to);
-			component.overwriteWorkingMemory(matchingWMA, to);
-		} catch (IncompatibleAssignmentException e) {
-			logger.error("during update:", e);
-		} catch (CASTException e) {
-			logger.error("during update:", e);
-		} finally {
-			try {
-				component.unlockEntry(matchingWMA);
-			} catch (CASTException e) {
-				logger.error("during unlock of " + matchingWMA, e);
+		executor.submit(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					// make sure we have exclusive access
+//					try {
+//						component.lockComponent();
+//						component.lockEntry(matchingWMA,
+//								WorkingMemoryPermissions.LOCKEDOD);
+//					} finally {
+//						component.unlockComponent();
+//					}
+					lock(matchingWMA);
+					To to = component.getMemoryEntry(matchingWMA, toType);
+					matcherFunction.update(ev, from, to);
+					manageHistory(ev, from, to);
+					try {
+//						component.lockComponent();
+						component.overwriteWorkingMemory(matchingWMA, to);
+					} finally {
+//						component.unlockComponent();
+						unlock(matchingWMA);
+					}
+				} catch (IncompatibleAssignmentException e) {
+					logger.error("during update:", e);
+				} catch (InterruptedException e) {
+					logger.error("during update:", e);
+				} catch (CASTException e) {
+					logger.error("during update:", e);
+//				} finally {
+//					try {
+//						try {
+//							component.lockComponent();
+//							component.unlockEntry(matchingWMA);
+//						} finally {
+//							component.unlockComponent();
+//						}
+//					} catch (CASTException e) {
+//						logger.error("during unlock of " + matchingWMA, e);
+//					}
+				}
 			}
-		}
+		});
 	}
-	// });
 
 	/**
 	 * @return the shouldPropagateDeletion
@@ -450,7 +498,8 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 	}
 
 	/**
-	 * @param shouldPropagateDeletion the shouldPropagateDeletion to set
+	 * @param shouldPropagateDeletion
+	 *            the shouldPropagateDeletion to set
 	 */
 	public void setShouldPropagateDeletion(boolean shouldPropagateDeletion) {
 		this.shouldPropagateDeletion = shouldPropagateDeletion;
