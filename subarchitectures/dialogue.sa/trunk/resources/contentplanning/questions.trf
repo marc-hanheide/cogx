@@ -69,9 +69,53 @@
                     <Cop-Scope>(#b:q-color ^ #c1value) ^ 
                     <Subject>#t:.                             
                                   
+                   
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-size ^ #c1value)
+ -> 
+#c1 = :ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(#c:entity ^ size ^ 
+                               <Delimitation>unique ^ 
+                               <Num>sg ^ 
+                               <Quantification>specific ^ 
+                               <Owner>(#t:)) ^ 
+                    <Cop-Scope>(#b:q-size ^ #c1value) ^ 
+                    <Subject>#c:.
+
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:entity ^ context ) ^ <Content>(#c1:q-size ^ #c1value)
+ -> 
+#c1 = :ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(#t:) ^ 
+                    <Cop-Scope>(#b:q-size ^ #c1value) ^ 
+                    <Subject>#t:.      
+
+
+
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-shape ^ #c1value)
+ -> 
+#c1 = :ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(#c:entity ^ shape ^ 
+                               <Delimitation>unique ^ 
+                               <Num>sg ^ 
+                               <Quantification>specific ^ 
+                               <Owner>(#t:)) ^ 
+                    <Cop-Scope>(#b:q-shape ^ #c1value) ^ 
+                    <Subject>#c:.
                                   
                                   
-                                  
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:entity ^ context ) ^ <Content>(#c1:q-shape ^ #c1value)
+ -> 
+#c1 = :ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(#t:) ^ 
+                    <Cop-Scope>(#b:q-shape ^ #c1value) ^ 
+                    <Subject>#t:.    
                                   
                                   
                                                               
