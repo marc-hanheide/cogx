@@ -14,6 +14,7 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
+import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import cast.interfaces.WorkingMemory;
 import castutils.castextensions.CASTHelper;
@@ -399,12 +400,14 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 	private void manageHistory(WorkingMemoryChange ev, From from, To to) {
 		if (!(to.hist instanceof CASTBeliefHistory)) {
 			to.hist = new CASTBeliefHistory(
-					new ArrayList<WorkingMemoryAddress>(),
-					new ArrayList<WorkingMemoryAddress>());
+					new ArrayList<WorkingMemoryPointer>(1),
+					new ArrayList<WorkingMemoryPointer>(1));
 		}
 		CASTBeliefHistory bh = (CASTBeliefHistory) to.hist;
-		if (!bh.ancestors.contains(ev.address))
-			bh.ancestors.add(ev.address);
+		WorkingMemoryPointer ancesterPointer = new WorkingMemoryPointer(ev.address,ev.type);
+		if (!bh.ancestors.contains(ancesterPointer)) {
+			bh.ancestors.add(ancesterPointer);
+		}
 	}
 
 	private void handleOverwriteObservation(final WorkingMemoryChange ev,

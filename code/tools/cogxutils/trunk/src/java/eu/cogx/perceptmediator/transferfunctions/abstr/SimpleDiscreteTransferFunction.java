@@ -3,9 +3,10 @@
  */
 package eu.cogx.perceptmediator.transferfunctions.abstr;
 
+import java.util.ArrayList;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 
@@ -13,17 +14,17 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import cast.interfaces.TimeServerPrx;
 import castutils.castextensions.CASTHelper;
 import castutils.castextensions.WMEntrySynchronizer.TransferFunction;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
-import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
-import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
+import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.PerceptBelief;
@@ -44,7 +45,6 @@ import eu.cogx.beliefs.slice.PerceptBelief;
 public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl, To extends dBelief>
 		extends CASTHelper implements TransferFunction<From, To> {
 
-	public static final String SOURCE_ADDR_ID = "source-addr";
 
 
 	public static String getBeliefTypeFromCastType(
@@ -129,11 +129,13 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		CASTTime starttime = p.getStartTime();
 		p.setTime(starttime, now());
 
+		addAncestors(wmc, from, p);
+		
 		IndependentFormulaDistributions features = p.getContent();
 		Map<String, Formula> mapping;
 		try {
 			mapping = getFeatureValueMapping(wmc, from);
-			addUniversalMappings(wmc, from, mapping);
+			
 
 			for (Entry<String, Formula> fvm : mapping.entrySet()) {
 				FormulaDistribution fd = FormulaDistribution.create();
@@ -149,18 +151,11 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		return true;
 	}
 
-	/**
-	 * Add things to the mapping which are used for all beliefs.
-	 * 
-	 * @param _from
-	 * @param _wmc
-	 * @param _mapping
-	 */
-	private void addUniversalMappings(WorkingMemoryChange _wmc, From _from,
-			Map<String, Formula> _mapping) {
-		//TODO make this work with the proper type
-		//_mapping.put(SOURCE_ADDR_ID, WMPointer.create(_wmc.address).getAsFormula());
-		_mapping.put(SOURCE_ADDR_ID, PropositionFormula.create(_wmc.address.id + " " + _wmc.address.subarchitecture).getAsFormula());
+	private void addAncestors(WorkingMemoryChange _wmc, From _from,
+			CASTIndependentFormulaDistributionsBelief<To> _p) {
+		CASTBeliefHistory hist = new CASTBeliefHistory(new ArrayList<WorkingMemoryPointer>(1), new ArrayList<WorkingMemoryPointer>(0));
+		hist.ancestors.add(new WorkingMemoryPointer(_wmc.address, _wmc.type));
+		_p.get().hist = hist;
 	}
 
 	/**

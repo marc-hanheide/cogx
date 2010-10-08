@@ -75,9 +75,6 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 		m_fromCls = _fromCls;
 		m_toCls = _toCls;
 
-		// always ignore the source-address!
-		ignoredKeys.add(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID);
-		ignoreForPointerPropagationSet.add(SimpleDiscreteTransferFunction.SOURCE_ADDR_ID);
 	}
 
 	public FormulaMatcher(List<String> types, PointerMap<?> map,
