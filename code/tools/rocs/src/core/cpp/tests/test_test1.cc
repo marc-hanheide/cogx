@@ -23,7 +23,7 @@
  * For more information see:
  * http://www.boost.org/doc/libs/1_44_0/libs/test/doc/html/utf/user-guide.html
  * \author Andrzej Pronobis
- * \file test1.cc
+ * \file test_test1.cc
  */
 
 // Boost
@@ -35,13 +35,13 @@
 BOOST_AUTO_TEST_CASE( case1 )
 {
 	BOOST_CHECK( 0 == 0 );
-	BOOST_REQUIRE(0 == 0);
+	BOOST_REQUIRE( 0 == 0 );
 }
 
 /*! Define second test case. */
 BOOST_AUTO_TEST_CASE( case2 )
 {
-	BOOST_CHECK( 0 == 1 );
-	BOOST_REQUIRE(0 == 1);
+	BOOST_CHECK( 1 == 1 );
+	BOOST_REQUIRE( 1 == 1 );
 }
 

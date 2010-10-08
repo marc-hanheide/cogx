@@ -5,6 +5,11 @@
 #ifndef FEATUREEXTRACTOR_H_
 #define FEATUREEXTRACTOR_H_
 
+// STD includes
+#include <string>
+using std::string;
+
+
 /*!
  * a pure virtual class
  */
@@ -21,6 +26,7 @@ public:
 	virtual void start() = 0;
 	virtual void end() = 0;
 	virtual void process(Img* frame) = 0;
+	virtual void process(string filename) = 0;
 };
 
 } // end namespace cv
