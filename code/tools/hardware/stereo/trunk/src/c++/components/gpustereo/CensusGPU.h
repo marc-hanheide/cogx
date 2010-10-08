@@ -38,7 +38,7 @@ private:
 		*d_disparityMap;
 
 public:
-	CensusGPU(int _disp_max = 50);
+	CensusGPU();
 	~CensusGPU();
 
 	//void SetImages(IplImage* _Left, IplImage* _Right, IplImage* _DM, IplImage *_GT = 0, IplImage *_EM = 0, float _bad_match_thresh = 0.0);
