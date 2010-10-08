@@ -32,7 +32,7 @@ import java.util.Iterator;
 /**
  * Class of weighted words
  * 
- * @author 	Pierre Lison (pierre.lison@dfki.de)
+ * @author 	Pierre Lison (plison@dfki.de)
  * @version	100608
  */
 

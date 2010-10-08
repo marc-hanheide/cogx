@@ -1,6 +1,6 @@
 
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -43,10 +43,9 @@ import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
  */
 public class DialogueManagerTest {
 
-
+	// logging and debugging
 	public static boolean LOGGING = true;
-	
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 	
 	// the configuration files
 	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/simplepolicy.txt";

@@ -1,6 +1,6 @@
 // =================================================================
 // Copyright (C) 2010 DFKI GmbH Talking Robots 
-// Pierre Lison (pierre.lison@dfki.de)
+// Pierre Lison (plison@dfki.de)
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License 
@@ -56,7 +56,7 @@ import cast.architecture.ChangeFilterFactory;
 /**
  * Component for context-sensitive adaptation of a language model for ASR
  * 
- * @author 	Pierre Lison (pierre.lison@dfki.de)
+ * @author 	Pierre Lison (plison@dfki.de)
  * @version	100608
  */
 

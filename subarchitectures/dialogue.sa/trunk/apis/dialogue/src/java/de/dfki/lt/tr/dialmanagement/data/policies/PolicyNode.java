@@ -1,6 +1,6 @@
 
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -21,112 +21,86 @@
 package de.dfki.lt.tr.dialmanagement.data.policies;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Vector;
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
 
 /**
- * An action node in a dialogue policy
+ * An node included in a dialogue policy.  Its is made of an identifier, 
+ * a collection of outgoing edge, and an associated policy action. It 
+ * can also be marked as being an initial or final node.
  * 
  * @author Pierre Lison (plison@dfki.de)
- * @version 14/06/2010
+ * @version 08/10/2010
  */
 public class PolicyNode {
 
-	
-
+	// logging and debugging
 	public static boolean LOGGING = true;
-
 	public static boolean DEBUG = true;
 	
 	// the unique identifier for the node
 	private String id;
-
-
-	// the collection of fully specified outgoing observation edges
+	
+	// the collection of outgoing edges
 	private Vector<PolicyEdge> outgoingEdges;
 
-	// the (dialogue) action encapsulated by the node
+	// the action encapsulated by the node
 	private PolicyAction action;
 
-	// is it an initial (starting) node
+	// is it an initial (starting) node or not
 	private boolean isInitial = false;
 
-	// is it a final node
+	// is it a final node or not
 	private boolean isFinal = false;
  
 	/**
-	 * Constructs a new action node, given an action
+	 * Constructs a new node, given a policy action
 	 * 
-	 * @param identifier the unique identifier for the node
-	 * @param action the dialogue action
+	 * @param id the unique identifier for the node
+	 * @param action the action
 	 * @throws DialogueException if the action is a null value
 	 */
-	public PolicyNode(String identifier, PolicyAction action) throws DialogueException {
-		id = identifier;
+	public PolicyNode(String id, PolicyAction action) {
+		this.id = id;
 		outgoingEdges = new Vector<PolicyEdge>();
-		if (action != null) {
-			this.action = action;
-		}
-		else {
-			throw new DialogueException("ERROR, action is a null value");
-		}
+		this.action = action;
 	}
 	
-	
-	public PolicyNode(String identifier) {
-		id = identifier;
-		outgoingEdges = new Vector<PolicyEdge>();
-		action = PolicyAction.createVoidAction();
+	/**
+	 * Constructs a new node given an identifier
+	 * 
+	 * @param id the unique identifier for the node
+	 */
+	public PolicyNode(String id) {
+		this(id, null);
 	}
 	
+	/**
+	 * Sets the policy action for the node
+	 * 
+	 * @param action the action
+	 */
 	public void setPolicyAction (PolicyAction action) {
 		this.action = action;
 	}
 	
+	/**
+	 * Returns the policy action for the node
+	 * @return the action
+	 */
 	public PolicyAction getPolicyAction () {
 		return action;
 	}
 	
-	
+
 	/**
-	 * Constructs a new action node, given an action and a set of incoming and 
-	 * outgoing observation edges
+	 * Adds a collection of outgoing edges to the node
 	 * 
-	 * @param identifier the unique identifier for the node
-	 * @param action the dialogue action
-	 * @param outgoingEdges the set of outgoing observation edges
-	 * @throws DialogueException if one of the parameters is a null value
-	 */
-	public PolicyNode(String identifier, PolicyAction action, Collection<PolicyEdge> outgoingEdges) throws DialogueException {
-
-		id = identifier;
-
-		if (action != null && outgoingEdges != null) {
-
-			this.outgoingEdges = new Vector<PolicyEdge>();
-
-			addOutgoingEdges(outgoingEdges);
-
-			this.action = action;
-		}
-		else {
-			throw new DialogueException("ERROR, action is a null value");
-		}
-	}
-
-
-	/**
-	 * Adds a collection of outgoing observation edges to the node
 	 * @param edges the collection of edges to add
-	 * @throws DialogueException if null value, or if one of the observation is already
-	 * used in the node
 	 */
-	public void addOutgoingEdges(Collection<PolicyEdge> edges) throws DialogueException {
+	public void addAllOutgoingEdges(Collection<PolicyEdge> edges) {
 		for (PolicyEdge edge : edges) {
 			addOutgoingEdge(edge);
 		}
@@ -136,23 +110,8 @@ public class PolicyNode {
 	 * Adds an outgoing edge to the node
 	 * 
 	 * @param edge the observation edge to add
-	 * @throws DialogueException if null value, or if the observation is already
-	 * used in the node
 	 */
-	public void addOutgoingEdge (PolicyEdge edge) throws DialogueException {
-		
-		if (edge==null) {
-			throw new DialogueException("ERROR, edge is a null value");
-		}
-		
-	/**	for (PolicyEdge existingEdge : outgoingEdges)  {
-			if (edge.getObservation().equals(existingEdge.getObservation()) && 
-					!existingEdge.getObservation().isUnderspecified() && 
-					!edge.getObservation().isUnderspecified()) {
-				throw new DialogueException("ERROR, observation " + edge.getObservation().toString() +  "already in outgoing edges");
-			}
-		}  */
-			
+	public void addOutgoingEdge (PolicyEdge edge) {
 		outgoingEdges.add(edge);
 	}
 
@@ -160,31 +119,24 @@ public class PolicyNode {
 
 
 	/**
-	 * Remove one outgoing edge to the node (if no outgoing edge corresponds to the observation,
-	 * leave as such)
+	 * Remove one outgoing edge to the node, if it exists
 	 * 
-	 * @param obs the observation
+	 * @param edge the edge to remove
 	 * @throws DialogueException if null value
 	 */
-	public void removeOutgoingEdge (PolicyEdge obs) throws DialogueException {
-
-		if (obs != null) {
-			outgoingEdges.remove(obs);
-		}
-		else {
-			throw new DialogueException("ERROR, obs is a null value");
-		}
+	public void removeOutgoingEdge (PolicyEdge edge) {
+			outgoingEdges.remove(edge);
 	}
 
 
 	/**
 	 * Sets node as being initial
-	 * 
 	 */
 	public void setAsInitialNode () {
 		isInitial = true;
 	}
 
+	
 	/**
 	 * Returns true if node is initial, false otherwise
 	 * @return is initial node
@@ -196,13 +148,12 @@ public class PolicyNode {
 
 	/**
 	 * Sets node as being final
-	 * 
-	 * @throws DialogueException if the node contains one or more outgoing edges
 	 */
 	public void setAsFinalNode () {
 		isFinal = true;
 	}
 
+	
 	/**
 	 * Returns true if node is final, false otherwise
 	 * @return is final node
@@ -211,36 +162,13 @@ public class PolicyNode {
 		return isFinal;
 	}
 
-
-
 	/**
-	 * True if observation contained in fully realised outgoing edges, false otherwise
+	 * Returns the set of edges matching the given observation
 	 * 
-	 * @param obs the observation
-	 * @return true if observation found, false otherwise
+	 * @param obs the observation to match
+	 * @return the collection of edges which match
 	 */
-	public boolean hasOutgoingObservation (Observation obs) {
-		
-		for (PolicyEdge edge: outgoingEdges) {
-			
-			if (obs.equals(edge.getObservation())) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-
-
-	/**
-	 * Returns the outgoing observation edge, identified by its observation.  If none found, throws
-	 * an exception
-	 * 
-	 * @param obs the observation
-	 * @return the outgoing observation edge
-	 * @throws DialogueException if no edge corresponds to the observation
-	 */
-	public Collection<PolicyEdge> getMatchingEdges (Observation obs) throws DialogueException {
+	public Collection<PolicyEdge> getMatchingEdges (Observation obs) {
 	
 		Vector<PolicyEdge> edges = new Vector<PolicyEdge>();
 		for (PolicyEdge edge: outgoingEdges) {
@@ -268,7 +196,10 @@ public class PolicyNode {
 	 * @return the action
 	 */
 	public PolicyAction getAction() {
-		return action;
+		if (action!=null) {
+			return action;
+		}
+		else return PolicyAction.createVoidAction();
 	}
 
 	/**
@@ -289,7 +220,7 @@ public class PolicyNode {
 	 */
 	private static void log (String s) {
 		if (LOGGING) {
-			System.out.println("[dialmanager] " + s);
+			System.out.println("[policynode] " + s);
 		}
 	}
 
@@ -299,7 +230,7 @@ public class PolicyNode {
 	 */
 	private static void debug (String s) {
 		if (DEBUG) {
-			System.out.println("[dialmanager] " + s);
+			System.out.println("[policynode] " + s);
 		}
 	}
 }

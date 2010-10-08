@@ -1,5 +1,5 @@
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -47,14 +47,21 @@ import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
  * the manager remains on the same position and outputs a void action.
  * 
  * The current dialogue manager features:
+ * - the ability to provide policies with both text or XML files
  * - the ability to handle intentions or events encoding arbitrarily complex formulae;
  * - the ability to process intention or events with multiple alternatives;
  * - the ability of partially or fully underspecifying observations;
  * - the ability of passing arguments from observations to actions;
  * - the ability to provide lower and higher bounds on the observation probabilities.
  * 
+ * TODO: complete documentation for the package
+ * TODO: test documentation on javadoc
+ * TODO: write complete policies for Dora and George, and extensive tests
+ * TODO: refactor logging functionality
+ * TODO: once ready, recopy dialogue manager on DFKI SVN
+ * 
  * @author Pierre Lison (plison@dfki.de)
- * @version 7/10/2010
+ * @version 8/10/2010
  *
  */
 public class DialogueManager {
@@ -161,7 +168,7 @@ public class DialogueManager {
 
 			// select the best edge
 			PolicyEdge selectedEdge = sortedEdges.get(0);
-			curNode = selectedEdge.getOutgoingAction();
+			curNode = selectedEdge.getTargetNode();
 			
 			// if the outgoing action is underspecified, fill the arguments
 			if (curNode.getAction().isUnderspecified()) {

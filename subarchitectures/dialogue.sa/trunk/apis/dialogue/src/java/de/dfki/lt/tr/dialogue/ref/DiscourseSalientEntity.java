@@ -1,6 +1,6 @@
 // =================================================================
 // Copyright (C) 2010 DFKI GmbH Talking Robots 
-// Pierre Lison (pierre.lison@dfki.de)
+// Pierre Lison (plison@dfki.de)
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License 
@@ -27,7 +27,7 @@ package de.dfki.lt.tr.dialogue.ref;
  * concept (ontological sort), and a (unique) nominal variable. Recency of mention controls the 
  * salience of this entity. 
  * 
- * @author 	Pierre Lison (pierre.lison@dfki.de)
+ * @author 	Pierre Lison (plison@dfki.de)
  * @author	Geert-Jan M. Kruijff (gj@dfki.de)
  * @version 100608
  */

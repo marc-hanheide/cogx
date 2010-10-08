@@ -1,5 +1,5 @@
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -35,83 +35,88 @@ import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
 
 
+/**
+ * TODO: tests with multiple arguments
+ * 
+ * @author plison
+ *
+ */
 public class DialogueManagerWithArgumentsTest {
 
-	
-public static boolean LOGGING = true;
+	// logging and debugging
+	public static boolean LOGGING = true;
+	public static boolean DEBUG = true;
 
-public static boolean DEBUG = false;
+	// the configuration files
+	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/propagationPolicy.txt";
+	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/propObservations.txt";
+	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/propActions.txt";
 
-// the configuration files
-public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/propagationPolicy.txt";
-public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/propObservations.txt";
-public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/propActions.txt";
-
-// the dialogue manager
-public DialogueManager manager;
-
-
-
-private Observation createSimpleObservation (String s) throws DialogueException {
-	return createSimpleObservation(s, 1.0f);
-}
-
-
-private Observation createSimpleObservation (String s, float f) throws DialogueException {
-	Observation intent = new Observation (Observation.INTENTION);
-	intent.addAlternative(s, f);
-	intent.addAlternative(new UnknownFormula(0), 1-f);
-	return intent;
-}
-
-/**
- * Construct the dialogue policy
- * 
- * @throws DialogueException if the configuration files are not well-formatted
- */
-@Before
-public void constructPolicy() throws DialogueException {
-	
-	DialoguePolicy policy = PolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
-	
-	policy.ensureWellFormedPolicy();
-	
-	manager = new DialogueManager(policy);
-}
+	// the dialogue manager
+	public DialogueManager manager;
 
 
 
-/**
- * Test the policy with a single, high-confidence utterance
- * @throws DialogueException
- */
-@Test
-public void testPolicyBasic() throws DialogueException {
-	
-	Observation intent = createSimpleObservation("Say ^ <Object>(Blabla)");
-	PolicyAction action1 = manager.nextAction(intent);
-	assertEquals("CI[Said ^ <Object>(Blabla)]", action1.toString());
-	
-}
-
-
-/**
- * Logging
- * @param s
- */
-private static void log (String s) {
-	if (LOGGING) {
-		System.out.println("\"[dialmanager test\"] " + s);
+	private Observation createSimpleObservation (String s) throws DialogueException {
+		return createSimpleObservation(s, 1.0f);
 	}
-}
 
-/**
- * Debugging
- * @param s
- */
-private static void debug (String s) {
-	if (DEBUG) {
-		System.out.println("[dialmanager test] " + s);
+
+	private Observation createSimpleObservation (String s, float f) throws DialogueException {
+		Observation intent = new Observation (Observation.INTENTION);
+		intent.addAlternative(s, f);
+		intent.addAlternative(new UnknownFormula(0), 1-f);
+		return intent;
 	}
-}
+
+	/**
+	 * Construct the dialogue policy
+	 * 
+	 * @throws DialogueException if the configuration files are not well-formatted
+	 */
+	@Before
+	public void constructPolicy() throws DialogueException {
+
+		DialoguePolicy policy = PolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
+
+		policy.ensureWellFormedPolicy();
+
+		manager = new DialogueManager(policy);
+	}
+
+
+
+	/**
+	 * Test the policy with a single, high-confidence utterance
+	 * @throws DialogueException
+	 */
+	@Test
+	public void testPolicyBasic() throws DialogueException {
+
+		Observation intent = createSimpleObservation("Say ^ <Object>(Blabla)");
+		PolicyAction action1 = manager.nextAction(intent);
+		assertEquals("CI[Said ^ <Object>(Blabla)]", action1.toString());
+
+	}
+
+
+	/**
+	 * Logging
+	 * @param s
+	 */
+	private static void log (String s) {
+		if (LOGGING) {
+			System.out.println("\"[dialmanager test\"] " + s);
+		}
+	}
+
+	/**
+	 * Debugging
+	 * @param s
+	 */
+	private static void debug (String s) {
+		if (DEBUG) {
+			System.out.println("[dialmanager test] " + s);
+		}
+	}
 }

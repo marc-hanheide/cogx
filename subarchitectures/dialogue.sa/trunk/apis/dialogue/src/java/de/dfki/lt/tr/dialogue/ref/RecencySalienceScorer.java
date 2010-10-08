@@ -38,7 +38,7 @@ import de.dfki.lt.tr.dialogue.util.DialogueMissingValueException;
  * Saliency thus ranges between 0.1f (lowest) and 1.0f (highest). 
  * 
  * @author 	Geert-Jan M. Kruijff (gj@dfki.de)
- * @author 	Pierre Lison (pierre.lison@dfki.de)
+ * @author 	Pierre Lison (plison@dfki.de)
  * @version 100608
  */
 

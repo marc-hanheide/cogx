@@ -1,6 +1,6 @@
 
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -25,7 +25,6 @@ package de.dfki.lt.tr.dialmanagement.data;
 //JUnit
 import java.util.Random;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
@@ -34,20 +33,20 @@ import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyEdge;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyNode;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyObservation;
-import static org.junit.Assert.*;
 
 
 /**
  * Simple tests for constructing a dialogue policy
+ * 
+ * TODO: test for different type of ill-formed policies
  * @author plison
  *
  */
 public class DialoguePolicyTest {
 
-	
+	// logging and debugging
 	public static boolean LOGGING = true;
-
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 	
 	
 	public static int MAX_LEAVES = 6;
@@ -67,13 +66,15 @@ public class DialoguePolicyTest {
 	public void minimalPolicyConstruction () throws DialogueException {
 		DialoguePolicy policy = new DialoguePolicy();
 				
-		PolicyNode an1 = policy.addNode("start", new PolicyAction("start"));
+		PolicyNode an1 = new PolicyNode("start", new PolicyAction("start"));
+		policy.addNode(an1);
 		policy.setNodeAsInitial(an1);
 
-		PolicyNode an2 = policy.addNode("end", new PolicyAction("end"));
-		PolicyEdge newEdge = new PolicyEdge(new PolicyObservation("","edge", 1.0f, 1.0f));
-		newEdge.setIncomingAction(an1);
-		newEdge.setOutgoingAction(an2);
+		PolicyNode an2 = new PolicyNode("end", new PolicyAction("end"));
+		policy.addNode(an2);
+		PolicyEdge newEdge = new PolicyEdge("edge", an1, an2, new PolicyObservation("","edge", 1.0f, 1.0f));
+		newEdge.setSourceNode(an1);
+		newEdge.setTargetNode(an2);
 		policy.addEdge(newEdge, an1, an2);
 		policy.setNodeAsFinal(an2);
 		
@@ -106,7 +107,8 @@ public class DialoguePolicyTest {
 	private void randomPolicyConstruction (int maxLeaves, int maxDepth) throws DialogueException {
 		DialoguePolicy policy = new DialoguePolicy();
 				
-		PolicyNode an1 = policy.addNode("start", new PolicyAction(getNewId()));
+		PolicyNode an1 = new PolicyNode("start", new PolicyAction(getNewId()));
+		policy.addNode(an1);
 		policy.setNodeAsInitial(an1);
 		debug("initial node: " + an1);
 
@@ -133,10 +135,11 @@ public class DialoguePolicyTest {
 	    
 	    for (int i = 0; i < nbLeaves && depth > 0 ; i++) {
 	    	
-	    	PolicyEdge nextObs = new PolicyEdge(new PolicyObservation("",getNewId(), 1.0f, 1.0f));
-	    	PolicyNode nextNode = policy.addNode(getNewId(), new PolicyAction(getNewId()));
-	    	nextObs.setOutgoingAction(nextNode);
-	    	nextObs.setIncomingAction(curNode);
+	    	PolicyEdge nextObs = new PolicyEdge(getNewId(), new PolicyObservation("",getNewId(), 1.0f, 1.0f));
+	    	PolicyNode nextNode = new PolicyNode(getNewId(), new PolicyAction(getNewId()));
+	    	policy.addNode(nextNode);
+	    	nextObs.setTargetNode(nextNode);
+	    	nextObs.setSourceNode(curNode);
 			policy.addEdge(nextObs, curNode, nextNode);
 			
 			debug("creating new observation " + nextObs + " between node " + curNode + " and node " + nextNode);
