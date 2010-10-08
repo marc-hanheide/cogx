@@ -42,12 +42,22 @@ public class WMPointer extends GenericFormula<PointerFormula> {
 	public static WMPointer create(Ice.Object pd) {
 		return new WMPointer(pd);
 	}
-	
-	public static WMPointer create(WorkingMemoryAddress v) {
-		return new WMPointer(new PointerFormula(-1, v));
+
+//	public static WMPointer create(WorkingMemoryAddress v) {
+//		return new WMPointer(new PointerFormula(-1, v, ""));
+//	}
+
+	public static WMPointer create(WorkingMemoryAddress v, String type) {
+		return new WMPointer(new PointerFormula(-1, v, type));
 	}
 	
-	
+	public void setType(String t) {
+		_content.type=t;
+	}
+
+	public String getType() {
+		return _content.type;
+	}
 
 	/**
 	 * Object is created from underlying slice-based datastructure, and a given
@@ -61,17 +71,19 @@ public class WMPointer extends GenericFormula<PointerFormula> {
 	public WorkingMemoryAddress getVal() {
 		return _content.pointer;
 	}
-	
+
 	public void setVal(WorkingMemoryAddress adr) {
 		_content.pointer = adr;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.dfki.lt.tr.beliefs.data.genericproxies.GenericFormula#toString()
 	 */
 	@Override
 	public String toString() {
 		return CASTUtils.toString(_content.pointer);
 	}
-	
+
 } // end class
