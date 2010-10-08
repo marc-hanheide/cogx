@@ -139,7 +139,7 @@ public class DialogueActionInterface extends ManagedComponent {
 				robotIntention.content = new ArrayList<IntentionalContent>(1);
 				robotIntention.content.add(content);
 
-				addThenCompleteOnOverwrite(robotIntention);
+				addThenCompleteOnDelete(robotIntention);
 			}
 
 		}

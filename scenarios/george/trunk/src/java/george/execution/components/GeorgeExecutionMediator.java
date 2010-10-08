@@ -2,20 +2,14 @@ package george.execution.components;
 
 import autogen.Planner.Action;
 import cast.CASTException;
-import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
-import de.dfki.lt.tr.beliefs.data.genericproxies.GenericFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
-import execution.components.PlanExecutionMediator;
+import execution.components.BeliefBasedPlanExecutionMediator;
 import execution.slice.ActionExecutionException;
 import execution.slice.actions.AskForColour;
 import execution.slice.actions.AskForIdentity;
 import execution.slice.actions.AskForShape;
-import execution.slice.actions.BeliefPlusStringAction;
 import execution.slice.actions.LearnColour;
 import execution.slice.actions.LearnIdentity;
 import execution.slice.actions.LearnShape;
-import execution.slice.actions.SingleBeliefAction;
 import execution.util.ActionConverter;
 
 /**
@@ -24,7 +18,7 @@ import execution.util.ActionConverter;
  * @author nah
  * 
  */
-public class GeorgeExecutionMediator extends PlanExecutionMediator implements
+public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator implements
 		ActionConverter {
 
 	public GeorgeExecutionMediator() {
@@ -84,34 +78,7 @@ public class GeorgeExecutionMediator extends PlanExecutionMediator implements
 				+ _plannedAction.fullName);
 	}
 
-	/**
-	 * @param _arguments
-	 * @param action
-	 * @return
-	 */
-	private <T extends SingleBeliefAction> SingleBeliefAction beliefPointerToBeliefAction(
-			dFormula _argument, T action) {
-		WMPointer beliefPtr = WMPointer.create(_argument);
-		action.beliefAddress = beliefPtr.getVal();
-		return action;
-	}
-
-	private <T extends SingleBeliefAction> T createSingleBeliefAction(
-			Class<T> _cls, dFormula _belief) throws CASTException {
-		T action = newActionInstance(_cls);
-		return (T) beliefPointerToBeliefAction(_belief, action);
-	}
-
-	private <T extends BeliefPlusStringAction> T createBeliefPlusStringAction(
-			Class<T> _cls, dFormula _belief, dFormula _value)
-			throws CASTException {
-		T action = newActionInstance(_cls);
-		ElementaryFormula formula = (ElementaryFormula) _value;
-		GenericFormula<ElementaryFormula> elementaryFormula = GenericFormula
-				.create(ElementaryFormula.class, formula);
-		action.value = elementaryFormula.getProposition();
-		return (T) beliefPointerToBeliefAction(_belief, action);
-	}
+	
 
 	@Override
 	public ActionConverter getActionConverter() {
