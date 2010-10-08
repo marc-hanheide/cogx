@@ -122,10 +122,10 @@ generate : event : utter(S, H, Int) <-
 	i : feat_Modality(Nom, vision) / -1.0,
 	i : rel_Actor(Nom, ActorNom) / -1.0,
 		i : sort(ActorNom, person) / -1.0,
-		i : prop(ActorNom, prop) / -1.0,
+		i : prop(ActorNom, you) / -1.0,
 	i : rel_Content(Nom, ContentNom) / -1.0,
-		i : sort(ContentNom, 'q-shape') / -1.0,
-		i : prop(ContentNom, round) / -1.0,
+		i : sort(ContentNom, 'q-color') / -1.0,
+		i : prop(ContentNom, red) / -1.0,
 	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
