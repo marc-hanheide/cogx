@@ -77,6 +77,7 @@ class CDisplayClient:
         except Exception as e:
             owner.println(
                 "*** DisplayClient(python): standalone server not found on host '%s'" % (self.m_ServerHost))
+            owner.println("%s" % e)
             self.m_Server = None
 
     def connectIceClient(self, owner):
