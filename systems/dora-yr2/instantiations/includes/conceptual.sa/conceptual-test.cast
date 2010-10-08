@@ -1,2 +1,2 @@
-CPP GD conceptual.tester ConceptualTester --queryhandler conceptual.queryhandler
+CPP GD conceptual.tester ConceptualTester --queryhandler conceptual.queryhandler --debug true
 
