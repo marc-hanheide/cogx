@@ -39,7 +39,7 @@ void VL_introspect(
 extern void VL_LoadAvModels(const char* filename);
 
 // Configure the mapping between label names and integers.
-extern void VL_setEnumeration(const cogx::CTypeEnumerator& typeEnum);
+extern void VL_setEnumeration(const CTypeEnumerator& typeEnum);
 
 // Which configuration file (Matlab script) should be loaded at startup.
 extern void VL_setClfStartConfig(const std::string& absConfigPath);

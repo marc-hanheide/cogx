@@ -57,7 +57,7 @@ void VL_LoadAvModels(const char* filename)
    LRloadAVmodels(fname);
 }
 
-void VL_setEnumeration(const cogx::CTypeEnumerator& typeEnum)
+void VL_setEnumeration(const CTypeEnumerator& typeEnum)
 {
    Enumerator = typeEnum;
 }
