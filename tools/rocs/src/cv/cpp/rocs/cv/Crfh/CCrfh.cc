@@ -20,7 +20,7 @@ CCrfh::CCrfh(vector<Matrix_<double> *> outputs,
 		const CDescriptorList &descrList, int skipBorderPixels) {
 	// Check whether the descriptor list matches the output list
 	if (outputs.size() != descrList.size()) {
-		error("The size of the descriptor list does not match the size of the outputs list. ");
+		rocsError("The size of the descriptor list does not match the size of the outputs list. ");
 		return;
 	}
 
@@ -40,7 +40,7 @@ CCrfh::CCrfh(vector<Matrix_<double> *> outputs,
 		minVect.push_back(descrList[i]->getMin());
 		maxVect.push_back(descrList[i]->getMax());
 		if ((rows != outputs[i]->nbRows()) || (cols != outputs[i]->nbCols())) {
-			error("The filter outputs have different dimensions. ");
+			rocsError("The filter outputs have different dimensions. ");
 			return;
 		}
 	}
@@ -100,7 +100,7 @@ CCrfh::CCrfh(vector<Matrix_<double> *> outputs,
 
 // -----------------------------------------
 void CCrfh::serialize(ostream &stream) {
-	debug3("serialize()");
+	rocsDebug3("serialize()");
 
 	for (map<int, double>::const_iterator i = begin(); i != end(); ++i) {
 		//stream << i.key() << ":" << i.value() << " ";
@@ -110,7 +110,7 @@ void CCrfh::serialize(ostream &stream) {
 
 // -----------------------------------------
 void CCrfh::filter(double min_val) {
-	debug3("filter(%f)", min_val);
+	rocsDebug3("filter(%f)", min_val);
 
 	double tmp = min_val * _sum;
 
@@ -129,7 +129,7 @@ void CCrfh::filter(double min_val) {
 
 // -----------------------------------------
 void CCrfh::normalize() {
-	debug3("normalize() - sum:%f", _sum);
+	rocsDebug3("normalize() - sum:%f", _sum);
 
 	for (map<int, double>::iterator i = begin(); i != end(); ++i) {
 		//i.value() /= _sum; TODO check this
@@ -140,19 +140,19 @@ void CCrfh::normalize() {
 
 // -----------------------------------------
 CSvmNode *CCrfh::getLibSvmVector() {
-	debug3("getLibSvmVector()");
+	rocsDebug3("getLibSvmVector()");
 
 	//CSvmNode *vector = aMalloc<CSvmNode> (size() + 1);
 	CSvmNode *vector = new CSvmNode[size() + 1];
 
 	int nr = 0;
 	for (map<int, double>::const_iterator i = begin(); i != end(); ++i, ++nr) {
-		vector[nr].index = i->first;//key();
-		vector[nr].value = i->second;//.value();
+		vector[nr].first = i->first;//key();
+		vector[nr].second = i->second;//.value();
 	}
 
-	vector[size()].index = -1;
-	vector[size()].value = 0.0;
+	vector[size()].first = -1;
+	vector[size()].second = 0.0;
 
 	return vector;
 }

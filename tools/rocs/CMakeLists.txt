@@ -30,6 +30,9 @@ if ("${ROCS_DIR_INIT}" STREQUAL "")
 endif("${ROCS_DIR_INIT}" STREQUAL "")
 set(ROCS_DIR ${ROCS_DIR_INIT} CACHE PATH "Path to the directory where ROCS should be installed.")
 
+# Make ROCS_DIR available as preprocessor definition
+ADD_DEFINITIONS(-DROCS_DIR="${ROCS_DIR}")
+
 # Are we installing to SRC_ROOT?
 get_filename_component(TMP_PATH1 ${ROCS_SRC_ROOT} ABSOLUTE)
 get_filename_component(TMP_PATH2 ${ROCS_DIR} ABSOLUTE)
@@ -61,6 +64,10 @@ include(ROCSBuildOpts)
 include(ROCSDeps)
 # Finding external dependencies
 include(ROCSExtDeps)
+
+# Debug level
+set(ROCS_DEBUG_LEVEL 0 CACHE PATH "Debug level used by ROCS (0-3).")
+ADD_DEFINITIONS(-DROCS_DEBUG_LEVEL=${ROCS_DEBUG_LEVEL})
 
 
 # ------------------------------------------------------------------
