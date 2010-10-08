@@ -13,7 +13,7 @@ JAVA MG	int-recognizer	de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRecogni
 JAVA MG	int-realizer	de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRealizer --ruleset ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.G.txt --log true
 JAVA MG int-mirror	de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionMirror --log true
 JAVA MG cplan	de.dfki.lt.tr.cast.dialogue.ContentPlanner --domainFile ./subarchitectures/dialogue.sa/resources/contentplanning/allRuleFiles.trf --contentRel Content --log true
-JAVA MG realizer	de.dfki.lt.tr.cast.dialogue.CCGRealizer --ccg ./subarchitectures/dialogue.sa/resources/grammars/openccg/nonrobustmoloko/grammar.xml --ngrams ./subarchitectures/dialogue.sa/resources/grammars/openccg/nonrobustmoloko/ngram-corpus.txt --log true
+JAVA MG realizer	de.dfki.lt.tr.cast.dialogue.CCGRealizer --ccg ./subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml --ngrams ./subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt --log true
 #JAVA GD tts	de.dfki.lt.tr.cast.dialogue.MaryTTS --startserver --serverHost localhost --serverPort 59125 --voice cmu-slt-hsmm --log true #--debug true
 
 SUBARCHITECTURE binder
