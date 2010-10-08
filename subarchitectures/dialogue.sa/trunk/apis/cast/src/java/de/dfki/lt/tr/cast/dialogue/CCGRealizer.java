@@ -147,6 +147,8 @@ public class CCGRealizer
 		// of the generated surface form 
 		boolean writeOutPackedLF;
 		
+		String ngramCorpus = "";
+		
 		
 		// =================================================================
 		// CONSTRUCTOR METHODS
@@ -269,6 +271,12 @@ public class CCGRealizer
 							handleWorkingMemoryChange(_wmc);
 						}
 					});
+			
+			if (!ngramCorpus.equals("")) {
+				String[] targets = loadCorpus(ngramCorpus);
+			    ngramScorer = new NgramPrecisionModel(targets);
+			}
+			
 		}// end start
 		
 		
@@ -365,6 +373,8 @@ public class CCGRealizer
 						// Translate the planLF logical form into XML for OpenCCG
 						LF lf = LFUtils.convertToLF(planLF);
 						// Realize the XML-based logical form
+						// Initialize the realizer with the CCG grammar, if there is one specified 					
+
 						if (ngramScorer == null) { 
 							realizer.realize(lf);
 						} else {
@@ -549,9 +559,7 @@ public class CCGRealizer
 			}	
 			
 			if (_config.containsKey("--ngrams")) { 
-				String ngramsCorpus = _config.get("--ngrams");
-				String[] targets = loadCorpus(ngramsCorpus);
-				// ngramScorer = new NgramPrecisionModel(targets);
+				ngramCorpus = _config.get("--ngrams");
 			} 	
 			if (_config.containsKey("--packedlf")) 
 			{

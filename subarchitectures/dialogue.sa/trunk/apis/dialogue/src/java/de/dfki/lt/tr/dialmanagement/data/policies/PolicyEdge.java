@@ -76,6 +76,20 @@ public class PolicyEdge {
 		}
 	}
 	
+	
+	public PolicyEdge (String id, PolicyNode in, PolicyNode out) throws DialogueException {
+		
+		if (id != null && in != null && out != null) {
+			this.id = id;
+			this.in = in;
+			this.out = out;
+		}
+		else {
+			throw new DialogueException("ERROR: cannot enter null values in observation edge");
+		}
+	}
+	
+	
 	public PolicyEdge (PolicyObservation obs) {
 		this.obs = obs;
 	}

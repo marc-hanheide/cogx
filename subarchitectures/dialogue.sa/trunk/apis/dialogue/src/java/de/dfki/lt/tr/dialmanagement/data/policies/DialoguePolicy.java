@@ -209,6 +209,13 @@ public class DialoguePolicy {
 	}
 	
 	
+	public void addNode (PolicyNode node) {
+		if (node != null) {
+			nodes.put(node.getId(), node);
+		}
+	}
+	
+	
 	/**
 	 * Set node as being initial
 	 * @param node
