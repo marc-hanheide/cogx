@@ -2,18 +2,25 @@ package dora.execution.components;
 
 import autogen.Planner.Action;
 import cast.CASTException;
+import cast.cdl.WorkingMemoryAddress;
+
+import comadata.ComaRoom;
+
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
-import execution.components.PlanExecutionMediator;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
+import execution.components.BeliefBasedPlanExecutionMediator;
 import execution.slice.ActionExecutionException;
+import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.GoToPlace;
 import execution.util.ActionConverter;
-import facades.BinderFacade;
 
 /**
  * Execution mediator specifically for Dora/Spring School.
@@ -21,20 +28,12 @@ import facades.BinderFacade;
  * @author nah
  * 
  */
-public class DoraExecutionMediator extends PlanExecutionMediator implements
-		ActionConverter {
-	private final BinderFacade m_binderFacade;
-	private static final String[] DEFAULT_LABELS = { "record1", "record2",
-			"record3", "record4" };
-
-	public DoraExecutionMediator() {
-		m_binderFacade = new BinderFacade(this);
-	}
+public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
+		implements ActionConverter {
 
 	@Override
 	protected void start() {
 		super.start();
-		m_binderFacade.start();
 	}
 
 	/**
@@ -55,8 +54,8 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 
 			// read the belief from WM
 			IndependentFormulaDistributionsBelief<dBelief> placeUnion = IndependentFormulaDistributionsBelief
-					.create(dBelief.class, getMemoryEntry(beliefPtr.getVal(),
-							dBelief.class));
+					.create(dBelief.class,
+							getMemoryEntry(beliefPtr.getVal(), dBelief.class));
 
 			Formula placeProperty = placeUnion.getContent().get("PlaceId")
 					.getDistribution().firstValue();
@@ -76,29 +75,30 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 
 			DetectPeople act = newActionInstance(DetectPeople.class);
 			return act;
-			// } else if (_plannedAction.name.equals("ask-for-placename")) {
-			// assert _plannedAction.arguments.length == 2 :
-			// "ask-for-feature action arity is expected to be 2";
-			// String beliefID = ((PointerValue)
-			// _plannedAction.arguments[1]).beliefId.id;
-			// String featureID = "name";
-			// ComsysQueryFeature act =
-			// newActionInstance(ComsysQueryFeature.class);
-			// act.beliefID = beliefID;
-			// act.featureID = featureID;
-			// return act;
-			// } else if (_plannedAction.name.equals("verify-placename")) {
-			// assert _plannedAction.arguments.length == 3 :
-			// "ask-for-feature action arity is expected to be 2";
-			// String beliefID = ((PointerValue)
-			// _plannedAction.arguments[1]).beliefId.id;
-			// String featureID = "name";
-			// ComsysTestFeatureValue act =
-			// newActionInstance(ComsysTestFeatureValue.class);
-			// act.beliefID = beliefID;
-			// act.featureType = featureID;
-			// act.featureValue = _plannedAction.arguments[2];
-			// return act;
+
+		} else if (_plannedAction.name.equals("create_cones")) {
+			assert _plannedAction.arguments.length == 3 : "create_cones action arity is expected to be 3";
+
+
+			WorkingMemoryAddress roomBeliefAddress = addressFromFormula(_plannedAction.arguments[2]);
+
+			IndependentFormulaDistributionsBelief<GroundedBelief> gb = IndependentFormulaDistributionsBelief
+					.create(GroundedBelief.class,
+							getMemoryEntry(roomBeliefAddress,
+									GroundedBelief.class));
+
+			IndependentFormulaDistributionsBelief<PerceptBelief> pb = BeliefUtils
+					.getMostRecentPerceptBeliefAncestor(this, gb);
+
+			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(this, pb,
+					ComaRoom.class);
+
+			CreateConesForModel act = newActionInstance(CreateConesForModel.class);
+			act.model = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[1]);
+			act.placeIDs = room.containedPlaceIds;
+			
+			return act;
+			
 		}
 		throw new ActionExecutionException("No conversion available for: "
 				+ _plannedAction.fullName);
