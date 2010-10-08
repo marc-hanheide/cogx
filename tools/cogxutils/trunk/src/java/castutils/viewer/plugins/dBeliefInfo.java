@@ -15,7 +15,7 @@ import de.dfki.lt.tr.beliefs.util.ProbFormula;
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class dBeliefInfo extends ObjectImplInfo {
+public class dBeliefInfo extends DefaultXMLInfo {
 
 	@Override
 	public Vector<Object> toVector(Ice.ObjectImpl iceObject) {
