@@ -17,6 +17,8 @@
                     <Wh-Restr>(:specifier ^ what ^ 
                                <Scope>(#c:)).
 
+
+
 :dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-shape)
 -> 
 #c1 =:ascription ^ be ^ 
