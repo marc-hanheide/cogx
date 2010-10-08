@@ -39,7 +39,7 @@
 
 #^/code/tools/interconnectivity				tools/interconnectivity
 ^/code/tools/beliefs/trunk           tools/beliefs
-#^/code/tools/mary				tools/mary
+^/code/tools/mary				tools/mary
 ^/code/tools/castutils/trunk				tools/castutils
 ^/code/tools/cogxutils/trunk				tools/cogxutils
 
