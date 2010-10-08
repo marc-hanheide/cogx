@@ -707,6 +707,8 @@ void PointGreyServer::init() throw(runtime_error)
     //   throw runtime_error(error.GetDescription());
     // LogCameraInfo(&camInfo);
 
+    log("setting video mode %d x %d", width, height);
+
     FlyCapture2::VideoMode mode = selectVideoMode(width, height);
 		FlyCapture2::FrameRate rate = selectFrameRate(fps);
 		if(useVideoMode7)
@@ -849,6 +851,9 @@ void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height, V
 				error = cameras[i]->StopCapture();
 				if(error != FlyCapture2::PGRERROR_OK)
 					throw runtime_error(error.GetDescription());
+
+        log("setting video mode %d x %d", width, height);
+        
 				FlyCapture2::VideoMode mode = selectVideoMode(w, h);
 				FlyCapture2::FrameRate rate = selectFrameRate(fps);
 				error = cameras[i]->SetVideoModeAndFrameRate(mode, rate);
