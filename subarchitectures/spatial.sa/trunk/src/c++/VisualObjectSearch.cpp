@@ -292,7 +292,7 @@ m_samplesize = 100;
   }
 
   double VisualObjectSearch::GetPlaceIdFromNodeId(int nodeId){
-    FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("navgraph.process"));
+    FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
     int d = agg->getPlaceFromNodeID(nodeId);
     return d;
   }
@@ -630,6 +630,7 @@ m_samplesize = 100;
       log("total cost at %dth cone so far %3.2f", count, cost);
       start = dest;
       if(m_publishSimCones){
+	try{
 	log("Adding View cone to WM for planner");
 	SpatialData::ViewPointPtr vp = new SpatialData::ViewPoint;
 	vp->pose.x = nbv.pos[0];
@@ -641,7 +642,11 @@ m_samplesize = 100;
 	vp->closestPlaceId = GetPlaceIdFromNodeId(GetClosestNodeId(vp->pose.x, vp->pose.y, vp->pose.z)); 
 	vp->areaId = GetAreaId(vp->pose.x, vp->pose.y, vp->pose.z); 
 	addToWorkingMemory(newDataID(),vp);      
-      }
+	}
+	catch (DoesNotExistOnWMException e) {
+	  log("WARNING: View cone could not be added: %s", e.what());
+	}
+	}
       count++;
       if(count > maxnumberofcones){
 	double averageprob = totalprob / count;
