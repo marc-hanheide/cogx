@@ -84,10 +84,12 @@ generate : event : utter(S, H, Int) <-
 
 %-------------------------------------------------------------------------
 
+% CAREFUL: "box" is a "thing"
+
 generate : this(Nom) <-
 	i : sort(Nom, entity) / -1.0,
-	i : prop(Nom, context) / -1.0.
-%	i : feat_Salient(Nom, true) / -1.0.
+	i : prop(Nom, context) / -1.0,
+	i : feat_Salient(Nom, true) / -1.0.
 %	i : feat_InfoStatus(Nom, familiar) / -1.0.
 
 %-------------------------------------------------------------------------
