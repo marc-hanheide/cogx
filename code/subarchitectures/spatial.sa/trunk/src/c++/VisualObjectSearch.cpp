@@ -293,7 +293,7 @@ m_samplesize = 100;
 
   double VisualObjectSearch::GetPlaceIdFromNodeId(int nodeId){
     FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-    int d = agg->getPlaceFromNodeID(nodeId);
+    int d = agg->getPlaceFromNodeID(nodeId)->id;
     return d;
   }
   int VisualObjectSearch::GetClosestNodeId(double x, double y, double a){
