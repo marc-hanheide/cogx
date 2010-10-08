@@ -3,6 +3,7 @@
  */
 package eu.cogx.percepttracker;
 
+import java.awt.Component;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -90,8 +91,6 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 
 	protected final Set<String> ignoreForPointerPropagationSet = new HashSet<String>();
 
-	
-	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -275,7 +274,7 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 		fillBeliefs(wmc, fromBelief, toBelief);
 	}
 
-	protected void fillBeliefs(WorkingMemoryChange wmc, 
+	protected void fillBeliefs(WorkingMemoryChange wmc,
 			CASTIndependentFormulaDistributionsBelief<From> fromBelief,
 			CASTIndependentFormulaDistributionsBelief<To> toBelief) {
 
@@ -301,15 +300,31 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 				// propagate any PointerFormulas to PerceptBeliefs to
 				// GroundedBeliefs
 				if (f.getFormula().get() instanceof PointerFormula) {
+
 					WMPointer wmp = WMPointer.create((Ice.Object) f
 							.getFormula().get());
+					if (!wmp.getType().equals(CASTUtils.typeName(m_fromCls))) {
+						logger
+								.debug("ignore WMPointer as it is pointing out of the layer");
+						continue;
+					}
 					WorkingMemoryAddress lookUpGroundedBelief;
 
+					logger.info("checking the type of "
+							+ CASTUtils.toString(wmp.getVal())
+							+ " in the map to fill " + entry.getKey()
+							+ " in type " + toBelief.getType()+": " + wmp.getType());
+
+					logger.info("have to find the key "
+							+ CASTUtils.toString(wmp.getVal())
+							+ " in the map to fill " + entry.getKey()
+							+ " in type " + toBelief.getType());
 					lookUpGroundedBelief = wm2wmMap.waitFor(wmp.getVal());
 					logger.info("update " + entry.getKey() + " formula "
 							+ f.getFormula().toString() + " to "
 							+ CASTUtils.toString(lookUpGroundedBelief));
 					wmp.setVal(lookUpGroundedBelief);
+					wmp.setType(CASTUtils.typeName(m_toCls));
 					logger.info("new val: " + entry.getKey() + " formula "
 							+ f.getFormula().toString());
 				}

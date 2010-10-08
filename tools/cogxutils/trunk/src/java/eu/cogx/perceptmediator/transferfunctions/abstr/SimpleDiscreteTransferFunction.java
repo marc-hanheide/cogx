@@ -61,7 +61,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	}
 
 	private static TimeServerPrx timeServer = null;
-	Class<To> beliefClass;
+	final protected Class<To> beliefClass;
 
 	/**
 	 * constructor
@@ -156,7 +156,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		CASTBeliefHistory hist = new CASTBeliefHistory(new ArrayList<WorkingMemoryPointer>(1), new ArrayList<WorkingMemoryPointer>(0));
 		hist.ancestors.add(new WorkingMemoryPointer(_wmc.address, _wmc.type));
 		_p.get().hist = hist;
-	}
+        }
 
 	/**
 	 * the abstract method
