@@ -12,6 +12,8 @@ import SpatialData.ViewPoint;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.core.CASTUtils;
+import castutils.castextensions.IceXMLSerializer;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
@@ -63,8 +65,11 @@ public class ViewPointTransferFunction extends
 					closestPlace));
 			CASTIndependentFormulaDistributionsBelief<dBelief> placeBel = CASTIndependentFormulaDistributionsBelief
 					.create(dBelief.class, allBeliefs.get(placeBelAdr));
+			logger.info("  placeBel=" + placeBel.toString());
 			result.put(RoomMembershipMediator.ROOM_PROPERTY, placeBel.getContent().get(RoomMembershipMediator.ROOM_PROPERTY).getDistribution().getMostLikely());
-			result.put(LocalizedAgentTransferFunction.IS_IN, WMPointer.create(placeBelAdr).getAsFormula());
+			logger.info("  roommember=" + placeBel.getContent().get(RoomMembershipMediator.ROOM_PROPERTY).getDistribution().getMostLikely().toString());
+			result.put(LocalizedAgentTransferFunction.IS_IN, WMPointer.create(placeBelAdr, CASTUtils.typeName(this.beliefClass)).getAsFormula());
+			logger.info("  generate for view cone: " + IceXMLSerializer.toXMLString(result));
 		} catch (InterruptedException e) {
 			logger.error(e);
 			return null;

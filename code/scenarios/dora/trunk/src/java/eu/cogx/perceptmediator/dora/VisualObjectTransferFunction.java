@@ -15,6 +15,7 @@ import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
@@ -74,7 +75,7 @@ public class VisualObjectTransferFunction extends
 			currentPlace = SpatialFacade.get(component).getPlace();
 			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
 					currentPlace.id));
-			WMPointer wmp = WMPointer.create(placeWMA);
+			WMPointer wmp = WMPointer.create(placeWMA, CASTUtils.typeName(this.beliefClass));
 			component.log("size of from.identDistrib: "+ from.identDistrib.length);
 			fd.add(wmp.get(), from.identDistrib[0]);
 			belief.getContent().put("is-in", fd);
