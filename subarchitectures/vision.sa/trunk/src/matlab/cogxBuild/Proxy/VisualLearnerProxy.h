@@ -3,6 +3,9 @@
 // you need Matlab for that!
 // #include <VisionData.hpp>
 
+#ifndef VISUALLEARNERPROXY_YGO3EQK8
+#define VISUALLEARNERPROXY_YGO3EQK8
+
 #include "Enumerator.h"
 #include <vector>
 
@@ -42,3 +45,5 @@ extern void VL_setEnumeration(const cogx::CTypeEnumerator& typeEnum);
 extern void VL_setClfStartConfig(const std::string& absConfigPath);
 
 } // namespace
+
+#endif /* end of include guard: VISUALLEARNERPROXY_YGO3EQK8 */

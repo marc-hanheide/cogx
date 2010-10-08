@@ -2,7 +2,7 @@
 /** 
  * @brief Proxy for the VisualLearner component.
  *
- * @author Marko Mahnic
+ * @author Marko Mahnič
  */
 #include <stdio.h>
 #include <stdarg.h>
@@ -15,88 +15,13 @@
 #include "MatlabHelper.h"
 #include "VisualLearnerProxy.h"
 #include "libVisualLearnerCtf.h"
-#include "initlib.h"
+#include "Globals.h"
+#include "Conversion.h"
 
 using namespace std;
 using namespace VisionData;
 
 namespace matlab {
-
-cogx::CTypeEnumerator Enumerator;
-std::map<std::string, int> labelConceptMap; // name -> 1=color, 2=shape
-std::string ClfStartConfig;
-
-class CInitializer
-{
-public:
-   CInitializer() {
-      printf("VisualLearnerProxy initializing\n");
-      InitVisualLearnerLib();
-
-      printf("ClfStartConfig='%s'\n", ClfStartConfig.c_str());
-
-      // Load global variables 
-      mwArray clfConfig(ClfStartConfig.c_str());
-      CLFstart(clfConfig);
-   }
-   ~CInitializer() {
-      printf("VisualLearnerProxy terminating\n");
-      TermVisualLearnerLib();
-   }
-
-   void initEnumeration() {
-      try {
-         Enumerator.clear();
-         labelConceptMap.clear();
-         mwArray avNames, scConcept;
-         getGlobalArray(1, avNames, "Coma", "Coma.avNames");
-         getGlobalArray(1, scConcept, "Coma", "Coma.SCC");
-         mwArray dims = avNames.GetDimensions();
-         double dim0 = dims.Get(mwSize(1), 1);
-         for (int i = 0; i < dim0; i++) {
-            mwString mws = avNames.Get(mwSize(1), i+1).ToString();
-            int concept = scConcept.Get(mwSize(2), i+1, 2);
-            string label((const char*)mws);
-            Enumerator.addMapping(label, i+1);
-            labelConceptMap[label] = concept;
-            printf(" ... %d .. %s .. c%d \n", i+1, label.c_str(), concept);
-         }
-      }
-      catch (...) {
-         printf(" **** FAILED to extract from Matlab: Coma.avNames, Coma.SCC\n");
-         Enumerator.clear();
-         Enumerator.addMapping("red", 1);
-         Enumerator.addMapping("green", 2);
-         Enumerator.addMapping("blue", 3);
-         Enumerator.addMapping("yellow", 4);
-         Enumerator.addMapping("black", 5);
-         Enumerator.addMapping("white", 6);
-         Enumerator.addMapping("orange", 7);
-         Enumerator.addMapping("pink", 8);
-         Enumerator.addMapping("compact", 9);
-         Enumerator.addMapping("elongated", 10);
-      }
-   }
-
-} *pInitializer=NULL;
-
-class CTerminator
-{
-public:
-   ~CTerminator() {
-      if (pInitializer) delete pInitializer;
-      pInitializer = NULL;
-   }
-} Terminator;
-
-static void CheckInit()
-{
-   if (!pInitializer) {
-      pInitializer = new CInitializer();
-      pInitializer->initEnumeration();
-   }
-}
-
 
 static void addLabels(mwArray &ans, double weight, vector<string> &labels, vector<double> &probs)
 {
@@ -122,45 +47,6 @@ static void copyLabels(const mwArray &ans, vector<string> &labels, vector<double
       double weight = ans.Get(mwSize(2), i+1, 2);
       labels.push_back(Enumerator.getName((int)label));
       probs.push_back(weight);
-   }
-}
-
-void protoObjectToMwArray(const ProtoObject &Object, mwArray &image, mwArray &mask, mwArray &points3d)
-{
-   // Convert image patch
-   image = CMatlabHelper::iplImage2array(&(Object.image.data[0]), 
-         Object.image.width, Object.image.height, 3, 1); // WISH: number of channels in image
-   // printf("Object Image: %dx%d\n", Object.image.width, Object.image.height);
-
-   // Convert image mask
-   mask = CMatlabHelper::iplImage2array( &(Object.mask.data[0]), 
-         Object.mask.width, Object.mask.height, 1, 1);
-   // printf("Object Mask: %dx%d\n", Object.mask.width, Object.mask.height);
-
-   // Convert 3D points
-   int npts = Object.points.size();
-   const int ncol = 6;
-   if (npts < 1) {
-      printf("**** not enough points\n");
-      points3d = mwArray();
-   }
-   else {
-      printf("**** we have %d 3D points\n", npts);
-      // x, y, z, r, g, b
-      mwSize dimensions[2] = {npts, ncol};
-      points3d = mwArray(2, dimensions, mxDOUBLE_CLASS, mxREAL);
-      double *data = new double[npts * ncol];
-      for (int i = 0; i < npts; i++) {
-         const SurfacePoint &p = Object.points[i];
-         data[i + npts*0] = p.p.x;
-         data[i + npts*1] = p.p.y;
-         data[i + npts*2] = p.p.z;
-         data[i + npts*3] = p.c.r;
-         data[i + npts*4] = p.c.g;
-         data[i + npts*5] = p.c.b;
-      }
-      points3d.SetData(data, npts*ncol);
-      delete data;
    }
 }
 

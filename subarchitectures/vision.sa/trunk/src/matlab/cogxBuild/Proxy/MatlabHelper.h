@@ -1,3 +1,6 @@
+#ifndef MATLABHELPER_UT6PZ9BU
+#define MATLABHELPER_UT6PZ9BU
+
 #include <cv.h>
 #include <MatlabData.hpp>
 
@@ -9,6 +12,8 @@
 #endif
 #include "mclmcrrt.h"
 #include "mclcppclass.h"
+
+namespace matlab {
 
 class CMatlabHelper
 {
@@ -126,3 +131,7 @@ void CMatlabHelper::sequence2matrix(
       }
    }
 }
+
+} // namespace
+
+#endif /* end of include guard: MATLABHELPER_UT6PZ9BU */

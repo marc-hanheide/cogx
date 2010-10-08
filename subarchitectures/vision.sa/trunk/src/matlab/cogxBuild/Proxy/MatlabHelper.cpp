@@ -1,5 +1,7 @@
 #include "MatlabHelper.h"
 
+namespace matlab {
+
 void CMatlabHelper::array2idl(mwArray &array, Matlab::Matrix& _matrix)
 {
    // TODO: test - array.IsNumeric();
@@ -96,4 +98,4 @@ void CMatlabHelper::iplImage2matrix(const unsigned char *pImageData, Matlab::Mat
       pImageData, pResult, width, height, nChannels, align);
 }
 
-
+} // namespace

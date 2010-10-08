@@ -5,8 +5,11 @@ LINK_DIRECTORIES( ${VisualLearnerCtf_BINARY_DIR}/build )
 # LINK_DIRECTORIES( ${MATLAB_DIR}/bin/glnxa64 )
 SET(SOURCES 
    initlib.cpp  
+   Globals.cpp
    MatlabHelper.cpp
+   Conversion.cpp
    VisualLearnerProxy.cpp
+   AffordanceLearnerProxy.cpp
    Enumerator.cpp
    )
 SET(HEADERS initlib.h RecogniserP.h)
