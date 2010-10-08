@@ -22,19 +22,19 @@
 // Once delimitation and quantification are set using InfoStatus, this feature is removed. 
 // The absence of Salient is required: Salient triggers realization as deictic or pronoun.
 
-(:entity | :thing) ^ <InfoStatus>familiar ^ !<Salient>
+:thing ^ <InfoStatus>familiar ^ !<Salient>
 -> 
 # ^ <Delimitation>unique.
 
 // We check explicitly that we neither have a salient feature, nor did we ever have one
 // (which would have let us to set the Salient global variable). 
 
-(:entity | :thing) ^ !<InfoStatus> ^ !<Salient>,
+:thing ^ !<InfoStatus> ^ !<Salient>,
 ##Salient ^ false
 -> 
 # ^ <Delimitation>existential. 
 
-(:entity | :thing) ^ <InfoStatus>new ^ !<Salient>
+:thing ^ <InfoStatus>new ^ !<Salient>
 -> 
 # ^ <Delimitation>existential.
 
@@ -42,44 +42,44 @@
 //-> 
 //# ^ <Delimitation>existential. 
 
-(:entity | :thing) ^ <InfoStatus>familiar ^ !<Salient>
+:thing ^ <InfoStatus>familiar ^ !<Salient>
 -> 
 # ^ <Delimitation>unique. 
 
-(:entity | :thing) ^ !<InfoStatus> ^ <Salient>true
+:thing ^ !<InfoStatus> ^ <Salient>true
 ->
 # ^ <Delimitation>unique.
 
-(:entity | :thing) ^ <InfoStatus>familiar ^ <Salient>true
+:thing ^ <InfoStatus>familiar ^ <Salient>true
 ->
 # ^ <Delimitation>unique.
 
-(:entity | :thing) ^ <InfoStatus>new ^ !<Salient> 
+:thing ^ <InfoStatus>new ^ !<Salient> 
 -> 
 # ^ <Quantification>specific.
 
-(:entity | :thing) ^ <InfoStatus>familiar ^ !<Salient> 
+:thing ^ <InfoStatus>familiar ^ !<Salient> 
 -> 
 # ^ <Quantification>specific.
 
-(:entity | :thing) ^ !<InfoStatus> ^ <Salient>true
+:thing ^ !<InfoStatus> ^ <Salient>true
 ->
 # ^ <Quantification>specific.
 
-(:entity | :thing) ^ <InfoStatus>familiar ^ <Salient>true
+:thing ^ <InfoStatus>familiar ^ <Salient>true
 ->
 # ^ <Quantification>specific.
 
 
-(:entity | :thing) ^ !<InfoStatus> ^ !<Salient>
+:thing ^ !<InfoStatus> ^ !<Salient>
 -> 
 # ^ <Quantification>specific.
 
-(:entity | :thing) ^ <Quantification> ^ <Delimitation> ^ <InfoStatus> 
+:thing ^ <Quantification> ^ <Delimitation> ^ <InfoStatus> 
 -> 
 # ! <InfoStatus>.
 
-(:entity | :thing) ^ <Quantification> ^ <Delimitation> ^ <Salient> 
+:thing ^ <Quantification> ^ <Delimitation> ^ <Salient> 
 -> 
 # ! <Salient>.
 
