@@ -6,7 +6,7 @@
 // Variants: "what PROPERTY is the TARGET"
 // Example: @d1:dvp(<SpeechAct>clarification ^ <Modality>vision ^ <Target>(t:thing ^ box ^ <Salient>true) ^ <Content>(c1:q-color))
 
-:dvp ^ <SpeechAct>question ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-color ^ !#propvalue)
+:dvp ^ <SpeechAct>question ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-color)
 -> 
 #c1 =:ascription ^ be ^ 
                     <Mood>int ^ 
@@ -17,7 +17,7 @@
                     <Wh-Restr>(:specifier ^ what ^ 
                                <Scope>(#c:)).
 
-:dvp ^ <SpeechAct>question ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-shape ^ !#propvalue)
+:dvp ^ <SpeechAct>question ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-shape)
 -> 
 #c1 =:ascription ^ be ^ 
                     <Mood>int ^ 
@@ -28,7 +28,7 @@
                     <Wh-Restr>(:specifier ^ what ^ 
                                <Scope>(#c:)). 
                                
-:dvp ^ <SpeechAct>question ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-size ^ !#propvalue)
+:dvp ^ <SpeechAct>question ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-size)
 -> 
 #c1 =:ascription ^ be ^ 
                     <Mood>int ^ 
