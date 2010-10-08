@@ -14,6 +14,7 @@ namespace cogx
 namespace Math
 {
 
+inline
 bool pointInsideBox(const Box3 &b, const Vector3 &p)
 {
   return b.pos.x - b.size.x/2. <= p.x && p.x <= b.pos.x + b.size.x/2. &&

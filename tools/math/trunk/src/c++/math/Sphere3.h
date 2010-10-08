@@ -14,6 +14,7 @@ namespace cogx
 namespace Math
 {
 
+inline
 bool pointInsideSphere(const Sphere3 &s, const Vector3 &p)
 {
   return dist(p, s.pos) <= s.rad;
