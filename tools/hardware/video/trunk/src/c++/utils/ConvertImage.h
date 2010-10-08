@@ -40,6 +40,27 @@ void convertImageToIpl(const Video::Image & img, IplImage ** iplImg);
 IplImage* convertImageToIpl(const Video::Image & image);
 
 /**
+ * @brief Create an IplImage that uses the data from a Video::Image. \n
+ * The image data is shared between Video::Image and IplImage. \n
+ * WARNING: DO NOT cvReleaseImage() the obtained VideoImage.
+ *    Use releaseWrappedImage() instead. \n
+ * WARNING: The Video::Image MUST NOT BE DESTROYED while using the
+ *    IplImage created with this function.
+ * WARNING: At the moment it is not clear if the hack works with
+ *    images whose width is not aligned to 4 bytes.
+ * WARNING: THIS IS A SEVERE HACK: USE AT YOUR OWN RISK.
+ */
+IplImage* wrapVideoImage(const Video::Image &image);
+
+/**
+ * @brief Release an image obtained with wrapVideoImage(). \n
+ * WARNING: DO NOT releaseWrappedImage() if the IplImage was not created 
+ *    with wrapVideoImage(). Use cvReleaseImage() instead. \n
+ * WARNING: THIS IS A SEVERE HACK: USE AT YOUR OWN RISK.
+ */
+void releaseWrappedImage(IplImage** pImagePtr);
+
+/**
  * @brief Convert from raw image data to an OpenCV image type (IplImage).
  */
 bool convertBytesToIpl(const std::vector<unsigned char>& data, int width, int height, int nchn, IplImage ** iplImg);

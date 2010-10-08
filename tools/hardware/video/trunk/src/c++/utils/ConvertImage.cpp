@@ -51,6 +51,27 @@ IplImage* convertImageToIpl(const Video::Image & img)
   return iplImg;
 }
 
+IplImage* wrapVideoImage(const Video::Image &img)
+{
+  // HACK: Data shared between IplImage and vector
+   IplImage* pImg = cvCreateImageHeader(cvSize(img.width, img.height), IPL_DEPTH_8U, 3);
+   pImg->imageData = (char*) &(img.data[0]);
+   pImg->imageDataOrigin = pImg->imageData;
+   pImg->widthStep = img.width * 3;
+   pImg->imageSize = pImg->widthStep * img.height;
+}
+
+void releaseWrappedImage(IplImage** pImagePtr)
+{
+  if (! pImagePtr) return;
+  if (*pImagePtr) {
+    // HACK: Data shared between IplImage and vector; the data will be released with Video::Image
+    (*pImagePtr)->imageData = NULL;
+    (*pImagePtr)->imageDataOrigin = NULL;
+    cvReleaseImage(pImagePtr);
+  }
+}
+
 bool convertBytesToIpl(const std::vector<unsigned char>& data, int width, int height, int nchn, IplImage ** iplImg)
 {
   if(*iplImg != 0)
