@@ -1,6 +1,5 @@
 HOST localhost
 
-
 # spatial #####################################################################
 INCLUDE includes/spatial.sa/spatial-blobfinder.cast
 INCLUDE includes/spatial.sa/spatial-ptz.cast
@@ -13,27 +12,32 @@ INCLUDE includes/spatial.sa/spatial-mediator.cast
 CPP GD visual.search VisualObjectSearch -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 100 --tiltinterval 15  --gridsize 500 --cellsize 0.05  --kernel-width-factor 0.7 --sampleawayfromobs 0.45 --publishsimcones #--showgui --ctrl-ptu --simulate --showconemap 
 
 
+# Default.SA ################################################################
+INCLUDE includes/default.sa/default-base.cast
+INCLUDE includes/coma.sa/coma-defaultsa.cast
+INCLUDE includes/default.sa/default-main.cast
+
+
+# Conceptual.SA  ############################################################
+INCLUDE includes/conceptual.sa/conceptual-base.cast
+#INCLUDE includes/conceptual.sa/conceptual-main.cast
+
 
 # vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
-INCLUDE includes/vision.sa/vision-camera-mount.cast
 INCLUDE includes/vision.sa/vision-blobs-dora.cast
-
-#JAVA MG ContinuousDetector  vision.components.ContinuousDetector --label-record1 --label-record2 --label-record3 --label-record4
+INCLUDE includes/vision.sa/vision-execution.cast
+INCLUDE includes/vision.sa/vision-mediators-dora.cast
 
 # coma ######################################################################
-#INCLUDE includes/coma.sa/coma-base.cast
-#JAVA GD FakeComa fakecoma.components.GraphicalComa --debug
-#JAVA MG recorder castutils.components.WorkingMemoryRecorder  --config recorder-filter.txt
-#JAVA MG player castutils.components.WorkingMemoryPlayer  --state --file stored-maps/3rdtask-real/coma.log
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma-crowl.cast
+INCLUDE includes/coma.sa/coma-mediators.cast
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
-#INCLUDE includes/binder.sa/binder.cast
+JAVA MG percepttracker.dora     eu.cogx.percepttracker.dora.DoraBeliefTracker --write-to-sa binder
 
-# comsys ######################################################################
-#INCLUDE includes/comsys.sa/comsys-base.cast
-#JAVA MG  comsys-execution comsys.motivation.ComsysActionInterface
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
@@ -48,25 +52,16 @@ JAVA MG executor dora.execution.components.DoraExecutionMediator
 
 # viewing and debugging #######################################################
 
-#JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, castutils.slice.WMMap, motivation.slice.ExploreMotive"
 
 
-
-
-
-#JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
-
-
-
-
-JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"
-JAVA MG placedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "SpatialData.Place"
-JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "motivation.slice.Motive"
-JAVA MG conedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "SpatialData.ViewPoint"
-
-
-#INCLUDE includes/visualization.sa/v11n-base.cast
+INCLUDE includes/visualization.sa/v11n-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
 
 
 
+
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col
+JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "motivation.slice.Motive"
+JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.Intention" --generic-col
+
+JAVA MG roomdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "comadata.ComaRoom" --generic-col
