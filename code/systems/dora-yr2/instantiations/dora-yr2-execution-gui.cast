@@ -54,7 +54,7 @@ JAVA MG executor dora.execution.components.DoraExecutionMediator
 
 
 
-INCLUDE includes/visualization.sa/v11n-base.cast
+
 INCLUDE includes/planner.sa/viz-plan.cast
 
 
