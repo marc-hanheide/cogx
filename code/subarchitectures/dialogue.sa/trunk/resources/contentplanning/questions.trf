@@ -6,7 +6,7 @@
 // Variants: "what PROPERTY is the TARGET"
 // Example: @d1:dvp(<SpeechAct>clarification ^ <Modality>vision ^ <Target>(t:thing ^ box ^ <Salient>true) ^ <Content>(c1:q-color))
 
-:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-color)
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-color ^ !#propvalue)
 -> 
 #c1 =:ascription ^ be ^ 
                     <Mood>int ^ 
@@ -17,9 +17,7 @@
                     <Wh-Restr>(:specifier ^ what ^ 
                                <Scope>(#c:)).
 
-
-
-:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-shape)
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-shape ^ !#propvalue)
 -> 
 #c1 =:ascription ^ be ^ 
                     <Mood>int ^ 
@@ -30,7 +28,7 @@
                     <Wh-Restr>(:specifier ^ what ^ 
                                <Scope>(#c:)). 
                                
-:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-size)
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-size ^ !#propvalue)
 -> 
 #c1 =:ascription ^ be ^ 
                     <Mood>int ^ 
@@ -40,7 +38,7 @@
                     <Cop-Scope>(#c:quality ^ size) ^
                     <Wh-Restr>(:specifier ^ what ^ 
                                <Scope>(#c:)).                                                               
-                               
+                                                              
 
 
 // Clarification: check whether a property value as recognized in vision is correct
@@ -48,7 +46,7 @@
 // Variants: "is the PROPERTY of the TARGET PROPVALUE"
 // Example: @d1:dvp(<SpeechAct>clarification ^ <Modality>vision ^ <Target>(t:thing ^ box ^ <Salient>true) ^ <Content>(c1:q-color ^ blue))
 
-:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-color ^ #c1value)
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:thing) ^ <Content>(#c1:q-color ^ #c1value)
  -> 
 #c1 = :ascription ^ be ^ 
                     <Mood>int ^ 
@@ -61,30 +59,19 @@
                     <Cop-Scope>(#b:q-color ^ #c1value) ^ 
                     <Subject>#c:.
 
-
-:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-size ^ #c1value)
+                                  
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:entity ^ context ) ^ <Content>(#c1:q-color ^ #c1value)
  -> 
 #c1 = :ascription ^ be ^ 
                     <Mood>int ^ 
                     <Tense>pres ^ 
-                    <Cop-Restr>(#c:entity ^ size ^ 
-                               <Delimitation>unique ^ 
-                               <Num>sg ^ 
-                               <Quantification>specific ^ 
-                               <Owner>(#t:)) ^ 
-                    <Cop-Scope>(#b:q-size ^ #c1value) ^ 
-                    <Subject>#c:.
-
-:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-shape ^ #c1value)
- -> 
-#c1 = :ascription ^ be ^ 
-                    <Mood>int ^ 
-                    <Tense>pres ^ 
-                    <Cop-Restr>(#c:entity ^ shape ^ 
-                               <Delimitation>unique ^ 
-                               <Num>sg ^ 
-                               <Quantification>specific ^ 
-                               <Owner>(#t:)) ^ 
-                    <Cop-Scope>(#b:q-shape ^ #c1value) ^ 
-                    <Subject>#c:.
-
+                    <Cop-Restr>(#t:) ^ 
+                    <Cop-Scope>(#b:q-color ^ #c1value) ^ 
+                    <Subject>#t:.                             
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                                              
