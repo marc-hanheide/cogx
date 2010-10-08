@@ -87,6 +87,7 @@
 	m_snapshotFlags = "psmh"; // points, segmented image, mask, shape descriptor histogram; no video image
 	m_idLeftImage = 0;
 	m_idRightImage = 1;
+	m_bAutoSnapshot = false;
   }
 
   void SOIFilter::configure(const map<string,string> & _config)
@@ -184,6 +185,14 @@
 	  str >> m_idLeftImage;
 	  str >> m_idRightImage;
 	  m_snapshotFlags = m_snapshotFlags + "v";
+	}
+
+	if((it = _config.find("--autosnap")) != _config.end())
+	{
+	  istringstream str(it->second);
+	  string val;
+	  str >> val;
+	  m_bAutoSnapshot = (val == "" || val == "true");
 	}
 
 
@@ -1349,6 +1358,11 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 #if 1 && defined(FEAT_VISUALIZATION)
   m_display.setHtml("soif.@debug", "segmentObject.input", ss.str());
 #endif
+
+  if (m_bAutoSnapshot && protoObj != NULL) {
+	// XXX: (quick and dirty) assumption: we filled m_LastProtoObject that was passed from runComponent();
+	saveSnapshot();
+  }
 
   return protoObj;
 }
