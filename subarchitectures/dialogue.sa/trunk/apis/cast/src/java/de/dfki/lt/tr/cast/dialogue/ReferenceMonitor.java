@@ -46,7 +46,7 @@ import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
 import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
 import de.dfki.lt.tr.infer.weigabd.slice.Term;
-import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.slice.SharedBelief;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -106,7 +106,7 @@ extends AbstractDialogueComponent {
  */
 
 		addChangeFilter(
-				ChangeFilterFactory.createChangeFilter(GroundedBelief.class, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
+				ChangeFilterFactory.createChangeFilter(SharedBelief.class, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -184,15 +184,8 @@ extends AbstractDialogueComponent {
 		proposeInformationProcessingTask(taskID, taskGoal);
 	}
 
-	private static Term wmAddressToTerm(WorkingMemoryAddress addr) {
-		return TermAtomFactory.term("ptr", new Term[] {
-				TermAtomFactory.term(addr.subarchitecture),
-				TermAtomFactory.term(addr.id)
-		});
-	}
-
 	private static String wmAddressToTermString(WorkingMemoryAddress addr) {
-		return MercuryUtils.termToString(wmAddressToTerm(addr));
+		return MercuryUtils.termToString(ConversionUtils.workingMemoryAddressToTerm(addr));
 	}
 
 	// FIXME: this has to be as efficient as possible!
@@ -207,7 +200,7 @@ extends AbstractDialogueComponent {
 			dBelief bel = bm.get(addr);
 			args.add("bel : " + MercuryUtils.atomToString(TermAtomFactory.atom("epistemic_status",
 						new Term[] {
-							wmAddressToTerm(addr),
+							ConversionUtils.workingMemoryAddressToTerm(addr),
 							ConversionUtils.epistemicStatusToTerm(bel.estatus)
 						} ))
 					+ ".");
