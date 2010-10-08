@@ -161,6 +161,52 @@ public class DialogueActionInterface extends ManagedComponent {
 			m_feature = _feature;
 		}
 
+		protected Intention getIntention(
+				WorkingMemoryAddress _groundedBeliefAddress,
+				WorkingMemoryAddress _sharedBeliefAddress) {
+			// TODO sweet-talk marc into writing proxies for this too
+			Intention robotIntention = new Intention();
+			robotIntention.frame = CASTFrame.create().get();
+			robotIntention.estatus = new PrivateEpistemicStatus("robot");
+
+			// actual content
+			IntentionalContent content = new IntentionalContent();
+			content.probValue = 1f;
+			content.agents = new ArrayList<String>();
+			content.agents.add("robot");
+
+			// precondition
+			ComplexFormula preconditions = new ComplexFormula(-1,
+					new ArrayList<dFormula>(1), BinaryOp.conj);
+			preconditions.forms.add(new ModalFormula(-1, "belief", WMPointer
+					.create(_sharedBeliefAddress).get()));
+			content.preconditions = preconditions;
+
+			// postcondition
+			ComplexFormula postconditions = new ComplexFormula(-1,
+					new ArrayList<dFormula>(4), BinaryOp.conj);
+			postconditions.forms.add(PropositionFormula.create(
+					"question-answered").get());
+			postconditions.forms.add(new ModalFormula(-1, "agent",
+					PropositionFormula.create("human").get()));
+			postconditions.forms.add(new ModalFormula(-1, "about", WMPointer
+					.create(_groundedBeliefAddress).get()));
+			postconditions.forms.add(new ModalFormula(-1, "feature",
+					PropositionFormula.create(m_feature).get()));
+
+			ModalFormula state = new ModalFormula(-1, "state", postconditions);
+
+			ComplexFormula states = new ComplexFormula(-1,
+					new ArrayList<dFormula>(1), BinaryOp.conj);
+			states.forms.add(state);
+
+			content.postconditions = states;
+
+			robotIntention.content = new ArrayList<IntentionalContent>(1);
+			robotIntention.content.add(content);
+			return robotIntention;
+		}
+
 		@Override
 		public void executeAction() {
 
@@ -177,51 +223,34 @@ public class DialogueActionInterface extends ManagedComponent {
 				// as copied from
 				// http://codex.cs.bham.ac.uk/trac/cogx/wiki/documents/scenarios/beliefs/lingproduction
 
-				// TODO sweet-talk marc into writing proxies for this too
-				Intention robotIntention = new Intention();
-				robotIntention.frame = CASTFrame.create().get();
-				robotIntention.estatus = new PrivateEpistemicStatus("robot");
-
-				// actual content
-				IntentionalContent content = new IntentionalContent();
-				content.probValue = 1f;
-				content.agents = new ArrayList<String>();
-				content.agents.add("robot");
-
-				// precondition
-				ComplexFormula preconditions = new ComplexFormula(-1,
-						new ArrayList<dFormula>(1), BinaryOp.conj);
-				preconditions.forms.add(new ModalFormula(-1, "belief",
-						WMPointer.create(sharedBeliefAddress).get()));
-				content.preconditions = preconditions;
-
-				// postcondition
-				ComplexFormula postconditions = new ComplexFormula(-1,
-						new ArrayList<dFormula>(4), BinaryOp.conj);
-				postconditions.forms.add(PropositionFormula.create(
-						"question-answered").get());
-				postconditions.forms.add(new ModalFormula(-1, "agent",
-						PropositionFormula.create("human").get()));
-				postconditions.forms.add(new ModalFormula(-1, "about",
-						WMPointer.create(groundedBeliefAddress).get()));
-				postconditions.forms.add(new ModalFormula(-1, "feature",
-						PropositionFormula.create(m_feature).get()));
-
-				ModalFormula state = new ModalFormula(-1, "state",
-						postconditions);
-
-				ComplexFormula states = new ComplexFormula(-1,
-						new ArrayList<dFormula>(1), BinaryOp.conj);
-				states.forms.add(state);
-
-				content.postconditions = states;
-
-				robotIntention.content = new ArrayList<IntentionalContent>(1);
-				robotIntention.content.add(content);
-
+				Intention robotIntention = getIntention(groundedBeliefAddress,
+						sharedBeliefAddress);
 				addThenCompleteOnOverwrite(robotIntention);
 			}
 
+		}
+
+	}
+
+	public abstract static class AskForPolarDialogue<T extends BeliefPlusStringAction>
+			extends AskForFeatureValueDialogue<T> {
+
+		public AskForPolarDialogue(ManagedComponent _component, Class<T> _cls,
+				String _feature) {
+			super(_component, _cls, _feature);
+		}
+
+		@Override
+		protected Intention getIntention(
+				WorkingMemoryAddress _groundedBeliefAddress,
+				WorkingMemoryAddress _sharedBeliefAddress) {
+			Intention intention = super.getIntention(_groundedBeliefAddress,
+					_sharedBeliefAddress);
+			ComplexFormula postconditions = (ComplexFormula) intention.content
+					.get(0).postconditions;
+			postconditions.forms.add(new ModalFormula(-1, "hypo",
+					PropositionFormula.create(getAction().value).get()));
+			return intention;
 		}
 
 	}
@@ -244,6 +273,27 @@ public class DialogueActionInterface extends ManagedComponent {
 			AskForFeatureValueDialogue<AskForIdentity> {
 		public AskForIdentityValueDialogue(ManagedComponent _component) {
 			super(_component, AskForIdentity.class, "identity");
+		}
+	}
+
+	public static class AskForColourPolarDialogue extends
+			AskForPolarDialogue<AskPolarColour> {
+		public AskForColourPolarDialogue(ManagedComponent _component) {
+			super(_component, AskPolarColour.class, "color");
+		}
+	}
+
+	public static class AskForShapePolarDialogue extends
+			AskForPolarDialogue<AskPolarShape> {
+		public AskForShapePolarDialogue(ManagedComponent _component) {
+			super(_component, AskPolarShape.class, "shape");
+		}
+	}
+
+	public static class AskForIdentityPolarDialogue extends
+			AskForPolarDialogue<AskPolarIdentity> {
+		public AskForIdentityPolarDialogue(ManagedComponent _component) {
+			super(_component, AskPolarIdentity.class, "identity");
 		}
 	}
 
@@ -485,6 +535,18 @@ public class DialogueActionInterface extends ManagedComponent {
 			m_actionStateManager.registerActionType(AskForIdentity.class,
 					new ComponentActionFactory<AskForIdentityValueDialogue>(
 							this, AskForIdentityValueDialogue.class));
+
+			m_actionStateManager.registerActionType(AskPolarColour.class,
+					new ComponentActionFactory<AskForColourPolarDialogue>(this,
+							AskForColourPolarDialogue.class));
+
+			m_actionStateManager.registerActionType(AskPolarShape.class,
+					new ComponentActionFactory<AskForShapePolarDialogue>(this,
+							AskForShapePolarDialogue.class));
+
+			m_actionStateManager.registerActionType(AskPolarIdentity.class,
+					new ComponentActionFactory<AskForIdentityPolarDialogue>(
+							this, AskForIdentityPolarDialogue.class));
 
 			// TODO replace this with one of Marc's magic thingys
 			WorkingMemoryChangeReceiver updater = new WorkingMemoryChangeReceiver() {
