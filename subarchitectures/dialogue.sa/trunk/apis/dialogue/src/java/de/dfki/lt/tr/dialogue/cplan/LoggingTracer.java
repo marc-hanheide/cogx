@@ -5,7 +5,7 @@ import org.apache.log4j.Logger;
 public class LoggingTracer implements RuleTracer {
 
   private int _ruleTracing = 0;
-  private static Logger logger = Logger.getLogger("TraceLogger");
+  private Logger logger = Logger.getLogger("TraceLogger");
 
   public LoggingTracer(int bitmask) {
     setTracing(bitmask);

@@ -37,7 +37,7 @@ public class LFDebugPrinter extends DagPrinter {
     sb.append('[');
     // sb.append(readable ? here.getTypeName() : here.getType());
     DagNode.EdgeIterator fvListIt = here.getTransitionalEdgeIterator();
-    if (fvListIt != null) {
+    if (fvListIt != null && fvListIt.hasNext()) {
       while(fvListIt.hasNext()) {
         DagEdge edge = fvListIt.next();
         short feature = edge.getFeature();
@@ -53,6 +53,9 @@ public class LFDebugPrinter extends DagPrinter {
           toStringRec(edge.getValue(), readable, sb);
         }
       }
+    }
+    else {
+      sb.append('@').append(here.getTypeName()).append('@');
     }
     sb.append(']');
   }

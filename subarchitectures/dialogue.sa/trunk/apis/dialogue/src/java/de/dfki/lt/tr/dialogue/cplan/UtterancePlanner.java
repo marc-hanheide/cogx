@@ -92,14 +92,14 @@ public class UtterancePlanner {
 
   private void readRulesFromFile(File f, List<Rule> rules) {
     try {
-      logger.info("Reading rule file " + f);
       readRules(new FileReader(f), f.getPath(), rules);
+      logger.info("Reading rule file: " + f);
     }
     catch (FileNotFoundException fnfex) {
       logger.warn("Could not find rule file: " + f);
     }
     catch (IOException ioex) {
-      logger.warn("Could not read rule file: " + f + "(" + ioex +")");
+      logger.warn("Could not read rule file: " + f + " (" + ioex +")");
     }
   }
 

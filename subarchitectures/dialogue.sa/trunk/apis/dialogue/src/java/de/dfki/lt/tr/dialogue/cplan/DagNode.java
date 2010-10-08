@@ -1329,13 +1329,16 @@ public class DagNode {
     sb.append('[');
     sb.append(readable ? here.getTypeName() : here.getType());
     EdgeIterator fvListIt = here.getNewEdgeIterator();
-    if (fvListIt != null) {
+    if (fvListIt != null && fvListIt.hasNext()) {
       while(fvListIt.hasNext()) {
         DagEdge edge = fvListIt.next();
         sb.append(' ');
         sb.append(readable ? edge.getName() : edge.getFeature());
         edge.getValue().toStringRec(readable, sb, corefs);
       }
+    }
+    else {
+      sb.append('@').append(here.getTypeName()).append('@');
     }
     sb.append(']');
   }
