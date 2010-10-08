@@ -84,14 +84,15 @@ class PointerFormula extends dFormula {
 module history {
 
 ["java:type:java.util.ArrayList<cast.cdl.WorkingMemoryAddress>"] sequence<cast::cdl::WorkingMemoryAddress> WorkingMemoryAddresses;
+["java:type:java.util.ArrayList<cast.cdl.WorkingMemoryPointer>"] sequence<cast::cdl::WorkingMemoryPointer> WorkingMemoryPointers;
 
 
 /**
  * Abstract class specifying the history of a given belief
  */
 class CASTBeliefHistory extends AbstractBeliefHistory{
-	WorkingMemoryAddresses ancestors;
-	WorkingMemoryAddresses offspring;
+	WorkingMemoryPointers ancestors;
+	WorkingMemoryPointers offspring;
  };
 
 }; 
