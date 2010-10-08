@@ -40,22 +40,31 @@ public class PolicyAction extends FormulaWrapper {
 
 	private boolean isVoid = false;
 	
-	public PolicyAction() {
-		super("");
+	private String id;
+	
+	public PolicyAction(String id) {
+		super ("");
+		this.id = id;
 		isVoid = true;
 	}
 	
+	public PolicyAction(String id, String str) {
+		super(str);
+		this.id = id;
+	}
+	
+	public PolicyAction(String id, dFormula formula) {
+		super(formula);
+		this.id = id;
+	}
+	
+
 	public boolean isVoid() {
 		return isVoid;
 	}
 	
-	
-	public PolicyAction(String str) {
-		super(str);
-	}
-	
-	public PolicyAction(dFormula formula) {
-		super(formula);
+	public String getId() {
+		return id;
 	}
 	
 	public void fillActionArguments (HashMap<Integer,dFormula> arguments) {
@@ -89,5 +98,9 @@ public class PolicyAction extends FormulaWrapper {
 		else {
 			return "CI[" + FormulaUtils.getString(content) + "]";
 		}
+	}
+	
+	public static PolicyAction createVoidAction() {
+		return new PolicyAction("void");
 	}
 }

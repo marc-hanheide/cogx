@@ -173,9 +173,9 @@ public class PolicyEdge {
 	 * @param obs the new observation
 	 * @throws DialogueException if the observation is a null value
 	 */
-	public void setObservation(dFormula obs) throws DialogueException {
+	public void setObservation(PolicyObservation obs) throws DialogueException {
 		if (obs != null) {
-			this.obs = new PolicyObservation(obs);
+			this.obs = obs;
 		}
 		else {
 			throw new DialogueException("ERROR: cannot enter null values in observation edge");
@@ -202,7 +202,12 @@ public class PolicyEdge {
 	
 	
 	public String toString() {
+		if (obs != null) {
 		return obs.toString();
+		}
+		else {
+			return "";
+		}
 	}
 	
 	

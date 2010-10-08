@@ -180,7 +180,7 @@ public class DialogueManager {
 		debug("Policy: " + policy.toString());
 	
 		// else, return a void action
-		return new PolicyAction();
+		return PolicyAction.createVoidAction();
 	}
 
 

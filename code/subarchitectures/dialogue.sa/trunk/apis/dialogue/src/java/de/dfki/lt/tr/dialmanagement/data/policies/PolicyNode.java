@@ -58,8 +58,6 @@ public class PolicyNode {
 
 	// is it a final node
 	private boolean isFinal = false;
-
-
  
 	/**
 	 * Constructs a new action node, given an action
@@ -83,9 +81,18 @@ public class PolicyNode {
 	public PolicyNode(String identifier) {
 		id = identifier;
 		outgoingEdges = new Vector<PolicyEdge>();
+		action = PolicyAction.createVoidAction();
 	}
-
-
+	
+	public void setPolicyAction (PolicyAction action) {
+		this.action = action;
+	}
+	
+	public PolicyAction getPolicyAction () {
+		return action;
+	}
+	
+	
 	/**
 	 * Constructs a new action node, given an action and a set of incoming and 
 	 * outgoing observation edges
@@ -134,7 +141,7 @@ public class PolicyNode {
 	 */
 	public void addOutgoingEdge (PolicyEdge edge) throws DialogueException {
 		
-		if (edge==null || edge.getObservation() == null) {
+		if (edge==null) {
 			throw new DialogueException("ERROR, edge is a null value");
 		}
 		
