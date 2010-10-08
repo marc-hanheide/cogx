@@ -19,6 +19,13 @@ what shape is a box
 which shape is a box
 what shape is a triangle
 which shape is a triangle
+is the colour of the box red
+is the box red
+is the colour of this green
+is the box red
+is the ball red
+is a box red
+is a ball red
 this is a ball
 this is a box
 this is a car
