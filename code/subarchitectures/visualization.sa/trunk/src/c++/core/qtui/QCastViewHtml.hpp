@@ -32,6 +32,7 @@ private:
    static QString m_jQuery;
    QString jsObjectName;
    CPtrVector<cogx::display::CHtmlChunk> m_Chunks; // activehtml and form chunks (js interaction)
+   QString m_TextToFind;
 
 public:
    QCastViewHtml( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
@@ -57,6 +58,8 @@ private slots:
    void doUpdateContent();
    void createJsObjects();
    void finishLoading(bool);
+   void onFindOnPage();
+   void onFindAgainOnPage();
 private slots:
    // see: <url:html/formcap.hpp#tn=signalOwnerDataChanged>
    void doFillHtmlFrom(const QString& formid);
