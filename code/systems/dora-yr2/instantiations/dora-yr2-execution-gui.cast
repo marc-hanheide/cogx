@@ -46,7 +46,7 @@ INCLUDE includes/planner.sa/planner-base.cast
 
 
 # exection ####################################################################
-JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager
+JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --labels cornflakes,mug,book,boardgame
 JAVA MG executor dora.execution.components.DoraExecutionMediator
 
 
