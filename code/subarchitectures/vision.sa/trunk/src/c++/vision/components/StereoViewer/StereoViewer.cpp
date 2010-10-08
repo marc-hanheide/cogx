@@ -378,7 +378,7 @@ void StereoViewer::runComponent()
   glutMotionFunc(MouseMove);
   glutReshapeFunc(ResizeWin);
   glutDisplayFunc(DisplayWin);
-  int imgWidth = 1000;
+  int imgWidth = 320;
 
   cvNamedWindow(getComponentID().c_str(), 1);
 
