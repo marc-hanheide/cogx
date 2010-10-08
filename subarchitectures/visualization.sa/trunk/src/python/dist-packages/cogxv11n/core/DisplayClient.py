@@ -73,10 +73,10 @@ class CDisplayClient:
                 V11NSTANDALONENAME, dispCategory, self.m_ServerHost, V11NSTANDALONEPORT)
 
             self.m_Server = DisplayInterfacePrx.checkedCast(prx)
-            owner.println("DisplayClient(python) connected to standalone server on '%s'" % (m_ServerHost));
+            owner.println("DisplayClient(python) connected to standalone server on '%s'" % (self.m_ServerHost));
         except Exception as e:
             owner.println(
-                "*** DisplayClient(python): standalone server not found on host '%s'" % (m_ServerHost))
+                "*** DisplayClient(python): standalone server not found on host '%s'" % (self.m_ServerHost))
             self.m_Server = None
 
     def connectIceClient(self, owner):
