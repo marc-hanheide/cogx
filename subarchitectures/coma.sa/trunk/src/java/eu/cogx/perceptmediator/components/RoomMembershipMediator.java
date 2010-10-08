@@ -17,6 +17,7 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
+import cast.core.CASTUtils;
 import castutils.castextensions.WMContentWaiter;
 import castutils.castextensions.WMEventQueue;
 import castutils.castextensions.WMView;
@@ -154,7 +155,7 @@ public class RoomMembershipMediator extends ManagedComponent {
 				FormulaDistribution roomProperty = FormulaDistribution.create();
 				WorkingMemoryAddress roomBelief=getReferredBelief(new ComaRoomMatchingFunction(room.roomId));
 				roomProperty.getDistribution().add(
-						WMPointer.create(roomBelief).get(), 1.0);
+						WMPointer.create(roomBelief, CASTUtils.typeName(PerceptBelief.class)).get(), 1.0);
 				placeBelief.getContent().put(ROOM_PROPERTY, roomProperty);
 				overwriteWorkingMemory(newPlace, placeBelief.get());
 			} finally {
