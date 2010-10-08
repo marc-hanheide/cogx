@@ -9,9 +9,9 @@ JAVA MG	parser	de.dfki.lt.tr.cast.dialogue.IncrStringParser --grammar ./subarchi
 JAVA MG parseselect	de.dfki.lt.tr.cast.dialogue.ParseSelection --log true
 JAVA MG refmonitor	de.dfki.lt.tr.cast.dialogue.ReferenceMonitor --dumpfile /tmp/belief-model.abd --log true
 JAVA MG	refresolve	de.dfki.lt.tr.cast.dialogue.ReferenceResolution --ruleset-construct ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.construct.txt --dumpfile /tmp/belief-model.abd --correlfile ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/correlations.abd --appendfile ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/reference-resolution.abd --log true
-JAVA MG	int-recognizer	de.dfki.lt.tr.cast.dialogue.IntentionRecognizer --ruleset ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.U.txt --log true
-JAVA MG	int-realizer	de.dfki.lt.tr.cast.dialogue.IntentionRealizer --ruleset ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.G.txt --log true
-JAVA MG int-mirror	de.dfki.lt.tr.cast.dialogue.IntentionMirror --log true
+JAVA MG	int-recognizer	de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRecognizer --ruleset ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.U.txt --log true
+JAVA MG	int-realizer	de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRealizer --ruleset ./subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.G.txt --log true
+JAVA MG int-mirror	de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionMirror --log true
 JAVA MG cplan	de.dfki.lt.tr.cast.dialogue.ContentPlanner --domainFile ./subarchitectures/dialogue.sa/resources/contentplanning/allRuleFiles.trf --contentRel Content --log true
 JAVA MG realizer	de.dfki.lt.tr.cast.dialogue.CCGRealizer --ccg ./subarchitectures/dialogue.sa/resources/grammars/openccg/nonrobustmoloko/grammar.xml --log true
 #JAVA GD tts	de.dfki.lt.tr.cast.dialogue.MaryTTS --startserver --serverHost localhost --serverPort 59125 --voice cmu-slt-hsmm --log true #--debug true
