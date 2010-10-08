@@ -20,7 +20,7 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 import castutils.castextensions.WMEntrySet;
 import castutils.castextensions.WMEntrySet.ChangeHandler;
-import castutils.viewer.plugins.ObjectImplInfo;
+import castutils.viewer.plugins.DefaultXMLInfo;
 import castutils.viewer.plugins.Plugin;
 
 /**
@@ -33,7 +33,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 	final private MyDisplayClient displayClient = new MyDisplayClient();
 	final Map<Class<?>, Plugin> objectDispatcherMap = new HashMap<Class<?>, Plugin>();
 	public boolean addGenericCol = false;
-	private final ObjectImplInfo genericPlugin = new ObjectImplInfo();
+	private final DefaultXMLInfo genericPlugin = new DefaultXMLInfo();
 
 	private class MyDisplayClient extends DisplayClient implements
 			ChangeHandler {
