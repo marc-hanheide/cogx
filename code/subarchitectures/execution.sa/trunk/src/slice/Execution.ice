@@ -184,6 +184,16 @@ module execution {
       class AskForIdentity extends SingleBeliefAction {
       };
 
+      class AskPolarColour extends BeliefPlusStringAction {
+      };
+
+      class AskPolarShape extends BeliefPlusStringAction {
+      };
+
+      class AskPolarIdentity extends BeliefPlusStringAction {
+      };
+
+
       class LearnColour extends BeliefPlusStringAction {
       };
 
