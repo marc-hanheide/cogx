@@ -46,6 +46,7 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import dora.execution.components.GraphicalExecutionManager;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
 import eu.cogx.perceptmediator.dora.ViewPointTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
@@ -614,34 +615,7 @@ public class ActionInterfaceFrame extends JFrame {
 		}
 	}
 
-	private IndependentFormulaDistributionsBelief<PerceptBelief> getMostRecentPerceptBeliefAncestor(
-			IndependentFormulaDistributionsBelief<GroundedBelief> _gb)
-			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-		CASTBeliefHistory hist = (CASTBeliefHistory) _gb.get().hist;
 
-		
-		IndependentFormulaDistributionsBelief<PerceptBelief> perceptBel = IndependentFormulaDistributionsBelief
-				.create(PerceptBelief.class, m_exeMan.getMemoryEntry(
-						hist.ancestors.get(hist.ancestors.size() - 1).address,
-						PerceptBelief.class));
-		return perceptBel;
-
-	}
-
-	private WorkingMemoryPointer getMostRecentAncestorPointer(
-			IndependentFormulaDistributionsBelief<?> _pb) {
-		CASTBeliefHistory hist = (CASTBeliefHistory) _pb.get().hist;
-		return hist.ancestors.get(hist.ancestors.size() - 1);
-	}
-
-	<PerceptType extends Ice.Object> PerceptType getMostRecentPerceptAncestor(
-			IndependentFormulaDistributionsBelief<PerceptBelief> _pb,
-			Class<PerceptType> _pCls) throws DoesNotExistOnWMException,
-			UnknownSubarchitectureException {
-		WorkingMemoryPointer ancestorPtr = getMostRecentAncestorPointer(_pb);
-		assert ancestorPtr.type.equals(CASTUtils.typeName(_pCls)) : "type mismactch for requested percept ancestor";
-		return m_exeMan.getMemoryEntry(ancestorPtr.address, _pCls);
-	}
 
 	/**
 	 * @throws CASTException
@@ -660,9 +634,9 @@ public class ActionInterfaceFrame extends JFrame {
 
 			// TODO source-address or what now to get original ComaRoom from
 			// GroundedBelief?
-			IndependentFormulaDistributionsBelief<PerceptBelief> pb = getMostRecentPerceptBeliefAncestor(gb);
+			IndependentFormulaDistributionsBelief<PerceptBelief> pb = BeliefUtils.getMostRecentPerceptBeliefAncestor(m_exeMan, gb);
 
-			ComaRoom room = getMostRecentPerceptAncestor(pb, ComaRoom.class);
+			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(m_exeMan,pb, ComaRoom.class);
 
 			m_exeMan.triggerConeGeneration((String) JOptionPane
 					.showInputDialog(this,
@@ -691,7 +665,7 @@ public class ActionInterfaceFrame extends JFrame {
 
 			//ViewPoint GBs come directly from data, no percept belief middle ground
 			
-			WorkingMemoryPointer perceptPointer = getMostRecentAncestorPointer(gb);
+			WorkingMemoryPointer perceptPointer = BeliefUtils.getMostRecentAncestorPointer(gb);
 			
 			m_exeMan.triggerProccesCone(perceptPointer.address, new MonitorPanel());
 		} else {
