@@ -18,7 +18,7 @@
 
 
 // Variant: "thank you"
-
+/*
 :dvp ^ <SpeechAct>confirmation ^ <Content>(#c1:top),
 random(1,2,3) ^ 1
 -> 
@@ -28,16 +28,16 @@ random(1,2,3) ^ 1
         <Actor>(#s1:entity ^ speaker ^ 
                 <Num>sg) ^ 
         <Recipient>(#a1:entity ^ addressee).
-
+*/
+        
 // Variant: "okay"        
         
-:dvp ^ <SpeechAct>confirmation ^ <Content>(#c1:top),
-random(1,2,3) ^ 2
+:dvp ^ <SpeechAct>confirmation ^ <Content>(#c1:top)
 ->         
-#c1 = :marker ^ okay.        
+#c1 = :q-attitude ^ ok.    
         
  // Variant: "thank you for telling me that" (3)
-
+/*
 :dvp ^ <SpeechAct>confirmation ^ <Content>(#c1:top),
 random(1,2,3) ^ 3
 ->         
@@ -55,6 +55,6 @@ random(1,2,3) ^ 3
                                         <Num>sg))) ^ 
             <Recipient>#x1:entity ^ 
             <Subject>#i1:person.
-
+*/
 
 

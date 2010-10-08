@@ -26,53 +26,60 @@
 
 :dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-color)
 -> 
-#c1 =:communication ^ say ^ 
-                    <Mood>int ^ 
-                    <Tense>past ^ 
-                    <Actor>(#y1:person ^ you ^ 
-                            <Num>sg) ^ 
-                    <Event>#x1:event ^ 
-                    <Modifier>(#j1:m-time ^ just) ^ 
-                    <Subject>#y1: ^ 
-                    <Wh-Restr>(#w1:specifier ^ what ^ 
-                               <Scope>(#s2:quality ^ color)). 
+#c1 = :cognition ^ mean ^ 
+        <Mood>int ^ 
+        <Tense>past ^ 
+        <Actor>(#y1:person ^ you ^ 
+                <Num>sg) ^ 
+        <Patient>(#c:entity ^ color ^ 
+                  <Delimitation>unique ^ 
+                  <Num>sg ^ 
+                  <Quantification>specific) ^ 
+        <Subject>#y1: ^ 
+        <Wh-Restr>(#w1:specifier ^ which ^ 
+                   <Scope>#c:).
+
 
 
 :dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-shape)
 -> 
-#c1 =:communication ^ say ^ 
-                    <Mood>int ^ 
-                    <Tense>past ^ 
-                    <Actor>(#y1:person ^ you ^ 
-                            <Num>sg) ^ 
-                    <Event>:event ^ 
-                    <Modifier>(:m-time ^ just) ^ 
-                    <Subject>#y1: ^ 
-                    <Wh-Restr>(:specifier ^ what ^ 
-                               <Scope>(:quality ^ shape)). 
+#c1 = :cognition ^ mean ^ 
+<Mood>int ^ 
+<Tense>past ^ 
+<Actor>(#y1:person ^ you ^ 
+        <Num>sg) ^ 
+<Patient>(#c:entity ^ shape ^ 
+          <Delimitation>unique ^ 
+          <Num>sg ^ 
+          <Quantification>specific) ^ 
+<Subject>#y1: ^ 
+<Wh-Restr>(#w1:specifier ^ which ^ 
+           <Scope>#c:).
 
 
 :dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-size)
 -> 
-#c1 =:communication ^ say ^ 
-                    <Mood>int ^ 
-                    <Tense>past ^ 
-                    <Actor>(#y1:person ^ you ^ 
-                            <Num>sg) ^ 
-                    <Event>:event ^ 
-                    <Modifier>(:m-time ^ just) ^ 
-                    <Subject>#y1: ^ 
-                    <Wh-Restr>(:specifier ^ what ^ 
-                               <Scope>(:quality ^ size)). 
+#c1 = :cognition ^ mean ^ 
+        <Mood>int ^ 
+        <Tense>past ^ 
+        <Actor>(#y1:person ^ you ^ 
+                <Num>sg) ^ 
+        <Patient>(#c:entity ^ size ^ 
+                  <Delimitation>unique ^ 
+                  <Num>sg ^ 
+                  <Quantification>specific) ^ 
+        <Subject>#y1: ^ 
+        <Wh-Restr>(#w1:specifier ^ which ^ 
+                   <Scope>#c:).
 
 
 // Clarification: failure to understand what property value was just said
 // Goal: @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-PROPERTY ^ VALUE))
 // Variants: "did you say it is VALUE" (1), "did you say the PROPERTY is VALUE" (2)
 
+/*
 // Variant (1): "did you say it is VALUE"
-:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-color ^ #c1value),
-random(1,2) ^ 1
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-color ^ #c1value)
 ->
 #c1 = :communication ^ say ^ 
                     <Mood>int ^ 
@@ -86,11 +93,11 @@ random(1,2) ^ 1
                                         <Num>sg) ^ 
                             <Cop-Scope>(#b2:q-color ^ #c1value) ^ 
                             <Subject>#i1:) ^ 
-                    <Subject>y1:person.
-
+                    <Subject>#y1:.
+*/
+                    
 // Variant (2): "did you say the color is VALUE?"
-:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-color ^ #c1value),
-random(1,2) ^ 2
+:dvp ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(#c1:q-color ^ #c1value)
 ->
 #c1 =  :communication ^ say ^ 
                     <Mood>int ^ 
@@ -100,13 +107,13 @@ random(1,2) ^ 2
                     <Event>(#b1:ascription ^ be ^ 
                             <Mood>ind ^ 
                             <Tense>pres ^ 
-                            <Cop-Restr>(#c1:entity ^ color ^ 
+                            <Cop-Restr>(#c:entity ^ color ^ 
                                         <Delimitation>unique ^ 
                                         <Num>sg ^ 
                                         <Quantification>specific) ^ 
                             <Cop-Scope>(#b2:q-color ^ #c1value) ^ 
-                            <Subject>#c1:) ^ 
-                    <Subject>y1:person.
+                            <Subject>#c:) ^ 
+                    <Subject>#y1:.
 
 
 // Variant (1) "did you say it is VALUE"

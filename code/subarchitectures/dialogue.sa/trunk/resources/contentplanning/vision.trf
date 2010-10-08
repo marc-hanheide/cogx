@@ -17,12 +17,13 @@
 // "I see x"
 
 
-:dvp ^ <SpeechAct>assertion ^ <Modality>vision ^ <Actor>(i:person ^ I) ^ <Target>#w1:entity ^ <Content> ( #c1: )
+:dvp ^ <SpeechAct>assertion ^ <Modality>vision ^ <Actor>(#i:person ^ I) ^ <Target>#w1:thing ^ <Content> ( #c1: )
 ->
 #c1 = :perception ^ see ^ 
-                 <Mood> ind ^ 
-                 <Actor>(i:person ^ <Num> sg) ^ 
+                 <Mood> ind ^
+                 <Tense> pres ^ 
+                 <Actor>(#i:person ^ I ^ <Num> sg) ^ 
                  <Patient>#w1: ^ 
-                 <Subject>i:person.
+                 <Subject>#i:person.
 
 

@@ -5,7 +5,8 @@
 
 :ascription 
 -> 
-##ascription = true.
+##ascription = true, 
+# ^ be.
 
 // TARGET DESCRIPTION: 
 // Transforms a target entity into the copula restrictor, deleting the original target spec
