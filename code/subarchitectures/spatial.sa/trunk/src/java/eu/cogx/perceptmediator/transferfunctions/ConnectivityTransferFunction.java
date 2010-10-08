@@ -9,6 +9,7 @@ import SpatialProperties.ConnectivityPathProperty;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.formulas.BoolFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
@@ -59,8 +60,8 @@ public class ConnectivityTransferFunction extends
 				from.place1Id));
 		WorkingMemoryAddress wmaPlace2 = getReferredBelief(new PlaceMatchingFunction(
 				from.place2Id));
-		result.put("val0", WMPointer.create(wmaPlace1).getAsFormula());
-		result.put("val1", WMPointer.create(wmaPlace2).getAsFormula());
+		result.put("val0", WMPointer.create(wmaPlace1, CASTUtils.typeName(this.beliefClass)).getAsFormula());
+		result.put("val1", WMPointer.create(wmaPlace2, CASTUtils.typeName(this.beliefClass)).getAsFormula());
 		result.put("connected", BoolFormula.create(true).getAsFormula());
 		return result;
 	}
