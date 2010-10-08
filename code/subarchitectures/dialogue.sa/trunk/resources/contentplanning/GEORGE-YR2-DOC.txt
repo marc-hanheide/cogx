@@ -132,7 +132,17 @@ H: ok, goodbye robot!
 - "it is a red box": @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ context)  ^ <Type>(b3:thing ^ <InfoStatus>new ^ <Color>red ^ box))) 
 
 
+* POLAR QUESTION: 
+- "is the color of the box blue": @d1:dvp(<SpeechAct>clarification ^ <Modality>vision ^ <Target>(t:thing ^ box ^ <Salient>true) ^ <Content>(c1:q-color ^ blue))
+- "is this blue": @d1:dvp(<SpeechAct>clarification ^ <Modality>vision ^ <Target>(t:entity ^ context ^ <Salient>true) ^ <Content>(c1:q-color ^ blue))
+- "is it blue": @d1:dvp(<SpeechAct>clarification ^ <Modality>vision ^ <Target>(t:entity ^ context ^ <InfoStatus>familiar ^ <Salient>true) ^ <Content>(c1:q-color ^ blue))
 
+* WH-QUESTION: 
+- "what color is the box" @d1:dvp(<SpeechAct>question ^ <Modality>vision ^ <Target>(t:thing ^ box ^ <Salient>true) ^ <Content>(c1:q-color))
 
+* REQUEST: 
+- "could you show a red object": @d1:dvp(<SpeechAct>request ^ <Modality>vision ^ <Actor>(y1:person ^ you) ^ <Content>(c1:q-color ^ red))
+- "could you show me a big object": @d1:dvp(<SpeechAct>request ^ <Modality>vision ^ <Actor>(y1:person ^ you) ^ <Content>(c1:q-size ^ big))
+- "could you show me a round object": @d1:dvp(<SpeechAct>request ^ <Modality>vision ^ <Actor>(y1:person ^ you) ^ <Content>(c1:q-shape ^ round))
 
 

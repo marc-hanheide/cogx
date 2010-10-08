@@ -98,6 +98,9 @@
 # !<InfoStatus>,
 # !<Salient>.
 
+
+
+
 (:entity | :thing) ^ #v ^ !<InfoStatus> ^ <Salient>true ^ !<Num>, 
 ##ascription ^ true
 ->
@@ -117,7 +120,7 @@
 // NUMBER
 // The number for an entity is as specified, else it defaults to singular. 
 
-(:entity | :thing) ^ !<Num> ^ !<InfoStatus>
+(:entity | :thing | :person) ^ !<Num> ^ !<InfoStatus>
 ->
 # ^ <Num>sg.
 
