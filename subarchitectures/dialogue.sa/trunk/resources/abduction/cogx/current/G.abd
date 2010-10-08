@@ -114,21 +114,18 @@ generate : event : utter(S, H, Int) <-
 % go left -> please show me something red
 generate : event : utter(S, H, Int) <-
 	utt_head(Nom),
-%	dummy_nom2(ContentNom),
-%	dummy_nom3(TargetNom),
-%	dummy_nom4(PropNom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(ActorNom),
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['motion' | T])),
-%	i : feat_SpeechAct(Nom, assertion) / -1.0,
-%	i : feat_Relation(Nom, answer) / -1.0,
-%	i : rel_Content(Nom, ContentNom) / -1.0,
-%		i : sort(ContentNom, 'ascription') / -1.0,
-%		i : rel_Target(ContentNom, TargetNom) / -1.0,
-%			generate : it(TargetNom),
-%		i : rel_Color(ContentNom, PropNom) / -1.0,
-%			i : sort(PropNom, quality) / -1.0,
-%			i : prop(PropNom, blue) / -1.0,
-	i : feat_CannedText(Nom, todo_please_show_me_something_red) / -1.0,
+	i : feat_SpeechAct(Nom, request) / -1.0,
+	i : feat_Modality(Nom, vision) / -1.0,
+	i : rel_Actor(Nom, ActorNom) / -1.0,
+		i : sort(ActorNom, person) / -1.0,
+		i : prop(ActorNom, prop) / -1.0,
+	i : rel_Content(Nom, ContentNom) / -1.0,
+		i : sort(ContentNom, 'q-shape') / -1.0,
+		i : prop(ContentNom, round) / -1.0,
 	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
