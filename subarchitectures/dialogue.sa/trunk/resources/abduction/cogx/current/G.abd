@@ -103,7 +103,7 @@ generate : event : utter(S, H, Int) <-
 %-------------------------------------------------------------------------
 
 % XXX HACK XXX
-% find me a box -> it is blue
+% bring me a box -> it is blue
 generate : event : utter(S, H, Int) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
@@ -116,7 +116,7 @@ generate : event : utter(S, H, Int) <-
 	i : rel_Content(Nom, ContentNom) / -1.0,
 		i : sort(ContentNom, 'ascription') / -1.0,
 		i : rel_Target(ContentNom, TargetNom) / -1.0,
-			generate : it(TargetNom),
+			generate : complex_ex(TargetNom),
 		i : rel_Color(ContentNom, PropNom) / -1.0,
 			i : sort(PropNom, quality) / -1.0,
 			i : prop(PropNom, blue) / -1.0,
@@ -165,6 +165,11 @@ generate : the_box(Nom) <-
 	i : feat_InfoStatus(Nom, familiar) / -1.0,
 	i : feat_Salient(Nom, true) / -1.0.
 
+generate : complex_ex(Nom) <-
+	generate : the_box(Nom),
+	i : feat_Color(Nom, red) / -1.0,
+	i : feat_Shape(Nom, round) / -1.0.
+
 %-------------------------------------------------------------------------
 % ENGAGEMENT
 %-------------------------------------------------------------------------
@@ -185,3 +190,12 @@ generate : event : utter(S, H, Int) <-
 	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
+% THANKING
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['thanked'|T])),
+	utt_head(Nom),
+	i : feat_SpeechAct(Nom, confirmation) / -1.0,
+	event : produce(r, Nom) / -1.0.
