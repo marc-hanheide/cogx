@@ -82,6 +82,8 @@ public class RoomMembershipMediator extends ManagedComponent {
 			while (true) {
 				try {
 					final WorkingMemoryChange ev = entryQueue.take();
+					log(RoomMembershipMediator.class.getName() + " change: "
+							+ CASTUtils.toString(ev));
 					switch (ev.operation) {
 					case ADD: {
 						ComaRoom room = getMemoryEntry(ev.address,
@@ -101,7 +103,7 @@ public class RoomMembershipMediator extends ManagedComponent {
 						break;
 					}
 					case DELETE: {
-						removePlaceProperties(null);
+						removePlaceProperties(ev.address);
 						mapRoom2Places.remove(ev.address);
 						break;
 					}
@@ -153,9 +155,12 @@ public class RoomMembershipMediator extends ManagedComponent {
 						.create(PerceptBelief.class, getMemoryEntry(newPlace,
 								PerceptBelief.class));
 				FormulaDistribution roomProperty = FormulaDistribution.create();
-				WorkingMemoryAddress roomBelief=getReferredBelief(new ComaRoomMatchingFunction(room.roomId));
+				WorkingMemoryAddress roomBelief = getReferredBelief(new ComaRoomMatchingFunction(
+						room.roomId));
 				roomProperty.getDistribution().add(
-						WMPointer.create(roomBelief, CASTUtils.typeName(PerceptBelief.class)).get(), 1.0);
+						WMPointer.create(roomBelief,
+								CASTUtils.typeName(PerceptBelief.class)).get(),
+						1.0);
 				placeBelief.getContent().put(ROOM_PROPERTY, roomProperty);
 				overwriteWorkingMemory(newPlace, placeBelief.get());
 			} finally {
@@ -210,6 +215,7 @@ public class RoomMembershipMediator extends ManagedComponent {
 
 	private void removePlaceProperty(WorkingMemoryAddress place)
 			throws CASTException {
+		log("remove " + ROOM_PROPERTY + " from " + CASTUtils.toString(place));
 		try {
 			lockEntry(place, WorkingMemoryPermissions.LOCKEDOD);
 
