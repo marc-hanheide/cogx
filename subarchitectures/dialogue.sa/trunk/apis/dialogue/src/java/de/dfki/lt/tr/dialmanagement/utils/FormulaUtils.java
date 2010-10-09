@@ -21,6 +21,7 @@
 package de.dfki.lt.tr.dialmanagement.utils;
 
 import java.io.ByteArrayInputStream;
+import java.util.LinkedList;
 import java.util.Vector;
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
@@ -225,6 +226,49 @@ public class FormulaUtils {
 		// else, look at the raw string
 		return FormulaUtils.getString(form1).equals(FormulaUtils.getString(form2));
 	}
+	
+	
+	
+	public static dFormula copy (dFormula form) throws DialogueException {
+		
+		if (form instanceof ElementaryFormula) {
+			return new ElementaryFormula(0, ((ElementaryFormula)form).prop);
+		}
+		else if (form instanceof ComplexFormula) {
+			LinkedList<dFormula> subFormulae = new LinkedList<dFormula>();
+			for (dFormula initSubFormula : ((ComplexFormula)form).forms) {
+				subFormulae.add(copy(initSubFormula));
+			}
+			return new ComplexFormula(0, subFormulae, ((ComplexFormula)form).op);
+		}
+		else if (form instanceof ModalFormula) {
+			return new ModalFormula(0, ((ModalFormula)form).op, copy(((ModalFormula)form).form));
+		}
+		else if (form instanceof IntegerFormula) {
+			return new IntegerFormula(0, ((IntegerFormula)form).val);
+		}
+		else if (form instanceof FloatFormula) {
+			return new FloatFormula(0, ((FloatFormula)form).val);
+		}
+		else if (form instanceof BooleanFormula) {
+			return new BooleanFormula(0, ((BooleanFormula)form).val);
+		}
+		else if (form instanceof GenericPointerFormula) {
+			return new GenericPointerFormula(0, ((GenericPointerFormula)form).pointer);
+		}
+		else if (form instanceof PointerFormula) {
+			return new PointerFormula(0, ((PointerFormula)form).pointer, ((PointerFormula)form).type);
+		}
+		else if (form instanceof UnderspecifiedFormula) {
+			return new UnderspecifiedFormula(0);
+		}
+		else if (form instanceof UnknownFormula) {
+			return new UnknownFormula(0);
+		}
+		
+		return constructFormula(getString(form));
+	}
+	
 	
 	
 	

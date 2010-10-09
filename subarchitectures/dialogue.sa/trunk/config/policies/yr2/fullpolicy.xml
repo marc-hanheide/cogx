@@ -1,0 +1,36 @@
+<policy>
+	<nodes>
+		<node id="rootNode" isInitial="true" isFinal="true" action="forwardAction"/>
+		<node id="greetingNode" isFinal="true" isInitial="false" action="greetingAction"/>
+		<node id="thankingNode" action="thankAction" isFinal="true" isInitial="false"/>
+		<node id="closingNode" action="closingAction" isInitial="false" isFinal="true"/>
+	</nodes>
+	
+	<edges>
+		<edge id="greetingEdge" source="rootNode" target="greetingNode" condition="greetingCond"/>
+		<edge id="greetingEdge2" source="closingNode" target="greetingNode" condition="greetingCond"/>
+		<edge id="evalEdge" source="rootNode" target="thankingNode" condition="evalCond"/>
+		<edge id="evalEdge2" source="greetingNode" target="thankingNode" condition="evalCond"/>
+		<edge id="anyEdge" source="rootNode" target="rootNode" condition="anyCond"/>	
+		<edge id="anyEdge2" source="greetingNode" target="rootNode" condition="anyCond"/>
+		<edge id="anyEdge3" source="thankingNode" target="rootNode" condition="anyCond"/>
+		<edge id="anyEdge4" source="closingNode" target="rootNode" condition="anyCond"/>
+		<edge id="closingEdge" source="rootNode" target="closingNode" condition="closingCond"/>
+		<edge id="closingEdge2" source="greetingNode" target="closingNode" condition="closingCond"/>
+		<edge id="closingEdge3" source="thankingNode" target="closingNode" condition="closingCond"/>
+	</edges>
+	
+	<conditions>
+		<condition id="anyCond" content="%1" lowerProb="0.0" higherProb="1.0" type="communicativeintention"/>
+		<condition content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(robot))" id="greetingCond" lowerProb="0.0" higherProb="1.0" type="communicativeintention"/>
+		<condition id="evalCond" content="&lt;state&gt;(appreciated ^ &lt;agent&gt;human ^ &lt;patient&gt;robot)" type="communicativeintention" lowerProb="0.0" higherProb="1.0"/>
+		<condition id="closingCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(robot))"/>
+	</conditions>
+	
+	<actions>
+		<action id="forwardAction" content="%1" type="intention"/>
+		<action id="greetingAction" type="communicativeintention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(robot) ^ &lt;agent&gt;(human))"/>
+		<action id="thankAction" type="communicativeintention" content="&lt;state&gt;(thanked ^ &lt;agent&gt;human ^ &lt;patient&gt;robot)"/>
+		<action id="closingAction" type="communicativeintention" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(robot) ^ &lt;agent&gt;(human))"/>
+	</actions>
+</policy>

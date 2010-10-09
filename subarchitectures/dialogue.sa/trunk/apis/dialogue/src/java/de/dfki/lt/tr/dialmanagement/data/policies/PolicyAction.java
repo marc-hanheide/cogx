@@ -43,6 +43,9 @@ public class PolicyAction extends FormulaWrapper {
 	// logging and debugging
 	public static boolean LOGGING = true;
 	public static boolean DEBUG = true;
+
+	// updated content
+	dFormula updatedContent;
 	
 	// the condition type
 	private int type;
@@ -67,6 +70,7 @@ public class PolicyAction extends FormulaWrapper {
 		super ("");
 		this.id = id;
 		isVoid = true;
+		updatedContent = content;
 	}
 	
 	/**
@@ -79,6 +83,7 @@ public class PolicyAction extends FormulaWrapper {
 	public PolicyAction(String id, String str) {
 		super(str);
 		this.id = id;
+		updatedContent = content;
 	}
 	
 	/**
@@ -90,6 +95,7 @@ public class PolicyAction extends FormulaWrapper {
 	public PolicyAction(String id, dFormula formula) {
 		super(formula);
 		this.id = id;
+		updatedContent = content;
 	}
 	
 
@@ -139,7 +145,7 @@ public class PolicyAction extends FormulaWrapper {
 	 * @param arguments the filled arguments (mapping the argument number i to its formula)
 	 */
 	public void fillActionArguments (HashMap<Integer,dFormula> arguments) {
-		content = fillActionArguments (content, arguments);
+		updatedContent = fillActionArguments (content, arguments);
 	}
 
 	
@@ -172,12 +178,21 @@ public class PolicyAction extends FormulaWrapper {
 		return formula;
 	}
 	
+	/**
+	 * Returns the content of the action
+	 * 
+	 */
+	@Override
+	public dFormula getContent() {
+		return updatedContent;
+	}
 	
 	/**
 	 * Returns a string representation of the action
 	 */
 	@Override
 	public String toString() {
+		debug("Action ID: " + id);
 		if (isVoid) {
 			return "VoidAction";
 		}
@@ -192,7 +207,7 @@ public class PolicyAction extends FormulaWrapper {
 			else {
 				str += "CI";
 			}
-			str += "[" + FormulaUtils.getString(content) + "]";
+			str += "[" + FormulaUtils.getString(updatedContent) + "]";
 			return str;
 		}
 	}
