@@ -170,7 +170,6 @@ public class DialogueManager {
 			
 			// if the outgoing action is underspecified, fill the arguments
 			if (curNode.getAction().isUnderspecified()) {
-				log("filled argument: " + PolicyUtils.extractFilledArguments(obs, selectedEdge).get(1));
 				curNode.getAction().fillActionArguments(PolicyUtils.extractFilledArguments(obs, selectedEdge));
 			} 
 			

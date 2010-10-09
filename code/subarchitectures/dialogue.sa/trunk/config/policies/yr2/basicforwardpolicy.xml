@@ -1,0 +1,9 @@
+<policy>
+	<nodes>
+		<node id="startNode" isInitial="true" isFinal="true" action="forwardAction"></node></nodes>
+	<edges>
+		<edge id="anyEdge" source="startNode" target="startNode" condition="anyCond"></edge></edges>
+	<conditions>
+		<condition id="anyCond" content="%1" lowerProb="0.0" higherProb="1.0" type="communicativeintention"></condition></conditions>
+	<actions>
+		<action id="forwardAction" content="%1" type="intention"></action></actions></policy>
