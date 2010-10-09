@@ -65,11 +65,11 @@ public class ViewPointTransferFunction extends
 					closestPlace));
 			CASTIndependentFormulaDistributionsBelief<dBelief> placeBel = CASTIndependentFormulaDistributionsBelief
 					.create(dBelief.class, allBeliefs.get(placeBelAdr));
-			logger.info("  placeBel=" + placeBel.toString());
+//			logger.info("  placeBel=" + placeBel.toString());
 			result.put(RoomMembershipMediator.ROOM_PROPERTY, placeBel.getContent().get(RoomMembershipMediator.ROOM_PROPERTY).getDistribution().getMostLikely());
-			logger.info("  roommember=" + placeBel.getContent().get(RoomMembershipMediator.ROOM_PROPERTY).getDistribution().getMostLikely().toString());
+//			logger.info("  roommember=" + placeBel.getContent().get(RoomMembershipMediator.ROOM_PROPERTY).getDistribution().getMostLikely().toString());
 			result.put(LocalizedAgentTransferFunction.IS_IN, WMPointer.create(placeBelAdr, CASTUtils.typeName(this.beliefClass)).getAsFormula());
-			logger.info("  generate for view cone: " + IceXMLSerializer.toXMLString(result));
+//			logger.info("  generate for view cone: " + IceXMLSerializer.toXMLString(result));
 		} catch (InterruptedException e) {
 			logger.error(e);
 			return null;

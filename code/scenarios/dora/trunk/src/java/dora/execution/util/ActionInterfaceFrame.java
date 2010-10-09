@@ -28,12 +28,15 @@ import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import SpatialData.ViewPoint;
 import cast.CASTException;
+import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 
 import comadata.ComaRoom;
 
+import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
@@ -46,6 +49,7 @@ import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
 import eu.cogx.perceptmediator.dora.ViewPointTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
+import eu.cogx.perceptmediator.transferfunctions.LocalizedAgentTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 import execution.slice.Action;
@@ -75,6 +79,8 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_generateConesForPlacesAction;
 	private JRadioButton m_generateConesForRoomAction;
 	private JRadioButton m_processConeAction;
+	private JRadioButton m_processConesAtPlaceAction;
+
 	private JRadioButton m_goAction;
 	private JRadioButton m_detectObjectsAction;
 	private JRadioButton m_detectPeopleAction;
@@ -104,7 +110,8 @@ public class ActionInterfaceFrame extends JFrame {
 	private static final Class<?>[] FEATURE_VALUE_TYPES = {
 			ElementaryFormula.class, IntegerFormula.class, FloatFormula.class,
 			BooleanFormula.class };
-	private static final int CONE_ADDR_COLUMN = 2;
+	private static final int CONE_ADDR_COLUMN = 3;
+	private static final int PLACE_ADDR_COLUMN = 2;
 	private static final int ROOM_ADDR_COLUMN = 1;
 
 	private static final String PLACETYPE = SimpleDiscreteTransferFunction
@@ -152,23 +159,21 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private JPanel getPlacesPanel() {
 		if (m_placesPanel == null) {
-			m_placesPanel = new JPanel(new GridLayout(1,0));
+			m_placesPanel = new JPanel(new GridLayout(1, 0));
 			// m_placesPanel.setLayout(new GridLayout(0, 1));
 			m_placesPanel.add(new JScrollPane(getPlaceTable()));
 			m_placesPanel.add(new JScrollPane(getConeTable()));
 			m_placesPanel.add(new JScrollPane(getRoomTable()));
 
-			
 			getPlaceTable().setPreferredScrollableViewportSize(
 					new Dimension(200, 300));
-			
+
 			getConeTable().setPreferredScrollableViewportSize(
 					new Dimension(200, 300));
-			
+
 			getRoomTable().setPreferredScrollableViewportSize(
 					new Dimension(200, 300));
-		
-			
+
 			m_placesPanel.add(getPlacesActionPanel());
 		}
 		return m_placesPanel;
@@ -176,7 +181,7 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private JPanel getObjectsPanel() {
 		if (m_objectsPanel == null) {
-			m_objectsPanel = new JPanel(new GridLayout(1,0));
+			m_objectsPanel = new JPanel(new GridLayout(1, 0));
 			m_objectsPanel.add(new JScrollPane(getObjectTable()));
 			m_objectsPanel.add(getObjectsActionPanel());
 			getObjectTable().setPreferredScrollableViewportSize(
@@ -256,6 +261,8 @@ public class ActionInterfaceFrame extends JFrame {
 					"generate cones in selected room");
 
 			m_processConeAction = new JRadioButton("process selected cone");
+			m_processConesAtPlaceAction = new JRadioButton(
+					"process all cones at place");
 
 			m_goAction.setSelected(true);
 
@@ -264,11 +271,13 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_generateConesForPlacesAction);
 			actionGroup.add(m_generateConesForRoomAction);
 			actionGroup.add(m_processConeAction);
+			actionGroup.add(m_processConesAtPlaceAction);
 
 			m_placesActionPanel.add(m_goAction);
 			m_placesActionPanel.add(m_generateConesForPlacesAction);
 			m_placesActionPanel.add(m_generateConesForRoomAction);
 			m_placesActionPanel.add(m_processConeAction);
+			m_placesActionPanel.add(m_processConesAtPlaceAction);
 		}
 		return m_placesActionPanel;
 	}
@@ -394,6 +403,8 @@ public class ActionInterfaceFrame extends JFrame {
 				goToPlace();
 			} else if (m_generateConesForRoomAction.isSelected()) {
 				generateConesInRoom();
+			} else if (m_processConesAtPlaceAction.isSelected()) {
+				processConesAtPlace();
 			}
 		} else if (tabIndex == 1) {
 
@@ -481,9 +492,7 @@ public class ActionInterfaceFrame extends JFrame {
 
 			final JDialog dialog = new JDialog(this);
 			dialog.setLayout(new FlowLayout());
-			dialog
-					.add(new JLabel(
-							"What feature TYPE do you want to ask about?"));
+			dialog.add(new JLabel("What feature TYPE do you want to ask about?"));
 			final JTextField textfield = new JTextField(10);
 			dialog.add(textfield);
 
@@ -525,8 +534,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private void submitFeatureValueTest(String _beliefID, String _featureLabel,
 			Object _valueType, String _value) {
 		if (_featureLabel.isEmpty() || _value.isEmpty()) {
-			m_exeMan
-					.println("Missing values for feature test. Please fill in all the fields");
+			m_exeMan.println("Missing values for feature test. Please fill in all the fields");
 			return;
 		}
 
@@ -612,8 +620,6 @@ public class ActionInterfaceFrame extends JFrame {
 		}
 	}
 
-
-
 	/**
 	 * @throws CASTException
 	 */
@@ -629,9 +635,11 @@ public class ActionInterfaceFrame extends JFrame {
 					.create(GroundedBelief.class, m_exeMan.getMemoryEntry(
 							roomBeliefAddress, GroundedBelief.class));
 
-			IndependentFormulaDistributionsBelief<PerceptBelief> pb = BeliefUtils.getMostRecentPerceptBeliefAncestor(m_exeMan, gb);
+			IndependentFormulaDistributionsBelief<PerceptBelief> pb = BeliefUtils
+					.getMostRecentPerceptBeliefAncestor(m_exeMan, gb);
 
-			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(m_exeMan,pb, ComaRoom.class);
+			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(m_exeMan,
+					pb, ComaRoom.class);
 
 			m_exeMan.triggerConeGeneration((String) JOptionPane
 					.showInputDialog(this,
@@ -658,11 +666,14 @@ public class ActionInterfaceFrame extends JFrame {
 					.create(GroundedBelief.class, m_exeMan.getMemoryEntry(
 							beliefAddress, GroundedBelief.class));
 
-			//ViewPoint GBs come directly from data, no percept belief middle ground
-			
-			WorkingMemoryPointer perceptPointer = BeliefUtils.getMostRecentAncestorPointer(gb);
-			
-			m_exeMan.triggerProccesCone(perceptPointer.address, new MonitorPanel());
+			// ViewPoint GBs come directly from data, no percept belief middle
+			// ground
+
+			WorkingMemoryPointer perceptPointer = BeliefUtils
+					.getMostRecentAncestorPointer(gb);
+
+			m_exeMan.triggerProccesCone(perceptPointer.address,
+					new MonitorPanel());
 		} else {
 			m_exeMan.println("no cone selected, doing nothing");
 		}
@@ -685,6 +696,20 @@ public class ActionInterfaceFrame extends JFrame {
 	/**
 	 * @throws CASTException
 	 */
+	private void processConesAtPlace() throws CASTException {
+		int selectedRow = m_placeTable.getSelectedRow();
+		if (selectedRow != -1) {
+			Object placeIDVal = m_placeTableModel.getValueAt(selectedRow,
+					PLACE_ID_COLUMN);
+			assert (placeIDVal != null);
+			long placeID = (Long) placeIDVal;
+			m_exeMan.triggerProcessConesAtPlace(placeID, new MonitorPanel());
+		}
+	}
+
+	/**
+	 * @throws CASTException
+	 */
 	private void detectObjects() throws CASTException {
 		m_exeMan.log("detectObjects");
 		m_exeMan.triggerDetectObjects(getSelectedObjectModels(),
@@ -695,16 +720,14 @@ public class ActionInterfaceFrame extends JFrame {
 	 * @throws CASTException
 	 */
 	private void foregroundModels() throws CASTException {
-		m_exeMan
-				.foregroundModels(getSelectedObjectModels(), new MonitorPanel());
+		m_exeMan.foregroundModels(getSelectedObjectModels(), new MonitorPanel());
 	}
 
 	/**
 	 * @throws CASTException
 	 */
 	private void backgroundModels() throws CASTException {
-		m_exeMan
-				.backgroundModels(getSelectedObjectModels(), new MonitorPanel());
+		m_exeMan.backgroundModels(getSelectedObjectModels(), new MonitorPanel());
 	}
 
 	/**
@@ -764,7 +787,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_placeTableModel = new DefaultTableModel(new String[] {
 					"place id", "status", "belief address" }, 0);
 			m_placeTable.setModel(m_placeTableModel);
-			
+
 		}
 		return m_placeTable;
 	}
@@ -779,9 +802,9 @@ public class ActionInterfaceFrame extends JFrame {
 			// m_coneTable = new JTable(1, 2);
 			// m_coneTableModel = new DefaultTableModel(new String[] { "id",
 			// "explored" }, 0);
-			m_coneTable = new JTable(1, 3);
+			m_coneTable = new JTable(1, 4);
 			m_coneTableModel = new DefaultTableModel(new String[] { "object",
-					"prob", "belief address" }, 0);
+					"prob", "place id", "belief address" }, 0);
 			m_coneTable.setModel(m_coneTableModel);
 		}
 		return m_coneTable;
@@ -798,7 +821,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_roomTableModel = new DefaultTableModel(new String[] { "room id",
 					"belief address" }, 0);
 			m_roomTable.setModel(m_roomTableModel);
-		
+
 		}
 		return m_roomTable;
 	}
@@ -858,19 +881,33 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 	public void addConeBelief(WorkingMemoryAddress _address,
-			IndependentFormulaDistributionsBelief<dBelief> _belief) {
+			IndependentFormulaDistributionsBelief<dBelief> _belief)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 
-		String label = _belief.getContent().get(
-				ViewPointTransferFunction.OBJECT_LABEL_ID).getDistribution()
-				.getMostLikely().getProposition();
+		String label = _belief.getContent()
+				.get(ViewPointTransferFunction.OBJECT_LABEL_ID)
+				.getDistribution().getMostLikely().getProposition();
 
-		Double prob = _belief.getContent().get(
-				ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
+		Double prob = _belief.getContent()
+				.get(ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
 				.getDistribution().getMostLikely().getDouble();
 
-		String addr = toAddressString(_address);
+		String beliefAddr = toAddressString(_address);
 
-		m_coneTableModel.addRow(new Object[] { label, prob, addr });
+		WMPointer pointer = WMPointer.create(_belief.getContent()
+				.get(LocalizedAgentTransferFunction.IS_IN).getDistribution()
+				.getMostLikely().get());
+
+		IndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = IndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, m_exeMan.getMemoryEntry(
+						pointer.get().pointer, GroundedBelief.class));
+
+		long placeID = placeBelief.getContent()
+				.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+				.getMostLikely().getInteger();
+
+		m_coneTableModel
+				.addRow(new Object[] { label, prob, placeID, beliefAddr });
 
 		// pack();
 
@@ -890,7 +927,8 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 	public void addBelief(WorkingMemoryAddress _address,
-			IndependentFormulaDistributionsBelief<dBelief> _belief) {
+			IndependentFormulaDistributionsBelief<dBelief> _belief)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 
 		if (_belief.getType().equals(PLACETYPE)) {
 			addPlaceBelief(_address, _belief);
@@ -901,7 +939,6 @@ public class ActionInterfaceFrame extends JFrame {
 		if (_belief.getType().equals(COMAROOMTYPE)) {
 			addRoomBelief(_address, _belief);
 		}
-
 		// pack();
 
 	}
@@ -929,7 +966,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private boolean removePlaceBelief(WorkingMemoryAddress _address) {
 		for (int row = 0; row < m_placeTableModel.getRowCount(); row++) {
 			WorkingMemoryAddress placeAddr = addressFromString((String) m_placeTableModel
-					.getValueAt(row, CONE_ADDR_COLUMN));
+					.getValueAt(row, PLACE_ADDR_COLUMN));
 			if (placeAddr.equals(_address)) {
 				m_placeTableModel.removeRow(row);
 				// pack();
@@ -966,12 +1003,12 @@ public class ActionInterfaceFrame extends JFrame {
 	public void addPlaceBelief(WorkingMemoryAddress _address,
 			IndependentFormulaDistributionsBelief<dBelief> _belief) {
 
-		long placeID = _belief.getContent().get(
-				PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+		long placeID = _belief.getContent()
+				.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
 				.getMostLikely().getInteger();
 
-		String status = _belief.getContent().get(
-				PlaceTransferFunction.PLACE_STATUS_ID).getDistribution()
+		String status = _belief.getContent()
+				.get(PlaceTransferFunction.PLACE_STATUS_ID).getDistribution()
 				.getMostLikely().getProposition();
 
 		String addr = toAddressString(_address);
