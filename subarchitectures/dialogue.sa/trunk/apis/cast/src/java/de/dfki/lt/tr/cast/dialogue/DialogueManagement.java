@@ -30,7 +30,7 @@ import de.dfki.lt.tr.dialmanagement.components.DialogueManager;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
-import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
+import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import java.util.HashMap;
 
@@ -61,7 +61,7 @@ public class DialogueManagement extends ManagedComponent {
 	 */
 	public DialogueManagement() {
 		try {
-		manager = new DialogueManager(PolicyReader.constructPolicy(policyFile, observationsFile, actionsFile));
+		manager = new DialogueManager(TextPolicyReader.constructPolicy(policyFile, observationsFile, actionsFile));
 		}
 		catch (DialogueException e) {
 			e.printStackTrace();
@@ -85,7 +85,7 @@ public class DialogueManagement extends ManagedComponent {
 					policyFile = _config.get("--policy");
 					observationsFile = _config.get("--observations") ;
 					actionsFile = _config.get("--actions");
-					manager = new DialogueManager(PolicyReader.constructPolicy(policyFile,observationsFile, actionsFile));
+					manager = new DialogueManager(TextPolicyReader.constructPolicy(policyFile,observationsFile, actionsFile));
 				} catch (DialogueException e) {
 					log(e.getMessage());
 					e.printStackTrace();
