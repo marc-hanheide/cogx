@@ -1,45 +1,50 @@
 import os, time
 import itertools
+from itertools import chain
 
 from collections import defaultdict
 from standalone import task, config, pddl, plans
 from standalone.pddl import state, dtpddl, mapl, translators, visitors, effects
 
 import standalone.globals as global_vars
+import simplegraph
 import partial_problem
 
 log = config.logger("dt")
 
 
 class DTProblem(object):
-    def __init__(self, plan, domain, cast_state):
+    def __init__(self, plan, domain):
         self.plan = plan
         self.domain = domain
-        self.state = cast_state
+        #self.state = cast_state
         self.subplan_actions = []
+        self.dt_plan = []
         self.select_actions = []
-        self.selected_subproblem = -1
         
         self.goals = self.create_goals(plan)
         if not self.goals:
             return
         
-        self.goal_actions = []
-        self.relaxation_layers = self.compute_restrictions()
         self.dt_rules = pddl.translators.Translator.get_annotations(domain).get('dt_rules', [])
         
         self.dtdomain = self.create_dt_domain(domain)
-        self.goal_actions += self.create_goal_actions(self.goals, self.dtdomain)
+        self.goal_actions = self.create_goal_actions(self.goals, self.dtdomain)
         self.dtdomain.actions += [a for a in self.goal_actions]
         self.dtdomain.name2action = None
-        
-        self.subproblems = self.compute_subproblems(self.state)
-        self.problem = self.create_problem(self.state, self.dtdomain)
-        self.dt_plan = []
 
         # dom_str, prob_str = DTPDDLOutput().write(self.problem)
         # print "\n".join(dom_str)
         # print "\n".join(prob_str)
+        
+    def initialize(self, cast_state):
+        self.state = cast_state
+        self.selected_subproblem = -1
+        
+        self.relaxation_layers = self.compute_restrictions_new()
+        #self.relaxation_layers = self.compute_restrictions()
+        self.subproblems = self.compute_subproblems(self.state)
+        self.problem = self.create_problem(self.state, self.dtdomain)
 
     def write_dt_input(self, domain_fn, problem_fn):
         DTPDDLOutput().write(self.problem, domain_fn=domain_fn, problem_fn=problem_fn)
@@ -111,7 +116,136 @@ class DTProblem(object):
             if all(c.matches(o, self.state.prob_state) for c in problem.constraints):
                 return True
         return False
-    
+
+    def compute_restrictions_new(self):
+        def transform_constraints(new_fixed, new_constraints):
+            print map(str, new_fixed)
+            c2 = []
+            most_relaxed_supertype = {}
+            for c in new_constraints:
+                for a, p in zip(c.svar.args, c.svar.function.args):
+                    if a not in new_fixed:
+                        if not a in most_relaxed_supertype:
+                            most_relaxed_supertype[a] = p.type
+                        elif p.type.is_subtype_of(most_relaxed_supertype[a]):
+                            most_relaxed_supertype[a] = p.type
+                            
+            replace_dict = {}
+            for c in new_constraints:
+                args = []
+                assert not c.svar.modal_args, "Not yet supported."
+                for a in c.svar.args:
+                    if a in new_fixed:
+                        args.append(a)
+                    else:
+                        typ = most_relaxed_supertype[a]
+                        a2 = pddl.TypedObject("any_%s" % (typ.name), typ)
+                        replace_dict[a] = a2
+                        args.append(a2)
+                val = replace_dict.get(c.value, c.value)
+                constr = partial_problem.FunctionConstraint(c.svar.function, args, [val])
+                if constr not in c2:
+                    c2.append(constr)
+            return c2
+
+        fixed_per_pnode = {}
+        fixed = set()
+        for pnode in reversed(self.select_actions):
+            fixed = fixed | set(pnode.full_args)
+            fixed_per_pnode[pnode] = fixed
+
+        layers = []
+        constraints = []
+        previous_relaxations = set()
+        pending_relaxations = []
+        for pnode in self.select_actions:
+            print pnode
+            log.debug("cond: %s", str(map(str,pnode.original_preconds)))
+            det_constraints = []
+            prob_constraints = []
+            constants = set()
+            indep_vars = set()
+            depvars = set()
+            deps = simplegraph.Graph()
+            prev = None
+            for svar, val in pnode.original_preconds:
+                if val.is_instance_of(pddl.t_number):
+                    continue
+                constants |= set(svar.args + svar.modal_args + (val,))
+                if svar.modality in (mapl.hyp, mapl.indomain):
+                    if svar.modality == mapl.hyp:
+                        indep_vars |= set(svar.args + svar.modal_args)
+                    constr = pddl.state.Fact(svar.nonmodal(), svar.modal_args[0])
+                    prob_constraints.append(constr)
+                    deps[svar.modal_args[0]] |= set(svar.args)
+                else:
+                    constr = pddl.state.Fact(svar, val)
+                    det_constraints.append(constr)
+                    deps[val] |= set(svar.args)
+
+            constants -= set(pnode.full_args)
+            depvars |= deps.undirected().succ(indep_vars) - indep_vars
+            depvars &= set(pnode.full_args)
+            indep_vars |= set(pnode.full_args) - depvars
+            indep_vars &= set(pnode.full_args)
+            relaxation_order = deps.topological_sort()
+            dep_relaxations = [v for v in reversed(relaxation_order) if v in depvars]
+            indep_relaxations = [v for v in relaxation_order if v in indep_vars]
+            print "independent vars:", map(str, indep_relaxations)
+            print "dependent vars:", map(str, dep_relaxations)
+
+            for c in chain(det_constraints):
+                if c not in constraints:
+                    constraints.append(c)
+                    
+            fixed = fixed_per_pnode[pnode]
+            for v in chain([None], dep_relaxations):
+                if v is not None:
+                    if deps[v] and not (deps[v] - indep_vars):
+                        print "Fake relaxation:", v
+                        continue
+                    print "removing", v
+                    fixed.discard(v)
+                    previous_relaxations.add(v)
+                    
+                cnew = []
+                for c in constraints:
+                    if c.value not in fixed | constants or all(v in fixed|constants for v in chain(c.svar.args, [c.value])):
+                        continue
+                    cnew.append(c)
+                
+                log.debug("fixed on this layer: %s", str(map(str, fixed)))
+                c2 = transform_constraints(fixed | constants, cnew)
+                fc = partial_problem.ObjectsConstraint(fixed)
+                layers.append([fc]+c2)
+
+            pending_relaxations = [v for v in pending_relaxations if v not in dep_relaxations + indep_relaxations]
+            pending_relaxations += indep_relaxations
+            print "pending:", map(str, pending_relaxations)
+
+        for v in pending_relaxations:
+            if v is not None:
+                print "removing", v
+                fixed.discard(v)
+
+            cnew = []
+            for c in constraints:
+                if c.value not in fixed | constants or all(v in fixed| constants for v in chain(c.svar.args, [c.value])):
+                    continue
+                cnew.append(c)
+
+            log.debug("fixed on this layer: %s", str(map(str, fixed)))
+            c2 = transform_constraints(fixed | constants, cnew)
+            fc = partial_problem.ObjectsConstraint(fixed)
+            layers.append([fc]+c2)
+             
+        for i, constraints in enumerate(layers):
+            log.debug("Layer %d", i)
+            log.debug("Fixed: %s", str(constraints[0]))
+            log.debug("Constraints: %s", str(map(str, constraints[1:])))
+            log.debug("")
+        return layers
+
 
     def compute_restrictions(self):
 
@@ -141,7 +275,7 @@ class DTProblem(object):
         constraints = defaultdict(set)
         for pnode in self.select_actions:
             log.debug("action: %s", str(pnode))
-            log.debug("cond: %s", str(map(str,pnode.preconds)))
+            log.debug("cond: %s", str(map(str,pnode.original_preconds)))
             supporter = {}
             for pred in self.plan.predecessors_iter(pnode, link_type='depends'):
                 for e in self.plan[pred][pnode].itervalues():
@@ -154,14 +288,16 @@ class DTProblem(object):
             new_var_relaxations = set()
             new_value_relaxations = set()
             new_constraints = defaultdict(set)
-            for svar, val in pnode.preconds:
-                if svar.modality == mapl.commit:
+            for svar, val in pnode.original_preconds:
+                if svar.modality in (mapl.commit, mapl.indomain) :
                     new_var_relaxations |= set(svar.args)
                     new_value_relaxations |= set(svar.modal_args)
-                elif supporter[svar] != self.plan.init_node:
+                #elif supporter[svar] != self.plan.init_node:
+                #    new_var_relaxations |= set(svar.args)
+                #    new_value_relaxations.add(val)
+                elif svar.function.type != pddl.t_number:
                     new_var_relaxations |= set(svar.args)
                     new_value_relaxations.add(val)
-                elif svar.function.type != pddl.t_number:
                     for a in svar.args+svar.modal_args:
                         new_constraints[a].add(state.Fact(svar,val))
             new_var_relaxations.discard(pddl.TRUE)
@@ -423,10 +559,7 @@ class StateTreeNode(dict):
         if fact is not None:
             self.svar = fact.svar
             rules_for_fact = [r for r in all_rules if r.function == self.svar.function]
-            if rules_for_fact:
-                self.rule = rules_for_fact[0]
-            else:
-                self.rule = None
+            self.rule = (rules_for_fact[0] if rules_for_fact else None)
                 
             if isinstance(fact.value, pddl.TypedObject):
                 self.create_subtree(1.0, fact.value, marginal=(val not in objects))
@@ -451,13 +584,16 @@ class StateTreeNode(dict):
             if p == 1.0:
                 sub = st
             else:
-                sub = HierarchicalState([], parent=st)
-                st.add_substate(self.svar, val, sub, p)
+                if st.has_substate(self.svar, val):
+                    oldp, sub = st.get_substate(self.svar, val)
+                    st.add_substate(self.svar, val, sub, p+oldp)
+                else:
+                    sub = HierarchicalState([], parent=st)
+                    st.add_substate(self.svar, val, sub, p)
             if not marginal:
                 sub[self.svar] = val
             for t in subtrees:
                 t.create_state(sub)
-
 
     def create_subtree(self, prob, value, marginal=False):
         log.debug("creating subtrees for %s=%s (marginal=%s)", str(self.svar), value, str(marginal))
@@ -472,16 +608,22 @@ class StateTreeNode(dict):
             return
 
         rules = [r for r in self.all_rules if r.depends_on(self.rule)]
-        log.debug("rules depending on this: %s", ", ".join(r.function.name for r in rules))
+        log.debug("rules depending on this: %s", ", ".join(r.name for r in rules))
         
         subtrees = []
         for r in rules:
             matched_cond = None
             matched_args = {}
-            for t,v in r.conditions:
-                if t.function == self.rule.function:
-                    matched_cond = t
-                    for a, a2 in zip(t.args + [v], self.svar.args + (value,)):
+            for lit in r.conditions:
+                if lit.predicate == pddl.equals and lit.args[0].function == self.rule.function:
+                    matched_cond = lit
+                    for a, a2 in zip(lit.args[0].args + [lit.args[1]], self.svar.args + (value,)):
+                        matched_args[a.object] = a2
+                    break
+                elif lit.predicate == self.rule.function:
+                    matched_cond = lit
+                    v = pddl.TRUE if not lit.negated else pddl.FALSE
+                    for a, a2 in zip(lit.args + [v], self.svar.args + (value,)):
                         matched_args[a.object] = a2
                     break
             if matched_cond and any(a.__class__ == a2.__class__ == pddl.TypedObject and a != a2 for a,a2 in matched_args.iteritems()):
@@ -518,10 +660,12 @@ class StateTreeNode(dict):
 
         subtrees = []
         done = set()
+        
+        detstate = st.determinized_state(0.05, 0.95)
         for fact in st.iterdists():
             if any(a not in objects for a in fact.svar.args):
                 continue
-            sub = StateTreeNode.create_from_fact(fact, st, objects, rules, cache)
+            sub = StateTreeNode.create_from_fact(fact, detstate, objects, rules, cache)
             if sub is not None:
                 subtrees.append(sub)
                 done.add(sub.svar)
@@ -529,15 +673,15 @@ class StateTreeNode(dict):
         for r in nodep_rules:
             def get_objects(arg):
                 if arg in r.get_value_args():
-                    return list(st.problem.get_all_objects(arg.type))
+                    return list(detstate.problem.get_all_objects(arg.type))
                 return [o for o in objects if o.is_instance_of(arg.type)]
             
             args = r.args+r.add_args
-            for mapping in r.smart_instantiate(r.get_inst_func(st), args, [get_objects(a) for a in args], st.problem):
+            for mapping in r.smart_instantiate(r.get_inst_func(detstate), args, [get_objects(a) for a in args], detstate.problem):
                 svar = state.StateVariable(r.function, state.instantiate_args(r.args))
                 if svar in done:
                     continue
-                subtrees.append(StateTreeNode(r, st, objects, rules, cache))
+                subtrees.append(StateTreeNode(r, detstate, objects, rules, cache))
 
         return subtrees
         

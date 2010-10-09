@@ -176,7 +176,7 @@ class CASTTask(object):
 
         if "partial-observability" in self.domain.requirements:
             log.info("creating dt task")
-            self.dt_task = dt_problem.DTProblem(plan, self.domain, self.state)
+            self.dt_task = dt_problem.DTProblem(plan, self.domain)
 
             for pnode in plan.nodes_iter():
                 if pnode.is_virtual():
@@ -185,6 +185,7 @@ class CASTTask(object):
             #self.update_status(self.status)
             if self.dt_planning_active():
                 self.update_status(TaskStateEnum.WAITING_FOR_DT)
+                self.dt_task.initialize(self.state)
                 self.component.start_dt_planning(self)
                 return
             
@@ -249,7 +250,7 @@ class CASTTask(object):
             self.cp_task.mark_changed()
         else:
             log.debug("checking execution state")
-            executable_plan = plan.topological_sort()[plan.execution_position:-1]
+            executable_plan = [pnode for pnode in plan.topological_sort()[plan.execution_position:-1] if not pnode.is_virtual()]
 
             if len(slice_plan) != len(executable_plan):
                 log.error("wm plan:")

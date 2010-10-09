@@ -94,3 +94,11 @@ def collect_literals(elem, results):
     """Return a list of all literals"""
     if isinstance(elem, predicates.Literal):
         return elem
+
+@collect
+def collect_functions(elem, results=[]):
+    if elem.__class__ == predicates.FunctionTerm:
+        return sum(results, []) + [elem.function]
+    if isinstance(elem, predicates.Literal):
+        return sum([t.visit(collect_functions) for t in elem.args], [])
+        

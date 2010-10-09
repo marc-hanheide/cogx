@@ -334,7 +334,10 @@ class Scope(dict):
                     next = iter(remaining).next()
                 curr_arg = next
                 curr_index = 0
-                nextval = values[curr_arg][curr_index]
+                if values[curr_arg]:
+                    nextval = values[curr_arg][curr_index]
+                else:
+                    next = None
                 
             if not next:
                 curr_index = -1

@@ -100,7 +100,7 @@ def feature_val_to_object(fval):
     bel = belief_dict[fval.pointer.id]
     return belief_to_object(bel)
   
-  elif fval.__class__ == logicalcontent.IntegerFormula:
+  elif fval.__class__ in (logicalcontent.IntegerFormula, logicalcontent.FloatFormula):
     if "numeric-fluents" in current_domain.requirements or "fluents" in current_domain.requirements:
       return pddl.TypedObject(fval.val, pddl.t_number)
     else:
@@ -256,6 +256,8 @@ def infer_types(obj_descriptions):
     else:
       declarations = current_domain.predicates[pred]
       is_function = False
+
+    possible_types = defaultdict(set)
     for declaration in declarations:
       ftypes = map(lambda a: a.type, declaration.args)
       #ftypes.append(declaration.type)
@@ -265,12 +267,16 @@ def infer_types(obj_descriptions):
             all(t.equal_or_subtype_of(a.type) or a.type.equal_or_subtype_of(t) for (t,a) in zip(ftypes, ftup.args)) and \
             all(declaration.type.equal_or_subtype_of(arg.type) for arg, _ in ftup.values):
         for arg, type in zip(ftup.args, ftypes):
-          constraints[arg].add(type)
+          possible_types[arg].add(type)
+          #print "Inferring: %s is instance of %s because of use in %s" % (arg.name, str(type), str(declaration))
         for arg, _ in ftup.values:
-          constraints[arg].add(declaration.type)
+          possible_types[arg].add(declaration.type)
+          #print "Inferring: %s is instance of %s because of use in %s" % (arg.name, str(declaration.type), str(declaration))
           
-        #print "Inferring: %s is instance of %s because of use in %s" % (name, nametype, declaration)
-        #print "Inferring: %s is instance of %s because of use in %s" % (val, valtype, declaration)
+    for arg, types in possible_types.iteritems():
+      #print "%s induces the following possible types for %s: %s" % (declaration.name,  arg.name, ", ".join(t.name for t in types))
+      #types.add(arg.type) # always add the basetype as an "ignore-this-feature" option
+      constraints[arg].add(frozenset(types))
         
   objects = set()
   for obj in constraints:
@@ -283,8 +289,31 @@ def infer_types(obj_descriptions):
     #if obj not in constraints:
     #  constraints[obj].add("object")
     
-    types = constraints[obj]
-    types.add(obj.type)
+    typesets = list(set(ts) for ts in constraints[obj])
+    typesets.append(set([obj.type]))
+    types = set()
+    for ts in typesets:
+      for ts2 in typesets:
+        subset = set(t for t in ts if any(t.is_compatible(t2) for t2 in ts2))
+        subset |= set(t for t in ts2 if any(t.is_compatible(t2) for t2 in ts))
+        assert subset, "incompatible types: (%s) / (%s)" % (", ".join(str(t) for t in ts), ", ".join(str(t) for t in ts2))
+        ts &= subset
+        ts2 &= subset
+          
+    types = reduce(lambda x,y: x | y, typesets, set())
+        
+    # for ts in typesets:
+    #   candidates = set()
+    #   for t in ts:
+    #     #eleminate all impossible types from this typeset
+    #     if any(t.is_compatible(t2) for t2 in types):
+    #       candidates.add(t)
+    #   for t in set(types):
+    #     if not any(t.is_compatible(t2) for t2 in candidates):
+    #       types.discard(t)
+    #   types |= candidates
+      
+    #types.add(frozenset([obj.type]))
     #log.debug("%s has the following type constraints %s", obj.name, map(str,types))
     def type_cmp(type1, type2):
       if type1 == type2:

@@ -8,7 +8,7 @@ import builtin
 from builder import Builder
 from parser import ParseError, UnexpectedTokenError
 from mapltypes import Type, TypedObject, Parameter
-from predicates import Predicate, Function, VariableTerm
+from predicates import Predicate, Function, FunctionTerm, VariableTerm
 from builtin import t_object, t_boolean, t_number
 
 p = Parameter("?f", types.FunctionType(t_object))
@@ -293,20 +293,22 @@ class DTPDDLWriter(writer.Writer):
         return strings
 
 class DTRule(scope.Scope):
-    def __init__(self, function, args, add_args, conditions, values, domain):
+    def __init__(self, function, args, add_args, conditions, values, domain, name=None):
         scope.Scope.__init__(self, args+add_args, domain)
+        self.name = (name if name else function.name)
         self.function = function
         self.args = args
         self.add_args = add_args
-        self.conditions = [tuple(self.lookup(c)) for c in conditions]
+        self.conditions = [c.copy(new_scope=self) for c in conditions]
         self.values = [tuple(self.lookup(c)) for c in values]
 
     def deps(self):
-        return set(t.function for t,v in self.conditions)
+        funcs = sum((lit.visit(visitors.collect_functions) for lit in self.conditions), [])
+        return set(f for f in funcs if f != self.function)
 
     def depends_on(self, other):
-        for t,v in self.conditions:
-            if t.function == other.function:
+        for func in self.deps():
+            if func == other.function:
                 return True
         return False
 
@@ -334,29 +336,36 @@ class DTRule(scope.Scope):
 
     def get_inst_func(self, st, ignored_cond=None):
         import state
+        def args_visitor(term, results):
+            if isinstance(term, FunctionTerm):
+                return sum(results, [])
+            return [term]
+        
         def inst_func(mapping, args):
             next_candidates = []
             #print [a.name for a in mapping.iterkeys()]
             forced = None
-            for t,v in self.conditions:
-                if t == ignored_cond:
+            for lit in self.conditions:
+                if lit == ignored_cond:
                     continue
-                if all(a.object in args[:-1] for a in t.args + [v] if isinstance(a, VariableTerm)):
+                if all(a in args[:-1] for a in lit.free()):
                     continue # checked before
 
-                if all(a.is_instantiated() for a in t.args if isinstance(a, VariableTerm)) and isinstance(v, VariableTerm):
-                    if not v.is_instantiated():
-                        cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
-                        forced = v.object, st[cvar]
+                if lit.predicate == builtin.equals and isinstance(lit.args[0], FunctionTerm) and isinstance(lit.args[1], VariableTerm):
+                    v = lit.args[-1]
+                    if all(a.is_instantiated() for a in lit.args[0].args if isinstance(a, VariableTerm)) and  isinstance(v, VariableTerm) and not v.is_instantiated():
+                        svar = state.StateVariable.from_literal(lit, st)
+                        forced = v.object, st[svar]
 
-                if all(a.is_instantiated() for a in t.args + [v] if isinstance(a, VariableTerm)):
-                    cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
-                    exst = st.get_extended_state([cvar])
-                    val = st.evaluate_term(v)
-                    if exst[cvar] != val:
+                if all(a.is_instantiated() for a in lit.free()):
+                    fact = state.Fact.from_literal(lit, st)
+                    #cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
+                    exst = st.get_extended_state([fact.svar])
+                    #val = st.evaluate_term(v)
+                    if exst[fact.svar] != fact.value:
                         return None, None
                 else:
-                    next_candidates.append([a.object for a in t.args if isinstance(a, VariableTerm)])
+                    next_candidates.append([a for a in lit.free() if not a.is_instantiated()])
 
             if forced:
                 return forced
@@ -429,7 +438,8 @@ class DTRule(scope.Scope):
                         value = predicates.Term(builtin.TRUE)
                 return (term, value)
 
-        conds = visitors.visit(action.precondition, extract_conditions, [])
+        #conds = visitors.visit(action.precondition, extract_conditions, [])
+        conds = visitors.visit(action.precondition, visitors.collect_literals, [])
         
         values = defaultdict(list)
         for p, term, value in visitors.visit(action.effect, extract_terms_with_prob, []):
@@ -454,19 +464,20 @@ class DTRule(scope.Scope):
             changed = True
             while changed:
                 changed = False
-                for t,v in conds:
-                    if (t,v) in rel_conditions:
+                for lit in conds:
+                    if lit in rel_conditions:
                         continue
-                    cargs = set(t.visit(collect_param_visitor) + v.visit(collect_param_visitor))
+                    #cargs = set(t.visit(collect_param_visitor) + v.visit(collect_param_visitor))
+                    cargs = lit.free()
                     if cargs & (set(term_args) | other_args):
                         other_args |= cargs
-                        rel_conditions.append((t,v))
+                        rel_conditions.append(lit)
                         changed = True
-            rules.append(DTRule(term.function, term_args, list(other_args - set(term_args)), rel_conditions, rule_values, action.parent))
+            rules.append(DTRule(term.function, term_args, list(other_args - set(term_args)), rel_conditions, rule_values, action.parent, name=action.name))
         return rules
 
     def __str__(self):
-        cstr = ", ".join("%s = %s" % (t.pddl_str(), v.pddl_str()) for t,v in self.conditions)
+        cstr = ", ".join("%s" % lit.pddl_str() for lit in self.conditions)
         vstrs = []
         for p,v in self.values:
             if p is None:
@@ -475,7 +486,7 @@ class DTRule(scope.Scope):
                 vstrs.append("%s: %s" % (p.pddl_str(), v.pddl_str()))
                 
         vstr = ", ".join(vstrs)
-        s = "(%s %s) (when %s) %s" % (self.function.name, " ".join(a.name for a in self.args), cstr, vstr)
+        s = "%: (%s %s) (when %s) %s" % (self.name, self.function.name, " ".join(a.name for a in self.args), cstr, vstr)
         return s
 
 def collect_param_visitor(term, results):
@@ -567,17 +578,11 @@ class DT2MAPLCompiler(translators.Translator):
                 dterm = b("*", (total_p_cost,), ("-", 1, p))
                 a.duration.append(durative.DurationConstraint(dterm))
                 cparts = []
-                for t,val in r.conditions:
-                    if t.function in p_functions:
-                        cparts.append(b.cond("hyp", t, val))
+                for lit in r.conditions:
+                    if lit.predicate == builtin.equals and lit.args[0].function in p_functions:
+                        cparts.append(b.cond("hyp", lit.args[0], lit.args[1]))
                     else:
-                        if isinstance(t.function, Predicate):
-                            c = b.cond(t.function, *t.args)
-                            if val == builtin.FALSE:
-                                c = c.negate()
-                        else:
-                            c = b.cond("=", t, val)
-                        cparts.append(c)
+                        cparts.append(lit)
                 #lock_cond = b.cond("not", ("select-locked",))
                 a.precondition = conditions.Conjunction([durative.TimedCondition("start", conditions.Conjunction(cparts))], a)
                                                              #durative.TimedCondition("all", b.cond("not", ("started",))), \
