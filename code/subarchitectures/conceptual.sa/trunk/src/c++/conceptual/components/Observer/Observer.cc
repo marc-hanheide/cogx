@@ -31,6 +31,15 @@ using namespace cast;
 
 
 // -------------------------------------------------------
+template<typename T>
+static void removeDuplicates(std::vector<T>& vec)
+{
+	std::sort(vec.begin(), vec.end());
+	vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
+}
+
+
+// -------------------------------------------------------
 void Observer::configure(const std::map<std::string,std::string> & _config)
 {
 /*	map<string,string>::const_iterator it;
@@ -170,18 +179,50 @@ void Observer::updateWorldState()
 				pi.objectProperties.push_back(oppi);
 			}
 
+			// Add the place info
 			cri.places.push_back(pi);
+
+			// Get room connectivity for this place
+			int room1Id = comaRoomPtr->roomId;
+			debug("Getting room connectivity for place %d in room %d", placeId, room1Id);
+			vector<int> connectedPlaces;
+			getConnectedPlaces(placeId, &connectedPlaces);
+			for(unsigned int j=0; j<connectedPlaces.size(); ++j)
+			{
+				int room2Id = getRoomForPlace(connectedPlaces[j]);
+				if (room2Id>=0) // We actually found a room. It's not a placeholder!
+				{
+					if (room1Id<room2Id)
+					{
+						ConceptualData::RoomConnectivityInfo rci;
+						rci.room1Id=room1Id;
+						rci.room2Id=room2Id;
+						newWorldStatePtr->roomConnections.push_back(rci);
+					}
+					if (room2Id<room1Id)
+					{
+						ConceptualData::RoomConnectivityInfo rci;
+						rci.room1Id=room2Id;
+						rci.room2Id=room1Id;
+						newWorldStatePtr->roomConnections.push_back(rci);
+					}
+				}
+			}
+
 		} // for(unsigned int i=0; i<comaRoomPtr->containedPlaceIds.size(); ++i)
 
 		newWorldStatePtr->rooms.push_back(cri);
 	} // for( comaRoomIt=_comaRoomWmAddressMap.begin(); comaRoomIt!=_comaRoomWmAddressMap.end(); ++comaRoomIt)
 
+	// Clean up the room connectivity info
+	removeDuplicates(newWorldStatePtr->roomConnections);
 
 	// -----------------------------------
 	// Update on working memory if the new world
 	// state is different than the previous one.
 	// -----------------------------------
-	if (_worldStatePtr->rooms != newWorldStatePtr->rooms)
+	if ( (_worldStatePtr->rooms != newWorldStatePtr->rooms) ||
+		 (_worldStatePtr->roomConnections != newWorldStatePtr->roomConnections) )
 	{
 		// Remember the new world state
 		_worldStatePtr=newWorldStatePtr;
@@ -202,9 +243,7 @@ void Observer::updateWorldState()
 	}
 }
 
-// TODO: Catch all exceptions in events
-// TODO: Not fail if I get delete and something already does not exist.
-// TODO: Next fix the query handler
+
 // -------------------------------------------------------
 void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 {
@@ -562,6 +601,87 @@ void Observer::getObjectPlaceProperties(int placeId,
 		if (objectPlacePropertyPtr->placeId == placeId)
 			properties.push_back(objectPlacePropertyPtr);
 	}
+}
+
+
+// -------------------------------------------------------
+int Observer::getRoomForPlace(int placeId)
+{
+	map<cast::cdl::WorkingMemoryAddress, comadata::ComaRoomPtr>::iterator comaRoomIt;
+	for( comaRoomIt=_comaRoomWmAddressMap.begin(); comaRoomIt!=_comaRoomWmAddressMap.end(); ++comaRoomIt)
+	{
+		comadata::ComaRoomPtr comaRoomPtr = comaRoomIt->second;
+		for (unsigned int i=0; i<comaRoomPtr->containedPlaceIds.size(); ++i)
+		{
+			if (comaRoomPtr->containedPlaceIds[i] == placeId)
+				return comaRoomPtr->roomId;
+		}
+	}
+	return -1;
+}
+
+
+// -------------------------------------------------------
+void Observer::getConnectedPlaces(int placeId, vector<int> *connectedPlaces,
+		set<int> *traversedPlaces)
+{
+	debug("getConnectedPlaces(placeId=%d)", placeId);
+
+	if (!traversedPlaces)
+		traversedPlaces = new set<int>();
+	traversedPlaces->insert(placeId);
+
+	map<cast::cdl::WorkingMemoryAddress,
+		SpatialProperties::ConnectivityPathPropertyPtr>::iterator connectivityPathPropertyIt;
+	for( connectivityPathPropertyIt=_connectivityPathPropertyWmAddressMap.begin();
+			connectivityPathPropertyIt!=_connectivityPathPropertyWmAddressMap.end();
+			++connectivityPathPropertyIt)
+	{
+		SpatialProperties::ConnectivityPathPropertyPtr connectivityPathPropertyPtr =
+				connectivityPathPropertyIt->second;
+
+		if (connectivityPathPropertyPtr->place1Id == placeId)
+		{
+			int p = connectivityPathPropertyPtr->place2Id;
+			debug("getConnectedPlaces(placeId=%d): found connection to place %d", placeId, p);
+
+			if (traversedPlaces->find(p)==traversedPlaces->end())
+			{
+				// Is p a gateway?
+				if (isGatewayPlace(p))
+				{ // Find connected places recursively
+					getConnectedPlaces(p, connectedPlaces, traversedPlaces);
+				}
+				else
+					connectedPlaces->push_back(p);
+				traversedPlaces->insert(p);
+			}
+		}
+		if (connectivityPathPropertyPtr->place2Id == placeId)
+		{
+			int p = connectivityPathPropertyPtr->place1Id;
+			debug("getConnectedPlaces(placeId=%d): found connection to place %d", placeId, p);
+
+			if (traversedPlaces->find(p)==traversedPlaces->end())
+			{
+				// Is p a gateway?
+				if (isGatewayPlace(p))
+				{ // Find connected places recursively
+					getConnectedPlaces(p, connectedPlaces, traversedPlaces);
+				}
+				else
+					connectedPlaces->push_back(p);
+				traversedPlaces->insert(p);
+			}
+		}
+	}
+
+	debug("getConnectedPlaces(placeId=%d): Finished searching for connected places", placeId);
+
+	// Remove duplicates and the placeId itself.
+	removeDuplicates(*connectedPlaces);
+	connectedPlaces->erase(std::remove(connectedPlaces->begin(), connectedPlaces->end(),
+			placeId), connectedPlaces->end());
 }
 
 

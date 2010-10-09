@@ -90,6 +90,14 @@ private:
 	/** Returns all object properties of the place. */
 	void getObjectPlaceProperties(int placeId, std::vector<SpatialProperties::ObjectPlacePropertyPtr> &properties);
 
+	/** Returns id of the room to which the given place belongs. Returns -1 if not found. */
+	int getRoomForPlace(int placeId);
+
+	/** Returns a list of Ids of places connected to the given place.
+	 * traversedPlaces used only for recursion. */
+	void getConnectedPlaces(int placeId, std::vector<int> *connectedPlaces,
+			std::set<int> *traversedPlaces = 0);
+
 
 private:
 
