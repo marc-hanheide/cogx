@@ -73,9 +73,7 @@ public class DialogueManagement extends ManagedComponent {
 	 */
 	@Override
 	public void configure(Map<String, String> _config) {
-		if ((_config.containsKey("--policy")) && 
-				(_config.containsKey("--actions")) && 
-				(_config.containsKey("--observations"))) {
+		if ((_config.containsKey("--policy"))) {
 			try {
 				log("Provided parameters: policy=" + _config.get("--policy"));
 				policyFile = _config.get("--policy");
@@ -185,6 +183,7 @@ public class DialogueManagement extends ManagedComponent {
 				
 				// if it is a communicative intention
 				if (action.getType() == PolicyAction.COMMUNICATIVE_INTENTION) {
+					log("creating a new communicative intention based on the dialogue manager selection");
 					CommunicativeIntention response = 
 					EpistemicObjectUtils.createSimplePrivateCommunicativeIntention((action).getContent(), 1.0f); 
 					addToWorkingMemory(newDataID(), response);
@@ -196,8 +195,14 @@ public class DialogueManagement extends ManagedComponent {
 					if (FormulaUtils.subsumes(augmentedIntention.intent.content.get(0).postconditions, action.getContent())) {
 						
 						// we are dealing with a simple forwarding action	
-						log("forwarding the communicative action beyond dialogue.sa");
-						addToWorkingMemory(newDataID(), intention.intent);
+						log("simply forwarding the communicative action beyond dialogue.sa");
+						addToWorkingMemory(intention.intent.id, intention.intent);
+					}
+					else {
+						log("creating a new intention based on the dialogue manager selection");
+						Intention response = 
+							EpistemicObjectUtils.createSimplePrivateIntention((action).getContent(), 1.0f); 
+							addToWorkingMemory(newDataID(), response);
 					}
 		
 					log("new private intention successfully added to working memory");

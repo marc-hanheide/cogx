@@ -53,7 +53,7 @@ public class XMLPolicyReader {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	
 	
 	/**
@@ -136,16 +136,18 @@ public class XMLPolicyReader {
 				PolicyNode pnode = new PolicyNode(xmlNode.getAttributes().getNamedItem("id").getNodeValue());
 					
 				if (Boolean.parseBoolean(xmlNode.getAttributes().getNamedItem("isInitial").getNodeValue())) {
-					log("setting node " + pnode.getId() + "as initial");
+					debug("setting node " + pnode.getId() + " as initial");
 					policy.setNodeAsInitial(pnode);
 				}
 				
 				if (Boolean.parseBoolean(xmlNode.getAttributes().getNamedItem("isFinal").getNodeValue())) {
-					log("setting node " + pnode.getId() + "as final");
+					debug("setting node " + pnode.getId() + " as final");
 					policy.setNodeAsFinal(pnode);
 				}
 				
+				debug("we are here...");
 				if (xmlNode.getAttributes().getNamedItem("action") != null) {
+					debug("and here...");
 					pnode.setPolicyAction(new PolicyAction(xmlNode.getAttributes().getNamedItem("action").getNodeValue()));
 				}
 				else {
@@ -177,12 +179,13 @@ public class XMLPolicyReader {
 			if (xmlNode.getNodeName().equals("edge") && 
 					xmlNode.getAttributes().getNamedItem("id") != null && 
 					xmlNode.getAttributes().getNamedItem("source") != null && 
-					xmlNode.getAttributes().getNamedItem("target") != null) {
+					xmlNode.getAttributes().getNamedItem("target") != null ) {
 				
 				String id = xmlNode.getAttributes().getNamedItem("id").getNodeValue(); 
 				String source = xmlNode.getAttributes().getNamedItem("source").getNodeValue();
 				String target = xmlNode.getAttributes().getNamedItem("target").getNodeValue();
 				
+				if (xmlNode.getAttributes().getNamedItem("deactivated") == null) {
 				if (policy.hasNode(source) && policy.hasNode(target)) {	
 						PolicyEdge pedge = new PolicyEdge (id, policy.getNode(source), policy.getNode(target)); 
 						
@@ -195,6 +198,13 @@ public class XMLPolicyReader {
 						debug("adding edge: " + pedge.getId());
 						policy.addEdge(pedge, policy.getNode(source), policy.getNode(target)) ;
 				}
+				else {
+					log("WARNING: the nodes specified for edge " + xmlNode.getAttributes().getNamedItem("id") + " are not specified anywhere");
+				}
+				}
+				else {
+					debug("edge " + id + " temporarily deactivated");
+				} 
 			}
 			else if (!xmlNode.getNodeName().equals("#text")){
 				throw new DialogueException("wrongly formatted policy file for tag: " + xmlNode.getNodeName());

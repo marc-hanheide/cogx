@@ -66,7 +66,7 @@ public class DialogueManager {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 
 	// the dialogue policy
 	DialoguePolicy policy;
@@ -79,7 +79,8 @@ public class DialogueManager {
 	 * 
 	 * @param policy the dialogue policy (typically extracted from a configuration file)
 	 */
-	public DialogueManager(DialoguePolicy policy) {
+	public DialogueManager(DialoguePolicy policy) throws DialogueException {
+		policy.ensureWellFormedPolicy();
 		this.policy = policy;
 		curNode = policy.getInitNode();
 	}
@@ -159,7 +160,8 @@ public class DialogueManager {
 
 		// get matching edges
 		Collection<PolicyEdge> matchingEdges = curNode.getMatchingEdges(obs);
-		
+		debug("number of matching edges: " + matchingEdges);
+	
 		// sort the edges by preferential order
 		List<PolicyEdge> sortedEdges = PolicyUtils.sortEdges(matchingEdges);
 		if (sortedEdges.size() > 0) {
@@ -167,6 +169,7 @@ public class DialogueManager {
 			// select the best edge
 			PolicyEdge selectedEdge = sortedEdges.get(0);
 			curNode = selectedEdge.getTargetNode();
+			debug("now moving to node " + curNode.getId());
 			
 			// if the outgoing action is underspecified, fill the arguments
 			if (curNode.getAction().isUnderspecified()) {

@@ -42,7 +42,7 @@ public class DialoguePolicy {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	
 	// set of action nodes
 	private HashMap<String,PolicyNode> nodes;
