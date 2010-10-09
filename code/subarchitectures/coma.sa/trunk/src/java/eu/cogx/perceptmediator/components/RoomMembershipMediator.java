@@ -29,7 +29,7 @@ import comadata.ComaRoom;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.helpers.ComaRoomMatchingFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 
@@ -42,13 +42,13 @@ public class RoomMembershipMediator extends ManagedComponent {
 	public static final String ROOM_PROPERTY = "in-room";
 	final Map<WorkingMemoryAddress, Set<WorkingMemoryAddress>> mapRoom2Places = new HashMap<WorkingMemoryAddress, Set<WorkingMemoryAddress>>();
 
-	WMView<PerceptBelief> allBeliefs;
-	WMContentWaiter<PerceptBelief> waitingBeliefReader;
+	WMView<GroundedBelief> allBeliefs;
+	WMContentWaiter<GroundedBelief> waitingBeliefReader;
 	final WMEventQueue entryQueue = new WMEventQueue();
 
 	public RoomMembershipMediator() {
-		this.allBeliefs = WMView.create(this, PerceptBelief.class);
-		this.waitingBeliefReader = new WMContentWaiter<PerceptBelief>(
+		this.allBeliefs = WMView.create(this, GroundedBelief.class);
+		this.waitingBeliefReader = new WMContentWaiter<GroundedBelief>(
 				this.allBeliefs);
 	}
 
@@ -63,10 +63,10 @@ public class RoomMembershipMediator extends ManagedComponent {
 	 * @throws InterruptedException
 	 */
 	protected WorkingMemoryAddress getReferredBelief(
-			ContentMatchingFunction<? super PerceptBelief> contentMatchingFunction)
+			ContentMatchingFunction<? super GroundedBelief> contentMatchingFunction)
 			throws InterruptedException {
 		debug("trying to find referred belief");
-		Entry<WorkingMemoryAddress, PerceptBelief> entry = waitingBeliefReader
+		Entry<WorkingMemoryAddress, GroundedBelief> entry = waitingBeliefReader
 				.read(contentMatchingFunction);
 		debug("got it: " + entry.getKey().id);
 		return entry.getKey();
@@ -162,15 +162,15 @@ public class RoomMembershipMediator extends ManagedComponent {
 			try {
 				lockEntry(newPlace, WorkingMemoryPermissions.LOCKEDOD);
 
-				CASTIndependentFormulaDistributionsBelief<PerceptBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
-						.create(PerceptBelief.class, getMemoryEntry(newPlace,
-								PerceptBelief.class));
+				CASTIndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
+						.create(GroundedBelief.class, getMemoryEntry(newPlace,
+								GroundedBelief.class));
 				FormulaDistribution roomProperty = FormulaDistribution.create();
 				WorkingMemoryAddress roomBelief = getReferredBelief(new ComaRoomMatchingFunction(
 						room.roomId));
 				roomProperty.getDistribution().add(
 						WMPointer.create(roomBelief,
-								CASTUtils.typeName(PerceptBelief.class)).get(),
+								CASTUtils.typeName(GroundedBelief.class)).get(),
 						1.0);
 				placeBelief.getContent().put(ROOM_PROPERTY, roomProperty);
 				overwriteWorkingMemory(newPlace, placeBelief.get());
@@ -230,9 +230,9 @@ public class RoomMembershipMediator extends ManagedComponent {
 		try {
 			lockEntry(place, WorkingMemoryPermissions.LOCKEDOD);
 
-			CASTIndependentFormulaDistributionsBelief<PerceptBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
-					.create(PerceptBelief.class, getMemoryEntry(place,
-							PerceptBelief.class));
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
+					.create(GroundedBelief.class, getMemoryEntry(place,
+							GroundedBelief.class));
 			placeBelief.getContent().remove(ROOM_PROPERTY);
 			overwriteWorkingMemory(place, placeBelief.get());
 		} finally {
