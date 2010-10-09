@@ -1,1 +1,0 @@
-COMPONENT CPP ptz.server PlayerPTZServer --log --player-host localhost 
