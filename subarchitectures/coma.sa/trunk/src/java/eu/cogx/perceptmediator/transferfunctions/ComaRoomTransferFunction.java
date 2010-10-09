@@ -9,10 +9,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import SpatialProbabilities.JointProbabilityValue;
-
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChange;
-import castutils.castextensions.IceXMLSerializer;
 
 import comadata.ComaRoom;
 
@@ -22,7 +20,7 @@ import de.dfki.lt.tr.beliefs.data.formulas.IntFormula;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 /**
@@ -30,13 +28,13 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
  * 
  */
 public class ComaRoomTransferFunction extends
-		SimpleDiscreteTransferFunction<ComaRoom, PerceptBelief> {
+		SimpleDiscreteTransferFunction<ComaRoom, GroundedBelief> {
 
 	public static final String ROOM_ID = "RoomId";
 
 	public ComaRoomTransferFunction(ManagedComponent component) {
 		super(component, Logger.getLogger(ComaRoomTransferFunction.class),
-				PerceptBelief.class);
+				GroundedBelief.class);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -59,7 +57,7 @@ public class ComaRoomTransferFunction extends
 
 	@Override
 	protected void fillBelief(
-			CASTIndependentFormulaDistributionsBelief<PerceptBelief> belief,
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief,
 			WorkingMemoryChange wmc, ComaRoom from) {
 		super.fillBelief(belief, wmc, from);
 		if (from.categories.massFunction == null) {

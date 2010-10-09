@@ -13,12 +13,13 @@ import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 
 /**
  * @author marc
  *
  */
-public class ComaRoomMatchingFunction implements ContentMatchingFunction<PerceptBelief> {
+public class ComaRoomMatchingFunction implements ContentMatchingFunction<dBelief> {
 	/** the identifier of the RoomId attribute */ 
 	public static final String ROOM_ID = ComaRoomTransferFunction.ROOM_ID;
 
@@ -33,11 +34,11 @@ public class ComaRoomMatchingFunction implements ContentMatchingFunction<Percept
 
 
 	@Override
-	public boolean matches(PerceptBelief r) {
+	public boolean matches(dBelief r) {
 		if (r.type.equals(SimpleDiscreteTransferFunction.getBeliefTypeFromCastType(ComaRoom.class))) {
 			assert (r.content instanceof CondIndependentDistribs);
 			
-			IndependentFormulaDistributionsBelief<PerceptBelief> b = IndependentFormulaDistributionsBelief.create(PerceptBelief.class, r);
+			IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief.create(dBelief.class, r);
 			FormulaDistribution fv = b.getContent().get(ROOM_ID);
 			Formula mostLikelyPlace=fv.getDistribution().getMostLikely();
 			int idVal = mostLikelyPlace.getInteger();
