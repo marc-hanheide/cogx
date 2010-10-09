@@ -4,7 +4,8 @@
 %resolves_main(Nom, BId, EpSt, Ps) <-
 resolves_main(Nom, BId, Ps) <-
 	understand : resolves_to_belief(Nom, BId),
-	resolves_props(BId, Ps).
+	resolves_props(BId, Ps),
+	bel : b(BId) / belief_exist.
 %	bel : epistemic_status(BId, EpSt).
 
 	% THIS IS THE IMPORTANT MODALISED ATOM -- reference resolution
@@ -18,9 +19,15 @@ understand : resolves_to_belief(Nom, BId).
 
 resolves_props(BId, []).
 
+% correlated
 resolves_props(BId, [Property|T]) <-
 	ling_to_observed(Property, PropObs) / correlation,
 	get_belief(BId, PropObs),
+	resolves_props(BId, T).
+
+% non-correlated
+resolves_props(BId, [Property|T]) <-
+	property_can_be_ignored(Property) / p(0.25),
 	resolves_props(BId, T).
 
 %-------------------------------------------------------------------------
