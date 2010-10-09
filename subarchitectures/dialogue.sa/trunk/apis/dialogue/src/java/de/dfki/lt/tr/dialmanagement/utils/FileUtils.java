@@ -34,7 +34,7 @@ import java.io.InputStreamReader;
  * Generic utility for reading and writing text files
  * 
  * @author plison
- * @version 10/06/2010
+ * @version 09/10/2010
  */
 
 public class FileUtils {

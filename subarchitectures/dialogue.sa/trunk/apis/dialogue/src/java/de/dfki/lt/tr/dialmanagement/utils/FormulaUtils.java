@@ -21,11 +21,6 @@
 package de.dfki.lt.tr.dialmanagement.utils;
 
 import java.io.ByteArrayInputStream;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.StringTokenizer;
 import java.util.Vector;
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
@@ -36,6 +31,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.GenericPointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
@@ -47,7 +43,7 @@ import de.dfki.lt.tr.dialmanagement.utils.formulaParser.ParseException;
  * Utility functions for manipulating propositional modal formulae
  * 
  * @author Pierre Lison (plison@dfki.de)
- * @version 03/07/2010
+ * @version 09/10/2010
  *
  */
 public class FormulaUtils {
@@ -56,6 +52,7 @@ public class FormulaUtils {
 	public static boolean LOGGING = true;
 	public static boolean DEBUG = true;
 	
+	// the formula parser
 	private static FormulaParser parser;
 
 	
@@ -116,7 +113,7 @@ public class FormulaUtils {
 	 * 
 	 * @param s the string
 	 * @return the formula in propositional modal logic
-	 * @throws DialogueException
+	 * @throws DialogueException if the formula is not well-formed
 	 */
 	public static dFormula constructFormula (String s) throws DialogueException {
 
@@ -141,9 +138,9 @@ public class FormulaUtils {
 	   * Get the formula from a string representation (assuming the preformatting is 
 	   * already done)
 	   * 
-	   * @param s
-	   * @return
-	   * @throws ParseException
+	   * @param s the preformatted string
+	   * @return the resulting formula
+	   * @throws ParseException if the formula is not well-formed
 	   */
 	  private static dFormula getFormulaFromString (String s) throws ParseException {
 		StringBuffer StringBuffer1 = new StringBuffer(s);
@@ -165,46 +162,65 @@ public class FormulaUtils {
 	 *  
 	 * @param form1 the first formula
 	 * @param form2 the second formula
-	 * @return true if contents are *, false otherwise
+	 * @return true if form1 subsumes form2, false otherwise
 	 */
 	public static boolean subsumes (dFormula form1, dFormula form2)  {
 		
+		// elementary formulae
 		if (form1 instanceof ElementaryFormula && form2 instanceof ElementaryFormula) {
 			if (((ElementaryFormula)form1).prop.toLowerCase().equals(((ElementaryFormula)form2).prop.toLowerCase())) {
 				return true;
 			}
 		}
+		
+		// complex formulae
 		else if (form1 instanceof ComplexFormula && form2 instanceof ComplexFormula) {
 			return compare ((ComplexFormula)form1, (ComplexFormula)form2);
 		}
+		
+		// modal formulae
 		else if (form1 instanceof ModalFormula && form2 instanceof ModalFormula) {
 			return compare ((ModalFormula)form1, (ModalFormula)form2);
 		}
 		
+		// integer formulae
 		else if (form1 instanceof IntegerFormula && form2 instanceof IntegerFormula) {
 			return ((IntegerFormula)form1).val == ((IntegerFormula)form2).val;
 		}
 		
+		// float formulae
 		else if (form1 instanceof FloatFormula && form2 instanceof FloatFormula) {
 			return ((FloatFormula)form1).val == ((FloatFormula)form2).val;
 		}
 		
+		// generic pointer formulae
 		else if (form1 instanceof GenericPointerFormula && form2 instanceof GenericPointerFormula) {
 			return ((GenericPointerFormula)form1).pointer.equals(((GenericPointerFormula)form2).pointer);
 		}
 		
+		// CAST pointer formulae
+		else if (form1 instanceof PointerFormula && form2 instanceof PointerFormula) {
+			return (((PointerFormula)form1).pointer.subarchitecture.equals(((PointerFormula)form2).pointer.subarchitecture) && 
+					((PointerFormula)form1).pointer.id.equals(((PointerFormula)form2).pointer.id) && 
+					((PointerFormula)form1).type.equals(((PointerFormula)form2).type));
+		}
+		
+		// boolean formulae
 		else if (form1 instanceof BooleanFormula && form2 instanceof BooleanFormula) {
 			return ((BooleanFormula)form1).val == ((BooleanFormula)form2).val;
 		}
 		
+		// underspecified formulae (notice the || operator!)
 		else if (form1 instanceof UnderspecifiedFormula || form2 instanceof UnderspecifiedFormula) {
 			return true;
 		}
+		
+		// unknown formulae
 		else if (form1 instanceof UnknownFormula && form2 instanceof UnknownFormula) {
 			return true;
 		}
 		
-		
+		// else, look at the raw string
 		return FormulaUtils.getString(form1).equals(FormulaUtils.getString(form2));
 	}
 	
@@ -212,10 +228,10 @@ public class FormulaUtils {
 	
 	/**
 	 * returns true if the content of form1 is equal to the content of form2,
-	 * false otherwise
+	 * false otherwise (with the two being modal formulae)
 	 * 
-	 * @param form1 the first formula
-	 * @param form2 the second formula
+	 * @param form1 the first modal formula
+	 * @param form2 the second modal formula
 	 * @return true if contents are equal, false otherwise
 	 */
 	private static boolean compare (ModalFormula form1, ModalFormula form2) {
@@ -229,10 +245,10 @@ public class FormulaUtils {
 	
 	/**
 	 * returns true if the content of form1 is equal to the content of form2,
-	 * false otherwise
+	 * false otherwise (with the two being complex formulae)
 	 * 
-	 * @param form1 the first formula
-	 * @param form2 the second formula
+	 * @param form1 the first complex formula
+	 * @param form2 the second complex formula
 	 * @return true if contents are equal, false otherwise
 	 */
 	private static boolean compare (ComplexFormula form1, ComplexFormula form2) {

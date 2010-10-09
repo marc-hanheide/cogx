@@ -50,9 +50,9 @@ public class DialogueManagerDoraTest {
 	public static boolean DEBUG = true;
 	
 	// the configuration files
-	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/policyExampleDora.txt";
-	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/observationsDora.txt";
-	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/actionsDora.txt";
+	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/policy3.txt";
+	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/conditions3.txt";
+	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/actions3.txt";
 
 	// the dialogue manager
 	public DialogueManager manager;
