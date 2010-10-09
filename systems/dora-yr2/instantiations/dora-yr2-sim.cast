@@ -8,11 +8,7 @@ INCLUDE includes/spatial.sa/spatial.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter
 INCLUDE includes/spatial.sa/spatial-mediator.cast
-
-# AVS #
-CPP GD relation.manager ObjectRelationManager -c instantiations/cureconfig/cogxp3.ccf --log --no-vision #--display-objects-in-pb --no-vision #--debug #--no-ptz #--debug
-CPP GD visual.search VisualObjectSearch -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 100 --tiltinterval 15  --gridsize 500 --cellsize 0.05  --kernel-width-factor 0.7 --sampleawayfromobs 0.45 --publishsimcones #--showgui --ctrl-ptu --simulate --showconemap 
-
+INCLUDE includes/spatial.sa/spatial-objsearch.cast
 
 # Default.SA ################################################################
 INCLUDE includes/default.sa/default-base.cast
@@ -46,7 +42,7 @@ INCLUDE includes/dialogue.sa/dialogue-base.cast
 INCLUDE includes/dialogue.sa/dialogue-dora.cast
 
 # planning and motivation #####################################################
-INCLUDE includes/planner.sa/switching-planner-dora.cast
+#INCLUDE includes/planner.sa/switching-planner-dora.cast
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
 
