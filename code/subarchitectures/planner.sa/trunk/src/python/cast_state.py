@@ -15,7 +15,7 @@ log = config.logger("cast-state")
 BINDER_SA = "binder"
 TOTAL_P_COSTS = 200
 
-QDL_NUMBER_RE = re.compile("\"([0-9\.]+)\"\^\^<xsd:float>")
+QDL_NUMBER_RE = re.compile("\"([-eE0-9\.]+)\"\^\^<xsd:float>")
 QDL_VALUE = re.compile("<dora:(.*)>")
 
 class CASTState(object):
@@ -262,7 +262,8 @@ class CASTState(object):
         for b in self.beliefs:
             tp.belief_dict[b.id] = b
             if isinstance(b.hist, bm.history.CASTBeliefHistory):
-                for wma in b.hist.ancestors:
+                for wmp in b.hist.ancestors:
+                    wma = wmp.address
                     tp.belief_dict[wma.id] = b
                     percept2bel[wma.id] = b
 

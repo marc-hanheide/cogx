@@ -94,6 +94,9 @@ def feature_val_to_object(fval):
     return pddl.TypedObject(val, pddl.t_object)
   
   elif fval.__class__ == logicalcontent.PointerFormula:
+    if fval.pointer.id not in belief_dict:
+      log.warning("Pointer to belief %s cannot be resolved!", fval.pointer.id)
+      return pddl.UNKNOWN
     bel = belief_dict[fval.pointer.id]
     return belief_to_object(bel)
   

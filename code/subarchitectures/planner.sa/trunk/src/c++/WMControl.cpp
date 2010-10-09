@@ -285,9 +285,15 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     log("state change...");
     if (wmc.operation == cast::cdl::ADD || wmc.operation == cast::cdl::OVERWRITE) {
         log("added/changed belief at %s@%s", wmc.address.id.c_str(), wmc.address.subarchitecture.c_str());
-        dBeliefPtr changedBelief = getMemoryEntry<dBelief>(wmc.address);
-        m_currentState[wmc.address.id] = changedBelief;
-        log("%s->id = %s", wmc.address.id.c_str(), changedBelief->id.c_str());
+        try {
+            dBeliefPtr changedBelief = getMemoryEntry<dBelief>(wmc.address);
+            m_currentState[wmc.address.id] = changedBelief;
+            log("%s->id = %s", wmc.address.id.c_str(), changedBelief->id.c_str());
+        }
+        catch(cast::DoesNotExistOnWMException) {
+            log("%s vanished.", wmc.address.id.c_str());
+            m_currentState.erase(wmc.address.id);
+        }
     }
     else {
         m_currentState.erase(wmc.address.id);
