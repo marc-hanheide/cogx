@@ -88,6 +88,8 @@ private:
 	IplImage* previousImg;
 	bool bIsMoving;
 	double CurrentBestDistSquared;
+	bool bHorizontalFound;
+	bool bVerticalOn;
 
 #ifdef FEAT_VISUALIZATION
 	bool m_bSendPoints;
@@ -155,6 +157,7 @@ public:
 	double CompareHistKLD(CvHistogram* h1, CvHistogram* h2);
 	bool IsMoving(IplImage * subimg);
 	Vector3 PixelRGB2HSV(VisionData::ColorRGB rgb);
+	void FindVerticalPlanes(VisionData::SurfacePointSeq &points, std::vector <int> &labels, double B, double C);
 	
 	inline Particle InitialParticle()
 	{
