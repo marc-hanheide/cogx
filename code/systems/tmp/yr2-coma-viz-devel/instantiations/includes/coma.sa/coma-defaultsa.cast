@@ -1,0 +1,3 @@
+# JAVA MG hfcserver coma.components.HFCServer --nsFile subarchitectures/coma.sa/ontologies/dora.ns --ruleFile subarchitectures/coma.sa/ontologies/default.rdl --tupleFile subarchitectures/coma.sa/ontologies/dora_omics_thingloc.nt --log
+JAVA MG hfcserver coma.components.HFCServer --nsFile subarchitectures/coma.sa/ontologies/dora.ns --ruleFile subarchitectures/coma.sa/ontologies/default.rdl --tupleFile subarchitectures/coma.sa/ontologies/defaultsa/objloc-defaults-subset1.nt
+#--tupleFile subarchitectures/coma.sa/ontologies/omics-locations-coocmatrix-subset1full.nt --log

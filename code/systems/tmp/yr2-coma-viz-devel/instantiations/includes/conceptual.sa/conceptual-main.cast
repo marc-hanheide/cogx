@@ -1,0 +1,4 @@
+CPP GD conceptual.queryhandler ConceptualQueryHandler --debug true
+CPP GD conceptual.observer ConceptualObserver --debug true
+CPP GD conceptual.comaroomupdater ConceptualComaRoomUpdater --debug true
+

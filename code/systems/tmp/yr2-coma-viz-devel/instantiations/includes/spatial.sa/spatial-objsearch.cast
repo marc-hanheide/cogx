@@ -1,0 +1,2 @@
+CPP GD visual.search VisualObjectSearch -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 50 --tiltinterval 15 --showgui --ctrl-ptu --gridsize 500 --cellsize 0.05  --kernel-width-factor 0.7 --sampleawayfromobs 0.45 --publishsimcones --usepeekabot --log #--debug --showconemap 
+
