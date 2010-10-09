@@ -157,9 +157,9 @@ public class SpatialActionInterface extends ManagedComponent {
 						.getViewPointsForPlaceAndObject((int) getAction().placeID, getAction().model);
 								
 				
-				for (ViewPoint vp : m_vps) {
-					log("cone to process: " + vp.label + " " + vp.probability);
-				}
+//				for (ViewPoint vp : m_vps) {
+//					log("cone to process: " + vp.label + " " + vp.probability);
+//				}
 				
 				processNextCone();
 
