@@ -3,12 +3,11 @@
  */
 package eu.cogx.percepttracker;
 
-import java.awt.Component;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -16,6 +15,7 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.core.CASTUtils;
 import castutils.castextensions.PointerMap;
+import castutils.castextensions.ValueNotAvailableException;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
@@ -29,7 +29,6 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.ProbFormula;
-import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 /**
  * this is a generic matcher that matches any
@@ -214,12 +213,17 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 				// look up the corresponding value of the belief for
 				// this pointer
 				WorkingMemoryAddress lookUpGroundedBelief;
-				lookUpGroundedBelief = wm2wmMap.waitFor(wmPointer.pointer);
-				assert (lookUpGroundedBelief != null);
-				// it should be always valid here!
-				if (!lookUpGroundedBelief
-						.equals(((PointerFormula) fo.get()).pointer))
-					return false;
+				try {
+					lookUpGroundedBelief = wm2wmMap.waitFor(wmPointer.pointer);
+					assert (lookUpGroundedBelief != null);
+					// it should be always valid here!
+					if (!lookUpGroundedBelief
+							.equals(((PointerFormula) fo.get()).pointer))
+						return false;
+				} catch (ValueNotAvailableException e) {
+					logger.warn("couldn't find "
+							+ CASTUtils.toString(wmPointer.pointer), e);
+				}
 			} else if (ft.get() instanceof IntegerFormula) { // compare the
 				// integer
 				// values
@@ -313,20 +317,26 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 					logger.info("checking the type of "
 							+ CASTUtils.toString(wmp.getVal())
 							+ " in the map to fill " + entry.getKey()
-							+ " in type " + toBelief.getType()+": " + wmp.getType());
+							+ " in type " + toBelief.getType() + ": "
+							+ wmp.getType());
 
 					logger.info("have to find the key "
 							+ CASTUtils.toString(wmp.getVal())
 							+ " in the map to fill " + entry.getKey()
 							+ " in type " + toBelief.getType());
-					lookUpGroundedBelief = wm2wmMap.waitFor(wmp.getVal());
-					logger.info("update " + entry.getKey() + " formula "
-							+ f.getFormula().toString() + " to "
-							+ CASTUtils.toString(lookUpGroundedBelief));
-					wmp.setVal(lookUpGroundedBelief);
-					wmp.setType(CASTUtils.typeName(m_toCls));
-					logger.info("new val: " + entry.getKey() + " formula "
-							+ f.getFormula().toString());
+					try {
+						lookUpGroundedBelief = wm2wmMap.waitFor(wmp.getVal());
+						logger.info("update " + entry.getKey() + " formula "
+								+ f.getFormula().toString() + " to "
+								+ CASTUtils.toString(lookUpGroundedBelief));
+						wmp.setVal(lookUpGroundedBelief);
+						wmp.setType(CASTUtils.typeName(m_toCls));
+						logger.info("new val: " + entry.getKey() + " formula "
+								+ f.getFormula().toString());
+					} catch (ValueNotAvailableException e) {
+						logger.warn("couldn't find value for "
+								+ CASTUtils.toString(wmp.getVal()));
+					}
 				}
 			}
 		}
