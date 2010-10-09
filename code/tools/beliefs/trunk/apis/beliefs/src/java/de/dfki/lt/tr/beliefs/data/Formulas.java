@@ -245,7 +245,7 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 	}
 
 	public Formula getMostLikely() {
-		double max = Double.MIN_VALUE;
+		double max = -1;
 		dFormula maxFormula = null;
 		for (FormulaProbPair f : _content.values) {
 			if (f.prob > max) {
@@ -253,11 +253,11 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 				maxFormula = f.val;
 			}
 		}
-		if (maxFormula != null) {
+		// if (maxFormula != null) {
 			return Formula.create(maxFormula);
-		} else {
-			return null;
-		}
+//		} else {
+//			return null;
+//		}
 
 	}
 
