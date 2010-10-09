@@ -703,7 +703,9 @@ public class ActionInterfaceFrame extends JFrame {
 					PLACE_ID_COLUMN);
 			assert (placeIDVal != null);
 			long placeID = (Long) placeIDVal;
-			m_exeMan.triggerProcessConesAtPlace(placeID, new MonitorPanel());
+			m_exeMan.triggerProcessConesAtPlace(placeID,(String) JOptionPane
+					.showInputDialog(this,
+					"What object should the cones be processed for?"), new MonitorPanel());
 		}
 	}
 

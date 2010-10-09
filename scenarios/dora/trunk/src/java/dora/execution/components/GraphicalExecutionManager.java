@@ -151,9 +151,10 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 	}
 
 	public WorkingMemoryAddress triggerProcessConesAtPlace(long _placeID,
-			ActionMonitor _monitor) throws CASTException {
+			String _model, ActionMonitor _monitor) throws CASTException {
 		ProcessConesAtPlace act = newActionInstance(ProcessConesAtPlace.class);
 		act.placeID = _placeID;
+		act.model = _model;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}

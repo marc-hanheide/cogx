@@ -154,10 +154,11 @@ public class SpatialActionInterface extends ManagedComponent {
 
 			try {
 				m_vps = ((SpatialActionInterface) getComponent())
-						.getViewPointsForPlace((int) getAction().placeID);
+						.getViewPointsForPlaceAndObject((int) getAction().placeID, getAction().model);
+								
+				
 				for (ViewPoint vp : m_vps) {
-					println("cone to process: " + vp.probability);
-					
+					log("cone to process: " + vp.label + " " + vp.probability);
 				}
 				
 				processNextCone();
@@ -211,23 +212,27 @@ public class SpatialActionInterface extends ManagedComponent {
 	/**
 	 * 
 	 * @param _placeID
+	 * @param _model 
 	 * @return
 	 * @throws UnknownSubarchitectureException
 	 * @throws DoesNotExistOnWMException
 	 */
-	private List<ViewPoint> getViewPointsForPlace(int _placeID)
+	private List<ViewPoint> getViewPointsForPlaceAndObject(int _placeID, String _model)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		List<ViewPoint> vps = Collections.emptyList();
 
-		if (m_viewPointsForPlace != null) {
+		if (m_viewPointsForObject != null) {
 
-			HashSet<WorkingMemoryAddress> addressSet = m_viewPointsForPlace
-					.get(_placeID);
+			HashSet<WorkingMemoryAddress> addressSet = m_viewPointsForObject
+					.get(_model);
 
 			if (addressSet != null) {
 				vps = new ArrayList<ViewPoint>(addressSet.size());
 				for (WorkingMemoryAddress vpAddr : addressSet) {
-					vps.add(getMemoryEntry(vpAddr, ViewPoint.class));
+					ViewPoint vp = getMemoryEntry(vpAddr, ViewPoint.class);
+					if(vp.closestPlaceId == _placeID) {
+						vps.add(vp);
+					}
 				}
 
 				// sort to start with most likely place to find an object
@@ -517,7 +522,7 @@ public class SpatialActionInterface extends ManagedComponent {
 	private int m_detections;
 
 	private HashMap<String, HashSet<WorkingMemoryAddress>> m_viewPointsForObject;
-	private HashMap<Integer, HashSet<WorkingMemoryAddress>> m_viewPointsForPlace;
+//	private HashMap<Integer, HashSet<WorkingMemoryAddress>> m_viewPointsForPlace;
 
 	public SpatialActionInterface() {
 		m_detections = 4;
@@ -654,33 +659,33 @@ public class SpatialActionInterface extends ManagedComponent {
 		try {
 			ViewPoint vp = getMemoryEntry(_address, ViewPoint.class);
 			storeObjectViewPointMapping(_address, vp);
-			storePlaceIDViewPointMapping(_address, vp);
+//			storePlaceIDViewPointMapping(_address, vp);
 		} catch (CASTException e) {
 			logException(e);
 		}
 	}
 
-	/**
-	 * @param _address
-	 * @param vp
-	 */
-	private void storePlaceIDViewPointMapping(WorkingMemoryAddress _address,
-			ViewPoint vp) {
-
-		if (m_viewPointsForPlace == null) {
-			m_viewPointsForPlace = new HashMap<Integer, HashSet<WorkingMemoryAddress>>();
-		}
-
-		int placeID = vp.closestPlaceId;
-
-		HashSet<WorkingMemoryAddress> objectSet = m_viewPointsForPlace
-				.get(placeID);
-		if (objectSet == null) {
-			objectSet = new HashSet<WorkingMemoryAddress>();
-			m_viewPointsForPlace.put(placeID, objectSet);
-		}
-		objectSet.add(_address);
-	}
+//	/**
+//	 * @param _address
+//	 * @param vp
+//	 */
+//	private void storePlaceIDViewPointMapping(WorkingMemoryAddress _address,
+//			ViewPoint vp) {
+//
+//		if (m_viewPointsForPlace == null) {
+//			m_viewPointsForPlace = new HashMap<Integer, HashSet<WorkingMemoryAddress>>();
+//		}
+//
+//		int placeID = vp.closestPlaceId;
+//
+//		HashSet<WorkingMemoryAddress> objectSet = m_viewPointsForPlace
+//				.get(placeID);
+//		if (objectSet == null) {
+//			objectSet = new HashSet<WorkingMemoryAddress>();
+//			m_viewPointsForPlace.put(placeID, objectSet);
+//		}
+//		objectSet.add(_address);
+//	}
 
 	/**
 	 * @param _address
@@ -719,7 +724,7 @@ public class SpatialActionInterface extends ManagedComponent {
 
 					try {
 						deleteFromWorkingMemory(addr);
-						removeStoredPlaceIDViewPointMapping(addr);
+//						removeStoredPlaceIDViewPointMapping(addr);
 					} catch (CASTException e) {
 						logException(e);
 					}
@@ -734,15 +739,15 @@ public class SpatialActionInterface extends ManagedComponent {
 
 	}
 
-	private void removeStoredPlaceIDViewPointMapping(WorkingMemoryAddress _addr) {
-		for (HashSet<WorkingMemoryAddress> hashSet : m_viewPointsForPlace
-				.values()) {
-			if (hashSet.remove(_addr)) {
-				return;
-			}
-		}
-		println("OHAI, we didn't have a viewpoint stored for that address");
-	}
+//	private void removeStoredPlaceIDViewPointMapping(WorkingMemoryAddress _addr) {
+//		for (HashSet<WorkingMemoryAddress> hashSet : m_viewPointsForPlace
+//				.values()) {
+//			if (hashSet.remove(_addr)) {
+//				return;
+//			}
+//		}
+//		println("OHAI, we didn't have a viewpoint stored for that address");
+//	}
 
 	/**
 	 * @return
