@@ -181,19 +181,21 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
     NavData::FNodePtr oobj =
       getMemoryEntry<NavData::FNode>(objID.address);
     if (m_firstMovementRegistered) {
-    debug("newNavNode called");
-
-    if (oobj != 0) {
-      processPlaceArrival(false);
-    }
+      debug("newNavNode called");
+      
+      if (oobj != 0) {
+	processPlaceArrival(false);
+      }
     }
     else {
+      
       // Special case: Robot hasn't yet moved; this must be a loaded map
       // node. Just add it as a Place.
       PlaceHolder p;
       p.m_data = new SpatialData::Place;   
       //p.m_data->id = oobj->getData()->nodeId;
-
+      
+      
       int newPlaceID = m_placeIDCounter;
       m_placeIDCounter++;
       p.m_data->id = newPlaceID;
@@ -205,6 +207,11 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
       addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
 
       m_Places[newPlaceID] = p;
+
+      if(oobj->gateway == 1) {
+	addNewGatewayProperty(p.m_data->id);			
+      }
+
     }
   }
   catch (DoesNotExistOnWMException) {
