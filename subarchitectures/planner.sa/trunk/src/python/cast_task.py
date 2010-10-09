@@ -418,10 +418,10 @@ class CASTTask(object):
             self.dt_done()
             return
         
-        state = self.cp_task.get_state().copy()
-        #TODO: using the last CP state might be problematic
 
         def wait_for_effect():
+            #TODO: using the last CP state might be problematic
+            state = self.cp_task.get_state().copy()
             try:
                 pnode = plan_postprocess.getRWDescription(pddl_action, args, state, 1)
             except:
@@ -438,6 +438,8 @@ class CASTTask(object):
             self.update_status(TaskStateEnum.FAILED)
             return
         
+        #TODO: using the last CP state might be problematic
+        state = self.cp_task.get_state().copy()
         try:
             pnode = plan_postprocess.getRWDescription(pddl_action, args, state, 1)
         except:
