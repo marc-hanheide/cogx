@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import cast.CASTException;
+import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -94,12 +95,22 @@ public class RoomMembershipMediator extends ManagedComponent {
 						break;
 					}
 					case OVERWRITE: {
-						ComaRoom room = getMemoryEntry(ev.address,
-								ComaRoom.class);
-						removeInvalidPlaceProperties(room, ev.address);
-						addPlaceProperties(room, ev.address);
-						mapRoom2Places.put(ev.address,
-								getContainedPlaceSet(room));
+						ComaRoom room = null;
+						try {
+							room = getMemoryEntry(ev.address, ComaRoom.class);
+						} catch (DoesNotExistOnWMException e) {
+							getLogger().warn("object already removed...");
+						}
+						if (room != null) {
+							removeInvalidPlaceProperties(room, ev.address);
+							addPlaceProperties(room, ev.address);
+
+							mapRoom2Places.put(ev.address,
+									getContainedPlaceSet(room));
+						} else {
+							removePlaceProperties(ev.address);
+							mapRoom2Places.remove(ev.address);
+						}
 						break;
 					}
 					case DELETE: {
