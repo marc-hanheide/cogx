@@ -1,6 +1,6 @@
 (define (domain george-yr2)
 
-  (:requirements :mapl :adl :object-fluents) 
+  (:requirements :mapl :adl :fluents :action-costs :equality)
 
   (:types
     robot - agent
@@ -9,6 +9,7 @@
 
   (:constants
     george - robot
+    tutor - agent
     unknown-color - color-name
     unknown-shape - shape-name
     unknown-ident - ident-name
@@ -24,45 +25,84 @@
     (color ?v - visual-object) - color-name
     (shape ?v - visual-object) - shape-name
     (ident ?v - visual-object) - ident-name
+    (p-color ?v - visual-object ?c - color-name) - number
+    (p-shape ?v - visual-object ?s - shape-name) - number
+    (p-ident ?v - visual-object ?i - ident-name) - number
   )
 
   (:action ask-for-an-objects-color-polar
     :agent (?a - robot)
     :parameters (?v - visual-object ?c - color-name)
-    :precondition (in-domain (color ?v) ?c)
-    :effect (kval ?a (color ?v))
+    :precondition (and 
+    		       (in-domain (color ?v) ?c)
+		       (not (= ?c unknown-color))
+		       (> (p-color ?v ?c) 0.5)
+		  )
+    :effect (and
+		;;(kval ?a (color ?v))
+		(attributed tutor (color ?v) ?c)
+		(increase (total-cost) 1)
+	    )
   )
 
   (:action ask-for-an-objects-color-general
     :agent (?a - robot)
     :parameters (?v - visual-object)
-    :effect (kval ?a (color ?v))
+    :effect (and 
+    	    	 ;;(kval ?a (color ?v))
+		 (attributed tutor (color ?v) unknown-color)
+		 (increase (total-cost) 2)
+	    )
   )
 
   (:action ask-for-an-objects-shape-polar
     :agent (?a - robot)
     :parameters (?v - visual-object ?s - shape-name)
-    :precondition (in-domain (shape ?v) ?s)
-    :effect (kval ?a (shape ?v))
+    :precondition (and
+			(in-domain (shape ?v) ?s)
+			(not (= ?s unknown-shape))
+			(> (p-shape ?v ?s) 0.5)
+		  )
+    :effect (and
+		;;(kval ?a (shape ?v))
+		(attributed tutor (shape ?v) ?s)
+		(increase (total-cost) 1)
+	    )
   )
 
   (:action ask-for-an-objects-shape-general
     :agent (?a - robot)
     :parameters (?v - visual-object)
-    :effect (kval ?a (shape ?v))
+    :effect (and
+		;;(kval ?a (shape ?v))
+		(attributed tutor (shape ?v) unknown-shape)
+		(increase (total-cost) 2)
+	    )
   )
 
   (:action ask-for-an-objects-ident-polar
     :agent (?a - robot)
     :parameters (?v - visual-object ?i - ident-name)
-    :precondition (in-domain (ident ?v) ?i)
-    :effect (kval ?a (ident ?v))
+    :precondition (and
+			(in-domain (ident ?v) ?i)
+			(not (= ?i unknown-ident))
+			(> (p-ident ?v ?i) 0.5)
+		  )
+    :effect (and
+		;;(kval ?a (ident ?v))
+		(attributed tutor (ident ?v) ?i)
+		(increase (total-cost) 1)
+	    )
   )
 
   (:action ask-for-an-objects-ident-general
     :agent (?a - robot)
     :parameters (?v - visual-object)
-    :effect (kval ?a (ident ?v))
+    :effect (and
+		;;(kval ?a (ident ?v))
+		(attributed tutor (ident ?v) unknown-ident)
+		(increase (total-cost) 2)
+	    )
   )
 
   (:action learn-color
@@ -71,11 +111,12 @@
     :precondition 
       (and
 	(not (color-learned ?v))
-	;;(= (color ?v) ?c)
-	(in-domain (color ?v) ?c)
-	(kval ?a (color ?v))
+	(attributed tutor (color ?v) ?c)
       )
-    :effect (color-learned ?v)
+    :effect (and
+		(color-learned ?v)
+		(increase (total-cost) 1)
+	    )
   )
 
   (:action learn-shape
@@ -84,11 +125,12 @@
     :precondition 
       (and
 	(not (shape-learned ?v))
-	;;(= (shape ?v) ?s)
-	(in-domain (shape ?v) ?s)
-	(kval ?a (shape ?v))
+	(attributed tutor (shape ?v) ?s)
       )
-    :effect (shape-learned ?v)
+    :effect (and
+		(shape-learned ?v)
+		(increase (total-cost) 1)
+	    )
   )
 
   (:action learn-ident
@@ -97,10 +139,11 @@
     :precondition 
       (and
 	(not (ident-learned ?v))
-	;;(= (ident ?v) ?i)
-	(in-domain (ident ?v) ?i)
-	(kval ?a (ident ?v))
+	(attributed tutor (ident ?v) ?i)
       )
-    :effect (ident-learned ?v)
+    :effect (and
+		(ident-learned ?v)
+		(increase (total-cost) 1)
+	    )
   )
 )
