@@ -14,12 +14,14 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
+import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import execution.components.BeliefBasedPlanExecutionMediator;
 import execution.slice.ActionExecutionException;
 import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.GoToPlace;
+import execution.slice.actions.ProcessConesAtPlace;
 import execution.util.ActionConverter;
 
 /**
@@ -57,7 +59,7 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 					.create(dBelief.class,
 							getMemoryEntry(beliefPtr.getVal(), dBelief.class));
 
-			Formula placeProperty = placeUnion.getContent().get("PlaceId")
+			Formula placeProperty = placeUnion.getContent().get(PlaceTransferFunction.PLACE_ID_ID)
 					.getDistribution().firstValue();
 			act.placeID = placeProperty.getInteger();
 
@@ -79,7 +81,6 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 		} else if (_plannedAction.name.equals("create_cones")) {
 			assert _plannedAction.arguments.length == 3 : "create_cones action arity is expected to be 3";
 
-
 			WorkingMemoryAddress roomBeliefAddress = addressFromFormula(_plannedAction.arguments[2]);
 
 			IndependentFormulaDistributionsBelief<GroundedBelief> gb = IndependentFormulaDistributionsBelief
@@ -96,12 +97,33 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			CreateConesForModel act = newActionInstance(CreateConesForModel.class);
 			act.model = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[1]);
 			act.placeIDs = room.containedPlaceIds;
-			
+
 			return act;
+
+		} else if (_plannedAction.name.equals("process_all_cones_at_place")) {
+			assert _plannedAction.arguments.length == 3 : "process_all_cones_at_place action arity is expected to be 3";
+
+			ProcessConesAtPlace act = newActionInstance(ProcessConesAtPlace.class);
+		
 			
+			WMPointer beliefPtr = WMPointer.create(_plannedAction.arguments[1]);
+
+			// read the belief from WM
+			IndependentFormulaDistributionsBelief<dBelief> placeUnion = IndependentFormulaDistributionsBelief
+					.create(dBelief.class,
+							getMemoryEntry(beliefPtr.getVal(), dBelief.class));
+
+			Formula placeProperty = placeUnion.getContent().get(PlaceTransferFunction.PLACE_ID_ID)
+					.getDistribution().firstValue();
+			act.placeID = placeProperty.getInteger();
+
+			act.model = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[2]);
+
+			return act;
 		}
 		throw new ActionExecutionException("No conversion available for: "
 				+ _plannedAction.fullName);
+
 	}
 
 	@Override
