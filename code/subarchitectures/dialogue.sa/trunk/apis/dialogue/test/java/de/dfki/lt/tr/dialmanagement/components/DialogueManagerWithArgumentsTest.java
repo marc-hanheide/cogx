@@ -48,9 +48,9 @@ public class DialogueManagerWithArgumentsTest {
 	public static boolean DEBUG = true;
 
 	// the configuration files
-	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/propagationPolicy.txt";
-	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/propObservations.txt";
-	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/propActions.txt";
+	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/policy5.txt";
+	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/conditions5.txt";
+	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/actions5.txt";
 
 	// the dialogue manager
 	public DialogueManager manager;

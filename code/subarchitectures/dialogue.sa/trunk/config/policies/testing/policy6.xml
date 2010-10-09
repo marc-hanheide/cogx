@@ -19,10 +19,10 @@
 		<edge id="closingEdge" observation="closingObs" source="engagedNode" target="closedNode"/>
 	</edges>
     
-	<observations>
-        <observation type="communicativeintention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;human ^ &lt;agent&gt;robot)" lowerProb="0.0" higherProb="1.0" id="greetingObs"/>
-        <observation content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;human ^ &lt;agent&gt;robot)" type="communicativeintention" lowerProb="0.0" higherProb="1.0" id="closingObs"/>
-    </observations>
+	<conditions>
+        <condition type="communicativeintention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;human ^ &lt;agent&gt;robot)" lowerProb="0.0" higherProb="1.0" id="greetingObs"/>
+        <condition content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;human ^ &lt;agent&gt;robot)" type="communicativeintention" lowerProb="0.0" higherProb="1.0" id="closingObs"/>
+    </conditions>
     
 	<actions>
         <action id="greetingAction" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;robot ^ &lt;agent&gt;human)"/><action

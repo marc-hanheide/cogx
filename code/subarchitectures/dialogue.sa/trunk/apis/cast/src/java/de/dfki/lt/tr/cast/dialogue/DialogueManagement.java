@@ -1,10 +1,7 @@
 package de.dfki.lt.tr.cast.dialogue;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
 
 import cast.AlreadyExistsOnWMException;
 import cast.DoesNotExistOnWMException;
@@ -271,12 +268,10 @@ public class DialogueManagement extends ManagedComponent {
 					if (b.content instanceof BasicProbDistribution &&
 							((BasicProbDistribution)b.content).values instanceof FormulaValues) {
 
-//						List<FormulaProbPair> newPairs = new LinkedList<FormulaProbPair>();
 						HashMap<dFormula,Float> mapPairs = new HashMap<dFormula,Float>();
 
 						for (FormulaProbPair pair : ((FormulaValues)((BasicProbDistribution)b.content).values).values) {
 							FormulaProbPair newPair = new FormulaProbPair(new ModalFormula(0, IntentionManagementConstants.beliefLinkModality, pair.val), pair.prob);
-//							newPairs.add(newPair);
 							mapPairs.put(newPair.val, newPair.prob);
 						}
 

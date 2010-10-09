@@ -36,9 +36,9 @@ public class TextPolicyReaderTest {
 	public static boolean LOGGING = true;
 	public static boolean DEBUG = true;
 	
-	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/simplepolicy.txt";
-	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/simpleobservations.txt";
-	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/simpleactions.txt";
+	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/policy1.txt";
+	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/conditions1.txt";
+	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/actions1.txt";
 
 	
 	@Test

@@ -33,6 +33,14 @@ import de.dfki.lt.tr.dialmanagement.data.FormulaWrapper;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyEdge;
 
+
+/**
+ * Utilities for manipulating dialogue policies
+ * 
+ * @author Pierre Lison (plison@dfki.de)
+ * @version 09/10/2010
+ *
+ */
 public class PolicyUtils {
 
 	// logging and debugging
@@ -40,6 +48,16 @@ public class PolicyUtils {
 	public static boolean DEBUG = true;
 	
 	
+	/**
+	 * Sort the edge according to their specificity, the head of the list being the most
+	 * specific while the tail is the most underspecified
+	 * 
+	 * TODO: extend this to full partial order
+	 * TODO: test the partial order
+	 * 
+	 * @param unsortedEdges the unsorted collection of edges
+	 * @return the sorted list of edges
+	 */
 	public static List<PolicyEdge> sortEdges (Collection<PolicyEdge> unsortedEdges) {
 		
 		LinkedList<PolicyEdge> sortedEdges = new LinkedList<PolicyEdge>();
@@ -57,6 +75,14 @@ public class PolicyUtils {
 	}
 		
 	
+	/**
+	 * Given an observation and a policy edge whose condition contains arguments (of the form %i), 
+	 * extract the value of these arguments against the observation
+	 * 
+	 * @param obs the observation
+	 * @param edge the policy edge
+	 * @return a mapping from each argument i to its value in the observation
+	 */
 	public static HashMap<Integer,dFormula> extractFilledArguments (Observation obs, PolicyEdge edge) {
 		
 		for (FormulaWrapper alternative : obs.getAlternatives()) {		
@@ -70,7 +96,13 @@ public class PolicyUtils {
 	
 	
 	
-	
+	/**
+	 * Given two formulae (one of which is fully specified and the other contains underspecified
+	 * arguments), extract the value of each argument
+	 * @param form1 the underspecified formula
+	 * @param form2 the fully specified formula
+	 * @return  a mapping from each argument i in form1 to its value in form2
+	 */
 	public static HashMap<Integer,dFormula> extractFilledArguments (dFormula form1, dFormula form2)  {
 		
 		HashMap<Integer,dFormula> filledArguments = new HashMap<Integer,dFormula>();
@@ -93,7 +125,13 @@ public class PolicyUtils {
 	}
 	
 
-	
+	/**
+	 * Given two complex formulae (one of which is fully specified and the other contains underspecified
+	 * arguments), extract the value of each argument
+	 * @param form1 the underspecified complex formula
+	 * @param form2 the fully specified complex formula
+	 * @return  a mapping from each argument i in form1 to its value in form2
+	 */	
 	public static HashMap<Integer,dFormula> extractFilledArgumentsInComplexFormula (ComplexFormula form1, ComplexFormula form2)  {
 			
 		HashMap<Integer,dFormula> filledArguments = new HashMap<Integer,dFormula>();

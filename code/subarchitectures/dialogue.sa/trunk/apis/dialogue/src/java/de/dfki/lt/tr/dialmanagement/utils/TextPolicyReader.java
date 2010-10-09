@@ -34,13 +34,11 @@ import de.dfki.lt.tr.dialmanagement.data.policies.PolicyCondition;
 
 /**
  * Utility for constructing a new dialogue policy from a finite-state specification
- * in the AT&T FSM format, associated with a file describing the actions and a
- * file describing the observations
- * 
- * TODO: change to textpolicyreader
+ * in the text-based AT&T FSM format, associated with a file describing the actions and a
+ * file describing the conditions on observations
  * 
  * @author Pierre Lison (plison@dfki.de)
- * @version 10/06/2010
+ * @version 09/10/2010
  */
 
 public class TextPolicyReader {
@@ -52,30 +50,30 @@ public class TextPolicyReader {
 
 	/**
 	 * Construct a new dialogue policy according to the specifications in the 3 configuration
-	 * files (one for the policy, one for the observations, one for the actions)
+	 * files (one for the policy, one for the conditions, one for the actions)
 	 * 
 	 * @param policyFile path of the policy file
-	 * @param obsFile path of the observations file
+	 * @param condFile path of the conditions file
 	 * @param actionsFile path of the actions file
 	 * @return the constructed dialogue policy
 	 * @throws DialogueException if the files don't exist or are not correctly formatted
 	 */
-	public static DialoguePolicy constructPolicy(String policyFile, String obsFile, 
+	public static DialoguePolicy constructPolicy(String policyFile, String condFile, 
 			String actionsFile) throws DialogueException {
 
 		try {
-			// extracting the observations
-			HashMap<String,PolicyEdge> observations = extractObservations (FileUtils.readfile(obsFile));
+			// extracting the conditions
+			HashMap<String,PolicyCondition> conditions = extractConditions (FileUtils.readfile(condFile));
 
 			// extracting the actions
-			HashMap<String,PolicyNode> actions = extractActions (FileUtils.readfile(actionsFile));
+			HashMap<String,PolicyAction> actions = extractActions (FileUtils.readfile(actionsFile));
 
 			// constructing the policy
 			String policyText = FileUtils.readfile(policyFile);
-			return constructPolicy(policyText, observations, actions);
+			return constructPolicy(policyText, conditions, actions);
 
 		} catch (IOException e) {
-			String m = "ERROR: problem reading the files: {" + policyFile +  ", " + obsFile +
+			String m = "ERROR: problem reading the files: {" + policyFile +  ", " + condFile +
 			", " + actionsFile +  "}, abording the construction of the finite-state machine";
 			throw new DialogueException(m);
 		}	
@@ -85,17 +83,17 @@ public class TextPolicyReader {
 
 
 	/**
-	 * Returns a list of observations extracted from the specification text
+	 * Returns a list of conditions extracted from the specification text
 	 * 
-	 * @param obsText the text specifying the observations
-	 * @return a hashmap containing the observations, indexed by their identifier
+	 * @param condText the text specifying the conditions
+	 * @return a hashmap containing the edges, indexed by their identifier
 	 * @throws DialogueException if the specification text is ill-formated
 	 */
-	public static HashMap<String,PolicyEdge> extractObservations (String obsText) throws DialogueException {
+	public static HashMap<String,PolicyCondition> extractConditions (String condText) throws DialogueException {
 
-		String[] lines = obsText.split("\n");
+		String[] lines = condText.split("\n");
 
-		HashMap<String,PolicyEdge> totalObs = new HashMap<String, PolicyEdge>();
+		HashMap<String,PolicyCondition> conditions = new HashMap<String, PolicyCondition>();
 
 		for (int i = 0 ; i < lines.length ; i++) {
 			String line = lines[i];
@@ -103,17 +101,16 @@ public class TextPolicyReader {
 			String[] tabs = line.split("=");
 
 			if (tabs.length == 2) {
-				String obsSymbol = tabs[0].replace("=", "").trim();
-				String obs = tabs[1].trim();
-				PolicyEdge edge = extractObservation(obsSymbol, obs);
-				edge.setId(obsSymbol);
-				totalObs.put(obsSymbol, edge);		
+				String condSymbol = tabs[0].replace("=", "").trim();
+				String condFormula = tabs[1].trim();
+				PolicyCondition cond = extractCondition(condSymbol, condFormula);
+				conditions.put(condSymbol, cond);		
 			}
 			else if (line.trim().length() > 0) {
-				throw new DialogueException("ERROR: observation file is ill-formated at line: " + i);
+				throw new DialogueException("ERROR: condition file is ill-formated at line: " + i);
 			}
 		}
-		return totalObs;
+		return conditions;
 	}
 
 	
@@ -125,11 +122,11 @@ public class TextPolicyReader {
 	 * @return the list of actions
 	 * @throws DialogueException if the specification text is ill-formatted
 	 */
-	public static HashMap<String,PolicyNode> extractActions (String actionsText) throws DialogueException {
+	public static HashMap<String,PolicyAction> extractActions (String actionsText) throws DialogueException {
 
 		String[] lines = actionsText.split("\n");
 
-		HashMap<String,PolicyNode> totalActions = new HashMap<String, PolicyNode>();
+		HashMap<String,PolicyAction> totalActions = new HashMap<String, PolicyAction>();
 
 		for (int i = 0 ; i < lines.length ; i++) {
 			String line = lines[i];
@@ -139,7 +136,7 @@ public class TextPolicyReader {
 			if (tabs.length == 2) {
 				String actionsSymbol = tabs[0].replace("=", "").trim();
 				String content = tabs[1].trim();
-				totalActions.put(actionsSymbol, new PolicyNode(actionsSymbol, extractAction(actionsSymbol, content)));
+				totalActions.put(actionsSymbol, extractAction(actionsSymbol, content));
 			}
 			else if (line.trim().length() > 0) {
 				throw new DialogueException("ERROR: action file is ill-formated at line: " + i);
@@ -149,13 +146,13 @@ public class TextPolicyReader {
 	}
 
 	/**
-	 * Returns a new constructed observation from a line of specification
+	 * Returns a new constructed condition from a line of specification
 	 * 
-	 * @param content a line specifying the observation
-	 * @return the constructed observation
+	 * @param content a line specifying the condition
+	 * @return the constructed condition
 	 * @throws DialogueException if the line is ill-formatted
 	 */
-	public static PolicyEdge extractObservation (String obsSymbol, String str) throws DialogueException {
+	public static PolicyCondition extractCondition (String condSymbol, String str) throws DialogueException {
 
 		str = str.trim();
 		if (str.contains("[") != str.contains("]")) {
@@ -163,37 +160,37 @@ public class TextPolicyReader {
 		}
 
 		// extracting the probabilities
-		float[] minmaxProbs;
+		float[] minmaxPrcond;
 		if (str.contains("]") && !str.endsWith("]")) {
-			minmaxProbs = extractMinAndMaxProbabilities(str.split("]")[1]);
+			minmaxPrcond = extractMinAndMaxProbabilities(str.split("]")[1]);
 		}
 		else {
-			minmaxProbs = extractMinAndMaxProbabilities(str);
+			minmaxPrcond = extractMinAndMaxProbabilities(str);
 		}
-		debug("minmax: " + minmaxProbs[0] + " " + minmaxProbs[1]);
+		debug("minmax: " + minmaxPrcond[0] + " " + minmaxPrcond[1]);
 		
-		// event observation
+		// event condition
 		if (str.substring(0,2).equals("E[")) {
 			String eventcontent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new PolicyEdge (obsSymbol, new PolicyCondition(obsSymbol, eventcontent, minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyCondition(condSymbol, eventcontent, minmaxPrcond[0], minmaxPrcond[1]);
 		}
 
-		// intention observation
+		// intention condition
 		else if (str.substring(0,3).equals("CI[")) {
 			String intentContent = str.substring(3,str.length()).split("]")[0].replace("]", "");
-			return new PolicyEdge (obsSymbol, new PolicyCondition(obsSymbol, intentContent, minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyCondition(condSymbol, intentContent, minmaxPrcond[0], minmaxPrcond[1]);
 		}
 		
-		// intention observation
+		// intention condition
 		else if (str.substring(0,2).equals("I[")) {
 			String intentContent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new PolicyEdge (obsSymbol, new PolicyCondition(obsSymbol, intentContent, minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyCondition(condSymbol, intentContent, minmaxPrcond[0], minmaxPrcond[1]);
 		}
 
-		// else, we assume it is a shallow observation
+		// else, we assume it is a shallow condition
 		else {
 			String internalcontent = str.split("\\(")[0];
-			return new PolicyEdge (obsSymbol, new PolicyCondition(obsSymbol, internalcontent.replace("\"", ""), minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyCondition(condSymbol, internalcontent.replace("\"", ""), minmaxPrcond[0], minmaxPrcond[1]);
 		}
 	}
 
@@ -262,15 +259,15 @@ public class TextPolicyReader {
 
 
 	/**
-	 * Construct a new dialogue policy from a policy specification, a set of observations and a set of actions
+	 * Construct a new dialogue policy from a policy specification, a set of conditions and a set of actions
 	 * @param text the policy text
-	 * @param observations the observations
+	 * @param conditions the conditions
 	 * @param actions the actions
 	 * @return
 	 * @throws DialogueException if the policy text is not well formatted
 	 */
-	public static DialoguePolicy constructPolicy (String text, HashMap<String, PolicyEdge> observations, 
-			HashMap<String, PolicyNode> actions) throws DialogueException {
+	public static DialoguePolicy constructPolicy (String text, HashMap<String, PolicyCondition> conditions, 
+			HashMap<String, PolicyAction> actions) throws DialogueException {
 
 		String[] lines = text.split("\n");
 
@@ -280,9 +277,9 @@ public class TextPolicyReader {
 			String curLine = lines[i];
 			debug("parsing line: " + curLine);
 			
-			// line formatted as "inNode outNode observation"
+			// line formatted as "inNode outNode condition"
 			if ((curLine.split("\t").length == 3) || (curLine.split(" ").length == 3)) {
-				addEdgeAndNodesToPolicy (curLine, policy, observations, actions);
+				addEdgeAndNodesToPolicy (curLine, policy, conditions, actions);
 				
 				// if it is the first line, set the first node as initial
 				if (i == 0) {
@@ -324,19 +321,19 @@ public class TextPolicyReader {
 
 	
 	/**
-	 * Given a policy line and lists of observations and actions, insert a new edge,
+	 * Given a policy line and lists of conditions and actions, insert a new edge,
 	 * and the incoming and outgoing nodes (if they don't already exist)
 	 * 
 	 * @param line the policy line
 	 * @param policy the dialogue policy to extend
-	 * @param observations the observations
+	 * @param conditions the conditions
 	 * @param actions the actions
 	 * @throws DialogueException if the policy line is not well-formatted, or if the policy 
-	 *         refers to actions or observations not in the list
+	 *         refers to actions or conditions not in the list
 	 */
 	public static void addEdgeAndNodesToPolicy (String line, DialoguePolicy policy, 
-			HashMap<String, PolicyEdge> observations, 
-			HashMap<String, PolicyNode> actions) 
+			HashMap<String, PolicyCondition> conditions, 
+			HashMap<String, PolicyAction> actions) 
 	throws DialogueException {
 
 		String[] tabs = line.split("\t");
@@ -354,13 +351,13 @@ public class TextPolicyReader {
 			if (!actions.containsKey(targetNodeId)) {
 				throw new DialogueException("ERROR: " + targetNodeId + " is not in the specified actions list");
 			}
-			if (!observations.containsKey(edgeId)) {
-				throw new DialogueException("ERROR: " + edgeId + " is not in the specified observations list");
+			if (!conditions.containsKey(edgeId)) {
+				throw new DialogueException("ERROR: " + edgeId + " is not in the specified conditions list");
 			}
 
 			PolicyNode sourceNode;
 			if (!policy.hasNode(sourceNodeId)) {
-				sourceNode = new PolicyNode(sourceNodeId, actions.get(sourceNodeId).getAction());
+				sourceNode = new PolicyNode(sourceNodeId, actions.get(sourceNodeId));
 				policy.addNode(sourceNode);
 			}
 			else {
@@ -369,14 +366,14 @@ public class TextPolicyReader {
 
 			PolicyNode targetNode;
 			if (!policy.hasNode(targetNodeId)  && actions.containsKey(targetNodeId)) {
-				targetNode = new PolicyNode(targetNodeId, actions.get(targetNodeId).getAction());
+				targetNode = new PolicyNode(targetNodeId, actions.get(targetNodeId));
 				policy.addNode(targetNode);
 			}
 			else {
 				targetNode = policy.getNode(targetNodeId);
 			}
 
-			PolicyEdge newEdge = observations.get(edgeId).copy();
+			PolicyEdge newEdge = new PolicyEdge(edgeId, conditions.get(edgeId));
 			newEdge.setSourceNode(sourceNode);
 			newEdge.setTargetNode(targetNode);		
 			policy.addEdge(newEdge, sourceNode, targetNode);
@@ -389,6 +386,7 @@ public class TextPolicyReader {
 
 	/**
 	 * Set a node as being in the set of final nodes in the policy
+	 * 
 	 * @param line the line describing the final node
 	 * @param policy the policy
 	 * @throws DialogueException if the node cannot be set as final
