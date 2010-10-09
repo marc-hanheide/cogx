@@ -219,7 +219,14 @@ class PartialProblem(object):
             obj_counts = defaultdict(lambda: 0)
             
             for r in rules:
-                for cterm, v in r.conditions:
+                for lit in r.conditions:
+                    if lit.predicate == pddl.equals:
+                        cterm = lit.args[0]
+                        v = lit.args[1]
+                    else:
+                        cterm = pddl.Term(lit.predicate, lit.args)
+                        v = pddl.TRUE if not lit.negated else pddl.FALSE
+
                     cond_combinations = state.product(*map(lambda a: all_objects(a.object, remaining), cterm.args))
                     for c in cond_combinations:
                         var_combinations = state.product(*map(lambda a: all_objects(a, remaining|to_remove), r.args))

@@ -520,6 +520,11 @@ class VariableTerm(Term):
         if new_scope:
             return VariableTerm(new_scope[self.object])
         return VariableTerm(self.object)
+
+    def __str__(self):
+        if self.is_instantiated():
+            return "VariableTerm: %s (instance: %s)" % (str(self.object), str(self.object.get_instance()))
+        return "VariableTerm: %s" % str(self.object)
     
     def __eq__(self, other):
         if isinstance(other, VariableTerm):
