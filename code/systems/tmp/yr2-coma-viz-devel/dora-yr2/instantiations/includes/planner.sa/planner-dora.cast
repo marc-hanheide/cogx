@@ -1,3 +1,0 @@
-
-
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain dora-explore.mapl --log --nodot $V11N_STANDALONE $V11N_STANDALONE_HOST 
