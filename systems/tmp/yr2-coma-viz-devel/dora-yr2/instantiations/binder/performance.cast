@@ -1,0 +1,10 @@
+HOST localhost
+
+SUBARCHITECTURE binder 
+JAVA WM binder.arch.BindingWorkingMemory
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+
+JAVA GD springschooltest binder.testing.PerformanceTest --log
+JAVA GD grouping binder.components.PerceptualGrouping_fake --log
+JAVA GD mmestimation binder.components.MultiModalEstimation_fake --log
+JAVA GD tracking binder.components.Tracking_MLN --log false --debug false
