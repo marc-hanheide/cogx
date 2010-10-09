@@ -20,6 +20,8 @@
 
 package de.dfki.lt.tr.dialogue.ref;
 
+import cast.cdl.WorkingMemoryAddress;
+import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalRef;
 import de.dfki.lt.tr.dialogue.slice.ref.RefHypo;
 import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
@@ -36,6 +38,8 @@ import de.dfki.lt.tr.infer.weigabd.slice.Modality;
 import de.dfki.lt.tr.infer.weigabd.slice.ProofWithCost;
 import de.dfki.lt.tr.infer.weigabd.slice.SyntaxErrorException;
 import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -86,7 +90,7 @@ public class AbductiveReferenceResolution {
 				new Modality[] { },
 				TermAtomFactory.atom("resolves_main", new Term[] {
 					TermAtomFactory.term(nom),
-					TermAtomFactory.var("Bel"),
+					TermAtomFactory.var("BId"),
 //					TermAtomFactory.var("EpSt"),
 					propertiesToListTerm(fvPairs)
 				}));
@@ -97,11 +101,36 @@ public class AbductiveReferenceResolution {
 		Map<String, Set<ModalisedAtom>> disj = new HashMap<String, Set<ModalisedAtom>>();
 
 		if (proof != null) {
+
+			Map<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, Double> combined_hypos = new HashMap<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, Double>();
+			double total_mass = 0.0;
+
 			for (int i = 0; i < proof.length; i++) {
 				ModalisedAtom rma = extractResolvesMAtom(proof[i].proof);
-				if (rma != null && intentionEngine != null) {
-					log("adding reference hypothesis: " + MercuryUtils.modalisedAtomToString(rma) + " @ cost=" + proof[i].cost + " (p=" + Math.exp(-proof[i].cost) + ")");
-					intentionEngine.getProxy().addAssumable("reference_resolution", rma, proof[i].cost);
+				if (rma != null) {
+					AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress> hypo = extractHypothesis(rma);
+					double mass = 0.0;
+					if (combined_hypos.containsKey(hypo)) {
+						mass = combined_hypos.get(hypo);
+					}
+					double deltaMass = Math.exp(-proof[i].cost);
+					mass += deltaMass;
+					combined_hypos.put(hypo, mass);
+					total_mass += deltaMass;
+				}
+			}
+
+			for (AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress> hypo : combined_hypos.keySet()) {
+				double prob = combined_hypos.get(hypo) / total_mass;
+				ModalisedAtom rma = TermAtomFactory.modalisedAtom(new Modality[] {Modality.Understanding},
+						TermAtomFactory.atom("resolves_to_belief", new Term[] {
+							TermAtomFactory.term(hypo.getKey()),
+							ConversionUtils.workingMemoryAddressToTerm(hypo.getValue())
+						} ));
+
+				if (intentionEngine != null) {
+					log("adding reference hypothesis: " + MercuryUtils.modalisedAtomToString(rma) + " @ p=" + prob);
+					intentionEngine.getProxy().addAssumable("reference_resolution", rma, (float) -Math.log(prob));
 
 					String n = ((FunctionTerm)rma.a.args[0]).functor;
 					Set<ModalisedAtom> dj = disj.get(n);
@@ -115,12 +144,12 @@ public class AbductiveReferenceResolution {
 					}
 				}
 
-				RefHypo hypo = new RefHypo();
-				hypo.prob = Math.exp(-proof[i].cost);
-				hypo.beliefId = extractBeliefId(proof[i].proof);
-				if (hypo.beliefId != null) {
-					hypos.add(hypo);
-				}
+				RefHypo hypox = new RefHypo();
+//				hypox.prob = Math.exp(-proof[i].cost);
+//				hypox.beliefId = extractBeliefId(proof[i].proof);
+//				if (hypox.beliefId != null) {
+//					hypos.add(hypox);
+//				}
 			}
 		}
 
@@ -150,6 +179,14 @@ public class AbductiveReferenceResolution {
 			}
 		}
 		return null;
+	}
+
+	public static AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress> extractHypothesis(ModalisedAtom matom) {
+		assert (matom.a.args.length == 2);
+		assert (matom.a.args[0] instanceof FunctionTerm);
+		String nom = ((FunctionTerm) matom.a.args[0]).functor;
+		WorkingMemoryAddress wma = ConversionUtils.termToWorkingMemoryAddress(matom.a.args[1]);
+		return new AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>(nom, wma);
 	}
 
 	private static String extractBeliefId(MarkedQuery[] qs) {

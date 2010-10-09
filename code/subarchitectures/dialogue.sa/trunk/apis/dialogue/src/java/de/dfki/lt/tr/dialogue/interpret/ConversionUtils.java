@@ -532,7 +532,7 @@ public abstract class ConversionUtils {
 		}
 	}
 
-	private static WorkingMemoryAddress termToWorkingMemoryAddress(Term t) {
+	public static WorkingMemoryAddress termToWorkingMemoryAddress(Term t) {
 		if (t instanceof FunctionTerm) {
 			FunctionTerm ft = (FunctionTerm) t;
 			if (ft.functor.equals("ptr") && ft.args.length == 2 && ft.args[0] instanceof FunctionTerm && ft.args[1] instanceof FunctionTerm) {
