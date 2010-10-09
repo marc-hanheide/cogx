@@ -9,6 +9,9 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <ConceptualData.hpp>
+#include "ComaData.hpp"
+#include "SpatialData.hpp"
+#include "SpatialProperties.hpp"
 
 namespace conceptual
 {
@@ -60,11 +63,52 @@ private:
 	/** Updates the world state on the WM. */
 	void updateWorldState();
 
-	/** Executed when coma room changes. */
+	/** Change event. */
 	void comaRoomChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Change event. */
+	void placeChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Change event. */
+	void gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Change event. */
+	void objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Change event. */
+	void connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
 
 private:
+
+	/** Checks if the place is a true place based on the _placeWmAddressMap */
+	bool isTruePlace(int placeId);
+
+	/** Returns true if the place has a gateway property set. */
+	bool isGatewayPlace(int placeId);
+
+	/** Returns all object properties of the place. */
+	void getObjectPlaceProperties(int placeId, std::vector<SpatialProperties::ObjectPlacePropertyPtr> &properties);
+
+
+private:
+
+
+	/** Map of coma room wmAddress -> ComaRoom. */
+	std::map<cast::cdl::WorkingMemoryAddress, comadata::ComaRoomPtr> _comaRoomWmAddressMap;
+
+	/** Map of place wmAddress -> Place*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialData::PlacePtr> _placeWmAddressMap;
+
+	/** Map of place wmAddress -> GatewayPlaceProperty*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::GatewayPlacePropertyPtr> _gatewayPlacePropertyWmAddressMap;
+
+	/** Map of place wmAddress -> ObjectPlaceProperty*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::ObjectPlacePropertyPtr> _objectPlacePropertyWmAddressMap;
+
+	/** Map of place wmAddress -> ConnectivityPathProperty*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::ConnectivityPathPropertyPtr> _connectivityPathPropertyWmAddressMap;
+
 
 	/** Current state of the world as much as
 	 * the conceptual.sa is concerned. */
@@ -73,10 +117,12 @@ private:
 	/** Working memory ID of the world state struct. */
 	std::string _worldStateId;
 
+
 }; // class Observer
 } // namespace
 
 #endif // CONCEPTUAL_OBSERVER_H
+
 
 
 

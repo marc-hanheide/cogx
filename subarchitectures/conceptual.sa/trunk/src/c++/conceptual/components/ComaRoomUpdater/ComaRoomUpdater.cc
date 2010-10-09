@@ -97,9 +97,7 @@ void ComaRoomUpdater::runComponent()
 			_worldStateChanged=false;
 
 			// Get a local copy of the roomID to coma room address mapping.
-			map<int, cdl::WorkingMemoryAddress> rooms;
-			for (ConceptualData::RoomSet::iterator it=_rooms.begin(); it!=_rooms.end(); it++)
-				rooms[it->first] = it->second.wmAddress;
+			map<int, cdl::WorkingMemoryAddress> rooms = _comaRoomIdToWmAddressMap;
 
 			pthread_mutex_unlock(&_worldStateChangedSignalMutex);
 
@@ -174,7 +172,8 @@ void ComaRoomUpdater::worldStateChanged(const cast::cdl::WorkingMemoryChange & w
 	// Get the rooms information from the world state
 	lockEntry(wmChange.address, cdl::LOCKEDOD);
 	ConceptualData::WorldStatePtr worldStatePtr = getMemoryEntry<ConceptualData::WorldState>(wmChange.address);
-	_rooms = worldStatePtr->rooms;
+	for(unsigned int i=0; i<worldStatePtr->rooms.size(); ++i)
+		_comaRoomIdToWmAddressMap[worldStatePtr->rooms[i].roomId] = worldStatePtr->rooms[i].wmAddress;
 	unlockEntry(wmChange.address);
 
 	// Signal to make an inference and update coma room structs.
