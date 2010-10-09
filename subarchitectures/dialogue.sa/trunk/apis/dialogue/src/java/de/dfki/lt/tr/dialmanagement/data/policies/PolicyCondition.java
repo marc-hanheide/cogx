@@ -28,16 +28,16 @@ import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 
 
 /**
- * Representation of a policy observation, made of an identifier,
- * a type, a content (expressed as a formula), and minimum/maximum
- * probabilities.
+ * Representation of a policy condition on possible observations.  A policy
+ * condition is defined by an identifier, a type, a content (expressed as 
+ * a formula), and minimum/maximum probabilities.
  * 
- * NB: the observation content is defined in FormulaWrapper
+ * NB: the condition content is defined in FormulaWrapper
  * 
  * @author Pierre Lison (plison@dfki.de)
  * @version 8/10/2010
  */
-public class PolicyObservation extends FormulaWrapper {
+public class PolicyCondition extends FormulaWrapper {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
@@ -45,62 +45,113 @@ public class PolicyObservation extends FormulaWrapper {
 	
 	// the unique identifier for the node
 	private String id;
-		
+	
+	// the condition type
 	private int type;
 	
+	// allowed condition types
 	public static final int COMMUNICATIVE_INTENTION = 0;
 	public static final int INTENTION = 1;
 	public static final int EVENT = 2;
 	
-	// minimum probability for the observation
+	// minimum probability for the condition
 	float minProb = 0.0f;
 	
-	// maximum probability for the observation
+	// maximum probability for the condition
 	float maxProb = 1.0f;
 	
 
-	public PolicyObservation (String id) {
+	/**
+	 * Create a new policy condition given an identifier
+	 * 
+	 * @param id the identifier
+	 */
+	public PolicyCondition (String id) {
 		super("");
 		this.id = id;
 	}
 	
-	public PolicyObservation (String id, dFormula content, float minProb, float maxProb) {
+	/**
+	 * Creates a policy condition with identifier and content (default probability
+	 * thresholds are 0.0f and 1.0f)
+	 * 
+	 * @param id the identifier
+	 * @param content the condition content
+	 */
+	public PolicyCondition (String id, dFormula content) {
+		this(id,content,0.0f,1.0f);
+	}
+	
+	/**
+	 * Creates a policy condition with identifier and content (default probability
+	 * thresholds are 0.0f and 1.0f)
+	 * 
+	 * @param id the identifier
+	 * @param content the condition content
+	 */
+	public PolicyCondition (String id, String content) {
+		this(id,content,0.0f, 1.0f);
+	}
+
+	/**
+	 * Create a new policy condition given an identifier, a formula content, and 
+	 * mimimum/maximum probabilities
+	 * 
+	 * @param id the identifier
+	 * @param content the formula content
+	 * @param minProb the minimum probability
+	 * @param maxProb the maximum probaiblity
+	 */
+	public PolicyCondition (String id, dFormula content, float minProb, float maxProb) {
 		super(content);	
 		this.id = id;
 		this.minProb = minProb;
 		this.maxProb = maxProb;
 	}
 	
+	/**
+	 * Create a new policy condition given an identifier, a formula content, and 
+	 * mimimum/maximum probabilities
+	 * 
+	 * @param id the identifier
+	 * @param content the formula content
+	 * @param minProb the minimum probability
+	 * @param maxProb the maximum probaiblity
+	 */
+	public PolicyCondition (String id, String content, float minProb, float maxProb) {
+		super(content);
+		this.id = id;
+		this.minProb = minProb;
+		this.maxProb = maxProb;
+	}
 	
+	/**
+	 * Sets the type of condition (within the set of allowed ones, cf. above)
+	 * 
+	 * @param type the condition type
+	 */
 	public void setType (int type) {
 		if (type == COMMUNICATIVE_INTENTION || type == INTENTION || type == EVENT) {
 			this.type = type;
 		}
 	}
 	
+	/**
+	 * Returns the type of condition
+	 * @return
+	 */
 	public int getType() {
 		return type;
 	}
 
-	public PolicyObservation (String id, dFormula content) {
-		super(content);
-		this.id = id;
-	}
-	
-	public PolicyObservation (String id, String content) {
-		super(content);
-		this.id = id;
-	}
-	
-	public PolicyObservation (String id, String content, float minProb, float maxProb) {
-		super(content);
-		this.id = id;
-		this.minProb = minProb;
-		this.maxProb = maxProb;
-	}
 
-	
-	public boolean matchesWithObservation (Observation obs) {
+	/**
+	 * Returns true if the policy condition matches a given observation
+	 * 
+	 * @param obs the observation
+	 * @return true if a match is found, false otherwise
+	 */
+	public boolean matchesObservation (Observation obs) {
 		
 		for (FormulaWrapper alternative : obs.getAlternatives()) {
 			if (alternative.equals(this) && 
@@ -115,13 +166,17 @@ public class PolicyObservation extends FormulaWrapper {
 
 	/**
 	 * Returns the node identifier
+	 * 
 	 * @return the identifier, as a string
 	 */
 	public String getId() {
 		return id;
 	}
 	
-
+	/**
+	 * Returns a string representation of the policy condition
+	 */
+	@Override
 	public String toString () {
 		String typeStr = "";
 		if (type == COMMUNICATIVE_INTENTION) {

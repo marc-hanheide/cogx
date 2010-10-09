@@ -83,4 +83,27 @@ public class FileUtils {
 			out.close();
 	}
 	
+	
+
+
+	/**
+	 * Logging
+	 * @param s
+	 */
+	private static void log (String s) {
+		if (LOGGING) {
+			System.out.println("[fileutils] " + s);
+		}
+	}
+
+	/**
+	 * Debugging
+	 * @param s
+	 */
+	private static void debug (String s) {
+		if (DEBUG) {
+			System.out.println("[fileutils] " + s);
+		}
+	}
+	
 }

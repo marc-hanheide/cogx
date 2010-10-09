@@ -23,20 +23,14 @@ package de.dfki.lt.tr.dialmanagement.utils;
 
 
 //JUnit
-import java.util.Random;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
 
 
-import static org.junit.Assert.*;
-
-
-
-public class PolicyFileReaderTest {
+public class TextPolicyReaderTest {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
@@ -50,7 +44,7 @@ public class PolicyFileReaderTest {
 	@Test
 	public void readSimplePolicy() throws DialogueException {
 		
-		DialoguePolicy policy = PolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
+		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
 		
 		policy.ensureWellFormedPolicy();
 		

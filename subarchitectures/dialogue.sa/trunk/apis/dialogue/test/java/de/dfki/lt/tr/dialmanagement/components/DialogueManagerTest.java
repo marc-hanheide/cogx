@@ -32,7 +32,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
+import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 
 /**
  * Test class for the dialogue manager, with simple shallow observations and actions
@@ -65,7 +65,7 @@ public class DialogueManagerTest {
 	@Before
 	public void constructPolicy() throws DialogueException {
 		
-		DialoguePolicy policy = PolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
+		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
 		
 		policy.ensureWellFormedPolicy();
 		

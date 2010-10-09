@@ -30,7 +30,7 @@ import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyEdge;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyNode;
-import de.dfki.lt.tr.dialmanagement.data.policies.PolicyObservation;
+import de.dfki.lt.tr.dialmanagement.data.policies.PolicyCondition;
 
 /**
  * Utility for constructing a new dialogue policy from a finite-state specification
@@ -43,7 +43,7 @@ import de.dfki.lt.tr.dialmanagement.data.policies.PolicyObservation;
  * @version 10/06/2010
  */
 
-public class PolicyReader {
+public class TextPolicyReader {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
@@ -175,25 +175,25 @@ public class PolicyReader {
 		// event observation
 		if (str.substring(0,2).equals("E[")) {
 			String eventcontent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new PolicyEdge (obsSymbol, new PolicyObservation(obsSymbol, eventcontent, minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyEdge (obsSymbol, new PolicyCondition(obsSymbol, eventcontent, minmaxProbs[0], minmaxProbs[1]));
 		}
 
 		// intention observation
 		else if (str.substring(0,3).equals("CI[")) {
 			String intentContent = str.substring(3,str.length()).split("]")[0].replace("]", "");
-			return new PolicyEdge (obsSymbol, new PolicyObservation(obsSymbol, intentContent, minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyEdge (obsSymbol, new PolicyCondition(obsSymbol, intentContent, minmaxProbs[0], minmaxProbs[1]));
 		}
 		
 		// intention observation
 		else if (str.substring(0,2).equals("I[")) {
 			String intentContent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new PolicyEdge (obsSymbol, new PolicyObservation(obsSymbol, intentContent, minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyEdge (obsSymbol, new PolicyCondition(obsSymbol, intentContent, minmaxProbs[0], minmaxProbs[1]));
 		}
 
 		// else, we assume it is a shallow observation
 		else {
 			String internalcontent = str.split("\\(")[0];
-			return new PolicyEdge (obsSymbol, new PolicyObservation(obsSymbol, internalcontent.replace("\"", ""), minmaxProbs[0], minmaxProbs[1]));
+			return new PolicyEdge (obsSymbol, new PolicyCondition(obsSymbol, internalcontent.replace("\"", ""), minmaxProbs[0], minmaxProbs[1]));
 		}
 	}
 
@@ -410,7 +410,7 @@ public class PolicyReader {
 	 */
 	private static void log (String s) {
 		if (LOGGING) {
-			System.out.println("[Dialogue policy] " + s);
+			System.out.println("[textpolicyreader] " + s);
 		}
 	}
 
@@ -420,7 +420,7 @@ public class PolicyReader {
 	 */
 	private static void debug (String s) {
 		if (DEBUG) {
-			System.out.println("[Dialogue policy] " + s);
+			System.out.println("[textpolicyreader] " + s);
 		}
 	}
 

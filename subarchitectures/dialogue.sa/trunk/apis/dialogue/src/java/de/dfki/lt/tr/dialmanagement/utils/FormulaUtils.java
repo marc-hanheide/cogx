@@ -259,10 +259,26 @@ public class FormulaUtils {
 	
 
 	
-	
-	
+
+
+	/**
+	 * Logging
+	 * @param s
+	 */
 	private static void log (String s) {
-		System.out.println("[FormulaUtils] " + s);
+		if (LOGGING) {
+			System.out.println("[formulautils] " + s);
+		}
+	}
+
+	/**
+	 * Debugging
+	 * @param s
+	 */
+	private static void debug (String s) {
+		if (DEBUG) {
+			System.out.println("[formulautils] " + s);
+		}
 	}
 	 
 }

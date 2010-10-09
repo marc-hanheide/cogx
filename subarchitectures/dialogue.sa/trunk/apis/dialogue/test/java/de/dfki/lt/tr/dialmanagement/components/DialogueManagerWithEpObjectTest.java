@@ -38,7 +38,7 @@ import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
-import de.dfki.lt.tr.dialmanagement.utils.PolicyReader;
+import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 
 
 /**
@@ -72,7 +72,7 @@ public class DialogueManagerWithEpObjectTest {
 	@Before
 	public void constructPolicy() throws DialogueException {
 		
-		DialoguePolicy policy = PolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
+		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
 		
 		policy.ensureWellFormedPolicy();
 		
