@@ -230,9 +230,9 @@
 		new MemberFunctionChangeReceiver<SOIFilter>(this,
 		  &SOIFilter::newSOI));
 	// .., when they are updated
-	addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::OVERWRITE),
-		new MemberFunctionChangeReceiver<SOIFilter>(this,
-		  &SOIFilter::updatedSOI));
+//	addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::OVERWRITE),
+//		new MemberFunctionChangeReceiver<SOIFilter>(this,
+//		  &SOIFilter::updatedSOI));
 	// .. and when they are deleted
 	addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::DELETE),
 		new MemberFunctionChangeReceiver<SOIFilter>(this,
@@ -362,6 +362,7 @@ void SOIFilter::runComponent()
 {
   while(isRunning())
   {
+	debug("loop");
 	ptime t(second_clock::universal_time() + seconds(2));
 
 	if (queuesNotEmpty->timed_wait(t))
@@ -488,14 +489,20 @@ void SOIFilter::newSOI(const cdl::WorkingMemoryChange & _wmc)
 
   data.addr = _wmc.address;
   data.addTime = obj->time;
+  data.stableTime = getCASTTime();
   data.updCount = 0;
-  data.status = CANDIDATE;
+  data.status = STABLE;
 //  data.objId = "";
 
   SOIMap.insert(make_pair(data.addr.id, data));
 
   debug("A new SOI ID %s ", data.addr.id.c_str());
-
+  log("An object candidate ID %s at %u",
+	  data.addr.id.c_str(), data.addTime.s, data.addTime.us);
+	  
+  objToAdd.push(data.addr.id);  
+	  
+  queuesNotEmpty->post();
 
 }
 
