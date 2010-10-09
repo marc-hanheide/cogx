@@ -174,6 +174,11 @@ module execution {
 	 * The ID of the place.
 	 */
 	long placeID;
+	/*
+	* The thing to look for
+ 	*/
+	string model;
+
       };
 
 
