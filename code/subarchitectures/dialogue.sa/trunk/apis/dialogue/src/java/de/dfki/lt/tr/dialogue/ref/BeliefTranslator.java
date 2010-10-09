@@ -179,8 +179,8 @@ public class BeliefTranslator {
 						}));
 
 			r.ante = new Antecedent[] {
-				new AssumableAntecedent(worldexMAtom, new NamedAssumabilityFunction(BELIEF_EXIST_ASSUMABILITY_FUNCTION_NAME)),
-				new AssumableAntecedent(belexMAtom, new NamedAssumabilityFunction(WORLD_EXIST_ASSUMABILITY_FUNCTION_NAME))
+				new AssumableAntecedent(worldexMAtom, new NamedAssumabilityFunction(WORLD_EXIST_ASSUMABILITY_FUNCTION_NAME)),
+				new AssumableAntecedent(belexMAtom, new NamedAssumabilityFunction(BELIEF_EXIST_ASSUMABILITY_FUNCTION_NAME))
 			};
 
 			rules.add(r);
