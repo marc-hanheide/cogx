@@ -160,23 +160,30 @@ public class PlaceMonitor extends ManagedComponent {
 				synchronized (this) {
 					// if there is no pending task, continue the loop 
 					if (!this.maintainRoomsTaskPending) {
+						log("no room maintenance task pending. waiting...");
 						this.wait();
 						continue;
 					}
 				}
 				synchronized (this) {
+					log("pending room maintenance task. acknowledged.");
 					this.maintainRoomsTaskPending = false;
 				}
 				// wait for another change
+				log("wait for some time to let it settle.");
 				Thread.sleep(TIME_TO_WAIT_TO_SETTLE);
 				synchronized (this) {			
 					// if there were no more changes
 					if (this.maintainRoomsTaskPending) {
+						log("ok. got a fresh pending maintenance task. not yet processing it.");
 						continue;
 					}
 				}
+				log("waited long enough. no more fresh maintenance tasks for a while. gonna process them!");
 				// execute the room maintenance algorithm
+				this.lockComponent();
 				executeMaintainRoomsAlgorithm();
+				this.unlockComponent();
 			}  catch (InterruptedException e) {
 				logException(e);
 			}
@@ -189,7 +196,7 @@ public class PlaceMonitor extends ManagedComponent {
 		try {
 			// read place struct from WM
 			Place _newPlaceNode = getMemoryEntry(_wmc.address, Place.class);
-			debug("Place ID = " + _newPlaceNode.id + " " +
+			log("processAddedPlace() called: Place ID = " + _newPlaceNode.id + " " +
 			"Place status = " + (_newPlaceNode.status.equals(PlaceStatus.PLACEHOLDER) ? "PLACEHOLDER" : "TRUEPLACE"));
 
 			// check the Place status
@@ -274,7 +281,7 @@ public class PlaceMonitor extends ManagedComponent {
 	private void processAddedConnectivityPath(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		// get path from WM
 		ConnectivityPathProperty _path = getMemoryEntry(_wmc.address, ConnectivityPathProperty.class);
-		debug("got a callback for an ADDED ConnectivityPathProperty between " + _path.place1Id + " and " +_path.place2Id);
+		log("processAddedConnectivityPath() called: got a callback for an ADDED ConnectivityPathProperty between " + _path.place1Id + " and " +_path.place2Id);
 		
 		debug("Set of known placeholders: " + m_placeholders);
 		debug("Set of known places: " + m_trueplaces);
@@ -344,7 +351,7 @@ public class PlaceMonitor extends ManagedComponent {
 	private void processAddedGatewayProperty(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		// get path from WM
 		GatewayPlaceProperty _gateProp = getMemoryEntry(_wmc.address, GatewayPlaceProperty.class);
-		debug("got a callback for an ADDED GatewayPlaceProperty for " + _gateProp.placeId + ". The probability distribution is not yet taken into account!");
+		log("processAddedGatewayProperty() called: got a callback for an ADDED GatewayPlaceProperty for " + _gateProp.placeId + ". The probability distribution is not yet taken into account!");
 		
 		// TODO handle probability distribution 
 		// for now this property is only added for true gateways, but it is not guaranteed to remain like that
@@ -411,7 +418,7 @@ public class PlaceMonitor extends ManagedComponent {
 		try {
 			// get the place from WM
 			Place _newPlaceNode = getMemoryEntry(_wmc.address, Place.class);
-			debug("Place ID = " + _newPlaceNode.id + " " +
+			log("processOverwrittenPlace() called: Place ID = " + _newPlaceNode.id + " " +
 			"Place status = " + (_newPlaceNode.status.equals(PlaceStatus.PLACEHOLDER) ? "PLACEHOLDER" : "TRUEPLACE"));
 
 			// for the moment we are only interested in true places
@@ -451,7 +458,7 @@ public class PlaceMonitor extends ManagedComponent {
 	}
 	
 	private void processDeletedPlace(long _deletedPlaceID) {
-		debug("Got a callback for a DELETED Place with ID: " + _deletedPlaceID);
+		log("processDeletedPlace() called: Got a callback for a DELETED Place with ID: " + _deletedPlaceID);
 		boolean _successfullyDeleted = m_comareasoner.deleteInstance("dora:place"+_deletedPlaceID);
 		if (_successfullyDeleted) log("successfully deleted " + "dora:place"+_deletedPlaceID);
 		else log("There was an error deleting " + "dora:place"+_deletedPlaceID);
@@ -531,6 +538,7 @@ public class PlaceMonitor extends ManagedComponent {
 	
 	private void maintainRooms() {
 		synchronized(this) {
+			log("maintainRooms() called: new room maintenance task pending.");
 			this.maintainRoomsTaskPending = true;
 			this.notifyAll();
 		}
@@ -540,7 +548,7 @@ public class PlaceMonitor extends ManagedComponent {
 	
 	@SuppressWarnings("unchecked")
 	private void executeMaintainRoomsAlgorithm() {
-		log("entering maintainRooms().");
+		log("entering executeMaintainRoomsAlgorithm().");
 		try {
 			// determine all places
 			Queue<Long> _remainingPlaceIds;
