@@ -357,7 +357,10 @@ public class TextPolicyReader {
 
 			PolicyNode sourceNode;
 			if (!policy.hasNode(sourceNodeId)) {
+				log("sourceNodeId: " + sourceNodeId);
 				sourceNode = new PolicyNode(sourceNodeId, actions.get(sourceNodeId));
+				log("sourceNode.id: " + sourceNode.getId());
+				log("hasNode: " + policy.hasNode(sourceNodeId));
 				policy.addNode(sourceNode);
 			}
 			else {

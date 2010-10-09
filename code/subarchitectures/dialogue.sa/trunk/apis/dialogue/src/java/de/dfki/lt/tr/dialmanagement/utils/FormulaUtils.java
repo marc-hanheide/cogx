@@ -211,7 +211,7 @@ public class FormulaUtils {
 		}
 		
 		// underspecified formulae (notice the || operator!)
-		else if (form1 instanceof UnderspecifiedFormula || form2 instanceof UnderspecifiedFormula) {
+		else if (form1 instanceof UnderspecifiedFormula) {
 			return true;
 		}
 		

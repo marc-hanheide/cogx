@@ -28,7 +28,9 @@ import java.util.Vector;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.FormulaWrapper;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyEdge;
@@ -86,7 +88,7 @@ public class PolicyUtils {
 	public static HashMap<Integer,dFormula> extractFilledArguments (Observation obs, PolicyEdge edge) {
 		
 		for (FormulaWrapper alternative : obs.getAlternatives()) {		
-			if (alternative.equals(edge.getCondition())) {
+			if (edge.getCondition().equals(alternative)) {
 				return extractFilledArguments (edge.getCondition().getContent(), alternative.getContent()) ;
 			}
 		}
@@ -104,6 +106,8 @@ public class PolicyUtils {
 	 * @return  a mapping from each argument i in form1 to its value in form2
 	 */
 	public static HashMap<Integer,dFormula> extractFilledArguments (dFormula form1, dFormula form2)  {
+		
+		log("extractfilledargs: form1: " + FormulaUtils.getString(form1) + ", " + FormulaUtils.getString(form2));
 		
 		HashMap<Integer,dFormula> filledArguments = new HashMap<Integer,dFormula>();
 
@@ -158,6 +162,33 @@ public class PolicyUtils {
 	}
 	
 
+
+	/**
+	 * Create a simple (intentional) observation with a unique alternative with p = 1.0
+	 * 
+	 * @param s the string describing the observation
+	 * @return the constructed observation
+	 * @throws DialogueException if formatting problem
+	 */
+	public static Observation createSimpleObservation (String s) throws DialogueException {
+		return createSimpleObservation(s, 1.0f);
+	}
+	
+	/**
+	 * Create a simple (intentional) observation with a unique alternative with p = f
+	 * 
+	 * @param s the string describing the observation
+	 * @param f the probability for the description
+	 * @return the constructed observation
+	 * @throws DialogueException if formatting problem
+	 */
+	public static Observation createSimpleObservation (String s, float f) throws DialogueException {
+		Observation intent = new Observation (Observation.INTENTION);
+		intent.addAlternative(s, f);
+		intent.addAlternative(new UnknownFormula(0), 1-f);
+		return intent;
+	}
+	
 
 	/**
 	 * Logging

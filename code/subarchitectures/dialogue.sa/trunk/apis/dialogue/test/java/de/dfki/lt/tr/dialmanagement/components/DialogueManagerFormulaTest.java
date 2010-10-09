@@ -50,11 +50,12 @@ import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
+import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
 import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 
 
 /**
- * Test class for a simple Dora-style interaction
+ * Test class for an interaction using complex and modal formulae
  * 
  * @author Pierre Lison (plison@dfki.de)
  * @version 04/07/2010
@@ -92,26 +93,15 @@ public class DialogueManagerFormulaTest {
 	}
 	
 
-	private Observation createSimpleObservation (String s) throws DialogueException {
-		return createSimpleObservation(s, 1.0f);
-	}
-	
-
-	private Observation createSimpleObservation (String s, float f) throws DialogueException {
-		Observation intent = new Observation (Observation.INTENTION);
-		intent.addAlternative(s, f);
-		intent.addAlternative(new UnknownFormula(0), 1-f);
-		return intent;
-	}
-	
 	/**
-	 * Test the policy with a single, high-confidence utterance
-	 * @throws DialogueException
+	 * Test the policy with an observation containing complex and modal formulae
+	 * 
+	 * @throws DialogueException if test fails
 	 */
 	@Test
 	public void testPolicyDirect1() throws DialogueException {
 		
-		Observation intent = createSimpleObservation("<Belief>(<Ref>context1_1 ^ <ObjectType>ball)");
+		Observation intent = PolicyUtils.createSimpleObservation("<Belief>(<Ref>context1_1 ^ <ObjectType>ball)");
 		PolicyAction action1 = manager.nextAction(intent);
 		assertEquals(action1.toString(), "CI[okay]");
 		
@@ -123,7 +113,7 @@ public class DialogueManagerFormulaTest {
 	 */
 	private static void log (String s) {
 		if (LOGGING) {
-			System.out.println("\"[dialmanager test\"] " + s);
+			System.out.println("[dialmanager_formulatest] " + s);
 		}
 	}
 	
@@ -133,7 +123,7 @@ public class DialogueManagerFormulaTest {
 	 */
 	private static void debug (String s) {
 		if (DEBUG) {
-			System.out.println("[dialmanager test] " + s);
+			System.out.println("[dialmanager_formulatest] " + s);
 		}
 	}
 }

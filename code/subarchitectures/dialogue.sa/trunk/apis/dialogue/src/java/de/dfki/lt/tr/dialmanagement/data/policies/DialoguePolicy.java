@@ -34,7 +34,6 @@ import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
  * action nodes and observation edges between them
  * 
  * TODO: refactor to have a policy also well-formed during the incremental construction?
- * TODO: check whether the node, edge, action and observation identifiers are unique
  * 
  * @author Pierre Lison (plison@dfki.de)
  * @version 8/10/2010
@@ -113,9 +112,13 @@ public class DialoguePolicy {
 	 * Adding a new node in the policy
 	 * 
 	 * @param node the node to add
+	 * @throws DialogueException if nodeID already exists
 	 */
-	public void addNode (PolicyNode node) {
+	public void addNode (PolicyNode node) throws DialogueException {
 		if (node != null) {
+			if (nodes.containsKey(node.getId())) {
+				throw new DialogueException("ERROR: node with same ID already exists");
+			}
 			nodes.put(node.getId(), node);
 		}
 	}
@@ -159,6 +162,18 @@ public class DialoguePolicy {
 	 */
 	public Collection<PolicyEdge> getEdges () {
 		return edges.values();
+	}
+	
+	
+	/**
+	 * Returns the edge anchored by the identifier (if no edge exists,
+	 * return null)
+	 * 
+	 * @param edgeId
+	 * @return
+	 */
+	public PolicyEdge getEdge(String edgeId) {
+		return edges.get(edgeId);
 	}
 	
 	
@@ -228,7 +243,7 @@ public class DialoguePolicy {
 		result += "Edges = \n";
 		for (String nodeId : nodes.keySet()) {
 			PolicyNode node = nodes.get(nodeId);		
-			for (PolicyEdge edge: node.getAllOutgoingObservations()) {			
+			for (PolicyEdge edge: node.getAllOutgoingEdges()) {			
 				result += edge.getSourceNode().getId() + " -- " + edge.getCondition().toString() + 
 				" --> " + edge.getTargetNode().getId() + "\n";			
 			}
@@ -324,7 +339,7 @@ public class DialoguePolicy {
 		}
 		
 		LinkedList<PolicyEdge> observations = 
-			new LinkedList<PolicyEdge>(nodes.get(nodeId).getAllOutgoingObservations());
+			new LinkedList<PolicyEdge>(nodes.get(nodeId).getAllOutgoingEdges());
 		Collections.shuffle(observations);
 		
 		for (PolicyEdge e: observations) {

@@ -91,7 +91,12 @@ public class PolicyNode {
 	 * @return the action
 	 */
 	public PolicyAction getPolicyAction () {
-		return action;
+		if (action != null) {
+			return action;
+		}
+		else {
+			return PolicyAction.createVoidAction();
+		}
 	}
 	
 
@@ -181,10 +186,10 @@ public class PolicyNode {
 
 
 	/**
-	 * Returns all outgoing observation edges
-	 * @return all outgoing observation edges
+	 * Returns all outgoing edges
+	 * @return all outgoing edges
 	 */
-	public Collection<PolicyEdge> getAllOutgoingObservations () {
+	public Collection<PolicyEdge> getAllOutgoingEdges () {
 		return outgoingEdges;
 	}
 

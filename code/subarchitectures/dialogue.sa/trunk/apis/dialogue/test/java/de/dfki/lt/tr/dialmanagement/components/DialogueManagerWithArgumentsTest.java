@@ -22,23 +22,22 @@ package de.dfki.lt.tr.dialmanagement.components;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-
-
 import org.junit.Before;
 
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
-import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
+import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
 import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 
 
 /**
+ * Test with a policy including underspecified arguments
+ * 
  * TODO: tests with multiple arguments
  * 
- * @author plison
+ * @author Pierre Lison (plison@dfki.de)
  *
  */
 public class DialogueManagerWithArgumentsTest {
@@ -55,19 +54,6 @@ public class DialogueManagerWithArgumentsTest {
 	// the dialogue manager
 	public DialogueManager manager;
 
-
-
-	private Observation createSimpleObservation (String s) throws DialogueException {
-		return createSimpleObservation(s, 1.0f);
-	}
-
-
-	private Observation createSimpleObservation (String s, float f) throws DialogueException {
-		Observation intent = new Observation (Observation.INTENTION);
-		intent.addAlternative(s, f);
-		intent.addAlternative(new UnknownFormula(0), 1-f);
-		return intent;
-	}
 
 	/**
 	 * Construct the dialogue policy
@@ -87,13 +73,14 @@ public class DialogueManagerWithArgumentsTest {
 
 
 	/**
-	 * Test the policy with a single, high-confidence utterance
+	 * Test the policy with an observation filling a single argumetn
+	 * 
 	 * @throws DialogueException
 	 */
 	@Test
 	public void testPolicyBasic() throws DialogueException {
 
-		Observation intent = createSimpleObservation("Say ^ <Object>(Blabla)");
+		Observation intent = PolicyUtils.createSimpleObservation("Say ^ <Object>(Blabla)");
 		PolicyAction action1 = manager.nextAction(intent);
 		assertEquals("CI[Said ^ <Object>(Blabla)]", action1.toString());
 
@@ -106,7 +93,7 @@ public class DialogueManagerWithArgumentsTest {
 	 */
 	private static void log (String s) {
 		if (LOGGING) {
-			System.out.println("\"[dialmanager test\"] " + s);
+			System.out.println("[dialmanager_withargumentstest] " + s);
 		}
 	}
 
@@ -116,7 +103,7 @@ public class DialogueManagerWithArgumentsTest {
 	 */
 	private static void debug (String s) {
 		if (DEBUG) {
-			System.out.println("[dialmanager test] " + s);
+			System.out.println("[dialmanager_withargumentstest] " + s);
 		}
 	}
 }

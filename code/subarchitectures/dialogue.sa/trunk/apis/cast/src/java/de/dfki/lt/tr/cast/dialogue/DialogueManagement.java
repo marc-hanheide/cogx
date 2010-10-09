@@ -45,27 +45,27 @@ public class DialogueManagement extends ManagedComponent {
 
 	// the dialogue manager
 	DialogueManager manager;
-	
+
 	// default parameters for the dialogue manager
 	String policyFile = "subarchitectures/dialogue.sa/config/policies/yr2/testpolicy.txt";
 	String actionsFile = "subarchitectures/dialogue.sa/config/policies/yr2/testaction.txt";
 	String observationsFile = "subarchitectures/dialogue.sa/config/policies/yr2/testobservation.txt";
-	
-	
+
+
 	/**
 	 * Construct a new dialogue manager, with default values
 	 * 
 	 */
 	public DialogueManagement() {
 		try {
-		manager = new DialogueManager(TextPolicyReader.constructPolicy(policyFile, observationsFile, actionsFile));
+			manager = new DialogueManager(TextPolicyReader.constructPolicy(policyFile, observationsFile, actionsFile));
 		}
 		catch (DialogueException e) {
 			e.printStackTrace();
 		} 
 	} 
-	
-	
+
+
 	/**
 	 * Configuration method.  If the parameters --policy, --actions and --observations are given, 
 	 * use their values as parameters to the FSA-based dialogue manager.  If these values
@@ -75,33 +75,27 @@ public class DialogueManagement extends ManagedComponent {
 	@Override
 	public void configure(Map<String, String> _config) {
 		if ((_config.containsKey("--policy")) && 
-			(_config.containsKey("--actions")) && 
-			(_config.containsKey("--observations"))) {
-				try {
-					log("Provided parameters: policy=" + _config.get("--policy") + ", actions=" + _config.get("--actions") + ", observations=" + _config.get("--observations"));
-					policyFile = _config.get("--policy");
-					observationsFile = _config.get("--observations") ;
-					actionsFile = _config.get("--actions");
-					manager = new DialogueManager(TextPolicyReader.constructPolicy(policyFile,observationsFile, actionsFile));
-				} catch (DialogueException e) {
-					log(e.getMessage());
-					e.printStackTrace();
-				} 	
-			}
+				(_config.containsKey("--actions")) && 
+				(_config.containsKey("--observations"))) {
+			try {
+				log("Provided parameters: policy=" + _config.get("--policy") + ", actions=" + _config.get("--actions") + ", observations=" + _config.get("--observations"));
+				policyFile = _config.get("--policy");
+				observationsFile = _config.get("--observations") ;
+				actionsFile = _config.get("--actions");
+				manager = new DialogueManager(TextPolicyReader.constructPolicy(policyFile,observationsFile, actionsFile));
+			} catch (DialogueException e) {
+				log(e.getMessage());
+				e.printStackTrace();
+			} 	
+		}
 	}
-	
-	
-	/*
-	 * Starting up the CAST component by registering filters on the insertion of new intentions and events. 
-	 * 
-	 * @see cast.architecture.abstr.WorkingMemoryReaderProcess#start()
-	 */
+
+
+
 	@Override
 	public void start() {
 
-		//try {
-		
-		
+		// communicative intentions
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(CommunicativeIntention.class,  WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
@@ -120,56 +114,59 @@ public class DialogueManagement extends ManagedComponent {
 						}
 					}
 				});
-		
-		
-			addChangeFilter(
-					ChangeFilterFactory.createLocalTypeFilter(Intention.class,  WorkingMemoryOperation.ADD),
-					new WorkingMemoryChangeReceiver() {
 
-						public void workingMemoryChanged(
-								WorkingMemoryChange _wmc) {
-							try {
-								Intention initIntention = getMemoryEntry(_wmc.address, Intention.class);
-								if (initIntention.estatus instanceof PrivateEpistemicStatus) {
-									addToWorkingMemory(newDataID(), new CommunicativeIntention(initIntention));
-								}
-							} catch (DoesNotExistOnWMException e) {
-								e.printStackTrace();
-							} catch (UnknownSubarchitectureException e) {
-								e.printStackTrace();
+
+		// (non-communicative) intentions
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(Intention.class,  WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+
+					public void workingMemoryChanged(
+							WorkingMemoryChange _wmc) {
+						try {
+							Intention initIntention = getMemoryEntry(_wmc.address, Intention.class);
+							if (initIntention.estatus instanceof PrivateEpistemicStatus) {
+								addToWorkingMemory(newDataID(), new CommunicativeIntention(initIntention));
 							}
-							catch (AlreadyExistsOnWMException e) {
-								e.printStackTrace();
-							} 
+						} catch (DoesNotExistOnWMException e) {
+							e.printStackTrace();
+						} catch (UnknownSubarchitectureException e) {
+							e.printStackTrace();
 						}
-					}); 
-			 
-	
-			addChangeFilter(
-					ChangeFilterFactory.createLocalTypeFilter(Event.class,  WorkingMemoryOperation.ADD),
-					new WorkingMemoryChangeReceiver() {
+						catch (AlreadyExistsOnWMException e) {
+							e.printStackTrace();
+						} 
+					}
+				}); 
 
-						public void workingMemoryChanged(
-								WorkingMemoryChange _wmc) {
-							try {
-								newEventReceived(getMemoryEntry(_wmc.address, Event.class));
-							} catch (DoesNotExistOnWMException e) {
-								e.printStackTrace();
-							} catch (UnknownSubarchitectureException e) {
-								e.printStackTrace();
-							}
+
+		// events
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(Event.class,  WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+
+					public void workingMemoryChanged(
+							WorkingMemoryChange _wmc) {
+						try {
+							newEventReceived(getMemoryEntry(_wmc.address, Event.class));
+						} catch (DoesNotExistOnWMException e) {
+							e.printStackTrace();
+						} catch (UnknownSubarchitectureException e) {
+							e.printStackTrace();
 						}
-					});
-
+					}
+				});
 	}
-	
-	
 
-	   
+
+
+
 	/**
-	 * If a new intention is added, triggers the dialogue manager to determine the next appropriate
-	 * action, if any is available.  If an intention action is returned, create a new private intention
-	 * and inserts it into the working memory
+	 * If a new intention is added, triggers the dialogue manager to determine 
+	 * the next appropriate action, if any is available.  
+	 * 
+	 * If an intention action is returned, create a new private intention and 
+	 * inserts it into the working memory
 	 * 
 	 * @param intention the (attributed) intention received as observation
 	 * 
@@ -177,41 +174,30 @@ public class DialogueManagement extends ManagedComponent {
 	public void newIntentionReceived (CommunicativeIntention intention) {
 		try {
 			
+			// create an "augmented" intention based on the received one
 			CommunicativeIntention augmentedIntention = createAugmentedIntention(intention);
-			
 			String formAsString = FormulaUtils.getString(augmentedIntention.intent.content.get(0).postconditions);
 			debug("augmented intention: " + formAsString);	
 
+			// running the dialogue manager to select the next action
 			PolicyAction action = manager.nextAction(augmentedIntention);
-			
-			debug(action);
 			log("action chosen: " + action.toString());
-			
+
+			// if the action is not void, adds the new intention to the WM
 			if (!action.isVoid()) {
 				CommunicativeIntention response = 
 					EpistemicObjectUtils.createSimplePrivateCommunicativeIntention((action).getContent(), 1.0f);
 				addToWorkingMemory(newDataID(), response);
 				log("new private intention successfully added to working memory");
-		/**		if (manager.isFinished()) {
-					log("restarting the policy...");
-					manager = new DialogueManager(PolicyReader.constructPolicy(policyFile,observationsFile, actionsFile));
-				} */
 			}
-		
+
 		} catch (Exception e) {
 			log(e.getMessage());
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
-	@Override
-	public void run () {
-	}
-	
-  
-	   
+
+
 	/**
 	 * If a new event is added, triggers the dialogue manager to determine the next appropriate
 	 * action, if any is available.  If an intention action is returned, create a new private intention
@@ -222,13 +208,19 @@ public class DialogueManagement extends ManagedComponent {
 	 */
 	public void newEventReceived (Event event) {
 		try {
+			
+			// running the dialogue manager to select the next action
 			PolicyAction action = manager.nextAction(event);
+			log("action chosen: " + action.toString());
+
+			// if the action is not void, adds the new intention to the WM
 			if (!action.isVoid()) {
 				CommunicativeIntention response = 
 					EpistemicObjectUtils.createSimplePrivateCommunicativeIntention((action).getContent(), 1.0f);
 				addToWorkingMemory(newDataID(), response);
+				log("new private intention successfully added to working memory");
 			}
-		
+
 		} catch (DialogueException e) {
 			log(e.getMessage());
 			e.printStackTrace();
@@ -236,18 +228,16 @@ public class DialogueManagement extends ManagedComponent {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
-	
+
+
 	/**
 	 * Create a new intention based on the content of the init intention, by
 	 * replace pointers by the content of the pointed epistemic object
 	 * 
-	 * @param initIntention
+	 * @param initIntention the initial intention
 	 * @return
-	 * @throws DialogueException
-	 * @throws DoesNotExistOnWMException
+	 * @throws DialogueException if formatting problems
+	 * @throws DoesNotExistOnWMException if the pointers relate to non-existent entities on the WM
 	 */
 	public CommunicativeIntention createAugmentedIntention (CommunicativeIntention initIntention) 
 	throws DialogueException, DoesNotExistOnWMException {
@@ -255,34 +245,43 @@ public class DialogueManagement extends ManagedComponent {
 		if (initIntention!=null && initIntention.intent.content.size() > 0)  {
 
 			if (initIntention.intent.content.get(0).postconditions instanceof ModalFormula &&
-					((ModalFormula)initIntention.intent.content.get(0).postconditions).op.equals(IntentionManagementConstants.beliefLinkModality)) {
+					((ModalFormula)initIntention.intent.content.get(0).postconditions).op.equals(
+							IntentionManagementConstants.beliefLinkModality)) {
 
+				// extracting the pointer content
 				String beliefID = FormulaUtils.getString(
 						((ModalFormula)initIntention.intent.content.get(0).postconditions).form);
 
+				// checking that it exists on the working memory
 				if (existsOnWorkingMemory(beliefID)) {
 					dBelief b = getMemoryEntry(beliefID, dBelief.class);
 
 					debug("type of distrib: " + b.content.getClass().getCanonicalName());
 
+					// assuming it has a basic probdistribution
 					if (b.content instanceof BasicProbDistribution &&
 							((BasicProbDistribution)b.content).values instanceof FormulaValues) {
 
+						// extracting the content pairs
 						HashMap<dFormula,Float> mapPairs = new HashMap<dFormula,Float>();
-
 						for (FormulaProbPair pair : ((FormulaValues)((BasicProbDistribution)b.content).values).values) {
-							FormulaProbPair newPair = new FormulaProbPair(new ModalFormula(0, IntentionManagementConstants.beliefLinkModality, pair.val), pair.prob);
+							FormulaProbPair newPair = new FormulaProbPair(new ModalFormula(0, 
+									IntentionManagementConstants.beliefLinkModality, pair.val), pair.prob);
 							mapPairs.put(newPair.val, newPair.prob);
 						}
 
-						CommunicativeIntention forgedIntention = EpistemicObjectUtils.createAttributedCommunicativeIntention(mapPairs);
+						// create a forged intention with this content
+						CommunicativeIntention forgedIntention = 
+							EpistemicObjectUtils.createAttributedCommunicativeIntention(mapPairs);
 
 						return forgedIntention;
 					}
 				}
 			}
 		}
+		
+		// else, return the same intention
 		return initIntention;
 	}
-	
+
 }

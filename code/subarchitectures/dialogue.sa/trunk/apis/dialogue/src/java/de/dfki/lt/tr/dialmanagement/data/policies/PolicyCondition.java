@@ -154,7 +154,7 @@ public class PolicyCondition extends FormulaWrapper {
 	public boolean matchesObservation (Observation obs) {
 		
 		for (FormulaWrapper alternative : obs.getAlternatives()) {
-			if (alternative.equals(this) && 
+			if (this.equals(alternative) && 
 					obs.getProbability(alternative) >= minProb && 
 					obs.getProbability(alternative) <= maxProb) {				
 				return true;
@@ -171,6 +171,25 @@ public class PolicyCondition extends FormulaWrapper {
 	 */
 	public String getId() {
 		return id;
+	}
+	
+	
+	/**
+	 * Returns the minimum probability for the condition
+	 * 
+	 * @return min probability
+	 */
+	public float getMinimumProb () {
+		return minProb;
+	}
+	
+	/**
+	 * Returns the maximum probability for the condition
+	 * 
+	 * @return max probability
+	 */
+	public float getMaximumProb() {
+		return maxProb;
 	}
 	
 	/**

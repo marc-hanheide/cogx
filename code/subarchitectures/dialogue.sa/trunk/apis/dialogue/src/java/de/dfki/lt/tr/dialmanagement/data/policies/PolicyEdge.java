@@ -184,6 +184,18 @@ public class PolicyEdge {
 		return id;
 	}
 	
+	
+	
+	/**
+	 * Returns true is the edge is complete and well-formed, false otherwise
+	 * 
+	 * @return true if well-formed, else false
+	 */
+	public boolean isWellFormed() {
+		return (in != null && out != null && condition != null && id != null);
+	}
+	
+	
 	/**
 	 * Returns a string representation of the edge
 	 */
