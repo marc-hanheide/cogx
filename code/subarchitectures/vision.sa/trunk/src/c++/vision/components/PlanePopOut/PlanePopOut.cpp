@@ -648,13 +648,13 @@ void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 
 void PlanePopOut::runComponent()
 {
-  sleepComponent(1000);
+  sleepComponent(100);
   //log("Component is running now");
   // note: this must be called in the run loop, not in configure or start as these are all different threads!
   int argc = 1;
   char argv0[] = "PlanePopOut";
   char *argv[1] = {argv0};
-  int stereoWidth = 640;
+  int stereoWidth = 320;
   if (doDisplay)
   {
       glutInit(&argc, argv);
@@ -708,7 +708,8 @@ void PlanePopOut::runComponent()
 		tempPoints.clear();
 		pointsN.clear();
 		objnumber = 0;
-		N = (int)points.size()/2500;
+		N = (int)points.size()/2000;
+		random_shuffle ( points.begin(), points.end() );
 		for (VisionData::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
 		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<5)
 			pointsN.push_back(*it);
@@ -1586,7 +1587,7 @@ void PlanePopOut::FindVerticalPlanes(VisionData::SurfacePointSeq &points, std::v
 		    candidants.push_back(i);
     }
     unsigned int nPoints = candidants.size();
-    int nRansacs = 100;
+    int nRansacs = 50;
     int point1 = 0;
     int point2 = 0;
     int point3 = 0;
