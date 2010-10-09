@@ -135,8 +135,8 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		Map<String, Formula> mapping;
 		try {
 			mapping = getFeatureValueMapping(wmc, from);
-			
-
+			if (mapping==null)
+				return false;
 			for (Entry<String, Formula> fvm : mapping.entrySet()) {
 				FormulaDistribution fd = FormulaDistribution.create();
 				fd.add(fvm.getValue().get(), 1.0);
