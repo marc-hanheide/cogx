@@ -57,6 +57,7 @@ public class PlaceMonitor extends ManagedComponent {
 	public PlaceMonitor() {
 		return;
 	}
+	private static final int TIME_TO_WAIT_TO_SETTLE = 100;
 	
 	private String m_comareasoner_component_name;
 	private ComaReasonerInterfacePrx m_comareasoner;
@@ -71,6 +72,8 @@ public class PlaceMonitor extends ManagedComponent {
 	private HashMap<String,HashSet<String>> m_existingRelationProxies;
 	
 	private boolean m_createDummyObjects;
+	
+	private boolean maintainRoomsTaskPending = false;
 
 	public void configure(Map<String, String> args) {
 		log("configure() called");
@@ -148,6 +151,36 @@ public class PlaceMonitor extends ManagedComponent {
 			log("Connection to the coma reasoner Ice server at "+ m_comareasoner_component_name + " failed! Exiting. (Specify the coma reasoner component name using --reasoner-name)");
 			System.exit(-1);
 		}	
+	}
+	
+	@Override
+	protected void runComponent() {
+		while (isRunning()) {
+			try {
+				synchronized (this) {
+					// if there is no pending task, continue the loop 
+					if (!this.maintainRoomsTaskPending) {
+						this.wait();
+						continue;
+					}
+				}
+				synchronized (this) {
+					this.maintainRoomsTaskPending = false;
+				}
+				// wait for another change
+				Thread.sleep(TIME_TO_WAIT_TO_SETTLE);
+				synchronized (this) {			
+					// if there were no more changes
+					if (this.maintainRoomsTaskPending) {
+						continue;
+					}
+				}
+				// execute the room maintenance algorithm
+				executeMaintainRoomsAlgorithm();
+			}  catch (InterruptedException e) {
+				logException(e);
+			}
+		}
 	}
 	
 	
@@ -496,9 +529,17 @@ public class PlaceMonitor extends ManagedComponent {
 		}
 	}
 	
+	private void maintainRooms() {
+		synchronized(this) {
+			this.maintainRoomsTaskPending = true;
+			this.notifyAll();
+		}
+	}
+	
+	
 	
 	@SuppressWarnings("unchecked")
-	private void maintainRooms() {
+	private void executeMaintainRoomsAlgorithm() {
 		log("entering maintainRooms().");
 		try {
 			// determine all places
