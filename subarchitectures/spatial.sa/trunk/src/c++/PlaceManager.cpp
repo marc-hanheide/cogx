@@ -425,8 +425,9 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
     objX = object->x;
     objY = object->y;
     category = object->category;
+    double probability = object->probability;
     
-    log("newObject is of category %s", category.c_str());
+    log("newObject is of category %s and exists with probability %f", category.c_str(), probability);
 
 
     double minDistance = FLT_MAX;
@@ -459,7 +460,7 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
 	  objCat->value = category;
 
 	  SpatialProperties::ValueProbabilityPair pair1 =
-	  { objCat, 1.0 };
+	  { objCat, probability };
 
 	  SpatialProperties::ValueProbabilityPairs pairs;
 	  pairs.push_back(pair1);

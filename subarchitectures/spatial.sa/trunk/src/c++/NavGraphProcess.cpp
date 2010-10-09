@@ -25,6 +25,7 @@
 #include <Navigation/NavGraphNode.hh>
 #include <Navigation/NavGraphEdge.hh>
 #include <Navigation/NavGraphGateway.hh>
+#include <VisionData.hpp>
 
 #include <sstream>
 
@@ -143,6 +144,7 @@ void NavGraphProcess::saveGraphToFile(const std::string &filename)
            << iter->second.m_data->z << " "
            << iter->second.m_data->areaId << " "
            << iter->second.m_data->category << " "
+           << iter->second.m_data->probability << " "
            << iter->second.m_data->objectId << " "
            << iter->second.m_data->camX << " "
            << iter->second.m_data->camY << std::endl;
@@ -425,11 +427,13 @@ void NavGraphProcess::loadGraphFromFile(const std::string &filename)
       double x,y,z, robX, robY;
       long areaId, objId;
       std::string category;
+      double probability;
 
-      if (istr >> x >> y >> z >> areaId >> category >> objId >> robX >> robY) {
+      if (istr >> x >> y >> z >> areaId >> category >> probability >> objId >> robX >> robY)
+      {
         addObject(x, y, z, robX, robY,
-                  areaId, category, objId);
-        log("object added: %s: at area %i", category.c_str(), areaId);
+                  areaId, category, objId, probability);
+        log("object added: %s: at area %i with probability %f", category.c_str(), areaId, probability);
       }
     }
   }
@@ -482,6 +486,10 @@ void NavGraphProcess::start() {
                   new MemberFunctionChangeReceiver<NavGraphProcess>(this,
                                          &NavGraphProcess::newObjObs));
   
+  addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<NavGraphProcess>(this,
+                                         &NavGraphProcess::newVisualObject));
+
   addChangeFilter(createLocalTypeFilter<NavData::ObjObs>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<NavGraphProcess>(this,
                                          &NavGraphProcess::newObjObs));
@@ -1016,7 +1024,7 @@ void NavGraphProcess::addFreeNode(long nodeId,
 void NavGraphProcess::addObject(double x, double y, double z, 
                                 double camX, double camY,
                                 long areaId,
-                                const string &category, long objectId) 
+                                const string &category, long objectId, double probability)
 {
   // Add the object
 
@@ -1029,8 +1037,10 @@ void NavGraphProcess::addObject(double x, double y, double z,
   onode.m_data->camX = camX;
   onode.m_data->camY = camY;
   onode.m_data->areaId = areaId;  
-  onode.m_data->category = category;  
+  onode.m_data->category = category;
+  onode.m_data->probability= probability;
   onode.m_data->objectId = objectId;
+
 
   if (m_UniqueObjects) {
     
@@ -1050,7 +1060,7 @@ void NavGraphProcess::addObject(double x, double y, double z,
         return;
       }
     }
-    
+
     // Change the data of any objects that have not yet been writte to
     // working memory
     for (std::list<ObjDataHolder>::iterator i = m_NewObjData.begin();
@@ -1156,6 +1166,72 @@ void NavGraphProcess::newRobotPose(const cdl::WorkingMemoryChange &objID)
   m_TOPP.defineTransform(cp);
 }
 
+
+void NavGraphProcess::newVisualObject(const cast::cdl::WorkingMemoryChange & wmChange)
+{
+	VisionData::VisualObjectPtr visualObjectPtr = getMemoryEntry<VisionData::VisualObject>(wmChange.address);
+
+	string category = visualObjectPtr->identLabels[0];
+	double probability = visualObjectPtr->identDistrib[0];
+	log("Observed object of category \"%s\" with probability %f", category.c_str(), probability);
+
+    Cure::Timestamp t(visualObjectPtr->time.s, visualObjectPtr->time.us);
+
+    // As a first approximation we use the last robot pose as the robot
+    // pose when the object was observed
+    Cure::Pose3D rp = m_LastRobotPose;
+
+    if (!m_TOPP.isTransformDefined())
+    {
+    	log("TOPP transformation not defined yet -> GUESSING pose more or less");
+    } else
+    {
+    	m_TOPP.getPoseAtTime(t, rp);
+    }
+    rp.setTime(t);
+
+    // Pose of the camera in world frame at the time of the observation
+    Cure::Pose3D camPw;
+    camPw.add(rp, m_CamPoseR);
+
+    // The default distance is 1m
+    double d = 1.0;
+//    if (!oobj->getData()->dist.empty()) d = oobj->getData()->dist[0];
+
+    double pan = 0, tilt = 0;
+//    if (oobj->getData()->angles.size() > 0)
+//    {
+//    	pan = oobj->getData()->angles[0];
+//    	if (oobj->getData()->angles.size() > 1)
+//    	{
+//    		tilt = oobj->getData()->angles[1];
+//    	}
+//    }
+
+    // Object pos in the camera frame
+    Cure::Pose3D objPc;
+    objPc.setX(d);
+    objPc.setY(d * tan(pan));
+    objPc.setZ(d * tan(tilt));
+
+    // Object pos in world frame
+    Cure::Pose3D objPw;
+    objPw.add(camPw, objPc);
+
+    long objId = -1;
+
+    long areaId = 0;
+    if (m_TopRobPos) areaId = m_TopRobPos->areaId;
+
+    addObject(objPw.getX(), objPw.getY(), objPw.getZ(),
+    		rp.getX(), rp.getY(),
+    		areaId,
+    		category, objId, probability);
+
+    writeGraphToWorkingMemory();
+}
+
+
 void NavGraphProcess::newObjObs(const cdl::WorkingMemoryChange &objID) 
 {
   shared_ptr<CASTData<NavData::ObjObs> > oobj =
@@ -1211,7 +1287,7 @@ void NavGraphProcess::newObjObs(const cdl::WorkingMemoryChange &objID)
   addObject(objPw.getX(), objPw.getY(), objPw.getZ(), 
             rp.getX(), rp.getY(),
             areaId,
-            oobj->getData()->category, objId);
+            oobj->getData()->category, objId, 1.0);
 
   writeGraphToWorkingMemory();
 }
@@ -1380,7 +1456,7 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
 
         m_Mutex.lock();
         //long lastid = m_cureNavGraph.m_Nodes.back()->getId();
-	long lastsize = m_cureNavGraph.m_Nodes.size();
+	unsigned long lastsize = m_cureNavGraph.m_Nodes.size();
         m_cureNavGraph.addGatewayNode(x,y,dir,
                                       m_DoorDetector.m_Width);
 	//if (m_cureNavGraph.m_Nodes.back()->getId() == lastid) {

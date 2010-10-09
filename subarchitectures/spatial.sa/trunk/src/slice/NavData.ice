@@ -298,6 +298,9 @@ interface NavGraphInterface{
 
     // y-coordinate of robot when object was observed
     double camY;
+    
+    // Probability of existance
+    double probability;
   };
 
   sequence<Area> AreaSequence;

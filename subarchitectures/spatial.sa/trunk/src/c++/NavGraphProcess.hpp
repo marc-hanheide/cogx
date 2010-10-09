@@ -92,7 +92,7 @@ protected:
                  double camX, double camY,
                  long areaID,
                  const std::string &category, 
-                 long objectID); 
+                 long objectID, double probability);
   
   void addAccessEdge(long startNodeID, long endNodeID, double weight); 
 
@@ -127,6 +127,7 @@ private:
 
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
   void newObjObs(const cast::cdl::WorkingMemoryChange &objID);
+  void newVisualObject(const cast::cdl::WorkingMemoryChange & wmChange);
 
   void receiveOdometry(const Robotbase::Odometry &castOdom);
   void receiveScan2d(const Laser::Scan2d &castScan);
