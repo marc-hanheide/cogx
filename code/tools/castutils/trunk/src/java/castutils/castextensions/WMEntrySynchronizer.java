@@ -11,6 +11,7 @@ import java.util.Set;
 
 import Ice.ObjectImpl;
 import cast.CASTException;
+import cast.DoesNotExistOnWMException;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -229,14 +230,21 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 					}
 					case OVERWRITE: {
 						if (ops.contains(WorkingMemoryOperation.OVERWRITE)) {
-							final From from = component.getMemoryEntry(
-									ev.address, fromType);
+							From from = null;
+							try {
+								from = component.getMemoryEntry(ev.address,
+										fromType);
+							} catch (DoesNotExistOnWMException e) {
+								component.getLogger().warn(
+										"object already removed...");
+
+							}
 							WorkingMemoryAddress toWMA = wm2wmMap
 									.get(ev.address);
 							boolean isNew = false;
 							To to;
 							try {
-								if (toWMA == null) {
+								if (toWMA == null && from != null) {
 									isNew = true;
 									final String id = component.newDataID();
 									toWMA = new WorkingMemoryAddress(id,
@@ -251,8 +259,9 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 											.getMemoryEntry(toWMA, toType);
 								}
 								if (to != null) {
-									if (transferFunction
-											.transform(ev, from, to)) {
+									if ((from != null)
+											&& transferFunction.transform(ev,
+													from, to)) {
 										if (isNew) {
 											component.addToWorkingMemory(toWMA,
 													to);
@@ -286,8 +295,14 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 
 								}
 							} finally {
-								if (!isNew)
-									component.unlockEntry(toWMA);
+								if (!isNew) {
+									try {
+										component.unlockEntry(toWMA);
+									} catch (DoesNotExistOnWMException e) {
+										component
+												.log("tried to unlock a non-existing entry");
+									}
+								}
 							}
 						}
 						break;
