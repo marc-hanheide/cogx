@@ -116,6 +116,10 @@ public class IntentionRealization {
 		return plf;
 	}
 
+	public void clearContext() {
+		abd_realize.getProxy().clearContext();
+	}
+
 	/**
 	 * Load a file with rules and facts for the abducer.
 	 *

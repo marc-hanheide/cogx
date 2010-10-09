@@ -13,6 +13,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
@@ -156,17 +157,24 @@ public class BeliefTranslator {
 				expandFormulaToRules(modality, subF, args, belIdTerm, belexMAtom, worldexMAtom);
 			}
 		}
-		else if (val instanceof ElementaryFormula) {
+
+		if (val instanceof ElementaryFormula) {
 			ElementaryFormula eF = (ElementaryFormula) val;
 			valTerm = TermAtomFactory.term(eF.prop);
 		}
-		else if (val instanceof FloatFormula) {
+
+		if (val instanceof FloatFormula) {
 			FloatFormula fF = (FloatFormula) val;
-			String discr = "zero";
+			String discrete = "zero";
 			if (fF.val != 0.0) {
-				discr = "nonzero";
+				discrete = "nonzero";
 			}
-			valTerm = TermAtomFactory.term(discr);
+			valTerm = TermAtomFactory.term(discrete);
+		}
+
+		if (val instanceof PointerFormula) {
+			PointerFormula pF = (PointerFormula) val;
+			valTerm = ConversionUtils.workingMemoryAddressToTerm(pF.pointer);
 		}
 
 		if (valTerm != null) {

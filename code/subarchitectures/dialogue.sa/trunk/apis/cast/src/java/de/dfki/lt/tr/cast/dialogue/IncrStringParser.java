@@ -781,7 +781,7 @@ public class IncrStringParser
 							// log(">>>>>> SAY SOMETHING NICE HERE <<<<<<<");
 							try {
 								// Send feedback to be realized
-								LogicalForm comGoal = LFUtils.convertFromString("@d1:dvp(cg ^ <FeedBackSource>parser ^ <Polarity>negative ^ <Content>(f1:feedback ))");
+								LogicalForm comGoal = LFUtils.convertFromString("@d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech)");
 								ContentPlanningGoal cpg = new ContentPlanningGoal();
 								cpg.lform = comGoal;
 								addToWorkingMemory(newDataID(), cpg); 
