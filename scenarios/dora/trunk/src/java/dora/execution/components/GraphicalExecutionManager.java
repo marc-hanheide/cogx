@@ -5,7 +5,6 @@ package dora.execution.components;
 
 import java.util.Map;
 
-import SpatialData.ViewPoint;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -29,6 +28,7 @@ import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.ProcessCone;
+import execution.slice.actions.ProcessConesAtPlace;
 import execution.slice.actions.RecogniseForegroundedModels;
 import execution.util.ActionMonitor;
 
@@ -75,7 +75,7 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 	@Override
 	protected void start() {
-		
+
 		// use these to harvest beliefs
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				GroundedBelief.class, WorkingMemoryOperation.ADD),
@@ -88,7 +88,6 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 					}
 				});
 
-		
 		// use these to harvest beliefs
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				GroundedBelief.class, WorkingMemoryOperation.OVERWRITE),
@@ -96,13 +95,13 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
-						//FIXME: horribly inefficient I guess
+						// FIXME: horribly inefficient I guess
 						removeStableBelief(_wmc.address);
 						addStableBelief(_wmc.address,
 								getMemoryEntry(_wmc.address, dBelief.class));
 					}
 				});
-		
+
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				GroundedBelief.class, WorkingMemoryOperation.DELETE),
 				new WorkingMemoryChangeReceiver() {
@@ -117,12 +116,11 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 	}
 
-
 	private void removeStableBelief(WorkingMemoryAddress _address) {
 		m_gui.removeBelief(_address);
 	}
 
-	private void addStableBelief(WorkingMemoryAddress _address, dBelief _belief) {
+	private void addStableBelief(WorkingMemoryAddress _address, dBelief _belief) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		println(_belief.type);
 		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
 				.create(dBelief.class, _belief);
@@ -147,6 +145,14 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 	public WorkingMemoryAddress triggerGoToAction(long _placeID,
 			ActionMonitor _monitor) throws CASTException {
 		GoToPlace act = newActionInstance(GoToPlace.class);
+		act.placeID = _placeID;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress triggerProcessConesAtPlace(long _placeID,
+			ActionMonitor _monitor) throws CASTException {
+		ProcessConesAtPlace act = newActionInstance(ProcessConesAtPlace.class);
 		act.placeID = _placeID;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
@@ -213,8 +219,6 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		}
 
 	}
-
-	
 
 	public WorkingMemoryAddress backgroundModels(String[] _models,
 			ActionMonitor _monitor) throws CASTException {
