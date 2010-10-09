@@ -586,9 +586,12 @@ void DShapeCore::ComputeRAShapeDescriptor(Array<Plane*> &planes, RASDescriptor &
       {
         relAngle = ScaleAngle_0_pi(acos(Dot(p1->n,planes[j]->n)));
 
+        /* for now forget about convex/concave distinction.
+           first we need to be able to reliably identify where is inside
+           and outside
         l1 = p1->p - planes[j]->p;
         l2 = (p1->p+p1->n) - (planes[j]->p+planes[j]->n);
-        if (Length(l1) > Length(l2)) relAngle+=pi; 
+        if (Length(l1) > Length(l2)) relAngle+=pi;*/
 
         relScale = p1->area/planes[j]->area;
         ras.Insert(relAngle, relScale);
