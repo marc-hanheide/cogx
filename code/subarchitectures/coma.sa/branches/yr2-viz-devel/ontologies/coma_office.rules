@@ -1,0 +1,220 @@
+#------------------------------------------------------------------
+# OWL ABox reasoning
+# 
+# OWL reasoning for ABox individuals
+#
+# author: Hendrik Zender, zender@dfki.de
+# date: 2008-04-17
+#------------------------------------------------------------------
+
+@prefix oe: <http://www.dfki.de/cosy/officeenv.owl#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+
+
+#------------------------------------------------------------------
+# Tabling directives
+#------------------------------------------------------------------
+
+#-> tableAll().
+
+#-> table(rdf:type).
+#-> table(owl:sameAs).
+#-> table(owl:differentFrom).
+
+#------------------------------------------------------------------
+# OWL rules
+#------------------------------------------------------------------
+
+#[worldSubsumptionRule:
+# (?x rdf:type oe:Entity)
+# ->
+# (?x oe:topoIncluded oe:world)]
+
+#[prepositionSelectionRule1:
+# (?x rdf:type oe:Floor),
+# (?x rdf:topoContains ?y),
+# notEqual(?x,?y)
+# ->
+# (?y oe:on ?x)]
+
+#[prepositionSelectionRule2:
+# (?x rdf:type oe:Area),
+# (?x rdf:topoContains ?y),
+# notEqual(?x,?y)
+# ->
+# (?y oe:in ?x)]
+
+#[topoNeighborRule:
+# (?x oe:near ?y),
+# (?y oe:in ?z)
+# ->
+# (?x oe:in ?z) ]
+ 
+#[topoNeighborRule2:
+# (?x oe:near ?y),
+# (?y oe:on ?z)
+# ->
+# (?x oe:on ?z) ]
+
+
+#[hasObjectRule:
+# (?x oe:in ?y),
+# (?y rdf:type oe:Area)
+# ->
+# (?y oe:hasObject ?x) ]
+ 
+## with this rule we raise objects dominated by other objects to area level
+#[hasObjectRule:
+# (?x oe:topoIncluded ?y),
+# (?y rdf:type oe:Object),
+# (?y oe:in ?z),
+# (?z rdf:type oe:Area)
+# ->
+# (?z oe:hasObject ?x)]
+
+# with this rule we raise topological adjency of nodes to area level
+#[hasObjectRule:
+# (?node1 oe:topoIncluded ?area1),
+# (?node2 oe:topoIncluded ?area2),
+# notEqual(?area1, ?area2),
+# (?node1 oe:accessibleFrom ?node2)
+# ->
+# (?area1 oe:topoAdjacent ?area2)]
+
+
+#[testWriteDirectClass:
+#  (?ind rdf:type ?dummy),
+#  (?ind rdf:type owl:Thing),
+#  noValue(?ind rdfs:subClassOf owl:Thing),
+#  notBNode(?ind),
+#  noValue(?ind, oe:DIRECT),
+#  ->
+#  print(first rule),
+#  writedirectclasses(?x,?ind)]
+
+#[testWriteDirectClass2:
+#  (?ind rdf:type ?dummy),
+#  (?ind rdf:type owl:Thing),
+#  noValue(?ind rdfs:subClassOf owl:Thing),
+#  notBNode(?ind),
+#  (?ind oe:DIRECT ?olddirect),
+#  notEqual(?olddirect, ?dummy),
+#  noValue(?dummy owl:equivalentClasses ?olddirect),
+##  noValue(?olddirect rdfs:subClassOf ?dummy)
+#  ->
+#  print(second rule),
+#  writedirectclasses(?x,?ind)]
+
+
+#[detectDirectTriples:
+#  (?ind oe:DIRECT ?y),
+#  (?ind oe:DIRECT ?z),
+#  notEqual(?y,?z),
+#  noValue(?y owl:equivalentClass ?z),
+#  noValue(?y rdfs:subClassOf ?y),
+#  notBNode(?ind),
+##  print(remove ?z)
+##  (?z rdfs:subClassOf ?y)
+#  ->
+#  print(rule2)
+#  remove(0),
+##  writedirectclasses(?x, ?ind)
+#]
+
+
+#[removeSpuriousDirectsRule:
+#  (?ind oe:DIRECT ?x),
+#  (?ind oe:DIRECT ?y),
+#  notEqual(?x, ?y),
+#  noValue(?x owl:equivalentClass ?y),
+##  noValue(?y rdfs:subClassOf ?x),
+#  (?y rdfs:subClassOf ?x)
+#  ->
+#  print(removal rule ?ind ?x ?y)
+##  <-
+##  (?x rdfs:subClassOf ?y)]
+##  remove(2)
+#]
+
+
+
+
+
+#[testDirectClass:
+#  (?ind rdf:type ?dummy),
+#  (?ind rdf:type owl:Thing),
+#  noValue(?ind rdfs:subClassOf owl:Thing),
+#  notBNode(?ind),
+#  getdirectclass(?x,?ind)
+#  ->
+#  (?ind oe:DIRECT ?x)]
+
+#[testSubsumptionRule:
+#  (?ind rdf:type owl:Thing),
+#  noValue(?ind rdfs:subClassOf owl:Thing),
+#  (?ind rdf:type ?x),
+#  notBNode(?ind),
+#  notBNode(?x),
+#  (?x rdfs:subClassOf owl:Thing),
+#  (?y rdfs:subClassOf ?x),
+#  notEqual(?y, ?x),
+#  notBNode(?y),
+#  (?ind rdf:type ?y)
+#  ->
+#  (?ind oe:DIRECT ?x)]
+
+#[testRule1:
+#  (?x rdf:type ?y),
+#  notBNode(?x),
+#  noValue(?z, rdfs:subClassOf, ?y)
+#  ->
+#  (?x oe:DIRECT ?y)]
+
+#[testSubsumptionRule:
+#  (?ind rdf:type owl:Thing),
+#  noValue(?ind, rdfs:subClassOf, owl:Thing),
+#  (?ind rdf:type ?x),
+#  notBNode(?ind),
+#  notBNode(?x),
+#  (?x rdfs:subClassOf owl:Thing),
+#  (?y rdfs:subClassOf ?x),
+#  notEqual(?y, ?x),
+#  notBNode(?y),
+#  noValue(?ind, rdf:type, ?y)
+#  ->
+#  (?ind oe:DIRECT ?x),
+#  (?ind oe:NON ?y)]
+
+
+#[testSubsumptionRule:
+#  (?ind rdf:type owl:Thing),
+#  noValue(?ind rdfs:subClassOf owl:Thing),
+#  (?ind rdf:type ?x),
+#  notBNode(?ind),
+#  notBNode(?x),
+#  (?x rdfs:subClassOf owl:Thing),
+#  (?y rdfs:subClassOf ?x),
+#  notEqual(?y, ?x),
+#  noValue(?ind rdf:type ?y),
+#  (?z rdfs:subClassOf ?x),
+#  (?ind rdf:type ?z),
+#  notEqual(?y, ?z),
+#  unbound(?z)
+#  ->
+#  (?ind oe:DIRECT ?x),
+#  (?ind oe:NON ?y)]
+
+
+#[aggregateRegionsRule:
+# (?node1 rdf:type oe:NavGraphNode),
+# (?node2 rdf:type oe:NavGraphNode),
+# (?node1 oe:accessibleFrom ?node2),
+# (?node1 rdf:type ?areaType),
+# (?node2 rdf:type ?areaType),
+# (?areaType rdfs:subClassOf oe:Area),
+# (?node1 oe:topoIncluded ?region1),
+# (?node2 oe:topoIncluded ?region2),
+# (?
