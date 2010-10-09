@@ -101,6 +101,9 @@ public class FormulaUtils {
 				return str;
 			}
 		}
+		else if (formula instanceof PointerFormula) {
+			return "["+((PointerFormula)formula).pointer.subarchitecture + ":" + ((PointerFormula)formula).pointer.id + "]";
+		}
 		else if (formula != null) {
 			return formula.toString();
 		}
@@ -201,8 +204,7 @@ public class FormulaUtils {
 		// CAST pointer formulae
 		else if (form1 instanceof PointerFormula && form2 instanceof PointerFormula) {
 			return (((PointerFormula)form1).pointer.subarchitecture.equals(((PointerFormula)form2).pointer.subarchitecture) && 
-					((PointerFormula)form1).pointer.id.equals(((PointerFormula)form2).pointer.id) && 
-					((PointerFormula)form1).type.equals(((PointerFormula)form2).type));
+					((PointerFormula)form1).pointer.id.equals(((PointerFormula)form2).pointer.id));
 		}
 		
 		// boolean formulae

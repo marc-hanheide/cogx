@@ -193,9 +193,13 @@ public class DialogueManagement extends ManagedComponent {
 				
 				// and if it is a (non-communicative) intention
 				else if (action.getType() == PolicyAction.INTENTION) {
-					Intention response = 
-					EpistemicObjectUtils.createSimplePrivateIntention((action).getContent(), 1.0f); 
-					addToWorkingMemory(newDataID(), response);
+					if (FormulaUtils.subsumes(augmentedIntention.intent.content.get(0).postconditions, action.getContent())) {
+						
+						// we are dealing with a simple forwarding action	
+						log("forwarding the communicative action beyond dialogue.sa");
+						addToWorkingMemory(newDataID(), intention.intent);
+					}
+		
 					log("new private intention successfully added to working memory");
 				}
 			}
