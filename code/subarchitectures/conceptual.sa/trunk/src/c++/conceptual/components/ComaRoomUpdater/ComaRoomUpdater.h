@@ -60,8 +60,8 @@ private:
 	  /** True if the world state has changed since the last time we checked. */
 	  bool _worldStateChanged;
 
-	  /** Most recent set of rooms from the world state. */
-	  ConceptualData::RoomSet _rooms;
+	  /** Map ComaRoom Id -> WMAddress. */
+	  std::map<int, cast::cdl::WorkingMemoryAddress> _comaRoomIdToWmAddressMap;
 
 }; // class ComaRoomUpdater
 } // namespace
