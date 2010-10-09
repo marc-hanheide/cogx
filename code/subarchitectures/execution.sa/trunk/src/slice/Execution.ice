@@ -174,7 +174,8 @@ module execution {
 	string value;	
       };
 
-      class SingleStringAction extends Action {
+      class FeatureValueStringsAction extends Action {
+	string feature;	
 	string value;	
       };
 
@@ -207,7 +208,7 @@ module execution {
       class LearnIdentity extends BeliefPlusStringAction {
       };
 
-      class AskForObjectWithFeatureValue extends SingleStringAction {
+      class AskForObjectWithFeatureValue extends FeatureValueStringsAction {
       };    
 
       /**
