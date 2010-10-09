@@ -1,0 +1,2 @@
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain dora-test-100.pddl --log --nodot #--pdb #--problem switchtest-tfd-problem.pddl
+COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
