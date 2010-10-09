@@ -13,11 +13,38 @@
 
 module ConceptualData 
 {
+	// ---------------------------------------------------
+	// Query stuff	
+	// ---------------------------------------------------
+
 	/** Interface to the conceptual::QueryHandler::Server. */
 	interface QueryHandlerServerInterface
 	{
 		SpatialProbabilities::ProbabilityDistribution query(string queryStr);
 	};
+
+	/** Query sent to the chain graph inferencer. */ 
+	class InferenceQuery
+	{
+		string queryString;
+	};
+	
+	/** Result of a single inference. */
+	class InferenceResult
+	{
+		/** Query string used to generate the result. */
+		string queryString;
+		
+		/** WM Id of the inference query to which that result corresponds. */
+		string queryId;
+		
+		/** Result of the inference. */
+		SpatialProbabilities::ProbabilityDistribution result;
+	};
+
+	// ---------------------------------------------------
+	// WorldState Stuff	
+	// ---------------------------------------------------
 
 	/** Structure representing information about object place properties. */
 	struct ObjectPlacePropertyInfo

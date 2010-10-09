@@ -202,7 +202,9 @@ void Observer::updateWorldState()
 	}
 }
 
-
+// TODO: Catch all exceptions in events
+// TODO: Not fail if I get delete and something already does not exist.
+// TODO: Next fix the query handler
 // -------------------------------------------------------
 void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 {
@@ -211,7 +213,17 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 	{
 	case cdl::ADD:
 	{ // Room added
-		comadata::ComaRoomPtr comaRoomPtr = getMemoryEntry<comadata::ComaRoom>(wmChange.address);
+		comadata::ComaRoomPtr comaRoomPtr;
+		try
+		{
+			comaRoomPtr = getMemoryEntry<comadata::ComaRoom>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
 		_comaRoomWmAddressMap[wmChange.address] = comaRoomPtr;
 		updateWorldState();
 		break;
@@ -219,11 +231,22 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 
 	case cdl::OVERWRITE:
 	{
-	  	comadata::ComaRoomPtr comaRoomPtr = getMemoryEntry<comadata::ComaRoom>(wmChange.address);
-	  	comadata::ComaRoomPtr old = _comaRoomWmAddressMap[wmChange.address];
-	  	_comaRoomWmAddressMap[wmChange.address] = comaRoomPtr;
+		comadata::ComaRoomPtr comaRoomPtr;
 
-	  	// Check wmAddresss and ID
+		try
+		{
+			comaRoomPtr = getMemoryEntry<comadata::ComaRoom>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
+		comadata::ComaRoomPtr old = _comaRoomWmAddressMap[wmChange.address];
+		_comaRoomWmAddressMap[wmChange.address] = comaRoomPtr;
+
+		// Check wmAddresss and ID
 		if (old->roomId != comaRoomPtr->roomId)
 			throw cast::CASTException("The mapping between ComaRoom WMAddress and ID changed!");
 
@@ -252,7 +275,17 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 	{
 	case cdl::ADD:
 	{ // Room added
-		SpatialData::PlacePtr placePtr = getMemoryEntry<SpatialData::Place>(wmChange.address);
+		SpatialData::PlacePtr placePtr;
+		try
+		{
+			placePtr = getMemoryEntry<SpatialData::Place>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
 		_placeWmAddressMap[wmChange.address] = placePtr;
 		updateWorldState();
 		break;
@@ -260,7 +293,17 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 
 	case cdl::OVERWRITE:
 	{
-		SpatialData::PlacePtr placePtr = getMemoryEntry<SpatialData::Place>(wmChange.address);
+		SpatialData::PlacePtr placePtr;
+		try
+		{
+			placePtr = getMemoryEntry<SpatialData::Place>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
 		SpatialData::PlacePtr old = _placeWmAddressMap[wmChange.address];
 	  	_placeWmAddressMap[wmChange.address] = placePtr;
 
@@ -293,8 +336,18 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 	{
 	case cdl::ADD:
 	{ // Room added
-		SpatialProperties::GatewayPlacePropertyPtr gatewayPlacePropertyPtr =
-				getMemoryEntry<SpatialProperties::GatewayPlaceProperty>(wmChange.address);
+		SpatialProperties::GatewayPlacePropertyPtr gatewayPlacePropertyPtr;
+		try
+		{
+			gatewayPlacePropertyPtr =
+					getMemoryEntry<SpatialProperties::GatewayPlaceProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
 		_gatewayPlacePropertyWmAddressMap[wmChange.address] = gatewayPlacePropertyPtr;
 		updateWorldState();
 		break;
@@ -302,8 +355,18 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 
 	case cdl::OVERWRITE:
 	{
-		SpatialProperties::GatewayPlacePropertyPtr gatewayPlacePropertyPtr =
-				getMemoryEntry<SpatialProperties::GatewayPlaceProperty>(wmChange.address);
+		SpatialProperties::GatewayPlacePropertyPtr gatewayPlacePropertyPtr;
+		try
+		{
+			gatewayPlacePropertyPtr =
+					getMemoryEntry<SpatialProperties::GatewayPlaceProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
 		SpatialProperties::GatewayPlacePropertyPtr old = _gatewayPlacePropertyWmAddressMap[wmChange.address];
 	  	_gatewayPlacePropertyWmAddressMap[wmChange.address] = gatewayPlacePropertyPtr;
 
@@ -336,8 +399,18 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 	{
 	case cdl::ADD:
 	{ // Room added
-		SpatialProperties::ObjectPlacePropertyPtr objectPlacePropertyPtr =
-				getMemoryEntry<SpatialProperties::ObjectPlaceProperty>(wmChange.address);
+		SpatialProperties::ObjectPlacePropertyPtr objectPlacePropertyPtr;
+		try
+		{
+			objectPlacePropertyPtr =
+					getMemoryEntry<SpatialProperties::ObjectPlaceProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
 		_objectPlacePropertyWmAddressMap[wmChange.address] = objectPlacePropertyPtr;
 		updateWorldState();
 		break;
@@ -345,8 +418,18 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 
 	case cdl::OVERWRITE:
 	{
-		SpatialProperties::ObjectPlacePropertyPtr objectPlacePropertyPtr =
-				getMemoryEntry<SpatialProperties::ObjectPlaceProperty>(wmChange.address);
+		SpatialProperties::ObjectPlacePropertyPtr objectPlacePropertyPtr;
+		try
+		{
+			objectPlacePropertyPtr =
+					getMemoryEntry<SpatialProperties::ObjectPlaceProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
 		SpatialProperties::ObjectPlacePropertyPtr old = _objectPlacePropertyWmAddressMap[wmChange.address];
 	  	_objectPlacePropertyWmAddressMap[wmChange.address] = objectPlacePropertyPtr;
 
@@ -379,8 +462,18 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 	{
 	case cdl::ADD:
 	{ // Room added
-		SpatialProperties::ConnectivityPathPropertyPtr connectivityPathPropertyPtr =
-				getMemoryEntry<SpatialProperties::ConnectivityPathProperty>(wmChange.address);
+		SpatialProperties::ConnectivityPathPropertyPtr connectivityPathPropertyPtr;
+		try
+		{
+			connectivityPathPropertyPtr =
+					getMemoryEntry<SpatialProperties::ConnectivityPathProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
 		_connectivityPathPropertyWmAddressMap[wmChange.address] = connectivityPathPropertyPtr;
 		updateWorldState();
 		break;
@@ -388,8 +481,18 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 
 	case cdl::OVERWRITE:
 	{
-		SpatialProperties::ConnectivityPathPropertyPtr connectivityPathPropertyPtr =
-				getMemoryEntry<SpatialProperties::ConnectivityPathProperty>(wmChange.address);
+		SpatialProperties::ConnectivityPathPropertyPtr connectivityPathPropertyPtr;
+		try
+		{
+			connectivityPathPropertyPtr =
+					getMemoryEntry<SpatialProperties::ConnectivityPathProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
 		SpatialProperties::ConnectivityPathPropertyPtr old = _connectivityPathPropertyWmAddressMap[wmChange.address];
 	  	_connectivityPathPropertyWmAddressMap[wmChange.address] = connectivityPathPropertyPtr;
 
