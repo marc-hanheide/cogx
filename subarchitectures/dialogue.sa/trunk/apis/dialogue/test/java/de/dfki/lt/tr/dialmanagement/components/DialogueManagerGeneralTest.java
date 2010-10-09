@@ -43,7 +43,7 @@ import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
  * @version 04/07/2010
  *
  */
-public class DialogueManagerDoraTest {
+public class DialogueManagerGeneralTest {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
