@@ -41,7 +41,7 @@ import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
  * @version 04/07/2010
  *
  */
-public class DialogueManagerTest {
+public class DialogueManagerBasicTest {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
