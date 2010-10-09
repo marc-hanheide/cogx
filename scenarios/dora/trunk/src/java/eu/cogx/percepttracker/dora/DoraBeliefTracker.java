@@ -63,10 +63,13 @@ public class DoraBeliefTracker extends ManagedComponent {
 		try {
 			wm2wmMap = new PointerMap<WMTrackedBeliefMap>(this,
 					WMTrackedBeliefMap.class);
-			tracker = WMTracker.create(this, PerceptBelief.class,
-					GroundedBelief.class, new FormulaMatcher(types, wm2wmMap,
-							PerceptBelief.class, GroundedBelief.class),
-					wm2wmMap, config.get("--write-to-sa"));
+			tracker = WMTracker
+					.create(this, PerceptBelief.class, GroundedBelief.class,
+							new FormulaMatcher<PerceptBelief, GroundedBelief>(
+									types, wm2wmMap, PerceptBelief.class,
+									GroundedBelief.class), wm2wmMap, config
+									.get("--write-to-sa"));
+			tracker.setShouldPropagateDeletion(true);
 		} catch (InstantiationException e) {
 			logException("cannot create PointerMap and tracker", e);
 		} catch (IllegalAccessException e) {
