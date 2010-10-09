@@ -83,8 +83,12 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
-						addStableBelief(_wmc.address,
-								getMemoryEntry(_wmc.address, dBelief.class));
+						try {
+							addStableBelief(_wmc.address,
+									getMemoryEntry(_wmc.address, dBelief.class));
+						} catch (CASTException e) {
+							logException("Carry on regardless", e);
+						}
 					}
 				});
 
@@ -95,10 +99,14 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
-						// FIXME: horribly inefficient I guess
-						removeStableBelief(_wmc.address);
-						addStableBelief(_wmc.address,
-								getMemoryEntry(_wmc.address, dBelief.class));
+						try {
+							// FIXME: horribly inefficient I guess
+							removeStableBelief(_wmc.address);
+							addStableBelief(_wmc.address,
+									getMemoryEntry(_wmc.address, dBelief.class));
+						} catch (CASTException e) {
+							logException("Carry on regardless", e);
+						}
 					}
 				});
 
@@ -109,7 +117,6 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
-
 						removeStableBelief(_wmc.address);
 					}
 				});
@@ -120,7 +127,8 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		m_gui.removeBelief(_address);
 	}
 
-	private void addStableBelief(WorkingMemoryAddress _address, dBelief _belief) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+	private void addStableBelief(WorkingMemoryAddress _address, dBelief _belief)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		println(_belief.type);
 		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
 				.create(dBelief.class, _belief);
