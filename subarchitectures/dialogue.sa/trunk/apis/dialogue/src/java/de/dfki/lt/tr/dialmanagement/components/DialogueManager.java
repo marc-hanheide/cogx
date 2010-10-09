@@ -39,26 +39,24 @@ import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
 
 
 /**
- * A simple, FSA-based dialogue manager.  The manager is based on (1) a dialogue policy, and
- * (2) a pointer to the current node in the policy.  
+ * <p>A simple, FSA-based dialogue manager.  The manager is based on (1) a dialogue policy, and
+ * (2) a pointer to the current node in the policy.
  * 
- * The traversal of the policy is implemented with the nexAction method, which takes an observation
+ * <p>The traversal of the policy is implemented with the nexAction method, which takes an observation
  * as argument, and jumps to the appropriate next action.  If no appropriate action is found,
- * the manager remains on the same position and outputs a void action.
+ * the manager remains on the same position and outputs a void action.  
  * 
- * The current dialogue manager features:
- * - the ability to provide policies with both text or XML files
- * - the ability to handle intentions or events encoding arbitrarily complex formulae;
- * - the ability to process intention or events with multiple alternatives;
- * - the ability of partially or fully underspecifying observations;
- * - the ability of passing arguments from observations to actions;
- * - the ability to provide lower and higher bounds on the observation probabilities.
+ * <p>The current dialogue manager features:  <ul>
+ * <li> the ability to provide policies with both text or XML files
+ * <li> the ability to handle intentions or events encoding arbitrarily complex formulae;
+ * <li> the ability to process intention or events with multiple alternatives;
+ * <li> the ability of partially or fully underspecifying observations;
+ * <li> the ability of passing arguments from observations to actions;
+ * <li> the ability to provide lower and higher bounds on the observation probabilities. </ul><br>
  * 
- * TODO: complete documentation for the package
- * TODO: test documentation on javadoc
- * TODO: write complete policies for Dora and George, and extensive tests
- * TODO: refactor logging functionality
- * TODO: once ready, recopy dialogue manager on DFKI SVN
+ * <p> TODO: write complete policies for Dora and George, and extensive tests<br>
+ * TODO: refactor logging functionality<br>
+ * TODO: once ready, recopy dialogue manager on DFKI SVN<br>
  * 
  * @author Pierre Lison (plison@dfki.de)
  * @version 8/10/2010
@@ -172,6 +170,7 @@ public class DialogueManager {
 			
 			// if the outgoing action is underspecified, fill the arguments
 			if (curNode.getAction().isUnderspecified()) {
+				log("filled argument: " + PolicyUtils.extractFilledArguments(obs, selectedEdge).get(1));
 				curNode.getAction().fillActionArguments(PolicyUtils.extractFilledArguments(obs, selectedEdge));
 			} 
 			
@@ -180,7 +179,7 @@ public class DialogueManager {
 		}
 
 		debug("Warning: observation " + obs.toString() + " not applicable from node " + curNode.getId());
-		debug("number of edges from node: " + curNode.getAllOutgoingObservations().size());
+		debug("number of edges from node: " + curNode.getAllOutgoingEdges().size());
 		for (PolicyEdge matchingEdge: matchingEdges) {
 			debug("Matching edge: " + matchingEdge.toString());
 		}

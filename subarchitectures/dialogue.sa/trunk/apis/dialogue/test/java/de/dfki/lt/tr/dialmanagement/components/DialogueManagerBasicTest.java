@@ -24,18 +24,17 @@ package de.dfki.lt.tr.dialmanagement.components;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-
-
 import org.junit.Before;
 
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
+import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
 import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 
 /**
- * Test class for the dialogue manager, with simple shallow observations and actions
+ * Test class for the dialogue manager, with simple shallow observations 
+ * and actions
  * 
  * @author Pierre Lison (plison@dfki.de)
  * @version 04/07/2010
@@ -49,7 +48,7 @@ public class DialogueManagerBasicTest {
 	
 	// the configuration files
 	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/policy1.txt";
-	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/conditions1.txt";
+	public static String CONDFILE = "subarchitectures/dialogue.sa/config/policies/testing/conditions1.txt";
 	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/actions1.txt";
 
 	// the dialogue manager
@@ -65,43 +64,30 @@ public class DialogueManagerBasicTest {
 	@Before
 	public void constructPolicy() throws DialogueException {
 		
-		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
-		
-		policy.ensureWellFormedPolicy();
-		
+		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE, CONDFILE, ACTIONSFILE);	
+		policy.ensureWellFormedPolicy();	
 		manager = new DialogueManager(policy);
 	}
 	
 	
-
-	private Observation createSimpleObservation (String s) throws DialogueException {
-		return createSimpleObservation(s, 1.0f);
-	}
-	
-
-	private Observation createSimpleObservation (String s, float f) throws DialogueException {
-		Observation intent = new Observation (Observation.INTENTION);
-		intent.addAlternative(s, f);
-		intent.addAlternative(new UnknownFormula(0), 1-f);
-		return intent;
-	}
 	
 	/**
 	 * Test the policy with a simple traversal
-	 * @throws DialogueException
+	 * 
+	 * @throws DialogueException if test fails
 	 */
 	@Test
 	public void testPolicy() throws DialogueException {
 		
-		log("init node" + manager.getCurrentAction().toString());
-		Observation obs1 = createSimpleObservation("one");
-		log("observing " + obs1);
+		debug("init node" + manager.getCurrentAction().toString());
+		Observation obs1 = PolicyUtils.createSimpleObservation("one");
+		debug("observing " + obs1);
 		manager.nextAction(obs1);
-		log("cur action: " + manager.getCurrentAction());
-		Observation obs4 = createSimpleObservation("four");
-		log("observing " + obs4);
+		debug("cur action: " + manager.getCurrentAction());
+		Observation obs4 = PolicyUtils.createSimpleObservation("four");
+		debug("observing " + obs4);
 		manager.nextAction(obs4);
-		log("cur action: " + manager.getCurrentAction());
+		debug("cur action: " + manager.getCurrentAction());
 		assertTrue(manager.isFinished());
 	}
 	
@@ -109,19 +95,17 @@ public class DialogueManagerBasicTest {
 	/**
 	 * Test the dialogue manager with an observation not on the list
 	 * 
+	 * @throws DialogueException if test fails
 	 */
 	@Test
 	public void testWrongPolicy() throws DialogueException {
 		
-		log("init node" + manager.getCurrentAction().toString());
-	
-		Observation obs1 = createSimpleObservation("six");
-		
+		debug("init node" + manager.getCurrentAction().toString());
+		Observation obs1 = PolicyUtils.createSimpleObservation("six");	
 		assertTrue (manager.nextAction(obs1).isVoid());
 		
 		
 	}
-	
 	
 
 	/**
@@ -130,7 +114,7 @@ public class DialogueManagerBasicTest {
 	 */
 	private static void log (String s) {
 		if (LOGGING) {
-			System.out.println("[dialmanager test] " + s);
+			System.out.println("[dialmanager_basictest] " + s);
 		}
 	}
 	
@@ -140,7 +124,7 @@ public class DialogueManagerBasicTest {
 	 */
 	private static void debug (String s) {
 		if (DEBUG) {
-			System.out.println("[dialmanager test] " + s);
+			System.out.println("[dialmanager_basictest] " + s);
 		}
 	}
 }

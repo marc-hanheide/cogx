@@ -22,12 +22,8 @@ package de.dfki.lt.tr.dialmanagement.components;
 import static org.junit.Assert.*;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.junit.Test;
-
-
 import org.junit.Before;
 
 
@@ -42,8 +38,8 @@ import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 
 
 /**
- * Test class for a Dora-style interactions with full epistemic objects (events and 
- * intentions)
+ * Test class for an interaction with full epistemic objects (events 
+ * and intentions)
  * 
  * @author Pierre Lison (plison@dfki.de)
  * @version 04/07/2010
@@ -80,6 +76,11 @@ public class DialogueManagerWithEpObjectTest {
 	}
 	
 	
+	/**
+	 * Test the policy with a simple intention
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void testPolicyWithSimpleIntention() throws DialogueException {
 			
@@ -91,6 +92,11 @@ public class DialogueManagerWithEpObjectTest {
 	}
 	
 	
+	/**
+	 * Test the policy with an uncertain intention
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void testPolicyWithUncertainIntentions() throws DialogueException {
 		
@@ -110,7 +116,7 @@ public class DialogueManagerWithEpObjectTest {
 	 */
 	private static void log (String s) {
 		if (LOGGING) {
-			System.out.println("[dialmanager test] " + s);
+			System.out.println("[dialmanager_withepobjectstest] " + s);
 		}
 	}
 	
@@ -120,7 +126,7 @@ public class DialogueManagerWithEpObjectTest {
 	 */
 	private static void debug (String s) {
 		if (DEBUG) {
-			System.out.println("[dialmanager test] " + s);
+			System.out.println("[dialmanager_withepobjectstest] " + s);
 		}
 	}
 }

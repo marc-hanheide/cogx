@@ -38,8 +38,8 @@ import de.dfki.lt.tr.dialmanagement.data.policies.PolicyCondition;
 /**
  * Simple tests for constructing a dialogue policy
  * 
- * TODO: test for different type of ill-formed policies
- * @author plison
+ * TODO: test for different types of ill-formed policies
+ * @author Pierre Lison (plison@dfki.de)
  *
  */
 public class DialoguePolicyTest {
@@ -48,12 +48,13 @@ public class DialoguePolicyTest {
 	public static boolean LOGGING = true;
 	public static boolean DEBUG = true;
 	
-	
+	// parameters for the test
 	public static int MAX_LEAVES = 6;
 	public static int MAX_DEPTH = 4;
 	public static int NB_POLICIES = 50;
 	
-	public static int count = 0;
+	// counts for forging identifiers
+	private static int count = 0;
 	 
 	
 	
@@ -170,7 +171,7 @@ public class DialoguePolicyTest {
 	 */
 	private static void log (String s) {
 		if (LOGGING) {
-			System.out.println("[dialmanager test] " + s);
+			System.out.println("[dialpolicytest] " + s);
 		}
 	}
 
@@ -180,7 +181,7 @@ public class DialoguePolicyTest {
 	 */
 	private static void debug (String s) {
 		if (DEBUG) {
-			System.out.println("[dialmanager test] " + s);
+			System.out.println("[dialpolicytest] " + s);
 		}
 	}
 

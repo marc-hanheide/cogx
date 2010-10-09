@@ -21,15 +21,18 @@
 
 package de.dfki.lt.tr.dialmanagement.utils;
 
-
-//JUnit
-
 import org.junit.Test;
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
 
 
+/**
+ * Test for reading a text policy file
+ * 
+ * @author Pierre Lison (plison@dfki.de)
+ * @version 09/10/2010
+ */
 public class TextPolicyReaderTest {
 
 	// logging and debugging
@@ -41,12 +44,36 @@ public class TextPolicyReaderTest {
 	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/actions1.txt";
 
 	
+	/**
+	 * Reads a simple policy
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void readSimplePolicy() throws DialogueException {
 		
-		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
-		
-		policy.ensureWellFormedPolicy();
-		
+		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);	
+		policy.ensureWellFormedPolicy();	
+	}
+	
+	
+	/**
+	 * Logging
+	 * @param s
+	 */
+	private static void log (String s) {
+		if (LOGGING) {
+			System.out.println("[textpolicyreadertest] " + s);
+		}
+	}
+	
+	/**
+	 * Debugging
+	 * @param s
+	 */
+	private static void debug (String s) {
+		if (DEBUG) {
+			System.out.println("[textpolicyreadertest] " + s);
+		}
 	}
 }

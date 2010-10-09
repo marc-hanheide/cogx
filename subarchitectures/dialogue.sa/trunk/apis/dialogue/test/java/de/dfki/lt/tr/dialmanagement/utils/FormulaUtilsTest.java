@@ -50,6 +50,11 @@ public class FormulaUtilsTest {
 	public static boolean LOGGING = true;
 	public static boolean DEBUG = true;
 
+	/**
+	 * Disjunctive formula
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void simpleDisjFormula () throws DialogueException {
 		String str = "blabla v bloblo v blibli";
@@ -62,7 +67,11 @@ public class FormulaUtilsTest {
 		assertEquals (((ComplexFormula)formula).op, BinaryOp.disj);
 	}
 	
-	
+	/**
+	 * Conjunctive formula
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void simpleConjFormula () throws DialogueException {
 		String str = "blabla ^ bloblo ^ blibli";
@@ -76,7 +85,11 @@ public class FormulaUtilsTest {
 		assertEquals (((ComplexFormula)formula).op, BinaryOp.conj);
 	}
 	
-	
+	/**
+	 * Simple elementary formula (within quotes)
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void simpleElementaryFormula () throws DialogueException {
 		String str = "\"blabla bla bli blou\"";
@@ -89,7 +102,11 @@ public class FormulaUtilsTest {
 	}
 	
 	
-
+	/**
+	 * Simple elementary formula (should fail to parse)
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void simpleElementaryFormula2 () throws DialogueException {
 		String str = "blabla bla bli blou BLO";		
@@ -102,7 +119,11 @@ public class FormulaUtilsTest {
 		
 	}
 	
-	
+	/**
+	 * Formula with embeddings
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void embeddedFormula() throws DialogueException {
 		String str = "(blabla v (blibli ^ blo ^ bla) v blibli)";
@@ -123,6 +144,11 @@ public class FormulaUtilsTest {
 	}
 	
 	
+	/**
+	 * Simple modal formula
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void simpleModalFormula() throws DialogueException {
 		
@@ -139,6 +165,11 @@ public class FormulaUtilsTest {
 	}
 	
 	
+	/**
+	 * Modal formula
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void simpleModalFormula2() throws DialogueException {
 		
@@ -155,7 +186,11 @@ public class FormulaUtilsTest {
 	}
 	
 	
-	
+	/**
+	 * Complex formula
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void complexFormula() throws DialogueException {
 		
@@ -178,7 +213,11 @@ public class FormulaUtilsTest {
 
 	}
 	
-	
+	/**
+	 * Complex formula 2
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void complexFormula2() throws DialogueException {
 		String str = "<Op1>(prop1 ^ prop2) ^ <Op2>(prop3 v prop4)";
@@ -188,6 +227,11 @@ public class FormulaUtilsTest {
 	}
 	
 	
+	/**
+	 * Modal formula, once again
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void modalFormula() throws DialogueException {
 		
@@ -201,7 +245,11 @@ public class FormulaUtilsTest {
 		assertEquals(((ComplexFormula)((ModalFormula)formula).form).forms.size(), 2);
 	}
 	
-
+	/**
+	 * Formula under brackets
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void brackettedFormula() throws DialogueException {
 		
@@ -214,6 +262,11 @@ public class FormulaUtilsTest {
 		assertEquals (((ComplexFormula)formula).forms.size(),2);
 	}
 	
+	/**
+	 * Negated formula
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void negatedFormula() throws DialogueException {
 		
@@ -227,6 +280,11 @@ public class FormulaUtilsTest {
 	}
 	
 	
+	/**
+	 * Integer formula
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void intFormula() throws DialogueException {
 		
@@ -241,7 +299,11 @@ public class FormulaUtilsTest {
 	}
 	
 	
-	
+	/**
+	 * Float formula
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void floatFormula() throws DialogueException {
 		
@@ -259,7 +321,11 @@ public class FormulaUtilsTest {
 	
 	
 	
-	
+	/**
+	 * Boolean formula
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void booleanFormula() throws DialogueException {
 		
@@ -274,7 +340,11 @@ public class FormulaUtilsTest {
 	}
 	
 	
-	
+	/**
+	 * Comparing the value of two formulae
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test 
 	public void compareFormula1() throws DialogueException {
 		
@@ -287,6 +357,11 @@ public class FormulaUtilsTest {
 		assertTrue(FormulaUtils.subsumes(formula1, formula2));
 	}
 	
+	/**
+	 * Comparing the value of two formulae
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void compareFormula2() throws DialogueException {
 		
@@ -299,6 +374,12 @@ public class FormulaUtilsTest {
 		assertFalse(FormulaUtils.subsumes(formula1, formula2));
 	}
 	
+
+	/**
+	 * Comparing the value of two formulae
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void compareFormula3() throws DialogueException {
 		
@@ -313,6 +394,11 @@ public class FormulaUtilsTest {
 	}
 	
 
+	/**
+	 * Comparing the value of two formulae
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void compareFormula4() throws DialogueException {
 		
@@ -327,6 +413,12 @@ public class FormulaUtilsTest {
 	}
 	
 	
+
+	/**
+	 * Comparing the value of two formulae
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void compareFormula5() throws DialogueException {
 		
@@ -339,6 +431,11 @@ public class FormulaUtilsTest {
 		assertTrue(FormulaUtils.subsumes(formula1, formula2));
 	}
 	
+	/**
+	 * Creating an underspecified formula
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void underspecifiedFormulaWithArgument1() throws DialogueException {
 		String str = "*";
@@ -347,6 +444,12 @@ public class FormulaUtilsTest {
 		assertTrue(formula instanceof UnderspecifiedFormula);
 	}
 	
+
+	/**
+	 * Creating an underspecified formula with explicit argument
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void underspecifiedFormulaWithArgument2() throws DialogueException {
 		String str = "%1";
@@ -356,6 +459,11 @@ public class FormulaUtilsTest {
 		assertEquals(((UnderspecifiedFormula)formula).id, 1);
 	}
 	
+	/**
+	 * Creating an underspecified formula with explicit argument
+	 * 
+	 * @throws DialogueException
+	 */
 	@Test
 	public void underspecifiedFormulaWithArgument3() throws DialogueException {
 		String str = "Test ^ %1";
@@ -365,5 +473,25 @@ public class FormulaUtilsTest {
 		assertTrue (((ComplexFormula)formula).forms.get(1) instanceof UnderspecifiedFormula);
 		assertEquals(((UnderspecifiedFormula)((ComplexFormula)formula).forms.get(1)).id, 1);
 	}
-		
+
+
+	/**
+	 * Logging
+	 * @param s
+	 */
+	private static void log (String s) {
+		if (LOGGING) {
+			System.out.println("[formulautilstest] " + s);
+		}
+	}
+	
+	/**
+	 * Debugging
+	 * @param s
+	 */
+	private static void debug (String s) {
+		if (DEBUG) {
+			System.out.println("[formulautilstest] " + s);
+		}
+	}
 }
