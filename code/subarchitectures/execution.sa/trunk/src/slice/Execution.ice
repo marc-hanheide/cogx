@@ -166,6 +166,18 @@ module execution {
 	cast::cdl::WorkingMemoryAddress coneAddress;
       };
 
+      /**
+       * Process all cones at the given place.
+       */
+      class ProcessConesAtPlace extends Action {
+	/**
+	 * The ID of the place.
+	 */
+	long placeID;
+      };
+
+
+
       class SingleBeliefAction extends Action {
 	cast::cdl::WorkingMemoryAddress beliefAddress;	
       };
