@@ -15,20 +15,20 @@ import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.IntFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 /**
  * @author marc
  *
  */
-public class PlaceTransferFunction extends SimpleDiscreteTransferFunction<Place, PerceptBelief> {
+public class PlaceTransferFunction extends SimpleDiscreteTransferFunction<Place, GroundedBelief> {
 
 	public static final String PLACE_ID_ID = "PlaceId";
 	public static final String PLACE_STATUS_ID = "placestatus";
 
 	public PlaceTransferFunction(ManagedComponent component) {
-		super(component, Logger.getLogger(PlaceTransferFunction.class), PerceptBelief.class);
+		super(component, Logger.getLogger(PlaceTransferFunction.class), GroundedBelief.class);
 	}
 
 	@Override

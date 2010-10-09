@@ -15,22 +15,22 @@ import de.dfki.lt.tr.beliefs.data.formulas.BoolFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 
 public class ConnectivityTransferFunction extends
-		DependentDiscreteTransferFunction<ConnectivityPathProperty, PerceptBelief> {
+		DependentDiscreteTransferFunction<ConnectivityPathProperty, GroundedBelief> {
 
 	static final String ATTR_CONNECTED = "connected";
 
 	/**
-	 * @param perceptBeliefs
+	 * @param GroundedBeliefs
 	 */
 	public ConnectivityTransferFunction(ManagedComponent component,
-			WMView<PerceptBelief> perceptBeliefs) {
-		super(component, perceptBeliefs, Logger
-				.getLogger(ConnectivityTransferFunction.class), PerceptBelief.class);
+			WMView<GroundedBelief> GroundedBeliefs) {
+		super(component, GroundedBeliefs, Logger
+				.getLogger(ConnectivityTransferFunction.class), GroundedBelief.class);
 
 	}
 
@@ -42,9 +42,9 @@ public class ConnectivityTransferFunction extends
 	 * cast.cdl.WorkingMemoryChange, Ice.ObjectImpl)
 	 */
 	@Override
-	public PerceptBelief create(WorkingMemoryAddress newAddr,
+	public GroundedBelief create(WorkingMemoryAddress newAddr,
 			WorkingMemoryChange wmc, ConnectivityPathProperty from) {
-		PerceptBelief bel = super.create(newAddr, wmc, from);
+		GroundedBelief bel = super.create(newAddr, wmc, from);
 		bel.type = "relation";
 		return bel;
 	}
