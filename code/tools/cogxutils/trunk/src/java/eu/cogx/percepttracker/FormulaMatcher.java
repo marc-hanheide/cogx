@@ -196,11 +196,11 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 			Formula ft = entry.getValue().getDistribution().getMostLikely();
 			Formula fo = otherEntry.getDistribution().getMostLikely();
 
+			logger.debug("ft=" + ft + ", fo=" + fo);
 			// if any Formula didn't have a likely value, we take this as
 			// acceptable and continue
 			if (ft == null || fo == null)
 				continue;
-			logger.debug("ft=" + ft.toString() + ", fo=" + fo.toString());
 
 			// try {
 			// if both Formulas are of different type, they never match
@@ -214,12 +214,19 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 				// this pointer
 				WorkingMemoryAddress lookUpGroundedBelief;
 				try {
-					lookUpGroundedBelief = wm2wmMap.waitFor(wmPointer.pointer);
-					assert (lookUpGroundedBelief != null);
-					// it should be always valid here!
-					if (!lookUpGroundedBelief
-							.equals(((PointerFormula) fo.get()).pointer))
-						return false;
+					if (wmPointer.type.equals(CASTUtils.typeName(m_fromCls))) {
+						lookUpGroundedBelief = wm2wmMap
+								.waitFor(wmPointer.pointer);
+						assert (lookUpGroundedBelief != null);
+						// it should be always valid here!
+						if (!lookUpGroundedBelief.equals(((PointerFormula) fo
+								.get()).pointer))
+							return false;
+					} else {
+						if (!wmPointer.pointer.equals(((PointerFormula) fo
+								.get()).pointer))
+							return false;
+					}
 				} catch (ValueNotAvailableException e) {
 					logger.warn("couldn't find "
 							+ CASTUtils.toString(wmPointer.pointer), e);
