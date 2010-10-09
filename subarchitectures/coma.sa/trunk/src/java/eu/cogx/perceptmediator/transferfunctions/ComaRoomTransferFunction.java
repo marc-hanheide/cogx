@@ -49,12 +49,6 @@ public class ComaRoomTransferFunction extends
 				.put(ROOM_ID, IntFormula.create((int) from.roomId)
 						.getAsFormula());
 
-		if (from.categories.massFunction == null) {
-			component.getLogger().info(
-					"Coma room without a category yet, not mediating!");
-			return null;
-		}
-		logger.info(IceXMLSerializer.toXMLString(from));
 		// BoolFormula isExplored =
 		// BoolFormula.create(from.status==PlaceStatus.TRUEPLACE);
 		// result.put("placestatus",
@@ -68,15 +62,20 @@ public class ComaRoomTransferFunction extends
 			CASTIndependentFormulaDistributionsBelief<PerceptBelief> belief,
 			WorkingMemoryChange wmc, ComaRoom from) {
 		super.fillBelief(belief, wmc, from);
+		if (from.categories.massFunction == null) {
+			component.getLogger().info(
+					"Coma room without a category yet, not mediating!");
+			return;
+		}
 		logger.info("fill belief with coma categories");
 		IndependentFormulaDistributions distr = belief.getContent();
 		FormulaDistribution fd = FormulaDistribution.create();
 		for (JointProbabilityValue jp : from.categories.massFunction) {
 			String value = ((SpatialProbabilities.StringRandomVariableValue) (jp.variableValues[0])).value;
-			logger.info("adding " + value + " ("+jp.probability+")");
+			logger.info("adding " + value + " (" + jp.probability + ")");
 			fd.add(value, jp.probability);
 		}
-		assert(fd.size()>0);
+		assert (fd.size() > 0);
 		distr.put("category", fd);
 	}
 
