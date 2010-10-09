@@ -57,7 +57,7 @@ public class PlaceMonitor extends ManagedComponent {
 	public PlaceMonitor() {
 		return;
 	}
-	private static final int TIME_TO_WAIT_TO_SETTLE = 100;
+	private static final int TIME_TO_WAIT_TO_SETTLE = 1000;
 	
 	private String m_comareasoner_component_name;
 	private ComaReasonerInterfacePrx m_comareasoner;
