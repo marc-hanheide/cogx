@@ -45,7 +45,7 @@ public class PolicyUtils {
 		LinkedList<PolicyEdge> sortedEdges = new LinkedList<PolicyEdge>();
 		
 		for (PolicyEdge edge: unsortedEdges) {
-			if (edge.getObservation().isUnderspecified() || edge.getObservation().isUnknown() ) {
+			if (edge.getCondition().isUnderspecified() || edge.getCondition().isUnknown() ) {
 				sortedEdges.addLast(edge);
 			}
 			else {
@@ -60,8 +60,8 @@ public class PolicyUtils {
 	public static HashMap<Integer,dFormula> extractFilledArguments (Observation obs, PolicyEdge edge) {
 		
 		for (FormulaWrapper alternative : obs.getAlternatives()) {		
-			if (alternative.equals(edge.getObservation())) {
-				return extractFilledArguments (edge.getObservation().getContent(), alternative.getContent()) ;
+			if (alternative.equals(edge.getCondition())) {
+				return extractFilledArguments (edge.getCondition().getContent(), alternative.getContent()) ;
 			}
 		}
 		return new HashMap<Integer,dFormula>();
@@ -119,4 +119,25 @@ public class PolicyUtils {
 		return filledArguments;
 	}
 	
+
+
+	/**
+	 * Logging
+	 * @param s
+	 */
+	private static void log (String s) {
+		if (LOGGING) {
+			System.out.println("[policyutils] " + s);
+		}
+	}
+
+	/**
+	 * Debugging
+	 * @param s
+	 */
+	private static void debug (String s) {
+		if (DEBUG) {
+			System.out.println("[policyutils] " + s);
+		}
+	}
 }

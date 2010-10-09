@@ -153,4 +153,25 @@ public class Observation {
 		return result.substring(0, result.length() -2) + "}";
 	}
 	
+
+
+	/**
+	 * Logging
+	 * @param s
+	 */
+	private static void log (String s) {
+		if (LOGGING) {
+			System.out.println("[observation] " + s);
+		}
+	}
+
+	/**
+	 * Debugging
+	 * @param s
+	 */
+	private static void debug (String s) {
+		if (DEBUG) {
+			System.out.println("[observation] " + s);
+		}
+	}
 }

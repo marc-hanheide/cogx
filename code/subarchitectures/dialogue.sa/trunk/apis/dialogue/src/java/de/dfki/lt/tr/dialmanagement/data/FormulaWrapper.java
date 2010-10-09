@@ -33,10 +33,10 @@ import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 
 /**
- * Wrapper around the formula of an epistemic object, to provide some additional
- * functionalities
+ * Wrapper around the formula of an epistemic object, providing additional 
+ * functionalities for dialogue management
  *  
- * @author Pierre Lison
+ * @author Pierre Lison (plison@dfki.de)
  * @version 7/10/2010
  *
  */
@@ -159,4 +159,25 @@ public class FormulaWrapper {
 		return FormulaUtils.getString(content);
 	}
 	
+
+
+	/**
+	 * Logging
+	 * @param s
+	 */
+	private static void log (String s) {
+		if (LOGGING) {
+			System.out.println("[formwrapper] " + s);
+		}
+	}
+
+	/**
+	 * Debugging
+	 * @param s
+	 */
+	private static void debug (String s) {
+		if (DEBUG) {
+			System.out.println("[formwrapper] " + s);
+		}
+	}
 }

@@ -172,7 +172,7 @@ public class PolicyNode {
 	
 		Vector<PolicyEdge> edges = new Vector<PolicyEdge>();
 		for (PolicyEdge edge: outgoingEdges) {
-			if (edge.matchesWithObservation(obs)) {
+			if (edge.matchesObservation(obs)) {
 				edges.add(edge);
 			}
 		}

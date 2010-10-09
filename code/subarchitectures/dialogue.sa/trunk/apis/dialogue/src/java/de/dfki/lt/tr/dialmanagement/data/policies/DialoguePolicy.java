@@ -229,7 +229,7 @@ public class DialoguePolicy {
 		for (String nodeId : nodes.keySet()) {
 			PolicyNode node = nodes.get(nodeId);		
 			for (PolicyEdge edge: node.getAllOutgoingObservations()) {			
-				result += edge.getSourceNode().getId() + " -- " + edge.getObservation().toString() + 
+				result += edge.getSourceNode().getId() + " -- " + edge.getCondition().toString() + 
 				" --> " + edge.getTargetNode().getId() + "\n";			
 			}
 		}
@@ -295,7 +295,7 @@ public class DialoguePolicy {
 		
 		for (PolicyEdge e : edges.values()) {
 			
-			if (e.getObservation() == null) {
+			if (e.getCondition() == null) {
 				throw new DialogueException("Warning: no observation specified in edge");
 			}
 		}

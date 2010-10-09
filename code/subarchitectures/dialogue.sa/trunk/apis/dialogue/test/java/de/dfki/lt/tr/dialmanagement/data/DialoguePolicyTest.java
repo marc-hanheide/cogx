@@ -32,7 +32,7 @@ import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyEdge;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyNode;
-import de.dfki.lt.tr.dialmanagement.data.policies.PolicyObservation;
+import de.dfki.lt.tr.dialmanagement.data.policies.PolicyCondition;
 
 
 /**
@@ -72,7 +72,7 @@ public class DialoguePolicyTest {
 
 		PolicyNode an2 = new PolicyNode("end", new PolicyAction("end"));
 		policy.addNode(an2);
-		PolicyEdge newEdge = new PolicyEdge("edge", an1, an2, new PolicyObservation("","edge", 1.0f, 1.0f));
+		PolicyEdge newEdge = new PolicyEdge("edge", an1, an2, new PolicyCondition("","edge", 1.0f, 1.0f));
 		newEdge.setSourceNode(an1);
 		newEdge.setTargetNode(an2);
 		policy.addEdge(newEdge, an1, an2);
@@ -135,7 +135,7 @@ public class DialoguePolicyTest {
 	    
 	    for (int i = 0; i < nbLeaves && depth > 0 ; i++) {
 	    	
-	    	PolicyEdge nextObs = new PolicyEdge(getNewId(), new PolicyObservation("",getNewId(), 1.0f, 1.0f));
+	    	PolicyEdge nextObs = new PolicyEdge(getNewId(), new PolicyCondition("",getNewId(), 1.0f, 1.0f));
 	    	PolicyNode nextNode = new PolicyNode(getNewId(), new PolicyAction(getNewId()));
 	    	policy.addNode(nextNode);
 	    	nextObs.setTargetNode(nextNode);

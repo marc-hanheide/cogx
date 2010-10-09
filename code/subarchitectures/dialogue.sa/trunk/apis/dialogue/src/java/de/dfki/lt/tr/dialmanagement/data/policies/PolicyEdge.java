@@ -28,7 +28,7 @@ import de.dfki.lt.tr.dialmanagement.data.Observation;
  * (1) an identifier, 
  * (2) a source node, 
  * (3) a target node,
- * and (4) an associated observation.
+ * and (4) an associated condition on possible observations.
  * 
  * TODO: have a method to verify that the edge if complete
  * 
@@ -51,23 +51,23 @@ public class PolicyEdge {
 	// the target node
 	private PolicyNode out;
 
-	// the observation associated with the edge
-	private PolicyObservation obs;
+	// the condition associated with the edge
+	private PolicyCondition condition;
 	
 	
 	/**
-	 * Constructs a new edge from an identifier, a source node, a target node, and an observation
+	 * Constructs a new edge from an identifier, a source node, a target node, and an condition
 	 * 
 	 * @param id the edge identifier
 	 * @param in the source node
 	 * @param out the target node
-	 * @param obs the observation
+	 * @param condition the condition
 	 */
-	public PolicyEdge (String id, PolicyNode in, PolicyNode out, PolicyObservation obs)  {			
+	public PolicyEdge (String id, PolicyNode in, PolicyNode out, PolicyCondition condition)  {			
 		this.id = id;
 		this.in = in;
 		this.out = out;
-		this.obs = obs;
+		this.condition = condition;
 	}
 	
 	/**
@@ -82,13 +82,13 @@ public class PolicyEdge {
 	}
 	
 	/**
-	 * Constructs a new edge with an identifier and an observation
+	 * Constructs a new edge with an identifier and an condition
 	 * 
 	 * @param id the edge identifier
-	 * @param obs the observation
+	 * @param condition the condition
 	 */
-	public PolicyEdge (String id, PolicyObservation obs){
-		this(id,null,null,obs);
+	public PolicyEdge (String id, PolicyCondition condition){
+		this(id,null,null,condition);
 	}
 		
 	/**
@@ -97,7 +97,7 @@ public class PolicyEdge {
 	 * @return the edge copy
 	 */
 	public PolicyEdge copy () {
-		return new PolicyEdge(id, in, out, obs);
+		return new PolicyEdge(id, in, out, condition);
 	}
 	
 	/**
@@ -129,20 +129,12 @@ public class PolicyEdge {
 	
 	
 	/**
-	 * Sets the policy observation for the edge
+	 * Sets the policy condition for the edge
 	 * 
-	 * @param obs the observation
+	 * @param condition the condition
 	 */
-	public void setObservation(PolicyObservation obs) {
-		this.obs = obs;
-	}
-	
-	/**
-	 * Returns the incoming action node (i.e. the origin of the edge)
-	 * @return the incoming action node
-	 */
-	public PolicyNode getIncomingAction() {
-		return in;
+	public void setCondition(PolicyCondition condition) {
+		this.condition = condition;
 	}
 	
 	
@@ -164,23 +156,23 @@ public class PolicyEdge {
 	
 	
 	/**
-	 * Returns the observation contained in the edge
-	 * @return the observation
+	 * Returns the condition contained in the edge
+	 * @return the condition
 	 */
-	public PolicyObservation getObservation() {
-		return obs;
+	public PolicyCondition getCondition() {
+		return condition;
 	}
 	
 	
 	/**
-	 * Returns true if the policy observation contained in the edge
-	 * matches the full observation passed as argument
+	 * Returns true if the policy condition contained in the edge
+	 * matches the provided observation
 	 * 
-	 * @param fullObs the full, runtime observation
-	 * @return true if the two observations match, false otherwise
+	 * @param obs the observation
+	 * @return true if the condition and observation match, false otherwise
 	 */
-	public boolean matchesWithObservation (Observation fullObs) {
-		return obs.matchesWithObservation(fullObs);
+	public boolean matchesObservation (Observation obs) {
+		return condition.matchesObservation(obs);
 	}
 	
 		
@@ -196,8 +188,8 @@ public class PolicyEdge {
 	 * Returns a string representation of the edge
 	 */
 	public String toString() {
-		if (obs != null) {
-		return obs.toString();
+		if (condition != null) {
+		return condition.toString();
 		}
 		else {
 			return "voidEdge";

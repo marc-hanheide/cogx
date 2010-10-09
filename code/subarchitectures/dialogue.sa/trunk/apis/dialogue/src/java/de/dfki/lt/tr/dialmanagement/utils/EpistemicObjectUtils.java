@@ -324,4 +324,26 @@ final class FormulaProbPairsComparator implements Comparator<FormulaProbPair> {
 		return 0;
 	}
 	
+	
+
+
+	/**
+	 * Logging
+	 * @param s
+	 */
+	private static void log (String s) {
+		if (LOGGING) {
+			System.out.println("[epobjectutils] " + s);
+		}
+	}
+
+	/**
+	 * Debugging
+	 * @param s
+	 */
+	private static void debug (String s) {
+		if (DEBUG) {
+			System.out.println("[epobjectutils] " + s);
+		}
+	}
 }
