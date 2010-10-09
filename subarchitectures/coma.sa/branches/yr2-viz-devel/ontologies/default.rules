@@ -1,0 +1,73 @@
+#------------------------------------------------------------------
+# OWL ABox reasoning
+# 
+# Default reasoning for ABox individuals 
+#
+# author: Hendrik Zender, zender@dfki.de
+# date: 2010-02-20, started: 2010-02-02
+#------------------------------------------------------------------
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix dora: <http://dora.cogx.eu#>.
+@prefix default: <http://dora.cogx.eu/default#>.
+
+
+
+#------------------------------------------------------------------
+# Tabling directives
+#------------------------------------------------------------------
+
+#-> tableAll().
+
+#-> table(rdf:type).
+#-> table(owl:sameAs).
+#-> table(owl:differentFrom).
+
+#------------------------------------------------------------------
+# OWL rules
+#------------------------------------------------------------------
+
+# -> (default:DefaultStatement rdfs:subClassOf rdf:Statement)
+
+
+[defaultsForIndividuals:
+	(?definedClass rdfs:subClassOf ?def),
+	(?def rdf:type owl:Restriction),
+	(?def owl:onProperty ?prop),
+	(?def ?restr ?restrictedClass),
+	(?restrictedClass rdfs:subClassOf owl:Thing),
+	notEqual(?definedClass, owl:Nothing),
+	notEqual(?restr, rdfs:subClassOf),
+	(?ind1 rdf:type ?definedClass),
+	(?ind2 rdf:type ?restrictedClass),
+	noValue(?y rdf:type default:DefaultStatement),
+	noValue(?y rdf:subject ?ind1),
+	noValue(?y rdf:predicate ?prop),
+	noValue(?y rdf:object ?ind2),
+	makeTemp(?x)
+	->
+	(?x rdf:type default:DefaultStatement),
+	(?x rdf:subject ?ind1),
+	(?x rdf:predicate ?prop),
+	(?x rdf:object ?ind2)]
+	
+[inverseDefaults: 
+	(?def rdf:type default:DefaultStatement),
+	(?def rdf:subject ?ind1),
+	(?def rdf:predicate ?prop),
+	(?def rdf:object ?ind2),
+	(?prop owl:inverseOf ?inverseProp),
+	noValue(?y rdf:type default:DefaultStatement),
+	noValue(?y rdf:subject ?ind2),
+	noValue(?y rdf:predicate ?inverseProp),
+	noValue(?y rdf:object ?ind1),
+	makeTemp(?x)
+	->
+	(?x rdf:type default:DefaultStatement),
+	(?x rdf:subject ?ind2),
+	(?x rdf:predicate ?inverseProp),
+	(?x rdf:object ?ind1)]
+	
