@@ -97,6 +97,52 @@ public class EpistemicObjectUtils {
 	}
 	
 	
+	
+	
+	/**
+	 * Create a simple private intention with a single postcondition 
+	 * associated with a probability value
+	 * 
+	 * @param postcondition the postcondition
+	 * @param prob the probability of the postcondition
+	 * @return the newly constructed private intention
+	 * @throws DialogueException if postcondition is ill-formed
+	 */
+	public static Intention createSimplePrivateIntention 
+		(dFormula postcondition, float prob) throws DialogueException {
+		
+		HashMap<dFormula,Float> postconditions = new HashMap<dFormula,Float>();
+		postconditions.put(postcondition, prob);
+		return createPrivateIntention(postconditions);
+	}
+	
+	
+
+	/**
+	 * Create a private intention containing a list of postconditions (each of which is associated
+	 * with a probability value)
+	 * 
+	 * @param postconditions a hashmap mapping each postcondition to its probability value
+	 * @return the newly constructed private intention
+	 * @throws DialogueException if formulae are ill-formed
+	 */
+	public static Intention createPrivateIntention 
+	(HashMap<dFormula,Float> postconditions) throws DialogueException {
+		
+	    SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
+		PrivateEpistemicStatus priv = new PrivateEpistemicStatus ("robot");
+		
+		List<IntentionalContent> intents = new LinkedList<IntentionalContent>();
+		
+		for (dFormula formula: postconditions.keySet()) {
+			intents.add((new IntentionalContent(Arrays.asList("robot"), 
+					FormulaUtils.constructFormula(""), formula, postconditions.get(formula))));
+		}
+		return new Intention(frame, priv, forgeNewId(), intents);
+	}
+	
+	
+	
 	/**
 	 * Create an attributed communicative intention containing a list of postconditions 
 	 * (each of which is associated with a probability value)

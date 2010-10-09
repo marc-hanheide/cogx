@@ -28,6 +28,7 @@ import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
+import de.dfki.lt.tr.dialmanagement.utils.XMLPolicyReader;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import java.util.HashMap;
 
@@ -47,9 +48,7 @@ public class DialogueManagement extends ManagedComponent {
 	DialogueManager manager;
 
 	// default parameters for the dialogue manager
-	String policyFile = "subarchitectures/dialogue.sa/config/policies/yr2/testpolicy.txt";
-	String actionsFile = "subarchitectures/dialogue.sa/config/policies/yr2/testaction.txt";
-	String observationsFile = "subarchitectures/dialogue.sa/config/policies/yr2/testobservation.txt";
+	String policyFile = "subarchitectures/dialogue.sa/config/policies/yr2/basicforwardpolicy.xml";
 
 
 	/**
@@ -58,7 +57,7 @@ public class DialogueManagement extends ManagedComponent {
 	 */
 	public DialogueManagement() {
 		try {
-			manager = new DialogueManager(TextPolicyReader.constructPolicy(policyFile, observationsFile, actionsFile));
+			manager = new DialogueManager(XMLPolicyReader.constructPolicy(policyFile));
 		}
 		catch (DialogueException e) {
 			e.printStackTrace();
@@ -78,11 +77,9 @@ public class DialogueManagement extends ManagedComponent {
 				(_config.containsKey("--actions")) && 
 				(_config.containsKey("--observations"))) {
 			try {
-				log("Provided parameters: policy=" + _config.get("--policy") + ", actions=" + _config.get("--actions") + ", observations=" + _config.get("--observations"));
+				log("Provided parameters: policy=" + _config.get("--policy"));
 				policyFile = _config.get("--policy");
-				observationsFile = _config.get("--observations") ;
-				actionsFile = _config.get("--actions");
-				manager = new DialogueManager(TextPolicyReader.constructPolicy(policyFile,observationsFile, actionsFile));
+				manager = new DialogueManager(XMLPolicyReader.constructPolicy(policyFile));
 			} catch (DialogueException e) {
 				log(e.getMessage());
 				e.printStackTrace();
@@ -185,10 +182,22 @@ public class DialogueManagement extends ManagedComponent {
 
 			// if the action is not void, adds the new intention to the WM
 			if (!action.isVoid()) {
-				CommunicativeIntention response = 
-					EpistemicObjectUtils.createSimplePrivateCommunicativeIntention((action).getContent(), 1.0f);
-				addToWorkingMemory(newDataID(), response);
-				log("new private intention successfully added to working memory");
+				
+				// if it is a communicative intention
+				if (action.getType() == PolicyAction.COMMUNICATIVE_INTENTION) {
+					CommunicativeIntention response = 
+					EpistemicObjectUtils.createSimplePrivateCommunicativeIntention((action).getContent(), 1.0f); 
+					addToWorkingMemory(newDataID(), response);
+					log("new private communicative intention successfully added to working memory");
+				}
+				
+				// and if it is a (non-communicative) intention
+				else if (action.getType() == PolicyAction.INTENTION) {
+					Intention response = 
+					EpistemicObjectUtils.createSimplePrivateIntention((action).getContent(), 1.0f); 
+					addToWorkingMemory(newDataID(), response);
+					log("new private intention successfully added to working memory");
+				}
 			}
 
 		} catch (Exception e) {

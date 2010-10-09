@@ -106,9 +106,7 @@ public class PolicyUtils {
 	 * @return  a mapping from each argument i in form1 to its value in form2
 	 */
 	public static HashMap<Integer,dFormula> extractFilledArguments (dFormula form1, dFormula form2)  {
-		
-		log("extractfilledargs: form1: " + FormulaUtils.getString(form1) + ", " + FormulaUtils.getString(form2));
-		
+				
 		HashMap<Integer,dFormula> filledArguments = new HashMap<Integer,dFormula>();
 
 		if (form1 instanceof ComplexFormula && form2 instanceof ComplexFormula) {

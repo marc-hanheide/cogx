@@ -44,6 +44,13 @@ public class PolicyAction extends FormulaWrapper {
 	public static boolean LOGGING = true;
 	public static boolean DEBUG = true;
 	
+	// the condition type
+	private int type;
+	
+	// allowed condition types
+	public static final int COMMUNICATIVE_INTENTION = 0;
+	public static final int INTENTION = 1;
+	
 	// the identifier of the action
 	private String id;
 
@@ -105,6 +112,26 @@ public class PolicyAction extends FormulaWrapper {
 	}
 	
 	
+
+	/**
+	 * Sets the type of action (within the set of allowed ones, cf. above)
+	 * 
+	 * @param type the action type
+	 */
+	public void setType (int type) {
+		if (type == COMMUNICATIVE_INTENTION || type == INTENTION) {
+			this.type = type;
+		}
+	}
+	
+	/**
+	 * Returns the type of action
+	 * @return
+	 */
+	public int getType() {
+		return type;
+	}
+	
 	/**
 	 * If the action content contains underspecified subformulae (of the form %i),
 	 * replace these with the formulae provided in "arguments"
@@ -155,7 +182,18 @@ public class PolicyAction extends FormulaWrapper {
 			return "VoidAction";
 		}
 		else {
-			return "CI[" + FormulaUtils.getString(content) + "]";
+			String str = "";
+			if (type == COMMUNICATIVE_INTENTION) {
+				str += "CI";
+			}
+			else if (type == INTENTION) {
+				str += "I";
+			}
+			else {
+				str += "CI";
+			}
+			str += "[" + FormulaUtils.getString(content) + "]";
+			return str;
 		}
 	}
 	
