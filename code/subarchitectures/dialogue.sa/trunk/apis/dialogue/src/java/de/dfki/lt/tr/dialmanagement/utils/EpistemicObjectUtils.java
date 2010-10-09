@@ -273,6 +273,27 @@ public class EpistemicObjectUtils {
 		incrCounter++;
 		return "id" + incrCounter;
 	}
+	
+
+	/**
+	 * Logging
+	 * @param s
+	 */
+	private static void log (String s) {
+		if (LOGGING) {
+			System.out.println("[epobjectutils] " + s);
+		}
+	}
+
+	/**
+	 * Debugging
+	 * @param s
+	 */
+	private static void debug (String s) {
+		if (DEBUG) {
+			System.out.println("[epobjectutils] " + s);
+		}
+	}
  }
 
 
@@ -327,23 +348,4 @@ final class FormulaProbPairsComparator implements Comparator<FormulaProbPair> {
 	
 
 
-	/**
-	 * Logging
-	 * @param s
-	 */
-	private static void log (String s) {
-		if (LOGGING) {
-			System.out.println("[epobjectutils] " + s);
-		}
-	}
-
-	/**
-	 * Debugging
-	 * @param s
-	 */
-	private static void debug (String s) {
-		if (DEBUG) {
-			System.out.println("[epobjectutils] " + s);
-		}
-	}
 }
