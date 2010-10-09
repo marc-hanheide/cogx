@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -69,6 +70,8 @@ extends AbstractDialogueComponent {
 
 	private IntentionRealization ireal;
 	private String rulesetFile = "/dev/null";
+	private String dumpFile = "/tmp/belief-model.abd";
+	private List<String> files = new LinkedList<String>();
 	private HashMap<String, EpistemicObject> epObjs = new HashMap<String, EpistemicObject>();
 
 	@Override
@@ -82,33 +85,8 @@ extends AbstractDialogueComponent {
 			}
 		});
 
-		if (rulesetFile != null) {
-			try {
-				BufferedReader f = new BufferedReader(new FileReader(rulesetFile));
-				String parentAbsPath = (new File((new File(rulesetFile)).getParent()).getCanonicalPath());
-				if (parentAbsPath == null) {
-					parentAbsPath = "";  // rulefile is in `/'
-				}
-				log("will be looking for abducer rulefiles in `" + parentAbsPath + "'");
-				String file = null;
-				while ((file = f.readLine()) != null) {
-					file = parentAbsPath + File.separator + file;
-					log("adding file " + file);
-					ireal.loadFile(file);
-				}
-				f.close();
-			}
-			catch (FileNotFoundException e) {
-				log("ruleset filename not found");
-			}
-			catch (IOException e) {
-				log("I/O exception while reading files from list");
-				e.printStackTrace();
-			}
-		}
-		else {
-			log("no ruleset to read");
-		}
+		initialiseContext();
+		files.add(dumpFile);
 
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(CommunicativeIntention.class, WorkingMemoryOperation.ADD),
@@ -125,6 +103,30 @@ extends AbstractDialogueComponent {
 	{
 		if (_config.containsKey("--ruleset")) {
 			rulesetFile = _config.get("--ruleset");
+		}
+
+		if (rulesetFile != null) {
+			try {
+				BufferedReader f = new BufferedReader(new FileReader(rulesetFile));
+				String parentAbsPath = (new File((new File(rulesetFile)).getParent()).getCanonicalPath());
+				if (parentAbsPath == null) {
+					parentAbsPath = "";  // rulefile is in `/'
+				}
+				log("will be looking for abducer rulefiles in `" + parentAbsPath + "'");
+				String file = null;
+				while ((file = f.readLine()) != null) {
+					file = parentAbsPath + File.separator + file;
+					files.add(file);
+				}
+				f.close();
+			}
+			catch (FileNotFoundException e) {
+				log("ruleset filename not found");
+			}
+			catch (IOException e) {
+				log("I/O exception while reading files from list");
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -171,6 +173,7 @@ extends AbstractDialogueComponent {
 			if (body instanceof CommunicativeIntention) {
 				CommunicativeIntention cit = (CommunicativeIntention) body;
 				log("processing an intention");
+/*
 				LinkedList<String> belIds = BeliefIntentionUtils.collectBeliefIdsInIntention(cit.intent);
 				LinkedList<dBelief> bels = new LinkedList<dBelief>();
 				for (String id : belIds) {
@@ -180,8 +183,10 @@ extends AbstractDialogueComponent {
 						bels.add(b);
 					}
 				}
+*/
+				initialiseContext();
 
-				ContentPlanningGoal protoLF = ireal.epistemicObjectsToProtoLF(wma, cit.intent, bels);
+				ContentPlanningGoal protoLF = ireal.epistemicObjectsToProtoLF(wma, cit.intent, new LinkedList<dBelief>());
 				if (protoLF != null) {
 					try {
 						log("adding proto-LF to working memory: " + LFUtils.lfToString(protoLF.lform));
@@ -199,6 +204,15 @@ extends AbstractDialogueComponent {
 		}
 		else {
 			log("no data for processing");
+		}
+	}
+
+	private void initialiseContext() {
+		log("initialising context");
+		ireal.clearContext();
+		for (String f : files) {
+			log("reading file " + f);
+			ireal.loadFile(f);
 		}
 	}
 
