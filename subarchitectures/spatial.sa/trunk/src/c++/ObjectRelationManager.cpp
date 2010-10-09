@@ -530,13 +530,13 @@ void ObjectRelationManager::runComponent()
   log("I am running!");
 
   //REMOVEME
-  readRelationsFromFile("relationFile.txt");
+//   readRelationsFromFile("relationFile.txt");
 
-  vector<string> ret =
-    computeMarginalDistribution("book");
-  for (vector<string>::iterator it = ret.begin(); it != ret.end(); it++) {
-    log(it->c_str());
-  }
+//   vector<string> ret =
+//     computeMarginalDistribution("book");
+//   for (vector<string>::iterator it = ret.begin(); it != ret.end(); it++) {
+//     log(it->c_str());
+//   }
   ///REMOVEME
 
   peekabot::GroupProxy root;
