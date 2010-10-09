@@ -6,7 +6,7 @@ package eu.cogx.perceptmediator.components;
 import SpatialProperties.AssociatedSpacePlaceholderProperty;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.components.abstr.PlacePropertyMediator;
 
 /**
@@ -25,7 +25,7 @@ public class AssociatedSpacePropertyMediator extends
 
 	@Override
 	protected boolean fillValues(
-			CASTIndependentFormulaDistributionsBelief<PerceptBelief> create,
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> create,
 			AssociatedSpacePlaceholderProperty from) {
 		FormulaDistribution fd = FormulaDistribution.create();
 		fd.add((float) getFirstPropertyValue(from), 1.0);

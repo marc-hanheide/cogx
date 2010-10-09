@@ -19,7 +19,7 @@ import de.dfki.lt.tr.beliefs.data.formulas.BoolFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.AgentMatchingFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
@@ -29,19 +29,19 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
  * 
  */
 public class PlaceContainmentAgentTransferFunction extends
-		DependentDiscreteTransferFunction<PlaceContainmentAgentProperty, PerceptBelief> {
+		DependentDiscreteTransferFunction<PlaceContainmentAgentProperty, GroundedBelief> {
 
 	public PlaceContainmentAgentTransferFunction(ManagedComponent component,
-			WMView<PerceptBelief> allBeliefs) {
+			WMView<GroundedBelief> allBeliefs) {
 		super(component, allBeliefs, Logger
-				.getLogger(PlaceContainmentAgentTransferFunction.class), PerceptBelief.class);
+				.getLogger(PlaceContainmentAgentTransferFunction.class), GroundedBelief.class);
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public PerceptBelief create(WorkingMemoryAddress newAddr,
+	public GroundedBelief create(WorkingMemoryAddress newAddr,
 			WorkingMemoryChange wmc, PlaceContainmentAgentProperty from) {
-		PerceptBelief bel = super.create(newAddr, wmc, from);
+		GroundedBelief bel = super.create(newAddr, wmc, from);
 		bel.type = "relation";
 		return bel;
 	}

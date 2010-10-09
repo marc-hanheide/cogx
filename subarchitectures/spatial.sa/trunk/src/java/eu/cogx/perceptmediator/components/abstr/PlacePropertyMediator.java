@@ -22,7 +22,7 @@ import castutils.castextensions.WMContentWaiter;
 import castutils.castextensions.WMEventQueue;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 
 /**
@@ -32,11 +32,11 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 public abstract class PlacePropertyMediator<From extends PlaceProperty> extends
 		ManagedComponent {
 
-	private final WMView<PerceptBelief> allPercepts;
+	private final WMView<GroundedBelief> allPercepts;
 
 	private WMEventQueue entryQueue;
 
-	private final WMContentWaiter<PerceptBelief> waitingBeliefReader;
+	private final WMContentWaiter<GroundedBelief> waitingBeliefReader;
 	/**
 	 * the from type
 	 */
@@ -48,8 +48,8 @@ public abstract class PlacePropertyMediator<From extends PlaceProperty> extends
 	public PlacePropertyMediator(Class<From> fromType) {
 		super();
 		this.fromType = fromType;
-		this.allPercepts = WMView.create(this, PerceptBelief.class);
-		this.waitingBeliefReader = new WMContentWaiter<PerceptBelief>(
+		this.allPercepts = WMView.create(this, GroundedBelief.class);
+		this.waitingBeliefReader = new WMContentWaiter<GroundedBelief>(
 				allPercepts);
 		entryQueue = new WMEventQueue();
 	}
@@ -64,7 +64,7 @@ public abstract class PlacePropertyMediator<From extends PlaceProperty> extends
 	}
 
 	protected abstract boolean fillValues(
-			CASTIndependentFormulaDistributionsBelief<PerceptBelief> create,
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> create,
 			From from);
 
 	/*
@@ -82,7 +82,7 @@ public abstract class PlacePropertyMediator<From extends PlaceProperty> extends
 					case ADD:
 					case OVERWRITE: {
 						From from = getMemoryEntry(ev.address, fromType);
-						Entry<WorkingMemoryAddress, PerceptBelief> referredPlace = waitingBeliefReader
+						Entry<WorkingMemoryAddress, GroundedBelief> referredPlace = waitingBeliefReader
 								.read(new PlaceMatchingFunction(from.placeId));
 						assert (referredPlace != null);
 						assert (referredPlace.getKey() != null);
@@ -90,13 +90,13 @@ public abstract class PlacePropertyMediator<From extends PlaceProperty> extends
 						try {
 							lockEntry(referredPlace.getKey(),
 									WorkingMemoryPermissions.LOCKEDOD);
-							PerceptBelief pb = getMemoryEntry(referredPlace
-									.getKey(), PerceptBelief.class);
+							GroundedBelief pb = getMemoryEntry(referredPlace
+									.getKey(), GroundedBelief.class);
 							debug("got referred place: "
 									+ referredPlace.getKey().id);
 							if (fillValues(
 									CASTIndependentFormulaDistributionsBelief
-											.create(PerceptBelief.class, pb),
+											.create(GroundedBelief.class, pb),
 									from)) {
 								overwriteWorkingMemory(referredPlace.getKey(),
 										pb);

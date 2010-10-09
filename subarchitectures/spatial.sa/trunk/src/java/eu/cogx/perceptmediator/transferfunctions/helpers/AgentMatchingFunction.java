@@ -8,14 +8,15 @@ import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 
 /**
  * @author marc
  * 
  */
 public class AgentMatchingFunction implements
-		ContentMatchingFunction<PerceptBelief> {
+		ContentMatchingFunction<dBelief> {
 
 	long agentId;
 
@@ -31,11 +32,11 @@ public class AgentMatchingFunction implements
 	 * (Ice.ObjectImpl)
 	 */
 	@Override
-	public boolean matches(PerceptBelief r) {
+	public boolean matches(dBelief r) {
 		if (r.type.equals("Robot")) {
 			assert (r.content instanceof CondIndependentDistribs);
-			IndependentFormulaDistributionsBelief<PerceptBelief> b = IndependentFormulaDistributionsBelief
-					.create(PerceptBelief.class, r);
+			IndependentFormulaDistributionsBelief<GroundedBelief> b = IndependentFormulaDistributionsBelief
+					.create(GroundedBelief.class, r);
 			FormulaDistribution fv = b.getContent().get("AgentId");
 			Formula mostLikelyPlace = fv.getDistribution().getMostLikely();
 			int idVal = mostLikelyPlace.getInteger();

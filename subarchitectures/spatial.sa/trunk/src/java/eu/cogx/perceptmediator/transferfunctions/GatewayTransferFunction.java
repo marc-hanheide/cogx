@@ -15,34 +15,35 @@ import de.dfki.lt.tr.beliefs.data.formulas.BoolFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 
-public class GatewayTransferFunction
-		extends
-		DependentDiscreteTransferFunction<GatewayPlaceProperty, PerceptBelief> {
+public class GatewayTransferFunction extends
+		DependentDiscreteTransferFunction<GatewayPlaceProperty, GroundedBelief> {
 
-	
 	/**
-	 * @param perceptBeliefs
+	 * @param GroundedBeliefs
 	 */
-	public GatewayTransferFunction(ManagedComponent component, WMView<PerceptBelief> perceptBeliefs) {
-		super(component, perceptBeliefs, Logger.getLogger(GatewayTransferFunction.class), PerceptBelief.class);
+	public GatewayTransferFunction(ManagedComponent component,
+			WMView<GroundedBelief> GroundedBeliefs) {
+		super(component, GroundedBeliefs, Logger
+				.getLogger(GatewayTransferFunction.class), GroundedBelief.class);
 
 	}
 
 	@Override
-	protected
-	Map<String, Formula> getFeatureValueMapping(WorkingMemoryChange wmc, 
-			final GatewayPlaceProperty from) throws InterruptedException, BeliefException {
+	protected Map<String, Formula> getFeatureValueMapping(
+			WorkingMemoryChange wmc, final GatewayPlaceProperty from)
+			throws InterruptedException, BeliefException {
 		assert (from != null);
 		Map<String, Formula> result = new HashMap<String, Formula>();
 
 		WorkingMemoryAddress wmaPlace = getReferredBelief(new PlaceMatchingFunction(
 				from.placeId));
 
-		result.put("place", WMPointer.create(wmaPlace, CASTUtils.typeName(this.beliefClass)).getAsFormula());
+		result.put("place", WMPointer.create(wmaPlace,
+				CASTUtils.typeName(this.beliefClass)).getAsFormula());
 		result.put("isGateway", BoolFormula.create(true).getAsFormula());
 		return result;
 	}

@@ -20,7 +20,6 @@ import de.dfki.lt.tr.beliefs.data.formulas.IntFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
-import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 
@@ -50,8 +49,8 @@ public class LocalizedAgentTransferFunction<To extends dBelief> extends
 	 * Ice.ObjectImpl)
 	 */
 	@Override
-	public To create(WorkingMemoryAddress idToCreate,
-			WorkingMemoryChange wmc, PlaceContainmentAgentProperty from) {
+	public To create(WorkingMemoryAddress idToCreate, WorkingMemoryChange wmc,
+			PlaceContainmentAgentProperty from) {
 		// TODO Auto-generated method stub
 		To pb = super.create(idToCreate, wmc, from);
 		pb.type = "Robot";
@@ -70,9 +69,11 @@ public class LocalizedAgentTransferFunction<To extends dBelief> extends
 			log("current place id of agent is " + currentPlace);
 			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
 					currentPlace));
-			log("  the corresponding PerceptBelief is " + placeWMA);
-			result.put(AGENT_ID, IntFormula.create((int) from.agentID).getAsFormula());
-			result.put(IS_IN, WMPointer.create(placeWMA, CASTUtils.typeName(this.beliefClass)).getAsFormula());
+			log("  the corresponding GroundedBelief is " + placeWMA);
+			result.put(AGENT_ID, IntFormula.create((int) from.agentID)
+					.getAsFormula());
+			result.put(IS_IN, WMPointer.create(placeWMA,
+					CASTUtils.typeName(this.beliefClass)).getAsFormula());
 		} catch (InterruptedException e) {
 			component.logException(e);
 		}
