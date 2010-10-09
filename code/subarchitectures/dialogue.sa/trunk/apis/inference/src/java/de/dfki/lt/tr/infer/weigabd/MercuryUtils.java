@@ -131,7 +131,23 @@ public abstract class MercuryUtils {
          * @return corresponding string
          */
     public static String modalityToString(Modality m) {
-		return m.toString();
+		switch (m) {
+			case Truth:
+				return "i";
+			case Belief:
+				return "bel";
+			case Intention:
+				return "int";
+			case Attention:
+				return "att";
+			case Event:
+				return "event";
+			case Understanding:
+				return "understand";
+			case Generation:
+				return "generate";
+		}
+		return "unknown";
 	}
 
 	/**
