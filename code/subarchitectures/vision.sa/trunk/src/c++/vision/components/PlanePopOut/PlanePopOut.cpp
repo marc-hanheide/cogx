@@ -40,9 +40,9 @@ long long gethrtime(void)
 #define Lower_BG 1.1	// 1.1-1.5 radius of BoundingSphere
 #define rate_of_centers 0.4	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
-#define Torleration 10		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
+#define Torleration 3		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
-#define AgonalTime  100		//The dying object could be "remembered" for "AgonalTime" of framse
+#define AgonalTime  50		//The dying object could be "remembered" for "AgonalTime" of frames
 #define MAX_V 0.1
 #define label4initial		-3
 #define label4plane		0	//0, -10, -20, -30... for multiple planes
@@ -51,7 +51,7 @@ long long gethrtime(void)
 #define label4ambiguousness	-1
 
 #define SendDensePoints  1 	//0 send sparse points ,1 send dense points (recollect them after the segmentation)
-#define Treshold_Comp2SOI	0.6	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
+#define Treshold_Comp2SOI	0.7	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
 
 /**
  * The function called to create a new instance of our component.
@@ -101,6 +101,8 @@ double pre_mConvexHullRadius;
 std::string pre_id;
 
 vector <int> points_label;  //0->plane; 1~999->objects index; -1->discarded points
+vector <CvRect> vSOIonImg;
+vector <std::string> vSOIid;
 
 
 
@@ -422,6 +424,8 @@ void PlanePopOut::configure(const map<string,string> & _config)
   pre_id = "";
   bIsMoving = false;
   CurrentBestDistSquared = 999999.0;
+  bHorizontalFound = false;
+  bVerticalOn = false;
   previousImg=cvCreateImage(cvSize(1,1),8,3);
 
 #ifdef FEAT_VISUALIZATION
@@ -511,9 +515,19 @@ void SendImage(VisionData::SurfacePointSeq points, std::vector <int> &labels, co
 	  case 0:	cvCircle(iplImg, powner->ProjectPointOnImage(points.at(i).p,c), 2, CV_RGB(255,0,0)); break;
 	  case -10:	cvCircle(iplImg, powner->ProjectPointOnImage(points.at(i).p,c), 2, CV_RGB(0,255,0)); break;
 	  case -20:	cvCircle(iplImg, powner->ProjectPointOnImage(points.at(i).p,c), 2, CV_RGB(0,0,255)); break;
+	  case -30:	cvCircle(iplImg, powner->ProjectPointOnImage(points.at(i).p,c), 2, CV_RGB(0,255,255)); break;
+	  case -40:	cvCircle(iplImg, powner->ProjectPointOnImage(points.at(i).p,c), 2, CV_RGB(128,128,0)); break;
+	  case -5:	cvCircle(iplImg, powner->ProjectPointOnImage(points.at(i).p,c), 2, CV_RGB(255,255,255)); break;
 	}
     }
-    cvSaveImage("/tmp/planes_image.jpg", iplImg);
+    CvFont a;
+    cvInitFont( &a, CV_FONT_VECTOR0, 1, 1, 0 , 1 );
+    for (unsigned int i=0 ; i<vSOIonImg.size() ; i++)
+    {
+	CvPoint p; p.x = (int)(vSOIonImg.at(i).x+0.3*vSOIonImg.at(i).width); p.y = (int)(vSOIonImg.at(i).y+0.3*vSOIonImg.at(i).height);
+	cvPutText(iplImg, vSOIid.at(i).c_str(), p, &a,CV_RGB(255,255,255));
+    }
+    //cvSaveImage("/tmp/planes_image.jpg", iplImg);
     m_display.setImage(ID_OBJECT_IMAGE, iplImg);
     cvReleaseImage(&iplImg);
 }
@@ -535,6 +549,8 @@ void SendPoints(const VisionData::SurfacePointSeq& points, std::vector<int> &lab
 				case -10: str << "glColor(0.0,1.0,0.0)\n"; break;
 				case -20: str << "glColor(0.0,0.0,1.0)\n"; break;
 				case -30: str << "glColor(0.0,1.0,1.0)\n"; break;
+				case -40: str << "glColor(0.5,0.5,0.0)\n"; break;
+				case -5: str << "glColor(0.0,0.0,0.0)\n"; break;
 				default: str << "glColor(1.0,1.0,0.0)\n"; break;
 			}
 		}
@@ -633,7 +649,7 @@ void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 void PlanePopOut::runComponent()
 {
   sleepComponent(1000);
-
+  //log("Component is running now");
   // note: this must be called in the run loop, not in configure or start as these are all different threads!
   int argc = 1;
   char argv0[] = "PlanePopOut";
@@ -641,16 +657,15 @@ void PlanePopOut::runComponent()
   int stereoWidth = 640;
   if (doDisplay)
   {
-  glutInit(&argc, argv);
-  win = glutCreateWindow("points");
-  InitWin();
-  glutKeyboardFunc(KeyPress);
-  glutMouseFunc(MousePress);
-  glutMotionFunc(MouseMove);
-  glutReshapeFunc(ResizeWin);
-  glutDisplayFunc(DisplayWin);
+      glutInit(&argc, argv);
+      win = glutCreateWindow("points");
+      InitWin();
+      glutKeyboardFunc(KeyPress);
+      glutMouseFunc(MousePress);
+      glutMotionFunc(MouseMove);
+      glutReshapeFunc(ResizeWin);
+      glutDisplayFunc(DisplayWin);
   }
-
 #ifdef FEAT_VISUALIZATION
   //SendOverlays(m_display, this);
 #endif
@@ -661,7 +676,6 @@ void PlanePopOut::runComponent()
 	points.resize(0);
 
 	getPoints(useGlobalPoints, stereoWidth, points);
-
 	Video::Image image;
 	getRectImage(LEFT, stereoWidth, image);
 #ifdef USE_MOTION_DETECTION
@@ -682,6 +696,7 @@ void PlanePopOut::runComponent()
 	    cvReleaseImage(&subimg);
 	}
 #endif
+
 	if (bIsMoving)	continue;
 	if (points.size() == 0)
 	{
@@ -695,6 +710,7 @@ void PlanePopOut::runComponent()
 		objnumber = 0;
 		N = (int)points.size()/2500;
 		for (VisionData::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
+		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<5)
 			pointsN.push_back(*it);
 		points_label.clear();
 		points_label.assign(pointsN.size(), -3);
@@ -702,6 +718,7 @@ void PlanePopOut::runComponent()
 		bool executeflag = false;
 		if (USE_PSO == 0)		executeflag = RANSAC(pointsN,points_label);
 		else if (USE_PSO == 1)		executeflag = PSO_Label(pointsN,points_label);
+		//log("parameters of plane: A, B, C = (%f, %f, %f)", A, B, C);
 		if (executeflag == true)
 		{	//cout<<"after ransac we have "<<points.size()<<" points"<<endl;
 			SplitPoints(pointsN,points_label);
@@ -848,10 +865,10 @@ void PlanePopOut::SOIManagement()
 	}
 	return;
     }
+    //log("there are %d SOI in CurrentObjList", CurrentObjList.size());
   for (unsigned int j=0; j<PreviousObjList.size(); j++)
     {
 	bool deleteObjFlag = true; // if this flag is still true after compare, then this object should be deleted from the WM
-	//log("there are %d SOI in CurrentObjList", CurrentObjList.size());
 	for(unsigned int i=0; i<CurrentObjList.size(); i++)
 	{
 	    if (CurrentObjList.at(i).bComCurrentPre == false)
@@ -867,19 +884,22 @@ void PlanePopOut::SOIManagement()
 			CurrentObjList.at(i).bInWM = true;
 			CurrentObjList.at(i).id = PreviousObjList.at(j).id;
 			CurrentObjList.at(i).count = PreviousObjList.at(j).count;
-			if (dist(CurrentObjList.at(i).c, PreviousObjList.at(j).c)/norm(CurrentObjList.at(i).c) > 1/2)
-			  //(abs((CurrentObjList.at(i).c.y-PreviousObjList.at(j).c.y)/CurrentObjList.at(i).c.y)>0.2)
+			//cout<<"distCP = "<<dist(CurrentObjList.at(i).c, PreviousObjList.at(j).c)<<"  norm = "<<norm(CurrentObjList.at(i).c)<<endl;
+			if (dist(CurrentObjList.at(i).c, PreviousObjList.at(j).c)/norm(CurrentObjList.at(i).c) > 0.15)
 			{
-			    //cout<<"Current = "<<CurrentObjList.at(i).c.y<<"  Previous = "<<PreviousObjList.at(j).c.y<<endl;
-			    CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;
+// 			    cout<<"CurrentY = "<<CurrentObjList.at(i).c.y<<"  PreviousY = "<<PreviousObjList.at(j).c.y<<endl;
+// 			    cout<<"CurrentX = "<<CurrentObjList.at(i).c.x<<"  PreviousX = "<<PreviousObjList.at(j).c.x<<endl;	    
+			    //CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;
 			    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 			    overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
-			    //cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
+			    cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
 			}
 			else
 			{
 			    CurrentObjList.at(i).c = PreviousObjList.at(j).c;
 			}
+			if (CurrentObjList.at(i).count < Torleration)
+			    CurrentObjList.at(i).count = PreviousObjList.at(j).count+1;
 		    }
 		    else
 		    {
@@ -900,9 +920,9 @@ void PlanePopOut::SOIManagement()
 			    cvSaveImage(path.c_str(), cropped);
 			    cvReleaseImage(&cropped);
 			    #endif
-			    log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+			    //log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 			    //log("objects number = %u",objnumber);
-			    //cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
+			    cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
 			}
 		    }
 		    break;
@@ -938,6 +958,13 @@ void PlanePopOut::SOIManagement()
     if (Pre2CurrentList.size()>0)
 	for (unsigned int i=0; i<Pre2CurrentList.size(); i++)
 	    PreviousObjList.push_back(Pre2CurrentList.at(i));
+    vSOIonImg.clear();
+    vSOIid.clear();
+    for (unsigned int i=0; i<PreviousObjList.size(); i++)
+    {
+	vSOIonImg.push_back(PreviousObjList.at(i).rect);
+	vSOIid.push_back(PreviousObjList.at(i).id);
+    }
 }
 
 CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r)
@@ -1116,10 +1143,17 @@ vector<double> PlanePopOut::Hypo2ParaSpace(vector<Vector3> vv3Hypo)
      }
 
     double para_a, para_b, para_c, para_d;
-    para_a = ( (vv3Hypo.at(1).y-vv3Hypo.at(0).y)*(vv3Hypo.at(2).z-vv3Hypo.at(0).z)-(vv3Hypo.at(1).z-vv3Hypo.at(0).z)*(vv3Hypo.at(2).y-vv3Hypo.at(0).y) );
+    //para_a = ( (vv3Hypo.at(1).y-vv3Hypo.at(0).y)*(vv3Hypo.at(2).z-vv3Hypo.at(0).z)-(vv3Hypo.at(1).z-vv3Hypo.at(0).z)*(vv3Hypo.at(2).y-vv3Hypo.at(0).y) );
+    para_a = 0.0;	//parallel with baseline
     para_b = ( (vv3Hypo.at(1).z-vv3Hypo.at(0).z)*(vv3Hypo.at(2).x-vv3Hypo.at(0).x)-(vv3Hypo.at(1).x-vv3Hypo.at(0).x)*(vv3Hypo.at(2).z-vv3Hypo.at(0).z) );
     para_c = ( (vv3Hypo.at(1).x-vv3Hypo.at(0).x)*(vv3Hypo.at(2).y-vv3Hypo.at(0).y)-(vv3Hypo.at(1).y-vv3Hypo.at(0).y)*(vv3Hypo.at(2).x-vv3Hypo.at(0).x) );
     para_d = ( 0-(para_a*vv3Hypo.at(0).x+para_b*vv3Hypo.at(0).y+para_c*vv3Hypo.at(0).z) );
+    if (para_c<0)
+    {
+	para_b = -para_b;
+	para_c = -para_c;
+	para_d = -para_d;
+    }
     double temp = sqrt(para_a*para_a+para_b*para_b+para_c*para_c);
 
     vector<double> ABCD;
@@ -1212,7 +1246,7 @@ double PlanePopOut::PSO_EvaluateParticle(Particle OneParticle, vector <Particle>
 	  for (unsigned int i = 0; i<optima_found.size(); i++)
 	  {
 	      weight.at(i) = DistOfParticles(OneParticle,optima_found.at(i),cc,rr,bP);
-	      weight.at(i) =lambda*exp(-lambda*weight.at(i))+1;
+	      weight.at(i) =lambda*exp(-lambda*weight.at(i))/5.0+1;
 	  }
 	  double r = 1.0;
 	  for (unsigned int i = 0; i<optima_found.size(); i++)
@@ -1232,19 +1266,32 @@ vector<double> PlanePopOut::UpdatePosition(vector<double> p, vector<double> v)
     vector<double> r = p;
     for (unsigned int i=0; i<r.size(); i++)
     {
-	r.at(i) = p.at(i)+v.at(i);
+	if (i==1 || i==3)
+	    r.at(i) = p.at(i)+v.at(i);
+	if (i == 2)
+	{
+	    if (r.at(1)<1)
+	      r.at(i) = sqrt(1-r.at(1)*r.at(1));
+	    else
+	    {
+	      //srand((unsigned) time (NULL));
+	      r.at(1) = ((double)rand()/RAND_MAX)*2-1;
+	      r.at(i) = sqrt(1-r.at(1)*r.at(1));
+	    }
+	}
     }
     return r;
 }
 
 vector<double> PlanePopOut::UpdateVelocity(vector<double> p, vector<double> v, vector<double> pbest, vector<double> gbest, float chi, float c1, float c2, float w)
 {
+    //log("Start updata velocity");   
     if (p.size() != v.size())
     {
 	cout<<"the dimentions of position and velocity are different = "<<endl;//error
 	exit(0);
     }
-
+/*---------------------- This is the old UpdateVelocity function, which update (A,B,C,D) parameters of plane -------------------
     vector<double> r = v;
     double r1, r2;
     for (unsigned int i=0; i<r.size(); i++)
@@ -1257,26 +1304,62 @@ vector<double> PlanePopOut::UpdateVelocity(vector<double> p, vector<double> v, v
     }
 
     return r;
+*/    
+//------------------------- The new one, only update (B,D) paramters of plane, C = sqrt(1-B^2), A = 0 -----------------
+
+    vector<double> r = v;
+    double r1, r2;
+    for (unsigned int i=0; i<r.size(); i++)
+    {
+	r1 = rand()/(double)RAND_MAX;
+	//srand((unsigned) time (NULL));
+	r2 = rand()/(double)RAND_MAX;
+	if (i==1 || i==3)	// ignore A, C velocity
+	{
+	    r.at(i) = chi*(w*v.at(i)+c1*r1*(pbest.at(i)-p.at(i))+c2*r2*(gbest.at(i)-p.at(i)));
+	    if (r.at(i)>MAX_V) r.at(i) = MAX_V;
+	}
+    }
+
+    return r;
+
 }
 
 void PlanePopOut::Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>& vT, vector<Particle> vFO, VisionData::SurfacePointSeq points, Vector3 cc, double rr)
 {
-    if (vFO.at(0).p.at(3)<0)
-    {vFO.at(0).p.at(0)=-vFO.at(0).p.at(0); vFO.at(0).p.at(1)=-vFO.at(0).p.at(1); vFO.at(0).p.at(2)=-vFO.at(0).p.at(2); vFO.at(0).p.at(3)=-vFO.at(0).p.at(3);}
-    Vector3 vnorm; vnorm.x=vFO.at(0).p.at(0); vnorm.y=vFO.at(0).p.at(1); vnorm.z=vFO.at(0).p.at(2);
-    double min_dist = 9999999.0;
+    Vector3 vnorm; // normal vector of found plane
+    if (vFO.size() == 1)
+    {
+	if (vFO.at(0).p.at(3)<0)
+	{vFO.at(0).p.at(0)=-vFO.at(0).p.at(0); vFO.at(0).p.at(1)=-vFO.at(0).p.at(1); vFO.at(0).p.at(2)=-vFO.at(0).p.at(2); vFO.at(0).p.at(3)=-vFO.at(0).p.at(3);}
+	vnorm.x=vFO.at(0).p.at(0); vnorm.y=vFO.at(0).p.at(1); vnorm.z=vFO.at(0).p.at(2);
+    }
+    else if (vFO.size() > 1)
+    {
+	if (vFO.at(1).p.at(3)<0)
+	{vFO.at(1).p.at(0)=-vFO.at(1).p.at(0); vFO.at(1).p.at(1)=-vFO.at(1).p.at(1); vFO.at(1).p.at(2)=-vFO.at(1).p.at(2); vFO.at(1).p.at(3)=-vFO.at(1).p.at(3);}
+	vnorm.x=vFO.at(1).p.at(0); vnorm.y=vFO.at(1).p.at(1); vnorm.z=vFO.at(1).p.at(2);
+    }
+/*    Vector3 vnormV;	// normal vector of the plane which is vertical with plane found
+    srand((unsigned) time (rand()));   vnormV.x= -1+rand()%200/100;
+    srand((unsigned) time (rand()));   vnormV.y= -1+rand()%200/100;
+    vnormV.z= (-vnormV.x*vFO.at(0).p.at(0)-vnormV.y*vFO.at(0).p.at(1))/vFO.at(0).p.at(2);
+*/    double max_dist = 0.0;
     for (unsigned int i = 0; i<points.size(); i++)
     {
 	double dd = -dot(vnorm,points.at(i).p);
-	if (dd<min_dist)	min_dist = dd;
+	if (dd>max_dist)	max_dist = dd;
     }
     for (unsigned int i = 0; i<vPar.size(); i++)
     {
 	vPar.at(i).p.at(0)=vFO.at(0).p.at(0); vPar.at(i).p.at(1)=vFO.at(0).p.at(1); vPar.at(i).p.at(2)=vFO.at(0).p.at(2);
-	vPar.at(i).p.at(3) = (vFO.at(0).p.at(3)-min_dist)*(i+1)/vPar.size()+min_dist;
+	if (vFO.size() == 1)
+	    vPar.at(i).p.at(3) = (vFO.at(0).p.at(3)-max_dist)+i*2*max_dist/vPar.size();
+	else if (vFO.size() > 1)
+	    vPar.at(i).p.at(3) = (vFO.at(1).p.at(3)-max_dist)+i*2*max_dist/vPar.size();
 	vPar.at(i).v.at(0)=0.0; vPar.at(i).v.at(1)=0.0; vPar.at(i).v.at(2)=0.0;
-	srand((unsigned) time (NULL));
-	vPar.at(i).v.at(3)=-1+rand()%200/100;
+	//srand((unsigned) time (NULL));
+	vPar.at(i).v.at(3)=((double)rand()/RAND_MAX)*2-1;
 	vPar.at(i).fCurr = PSO_EvaluateParticle(vPar.at(i),vFO,points,cc,rr);
 	vPar.at(i).pbest = vPar.at(i).p;
 	if (vPar.at(i).fCurr<vT.at(vT.size()-1).fCurr)
@@ -1287,11 +1370,27 @@ void PlanePopOut::Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>
     }
 }
 
+/*
 void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
 						   VisionData::SurfacePointSeq &points,
 						   std::vector <int> &labels)
 {
-     int N_iter = 200; 				// iteration number
+    if (bHorizontalFound == true)
+    {
+	if (bVerticalOn == true)
+	    PSO_internal_HVPlanes(init_positions, points, labels);
+	else
+	    PSO_internal_HPlanes(init_positions, points, labels);
+    }
+    else
+	PSO_internal_All(init_positions, points, labels);
+}
+*/
+void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
+						   VisionData::SurfacePointSeq &points,
+						   std::vector <int> &labels)
+{
+     int N_iter = 100; 				// iteration number
      int N_particle = init_positions.size();	// particle number
      float w = 1;				// inertia weight
      float c1 = 2.0;				// cognitive factor
@@ -1311,14 +1410,16 @@ void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
      vector <Particle> mTournament;
      mTournament.assign(N_tour,InitialParticle());
 
+     srand((unsigned) time (NULL));
      for (int i=0; i<N_particle; i++)
      {
 	mvParticle.at(i).p = init_positions.at(i);
 	vector <double> init_velocity;
-	for (unsigned int j = 0; j<4; j++)
+	//srand((unsigned) time (NULL));
+	for (unsigned int j = 0; j<4; j++)	//A,B,C,D
 	{
-	    srand((unsigned) time (NULL));
-	    init_velocity.push_back(-1+rand()%200/100); //-1~1 rand number
+	    double dr = ((double)rand()/RAND_MAX)*2-1;	//log("dr = %f", dr);
+	    init_velocity.push_back(dr); //-1~1 rand number
 	}
 	mvParticle.at(i).v = init_velocity;
 	mvParticle.at(i).fCurr = PSO_EvaluateParticle(mvParticle.at(i),mvFoundOptima,points,cc,rr);
@@ -1339,17 +1440,18 @@ void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
      int count = 0;
      Particle p_previous = InitialParticle();
      double dist_threshold = 0.1;	 	// to measure the distance between optima found of continuous iterations
-     int min_iter_time_4_optima_found = 60;	// to determine the stability of the optimum found
+     int min_iter_time_4_optima_found = 40;	// to determine the stability of the optimum found
+     //log("start the loop in PSO");
      for (int i=0; i<N_iter; i++)
      {
 	p_previous = mTournament.at(0);
 	for (int j=0; j<N_particle; j++)
 	{
-	  //cout<<"before update velocity, v ="<<mvParticle.at(j).v.at(0)<<endl;
+	  //cout<<"before update velocity, v ="<<mvParticle.at(j).v.at(1)<<endl;
 	    mvParticle.at(j).v = UpdateVelocity(mvParticle.at(j).p, mvParticle.at(j).v, mvParticle.at(j).pbest, mTournament.at(0).p, chi, c1, c2, w);
 	  //cout<<"after update velocity, v ="<<mvParticle.at(j).v.at(0)<<endl;
 	    mvParticle.at(j).p = UpdatePosition(mvParticle.at(j).p, mvParticle.at(j).v);
-	    //cout<<"after update Position, p ="<<mvParticle.at(j).p.at(0)<<endl;
+	   // cout<<"after update Position, p ="<<mvParticle.at(j).p.at(0)<<endl;
 	    mvParticle.at(j).fCurr = PSO_EvaluateParticle(mvParticle.at(j),mvFoundOptima,points,cc,rr);
 	    //cout<<"fitness value of "<<j<<" particle ="<<mvParticle.at(j).fCurr<<endl;
 	    if (mvParticle.at(j).fCurr < mvParticle.at(j).fbest)	// update pbest
@@ -1388,10 +1490,10 @@ void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
 	    //cout<<"iteration number = "<<i<<endl;
 	}
      }
-     /*
+     
      for(unsigned int m = 0 ; m<mTournament.size() ; m++)
-     cout<<"mTournament parameter "<<m<<" is ["<<mTournament.at(m).p.at(0)<<" "<<mTournament.at(m).p.at(1)<<" "<<mTournament.at(m).p.at(2)<<" "<<mTournament.at(m).p.at(3)<<"]"<<endl;
-     */
+     //cout<<"mTournament parameter "<<m<<" is ["<<mTournament.at(m).p.at(0)<<" "<<mTournament.at(m).p.at(1)<<" "<<mTournament.at(m).p.at(2)<<" "<<mTournament.at(m).p.at(3)<<"]"<<endl;
+     
      if (mvFoundOptima.size()>0)	// find at least one dominant plane
      {
 	for (unsigned int i = 0 ; i<mvFoundOptima.size() ; i++)
@@ -1431,7 +1533,7 @@ void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
 
 bool PlanePopOut::PSO_Label(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
 {
-     int N_particle = 25; 			// particle number
+     int N_particle = 80; 			// particle number
 
       VisionData::SurfacePointSeq P_points = points;
       unsigned int nPoints = P_points.size();
@@ -1470,11 +1572,81 @@ bool PlanePopOut::PSO_Label(VisionData::SurfacePointSeq &points, std::vector <in
       }
       //std::cout << " After random selection, PSO is running... " << std::endl;
       PSO_internal(vvd_particles, points, labels);
-// find multiple dominant planes, now label the inliers for each plane
+      FindVerticalPlanes(points, labels, B, C);
 
       return true;
 }
 
+void PlanePopOut::FindVerticalPlanes(VisionData::SurfacePointSeq &points, std::vector <int> &labels, double B, double C)
+{	
+    std::vector<int> candidants;
+    for (unsigned int i=0; i<labels.size(); i++)
+    {
+	    if (labels.at(i) == -2) //not belong to the dominant plane cluster
+		    candidants.push_back(i);
+    }
+    unsigned int nPoints = candidants.size();
+    int nRansacs = 100;
+    int point1 = 0;
+    int point2 = 0;
+    int point3 = 0;
+    Vector3 v3BestMean;
+    Vector3 v3BestNormal;
+    double dBestDistSquared = 9999999999999999.9;
+
+    for(int i=0; i<nRansacs; i++)
+    {
+	    int nA, nB, nC;
+	    Vector3 v3Normal;
+//	    do
+//	    {
+		    nA = rand()%nPoints;
+		    nB = nA;
+		    nC = nA;
+		    while(nB == nA)
+			    nB = rand()%nPoints;
+		    while(nC == nA || nC==nB)
+			    nC = rand()%nPoints;
+		    Vector3 v3CA = points.at(candidants.at(nC)).p - points.at(candidants.at(nA)).p;
+		    Vector3 v3BA = points.at(candidants.at(nB)).p - points.at(candidants.at(nA)).p;
+		    v3Normal = cross(v3CA, v3BA);
+		    if (norm(v3Normal) != 0)
+			    normalise(v3Normal);
+		    else v3Normal = 99999.9*v3Normal;
+//	    } while (fabs(v3Normal.x*B+v3Normal.z*C)>0.01); //the vertical planes
+
+	    Vector3 v3Mean = 0.33333333 * (points.at(candidants.at(nA)).p + points.at(candidants.at(nB)).p + points.at(candidants.at(nC)).p);
+	    double dSumError = 0.0;
+	    for(unsigned int i=0; i<nPoints; i++)
+	    {
+		    Vector3 v3Diff = points.at(candidants.at(i)).p - v3Mean;
+		    double dDistSq = dot(v3Diff, v3Diff);
+		    if(dDistSq == 0.0)
+		    continue;
+		    double dNormDist = fabs(dot(v3Diff, v3Normal));
+		    if(dNormDist > min_height_of_obj)
+		    dNormDist = min_height_of_obj;
+		    dSumError += dNormDist;
+	    }
+	    if(dSumError < dBestDistSquared)
+	    {
+		    dBestDistSquared = dSumError;
+		    v3BestMean = v3Mean;
+		    v3BestNormal = v3Normal;
+		    point1 = nA;
+		    point2 = nB;
+		    point3 = nC;
+	    }
+    }
+    //----------------------- now collect the supposed inlier set-----------------//
+    for(unsigned int i=0; i<nPoints; i++)
+    {
+	    Vector3 v3Diff = points.at(candidants.at(i)).p - v3BestMean;
+	    double dNormDist = fabs(dot(v3Diff, v3BestNormal));
+	    if(dNormDist < min_height_of_obj)
+		labels.at(candidants.at(i)) = -5; // vertical plane
+    }
+}
 
 bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
 {
@@ -1745,7 +1917,7 @@ double PlanePopOut::CompareHistKLD(CvHistogram* h1, CvHistogram* h2)
 		    /** calculate the height of the bar */
 		    float bin_val1 = cvQueryHistValue_2D( h1, h, s );
 		    float bin_val2 = cvQueryHistValue_2D( h2, h, s );
-		    if (bin_val1 != 0.0 && bin_val2!= 0.0)	KLD = log10(bin_val1/bin_val2)*bin_val1 + KLD;
+		    if (bin_val1 != 0.0 && bin_val2!= 0.0)	KLD = (log10(bin_val1/bin_val2)*bin_val1+log10(bin_val2/bin_val1)*bin_val2)/2 + KLD;
 		    //log("Now bin_val = %f, %f", bin_val1, bin_val2);
 		    //log("Now KLD = %f", KLD);
 	    }
@@ -1759,16 +1931,19 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
    
     float wS, wC, wP; //magic weight for SURF matching, color histogram and Size/Position/Pose
     IpPairVec matches;
-    wP = 0.1;
+    wP = 0.3;
     if (obj1.surf.size() == 0 || obj2.surf.size()==0) wS = 0.0;
     else if (obj1.surf.size() < 40 || obj2.surf.size()<40)
     {
-	wS = 0.1;
+	if (obj1.surf.size() < 10 || obj2.surf.size()<10)
+	    wS = 0;
+	else
+	    wS = 0.1;
 	getMatches(obj1.surf,obj2.surf,matches);
     }
     else
     {
-	wS = 0.4;
+	wS = 0.3;
 	getMatches(obj1.surf,obj2.surf,matches);
     }
     wC = 1.0-wS-wP;
@@ -1793,7 +1968,7 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 //    int s1 = obj1.pointsInOneSOI.size();
 //    int s2 = obj2.pointsInOneSOI.size();
     double s1, s2; s1 = obj1.r; s2 = obj2.r;	double smax; if (s1>s2) smax=s1; else smax=s2;
-    sizeRatio = exp(-(s2-s1)*(s2-s1)*3.14159/smax);
+    sizeRatio = 1.0-exp(-(s2-s1)*(s2-s1)*3.14159/smax);
     /*
     if (obj1.r== 0 || obj2.r==0) sizeRatio = 0.0;
     else
@@ -1802,8 +1977,8 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
       else sizeRatio = abs(obj1.r-obj2.r)/obj2.r;
     }
     */
-    //log("ratio = %f, %f, %f", wS, wC, wP);
-    //log("dist_histogram, surfmacthingRatio, sizeRatio are %f, %f, %f",dist_histogram, surfmacthingRatio, sizeRatio);
+//     log("ratio = %f, %f, %f", wC, wS, wP);
+//     log("dist_histogram, surfmacthingRatio, sizeRatio are %f, %f, %f",dist_histogram, surfmacthingRatio, sizeRatio);
 
     return 1.0-wS*surfmacthingRatio-wC*abs(dist_histogram)-wP*sizeRatio;
 }
