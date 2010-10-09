@@ -81,11 +81,23 @@ module ConceptualData
 	/** Sequence of ComaRoomInfos. */
 	sequence<ComaRoomInfo> ComaRoomInfos;
 
+	/** Room connectivity information. */
+	struct RoomConnectivityInfo
+	{
+		/** This ID is always smaller than room2Id. */
+		int room1Id;
+		/** This ID is always larger than room1Id. */
+		int room2Id;
+	};
+
+	/** List of room id pairs. */
+	sequence<RoomConnectivityInfo> RoomConnectivityInfos;
 
 	/** State of the world obtained from other SAs. */
 	class WorldState
 	{
 		ComaRoomInfos rooms;
+		RoomConnectivityInfos roomConnections;
 	};
 
 };
