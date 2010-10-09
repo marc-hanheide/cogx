@@ -86,10 +86,14 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
-						addGroundedBelief(
-								_wmc.address,
-								getMemoryEntry(_wmc.address,
-										GroundedBelief.class));
+						try {
+							addGroundedBelief(
+									_wmc.address,
+									getMemoryEntry(_wmc.address,
+											GroundedBelief.class));
+						} catch (CASTException e) {
+							logException("Carry on regardless", e);
+						}
 					}
 				});
 
@@ -102,6 +106,7 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 							throws CASTException {
 
 						removeGroundedBelief(_wmc.address);
+						
 					}
 				});
 
