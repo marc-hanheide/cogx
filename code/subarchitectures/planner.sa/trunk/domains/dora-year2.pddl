@@ -167,6 +167,13 @@
                      :effect (and (at start (started)))
                      )
 
+; nah: execution is expecting this:
+;   (:durative-action process_all_cones_at_place
+;                     :agent (?a - robot)
+;                     :parameters (?p - place ?l - label)
+
+
+
    (:observe visual_object_in_cone
              :agent (?a - robot)
              :parameters (?c - cone ?o - visualobject ?l - label ?p - place)
