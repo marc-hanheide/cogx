@@ -1,7 +1,7 @@
 /**
  * @author Marc Hanheide (marc@hanheide.de)
  */
-package eu.cogx.sharedtracker;
+package eu.cogx.sharedtracker.george;
 
 import java.util.Arrays;
 import java.util.List;

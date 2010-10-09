@@ -271,9 +271,10 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-	public WorkingMemoryAddress askForObject(String _value,
+	public WorkingMemoryAddress askForObject(String _feature, String _value,
 			ActionMonitor _monitor) throws CASTException {
 		AskForObjectWithFeatureValue act = newActionInstance(AskForObjectWithFeatureValue.class);
+		act.feature = _feature;
 		act.value = _value;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;

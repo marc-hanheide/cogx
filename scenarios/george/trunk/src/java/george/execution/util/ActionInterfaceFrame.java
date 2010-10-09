@@ -508,9 +508,17 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 	private void askForObject() throws CASTException {
-		m_exeMan.askForObject((String) JOptionPane.showInputDialog(this,
-				"What do you want your object to look like?"),
-				new MonitorPanel());
+
+		String feature = (String) JOptionPane.showInputDialog(this,
+				"What feature do you want? (color, shape, identity)");
+
+		if (feature != null) {
+			String value = (String) JOptionPane.showInputDialog(this,
+					"What value do you want for this?");
+			if (value != null) {
+				m_exeMan.askForObject(feature, value, new MonitorPanel());
+			}
+		}
 	}
 
 	private String getFeatureValue(String _beliefID, String _concept, String _op) {
