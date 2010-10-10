@@ -314,7 +314,7 @@ public static void main(String[] args) {
 	//Initialise an Instant of TTS Local.
 	try{
 		MaryClient l_mary = MaryClient.getMaryClient();
-		TTSLocal l_ttslocal = new TTSLocal(l_mary,"RAWMARYXML", "us2", false, "WAVE");
+		MaryTTSLocal l_ttslocal = new MaryTTSLocal(l_mary,"RAWMARYXML", "us2", false, "WAVE");
 		
 		System.out.println("RAWMARYXMLHead is in file : " + args[1]);
 		ProsodicTextToRawMARYXml l_convert = new ProsodicTextToRawMARYXml(args[1], args[2],"");
