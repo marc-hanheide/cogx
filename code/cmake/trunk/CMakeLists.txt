@@ -54,6 +54,7 @@ if(BUILD_ROCS)
 	set(ROCS_DIR ${OUTPUT}/rocs)
 	# Finally, add ROCS
 	add_subdirectory(tools/rocs)
+	get_directory_property(ROCS_SRC_INCLUDES DIRECTORY tools/rocs INCLUDE_DIRECTORIES)
 endif(BUILD_ROCS)
 # ------------ </ROCS> ------------
 
