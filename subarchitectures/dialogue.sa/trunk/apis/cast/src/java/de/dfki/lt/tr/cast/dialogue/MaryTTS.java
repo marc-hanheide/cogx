@@ -647,7 +647,7 @@ public class MaryTTS extends ManagedComponent {
 
             // create local and remote TTS
             m_ttsLocal =
-                    new MaryTTSLocal(m_mary, m_voiceName, m_bSilentModeLocal, "WAVE");
+                    new MaryTTSLocal(m_mary, "TEXT",m_voiceName, m_bSilentModeLocal, "WAVE");
        //     ttsRemote =
        //             new TTSRemote(m_mary, m_voiceName, m_bSilentModeRemote);
 			
