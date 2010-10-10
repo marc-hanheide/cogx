@@ -562,22 +562,28 @@ class StateTreeNode(dict):
             self.rule = (rules_for_fact[0] if rules_for_fact else None)
                 
             if isinstance(fact.value, pddl.TypedObject):
+                #t0 = time.time()
                 self.create_subtree(1.0, fact.value, marginal=(val not in objects))
+                #print "tree for %s=%s took %.2f secs" % (str(self.svar), self.value.name, time.time()-t0)
             else:
                 for val, p in fact.value.iteritems():
+                    #t0 = time.time()
                     self.create_subtree(p, val, marginal=(val not in objects))
+                    #print "tree for %s=%s took %.2f secs" % (str(self.svar), val.name, time.time()-t0)
             return
             
         #assume that the rule is instantiated
         self.svar = state.StateVariable(rule.function, state.instantiate_args(rule.args))
         
-        log.debug("creating subtree for %s", str(self.svar))
+        #log.debug("creating subtree for %s", str(self.svar))
         for p, value in rule.values:
             pval = self.state.evaluate_term(p) # evaluate in original state because probs for marginals could be gone in this partial state
             if pval == pddl.UNKNOWN or pval.value < 0.01:
                 continue
             val = self.state.evaluate_term(value)
+            #t0 = time.time()
             self.create_subtree(pval.value, val, marginal=(val not in objects))
+            #print "tree for %s=%s took %.2f secs" % (str(self.svar), val.name, time.time()-t0)
 
     def create_state(self, st):
         for val, (subtrees, p, marginal) in self.iteritems():
@@ -599,7 +605,7 @@ class StateTreeNode(dict):
         log.debug("creating subtrees for %s=%s (marginal=%s)", str(self.svar), value, str(marginal))
         fact = state.Fact(self.svar, value)
         if fact in self.cache:
-            print "cache hit"
+            #print "cache hit"
             self[value] = (self.cache[fact], prob, marginal)
             return
 
@@ -608,7 +614,7 @@ class StateTreeNode(dict):
             return
 
         rules = [r for r in self.all_rules if r.depends_on(self.rule)]
-        log.debug("rules depending on this: %s", ", ".join(r.name for r in rules))
+        #log.debug("rules depending on this: %s", ", ".join(r.name for r in rules))
         
         subtrees = []
         for r in rules:

@@ -12,10 +12,38 @@ from predicates import *
 class TranslatorAnnotations(dict):
     pass
 
+def removes(*requirements):
+    import functools
+    def decorator(f):
+        @functools.wraps(f)
+        def wrapper(self, *args, **kwargs):
+            for a in args:
+                if isinstance(a, domain.Domain):
+                    #print requirement, map(str, a.requirements)
+                    if not any(r in a.requirements for r in requirements):
+                        #print "pass"
+                        return self.pass_trough_domain(a, **kwargs)
+                if isinstance(a, problem.Problem):
+                    #print requirement, map(str, a.domain.requirements)
+                    if not any(r in a.domain.requirements for r in requirements):
+                        #print "pass"
+                        return self.pass_trough_problem(a, **kwargs)
+            return f(self, *args, **kwargs)
+        return wrapper
+    return decorator
+
 class Translator(object):
     def __init__(self, copy=True, **kwargs):
         self.depends = []
-        self.copy = copy
+        self.set_copy(copy)
+
+    def set_copy(self, value):
+        if self.depends:
+            for d, v in zip(self.depends, [value] + [False]*(len(self.depends)-1)):
+                d.set_copy(v)
+            self.copy = False
+        else:
+            self.copy = value
         
     def translate(self, entity, **kwargs):
         t0 = time.time()
@@ -26,8 +54,8 @@ class Translator(object):
             
             entity = translator.translate(entity, **kwargs)
             entity._original = original._original
-        #print "total time for %s: %f" % (type(self), time.time()-t0)
-            
+        t1 = time.time()
+        #try:
         #print "postorder:", type(self), type(entity)
         if isinstance(entity, actions.Action):
             return self.translate_action(entity, **kwargs)
@@ -37,6 +65,8 @@ class Translator(object):
             return self.translate_problem(entity, **kwargs)
         elif isinstance(entity, domain.Domain):
             return self.translate_domain(entity, **kwargs)
+        # finally:
+        #     print "total time for %s: %.2f (this: %.2f)" % (type(self), time.time()-t0, time.time()-t1)
 
     @staticmethod
     def get_original(entity):
@@ -64,6 +94,12 @@ class Translator(object):
         if domain:
             axiom.set_parent(domain)
         return axiom
+
+    def pass_trough_domain(self, _domain):
+        if self.copy:
+            return _domain.copy()
+        else:
+            return _domain
     
     def translate_domain(self, _domain):
         if self.copy:
@@ -85,6 +121,14 @@ class Translator(object):
         dom.name2action = None
         return dom
 
+    def pass_trough_problem(self, _problem):
+        if self.copy:
+            print self, "copy"
+            domain = self.pass_trough_domain(_problem.domain)
+            return problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
+        else:
+            return _problem
+    
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
         if self.copy:
@@ -128,20 +172,22 @@ class ChainingTranslator(Translator):
     def __init__(self, *deps, **kwargs):
         copy = kwargs.get('copy', True)
         self.depends = deps
+        self.set_copy(copy)
 
-        if deps:
-            self.depends[0].copy = copy
-            for d in self.depends[1:]:
-                d.copy = False
-            self.copy = False
-        else:
-            self.copy = copy
+    def translate_problem(self, _problem):
+        return self.pass_trough_problem(_problem)
 
+    def translate_domain(self, _domain):
+        return self.pass_trough_domain(_domain)
+    
 class IntermediateCompiler(Translator):
     def __init__(self, copy=True, **kwargs):
         self.depends = []
         self.counter = 0
-        self.copy = copy
+        self.set_copy(copy)
+
+    def translate_domain(self, _domain):
+        return self.pass_trough_domain(_domain)
 
     def translate_problem(self, _problem):
         p2 = Translator.translate_problem(self, _problem)
@@ -180,12 +226,12 @@ class IntermediateCompiler(Translator):
 
 class PreferenceCompiler(Translator):
     def __init__(self, copy=True, **kwargs):
-        self.depends = [IntermediateCompiler(copy=copy, **kwargs)]
+        self.depends = [IntermediateCompiler(**kwargs)]
+        self.set_copy(copy)
         self.counter = 0
         self.costIncrease = 0
         self.prefCondScope = None
         self.prefFound = False
-        self.copy = False
 
     def translate_action(self, action, domain):
         self.prefFound = False
@@ -267,8 +313,8 @@ class PreferenceCompiler(Translator):
     
 class ADLCompiler(Translator):
     def __init__(self, copy=True, **kwargs):
-        self.depends = [ModalPredicateCompiler(copy=copy, **kwargs), ObjectFluentCompiler(copy=False, **kwargs), CompositeTypeCompiler(copy=False, **kwargs), PreferenceCompiler(copy=False, **kwargs)]
-        self.copy = False
+        self.depends = [ModalPredicateCompiler(**kwargs), ObjectFluentCompiler(**kwargs), CompositeTypeCompiler(**kwargs), PreferenceCompiler(**kwargs)]
+        self.set_copy(copy)
 
     @staticmethod
     def condition_visitor(cond, parts):
@@ -294,13 +340,9 @@ class ADLCompiler(Translator):
         return a2
 
     def translate_problem(self, _problem):
-        domain = self.translate_domain(_problem.domain)
-        p2 = problem.Problem(_problem.name, _problem.objects, [], _problem.goal, domain, _problem.optimization, _problem.opt_func)
-        
-        for i in _problem.init:
-            if not i.negated:
-                p2.init.append(i.copy(new_scope=p2))
+        p2 = Translator.translate_problem(self, _problem)
 
+        p2.init = [i for i in p2.init if not i.negated]
         p2.goal = visitors.visit(p2.goal, ADLCompiler.condition_visitor)
         #make sure that the goal is in the form FD likes (exactly one "and" at the top level)
         # if not isinstance(p2.goal, conditions.Conjunction):
@@ -626,8 +668,8 @@ class ObjectFluentNormalizer(Translator):
 
 class ObjectFluentCompiler(Translator):
     def __init__(self, copy=True, **kwargs):
-        self.depends = [ModalPredicateCompiler(copy=copy, **kwargs), ObjectFluentNormalizer(copy=False, **kwargs)]
-        self.copy = False
+        self.depends = [ModalPredicateCompiler(**kwargs), ObjectFluentNormalizer(**kwargs)]
+        self.set_copy(copy)
         
     def translate_condition(self, cond, scope):
         if cond is None:
@@ -739,7 +781,8 @@ class ObjectFluentCompiler(Translator):
         a2 = axioms.Axiom(domain.predicates.get(axiom.predicate.name, axiom.args), [types.Parameter(p.name, p.type) for p in axiom.args], None, domain)
         a2.condition, _ = self.translate_condition(axiom.condition, a2)
         return a2
-        
+
+    @removes('object-fluents', 'fluents')
     def translate_domain(self, _domain):
         predicates = []
         functions = []
@@ -768,6 +811,7 @@ class ObjectFluentCompiler(Translator):
         dom.name2action = None
         return dom
     
+    @removes('object-fluents', 'fluents')
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
         p2 = problem.Problem(_problem.name, _problem.objects, [], None, domain, _problem.optimization, _problem.opt_func)
@@ -793,8 +837,8 @@ class ObjectFluentCompiler(Translator):
         
 class ModalPredicateCompiler(Translator):
     def __init__(self, copy=True, **kwargs):
-        self.depends = [MAPLCompiler(copy=copy, **kwargs)]
-        self.copy = False
+        self.depends = [MAPLCompiler(**kwargs)]
+        self.set_copy(copy)
         
     def compile_modal_args(self, args, functions):
         func_arg = None
@@ -911,10 +955,8 @@ class ModalPredicateCompiler(Translator):
 
         return a2
         
+    @removes('modal-predicates')
     def translate_domain(self, _domain):
-        if 'modal-predicates' not in _domain.requirements:
-            return Translator.translate_domain(self, _domain)
-        
         import dtpddl
         import durative
         
@@ -977,6 +1019,7 @@ class ModalPredicateCompiler(Translator):
 
         return dom
     
+    @removes('modal-predicates')
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
         p2 = problem.Problem(_problem.name, _problem.objects, [], None, domain, _problem.optimization, _problem.opt_func)
@@ -1044,11 +1087,17 @@ class RemoveTimeCompiler(Translator):
 
         return a2
 
+    @removes('durative-actions')
     def translate_domain(self, domain):
         dom = Translator.translate_domain(self, domain)
         dom.requirements.discard('durative-actions')
         dom.requirements.add('action-costs')
         return dom
+
+    @removes('durative-actions')
+    def translate_problem(self, problem):
+        return Translator.translate_problem(self, problem)
+    
 
 class MAPLCompiler(Translator):
     def __init__(self, remove_replan=False, **kwargs):
@@ -1107,10 +1156,9 @@ class MAPLCompiler(Translator):
             a2.effect = keff
         return a2
 
+    @removes('mapl')
     def translate_domain(self, _domain):
         import mapl
-        if "mapl" not in _domain.requirements:
-            return _domain
         
         dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), _domain.predicates.copy(), _domain.functions.copy(), [], [])
         dom.requirements = _domain.requirements.copy()
@@ -1126,18 +1174,18 @@ class MAPLCompiler(Translator):
         dom.name2action = None
         return dom
 
+    @removes('mapl')
     def translate_problem(self, _problem):
-        domain = self.translate_domain(_problem.domain)
-        if domain == _problem.domain:
-            return _problem
-        p2 = problem.Problem(_problem.name, _problem.objects, [], _problem.goal, domain, _problem.optimization, _problem.opt_func)
-        
-        for i in _problem.init:
+        p2 = Translator.translate_problem(self, _problem)
+
+        oldinit = p2.init
+        p2.init = []
+        for i in oldinit:
             #determinise probabilistic init conditions
             if isinstance(i, effects.ProbabilisticEffect):
-                p2.init.append(i.copy(new_scope=p2))
+                p2.init.append(i)
             elif not i.args or i.args[-1] != builtin.UNKNOWN:
-                p2.init.append(i.copy(new_scope=p2))
+                p2.init.append(i)
 
         return p2
 

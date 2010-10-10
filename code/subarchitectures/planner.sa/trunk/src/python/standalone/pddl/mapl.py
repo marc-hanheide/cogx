@@ -426,6 +426,13 @@ class InitRule(actions.Action):
     def __init__(self, name, args, precondition, effect, domain):
         actions.Action.__init__(self, name, args, precondition, effect, domain)
 
+    def get_effects(self):
+        if not self.effect:
+            return []
+        if isinstance(self.effect, effects.ConjunctiveEffect):
+            return self.effect.parts
+        return [self.effect]
+
     def copy(self, newdomain=None):
         if not newdomain:
             newdomain = self.parent

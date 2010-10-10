@@ -314,11 +314,11 @@ class FDOutput(PDDLOutput):
 
 class TemporalTranslator(pddl.translators.Translator):
     def __init__(self, copy=True):
-        self.depends = [pddl.translators.ModalPredicateCompiler(copy=True, remove_replan=True), pddl.translators.PreferenceCompiler(copy=False)]
+        self.depends = [pddl.translators.ModalPredicateCompiler(remove_replan=True), pddl.translators.PreferenceCompiler()]
+        self.set_copy(copy)
         self.lock_pred = pddl.Predicate("locked", [])
         self.ended_pred = pddl.Predicate("ended", [])
         self.do_locking = False
-        self.copy = False
 
     def translate_action(self, action, domain=None):
         if isinstance(action, pddl.durative.DurativeAction):

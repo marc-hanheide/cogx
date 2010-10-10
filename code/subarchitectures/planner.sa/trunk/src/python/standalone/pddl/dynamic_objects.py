@@ -131,9 +131,10 @@ class DestroyEffect(effects.Effect):
 
 #TODO handle quantified conditions/effects correctly
 class DynamicObjectsCompiler(translators.Translator):
-    def __init__(self, spare_count=2, **kwargs):
+    def __init__(self, copy=True, spare_count=2, **kwargs):
         self.depends = []
         self.spare_count = spare_count
+        self.set_copy(copy)
 
     def detect_dynamic_types(self, domain):
         @visitors.collect
@@ -192,9 +193,14 @@ class DynamicObjectsCompiler(translators.Translator):
         
         return a2
     
+    @translators.removes('dynamic-objects')
     def translate_domain(self, _domain):
-        dom = domain.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
-        dom.requirements = _domain.requirements.copy()
+        if self.copy:
+            dom = domain.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
+            dom.requirements = _domain.requirements.copy()
+        else:
+            dom = _domain
+            
         dom.requirements.discard("dynamic-objects")
 
         destroyed2 = predicates.Predicate("not-instantiated", [types.Parameter("?o", builtin.t_object)], builtin=False)
@@ -205,19 +211,24 @@ class DynamicObjectsCompiler(translators.Translator):
         ctypes, dtypes = self.detect_dynamic_types(_domain)
         dyntypes = ctypes | dtypes
         
-        dom.actions += [self.translate_action(a, dyntypes, dom) for a in _domain.actions]
-        dom.observe += [self.translate_action(o, dyntypes, dom) for o in _domain.observe]
-        dom.axioms += [self.translate_axiom(a, dyntypes, dom) for a in _domain.axioms]
+        dom.actions = [self.translate_action(a, dyntypes, dom) for a in _domain.actions]
+        dom.observe = [self.translate_action(o, dyntypes, dom) for o in _domain.observe]
+        dom.axioms = [self.translate_axiom(a, dyntypes, dom) for a in _domain.axioms]
         dom.stratify_axioms()
         dom.name2action = None
         return dom
 
+    @translators.removes('dynamic-objects')
     def translate_problem(self, _problem):
         ctypes, dtypes = self.detect_dynamic_types(_problem.domain)
         domain = self.translate_domain(_problem.domain)
-        p2 = problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
+        if self.copy:
+            p2 = problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
+        else:
+            _problem.set_parent(domain)
+            p2 = _problem
+            
         b = Builder(p2)
-        
         for t in ctypes:
             for n in xrange(0, self.spare_count):
                 obj = types.TypedObject("spare_%s%d" % (str(t), n), t)

@@ -308,14 +308,23 @@ class Scope(dict):
             self.original_parent = self.parent
             self.set_parent(parent)
             
-        values = dict((a, list(l)) for a,l in zip(args, arglists))
-        if any(not l for l in arglists):
-            return
+        values = {}
         mapping = {}
         stack = []
+        remaining = set(args)
+        for a, l in zip(args, arglists):
+            if not l:
+                return
+            l = list(l)
+            values[a] = l
+            if len(l) == 1:
+                mapping[a] = l[0]
+                stack.append((a,0))
+                a.instantiate(l[0])
+                remaining.discard(a)
+            
         curr_arg = None
         curr_index = -1
-        remaining = set(args)
         while True:
             next, nextval = func(mapping, [s[0] for s in stack])
             if next == True and len(stack) == len(args):
