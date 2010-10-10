@@ -512,9 +512,9 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	// Calculate SIFTs from image
 	sift.Operate(m_iplGray,m_image_keys);
 
-	if(m_image_keys.Size() < 10){
-		log("%s: Too less keypoints detected, no pose estimation possible",m_label.c_str());
-	}else{
+	//if(m_image_keys.Size() < 10){
+	//		log("%s: Too less keypoints detected, no pose estimation possible",m_label.c_str());
+	//}else{
 		m_detect->SetDebugImage(m_iplImage);
 		if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object))){
 			log("%s: No object detected", m_label.c_str());
@@ -543,7 +543,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 				m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
 			}
 		}
-	}
+		//}
 
 	if(m_showCV){
 		cvShowImage ( "ObjectRecognizer3D", m_iplImage );
