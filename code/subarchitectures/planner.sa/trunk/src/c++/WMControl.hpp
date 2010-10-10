@@ -31,6 +31,7 @@ protected:
     void updateStatus(int id, Completion status);
     void setChangeFilter(int id, const StateChangeFilterPtr& filter);
     void waitForChanges(int id, int timeout);
+    bool queryGoal(const std::string& goal);
 
     void receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc);
     void actionChanged(const cast::cdl::WorkingMemoryChange& wmc);
@@ -48,6 +49,7 @@ protected:
         virtual void updateStatus(int id, Completion status, const Ice::Current&);
         virtual void setChangeFilter(int id, const StateChangeFilterPtr& filter, const Ice::Current&);
         virtual void waitForChanges(int id, int timeout, const Ice::Current&);
+        virtual bool queryGoal(const std::string& goal, const Ice::Current&);
 
     protected:
         WMControl* parent;
