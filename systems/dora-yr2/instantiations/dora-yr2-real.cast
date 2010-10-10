@@ -19,7 +19,7 @@ INCLUDE includes/default.sa/default-main.cast
 
 # Conceptual.SA  ############################################################
 INCLUDE includes/conceptual.sa/conceptual-base.cast
-#INCLUDE includes/conceptual.sa/conceptual-main.cast
+INCLUDE includes/conceptual.sa/conceptual-main.cast
 
 
 
@@ -74,7 +74,7 @@ JAVA MG executor dora.execution.components.DoraExecutionMediator
 
 # viewing and debugging #######################################################
 
-INCLUDE includes/visualization.sa/v11n-base.cast
+#INCLUDE includes/visualization.sa/v11n-base.cast
 
 #JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, castutils.slice.WMMap, motivation.slice.ExploreMotive"
 
