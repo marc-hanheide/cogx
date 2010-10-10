@@ -1,5 +1,6 @@
 package castutils.castextensions;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -75,7 +76,8 @@ public class WMContentWaiter<T extends Ice.ObjectImpl> implements
 
 		view.registerHandler(this);
 		try {
-			for (Entry<WorkingMemoryAddress, T> entry : view.entrySet()) {
+			HashSet<Entry<WorkingMemoryAddress,T>> copySet=new HashSet<Entry<WorkingMemoryAddress, T>>(view.entrySet()); 
+			for (Entry<WorkingMemoryAddress, T> entry : copySet) {
 				if (cmf.matches(entry.getValue())) {
 					logger.trace("found a matching entry already in the view");
 					return entry;
