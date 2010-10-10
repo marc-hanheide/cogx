@@ -10,6 +10,7 @@ import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
 
@@ -22,16 +23,16 @@ import eu.cogx.beliefs.slice.PerceptBelief;
  */
 public class BeliefUtils {
 
-	public static IndependentFormulaDistributionsBelief<PerceptBelief> getMostRecentPerceptBeliefAncestor(
+	public static IndependentFormulaDistributionsBelief<dBelief> getMostRecentBeliefAncestor(
 			ManagedComponent _component,
-			IndependentFormulaDistributionsBelief<GroundedBelief> _gb)
+			IndependentFormulaDistributionsBelief<? extends dBelief> _gb)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		CASTBeliefHistory hist = (CASTBeliefHistory) _gb.get().hist;
 
-		IndependentFormulaDistributionsBelief<PerceptBelief> perceptBel = IndependentFormulaDistributionsBelief
-				.create(PerceptBelief.class, _component.getMemoryEntry(
+		IndependentFormulaDistributionsBelief<dBelief> perceptBel = IndependentFormulaDistributionsBelief
+				.create(dBelief.class, _component.getMemoryEntry(
 						hist.ancestors.get(hist.ancestors.size() - 1).address,
-						PerceptBelief.class));
+						dBelief.class));
 		return perceptBel;
 
 	}
@@ -44,7 +45,7 @@ public class BeliefUtils {
 
 	public static <PerceptType extends Ice.Object> PerceptType getMostRecentPerceptAncestor(
 			ManagedComponent _component,
-			IndependentFormulaDistributionsBelief<PerceptBelief> _pb,
+			IndependentFormulaDistributionsBelief<? extends dBelief> _pb,
 			Class<PerceptType> _pCls) throws DoesNotExistOnWMException,
 			UnknownSubarchitectureException {
 		WorkingMemoryPointer ancestorPtr = getMostRecentAncestorPointer(_pb);
