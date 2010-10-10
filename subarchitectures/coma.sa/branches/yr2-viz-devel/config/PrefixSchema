@@ -1,0 +1,11 @@
+#the concept of the place
+topConcept = dora:\LocalSpace
+#URL and URI
+http\://www.w3.org/1999/02/22-rdf-syntax-ns = rdf
+http\://www.zas.gwz-berlin.de/mitarb/homepage/bertomeu/furniture.owl = furniture
+http\://www.w3.org/2001/XMLSchema = xsd 
+http\://www.w3.org/2000/01/rdf-schema = rdfs
+http\://www.w3.org/2002/07/owl = owl
+http\://www.dfki.de/cosy/wordnet = wn
+http\://dora.cogx.eu = dora
+http\://www.dfki.de/komparse/resource/twinity = twinity
