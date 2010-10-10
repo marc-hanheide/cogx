@@ -37,7 +37,9 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.interpret.IntentionRecognition;
 import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
+import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.RecognisedIntention;
+import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.ref.RefLogicalForm;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
@@ -52,6 +54,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A CAST component/wrapper of the class IntentionManagement. The component
@@ -167,10 +171,10 @@ extends AbstractDialogueComponent {
 				RefLogicalForm rlf = (RefLogicalForm) body;
 				LogicalForm lf = rlf.lform;
 				irecog.updateReferentialHypotheses(rlf.refs);
-				RecognisedIntention eos = irecog.logicalFormToEpistemicObjects(lf);
-				if (eos != null) {
-					log("recognised " + eos.ints.size() + " intentions and " + (eos.pre.size() + eos.post.size()) + " beliefs");
-					for (dBelief b : eos.pre) {
+				RecognisedIntention ri = irecog.logicalFormToEpistemicObjects(lf);
+				if (ri != null) {
+					log("recognised " + ri.ints.size() + " intentions and " + (ri.pre.size() + ri.post.size()) + " beliefs");
+					for (dBelief b : ri.pre) {
 						log("adding belief " + b.id + " to binder WM:\n" + BeliefIntentionUtils.beliefToString(b));
 						try {
 							dBelief db = upCastPrecondition(b);
@@ -183,7 +187,7 @@ extends AbstractDialogueComponent {
 							ex.printStackTrace();
 						}
 					}
-					for (dBelief b : eos.post) {
+					for (dBelief b : ri.post) {
 						log("adding belief " + b.id + " to dialogue WM:\n" + BeliefIntentionUtils.beliefToString(b));
 						try {
 							addToWorkingMemory(b.id, b);
@@ -192,7 +196,7 @@ extends AbstractDialogueComponent {
 							ex.printStackTrace();
 						}
 					}
-					for (Intention i : eos.ints) {
+					for (Intention i : ri.ints) {
 						log("adding communicative intention " + i.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(i));
 						try {
 							CommunicativeIntention cit = new CommunicativeIntention();
@@ -207,6 +211,15 @@ extends AbstractDialogueComponent {
 				}
 				else {
 					log("no epistemic object recognised");
+				}
+
+				// register the dialogue move
+				DialogueMove dm = new DialogueMove(IntentionManagementConstants.humanAgent, lf, ri.nref);
+				try {
+					addToWorkingMemory(newDataID(), dm);
+				}
+				catch (AlreadyExistsOnWMException ex) {
+					ex.printStackTrace();
 				}
 			}
 		}

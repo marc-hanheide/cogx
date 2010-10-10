@@ -14,5 +14,13 @@ correlation = [
 	(ling_to_observed(objecttype(box), objecttype(box))) = p(0.8),
 	(ling_to_observed(objecttype(box), objecttype(ball))) = p(0.2),
 	(ling_to_observed(objecttype(ball), objecttype(box))) = p(0.2),
-	(ling_to_observed(objecttype(ball), objecttype(ball))) = p(0.8)
+	(ling_to_observed(objecttype(ball), objecttype(ball))) = p(0.8),
+
+	(ling_to_observed(linguisticsalience(high), linguisticsalience(high))) = p(0.7),
+	(ling_to_observed(linguisticsalience(high), linguisticsalience(low))) = p(0.3),
+
+	(ling_to_observed(visualsalience(high), linguisticsalience(high))) = p(0.4),
+	(ling_to_observed(visualsalience(high), linguisticsalience(low))) = p(0.3),
+	(ling_to_observed(visualsalience(low), linguisticsalience(high))) = p(0.2),
+	(ling_to_observed(visualsalience(low), linguisticsalience(low))) = p(0.1)
 ].

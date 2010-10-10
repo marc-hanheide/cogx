@@ -43,6 +43,7 @@ import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.dialogue.util.Counter;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
@@ -85,8 +86,8 @@ public abstract class ConversionUtils {
 		List<dBelief> bels_pre = new LinkedList<dBelief>();
 		List<dBelief> bels_post = new LinkedList<dBelief>();
 
-		Map<String, dBelief> marks = new HashMap<String, dBelief>();
-		List<InterBeliefPointer> pointers = new LinkedList<InterBeliefPointer>();
+//		Map<String, dBelief> marks = new HashMap<String, dBelief>();
+//		List<InterBeliefPointer> pointers = new LinkedList<InterBeliefPointer>();
 
 		RecognisedIntention ri = new RecognisedIntention();
 
@@ -100,6 +101,13 @@ public abstract class ConversionUtils {
 				if (wma != null) {
 					usedRefs.put(n, wma);
 				}
+			}
+		}
+
+		if (usedRefs.size() == 1) {
+			for (String refnom : usedRefs.keySet()) {
+				ri.nref = new NominalReference(refnom, BeliefFormulaFactory.newPointerFormula(usedRefs.get(refnom)));
+				break;
 			}
 		}
 

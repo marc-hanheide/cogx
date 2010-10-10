@@ -107,6 +107,11 @@ generate : object_description(Int, Nom, PrivBId) <-
 	i : feat_InfoStatus(Nom, familiar) / -1.0,
 	i : feat_Salient(Nom, true) / -1.0.
 
+generate : object_description(Int, Nom, PrivBId) <-
+	att : linguisticsalience(PrivBId, high),
+	att : using_salience(PrivBId) / -5.0,
+	generate : it(Nom).
+
 %-------------------------------------------------------------------------
 
 % CAREFUL: "box" is a "thing"

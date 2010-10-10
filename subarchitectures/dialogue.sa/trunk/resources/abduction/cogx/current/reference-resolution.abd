@@ -27,7 +27,7 @@ resolves_props(BId, [Property|T]) <-
 
 % non-correlated
 resolves_props(BId, [Property|T]) <-
-	property_can_be_ignored(Property) / p(0.25),
+	property_can_be_ignored(Property) / p(0.1),
 	resolves_props(BId, T).
 
 %-------------------------------------------------------------------------
@@ -36,6 +36,23 @@ resolves_props(BId, [Property|T]) <-
 get_belief(BId, color(Arg)) <- bel : color(BId, Arg).
 get_belief(BId, shape(Arg)) <- bel : shape(BId, Arg).
 get_belief(BId, objecttype(Arg)) <- bel : objecttype(BId, Arg).
+
+get_belief(BId, linguisticsalience(Arg)) <- att : linguisticsalience(BId, Arg).
+
+%att : linguisticsalience(X, low).
+
+%-------------------------------------------------------------------------
+% Linguistic salience
+
+%bel : linguisticsalience(BId, Arg) <-
+%	att : dialogue_history(Latest),
+%	att : dialogue_move
+%
+%att : linguisticsalience(BId, Arg, []).
+%
+%att : linguisticsalience(BId, Arg, [dm(Agent, Topic)|T]) <-
+%	Topic \= BId,
+%	att : linguisticsalience(BId, Arg, T).
 
 %-------------------------------------------------------------------------
 % Epistemic status hierarchy

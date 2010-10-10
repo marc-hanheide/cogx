@@ -61,7 +61,10 @@ understand : topic(S, H, EpSt, Int, Ref, Nom) <-
 	i : prop(Nom, it),
 	i : feat_Num(Nom, sg),
 	% XXX: have the epst bound dynamically depending on the refexp
-	int : pre(Int, belief(Ref, shared(S, H), fv(saliency, salient))) / p(1.0).
+%	int : pre(Int, belief(Ref, shared(S, H), fv(saliency, salient))) / p(1.0).
+%	int : pre(Int, belief(Ref, shared(S, H), fv(saliency, salient))) / p(1.0),
+	EpSt = shared(S, H),
+	try_topic_reference_resolution(EpSt, Int, Ref, Nom).
 
 % colour
 understand : topic(S, H, EpSt, Int, Ref, Nom) <-
@@ -108,8 +111,8 @@ try_topic_reference_resolution(EpSt, Int, Ref, Nom) <-
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-get_topic_referent(attrib(S, H), Int, Ref, Nom, 'pointer-to'('topic-referent')) <-
-	is_not_reference(Ref) / p(1.0).
+%get_topic_referent(attrib(S, H), Int, Ref, Nom, 'pointer-to'('topic-referent')) <-
+%	is_not_reference(Ref) / p(1.0).
 
 get_topic_referent(EpSt, Int, Ref, Nom, BId) <-
 	EpSt = shared(S, H),

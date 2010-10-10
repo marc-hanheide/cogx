@@ -54,7 +54,7 @@ find_ref_features(BId, Nom) <-
 	i : sort(Nom, thing),
 	i : prop(Nom, it),
 	i : feat_Num(Nom, sg),
-	bel : fv(BId, 'saliency', salient) / 0.0.
+	bel : fv(BId, 'linguisticSalience', high) / 0.0.
 
 find_ref_features(BId, Nom) <-
 	i : sort(Nom, 'q-color'),
@@ -98,4 +98,9 @@ try_proximity(BId, Nom) <-
 
 try_proximity(BId, Nom) <-
 	i : feat_Proximity(Nom, Proximity),
-	bel : fv(BId, 'proximity', Proximity) / 0.0.
+	proximity_to_salience(Proximity, Salience),
+	bel : fv(BId, 'visualSalience', Salience) / 0.0.
+%	bel : fv(BId, 'proximity', Proximity) / 0.0.
+
+proximity_to_salience(proximal, high).
+prozimity_to_salience(distal, low).

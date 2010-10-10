@@ -30,6 +30,8 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
+import de.dfki.lt.tr.dialogue.discourse.DialogueMoveTranslator;
+import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
 import de.dfki.lt.tr.dialogue.ref.BeliefTranslator;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import eu.cogx.beliefs.slice.GroundedBelief;
@@ -39,6 +41,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 /**
  *
@@ -52,6 +55,7 @@ extends AbstractDialogueComponent {
 	private boolean testing = false;
 
 	HashMap<WorkingMemoryAddress, dBelief> bm = new HashMap<WorkingMemoryAddress, dBelief>();
+	Stack<DialogueMove> dst = new Stack<DialogueMove>();
 
 	@Override
 	public void start() {
@@ -90,16 +94,25 @@ extends AbstractDialogueComponent {
 
  */
 		if (testing) {
-			addChangeFilters(dBelief.class);
+			addBeliefChangeFilters(dBelief.class);
 		}
 		else {
-			addChangeFilters(GroundedBelief.class);
+			addBeliefChangeFilters(GroundedBelief.class);
 //			addChangeFilters(SharedBelief.class);
 		}
+
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(DialogueMove.class,  WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleDialogueMove(_wmc);
+					}
+				});
 }
 
 	private void
-	addChangeFilters(Class cls_) {
+	addBeliefChangeFilters(Class cls_) {
 		addChangeFilter(
 				ChangeFilterFactory.createChangeFilter(cls_, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
 				new WorkingMemoryChangeReceiver() {
@@ -152,15 +165,20 @@ extends AbstractDialogueComponent {
 	}
 
 	private void handleBeliefDelete(WorkingMemoryChange _wmc) {
-//		try {
-			//CASTData data = getWorkingMemoryEntry(_wmc.address);
-			//dBelief belief = (dBelief)data.getData();
-			bm.remove(_wmc.address);
+		bm.remove(_wmc.address);
+		triggerRulefileRewrite();
+	}
+
+	private void handleDialogueMove(WorkingMemoryChange _wmc) {
+		try {
+			CASTData data = getWorkingMemoryEntry(_wmc.address);
+			DialogueMove dm = (DialogueMove)data.getData();
+			dst.push(dm);
 			triggerRulefileRewrite();
-//		}
-//		catch (SubarchitectureComponentException e) {
-//			e.printStackTrace();
-//		}
+		}
+		catch (SubarchitectureComponentException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void triggerRulefileRewrite() {
@@ -173,18 +191,22 @@ extends AbstractDialogueComponent {
 
 	// FIXME: this has to be as efficient as possible!
 	private void rewriteRulefile(String filename) {
-		log("dumping the current belief model to " + filename);
+		log("dumping the current belief and discourse model to " + filename);
 
-		BeliefTranslator tran = new BeliefTranslator();
-
+		BeliefTranslator bTran = new BeliefTranslator();
 		for (WorkingMemoryAddress addr : bm.keySet()) {
 			dBelief bel = bm.get(addr);
-			tran.addBelief(addr, bel);
+			bTran.addBelief(addr, bel);
+		}
+		DialogueMoveTranslator dmTran = new DialogueMoveTranslator();
+		for (DialogueMove dm : dst) {
+			dmTran.addDialogueMove(dm);
 		}
 
 		try {
 			BufferedWriter f = new BufferedWriter(new FileWriter(dumpfile));
-			f.write(tran.toRulefileContents());
+			f.write(bTran.toRulefileContents());
+			f.write(dmTran.toRulefileContents());
 			f.close();
 		}
 		catch (IOException ex) {
