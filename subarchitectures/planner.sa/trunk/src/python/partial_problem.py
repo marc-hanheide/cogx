@@ -70,6 +70,7 @@ def all_objects(arg, objects):
 class PartialProblem(object):
     def __init__(self, pstate, objects, min_constraints, max_constraints, rules, domain):
         self.state = pstate
+        self.detstate = pstate.determinized_state(0.05, 0.95)
         self.objects = objects
         self.min_constraints = min_constraints
         self.max_constraints = max_constraints
@@ -135,7 +136,7 @@ class PartialProblem(object):
     def limit(self, constraints):
         result = set()
         for o in self.objects:
-            if all(c.matches(o, self.state) for c in constraints):
+            if all(c.matches(o, self.detstate) for c in constraints):
                 result.add(o)
 
         def check_value(val):
@@ -186,8 +187,8 @@ class PartialProblem(object):
             elif c not in self.min_constraints:
                 new_constraints.append(c)
 
-        remaining = set(o for o in self.objects if all(c.matches(o, self.state) for c in obj_constraints))
-        to_remove = set(o for o in self.objects if not all(c.matches(o, self.state) for c in obj_constraints))
+        remaining = set(o for o in self.objects if all(c.matches(o, self.detstate) for c in obj_constraints))
+        to_remove = set(o for o in self.objects if not all(c.matches(o, self.detstate) for c in obj_constraints))
         log.debug("candidates for removal: %s", ", ".join(a.name for a in to_remove))
         assert to_remove
         vo_rules, co_rules = self.compute_removal_criterions(to_remove, remaining)

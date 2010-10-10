@@ -79,7 +79,7 @@ class CASTState(object):
             self.match_generated_objects(oldstate)
 
     def generate_init_facts(self, problem, oldstate=None):
-        generated_facts = []
+        generated_facts = {}
         generated_objects = set()
         new_objects = set(self.objects)
         if oldstate and oldstate.generated_facts is not None:
@@ -89,6 +89,8 @@ class CASTState(object):
 
         # import debug
         # debug.set_trace()
+        cstate = self.prob_state.determinized_state(0.05, 0.95)
+        
         for rule in self.domain.init_rules:
             def inst_func(mapping, args):
                 if len(args) != len(rule.args):
@@ -99,16 +101,17 @@ class CASTState(object):
                     return True, None
                 return None, None
             
-            #combinations = list(product(*map(lambda arg: list(self.problem.get_all_objects(arg.type)), rule.args)))
             for mapping in rule.smart_instantiate(inst_func, rule.args, [problem.get_all_objects(a.type) for a in rule.args], problem):
-            #for c in combinations:
-            #    rule.instantiate(c, self.problem)
-                if rule.precondition is None or self.prob_state.is_satisfied(rule.precondition):
-                    facts = self.prob_state.get_effect_facts(rule.effect)
-                    generated_facts += [pddl.state.Fact(svar, val) for svar, val in facts.iteritems()] 
-            #    rule.uninstantiate()
+                if rule.precondition is None or cstate.is_satisfied(rule.precondition):
+                    for e in rule.get_effects():
+                        #print e.pddl_str()
+                          #apply effects seperately in order to allow later effects affecting previously set values
+                        facts = cstate.get_effect_facts(e)
+                        cstate.update(facts)
+                        generated_facts.update(facts)
+
         generated_objects |= (problem.objects - self.objects)
-        return generated_facts, generated_objects
+        return [pddl.state.Fact(svar,val) for svar, val in generated_facts.iteritems()], generated_objects
 
     def get_coma_data(self, component):
         coma_objects = set()

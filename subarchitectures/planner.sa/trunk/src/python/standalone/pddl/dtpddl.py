@@ -301,6 +301,7 @@ class DTRule(scope.Scope):
         self.add_args = add_args
         self.conditions = [c.copy(new_scope=self) for c in conditions]
         self.values = [tuple(self.lookup(c)) for c in values]
+        self.inst_func_init = False
 
     def deps(self):
         funcs = sum((lit.visit(visitors.collect_functions) for lit in self.conditions), [])
@@ -334,44 +335,79 @@ class DTRule(scope.Scope):
             mapping = dict((param.name, c) for (param, c) in zip(self.args+self.add_args, mapping))
         scope.Scope.instantiate(self, mapping, parent)
 
+    def prepare_inst_func(self):
+        self.pcond = None
+        if len(self.values) == 1 and not isinstance(self.values[0][0], predicates.ConstantTerm):
+            self.pcond = conditions.LiteralCondition(builtin.gt, [self.values[0][0], predicates.Term(0)])
+
+        self.lit_by_arg = defaultdict(set)
+        for lit in self.conditions + [self.pcond]:
+            if lit:
+                for arg in lit.free():
+                    self.lit_by_arg[arg].add(lit)
+        self.inst_func_init = True
+
     def get_inst_func(self, st, ignored_cond=None):
         import state
         def args_visitor(term, results):
             if isinstance(term, FunctionTerm):
                 return sum(results, [])
             return [term]
-        
+
+        if not self.inst_func_init:
+            self.prepare_inst_func()
+                    
+        prev_mapping = {}
+        checked = set()
+            
         def inst_func(mapping, args):
             next_candidates = []
+            if checked:
+                for k,v in prev_mapping.iteritems():
+                    if mapping.get(k, None) != v:
+                        checked.difference_update(self.lit_by_arg[k])
+            prev_mapping.update(mapping)
+            
             #print [a.name for a in mapping.iterkeys()]
             forced = None
-            for lit in self.conditions:
-                if lit == ignored_cond:
+            forced_lit = None
+            for lit in self.conditions + [self.pcond]:
+                if lit == ignored_cond or lit in checked or lit is None:
                     continue
-                if all(a in args[:-1] for a in lit.free()):
-                    continue # checked before
 
                 if lit.predicate == builtin.equals and isinstance(lit.args[0], FunctionTerm) and isinstance(lit.args[1], VariableTerm):
                     v = lit.args[-1]
                     if all(a.is_instantiated() for a in lit.args[0].args if isinstance(a, VariableTerm)) and  isinstance(v, VariableTerm) and not v.is_instantiated():
                         svar = state.StateVariable.from_literal(lit, st)
                         forced = v.object, st[svar]
+                        forced_lit = lit
 
                 if all(a.is_instantiated() for a in lit.free()):
-                    fact = state.Fact.from_literal(lit, st)
-                    #cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
-                    exst = st.get_extended_state([fact.svar])
-                    #val = st.evaluate_term(v)
-                    if exst[fact.svar] != fact.value:
-                        return None, None
+                    if lit == self.pcond:
+                        svar = state.StateVariable.from_literal(lit, st)
+                        val = st[svar]
+                        if val == builtin.UNKNOWN or val.value <= 0.001:
+                            return None, None
+                    else:
+                        fact = state.Fact.from_literal(lit, st)
+                        #cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
+                        exst = st.get_extended_state([fact.svar])
+                        #val = st.evaluate_term(v)
+                        if exst[fact.svar] != fact.value:
+                            return None, None
+                    checked.add(lit)
                 else:
                     next_candidates.append([a for a in lit.free() if not a.is_instantiated()])
 
             if forced:
+                checked.add(forced_lit)
+                #print "Forced %s = %s" % (str(forced[0]), str(forced[1]))
                 return forced
             if next_candidates:
                 next_candidates = sorted(next_candidates, key=lambda l: len(l))
+                #print "Next:", next_candidates[0][0]
                 return next_candidates[0][0], None
+            #print self, [a.get_instance().name for a in  args]
             return True, None
         return inst_func
         
@@ -486,7 +522,7 @@ class DTRule(scope.Scope):
                 vstrs.append("%s: %s" % (p.pddl_str(), v.pddl_str()))
                 
         vstr = ", ".join(vstrs)
-        s = "%: (%s %s) (when %s) %s" % (self.name, self.function.name, " ".join(a.name for a in self.args), cstr, vstr)
+        s = "%s: (%s %s) (when %s) %s" % (self.name, self.function.name, " ".join(a.name for a in self.args), cstr, vstr)
         return s
 
 def collect_param_visitor(term, results):
@@ -577,6 +613,7 @@ class DT2MAPLCompiler(translators.Translator):
                 b = Builder(a)
                 dterm = b("*", (total_p_cost,), ("-", 1, p))
                 a.duration.append(durative.DurationConstraint(dterm))
+                #cparts = [b.cond('not', ('=', p, 0))]
                 cparts = []
                 for lit in r.conditions:
                     if lit.predicate == builtin.equals and lit.args[0].function in p_functions:
@@ -606,10 +643,8 @@ class DT2MAPLCompiler(translators.Translator):
             action.precondition.parts.append(commit_cond)
         return action
     
+    @translators.removes('partial-observability')
     def translate_domain(self, _domain):
-        if "partial-observability" not in _domain.requirements:
-            return _domain
-
         if 'observe_effects' not in translators.Translator.get_annotations(_domain):
             translators.Translator.get_annotations(_domain)['observe_effects'] = []
         if 'dt_rules' not in translators.Translator.get_annotations(_domain):
@@ -659,6 +694,7 @@ class DT2MAPLCompiler(translators.Translator):
         dom.observe = []
         return dom
 
+    @translators.removes('partial-observability')
     def translate_problem(self, _problem):
         p2 = translators.Translator.translate_problem(self, _problem)
         b = Builder(p2)
@@ -667,8 +703,8 @@ class DT2MAPLCompiler(translators.Translator):
         
 class DTPDDLCompiler(translators.Translator):
     def __init__(self, copy=True, **kwargs):
-        self.depends = [translators.MAPLCompiler(copy=copy, **kwargs)]
-        self.copy = False
+        self.depends = [translators.MAPLCompiler(**kwargs)]
+        self.set_copy(copy)
 
     def translate_action(self, action, domain):
         cost_term = action.get_total_cost()
@@ -687,11 +723,8 @@ class DTPDDLCompiler(translators.Translator):
             a2.effect = new_eff
 
         return a2
-        
+
     def translate_domain(self, _domain):
-        if "partial-observability" not in _domain.requirements:
-            return translators.Translator.translate_domain(self, _domain)
-        
         dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), _domain.predicates.copy(), _domain.functions.copy(), [], [])
         dom.requirements = _domain.requirements.copy()
         translators.change_builtin_functions(dom.predicates, default_predicates)
@@ -701,7 +734,7 @@ class DTPDDLCompiler(translators.Translator):
             dom.predicates.add(builtin.increase)
         if "decrease" not in dom.predicates:
             dom.predicates.add(builtin.decrease)
-            
+
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
         dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
@@ -718,8 +751,8 @@ class DTPDDLCompiler(translators.Translator):
 
 class ProbADLCompiler(translators.ADLCompiler):
     def __init__(self, copy=True, **kwargs):
-        self.depends = [translators.ObjectFluentCompiler(copy=copy, **kwargs), translators.CompositeTypeCompiler(copy=False, **kwargs) ]
-        self.copy = False
+        self.depends = [translators.ObjectFluentCompiler(**kwargs), translators.CompositeTypeCompiler(**kwargs) ]
+        self.set_copy(copy)
 
     def translate_action(self, action, domain=None):
         a2 = translators.Translator.translate_action(self, action, domain)

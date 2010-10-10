@@ -71,8 +71,8 @@ def getRWDescription(action, args, _state, time):
         universal_args = []
         _state.clear_axiom_cache()
         extstate, reasons, universalReasons = _state.get_extended_state(_state.get_relevant_vars(action.replan), getReasons=True)
-        sat = extstate.is_satisfied(action.replan, read_vars, universal_args), "%s: %s" % (str(pnode), action.replan.pddl_str())
-        assert sat
+        sat = extstate.is_satisfied(action.replan, read_vars, universal_args)
+        assert sat, "%s: %s" % (str(pnode), action.replan.pddl_str())
         
         pnode.replanconds = set(read_vars)
         pnode.original_replan = set(state.Fact(var, extstate[var]) for var in read_vars)

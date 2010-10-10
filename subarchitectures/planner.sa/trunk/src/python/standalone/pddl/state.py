@@ -231,7 +231,7 @@ class StateVariable(object):
         function = None
         litargs = []
         modal_args = []
-        if literal.predicate in assignment_ops + [equals, eq]:
+        if literal.predicate in assignment_ops + numeric_comparators + [equals]:
             function = literal.args[0].function
             litargs = literal.args[0].args
             modal_args = None
@@ -328,7 +328,7 @@ class Fact(tuple):
         literal -- Literal
         state -- state to look up nested function."""
         value = None
-        if literal.predicate in assignment_ops + [equals, eq]:
+        if literal.predicate in assignment_ops + [eq, equals]:
             value = instantiate_args(literal.args[-1:], state)[0]
         else:
             if literal.negated:
@@ -753,7 +753,7 @@ class State(dict):
             elif isinstance(cond, conditions.Disjunction):
                 return anyFacts(imap(checkConditionVisitor, cond.parts))
             elif isinstance(cond, conditions.QuantifiedCondition):
-                combinations = product(*map(lambda a: self.problem.get_all_objects(a.type), cond.args))
+                combinations = product(*map(lambda a: list(self.problem.get_all_objects(a.type)), cond.args))
                 if isinstance(cond, conditions.UniversalCondition):
                     result, vars, universal = allFacts(instantianteAndCheck(cond, c) for c in combinations)
                     universal += cond.args
@@ -807,7 +807,7 @@ class State(dict):
                     if not restrictionVisitor(cond):
                         return
                     
-                combinations = product(*map(lambda a: self.problem.get_all_objects(a.type), cond.args))
+                combinations = product(*map(lambda a: list(self.problem.get_all_objects(a.type)), cond.args))
                 result = []
                 for c in combinations:
                     cond.instantiate(dict(zip(cond.args, c)), self.problem)
