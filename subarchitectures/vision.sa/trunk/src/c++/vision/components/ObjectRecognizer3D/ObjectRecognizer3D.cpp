@@ -105,6 +105,8 @@ void ObjectRecognizer3D::start(){
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
         &ObjectRecognizer3D::receiveDetectionCommand));
 }
+
+
 void ObjectRecognizer3D::PostFake3DObject(const cdl::WorkingMemoryChange & _wmc){
   Post3DObjectPtr f = getMemoryEntry<Post3DObject>(_wmc.address);
   loadVisualModelToWM(m_recEntries[f->label],f->pose,f->label);
