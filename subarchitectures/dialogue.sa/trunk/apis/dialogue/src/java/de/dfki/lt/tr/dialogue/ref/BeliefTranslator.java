@@ -86,7 +86,7 @@ public class BeliefTranslator {
 								new Term[] {
 									belIdTerm,
 									ConversionUtils.workingMemoryAddressToTerm(wmp.address),
-									TermAtomFactory.term(wmp.type)
+									TermAtomFactory.term("type" + wmp.type)
 								} )));
 			}
 			for (WorkingMemoryPointer wmp : chist.offspring) {
@@ -96,7 +96,7 @@ public class BeliefTranslator {
 								new Term[] {
 									belIdTerm,
 									ConversionUtils.workingMemoryAddressToTerm(wmp.address),
-									TermAtomFactory.term(wmp.type)
+									TermAtomFactory.term("type" + wmp.type)
 								} )));
 			}
 		}
