@@ -2,7 +2,7 @@ package coma.view;
 
 import java.io.IOException;
 
-import coma.visulization.jung.ComaFrame;
+import coma.jung.ComaFrame;
 
 public class KnowledgeViewer {
 	private ComaFrame cf;
