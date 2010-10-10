@@ -28,7 +28,7 @@ import java.io.FileReader;
 import marytts.client.MaryClient;
 //import marytts.client.MaryClient;
 
-import comsys.components.tts.TTSLocal;
+import de.dfki.lt.tr.dialogue.tts.MaryTTSLocal;
 //import marytts.client.http.Address;
 
 public class SynthesisRAWMaryXMLInput {
