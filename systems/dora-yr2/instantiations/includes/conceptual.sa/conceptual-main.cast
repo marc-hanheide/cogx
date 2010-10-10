@@ -1,5 +1,5 @@
 CPP GD conceptual.queryhandler ConceptualQueryHandler --debug true
 CPP GD conceptual.observer ConceptualObserver --debug true
-CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --debug true
+CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --defaultchaingraphinferencer default.chaingraphinferencer --debug true
 CPP GD conceptual.comaroomupdater ConceptualComaRoomUpdater --queryhandler conceptual.queryhandler --debug true
 
