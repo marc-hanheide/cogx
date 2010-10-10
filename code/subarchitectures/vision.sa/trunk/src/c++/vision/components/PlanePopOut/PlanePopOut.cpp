@@ -1986,7 +1986,7 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
    
     float wS, wC, wP; //magic weight for SURF matching, color histogram and Size/Position/Pose
     IpPairVec matches;
-    wP = 0.3;
+    wP = 0.2;
     if (obj1.surf.size() == 0 || obj2.surf.size()==0) wS = 0.0;
     else if (obj1.surf.size() < 40 || obj2.surf.size()<40)
     {
