@@ -49,6 +49,7 @@ if(BUILD_ROCS)
 	set(ROCS_BUILD_MODULE_CORE yes)
 	set(ROCS_BUILD_MODULE_MATH yes)
 	set(ROCS_BUILD_MODULE_CV yes)
+	set(ROCS_BUILD_THIRDPARTY_LIBDAI yes)
 	# Set the directory where ROCS should be installed
 	set(ROCS_DIR ${OUTPUT}/rocs)
 	# Finally, add ROCS
@@ -199,6 +200,12 @@ if(BUILD_SA_FAKE_MOTIVATION)
 endif(BUILD_SA_FAKE_MOTIVATION)
 
 add_subdirectory(tools/scripts)
+
+# HACK FOR UBUNTU USERS UNTIL FIXED IN CAST!
+if ("${ICE_SLICE_DIR}" STREQUAL "/usr/share/slice")
+    set(ICE_SLICE_DIR "/usr/share/Ice/slice")
+    message("Using a dirty hack to set the Ice/slice path")
+endif ("${ICE_SLICE_DIR}" STREQUAL "/usr/share/slice")
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/build.properties.in ${CMAKE_SOURCE_DIR}/build.properties)
 
