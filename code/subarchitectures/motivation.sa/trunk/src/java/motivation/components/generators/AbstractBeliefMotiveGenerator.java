@@ -15,6 +15,7 @@ import castutils.castextensions.WMView;
 import castutils.castextensions.WMView.ChangeHandler;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.WMBeliefView;
+import eu.cogx.planner.facade.PlannerFacade;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
@@ -65,6 +66,13 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 		switch (wmc.operation) {
 		case ADD: {
 			motive = checkForAddition(wmc.address, newEntry);
+			// if goal is achieved already we should remove it!
+			if (motive != null
+					&& PlannerFacade.get(this).isGoalAchieved(
+							motive.goal.goalString)) {
+				motive = null;
+			}
+
 			if (motive != null) {
 				motive.thisEntry = new WorkingMemoryAddress(newDataID(),
 						getSubarchitectureID());
@@ -84,6 +92,12 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 							WorkingMemoryPermissions.LOCKEDOD);
 					motive = getMemoryEntry(correspondingWMA, motiveClass);
 					motive = checkForUpdate(newEntry, motive);
+					// if goal is achieved already we should remove it!
+					if (motive != null
+							&& PlannerFacade.get(this).isGoalAchieved(
+									motive.goal.goalString)) {
+						motive = null;
+					}
 					if (motive == null) {
 						deleteFromWorkingMemory(correspondingWMA);
 						bel2motiveMap.remove(wmc.address);
@@ -104,10 +118,10 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 					lockEntry(correspondingWMA,
 							WorkingMemoryPermissions.LOCKEDOD);
 					deleteFromWorkingMemory(correspondingWMA);
-				} catch(CASTException e) {
+				} catch (CASTException e) {
 					logException(e);
 					unlockEntry(correspondingWMA);
-					throw(e);
+					throw (e);
 				}
 				bel2motiveMap.remove(wmc.address);
 			}
