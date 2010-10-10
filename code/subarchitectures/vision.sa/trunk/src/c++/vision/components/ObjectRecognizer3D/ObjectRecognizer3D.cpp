@@ -515,16 +515,27 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	//if(m_image_keys.Size() < 10){
 	//		log("%s: Too less keypoints detected, no pose estimation possible",m_label.c_str());
 	//}else{
+
+	//nick has been hacking here to get VisualObjects to WM even with low confidence
+
 		m_detect->SetDebugImage(m_iplImage);
+
 		if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object))){
 			log("%s: No object detected", m_label.c_str());
-		}else{
+
+			//not sure if this is actually necessary, but let's do it anyway
+			m_recEntries[m_label].object->conf = 0;
+		}
+		//else{
 			m_rec_cmd->confidence = m_recEntries[m_label].object->conf;
+			
 			if(m_recEntries[m_label].object->conf < m_confidence){
 				log("%s: Confidence of detected object to low: %f<%f", m_label.c_str(), m_recEntries[m_label].object->conf,m_confidence);
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
 				m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
-			}else{
+			}
+			//nah: sure, it's too low, but we want the objects on WM anyway
+			//else{
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
 				m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
 				// Transform pose from Camera to world coordinates
@@ -541,8 +552,8 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 				log("%s: Found object at: (%.3f %.3f %.3f), Confidence: %f", m_label.c_str(), B.pos.x, B.pos.y, B.pos.z, m_recEntries[m_label].object->conf);
 				loadVisualModelToWM(m_recEntries[m_label], B, m_label);
 				m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
-			}
-		}
+				//}
+			//}
 		//}
 
 	if(m_showCV){
