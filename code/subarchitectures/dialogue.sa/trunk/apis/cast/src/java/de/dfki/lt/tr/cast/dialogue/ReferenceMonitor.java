@@ -49,6 +49,7 @@ extends AbstractDialogueComponent {
 
 //	private AbductiveReferenceResolution arr;
 	private String dumpfile = "/dev/null";
+	private boolean testing = false;
 
 	HashMap<WorkingMemoryAddress, dBelief> bm = new HashMap<WorkingMemoryAddress, dBelief>();
 
@@ -88,28 +89,19 @@ extends AbstractDialogueComponent {
 				});
 
  */
-		addChangeFilter(
-				ChangeFilterFactory.createChangeFilter(GroundedBelief.class, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
-				new WorkingMemoryChangeReceiver() {
-					@Override
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handleBeliefAddOverwrite(_wmc);
-					}
-				});
+		if (testing) {
+			addChangeFilters(dBelief.class);
+		}
+		else {
+			addChangeFilters(GroundedBelief.class);
+//			addChangeFilters(SharedBelief.class);
+		}
+}
 
-/*
+	private void
+	addChangeFilters(Class<Type> cls_) {
 		addChangeFilter(
-				ChangeFilterFactory.createChangeFilter(SharedBelief.class, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
-				new WorkingMemoryChangeReceiver() {
-					@Override
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handleBeliefAddOverwrite(_wmc);
-					}
-				});
- */
-/*
-		addChangeFilter(
-				ChangeFilterFactory.createChangeFilter(dBelief.class, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
+				ChangeFilterFactory.createChangeFilter(cls_, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -118,7 +110,7 @@ extends AbstractDialogueComponent {
 				});
 
 		addChangeFilter(
-				ChangeFilterFactory.createChangeFilter(dBelief.class, WorkingMemoryOperation.OVERWRITE, "", "", "binder", FilterRestriction.ALLSA),
+				ChangeFilterFactory.createChangeFilter(cls_, WorkingMemoryOperation.OVERWRITE, "", "", "binder", FilterRestriction.ALLSA),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -127,21 +119,23 @@ extends AbstractDialogueComponent {
 				});
 
 		addChangeFilter(
-				ChangeFilterFactory.createChangeFilter(dBelief.class, WorkingMemoryOperation.DELETE, "", "", "binder", FilterRestriction.ALLSA),
+				ChangeFilterFactory.createChangeFilter(cls_, WorkingMemoryOperation.DELETE, "", "", "binder", FilterRestriction.ALLSA),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						handleBeliefDelete(_wmc);
 					}
 				});
- */
-}
+	}
 
 	@Override
 	public void configure(Map<String, String> _config)
 	{
 		if (_config.containsKey("--dumpfile")) {
 			dumpfile = _config.get("--dumpfile");
+		}
+		if (_config.containsKey("--testing")) {
+			testing = true;
 		}
 	}
 
