@@ -1,5 +1,6 @@
 function showROI(x,b,f,pts3d)
 
+%%return;%%TODEBUG
 global Settings Figs
 global Dirs
 
@@ -42,7 +43,7 @@ if nargin>0
        if uselocalcolorifok == 1
             ptcol = repmat( hsv2rgb(f(1:3)')*255, size(pts3d,1), 1 ) ;
        end
-       showSurfaceFromPoints( pts3d(:,1:3), ptcol, Figs.LRguiR.LRaxPts3d ) ;
+%%TODEBUG       showSurfaceFromPoints( pts3d(:,1:3), ptcol, Figs.LRguiR.LRaxPts3d ) ;
    end
    
    if Settings.SaveImgs
