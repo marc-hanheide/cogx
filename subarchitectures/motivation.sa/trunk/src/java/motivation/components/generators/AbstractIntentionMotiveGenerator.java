@@ -20,6 +20,7 @@ import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTData;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.planner.facade.PlannerFacade;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
@@ -61,6 +62,11 @@ public abstract class AbstractIntentionMotiveGenerator<M extends Motive, T exten
 		case ADD: {
 			T intent = getMemoryEntry(wmc.address, epistemicClass);
 			motive = checkForAddition(wmc.address, intent);
+			if (motive != null
+					&& PlannerFacade.get(this).isGoalAchieved(
+							motive.goal.goalString)) {
+				motive = null;
+			}
 			if (motive != null) {
 				motive.thisEntry = new WorkingMemoryAddress(newDataID(),
 						getSubarchitectureID());
@@ -81,6 +87,12 @@ public abstract class AbstractIntentionMotiveGenerator<M extends Motive, T exten
 							WorkingMemoryPermissions.LOCKEDOD);
 					motive = getMemoryEntry(correspondingWMA, motiveClass);
 					motive = checkForUpdate(intent, motive);
+					if (motive != null
+							&& PlannerFacade.get(this).isGoalAchieved(
+									motive.goal.goalString)) {
+						motive = null;
+					}
+
 					if (motive == null) {
 						deleteFromWorkingMemory(correspondingWMA);
 						intent2motiveMap.remove(wmc.address);
