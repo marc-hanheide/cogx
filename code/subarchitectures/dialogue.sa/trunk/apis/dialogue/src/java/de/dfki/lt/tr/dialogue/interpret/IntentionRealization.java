@@ -78,11 +78,13 @@ public class IntentionRealization {
 		for (ModalisedAtom mf : ConversionUtils.intentionToFacts(itIdTerm, it)) {  // XXX
 			abd_realize.getProxy().addFact(mf);
 		}
+/*
 		for (dBelief b : bels) {
 			for (ModalisedAtom mf : ConversionUtils.beliefToFacts(b)) {
 				abd_realize.getProxy().addFact(mf);
 			}
 		}
+*/
 
 		ModalisedAtom g = TermAtomFactory.modalisedAtom(
 				new Modality[] {

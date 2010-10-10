@@ -111,7 +111,8 @@
       <includepath>
         <pathelement path="${slice.dir}"/>
         <pathelement path="${ice.slice.dir}"/>
-	<pathelement path="../../../../tools/beliefs/apis/beliefs/src/slice/"/>
+        <pathelement path="${beliefslice.dir}"/>
+<!--	<pathelement path="../../../../tools/beliefs/apis/beliefs/src/slice/"/> -->
       </includepath>
     </slice2java>
   </target>

@@ -15,6 +15,7 @@ import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
 import de.dfki.lt.tr.infer.weigabd.slice.Modality;
 import de.dfki.lt.tr.infer.weigabd.slice.ProofWithCost;
 import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -184,6 +185,18 @@ public abstract class AbducerUtils {
 	}
 
 	public static MarkedQuery[] bestAbductiveProof(AbductionEngineConnection abd, MarkedQuery[] goal, int timeout) {
+		List<ProofWithCost> proofs = allAbductiveProofs(abd, goal, timeout);
+
+		if (!proofs.isEmpty()) {
+			log("abducer:" + abd.getEngineName(), "using the best proof");
+			return proofs.get(0).proof;
+		}
+		else {
+			return null;
+		}
+	}
+
+	public static List<ProofWithCost> allAbductiveProofs(AbductionEngineConnection abd, MarkedQuery[] goal, int timeout) {
 		String listGoalsStr = "";
 		for (int i = 0; i < goal.length; i++) {
 			listGoalsStr += MercuryUtils.modalisedAtomToString(goal[i].atom);
@@ -193,13 +206,10 @@ public abstract class AbducerUtils {
 
 		abd.getProxy().startProving(goal);
 		ProofWithCost[] result = abd.getProxy().getProofs(timeout);
-		if (result.length > 0) {
-			log("abducer:" + abd.getEngineName(), "found " + result.length + " proofs, picking the best one");
-			return result[0].proof;
-		}
-		else {
-			return null;
-		}
+
+		List<ProofWithCost> results = Arrays.asList(result);
+		log("abducer:" + abd.getEngineName(), "found " + result.length + " alternatives");
+		return results;
 	}
 
 	private static void log(String logname, String str) {

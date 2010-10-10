@@ -209,27 +209,39 @@ module ref {
 		Readings refRdngs; 
 	};
 
-	class RefHypo extends BaseData {
-		string beliefId;
+	class NominalReference {
+		string nominal;
+		de::dfki::lt::tr::beliefs::slice::logicalcontent::dFormula referent;
+	};
+
+	class NominalReferenceHypothesis {
+		NominalReference ref;
 		double prob;
 	};
 
-	sequence<RefHypo> RefHypoSeq;
+	["java:type:java.util.LinkedList<NominalReferenceHypothesis>"] sequence<NominalReferenceHypothesis> NominalReferenceHypothesisSeq;
 
-	class NominalRef extends BaseData {
-		string nominal;
-		RefHypoSeq hypos;
-	};
-
-	sequence<NominalRef> NominalRefSeq;
-
-	class ResolvedLogicalForm extends BaseData {
+	class RefLogicalForm {
 		lf::LogicalForm lform;
-		NominalRefSeq refs;
+		NominalReferenceHypothesisSeq refs;
 	};
 
 }; 
 // end module
+
+// ===================================================================
+// MODULE DISCOURSE
+// ===================================================================
+
+module discourse {
+
+	class DialogueMove {
+		string agent;
+		lf::LogicalForm lform;
+		ref::NominalReference topic;
+	};
+
+};
 
 // ===================================================================
 // MODULE PRODUCE
