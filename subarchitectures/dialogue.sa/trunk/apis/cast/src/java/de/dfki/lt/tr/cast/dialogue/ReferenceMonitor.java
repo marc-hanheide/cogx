@@ -32,6 +32,7 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.ref.BeliefTranslator;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.SharedBelief;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -87,7 +88,16 @@ extends AbstractDialogueComponent {
 				});
 
  */
+		addChangeFilter(
+				ChangeFilterFactory.createChangeFilter(GroundedBelief.class, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleBeliefAddOverwrite(_wmc);
+					}
+				});
 
+/*
 		addChangeFilter(
 				ChangeFilterFactory.createChangeFilter(SharedBelief.class, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
 				new WorkingMemoryChangeReceiver() {
@@ -96,6 +106,7 @@ extends AbstractDialogueComponent {
 						handleBeliefAddOverwrite(_wmc);
 					}
 				});
+ */
 /*
 		addChangeFilter(
 				ChangeFilterFactory.createChangeFilter(dBelief.class, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
