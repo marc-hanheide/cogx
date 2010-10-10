@@ -99,7 +99,7 @@ extends AbstractDialogueComponent {
 }
 
 	private void
-	addChangeFilters(Class<Type> cls_) {
+	addChangeFilters(Class cls_) {
 		addChangeFilter(
 				ChangeFilterFactory.createChangeFilter(cls_, WorkingMemoryOperation.ADD, "", "", "binder", FilterRestriction.ALLSA),
 				new WorkingMemoryChangeReceiver() {
