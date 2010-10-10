@@ -1,0 +1,12 @@
+<default>
+    <default_room_category_connectivity_potential>0.1</default_room_category_connectivity_potential>
+    <room_category_connectivity>
+	<item room_category1="kitchen"   room_category2="office"    potential="0.1"/>
+	<item room_category1="kitchen"   room_category2="corridor"  potential="0.9"/>
+	<item room_category1="office"    room_category2="kitchen"   potential="0.1"/>
+	<item room_category1="office"    room_category2="corridor"  potential="0.9"/>
+	<item room_category1="corridor"  room_category2="kitchen"   potential="0.9"/>
+	<item room_category1="corridor"  room_category2="office"    potential="0.9"/>
+    </room_category_connectivity>
+    <default_object_existence_probability>0.01</default_object_existence_probability>
+</default>
