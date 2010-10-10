@@ -527,21 +527,7 @@ namespace spatial
 																SpatialData::ViewPointGenerationCommandPtr newVPCommand= 
 																				getMemoryEntry<SpatialData::ViewPointGenerationCommand>(objID.address);
 
-																				log("Posting a fake table.");
-																				VisionData::Post3DObjectPtr obj3D = new VisionData::Post3DObject;
-																				obj3D->label = "table1";
-																				Pose3 p;
-																				p.pos.x = 0;
-																				p.pos.y = 0;
-																				p.pos.z = 0;
-																				setRot(1,0,0,
-																																				0,1,0,
-																																				0,0,1,p);
-																				obj3D->pose = p;
-																				addToWorkingMemory(newDataID(),obj3D);
-																				sleep(1);
-
-
+															
 																/** 1. Change Maps
 																	2. Set policy manager
 																	3. GetBestPolicy
@@ -564,7 +550,9 @@ namespace spatial
 
 																				ofstream out(filename.c_str());
 																				out << newVPCommand->label << endl;
-																				out << 0.8 << " " << newVPCommand->label << " IN room1";
+																				out << 0.8 << " " << newVPCommand->label << " ON " << "table1 IN room1" << endl;
+																				out << 0.95 << " " << "table1" << " IN " << "room1" << endl;	
+																				out << 0.95 << " " <<  newVPCommand->label << " IN " << "room1";	
 																				out.close();
 																}
 																policyManager.m_ConfigurationsFilename = filename;
@@ -799,7 +787,7 @@ namespace spatial
 																								getStrategyStep(policy, i);
 
 																				double	costThisStep = tryLoadStepCost(strategyStep);
-																				if (costThisStep == 0 || m_publishSimCones) {
+																				if (costThisStep == 0) {
 																								log("novel # of relations: %d", strategyStep.size() );
 																								ChangeMaps(room);
 
@@ -1075,8 +1063,8 @@ namespace spatial
 																								SpatialData::SpatialObjectPtr newObj = 
 																												getMemoryEntry<SpatialData::SpatialObject>(objID.address);
 
-																								if(m_publishSimCones)
-																												return;
+																							//	if(m_publishSimCones)
+																									//			return;
 
 
 																								spatial::Object *model = generateNewObjectModel(newObj->label);
@@ -1088,12 +1076,17 @@ namespace spatial
 																								model->pose = newObj->pose;
 
 																								putObjectInMap(*m_map, model);
-
 																								if(m_usePeekabot)
-																												pbVis->DisplayMap(*m_map);
+																																pbVis->DisplayMap(*m_map);
 																								m_map->clearDirty();
 
-																								delete model;
+
+																								// just place it in the map and move on
+																								if(m_publishSimCones)
+																																return;
+
+
+																																													delete model;
 																								if (newObj->label == targetObject){
 																												log("target object detected, stopping search");
 																												char buffer[1024];
@@ -1494,7 +1487,29 @@ namespace spatial
 																//				if (m_posttable){
 																//post a fake table object
 															//	}
+
+
+
 																log("I am running");
+
+sleep(5);
+																log("Posting a fake table.");
+																VisionData::Post3DObjectPtr obj3D = new VisionData::Post3DObject;
+																												obj3D->label = "table1";
+																				Pose3 p;
+																				p.pos.x = 0.1;
+																				p.pos.y = 0.1;
+																				p.pos.z = 0.1;
+																				setRot(1,0,0,
+																																				0,1,0,
+																																				0,0,1,p);
+																				obj3D->pose = p;
+																				addToWorkingMemory(newDataID(),obj3D);
+																				sleep(1);
+
+
+
+
 																if(m_showgui){
 
 																				log("showing GUI");
@@ -2091,7 +2106,7 @@ namespace spatial
 																								FrontierInterface::WeightedPointCloudPtr cloud =
 																												req->outCloud;
 
-																								if (m_bSimulation || m_bEvaluation){
+																								if (m_bSimulation || m_bEvaluation || m_publishSimCones){
 																												log("in simulation");
 																												m_priorreq = req;
 																												gotPC = true;
