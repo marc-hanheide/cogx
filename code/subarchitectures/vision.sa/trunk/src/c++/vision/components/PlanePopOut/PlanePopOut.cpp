@@ -40,7 +40,7 @@ long long gethrtime(void)
 #define Lower_BG 1.1	// 1.1-1.5 radius of BoundingSphere
 #define rate_of_centers 0.4	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
-#define Torleration 3		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
+#define Torleration 5		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
 #define AgonalTime  50		//The dying object could be "remembered" for "AgonalTime" of frames
 #define MAX_V 0.1
@@ -51,7 +51,7 @@ long long gethrtime(void)
 #define label4ambiguousness	-1
 
 #define SendDensePoints  1 	//0 send sparse points ,1 send dense points (recollect them after the segmentation)
-#define Treshold_Comp2SOI	0.7	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
+#define Treshold_Comp2SOI	0.8	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
 
 /**
  * The function called to create a new instance of our component.
@@ -560,11 +560,11 @@ void SendPoints(const VisionData::SurfacePointSeq& points, std::vector<int> &lab
 	str << "glEnd()\nend\n";
 	long long t1 = gethrtime();
 	double dt = (t1 - t0) * 1e-6;
-	powner->log("*****: %d points; Time to create script %lfms", points.size(), dt);
+// 	powner->log("*****: %d points; Time to create script %lfms", points.size(), dt);
 	m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", str.str());
 	t1 = gethrtime();
 	dt = (t1 - t0) * 1e-6;
-	powner->log("*****GL: %ld points sent after %lfms", points.size(), dt);
+// 	powner->log("*****GL: %ld points sent after %lfms", points.size(), dt);
 }
 
 void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
@@ -680,7 +680,6 @@ void PlanePopOut::runComponent()
 	getRectImage(LEFT, stereoWidth, image);
 #ifdef USE_MOTION_DETECTION
 	if (previousImg->width == 1)	{previousImg = convertImageToIpl(image); bIsMoving = true;}
-	else
 	{
 	    IplImage* Cimg = convertImageToIpl(image);
 	    IplImage* subimg=cvCreateImage(cvSize(Cimg->width,Cimg->height),Cimg->depth,Cimg->nChannels);
@@ -711,7 +710,7 @@ void PlanePopOut::runComponent()
 		N = (int)points.size()/2000;
 		random_shuffle ( points.begin(), points.end() );
 		for (VisionData::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
-		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<5)
+		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<3)
 			pointsN.push_back(*it);
 		points_label.clear();
 		points_label.assign(pointsN.size(), -3);
@@ -786,7 +785,7 @@ void PlanePopOut::runComponent()
 	}
 	long long t1 = gethrtime();
 	double dt = (t1 - t0) * 1e-9;
-	log("run time / frame rate: %lf / %lf", dt, 1./dt);
+// 	log("run time / frame rate: %lf / %lf", dt, 1./dt);
 //cout<<"SOI in the WM = "<<PreviousObjList.size()<<endl;
     // wait a bit so we don't hog the CPU
     sleepComponent(50);
@@ -855,8 +854,23 @@ void PlanePopOut::SaveHistogramImg(CvHistogram* hist)
     cvReleaseImage(&rgb_color);
 }
 
+int PlanePopOut::IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist)
+{
+    int IndexMatching = -1;
+    for (unsigned int i=0; i<mlist.size(); i++)
+    {
+	if (index == mlist.at(i).p)
+	{
+	    IndexMatching = mlist.at(i).c;
+	    break;
+	}
+    }
+    return IndexMatching;
+}
+
 void PlanePopOut::SOIManagement()
 {
+    Pre2CurrentList.clear();
     if (PreviousObjList.empty())
     {
 	for(unsigned int i=0; i<CurrentObjList.size(); i++)
@@ -866,73 +880,66 @@ void PlanePopOut::SOIManagement()
 	}
 	return;
     }
-    //log("there are %d SOI in CurrentObjList", CurrentObjList.size());
-  for (unsigned int j=0; j<PreviousObjList.size(); j++)
+//--------------there is no SOI in CurrentObjList----------------------------
+    if (CurrentObjList.empty())
     {
-	bool deleteObjFlag = true; // if this flag is still true after compare, then this object should be deleted from the WM
+	for (unsigned int j=0; j<PreviousObjList.size(); j++)
+	{
+	    if(PreviousObjList.at(j).bInWM == true)
+	    {
+		PreviousObjList.at(j).count = PreviousObjList.at(j).count-1;
+		if(PreviousObjList.at(j).count > Torleration-AgonalTime) Pre2CurrentList.push_back(PreviousObjList.at(j));
+		else
+		{
+		  deleteFromWorkingMemory(PreviousObjList.at(j).id);
+// 		  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+		}
+	    }
+	    else
+		if(PreviousObjList.at(j).count > 0) Pre2CurrentList.push_back(PreviousObjList.at(j));
+	}
+	PreviousObjList.clear();
+	if (!Pre2CurrentList.empty())
+	{
+	    if (Pre2CurrentList.size()>0)
+	    for (unsigned int i=0; i<Pre2CurrentList.size(); i++)
+		PreviousObjList.push_back(Pre2CurrentList.at(i));
+	}
+	return;
+    }
+//-----------------There are SOIs in CurrentObjList, so compare with objects in PreviousObjList
+    std::vector <SOIMatch> myMatchingSOIVector;
+    for (unsigned int j=0; j<PreviousObjList.size(); j++)
+    {
+	int matchingObjIndex = 0;
+	double max_matching_probability = 0.0;
 	for(unsigned int i=0; i<CurrentObjList.size(); i++)
 	{
 	    if (CurrentObjList.at(i).bComCurrentPre == false)
 	    {
 		float probability = Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j));
-		log("probability of matching is %f", probability);
-		if(probability >Treshold_Comp2SOI)
+		if (probability > max_matching_probability)
 		{
-		    deleteObjFlag = false;
-		    CurrentObjList.at(i).bComCurrentPre = true;
-		    if(PreviousObjList.at(j).bInWM == true)
-		    {
-			CurrentObjList.at(i).bInWM = true;
-			CurrentObjList.at(i).id = PreviousObjList.at(j).id;
-			CurrentObjList.at(i).count = PreviousObjList.at(j).count;
-			//cout<<"distCP = "<<dist(CurrentObjList.at(i).c, PreviousObjList.at(j).c)<<"  norm = "<<norm(CurrentObjList.at(i).c)<<endl;
-			if (dist(CurrentObjList.at(i).c, PreviousObjList.at(j).c)/norm(CurrentObjList.at(i).c) > 0.15)
-			{
-// 			    cout<<"CurrentY = "<<CurrentObjList.at(i).c.y<<"  PreviousY = "<<PreviousObjList.at(j).c.y<<endl;
-// 			    cout<<"CurrentX = "<<CurrentObjList.at(i).c.x<<"  PreviousX = "<<PreviousObjList.at(j).c.x<<endl;	    
-			    //CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;
-			    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-			    overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
-			    cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
-			}
-			else
-			{
-			    CurrentObjList.at(i).c = PreviousObjList.at(j).c;
-			}
-			if (CurrentObjList.at(i).count < Torleration)
-			    CurrentObjList.at(i).count = PreviousObjList.at(j).count+1;
-		    }
-		    else
-		    {
-			CurrentObjList.at(i).count = PreviousObjList.at(j).count+1;
-			if (CurrentObjList.at(i).count >= Torleration)
-			{
-			    CurrentObjList.at(i).bInWM =true;
-			    CurrentObjList.at(i).id = newDataID();
-			    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-			    addToWorkingMemory(CurrentObjList.at(i).id, obj);
-			    #ifdef SAVE_SOI_PATCH
-			    std::string path = CurrentObjList.at(i).id;
-			    path.insert(0,"/tmp/"); path.insert(path.length(),".jpg");
-			    IplImage* cropped = cvCreateImage( cvSize(CurrentObjList.at(i).rect.width,CurrentObjList.at(i).rect.height), previousImg->depth, previousImg->nChannels );
-			    cvSetImageROI( previousImg, CurrentObjList.at(i).rect);
-			    cvCopy( previousImg, cropped );
-			    cvResetImageROI( previousImg );
-			    cvSaveImage(path.c_str(), cropped);
-			    cvReleaseImage(&cropped);
-			    #endif
-			    //log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
-			    //log("objects number = %u",objnumber);
-			    cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
-			}
-		    }
-		    break;
+		    max_matching_probability = probability;
+		    matchingObjIndex = i;
 		}
 	    }
 	}
-	if (deleteObjFlag == true)
+	if (max_matching_probability>Treshold_Comp2SOI)
 	{
-	    if (PreviousObjList.at(j).bInWM == true)
+	    SOIMatch SOIm;
+	    SOIm.p = j; SOIm.c = matchingObjIndex; SOIm.pro = max_matching_probability;
+	    myMatchingSOIVector.push_back(SOIm);
+	    CurrentObjList.at(matchingObjIndex).bComCurrentPre = true;
+	}
+    }
+//-------------------handle the disappearing object
+    for (unsigned int j=0; j<PreviousObjList.size(); j++)
+    {
+	int matchingResult = IsMatchingWithOneSOI(j,myMatchingSOIVector);
+	if (matchingResult<0)	//disappearing object
+	{
+	    if(PreviousObjList.at(j).bInWM == true)
 	    {
 		PreviousObjList.at(j).count = PreviousObjList.at(j).count-1;
 		if(PreviousObjList.at(j).count > Torleration-AgonalTime) Pre2CurrentList.push_back(PreviousObjList.at(j));
@@ -940,25 +947,72 @@ void PlanePopOut::SOIManagement()
 		{
 		  //cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
 		  deleteFromWorkingMemory(PreviousObjList.at(j).id);
-		  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+// 		  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 		}
 	    }
 	    else
-	    {
 		if(PreviousObjList.at(j).count > 0) Pre2CurrentList.push_back(PreviousObjList.at(j));
+	}
+	else	//find the matching object with this previous SOI
+	{
+	    if(PreviousObjList.at(j).bInWM == true)
+	    {
+		CurrentObjList.at(matchingResult).bInWM = true;
+		CurrentObjList.at(matchingResult).id = PreviousObjList.at(j).id;
+		CurrentObjList.at(matchingResult).count = PreviousObjList.at(j).count;
+		if (dist(CurrentObjList.at(matchingResult).c, PreviousObjList.at(j).c)/norm(CurrentObjList.at(matchingResult).c) > 0.15)
+		{
+		    int i = matchingResult;
+		    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+		    overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
+		    //cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
+		}
+		else
+		    CurrentObjList.at(matchingResult).c = PreviousObjList.at(j).c;
+	    }
+	    else
+	    {
+		int i = matchingResult;
+		CurrentObjList.at(i).count = PreviousObjList.at(j).count+1;
+		if (CurrentObjList.at(i).count >= Torleration)
+		{
+		    CurrentObjList.at(i).bInWM =true;
+		    CurrentObjList.at(i).id = newDataID();
+		    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+		    addToWorkingMemory(CurrentObjList.at(i).id, obj);
+		    #ifdef SAVE_SOI_PATCH
+		    std::string path = CurrentObjList.at(i).id;
+		    path.insert(0,"/tmp/"); path.insert(path.length(),".jpg");
+		    IplImage* cropped = cvCreateImage( cvSize(CurrentObjList.at(i).rect.width,CurrentObjList.at(i).rect.height), previousImg->depth, previousImg->nChannels );
+		    cvSetImageROI( previousImg, CurrentObjList.at(i).rect);
+		    cvCopy( previousImg, cropped );
+		    cvResetImageROI( previousImg );
+		    cvSaveImage(path.c_str(), cropped);
+		    cvReleaseImage(&cropped);
+		    #endif
+		    //log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+		    //log("objects number = %u",objnumber);
+// 			    cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
+		}
 	    }
 	}
     }
-//done the management, now let's copy the currenctSOIs to the previous one
+//--------------------handle the new appearing object
+    for(unsigned int i=0; i<CurrentObjList.size(); i++)
+    {
+	if (CurrentObjList.at(i).bComCurrentPre ==false)
+	{
+	    CurrentObjList.at(i).count = CurrentObjList.at(i).count+1;
+	    log("We have new object, Wooo Hooo....");
+	}
+    }
     PreviousObjList.clear();
     for (unsigned int i=0; i<CurrentObjList.size(); i++)
-    {
-	if (CurrentObjList.at(i).bComCurrentPre == false)  CurrentObjList.at(i).count --;
 	PreviousObjList.push_back(CurrentObjList.at(i));
-    }
     if (Pre2CurrentList.size()>0)
 	for (unsigned int i=0; i<Pre2CurrentList.size(); i++)
 	    PreviousObjList.push_back(Pre2CurrentList.at(i));
+	
     vSOIonImg.clear();
     vSOIid.clear();
     for (unsigned int i=0; i<PreviousObjList.size(); i++)
@@ -1587,7 +1641,7 @@ void PlanePopOut::FindVerticalPlanes(VisionData::SurfacePointSeq &points, std::v
 		    candidants.push_back(i);
     }
     unsigned int nPoints = candidants.size();
-    int nRansacs = 50;
+    int nRansacs = 100;
     int point1 = 0;
     int point2 = 0;
     int point3 = 0;

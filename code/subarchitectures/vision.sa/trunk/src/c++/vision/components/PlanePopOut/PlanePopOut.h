@@ -59,6 +59,13 @@ typedef struct Particle
     }
 }PSOParticle;
 
+typedef struct MatchingSOI
+{
+    int p;	//index in previous list of SOIs
+    int c;	//index in current list of SOIs
+    double pro;	//probability of matching
+}SOIMatch;
+
 private:
   /**
    * Which camera to get images from
@@ -76,6 +83,7 @@ private:
 	std::vector<ObjPara> Pre2CurrentList;
 	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, VisionData::SurfacePointSeq psIn1SOI, VisionData::SurfacePointSeq BGpIn1SOI, VisionData::SurfacePointSeq EQpIn1SOI);
 	float Compare2SOI(ObjPara obj1, ObjPara obj2);
+	int IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist);
 	//bool Compare2SOI(ObjPara obj1, ObjPara obj2);
 	void AddConvexHullinWM();
 
