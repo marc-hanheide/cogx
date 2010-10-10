@@ -19,6 +19,12 @@ utt_head(Nom) <-
 	i : sort(Nom, dvp) / p(1.0),
 	i : prop(Nom, 'c-goal') / p(1.0).
 
+%-------------------------------------------------------------------------
+% ERRORS & COMPLAINTS
+%-------------------------------------------------------------------------
+
+% fallback goal
+% TODO: is it an appropriate one?
 generate : event : utter(robot, H, Int) <-
 	utt_head(Nom),
 	i : feat_SpeechAct(Nom, clarification) / -1.0,
@@ -103,6 +109,36 @@ generate : object_description(Int, Nom, PrivBId) <-
 
 %-------------------------------------------------------------------------
 
+% CAREFUL: "box" is a "thing"
+
+generate : this(Nom) <-
+	i : sort(Nom, entity) / -1.0,
+	i : prop(Nom, context) / -1.0,
+%	i : feat_InfoStatus(Nom, familiar) / -1.0.
+	i : feat_Proximity(Nom, proximal) / -1.0,  % when default, "it" doesn't work
+	i : feat_Salient(Nom, true) / -1.0.
+
+generate : it(Nom) <-
+	i : sort(Nom, entity) / -1.0,
+	i : prop(Nom, context) / -1.0,
+	i : feat_InfoStatus(Nom, familiar) / -1.0,
+	i : feat_Salient(Nom, true) / -1.0.
+
+generate : the_box(Nom) <-
+	i : sort(Nom, thing) / -1.0,
+	i : prop(Nom, box) / -1.0,
+	i : feat_InfoStatus(Nom, familiar) / -1.0,
+	i : feat_Salient(Nom, true) / -1.0.
+
+generate : complex_ex(Nom) <-
+	generate : the_box(Nom),
+	i : feat_Color(Nom, red) / -1.0,
+	i : feat_Shape(Nom, round) / -1.0.
+
+%-------------------------------------------------------------------------
+% HACKS
+%-------------------------------------------------------------------------
+
 % XXX HACK XXX
 % find me a box -> what size is this
 generate : event : utter(S, H, Int) <-
@@ -160,34 +196,6 @@ generate : event : utter(S, H, Int) <-
 		i : sort(ContentNom, 'q-color') / -1.0,
 		i : prop(ContentNom, red) / -1.0,
 	event : produce(r, Nom) / -1.0.
-
-%-------------------------------------------------------------------------
-
-% CAREFUL: "box" is a "thing"
-
-generate : this(Nom) <-
-	i : sort(Nom, entity) / -1.0,
-	i : prop(Nom, context) / -1.0,
-%	i : feat_InfoStatus(Nom, familiar) / -1.0.
-	i : feat_Proximity(Nom, proximal) / -1.0,  % when default, "it" doesn't work
-	i : feat_Salient(Nom, true) / -1.0.
-
-generate : it(Nom) <-
-	i : sort(Nom, entity) / -1.0,
-	i : prop(Nom, context) / -1.0,
-	i : feat_InfoStatus(Nom, familiar) / -1.0,
-	i : feat_Salient(Nom, true) / -1.0.
-
-generate : the_box(Nom) <-
-	i : sort(Nom, thing) / -1.0,
-	i : prop(Nom, box) / -1.0,
-	i : feat_InfoStatus(Nom, familiar) / -1.0,
-	i : feat_Salient(Nom, true) / -1.0.
-
-generate : complex_ex(Nom) <-
-	generate : the_box(Nom),
-	i : feat_Color(Nom, red) / -1.0,
-	i : feat_Shape(Nom, round) / -1.0.
 
 %-------------------------------------------------------------------------
 % ENGAGEMENT

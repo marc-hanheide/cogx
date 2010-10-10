@@ -362,6 +362,7 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   adj-none(false, q-attitude,)  
   
   adj-none(elongated,q-shape,)
+  adj-none(compact,q-shape,)
 
   #-- q-size --#
   

@@ -1461,6 +1461,7 @@
   <entry word="true" macros="@s-degree-base" pos="Adj" stem="truetrue-adj" class="q-attitude" pred="true"/>
   <entry word="false" macros="@s-degree-base" pos="Adj" stem="falsefalse-adj" class="q-attitude" pred="false"/>
   <entry word="elongated" macros="@s-degree-base" pos="Adj" stem="elongatedelongated-adj" class="q-shape" pred="elongated"/>
+  <entry word="compact" macros="@s-degree-base" pos="Adj" stem="compactcompact-adj" class="q-shape" pred="compact"/>
   <entry word="big" macros="@s-degree-base @pre-n" pos="Adj" stem="big-adj" class="q-size" pred="big"/>
   <entry word="bigger" macros="@s-comparative @pre-n @comparative" pos="Adj" stem="big-adj" class="q-size" pred="big"/>
   <entry word="biggest" macros="@s-superlative @pre-n @superlative" pos="Adj" stem="big-adj" class="q-size" pred="big"/>
