@@ -71,6 +71,9 @@ import java.util.Map;
 public class CommunicativeIntentionRecognizer
 extends AbstractDialogueComponent {
 
+	public final static int DEFAULT_TIMEOUT = 250;
+	private int timeout = DEFAULT_TIMEOUT;
+
 	private IntentionRecognition irecog;
 	private String rulesetFile = "/dev/null";
 	private HashMap<String, EpistemicObject> epObjs = new HashMap<String, EpistemicObject>();
@@ -84,7 +87,7 @@ extends AbstractDialogueComponent {
 			public String newIdentifier() {
 				return newDataID();
 			}
-		});
+		}, timeout);
 
 		if (rulesetFile != null) {
 			try {
@@ -129,6 +132,10 @@ extends AbstractDialogueComponent {
 	{
 		if (_config.containsKey("--ruleset")) {
 			rulesetFile = _config.get("--ruleset");
+		}
+		if (_config.containsKey("--timeout")) {
+			String timeoutStr = _config.get("--timeout");
+			timeout = Integer.parseInt(timeoutStr);
 		}
 	}
 

@@ -27,11 +27,9 @@ import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalReferenceHypothesis;
 import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
-import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
 import de.dfki.lt.tr.infer.weigabd.ProofUtils;
 import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
 import de.dfki.lt.tr.infer.weigabd.slice.Atom;
-import de.dfki.lt.tr.infer.weigabd.slice.DisjointDeclaration;
 import de.dfki.lt.tr.infer.weigabd.slice.FileReadErrorException;
 import de.dfki.lt.tr.infer.weigabd.slice.FunctionTerm;
 import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
@@ -43,7 +41,6 @@ import de.dfki.lt.tr.infer.weigabd.slice.Term;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -55,16 +52,21 @@ import java.util.Set;
  */
 public class AbductiveReferenceResolution {
 
+	private int timeout;
 	public boolean logging = true;
 	private AbductionEngineConnection refresEngine = null;
 	private String dumpfile;
 	private String appendfile;
 	public static final String REFERENCE_RESOLUTION_ENGINE = "ReferenceResolution";
 
-	public AbductiveReferenceResolution(String dumpfile_, String appendfile_) {
+	public static final String BELIEF_EXIST_ASSUMABILITY_FUNCTION_NAME = "belief_exist";
+	public static final String WORLD_EXIST_ASSUMABILITY_FUNCTION_NAME = "world_exist";
+
+	public AbductiveReferenceResolution(String dumpfile_, String appendfile_, int timeout_) {
 		init();
 		dumpfile = dumpfile_;
 		appendfile = appendfile_;
+		timeout = timeout_;
 	}
 
 	private void init() {
@@ -148,17 +150,6 @@ public class AbductiveReferenceResolution {
 		String nom = ((FunctionTerm) matom.a.args[0]).functor;
 		WorkingMemoryAddress wma = ConversionUtils.termToWorkingMemoryAddress(matom.a.args[1]);
 		return new AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>(nom, wma);
-	}
-
-	private static String extractBeliefId(MarkedQuery[] qs) {
-		for (MarkedQuery q : qs) {
-			Atom a = q.atom.a;
-			if (a.predSym.equals("resolves_to_belief") && a.args[1] instanceof FunctionTerm) {
-				FunctionTerm ft = (FunctionTerm)a.args[1];
-				return ft.functor;
-			}
-		}
-		return null;
 	}
 
 	private Term propertiesToListTerm(Map<String, String> fvPairs) {

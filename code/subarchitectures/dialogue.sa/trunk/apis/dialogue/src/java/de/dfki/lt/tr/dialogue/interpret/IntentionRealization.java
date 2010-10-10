@@ -39,6 +39,7 @@ import java.util.List;
 
 public class IntentionRealization {
 
+	private int timeout;
 	public boolean logging = true;
 	private AbductionEngineConnection abd_realize;
 
@@ -50,8 +51,9 @@ public class IntentionRealization {
 	/**
 	 * Initialise the abducer and prepare for action.
 	 */
-    public IntentionRealization(IdentifierGenerator idGen_) {
+    public IntentionRealization(IdentifierGenerator idGen_, int timeout_) {
 		this.idGen = idGen_;
+		this.timeout = timeout_;
 		init();
     }
 

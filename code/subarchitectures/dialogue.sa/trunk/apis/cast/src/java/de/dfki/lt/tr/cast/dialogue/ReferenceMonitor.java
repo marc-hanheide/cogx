@@ -152,15 +152,15 @@ extends AbstractDialogueComponent {
 	}
 
 	private void handleBeliefDelete(WorkingMemoryChange _wmc) {
-		try {
-			CASTData data = getWorkingMemoryEntry(_wmc.address);
-			dBelief belief = (dBelief)data.getData();
+//		try {
+			//CASTData data = getWorkingMemoryEntry(_wmc.address);
+			//dBelief belief = (dBelief)data.getData();
 			bm.remove(_wmc.address);
 			triggerRulefileRewrite();
-		}
-		catch (SubarchitectureComponentException e) {
-			e.printStackTrace();
-		}
+//		}
+//		catch (SubarchitectureComponentException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	private void triggerRulefileRewrite() {
