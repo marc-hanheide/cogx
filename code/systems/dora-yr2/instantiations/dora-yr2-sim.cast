@@ -18,7 +18,7 @@ INCLUDE includes/default.sa/default-main.cast
 
 # Conceptual.SA  ############################################################
 INCLUDE includes/conceptual.sa/conceptual-base.cast
-#INCLUDE includes/conceptual.sa/conceptual-main.cast
+INCLUDE includes/conceptual.sa/conceptual-main.cast
 
 
 
