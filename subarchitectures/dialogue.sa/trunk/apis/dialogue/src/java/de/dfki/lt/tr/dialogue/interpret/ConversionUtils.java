@@ -478,7 +478,7 @@ public abstract class ConversionUtils {
 		dFormula featureValue;
 		if (t.functor.equals("fv")) {
 			featureName = ((FunctionTerm)t.args[0]).functor;
-			featureValue = termToContentFormula((FunctionTerm)t.args[1]);
+			featureValue = functionTermToContentFormula((FunctionTerm)t.args[1]);
 
 			Comparator<EpistemicStatus> cmp = new EpistemicStatusComparator();
 			if (cmp.compare(bel.estatus, epst) != 0) {
@@ -514,7 +514,7 @@ public abstract class ConversionUtils {
 		return bpd;
 	}
 
-	private static dFormula termToContentFormula(FunctionTerm t) {
+	public static dFormula functionTermToContentFormula(FunctionTerm t) {
 		if (t.functor.equals("ptr")) {
 			WorkingMemoryAddress wma = termToWorkingMemoryAddress(t);
 			if (wma != null) {
@@ -522,10 +522,10 @@ public abstract class ConversionUtils {
 			}
 		}
 		if (t.functor.equals("not") && t.args.length == 1) {
-			return BeliefFormulaFactory.newNegatedFormula(termToContentFormula((FunctionTerm)t.args[0]));
+			return BeliefFormulaFactory.newNegatedFormula(functionTermToContentFormula((FunctionTerm)t.args[0]));
 		}
 		if (t.functor.equals("or") && t.args.length == 2) {
-			return BeliefFormulaFactory.newComplexFormula(BinaryOp.disj, termToContentFormula((FunctionTerm)t.args[0]), termToContentFormula((FunctionTerm)t.args[1]));
+			return BeliefFormulaFactory.newComplexFormula(BinaryOp.disj, functionTermToContentFormula((FunctionTerm)t.args[0]), functionTermToContentFormula((FunctionTerm)t.args[1]));
 		}
 		else {
 			return BeliefFormulaFactory.newElementaryFormula(t.functor);
@@ -752,7 +752,7 @@ public abstract class ConversionUtils {
 		return result;
 	}
 
-	private static Term stateFormulaToTerm(dFormula f) {
+	public static Term stateFormulaToTerm(dFormula f) {
 		if (f instanceof ComplexFormula) {
 			ComplexFormula cf = (ComplexFormula) f;
 			assert (cf.op == BinaryOp.conj);
@@ -782,28 +782,6 @@ public abstract class ConversionUtils {
 		}
 
 		return null;
-	}
-
-	public static List<ModalisedAtom> beliefToFacts(dBelief b) {
-		LinkedList<ModalisedAtom> result = new LinkedList<ModalisedAtom>();
-		FunctionTerm rvp = dFormulaToRPV(getFirstLogicalContent(b));
-		if (rvp != null) {
-			ModalisedAtom mf = TermAtomFactory.modalisedAtom(
-					new Modality[] {
-						Modality.Belief
-					},
-					TermAtomFactory.atom(beliefPredSym, new Term[] {
-						TermAtomFactory.term(b.id),
-						epistemicStatusToTerm(b.estatus),
-						rvp
-					}));
-			log("adding fact: " + MercuryUtils.modalisedAtomToString(mf));
-			result.add(mf);
-		}
-		else {
-			log("failed to generate RVP");
-		}
-		return result;
 	}
 
 	private static void log(String str) {

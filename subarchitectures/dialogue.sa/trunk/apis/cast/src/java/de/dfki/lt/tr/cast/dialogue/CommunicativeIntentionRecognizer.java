@@ -39,7 +39,7 @@ import de.dfki.lt.tr.dialogue.interpret.IntentionRecognition;
 import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.interpret.RecognisedIntention;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
-import de.dfki.lt.tr.dialogue.slice.ref.ResolvedLogicalForm;
+import de.dfki.lt.tr.dialogue.slice.ref.RefLogicalForm;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import eu.cogx.beliefs.slice.AssertedBelief;
@@ -115,7 +115,7 @@ extends AbstractDialogueComponent {
 		}
 
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(ResolvedLogicalForm.class, WorkingMemoryOperation.ADD),
+				ChangeFilterFactory.createLocalTypeFilter(RefLogicalForm.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -135,7 +135,7 @@ extends AbstractDialogueComponent {
 	private void handleResolvedLogicalForm(WorkingMemoryChange _wmc) {
 		try {
 			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
-			ResolvedLogicalForm arg = (ResolvedLogicalForm)data.getData();
+			RefLogicalForm arg = (RefLogicalForm)data.getData();
 			String taskID = newTaskID();
 			ProcessingData pd = new ProcessingData(newProcessingDataId());
 			pd.add(data);
@@ -156,9 +156,10 @@ extends AbstractDialogueComponent {
 		if (iter.hasNext()) {
 			Object body = iter.next().getData();
 
-			if (body instanceof ResolvedLogicalForm) {
-				ResolvedLogicalForm rlf = (ResolvedLogicalForm) body;
+			if (body instanceof RefLogicalForm) {
+				RefLogicalForm rlf = (RefLogicalForm) body;
 				LogicalForm lf = rlf.lform;
+				irecog.updateReferentialHypotheses(rlf.refs);
 				RecognisedIntention eos = irecog.logicalFormToEpistemicObjects(lf);
 				if (eos != null) {
 					log("recognised " + eos.ints.size() + " intentions and " + (eos.pre.size() + eos.post.size()) + " beliefs");

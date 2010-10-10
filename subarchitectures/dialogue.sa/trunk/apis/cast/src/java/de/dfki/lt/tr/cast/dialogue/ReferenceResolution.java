@@ -27,36 +27,24 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
-import de.dfki.lt.tr.beliefs.slice.epobject.EpistemicObject;
-import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
-import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
-import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
-import de.dfki.lt.tr.dialogue.interpret.IntentionRecognition;
+import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.ref.AbductiveReferenceResolution;
 import de.dfki.lt.tr.dialogue.ref.PresupposedBeliefConstruction;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
-import de.dfki.lt.tr.dialogue.slice.parse.PackedLFs;
-import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
-import de.dfki.lt.tr.dialogue.slice.ref.NominalRef;
-import de.dfki.lt.tr.dialogue.slice.ref.RefHypo;
-import de.dfki.lt.tr.dialogue.slice.ref.ResolvedLogicalForm;
-import de.dfki.lt.tr.dialogue.slice.ref.RefReadings;
+import de.dfki.lt.tr.dialogue.slice.ref.NominalReferenceHypothesis;
+import de.dfki.lt.tr.dialogue.slice.ref.RefLogicalForm;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
-import de.dfki.lt.tr.dialogue.util.LFUtils;
 import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ReferenceResolution
 extends AbstractDialogueComponent {
@@ -107,11 +95,7 @@ extends AbstractDialogueComponent {
 			log("no ruleset to read");
 		}
 
-		intentionEngine = new AbductionEngineConnection();
-		intentionEngine.connectToServer("AbducerServer", "default -p 10000");
-		intentionEngine.bindToEngine(IntentionRecognition.INTENTION_RECOGNITION_ENGINE);
-
-		arr = new AbductiveReferenceResolution(toAbsolutePath(dumpfile), toAbsolutePath(appendfile), intentionEngine);
+		arr = new AbductiveReferenceResolution(toAbsolutePath(dumpfile), toAbsolutePath(appendfile));
 		if (correlfile != null) {
 			arr.loadFile(toAbsolutePath(correlfile));
 		}
@@ -180,30 +164,20 @@ extends AbstractDialogueComponent {
 				LogicalForm lf = (LogicalForm) body;
 				Map<String, Map<String, String>> eos = pbc.extractPresuppositions(lf);
 
-				ResolvedLogicalForm rlf = new ResolvedLogicalForm();
-				rlf.lform = lf;
-				rlf.refs = new NominalRef[0];
-				List<NominalRef> nrs = new LinkedList<NominalRef>();
-
-				intentionEngine.getProxy().clearAssumabilityFunction("reference_resolution");
+				List<NominalReferenceHypothesis> refs = new LinkedList<NominalReferenceHypothesis>();
 				if (eos != null && !eos.isEmpty()) {
 					for (String nom : eos.keySet()) {
-						NominalRef nr =	arr.resolvePresupposition(nom, eos.get(nom));
-						log(nr.hypos.length + " hypos for ["
+						List<NominalReferenceHypothesis> nrhs = arr.resolvePresupposition(nom, eos.get(nom));
+						log(nrhs.size() + " hypos for ["
 								+ PresupposedBeliefConstruction.presupToString(nom, eos.get(nom)) + "]");
-
-/*
-						for (RefHypo hypo : nr.hypos) {
-							log("  " + hypo.beliefId + " @ p=" + hypo.prob);
-						}
- */
+							for (NominalReferenceHypothesis hypo : nrhs) {
+								log("    " + hypo.ref.nominal + " -> " + BeliefIntentionUtils.dFormulaToString(hypo.ref.referent) + " @ p=" + hypo.prob);
+							}
+						refs.addAll(nrhs);
 					}
-					log("reference hypotheses added to the intention recognition engine");
 				}
-				else {
-					log("found no beliefs to resolve");
-				}
-				rlf.refs = nrs.toArray(new NominalRef[0]);
+				RefLogicalForm rlf = new RefLogicalForm(lf, refs);
+				log("adding the RefLogicalForm to the working memory");
 
 				try {
 					addToWorkingMemory(newDataID(), rlf);

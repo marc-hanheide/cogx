@@ -21,16 +21,24 @@
 package de.dfki.lt.tr.dialogue.interpret;
 
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
+import de.dfki.lt.tr.dialogue.slice.ref.NominalReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
+import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
 import de.dfki.lt.tr.infer.weigabd.ProofUtils;
 import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
+import de.dfki.lt.tr.infer.weigabd.slice.DisjointDeclaration;
 import de.dfki.lt.tr.infer.weigabd.slice.FileReadErrorException;
 import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
 import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
 import de.dfki.lt.tr.infer.weigabd.slice.Modality;
 import de.dfki.lt.tr.infer.weigabd.slice.SyntaxErrorException;
 import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The class encapsulating the recognition and realisation of communicative
@@ -114,6 +122,43 @@ public class IntentionRecognition {
 		}
 		catch (SyntaxErrorException ex) {
 			log("syntax error: " + ex.error + " in " + ex.filename + " on line " + ex.line);
+		}
+	}
+
+	public void updateReferentialHypotheses(List<NominalReferenceHypothesis> refHypos) {
+
+		abd_recog.getProxy().clearAssumabilityFunction("reference_resolution");
+
+		Map<String, Set<ModalisedAtom>> disj = new HashMap<String, Set<ModalisedAtom>>();
+
+		for (NominalReferenceHypothesis hypo : refHypos) {
+
+			ModalisedAtom rma = TermAtomFactory.modalisedAtom(new Modality[] {Modality.Understanding},
+					TermAtomFactory.atom("resolves_to_belief", new Term[] {
+						TermAtomFactory.term(hypo.ref.nominal),
+						ConversionUtils.stateFormulaToTerm(hypo.ref.referent)
+					} ));
+
+			log("adding reference hypothesis: " + MercuryUtils.modalisedAtomToString(rma) + " @ p=" + hypo.prob);
+			abd_recog.getProxy().addAssumable("reference_resolution", rma, (float) -Math.log(hypo.prob));
+
+			Set<ModalisedAtom> dj = disj.get(hypo.ref.nominal);
+			if (dj != null) {
+				dj.add(rma);
+			}
+			else {
+				dj = new HashSet<ModalisedAtom>();
+				dj.add(rma);
+			}
+			disj.put(hypo.ref.nominal, dj);
+		}
+
+		for (String nom : disj.keySet()) {
+			Set<ModalisedAtom> dj = disj.get(nom);
+			DisjointDeclaration dd = new DisjointDeclaration();
+			dd.atoms = dj.toArray(new ModalisedAtom[0]);
+			log("adding a disjoint declaration for " + nom + " (" + dj.size() + " entries)");
+			abd_recog.getProxy().addDisjointDeclaration(dd);
 		}
 	}
 

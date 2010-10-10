@@ -21,9 +21,11 @@
 package de.dfki.lt.tr.dialogue.ref;
 
 import cast.cdl.WorkingMemoryAddress;
+import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
+import de.dfki.lt.tr.dialogue.interpret.BeliefFormulaFactory;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
-import de.dfki.lt.tr.dialogue.slice.ref.NominalRef;
-import de.dfki.lt.tr.dialogue.slice.ref.RefHypo;
+import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
+import de.dfki.lt.tr.dialogue.slice.ref.NominalReferenceHypothesis;
 import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
 import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
 import de.dfki.lt.tr.infer.weigabd.ProofUtils;
@@ -55,16 +57,14 @@ public class AbductiveReferenceResolution {
 
 	public boolean logging = true;
 	private AbductionEngineConnection refresEngine = null;
-	private AbductionEngineConnection intentionEngine = null;
 	private String dumpfile;
 	private String appendfile;
 	public static final String REFERENCE_RESOLUTION_ENGINE = "ReferenceResolution";
 
-	public AbductiveReferenceResolution(String dumpfile_, String appendfile_, AbductionEngineConnection intentionEngine_) {
+	public AbductiveReferenceResolution(String dumpfile_, String appendfile_) {
 		init();
 		dumpfile = dumpfile_;
 		appendfile = appendfile_;
-		intentionEngine = intentionEngine_;
 	}
 
 	private void init() {
@@ -74,9 +74,7 @@ public class AbductiveReferenceResolution {
 		refresEngine.getProxy().clearContext();
 	}
 
-	public NominalRef resolvePresupposition(String nom, Map<String, String> fvPairs) {
-		NominalRef result = new NominalRef();
-		result.nominal = nom;
+	public List<NominalReferenceHypothesis> resolvePresupposition(String nom, Map<String, String> fvPairs) {
 
 		refresEngine.getProxy().clearRules();
 		refresEngine.getProxy().clearFacts();
@@ -95,76 +93,39 @@ public class AbductiveReferenceResolution {
 					propertiesToListTerm(fvPairs)
 				}));
 
-		List<RefHypo> hypos = new LinkedList<RefHypo>();
-		ProofWithCost[] proof = allAbductiveProofs(ProofUtils.newUnsolvedProof(g));
+		List<ProofWithCost> proofs = AbducerUtils.allAbductiveProofs(refresEngine, ProofUtils.newUnsolvedProof(g), 500);
 
 		Map<String, Set<ModalisedAtom>> disj = new HashMap<String, Set<ModalisedAtom>>();
 
-		if (proof != null) {
+		Map<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, Double> combined_hypos = new HashMap<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, Double>();
 
-			Map<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, Double> combined_hypos = new HashMap<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, Double>();
-			double total_mass = 0.0;
-
-			for (int i = 0; i < proof.length; i++) {
-				ModalisedAtom rma = extractResolvesMAtom(proof[i].proof);
-				if (rma != null) {
-					AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress> hypo = extractHypothesis(rma);
-					double mass = 0.0;
-					if (combined_hypos.containsKey(hypo)) {
-						mass = combined_hypos.get(hypo);
-					}
-					double deltaMass = Math.exp(-proof[i].cost);
-					mass += deltaMass;
-					combined_hypos.put(hypo, mass);
-					total_mass += deltaMass;
+		double total_mass = 0.0;
+		// extract referential hypotheses from proofs
+		for (ProofWithCost pwc : proofs) {
+			ModalisedAtom rma = extractResolvesMAtom(pwc.proof);
+			if (rma != null) {
+				AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress> hypo = extractHypothesis(rma);
+				double mass = 0.0;
+				if (combined_hypos.containsKey(hypo)) {
+					mass = combined_hypos.get(hypo);
 				}
-			}
-
-			for (AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress> hypo : combined_hypos.keySet()) {
-				double prob = combined_hypos.get(hypo) / total_mass;
-				ModalisedAtom rma = TermAtomFactory.modalisedAtom(new Modality[] {Modality.Understanding},
-						TermAtomFactory.atom("resolves_to_belief", new Term[] {
-							TermAtomFactory.term(hypo.getKey()),
-							ConversionUtils.workingMemoryAddressToTerm(hypo.getValue())
-						} ));
-
-				if (intentionEngine != null) {
-					log("adding reference hypothesis: " + MercuryUtils.modalisedAtomToString(rma) + " @ p=" + prob);
-					intentionEngine.getProxy().addAssumable("reference_resolution", rma, (float) -Math.log(prob));
-
-					String n = ((FunctionTerm)rma.a.args[0]).functor;
-					Set<ModalisedAtom> dj = disj.get(n);
-					if (dj != null) {
-						dj.add(rma);
-					}
-					else {
-						dj = new HashSet<ModalisedAtom>();
-						dj.add(rma);
-						disj.put(n, dj);
-					}
-				}
-
-				RefHypo hypox = new RefHypo();
-//				hypox.prob = Math.exp(-proof[i].cost);
-//				hypox.beliefId = extractBeliefId(proof[i].proof);
-//				if (hypox.beliefId != null) {
-//					hypos.add(hypox);
-//				}
+				double deltaMass = Math.exp(-pwc.cost);
+				mass += deltaMass;
+				combined_hypos.put(hypo, mass);
+				total_mass += deltaMass;
 			}
 		}
 
-		// add disjoint declarations
-		if (intentionEngine != null) {
-			for (String n : disj.keySet()) {
-				Set<ModalisedAtom> dj = disj.get(n);
-				DisjointDeclaration dd = new DisjointDeclaration();
-				dd.atoms = dj.toArray(new ModalisedAtom[0]);
-				log("adding a disjoint declaration for " + n + " (" + dj.size() + " entries)");
-				intentionEngine.getProxy().addDisjointDeclaration(dd);
-			}
-		}
+		List<NominalReferenceHypothesis> result = new LinkedList<NominalReferenceHypothesis>();
 
-		result.hypos = hypos.toArray(new RefHypo[0]);
+		// create the hypotheses
+		for (AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress> hypo : combined_hypos.keySet()) {
+			double prob = combined_hypos.get(hypo) / total_mass;
+
+			NominalReference nref = new NominalReference(hypo.getKey(), BeliefFormulaFactory.newPointerFormula(hypo.getValue()));
+			NominalReferenceHypothesis nhypo = new NominalReferenceHypothesis(nref, prob);
+			result.add(nhypo);
+		}
 		return result;
 	}
 
@@ -198,25 +159,6 @@ public class AbductiveReferenceResolution {
 			}
 		}
 		return null;
-	}
-
-	private ProofWithCost[] allAbductiveProofs(MarkedQuery[] goal) {
-		String listGoalsStr = "";
-		for (int i = 0; i < goal.length; i++) {
-			listGoalsStr += MercuryUtils.modalisedAtomToString(goal[i].atom);
-			if (i < goal.length - 1) listGoalsStr += ", ";
-		}
-		log("proving: [" + listGoalsStr + "]");
-
-		refresEngine.getProxy().startProving(goal);
-		ProofWithCost[] result = refresEngine.getProxy().getProofs(500);
-		if (result.length > 0) {
-			log("found " + result.length + " alternatives");
-			return result;
-		}
-		else {
-			return null;
-		}
 	}
 
 	private Term propertiesToListTerm(Map<String, String> fvPairs) {
