@@ -425,6 +425,10 @@ public class MaryTTS extends ManagedComponent {
                 }
                 else {
 					log("Trying to say the following: ["+soi.phonString+"]");
+					
+					//Here starts the code for processing prosodic input.
+					//Note: '%' and '@' are the token that are "present" in prosodic grammar output
+					if(soi.phonString.contains("%") || soi.phonString.contains("@") ){
                     // Synthesize speech locally
 					ProsodicTextToRawMARYXml l_convert = new ProsodicTextToRawMARYXml(m_RAWMARYXMLHeader,m_GenrtdXMLFileLoc,"cast");
                     
@@ -434,7 +438,7 @@ public class MaryTTS extends ManagedComponent {
                     m_ttsLocal.m_AudioFileName=m_GenrtdXMLFileLoc.concat(l_convert.g_xmlfilename);
                     log("Trying to say the following: ["+soi.phonString+"]");
                     //Process the "text" string for Prosodic markers
-                    if(soi.phonString.contains("%") || soi.phonString.contains("@") ){
+                    //if(soi.phonString.contains("%") || soi.phonString.contains("@") ){
                     	//Do prosodic to RAWMaryXML
                         String l_xmlfile = new String();
 
