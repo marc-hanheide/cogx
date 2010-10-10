@@ -25,7 +25,7 @@ ObjectRecognizer3D::ObjectRecognizer3D(){
 	camId = 0;
 	m_detect = 0;
 	m_showCV = true;
-	m_confidence = 0.03;
+	m_confidence = 0.08;
 }
 
 ObjectRecognizer3D::~ObjectRecognizer3D(){
@@ -94,12 +94,22 @@ void ObjectRecognizer3D::start(){
 
   addChangeFilter(createLocalTypeFilter<VisionData::Recognizer3DCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
-        &ObjectRecognizer3D::receiveRecognizer3DCommand));
+	&ObjectRecognizer3D::receiveRecognizer3DCommand));
+
+  addChangeFilter(createLocalTypeFilter<VisionData::Post3DObject>(cdl::ADD),
+      new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
+	&ObjectRecognizer3D::PostFake3DObject));
+
 
   addChangeFilter(createLocalTypeFilter<VisionData::DetectionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
         &ObjectRecognizer3D::receiveDetectionCommand));
 }
+void ObjectRecognizer3D::PostFake3DObject(const cdl::WorkingMemoryChange & _wmc){
+  Post3DObjectPtr f = getMemoryEntry<Post3DObject>(_wmc.address);
+  loadVisualModelToWM(m_recEntries[f->label],f->pose,f->label);
+}
+
 
 void ObjectRecognizer3D::runComponent(){
 
@@ -235,6 +245,7 @@ void ObjectRecognizer3D::receiveRecognizer3DCommand(const cdl::WorkingMemoryChan
 	if(m_recEntries.find(rec_cmd->label) == m_recEntries.end())
 		return;
 
+	log("ID is %s", rec_cmd->visualObjectID.c_str());
 	m_recCommandList.push_back(rec_cmd);
 	m_recCommandID.push_back(_wmc.address.id);
 }
