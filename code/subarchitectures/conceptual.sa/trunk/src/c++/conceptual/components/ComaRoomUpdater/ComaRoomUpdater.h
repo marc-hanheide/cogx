@@ -63,6 +63,12 @@ private:
 	  /** Map ComaRoom Id -> WMAddress. */
 	  std::map<int, cast::cdl::WorkingMemoryAddress> _comaRoomIdToWmAddressMap;
 
+	  /** Name of the QueryHandler component.  */
+	  std::string _queryHandlerName;
+
+	  /** ICE proxy to the QueryHandlerInterface. */
+	  ConceptualData::QueryHandlerServerInterfacePrx _queryHandlerServerInterfacePrx;
+
 }; // class ComaRoomUpdater
 } // namespace
 

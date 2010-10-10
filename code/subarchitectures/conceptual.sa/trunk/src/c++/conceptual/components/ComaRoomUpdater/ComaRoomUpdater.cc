@@ -47,23 +47,27 @@ ComaRoomUpdater::~ComaRoomUpdater()
 // -------------------------------------------------------
 void ComaRoomUpdater::configure(const map<string,string> & _config)
 {
-/*	map<string,string>::const_iterator it;
+	map<string,string>::const_iterator it;
 
 	// QueryHandler name
-	if((it = _config.find("--test-qh")) != _config.end())
+	if((it = _config.find("--queryhandler")) != _config.end())
 	{
 		_queryHandlerName = it->second;
 	}
 
 	log("Configuration parameters:");
-	log("-> Test QueryHandler: %s", (_queryHandlerName.empty())?"No":"Yes");
-	log("-> QueryHandler Name: %s", _queryHandlerName.c_str());*/
+	log("-> QueryHandler name: %s", _queryHandlerName.c_str());
 }
 
 
 // -------------------------------------------------------
 void ComaRoomUpdater::start()
 {
+	// Get the QueryHandler interface proxy
+	_queryHandlerServerInterfacePrx =
+			getIceServer<ConceptualData::QueryHandlerServerInterface>(_queryHandlerName);
+
+	// Change filters
 	addChangeFilter(createLocalTypeFilter<ConceptualData::WorldState>(cdl::OVERWRITE),
 			new MemberFunctionChangeReceiver<ComaRoomUpdater>(this,
 					&ComaRoomUpdater::worldStateChanged));
@@ -93,6 +97,8 @@ void ComaRoomUpdater::runComponent()
 			pthread_mutex_unlock(&_worldStateChangedSignalMutex);
 		else
 		{
+			debug("Processing a world state change.");
+
 			// Mark that we have handled the world state change
 			_worldStateChanged=false;
 
@@ -103,39 +109,27 @@ void ComaRoomUpdater::runComponent()
 
 			sched_yield();
 
-			// Request the inference
-
-			// Wait for the results
-
-			sched_yield();
-
 			// Update the coma rooms
 			for (map<int, cdl::WorkingMemoryAddress>::iterator it=rooms.begin(); it!=rooms.end(); it++)
 			{
+				// Request the inference and wait for results
+				debug("Requesting inference about category of room %d.", it->first);
+				stringstream varName;
+				varName<<"room"<<it->first<<"_category";
+				SpatialProbabilities::ProbabilityDistribution probDist =
+						_queryHandlerServerInterfacePrx->query("p("+varName.str()+")");
+
+				sched_yield();
+
 				debug("Updating ComaRoom ID:%d with room category information ...", it->first);
 				try
 				{
 					lockEntry(it->second, cdl::LOCKEDODR);
 					// Get the coma room
 					comadata::ComaRoomPtr comaRoomPtr = getMemoryEntry<comadata::ComaRoom>(it->second);
+
 					// Update category information
-					stringstream varName;
-					varName<<"room"<<it->first<<"_category";
-					comaRoomPtr->categories.description = "p("+varName.str()+")";
-					comaRoomPtr->categories.variableNameToPositionMap[varName.str()]=0;
-					comaRoomPtr->categories.massFunction.clear();
-
-					SpatialProbabilities::StringRandomVariableValuePtr rvv1Ptr = new SpatialProbabilities::StringRandomVariableValue("kitchen");
-					SpatialProbabilities::JointProbabilityValue jpv1;
-					jpv1.probability=0.2;
-					jpv1.variableValues.push_back(rvv1Ptr);
-					comaRoomPtr->categories.massFunction.push_back(jpv1);
-
-					SpatialProbabilities::StringRandomVariableValuePtr rvv2Ptr = new SpatialProbabilities::StringRandomVariableValue("office");
-					SpatialProbabilities::JointProbabilityValue jpv2;
-					jpv2.probability=0.8;
-					jpv2.variableValues.push_back(rvv2Ptr);
-					comaRoomPtr->categories.massFunction.push_back(jpv2);
+					comaRoomPtr->categories = probDist;
 
 					// Update the coma room
 					overwriteWorkingMemory(it->second, comaRoomPtr);
