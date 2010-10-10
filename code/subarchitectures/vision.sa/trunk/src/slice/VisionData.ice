@@ -415,9 +415,13 @@ sequence<OneObj> ObjSeq;
   * @author Nick Hawes
   */
   class ForegroundedModel {
-    string model;
+	  string model;
   };
 
+  class Post3DObject{
+	  string label;
+		  cogx::Math::Pose3 pose;
+  };
 };
 
 #endif

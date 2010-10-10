@@ -96,7 +96,7 @@ void ObjectRecognizer3D::start(){
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
 	&ObjectRecognizer3D::receiveRecognizer3DCommand));
 
-  addChangeFilter(createLocalTypeFilter<VisionData::Post3DObject>(cdl::ADD),
+  addChangeFilter(createGlobalTypeFilter<VisionData::Post3DObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
 	&ObjectRecognizer3D::PostFake3DObject));
 
@@ -108,7 +108,8 @@ void ObjectRecognizer3D::start(){
 
 
 void ObjectRecognizer3D::PostFake3DObject(const cdl::WorkingMemoryChange & _wmc){
-  Post3DObjectPtr f = getMemoryEntry<Post3DObject>(_wmc.address);
+log("Fake 3D Object Received");  
+Post3DObjectPtr f = getMemoryEntry<Post3DObject>(_wmc.address);
   loadVisualModelToWM(m_recEntries[f->label],f->pose,f->label);
 }
 
