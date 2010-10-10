@@ -12,7 +12,6 @@ import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistribution
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import execution.components.BeliefBasedPlanExecutionMediator;
@@ -88,10 +87,8 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 							getMemoryEntry(roomBeliefAddress,
 									GroundedBelief.class));
 
-			IndependentFormulaDistributionsBelief<PerceptBelief> pb = BeliefUtils
-					.getMostRecentPerceptBeliefAncestor(this, gb);
 
-			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(this, pb,
+			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(this, gb,
 					ComaRoom.class);
 
 			CreateConesForModel act = newActionInstance(CreateConesForModel.class);

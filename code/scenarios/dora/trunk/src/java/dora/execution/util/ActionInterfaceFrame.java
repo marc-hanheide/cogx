@@ -45,7 +45,6 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import dora.execution.components.GraphicalExecutionManager;
 import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
 import eu.cogx.perceptmediator.dora.ViewPointTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
@@ -635,11 +634,8 @@ public class ActionInterfaceFrame extends JFrame {
 					.create(GroundedBelief.class, m_exeMan.getMemoryEntry(
 							roomBeliefAddress, GroundedBelief.class));
 
-			IndependentFormulaDistributionsBelief<PerceptBelief> pb = BeliefUtils
-					.getMostRecentPerceptBeliefAncestor(m_exeMan, gb);
-
 			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(m_exeMan,
-					pb, ComaRoom.class);
+					gb, ComaRoom.class);
 
 			m_exeMan.triggerConeGeneration((String) JOptionPane
 					.showInputDialog(this,
