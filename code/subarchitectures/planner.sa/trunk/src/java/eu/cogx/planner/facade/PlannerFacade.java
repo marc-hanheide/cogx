@@ -12,6 +12,8 @@ import java.util.concurrent.FutureTask;
 
 import autogen.Planner.Action;
 import autogen.Planner.Completion;
+import autogen.Planner.CppServer;
+import autogen.Planner.CppServerPrx;
 import autogen.Planner.Goal;
 import autogen.Planner.PlanningTask;
 import cast.CASTException;
@@ -29,6 +31,16 @@ import castutils.experimentation.StopWatch;
  */
 public class PlannerFacade {
 
+	public static final String PLANNER_PYTHON_SERVER = "PlannerPythonServer";
+	private static PlannerFacade singleton=null;
+	
+	public static synchronized PlannerFacade get(ManagedComponent component ) {
+		if (singleton==null) {
+			singleton = new PlannerFacade(component);
+		}
+		return singleton;
+	}
+	
 	public class FuturePlanningTask extends
 			FutureTask<WMEntryQueueElement<PlanningTask>> {
 
@@ -173,22 +185,7 @@ public class PlannerFacade {
 	private final static ExecutorService executorService = Executors
 			.newCachedThreadPool();
 
-	public Future<WMEntryQueueElement<PlanningTask>> plan(List<Goal> goals,
-			boolean execute) {
-		PlanningTask task = newPlanningTask(goals);
-		task.executePlan = execute;
-		return plan(task);
-	}
-
-	public Future<WMEntryQueueElement<PlanningTask>> plan(List<Goal> goals) {
-		return plan(newPlanningTask(goals));
-	}
-
-	public Future<WMEntryQueueElement<PlanningTask>> plan(PlanningTask task) {
-		FuturePlanningTask futurePlan = new FuturePlanningTask(task);
-		executorService.execute(futurePlan);
-		return futurePlan;
-	}
+	CppServerPrx cppServer = null;
 
 	/**
 	 * @param motives
@@ -242,5 +239,36 @@ public class PlannerFacade {
 		//
 		// }
 		// };
+	}
+
+	public boolean isGoalAchieved(String goalString) {
+		if (cppServer == null) {
+			try {
+				cppServer = component.getIceServer(PLANNER_PYTHON_SERVER,
+						CppServer.class, CppServerPrx.class);
+			} catch (CASTException e) {
+				component.logException("failed to contact "
+						+ PLANNER_PYTHON_SERVER + ": ", e);
+				return false;
+			}
+		}
+		return cppServer.queryGoal(goalString);
+	}
+
+	public Future<WMEntryQueueElement<PlanningTask>> plan(List<Goal> goals) {
+		return plan(newPlanningTask(goals));
+	}
+
+	public Future<WMEntryQueueElement<PlanningTask>> plan(List<Goal> goals,
+			boolean execute) {
+		PlanningTask task = newPlanningTask(goals);
+		task.executePlan = execute;
+		return plan(task);
+	}
+
+	public Future<WMEntryQueueElement<PlanningTask>> plan(PlanningTask task) {
+		FuturePlanningTask futurePlan = new FuturePlanningTask(task);
+		executorService.execute(futurePlan);
+		return futurePlan;
 	}
 }
