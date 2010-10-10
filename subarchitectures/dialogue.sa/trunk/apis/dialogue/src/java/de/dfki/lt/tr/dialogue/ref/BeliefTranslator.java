@@ -35,8 +35,6 @@ import java.util.List;
 public class BeliefTranslator {
 
 	public static final Modality[] mod = new Modality[] { Modality.Belief };
-	public static final String BELIEF_EXIST_ASSUMABILITY_FUNCTION_NAME = "belief_exist";
-	public static final String WORLD_EXIST_ASSUMABILITY_FUNCTION_NAME = "world_exist";
 
 	public List<ModalisedAtom> facts_epst = new LinkedList<ModalisedAtom>();
 	public List<ModalisedAtom> facts_ancestor = new LinkedList<ModalisedAtom>();
@@ -187,8 +185,8 @@ public class BeliefTranslator {
 						}));
 
 			r.ante = new Antecedent[] {
-				new AssumableAntecedent(worldexMAtom, new NamedAssumabilityFunction(WORLD_EXIST_ASSUMABILITY_FUNCTION_NAME)),
-				new AssumableAntecedent(belexMAtom, new NamedAssumabilityFunction(BELIEF_EXIST_ASSUMABILITY_FUNCTION_NAME))
+				new AssumableAntecedent(worldexMAtom, new NamedAssumabilityFunction(AbductiveReferenceResolution.WORLD_EXIST_ASSUMABILITY_FUNCTION_NAME)),
+				new AssumableAntecedent(belexMAtom, new NamedAssumabilityFunction(AbductiveReferenceResolution.BELIEF_EXIST_ASSUMABILITY_FUNCTION_NAME))
 			};
 
 			rules.add(r);
@@ -211,7 +209,7 @@ public class BeliefTranslator {
 		for (AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double> ass : assf_belief_exist) {
 			args.add("(" + MercuryUtils.modalisedAtomToString(ass.getKey()) + ") = p(" + ass.getValue() + ")");
 		}
-		sb.append(BELIEF_EXIST_ASSUMABILITY_FUNCTION_NAME + " = [\n\t").append(join(",\n\t", args)).append("\n].\n");
+		sb.append(AbductiveReferenceResolution.BELIEF_EXIST_ASSUMABILITY_FUNCTION_NAME + " = [\n\t").append(join(",\n\t", args)).append("\n].\n");
 		sb.append("\n");
 
 		sb.append("% belief ancestors\n");
@@ -235,7 +233,7 @@ public class BeliefTranslator {
 		for (AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double> ass : assf_world_exist) {
 			args.add("(" + MercuryUtils.modalisedAtomToString(ass.getKey()) + ") = p(" + ass.getValue() + ")");
 		}
-		sb.append(WORLD_EXIST_ASSUMABILITY_FUNCTION_NAME + " = [\n\t").append(join(",\n\t", args)).append("\n].\n");
+		sb.append(AbductiveReferenceResolution.WORLD_EXIST_ASSUMABILITY_FUNCTION_NAME + " = [\n\t").append(join(",\n\t", args)).append("\n].\n");
 		sb.append("\n");
 
 		sb.append("% disjoint declarations\n");

@@ -10,10 +10,12 @@ import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
 import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
 import de.dfki.lt.tr.infer.weigabd.ProofUtils;
 import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
+import de.dfki.lt.tr.infer.weigabd.slice.FileReadErrorException;
 import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
 import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
 import de.dfki.lt.tr.infer.weigabd.slice.Modality;
 import de.dfki.lt.tr.infer.weigabd.slice.ProofWithCost;
+import de.dfki.lt.tr.infer.weigabd.slice.SyntaxErrorException;
 import de.dfki.lt.tr.infer.weigabd.slice.Term;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -210,6 +212,23 @@ public abstract class AbducerUtils {
 		List<ProofWithCost> results = Arrays.asList(result);
 		log("abducer:" + abd.getEngineName(), "found " + result.length + " alternatives");
 		return results;
+	}
+
+	/**
+	 * Load a file with rules and facts for the abducer.
+	 *
+	 * @param file file name
+	 */
+	public static void loadFile(AbductionEngineConnection abd, String file) {
+		try {
+			abd.getProxy().loadFile(file);
+		}
+		catch (FileReadErrorException ex) {
+			log("abducer:" + abd.getEngineName(), "file read error: " + ex.filename);
+		}
+		catch (SyntaxErrorException ex) {
+			log("abducer:" + abd.getEngineName(), "syntax error: " + ex.error + " in " + ex.filename + " on line " + ex.line);
+		}
 	}
 
 	private static void log(String logname, String str) {

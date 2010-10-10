@@ -20,6 +20,7 @@
 
 package de.dfki.lt.tr.dialogue.interpret;
 
+import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import java.util.List;
@@ -30,11 +31,13 @@ public class RecognisedIntention {
 	public List<Intention> ints;
 	public List<dBelief> pre;
 	public List<dBelief> post;
+	public NominalReference nref;
 
 	public RecognisedIntention() {
 		ints = new LinkedList<Intention>();
 		pre = new LinkedList<dBelief>();
 		post = new LinkedList<dBelief>();
+		nref = null;
 	}
 
 }

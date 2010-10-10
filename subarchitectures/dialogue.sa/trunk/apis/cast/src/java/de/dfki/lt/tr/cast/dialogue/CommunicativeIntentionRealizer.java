@@ -66,6 +66,9 @@ import java.util.Map;
 public class CommunicativeIntentionRealizer
 extends AbstractDialogueComponent {
 
+	public final static int DEFAULT_TIMEOUT = 250;
+	private int timeout = DEFAULT_TIMEOUT;
+
 	private IntentionRealization ireal;
 	private String rulesetFile = "/dev/null";
 	private String dumpFile = "/tmp/belief-model.abd";
@@ -81,7 +84,7 @@ extends AbstractDialogueComponent {
 			public String newIdentifier() {
 				return newDataID();
 			}
-		});
+		}, timeout);
 
 		initialiseContext();
 		files.add(dumpFile);
@@ -101,6 +104,10 @@ extends AbstractDialogueComponent {
 	{
 		if (_config.containsKey("--ruleset")) {
 			rulesetFile = _config.get("--ruleset");
+		}
+		if (_config.containsKey("--timeout")) {
+			String timeoutStr = _config.get("--timeout");
+			timeout = Integer.parseInt(timeoutStr);
 		}
 
 		if (rulesetFile != null) {

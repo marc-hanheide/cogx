@@ -54,6 +54,10 @@ extends AbstractDialogueComponent {
 	private String rulesetFile = "/dev/null";
 	private HashMap<String, EpistemicObject> epObjs = new HashMap<String, EpistemicObject>();
  */
+
+	public final static int DEFAULT_TIMEOUT = 500;
+	private int timeout = DEFAULT_TIMEOUT;
+
 	private PresupposedBeliefConstruction pbc;
 	private AbductiveReferenceResolution arr;
 	private String pbcRulesetFile = "/dev/null";
@@ -95,7 +99,7 @@ extends AbstractDialogueComponent {
 			log("no ruleset to read");
 		}
 
-		arr = new AbductiveReferenceResolution(toAbsolutePath(dumpfile), toAbsolutePath(appendfile));
+		arr = new AbductiveReferenceResolution(toAbsolutePath(dumpfile), toAbsolutePath(appendfile), timeout);
 		if (correlfile != null) {
 			arr.loadFile(toAbsolutePath(correlfile));
 		}
@@ -124,6 +128,10 @@ extends AbstractDialogueComponent {
 		}
 		if (_config.containsKey("--dumpfile")) {
 			dumpfile = _config.get("--dumpfile");
+		}
+		if (_config.containsKey("--timeout")) {
+			String timeoutStr = _config.get("--timeout");
+			timeout = Integer.parseInt(timeoutStr);
 		}
 	}
 

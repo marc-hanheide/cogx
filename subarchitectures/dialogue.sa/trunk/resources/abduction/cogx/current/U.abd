@@ -113,14 +113,14 @@ get_topic_referent(attrib(S, H), Int, Ref, Nom, 'pointer-to'('topic-referent')) 
 
 get_topic_referent(EpSt, Int, Ref, Nom, BId) <-
 	EpSt = shared(S, H),
-	about(Ref, BId),
+	understand : about(Ref, BId),
 	int : pre(Int, belief(Ref, EpSt, fv(mark, 'referring-expression'))) / p(1.0).
 %	int : pre(Int, belief(Ref, EpSt, fv(about, BId))) / p(1.0),
 %	int : pre(Int, belief(Ref, EpSt, mark(refexp))) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-about(Ref, BId) <-
+understand : about(Ref, BId) <-
 	understand : resolves_to_belief(Ref, BId) / reference_resolution.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -173,6 +173,7 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	int : pointer(given, assertion, 'referring-expression') / p(1.0),
 	int : pre(Int, belief(Ref, attrib(H, S), fv(color, PolarProp))) / p(1.0),
 	int : post(Int, belief(Ref, shared(S, H), fv(color, PolarProp))) / p(1.0).
+%	int : post(Int, state(Ref, [grounded, about(X), color])) / p(1.0).
 
 understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, 'q-shape'),

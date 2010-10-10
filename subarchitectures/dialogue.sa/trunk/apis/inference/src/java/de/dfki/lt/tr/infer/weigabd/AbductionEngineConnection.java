@@ -40,21 +40,6 @@ public class AbductionEngineConnection {
         ic = Ice.Util.initialize();
     }
 
-/*
-    @Override
-    protected void finalize() {
-	super.finalize();
-        if (ic != null) {
-            try {
-                ic.destroy();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
- */
-
 	/**
 	 * Connect to the server.
 	 *

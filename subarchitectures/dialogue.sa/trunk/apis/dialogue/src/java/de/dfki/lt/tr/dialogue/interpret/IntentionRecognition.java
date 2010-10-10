@@ -57,14 +57,16 @@ public class IntentionRecognition {
 
 //	public static Counter counter = new Counter("ir");
 	public IdentifierGenerator idGen;
+	public int timeout;
 
 	public static final String INTENTION_RECOGNITION_ENGINE = "IntentionRecognition";
 
 	/**
 	 * Initialise the abducer and prepare for action.
 	 */
-    public IntentionRecognition(IdentifierGenerator idGen_) {
+    public IntentionRecognition(IdentifierGenerator idGen_, int timeout_) {
 		this.idGen = idGen_;
+		this.timeout = timeout_;
 		init();
     }
 
@@ -73,6 +75,10 @@ public class IntentionRecognition {
 		abd_recog.connectToServer("AbducerServer", "default -p 10000");
 		abd_recog.bindToEngine(INTENTION_RECOGNITION_ENGINE);
 		abd_recog.getProxy().clearContext();
+	}
+
+	public void loadFile(String name) {
+		AbducerUtils.loadFile(abd_recog, name);
 	}
 
 	/**
@@ -108,27 +114,8 @@ public class IntentionRecognition {
 		}
 	}
 
-	/**
-	 * Load a file with rules and facts for the abducer.
-	 *
-	 * @param file file name
-	 */
-	public void loadFile(String file) {
-		try {
-			abd_recog.getProxy().loadFile(file);
-		}
-		catch (FileReadErrorException ex) {
-			log("file read error: " + ex.filename);
-		}
-		catch (SyntaxErrorException ex) {
-			log("syntax error: " + ex.error + " in " + ex.filename + " on line " + ex.line);
-		}
-	}
-
 	public void updateReferentialHypotheses(List<NominalReferenceHypothesis> refHypos) {
-
 		abd_recog.getProxy().clearAssumabilityFunction("reference_resolution");
-
 		Map<String, Set<ModalisedAtom>> disj = new HashMap<String, Set<ModalisedAtom>>();
 
 		for (NominalReferenceHypothesis hypo : refHypos) {
