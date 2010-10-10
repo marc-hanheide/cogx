@@ -21,7 +21,7 @@ understand : polar_query_scope(S, H, EpSt, Int, Ref, Nom) <-
 	polar_query_prop(Nom, Prop, Value),
 %	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
 	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
-	get_topic_referent(EpSt, Int, SubjNom, RestrNom, BId),
+	get_topic_referent(EpSt, Int, Ref, Nom, BId),
 	int : post(Int, state(['question-answered', agent(H), about(BId), feature(Prop), hypo(Value)])) / p(1.0).
 
 %-------------------------------------------------------------------------
@@ -39,7 +39,7 @@ understand : event : utter(S, H, Nom) <-
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
 	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
-	understand : wh_query_scope(S, H, Int, SubjNom, ScopeNom).
+	understand : wh_query_scope(S, H, EpSt, Int, SubjNom, ScopeNom).
 
 % what is the X of Y
 understand : event : utter(S, H, Nom) <-
@@ -59,7 +59,7 @@ understand : wh_query_scope(S, H, EpSt, Int, Ref, Nom) <-
 	wh_query_prop(Nom, Prop),
 %	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
 	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
-	get_topic_referent(EpSt, Int, SubjNom, RestrNom, BId),
+	get_topic_referent(EpSt, Int, Ref, Nom, BId),
 	int : post(Int, state(['question-answered', agent(H), about(BId), feature(Prop)])) / p(1.0).
 
 %-------------------------------------------------------------------------
