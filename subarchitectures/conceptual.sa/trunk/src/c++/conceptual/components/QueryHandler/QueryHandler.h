@@ -45,10 +45,10 @@ class QueryHandler: public cast::ManagedComponent
 public:
 
 	/** Constructor. */
-	QueryHandler() {}
+	QueryHandler();
 
 	/** Destructor. */
-	virtual ~QueryHandler() {}
+	virtual ~QueryHandler();
 
 
 protected:
@@ -64,6 +64,29 @@ protected:
 	/** Called by the framework after the run loop finishes. */
 	virtual void stop();
 
+
+private:
+
+	/** Change event. */
+	void inferenceResultAdded(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Adds new InferenceQuery to WM. Returns the WM ID of the query. */
+	std::string sendInferenceQuery(std::string queryString);
+
+	/** Waits for the InferenceResult to a query with the given ID.
+	 * Retuns pointer to the distribution in the result. */
+	void retrieveInferenceResult(std::string queryId,
+			SpatialProbabilities::ProbabilityDistribution *resultDistribution);
+
+
+	pthread_cond_t _queryAddedSignalCond;
+	pthread_mutex_t _queryAddedSignalMutex;
+
+	/** Set of WM Ids of sent querries. */
+	std::set<std::string> _sentQueryIds;
+
+	/** Recently received results. */
+	std::list<ConceptualData::InferenceResultPtr> _receivedResults;
 
 }; // class ConceptualQueryHandler
 } // namespace def

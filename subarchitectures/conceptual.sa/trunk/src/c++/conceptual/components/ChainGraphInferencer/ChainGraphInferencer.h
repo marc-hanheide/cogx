@@ -26,10 +26,10 @@ class ChainGraphInferencer: public cast::ManagedComponent
 public:
 
 	/** Constructor. */
-	ChainGraphInferencer() {}
+	ChainGraphInferencer();
 
 	/** Destructor. */
-	virtual ~ChainGraphInferencer() {}
+	virtual ~ChainGraphInferencer();
 
 
 protected:
@@ -47,6 +47,28 @@ protected:
 
 
 private:
+
+	/** Change event. */
+	void inferenceQueryAdded(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Runs inference given by the query string and returns a probability distributions. */
+	void runInference(std::string queryString,
+			SpatialProbabilities::ProbabilityDistribution *resultDistribution);
+
+
+private:
+
+	struct Query
+	{
+		ConceptualData::InferenceQueryPtr queryPtr;
+		cast::cdl::WorkingMemoryAddress wmAddress;
+	};
+
+	/** Recently received queries. */
+	std::list<Query> _receivedQueries;
+
+	pthread_cond_t _inferenceQueryAddedSignalCond;
+	pthread_mutex_t _inferenceQueryAddedSignalMutex;
 
 
 }; // class ChainGraphInferencer

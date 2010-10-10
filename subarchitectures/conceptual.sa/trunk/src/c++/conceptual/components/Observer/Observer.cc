@@ -259,7 +259,7 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		}
 		catch(CASTException &e)
 		{
-			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -278,7 +278,7 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		}
 		catch(CASTException &e)
 		{
-			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -321,7 +321,7 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 		}
 		catch(CASTException &e)
 		{
-			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -339,7 +339,7 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 		}
 		catch(CASTException &e)
 		{
-			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -383,7 +383,7 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 		}
 		catch(CASTException &e)
 		{
-			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -402,7 +402,7 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 		}
 		catch(CASTException &e)
 		{
-			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -446,7 +446,7 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 		}
 		catch(CASTException &e)
 		{
-			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -465,7 +465,7 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 		}
 		catch(CASTException &e)
 		{
-			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -509,7 +509,7 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 		}
 		catch(CASTException &e)
 		{
-			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -528,7 +528,7 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 		}
 		catch(CASTException &e)
 		{
-			log("Cought exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -625,7 +625,7 @@ int Observer::getRoomForPlace(int placeId)
 void Observer::getConnectedPlaces(int placeId, vector<int> *connectedPlaces,
 		set<int> *traversedPlaces)
 {
-	debug("getConnectedPlaces(placeId=%d)", placeId);
+//	debug("getConnectedPlaces(placeId=%d)", placeId);
 
 	if (!traversedPlaces)
 		traversedPlaces = new set<int>();
@@ -643,7 +643,7 @@ void Observer::getConnectedPlaces(int placeId, vector<int> *connectedPlaces,
 		if (connectivityPathPropertyPtr->place1Id == placeId)
 		{
 			int p = connectivityPathPropertyPtr->place2Id;
-			debug("getConnectedPlaces(placeId=%d): found connection to place %d", placeId, p);
+//			debug("getConnectedPlaces(placeId=%d): found connection to place %d", placeId, p);
 
 			if (traversedPlaces->find(p)==traversedPlaces->end())
 			{
@@ -660,7 +660,7 @@ void Observer::getConnectedPlaces(int placeId, vector<int> *connectedPlaces,
 		if (connectivityPathPropertyPtr->place2Id == placeId)
 		{
 			int p = connectivityPathPropertyPtr->place1Id;
-			debug("getConnectedPlaces(placeId=%d): found connection to place %d", placeId, p);
+//			debug("getConnectedPlaces(placeId=%d): found connection to place %d", placeId, p);
 
 			if (traversedPlaces->find(p)==traversedPlaces->end())
 			{
@@ -676,7 +676,7 @@ void Observer::getConnectedPlaces(int placeId, vector<int> *connectedPlaces,
 		}
 	}
 
-	debug("getConnectedPlaces(placeId=%d): Finished searching for connected places", placeId);
+//	debug("getConnectedPlaces(placeId=%d): Finished searching for connected places", placeId);
 
 	// Remove duplicates and the placeId itself.
 	removeDuplicates(*connectedPlaces);
