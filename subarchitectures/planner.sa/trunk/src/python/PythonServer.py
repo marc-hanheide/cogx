@@ -312,6 +312,25 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       task.dt_task.write_dt_input(domain_fn, problem_fn)
       self.getDT().newTask(task.id, problem_fn, domain_fn);
 
+
+  @pdbdebug
+  def queryGoal(self, beliefs, goal, current=None):
+      import cast_state
+      import task_preprocessor as tp
+      
+      log.info("Loading domain %s.", self.domain_fn)
+      domain = pddl.load_domain(self.domain_fn)
+      state = cast_state.CASTState(beliefs, domain, component=self)
+      cstate = state.state
+      goalstrings = tp.transform_goal_string(goal, state.namedict).split("\n")
+      try:
+          pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, cstate.problem)
+      except Exception, e:
+          log.error("Could not parse goal: %s", goal)
+          log.error("Error: %s", e.message)
+          return False
+      extstate = cstate.get_extended_state(cstate.get_relevant_vars(pddl_goal))
+      return extstate.is_satisfied(pddl_goal)
       
   @pdbdebug
   def deliverAction(self, taskId, action, value, current=None):

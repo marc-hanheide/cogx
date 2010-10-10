@@ -146,6 +146,7 @@ module autogen {
       void updateStatus(int id, Completion status);
       void setChangeFilter(int id, StateChangeFilter filter);
       void waitForChanges(int id, int timeout);
+      bool queryGoal(string goal);
     };
 
     interface PythonServer extends cast::interfaces::CASTComponent
@@ -155,6 +156,7 @@ module autogen {
       void updateTask(PlanningTask task);
       void taskTimedOut(PlanningTask task);
       void updateState(BeliefSeq state, BeliefSeq percepts);
+      bool queryGoal(BeliefSeq state, string goal);
 
 //       /*DTP process with ID \argument{id} calls this method when: (1)
 // 	A useful plan has been found, and execution of that plan

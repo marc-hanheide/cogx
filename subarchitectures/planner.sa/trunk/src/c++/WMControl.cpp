@@ -184,7 +184,16 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
 }
 
 void WMControl::taskChanged(const cast::cdl::WorkingMemoryChange& wmc) {
-    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(wmc.address);
+    PlanningTaskPtr task;
+    try {
+         task = getMemoryEntry<PlanningTask>(wmc.address);
+    }
+    catch (cast::DoesNotExistOnWMException) {
+        log("task has vanished");
+        taskRemoved(wmc);
+        return;
+    }
+
     if (task->executionStatus != PENDING) {
         return;
     }
@@ -530,6 +539,14 @@ void WMControl::waitForChanges(int id, int timeout) {
     m_queue_mutex.unlock();
 }
 
+bool WMControl::queryGoal(const string& goal) {
+    vector<dBeliefPtr> state;
+    for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
+        state.push_back(i->second);
+    }
+    return pyServer->queryGoal(state, goal);
+}
+
 void WMControl::writeAction(ActionPtr& action, PlanningTaskPtr& task) {
     string id = task->firstActionID;
     action->taskID = task->id;
@@ -569,4 +586,8 @@ void WMControl::InternalCppServer::setChangeFilter(int id, const StateChangeFilt
 
 void WMControl::InternalCppServer::waitForChanges(int id, int timeout, const Ice::Current&) {
     parent->waitForChanges(id, timeout);
+}
+
+bool WMControl::InternalCppServer::queryGoal(const string& goal, const Ice::Current&) {
+    return parent->queryGoal(goal);
 }
