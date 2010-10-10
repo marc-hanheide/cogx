@@ -1312,6 +1312,7 @@
     <member stem="truetrue-adj" pred="true"/>
     <member stem="falsefalse-adj" pred="false"/>
     <member stem="elongatedelongated-adj" pred="elongated"/>
+    <member stem="compactcompact-adj" pred="compact"/>
     <member stem="big-adj" pred="big"/>
     <member stem="small-adj" pred="small"/>
     <member stem="tiny-adj" pred="tiny"/>
