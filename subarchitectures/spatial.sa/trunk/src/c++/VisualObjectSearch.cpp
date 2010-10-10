@@ -47,6 +47,7 @@ namespace spatial
   spatial::VisualObjectSearch* AVSComponentPtr;
   void VisualObjectSearch::configure(const std::map<std::string, std::string>& _config){
 
+    m_threshold = 0.7;
     m_currentRoom = 1;
     m_totalprob = 0;
     maxnumberofcones = 10; 
@@ -109,6 +110,16 @@ namespace spatial
       m_mapceiling = (atof(it->second.c_str()));
       log("Map ceiling set to: %d", m_mapceiling);
     }
+    
+
+
+    m_threshold = 0.7;
+    it = _config.find("--cov-threshold");
+    if (it != _config.end()) {
+	    m_threshold = (atof(it->second.c_str()));
+	    log("Map coverage set to: %d", m_threshold);
+    }
+
 
     m_sampleawayfromobs= 0.2;
     it = _config.find("--sampleawayfromobs");
@@ -758,7 +769,6 @@ m_samplesize = 100;
       }
       double VisualObjectSearch::GetStrategyCost(std::vector<std::string> policy){
 	double StrategyCost = 0;
-	double threshold = 0.7;
 	std::string room = policy[0];
 	log("got room: %s", room.c_str());
 
@@ -813,13 +823,13 @@ m_samplesize = 100;
 
 	      if (strategyStep.size() == 1) {
 		// If so, do uniform search without asking for a point cloud
-		log("strategy contains room and has 1 step.");
+		log("strategy contains room and has 1 step: %3.2f", m_threshold);
 		InitializePDFForObject(1.0, strategyStep[0].primaryobject, &tmpMap);
 		if(m_usePeekabot){
 		pbVis->AddPDF(tmpMap);
 		}
 		double cost = 0.0;
-		cost = GetCostForSingleStrategy(&tmpMap, topObject,threshold,false);
+		cost = GetCostForSingleStrategy(&tmpMap, topObject,m_threshold,false);
 		costThisStep = cost;
 		if (!m_publishSimCones)
 		  cacheStepCost(strategyStep,costThisStep);
@@ -908,7 +918,7 @@ m_samplesize = 100;
 
 		double cost = 0.0;
 		//FIXME: get lgmpdf as an arg
-		cost = GetCostForSingleStrategy(&tmpMap, topObject, threshold, false);
+		cost = GetCostForSingleStrategy(&tmpMap, topObject, m_threshold, false);
 		costThisStep = cost;
 		cacheStepCost(strategyStep,costThisStep, "_IN_" + policy[0]);
 	      }
@@ -1024,7 +1034,7 @@ m_samplesize = 100;
 		// the spread of the point cloud and the maximum cone length
 		// FIXME get lgmpdf as arg
 		double cost = 0.0;
-		cost = GetCostForSingleStrategy(&tmpMap, topObject,threshold, true);
+		cost = GetCostForSingleStrategy(&tmpMap, topObject,m_threshold, true);
 		costThisStep += cost / baseObjectPoses.size();
 		m_lgm = backupRoomLGM;
 	      }
@@ -1533,7 +1543,6 @@ m_samplesize = 100;
 	}
       }
   
-
 
       VisualObjectSearch::ObjectPairRelation 
 	VisualObjectSearch::GetSecondaryObject(string name){
@@ -2717,7 +2726,11 @@ if(m_usePeekabot)
 	      log(logString.c_str());
 
 	      if (waitingForObjects.empty() && waitingForDetection.empty()) {
-		DetectionComplete(false);
+		      log("Letting planner know that view point is processed.");
+		      SpatialData::ProcessViewPointCommandPtr VPcmd= new SpatialData::ProcessViewPointCommand;
+		      VPcmd->status = SpatialData::SUCCESS;
+		      overwriteWorkingMemory(m_ProcessVPID,VPcmd);
+		      DetectionComplete(false);
 	      }
 
 	    }
@@ -2735,10 +2748,8 @@ if(m_usePeekabot)
 
 	      // m_command = NEXT_NBV;
 	    }
-	    SpatialData::ProcessViewPointCommandPtr VPcmd= new SpatialData::ProcessViewPointCommand;
-	    VPcmd->status = SpatialData::SUCCESS;
-	    overwriteWorkingMemory(m_ProcessVPID,VPcmd);
-	  }
+
+	 }
 	  catch (const CASTException &e) {
 	    log("failed to delete SpatialDataCommand: %s", e.message.c_str());
 	  }
@@ -2927,7 +2938,7 @@ if(m_usePeekabot)
 	  else if (label == "metalbox") {
 	    objectSize = 0.76;
 	  }
-	  else if (label == "book") {
+	  else if (label == "book" || label == "frosties" ) {
 	    objectSize = 0.19;
 	  }
 	  else if (label == "rovio") {
@@ -2982,7 +2993,7 @@ if(m_usePeekabot)
 	  map = m_map;
 
 	m_totalprob += m_nbv.totalprob;
-	log("total prob covered so far %f", m_totalprob);
+	//log("total prob covered so far %f", m_totalprob);
 
 	double sensingProb = 0.8;
 	GDProbSum sumcells;

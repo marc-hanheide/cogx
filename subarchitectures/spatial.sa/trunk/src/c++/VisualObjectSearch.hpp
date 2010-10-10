@@ -174,6 +174,7 @@ std::string m_ProcessVPID;
 	IDLE
       };
 
+double m_threshold;
       bool m_usePeekabot;
       bool m_showgui;
       enum AVSStatus{
