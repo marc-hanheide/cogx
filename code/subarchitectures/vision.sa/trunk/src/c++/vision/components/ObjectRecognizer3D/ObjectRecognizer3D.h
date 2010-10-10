@@ -29,7 +29,6 @@
 #include "ObjectRecognizer3DUtils.hpp"
 #include "ObjectTrackerUtils.hpp"
 #include "Tracker.h"
-#include "ModelLoader.h"
 
 namespace cast
 {
@@ -88,6 +87,8 @@ private:
   void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
   void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
   void receiveRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc);
+  void PostFake3DObject(const cdl::WorkingMemoryChange & _wmc);
+  
 
   void init();
   void learnSiftModel(std::string& modelID, std::string& label);
