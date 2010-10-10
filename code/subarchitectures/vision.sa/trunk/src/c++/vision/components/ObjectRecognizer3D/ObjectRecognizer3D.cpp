@@ -113,6 +113,7 @@ void ObjectRecognizer3D::runComponent(){
   // Running Loop
   while(isRunning()){
 
+log("running in loop..");
     if(m_task == RECLEARN){
   		learnSiftModel(sift);   // m_task = STOP called in receiveTrackingCommand()
 
@@ -182,7 +183,8 @@ void ObjectRecognizer3D::runComponent(){
   		}
 
   	}
-  }
+sleepComponent(500);  
+}
 
   // Clean up
   if(m_detect)
@@ -399,8 +401,8 @@ void ObjectRecognizer3D::init(){
 
   m_detect->SetCameraParameter(C);
 
-  string empty;
-  addTrackerCommand(VisionData::START, empty);
+ // string empty;
+ // addTrackerCommand(VisionData::START, empty);
 
   cvReleaseMat(&C);
 }
@@ -553,9 +555,9 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 // 	addTrackerCommand(VisionData::UNLOCK, m_recEntries[m_label].visualObjectID);
 
 	// Send result to WM
-	//overwriteWorkingMemory(m_rec_cmd_id, m_rec_cmd);
+	overwriteWorkingMemory(m_rec_cmd_id, m_rec_cmd);
 	// note: execution layer expects the comand to be deleted as a signal of completion
-
+sleep(1);
 	try {
 	  if(m_delete_command_from_wm) {
       deleteFromWorkingMemory(m_rec_cmd_id);
@@ -568,6 +570,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 
 
 	// Clean up
+log("cleaning up..");
   cvReleaseImage(&m_iplImage);
 	cvReleaseImage(&m_iplGray);
 	for (unsigned i=0; i<m_image_keys.Size(); i++)
@@ -575,6 +578,8 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	m_image_keys.Clear();
 
 	m_task = RECSTOP;
+log("cleaned up..");
+
 }
 
 
