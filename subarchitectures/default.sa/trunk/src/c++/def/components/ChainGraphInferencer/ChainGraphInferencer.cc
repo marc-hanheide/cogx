@@ -316,16 +316,46 @@ SpatialProbabilities::ProbabilityDistribution
 	if ((variables.size()==2) &&
 		(variables[0]=="room_category1") && (variables[1]=="room_category2"))
 	{
+		// Set of all connectivities between all rooms
+		set< pair<string, string> > catConnectivities;
+		for ( vector<string>::iterator it = _chainGraphInferencer->_roomCategories.begin();
+			  it!=_chainGraphInferencer->_roomCategories.end(); ++it )
+		{
+			for ( vector<string>::iterator it2 = _chainGraphInferencer->_roomCategories.begin();
+				  it2!=_chainGraphInferencer->_roomCategories.end(); ++it2 )
+			{
+				catConnectivities.insert(pair<string,string>((*it), (*it2)));
+			}
+		}
+
+		// Add the connectivities from the data file
 		for(list<RoomCategoryConnectivity>::iterator it =
 				_chainGraphInferencer->_roomCategoryConnectivity.begin();
 				it!=_chainGraphInferencer->_roomCategoryConnectivity.end(); ++it)
 		{
+			catConnectivities.erase(pair<string, string>(it->roomCategory1, it->roomCategory2));
+
 			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
 					new SpatialProbabilities::StringRandomVariableValue(it->roomCategory1);
 			SpatialProbabilities::StringRandomVariableValuePtr roomCategory2RVVPtr =
 					new SpatialProbabilities::StringRandomVariableValue(it->roomCategory2);
 			SpatialProbabilities::JointProbabilityValue jpv;
 			jpv.probability=it->potential;
+			jpv.variableValues.push_back(roomCategory1RVVPtr);
+			jpv.variableValues.push_back(roomCategory2RVVPtr);
+			factor.massFunction.push_back(jpv);
+		}
+
+		// Add default potential for those connectivities that we don't know
+		for (set< pair<string, string> >::iterator it=catConnectivities.begin();
+				it!=catConnectivities.end(); ++it)
+		{
+			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->first);
+			SpatialProbabilities::StringRandomVariableValuePtr roomCategory2RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->second);
+			SpatialProbabilities::JointProbabilityValue jpv;
+			jpv.probability=_chainGraphInferencer->_defaultRoomCategoryConnectivityPotential;
 			jpv.variableValues.push_back(roomCategory1RVVPtr);
 			jpv.variableValues.push_back(roomCategory2RVVPtr);
 			factor.massFunction.push_back(jpv);
