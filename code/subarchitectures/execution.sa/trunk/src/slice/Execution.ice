@@ -54,10 +54,22 @@ module execution {
 
 
 
+
+
       /**
        * Move the robot to a particular place.
        */
       class GoToPlace extends Action {
+	/**
+	 * The ID of the place.
+	 */
+	long placeID;
+      };
+
+      /**
+       * Explore a place. 
+       */
+      class ExplorePlace extends Action {
 	/**
 	 * The ID of the place.
 	 */
@@ -77,8 +89,6 @@ module execution {
 	LongSeq placeIDs;
       };
 
-      /** Explore place. Not actually executed. **/
-      class ExplorePlace extends Action {};
 
 
       /**
