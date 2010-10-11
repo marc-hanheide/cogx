@@ -5,7 +5,7 @@ VARDEFAULT VisLearnerConfig = subarchitectures/vision.sa/config/test-vislearner/
 
 CPP MG vis.learner VisualLearner --clfconfig "%(VisLearnerConfig)" --log # --debug
 
-SETVAR VisLearnerFilemonParams = <multiline>
+VARDEFAULT VisLearnerFilemonParams = <multiline>
    %(VisLearnerDispPrefix).bmp.Recognition=%(VisLearnerDir)/{mGR.png}
    %(VisLearnerDispPrefix).bmp.Learning=%(VisLearnerDir)/{mGL.png}
    %(VisLearnerDispPrefix).bmp.D=%(VisLearnerDir)/{mGD.png}
