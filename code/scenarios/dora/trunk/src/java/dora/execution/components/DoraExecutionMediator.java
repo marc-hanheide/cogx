@@ -22,6 +22,7 @@ import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.ProcessConesAtPlace;
+import execution.slice.actions.ReportPosition;
 import execution.util.ActionConverter;
 
 /**
@@ -59,13 +60,13 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 					.create(dBelief.class,
 							getMemoryEntry(beliefPtr.getVal(), dBelief.class));
 
-			Formula placeProperty = placeUnion.getContent().get(PlaceTransferFunction.PLACE_ID_ID)
-					.getDistribution().firstValue();
+			Formula placeProperty = placeUnion.getContent()
+					.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+					.firstValue();
 			act.placeID = placeProperty.getInteger();
 
 			return act;
-		}
-		else if (_plannedAction.name.equals("explore_place")) {
+		} else if (_plannedAction.name.equals("explore_place")) {
 			assert _plannedAction.arguments.length == 2 : "explore_place action arity is expected to be 2";
 
 			ExplorePlace act = newActionInstance(ExplorePlace.class);
@@ -76,13 +77,13 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 					.create(dBelief.class,
 							getMemoryEntry(beliefPtr.getVal(), dBelief.class));
 
-			Formula placeProperty = placeUnion.getContent().get(PlaceTransferFunction.PLACE_ID_ID)
-					.getDistribution().firstValue();
+			Formula placeProperty = placeUnion.getContent()
+					.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+					.firstValue();
 			act.placeID = placeProperty.getInteger();
 
 			return act;
-		}
-		else if (_plannedAction.name.equals("look-for-object")) {
+		} else if (_plannedAction.name.equals("look-for-object")) {
 			assert _plannedAction.arguments.length == 2 : "look-for-object action arity is expected to be 2";
 			String label = ((ElementaryFormula) _plannedAction.arguments[1]).prop;
 
@@ -106,7 +107,6 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 							getMemoryEntry(roomBeliefAddress,
 									GroundedBelief.class));
 
-
 			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(this, gb,
 					ComaRoom.class);
 
@@ -120,8 +120,7 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			assert _plannedAction.arguments.length == 3 : "process_all_cones_at_place action arity is expected to be 3";
 
 			ProcessConesAtPlace act = newActionInstance(ProcessConesAtPlace.class);
-		
-			
+
 			WMPointer beliefPtr = WMPointer.create(_plannedAction.arguments[1]);
 
 			// read the belief from WM
@@ -129,13 +128,19 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 					.create(dBelief.class,
 							getMemoryEntry(beliefPtr.getVal(), dBelief.class));
 
-			Formula placeProperty = placeUnion.getContent().get(PlaceTransferFunction.PLACE_ID_ID)
-					.getDistribution().firstValue();
+			Formula placeProperty = placeUnion.getContent()
+					.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+					.firstValue();
 			act.placeID = placeProperty.getInteger();
 
 			act.model = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[2]);
 
 			return act;
+		} else if (_plannedAction.name
+				.equals("report_position")) {
+			assert _plannedAction.arguments.length == 2 : "report_position is expected to be of arity 2";
+			return createSingleBeliefAction(ReportPosition.class,
+					_plannedAction.arguments[1]);
 		}
 		throw new ActionExecutionException("No conversion available for: "
 				+ _plannedAction.fullName);
