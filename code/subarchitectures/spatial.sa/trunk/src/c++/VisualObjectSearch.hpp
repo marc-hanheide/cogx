@@ -276,6 +276,7 @@ SpatialData::NavCommandPtr newNavCommand();
       
       
       Cure::Pose3D tablepose;
+      std::string m_tablelabel;
       bool m_generateviewcones;
       std::string m_viewpointgen_id;
       bool m_showconemap;
