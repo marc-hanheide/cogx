@@ -19,6 +19,7 @@ import execution.slice.ActionExecutionException;
 import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
+import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.ProcessConesAtPlace;
 import execution.util.ActionConverter;
@@ -63,7 +64,25 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			act.placeID = placeProperty.getInteger();
 
 			return act;
-		} else if (_plannedAction.name.equals("look-for-object")) {
+		}
+		else if (_plannedAction.name.equals("explore_place")) {
+			assert _plannedAction.arguments.length == 2 : "explore_place action arity is expected to be 2";
+
+			ExplorePlace act = newActionInstance(ExplorePlace.class);
+			WMPointer beliefPtr = WMPointer.create(_plannedAction.arguments[1]);
+
+			// read the belief from WM
+			IndependentFormulaDistributionsBelief<dBelief> placeUnion = IndependentFormulaDistributionsBelief
+					.create(dBelief.class,
+							getMemoryEntry(beliefPtr.getVal(), dBelief.class));
+
+			Formula placeProperty = placeUnion.getContent().get(PlaceTransferFunction.PLACE_ID_ID)
+					.getDistribution().firstValue();
+			act.placeID = placeProperty.getInteger();
+
+			return act;
+		}
+		else if (_plannedAction.name.equals("look-for-object")) {
 			assert _plannedAction.arguments.length == 2 : "look-for-object action arity is expected to be 2";
 			String label = ((ElementaryFormula) _plannedAction.arguments[1]).prop;
 
