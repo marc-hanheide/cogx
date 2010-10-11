@@ -24,9 +24,16 @@ INCLUDE includes/conceptual.sa/conceptual-main.cast
 
 # vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
-INCLUDE includes/vision.sa/vision-blobs-dora.cast
+#INCLUDE includes/vision.sa/vision-blobs-dora.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 INCLUDE includes/vision.sa/vision-mediators-dora.cast
+CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "instantiations/test-recognition3d/frosties-%d.jpg" --start 0 --end 0 --framerate_ms 1000 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+
+CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
+CPP MG cameramounttest CameraMountTest --pan "0" --tilt "-0.25"
+#CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/frosties.ply instantiations/ply-models/table1.ply" --siftfiles "instantiations/sift-models/frosties.sift instantiations/sift-models/table1.sift" --labels "frosties table1" --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/frosties.ply instantiations/ply-models/table.ply" --siftfiles "instantiations/sift-models/frosties.sift instantiations/sift-models/table.sift" --labels "frosties table" --log
+
 
 # coma ######################################################################
 INCLUDE includes/coma.sa/coma-base.cast
@@ -69,6 +76,7 @@ JAVA MG display.PerceptBeliefs castutils.viewer.V11WMViewerComponent $V11N_STAND
 
 JAVA MG display.places castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "SpatialData.Place"
 JAVA MG display.goals castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "motivation.slice.Motive" --generic-col
+JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "ConceptualData.WorldState" --generic-col
 
 JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --mode SVG
 
