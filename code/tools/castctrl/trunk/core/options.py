@@ -252,7 +252,8 @@ class CCastOptions(object):
             if stm.startswith("<glob>"):
                 paths += self._globFileList(stm)
             else: paths.append(stm)
-        return separator.join(paths).replace("::", ":")
+        paths = separator.join(paths)
+        return paths
 
     def _readMultiLine(self, lineIterator):
         res = []
@@ -275,10 +276,16 @@ class CCastOptions(object):
             if mo != None:
                 lhs, rhs = mo.group(1), mo.group(2)
                 if rhs == "<pathlist>":
-                    rhs = self._readPathList(iexpr)
+                    rhs = self._readPathList(iexpr, ":")
+                    rhs = _xe(rhs, self._tempNewEnv)
+                    rhs = rhs.replace(": :", ":")
+                    rhs = rhs.replace("::", ":")
+                    rhs = rhs.strip(": ")
                 elif rhs == "<multiline>":
                     rhs = self._readMultiLine(iexpr)
-                rhs = _xe(rhs, self._tempNewEnv)
+                    rhs = _xe(rhs, self._tempNewEnv)
+                else:
+                    rhs = _xe(rhs, self._tempNewEnv)
                 rhs = rhs.replace("[PWD]", self.codeRootDir)
                 self._tempNewEnv[lhs] = rhs
             else: print "Invalid ENV expression:", stm
