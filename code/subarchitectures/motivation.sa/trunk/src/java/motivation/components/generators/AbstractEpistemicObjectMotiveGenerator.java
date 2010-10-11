@@ -15,6 +15,7 @@ import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTData;
+import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.slice.epobject.EpistemicObject;
 import eu.cogx.beliefs.slice.GroundedBelief;
 
@@ -43,8 +44,8 @@ public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T
 		this.epistemicClass = epistemicClass;
 	}
 
-	protected <T2 extends Motive> T2 fillDefault(T2 result) {
-		result.created = getCASTTime();
+	public static <T2 extends Motive> T2 fillDefault(T2 result) {
+		result.created = CASTUtils.getTimeServer().getCASTTime();
 		result.correspondingUnion = "";
 		result.maxExecutionTime = DEFAULT_MAX_EXECUTION_TIME;
 		result.maxPlanningTime = DEFAULT_MAX_PLANNING_TIME;
