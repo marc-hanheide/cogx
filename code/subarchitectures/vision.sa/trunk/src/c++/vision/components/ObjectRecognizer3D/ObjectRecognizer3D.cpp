@@ -357,6 +357,8 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Po
   obj->pose = pose;
   obj->componentID = getComponentID();
 
+  log("about to add/overwrite WM: '%s' id: %s", obj->identLabels[0].c_str(), rec_entry.visualObjectID.c_str());
+
   if(newModel){
 		addToWorkingMemory(rec_entry.visualObjectID, obj);
 		addTrackerCommand(ADDMODEL, rec_entry.visualObjectID);
@@ -528,38 +530,46 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	// Calculate SIFTs from image
 	sift.Operate(m_iplGray,m_image_keys);
 
-	//if(m_image_keys.Size() < 10){
-	//		log("%s: Too less keypoints detected, no pose estimation possible",m_label.c_str());
-	//}else{
-		m_detect->SetDebugImage(m_iplImage);
-		if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object))){
-			log("%s: No object detected", m_label.c_str());
-		}else{
-			m_rec_cmd->confidence = m_recEntries[m_label].object->conf;
-			if(m_recEntries[m_label].object->conf < m_confidence){
-				log("%s: Confidence of detected object to low: %f<%f", m_label.c_str(), m_recEntries[m_label].object->conf,m_confidence);
-				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
-				m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
-			}else{
-				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
-				m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
-				// Transform pose from Camera to world coordinates
-				Pose3 P, A, B;
-				P = m_image.camPars.pose;
-				convertPoseCv2MathPose(m_recEntries[m_label].object->pose, A);
+  m_detect->SetDebugImage(m_iplImage);
+  if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object)))
+  {
+    log("%s: No object detected", m_label.c_str());
+    Math::Pose3 nonPose;
+    setIdentity(nonPose);
+    loadVisualModelToWM(m_recEntries[m_label], nonPose, m_label);
+    m_rec_cmd->confidence = m_recEntries[m_label].object->conf;
+    m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
+  }
+  else
+  {
+    // Transform pose from Camera to world coordinates
+    Pose3 P, A, B;
+    P = m_image.camPars.pose;
+    convertPoseCv2MathPose(m_recEntries[m_label].object->pose, A);
+    Math::transform(P,A,B);
 
-				//printf("Pose: %f %f %f\n", A.pos.x, A.pos.y, A.pos.z);
+    if(m_recEntries[m_label].object->conf < m_confidence)
+    {
+      log("%s: Confidence of detected object too low: %f < %f, setting confidence to 0",
+        m_label.c_str(), m_recEntries[m_label].object->conf, m_confidence);
+      // set confidence to 0 to indicate that we consider the object not detected
+      m_recEntries[m_label].object->conf = 0.;
+      P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
+      m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
+    }
+    else
+    {
+      log("%s: Found object at: (%.3f %.3f %.3f), Confidence: %f",
+        m_label.c_str(), B.pos.x, B.pos.y, B.pos.z, m_recEntries[m_label].object->conf);
+      P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
+      m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
+    }
 
-				Math::transform(P,A,B);
-// 				transpose(B.rot, B.rot);
-
-				// if(first time recognition)
-				log("%s: Found object at: (%.3f %.3f %.3f), Confidence: %f", m_label.c_str(), B.pos.x, B.pos.y, B.pos.z, m_recEntries[m_label].object->conf);
-				loadVisualModelToWM(m_recEntries[m_label], B, m_label);
-				m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
-			}
-		}
-		//}
+    // if(first time recognition)
+    loadVisualModelToWM(m_recEntries[m_label], B, m_label);
+    m_rec_cmd->confidence = m_recEntries[m_label].object->conf;
+    m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
+  }
 
 	if(m_showCV){
 		cvShowImage ( "ObjectRecognizer3D", m_iplImage );
