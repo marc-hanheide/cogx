@@ -31,6 +31,13 @@ include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/autogen)
 include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/)
 endif(BUILD_SA_BINDING)
 
+option(DISPLAY_COMA_PB NO)
+if(DISPLAY_COMA_PB)
+     add_definitions(-DDISPLAY_COMA)
+     include_directories(${COGX_ROOT}/subarchitectures/coma.sa/src/c++)
+endif(DISPLAY_COMA_PB)
+
+
 # -------------- NAV.SA ----------------
 
 option(BUILD_SA_SPATIAL_PEEKABOT "Build spatial.sa PeekaBot components" YES)
@@ -41,6 +48,9 @@ link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData VisionData SpatialData La
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+if(DISPLAY_COMA_PB)
+  link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface ComaData)
+endif(DISPLAY_COMA_PB)
 endif(BUILD_SA_SPATIAL_PEEKABOT)
 
 # add_cast_component(PeekabotControl PeekabotControl.cpp)
@@ -164,9 +174,4 @@ link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialPropert
 link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
 endif(BUILD_AVS)
-
-option(DISPLAY_COMA_PB NO)
-if(DISPLAY_COMA_PB)
-     add_definitions(-DDISPLAY_COMA)
-endif(DISPLAY_COMA_PB)
 
