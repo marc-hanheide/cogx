@@ -33,6 +33,9 @@ import execution.slice.actions.LearnColour;
 import execution.slice.actions.LearnIdentity;
 import execution.slice.actions.LearnShape;
 import execution.slice.actions.RecogniseForegroundedModels;
+import execution.slice.actions.UnlearnColour;
+import execution.slice.actions.UnlearnIdentity;
+import execution.slice.actions.UnlearnShape;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
@@ -223,9 +226,15 @@ public class VisionActionInterface extends ManagedComponent {
 	public static abstract class LearnInstructionExecutor<ActionType extends BeliefPlusStringAction>
 			extends NonBlockingCompleteOnOperationExecutor<ActionType> {
 
+		private final String m_concept;
+		private final double m_weight;
+
 		public LearnInstructionExecutor(ManagedComponent _component,
-				Class<ActionType> _actCls) {
+				Class<ActionType> _actCls, String _concept, double _weight) {
 			super(_component, _actCls);
+			m_concept = _concept;
+			m_weight = _weight;
+
 		}
 
 		protected boolean acceptAction(ActionType _action) {
@@ -237,8 +246,6 @@ public class VisionActionInterface extends ManagedComponent {
 			return (VisionActionInterface) super.getComponent();
 		}
 
-		protected abstract String getConcept();
-
 		@Override
 		public void executeAction() {
 			try {
@@ -247,10 +254,11 @@ public class VisionActionInterface extends ManagedComponent {
 				VisualLearningTask cmd;
 
 				cmd = new VisualLearningTask(getComponent().getVisualObjectID(
-						beliefID), beliefID.id, getConcept(),
-						new String[] { getAction().value }, new double[] { 1 });
+						beliefID), beliefID.id, m_concept,
+						new String[] { getAction().value },
+						new double[] { m_weight });
 
-				getComponent().println(
+				getComponent().log(
 						"got the vis obj id: "
 								+ getComponent().getVisualObjectID(beliefID));
 
@@ -265,7 +273,7 @@ public class VisionActionInterface extends ManagedComponent {
 		protected void actionComplete() {
 			try {
 				getComponent().addBooleanFeature(getAction().beliefAddress,
-						getConcept() + "-learned", true);
+						m_concept + "-learned", true);
 			} catch (CASTException e) {
 				logException(e);
 			}
@@ -276,26 +284,15 @@ public class VisionActionInterface extends ManagedComponent {
 			LearnInstructionExecutor<LearnColour> {
 
 		public LearnColourExecutor(ManagedComponent _component) {
-			super(_component, LearnColour.class);
+			super(_component, LearnColour.class, "color", 1);
 		}
-
-		@Override
-		protected String getConcept() {
-			return "color";
-		}
-
 	}
 
 	public static class LearnShapeExecutor extends
 			LearnInstructionExecutor<LearnShape> {
 
 		public LearnShapeExecutor(ManagedComponent _component) {
-			super(_component, LearnShape.class);
-		}
-
-		@Override
-		protected String getConcept() {
-			return "shape";
+			super(_component, LearnShape.class, "shape", 1);
 		}
 
 	}
@@ -304,14 +301,33 @@ public class VisionActionInterface extends ManagedComponent {
 			LearnInstructionExecutor<LearnIdentity> {
 
 		public LearnIdentityExecutor(ManagedComponent _component) {
-			super(_component, LearnIdentity.class);
+			super(_component, LearnIdentity.class, "ident", 1);
+		}
+	}
+
+	public static class UnlearnColourExecutor extends
+			LearnInstructionExecutor<UnlearnColour> {
+
+		public UnlearnColourExecutor(ManagedComponent _component) {
+			super(_component, UnlearnColour.class, "color", -1);
+		}
+	}
+
+	public static class UnlearnShapeExecutor extends
+			LearnInstructionExecutor<UnlearnShape> {
+
+		public UnlearnShapeExecutor(ManagedComponent _component) {
+			super(_component, UnlearnShape.class, "shape", -1);
 		}
 
-		@Override
-		protected String getConcept() {
-			return "ident";
-		}
+	}
 
+	public static class UnlearnIdentityExecutor extends
+			LearnInstructionExecutor<UnlearnIdentity> {
+
+		public UnlearnIdentityExecutor(ManagedComponent _component) {
+			super(_component, UnlearnIdentity.class, "ident", -1);
+		}
 	}
 
 	@Override
@@ -395,6 +411,16 @@ public class VisionActionInterface extends ManagedComponent {
 		m_actionStateManager.registerActionType(LearnIdentity.class,
 				new ComponentActionFactory<LearnIdentityExecutor>(this,
 						LearnIdentityExecutor.class));
+
+		m_actionStateManager.registerActionType(UnlearnColour.class,
+				new ComponentActionFactory<UnlearnColourExecutor>(this,
+						UnlearnColourExecutor.class));
+		m_actionStateManager.registerActionType(UnlearnShape.class,
+				new ComponentActionFactory<UnlearnShapeExecutor>(this,
+						UnlearnShapeExecutor.class));
+		m_actionStateManager.registerActionType(UnlearnIdentity.class,
+				new ComponentActionFactory<UnlearnIdentityExecutor>(this,
+						UnlearnIdentityExecutor.class));
 
 	}
 
