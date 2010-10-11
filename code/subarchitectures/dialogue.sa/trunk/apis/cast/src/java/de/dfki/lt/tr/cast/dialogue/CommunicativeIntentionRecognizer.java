@@ -209,6 +209,13 @@ extends AbstractDialogueComponent {
 						}
 					}
 
+					if (ri.nref == null) {
+						log("the communication act does not specify topic");
+					}
+					else {
+						log("topic: (" + ri.nref.nominal + ", " + BeliefIntentionUtils.dFormulaToString(ri.nref.referent) + ")");
+					}
+
 					// register the dialogue move
 					DialogueMove dm = new DialogueMove(IntentionManagementConstants.humanAgent, lf, ri.nref);
 					try {

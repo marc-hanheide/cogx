@@ -32,7 +32,7 @@ import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.ref.AbductiveReferenceResolution;
 import de.dfki.lt.tr.dialogue.ref.PresupposedBeliefConstruction;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
-import de.dfki.lt.tr.dialogue.slice.ref.NominalReferenceHypothesis;
+import de.dfki.lt.tr.dialogue.slice.ref.NominalEpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.slice.ref.RefLogicalForm;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
@@ -170,16 +170,16 @@ extends AbstractDialogueComponent {
 
 			if (body instanceof LogicalForm) {
 				LogicalForm lf = (LogicalForm) body;
-				Map<String, Map<String, String>> eos = pbc.extractPresuppositions(lf);
+				Map<String, Map<String, String>> pmap = pbc.extractPresuppositions(lf);
 
-				List<NominalReferenceHypothesis> refs = new LinkedList<NominalReferenceHypothesis>();
-				if (eos != null && !eos.isEmpty()) {
-					for (String nom : eos.keySet()) {
-						List<NominalReferenceHypothesis> nrhs = arr.resolvePresupposition(nom, eos.get(nom));
+				List<NominalEpistemicReferenceHypothesis> refs = new LinkedList<NominalEpistemicReferenceHypothesis>();
+				if (pmap != null && !pmap.isEmpty()) {
+					for (String nom : pmap.keySet()) {
+						List<NominalEpistemicReferenceHypothesis> nrhs = arr.resolvePresupposition(nom, pmap.get(nom));
 						log(nrhs.size() + " hypos for ["
-								+ PresupposedBeliefConstruction.presupToString(nom, eos.get(nom)) + "]");
-							for (NominalReferenceHypothesis hypo : nrhs) {
-								log("    " + hypo.ref.nominal + " -> " + BeliefIntentionUtils.dFormulaToString(hypo.ref.referent) + " @ p=" + hypo.prob);
+								+ PresupposedBeliefConstruction.presupToString(nom, pmap.get(nom)) + "]");
+							for (NominalEpistemicReferenceHypothesis hypo : nrhs) {
+								log("    " + hypo.eref.ref.nominal + " -> " + BeliefIntentionUtils.dFormulaToString(hypo.eref.ref.referent) + " @ p=" + hypo.prob + " -- B{" + BeliefIntentionUtils.epistemicStatusToString(hypo.eref.epst) + "}");
 							}
 						refs.addAll(nrhs);
 					}

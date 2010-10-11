@@ -21,7 +21,7 @@
 package de.dfki.lt.tr.dialogue.interpret;
 
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
-import de.dfki.lt.tr.dialogue.slice.ref.NominalReferenceHypothesis;
+import de.dfki.lt.tr.dialogue.slice.ref.NominalEpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
 import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
@@ -114,22 +114,23 @@ public class IntentionRecognition {
 		}
 	}
 
-	public void updateReferentialHypotheses(List<NominalReferenceHypothesis> refHypos) {
+	public void updateReferentialHypotheses(List<NominalEpistemicReferenceHypothesis> refHypos) {
 		abd_recog.getProxy().clearAssumabilityFunction("reference_resolution");
 		Map<String, Set<ModalisedAtom>> disj = new HashMap<String, Set<ModalisedAtom>>();
 
-		for (NominalReferenceHypothesis hypo : refHypos) {
+		for (NominalEpistemicReferenceHypothesis ehypo : refHypos) {
 
 			ModalisedAtom rma = TermAtomFactory.modalisedAtom(new Modality[] {Modality.Understanding},
 					TermAtomFactory.atom("resolves_to_belief", new Term[] {
-						TermAtomFactory.term(hypo.ref.nominal),
-						ConversionUtils.stateFormulaToTerm(hypo.ref.referent)
+						TermAtomFactory.term(ehypo.eref.ref.nominal),
+						ConversionUtils.stateFormulaToTerm(ehypo.eref.ref.referent),
+						ConversionUtils.epistemicStatusToTerm(ehypo.eref.epst)
 					} ));
 
-			log("adding reference hypothesis: " + MercuryUtils.modalisedAtomToString(rma) + " @ p=" + hypo.prob);
-			abd_recog.getProxy().addAssumable("reference_resolution", rma, (float) -Math.log(hypo.prob));
+			log("adding reference hypothesis: " + MercuryUtils.modalisedAtomToString(rma) + " @ p=" + ehypo.prob);
+			abd_recog.getProxy().addAssumable("reference_resolution", rma, (float) -Math.log(ehypo.prob));
 
-			Set<ModalisedAtom> dj = disj.get(hypo.ref.nominal);
+			Set<ModalisedAtom> dj = disj.get(ehypo.eref.ref.nominal);
 			if (dj != null) {
 				dj.add(rma);
 			}
@@ -137,7 +138,7 @@ public class IntentionRecognition {
 				dj = new HashSet<ModalisedAtom>();
 				dj.add(rma);
 			}
-			disj.put(hypo.ref.nominal, dj);
+			disj.put(ehypo.eref.ref.nominal, dj);
 		}
 
 		for (String nom : disj.keySet()) {

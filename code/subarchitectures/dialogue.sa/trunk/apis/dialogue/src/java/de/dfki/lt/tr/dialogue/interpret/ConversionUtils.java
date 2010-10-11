@@ -95,7 +95,7 @@ public abstract class ConversionUtils {
 		ModalisedAtom[] rrs = ProofUtils.stripMarking(ProofUtils.filterAssumed(proof));
 
 		for (ModalisedAtom ma : Arrays.asList(rrs)) {
-			if (ma.m.length == 1 && ma.m[0] == Modality.Understanding && ma.a.predSym.equals("resolves_to_belief") && ma.a.args.length == 2) {
+			if (ma.m.length == 1 && ma.m[0] == Modality.Understanding && ma.a.predSym.equals("resolves_to_belief") && ma.a.args.length == 3) {
 				String n = ((FunctionTerm)ma.a.args[0]).functor;
 				WorkingMemoryAddress wma = termToWorkingMemoryAddress(ma.a.args[1]);
 				if (wma != null) {
@@ -217,6 +217,38 @@ public abstract class ConversionUtils {
 
 				if (from != null && to != null) {
 					addFeature(from, featName, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(to.id, "binder")));  // FIXME: this is *very* hacky!
+				}
+			}
+		}
+
+		// explicit topic switch
+		for (ModalisedAtom ma : Arrays.asList(rrs)) {
+			if (ma.m.length == 1 && ma.m[0] == Modality.Understanding && ma.a.predSym.equals("topic_switch_mark") && ma.a.args.length == 2
+					&& ma.a.args[0] instanceof FunctionTerm && ma.a.args[1] instanceof FunctionTerm) {
+
+				String nom = ((FunctionTerm) ma.a.args[0]).functor;
+				NominalReference newTopic = null;
+
+				dFormula inF = uniTermToFormula((FunctionTerm) ma.a.args[1]);
+				dFormula outF = null;
+
+				outF = replacePointersInFormula(inF, bels_pre, "binder");
+				if (outF instanceof PointerFormula) {
+					newTopic = new NominalReference(nom, outF);
+				}
+
+				if (newTopic == null) {
+					outF = replacePointersInFormula(inF, bels_post, "dialogue");
+					if (outF instanceof PointerFormula) {
+						newTopic = new NominalReference(nom, outF);
+					}
+				}
+
+				if (newTopic == null) {
+					log("got a topic swith, but don't know what to resolve it against");
+				}
+				else {
+					ri.nref = newTopic;
 				}
 			}
 		}

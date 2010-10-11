@@ -21,11 +21,13 @@
 package de.dfki.lt.tr.dialogue.ref;
 
 import cast.cdl.WorkingMemoryAddress;
+import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
 import de.dfki.lt.tr.dialogue.interpret.BeliefFormulaFactory;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
-import de.dfki.lt.tr.dialogue.slice.ref.NominalReferenceHypothesis;
+import de.dfki.lt.tr.dialogue.slice.ref.NominalEpistemicReference;
+import de.dfki.lt.tr.dialogue.slice.ref.NominalEpistemicReferenceHypothesis;
 import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
 import de.dfki.lt.tr.infer.weigabd.ProofUtils;
 import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
@@ -76,7 +78,7 @@ public class AbductiveReferenceResolution {
 		refresEngine.getProxy().clearContext();
 	}
 
-	public List<NominalReferenceHypothesis> resolvePresupposition(String nom, Map<String, String> fvPairs) {
+	public List<NominalEpistemicReferenceHypothesis> resolvePresupposition(String nom, Map<String, String> fvPairs) {
 
 		refresEngine.getProxy().clearRules();
 		refresEngine.getProxy().clearFacts();
@@ -91,15 +93,14 @@ public class AbductiveReferenceResolution {
 				TermAtomFactory.atom("resolves_main", new Term[] {
 					TermAtomFactory.term(nom),
 					TermAtomFactory.var("BId"),
-//					TermAtomFactory.var("EpSt"),
+					TermAtomFactory.var("EpSt"),
 					propertiesToListTerm(fvPairs)
 				}));
 
 		List<ProofWithCost> proofs = AbducerUtils.allAbductiveProofs(refresEngine, ProofUtils.newUnsolvedProof(g), 500);
 
-		Map<String, Set<ModalisedAtom>> disj = new HashMap<String, Set<ModalisedAtom>>();
-
 		Map<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, Double> combined_hypos = new HashMap<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, Double>();
+		Map<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, EpistemicStatus> epistemic_statuses = new HashMap<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, EpistemicStatus>();
 
 		double total_mass = 0.0;
 		// extract referential hypotheses from proofs
@@ -107,25 +108,29 @@ public class AbductiveReferenceResolution {
 			ModalisedAtom rma = extractResolvesMAtom(pwc.proof);
 			if (rma != null) {
 				AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress> hypo = extractHypothesis(rma);
+				EpistemicStatus epst = extractEpistemicStatus(rma);
 				double mass = 0.0;
 				if (combined_hypos.containsKey(hypo)) {
 					mass = combined_hypos.get(hypo);
 				}
 				double deltaMass = Math.exp(-pwc.cost);
 				mass += deltaMass;
-				combined_hypos.put(hypo, mass);
 				total_mass += deltaMass;
+
+				combined_hypos.put(hypo, mass);
+				epistemic_statuses.put(hypo, epst);
 			}
 		}
 
-		List<NominalReferenceHypothesis> result = new LinkedList<NominalReferenceHypothesis>();
+		List<NominalEpistemicReferenceHypothesis> result = new LinkedList<NominalEpistemicReferenceHypothesis>();
 
 		// create the hypotheses
 		for (AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress> hypo : combined_hypos.keySet()) {
 			double prob = combined_hypos.get(hypo) / total_mass;
 
 			NominalReference nref = new NominalReference(hypo.getKey(), BeliefFormulaFactory.newPointerFormula(hypo.getValue()));
-			NominalReferenceHypothesis nhypo = new NominalReferenceHypothesis(nref, prob);
+			NominalEpistemicReference eref = new NominalEpistemicReference(nref, epistemic_statuses.get(hypo));
+			NominalEpistemicReferenceHypothesis nhypo = new NominalEpistemicReferenceHypothesis(eref, prob);
 			result.add(nhypo);
 		}
 		return result;
@@ -145,11 +150,17 @@ public class AbductiveReferenceResolution {
 	}
 
 	public static AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress> extractHypothesis(ModalisedAtom matom) {
-		assert (matom.a.args.length == 2);
+		assert (matom.a.args.length == 3);
 		assert (matom.a.args[0] instanceof FunctionTerm);
 		String nom = ((FunctionTerm) matom.a.args[0]).functor;
 		WorkingMemoryAddress wma = ConversionUtils.termToWorkingMemoryAddress(matom.a.args[1]);
 		return new AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>(nom, wma);
+	}
+
+	public static EpistemicStatus extractEpistemicStatus(ModalisedAtom matom) {
+		assert (matom.a.args.length == 3);
+		assert (matom.a.args[2] instanceof FunctionTerm);
+		return ConversionUtils.termToEpistemicStatus((FunctionTerm) matom.a.args[2]);
 	}
 
 	private Term propertiesToListTerm(Map<String, String> fvPairs) {
