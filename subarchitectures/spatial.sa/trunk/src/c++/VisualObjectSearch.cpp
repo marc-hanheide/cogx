@@ -161,12 +161,15 @@ namespace spatial
     if ((it = _config.find("--tpose")) != _config.end()) {
       istringstream istr(it->second);
       string label;
+
       istr >> label;
-	tablepose.setX(atof(label.c_str()));
+      m_tablelabel = label;
       istr >> label;
-	tablepose.setY(atof(label.c_str()));
+      tablepose.setX(atof(label.c_str()));
       istr >> label;
-	tablepose.setTheta(atof(label.c_str()));
+      tablepose.setY(atof(label.c_str()));
+      istr >> label;
+      tablepose.setTheta(atof(label.c_str()));
     }
     if ((it = _config.find("--objects")) != _config.end()) {
       istringstream istr(it->second);
@@ -1326,7 +1329,7 @@ log("filled");
 	  height = 0.45-0.225;
 	  isspecial = true;
 	}
-	else if (label == "table2") {
+	else if (label == "table2" || label == "table") {
 	  isspecial = true;
 	  height = 0.72-0.36;
 	}
@@ -1483,14 +1486,14 @@ log("filled");
 	  }
 	  SpatialGridMap::GridMap<GridMapData> tmpMap = *m_map; 
 	  if(exists){
-	    log("table1 exists in the places what we are asked to search");
+	    log("table1 exists in the places  what we are asked to search");
 	    // we always execute the first policy
 
 	    vector<FrontierInterface::ObjectRelation> relations;
 	    vector<string> labels;
 	    relations.push_back(FrontierInterface::ON);
 	    labels.push_back(targetObject);
-	    labels.push_back("table1");
+	    labels.push_back(m_tablelabel);
 	    FrontierInterface::WeightedPointCloudPtr queryCloud = 
 	      new FrontierInterface::WeightedPointCloud;
 	    FrontierInterface::ObjectPriorRequestPtr objreq =
@@ -1566,7 +1569,7 @@ log("filled");
 	sleep(10);
 	log("Posting a fake table.");
 	VisionData::Post3DObjectPtr obj3D = new VisionData::Post3DObject;
-	obj3D->label = "table1";
+	obj3D->label = m_tablelabel;
 	Pose3 p;
 	p.pos.x = tablepose.getX();
 	p.pos.y = tablepose.getY();
@@ -3031,7 +3034,7 @@ log("filled");
 	VisualObjectSearch::SetCurrentTarget(const string &label) {
 	  currentTarget = label;
 	  double objectSize = 0.5;
-	  if (label == "table1") {
+	  if (label == "table1" || label =="table") {
 	    objectSize = 1.1;
 	  }
 	  if (label == "table2") {

@@ -1535,6 +1535,11 @@ generateNewObjectModel(const std::string &label) {
       newBoxObject->radius2 = 0.45;
       newBoxObject->radius3 = 0.275;
     }
+    else if (label == "table") {
+      newBoxObject->radius1 = 0.95;
+      newBoxObject->radius2 = 0.45;
+      newBoxObject->radius3 = 0.275;
+    }
     else if (label == "table2") {
       newBoxObject->radius1 = 0.30;
       newBoxObject->radius2 = 0.50;
