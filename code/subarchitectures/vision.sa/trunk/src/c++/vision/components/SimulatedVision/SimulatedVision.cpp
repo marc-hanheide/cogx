@@ -339,6 +339,7 @@ void CVisionSimulator::CDisplayClient::createForms()
       for(int i = 0; i < pSim->m_objectNames.size(); i++) {
          objids << "<option>" << pSim->m_objectNames[i] << "</option>";
       }
+      objids << "<option>" "</option>";
 
       // up to MAX_SCENE_OBJECT_COUNT objects in a scene
       for(int i = 0; i < MAX_SCENE_OBJECT_COUNT; i++) {
