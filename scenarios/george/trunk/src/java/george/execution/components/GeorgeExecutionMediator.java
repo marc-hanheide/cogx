@@ -15,6 +15,9 @@ import execution.slice.actions.AskPolarShape;
 import execution.slice.actions.LearnColour;
 import execution.slice.actions.LearnIdentity;
 import execution.slice.actions.LearnShape;
+import execution.slice.actions.UnlearnColour;
+import execution.slice.actions.UnlearnIdentity;
+import execution.slice.actions.UnlearnShape;
 import execution.util.ActionConverter;
 
 /**
@@ -90,7 +93,22 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			return createBeliefPlusStringAction(LearnIdentity.class,
 					_plannedAction.arguments[1], _plannedAction.arguments[2]);
 
-		} else if (_plannedAction.name.equals("ask-for-and-object-with-color")) {
+		} else if (_plannedAction.name.equals("unlearn-color")) {
+
+			assert _plannedAction.arguments.length == 3 : "unlearn-color is expected to be of arity 3";
+			return createBeliefPlusStringAction(UnlearnColour.class,
+					_plannedAction.arguments[1], _plannedAction.arguments[2]);
+		} else if (_plannedAction.name.equals("unlearn-shape")) {
+			assert _plannedAction.arguments.length == 3 : "unlearn-shape is expected to be of arity 3";
+			return createBeliefPlusStringAction(UnlearnShape.class,
+					_plannedAction.arguments[1], _plannedAction.arguments[2]);
+
+		} else if (_plannedAction.name.equals("unlearn-ident")) {
+			assert _plannedAction.arguments.length == 3 : "unlearn-ident is expected to be of arity 3";
+			return createBeliefPlusStringAction(UnlearnIdentity.class,
+					_plannedAction.arguments[1], _plannedAction.arguments[2]);
+		}
+		else if (_plannedAction.name.equals("ask-for-and-object-with-color")) {
 			assert _plannedAction.arguments.length == 2 : "ask-for-and-object-with-color is expected to be of arity 2";
 			return createAskForAction("color",
 					(ElementaryFormula) _plannedAction.arguments[1]);

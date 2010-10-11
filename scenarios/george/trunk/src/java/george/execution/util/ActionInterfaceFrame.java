@@ -68,6 +68,11 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_learnShapeAction;
 	private JRadioButton m_learnIdentityAction;
 
+	private JRadioButton m_unlearnColourAction;
+	private JRadioButton m_unlearnShapeAction;
+	private JRadioButton m_unlearnIdentityAction;
+
+	
 	private JRadioButton m_foregroundModelsAction;
 	private JRadioButton m_backgroundModelsAction;
 	private JRadioButton m_recogniseForegroundedModelsAction;
@@ -209,6 +214,12 @@ public class ActionInterfaceFrame extends JFrame {
 			m_learnColourAction = new JRadioButton("learn colour");
 			m_learnShapeAction = new JRadioButton("learn shape");
 			m_learnIdentityAction = new JRadioButton("learn identity");
+			
+			m_unlearnColourAction = new JRadioButton("unlearn colour");
+			m_unlearnShapeAction = new JRadioButton("unlearn shape");
+			m_unlearnIdentityAction = new JRadioButton("unlearn identity");
+			
+			
 			m_askForColourAction = new JRadioButton("ask for colour");
 			m_askForShapeAction = new JRadioButton("ask for shape");
 			m_askForIdentityAction = new JRadioButton("ask for identity");
@@ -224,6 +235,10 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_learnColourAction);
 			actionGroup.add(m_learnShapeAction);
 			actionGroup.add(m_learnIdentityAction);
+			actionGroup.add(m_unlearnColourAction);
+			actionGroup.add(m_unlearnShapeAction);
+			actionGroup.add(m_unlearnIdentityAction);
+
 			actionGroup.add(m_askForColourAction);
 			actionGroup.add(m_askForShapeAction);
 			actionGroup.add(m_askForIdentityAction);
@@ -238,6 +253,10 @@ public class ActionInterfaceFrame extends JFrame {
 			m_beliefsActionPanel.add(m_learnShapeAction, null);
 			m_beliefsActionPanel.add(m_learnIdentityAction, null);
 
+			m_beliefsActionPanel.add(m_unlearnColourAction, null);
+			m_beliefsActionPanel.add(m_unlearnShapeAction, null);
+			m_beliefsActionPanel.add(m_unlearnIdentityAction, null);
+			
 			m_beliefsActionPanel.add(m_askForColourAction, null);
 			m_beliefsActionPanel.add(m_askForShapeAction, null);
 			m_beliefsActionPanel.add(m_askForIdentityAction, null);
@@ -381,6 +400,13 @@ public class ActionInterfaceFrame extends JFrame {
 				learnShape();
 			} else if (m_learnIdentityAction.isSelected()) {
 				learnIdentity();
+			}
+			if (m_unlearnColourAction.isSelected()) {
+				unlearnColour();
+			} else if (m_unlearnShapeAction.isSelected()) {
+				unlearnShape();
+			} else if (m_unlearnIdentityAction.isSelected()) {
+				unlearnIdentity();
 			} else if (m_askForColourAction.isSelected()) {
 				askForColour();
 			} else if (m_askForShapeAction.isSelected()) {
@@ -444,7 +470,43 @@ public class ActionInterfaceFrame extends JFrame {
 		if (beliefID != null) {
 			String colour = getFeatureValue(beliefID, "identity", "learnt");
 			if (colour != null) {
-				m_exeMan.learnShape(
+				m_exeMan.learnIdentity(
+						new WorkingMemoryAddress(beliefID, "binder"), colour,
+						new MonitorPanel());
+			}
+		}
+	}
+	
+	
+	private void unlearnColour() throws CASTException {
+		String beliefID = getSelectedBeliefID();
+		if (beliefID != null) {
+			String colour = getFeatureValue(beliefID, "colour", "unlearnt");
+			if (colour != null) {
+				m_exeMan.unlearnColour(new WorkingMemoryAddress(beliefID,
+						"binder"), colour, new MonitorPanel());
+			}
+		}
+	}
+
+	private void unlearnShape() throws CASTException {
+		String beliefID = getSelectedBeliefID();
+		if (beliefID != null) {
+			String colour = getFeatureValue(beliefID, "shape", "unlearnt");
+			if (colour != null) {
+				m_exeMan.unlearnShape(
+						new WorkingMemoryAddress(beliefID, "binder"), colour,
+						new MonitorPanel());
+			}
+		}
+	}
+
+	private void unlearnIdentity() throws CASTException {
+		String beliefID = getSelectedBeliefID();
+		if (beliefID != null) {
+			String colour = getFeatureValue(beliefID, "identity", "unlearnt");
+			if (colour != null) {
+				m_exeMan.unlearnIdentity(
 						new WorkingMemoryAddress(beliefID, "binder"), colour,
 						new MonitorPanel());
 			}
