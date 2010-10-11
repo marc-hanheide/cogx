@@ -31,7 +31,7 @@ class CASTState(object):
 
         #self.attr_beliefdict = dict((b.id, b) for b in self.attributed_beliefs)
         #self.beliefdict.update(dict((b.id, b) for b in self.attributed_beliefs))
-
+        self.address_dict = component.address_dict if component else None
         
         self.coma_facts = []
         self.coma_objects = set()
@@ -83,7 +83,7 @@ class CASTState(object):
         generated_objects = set()
         new_objects = set(self.objects)
         if oldstate and oldstate.generated_facts is not None:
-            generated_facts = oldstate.generated_facts
+            generated_facts.update(oldstate.generated_facts)
             generated_objects = oldstate.generated_objects
             new_objects -= oldstate.objects
 
@@ -260,6 +260,7 @@ class CASTState(object):
     def convert_percepts(self, percepts):
         objdict = dict((o.name, o) for o in chain(self.objects, self.domain.constants))
         tp.belief_dict = {}
+        tp.belief_dict.update(self.beliefdict)
         percept2bel = {}
 
         for b in self.beliefs:
@@ -321,7 +322,8 @@ class CASTState(object):
 
         if name in self.beliefdict:
             #arg is a pointer to another belief
-            value = logicalcontent.PointerFormula(0, cast.cdl.WorkingMemoryAddress(name, BINDER_SA))
+            wma = self.address_dict[name] if self.address_dict else cast.cdl.WorkingMemoryAddress(name, BINDER_SA)
+            value = logicalcontent.PointerFormula(0, wma)
         elif arg.is_instance_of(pddl.t_boolean):
             value = False
             if arg == pddl.TRUE:
@@ -331,7 +333,9 @@ class CASTState(object):
             value = logicalcontent.UnknownFormula(0)
         else:
             if ":" in name:
-                value = logicalcontent.PointerFormula(0, cast.cdl.WorkingMemoryAddress(name, BINDER_SA))
+                log.warning("%s seems to be a belief but is not in belief dict!", name)
+                wma = self.address_dict[name] if self.address_dict else cast.cdl.WorkingMemoryAddress(name, BINDER_SA)
+                value = logicalcontent.PointerFormula(0, wma)
             else:
                 value = logicalcontent.ElementaryFormula(0, name)
             #assume a string value

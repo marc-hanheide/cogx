@@ -119,7 +119,7 @@ void WMControl::runComponent() {
         if (!execute.empty() || !timed_out.empty() || (waiting && m_new_updates)) {
             lockComponent();
             m_new_updates = false;
-            vector<dBeliefPtr> state;
+            vector<BeliefEntry> state;
             for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
                 state.push_back(i->second);
             }
@@ -171,7 +171,7 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
 
     overwriteWorkingMemory(wmc.address, task);
     
-    vector<dBeliefPtr> state;
+    vector<BeliefEntry> state;
     for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
         state.push_back(i->second);
     }
@@ -285,8 +285,10 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
 
 void WMControl::newPercept(const cast::cdl::WorkingMemoryChange& wmc) {
     log("new percept");
-    dBeliefPtr percept = getMemoryEntry<dBelief>(wmc.address);
-    m_percepts.push_back(percept);
+    BeliefEntry entry;
+    entry.address = wmc.address;
+    entry.belief = getMemoryEntry<dBelief>(wmc.address);
+    m_percepts.push_back(entry);
 }        
 
 
@@ -295,9 +297,11 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     if (wmc.operation == cast::cdl::ADD || wmc.operation == cast::cdl::OVERWRITE) {
         log("added/changed belief at %s@%s", wmc.address.id.c_str(), wmc.address.subarchitecture.c_str());
         try {
-            dBeliefPtr changedBelief = getMemoryEntry<dBelief>(wmc.address);
-            m_currentState[wmc.address.id] = changedBelief;
-            log("%s->id = %s", wmc.address.id.c_str(), changedBelief->id.c_str());
+            BeliefEntry entry;
+            entry.address = wmc.address;
+            entry.belief = getMemoryEntry<dBelief>(wmc.address);
+            m_currentState[wmc.address.id] = entry;
+            log("%s->id = %s", wmc.address.id.c_str(), entry.belief->id.c_str());
         }
         catch(cast::DoesNotExistOnWMException) {
             log("%s vanished.", wmc.address.id.c_str());
@@ -540,7 +544,7 @@ void WMControl::waitForChanges(int id, int timeout) {
 }
 
 bool WMControl::queryGoal(const string& goal) {
-    vector<dBeliefPtr> state;
+    vector<BeliefEntry> state;
     for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
         state.push_back(i->second);
     }
