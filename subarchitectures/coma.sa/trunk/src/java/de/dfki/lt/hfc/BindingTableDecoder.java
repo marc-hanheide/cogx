@@ -18,7 +18,7 @@ public final class BindingTableDecoder {
 
 	public static ArrayList<Map<String, String>> decode(BindingTable bt, TupleStore ts) {
 	    ArrayList<Map<String, String>> decodedList = new ArrayList<Map<String,String>>();
-	    System.out.println("decode called, and arraylist initialized");
+	    // System.out.println("decode called, and arraylist initialized");
 	    for (int[] intResLine : bt.table) {
 
 	    	StringBuffer _outputLine = new StringBuffer();
@@ -41,7 +41,7 @@ public final class BindingTableDecoder {
 				_currDecodedLine.put(extVarName, resource);
 			}
 	    	decodedList.add(_currDecodedLine);
-	    	System.out.println(_outputLine);
+	    	// System.out.println(_outputLine);
 	    }
 	    //System.out.println("BTD: the decoded bindings list has a size of: " + decodedList.size());
 		return decodedList;
