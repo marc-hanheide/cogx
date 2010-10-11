@@ -73,7 +73,7 @@ SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SM
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
 LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI
                GolemSys GolemCtrl GolemPhys GolemPhysCtrl GolemTools GolemTinyIce
-	       pthread rt GL glut expat SMLearning netcdf
+	       pthread rt GL glut GLU expat SMLearning netcdf
  	       rnnlib ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY}
 	       ${QT_LIBRARIES} qwt-qt4
 	       Ice IceUtil)

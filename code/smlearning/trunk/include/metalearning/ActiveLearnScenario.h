@@ -7,7 +7,6 @@
  *
  */
 
-#pragma once
 #ifndef _SMLEARNING_ACTIVELEARNSCENARIO_H_
 #define _SMLEARNING_ACTIVELEARNSCENARIO_H_
 
@@ -84,8 +83,8 @@ protected:
 	SMRegion::RegionsMap regions;
 
 	/** struct defining an action tuple */
-	struct Action { int startPosition; int speed; Real horizontalAngle; };
-	typedef vector<pair<FeatureVector, Action> > ActionsVector;
+	// struct Action { int startPosition; int speed; Real horizontalAngle; };
+	typedef vector<pair<FeatureVector, LearningData::MotorCommand> > ActionsVector;
 
 	/** regions counter for defining regions indices */
 	int regionsCount;
@@ -142,7 +141,7 @@ protected:
 	///
 	///get the actions vector that maximizes learning progress
 	///
-	pair<FeatureVector, Action> get_action_maxLearningProgress (const ActionsVector& candidateActions);
+	pair<FeatureVector, LearningData::MotorCommand> get_action_maxLearningProgress (const ActionsVector& candidateActions);
 		
 	///
 	///Update learners according to a sensorimotor region splitting criterion

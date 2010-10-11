@@ -22,7 +22,6 @@
 
  
  */
-#pragma once
 #ifndef SMLEARNING_SMREGION_H_
 #define SMLEARNING_SMREGION_H_
 

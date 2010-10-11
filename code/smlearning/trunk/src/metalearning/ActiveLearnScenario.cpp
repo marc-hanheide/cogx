@@ -148,7 +148,7 @@ void ActiveLearnScenario::initialize_polyflap(){
 ///
 ///get the action that maximizes learning progress
 ///
-pair<FeatureVector, ActiveLearnScenario::Action> ActiveLearnScenario::get_action_maxLearningProgress (const ActionsVector& candidateActions) {
+pair<FeatureVector, LearningData::MotorCommand> ActiveLearnScenario::get_action_maxLearningProgress (const ActionsVector& candidateActions) {
 	double maxLearningProgress = -1e6;
 	int index = -1;
 	for (int i=0; i < candidateActions.size(); i++) {
@@ -189,25 +189,28 @@ void ActiveLearnScenario::choose_action () {
 			ActionsVector candidateActions;
 			
 			for (int i=0; i<maxNumberCandidateActions; i++) {
-				Action action;
-				action.startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
+				// Action action;
+				LearningData::MotorCommand action;
+				// action.startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
+				int startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
 				//action.speed = floor (randomG.nextUniform (3.0, 6.0));
 				action.speed = 3.0;
 				action.horizontalAngle = choose_angle(60.0, 120.0, "cont");
 				FeatureVector motorVector;
 				Vec3 pos;
 				init_positionT (pos);
-				set_coordinates_into_target(action.startPosition, pos, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
-				write_finger_pos_and_or (motorVector, pos);
-				write_finger_speed_and_angle (motorVector, action.speed, action.horizontalAngle);
+				set_coordinates_into_target(/*action.*/startPosition, pos, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
+				write_finger_pos_and_or (motorVector, action, pos);
+				write_finger_speed_and_angle (motorVector, action, action.speed, action.horizontalAngle);
 				candidateActions.push_back (make_pair (motorVector, action));
 			}
 
-			pair<FeatureVector, Action> chosenAction = get_action_maxLearningProgress(candidateActions);
+			pair<FeatureVector, LearningData::MotorCommand> chosenAction = get_action_maxLearningProgress(candidateActions);
 			
-			this->startPosition = chosenAction.second.startPosition;
-			this->speed = chosenAction.second.speed;
-			this->horizontalAngle = chosenAction.second.horizontalAngle;
+			// this->startPosition = chosenAction.second.startPosition;
+			// this->speed = chosenAction.second.speed;
+			// this->horizontalAngle = chosenAction.second.horizontalAngle;
+			this->positionT = chosenAction.second.initEfPosition;
 
 			usedStartingPositions.push_back(startPosition);
 		}
@@ -301,10 +304,10 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		init_writing();
 
 		//write initial position and orientation of the finger
-		write_finger_pos_and_or(learningData.currentMotorCommandVector, positionT);
+		write_finger_pos_and_or(learningData.currentMotorCommandVector, learningData.currentMotorCommand, positionT);
 
 		//write chosen speed and angle of the finger experiment trajectory	
-		write_finger_speed_and_angle(learningData.currentMotorCommandVector, speed, horizontalAngle);
+		write_finger_speed_and_angle(learningData.currentMotorCommandVector, learningData.currentMotorCommand, speed, horizontalAngle);
 		//add motor vector to the sequence
 		write_motor_vector_into_current_sequence();
 

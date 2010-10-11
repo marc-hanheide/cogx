@@ -331,7 +331,7 @@ void Scenario::choose_action () {
 	define_start_position ();
 
 	//speed = floor (randomG.nextUniform (3.0, 6.0));
-	speed = 3.0;
+	speed = 3;
 
 	horizontalAngle = choose_angle(60.0, 120.0, "cont");
 
@@ -563,13 +563,15 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		arm->getArm().lookupInp(chunk.armState, context.getTimer()->elapsed());
 		chunk.effectorPose = effector->getPose();
 		chunk.objectPose = object->getPose();
-		// golem::Mat34 p = chunk.objectPose; 
-		// golem::Mat34 p = chunk.effectorPose; 
-		// cout << "pose: ";
-		// printf("%f %f %f %f %f %f %f %f %f %f %f %f\n", p.p.v1, p.p.v2, p.p.v3, p.R._m._11, p.R._m._12, p.R._m._13, p.R._m._21, p.R._m._22, p.R._m._23, p.R._m._31, p.R._m._32, p.R._m._33);  
 	
 		chunk.effectorPose.R.toEuler (chunk.efRoll, chunk.efPitch, chunk.efYaw);
 		chunk.objectPose.R.toEuler (chunk.obRoll, chunk.obPitch, chunk.obYaw);
+
+		// golem::Mat34 p = chunk.objectPose; 
+		golem::Mat34 p = chunk.effectorPose; 
+		cout << "pose: ";
+
+		cout << p.p.v1 << " " << p.p.v2 << " " << p.p.v3 << " " << chunk.efRoll << " " << chunk.efPitch << " " << chunk.efYaw << endl;
 
 		add_feature_vector (currentFeatureVector, chunk);
 		if (storeLabels) add_label (currentFeatureVector, chunk);
@@ -649,6 +651,9 @@ void Scenario::init_writing(){
 	//create sequence for this loop run and initial (motor command) vector
 	learningData.currentSeq.clear();
 	learningData.currentMotorCommandVector.clear();
+	
+	// learningData._currentSeq.clear();
+	learningData.currentMotorCommand;
 	//learningData.currentFeatureVector.clear();
 	/////////////////////////////////////////////////	
 }
@@ -657,7 +662,7 @@ void Scenario::init_writing(){
 ///
 ///write finger features to the vector
 ///
-void Scenario::write_finger_pos_and_or(FeatureVector& featureVector, const Vec3& positionT){
+void Scenario::write_finger_pos_and_or(FeatureVector& featureVector, LearningData::MotorCommand &motorCommand, const Vec3& positionT){
 
 	/////////////////////////////////////////////////
 	//writing in the initial vector	
@@ -675,13 +680,15 @@ void Scenario::write_finger_pos_and_or(FeatureVector& featureVector, const Vec3&
 	} catch ( ... ) {
 		cerr << "Error normalizing finger pos. feature vector..." << endl;
 	}
+
+	motorCommand.initEfPosition = positionT;
 }
 
 
 ///
 ///write finger features to the vector
 ///
-void Scenario::write_finger_speed_and_angle(FeatureVector& featureVector, const int speed, const Real horizontalAngle){
+void Scenario::write_finger_speed_and_angle(FeatureVector& featureVector, LearningData::MotorCommand &motorCommand, const int speed, const Real horizontalAngle){
 
 	try {
 	/////////////////////////////////////////////////
@@ -698,6 +705,11 @@ void Scenario::write_finger_speed_and_angle(FeatureVector& featureVector, const 
 	} catch ( ... ) {
 		cerr << "Error normalizing finger speed/angle..." << endl;
 	}
+
+	motorCommand.horizontalAngle = horizontalAngle;
+	motorCommand.speed = speed;
+	
+	
 }
 
 
@@ -711,6 +723,7 @@ void Scenario::write_motor_vector_into_current_sequence(){
 	//writing of the initial vector into sequence
 	learningData.currentSeq.push_back(learningData.currentMotorCommandVector);
 	/////////////////////////////////////////////////
+	learningData._currentSeq = make_pair (learningData.currentMotorCommand, learningData.currentChunkSeq);
 }
 
 
@@ -914,10 +927,10 @@ void Scenario::run(int argc, char* argv[]) {
 		init_writing();	
 
 		//write initial position and orientation of the finger
-		write_finger_pos_and_or(learningData.currentMotorCommandVector, positionT);
+		write_finger_pos_and_or(learningData.currentMotorCommandVector, learningData.currentMotorCommand, positionT);
 
 		//write chosen speed and angle of the finger experiment trajectory
-		write_finger_speed_and_angle(learningData.currentMotorCommandVector, speed, horizontalAngle);
+		write_finger_speed_and_angle(learningData.currentMotorCommandVector, learningData.currentMotorCommand, speed, horizontalAngle);
 		//add motor feature vector to the sequence
 		write_motor_vector_into_current_sequence();
 
