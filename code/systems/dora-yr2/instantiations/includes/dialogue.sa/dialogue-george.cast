@@ -8,4 +8,5 @@ JAVA MG	cint-realizer	de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRealizer
 JAVA MG cplan	de.dfki.lt.tr.cast.dialogue.ContentPlanner --domainFile ./subarchitectures/dialogue.sa/resources/contentplanning/allRuleFiles.trf --contentRel Content --log true
 JAVA MG realizer	de.dfki.lt.tr.cast.dialogue.CCGRealizer --ccg ./subarchitectures/dialogue.sa/resources/grammars/openccg/nonrobustmoloko/grammar.xml --log true
 #JAVA MG int-to-cint	de.dfki.lt.tr.cast.dialogue.IntentionToCommunicativeIntentionForwarder --log true
-#JAVA MG dialmanager	de.dfki.lt.tr.cast.dialogue.DialogueManagement --policy ./subarchitectures/dialogue.sa/config/policies/yr2/testpolicy.txt --actions ./subarchitectures/dialogue.sa/config/policies/yr2/testaction.txt --observations ./subarchitectures/dialogue.sa/config/policies/yr2/testobservation.txt --log true
+JAVA MG dialmanager	de.dfki.lt.tr.cast.dialogue.DialogueManagement --policy ./subarchitectures/dialogue.sa/config/policies/yr2/basicforwardpolicy.txt
+#testpolicy.txt --actions ./subarchitectures/dialogue.sa/config/policies/yr2/testaction.txt --observations ./subarchitectures/dialogue.sa/config/policies/yr2/testobservation.txt --log true
