@@ -23,7 +23,7 @@ public class PlaceBeliefGoalGenerator extends
 	private static final String PLACETYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(Place.class));
 	private static final int MAX_EXECUTION_TIME = 60 * 5;
-	private static final int MAX_PLANNING_TIME = 10;
+	private static final int MAX_PLANNING_TIME = 30;
 
 	/**
 	 * the maximum costs to drop we assign if information gain is really high
