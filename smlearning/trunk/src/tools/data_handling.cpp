@@ -1170,10 +1170,11 @@ void write_dataset_cryssmex_fmt_with_label (string writeFileName, DataSet data, 
 
 ///
 ///write a dataset in cryssmex format. This code assumes vectorial data format
-///and works as a regression predictor (output is of the same dimensionality as the state space) and canonical format for the input
+///and works as a regression predictor and canonical format for the input
 ///
 void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, CanonicalData::DataSetStruct& data, bool pfefState, bool pfefOutput ) {
-	//assuming an input(output) vector be symbolic (dimensionality 0 in cryssmex)
+	//assuming an input vector be symbolic (dimensionality 0 in cryssmex)
+	
 	writeFileName += ".cry";
 
 	assert (data.first.size() >= 1);
@@ -1221,7 +1222,7 @@ void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, Cano
 		writeFile << *it << " ";
 	writeFile << endl;
 	writeFile << "# output examples" << endl << "0.0" << endl;
-	writeFile.precision(20);
+	// writeFile.precision(20);
 
 	for (s=data.first.begin(); s!= data.first.end(); s++) {
 		CanonicalData::Sequence::const_iterator v;
@@ -1251,6 +1252,54 @@ void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, Cano
 	writeFile.close();
 
 
+}
+
+///
+///write a dataset in cryssmex format. This code assumes vectorial data format
+///and works as a regression predictor
+///\params pfEfPredictor variable allows prediction of both polyflap and effector vectors
+///
+void write_dataset_cryssmex_fmt_regression (string writeFileName, DataSetStruct& data, bool pfefState = false, bool pfefOutput = false) {
+
+	writeFileName += ".cry";
+
+	assert (data.first.size() >= 1);
+	assert (data.first[0].size() >= 2);
+
+	int inputVectorSize = data.second.get<lParams>().get<mVSize>();;
+	int stateVectorSize;
+	int outputVectorSize;
+	if (pfefState)
+		stateVectorSize = data.second.get<lParams>().get<fVSize>();
+	else
+		stateVectorSize = data.second.get<lParams>().get<pfVSize>();
+	if (pfefOutput)
+		outputVectorSize = data.second.get<lParams>().get<fVSize>();
+	else
+		outputVectorSize = data.second.get<lParams>().get<pfVSize>();
+
+	ofstream writeFile(writeFileName.c_str(), ios::out | ios::binary);
+
+	writeFile << "# input dim" << endl;
+	writeFile << inputVectorSize << endl;
+	writeFile << "# state dim" << endl;
+	writeFile << stateVectorSize << endl;
+	writeFile << "# output dim" << endl;
+	writeFile << outputVectorSize << endl;
+
+	writeFile << "# nr input symbols" << endl << "0.0" << endl;
+	writeFile << "# output examples" << endl << "0.0" << endl;
+
+	DataSet::const_iterator s_iter;
+
+	for (s_iter=data.first.begin(); s_iter!= data.first.end(); s_iter++) {
+		Sequence::const_iterator v_iter;
+
+		if (v_iter == s_iter->begin()) {
+		}
+	}
+
+		
 }
 
 

@@ -22,7 +22,7 @@
 
  
  */
-#pragma once
+
 #ifndef SMLEARNING_DATAHANDLING_H_
 #define SMLEARNING_DATAHANDLING_H_
 
@@ -325,10 +325,16 @@ void write_dataset_cryssmex_fmt_with_label (string writeFileName, DataSet data, 
 ///
 ///write a dataset in cryssmex format. This code assumes vectorial data format
 ///and works as a regression predictor and canonical format for the input
-///\params pfEfPredictor variable allows prediction of both polyflap and effector vectors (output
-///        space of the same dimensionality of state space)
+///\params pfefState and pfefOutput allow features with both polyflap and effector vectors
 ///
 void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, CanonicalData::DataSetStruct& data, bool pfefState = true, bool pfefOutput = false);
+
+///
+///write a dataset in cryssmex format. This code assumes vectorial data format
+///and works as a regression predictor
+///\params pfefState and pfefOutput allow features with both polyflap and effector vectors
+///
+void write_dataset_cryssmex_fmt_regression (string writeFileName, CanonicalData::DataSetStruct& data, bool pfefState = true, bool pfefOutput = false);
 
 ///
 ///parse a string containing a list of starting positions (TODO: write a nice reg.exp. :P )

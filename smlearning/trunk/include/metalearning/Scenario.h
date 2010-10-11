@@ -36,7 +36,6 @@
  
  */
 
-#pragma once
 #ifndef SMLEARNING_SCENARIO_H_
 #define SMLEARNING_SCENARIO_H_
 
@@ -263,6 +262,7 @@ protected:
 	LearningData learningData;
 	/** Dataset */
  	DataSetStruct data;
+	LearningData::DataSet _data;
 	/** base file name for dataset */
 	string dataFileName;
 	/** Time */
@@ -403,12 +403,12 @@ protected:
 	///
 	///write finger features to the vector
 	///
-	void write_finger_pos_and_or(FeatureVector& featureVector, const Vec3& pos);
+	void write_finger_pos_and_or(FeatureVector& featureVector, LearningData::MotorCommand &motorCommand, const Vec3& pos);
 
 	///
 	///write finger features to the vector
 	///
-	void write_finger_speed_and_angle(FeatureVector& featureVector, const int speed, const Real horizontalAngle);
+	void write_finger_speed_and_angle(FeatureVector& featureVector, LearningData::MotorCommand &motorCommand, const int speed, const Real horizontalAngle);
 
 	///
 	///add the vector to the current sequence

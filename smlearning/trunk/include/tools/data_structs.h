@@ -22,7 +22,6 @@
 
  
  */
-#pragma once
 #ifndef SMLEARNING_DATASTRUCTS_H_
 #define SMLEARNING_DATASTRUCTS_H_
 
@@ -50,7 +49,7 @@ enum { mVSize, fVSize, pfVSize, efVSize };
 typedef tuple<int, int, int, int> LearningParams;
 /** DataSetValueLimits tuple < minX, minY, minZ, maxX, maxY, maxZ> */
 enum { minX, minY, minZ, maxX, maxY, maxZ };
-typedef tuple<Real, Real, Real, Real, Real, Real> DataSetValueLimits;
+typedef tuple<double, double, double, double, double, double> DataSetValueLimits;
 /** DataSetParams tuple <LearningParams, storeLabels, DataSetValueLimits> */
 enum {lParams, labels, limits };
 typedef tuple<LearningParams, bool, DataSetValueLimits> DataSetParams;
@@ -71,16 +70,11 @@ struct CanonicalData {
 
 
 /** Learning data format */
-class LearningData {
-public:
+struct LearningData {
+
 	/** Data chunk */
-	class Chunk {
-	public:
+	struct Chunk {
 		typedef std::vector<Chunk> Seq;
-		
-		/** Do nothing */
-		Chunk() {
-		}
 		
 		/** Data chunk time stamp */
 		golem::SecTmReal timeStamp;
@@ -98,6 +92,18 @@ public:
 		
 	};
 
+	struct MotorCommand {
+		/** initial effector pose before the movement */
+		golem::Vec3 initEfPosition;
+		/** horizontal angle */
+		golem::Real horizontalAngle;
+		/** speed ( 3 (fast), 4 (middle), 5 (low) */
+		int speed;	
+	};
+	typedef std::pair<MotorCommand, Chunk::Seq> Sequence;
+	
+	typedef std::vector<LearningData::Sequence> DataSet;
+
 	/** (Dynamic) Effector bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::effectorPose */
 	golem::Bounds::Seq effector;
 	/** (Dynamic) Object bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::objectPose */
@@ -106,8 +112,9 @@ public:
 	golem::Bounds::Seq obstacles;
 	
 	/** Time-dependent data */
-// 	Chunk::Seq data;
-	DataSet data;
+	Chunk::Seq currentChunkSeq;
+	LearningData::Sequence _currentSeq;
+	//LearningData::DataSet data;
 	/** current predicted polyflap poses sequence */
 	vector<Mat34> currentPredictedPfSeq;
 	/** current predicted effector poses sequence */
@@ -116,6 +123,7 @@ public:
 	smlearning::Sequence currentSeq;
 	/** current motor command */
 	FeatureVector currentMotorCommandVector;
+	MotorCommand currentMotorCommand;
 	/** Record validity */
 	//bool bArmState;
 	//bool bEffectorPose;
@@ -131,7 +139,7 @@ public:
 		effector.clear();
 		object.clear();
 		obstacles.clear();
-		data.clear();
+		//data.clear();
 		//bArmState = false;
 		//bEffectorPose = false;
 		//bObjectPose = false;
@@ -143,8 +151,8 @@ public:
 	}
 	/** Check if the data is valid */
 	bool isValid() const {
-		if (!data.empty()) // must not be empty
-			return false;
+		// if (!data.empty()) // must not be empty
+		// 	return false;
 		//if (bEffector && effector.empty())
 		//	return false;
 		//if (bObject && object.empty())

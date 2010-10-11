@@ -80,9 +80,9 @@ void scriptValues(string fileName, string sourceName, string scriptName, int win
 	actionsForStartPosGnuplotScript << "set style line 4 lt 1 lc rgb \"yellow\"" << endl;
 	// actionsForStartPosGnuplotScript << "set log y" << endl;
 	if (region != -1) {
-	actionsForStartPosGnuplotScript << "set title \"Region " << region << " (window size: " << windowSize << ")\"" << endl;
+		actionsForStartPosGnuplotScript << "set title \"Region " << region /*<< " (window size: " << windowSize << ")\""*/ << endl;
 	} else {
-	actionsForStartPosGnuplotScript << "set title \" Usage of starting positions (window size: " << windowSize << ")\"" << endl;
+		actionsForStartPosGnuplotScript << "set title \" Frequency of actions (window size: " << windowSize << ")\"" << endl;
 	}
 	actionsForStartPosGnuplotScript << "set xlabel \"Iterations\" " << endl;
 	actionsForStartPosGnuplotScript << "set ylabel \"Values\" " << endl;
@@ -91,16 +91,16 @@ void scriptValues(string fileName, string sourceName, string scriptName, int win
 	actionsForStartPosGnuplotScript << "\"" + sourceName + "\" "; 
 	actionsForStartPosGnuplotScript << "using 1:3 ls 2 title '" + descText2 +"' with lines";
 	if (learnProgErr) {
-	actionsForStartPosGnuplotScript << endl;
+		actionsForStartPosGnuplotScript << endl;
 	} else {
-	actionsForStartPosGnuplotScript << ", \"" + sourceName + "\" "; 
-	actionsForStartPosGnuplotScript << "using 1:4 ls 3 title 'starting positions 19 - 24' with lines";
-	if (region != -1) {
-	actionsForStartPosGnuplotScript << ", \"" + sourceName + "\" "; 
-	actionsForStartPosGnuplotScript << "using 1:5 ls 4 title 'region not used' with lines" << endl;
-	} else {
-	actionsForStartPosGnuplotScript << endl;
-	}
+		// actionsForStartPosGnuplotScript << ", \"" + sourceName + "\" "; 
+		// actionsForStartPosGnuplotScript << "using 1:4 ls 3 title 'starting positions 19 - 24' with lines";
+		if (region != -1) {
+			actionsForStartPosGnuplotScript << ", \"" + sourceName + "\" "; 
+			actionsForStartPosGnuplotScript << "using 1:5 ls 4 title 'current region not active' with lines" << endl;
+		} else {
+			actionsForStartPosGnuplotScript << endl;
+		}
 	}
 	ofstream StartPosgnuplotScript(scriptName.c_str(), ios::out);
 	StartPosgnuplotScript << actionsForStartPosGnuplotScript.str() << endl;

@@ -24,9 +24,8 @@
 
  
  */
-#pragma once
 #ifndef SMLEARNING_MATHHELPERS_H_
-#define SMLEyARNING_MATHHELPERS_H_
+#define SMLEARNING_MATHHELPERS_H_
 
 #include <math.h>
 #include <Math.h>
