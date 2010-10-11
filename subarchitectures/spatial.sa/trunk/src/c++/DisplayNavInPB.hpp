@@ -17,6 +17,7 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <NavData.hpp>
+#include <SpatialProbabilities.hpp>
 #include <string>
 #include <Scan2dReceiver.hpp>
 #include <SensorData/SensorPose.hh>
@@ -121,6 +122,10 @@ private:
   void createRobotFOV();
   void getColorByIndex(int id, float &r, float &g, float &b);
 
+  double getComaRoomCategoryProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
+			std::string varValue);
+
+
   Cure::Transformation3D getCameraToWorldTransform();
 
   bool m_ShowWalls;
@@ -191,6 +196,9 @@ private:
   ptz::PTZInterfacePrx m_PTUServer;
 
   Cure::SensorPose m_CameraPoseR;
+
+  /** List of categories of rooms that we know about. */
+  std::vector<std::string> _roomCategories;
 };
 
 }; // namespace navsa

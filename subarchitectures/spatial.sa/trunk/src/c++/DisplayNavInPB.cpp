@@ -20,6 +20,8 @@
 #include <Laser.hpp>
 #include <CureHWUtils.hpp>
 #include <cast/architecture/ChangeFilterFactory.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 
 #ifdef DISPLAY_COMA
 #include <FrontierInterface.hpp>
@@ -102,6 +104,11 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
   if (_config.find("--fov-vert") != _config.end()) {
     std::istringstream str(_config.find("--fov-vert")->second);
     str >> m_FovV;
+  }
+
+  if (_config.find("--room-categories") != _config.end()) {
+    string rcStr = _config.find("--room-categories")->second;
+    split( _roomCategories, rcStr, is_any_of(",") );
   }
 
   m_RetryDelay = 10;
@@ -412,19 +419,68 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID){
                 mp.set_color(r,g,b);
             }
             
-            if (m_ShowAreaClass) {
-                peekabot::CylinderProxy acp;
-                char name2[32];
-                sprintf(name2, "node%ld/area_class", node.m_Id);
-                acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
-                acp.set_scale(0.5, 0.5, 0.0);
-                acp.set_position(0,0,0);
-                acp.set_opacity(0.3);
-                //FIXME
-                //place::ColorMap::getColorForPlaceClass(fnode->areaTypeNo, r, g, b);
-                getColorByIndex(roomId, r, g, b);
-                //getColorByIndex(3+(fnode->areaId%6), r, g, b);
-                acp.set_color(r,g,b);
+            if (m_ShowAreaClass)
+            {
+            	// Old code using a single circle
+//                peekabot::CylinderProxy acp;
+//                char name2[32];
+//                sprintf(name2, "node%ld.area_class", node.m_Id);
+//                acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
+//                acp.set_scale(0.5, 0.5, 0.0);
+//                acp.set_position(0,0,0);
+//                acp.set_opacity(0.3);
+//                //FIXME
+//                //place::ColorMap::getColorForPlaceClass(fnode->areaTypeNo, r, g, b);
+//                getColorByIndex(roomId, r, g, b);
+//                //getColorByIndex(3+(fnode->areaId%6), r, g, b);
+//                acp.set_color(r,g,b);
+            	// Pie chart of category probabilities
+            	double probSum=0.0;
+            	double startAngle=0.0;
+            	unsigned int index=0;
+            	for (; index<_roomCategories.size(); ++index)
+            	{
+            		double prob = getComaRoomCategoryProbabilityValue(
+            				croom->categories, _roomCategories[index]);
+            		getColorByIndex(index, r, g, b);
+            		char name2[32];
+            		if (index==0)
+            			sprintf(name2, "node%ld.area_class", node.m_Id);
+            		else
+            			sprintf(name2, "node%ld.area_class%d", node.m_Id, index);
+
+            		// Calculations
+            		probSum+=prob;
+            		double endAngle=(2*3.1415926)*probSum;
+            		// Add a polygon that corresponds to part of the pie chart
+            		// between startAngle and endAngle;
+            		peekabot::PolygonProxy acp;
+            		acp.add(sp, name2, peekabot::REPLACE_ON_CONFLICT);
+            		acp.add_vertex( 0, 0, 0 );
+            		for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
+            		  acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
+         		    acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+         		    acp.set_opacity(0.3);
+         		    acp.set_color(r,g,b);
+            		startAngle=endAngle;
+            	}
+            	// Add one for the rest
+        		char name2[32];
+        		if (index==0)
+        			sprintf(name2, "node%ld.area_class", node.m_Id);
+        		else
+        			sprintf(name2, "node%ld.area_class%d", node.m_Id, index);
+            	double endAngle=(2*3.1415926);
+        		peekabot::PolygonProxy acp;
+        		acp.add(sp, name2, peekabot::REPLACE_ON_CONFLICT);
+        		acp.add_vertex( 0, 0, 0 );
+        		for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
+        		  acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
+     		    acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+     		    acp.set_opacity(0.3);
+     		    acp.set_color(0.3,0.3,0.3);
+        		startAngle=endAngle;
+
             }
             
             // We also redraw the edge just to make sure that it is drawn
@@ -435,7 +491,26 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID){
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
 }
+
+
+double DisplayNavInPB::getComaRoomCategoryProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
+			std::string varValue)
+{
+	for(unsigned int i=0; i<pd.massFunction.size(); ++i)
+	{
+		SpatialProbabilities::JointProbabilityValue jpv = pd.massFunction[i];
+		string v1
+			=SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+					jpv.variableValues[0])->value;
+		if (v1 == varValue)
+			return jpv.probability;
+	}
+
+	return 0;
+}
+
 #endif
+
 
 void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
   debug("VPnodelist called"); 
@@ -1417,9 +1492,9 @@ void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
     b = 1.0/0xFF*0xFF;
     break;
   case 6:
-    r = 1.0/0xFF*0x00; 
-    g = 1.0/0xFF*0x00;
-    b = 1.0/0xFF*0x00;
+    r = 1.0/0xFF*0x24;
+    g = 1.0/0xFF*0xFF;
+    b = 1.0/0xFF*0x24;
     break;
   case 7:
     r = 1.0/0xFF*0xFF;
