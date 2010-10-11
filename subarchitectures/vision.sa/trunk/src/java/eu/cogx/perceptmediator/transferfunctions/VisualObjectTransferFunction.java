@@ -74,52 +74,84 @@ public class VisualObjectTransferFunction extends
 		fd.add(wmc.address.id, 1.0);
 		distr.put(VISUAL_OBJECT_ID, fd);
 
-		{ // color
-			fd = FormulaDistribution.create();
-			for (int i = 0; i < from.colorLabels.length; i++) {
-				fd.add(from.colorLabels[i], from.colorDistrib[i]);
-			}
-			distr.put("color", fd);
-
-			fd = FormulaDistribution.create();
-			fd.add((float) from.colorGain, 1.0);
-			distr.put("colorGain", fd);
-
-			fd = FormulaDistribution.create();
-			fd.add((float) from.colorAmbiguity, 1.0);
-			distr.put("colorAmbiguity", fd);
-
-		}
-		{ // shape
-			fd = FormulaDistribution.create();
-			for (int i = 0; i < from.shapeLabels.length; i++) {
-				fd.add(from.shapeLabels[i], from.shapeDistrib[i]);
-			}
-			distr.put("shape", fd);
-
-			fd = FormulaDistribution.create();
-			fd.add((float) from.shapeGain, 1.0);
-			distr.put("shapeGain", fd);
-
-			fd = FormulaDistribution.create();
-			fd.add((float) from.shapeAmbiguity, 1.0);
-			distr.put("shapeAmbiguity", fd);
-		}
-		{ // ident
-			fd = FormulaDistribution.create();
-			for (int i = 0; i < from.identLabels.length; i++) {
-				fd.add(from.identLabels[i], from.identDistrib[i]);
-			}
-			distr.put("ident", fd);
-
-			fd = FormulaDistribution.create();
-			fd.add((float) from.identGain, 1.0);
-			distr.put("identGain", fd);
-
-			fd = FormulaDistribution.create();
-			fd.add((float) from.identAmbiguity, 1.0);
-			distr.put("identAmbiguity", fd);
-		}
+		fillConcept("color", distr, from.colorLabels, from.colorDistrib,
+				from.colorGains, from.colorGain, from.colorAmbiguity);
+		fillConcept("shape", distr, from.shapeLabels, from.shapeDistrib,
+				from.shapeGains, from.shapeGain, from.shapeAmbiguity);
+		fillConcept("ident", distr, from.identLabels, from.identDistrib, null,
+				from.identGain, from.identAmbiguity);
+		// { // color
+		// fd = FormulaDistribution.create();
+		// for (int i = 0; i < from.colorLabels.length; i++) {
+		// fd.add(from.colorLabels[i], from.colorDistrib[i]);
+		// FormulaDistribution gainFD = FormulaDistribution.create();
+		// gainFD.add((float) from.colorGains[i], 1.0);
+		// distr.put("gain-color-" + from.colorLabels[i], gainFD);
+		// }
+		// distr.put("color", fd);
+		//
+		// fd = FormulaDistribution.create();
+		// fd.add((float) from.colorGain, 1.0);
+		// distr.put("colorGain", fd);
+		//
+		// fd = FormulaDistribution.create();
+		// fd.add((float) from.colorAmbiguity, 1.0);
+		// distr.put("colorAmbiguity", fd);
+		//
+		// }
+		// { // shape
+		// fd = FormulaDistribution.create();
+		// for (int i = 0; i < from.shapeLabels.length; i++) {
+		// fd.add(from.shapeLabels[i], from.shapeDistrib[i]);
+		// }
+		// distr.put("shape", fd);
+		//
+		// fd = FormulaDistribution.create();
+		// fd.add((float) from.shapeGain, 1.0);
+		// distr.put("shapeGain", fd);
+		//
+		// fd = FormulaDistribution.create();
+		// fd.add((float) from.shapeAmbiguity, 1.0);
+		// distr.put("shapeAmbiguity", fd);
+		// }
+		// { // ident
+		// fd = FormulaDistribution.create();
+		// for (int i = 0; i < from.identLabels.length; i++) {
+		// fd.add(from.identLabels[i], from.identDistrib[i]);
+		// }
+		// distr.put("ident", fd);
+		//
+		// fd = FormulaDistribution.create();
+		// fd.add((float) from.identGain, 1.0);
+		// distr.put("identGain", fd);
+		//
+		// fd = FormulaDistribution.create();
+		// fd.add((float) from.identAmbiguity, 1.0);
+		// distr.put("identAmbiguity", fd);
+		// }
 	}
 
+	private void fillConcept(String concept,
+			IndependentFormulaDistributions distr, String[] labels,
+			double[] distrib, double[] gains, double gain, double ambiguity) {
+		FormulaDistribution fd = FormulaDistribution.create();
+		for (int i = 0; i < labels.length; i++) {
+			fd.add(labels[i], distrib[i]);
+			FormulaDistribution gainFD = FormulaDistribution.create();
+			if (gains != null) {
+				gainFD.add((float) gains[i], 1.0);
+				distr.put("gain-" + concept + "-" + labels[i], gainFD);
+			}
+		}
+		distr.put(concept, fd);
+
+		fd = FormulaDistribution.create();
+		fd.add((float) gain, 1.0);
+		distr.put("gain-" + concept, fd);
+
+		fd = FormulaDistribution.create();
+		fd.add((float) ambiguity, 1.0);
+		distr.put("ambiguity-" + concept, fd);
+
+	}
 }
