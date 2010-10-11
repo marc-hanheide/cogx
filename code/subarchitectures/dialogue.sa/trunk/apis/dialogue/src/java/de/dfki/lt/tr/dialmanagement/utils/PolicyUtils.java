@@ -54,9 +54,7 @@ public class PolicyUtils {
 	/**
 	 * Sort the edge according to their specificity, the head of the list being the most
 	 * specific while the tail is the most underspecified
-	 * 
-	 * TODO: test the partial order
-	 * 
+	 *  
 	 * @param unsortedEdges the unsorted collection of edges
 	 * @return the sorted list of edges
 	 */

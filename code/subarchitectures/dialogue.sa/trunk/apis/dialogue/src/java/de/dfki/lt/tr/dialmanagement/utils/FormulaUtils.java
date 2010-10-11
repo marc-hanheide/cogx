@@ -111,6 +111,15 @@ public class FormulaUtils {
 		else if (formula instanceof PointerFormula) {
 			return "["+((PointerFormula)formula).pointer.subarchitecture + ":" + ((PointerFormula)formula).pointer.id + "]";
 		}
+		else if (formula instanceof IntegerFormula) {
+			return "" + ((IntegerFormula)formula).val;
+		}
+		else if (formula instanceof FloatFormula) {
+			return "" + ((FloatFormula)formula).val + "f";
+		}
+		else if (formula instanceof BooleanFormula) {
+			return "" + ((BooleanFormula)formula).val;
+		}
 		else if (formula != null) {
 			return formula.toString();
 		}
