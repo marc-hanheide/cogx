@@ -21,6 +21,7 @@
 
 package de.dfki.lt.tr.dialmanagement.data.policies;
 
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.data.FormulaWrapper;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
@@ -41,7 +42,7 @@ public class PolicyCondition extends FormulaWrapper {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	
 	// the unique identifier for the node
 	private String id;
@@ -153,13 +154,29 @@ public class PolicyCondition extends FormulaWrapper {
 	 */
 	public boolean matchesObservation (Observation obs) {
 		
+		debug("this: " + this.toString());
 		for (FormulaWrapper alternative : obs.getAlternatives()) {
+			debug("alternative: " + alternative.toString());
 			if (this.equals(alternative) && 
 					obs.getProbability(alternative) >= minProb && 
-					obs.getProbability(alternative) <= maxProb) {				
+					obs.getProbability(alternative) <= maxProb) {	
+				debug("match found between: " + this.toString() + " and " + obs.toString());
 				return true;
 			}
+			// handling <post> operators when handling intentions
+			else if (alternative.toString().contains("<post>") && 
+					!this.toString().contains("<post>")){
+				debug("need to take the <post> modal operator into account");
+				FormulaWrapper postCondFormula = new FormulaWrapper(new ModalFormula(0, "post", this.getContent()));
+				if (postCondFormula.equals(alternative) && 
+						obs.getProbability(alternative) >= minProb && 
+						obs.getProbability(alternative) <= maxProb) {
+					debug("match found between: " + this.toString() + " and " + obs.toString());
+					return true;
+				}
+			}
 		}
+		debug("match NOT found between: " + this.toString() + " and " + obs.toString());
 		return false;
 	}
 	
@@ -209,5 +226,27 @@ public class PolicyCondition extends FormulaWrapper {
 		}
 		
 		return typeStr + FormulaUtils.getString(content) + " (" + minProb + ", " + maxProb + ")" + "]";
+	}
+	
+	
+
+	/**
+	 * Logging
+	 * @param s
+	 */
+	private static void log (String s) {
+		if (LOGGING) {
+			System.out.println("[policycondition] " + s);
+		}
+	}
+	
+	/**
+	 * Debugging
+	 * @param s
+	 */
+	private static void debug (String s) {
+		if (DEBUG) {
+			System.out.println("[policycondition] " + s);
+		}
 	}
 }

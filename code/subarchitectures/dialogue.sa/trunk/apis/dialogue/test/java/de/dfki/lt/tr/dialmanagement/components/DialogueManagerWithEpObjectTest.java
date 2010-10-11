@@ -21,6 +21,7 @@ package de.dfki.lt.tr.dialmanagement.components;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.junit.Test;
@@ -28,6 +29,10 @@ import org.junit.Before;
 
 
 import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
+import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
+import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
@@ -84,14 +89,18 @@ public class DialogueManagerWithEpObjectTest {
 	@Test
 	public void testPolicyWithSimpleIntention() throws DialogueException {
 			
-		CommunicativeIntention intention1 = EpistemicObjectUtils.createSimpleAttributedCommunicativeIntention(
-				FormulaUtils.constructFormula("\"Please find the cornflakes box\""), 0.8f);
+		dFormula postCondition = FormulaUtils.constructFormula("\"Please find the cornflakes box\"");
+		IntentionalContent intent = 
+			EpistemicObjectUtils.createIntentionalContent(postCondition, EpistemicObjectUtils.robotAgent, 1.0f);
+			
+		CommunicativeIntention intention = new CommunicativeIntention (new Intention(
+				EpistemicObjectUtils.curFrame, EpistemicObjectUtils.attributedStatus, "", Arrays.asList(intent)));
 		
-		PolicyAction action1 = manager.nextAction(intention1);
-		assertEquals(action1, new PolicyAction("", FormulaUtils.constructFormula("\"okay, searching for the cornflakes box!\"")));
+		PolicyAction action1 = manager.nextAction(intention);
+		assertEquals(new PolicyAction("", FormulaUtils.constructFormula("\"okay, searching for the cornflakes box!\"")), action1);
 	}
-	
-	
+	 
+	 
 	/**
 	 * Test the policy with an uncertain intention
 	 * 
@@ -100,13 +109,19 @@ public class DialogueManagerWithEpObjectTest {
 	@Test
 	public void testPolicyWithUncertainIntentions() throws DialogueException {
 		
-		HashMap<dFormula, Float> postconditions = new HashMap<dFormula,Float>();
-		postconditions.put(FormulaUtils.constructFormula("\"bla bla bla\""), 0.7f);
-		postconditions.put(FormulaUtils.constructFormula("\"Please find the cornflakes box\""), 0.3f);
+		dFormula postCondition1 = FormulaUtils.constructFormula("\"bla bla bla\"");
+		IntentionalContent intent1 = 
+			EpistemicObjectUtils.createIntentionalContent(postCondition1, EpistemicObjectUtils.robotAgent, 0.7f);
 		
-		CommunicativeIntention intention1 = EpistemicObjectUtils.createAttributedCommunicativeIntention(postconditions);
-		PolicyAction action1 = manager.nextAction(intention1);
-		assertEquals(action1, new PolicyAction("", FormulaUtils.constructFormula("\"sorry, should I search for the cornflaxes box?\"")));
+		dFormula postCondition2 = FormulaUtils.constructFormula("\"Please find the cornflakes box\"");
+		IntentionalContent intent2 = 
+			EpistemicObjectUtils.createIntentionalContent(postCondition2, EpistemicObjectUtils.robotAgent, 0.3f);
+			
+		CommunicativeIntention intention = new CommunicativeIntention (new Intention(
+				EpistemicObjectUtils.curFrame, EpistemicObjectUtils.attributedStatus, "", Arrays.asList(intent1, intent2)));
+		
+		PolicyAction action1 = manager.nextAction(intention);
+		assertEquals(new PolicyAction("", FormulaUtils.constructFormula("\"sorry, should I search for the cornflaxes box?\"")), action1);
 	}
 	
 	

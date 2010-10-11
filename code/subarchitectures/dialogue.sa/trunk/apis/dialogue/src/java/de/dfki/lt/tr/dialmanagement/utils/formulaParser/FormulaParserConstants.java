@@ -15,10 +15,13 @@ public interface FormulaParserConstants {
   int KLEENE_STAR = 13;
   int ARGUMENT = 14;
   int INTERROGATION_MARK = 15;
-  int LAND = 16;
-  int LOR = 17;
-  int QUOTE = 18;
-  int WORD = 19;
+  int SLBRACKET = 16;
+  int SRBRACKET = 17;
+  int COLON = 18;
+  int LAND = 19;
+  int LOR = 20;
+  int QUOTE = 21;
+  int WORD = 22;
 
   int DEFAULT = 0;
 
@@ -39,6 +42,9 @@ public interface FormulaParserConstants {
     "\"*\"",
     "<ARGUMENT>",
     "\"?\"",
+    "\"[\"",
+    "\"]\"",
+    "\":\"",
     "\"^\"",
     "\"v\"",
     "\"\\\"\"",

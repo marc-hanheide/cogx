@@ -35,6 +35,7 @@ import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyEdge;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyNode;
+import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
 
 
@@ -104,7 +105,7 @@ public class DialogueManager {
 
 		Observation obs = new Observation(Observation.INTENTION);
 		for (IntentionalContent icontent : intention.intent.content) {
-			obs.addAlternative(icontent.postconditions, icontent.probValue);
+			obs.addAlternative(EpistemicObjectUtils.translateIntoFormula(icontent), icontent.probValue);
 		}
 
 		return nextAction(obs);

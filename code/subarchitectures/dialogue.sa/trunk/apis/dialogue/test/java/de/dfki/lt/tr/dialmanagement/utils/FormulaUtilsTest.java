@@ -32,6 +32,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
@@ -474,6 +475,46 @@ public class FormulaUtilsTest {
 		assertEquals(((UnderspecifiedFormula)((ComplexFormula)formula).forms.get(1)).id, 1);
 	}
 
+	
+	@Test
+	public void pointerFormulae() throws DialogueException {
+		String str = "[subarch:0:6]";
+		dFormula formula = FormulaUtils.constructFormula(str);
+		assertTrue(formula instanceof PointerFormula);
+	}
+	 
+	@Test
+	public void testSubsumptionOperation() throws DialogueException {
+		String underspec = "<state>(question-answered ^ <agent>(robot) ^ <about>(<ref>(%1) ^ <lingref>(*) ^ <color>(%2) ^ <objecttype>(box)) ^ <feature>(color))";
+		String fullspec = "<state>(question-answered ^ <agent>(robot) ^ <about>(<ref>([binder:0:7]) ^ <lingref>(box1_1) ^ <color>(red) ^ <objecttype>(box)) ^ <feature>(color))";
+		assertTrue(FormulaUtils.subsumes(FormulaUtils.constructFormula(underspec), FormulaUtils.constructFormula(fullspec)));
+		assertFalse(FormulaUtils.subsumes(FormulaUtils.constructFormula(fullspec), FormulaUtils.constructFormula(underspec)));
+	}
+	
+	
+	 
+	@Test
+	public void testSubsumptionOperation2() throws DialogueException {
+		String underspec = "<state>(question-answered ^ <about>(<ref>(%1) ^ <color>(%2)) ^ <feature>(color))";
+		String fullspec = "<state>(question-answered ^ <agent>(robot) ^ <about>(<ref>([binder:0:7]) ^ <lingref>(box1_1) ^ <color>(red) ^ <objecttype>(box)) ^ <feature>(color))";
+		assertTrue(FormulaUtils.subsumes(FormulaUtils.constructFormula(underspec), FormulaUtils.constructFormula(fullspec)));
+		assertFalse(FormulaUtils.subsumes(FormulaUtils.constructFormula(fullspec), FormulaUtils.constructFormula(underspec)));
+	}
+	
+	@Test
+	public void testSubsumptionOperation3() throws DialogueException {
+		String underspec = "<state>(question-answered ^ <about>(<ref>(%1) ^ <color>(%2)) ^ <feature>(%3))";
+		String fullspec = "<state>(question-answered ^ <agent>(robot) ^ <about>(<ref>([binder:0:7]) ^ <lingref>(box1_1) ^ <color>(red) ^ <objecttype>(box)) ^ <feature>(color))";
+		assertTrue(FormulaUtils.subsumes(FormulaUtils.constructFormula(underspec), FormulaUtils.constructFormula(fullspec)));
+		assertFalse(FormulaUtils.subsumes(FormulaUtils.constructFormula(fullspec), FormulaUtils.constructFormula(underspec)));
+	}
+	
+	/**
+	public void specialUnderspecification() throws DialogueException {
+		String str = "<state>(grounded ^ <about>(%1) ^ <content>(<%3>(%2)))";
+		dFormula formula = FormulaUtils.constructFormula(str);
+		assertTrue(formula instanceof ModalFormula);
+	} */
 
 	/**
 	 * Logging

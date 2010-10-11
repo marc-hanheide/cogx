@@ -71,6 +71,8 @@ import de.dfki.lt.tr.dialogue.util.ParsingUtils;
  * to parse a single string with a given OpenCCG-style CCG grammar. The parser
  * includes the possibility for performing parse selection. 
  * 
+ * TODO: fine tune the performance of the parser (check options etc.)
+ * 
  * @author 	Geert-Jan M. Kruijff (gj@dfki.de)
  * @since	100607 (based on earlier versions, heavily refactored)
  * @version	100607

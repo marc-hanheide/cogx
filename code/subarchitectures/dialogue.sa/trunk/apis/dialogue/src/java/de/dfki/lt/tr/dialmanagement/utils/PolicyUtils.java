@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
@@ -54,7 +55,6 @@ public class PolicyUtils {
 	 * Sort the edge according to their specificity, the head of the list being the most
 	 * specific while the tail is the most underspecified
 	 * 
-	 * TODO: extend this to full partial order
 	 * TODO: test the partial order
 	 * 
 	 * @param unsortedEdges the unsorted collection of edges
@@ -63,14 +63,27 @@ public class PolicyUtils {
 	public static List<PolicyEdge> sortEdges (Collection<PolicyEdge> unsortedEdges) {
 		
 		LinkedList<PolicyEdge> sortedEdges = new LinkedList<PolicyEdge>();
-		
 		for (PolicyEdge edge: unsortedEdges) {
-			if (edge.getCondition().isUnderspecified() || edge.getCondition().isUnknown() ) {
-				sortedEdges.addLast(edge);
+			sortedEdges.add(edge);
+		}
+		
+		debug("sortedEdges: " + sortedEdges);
+		boolean fixedPointReached = false;
+		while (!fixedPointReached) {
+			fixedPointReached = true;
+			for (int i = 0 ; fixedPointReached && i < sortedEdges.size(); i++) {
+				PolicyEdge firstEdge = sortedEdges.get(i);
+				if (i < sortedEdges.size() -1) {
+					PolicyEdge nextEdge = sortedEdges.get(i+1);
+					if (FormulaUtils.subsumes(firstEdge.getCondition().getContent(), nextEdge.getCondition().getContent()) && 
+							!FormulaUtils.subsumes(nextEdge.getCondition().getContent(),firstEdge.getCondition().getContent())) {
+						sortedEdges.remove(i);
+						sortedEdges.add(i+1, firstEdge);
+						fixedPointReached = false;
+					}
+				}
 			}
-			else {
-				sortedEdges.addFirst(edge);
-			}
+			debug("sortedEdges: " + sortedEdges);
 		}
 		
 		return sortedEdges;
@@ -107,22 +120,35 @@ public class PolicyUtils {
 	 */
 	public static HashMap<Integer,dFormula> extractFilledArguments (dFormula form1, dFormula form2)  {
 				
+		debug("extracting filled arguments for: " + FormulaUtils.getString(form1) + " and " + FormulaUtils.getString(form2));
+		
 		HashMap<Integer,dFormula> filledArguments = new HashMap<Integer,dFormula>();
 
+		form1 = FormulaUtils.flattenFormula(form1);
+		form2 = FormulaUtils.flattenFormula(form2);
+		
 		if (form1 instanceof ComplexFormula && form2 instanceof ComplexFormula) {
 			filledArguments.putAll(extractFilledArgumentsInComplexFormula((ComplexFormula)form1, (ComplexFormula)form2));
 		}
 		
-		if (form1 instanceof ModalFormula && form2 instanceof ModalFormula) {
+		else if (form1 instanceof ModalFormula && form2 instanceof ModalFormula) {
 			if (((ModalFormula)form1).op.equals(((ModalFormula)form2).op)) {
 				filledArguments.putAll(extractFilledArguments(((ModalFormula)form1).form, ((ModalFormula)form2).form));
 			}
 		}
 		
+		else if (form1 instanceof ModalFormula && form2 instanceof ComplexFormula) {
+			List<dFormula> formList = new LinkedList<dFormula>();
+			formList.add(form1);
+			filledArguments.putAll(extractFilledArgumentsInComplexFormula(
+					new ComplexFormula(0, formList, BinaryOp.conj), (ComplexFormula)form2));
+		}
+		
 		else if (form1 instanceof UnderspecifiedFormula) {
 			filledArguments.put(form1.id, form2);
 		}
-			
+		
+		debug("number of filled arguments: " + filledArguments.size());
 		return filledArguments;
 	}
 	
@@ -138,7 +164,7 @@ public class PolicyUtils {
 			
 		HashMap<Integer,dFormula> filledArguments = new HashMap<Integer,dFormula>();
 		
-		if ((form1.forms.size() != form2.forms.size()) || !(form1.op.equals(form2.op))) {
+		if ((form1.forms.size() > form2.forms.size()) || !(form1.op.equals(form2.op))) {
 			return filledArguments;
 		}
 		
