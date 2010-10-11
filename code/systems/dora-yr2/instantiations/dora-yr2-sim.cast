@@ -66,9 +66,9 @@ JAVA MG executor dora.execution.components.DoraExecutionMediator
 
 # viewing and debugging #######################################################
 
-#JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, castutils.slice.WMMap, motivation.slice.ExploreMotive"
+JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, castutils.slice.WMMap, motivation.slice.ExploreMotive, comadata.ComaRoom"
 
-JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, comadata.ComaRoom, de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief,  castutils.slice.WMMap"
+# JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, comadata.ComaRoom, de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief,  castutils.slice.WMMap"
 
 
 JAVA MG display.GroundedBeliefs castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "eu.cogx.beliefs.slice.GroundedBelief" --generic-col
