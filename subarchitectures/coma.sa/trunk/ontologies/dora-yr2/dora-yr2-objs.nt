@@ -1,0 +1,8 @@
+<http://dora.cogx.eu#corridor> <owl:equivalentClass> <http://dora.cogx.eu#hallway>
+
+<http://dora.cogx.eu#cornflakes> <rdfs:subClassOf> <http://dora.cogx.eu#cereal_box>
+<http://dora.cogx.eu#coco_pops> <rdfs:subClassOf> <http://dora.cogx.eu#cereal_box>
+<http://dora.cogx.eu#frosties> <rdfs:subClassOf> <http://dora.cogx.eu#cereal_box>
+<http://dora.cogx.eu#rice_krispies> <rdfs:subClassOf> <http://dora.cogx.eu#cereal_box>
+
+
