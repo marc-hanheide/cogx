@@ -5,7 +5,8 @@
 		<node id="greetingNode" isFinal="true" isInitial="false" action="greetingAction"/>
 		<node id="thankingNode" action="thankAction" isFinal="true" isInitial="false"/>
 		<node id="closingNode" action="closingAction" isInitial="false" isFinal="true"/>
-		<node id="answerNode" action="answerAction" isInitial="false" isFinal="true"/>
+		<node id="whAnswerNode" action="whAnswerAction" isInitial="false" isFinal="true"/>
+<!--		<node id="pAnswerNode" action="pAnswerAction" isInitial="false" isFinal="true"/> -->
 	</nodes>
 	
 	<edges>
@@ -20,8 +21,12 @@
 		<edge id="anyEdge5" source="startNode" target="rootNode" condition="anyCond"/>
 		<edge id="closingEdge" source="rootNode" target="closingNode" condition="closingCond"/>
 		<edge id="closingEdge2" source="greetingNode" target="closingNode" condition="closingCond"/>
-		<edge id="closingEdge3" source="thankingNode" target="closingNode" condition="closingCond"></edge>
-		<edge id="questionEdge" source="rootNode" target="answerNode" condition="questionCond"/>
+		<edge id="closingEdge3" source="thankingNode" target="closingNode" condition="closingCond"/>
+		<edge id="closingEdge4" source="whAnswerNode" target="closingNode" condition="closingCond"/>
+		<edge id="whQuestionEdge" source="rootNode" target="whAnswerNode" condition="whQuestionCond"/>
+		<edge id="whQuestionEdge2" source="greetingNode" target="whAnswerNode" condition="whQuestionCond"/>
+		<edge id="whQuestionEdge3" source="startNode" target="whAnswerNode" condition="whQuestionCond"/>
+	<!--	<edge id="pQuestionEdge" source="rootNode" target="pAnswerNode" condition="pQuestionCond"/> -->
 	</edges>
 	
 	<conditions>
@@ -29,8 +34,10 @@
 		<condition content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(robot))" id="greetingCond" lowerProb="0.0" higherProb="1.0" type="communicativeintention"/>
 		<condition id="evalCond" content="&lt;state&gt;(appreciated ^ &lt;agent&gt;human ^ &lt;patient&gt;robot)" type="communicativeintention" lowerProb="0.0" higherProb="1.0"></condition>
 		<condition id="closingCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(robot))"/>
-		<condition id="questionCond" type="communicativeintention"
+		<condition id="whQuestionCond" type="communicativeintention"
 			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;color&gt;(%3)) ^ &lt;feature&gt;(color)))" />
+	<!--	<condition id="pQuestionCond" type="communicativeintention"
+			lowerProb="0.0" higherProb="1.0" content="&lt;pdddre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;color&gt;(%3)) ^ &lt;feature&gt;(color)))" /> -->
 	</conditions>
 	
 	<actions>
@@ -38,6 +45,7 @@
 		<action id="greetingAction" type="communicativeintention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(robot) ^ &lt;agent&gt;(human))"></action>
 		<action id="thankAction" type="communicativeintention" content="&lt;state&gt;(thanked ^ &lt;agent&gt;human ^ &lt;patient&gt;robot)"></action>
 		<action id="closingAction" type="communicativeintention" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(robot) ^ &lt;agent&gt;(human))"></action>
-		<action id="answerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" />
+		<action id="whAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" />
+<!--	    <action id="pAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" /> -->
 	</actions>
 </policy>

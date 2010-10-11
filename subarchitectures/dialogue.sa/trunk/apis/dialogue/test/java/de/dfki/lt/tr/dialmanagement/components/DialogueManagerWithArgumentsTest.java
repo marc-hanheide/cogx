@@ -73,7 +73,7 @@ public class DialogueManagerWithArgumentsTest {
 
 
 	/**
-	 * Test the policy with an observation filling a single argumetn
+	 * Test the policy with an observation filling a single argument
 	 * 
 	 * @throws DialogueException
 	 */
@@ -83,6 +83,21 @@ public class DialogueManagerWithArgumentsTest {
 		Observation intent = PolicyUtils.createSimpleObservation("Say ^ <Object>(Blabla)");
 		PolicyAction action1 = manager.nextAction(intent);
 		assertEquals("CI[Said ^ <Object>(Blabla)]", action1.toString());
+
+	}
+	
+
+	/**
+	 * Test the policy with an observation filling two arguments
+	 * 
+	 * @throws DialogueException
+	 */
+	@Test
+	public void testPolicySecond() throws DialogueException {
+
+		Observation intent = PolicyUtils.createSimpleObservation("Say ^ <Subject>(ahah ^ <oho>4.3f) ^ <Object>(Blabla)");
+		PolicyAction action1 = manager.nextAction(intent);
+		assertEquals("CI[Said ^ <Subject>(ahah ^ <oho>(4.3f)) ^ <Object>(Blabla)]", action1.toString());
 
 	}
 

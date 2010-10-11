@@ -157,7 +157,7 @@ public class XMLPolicyReader {
 				debug("adding node: " + pnode.getId());
 				policy.addNode(pnode);
 			}
-			else if (!xmlNode.getNodeName().equals("#text")){
+			else if (!xmlNode.getNodeName().equals("#text") && !xmlNode.getNodeName().equals("#comment")){
 				throw new DialogueException("wrongly formatted policy file for tag: " + xmlNode.getNodeName());
 			}
 		}
@@ -206,7 +206,7 @@ public class XMLPolicyReader {
 					debug("edge " + id + " temporarily deactivated");
 				} 
 			}
-			else if (!xmlNode.getNodeName().equals("#text")){
+			else if (!xmlNode.getNodeName().equals("#text") && !xmlNode.getNodeName().equals("#comment")){
 				throw new DialogueException("wrongly formatted policy file for tag: " + xmlNode.getNodeName());
 			}
 		}
@@ -262,7 +262,7 @@ public class XMLPolicyReader {
 					log("WARNING: no node associated with action " + paction.getId());
 				}
 			}	
-			else if (!xmlNode.getNodeName().equals("#text")){
+			else if (!xmlNode.getNodeName().equals("#text") && !xmlNode.getNodeName().equals("#comment")){
 				throw new DialogueException("wrongly formatted policy file for tag: " + xmlNode.getNodeName());
 			}
 		}
@@ -317,7 +317,7 @@ public class XMLPolicyReader {
 					log("WARNING: no edge associated with condition " + pcond.getId());
 				}
 			}
-			else if (!xmlNode.getNodeName().equals("#text")){
+			else if (!xmlNode.getNodeName().equals("#text") && !xmlNode.getNodeName().equals("#comment")){
 				throw new DialogueException("wrongly formatted policy file for tag: " + xmlNode.getNodeName());
 			}
 		}

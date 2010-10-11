@@ -230,6 +230,25 @@ public class PolicyAction extends FormulaWrapper {
 	
 	
 	/**
+	 * Check whether two policy actions are similar or not
+	 * 
+	 */
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof PolicyAction) {
+			if (type == ((PolicyAction)o).getType()) {
+				return FormulaUtils.subsumes(updatedContent, ((PolicyAction)o).getContent());
+			}
+			else {
+				debug("policy actions " + toString() + " and " + ((PolicyAction)o).toString() + " have different types");
+				return false;
+			}
+		}
+		return false;
+	}
+	
+	
+	/**
 	 * Logging
 	 * @param s
 	 */
