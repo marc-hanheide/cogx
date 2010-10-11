@@ -542,7 +542,7 @@ public class DialogueActionInterface extends ManagedComponent {
 				String objectIdent = "object";
 				
 				FormulaDistribution distribution = gb.getContent()
-				.get(VisualObjectTransferFunction.VISUAL_OBJECT_IDENT);
+				.get(VisualObjectTransferFunction.VISUAL_OBJECT_ID);
 				if(distribution != null) {
 					objectIdent = distribution.getDistribution().getMostLikely().getProposition();
 				}
