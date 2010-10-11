@@ -907,6 +907,9 @@ void PlanePopOut::SOIManagement()
 	}
 	return;
     }
+    for (unsigned int j=0; j<PreviousObjList.size(); j++)
+	log("id in PreviousObjList are %s", PreviousObjList.at(j).id.c_str());
+   
 //-----------------There are SOIs in CurrentObjList, so compare with objects in PreviousObjList
     std::vector <SOIMatch> myMatchingSOIVector;
     for (unsigned int j=0; j<PreviousObjList.size(); j++)
@@ -925,6 +928,7 @@ void PlanePopOut::SOIManagement()
 		}
 	    }
 	}
+	log("The matching probability of %d in Current and %d in Previous is %f",matchingObjIndex, j, max_matching_probability);
 	if (max_matching_probability>Treshold_Comp2SOI)
 	{
 	    SOIMatch SOIm;
@@ -951,7 +955,10 @@ void PlanePopOut::SOIManagement()
 		}
 	    }
 	    else
+	    {
+		PreviousObjList.at(j).count = PreviousObjList.at(j).count -1;
 		if(PreviousObjList.at(j).count > 0) Pre2CurrentList.push_back(PreviousObjList.at(j));
+	    }
 	}
 	else	//find the matching object with this previous SOI
 	{
@@ -959,6 +966,7 @@ void PlanePopOut::SOIManagement()
 	    {
 		CurrentObjList.at(matchingResult).bInWM = true;
 		CurrentObjList.at(matchingResult).id = PreviousObjList.at(j).id;
+		CurrentObjList.at(matchingResult).rect = PreviousObjList.at(j).rect;
 		CurrentObjList.at(matchingResult).count = PreviousObjList.at(j).count;
 		if (dist(CurrentObjList.at(matchingResult).c, PreviousObjList.at(j).c)/norm(CurrentObjList.at(matchingResult).c) > 0.15)
 		{
@@ -990,8 +998,8 @@ void PlanePopOut::SOIManagement()
 		    cvSaveImage(path.c_str(), cropped);
 		    cvReleaseImage(&cropped);
 		    #endif
-		    //log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
-		    //log("objects number = %u",objnumber);
+// 		    log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+// 		    log("objects number = %u",objnumber);
 // 			    cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
 		}
 	    }
@@ -1003,9 +1011,11 @@ void PlanePopOut::SOIManagement()
 	if (CurrentObjList.at(i).bComCurrentPre ==false)
 	{
 	    CurrentObjList.at(i).count = CurrentObjList.at(i).count+1;
-	    log("We have new object, Wooo Hooo....");
+	    log("We have new object, Wooo Hooo.... There are %d objects in CurrentObjList and this is the %d one", CurrentObjList.size(), i);
 	}
     }
+    for (unsigned int j=0; j<CurrentObjList.size(); j++)
+	log("id in CurrentObjList are %s", CurrentObjList.at(j).id.c_str()); 
     PreviousObjList.clear();
     for (unsigned int i=0; i<CurrentObjList.size(); i++)
 	PreviousObjList.push_back(CurrentObjList.at(i));
