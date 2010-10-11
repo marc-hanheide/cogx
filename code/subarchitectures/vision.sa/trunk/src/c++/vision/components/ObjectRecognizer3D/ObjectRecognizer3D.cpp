@@ -339,7 +339,7 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Po
   }else{
 		obj = getMemoryEntry<VisualObject>(rec_entry.visualObjectID);
   }
-
+log("got ply model");
   // create a very simple distribution: label and unknown
   obj->identLabels.push_back(label);
   obj->identLabels.push_back("unknown");
@@ -356,6 +356,7 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Po
       obj->identAmbiguity -= obj->identDistrib[i]*::log(obj->identDistrib[i]);
   obj->pose = pose;
   obj->componentID = getComponentID();
+log("Making WM changes..");
 
   log("about to add/overwrite WM: '%s' id: %s", obj->identLabels[0].c_str(), rec_entry.visualObjectID.c_str());
 
