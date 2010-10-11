@@ -139,7 +139,7 @@ public class VisualObjectTransferFunction extends
 		String gainStr = "";
 		for (int i = 0; i < labels.length; i++) {
 			fd.add(labels[i], distrib[i]);
-			if (gains != null) {
+			if (gains != null && i<gains.length) {
 				if (maxGain < gains[i]) {
 					maxGain = gains[i];
 					gainStr = labels[i];
