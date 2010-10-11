@@ -9,6 +9,7 @@ import time
 import subprocess as subp
 import tempfile
 import select, signal, threading
+import fcntl
 import options, messages
 import itertools
 import legacy
@@ -186,6 +187,11 @@ class CProcess(CProcessBase):
             self.pipeReader = CPipeReader_1(self)
             self.pipeReader.start()
             self.process = subp.Popen(command, bufsize=1, stdout=subp.PIPE, stderr=subp.PIPE, cwd=self.workdir)
+
+            # Make the pipes nonblocking so we can read the messages better
+            fcntl.fcntl(self.process.stdout, fcntl.F_SETFL, os.O_NONBLOCK)
+            fcntl.fcntl(self.process.stderr, fcntl.F_SETFL, os.O_NONBLOCK)
+
             time.sleep(0.01)
             self._setStatus(max(1, self.process.pid))
             log("Process '%s' started, pid=%d" % (self.name, self.process.pid))
@@ -249,15 +255,23 @@ class CProcess(CProcessBase):
         if flushing: maxempty = 0
         else: maxempty = 1
         while len(select.select([pipe], [], [], 0.0)[0]) > 0:
-            msg = pipe.readline()
+            msg = pipe.read(64000)
             if len(msg) < 1 or msg.isspace(): self.lastLinesEmpty += 1
             else: self.lastLinesEmpty = 0
             if self.lastLinesEmpty <= maxempty:
-                typ = fnType(msg)
-                self.msgOrder += 1
-                msg = msg.decode("utf-8", "replace")
-                targetList.append(messages.CMessage(self.srcid, msg, typ, self.msgOrder))
-                nl += 1
+                lines = msg.split("\n")
+                if len(lines[-1]) < 1:
+                    lines = lines[:-1]
+                for msg in lines:
+                    if len(msg) < 1 or msg.isspace(): self.lastLinesEmpty += 1
+                    else: self.lastLinesEmpty = 0
+                    if self.lastLinesEmpty > maxempty: continue
+                    typ = fnType(msg)
+                    self.msgOrder += 1
+                    msg = msg.decode("utf-8", "replace")
+                    targetList.append(messages.CMessage(self.srcid, msg, typ, self.msgOrder))
+                    nl += 1
+
             if nl > maxcount: break
             now = time.time()
             if now < start or now > tmend: break
