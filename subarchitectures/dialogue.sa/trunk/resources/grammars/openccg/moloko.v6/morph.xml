@@ -1203,9 +1203,9 @@
   <entry word="coffee" macros="@s-sg @full" pos="Noun" stem="coffee-noun-n" class="thing" pred="coffee"/>
   <entry word="coffees" macros="@s-pl-unsp @full" pos="Noun" stem="coffee-noun-n" class="thing" pred="coffee"/>
   <entry word="cornflakes" macros="@s-sg @full" pos="Noun" stem="cornflakes-noun-n" class="thing" pred="cornflakes"/>
-  <entry word="cornflakeses" macros="@s-pl-unsp @full" pos="Noun" stem="cornflakes-noun-n" class="thing" pred="cornflakes"/>
+  <entry word="cornflakes" macros="@s-pl-unsp @full" pos="Noun" stem="cornflakes-noun-n" class="thing" pred="cornflakes"/>
   <entry word="cookies" macros="@s-sg @full" pos="Noun" stem="cookies-noun-n" class="thing" pred="cookies"/>
-  <entry word="cookieses" macros="@s-pl-unsp @full" pos="Noun" stem="cookies-noun-n" class="thing" pred="cookies"/>
+  <entry word="cookies" macros="@s-pl-unsp @full" pos="Noun" stem="cookies-noun-n" class="thing" pred="cookies"/>
   <entry word="water" macros="@s-sg @full" pos="Noun" stem="water-noun-n" class="thing" pred="water"/>
   <entry word="waters" macros="@s-pl-unsp @full" pos="Noun" stem="water-noun-n" class="thing" pred="water"/>
   <entry word="tea" macros="@s-mass @full" pos="Noun" stem="tea-mass-n" class="e-substance" pred="tea"/>
