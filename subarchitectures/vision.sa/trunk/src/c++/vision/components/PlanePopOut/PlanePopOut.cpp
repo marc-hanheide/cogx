@@ -38,8 +38,7 @@ long long gethrtime(void)
 #define Shrink_SOI 1
 #define Upper_BG 1.5
 #define Lower_BG 1.1	// 1.1-1.5 radius of BoundingSphere
-#define rate_of_centers 0.4	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
-#define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
+
 #define Torleration 5		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
 #define AgonalTime  30		//The dying object could be "remembered" for "AgonalTime" of frames
@@ -51,7 +50,7 @@ long long gethrtime(void)
 #define label4ambiguousness	-1
 
 #define SendDensePoints  1 	//0 send sparse points ,1 send dense points (recollect them after the segmentation)
-#define Treshold_Comp2SOI	0.7	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
+#define Treshold_Comp2SOI	0.8	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
 
 /**
  * The function called to create a new instance of our component.
@@ -707,7 +706,7 @@ void PlanePopOut::runComponent()
 		tempPoints.clear();
 		pointsN.clear();
 		objnumber = 0;
-		N = (int)points.size()/3000;
+		N = (int)points.size()/5000;
 		random_shuffle ( points.begin(), points.end() );
 		for (VisionData::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
 		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<3)
@@ -869,6 +868,7 @@ int PlanePopOut::IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist)
 
 void PlanePopOut::SOIManagement()
 {
+    log("There are %d SOI in the Current scene", CurrentObjList.size());
     Pre2CurrentList.clear();
     if (PreviousObjList.empty())
     {
@@ -920,7 +920,7 @@ void PlanePopOut::SOIManagement()
 	    if (CurrentObjList.at(i).bComCurrentPre == false)
 	    {
 		float probability = Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j));
-		log("The matching probability of %d in Current and %d in Previous is %f",i, j, probability);
+		log("The matching probability of %d SOI in Current and %s in Previous is %f",i+1, PreviousObjList.at(j).id.c_str(), probability);
 		if (probability > max_matching_probability)
 		{
 		    max_matching_probability = probability;
@@ -1013,7 +1013,7 @@ void PlanePopOut::SOIManagement()
     {
 	if (CurrentObjList.at(i).bComCurrentPre ==false)
 	{
-	    CurrentObjList.at(i).count = CurrentObjList.at(i).count-1;
+	    CurrentObjList.at(i).count = CurrentObjList.at(i).count-2;
 // 	    log("We have new object, Wooo Hooo.... There are %d objects in CurrentObjList and this is the %d one", CurrentObjList.size(), i);
 	}
     }
@@ -1891,7 +1891,7 @@ void PlanePopOut::SplitPoints(VisionData::SurfacePointSeq &points, std::vector <
 	std::stack <int> objstack;
 	double split_threshold = Calc_SplitThreshold(points, labels);
 	unsigned int obj_number_threshold;
-	obj_number_threshold = 25;
+	obj_number_threshold = 100;
 	while(!candidants.empty())
 	{
 		S_label.at(*candidants.begin()) = objnumber;
