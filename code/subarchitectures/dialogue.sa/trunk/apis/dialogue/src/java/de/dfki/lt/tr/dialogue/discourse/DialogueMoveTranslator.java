@@ -13,20 +13,16 @@ import java.util.List;
 public class DialogueMoveTranslator {
 
 	List<String> lines = new LinkedList<String>();
-	FunctionTerm currentTopic = null;
+	NominalReference latestTopic = null;
+//	FunctionTerm lastTopic = null;
 
 	public void addDialogueMove(DialogueMove dm) {
 		NominalReference nr = dm.topic;
-		String s = "% ";
-		String s2 = "";
+		String s = "%   ";
 		s += "(dm " + dm.agent + " " + dm.lform.root.nomVar + " (topic ";
 		if (nr != null) {
 			s += "(ref " + nr.nominal + " " + MercuryUtils.termToString(ConversionUtils.stateFormulaToTerm(nr.referent)) + ")";
-			if (currentTopic == null) {
-				// the latest topic!
-				currentTopic = (FunctionTerm) ConversionUtils.stateFormulaToTerm(nr.referent);
-				s2 = "att : linguisticsalience(" + MercuryUtils.termToString(currentTopic) + ", high).";
-			}
+			latestTopic = nr;
 		}
 		else {
 			s += "NULL";
@@ -34,13 +30,15 @@ public class DialogueMoveTranslator {
 		s += "))";
 
 		lines.add(s);
-		if (!s2.isEmpty()) {
-			lines.add(s2);
-		}
 	}
 
 	public String toRulefileContents() {
-		return "\n" + join("\n", lines) + "\n";
+		String topS = "";
+		if (latestTopic != null) {
+			FunctionTerm topicTerm = (FunctionTerm) ConversionUtils.stateFormulaToTerm(latestTopic.referent);
+			topS = "att : linguisticsalience(" + MercuryUtils.termToString(topicTerm) + ", high).\n";
+		}
+		return "\n" + "% discourse structure\n" + join("\n", lines) + "\n\n" + "% latest topic\n" + topS;
 	}
 
 	// Sun should burn in hell for not having such a function in the standard library!

@@ -197,6 +197,7 @@ extends AbstractDialogueComponent
 						productionLF.lform = output;
 					}
 					productionLF.plfid = newId("cp");
+					productionLF.topic = goal.topic;
 					// Put the resulting logical form onto WM
 					log("adding the production LF to the WM: " + LFUtils.lfToString(productionLF.lform));
 					addToWorkingMemory(newDataID(),productionLF);
@@ -204,6 +205,7 @@ extends AbstractDialogueComponent
 					// Put the resulting logical form onto WM
 					ProductionLF productionLF = new ProductionLF();
 					productionLF.lform = goal.lform;
+					productionLF.topic = goal.topic;
 					log("adding the canned text LF to the WM: " + LFUtils.lfToString(productionLF.lform));
 					addToWorkingMemory(newDataID(),productionLF);
 				} // if ..else check for canned text

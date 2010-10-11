@@ -23,6 +23,7 @@ package de.dfki.lt.tr.dialogue.interpret;
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
@@ -30,12 +31,16 @@ import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
 import de.dfki.lt.tr.infer.weigabd.ProofUtils;
 import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
 import de.dfki.lt.tr.infer.weigabd.slice.FileReadErrorException;
+import de.dfki.lt.tr.infer.weigabd.slice.FunctionTerm;
 import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
 import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
 import de.dfki.lt.tr.infer.weigabd.slice.Modality;
 import de.dfki.lt.tr.infer.weigabd.slice.SyntaxErrorException;
 import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class IntentionRealization {
 
@@ -114,9 +119,23 @@ public class IntentionRealization {
 				ProofUtils.stripMarking(ProofUtils.filterAssumed(proof)),
 				new Modality[] {Modality.Truth});
 		LogicalForm lf = AbducerUtils.factsToLogicalForm(imfs, "dn1_1");
+
+		NominalReference nr = null;
+		ModalisedAtom[] rrs = ProofUtils.stripMarking(ProofUtils.filterAssumed(proof));
+		for (ModalisedAtom ma : Arrays.asList(rrs)) {
+			if (ma.m.length == 1 && ma.m[0] == Modality.Generation && ma.a.predSym.equals("dialogue_move_topic") && ma.a.args.length == 2) {
+				String nom = ((FunctionTerm)ma.a.args[0]).functor;
+				WorkingMemoryAddress wma = ConversionUtils.termToWorkingMemoryAddress(ma.a.args[1]);
+				if (wma != null) {
+					nr = new NominalReference(nom, BeliefFormulaFactory.newPointerFormula(wma));
+				}
+			}
+		}
+
 		ContentPlanningGoal plf = new ContentPlanningGoal();
 		plf.cpgid = idGen.newIdentifier();
 		plf.lform = lf;
+		plf.topic = nr;
 		return plf;
 	}
 
