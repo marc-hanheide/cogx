@@ -16,6 +16,7 @@ public class HFCTester extends ManagedComponent {
 		HFCInterfacePrx m_hfcserver;
 	
 	public void configure(Map<String, String> args) {
+		super.configure(args);
 		log("configure() called");
 		m_hfcserver_id = new Identity();
 		m_hfcserver_id.name="";
@@ -43,16 +44,19 @@ public class HFCTester extends ManagedComponent {
 	}
 	
 	protected void runComponent() {
-		println("simple ICE connection test: ping");
-		println(m_hfcserver.ping());
+		log("simple ICE connection test: ping");
+		log(m_hfcserver.ping());
 
+		
 		String query = "SELECT ?x ?y ?z where ?x ?y ?z";
+//		String query = "SELECT ?x ?y ?z ?num where ?x ?y ?z ?num";
+		
 		QueryResults _results = m_hfcserver.querySelect(query);
-		println("query results:");
+		log("query results:");
 
-		println("Query: " + _results.query);
-		println("Variable to array position mapping: " + _results.varPosMap.toString());
-		println("Variable result bindings: ");
+		log("Query: " + _results.query);
+		log("Variable to array position mapping: " + _results.varPosMap.toString());
+		log("Variable result bindings: ");
 
 		for (int i = 0; i < _results.bt.length; i++) {
 			String[] _currLine = _results.bt[i];
@@ -61,8 +65,50 @@ public class HFCTester extends ManagedComponent {
 				String _res  = _currLine[j];
 				_currLineResult.append(_res + " ");
 			}
-			println(_currLineResult);
+			log(_currLineResult);
 		}
+		
+		
+		query = "SELECT ?x ?y where <dora:corridor> ?x ?y ";
+		
+		_results = m_hfcserver.querySelect(query);
+		log("query results:");
+
+		log("Query: " + _results.query);
+		log("Variable to array position mapping: " + _results.varPosMap.toString());
+		log("Variable result bindings: ");
+
+		for (int i = 0; i < _results.bt.length; i++) {
+			String[] _currLine = _results.bt[i];
+			StringBuffer _currLineResult = new StringBuffer();
+			for (int j = 0; j < _currLine.length; j++) {
+				String _res  = _currLine[j];
+				_currLineResult.append(_res + " ");
+			}
+			log(_currLineResult);
+		}
+		
+		
+		
+		query = "SELECT ?x ?y ?num where <dora:corridor> ?x ?y ?num";
+		
+		_results = m_hfcserver.querySelect(query);
+		log("query results:");
+
+		log("Query: " + _results.query);
+		log("Variable to array position mapping: " + _results.varPosMap.toString());
+		log("Variable result bindings: ");
+
+		for (int i = 0; i < _results.bt.length; i++) {
+			String[] _currLine = _results.bt[i];
+			StringBuffer _currLineResult = new StringBuffer();
+			for (int j = 0; j < _currLine.length; j++) {
+				String _res  = _currLine[j];
+				_currLineResult.append(_res + " ");
+			}
+			log(_currLineResult);
+		}
+	
 	}
 	 
 

@@ -27,9 +27,17 @@ public class HFCServer extends ManagedComponent {
 	}
 	
 	protected void configure(Map<String, String> args) {
+		super.configure(args);
 		log("registering HFCServer...");
 		
-		this.registerIceServer(HFCInterface.class, new HFCInterfaceI(args.get("--nsFile"), args.get("--tupleFile"), args.get("--ruleFile")));
+		this.registerIceServer(HFCInterface.class, 
+				new HFCInterfaceI(
+						args.get("--stdNSFile"), 
+						args.get("--stdTupleFile"), 
+						args.get("--stdRuleFile"),
+						args.get("--otherNSFiles").split(","), 
+						args.get("--otherTupleFiles").split(","), 
+						args.get("--otherRuleFiles").split(",")));
 		
 		log("registered HFCServer...");
 		
@@ -69,54 +77,95 @@ public class HFCServer extends ManagedComponent {
 		private static final long serialVersionUID = 6809681574925454933L;
 
 		// HFC related members
-		private de.dfki.lt.hfc.Namespace namespaces = null;
-		private de.dfki.lt.hfc.TupleStore tupleStore = null;
-		private de.dfki.lt.hfc.RuleStore ruleStore = null;
+		//private de.dfki.lt.hfc.Namespace namespaces = null;
+		//private de.dfki.lt.hfc.TupleStore tupleStore = null;
+		//private de.dfki.lt.hfc.RuleStore ruleStore = null;
 		private de.dfki.lt.hfc.ForwardChainer forwardChainer = null;
 		private de.dfki.lt.hfc.Query query = null;
 		
-		public HFCInterfaceI(String namespaceFile, String tupleFile, String ruleFile) {
+		public HFCInterfaceI(
+				String std_namespaceFile, 
+				String std_tupleFile, 
+				String std_ruleFile, 
+				String[] other_namespaceFiles, 
+				String[] other_tupleFiles, 
+				String[] other_ruleFiles ) {
+						
+			//System.out.println("HFCInterfaceI constructor called.");
+			//System.out.println("std_namespaceFile " + std_namespaceFile);
+			//System.out.println("std_tupleFile " + std_tupleFile);
+			//System.out.println("std_ruleFile " + std_ruleFile);
+			//System.out.println("other_namespaceFile " + other_namespaceFiles);
+			//System.out.println("other_tupleFiles " + other_tupleFiles);
+			//System.out.println("other_ruleFiles " + other_ruleFiles);
 			
-			System.out.println("HFCInterfaceI constructor called.");
-			// read declarations from file and initialize members
-			this.namespaces = new de.dfki.lt.hfc.Namespace(namespaceFile);
-			System.out.println("loaded namespaces.");
-			this.tupleStore = new de.dfki.lt.hfc.TupleStore(this.namespaces, tupleFile);
-			System.out.println("loaded tuplestore.");
-			this.query = new de.dfki.lt.hfc.Query(this.tupleStore);
-			System.out.println("initialized query object.");
-			this.ruleStore = new de.dfki.lt.hfc.RuleStore(this.namespaces, this.tupleStore, ruleFile);
-			System.out.println("loaded rule file.");
+			// read declarations from files and initialize members
+			// wrong... new: just load the default files in the FC constructor
+			/*
+			this.namespaces = new de.dfki.lt.hfc.Namespace(std_namespaceFile);
+			System.out.println("init namespaces.");
+			
+			this.tupleStore = new de.dfki.lt.hfc.TupleStore(this.namespaces, std_tupleFile);
+			System.out.println("init tuplestore.");
+
+			
+			this.ruleStore = new de.dfki.lt.hfc.RuleStore(this.namespaces, this.tupleStore, std_ruleFile);
+			System.out.println("init rules.");
 
 			//de.dfki.lt.hfc.Interactive intMode = new de.dfki.lt.hfc.Interactive(namespaceFile, tupleFile, ruleFile);
+			*/ 
 			
-			this.forwardChainer = new de.dfki.lt.hfc.ForwardChainer(this.namespaces, this.tupleStore, this.ruleStore);
-			System.out.println("created forward chainer object.");
+			this.forwardChainer = new de.dfki.lt.hfc.ForwardChainer(std_tupleFile, std_ruleFile, std_namespaceFile);
+			log("created forward chainer object.");
 			
+			// so?
+			for (String i_tupleFile : other_tupleFiles) {
+				this.forwardChainer.uploadTuples(i_tupleFile);
+				log("added extra tuples from file " + i_tupleFile);
+			}
+
+			// so?
+			for (String i_ruleFile : other_ruleFiles) {
+				this.forwardChainer.uploadRules(i_ruleFile);
+				log("added extra rules from file " + i_ruleFile);
+			}
+
+			for (String i_namespaceFile : other_namespaceFiles) {
+				this.forwardChainer.namespace.readNamespaces(i_namespaceFile);
+				log("added extra namespace file " + i_namespaceFile);
+			}
+
 			this.forwardChainer.computeClosure();
-			System.out.println("Constructed a new HFCInterface!");
+			log("Constructed a new HFCInterface!");
+			
+			this.query = new de.dfki.lt.hfc.Query(this.forwardChainer.tupleStore);
+			System.out.println("init query object.");
 		}
 		
 		
 		@Override
 		public QueryResults querySelect(String q, Current current) {
+			log("querySelect() called with query " + q);
 			QueryResults _results = new QueryResults();
 			
 			if (q.toUpperCase().startsWith("SELECT")) {
+				log("received a SELECT type query");
 				de.dfki.lt.hfc.BindingTable bt;
 				_results.query = q;
 				
 				try {
+					log("try...");
 					bt = this.query.query(q);
 					if (bt == null) {
-						System.out.println("HFC: query contains constants not known to the tuple store");
+						log("HFC: query contains constants not known to the tuple store");
 						_results.bt = new String[0][0];
 						_results.varPosMap = new HashMap<String, Integer>();
 					} 
 					else {
+						log("bt!=null");
 						ArrayList<Map<String, String>> _hfcAnswer = 
-							de.dfki.lt.hfc.BindingTableDecoder.decode(bt, this.tupleStore);
-						System.out.println("received a decoded collection of size: " + _hfcAnswer.size());
+							de.dfki.lt.hfc.BindingTableDecoder.decode(bt, this.forwardChainer.tupleStore);
+						log("received a decoded collection of size: " + _hfcAnswer.size());
 						Map<String,String> _firstLine = _hfcAnswer.remove(0);
 						_results.bt = new String[_hfcAnswer.size()+1][_firstLine.size()];
 						_results.varPosMap = new HashMap<String, Integer>();
@@ -136,14 +185,14 @@ public class HFCServer extends ManagedComponent {
 						}
 					}
 				} catch (QueryParseException e) {
-					System.out.println("HFC: malformed SELECT query!");
+					log("HFC: malformed SELECT query!");
 					_results.bt = new String[0][0];
 					_results.varPosMap = new HashMap<String, Integer>();
 					e.printStackTrace();
 				}
 			}
 			else {
-				System.out.println("HFC: malformed SELECT query!");
+				log("HFC: malformed SELECT query!");
 				_results.bt = new String[0][0];
 				_results.varPosMap = new HashMap<String, Integer>();
 			}
