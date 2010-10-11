@@ -34,6 +34,7 @@ public class VisualObjectTransferFunction
 		extends
 		DependentLinkingDiscreteTransferFunction<VisualObject, PerceptBelief, GroundedBelief> {
 
+	public static final String LABEL_ID = "label";
 	public static final String IS_IN = "is-in";
 
 	public VisualObjectTransferFunction(ManagedComponent component,
@@ -50,7 +51,7 @@ public class VisualObjectTransferFunction
 		Map<String, Formula> result = new HashMap<String, Formula>();
 		// TODO: we should use a DoubleValue here!
 		try {
-			result.put("label", PropositionFormula.create(from.identLabels[0])
+			result.put(LABEL_ID, PropositionFormula.create(from.identLabels[0])
 					.getAsFormula());
 		} catch (BeliefException e) {
 			component.logException(e);
