@@ -12,7 +12,10 @@
 #include <ConceptualData.hpp>
 #include <DefaultData.hpp>
 // LibDAI
-#include "dai/factorgraph.h"
+#define DAI_WITH_JTREE
+#define DAI_WITH_BP
+
+#include <dai/alldai.h>
 
 
 namespace conceptual
@@ -62,6 +65,18 @@ private:
 	 * Returns true if the factor graph was changed. */
 	bool updateFactorGraph();
 
+	/** Create DAI Variable if not yet created. */
+	void createDaiVariable(std::string name, const std::vector<std::string> &values);
+
+	/** Creates a DAI connectivity factor for two rooms. */
+	void createDaiConnectivityFactor(int room1Id, int room2Id);
+	void createDaiSingleRoomFactor(int room1Id);
+	void createDaiObservedObjectPropertyFactor(int room1Id,
+			std::string objectVariableName, bool objectExists);
+
+	/** Adds factors related to the factor graph */
+	void addDaiFactors();
+
 	/** Performs all inferences on the factor graph. */
 	void runAllInferences();
 
@@ -71,6 +86,14 @@ private:
 
 	/** Reads the default knowledge factors from the Default.SA */
 	void getDefaultKnowledge();
+
+	/** Returns probability value from the distribution. */
+	double getProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
+			std::string var1Value, std::string var2value);
+
+	/** Returns probability value from the distribution. */
+	double getProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
+			std::string var1Value, bool var2value);
 
 
 private:
@@ -98,7 +121,6 @@ private:
 	/** Part of the local copy of the world state. */
 	ConceptualData::RoomConnectivityInfos _worldStateRoomConnections;
 
-
 	/** Name of the DefaultChainGraphInferencer component.  */
 	std::string _defaultChainGraphInferencerName;
 
@@ -108,9 +130,32 @@ private:
 	/** Default knowledge factors. Map from factor string to the factor itself. */
 	std::map<std::string, SpatialProbabilities::ProbabilityDistribution> _defaultKnowledgeFactors;
 
-	/** Map from variable names to DAI variables. */
-	std::map<std::string, dai::Var> _variableNameToDai;
+	/** Names of the object place property variables. */
+	DefaultData::StringSeq _objectPropertyVariables;
 
+	/** Names of all room categories. */
+	DefaultData::StringSeq _roomCategories;
+
+	/** Information about DAI variable. */
+	struct DaiVariable
+	{
+		dai::Var var;
+		std::map<int, std::string> valueIdToName;
+	};
+
+	/** Map from variable names to DAI variables. */
+	std::map<std::string, DaiVariable> _variableNameToDai;
+
+	/** List of all factors in the graph. */
+	std::vector<dai::Factor> _factors;
+
+	/** The main factor graph used for inference. */
+	dai::FactorGraph _factorGraph;
+
+	/** Junction tree. */
+	dai::JTree _junctionTree;
+
+    dai::PropertySet _daiOptions;
 
 }; // class ChainGraphInferencer
 } // namespace def
