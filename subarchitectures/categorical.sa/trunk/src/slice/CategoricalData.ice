@@ -1,38 +1,16 @@
-#ifndef CONCEPTUALDATA_ICE
-#define CONCEPTUALDATA_ICE
+#ifndef CATEGORICALDATA_ICE
+#define CATEGORICALDATA_ICE
 
 #include <cast/slice/CDL.ice>
 
 /**
- * Data structures representing the knowledge stored in the conceptual layer
+ * Data structures representing the knowledge stored in the categorical layer
  * and interfaces used to access that knowledge.
  * @author Andrzej Pronobis
  */
 
-module ConceptualData 
+module CategoricalData 
 {
 
-    sequence<string> BindingRow;
-    sequence<BindingRow> BindingTable;
-    dictionary<string, int> StringToIntMap;
-
-    struct QueryResults 
-    {
-    	string query;
-    	StringToIntMap varPosMap;
-    	BindingTable bt;
-    };
-
-    interface HFCInterface 
-    {
-	QueryResults querySelect(string q);
-    };
-
-
-   interface QdlQueryHandlerInterface
-   {
-	QueryResults querySelect(string q);
-   }
-
 };
-#endif // CONCEPTUALDATA_ICE
+#endif // CATEGORICALDATA_ICE

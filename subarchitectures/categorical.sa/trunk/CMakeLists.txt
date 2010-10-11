@@ -1,7 +1,7 @@
-project (CONCEPTUALSA)
+project (CATEGORICALSA)
 
 # Set build type
-# set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release)
 
 # You can prepare verbose Makefile to see what's going.
 set(CMAKE_VERBOSE_MAKEFILE true)
@@ -14,8 +14,6 @@ set(CMAKE_VERBOSE_MAKEFILE true)
 add_subdirectory (src/c++/autogen)
 include_directories(src/c++/autogen)
 
-# Conceptual.SA C++ Components
-add_subdirectory (src/c++/conceptual/components/QdlQueryHandler)
-add_subdirectory (src/c++/conceptual/components/ChainGraphInferencer)
-add_subdirectory (src/c++/conceptual/components/ConceptualMediator)
+# Categorical.SA C++ Components
+#add_subdirectory (src/c++/conceptual/components/QdlQueryHandler)
 
