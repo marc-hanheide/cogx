@@ -49,12 +49,15 @@ public class SharedBeliefTracker extends ManagedComponent {
 							types, wm2wmMap, GroundedBelief.class,
 							SharedBelief.class), wm2wmMap, config
 							.get("--write-to-sa"));
+			tracker.setShouldPropagateDeletion(true);
 		} catch (InstantiationException e) {
 			logException("cannot create PointerMap and tracker", e);
 		} catch (IllegalAccessException e) {
 			logException("cannot create PointerMap and tracker", e);
 		}
 
+		
+		
 	}
 
 	/*
