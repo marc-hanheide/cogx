@@ -135,13 +135,21 @@ public class VisualObjectTransferFunction extends
 			IndependentFormulaDistributions distr, String[] labels,
 			double[] distrib, double[] gains, double gain, double ambiguity) {
 		FormulaDistribution fd = FormulaDistribution.create();
+		double maxGain = -1;
+		String gainStr = "";
 		for (int i = 0; i < labels.length; i++) {
 			fd.add(labels[i], distrib[i]);
-			FormulaDistribution gainFD = FormulaDistribution.create();
 			if (gains != null) {
-				gainFD.add((float) gains[i], 1.0);
-				distr.put("gain-" + concept + "-" + labels[i], gainFD);
+				if (maxGain < gains[i]) {
+					maxGain = gains[i];
+					gainStr = labels[i];
+				}
 			}
+		}
+		if (maxGain > 0) {
+			FormulaDistribution gainFD = FormulaDistribution.create();
+			gainFD.add(gainStr, 1.0);
+			distr.put("max-gain-" + concept, gainFD);
 		}
 		distr.put(concept, fd);
 
