@@ -247,6 +247,10 @@ module execution {
       class AskForObjectWithFeatureValue extends FeatureValueStringsAction {
       };    
 
+      class ReportPosition extends SingleBeliefAction {
+      };    
+
+
       /**
        * comsys action
        */
