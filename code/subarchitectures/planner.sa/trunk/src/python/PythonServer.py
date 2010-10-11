@@ -291,7 +291,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       
       if not task.update_state(self.beliefs):
           print_state_difference(old_state, task.state.state)
-          task.update_status(Planner.Completion.FAILED)
+          task.update_status(TaskStateEnum.FAILED)
           self.deliver_plan(task, [])
           return
 
