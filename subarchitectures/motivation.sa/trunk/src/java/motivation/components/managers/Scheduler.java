@@ -4,9 +4,11 @@
 package motivation.components.managers;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -45,7 +47,9 @@ import facades.ExecutorFacade;
 public class Scheduler extends ManagedComponent implements
 		ChangeHandler<Motive>, Callable<Object> {
 
-	private static final int TIME_TO_WAIT_TO_SETTLE = 100;
+	private static final int MINIMUM_PLANNER_TIMEOUT = 30;
+
+	private static final int TIME_TO_WAIT_TO_SETTLE = 1000;
 
 	private static final int TIME_TO_WAIT_FOR_CHANGE = 5000;
 
@@ -62,17 +66,18 @@ public class Scheduler extends ManagedComponent implements
 		return result;
 	}
 
-	private static Map<WorkingMemoryAddress, Motive> subSetByPriority(
-			Map<WorkingMemoryAddress, Motive> surfacedGoals,
-			MotivePriority minimumPriority) {
-		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
-		for (Entry<WorkingMemoryAddress, Motive> m : surfacedGoals.entrySet()) {
-			if (m.getValue().priority.compareTo(minimumPriority) >= 0) {
-				result.put(m.getKey(), m.getValue());
-			}
-		}
-		return result;
-	}
+	// private static Map<WorkingMemoryAddress, Motive> subSetByPriority(
+	// Map<WorkingMemoryAddress, Motive> surfacedGoals,
+	// MotivePriority minimumPriority) {
+	// Map<WorkingMemoryAddress, Motive> result = new
+	// HashMap<WorkingMemoryAddress, Motive>();
+	// for (Entry<WorkingMemoryAddress, Motive> m : surfacedGoals.entrySet()) {
+	// if (m.getValue().priority.compareTo(minimumPriority) >= 0) {
+	// result.put(m.getKey(), m.getValue());
+	// }
+	// }
+	// return result;
+	// }
 
 	final PlannerFacade planner;
 	final ExecutorFacade executor;
@@ -134,15 +139,39 @@ public class Scheduler extends ManagedComponent implements
 		try {
 			while (isRunning()) {
 
-				if (!changesToProcess())
+				if (!changesToProcess()) {
 					continue;
-				// get all the surfaced motives
+				}
 				surfacedGoals = motives.getMapByStatus(MotiveStatus.SURFACED);
 				activeGoals = motives.getMapByStatus(MotiveStatus.ACTIVE);
 				log("we currently have " + surfacedGoals.size()
 						+ " surfaced goals.");
 				log("we currently have " + activeGoals.size()
 						+ " active goals.");
+				if (executionFuture != null
+						&& (executionFuture.isDone() || executionFuture
+								.isCancelled())) {
+					log("execution has finished... de-activate goals!");
+					setStatus(activeGoals, MotiveStatus.SURFACED);
+					sleepComponent(1000);
+					// check if there are any goals that need to be deleted
+					// if goal is achieved already we should remove it!
+					{
+						Set<Entry<WorkingMemoryAddress, Motive>> copySet = new HashSet<Entry<WorkingMemoryAddress, Motive>>(
+								motives.entrySet());
+
+						for (Entry<WorkingMemoryAddress, Motive> m : copySet) {
+							if (PlannerFacade.get(this).isGoalAchieved(
+									m.getValue().goal.goalString)) {
+								log("remove achieved goal " + m.getValue().goal.goalString);
+								motives.remove(m.getKey());
+							}
+						}
+					}
+
+					executionFuture = null;
+					continue;
+				}
 
 				// lockSet(surfacedGoals);
 				// lockSet(activeGoals);
@@ -151,8 +180,8 @@ public class Scheduler extends ManagedComponent implements
 				// executionFuture.cancel(true);
 				// executionFuture = null;
 				// }
-				if (executionFuture == null || executionFuture.isDone()
-						|| executionFuture.isCancelled()) {
+				if (executionFuture == null) {
+
 					// we are currently not executing
 					// if we are not yet executing, we just check all
 					// surfaced goals whether they can be planned for, and
@@ -226,6 +255,7 @@ public class Scheduler extends ManagedComponent implements
 
 				}
 			}
+
 		} catch (CASTException e) {
 			logException(e);
 			return;
@@ -257,7 +287,7 @@ public class Scheduler extends ManagedComponent implements
 			for (Entry<WorkingMemoryAddress, Motive> e : activeGoals.entrySet()) {
 				Motive goal = getMemoryEntry(e.getKey(), Motive.class);
 				goal.status = status;
-				if (status==MotiveStatus.ACTIVE)
+				if (status == MotiveStatus.ACTIVE)
 					goal.tries++;
 				overwriteWorkingMemory(e.getKey(), goal);
 			}
@@ -306,6 +336,11 @@ public class Scheduler extends ManagedComponent implements
 	private boolean changesToProcess() {
 
 		try {
+			if (executionFuture != null
+					&& (executionFuture.isDone() || executionFuture
+							.isCancelled()))
+				return true;
+
 			synchronized (this) {
 				if (checkAgain) {
 					checkAgain = false;
@@ -317,7 +352,7 @@ public class Scheduler extends ManagedComponent implements
 					if (lastChange == null) {
 						getLogger().info(
 								"no relevant event, so we continue waiting");
-						return false;
+						return true;
 					}
 				}
 				lastChange = null;
@@ -343,7 +378,7 @@ public class Scheduler extends ManagedComponent implements
 			Map<WorkingMemoryAddress, Motive> possibleGoals,
 			Map<WorkingMemoryAddress, Motive> impossibleGoals)
 			throws InterruptedException, ExecutionException {
-		int timeout = 0;
+		int timeout = MINIMUM_PLANNER_TIMEOUT;
 		for (Motive g : goalsToPlanFor.values()) {
 			timeout += g.maxPlanningTime;
 		}
@@ -364,7 +399,6 @@ public class Scheduler extends ManagedComponent implements
 		for (Motive m : goalsToPlanFor.values()) {
 			goals.add(m.goal);
 		}
-			
 
 		for (Entry<WorkingMemoryAddress, Motive> m : goalsToPlanFor.entrySet()) {
 			if (!m.getValue().goal.goalString.isEmpty()) {
@@ -390,8 +424,7 @@ public class Scheduler extends ManagedComponent implements
 			WMEntryQueueElement<PlanningTask> result = null;
 
 			if (timeoutMs > 0) {
-				result = planner.plan(goals).get(timeoutMs,
-						TimeUnit.SECONDS);
+				result = planner.plan(goals).get(timeoutMs, TimeUnit.SECONDS);
 			} else {
 				result = planner.plan(goals).get();
 			}
@@ -431,13 +464,15 @@ public class Scheduler extends ManagedComponent implements
 
 	private void lockSet(Map<WorkingMemoryAddress, Motive> set)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+		lockComponent();
 		for (WorkingMemoryAddress wma : set.keySet()) {
 			lockEntry(wma, WorkingMemoryPermissions.LOCKEDOD);
 		}
-
+		unlockComponent();
 	}
 
 	private void unlockSet(Map<WorkingMemoryAddress, Motive> set) {
+		lockComponent();
 		for (WorkingMemoryAddress wma : set.keySet()) {
 			if (holdsLock(wma.id, wma.subarchitecture)) {
 				try {
@@ -447,6 +482,7 @@ public class Scheduler extends ManagedComponent implements
 				}
 			}
 		}
+		unlockComponent();
 	}
 
 }

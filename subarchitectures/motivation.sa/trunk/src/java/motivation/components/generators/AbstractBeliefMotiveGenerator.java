@@ -66,12 +66,12 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 		switch (wmc.operation) {
 		case ADD: {
 			motive = checkForAddition(wmc.address, newEntry);
-			// if goal is achieved already we should remove it!
-			if (motive != null
-					&& PlannerFacade.get(this).isGoalAchieved(
-							motive.goal.goalString)) {
-				motive = null;
-			}
+//			// if goal is achieved already we should remove it!
+//			if (motive != null
+//					&& PlannerFacade.get(this).isGoalAchieved(
+//							motive.goal.goalString)) {
+//				motive = null;
+//			}
 
 			if (motive != null) {
 				motive.thisEntry = new WorkingMemoryAddress(newDataID(),
@@ -92,12 +92,12 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 							WorkingMemoryPermissions.LOCKEDOD);
 					motive = getMemoryEntry(correspondingWMA, motiveClass);
 					motive = checkForUpdate(newEntry, motive);
-					// if goal is achieved already we should remove it!
-					if (motive != null
-							&& PlannerFacade.get(this).isGoalAchieved(
-									motive.goal.goalString)) {
-						motive = null;
-					}
+//					// if goal is achieved already we should remove it!
+//					if (motive != null
+//							&& PlannerFacade.get(this).isGoalAchieved(
+//									motive.goal.goalString)) {
+//						motive = null;
+//					}
 					if (motive == null) {
 						deleteFromWorkingMemory(correspondingWMA);
 						bel2motiveMap.remove(wmc.address);
