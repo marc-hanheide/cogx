@@ -33,6 +33,9 @@ import execution.slice.actions.LearnShape;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.RecogniseForegroundedModels;
+import execution.slice.actions.UnlearnColour;
+import execution.slice.actions.UnlearnIdentity;
+import execution.slice.actions.UnlearnShape;
 import execution.util.ActionMonitor;
 import george.execution.util.ActionInterfaceFrame;
 
@@ -224,6 +227,33 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
+	public WorkingMemoryAddress unlearnColour(WorkingMemoryAddress _beliefID,
+			String _colour, ActionMonitor _monitor) throws CASTException {
+		UnlearnColour act = newActionInstance(UnlearnColour.class);
+		act.beliefAddress = _beliefID;
+		act.value = _colour;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress unlearnShape(WorkingMemoryAddress _beliefID,
+			String _shape, ActionMonitor _monitor) throws CASTException {
+		UnlearnShape act = newActionInstance(UnlearnShape.class);
+		act.beliefAddress = _beliefID;
+		act.value = _shape;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress unlearnIdentity(WorkingMemoryAddress _beliefID,
+			String _identity, ActionMonitor _monitor) throws CASTException {
+		UnlearnIdentity act = newActionInstance(UnlearnIdentity.class);
+		act.beliefAddress = _beliefID;
+		act.value = _identity;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+	
 	public WorkingMemoryAddress askForColour(WorkingMemoryAddress _beliefID,
 			ActionMonitor _monitor) throws CASTException {
 		AskForColour act = newActionInstance(AskForColour.class);
