@@ -225,6 +225,15 @@ module execution {
       class LearnIdentity extends BeliefPlusStringAction {
       };
 
+      class UnlearnColour extends BeliefPlusStringAction {
+      };
+
+      class UnlearnShape extends BeliefPlusStringAction {
+      };
+
+      class UnlearnIdentity extends BeliefPlusStringAction {
+      };
+
       class AskForObjectWithFeatureValue extends FeatureValueStringsAction {
       };    
 
