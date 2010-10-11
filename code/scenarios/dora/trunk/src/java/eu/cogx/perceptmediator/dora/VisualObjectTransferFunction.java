@@ -10,16 +10,13 @@ import org.apache.log4j.Logger;
 
 import SpatialData.Place;
 import VisionData.VisualObject;
-import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
-import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
-import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
@@ -28,8 +25,6 @@ import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.LocalizedAgentTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentLinkingDiscreteTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.AgentMatchingFunction;
-import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
-import facades.SpatialFacade;
 
 /**
  * @author marc
