@@ -208,18 +208,19 @@ extends AbstractDialogueComponent {
 							ex.printStackTrace();
 						}
 					}
+
+					// register the dialogue move
+					DialogueMove dm = new DialogueMove(IntentionManagementConstants.humanAgent, lf, ri.nref);
+					try {
+						addToWorkingMemory(newDataID(), dm);
+					}
+					catch (AlreadyExistsOnWMException ex) {
+						ex.printStackTrace();
+					}
+
 				}
 				else {
 					log("no epistemic object recognised");
-				}
-
-				// register the dialogue move
-				DialogueMove dm = new DialogueMove(IntentionManagementConstants.humanAgent, lf, ri.nref);
-				try {
-					addToWorkingMemory(newDataID(), dm);
-				}
-				catch (AlreadyExistsOnWMException ex) {
-					ex.printStackTrace();
 				}
 			}
 		}
