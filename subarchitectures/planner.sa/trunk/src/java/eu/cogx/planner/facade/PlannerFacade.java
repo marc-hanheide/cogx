@@ -87,7 +87,7 @@ public class PlannerFacade {
 				// }
 
 				// start the stop watch
-				watch.tic();
+//				watch.tic();
 				component.addToWorkingMemory(id, task);
 
 				// wait for the plan to be generated
@@ -104,7 +104,7 @@ public class PlannerFacade {
 					}
 					switch (taskEntry.planningStatus) {
 					case SUCCEEDED:
-						watch.toc("plan succeded");
+//						watch.toc("plan succeded");
 						component.log("we have a plan right now: "
 								+ ((PlanningTask) pt.getEntry()).firstActionID);
 						// stop waiting for further changes
@@ -112,7 +112,7 @@ public class PlannerFacade {
 						break;
 					case ABORTED:
 					case FAILED:
-						watch.toc("plan failed");
+//						watch.toc("plan failed");
 						component
 								.log("could not generate a plan... we have to abort for this time and remove the listener");
 						component.removeChangeFilter(planQueue);
@@ -180,7 +180,7 @@ public class PlannerFacade {
 
 	private final ManagedComponent component;
 
-	private final StopWatch watch = new StopWatch("plannerStopWatch");;
+//	private final StopWatch watch = new StopWatch("plannerStopWatch");;
 
 	private final static ExecutorService executorService = Executors
 			.newCachedThreadPool();
