@@ -21,10 +21,10 @@ uselocalcolorifok = 0 ;
 
 if nargin>0
 
-    sizex=size(x);
-    if ~isequal(sizex(1:2),size(b))
-        b=imresize(b,sizex(1:2), 'nearest');
-    end
+%     sizex=size(x);
+%     if ~isequal(sizex(1:2),size(b))
+%         b=imresize(b,sizex(1:2), 'nearest');
+%     end
     
     x1=cutBG(x,b);
 
