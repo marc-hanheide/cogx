@@ -71,6 +71,9 @@ void ComaRoomUpdater::start()
 	addChangeFilter(createLocalTypeFilter<ConceptualData::WorldState>(cdl::OVERWRITE),
 			new MemberFunctionChangeReceiver<ComaRoomUpdater>(this,
 					&ComaRoomUpdater::worldStateChanged));
+	addChangeFilter(createLocalTypeFilter<ConceptualData::WorldState>(cdl::ADD),
+			new MemberFunctionChangeReceiver<ComaRoomUpdater>(this,
+					&ComaRoomUpdater::worldStateChanged));
 }
 
 

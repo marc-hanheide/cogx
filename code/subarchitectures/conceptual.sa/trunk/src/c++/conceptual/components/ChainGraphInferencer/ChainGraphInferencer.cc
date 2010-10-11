@@ -88,6 +88,9 @@ void ChainGraphInferencer::start()
 					&ChainGraphInferencer::inferenceQueryAdded));
 
 	// Filter on WorldState
+	addChangeFilter(createLocalTypeFilter<ConceptualData::WorldState>(cdl::ADD),
+			new MemberFunctionChangeReceiver<ChainGraphInferencer>(this,
+					&ChainGraphInferencer::worldStateChanged));
 	addChangeFilter(createLocalTypeFilter<ConceptualData::WorldState>(cdl::OVERWRITE),
 			new MemberFunctionChangeReceiver<ChainGraphInferencer>(this,
 					&ChainGraphInferencer::worldStateChanged));
