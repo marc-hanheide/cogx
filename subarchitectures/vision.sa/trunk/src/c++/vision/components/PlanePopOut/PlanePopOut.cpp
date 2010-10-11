@@ -907,8 +907,8 @@ void PlanePopOut::SOIManagement()
 	}
 	return;
     }
-    for (unsigned int j=0; j<PreviousObjList.size(); j++)
-	log("id in PreviousObjList are %s", PreviousObjList.at(j).id.c_str());
+//     for (unsigned int j=0; j<PreviousObjList.size(); j++)
+// 	log("id in PreviousObjList are %s", PreviousObjList.at(j).id.c_str());
    
 //-----------------There are SOIs in CurrentObjList, so compare with objects in PreviousObjList
     std::vector <SOIMatch> myMatchingSOIVector;
@@ -966,7 +966,7 @@ void PlanePopOut::SOIManagement()
 	    {
 		CurrentObjList.at(matchingResult).bInWM = true;
 		CurrentObjList.at(matchingResult).id = PreviousObjList.at(j).id;
-		CurrentObjList.at(matchingResult).rect = PreviousObjList.at(j).rect;
+// 		CurrentObjList.at(matchingResult).rect = PreviousObjList.at(j).rect;
 		CurrentObjList.at(matchingResult).count = PreviousObjList.at(j).count;
 		if (dist(CurrentObjList.at(matchingResult).c, PreviousObjList.at(j).c)/norm(CurrentObjList.at(matchingResult).c) > 0.15)
 		{
@@ -1011,11 +1011,11 @@ void PlanePopOut::SOIManagement()
 	if (CurrentObjList.at(i).bComCurrentPre ==false)
 	{
 	    CurrentObjList.at(i).count = CurrentObjList.at(i).count+1;
-	    log("We have new object, Wooo Hooo.... There are %d objects in CurrentObjList and this is the %d one", CurrentObjList.size(), i);
+// 	    log("We have new object, Wooo Hooo.... There are %d objects in CurrentObjList and this is the %d one", CurrentObjList.size(), i);
 	}
     }
-    for (unsigned int j=0; j<CurrentObjList.size(); j++)
-	log("id in CurrentObjList are %s", CurrentObjList.at(j).id.c_str()); 
+//     for (unsigned int j=0; j<CurrentObjList.size(); j++)
+// 	log("id in CurrentObjList are %s", CurrentObjList.at(j).id.c_str()); 
     PreviousObjList.clear();
     for (unsigned int i=0; i<CurrentObjList.size(); i++)
 	PreviousObjList.push_back(CurrentObjList.at(i));
@@ -1996,7 +1996,7 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
    
     float wS, wC, wP; //magic weight for SURF matching, color histogram and Size/Position/Pose
     IpPairVec matches;
-    wP = 0.2;
+    wP = 0.1;
     if (obj1.surf.size() == 0 || obj2.surf.size()==0) wS = 0.0;
     else if (obj1.surf.size() < 40 || obj2.surf.size()<40)
     {
