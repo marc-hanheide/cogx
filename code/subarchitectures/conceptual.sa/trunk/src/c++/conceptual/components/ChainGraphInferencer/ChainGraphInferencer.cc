@@ -275,6 +275,7 @@ bool ChainGraphInferencer::updateFactorGraph()
 
 		// RECREATE THE FACTOR GRAPH FROM WORLD STATE AND DEFAULT KNOWLEDGE
 		_factors.clear();
+		_variableNameToDai.clear();
 		addDaiFactors();
 		_factorGraph = dai::FactorGraph(_factors);
 	}
