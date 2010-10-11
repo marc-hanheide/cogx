@@ -35,8 +35,6 @@ import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 /**
  * Test with a policy including underspecified arguments
  * 
- * TODO: tests with multiple arguments
- * 
  * @author Pierre Lison (plison@dfki.de)
  *
  */
