@@ -12,10 +12,11 @@
 
   (:predicates
    (connected ?p1 ?p2 - place)
+   (is-virtual ?o - object)
    ;; derived predicates
    (cones-exist ?l - label ?r - room)
    (obj-possibly-in-room ?o - visualobject ?r - room)
-   (fully_explored ?r)
+   ;(fully_explored ?r)
 
    ;;virtual predicates
    (cones_created ?l - label ?r - room)
@@ -31,9 +32,11 @@
    (category ?r - room) - category
    (label ?o - visualobject) - label
    (label ?c - cone) - label
-;   (cone-label ?c - cone) - label
+   (placestatus ?n - place) - place_status
+
    (ex-in-room ?l - label ?r - room) - boolean
    (probability ?c - cone) - number
+   (p-probability ?p - place ?l - label) - number
    (p-is-in ?p - place) - number
    (dora__in ?l - label ?c - category ) - number
    (p-category ?r - room ?c - category ) - number
@@ -41,7 +44,7 @@
    )
 
   (:constants
-   dummy-cone - label
+   placeholder trueplace - place_status
    kitchen office living_room - category
    ;;cornflakes table mug - label ;;oven fridge book board-game - label
    )
@@ -50,21 +53,36 @@
               :effect (and (assign (total-p-costs) 200))
               )
 
+  ;; (:init-rule bla
+  ;;             :parameters(?c - colorname ?o - visualobject)
+  ;;             :precondition (not (> (color-gain ?o ?c) 0))
+  ;;             :effect (assign ((color-gain ?o ?c) 0)))
+
   (:init-rule objects
               :parameters(?l - label)
               :precondition (not (exists (?o - visualobject)
                                       (= (label ?o) ?l)))
               :effect (create (?o - visualobject) (and
+                                                   (is-virtual ?o)
                                                    (assign (label ?o) ?l)
-                                                   (assign (is-in ?o) UNKNOWN)))
+                                                   (assign (is-in ?o) UNKNOWN))
+                              )
               )
 
   (:init-rule categories
               :parameters(?r - room)
-              :effect (assign-probabilistic (category ?r) 
-                                            0.3 kitchen
-                                            0.3 office
-                                            0.3 living_room)
+              :effect (assign (category ?r) UNKNOWN)
+              )
+
+  (:init-rule places-probs
+              :parameters(?p - place ?l - label)
+              :precondition (exists (?c - cone) (and (= (is-in ?c) ?p)
+                                                     (= (label ?c) ?l)))
+              :effect (and (assign (p-probability ?p ?l) 0)
+                           (forall (?c - cone) (when (and (= (is-in ?c) ?p)
+                                                          (= (label ?c) ?l))
+                                                 (increase (p-probability ?p ?l) (probability ?c))))
+                           )
               )
 
   (:init-rule virtual-places
@@ -72,6 +90,7 @@
               :precondition (not (exists (?p - virtual-place)
                                          (= (in-room ?p) ?r)))
               :effect (and (create (?p - virtual-place) (and
+                                                         (is-virtual ?p)
                                                          (assign (in-room ?p) ?r)))
                            )
               )
@@ -100,15 +119,26 @@
 
   (:action sample_is_in
            :agent (?a - agent)
-           :parameters (?l - label ?r - room ?p - place ?c - cone ?o - visualobject)
+           :parameters (?l - label ?r - room ?p - place ?o - visualobject)
            :precondition (and (= (in-room ?p) ?r)
-                              (= (is-in ?c) ?p)
-                              (= (label ?c) ?l)
                               (= (label ?o) ?l)
+                              (not (is-virtual ?p))
                               (in-domain (is-in ?o) ?p) 
                               (= (ex-in-room ?l ?r) true))
-           :effect (probabilistic (probability ?c) (assign (is-in ?o) ?p))
+           :effect (probabilistic (p-probability ?p ?l) (assign (is-in ?o) ?p))
            )
+
+  ;; (:action sample_is_in
+  ;;          :agent (?a - agent)
+  ;;          :parameters (?l - label ?r - room ?p - place ?c - cone ?o - visualobject)
+  ;;          :precondition (and (= (in-room ?p) ?r)
+  ;;                             (= (is-in ?c) ?p)
+  ;;                             (= (label ?c) ?l)
+  ;;                             (= (label ?o) ?l)
+  ;;                             (in-domain (is-in ?o) ?p) 
+  ;;                             (= (ex-in-room ?l ?r) true))
+  ;;          :effect (probabilistic (probability ?c) (assign (is-in ?o) ?p))
+  ;;          )
 
   (:action sample_is_in_virtual
            :agent (?a - agent)
@@ -127,6 +157,14 @@
    ;;                   :condition (over all (done))
    ;;                   :effect (and)
    ;;                   )
+
+  (:action explore_place
+           :agent (?a - robot)
+           :parameters (?loc - place)
+           :precondition (and (= (is-in ?a) ?loc))
+           :effect (assign (placestatus ?loc) trueplace)
+           )
+
 
    (:durative-action move
                      :agent (?a - robot)
@@ -207,11 +245,7 @@
                      :condition (over all (and (not (done))
                                                (= (is-in ?a) ?p)
                                                (= (label ?o) ?l)))
-                                        ;(over all )
-                                     ;(at start (hyp (is-in ?o) ?c)))
-                     :effect (and ;;(at end (assign (really-is-in ?o) ?c))
-                                  ;;(at end (kval ?a (is-in ?o)))
-                                  (at start (started)))
+                     :effect (and (at start (started)))
                      )
 
    (:observe visual_object
