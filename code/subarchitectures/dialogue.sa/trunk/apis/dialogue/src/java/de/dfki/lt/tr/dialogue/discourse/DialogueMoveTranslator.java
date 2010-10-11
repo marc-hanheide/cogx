@@ -18,18 +18,20 @@ public class DialogueMoveTranslator {
 
 	public void addDialogueMove(DialogueMove dm) {
 		NominalReference nr = dm.topic;
-		String s = "%   ";
-		s += "(dm " + dm.agent + " " + dm.lform.root.nomVar + " (topic ";
-		if (nr != null) {
-			s += "(ref " + nr.nominal + " " + MercuryUtils.termToString(ConversionUtils.stateFormulaToTerm(nr.referent)) + ")";
-			latestTopic = nr;
-		}
-		else {
-			s += "NULL";
-		}
-		s += "))";
+		if (dm.lform != null) {
+			String s = "%   ";
+			s += "(dm " + dm.agent + " " + dm.lform.root.nomVar + " (topic ";
+			if (nr != null) {
+				s += "(ref " + nr.nominal + " " + MercuryUtils.termToString(ConversionUtils.stateFormulaToTerm(nr.referent)) + ")";
+				latestTopic = nr;
+			}
+			else {
+				s += "NULL";
+			}
+			s += "))";
 
-		lines.add(s);
+			lines.add(s);
+		}
 	}
 
 	public String toRulefileContents() {

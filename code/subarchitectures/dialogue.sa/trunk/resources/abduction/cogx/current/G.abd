@@ -151,17 +151,24 @@ generate : complex_ex(Nom) <-
 % find me a box -> what size is this
 generate : event : utter(S, H, Int) <-
 	utt_head(Nom),
-	dummy_nom2(ContentNom),
-	dummy_nom3(TargetNom),
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['found' | T])),
-	i : feat_SpeechAct(Nom, question) / -1.0,
-	i : feat_Modality(Nom, vision) / -1.0,
-	i : rel_Target(Nom, TargetNom) / -1.0,
-		generate : this(TargetNom),
-	i : rel_Content(Nom, ContentNom) / -1.0,
-		i : sort(ContentNom, 'q-size') / -1.0,
+	i : feat_CannedText(Nom, 'yummy_yummy_yummy!_dora_likes_sweets') / -1.0,
 	event : produce(r, Nom) / -1.0.
+
+%generate : event : utter(S, H, Int) <-
+%	utt_head(Nom),
+%	dummy_nom2(ContentNom),
+%	dummy_nom3(TargetNom),
+%	i : int : agent(Int, [S]),
+%	i : int : post(Int, state(['found' | T])),
+%	i : feat_SpeechAct(Nom, question) / -1.0,
+%	i : feat_Modality(Nom, vision) / -1.0,
+%	i : rel_Target(Nom, TargetNom) / -1.0,
+%		generate : this(TargetNom),
+%	i : rel_Content(Nom, ContentNom) / -1.0,
+%		i : sort(ContentNom, 'q-size') / -1.0,
+%	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
 
