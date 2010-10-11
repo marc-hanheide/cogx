@@ -14,7 +14,7 @@ public class LearnShapeGenerator extends LearnConceptGenerator {
 	 */
 	@Override
 	protected String getConceptName() {
-		return "Shape";
+		return "shape";
 	}
 
 	/* (non-Javadoc)
@@ -22,7 +22,7 @@ public class LearnShapeGenerator extends LearnConceptGenerator {
 	 */
 	@Override
 	protected String getGainPropertyName() {
-		return "shapeGain";
+		return "gain-shape";
 	}
 
 }
