@@ -161,7 +161,7 @@ public:
 	void CollectDensePoints(Video::CameraParameters &cam, VisionData::SurfacePointSeq points);
 	CvHistogram* GetSurfAndHistogram(VisionData::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r);
 	void SOIManagement();
-	void SaveHistogramImg(CvHistogram* hist);
+	void SaveHistogramImg(CvHistogram* hist, std::string str);
 	double CompareHistKLD(CvHistogram* h1, CvHistogram* h2);
 	bool IsMoving(IplImage * subimg);
 	Vector3 PixelRGB2HSV(VisionData::ColorRGB rgb);

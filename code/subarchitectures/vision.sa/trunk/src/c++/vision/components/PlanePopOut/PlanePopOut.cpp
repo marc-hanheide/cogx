@@ -42,7 +42,7 @@ long long gethrtime(void)
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
 #define Torleration 5		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
-#define AgonalTime  50		//The dying object could be "remembered" for "AgonalTime" of frames
+#define AgonalTime  30		//The dying object could be "remembered" for "AgonalTime" of frames
 #define MAX_V 0.1
 #define label4initial		-3
 #define label4plane		0	//0, -10, -20, -30... for multiple planes
@@ -51,7 +51,7 @@ long long gethrtime(void)
 #define label4ambiguousness	-1
 
 #define SendDensePoints  1 	//0 send sparse points ,1 send dense points (recollect them after the segmentation)
-#define Treshold_Comp2SOI	0.8	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
+#define Treshold_Comp2SOI	0.7	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
 
 /**
  * The function called to create a new instance of our component.
@@ -707,7 +707,7 @@ void PlanePopOut::runComponent()
 		tempPoints.clear();
 		pointsN.clear();
 		objnumber = 0;
-		N = (int)points.size()/2000;
+		N = (int)points.size()/3000;
 		random_shuffle ( points.begin(), points.end() );
 		for (VisionData::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
 		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<3)
@@ -778,7 +778,6 @@ void PlanePopOut::runComponent()
 			OP.BGInOneSOI = BGPointsSeq.at(i);
 			OP.EQInOneSOI = EQPointsSeq.at(i);
 			OP.hist = GetSurfAndHistogram(SOIPointsSeq.at(i), image,OP.surf, OP.rect);
-			//SaveHistogramImg(OP.hist);
 			CurrentObjList.push_back(OP);
 		}
 		SOIManagement();
@@ -812,9 +811,9 @@ bool PlanePopOut::IsMoving(IplImage * subimg)
     return false;
 }
 
-void PlanePopOut::SaveHistogramImg(CvHistogram* hist)
+void PlanePopOut::SaveHistogramImg(CvHistogram* hist, std::string str)
 {
-    int h_bins = 30, s_bins = 32;
+    int h_bins = 16, s_bins = 8;
    
     int height = 240;
     int width = (h_bins*s_bins*6);
@@ -838,7 +837,7 @@ void PlanePopOut::SaveHistogramImg(CvHistogram* hist)
  
 			/** Get the RGB color of this bar */
 			cvSet2D(hsv_color,0,0,cvScalar(h*180.f / h_bins,s*255.f/s_bins,255,0));
-			cvCvtColor(hsv_color,rgb_color,CV_HSV2BGR);
+			cvCvtColor(hsv_color,rgb_color,CV_HSV2RGB);
 			CvScalar color = cvGet2D(rgb_color,0,0);
  
 			cvRectangle( hist_img, cvPoint(i*bin_w,height),
@@ -846,8 +845,8 @@ void PlanePopOut::SaveHistogramImg(CvHistogram* hist)
 				color, -1, 8, 0 );
 		}
 	}
-    std::string path = "H-S-histogram";
-    path.insert(0,"/tmp/"); path.insert(path.length(),".jpg");
+    std::string path = str;
+    path.insert(0,"/tmp/H-S-histogram_"); path.insert(path.length(),".jpg");
     cvSaveImage(path.c_str(), hist_img);
     cvReleaseImage(&hist_img);
     cvReleaseImage(&hsv_color);
@@ -921,6 +920,7 @@ void PlanePopOut::SOIManagement()
 	    if (CurrentObjList.at(i).bComCurrentPre == false)
 	    {
 		float probability = Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j));
+		log("The matching probability of %d in Current and %d in Previous is %f",i, j, probability);
 		if (probability > max_matching_probability)
 		{
 		    max_matching_probability = probability;
@@ -928,7 +928,7 @@ void PlanePopOut::SOIManagement()
 		}
 	    }
 	}
-	log("The matching probability of %d in Current and %d in Previous is %f",matchingObjIndex, j, max_matching_probability);
+// 	log("The matching probability of %d in Current and %d in Previous is %f",matchingObjIndex, j, max_matching_probability);
 	if (max_matching_probability>Treshold_Comp2SOI)
 	{
 	    SOIMatch SOIm;
@@ -966,6 +966,7 @@ void PlanePopOut::SOIManagement()
 	    {
 		CurrentObjList.at(matchingResult).bInWM = true;
 		CurrentObjList.at(matchingResult).id = PreviousObjList.at(j).id;
+		CurrentObjList.at(matchingResult).hist = PreviousObjList.at(j).hist;
 // 		CurrentObjList.at(matchingResult).rect = PreviousObjList.at(j).rect;
 		CurrentObjList.at(matchingResult).count = PreviousObjList.at(j).count;
 		if (dist(CurrentObjList.at(matchingResult).c, PreviousObjList.at(j).c)/norm(CurrentObjList.at(matchingResult).c) > 0.15)
@@ -990,6 +991,7 @@ void PlanePopOut::SOIManagement()
 		    addToWorkingMemory(CurrentObjList.at(i).id, obj);
 		    #ifdef SAVE_SOI_PATCH
 		    std::string path = CurrentObjList.at(i).id;
+		    SaveHistogramImg(CurrentObjList.at(i).hist, path);
 		    path.insert(0,"/tmp/"); path.insert(path.length(),".jpg");
 		    IplImage* cropped = cvCreateImage( cvSize(CurrentObjList.at(i).rect.width,CurrentObjList.at(i).rect.height), previousImg->depth, previousImg->nChannels );
 		    cvSetImageROI( previousImg, CurrentObjList.at(i).rect);
@@ -997,6 +999,7 @@ void PlanePopOut::SOIManagement()
 		    cvResetImageROI( previousImg );
 		    cvSaveImage(path.c_str(), cropped);
 		    cvReleaseImage(&cropped);
+
 		    #endif
 // 		    log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 // 		    log("objects number = %u",objnumber);
@@ -1010,7 +1013,7 @@ void PlanePopOut::SOIManagement()
     {
 	if (CurrentObjList.at(i).bComCurrentPre ==false)
 	{
-	    CurrentObjList.at(i).count = CurrentObjList.at(i).count+1;
+	    CurrentObjList.at(i).count = CurrentObjList.at(i).count-1;
 // 	    log("We have new object, Wooo Hooo.... There are %d objects in CurrentObjList and this is the %d one", CurrentObjList.size(), i);
 	}
     }
@@ -1070,7 +1073,7 @@ CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points
     IplImage* v_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
     IplImage* planes[] = { h_plane, s_plane };
     IplImage* hsv = cvCreateImage( cvGetSize(tmp), 8, 3 );
-    int h_bins = 30, s_bins = 32;
+    int h_bins = 16, s_bins = 8;
     int hist_size[] = {h_bins, s_bins};
     /* hue varies from 0 (~0 deg red) to 180 (~360 deg red again) */
     float h_ranges[] = { 0, 180 };
@@ -1972,7 +1975,7 @@ double PlanePopOut::CompareHistKLD(CvHistogram* h1, CvHistogram* h2)
 {
     cvNormalizeHist( h1, 1.0 ); // Normalize it
     cvNormalizeHist( h2, 1.0 ); 
-    int h_bins = 30, s_bins = 32;
+    int h_bins = 16, s_bins = 8;
     double KLD = 0.0;
 
     for(int h = 0; h < h_bins; h++)
@@ -2032,7 +2035,10 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
     double sizeRatio;
 //    int s1 = obj1.pointsInOneSOI.size();
 //    int s2 = obj2.pointsInOneSOI.size();
-    double s1, s2; s1 = obj1.r; s2 = obj2.r;	double smax; if (s1>s2) smax=s1; else smax=s2;
+    double s1, s2; 
+//     s1 = obj1.r; s2 = obj2.r;
+    s1 = obj1.pointsInOneSOI.size();  s2 = obj2.pointsInOneSOI.size();
+    double smax; if (s1>s2) smax=s1; else smax=s2;
     sizeRatio = 1.0-exp(-(s2-s1)*(s2-s1)*3.14159/smax);
     /*
     if (obj1.r== 0 || obj2.r==0) sizeRatio = 0.0;
