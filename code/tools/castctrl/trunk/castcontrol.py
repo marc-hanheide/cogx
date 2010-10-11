@@ -680,6 +680,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         if p != None: p.stop()
         p = self._manager.getProcess("abducer")
         if p != None: p.stop()
+        p = self._manager.getProcess("speech")
+        if p != None: p.stop()
 
     def _checkBuidDir(self):
         workdir=self._options.xe("${COGX_BUILD_DIR}")

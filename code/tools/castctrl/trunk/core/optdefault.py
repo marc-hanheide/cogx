@@ -90,6 +90,16 @@ CMD_ABDUCER_SERVER=<multiline>
    -a ${ABDUCER_ROOT}/abduction-engine
 </multiline>
 
+MARY_ROOT=${COGX_ROOT}/tools/mary
+MARY_CLASSPATH=<pathlist>
+   ${MARY_ROOT}/java/mary-common.jar
+   ${MARY_ROOT}/java/log4j-1.2.15.jar
+</pathlist>
+CMD_SPEECH_SERVER=<multiline>
+   java -ea -Xms40m -Xmx1g -classpath ${MARY_CLASSPATH}
+   -Dmary.base=${MARY_ROOT} 
+   marytts.server.Mary
+</multiline>
 
 """
 cleanup="""
