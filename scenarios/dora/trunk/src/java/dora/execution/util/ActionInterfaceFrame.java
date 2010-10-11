@@ -1,7 +1,6 @@
 package dora.execution.util;
 
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -11,22 +10,19 @@ import java.awt.event.ActionListener;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import SpatialData.ViewPoint;
+import VisionData.VisualObject;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
@@ -37,16 +33,14 @@ import cast.core.CASTUtils;
 import comadata.ComaRoom;
 
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import dora.execution.components.GraphicalExecutionManager;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
 import eu.cogx.perceptmediator.dora.ViewPointTransferFunction;
+import eu.cogx.perceptmediator.dora.VisualObjectTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.LocalizedAgentTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
@@ -85,33 +79,29 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_detectPeopleAction;
 	private JRadioButton m_lookForObjectsAction;
 	// private JRadioButton m_lookForPeopleAction;
-	private JRadioButton m_askForFeatureAction;
-	private JRadioButton m_testFeatureValueAction;
 
 	private JRadioButton m_foregroundModelsAction;
 	private JRadioButton m_backgroundModelsAction;
 	private JRadioButton m_recogniseForegroundedModelsAction;
 
+	private JRadioButton m_reportPosition;
+
 	private GraphicalExecutionManager m_exeMan;
-	private JTable m_beliefTable;
-	private DefaultTableModel m_beliefTableModel;
-	private JPanel m_beliefsActionPanel;
 	private JPanel m_objectsActionPanel;
 	private JPanel m_placesPanel;
-	private JPanel m_beliefsPanel;
 	private JPanel m_objectsPanel;
 	private JTabbedPane m_tabbedPane;
 	private JTable m_objectTable;
 	private DefaultTableModel m_objectTableModel;
 	private JTable m_roomTable;
 	private DefaultTableModel m_roomTableModel;
+	private JTable m_objectBeliefsTable;
+	private DefaultTableModel m_objectBeliefsTableModel;
 
-	private static final Class<?>[] FEATURE_VALUE_TYPES = {
-			ElementaryFormula.class, IntegerFormula.class, FloatFormula.class,
-			BooleanFormula.class };
 	private static final int CONE_ADDR_COLUMN = 3;
 	private static final int PLACE_ADDR_COLUMN = 2;
 	private static final int ROOM_ADDR_COLUMN = 1;
+	private static final int OBJ_ADDR_COLUMN = 1;
 
 	private static final String PLACETYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(Place.class));
@@ -121,6 +111,9 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private static final String VIEWPOINTTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(ViewPoint.class));
+
+	private static final String VISUALOBJECTTYPE = SimpleDiscreteTransferFunction
+			.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
 
 	private static final String SEPARATOR = " ";
 
@@ -181,6 +174,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel getObjectsPanel() {
 		if (m_objectsPanel == null) {
 			m_objectsPanel = new JPanel(new GridLayout(1, 0));
+			m_objectsPanel.add(new JScrollPane(getObjectBeliefsTable()));
 			m_objectsPanel.add(new JScrollPane(getObjectTable()));
 			m_objectsPanel.add(getObjectsActionPanel());
 			getObjectTable().setPreferredScrollableViewportSize(
@@ -285,32 +279,6 @@ public class ActionInterfaceFrame extends JFrame {
 	 * 
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getBeliefsActionPanel() {
-		if (m_beliefsActionPanel == null) {
-			m_beliefsActionPanel = new JPanel();
-			m_beliefsActionPanel.setLayout(new GridBagLayout());
-
-			m_askForFeatureAction = new JRadioButton("ask for feature");
-			m_testFeatureValueAction = new JRadioButton("test a feature value");
-
-			m_askForFeatureAction.setSelected(true);
-
-			ButtonGroup actionGroup = new ButtonGroup();
-			actionGroup.add(m_askForFeatureAction);
-			actionGroup.add(m_testFeatureValueAction);
-
-			m_beliefsActionPanel.add(m_askForFeatureAction,
-					new GridBagConstraints());
-			m_beliefsActionPanel.add(m_testFeatureValueAction,
-					new GridBagConstraints());
-		}
-		return m_beliefsActionPanel;
-	}
-
-	/**
-	 * 
-	 * @return javax.swing.JPanel
-	 */
 	private JPanel getObjectsActionPanel() {
 		if (m_objectsActionPanel == null) {
 			m_objectsActionPanel = new JPanel(new GridLayout(0, 1));
@@ -324,6 +292,8 @@ public class ActionInterfaceFrame extends JFrame {
 			m_recogniseForegroundedModelsAction = new JRadioButton(
 					"recognise foregrounded models");
 
+			m_reportPosition = new JRadioButton("report position");
+
 			// m_avsAction.setSelected(true);
 			m_detectObjectsAction.setSelected(true);
 
@@ -335,6 +305,7 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_foregroundModelsAction);
 			actionGroup.add(m_backgroundModelsAction);
 			actionGroup.add(m_recogniseForegroundedModelsAction);
+			actionGroup.add(m_reportPosition);
 
 			m_objectsActionPanel.add(m_detectObjectsAction,
 					new GridBagConstraints());
@@ -348,8 +319,12 @@ public class ActionInterfaceFrame extends JFrame {
 					new GridBagConstraints());
 			m_objectsActionPanel.add(m_backgroundModelsAction,
 					new GridBagConstraints());
+
 			m_objectsActionPanel.add(m_recogniseForegroundedModelsAction,
 					new GridBagConstraints());
+			m_objectsActionPanel
+					.add(m_reportPosition, new GridBagConstraints());
+
 		}
 		return m_objectsActionPanel;
 	}
@@ -426,8 +401,9 @@ public class ActionInterfaceFrame extends JFrame {
 				backgroundModels();
 			} else if (m_recogniseForegroundedModelsAction.isSelected()) {
 				recogniseForegroundedModels();
+			} else if (m_reportPosition.isSelected()) {
+				reportPosition();
 			}
-
 			// } else if (tabIndex ==2) {
 			// if (m_askForFeatureAction.isSelected()) {
 			// askForFeature();
@@ -477,91 +453,6 @@ public class ActionInterfaceFrame extends JFrame {
 	// dialog.setVisible(true);
 	// }
 	// }
-
-	/**
-	 * Popup
-	 */
-	private void testFeatureValue() {
-		int selectedRow = m_beliefTable.getSelectedRow();
-		if (selectedRow != -1) {
-			Object beliefIDVal = m_beliefTableModel.getValueAt(selectedRow,
-					BELIEF_ID_COLUMN);
-			assert (beliefIDVal != null);
-			final String beliefID = (String) beliefIDVal;
-
-			final JDialog dialog = new JDialog(this);
-			dialog.setLayout(new FlowLayout());
-			dialog.add(new JLabel("What feature TYPE do you want to ask about?"));
-			final JTextField textfield = new JTextField(10);
-			dialog.add(textfield);
-
-			dialog.add(new JLabel("VALUE TYPE: "));
-
-			final JComboBox featureValueTypesCombo = new JComboBox(
-					FEATURE_VALUE_TYPES);
-
-			dialog.add(featureValueTypesCombo);
-			dialog.add(new JLabel("VALUE: "));
-
-			final JTextField valuefield = new JTextField(10);
-			dialog.add(valuefield);
-
-			ActionListener submit = new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent _e) {
-					submitFeatureValueTest(beliefID, textfield.getText(),
-							FEATURE_VALUE_TYPES[featureValueTypesCombo
-									.getSelectedIndex()], valuefield.getText());
-					dialog.setVisible(false);
-				}
-			};
-
-			valuefield.addActionListener(submit);
-
-			JButton goButton = new JButton("Go!");
-			goButton.addActionListener(submit);
-
-			dialog.add(goButton);
-			// dialog.pack();
-			dialog.setVisible(true);
-
-		}
-
-	}
-
-	private void submitFeatureValueTest(String _beliefID, String _featureLabel,
-			Object _valueType, String _value) {
-		if (_featureLabel.isEmpty() || _value.isEmpty()) {
-			m_exeMan.println("Missing values for feature test. Please fill in all the fields");
-			return;
-		}
-
-		// FeatureValue fv = null;
-		//
-		// if (_valueType == StringValue.class) {
-		// fv = new StringValue(_value);
-		// } else if (_valueType == IntegerValue.class) {
-		// fv = new IntegerValue(Integer.parseInt(_value));
-		// } else if (_valueType == FloatValue.class) {
-		// fv = new FloatValue(Float.parseFloat(_value));
-		// } else if (_valueType == BooleanValue.class) {
-		// fv = new BooleanValue(Boolean.parseBoolean(_value));
-		// } else {
-		assert (false);
-		// }
-
-		// final sanity check in case assertions are disable
-		// if(fv != null) {
-		// try {
-		// m_exeMan.triggerFeatureValueTest(_beliefID, _featureLabel, fv,
-		// new MonitorPanel());
-		// } catch (CASTException e) {
-		// m_exeMan.logException(e);
-		// }
-		// }
-
-	}
 
 	// /**
 	// * @param beliefID
@@ -678,6 +569,21 @@ public class ActionInterfaceFrame extends JFrame {
 	/**
 	 * @throws CASTException
 	 */
+	private void reportPosition() throws CASTException {
+		int selectedRow = m_objectBeliefsTable.getSelectedRow();
+		if (selectedRow != -1) {
+			Object objectBelief = m_objectBeliefsTableModel.getValueAt(
+					selectedRow, OBJ_ADDR_COLUMN);
+			assert (objectBelief != null);
+			m_exeMan.triggerReportPositionAction(
+					addressFromString((String) objectBelief),
+					new MonitorPanel());
+		}
+	}
+
+	/**
+	 * @throws CASTException
+	 */
 	private void goToPlace() throws CASTException {
 		int selectedRow = m_placeTable.getSelectedRow();
 		if (selectedRow != -1) {
@@ -699,9 +605,10 @@ public class ActionInterfaceFrame extends JFrame {
 					PLACE_ID_COLUMN);
 			assert (placeIDVal != null);
 			long placeID = (Long) placeIDVal;
-			m_exeMan.triggerProcessConesAtPlace(placeID,(String) JOptionPane
+			m_exeMan.triggerProcessConesAtPlace(placeID, (String) JOptionPane
 					.showInputDialog(this,
-					"What object should the cones be processed for?"), new MonitorPanel());
+							"What object should the cones be processed for?"),
+					new MonitorPanel());
 		}
 	}
 
@@ -839,28 +746,25 @@ public class ActionInterfaceFrame extends JFrame {
 		return m_objectTable;
 	}
 
+	/**
+	 * This method initializes m_objectTable
+	 * 
+	 * @return javax.swing.JTable
+	 */
+	private JTable getObjectBeliefsTable() {
+		if (m_objectBeliefsTable == null) {
+			m_objectBeliefsTable = new JTable(1, 2);
+			m_objectBeliefsTableModel = new DefaultTableModel(new String[] {
+					"ident", "belief addr" }, 0);
+			m_objectBeliefsTable.setModel(m_objectBeliefsTableModel);
+		}
+		return m_objectBeliefsTable;
+	}
+
 	public void setObjectModels(String[] _models) {
 		for (String model : _models) {
 			m_objectTableModel.addRow(new Object[] { model });
 		}
-	}
-
-	/**
-	 * This method initializes m_beliefTable
-	 * 
-	 * @return javax.swing.JTable
-	 */
-	private JTable getBeliefTable() {
-		if (m_beliefTable == null) {
-			// m_placeTable = new JTable(1, 2);
-			// m_placeTableModel = new DefaultTableModel(new String[] { "id",
-			// "explored" }, 0);
-			m_beliefTable = new JTable(1, 2);
-			m_beliefTableModel = new DefaultTableModel(new String[] { "id",
-					"type" }, 0);
-			m_beliefTable.setModel(m_beliefTableModel);
-		}
-		return m_beliefTable;
 	}
 
 	private void println(Object _o) {
@@ -930,12 +834,12 @@ public class ActionInterfaceFrame extends JFrame {
 
 		if (_belief.getType().equals(PLACETYPE)) {
 			addPlaceBelief(_address, _belief);
-		}
-		if (_belief.getType().equals(VIEWPOINTTYPE)) {
+		} else if (_belief.getType().equals(VIEWPOINTTYPE)) {
 			addConeBelief(_address, _belief);
-		}
-		if (_belief.getType().equals(COMAROOMTYPE)) {
+		} else if (_belief.getType().equals(COMAROOMTYPE)) {
 			addRoomBelief(_address, _belief);
+		} else if (_belief.getType().equals(VISUALOBJECTTYPE)) {
+			addObjectBelief(_address, _belief);
 		}
 		// pack();
 
@@ -974,6 +878,19 @@ public class ActionInterfaceFrame extends JFrame {
 		return false;
 	}
 
+	private boolean removeObjectBelief(WorkingMemoryAddress _address) {
+		for (int row = 0; row < m_objectBeliefsTableModel.getRowCount(); row++) {
+			WorkingMemoryAddress objectAddr = addressFromString((String) m_objectBeliefsTableModel
+					.getValueAt(row, OBJ_ADDR_COLUMN));
+			if (objectAddr.equals(_address)) {
+				m_objectBeliefsTableModel.removeRow(row);
+				// pack();
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private boolean removeRoomBelief(WorkingMemoryAddress _address) {
 		for (int row = 0; row < m_roomTableModel.getRowCount(); row++) {
 			WorkingMemoryAddress roomAddr = addressFromString((String) m_roomTableModel
@@ -993,6 +910,8 @@ public class ActionInterfaceFrame extends JFrame {
 		} else if (removePlaceBelief(_address)) {
 			return;
 		} else if (removeRoomBelief(_address)) {
+			return;
+		} else if (removeObjectBelief(_address)) {
 			return;
 		}
 
@@ -1025,6 +944,22 @@ public class ActionInterfaceFrame extends JFrame {
 		String addr = toAddressString(_address);
 		m_roomTableModel.addRow(new Object[] { roomID, addr });
 		pack();
+	}
+
+	public void addObjectBelief(WorkingMemoryAddress _address,
+			IndependentFormulaDistributionsBelief<dBelief> _belief) {
+
+		FormulaDistribution distribution = _belief.getContent().get(
+				VisualObjectTransferFunction.LABEL_ID);
+
+		if (distribution != null) {
+			String ident = distribution.getDistribution().getMostLikely()
+					.getProposition();
+
+			String addr = toAddressString(_address);
+			m_objectBeliefsTableModel.addRow(new Object[] { ident, addr });
+			pack();
+		}
 	}
 
 	public void updatePlace(WorkingMemoryAddress _address, long _id,

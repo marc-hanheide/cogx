@@ -30,6 +30,7 @@ import execution.slice.actions.LookForPeople;
 import execution.slice.actions.ProcessCone;
 import execution.slice.actions.ProcessConesAtPlace;
 import execution.slice.actions.RecogniseForegroundedModels;
+import execution.slice.actions.ReportPosition;
 import execution.util.ActionMonitor;
 
 /**
@@ -250,6 +251,16 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		act.models = _models;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress triggerReportPositionAction(
+			WorkingMemoryAddress _beliefAddress, ActionMonitor _monitor) throws CASTException {
+		ReportPosition act = newActionInstance(ReportPosition.class);
+		act.beliefAddress = _beliefAddress;
+		println("sending report position action");
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+		
 	}
 
 	// public WorkingMemoryAddress triggerFeatureValueTest(String _beliefID,
