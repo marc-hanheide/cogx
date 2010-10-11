@@ -548,9 +548,8 @@ public class DialogueActionInterface extends ManagedComponent {
 				}
 				
 				//get place id that object is at
-				//TODO replace "is-in" with appropriate constant
 				WMPointer placePointer = WMPointer.create(gb.getContent()
-						.get("is-in").getDistribution().getMostLikely().get());
+						.get(eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN).getDistribution().getMostLikely().get());
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
 						.create(GroundedBelief.class,
 								getComponent().getMemoryEntry(
