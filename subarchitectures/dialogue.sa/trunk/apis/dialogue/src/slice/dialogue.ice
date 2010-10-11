@@ -214,16 +214,21 @@ module ref {
 		de::dfki::lt::tr::beliefs::slice::logicalcontent::dFormula referent;
 	};
 
-	class NominalReferenceHypothesis {
+	class NominalEpistemicReference {
 		NominalReference ref;
+		de::dfki::lt::tr::beliefs::slice::epstatus::EpistemicStatus epst;
+	};
+
+	class NominalEpistemicReferenceHypothesis {
+		NominalEpistemicReference eref;
 		double prob;
 	};
 
-	["java:type:java.util.LinkedList<NominalReferenceHypothesis>"] sequence<NominalReferenceHypothesis> NominalReferenceHypothesisSeq;
+	["java:type:java.util.LinkedList<NominalEpistemicReferenceHypothesis>"] sequence<NominalEpistemicReferenceHypothesis> NominalEpistemicReferenceHypothesisSeq;
 
 	class RefLogicalForm {
 		lf::LogicalForm lform;
-		NominalReferenceHypothesisSeq refs;
+		NominalEpistemicReferenceHypothesisSeq refs;
 	};
 
 }; 

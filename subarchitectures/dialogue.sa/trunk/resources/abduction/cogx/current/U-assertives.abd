@@ -32,7 +32,9 @@ understand : event : utter(S, H, Nom) <-
 	i : rel_Presented(Nom, PresNom),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
-	understand : assertion_effect(S, H, Int, PresNom, pos, PresNom).
+	understand : assertion_effect(S, H, Int, PresNom, pos, PresNom),
+	understand : topic_switch_mark(PresNom, 'pointer-to'(assertion)) / p(1.0),
+	int : post(Int, state([presented, agent(S), patient('pointer-to'(assertion))])) / p(1.0).
 
 %-------------------------------------------------------------------------
 
