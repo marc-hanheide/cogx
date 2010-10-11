@@ -523,15 +523,12 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
 
   NavData::ObjectSearchPlanPtr plan = oobj->getData();
 
-  m_ProxyViewPoints.add(m_PeekabotClient, "viewpoints",peekabot::REPLACE_ON_CONFLICT);
-
   // Get nodeIDs stated in the plan, and search through navGraph to
   // each nodeID and finally put ordered numbers on top of nodes that
   // are in the plan.
   char path[32];
   if(plan->planlist.size() > 0)
   {
-
     double color[3];
     color[0] = 0.9;
     color[1] = 0.1;
@@ -539,14 +536,9 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
     for (unsigned int i = 0; i < plan->planlist.size(); i++){
       sprintf(path,"viewpoint_%i",i);
       createFOV(m_ProxyViewPoints, path, m_FovH, m_FovV, color, 0.5, plan->planlist[i], false);
-
     }
-
   }
-
 }
-
-
 
 void DisplayNavInPB::createRobotFOV() 
 {
@@ -581,8 +573,8 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
                                NavData::ViewPoint viewpoint, bool robotfov){
 
 		peekabot::GroupProxy proxyCone;	
-		proxyCone.add(proxy, path, peekabot::REPLACE_ON_CONFLICT);
-  
+		proxyCone.add(proxy, path, peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+		proxyCone.hide();
   const double coneLen = viewpoint.length;
   // The "half angle" of the field of view
   const double fovHoriz = fovHorizAngle*M_PI/180.0/2;
@@ -652,8 +644,8 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
 	else
 	{
 
-			proxyCone.set_rotation(viewpoint.pan,viewpoint.tilt,0);
-		proxyCone.set_position(0,0,viewpoint.pos.z);
+	  proxyCone.set_rotation(viewpoint.pan,viewpoint.tilt,0);
+	  proxyCone.set_position(0,0,viewpoint.pos.z);
 	}
 }
 
@@ -1612,10 +1604,13 @@ void DisplayNavInPB::connectPeekabot()
       log("added robot.");
     
       log("Loading robot file \"%s\"", 
-              m_PbRobotFile.c_str());
-    
-   s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
-    if( s1.failed() ) {
+	  m_PbRobotFile.c_str());
+      
+      
+      m_ProxyViewPoints.add(m_PeekabotClient, "planned_viewpoints",peekabot::REPLACE_ON_CONFLICT);
+      
+      s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
+      if( s1.failed() ) {
       log("Could not load robot file \"%s\"", 
               m_PbRobotFile.c_str());
       peekabot::CubeProxy cube;
@@ -1696,7 +1691,6 @@ void DisplayNavInPB::connectPeekabot()
     m_ProxyObjectLabels.add(m_ProxyGraph,
                        "labels",
                        peekabot::REPLACE_ON_CONFLICT);
-    m_ProxyViewPoints.add(m_PeekabotClient, "viewpoints",peekabot::REPLACE_ON_CONFLICT);
 
     createRobotFOV();
     log("Connection to Peekabot established");

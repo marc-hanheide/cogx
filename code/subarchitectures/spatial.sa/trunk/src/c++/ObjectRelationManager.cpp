@@ -264,19 +264,19 @@ void ObjectRelationManager::start()
       sleep(m_RetryDelay);
     }
 
-    peekabot::GroupProxy root;
-    root.assign(m_PeekabotClient, "root");
+   // peekabot::GroupProxy root;
+    //root.assign(m_PeekabotClient, "root");
     if (m_bDisplayPlaneObjectsInPB) {
-      m_planeProxies.add(root, "plane_objects", peekabot::REPLACE_ON_CONFLICT);
+      m_planeProxies.add(m_PeekabotClient, "plane_objects", peekabot::REPLACE_ON_CONFLICT);
     }
     if (m_bDisplayVisualObjectsInPB || m_bTestOnness || m_bTestInness) {
-      m_objectProxies.add(root, "visual_objects", peekabot::REPLACE_ON_CONFLICT);
+      m_objectProxies.add(m_PeekabotClient, "visual_objects", peekabot::REPLACE_ON_CONFLICT);
     }
     if (m_bTestOnness) {
-      m_relationTester.add(root, "on-ness_tester", peekabot::REPLACE_ON_CONFLICT);
+      m_relationTester.add(m_PeekabotClient, "on-ness_tester", peekabot::REPLACE_ON_CONFLICT);
     }
     else if (m_bTestInness) {
-      m_relationTester.add(root, "in-ness_tester", peekabot::REPLACE_ON_CONFLICT);
+      m_relationTester.add(m_PeekabotClient, "in-ness_tester", peekabot::REPLACE_ON_CONFLICT);
     }
     println("Connected to peekabot, ready to go");
   }
@@ -711,11 +711,6 @@ void ObjectRelationManager::runComponent()
 	box1.radius1 = 0.095;
 	box1.radius2 = 0.045;
 	box1.radius3 = 0.145;
-
-
-
-
-
 
 	r = bp2.get_transformation(peekabot::WORLD_COORDINATES);
 	if (r.succeeded()) {
