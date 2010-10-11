@@ -323,11 +323,19 @@ class ProbabilisticState(State):
                 #already handled in the previous loop
                 continue
             excluded = set(excluded)
+            pvars = []
             for v in self.problem.get_all_objects(svar.get_type()):
                 if v in excluded:
                     continue
                 idvar = svar.as_modality(mapl.i_indomain, [v])
                 s[idvar] = TRUE
+                pvar = get_p_svar(svar, v)
+                if pvar:
+                    pvars.append(pvar)
+            if pvars:
+                p = types.TypedNumber(1.0/len(pvars))
+                for pvar in pvars:
+                    s[pvar] = p
 
         return s
             
