@@ -39,6 +39,8 @@ public class VisualObjectTransferFunction
 		extends
 		DependentLinkingDiscreteTransferFunction<VisualObject, PerceptBelief, GroundedBelief> {
 
+	public static final String IS_IN = "is-in";
+
 	public VisualObjectTransferFunction(ManagedComponent component,
 			WMView<GroundedBelief> allBeliefs) {
 		super(component, allBeliefs, Logger
@@ -93,7 +95,7 @@ public class VisualObjectTransferFunction
 			component.log("size of from.identDistrib: "
 					+ from.identDistrib.length);
 			fd.add(place.get(), from.identDistrib[0]);
-			belief.getContent().put("is-in", fd);
+			belief.getContent().put(IS_IN, fd);
 //		} catch (CASTException e) {
 //			component.logException(e);
 		} catch (InterruptedException e) {
