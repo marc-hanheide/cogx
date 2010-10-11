@@ -29,6 +29,7 @@ generate : event : utter(robot, H, Int) <-
 	utt_head(Nom),
 	i : feat_SpeechAct(Nom, clarification) / -1.0,
 	i : feat_Modality(Nom, speech) / -1.0,
+	generate : dialogue_move_flag(failure) / 0.0,
 	event : produce(r, Nom) / 20.0.
 
 %-------------------------------------------------------------------------
@@ -51,6 +52,7 @@ generate : event : utter(S, H, Int) <-
 	dummy_nom3(TargetNom),
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['question-answered', agent(H), about(About), feature(Feat), hypo(Hypo)])),
+	generate : dialogue_move_topic(TargetNom, About) / 0.0,
 	i : feat_SpeechAct(Nom, clarification) / -1.0,
 	i : feat_Modality(Nom, vision) / -1.0,
 	i : rel_Target(Nom, TargetNom) / -1.0,
@@ -84,6 +86,7 @@ generate : event : utter(S, H, Int) <-
 	dummy_nom3(TargetNom),
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['question-answered', agent(H), about(About), feature(Feat)])),
+	generate : dialogue_move_topic(TargetNom, About) / 0.0,
 	i : feat_SpeechAct(Nom, question) / -1.0,
 	i : feat_Modality(Nom, vision) / -1.0,
 	i : rel_Target(Nom, TargetNom) / -1.0,

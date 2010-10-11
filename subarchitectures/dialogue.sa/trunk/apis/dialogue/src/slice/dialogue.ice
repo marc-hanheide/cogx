@@ -256,6 +256,7 @@ module produce {
 	class ContentPlanningGoal { 
 		string cpgid;
 		lf::LogicalForm lform;
+		ref::NominalReference topic;  // FIXME: hacky
 	}; 
 	// end ProductionLF
 	
@@ -263,6 +264,7 @@ module produce {
 	class ProductionLF { 
 		string plfid;
 		lf::LogicalForm lform;
+		ref::NominalReference topic;  // FIXME: hacky
 	}; 
 	// end ProductionLF	
 	
@@ -283,7 +285,8 @@ module synthesize {
 
 	class SpokenOutputItem extends BaseData { 
 		string phonString;
-	        string inputStreamId ;
+		string inputStreamId;
+		ref::NominalReference topic;  // FIXME: hacky
 	}; 
 	// end SpokenOutputItem 
 	

@@ -41,11 +41,13 @@ import de.dfki.lt.tr.cast.dialogue.DialogueGoals;
 
 
 // Dialogue API slice
-import de.dfki.lt.tr.dialogue.slice.*;
+import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
+import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
 import de.dfki.lt.tr.dialogue.slice.lf.*;
 import de.dfki.lt.tr.dialogue.slice.parse.*;
 import de.dfki.lt.tr.dialogue.slice.produce.*;
+import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.dialogue.slice.synthesize.*;
 
 
@@ -148,6 +150,8 @@ public class CCGRealizer
 		boolean writeOutPackedLF;
 		
 		String ngramCorpus = "";
+
+		public final String UNABLE_TO_REALISE = "I am sorry I am lost for words on this one";
 		
 		
 		// =================================================================
@@ -351,7 +355,8 @@ public class CCGRealizer
 					// Get the logical form
 					LogicalForm logicalForm = productionLF.lform;
 					// Initialize the return string
-					String realString = "I am sorry I am lost for words on this one";
+					String realString = UNABLE_TO_REALISE;
+					NominalReference nr = null;
 					LogicalForm planLF = null;
 					// Check whether there is canned text OR a content body
 					String canned = LFUtils.lfNominalGetFeature(logicalForm.root, cannedText);
@@ -395,13 +400,22 @@ public class CCGRealizer
 						if (start != -1 && end != -1) { 
 							realString = bestRealization.substring(start+1,end);
 						}
-					} // end if..else
+						if (!realString.equals(UNABLE_TO_REALISE)) {
+							// assume that realisation worked out
+							nr = productionLF.topic;
+						}
+					}
 					// Forward the string to WM, to be synthesized
 					try { 
 						log("Sending on for synthesis: ["+realString+"]");
 						SpokenOutputItem spoi = new SpokenOutputItem();
 						spoi.phonString = realString;
-						addToWorkingMemory(newDataID(), spoi); 
+
+						DialogueMove dm = new DialogueMove(IntentionManagementConstants.thisAgent, planLF, nr);
+
+						addToWorkingMemory(newDataID(), spoi);
+						addToWorkingMemory(newDataID(), dm);
+
 					} catch (AlreadyExistsOnWMException ioe) { 
 						log("ERROR: "+ioe.getMessage());
 					} catch (SubarchitectureComponentException se) { 
