@@ -49,6 +49,13 @@ INCLUDE includes/planner.sa/planner-base.cast
 JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --labels cornflakes,mug,book,boardgame
 JAVA MG executor dora.execution.components.DoraExecutionMediator
 
+# dialogue stuff ##############################################################
+INCLUDE includes/dialogue.sa/dialogue-base.cast
+INCLUDE includes/dialogue.sa/dialogue-dora.cast
+# switch these two to use actual dialogue rather than pop-up boxes
+#INCLUDE includes/dialogue.sa/dialogue-george-exe.cast
+INCLUDE includes/dialogue.sa/dialogue-george-exe-fake.cast
+
 
 # viewing and debugging #######################################################
 
