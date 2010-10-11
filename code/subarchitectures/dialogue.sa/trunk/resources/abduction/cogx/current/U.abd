@@ -129,10 +129,10 @@ understand : topic(S, H, EpSt, Int, Ref, Nom) <-
 
 % material
 understand : topic(S, H, EpSt, Int, Ref, Nom) <-
-	i : sort(Nom, _Sort),
+	i : sort(Nom, Sort),
 	i : prop(Nom, Prop),
-	Prop = cornflakes,
-	int : pre(Int, belief(Ref, EpSt, fv(material, Prop))) / p(1.0).
+	valid_material(Sort, Prop, Material),
+	int : pre(Int, belief(Ref, EpSt, fv(material, Material))) / p(1.0).
 
 %-------------------------------------------------------------------------
 

@@ -1204,12 +1204,15 @@
   <entry word="coffees" macros="@s-pl-unsp @full" pos="Noun" stem="coffee-noun-n" class="thing" pred="coffee"/>
   <entry word="cornflakes" macros="@s-sg @full" pos="Noun" stem="cornflakes-noun-n" class="thing" pred="cornflakes"/>
   <entry word="cornflakeses" macros="@s-pl-unsp @full" pos="Noun" stem="cornflakes-noun-n" class="thing" pred="cornflakes"/>
+  <entry word="cookies" macros="@s-sg @full" pos="Noun" stem="cookies-noun-n" class="thing" pred="cookies"/>
+  <entry word="cookieses" macros="@s-pl-unsp @full" pos="Noun" stem="cookies-noun-n" class="thing" pred="cookies"/>
   <entry word="water" macros="@s-sg @full" pos="Noun" stem="water-noun-n" class="thing" pred="water"/>
   <entry word="waters" macros="@s-pl-unsp @full" pos="Noun" stem="water-noun-n" class="thing" pred="water"/>
   <entry word="tea" macros="@s-mass @full" pos="Noun" stem="tea-mass-n" class="e-substance" pred="tea"/>
   <entry word="coffee" macros="@s-mass @full" pos="Noun" stem="coffee-mass-n" class="e-substance" pred="coffee"/>
   <entry word="chocolate" macros="@s-mass @full" pos="Noun" stem="chocolate-mass-n" class="e-substance" pred="chocolate"/>
   <entry word="cornflakes" macros="@s-mass @full" pos="Noun" stem="cornflakes-mass-n" class="e-substance" pred="cornflakes"/>
+  <entry word="cookies" macros="@s-mass @full" pos="Noun" stem="cookies-mass-n" class="e-substance" pred="cookies"/>
   <entry word="water" macros="@s-mass @full" pos="Noun" stem="water-mass-n" class="e-substance" pred="water"/>
   <entry word="tee" macros="@s-mass @full" pos="Noun" stem="tee-mass-n" class="e-substance" pred="tee"/>
   <entry word="iron" macros="@s-mass @full" pos="Noun" stem="iron-mass-n" class="e-substance" pred="iron"/>

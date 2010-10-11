@@ -214,6 +214,7 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   noun(tea, thing,) 
   noun(coffee, thing,) 
   noun(cornflakes, thing,)
+  noun(cookies, thing,)
   noun(water, thing,) 
    
   #-- e-substance --#
@@ -222,6 +223,7 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   noun-mass(coffee, e-substance,)
   noun-mass(chocolate, e-substance,) 
   noun-mass(cornflakes, e-substance,)
+  noun-mass(cookies, e-substance,)
   noun-mass(water, e-substance,) 
   
   noun-mass(tee, e-substance,)
