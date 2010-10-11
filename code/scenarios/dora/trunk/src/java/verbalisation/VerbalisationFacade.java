@@ -5,16 +5,22 @@ import java.util.Map;
 
 import Ice.ObjectImpl;
 import cast.CASTException;
+import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTUtils;
 import castutils.castextensions.Accessor;
 import castutils.castextensions.StateChangeReceiver;
 import castutils.castextensions.WMEntrySet;
 import castutils.castextensions.WMEntrySet.ChangeHandler;
+import de.dfki.lt.tr.cast.dialogue.CCGRealizer;
+import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
+import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
+import de.dfki.lt.tr.dialogue.util.LFUtils;
 
 /**
  * Essentially a set of of
@@ -34,45 +40,45 @@ public class VerbalisationFacade {
 	}
 
 	public void configure(Map<String, String> args) {
-		m_comsysSA = "comsys";
+		m_comsysSA = "dialogue";
 		if (args.containsKey("--comsys")) {
 			m_comsysSA = args.get("--comsys");
 		}
 	}
 
-//	protected LogicalForm lfForCannedText(String _cannedText) {
-//		if (_cannedText.contains(" ")) {
-//			_cannedText = _cannedText.replaceAll(" ", "_");
-//		}
-//		String lfGoal = CASTUtils.concatenate("@d1:dvp(c-goal ^ <CannedText>",
-//				_cannedText, " )");
-//		// m_component.log(lfGoal);
-//		return LFUtils.convertFromString(lfGoal);
-//	}
+	protected LogicalForm lfForCannedText(String _cannedText) {
+		if (_cannedText.contains(" ")) {
+			_cannedText = _cannedText.replaceAll(" ", "_");
+		}
+		String lfGoal = CASTUtils.concatenate("@d1:dvp(c-goal ^ <CannedText>",
+				_cannedText, " )");
+		// m_component.log(lfGoal);
+		return LFUtils.convertFromString(lfGoal);
+	}
 
 	/**
 	 * @param _text
 	 */
 	protected void verbaliseCannedText(String _text) {
-//		if (!_text.isEmpty()) {
-//			LogicalForm _greetingLF = lfForCannedText(_text);
-//			verbaliseLF(_greetingLF);
-//		}
+		if (!_text.isEmpty()) {
+			LogicalForm _greetingLF = lfForCannedText(_text);
+			verbaliseLF(_greetingLF);
+		}
 	}
 
-//	/**
-//	 * @param _greetingLF
-//	 */
-//	private void verbaliseLF(LogicalForm _greetingLF) {
-//		ContentPlanningGoal _cpGoal = new ContentPlanningGoal(m_component
-//				.newDataID(), _greetingLF);
-//		try {
-//			m_component.addToWorkingMemory(new WorkingMemoryAddress(m_component
-//					.newDataID(), m_comsysSA), _cpGoal);
-//		} catch (SubarchitectureComponentException e) {
-//			e.printStackTrace();
-//		}
-//	}
+	/**
+	 * @param _greetingLF
+	 */
+	private void verbaliseLF(LogicalForm _greetingLF) {
+		ContentPlanningGoal _cpGoal = new ContentPlanningGoal(m_component
+				.newDataID(), _greetingLF, null);
+		try {
+			m_component.addToWorkingMemory(new WorkingMemoryAddress(m_component
+					.newDataID(), m_comsysSA), _cpGoal);
+		} catch (SubarchitectureComponentException e) {
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * Verbalise some canned text on state transition.
