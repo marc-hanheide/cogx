@@ -13,6 +13,13 @@ function [rCpcx,gain] = cogxVisualLearner_recognise(X, B, pts3d)
       disp(['MATLAB: cogxVisualLearner_recognise']);
       % Copied from cosyFeatureExtractor_extract
       global Params
+      
+      %resize mask to match image size
+      sizex=size(X);
+      if ~isequal(sizex(1:2),size(B))
+          B=imresize(B,sizex(1:2), 'nearest');
+      end
+
       X = uint8(X);
       f = extAPfeatures(X,B,Params.FV,pts3d);
       showROI(X,B,f,pts3d);
