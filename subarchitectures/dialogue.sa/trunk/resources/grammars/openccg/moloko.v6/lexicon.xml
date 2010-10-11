@@ -171,11 +171,13 @@
     <member stem="tea-noun-n" pred="tea"/>
     <member stem="coffee-noun-n" pred="coffee"/>
     <member stem="cornflakes-noun-n" pred="cornflakes"/>
+    <member stem="cookies-noun-n" pred="cookies"/>
     <member stem="water-noun-n" pred="water"/>
     <member stem="tea-mass-n" pred="tea"/>
     <member stem="coffee-mass-n" pred="coffee"/>
     <member stem="chocolate-mass-n" pred="chocolate"/>
     <member stem="cornflakes-mass-n" pred="cornflakes"/>
+    <member stem="cookies-mass-n" pred="cookies"/>
     <member stem="water-mass-n" pred="water"/>
     <member stem="tee-mass-n" pred="tee"/>
     <member stem="iron-mass-n" pred="iron"/>
