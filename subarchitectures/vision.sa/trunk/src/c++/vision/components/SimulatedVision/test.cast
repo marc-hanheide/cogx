@@ -1,0 +1,16 @@
+HOST localhost
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG display.srv DisplayServer --log true --debug true
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG sim.vision SimulatedVision --displayserver "display.srv" --datadir "/path/to/dir"
+   # --log true --debug true
+
+
