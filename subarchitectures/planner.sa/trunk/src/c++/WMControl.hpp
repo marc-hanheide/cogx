@@ -63,8 +63,8 @@ private:
     typedef std::tr1::unordered_map<int,cast::cdl::WorkingMemoryAddress> taskMap;
     taskMap activeTasks;
 
-    typedef std::tr1::unordered_map< std::string, ::de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBeliefPtr > BeliefMap;
-    typedef std::vector< ::de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBeliefPtr > PerceptList;
+    typedef std::tr1::unordered_map< std::string, BeliefEntry > BeliefMap;
+    typedef std::vector< BeliefEntry > PerceptList;
     BeliefMap m_currentState;
     PerceptList m_percepts;
     std::map<int, StateChangeFilterPtr> m_stateFilters;

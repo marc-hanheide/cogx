@@ -144,6 +144,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.planner = StandalonePlanner()
     self.tasks = {}
     self.beliefs = None
+    self.address_dict = {}
 
     self.dttasks = {}
     self.max_dt_id = 0
@@ -234,12 +235,19 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.m_display.update_task(task)
       self.getClient().deliverPlan(task.id, slice_plan, task.slice_goals);
 
+  def process_beliefs(self, beliefs):
+      result = []
+      for entry in beliefs:
+          result.append(entry.belief)
+          self.address_dict[entry.belief.id] = entry.address
+      return result
+
   @pdbdebug
   def updateState(self, state, percepts, current=None):
       log.debug("recieved state update.")
-      self.beliefs = state
+      self.beliefs = self.process_beliefs(state)
       for task in self.tasks.itervalues():
-          task.percepts += percepts
+          task.percepts += self.process_beliefs(percepts)
           if task.internal_state == TaskStateEnum.WAITING_FOR_BELIEF:
               self.updateWaitingTask(task)
 
@@ -320,7 +328,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       
       log.info("Loading domain %s.", self.domain_fn)
       domain = pddl.load_domain(self.domain_fn)
-      state = cast_state.CASTState(beliefs, domain, component=self)
+      state = cast_state.CASTState([e.belief for e in beliefs], domain, component=self)
       cstate = state.state
       goalstrings = tp.transform_goal_string(goal, state.namedict).split("\n")
       try:

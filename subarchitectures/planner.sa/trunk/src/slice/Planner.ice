@@ -20,10 +20,15 @@ module autogen {
       // plan found
     };
 
+    struct BeliefEntry {
+          cast::cdl::WorkingMemoryAddress address;
+          de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief belief;
+    };
+
     sequence<string> stringSeq;
     sequence<de::dfki::lt::tr::beliefs::slice::logicalcontent::dFormula> ArgumentSeq;
 
-    sequence<de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief> BeliefSeq;
+    sequence<BeliefEntry> BeliefSeq;
 
     class StateChangeFilter {
       BeliefSeq removeFilter;
