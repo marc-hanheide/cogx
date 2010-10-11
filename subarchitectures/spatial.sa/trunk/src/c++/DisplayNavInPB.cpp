@@ -415,7 +415,7 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID){
             if (m_ShowAreaClass) {
                 peekabot::CylinderProxy acp;
                 char name2[32];
-                sprintf(name2, "node%ld.area_class", node.m_Id);
+                sprintf(name2, "node%ld/area_class", node.m_Id);
                 acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
                 acp.set_scale(0.5, 0.5, 0.0);
                 acp.set_position(0,0,0);
