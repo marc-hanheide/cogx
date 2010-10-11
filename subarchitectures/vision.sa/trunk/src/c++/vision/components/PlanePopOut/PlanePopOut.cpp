@@ -32,7 +32,7 @@ long long gethrtime(void)
 }
 
 #define USE_MOTION_DETECTION
-#define SAVE_SOI_PATCH
+// #define SAVE_SOI_PATCH
 #define USE_PSO	0	//0=use RANSAC, 1=use PSO to estimate multiple planes
 
 #define Shrink_SOI 1
@@ -520,10 +520,10 @@ void SendImage(VisionData::SurfacePointSeq points, std::vector <int> &labels, co
 	}
     }
     CvFont a;
-    cvInitFont( &a, CV_FONT_VECTOR0, 1, 1, 0 , 1 );
+    cvInitFont( &a, CV_FONT_HERSHEY_PLAIN, 1, 1, 0 , 1 );
     for (unsigned int i=0 ; i<vSOIonImg.size() ; i++)
     {
-	CvPoint p; p.x = (int)(vSOIonImg.at(i).x+0.3*vSOIonImg.at(i).width); p.y = (int)(vSOIonImg.at(i).y+0.3*vSOIonImg.at(i).height);
+	CvPoint p; p.x = (int)(vSOIonImg.at(i).x+0.3*vSOIonImg.at(i).width); p.y = (int)(vSOIonImg.at(i).y+0.5*vSOIonImg.at(i).height);
 	cvPutText(iplImg, vSOIid.at(i).c_str(), p, &a,CV_RGB(255,255,255));
     }
     //cvSaveImage("/tmp/planes_image.jpg", iplImg);
@@ -868,7 +868,7 @@ int PlanePopOut::IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist)
 
 void PlanePopOut::SOIManagement()
 {
-    log("There are %d SOI in the Current scene", CurrentObjList.size());
+//     log("There are %d SOI in the Current scene", CurrentObjList.size());
     Pre2CurrentList.clear();
     if (PreviousObjList.empty())
     {
@@ -920,7 +920,7 @@ void PlanePopOut::SOIManagement()
 	    if (CurrentObjList.at(i).bComCurrentPre == false)
 	    {
 		float probability = Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j));
-		log("The matching probability of %d SOI in Current and %s in Previous is %f",i+1, PreviousObjList.at(j).id.c_str(), probability);
+// 		log("The matching probability of %d SOI in Current and %s in Previous is %f",i+1, PreviousObjList.at(j).id.c_str(), probability);
 		if (probability > max_matching_probability)
 		{
 		    max_matching_probability = probability;
@@ -1018,7 +1018,7 @@ void PlanePopOut::SOIManagement()
 	}
     }
 //     for (unsigned int j=0; j<CurrentObjList.size(); j++)
-// 	log("id in CurrentObjList are %s", CurrentObjList.at(j).id.c_str()); 
+// 	/*log*/("id in CurrentObjList are %s", CurrentObjList.at(j).id.c_str()); 
     PreviousObjList.clear();
     for (unsigned int i=0; i<CurrentObjList.size(); i++)
 	PreviousObjList.push_back(CurrentObjList.at(i));
@@ -1947,7 +1947,7 @@ double PlanePopOut::Calc_SplitThreshold(VisionData::SurfacePointSeq &points, std
 			if (v3Obj.z<min_z) min_z = v3Obj.z;
 		}
 	}
-	return sqrt((max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y)+(max_z-min_z)*(max_z-min_z))/20;
+	return sqrt((max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y)+(max_z-min_z)*(max_z-min_z))/25;
 }
 
 SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, VisionData::SurfacePointSeq psIn1SOI, VisionData::SurfacePointSeq BGpIn1SOI, VisionData::SurfacePointSeq EQpIn1SOI)
