@@ -13,12 +13,12 @@ INCLUDE includes/spatial.sa/spatial-objsearch.cast
 # Default.SA ################################################################
 INCLUDE includes/default.sa/default-base.cast
 INCLUDE includes/coma.sa/coma-defaultsa.cast
-INCLUDE includes/default.sa/default-main.cast
+#INCLUDE includes/default.sa/default-main.cast
 
 
 # Conceptual.SA  ############################################################
-INCLUDE includes/conceptual.sa/conceptual-base.cast
-INCLUDE includes/conceptual.sa/conceptual-main.cast
+#INCLUDE includes/conceptual.sa/conceptual-base.cast
+#INCLUDE includes/conceptual.sa/conceptual-main.cast
 
 
 
@@ -39,8 +39,8 @@ INCLUDE includes/binder.sa/binder-base.cast
 JAVA MG percepttracker.dora     eu.cogx.percepttracker.dora.DoraBeliefTracker --write-to-sa binder
 
 # dialogue stuff ##############################################################
-INCLUDE includes/dialogue.sa/dialogue-base.cast
-INCLUDE includes/dialogue.sa/dialogue-dora.cast
+#INCLUDE includes/dialogue.sa/dialogue-base.cast
+#INCLUDE includes/dialogue.sa/dialogue-dora.cast
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/switching-planner-dora.cast
