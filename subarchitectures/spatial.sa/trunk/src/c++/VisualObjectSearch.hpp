@@ -111,6 +111,8 @@ void newProcessViewPointCommand(const cast::cdl::WorkingMemoryChange &objID);
       SensingAction SampleAndSelect(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* tmpMap = 0);
       bool isCircleFree(double xW, double yW, double rad);
 
+
+      void GenerateViewPoints();
       void SaveCureMapToFile();
       void getStructuredStrategy(std::string strategy, std::vector<ObjectPairRelation> &singleStrategy);
       void SaveSearchPerformance(std::string result);
@@ -174,6 +176,8 @@ std::string m_ProcessVPID;
 	IDLE
       };
 
+
+      SpatialData::PlaceIDSeq m_placestosearch;
 bool m_posttable;
 double m_threshold;
       bool m_usePeekabot;
@@ -269,7 +273,11 @@ SpatialData::NavCommandPtr newNavCommand();
 		      VisualObjectSearch & m_component;
 		      SpatialData::NavCommandPtr m_cmd;
       };
-
+      
+      
+      Cure::Pose3D tablepose;
+      bool m_generateviewcones;
+      std::string m_viewpointgen_id;
       bool m_showconemap;
       bool m_usePTZ;
       bool m_savemapmode;

@@ -1340,8 +1340,8 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
   // Get the current robot position
   Cure::Pose3D cp;
   if (m_TOPP.getPoseAtTime(cureScan.getTime(), cp) != 0) {
-    log("Failed to get robot pose at the time of the scan, cannot add nodes");
-    log("Wanted robot pose at t=%.6f (last odometry t=%.6f, robot pose t=%.6f)",
+    debug("Failed to get robot pose at the time of the scan, cannot add nodes");
+    debug("Wanted robot pose at t=%.6f (last odometry t=%.6f, robot pose t=%.6f)",
         cureScan.getDoubleTime(), m_LastOdom.getDoubleTime(),
         m_LastRobotPose.getDoubleTime());
     return;
@@ -1358,7 +1358,7 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
   
   if (ret == 1) { 
 
-    log("maybeAddNewNodeAt returned %d", ret);
+    debug("maybeAddNewNodeAt returned %d", ret);
 
     if (processNewCureNavGraphNode()) {
     	checkForNodeChanges();
@@ -1378,7 +1378,7 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
   if (m_MotionDetector) {
     Cure::Pose3D scanOdomPose;
     if (m_TOPP.getOdomAtTime(cureScan.getTime(), scanOdomPose) != 0) {
-      log("Failed to get odom pose at time of scan");
+      debug("Failed to get odom pose at time of scan");
       m_MotionDetector->m_Movements.clear();
     } else {
       m_MotionDetector->checkForMotion(cureScan.getTime().getDouble(),

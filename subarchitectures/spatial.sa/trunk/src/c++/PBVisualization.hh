@@ -32,7 +32,7 @@ class VisualPB_Bloxel{
     void Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap,std::string name = "og2d");
     void Display2DBinaryMap(const Cure::BinaryMatrix &binmap,const Cure::LocalGridMap<unsigned char>* curemap, std::string name = "og2d_binarymatrix");
     #endif
-    void Add3DPointCloud(std::vector< std::vector<double> > point);
+    void Add3DPointCloud(std::vector< std::vector<double> > point, bool ishidden = true, std::string name = "extrapoints");
     
     template<class MapData>
     void AddPDF (SpatialGridMap::GridMap<MapData> &map);
@@ -40,6 +40,10 @@ class VisualPB_Bloxel{
     double scale,CellSize;
     int xSize,ySize;
   private:
+    
+    peekabot::GroupProxy m_2DOccGridProxy;
+
+
     bool isReplaceMap;
     peekabot::PeekabotClient client;
     std::string host;
@@ -60,15 +64,15 @@ class VisualPB_Bloxel{
 
 #ifndef NO_COGX_DEPENDENCIES
 void VisualPB_Bloxel::Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap, std::string name){
+  peekabot::OccupancySet2D cells;
   peekabot::OccupancyGrid2DProxy og2d;
- peekabot::OccupancySet2D cells;
- og2d.add(client, name , curemap->getCellSize(),0.3,0.3,0,1,0,0,peekabot::REPLACE_ON_CONFLICT); 
- og2d.translate(0,0,-0.005);
- 
- for (int x = -curemap->getSize(); x < curemap->getSize(); x++){
-   for (int y = -curemap->getSize(); y< curemap->getSize(); y++){
-     double xw,yw;
-     curemap->index2WorldCoords(x,y,xw,yw);
+  og2d.add(m_2DOccGridProxy,name,peekabot::REPLACE_ON_CONFLICT);
+  og2d.translate(0,0,-0.005);
+  og2d.hide(); 
+  for (int x = -curemap->getSize(); x < curemap->getSize(); x++){
+    for (int y = -curemap->getSize(); y< curemap->getSize(); y++){
+      double xw,yw;
+      curemap->index2WorldCoords(x,y,xw,yw);
      if ((*curemap)(x,y) == '1' || (*curemap)(x,y) == '3'){
 	cells.set_cell(xw,yw,1);
       }
@@ -77,8 +81,8 @@ void VisualPB_Bloxel::Display2DCureMap(const Cure::LocalGridMap<unsigned char>* 
       }
     }
   }
-   og2d.set_cells(cells);
-    client.sync();
+  og2d.set_cells(cells);
+  client.sync();
 }
 void VisualPB_Bloxel::Display2DBinaryMap(const Cure::BinaryMatrix &binmap, const Cure::LocalGridMap<unsigned char>* curemap, std::string name){
   peekabot::OccupancyGrid2DProxy og2d;
@@ -131,10 +135,11 @@ bool VisualPB_Bloxel::connectPeekabot(){
     printf("Trying to connect to Peekabot on host %s and port %d \n", host.c_str(), port);
     client.connect(host, port);
     printf("Connection to Peekabot established! \n");
-    // eieiAssign root
+    // Assign root
     pb_map.add(client,"map",peekabot::REPLACE_ON_CONFLICT);
     
     pdf.add(client, "pdf", peekabot::REPLACE_ON_CONFLICT);
+    m_2DOccGridProxy.add(client, "combined_placemap2D", peekabot::REPLACE_ON_CONFLICT);
     
     // Add 15 levels for pdf-visualization
     maxLevels = 15;
@@ -214,16 +219,18 @@ void VisualPB_Bloxel::DisplayPCMap(const SpatialGridMap::GridMap<MapData> &map, 
 }
 */
 
-void VisualPB_Bloxel::Add3DPointCloud(std::vector< std::vector<double> > point){
+void VisualPB_Bloxel::Add3DPointCloud(std::vector< std::vector<double> > point, bool ishidden, std::string name){
   try{
     peekabot::OccupancyGrid3DProxy ogproxy;
-    ogproxy.add(client, "extrapoints", 0.05, 0.05, peekabot::REPLACE_ON_CONFLICT);
+    ogproxy.add(client, name, 0.05, 0.05, peekabot::REPLACE_ON_CONFLICT);
     peekabot::OccupancySet3D cells;
     for (unsigned int i = 0; i < point.size(); i++){
       cells.set_cell(point[i][0],point[i][1], point[i][2],1);
     }
 
     ogproxy.set_cells(cells);
+    if(ishidden)
+      ogproxy.hide();
     client.sync();
   }
 
