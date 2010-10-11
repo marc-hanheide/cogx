@@ -62,6 +62,9 @@ int main(int argc, const char **argv) {
 	for(const char *c = argv[i]; *c != 0; c++) {
 	    if(*c == 't') {
 		g_timeout = atoi(string(argv[++i]).c_str());
+	    }
+	    else if(*c == 'h') {
+		g_hard_timeout = atoi(string(argv[++i]).c_str());
 	    } else if(*c == 'm') {
 	        g_planMonitorFileName = string(argv[++i]);
 	        monitor = true;
@@ -87,7 +90,10 @@ int main(int argc, const char **argv) {
     }
 
     if(g_timeout > 0) {
-	cout << "Timeout set to " << g_timeout << " sec." << endl;
+	cout << "Timeout set to " << g_timeout << " msec." << endl;
+    }
+    if(g_hard_timeout > 0) {
+	cout << "Hard timeout set to " << g_hard_timeout << " msec." << endl;
     }
 
     if(!cyclic_cg_heuristic && !no_heuristic) {

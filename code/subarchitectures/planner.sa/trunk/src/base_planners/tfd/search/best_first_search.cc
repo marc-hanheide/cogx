@@ -18,8 +18,9 @@ BestFirstSearchEngine::BestFirstSearchEngine() :
     generated_states = 0;
     current_predecessor = 0;
     current_operator = 0;
-    start_time = time(NULL);
+    gettimeofday(&start_time, NULL);
     last_time = start_time;
+    last_improvement_time = start_time;
 }
 
 BestFirstSearchEngine::~BestFirstSearchEngine() {
@@ -46,9 +47,9 @@ void BestFirstSearchEngine::initialize() {
     assert(!open_lists.empty());
 }
 
-void BestFirstSearchEngine::statistics(time_t & current_time) const {
+void BestFirstSearchEngine::statistics(timeval & current_time) const {
     cout << endl;
-    cout << "Search Time: " << (current_time - start_time) << " sec." << endl;
+    cout << "Search Time: " << (current_time.tv_sec - start_time.tv_sec) << " sec." << endl;
     cout << "Expanded Nodes: " << closed_list.size() << " state(s)." << endl;
     cout << "Generated Nodes: " << generated_states << " state(s)." << endl;
     cout << "Best heuristic value: " << best_heuristic_values[0] << endl;
@@ -125,11 +126,19 @@ int BestFirstSearchEngine::step() {
 //    current_state.dump();
 //    cout << "---------------------------------------" << endl << endl << endl;
 
-    time_t current_time = time(NULL);
-    if(g_timeout > 0 && current_time - start_time > g_timeout) {
+    timeval current_time;
+    gettimeofday(&current_time, NULL);
+    int elapsed = (current_time.tv_sec - start_time.tv_sec) * 1000 + (current_time.tv_usec - start_time.tv_usec) / 1000; 
+    if(g_hard_timeout > 0 && elapsed > g_hard_timeout) {
 	exit(0);
     }
-    if(current_time - last_time >= 10) {
+    if(found_at_least_one_solution() && g_timeout > 0) {
+        int impr_elapsed = (current_time.tv_sec - last_improvement_time.tv_sec) * 1000 + (current_time.tv_usec - last_improvement_time.tv_usec) / 1000; 
+        if (impr_elapsed > g_timeout) {
+            exit(0);
+        }
+    }
+    if(current_time.tv_sec - last_time.tv_sec >= 10) {
         statistics(current_time);
         last_time = current_time;
     }
@@ -172,6 +181,7 @@ bool BestFirstSearchEngine::check_goal() {
 	closed_list.trace_path(current_state, plan, path);
 	set_plan(plan);
 	set_path(path);
+    gettimeofday(&last_improvement_time, NULL);
 	return true;
     } else {
 	return false;

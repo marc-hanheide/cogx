@@ -168,6 +168,7 @@ Cache *g_cache;
 int g_cache_hits = 0, g_cache_misses = 0;
 bool g_greedy;
 int g_timeout = 0;
+int g_hard_timeout = 0;
 string g_planMonitorFileName;
 
 bool g_force_sequential = false;

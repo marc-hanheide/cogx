@@ -61,6 +61,7 @@ extern Cache *g_cache;
 extern int g_cache_hits, g_cache_misses;
 extern bool g_greedy;
 extern int g_timeout;
+extern int g_hard_timeout;
 extern string g_planMonitorFileName;
 
 extern bool g_force_sequential;

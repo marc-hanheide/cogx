@@ -1,6 +1,7 @@
 #ifndef BEST_FIRST_SEARCH_H
 #define BEST_FIRST_SEARCH_H
 
+#include <sys/time.h>
 #include <vector>
 #include <queue>
 #include "closed_list.h"
@@ -59,8 +60,9 @@ class BestFirstSearchEngine : public SearchEngine {
     void dump_plan_prefix_for_current_state() const;
     void dump_plan_prefix_for__state(const TimeStampedState &state) const;
 
-    time_t start_time;
-    time_t last_time;
+    timeval start_time;
+    timeval last_time;
+    timeval last_improvement_time;
 protected:
     virtual int step();
 public:
@@ -68,7 +70,7 @@ public:
     ~BestFirstSearchEngine();
     void add_heuristic(Heuristic *heuristic, bool use_estimates,
 	    bool use_preferred_operators);
-    virtual void statistics(time_t & current_time) const;
+    virtual void statistics(timeval & current_time) const;
     virtual void initialize();
     int fetch_next_state();
 };
