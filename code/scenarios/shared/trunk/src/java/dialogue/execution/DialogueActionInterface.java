@@ -672,6 +672,11 @@ public class DialogueActionInterface extends ManagedComponent {
 					new ComponentActionFactory<DirectAskForObject>(this,
 							DirectAskForObject.class));
 
+			
+			m_actionStateManager.registerActionType(
+					ReportPosition.class,
+					new ComponentActionFactory<DirectReportPosition>(this,
+							DirectReportPosition.class));
 		} else {
 
 			m_actionStateManager.registerActionType(AskForColour.class,
