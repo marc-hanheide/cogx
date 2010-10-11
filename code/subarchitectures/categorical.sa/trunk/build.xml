@@ -1,5 +1,5 @@
 <!-- Inner build file for a module in the CogX system -->
-<project name="conceptual.sa" default="compile" basedir=".">
+<project name="categorical.sa" default="compile" basedir=".">
 	<property name="projectroot.dir" value="${basedir}/../.." />
 	<property file="${projectroot.dir}/build.properties" />
 	
@@ -32,7 +32,7 @@
 	<!-- =================================================================== -->
 	<target name="slice" depends="prepare" description="generates source from slice">
 		<slice2java tie="true" outputdir="${src.dir}">
-			<fileset dir="${slice.dir}" includes="ConceptualData.ice" />
+			<fileset dir="${slice.dir}" includes="CategoricalData.ice" />
 			<includepath>
 				<pathelement path="${slice.dir}" />
 				<pathelement path="${castslice.dir}" />
@@ -47,7 +47,7 @@
 	<!-- slice file compilation                                              -->
 	<!-- =================================================================== -->
 	<target name="compile-slice" depends="slice" description="compiles the source code">
-		<javac srcdir="${src.dir}/ConceptualData" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+		<javac srcdir="${src.dir}/CategoricalData" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
 			<classpath refid="build.classpath" />
 		</javac>
 	</target>
@@ -66,7 +66,7 @@
 	<!-- Cleanup                                                             -->
 	<!-- =================================================================== -->
 	<target name="clean">
-		<delete dir="${src.dir}/ConceptualData/**" />
+		<delete dir="${src.dir}/CategoricalData/**" />
 		<delete dir="${src.dir}/.depend" />
 	</target>
 
