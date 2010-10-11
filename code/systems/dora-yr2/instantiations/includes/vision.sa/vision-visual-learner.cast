@@ -14,7 +14,7 @@ SETVAR VisLearnerFilemonParams = <multiline>
    %(VisLearnerDispPrefix).htm.D=%(VisLearnerDir)/{mTD.html}
 </multiline>
 
-CPP MG matlab.display FileMonitorDC --displayserver "display.srv" --monitor "%(fileMonitorParams)" # --debug true
+CPP MG matlab.display FileMonitorDC --displayserver "display.srv" --monitor "%(VisLearnerFilemonParams)" # --debug true
 
 
 
