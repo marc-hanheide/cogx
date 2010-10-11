@@ -31,7 +31,7 @@ import castutils.experimentation.StopWatch;
  */
 public class PlannerFacade {
 
-	public static final String PLANNER_PYTHON_SERVER = "PlannerPythonServer";
+	public static final String PLANNER_CPP_SERVER = "Planner";
 	private static PlannerFacade singleton=null;
 	
 	public static synchronized PlannerFacade get(ManagedComponent component ) {
@@ -244,11 +244,11 @@ public class PlannerFacade {
 	public boolean isGoalAchieved(String goalString) {
 		if (cppServer == null) {
 			try {
-				cppServer = component.getIceServer(PLANNER_PYTHON_SERVER,
+				cppServer = component.getIceServer(PLANNER_CPP_SERVER,
 						CppServer.class, CppServerPrx.class);
 			} catch (CASTException e) {
 				component.logException("failed to contact "
-						+ PLANNER_PYTHON_SERVER + ": ", e);
+						+ PLANNER_CPP_SERVER + ": ", e);
 				return false;
 			}
 		}
