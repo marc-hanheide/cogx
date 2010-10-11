@@ -80,7 +80,7 @@ public class DialogueManagerGeneralTest {
 		
 		Observation intent = PolicyUtils.createSimpleObservation("Please find the cornflakes box");
 		PolicyAction action1 = manager.nextAction(intent);
-		assertEquals(action1.toString(), "CI[\"okay, searching for the cornflakes box!\"]");
+		assertEquals("CI[\"okay, searching for the cornflakes box!\"]", action1.toString());
 		
 	}
 	
@@ -93,7 +93,7 @@ public class DialogueManagerGeneralTest {
 		
 		Observation intent = PolicyUtils.createSimpleObservation("Please find the mug");
 		PolicyAction action1 = manager.nextAction(intent);
-		assertEquals(action1.toString(), "CI[\"okay, searching for the mug!\"]");
+		assertEquals("CI[\"okay, searching for the mug!\"]", action1.toString());
 		
 	}
 	
@@ -106,10 +106,10 @@ public class DialogueManagerGeneralTest {
 		
 		Observation intent = PolicyUtils.createSimpleObservation("Please find the cornflakes box", 0.4f);
 		PolicyAction action1 = manager.nextAction(intent);
-		assertEquals(action1.toString(), "CI[\"sorry, should I search for the cornflaxes box?\"]");
+		assertEquals("CI[\"sorry, should I search for the cornflaxes box?\"]", action1.toString());
 		Observation intent2 = PolicyUtils.createSimpleObservation("yes", 0.8f);
 		PolicyAction action2 = manager.nextAction(intent2);
-		assertEquals(action2.toString(), "CI[\"okay, searching for the cornflakes box!\"]");
+		assertEquals("CI[\"okay, searching for the cornflakes box!\"]", action2.toString());
 	}
 	
 	/**
@@ -121,10 +121,10 @@ public class DialogueManagerGeneralTest {
 		
 		Observation intent = PolicyUtils.createSimpleObservation("Please find the cornflakes box", 0.4f);
 		PolicyAction action1 = manager.nextAction(intent);
-		assertEquals(action1.toString(), "CI[\"sorry, should I search for the cornflaxes box?\"]");
+		assertEquals("CI[\"sorry, should I search for the cornflaxes box?\"]", action1.toString());
 		Observation intent2 = PolicyUtils.createSimpleObservation("no", 0.8f);
 		PolicyAction action2 = manager.nextAction(intent2);
-		assertEquals(action2.toString(), "CI[\"sorry, could you repeat please?\"]");
+		assertEquals("CI[\"sorry, could you repeat please?\"]", action2.toString());
 		testPolicyDirect2();
 	}
 
@@ -137,7 +137,7 @@ public class DialogueManagerGeneralTest {
 		
 		Observation i = PolicyUtils.createSimpleObservation("?", 0.8f);
 		PolicyAction action1 = manager.nextAction(i);
-		assertEquals(action1.toString(), "CI[\"sorry, could you repeat please?\"]");
+		assertEquals("CI[\"sorry, could you repeat please?\"]", action1.toString());
 		testPolicyConfirm();
 	}
 	
@@ -151,7 +151,7 @@ public class DialogueManagerGeneralTest {
 		
 		Observation i = PolicyUtils.createSimpleObservation("bla bla bla", 0.8f);
 		PolicyAction action1 = manager.nextAction(i);
-		assertEquals(action1.toString(), "CI[\"sorry, could you repeat please?\"]");
+		assertEquals("CI[\"sorry, could you repeat please?\"]", action1.toString());
 		testPolicyConfirm();
 	}
 
@@ -164,10 +164,10 @@ public class DialogueManagerGeneralTest {
 		
 		Observation i1 = PolicyUtils.createSimpleObservation("?", 0.8f);
 		PolicyAction action1 = manager.nextAction(i1);
-		assertEquals(action1.toString(), "CI[\"sorry, could you repeat please?\"]");
+		assertEquals("CI[\"sorry, could you repeat please?\"]", action1.toString());
 		Observation i2 = PolicyUtils.createSimpleObservation("?", 0.8f);
 		PolicyAction action2 = manager.nextAction(i2);
-		assertEquals(action2.toString(), "CI[\"sorry I couldn't understand you\"]");
+		assertEquals("CI[\"sorry I couldn't understand you\"]", action2.toString());
 	}
 
 	/**

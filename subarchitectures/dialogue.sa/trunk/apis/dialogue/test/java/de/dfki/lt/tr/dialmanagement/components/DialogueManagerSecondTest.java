@@ -85,7 +85,7 @@ public class DialogueManagerSecondTest {
 		
 		Observation intent = PolicyUtils.createSimpleObservation("<state>(engagement-open ^ <agent>human ^ <agent>robot)");
 		PolicyAction action1 = manager.nextAction(intent);
-		assertEquals(action1.toString(), "CI[<state>(engagement-open ^ <agent>(robot) ^ <agent>(human))]");	
+		assertEquals("CI[<state>(engagement-open ^ <agent>(robot) ^ <agent>(human))]", action1.toString());	
 	}
 
 	/**
@@ -98,7 +98,7 @@ public class DialogueManagerSecondTest {
 		testPolicyGreeting();
 		Observation intent = PolicyUtils.createSimpleObservation("<state>(engagement-closed ^ <agent>human ^ <agent>robot)");
 		PolicyAction action1 = manager.nextAction(intent);
-		assertEquals(action1.toString(), "CI[<state>(engagement-closed ^ <agent>(robot) ^ <agent>(human))]");
+		assertEquals( "CI[<state>(engagement-closed ^ <agent>(robot) ^ <agent>(human))]", action1.toString());
 	}
 	
 	/**
@@ -122,7 +122,7 @@ public class DialogueManagerSecondTest {
 	public void testPolicyRecognitionError() throws DialogueException {
 		Event event = EpistemicObjectUtils.createSimpleEvent("recognition-error", 0.8f);
 		PolicyAction action1 = manager.nextAction(event);
-		assertEquals(action1.toString(), "CI[<state>(error-reported)]");
+		assertEquals("CI[<state>(error-reported)]", action1.toString());
 	}
 	
 	

@@ -150,7 +150,7 @@ public class XMLPolicyReader {
 					debug("and here...");
 					pnode.setPolicyAction(new PolicyAction(xmlNode.getAttributes().getNamedItem("action").getNodeValue()));
 				}
-				else {
+				else if (!pnode.isInitialNode()){
 					log("WARNING: no action specified for node id " + pnode.getId());
 				}
 				
@@ -239,9 +239,13 @@ public class XMLPolicyReader {
 					if (xmlNode.getAttributes().getNamedItem("type").getNodeValue().equals("communicativeintention")) {
 						paction.setType(PolicyAction.COMMUNICATIVE_INTENTION);
 					}
-					else if (xmlNode.getAttributes().getNamedItem("type").getNodeValue().equals("intention")) {
-						log("setting type of action as: intention");
-						paction.setType(PolicyCondition.INTENTION);
+					else if (xmlNode.getAttributes().getNamedItem("type").getNodeValue().equals("privateintention")) {
+						debug("setting type of action as: private intention");
+						paction.setType(PolicyAction.PRIVATE_INTENTION);
+					}
+					else if (xmlNode.getAttributes().getNamedItem("type").getNodeValue().equals("attributedintention")) {
+						debug("setting type of action as: attributed intention");
+						paction.setType(PolicyAction.ATTRIBUTED_INTENTION);
 					}
 				}
 				

@@ -42,7 +42,7 @@ public class PolicyAction extends FormulaWrapper {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 
 	// updated content
 	dFormula updatedContent;
@@ -52,8 +52,9 @@ public class PolicyAction extends FormulaWrapper {
 	
 	// allowed condition types
 	public static final int COMMUNICATIVE_INTENTION = 0;
-	public static final int INTENTION = 1;
-	
+	public static final int PRIVATE_INTENTION = 1;
+	public static final int ATTRIBUTED_INTENTION = 2;
+
 	// the identifier of the action
 	private String id;
 
@@ -125,7 +126,7 @@ public class PolicyAction extends FormulaWrapper {
 	 * @param type the action type
 	 */
 	public void setType (int type) {
-		if (type == COMMUNICATIVE_INTENTION || type == INTENTION) {
+		if (type == COMMUNICATIVE_INTENTION || type == PRIVATE_INTENTION || type == ATTRIBUTED_INTENTION) {
 			this.type = type;
 		}
 	}
@@ -161,6 +162,8 @@ public class PolicyAction extends FormulaWrapper {
 	 */
 	private dFormula fillActionArguments (dFormula formula, HashMap<Integer,dFormula> arguments) {
 		
+		debug("filling action arguments");
+		
 		if (formula instanceof ComplexFormula) {
 			for (dFormula subform : ((ComplexFormula)formula).forms) {
 				subform = fillActionArguments(subform, arguments);
@@ -171,6 +174,7 @@ public class PolicyAction extends FormulaWrapper {
 		}
 		
 		else if (formula instanceof UnderspecifiedFormula) {
+			debug("reached underspec");
 			if (arguments.containsKey(((UnderspecifiedFormula)formula).id)) {
 				formula = arguments.get(((UnderspecifiedFormula)formula).id);
 			}
@@ -201,8 +205,11 @@ public class PolicyAction extends FormulaWrapper {
 			if (type == COMMUNICATIVE_INTENTION) {
 				str += "CI";
 			}
-			else if (type == INTENTION) {
-				str += "I";
+			else if (type == PRIVATE_INTENTION) {
+				str += "PI";
+			}
+			else if (type == ATTRIBUTED_INTENTION) {
+				str += "AI";
 			}
 			else {
 				str += "CI";

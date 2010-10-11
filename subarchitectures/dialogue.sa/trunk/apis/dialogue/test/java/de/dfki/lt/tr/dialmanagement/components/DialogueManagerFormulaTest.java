@@ -103,7 +103,7 @@ public class DialogueManagerFormulaTest {
 		
 		Observation intent = PolicyUtils.createSimpleObservation("<Belief>(<Ref>context1_1 ^ <ObjectType>ball)");
 		PolicyAction action1 = manager.nextAction(intent);
-		assertEquals(action1.toString(), "CI[okay]");
+		assertEquals("CI[okay]", action1.toString());
 		
 	}
 	

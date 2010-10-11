@@ -35,7 +35,7 @@ import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 /**
  * Test class for the dialogue manager, with simple shallow observations 
  * and actions
- * 
+ *  
  * @author Pierre Lison (plison@dfki.de)
  * @version 04/07/2010
  *

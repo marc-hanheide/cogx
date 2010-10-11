@@ -2,10 +2,15 @@ package de.dfki.lt.tr.dialmanagement.components;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
+import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
+import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
@@ -44,14 +49,25 @@ public class DialogueManagerYr2Test {
 	
 	@Test
 	public void ForwardingTest() throws DialogueException {
-		dFormula formula = FormulaUtils.constructFormula("anything ^ here");
-		CommunicativeIntention intent = EpistemicObjectUtils.createSimplePrivateCommunicativeIntention(formula, 1.0f);
-		PolicyAction action = manager.nextAction(intent);
+		
+		dFormula formula = FormulaUtils.constructFormula("<belief>(anything ^ here)");
+		
+		IntentionalContent intent = 
+			EpistemicObjectUtils.createIntentionalContent(formula, EpistemicObjectUtils.robotAgent, 1.0f);
+			
+		CommunicativeIntention intention = new CommunicativeIntention (new Intention(
+				EpistemicObjectUtils.curFrame, EpistemicObjectUtils.attributedStatus, "", Arrays.asList(intent)));	
+
+		PolicyAction action = manager.nextAction(intention);
 		log ("selected action: " + action);
-		assertEquals(formula, action.getContent());
+		assertEquals(new PolicyAction("", new ModalFormula(0,"post",formula)), action);
 	}
 	
 	
+	@Test
+	public void HandlingPreconditions() throws DialogueException {
+		
+	}
 
 
 	/**

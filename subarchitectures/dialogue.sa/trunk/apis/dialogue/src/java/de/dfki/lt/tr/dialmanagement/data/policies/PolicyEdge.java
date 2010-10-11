@@ -40,7 +40,7 @@ public class PolicyEdge {
 	
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 		
 	// the (unique) identifier for the edge
 	private String id;

@@ -27,10 +27,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Comparator;
 
+import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
+import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
+
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.events.Event;
 import de.dfki.lt.tr.beliefs.slice.framing.SpatioTemporalFrame;
@@ -38,13 +45,20 @@ import de.dfki.lt.tr.beliefs.slice.framing.TemporalInterval;
 import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
+import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 
 /**
  * Utility functions for creating and manipulating epistemic objects 
  * (beliefs, events, intentions)
- * 
+ *  
  * @author Pierre Lison (plison@dfki.de)
  * @version 07/10/2010
  *
@@ -54,167 +68,47 @@ public class EpistemicObjectUtils {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	
 	// incremental counter for forging identifiers
 	static int incrCounter = 0;
-	
-		
-	
-	/**
-	 * Create a simple attributed communicative intention with a single postcondition 
-	 * associated with a probability value
-	 * 
-	 * @param postcondition the postcondition
-	 * @param prob the probability of the postcondition
-	 * @return the newly constructed attributed intention
-	 * @throws DialogueException if postcondition is ill-formed
-	 */
-	public static CommunicativeIntention createSimpleAttributedCommunicativeIntention 
-		(dFormula postcondition, float prob) throws DialogueException {
-		
-		HashMap<dFormula,Float> postconditions = new HashMap<dFormula,Float>();
-		postconditions.put(postcondition, prob);
-		return createAttributedCommunicativeIntention(postconditions);
-	}
-	 
-	
-	/**
-	 * Create a simple private communicative intention with a single postcondition 
-	 * associated with a probability value
-	 * 
-	 * @param postcondition the postcondition
-	 * @param prob the probability of the postcondition
-	 * @return the newly constructed private intention
-	 * @throws DialogueException if postcondition is ill-formed
-	 */
-	public static CommunicativeIntention createSimplePrivateCommunicativeIntention 
-		(dFormula postcondition, float prob) throws DialogueException {
-		
-		HashMap<dFormula,Float> postconditions = new HashMap<dFormula,Float>();
-		postconditions.put(postcondition, prob);
-		return createPrivateCommunicativeIntention(postconditions);
-	}
-	
-	
-	
-	
-	/**
-	 * Create a simple private intention with a single postcondition 
-	 * associated with a probability value
-	 * 
-	 * @param postcondition the postcondition
-	 * @param prob the probability of the postcondition
-	 * @return the newly constructed private intention
-	 * @throws DialogueException if postcondition is ill-formed
-	 */
-	public static Intention createSimplePrivateIntention 
-		(dFormula postcondition, float prob) throws DialogueException {
-		
-		HashMap<dFormula,Float> postconditions = new HashMap<dFormula,Float>();
-		postconditions.put(postcondition, prob);
-		return createPrivateIntention(postconditions);
-	}
-	
-	
 
+	
+	public static final SpatioTemporalFrame curFrame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
+	public static final List<String> robotAgent = Arrays.asList("robot");
+	public static final List<String> humanAgent = Arrays.asList("human");	
+	public static final EpistemicStatus privateStatus = new PrivateEpistemicStatus("robot");
+	public static final EpistemicStatus attributedStatus = new AttributedEpistemicStatus(robotAgent.get(0), humanAgent);
+	
+		
 	/**
-	 * Create a private intention containing a list of postconditions (each of which is associated
-	 * with a probability value)
+	 * Extract the intentional content of a formula with two modal operators <pre> and <post>
 	 * 
-	 * @param postconditions a hashmap mapping each postcondition to its probability value
-	 * @return the newly constructed private intention
-	 * @throws DialogueException if formulae are ill-formed
+	 * @param fullFormula the formula containing the two modal formulae
+	 * @param agents the agents of the intentional content
+	 * @param prob the probability
+	 * @return the resulting intentional content
 	 */
-	public static Intention createPrivateIntention 
-	(HashMap<dFormula,Float> postconditions) throws DialogueException {
+	public static IntentionalContent createIntentionalContent (dFormula fullFormula, List<String> agents, float prob) {
 		
-	    SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
-		PrivateEpistemicStatus priv = new PrivateEpistemicStatus ("robot");
-		
-		List<IntentionalContent> intents = new LinkedList<IntentionalContent>();
-		
-		for (dFormula formula: postconditions.keySet()) {
-			intents.add((new IntentionalContent(Arrays.asList("robot"), 
-					FormulaUtils.constructFormula(""), formula, postconditions.get(formula))));
+		dFormula precondition = new UnknownFormula(0);
+		dFormula postcondition = fullFormula;
+		if (fullFormula instanceof ComplexFormula) {
+			
+			for (dFormula subFormula : ((ComplexFormula)fullFormula).forms) {
+				
+				if (subFormula instanceof ModalFormula && ((ModalFormula)subFormula).op.equals("pre")) {
+					precondition = ((ModalFormula)subFormula).form;
+				}
+				if (subFormula instanceof ModalFormula && ((ModalFormula)subFormula).op.equals("post")) {
+					postcondition = ((ModalFormula)subFormula).form;
+				}
+			}
 		}
-		return new Intention(frame, priv, forgeNewId(), intents);
-	}
-	
-	
-	
-	/**
-	 * Create an attributed communicative intention containing a list of postconditions 
-	 * (each of which is associated with a probability value)
-	 * 
-	 * @param postconditions a hashmap mapping each postcondition to its probability value
-	 * @return the newly constructed attributed intention
-	 * @throws DialogueException if postcondition is ill-formed
-	 */
-	public static CommunicativeIntention createAttributedCommunicativeIntention 
-	(HashMap<dFormula,Float> postconditions) throws DialogueException {
-		
-	    SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
-		AttributedEpistemicStatus attrib = new AttributedEpistemicStatus ("robot", Arrays.asList("human"));
-		
-		List<IntentionalContent> intents = new LinkedList<IntentionalContent>();
-		
-		for (dFormula formula: postconditions.keySet()) {
-			intents.add((new IntentionalContent(Arrays.asList("robot"), 
-					FormulaUtils.constructFormula(""), formula, postconditions.get(formula))));
-		}
-		return new CommunicativeIntention(new Intention(frame, attrib, forgeNewId(), intents));
-	}
-	
-	
-	
-	/**
-	 * Create an attributed intention containing a list of postconditions (each of which is associated
-	 * with a probability value)
-	 * 
-	 * @param postconditions a list of <form,prob> pairs
-	 * @throws DialogueException 
-	 * @return the newly constructed attributed intention
-	 */
-	public static CommunicativeIntention createAttributedCommunicativeIntention 
-	(List<FormulaProbPair> pairs) throws DialogueException {
-		
-	    SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(), 1.0f);
-		AttributedEpistemicStatus attrib = new AttributedEpistemicStatus ("robot", Arrays.asList("human"));
-		
-		List<IntentionalContent> intents = new LinkedList<IntentionalContent>();
-		
-		for (FormulaProbPair pair: pairs) {
-			intents.add((new IntentionalContent(Arrays.asList("robot"), FormulaUtils.constructFormula(""), pair.val, pair.prob)));
-		}
-		return new CommunicativeIntention(new Intention(frame, attrib, forgeNewId(), intents));
+		return new IntentionalContent (agents, precondition, postcondition, prob);
 	}
 	
 
-	/**
-	 * Create a private intention containing a list of postconditions (each of which is associated
-	 * with a probability value)
-	 * 
-	 * @param postconditions a hashmap mapping each postcondition to its probability value
-	 * @return the newly constructed private intention
-	 * @throws DialogueException if formulae are ill-formed
-	 */
-	public static CommunicativeIntention createPrivateCommunicativeIntention 
-	(HashMap<dFormula,Float> postconditions) throws DialogueException {
-		
-	    SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
-		PrivateEpistemicStatus priv = new PrivateEpistemicStatus ("robot");
-		
-		List<IntentionalContent> intents = new LinkedList<IntentionalContent>();
-		
-		for (dFormula formula: postconditions.keySet()) {
-			intents.add((new IntentionalContent(Arrays.asList("robot"), 
-					FormulaUtils.constructFormula(""), formula, postconditions.get(formula))));
-		}
-		return new CommunicativeIntention(new Intention(frame, priv, forgeNewId(), intents));
-	}
-	
-	
 	/**
 	 * Create a new event with a list of alternative event descriptions, with associated
 	 * probabilities
@@ -270,6 +164,202 @@ public class EpistemicObjectUtils {
 		
 		Collections.sort(formProbPairs, new FormulaProbPairsComparator());
 		return formProbPairs;
+	}
+	
+	
+	
+	/**
+	 * Transform an intentional content into a single formula, with two modal
+	 * formulae <pre> and <post>
+	 * 
+	 * @param content the intentional content
+	 * @return the resulting formula
+	 */
+	public static dFormula translateIntoFormula (IntentionalContent content) {
+		
+		if (!(content.preconditions instanceof UnknownFormula)) {
+			List<dFormula> formulae = new LinkedList<dFormula>();
+			formulae.add(new ModalFormula(0, "pre", content.preconditions));
+			formulae.add(new ModalFormula(0, "post", content.postconditions));
+			return new ComplexFormula(0,formulae, BinaryOp.conj);
+		}
+		else {
+			return new ModalFormula(0, "post", content.postconditions);
+		}
+		
+	}
+	
+	
+	
+	
+	/**
+	 * Create a copy of the communicative intention
+	 * 
+	 * @param initCI the comm. intention to copy
+	 * @return the copied communicative intention
+	 * @throws DialogueException if something went wrong in the copy
+	 */
+	public static CommunicativeIntention copy (CommunicativeIntention initCI) throws DialogueException {
+		return new CommunicativeIntention(copy(initCI.intent))	;	
+	}
+	
+	
+	/**
+	 * Create a copy of the intention
+	 * 
+	 * @param initIntention the intention to copy
+	 * @return the copied intention
+	 * @throws DialogueException
+	 */
+	public static Intention copy (Intention initIntention) throws DialogueException {
+		
+		List<IntentionalContent> newContent = new LinkedList<IntentionalContent>();
+		for (IntentionalContent existingIntent : initIntention.content) {
+			dFormula copiedPreconditions = FormulaUtils.copy(existingIntent.preconditions);
+			dFormula copiedPostconditions = FormulaUtils.copy(existingIntent.postconditions);
+			newContent.add(new IntentionalContent (existingIntent.agents, copiedPreconditions,copiedPostconditions, existingIntent.probValue));
+		}
+		return new Intention(initIntention.frame, initIntention.estatus, initIntention.id, initIntention.content);
+	}
+	
+	
+	
+	
+	/**
+	 * Expand the intentional content -- i.e. if the formula of the postcondition contains
+	 * a pointer formula, replace this pointer by the value of the epistemic object
+	 * being pointed at
+	 * 
+	 * @param initCI the initial communicative intention
+	 * @param component the CAST component to retrieve object from memory
+	 * @return the expanded intentional content (as a copy)
+	 * 
+	 * @throws DialogueException
+	 * @throws DoesNotExistOnWMException
+	 * @throws UnknownSubarchitectureException
+	 */
+	public static CommunicativeIntention expandCommunicativeIntention  
+		(CommunicativeIntention initCI, ManagedComponent component) 
+	throws DialogueException, DoesNotExistOnWMException, UnknownSubarchitectureException  {
+		
+		CommunicativeIntention newCI = copy (initCI);
+		debug("communicative intention " + initCI.intent.id + " successfully copied");
+		
+		for (IntentionalContent alternativeContent : newCI.intent.content) {			
+			alternativeContent.postconditions = expandFormula(alternativeContent.postconditions, component);		
+			debug("expanded postcondition: " + FormulaUtils.getString(alternativeContent.postconditions));
+		}
+			
+		return newCI;
+	}
+
+	
+	
+	/**
+	 * Extract the content of the belief and express it as a single ComplexFormula
+	 * 
+	 * TODO: take the ambiguity into account
+
+	 * @param b the belief
+	 * @return the complex formula representing the belief
+	 * @throws DialogueException
+	 */
+	private static ComplexFormula getBeliefContent (dBelief b) throws DialogueException {
+		
+		debug("type of distrib: " + b.content.getClass().getCanonicalName());
+		
+		if (b.content instanceof CondIndependentDistribs) {
+			
+			List<dFormula> beliefFormulae = new LinkedList<dFormula>();
+			
+			for (String key : ((CondIndependentDistribs)b.content).distribs.keySet()) {
+				if (((CondIndependentDistribs)b.content).distribs.get(key) instanceof BasicProbDistribution) {
+					if (((BasicProbDistribution)((CondIndependentDistribs)b.content).
+							distribs.get(key)).values instanceof FormulaValues) {
+						
+						// here we only take the first value
+						if (((FormulaValues)((BasicProbDistribution)((CondIndependentDistribs)
+								b.content).distribs.get(key)).values).values.size() > 0) {
+							dFormula keyValue = ((FormulaValues)((BasicProbDistribution)
+									((CondIndependentDistribs)b.content).distribs.get(key)).values).values.get(0).val;
+							ModalFormula replacementFormula = new ModalFormula(0, key, keyValue);
+							debug("adding formula: " + FormulaUtils.getString(replacementFormula));
+							beliefFormulae.add(replacementFormula);
+						}
+					}
+				}
+			}
+			
+			ComplexFormula completeFormula = new ComplexFormula(0, beliefFormulae, BinaryOp.conj);
+			debug("complete replacement formula: " + FormulaUtils.getString(completeFormula)); 
+			return completeFormula;
+		}
+		else if (b.content instanceof BasicProbDistribution) {
+						
+			if  (((BasicProbDistribution)b.content).values instanceof FormulaValues) {
+				
+				// here again, only take the first value
+				if (((FormulaValues)((BasicProbDistribution)b.content).values).values.size() > 0) {
+					dFormula form = ((FormulaValues)((BasicProbDistribution)b.content).values).values.get(0).val;
+					if (form instanceof ComplexFormula) {
+						return (ComplexFormula)form;
+					}
+					else {
+						List<dFormula> forms = new LinkedList<dFormula>();
+						forms.add(form);
+						return new ComplexFormula(0, forms, BinaryOp.conj) ;
+					}
+				}
+			}
+		}
+		throw new DialogueException("WARNING: belief content of " + b.id + " could not be extracted");
+	}
+	
+		
+	/**
+	 * Expand the given formula (if the formula contains a pointer, replaces it by
+	 * the content of the epistemic object being pointed at)
+	 * 
+	 * @param form the formula to expand
+	 * @param component the CAST component to extract the pointed-to object
+	 * @return the expanded formula
+	 * 
+	 * @throws UnknownSubarchitectureException
+	 * @throws DoesNotExistOnWMException
+	 * @throws DialogueException
+	 */
+	private static dFormula expandFormula (dFormula form, ManagedComponent component)
+		throws UnknownSubarchitectureException, DoesNotExistOnWMException, DialogueException {
+		
+		if (form instanceof ComplexFormula) {
+			List<dFormula> newSubFormulae = new LinkedList<dFormula>();
+			for (dFormula existingSubFormula : ((ComplexFormula)form).forms) {
+				newSubFormulae.add(expandFormula(existingSubFormula,component));
+			}
+			return new ComplexFormula(0, newSubFormulae, ((ComplexFormula)form).op);
+		}
+		
+		else if (form instanceof ModalFormula) {
+			return new ModalFormula(0, ((ModalFormula)form).op, expandFormula(((ModalFormula)form).form, component));
+		}
+		
+		else if (form instanceof PointerFormula) {
+			debug("found pointer: " + FormulaUtils.getString(form));
+			WorkingMemoryAddress WMPointer= ((PointerFormula)form).pointer;
+			if (WMPointer != null && component.existsOnWorkingMemory(WMPointer)) {			
+				try {
+				dBelief b = component.getMemoryEntry(WMPointer, dBelief.class);
+				ComplexFormula expandedFormula =  getBeliefContent(b);
+				expandedFormula.forms.add(new ModalFormula(0, "ref", form));
+				return expandedFormula;
+				}
+				catch (ClassCastException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return form;
 	}
 	
 	

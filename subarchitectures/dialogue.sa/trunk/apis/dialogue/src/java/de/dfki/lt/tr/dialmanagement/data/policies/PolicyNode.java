@@ -38,7 +38,7 @@ public class PolicyNode {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	
 	// the unique identifier for the node
 	private String id;
@@ -177,6 +177,7 @@ public class PolicyNode {
 	
 		Vector<PolicyEdge> edges = new Vector<PolicyEdge>();
 		for (PolicyEdge edge: outgoingEdges) {
+			debug("is edge " + edge.toString() + " matching with observation " + obs + "? " + edge.matchesObservation(obs));
 			if (edge.matchesObservation(obs)) {
 				edges.add(edge);
 			}

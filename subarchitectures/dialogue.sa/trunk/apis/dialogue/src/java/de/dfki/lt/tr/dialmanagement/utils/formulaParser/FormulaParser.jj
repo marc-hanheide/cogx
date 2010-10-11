@@ -9,6 +9,7 @@ import java.util.LinkedList ;
 import java.util.Enumeration ;
 import java.io.* ;
 import java.util.Hashtable;
+import cast.cdl.WorkingMemoryAddress;
 
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.*;
@@ -42,6 +43,9 @@ TOKEN :
 | <KLEENE_STAR: "*">
 | <ARGUMENT: "%" ( ["0"-"9"] )+>
 | <INTERROGATION_MARK: "?">
+| <SLBRACKET: "[">
+| <SRBRACKET: "]">
+| <COLON: ":">
 | <LAND: "^">
 | <LOR: "v">
 | <QUOTE: "\"">
@@ -61,6 +65,16 @@ Token tok;
 	{return new ElementaryFormula(0, "\"" + curString.substring(0, curString.length()-1) + "\""); }
 }	
 
+
+PointerFormula PointerFormula():
+{
+Token tok1;
+Token tok2;
+Token tok3;
+}
+{ <SLBRACKET> tok1=<WORD> <COLON> tok2=<INTEGER> <COLON> tok3=<INTEGER> <SRBRACKET> 
+ { return new PointerFormula(0, new WorkingMemoryAddress(tok2.toString()+":"+tok3.toString(), tok1.toString()), "") ; }
+}
 
 ElementaryFormula ElemFormula():
 {
@@ -185,6 +199,8 @@ dFormula formulaIn;
 	|
 	formula = UnderspecifiedFormula()
 	|
+	formula = PointerFormula()
+	|
 	formula = IntegerFormula()	
 	|
    formula = ElemFormula()	
@@ -235,6 +251,8 @@ dFormula formulaIn;
 	formula = FloatFormula()
 	|
 	formula = UnderspecifiedFormula()	
+	|
+	formula = PointerFormula()
 	|
 	formula = UnknownFormula()	
 	|
