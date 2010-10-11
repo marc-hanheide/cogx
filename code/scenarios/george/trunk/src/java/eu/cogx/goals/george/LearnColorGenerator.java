@@ -14,7 +14,7 @@ public class LearnColorGenerator extends LearnConceptGenerator {
 	 */
 	@Override
 	protected String getConceptName() {
-		return "Color";
+		return "color";
 	}
 
 	/* (non-Javadoc)
@@ -22,7 +22,7 @@ public class LearnColorGenerator extends LearnConceptGenerator {
 	 */
 	@Override
 	protected String getGainPropertyName() {
-		return "colorGain";
+		return "gain-color";
 	}
 
 }
