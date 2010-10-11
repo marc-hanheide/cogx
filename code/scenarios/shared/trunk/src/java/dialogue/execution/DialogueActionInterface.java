@@ -32,6 +32,8 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.SharedBelief;
+import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
+import eu.cogx.perceptmediator.transferfunctions.VisualObjectTransferFunction;
 import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.slice.actions.AskForColour;
@@ -42,6 +44,7 @@ import execution.slice.actions.AskPolarColour;
 import execution.slice.actions.AskPolarIdentity;
 import execution.slice.actions.AskPolarShape;
 import execution.slice.actions.BeliefPlusStringAction;
+import execution.slice.actions.ReportPosition;
 import execution.slice.actions.SingleBeliefAction;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
@@ -517,6 +520,58 @@ public class DialogueActionInterface extends ManagedComponent {
 		}
 	}
 
+	public static class DirectReportPosition extends
+			BlockingActionExecutor<ReportPosition> {
+
+		public DirectReportPosition(ManagedComponent _component) {
+			super(_component, ReportPosition.class);
+		}
+
+		@Override
+		public TriBool execute() {
+
+			TriBool result = TriBool.TRIFALSE;
+			try {
+				GroundedBelief belief = getComponent().getMemoryEntry(
+						getAction().beliefAddress, GroundedBelief.class);
+				CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
+						.create(GroundedBelief.class, belief);
+
+
+				//get something to describe the object
+				String objectIdent = "object";
+				
+				FormulaDistribution distribution = gb.getContent()
+				.get(VisualObjectTransferFunction.VISUAL_OBJECT_IDENT);
+				if(distribution != null) {
+					objectIdent = distribution.getDistribution().getMostLikely().getProposition();
+				}
+				
+				//get place id that object is at
+				WMPointer placePointer = WMPointer.create(gb.getContent()
+						.get("").getDistribution().getMostLikely().get());
+				CASTIndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
+						.create(GroundedBelief.class,
+								getComponent().getMemoryEntry(
+										placePointer.getVal(),
+										GroundedBelief.class));
+				int placeID = placeBelief.getContent().get(PlaceTransferFunction.PLACE_ID_ID).getDistribution().getMostLikely().getInteger();
+
+				
+				JOptionPane.showMessageDialog(null,
+						"the " + objectIdent +  " is at place " + placeID);
+				
+				result = TriBool.TRITRUE;
+
+			} catch (CASTException e) {
+				logException(e);
+			}
+
+			return result;
+
+		}
+	}
+
 	private void addFeatureDirectly(SingleBeliefAction _action,
 			String _feature, String _value, double _prob)
 			throws DoesNotExistOnWMException, ConsistencyException,
@@ -643,11 +698,13 @@ public class DialogueActionInterface extends ManagedComponent {
 					new ComponentActionFactory<AskForIdentityPolarDialogue>(
 							this, AskForIdentityPolarDialogue.class));
 
-			m_actionStateManager.registerActionType(AskForObjectWithFeatureValue.class,
-					new ComponentActionFactory<AskForObjectWithFeatureValueDialogue>(
-							this, AskForObjectWithFeatureValueDialogue.class));
-			
-			
+			m_actionStateManager
+					.registerActionType(
+							AskForObjectWithFeatureValue.class,
+							new ComponentActionFactory<AskForObjectWithFeatureValueDialogue>(
+									this,
+									AskForObjectWithFeatureValueDialogue.class));
+
 			// TODO replace this with one of Marc's magic thingys
 			WorkingMemoryChangeReceiver updater = new WorkingMemoryChangeReceiver() {
 
