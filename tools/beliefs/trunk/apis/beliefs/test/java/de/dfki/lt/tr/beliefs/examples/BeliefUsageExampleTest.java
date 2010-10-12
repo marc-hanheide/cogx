@@ -198,7 +198,7 @@ public class BeliefUsageExampleTest {
 		FormulaDistribution d = FormulaDistribution.create();
 		hiddenBelief.getContent().put("firstFormulaDist", d);
 		d.addAll(new Object[][] { { 3, 0.4 }, { 5, 0.6 } });
-		hiddenBelief.setAttributed("human", Arrays.asList(org.cognitivesystems.binder.thisAgent.value));
+		hiddenBelief.setAttributed("human", Arrays.asList("self"));
 		// a belief should have a unique id!
 		hiddenBelief.setId("hurga:0");
 		// this encodes for a VisualObject
