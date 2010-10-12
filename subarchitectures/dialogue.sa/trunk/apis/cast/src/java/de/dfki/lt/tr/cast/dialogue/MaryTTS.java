@@ -566,7 +566,7 @@ public class MaryTTS extends ManagedComponent {
         
         
         if (_config.containsKey("--no-mary")) {
-            println("Running with no Mary server, all output items will be printed.");
+            log("running with no Mary server, all output items will be printed");
             m_bNoMary = true;
         }
         else {
@@ -620,11 +620,12 @@ public class MaryTTS extends ManagedComponent {
 			
             try {
                 m_mary = MaryClient.getMaryClient(new Address(m_serverHost, m_serverPort));
-                //speakLocal("hello !");
             }
 
             catch (Exception e) {
                 log(e);
+				log("connection to the Mary server failed, switching to no-Mary mode");
+				m_bNoMary = true;
             }
 
          // Location of RAWMARYXMLHeader
@@ -652,7 +653,7 @@ public class MaryTTS extends ManagedComponent {
 
             // create local and remote TTS
             m_ttsLocal =
-                    new MaryTTSLocal(m_mary, "TEXT",m_voiceName, m_bSilentModeLocal, "WAVE");
+                    new MaryTTSLocal(m_mary, "TEXT", m_voiceName, m_bSilentModeLocal, "WAVE");
        //     ttsRemote =
        //             new TTSRemote(m_mary, m_voiceName, m_bSilentModeRemote);
 			
