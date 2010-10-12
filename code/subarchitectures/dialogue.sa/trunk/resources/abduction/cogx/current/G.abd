@@ -111,12 +111,12 @@ generate : object_description(Int, Nom, PrivBId) <-
 	i : feat_Salient(Nom, true) / -1.0.
 
 generate : object_description(Int, Nom, PrivBId) <-
-	att : using_just_object(PrivBId) / -1.0,
+	generate : using_just_object(PrivBId) / -1.0,
 	generate : the_object(Nom).
 
 generate : object_description(Int, Nom, PrivBId) <-
 	att : linguisticsalience(PrivBId, high),
-	att : using_salience(PrivBId) / -5.0,
+	generate : using_salience(PrivBId) / -5.0,
 	generate : it(Nom).
 
 %-------------------------------------------------------------------------
