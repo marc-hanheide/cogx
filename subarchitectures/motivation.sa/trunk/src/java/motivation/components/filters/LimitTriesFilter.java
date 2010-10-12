@@ -3,8 +3,13 @@
  */
 package motivation.components.filters;
 
+import java.util.Map;
+
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
+
+import org.apache.log4j.Logger;
+
 import cast.cdl.WorkingMemoryChange;
 
 /**
@@ -12,12 +17,13 @@ import cast.cdl.WorkingMemoryChange;
  * 
  */
 public class LimitTriesFilter implements MotiveFilter {
-	private static final long MAX_TRIES = 10;
-	
+	private static final long DEFAULT_MAX_TRIES = 10;
+	private long maxTries = DEFAULT_MAX_TRIES;
+
 	/**
 	 * @param specificType
 	 */
-	public  LimitTriesFilter() {
+	public LimitTriesFilter() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -31,7 +37,7 @@ public class LimitTriesFilter implements MotiveFilter {
 	 */
 	@Override
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
-		if (motive.tries<=MAX_TRIES) 
+		if (motive.tries <= maxTries)
 			return MotivePriority.HIGH;
 		return MotivePriority.UNSURFACE;
 	}
@@ -41,6 +47,17 @@ public class LimitTriesFilter implements MotiveFilter {
 
 	@Override
 	public void start() {
+	}
+
+	@Override
+	public void configure(Map<String, String> arg0) {
+		String arg = arg0.get("--max-tries");
+		if (arg != null) {
+			maxTries = Integer.parseInt(arg);
+		}
+		Logger.getLogger(GainFilter.class).info(
+				"configure: maxTries=" + maxTries);
+
 	}
 
 }

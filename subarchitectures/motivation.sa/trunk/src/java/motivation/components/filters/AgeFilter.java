@@ -3,6 +3,8 @@
  */
 package motivation.components.filters;
 
+import java.util.Map;
+
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import cast.cdl.CASTTime;
@@ -51,6 +53,12 @@ public class AgeFilter implements MotiveFilter {
 
 	@Override
 	public void start() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void configure(Map<String, String> arg0) {
 		// TODO Auto-generated method stub
 		
 	}

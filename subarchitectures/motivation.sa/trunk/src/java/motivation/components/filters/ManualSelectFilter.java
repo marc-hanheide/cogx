@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -380,6 +381,12 @@ public class ManualSelectFilter implements MotiveFilter {
 		jFrame.setVisible(true);
 		jFrame.pack();
 		jFrame.setSize(800, 600);
+	}
+
+	@Override
+	public void configure(Map<String, String> arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 } // @jve:decl-index=0:visual-constraint="583,36"

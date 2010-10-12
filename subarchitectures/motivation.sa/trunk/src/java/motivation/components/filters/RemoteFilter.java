@@ -116,4 +116,10 @@ public class RemoteFilter implements MotiveFilter,
 				.synchronizedMap(new HashMap<Class<?>, MotivePriority>());
 	}
 
+	@Override
+	public void configure(Map<String, String> arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

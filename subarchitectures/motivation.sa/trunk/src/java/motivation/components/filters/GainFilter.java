@@ -3,12 +3,13 @@
  */
 package motivation.components.filters;
 
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
-import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryChange;
-import cast.core.CASTUtils;
-import castutils.CASTTimeUtil;
 
 /**
  * @author marc
@@ -16,14 +17,14 @@ import castutils.CASTTimeUtil;
  */
 public class GainFilter implements MotiveFilter {
 
-	public static final double MIN_GAIN = 0.3;
+	public static final double DEFAULT_MIN_GAIN = 0.3;
+	private double minGain = DEFAULT_MIN_GAIN;
 
 	/**
 	 * @param specificType
 	 */
 	public GainFilter() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	/*
@@ -35,7 +36,7 @@ public class GainFilter implements MotiveFilter {
 	 */
 	@Override
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
-		if (motive.informationGain >= MIN_GAIN)
+		if (motive.informationGain >= minGain)
 			return MotivePriority.HIGH;
 		else
 			return MotivePriority.UNSURFACE;
@@ -46,7 +47,16 @@ public class GainFilter implements MotiveFilter {
 
 	@Override
 	public void start() {
-		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void configure(Map<String, String> arg0) {
+		String arg = arg0.get("--min-gain");
+		if (arg != null) {
+			minGain = Double.parseDouble(arg);			
+		}
+		Logger.getLogger(GainFilter.class).info("configure: minGain=" + minGain);
 
 	}
 
