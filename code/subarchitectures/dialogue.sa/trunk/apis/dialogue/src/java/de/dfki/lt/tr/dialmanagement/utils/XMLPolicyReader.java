@@ -323,6 +323,24 @@ public class XMLPolicyReader {
 						pcond.setType(PolicyCondition.EVENT);
 					}
 				}
+				
+				
+				if (xmlNode.getAttributes().getNamedItem("lowerProb") != null) {
+					try {
+						float lowerProb = Float.parseFloat(xmlNode.getAttributes().getNamedItem("lowerProb").getNodeValue());
+						pcond.setMinimumProb(lowerProb);
+					}
+					catch (NumberFormatException e) {}
+				}
+				
+				if (xmlNode.getAttributes().getNamedItem("higherProb") != null) {
+					try {
+						float higherProb = Float.parseFloat(xmlNode.getAttributes().getNamedItem("higherProb").getNodeValue());
+						pcond.setMaximumProb(higherProb);
+					}
+					catch (NumberFormatException e) {}
+				}
+				
 				debug("creating condition: " + pcond.getId());
 
 				// modifying the edges pointing to the condition to integrate it

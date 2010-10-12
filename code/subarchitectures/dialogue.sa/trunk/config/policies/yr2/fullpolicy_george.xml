@@ -17,10 +17,12 @@
 		<edge id="evalEdge" source="*" target="thankingNode" condition="evalCond"/>
 		<edge id="anyEdge" source="*" target="rootNode" condition="anyCond"/>	
 		<edge id="closingEdge" source="*" target="closingNode" condition="closingCond"/>
-		<edge id="whQuestionEdge" source="*" target="whAnswerNode" condition="whQuestionCond"/>
-		<edge id="whQuestionEdge2" source="*" target="notKnowAnswerNode" condition="whQuestionCond2"/>
+		<edge id="whColorQuestionEdge" source="*" target="whAnswerNode" condition="whColorQuestionCond"/>
+		<edge id="notKnowQuestionEdge" source="*" target="notKnowAnswerNode" condition="notKnowQuestionEdge"/>
+		<edge id="whShapeQuestionEdge" source="*" target="whAnswerNode" condition="whShapeQuestionCond"/>
 		<edge id="polarPosEdge" source="*" target="posAnswerNode" condition="polarCond1"/> 
 		<edge id="polarNegEdge" source="*" target="negAnswerNode" condition="polarCond2"/> 
+		<edge id="polarNoclueEdge" source="*" target="notKnowAnswerNode" condition="polarCond3"/> 
 		
 	</edges>
 	
@@ -28,15 +30,20 @@
 		<condition id="anyCond" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;belief&gt;(%2))" lowerProb="0.0" higherProb="1.0" type="communicativeintention"></condition>
 		<condition content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))" id="greetingCond" lowerProb="0.0" higherProb="1.0" type="communicativeintention"/>
 		<condition id="evalCond" content="&lt;state&gt;(appreciated ^ &lt;agent&gt;human ^ &lt;patient&gt;self)" type="communicativeintention" lowerProb="0.0" higherProb="1.0"></condition>
-		<condition id="closingCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))"/>
-		<condition id="whQuestionCond" type="communicativeintention"
-			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;color&gt;(%3)) ^ &lt;feature&gt;(color)))" ></condition>
-		<condition id="whQuestionCond2" type="communicativeintention"
-			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)) ^ &lt;feature&gt;(color)))" ></condition>
+		<condition id="closingCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))"></condition>
+		<condition id="whColorQuestionCond" type="communicativeintention"
+			lowerProb="0.6" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;color&gt;(%3)) ^ &lt;feature&gt;(color)))" ></condition>
+		<condition id="notKnowQuestionEdge" type="communicativeintention"
+			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2))))" ></condition>
+	    <condition id="whShapeQuestionCond" type="communicativeintention"
+			lowerProb="0.6" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;shape&gt;(%3)) ^ &lt;feature&gt;(shape)))" ></condition>
+
 		<condition id="polarCond1" type="communicativeintention"
-			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(valid)))" /> 
+			lowerProb="0.6" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(valid)))" /> 
 		<condition id="polarCond2" type="communicativeintention"
-			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(invalid)))" ></condition> 
+			lowerProb="0.6" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(invalid)))" ></condition> 
+	<condition id="polarCond3" type="communicativeintention"
+			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(noclue)))" ></condition> 
 	</conditions>
 	
 	<actions>
@@ -45,7 +52,7 @@
 		<action id="thankAction" type="communicativeintention" content="&lt;state&gt;(thanked ^ &lt;agent&gt;human ^ &lt;patient&gt;self)"></action>
 		<action id="closingAction" type="communicativeintention" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
 		<action id="whAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" />
-	    <action id="notKnowAnswerAction" type="communicativeintention" content="bla" />
+	    <action id="notKnowAnswerAction" type="communicativeintention" content="&lt;state&gt;(knowing-disconfirmed)" />
 	    <action id="posAnswerAction" type="communicativeintention" content="&lt;state&gt;(verified)" ></action> 
 	    	    <action id="negAnswerAction" type="communicativeintention" content="&lt;state&gt;(falsified)" ></action> 
 	</actions>

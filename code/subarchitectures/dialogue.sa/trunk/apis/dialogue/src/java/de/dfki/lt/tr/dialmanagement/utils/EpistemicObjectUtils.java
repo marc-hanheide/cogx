@@ -63,7 +63,7 @@ public class EpistemicObjectUtils {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	
 	// incremental counter for forging identifiers
 	static int incrCounter = 0;
@@ -235,7 +235,7 @@ public class EpistemicObjectUtils {
 	 * @return the complex formula representing the belief
 	 * @throws DialogueException
 	 */
-	public static HashMap<ComplexFormula,Float> getBeliefContent (dBelief b) throws DialogueException {
+	public static HashMap<ComplexFormula,Float> getBeliefContent (dBelief b, String featureType) throws DialogueException {
 		
 		HashMap<ComplexFormula,Float> results = new HashMap<ComplexFormula,Float>();
 		results.put(new ComplexFormula(0,new LinkedList<dFormula>(), BinaryOp.conj), 1.0f);
@@ -246,7 +246,8 @@ public class EpistemicObjectUtils {
 
 			for (String key : ((CondIndependentDistribs)b.content).distribs.keySet()) {
 				debug("key: " + key);
-				if (((CondIndependentDistribs)b.content).distribs.get(key) instanceof BasicProbDistribution) {
+				if (featureType.equals(key) && 
+						((CondIndependentDistribs)b.content).distribs.get(key) instanceof BasicProbDistribution) {
 
 					debug("type of values: " + ((BasicProbDistribution)((CondIndependentDistribs)b.content).distribs.get(key)).values);
 					if (((BasicProbDistribution)((CondIndependentDistribs)b.content).
@@ -255,6 +256,8 @@ public class EpistemicObjectUtils {
 						if ((((FormulaValues)((BasicProbDistribution)((CondIndependentDistribs)
 								b.content).distribs.get(key)).values).values.size() > 0)) {
 
+							HashMap<ComplexFormula,Float> newResults = new HashMap<ComplexFormula,Float>();
+							
 							for (ComplexFormula existingFormula : results.keySet()) {
 								float curProb = results.get(existingFormula);
 
@@ -264,11 +267,11 @@ public class EpistemicObjectUtils {
 									dFormula newFormula = FormulaUtils.copy(existingFormula);
 									((ComplexFormula)newFormula).forms.add(new ModalFormula(0, key, pair.val));
 									debug("adding formula: " + FormulaUtils.getString(newFormula));
-									results.put((ComplexFormula)newFormula, new Float(curProb*pair.prob));
+									newResults.put((ComplexFormula)newFormula, new Float(curProb*pair.prob));
 
 								}
-								results.remove(existingFormula);
 							}
+							results = newResults;
 						}
 
 					}
