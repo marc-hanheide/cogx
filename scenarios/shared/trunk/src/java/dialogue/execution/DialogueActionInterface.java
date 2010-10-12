@@ -106,8 +106,8 @@ public class DialogueActionInterface extends ManagedComponent {
 		 */
 		ArrayList<dFormula> getPostconditions() {
 			ArrayList<dFormula> postconditions = new ArrayList<dFormula>();
-			postconditions.add(new ModalFormula(-1, "agent", PropositionFormula
-					.create("human").get()));
+//			postconditions.add(new ModalFormula(-1, "agent", PropositionFormula
+//					.create("human").get()));
 			return postconditions;
 		}
 
@@ -132,7 +132,15 @@ public class DialogueActionInterface extends ManagedComponent {
 		protected Intention getIntention() {
 			Intention intention = createEmptyIntention();
 			((ComplexFormula) intention.content.get(0).preconditions).forms = getPreconditions();
-			((ComplexFormula) intention.content.get(0).postconditions).forms = getPostconditions();
+
+			ModalFormula state = new ModalFormula(-1, "state",
+					new ComplexFormula(-1, getPostconditions(), BinaryOp.conj));
+			ArrayList<dFormula> states = new ArrayList<dFormula>();
+			states.add(state);
+
+			((ComplexFormula) intention.content.get(0).postconditions).forms = states;
+
+//			((ComplexFormula) intention.content.get(0).postconditions).forms = getPostconditions();
 			return intention;
 		}
 
@@ -240,8 +248,17 @@ public class DialogueActionInterface extends ManagedComponent {
 			Intention intention = createEmptyIntention();
 			((ComplexFormula) intention.content.get(0).preconditions).forms = getPreconditions(
 					groundedBeliefAddress, sharedBeliefAddress);
-			((ComplexFormula) intention.content.get(0).postconditions).forms = getPostconditions(
-					groundedBeliefAddress, sharedBeliefAddress);
+
+			ModalFormula state = new ModalFormula(-1, "state",
+					new ComplexFormula(-1, getPostconditions(
+							groundedBeliefAddress, sharedBeliefAddress), BinaryOp.conj));
+			ArrayList<dFormula> states = new ArrayList<dFormula>();
+			states.add(state);
+
+			((ComplexFormula) intention.content.get(0).postconditions).forms = states;
+
+//			((ComplexFormula) intention.content.get(0).postconditions).forms = getPostconditions(
+//					groundedBeliefAddress, sharedBeliefAddress);
 			return intention;
 		}
 
@@ -262,11 +279,14 @@ public class DialogueActionInterface extends ManagedComponent {
 				WorkingMemoryAddress _groundedBeliefAddress,
 				WorkingMemoryAddress _sharedBeliefAddress) {
 
-			ArrayList<dFormula> postconditions = super.getPreconditions(
+			ArrayList<dFormula> postconditions = super.getPostconditions(
 					_groundedBeliefAddress, _sharedBeliefAddress);
 
 			postconditions.add(PropositionFormula.create("question-answered")
 					.get());
+
+			postconditions.add(new ModalFormula(-1, "agent",
+					PropositionFormula.create(org.cognitivesystems.binder.humanAgent.value).get()));
 
 			postconditions.add(new ModalFormula(-1, "about", WMPointer.create(
 					_groundedBeliefAddress,
