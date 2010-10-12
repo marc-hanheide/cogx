@@ -75,11 +75,11 @@ public class EpistemicObjectUtils {
 
 	
 	public static final SpatioTemporalFrame curFrame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
-	public static final List<String> robotAgent = Arrays.asList("robot");
-	public static final List<String> humanAgent = Arrays.asList("human");	
-	public static final EpistemicStatus privateStatus = new PrivateEpistemicStatus("robot");
+	public static final List<String> robotAgent = Arrays.asList(IntentionManagementConstants.thisAgent);
+	public static final List<String> humanAgent = Arrays.asList(IntentionManagementConstants.humanAgent);	
+	public static final EpistemicStatus privateStatus = new PrivateEpistemicStatus(IntentionManagementConstants.thisAgent);
 	public static final EpistemicStatus attributedStatus = new AttributedEpistemicStatus(robotAgent.get(0), humanAgent);
-	
+	 
 		
 	/**
 	 * Extract the intentional content of a formula with two modal operators <pre> and <post>
