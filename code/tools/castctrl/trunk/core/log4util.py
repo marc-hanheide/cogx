@@ -44,6 +44,7 @@ class CLog4Config:
     def setXmlLogFilename(self, filename):
         path = os.path.abspath(filename)
         self._logDir = os.path.dirname(path)
+        self._logFile = os.path.basename(path)
         if self._logFile == "":
             self._logFile = "cast-log.xml"
 
