@@ -30,7 +30,7 @@ implements TRResultListener {
 	private String serverName = defaultServerName;
 	private String serverEndpoint = defaultServerEndpoint;
 	
-	private float threshold = 1.0f;
+	private float threshold = 0.2f;
 
 	/**
 	 * Starts up the component. The engine is configured and started
