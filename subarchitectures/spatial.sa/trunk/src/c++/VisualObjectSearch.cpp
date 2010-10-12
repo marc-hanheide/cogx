@@ -615,6 +615,10 @@ log("filled");
     while (totalprob <= threshold){
       log("total prob mass of cones for strategy step so far: %f", totalprob);
       SensingAction nbv = SampleAndSelect(tmpMap);
+      if(nbv.totalprob < 0){
+	log("Probably you have a map with no obstacles, returning without doing anything now.");
+	break;
+      }
       plan.push_back(nbv);
       totalprob += nbv.totalprob;
       UnsuccessfulDetection(nbv, tmpMap);
@@ -1054,7 +1058,7 @@ log("filled");
 
 	    //	if(m_publishSimCones)
 	    //			return;
-
+lockComponent();
 
 	    spatial::Object *model = generateNewObjectModel(newObj->label);
 	    log("Got Spatial Object: %s", newObj->label.c_str());
@@ -1118,6 +1122,7 @@ log("filled");
 	  catch (DoesNotExistOnWMException e) {
 	    log("Error! SpatialObject disappeared from WM!");
 	  }
+	  unlockComponent();
 	}
 
       void
@@ -2719,7 +2724,9 @@ log("filled");
 	int bestConeIndex = GetViewConeSums(samplepoints, tmpMap);
 	if(bestConeIndex == -1){
 	  log("No View Cone is selected possible cause is grid map does not contain any obstacles or too little free space area, returning without doing anything");
-	  return;
+	  SensingAction wbv;
+	  wbv.totalprob = -1;
+	  return wbv;
 	}
 	else{
 	  delete lgmpdf;
@@ -2842,10 +2849,26 @@ log("filled");
 
 	    log("got recognizer3D overwrite command: %s", cmd->label.c_str());
 	    // First of all check if we have found the holy grail
+	      waitingForDetection.erase(cmd->label);
 
+	      string logString(" Recognizer Waiting list: ");
+	      logString += " / ";
+	      for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
+		logString += *it + " ";
+	      }
+	      log(logString.c_str());
+
+	      if (waitingForDetection.empty()) {
+		log("Letting planner know that view point is processed.");
+		SpatialData::ProcessViewPointCommandPtr VPcmd= new SpatialData::ProcessViewPointCommand;
+		VPcmd->status = SpatialData::SUCCESS;
+		overwriteWorkingMemory(m_ProcessVPID,VPcmd);
+	      }
+
+	     if(m_publishSimCones); 
+	      return;
 	    if(waitingForDetection.find(cmd->label) != waitingForDetection.end() ){
 	      //We were waiting for detection results on this object
-	      waitingForDetection.erase(cmd->label);
 
 	      string logString(" Recognizer Waiting list: ");
 	      for (std::set<string>::iterator it = waitingForObjects.begin(); it != waitingForObjects.end(); it++) {
@@ -2856,14 +2879,6 @@ log("filled");
 		logString += *it + " ";
 	      }
 	      log(logString.c_str());
-
-	      if (waitingForObjects.empty() && waitingForDetection.empty()) {
-		log("Letting planner know that view point is processed.");
-		SpatialData::ProcessViewPointCommandPtr VPcmd= new SpatialData::ProcessViewPointCommand;
-		VPcmd->status = SpatialData::SUCCESS;
-		overwriteWorkingMemory(m_ProcessVPID,VPcmd);
-		DetectionComplete(false);
-	      }
 
 	    }
 	    else{
