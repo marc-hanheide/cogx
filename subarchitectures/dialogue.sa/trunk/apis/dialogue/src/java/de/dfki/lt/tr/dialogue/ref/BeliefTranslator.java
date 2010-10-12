@@ -82,6 +82,7 @@ public class BeliefTranslator {
 			// ancestors and offsprings
 			if (bel.hist instanceof CASTBeliefHistory) {
 				CASTBeliefHistory chist = (CASTBeliefHistory) bel.hist;
+				boolean have_ancestors = false;
 				for (WorkingMemoryPointer wmp : chist.ancestors) {
 					facts_ancestor.add(
 							TermAtomFactory.modalisedAtom(mod,
@@ -91,7 +92,21 @@ public class BeliefTranslator {
 										ConversionUtils.workingMemoryAddressToTerm(wmp.address),
 										TermAtomFactory.term("type" + wmp.type)
 									} )));
+					have_ancestors = true;
+					break;  // let's just do one of them
 				}
+
+				if (!have_ancestors) {
+					facts_ancestor.add(
+							TermAtomFactory.modalisedAtom(mod,
+								TermAtomFactory.atom("ancestor",
+									new Term[] {
+										belIdTerm,
+										belIdTerm,
+										TermAtomFactory.term("type::unknown")
+									} )));
+				}
+/*
 				for (WorkingMemoryPointer wmp : chist.offspring) {
 					facts_offspring.add(
 							TermAtomFactory.modalisedAtom(mod,
@@ -101,7 +116,9 @@ public class BeliefTranslator {
 										ConversionUtils.workingMemoryAddressToTerm(wmp.address),
 										TermAtomFactory.term("type" + wmp.type)
 									} )));
-				}
+					break;  // let's just do one of them
+ 				}
+ */
 			}
 
 			// examine the contents
@@ -229,6 +246,7 @@ public class BeliefTranslator {
 		sb.append(join("\n", args)).append("\n");
 		sb.append("\n");
 
+/*
 		sb.append("% belief offsprings\n");
 		args.clear();
 		for (ModalisedAtom ma : facts_offspring) {
@@ -236,6 +254,7 @@ public class BeliefTranslator {
 		}
 		sb.append(join("\n", args)).append("\n");
 		sb.append("\n");
+ */
 
 		sb.append("% world existence assumability function\n");
 		args.clear();
