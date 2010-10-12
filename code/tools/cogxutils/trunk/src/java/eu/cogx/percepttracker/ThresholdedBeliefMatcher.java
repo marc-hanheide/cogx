@@ -36,8 +36,8 @@ public class ThresholdedBeliefMatcher<From extends dBelief, To extends dBelief>
 	protected EpistemicStatus getEpistemicStatus() {
 		SharedEpistemicStatus status = new SharedEpistemicStatus();
 		status.cgagents = new ArrayList<String>(2);
-		status.cgagents.add(org.cognitivesystems.binder.thisAgent.value);
-		status.cgagents.add(org.cognitivesystems.binder.humanAgent.value);
+		status.cgagents.add("self");
+		status.cgagents.add("human");
 		return status;
 	}
 
