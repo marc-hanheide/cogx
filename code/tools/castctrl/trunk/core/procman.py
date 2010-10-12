@@ -128,6 +128,7 @@ class CProcess(CProcessBase):
         self.willClearAt = None # Flushing
         self.pipeReader = None
         self.srcid = "process.%s.%s" % (self.host.host.replace('.', '_'), self.name.replace('.', '_'))
+        self.partialLine = {} # one place for every pipe
 
     def __del__(self):
         self.stop()
@@ -251,16 +252,22 @@ class CProcess(CProcessBase):
 
     def _readPipe(self, pipe, maxcount, targetList, fnType, flushing=False):
         start = time.time(); tmend = start + 0.1
+        if not self.partialLine.has_key(pipe): self.partialLine[pipe] = ""
         nl = 0
         if flushing: maxempty = 0
         else: maxempty = 1
         while len(select.select([pipe], [], [], 0.0)[0]) > 0:
             msg = pipe.read(64000)
-            if len(msg) < 1 or msg.isspace(): self.lastLinesEmpty += 1
-            else: self.lastLinesEmpty = 0
-            if self.lastLinesEmpty <= maxempty:
+            if len(msg) > 0:
+                lineTerminated = msg.endswith("\n")
                 lines = msg.split("\n")
-                if len(lines[-1]) < 1:
+                if lineTerminated:
+                    lines = lines[:-1]
+                if (len(lines) > 1 or lineTerminated) and len(self.partialLine[pipe]) > 0:
+                    lines[0] = self.partialLine[pipe] + lines[0]
+                    self.partialLine[pipe] = ""
+                if not lineTerminated:
+                    self.partialLine[pipe] += lines[-1]
                     lines = lines[:-1]
                 for msg in lines:
                     if len(msg) < 1 or msg.isspace(): self.lastLinesEmpty += 1
