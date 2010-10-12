@@ -31,7 +31,7 @@ public abstract class AbstractIntentionMotiveGenerator<M extends Motive, T exten
 		WorkingMemoryChangeReceiver {
 
 	final Map<WorkingMemoryAddress, WorkingMemoryAddress> intent2motiveMap = new HashMap<WorkingMemoryAddress, WorkingMemoryAddress>();
-	private WorkingMemoryAddress robotBeliefAddr = null;
+
 
 	/**
 	 * 
@@ -128,27 +128,5 @@ public abstract class AbstractIntentionMotiveGenerator<M extends Motive, T exten
 
 	protected abstract M checkForUpdate(T newEntry, M motive);
 
-	protected WorkingMemoryAddress getRobotBeliefAddr() {
-		if (robotBeliefAddr == null) {
-			List<CASTData<GroundedBelief>> groundedBeliefs = new ArrayList<CASTData<GroundedBelief>>();
-			try {
-				getMemoryEntriesWithData(GroundedBelief.class, groundedBeliefs,
-						BINDER_SA, 0);
-			} catch (UnknownSubarchitectureException e) {
-				logException(e);
-				return null;
-			}
-
-			for (CASTData<GroundedBelief> beliefEntry : groundedBeliefs) {
-				if (beliefEntry.getData().type.equals(ROBOT_BELIEF_TYPE)) {
-					robotBeliefAddr = new WorkingMemoryAddress(beliefEntry
-							.getID(), BINDER_SA);
-					break;
-				}
-			}
-			getLogger().warn("unable to find belief 'Robot'");
-		}
-		return robotBeliefAddr;
-	}
 
 }
