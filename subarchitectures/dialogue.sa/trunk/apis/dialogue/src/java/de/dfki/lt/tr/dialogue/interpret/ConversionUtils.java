@@ -775,6 +775,13 @@ public abstract class ConversionUtils {
 					FunctionTerm ft = TermAtomFactory.term(IntentionManagementConstants.stateModality, new Term[] {listToTerm(stateFormulaToTerms(cf.forms))});
 					result.add(TermAtomFactory.modalisedAtom(modality, TermAtomFactory.atom(atomPrefix, new Term[] {itIdTerm, ft})));
 				}
+				else {
+					// not a complex formula -> make a singleton list
+					List<dFormula> sl = new LinkedList<dFormula>();
+					sl.add(mf.form);
+					FunctionTerm ft = TermAtomFactory.term(IntentionManagementConstants.stateModality, new Term[] {listToTerm(stateFormulaToTerms(sl))});
+					result.add(TermAtomFactory.modalisedAtom(modality, TermAtomFactory.atom(atomPrefix, new Term[] {itIdTerm, ft})));
+				}
 			}
 		}
 
