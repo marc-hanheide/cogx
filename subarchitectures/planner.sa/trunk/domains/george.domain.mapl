@@ -36,9 +36,9 @@
     (p-color ?v - visual-object ?c - color-name) - number
     (p-shape ?v - visual-object ?s - shape-name) - number
     (p-ident ?v - visual-object ?i - ident-name) - number
-    ;;(max-color-gain ?v - visual-object) - color-name
-    ;;(max-shape-gain ?v - visual-object) - shape-name
-    ;;(max-ident-gain ?v - visual-object) - ident-name
+    (max-gain-color ?v - visual-object) - color-name
+    (max-gain-shape ?v - visual-object) - shape-name
+    (max-gain-ident ?v - visual-object) - ident-name
   )
 
   (:derived (learning-impossible)
@@ -65,7 +65,7 @@
 	    	    (or
 			(= ?c unknown-color)
 			(< (p-color ?v ?c) 0.5)
-			;;(not (= (max-color-gain ?v) ?c))
+			(not (= (max-gain-color ?v) ?c))
 		    )
 	    )
   )
@@ -73,7 +73,7 @@
   (:derived (allow-polar-color-question ?v - visual-object ?c - color-name)
   	    (and
 		(>= (p-color ?v ?c) 0.5)
-		;;(= (max-color-gain ?v) ?c)
+		(= (max-gain-color ?v) ?c)
 	    )
   )
 
@@ -82,7 +82,7 @@
 	    	    (or
 			(= ?s unknown-shape)
 			(< (p-shape ?v ?s) 0.5)
-			;;(not (= (max-shape-gain ?v) ?s))
+			(not (= (max-gain-shape ?v) ?s))
 		    )
 	    )
   )
@@ -90,7 +90,7 @@
   (:derived (allow-polar-shape-question ?v - visual-object ?s - shape-name)
   	    (and
 		(>= (p-shape ?v ?s) 0.5)
-		;;(= (max-shape-gain ?v) ?c)
+		(= (max-gain-shape ?v) ?s)
 	    )
   )
 
@@ -99,7 +99,7 @@
 	    	    (or
 			(= ?i unknown-ident)
 			(< (p-ident ?v ?i) 0.5)
-			;;(not (= (max-ident-gain ?v) ?i))
+			(not (= (max-gain-ident ?v) ?i))
 		    )
 	    )
   )
@@ -107,7 +107,7 @@
   (:derived (allow-polar-ident-question ?v - visual-object ?i - ident-name)
   	    (and
 		(>= (p-ident ?v ?i) 0.5)
-		;;(= (max-ident-gain ?v) ?i)
+		(= (max-gain-ident ?v) ?i)
 	    )
   )  
 
