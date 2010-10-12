@@ -13,6 +13,7 @@
 		<edge id="greetingEdge" source="startNode" target="greetingNode" condition="greetingCond"/>
 		<edge id="greetingEdge2" source="closingNode" target="greetingNode" condition="greetingCond"/>
 		<edge id="greetingEdge3" source="rootNode" target="greetingNode" condition="greetingCond"/>
+		<edge id="greetingEdge4" source="greetingNode" target="greetingNode" condition="greetingCond"/>
 		<edge id="evalEdge" source="rootNode" target="thankingNode" condition="evalCond"/>
 		<edge id="evalEdge2" source="greetingNode" target="thankingNode" condition="evalCond"/>
 		<edge id="anyEdge" source="rootNode" target="rootNode" condition="anyCond"/>	
