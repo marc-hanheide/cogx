@@ -8,7 +8,6 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -188,9 +187,9 @@ public class ManualGoalFrame extends JFrame {
 		if (jContentPane == null) {
 			jContentPane = new JPanel();
 			jContentPane.setLayout(new BorderLayout());
-			jContentPane.add(getJBeliefsPanel(), BorderLayout.WEST);
+			jContentPane.add(getJBeliefsPanel(), BorderLayout.CENTER);
 			jContentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
-			jContentPane.add(getJGoalsPanel(), BorderLayout.CENTER);
+			jContentPane.add(getJGoalsPanel(), BorderLayout.WEST);
 		}
 		return jContentPane;
 	}
@@ -322,9 +321,9 @@ public class ManualGoalFrame extends JFrame {
 	 * @return void
 	 */
 	private void initialize() {
-		this.setSize(500, 248);
+		this.setSize(400, 248);
 		this.setContentPane(getJContentPane());
-		this.setTitle("ManualPlanningTask");
+		this.setTitle("Manual Motivation Generator");
 		this.pack();
 	}
 
