@@ -79,46 +79,28 @@ public class BeliefTranslator {
 						belexMAtom,
 						new Double(exist_prob)));
 
-			// ancestors and offsprings
-			if (bel.hist instanceof CASTBeliefHistory) {
+			// ancestors
+			if (bel.hist instanceof CASTBeliefHistory && ((CASTBeliefHistory)bel.hist).ancestors.size() > 0) {
 				CASTBeliefHistory chist = (CASTBeliefHistory) bel.hist;
-				boolean have_ancestors = false;
-				for (WorkingMemoryPointer wmp : chist.ancestors) {
-					facts_ancestor.add(
-							TermAtomFactory.modalisedAtom(mod,
-								TermAtomFactory.atom("ancestor",
-									new Term[] {
-										belIdTerm,
-										ConversionUtils.workingMemoryAddressToTerm(wmp.address),
-										TermAtomFactory.term("type" + wmp.type)
-									} )));
-					have_ancestors = true;
-					break;  // let's just do one of them
-				}
-
-				if (!have_ancestors) {
-					facts_ancestor.add(
-							TermAtomFactory.modalisedAtom(mod,
-								TermAtomFactory.atom("ancestor",
-									new Term[] {
-										belIdTerm,
-										belIdTerm,
-										TermAtomFactory.term("type::unknown")
-									} )));
-				}
-/*
-				for (WorkingMemoryPointer wmp : chist.offspring) {
-					facts_offspring.add(
-							TermAtomFactory.modalisedAtom(mod,
-								TermAtomFactory.atom("offspring",
-									new Term[] {
-										belIdTerm,
-										ConversionUtils.workingMemoryAddressToTerm(wmp.address),
-										TermAtomFactory.term("type" + wmp.type)
-									} )));
-					break;  // let's just do one of them
- 				}
- */
+				WorkingMemoryPointer wmp = chist.ancestors.get(0);
+				facts_ancestor.add(
+						TermAtomFactory.modalisedAtom(mod,
+							TermAtomFactory.atom("ancestor",
+								new Term[] {
+									belIdTerm,
+									ConversionUtils.workingMemoryAddressToTerm(wmp.address),
+									TermAtomFactory.term("type" + wmp.type)
+								} )));
+			}
+			else {
+				facts_ancestor.add(
+						TermAtomFactory.modalisedAtom(mod,
+							TermAtomFactory.atom("ancestor",
+								new Term[] {
+									belIdTerm,
+									belIdTerm,
+									TermAtomFactory.term("type::unknown")
+								} )));
 			}
 
 			// examine the contents
