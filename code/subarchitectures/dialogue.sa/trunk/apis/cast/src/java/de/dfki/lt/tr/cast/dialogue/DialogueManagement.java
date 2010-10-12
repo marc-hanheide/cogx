@@ -1,6 +1,7 @@
 package de.dfki.lt.tr.cast.dialogue;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import de.dfki.lt.tr.beliefs.slice.events.Event;
 import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
@@ -310,11 +312,21 @@ public class DialogueManagement extends ManagedComponent {
 		CommunicativeIntention newCI = EpistemicObjectUtils.copy (initCI);
 		debug("communicative intention " + initCI.intent.id + " successfully copied");
 
-		for (IntentionalContent alternativeContent : newCI.intent.content) {			
-			alternativeContent.postconditions = expandFormula(alternativeContent.postconditions);		
-			debug("expanded postcondition: " + FormulaUtils.getString(alternativeContent.postconditions));				
+		List<IntentionalContent> newContents = new LinkedList<IntentionalContent>();
+		for (IntentionalContent alternativeContent : newCI.intent.content) {	
+			
+			HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(alternativeContent.postconditions);		
+			
+			debug("number of expanded formulae: " + expandedFormulae.size());
+				for (ComplexFormula expandedFormula : expandedFormulae.keySet()) {
+				IntentionalContent newContent = new IntentionalContent(alternativeContent.agents, alternativeContent.preconditions, 
+						expandedFormula, alternativeContent.probValue* expandedFormulae.get(expandedFormula));
+				newContents.add(newContent);
+				debug("expanded postcondition: " + FormulaUtils.getString(newContent.postconditions));				
+			}
 		}
-
+		newCI.intent.content = newContents;
+		
 		if (includesInFormula(initCI.intent, "<hypo>")) {
  
 			debug("dealing with a polar question");
@@ -337,9 +349,6 @@ public class DialogueManagement extends ManagedComponent {
 		return newCI;
 	}
 	
-	
-	
-	
 
 	
 	
@@ -354,19 +363,50 @@ public class DialogueManagement extends ManagedComponent {
 	 * @throws DoesNotExistOnWMException
 	 * @throws DialogueException
 	 */
-	private dFormula expandFormula (dFormula form)
+	private HashMap<ComplexFormula,Float> expandFormula (dFormula form)
 		throws UnknownSubarchitectureException, DoesNotExistOnWMException, DialogueException {
 		
 		if (form instanceof ComplexFormula) {
-			List<dFormula> newSubFormulae = new LinkedList<dFormula>();
+			
+			debug("inside complex formula");
+			HashMap<ComplexFormula,Float> CFormulae = new HashMap<ComplexFormula,Float>();
+			CFormulae.put(new ComplexFormula(0,new LinkedList<dFormula>(),BinaryOp.conj), 1.0f);
+			
 			for (dFormula existingSubFormula : ((ComplexFormula)form).forms) {
-				newSubFormulae.add(expandFormula(existingSubFormula));
+				
+				HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(existingSubFormula);
+				
+				for (dFormula curCFormula : CFormulae.keySet()) {
+					
+					for (dFormula expandedFormula : expandedFormulae.keySet()) {
+						
+						ComplexFormula newFormula = (ComplexFormula) FormulaUtils.copy(curCFormula);
+						newFormula.forms.add(expandedFormula);
+						CFormulae.put(newFormula, CFormulae.get(curCFormula) * expandedFormulae.get(expandedFormula));
+					}
+					
+					CFormulae.remove(curCFormula);
+				}		
 			}
-			return new ComplexFormula(0, newSubFormulae, ((ComplexFormula)form).op);
+			return CFormulae;
 		}
 		
 		else if (form instanceof ModalFormula) {
-			return new ModalFormula(0, ((ModalFormula)form).op, expandFormula(((ModalFormula)form).form));
+					
+			debug("inside modal formula");
+			
+			HashMap<ComplexFormula, Float> newFormulae = new HashMap<ComplexFormula,Float>();
+			HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(((ModalFormula)form).form);
+			
+			for (ComplexFormula expandedFormula : expandedFormulae.keySet()) {
+				
+				ComplexFormula newFormula = new ComplexFormula(0, Arrays.asList((dFormula)new ModalFormula(
+						0, ((ModalFormula)form).op, expandedFormula)), BinaryOp.conj);
+				newFormulae.put(newFormula, expandedFormulae.get(expandedFormula));
+				debug("returning formula 2: " + FormulaUtils.getString(newFormula));
+			}
+			
+			return newFormulae;
 		}
 		
 		else if (form instanceof PointerFormula) {
@@ -375,10 +415,15 @@ public class DialogueManagement extends ManagedComponent {
 			if (WMPointer != null && existsOnWorkingMemory(WMPointer)) {			
 				try {
 				dBelief b = getMemoryEntry(WMPointer, dBelief.class);
-				ComplexFormula expandedFormula =  EpistemicObjectUtils.getBeliefContent(b);
-				debug("belief content: " + FormulaUtils.getString(expandedFormula));
-				expandedFormula.forms.add(new ModalFormula(0, "ref", form));
-				return expandedFormula;
+				
+				HashMap<ComplexFormula,Float> expandedFormulae =  EpistemicObjectUtils.getBeliefContent(b);
+								
+				for (ComplexFormula expandedFormula : expandedFormulae.keySet()) {
+					expandedFormula.forms.add(new ModalFormula(0, "ref", form));
+					debug("returning formula: " + FormulaUtils.getString(expandedFormula));
+				}
+				
+				return expandedFormulae;
 				}
 				catch (ClassCastException e) {
 					e.printStackTrace();
@@ -386,6 +431,9 @@ public class DialogueManagement extends ManagedComponent {
 			}
 		}
 		
-		return form;
+		HashMap<ComplexFormula,Float> dummyHash = new HashMap<ComplexFormula,Float>();
+		dummyHash.put(new ComplexFormula(0,Arrays.asList(form),BinaryOp.conj), 1.0f);
+		return dummyHash;
+	
 	}
 }

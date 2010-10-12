@@ -235,58 +235,72 @@ public class EpistemicObjectUtils {
 	 * @return the complex formula representing the belief
 	 * @throws DialogueException
 	 */
-	public static ComplexFormula getBeliefContent (dBelief b) throws DialogueException {
+	public static HashMap<ComplexFormula,Float> getBeliefContent (dBelief b) throws DialogueException {
+		
+		HashMap<ComplexFormula,Float> results = new HashMap<ComplexFormula,Float>();
+		results.put(new ComplexFormula(0,new LinkedList<dFormula>(), BinaryOp.conj), 1.0f);
 		
 		debug("type of distrib: " + b.content.getClass().getCanonicalName());
-		
+
 		if (b.content instanceof CondIndependentDistribs) {
-			
-			List<dFormula> beliefFormulae = new LinkedList<dFormula>();
-			
+
 			for (String key : ((CondIndependentDistribs)b.content).distribs.keySet()) {
 				debug("key: " + key);
 				if (((CondIndependentDistribs)b.content).distribs.get(key) instanceof BasicProbDistribution) {
-					
+
 					debug("type of values: " + ((BasicProbDistribution)((CondIndependentDistribs)b.content).distribs.get(key)).values);
 					if (((BasicProbDistribution)((CondIndependentDistribs)b.content).
 							distribs.get(key)).values instanceof FormulaValues) {
-						
-						// here we only take the first value
-						if (((FormulaValues)((BasicProbDistribution)((CondIndependentDistribs)
-								b.content).distribs.get(key)).values).values.size() > 0) {
-							dFormula keyValue = ((FormulaValues)((BasicProbDistribution)
-									((CondIndependentDistribs)b.content).distribs.get(key)).values).values.get(0).val;
-							ModalFormula replacementFormula = new ModalFormula(0, key, keyValue);
-							debug("adding formula: " + FormulaUtils.getString(replacementFormula));
-							beliefFormulae.add(replacementFormula);
+
+						if ((((FormulaValues)((BasicProbDistribution)((CondIndependentDistribs)
+								b.content).distribs.get(key)).values).values.size() > 0)) {
+
+							for (ComplexFormula existingFormula : results.keySet()) {
+								float curProb = results.get(existingFormula);
+
+								for (FormulaProbPair pair: (((FormulaValues)((BasicProbDistribution)((CondIndependentDistribs)
+										b.content).distribs.get(key)).values).values)) {
+
+									dFormula newFormula = FormulaUtils.copy(existingFormula);
+									((ComplexFormula)newFormula).forms.add(new ModalFormula(0, key, pair.val));
+									debug("adding formula: " + FormulaUtils.getString(newFormula));
+									results.put((ComplexFormula)newFormula, new Float(curProb*pair.prob));
+
+								}
+								results.remove(existingFormula);
+							}
 						}
+
 					}
 				}
-			}
-			
-			ComplexFormula completeFormula = new ComplexFormula(0, beliefFormulae, BinaryOp.conj);
-			debug("complete replacement formula: " + FormulaUtils.getString(completeFormula)); 
-			return completeFormula;
+			}	
 		}
+				
 		else if (b.content instanceof BasicProbDistribution) {
 						
 			if  (((BasicProbDistribution)b.content).values instanceof FormulaValues) {
 				
-				// here again, only take the first value
-				if (((FormulaValues)((BasicProbDistribution)b.content).values).values.size() > 0) {
-					dFormula form = ((FormulaValues)((BasicProbDistribution)b.content).values).values.get(0).val;
-					if (form instanceof ComplexFormula) {
-						return (ComplexFormula)form;
+				for (FormulaProbPair pair: ((FormulaValues)((BasicProbDistribution)b.content).values).values) {
+					if (pair.val instanceof ComplexFormula) {
+						results.put((ComplexFormula)pair.val, pair.prob);
 					}
 					else {
-						List<dFormula> forms = new LinkedList<dFormula>();
-						forms.add(form);
-						return new ComplexFormula(0, forms, BinaryOp.conj) ;
+						results.put(new ComplexFormula(0,Arrays.asList(pair.val), BinaryOp.conj), pair.prob);
 					}
 				}
 			}
 		}
-		throw new DialogueException("WARNING: belief content of " + b.id + " could not be extracted");
+		else {
+			throw new DialogueException("WARNING: belief content of " + b.id + " could not be extracted");
+		}
+		
+		
+		debug("final created formulae: ");
+		for (ComplexFormula existingFormula : results.keySet()) {
+			debug("form: " + FormulaUtils.getString(existingFormula) + ": " + results.get(existingFormula));
+		}
+		
+		return results;
 	}
 	
 	
