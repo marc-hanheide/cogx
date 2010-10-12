@@ -27,11 +27,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Comparator;
 
-import cast.DoesNotExistOnWMException;
-import cast.UnknownSubarchitectureException;
-import cast.architecture.ManagedComponent;
-import cast.cdl.WorkingMemoryAddress;
-
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
@@ -223,35 +218,6 @@ public class EpistemicObjectUtils {
 	}
 	
 	
-	
-	
-	/**
-	 * Expand the intentional content -- i.e. if the formula of the postcondition contains
-	 * a pointer formula, replace this pointer by the value of the epistemic object
-	 * being pointed at
-	 * 
-	 * @param initCI the initial communicative intention
-	 * @param component the CAST component to retrieve object from memory
-	 * @return the expanded intentional content (as a copy)
-	 * 
-	 * @throws DialogueException
-	 * @throws DoesNotExistOnWMException
-	 * @throws UnknownSubarchitectureException
-	 */
-	public static CommunicativeIntention expandCommunicativeIntention  
-		(CommunicativeIntention initCI, ManagedComponent component) 
-	throws DialogueException, DoesNotExistOnWMException, UnknownSubarchitectureException  {
-		
-		CommunicativeIntention newCI = copy (initCI);
-		debug("communicative intention " + initCI.intent.id + " successfully copied");
-		
-		for (IntentionalContent alternativeContent : newCI.intent.content) {			
-			alternativeContent.postconditions = expandFormula(alternativeContent.postconditions, component);		
-			debug("expanded postcondition: " + FormulaUtils.getString(alternativeContent.postconditions));
-		}
-			
-		return newCI;
-	}
 
 	
 	
@@ -264,7 +230,7 @@ public class EpistemicObjectUtils {
 	 * @return the complex formula representing the belief
 	 * @throws DialogueException
 	 */
-	private static ComplexFormula getBeliefContent (dBelief b) throws DialogueException {
+	public static ComplexFormula getBeliefContent (dBelief b) throws DialogueException {
 		
 		debug("type of distrib: " + b.content.getClass().getCanonicalName());
 		
@@ -315,52 +281,6 @@ public class EpistemicObjectUtils {
 		throw new DialogueException("WARNING: belief content of " + b.id + " could not be extracted");
 	}
 	
-		
-	/**
-	 * Expand the given formula (if the formula contains a pointer, replaces it by
-	 * the content of the epistemic object being pointed at)
-	 * 
-	 * @param form the formula to expand
-	 * @param component the CAST component to extract the pointed-to object
-	 * @return the expanded formula
-	 * 
-	 * @throws UnknownSubarchitectureException
-	 * @throws DoesNotExistOnWMException
-	 * @throws DialogueException
-	 */
-	private static dFormula expandFormula (dFormula form, ManagedComponent component)
-		throws UnknownSubarchitectureException, DoesNotExistOnWMException, DialogueException {
-		
-		if (form instanceof ComplexFormula) {
-			List<dFormula> newSubFormulae = new LinkedList<dFormula>();
-			for (dFormula existingSubFormula : ((ComplexFormula)form).forms) {
-				newSubFormulae.add(expandFormula(existingSubFormula,component));
-			}
-			return new ComplexFormula(0, newSubFormulae, ((ComplexFormula)form).op);
-		}
-		
-		else if (form instanceof ModalFormula) {
-			return new ModalFormula(0, ((ModalFormula)form).op, expandFormula(((ModalFormula)form).form, component));
-		}
-		
-		else if (form instanceof PointerFormula) {
-			debug("found pointer: " + FormulaUtils.getString(form));
-			WorkingMemoryAddress WMPointer= ((PointerFormula)form).pointer;
-			if (WMPointer != null && component.existsOnWorkingMemory(WMPointer)) {			
-				try {
-				dBelief b = component.getMemoryEntry(WMPointer, dBelief.class);
-				ComplexFormula expandedFormula =  getBeliefContent(b);
-				expandedFormula.forms.add(new ModalFormula(0, "ref", form));
-				return expandedFormula;
-				}
-				catch (ClassCastException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		return form;
-	}
 	
 	
 	/**
