@@ -2,8 +2,9 @@
 # vim:set fileencoding=utf-8 sw=4 ts=8 et:vim
 # Author:  Marko Mahnič
 # Created: jun 2009 
-import sys, traceback, Ice
+import sys, os, traceback, Ice
 import threading, time
+import stat
 
 import modice
 import icemodule.castcontrol.CastAgent as CastAgent
@@ -69,6 +70,21 @@ class CAgentI(CastAgent.Agent):
         p = self.manager.getProcess(processName)
         if p != None: p.stop()
         return 1 if p != None else 0
+
+    def setLog4jClientProperties(propText):
+        # based on log4jutil.prepareClientConfig()
+        # WARNING: if the client and the server are running from the same directory
+        # the link to log4j properties will switch between two files
+        logDir = os.path.abspath("./logs")
+        logPropLink = "log4j.properties"
+        clientfile = os.path.join(ligDir, "ccatmp.log4client.conf")
+        if os.path.exists(logPropLink):
+            st = os.lstat(logPropLink)
+            if not stat.S_ISLNK(st.st_mode):
+                os.rename(logPropLink, os.tempnam(logDir, logPropLink))
+            os.remove(logPropLink)
+        os.symlink(clientfile, logPropLink)
+        pass
 
 
 class CCastSlave(threading.Thread):

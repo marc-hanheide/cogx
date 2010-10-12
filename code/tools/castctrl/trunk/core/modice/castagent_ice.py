@@ -146,6 +146,7 @@ if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('Agent'):
         # def readMessages(self, processName, current=None):
         # def startProcess(self, name, current=None):
         # def stopProcess(self, name, current=None):
+        # def setLog4jClientProperties(self, propText, current=None):
 
         def __str__(self):
             return IcePy.stringify(self, _M_icemodule.castcontrol.CastAgent._t_Agent)
@@ -167,6 +168,9 @@ if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('Agent'):
         def stopProcess(self, name, _ctx=None):
             return _M_icemodule.castcontrol.CastAgent.Agent._op_stopProcess.invoke(self, ((name, ), _ctx))
 
+        def setLog4jClientProperties(self, propText, _ctx=None):
+            return _M_icemodule.castcontrol.CastAgent.Agent._op_setLog4jClientProperties.invoke(self, ((propText, ), _ctx))
+
         def checkedCast(proxy, facetOrCtx=None, _ctx=None):
             return _M_icemodule.castcontrol.CastAgent.AgentPrx.ice_checkedCast(proxy, '::castcontrol::CastAgent::Agent', facetOrCtx, _ctx)
         checkedCast = staticmethod(checkedCast)
@@ -184,6 +188,7 @@ if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('Agent'):
     Agent._op_readMessages = IcePy.Operation('readMessages', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), _M_icemodule.castcontrol.CastAgent._t_CastMessageList, ())
     Agent._op_startProcess = IcePy.Operation('startProcess', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), IcePy._t_int, ())
     Agent._op_stopProcess = IcePy.Operation('stopProcess', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), IcePy._t_int, ())
+    Agent._op_setLog4jClientProperties = IcePy.Operation('setLog4jClientProperties', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), None, ())
 
     _M_icemodule.castcontrol.CastAgent.Agent = Agent
     del Agent

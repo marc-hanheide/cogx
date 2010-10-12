@@ -11,6 +11,7 @@ from PyQt4 import QtCore, QtGui
 from core import procman, options, messages, confbuilder, network
 from core import castagentsrv, remoteproc
 from core import legacy
+from core import log4util
 from qtui import uimainwindow, uiresources
 from selectcomponentdlg import CSelectComponentsDlg
 from textedit import CTextEditor
@@ -197,7 +198,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             if fn.strip() == "": continue
             self.ui.hostConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
-        log4jlevels = ['ALL', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'OFF']
+        log4jlevels = log4util.log4jlevels
         for i in log4jlevels:
             self.ui.log4jConsoleLevelCmbx.addItem(i)
             self.ui.log4jFileLevelCmbx.addItem(i)
@@ -452,17 +453,20 @@ class CCastControlWnd(QtGui.QMainWindow):
             # procman.runCommand(cmd, name="cleanup-cmd-%d" % (i+1))
             procman.xrun_wait(cmd)
 
-    def startServers(self):
+    def startServers(self, log4):
         self._options.checkConfigFile()
         if self.ui.actEnableCleanupScript.isChecked():
             self.runCleanupScript()
         srvs = self.getServers(self._manager)
         for p in srvs: p.start()
 
+        log4config = "\n".join(open(log4.clientConfigFile).readlines())
+
         # XXX Processes could be started for each host separately;  (id=remotestart)
         # Each process on each host could be started separately;
         # ATM we start all processes on all hosts, so the UI can remain unchanged.
         for h in self._remoteHosts:
+            h.agentProxy.setLog4jClientProperties(log4config)
             for p in h.proclist: p.start()
         self.ui.processTree.expandAll()
 
@@ -476,8 +480,12 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     # Somehow we get 2 events for a button click ... filter one out
     def onStartCastServers(self):
+        log4 = self._getLog4jConfig()
+        hasServer = self.ui.ckRunLog4jServer.isChecked()
+        log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
+
         self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
-        self.startServers()
+        self.startServers(log4)
 
     def onStopCastServers(self):
         self.stopServers()
@@ -576,6 +584,10 @@ class CCastControlWnd(QtGui.QMainWindow):
 
 
     def onStartCastClient(self):
+        log4 = self._getLog4jConfig()
+        hasServer = self.ui.ckRunLog4jServer.isChecked()
+        log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
+
         if self.ui.ckAutoClearLog.isChecked():
             self.mainLog.clearOutput()
         self._options.checkConfigFile()
@@ -594,59 +606,35 @@ class CCastControlWnd(QtGui.QMainWindow):
         p = self._manager.getProcess("cast-client")
         if p != None: p.stop()
 
-    def _prepareLogFile(self, logfile):
+    def _getLog4jConfig(self):
         try:
-            if not os.path.exists(logfile):
-                fdir, fn = os.path.split(logfile)
-                if not os.path.exists(fdir):
-                    os.makedirs(fdir)
-            f = open(logfile, 'w')
-            head = self._options.getSection("LOG4J.SimpleSocketServer.XMLLayout.head")
-            f.write("\n".join(head))
-            f.close()
+            log4 = log4util.CLog4Config()
+            log4.setXmlLogFilename(self._log4jServerOutfile)
+            log4.setServerConsoleLevel(self._log4jConsoleLevel)
+            log4.setServerXmlFileLevel(self._log4jXmlFileLevel)
+            log4.setServerPort(self._log4jServerPort)
+            # XXX: currently it can only run on localhost; agents have to be modified for remote execution
+            log4.serverHost = self._localhost
+            return log4
         except Exception as e:
             dlg = QtGui.QErrorMessage(self)
             dlg.setModal(True)
             dlg.showMessage("Had some problems preparing the log file.\n%s" % e)
 
-    def prepareLog4jServer(self, fnameSrvConf):
-        f = open(fnameSrvConf, "w")
-        conf = self._options.getSection("LOG4J.SimpleSocketServer.conf")
-        f.write("\n".join(conf))
-        level = self._log4jConsoleLevel
-        if level != 'OFF':
-            conf = self._options.getSection("LOG4J.SimpleSocketServer.console")
-            for ln in conf:
-                ln = ln.replace('${LEVEL}', level)
-                f.write(ln); f.write('\n')
-
-        level = self._log4jXmlFileLevel
-        logfile = self._log4jServerOutfile
-        if level != 'OFF':
-            if logfile == '': logfile = 'logs/cast-log.xml'
-            logfile = os.path.abspath(logfile)
-            self._prepareLogFile(logfile)
-            conf = self._options.getSection("LOG4J.SimpleSocketServer.xmlfile")
-            for ln in conf:
-                ln = ln.replace('${LEVEL}', level)
-                ln = ln.replace('${LOGFILE}', logfile)
-                f.write(ln); f.write('\n')
-
-        f.close()
-
     def onStartExternalServers(self):
         self._options.checkConfigFile()
-        if not self.ui.ckRunLog4jServer.isChecked():
-            pass # TODO: ln -s log4j configuration for client: one with server, one w/o
-        else:
+        log4 = self._getLog4jConfig()
+        hasServer = self.ui.ckRunLog4jServer.isChecked()
+        log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
+
+        if self.ui.ckRunLog4jServer.isChecked():
             p = self._manager.getProcess("log4jServer")
             if p != None:
+                log4.prepareServerConfig()
                 LOGGER.log("Log4j STARTING 2")
-                conf = "cctmp.SimpleSocketServer.conf"
-                self.prepareLog4jServer(conf)
                 p.start( params = {
-                    "LOG4J_PORT": self._log4jServerPort,
-                    "LOG4J_SERVER_CONFIG": conf
+                    "LOG4J_PORT": log4.serverPort,
+                    "LOG4J_SERVER_CONFIG": log4.serverConfigFile
                     })
 
         if self.ui.ckRunPlayer.isChecked():

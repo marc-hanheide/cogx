@@ -25,5 +25,5 @@ $(DIR)/__init__.py: $(DIR) $(DIR)/castagent_ice.py
 
 # Write default options to python
 # -------------------------------
-optdefault.py: default_cleanup.txt default_env.txt default_user.txt
+optdefault.py: default_cleanup.txt default_env.txt default_user.txt default_log4jsrv.txt
 	bash ./mkdefaults.sh

@@ -63,9 +63,12 @@ PYTHONPATH=<pathlist>
    ${PYTHONPATH}
 </pathlist>
 
-# V11N can run standalone when --standalone-display-host is set
-# All clients that use the display server should include the 
-# parmeters: $V11N_STANDALONE $V11N_STANDALONE_HOST 
+# To redirect the v11n output to a standalone DisplayServer add the
+# parameter --redirect-to-host "hostnale" to a DisplayServer component
+# in a cast file.
+# OBSOLETE: V11N can run standalone when --standalone-display-host is set
+# OBSOLETE: All clients that use the display server should include the 
+# OBSOLETE: parmeters: $V11N_STANDALONE $V11N_STANDALONE_HOST 
 V11N_STANDALONE=--standalone-display-host
 V11N_STANDALONE_HOST=localhost
 
@@ -76,7 +79,10 @@ CMD_PYTHON_SERVER=python -m ComponentServer
 CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG]
 CMD_PLAYER=player [PLAYER_CONFIG]
 CMD_PEEKABOT=peekabot
-CMD_LOG4J_SERVER=${CMD_JAVA} org.apache.log4j.net.SimpleSocketServer [LOG4J_PORT] [LOG4J_SERVER_CONFIG]
+CMD_LOG4J_SERVER=<multiline>
+   java -ea -classpath ${CLASSPATH}
+   org.apache.log4j.net.SimpleSocketServer [LOG4J_PORT] [LOG4J_SERVER_CONFIG]
+</multiline>
 CMD_DISPLAY_SERVER=${COGX_ROOT}/output/bin/display-server
 
 # Abducer Server

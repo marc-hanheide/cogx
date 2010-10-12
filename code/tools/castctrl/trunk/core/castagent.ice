@@ -20,6 +20,7 @@ module castcontrol{
          CastMessageList readMessages(string processName);
          int startProcess(string name);
          int stopProcess(string name);
+         void setLog4jClientProperties(string propText);
       };
    };
 };
