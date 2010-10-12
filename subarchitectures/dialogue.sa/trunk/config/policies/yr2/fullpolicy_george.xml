@@ -6,6 +6,7 @@
 		<node id="thankingNode" action="thankAction" isFinal="true" isInitial="false"/>
 		<node id="closingNode" action="closingAction" isInitial="false" isFinal="true"/>
 		<node id="whAnswerNode" action="whAnswerAction" isInitial="false" isFinal="true"/>
+		<node id="notKnowAnswerNode" action="notKnowAnswerAction" isInitial="false" isFinal="true"/>
 		<node id="posAnswerNode" action="posAnswerAction" isInitial="false" isFinal="true"/> 
 		<node id="negAnswerNode" action="negAnswerAction" isInitial="false" isFinal="true"/> 
 		
@@ -17,6 +18,7 @@
 		<edge id="anyEdge" source="*" target="rootNode" condition="anyCond"/>	
 		<edge id="closingEdge" source="*" target="closingNode" condition="closingCond"/>
 		<edge id="whQuestionEdge" source="*" target="whAnswerNode" condition="whQuestionCond"/>
+		<edge id="whQuestionEdge2" source="*" target="notKnowAnswerNode" condition="whQuestionCond2"/>
 		<edge id="polarPosEdge" source="*" target="posAnswerNode" condition="polarCond1"/> 
 		<edge id="polarNegEdge" source="*" target="negAnswerNode" condition="polarCond2"/> 
 		
@@ -29,10 +31,12 @@
 		<condition id="closingCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))"/>
 		<condition id="whQuestionCond" type="communicativeintention"
 			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;color&gt;(%3)) ^ &lt;feature&gt;(color)))" ></condition>
+		<condition id="whQuestionCond2" type="communicativeintention"
+			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)) ^ &lt;feature&gt;(color)))" ></condition>
 		<condition id="polarCond1" type="communicativeintention"
 			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(valid)))" /> 
 		<condition id="polarCond2" type="communicativeintention"
-			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(invalid)))" /> 
+			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(invalid)))" ></condition> 
 	</conditions>
 	
 	<actions>
@@ -41,6 +45,7 @@
 		<action id="thankAction" type="communicativeintention" content="&lt;state&gt;(thanked ^ &lt;agent&gt;human ^ &lt;patient&gt;self)"></action>
 		<action id="closingAction" type="communicativeintention" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
 		<action id="whAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" />
+	    <action id="notKnowAnswerAction" type="communicativeintention" content="bla" />
 	    <action id="posAnswerAction" type="communicativeintention" content="&lt;state&gt;(verified)" ></action> 
 	    	    <action id="negAnswerAction" type="communicativeintention" content="&lt;state&gt;(falsified)" ></action> 
 	</actions>

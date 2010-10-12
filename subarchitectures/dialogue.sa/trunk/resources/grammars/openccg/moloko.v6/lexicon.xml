@@ -19,7 +19,6 @@
       </atomcat>
     </entry>
     <member stem="up"/>
-    <member stem="cup" pred="up"/>
   </family>
   <family name="Noun" pos="Noun" closed="true">
     <entry name="Entry-1">
@@ -69,7 +68,6 @@
     <member stem="researcher-noun-n" pred="researcher"/>
     <member stem="pirate-noun-n" pred="pirate"/>
     <member stem="victim-noun-n" pred="victim"/>
-    <member stem="rowboat-noun-n" pred="Robot"/>
     <member stem="Borland-noun-n" pred="Borland"/>
     <member stem="dog-noun-n" pred="dog"/>
     <member stem="cat-noun-n" pred="cat"/>
@@ -108,9 +106,6 @@
     <member stem="ball-noun-n" pred="ball"/>
     <member stem="block-noun-n" pred="block"/>
     <member stem="box-noun-n" pred="box"/>
-    <member stem="box2-noun-n" pred="box"/>
-    <member stem="box3-noun-n" pred="box"/>
-    <member stem="box4-noun-n" pred="box"/>
     <member stem="bucket-noun-n" pred="bucket"/>
     <member stem="pin-noun-n" pred="pin"/>
     <member stem="cube-noun-n" pred="cube"/>
@@ -2983,8 +2978,6 @@
       </atomcat>
     </entry>
     <member stem="now-adv" pred="now"/>
-    <member stem="now2-adv" pred="now"/>
-    <member stem="now3-adv" pred="now"/>
     <member stem="today-adv" pred="today"/>
     <member stem="yesterday-adv" pred="yesterday"/>
     <member stem="tomorrow-adv" pred="tomorrow"/>
@@ -14713,7 +14706,6 @@
     <member stem="butxx-du" pred="but"/>
     <member stem="andxx-du" pred="and"/>
     <member stem="soxx-du" pred="so"/>
-    <member stem="thenxx-du" pred="and"/>
     <member stem="finexx-du" pred="fine"/>
     <member stem="goodxx-du" pred="good"/>
     <member stem=",xx-du" pred=","/>

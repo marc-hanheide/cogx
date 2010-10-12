@@ -21,14 +21,13 @@
   <entry word="her" macros="@sg" pos="Owner-pro" stem="she-owner-sg" class="entity" pred="she"/>
   <entry word="hers" macros="@sg" pos="Owned-np" stem="she-owned-sg" class="entity" pred="she"/>
   <entry word="it" macros="@3rd @s-sg @nom @pro @sg" pos="Bare-np" stem="it-pro-pers-sg" class="thing" pred="it"/>
-  <entry word="it" macros="@3rd @s-sg @acc @pro @sg" pos="Bare-np" stem="it-pro-pers-sg" class="thing" pred="it"/>
+  <entry word="it" macros="@3rd @s-sg @acc @pro @sg" pos="Bare-np" stem="it-pro-3rd-sg" class="thing" pred="it"/>
   <entry word="its" macros="@sg" pos="Owner-pro" stem="it-owner-sg" class="entity" pred="it"/>
   <entry word="its" macros="@sg" pos="Owned-np" stem="it-owned-sg" class="entity" pred="it"/>
   <entry word="they" macros="@3rd @s-pl @nom @pro @pl" pos="Bare-np" stem="they-pro-pers-pl" class="entity" pred="they"/>
   <entry word="them" macros="@3rd @s-pl @acc @pro @pl" pos="Bare-np" stem="they-pro-pers-pl" class="entity" pred="they"/>
   <entry word="their" macros="@pl" pos="Owner-pro" stem="they-owner-pl" class="entity" pred="they"/>
   <entry word="theirs" macros="@pl" pos="Owned-np" stem="they-owned-pl" class="entity" pred="they"/>
-  <entry word="that" macros="@3rd @s-sg @acc @pro @sg @asr-correction" pos="Bare-np" stem="it-pro-3rd-sg" class="thing" pred="it"/>
   <entry word="someone" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt" pos="Bare-np" stem="someone-context-np" class="person" pred="context"/>
   <entry word="somebody" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt" pos="Bare-np" stem="somebody-context-np" class="person" pred="context"/>
   <entry word="anyone" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt" pos="Bare-np" stem="anyone-context-np" class="person" pred="context"/>
@@ -682,7 +681,6 @@
   <entry word="fifteenth" macros="@s-sg" pos="SGroup-n" stem="fifteenth15sgroup-n" class="number-ordinal" pred="15"/>
   <entry word="to" macros="@s-purpose" pos="Adv+verb-base-" stem="to-purpose" class="m-purpose" pred="to"/>
   <entry word="up" pos="Particle" stem="up"/>
-  <entry word="cup" macros="@asr-correction" pos="Particle" stem="cup" pred="up"/>
   <entry word="and" macros="@s-pl @pl" pos="Coord-np-" stem="and-coord-np" class="entity" pred="and"/>
   <entry word="then" macros="@s-pl @pl" pos="Coord-np-" stem="then-coord-np" class="entity" pred="then"/>
   <entry word="before" macros="@s-pl @pl" pos="Coord-np-" stem="before-coord-np" class="entity" pred="before"/>
@@ -748,7 +746,6 @@
   <entry word="orientation" pos="Quality-class" stem="orientationorientation-quality-class" class="quality" pred="orientation"/>
   <entry word="am" macros="@be @pres @1st @s-sg @s-prov-pos @fin-full @m-class-2x" pos="V" stem="be-copular" class="ascription" pred="be"/>
   <entry word="are" macros="@be @pres @s-pl @s-prov-pos @fin-full @m-class-2x" pos="V" stem="be-copular" class="ascription" pred="be"/>
-  <entry word="far" macros="@be @pres @s-pl @s-prov-pos @asr-correction" pos="V" stem="be-copular" class="ascription" pred="be"/>
   <entry word="are" macros="@be @pres @2nd @s-sg @s-prov-pos @fin-full @m-class-2x" pos="V" stem="be-copular" class="ascription" pred="be"/>
   <entry word="aren't" macros="@be @pres @s-pl @s-neg @neg @fin-full @m-class-2x" pos="V" stem="be-copular" class="ascription" pred="be"/>
   <entry word="aren't" macros="@be @pres @2nd @s-sg @s-neg @neg @fin-full @m-class-2x" pos="V" stem="be-copular" class="ascription" pred="be"/>
@@ -769,7 +766,6 @@
   <entry word="be" macros="@vf-to-imp @m-class-3" pos="V" stem="be-copular" class="ascription" pred="be"/>
   <entry word="am" macros="@be @pres @1st @s-sg @s-prov-pos @fin-full @m-class-3" pos="V" stem="be-copular-loc" class="ascription" pred="be"/>
   <entry word="are" macros="@be @pres @s-pl @s-prov-pos @fin-full @m-class-3" pos="V" stem="be-copular-loc" class="ascription" pred="be"/>
-  <entry word="far" macros="@be @pres @s-pl @s-prov-pos @asr-correction" pos="V" stem="be-copular-loc" class="ascription" pred="be"/>
   <entry word="are" macros="@be @pres @2nd @s-sg @s-prov-pos @fin-full @m-class-3" pos="V" stem="be-copular-loc" class="ascription" pred="be"/>
   <entry word="aren't" macros="@be @pres @s-pl @s-neg @neg @fin-full @m-class-3" pos="V" stem="be-copular-loc" class="ascription" pred="be"/>
   <entry word="aren't" macros="@be @pres @2nd @s-sg @s-neg @neg @fin-full @m-class-3" pos="V" stem="be-copular-loc" class="ascription" pred="be"/>
@@ -789,10 +785,8 @@
   <entry word="be" macros="@vf-base @m-class-3" pos="V" stem="be-copular-loc" class="ascription" pred="be"/>
   <entry word="be" macros="@vf-to-imp @m-class-3" pos="V" stem="be-copular-loc" class="ascription" pred="be"/>
   <entry word="not" macros="@neg" pos="Cop-negation" stem="not-cop-neg"/>
-  <entry word="No" macros="@neg @asr-correction" pos="Cop-negation" stem="no-cop-neg"/>
   <entry word="am" macros="@be @pres @1st @s-sg @s-prov-pos @fin-full @m-class-2" pos="V" stem="be-presentational" class="presentational" pred="be"/>
   <entry word="are" macros="@be @pres @s-pl @s-prov-pos @fin-full @m-class-2" pos="V" stem="be-presentational" class="presentational" pred="be"/>
-  <entry word="far" macros="@be @pres @s-pl @s-prov-pos @asr-correction" pos="V" stem="be-presentational" class="presentational" pred="be"/>
   <entry word="are" macros="@be @pres @2nd @s-sg @s-prov-pos @fin-full @m-class-2" pos="V" stem="be-presentational" class="presentational" pred="be"/>
   <entry word="aren't" macros="@be @pres @s-pl @s-neg @neg @fin-full @m-class-2" pos="V" stem="be-presentational" class="presentational" pred="be"/>
   <entry word="aren't" macros="@be @pres @2nd @s-sg @s-neg @neg @fin-full @m-class-2" pos="V" stem="be-presentational" class="presentational" pred="be"/>
@@ -812,7 +806,6 @@
   <entry word="be" macros="@vf-base @m-class-2" pos="V" stem="be-presentational" class="presentational" pred="be"/>
   <entry word="am" macros="@be @pres @1st @s-sg @s-prov-pos @fin-full @m-class-3" pos="V" stem="be-presentational-inverted" class="presentational" pred="be"/>
   <entry word="are" macros="@be @pres @s-pl @s-prov-pos @fin-full @m-class-3" pos="V" stem="be-presentational-inverted" class="presentational" pred="be"/>
-  <entry word="far" macros="@be @pres @s-pl @s-prov-pos @asr-correction" pos="V" stem="be-presentational-inverted" class="presentational" pred="be"/>
   <entry word="are" macros="@be @pres @2nd @s-sg @s-prov-pos @fin-full @m-class-3" pos="V" stem="be-presentational-inverted" class="presentational" pred="be"/>
   <entry word="aren't" macros="@be @pres @s-pl @s-neg @neg @fin-full @m-class-3" pos="V" stem="be-presentational-inverted" class="presentational" pred="be"/>
   <entry word="aren't" macros="@be @pres @2nd @s-sg @s-neg @neg @fin-full @m-class-3" pos="V" stem="be-presentational-inverted" class="presentational" pred="be"/>
@@ -868,7 +861,6 @@
   <entry word="have" macros="@vf-base @perfect" pos="Aux-no-int-pp" stem="have-aux-no-int" class="aux"/>
   <entry word="am" macros="@be @pres @1st @s-sg @s-prov-pos" pos="Aux-vf-be" stem="be-aux-vf-be" class="aux"/>
   <entry word="are" macros="@be @pres @s-pl @s-prov-pos" pos="Aux-vf-be" stem="be-aux-vf-be" class="aux"/>
-  <entry word="far" macros="@be @pres @s-pl @s-prov-pos @asr-correction" pos="Aux-vf-be" stem="be-aux-vf-be" class="aux"/>
   <entry word="are" macros="@be @pres @2nd @s-sg @s-prov-pos" pos="Aux-vf-be" stem="be-aux-vf-be" class="aux"/>
   <entry word="aren't" macros="@be @pres @s-pl @s-neg @neg" pos="Aux-vf-be" stem="be-aux-vf-be" class="aux"/>
   <entry word="aren't" macros="@be @pres @2nd @s-sg @s-neg @neg" pos="Aux-vf-be" stem="be-aux-vf-be" class="aux"/>
@@ -887,7 +879,6 @@
   <entry word="been" macros="@pp" pos="Aux-no-int-vf-be" stem="be-aux-vf-be-no-int" class="aux"/>
   <entry word="am" macros="@be @pres @1st @s-sg @s-prov-pos @continuous" pos="Aux-ing" stem="be-aux-ing" class="aux"/>
   <entry word="are" macros="@be @pres @s-pl @s-prov-pos @continuous" pos="Aux-ing" stem="be-aux-ing" class="aux"/>
-  <entry word="far" macros="@be @pres @s-pl @s-prov-pos @asr-correction" pos="Aux-ing" stem="be-aux-ing" class="aux"/>
   <entry word="are" macros="@be @pres @2nd @s-sg @s-prov-pos @continuous" pos="Aux-ing" stem="be-aux-ing" class="aux"/>
   <entry word="aren't" macros="@be @pres @s-pl @s-neg @neg @continuous" pos="Aux-ing" stem="be-aux-ing" class="aux"/>
   <entry word="aren't" macros="@be @pres @2nd @s-sg @s-neg @neg @continuous" pos="Aux-ing" stem="be-aux-ing" class="aux"/>
@@ -906,7 +897,6 @@
   <entry word="been" macros="@pp @continuous" pos="Aux-no-int-ing" stem="be-aux-ing-no-int" class="aux"/>
   <entry word="am" macros="@be @pres @1st @s-sg @s-prov-pos @passive" pos="Aux-passive" stem="be-passive-aux" class="aux"/>
   <entry word="are" macros="@be @pres @s-pl @s-prov-pos @passive" pos="Aux-passive" stem="be-passive-aux" class="aux"/>
-  <entry word="far" macros="@be @pres @s-pl @s-prov-pos @asr-correction" pos="Aux-passive" stem="be-passive-aux" class="aux"/>
   <entry word="are" macros="@be @pres @2nd @s-sg @s-prov-pos @passive" pos="Aux-passive" stem="be-passive-aux" class="aux"/>
   <entry word="aren't" macros="@be @pres @s-pl @s-neg @neg @passive" pos="Aux-passive" stem="be-passive-aux" class="aux"/>
   <entry word="aren't" macros="@be @pres @2nd @s-sg @s-neg @neg @passive" pos="Aux-passive" stem="be-passive-aux" class="aux"/>
@@ -999,8 +989,6 @@
   <entry word="Dennis" macros="@fin-full" pos="du" stem="Dennisxx-du" class="person" pred="Dennis"/>
   <entry word="George" macros="@s-sg @3rd @full" pos="Bare-np" stem="George-name" class="person" pred="George"/>
   <entry word="George" macros="@fin-full" pos="du" stem="Georgexx-du" class="person" pred="George"/>
-  <entry word="rowboat" macros="@s-sg @full @asr-correction" pos="Noun" stem="rowboat-noun-n" class="animate" pred="Robot"/>
-  <entry word="rowboats" macros="@s-pl-unsp @full @asr-correction" pos="Noun" stem="rowboat-noun-n" class="animate" pred="Robot"/>
   <entry word="Borland" macros="@s-sg @full" pos="Noun" stem="Borland-noun-n" class="entity" pred="Borland"/>
   <entry word="Borlands" macros="@s-pl-unsp @full" pos="Noun" stem="Borland-noun-n" class="entity" pred="Borland"/>
   <entry word="Robot" macros="@s-sg @3rd @full" pos="Bare-np" stem="Robot-name" class="animate" pred="Robot"/>
@@ -1083,9 +1071,6 @@
   <entry word="blocks" macros="@s-pl-unsp @full" pos="Noun" stem="block-noun-n" class="thing" pred="block"/>
   <entry word="box" macros="@s-sg @full" pos="Noun" stem="box-noun-n" class="thing" pred="box"/>
   <entry word="boxes" macros="@s-pl-unsp @full" pos="Noun" stem="box-noun-n" class="thing" pred="box"/>
-  <entry word="blocks" macros="@s-sg @full @asr-correction" pos="Noun" stem="box2-noun-n" class="thing" pred="box"/>
-  <entry word="ball" macros="@s-sg @full @asr-correction" pos="Noun" stem="box3-noun-n" class="thing" pred="box"/>
-  <entry word="books" macros="@s-sg @full @asr-correction" pos="Noun" stem="box4-noun-n" class="thing" pred="box"/>
   <entry word="bucket" macros="@s-sg @full" pos="Noun" stem="bucket-noun-n" class="thing" pred="bucket"/>
   <entry word="buckets" macros="@s-pl-unsp @full" pos="Noun" stem="bucket-noun-n" class="thing" pred="bucket"/>
   <entry word="pin" macros="@s-sg @full" pos="Noun" stem="pin-noun-n" class="thing" pred="pin"/>
@@ -2606,8 +2591,6 @@
   <entry word="with" macros="@x-instrumental @prep-1" pos="Prep" stem="with-prep-instrumental" class="m-instrumental" pred="with"/>
   <entry word="like" macros="@x-comparison @prep-1" pos="Prep" stem="like-prep-comparison" class="m-comparison" pred="like"/>
   <entry word="now" macros="@s-degree-base @x-time-point @adv-1" pos="Adv" stem="now-adv" class="m-time-point" pred="now"/>
-  <entry word="No" macros="@x-time-point @adv-1 @asr-correction" pos="Adv" stem="now2-adv" class="m-time-point" pred="now"/>
-  <entry word="not" macros="@x-time-point @adv-1 @asr-correction" pos="Adv" stem="now3-adv" class="m-time-point" pred="now"/>
   <entry word="today" macros="@s-degree-base @x-time-point @adv-3" pos="Adv" stem="today-adv" class="m-time-point" pred="today"/>
   <entry word="yesterday" macros="@s-degree-base @x-time-point @adv-3" pos="Adv" stem="yesterday-adv" class="m-time-point" pred="yesterday"/>
   <entry word="tomorrow" macros="@s-degree-base @x-time-point @adv-3" pos="Adv" stem="tomorrow-adv" class="m-time-point" pred="tomorrow"/>
@@ -2697,7 +2680,6 @@
   <entry word="but" pos="du" stem="butxx-du" class="marker" pred="but"/>
   <entry word="and" pos="du" stem="andxx-du" class="marker" pred="and"/>
   <entry word="so" pos="du" stem="soxx-du" class="marker" pred="so"/>
-  <entry word="then" macros="@asr-correction" pos="du" stem="thenxx-du" class="marker" pred="and"/>
   <entry word="fine" pos="du" stem="finexx-du" class="marker" pred="fine"/>
   <entry word="good" pos="du" stem="goodxx-du" class="marker" pred="good"/>
   <entry word="," pos="du" stem=",xx-du" class="marker" pred=","/>
@@ -2867,23 +2849,6 @@
     </fs>
     <fs id="15">
       <feat attr="CC-TYPE" val="adv-all"/>
-    </fs>
-  </macro>
-  <macro name="@asr-correction">
-    <fs id="1">
-      <feat attr="CORRECTED" val="asr-correction"/>
-    </fs>
-    <fs id="10">
-      <feat attr="CORRECTED" val="asr-correction"/>
-    </fs>
-    <fs id="15">
-      <feat attr="CORRECTED" val="asr-correction"/>
-    </fs>
-    <fs id="25">
-      <feat attr="CORRECTED" val="asr-correction"/>
-    </fs>
-    <fs id="34">
-      <feat attr="CORRECTED" val="asr-correction"/>
     </fs>
   </macro>
   <macro name="@be">
