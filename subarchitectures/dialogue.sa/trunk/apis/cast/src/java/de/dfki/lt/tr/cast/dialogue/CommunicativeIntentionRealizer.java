@@ -32,6 +32,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
+import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.IntentionRealization;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
@@ -146,7 +147,7 @@ extends AbstractDialogueComponent {
 			}
 			else {
 				IntentionalContent itnc = cit.intent.content.get(0);
-				if (itnc.agents.size() == 1 && itnc.agents.get(0).equals("robot")) {
+				if (itnc.agents.size() == 1 && itnc.agents.get(0).equals(IntentionManagementConstants.thisAgent)) {
 					log("got a private intention, will try to realise it");
 					String taskID = newTaskID();
 					ProcessingData pd = new ProcessingData(newProcessingDataId());
