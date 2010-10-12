@@ -176,12 +176,17 @@ void CVisionSimulator::CDisplayClient::handleForm(const std::string& id,
       if (pSim) {
          typeof(fields.begin()) pname = fields.find(IDC_FORM_SCENE_NAME);
          if (pname == fields.end()) {
-            std::cout << " *** Error: form has no field " << IDC_FORM_SCENE_NAME << std::endl;
+            // Scene with that name does not exist; use a temporary scene object
+            CSceneAttrs scn;
+            scn.fromForm(m_FormScene);
+            pSim->log("applyScene - unnamed");
+            pSim->applyScene(scn);
          }
          else {
             typeof(pSim->m_Scenes.begin()) it = pSim->m_Scenes.find(pname->second);
             if (it != pSim->m_Scenes.end()) {
                it->second.fromForm(m_FormScene);
+               pSim->log("applyScene - %s", pname->second.c_str());
                pSim->applyScene(pname->second);
             }
             else {
@@ -756,6 +761,17 @@ void CVisionSimulator::clearScene()
 
 void CVisionSimulator::applyScene(const std::string& sceneName)
 {
+   typeof(m_Scenes.begin()) itscn = m_Scenes.find(sceneName);
+   if (itscn == m_Scenes.end()) {
+      log("ERROR: Invalid scene name '%s'", sceneName.c_str());
+      return;
+   }
+
+   applyScene(itscn->second);
+}
+
+void CVisionSimulator::applyScene(CSceneAttrs& scene)
+{
    struct _local_ {
       // from matalab: ap2gain.m @ 20101001.
       // ap0 = 1-sum(ap)
@@ -778,13 +794,6 @@ void CVisionSimulator::applyScene(const std::string& sceneName)
       }
    };
 
-   log("applyScene");
-   typeof(m_Scenes.begin()) itscn = m_Scenes.find(sceneName);
-   if (itscn == m_Scenes.end()) {
-      log("ERROR: Invalid scene name '%s'", sceneName.c_str());
-      return;
-   }
-
    VisionData::VisualObjectPtr pobject;
 
    typeof(m_WmObjectIds.begin()) itaddr;
@@ -804,7 +813,7 @@ void CVisionSimulator::applyScene(const std::string& sceneName)
    std::ostringstream ss;
 
    std::vector<std::string>::iterator itname;
-   for(itname = itscn->second.m_objects.begin(); itname != itscn->second.m_objects.end(); itname++) {
+   for(itname = scene.m_objects.begin(); itname != scene.m_objects.end(); itname++) {
       typeof(m_Objects.begin()) itobj = m_Objects.find(*itname);
       if (itobj == m_Objects.end()) continue; // TODO: this could be an error
 
