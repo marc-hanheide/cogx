@@ -10,7 +10,7 @@ from collections import deque
 
 reColorEscape = re.compile("\x1b\\[[0-9;]+m")
 reColorEscapeSplit = re.compile("(\x1b\\[[0-9;]+m)")
-reExtractComponent = re.compile("\\[([a-zA-Z]+\\s+)?([^:\\[\\] ]+):") # [DEBUG component: ...]
+reExtractComponent = re.compile("\\[([a-zA-Z]*\\s+)?([^:\\[\\] ]+):") # [DEBUG component: ...]
 
 class CMessage(object):
     MESSAGE=0
