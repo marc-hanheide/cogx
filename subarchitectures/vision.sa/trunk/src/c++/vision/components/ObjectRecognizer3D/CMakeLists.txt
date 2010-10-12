@@ -1,3 +1,6 @@
+# needed to allow visualization to use IplImages 
+add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+
 include_directories(.)
 include_directories(./ODetect3D)
 include_directories(./matrix)
