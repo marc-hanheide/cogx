@@ -45,7 +45,7 @@ INCLUDE includes/planner.sa/planner-base.cast
 #INCLUDE includes/motivation.sa/motivation.cast
 
 # exection ####################################################################
-JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --labels cereal_box,filing_box,book,boardgame
+JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --labels cereal_box,filing_box,matchbox,table_for_meal
 JAVA MG executor dora.execution.components.DoraExecutionMediator
 
 # viewing and debugging #######################################################
