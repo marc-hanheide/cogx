@@ -50,6 +50,17 @@ understand : event : utter(S, H, Nom) <-
 	understand : assertion_effect(S, H, Int, PatNom, pos, PatNom).
 
 %-------------------------------------------------------------------------
+
+% (I) don't know
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, cognition),
+	i : prop(Nom, know),
+	i : feat_Polarity(Nom, neg),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, state(['knowing-disconfirmed'])) / p(1.0).
+
+%-------------------------------------------------------------------------
 % CONFIRMATIONS
 %-------------------------------------------------------------------------
 
