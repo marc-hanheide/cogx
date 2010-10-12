@@ -238,6 +238,13 @@
 		new MemberFunctionChangeReceiver<SOIFilter>(this,
 		  &SOIFilter::deletedSOI));
 
+	// XXX: added to save SurfacePatches with saveSnapshot
+	if (m_bAutoSnapshot) {
+	  log("AUTOSNAP is ON; Triggered on ProtoObject OVERWRITE");
+	  addChangeFilter(createLocalTypeFilter<VisionData::ProtoObject>(cdl::OVERWRITE),
+		  new MemberFunctionChangeReceiver<SOIFilter>(this,
+			&SOIFilter::updatedProtoObject));
+	}
   }
 
   bool SOIFilter::hasSnapFlag(char ch)
@@ -554,6 +561,14 @@ void SOIFilter::updatedSOI(const cdl::WorkingMemoryChange & _wmc)
 
 	  queuesNotEmpty->post();
 	}
+}
+
+// XXX: Added to saveSnapshot with SurfacePatches
+void SOIFilter::updatedProtoObject(const cdl::WorkingMemoryChange & _wmc)
+{
+  // XXX: ASSUME it's the same protoobject
+  m_LastProtoObject = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
+  saveSnapshot();
 }
 
 void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
@@ -1392,10 +1407,11 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   m_display.setHtml("soif.@debug", "segmentObject.input", ss.str());
 #endif
 
-  if (m_bAutoSnapshot && ! (protoObj == NULL)) {
-	// XXX: (quick and dirty) assumption: we filled m_LastProtoObject that was passed from runComponent();
-	saveSnapshot();
-  }
+  // XXX: moved to updatedProtoObject
+  //if (m_bAutoSnapshot && ! (protoObj == NULL)) {
+  //  // XXX: (quick and dirty) assumption: we filled m_LastProtoObject that was passed from runComponent();
+  //  saveSnapshot();
+  //}
 
   return protoObj;
 }
