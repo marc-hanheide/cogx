@@ -241,6 +241,7 @@ void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange 
       rec_cmd->cmd = RECOGNIZE;
       rec_cmd->label = det_cmd->labels[i];
       m_recCommandList.push_back(rec_cmd);
+      // note: here we add (multiple times) the WM Id of the detection command
       m_recCommandID.push_back(_wmc.address.id);
     }
   }
