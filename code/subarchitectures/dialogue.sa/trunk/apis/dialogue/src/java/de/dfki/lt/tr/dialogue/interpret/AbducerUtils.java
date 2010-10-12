@@ -191,7 +191,16 @@ public abstract class AbducerUtils {
 
 		if (!proofs.isEmpty()) {
 			log("abducer:" + abd.getEngineName(), "using the best proof");
-			return proofs.get(0).proof;
+
+			MarkedQuery[] proof = proofs.get(0).proof;
+			String queriesStr = "";
+			for (int i = 0; i < goal.length; i++) {
+				queriesStr += MercuryUtils.modalisedAtomToString(goal[i].atom);
+				if (i < goal.length - 1) queriesStr += ", ";
+			}
+			log("abducer:" + abd.getEngineName(), "obtained the proof: [" + queriesStr + "]");
+
+			return proof;
 		}
 		else {
 			return null;
