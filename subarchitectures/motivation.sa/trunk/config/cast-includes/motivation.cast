@@ -1,5 +1,5 @@
 # motivation ##################################################################
 
-JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
+
 JAVA MG goal.scheduler motivation.components.managers.Scheduler --debug 
 
