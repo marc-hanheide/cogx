@@ -146,13 +146,13 @@ public class DialogueActionInterface extends ManagedComponent {
 			// TODO sweet-talk marc into writing proxies for this too
 			Intention robotIntention = new Intention();
 			robotIntention.frame = CASTFrame.create().get();
-			robotIntention.estatus = new PrivateEpistemicStatus("robot");
+			robotIntention.estatus = new PrivateEpistemicStatus(org.cognitivesystems.binder.thisAgent.value);
 
 			// actual content
 			IntentionalContent content = new IntentionalContent();
 			content.probValue = 1f;
 			content.agents = new ArrayList<String>();
-			content.agents.add("robot");
+			content.agents.add(org.cognitivesystems.binder.thisAgent.value);
 
 			// precondition
 			ComplexFormula preconditions = new ComplexFormula(-1, null,
