@@ -45,6 +45,8 @@ option(BUILD_ROCS "Build the internal version of the ROCS library." YES)
 if(BUILD_ROCS)
 	# We don't want the ROCS build system to define its own build options. We will set them as variables.
 	set(ROCS_DONT_DEFINE_OPTIONS yes)
+	# Build type used for rocs
+	set(ROCS_BUILD_TYPE "Release")
 	# Now, set the build options of ROCS
 	set(ROCS_BUILD_MODULE_CORE yes)
 	set(ROCS_BUILD_MODULE_MATH yes)
