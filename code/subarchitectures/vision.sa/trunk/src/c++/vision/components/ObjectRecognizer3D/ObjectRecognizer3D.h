@@ -80,7 +80,8 @@ private:
   bool m_delete_command_from_wm;
   bool m_showCV;
 
-  void loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Pose3 &pose, std::string &label);
+  void loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Pose3 &pose,
+    std::string &label, bool forceNewObject = false);
   std::string loadEmptyVisualModelToWM(std::string &label);
   void addTrackerCommand(VisionData::TrackingCommandType cmd, std::string& modelID);
   void get3DPointFromTrackerModel(std::string& modelID, VisionData::VertexSeq& vertexlist);
