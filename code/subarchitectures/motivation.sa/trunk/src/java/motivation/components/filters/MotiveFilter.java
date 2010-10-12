@@ -1,5 +1,7 @@
 package motivation.components.filters;
 
+import java.util.Map;
+
 import cast.cdl.WorkingMemoryChange;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
@@ -10,5 +12,7 @@ interface MotiveFilter {
 	void setManager(MotiveFilterManager motiveFilterManager);
 
 	void start();
+
+	void configure(Map<String, String> arg0);
 	
 }

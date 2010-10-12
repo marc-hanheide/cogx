@@ -103,8 +103,10 @@ public class MotiveFilterManager extends ManagedComponent {
 				try {
 					log("add type '" + className + "'");
 					ClassLoader.getSystemClassLoader().loadClass(className);
-					addFilter((MotiveFilter) Class.forName(className)
-							.newInstance());
+					MotiveFilter filter = (MotiveFilter) Class.forName(
+							className).newInstance();
+					filter.configure(arg0);
+					addFilter(filter);
 				} catch (ClassNotFoundException e) {
 					println("trying to register for a class that doesn't exist.");
 					e.printStackTrace();
@@ -146,7 +148,7 @@ public class MotiveFilterManager extends ManagedComponent {
 				WorkingMemoryOperation.OVERWRITE), receiver);
 
 		super.start();
-		
+
 	}
 
 	public void checkAll() throws CASTException {
@@ -162,8 +164,7 @@ public class MotiveFilterManager extends ManagedComponent {
 
 	}
 
-	public MotivePriority checkMotive(Motive motive,
-			WorkingMemoryChange wmc) {
+	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 		MotivePriority result = MotivePriority.HIGH;
 		for (MotiveFilter filter : pipe) {
 			MotivePriority filterResult = filter.checkMotive(motive, wmc);
