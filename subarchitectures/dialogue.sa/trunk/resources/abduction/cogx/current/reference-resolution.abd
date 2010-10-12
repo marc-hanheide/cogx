@@ -4,15 +4,25 @@
 resolves_main(Nom, BId, EpSt, Ps) <-
 %resolves_main(Nom, BId, Ps) <-
 	understand : resolves_to_belief(Nom, BId, EpSt),
-	resolves_props(BId, Ps),
-	bel : b(BId) / belief_exist,
-	bel : epistemic_status(BId, EpSt).
+	get_referent(SharedBId, BId),
+	resolves_props(SharedBId, Ps),
+	bel : b(SharedBId) / belief_exist,
+	bel : epistemic_status(SharedBId, EpSt).
 
 	% THIS IS THE IMPORTANT MODALISED ATOM -- reference resolution
 	% picks these from the abductive proof and puts them in an
 	% assumability function
 %understand : resolves_to_belief(Nom, BId).
 understand : resolves_to_belief(Nom, BId, EpSt).
+
+%-------------------------------------------------------------------------
+% Get the referent
+
+get_referent(SharedBId, BId) <-
+	bel : ancestor(SharedBId, BId, _Type).
+
+%get_referent(SharedBId, SharedBId) <-
+%	does_not_have_a_referent(SharedBId) / p(0.2).
 
 %-------------------------------------------------------------------------
 % Resolve a list of features

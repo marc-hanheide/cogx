@@ -160,8 +160,20 @@ get_topic_referent(_S, _H, EpSt, Int, Ref, Nom, BId) <-
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-understand : about(Ref, BId, EpSt) <-
-	understand : resolves_to_belief(Ref, BId, EpSt) / reference_resolution.
+understand : about(Ref, BId, private(A)) <-
+	understand : resolves_to_belief(Ref, BId, private(A)) / reference_resolution.
+
+understand : about(Ref, BId, attrib(A, B)) <-
+	understand : resolves_to_belief(Ref, BId, attrib(A, B)) / reference_resolution.
+
+understand : about(Ref, BId, shared(A, B)) <-
+	understand : resolves_to_belief(Ref, BId, shared(A, B)) / reference_resolution.
+
+understand : about(Ref, BId, shared(A, B)) <-
+	understand : resolves_to_belief(Ref, BId, shared(B, A)) / reference_resolution.
+
+%understand : about(Ref, BId, EpSt) <-
+%	understand : resolves_to_belief(Ref, BId, EpSt) / reference_resolution.
 %	understand : resolves_to_belief(Ref, BId) / reference_resolution.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
