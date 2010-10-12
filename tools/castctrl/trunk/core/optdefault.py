@@ -65,9 +65,12 @@ PYTHONPATH=<pathlist>
    ${PYTHONPATH}
 </pathlist>
 
-# V11N can run standalone when --standalone-display-host is set
-# All clients that use the display server should include the 
-# parmeters: $V11N_STANDALONE $V11N_STANDALONE_HOST 
+# To redirect the v11n output to a standalone DisplayServer add the
+# parameter --redirect-to-host "hostnale" to a DisplayServer component
+# in a cast file.
+# OBSOLETE: V11N can run standalone when --standalone-display-host is set
+# OBSOLETE: All clients that use the display server should include the 
+# OBSOLETE: parmeters: $V11N_STANDALONE $V11N_STANDALONE_HOST 
 V11N_STANDALONE=--standalone-display-host
 V11N_STANDALONE_HOST=localhost
 
@@ -78,7 +81,10 @@ CMD_PYTHON_SERVER=python -m ComponentServer
 CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG]
 CMD_PLAYER=player [PLAYER_CONFIG]
 CMD_PEEKABOT=peekabot
-CMD_LOG4J_SERVER=${CMD_JAVA} org.apache.log4j.net.SimpleSocketServer [LOG4J_PORT] [LOG4J_SERVER_CONFIG]
+CMD_LOG4J_SERVER=<multiline>
+   java -ea -classpath ${CLASSPATH}
+   org.apache.log4j.net.SimpleSocketServer [LOG4J_PORT] [LOG4J_SERVER_CONFIG]
+</multiline>
 CMD_DISPLAY_SERVER=${COGX_ROOT}/output/bin/display-server
 
 # Abducer Server
@@ -132,30 +138,46 @@ EDITOR=internal
 """
 log4joptions="""
 
-[LOG4J.SimpleSocketServer.conf]
 # Startup configuration for org.apache.log4j.net.SimpleSocketServer 
-log4j.rootLogger=TRACE, console, XMLLog
+# rootLogger entries are the following: level, consoleAppender-id, xmlFileAppender-id
+[LOG4J.SimpleSocketServer.conf]
+log4j.rootLogger=TRACE, srvConsole, srvXmlFile
 
 [LOG4J.SimpleSocketServer.console]
-log4j.appender.console=org.apache.log4j.ConsoleAppender
-log4j.appender.console.Threshold=${LEVEL}
-log4j.appender.console.layout=org.apache.log4j.PatternLayout
-log4j.appender.console.layout.ConversionPattern=[%p %c - %m]%n
+log4j.appender.srvConsole=org.apache.log4j.ConsoleAppender
+log4j.appender.srvConsole.Threshold=${LEVEL}
+log4j.appender.srvConsole.layout=org.apache.log4j.PatternLayout
+log4j.appender.srvConsole.layout.ConversionPattern=[%p %c: %m]%n
+# log4j.appender.srvConsole.layout.ConversionPattern=%30c [ %05p ] - %m %n
 
 [LOG4J.SimpleSocketServer.xmlfile]
-log4j.appender.XMLLog=org.apache.log4j.FileAppender
-log4j.appender.XMLLog.Threshold=${LEVEL}
-log4j.appender.XMLLog.File=${LOGFILE}
-log4j.appender.XMLLog.Append=true
-log4j.appender.XMLLog.layout=org.apache.log4j.xml.XMLLayout
-
-# log4j.appender.console.layout=cast.core.logging.ComponentLayout
-# log4j.appender.console.layout.ConversionPattern=%S %30c [ %05p ] - %m %n%E
-#
-#log4j.appender.console=org.apache.log4j.ConsoleAppender
-#log4j.appender.console.layout=org.apache.log4j.xml.XMLLayout
+log4j.appender.srvXmlFile=org.apache.log4j.FileAppender
+log4j.appender.srvXmlFile.Threshold=${LEVEL}
+log4j.appender.srvXmlFile.File=${LOGFILE}
+log4j.appender.srvXmlFile.Append=true
+log4j.appender.srvXmlFile.layout=org.apache.log4j.xml.XMLLayout
 
 [LOG4J.SimpleSocketServer.XMLLayout.head]
 <?xml version="1.0" encoding="UTF-8"?>
 <log4j:logsequence xmlns:log4j="http://jakarta.apache.org/log4j/" user="${USER}" time="${NOW}">
+
+# Startup configuration for clients other than the SimpleSocketServer
+# rootLogger entries are the following: level, consoleAppender-id, socketAppender-id
+[LOG4J.client.conf]
+log4j.rootLogger=TRACE, cliConsole, cliSocketApp
+
+[LOG4J.client.console]
+log4j.appender.cliConsole=org.apache.log4j.ConsoleAppender
+log4j.appender.cliConsole.Threshold=${LEVEL}
+log4j.appender.cliConsole.layout=cast.core.logging.ComponentLayout
+log4j.appender.cliConsole.layout.ConversionPattern=%S[%p %c: %m]%n%E
+#log4j.appender.cliConsole.layout.ConversionPattern=%S %30c [ %05p ] - %m %n%E
+
+[LOG4J.client.socket]
+log4j.appender.cliSocketApp=org.apache.log4j.net.SocketAppender
+# TODO: $LEVEL could be MAX of all levels in SimpleSocketServer
+# log4j.appender.SocketApp.Threshold=${LEVEL}
+log4j.appender.cliSocketApp.Port=${PORT}
+log4j.appender.cliSocketApp.RemoteHost=${HOST}
+
 """
