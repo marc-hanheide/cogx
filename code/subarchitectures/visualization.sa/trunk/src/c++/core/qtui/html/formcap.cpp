@@ -2,6 +2,7 @@
 #include "formcap.hpp"
 #include "v11n_jscode.inc"
 #include <QStringList>
+#include <QMessageBox>
 
 #include "../QCastMainFrame.hpp"
 
@@ -227,6 +228,9 @@ void QCastFormProxy::saveFormData(const QString& formid, const QMap<QString,QVar
       else pSettings->setValue(skey, val);
    }
    pSettings->endGroup();
+   QMessageBox msgBox;
+   msgBox.setText("Form data have been saved to the registry.");
+   msgBox.exec();
 }
 
 QMap<QString, QVariant> QCastFormProxy::getSavedFormData(const QString& formid)
