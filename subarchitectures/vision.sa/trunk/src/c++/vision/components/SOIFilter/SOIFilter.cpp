@@ -296,28 +296,54 @@
 	ss << m_snapshotFiles << buf;
 	std::string path = ss.str();
 
-	if (hasSnapFlag('p')) try {
-	  int cnt=1;
-	  for (vector<SurfacePatch>::iterator it1 = pobj->surfacePatches.begin(); it1 != pobj->surfacePatches.end(); it1++) {
-		
-	  	ofstream fpoints;
-	  	fpoints.exceptions ( ofstream::eofbit | ofstream::failbit | ofstream::badbit );
-	  	std::stringstream filename;
-	  	filename << "points" << cnt << ".txt";
-	  	fpoints.open(string(path + filename.str()).c_str(), ofstream::out);
-	  	fpoints << ";;r\tg\tb\tx\ty\tz" << endl;
-	  	typeof(it1->points.begin()) it;
-	  	for (it = it1->points.begin(); it != it1->points.end(); it++) {
-	  	      fpoints << (unsigned int)it->c.r << "\t" << (unsigned int)it->c.g << "\t" << (unsigned int)it->c.b << "\t";
-	  	      fpoints << it->p.x << "\t" << it->p.y << "\t" << it->p.z << endl;
-	  	}
-	  	fpoints.close();
-	  	cnt++;
-	  	log("Saved points to '%sp.txt'", path.c_str());
+	if (hasSnapFlag('p')) {
+	  // All 3D points from ProtoObject
+	  try {
+		ofstream fpoints;
+		fpoints.exceptions ( ofstream::eofbit | ofstream::failbit | ofstream::badbit );
+		fpoints.open(string(path + "p.txt").c_str(), ofstream::out);
+		fpoints << ";;r\tg\tb\tx\ty\tz" << endl;
+		typeof(pobj->points.begin()) it;
+		for (it = pobj->points.begin(); it != pobj->points.end(); it++) {
+		  fpoints << (unsigned int)it->c.r << "\t" << (unsigned int)it->c.g
+		   	<< "\t" << (unsigned int)it->c.b << "\t";
+		  fpoints << it->p.x << "\t" << it->p.y << "\t" << it->p.z << endl;
+		}
+		fpoints.close();
+		log("Saved points to '%sp.txt'", path.c_str());
+	  }
+	  catch (...) {
+		println("Failed to save points to '%sp.txt'", path.c_str());
 	  }
 	}
-	catch (...) {
-	  println("Failed to save points to '%sp.txt'", path.c_str());
+
+	if (hasSnapFlag('p')) { // XXX: currently the same flag as for the 3D points
+	  // Individual surface patches
+	  try {
+		int cnt=1;
+		for (vector<SurfacePatch>::iterator it1 = pobj->surfacePatches.begin(); it1 != pobj->surfacePatches.end(); it1++)
+		{
+
+		  ofstream fpoints;
+		  fpoints.exceptions ( ofstream::eofbit | ofstream::failbit | ofstream::badbit );
+		  std::stringstream filename;
+		  filename << "patch" << cnt << ".txt";
+		  fpoints.open(string(path + filename.str()).c_str(), ofstream::out);
+		  fpoints << ";;r\tg\tb\tx\ty\tz" << endl;
+		  typeof(it1->points.begin()) it;
+		  for (it = it1->points.begin(); it != it1->points.end(); it++) {
+			fpoints << (unsigned int)it->c.r << "\t" << (unsigned int)it->c.g
+			  << "\t" << (unsigned int)it->c.b << "\t";
+			fpoints << it->p.x << "\t" << it->p.y << "\t" << it->p.z << endl;
+		  }
+		  fpoints.close();
+		  cnt++;
+		  log("Saved SurfacePatch to '%s%s'", path.c_str(), filename.str().c_str());
+		}
+	  }
+	  catch (...) {
+		println("Failed to save SurfacePatch to '%spatchX.txt'", path.c_str());
+	  }
 	}
 
 	if (hasSnapFlag('h')) try {
@@ -1366,7 +1392,7 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   m_display.setHtml("soif.@debug", "segmentObject.input", ss.str());
 #endif
 
-  if (m_bAutoSnapshot && protoObj != NULL) {
+  if (m_bAutoSnapshot && ! (protoObj == NULL)) {
 	// XXX: (quick and dirty) assumption: we filled m_LastProtoObject that was passed from runComponent();
 	saveSnapshot();
   }
