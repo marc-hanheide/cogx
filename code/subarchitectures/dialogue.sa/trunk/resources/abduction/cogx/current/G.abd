@@ -241,3 +241,21 @@ generate : event : utter(S, H, Int) <-
 	utt_head(Nom),
 	i : feat_SpeechAct(Nom, confirmation) / -1.0,
 	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+% CONFIRMATIONS
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['verified'|T])),
+	utt_head(Nom),
+	i : feat_CannedText(Nom, yes) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['falsified'|T])),
+	utt_head(Nom),
+	i : feat_CannedText(Nom, yes) / -1.0,
+	event : produce(r, Nom) / -1.0.
