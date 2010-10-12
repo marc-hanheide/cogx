@@ -30,4 +30,12 @@ $default_quad_taxonomy_subj
 $default_quad_taxonomy_obj
 ?s ?p ?o ?num
 ->
-?0 <rdfs:subClassOf> <owl:Thing>
+?o <rdfs:subClassOf> <owl:Thing>
+
+$default_subclass_number_inheritance_subj
+?s ?p ?o ?num
+?sub <rdfs:subClassOf> ?s
+->
+?sub ?p ?o ?num
+@test
+?s != ?sub
