@@ -189,9 +189,7 @@ void ActiveLearnScenario::choose_action () {
 			ActionsVector candidateActions;
 			
 			for (int i=0; i<maxNumberCandidateActions; i++) {
-				// Action action;
 				LearningData::MotorCommand action;
-				// action.startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
 				int startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
 				//action.speed = floor (randomG.nextUniform (3.0, 6.0));
 				action.speed = 3.0;
@@ -207,10 +205,10 @@ void ActiveLearnScenario::choose_action () {
 
 			pair<FeatureVector, LearningData::MotorCommand> chosenAction = get_action_maxLearningProgress(candidateActions);
 			
-			// this->startPosition = chosenAction.second.startPosition;
-			// this->speed = chosenAction.second.speed;
-			// this->horizontalAngle = chosenAction.second.horizontalAngle;
+			this->speed = chosenAction.second.speed;
+			this->horizontalAngle = chosenAction.second.horizontalAngle;
 			this->positionT = chosenAction.second.initEfPosition;
+			this->startPosition = positionsT[this->positionT];
 
 			usedStartingPositions.push_back(startPosition);
 		}
@@ -264,6 +262,8 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	//setup and move to home position; define fingertip orientation
 	setup_home();
 
+	positionsT = get_canonical_positions (desc);
+
 	regionsCount = 0;
 	SMRegion firstRegion (regionsCount, /*motorVectorSize, */splittingCriterion1);
 	regions[regionsCount] = firstRegion;
@@ -295,7 +295,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		}
 
 		//compute coordinates of start position
-		calculate_starting_position_coord ();
+		prepare_target();
 
 		//move the finger to the beginnign of experiment trajectory
 		send_position(target, ReacPlanner::ACTION_GLOBAL);

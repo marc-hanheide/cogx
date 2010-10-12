@@ -304,7 +304,7 @@ string get_seqBaseFileName (string seqFile);
 ///
 ///obtain a discretization of starting finger poses from a canonical set of actions
 ///
-map<Vec3, int, compare_Vec3> get_canonical_positions ();
+map<Vec3, int, compare_Vec3> get_canonical_positions (Scenario::Desc&);
 
 ///
 ///enumerate a dataset using a canonical representation taking into account time steps

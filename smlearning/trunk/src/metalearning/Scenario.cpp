@@ -373,8 +373,7 @@ void Scenario::define_start_position(){
 ///set the variable target so that it obtains the coordinates of the start point of the experiment trajectory
 ///
 void Scenario::prepare_target(){
-	//arm target update
-	set_coordinates_into_target(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
+;
 	cout << "Position " << startPosition-1 << endl;
 	
 	// and set target waypoint
@@ -399,7 +398,12 @@ void  Scenario::calculate_starting_position_coord(){
 	init_positionT(positionT);
 
 	//set the variable target so that it obtains the coordinates of the start point
+	//arm target update
+	set_coordinates_into_target(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
+
 	prepare_target();
+
+
 }
 
 ///
