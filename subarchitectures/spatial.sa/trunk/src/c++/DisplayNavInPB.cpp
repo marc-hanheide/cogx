@@ -37,6 +37,7 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <VisionData.hpp>
 #include <SpatialData.hpp>
+#include <FrontierInterface.hpp>
 using namespace std;
 using namespace cast;
 using namespace boost;
@@ -1278,6 +1279,17 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 #endif
     }
 
+
+    char buf[32];
+    peekabot::LabelProxy text;
+    sprintf(buf, "placeid_%d", GetPlaceIdFromNodeId(node.m_Id));
+    text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
+    text.set_text(buf);
+  text.set_pose(node.m_X,node.m_Y,0.3,M_PI/2,0,M_PI/2);
+    text.set_scale(30, 30, 30);
+    text.set_alignment(peekabot::ALIGN_CENTER);
+    text.set_color(1,0,0);
+
   } else { // Node already exists
     log("Node %d already there, should be changed", fnode->nodeId);
 
@@ -1384,6 +1396,11 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
   m_PeekabotClient.end_bundle();
   m_Mutex.unlock();
 }
+ int DisplayNavInPB::GetPlaceIdFromNodeId(int nodeId){
+    FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+    int d = agg->getPlaceFromNodeID(nodeId)->id;
+    return d;
+  }
 
 void DisplayNavInPB::addDoorpost(double x, double y, double theta, 
                                  double width, 
@@ -1608,6 +1625,7 @@ void DisplayNavInPB::connectPeekabot()
       
       
       m_ProxyViewPoints.add(m_PeekabotClient, "planned_viewpoints",peekabot::REPLACE_ON_CONFLICT);
+      m_ProxyLabels.add(m_PeekabotClient, "labels",peekabot::REPLACE_ON_CONFLICT);
       
       s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
       if( s1.failed() ) {

@@ -124,6 +124,7 @@ private:
 
   double getComaRoomCategoryProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
 			std::string varValue);
+ int GetPlaceIdFromNodeId(int nodeId);
 
 
   Cure::Transformation3D getCameraToWorldTransform();
@@ -166,6 +167,7 @@ private:
 
   //peekabot::ObjectProxy m_ProxyRoot;
   
+  peekabot::GroupProxy m_ProxyLabels;
   peekabot::GroupProxy m_ProxyRobot;
   peekabot::GroupProxy m_ProxyLaser;
   peekabot::PointCloudProxy m_ProxyScan;
