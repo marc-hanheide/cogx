@@ -323,8 +323,12 @@ namespace spatial
 
   double VisualObjectSearch::GetPlaceIdFromNodeId(int nodeId){
     FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-    int d = agg->getPlaceFromNodeID(nodeId)->id;
-    return d;
+    SpatialData::PlacePtr p = new SpatialData::Place;
+     p = agg->getPlaceFromNodeID(nodeId);
+     if (p != NULL)
+       return p->id;
+     else
+       return -1;
   }
   int VisualObjectSearch::GetClosestNodeId(double x, double y, double a){
 
