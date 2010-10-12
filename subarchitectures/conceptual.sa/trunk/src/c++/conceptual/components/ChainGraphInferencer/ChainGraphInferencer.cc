@@ -168,17 +168,26 @@ void ChainGraphInferencer::runComponent()
 			debug("Processing inference query '"+q.queryPtr->queryString+"'");
 
 			// Update the factor graph if necessary
-			bool factorGraphChanged = updateFactorGraph();
+			bool factorGraphChanged;
+			bool worldStateValid = updateFactorGraph(factorGraphChanged);
 
-			// If the factor graph changed, re-run the inferences
-			if (factorGraphChanged)
-				runAllInferences();
-
-			// Prepare the result
+			// Prepare some parts of the result
 			ConceptualData::InferenceResultPtr inferenceResultPtr = new ConceptualData::InferenceResult();
 			inferenceResultPtr->queryId = q.wmAddress.id;
 			inferenceResultPtr->queryString = q.queryPtr->queryString;
-			prepareInferenceResult(q.queryPtr->queryString, &(inferenceResultPtr->result));
+
+			// Check if the world state is valid, otherwise return empty result
+			if (worldStateValid)
+			{
+				// If the factor graph changed, re-run the inferences
+				if (factorGraphChanged)
+					runAllInferences();
+
+				// Prepare the result distribution
+				prepareInferenceResult(q.queryPtr->queryString, &(inferenceResultPtr->result));
+			}
+			else
+				log("World state is invalid. We will not run inference. Returning empty result.");
 
 			// Return result
 			debug("Sending out inference result for query '"+q.queryPtr->queryString+"'");
@@ -261,9 +270,9 @@ void ChainGraphInferencer::worldStateChanged(const cast::cdl::WorkingMemoryChang
 
 
 // -------------------------------------------------------
-bool ChainGraphInferencer::updateFactorGraph()
+bool ChainGraphInferencer::updateFactorGraph(bool &factorGraphChanged)
 {
-	bool factorGraphChanged = false;
+	factorGraphChanged = false;
 
 	// Lock world state
 	pthread_mutex_lock(&_worldStateMutex);
@@ -272,6 +281,14 @@ bool ChainGraphInferencer::updateFactorGraph()
 	if (_worldStateChanged)
 	{
 		log("Updating the graph since the world state has changed!");
+
+		// Check if the world state is actaully valid
+		if (_worldStateRooms.empty())
+		{ // World state invalid
+			log("World state is invalid.");
+			pthread_mutex_unlock(&_worldStateMutex);
+			return false;
+		}
 
 		factorGraphChanged = true;
 		_worldStateChanged = false;
@@ -286,7 +303,7 @@ bool ChainGraphInferencer::updateFactorGraph()
 	// Unlock world state
 	pthread_mutex_unlock(&_worldStateMutex);
 
-	return factorGraphChanged;
+	return true;
 }
 
 

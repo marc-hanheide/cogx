@@ -62,8 +62,9 @@ private:
 	void worldStateChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
 	/** Updates the factor graph based on the world state if the world state changed.
-	 * Returns true if the factor graph was changed. */
-	bool updateFactorGraph();
+	 * Sets factorGraphChanged if the factor graph was changed.
+	 * Return true if the world state was valid and inference can be done. */
+	bool updateFactorGraph(bool &factorGraphChanged);
 
 	/** Create DAI Variable if not yet created. */
 	void createDaiVariable(std::string name, const std::vector<std::string> &values);
