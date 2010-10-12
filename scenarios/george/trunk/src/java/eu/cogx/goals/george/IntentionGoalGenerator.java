@@ -24,8 +24,8 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 public class IntentionGoalGenerator extends
 		AbstractIntentionMotiveGenerator<TutorInitiativeMotive, Intention> {
 
-	public final static String XPATH_SELECT_PRECONDITIONS = "/*/content/*/preconditions/forms/*";
-	public final static String XPATH_SELECT_POSTCONDITIONS = "/*/content/*/preconditions/forms/*";
+	public final static String XPATH_SELECT_PRECONDITIONS = "/*/content/*/*/preconditions/forms/*";
+	public final static String XPATH_SELECT_POSTCONDITIONS = "/*/content/*/*/postconditions/forms/*";
 	public final static String XPATH_SELECT_POINTER_PREFIX = "form/pointer";
 	private final static String[] CONCEPTS_TO_PARSE = new String[] { "color",
 			"shape" };
