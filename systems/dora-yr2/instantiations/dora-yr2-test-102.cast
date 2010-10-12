@@ -2,6 +2,12 @@
 
 HOST localhost
 
+# visualization stuff #########################################################
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer # --redirect-to-host localhost
+
 
 # vision stuff ################################################################
 INCLUDE includes/vision.sa/vision-base.cast
@@ -25,7 +31,7 @@ CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --dis
 
 JAVA MG WMViewer castutils.viewer.ViewerCastComponent --log --subscribe "VisionData.VisualObject"
 
-JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --log --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --log --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"
 
 
 # planning and motivation #####################################################
