@@ -120,7 +120,7 @@ understand : event : utter(S, H, Nom) <-
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 nm_action_effects(S, H, EpSt, RootNom, Int, Ref, find) <-
-%	int : pre(Int, belief(Ref, attrib(H, S), fv(location, unknown))) / p(1.0),
+	int : pre(Int, belief(Ref, attrib(H, S), fv(inRoom, unknown))) / p(1.0),
 	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
 %	int : post(Int, belief(Ref, shared(S, H), fv(location, not(unknown)))) / p(1.0),
 	get_topic_referent(S, H, EpSt, Int, Ref, Ref, BId),
