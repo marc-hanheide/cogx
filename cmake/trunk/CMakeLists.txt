@@ -108,6 +108,11 @@ if(BUILD_SA_COMA)
 add_subdirectory (subarchitectures/coma.sa)
 endif(BUILD_SA_COMA)
 
+option(BUILD_SA_CATEGORICAL "Build categorical subarchitecure" NO)
+if(BUILD_SA_CATEGORICAL)
+add_subdirectory (subarchitectures/categorical.sa)
+endif(BUILD_SA_CATEGORICAL)
+
 option(BUILD_SA_CONCEPTUAL "Build conceptual subarchitecure" NO)
 if(BUILD_SA_CONCEPTUAL)
 add_subdirectory (subarchitectures/conceptual.sa)
