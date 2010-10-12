@@ -59,6 +59,7 @@ import cast.core.CASTUtils;
 
 // MARY 
 import marytts.client.MaryClient;
+import marytts.client.http.Address;
 
 
 // =================================================================
@@ -618,7 +619,7 @@ public class MaryTTS extends ManagedComponent {
             }						
 			
             try {
-                m_mary = MaryClient.getMaryClient();
+                m_mary = MaryClient.getMaryClient(new Address(m_serverHost, m_serverPort));
                 //speakLocal("hello !");
             }
 
