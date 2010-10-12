@@ -159,6 +159,8 @@ private:
    * callback function called whenever a SOI is deleted
    */
   void deletedSOI(const cdl::WorkingMemoryChange & _wmc);
+
+  void updatedProtoObject(const cdl::WorkingMemoryChange & _wmc);
   
   /**
    * segment out object roi
