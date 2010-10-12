@@ -31,9 +31,9 @@
 	
 	<conditions>
 		<condition id="anyCond" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(%2)" lowerProb="0.0" higherProb="1.0" type="communicativeintention"/>
-		<condition content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(robot))" id="greetingCond" lowerProb="0.0" higherProb="1.0" type="communicativeintention"/>
-		<condition id="evalCond" content="&lt;state&gt;(appreciated ^ &lt;agent&gt;human ^ &lt;patient&gt;robot)" type="communicativeintention" lowerProb="0.0" higherProb="1.0"></condition>
-		<condition id="closingCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(robot))"/>
+		<condition content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))" id="greetingCond" lowerProb="0.0" higherProb="1.0" type="communicativeintention"/>
+		<condition id="evalCond" content="&lt;state&gt;(appreciated ^ &lt;agent&gt;human ^ &lt;patient&gt;self)" type="communicativeintention" lowerProb="0.0" higherProb="1.0"></condition>
+		<condition id="closingCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))"/>
 		<condition id="whQuestionCond" type="communicativeintention"
 			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;color&gt;(%3)) ^ &lt;feature&gt;(color)))" />
 	<!--	<condition id="pQuestionCond" type="communicativeintention"
@@ -42,9 +42,9 @@
 	
 	<actions>
 		<action id="forwardAction" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(%2)" type="attributedintention"></action>
-		<action id="greetingAction" type="communicativeintention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(robot) ^ &lt;agent&gt;(human))"></action>
-		<action id="thankAction" type="communicativeintention" content="&lt;state&gt;(thanked ^ &lt;agent&gt;human ^ &lt;patient&gt;robot)"></action>
-		<action id="closingAction" type="communicativeintention" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(robot) ^ &lt;agent&gt;(human))"></action>
+		<action id="greetingAction" type="communicativeintention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
+		<action id="thankAction" type="communicativeintention" content="&lt;state&gt;(thanked ^ &lt;agent&gt;human ^ &lt;patient&gt;self)"></action>
+		<action id="closingAction" type="communicativeintention" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
 		<action id="whAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" />
 <!--	    <action id="pAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" /> -->
 	</actions>

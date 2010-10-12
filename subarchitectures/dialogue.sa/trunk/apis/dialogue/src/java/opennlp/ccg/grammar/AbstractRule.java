@@ -39,7 +39,7 @@ public abstract class AbstractRule implements Rule {
     /** The rule group which contains this rule. */
     protected RuleGroup _ruleGroup;
 
-	public static boolean handleRobustness = true;
+	public static boolean handleRobustness = false;
 	public static boolean asrcorrectionRules = false;
 	public static boolean disclevelcompositionRules = false;
 	public static boolean disfluencycorrectionRules = false;

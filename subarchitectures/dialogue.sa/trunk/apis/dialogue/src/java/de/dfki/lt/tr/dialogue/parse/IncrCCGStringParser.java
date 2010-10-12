@@ -71,8 +71,6 @@ import de.dfki.lt.tr.dialogue.util.ParsingUtils;
  * to parse a single string with a given OpenCCG-style CCG grammar. The parser
  * includes the possibility for performing parse selection. 
  * 
- * TODO: fine tune the performance of the parser (check options etc.)
- * 
  * @author 	Geert-Jan M. Kruijff (gj@dfki.de)
  * @since	100607 (based on earlier versions, heavily refactored)
  * @version	100607
@@ -82,6 +80,7 @@ public class IncrCCGStringParser {
 
 	// Access to the grammar is factorized out
 	protected OpenCCGGrammar grammar;
+
 	// The actual parser
 	private IncrCKYParser parser; 
 	// Parameter vector for parse selection 
@@ -587,4 +586,10 @@ public class IncrCCGStringParser {
 		}
 	} // end convertPhonString2LFPairs
 	
+	
+
+	public void registerChartScorer (ChartScorer shs) { 
+		chartScorer = shs; 
+	} // end registerChartScorer
+
 } // end class

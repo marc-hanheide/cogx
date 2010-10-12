@@ -34,8 +34,6 @@ import java.util.List;
 /**
  * A client to the Loquendo ICE server.
  *
- * TODO: test and improve ASR for review
- *
  * @author Miroslav Janicek
  */
 public class LoquendoClient
