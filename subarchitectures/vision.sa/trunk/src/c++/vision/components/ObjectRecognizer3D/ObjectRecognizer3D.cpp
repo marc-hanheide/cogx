@@ -126,8 +126,6 @@ void ObjectRecognizer3D::runComponent(){
   // Running Loop
   while(isRunning()){
 
-    log("running in loop..");
-
     if(m_task == RECLEARN){
   		learnSiftModel(sift);   // m_task = STOP called in receiveTrackingCommand()
 
@@ -320,9 +318,19 @@ void ObjectRecognizer3D::get3DPointFromTrackerModel(std::string& modelID, Vision
 	addToWorkingMemory(newDataID(), track_cmd);
 }
 
-void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Pose3 &pose, std::string &label){
+/**
+ * load a recogizsed object to WM.
+ * @param rec_entry recognition entry with confidence etc.
+ * @param pose detected object pose
+ * @param label the objects label
+ * @param forceNewObject if true, we will always add a new object to WM.
+ *        otherwise we only add a new model if rec_entry does not yet
+ *        have a object id
+ */
+void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
+  cogx::Math::Pose3 &pose, std::string &label, bool forceNewObject){
 
-  bool newModel = rec_entry.visualObjectID.empty();
+  bool newModel = forceNewObject || rec_entry.visualObjectID.empty();
   VisionData::VisualObjectPtr obj;
 
   if(newModel){
@@ -357,8 +365,6 @@ log("got ply model");
   obj->pose = pose;
   obj->componentID = getComponentID();
 log("Making WM changes..");
-
-  log("about to add/overwrite WM: '%s' id: %s", obj->identLabels[0].c_str(), rec_entry.visualObjectID.c_str());
 
   if(newModel){
 		addToWorkingMemory(rec_entry.visualObjectID, obj);
@@ -545,21 +551,18 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
 
 void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 
-	log("%s: Recognizing model pose", m_label.c_str());
-
   // if we don't know that label we want to produce a non-detected
   // VisualObject
-log("lets see if i know this object");
   if(m_recEntries.find(m_label) == m_recEntries.end())
   {
-    log("%s: don't know this model", m_label.c_str());
+    log("%s: Unknown model", m_label.c_str());
     std::string newID = loadEmptyVisualModelToWM(m_label);
     m_rec_cmd->confidence = 0.;
     m_rec_cmd->visualObjectID = newID;
   }
   else
   {
-	log("%s: I know this model", m_label.c_str());
+	log("%s: Detecting object", m_label.c_str());
 	// 	if(m_starttask){
 	// 		m_starttask = false;
 	// 	}else{
