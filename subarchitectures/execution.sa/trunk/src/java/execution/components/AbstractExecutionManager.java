@@ -28,6 +28,8 @@ import execution.util.ActionMonitor;
  */
 public abstract class AbstractExecutionManager extends ManagedComponent {
 
+	public abstract boolean isPaused();
+	
 	private class ActionCallback implements WorkingMemoryChangeReceiver {
 		private final WorkingMemoryAddress m_actionAddress;
 		private final ActionMonitor m_monitor;

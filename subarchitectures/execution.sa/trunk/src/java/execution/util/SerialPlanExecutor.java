@@ -78,6 +78,8 @@ public class SerialPlanExecutor extends Thread {
 
 	private StopWatch stopWatch;
 
+
+
 	public SerialPlanExecutor(AbstractExecutionManager _component,
 			WorkingMemoryAddress _planProxyAddress, ActionConverter _converter)
 			throws SubarchitectureComponentException {
@@ -91,9 +93,12 @@ public class SerialPlanExecutor extends Thread {
 
 		// fetch proxy
 		m_planProxyAddress = _planProxyAddress;
+		
+		
 
 	}
 
+	
 	private void initCallbacks() {
 		// if either struct is deleted we stop execution
 		m_stopCallback = new WorkingMemoryChangeReceiver() {
@@ -234,6 +239,17 @@ public class SerialPlanExecutor extends Thread {
 				// wait for the component to receive changes
 				m_component.waitForChanges();
 
+				while (m_component.isPaused()) {
+					m_component.log("we are paused... let's wait");
+					try {
+						sleep(1000);
+					} catch (InterruptedException e) {
+						m_component.getLogger().warn("interrupted:", e);
+						break;
+					}
+				}
+					
+				
 				// check that we should still do something
 				if (m_component.isRunning()) {
 
