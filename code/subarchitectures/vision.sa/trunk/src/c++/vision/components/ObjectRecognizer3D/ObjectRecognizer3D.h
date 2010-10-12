@@ -9,9 +9,6 @@
 #ifndef OBJECT_RECOGNIZER_3D_H
 #define OBJECT_RECOGNIZER_3D_H
 
-// HACK: for some reason vis does not worK: undefined symbol setImage
-#undef FEAT_VISUALIZATION
-
 #include <vector>
 #include <string>
 #include <cv.h>
