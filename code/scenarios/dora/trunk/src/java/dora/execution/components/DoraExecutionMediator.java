@@ -1,5 +1,10 @@
 package dora.execution.components;
 
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import autogen.Planner.Action;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
@@ -34,9 +39,27 @@ import execution.util.ActionConverter;
 public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 		implements ActionConverter {
 
+	protected boolean m_paused=false;
+
 	@Override
 	protected void start() {
 		super.start();
+
+			JFrame jFrame = new JFrame("execution pauser");
+			final JCheckBox jCheckbox = new JCheckBox("pause execution");
+			jCheckbox.addChangeListener(new ChangeListener() {
+				
+				@Override
+				public void stateChanged(ChangeEvent arg0) {
+					m_paused=jCheckbox.isSelected();
+					
+				}
+			});
+			jFrame.add(jCheckbox);
+			jFrame.pack();
+			jFrame.setVisible(true);
+
+
 	}
 
 	/**
@@ -151,6 +174,11 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 	public ActionConverter getActionConverter() {
 
 		return this;
+	}
+
+	@Override
+	public boolean isPaused() {		
+		return m_paused;
 	}
 
 }
