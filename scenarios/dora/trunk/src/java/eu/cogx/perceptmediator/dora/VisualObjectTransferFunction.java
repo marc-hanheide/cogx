@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import SpatialData.Place;
 import VisionData.VisualObject;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
@@ -36,6 +35,7 @@ public class VisualObjectTransferFunction
 
 	public static final String LABEL_ID = "label";
 	public static final String IS_IN = "is-in";
+	private static final double BLOODY_THRESHOLD_ACCORDING_TO_MICHI = 0.08;
 
 	public VisualObjectTransferFunction(ManagedComponent component,
 			WMView<GroundedBelief> allBeliefs) {
@@ -73,27 +73,32 @@ public class VisualObjectTransferFunction
 			CASTIndependentFormulaDistributionsBelief<PerceptBelief> belief,
 			WorkingMemoryChange wmc, VisualObject from) {
 		FormulaDistribution fd = FormulaDistribution.create();
-		Place currentPlace;
 		try {
 			WorkingMemoryAddress agentWMA = getReferredBelief(new AgentMatchingFunction(
 					0));
 			CASTIndependentFormulaDistributionsBelief<dBelief> agent = CASTIndependentFormulaDistributionsBelief
 					.create(dBelief.class, allBeliefs.get(agentWMA));
-			Formula place=agent.getContent().get(LocalizedAgentTransferFunction.IS_IN)
-					.getDistribution().getMostLikely();
-//			currentPlace = SpatialFacade.get(component).getPlace();
-//			component.log("I am at place " + currentPlace.id
-//					+ " when I found that object");
-//			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
-//					currentPlace.id));
-//			WMPointer wmp = WMPointer.create(placeWMA, CASTUtils
-//					.typeName(GroundedBelief.class));
+			Formula place = agent.getContent().get(
+					LocalizedAgentTransferFunction.IS_IN).getDistribution()
+					.getMostLikely();
+			// currentPlace = SpatialFacade.get(component).getPlace();
+			// component.log("I am at place " + currentPlace.id
+			// + " when I found that object");
+			// WorkingMemoryAddress placeWMA = getReferredBelief(new
+			// PlaceMatchingFunction(
+			// currentPlace.id));
+			// WMPointer wmp = WMPointer.create(placeWMA, CASTUtils
+			// .typeName(GroundedBelief.class));
 			component.log("size of from.identDistrib: "
 					+ from.identDistrib.length);
-			fd.add(place.get(), from.identDistrib[0]);
+			fd
+					.add(
+							place.get(),
+							from.identDistrib[0] > BLOODY_THRESHOLD_ACCORDING_TO_MICHI ? 1.0
+									: 0.0);
 			belief.getContent().put(IS_IN, fd);
-//		} catch (CASTException e) {
-//			component.logException(e);
+			// } catch (CASTException e) {
+			// component.logException(e);
 		} catch (InterruptedException e) {
 			component.logException(e);
 		} catch (BeliefException e) {
