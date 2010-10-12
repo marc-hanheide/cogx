@@ -82,6 +82,7 @@ public class MaryTTSLocal {
 			this.m_audioType = audioType;
 							
 	}
+	
 	/* for Mary.4
 	public TTSLocal (MaryClient mary, String voiceName, boolean bSilentMode, String locale, String audioType) {
 		this.m_mary = mary ;

@@ -394,7 +394,9 @@ public class CCGRealizer
 							// Sign sign = edge.getSign();
 							bestRealization = bestRealization+edge.toString()+"\n";
 						} // end for over best edges
-						log("Best realization: "+bestRealization);
+						if (bestEdges.size() > 0) {
+							log("Best realization: "+bestEdges.get(0));
+						}
 						int start = bestRealization.indexOf("]");
 						int end   = bestRealization.indexOf(":-");
 						if (start != -1 && end != -1) { 
