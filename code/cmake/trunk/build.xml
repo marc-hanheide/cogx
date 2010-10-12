@@ -123,6 +123,8 @@
 		<ant target="${target}" dir="tools/beliefs" />
 		<ant target="${target}" dir="tools/hardware/video" />
 		<ant target="${target}" dir="tools/hardware/blobfinder" />
+		<ant target="${target}" dir="tools/hardware/laser" />
+		<ant target="${target}" dir="tools/hardware/robotbase" />
 
 		<antcall target="sa.visualization">
 		  <param name="target" value="${target}" />
