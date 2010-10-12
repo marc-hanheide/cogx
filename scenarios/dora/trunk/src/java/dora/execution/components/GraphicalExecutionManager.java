@@ -263,6 +263,12 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		
 	}
 
+	@Override
+	public boolean isPaused() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	// public WorkingMemoryAddress triggerFeatureValueTest(String _beliefID,
 	// String _featureLabel,
 	// FeatureValue _fv, ActionMonitor _monitor) throws CASTException {
