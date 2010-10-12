@@ -92,4 +92,9 @@ public class TestExecutionManager extends AbstractExecutionManager {
 		}
 	}
 
+	@Override
+	public boolean isPaused() {
+		return false;
+	}
+
 }
