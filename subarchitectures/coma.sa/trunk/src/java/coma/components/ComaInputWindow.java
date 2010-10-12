@@ -11,6 +11,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import comadata.ComaReasonerInterfacePrx;
+import comadata.HFCInterfacePrx;
+import comadata.QueryResults;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -18,12 +20,16 @@ import java.util.Map;
 public class ComaInputWindow extends ManagedComponent {
 
 	private String lastInputFreeForm = "SELECT ?x WHERE { ?x rdfs:subClassOf owl:Thing. }";
+	private String lastInputFreeFormQDL = "SELECT ?x ?y ?z ?num where ?x ?y ?z ?num";
 	private String lastInputAllSubclassesOf = "";
 	private String lastInputAllInstancesOf = "";
 	private String lastInputAllRelatedInstancesOf = "";
 	
 	private String m_comareasoner_component_name;
 	private ComaReasonerInterfacePrx m_comareasoner;
+
+	private String m_hfcserver_component_name;
+	private HFCInterfacePrx m_hfcserver;
 
 	private JTextArea outputArea;
 	private JFrame frame;
@@ -40,6 +46,9 @@ public class ComaInputWindow extends ManagedComponent {
 			m_comareasoner_component_name=args.get("--reasoner-name");
 		}
 		
+		if (args.containsKey("--hfcserver-name")) {
+			m_hfcserver_component_name=args.get("--hfcserver-name");
+		}
 	}
 
 	public void start() {
@@ -59,6 +68,16 @@ public class ComaInputWindow extends ManagedComponent {
 		} catch (CASTException e) {
 			e.printStackTrace();
 			log("Connection to the coma reasoner Ice server at "+ m_comareasoner_component_name + " failed! Exiting. (Specify the coma reasoner component name using --reasoner-name)");
+			System.exit(-1);
+		}	
+		try{
+			if (m_hfcserver_component_name!=null) log("initiating connection to Ice server " + m_hfcserver_component_name);
+			if (m_hfcserver_component_name!=null) m_hfcserver = getIceServer(m_hfcserver_component_name, comadata.HFCInterface.class , comadata.HFCInterfacePrx.class);
+			if (m_hfcserver!=null) log("initiated hfcserver connection");
+			else throw new CASTException();
+		} catch (CASTException e) {
+			e.printStackTrace();
+			log("Connection to the hfcserver Ice server at "+ m_hfcserver_component_name + " failed! Exiting. (Specify the hfcserver component name using --hfcserver-name)");
 			System.exit(-1);
 		}	
 	}
@@ -156,7 +175,7 @@ public class ComaInputWindow extends ManagedComponent {
 			pane.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 		}
 
-		JButton getABox = new JButton("List ABox contents");
+		JButton getABox = new JButton("List CROWL ABox");
 		pane.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		if (shouldFill) {
@@ -172,20 +191,45 @@ public class ComaInputWindow extends ManagedComponent {
 		c.gridy = 0;
 		pane.add(getABox, c);
 
-		JButton getTBox = new JButton("List TBox contents");
+		JButton getTBox = new JButton("List CROWL TBox");
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0.5;
 		c.gridx = 1;
 		c.gridy = 0;
 		pane.add(getTBox, c);
 
-		JButton freeForm = new JButton("Free form SPARQL query...");
+		JButton freeForm = new JButton("CROWL SPARQL query...");
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0.5;
 		c.gridx = 2;
 		c.gridy = 0;
 		pane.add(freeForm, c);
 
+		
+		
+
+		JButton getHFCTBox3 = new JButton("List HFC triples");
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 0.5;
+		c.gridx = 0;
+		c.gridy = 1;
+		pane.add(getHFCTBox3, c);
+
+		JButton getHFCTBox4 = new JButton("List HFC quadruples");
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 0.5;
+		c.gridx = 1;
+		c.gridy = 1;
+		pane.add(getHFCTBox4, c);
+
+		JButton freeFormQDL = new JButton("HFC QDL SELECT query...");
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 0.5;
+		c.gridx = 2;
+		c.gridy = 1;
+		pane.add(freeFormQDL, c);
+		
+		
 		outputArea = new JTextArea(15,30);
         outputArea.setEditable(false);
         outputArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -197,7 +241,7 @@ public class ComaInputWindow extends ManagedComponent {
 		c.weighty = 1.0;
 		c.gridwidth = 3;
 		c.gridx = 0;
-		c.gridy = 1;
+		c.gridy = 2;
 		pane.add(scrollPane, c);
 
 		JButton clear = new JButton("Clear");
@@ -209,7 +253,7 @@ public class ComaInputWindow extends ManagedComponent {
 //		c.insets = new Insets(10,0,0,0);  //top padding
 		c.gridx = 2;       //aligned with button 2
 		c.gridwidth = 1;   //2 columns wide
-		c.gridy = 2;       //third row
+		c.gridy = 3;       //third row
 		pane.add(clear, c);
 
 		
@@ -235,6 +279,7 @@ public class ComaInputWindow extends ManagedComponent {
 				outputArea.setCaretPosition(outputArea.getDocument().getLength());
 			}
 		});
+		
 
 		getTBox.addActionListener(new ActionListener(){
 		public void actionPerformed(ActionEvent ae){
@@ -252,7 +297,81 @@ public class ComaInputWindow extends ManagedComponent {
 		}
 	});
 
-	freeForm.addActionListener(new ActionListener(){
+		getHFCTBox3.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				debug("getHFCTBox3 button pressed.");
+				outputArea.append("Listing HFC TBox triples:" + newline);
+				QueryResults _results = m_hfcserver.querySelect("SELECT ?x ?z ?y WHERE ?x ?y ?z");
+				for (int i = 0; i < _results.bt.length; i++) {
+					String[] _currLine = _results.bt[i];
+					StringBuffer _currLineResult = new StringBuffer();
+					for (int j = 0; j < _currLine.length; j++) {
+						String _res  = _currLine[j];
+						_currLineResult.append(_res + " ");
+					}
+					log(_currLineResult);
+					outputArea.append(_currLineResult + newline);
+				}
+				outputArea.append("-----" + newline);
+				//Make sure the new text is visible, even if there
+				//was a selection in the text area.
+				outputArea.setCaretPosition(outputArea.getDocument().getLength());
+			}
+		});
+
+		getHFCTBox4.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				debug("getHFCTBox4 button pressed.");
+				outputArea.append("Listing HFC TBox triples:" + newline);
+				QueryResults _results = m_hfcserver.querySelect("SELECT ?x ?z ?y ?num WHERE ?x ?y ?z ?num");
+				for (int i = 0; i < _results.bt.length; i++) {
+					String[] _currLine = _results.bt[i];
+					StringBuffer _currLineResult = new StringBuffer();
+					for (int j = 0; j < _currLine.length; j++) {
+						String _res  = _currLine[j];
+						_currLineResult.append(_res + " ");
+					}
+					log(_currLineResult);
+					outputArea.append(_currLineResult + newline);
+				}
+				outputArea.append("-----" + newline);
+				//Make sure the new text is visible, even if there
+				//was a selection in the text area.
+				outputArea.setCaretPosition(outputArea.getDocument().getLength());
+			}
+		});
+
+		freeFormQDL.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				debug("freeFormQDL button pressed.");
+				String str = (String) JOptionPane.showInputDialog(null, null, "Enter a QDL query: ", JOptionPane.PLAIN_MESSAGE, null, null, lastInputFreeFormQDL);
+				if(str != null) {
+					outputArea.append("Executing QDL query: " + str + newline);
+					log("Executing QDL query: " + str);
+					QueryResults _results = m_hfcserver.querySelect(str);
+					lastInputFreeFormQDL = str;
+					for (int i = 0; i < _results.bt.length; i++) {
+						String[] _currLine = _results.bt[i];
+						StringBuffer _currLineResult = new StringBuffer();
+						for (int j = 0; j < _currLine.length; j++) {
+							String _res  = _currLine[j];
+							_currLineResult.append(_res + " ");
+						}
+						log(_currLineResult);
+						outputArea.append(_currLineResult + newline);
+					}
+					outputArea.append("-----" + newline);
+				}
+				else {
+					debug("QDL input cancelled!");
+				}
+				//Make sure the new text is visible, even if there
+				//was a selection in the text area.
+				outputArea.setCaretPosition(outputArea.getDocument().getLength());
+			}
+		});
+
+		freeForm.addActionListener(new ActionListener(){
 		public void actionPerformed(ActionEvent ae){
 			debug("requested free form input window");
 			String str = (String) JOptionPane.showInputDialog(null, null, "Enter a SPARQL query: ", JOptionPane.PLAIN_MESSAGE, null, null, lastInputFreeForm);  
