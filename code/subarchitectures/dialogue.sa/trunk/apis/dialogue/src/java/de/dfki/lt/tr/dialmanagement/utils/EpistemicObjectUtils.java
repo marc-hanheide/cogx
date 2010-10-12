@@ -43,7 +43,6 @@ import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
@@ -281,6 +280,24 @@ public class EpistemicObjectUtils {
 		throw new DialogueException("WARNING: belief content of " + b.id + " could not be extracted");
 	}
 	
+	
+	
+	public static dFormula getModalOperatorValue(dFormula form, String modOp) {
+		
+		if (form instanceof ComplexFormula) {
+			for (dFormula subform : ((ComplexFormula)form).forms) {
+				dFormula val = getModalOperatorValue(subform, modOp);
+				if (val != null) {
+					return val;
+				}
+			}
+		}
+		else if (form instanceof ModalFormula && ((ModalFormula)form).op.equals(modOp)) {
+			return ((ModalFormula)form).form;
+		}
+		
+		return null;
+	}
 	
 	
 	/**
