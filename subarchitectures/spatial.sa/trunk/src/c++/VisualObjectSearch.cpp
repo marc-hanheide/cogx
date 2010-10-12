@@ -1519,9 +1519,6 @@ log("filled");
 	    lockComponent();
 	    GetCostForSingleStrategy(m_map, targetObject,m_threshold,false);
 	    // overwrite the command
-	    SpatialData::ViewPointGenerationCommandPtr newVPCommand = new SpatialData::ViewPointGenerationCommand;
-	    newVPCommand->status = SpatialData::SUCCESS;
-	    overwriteWorkingMemory<SpatialData::ViewPointGenerationCommand>(m_viewpointgen_id , newVPCommand);
 	  }
 	  else {
 	    log("strategy contains room and has 1 step: %3.2f", m_threshold);
@@ -1531,14 +1528,17 @@ log("filled");
 	    }
 	    GetCostForSingleStrategy(m_map, targetObject, m_threshold, false);
 	  }
+	  SpatialData::ViewPointGenerationCommandPtr newVPCommand = new SpatialData::ViewPointGenerationCommand;
+	  newVPCommand->status = SpatialData::SUCCESS;
+	  overwriteWorkingMemory<SpatialData::ViewPointGenerationCommand>(m_viewpointgen_id , newVPCommand);
 	  /*	list<string> listpolicy;
 		AVSPolicyManager policyManager;	
 		policyManager.m_CurrentRoom=0;
-	policyManager.m_evalpol = this; 
-	policyManager.m_CostCredit = 9;
-	policyManager.m_ExpectedCost = 30;
-	policyManager.m_Type = 2;
-	string filename = "configs_"+ targetObject + ".txt";	
+		policyManager.m_evalpol = this; 
+		policyManager.m_CostCredit = 9;
+		policyManager.m_ExpectedCost = 30;
+		policyManager.m_Type = 2;
+		string filename = "configs_"+ targetObject + ".txt";	
 	ifstream ifile(filename.c_str());
 	if (!ifile) {
 	  // The file exists, and is open for input
