@@ -38,6 +38,10 @@ private:
   int frameCnt;
   int framerateMillis;
   int width, height;
+  /**
+   * Whether to loop image sequence or return empty images at end of sequence.
+   */
+  bool loopSequence;
 
   // Number of times each frame is repeated; default = 1
   int frameRepeatCnt;

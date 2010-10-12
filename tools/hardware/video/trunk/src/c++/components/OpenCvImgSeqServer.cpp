@@ -35,6 +35,7 @@ OpenCvImgSeqServer::OpenCvImgSeqServer()
   downsampleFactor = 1;
   width = height = 0;
   frameRepeatCnt = 1;
+  loopSequence = true;
 }
 
 OpenCvImgSeqServer::~OpenCvImgSeqServer()
@@ -135,23 +136,36 @@ void OpenCvImgSeqServer::grabFramesInternal() throw(runtime_error)
 {
   if(filenames.size() == 0)
     throw runtime_error(exceptionMessage(__HERE__, "video not initialised"));
-  // number of current frame, note that we loop
-  int fn = frameCnt % numFrames();
-  for(size_t i = 0; i < grabbedImages.size(); i++)
+  if(frameCnt < numFrames() || loopSequence)
   {
-    cvReleaseImage(&grabbedImages[i]);
-    grabbedImages[i] = cvLoadImage(filenames[fn*getNumCameras() + i].c_str(),
-        CV_LOAD_IMAGE_COLOR);
-    if(grabbedImages[i] == 0)
-      throw runtime_error(exceptionMessage(__HERE__,
-            "failed to load image '%s'",
-            filenames[fn*getNumCameras() + i].c_str()));
-    if(grabbedImages[i]->width != width || grabbedImages[i]->height != height)
-      throw runtime_error(exceptionMessage(__HERE__,
-            "size of loaded image '%s': %dx%d does not match video size %dx%d",
-            filenames[fn*getNumCameras() + i].c_str(),
-            grabbedImages[i]->width, grabbedImages[i]->height,
-            width, height));
+    // number of current frame, note that we loop
+    int fn = frameCnt % numFrames();
+    for(size_t i = 0; i < grabbedImages.size(); i++)
+    {
+      cvReleaseImage(&grabbedImages[i]);
+      grabbedImages[i] = cvLoadImage(filenames[fn*getNumCameras() + i].c_str(),
+          CV_LOAD_IMAGE_COLOR);
+      if(grabbedImages[i] == 0)
+        throw runtime_error(exceptionMessage(__HERE__,
+              "failed to load image '%s'",
+              filenames[fn*getNumCameras() + i].c_str()));
+      if(grabbedImages[i]->width != width || grabbedImages[i]->height != height)
+        throw runtime_error(exceptionMessage(__HERE__,
+              "size of loaded image '%s': %dx%d does not match video size %dx%d",
+              filenames[fn*getNumCameras() + i].c_str(),
+              grabbedImages[i]->width, grabbedImages[i]->height,
+              width, height));
+    }
+  }
+  else
+  {
+    // return empty images
+    for(size_t i = 0; i < grabbedImages.size(); i++)
+    {
+      cvReleaseImage(&grabbedImages[i]);
+      grabbedImages[i] = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+      cvSet(grabbedImages[i], cvScalar(0));
+    }
   }
   cdl::CASTTime time = getCASTTime();
   for(size_t i = 0; i < grabTimes.size(); i++)
@@ -159,7 +173,8 @@ void OpenCvImgSeqServer::grabFramesInternal() throw(runtime_error)
 
   if (frameRepeatPos > frameRepeatCnt) frameRepeatPos = frameRepeatCnt;
   frameRepeatPos--;
-  if (frameRepeatPos <= 0) {
+  if (frameRepeatPos <= 0)
+  {
     frameRepeatPos = frameRepeatCnt;
     frameCnt++;
   }
@@ -316,6 +331,10 @@ void OpenCvImgSeqServer::configure(const map<string,string> & _config)
     str >> downsampleFactor;
     if(downsampleFactor <= 0)
       downsampleFactor = 1;
+  }
+  if((it = _config.find("--noloop")) != _config.end())
+  {
+    loopSequence = false;
   }
 
   // do some initialisation based on configured items
