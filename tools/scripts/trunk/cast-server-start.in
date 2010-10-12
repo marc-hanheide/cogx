@@ -5,7 +5,7 @@ COMA_CLASS_PATH=`ls -1 @PREFIX@/classes/coma.libs/*.jar | tr "\n" ":"`
 echo "added coma external libs to CLASSPATH: $COMA_CLASS_PATH" >&2
 export CLASSPATH=@CAST_INSTALL_ROOT@/share/java/cast.jar:@ICE_HOME@/share/java/Ice.jar:@PREFIX@/classes:$COMA_CLASS_PATH:/usr/share/java/log4j-1.2.jar:$CLASSPATH:
 echo "CLASSPATH=$CLASSPATH"
-export LD_LIBRARY_PATH=@PREFIX@/lib:@CURE_INSTALLROOT@/lib/cure:$LD_LIBRARY_PATH:
+export LD_LIBRARY_PATH=@PREFIX@/lib:@PREFIX@/rocs/lib:@CURE_INSTALLROOT@/lib/cure:$LD_LIBRARY_PATH:
 export PYTHONPATH=@PREFIX@/planner:@PREFIX@/python:$PYTHONPATH:
 export DYLD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DYLD_LIBRARY_PATH:"
 
