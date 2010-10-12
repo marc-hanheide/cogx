@@ -209,11 +209,14 @@ endif(BUILD_SA_FAKE_MOTIVATION)
 
 add_subdirectory(tools/scripts)
 
-# HACK FOR UBUNTU USERS UNTIL FIXED IN CAST!
-if ("${ICE_SLICE_DIR}" STREQUAL "/usr/share/slice")
-    set(ICE_SLICE_DIR "/usr/share/Ice/slice")
-    message("Using a dirty hack to set the Ice/slice path")
-endif ("${ICE_SLICE_DIR}" STREQUAL "/usr/share/slice")
+# Find ICE_SLICE_DIR by searching for Ice/Identity.ice
+#message(" ice slice: " ${ICE_SLICE_DIR})
+find_file(SLICE_IDENTITY Ice/Identity.ice
+   PATHS /usr/share/slice /usr/share/Ice/slice)
+if(SLICE_IDENTITY)
+   string(REGEX REPLACE "/Ice/Identity\\.ice$" "" ICE_SLICE_DIR ${SLICE_IDENTITY})
+endif(SLICE_IDENTITY)
+#message(" ice slice: " ${ICE_SLICE_DIR})
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/build.properties.in ${CMAKE_SOURCE_DIR}/build.properties)
 
