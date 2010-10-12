@@ -22,6 +22,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
@@ -174,7 +175,7 @@ public class DialogueManagement extends ManagedComponent {
 		try {
 
 			// create an "augmented" intention based on the received one
-			if (includesQuestion(cintention.intent)) {
+			if (includesInFormula(cintention.intent, "question-answered")) {
 				cintention = expandCommunicativeIntention(cintention);
 			String formAsString = FormulaUtils.getString(cintention.intent.content.get(0).postconditions);
 			log("expanded postcondition: " + formAsString);	
@@ -233,12 +234,13 @@ public class DialogueManagement extends ManagedComponent {
 	 * Returns true if the intention contains the predicate "question-answered", false otherwise
 	 * 
 	 * @param intent the intention
+	 * @param the predicate
 	 * @return true if the predicate is contained, false otherwise
 	 */
-	private boolean includesQuestion (Intention intent)  {
+	private boolean includesInFormula (Intention intent, String str)  {
 		
 		for (IntentionalContent content : intent.content) {
-			if (FormulaUtils.getString(content.postconditions).contains("question-answered")) {
+			if (FormulaUtils.getString(content.postconditions).contains(str)) {
 				return true;
 			}
 		}
@@ -304,19 +306,43 @@ public class DialogueManagement extends ManagedComponent {
 	 */
 	private  CommunicativeIntention expandCommunicativeIntention  (CommunicativeIntention initCI) 
 	throws DialogueException, DoesNotExistOnWMException, UnknownSubarchitectureException  {
-		
+
 		CommunicativeIntention newCI = EpistemicObjectUtils.copy (initCI);
 		debug("communicative intention " + initCI.intent.id + " successfully copied");
-		
+
 		for (IntentionalContent alternativeContent : newCI.intent.content) {			
 			alternativeContent.postconditions = expandFormula(alternativeContent.postconditions);		
-			debug("expanded postcondition: " + FormulaUtils.getString(alternativeContent.postconditions));
+			debug("expanded postcondition: " + FormulaUtils.getString(alternativeContent.postconditions));				
 		}
+
+		if (includesInFormula(initCI.intent, "<hypo>")) {
+ 
+			debug("dealing with a polar question");
 			
+			for (IntentionalContent alternativeContent : newCI.intent.content) {	
+				dFormula hypothesis = EpistemicObjectUtils.getModalOperatorValue(alternativeContent.postconditions, "hypo");
+				dFormula reality = EpistemicObjectUtils.getModalOperatorValue(alternativeContent.postconditions, "color");
+				
+				if (hypothesis != null && reality != null) {
+					if (FormulaUtils.subsumes(hypothesis,reality)) {
+						hypothesis = new ElementaryFormula(0,"valid");
+						debug("hypothesis is valid");
+					}
+					else {
+						hypothesis = new ElementaryFormula(0,"invalid");
+						debug("hypothesis is invalid");
+					}
+				}
+			}
+		}
 		return newCI;
 	}
+	
+	
+	
+	
 
-
+	
 	
 	/**
 	 * Expand the given formula (if the formula contains a pointer, replaces it by
