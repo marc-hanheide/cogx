@@ -25,8 +25,9 @@ import eu.cogx.beliefs.slice.GroundedBelief;
  */
 public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T extends EpistemicObject>
 		extends ManagedComponent {
-	public static final String ROBOT_BELIEF_TYPE = "Robot";
-	public static final String BINDER_SA = "binder";
+	// TODO: BAAAAAAAD
+	public static final String ROBOT_BELIEF_TYPE = "Robot"; 
+	public static final String SPATIAL_SA = "spatial.sa";
 
 	private static final int DEFAULT_MAX_EXECUTION_TIME = 60 * 5;
 
@@ -59,7 +60,7 @@ public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T
 			List<CASTData<GroundedBelief>> groundedBeliefs = new ArrayList<CASTData<GroundedBelief>>();
 			try {
 				getMemoryEntriesWithData(GroundedBelief.class, groundedBeliefs,
-						BINDER_SA, 0);
+						SPATIAL_SA, 0);
 			} catch (UnknownSubarchitectureException e) {
 				logException(e);
 				return null;
@@ -68,12 +69,12 @@ public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T
 			for (CASTData<GroundedBelief> beliefEntry : groundedBeliefs) {
 				if (beliefEntry.getData().type.equals(ROBOT_BELIEF_TYPE)) {
 					robotBeliefAddr = new WorkingMemoryAddress(beliefEntry
-							.getID(), BINDER_SA);
+							.getID(), SPATIAL_SA);
 					break;
 				}
+				getLogger().warn(
+						"unable to find belief '" + ROBOT_BELIEF_TYPE + "'");
 			}
-			getLogger().warn(
-					"unable to find belief '" + ROBOT_BELIEF_TYPE + "'");
 		}
 		return robotBeliefAddr;
 	}
