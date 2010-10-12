@@ -151,7 +151,7 @@ void ObjectRecognizer3D::runComponent(){
 
   			if(m_rec_cmd->cmd == RECOGNIZE)
   			{
-          if(m_recEntries[m_label].learn)
+          if(m_recEntries.find(m_label) != m_recEntries.end() && m_recEntries[m_label].learn)
           {
             log("%s: Warning no Sift file available: starting to learn", m_label.c_str());
             m_rec_cmd->cmd = RECLEARN;
@@ -235,24 +235,18 @@ void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange 
   
   for(size_t i = 0; i < det_cmd->labels.size(); i++)
   {
-    //if(m_recEntries.find(det_cmd->labels[i]) != m_recEntries.end())
-    {
-      Recognizer3DCommandPtr rec_cmd = new Recognizer3DCommand();
-      rec_cmd->cmd = RECOGNIZE;
-      rec_cmd->label = det_cmd->labels[i];
-      m_recCommandList.push_back(rec_cmd);
-      // note: here we add (multiple times) the WM Id of the detection command
-      m_recCommandID.push_back(_wmc.address.id);
-    }
+    Recognizer3DCommandPtr rec_cmd = new Recognizer3DCommand();
+    rec_cmd->cmd = RECOGNIZE;
+    rec_cmd->label = det_cmd->labels[i];
+    m_recCommandList.push_back(rec_cmd);
+    // note: here we add (multiple times) the WM Id of the detection command
+    m_recCommandID.push_back(_wmc.address.id);
   }
 }
 
 void ObjectRecognizer3D::receiveRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc){
 	log("Receiving Recognizer3DCommand");
 	Recognizer3DCommandPtr rec_cmd = getMemoryEntry<Recognizer3DCommand>(_wmc.address);
-
-	//if(m_recEntries.find(rec_cmd->label) == m_recEntries.end())
-	//	return;
 
 	log("ID is %s", rec_cmd->visualObjectID.c_str());
 	m_recCommandList.push_back(rec_cmd);
@@ -384,6 +378,7 @@ log("Making WM changes..");
  */
 std::string ObjectRecognizer3D::loadEmptyVisualModelToWM(std::string &label){
 
+  log("creating empty object %s", label.c_str());
   VisionData::VisualObjectPtr obj = new VisionData::VisualObject();
 
   // create a very simple distribution: label and unknown
@@ -408,6 +403,7 @@ std::string ObjectRecognizer3D::loadEmptyVisualModelToWM(std::string &label){
   // do not add a command to track it (as would be the case for a properly detected
   // visual object)
   log("Add model to working memory: '%s' id: %s", obj->identLabels[0].c_str(), newObjID.c_str());
+  return newObjID;
 }
 
 // *** Recognizer3D functions ***
@@ -548,18 +544,29 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
 }
 
 void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
+
 	log("%s: Recognizing model pose", m_label.c_str());
 
-  int key;
-  m_rec_cmd->confidence = 0.0;
+  // if we don't know that label we want to produce a non-detected
+  // VisualObject
+log("lets see if i know this object");
+  if(m_recEntries.find(m_label) == m_recEntries.end())
+  {
+    log("%s: don't know this model", m_label.c_str());
+    std::string newID = loadEmptyVisualModelToWM(m_label);
+    m_rec_cmd->confidence = 0.;
+    m_rec_cmd->visualObjectID = newID;
+  }
+  else
+  {
+	log("%s: I know this model", m_label.c_str());
+	// 	if(m_starttask){
+	// 		m_starttask = false;
+	// 	}else{
+	// 		addTrackerCommand(REMOVEMODEL, m_recEntries[m_label].visualObjectID);
+	// 	}
 
-// 	if(m_starttask){
-// 		m_starttask = false;
-// 	}else{
-// 		addTrackerCommand(REMOVEMODEL, m_recEntries[m_label].visualObjectID);
-// 	}
-
-// 	addTrackerCommand(VisionData::LOCK, m_recEntries[m_label].visualObjectID);
+	// 	addTrackerCommand(VisionData::LOCK, m_recEntries[m_label].visualObjectID);
 
 	// Grab image from VideoServer
 	videoServer->getImage(camId, m_image);
@@ -570,18 +577,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	// Calculate SIFTs from image
 	sift.Operate(m_iplGray,m_image_keys);
 
-  m_detect->SetDebugImage(m_iplImage);
-  // if we don't know that label we want to produce a non-detected
-  // VisualObject
-  if(m_recEntries.find(m_label) == m_recEntries.end())
-  {
-    log("%s: don't know this model", m_label.c_str());
-    std::string newID = loadEmptyVisualModelToWM(m_label);
-    m_rec_cmd->confidence = 0.;
-    m_rec_cmd->visualObjectID = newID;
-  }
-  else
-  {
+    m_detect->SetDebugImage(m_iplImage);
     if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object)))
     {
       log("%s: No object detected", m_label.c_str());
@@ -621,19 +617,25 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
       m_rec_cmd->confidence = m_recEntries[m_label].object->conf;
       m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
     }
-  }
 
 	if(m_showCV){
 		cvShowImage ( "ObjectRecognizer3D", m_iplImage );
 		cvWaitKey(50);
 	}
 
+	cvReleaseImage(&m_iplImage);
+	cvReleaseImage(&m_iplGray);
+	for (unsigned i=0; i<m_image_keys.Size(); i++)
+	  delete(m_image_keys[i]);
+	m_image_keys.Clear();
+  }
+
 // 	addTrackerCommand(VisionData::UNLOCK, m_recEntries[m_label].visualObjectID);
 
 	// Send result to WM
 	overwriteWorkingMemory(m_rec_cmd_id, m_rec_cmd);
 	// note: execution layer expects the comand to be deleted as a signal of completion
-sleep(1);
+sleep(1);  // why this??
 	try {
 	  if(m_delete_command_from_wm) {
       deleteFromWorkingMemory(m_rec_cmd_id);
@@ -644,18 +646,7 @@ sleep(1);
 	  println("exception while deleting command: " + e.message);
 	}
 
-
-	// Clean up
-log("cleaning up..");
-  cvReleaseImage(&m_iplImage);
-	cvReleaseImage(&m_iplGray);
-	for (unsigned i=0; i<m_image_keys.Size(); i++)
-	  delete(m_image_keys[i]);
-	m_image_keys.Clear();
-
 	m_task = RECSTOP;
-log("cleaned up..");
-
 }
 
 
