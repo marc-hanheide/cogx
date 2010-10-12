@@ -756,6 +756,28 @@ void CVisionSimulator::clearScene()
 
 void CVisionSimulator::applyScene(const std::string& sceneName)
 {
+   struct _local_ {
+      // from matalab: ap2gain.m @ 20101001.
+      // ap0 = 1-sum(ap)
+      static double ap2gain(double ap, double ap0) {
+         const double thrs[] = { 0.7, 0.5, 0.1 }; // Defaults from CLFStart
+         double t1 = 1, tY = thrs[0], tPy = thrs[1], tPn = thrs[2];
+         double g1 = 0.25, gY = 1, gPy = 0.5, gPn = 0;
+         double g = 0;
+
+         if (ap>=tY)
+            g=g1+(g1-gY)/(tY-t1)*(t1-ap);
+         else if (ap>=tPy)
+            g=gY-(gY-gPy)/(tY-tPy)*(tY-ap);
+         else if (ap>=tPn)
+            g=gPy-(gPy-gPn)/(tPy-tPn)*(tPy-ap);
+         else
+            g=0;
+
+         return g+ap0;    
+      }
+   };
+
    log("applyScene");
    typeof(m_Scenes.begin()) itscn = m_Scenes.find(sceneName);
    if (itscn == m_Scenes.end()) {
@@ -810,8 +832,16 @@ void CVisionSimulator::applyScene(const std::string& sceneName)
             pvobj->colorDistrib.push_back(1.0 - sum);
             ss << " *unknown*=" << (1.0-sum);
          }
-         pvobj->colorGain = obj.m_gain_color;
          pvobj->colorAmbiguity = obj.m_ambig_color;
+         double ap0 = sum < 1.0 ? 1.0 - sum : 0.0;
+         double maxGain = 0;
+         for(it = obj.m_colors.begin(); it != obj.m_colors.end(); it++) {
+            double ap = it->second;
+            double gain = _local_::ap2gain(ap, ap0);
+            pvobj->colorGains.push_back(gain);
+            if (gain > maxGain) maxGain = gain;
+         }
+         pvobj->colorGain = obj.m_gain_color; // TODO? use maxGain instead?
 
          sum = 0;
          for(it = obj.m_shapes.begin(); it != obj.m_shapes.end(); it++) {
@@ -825,8 +855,16 @@ void CVisionSimulator::applyScene(const std::string& sceneName)
             pvobj->shapeDistrib.push_back(1.0 - sum);
             ss << " *unknown*=" << (1.0-sum);
          }
-         pvobj->shapeGain = obj.m_gain_shape;
          pvobj->shapeAmbiguity = obj.m_ambig_shape;
+         ap0 = sum < 1.0 ? 1.0 - sum : 0.0;
+         maxGain = 0;
+         for(it = obj.m_shapes.begin(); it != obj.m_shapes.end(); it++) {
+            double ap = it->second;
+            double gain = _local_::ap2gain(ap, ap0);
+            pvobj->shapeGains.push_back(gain);
+            if (gain > maxGain) maxGain = gain;
+         }
+         pvobj->shapeGain = obj.m_gain_shape; // TODO? use maxGain instead?
 
          sum = 0;
          for(it = obj.m_labels.begin(); it != obj.m_labels.end(); it++) {
@@ -840,8 +878,17 @@ void CVisionSimulator::applyScene(const std::string& sceneName)
             pvobj->identDistrib.push_back(1.0 - sum);
             ss << " *unknown*=" << (1.0-sum);
          }
-         pvobj->identGain = obj.m_gain_label;
          pvobj->identAmbiguity = obj.m_ambig_label;
+         // ATM there are no gains for individual object labels
+         //ap0 = sum < 1.0 ? 1.0 - sum : 0.0;
+         //maxGain = 0;
+         //for(it = obj.m_labels.begin(); it != obj.m_labels.end(); it++) {
+         //   double ap = it->second;
+         //   double gain = _local_::ap2gain(ap, ap0);
+         //   pvobj->identGains.push_back(gain);
+         //   if (gain > maxGain) maxGain = gain;
+         //}
+         pvobj->identGain = obj.m_gain_label;
 
          std::string objId = newDataID();
          addToWorkingMemory(objId, pvobj);
