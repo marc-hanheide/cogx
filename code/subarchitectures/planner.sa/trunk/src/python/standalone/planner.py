@@ -161,7 +161,7 @@ class Planner(object):
             t1 = time.time()
             action = pnode.action
             #don't check preconditions of actions in progress
-            if not pnode.is_inprogress() and (not self.check_node(pnode, state, replan=True) or not self.check_node(pnode, state)):
+            if (not pnode.is_inprogress() and not pnode.is_virtual()) and (not self.check_node(pnode, state, replan=True) or not self.check_node(pnode, state)):
                 if not first_invalid_action:
                     first_invalid_action = pnode
                 log.debug("Action (%s %s) is not executable, trying to skip it.", action.name, " ".join(a.name for a in pnode.full_args))

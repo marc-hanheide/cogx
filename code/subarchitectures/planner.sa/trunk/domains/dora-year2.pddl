@@ -16,7 +16,7 @@
    ;; derived predicates
    (cones-exist ?l - label ?r - room)
    (obj-possibly-in-room ?o - visualobject ?r - room)
-   ;(fully_explored ?r)
+   (not_fully_explored ?r)
 
    ;;virtual predicates
    (cones_created ?l - label ?r - room)
@@ -77,15 +77,18 @@
   ;;             :effect (assign (category ?r) UNKNOWN)
   ;;             )
 
-  (:init-rule places-probs
+  (:init-rule init-place-probs
               :parameters(?p - place ?l - label)
               :precondition (exists (?c - cone) (and (= (is-in ?c) ?p)
                                                      (= (label ?c) ?l)))
-              :effect (and (assign (p-probability ?p ?l) 0)
-                           (forall (?c - cone) (when (and (= (is-in ?c) ?p)
-                                                          (= (label ?c) ?l))
-                                                 (increase (p-probability ?p ?l) (probability ?c))))
-                           )
+              :effect (and (assign (p-probability ?p ?l) 0))
+              )
+
+  (:init-rule places-probs
+              :parameters(?p - place ?l - label ?c - cone)
+              :precondition (and (= (is-in ?c) ?p)
+                                 (= (label ?c) ?l))
+              :effect (increase (p-probability ?p ?l) (probability ?c))
               )
 
   (:init-rule virtual-places
@@ -108,9 +111,10 @@
                                                 (= (label ?c) ?l)))
             )
 
-  ;; (:derived (fully_explored ?r - room)
-  ;;           (forall (?p - place) (or (not (= (in-room ?p) ?r))
-  ;;                                    (
+  (:derived (not_fully_explored ?r - room)
+            (exists (?p ?p2 - place) (and (= (in-room ?p) ?r)
+                                          (not (= (placestatus ?p2) trueplace))
+                                          (connected ?p ?p2))))
 
   (:action sample_existence
            :agent (?a - agent)
@@ -191,6 +195,7 @@
                      :duration (= ?duration 10)
                      :condition (and (over all (and (= (is-in ?a) ?p)
                                                     (= (in-room ?p) ?r)
+                                                    ;;(not (not_fully_explored ?r))
                                                     ;;(hyp (ex-in-room ?l ?r) true)
                                                     (not (done))))
                                      )
