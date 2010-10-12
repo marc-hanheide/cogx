@@ -158,7 +158,7 @@ public class BeliefTranslator {
 
 		if (val instanceof ElementaryFormula) {
 			ElementaryFormula eF = (ElementaryFormula) val;
-			String prop = eF.prop.replaceAll("[^a-zA-Z0-9_-:]", "");
+			String prop = eF.prop.replaceAll("[^a-zA-Z0-9_\\-:]", "");
 			valTerm = TermAtomFactory.term(prop);
 		}
 
