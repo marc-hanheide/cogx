@@ -48,7 +48,7 @@ public class PolicyUtils {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 	
 	
 	/**
@@ -73,11 +73,25 @@ public class PolicyUtils {
 				PolicyEdge firstEdge = sortedEdges.get(i);
 				if (i < sortedEdges.size() -1) {
 					PolicyEdge nextEdge = sortedEdges.get(i+1);
-					if (FormulaUtils.subsumes(firstEdge.getCondition().getContent(), nextEdge.getCondition().getContent()) && 
-							!FormulaUtils.subsumes(nextEdge.getCondition().getContent(),firstEdge.getCondition().getContent())) {
+					boolean subsumption1 = 
+						FormulaUtils.subsumes(firstEdge.getCondition().getContent(), nextEdge.getCondition().getContent());
+					boolean subsumption2 = 
+						FormulaUtils.subsumes(nextEdge.getCondition().getContent(),firstEdge.getCondition().getContent());
+					
+					if (subsumption1 && !subsumption2) {
 						sortedEdges.remove(i);
 						sortedEdges.add(i+1, firstEdge);
 						fixedPointReached = false;
+					}
+					
+					// hack
+					else if (!subsumption1 && !subsumption2) {
+						if (firstEdge.getCondition().getUnderspecifiedArguments().size() > 
+						nextEdge.getCondition().getUnderspecifiedArguments().size()) {
+							sortedEdges.remove(i);
+							sortedEdges.add(i+1, firstEdge);
+							fixedPointReached = false;
+						}
 					}
 				}
 			}
