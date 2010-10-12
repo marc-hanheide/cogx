@@ -31,7 +31,7 @@ log4j.rootLogger=TRACE, cliConsole, cliSocketApp
 log4j.appender.cliConsole=org.apache.log4j.ConsoleAppender
 log4j.appender.cliConsole.Threshold=${LEVEL}
 log4j.appender.cliConsole.layout=cast.core.logging.ComponentLayout
-log4j.appender.cliConsole.layout.ConversionPattern=%S[%p %c: %m]%n%E
+log4j.appender.cliConsole.layout.ConversionPattern=%S[%P %i: %m]%n%E
 #log4j.appender.cliConsole.layout.ConversionPattern=%S %30c [ %05p ] - %m %n%E
 
 [LOG4J.client.socket]
