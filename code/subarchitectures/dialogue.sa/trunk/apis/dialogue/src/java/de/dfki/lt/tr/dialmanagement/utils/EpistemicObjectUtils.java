@@ -42,6 +42,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
@@ -62,7 +63,7 @@ public class EpistemicObjectUtils {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 	
 	// incremental counter for forging identifiers
 	static int incrCounter = 0;
@@ -87,6 +88,11 @@ public class EpistemicObjectUtils {
 		
 		dFormula precondition = new UnknownFormula(0);
 		dFormula postcondition = fullFormula;
+		
+		if (postcondition instanceof ModalFormula) {
+			postcondition = new ComplexFormula(0, Arrays.asList(postcondition), BinaryOp.conj);
+		}
+		
 		if (fullFormula instanceof ComplexFormula) {
 			
 			for (dFormula subFormula : ((ComplexFormula)fullFormula).forms) {
@@ -97,7 +103,7 @@ public class EpistemicObjectUtils {
 				if (subFormula instanceof ModalFormula && ((ModalFormula)subFormula).op.equals("post")) {
 					postcondition = ((ModalFormula)subFormula).form;
 				}
-			}
+			} 
 		}
 		return new IntentionalContent (agents, precondition, postcondition, prob);
 	}
@@ -223,7 +229,7 @@ public class EpistemicObjectUtils {
 	/**
 	 * Extract the content of the belief and express it as a single ComplexFormula
 	 * 
-	 * TODO: take the ambiguity into account
+	 * TODO: take the ambiguity into account when extracting belief content
 
 	 * @param b the belief
 	 * @return the complex formula representing the belief
@@ -238,7 +244,10 @@ public class EpistemicObjectUtils {
 			List<dFormula> beliefFormulae = new LinkedList<dFormula>();
 			
 			for (String key : ((CondIndependentDistribs)b.content).distribs.keySet()) {
+				debug("key: " + key);
 				if (((CondIndependentDistribs)b.content).distribs.get(key) instanceof BasicProbDistribution) {
+					
+					debug("type of values: " + ((BasicProbDistribution)((CondIndependentDistribs)b.content).distribs.get(key)).values);
 					if (((BasicProbDistribution)((CondIndependentDistribs)b.content).
 							distribs.get(key)).values instanceof FormulaValues) {
 						
@@ -291,14 +300,35 @@ public class EpistemicObjectUtils {
 					return val;
 				}
 			}
-		}
+		} 
 		else if (form instanceof ModalFormula && ((ModalFormula)form).op.equals(modOp)) {
 			return ((ModalFormula)form).form;
+		}
+		else if (form instanceof ModalFormula) {
+			return getModalOperatorValue(((ModalFormula)form).form, modOp);
 		}
 		
 		return null;
 	}
 	
+	
+	
+	
+
+	public static void setModalOperatorValue(dFormula form, String modOp, String val) {
+		
+		if (form instanceof ComplexFormula) {
+			for (dFormula subform : ((ComplexFormula)form).forms) {
+				setModalOperatorValue(subform, modOp, val);
+			}
+		} 
+		else if (form instanceof ModalFormula && ((ModalFormula)form).op.equals(modOp)) {
+			((ModalFormula)form).form = new ElementaryFormula(0,val);
+		}
+		else if (form instanceof ModalFormula) {
+			setModalOperatorValue(((ModalFormula)form).form, modOp, val);
+		}	
+	}
 	
 	/**
 	 * Forge a new identifier

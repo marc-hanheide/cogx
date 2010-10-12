@@ -322,14 +322,13 @@ public class DialogueManagement extends ManagedComponent {
 			for (IntentionalContent alternativeContent : newCI.intent.content) {	
 				dFormula hypothesis = EpistemicObjectUtils.getModalOperatorValue(alternativeContent.postconditions, "hypo");
 				dFormula reality = EpistemicObjectUtils.getModalOperatorValue(alternativeContent.postconditions, "color");
-				
 				if (hypothesis != null && reality != null) {
 					if (FormulaUtils.subsumes(hypothesis,reality)) {
-						hypothesis = new ElementaryFormula(0,"valid");
+						EpistemicObjectUtils.setModalOperatorValue(alternativeContent.postconditions, "hypo", "valid");
 						debug("hypothesis is valid");
 					}
 					else {
-						hypothesis = new ElementaryFormula(0,"invalid");
+						EpistemicObjectUtils.setModalOperatorValue(alternativeContent.postconditions, "hypo", "invalid");
 						debug("hypothesis is invalid");
 					}
 				}
@@ -377,6 +376,7 @@ public class DialogueManagement extends ManagedComponent {
 				try {
 				dBelief b = getMemoryEntry(WMPointer, dBelief.class);
 				ComplexFormula expandedFormula =  EpistemicObjectUtils.getBeliefContent(b);
+				debug("belief content: " + FormulaUtils.getString(expandedFormula));
 				expandedFormula.forms.add(new ModalFormula(0, "ref", form));
 				return expandedFormula;
 				}

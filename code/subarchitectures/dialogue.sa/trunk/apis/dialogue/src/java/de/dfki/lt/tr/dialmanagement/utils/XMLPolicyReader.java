@@ -186,7 +186,28 @@ public class XMLPolicyReader {
 				String target = xmlNode.getAttributes().getNamedItem("target").getNodeValue();
 				
 				if (xmlNode.getAttributes().getNamedItem("deactivated") == null) {
-				if (policy.hasNode(source) && policy.hasNode(target)) {	
+				
+					if (source.equals("*") && policy.hasNode(target)) {
+						debug("adding an edge at each possible node");
+						
+						int counter = 1;
+						for (PolicyNode node : policy.getNodes()) {
+							
+							PolicyEdge pedge = new PolicyEdge (id+counter, node, policy.getNode(target)); 
+							counter++;
+							if (xmlNode.getAttributes().getNamedItem("condition") != null) {
+								pedge.setCondition(new PolicyCondition (xmlNode.getAttributes().getNamedItem("condition").getNodeValue()));
+							}		
+							else {
+								log("WARNING: no condition specified for edge id " + pedge.getId());
+							}
+							debug("adding edge: " + pedge.getId());
+							policy.addEdge(pedge, node, policy.getNode(target)) ;						
+						}
+					}
+					
+					
+					else if (policy.hasNode(source) && policy.hasNode(target)) {	
 						PolicyEdge pedge = new PolicyEdge (id, policy.getNode(source), policy.getNode(target)); 
 						
 						if (xmlNode.getAttributes().getNamedItem("condition") != null) {
