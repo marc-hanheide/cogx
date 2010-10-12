@@ -1,5 +1,6 @@
 package verbalisation;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import motivation.slice.CategorizeRoomMotive;
@@ -10,14 +11,21 @@ import motivation.slice.PatrolMotive;
 import SpatialData.NavCommand;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
+import SpatialData.ProcessViewPointCommand;
+import SpatialData.ViewPointGenerationCommand;
 import SpatialProperties.GatewayPlaceProperty;
 import SpatialProperties.ObjectPlaceProperty;
 import VisionData.DetectionCommand;
 import VisionData.VisualObject;
+import cast.CASTException;
+import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
+import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTUtils;
 import castutils.castextensions.Accessor;
-
-
+import de.dfki.lt.hfc.operators.FProduct;
 
 /**
  * - found new place N - found new placeholder N - found new room N - seen
@@ -32,14 +40,24 @@ import castutils.castextensions.Accessor;
  * @author nah
  * 
  */
-public class DoraVerbalisation extends ManagedComponent {
+public class DoraVerbalisation extends ManagedComponent implements
+		WorkingMemoryChangeReceiver {
 
-	private static final TextGenerator<NavCommand> NAV_CMD_GENERATOR = new TextGenerator<NavCommand>() {
+	private final TextGenerator<NavCommand> NAV_CMD_GENERATOR = new TextGenerator<NavCommand>() {
+
 		@Override
 		public String toText(NavCommand _i) {
+
 			switch (_i.cmd) {
 			case GOTOPLACE:
-				return "Going to Place " + _i.destId[0];
+				PlaceStatus status = m_placeIDToStatus.get(_i.destId[0]);
+				if (status == null) {
+					return "";
+				} else if (status == PlaceStatus.PLACEHOLDER) {
+					return "Exploring place " + _i.destId[0];
+				} else {
+					return "Going to place " + _i.destId[0];
+				}
 			case TURNTO:
 				return "Turning";
 
@@ -86,8 +104,29 @@ public class DoraVerbalisation extends ManagedComponent {
 	private static final TextGenerator<ObjectPlaceProperty> OBJECT_PROPERTY_GENERATOR = new TextGenerator<ObjectPlaceProperty>() {
 		@Override
 		public String toText(ObjectPlaceProperty _i) {
-			return "I see something that appears to be "
+			return "Found an object of type "
 					+ ((SpatialProperties.StringValue) _i.mapValue).value;
+		}
+	};
+
+	private static final TextGenerator<ViewPointGenerationCommand> VIEW_POINT_CMD_GENERATOR = new TextGenerator<ViewPointGenerationCommand>() {
+		@Override
+		public String toText(ViewPointGenerationCommand _i) {
+			return "Generating view points for object " + _i.label;
+		}
+	};
+
+	private static final TextGenerator<ProcessViewPointCommand> PROCESS_SINGLE_VIEWPOINT_GENERATOR = new TextGenerator<ProcessViewPointCommand>() {
+
+		@Override
+		public String toText(ProcessViewPointCommand _i) {
+			StringBuffer sb = new StringBuffer(
+					"Processing view point to look for");
+			for (String model : _i.objectModels) {
+				sb.append(" a ");
+				sb.append(model);
+			}
+			return sb.toString();
 		}
 	};
 
@@ -158,8 +197,11 @@ public class DoraVerbalisation extends ManagedComponent {
 
 	private final VerbalisationFacade m_verbals;
 
+	private final HashMap<Long, PlaceStatus> m_placeIDToStatus;
+
 	public DoraVerbalisation() {
 		m_verbals = new VerbalisationFacade(this);
+		m_placeIDToStatus = new HashMap<Long, PlaceStatus>();
 	}
 
 	@Override
@@ -172,9 +214,9 @@ public class DoraVerbalisation extends ManagedComponent {
 		// say stuff...
 
 		// when all motives are activated
-		m_verbals.verbaliseOnStateTransition(Motive.class,
-				MOTIVE_STATUS_ACCESSOR, MotiveStatus.SURFACED,
-				MotiveStatus.ACTIVE, MOTIVE_ACTIVATED);
+		// m_verbals.verbaliseOnStateTransition(Motive.class,
+		// MOTIVE_STATUS_ACCESSOR, MotiveStatus.SURFACED,
+		// MotiveStatus.ACTIVE, MOTIVE_ACTIVATED);
 
 		// when places are created
 		// m_verbals.verbaliseOnAddition(Place.class, NEW_PLACE_GENERATOR);
@@ -189,19 +231,15 @@ public class DoraVerbalisation extends ManagedComponent {
 		// PLACE_EXPLORATION_FAILED_GENERATOR);
 
 		// // when navigation is told to move the robot
-		// m_verbals.verbaliseOnAddition(NavCommand.class, NAV_CMD_GENERATOR);
+		m_verbals.verbaliseOnAddition(NavCommand.class, NAV_CMD_GENERATOR);
 
 		// // when plan execution is triggered
 		// m_verbals.verbaliseCannedTextOnAddition(PlanProxy.class,
 		// "Starting plan execution.");
 
-		// when AVS is triggered
-//		m_verbals.verbaliseCannedTextOnAddition(AVSCommand.class,
-//				"Having a look around");
-
 		// when a recognition command is triggered�
-		m_verbals.verbaliseOnAddition(DetectionCommand.class,
-				DETECTION_COMMAND_GENERATOR);
+		// m_verbals.verbaliseOnAddition(DetectionCommand.class,
+		// DETECTION_COMMAND_GENERATOR);
 
 		// when an object is added to the spatial model -> this is once per
 		// object class in place
@@ -213,18 +251,41 @@ public class DoraVerbalisation extends ManagedComponent {
 		// m_verbals.verbaliseOnAddition(VisualObject.class,
 		// VISUAL_OBJECT_GENERATOR);
 
-//		m_verbals.verbaliseOnOverwrite(ComaRoom.class,
-//				new RoomCategoryTextGenerator());
+		// m_verbals.verbaliseOnOverwrite(ComaRoom.class,
+		// new RoomCategoryTextGenerator());
 
 		m_verbals.verbaliseCannedTextOnAddition(GatewayPlaceProperty.class,
 				"Ah ha. Looks like there is a door here");
 
+		// when spatial is asked for new viewpoints
+		m_verbals.verbaliseOnAddition(ViewPointGenerationCommand.class,
+				VIEW_POINT_CMD_GENERATOR);
+
+		// when spatial is asked for new viewpoints
+		m_verbals.verbaliseOnAddition(ProcessViewPointCommand.class,
+				PROCESS_SINGLE_VIEWPOINT_GENERATOR);
+
+		addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(Place.class), this);
+		addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(Place.class), this);
 	}
 
 	public void runComponent() {
 		m_verbals.verbaliseCannedText("go dora go go go");
 	}
 
-	// verbaliseCannedTextOnStateTransition
+	@Override
+	public void workingMemoryChanged(WorkingMemoryChange _wmc)
+			throws CASTException {
+		// stop me making silly mistakes
+		assert (_wmc.type.equals(CASTUtils.typeName(Place.class)));
+
+		if (_wmc.operation != WorkingMemoryOperation.DELETE) {
+			Place place = getMemoryEntry(_wmc.address, Place.class);
+			m_placeIDToStatus.put(place.id, place.status);
+		}
+
+	}
 
 }
