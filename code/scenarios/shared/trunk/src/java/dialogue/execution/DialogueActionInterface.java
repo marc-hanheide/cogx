@@ -154,7 +154,8 @@ public class DialogueActionInterface extends ManagedComponent {
 			// TODO sweet-talk marc into writing proxies for this too
 			Intention robotIntention = new Intention();
 			robotIntention.frame = CASTFrame.create().get();
-			robotIntention.estatus = new PrivateEpistemicStatus(org.cognitivesystems.binder.thisAgent.value);
+			robotIntention.estatus = new PrivateEpistemicStatus(
+					org.cognitivesystems.binder.thisAgent.value);
 
 			// actual content
 			IntentionalContent content = new IntentionalContent();
@@ -375,21 +376,21 @@ public class DialogueActionInterface extends ManagedComponent {
 	}
 
 	public static class AskForColourPolarDialogue extends
-			FeatureRequestDialogueAction<AskPolarColour> {
+			AskForPolarDialogue<AskPolarColour> {
 		public AskForColourPolarDialogue(ManagedComponent _component) {
 			super(_component, AskPolarColour.class, "color");
 		}
 	}
 
 	public static class AskForShapePolarDialogue extends
-			FeatureRequestDialogueAction<AskPolarShape> {
+			AskForPolarDialogue<AskPolarShape> {
 		public AskForShapePolarDialogue(ManagedComponent _component) {
 			super(_component, AskPolarShape.class, "shape");
 		}
 	}
 
 	public static class AskForIdentityPolarDialogue extends
-			FeatureRequestDialogueAction<AskPolarIdentity> {
+			AskForPolarDialogue<AskPolarIdentity> {
 		public AskForIdentityPolarDialogue(ManagedComponent _component) {
 			super(_component, AskPolarIdentity.class, "identity");
 		}
@@ -557,30 +558,34 @@ public class DialogueActionInterface extends ManagedComponent {
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
 						.create(GroundedBelief.class, belief);
 
-
-				//get something to describe the object
+				// get something to describe the object
 				String objectIdent = "object";
-				
-				FormulaDistribution distribution = gb.getContent()
-				.get(VisualObjectTransferFunction.VISUAL_OBJECT_ID);
-				if(distribution != null) {
-					objectIdent = distribution.getDistribution().getMostLikely().getProposition();
+
+				FormulaDistribution distribution = gb.getContent().get(
+						VisualObjectTransferFunction.VISUAL_OBJECT_ID);
+				if (distribution != null) {
+					objectIdent = distribution.getDistribution()
+							.getMostLikely().getProposition();
 				}
-				
-				//get place id that object is at
-				WMPointer placePointer = WMPointer.create(gb.getContent()
-						.get(eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN).getDistribution().getMostLikely().get());
+
+				// get place id that object is at
+				WMPointer placePointer = WMPointer
+						.create(gb
+								.getContent()
+								.get(eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN)
+								.getDistribution().getMostLikely().get());
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
 						.create(GroundedBelief.class,
 								getComponent().getMemoryEntry(
 										placePointer.getVal(),
 										GroundedBelief.class));
-				int placeID = placeBelief.getContent().get(PlaceTransferFunction.PLACE_ID_ID).getDistribution().getMostLikely().getInteger();
+				int placeID = placeBelief.getContent()
+						.get(PlaceTransferFunction.PLACE_ID_ID)
+						.getDistribution().getMostLikely().getInteger();
 
-				
-				JOptionPane.showMessageDialog(null,
-						"the " + objectIdent +  " is at place " + placeID);
-				
+				JOptionPane.showMessageDialog(null, "the " + objectIdent
+						+ " is at place " + placeID);
+
 				result = TriBool.TRITRUE;
 
 			} catch (CASTException e) {
@@ -692,9 +697,7 @@ public class DialogueActionInterface extends ManagedComponent {
 					new ComponentActionFactory<DirectAskForObject>(this,
 							DirectAskForObject.class));
 
-			
-			m_actionStateManager.registerActionType(
-					ReportPosition.class,
+			m_actionStateManager.registerActionType(ReportPosition.class,
 					new ComponentActionFactory<DirectReportPosition>(this,
 							DirectReportPosition.class));
 		} else {
