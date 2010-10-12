@@ -169,6 +169,7 @@ void ComaRoomUpdater::worldStateChanged(const cast::cdl::WorkingMemoryChange & w
 	// Get the rooms information from the world state
 	lockEntry(wmChange.address, cdl::LOCKEDOD);
 	ConceptualData::WorldStatePtr worldStatePtr = getMemoryEntry<ConceptualData::WorldState>(wmChange.address);
+	_comaRoomIdToWmAddressMap.clear();
 	for(unsigned int i=0; i<worldStatePtr->rooms.size(); ++i)
 		_comaRoomIdToWmAddressMap[worldStatePtr->rooms[i].roomId] = worldStatePtr->rooms[i].wmAddress;
 	unlockEntry(wmChange.address);
