@@ -1,3 +1,2 @@
 <dora:corridor> <owl:equivalentClass> <dora:hallway>
-
 <http://dora.cogx.eu#cornflakes> <rdfs:subClassOf> <http://dora.cogx.eu#cereal_box>
