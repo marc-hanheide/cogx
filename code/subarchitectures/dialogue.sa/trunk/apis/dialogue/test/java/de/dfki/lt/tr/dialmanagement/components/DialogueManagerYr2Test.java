@@ -109,7 +109,7 @@ public class DialogueManagerYr2Test {
 	public void answeringQuestion () throws DialogueException {
 		
 		dFormula formula = FormulaUtils.constructFormula("<pre>(<belief>[binder:8:7]) ^ <post>(<state>" + 
-				"(question-answered ^ <agent>(robot) ^ <about>(<lingref>ball1_2 ^ <color>red " + 
+				"(question-answered ^ <agent>(self) ^ <about>(<lingref>ball1_2 ^ <color>red " + 
 				"^ <objecttype>ball ^ <ref>[binder:3:7]) ^ <feature>color))");
 		
 		IntentionalContent intent = 
@@ -131,7 +131,7 @@ public class DialogueManagerYr2Test {
 	public void answeringQuestion2() throws DialogueException {
 		
 		dFormula formula = FormulaUtils.constructFormula("<pre>(<belief>[binder:5:7]) ^ <post>(" + 
-			"<state>(question-answered ^ <agent>robot ^ <about>(<lingref>ball1_1 ^ <color>blue "  + 
+			"<state>(question-answered ^ <agent>self ^ <about>(<lingref>ball1_1 ^ <color>blue "  + 
 			" ^ <objecttype>ball ^ <ref>[binder:0:7]) ^ <feature>color ^ <hypo>blue))");
 		
 
@@ -150,7 +150,7 @@ public class DialogueManagerYr2Test {
 	
 	@Test
 	public void sayHello() throws DialogueException {
-		dFormula formula = FormulaUtils.constructFormula("<state>(engagement-open ^ <agent>(human) ^ <agent>(robot))");
+		dFormula formula = FormulaUtils.constructFormula("<state>(engagement-open ^ <agent>(human) ^ <agent>(self))");
 		
 		IntentionalContent intent = 
 			EpistemicObjectUtils.createIntentionalContent(formula, EpistemicObjectUtils.robotAgent, 1.0f);
@@ -161,7 +161,7 @@ public class DialogueManagerYr2Test {
 		PolicyAction action = manager.nextAction(intention);
 		log ("selected action: " + action);
 		
-		dFormula expectedreply = FormulaUtils.constructFormula("<state>(engagement-open ^ <agent>(robot) ^ <agent>(human))");
+		dFormula expectedreply = FormulaUtils.constructFormula("<state>(engagement-open ^ <agent>(self) ^ <agent>(human))");
 		assertEquals(new PolicyAction("", expectedreply), action);
 	}
 	
@@ -171,7 +171,7 @@ public class DialogueManagerYr2Test {
 	
 		sayHello();
 		
-		dFormula formula = FormulaUtils.constructFormula("<state>(engagement-closed ^ <agent>(human) ^ <agent>(robot))");
+		dFormula formula = FormulaUtils.constructFormula("<state>(engagement-closed ^ <agent>(human) ^ <agent>(self))");
 		
 		IntentionalContent intent = 
 			EpistemicObjectUtils.createIntentionalContent(formula, EpistemicObjectUtils.robotAgent, 1.0f);
@@ -182,7 +182,7 @@ public class DialogueManagerYr2Test {
 		PolicyAction action = manager.nextAction(intention);
 		log ("selected action: " + action);
 		
-		dFormula expectedreply = FormulaUtils.constructFormula("<state>(engagement-closed ^ <agent>(robot) ^ <agent>(human))");
+		dFormula expectedreply = FormulaUtils.constructFormula("<state>(engagement-closed ^ <agent>(self) ^ <agent>(human))");
 		assertEquals(new PolicyAction("", expectedreply), action);
 	}
 	
@@ -192,7 +192,7 @@ public class DialogueManagerYr2Test {
 		
 		sayHello();
 		
-		dFormula formula = FormulaUtils.constructFormula("<state>(appreciated ^ <agent>(human) ^ <patient>(robot))");
+		dFormula formula = FormulaUtils.constructFormula("<state>(appreciated ^ <agent>(human) ^ <patient>(self))");
 		
 		IntentionalContent intent = 
 			EpistemicObjectUtils.createIntentionalContent(formula, EpistemicObjectUtils.robotAgent, 1.0f);
@@ -203,7 +203,7 @@ public class DialogueManagerYr2Test {
 		PolicyAction action = manager.nextAction(intention);
 		log ("selected action: " + action);
 		
-		dFormula expectedreply = FormulaUtils.constructFormula("<state>(thanked ^ <agent>(human) ^ <patient>(robot))");
+		dFormula expectedreply = FormulaUtils.constructFormula("<state>(thanked ^ <agent>(human) ^ <patient>(self))");
 		assertEquals(new PolicyAction("", expectedreply), action);		
 	}
 	
