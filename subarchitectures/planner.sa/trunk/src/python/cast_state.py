@@ -23,7 +23,8 @@ class CASTState(object):
         self.domain = domain
         self.beliefs = []
         for b in beliefs:
-            if isinstance(b, eubm.GroundedBelief) or isinstance(b.estatus, bm.epstatus.AttributedEpistemicStatus):
+            #if isinstance(b, eubm.GroundedBelief) or isinstance(b.estatus, bm.epstatus.AttributedEpistemicStatus):
+            if isinstance(b, eubm.GroundedBelief) or isinstance(b, eubm.AssertedBelief):
                 self.beliefs.append(b)
 
         #self.beliefs = beliefs
