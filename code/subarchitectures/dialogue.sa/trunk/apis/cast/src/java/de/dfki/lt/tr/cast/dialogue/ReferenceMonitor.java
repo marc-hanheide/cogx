@@ -97,8 +97,8 @@ extends AbstractDialogueComponent {
 			addBeliefChangeFilters(dBelief.class);
 		}
 		else {
-			addBeliefChangeFilters(GroundedBelief.class);
-//			addChangeFilters(SharedBelief.class);
+//			addBeliefChangeFilters(GroundedBelief.class);
+			addBeliefChangeFilters(SharedBelief.class);
 		}
 
 		addChangeFilter(
