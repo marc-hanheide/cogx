@@ -636,6 +636,7 @@ class CCastControlWnd(QtGui.QMainWindow):
                     "LOG4J_PORT": log4.serverPort,
                     "LOG4J_SERVER_CONFIG": log4.serverConfigFile
                     })
+                time.sleep(0.5) # give the server time to start before the others start
 
         if self.ui.ckRunPlayer.isChecked():
             p = self._manager.getProcess("player")
