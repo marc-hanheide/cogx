@@ -1,3 +1,4 @@
+import math
 import itertools
 from collections import defaultdict
 
@@ -603,6 +604,16 @@ class DT2MAPLCompiler(translators.Translator):
 
         actions = []
         action_count = defaultdict(lambda: 0)
+
+        def logp(p):
+            if isinstance(p, predicates.ConstantTerm):
+                return predicates.Term(-math.log(p.object.value, 2))
+            logname = "log-%s" % p.function.name
+            func = domain.functions.get(logname, p.function.args)
+            if not func:
+                func = predicates.Function(logname, [Parameter(a.name, a.type) for a in p.function.args], builtin.t_number)
+                domain.functions.add(func)
+            return predicates.Term(func, p.args)
         
         for r in rules:
             for p, v in r.values:
@@ -611,7 +622,8 @@ class DT2MAPLCompiler(translators.Translator):
                 action_count[r.function] += 1
                 a = mapl.MAPLDurativeAction("select-%s-%d" % (r.function.name,i), [agent], r.args, r.add_args, [], None, None, None, [], domain)
                 b = Builder(a)
-                dterm = b("*", (total_p_cost,), ("-", 1, p))
+                #dterm = b("*", (total_p_cost,), ("-", 1, p))
+                dterm = b("*", (total_p_cost,), logp(p))
                 a.duration.append(durative.DurationConstraint(dterm))
                 #cparts = [b.cond('not', ('=', p, 0))]
                 cparts = []
@@ -630,7 +642,8 @@ class DT2MAPLCompiler(translators.Translator):
                 commit_eff = b.timed_effect("end", "commit", b(r.function, *r.args), v)
                 decrease_eff = b.timed_effect("end", "decrease", (total_p_cost,), "?duration")
                 #a.effect = effects.ConjunctiveEffect([acquire_lock, release_lock, commit_eff, decrease_eff], a)
-                a.effect = effects.ConjunctiveEffect([commit_eff, decrease_eff], a)
+                #a.effect = effects.ConjunctiveEffect([commit_eff, decrease_eff], a)
+                a.effect = effects.ConjunctiveEffect([commit_eff], a)
 
                 actions.append(a)
             
@@ -697,8 +710,19 @@ class DT2MAPLCompiler(translators.Translator):
     @translators.removes('partial-observability')
     def translate_problem(self, _problem):
         p2 = translators.Translator.translate_problem(self, _problem)
-        b = Builder(p2)
-        p2.init.append(b.init('=', (total_p_cost,), p_cost_value))
+        # b = Builder(p2)
+        # logfuncs = dict((f.name, f) for f in p2.domain.functions if f.name.startswith("log-"))
+        # pfuncs = dict((f, logfuncs["log-%s" % f.name]) for f in p2.domain.functions if "log-%s" % f.name in logfuncs)
+        # print logfuncs.keys()
+        # print map(str, pfuncs.iterkeys())
+        # newinit = []
+        # for i in p2.init:
+        #     if i.predicate == builtin.num_equal_assign and i.args[0].function in pfuncs and i.args[1].object.value > 0:
+        #         logterm = predicates.Term(pfuncs[i.args[0].function], i.args[0].args)
+        #         newinit.append(b.init('=', logterm, -math.log(i.args[1].object.value, 2)))
+                
+        # p2.init += newinit
+        # p2.init.append(b.init('=', (total_p_cost,), p_cost_value))
         return p2
         
 class DTPDDLCompiler(translators.Translator):

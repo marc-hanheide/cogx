@@ -40,7 +40,10 @@
    (p-is-in ?p - place) - number
    (dora__in ?l - label ?c - category ) - number
    (p-category ?r - room ?c - category ) - number
-   (total-p-costs) - number
+   (log-p-probability ?p - place ?l - label) - number
+   (log-dora__in ?l - label ?c - category ) - number
+   (log-p-category ?r - room ?c - category ) - number
+   (total-p-cost) - number
    )
 
   (:constants
@@ -50,7 +53,7 @@
    )
 
   (:init-rule init
-              :effect (and (assign (total-p-costs) 200))
+              :effect (and (assign (total-p-cost) 50))
               )
 
   ;; (:init-rule bla
@@ -69,10 +72,10 @@
                               )
               )
 
-  (:init-rule categories
-              :parameters(?r - room)
-              :effect (assign (category ?r) UNKNOWN)
-              )
+  ;; (:init-rule categories
+  ;;             :parameters(?r - room)
+  ;;             :effect (assign (category ?r) UNKNOWN)
+  ;;             )
 
   (:init-rule places-probs
               :parameters(?p - place ?l - label)
@@ -158,11 +161,12 @@
    ;;                   :effect (and)
    ;;                   )
 
-  (:action explore_place
+  (:durative-action explore_place
            :agent (?a - robot)
            :parameters (?loc - place)
-           :precondition (and (= (is-in ?a) ?loc))
-           :effect (assign (placestatus ?loc) trueplace)
+           :duration (= ?duration 0.1)
+           :condition (and (over all (= (is-in ?a) ?loc)) (at start (= (placestatus ?loc) placeholder)))
+           :effect (change (placestatus ?loc) trueplace)
            )
 
 
