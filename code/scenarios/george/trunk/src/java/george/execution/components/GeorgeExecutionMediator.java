@@ -145,4 +145,10 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 		return this;
 	}
 
+	@Override
+	public boolean isPaused() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
