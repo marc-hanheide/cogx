@@ -186,7 +186,7 @@ public class ManualSelectFilter implements MotiveFilter {
 			}
 		});
 
-		presetPanel.add(ecButton);
+//		presetPanel.add(ecButton);
 
 		JButton ceButton = new JButton("categorize > explore");
 		ceButton.addActionListener(new ActionListener() {
@@ -203,7 +203,7 @@ public class ManualSelectFilter implements MotiveFilter {
 
 			}
 		});
-		presetPanel.add(ceButton);
+//		presetPanel.add(ceButton);
 
 		JButton peButton = new JButton("patrol == explore");
 		peButton.addActionListener(new ActionListener() {
@@ -220,7 +220,7 @@ public class ManualSelectFilter implements MotiveFilter {
 
 			}
 		});
-		presetPanel.add(peButton);
+//		presetPanel.add(peButton);
 		
 		
 		JButton nullButton = new JButton("unsurface all");
@@ -245,7 +245,7 @@ public class ManualSelectFilter implements MotiveFilter {
 		});
 		presetPanel.add(nullButton);
 		
-		JButton doraButton = new JButton("Dora def");
+		JButton doraButton = new JButton("cogx default");
 		doraButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

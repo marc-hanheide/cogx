@@ -32,11 +32,12 @@ public class ManualGoalFrame extends JFrame {
 	}
 
 	private static final long serialVersionUID = 1L;
+	private static final Object DEFAULT_GOAL = "(exists (?o - visualobject) (and (= (label ?o) cereal_box) (kval '2:f' (is-in ?o))))";
 	private JPanel jContentPane = null;
 	private JPanel jBeliefsPanel = null;
 	private JScrollPane jBeliefsScrollPane = null;
 	private JTable jBeliefsTable = null;
-	private final SubmitListener listener; 
+	private final SubmitListener listener;
 	private TableModel beliefTableModel;
 	private JPanel jButtonPanel = null;
 	private JTextField jGoalTextEditField = null;
@@ -47,6 +48,7 @@ public class ManualGoalFrame extends JFrame {
 	private JTextArea jStatus = null;
 	private JScrollPane jStatusScrollPane = null;
 	private JPanel jPlanButtonsPanel = null;
+
 	/**
 	 * This is the default constructor
 	 */
@@ -244,6 +246,7 @@ public class ManualGoalFrame extends JFrame {
 			jGoalsTable.getColumnModel().getColumn(0).setPreferredWidth(900);
 			jGoalsTable.getColumnModel().getColumn(1).setPreferredWidth(100);
 			jGoalsTable.changeSelection(0, 0, true, false);
+			jGoalsTable.setValueAt(DEFAULT_GOAL, 0, 0);
 		}
 		return jGoalsTable;
 	}
@@ -328,14 +331,14 @@ public class ManualGoalFrame extends JFrame {
 	}
 
 	/**
-	 * This method initializes jPlanButtonsPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes jPlanButtonsPanel
+	 * 
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getJPlanButtonsPanel() {
 		if (jPlanButtonsPanel == null) {
 			jPlanButtonsPanel = new JPanel();
-			jPlanButtonsPanel.setLayout(new GridLayout(1,2));
+			jPlanButtonsPanel.setLayout(new GridLayout(1, 2));
 			jPlanButtonsPanel.add(getJButtonSubmit(), null);
 		}
 		return jPlanButtonsPanel;
