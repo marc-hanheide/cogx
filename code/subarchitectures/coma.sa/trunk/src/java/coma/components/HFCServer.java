@@ -30,14 +30,16 @@ public class HFCServer extends ManagedComponent {
 		super.configure(args);
 		log("registering HFCServer...");
 		
+		
+		
 		this.registerIceServer(HFCInterface.class, 
 				new HFCInterfaceI(
-						args.get("--stdNSFile"), 
-						args.get("--stdTupleFile"), 
-						args.get("--stdRuleFile"),
-						args.get("--otherNSFiles").split(","), 
-						args.get("--otherTupleFiles").split(","), 
-						args.get("--otherRuleFiles").split(",")));
+						(args.get("--stdNSFile")!=null ? args.get("--stdNSFile") : ""), 
+						(args.get("--stdTupleFile")!=null ? args.get("--stdTupleFile") : ""), 
+						(args.get("--stdRuleFile")!=null ? args.get("--stdRuleFile") : ""),
+						(args.get("--otherNSFiles")!=null ? args.get("--otherNSFiles").split(",") : new String[0]), 
+						(args.get("--otherTupleFiles")!=null ? args.get("--otherTupleFiles").split(",") : new String[0]), 
+						(args.get("--otherRuleFiles")!=null ? args.get("--otherRuleFiles").split(",") : new String[0])));
 		
 		log("registered HFCServer...");
 		
