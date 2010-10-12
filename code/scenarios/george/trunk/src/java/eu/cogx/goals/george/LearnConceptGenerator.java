@@ -95,10 +95,11 @@ public abstract class LearnConceptGenerator extends
 	protected abstract String getConceptName();
 
 	float computeImportance(Motive m) {
-		if (m.informationGain < 0)
-			return -1.0f;
-		else
-			return (float) (m.informationGain * MAX_COSTS_TO_DROP);
+//		if (m.informationGain < 0)
+//			return -1.0f;
+//		else
+//			return (float) (m.informationGain * MAX_COSTS_TO_DROP);
+		return -1.0f;
 	}
 
 }
