@@ -39,9 +39,6 @@ long long gethrtime(void)
 #define Upper_BG 1.5
 #define Lower_BG 1.1	// 1.1-1.5 radius of BoundingSphere
 
-#define Torleration 5		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
-				//this makes stable obj
-#define AgonalTime  30		//The dying object could be "remembered" for "AgonalTime" of frames
 #define MAX_V 0.1
 #define label4initial		-3
 #define label4plane		0	//0, -10, -20, -30... for multiple planes
@@ -102,6 +99,9 @@ std::string pre_id;
 vector <int> points_label;  //0->plane; 1~999->objects index; -1->discarded points
 vector <CvRect> vSOIonImg;
 vector <std::string> vSOIid;
+int AgonalTime;	//The dying object could be "remembered" for "AgonalTime" of frames
+int StableTime;	// Torleration error, even there are "Torleration" frames without data, previous data will still be used
+		//this makes stable obj
 
 
 
@@ -109,7 +109,6 @@ double A, B, C, D;
 int N;  // 1/N points will be used
 bool mbDrawWire;
 bool doDisplay;
-int m_torleration;
 Vector3 v3dmax;
 Vector3 v3dmin;
 
@@ -401,6 +400,8 @@ void PlanePopOut::configure(const map<string,string> & _config)
 
   useGlobalPoints = true;
   doDisplay = false;
+  AgonalTime = 30;
+  StableTime = 5;
   if((it = _config.find("--globalPoints")) != _config.end())
   {
     istringstream str(it->second);
@@ -415,8 +416,17 @@ void PlanePopOut::configure(const map<string,string> & _config)
     istringstream str(it->second);
     str >> min_height_of_obj;
   }
+  if((it = _config.find("--agonalTime")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> AgonalTime;
+  }
+  if((it = _config.find("--stableTime")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> StableTime;
+  }
   println("use global points: %d", (int)useGlobalPoints);
-  m_torleration = 0;
   mConvexHullDensity = 0.0;
   pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
   pre_mConvexHullRadius = 0.0;
@@ -887,7 +897,7 @@ void PlanePopOut::SOIManagement()
 	    if(PreviousObjList.at(j).bInWM == true)
 	    {
 		PreviousObjList.at(j).count = PreviousObjList.at(j).count-1;
-		if(PreviousObjList.at(j).count > Torleration-AgonalTime) Pre2CurrentList.push_back(PreviousObjList.at(j));
+		if(PreviousObjList.at(j).count > StableTime-AgonalTime) Pre2CurrentList.push_back(PreviousObjList.at(j));
 		else
 		{
 		  deleteFromWorkingMemory(PreviousObjList.at(j).id);
@@ -946,7 +956,7 @@ void PlanePopOut::SOIManagement()
 	    if(PreviousObjList.at(j).bInWM == true)
 	    {
 		PreviousObjList.at(j).count = PreviousObjList.at(j).count-1;
-		if(PreviousObjList.at(j).count > Torleration-AgonalTime) Pre2CurrentList.push_back(PreviousObjList.at(j));
+		if(PreviousObjList.at(j).count > StableTime-AgonalTime) Pre2CurrentList.push_back(PreviousObjList.at(j));
 		else
 		{
 		  //cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
@@ -983,7 +993,7 @@ void PlanePopOut::SOIManagement()
 	    {
 		int i = matchingResult;
 		CurrentObjList.at(i).count = PreviousObjList.at(j).count+1;
-		if (CurrentObjList.at(i).count >= Torleration)
+		if (CurrentObjList.at(i).count >= StableTime)
 		{
 		    CurrentObjList.at(i).bInWM =true;
 		    CurrentObjList.at(i).id = newDataID();
