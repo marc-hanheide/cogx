@@ -2717,10 +2717,15 @@ log("filled");
 
 	// keyed with room id
 	int bestConeIndex = GetViewConeSums(samplepoints, tmpMap);
-	delete lgmpdf;
-	log("returning best nbv: %d", bestConeIndex);
-	return samplepoints[bestConeIndex];
-
+	if(bestConeIndex == -1){
+	  log("No View Cone is selected possible cause is grid map does not contain any obstacles or too little free space area, returning without doing anything");
+	  return;
+	}
+	else{
+	  delete lgmpdf;
+	  log("returning best nbv: %d", bestConeIndex);
+	  return samplepoints[bestConeIndex];
+	}
       }
 
       int VisualObjectSearch::GetViewConeSums(std::vector <SensingAction> &samplepoints, GridMap<GridMapData> *map){
