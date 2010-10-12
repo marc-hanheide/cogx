@@ -236,13 +236,18 @@ void QCastViewHtml::doUpdateContent()
       int sbv = 0;
       if (pFrame) sbv = pFrame->scrollBarValue(Qt::Vertical);
       pView->drawHtml(head, body);
-      list.append("<html><head>");
+      list.append(
+            "<html><head>"
+            "<style>"
+            " .v11ninfo { font-size: 90%; color: #808080; }"
+            "</style>\n"
+            );
 
       if (m_bHasForms) {
          // Render std Display Server elements
          list <<
             "<style>"
-            " .v11nformbar { background-color: #f0f0f8; }"
+            " .v11nformbar { background-color: #e0e0f0; }"
             " .v11nformtitle { width: 200px; }"
             " .v11nformbutton { background-color: white; color: blue; padding: 0 4 0 4px;}"
             "</style>\n";
