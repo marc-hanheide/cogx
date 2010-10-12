@@ -263,14 +263,15 @@ void CVisionSimulator::CDisplayClient::createForms()
             ss << "</td></tr>";
          }
          static void ambiguityGain(std::ostringstream& ss, const std::string& name,
-              cogx::display::CFormValues& form, bool bLabel)
+              cogx::display::CFormValues& form, bool bLabel, bool bGain=true)
          {
             ss << "<tr><td>" << (bLabel ? "Ambiguity:" : "&nbsp") << "</td><td>";
             ss << "<input type='text' name='ambig" << name << "' style='width:5em;' />";
             ss << "</td></tr>";
             form.add(new cxd::CFormValues::field(std::string("ambig") + name));
-            ss << "<tr><td>" << (bLabel ? "Gain:" : "&nbsp") << "</td><td>";
-            ss << "<input type='text' name='gain" << name << "' style='width:5em;' />";
+            ss << "<tr><td>" << (bLabel && bGain ? "Gain:" : "&nbsp") << "</td><td>";
+            ss << "<input type='" << (bGain ? "text" : "hidden") << "' name='gain" <<
+               name << "' style='width:5em;' />";
             ss << "</td></tr>";
             form.add(new cxd::CFormValues::field(std::string("gain") + name));
          }
@@ -286,7 +287,10 @@ void CVisionSimulator::CDisplayClient::createForms()
          ss << "<option>" << pSim->m_objectNames[i] << "</option>";
       }
       ss << "</select>";
-      ss << "Select an object, edit its properties and save it.";
+      ss << 
+         "<span class='v11ninfo'>"
+         "Select an object, edit its properties and Apply the changes."
+         "</spam>";
       ss << "</div>";
       m_FormObject.add(new cxd::CFormValues::field(IDC_FORM_OBJECT_NAME));
 
@@ -296,7 +300,7 @@ void CVisionSimulator::CDisplayClient::createForms()
       // up to 3 colors for an object
       ss << "<table>";
       _local_::valueDistrib(ss, "color", pSim->m_colorNames, m_FormObject, 3);
-      _local_::ambiguityGain(ss, "color", m_FormObject, true);
+      _local_::ambiguityGain(ss, "color", m_FormObject, true, false);
       ss << "</table>";
 
       ss << "</td><td>";
@@ -304,7 +308,7 @@ void CVisionSimulator::CDisplayClient::createForms()
       // up to 3 shapes for an object
       ss << "<table>";
       _local_::valueDistrib(ss, "shape", pSim->m_shapeNames, m_FormObject, 3);
-      _local_::ambiguityGain(ss, "shape", m_FormObject, true);
+      _local_::ambiguityGain(ss, "shape", m_FormObject, true, false);
       ss << "</table>";
 
       ss << "</td><td>";
@@ -312,10 +316,11 @@ void CVisionSimulator::CDisplayClient::createForms()
       // up to 3 labels for an object
       ss << "<table>";
       _local_::valueDistrib(ss, "label", pSim->m_labelNames, m_FormObject, 3);
-      _local_::ambiguityGain(ss, "label", m_FormObject, true);
+      _local_::ambiguityGain(ss, "label", m_FormObject, true, true);
       ss << "</table>";
 
       ss << "</td></tr></table>";
+      ss << "<div class='v11ninfo'>Gains for colors and shapes are calculated from the distribution</div>";
 
       ss << "<input type='submit' value='Apply' />";
       ss << "<input type='button' value='Apply&amp;Save' "
@@ -336,7 +341,9 @@ void CVisionSimulator::CDisplayClient::createForms()
          ss << "<option>" << pSim->m_sceneNames[i] << "</option>";
       }
       ss << "</select>";
-      ss << "Load a predefined scene.<br>Select the objects that will be on the scene.";
+      ss << "<span class='v11ninfo'>"
+         "Load a predefined scene.<br>Select the objects that will be on the scene."
+         "</span>";
       ss << "</div>";
       m_FormScene.add(new cxd::CFormValues::field(IDC_FORM_SCENE_NAME));
 
@@ -850,7 +857,7 @@ void CVisionSimulator::applyScene(CSceneAttrs& scene)
             pvobj->colorGains.push_back(gain);
             if (gain > maxGain) maxGain = gain;
          }
-         pvobj->colorGain = obj.m_gain_color; // TODO? use maxGain instead?
+         pvobj->colorGain = maxGain; // obj.m_gain_color;
 
          sum = 0;
          for(it = obj.m_shapes.begin(); it != obj.m_shapes.end(); it++) {
@@ -873,7 +880,7 @@ void CVisionSimulator::applyScene(CSceneAttrs& scene)
             pvobj->shapeGains.push_back(gain);
             if (gain > maxGain) maxGain = gain;
          }
-         pvobj->shapeGain = obj.m_gain_shape; // TODO? use maxGain instead?
+         pvobj->shapeGain = maxGain; // obj.m_gain_shape;
 
          sum = 0;
          for(it = obj.m_labels.begin(); it != obj.m_labels.end(); it++) {
