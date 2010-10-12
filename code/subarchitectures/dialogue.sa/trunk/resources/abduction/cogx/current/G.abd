@@ -111,6 +111,10 @@ generate : object_description(Int, Nom, PrivBId) <-
 	i : feat_Salient(Nom, true) / -1.0.
 
 generate : object_description(Int, Nom, PrivBId) <-
+	att : using_just_object(PrivBId) / -1.0,
+	generate : the_object(Nom).
+
+generate : object_description(Int, Nom, PrivBId) <-
 	att : linguisticsalience(PrivBId, high),
 	att : using_salience(PrivBId) / -5.0,
 	generate : it(Nom).
@@ -132,6 +136,12 @@ generate : it(Nom) <-
 	i : feat_InfoStatus(Nom, familiar) / -1.0,
 	i : feat_Salient(Nom, true) / -1.0.
 
+generate : the_object(Nom) <-
+	i : sort(Nom, thing) / -1.0,
+	i : prop(Nom, thing) / -1.0,
+	i : feat_InfoStatus(Nom, familiar) / -1.0,
+	i : feat_Salient(Nom, true) / -1.0.
+
 generate : the_box(Nom) <-
 	i : sort(Nom, thing) / -1.0,
 	i : prop(Nom, box) / -1.0,
@@ -149,12 +159,12 @@ generate : complex_ex(Nom) <-
 
 % XXX HACK XXX
 % find me a box -> what size is this
-generate : event : utter(S, H, Int) <-
-	utt_head(Nom),
-	i : int : agent(Int, [S]),
-	i : int : post(Int, state(['found' | T])),
-	i : feat_CannedText(Nom, 'yummy_yummy_yummy!_dora_likes_sweets') / -1.0,
-	event : produce(r, Nom) / -1.0.
+%generate : event : utter(S, H, Int) <-
+%	utt_head(Nom),
+%	i : int : agent(Int, [S]),
+%	i : int : post(Int, state(['found' | T])),
+%	i : feat_CannedText(Nom, 'yummy_yummy_yummy!_dora_likes_sweets') / -1.0,
+%	event : produce(r, Nom) / -1.0.
 
 %generate : event : utter(S, H, Int) <-
 %	utt_head(Nom),
@@ -174,43 +184,43 @@ generate : event : utter(S, H, Int) <-
 
 % XXX HACK XXX
 % bring me a box -> it is blue
-generate : event : utter(S, H, Int) <-
-	utt_head(Nom),
-	dummy_nom2(ContentNom),
-	dummy_nom3(TargetNom),
-	dummy_nom4(PropNom),
-	i : int : agent(Int, [S]),
-	i : int : post(Int, state(['possession' | T])),
-	i : feat_SpeechAct(Nom, assertion) / -1.0,
-	i : feat_Relation(Nom, answer) / -1.0,
-	i : rel_Content(Nom, ContentNom) / -1.0,
-		i : sort(ContentNom, 'ascription') / -1.0,
-		i : rel_Target(ContentNom, TargetNom) / -1.0,
-			generate : complex_ex(TargetNom),
-		i : rel_Color(ContentNom, PropNom) / -1.0,
-			i : sort(PropNom, quality) / -1.0,
-			i : prop(PropNom, blue) / -1.0,
-	event : produce(r, Nom) / -1.0.
+%generate : event : utter(S, H, Int) <-
+%	utt_head(Nom),
+%	dummy_nom2(ContentNom),
+%	dummy_nom3(TargetNom),
+%	dummy_nom4(PropNom),
+%	i : int : agent(Int, [S]),
+%	i : int : post(Int, state(['possession' | T])),
+%	i : feat_SpeechAct(Nom, assertion) / -1.0,
+%	i : feat_Relation(Nom, answer) / -1.0,
+%	i : rel_Content(Nom, ContentNom) / -1.0,
+%		i : sort(ContentNom, 'ascription') / -1.0,
+%		i : rel_Target(ContentNom, TargetNom) / -1.0,
+%			generate : complex_ex(TargetNom),
+%		i : rel_Color(ContentNom, PropNom) / -1.0,
+%			i : sort(PropNom, quality) / -1.0,
+%			i : prop(PropNom, blue) / -1.0,
+%	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
 
 % XXX HACK XXX
 % go left -> please show me something red
-generate : event : utter(S, H, Int) <-
-	utt_head(Nom),
-	dummy_nom2(ContentNom),
-	dummy_nom3(ActorNom),
-	i : int : agent(Int, [S]),
-	i : int : post(Int, state(['motion' | T])),
-	i : feat_SpeechAct(Nom, request) / -1.0,
-	i : feat_Modality(Nom, vision) / -1.0,
-	i : rel_Actor(Nom, ActorNom) / -1.0,
-		i : sort(ActorNom, person) / -1.0,
-		i : prop(ActorNom, you) / -1.0,
-	i : rel_Content(Nom, ContentNom) / -1.0,
-		i : sort(ContentNom, 'q-color') / -1.0,
-		i : prop(ContentNom, red) / -1.0,
-	event : produce(r, Nom) / -1.0.
+%generate : event : utter(S, H, Int) <-
+%	utt_head(Nom),
+%	dummy_nom2(ContentNom),
+%	dummy_nom3(ActorNom),
+%	i : int : agent(Int, [S]),
+%	i : int : post(Int, state(['motion' | T])),
+%	i : feat_SpeechAct(Nom, request) / -1.0,
+%	i : feat_Modality(Nom, vision) / -1.0,
+%	i : rel_Actor(Nom, ActorNom) / -1.0,
+%		i : sort(ActorNom, person) / -1.0,
+%		i : prop(ActorNom, you) / -1.0,
+%	i : rel_Content(Nom, ContentNom) / -1.0,
+%		i : sort(ContentNom, 'q-color') / -1.0,
+%		i : prop(ContentNom, red) / -1.0,
+%	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
 % ENGAGEMENT
