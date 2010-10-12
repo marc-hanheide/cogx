@@ -210,6 +210,25 @@ public class PolicyCondition extends FormulaWrapper {
 	}
 	
 	/**
+	 * Change the minimum probability for the condition
+	 * 
+	 * @param minProb the minimum probability
+	 */
+	public void setMinimumProb(float minProb) {
+		this.minProb = minProb;
+	}
+	
+	
+	/**
+	 * Change the maximum probability for the condition
+	 * 
+	 * @param maxProb the maximum probability
+	 */
+	public void setMaximumProb(float maxProb) {
+		this.maxProb = maxProb;
+	}
+	
+	/**
 	 * Returns a string representation of the policy condition
 	 */
 	@Override

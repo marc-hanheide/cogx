@@ -57,6 +57,7 @@ import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
  * 
  * <p> TODO: write complete policies for Dora and George, and extensive tests<br>
  * TODO: refactor logging functionality<br>
+ * TODO: provide simple adaptivity model<br>
  * TODO: once ready, recopy dialogue manager on DFKI SVN<br>
  * 
  * @author Pierre Lison (plison@dfki.de)
