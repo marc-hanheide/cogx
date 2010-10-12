@@ -2,3 +2,7 @@ JAVA MG goal.generator.explore motivation.components.generators.PlaceBeliefGoalG
 JAVA MG goal.generator.human motivation.components.generators.DoraIntentionGoalGenerator 
 
 JAVA MG goal.generator.manual motivation.components.generators.ManualGoalComponent
+
+
+
+JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter, GainFilter" --min-gain 0.05 --max-tries 3
