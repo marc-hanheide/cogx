@@ -601,9 +601,9 @@ class StateTreeNode(dict):
                 else:
                     sub = HierarchicalState([], parent=st)
                     st.add_substate(self.svar, val, sub, (p*ratio))
-                    sub[self.svar] = val
                     for t in subtrees:
                         t.create_state(sub)
+            sub[self.svar] = val
 
     def create_state(self, st):
         for val, (subtrees, p, marginal) in self.iteritems():
@@ -624,7 +624,7 @@ class StateTreeNode(dict):
                     st.add_substate(self.svar, val, sub, p)
                     for t in subtrees:
                         t.create_state(sub)
-                    sub[self.svar] = val
+            sub[self.svar] = val
 
     def create_subtree(self, prob, value, marginal=False):
         log.debug("creating subtrees for %s=%s (marginal=%s)", str(self.svar), value, str(marginal))
