@@ -17,6 +17,7 @@ TOTAL_P_COSTS = 200
 
 QDL_NUMBER_RE = re.compile("\"([-eE0-9\.]+)\"\^\^<xsd:float>")
 QDL_VALUE = re.compile("<dora:(.*)>")
+#QDL_VALUE = re.compile("<http://dora.cogx.eu#(.*)>")
 
 class CASTState(object):
     def __init__(self, beliefs, domain, oldstate=None, component=None):
@@ -74,33 +75,40 @@ class CASTState(object):
         for f in self.generated_facts:
             self.prob_state.set(f)
         self.objects |= self.generated_objects
-        
+
         self.state = self.prob_state.determinized_state(0.05, 0.95)
         if oldstate:
             self.match_generated_objects(oldstate)
-
+                      
     def generate_init_facts(self, problem, oldstate=None):
+        cstate = self.prob_state.determinized_state(0.05, 0.95)
+
         generated_facts = {}
         generated_objects = set()
         new_objects = set(self.objects)
         if oldstate and oldstate.generated_facts is not None:
-            generated_facts.update(oldstate.generated_facts)
+            current_objects = self.objects | oldstate.generated_objects | self.domain.constants
+            for svar, val in oldstate.generated_facts:
+                if all(a in current_objects for a in chain(svar.args, svar.modal_args, [val])):
+                    generated_facts[svar] = val
+            #generated_facts.update(oldstate.generated_facts)
+            cstate.update(generated_facts)
             generated_objects = oldstate.generated_objects
             new_objects -= oldstate.objects
+            for o in generated_objects:
+                problem.add_object(o)
 
         # import debug
         # debug.set_trace()
-        cstate = self.prob_state.determinized_state(0.05, 0.95)
-        
         for rule in self.domain.init_rules:
             def inst_func(mapping, args):
                 if len(args) != len(rule.args):
                     return True, None
                 elif len(rule.args) == 0 and oldstate is None:
                     return True, None
-                elif any(a in new_objects for a in mapping.itervalues()):
-                    return True, None
-                return None, None
+                #elif rule.precondition and any(a in new_objects for a in mapping.itervalues()):
+                #    return True, None
+                return True, None
             
             for mapping in rule.smart_instantiate(inst_func, rule.args, [problem.get_all_objects(a.type) for a in rule.args], problem):
                 if rule.precondition is None or cstate.is_satisfied(rule.precondition):
@@ -108,12 +116,29 @@ class CASTState(object):
                         #print e.pddl_str()
                           #apply effects seperately in order to allow later effects affecting previously set values
                         facts = cstate.get_effect_facts(e)
+                        #print ["%s=%s" % (str(k), str(v)) for k,v in facts.iteritems()]
                         cstate.update(facts)
                         generated_facts.update(facts)
 
         generated_objects |= (problem.objects - self.objects)
+                      
+        if 'partial-observability' in self.domain.requirements:
+            generated_facts.update(self.compute_logps(cstate))
+                      
         return [pddl.state.Fact(svar,val) for svar, val in generated_facts.iteritems()], generated_objects
 
+    def compute_logps(self, st):
+        import math
+        pfuncs = set(f for f in self.domain.functions if "log-%s" % f.name in self.domain.functions)
+        facts = []
+        for svar, val in st.iteritems():
+            if svar.function in pfuncs and val != pddl.UNKNOWN and val.is_instance_of(pddl.t_number) and val.value > 0:
+                logfunc = self.domain.functions.get("log-%s" % svar.function.name, svar.args)
+                logvar = pddl.state.StateVariable(logfunc, svar.args)
+                logval = pddl.types.TypedNumber(-math.log(val.value, 2))
+                facts.append((logvar, logval))
+        return facts
+    
     def get_coma_data(self, component):
         coma_objects = set()
         coma_facts = []
@@ -121,7 +146,7 @@ class CASTState(object):
             if not f.name.startswith("dora__"):
                 continue
             assert len(f.args) == 2
-            query = "SELECT ?x ?y ?p where ?x <%s> ?y ?p" % f.name.replace("__",":");
+            query = "SELECT ?x ?y ?p where ?x <%s> ?y ?p" % f.name.replace("dora__","dora:")
             try:
                 results = component.getHFC().querySelect(query)
             except Exception, e:

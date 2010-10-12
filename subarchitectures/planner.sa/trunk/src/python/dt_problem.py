@@ -380,7 +380,7 @@ class DTProblem(object):
             a.precondition = b.cond('not', ('done', ))
             #commit_effect = b.effect(dtpddl.committed, [term])
             reward_effect = b('when', ('=', term, val), ('assign', ('reward',), confirm_score))
-            penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -confirm_score))
+            penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -5*confirm_score))
             done_effect = b.effect('done')
             a.effect = b.effect('and', reward_effect, penalty_effect, done_effect)
             
@@ -423,7 +423,7 @@ class DTProblem(object):
             
             #commit_effect = b.effect(dtpddl.committed, term)
             reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_score))
-            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -2*dis_score))
+            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -10*dis_score))
             done_effect = b.effect('done')
             a.effect = b.effect('and', reward_effect, penalty_effect, done_effect)
             
@@ -575,7 +575,7 @@ class StateTreeNode(dict):
         #assume that the rule is instantiated
         self.svar = state.StateVariable(rule.function, state.instantiate_args(rule.args))
         
-        #log.debug("creating subtree for %s", str(self.svar))
+        log.debug("creating subtree for %s", str(self.svar))
         for p, value in rule.values:
             pval = self.state.evaluate_term(p) # evaluate in original state because probs for marginals could be gone in this partial state
             if pval == pddl.UNKNOWN or pval.value < 0.01:
@@ -585,21 +585,46 @@ class StateTreeNode(dict):
             self.create_subtree(pval.value, val, marginal=(val not in objects))
             #print "tree for %s=%s took %.2f secs" % (str(self.svar), val.name, time.time()-t0)
 
+    def add_state(self, st, ratio):
+        for val, (subtrees, p, marginal) in self.iteritems():
+            use_ratio = False
+            if marginal:
+                val = pddl.UNKNOWN
+                use_ratio = True
+
+            if p == 1.0 and not marginal:
+                sub = st
+            else:
+                if st.has_substate(self.svar, val):
+                    oldp, sub = st.get_substate(self.svar, val)
+                    st.add_substate(self.svar, val, sub, (p*ratio)+(oldp* (1-ratio)))
+                else:
+                    sub = HierarchicalState([], parent=st)
+                    st.add_substate(self.svar, val, sub, (p*ratio))
+                    sub[self.svar] = val
+                    for t in subtrees:
+                        t.create_state(sub)
+
     def create_state(self, st):
         for val, (subtrees, p, marginal) in self.iteritems():
-            if p == 1.0:
+            if marginal:
+                val = pddl.UNKNOWN
+
+            if p == 1.0 and not marginal:
                 sub = st
             else:
                 if st.has_substate(self.svar, val):
                     oldp, sub = st.get_substate(self.svar, val)
                     st.add_substate(self.svar, val, sub, p+oldp)
+                    ratio = p/(p + oldp)
+                    for t in subtrees:
+                        t.add_state(sub, ratio)
                 else:
                     sub = HierarchicalState([], parent=st)
                     st.add_substate(self.svar, val, sub, p)
-            if not marginal:
-                sub[self.svar] = val
-            for t in subtrees:
-                t.create_state(sub)
+                    for t in subtrees:
+                        t.create_state(sub)
+                    sub[self.svar] = val
 
     def create_subtree(self, prob, value, marginal=False):
         log.debug("creating subtrees for %s=%s (marginal=%s)", str(self.svar), value, str(marginal))
@@ -614,7 +639,7 @@ class StateTreeNode(dict):
             return
 
         rules = [r for r in self.all_rules if r.depends_on(self.rule)]
-        #log.debug("rules depending on this: %s", ", ".join(r.name for r in rules))
+        log.debug("rules depending on this: %s", ", ".join(r.name for r in rules))
         
         subtrees = []
         for r in rules:
@@ -669,12 +694,11 @@ class StateTreeNode(dict):
         
         detstate = st.determinized_state(0.05, 0.95)
         for fact in st.iterdists():
-            if any(a not in objects for a in fact.svar.args):
+            if fact.value.value == pddl.UNKNOWN or any(a not in objects for a in fact.svar.args):
                 continue
             sub = StateTreeNode.create_from_fact(fact, detstate, objects, rules, cache)
-            if sub is not None:
-                subtrees.append(sub)
-                done.add(sub.svar)
+            subtrees.append(sub)
+            done.add(sub.svar)
                 
         for r in nodep_rules:
             def get_objects(arg):
