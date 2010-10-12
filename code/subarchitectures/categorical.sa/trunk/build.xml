@@ -37,6 +37,9 @@
 				<pathelement path="${slice.dir}" />
 				<pathelement path="${castslice.dir}" />
 				<pathelement path="/opt/local/share" />
+				<pathelement path="${basedir}/../../subarchitectures/spatial.sa/src/slice" />
+				<pathelement path="${basedir}/../../tools/hardware/robotbase/src/slice" />
+				<pathelement path="${basedir}/../../tools/hardware/laser/src/slice" />
 				<pathelement path="/usr/local/share" />
 				<pathelement path="/usr/share" />
 			</includepath>
@@ -47,7 +50,7 @@
 	<!-- slice file compilation                                              -->
 	<!-- =================================================================== -->
 	<target name="compile-slice" depends="slice" description="compiles the source code">
-		<javac srcdir="${src.dir}/CategoricalData" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
 			<classpath refid="build.classpath" />
 		</javac>
 	</target>
@@ -66,8 +69,8 @@
 	<!-- Cleanup                                                             -->
 	<!-- =================================================================== -->
 	<target name="clean">
-		<delete dir="${src.dir}/CategoricalData/**" />
-		<delete dir="${src.dir}/.depend" />
+		<delete dir="${src.dir}/CategoricalData" />
+		<delete file="${src.dir}/.depend" />
 	</target>
 
 
