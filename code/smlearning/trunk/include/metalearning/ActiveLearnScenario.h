@@ -104,6 +104,8 @@ protected:
 	/** number of instances to decide splitting a region */
 	int splittingCriterion1;
 
+	/** canonical positions */
+	map<Vec3, int, compare_Vec3> positionsT;
 	
 
 
