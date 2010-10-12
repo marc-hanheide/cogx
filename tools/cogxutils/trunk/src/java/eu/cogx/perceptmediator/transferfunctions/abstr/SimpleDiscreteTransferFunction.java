@@ -99,7 +99,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 					.create(beliefClass);
 			pb.setId(idToCreate.id);
 			pb.setType(getBeliefTypeFromCastType(wmc.type));
-			pb.setPrivate("robot");
+			pb.setPrivate(org.cognitivesystems.binder.thisAgent.value);
 			return pb.get();
 		} catch (BeliefException e) {
 			component.logException(e);
