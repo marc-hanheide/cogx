@@ -25,6 +25,9 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
 #include <VisionData.hpp>
+#ifdef FEAT_VISUALIZATION
+#include <CDisplayClient.hpp>
+#endif
 
 #include "ObjectRecognizer3DUtils.hpp"
 #include "ObjectTrackerUtils.hpp"
@@ -79,6 +82,17 @@ private:
   bool m_wait4data;
   bool m_delete_command_from_wm;
   bool m_showCV;
+
+#ifdef FEAT_VISUALIZATION
+  class CDisplayClient: public cogx::display::CDisplayClient
+	{
+		ObjectRecognizer3D* pRec;
+	public:
+		CDisplayClient() { pRec = NULL; }
+		void setClientData(ObjectRecognizer3D* _pRec) { pRec = _pRec; }
+	};
+	CDisplayClient m_display;
+#endif
 
   void loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Pose3 &pose,
     std::string &label, bool forceNewObject = false);

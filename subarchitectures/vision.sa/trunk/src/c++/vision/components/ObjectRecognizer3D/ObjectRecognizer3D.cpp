@@ -78,6 +78,10 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
 		m_recEntries[label].plyfile = plystr;
 		m_recEntries[label].siftfile = siftstr;
 	}
+
+#ifdef FEAT_VISUALIZATION	
+  m_display.configureDisplayClient(_config);
+#endif
 }
 
 void ObjectRecognizer3D::start(){
@@ -104,6 +108,11 @@ void ObjectRecognizer3D::start(){
   addChangeFilter(createLocalTypeFilter<VisionData::DetectionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
         &ObjectRecognizer3D::receiveDetectionCommand));
+
+#ifdef FEAT_VISUALIZATION        
+  m_display.connectIceClient(*this);
+  m_display.setClientData(this);
+#endif
 }
 
 
@@ -282,6 +291,10 @@ void ObjectRecognizer3D::receiveTrackingCommand(const cdl::WorkingMemoryChange &
 
 	}
 	sift_model_learner.AddToModel(m_temp_keys, (*m_recEntries[m_label].object));
+
+#ifdef FEAT_VISUALIZATION
+  m_display.setImage("ObjectRecognizer3D", m_iplImage);
+#endif
 
 	if(m_showCV){
 		for (unsigned i=0; i<m_temp_keys.Size(); i++){
@@ -620,6 +633,10 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
       m_rec_cmd->confidence = m_recEntries[m_label].object->conf;
       m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
     }
+
+#ifdef FEAT_VISUALIZATION
+  m_display.setImage("ObjectRecognizer3D", m_iplImage);
+#endif
 
 	if(m_showCV){
 		cvShowImage ( "ObjectRecognizer3D", m_iplImage );

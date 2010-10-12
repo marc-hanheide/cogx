@@ -5,6 +5,7 @@ include_directories(./SiftGPU/src/SiftGPU)
 include_directories(../ObjectTracker)
 include_directories(../ObjectTracker/Tracker/include)
 include_directories(/usr/include/opencv)
+include_directories(${VISUALIZATION_INCLUDE_DIRS})
 
 link_directories(${CUDA_INSTALLROOT}/lib)
 
