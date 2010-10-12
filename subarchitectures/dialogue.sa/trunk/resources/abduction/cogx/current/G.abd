@@ -257,5 +257,5 @@ generate : event : utter(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['falsified'|T])),
 	utt_head(Nom),
-	i : feat_CannedText(Nom, yes) / -1.0,
+	i : feat_CannedText(Nom, no) / -1.0,
 	event : produce(r, Nom) / -1.0.
