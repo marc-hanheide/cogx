@@ -126,7 +126,8 @@ void ObjectRecognizer3D::runComponent(){
   // Running Loop
   while(isRunning()){
 
-log("running in loop..");
+    log("running in loop..");
+
     if(m_task == RECLEARN){
   		learnSiftModel(sift);   // m_task = STOP called in receiveTrackingCommand()
 
@@ -148,36 +149,24 @@ log("running in loop..");
   			m_task = m_rec_cmd->cmd;
   			m_label = m_rec_cmd->label;
 
-
-				if(m_rec_cmd->cmd == RECOGNIZE && m_recEntries[m_label].learn){
-					log("%s: Warning no Sift file available: starting to learn", m_label.c_str());
-					m_rec_cmd->cmd = RECLEARN;
-					m_task = RECLEARN;
-				}
-				if(m_rec_cmd->cmd == RECLEARN && m_rec_cmd->visualObjectID.empty()){
-  				log("%s: Warning no VisualObject given", m_label.c_str());
-  				Math::Pose3 pose;
-  				setIdentity(pose);
-					// NOTE: useful values for a user presenting an object to the system:
-					// 1.0 meters away and rotated 90 deg around x, so the object stands upright
-					// assuming that the objects local z axis points "up"
-  				pose.pos.x = 0.0; pose.pos.y = 0.0; pose.pos.z = 1.0;
-					fromRotVector(pose.rot, vector3(M_PI/2., 0., 0.));
-  				loadVisualModelToWM(m_recEntries[m_label], pose, m_label);
-  				m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
-  			}
-  			// HACK
-  			// (this must be one of the ugliest hacks I have ever perpetrated)
-  			// if we received a detection command with several labels, we created a corresponding
-  			// number of single-label recognition commands in m_recCommandList with identical
-  			// IDs in m_recCommandID, which is the ID of the original *detection* command.
-  			// Now we only want to delete this detection command from WM (within recognizeSiftModel()) when
-  			// the last of these single-label recognition commands was executed, i.e. when the
-  			// complete original detection command was executed.
-  			// So we remember here whether the next command ID is different or it was the last command ID,
-  			// and only then do the delete from WM (in recognizeSiftModel())
-				if(m_rec_cmd->cmd == RECOGNIZE)
-				{
+  			if(m_rec_cmd->cmd == RECOGNIZE)
+  			{
+          if(m_recEntries[m_label].learn)
+          {
+            log("%s: Warning no Sift file available: starting to learn", m_label.c_str());
+            m_rec_cmd->cmd = RECLEARN;
+            m_task = RECLEARN;
+          }
+          // HACK
+          // (this must be one of the ugliest hacks I have ever perpetrated)
+          // if we received a detection command with several labels, we created a corresponding
+          // number of single-label recognition commands in m_recCommandList with identical
+          // IDs in m_recCommandID, which is the ID of the original *detection* command.
+          // Now we only want to delete this detection command from WM (within recognizeSiftModel()) when
+          // the last of these single-label recognition commands was executed, i.e. when the
+          // complete original detection command was executed.
+          // So we remember here whether the next command ID is different or it was the last command ID,
+          // and only then do the delete from WM (in recognizeSiftModel())
           if(m_recCommandID.empty())
           {
             m_delete_command_from_wm = true;
@@ -190,14 +179,30 @@ log("running in loop..");
             else
               m_delete_command_from_wm = false;
           }
-				}
+  			}
+        else if(m_rec_cmd->cmd == RECLEARN)
+        {
+          if(m_rec_cmd->visualObjectID.empty())
+          {
+            log("%s: Warning no VisualObject given", m_label.c_str());
+            Math::Pose3 pose;
+            setIdentity(pose);
+            // NOTE: useful values for a user presenting an object to the system:
+            // 1.0 meters away and rotated 90 deg around x, so the object stands upright
+            // assuming that the objects local z axis points "up"
+            pose.pos.x = 0.0; pose.pos.y = 0.0; pose.pos.z = 1.0;
+            fromRotVector(pose.rot, vector3(M_PI/2., 0., 0.));
+            loadVisualModelToWM(m_recEntries[m_label], pose, m_label);
+            m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
+          }
+        }
   			m_starttask = true;
   			unlockComponent();
   		}
 
   	}
-sleepComponent(500);  
-}
+    sleepComponent(500);  
+  }
 
   // Clean up
   if(m_detect)
@@ -229,24 +234,24 @@ void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange 
   DetectionCommandPtr det_cmd = getMemoryEntry<DetectionCommand>(_wmc.address);
   
   for(size_t i = 0; i < det_cmd->labels.size(); i++)
+  {
+    //if(m_recEntries.find(det_cmd->labels[i]) != m_recEntries.end())
     {
-      if(m_recEntries.find(det_cmd->labels[i]) != m_recEntries.end())
-	{
-	  Recognizer3DCommandPtr rec_cmd = new Recognizer3DCommand();
-	  rec_cmd->cmd = RECOGNIZE;
-	  rec_cmd->label = det_cmd->labels[i];
-	  m_recCommandList.push_back(rec_cmd);
-	  m_recCommandID.push_back(_wmc.address.id);
-	}
+      Recognizer3DCommandPtr rec_cmd = new Recognizer3DCommand();
+      rec_cmd->cmd = RECOGNIZE;
+      rec_cmd->label = det_cmd->labels[i];
+      m_recCommandList.push_back(rec_cmd);
+      m_recCommandID.push_back(_wmc.address.id);
     }
+  }
 }
 
 void ObjectRecognizer3D::receiveRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc){
 	log("Receiving Recognizer3DCommand");
 	Recognizer3DCommandPtr rec_cmd = getMemoryEntry<Recognizer3DCommand>(_wmc.address);
 
-	if(m_recEntries.find(rec_cmd->label) == m_recEntries.end())
-		return;
+	//if(m_recEntries.find(rec_cmd->label) == m_recEntries.end())
+	//	return;
 
 	log("ID is %s", rec_cmd->visualObjectID.c_str());
 	m_recCommandList.push_back(rec_cmd);
@@ -320,7 +325,7 @@ void ObjectRecognizer3D::get3DPointFromTrackerModel(std::string& modelID, Vision
 	addToWorkingMemory(newDataID(), track_cmd);
 }
 
-void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Pose3 pose, std::string label){
+void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Pose3 &pose, std::string &label){
 
   bool newModel = rec_entry.visualObjectID.empty();
   VisionData::VisualObjectPtr obj;
@@ -369,6 +374,39 @@ log("Making WM changes..");
 		addTrackerCommand(OVERWRITE, rec_entry.visualObjectID);
 		log("Overwriting VisualObject '%s'", getComponentID().c_str());
 	}
+}
+
+/**
+ * Load an empty (i.e. actually not detected) visual model to WM. It has a label,
+ * identity pose and confidence 0.
+ * @return the WM ID of the newly created object
+ */
+std::string ObjectRecognizer3D::loadEmptyVisualModelToWM(std::string &label){
+
+  VisionData::VisualObjectPtr obj = new VisionData::VisualObject();
+
+  // create a very simple distribution: label and unknown
+  obj->identLabels.push_back(label);
+  obj->identLabels.push_back("unknown");
+  // note: distribution must of course sum to 1
+  obj->identDistrib.push_back(0.);
+  obj->identDistrib.push_back(1.);
+  // the information gain if we know the label, just set to 1, cause we don't
+  // have any alternative thing to do
+  obj->identGain = 1.;
+  // ambiguity in the distribution: we use the distribution's entropy
+  obj->identAmbiguity = 0.;
+  for(size_t i = 0; i < obj->identDistrib.size(); i++)
+    if(fpclassify(obj->identDistrib[i]) != FP_ZERO)
+      obj->identAmbiguity -= obj->identDistrib[i]*::log(obj->identDistrib[i]);
+  setIdentity(obj->pose);
+  obj->componentID = getComponentID();
+
+  std::string newObjID = newDataID();
+  addToWorkingMemory(newObjID, obj);
+  // do not add a command to track it (as would be the case for a properly detected
+  // visual object)
+  log("Add model to working memory: '%s' id: %s", obj->identLabels[0].c_str(), newObjID.c_str());
 }
 
 // *** Recognizer3D functions ***
@@ -532,44 +570,56 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	sift.Operate(m_iplGray,m_image_keys);
 
   m_detect->SetDebugImage(m_iplImage);
-  if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object)))
+  // if we don't know that label we want to produce a non-detected
+  // VisualObject
+  if(m_recEntries.find(m_label) == m_recEntries.end())
   {
-    log("%s: No object detected", m_label.c_str());
-    Math::Pose3 nonPose;
-    setIdentity(nonPose);
-    loadVisualModelToWM(m_recEntries[m_label], nonPose, m_label);
-    m_rec_cmd->confidence = m_recEntries[m_label].object->conf;
-    m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
+    log("%s: don't know this model", m_label.c_str());
+    std::string newID = loadEmptyVisualModelToWM(m_label);
+    m_rec_cmd->confidence = 0.;
+    m_rec_cmd->visualObjectID = newID;
   }
   else
   {
-    // Transform pose from Camera to world coordinates
-    Pose3 P, A, B;
-    P = m_image.camPars.pose;
-    convertPoseCv2MathPose(m_recEntries[m_label].object->pose, A);
-    Math::transform(P,A,B);
-
-    if(m_recEntries[m_label].object->conf < m_confidence)
+    if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object)))
     {
-      log("%s: Confidence of detected object too low: %f < %f, setting confidence to 0",
-        m_label.c_str(), m_recEntries[m_label].object->conf, m_confidence);
-      // set confidence to 0 to indicate that we consider the object not detected
-      m_recEntries[m_label].object->conf = 0.;
-      P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
-      m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
+      log("%s: No object detected", m_label.c_str());
+      Math::Pose3 nonPose;
+      setIdentity(nonPose);
+      loadVisualModelToWM(m_recEntries[m_label], nonPose, m_label);
+      m_rec_cmd->confidence = m_recEntries[m_label].object->conf;
+      m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
     }
     else
     {
-      log("%s: Found object at: (%.3f %.3f %.3f), Confidence: %f",
-        m_label.c_str(), B.pos.x, B.pos.y, B.pos.z, m_recEntries[m_label].object->conf);
-      P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
-      m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
-    }
+      // Transform pose from Camera to world coordinates
+      Pose3 P, A, B;
+      P = m_image.camPars.pose;
+      convertPoseCv2MathPose(m_recEntries[m_label].object->pose, A);
+      Math::transform(P,A,B);
 
-    // if(first time recognition)
-    loadVisualModelToWM(m_recEntries[m_label], B, m_label);
-    m_rec_cmd->confidence = m_recEntries[m_label].object->conf;
-    m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
+      if(m_recEntries[m_label].object->conf < m_confidence)
+      {
+        log("%s: Confidence of detected object too low: %f < %f, setting confidence to 0",
+          m_label.c_str(), m_recEntries[m_label].object->conf, m_confidence);
+        // set confidence to 0 to indicate that we consider the object not detected
+        m_recEntries[m_label].object->conf = 0.;
+        P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
+        m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
+      }
+      else
+      {
+        log("%s: Found object at: (%.3f %.3f %.3f), Confidence: %f",
+          m_label.c_str(), B.pos.x, B.pos.y, B.pos.z, m_recEntries[m_label].object->conf);
+        P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
+        m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
+      }
+
+      // if(first time recognition)
+      loadVisualModelToWM(m_recEntries[m_label], B, m_label);
+      m_rec_cmd->confidence = m_recEntries[m_label].object->conf;
+      m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
+    }
   }
 
 	if(m_showCV){
