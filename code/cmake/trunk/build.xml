@@ -40,6 +40,9 @@
 	<condition property="build.coma_sa">
 		<equals arg1="${build_sa_coma}" arg2="ON" />
 	</condition>
+	<condition property="build.categorical_sa">
+		<equals arg1="${build_sa_categorical}" arg2="ON" />
+	</condition>
 	<condition property="build.default_sa">
 		<equals arg1="${build_sa_default}" arg2="ON" />
 	</condition>
@@ -70,6 +73,9 @@
 	</target>
 	<target name="sa.coma" if="build.coma_sa">
 	  <ant target="${target}" dir="subarchitectures/coma.sa" />
+	</target>
+	<target name="sa.categorical" if="build.categorical_sa">
+	  <ant target="${target}" dir="subarchitectures/categorical.sa" />
 	</target>
 	<target name="sa.default" if="build.default_sa">
 	  <ant target="${target}" dir="subarchitectures/default.sa" />
@@ -130,6 +136,9 @@
 		  <param name="target" value="${target}" />
 		</antcall>
 		<antcall target="sa.coma">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.categorical">
 		  <param name="target" value="${target}" />
 		</antcall>
 		<antcall target="sa.default">

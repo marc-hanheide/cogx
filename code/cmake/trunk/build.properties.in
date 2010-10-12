@@ -17,6 +17,7 @@ build_sa_motivation=${BUILD_SA_MOTIVATION}
 build_sa_execution=${BUILD_SA_EXECUTION}
 build_sa_planner=${BUILD_SA_PLANNER}
 build_sa_spatial=${BUILD_SA_SPATIAL}
+build_sa_categorical=${BUILD_SA_CATEGORICAL}
 build_sa_default=${BUILD_SA_DEFAULT}
 build_sa_conceptual=${BUILD_SA_CONCEPTUAL}
 build_sa_vision=${BUILD_SA_VISION}
