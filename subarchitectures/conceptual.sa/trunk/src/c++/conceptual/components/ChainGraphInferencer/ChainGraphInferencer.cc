@@ -36,7 +36,7 @@ using namespace boost::assign;
 
 // -------------------------------------------------------
 ChainGraphInferencer::ChainGraphInferencer() :
-		_worldStateChanged(true) // We will process the world state initially
+		_worldStateChanged(false) // We will process the world state initially
 {
 	pthread_cond_init(&_inferenceQueryAddedSignalCond, 0);
 	pthread_mutex_init(&_inferenceQueryAddedSignalMutex, 0);
@@ -375,7 +375,10 @@ void ChainGraphInferencer::createDaiConnectivityFactor(int room1Id, int room2Id)
 	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
 			_defaultKnowledgeFactors.find(factorName);
 	if (dnfIt == _defaultKnowledgeFactors.end())
-		throw CASTException("Factor not found '"+factorName+"'");
+	{
+		error("Factor \'%s\' not found. This indicates a serious implementatation error!", factorName.c_str());
+		return;
+	}
 	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
 
 	// Create variables
@@ -453,7 +456,11 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id,
 	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
 			_defaultKnowledgeFactors.find(factorName);
 	if (dnfIt == _defaultKnowledgeFactors.end())
-		throw CASTException("Factor not found '"+factorName+"'");
+	{
+		error ("Factor \'%s\' not found. This usually means that the object was not in the tuple store.",
+				factorName.c_str());
+		return;
+	}
 	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
 
 	// Create variables
@@ -543,7 +550,11 @@ void ChainGraphInferencer::prepareInferenceResult(string queryString,
 	// Check the query string
 	if ( (queryString.length()<4) || (queryString[0]!='p') ||
 		 (queryString[1]!='(') || (queryString[queryString.length()-1]!=')') )
-		throw CASTException("Malformed ChainGraphInferencer query string '"+queryString+"'");
+	{
+		error("Malformed ChainGraphInferencer query string \'%s\'! This indicates a serious implementation error!",
+				queryString.c_str());
+		return;
+	}
 
 	// Extract variable names
 	string variableString=queryString;
@@ -570,7 +581,8 @@ void ChainGraphInferencer::prepareInferenceResult(string queryString,
 			msg = "Variable '"+varName+"' not found! Variables we know:";
 			for (varIter = _variableNameToDai.begin(); varIter!=_variableNameToDai.end(); ++varIter)
 				msg+=varIter->first+" ";
-			throw CASTException(msg);
+			error(msg.c_str());
+			return;
 		}
 		// Retrieve marginal
         dai::Factor marginal = _junctionTree.belief(varIter->second.var);
@@ -588,7 +600,10 @@ void ChainGraphInferencer::prepareInferenceResult(string queryString,
         }
 	}
 	else
-		throw CASTException("Unhandled query '"+queryString+"'");
+	{
+		error("Unhandled query \'%s\'. This indicates serious implementation error.", queryString.c_str());
+		return;
+	}
 }
 
 
@@ -602,12 +617,19 @@ void ChainGraphInferencer::getDefaultKnowledge()
 	_roomCategories =
 		_defaultChainGraphInferencerServerInterfacePrx->getRoomCategories();
 
+	// Error checking
+	if ( (_objectPropertyVariables.empty()) || (_roomCategories.empty()) )
+		throw CASTException("Did not receive information from Default.SA. Is everything started?");
+
 	string factorStr;
 
 	// Get the room_category1, room_category2 factor
 	factorStr = "f(room_category1,room_category2)";
 	_defaultKnowledgeFactors[factorStr] =
 			_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
+	if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
+		throw CASTException("Did not receive information from Default.SA. Is everything started?");
+
 
 	// Get the room1_category -> object_xxx_property factors
 	for(unsigned int i=0; i<_objectPropertyVariables.size(); ++i)
@@ -615,6 +637,8 @@ void ChainGraphInferencer::getDefaultKnowledge()
 		factorStr = "f(room_category1,"+_objectPropertyVariables[i]+")";
 		_defaultKnowledgeFactors[factorStr] =
 				_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
+		if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
+			throw CASTException("Did not receive information from Default.SA. Is everything started?");
 	}
 
 	// Get the room1_category -> shape_property factor
