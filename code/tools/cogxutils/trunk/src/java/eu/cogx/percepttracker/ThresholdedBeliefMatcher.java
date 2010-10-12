@@ -8,8 +8,6 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import castutils.castextensions.PointerMap;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
-import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
@@ -38,8 +36,8 @@ public class ThresholdedBeliefMatcher<From extends dBelief, To extends dBelief>
 	protected EpistemicStatus getEpistemicStatus() {
 		SharedEpistemicStatus status = new SharedEpistemicStatus();
 		status.cgagents = new ArrayList<String>(2);
-		status.cgagents.add("robot");
-		status.cgagents.add("human");
+		status.cgagents.add(org.cognitivesystems.binder.thisAgent.value);
+		status.cgagents.add(org.cognitivesystems.binder.humanAgent.value);
 		return status;
 	}
 
