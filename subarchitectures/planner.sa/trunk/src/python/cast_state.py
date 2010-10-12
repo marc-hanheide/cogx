@@ -187,7 +187,7 @@ class CASTState(object):
             if a == gen:
                 return obj
             return a
-        new_objects = self.objects - oldstate.objects
+        new_objects = self.objects - self.generated_objects - oldstate.objects
         matches = {}
         for gen in oldstate.generated_objects:
             facts = []
