@@ -4,7 +4,7 @@ SUBARCHITECTURE visualization.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-CPP MG display.srv DisplayServer --redirect-to-host localhost
+CPP MG display.srv DisplayServer #--redirect-to-host localhost
 
 SUBARCHITECTURE vision.sa
 #CPP WM SubarchitectureWorkingMemory
