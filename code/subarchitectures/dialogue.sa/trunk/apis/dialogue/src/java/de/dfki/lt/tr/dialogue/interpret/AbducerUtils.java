@@ -196,7 +196,7 @@ public abstract class AbducerUtils {
 			String queriesStr = "";
 			for (int i = 0; i < proof.length; i++) {
 				queriesStr += MercuryUtils.modalisedAtomToString(proof[i].atom);
-				if (i < proof.length - 1) queriesStr += ", ";
+				if (i < proof.length - 1) queriesStr += ",\n";
 			}
 			log("abducer:" + abd.getEngineName(), "obtained the proof: [" + queriesStr + "]");
 
