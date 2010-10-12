@@ -54,7 +54,7 @@ JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 
 
 # exection ####################################################################
-JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels cornflakes,mug,book,boardgame
+JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels cereal_box,filing_box,matchbox,table_for_meal
 JAVA MG executor dora.execution.components.DoraExecutionMediator
 
 
@@ -74,6 +74,7 @@ JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE
 
 JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --mode SVG
 
+JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "ConceptualData.WorldState" --generic-col
 JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief" --generic-col
 JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "motivation.slice.Motive"
 JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.Intention" --generic-col
