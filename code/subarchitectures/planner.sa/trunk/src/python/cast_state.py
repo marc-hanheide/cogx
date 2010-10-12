@@ -24,15 +24,11 @@ class CASTState(object):
         self.domain = domain
         self.beliefs = []
         for b in beliefs:
-            #if isinstance(b, eubm.GroundedBelief) or isinstance(b.estatus, bm.epstatus.AttributedEpistemicStatus):
             if isinstance(b, eubm.GroundedBelief) or isinstance(b, eubm.AssertedBelief):
                 self.beliefs.append(b)
 
-        #self.beliefs = beliefs
         self.beliefdict = dict((b.id, b) for b in self.beliefs)
 
-        #self.attr_beliefdict = dict((b.id, b) for b in self.attributed_beliefs)
-        #self.beliefdict.update(dict((b.id, b) for b in self.attributed_beliefs))
         self.address_dict = component.address_dict if component else None
         
         self.coma_facts = []
@@ -47,12 +43,8 @@ class CASTState(object):
         tp.current_domain = self.domain
         tp.belief_dict = self.beliefdict
 
-        #self.all_beliefs = self.beliefs
-        #self.all_beliefs.extend(self.attributed_beliefs)
         obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(self.beliefs))))
   
-        #obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(self.beliefs))))
-        #attr_obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(self.attributed_beliefs))))
         #print "attr_objs:"
         #for at in attr_obj_descriptions:
         #    print at

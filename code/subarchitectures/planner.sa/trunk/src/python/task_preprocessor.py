@@ -137,10 +137,15 @@ def gen_fact_tuples(beliefs):
           if len(value.values) == 0:
               result.append((feat, pddl.UNKNOWN, 1.0))
           for valpair in value.values:
-            val = feature_val_to_object(valpair.val)
+            if isinstance(valpair.val, logicalcontent.NegatedFormula):
+              val = feature_val_to_object(valpair.val.negForm)
+              prob = 0.0
+            else:
+              val = feature_val_to_object(valpair.val)
+              prob = valpair.prob
             if val is not None:
               #log.debug("%s = %s:%.2f", feat, val, valpair.prob)
-              result.append((feat, val, valpair.prob))
+              result.append((feat, val, prob))
         elif isinstance(value, distribs.NormalValues):
           #TODO: discretize?
           val = feature_val_to_object(value.mean)
@@ -212,7 +217,10 @@ def tuples2facts(fact_tuples):
         yield state.Fact(state.StateVariable(func, ftup.args,\
                                               modality=pddl.mapl.attributed, modal_args = [ftup.agent,ftup.values[0][0]]),pddl.TRUE)
       else:
-        yield state.Fact(state.StateVariable(func, ftup.args), ftup.values[0][0])
+        yield state.Fact(state.StateVariable(func, ftup.args),ftup.values[0][0])
+    elif len(ftup.values) == 1 and ftup.values[0][1] == 0.0 and isinstance(ftup, AttributedSVarDistribution):
+      yield state.Fact(state.StateVariable(func, ftup.args,\
+                                              modality=pddl.mapl.neg_attributed, modal_args = [ftup.agent,ftup.values[0][0]]),pddl.TRUE)
     else:
       vdist = prob_state.ValueDistribution(dict(ftup.values))
       yield prob_state.ProbFact(state.StateVariable(func, ftup.args), vdist)
