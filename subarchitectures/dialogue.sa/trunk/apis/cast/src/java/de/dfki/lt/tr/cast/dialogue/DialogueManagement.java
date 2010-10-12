@@ -178,9 +178,7 @@ public class DialogueManagement extends ManagedComponent {
 
 			// create an "augmented" intention based on the received one
 			if (includesInFormula(cintention.intent, "question-answered")) {
-				cintention = expandCommunicativeIntention(cintention);
-			String formAsString = FormulaUtils.getString(cintention.intent.content.get(0).postconditions);
-			log("expanded postcondition: " + formAsString);	
+				cintention = expandCommunicativeIntention(cintention);	
 			}
 
 			// running the dialogue manager to select the next action
@@ -189,14 +187,14 @@ public class DialogueManagement extends ManagedComponent {
 
 			// if the action is not void or ill-formed, adds the new intention to the WM
 			if (!action.isVoid() && !action.toString().contains("%")) {
-			
+
 				// if it is a communicative intention
 				if (action.getType() == PolicyAction.COMMUNICATIVE_INTENTION) {
-		
+
 					log("reacting with a communicative response...");
 					IntentionalContent content = EpistemicObjectUtils.createIntentionalContent(action.getContent(), 
 							EpistemicObjectUtils.robotAgent , 1.0f);
-					
+
 					Intention response = new Intention (
 							cintention.intent.frame, EpistemicObjectUtils.privateStatus, 
 							cintention.intent.id, Arrays.asList(content));
@@ -208,14 +206,14 @@ public class DialogueManagement extends ManagedComponent {
 
 				// if it is an attributed intention to forward
 				else if (action.getType() == PolicyAction.ATTRIBUTED_INTENTION) {
-					
+
 					log("forwarding the communicative intention beyond dialogue.sa...");								
 					IntentionalContent content = EpistemicObjectUtils.createIntentionalContent(action.getContent(), 
 							cintention.intent.content.get(0).agents, 1.0f);
-					
+
 					Intention response = new Intention (cintention.intent.frame, cintention.intent.estatus, 
 							cintention.intent.id, Arrays.asList(content));
-					
+
 					addToWorkingMemory(cintention.intent.id, response);
 					log("attributed intention successfully added to working memory");
 				}
@@ -230,8 +228,8 @@ public class DialogueManagement extends ManagedComponent {
 		}
 	}
 
-	
-	
+
+
 	/**
 	 * Returns true if the intention contains the predicate "question-answered", false otherwise
 	 * 
@@ -240,7 +238,7 @@ public class DialogueManagement extends ManagedComponent {
 	 * @return true if the predicate is contained, false otherwise
 	 */
 	private boolean includesInFormula (Intention intent, String str)  {
-		
+
 		for (IntentionalContent content : intent.content) {
 			if (FormulaUtils.getString(content.postconditions).contains(str)) {
 				return true;
@@ -248,7 +246,7 @@ public class DialogueManagement extends ManagedComponent {
 		}
 		return false;
 	}
-	
+
 
 	/**
 	 * If a new event is added, triggers the dialogue manager to determine the next appropriate
@@ -266,13 +264,13 @@ public class DialogueManagement extends ManagedComponent {
 			log("action chosen: " + action.toString());
 
 			// if the action is not void, adds the new intention to the WM
-			
+
 			if (action.getType() == PolicyAction.COMMUNICATIVE_INTENTION) {
-				
+
 				log("reacting with a communicative response...");
 				IntentionalContent content = EpistemicObjectUtils.createIntentionalContent(action.getContent(), 
 						EpistemicObjectUtils.robotAgent , 1.0f);
-				
+
 				Intention response = new Intention (
 						event.frame, EpistemicObjectUtils.privateStatus, 
 						event.id, Arrays.asList(content));
@@ -290,10 +288,10 @@ public class DialogueManagement extends ManagedComponent {
 		}
 	}
 
-	
 
-	
-	
+
+
+
 	/**
 	 * Expand the intentional content -- i.e. if the formula of the postcondition contains
 	 * a pointer formula, replace this pointer by the value of the epistemic object
@@ -313,45 +311,57 @@ public class DialogueManagement extends ManagedComponent {
 		debug("communicative intention " + initCI.intent.id + " successfully copied");
 
 		List<IntentionalContent> newContents = new LinkedList<IntentionalContent>();
-		for (IntentionalContent alternativeContent : newCI.intent.content) {	
-			
-			HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(alternativeContent.postconditions);		
-			
-			debug("number of expanded formulae: " + expandedFormulae.size());
-				for (ComplexFormula expandedFormula : expandedFormulae.keySet()) {
-				IntentionalContent newContent = new IntentionalContent(alternativeContent.agents, alternativeContent.preconditions, 
-						expandedFormula, alternativeContent.probValue* expandedFormulae.get(expandedFormula));
-				newContents.add(newContent);
-				debug("expanded postcondition: " + FormulaUtils.getString(newContent.postconditions));				
-			}
-		}
-		newCI.intent.content = newContents;
 		
-		if (includesInFormula(initCI.intent, "<hypo>")) {
- 
-			debug("dealing with a polar question");
+		for (IntentionalContent alternativeContent : newCI.intent.content) {	
+
+			dFormula featureType = EpistemicObjectUtils.getModalOperatorValue(
+					alternativeContent.postconditions,"feature");
+			debug("feature type: " + FormulaUtils.getString(featureType));
+
+			HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(alternativeContent.postconditions, FormulaUtils.getString(featureType));		
+
+			debug("number of expanded formulae: " + expandedFormulae.size());
 			
-			for (IntentionalContent alternativeContent : newCI.intent.content) {	
-				dFormula hypothesis = EpistemicObjectUtils.getModalOperatorValue(alternativeContent.postconditions, "hypo");
-				dFormula reality = EpistemicObjectUtils.getModalOperatorValue(alternativeContent.postconditions, "color");
-				if (hypothesis != null && reality != null) {
-					if (FormulaUtils.subsumes(hypothesis,reality)) {
-						EpistemicObjectUtils.setModalOperatorValue(alternativeContent.postconditions, "hypo", "valid");
-						debug("hypothesis is valid");
+			for (ComplexFormula expandedFormula : expandedFormulae.keySet()) {
+				
+				float prob = alternativeContent.probValue* expandedFormulae.get(expandedFormula);
+				IntentionalContent newContent = new IntentionalContent(alternativeContent.agents, alternativeContent.preconditions, 
+						expandedFormula, prob);
+				debug("expanded postcondition: " + FormulaUtils.getString(newContent.postconditions) + ", with prob. " + prob);				
+
+				// in case we deal with a polar question
+				
+				dFormula featureValue = EpistemicObjectUtils.getModalOperatorValue(
+						newContent.postconditions, (FormulaUtils.getString(featureType)));	
+				debug("feature value: " + FormulaUtils.getString(featureValue));
+
+				dFormula hypothesis = EpistemicObjectUtils.getModalOperatorValue(newContent.postconditions, "hypo");
+				debug("hypothesis: " + FormulaUtils.getString(hypothesis));		
+
+				if (hypothesis != null && featureValue != null) {
+					if (FormulaUtils.subsumes(hypothesis,featureValue)) {
+						EpistemicObjectUtils.setModalOperatorValue(newContent.postconditions, "hypo", "valid");
 					}
 					else {
-						EpistemicObjectUtils.setModalOperatorValue(alternativeContent.postconditions, "hypo", "invalid");
-						debug("hypothesis is invalid");
+						EpistemicObjectUtils.setModalOperatorValue(newContent.postconditions, "hypo", "invalid");
 					}
 				}
-			}
+				else if (hypothesis != null) {
+					EpistemicObjectUtils.setModalOperatorValue(newContent.postconditions, "hypo", "noclue");
+				}
+				
+				newContents.add(newContent);
+			}	
 		}
+		
+		newCI.intent.content = newContents;
+		
 		return newCI;
 	}
-	
 
-	
-	
+
+
+
 	/**
 	 * Expand the given formula (if the formula contains a pointer, replaces it by
 	 * the content of the epistemic object being pointed at)
@@ -363,77 +373,73 @@ public class DialogueManagement extends ManagedComponent {
 	 * @throws DoesNotExistOnWMException
 	 * @throws DialogueException
 	 */
-	private HashMap<ComplexFormula,Float> expandFormula (dFormula form)
-		throws UnknownSubarchitectureException, DoesNotExistOnWMException, DialogueException {
-		
+	private HashMap<ComplexFormula,Float> expandFormula (dFormula form, String featureType)
+	throws UnknownSubarchitectureException, DoesNotExistOnWMException, DialogueException {
+
 		if (form instanceof ComplexFormula) {
-			
-			debug("inside complex formula");
-			HashMap<ComplexFormula,Float> CFormulae = new HashMap<ComplexFormula,Float>();
-			CFormulae.put(new ComplexFormula(0,new LinkedList<dFormula>(),BinaryOp.conj), 1.0f);
-			
+
+			HashMap<ComplexFormula,Float> results = new HashMap<ComplexFormula,Float>();
+			results.put(new ComplexFormula(0,new LinkedList<dFormula>(),BinaryOp.conj), 1.0f);
+
 			for (dFormula existingSubFormula : ((ComplexFormula)form).forms) {
-				
-				HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(existingSubFormula);
-				
-				for (dFormula curCFormula : CFormulae.keySet()) {
-					
+
+				HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(existingSubFormula, featureType);			
+				HashMap<ComplexFormula,Float> newResults = new HashMap<ComplexFormula,Float>();
+
+				for (dFormula curCFormula : results.keySet()) {
+
 					for (dFormula expandedFormula : expandedFormulae.keySet()) {
-						
+
 						ComplexFormula newFormula = (ComplexFormula) FormulaUtils.copy(curCFormula);
 						newFormula.forms.add(expandedFormula);
-						CFormulae.put(newFormula, CFormulae.get(curCFormula) * expandedFormulae.get(expandedFormula));
-					}
-					
-					CFormulae.remove(curCFormula);
+						newResults.put(newFormula, results.get(curCFormula) * expandedFormulae.get(expandedFormula));
+					}			
 				}		
+				results = newResults;
 			}
-			return CFormulae;
+			return results;
 		}
-		
+
 		else if (form instanceof ModalFormula) {
-					
-			debug("inside modal formula");
-			
+
+
 			HashMap<ComplexFormula, Float> newFormulae = new HashMap<ComplexFormula,Float>();
-			HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(((ModalFormula)form).form);
-			
+			HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(((ModalFormula)form).form, featureType);
+
 			for (ComplexFormula expandedFormula : expandedFormulae.keySet()) {
-				
+
 				ComplexFormula newFormula = new ComplexFormula(0, Arrays.asList((dFormula)new ModalFormula(
-						0, ((ModalFormula)form).op, expandedFormula)), BinaryOp.conj);
+						0, ((ModalFormula)form).op, FormulaUtils.copy(expandedFormula))), BinaryOp.conj);
 				newFormulae.put(newFormula, expandedFormulae.get(expandedFormula));
-				debug("returning formula 2: " + FormulaUtils.getString(newFormula));
 			}
-			
+
 			return newFormulae;
 		}
-		
+
 		else if (form instanceof PointerFormula) {
 			debug("found pointer: " + FormulaUtils.getString(form));
 			WorkingMemoryAddress WMPointer= ((PointerFormula)form).pointer;
 			if (WMPointer != null && existsOnWorkingMemory(WMPointer)) {			
 				try {
-				dBelief b = getMemoryEntry(WMPointer, dBelief.class);
-				
-				HashMap<ComplexFormula,Float> expandedFormulae =  EpistemicObjectUtils.getBeliefContent(b);
-								
-				for (ComplexFormula expandedFormula : expandedFormulae.keySet()) {
-					expandedFormula.forms.add(new ModalFormula(0, "ref", form));
-					debug("returning formula: " + FormulaUtils.getString(expandedFormula));
-				}
-				
-				return expandedFormulae;
+					dBelief b = getMemoryEntry(WMPointer, dBelief.class);
+
+					HashMap<ComplexFormula,Float> expandedFormulae =  EpistemicObjectUtils.getBeliefContent(b, featureType);
+
+					for (ComplexFormula expandedFormula : expandedFormulae.keySet()) {
+						expandedFormula.forms.add(new ModalFormula(0, "ref", form));
+					}
+
+					return expandedFormulae;
 				}
 				catch (ClassCastException e) {
 					e.printStackTrace();
 				}
 			}
 		}
-		
+
 		HashMap<ComplexFormula,Float> dummyHash = new HashMap<ComplexFormula,Float>();
-		dummyHash.put(new ComplexFormula(0,Arrays.asList(form),BinaryOp.conj), 1.0f);
+		dummyHash.put(new ComplexFormula(0,Arrays.asList(FormulaUtils.copy(form)),BinaryOp.conj), 1.0f);
 		return dummyHash;
-	
+
 	}
 }

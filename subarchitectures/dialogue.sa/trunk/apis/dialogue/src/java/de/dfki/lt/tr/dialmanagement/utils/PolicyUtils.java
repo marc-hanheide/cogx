@@ -48,7 +48,7 @@ public class PolicyUtils {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	
 	
 	/**
@@ -113,7 +113,8 @@ public class PolicyUtils {
 	public static HashMap<Integer,dFormula> extractFilledArguments (Observation obs, PolicyEdge edge) {
 		
 		for (FormulaWrapper alternative : obs.getAlternatives()) {		
-			if (edge.getCondition().equals(alternative)) {
+			if (edge.getCondition().equals(alternative) && 
+					obs.getProbability(alternative) >= edge.getCondition().getMinimumProb()) {
 				return extractFilledArguments (edge.getCondition().getContent(), alternative.getContent()) ;
 			}
 		}
@@ -131,9 +132,7 @@ public class PolicyUtils {
 	 * @return  a mapping from each argument i in form1 to its value in form2
 	 */
 	public static HashMap<Integer,dFormula> extractFilledArguments (dFormula form1, dFormula form2)  {
-				
-		debug("extracting filled arguments for: " + FormulaUtils.getString(form1) + " and " + FormulaUtils.getString(form2));
-		
+						
 		HashMap<Integer,dFormula> filledArguments = new HashMap<Integer,dFormula>();
 
 		form1 = FormulaUtils.flattenFormula(form1);
@@ -160,7 +159,6 @@ public class PolicyUtils {
 			filledArguments.put(form1.id, form2);
 		}
 		
-		debug("number of filled arguments: " + filledArguments.size());
 		return filledArguments;
 	}
 	
