@@ -19,7 +19,15 @@
     (color-learned ?v - visual-object)
     (shape-learned ?v - visual-object)
     (ident-learned ?v - visual-object)
+    (allow-general-color-question ?v - visual-object)
+    (allow-polar-color-question ?v - visual-object ?c - color-name)
+    (allow-general-shape-question ?v - visual-object)
+    (allow-polar-shape-question ?v - visual-object ?s - shape-name)
+    (allow-general-ident-question ?v - visual-object)
+    (allow-polar-ident-question ?v - visual-object ?i - ident-name)
+    (learning-impossible)
   )
+
  
   (:functions
     (color ?v - visual-object) - color-name
@@ -28,7 +36,80 @@
     (p-color ?v - visual-object ?c - color-name) - number
     (p-shape ?v - visual-object ?s - shape-name) - number
     (p-ident ?v - visual-object ?i - ident-name) - number
+    ;;(max-color-gain ?v - visual-object) - color-name
+    ;;(max-shape-gain ?v - visual-object) - shape-name
+    ;;(max-ident-gain ?v - visual-object) - ident-name
   )
+
+  (:derived (learning-impossible)
+  	    (forall (?v - visual-object)
+	    	(and
+		   (or
+		      (forall (?c - color-name) (not (attributed tutor (color ?v) ?c)))
+		      (color-learned ?v)
+		   )
+		   (or
+		      (forall (?s - shape-name) (not (attributed tutor (shape ?v) ?s)))
+		      (shape-learned ?v)
+		   )
+		   (or
+		      (forall (?i - ident-name) (not (attributed tutor (ident ?v) ?i)))
+		      (ident-learned ?v)
+		   )
+		)
+	    )
+  )		
+
+  (:derived (allow-general-color-question ?v - visual-object)
+  	    (forall (?c - color-name)
+	    	    (or
+			(= ?c unknown-color)
+			(< (p-color ?v ?c) 0.5)
+			;;(not (= (max-color-gain ?v) ?c))
+		    )
+	    )
+  )
+
+  (:derived (allow-polar-color-question ?v - visual-object ?c - color-name)
+  	    (and
+		(>= (p-color ?v ?c) 0.5)
+		;;(= (max-color-gain ?v) ?c)
+	    )
+  )
+
+  (:derived (allow-general-shape-question ?v - visual-object)
+  	    (forall (?s - shape-name)
+	    	    (or
+			(= ?s unknown-shape)
+			(< (p-shape ?v ?s) 0.5)
+			;;(not (= (max-shape-gain ?v) ?s))
+		    )
+	    )
+  )
+
+  (:derived (allow-polar-shape-question ?v - visual-object ?s - shape-name)
+  	    (and
+		(>= (p-shape ?v ?s) 0.5)
+		;;(= (max-shape-gain ?v) ?c)
+	    )
+  )
+
+  (:derived (allow-general-ident-question ?v - visual-object)
+  	    (forall (?i - ident-name)
+	    	    (or
+			(= ?i unknown-ident)
+			(< (p-ident ?v ?i) 0.5)
+			;;(not (= (max-ident-gain ?v) ?i))
+		    )
+	    )
+  )
+
+  (:derived (allow-polar-ident-question ?v - visual-object ?i - ident-name)
+  	    (and
+		(>= (p-ident ?v ?i) 0.5)
+		;;(= (max-ident-gain ?v) ?i)
+	    )
+  )  
 
   (:action ask-for-an-objects-color-polar
     :agent (?a - robot)
@@ -36,10 +117,10 @@
     :precondition (and 
     		       (in-domain (color ?v) ?c)
 		       (not (= ?c unknown-color))
-		       (> (p-color ?v ?c) 0.5)
+		       (allow-polar-color-question ?v ?c)
+		       (learning-impossible)
 		  )
     :effect (and
-		;;(kval ?a (color ?v))
 		(attributed tutor (color ?v) ?c)
 		(increase (total-cost) 1)
 	    )
@@ -48,8 +129,11 @@
   (:action ask-for-an-objects-color-general
     :agent (?a - robot)
     :parameters (?v - visual-object)
+    :precondition (and 
+    		       (allow-general-color-question ?v)
+		       (learning-impossible)
+		  )
     :effect (and 
-    	    	 ;;(kval ?a (color ?v))
 		 (attributed tutor (color ?v) unknown-color)
 		 (increase (total-cost) 2)
 	    )
@@ -61,10 +145,10 @@
     :precondition (and
 			(in-domain (shape ?v) ?s)
 			(not (= ?s unknown-shape))
-			(> (p-shape ?v ?s) 0.5)
+			(allow-polar-shape-question ?v ?s)
+			(learning-impossible)
 		  )
     :effect (and
-		;;(kval ?a (shape ?v))
 		(attributed tutor (shape ?v) ?s)
 		(increase (total-cost) 1)
 	    )
@@ -73,8 +157,11 @@
   (:action ask-for-an-objects-shape-general
     :agent (?a - robot)
     :parameters (?v - visual-object)
+    :precondition (and 
+    		       (allow-general-shape-question ?v)
+		       (learning-impossible)
+		  )
     :effect (and
-		;;(kval ?a (shape ?v))
 		(attributed tutor (shape ?v) unknown-shape)
 		(increase (total-cost) 2)
 	    )
@@ -86,10 +173,10 @@
     :precondition (and
 			(in-domain (ident ?v) ?i)
 			(not (= ?i unknown-ident))
-			(> (p-ident ?v ?i) 0.5)
+			(allow-polar-ident-question ?v ?i)
+			(learning-impossible)
 		  )
     :effect (and
-		;;(kval ?a (ident ?v))
 		(attributed tutor (ident ?v) ?i)
 		(increase (total-cost) 1)
 	    )
@@ -98,8 +185,11 @@
   (:action ask-for-an-objects-ident-general
     :agent (?a - robot)
     :parameters (?v - visual-object)
+    :precondition (and 
+    		       (allow-general-ident-question ?v)
+		       (learning-impossible)
+		  )
     :effect (and
-		;;(kval ?a (ident ?v))
 		(attributed tutor (ident ?v) unknown-ident)
 		(increase (total-cost) 2)
 	    )
