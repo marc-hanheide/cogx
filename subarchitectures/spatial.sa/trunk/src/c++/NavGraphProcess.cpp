@@ -274,16 +274,28 @@ double  NavGraphProcess::NavGraphServer::getPathLength(double xS, double yS, dou
 int NavGraphProcess::NavGraphServer::getAreaId(double x, double y, double a, double maxDist, const Ice::Current &_context){
   int id;
   m_pOwner->lockComponent();
-  id = m_pOwner->m_cureNavGraph.getClosestNode(x,y,a,maxDist)->getAreaId();
+ Cure::NavGraphNode* node;
+  node = m_pOwner->m_cureNavGraph.getClosestNode(x,y,a,maxDist); 
   m_pOwner->unlockComponent();
+  if (node != NULL)
+    id = node->getAreaId();
+  else
+    id = -1;
+
   return id;
 }
 
 int NavGraphProcess::NavGraphServer::getClosestNodeId(double x, double y, double a, double maxDist, const Ice::Current &_context){
   int id;
   m_pOwner->lockComponent();
-  id = m_pOwner->m_cureNavGraph.getClosestNode(x,y,a,maxDist)->getId();
+  Cure::NavGraphNode* node;
+  node = m_pOwner->m_cureNavGraph.getClosestNode(x,y,a,maxDist); 
   m_pOwner->unlockComponent();
+  if (node != NULL)
+    id = node->getId();
+  else
+    id = -1;
+
   return id;
 }
 void NavGraphProcess::loadGraphFromFile(const std::string &filename)
