@@ -47,6 +47,7 @@ import de.dfki.lt.tr.dialogue.slice.parse.*;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
 
 // Dialogue API 
+import de.dfki.lt.tr.dialogue.parse.IncrCCGStringParser;
 import de.dfki.lt.tr.dialogue.parse.IncrCCGWordLatticeParser;
 import de.dfki.lt.tr.dialogue.parse.PackedLFParseResults;
 import de.dfki.lt.tr.dialogue.parse.OpenCCGGrammar;
@@ -128,7 +129,7 @@ public class IncrStringParser
 	public String grammarFile; 
 
 	// The grammatical inference engine
-	public IncrCCGWordLatticeParser parser;
+	public IncrCCGStringParser parser;
 	
 	// The grammar access
 	OpenCCGGrammar grammar; 
@@ -185,10 +186,15 @@ public class IncrStringParser
 			grammar = new OpenCCGGrammar();
 			grammar.setGrammar(grammarFile);
 			// Parsing processes: set up the actual parser, connect it to the grammar
-			parser	= new IncrCCGWordLatticeParser();
+			parser	= new IncrCCGStringParser();
 			// Register the grammar: this initializes the connection with the lexicon, 
 			// and creates the ccg parser with the corresponding openccg grammar
 			parser.registerGrammarAccess(grammar); 
+			
+			CategoryChartScorer cshs = new CategoryChartScorer();
+			cshs.setBeamWidthFunction(new UnrestrictedBeamWidthFunction());
+			parser.registerChartScorer(cshs);
+			
 		} 
 		catch (Exception e) { 
 			log("Fatal error: "+e.getMessage());

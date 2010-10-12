@@ -29,6 +29,8 @@ implements TRResultListener {
 
 	private String serverName = defaultServerName;
 	private String serverEndpoint = defaultServerEndpoint;
+	
+	private float threshold = 1.0f;
 
 	/**
 	 * Starts up the component. The engine is configured and started
@@ -51,6 +53,14 @@ implements TRResultListener {
 	public void configure (Map<String, String> _config) {
 		if (_config.containsKey("--serverName")) {
 			serverName = _config.get("--serverName");
+		}
+		if (_config.containsKey("--threshold")) {
+			try {
+			threshold = Float.parseFloat(_config.get("--threshold"));
+			}
+			catch (NumberFormatException e) {
+				System.out.println("Wrong format for threshold");
+			}
 		}
 		if (_config.containsKey("--serverEndpoint")) {
 			serverEndpoint = _config.get("--serverEndpoint");
@@ -103,16 +113,24 @@ implements TRResultListener {
 			if (rr instanceof NBestList) {
 				PhonString pstr = nBestListToPhonString((NBestList)rr);
 				if (pstr != null) {
-					log("recognised phonstring: \"" + pstr.wordSequence + "\"");
-					CASTData data = new CASTData ("emptyid", nBestListToPhonString((NBestList)rr));
+					
+					PhonString phonString = nBestListToPhonString((NBestList)rr);
+					
+					log("Recognised phonological string: " + phonString.wordSequence + " [" + phonString.confidenceValue + "]");
+					
+					if (phonString.confidenceValue > threshold) {
 					String taskID = newTaskID();
 
 					ProcessingData pd = new ProcessingData(newProcessingDataId());
-					pd.add(data);
+					pd.add(new CASTData<PhonString> ("emptyid", phonString));
 					m_proposedProcessing.put(taskID, pd);
 
 					String taskGoal = DialogueGoals.ASR_TASK;
 					proposeInformationProcessingTask(taskID, taskGoal);
+					}
+					else {
+						log("phonological string below minimal threshold, not forwarding");
+					}
 				}
 				else {
 					log("got a NULL in phonstring extraction");
