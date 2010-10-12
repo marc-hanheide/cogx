@@ -149,7 +149,10 @@ public class VisualObjectTransferFunction extends
 		if (maxGain > 0) {
 			FormulaDistribution gainFD = FormulaDistribution.create();
 			gainFD.add(gainStr, 1.0);
-			distr.put("max-gain-" + concept, gainFD);
+			distr.put("max-gain-label-" + concept, gainFD);
+			gainFD = FormulaDistribution.create();
+			gainFD.add((float) maxGain, 1.0);
+			distr.put("max-gain-value-" + concept, gainFD);
 		}
 		distr.put(concept, fd);
 
