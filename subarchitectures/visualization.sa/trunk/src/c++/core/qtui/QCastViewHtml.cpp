@@ -240,7 +240,12 @@ void QCastViewHtml::doUpdateContent()
 
       if (m_bHasForms) {
          // Render std Display Server elements
-         list << "<style> .v11nformbar { background-color: #f0f0f8; } .v11nformtitle { width: 200px; } </style>\n";
+         list <<
+            "<style>"
+            " .v11nformbar { background-color: #f0f0f8; }"
+            " .v11nformtitle { width: 200px; }"
+            " .v11nformbutton { background-color: white; color: blue; padding: 0 4 0 4px;}"
+            "</style>\n";
 
          // Loading jQuery is _very_ time consuming
          list << "<script type=\"text/javascript\">\n";
