@@ -36,6 +36,9 @@ public class BeliefTranslator {
 
 	public static final Modality[] mod = new Modality[] { Modality.Belief };
 
+	public static double THRESHOLD_MIN = 0.01f;
+	public static double THRESHOLD_MAX = 1.0f;
+
 	public List<ModalisedAtom> facts_epst = new LinkedList<ModalisedAtom>();
 	public List<ModalisedAtom> facts_ancestor = new LinkedList<ModalisedAtom>();
 	public List<ModalisedAtom> facts_offspring = new LinkedList<ModalisedAtom>();
@@ -69,79 +72,84 @@ public class BeliefTranslator {
 						belIdTerm
 					} ));
 
-		assf_belief_exist.add(
-				new AbstractMap.SimpleImmutableEntry<ModalisedAtom, Double>(
-					belexMAtom,
-					new Double(exist_prob)));
+		if (exist_prob >= THRESHOLD_MIN && exist_prob <= THRESHOLD_MAX) {
 
-		// ancestors and offsprings
-		if (bel.hist instanceof CASTBeliefHistory) {
-			CASTBeliefHistory chist = (CASTBeliefHistory) bel.hist;
-			for (WorkingMemoryPointer wmp : chist.ancestors) {
-				facts_ancestor.add(
-						TermAtomFactory.modalisedAtom(mod,
-							TermAtomFactory.atom("ancestor",
-								new Term[] {
-									belIdTerm,
-									ConversionUtils.workingMemoryAddressToTerm(wmp.address),
-									TermAtomFactory.term("type" + wmp.type)
-								} )));
-			}
-			for (WorkingMemoryPointer wmp : chist.offspring) {
-				facts_offspring.add(
-						TermAtomFactory.modalisedAtom(mod,
-							TermAtomFactory.atom("offspring",
-								new Term[] {
-									belIdTerm,
-									ConversionUtils.workingMemoryAddressToTerm(wmp.address),
-									TermAtomFactory.term("type" + wmp.type)
-								} )));
-			}
-		}
+			assf_belief_exist.add(
+					new AbstractMap.SimpleImmutableEntry<ModalisedAtom, Double>(
+						belexMAtom,
+						new Double(exist_prob)));
 
-		// examine the contents
-		if (bel.content instanceof CondIndependentDistribs) {
-			CondIndependentDistribs cdd = (CondIndependentDistribs) bel.content;
-
-			for (ProbDistribution pd : cdd.distribs.values()) {
-				if (pd instanceof BasicProbDistribution) {
-					BasicProbDistribution bpd = (BasicProbDistribution)pd;
-
-					List<ModalisedAtom> ddpart = new LinkedList<ModalisedAtom>();
-
-					if (bpd.values instanceof FormulaValues) {
-						FormulaValues fv = (FormulaValues) bpd.values;
-						int idx = 1;
-						for (FormulaProbPair fp : fv.values) {
-
-							// world_exist
-							String worldId = bpd.key + idx;
-							Term worldIdTerm = TermAtomFactory.term(worldId);
-
-							ModalisedAtom worldexMAtom = TermAtomFactory.modalisedAtom(mod,
-										TermAtomFactory.atom("w",
-											new Term[] {
-												belIdTerm,
-												worldIdTerm
-											} ));
-
-							assf_world_exist.add(
-								new AbstractMap.SimpleImmutableEntry<ModalisedAtom, Double>(
-									worldexMAtom,
-									new Double(fp.prob)));
-
-							// disjoints
-							ddpart.add(worldexMAtom);
-
-							// rules
-							expandFormulaToRules(bpd.key, fp.val, rules, belIdTerm, belexMAtom, worldexMAtom);
-
-							idx++;
-						}
-					}
-					disjoints.add(ddpart);
+			// ancestors and offsprings
+			if (bel.hist instanceof CASTBeliefHistory) {
+				CASTBeliefHistory chist = (CASTBeliefHistory) bel.hist;
+				for (WorkingMemoryPointer wmp : chist.ancestors) {
+					facts_ancestor.add(
+							TermAtomFactory.modalisedAtom(mod,
+								TermAtomFactory.atom("ancestor",
+									new Term[] {
+										belIdTerm,
+										ConversionUtils.workingMemoryAddressToTerm(wmp.address),
+										TermAtomFactory.term("type" + wmp.type)
+									} )));
 				}
+				for (WorkingMemoryPointer wmp : chist.offspring) {
+					facts_offspring.add(
+							TermAtomFactory.modalisedAtom(mod,
+								TermAtomFactory.atom("offspring",
+									new Term[] {
+										belIdTerm,
+										ConversionUtils.workingMemoryAddressToTerm(wmp.address),
+										TermAtomFactory.term("type" + wmp.type)
+									} )));
+				}
+			}
 
+			// examine the contents
+			if (bel.content instanceof CondIndependentDistribs) {
+				CondIndependentDistribs cdd = (CondIndependentDistribs) bel.content;
+
+				for (ProbDistribution pd : cdd.distribs.values()) {
+					if (pd instanceof BasicProbDistribution) {
+						BasicProbDistribution bpd = (BasicProbDistribution)pd;
+
+						List<ModalisedAtom> ddpart = new LinkedList<ModalisedAtom>();
+
+						if (bpd.values instanceof FormulaValues) {
+							FormulaValues fv = (FormulaValues) bpd.values;
+							int idx = 1;
+							for (FormulaProbPair fp : fv.values) {
+
+								if (fp.prob >= THRESHOLD_MIN && fp.prob <= THRESHOLD_MAX) {
+
+									// world_exist
+									String worldId = bpd.key + idx;
+									Term worldIdTerm = TermAtomFactory.term(worldId);
+
+									ModalisedAtom worldexMAtom = TermAtomFactory.modalisedAtom(mod,
+												TermAtomFactory.atom("w",
+													new Term[] {
+														belIdTerm,
+														worldIdTerm
+													} ));
+
+									assf_world_exist.add(
+										new AbstractMap.SimpleImmutableEntry<ModalisedAtom, Double>(
+											worldexMAtom,
+											new Double(fp.prob)));
+
+									// disjoints
+									ddpart.add(worldexMAtom);
+
+									// rules
+									expandFormulaToRules(bpd.key, fp.val, rules, belIdTerm, belexMAtom, worldexMAtom);
+
+									idx++;
+								}
+							}
+						}
+						disjoints.add(ddpart);
+					}
+				}
 			}
 		}
 	}
