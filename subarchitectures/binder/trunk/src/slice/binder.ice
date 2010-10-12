@@ -28,7 +28,10 @@ module org {
 module cognitivesystems {
 module binder {
 
- const string POINTERLABEL = "about";
+	const string POINTERLABEL = "about";
+
+	const string thisAgent = "self";
+	const string humanAgent = "human";
 
 };
 }; 
