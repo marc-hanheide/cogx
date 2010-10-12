@@ -119,6 +119,7 @@ protected:
 
    // WM
    void applyScene(const std::string& sceneName);
+   void applyScene(CSceneAttrs& scene);
    void clearScene();
 
 public:
