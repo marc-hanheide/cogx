@@ -9,7 +9,7 @@
 
   (:constants
     george - robot
-    human - agent
+    tutor - agent
     unknown-color - color-name
     unknown-shape - shape-name
     unknown-ident - ident-name
@@ -19,6 +19,9 @@
     (color-learned ?v - visual-object)
     (shape-learned ?v - visual-object)
     (ident-learned ?v - visual-object)
+    ;;(color-unlearned ?v - visual-object ?c - color-name)
+    ;;(shape-unlearned ?v - visual-object ?s - shape-name)
+    ;;(ident-unlearned ?v - visual-object ?i - ident-name)
     (allow-general-color-question ?v - visual-object)
     (allow-polar-color-question ?v - visual-object ?c - color-name)
     (allow-general-shape-question ?v - visual-object)
@@ -69,15 +72,15 @@
   	    (forall (?v - visual-object)
 	    	(and
 		   (or
-		      (forall (?c - color-name) (not (attributed human (color ?v) ?c)))
+		      (forall (?c - color-name) (not (attributed tutor (color ?v) ?c)))
 		      (color-learned ?v)
 		   )
 		   (or
-		      (forall (?s - shape-name) (not (attributed human (shape ?v) ?s)))
+		      (forall (?s - shape-name) (not (attributed tutor (shape ?v) ?s)))
 		      (shape-learned ?v)
 		   )
 		   (or
-		      (forall (?i - ident-name) (not (attributed human (ident ?v) ?i)))
+		      (forall (?i - ident-name) (not (attributed tutor (ident ?v) ?i)))
 		      (ident-learned ?v)
 		   )
 		)
@@ -176,7 +179,7 @@
 		       (has-highest-color-gain ?v)
 		  )
     :effect (and
-		(attributed human (color ?v) ?c)
+		(attributed tutor (color ?v) ?c)
 		(increase (total-cost) 1)
 	    )
   )
@@ -190,7 +193,7 @@
 		       (has-highest-color-gain ?v)
 		  )
     :effect (and 
-		 (attributed human (color ?v) unknown-color)
+		 (attributed tutor (color ?v) unknown-color)
 		 (increase (total-cost) 2)
 	    )
   )
@@ -206,7 +209,7 @@
 			(has-highest-shape-gain ?v)
 		  )
     :effect (and
-		(attributed human (shape ?v) ?s)
+		(attributed tutor (shape ?v) ?s)
 		(increase (total-cost) 1)
 	    )
   )
@@ -220,7 +223,7 @@
 		       (has-highest-shape-gain ?v)
 		  )
     :effect (and
-		(attributed human (shape ?v) unknown-shape)
+		(attributed tutor (shape ?v) unknown-shape)
 		(increase (total-cost) 2)
 	    )
   )
@@ -236,7 +239,7 @@
 			(has-highest-ident-gain ?v)
 		  )
     :effect (and
-		(attributed human (ident ?v) ?i)
+		(attributed tutor (ident ?v) ?i)
 		(increase (total-cost) 1)
 	    )
   )
@@ -250,7 +253,7 @@
 		       (has-highest-ident-gain ?v)
 		  )
     :effect (and
-		(attributed human (ident ?v) unknown-ident)
+		(attributed tutor (ident ?v) unknown-ident)
 		(increase (total-cost) 2)
 	    )
   )
@@ -261,7 +264,7 @@
     :precondition 
       (and
 	(not (color-learned ?v))
-	(attributed human (color ?v) ?c)
+	(attributed tutor (color ?v) ?c)
       )
     :effect (and
 		(color-learned ?v)
@@ -275,7 +278,7 @@
     :precondition 
       (and
 	(not (shape-learned ?v))
-	(attributed human (shape ?v) ?s)
+	(attributed tutor (shape ?v) ?s)
       )
     :effect (and
 		(shape-learned ?v)
@@ -289,7 +292,7 @@
     :precondition 
       (and
 	(not (ident-learned ?v))
-	(attributed human (ident ?v) ?i)
+	(attributed tutor (ident ?v) ?i)
       )
     :effect (and
 		(ident-learned ?v)
@@ -300,7 +303,44 @@
 ;;  (:action unlearn-color
 ;;    :agent (?a - robot)
 ;;    :parameters (?v - visual-object ?c - color-name)
-;;    :precondition (neg-attributed human (color ?v) ?c)
-;;    :effect ()
+;;    :precondition 
+;;      (and 
+;;	     (neg-attributed tutor (color ?v) ?c)
+;;	     (not (color-unlearned ?v ?c))
+;;      )
+;;    :effect (and 
+;;    	    	 (color-unlearned ?v ?c)
+;;		 (increase (total-cost) 1)
+;;	    )
 ;;  )
+
+;;  (:action unlearn-shape
+;;    :agent (?a - robot)
+;;    :parameters (?v - visual-object ?s - shape-name)
+;;    :precondition 
+;;      (and 
+;;	     (neg-attributed tutor (shape ?v) ?s)
+;;	     (not (shape-unlearned ?v ?s))
+;;      )
+;;    :effect (and 
+;;    	    	 (shape-unlearned ?v ?s)
+;;		 (increase (total-cost) 1)
+;;	    )
+;;  )
+
+;;  (:action unlearn-color
+;;    :agent (?a - robot)
+;;    :parameters (?v - visual-object ?i - ident-name)
+;;    :precondition 
+;;      (and 
+;;	     (neg-attributed tutor (ident ?v) ?i)
+;;	     (not (ident-unlearned ?v ?i))
+;;      )
+;;    :effect (and 
+;;    	    	 (ident-unlearned ?v ?i)
+;;		 (increase (total-cost) 1)
+;;	    )
+;;  )
+
+
 )
