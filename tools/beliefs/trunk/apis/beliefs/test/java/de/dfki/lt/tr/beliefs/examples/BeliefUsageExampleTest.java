@@ -171,7 +171,7 @@ public class BeliefUsageExampleTest {
 		// now ship the dBelief and you are done!
 		// oh wait! Of course you can still populate the Belief with more
 		// meaningful information:
-		belief.setAttributed("human", Arrays.asList(org.cognitivesystems.binder.thisAgent.value));
+		belief.setAttributed("human", Arrays.asList("self"));
 		// a belief should have a unique id!
 		belief.setId("hurga:0");
 		// this encodes for a VisualObject
