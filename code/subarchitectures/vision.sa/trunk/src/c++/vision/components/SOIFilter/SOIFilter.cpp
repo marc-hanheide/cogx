@@ -418,7 +418,7 @@ void SOIFilter::runComponent()
 			
 			m_LastProtoObject = new ProtoObject;
 			ProtoObjectPtr pobj = m_LastProtoObject;
-			if(segmentObject(soiPtr, pobj->image, pobj->mask, pobj->points))
+			if(segmentObject(soiPtr, pobj->image, pobj->mask, pobj->points, pobj))
 			{
 			  pobj->time = getCASTTime();
 			  pobj->SOIList.push_back(soi.addr.id);
@@ -1152,7 +1152,8 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
   return result;
 }
 
-bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask, vector<SurfacePoint> &segPoints)
+// (review2010): Added pProto to fill the imageOrigin and imageSourceSize
+bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask, vector<SurfacePoint> &segPoints, ProtoObjectPtr& pProto)
 {
   Video::Image image, imageLarge;
   // The large image for the ProtoObject should be as large as possible
@@ -1306,6 +1307,13 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	rectLarge.y = rect.y * inputScale;
 	rectLarge.width  = segMask.width;  // == rect.width  * inputScale
 	rectLarge.height = segMask.height; // == rect.height * inputScale
+
+	if (pProto != NULL) { // (review2010)
+	  pProto->imageOrigin.x = rectLarge.x;
+	  pProto->imageOrigin.y = rectLarge.y;
+	  pProto->imageSourceSize.x = imageLarge.width;
+	  pProto->imageSourceSize.y = imageLarge.height;
+	}
 
 	CvSize sz = cvGetSize(iplFull);
 #if 1 && defined(FEAT_VISUALIZATION)
