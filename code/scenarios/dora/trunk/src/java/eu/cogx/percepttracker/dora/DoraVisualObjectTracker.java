@@ -5,7 +5,9 @@ package eu.cogx.percepttracker.dora;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import VisionData.VisualObject;
 import cast.AlreadyExistsOnWMException;
@@ -33,8 +35,8 @@ import eu.cogx.perceptmediator.dora.VisualObjectTransferFunction;
 public class DoraVisualObjectTracker extends ManagedComponent implements
 		WorkingMemoryChangeReceiver {
 
-	Map<String, WorkingMemoryAddress> label2AddrMap = Collections
-			.synchronizedMap(new HashMap<String, WorkingMemoryAddress>());
+	Map<String, Set<WorkingMemoryAddress>> label2AddrMap = Collections
+			.synchronizedMap(new HashMap<String, Set<WorkingMemoryAddress>>());
 
 	@Override
 	protected void runComponent() {
@@ -66,22 +68,41 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 				VisualObjectTransferFunction.IS_IN).getDistribution().get().values
 				.get(0).prob;
 
-		WorkingMemoryAddress wmaGrounded = label2AddrMap.get(perceptLabel);
-		if (wmaGrounded == null) {
+		Set<WorkingMemoryAddress> wmaGroundedSet = label2AddrMap
+				.get(perceptLabel);
+		if (wmaGroundedSet == null) {
+			label2AddrMap
+					.put(perceptLabel, new HashSet<WorkingMemoryAddress>());
 			newBelief(pb, perceptLabel);
 			return;
 		} else {
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
-					.create(GroundedBelief.class, getMemoryEntry(label2AddrMap
-							.get(perceptLabel), GroundedBelief.class));
-			setIsInProb(
-					gb.getContent().get(VisualObjectTransferFunction.IS_IN),
-					perceptPointer, (float) perceptIsInProb);
-			// if (isNew) {
-			// newBelief(pb, perceptLabel);
-			// } else {
-			overwriteWorkingMemory(wmaGrounded, gb.get());
-			// }
+			boolean newNeeded = true;
+			for (WorkingMemoryAddress wmaGrounded : wmaGroundedSet) {
+				CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
+						.create(GroundedBelief.class, getMemoryEntry(
+								wmaGrounded, GroundedBelief.class));
+				float existingProb = sumProb(gb.getContent().get(
+						VisualObjectTransferFunction.IS_IN));
+				if (perceptIsInProb < 0.5) {
+					setIsInProb(gb.getContent().get(
+							VisualObjectTransferFunction.IS_IN),
+							perceptPointer, (float) perceptIsInProb);
+					overwriteWorkingMemory(wmaGrounded, gb.get());
+					newNeeded=false;
+				}
+				else if (existingProb < 0.5) {
+					setIsInProb(gb.getContent().get(
+							VisualObjectTransferFunction.IS_IN),
+							perceptPointer, (float) perceptIsInProb);
+					overwriteWorkingMemory(wmaGrounded, gb.get());
+					newNeeded = false;
+					break;
+				}
+
+			}
+			// we found no belief that we can assign to, so we need a new one
+			if (newNeeded)
+				newBelief(pb, perceptLabel);
 		}
 
 	}
@@ -97,8 +118,10 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 		newGB.getContent().putAll(pb.getContent());
 		newGB.setId(newDataID());
 		addToWorkingMemory(newGB.getId(), newGB.get());
-		label2AddrMap.put(perceptLabel, new WorkingMemoryAddress(newGB.getId(),
-				getSubarchitectureID()));
+		label2AddrMap.get(perceptLabel)
+				.add(
+						new WorkingMemoryAddress(newGB.getId(),
+								getSubarchitectureID()));
 	}
 
 	public boolean setIsInProb(FormulaDistribution fd,
@@ -130,5 +153,14 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 			return true;
 		else
 			return false;
+	}
+
+	public float sumProb(FormulaDistribution fd) {
+		FormulaValues fdRaw = fd.getDistribution().get();
+		float sum = 0.0f;
+		for (FormulaProbPair v : fdRaw.values) {
+			sum += v.prob;
+		}
+		return sum;
 	}
 }
