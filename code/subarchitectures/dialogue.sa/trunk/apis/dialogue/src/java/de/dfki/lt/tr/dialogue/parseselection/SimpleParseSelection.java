@@ -60,6 +60,9 @@ public abstract class SimpleParseSelection {
 			if (lf.root.sort.equals("marker") || lf.root.sort.equals("greeting") || lf.root.sort.equals("closing")) {
 				// ok
 			}
+			else if (lf.root.sort.startsWith("q-")) {
+				// fine as well
+			}
 			else {
 				if (LFUtils.lfNominalGetFeature(lf.root, "Mood").isEmpty()) {
 					ok = false;
