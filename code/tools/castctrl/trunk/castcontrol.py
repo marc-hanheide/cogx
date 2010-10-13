@@ -369,7 +369,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager.addProcess(procman.CProcess("cast-client", self._options.xe("${CMD_CAST_CLIENT}")))
         self._manager.addProcess(procman.CProcess("display", self._options.xe("${CMD_DISPLAY_SERVER}")))
         self._manager.addProcess(procman.CProcess("abducer", self._options.xe("${CMD_ABDUCER_SERVER}")))
-        self._manager.addProcess(procman.CProcess("speech", self._options.xe("${CMD_SPEECH_SERVER}")))
+        self._manager.addProcess(procman.CProcess("mary.tts", self._options.xe("${CMD_SPEECH_SERVER}")))
         self._manager.addProcess(procman.CProcess("player", self._options.xe("${CMD_PLAYER}")))
         self._manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
         self._manager.addProcess(procman.CProcess("log4jServer", self._options.xe("${CMD_LOG4J_SERVER}")))
@@ -655,7 +655,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             if p != None: p.start()
 
         if self.ui.ckRunSpeechServer.isChecked():
-            p = self._manager.getProcess("speech")
+            p = self._manager.getProcess("mary.tts")
             if p != None: p.start()
 
     def onStopExternalServers(self):
@@ -669,7 +669,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         if p != None: p.stop()
         p = self._manager.getProcess("abducer")
         if p != None: p.stop()
-        p = self._manager.getProcess("speech")
+        p = self._manager.getProcess("mary.tts")
         if p != None: p.stop()
 
     def _checkBuidDir(self):
@@ -708,6 +708,12 @@ class CCastControlWnd(QtGui.QMainWindow):
             self.buildLog.clearOutput()
             if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
             p.start(params={"target": "clean"})
+
+        # CMake can't run "ant clean" (can't add a clean dependency), so we run it here 
+        # TODO: chould check in CMakeCache if DO_ANT is enabled
+        #root = self._options.xe("${COGX_ROOT}")
+        #procman.xrun_wait("ant clean", root)
+
 
     def _checkMakeCache(self, listsDir, cacheFile):
         bdir = os.path.dirname(cacheFile)

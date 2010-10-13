@@ -974,7 +974,7 @@
                     </font>
                    </property>
                    <property name="text">
-                    <string>Run Speech Server</string>
+                    <string>Run Mary TTS Server</string>
                    </property>
                   </widget>
                  </item>
