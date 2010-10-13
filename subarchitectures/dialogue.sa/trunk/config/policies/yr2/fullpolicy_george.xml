@@ -8,9 +8,10 @@
 		<node id="whColorAnswerNode" action="whColorAnswerAction" isInitial="false" isFinal="true"/>
 	    <node id="whShapeAnswerNode" action="whShapeAnswerAction" isInitial="false" isFinal="true"/>
 		<node id="notKnowAnswerNode" action="notKnowAnswerAction" isInitial="false" isFinal="true"/>
-		<node id="posAnswerNode" action="posAnswerAction" isInitial="false" isFinal="true"/> 
-		<node id="negAnswerNode" action="negAnswerAction" isInitial="false" isFinal="true"/> 
-		
+		<node id="posAnswerNodeCertain" action="posAnswerActionCertain" isInitial="false" isFinal="true"/> 
+		<node id="posAnswerNodeUncertain" action="posAnswerActionUncertain" isInitial="false" isFinal="true"/> 
+		<node id="negAnswerNodeCertain" action="negAnswerActionCertain" isInitial="false" isFinal="true"/> 
+		<node id="negAnswerNodeUncertain" action="negAnswerActionUncertain" isInitial="false" isFinal="true"/> 		
 	</nodes>
 	
 	<edges>
@@ -21,9 +22,11 @@
 		<edge id="whColorQuestionEdge" source="*" target="whColorAnswerNode" condition="whColorQuestionCond"/>
 		<edge id="notKnowQuestionEdge" source="*" target="notKnowAnswerNode" condition="notKnowQuestionEdge"/>
 		<edge id="whShapeQuestionEdge" source="*" target="whShapeAnswerNode" condition="whShapeQuestionCond"/>
-		<edge id="polarPosEdge" source="*" target="posAnswerNode" condition="polarCond1"/> 
-		<edge id="polarNegEdge" source="*" target="negAnswerNode" condition="polarCond2"/> 
-		<edge id="polarNoclueEdge" source="*" target="notKnowAnswerNode" condition="polarCond3"/> 
+		<edge id="polarPosEdgeCertain" source="*" target="posAnswerNodeCertain" condition="polarPosCondCertain"/> 
+		<edge id="polarPosEdgeUncertain" source="*" target="posAnswerNodeUncertain" condition="polarPosCondUncertain"/> 
+		<edge id="polarNegEdgeCertain" source="*" target="negAnswerNodeCertain" condition="polarNegCondCertain"/> 
+		<edge id="polarNegEdgeUncertain" source="*" target="negAnswerNodeUncertain" condition="polarNegCondUncertain"/> 
+		<edge id="polarNoclueEdge" source="*" target="notKnowAnswerNode" condition="polarNoclueCond"/> 
 		
 	</edges>
 	
@@ -39,11 +42,15 @@
 	    <condition id="whShapeQuestionCond" type="communicativeintention"
 			lowerProb="0.6" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;shape&gt;(%3)) ^ &lt;feature&gt;(shape)))" ></condition>
 
-		<condition id="polarCond1" type="communicativeintention"
-			lowerProb="0.6" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(valid)))" /> 
-		<condition id="polarCond2" type="communicativeintention"
+		<condition id="polarPosCondCertain" type="communicativeintention"
+			lowerProb="0.8" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(valid)))" /> 
+	    <condition id="polarPosCondUncertain" type="communicativeintention"
+			lowerProb="0.4" higherProb="0.8" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(valid)))" /> 
+		<condition id="polarNegCondCertain" type="communicativeintention"
+			lowerProb="0.6" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(invalid)))" ></condition>
+		<condition id="polarNegCondUncertain" type="communicativeintention"
 			lowerProb="0.6" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(invalid)))" ></condition> 
-	<condition id="polarCond3" type="communicativeintention"
+	<condition id="polarNoclueCond" type="communicativeintention"
 			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(noclue)))" ></condition> 
 	</conditions>
 	
@@ -55,7 +62,9 @@
 		<action id="whColorAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" />
 		<action id="whShapeAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;shape&gt;(%3))))" />
 	    <action id="notKnowAnswerAction" type="communicativeintention" content="&lt;state&gt;(knowing-disconfirmed)" />
-	    <action id="posAnswerAction" type="communicativeintention" content="&lt;state&gt;(verified)" ></action> 
-	    	    <action id="negAnswerAction" type="communicativeintention" content="&lt;state&gt;(falsified)" ></action> 
+	    <action id="posAnswerActionCertain" type="communicativeintention" content="&lt;state&gt;(verified)" ></action> 
+	    <action id="posAnswerActionUncertain" type="communicativeintention" content="&lt;state&gt;(verified ^ &lt;certainty&gt;uncertain)" ></action> 
+	      <action id="negAnswerActionCertain" type="communicativeintention" content="&lt;state&gt;(falsified)" ></action> 
+	       <action id="negAnswerActionUncertain" type="communicativeintention" content="&lt;state&gt;(falsified ^ &lt;certainty&gt;uncertain)" ></action> 
 	</actions>
 </policy>
