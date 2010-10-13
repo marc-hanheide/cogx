@@ -26,6 +26,8 @@ public class ModelStatusTransferFunction
 		extends
 		SimpleDiscreteTransferFunction<VisualConceptModelStatus, GroundedBelief> {
 
+	public static final String GAIN = "gain";
+	public static final String MOST_PROMISING = "most-promising";
 	private static final String CONCEPT_ID = "concept";
 
 	public ModelStatusTransferFunction(ManagedComponent component) {
@@ -50,9 +52,9 @@ public class ModelStatusTransferFunction
 		}
 		if (maxLabel == null)
 			return null;
-		result.put("most-promising", PropositionFormula.create(maxLabel)
+		result.put(MOST_PROMISING, PropositionFormula.create(maxLabel)
 				.getAsFormula());
-		result.put("gain", DoubleFormula.create(maxGain).getAsFormula());
+		result.put(GAIN, DoubleFormula.create(maxGain).getAsFormula());
 
 		return result;
 	}
