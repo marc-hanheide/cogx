@@ -395,7 +395,6 @@ void SOIFilter::runComponent()
 {
   while(isRunning())
   {
-	debug("loop");
 	ptime t(second_clock::universal_time() + seconds(2));
 
 	if (queuesNotEmpty->timed_wait(t))
