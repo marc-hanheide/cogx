@@ -1,5 +1,6 @@
 #include "VisualLearner.h"
 #include "VisualLearnerProxy.h"
+#include "AffordanceLearnerProxy.h"
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
@@ -61,6 +62,9 @@ void VisualLearner::start()
 
    addChangeFilter(createGlobalTypeFilter<VisualLearningTask>(cdl::ADD),
          new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onAdd_LearningTask));
+
+   addChangeFilter(createGlobalTypeFilter<AffordanceRecognitionTask>(cdl::ADD),
+         new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onAdd_AffordanceTask));
 }
 
 void VisualLearner::onAdd_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
@@ -70,7 +74,7 @@ void VisualLearner::onAdd_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
    string id(_wmc.address.id);
 
    log("Added: " + type + ", id: " + id);
-   VisualLearnerRecognitionTaskPtr pTask;
+   //VisualLearnerRecognitionTaskPtr pTask;
    try {
       // get the data from working memory
       // pTask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
@@ -87,6 +91,30 @@ void VisualLearner::onAdd_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
    };
 }
 
+void VisualLearner::onAdd_AffordanceTask(const cdl::WorkingMemoryChange & _wmc)
+{
+   debug("::onAdd_AffordanceTask");
+   string type(_wmc.type);
+   string id(_wmc.address.id);
+
+   log("Added: " + type + ", id: " + id);
+   //AffordanceRecognitionTaskPtr pTask;
+   try {
+      // get the data from working memory
+      // pTask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
+      {
+         IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_RrqMonitor);
+         m_AffordanceTaskId_Queue.push_back(_wmc.address);
+         m_RrqMonitor.notify();
+      }
+      log("AffordanceTask addr pushed: %s", descAddr(_wmc.address).c_str());
+   }
+   catch(cast::DoesNotExistOnWMException){
+      log("VisualLearner.OnAdd: AffordanceTask deleted while working...");
+      return;
+   };
+}
+
 void VisualLearner::onAdd_LearningTask(const cdl::WorkingMemoryChange & _wmc)
 {
    debug("::onAdd_LearningTask");
@@ -94,7 +122,7 @@ void VisualLearner::onAdd_LearningTask(const cdl::WorkingMemoryChange & _wmc)
    string id(_wmc.address.id);
 
    log("Added: " + type + ", id: " + id);
-   VisualLearningTaskPtr pTask;
+   //VisualLearningTaskPtr pTask;
    try {
       // get the data from working memory
       // pTask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
@@ -126,6 +154,7 @@ void VisualLearner::runComponent()
 
       TWmAddressVector newRecogRqs;
       TWmAddressVector newLearnRqs;
+      TWmAddressVector newAffordanceRqs;
       {
          // SYNC: Lock the monitor
          IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_RrqMonitor);
@@ -138,6 +167,8 @@ void VisualLearner::runComponent()
          m_RecogTaskId_Queue.clear();
          newLearnRqs = m_LearnTaskId_Queue;
          m_LearnTaskId_Queue.clear();
+         newAffordanceRqs = m_AffordanceTaskId_Queue;
+         m_AffordanceTaskId_Queue.clear();
          // SYNC: unlock the monitor on scope exit
       }
 
@@ -213,6 +244,42 @@ void VisualLearner::runComponent()
          log("VL_Learning Task processed");
       }
 
+      if (newAffordanceRqs.size() > 0) {
+         pwma = newRecogRqs.begin();
+         cdl::WorkingMemoryAddress addr = *pwma;
+         newAffordanceRqs.erase(pwma);
+
+         log("Affordance Request addr popped: %s", descAddr(addr).c_str());
+         AffordanceRecognitionTaskPtr pTaskData;
+         try{
+            // get the data from working memory
+            pTaskData = getMemoryEntry<AffordanceRecognitionTask>(addr);
+
+            // XXX: check if pTaskData is valid
+            // XXX: lock pTaskData in WM
+            if (recogniseAffordance(pTaskData)) {
+              debug("Will overwrite task: %s", descAddr(addr).c_str());
+              // sleepComponent(100);
+              try {
+                 overwriteWorkingMemory(addr, pTaskData);
+              }
+              catch (cast::ConsistencyException) {
+                 log("Affordance Task overwritten elsewhere: %s", descAddr(addr).c_str());
+                 // The task was changed in WM, but we don't care
+                 AffordanceRecognitionTaskPtr pData = getMemoryEntry<AffordanceRecognitionTask>(addr);
+                 overwriteWorkingMemory(addr, pTaskData);
+              }
+            }
+            // XXX: unlock pTaskData in WM
+         }
+         catch(cast::DoesNotExistOnWMException){
+            log("run: AffordanceRecognitionTask deleted while working...");
+         };
+         // XXX: catch other stuff from Matlab Proxy
+
+         log("VL_Recognition Task processed");
+      } // while
+
    } // while isRunning
 }
 
@@ -243,6 +310,43 @@ bool VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
 
    matlab::VL_recognise_attributes(*pProtoObj, _pTask->labels, _pTask->labelConcepts,
          _pTask->distribution, _pTask->gains);
+
+   // XXX: unlock pProtoObj
+   return true;
+
+   // Now write this back into working memory, this will manage the memory for us.
+   //debug("::recogniseAttributes writing");
+   //overwriteWorkingMemory<SOI>(_pProtoObj->getAddress(), _pProtoObj);
+   //log("Added a new AttrObject.");
+   //unlockEntry(_pProtoObj.address);
+}
+
+bool VisualLearner::recogniseAffordance(AffordanceRecognitionTaskPtr _pTask)
+{
+   debug("::recogniseAffordance");
+   //try{
+   //   lockEntry(_pProtoObj.address, cdl::LOCKEDODR);
+   //}
+   //catch(cast::DoesNotExistOnWMException){
+   //   printf("VisualLearner: ProtoObject deleted while working...\n");
+   //   return;
+   //};
+
+   // get the SOI data nah: this is naughty, but as we're overwriting
+   // the soi in wm anyway it's not too bad
+
+   cdl::WorkingMemoryAddress addr = _pTask->protoObjectAddr;
+   ProtoObjectPtr pProtoObj;
+   try{
+      pProtoObj = getMemoryEntry<ProtoObject>(addr);
+   }
+   catch(cast::DoesNotExistOnWMException){
+      log("VisualLearner.recogAffordance: ProtoObject %s deleted while working...", descAddr(addr).c_str());
+      return false;
+   };
+   // XXX: lock pProtoObj
+
+   matlab::AL_affordance_recognise(*pProtoObj, _pTask->affordance);
 
    // XXX: unlock pProtoObj
    return true;

@@ -108,6 +108,8 @@ class ObjectAnalyzer : public ManagedComponent
 	void onChange_OR_RecognitionTask(const cdl::WorkingMemoryChange & _wmc);
 	long getOrCreateVisualObject(const std::string &objectId, VisionData::VisualObjectPtr &pobject);
 
+	void start_AL_AffordanceTask(const cdl::WorkingMemoryAddress &visualObjectAddr);
+	void onChange_AL_AffordanceTask(const cdl::WorkingMemoryChange & _wmc);
   protected:
 	/**
 	 * called by the framework to configure our component

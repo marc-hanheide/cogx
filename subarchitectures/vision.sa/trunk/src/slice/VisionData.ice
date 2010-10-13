@@ -181,6 +181,9 @@ sequence<OneObj> ObjSeq;
     double shapeGain;
     double shapeAmbiguity;
 
+    // Object affordance
+    string affordance;
+
     // Source proto object
     string protoObjectID;
   };
