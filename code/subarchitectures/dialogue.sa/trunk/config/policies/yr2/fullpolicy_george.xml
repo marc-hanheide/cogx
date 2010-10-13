@@ -5,7 +5,8 @@
 		<node id="greetingNode" isFinal="true" isInitial="false" action="greetingAction"/>
 		<node id="thankingNode" action="thankAction" isFinal="true" isInitial="false"/>
 		<node id="closingNode" action="closingAction" isInitial="false" isFinal="true"/>
-		<node id="whAnswerNode" action="whAnswerAction" isInitial="false" isFinal="true"/>
+		<node id="whColorAnswerNode" action="whColorAnswerAction" isInitial="false" isFinal="true"/>
+	    <node id="whShapeAnswerNode" action="whShapeAnswerAction" isInitial="false" isFinal="true"/>
 		<node id="notKnowAnswerNode" action="notKnowAnswerAction" isInitial="false" isFinal="true"/>
 		<node id="posAnswerNode" action="posAnswerAction" isInitial="false" isFinal="true"/> 
 		<node id="negAnswerNode" action="negAnswerAction" isInitial="false" isFinal="true"/> 
@@ -17,9 +18,9 @@
 		<edge id="evalEdge" source="*" target="thankingNode" condition="evalCond"/>
 		<edge id="anyEdge" source="*" target="rootNode" condition="anyCond"/>	
 		<edge id="closingEdge" source="*" target="closingNode" condition="closingCond"/>
-		<edge id="whColorQuestionEdge" source="*" target="whAnswerNode" condition="whColorQuestionCond"/>
+		<edge id="whColorQuestionEdge" source="*" target="whColorAnswerNode" condition="whColorQuestionCond"/>
 		<edge id="notKnowQuestionEdge" source="*" target="notKnowAnswerNode" condition="notKnowQuestionEdge"/>
-		<edge id="whShapeQuestionEdge" source="*" target="whAnswerNode" condition="whShapeQuestionCond"/>
+		<edge id="whShapeQuestionEdge" source="*" target="whShapeAnswerNode" condition="whShapeQuestionCond"/>
 		<edge id="polarPosEdge" source="*" target="posAnswerNode" condition="polarCond1"/> 
 		<edge id="polarNegEdge" source="*" target="negAnswerNode" condition="polarCond2"/> 
 		<edge id="polarNoclueEdge" source="*" target="notKnowAnswerNode" condition="polarCond3"/> 
@@ -51,7 +52,8 @@
 		<action id="greetingAction" type="communicativeintention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
 		<action id="thankAction" type="communicativeintention" content="&lt;state&gt;(thanked ^ &lt;agent&gt;human ^ &lt;patient&gt;self)"></action>
 		<action id="closingAction" type="communicativeintention" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
-		<action id="whAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" />
+		<action id="whColorAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" />
+		<action id="whShapeAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;shape&gt;(%3))))" />
 	    <action id="notKnowAnswerAction" type="communicativeintention" content="&lt;state&gt;(knowing-disconfirmed)" />
 	    <action id="posAnswerAction" type="communicativeintention" content="&lt;state&gt;(verified)" ></action> 
 	    	    <action id="negAnswerAction" type="communicativeintention" content="&lt;state&gt;(falsified)" ></action> 
