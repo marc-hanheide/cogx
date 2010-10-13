@@ -401,7 +401,6 @@ void DTPCONTROL::get_observation(Ice::Int id,
     
     /* Task is being killed.*/
     if(observationSeq.size() == 0){
-        
         log("OBSERVER:: KILLING");
         thread_statuus[id] = false;
 
@@ -542,14 +541,19 @@ void  DTPCONTROL::post_action(Ice::Int id)
     
     while(true){//thread_statuus[id]){
         VERBOSER(1001, "DTP action posting trying for mutex :: "<<id);
-        
+
+        log("ACTOR:: GETTING TURN");        
         get_turn(id, Turn::actor);
 //         pthread_mutex_lock(thread_mutex[id].get());
         
         LOOP_OPEN;
+        
+        log("ACTOR:: IN MAIN LOOP");
         VERBOSER(2000, "DTP posting  an  action for task "<<id);
         
         if(!thread_statuus[id]){
+            
+            log("ACTOR:: KILLED"); 
             VERBOSER(2000, "DTP action posting withdrawn for task "<<id<<std::endl
                      <<"That was cancelled.");
             break;
@@ -616,8 +620,10 @@ void  DTPCONTROL::post_action(Ice::Int id)
         VERBOSER(1001, "DTP Done posting the action :: "<<pddlaction->name);
 
 
+        log("ACTOR:: SWAPPING TURN"); 
         swap_turn(id, Turn::actor);
         
+        log("ACTOR:: CLOSING LOOP"); 
         VERBOSER(2000, "DTP done action post for task "<<id);
         LOOP_CLOSE;
     }
