@@ -48,17 +48,19 @@ class AttributedSVarDistribution(SVarDistribution):
     valstr = " ".join("%.2f: %s" % (v[1], v[0]) for v in self.values)
     return "(attributed %s (%s %s)) = [%s]" % (self.agent, self.feature, " ".join(a.name for a in self.args), valstr)
 
-def rename_objects(objects, existing=set()):
+def rename_objects(objects, existing=set(), add_renamings={}):
   namedict = {}
   for obj in objects:
     if obj in existing:
       continue
     oldname = obj.name
-    new_name = "%s_%s" % (obj.type, obj.name.translate(trans_tbl))
-    #the cast ids are case sensitive, so we have to replace uppercase chars
-    #with something different
-    new_name = re.sub(UCASE_REXP, r'_\1', new_name).lower()
-    #obj.name = obj.name.lower()
+    if oldname in add_renamings:
+      new_name = add_renamings[oldname]
+    else:
+      new_name = "%s_%s" % (obj.type, obj.name.translate(trans_tbl))
+      #the cast ids are case sensitive, so we have to replace uppercase chars
+      #with something different
+      new_name = re.sub(UCASE_REXP, r'_\1', new_name).lower()
     obj.rename(new_name)
   
     namedict[oldname] = obj

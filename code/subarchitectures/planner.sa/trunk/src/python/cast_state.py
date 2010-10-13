@@ -45,14 +45,20 @@ class CASTState(object):
 
         obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(self.beliefs))))
   
-        #print "attr_objs:"
-        #for at in attr_obj_descriptions:
-        #    print at
-        #print "end attr_objs"
+        #keep names for previously matched objects
+        renamings = {}
+        if oldstate:
+            for gen in oldstate.generated_objects:
+                if gen.name in oldstate.namedict:
+                    belname = oldstate.namedict[gen.name]
+                    renamings[belname] = gen.name
+                    #print "previous match:", belname, gen.name
 
         objects = tp.infer_types(obj_descriptions)
-        self.namedict = tp.rename_objects(objects, self.coma_objects|domain.constants )
+        #print "before rename", map(str, objects)
+        self.namedict = tp.rename_objects(objects, self.coma_objects|domain.constants, add_renamings=renamings )
         self.objects = set(list(objects)) # force rehashing
+        #print "after rename", map(str, self.objects)
         self.facts = list(tp.tuples2facts(obj_descriptions))
         self.objects |= self.coma_objects
         self.facts += self.coma_facts
@@ -74,18 +80,30 @@ class CASTState(object):
                       
     def generate_init_facts(self, problem, oldstate=None):
         cstate = self.prob_state.determinized_state(0.05, 0.95)
+        if oldstate:
+            for gen in oldstate.generated_objects:
+                if gen in oldstate.namedict:
+                    belname = oldstate.namedict[gen.name]
+                    self.namedict[belname] = gen
+                    self.namedict[gen.name] = belname
 
         generated_facts = {}
         generated_objects = set()
         new_objects = set(self.objects)
         if oldstate and oldstate.generated_facts is not None:
             current_objects = self.objects | oldstate.generated_objects | self.domain.constants
+            
+            for gen in oldstate.generated_objects:
+                if gen.name in oldstate.namedict and gen.name not in self.namedict:
+                    log.debug("generated object %s is gone", gen.name)
+                    current_objects.discard(gen) # remove matched generated objects that have vanished
+                    
             for svar, val in oldstate.generated_facts:
                 if all(a in current_objects for a in chain(svar.args, svar.modal_args, [val])):
                     generated_facts[svar] = val
-            #generated_facts.update(oldstate.generated_facts)
+
             cstate.update(generated_facts)
-            generated_objects = oldstate.generated_objects
+            generated_objects = oldstate.generated_objects & current_objects
             new_objects -= oldstate.objects
             for o in generated_objects:
                 problem.add_object(o)
@@ -127,7 +145,7 @@ class CASTState(object):
             if svar.function in pfuncs and val != pddl.UNKNOWN and val.is_instance_of(pddl.t_number) and val.value > 0:
                 logfunc = self.domain.functions.get("log-%s" % svar.function.name, svar.args)
                 logvar = pddl.state.StateVariable(logfunc, svar.args)
-                logval = pddl.types.TypedNumber(-math.log(val.value, 2))
+                logval = pddl.types.TypedNumber(max(-math.log(val.value, 2), 0.1))
                 facts.append((logvar, logval))
         return facts
     
@@ -179,9 +197,14 @@ class CASTState(object):
             if a == gen:
                 return obj
             return a
+        
         new_objects = self.objects - self.generated_objects - oldstate.objects
         matches = {}
-        for gen in oldstate.generated_objects:
+        for gen in oldstate.generated_objects & self.objects:
+            if gen.name in oldstate.namedict:
+                log.debug("Keeping match from %s to %s.", gen.name, oldstate.namedict[gen.name])
+                continue
+            
             facts = []
             for f in oldstate.state.iterfacts():
                 if any(a == gen for a in f.svar.args + f.svar.modal_args):
@@ -192,14 +215,24 @@ class CASTState(object):
                     continue
                 match = True
                 for svar, val in facts:
+                    if svar.function.name in ("is-virtual", ) or svar.modality in (pddl.mapl.indomain, pddl.mapl.i_indomain, pddl.mapl.knowledge, pddl.mapl.direct_knowledge):
+                        continue # HACK: don't match on modal/virtual predicates
                     newvar = pddl.state.StateVariable(svar.function, [repl(a) for a in svar.args], svar.modality,  [repl(a) for a in svar.modal_args])
+                    if self.state[newvar] == pddl.UNKNOWN and val == pddl.UNKNOWN:
+                        continue
                     if self.state[newvar] != val:
+                        log.debug("Mismatch: %s = %s != %s = %s", str(svar), val.name, str(newvar), self.state[newvar].name)
                         match = False
+                        break
                 if match:
                     matches[obj] = gen
                     break
 
         if matches:
+            matched = matches.values()
+            #remove old (generated) facts
+            self.facts = [f for f in self.facts if not any(a in matched for a in chain(f.svar.args, f.svar.modal_args, [f.value]))]
+            
             for obj, gen in matches.iteritems():
                 self.objects.discard(obj)
                 log.debug("Matching generated object %s to new object %s.", gen.name, obj.name)
