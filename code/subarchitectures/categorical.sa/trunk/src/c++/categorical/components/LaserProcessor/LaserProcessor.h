@@ -128,6 +128,8 @@ private:
   int _svmOaaAlg;
   int _svmMeasure;
 
+  int _delay;
+
   double _confidenceThreshold;
 
   /** List of labels and names. */
