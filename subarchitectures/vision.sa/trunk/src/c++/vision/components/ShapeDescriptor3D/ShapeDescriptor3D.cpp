@@ -54,7 +54,6 @@ static void DrawCross3D(std::ostringstream &str,
 static void DrawScene3D(std::ostringstream &str, P::Scene3D &scene, map<unsigned, P::RGBColor> &colors);
 
 ShapeDescriptor3D::ShapeDescriptor3D()
-  : camId(0)
 {
   stereoWidth = STEREO_WIDTH_DEF;
   histogramSize = HISTOGRAM_SIZE_DEF;
