@@ -31,18 +31,29 @@ public abstract class NonBlockingCompleteOnOperationExecutor<ActionType extends 
 	}
 
 	protected <T extends ObjectImpl> void addThenCompleteOnDelete(T _command) {
-		addThenCompleteOnOperation(_command, WorkingMemoryOperation.DELETE);
+		addThenCompleteOnDelete(getComponent().newDataID(), _command);
+	}
+
+	protected <T extends ObjectImpl> void addThenCompleteOnDelete(String _id,
+			T _command) {
+		addThenCompleteOnOperation(_id, _command, WorkingMemoryOperation.DELETE);
 	}
 
 	protected <T extends ObjectImpl> void addThenCompleteOnOverwrite(T _command) {
-		addThenCompleteOnOperation(_command, WorkingMemoryOperation.OVERWRITE);
+		addThenCompleteOnOverwrite(getComponent().newDataID(), _command);
+	}
+
+	protected <T extends ObjectImpl> void addThenCompleteOnOverwrite(
+			String _id, T _command) {
+		addThenCompleteOnOperation(_id, _command,
+				WorkingMemoryOperation.OVERWRITE);
 	}
 
 	protected <T extends ObjectImpl> void addThenCompleteOnOperation(
-			T _command, WorkingMemoryOperation _operation) {
+			String _id, T _command, WorkingMemoryOperation _operation) {
 		assert (_operation == WorkingMemoryOperation.DELETE || _operation == WorkingMemoryOperation.OVERWRITE);
 
-		m_cmdID = getComponent().newDataID();
+		m_cmdID = _id;
 		getComponent().addChangeFilter(
 				ChangeFilterFactory.createIDFilter(m_cmdID, _operation), this);
 		try {
