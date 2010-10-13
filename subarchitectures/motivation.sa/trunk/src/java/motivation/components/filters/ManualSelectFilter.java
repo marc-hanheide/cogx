@@ -14,9 +14,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 
+import motivation.slice.CannedTextMotive;
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
-import motivation.slice.GeneralGoalMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
@@ -51,10 +51,10 @@ public class ManualSelectFilter implements MotiveFilter {
 
 	private JSlider jPatrolPrioritySlider = null;
 
-	private JSlider jGeneralPrioritySlider = null;
+	private JSlider jcannedPrioritySlider = null;
 	private JSlider jRobotInitiativePrioritySlider = null;
 	private JSlider jTutorInitiativePrioritySlider = null;
-	
+
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 
 		if (motive instanceof ExploreMotive)
@@ -63,14 +63,16 @@ public class ManualSelectFilter implements MotiveFilter {
 			return MotivePriority.values()[jHomePrioritySlider.getValue()];
 		else if (motive instanceof CategorizeRoomMotive)
 			return MotivePriority.values()[jCategorizePrioritySlider.getValue()];
-		else if (motive instanceof GeneralGoalMotive)
-			return MotivePriority.values()[jGeneralPrioritySlider.getValue()];
+		else if (motive instanceof CannedTextMotive)
+			return MotivePriority.values()[jcannedPrioritySlider.getValue()];
 		else if (motive instanceof PatrolMotive)
 			return MotivePriority.values()[jPatrolPrioritySlider.getValue()];
 		else if (motive instanceof RobotInitiativeMotive)
-			return MotivePriority.values()[jRobotInitiativePrioritySlider.getValue()];
+			return MotivePriority.values()[jRobotInitiativePrioritySlider
+					.getValue()];
 		else if (motive instanceof TutorInitiativeMotive)
-			return MotivePriority.values()[jTutorInitiativePrioritySlider.getValue()];
+			return MotivePriority.values()[jTutorInitiativePrioritySlider
+					.getValue()];
 		else
 			return MotivePriority.NORMAL;
 	}
@@ -143,11 +145,11 @@ public class ManualSelectFilter implements MotiveFilter {
 	private JPanel getJMotivesPanel() {
 		if (jMotivesPanel == null) {
 			GridLayout gridLayout = new GridLayout(0, 2);
-			//gridLayout.setColumns(1);
+			// gridLayout.setColumns(1);
 			jMotivesPanel = new JPanel();
 			jMotivesPanel.setLayout(gridLayout);
-			jMotivesPanel.add(new JLabel("General Goal"));
-			jMotivesPanel.add(getJSliderGeneral());
+			jMotivesPanel.add(new JLabel("canned Goal"));
+			jMotivesPanel.add(getJSlidercanned());
 			jMotivesPanel.add(new JLabel("Categorize"));
 			jMotivesPanel.add(getJSliderCategorize());
 			jMotivesPanel.add(new JLabel("Explore"));
@@ -186,7 +188,7 @@ public class ManualSelectFilter implements MotiveFilter {
 			}
 		});
 
-//		presetPanel.add(ecButton);
+		// presetPanel.add(ecButton);
 
 		JButton ceButton = new JButton("categorize > explore");
 		ceButton.addActionListener(new ActionListener() {
@@ -203,7 +205,7 @@ public class ManualSelectFilter implements MotiveFilter {
 
 			}
 		});
-//		presetPanel.add(ceButton);
+		// presetPanel.add(ceButton);
 
 		JButton peButton = new JButton("patrol == explore");
 		peButton.addActionListener(new ActionListener() {
@@ -220,9 +222,8 @@ public class ManualSelectFilter implements MotiveFilter {
 
 			}
 		});
-//		presetPanel.add(peButton);
-		
-		
+		// presetPanel.add(peButton);
+
 		JButton nullButton = new JButton("unsurface all");
 		nullButton.addActionListener(new ActionListener() {
 			@Override
@@ -232,7 +233,7 @@ public class ManualSelectFilter implements MotiveFilter {
 					jCategorizePrioritySlider.setValue(0);
 					jHomePrioritySlider.setValue(0);
 					jPatrolPrioritySlider.setValue(0);
-					jGeneralPrioritySlider.setValue(0);
+					jcannedPrioritySlider.setValue(0);
 					jRobotInitiativePrioritySlider.setValue(0);
 					jTutorInitiativePrioritySlider.setValue(0);
 					component.checkAll();
@@ -244,7 +245,7 @@ public class ManualSelectFilter implements MotiveFilter {
 			}
 		});
 		presetPanel.add(nullButton);
-		
+
 		JButton doraButton = new JButton("cogx default");
 		doraButton.addActionListener(new ActionListener() {
 			@Override
@@ -254,7 +255,7 @@ public class ManualSelectFilter implements MotiveFilter {
 					jCategorizePrioritySlider.setValue(2);
 					jHomePrioritySlider.setValue(0);
 					jPatrolPrioritySlider.setValue(1);
-					jGeneralPrioritySlider.setValue(2);
+					jcannedPrioritySlider.setValue(1);
 					jRobotInitiativePrioritySlider.setValue(2);
 					jTutorInitiativePrioritySlider.setValue(3);
 					component.checkAll();
@@ -272,8 +273,8 @@ public class ManualSelectFilter implements MotiveFilter {
 
 	private JSlider createPrioritySlider() {
 		JSlider jSlider = new JSlider(JSlider.HORIZONTAL,
-				MotivePriority.UNSURFACE.ordinal(), MotivePriority.HIGH.ordinal(),
-				MotivePriority.UNSURFACE.ordinal());
+				MotivePriority.UNSURFACE.ordinal(), MotivePriority.HIGH
+						.ordinal(), MotivePriority.UNSURFACE.ordinal());
 		Dictionary<Integer, JComponent> labels;
 		labels = new Hashtable<Integer, JComponent>();
 		labels.put(MotivePriority.UNSURFACE.ordinal(), new JLabel(
@@ -282,8 +283,8 @@ public class ManualSelectFilter implements MotiveFilter {
 				.name()));
 		labels.put(MotivePriority.NORMAL.ordinal(), new JLabel(
 				MotivePriority.NORMAL.name()));
-		labels.put(MotivePriority.HIGH.ordinal(), new JLabel(MotivePriority.HIGH
-				.name()));
+		labels.put(MotivePriority.HIGH.ordinal(), new JLabel(
+				MotivePriority.HIGH.name()));
 		jSlider.setLabelTable(labels);
 		jSlider.setPaintTicks(true);
 		jSlider.setPaintLabels(true);
@@ -297,11 +298,11 @@ public class ManualSelectFilter implements MotiveFilter {
 	 * 
 	 * @return javax.swing.JSlider
 	 */
-	private JSlider getJSliderGeneral() {
-		if (jGeneralPrioritySlider == null) {
-			jGeneralPrioritySlider = createPrioritySlider();
+	private JSlider getJSlidercanned() {
+		if (jcannedPrioritySlider == null) {
+			jcannedPrioritySlider = createPrioritySlider();
 		}
-		return jGeneralPrioritySlider;
+		return jcannedPrioritySlider;
 	}
 
 	/**
@@ -363,6 +364,7 @@ public class ManualSelectFilter implements MotiveFilter {
 		}
 		return jRobotInitiativePrioritySlider;
 	}
+
 	/**
 	 * This method initializes jExplorePrioritySlider
 	 * 
@@ -375,7 +377,6 @@ public class ManualSelectFilter implements MotiveFilter {
 		return jTutorInitiativePrioritySlider;
 	}
 
-	
 	@Override
 	public void start() {
 		jFrame.setVisible(true);
@@ -386,7 +387,7 @@ public class ManualSelectFilter implements MotiveFilter {
 	@Override
 	public void configure(Map<String, String> arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 } // @jve:decl-index=0:visual-constraint="583,36"
