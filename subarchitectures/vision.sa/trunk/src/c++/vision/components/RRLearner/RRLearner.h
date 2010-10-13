@@ -21,6 +21,7 @@
 #include <../../VisionUtils.h>
 
 #include <beliefs_cast.hpp>
+#include <beliefs_cogx.hpp>
 
 using namespace de::dfki::lt::tr::beliefs::slice;
 
@@ -80,8 +81,9 @@ class RRLearner :  public ManagedComponent
   
   /**
    * checks if the epistemic status is T
-   */			    
-  bool epistemicStatus<T>(epobject::EpistemicObject obj)
+   */
+  template <class T>		    
+  bool epistemicStatus(epobject::EpistemicObject obj)
   {
 	EpistemicStatus *eps = &(obj.epistemicStatus);
 	debug("The epistemic status class is %s", typeid(*eps).name());
