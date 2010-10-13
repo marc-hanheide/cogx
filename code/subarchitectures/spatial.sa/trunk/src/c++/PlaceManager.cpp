@@ -1527,10 +1527,15 @@ SpatialData::PlacePtr
 PlaceManager::PlaceServer::getCurrentPlace(const Ice::Current &_context) {
   m_pOwner->lockComponent();
   NavData::FNodePtr curNode = m_pOwner->getCurrentNavNode();
-  SpatialData::PlacePtr curPlace = m_pOwner->getPlaceFromNodeID(curNode->nodeId);
-  m_pOwner->unlockComponent();
-  return curPlace;
-}
+  if(curNode !=NULL){
+    SpatialData::PlacePtr curPlace = m_pOwner->getPlaceFromNodeID(curNode->nodeId);
+    m_pOwner->unlockComponent();
+    return curPlace;
+  }else{
+    m_pOwner->unlockComponent();
+    return 0;
+
+  }
 
 FrontierInterface::PlaceMembership
 PlaceManager::PlaceServer::getPlaceMembership(double x, double y,
