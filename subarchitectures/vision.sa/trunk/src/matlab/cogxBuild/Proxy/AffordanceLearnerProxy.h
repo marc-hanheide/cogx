@@ -10,8 +10,12 @@ namespace matlab {
 
 extern void AL_get_affordance_features(
       const VisionData::ProtoObject &Object,
-      void **something_comes_out
+      std::vector<double> &features
       );
+
+extern void AL_affordance_recognise(
+      const VisionData::ProtoObject &Object,
+      std::string &outAffordance);
 
 } // namespace
 
