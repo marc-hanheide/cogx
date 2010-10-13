@@ -464,6 +464,9 @@ std::string CategoricalDataProvider::addEmptyImage()
   addToWorkingMemory(dataId, image);
   debug("Empty image placed in the WM.");
 
+  // To prevent consistency exceptions
+  lockEntry(dataId, cdl::LOCKEDO);
+
   return dataId;
 }
 
@@ -482,6 +485,9 @@ std::string CategoricalDataProvider::addEmptyLaserScan()
   string dataId = newDataID();
   addToWorkingMemory(dataId, scan);
   debug("Empty laser scan placed in the WM.");
+
+  // To prevent consistency exceptions
+  lockEntry(dataId, cdl::LOCKEDO);
 
   return dataId;
 }
@@ -502,6 +508,10 @@ std::string CategoricalDataProvider::addEmptyOdometry()
   addToWorkingMemory(dataId, odom);
   debug("Empty odometry reading placed in the WM.");
 
+  // To prevent consistency exceptions
+  lockEntry(dataId, cdl::LOCKEDO);
+
+
   return dataId;
 }
 
@@ -518,6 +528,10 @@ std::string CategoricalDataProvider::addEmptyTarget()
   string dataId = newDataID();
   addToWorkingMemory(dataId, target);
   debug("Empty target placed in the WM.");
+
+  // To prevent consistency exceptions
+  lockEntry(dataId, cdl::LOCKEDO);
+
 
   return dataId;
 }
