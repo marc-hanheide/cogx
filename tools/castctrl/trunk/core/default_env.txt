@@ -86,7 +86,7 @@ CMD_LOG4J_SERVER=<multiline>
 CMD_DISPLAY_SERVER=${COGX_ROOT}/output/bin/display-server
 
 # Abducer Server
-ABDUCER_ROOT=${COGX_ROOT}/subarchitectures/dialogue.sa/external/abducer-2.0.0
+ABDUCER_ROOT=${COGX_ROOT}/subarchitectures/dialogue.sa/external/abducer-current
 CMD_ABDUCER_SERVER=<multiline>
    ${ABDUCER_ROOT}/abducer-server-bin
    -n "AbducerServer"
