@@ -3,6 +3,7 @@
  */
 package eu.cogx.percepttracker.dora;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,11 +19,13 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
+import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
@@ -52,9 +55,9 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 	}
 
 	@Override
-	public void workingMemoryChanged(WorkingMemoryChange arg0)
+	public void workingMemoryChanged(WorkingMemoryChange event)
 			throws CASTException {
-		PerceptBelief from = getMemoryEntry(arg0.address, PerceptBelief.class);
+		PerceptBelief from = getMemoryEntry(event.address, PerceptBelief.class);
 		CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief
 				.create(PerceptBelief.class, from);
 		String perceptLabel = pb.getContent().get(
@@ -73,7 +76,7 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 		if (wmaGroundedSet == null) {
 			label2AddrMap
 					.put(perceptLabel, new HashSet<WorkingMemoryAddress>());
-			newBelief(pb, perceptLabel);
+			newBelief(pb, perceptLabel, event);
 			return;
 		} else {
 			boolean newNeeded = true;
@@ -87,13 +90,14 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 					setIsInProb(gb.getContent().get(
 							VisualObjectTransferFunction.IS_IN),
 							perceptPointer, (float) perceptIsInProb);
+					manageHistory(event, from, gb.get());
 					overwriteWorkingMemory(wmaGrounded, gb.get());
-					newNeeded=false;
-				}
-				else if (existingProb < 0.5) {
+					newNeeded = false;
+				} else if (existingProb < 0.5) {
 					setIsInProb(gb.getContent().get(
 							VisualObjectTransferFunction.IS_IN),
 							perceptPointer, (float) perceptIsInProb);
+					manageHistory(event, from, gb.get());
 					overwriteWorkingMemory(wmaGrounded, gb.get());
 					newNeeded = false;
 					break;
@@ -101,15 +105,17 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 
 			}
 			// we found no belief that we can assign to, so we need a new one
-			if (newNeeded)
-				newBelief(pb, perceptLabel);
+			if (newNeeded) {
+				newBelief(pb, perceptLabel, event);
+			}
 		}
 
 	}
 
 	private void newBelief(
 			CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb,
-			String perceptLabel) throws AlreadyExistsOnWMException {
+			String perceptLabel, WorkingMemoryChange event)
+			throws AlreadyExistsOnWMException {
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> newGB = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class);
 		newGB.setType(pb.getType());
@@ -117,6 +123,7 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 		newGB.setPrivate(pb.getPrivate());
 		newGB.getContent().putAll(pb.getContent());
 		newGB.setId(newDataID());
+		manageHistory(event, pb.get(), newGB.get());
 		addToWorkingMemory(newGB.getId(), newGB.get());
 		label2AddrMap.get(perceptLabel)
 				.add(
@@ -163,4 +170,20 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 		}
 		return sum;
 	}
+
+	private void manageHistory(WorkingMemoryChange ev, PerceptBelief from,
+			GroundedBelief to) {
+		if (!(to.hist instanceof CASTBeliefHistory)) {
+			to.hist = new CASTBeliefHistory(
+					new ArrayList<WorkingMemoryPointer>(1),
+					new ArrayList<WorkingMemoryPointer>(1));
+		}
+		CASTBeliefHistory bh = (CASTBeliefHistory) to.hist;
+		WorkingMemoryPointer ancesterPointer = new WorkingMemoryPointer(
+				ev.address, ev.type);
+		if (!bh.ancestors.contains(ancesterPointer)) {
+			bh.ancestors.add(ancesterPointer);
+		}
+	}
+
 }
