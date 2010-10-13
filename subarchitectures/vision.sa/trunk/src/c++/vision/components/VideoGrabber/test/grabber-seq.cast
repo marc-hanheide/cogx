@@ -1,18 +1,23 @@
 # Test
 HOST localhost
 
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer # --redirect-to-host localhost
+
 SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
 # reading stored images
-VARDEFAULT video_camconfigFile = xdata/TestVisLrn/c1/castinput/ul_stereo_201009.ini
-VARDEFAULT video_staticImgDir = xdata/TestVisLrn/c1/castinput/640
+VARDEFAULT video_camconfigFile = %(CONFIG_DIR)/640/camera.ini
+VARDEFAULT video_staticImgDir = %(CONFIG_DIR)/640
 VARDEFAULT video_staticImgFile = %(video_staticImgDir)/img-%03d
 VARDEFAULT params_VideoServer = <multiline>
   --camids "0 1"
-  --files "%(video_staticImgFile)-L.png  %(video_staticImgFile)-R.png"
-  --start 0 --end 7 --repeatframe 5 --framerate_ms 200 
+  --files "%(video_staticImgFile)-L.jpg  %(video_staticImgFile)-R.jpg"
+  --start 0 --end 4 --repeatframe 10 --framerate_ms 100 
   --camconfigs "%(video_camconfigFile):L  %(video_camconfigFile):R"
 </multiline>
 CPP MG VideoServer OpenCvImgSeqServer %(params_VideoServer)
@@ -20,7 +25,3 @@ CPP MG VideoServer OpenCvImgSeqServer %(params_VideoServer)
 # Grabber GUI
 CPP MG grabber VideoGrabber --videoname VideoServer --camids "0 1" --displayserver "display.srv"
 
-SUBARCHITECTURE visualization.sa 
-CPP WM SubarchitectureWorkingMemory
-CPP TM AlwaysPositiveTaskManager
-CPP MG display.srv DisplayServer --redirect-to-host localhost
