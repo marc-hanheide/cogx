@@ -99,6 +99,10 @@ private:
 
 
 	int _previousPlaceId;
+
+	/** Ids of the property structs on the working memory. */
+	std::map<int, std::string> _placeShapePropertyIds;
+
 };
 
 

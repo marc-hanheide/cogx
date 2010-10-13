@@ -568,9 +568,10 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
   {
     string outName;
     if (outputLabels2[i]<0)
-      outName=lexical_cast<string>(outputLabels1[i]);
+      outName=lexical_cast<string>(_labels.labelNoToName(outputLabels1[i]));
     else
-      outName=lexical_cast<string>(outputLabels1[i])+"_"+lexical_cast<string>(outputLabels2[i]);
+      outName=lexical_cast<string>(_labels.labelNoToName(outputLabels1[i]))+"_"+
+      lexical_cast<string>(_labels.labelNoToName(outputLabels2[i]));
     laserResults->outputs[i].name=outName.c_str();
     laserResults->outputs[i].value=outputs[i];
   }
