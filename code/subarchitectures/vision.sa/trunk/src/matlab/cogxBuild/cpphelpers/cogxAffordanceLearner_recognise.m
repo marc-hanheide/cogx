@@ -1,4 +1,4 @@
-function Affordance = cogxAffordanceClassifier_recognise(Features)
+function Affordance = cogxAffordanceLearner_recognise(Features)
 %
 % Note: This assumes the existence of a global BiModalLearner object named
 % AffordanceClassifier

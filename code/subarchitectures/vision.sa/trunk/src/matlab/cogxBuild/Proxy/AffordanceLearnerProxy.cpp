@@ -23,14 +23,48 @@ using namespace VisionData;
 
 namespace matlab {
 
-void AL_get_affordance_features(const VisionData::ProtoObject &Object, void **something_comes_out)
+void _get_affordance_features(const VisionData::ProtoObject &Object, mwArray& features)
 {
    CheckInit();
 
-   mwArray features, image, mask, pts3d;
+   mwArray image, mask, pts3d, patches;
    protoObjectToMwArray(Object, image, mask, pts3d);
+   protoObjectToMwArray_Patches(Object, patches);
 
-   cogxAffordanceLearner_getFeatures(1, features, image, mask, pts3d);
+   cogxAffordanceLearner_getFeatures(1, features, image, mask, pts3d, patches);
+}
+
+void AL_get_affordance_features(const VisionData::ProtoObject &Object, std::vector<double> &features)
+{
+   features.clear();
+
+   mwArray mwfeatures;
+   _get_affordance_features(Object, mwfeatures);
+
+   mwArray dims = mwfeatures.GetDimensions();
+   double dim0 = dims.Get(mwSize(1), 1);
+   for (int i = 0; i < dim0; i++) {
+      double ftr = mwfeatures.Get(mwSize(1), i+1);
+      features.push_back(ftr);
+   }
+}
+
+void AL_affordance_recognise(const VisionData::ProtoObject &Object, std::string& outAffordance)
+{
+   CheckInit();
+
+   mwArray affordance, features;
+   _get_affordance_features(Object, features);
+   cogxAffordanceLearner_recognise(1, affordance, features);
+
+   mwArray dims = affordance.GetDimensions();
+   double dim0 = dims.Get(mwSize(1), 1);
+
+   if (dim0 > 0) {
+      mwString mws = affordance.Get(mwSize(1), 1).ToString();
+      outAffordance = string((const char*)mws);
+   }
+   else outAffordance = "";
 }
 
 }
