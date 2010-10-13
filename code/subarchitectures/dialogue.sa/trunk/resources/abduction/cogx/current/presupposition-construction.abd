@@ -45,6 +45,7 @@ find_ref_features(BId, Nom) <-
 	i : feat_Delimitation(Nom, unique),
 	i : feat_Num(Nom, sg),
 	i : feat_Quantification(Nom, specific),
+	bel : fv(BId, exists, yes) / 0.0,
 	try_objecttype(BId, Nom),
 	try_proximity(BId, Nom),
 	try_modifier(BId, Nom).
