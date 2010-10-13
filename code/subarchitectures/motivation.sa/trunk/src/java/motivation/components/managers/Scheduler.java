@@ -163,7 +163,8 @@ public class Scheduler extends ManagedComponent implements
 						for (Entry<WorkingMemoryAddress, Motive> m : copySet) {
 							if (PlannerFacade.get(this).isGoalAchieved(
 									m.getValue().goal.goalString)) {
-								log("remove achieved goal " + m.getValue().goal.goalString);
+								log("remove achieved goal "
+										+ m.getValue().goal.goalString);
 								motives.remove(m.getKey());
 							}
 						}
@@ -199,8 +200,10 @@ public class Scheduler extends ManagedComponent implements
 					Map<WorkingMemoryAddress, Motive> possibleGoals = new HashMap<WorkingMemoryAddress, Motive>();
 					Map<WorkingMemoryAddress, Motive> impossibleGoals = new HashMap<WorkingMemoryAddress, Motive>();
 
+					Map<WorkingMemoryAddress, Motive> prioritySet = getMaxPrioritySet(surfacedGoals);
+
 					WMEntryQueueElement<PlanningTask> plan = doPlanning(
-							surfacedGoals, possibleGoals, impossibleGoals);
+							prioritySet, possibleGoals, impossibleGoals);
 
 					if (plan != null) {
 						log("we have a plan to execute: "
@@ -276,6 +279,18 @@ public class Scheduler extends ManagedComponent implements
 
 		}
 
+	}
+
+	private Map<WorkingMemoryAddress, Motive> getMaxPrioritySet(
+			Map<WorkingMemoryAddress, Motive> surfacedGoals) {
+		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
+		MotivePriority max = getMaxPriority(surfacedGoals);
+		for (Entry<WorkingMemoryAddress, Motive> e : surfacedGoals.entrySet()) {
+			if (e.getValue().priority == max) {
+				result.put(e.getKey(), e.getValue());
+			}
+		}
+		return result;
 	}
 
 	private void setStatus(Map<WorkingMemoryAddress, Motive> activeGoals,
