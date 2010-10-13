@@ -157,6 +157,9 @@ implements TRResultListener {
 			pstr.NLconfidenceValue = hypo.confidence;
 			pstr.length = hypo.words.length;
 			pstr.wordSequence = hypo.str;
+			if (pstr.wordSequence.equals("no")) {
+				pstr.wordSequence = "No";
+			}
 		}
  		return pstr;
 	}
