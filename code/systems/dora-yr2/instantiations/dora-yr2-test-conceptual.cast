@@ -29,6 +29,9 @@ INCLUDE includes/conceptual.sa/conceptual-base.cast
 INCLUDE includes/conceptual.sa/conceptual-main.cast
 INCLUDE includes/conceptual.sa/conceptual-test.cast
 
+# Categorical.SA ############################################################
+INCLUDE includes/categorical.sa/categorical-shape-sim.cast
+
 # Vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-blobs-dora.cast
