@@ -84,7 +84,7 @@ void CategoricalLaserProcessor::configure(const map<string,string> &config)
   // Get configuration from the file
   try
   {
-    labelFile=cf.getStrValue("Common", "LabelFile", "");
+    labelFile=cf.getStrValue(_cfgGroup, "LabelFile", "");
 
     _featureFilePath=cf.getStrValue(_cfgGroup, "FeatureConfigFile", "");
     _scaleFilePath=cf.getStrValue(_cfgGroup, "ScaleConfigFile", "");
