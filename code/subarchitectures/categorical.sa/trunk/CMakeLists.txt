@@ -1,7 +1,7 @@
 project (CATEGORICALSA)
 
 # Set build type
-set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Release)
 
 # You can prepare verbose Makefile to see what's going.
 set(CMAKE_VERBOSE_MAKEFILE true)
@@ -10,9 +10,15 @@ set(CMAKE_VERBOSE_MAKEFILE true)
 find_package( Qt4 REQUIRED )
 include(${QT_USE_FILE})
 
+# Find opencv
+find_package(OpenCV REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIRS})
+link_directories(${OPENCV_LIBRARY_DIRS})
+
 # Includes
 include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/utils)
 include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/robotbase/src/c++/autogen)
 include_directories(src/c++/categorical)
@@ -34,11 +40,15 @@ add_subdirectory(src/c++/categorical/tools/sequentialadaboost)
 add_subdirectory(src/c++/categorical/tools/laserextractor)
 
 # Categorical.SA C++ Components
-#add_subdirectory (src/c++/categorical/conceptual/components/QdlQueryHandler)
+add_subdirectory(src/c++/categorical/components/DataProvider)
+add_subdirectory(src/c++/categorical/components/LaserProcessor)
+add_subdirectory(src/c++/categorical/components/VisualProcessor)
+add_subdirectory(src/c++/categorical/components/DataSaver)
 
 # Auxiliary components
 option(BUILD_SA_CATEGORICAL_AUX "Build categorical subarchitecture auxiliary components" NO)
 if(BUILD_SA_CATEGORICAL_AUX)
     add_subdirectory(src/c++/categorical/tools/dataeditor)
+#    add_subdirectory(src/c++/categorical/components/Monitor)
 endif(BUILD_SA_CATEGORICAL_AUX)
 

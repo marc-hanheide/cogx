@@ -282,19 +282,31 @@ bool DataWriter::writePgmImage(const CategoricalData::ImagePtr image, std::strin
   fprintf(file,"P5\n%u %u\n255\n", width, height);
 
   // Print rows
-  unsigned char *row = new unsigned char[width];
-  for(int i=0; i<height; ++i)
-  {
-    // Get one row
-    int shift=i*stride;
-    for(int j=0; j<width; ++j)
+//  unsigned char *row = new unsigned char[width];
+//  for(int i=0; i<height; ++i)
+//  {
+//    // Get one row
+//    int shift=i*stride;
+//    for(int j=0; j<width; ++j)
+//    {
+//      int pos = shift+j*3;
+//      row[j]=static_cast<unsigned char>( ( static_cast<unsigned int>(image->imageBuffer.data[pos])*299   +   // R
+//                                           static_cast<unsigned int>(image->imageBuffer.data[pos+1])*587 +   // G
+//                                           static_cast<unsigned int>(image->imageBuffer.data[pos+2])*114     // B
+//                                         ) / 1000 );
+//    }
+
+    unsigned char *row = new unsigned char[width];
+    for(int i=0; i<height; ++i)
     {
-      int pos = shift+j*3;
-      row[j]=static_cast<unsigned char>( ( static_cast<unsigned int>(image->imageBuffer.data[pos])*299   +   // R
-                                           static_cast<unsigned int>(image->imageBuffer.data[pos+1])*587 +   // G
-                                           static_cast<unsigned int>(image->imageBuffer.data[pos+2])*114     // B
-                                         ) / 1000 );
-    }
+      // Get one row
+      int shift=i*width;
+      for(int j=0; j<width; ++j)
+      {
+        int pos = shift+j;
+        row[j]=image->imageBuffer.data[pos];
+      }
+
     // Write row
     fwrite(row, 1, width, file);
     // Yield
