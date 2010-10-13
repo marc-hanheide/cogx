@@ -7,6 +7,7 @@ import java.util.Map;
 
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
+import motivation.slice.RobotInitiativeMotive;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryChange;
 import cast.core.CASTUtils;
@@ -46,8 +47,11 @@ public class MinAgeFilter implements MotiveFilter {
 
 
 	boolean checkAge(Motive motive) {
+		if (motive instanceof RobotInitiativeMotive) {
 		CASTTime time = CASTUtils.getTimeServer().getCASTTime();
 		return (CASTTimeUtil.diff(time, motive.created) > minAgeMillis);
+		} else
+			return true;
 	}
 
 	public void setManager(MotiveFilterManager motiveFilterManager) {
