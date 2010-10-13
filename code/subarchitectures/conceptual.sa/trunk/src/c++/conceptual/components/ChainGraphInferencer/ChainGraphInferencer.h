@@ -74,6 +74,8 @@ private:
 	void createDaiSingleRoomFactor(int room1Id);
 	void createDaiObservedObjectPropertyFactor(int room1Id,
 			std::string objectVariableName, bool objectExists);
+	void createDaiShapePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
+	void createDaiObservedShapePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
 
 	/** Adds factors related to the factor graph */
 	void addDaiFactors();
@@ -136,6 +138,13 @@ private:
 
 	/** Names of all room categories. */
 	DefaultData::StringSeq _roomCategories;
+
+	/** Names of all shapes. */
+	DefaultData::StringSeq _shapes;
+
+	/** Names of all appearances. */
+	DefaultData::StringSeq _appearances;
+
 
 	/** Information about DAI variable. */
 	struct DaiVariable

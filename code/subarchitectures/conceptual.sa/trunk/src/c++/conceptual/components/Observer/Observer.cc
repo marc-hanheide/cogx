@@ -82,6 +82,16 @@ void Observer::start()
 			new MemberFunctionChangeReceiver<Observer>(this,
 					&Observer::objectPlacePropertyChanged));
 
+	// Global filter on SpatialProperties::RoomShapePlaceProperty
+	addChangeFilter(createGlobalTypeFilter<SpatialProperties::RoomShapePlaceProperty>(cdl::WILDCARD),
+			new MemberFunctionChangeReceiver<Observer>(this,
+					&Observer::shapePlacePropertyChanged));
+
+	// Global filter on SpatialProperties::RoomAppearancePlaceProperty
+	addChangeFilter(createGlobalTypeFilter<SpatialProperties::RoomAppearancePlaceProperty>(cdl::WILDCARD),
+			new MemberFunctionChangeReceiver<Observer>(this,
+					&Observer::appearancePlacePropertyChanged));
+
 	// Global filter on SpatialProperties::ConnectivityPathProperty
 	addChangeFilter(createGlobalTypeFilter<SpatialProperties::ConnectivityPathProperty>(cdl::WILDCARD),
 			new MemberFunctionChangeReceiver<Observer>(this,
@@ -179,6 +189,48 @@ void Observer::updateWorldState()
 				pi.objectProperties.push_back(oppi);
 			}
 
+			// Shape properties
+			std::vector<SpatialProperties::RoomShapePlacePropertyPtr> shapePlaceProperties;
+			getShapePlaceProperties(placeId, shapePlaceProperties);
+			for (unsigned int j=0; j<shapePlaceProperties.size(); ++j)
+			{
+				SpatialProperties::RoomShapePlacePropertyPtr shapePlacePropertyPtr =
+						shapePlaceProperties[j];
+				SpatialProperties::DiscreteProbabilityDistributionPtr dpdPtr =
+						SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(shapePlacePropertyPtr->distribution);
+
+				ConceptualData::ShapePlacePropertyInfo sppi;
+				for (unsigned int k=0; k<dpdPtr->data.size(); ++k)
+				{
+					ConceptualData::ValuePotentialPair vpp;
+					vpp.value = SpatialProperties::StringValuePtr::dynamicCast(dpdPtr->data[k].value)->value;
+					vpp.potential = dpdPtr->data[k].probability;
+					sppi.distribution.push_back(vpp);
+				}
+				pi.shapeProperties.push_back(sppi);
+			}
+
+			// Appearance properties
+			std::vector<SpatialProperties::RoomAppearancePlacePropertyPtr> appearancePlaceProperties;
+			getAppearancePlaceProperties(placeId, appearancePlaceProperties);
+			for (unsigned int j=0; j<appearancePlaceProperties.size(); ++j)
+			{
+				SpatialProperties::RoomAppearancePlacePropertyPtr appearancePlacePropertyPtr =
+						appearancePlaceProperties[j];
+				SpatialProperties::DiscreteProbabilityDistributionPtr dpdPtr =
+						SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(appearancePlacePropertyPtr->distribution);
+
+				ConceptualData::AppearancePlacePropertyInfo sppi;
+				for (unsigned int k=0; k<dpdPtr->data.size(); ++k)
+				{
+					ConceptualData::ValuePotentialPair vpp;
+					vpp.value = SpatialProperties::StringValuePtr::dynamicCast(dpdPtr->data[k].value)->value;
+					vpp.potential = dpdPtr->data[k].probability;
+					sppi.distribution.push_back(vpp);
+				}
+				pi.appearanceProperties.push_back(sppi);
+			}
+
 			// Add the place info
 			cri.places.push_back(pi);
 
@@ -221,8 +273,7 @@ void Observer::updateWorldState()
 	// Update on working memory if the new world
 	// state is different than the previous one.
 	// -----------------------------------
-	if ( (_worldStatePtr->rooms != newWorldStatePtr->rooms) ||
-		 (_worldStatePtr->roomConnections != newWorldStatePtr->roomConnections) )
+	if ( areWorldStatesDifferent(_worldStatePtr, newWorldStatePtr ) )
 	{
 		// Remember the new world state
 		_worldStatePtr=newWorldStatePtr;
@@ -241,6 +292,19 @@ void Observer::updateWorldState()
 			unlockEntry(_worldStateId);
 		}
 	}
+}
+
+
+// -------------------------------------------------------
+bool Observer::areWorldStatesDifferent(ConceptualData::WorldStatePtr ws1, ConceptualData::WorldStatePtr ws2)
+{
+	if (ws1->roomConnections != ws2->roomConnections)
+		return true;
+
+	if (ws1->rooms != ws2->rooms)
+		return true;
+
+	return false;
 }
 
 
@@ -494,6 +558,135 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 
 
 // -------------------------------------------------------
+void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange)
+{
+	// Decide what change has been made
+	switch (wmChange.operation)
+	{
+	case cdl::ADD:
+	{ // Room added
+		SpatialProperties::RoomShapePlacePropertyPtr shapePlacePropertyPtr;
+		try
+		{
+			shapePlacePropertyPtr =
+					getMemoryEntry<SpatialProperties::RoomShapePlaceProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
+		_shapePlacePropertyWmAddressMap[wmChange.address] = shapePlacePropertyPtr;
+		updateWorldState();
+		break;
+	}
+
+	case cdl::OVERWRITE:
+	{
+		SpatialProperties::RoomShapePlacePropertyPtr shapePlacePropertyPtr;
+		try
+		{
+			shapePlacePropertyPtr =
+					getMemoryEntry<SpatialProperties::RoomShapePlaceProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
+		SpatialProperties::RoomShapePlacePropertyPtr old = _shapePlacePropertyWmAddressMap[wmChange.address];
+	  	_shapePlacePropertyWmAddressMap[wmChange.address] = shapePlacePropertyPtr;
+
+	  	// Check wmAddresss and ID
+		if (old->placeId != shapePlacePropertyPtr->placeId)
+			throw cast::CASTException("The mapping between RoomShapePlaceProperty WMAddress and Place ID changed!");
+
+		updateWorldState();
+		break;
+	}
+
+	case cdl::DELETE:
+	{
+		_objectPlacePropertyWmAddressMap.erase(wmChange.address);
+		updateWorldState();
+		break;
+	}
+
+	default:
+		break;
+	} // switch
+}
+
+
+
+// -------------------------------------------------------
+void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange)
+{
+	// Decide what change has been made
+	switch (wmChange.operation)
+	{
+	case cdl::ADD:
+	{ // Room added
+		SpatialProperties::RoomAppearancePlacePropertyPtr appearancePlacePropertyPtr;
+		try
+		{
+			appearancePlacePropertyPtr =
+					getMemoryEntry<SpatialProperties::RoomAppearancePlaceProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
+		_appearancePlacePropertyWmAddressMap[wmChange.address] = appearancePlacePropertyPtr;
+		updateWorldState();
+		break;
+	}
+
+	case cdl::OVERWRITE:
+	{
+		SpatialProperties::RoomAppearancePlacePropertyPtr appearancePlacePropertyPtr;
+		try
+		{
+			appearancePlacePropertyPtr =
+					getMemoryEntry<SpatialProperties::RoomAppearancePlaceProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
+		SpatialProperties::RoomAppearancePlacePropertyPtr old = _appearancePlacePropertyWmAddressMap[wmChange.address];
+	  	_appearancePlacePropertyWmAddressMap[wmChange.address] = appearancePlacePropertyPtr;
+
+	  	// Check wmAddresss and ID
+		if (old->placeId != appearancePlacePropertyPtr->placeId)
+			throw cast::CASTException("The mapping between RoomAppearancePlaceProperty WMAddress and Place ID changed!");
+
+		updateWorldState();
+		break;
+	}
+
+	case cdl::DELETE:
+	{
+		_objectPlacePropertyWmAddressMap.erase(wmChange.address);
+		updateWorldState();
+		break;
+	}
+
+	default:
+		break;
+	} // switch
+}
+
+
+
+
+// -------------------------------------------------------
 void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 {
 	// Decide what change has been made
@@ -600,6 +793,36 @@ void Observer::getObjectPlaceProperties(int placeId,
 		SpatialProperties::ObjectPlacePropertyPtr objectPlacePropertyPtr = objectPlacePropertyIt->second;
 		if (objectPlacePropertyPtr->placeId == placeId)
 			properties.push_back(objectPlacePropertyPtr);
+	}
+}
+
+
+// -------------------------------------------------------
+void Observer::getShapePlaceProperties(int placeId,
+		std::vector<SpatialProperties::RoomShapePlacePropertyPtr> &properties)
+{
+	map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomShapePlacePropertyPtr>::iterator shapePlacePropertyIt;
+	for( shapePlacePropertyIt=_shapePlacePropertyWmAddressMap.begin();
+			shapePlacePropertyIt!=_shapePlacePropertyWmAddressMap.end(); ++shapePlacePropertyIt)
+	{
+		SpatialProperties::RoomShapePlacePropertyPtr shapePlacePropertyPtr = shapePlacePropertyIt->second;
+		if (shapePlacePropertyPtr->placeId == placeId)
+			properties.push_back(shapePlacePropertyPtr);
+	}
+}
+
+
+// -------------------------------------------------------
+void Observer::getAppearancePlaceProperties(int placeId,
+		std::vector<SpatialProperties::RoomAppearancePlacePropertyPtr> &properties)
+{
+	map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomAppearancePlacePropertyPtr>::iterator appearancePlacePropertyIt;
+	for( appearancePlacePropertyIt=_appearancePlacePropertyWmAddressMap.begin();
+			appearancePlacePropertyIt!=_appearancePlacePropertyWmAddressMap.end(); ++appearancePlacePropertyIt)
+	{
+		SpatialProperties::RoomAppearancePlacePropertyPtr appearancePlacePropertyPtr = appearancePlacePropertyIt->second;
+		if (appearancePlacePropertyPtr->placeId == placeId)
+			properties.push_back(appearancePlacePropertyPtr);
 	}
 }
 
