@@ -49,11 +49,16 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.discourse.DialogueMoveTranslator;
 import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
+import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.ref.BeliefTranslator;
 import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
+import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
+import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
+import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
 import eu.cogx.beliefs.slice.SharedBelief;
+import java.util.List;
 
 /**
  * 
@@ -365,15 +370,14 @@ public class ReferenceMonitor extends AbstractDialogueComponent {
 			dmTran.addDialogueMove(dm);
 		}
 
-		String qud_str = "";
+		String qud_str = "% question under discussion\n";
 		if (qud != null) {
-			String lines[] = BeliefIntentionUtils.intentionToString(qud).split(
-					"\n");
-			for (String line : Arrays.asList(lines)) {
-				qud_str += line + "\n";
+			List<ModalisedAtom> qud_facts = ConversionUtils.intentionToFacts(TermAtomFactory.term("qud"), qud);
+			for (ModalisedAtom fact : qud_facts) {
+				qud_str += MercuryUtils.modalisedAtomToString(fact) + ".\n";
 			}
 		} else {
-			qud_str = "% QUD = null\n";
+			qud_str = "% (none)\n";
 		}
 
 		try {
