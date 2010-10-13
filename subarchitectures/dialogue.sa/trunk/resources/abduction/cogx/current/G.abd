@@ -169,7 +169,35 @@ generate : object_description(Int, Nom, PrivBId) <-
 
 %generate : get_label(PrivBId, Label) <-
 %	bel : 
-%
+
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(ActorNom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['object-shown', feature(Feat), hypo(Hypo)])),
+	i : feat_SpeechAct(Nom, request) / -1.0,
+	i : feat_Modality(Nom, vision) / -1.0,
+	i : rel_Actor(Nom, ActorNom) / -1.0,
+		i : sort(ActorNom, person) / -1.0,
+		i : prop(ActorNom, you) / -1.0,
+	i : rel_Content(Nom, ContentNom) / -1.0,
+		generate : expand_feat_hypo(ContentNom, Feat, Hypo),
+	event : produce(r, Nom) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+generate : expand_feat_hypo(Nom, color, C) <-
+		i : sort(Nom, 'q-color') / -1.0,
+		i : prop(Nom, C) / -1.0.
+
+generate : expand_feat_hypo(Nom, shape, C) <-
+		i : sort(Nom, 'q-shape') / -1.0,
+		i : prop(Nom, C) / -1.0.
+
+generate : expand_feat_hypo(Nom, size, C) <-
+		i : sort(Nom, 'q-size') / -1.0,
+		i : prop(Nom, C) / -1.0.
 
 %-------------------------------------------------------------------------
 
