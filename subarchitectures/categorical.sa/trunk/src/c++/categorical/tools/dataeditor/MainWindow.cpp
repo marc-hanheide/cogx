@@ -289,7 +289,7 @@ bool MainWindow::readData(QString dataFilePath)
 
       // Plot scan
       _osWidget->plotScan(_odoms[i]->odometryBuffer.odompose[0].x, _odoms[i]->odometryBuffer.odompose[0].y,
-                          _odoms[i]->odometryBuffer.odompose[0].theta+_scans[i]->scanBuffer.startAngle-3.1415926/2,
+                          _odoms[i]->odometryBuffer.odompose[0].theta+_scans[i]->scanBuffer.startAngle,
                           scanV, _scans[i]->scanBuffer.angleStep, _scans[i]->scanBuffer.maxRange);
       // Plot path
       _osWidget->plotPathNode(_odoms[i]->odometryBuffer.odompose[0].x, _odoms[i]->odometryBuffer.odompose[0].y);
@@ -342,7 +342,7 @@ void MainWindow::currentItemChanged(QTreeWidgetItem * current, QTreeWidgetItem *
    // Plot scan
   _osWidget->clearOverlay();
   _osWidget->plotScanOverlay(_odoms[i]->odometryBuffer.odompose[0].x, _odoms[i]->odometryBuffer.odompose[0].y,
-                      _odoms[i]->odometryBuffer.odompose[0].theta+_scans[i]->scanBuffer.startAngle-3.1415926/2,
+                      _odoms[i]->odometryBuffer.odompose[0].theta+_scans[i]->scanBuffer.startAngle,
                       scanV, _scans[i]->scanBuffer.angleStep, _scans[i]->scanBuffer.maxRange);
    // Plot path
   _osWidget->plotPointOverlay(_odoms[i]->odometryBuffer.odompose[0].x, _odoms[i]->odometryBuffer.odompose[0].y);

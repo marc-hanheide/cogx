@@ -1,21 +1,21 @@
 // ==================================================================
-// Place.SA - Place Classification Subarchitecture
+// Categorical.SA - Categorical Classification Subarchitecture
 // Copyright (C) 2008, 2009  Andrzej Pronobis
 //
-// This file is part of Place.SA.
+// This file is part of Categorical.SA.
 //
-// Place.SA is free software: you can redistribute it and/or modify it
+// Categorical.SA is free software: you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Place.SA is distributed in the hope that it will be useful,
+// Categorical.SA is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Place.SA. If not, see <http://www.gnu.org/licenses/>.
+// along with Categorical.SA. If not, see <http://www.gnu.org/licenses/>.
 // ==================================================================
 
 /**
@@ -25,7 +25,7 @@
  * \date 2008-08-18
  */
 
-// Place.SA
+// Categorical.SA
 #include "DataReader.h"
 #include "ConfigFile.h"
 // CAST
@@ -147,6 +147,7 @@ bool DataReader::readImage(CategoricalData::ImagePtr image)
   }
 
   // Set the image metadata
+  image->status=CategoricalData::DsValid;
   image->realTimeStamp.s=seconds;
   image->realTimeStamp.us=useconds;
   image->frameNo=frameNo;
@@ -214,6 +215,7 @@ bool DataReader::readImageInfo(std::string &iPath, CategoricalData::ImagePtr ima
   }
 
   // Set the image metadata
+  image->status=CategoricalData::DsValid;
   image->realTimeStamp.s=seconds;
   image->realTimeStamp.us=useconds;
   image->frameNo=frameNo;
@@ -315,6 +317,9 @@ bool DataReader::readLaserScan(CategoricalData::LaserScanPtr scan, bool checkFra
   sstr>>tmp;
   scan->scanBuffer.rangeRes=tmp;
 
+  // Fill in missing scan fields
+  scan->status = CategoricalData::DsValid;
+
   // Increment the pointers
   _lastScanFrameNo++;
   _nextScanPos=f.tellg();
@@ -407,6 +412,8 @@ bool DataReader::readOdometry(CategoricalData::OdometryPtr odom, bool checkFrame
   sstr>>tmpD;
   // odom.odometryBuffer.m_rotspeed=tmpD;
 
+  // Fill in missing fields
+  odom->status = CategoricalData::DsValid;
 
   // Increment the pointers
   _lastOdometryFrameNo++;
@@ -460,6 +467,7 @@ bool DataReader::readTarget(CategoricalData::TargetPtr target, bool checkFrameNo
   target->targetName=tmpS.c_str();
 
   // Fill in missing fields
+  target->status = CategoricalData::DsValid;
   target->frameNo=frameNo;
 
   // Increment the pointers
