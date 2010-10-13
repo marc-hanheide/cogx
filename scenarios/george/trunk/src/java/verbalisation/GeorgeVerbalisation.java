@@ -1,13 +1,11 @@
 package verbalisation;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import motivation.slice.CannedTextMotive;
 import motivation.slice.MotiveStatus;
-import SpatialData.PlaceStatus;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 
@@ -47,7 +45,6 @@ public class GeorgeVerbalisation extends ManagedComponent {
 
 	public GeorgeVerbalisation() {
 		m_verbals = new VerbalisationFacade(this);
-		new HashMap<Long, PlaceStatus>();
 	}
 
 	@Override
