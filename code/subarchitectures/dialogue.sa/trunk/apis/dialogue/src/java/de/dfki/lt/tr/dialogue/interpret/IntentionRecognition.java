@@ -150,6 +150,10 @@ public class IntentionRecognition {
 		}
 	}
 
+	public void clearContext() {
+		abd_recog.getProxy().clearContext();
+	}
+
 	private void log(String str) {
 		if (logging)
 			System.out.println("\033[32m[IR]\t" + str + "\033[0m");

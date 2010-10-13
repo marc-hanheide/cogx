@@ -53,6 +53,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -78,6 +80,8 @@ extends AbstractDialogueComponent {
 
 	private IntentionRecognition irecog;
 	private String rulesetFile = "/dev/null";
+	private String dumpFile = "/tmp/belief-model.abd";
+	private List<String> files = new LinkedList<String>();
 	private HashMap<String, EpistemicObject> epObjs = new HashMap<String, EpistemicObject>();
 
 	@Override
@@ -91,33 +95,8 @@ extends AbstractDialogueComponent {
 			}
 		}, timeout);
 
-		if (rulesetFile != null) {
-			try {
-				BufferedReader f = new BufferedReader(new FileReader(rulesetFile));
-				String parentAbsPath = (new File((new File(rulesetFile)).getParent()).getCanonicalPath());
-				if (parentAbsPath == null) {
-					parentAbsPath = "";  // rulefile is in `/'
-				}
-				log("will be looking for abducer rulefiles in `" + parentAbsPath + "'");
-				String file = null;
-				while ((file = f.readLine()) != null) {
-					file = parentAbsPath + File.separator + file;
-					log("adding file " + file);
-					irecog.loadFile(file);
-				}
-				f.close();
-			}
-			catch (FileNotFoundException e) {
-				log("ruleset filename not found");
-			}
-			catch (IOException e) {
-				log("I/O exception while reading files from list");
-				e.printStackTrace();
-			}
-		}
-		else {
-			log("no ruleset to read");
-		}
+		initialiseContext();
+		files.add(dumpFile);
 
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(RefLogicalForm.class, WorkingMemoryOperation.ADD),
@@ -138,6 +117,30 @@ extends AbstractDialogueComponent {
 		if (_config.containsKey("--timeout")) {
 			String timeoutStr = _config.get("--timeout");
 			timeout = Integer.parseInt(timeoutStr);
+		}
+
+		if (rulesetFile != null) {
+			try {
+				BufferedReader f = new BufferedReader(new FileReader(rulesetFile));
+				String parentAbsPath = (new File((new File(rulesetFile)).getParent()).getCanonicalPath());
+				if (parentAbsPath == null) {
+					parentAbsPath = "";  // rulefile is in `/'
+				}
+				log("will be looking for abducer rulefiles in `" + parentAbsPath + "'");
+				String file = null;
+				while ((file = f.readLine()) != null) {
+					file = parentAbsPath + File.separator + file;
+					files.add(file);
+				}
+				f.close();
+			}
+			catch (FileNotFoundException e) {
+				log("ruleset filename not found");
+			}
+			catch (IOException e) {
+				log("I/O exception while reading files from list");
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -168,6 +171,7 @@ extends AbstractDialogueComponent {
 			if (body instanceof RefLogicalForm) {
 				RefLogicalForm rlf = (RefLogicalForm) body;
 				LogicalForm lf = rlf.lform;
+				initialiseContext();
 				irecog.updateReferentialHypotheses(rlf.refs);
 				RecognisedIntention ri = irecog.logicalFormToEpistemicObjects(lf);
 				if (ri != null) {
@@ -231,6 +235,15 @@ extends AbstractDialogueComponent {
 		}
 		else {
 			log("no data for processing");
+		}
+	}
+
+	private void initialiseContext() {
+		log("initialising context");
+		irecog.clearContext();
+		for (String f : files) {
+			log("reading file " + f);
+			irecog.loadFile(f);
 		}
 	}
 
