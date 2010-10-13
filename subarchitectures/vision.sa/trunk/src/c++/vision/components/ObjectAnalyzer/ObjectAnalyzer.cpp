@@ -87,11 +87,11 @@ void ObjectAnalyzer::start()
 
 }
 
-void ObjectAnalyzer::start_VL_RecognitionTask(const ProtoObjectPtr& pproto, const WorkingMemoryAddress &addr)
+void ObjectAnalyzer::start_VL_RecognitionTask(const WorkingMemoryAddress &protoObjectAddr)
 {
    log("Adding new VisualLearnerRecognitionTask");
    VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
-   ptask->protoObjectId = addr.id;
+   ptask->protoObjectAddr = protoObjectAddr;
 
    // TODO: Add learning data: labels, confidences!
 
@@ -112,7 +112,6 @@ long ObjectAnalyzer::getOrCreateVisualObject(const string &objectId, VisualObjec
 	}
 	catch (DoesNotExistOnWMException e) {
 	  VisualObjectPtr pvobj = new VisualObject;
-	  //pvobj->protoObjectID = objectId;
 	  return NewObject;
 	}
   }
@@ -128,7 +127,7 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
   // ProtoObjectData &data = ProtoObjectMap[ptask->protoObjectId];
 
   
-  string pvId = ProtoObjectMap[ptask->protoObjectId].visualObjId;
+  string pvId = ProtoObjectMap[ptask->protoObjectAddr.id].visualObjId;
   VisualObjectPtr pvobj;
   if(existsOnWorkingMemory(pvId)) {
 	try {
@@ -144,7 +143,7 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
 	log("Visual object ID %s deleted. It will not be updated", pvId.c_str());
 	return;
   }
-  pvobj->protoObjectID = ptask->protoObjectId;
+  pvobj->protoObjectID = ptask->protoObjectAddr.id; // XXX: this should already be present in VisualObject
 
   // NOTE: we are assuming that all the lists have the same length
   // so we stop copying when the shortest list ends.
@@ -185,17 +184,17 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
   // TODO: what about identGain?
 
   pvobj->time = getCASTTime();
-  if(ProtoObjectMap.find(ptask->protoObjectId) != ProtoObjectMap.end())
+  if(ProtoObjectMap.find(ptask->protoObjectAddr.id) != ProtoObjectMap.end())
 	overwriteWorkingMemory(pvId, pvobj);
   else
-	log("Proto object ID %s deleted. Visual object will not be updated", ptask->protoObjectId.c_str());
+	log("Proto object ID %s deleted. Visual object will not be updated", ptask->protoObjectAddr.id.c_str());
 }
 
 
-void ObjectAnalyzer::start_OR_RecognitionTask(const ProtoObjectPtr& pproto, const WorkingMemoryAddress &addr)
+void ObjectAnalyzer::start_OR_RecognitionTask(const WorkingMemoryAddress &visualObjectAddr)
 {
   ObjectRecognitionTaskPtr ptask = new ObjectRecognitionTask();
-  ptask->protoObjectAddr = addr;
+  ptask->visualObjectAddr = visualObjectAddr;
 
   string reqId(newDataID());
   log("Adding new ObjectRecognitionTask: %s", reqId.c_str());
@@ -274,15 +273,17 @@ void ObjectAnalyzer::runComponent()
 			  overwriteWorkingMemory(m_salientObjID, salientObj);
 			}
 
-			string objId = newDataID();
-			addToWorkingMemory(objId, pvobj);
+			cdl::WorkingMemoryAddress objAddr;
+			objAddr.subarchitecture = data.addr.subarchitecture;
+			objAddr.id = newDataID();
+			addToWorkingMemory(objAddr, pvobj);
 
 			existsSalient = true;
-			data.visualObjId = m_salientObjID = objId;
+			data.visualObjId = m_salientObjID = objAddr.id;
 
 			log("A visual object added for protoObject ID %s", data.addr.id.c_str());
-			start_OR_RecognitionTask(objPtr, data.addr);
-			start_VL_RecognitionTask(objPtr, data.addr);
+			start_OR_RecognitionTask(objAddr);
+			start_VL_RecognitionTask(data.addr);
 		  }
 		  catch (DoesNotExistOnWMException e)
 		  {
