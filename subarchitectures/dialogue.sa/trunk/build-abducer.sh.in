@@ -1,7 +1,7 @@
 #!/bin/bash
 cd external
 
-ABDUCER_VERSION="2.0.1"
+ABDUCER_VERSION="2.0.2"
 
 if [ "abducer-$ABDUCER_VERSION" -nt "abducer-$ABDUCER_VERSION.tar.gz" ]; then
     echo "abducer is up to date"
