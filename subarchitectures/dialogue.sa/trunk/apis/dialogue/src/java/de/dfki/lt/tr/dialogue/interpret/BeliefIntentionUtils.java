@@ -274,5 +274,26 @@ public abstract class BeliefIntentionUtils {
 		return eos;
 	}
 
+	public static boolean isRobotsPrivateIntention(Intention it) {
+		if (it.estatus instanceof PrivateEpistemicStatus) {
+			if (it.content.size() == 1) {
+				IntentionalContent itnc = it.content.get(0);
+				if (itnc.agents.size() == 1 && itnc.agents.get(0).equals(IntentionManagementConstants.thisAgent)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public static boolean isHumansIntention(Intention it) {
+		if (it.content.size() == 1) {
+			IntentionalContent itnc = it.content.get(0);
+			if (itnc.agents.size() == 1 && itnc.agents.get(0).equals(IntentionManagementConstants.humanAgent)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 }

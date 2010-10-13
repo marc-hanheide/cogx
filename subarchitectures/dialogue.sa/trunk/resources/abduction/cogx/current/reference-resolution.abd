@@ -45,7 +45,7 @@ resolves_props(BId, [Property|T]) <-
 
 get_belief(BId, color(Arg)) <- bel : color(BId, Arg).
 get_belief(BId, shape(Arg)) <- bel : shape(BId, Arg).
-get_belief(BId, objecttype(Arg)) <- bel : objecttype(BId, Arg).
+get_belief(BId, objecttype(Arg)) <- bel : ident(BId, Arg).
 
 get_belief(BId, linguisticsalience(Arg)) <- att : linguisticsalience(BId, Arg).
 

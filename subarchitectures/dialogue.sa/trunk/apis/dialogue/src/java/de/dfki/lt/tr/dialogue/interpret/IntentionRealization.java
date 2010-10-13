@@ -44,7 +44,7 @@ import java.util.Map;
 
 public class IntentionRealization {
 
-	private int timeout;
+	private int timeout = 0;
 	public boolean logging = true;
 	private AbductionEngineConnection abd_realize;
 
@@ -104,7 +104,7 @@ public class IntentionRealization {
 					itIdTerm
 				}));
 
-		MarkedQuery[] proof = AbducerUtils.bestAbductiveProof(abd_realize, ProofUtils.newUnsolvedProof(g), 250);
+		MarkedQuery[] proof = AbducerUtils.bestAbductiveProof(abd_realize, ProofUtils.newUnsolvedProof(g), timeout);
 		if (proof != null) {
 			return proofToProtoLF(proof);
 		}
