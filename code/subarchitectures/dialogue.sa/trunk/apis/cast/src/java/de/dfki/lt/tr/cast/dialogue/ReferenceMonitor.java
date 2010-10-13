@@ -28,11 +28,19 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
+import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
+import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.discourse.DialogueMoveTranslator;
 import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
+import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
 import de.dfki.lt.tr.dialogue.ref.BeliefTranslator;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
@@ -99,13 +107,7 @@ extends AbstractDialogueComponent {
 				});
 
  */
-		if (testing) {
-			addBeliefChangeFilters(dBelief.class);
-		}
-		else {
-//			addBeliefChangeFilters(GroundedBelief.class);
-			addBeliefChangeFilters(SharedBelief.class);
-		}
+		addBeliefChangeFilters(SharedBelief.class);
 
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(DialogueMove.class,  WorkingMemoryOperation.ADD),
@@ -115,7 +117,7 @@ extends AbstractDialogueComponent {
 						handleDialogueMove(_wmc);
 					}
 				});
-
+/*
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(Intention.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
@@ -124,6 +126,35 @@ extends AbstractDialogueComponent {
 						handleIntentionAdd(_wmc);
 					}
 				});
+
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(Intention.class, WorkingMemoryOperation.DELETE),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleIntentionDelete(_wmc);
+					}
+				});
+*/
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(CommunicativeIntention.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleCommIntentionAdd(_wmc);
+					}
+				});
+
+/*
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(CommunicativeIntention.class, WorkingMemoryOperation.DELETE),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleCommIntentionDelete(_wmc);
+					}
+				});3
+ */
 }
 
 	private void
@@ -196,9 +227,11 @@ extends AbstractDialogueComponent {
 		}
 	}
 
+/*
 	private void handleIntentionDelete(WorkingMemoryChange _wmc) {
 		// somebody deleted it for us
 		if (_wmc.address.equals(qud_addr)) {
+			log("hmm... the question under discussion has been resolved by somebody else");
 			qud_addr = null;
 			qud = null;
 		}
@@ -209,18 +242,99 @@ extends AbstractDialogueComponent {
 		try {
 			CASTData data = getWorkingMemoryEntry(_wmc.address);
 			Intention it = (Intention)data.getData();
+			log("got an intention!");
 			if (BeliefIntentionUtils.isRobotsPrivateIntention(it)) {
 				// this is the new QUD
-				deleteFromWorkingMemory(qud_addr);
-
+				if (qud != null) {
+					log("removing the old question under discussion");
+					deleteFromWorkingMemory(qud_addr);
+				}
+				log("adding new question under discussion");
 				qud_addr = _wmc.address;
-				qud = null;
+				qud = it;
 				triggerRulefileRewrite();
+			}
+			else {
+				log("ignoring the intention...");
 			}
 		}
 		catch (SubarchitectureComponentException e) {
 			e.printStackTrace();
 		}
+	}
+*/
+
+	private void handleCommIntentionDelete(WorkingMemoryChange _wmc) {
+		// somebody deleted it for us
+		if (_wmc.address.equals(qud_addr)) {
+			log("(communicative) hmm... the question under discussion has been resolved by somebody else");  // okay this won't work
+//			qud_addr = null;
+//			qud = null;
+		}
+		triggerRulefileRewrite();
+	}
+
+	private void handleCommIntentionAdd(WorkingMemoryChange _wmc) {
+		try {
+			CASTData data = getWorkingMemoryEntry(_wmc.address);
+			CommunicativeIntention cit = (CommunicativeIntention)data.getData();
+			Intention it = cit.intent;
+			log("got an comm. intention!");
+			if (BeliefIntentionUtils.isRobotsPrivateIntention(it)) {
+				// this is the new QUD
+				if (qud != null) {
+					log("removing the old question under discussion");
+					deleteFromWorkingMemory(qud_addr);
+					try {
+						deleteFromWorkingMemory(qud.id, getSubarchitectureID());
+					}
+					catch (SubarchitectureComponentException e) {
+						log("hmm, something went wrong while trying to remove the intention: " + e.message);
+					}
+					qud = null;
+					qud_addr = null;
+				}
+				if (isQuestion(it)) {
+					log("adding new question under discussion");
+					qud_addr = _wmc.address;
+					qud = it;
+				}
+				else {
+					log("this is not a question");
+				}
+				triggerRulefileRewrite();
+			}
+			else {
+				log("ignoring the intention...");
+			}
+		}
+		catch (SubarchitectureComponentException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private boolean isQuestion(Intention it) {
+		if (it.content.size() > 0) {
+			IntentionalContent itc = it.content.get(0);
+			if (itc.postconditions instanceof ComplexFormula) {
+				ComplexFormula post = (ComplexFormula) itc.postconditions;
+				assert (post.op == BinaryOp.conj);
+				if (post.forms.size() > 0 && post.forms.get(0) instanceof ModalFormula && ((ModalFormula) post.forms.get(0)).op.equals(IntentionManagementConstants.stateModality)) {
+					dFormula sfs = ((ModalFormula) post.forms.get(0)).form;
+					if (sfs instanceof ComplexFormula) {
+						ComplexFormula xf = (ComplexFormula) sfs;
+						assert (xf.op == BinaryOp.conj);
+						if (xf.forms.size() > 0) {
+							dFormula hohof = xf.forms.get(0);
+							if (hohof instanceof ElementaryFormula) {
+								return ((ElementaryFormula) hohof).prop.equals("question-answered");
+							}
+						}
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	private void triggerRulefileRewrite() {
