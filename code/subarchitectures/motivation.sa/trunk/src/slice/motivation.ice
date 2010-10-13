@@ -76,6 +76,11 @@ module motivation {
     		
     	};
 
+    	class CannedTextMotive extends Motive {
+    		string text;
+    		
+    	};
+
     	class HomingMotive extends Motive {
     		long homePlaceID;
     	};
