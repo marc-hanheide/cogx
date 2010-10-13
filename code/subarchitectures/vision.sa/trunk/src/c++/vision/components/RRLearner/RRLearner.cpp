@@ -60,13 +60,13 @@ void RRLearner::start()
   const char *name = "mediatorSemaphore";
   named_semaphore(open_or_create, name, 0);
   queuesNotEmpty = new named_semaphore(open_only, name);
-  log("Mediator active");
+  log("RRLearner active");
   if (doDisplay)
   {
   }
 
  // filters for belief updates
-  addChangeFilter(createGlobalTypeFilter<Belief>(cdl::ADD),
+  addChangeFilter(createGlobalTypeFilter<PresupposedBelief>(cdl::ADD),
 	  new MemberFunctionChangeReceiver<RRLearner>(this,
 		&RRLearner::newdBelief));
   
@@ -316,12 +316,12 @@ void RRLearner::runComponent()
 
 void RRLearner::newBelief(const cdl::WorkingMemoryChange & _wmc)
 {
-  log("A belief was updated. ID: %s SA: %s", _wmc.address.id.c_str(), _wmc.address.subarchitecture.c_str());
+  log("A presupposed belief was updated. ID: %s SA: %s", _wmc.address.id.c_str(), _wmc.address.subarchitecture.c_str());
   
   dBeliefPtr belief; 
   
   try {
-	belief = getMemoryEntry<dBelief>(_wmc.address);
+	belief = getMemoryEntry<PresupposedBelief>(_wmc.address);
   }
   catch (DoesNotExistOnWMException e) {
 	log("WARNING: belief ID %s was removed before it could be processed.", _wmc.address.id.c_str());
@@ -332,35 +332,37 @@ void RRLearner::newBelief(const cdl::WorkingMemoryChange & _wmc)
 
   if(!epistemicStatus<SharedEpistemicStatus>(belief))
   {
-	log("The epistemic status is not a shared one - no learning case.");
+	log("WARNING: the epistemic status is not a shared one. No learning case.");
 	return;
   }
   
   cdl::WorkingMemoryAddress refWmaAddr;
   
-  if(pointedCASTAddr("about", belief, refWmaAddr))
+  if(!pointedCASTAddr("about", belief, refWmaAddr))
   {
-	debug("Found reference to WM addr %s in the shared belief.", refWmaAddr.c_str());
-
-	dBeliefPtr refBelief; 
+	log("WARNING: no reference property in the presupposed belief. No learning case.");
+	return;
+  }
   
-	try {
+  debug("Found reference to WM addr %s in the presupposed belief.", refWmaAddr.c_str());
+  
+  dBeliefPtr refBelief; 
+  
+  try {
 	  refBelief = getMemoryEntry<dBelief>(refWmaAddr);
-	}
-	catch (DoesNotExistOnWMException e) {
+  }	
+  catch (DoesNotExistOnWMException e) {
 	  log("WARNING: referenced belief ID %s not in working memory.", refWmaAddr.id.c_str());
 	  return;
-	}
+  }
 	
-	if(!epistemicStatus<PrivateEpistemicStatus>(belief))
-	{
-	  log("WARNING: The epistemic status of the referenced is not a private one.");
-	  return;
-	}
-	
-	
-	
-	
+  if(!epistemicStatus<SharedEpistemicStatus>(refBelief))
+  {
+	log("WARNING: the epistemic status of the referenced is not a shared one. No learning case.");
+	return;
+  }
+  
+  
 
 	if(m_currentUnions.find(refBeliefId) != m_currentUnions.end())
 	  uni = m_currentUnions[refBeliefId];
@@ -374,13 +376,15 @@ void RRLearner::newBelief(const cdl::WorkingMemoryChange & _wmc)
 		  uni = m_currentUnions[refBeliefId];
 		else
 		{
-		  log("Union ID %s not in the current configuration. There are %i unions in the configuration.", refBeliefId.c_str(), m_currentUnions.size());
+		  log("Union ID %s not in the current configuration. There are %i unions in the configuration.",
+				refBeliefId.c_str(), m_currentUnions.size());
 		  return;
 		}    
 	  }
 	  else
 	  {
-		log("Union ID %s not in the current configuration. There are %i unions in the configuration.", refBeliefId.c_str(), m_currentUnions.size());
+		log("Union ID %s not in the current configuration. There are %i unions in the configuration.",
+			  refBeliefId.c_str(), m_currentUnions.size());
 		return;
 	  }
 	}
