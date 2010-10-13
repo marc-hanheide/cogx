@@ -27,6 +27,7 @@ private:
    // Two request queues with a single monitor
    TWmAddressVector m_RecogTaskId_Queue;
    TWmAddressVector m_LearnTaskId_Queue;
+   TWmAddressVector m_AffordanceTaskId_Queue; // Affordance Recognition
    IceUtil::Monitor<IceUtil::Mutex> m_RrqMonitor;
    cast::cdl::WorkingMemoryAddress m_addrColorStatus;
    cast::cdl::WorkingMemoryAddress m_addrShapeStatus;
@@ -36,7 +37,9 @@ private:
 
    void onAdd_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
    void onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onAdd_AffordanceTask(const cast::cdl::WorkingMemoryChange & _wmc);
    bool recogniseAttributes(VisionData::VisualLearnerRecognitionTaskPtr _pTask);
+   bool recogniseAffordance(VisionData::AffordanceRecognitionTaskPtr _pTask);
    bool updateModel(VisionData::VisualLearningTaskPtr _pTask);
    void updateWmModelStatus();
 

@@ -81,6 +81,10 @@ void ObjectAnalyzer::start()
 	  new MemberFunctionChangeReceiver<ObjectAnalyzer>(this,
 		&ObjectAnalyzer::onChange_VL_RecognitionTask));
 
+  addChangeFilter(createLocalTypeFilter<VisionData::AffordanceRecognitionTask>(cdl::OVERWRITE),
+	  new MemberFunctionChangeReceiver<ObjectAnalyzer>(this,
+		&ObjectAnalyzer::onChange_AL_AffordanceTask));
+
   addChangeFilter(createLocalTypeFilter<ObjectRecognizerIce::ObjectRecognitionTask>(cdl::OVERWRITE),
 	  new MemberFunctionChangeReceiver<ObjectAnalyzer>(this,
 		&ObjectAnalyzer::onChange_OR_RecognitionTask));
@@ -93,7 +97,15 @@ void ObjectAnalyzer::start_VL_RecognitionTask(const WorkingMemoryAddress &protoO
    VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
    ptask->protoObjectAddr = protoObjectAddr;
 
-   // TODO: Add learning data: labels, confidences!
+   string reqId(newDataID());
+   addToWorkingMemory(reqId, ptask);
+}
+
+void ObjectAnalyzer::start_AL_AffordanceTask(const WorkingMemoryAddress &protoObjectAddr)
+{
+   log("Adding new AffordanceRecognitionTask");
+   AffordanceRecognitionTaskPtr ptask = new AffordanceRecognitionTask();
+   ptask->protoObjectAddr = protoObjectAddr;
 
    string reqId(newDataID());
    addToWorkingMemory(reqId, ptask);
@@ -135,7 +147,7 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
 		pvobj = getMemoryEntry<VisualObject>(pvId);
 	}
 	catch(DoesNotExistOnWMException e) {
-	  log("Cannot get the object ID %s dfrom WM. It will not be updated", pvId.c_str() );
+	  log("Cannot get the object ID %s from WM. It will not be updated", pvId.c_str() );
 	  return;
 	}
   }
@@ -182,6 +194,39 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
       pvobj->identAmbiguity -= pvobj->identDistrib[i]*::log(pvobj->identDistrib[i]);
 
   // TODO: what about identGain?
+
+  pvobj->time = getCASTTime();
+  if(ProtoObjectMap.find(ptask->protoObjectAddr.id) != ProtoObjectMap.end())
+	overwriteWorkingMemory(pvId, pvobj);
+  else
+	log("Proto object ID %s deleted. Visual object will not be updated", ptask->protoObjectAddr.id.c_str());
+}
+
+void ObjectAnalyzer::onChange_AL_AffordanceTask(const cdl::WorkingMemoryChange & _wmc)
+{
+  AffordanceRecognitionTaskPtr ptask = getMemoryEntry<AffordanceRecognitionTask>(_wmc.address);
+  log("Recieved results for AffordanceRecognitionTask %s", _wmc.address.id.c_str());
+  // ProtoObjectData &data = ProtoObjectMap[ptask->protoObjectId];
+  
+  string pvId = ProtoObjectMap[ptask->protoObjectAddr.id].visualObjId;
+  VisualObjectPtr pvobj;
+  if(existsOnWorkingMemory(pvId)) {
+	try {
+//		VisualObjectPtr pvobj = getMemoryEntryWithData<VisualObject>(pvId).getData();
+		pvobj = getMemoryEntry<VisualObject>(pvId);
+	}
+	catch(DoesNotExistOnWMException e) {
+	  log("Cannot get the object ID %s from WM. It will not be updated", pvId.c_str() );
+	  return;
+	}
+  }
+  else {
+	log("Visual object ID %s deleted. It will not be updated", pvId.c_str());
+	return;
+  }
+
+  log("Affordance: %s", ptask->affordance);
+  pvobj->affordance = ptask->affordance;
 
   pvobj->time = getCASTTime();
   if(ProtoObjectMap.find(ptask->protoObjectAddr.id) != ProtoObjectMap.end())
@@ -368,8 +413,9 @@ void ObjectAnalyzer::updatedProtoObject(const cdl::WorkingMemoryChange & _wmc)
 	// (review2010): We assume that the ProtoObject is written by the SOIFilter
 	// and updated by ShapeDetector3D. So we can call AffordanceRecognizer when
 	// the ProtoObject is updated.
-	ProtoObjectPtr obj =
-	  getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
+	//ProtoObjectPtr obj =
+	//  getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
+	start_AL_AffordanceTask(_wmc.address);
   }
   catch(DoesNotExistOnWMException e)
   {
