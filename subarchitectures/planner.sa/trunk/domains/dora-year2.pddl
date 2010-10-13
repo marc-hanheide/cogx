@@ -6,7 +6,7 @@
    virtual-place - place
    visualobject - movable
    robot - agent
-   robot - movable
+   robot human - movable
    place_status label category - object
    )
 
