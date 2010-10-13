@@ -1,6 +1,7 @@
 CPP GD categorical.visualprocessor CategoricalVisualProcessor --config subarchitectures/categorical.sa/config/dora-yr2.cfg --debug true
 CPP GD categorical.laserprocessor CategoricalLaserProcessor --config subarchitectures/categorical.sa/config/dora-yr2.cfg --debug true
 CPP GD categorical.shapeintegrator CategoricalShapeIntegrator --config subarchitectures/categorical.sa/config/dora-yr2.cfg --placemanager place.manager --debug true
+CPP GD categorical.appearanceintegrator CategoricalAppearanceIntegrator --config subarchitectures/categorical.sa/config/dora-yr2.cfg --placemanager place.manager --debug true
 
 
 
