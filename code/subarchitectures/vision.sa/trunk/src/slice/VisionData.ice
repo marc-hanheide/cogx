@@ -305,7 +305,7 @@ sequence<OneObj> ObjSeq;
 
   class VisualLearnerRecognitionTask {
     // REQUEST:
-    string protoObjectId;
+    cast::cdl::WorkingMemoryAddress protoObjectAddr;
 
     // RESPONSE
     StringSeq labels;

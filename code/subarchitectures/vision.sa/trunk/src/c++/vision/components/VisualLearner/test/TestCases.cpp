@@ -44,13 +44,14 @@ void CTestCase_Standalone::onChange_RecognitionTask(const cast::cdl::WorkingMemo
 void CTestCase_Standalone::issueRequest()
 {
    ProtoObjectPtr pproto = m_pOwner->loadFakeProtoObject();
-   string protoId = m_pOwner->newDataID();
-   m_pOwner->addToWorkingMemory(protoId, pproto);
-   // m_protoIDs.push_back(protoId);
+   cdl::WorkingMemoryAddress addr;
+   addr.subarchitecture = string(m_pOwner->getSubarchitectureID());
+   addr.id = m_pOwner->newDataID();
+   m_pOwner->addToWorkingMemory(addr, pproto);
 
    m_pOwner->println("Adding new VisualLearnerRecognitionTask");
    VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
-   ptask->protoObjectId = protoId;
+   ptask->protoObjectAddr = addr;
 
    string reqId(m_pOwner->newDataID());
    m_pOwner->addToWorkingMemory(reqId, ptask);
@@ -183,7 +184,10 @@ void CTestCase_Learning::performLearningStep(int issued, string protoId)
    if (issued == 1 || issued == 3 || issued == 5) {
       m_pOwner->log("STEP %d: RECOGNITION", issued);
       VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
-      ptask->protoObjectId = protoId;
+      cdl::WorkingMemoryAddress addr;
+      addr.subarchitecture = string(m_pOwner->getSubarchitectureID());
+      addr.id = protoId;
+      ptask->protoObjectAddr = addr;
 
       string reqId(m_pOwner->newDataID());
       m_pOwner->addToWorkingMemory(reqId, ptask);

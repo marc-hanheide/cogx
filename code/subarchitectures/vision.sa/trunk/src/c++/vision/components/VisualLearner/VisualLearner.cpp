@@ -230,9 +230,7 @@ bool VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
    // get the SOI data nah: this is naughty, but as we're overwriting
    // the soi in wm anyway it's not too bad
 
-   cdl::WorkingMemoryAddress addr;
-   addr.subarchitecture = string(getSubarchitectureID());
-   addr.id = _pTask->protoObjectId;
+   cdl::WorkingMemoryAddress addr = _pTask->protoObjectAddr;
    ProtoObjectPtr pProtoObj;
    try{
       pProtoObj = getMemoryEntry<ProtoObject>(addr);
