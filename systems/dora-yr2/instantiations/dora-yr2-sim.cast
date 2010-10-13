@@ -20,6 +20,8 @@ INCLUDE includes/default.sa/default-main.cast
 INCLUDE includes/conceptual.sa/conceptual-base.cast
 INCLUDE includes/conceptual.sa/conceptual-main.cast
 
+# Categorical.SA ############################################################
+INCLUDE includes/categorical.sa/categorical-shape-sim.cast
 
 
 # vision ######################################################################
