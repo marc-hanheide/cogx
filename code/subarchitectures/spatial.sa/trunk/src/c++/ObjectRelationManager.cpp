@@ -1080,7 +1080,8 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	      log("3");
 	if (obsObject->type == OBJECT_PLANE ||
 	    //FIXME
-	      obsLabel == "table1" ||
+	    obsLabel == "table" || 
+	    obsLabel == "table1" ||
 	      obsLabel == "table2" ||
 	      obsLabel == "bookcase_sm" ||
 	      obsLabel == "bookcase_lg" ||
