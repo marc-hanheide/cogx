@@ -447,8 +447,16 @@ void DTPCONTROL::get_observation(Ice::Int id,
                                         percepts,
                                         action_index[id]);
 
+    
+    auto& available_observations = current_state[id]
+        ->get__possible_observations_given_action(action_index[id]);
+    
     current_state[id] = successor_state;
-    current_state[id] = solvers[id]->solve__for_new_starting_state(successor_state);
+    
+    if(1 < available_observations.size()){
+        current_state[id] = solvers[id]->solve__for_new_starting_state(successor_state);
+    }
+    
     
 #else
     std::vector<std::string> observations;

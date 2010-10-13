@@ -293,7 +293,7 @@ int main(int argc, char** argv)
                 solver->generate_markov_decision_process_starting_states();
 
                 Planning::Policy_Iteration__GMRES policy_Iteration__for_MDP_states
-                    (solver->belief_state__space, solver->get__sink_state_penalty(), .65);
+                    (solver->belief_state__space, solver->get__sink_state_penalty(), .95);
 
                 auto current_state = solver->peek__next_belief_state_for_expansion();
                 
@@ -356,9 +356,12 @@ int main(int argc, char** argv)
 #else
             current_state = solver->solve__for_new_starting_state(current_state);
 #endif
-            
+
+
+            bool needs_to_replan = false;
             for(auto i = 0; i < 20; i++){
-            
+
+                
                 INTERACTIVE_VERBOSER(true, 15000, "Current state is :: "
                                      <<*current_state<<std::endl
                                      <<"First element is :: "
@@ -371,6 +374,12 @@ int main(int argc, char** argv)
             
                 auto observations = current_state->get__possible_observations_given_action(_action.second);
 
+                if(1 == observations.size()){
+                    needs_to_replan = false;
+                } else {
+                    needs_to_replan = true;
+                }
+                
                 auto random_index = 0;
                 for(auto observation = observations.begin()
                         ; observation != observations.end()
@@ -392,7 +401,11 @@ int main(int argc, char** argv)
             
                 current_state = successor_state;
 
-                current_state = solver->solve__for_new_starting_state(successor_state);//expand_for_new_state<>(successor_state, solver);
+                /*TWO DAYS TO GO -- Do not replan unless there was sensing.*/
+                if(needs_to_replan){
+                    current_state = solver->solve__for_new_starting_state(successor_state);
+                }
+                
 
                 
                 INTERACTIVE_VERBOSER(true, 15000, "Current belief state is :: "<<*current_state<<std::endl);
