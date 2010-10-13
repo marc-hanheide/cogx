@@ -35,12 +35,18 @@ public class FakeObjectCreator extends ManagedComponent{
 		((FormulaValues)colorDistrib.values).values.add(new FormulaProbPair(new ElementaryFormula(0, "red"), 0.7f));
 		((FormulaValues)colorDistrib.values).values.add(new FormulaProbPair(new ElementaryFormula(0, "blue"), 0.3f));
 		
+		BasicProbDistribution shapeDistrib = new BasicProbDistribution("shape", new FormulaValues(new LinkedList<FormulaProbPair>()));
+		((FormulaValues)shapeDistrib.values).values.add(new FormulaProbPair(new ElementaryFormula(0, "compact"), 0.7f));
+		((FormulaValues)shapeDistrib.values).values.add(new FormulaProbPair(new ElementaryFormula(0, "elongated"), 0.3f));
+		
+		
 		BasicProbDistribution typeDistrib = new BasicProbDistribution("objecttype", new FormulaValues(new LinkedList<FormulaProbPair>()));
 		((FormulaValues)typeDistrib.values).values.add(new FormulaProbPair(new ElementaryFormula(0, "box"), 0.8f));
 		
 		CondIndependentDistribs content = new CondIndependentDistribs(new HashMap<String,ProbDistribution>());
 		content.distribs.put("objecttype", typeDistrib);
 		content.distribs.put("color", colorDistrib);
+		content.distribs.put("shape", shapeDistrib);
 
 		CASTBeliefHistory history = new CASTBeliefHistory(new LinkedList<WorkingMemoryPointer>(), new LinkedList<WorkingMemoryPointer>());
 		
