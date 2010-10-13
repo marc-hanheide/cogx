@@ -285,12 +285,12 @@ sequence<OneObj> ObjSeq;
     cast::cdl::CASTTime time;
     // This is a temporary solution only: provide the 3D points that gave rise
     // to this SOI, iff the SOI was created by plane pop-out.
+    // frontground points
     SurfacePointSeq points;
-	// frontground points
+    // background points
     SurfacePointSeq BGpoints;
-	// background points
+    // equivocal points which either belongs to fg or bg
     SurfacePointSeq EQpoints;
-	// equivocal points which either belongs to fg or bg
     int status;
   };
 
@@ -299,8 +299,8 @@ sequence<OneObj> ObjSeq;
    */
   class ROI {
     cogx::Math::Rect2 rect;
+    // time the ROI was last changed
     cast::cdl::CASTTime time;
-	// time the ROI was last changed
   };
 
   class VisualLearnerRecognitionTask {
@@ -315,6 +315,15 @@ sequence<OneObj> ObjSeq;
 
     // ASYNC DATA
     string visualObjectId;
+  };
+
+  // (review2010): processed by VisualLearner
+  class AffordanceRecognitionTask {
+    // REQUEST:
+    cast::cdl::WorkingMemoryAddress protoObjectAddr;
+
+    // RESPONSE
+    string affordance;
   };
 
   class VisualLearningTask {
