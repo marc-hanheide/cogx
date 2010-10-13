@@ -58,7 +58,6 @@ private:
   int m_width;
   int m_height;
   int camId;
-  std::vector<int> camIds;								///< Which cameras to get images from
   std::string videoServerName;
   Video::VideoInterfacePrx videoServer;
 

@@ -47,9 +47,7 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
 
   if((it = _config.find("--camid")) != _config.end())  {
     istringstream str(it->second);
-    int id;
-    while(str >> id)
-      camIds.push_back(id);
+    str >> camId;
   }
 
   if((it = _config.find("--display")) != _config.end()){
