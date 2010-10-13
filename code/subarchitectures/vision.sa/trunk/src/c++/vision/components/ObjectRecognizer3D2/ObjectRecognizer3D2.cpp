@@ -229,6 +229,10 @@ void ObjectRecognizer3D2::recognizeAllObjects(P::DetectGPUSIFT &sift, IplImage *
 
   m_detect->SetDebugImage(img);
 
+  // make sure these are empty, could be that someone has already put an "unknown" in
+  obj->identLabels.clear();
+  obj->identDistrib.clear();
+
 	std::map<std::string,RecEntry>::iterator it;
 	for(it = m_recEntries.begin(); it != m_recEntries.end(); it++)
 	{
