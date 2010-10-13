@@ -508,6 +508,9 @@ void WMControl::updateStatus(int id, Completion status) {
         log("Planning aborted, setting status of task %d to %d", id, status);
         task->executionStatus = status;
     }
+    else if (status == SUCCEEDED) {
+            task->planningRetries = 0;
+    }
     else if (status == FAILED) {
         if (task->planningRetries >= MAX_PLANNING_RETRIES) {
             log("Planning failed %d times, setting status of task %d to %d", MAX_PLANNING_RETRIES, id, status);

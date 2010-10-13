@@ -77,15 +77,10 @@ class CASTState(object):
         self.state = self.prob_state.determinized_state(0.05, 0.95)
         if oldstate:
             self.match_generated_objects(oldstate)
-                      
+
+            
     def generate_init_facts(self, problem, oldstate=None):
         cstate = self.prob_state.determinized_state(0.05, 0.95)
-        if oldstate:
-            for gen in oldstate.generated_objects:
-                if gen in oldstate.namedict:
-                    belname = oldstate.namedict[gen.name]
-                    self.namedict[belname] = gen
-                    self.namedict[gen.name] = belname
 
         generated_facts = {}
         generated_objects = set()
@@ -231,7 +226,9 @@ class CASTState(object):
         if matches:
             matched = matches.values()
             #remove old (generated) facts
-            self.facts = [f for f in self.facts if not any(a in matched for a in chain(f.svar.args, f.svar.modal_args, [f.value]))]
+            facts_to_remove = set(f.svar for f in self.facts if any(a in matched for a in chain(f.svar.args, f.svar.modal_args, [f.value])))
+            self.facts = [f for f in self.facts if f.svar not in facts_to_remove]
+            self.generated_facts = [f for f in self.generated_facts if f.svar not in facts_to_remove]
             
             for obj, gen in matches.iteritems():
                 self.objects.discard(obj)
