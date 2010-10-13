@@ -17,7 +17,8 @@
 	<edges>
 		<edge id="greetingEdge" source="*" target="greetingNode" condition="greetingCond"/>
 		<edge id="evalEdge" source="*" target="thankingNode" condition="evalCond"/>
-		<edge id="anyEdge" source="*" target="rootNode" condition="anyCond"/>	
+		<edge id="notUnderstoodEdge" source="*" target="notUnderstoodNode" condition="anyCond"/>	
+		<edge id="forwardEdge" source="*" target="rootNode" condition="beliefCond"/>	
 		<edge id="closingEdge" source="*" target="closingNode" condition="closingCond"/>
 		<edge id="whColorQuestionEdge" source="*" target="whColorAnswerNode" condition="whColorQuestionCond"/>
 		<edge id="notKnowQuestionEdge" source="*" target="notKnowAnswerNode" condition="notKnowQuestionEdge"/>
@@ -31,7 +32,8 @@
 	</edges>
 	
 	<conditions>
-		<condition id="anyCond" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;belief&gt;(%2))" lowerProb="0.0" higherProb="1.0" type="communicativeintention"></condition>
+		<condition id="beliefCond" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;belief&gt;(%2))" lowerProb="0.0" higherProb="1.0" type="communicativeintention"></condition>
+		<condition id="anyCond" content="*" lowerProb="0.6" higherProb="1.0" type="communicativeintention"></condition>
 		<condition content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))" id="greetingCond" lowerProb="0.0" higherProb="1.0" type="communicativeintention"/>
 		<condition id="evalCond" content="&lt;state&gt;(appreciated ^ &lt;agent&gt;human ^ &lt;patient&gt;self)" type="communicativeintention" lowerProb="0.0" higherProb="1.0"></condition>
 		<condition id="closingCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))"></condition>
