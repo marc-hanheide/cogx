@@ -86,7 +86,7 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 
 	if ( (roomCat1Vector.size()!=roomCat2Vector.size()) ||
 		 (roomCat1Vector.size()!=potentialVector.size()) )
-		throw CASTException("The numbers of room_category1, room_category2 and potential keys do not much.");
+		throw CASTException("The numbers of room_category1, room_category2 and potential keys do not match.");
 
 	for(unsigned int i=0; i<roomCat1Vector.size(); ++i)
 	{
@@ -107,7 +107,7 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 
 	if ( (roomCat1Vector.size()!=shapePropVector.size()) ||
 		 (roomCat1Vector.size()!=potentialVector.size()) )
-		throw CASTException("The numbers of room_category1, shape_property and potential keys do not much.");
+		throw CASTException("The numbers of room_category1, shape_property and potential keys do not match.");
 
 	for(unsigned int i=0; i<roomCat1Vector.size(); ++i)
 	{
@@ -122,10 +122,10 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	shapePropVector.clear();
 	config.getValueList("default.default_shape_property_given_room_category", "shape_property", shapePropVector);
 	potentialVector.clear();
-	config.getValueList("default.default_hape_property_given_room_category", "probability", potentialVector);
+	config.getValueList("default.default_shape_property_given_room_category", "probability", potentialVector);
 
 	if ( shapePropVector.size()!=potentialVector.size() )
-		throw CASTException("The numbers of shape_property and potential keys do not much.");
+		throw CASTException("The numbers of shape_property and potential keys do not match.");
 
 	for(unsigned int i=0; i<shapePropVector.size(); ++i)
 	{
@@ -160,7 +160,7 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	appearancePropVector.clear();
 	config.getValueList("default.default_appearance_property_given_room_category", "appearance_property", appearancePropVector);
 	potentialVector.clear();
-	config.getValueList("default.default_hape_property_given_room_category", "probability", potentialVector);
+	config.getValueList("default.default_appearance_property_given_room_category", "probability", potentialVector);
 
 	if ( appearancePropVector.size()!=potentialVector.size() )
 		throw CASTException("The numbers of appearance_property and potential keys do not much.");
