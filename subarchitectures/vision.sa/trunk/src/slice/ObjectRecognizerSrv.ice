@@ -27,7 +27,9 @@ module ObjectRecognizerIce {
 
    class ObjectRecognitionTask {
       // REQUEST:
+      // TODO: (review2010) remove protoObjectAddr, use visualObjectAddr.protoObjectID instead
       cast::cdl::WorkingMemoryAddress protoObjectAddr;
+      cast::cdl::WorkingMemoryAddress visualObjectAddr;
 
       // RESPONSE
       RecognitionResultSeq matches;
