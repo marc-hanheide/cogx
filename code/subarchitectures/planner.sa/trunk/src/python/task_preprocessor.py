@@ -146,7 +146,7 @@ def gen_fact_tuples(beliefs):
               val = feature_val_to_object(valpair.val)
               prob = valpair.prob
             if val is not None:
-              #log.debug("%s = %s:%.2f", feat, val, valpair.prob)
+              #log.debug("%s = %s:%.2f", feat, val, prob)
               result.append((feat, val, prob))
         elif isinstance(value, distribs.NormalValues):
           #TODO: discretize?
@@ -173,7 +173,8 @@ def gen_fact_tuples(beliefs):
       else:
         obj = belief_to_object(bel)
         for feat,vals in factdict.iteritems():
-          #log.debug("(%s %s) = %s : %f", feat, obj, val, prob)
+          # for val, prob in vals:
+          #   log.debug("(%s %s) = %s : %f", feat, obj, val, prob)
           yield SVarDistribution(feat, [obj], vals)
     else:
       elems = []
@@ -213,7 +214,7 @@ def tuples2facts(fact_tuples):
     if not isinstance(func, pddl.Function):
       log.warning("Error looking up %s(%s), got %s", feature_label, ", ".join(map(str, ftup.args)), str(func))
       continue
-      
+
     if len(ftup.values) == 1 and ftup.values[0][1] == 1.0:
       if isinstance(ftup, AttributedSVarDistribution):
         yield state.Fact(state.StateVariable(func, ftup.args,\

@@ -76,7 +76,7 @@ class ProbFact(Fact):
         return tuple.__new__(_class, (svar, ValueDistribution(value)))
    
     def __str__(self):
-        values = ["%s (%.2f)" % (str(k), v) for k,v in self.value.iteritems() if v > 0]
+        values = ["%s (%.2f)" % (str(k), v) for k,v in self.value.iteritems()]
         return "%s = {%s}" % (str(self.svar), ", ".join(values))
 
     def to_init(self):

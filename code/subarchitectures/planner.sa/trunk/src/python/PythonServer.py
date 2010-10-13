@@ -298,6 +298,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       print_state_difference(old_state, task.state.state)
       
       if task.internal_state == TaskStateEnum.FAILED:
+          log.info("Retry planning after failure")
           task.retry()
       elif task.dt_planning_active():
           task.action_executed_dt(task_desc.plan)

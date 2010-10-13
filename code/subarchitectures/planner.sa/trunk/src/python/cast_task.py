@@ -144,7 +144,23 @@ class CASTTask(object):
         self.process_cp_plan()
 
     def retry(self):
-        self.cp_task.set_plan(None)
+        # self.state = cast_state.CASTState(beliefs, self.domain, component=self.component)
+        # self.percepts = []
+
+        # cp_problem, self.goaldict = self.state.to_problem(planning_task, deterministic=True, domain=self.cp_domain)
+        
+        # self.cp_task = task.Task(self.id, cp_problem)
+        # component.planner.register_task(self.cp_task)
+        
+        # self.update_status(TaskStateEnum.INITIALISED)
+
+        # problem_fn = abspath(join(self.component.get_path(), "problem%d.mapl" % self.id))
+        # self.write_cp_problem(problem_fn)
+
+        # domain_out_fn = abspath(join(self.component.get_path(), "domain%d.mapl" % self.id))
+        # w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
+        # w.write(self.cp_task.mapltask, domain_fn=domain_out_fn)
+        self.cp_task.mark_changed()
         self.update_status(TaskStateEnum.PROCESSING)
         self.cp_task.replan()
         self.process_cp_plan()
@@ -303,7 +319,6 @@ class CASTTask(object):
             log.info("DT task requires replanning")
             #send empty observations to terminate previous task
             self.component.getDT().deliverObservation(self.id, [])
-            self.component.getDT().cancelTask(self.id);
             self.dt_task.recompute_problem(self.state)
             self.update_status(TaskStateEnum.WAITING_FOR_DT)
             self.component.start_dt_planning(self)
@@ -368,6 +383,7 @@ class CASTTask(object):
             return True
 
         def wait_timeout():
+            log.info("Wait for %s timed out. Plan failed.", str(self.cp_task.pending_action))
             self.plan_history.append(plan)
             self.cp_task.set_plan(None, update_status=True)
             self.update_status(TaskStateEnum.FAILED)
@@ -395,6 +411,8 @@ class CASTTask(object):
                 last_dt_action = i
             elif dt_action_found:
                 break
+
+        self.component.getDT().deliverObservation(self.id, [])
             
         self.get_plan().execution_position = last_dt_action
         self.update_status(TaskStateEnum.PROCESSING)
@@ -438,6 +456,7 @@ class CASTTask(object):
         def wait_timeout():
             self.plan_history.append(self.dt_task)
             self.cp_task.set_plan(None, update_status=True)
+            self.component.getDT().deliverObservation(self.id, [])
             self.update_status(TaskStateEnum.FAILED)
             return
         
