@@ -320,8 +320,8 @@ void StereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<Vision
       }
     }
   double t4 = gethrtime_d();
-  log("run time: get images: %lf, stereo: %lf, reconstruct: %lf - total: %lf / frame rate: %lf",
-    t2 - t1, t3 - t2, t4 - t3, t4 - t1, 1./(t4 - t1));
+  /*log("run time: get images: %lf, stereo: %lf, reconstruct: %lf - total: %lf / frame rate: %lf",
+    t2 - t1, t3 - t2, t4 - t3, t4 - t1, 1./(t4 - t1));*/
 
   unlockComponent();
 }
@@ -434,14 +434,14 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
 
   double t4 = gethrtime_d();
 
-  log("%s at %d x %d: copy/rectify/convert images: %lf, stereo: %lf, log/display images: %lf - total: %lf / frame rate: %lf",
+  /*log("%s at %d x %d: copy/rectify/convert images: %lf, stereo: %lf, log/display images: %lf - total: %lf / frame rate: %lf",
 #ifdef HAVE_GPU_STEREO
       "gpustereo",
 #else
       "OpenCV stereo",
 #endif
     imgSet.disparityImg->width, imgSet.disparityImg->height,
-    t2 - t1, t3 - t2, t4 - t3, t4 - t1, 1./(t4 - t1));
+    t2 - t1, t3 - t2, t4 - t3, t4 - t1, 1./(t4 - t1));*/
 }
 
 void StereoServer::receiveImages(const vector<Video::Image>& images)
