@@ -5,4 +5,4 @@ JAVA MG goal.generator.manual motivation.components.generators.ManualGoalCompone
 
 
 
-JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter, GainFilter" --min-gain 0.05 --max-tries 3
+JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter, GainFilter" --min-gain 0.05
