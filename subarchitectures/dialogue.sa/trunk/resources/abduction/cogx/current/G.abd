@@ -328,7 +328,7 @@ generate : event : utter(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['falsified'|T])),
 	tail_to_certainty(T, Cert),
-	verification_certainty_to_cannedtext(Cert, CannedText),
+	falsification_certainty_to_cannedtext(Cert, CannedText),
 	utt_head(Nom),
 	i : feat_CannedText(Nom, CannedText) / -1.0,
 	event : produce(r, Nom) / -1.0.
