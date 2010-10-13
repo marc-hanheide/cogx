@@ -145,7 +145,8 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 
 	if ( (roomCat1Vector.size()!=appearancePropVector.size()) ||
 		 (roomCat1Vector.size()!=potentialVector.size()) )
-		throw CASTException("The numbers of room_category1, appearance_property and potential keys do not much.");
+		throw CASTException("The numbers of room_category1, appearance_property and potential keys do not match. %d %d %d",
+				roomCat1Vector.size(), appearancePropVector.size(), potentialVector.size());
 
 	for(unsigned int i=0; i<roomCat1Vector.size(); ++i)
 	{
