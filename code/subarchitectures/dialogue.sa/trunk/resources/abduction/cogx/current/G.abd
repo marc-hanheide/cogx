@@ -121,7 +121,7 @@ generate : event : utter(S, H, Int) <-
 % OBJECT DESCRIPTIONS
 %-------------------------------------------------------------------------
 
-generate :
+%generate :
 
 generate : object_description(Int, Nom, PrivBId) <-
 	i : int : pre(Int, belief(SharedBId)),
