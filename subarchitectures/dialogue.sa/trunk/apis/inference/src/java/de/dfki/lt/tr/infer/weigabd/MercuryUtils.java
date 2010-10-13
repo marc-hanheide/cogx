@@ -42,7 +42,7 @@ public abstract class MercuryUtils {
          * @return escaped string if necessary
          */
 	public static String termStringEscape(String s) {
-		if (s.equals("") || s.contains("-") || s.contains(":") || Character.isUpperCase(s.charAt(0))) {
+		if (s.equals("") || s.contains("-") || s.contains(":") || !Character.isLowerCase(s.charAt(0))) {
 			return "'" + s + "'";
 		}
 		else {
