@@ -1180,6 +1180,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 {
   debug("new NavGraphNode");
 
+  try{
   if (!m_PeekabotClient.is_connected()) return;
 
   shared_ptr<CASTData<NavData::FNode> > oobj =
@@ -1394,6 +1395,10 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
   }
 
   m_PeekabotClient.end_bundle();
+  }catch (DoesNotExistOnWMException e) {
+    log("Error! SpatialObject disappeared from WM!");
+  }
+
   m_Mutex.unlock();
 }
  int DisplayNavInPB::GetPlaceIdFromNodeId(int nodeId){

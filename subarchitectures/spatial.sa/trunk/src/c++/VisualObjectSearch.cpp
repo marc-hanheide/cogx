@@ -1058,7 +1058,6 @@ log("filled");
 
 	    //	if(m_publishSimCones)
 	    //			return;
-lockComponent();
 
 	    spatial::Object *model = generateNewObjectModel(newObj->label);
 	    log("Got Spatial Object: %s", newObj->label.c_str());
@@ -1122,7 +1121,6 @@ lockComponent();
 	  catch (DoesNotExistOnWMException e) {
 	    log("Error! SpatialObject disappeared from WM!");
 	  }
-	  unlockComponent();
 	}
 
       void
@@ -3057,7 +3055,7 @@ lockComponent();
       void
 	VisualObjectSearch::SetCurrentTarget(const string &label) {
 	  currentTarget = label;
-	  double objectSize = 0.5;
+	  double objectSize = 0.25;
 	  if (label == "table1" || label =="table") {
 	    objectSize = 1.1;
 	  }
