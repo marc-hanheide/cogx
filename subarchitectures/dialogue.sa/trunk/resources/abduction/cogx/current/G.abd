@@ -58,6 +58,7 @@ generate : event : utter(S, H, Int) <-
 	i : feat_SpeechAct(Nom, assertion) / -1.0,
 	i : feat_Relation(Nom, answer) / -1.0,
 	i : rel_Content(Nom, ContentNom) / -1.0,
+		i : sort(Nom, ascription) / -1.0,
 		i : rel_Target(ContentNom, TargetNom) / -1.0,
 			generate : object_description(Int, TargetNom, About),
 		generate : ascribe_property(ContentNom, PropNom, SingleCnt),
