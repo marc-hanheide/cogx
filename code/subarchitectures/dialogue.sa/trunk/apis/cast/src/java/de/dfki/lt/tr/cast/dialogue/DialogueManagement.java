@@ -57,6 +57,7 @@ public class DialogueManagement extends ManagedComponent {
 	// default parameters for the dialogue manager
 	String policyFile = "subarchitectures/dialogue.sa/config/policies/yr2/basicforwardpolicy.xml";
 
+	boolean useAcknowledgement = false;
 
 	/**
 	 * Construct a new dialogue manager, with default values
@@ -89,6 +90,13 @@ public class DialogueManagement extends ManagedComponent {
 				log(e.getMessage());
 				e.printStackTrace();
 			} 	
+		}
+		if ((_config.containsKey("--useAck"))) {
+			try {
+				useAcknowledgement = Boolean.parseBoolean(_config.get("--useAck"));
+				log("using acknowledgements when user provide new information");
+			}
+			catch (Exception e) { }
 		}
 	}
 
@@ -216,6 +224,21 @@ public class DialogueManagement extends ManagedComponent {
 
 					addToWorkingMemory(cintention.intent.id, response);
 					log("attributed intention successfully added to working memory");
+					
+					if (useAcknowledgement) {
+						
+						log("... and providing short acknowledgement");	
+						
+						IntentionalContent ackContent = EpistemicObjectUtils.createIntentionalContent(
+								FormulaUtils.constructFormula("<state>(thanked ^ <agent>human ^ <patient>self)"), EpistemicObjectUtils.robotAgent , 1.0f);
+						
+						Intention ack = new Intention (
+								cintention.intent.frame, EpistemicObjectUtils.privateStatus, 
+								cintention.intent.id, Arrays.asList(ackContent));
+
+						CommunicativeIntention cack = new CommunicativeIntention (ack);
+						addToWorkingMemory(newDataID(), cack);
+					}
 				}
 			}
 			else {
