@@ -372,8 +372,9 @@ sequence<OneObj> ObjSeq;
     // Segmentation mask;
     SegmentMask mask;
 
-    // The position of the image patch and mask in the original image, in pixel coordinates
-    cogx::Math::Vector2 imageSourceSize;
+    // (review2010) Size of the original image from which the patch and mask were created
+    cogx::Math::Vector2 sourceImageSize;
+    // (review2010) The top-left position of the image patch and mask in the original image, in pixel coordinates
     cogx::Math::Vector2 imageOrigin;
 
     // List of all surface 3D points

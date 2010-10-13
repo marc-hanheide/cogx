@@ -1309,10 +1309,10 @@ bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	rectLarge.height = segMask.height; // == rect.height * inputScale
 
 	if (pProto != NULL) { // (review2010)
+	  pProto->sourceImageSize.x = imageLarge.width;
+	  pProto->sourceImageSize.y = imageLarge.height;
 	  pProto->imageOrigin.x = rectLarge.x;
 	  pProto->imageOrigin.y = rectLarge.y;
-	  pProto->imageSourceSize.x = imageLarge.width;
-	  pProto->imageSourceSize.y = imageLarge.height;
 	}
 
 	CvSize sz = cvGetSize(iplFull);
