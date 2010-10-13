@@ -46,22 +46,22 @@ generate : event : utter(S, H, Int) <-
 % ASSERTIONS
 %-------------------------------------------------------------------------
 
-generate : event : utter(S, H, Int) <-
-	utt_head(Nom),
-	dummy_nom2(ContentNom),
-	dummy_nom3(TargetNom),
-	i : int : agent(Int, [S]),
-	i : int : post(Int, state(['grounded', about(About), content(Cnt)),
-	generate : dialogue_move_topic(TargetNom, About) / 0.0,
-	i : feat_SpeechAct(Nom, clarification) / -1.0,
-	i : feat_Modality(Nom, vision) / -1.0,
-	i : rel_Target(Nom, TargetNom) / -1.0,
-		generate : object_description(Int, TargetNom, About),
-	i : rel_Content(Nom, ContentNom) / -1.0,
-		feat_to_sort(Feat, FeatSort),
-		i : sort(ContentNom, FeatSort) / -1.0,
-		i : prop(ContentNom, Hypo) / -1.0,
-	event : produce(r, Nom) / -1.0.
+%generate : event : utter(S, H, Int) <-
+%	utt_head(Nom),
+%	dummy_nom2(ContentNom),
+%	dummy_nom3(TargetNom),
+%	i : int : agent(Int, [S]),
+%	i : int : post(Int, state(['grounded', about(About), content(Cnt)),
+%	generate : dialogue_move_topic(TargetNom, About) / 0.0,
+%	i : feat_SpeechAct(Nom, clarification) / -1.0,
+%	i : feat_Modality(Nom, vision) / -1.0,
+%	i : rel_Target(Nom, TargetNom) / -1.0,
+%		generate : object_description(Int, TargetNom, About),
+%	i : rel_Content(Nom, ContentNom) / -1.0,
+%		feat_to_sort(Feat, FeatSort),
+%		i : sort(ContentNom, FeatSort) / -1.0,
+%		i : prop(ContentNom, Hypo) / -1.0,
+%	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
 % POLAR QUESTIONS
