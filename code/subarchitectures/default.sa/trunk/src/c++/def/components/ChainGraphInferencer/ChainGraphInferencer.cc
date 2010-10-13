@@ -425,6 +425,22 @@ DefaultData::StringSeq
 
 
 // -------------------------------------------------------
+DefaultData::StringSeq
+	ChainGraphInferencer::Server::getShapes(const Ice::Current &)
+{
+	return _chainGraphInferencer->_shapes;
+}
+
+
+// -------------------------------------------------------
+DefaultData::StringSeq
+	ChainGraphInferencer::Server::getAppearances(const Ice::Current &)
+{
+	return _chainGraphInferencer->_appearances;
+}
+
+
+// -------------------------------------------------------
 SpatialProbabilities::ProbabilityDistribution
 	ChainGraphInferencer::Server::getFactor(const std::string &factorStr, const Ice::Current &)
 {
