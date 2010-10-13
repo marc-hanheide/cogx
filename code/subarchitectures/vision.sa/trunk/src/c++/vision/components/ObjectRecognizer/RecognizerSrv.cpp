@@ -208,6 +208,8 @@ void CObjectRecognizer::processQueuedTasks(TRecognitionRequestVector &requests)
       // load from wm the protoobject referenced by the request
       ProtoObjectPtr pProto;
       try {
+         // TODO: pTask now has visualObjectAddr; use that instead of protoObjectAddr
+         // or: if protoObjectAddr not empty use that, otherwise use visualObjectAddr
          pProto = getMemoryEntry<ProtoObject>(pTask->protoObjectAddr);
          Video::Image img = pProto->image;
       }
