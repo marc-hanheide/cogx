@@ -36,6 +36,10 @@ class ChainGraphInferencer: public cast::ManagedComponent
 
 		virtual DefaultData::StringSeq getRoomCategories(const Ice::Current &);
 
+		virtual DefaultData::StringSeq getShapes(const Ice::Current &);
+
+		virtual DefaultData::StringSeq getAppearances(const Ice::Current &);
+
 		virtual SpatialProbabilities::ProbabilityDistribution
 			getFactor(const std::string &factorStr, const Ice::Current &);
 
