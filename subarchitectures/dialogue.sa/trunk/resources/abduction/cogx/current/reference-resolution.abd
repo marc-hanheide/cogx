@@ -6,7 +6,7 @@ resolves_main(Nom, BId, EpSt, Ps) <-
 	understand : resolves_to_belief(Nom, BId, EpSt),
 	get_referent(SharedBId, BId),
 	resolves_props(SharedBId, Ps),
-	bel : b(SharedBId) / belief_exist,
+%	bel : b(SharedBId) / belief_exist,
 	bel : epistemic_status(SharedBId, EpSt).
 
 	% THIS IS THE IMPORTANT MODALISED ATOM -- reference resolution
@@ -43,6 +43,7 @@ resolves_props(BId, [Property|T]) <-
 %-------------------------------------------------------------------------
 % Retrieve the feature from the belief model
 
+get_belief(BId, exists(yes)) <- bel : b(BId) / belief_exist.
 get_belief(BId, color(Arg)) <- bel : color(BId, Arg).
 get_belief(BId, shape(Arg)) <- bel : shape(BId, Arg).
 get_belief(BId, objecttype(Arg)) <- bel : ident(BId, Arg).

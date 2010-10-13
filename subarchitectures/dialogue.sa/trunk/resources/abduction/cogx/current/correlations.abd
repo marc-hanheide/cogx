@@ -1,4 +1,6 @@
 correlation = [
+	(ling_to_observed(exists(yes), exists(yes))) = p(1.0),
+
 	(ling_to_observed(color(red), color(red))) = p(0.8),
 	(ling_to_observed(color(red), color(green))) = p(0.1),
 	(ling_to_observed(color(red), color(blue))) = p(0.1),
