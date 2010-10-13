@@ -165,7 +165,7 @@ private:
   /**
    * segment out object roi
    */
-  bool segmentObject(const VisionData::SOIPtr soiPtr, Video::Image &imgPatch, VisionData::SegmentMask &segMask, std::vector<VisionData::SurfacePoint> &segPoints);
+  bool segmentObject(const VisionData::SOIPtr soiPtr, Video::Image &imgPatch, VisionData::SegmentMask &segMask, std::vector<VisionData::SurfacePoint> &segPoints, VisionData::ProtoObjectPtr& pProto);
   
   
   void projectSOIPoints(const VisionData::SOI &soi, const VisionData::ROI &roi, std::vector<CvPoint> &projPoints,

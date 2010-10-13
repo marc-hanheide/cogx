@@ -372,6 +372,10 @@ sequence<OneObj> ObjSeq;
     // Segmentation mask;
     SegmentMask mask;
 
+    // The position of the image patch and mask in the original image, in pixel coordinates
+    cogx::Math::Vector2 imageSourceSize;
+    cogx::Math::Vector2 imageOrigin;
+
     // List of all surface 3D points
     SurfacePointSeq points;
 
@@ -406,7 +410,7 @@ sequence<OneObj> ObjSeq;
   * @author Nick Hawes
   */
   class PeopleDetectionCommand {
-  	//nothing involved here
+    //nothing involved here
   };
 
   /**
@@ -415,12 +419,12 @@ sequence<OneObj> ObjSeq;
   * @author Nick Hawes
   */
   class ForegroundedModel {
-	  string model;
+    string model;
   };
 
   class Post3DObject{
-	  string label;
-		  cogx::Math::Pose3 pose;
+    string label;
+    cogx::Math::Pose3 pose;
   };
 };
 
