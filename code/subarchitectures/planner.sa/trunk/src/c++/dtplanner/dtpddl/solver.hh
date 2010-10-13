@@ -52,7 +52,7 @@ namespace Planning
     {
     public:
         virtual ~Solver();//{};
-
+        void cleanup();
         
         /*Penalty for ending up in an illegal state.*/
         double get__sink_state_penalty() const;
