@@ -112,7 +112,7 @@ class DensitySampler
 {
   public:
     DensitySampler() : m_orientationQuantization(4),
-    m_sampleNumberTarget(1000),
+    m_sampleNumberTarget(5000),
     m_kernelWidthFactor(1.5) 
   { 
   };
