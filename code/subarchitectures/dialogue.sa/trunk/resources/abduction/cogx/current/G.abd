@@ -309,19 +309,32 @@ generate : event : utter(S, H, Int) <-
 % CONFIRMATIONS / DISCONFIRMATIONS
 %-------------------------------------------------------------------------
 
+tail_to_certainty([], certain).
+tail_to_certainty([certainty(C)], C).
+
 generate : event : utter(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['verified'|T])),
+	tail_to_certainty(T, Cert),
+	verification_certainty_to_cannedtext(Cert, CannedText),
 	utt_head(Nom),
-	i : feat_CannedText(Nom, yes) / -1.0,
+	i : feat_CannedText(Nom, CannedText) / -1.0,
 	event : produce(r, Nom) / -1.0.
+
+verification_certainty_to_cannedtext(certain, yes).
+verification_certainty_to_cannedtext(uncertain, probably_yes).
 
 generate : event : utter(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['falsified'|T])),
+	tail_to_certainty(T, Cert),
+	verification_certainty_to_cannedtext(Cert, CannedText),
 	utt_head(Nom),
-	i : feat_CannedText(Nom, no) / -1.0,
+	i : feat_CannedText(Nom, CannedText) / -1.0,
 	event : produce(r, Nom) / -1.0.
+
+falsification_certainty_to_cannedtext(certain, no).
+falsification_certainty_to_cannedtext(uncertain, probably_no).
 
 generate : event : utter(S, H, Int) <-
 	i : int : agent(Int, [S]),
