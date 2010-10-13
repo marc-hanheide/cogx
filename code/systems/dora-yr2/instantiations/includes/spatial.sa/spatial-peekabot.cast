@@ -1,2 +1,2 @@
-CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 -c --room-categories hallway,kitchen,office --debug instantiations/cureconfig/cogxp3.ccf
+CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 -c --room-categories corridor,kitchen,office --debug instantiations/cureconfig/cogxp3.ccf
 #CPP GD peekabot.control SpatialPeekabotControl -c instantiations/cureconfig/cogxp3.ccf --retry-interval 10  --do-path-query
