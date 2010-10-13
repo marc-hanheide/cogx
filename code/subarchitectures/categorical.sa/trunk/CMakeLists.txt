@@ -46,6 +46,7 @@ add_subdirectory(src/c++/categorical/components/LaserProcessor)
 add_subdirectory(src/c++/categorical/components/VisualProcessor)
 add_subdirectory(src/c++/categorical/components/DataSaver)
 add_subdirectory(src/c++/categorical/components/ShapeIntegrator)
+add_subdirectory(src/c++/categorical/components/AppearanceIntegrator)
 
 # Auxiliary components
 option(BUILD_SA_CATEGORICAL_AUX "Build categorical subarchitecture auxiliary components" NO)
