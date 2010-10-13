@@ -71,6 +71,14 @@ if ~isempty(Settings.initModel)
    LRloadAVmodels([Dirs.models Settings.initModel]);
 end;
 
+
+
+% Affordance recognition
+
+
+
+
+
 disp('CLF Start Done');
 
 function checkInitVal(var, dflt)
