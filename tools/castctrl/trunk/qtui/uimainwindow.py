@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Mon Oct 11 09:55:05 2010
+# Created: Wed Oct 13 14:36:55 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -864,7 +864,7 @@ class Ui_MainWindow(object):
         self.label_16.setText(QtGui.QApplication.translate("MainWindow", "XML File:", None, QtGui.QApplication.UnicodeUTF8))
         self.ckRunDisplaySrv.setText(QtGui.QApplication.translate("MainWindow", "Run Standalone Display Server", None, QtGui.QApplication.UnicodeUTF8))
         self.ckRunAbducerServer.setText(QtGui.QApplication.translate("MainWindow", "Run Abducer Server", None, QtGui.QApplication.UnicodeUTF8))
-        self.ckRunSpeechServer.setText(QtGui.QApplication.translate("MainWindow", "Run Speech Server", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckRunSpeechServer.setText(QtGui.QApplication.translate("MainWindow", "Run Mary TTS Server", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "Servers", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("MainWindow", "Servers", None, QtGui.QApplication.UnicodeUTF8))
         self.btServerStart.setText(QtGui.QApplication.translate("MainWindow", "Start", None, QtGui.QApplication.UnicodeUTF8))
