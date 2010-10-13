@@ -607,7 +607,7 @@ class DT2MAPLCompiler(translators.Translator):
 
         def logp(p):
             if isinstance(p, predicates.ConstantTerm):
-                return predicates.Term(-math.log(p.object.value, 2))
+                return predicates.Term(max(-math.log(p.object.value, 2), 0.1))
             logname = "log-%s" % p.function.name
             func = domain.functions.get(logname, p.function.args)
             if not func:
