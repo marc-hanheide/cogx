@@ -78,7 +78,7 @@ void CategoricalVisualProcessor::configure(const map<string,string> &config)
   // Get configuration from the file
   try
   {
-    labelFile=cf.getStrValue("Common", "LabelFile", "");
+    labelFile=cf.getStrValue(_cfgGroup, "LabelFile", "");
 
     _crfhDescriptors=cf.getStrValue(_cfgGroup, "CrfhDescriptors", "Lxx(4,28)+Lxy(4,28)+Lyy(4,28)+Lxx(64,28)+Lxy(64,28)+Lyy(64,28)");
     _crfhFiltering=cf.getBoolValue(_cfgGroup, "CrfhSmallValueFiltering", false);
