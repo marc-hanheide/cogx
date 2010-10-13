@@ -26,6 +26,26 @@ understand : polar_query_scope(S, H, EpSt, Int, Ref, Nom) <-
 
 %-------------------------------------------------------------------------
 
+% @{be1_1:ascription}(be ^ <Tense>pres ^ <Mood>int ^ <Cop-Restr>(context1_1:entity ^ context ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific) ^ <Cop-Scope>(what1_1:entity ^ what) ^ <Subject>(context1_1:entity) ^ <Wh-Restr>(what1_1:entity))
+
+% what is X
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, ascription),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+	i : rel_Subject(Nom, SubjNom),
+%	i : 'rel_Cop-Scope'(Nom, ScopeNom),  % XXX garbage
+	i : 'rel_Wh-Restr'(Nom, SubjNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
+	get_topic_referent(S, H, EpSt, Int, Ref, Nom, BId),
+	int : post(Int, state(['question-answered', agent(H), about(BId), feature(Prop)])) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 % what X is Y
 understand : event : utter(S, H, Nom) <-
 %	i : sort(Nom, ascription),  % XXX garbage
