@@ -66,6 +66,12 @@ class ObjectAnalyzer : public ManagedComponent
 	  cdl::CASTTime lastUpdateTime;
 	  cdl::CASTTime deleteTime;
 	};
+	
+  /**
+   * The current salient object
+   */
+	std::string m_salientObjID;
+	bool existsSalient; 
 
 	std::map<std::string, ProtoObjectData> ProtoObjectMap;
 
