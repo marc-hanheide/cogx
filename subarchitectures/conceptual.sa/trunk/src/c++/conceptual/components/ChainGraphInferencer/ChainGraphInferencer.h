@@ -76,6 +76,8 @@ private:
 			std::string objectVariableName, bool objectExists);
 	void createDaiShapePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
 	void createDaiObservedShapePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
+	void createDaiAppearancePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
+	void createDaiObservedAppearancePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
 
 	/** Adds factors related to the factor graph */
 	void addDaiFactors();
@@ -163,7 +165,10 @@ private:
 	dai::FactorGraph _factorGraph;
 
 	/** Junction tree. */
-	dai::JTree _junctionTree;
+//	dai::JTree _junctionTree;
+
+	dai::BP _bp;
+
 
     dai::PropertySet _daiOptions;
 

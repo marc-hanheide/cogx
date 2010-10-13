@@ -591,6 +591,103 @@ void ChainGraphInferencer::createDaiObservedShapePropertyFactor(int placeId,
 
 
 // -------------------------------------------------------
+void ChainGraphInferencer::createDaiAppearancePropertyGivenRoomCategoryFactor(int room1Id, int placeId)
+{
+	// Get the default connectivity factor
+	string factorName = "f(room_category1,appearance_property)";
+	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
+			_defaultKnowledgeFactors.find(factorName);
+	if (dnfIt == _defaultKnowledgeFactors.end())
+	{
+		error("Factor \'%s\' not found. This indicates a serious implementation error!", factorName.c_str());
+		return;
+	}
+	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
+
+	// Create variables
+	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
+	string appearancePropVarName = "place"+lexical_cast<string>(placeId)+"_appearance_property";
+
+	debug("Creating DAI connectivity factor for variables '%s' and '%s'", room1VarName.c_str(), appearancePropVarName.c_str() );
+	createDaiVariable(room1VarName, _roomCategories);
+	createDaiVariable(appearancePropVarName, _appearances);
+	DaiVariable &dv1 = _variableNameToDai[room1VarName];
+	DaiVariable &dv2 = _variableNameToDai[appearancePropVarName];
+
+	// Create factor
+	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
+	// Note: first fariable changes faster
+	// Go over the second variable
+	int roomCatCount = _roomCategories.size();
+	int appearanceCount = _appearances.size();
+	int index=0;
+	for (int i2 = 0; i2<appearanceCount; ++i2)
+	{
+		string var2ValueName = dv2.valueIdToName[i2];
+		// Go over the first variable
+		for (int i1 = 0; i1<roomCatCount; ++i1)
+		{
+			string var1ValueName = dv1.valueIdToName[i1];
+			double potential = getProbabilityValue(factor, var1ValueName, var2ValueName);
+			if (potential<0)
+				throw CASTException("Potential not found for values '"+var1ValueName+"' and '"+var2ValueName+"'");
+			daiFactor.set(index, potential);
+			++index;
+		}
+	}
+
+	// Add factor to the list
+	_factors.push_back(daiFactor);
+
+}
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::createDaiObservedAppearancePropertyFactor(int placeId,
+		ConceptualData::ValuePotentialPairs dist)
+{
+	string appearancePropVarName = "place"+lexical_cast<string>(placeId)+"_appearance_property";
+
+	debug("Creating DAI observed appearance property factor for variable '%s'",
+			appearancePropVarName.c_str());
+
+	// Create variables
+	createDaiVariable(appearancePropVarName, _appearances);
+	DaiVariable &dv = _variableNameToDai[appearancePropVarName];
+
+	// Create factor
+	dai::Factor daiFactor( dv.var );
+
+	int appearanceCount = _appearances.size();
+	int index=0;
+	for (int i = 0; i<appearanceCount; ++i)
+	{
+		// Find probability for the appearance
+		string appearance = _appearances[i];
+		double potential = -1;
+		for (unsigned int j=0; j<dist.size(); ++j)
+		{
+			if (dist[j].value == appearance)
+			{
+				potential = dist[j].potential;
+				break;
+			}
+		}
+		if (potential<0)
+		{
+			error("We can't find potential for a appearance building DAI factor! Implementation error!!");
+			potential=0.01;
+		}
+		daiFactor.set(index, potential);
+		++index;
+	}
+
+	// Add factor to the list
+	_factors.push_back(daiFactor);
+}
+
+
+// -------------------------------------------------------
 void ChainGraphInferencer::addDaiFactors()
 {
 	// Let's go through all the room connections and add category connectivity factors
@@ -632,6 +729,12 @@ void ChainGraphInferencer::addDaiFactors()
 			} // s
 
 			// Appearance properties
+			for (unsigned int a=0; a<pi.appearanceProperties.size(); ++a)
+			{
+				const ConceptualData::AppearancePlacePropertyInfo &appi = pi.appearanceProperties[a];
+				createDaiAppearancePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
+				createDaiObservedAppearancePropertyFactor(pi.placeId, appi.distribution);
+			} // a
 
 
 		} // p
@@ -644,9 +747,13 @@ void ChainGraphInferencer::runAllInferences()
 {
 	log("Running all inferences on the graph!");
 
-	_junctionTree = dai::JTree(_factorGraph, _daiOptions("updates",string("HUGIN")));
-	_junctionTree.init();
-	_junctionTree.run();
+	_bp = dai::BP(_factorGraph, _daiOptions("updates",string("SEQRND"))("logdomain",false));
+	_bp.init();
+	_bp.run();
+
+//	_junctionTree = dai::JTree(_factorGraph, _daiOptions("updates",string("HUGIN")));
+//	_junctionTree.init();
+//	_junctionTree.run();
 }
 
 
@@ -694,7 +801,8 @@ void ChainGraphInferencer::prepareInferenceResult(string queryString,
 			return;
 		}
 		// Retrieve marginal
-        dai::Factor marginal = _junctionTree.belief(varIter->second.var);
+//        dai::Factor marginal = _junctionTree.belief(varIter->second.var);
+        dai::Factor marginal = _bp.belief(varIter->second.var);
         // Convert to probability distribution
         for(unsigned int i=0; i<marginal.nrStates(); ++i)
         {

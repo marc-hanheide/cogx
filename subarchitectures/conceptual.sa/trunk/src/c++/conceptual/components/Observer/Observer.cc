@@ -12,7 +12,8 @@
 #include "SpatialProperties.hpp"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
-
+#include <boost/lexical_cast.hpp>
+#include <math.h>
 
 /** The function called to create a new instance of our component. */
 extern "C"
@@ -42,17 +43,25 @@ static void removeDuplicates(std::vector<T>& vec)
 // -------------------------------------------------------
 void Observer::configure(const std::map<std::string,std::string> & _config)
 {
-/*	map<string,string>::const_iterator it;
+	map<string,string>::const_iterator it;
+	_shapeThreshold = -1.0;
+	_appearanceThreshold = -1.0;
 
-	// QueryHandler name
-	if((it = _config.find("--coma")) != _config.end())
+	if((it = _config.find("--shape-threshold")) != _config.end())
 	{
-		_queryHandlerName = it->second;
+		_shapeThreshold = boost::lexical_cast<double>(it->second);
+	}
+	if((it = _config.find("--appearance-threshold")) != _config.end())
+	{
+		_appearanceThreshold = boost::lexical_cast<double>(it->second);
 	}
 
+	if ((_shapeThreshold<0.0) || (_appearanceThreshold<0.0))
+		throw CASTException(exceptionMessage(__HERE__, "Please set shape-threshold and appearance-threshold!"));
+
 	log("Configuration parameters:");
-	log("-> Test QueryHandler: %s", (_queryHandlerName.empty())?"No":"Yes");
-	log("-> QueryHandler Name: %s", _queryHandlerName.c_str());*/
+	log("-> Shape threshold: %f", _shapeThreshold);
+	log("-> Appearances threshold: %f", _appearanceThreshold);
 
 	/** Set the initial world state */
 	initializeWorldState();
@@ -301,10 +310,69 @@ bool Observer::areWorldStatesDifferent(ConceptualData::WorldStatePtr ws1, Concep
 	if (ws1->roomConnections != ws2->roomConnections)
 		return true;
 
-	if (ws1->rooms != ws2->rooms)
+	// Analyse the room structure
+	if (ws1->rooms.size() != ws2->rooms.size())
 		return true;
+	for (unsigned int i=0; i<ws1->rooms.size(); ++i)
+	{
+		ConceptualData::ComaRoomInfo &cri1 = ws1->rooms[i];
+		ConceptualData::ComaRoomInfo &cri2 = ws2->rooms[i];
+		if (cri1.wmAddress != cri2.wmAddress)
+			return true;
+		if (cri1.roomId != cri2.roomId)
+			return true;
+		if (cri1.places.size() != cri2.places.size())
+			return true;
+		for (unsigned int j=0; j<cri1.places.size(); ++j)
+		{
+			ConceptualData::PlaceInfo pi1 = cri1.places[j];
+			ConceptualData::PlaceInfo pi2 = cri2.places[j];
+			if (pi1.placeId != pi2.placeId)
+				return true;
+			if (pi1.objectProperties!=pi2.objectProperties)
+				return true;
+			// Check how different shapes are
+			if (pi1.shapeProperties.size() != pi2.shapeProperties.size())
+				return true;
+			for (unsigned int k=0; k<pi1.shapeProperties.size(); ++k)
+			{
+				if ( calculateDistributionDifference(pi1.shapeProperties[k].distribution,
+						pi2.shapeProperties[k].distribution) > _shapeThreshold )
+					return true;
+			}
+			// Check how different appearances are
+			if (pi1.appearanceProperties.size() != pi2.appearanceProperties.size())
+				return true;
+			for (unsigned int k=0; k<pi1.appearanceProperties.size(); ++k)
+			{
+				if ( calculateDistributionDifference(pi1.appearanceProperties[k].distribution,
+						pi2.appearanceProperties[k].distribution) > _appearanceThreshold )
+					return true;
+			}
+		}
+	}
 
 	return false;
+}
+
+
+// -------------------------------------------------------
+double Observer::calculateDistributionDifference(const ConceptualData::ValuePotentialPairs &dist1,
+		const ConceptualData::ValuePotentialPairs &dist2)
+{
+	if (dist1.size() != dist2.size())
+		return 1e6;
+
+	double difference = 0.0;
+	for (unsigned int i=0; i< dist1.size(); ++i)
+	{
+		if (dist1[i].value != dist2[i].value)
+			return 1e6;
+		double tmp = fabs(dist1[i].potential - dist2[i].potential);
+		if (difference<tmp)
+			difference = tmp;
+	}
+	return difference;
 }
 
 
