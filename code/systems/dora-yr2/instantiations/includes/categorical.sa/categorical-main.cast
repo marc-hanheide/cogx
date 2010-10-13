@@ -1,0 +1,5 @@
+CPP GD categorical.visualprocessor CategoricalVisualProcessor --config subarchitectures/categorical.sa/config/dora-yr2.cfg --debug true
+CPP GD categorical.laserprocessor CategoricalLaserProcessor --config subarchitectures/categorical.sa/config/dora-yr2.cfg --debug true
+
+
+
