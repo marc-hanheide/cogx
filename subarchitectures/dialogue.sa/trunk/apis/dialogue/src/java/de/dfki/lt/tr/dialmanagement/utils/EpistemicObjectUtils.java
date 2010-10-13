@@ -229,8 +229,6 @@ public class EpistemicObjectUtils {
 	/**
 	 * Extract the content of the belief and express it as a single ComplexFormula
 	 * 
-	 * TODO: take the ambiguity into account when extracting belief content
-
 	 * @param b the belief
 	 * @return the complex formula representing the belief
 	 * @throws DialogueException
