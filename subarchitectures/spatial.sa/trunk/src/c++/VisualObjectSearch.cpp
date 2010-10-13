@@ -3337,14 +3337,18 @@ log("filled");
 	    }
 	  }
 	  else if (cmd->comp == SpatialData::COMMANDFAILED){
-	    log("NavCommand failed.Getting next view.");
-	    if(currentPolicyStep == 0){
-	      // we could not reach to room try again
-	      m_command = GOTOROOM;
-	    }
-	    else{
-	      m_command=NEXT_NBV;
-	    }
+	    log("NavCommand failed.Letting planner know.");
+	    log("Letting planner know that view point is processed.");
+	    SpatialData::ProcessViewPointCommandPtr VPcmd= new SpatialData::ProcessViewPointCommand;
+	    VPcmd->status = SpatialData::SUCCESS;
+	    overwriteWorkingMemory(m_ProcessVPID,VPcmd);
+	    //   if(currentPolicyStep == 0){
+	    // we could not reach to room try again
+	    //   m_command = GOTOROOM;
+	   // }
+	   // else{
+	   //   m_command=NEXT_NBV;
+	   // }
 	  }
 	  else if (cmd->comp == SpatialData::COMMANDPENDING){
 	    log("NavCommand pending.");
