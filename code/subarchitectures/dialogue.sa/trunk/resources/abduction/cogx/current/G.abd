@@ -43,6 +43,27 @@ generate : event : utter(S, H, Int) <-
 	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
+% ASSERTIONS
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['grounded', about(About), content(Cnt)),
+	generate : dialogue_move_topic(TargetNom, About) / 0.0,
+	i : feat_SpeechAct(Nom, clarification) / -1.0,
+	i : feat_Modality(Nom, vision) / -1.0,
+	i : rel_Target(Nom, TargetNom) / -1.0,
+		generate : object_description(Int, TargetNom, About),
+	i : rel_Content(Nom, ContentNom) / -1.0,
+		feat_to_sort(Feat, FeatSort),
+		i : sort(ContentNom, FeatSort) / -1.0,
+		i : prop(ContentNom, Hypo) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
 % POLAR QUESTIONS
 %-------------------------------------------------------------------------
 
@@ -100,6 +121,8 @@ generate : event : utter(S, H, Int) <-
 % OBJECT DESCRIPTIONS
 %-------------------------------------------------------------------------
 
+generate :
+
 generate : object_description(Int, Nom, PrivBId) <-
 	i : int : pre(Int, belief(SharedBId)),
 	% XXX this will be outdated once we switch to ancestors!
@@ -121,6 +144,12 @@ generate : object_description(Int, Nom, PrivBId) <-
 
 %-------------------------------------------------------------------------
 
+%generate : get_label(PrivBId, Label) <-
+%	bel : 
+%
+
+%-------------------------------------------------------------------------
+
 % CAREFUL: "box" is a "thing"
 
 generate : this(Nom) <-
@@ -133,6 +162,12 @@ generate : this(Nom) <-
 generate : it(Nom) <-
 	i : sort(Nom, entity) / -1.0,
 	i : prop(Nom, context) / -1.0,
+	i : feat_InfoStatus(Nom, familiar) / -1.0,
+	i : feat_Salient(Nom, true) / -1.0.
+
+generate : the_x(Nom, Label) <-
+	i : sort(Nom, thing) / -1.0,
+	i : prop(Nom, Label) / -1.0,
 	i : feat_InfoStatus(Nom, familiar) / -1.0,
 	i : feat_Salient(Nom, true) / -1.0.
 
@@ -253,7 +288,7 @@ generate : event : utter(S, H, Int) <-
 	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
-% CONFIRMATIONS
+% CONFIRMATIONS / DISCONFIRMATIONS
 %-------------------------------------------------------------------------
 
 generate : event : utter(S, H, Int) <-
@@ -268,4 +303,12 @@ generate : event : utter(S, H, Int) <-
 	i : int : post(Int, state(['falsified'|T])),
 	utt_head(Nom),
 	i : feat_CannedText(Nom, no) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['knowing-disconfirmed'|T])),
+	utt_head(Nom),
+	i : feat_SpeechAct(Nom, reject) / -1.0,
+	i : feat_AcknoModality(Nom, cognition) / -1.0,
 	event : produce(r, Nom) / -1.0.
