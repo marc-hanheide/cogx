@@ -132,6 +132,45 @@ private:
 	/** List of all the room categories. */
 	std::vector<std::string> _roomCategories;
 
+	/** List of all the shapes. */
+	std::vector<std::string> _shapes;
+
+	/** List of all the appearances. */
+	std::vector<std::string> _appearances;
+
+	struct ShapePropertyGivenRoomCategory
+	{
+		std::string roomCategory1;
+		std::string shapeProperty;
+		double probability;
+	};
+
+	std::list<ShapePropertyGivenRoomCategory> _shapePropertyGivenRoomCategory;
+
+	struct DefaultShapePropertyGivenRoomCategory
+	{
+		std::string shapeProperty;
+		double probability;
+	};
+
+	std::list<DefaultShapePropertyGivenRoomCategory> _defaultShapePropertyGivenRoomCategory;
+
+	struct AppearancePropertyGivenRoomCategory
+	{
+		std::string roomCategory1;
+		std::string appearanceProperty;
+		double probability;
+	};
+
+	std::list<AppearancePropertyGivenRoomCategory> _appearancePropertyGivenRoomCategory;
+
+	struct DefaultAppearancePropertyGivenRoomCategory
+	{
+		std::string appearanceProperty;
+		double probability;
+	};
+
+	std::list<DefaultAppearancePropertyGivenRoomCategory> _defaultAppearancePropertyGivenRoomCategory;
 
 }; // class ChainGraphInferencer
 } // namespace def
