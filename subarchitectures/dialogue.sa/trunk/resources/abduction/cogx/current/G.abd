@@ -309,6 +309,7 @@ generate : event : utter(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['knowing-disconfirmed'|T])),
 	utt_head(Nom),
-	i : feat_SpeechAct(Nom, reject) / -1.0,
-	i : feat_AcknoModality(Nom, cognition) / -1.0,
+%	i : feat_SpeechAct(Nom, reject) / -1.0,
+%	i : feat_AcknoModality(Nom, cognition) / -1.0,
+	i : feat_CannedText(Nom, 'sorry_I_do_not_know_that') / -1.0,
 	event : produce(r, Nom) / -1.0.
