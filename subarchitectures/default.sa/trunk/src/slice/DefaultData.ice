@@ -57,6 +57,12 @@ module DefaultData
 		/** Returns the names of all the room categories. */
 		StringSeq getRoomCategories();
 
+		/** Returns the names of all the shapes. */
+		StringSeq getShapes();
+
+		/** Returns the names of all the appearances. */
+		StringSeq getAppearances();
+
 		/** Returns the factor identified by a factor description string f(variables). 
 		    We are using ProbabilityDistribution as a data container here for convenience. */
 		SpatialProbabilities::ProbabilityDistribution getFactor(string factorStr);
