@@ -382,19 +382,27 @@ void DTPCONTROL::get_observation(Ice::Int id,
 {
 
     VERBOSER(1001, "DTP got an observation posted for task :: "<<id);
+    log("OBSERVER :: DTP got an observation posted for task");
     get_turn(id, Turn::observer);
+    log("OBSERVER :: HAS CONTROL");
     
     METHOD_PREFIX;
     VERBOSER(2000, "DTP dealing with an observation for task "<<id);
+    log("OBSERVER:: COMPLETED METHOD PREFIX");
+
+
     
     /* Supposed to be ignoring signals on to $id$.*/
     if(!thread_statuus[id]){
+        log("OBSERVER:: TASK IS DEAD RETURNING");
         VERBOSER(1001, "DTP was requested to ignore observations on task :: "<<id);
         METHOD_RETURN;
     }
     
     /* Task is being killed.*/
     if(observationSeq.size() == 0){
+        
+        log("OBSERVER:: KILLING");
         thread_statuus[id] = false;
 
         
@@ -480,9 +488,12 @@ void DTPCONTROL::get_observation(Ice::Int id,
 #endif
     
     VERBOSER(1001, "DTP observation now triggering action on task  :: "<<id);
+    log("OBSERVER:: OBSERVATION TRIGGERING ACTION.");
     swap_turn(id, Turn::observer);
 //     pthread_mutex_unlock(thread_mutex[id].get());
+
     
+    log("OBSERVER:: METHOD COMPLETION");
     VERBOSER(2000, "DTP observation has been delt with, time to post an action for task "<<id);
     METHOD_RETURN; 
 }
