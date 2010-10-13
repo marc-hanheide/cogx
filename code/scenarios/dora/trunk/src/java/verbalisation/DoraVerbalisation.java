@@ -101,13 +101,13 @@ public class DoraVerbalisation extends ManagedComponent implements
 		}
 	};
 
-	private static final TextGenerator<ObjectPlaceProperty> OBJECT_PROPERTY_GENERATOR = new TextGenerator<ObjectPlaceProperty>() {
-		@Override
-		public String toText(ObjectPlaceProperty _i) {
-			return "Found an object of type "
-					+ ((SpatialProperties.StringValue) _i.mapValue).value;
-		}
-	};
+//	private static final TextGenerator<ObjectPlaceProperty> OBJECT_PROPERTY_GENERATOR = new TextGenerator<ObjectPlaceProperty>() {
+//		@Override
+//		public String toText(ObjectPlaceProperty _i) {
+//			return "Found an object of type "
+//					+ ((SpatialProperties.StringValue) _i.mapValue).value;
+//		}
+//	};
 
 	private static final TextGenerator<ViewPointGenerationCommand> VIEW_POINT_CMD_GENERATOR = new TextGenerator<ViewPointGenerationCommand>() {
 		@Override
@@ -133,7 +133,7 @@ public class DoraVerbalisation extends ManagedComponent implements
 	private static final TextGenerator<VisualObject> VISUAL_OBJECT_GENERATOR = new TextGenerator<VisualObject>() {
 		@Override
 		public String toText(VisualObject _i) {
-			if (_i.detectionConfidence > 0.5) {
+			if (_i.detectionConfidence > 0.08) {
 				return "That looks like " + _i.identLabels[0];
 			} else {
 				return "";
@@ -241,15 +241,15 @@ public class DoraVerbalisation extends ManagedComponent implements
 		// m_verbals.verbaliseOnAddition(DetectionCommand.class,
 		// DETECTION_COMMAND_GENERATOR);
 
-		// when an object is added to the spatial model -> this is once per
-		// object class in place
-		m_verbals.verbaliseOnAddition(ObjectPlaceProperty.class,
-				OBJECT_PROPERTY_GENERATOR);
+//		// when an object is added to the spatial model -> this is once per
+//		// object class in place
+//		m_verbals.verbaliseOnAddition(ObjectPlaceProperty.class,
+//				OBJECT_PROPERTY_GENERATOR);
 
 		// when an object is recognised at all -> is this every positive
 		// recognition result
-		// m_verbals.verbaliseOnAddition(VisualObject.class,
-		// VISUAL_OBJECT_GENERATOR);
+		m_verbals.verbaliseOnAddition(VisualObject.class,
+				VISUAL_OBJECT_GENERATOR);
 
 		// m_verbals.verbaliseOnOverwrite(ComaRoom.class,
 		// new RoomCategoryTextGenerator());
@@ -272,7 +272,7 @@ public class DoraVerbalisation extends ManagedComponent implements
 	}
 
 	public void runComponent() {
-		m_verbals.verbaliseCannedText("go dora go go go");
+		m_verbals.verbaliseCannedText("my name is dora.");
 	}
 
 	@Override
