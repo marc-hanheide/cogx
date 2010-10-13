@@ -355,7 +355,8 @@ class CASTTask(object):
             log.info("Waiting for observations from %s", str(self.dt_task.dt_plan[-1]))
             self.wait(WAIT_FOR_ACTION_TIMEOUT/2, wait_for_observation, wait_timeout)
             return
-            
+
+        log.debug("delivered observations")
         self.update_status(TaskStateEnum.WAITING_FOR_DT)
         self.component.getDT().deliverObservation(self.id, observations)
   
@@ -412,6 +413,7 @@ class CASTTask(object):
             elif dt_action_found:
                 break
 
+        log.info("dt planning cancelled.")
         self.component.getDT().deliverObservation(self.id, [])
             
         self.get_plan().execution_position = last_dt_action
