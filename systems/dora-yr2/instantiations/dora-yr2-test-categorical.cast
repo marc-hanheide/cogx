@@ -12,9 +12,8 @@ INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter 
 
 # Categorical.SA ############################################################
-INCLUDE includes/categorical.sa/categorical-base.cast
-INCLUDE includes/categorical.sa/categorical-main.cast
-INCLUDE includes/categorical.sa/categorical-test.cast
+INCLUDE includes/categorical.sa/categorical-base-sim.cast
+INCLUDE includes/categorical.sa/categorical-main-sim.cast
 
 
 # Vision ######################################################################
@@ -28,7 +27,7 @@ CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "instantiations/test-
 # viewing and debugging #######################################################
 INCLUDE includes/planner.sa/viz-plan.cast
 JAVA MG placepropertydisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialProperties.PlaceProperty" --generic-col
-JAVA MG display1 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.DataProviderCommand,CategoricalData.DataProviderCommandAck" --generic-col
+JAVA MG display1 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.DataProviderCommand" --generic-col
 JAVA MG display2 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.DataProviderCommandAck" --generic-col
 JAVA MG display3 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.VisualProcessorStatus" --generic-col
 JAVA MG display4 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.VisualResults" --generic-col

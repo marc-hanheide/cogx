@@ -14,7 +14,6 @@ CPP GD self.representer SelfRepresenter
 # Categorical.SA ############################################################
 INCLUDE includes/categorical.sa/categorical-base.cast
 INCLUDE includes/categorical.sa/categorical-saving.cast
-INCLUDE includes/categorical.sa/categorical-test.cast
 
 
 # Vision ######################################################################
@@ -22,17 +21,17 @@ INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-blobs-dora.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 #INCLUDE includes/vision.sa/vision-mediators-dora.cast
-CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "instantiations/test-recognition3d/frosties-%d.jpg" --start 0 --end 0 --framerate_ms 1000 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "instantiations/test-recognition3d/frosties-%d.jpg" --start 0 --end 0 --framerate_ms 200 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
 CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0
 
 
 # viewing and debugging #######################################################
-INCLUDE includes/planner.sa/viz-plan.cast
-JAVA MG placepropertydisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialProperties.PlaceProperty" --generic-col
-JAVA MG display1 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.DataProviderCommand,CategoricalData.DataProviderCommandAck" --generic-col
-JAVA MG display2 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.DataProviderCommandAck" --generic-col
-JAVA MG display3 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.VisualProcessorStatus" --generic-col
-JAVA MG display4 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.VisualResults" --generic-col
-JAVA MG display5 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.LaserProcessorStatus" --generic-col
-JAVA MG display6 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.LaserResults" --generic-col
+#INCLUDE includes/planner.sa/viz-plan.cast
+#JAVA MG placepropertydisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialProperties.PlaceProperty" --generic-col
+#JAVA MG display1 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.DataProviderCommand,CategoricalData.DataProviderCommandAck" --generic-col
+#JAVA MG display2 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.DataProviderCommandAck" --generic-col
+#JAVA MG display3 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.VisualProcessorStatus" --generic-col
+#JAVA MG display4 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.VisualResults" --generic-col
+#JAVA MG display5 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.LaserProcessorStatus" --generic-col
+#JAVA MG display6 castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "CategoricalData.LaserResults" --generic-col
 
