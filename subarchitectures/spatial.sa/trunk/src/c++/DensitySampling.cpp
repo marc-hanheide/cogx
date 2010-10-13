@@ -1,4 +1,4 @@
-#include <vector>
+	#include <vector>
 #include "DensitySampling.hpp"
 #include <float.h>
 #include <Navigation/LocalGridMap.hh>
@@ -267,7 +267,6 @@ DensitySampler::sampleBinaryRelationRecursively(const vector <SpatialRelationTyp
       break;
   }
 
-
   // Distribute N samples over the whole volume
   double sampleVolume = (x2-x1)*(y2-y1)*(zmax-zmin);
 
@@ -279,10 +278,15 @@ DensitySampler::sampleBinaryRelationRecursively(const vector <SpatialRelationTyp
   // Round samplingInterval upward to the nearest multiple of cellSize
   // (keeps the number of sampled positions less than sampleNumberTarget)
   samplingInterval = cellSize*(ceil(samplingInterval/cellSize));
+  std::cout << "m_sampleNumberTarget: " << m_sampleNumberTarget << std::endl; 
+  std::cout << "sampleNumberTargetUsed: " << sampleNumberTargetUsed << std::endl; 
+  std::cout << "sampleVolume: " << sampleVolume << std::endl; 
+  std::cout << "samplingInterval: " << samplingInterval << std::endl; 
 
   double kernelRadius = samplingInterval * m_kernelWidthFactor;
+  std::cout << "kernelRadius: " << kernelRadius<< std::endl; 
   if (kernelRadius < cellSize)
-    kernelRadius = cellSize;
+	  kernelRadius = cellSize;
   int kernelWidth = (int)(ceil(kernelRadius/cellSize)+0.1);
   //How many kernelRadiuses per cell
   double kernelStep = cellSize/kernelRadius; 
@@ -594,6 +598,7 @@ DensitySampler::sampleBinaryRelationSystematically(
 	    if (!tryLoadOrientationsFromFile(supportObjectLabel)) {
 	      if (supportObject->type == OBJECT_PLANE ||
 		  // FIXME
+		 supportObjectLabel == "table" || 
 		  supportObjectLabel == "table1" ||
 		  supportObjectLabel == "table2" ||
 		  supportObjectLabel == "bookcase_sm" ||
@@ -1203,6 +1208,7 @@ SampleCloud *
 DensitySampler::tryLoadCloudFromFile(const string &supportObjectLabel,
     const string &onObjectLabel, SpatialRelationType type) 
 {
+return 0;
   string filename("cloud_");
   filename += onObjectLabel;
   switch (type) {

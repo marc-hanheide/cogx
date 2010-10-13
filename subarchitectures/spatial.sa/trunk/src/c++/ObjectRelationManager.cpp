@@ -1035,7 +1035,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 
       //FIXME: if tag objects don't do this
       if(obsLabel == "metalbox" || obsLabel == "table1" || obsLabel == "table2" 
-	  || obsLabel == "shelves" ){
+	  || obsLabel == "shelves" || obsLabel == "table"){
 	pose = observedObject->pose;
       }
 
