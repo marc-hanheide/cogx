@@ -1534,8 +1534,8 @@ PlaceManager::PlaceServer::getCurrentPlace(const Ice::Current &_context) {
   }else{
     m_pOwner->unlockComponent();
     return 0;
-
   }
+}
 
 FrontierInterface::PlaceMembership
 PlaceManager::PlaceServer::getPlaceMembership(double x, double y,
