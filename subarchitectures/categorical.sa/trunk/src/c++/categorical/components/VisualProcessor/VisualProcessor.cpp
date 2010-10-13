@@ -440,9 +440,9 @@ void CategoricalVisualProcessor::processImage(const CImage &image,
   {
     string outName;
     if (outputLabels2[i]<0)
-      outName=lexical_cast<string>(outputLabels1[i]);
+      outName=lexical_cast<string>(_labels.labelNoToName(outputLabels1[i]));
     else
-      outName=lexical_cast<string>(outputLabels1[i])+"_"+lexical_cast<string>(outputLabels2[i]);
+      outName=lexical_cast<string>(_labels.labelNoToName(outputLabels1[i]))+"_"+lexical_cast<string>(_labels.labelNoToName(outputLabels2[i]));
     visualResults->outputs[i].name=outName.c_str();
     visualResults->outputs[i].value=outputs[i];
   }
