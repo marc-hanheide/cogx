@@ -1,0 +1,6 @@
+SUBARCHITECTURE categorical.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP GD categorical.dataprovider CategoricalDataProvider --config subarchitectures/categorical.sa/config/dora-yr2-sim.cfg  --debug true
+
