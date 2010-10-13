@@ -1492,7 +1492,7 @@ log("filled");
 	    }
 	  }
 	  SpatialGridMap::GridMap<GridMapData> tmpMap = *m_map; 
-	  if(exists){
+	  if(false){
 	    log("table exists in the places  what we are asked to search");
 	    // we always execute the first policy
 
