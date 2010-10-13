@@ -69,7 +69,6 @@ public class ReferenceMonitor extends AbstractDialogueComponent {
 	Stack<DialogueMove> dst = new Stack<DialogueMove>();
 
 	Intention qud = null;
-	WorkingMemoryAddress qud_addr = null;
 
 	@Override
 	public void start() {
@@ -230,6 +229,7 @@ public class ReferenceMonitor extends AbstractDialogueComponent {
 	 * (SubarchitectureComponentException e) { e.printStackTrace(); } }
 	 */
 
+/*
 	private void handleCommIntentionDelete(WorkingMemoryChange _wmc) {
 		// somebody deleted it for us
 		if (_wmc.address.equals(qud_addr)) {
@@ -242,56 +242,60 @@ public class ReferenceMonitor extends AbstractDialogueComponent {
 		}
 		triggerRulefileRewrite();
 	}
+*/
 
 	private void handleCommIntentionAdd(WorkingMemoryChange _wmc) {
 		try {
-			CommunicativeIntention cit = getMemoryEntry(_wmc.address,
-					CommunicativeIntention.class);
+			CommunicativeIntention cit = getMemoryEntry(_wmc.address, CommunicativeIntention.class);
 			Intention it = cit.intent;
-			log("got an comm. intention!");
+			log("got a communicative intention");
 
 			// HACK
 			// deleting previous intention here, this signals to the planner
 			// that the action has been finished (e.g. that the dialogue has
 			// been completed)
 
+			// robot's communicative intention
+			if (BeliefIntentionUtils.isRobotsIntention(it)) {
+				// the robot wants to communicate: only remove the QUD if
+				// the new intention is a question
+				if (isQuestion(it)) {
+					removeQUD();
+					log("setting the QUD");
+					qud = it;
+					triggerRulefileRewrite();
+				}
+				else {
+					log("the robot wants to talk, but does not ask a question -> the QUD stays");
+				}
+			}
+			else if (BeliefIntentionUtils.isHumansIntention(it)) {
+				log("got the human's intention, assuming that it resolves/overrides the QUD");
+				removeQUD();
+				triggerRulefileRewrite();
+			}
+			else {
+				log("ignoring the intention");
+			}
+		}
+		catch (SubarchitectureComponentException e) {
+			logException(e);
+		}
+	}
+
+	private void removeQUD() {
+		if (qud != null) {
 			try {
-				log("deleting input intention");
-				deleteFromWorkingMemory(it.id);
-			} catch (CASTException e) {
+				log("deleting qud.intent [" + qud.id + "]");
+				deleteFromWorkingMemory(qud.id);
+			}
+			catch (CASTException e) {
 				logException("Problem when deleting input intention", e);
 			}
-
-			// END HACK
-
-			if (BeliefIntentionUtils.isRobotsPrivateIntention(it)) {
-				// this is the new QUD
-				if (qud != null) {
-					log("removing the old question under discussion");
-					deleteFromWorkingMemory(qud_addr);
-					try {
-						deleteFromWorkingMemory(qud.id, getSubarchitectureID());
-					} catch (SubarchitectureComponentException e) {
-						logException(
-								"hmm, something went wrong while trying to remove the intention",
-								e);
-					}
-					qud = null;
-					qud_addr = null;
-				}
-				if (isQuestion(it)) {
-					log("adding new question under discussion");
-					qud_addr = _wmc.address;
-					qud = it;
-				} else {
-					log("this is not a question");
-				}
-				triggerRulefileRewrite();
-			} else {
-				log("ignoring the intention...");
-			}
-		} catch (SubarchitectureComponentException e) {
-			logException(e);
+			qud = null;
+		}
+		else {
+			log("no QUD to remove");
 		}
 	}
 
@@ -366,7 +370,7 @@ public class ReferenceMonitor extends AbstractDialogueComponent {
 			String lines[] = BeliefIntentionUtils.intentionToString(qud).split(
 					"\n");
 			for (String line : Arrays.asList(lines)) {
-				qud_str += "% " + line + "\n";
+				qud_str += line + "\n";
 			}
 		} else {
 			qud_str = "% QUD = null\n";
