@@ -193,9 +193,11 @@ public class DialogueActionInterface extends ManagedComponent {
 		public void executeAction() {
 			Intention robotIntention = getIntention();
 			if (robotIntention != null) {
-				addThenCompleteOnOverwrite(robotIntention);
+				assert(robotIntention.id == null);
+				robotIntention.id = getComponent().newDataID();
+				addThenCompleteOnDelete(robotIntention.id,robotIntention);
 			} else {
-
+				
 				println("returning fail due to null intention");
 				executionComplete(TriBool.TRIFALSE);
 			}
@@ -588,8 +590,29 @@ public class DialogueActionInterface extends ManagedComponent {
 						.get(PlaceTransferFunction.PLACE_ID_ID)
 						.getDistribution().getMostLikely().getInteger();
 
-				JOptionPane.showMessageDialog(null, "the " + objectIdent
-						+ " is at place " + placeID);
+				WMPointer roomPointer = WMPointer.create(placeBelief
+						.getContent().get(RoomMembershipMediator.ROOM_PROPERTY)
+						.getDistribution().getMostLikely().get());
+
+				CASTIndependentFormulaDistributionsBelief<GroundedBelief> roomBelief = CASTIndependentFormulaDistributionsBelief
+						.create(GroundedBelief.class,
+								getComponent().getMemoryEntry(
+										roomPointer.getVal(),
+										GroundedBelief.class));
+
+				// start with a default room
+				String room = "room";
+
+				FormulaDistribution categoryDistribution = roomBelief
+						.getContent().get(ComaRoomTransferFunction.CATEGORY_ID);
+				if (categoryDistribution != null) {
+					room = categoryDistribution.getDistribution()
+							.getMostLikely().getProposition();
+				}
+
+				String message = "the " + objectIdent + " is in the " + room
+						+ ", at place " + placeID;
+				JOptionPane.showMessageDialog(null, message);
 
 				result = TriBool.TRITRUE;
 
@@ -619,7 +642,6 @@ public class DialogueActionInterface extends ManagedComponent {
 			ArrayList<dFormula> postconditions = super.getPostconditions(
 					_groundedBeliefAddress, _sharedBeliefAddress);
 
-			
 			postconditions.add(PropositionFormula.create("grounded").get());
 
 			// postcondition is about the grounded belief
@@ -684,14 +706,14 @@ public class DialogueActionInterface extends ManagedComponent {
 
 			return postconditions;
 		}
-		
+
 		@Override
 		protected void actionComplete() {
 			try {
 				((DialogueActionInterface) getComponent()).addBooleanFeature(
 						getAction().beliefAddress, "position-reported", true);
 			} catch (CASTException e) {
-				logException("Problem while updating belief",e);
+				logException("Problem while updating belief", e);
 			}
 		}
 
