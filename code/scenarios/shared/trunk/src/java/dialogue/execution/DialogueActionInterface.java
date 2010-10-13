@@ -59,6 +59,8 @@ public class DialogueActionInterface extends ManagedComponent {
 	protected LocalActionStateManager m_actionStateManager;
 	private GroundedToSharedBeliefMap m_groundedToShared;
 
+	boolean madeup;
+	
 	protected boolean m_fakeIt;
 
 	public static class DirectColourAnswer extends
