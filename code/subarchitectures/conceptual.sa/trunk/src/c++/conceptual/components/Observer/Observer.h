@@ -112,6 +112,8 @@ private:
 
 	bool areWorldStatesDifferent(ConceptualData::WorldStatePtr ws1, ConceptualData::WorldStatePtr ws2);
 
+	double calculateDistributionDifference(const ConceptualData::ValuePotentialPairs &dist1,
+			const ConceptualData::ValuePotentialPairs &dist2);
 
 private:
 
@@ -145,6 +147,8 @@ private:
 	/** Working memory ID of the world state struct. */
 	std::string _worldStateId;
 
+	double _shapeThreshold;
+	double _appearanceThreshold;
 
 }; // class Observer
 } // namespace
