@@ -593,6 +593,9 @@ public class DialogueActionInterface extends ManagedComponent {
 
 				result = TriBool.TRITRUE;
 
+				((DialogueActionInterface) getComponent()).addBooleanFeature(
+						getAction().beliefAddress, "position-reported", true);
+
 			} catch (CASTException e) {
 				logException(e);
 			}
@@ -615,6 +618,9 @@ public class DialogueActionInterface extends ManagedComponent {
 				WorkingMemoryAddress _sharedBeliefAddress) {
 			ArrayList<dFormula> postconditions = super.getPostconditions(
 					_groundedBeliefAddress, _sharedBeliefAddress);
+
+			
+			postconditions.add(PropositionFormula.create("grounded").get());
 
 			// postcondition is about the grounded belief
 			postconditions.add(new ModalFormula(-1, "about", WMPointer.create(
@@ -656,11 +662,13 @@ public class DialogueActionInterface extends ManagedComponent {
 				// start with a default room
 				String room = "room";
 
-				FormulaDistribution categoryDistribution = roomBelief.getContent().get(ComaRoomTransferFunction.CATEGORY_ID);
-				if(categoryDistribution != null) {
-					room = categoryDistribution.getDistribution().getMostLikely().getProposition();
+				FormulaDistribution categoryDistribution = roomBelief
+						.getContent().get(ComaRoomTransferFunction.CATEGORY_ID);
+				if (categoryDistribution != null) {
+					room = categoryDistribution.getDistribution()
+							.getMostLikely().getProposition();
 				}
-				
+
 				ModalFormula inRoom = new ModalFormula(-1, "inRoom",
 						PropositionFormula.create(room).get());
 				ModalFormula content = new ModalFormula(-1, "content", inRoom);
@@ -675,6 +683,16 @@ public class DialogueActionInterface extends ManagedComponent {
 			}
 
 			return postconditions;
+		}
+		
+		@Override
+		protected void actionComplete() {
+			try {
+				((DialogueActionInterface) getComponent()).addBooleanFeature(
+						getAction().beliefAddress, "position-reported", true);
+			} catch (CASTException e) {
+				logException("Problem while updating belief",e);
+			}
 		}
 
 	}
@@ -739,6 +757,23 @@ public class DialogueActionInterface extends ManagedComponent {
 			addFeatureDirectly(_action, _feature, _action.value, 0d);
 		}
 		return false;
+	}
+
+	private void addBooleanFeature(WorkingMemoryAddress _beliefAddress,
+			String _feature, boolean _value) throws DoesNotExistOnWMException,
+			ConsistencyException, PermissionException,
+			UnknownSubarchitectureException {
+
+		GroundedBelief belief = getMemoryEntry(_beliefAddress,
+				GroundedBelief.class);
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, belief);
+
+		FormulaDistribution fd = FormulaDistribution.create();
+		fd.add(_value, 1);
+
+		pb.getContent().put(_feature, fd);
+		overwriteWorkingMemory(_beliefAddress, pb.get());
 	}
 
 	@Override
@@ -816,9 +851,9 @@ public class DialogueActionInterface extends ManagedComponent {
 									AskForObjectWithFeatureValueDialogue.class));
 
 			m_actionStateManager.registerActionType(ReportPosition.class,
-					new ComponentActionFactory<ReportPositionDialogue>(
-							this, ReportPositionDialogue.class));
-			
+					new ComponentActionFactory<ReportPositionDialogue>(this,
+							ReportPositionDialogue.class));
+
 			// TODO replace this with one of Marc's magic thingys
 			WorkingMemoryChangeReceiver updater = new WorkingMemoryChangeReceiver() {
 
