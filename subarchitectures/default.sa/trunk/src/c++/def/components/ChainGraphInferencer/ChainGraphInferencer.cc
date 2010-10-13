@@ -76,6 +76,7 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	_defaultObjectExistenceProbability =
 			config.getValue("default.default_object_existence_probability", 0.0);
 
+	// Connectivity
 	vector<string> roomCat1Vector;
 	config.getValueList("default.room_category_connectivity", "room_category1", roomCat1Vector);
 	vector<string> roomCat2Vector;
@@ -95,6 +96,84 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 		rcc.potential=potentialVector[i];
 		_roomCategoryConnectivity.push_back(rcc);
 	}
+
+	// Properties (shape)
+	roomCat1Vector.clear();
+	config.getValueList("default.shape_property_given_room_category", "room_category1", roomCat1Vector);
+	vector<string> shapePropVector;
+	config.getValueList("default.shape_property_given_room_category", "shape_property", shapePropVector);
+	potentialVector.clear();
+	config.getValueList("default.shape_property_given_room_category", "probability", potentialVector);
+
+	if ( (roomCat1Vector.size()!=shapePropVector.size()) ||
+		 (roomCat1Vector.size()!=potentialVector.size()) )
+		throw CASTException("The numbers of room_category1, shape_property and potential keys do not much.");
+
+	for(unsigned int i=0; i<roomCat1Vector.size(); ++i)
+	{
+		ShapePropertyGivenRoomCategory spgrc;
+		spgrc.roomCategory1=roomCat1Vector[i];
+		spgrc.shapeProperty=shapePropVector[i];
+		spgrc.probability=potentialVector[i];
+		_shapePropertyGivenRoomCategory.push_back(spgrc);
+	}
+
+	// Properties (shape) default
+	shapePropVector.clear();
+	config.getValueList("default.default_shape_property_given_room_category", "shape_property", shapePropVector);
+	potentialVector.clear();
+	config.getValueList("default.default_hape_property_given_room_category", "probability", potentialVector);
+
+	if ( shapePropVector.size()!=potentialVector.size() )
+		throw CASTException("The numbers of shape_property and potential keys do not much.");
+
+	for(unsigned int i=0; i<shapePropVector.size(); ++i)
+	{
+		DefaultShapePropertyGivenRoomCategory dspgrc;
+		dspgrc.shapeProperty=shapePropVector[i];
+		dspgrc.probability=potentialVector[i];
+		_defaultShapePropertyGivenRoomCategory.push_back(dspgrc);
+	}
+
+	// Properties (appearance)
+	roomCat1Vector.clear();
+	config.getValueList("default.appearance_property_given_room_category", "room_category1", roomCat1Vector);
+	vector<string> appearancePropVector;
+	config.getValueList("default.appearance_property_given_room_category", "appearance_property", appearancePropVector);
+	potentialVector.clear();
+	config.getValueList("default.appearance_property_given_room_category", "probability", potentialVector);
+
+	if ( (roomCat1Vector.size()!=appearancePropVector.size()) ||
+		 (roomCat1Vector.size()!=potentialVector.size()) )
+		throw CASTException("The numbers of room_category1, appearance_property and potential keys do not much.");
+
+	for(unsigned int i=0; i<roomCat1Vector.size(); ++i)
+	{
+		AppearancePropertyGivenRoomCategory spgrc;
+		spgrc.roomCategory1=roomCat1Vector[i];
+		spgrc.appearanceProperty=appearancePropVector[i];
+		spgrc.probability=potentialVector[i];
+		_appearancePropertyGivenRoomCategory.push_back(spgrc);
+	}
+
+	// Properties (appearance) default
+	appearancePropVector.clear();
+	config.getValueList("default.default_appearance_property_given_room_category", "appearance_property", appearancePropVector);
+	potentialVector.clear();
+	config.getValueList("default.default_hape_property_given_room_category", "probability", potentialVector);
+
+	if ( appearancePropVector.size()!=potentialVector.size() )
+		throw CASTException("The numbers of appearance_property and potential keys do not much.");
+
+	for(unsigned int i=0; i<appearancePropVector.size(); ++i)
+	{
+		DefaultAppearancePropertyGivenRoomCategory dspgrc;
+		dspgrc.appearanceProperty=appearancePropVector[i];
+		dspgrc.probability=potentialVector[i];
+		_defaultAppearancePropertyGivenRoomCategory.push_back(dspgrc);
+	}
+
+
 
 	// Register the ICE Server
 	DefaultData::ChainGraphInferencerServerInterfacePtr chainGraphInferencerServerInterfacePtr =
@@ -116,6 +195,39 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 		log("----> rc1=%s rc2=%s p=%f",
 				it->roomCategory1.c_str(), it->roomCategory2.c_str(), it->potential);
 	}
+
+	log("-> Shape property given room category:");
+	for(list<ShapePropertyGivenRoomCategory>::iterator it = _shapePropertyGivenRoomCategory.begin();
+			it!=_shapePropertyGivenRoomCategory.end(); ++it)
+	{
+		log("----> rc1=%s sp=%s p=%f",
+				it->roomCategory1.c_str(), it->shapeProperty.c_str(), it->probability);
+	}
+
+	log("-> Default Shape property given room category:");
+	for(list<DefaultShapePropertyGivenRoomCategory>::iterator it = _defaultShapePropertyGivenRoomCategory.begin();
+			it!=_defaultShapePropertyGivenRoomCategory.end(); ++it)
+	{
+		log("----> sp=%s p=%f",
+				it->shapeProperty.c_str(), it->probability);
+	}
+
+	log("-> Appearance property given room category:");
+	for(list<AppearancePropertyGivenRoomCategory>::iterator it = _appearancePropertyGivenRoomCategory.begin();
+			it!=_appearancePropertyGivenRoomCategory.end(); ++it)
+	{
+		log("----> rc1=%s ap=%s p=%f",
+				it->roomCategory1.c_str(), it->appearanceProperty.c_str(), it->probability);
+	}
+
+	log("-> Default Appearance property given room category:");
+	for(list<DefaultAppearancePropertyGivenRoomCategory>::iterator it = _defaultAppearancePropertyGivenRoomCategory.begin();
+			it!=_defaultAppearancePropertyGivenRoomCategory.end(); ++it)
+	{
+		log("----> ap=%s p=%f",
+				it->appearanceProperty.c_str(), it->probability);
+	}
+
 }
 
 
@@ -190,6 +302,23 @@ void ChainGraphInferencer::start()
 			it!=_hfcKnowledge.end(); ++it)
 		roomCategories.insert(it->room);
 	_roomCategories = vector<string>(roomCategories.begin(), roomCategories.end());
+
+	// Generate list of shapes
+	set<string> shapes;
+	for(std::list<ShapePropertyGivenRoomCategory>::iterator it =
+			_shapePropertyGivenRoomCategory.begin();
+			it!=_shapePropertyGivenRoomCategory.end(); ++it)
+		shapes.insert(it->shapeProperty);
+	_shapes = vector<string>(shapes.begin(), shapes.end());
+
+	// Generate list of appearances
+	set<string> appearances;
+	for(std::list<AppearancePropertyGivenRoomCategory>::iterator it =
+			_appearancePropertyGivenRoomCategory.begin();
+			it!=_appearancePropertyGivenRoomCategory.end(); ++it)
+		appearances.insert(it->appearanceProperty);
+	_appearances = vector<string>(appearances.begin(), appearances.end());
+
 }
 
 
@@ -444,6 +573,129 @@ SpatialProbabilities::ProbabilityDistribution
 				return factor;
 			}
 		}
+	}
+
+	// room_category1 -> _shape_property
+	if ((variables.size()==2) &&
+		(variables[0]=="room_category1") && (variables[1]=="shape_property"))
+	{
+		// Set of all pairs category -> shape
+		set< pair<string, string> > catShape;
+		for ( vector<string>::iterator it = _chainGraphInferencer->_roomCategories.begin();
+			  it!=_chainGraphInferencer->_roomCategories.end(); ++it )
+		{
+			for ( vector<string>::iterator it2 = _chainGraphInferencer->_shapes.begin();
+				  it2!=_chainGraphInferencer->_shapes.end(); ++it2 )
+			{
+				catShape.insert(pair<string,string>((*it), (*it2)));
+			}
+		}
+
+		// Add the connectivities from the data file
+		for(list<ShapePropertyGivenRoomCategory>::iterator it =
+				_chainGraphInferencer->_shapePropertyGivenRoomCategory.begin();
+				it!=_chainGraphInferencer->_shapePropertyGivenRoomCategory.end(); ++it)
+		{
+			catShape.erase(pair<string, string>(it->roomCategory1, it->shapeProperty));
+
+			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->roomCategory1);
+			SpatialProbabilities::StringRandomVariableValuePtr shapePropertyRVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->shapeProperty);
+			SpatialProbabilities::JointProbabilityValue jpv;
+			jpv.probability=it->probability;
+			jpv.variableValues.push_back(roomCategory1RVVPtr);
+			jpv.variableValues.push_back(shapePropertyRVVPtr);
+			factor.massFunction.push_back(jpv);
+		}
+
+		// Add default potential for those connectivities that we don't know
+		for (set< pair<string, string> >::iterator it=catShape.begin();
+				it!=catShape.end(); ++it)
+		{
+			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->first);
+			SpatialProbabilities::StringRandomVariableValuePtr shapePropertyRVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->second);
+			SpatialProbabilities::JointProbabilityValue jpv;
+			for(std::list<DefaultShapePropertyGivenRoomCategory>::iterator it2 =
+					_chainGraphInferencer->_defaultShapePropertyGivenRoomCategory.begin();
+					it2!=_chainGraphInferencer->_defaultShapePropertyGivenRoomCategory.end(); ++it2)
+			{
+				if (it2->shapeProperty == it->second)
+				{
+					jpv.probability=it2->probability;
+					break;
+				}
+			}
+			jpv.variableValues.push_back(roomCategory1RVVPtr);
+			jpv.variableValues.push_back(shapePropertyRVVPtr);
+			factor.massFunction.push_back(jpv);
+		}
+
+		return factor;
+	}
+
+
+	// room_category1 -> appearance_property
+	if ((variables.size()==2) &&
+		(variables[0]=="room_category1") && (variables[1]=="appearance_property"))
+	{
+		// Set of all pairs category -> appearance
+		set< pair<string, string> > catAppearance;
+		for ( vector<string>::iterator it = _chainGraphInferencer->_roomCategories.begin();
+			  it!=_chainGraphInferencer->_roomCategories.end(); ++it )
+		{
+			for ( vector<string>::iterator it2 = _chainGraphInferencer->_appearances.begin();
+				  it2!=_chainGraphInferencer->_appearances.end(); ++it2 )
+			{
+				catAppearance.insert(pair<string,string>((*it), (*it2)));
+			}
+		}
+
+		// Add the connectivities from the data file
+		for(list<AppearancePropertyGivenRoomCategory>::iterator it =
+				_chainGraphInferencer->_appearancePropertyGivenRoomCategory.begin();
+				it!=_chainGraphInferencer->_appearancePropertyGivenRoomCategory.end(); ++it)
+		{
+			catAppearance.erase(pair<string, string>(it->roomCategory1, it->appearanceProperty));
+
+			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->roomCategory1);
+			SpatialProbabilities::StringRandomVariableValuePtr appearancePropertyRVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->appearanceProperty);
+			SpatialProbabilities::JointProbabilityValue jpv;
+			jpv.probability=it->probability;
+			jpv.variableValues.push_back(roomCategory1RVVPtr);
+			jpv.variableValues.push_back(appearancePropertyRVVPtr);
+			factor.massFunction.push_back(jpv);
+		}
+
+		// Add default potential for those connectivities that we don't know
+		for (set< pair<string, string> >::iterator it=catAppearance.begin();
+				it!=catAppearance.end(); ++it)
+		{
+			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->first);
+			SpatialProbabilities::StringRandomVariableValuePtr appearancePropertyRVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->second);
+			SpatialProbabilities::JointProbabilityValue jpv;
+			for(std::list<DefaultAppearancePropertyGivenRoomCategory>::iterator it2 =
+					_chainGraphInferencer->_defaultAppearancePropertyGivenRoomCategory.begin();
+					it2!=_chainGraphInferencer->_defaultAppearancePropertyGivenRoomCategory.end(); ++it2)
+			{
+				if (it2->appearanceProperty == it->second)
+				{
+					jpv.probability=it2->probability;
+					break;
+				}
+			}
+			jpv.variableValues.push_back(roomCategory1RVVPtr);
+			jpv.variableValues.push_back(appearancePropertyRVVPtr);
+			factor.massFunction.push_back(jpv);
+		}
+
+		return factor;
 	}
 
 

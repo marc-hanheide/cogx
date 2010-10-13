@@ -13,31 +13,31 @@
     </room_category_connectivity>
     <default_object_existence_probability>0.01</default_object_existence_probability>
     <shape_property_given_room_category>
-	<item room_category1="corridor"  shape_property="elongated"   potential="0.9"/>
-	<item room_category1="corridor"  shape_property="square"      potential="0.1"/>
-	<item room_category1="kitchen"   shape_property="elongated"   potential="0.2"/>
-	<item room_category1="kitchen"   shape_property="square"      potential="0.8"/>
-	<item room_category1="office"    shape_property="elongated"   potential="0.2"/>
-	<item room_category1="office"    shape_property="square"      potential="0.8"/>
+	<item room_category1="corridor"  shape_property="elongated"   probability="0.9"/>
+	<item room_category1="corridor"  shape_property="square"      probability="0.1"/>
+	<item room_category1="kitchen"   shape_property="elongated"   probability="0.2"/>
+	<item room_category1="kitchen"   shape_property="square"      probability="0.8"/>
+	<item room_category1="office"    shape_property="elongated"   probability="0.2"/>
+	<item room_category1="office"    shape_property="square"      probability="0.8"/>
     </shape_property_given_room_category>
     <default_shape_property_given_room_category>
-	<item shape_property="elongated"   potential="0.5"/>
-	<item shape_property="square"      potential="0.5"/>
+	<item shape_property="elongated"   probability="0.5"/>
+	<item shape_property="square"      probability="0.5"/>
     </default_shape_property_given_room_category>
     <appearance_property_given_room_category>
-	<item room_category1="corridor"  appearance_property="corridor"   potential="0.9"/>
-	<item room_category1="corridor"  appearance_property="kitchen"    potential="0.05"/>
-	<item room_category1="corridor"  appearance_property="office"     potential="0.05"/>
-	<item room_category1="kitchen"   appearance_property="corridor"   potential="0.05"/>
-	<item room_category1="kitchen"   appearance_property="kitchen"    potential="0.9"/>
-	<item room_category1="kitchen"   appearance_property="office"     potential="0.05"/>
-	<item room_category1="office"    appearance_property="corridor"   potential="0.05"/>
-	<item room_category1="office"    appearance_property="kitchen"    potential="0.05"/>
-	<item room_category1="office"    appearance_property="office"     potential="0.9"/>
+	<item room_category1="corridor"  appearance_property="corridor"   probability="0.9"/>
+	<item room_category1="corridor"  appearance_property="kitchen"    probability="0.05"/>
+	<item room_category1="corridor"  appearance_property="office"     probability="0.05"/>
+	<item room_category1="kitchen"   appearance_property="corridor"   probability="0.05"/>
+	<item room_category1="kitchen"   appearance_property="kitchen"    probability="0.9"/>
+	<item room_category1="kitchen"   appearance_property="office"     probability="0.05"/>
+	<item room_category1="office"    appearance_property="corridor"   probability="0.05"/>
+	<item room_category1="office"    appearance_property="kitchen"    probability="0.05"/>
+	<item room_category1="office"    appearance_property="office"     probability="0.9"/>
     </appearance_property_given_room_category>
     <appearance_property_given_room_category>
-	<item appearance_property="corridor"   potential="0.33333"/>
-	<item appearance_property="kitchen"    potential="0.33333"/>
-	<item appearance_property="office"     potential="0.33333"/>
+	<item appearance_property="corridor"   probability="0.33333"/>
+	<item appearance_property="kitchen"    probability="0.33333"/>
+	<item appearance_property="office"     probability="0.33333"/>
     </appearance_property_given_room_category>
 </default>
