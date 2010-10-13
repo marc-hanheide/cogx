@@ -32,10 +32,6 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.SharedBelief;
-import eu.cogx.perceptmediator.components.RoomMembershipMediator;
-import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
-import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
-import eu.cogx.perceptmediator.transferfunctions.VisualObjectTransferFunction;
 import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.slice.actions.AskForColour;
@@ -46,7 +42,6 @@ import execution.slice.actions.AskPolarColour;
 import execution.slice.actions.AskPolarIdentity;
 import execution.slice.actions.AskPolarShape;
 import execution.slice.actions.BeliefPlusStringAction;
-import execution.slice.actions.ReportPosition;
 import execution.slice.actions.SingleBeliefAction;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
@@ -61,10 +56,10 @@ import execution.util.NonBlockingCompleteOnOperationExecutor;
  * 
  */
 public class DialogueActionInterface extends ManagedComponent {
-	private LocalActionStateManager m_actionStateManager;
+	protected LocalActionStateManager m_actionStateManager;
 	private GroundedToSharedBeliefMap m_groundedToShared;
 
-	private boolean m_fakeIt;
+	protected boolean m_fakeIt;
 
 	public static class DirectColourAnswer extends
 			BlockingActionExecutor<AskForColour> {
@@ -221,7 +216,7 @@ public class DialogueActionInterface extends ManagedComponent {
 		 * @param _sharedBeliefAddress
 		 * @return
 		 */
-		ArrayList<dFormula> getPostconditions(
+		protected ArrayList<dFormula> getPostconditions(
 				WorkingMemoryAddress _groundedBeliefAddress,
 				WorkingMemoryAddress _sharedBeliefAddress) {
 			return super.getPostconditions();
@@ -234,7 +229,7 @@ public class DialogueActionInterface extends ManagedComponent {
 		 * @param _sharedBeliefAddress
 		 * @return
 		 */
-		ArrayList<dFormula> getPreconditions(
+		protected ArrayList<dFormula> getPreconditions(
 				WorkingMemoryAddress _groundedBeliefAddress,
 				WorkingMemoryAddress _sharedBeliefAddress) {
 
@@ -291,7 +286,7 @@ public class DialogueActionInterface extends ManagedComponent {
 			m_feature = _feature;
 		}
 
-		ArrayList<dFormula> getPostconditions(
+		protected ArrayList<dFormula> getPostconditions(
 				WorkingMemoryAddress _groundedBeliefAddress,
 				WorkingMemoryAddress _sharedBeliefAddress) {
 
@@ -329,7 +324,7 @@ public class DialogueActionInterface extends ManagedComponent {
 		}
 
 		@Override
-		ArrayList<dFormula> getPostconditions(
+		protected ArrayList<dFormula> getPostconditions(
 				WorkingMemoryAddress _groundedBeliefAddress,
 				WorkingMemoryAddress _sharedBeliefAddress) {
 			ArrayList<dFormula> postconditions = super.getPostconditions(
@@ -548,176 +543,9 @@ public class DialogueActionInterface extends ManagedComponent {
 		}
 	}
 
-	public static class DirectReportPosition extends
-			BlockingActionExecutor<ReportPosition> {
+	
 
-		public DirectReportPosition(ManagedComponent _component) {
-			super(_component, ReportPosition.class);
-		}
-
-		@Override
-		public TriBool execute() {
-
-			TriBool result = TriBool.TRIFALSE;
-			try {
-				GroundedBelief belief = getComponent().getMemoryEntry(
-						getAction().beliefAddress, GroundedBelief.class);
-				CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class, belief);
-
-				// get something to describe the object
-				String objectIdent = "object";
-
-				FormulaDistribution distribution = gb.getContent().get(
-						VisualObjectTransferFunction.VISUAL_OBJECT_ID);
-				if (distribution != null) {
-					objectIdent = distribution.getDistribution()
-							.getMostLikely().getProposition();
-				}
-
-				// get place id that object is at
-				WMPointer placePointer = WMPointer
-						.create(gb
-								.getContent()
-								.get(eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN)
-								.getDistribution().getMostLikely().get());
-				CASTIndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class,
-								getComponent().getMemoryEntry(
-										placePointer.getVal(),
-										GroundedBelief.class));
-				int placeID = placeBelief.getContent()
-						.get(PlaceTransferFunction.PLACE_ID_ID)
-						.getDistribution().getMostLikely().getInteger();
-
-				WMPointer roomPointer = WMPointer.create(placeBelief
-						.getContent().get(RoomMembershipMediator.ROOM_PROPERTY)
-						.getDistribution().getMostLikely().get());
-
-				CASTIndependentFormulaDistributionsBelief<GroundedBelief> roomBelief = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class,
-								getComponent().getMemoryEntry(
-										roomPointer.getVal(),
-										GroundedBelief.class));
-
-				// start with a default room
-				String room = "room";
-
-				FormulaDistribution categoryDistribution = roomBelief
-						.getContent().get(ComaRoomTransferFunction.CATEGORY_ID);
-				if (categoryDistribution != null) {
-					room = categoryDistribution.getDistribution()
-							.getMostLikely().getProposition();
-				}
-
-				String message = "the " + objectIdent + " is in the " + room
-						+ ", at place " + placeID;
-				JOptionPane.showMessageDialog(null, message);
-
-				result = TriBool.TRITRUE;
-
-				((DialogueActionInterface) getComponent()).addBooleanFeature(
-						getAction().beliefAddress, "position-reported", true);
-
-			} catch (CASTException e) {
-				logException(e);
-			}
-
-			return result;
-
-		}
-	}
-
-	public static class ReportPositionDialogue extends
-			BeliefIntentionDialogueAction<ReportPosition> {
-
-		public ReportPositionDialogue(ManagedComponent _component) {
-			super(_component, ReportPosition.class);
-		}
-
-		@Override
-		ArrayList<dFormula> getPostconditions(
-				WorkingMemoryAddress _groundedBeliefAddress,
-				WorkingMemoryAddress _sharedBeliefAddress) {
-			ArrayList<dFormula> postconditions = super.getPostconditions(
-					_groundedBeliefAddress, _sharedBeliefAddress);
-
-			postconditions.add(PropositionFormula.create("grounded").get());
-
-			// postcondition is about the grounded belief
-			postconditions.add(new ModalFormula(-1, "about", WMPointer.create(
-					_groundedBeliefAddress,
-					CASTUtils.typeName(GroundedBelief.class)).get()));
-
-			try {
-
-				// get the grounded belief
-				GroundedBelief belief = getComponent().getMemoryEntry(
-						getAction().beliefAddress, GroundedBelief.class);
-
-				CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class, belief);
-
-				// get place id that object is at
-				WMPointer placePointer = WMPointer
-						.create(gb
-								.getContent()
-								.get(eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN)
-								.getDistribution().getMostLikely().get());
-
-				CASTIndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class,
-								getComponent().getMemoryEntry(
-										placePointer.getVal(),
-										GroundedBelief.class));
-
-				WMPointer roomPointer = WMPointer.create(placeBelief
-						.getContent().get(RoomMembershipMediator.ROOM_PROPERTY)
-						.getDistribution().getMostLikely().get());
-
-				CASTIndependentFormulaDistributionsBelief<GroundedBelief> roomBelief = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class,
-								getComponent().getMemoryEntry(
-										roomPointer.getVal(),
-										GroundedBelief.class));
-
-				// start with a default room
-				String room = "room";
-
-				FormulaDistribution categoryDistribution = roomBelief
-						.getContent().get(ComaRoomTransferFunction.CATEGORY_ID);
-				if (categoryDistribution != null) {
-					room = categoryDistribution.getDistribution()
-							.getMostLikely().getProposition();
-				}
-
-				ModalFormula inRoom = new ModalFormula(-1, "inRoom",
-						PropositionFormula.create(room).get());
-				ModalFormula content = new ModalFormula(-1, "content", inRoom);
-				postconditions.add(content);
-
-			} catch (DoesNotExistOnWMException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (UnknownSubarchitectureException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			return postconditions;
-		}
-
-		@Override
-		protected void actionComplete() {
-			try {
-				((DialogueActionInterface) getComponent()).addBooleanFeature(
-						getAction().beliefAddress, "position-reported", true);
-			} catch (CASTException e) {
-				logException("Problem while updating belief", e);
-			}
-		}
-
-	}
+	
 
 	private void addFeatureDirectly(SingleBeliefAction _action,
 			String _feature, String _value, double _prob)
@@ -781,7 +609,7 @@ public class DialogueActionInterface extends ManagedComponent {
 		return false;
 	}
 
-	private void addBooleanFeature(WorkingMemoryAddress _beliefAddress,
+	public void addBooleanFeature(WorkingMemoryAddress _beliefAddress,
 			String _feature, boolean _value) throws DoesNotExistOnWMException,
 			ConsistencyException, PermissionException,
 			UnknownSubarchitectureException {
@@ -836,10 +664,7 @@ public class DialogueActionInterface extends ManagedComponent {
 					new ComponentActionFactory<DirectAskForObject>(this,
 							DirectAskForObject.class));
 
-			m_actionStateManager.registerActionType(ReportPosition.class,
-					new ComponentActionFactory<DirectReportPosition>(this,
-							DirectReportPosition.class));
-		} else {
+			} else {
 
 			m_actionStateManager.registerActionType(AskForColour.class,
 					new ComponentActionFactory<AskForColourValueDialogue>(this,
@@ -872,9 +697,7 @@ public class DialogueActionInterface extends ManagedComponent {
 									this,
 									AskForObjectWithFeatureValueDialogue.class));
 
-			m_actionStateManager.registerActionType(ReportPosition.class,
-					new ComponentActionFactory<ReportPositionDialogue>(this,
-							ReportPositionDialogue.class));
+			
 
 			// TODO replace this with one of Marc's magic thingys
 			WorkingMemoryChangeReceiver updater = new WorkingMemoryChangeReceiver() {
