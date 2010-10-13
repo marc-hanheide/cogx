@@ -313,7 +313,29 @@ public class DialogueManagement extends ManagedComponent {
 
 
 
+	/**
+	 * Get the features to extract for the question
+	 * 
+	 * @param form the formula containing the question
+	 * @return the list of features to extract
+	 */
+	private List<String> getFeaturesToExtractForQuestion(dFormula form) {
+		
+		String featureType = FormulaUtils.getString(EpistemicObjectUtils.
+				getModalOperatorValue(form,"feature"));
+		debug("feature type: " + featureType);
 
+		List<String> featuresToExtract = new LinkedList<String>();
+		if (featureType.equals("identity")) {
+			featuresToExtract.add("color");
+			featuresToExtract.add("type");
+			featuresToExtract.add("shape");
+		}
+		else {
+			featuresToExtract.add(featureType);
+		}
+		return featuresToExtract;
+	}
 
 	/**
 	 * Expand the intentional content -- i.e. if the formula of the postcondition contains
@@ -335,45 +357,27 @@ public class DialogueManagement extends ManagedComponent {
 
 		List<IntentionalContent> newContents = new LinkedList<IntentionalContent>();
 		
-		for (IntentionalContent alternativeContent : newCI.intent.content) {	
+		for (IntentionalContent content : newCI.intent.content) {	
 
-			dFormula featureType = EpistemicObjectUtils.getModalOperatorValue(
-					alternativeContent.postconditions,"feature");
-			debug("feature type: " + FormulaUtils.getString(featureType));
-
-			HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(alternativeContent.postconditions, FormulaUtils.getString(featureType));		
+			List<String> featuresToExtract = getFeaturesToExtractForQuestion (content.postconditions);
+			HashMap<ComplexFormula,Float> expandedFormulae = 
+				expandFormula(content.postconditions, featuresToExtract);		
 
 			debug("number of expanded formulae: " + expandedFormulae.size());
 			
 			for (ComplexFormula expandedFormula : expandedFormulae.keySet()) {
 				
-				float prob = alternativeContent.probValue* expandedFormulae.get(expandedFormula);
-				IntentionalContent newContent = new IntentionalContent(alternativeContent.agents, alternativeContent.preconditions, 
+				float prob = content.probValue* expandedFormulae.get(expandedFormula);
+				IntentionalContent newContent = 
+					new IntentionalContent(content.agents, content.preconditions, 
 						expandedFormula, prob);
 
 				// in case we deal with a polar question
-				
-				dFormula featureValue = EpistemicObjectUtils.getModalOperatorValue(
-						newContent.postconditions, (FormulaUtils.getString(featureType)));	
-				debug("feature value: " + FormulaUtils.getString(featureValue));
-
-				dFormula hypothesis = EpistemicObjectUtils.getModalOperatorValue(newContent.postconditions, "hypo");
-				debug("hypothesis: " + FormulaUtils.getString(hypothesis));		
-
-				if (hypothesis != null && featureValue != null) {
-					if (FormulaUtils.subsumes(hypothesis,featureValue)) {
-						EpistemicObjectUtils.setModalOperatorValue(newContent.postconditions, "hypo", "valid");
-					}
-					else {
-						EpistemicObjectUtils.setModalOperatorValue(newContent.postconditions, "hypo", "invalid");
-					}
-				}
-				else if (hypothesis != null) {
-					EpistemicObjectUtils.setModalOperatorValue(newContent.postconditions, "hypo", "noclue");
+				if (FormulaUtils.getString(newContent.postconditions).contains(("hypo"))) {
+					transformPolarQuestionHypothesis (newContent);
 				}
 				
 				debug("expanded postcondition: " + FormulaUtils.getString(newContent.postconditions) + ", with prob. " + prob);				
-
 				newContents.add(newContent);
 			}	
 		}
@@ -383,6 +387,37 @@ public class DialogueManagement extends ManagedComponent {
 		return newCI;
 	}
 
+	
+	/**
+	 * If the question encoded in the intentional content is a polar content, transform the hypothesis
+	 * to 
+	 * @param content
+	 * @param featureType
+	 */
+	public void transformPolarQuestionHypothesis (IntentionalContent content) {
+		
+		String featureType = FormulaUtils.getString(EpistemicObjectUtils.
+				getModalOperatorValue(content.postconditions,"feature"));
+		
+		dFormula featureValue = EpistemicObjectUtils.getModalOperatorValue(
+				content.postconditions, featureType);	
+		debug("feature value: " + FormulaUtils.getString(featureValue));
+
+		dFormula hypothesis = EpistemicObjectUtils.getModalOperatorValue(content.postconditions, "hypo");
+		debug("hypothesis: " + FormulaUtils.getString(hypothesis));		
+
+		if (hypothesis != null && featureValue != null) {
+			if (FormulaUtils.subsumes(hypothesis,featureValue)) {
+				EpistemicObjectUtils.setModalOperatorValue(content.postconditions, "hypo", "valid");
+			}
+			else {
+				EpistemicObjectUtils.setModalOperatorValue(content.postconditions, "hypo", "invalid");
+			}
+		}
+		else if (hypothesis != null) {
+			EpistemicObjectUtils.setModalOperatorValue(content.postconditions, "hypo", "noclue");
+		}
+	}
 
 
 
@@ -397,7 +432,7 @@ public class DialogueManagement extends ManagedComponent {
 	 * @throws DoesNotExistOnWMException
 	 * @throws DialogueException
 	 */
-	private HashMap<ComplexFormula,Float> expandFormula (dFormula form, String featureType)
+	private HashMap<ComplexFormula,Float> expandFormula (dFormula form, List<String> featuresToExtract)
 	throws UnknownSubarchitectureException, DoesNotExistOnWMException, DialogueException {
 
 		if (form instanceof ComplexFormula) {
@@ -407,7 +442,7 @@ public class DialogueManagement extends ManagedComponent {
 
 			for (dFormula existingSubFormula : ((ComplexFormula)form).forms) {
 
-				HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(existingSubFormula, featureType);			
+				HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(existingSubFormula, featuresToExtract);			
 				HashMap<ComplexFormula,Float> newResults = new HashMap<ComplexFormula,Float>();
 
 				for (dFormula curCFormula : results.keySet()) {
@@ -428,7 +463,7 @@ public class DialogueManagement extends ManagedComponent {
 
 
 			HashMap<ComplexFormula, Float> newFormulae = new HashMap<ComplexFormula,Float>();
-			HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(((ModalFormula)form).form, featureType);
+			HashMap<ComplexFormula,Float> expandedFormulae = expandFormula(((ModalFormula)form).form, featuresToExtract);
 
 			for (ComplexFormula expandedFormula : expandedFormulae.keySet()) {
 
@@ -447,7 +482,7 @@ public class DialogueManagement extends ManagedComponent {
 				try {
 					dBelief b = getMemoryEntry(WMPointer, dBelief.class);
 
-					HashMap<ComplexFormula,Float> expandedFormulae =  EpistemicObjectUtils.getBeliefContent(b, featureType);
+					HashMap<ComplexFormula,Float> expandedFormulae =  EpistemicObjectUtils.getBeliefContent(b, featuresToExtract);
 
 					for (ComplexFormula expandedFormula : expandedFormulae.keySet()) {
 						expandedFormula.forms.add(new ModalFormula(0, "ref", form));

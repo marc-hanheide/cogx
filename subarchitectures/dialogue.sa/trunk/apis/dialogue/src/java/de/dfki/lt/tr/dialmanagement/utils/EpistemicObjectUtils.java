@@ -233,7 +233,7 @@ public class EpistemicObjectUtils {
 	 * @return the complex formula representing the belief
 	 * @throws DialogueException
 	 */
-	public static HashMap<ComplexFormula,Float> getBeliefContent (dBelief b, String featureType) throws DialogueException {
+	public static HashMap<ComplexFormula,Float> getBeliefContent (dBelief b, List<String> featuresToExtract) throws DialogueException {
 		
 		HashMap<ComplexFormula,Float> results = new HashMap<ComplexFormula,Float>();
 		results.put(new ComplexFormula(0,new LinkedList<dFormula>(), BinaryOp.conj), 1.0f);
@@ -244,7 +244,7 @@ public class EpistemicObjectUtils {
 
 			for (String key : ((CondIndependentDistribs)b.content).distribs.keySet()) {
 				debug("key: " + key);
-				if (featureType.equals(key) && 
+				if (featuresToExtract.contains(key) && 
 						((CondIndependentDistribs)b.content).distribs.get(key) instanceof BasicProbDistribution) {
 
 					debug("type of values: " + ((BasicProbDistribution)((CondIndependentDistribs)b.content).distribs.get(key)).values);
