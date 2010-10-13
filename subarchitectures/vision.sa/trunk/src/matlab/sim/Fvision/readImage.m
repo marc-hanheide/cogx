@@ -10,6 +10,10 @@ x0=imread([Dirs.data Data.imgName num2str(idx,['%0' num2str(Data.numDigit) 'd'])
 b0=imread([Dirs.data Data.mskName num2str(idx,['%0' num2str(Data.numDigit) 'd']) Data.imgFormat]);
 try
     pt3d = load([Dirs.data Data.ptsName num2str(idx,['%0' num2str(Data.numDigit) 'd']) Data.ptsFormat]) ;
+    if size(pt3d,2)>3
+        pt3d=pt3d(:,4:6);
+        b0=(b0==1);
+    end
 catch
     pt3d = [] ; warning('3d data not available?') ;
 end
