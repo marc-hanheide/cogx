@@ -40,6 +40,9 @@ class DTProblem(object):
     def initialize(self, cast_state):
         self.state = cast_state
         self.selected_subproblem = -1
+
+        for pnode in self.subplan_actions:
+            pnode.status = plans.ActionStatusEnum.IN_PROGRESS
         
         self.relaxation_layers = self.compute_restrictions_new()
         #self.relaxation_layers = self.compute_restrictions()
@@ -159,7 +162,7 @@ class DTProblem(object):
         previous_relaxations = set()
         pending_relaxations = []
         for pnode in self.select_actions:
-            print pnode
+            #print pnode
             log.debug("cond: %s", str(map(str,pnode.original_preconds)))
             det_constraints = []
             prob_constraints = []
@@ -191,8 +194,8 @@ class DTProblem(object):
             relaxation_order = deps.topological_sort()
             dep_relaxations = [v for v in reversed(relaxation_order) if v in depvars]
             indep_relaxations = [v for v in relaxation_order if v in indep_vars]
-            print "independent vars:", map(str, indep_relaxations)
-            print "dependent vars:", map(str, dep_relaxations)
+            #print "independent vars:", map(str, indep_relaxations)
+            #print "dependent vars:", map(str, dep_relaxations)
 
             for c in chain(det_constraints):
                 if c not in constraints:
@@ -202,9 +205,9 @@ class DTProblem(object):
             for v in chain([None], dep_relaxations):
                 if v is not None:
                     if deps[v] and not (deps[v] - indep_vars):
-                        print "Fake relaxation:", v
+                        #print "Fake relaxation:", v
                         continue
-                    print "removing", v
+                    #print "removing", v
                     fixed.discard(v)
                     previous_relaxations.add(v)
                     
@@ -221,11 +224,11 @@ class DTProblem(object):
 
             pending_relaxations = [v for v in pending_relaxations if v not in dep_relaxations + indep_relaxations]
             pending_relaxations += indep_relaxations
-            print "pending:", map(str, pending_relaxations)
+            #print "pending:", map(str, pending_relaxations)
 
         for v in pending_relaxations:
             if v is not None:
-                print "removing", v
+                #print "removing", v
                 fixed.discard(v)
 
             cnew = []

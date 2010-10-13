@@ -79,7 +79,6 @@ class CASTTask(object):
         self.cp_task = task.Task(self.id, cp_problem)
         component.planner.register_task(self.cp_task)
         
-        self.internal_state = TaskStateEnum.INITIALISED
         self.update_status(TaskStateEnum.INITIALISED)
 
         problem_fn = abspath(join(self.component.get_path(), "problem%d.mapl" % self.id))
@@ -184,8 +183,8 @@ class CASTTask(object):
             
             #self.update_status(self.status)
             if self.dt_planning_active():
-                self.update_status(TaskStateEnum.WAITING_FOR_DT)
                 self.dt_task.initialize(self.state)
+                self.update_status(TaskStateEnum.WAITING_FOR_DT)
                 self.component.start_dt_planning(self)
                 return
             
@@ -401,6 +400,9 @@ class CASTTask(object):
         self.update_status(TaskStateEnum.PROCESSING)
         self.plan_history.append(self.dt_task)
 
+        # import debug
+        # debug.set_trace()
+
         self.cp_task.mark_changed()
         self.monitor_cp()
 
@@ -462,10 +464,12 @@ class CASTTask(object):
 
         if outplan:
             log.info("First action: %s == %s", str(nodes[0]), outplan[0].fullName)
+            nodes[0].status = plans.ActionStatusEnum.IN_PROGRESS
+            self.update_status(TaskStateEnum.WAITING_FOR_ACTION)
         else:
             log.info("Plan is empty")
+            self.update_status(TaskStateEnum.COMPLETED)
         
-        self.internal_state = TaskStateEnum.WAITING_FOR_ACTION
         self.component.deliver_plan(self, outplan)
         
         

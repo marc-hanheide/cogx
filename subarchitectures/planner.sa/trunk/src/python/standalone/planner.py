@@ -125,7 +125,7 @@ class Planner(object):
         action = pnode.action
         if cond:
             try:
-                action.tryInstantiate(pnode.full_args, state.problem)
+                action.instantiate(pnode.full_args, state.problem)
                 extstate = state.get_extended_state(state.get_relevant_vars(cond))
                 result = extstate.is_satisfied(cond)
             except:

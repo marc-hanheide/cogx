@@ -15,7 +15,10 @@ tr.unsat {background-color: #FF6666}
 
 tr.executed {background-color: #CCCCCC}
 tr.failed {background-color: #FF6666}
-tr.executing {background-color: #88FF88}
+tr.in_progress {background-color: #88FF88}
+tr.dt {background-color: #8888ff}
+tr.dt.in_progress {background-color: #88ffff}
+tr.dt.executed {background-color: #6666dd}
 """
 
 class PlannerDisplayClient(DisplayClient.CDisplayClient):
@@ -73,11 +76,10 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
         html = "<h2>Planning Task %d (%s)</h2>" % (task.id, task.internal_state)
 
         def goal_row(g):
-            if task.status == Planner.Completion.SUCCEEDED:
-                if g.isInPlan:
-                    _class = "sat"
-                else:
-                    _class = "unsat"
+            if g.isInPlan:
+                _class = "sat"
+            elif task.status == Planner.Completion.SUCCEEDED:
+                _class = "unsat"
             else:
                 _class = ""
             return (_class, g.goalString, g.importance, g.isInPlan)
@@ -91,7 +93,10 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
         def action_row(pnode):
             args = [a.name for a in pnode.args]
             name = "(%s %s)" % (pnode.action.name, " ".join(args))
-            return (str(pnode.status).lower(), name, float(pnode.cost), pnode.status)
+            _class = str(pnode.status).lower()
+            if task.dt_task and pnode in task.dt_task.subplan_actions:
+                _class += ' dt'
+            return (_class, name, float(pnode.cost), pnode.status)
 
         if task.cp_task.planning_status == PlanningStatusEnum.PLANNING_FAILURE:
             html += "<p>No plan found</p>"
@@ -110,7 +115,7 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
                 html += "<p>Planning (DT)...</p>"
 
         if task.plan_history:
-            html += "<a3>Plan history</a3>"
+            html += "<h3>Plan history</h3>"
             for elem in task.plan_history:
                 if elem is None:
                     html += '<p>No plan found</p>'
