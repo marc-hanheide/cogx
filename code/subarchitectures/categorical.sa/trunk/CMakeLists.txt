@@ -23,6 +23,7 @@ include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/robotbase/src/c++/autogen)
 include_directories(src/c++/categorical)
 include_directories(src/c++/categorical/autogen)
+include_directories(${COGX_ROOT}/subarchitectures/spatial.sa/src/c++/autogen)
 
 
 # -----------------------------------------------------------
@@ -44,6 +45,7 @@ add_subdirectory(src/c++/categorical/components/DataProvider)
 add_subdirectory(src/c++/categorical/components/LaserProcessor)
 add_subdirectory(src/c++/categorical/components/VisualProcessor)
 add_subdirectory(src/c++/categorical/components/DataSaver)
+add_subdirectory(src/c++/categorical/components/ShapeIntegrator)
 
 # Auxiliary components
 option(BUILD_SA_CATEGORICAL_AUX "Build categorical subarchitecture auxiliary components" NO)
