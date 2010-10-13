@@ -57,6 +57,8 @@ void ObjectAnalyzer::start()
   const char *name = "analyzerSemaphore";
   named_semaphore(open_or_create, name, 0);
   queuesNotEmpty = new named_semaphore(open_only, name);
+  
+  existsSalient = false;
 
   if (doDisplay)
   {
@@ -102,15 +104,21 @@ enum {
 };
 long ObjectAnalyzer::getOrCreateVisualObject(const string &objectId, VisualObjectPtr &pobject)
 {
-  try {
-	pobject = getMemoryEntry<VisualObject>(objectId);
-	return WmObject;
+  if(existsOnWorkingMemory(objectId))
+  {
+	try {
+	  pobject = getMemoryEntry<VisualObject>(objectId);
+	  return WmObject;
+	}
+	catch (DoesNotExistOnWMException e) {
+	  VisualObjectPtr pvobj = new VisualObject;
+	  //pvobj->protoObjectID = objectId;
+	  return NewObject;
+	}
   }
-  catch (DoesNotExistOnWMException e) {
-	VisualObjectPtr pvobj = new VisualObject;
-	//pvobj->protoObjectID = objectId;
-	return NewObject;
-  }
+  
+  VisualObjectPtr pvobj = new VisualObject;
+  return NewObject;
 }
 
 void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
@@ -119,8 +127,23 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
   log("Recieved results for VisualLearnerRecognitionTask %s", _wmc.address.id.c_str());
   // ProtoObjectData &data = ProtoObjectMap[ptask->protoObjectId];
 
-  VisualObjectPtr pvobj = new VisualObject;
-
+  
+  string pvId = ProtoObjectMap[ptask->protoObjectId].visualObjId;
+  VisualObjectPtr pvobj;
+  if(existsOnWorkingMemory(pvId)) {
+	try {
+//		VisualObjectPtr pvobj = getMemoryEntryWithData<VisualObject>(pvId).getData();
+		pvobj = getMemoryEntry<VisualObject>(pvId);
+	}
+	catch(DoesNotExistOnWMException e) {
+	  log("Cannot get the object ID %s dfrom WM. It will not be updated", pvId.c_str() );
+	  return;
+	}
+  }
+  else {
+	log("Visual object ID %s deleted. It will not be updated", pvId.c_str());
+	return;
+  }
   pvobj->protoObjectID = ptask->protoObjectId;
 
   // NOTE: we are assuming that all the lists have the same length
@@ -163,7 +186,7 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
 
   pvobj->time = getCASTTime();
   if(ProtoObjectMap.find(ptask->protoObjectId) != ProtoObjectMap.end())
-	overwriteWorkingMemory(ProtoObjectMap[ptask->protoObjectId].visualObjId, pvobj);
+	overwriteWorkingMemory(pvId, pvobj);
   else
 	log("Proto object ID %s deleted. Visual object will not be updated", ptask->protoObjectId.c_str());
 }
@@ -239,12 +262,23 @@ void ObjectAnalyzer::runComponent()
 			pvobj->identDistrib.push_back(1.0f);
 			// we are absolutely sure that we dont't know
 			pvobj->identAmbiguity = 0.;
+			pvobj->salience = 1.0f;
 			// TODO: what about identGain?
+			
+			// Remove salience from the previously salient object
+			if(existsSalient && existsOnWorkingMemory(m_salientObjID))
+			{		  
+			  VisualObjectPtr salientObj = getMemoryEntryWithData<VisualObject>(m_salientObjID).getData();
+			  salientObj->salience=0.0f;
+			  
+			  overwriteWorkingMemory(m_salientObjID, salientObj);
+			}
 
 			string objId = newDataID();
 			addToWorkingMemory(objId, pvobj);
 
-			data.visualObjId = objId;
+			existsSalient = true;
+			data.visualObjId = m_salientObjID = objId;
 
 			log("A visual object added for protoObject ID %s", data.addr.id.c_str());
 			start_OR_RecognitionTask(objPtr, data.addr);
@@ -264,6 +298,9 @@ void ObjectAnalyzer::runComponent()
 		ProtoObjectData &obj = ProtoObjectMap[objToDelete.front()];
 
 		obj.status= DELETED;
+		
+		if (obj.visualObjId == m_salientObjID)
+		  existsSalient=false;
 
 		try
 		{
@@ -277,7 +314,7 @@ void ObjectAnalyzer::runComponent()
 		catch (DoesNotExistOnWMException e)
 		{
 		  log("WARNING: Proto-object ID %s already removed", obj.visualObjId.c_str());
-		}
+		}		
 
 		objToDelete.pop();
 	  }
