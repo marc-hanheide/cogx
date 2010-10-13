@@ -50,22 +50,40 @@
     (max-gain-value-ident ?v - visual-object) - number
   )
 
-  (:init-rule add-undefined-max-gain-value-color
+  (:init-rule set-max-gain-value-color
      :parameters (?v - visual-object)
      :precondition (= (max-gain-value-color ?v) UNKNOWN)
      :effect (assign (max-gain-value-color ?v) 0)
   )
 
-  (:init-rule add-undefined-max-gain-value-shape
+  (:init-rule set-max-gain-value-shape
      :parameters (?v - visual-object)
      :precondition (= (max-gain-value-shape ?v) UNKNOWN)
      :effect (assign (max-gain-value-shape ?v) 0)
   )
 
-  (:init-rule add-undefined-max-gain-value-color
+  (:init-rule set-max-gain-value-ident
      :parameters (?v - visual-object)
      :precondition (= (max-gain-value-ident ?v) UNKNOWN)
      :effect (assign (max-gain-value-ident ?v) 0)
+  )
+
+  (:init-rule set-p-color
+     :parameters (?v - visual-object ?c - color-name)
+     :precondition (= (p-color ?v ?c) UNKNOWN)
+     :effect (assign (p-color ?v ?c) 0)
+  )
+
+  (:init-rule set-p-shape
+     :parameters (?v - visual-object ?s - shape-name)
+     :precondition (= (p-shape ?v ?s) UNKNOWN)
+     :effect (assign (p-shape ?v ?s) 0)
+  )
+
+  (:init-rule set-p-ident
+     :parameters (?v - visual-object ?i - ident-name)
+     :precondition (= (p-ident ?v ?i) UNKNOWN)
+     :effect (assign (p-ident ?v ?i) 0)
   )
 
   (:derived (learning-impossible)
