@@ -87,6 +87,7 @@ void CategoricalLaserProcessor::configure(const map<string,string> &config)
     labelFile=cf.getStrValue(_cfgGroup, "LabelFile", "");
 
     _useVision=cf.getBoolValue("DataProvider", "UseVision", true);
+    _delay=cf.getIntValue(_cfgGroup, "Delay", 0);
 
     _featureFilePath=cf.getStrValue(_cfgGroup, "FeatureConfigFile", "");
     _scaleFilePath=cf.getStrValue(_cfgGroup, "ScaleConfigFile", "");
@@ -465,6 +466,9 @@ void CategoricalLaserProcessor::runComponent()
       }
 
       sched_yield();
+
+      if (_delay>0)
+    	  usleep(_delay);
 
       // Overwrite the outputs on the WM
       overwriteWorkingMemory(_laserResultsId, laserResults);

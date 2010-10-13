@@ -250,7 +250,17 @@ void CategoricalShapeIntegrator::runComponent()
 			if ( (results->status==CategoricalData::DsValid) && (odom->status==CategoricalData::DsValid) )
 			{
 				// Get the current place id
-				SpatialData::PlacePtr curPlace = _placeInterfacePrx->getCurrentPlace();
+				SpatialData::PlacePtr curPlace;
+				try
+				{
+					curPlace = _placeInterfacePrx->getCurrentPlace();
+				}
+				catch(...)
+				{
+					log("Could not get the current place!!");
+					curPlace=0;
+				}
+
 				if (curPlace)
 				{
 					log("%d", curPlace->id);
