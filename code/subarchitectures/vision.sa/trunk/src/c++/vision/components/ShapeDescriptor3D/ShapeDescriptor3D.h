@@ -28,10 +28,6 @@ class ShapeDescriptor3D : public StereoClient,
 {
 private:
   /**
-   * Which camera to get images from
-   */
-  int camId;
-  /**
    * image width at which the stereo server should operate for us.
    * smaller image are of course faster
    */
