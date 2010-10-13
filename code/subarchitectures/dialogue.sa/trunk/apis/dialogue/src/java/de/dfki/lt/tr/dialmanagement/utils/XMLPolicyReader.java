@@ -224,7 +224,7 @@ public class XMLPolicyReader {
 				}
 				}
 				else {
-					debug("edge " + id + " temporarily deactivated");
+					log("edge " + id + " temporarily deactivated");
 				} 
 			}
 			else if (!xmlNode.getNodeName().equals("#text") && !xmlNode.getNodeName().equals("#comment")){

@@ -177,6 +177,9 @@ implements TRResultListener
                 Iterator<CASTData> it = data.getData();
                 while (it.hasNext()) {
                     PhonString phonString = (PhonString) it.next().getData();
+                    if (phonString.wordSequence.equals("no")) {
+                    	phonString.wordSequence = "No";
+                    }
                     addToWorkingMemory(newDataID(), phonString);
                 }
     	}

@@ -11,7 +11,9 @@
 		<node id="posAnswerNodeCertain" action="posAnswerActionCertain" isInitial="false" isFinal="true"/> 
 		<node id="posAnswerNodeUncertain" action="posAnswerActionUncertain" isInitial="false" isFinal="true"/> 
 		<node id="negAnswerNodeCertain" action="negAnswerActionCertain" isInitial="false" isFinal="true"/> 
-		<node id="negAnswerNodeUncertain" action="negAnswerActionUncertain" isInitial="false" isFinal="true"/> 		
+		<node id="negAnswerNodeUncertain" action="negAnswerActionUncertain" isInitial="false" isFinal="true"/> 
+		<node id="notUnderstoodNode" action="notUnderstoodAction" isInitial="false" isFinal="true"/>
+		<node id="describeObjectNode" action="describeObjectAction" isInitial="false" isFinal="true"/>		
 	</nodes>
 	
 	<edges>
@@ -28,7 +30,8 @@
 		<edge id="polarNegEdgeCertain" source="*" target="negAnswerNodeCertain" condition="polarNegCondCertain"/> 
 		<edge id="polarNegEdgeUncertain" source="*" target="negAnswerNodeUncertain" condition="polarNegCondUncertain"/> 
 		<edge id="polarNoclueEdge" source="*" target="notKnowAnswerNode" condition="polarNoclueCond"/> 
-		
+		<edge id="yesEdge" source="*" target="thankingNode" condition="yesCond"/> 
+		<edge id="noEdge" source="*" target="thankingNode" condition="noCond"/> 
 	</edges>
 	
 	<conditions>
@@ -53,7 +56,11 @@
 		<condition id="polarNegCondUncertain" type="communicativeintention"
 			lowerProb="0.6" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(invalid)))" ></condition> 
 	<condition id="polarNoclueCond" type="communicativeintention"
-			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(noclue)))" ></condition> 
+			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(noclue)))" ></condition>
+		
+		<condition id="yesCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(verified)" ></condition>
+		<condition id="noCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(falsified)" ></condition>	 
+		<condition id="openQuestion" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content= "&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;color&gt;(%3)) ^ &lt;feature&gt;(identity)))" />
 	</conditions>
 	
 	<actions>
@@ -66,7 +73,9 @@
 	    <action id="notKnowAnswerAction" type="communicativeintention" content="&lt;state&gt;(knowing-disconfirmed)" />
 	    <action id="posAnswerActionCertain" type="communicativeintention" content="&lt;state&gt;(verified)" ></action> 
 	    <action id="posAnswerActionUncertain" type="communicativeintention" content="&lt;state&gt;(verified ^ &lt;certainty&gt;uncertain)" ></action> 
-	      <action id="negAnswerActionCertain" type="communicativeintention" content="&lt;state&gt;(falsified)" ></action> 
-	       <action id="negAnswerActionUncertain" type="communicativeintention" content="&lt;state&gt;(falsified ^ &lt;certainty&gt;uncertain)" ></action> 
+	    <action id="negAnswerActionCertain" type="communicativeintention" content="&lt;state&gt;(falsified)" ></action> 
+	    <action id="negAnswerActionUncertain" type="communicativeintention" content="&lt;state&gt;(falsified ^ &lt;certainty&gt;uncertain)" ></action>
+	    <action id="notUnderstoodAction" action="communicativeintention" content="&lt;state&gt;(error-reported)" />
+	    <action id="describeObjectAction" action="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(%3)))"></action>
 	</actions>
 </policy>

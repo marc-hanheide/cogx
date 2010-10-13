@@ -6468,34 +6468,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="x2du-58">
-    <arg>
-      <atomcat type="n">
-        <fs>
-          <feat attr="index">
-            <lf>
-              <nomvar name="D"/>
-            </lf>
-          </feat>
-          <feat attr="x2du">
-            <featvar name="X2DU"/>
-          </feat>
-        </fs>
-      </atomcat>
-    </arg>
-    <result>
-      <atomcat type="du">
-        <fs>
-          <feat attr="index">
-            <lf>
-              <nomvar name="D"/>
-            </lf>
-          </feat>
-        </fs>
-      </atomcat>
-    </result>
-  </typechanging>
-  <typechanging name="x2du-59">
+   <typechanging name="x2du-59">
     <arg>
       <atomcat type="adj">
         <fs>
@@ -6522,33 +6495,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="x2du-60">
-    <arg>
-      <atomcat type="adv">
-        <fs>
-          <feat attr="index">
-            <lf>
-              <nomvar name="D"/>
-            </lf>
-          </feat>
-          <feat attr="x2du">
-            <featvar name="X2DU"/>
-          </feat>
-        </fs>
-      </atomcat>
-    </arg>
-    <result>
-      <atomcat type="du">
-        <fs>
-          <feat attr="index">
-            <lf>
-              <nomvar name="D"/>
-            </lf>
-          </feat>
-        </fs>
-      </atomcat>
-    </result>
-  </typechanging>
+  
   <typechanging name="x2du-61">
     <arg>
       <atomcat type="s">
@@ -6576,33 +6523,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="x2du-62">
-    <arg>
-      <atomcat type="pp">
-        <fs>
-          <feat attr="index">
-            <lf>
-              <nomvar name="D"/>
-            </lf>
-          </feat>
-          <feat attr="x2du">
-            <featvar name="X2DU"/>
-          </feat>
-        </fs>
-      </atomcat>
-    </arg>
-    <result>
-      <atomcat type="du">
-        <fs>
-          <feat attr="index">
-            <lf>
-              <nomvar name="D"/>
-            </lf>
-          </feat>
-        </fs>
-      </atomcat>
-    </result>
-  </typechanging>
+  
 
   <application dir="forward"/>
   <application dir="backward"/>
