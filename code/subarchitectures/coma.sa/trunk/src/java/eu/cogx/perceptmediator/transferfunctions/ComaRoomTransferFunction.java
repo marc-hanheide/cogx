@@ -31,7 +31,7 @@ public class ComaRoomTransferFunction extends
 		SimpleDiscreteTransferFunction<ComaRoom, GroundedBelief> {
 
 	public static final String ROOM_ID = "RoomId";
-
+	public static final String CATEGORY_ID = "category";
 	public ComaRoomTransferFunction(ManagedComponent component) {
 		super(component, Logger.getLogger(ComaRoomTransferFunction.class),
 				GroundedBelief.class);
@@ -74,7 +74,7 @@ public class ComaRoomTransferFunction extends
 			fd.add(value, jp.probability);
 		}
 		assert (fd.size() > 0);
-		distr.put("category", fd);
+		distr.put(CATEGORY_ID, fd);
 	}
 
 }
