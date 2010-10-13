@@ -1208,6 +1208,7 @@ SampleCloud *
 DensitySampler::tryLoadCloudFromFile(const string &supportObjectLabel,
     const string &onObjectLabel, SpatialRelationType type) 
 {
+  cerr << "Not going to try clouds from file returning.."<< std::endl;
 return 0;
   string filename("cloud_");
   filename += onObjectLabel;

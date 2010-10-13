@@ -1493,7 +1493,7 @@ log("filled");
 	  }
 	  SpatialGridMap::GridMap<GridMapData> tmpMap = *m_map; 
 	  if(exists){
-	    log("table1 exists in the places  what we are asked to search");
+	    log("table exists in the places  what we are asked to search");
 	    // we always execute the first policy
 
 	    vector<FrontierInterface::ObjectRelation> relations;
@@ -1524,7 +1524,7 @@ log("filled");
 	    // overwrite the command
 	  }
 	  else {
-	    log("strategy contains room and has 1 step: %3.2f", m_threshold);
+	    log("table does not exists in the places  what we are asked to search");
 	    InitializePDFForObject(1.0, targetObject, m_map);
 	    if(m_usePeekabot){
 	      pbVis->AddPDF(*m_map);
@@ -3329,7 +3329,7 @@ log("filled");
 	    log("NavCommand succeeded.");
 	    m_totalViewPoints++;	
 	    if(m_publishSimCones){
-	     // MovePanTilt(0.0,m_tilt,0.08);
+	      MovePanTilt(0.0,m_tilt,0.08);
 	      Recognize();
 	    }else{	    
 	      MovePanTilt(0.0,m_nbv.tilt,0.08);
