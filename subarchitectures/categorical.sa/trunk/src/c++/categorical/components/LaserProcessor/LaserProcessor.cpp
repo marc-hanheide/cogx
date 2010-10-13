@@ -86,6 +86,8 @@ void CategoricalLaserProcessor::configure(const map<string,string> &config)
   {
     labelFile=cf.getStrValue(_cfgGroup, "LabelFile", "");
 
+    _useVision=cf.getBoolValue("DataProvider", "UseVision", true);
+
     _featureFilePath=cf.getStrValue(_cfgGroup, "FeatureConfigFile", "");
     _scaleFilePath=cf.getStrValue(_cfgGroup, "ScaleConfigFile", "");
 
@@ -400,6 +402,10 @@ void CategoricalLaserProcessor::runComponent()
 {
   debug("Running...");
 
+  // Send first DP Update
+  if (!_useVision)
+	  sendDpUpdateCommand();
+
   // Run component
   while(isRunning())
   {
@@ -423,7 +429,8 @@ void CategoricalLaserProcessor::runComponent()
       pthread_mutex_unlock(&_dataSignalMutex);
 
       // Send update
-// VISION IS DOING IT       sendDpUpdateCommand();
+      if (!_useVision)
+         sendDpUpdateCommand();
 
       sched_yield();
 

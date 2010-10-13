@@ -132,6 +132,8 @@ private:
 
   /** List of labels and names. */
   categorical::LabelFile _labels;
+
+  bool _useVision;
 };
 
 
