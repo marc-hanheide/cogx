@@ -35,9 +35,9 @@
 	<item room_category1="office"    appearance_property="kitchen"    probability="0.05"/>
 	<item room_category1="office"    appearance_property="office"     probability="0.9"/>
     </appearance_property_given_room_category>
-    <appearance_property_given_room_category>
+    <default_appearance_property_given_room_category>
 	<item appearance_property="corridor"   probability="0.33333"/>
 	<item appearance_property="kitchen"    probability="0.33333"/>
 	<item appearance_property="office"     probability="0.33333"/>
-    </appearance_property_given_room_category>
+    </default_appearance_property_given_room_category>
 </default>
