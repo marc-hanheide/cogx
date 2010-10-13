@@ -32,6 +32,8 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.SharedBelief;
+import eu.cogx.perceptmediator.components.RoomMembershipMediator;
+import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.VisualObjectTransferFunction;
 import execution.slice.Action;
@@ -106,8 +108,9 @@ public class DialogueActionInterface extends ManagedComponent {
 		 */
 		ArrayList<dFormula> getPostconditions() {
 			ArrayList<dFormula> postconditions = new ArrayList<dFormula>();
-//			postconditions.add(new ModalFormula(-1, "agent", PropositionFormula
-//					.create("human").get()));
+			// postconditions.add(new ModalFormula(-1, "agent",
+			// PropositionFormula
+			// .create("human").get()));
 			return postconditions;
 		}
 
@@ -140,7 +143,8 @@ public class DialogueActionInterface extends ManagedComponent {
 
 			((ComplexFormula) intention.content.get(0).postconditions).forms = states;
 
-//			((ComplexFormula) intention.content.get(0).postconditions).forms = getPostconditions();
+			// ((ComplexFormula) intention.content.get(0).postconditions).forms
+			// = getPostconditions();
 			return intention;
 		}
 
@@ -222,7 +226,7 @@ public class DialogueActionInterface extends ManagedComponent {
 		}
 
 		/**
-		 * Empty list of preconditions.
+		 * Adds the precondition that the shared belief exists.
 		 * 
 		 * @param _groundedBeliefAddress
 		 * @param _sharedBeliefAddress
@@ -231,7 +235,14 @@ public class DialogueActionInterface extends ManagedComponent {
 		ArrayList<dFormula> getPreconditions(
 				WorkingMemoryAddress _groundedBeliefAddress,
 				WorkingMemoryAddress _sharedBeliefAddress) {
-			return super.getPreconditions();
+
+			ArrayList<dFormula> preconditions = super.getPreconditions();
+
+			preconditions.add(new ModalFormula(-1, "belief", WMPointer.create(
+					_sharedBeliefAddress,
+					CASTUtils.typeName(SharedBelief.class)).get()));
+			return preconditions;
+
 		}
 
 		protected Intention getIntention() {
@@ -252,14 +263,16 @@ public class DialogueActionInterface extends ManagedComponent {
 
 			ModalFormula state = new ModalFormula(-1, "state",
 					new ComplexFormula(-1, getPostconditions(
-							groundedBeliefAddress, sharedBeliefAddress), BinaryOp.conj));
+							groundedBeliefAddress, sharedBeliefAddress),
+							BinaryOp.conj));
 			ArrayList<dFormula> states = new ArrayList<dFormula>();
 			states.add(state);
 
 			((ComplexFormula) intention.content.get(0).postconditions).forms = states;
 
-//			((ComplexFormula) intention.content.get(0).postconditions).forms = getPostconditions(
-//					groundedBeliefAddress, sharedBeliefAddress);
+			// ((ComplexFormula) intention.content.get(0).postconditions).forms
+			// = getPostconditions(
+			// groundedBeliefAddress, sharedBeliefAddress);
 			return intention;
 		}
 
@@ -286,8 +299,13 @@ public class DialogueActionInterface extends ManagedComponent {
 			postconditions.add(PropositionFormula.create("question-answered")
 					.get());
 
-			postconditions.add(new ModalFormula(-1, "agent",
-					PropositionFormula.create(org.cognitivesystems.binder.humanAgent.value).get()));
+			postconditions
+					.add(new ModalFormula(
+							-1,
+							"agent",
+							PropositionFormula
+									.create(org.cognitivesystems.binder.humanAgent.value)
+									.get()));
 
 			postconditions.add(new ModalFormula(-1, "about", WMPointer.create(
 					_groundedBeliefAddress,
@@ -296,19 +314,6 @@ public class DialogueActionInterface extends ManagedComponent {
 					PropositionFormula.create(m_feature).get()));
 
 			return postconditions;
-		}
-
-		ArrayList<dFormula> getPreconditions(
-				WorkingMemoryAddress _groundedBeliefAddress,
-				WorkingMemoryAddress _sharedBeliefAddress) {
-
-			ArrayList<dFormula> preconditions = super.getPreconditions(
-					_groundedBeliefAddress, _sharedBeliefAddress);
-
-			preconditions.add(new ModalFormula(-1, "belief", WMPointer.create(
-					_sharedBeliefAddress,
-					CASTUtils.typeName(SharedBelief.class)).get()));
-			return preconditions;
 		}
 
 	}
@@ -597,6 +602,83 @@ public class DialogueActionInterface extends ManagedComponent {
 		}
 	}
 
+	public static class ReportPositionDialogue extends
+			BeliefIntentionDialogueAction<ReportPosition> {
+
+		public ReportPositionDialogue(ManagedComponent _component) {
+			super(_component, ReportPosition.class);
+		}
+
+		@Override
+		ArrayList<dFormula> getPostconditions(
+				WorkingMemoryAddress _groundedBeliefAddress,
+				WorkingMemoryAddress _sharedBeliefAddress) {
+			ArrayList<dFormula> postconditions = super.getPostconditions(
+					_groundedBeliefAddress, _sharedBeliefAddress);
+
+			// postcondition is about the grounded belief
+			postconditions.add(new ModalFormula(-1, "about", WMPointer.create(
+					_groundedBeliefAddress,
+					CASTUtils.typeName(GroundedBelief.class)).get()));
+
+			try {
+
+				// get the grounded belief
+				GroundedBelief belief = getComponent().getMemoryEntry(
+						getAction().beliefAddress, GroundedBelief.class);
+
+				CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
+						.create(GroundedBelief.class, belief);
+
+				// get place id that object is at
+				WMPointer placePointer = WMPointer
+						.create(gb
+								.getContent()
+								.get(eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN)
+								.getDistribution().getMostLikely().get());
+
+				CASTIndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
+						.create(GroundedBelief.class,
+								getComponent().getMemoryEntry(
+										placePointer.getVal(),
+										GroundedBelief.class));
+
+				WMPointer roomPointer = WMPointer.create(placeBelief
+						.getContent().get(RoomMembershipMediator.ROOM_PROPERTY)
+						.getDistribution().getMostLikely().get());
+
+				CASTIndependentFormulaDistributionsBelief<GroundedBelief> roomBelief = CASTIndependentFormulaDistributionsBelief
+						.create(GroundedBelief.class,
+								getComponent().getMemoryEntry(
+										roomPointer.getVal(),
+										GroundedBelief.class));
+
+				// start with a default room
+				String room = "room";
+
+				FormulaDistribution categoryDistribution = roomBelief.getContent().get(ComaRoomTransferFunction.CATEGORY_ID);
+				if(categoryDistribution != null) {
+					room = categoryDistribution.getDistribution().getMostLikely().getProposition();
+				}
+				
+				ModalFormula inRoom = new ModalFormula(-1, "inRoom",
+						PropositionFormula.create(room).get());
+				ModalFormula content = new ModalFormula(-1, "content", inRoom);
+				postconditions.add(content);
+
+			} catch (DoesNotExistOnWMException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (UnknownSubarchitectureException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			return postconditions;
+		}
+
+	}
+
 	private void addFeatureDirectly(SingleBeliefAction _action,
 			String _feature, String _value, double _prob)
 			throws DoesNotExistOnWMException, ConsistencyException,
@@ -733,6 +815,10 @@ public class DialogueActionInterface extends ManagedComponent {
 									this,
 									AskForObjectWithFeatureValueDialogue.class));
 
+			m_actionStateManager.registerActionType(ReportPosition.class,
+					new ComponentActionFactory<ReportPositionDialogue>(
+							this, ReportPositionDialogue.class));
+			
 			// TODO replace this with one of Marc's magic thingys
 			WorkingMemoryChangeReceiver updater = new WorkingMemoryChangeReceiver() {
 
