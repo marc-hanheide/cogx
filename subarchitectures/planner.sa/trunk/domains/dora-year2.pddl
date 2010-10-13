@@ -12,6 +12,8 @@
 
   (:predicates
    (connected ?p1 ?p2 - place)
+   (reported-position ?o - visualobject)
+
    (is-virtual ?o - object)
    ;; derived predicates
    (cones-exist ?l - label ?r - room)
@@ -173,6 +175,15 @@
            :effect (change (placestatus ?loc) trueplace)
            )
 
+  (:durative-action report_position
+           :agent (?a - robot)
+           :parameters (?o - visualobject)
+           :variables (?p - place)
+           :duration (= ?duration 1.0)
+           :condition (over all (and (kval ?a (is-in ?o))
+                                     (= (is-in ?a) ?p)))
+           :effect (at end (reported-position ?o))
+           )
 
    (:durative-action move
                      :agent (?a - robot)
