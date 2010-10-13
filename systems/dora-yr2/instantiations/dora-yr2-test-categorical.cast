@@ -12,8 +12,7 @@ INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter 
 
 # Categorical.SA ############################################################
-INCLUDE includes/categorical.sa/categorical-base-sim.cast
-INCLUDE includes/categorical.sa/categorical-main-sim.cast
+INCLUDE includes/categorical.sa/categorical-shape-sim.cast
 
 
 # Vision ######################################################################
