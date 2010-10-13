@@ -82,7 +82,7 @@ generate : ascribe_property(Nom, UsedNom, size(C)) <-
 		i : prop(UsedNom, C) / -1.0.
 
 generate : ascribe_property(Nom, UsedNom, inRoom(_C)) <-
-	i : rel_Size(Nom, UsedNom) / -1.0,
+	i : rel_Color(Nom, UsedNom) / -1.0,
 		i : sort(UsedNom, quality) / -1.0,
 		i : prop(UsedNom, pink) / -1.0.
 
