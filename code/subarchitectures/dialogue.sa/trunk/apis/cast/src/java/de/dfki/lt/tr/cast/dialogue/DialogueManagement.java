@@ -350,7 +350,6 @@ public class DialogueManagement extends ManagedComponent {
 				float prob = alternativeContent.probValue* expandedFormulae.get(expandedFormula);
 				IntentionalContent newContent = new IntentionalContent(alternativeContent.agents, alternativeContent.preconditions, 
 						expandedFormula, prob);
-				debug("expanded postcondition: " + FormulaUtils.getString(newContent.postconditions) + ", with prob. " + prob);				
 
 				// in case we deal with a polar question
 				
@@ -373,6 +372,8 @@ public class DialogueManagement extends ManagedComponent {
 					EpistemicObjectUtils.setModalOperatorValue(newContent.postconditions, "hypo", "noclue");
 				}
 				
+				debug("expanded postcondition: " + FormulaUtils.getString(newContent.postconditions) + ", with prob. " + prob);				
+
 				newContents.add(newContent);
 			}	
 		}

@@ -22,8 +22,6 @@ import de.dfki.lt.tr.dialmanagement.utils.XMLPolicyReader;
 /**
  * Tests for the yr2 CogX review meeting
  * 
- * TODO: deal with polar questions
- * 
  * @author Pierre Lison (plison@dfki.de)
  * @version 11/10/2010
  *
