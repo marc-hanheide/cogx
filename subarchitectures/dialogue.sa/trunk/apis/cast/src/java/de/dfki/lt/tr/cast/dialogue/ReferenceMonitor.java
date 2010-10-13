@@ -337,6 +337,32 @@ extends AbstractDialogueComponent {
 		return false;
 	}
 
+/*
+	private boolean toPostcondition(Intention it) {
+		if (it.content.size() > 0) {
+			IntentionalContent itc = it.content.get(0);
+			if (itc.postconditions instanceof ComplexFormula) {
+				ComplexFormula post = (ComplexFormula) itc.postconditions;
+				assert (post.op == BinaryOp.conj);
+				if (post.forms.size() > 0 && post.forms.get(0) instanceof ModalFormula && ((ModalFormula) post.forms.get(0)).op.equals(IntentionManagementConstants.stateModality)) {
+					dFormula sfs = ((ModalFormula) post.forms.get(0)).form;
+					if (sfs instanceof ComplexFormula) {
+						ComplexFormula xf = (ComplexFormula) sfs;
+						assert (xf.op == BinaryOp.conj);
+						if (xf.forms.size() > 0) {
+							dFormula hohof = xf.forms.get(0);
+							if (hohof instanceof ElementaryFormula) {
+								return ((ElementaryFormula) hohof).prop.equals("question-answered");
+							}
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+*/
+
 	private void triggerRulefileRewrite() {
 		String taskID = newTaskID();
 		ProcessingData pd = new ProcessingData(newProcessingDataId());
