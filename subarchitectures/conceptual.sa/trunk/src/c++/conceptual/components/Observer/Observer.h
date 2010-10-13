@@ -76,6 +76,12 @@ private:
 	void objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
 	/** Change event. */
+	void shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Change event. */
+	void appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Change event. */
 	void connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
 
@@ -90,6 +96,12 @@ private:
 	/** Returns all object properties of the place. */
 	void getObjectPlaceProperties(int placeId, std::vector<SpatialProperties::ObjectPlacePropertyPtr> &properties);
 
+	/** Returns all object properties of the place. */
+	void getShapePlaceProperties(int placeId, std::vector<SpatialProperties::RoomShapePlacePropertyPtr> &properties);
+
+	/** Returns all object properties of the place. */
+	void getAppearancePlaceProperties(int placeId, std::vector<SpatialProperties::RoomAppearancePlacePropertyPtr> &properties);
+
 	/** Returns id of the room to which the given place belongs. Returns -1 if not found. */
 	int getRoomForPlace(int placeId);
 
@@ -97,6 +109,8 @@ private:
 	 * traversedPlaces used only for recursion. */
 	void getConnectedPlaces(int placeId, std::vector<int> *connectedPlaces,
 			std::set<int> *traversedPlaces = 0);
+
+	bool areWorldStatesDifferent(ConceptualData::WorldStatePtr ws1, ConceptualData::WorldStatePtr ws2);
 
 
 private:
@@ -113,6 +127,12 @@ private:
 
 	/** Map of place wmAddress -> ObjectPlaceProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::ObjectPlacePropertyPtr> _objectPlacePropertyWmAddressMap;
+
+	/** Map of place wmAddress -> ShapePlaceProperty*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomShapePlacePropertyPtr> _shapePlacePropertyWmAddressMap;
+
+	/** Map of place wmAddress -> AppearancePlaceProperty*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomAppearancePlacePropertyPtr> _appearancePlacePropertyWmAddressMap;
 
 	/** Map of place wmAddress -> ConnectivityPathProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::ConnectivityPathPropertyPtr> _connectivityPathPropertyWmAddressMap;

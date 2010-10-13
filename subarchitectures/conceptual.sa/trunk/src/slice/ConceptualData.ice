@@ -57,11 +57,36 @@ module ConceptualData
 	/** */
 	sequence<ObjectPlacePropertyInfo> ObjectPlacePropertyInfos;
 
+	struct ValuePotentialPair
+	{
+		string value;
+		double potential;
+	};
+	
+	sequence<ValuePotentialPair> ValuePotentialPairs;
+
+	struct ShapePlacePropertyInfo
+	{
+		ValuePotentialPairs distribution;
+	};
+	
+	sequence<ShapePlacePropertyInfo> ShapePlacePropertyInfos;
+
+	struct AppearancePlacePropertyInfo
+	{
+		ValuePotentialPairs distribution;
+	};
+	
+	sequence<AppearancePlacePropertyInfo> AppearancePlacePropertyInfos;
+
+
 	/** Relevant information about a place. */
 	struct PlaceInfo
 	{
     	int placeId;
 		ObjectPlacePropertyInfos objectProperties;
+		ShapePlacePropertyInfos shapeProperties;
+		AppearancePlacePropertyInfos appearanceProperties;
 	};
 
 	/** Sequence of PlaceInfos. */
