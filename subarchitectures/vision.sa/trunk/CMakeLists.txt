@@ -83,7 +83,6 @@ endif (BUILD_SA_VISION_STEREODETECTOR)
 option(BUILD_SA_VISION_PLANEPOPOUT "build plane pop-out (needs hardware/stereo)" YES)
 if(BUILD_SA_VISION_PLANEPOPOUT)
 add_subdirectory (src/c++/vision/components/PlanePopOut)
-add_subdirectory (src/c++/vision/components/PlanePopOut2)
 endif(BUILD_SA_VISION_PLANEPOPOUT)
 
 option(BUILD_SA_VISION_SOIFILTER "build SOI filter" YES)
