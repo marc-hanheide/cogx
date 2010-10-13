@@ -8,6 +8,7 @@
 #include "ShapeIntegrator.h"
 #include "shared/ConfigFile.h"
 #include "OutputsCache.h"
+#include "SpatialProperties.hpp"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
 // Boost
@@ -250,91 +251,129 @@ void CategoricalShapeIntegrator::runComponent()
 			{
 				// Get the current place id
 				SpatialData::PlacePtr curPlace = _placeInterfacePrx->getCurrentPlace();
-
-				log("%d", curPlace->id);
-
-
-				// Lock the internal data
-				pthread_mutex_lock(&_intrDataMutex);
-
-				// Create empty prior for that place if it does not yet exist
-				if (_priors.find(curPlace->id) == _priors.end())
+				if (curPlace)
 				{
-					Prior p;
-					p.count = 0;
-					_priors[curPlace->id] = p;
-				}
+					log("%d", curPlace->id);
 
-				if (_previousPlaceId!=curPlace->id)
-				{	// We changed place
-					// Check if we have something in the cache
-					if (!_nodeCache->isEmpty())
+
+					// Lock the internal data
+					pthread_mutex_lock(&_intrDataMutex);
+
+					// Create empty prior for that place if it does not yet exist
+					if (_priors.find(curPlace->id) == _priors.end())
 					{
-						// Integrate the cache with prior
-						unsigned int nodeOutputCount;
-						CategoricalData::ClassifierOutputs outputs;
-						_nodeCache->getAccumulatedOutputs(outputs, nodeOutputCount);
-
-						integrateWithPrior(_priors[_previousPlaceId].outputs,
-								_priors[_previousPlaceId].count, outputs, nodeOutputCount);
+						Prior p;
+						p.count = 0;
+						_priors[curPlace->id] = p;
 					}
-					// Clear cache
-					_nodeCache->clear();
-					_previousPlaceId = curPlace->id;
-				}
 
-				// Add the outputs to the caches
-				_nodeCache->addOutputs(odom->odometryBuffer.odompose[0].x, odom->odometryBuffer.odompose[0].y,
-						odom->odometryBuffer.odompose[0].theta, results->outputs);
+					if (_previousPlaceId!=curPlace->id)
+					{	// We changed place
+						// Check if we have something in the cache
+						if (!_nodeCache->isEmpty())
+						{
+							// Integrate the cache with prior
+							unsigned int nodeOutputCount;
+							CategoricalData::ClassifierOutputs outputs;
+							_nodeCache->getAccumulatedOutputs(outputs, nodeOutputCount);
+
+							integrateWithPrior(_priors[_previousPlaceId].outputs,
+									_priors[_previousPlaceId].count, outputs, nodeOutputCount);
+						}
+						// Clear cache
+						_nodeCache->clear();
+						_previousPlaceId = curPlace->id;
+					}
+
+					// Add the outputs to the caches
+					_nodeCache->addOutputs(odom->odometryBuffer.odompose[0].x, odom->odometryBuffer.odompose[0].y,
+							odom->odometryBuffer.odompose[0].theta, results->outputs);
 
 
-				// Get the accumulated outputs
-				unsigned int nodeOutputCount;
-				CategoricalData::ClassifierOutputs outputs;
-				_nodeCache->getAccumulatedOutputs(outputs, nodeOutputCount);
+					// Get the accumulated outputs
+					unsigned int nodeOutputCount;
+					CategoricalData::ClassifierOutputs outputs;
+					_nodeCache->getAccumulatedOutputs(outputs, nodeOutputCount);
 
-				// Get outputs combined with prior
-				CategoricalData::ClassifierOutputs outputsWithPrior;
-				outputsWithPrior = combineWithPrior(_priors[curPlace->id].outputs,
-						_priors[curPlace->id].count, outputs, nodeOutputCount);
+					// Get outputs combined with prior
+					CategoricalData::ClassifierOutputs outputsWithPrior;
+					outputsWithPrior = combineWithPrior(_priors[curPlace->id].outputs,
+							_priors[curPlace->id].count, outputs, nodeOutputCount);
 
-				// Print for debugging.
-				for (unsigned int i=0; i<outputs.size(); ++i)
-				{
-					if (!_priors[curPlace->id].outputs.empty())
-						log("place %d, name=%s output=%f outputWithPrior=%f, prior=%f", curPlace->id, outputs[i].name.c_str(),
-													outputs[i].value, outputsWithPrior[i].value, _priors[curPlace->id].outputs[i].value);
+					// Print for debugging.
+					//				for (unsigned int i=0; i<outputs.size(); ++i)
+					//				{
+					//					if (!_priors[curPlace->id].outputs.empty())
+					//						log("place %d, name=%s output=%f outputWithPrior=%f, prior=%f", curPlace->id, outputs[i].name.c_str(),
+					//													outputs[i].value, outputsWithPrior[i].value, _priors[curPlace->id].outputs[i].value);
+					//					else
+					//						log("place %d, name=%s output=%f outputWithPrior=%f", curPlace->id, outputs[i].name.c_str(),
+					//								outputs[i].value, outputsWithPrior[i].value);
+					//				}
+					//				_nodeCache->print();
+					//				_nodeCache->printAccumulatedOutputs();
+					//				_nodeCache->printNormalizedAccumulatedOutputs();
+
+
+					// Now, turn the outputs into "probabilities" or rather potentials
+					vector<double> potentials;
+					potentials.resize(outputsWithPrior.size());
+					for (unsigned int i=0; i<outputs.size(); ++i)
+					{
+						potentials[i] = outputsWithPrior[i].value;
+						potentials[i] /= (_priors[curPlace->id].count + nodeOutputCount);
+						potentials[i] = 1.0 / (1.0 + exp(-2.0*potentials[i]));
+
+						log("place %d, name=%s potential=%f", curPlace->id, outputs[i].name.c_str(),
+								potentials[i]);
+					}
+
+					// Output the property
+					SpatialProperties::RoomShapePlacePropertyPtr propertyPtr =
+							new SpatialProperties::RoomShapePlaceProperty();
+					propertyPtr->placeId = curPlace->id;
+					SpatialProperties::DiscreteProbabilityDistributionPtr probDistPtr = new
+							SpatialProperties::DiscreteProbabilityDistribution();
+
+					SpatialProperties::StringValuePtr mapStrVal =
+							new SpatialProperties::StringValue();
+					double mapPotential = -1.0;
+
+					for (unsigned int i=0; i<potentials.size(); ++i)
+					{
+						SpatialProperties::ValueProbabilityPair vpp;
+						vpp.probability = potentials[i];
+						SpatialProperties::StringValuePtr strVal =
+								new SpatialProperties::StringValue();
+						strVal->value = outputs[i].name;
+						vpp.value = strVal;
+						if (potentials[i]>mapPotential)
+						{
+							mapStrVal->value = outputs[i].name;
+							mapPotential = potentials[i];
+						}
+						probDistPtr->data.push_back(vpp);
+					}
+
+					propertyPtr->distribution = probDistPtr;
+					propertyPtr->mapValue = mapStrVal;
+					propertyPtr->mapValueReliable = true;
+
+					// Generate id if it's not there yet
+					if (_placeShapePropertyIds.find(curPlace->id) == _placeShapePropertyIds.end())
+					{
+						_placeShapePropertyIds[curPlace->id] = newDataID();
+						addToWorkingMemory<SpatialProperties::RoomShapePlaceProperty>(
+								_placeShapePropertyIds[curPlace->id], propertyPtr);
+					}
 					else
-						log("place %d, name=%s output=%f outputWithPrior=%f", curPlace->id, outputs[i].name.c_str(),
-								outputs[i].value, outputsWithPrior[i].value);
-				}
-				_nodeCache->print();
-				_nodeCache->printAccumulatedOutputs();
-				_nodeCache->printNormalizedAccumulatedOutputs();
+						overwriteWorkingMemory<SpatialProperties::RoomShapePlaceProperty>(
+								_placeShapePropertyIds[curPlace->id], propertyPtr);
 
-
-				// Now, turn the outputs into "probabilities" or rather potentials
-				vector<double> potentials;
-				potentials.resize(outputsWithPrior.size());
-				for (unsigned int i=0; i<outputs.size(); ++i)
-				{
-					potentials[i] = outputsWithPrior[i].value;
-					potentials[i] /= (_priors[curPlace->id].count + nodeOutputCount);
-
-					potentials[i] = 1.0 / (1.0 + exp(-potentials[i]));
-
-					log("place %d, name=%s potential=%f", curPlace->id, outputs[i].name.c_str(),
-							potentials[i]);
-				}
-
-
-
-				// Unock the internal data
-				pthread_mutex_unlock(&_intrDataMutex);
-
-				// Send to WM
-				//				overwriteWorkingMemory<PlaceData::NodeLabellerData>(_nodeLabellerDataId, dataCopy, cdl::BLOCKING);
-			}
+					// Unock the internal data
+					pthread_mutex_unlock(&_intrDataMutex);
+				} // cur place valid
+			} // valid
 			else
 			{
 				// Wait a short while not to loop
