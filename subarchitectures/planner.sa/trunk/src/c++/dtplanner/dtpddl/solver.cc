@@ -390,7 +390,7 @@ void Solver::reinstate__starting_belief_state()
 void Solver::instate__starting_belief_state(Planning::POMDP_State* pomdp_state)
 {
     starting_belief_state = pomdp_state;
-    assert(expansion_queue.size() == 0);
+    //assert(expansion_queue.size() == 0);
     expansion_queue.push(starting_belief_state);
 }
 
