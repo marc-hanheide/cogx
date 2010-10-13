@@ -104,7 +104,7 @@ public class IntentionRecognition {
 					TermAtomFactory.term(lf.root.nomVar)
 				}));
 
-		MarkedQuery[] proof = AbducerUtils.bestAbductiveProof(abd_recog, ProofUtils.newUnsolvedProof(g), 250);
+		MarkedQuery[] proof = AbducerUtils.bestAbductiveProof(abd_recog, ProofUtils.newUnsolvedProof(g), timeout);
 		if (proof != null) {
 			return ConversionUtils.proofToEpistemicObjects(idGen, IntentionManagementConstants.humanAgent, proof);
 		}

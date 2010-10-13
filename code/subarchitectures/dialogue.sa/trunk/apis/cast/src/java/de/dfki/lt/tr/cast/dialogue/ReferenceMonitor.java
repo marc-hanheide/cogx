@@ -28,9 +28,11 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
+import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.discourse.DialogueMoveTranslator;
+import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
 import de.dfki.lt.tr.dialogue.ref.BeliefTranslator;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
@@ -39,6 +41,7 @@ import eu.cogx.beliefs.slice.SharedBelief;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -56,6 +59,9 @@ extends AbstractDialogueComponent {
 
 	HashMap<WorkingMemoryAddress, dBelief> bm = new HashMap<WorkingMemoryAddress, dBelief>();
 	Stack<DialogueMove> dst = new Stack<DialogueMove>();
+
+	Intention qud = null;
+	WorkingMemoryAddress qud_addr = null;
 
 	@Override
 	public void start() {
@@ -107,6 +113,15 @@ extends AbstractDialogueComponent {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						handleDialogueMove(_wmc);
+					}
+				});
+
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(Intention.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleIntentionAdd(_wmc);
 					}
 				});
 }
@@ -181,6 +196,33 @@ extends AbstractDialogueComponent {
 		}
 	}
 
+	private void handleIntentionDelete(WorkingMemoryChange _wmc) {
+		// somebody deleted it for us
+		if (_wmc.address.equals(qud_addr)) {
+			qud_addr = null;
+			qud = null;
+		}
+		triggerRulefileRewrite();
+	}
+
+	private void handleIntentionAdd(WorkingMemoryChange _wmc) {
+		try {
+			CASTData data = getWorkingMemoryEntry(_wmc.address);
+			Intention it = (Intention)data.getData();
+			if (BeliefIntentionUtils.isRobotsPrivateIntention(it)) {
+				// this is the new QUD
+				deleteFromWorkingMemory(qud_addr);
+
+				qud_addr = _wmc.address;
+				qud = null;
+				triggerRulefileRewrite();
+			}
+		}
+		catch (SubarchitectureComponentException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void triggerRulefileRewrite() {
 		String taskID = newTaskID();
 		ProcessingData pd = new ProcessingData(newProcessingDataId());
@@ -203,10 +245,23 @@ extends AbstractDialogueComponent {
 			dmTran.addDialogueMove(dm);
 		}
 
+		String qud_str = "";
+		if (qud != null) {
+			String lines[] = BeliefIntentionUtils.intentionToString(qud).split("\n");
+			for (String line : Arrays.asList(lines)) {
+				qud_str += "% " + line + "\n";
+			}
+		}
+		else {
+			qud_str = "% QUD = null\n";
+		}
+
 		try {
 			BufferedWriter f = new BufferedWriter(new FileWriter(dumpfile));
 			f.write(bTran.toRulefileContents());
 			f.write(dmTran.toRulefileContents());
+			f.write("\n");
+			f.write(qud_str);
 			f.close();
 		}
 		catch (IOException ex) {

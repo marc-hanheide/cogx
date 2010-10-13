@@ -97,7 +97,7 @@ public class AbductiveReferenceResolution {
 					propertiesToListTerm(fvPairs)
 				}));
 
-		List<ProofWithCost> proofs = AbducerUtils.allAbductiveProofs(refresEngine, ProofUtils.newUnsolvedProof(g), 500);
+		List<ProofWithCost> proofs = AbducerUtils.allAbductiveProofs(refresEngine, ProofUtils.newUnsolvedProof(g), timeout);
 
 		Map<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, Double> combined_hypos = new HashMap<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, Double>();
 		Map<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, EpistemicStatus> epistemic_statuses = new HashMap<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, EpistemicStatus>();
