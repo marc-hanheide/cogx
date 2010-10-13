@@ -312,19 +312,23 @@ void ObjectRecognizer3D2::finalizeObject(VisualObjectPtr obj, Pose3 &pose)
 void ObjectRecognizer3D2::recognizeSiftModel(P::DetectGPUSIFT &sift, string &objId){
 
   log("recognizing object ...");
+
   VisualObjectPtr obj = getMemoryEntry<VisualObject>(objId);
-
   ProtoObjectPtr pobj = getMemoryEntry<ProtoObject>(obj->protoObjectID);
-
   IplImage *img = 0, *grey = 0;
+  Pose3 pose;
 
   fillImages(pobj, &img, &grey);
 
-  overwriteWorkingMemory(objId, obj);
+  recognizeAllObjects(sift, img, grey, obj, pose);
+  
+  finalizeObject(obj, pose);
 
 #ifdef FEAT_VISUALIZATION
   m_display.setImage("ObjectRecognizer3D2", img);
 #endif
+  
+  overwriteWorkingMemory(objId, obj);
 
   releaseImages(&img, &grey);
   
