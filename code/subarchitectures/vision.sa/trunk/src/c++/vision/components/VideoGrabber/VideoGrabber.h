@@ -58,6 +58,7 @@ private:
    public:
       cogx::display::CFormValues m_frmSettings;
       // Access form variables
+      std::string getModelName();
       std::string getDirectory();
       void setDirectory(const std::string& name);
       bool getCreateDirectory();

@@ -105,36 +105,47 @@ void CVideoGrabber::start()
 #ifdef FEAT_VISUALIZATION
 void CVideoGrabber::CVvDisplayClient::createForms()
 {
-   std::string head =
-      "<style>"
-      ".info { font-size: 90%; color: #808080; }"
-      "</style>"
-      ;
-   setHtmlHead(IDOBJ_SETTINGS, IDPART_SETTIGS_FORM, head);
+   //std::string head =
+   //   "<style>"
+   //   ".info { font-size: 90%; color: #808080; }"
+   //   "</style>"
+   //   ;
+   //setHtmlHead(IDOBJ_SETTINGS, IDPART_SETTIGS_FORM, head);
    std::ostringstream ss;
+   string help1, help2;
+   ss <<
+      "<table>"
+      "<tr><td>Model: </td><td>"
+      "<input type='text' name='model' style='width:20em;' />"
+      "</td></tr>"
+      "</table>";
+   m_frmSettings.add(new cxd::CFormValues::field("model"));
+
+   help1 = "Use \"%m\" to place the model name in the Directory.";
+   help2 = "\"Create directory\" can only create one (the last) level.";
    ss <<
       "<table>"
       "<tr><td>Directory: </td><td>"
-      "<input type='text' name='directory' style='width:20em;' />"
-      "</td><td>"
-      "<input type='checkbox' name='createdir' value='on' />Create dir"
+      "<input type='text' name='directory' style='width:20em;' title='" << help1 << "'/>"
+      "</td></tr><tr><td>&nbsp;</td><td>"
+      "<input type='checkbox' name='createdir' value='on' title='" << help2 << "'/>Create directory"
       "</td></tr>"
-      "<tr><td>&nbsp;</td>"
-      "<td><span class='info'>'Create dir' can only create one (the last) level."
-      "</span></td></tr>"
       "</table>";
    m_frmSettings.add(new cxd::CFormValues::field("directory"));
    m_frmSettings.add(new cxd::CFormValues::set("createdir", cxd::CFormValues::valuelist() << "on"));
 
+   help1 = 
+      "Filename to save to.\n"
+      "Use \"%c\" to place the counter.\n"
+      "Use \"%d\" to place the device name.\n"
+      "Use \"%m\" to place the model name.\n";
    ss <<
       "<table>"
       "<tr><td>Filename: </td><td>"
-      "<input type='text' name='filename' style='width:20em;' />"
-      "</td><tr><td>&nbsp;</td>"
-      "<td><span class='info'>Filename to save to. Use '%c' to place the counter. "
-      "Use '%d' to place the device name.</span></td></tr>";
+      "<input type='text' name='filename' style='width:20em;' title='" << help1 << "'/>"
+      "</td></tr>"
+      "</table>";
    m_frmSettings.add(new cxd::CFormValues::field("filename"));
-   ss << "</table>";
 
    ss << "<table>";
    vector<string> cntValues;
@@ -154,26 +165,27 @@ void CVideoGrabber::CVvDisplayClient::createForms()
    m_frmSettings.add(new cxd::CFormValues::choice("countersize", cxd::CFormValues::valuelist(cntValues)));
    ss << "</table>";
 
+   help1 = "Space delimited list of device names (for paramerer \"%d\").";
    ss <<
       "<table>"
       "<tr><td>Device names: </td><td>"
-      "<input type='text' name='devicenames' style='width:10em;' />"
+      "<input type='text' name='devicenames' style='width:10em;' title='" << help1 << "' />"
       "</td></tr>"
-      "<tr><td>&nbsp;</td>"
-      "<td><span class='info'>Space delimited list of device names (for paramerer '%d')."
-      "</span></td></tr>";
+      "</table>";
    m_frmSettings.add(new cxd::CFormValues::field("devicenames"));
-   ss << "</table>";
+
+   ss << "<input type='submit' value='Apply' />";
 
    ss << 
-      "<div class='info'>"
+      "<div class='v11ninfo'>"
       "If you change anything, don't forget to 'Apply'.<br>"
       "You can 'Save' current values for later use.<br>"
-      "After you 'Load' the saved values, press 'Apply'."
+      "After you 'Load' the saved values, press 'Apply'.<br>"
+      "More help is available in the tooltips."
       "</div>";
 
    // Set form defaults
-   setDirectory("xdata/grab");
+   setDirectory("xdata/grab/%m");
    setImageFilenamePatt("image%c-%d.png");
    setDeviceNames("L R");
    setCounterDigits(3);
@@ -184,8 +196,16 @@ void CVideoGrabber::CVvDisplayClient::createForms()
 
 std::string CVideoGrabber::CVvDisplayClient::getDirectory()
 {
-   std::string s = _s_::strip(m_frmSettings.get("directory"));
-   return _s_::rstrip(s, "/");
+   std::string dir = _s_::strip(m_frmSettings.get("directory"));
+   std::string model = _s_::strip(m_frmSettings.get("model"));
+   _s_::replace(dir, "%m", model);
+   return _s_::rstrip(dir, "/ ");
+}
+
+std::string CVideoGrabber::CVvDisplayClient::getModelName()
+{
+   std::string model = _s_::strip(m_frmSettings.get("model"));
+   return model;
 }
 
 void CVideoGrabber::CVvDisplayClient::setDirectory(const std::string& dirname)
@@ -440,6 +460,9 @@ void CVideoGrabber::saveImages(const std::vector<Video::Image>& images)
    if (digits > 9) digits = 9;
    std::string sval = _str_(val, digits, '0');
    _s_::replace(fname, "%c", sval);
+
+   std::string model = m_display.getModelName();
+   _s_::replace(fname, "%m", model);
  
    // TODO: conversion to GS when saving;
    // TODO: compression parameters for jpeg and png
