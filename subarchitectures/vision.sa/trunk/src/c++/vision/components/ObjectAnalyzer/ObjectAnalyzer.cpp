@@ -256,6 +256,7 @@ void ObjectAnalyzer::runComponent()
 			ProtoObjectPtr objPtr = getMemoryEntry<VisionData::ProtoObject>(data.addr);
 
 			VisualObjectPtr pvobj = new VisualObject;
+			pvobj->protoObjectID = data.addr.id; 
 			pvobj->time = getCASTTime();
 			pvobj->identLabels.push_back("unknown");
 			pvobj->identDistrib.push_back(1.0f);
@@ -364,9 +365,11 @@ void ObjectAnalyzer::updatedProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
   try
   {
+	// (review2010): We assume that the ProtoObject is written by the SOIFilter
+	// and updated by ShapeDetector3D. So we can call AffordanceRecognizer when
+	// the ProtoObject is updated.
 	ProtoObjectPtr obj =
 	  getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
-
   }
   catch(DoesNotExistOnWMException e)
   {
@@ -382,7 +385,7 @@ void ObjectAnalyzer::updatedProtoObject(const cdl::WorkingMemoryChange & _wmc)
   data.lastUpdateTime = time;
   //	queuesNotEmpty->post();objToAdd.push(obj.addr.id);
 
-  debug("A ProtoObject ID %s ",data.addr.id.c_str());
+  debug("A ProtoObject ID %s was updated",data.addr.id.c_str());
 
   //  queuesNotEmpty->post();
 }
