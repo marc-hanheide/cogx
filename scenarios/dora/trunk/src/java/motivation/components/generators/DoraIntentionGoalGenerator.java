@@ -1,6 +1,8 @@
 package motivation.components.generators;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import motivation.slice.TutorInitiativeMotive;
@@ -17,6 +19,8 @@ import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
+import facades.SpatialFacade;
 
 @SuppressWarnings("serial")
 public class DoraIntentionGoalGenerator extends
@@ -118,8 +122,8 @@ public class DoraIntentionGoalGenerator extends
 						objectType = materialFD.getDistribution()
 								.getMostLikely().getProposition();
 					}
-					log("objectType="+objectType);
-					if (DLG_TO_PLANNER_MAPPING.get(objectType)!=null)
+					log("objectType=" + objectType);
+					if (DLG_TO_PLANNER_MAPPING.get(objectType) != null)
 						objectType = DLG_TO_PLANNER_MAPPING.get(objectType);
 
 					TutorInitiativeMotive goal = new TutorInitiativeMotive();
@@ -134,7 +138,25 @@ public class DoraIntentionGoalGenerator extends
 									+ objectType + ") (kval '" + robotBel
 									+ "' (is-in ?o))))", false);
 					log("goal generated: " + goal.goal.goalString);
-					goal.informationGain=1.0;
+					goal.informationGain = 1.0;
+
+					{
+						CASTIndependentFormulaDistributionsBelief<GroundedBelief> person = CASTIndependentFormulaDistributionsBelief
+								.create(GroundedBelief.class);
+						List<GroundedBelief> gbs = new ArrayList<GroundedBelief>();
+						getMemoryEntries(GroundedBelief.class, gbs,
+								"spatial.sa");
+						for (GroundedBelief e : gbs) {
+							if (e.type.equals("Robot")) {
+								CASTIndependentFormulaDistributionsBelief<GroundedBelief> robot = CASTIndependentFormulaDistributionsBelief
+										.create(GroundedBelief.class, e);
+								person.setType("Human");
+								person.setContent(robot.getContent());
+								addToWorkingMemory(newDataID(), person.get());
+							}
+						}
+
+					}
 					return goal;
 				} else {
 					return null;
