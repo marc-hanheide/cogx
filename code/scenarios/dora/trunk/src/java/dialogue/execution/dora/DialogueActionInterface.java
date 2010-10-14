@@ -16,6 +16,7 @@ import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.components.RoomMembershipMediator;
 import eu.cogx.perceptmediator.dora.VisualObjectTransferFunction;
@@ -193,12 +194,24 @@ public class DialogueActionInterface extends
 
 				String message = "the " + objectIdent + " is in the " + room
 						+ ", at place " + placeID;
-				JOptionPane.showMessageDialog(null, message);
-
-				result = TriBool.TRITRUE;
-
+				
+//				JOptionPane.showMessageDialog(null, message);
+				
+				//HACK  for direct verbalisation of object location
+				
+				String ttsID = getComponent().newDataID();
+				SpokenOutputItem tts = new SpokenOutputItem(ttsID, message, null, null);
+				getComponent().addToWorkingMemory(ttsID, "dialogue", tts);
+				
+				//END HACK
+				
+				
 				((DialogueActionInterface) getComponent()).addBooleanFeature(
 						getAction().beliefAddress, "position-reported", true);
+				
+				result = TriBool.TRITRUE;
+
+				
 
 			} catch (CASTException e) {
 				logException(e);
