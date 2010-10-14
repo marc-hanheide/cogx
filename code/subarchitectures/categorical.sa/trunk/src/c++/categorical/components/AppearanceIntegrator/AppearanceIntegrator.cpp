@@ -334,7 +334,7 @@ void CategoricalAppearanceIntegrator::runComponent()
 						potentials[i] /= (_priors[curPlace->id].count + nodeOutputCount);
 						potentials[i] = 1.0 / (1.0 + exp(-2.0*potentials[i]));
 
-						log("place %d, name=%s potential=%f", curPlace->id, outputs[i].name.c_str(),
+						debug("place %d, name=%s potential=%lf", curPlace->id, outputs[i].name.c_str(),
 								potentials[i]);
 					}
 
