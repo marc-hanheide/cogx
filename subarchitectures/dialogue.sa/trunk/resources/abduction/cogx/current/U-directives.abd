@@ -33,10 +33,10 @@ understand : event : utter(S, H, Nom) <-
 	i : sort(Nom, ascription),
 	i : feat_Mood(Nom, int),
 	i : feat_Tense(Nom, pres),
-%	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+		i : 'rel_Cop-Scope'(Nom, WhNom),
 	i : rel_Subject(Nom, SubjNom),
-%	i : 'rel_Cop-Scope'(Nom, ScopeNom),  % XXX garbage
-%	i : 'rel_Wh-Restr'(Nom, SubjNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
 	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
