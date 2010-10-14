@@ -40,9 +40,6 @@
 [CylData{19} Foo] = processallfeatures('/home/cogx/svn/current/ul/xdata/snapshot(5)/soifilter20101013_074350');
 [CylData{20} Foo] = processallfeatures('/home/cogx/svn/current/ul/xdata/snapshot(5)/soifilter20101013_074408');
 
-Classifier.set('feature_selection', 'fuzzy');
-fprintf('\n\nFeature Selection: fuzzy\n\n');
-
 fprintf('Boxes:\n');
 for iBox = 1:length(BoxData)
     [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
@@ -50,130 +47,152 @@ for iBox = 1:length(BoxData)
 end
 fprintf('Mask: ');
 fprintf('%f ', Mask);
+fprintf('\n\n');
 
-fprintf('\nCylinders:\n');
+
+fprintf('Cylinders:\n');
 for iCyl = 1:length(CylData)
     [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
     fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
 end
 fprintf('Mask: ');
 fprintf('%f ', Mask);
+fprintf('\n\n');
 
-Classifier.set('feature_selection', 'hard', 'feature_selection_max', 1);
-fprintf('\n\nFeature Selection: hard\n\n');
-
-fprintf('\nBoxes:\n');
-for iBox = 1:length(BoxData)
-    [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
-    fprintf([BoxDataResults{iBox}.Results.GroundTruthClassification{1} '\n']);
-end
-fprintf('Mask: ');
-fprintf('%f ', Mask);
-
-fprintf('\nCylinders:\n');
-for iCyl = 1:length(CylData)
-    [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
-    fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
-end
-fprintf('Mask: ');
-fprintf('%f ', Mask);
-
-
-Classifier.set('feature_selection', 'nodestats_fuzzy');
-fprintf('\n\nFeature Selection: nodestats_fuzzy\n\n');
-
-fprintf('\nBoxes:\n');
-for iBox = 1:length(BoxData)
-    [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
-    fprintf([BoxDataResults{iBox}.Results.GroundTruthClassification{1} '\n']);
-end
-fprintf('Mask: ');
-fprintf('%f ', Mask);
-
-fprintf('\nCylinders:\n');
-for iCyl = 1:length(CylData)
-    [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
-    fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
-end
-fprintf('Mask: ');
-fprintf('%f ', Mask);
-
-
-Classifier.set('feature_selection', 'nodestats_hard', 'feature_selection_max', 1);
-fprintf('\n\nFeature Selection: nodestats_hard\n\n');
-
-fprintf('\nBoxes:\n');
-for iBox = 1:length(BoxData)
-    [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
-    fprintf([BoxDataResults{iBox}.Results.GroundTruthClassification{1} '\n']);
-end
-fprintf('Mask: ');
-fprintf('%f ', Mask);
-
-fprintf('\nCylinders:\n');
-for iCyl = 1:length(CylData)
-    [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
-    fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
-end
-fprintf('Mask: ');
-fprintf('%f ', Mask);
-
-
-Classifier.set('feature_selection', 'lda_fuzzy');
-fprintf('\n\nFeature Selection: lda_fuzzy\n\n');
-
-fprintf('\nBoxes:\n');
-for iBox = 1:length(BoxData)
-    [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
-    fprintf([BoxDataResults{iBox}.Results.GroundTruthClassification{1} '\n']);
-end
-fprintf('Mask: ');
-fprintf('%f ', Mask);
-
-fprintf('\nCylinders:\n');
-for iCyl = 1:length(CylData)
-    [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
-    fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
-end
-fprintf('Mask: ');
-fprintf('%f ', Mask);
-
-
-Classifier.set('feature_selection', 'lda_hard', 'feature_selection_max', 1);
-fprintf('\n\nFeature Selection: lda_hard\n\n');
-
-fprintf('\nBoxes:\n');
-for iBox = 1:length(BoxData)
-    [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
-    fprintf([BoxDataResults{iBox}.Results.GroundTruthClassification{1} '\n']);
-end
-fprintf('Mask: ');
-fprintf('%f ', Mask);
-
-fprintf('\nCylinders:\n');
-for iCyl = 1:length(CylData)
-    [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
-    fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
-end
-fprintf('Mask: ');
-fprintf('%f ', Mask);
-
-
-Classifier.set('feature_selection', 'nodestats_exp');
-fprintf('\n\nFeature Selection: nodestats_exp\n\n');
-
-fprintf('\nBoxes:\n');
-for iBox = 1:length(BoxData)
-    [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
-    fprintf([BoxDataResults{iBox}.Results.GroundTruthClassification{1} '\n']);
-end
-fprintf('Mask: ');
-fprintf('%f ', Mask);
-
-fprintf('\nCylinders:\n');
-for iCyl = 1:length(CylData)
-    [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
-    fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
-end
-fprintf('Mask: ');
-fprintf('%f ', Mask);
+% Classifier.set('feature_selection', 'fuzzy');
+% fprintf('\n\nFeature Selection: fuzzy\n\n');
+% 
+% fprintf('Boxes:\n');
+% for iBox = 1:length(BoxData)
+%     [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
+%     fprintf([BoxDataResults{iBox}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
+% 
+% fprintf('\nCylinders:\n');
+% for iCyl = 1:length(CylData)
+%     [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
+%     fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
+% 
+% Classifier.set('feature_selection', 'hard', 'feature_selection_max', 1);
+% fprintf('\n\nFeature Selection: hard\n\n');
+% 
+% fprintf('\nBoxes:\n');
+% for iBox = 1:length(BoxData)
+%     [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
+%     fprintf([BoxDataResults{iBox}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
+% 
+% fprintf('\nCylinders:\n');
+% for iCyl = 1:length(CylData)
+%     [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
+%     fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
+% 
+% 
+% Classifier.set('feature_selection', 'nodestats_fuzzy');
+% fprintf('\n\nFeature Selection: nodestats_fuzzy\n\n');
+% 
+% fprintf('\nBoxes:\n');
+% for iBox = 1:length(BoxData)
+%     [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
+%     fprintf([BoxDataResults{iBox}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
+% 
+% fprintf('\nCylinders:\n');
+% for iCyl = 1:length(CylData)
+%     [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
+%     fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
+% 
+% 
+% Classifier.set('feature_selection', 'nodestats_hard', 'feature_selection_max', 1);
+% fprintf('\n\nFeature Selection: nodestats_hard\n\n');
+% 
+% fprintf('\nBoxes:\n');
+% for iBox = 1:length(BoxData)
+%     [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
+%     fprintf([BoxDataResults{iBox}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
+% 
+% fprintf('\nCylinders:\n');
+% for iCyl = 1:length(CylData)
+%     [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
+%     fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
+% 
+% 
+% Classifier.set('feature_selection', 'lda_fuzzy');
+% fprintf('\n\nFeature Selection: lda_fuzzy\n\n');
+% 
+% fprintf('\nBoxes:\n');
+% for iBox = 1:length(BoxData)
+%     [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
+%     fprintf([BoxDataResults{iBox}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
+% 
+% fprintf('\nCylinders:\n');
+% for iCyl = 1:length(CylData)
+%     [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
+%     fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
+% 
+% 
+% Classifier.set('feature_selection', 'lda_hard', 'feature_selection_max', 1);
+% fprintf('\n\nFeature Selection: lda_hard\n\n');
+% 
+% fprintf('\nBoxes:\n');
+% for iBox = 1:length(BoxData)
+%     [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
+%     fprintf([BoxDataResults{iBox}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
+% 
+% fprintf('\nCylinders:\n');
+% for iCyl = 1:length(CylData)
+%     [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
+%     fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
+% 
+% 
+% Classifier.set('feature_selection', 'nodestats_exp');
+% fprintf('\n\nFeature Selection: nodestats_exp\n\n');
+% 
+% fprintf('\nBoxes:\n');
+% for iBox = 1:length(BoxData)
+%     [BoxDataResults{iBox} Mask] = Classifier.gtclassify('data', BoxData{iBox}');
+%     fprintf([BoxDataResults{iBox}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
+% 
+% fprintf('\nCylinders:\n');
+% for iCyl = 1:length(CylData)
+%     [CylDataResults{iCyl} Mask] = Classifier.gtclassify('data', CylData{iCyl}');
+%     fprintf([CylDataResults{iCyl}.Results.GroundTruthClassification{1} '\n']);
+% end
+% fprintf('Mask: ');
+% fprintf('%f ', Mask);
