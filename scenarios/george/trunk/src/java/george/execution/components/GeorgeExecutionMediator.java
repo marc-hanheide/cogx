@@ -98,6 +98,7 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			assert _plannedAction.arguments.length == 3 : "unlearn-color is expected to be of arity 3";
 			return createBeliefPlusStringAction(UnlearnColour.class,
 					_plannedAction.arguments[1], _plannedAction.arguments[2]);
+			
 		} else if (_plannedAction.name.equals("unlearn-shape")) {
 			assert _plannedAction.arguments.length == 3 : "unlearn-shape is expected to be of arity 3";
 			return createBeliefPlusStringAction(UnlearnShape.class,
