@@ -1,7 +1,7 @@
 # CAST config file
 HOST localhost
 
-COMPONENT PYTHON  PlannerPythonServer PythonServer --domain george.domain.mapl --log $V11N_STANDALONE $V11N_STANDALONE_HOST 
+COMPONENT PYTHON  PlannerPythonServer PythonServer --domain george.domain.mapl --log $V11N_STANDALONE $V11N_STANDALONE_HOST --nodot
 
 ####################################################################################################################
 INCLUDE georgeY2-vision.cast
@@ -24,7 +24,8 @@ CPP MG Planner WMControl --log
 
 CPP MG fileviewer.cli FileMonitorDC $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver --setvars "plandir=subarchitectures/planner.sa/src/python"  --monitor "CurrentPlan=dot:%(plandir)/{plan*.dot}"
 
-JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
+JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,GainFilter,MinAgeFilter,LimitTriesFilter" --min-gain 0.2 --min-age 5000
+
 JAVA MG goal.scheduler motivation.components.managers.Scheduler --debug 
 
 JAVA MG goal.generator.shape eu.cogx.goals.george.LearnShapeGenerator
@@ -32,12 +33,12 @@ JAVA MG goal.generator.color eu.cogx.goals.george.LearnColorGenerator
 JAVA MG goal.generator.intention eu.cogx.goals.george.IntentionGoalGenerator --log --debug
 JAVA MG goal.generator.asertion eu.cogx.goals.george.AttributedBeliefGoalGenerator
 
-JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+#JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 
 JAVA MG visual.percept.tracker eu.cogx.percepttracker.components.VisualObjectTracker --debug --write-to-sa binder
 JAVA MG shared.tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
 
-JAVA MG execution.manager george.execution.components.GraphicalExecutionManager
+#JAVA MG execution.manager george.execution.components.GraphicalExecutionManager
 JAVA MG execution.mediator george.execution.components.GeorgeExecutionMediator
 ##########################################################################################################################
 SUBARCHITECTURE dialogue
