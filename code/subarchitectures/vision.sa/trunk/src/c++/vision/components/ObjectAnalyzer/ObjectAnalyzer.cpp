@@ -236,10 +236,12 @@ void ObjectAnalyzer::onChange_AL_AffordanceTask(const cdl::WorkingMemoryChange &
 }
 
 
-void ObjectAnalyzer::start_OR_RecognitionTask(const WorkingMemoryAddress &visualObjectAddr)
+void ObjectAnalyzer::start_OR_RecognitionTask(const WorkingMemoryAddress &visualObjectAddr,
+  const WorkingMemoryAddress &protoObjectAddr)
 {
   ObjectRecognitionTaskPtr ptask = new ObjectRecognitionTask();
   ptask->visualObjectAddr = visualObjectAddr;
+  ptask->protoObjectAddr = protoObjectAddr;
 
   string reqId(newDataID());
   log("Adding new ObjectRecognitionTask: %s", reqId.c_str());
@@ -328,7 +330,7 @@ void ObjectAnalyzer::runComponent()
 			data.visualObjId = m_salientObjID = objAddr.id;
 
 			log("A visual object added for protoObject ID %s", data.addr.id.c_str());
-			start_OR_RecognitionTask(objAddr);
+			start_OR_RecognitionTask(objAddr, data.addr);
 			start_VL_RecognitionTask(data.addr);
 		  }
 		  catch (DoesNotExistOnWMException e)
