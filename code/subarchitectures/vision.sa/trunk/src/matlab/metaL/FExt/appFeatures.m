@@ -22,6 +22,7 @@ V=V0(idxs,:);
 
 %get median
 medHSV=median(V)';
+ 
 [hu,sa,in]=deal(medHSV(1),medHSV(2),medHSV(3));
 
 

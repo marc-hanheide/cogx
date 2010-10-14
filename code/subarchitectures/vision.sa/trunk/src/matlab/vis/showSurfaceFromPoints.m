@@ -5,6 +5,7 @@
 %
 function showSurfaceFromPoints( x, rgb3d, LRaxRoi )
 
+N_max = min([100, size(x,1)]) ;
 if isempty(x)
     return ;
 end
@@ -19,6 +20,10 @@ if nargin < 3
     LRaxRoi = [] ;
 end
 
+
+idx = round(linspace(1,size(x,1),N_max)) ;
+x = x(idx,:) ;
+rgb3d = rgb3d(idx,:) ;
 
 x(:,3) = -x(:,3) ;
 if turnoffDelaunay == 0

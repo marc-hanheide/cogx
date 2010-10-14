@@ -332,6 +332,7 @@ switch operator_data
 %         max_v = (rslt(id_cost,size(rslt,2))) ;
 %         
 %         
+
         indic = rslt(id_cost,:) > hyper_input_kde_cl.min_th_feat_sel ; %max_v*hyper_input_kde_cl.min_th_feat_sel ;
         frst = 1 ; 
         for i = length(indic) :-1: 1
