@@ -333,9 +333,18 @@ generate : event : utter(S, H, Int) <-
 
 generate : event : utter(S, H, Int) <-
 	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['acknowledged'|T])),
+	utt_head(Nom),
+%	i : feat_SpeechAct(Nom, confirmation) / -1.0,
+	i : feat_CannedText(Nom, 'ok_thanks') / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['thanked'|T])),
 	utt_head(Nom),
-	i : feat_SpeechAct(Nom, confirmation) / -1.0,
+%	i : feat_SpeechAct(Nom, confirmation) / -1.0,
+	i : feat_CannedText(Nom, 'thank_you') / -1.0,
 	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
