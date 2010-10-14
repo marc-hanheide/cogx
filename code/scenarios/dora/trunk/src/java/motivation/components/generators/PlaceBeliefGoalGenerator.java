@@ -29,7 +29,7 @@ public class PlaceBeliefGoalGenerator extends
 	 * the maximum costs to drop we assign if information gain is really high
 	 * (~1) in seconds
 	 */
-	private static final double MAX_COSTS_TO_DROP = 5*60;
+	private static final double MAX_COSTS_TO_DROP = 50;
 
 	/**
 	 * normalize borderproperties // normalization: Kristoffer Sjöö

@@ -20,7 +20,6 @@ import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
-import facades.SpatialFacade;
 
 @SuppressWarnings("serial")
 public class DoraIntentionGoalGenerator extends
@@ -132,7 +131,7 @@ public class DoraIntentionGoalGenerator extends
 					goal.referenceEntry = addr;
 					// (and (exists (?o - visualobject) (and (= (label ?o)
 					// cereal_box) (kval dora (is-in ?o))))
-					String robotBel = getRobotBeliefAddr().id;
+//					String robotBel = getRobotBeliefAddr().id;
 //					goal.goal = new Goal(-1,
 //							"(exists (?o - visualobject) (and (= (label ?o) "
 //									+ objectType + ") (kval '" + robotBel
