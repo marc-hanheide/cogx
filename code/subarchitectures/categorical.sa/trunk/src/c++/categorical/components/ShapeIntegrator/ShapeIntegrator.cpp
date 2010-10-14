@@ -311,18 +311,18 @@ void CategoricalShapeIntegrator::runComponent()
 							_priors[curPlace->id].count, outputs, nodeOutputCount);
 
 					// Print for debugging.
-					//				for (unsigned int i=0; i<outputs.size(); ++i)
-					//				{
-					//					if (!_priors[curPlace->id].outputs.empty())
-					//						log("place %d, name=%s output=%f outputWithPrior=%f, prior=%f", curPlace->id, outputs[i].name.c_str(),
-					//													outputs[i].value, outputsWithPrior[i].value, _priors[curPlace->id].outputs[i].value);
-					//					else
-					//						log("place %d, name=%s output=%f outputWithPrior=%f", curPlace->id, outputs[i].name.c_str(),
-					//								outputs[i].value, outputsWithPrior[i].value);
-					//				}
-					//				_nodeCache->print();
-					//				_nodeCache->printAccumulatedOutputs();
-					//				_nodeCache->printNormalizedAccumulatedOutputs();
+									for (unsigned int i=0; i<outputs.size(); ++i)
+									{
+										if (!_priors[curPlace->id].outputs.empty())
+											log("place %d, name=%s output=%f outputWithPrior=%f, prior=%f", curPlace->id, outputs[i].name.c_str(),
+																		outputs[i].value, outputsWithPrior[i].value, _priors[curPlace->id].outputs[i].value);
+										else
+											log("place %d, name=%s output=%f outputWithPrior=%f", curPlace->id, outputs[i].name.c_str(),
+													outputs[i].value, outputsWithPrior[i].value);
+									}
+									_nodeCache->print();
+									_nodeCache->printAccumulatedOutputs();
+									_nodeCache->printNormalizedAccumulatedOutputs();
 
 
 					// Now, turn the outputs into "probabilities" or rather potentials
