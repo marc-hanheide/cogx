@@ -11,10 +11,12 @@ function [Features, FeatureNames] = processallfeatures(FileSpec, varargin)
     TwoDFeatures = TwoDFeatures(:, [1:4 6:end]);
     
     try
-        [ThreeDFeatures ThreeDFeatureNames] = process3Dshapefeatures([FileSpec(1:Foo(end)) 'points']);
+        [ThreeDFeatures ThreeDFeatureNames] = process3Dshapefeatures([FileSpec(1:Foo(end)) 'points'],...
+                                                                     'z_scaling_factor', 2.5);
     catch Error1
         try
-            [ThreeDFeatures ThreeDFeatureNames] = process3Dshapefeatures([FileSpec(1:Foo(end)) 'patch']);
+            [ThreeDFeatures ThreeDFeatureNames] = process3Dshapefeatures([FileSpec(1:Foo(end)) 'patch'],...
+                                                                         'z_scaling_factor', 2.5);
         catch Error2
             rethrow(Error2);
         end

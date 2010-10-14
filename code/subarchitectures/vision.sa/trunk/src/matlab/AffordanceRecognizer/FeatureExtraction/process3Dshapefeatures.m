@@ -6,6 +6,7 @@ function [Features, FeatureNames] = process3Dshapefeatures(FileSpec, varargin)
     % Defaults...
     save_ascii = false;
     save_mat = false;
+    z_scaling_factor = 2.9730;
 
     % Loop through arguments...
     i = 1;
@@ -18,6 +19,8 @@ function [Features, FeatureNames] = process3Dshapefeatures(FileSpec, varargin)
                         i=i+1; save_ascii = varargin{i};
                 case {'savemat', 'save_mat'},...
                         i=i+1; save_mat = varargin{i};
+                case {'z_scaling_factor', 'z_scaling', 'zscaling'},...
+                        i=i+1; z_scaling_factor = varargin{i};
                     
             end
         else
@@ -64,21 +67,18 @@ function [Features, FeatureNames] = process3Dshapefeatures(FileSpec, varargin)
         end
     end
     
+    % Which patch is dominant, i.e. contains the most points?
     % Default to the first patch as the dominant patch...
     iDominantPatch = 1;
-    
-    % Which patch is dominant, i.e. contains the most points?
     most_points = 0;
+    
+    % Which patch has the lowest error for the quadratic surface fit?
+    iMinErrorPatch = 1;
+    min_error = Inf;
     
     % Loop through the patches, gathering features etc.
     for iPatch = 1:length(Patches)
         
-        % Find the dominant patch...
-        if size(Patches{iPatch},1) > most_points
-            most_points = size(Patches{iPatch},1);
-            iDominantPatch = iPatch;
-        end
-            
         % Fit a plane to the patch points, then rotate level with the
         % Z-plane...
         PointsNorm{iPatch} = normalizepoints_no_bg(Patches{iPatch}(:,(end-2):end));
@@ -87,7 +87,7 @@ function [Features, FeatureNames] = process3Dshapefeatures(FileSpec, varargin)
         % Bumblebee-captured data that the classifier was trained
         % with...
         PointsNormRescaled{iPatch} = PointsNorm{iPatch};
-        PointsNormRescaled{iPatch}(:,3) = PointsNorm{iPatch}(:,3) * 2.9730;
+        PointsNormRescaled{iPatch}(:,3) = PointsNorm{iPatch}(:,3) * z_scaling_factor;
 
         % Remove any remaining outliers (points that deviate from the mean
         % by 3 standard deviations or more)
@@ -110,12 +110,26 @@ function [Features, FeatureNames] = process3Dshapefeatures(FileSpec, varargin)
                
         PointsNormRescaledEroded{iPatch} = PointsNormRescaledEroded{iPatch}(~Outliers,:);
         
-        [Foo PatchFeatures{iPatch}] = fitsurface(PointsNormRescaledEroded{iPatch});
-    
+        [Foo PatchFeatures{iPatch} Error{iPatch}] = fitsurface(PointsNormRescaledEroded{iPatch});
+        
         PatchFeatures{iPatch} = PatchFeatures{iPatch}';
+        
+        % Find the dominant patch...
+        if size(Patches{iPatch},1) > most_points
+            most_points = size(Patches{iPatch},1);
+            iDominantPatch = iPatch;
+        end
+        
+        % Find the patch with the least error for the surface fit...
+        if Error{iPatch} < min_error
+            min_error = Error{iPatch};
+            iMinErrorPatch = iPatch;
+        end
+    
     end
     
-    Features = PatchFeatures{iDominantPatch};
+    % Features = PatchFeatures{iDominantPatch};
+    Features = PatchFeatures{iMinErrorPatch};
    
     FeatureNames = {'EigenValue1', 'EigenValue2'};
 

@@ -1,4 +1,4 @@
-function [solution eigs] = fitsurface(P, varargin)
+function [solution eigs error] = fitsurface(P, varargin)
 
     visualise_flag = false;
 
@@ -33,6 +33,8 @@ function [solution eigs] = fitsurface(P, varargin)
     % lhs=[1/2*x.^2, x.*y, 1/2*y.^2];
     rhs=z; 
     solution=lhs\rhs; % a b c d e f
+    
+    error = mean((lhs*solution - rhs).^2);
 
     % show the surface plus the points 
     xmin=min(x); 
