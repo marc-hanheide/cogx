@@ -22,7 +22,7 @@ get_referent(SharedBId, BId) <-
 	bel : ancestor(SharedBId, BId, _Type).
 
 %get_referent(SharedBId, SharedBId) <-
-%	does_not_have_a_referent(SharedBId) / p(0.2).
+%	does_not_have_a_grounded_referent(SharedBId) / p(0.2).
 
 %-------------------------------------------------------------------------
 % Resolve a list of features
@@ -46,9 +46,12 @@ resolves_props(BId, [Property|T]) <-
 get_belief(BId, exists(yes)) <- bel : b(BId) / belief_exist.
 get_belief(BId, color(Arg)) <- bel : color(BId, Arg).
 get_belief(BId, shape(Arg)) <- bel : shape(BId, Arg).
-get_belief(BId, objecttype(Arg)) <- bel : ident(BId, Arg).
+get_belief(BId, ident(Arg)) <- bel : ident(BId, Arg).
 
-get_belief(BId, linguisticsalience(Arg)) <- att : linguisticsalience(BId, Arg).
+get_belief(BId, linguisticsalience(Arg)) <-
+	bel : b(BId) / belief_exist,
+	bel : ancestor(BId, PrivBId, _Type),
+	att : linguisticsalience(PrivBId, Arg).
 
 %att : linguisticsalience(X, low).
 
