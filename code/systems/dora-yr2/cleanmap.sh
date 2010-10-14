@@ -1,2 +1,2 @@
 #!/bin/bash
-rm -f robotpose.ccf tmpmap.*
+zenity --question --text "reset mapping?"  && rm -f robotpose.ccf tmpmap.*
