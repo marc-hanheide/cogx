@@ -145,20 +145,31 @@ generate : event : utter(S, H, Int) <-
 %-------------------------------------------------------------------------
 
 %generate :
-
 generate : object_description(Int, Nom, PrivBId) <-
-	i : int : pre(Int, belief(SharedBId)),
-	% XXX this will be outdated once we switch to ancestors!
-	bel : about(SharedBId, PrivBId),
-	bel : objecttype(SharedBId, Type),
-	i : sort(Nom, thing) / -1.0,
-	i : prop(Nom, Type) / -1.0,
-	i : feat_InfoStatus(Nom, familiar) / -1.0,
-	i : feat_Salient(Nom, true) / -1.0.
+	generate : the_object(Nom),
+	bel : ancestor(UpBId, PrivBId, _T),
+	try_adding_color(UpBId, Nom),
+	try_adding_shape(UpBId, Nom).
 
-generate : object_description(Int, Nom, PrivBId) <-
-	generate : using_just_object(PrivBId) / -1.0,
-	generate : the_object(Nom).
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+try_adding_color(BId, Nom) <-
+	bel : color(BId, Color),
+	Color \= unknown,
+	i : feat_Color(Nom, Color) / -0.7.
+
+try_adding_color(BId, Nom) <-
+	color_uncertain_or_unknown(BId) / 0.0.
+
+try_adding_shape(BId, Nom) <-
+	bel : shape(BId, Shape),
+	Shape \= unknown,
+	i : feat_Shape(Nom, Shape) / -0.7.
+
+try_adding_shape(BId, Nom) <-
+	shape_uncertain_or_unknown(BId) / 0.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 generate : object_description(Int, Nom, PrivBId) <-
 	att : linguisticsalience(PrivBId, high),
@@ -238,6 +249,13 @@ generate : complex_ex(Nom) <-
 	generate : the_box(Nom),
 	i : feat_Color(Nom, red) / -1.0,
 	i : feat_Shape(Nom, round) / -1.0.
+
+%-------------------------------------------------------------------------
+% OBJECT DESCRIPTIONS
+%-------------------------------------------------------------------------
+
+% "it is a red box"
+% @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ context)  ^ <Type>(b3:thing ^ <InfoStatus>new ^ <Color>red ^ box))) 
 
 %-------------------------------------------------------------------------
 % HACKS
