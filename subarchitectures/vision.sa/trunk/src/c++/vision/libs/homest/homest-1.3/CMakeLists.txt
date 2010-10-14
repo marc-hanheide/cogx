@@ -22,7 +22,7 @@ IF(HAVE_F2C)
    #     libf2c.so: undefined reference to `MAIN__'
    # Try to set F2C_LIB=f2c.a in ccmake.
    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SET(F2C_LIB f2c CACHE STRING "The name of the f2c library")
+  SET(F2C_LIB f2c CACHE STRING "The name of the f2c library (use f2c.a if you get errors)")
 ELSE(HAVE_F2C)
   SET(F77_LIB libF77 CACHE STRING "The name of the F77 library")
   SET(I77_LIB libI77 CACHE STRING "The name of the I77 library")
