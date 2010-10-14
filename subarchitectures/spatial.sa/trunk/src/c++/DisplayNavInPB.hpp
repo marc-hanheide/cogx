@@ -21,6 +21,7 @@
 #include <string>
 #include <Scan2dReceiver.hpp>
 #include <SensorData/SensorPose.hh>
+#include "SpatialProperties.hpp"
 
 #include <Transformation/Transformation3D.hh>
 #include <peekabot.hh>
@@ -98,6 +99,10 @@ private:
   #ifdef DISPLAY_COMA
   void newComaRoom(const cast::cdl::WorkingMemoryChange &objID);
   #endif
+
+  void newShapeProperty(const cast::cdl::WorkingMemoryChange &objID);
+  void newAppearanceProperty(const cast::cdl::WorkingMemoryChange &objID);
+
   void newVPlist(const cast::cdl::WorkingMemoryChange &objID);
   void newArea(const cast::cdl::WorkingMemoryChange &objID);
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
@@ -125,6 +130,7 @@ private:
   double getComaRoomCategoryProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
 			std::string varValue);
  int GetPlaceIdFromNodeId(int nodeId);
+ void addProperties(peekabot::SphereProxy &sp, int placeId);
 
 
   Cure::Transformation3D getCameraToWorldTransform();
@@ -137,6 +143,7 @@ private:
   bool m_ShowScans;
   bool m_ShowObjects;
   bool m_ShowNodeClass;
+  bool m_ShowProperties;
   bool m_ShowAreaClass;
   bool m_ShowRobotViewCone;
   bool m_ShowPlanePoints;
@@ -201,6 +208,10 @@ private:
 
   /** List of categories of rooms that we know about. */
   std::vector<std::string> _roomCategories;
+
+  std::map<int, SpatialProperties::RoomShapePlacePropertyPtr> _shapeProps;
+  std::map<int, SpatialProperties::RoomAppearancePlacePropertyPtr> _appearanceProps;
+
 };
 
 }; // namespace navsa
