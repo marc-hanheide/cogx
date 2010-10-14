@@ -132,7 +132,7 @@ void newProcessViewPointCommand(const cast::cdl::WorkingMemoryChange &objID);
 
       void DetectionComplete(bool isDetected, std::string detectedObject = "");
       void MovePanTilt(double pan, double tilt, double tolerance);
-
+      int FindClosestPlaceID(double x, double y);
       /* Functions for 2D evaluation */
       std::vector<Cure::Pose3D> Sample2DGrid();
       std::vector<std::vector<pair<int,int> > > GetViewCones(std::vector<Cure::Pose3D> samples2D);
@@ -234,6 +234,7 @@ bool m_publishSimCones;
       std::set<std::string> waitingForObjects;
       //      bool isWaitingForDetection;
       bool isSearchFinished;
+      bool m_nobaseobject;
       int viewCount;
 
       double m_sampleawayfromobs;
