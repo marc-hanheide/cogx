@@ -7,6 +7,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 # compiler flags
 #ADD_DEFINITIONS(-DLINSOLVERS_RETAIN_MEMORY) # do not free memory between linear solvers calls
 #REMOVE_DEFINITIONS(-DLINSOLVERS_RETAIN_MEMORY) # free memory between calls
+ADD_DEFINITIONS(-fPIC)
 
 # f2c is sometimes equivalent to libF77 & libI77; in that case, set HAVE_F2C to 0
 SET(HAVE_F2C 1 CACHE BOOL "Do we have f2c or F77/I77?" )
