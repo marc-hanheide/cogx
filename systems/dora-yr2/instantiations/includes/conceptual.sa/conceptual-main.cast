@@ -1,5 +1,5 @@
 CPP GD conceptual.queryhandler ConceptualQueryHandler
-CPP GD conceptual.observer ConceptualObserver --shape-threshold 0.2 --appearance-threshold 0.2
+CPP GD conceptual.observer ConceptualObserver --shape-threshold 0.1 --appearance-threshold 0.1
 CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --defaultchaingraphinferencer default.chaingraphinferencer
 CPP GD conceptual.comaroomupdater ConceptualComaRoomUpdater --queryhandler conceptual.queryhandler
 
