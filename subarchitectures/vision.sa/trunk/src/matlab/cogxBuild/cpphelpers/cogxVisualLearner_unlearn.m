@@ -1,7 +1,7 @@
 %% UNLEARN %% 
 function cogxVisualLearner_unlearn(avw, X, B, pts3d)
    global mC
-   global Params   
+   global Params Coma
    
    %resize mask to match image size
    sizex=size(X);
