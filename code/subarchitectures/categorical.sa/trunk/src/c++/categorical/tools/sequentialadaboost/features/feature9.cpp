@@ -149,7 +149,7 @@ int Feature9::getFeature(oscar::Example *e, int index_feature) {
 
 	double mean = sum / (double)n;
 
-	delete V;
+	delete [] V;
 
 	// write feature
 	fv->value = mean;

@@ -113,7 +113,7 @@ int Feature9_sd::getFeature(oscar::Example *e, int index_feature) {
 	double std = sum / ( (double)n );
 	std = sqrt(std);
 
-	delete V;
+	delete [] V;
 
 	// write feature
 	fv->value = std;

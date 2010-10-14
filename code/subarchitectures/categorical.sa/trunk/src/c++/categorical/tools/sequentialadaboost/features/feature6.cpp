@@ -110,7 +110,7 @@ int Feature6::getFeature(oscar::Example *e, int index_feature) {
         perimeter = perimeter + dist;
     }
 
-	delete V;
+	delete [] V;
 
 	// write feature
 	fv = &(re->list_features[index_feature]);

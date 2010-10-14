@@ -106,7 +106,7 @@ int Feature5::getFeature(oscar::Example *e, int index_feature) {
     area = area / 2.0;
 
 
-	delete V;
+	delete [] V;
 
 	// write feature
 	fv = &(re->list_features[index_feature]);
