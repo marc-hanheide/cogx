@@ -1,6 +1,6 @@
 function drawAllClasses( model, hp )
 
-return;
+%return;
 
 decompose = 0 ;
 colrs = {'r', 'g', 'b', 'y', 'k', 'k', 'm', 'c'} ;
@@ -20,12 +20,13 @@ for i = 1 : 2
         end
  
         executeOperatorIKDEClsfr( model{i}, 'showKDE_of_class_index', j, 'showkdecolor', clr, 'decompose', decompose, 'draw_to_these_axes', ha) ;
-        xlabel(labls(model{i}.sub_selected_features(1)),'Parent',ha) ;
-        if length(model{i}.sub_selected_features) > 1
-            ylabel(labls(model{i}.sub_selected_features(2)),'Parent',ha) ;
+        fbs=getc(model,i,'Fb');
+        xlabel(labls(fbs(1)),'Parent',ha) ;
+        if length(fbs) > 1
+            ylabel(labls(fbs(2)),'Parent',ha) ;
         end
-        if length(model{i}.sub_selected_features) > 2
-            zlabel(labls(model{i}.sub_selected_features(3)),'Parent',ha) ;
+        if length(fbs) > 2
+            zlabel(labls(fbs(3)),'Parent',ha) ;
         end 
     end
     title(nam{i},'Parent',ha)

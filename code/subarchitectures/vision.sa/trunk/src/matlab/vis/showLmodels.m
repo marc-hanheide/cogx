@@ -61,7 +61,7 @@ if length(txt)>1%8
 end
 displayG(fig.main,'GL');
 displayTL(mC);
-displayTD(mC);
+%displayTD(mC);
 displayGD(mC);
 
 
