@@ -116,7 +116,7 @@ enum {
 };
 long ObjectAnalyzer::getOrCreateVisualObject(const string &objectId, VisualObjectPtr &pobject)
 {
-  if(existsOnWorkingMemory(objectId))
+  if(! objectId.empty() && existsOnWorkingMemory(objectId))
   {
 	try {
 	  pobject = getMemoryEntry<VisualObject>(objectId);
@@ -141,7 +141,7 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
   
   string pvId = ProtoObjectMap[ptask->protoObjectAddr.id].visualObjId;
   VisualObjectPtr pvobj;
-  if(existsOnWorkingMemory(pvId)) {
+  if(!pvId.empty() && existsOnWorkingMemory(pvId)) {
 	try {
 //		VisualObjectPtr pvobj = getMemoryEntryWithData<VisualObject>(pvId).getData();
 		pvobj = getMemoryEntry<VisualObject>(pvId);
@@ -211,7 +211,7 @@ void ObjectAnalyzer::onChange_AL_AffordanceTask(const cdl::WorkingMemoryChange &
   
   string pvId = ProtoObjectMap[ptask->protoObjectAddr.id].visualObjId;
   VisualObjectPtr pvobj;
-  if(existsOnWorkingMemory(pvId)) {
+  if(!pvId.empty() && existsOnWorkingMemory(pvId)) {
 	try {
 //		VisualObjectPtr pvobj = getMemoryEntryWithData<VisualObject>(pvId).getData();
 		pvobj = getMemoryEntry<VisualObject>(pvId);
@@ -311,7 +311,7 @@ void ObjectAnalyzer::runComponent()
 			// TODO: what about identGain?
 			
 			// Remove salience from the previously salient object
-			if(existsSalient && existsOnWorkingMemory(m_salientObjID))
+			if(existsSalient && !m_salientObjID.empty () && existsOnWorkingMemory(m_salientObjID))
 			{		  
 			  VisualObjectPtr salientObj = getMemoryEntryWithData<VisualObject>(m_salientObjID).getData();
 			  salientObj->salience=0.0f;
