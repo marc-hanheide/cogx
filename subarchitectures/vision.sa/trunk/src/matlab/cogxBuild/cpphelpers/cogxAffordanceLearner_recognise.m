@@ -1,10 +1,17 @@
 function Affordance = cogxAffordanceLearner_recognise(Features)
 %
 % Note: This assumes the existence of a global BiModalLearner object named
-% AffordanceClassifier
+% Classifier
 % 
+    global Classifier 
+    if isempty(Features) || length(Features) ~= 11
+        Affordance = 'Undefined';
+        return
+    end
 
-    FeaturesResults = AffordanceClassifier.classify(Features);
-    Affordance = FeaturesResults.Results.GroundTruthClassification{1};
+    FeaturesResults = Classifier.gtclassify('data', Features');
+    res = FeaturesResults.Results.GroundTruthClassification;
+    Affordance = res{1};
 
+    disp('cogxAffordanceLearner_recognise done.');
 end

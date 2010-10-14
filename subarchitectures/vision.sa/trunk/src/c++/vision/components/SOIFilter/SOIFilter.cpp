@@ -424,6 +424,9 @@ void SOIFilter::runComponent()
 			  pobj->SOIList.push_back(soi.addr.id);
 			  
 			  //m_LastProtoObject = pobj;
+			  if (pobj == NULL) {
+				println(" *********** WTF ************");
+			  }
 
 			  string objId = newDataID();
 			  addToWorkingMemory(objId, pobj);
