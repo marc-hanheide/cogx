@@ -52,9 +52,6 @@ JAVA MG executor dora.execution.components.DoraExecutionMediator
 # dialogue stuff ##############################################################
 INCLUDE includes/dialogue.sa/dialogue-base.cast
 INCLUDE includes/dialogue.sa/dialogue-dora.cast
-# switch these two to use actual dialogue rather than pop-up boxes
-#INCLUDE includes/dialogue.sa/dialogue-dora-exe.cast
-INCLUDE includes/dialogue.sa/dialogue-dora-exe-fake.cast
 
 
 # viewing and debugging #######################################################
