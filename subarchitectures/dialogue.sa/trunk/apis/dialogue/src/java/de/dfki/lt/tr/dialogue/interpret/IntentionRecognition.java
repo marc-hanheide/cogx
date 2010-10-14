@@ -59,20 +59,25 @@ public class IntentionRecognition {
 	public IdentifierGenerator idGen;
 	public int timeout;
 
+	private String abd_serverName = "";
+	private String abd_endpoints = "";
+
 	public static final String INTENTION_RECOGNITION_ENGINE = "IntentionRecognition";
 
 	/**
 	 * Initialise the abducer and prepare for action.
 	 */
-    public IntentionRecognition(IdentifierGenerator idGen_, int timeout_) {
+    public IntentionRecognition(String serverName, String endpoints, IdentifierGenerator idGen_, int timeout_) {
 		this.idGen = idGen_;
 		this.timeout = timeout_;
+		abd_serverName = serverName;
+		abd_endpoints = endpoints;
 		init();
     }
 
 	private void init() {
 		abd_recog = new AbductionEngineConnection();
-		abd_recog.connectToServer("AbducerServer", "default -p 10000");
+		abd_recog.connectToServer(abd_serverName, abd_endpoints);
 		abd_recog.bindToEngine(INTENTION_RECOGNITION_ENGINE);
 		abd_recog.getProxy().clearContext();
 	}

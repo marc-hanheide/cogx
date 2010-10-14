@@ -51,20 +51,25 @@ public class IntentionRealization {
 //	public static Counter counter = new Counter("ir");
 	public IdentifierGenerator idGen;
 
+	private String abd_serverName = "";
+	private String abd_endpoints = "";
+
 	public static final String INTENTION_REALIZATION_ENGINE = "IntentionRealization";
 
 	/**
 	 * Initialise the abducer and prepare for action.
 	 */
-    public IntentionRealization(IdentifierGenerator idGen_, int timeout_) {
+    public IntentionRealization(String servername, String endpoints, IdentifierGenerator idGen_, int timeout_) {
 		this.idGen = idGen_;
 		this.timeout = timeout_;
+		this.abd_serverName = servername;
+		this.abd_endpoints = endpoints;
 		init();
     }
 
 	private void init() {
 		abd_realize = new AbductionEngineConnection();
-		abd_realize.connectToServer("AbducerServer", "default -p 10000");
+		abd_realize.connectToServer(abd_serverName, abd_endpoints);
 		abd_realize.bindToEngine(INTENTION_REALIZATION_ENGINE);
 		abd_realize.getProxy().clearContext();
 	}

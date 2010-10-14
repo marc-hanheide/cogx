@@ -65,12 +65,15 @@ extends AbstractDialogueComponent {
 	private String appendfile = "/dev/null";
 	private String correlfile = "/dev/null";
 
+	private String abd_serverName = "AbducerServer";
+	private String abd_endpoints = "default -p 10000";
+
 	AbductionEngineConnection intentionEngine = null;
 
 	@Override
 	public void start() {
 		super.start();
-		pbc = new PresupposedBeliefConstruction();
+		pbc = new PresupposedBeliefConstruction(abd_serverName, abd_endpoints);
 		if (pbcRulesetFile != null) {
 			try {
 				BufferedReader f = new BufferedReader(new FileReader(pbcRulesetFile));
@@ -99,7 +102,7 @@ extends AbstractDialogueComponent {
 			log("no ruleset to read");
 		}
 
-		arr = new AbductiveReferenceResolution(toAbsolutePath(dumpfile), toAbsolutePath(appendfile), timeout);
+		arr = new AbductiveReferenceResolution(abd_serverName, abd_endpoints, toAbsolutePath(dumpfile), toAbsolutePath(appendfile), timeout);
 		if (correlfile != null) {
 			arr.loadFile(toAbsolutePath(correlfile));
 		}

@@ -59,12 +59,18 @@ public class AbductiveReferenceResolution {
 	private AbductionEngineConnection refresEngine = null;
 	private String dumpfile;
 	private String appendfile;
+
+	private String abd_serverName = "";
+	private String abd_endpoints = "";
+
 	public static final String REFERENCE_RESOLUTION_ENGINE = "ReferenceResolution";
 
 	public static final String BELIEF_EXIST_ASSUMABILITY_FUNCTION_NAME = "belief_exist";
 	public static final String WORLD_EXIST_ASSUMABILITY_FUNCTION_NAME = "world_exist";
 
-	public AbductiveReferenceResolution(String dumpfile_, String appendfile_, int timeout_) {
+	public AbductiveReferenceResolution(String servername, String endpoints, String dumpfile_, String appendfile_, int timeout_) {
+		abd_serverName = servername;
+		abd_endpoints = endpoints;
 		init();
 		dumpfile = dumpfile_;
 		appendfile = appendfile_;
@@ -73,7 +79,7 @@ public class AbductiveReferenceResolution {
 
 	private void init() {
 		refresEngine = new AbductionEngineConnection();
-		refresEngine.connectToServer("AbducerServer", "default -p 10000");
+		refresEngine.connectToServer(abd_serverName, abd_endpoints);
 		refresEngine.bindToEngine(REFERENCE_RESOLUTION_ENGINE);
 		refresEngine.getProxy().clearContext();
 	}
