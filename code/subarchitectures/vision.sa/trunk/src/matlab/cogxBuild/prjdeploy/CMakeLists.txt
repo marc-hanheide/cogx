@@ -16,7 +16,7 @@ IF (BUILD_SA_VISION_VISLEARNER_CTF)
 ENDIF (BUILD_SA_VISION_VISLEARNER_CTF)
 
 # The CTF file can be either separate or included in the executable (so/dll).
-SET(SEPARATE_CTF "true")
+SET(SEPARATE_CTF "false")
 
 PROJECT(VisualLearnerCtf)
 SET (LIBRARY_NAME VisualLearnerCtf)
