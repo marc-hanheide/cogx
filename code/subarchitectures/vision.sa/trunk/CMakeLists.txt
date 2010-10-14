@@ -23,6 +23,8 @@ include_directories(src/c++/vision/autogen)
 add_subdirectory(src/c++/vision/autogen)
 add_subdirectory(src/c++/vision/libs)
 
+SET(VISION_LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/c++/vision/libs)
+
 #add_subdirectory (src/c++/vision/components/VisualWMVisualisation)
 option(BUILD_SA_VISION_FERNS "build FERNS detector" YES)
 if (BUILD_SA_VISION_FERNS)
