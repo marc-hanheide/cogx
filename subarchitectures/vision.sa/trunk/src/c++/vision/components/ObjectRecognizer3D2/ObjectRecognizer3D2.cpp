@@ -122,7 +122,7 @@ void ObjectRecognizer3D2::receiveImages(const std::vector<Video::Image>& images)
 }
 
 void ObjectRecognizer3D2::receiveRecognitionTask(const cdl::WorkingMemoryChange & _wmc){
-  log("Receiving receiveDetectionCommand");
+  log("Receiving ObjectRecognitionTask");
   m_recTaskId = _wmc.address.id;
   m_recTask = getMemoryEntry<ObjectRecognitionTask>(_wmc.address);
 }
@@ -139,6 +139,8 @@ void ObjectRecognizer3D2::initRecognizer() {
  * load models
  */
 void ObjectRecognizer3D2::loadModels() {
+
+  log("loading models ...");
 	std::map<std::string,RecEntry>::iterator it;
 	for(it = m_recEntries.begin(); it!=m_recEntries.end(); it++){
 		log("Loading Sift Model '%s'", (*it).second.siftfile.c_str());
@@ -146,6 +148,7 @@ void ObjectRecognizer3D2::loadModels() {
 		if(!sift_model_learner.LoadModel((*it).second.siftfile.c_str(), (*(*it).second.object)))
       throw runtime_error(exceptionMessage(__HERE__, "failed to load %s", (*it).second.siftfile.c_str()));
 	}
+  log("... done loading models");
 }
 
 /**
@@ -158,6 +161,8 @@ void ObjectRecognizer3D2::setCameraParameters(int imgWidth, int igHeight) {
 
   if(!m_haveCameraParameters)
   {
+    log("setting camera parameters");
+
     Video::Image image;
     StereoClient::getRectImage(LEFT, imgWidth, image);
 
