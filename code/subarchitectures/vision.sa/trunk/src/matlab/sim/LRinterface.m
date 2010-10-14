@@ -21,8 +21,10 @@ switch req
       g=ODKDEgain(f,mC);
       gain=cc2c(g);
 
+      division_at = size(avu{1},1)-1 ;
       
-      showRec(ansYes,ansPy,rCpcx,f);
+      
+      showRec(ansYes,ansPy,rCpcx,f, division_at);
       displayTR(ansYes,ansPy,avu,g);
       displayG(Figs.LRguiR.main,'GR');
    case 2 %update
