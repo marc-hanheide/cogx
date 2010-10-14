@@ -68,7 +68,7 @@ public class DialogueManager {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 
 	// the dialogue policy
 	DialoguePolicy policy;

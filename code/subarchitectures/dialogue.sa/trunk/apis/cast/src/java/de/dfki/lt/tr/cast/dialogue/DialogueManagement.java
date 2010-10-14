@@ -185,7 +185,8 @@ public class DialogueManagement extends ManagedComponent {
 		try {
 
 			// create an "augmented" intention based on the received one
-			if (includesInFormula(cintention.intent, "question-answered")) {
+			if (includesInFormula(cintention.intent, "question-answered") || 
+					includesInFormula(cintention.intent, "object-described")) {
 				cintention = expandCommunicativeIntention(cintention);	
 			}
 
@@ -326,10 +327,9 @@ public class DialogueManagement extends ManagedComponent {
 		debug("feature type: " + featureType);
 
 		List<String> featuresToExtract = new LinkedList<String>();
-		if (featureType.equals("identity")) {
-			featuresToExtract.add("color");
-			featuresToExtract.add("type");
-			featuresToExtract.add("shape");
+		if (FormulaUtils.getString(form).contains("object-described")) {
+				featuresToExtract.add("color");
+				featuresToExtract.add("shape");
 		}
 		else {
 			featuresToExtract.add(featureType);

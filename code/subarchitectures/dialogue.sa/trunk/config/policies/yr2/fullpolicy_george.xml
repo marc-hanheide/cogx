@@ -14,7 +14,10 @@
 		<node id="negAnswerNodeCertain" action="negAnswerActionCertain" isInitial="false" isFinal="true"/> 
 		<node id="negAnswerNodeUncertain" action="negAnswerActionUncertain" isInitial="false" isFinal="true"/> 
 		<node id="notUnderstoodNode" action="notUnderstoodAction" isInitial="false" isFinal="true"/>
-		<node id="describeObjectNode" action="describeObjectAction" isInitial="false" isFinal="true"/>		
+		<node id="describeObjectNode1" action="describeObjectAction1" isInitial="false" isFinal="true"/>		
+		<node id="describeObjectNode2" action="describeObjectAction2" isInitial="false" isFinal="true"/>		
+		<node id="describeObjectNode3" action="describeObjectAction3" isInitial="false" isFinal="true"/>		
+		<node id="describeObjectNode4" action="describeObjectAction4" isInitial="false" isFinal="true"/>		
 	</nodes>
 	
 	<edges>
@@ -34,6 +37,10 @@
 		<edge id="polarNoclueEdge" source="*" target="notKnowAnswerNode" condition="polarNoclueCond"/> 
 		<edge id="yesEdge" source="*" target="thankingNode" condition="yesCond"/> 
 		<edge id="noEdge" source="*" target="thankingNode" condition="noCond"/> 
+		<edge id="openQuestionEdge1" source="*" target="describeObjectNode1" condition="openQuestionCond1"/>
+		<edge id="openQuestionEdge2" source="*" target="describeObjectNode2" condition="openQuestionCond2"/>
+		<edge id="openQuestionEdge3" source="*" target="describeObjectNode3" condition="openQuestionCond3"/>
+		<edge id="openQuestionEdge4" source="*" target="describeObjectNode4" condition="openQuestionCond4"/>
 	</edges>
 	
 	<conditions>
@@ -64,6 +71,11 @@
 		
 		<condition id="yesCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(verified)" ></condition>
 		<condition id="noCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(falsified)" ></condition>	 
+		<condition id="openQuestionCond1" type="communicativeintention" lowerProb="0.4" higherProb="1.0" content= "&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(object-described ^ &lt;about&gt;(&lt;ref&gt;(%2) ^ &lt;color&gt;(%3) ^ &lt;shape&gt;(%4))))" />
+	     <condition id="openQuestionCond2" type="communicativeintention" lowerProb="0.4" higherProb="1.0" content= "&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(object-described ^ &lt;about&gt;(&lt;ref&gt;(%2) ^ &lt;shape&gt;(%4))))" />
+	<condition id="openQuestionCond3" type="communicativeintention" lowerProb="0.4" higherProb="1.0" content= "&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(object-described ^ &lt;about&gt;(&lt;ref&gt;(%2) ^ &lt;color&gt;(%3))))" />
+	<condition id="openQuestionCond4" type="communicativeintention" lowerProb="0.4" higherProb="1.0" content= "&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(object-described ^ &lt;about&gt;(&lt;ref&gt;(%2))))" />
+	
 	</conditions>
 	
 	<actions>
@@ -80,5 +92,9 @@
 	    <action id="negAnswerActionCertain" type="communicativeintention" content="&lt;state&gt;(falsified)" ></action> 
 	    <action id="negAnswerActionUncertain" type="communicativeintention" content="&lt;state&gt;(falsified ^ &lt;certainty&gt;uncertain)" ></action>
 	    <action id="notUnderstoodAction" action="communicativeintention" content="&lt;state&gt;(error-reported)" />
+	    <action id="describeObjectAction1" action="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;type&gt;(object) ^ &lt;color&gt;(%3) ^ &lt;shape&gt;(%4))))"></action>
+	<action id="describeObjectAction2" action="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;type&gt;(object) ^ &lt;shape&gt;(%3))))"></action>
+	<action id="describeObjectAction3" action="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;type&gt;(object) ^ &lt;color&gt;(%3))))"></action>
+		<action id="describeObjectAction4" action="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;type&gt;(object))))"></action>
 	</actions>
 </policy>
