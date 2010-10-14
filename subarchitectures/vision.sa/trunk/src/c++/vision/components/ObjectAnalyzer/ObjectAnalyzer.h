@@ -104,7 +104,8 @@ class ObjectAnalyzer : public ManagedComponent
 	void start_VL_RecognitionTask(const cdl::WorkingMemoryAddress &protoObjectAddr);
 	void onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange & _wmc);
 
-	void start_OR_RecognitionTask(const cdl::WorkingMemoryAddress &visualObjectAddr);
+	void start_OR_RecognitionTask(const cdl::WorkingMemoryAddress &visualObjectAddr,
+	  const cdl::WorkingMemoryAddress &protoObjectAddr);
 	void onChange_OR_RecognitionTask(const cdl::WorkingMemoryChange & _wmc);
 	long getOrCreateVisualObject(const std::string &objectId, VisionData::VisualObjectPtr &pobject);
 
