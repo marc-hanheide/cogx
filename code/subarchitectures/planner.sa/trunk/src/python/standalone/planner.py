@@ -121,6 +121,15 @@ class Planner(object):
             #no universal preconditions => quickcheck
             if all(f in state for f in read):
                 return True
+            
+        def has_preferences(cond, results):
+            if isinstance(cond, pddl.conditions.PreferenceCondition):
+                return True
+            return any(results)
+        
+        if isinstance(pnode.action, plans.GoalAction) and cond and cond.visit(has_preferences):
+            if pnode.satisfied_softgoals:
+                cond = pddl.Conjunction([cond] + list(pnode.satisfied_softgoals))
 
         action = pnode.action
         if cond:

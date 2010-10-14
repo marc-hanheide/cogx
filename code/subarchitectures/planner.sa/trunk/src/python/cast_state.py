@@ -251,7 +251,7 @@ class CASTState(object):
             self.state = self.prob_state.determinized_state(0.05, 0.95)
 
 
-    def to_problem(self, cast_task, deterministic=True, domain=None):
+    def to_problem(self, slice_goals, deterministic=True, domain=None):
         if "action-costs" in self.domain.requirements:
             opt = "minimize"
             opt_func = pddl.FunctionTerm(pddl.builtin.total_cost, [])
@@ -277,21 +277,19 @@ class CASTState(object):
         else:
             self.prob_state.problem = problem
 
-        if cast_task is None:
+        if slice_goals is None:
             return problem, None
 
         goaldict = {}
         problem.goal = pddl.conditions.Conjunction([], problem)
-        for goal in cast_task.goals:
-            goalstrings = tp.transform_goal_string(goal.goalString, self.namedict).split("\n")
-            pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
-            # try:
-            #     goalstrings = tp.transform_goal_string(goal.goalString, self.namedict).split("\n")
-            #     pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
-            # except pddl.parser.ParseError,e:
-            #     log.error("Could not parse goal: %s", goal.goalString)
-            #     log.error("Error: %s", e.message)
-            #     continue
+        for goal in slice_goals:
+            try:
+                goalstrings = tp.transform_goal_string(goal.goalString, self.namedict).split("\n")
+                pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
+            except pddl.parser.ParseError,e:
+                log.warning("Could not parse goal: %s", goal.goalString)
+                log.warning("Error: %s", e.message)
+                continue
             
             goaldict[pddl_goal] = goal
             goaldict[goal.goalString] = pddl_goal
