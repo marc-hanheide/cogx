@@ -12,7 +12,7 @@
 
   (:predicates
    (connected ?p1 ?p2 - place)
-   (reported-position ?o - visualobject)
+   (position-reported ?o - visualobject)
 
    (is-virtual ?o - object)
    ;; derived predicates
@@ -157,7 +157,7 @@
                               (obj-possibly-in-room ?o ?r)
                               (not (cones-exist ?l ?r))
                               (= (ex-in-room ?l ?r) true))
-           :effect (probabilistic 0.9 (assign (is-in ?o) ?p))
+           :effect (probabilistic 0.8 (assign (is-in ?o) ?p))
            )
 
    ;; (:durative-action spin
@@ -182,7 +182,7 @@
            :duration (= ?duration 1.0)
            :condition (over all (and (kval ?a (is-in ?o))
                                      (= (is-in ?a) ?p)))
-           :effect (at end (reported-position ?o))
+           :effect (at end (position-reported ?o))
            )
 
    (:durative-action move
