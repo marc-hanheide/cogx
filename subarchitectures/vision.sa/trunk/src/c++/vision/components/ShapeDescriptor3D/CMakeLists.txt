@@ -1,6 +1,11 @@
 
-SET(LEVMAR_PATH "/usr/local/src/levmar-2.5") # "path to Lourakis' levmar v2.5" 
-SET(HOMEST_PATH  "/usr/local/src/homest-1.3") # "path to Lourakis' homest v1.3"
+if(VISION_LIB_DIR)
+   SET(LEVMAR_PATH "${VISION_LIB_DIR}/levmar/levmar-2.5")
+   SET(HOMEST_PATH  "${VISION_LIB_DIR}/homest/homest-1.3")
+else(VISION_LIB_DIR)
+   SET(LEVMAR_PATH "/usr/local/src/levmar-2.5") # "path to Lourakis' levmar v2.5" 
+   SET(HOMEST_PATH  "/usr/local/src/homest-1.3") # "path to Lourakis' homest v1.3"
+endif(VISION_LIB_DIR)
 
 
 include_directories(.)
