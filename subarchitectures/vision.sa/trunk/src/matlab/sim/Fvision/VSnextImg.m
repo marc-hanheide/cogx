@@ -15,6 +15,7 @@ else
 end
  
 [x,b,pt3d]=readImage(Data.currImg);
+N_max = min([100, size(x,1)]) ;
 
 imshow(x,'Parent',Figs.vsHs.axCimgH)
 set(Figs.vsHs.axCimgH,'Visible','off');
@@ -23,8 +24,13 @@ if ~isempty(pt3d)
 %     figure(7) ; clf ;
     axes(Figs.vsHs.axCpts3dH) ; hold off ;
     f=extAPfeatures(x,b,Params.FV);
- 
-    showSurfaceFromPoints( pt3d, repmat( hsv2rgb(f(1:3)')*255, size(pt3d,1), 1 ) ) ;
+  
+    cll = repmat( hsv2rgb(f(1:3)')*255, size(pt3d,1), 1 ) ;
+    idx = round(linspace(1,size(pt3d,1),N_max)) ;
+    pt3d = pt3d(idx,:) ;
+    cll = cll(idx,:) ;
+    
+    showSurfaceFromPoints( pt3d, cll  ) ;
 end
 
  msg = sprintf('Img %d has been read from the disk!',Data.currImg) ; disp(msg) ;

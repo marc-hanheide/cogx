@@ -549,7 +549,7 @@ for i = 1 : i_nextits
         handles.data=[];guidata(hObject,handles);
     end
     
-    pause(0.1) ;
+%     pause(0.1) ;
 end
 
 

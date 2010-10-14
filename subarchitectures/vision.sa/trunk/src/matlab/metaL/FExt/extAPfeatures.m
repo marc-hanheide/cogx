@@ -61,6 +61,20 @@ else
 
       %get median
       medHSV=median(V)';
+      
+% %       idx = randperm(size(V,1)) ;
+% %       num_sel = min([100, length(idx) ]) ; 
+% %       data = V(idx(1:num_sel),:) ; 
+% % %       N_max = min([size(V,1),100]) ;
+% % %       idx = round(linspace(1,size(x,1),N_max)) ;
+% % %       data = V(idx,:) ; 
+% %       [clustCent,num_in_cluster] = getModesInData( data ) ;
+% %       if ~isempty(num_in_cluster)
+% %           medHSV = clustCent(:,1) ;
+% %       else
+% %          medHSV = median(V)';  
+% %       end
+% medHSV = median(V)';  
       if length(medHSV) == 3        
         [hu,sa,in]=deal(medHSV(1),medHSV(2),medHSV(3));
       else
