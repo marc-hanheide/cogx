@@ -133,10 +133,13 @@ public class DoraIntentionGoalGenerator extends
 					// (and (exists (?o - visualobject) (and (= (label ?o)
 					// cereal_box) (kval dora (is-in ?o))))
 					String robotBel = getRobotBeliefAddr().id;
+//					goal.goal = new Goal(-1,
+//							"(exists (?o - visualobject) (and (= (label ?o) "
+//									+ objectType + ") (kval '" + robotBel
+//									+ "' (is-in ?o))))", false);
 					goal.goal = new Goal(-1,
-							"(exists (?o - visualobject) (and (= (label ?o) "
-									+ objectType + ") (kval '" + robotBel
-									+ "' (is-in ?o))))", false);
+					"(exists (?o - visualobject) (and (= (label ?o) "
+							+ objectType + ") (position-reported ?o)))", false);
 					log("goal generated: " + goal.goal.goalString);
 					goal.informationGain = 1.0;
 
