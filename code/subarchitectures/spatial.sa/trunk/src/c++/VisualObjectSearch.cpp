@@ -1479,38 +1479,85 @@ log("filled");
 	InitializeMaps(m_placestosearch);
 	m_map = m_maps[1]; 
 	m_lgm = m_lgms[1];
-	log("here..");
 	int tableid = GetPlaceIdFromNodeId(GetClosestNodeId(tablepose.getX(), tablepose.getY(), 0)); 
-	log("here.. 1");
 
 	//if this id exists in the list
-	  bool exists = false;
-	  for (unsigned int i= 0 ; i < m_placestosearch.size(); i++){
-	    if(m_placestosearch[i] == tableid){
-	      exists = true;
-	      break;
-	    }
+	bool exists = false;
+	for (unsigned int i= 0 ; i < m_placestosearch.size(); i++){
+	  if(m_placestosearch[i] == tableid){
+	    exists = true;
+	    break;
 	  }
-	  SpatialGridMap::GridMap<GridMapData> tmpMap = *m_map; 
-	  if(false){
-	    log("table exists in the places  what we are asked to search");
-	    // we always execute the first policy
+	}
+	SpatialGridMap::GridMap<GridMapData> tmpMap = *m_map; 
+	
+	FrontierInterface::ObjectPriorRequestPtr objreq =
+	  new FrontierInterface::ObjectPriorRequest;
+	if(exists){
+	  log("table exists in the places  what we are asked to search");
+	  // we always execute the first policy
+	  string filename = "table+with+" + targetObject + ".txt";
+	  ifstream tableCloudFile(filename.c_str(), ios::in);
+	  if (tableCloudFile.is_open()) {
 
+	    log("Reading cloud from file");
+	    FrontierInterface::WeightedPointCloudPtr cloud = 
+	      new FrontierInterface::WeightedPointCloud;
+	    tableCloudFile >> cloud->center.x;
+	    tableCloudFile >> cloud->center.y;
+	    tableCloudFile >> cloud->center.z;
+	    tableCloudFile >> cloud->interval;
+	    tableCloudFile >> cloud->xExtent;
+	    tableCloudFile >> cloud->yExtent;
+	    tableCloudFile >> cloud->zExtent;
+	    log("%d", __LINE__);
+
+	    long int valn;
+	    tableCloudFile >> valn;
+
+	    log("xExtend: %d , yExtend: %d, zExtend: %d", cloud->xExtent, cloud->yExtent, cloud->zExtent);
+	    cloud->values.resize(valn);
+	    log("%d", __LINE__);
+
+	    for (unsigned long i = 0; i < valn; i++) {
+	      tableCloudFile >> cloud->values[i];
+	    }
+
+	    int tmp;
+	    tableCloudFile >> tmp;
+	    cloud->isBaseObjectKnown = tmp;
+
+	    log("%d", __LINE__);
+	    if(cloud->isBaseObjectKnown){
+	    log("Base known");
+	    }
+	    else{
+	    log("Base unknown");
+
+	    }
+	    double totalMass;
+	    tableCloudFile >> totalMass;
+	    log("totalMass read from file: %3.2f", totalMass);
+	    log("%d", __LINE__);
+	    receivePointCloud(cloud, totalMass);
+	    log("%d", __LINE__);
+	 
+	  
+	  }
+	  else{
+	    FrontierInterface::WeightedPointCloudPtr queryCloud = 
+	      new FrontierInterface::WeightedPointCloud;	  
 	    vector<FrontierInterface::ObjectRelation> relations;
 	    vector<string> labels;
 	    relations.push_back(FrontierInterface::ON);
 	    labels.push_back(targetObject);
 	    labels.push_back(m_tablelabel);
-	    FrontierInterface::WeightedPointCloudPtr queryCloud = 
-	      new FrontierInterface::WeightedPointCloud;
-	    FrontierInterface::ObjectPriorRequestPtr objreq =
-	      new FrontierInterface::ObjectPriorRequest;
 	    objreq->relationTypes = relations; // ON or IN or whatnot
 	    objreq->objects = labels;	// Names of objects, starting with the query object
 	    objreq->cellSize = m_cellsize;	// Cell size of map (affects spacing of samples)
 	    objreq->outCloud = queryCloud;	// Data struct to receive output
 	    objreq->totalMass = 1.0;
-	  
+
 	    GDProbScale reset(0.0);
 	    m_map->universalQuery(reset, true);
 	    unlockComponent();
@@ -1520,9 +1567,10 @@ log("filled");
 	      usleep(2500);
 	    log("got PC for direct search");
 	    lockComponent();
-	    GetCostForSingleStrategy(m_map, targetObject,m_threshold,false);
-	    // overwrite the command
 	  }
+	  GetCostForSingleStrategy(m_map, targetObject,m_threshold,false);
+	  // overwrite the command
+	}
 	  else {
 	    log("table does not exists in the places  what we are asked to search");
 	    InitializePDFForObject(1.0, targetObject, m_map);
@@ -2090,10 +2138,13 @@ log("filled");
 
 	    // Huge HACK: REMOVEME
 	    if (objreq->objects.size() == 2 &&
+		
 		objreq->objects.back() == "table") {
 	      string filename = "table+with+" + objreq->objects.front() + ".txt";
 	      ifstream tableCloudFile(filename.c_str(), ios::in);
 	      if (tableCloudFile.is_open()) {
+	
+		log("Reading cloud from file");
 		FrontierInterface::WeightedPointCloudPtr cloud = 
 		  new FrontierInterface::WeightedPointCloud;
 		tableCloudFile >> cloud->center.x;
@@ -2220,6 +2271,8 @@ log("filled");
       void
 	VisualObjectSearch::receivePointCloud(FrontierInterface::WeightedPointCloudPtr cloud, double totalMass)
 	{
+
+	  log("KDEing cloud read from file");
 	    vector<Vector3> centers;
 	    centers.push_back(cloud->center);
 
