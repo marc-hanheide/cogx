@@ -1298,8 +1298,10 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
     sprintf(buf, "%d", GetPlaceIdFromNodeId(node.m_Id));
     text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
     text.set_text(buf);
-  text.set_pose(node.m_X,node.m_Y,0.3,0,M_PI/2,M_PI/2);
-    text.set_scale(10, 10, 10);
+  text.set_pose(node.m_X,node.m_Y,0.3,0,0.0,0);
+ //text.set_rotation(0,0,M_PI/2);  
+ text.set_rotation(0,0,0);
+ text.set_scale(20, 20, 20);
     text.set_alignment(peekabot::ALIGN_CENTER);
     text.set_color(1,0,0);
 

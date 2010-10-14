@@ -1826,7 +1826,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     //HACK for review; removeme
 
     if (request->objects.size() == 2 && request->objects[1] == "table") {
-      string filename = "table+with+" + request->objects[0] + ".txt";
+      string filename = "table+with+object.txt";
       ofstream tableCloudFile(filename.c_str(), ios::out);
       tableCloudFile << request->outCloud->center.x;
      tableCloudFile << " " ; 
