@@ -19,9 +19,9 @@
     (color-learned ?v - visual-object)
     (shape-learned ?v - visual-object)
     (ident-learned ?v - visual-object)
-    ;;(color-unlearned ?v - visual-object ?c - color-name)
-    ;;(shape-unlearned ?v - visual-object ?s - shape-name)
-    ;;(ident-unlearned ?v - visual-object ?i - ident-name)
+    (color-unlearned ?v - visual-object)
+    (shape-unlearned ?v - visual-object)
+    (ident-unlearned ?v - visual-object)
     (allow-general-color-question ?v - visual-object)
     (allow-polar-color-question ?v - visual-object ?c - color-name)
     (allow-general-shape-question ?v - visual-object)
@@ -100,6 +100,18 @@
 		   (or
 		      (forall (?i - ident-name) (not (attributed tutor (ident ?v) ?i)))
 		      (ident-learned ?v)
+		   )
+		   (or
+		      (forall (?c - color-name) (not (neg-attributed tutor (color ?v) ?c)))
+		      (color-unlearned ?v)
+		   )
+		   (or
+		      (forall (?s - shape-name) (not (neg-attributed tutor (shape ?v) ?s)))
+		      (shape-unlearned ?v)
+		   )
+		   (or
+		      (forall (?i - ident-name) (not (neg-attributed tutor (ident ?v) ?i)))
+		      (ident-unlearned ?v)
 		   )
 		)
 	    )
@@ -318,47 +330,50 @@
 	    )
   )
 
-;;  (:action unlearn-color
-;;    :agent (?a - robot)
-;;    :parameters (?v - visual-object ?c - color-name)
-;;    :precondition 
-;;      (and 
-;;	     (neg-attributed tutor (color ?v) ?c)
-;;	     (not (color-unlearned ?v ?c))
-;;      )
-;;    :effect (and 
-;;    	    	 (color-unlearned ?v ?c)
-;;		 (increase (total-cost) 1)
-;;	    )
-;;  )
+  (:action unlearn-color
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?c - color-name)
+    :precondition 
+      (and 
+	     (neg-attributed tutor (color ?v) ?c)
+	     (not (color-unlearned ?v))
+	     (not (= ?c unknown-color))
+      )
+    :effect (and 
+    	    	 (color-unlearned ?v)
+		 (increase (total-cost) 1)
+	    )
+  )
 
-;;  (:action unlearn-shape
-;;    :agent (?a - robot)
-;;    :parameters (?v - visual-object ?s - shape-name)
-;;    :precondition 
-;;      (and 
-;;	     (neg-attributed tutor (shape ?v) ?s)
-;;	     (not (shape-unlearned ?v ?s))
-;;      )
-;;    :effect (and 
-;;    	    	 (shape-unlearned ?v ?s)
-;;		 (increase (total-cost) 1)
-;;	    )
-;;  )
+  (:action unlearn-shape
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?s - shape-name)
+    :precondition 
+      (and 
+	     (neg-attributed tutor (shape ?v) ?s)
+	     (not (shape-unlearned ?v))
+	     (not (= ?s unknown-shape))
+      )
+    :effect (and 
+    	    	 (shape-unlearned ?v)
+		 (increase (total-cost) 1)
+	    )
+  )
 
-;;  (:action unlearn-color
-;;    :agent (?a - robot)
-;;    :parameters (?v - visual-object ?i - ident-name)
-;;    :precondition 
-;;      (and 
-;;	     (neg-attributed tutor (ident ?v) ?i)
-;;	     (not (ident-unlearned ?v ?i))
-;;      )
-;;    :effect (and 
-;;    	    	 (ident-unlearned ?v ?i)
-;;		 (increase (total-cost) 1)
-;;	    )
-;;  )
+  (:action unlearn-ident
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?i - ident-name)
+    :precondition 
+      (and 
+	     (neg-attributed tutor (ident ?v) ?i)
+	     (not (ident-unlearned ?v))
+	     (not (= ?i unknown-ident))
+      )
+    :effect (and 
+    	    	 (ident-unlearned ?v)
+		 (increase (total-cost) 1)
+	    )
+  )
 
 
 )
