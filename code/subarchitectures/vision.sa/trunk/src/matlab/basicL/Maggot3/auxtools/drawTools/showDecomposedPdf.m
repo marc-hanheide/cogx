@@ -125,11 +125,8 @@ drawnow ;
 function y_evals = showPdf( bounds, N,centers, covariances, w, color, lw, draw_to_these_axes )
 x_evals = [bounds(1):abs(diff(bounds))/N:bounds(2)] ;
 y_evals = evaluateDistributionAt( centers, w, covariances, x_evals ) ;
-plot ( draw_to_these_axes, x_evals, y_evals, color, 'LineWidth',lw )
+plot ( draw_to_these_axes, x_evals, y_evals, 'Color', color, 'LineWidth',lw ) ;
  
-
-
-
 % ---------------------------------------------------------------------- %
 function pdf = evaluateDistributionAt( mu, weights, covariances, locations )
 % mu          ... mean values of mixture components
