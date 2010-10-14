@@ -13,5 +13,7 @@ function Affordance = cogxAffordanceLearner_recognise(Features)
     res = FeaturesResults.Results.GroundTruthClassification;
     Affordance = res{1};
 
+    displayTD(Affordance);
+    
     disp('cogxAffordanceLearner_recognise done.');
 end
