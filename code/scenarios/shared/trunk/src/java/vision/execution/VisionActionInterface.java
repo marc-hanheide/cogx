@@ -227,13 +227,15 @@ public class VisionActionInterface extends ManagedComponent {
 			extends NonBlockingCompleteOnOperationExecutor<ActionType> {
 
 		private final String m_concept;
+		private final String m_featurePostfix;
 		private final double m_weight;
 
 		public LearnInstructionExecutor(ManagedComponent _component,
-				Class<ActionType> _actCls, String _concept, double _weight) {
+				Class<ActionType> _actCls, String _concept, double _weight, String _featurePostfix) {
 			super(_component, _actCls);
 			m_concept = _concept;
 			m_weight = _weight;
+			m_featurePostfix = _featurePostfix;
 
 		}
 
@@ -273,7 +275,7 @@ public class VisionActionInterface extends ManagedComponent {
 		protected void actionComplete() {
 			try {
 				getComponent().addBooleanFeature(getAction().beliefAddress,
-						m_concept + "-learned", true);
+						m_concept + m_featurePostfix, true);
 			} catch (CASTException e) {
 				logException(e);
 			}
@@ -284,7 +286,7 @@ public class VisionActionInterface extends ManagedComponent {
 			LearnInstructionExecutor<LearnColour> {
 
 		public LearnColourExecutor(ManagedComponent _component) {
-			super(_component, LearnColour.class, "color", 1);
+			super(_component, LearnColour.class, "color", 1, "-learned");
 		}
 	}
 
@@ -292,7 +294,7 @@ public class VisionActionInterface extends ManagedComponent {
 			LearnInstructionExecutor<LearnShape> {
 
 		public LearnShapeExecutor(ManagedComponent _component) {
-			super(_component, LearnShape.class, "shape", 1);
+			super(_component, LearnShape.class, "shape", 1, "-learned");
 		}
 
 	}
@@ -301,7 +303,7 @@ public class VisionActionInterface extends ManagedComponent {
 			LearnInstructionExecutor<LearnIdentity> {
 
 		public LearnIdentityExecutor(ManagedComponent _component) {
-			super(_component, LearnIdentity.class, "ident", 1);
+			super(_component, LearnIdentity.class, "ident", 1, "-learned");
 		}
 	}
 
@@ -309,7 +311,7 @@ public class VisionActionInterface extends ManagedComponent {
 			LearnInstructionExecutor<UnlearnColour> {
 
 		public UnlearnColourExecutor(ManagedComponent _component) {
-			super(_component, UnlearnColour.class, "color", -1);
+			super(_component, UnlearnColour.class, "color", -1, "-unlearned");
 		}
 	}
 
@@ -317,7 +319,7 @@ public class VisionActionInterface extends ManagedComponent {
 			LearnInstructionExecutor<UnlearnShape> {
 
 		public UnlearnShapeExecutor(ManagedComponent _component) {
-			super(_component, UnlearnShape.class, "shape", -1);
+			super(_component, UnlearnShape.class, "shape", -1, "-unlearned");
 		}
 
 	}
@@ -326,7 +328,7 @@ public class VisionActionInterface extends ManagedComponent {
 			LearnInstructionExecutor<UnlearnIdentity> {
 
 		public UnlearnIdentityExecutor(ManagedComponent _component) {
-			super(_component, UnlearnIdentity.class, "ident", -1);
+			super(_component, UnlearnIdentity.class, "ident", -1,  "-unlearned");
 		}
 	}
 
