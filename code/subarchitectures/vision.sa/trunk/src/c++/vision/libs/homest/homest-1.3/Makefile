@@ -20,7 +20,7 @@ RM=rm -f
 MAKE=make
 MAPLE=maple
 
-LAPACKLIBS=-llapack -lblas -lf2c
+LAPACKLIBS=-llapack -lblas #-lf2c
 
 all: libhomest.a homest_demo
 
