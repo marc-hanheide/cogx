@@ -78,9 +78,11 @@ double Feature25::calcDistance(carmen_point_t *p1, carmen_point_t *p2) {
 // get feature
 //-----------------------------------------
 int Feature25::getFeature(oscar::Example *e, int index_feature) {
+
 	oscar::RangeExample *re = (oscar::RangeExample *)e;
 
 	//cerr << "Feature1::getFeature(oscar::RangeExample *re, int index_feature)" << endl;
+
 
 	if ( deviation < 0.0 ) {
 		cerr << "ERROR: Feature25::getFeature(...): deviation NOT set" << endl;
@@ -92,6 +94,7 @@ int Feature25::getFeature(oscar::Example *e, int index_feature) {
 		cerr << "ERROR: Feature25::getFeature: list_features==NULL" << endl;
 		return -1;
 	}
+	
 
 	fv = re->getFeature(index_feature);
 
@@ -112,6 +115,7 @@ int Feature25::getFeature(oscar::Example *e, int index_feature) {
 	carmen_point_t *V;
 	V = new carmen_point_t[n];
 	carmen_point_t point;
+
 
 	// store the points in an array
 	int index = 0;
@@ -143,6 +147,7 @@ int Feature25::getFeature(oscar::Example *e, int index_feature) {
 	// look for the first minimum
 	min1 = MAXDOUBLE;
 	index1=-1;
+
 
 	first_min= MAXDOUBLE;
 	first_index = -1;
@@ -178,6 +183,7 @@ int Feature25::getFeature(oscar::Example *e, int index_feature) {
 			// do nothing
 		}
 	}
+
 
 
 	index1 = (last_index + first_index) / 2;
@@ -252,6 +258,8 @@ int Feature25::getFeature(oscar::Example *e, int index_feature) {
 				}
 			}
 		}
+
+
 
 		if ( debug ) {
 			cout << "2------------: " << endl;
