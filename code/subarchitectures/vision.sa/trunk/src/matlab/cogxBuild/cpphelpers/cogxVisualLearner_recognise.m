@@ -56,7 +56,8 @@ function [rCpcx,gain] = cogxVisualLearner_recognise(X, B, pts3d)
       g=ODKDEgain(f,mC);
       gain=cc2c(g);
       
-      showRec(ansYes,ansPy,rCpcx,f);
+      division_at = size(avu{1},1)-1 ;
+      showRec(ansYes,ansPy,rCpcx,f,division_at);
       displayTR(ansYes,ansPy,avu,g);
       displayG(Figs.LRguiR.main,'GR');                 
       
