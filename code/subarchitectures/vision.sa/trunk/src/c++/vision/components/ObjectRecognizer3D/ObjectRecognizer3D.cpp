@@ -442,7 +442,6 @@ void ObjectRecognizer3D::initInStart(){
 		cvWaitKey(10);
 	}
 
-	m_detect = new(P::ODetect3D);
 	std::map<std::string,RecEntry>::iterator it;
 	for(it = m_recEntries.begin(); it!=m_recEntries.end(); it++){
 		log("Loading Sift Model '%s'", (*it).second.siftfile.c_str());
@@ -456,6 +455,8 @@ void ObjectRecognizer3D::initInStart(){
  * hence must be done in runComponent()
  */
 void ObjectRecognizer3D::initInRun(){
+
+	m_detect = new(P::ODetect3D);
 
   videoServer->getImage(camId, m_image);
   m_iplImage = convertImageToIpl(m_image);
