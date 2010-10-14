@@ -75,8 +75,11 @@ public class IntentionGoalGenerator extends
 				Document xmlAttr = IceXMLSerializer.toXomDom(belief);
 				Nodes negations = xmlAttr.query(XPATH_SELECT_NEGATION);
 			
-				if (negations.size() == 1)
-					prefix="un";					
+				
+				if (negations.size() == 1) {
+					prefix="un";			
+					
+				}
 				
 				log("inferred concept from attributed belief: " + concept);
 				FormulaDistribution aboutPointerFD = preAttributedBelief
@@ -100,6 +103,13 @@ public class IntentionGoalGenerator extends
 						+ "-" + prefix + "learned '" + referredPrivate.getVal().id + "')",
 						false);
 				log("goal generated: " + goal.goal.goalString);
+
+				//HACK unlearning always has a gain of 1
+				if (negations.size() == 1) {
+					goal.informationGain = 1;				
+				}
+				//END HACK
+
 				return goal;
 			} catch (CASTException e) {
 				logException(e);
