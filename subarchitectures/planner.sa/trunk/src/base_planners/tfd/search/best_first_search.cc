@@ -317,6 +317,7 @@ int BestFirstSearchEngine::fetch_next_state() {
     OpenListInfo *open_info = select_open_queue();
     if(!open_info) {
 	cout << "Completely explored state space -- no solution!" << endl;
+	exit(0);
 	return FAILED;
     }
 
