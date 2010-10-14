@@ -108,6 +108,10 @@ while i <= nargs
             vforwvargin = horzcat(vforwvargin, args{i} ) ;
             vforwvargin = horzcat(vforwvargin, args{i+1} ) ;
             i = i + 2 ; 
+        case 'showkdecolor'
+             vforwvargin = horzcat(vforwvargin, args{i} ) ;
+            vforwvargin = horzcat(vforwvargin, args{i+1} ) ;
+            i = i + 2 ; 
         otherwise
              vforwvargin = horzcat(vforwvargin, args{i} ) ;
              i = i + 1 ; 
