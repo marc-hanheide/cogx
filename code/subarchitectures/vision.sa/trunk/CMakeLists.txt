@@ -115,12 +115,16 @@ if (BUILD_SA_VISION_OBJRECOGNIZER)
    add_subdirectory (src/c++/vision/components/ObjectRecognizer)
 endif (BUILD_SA_VISION_OBJRECOGNIZER)
 
-option(BUILD_SA_VISION_OBJRECOGNIZER_3D "build Object Recognizer" NO)
+option(BUILD_SA_VISION_OBJRECOGNIZER_3D "build Object Recognizer" YES)
 if (BUILD_SA_VISION_OBJRECOGNIZER_3D)
 add_subdirectory (src/c++/vision/components/ObjectRecognizer3D)
 add_subdirectory (src/c++/vision/components/ObjectRecognizer3DDriver)
-add_subdirectory (src/c++/vision/components/ObjectRecognizer3D2)
 endif (BUILD_SA_VISION_OBJRECOGNIZER_3D)
+
+option(BUILD_SA_VISION_OBJRECOGNIZER_3D2 "build Object Recognizer2 (for George)" YES)
+if (BUILD_SA_VISION_OBJRECOGNIZER_3D2)
+add_subdirectory (src/c++/vision/components/ObjectRecognizer3D2)
+endif (BUILD_SA_VISION_OBJRECOGNIZER_3D2)
 
 option(BUILD_SA_VISION_DISPLAY_CONVEXHULL_PB "build convex hull display" YES)
 if (BUILD_SA_VISION_DISPLAY_CONVEXHULL_PB)
