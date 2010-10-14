@@ -207,6 +207,7 @@ void ObjectAnalyzer::onChange_AL_AffordanceTask(const cdl::WorkingMemoryChange &
   AffordanceRecognitionTaskPtr ptask = getMemoryEntry<AffordanceRecognitionTask>(_wmc.address);
   log("Recieved results for AffordanceRecognitionTask %s", _wmc.address.id.c_str());
   // ProtoObjectData &data = ProtoObjectMap[ptask->protoObjectId];
+  log("Affordance: %s", ptask->affordance.c_str());
   
   string pvId = ProtoObjectMap[ptask->protoObjectAddr.id].visualObjId;
   VisualObjectPtr pvobj;
@@ -225,7 +226,6 @@ void ObjectAnalyzer::onChange_AL_AffordanceTask(const cdl::WorkingMemoryChange &
 	return;
   }
 
-  log("Affordance: %s", ptask->affordance);
   pvobj->affordance = ptask->affordance;
 
   pvobj->time = getCASTTime();

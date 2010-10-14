@@ -70,25 +70,30 @@ void protoObjectToMwArray_Patches(const ProtoObject &Object, mwArray &patches)
    mwSize dimensions[2] = {nRows, nCol};
    patches = mwArray(2, dimensions, mxDOUBLE_CLASS, mxREAL);
    double *data = new double[nRows * nCol];
+   memset(data, 0, sizeof(double)*nRows*nCol);
 
 #define writedata(row, x, y, z, r, g, b) { \
-         data[row + nRows*0] = x; data[row + nRows*1] = y; data[row + nRows*2] = z; \
-         data[row + nRows*3] = r; data[row + nRows*4] = g; data[row + nRows*5] = b; \
-         row++; }
-#define writeinfo(row, len, offs) writedata(row, len, len, len, offs+1, offs+1, offs+1)
+         data[row + nRows*0] = (double)x; data[row + nRows*1] = (double)y; data[row + nRows*2] = (double)z; \
+         data[row + nRows*3] = (double)r; data[row + nRows*4] = (double)g; data[row + nRows*5] = (double)b; \
+         }
+
+#define writeinfo(row, len, offs)  writedata(row, len, len, len, offs+1, offs+1, offs+1)
 
    int iHeadRow = 0;
    int iRow = nPatch + 1;
 
    writeinfo(iHeadRow, nPatch, 1);
+   iHeadRow++;
 
    for(itPatch = Object.surfacePatches.begin(); itPatch != Object.surfacePatches.end(); itPatch++) {
       int npts = itPatch->points.size();
       writeinfo(iHeadRow, npts, iRow);
+      iHeadRow++;
 
       for (int i = 0; i < npts; i++) {
          const SurfacePoint &p = itPatch->points[i];
          writedata(iRow, p.p.x, p.p.y, p.p.z, p.c.r, p.c.g, p.c.b);
+         iRow++;
       }
    } 
    patches.SetData(data, nRows * nCol);

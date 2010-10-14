@@ -1,3 +1,6 @@
+global Classifier
+global Data
+
 loadtrainingdata;
 
 TrainingIndices = [];
@@ -36,4 +39,4 @@ Classifier = BiModalLearner('name', 'SOM to HeurFORLVQ, Hellinger Distance',...
                         
 Classifier.TrainingData = Classifier.randomize(Classifier.TrainingData);
 
-Classifier = Classifier.train();
+Classifier.train();

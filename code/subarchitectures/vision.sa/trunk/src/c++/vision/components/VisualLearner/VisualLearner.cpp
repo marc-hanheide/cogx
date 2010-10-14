@@ -245,7 +245,7 @@ void VisualLearner::runComponent()
       }
 
       if (newAffordanceRqs.size() > 0) {
-         pwma = newRecogRqs.begin();
+         pwma = newAffordanceRqs.begin();
          cdl::WorkingMemoryAddress addr = *pwma;
          newAffordanceRqs.erase(pwma);
 

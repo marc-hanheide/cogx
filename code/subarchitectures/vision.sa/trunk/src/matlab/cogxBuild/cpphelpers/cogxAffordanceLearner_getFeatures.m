@@ -8,5 +8,4 @@ function [Features] = cogxAffordanceLearner_getFeatures(Image, Mask, Points3D, P
     [ThreeDFeatures ThreeDFeatureNames] = process3Dshapefeatures(Patches);
     
     Features = [ThreeDFeatures TwoDFeatures];
-    
 end

@@ -62,8 +62,8 @@ function [Features, FeatureNames] = process3Dshapefeatures(FileSpec, varargin)
         iPatchPointer = 1+nPatches+1;
         for iPatch = 1:nPatches            
             nPatchPoints(iPatch) = Points(1+iPatch,1);
-            Patches{iPatch} = Points(iPatchPointer:iPatchPointer+nPatchPoints(iPatch),:);
-            iPatchPointer = iPatchPointer+nPatchPoints(iPatch)+1;
+            Patches{iPatch} = Points(iPatchPointer:iPatchPointer+nPatchPoints(iPatch)-1,:);
+            iPatchPointer = iPatchPointer+nPatchPoints(iPatch);
         end
     end
     

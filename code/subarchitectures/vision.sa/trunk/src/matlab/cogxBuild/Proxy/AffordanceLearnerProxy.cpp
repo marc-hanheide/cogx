@@ -31,6 +31,14 @@ void _get_affordance_features(const VisionData::ProtoObject &Object, mwArray& fe
    protoObjectToMwArray(Object, image, mask, pts3d);
    protoObjectToMwArray_Patches(Object, patches);
 
+   mwArray dims = patches.GetDimensions();
+   double dim0 = dims.Get(mwSize(1), 1);
+   if (dim0 < 1 || (double)patches.Get(mwSize(2), 1, 1) < 1) {
+      mwSize dimensions[1] = {0};
+      features = mwArray(1, dimensions, mxDOUBLE_CLASS, mxREAL);
+      return;
+   }
+
    cogxAffordanceLearner_getFeatures(1, features, image, mask, pts3d, patches);
 }
 
@@ -55,13 +63,15 @@ void AL_affordance_recognise(const VisionData::ProtoObject &Object, std::string&
 
    mwArray affordance, features;
    _get_affordance_features(Object, features);
+
    cogxAffordanceLearner_recognise(1, affordance, features);
 
    mwArray dims = affordance.GetDimensions();
    double dim0 = dims.Get(mwSize(1), 1);
 
    if (dim0 > 0) {
-      mwString mws = affordance.Get(mwSize(1), 1).ToString();
+      //mwString mws = affordance.Get(mwSize(1), 1).ToString();
+      mwString mws = affordance.ToString();
       outAffordance = string((const char*)mws);
    }
    else outAffordance = "";
