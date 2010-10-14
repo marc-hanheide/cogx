@@ -74,6 +74,9 @@ void GMRES::operator()()
     disable_type_check<bool>::value = true;
 #endif
     gmres_restarts< Matrix >(T, x, *b, prec, A->size1()-1, 0, 1.0e-8);
+
+//     gmres_short< Matrix >(T, x, *b, prec, 20, 3*A->size1(), 1.0e-8);
+//     gmres_restarts< Matrix >(T, x, *b, prec, 2, 3*A->size1()/2, 1.0e-8);
 #ifndef NDEBUG
     disable_type_check<bool>::value = false;
 #endif

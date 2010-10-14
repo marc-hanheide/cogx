@@ -11,7 +11,7 @@ WARNINGS := -Wall -Wextra
 
 #CPPFLAGS := -DLAO_STAR -ggdb $(WARNINGS) -pg -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
 
-CPPFLAGS := $(OPTIMISE)   -DNDEBUG -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
+CPPFLAGS := -DLAO_STAR $(OPTIMISE)   -DNDEBUG -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
  
 #-DLAO_STAR
 
