@@ -24,6 +24,7 @@ endif(LIBBUILD_PYTHON_VISION)
 
 option(LIBBUILD_LEVMAR_HOMEST "Build homest & levmar libraries required by the 3D shape detector" OFF)
 if (LIBBUILD_LEVMAR_HOMEST)
+   # some prerequisites: liblapack-dev, libf2c2-dev && dependencies
    add_subdirectory(levmar/levmar-2.5)
    add_subdirectory(homest/homest-1.3)
 endif (LIBBUILD_LEVMAR_HOMEST)
