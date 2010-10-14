@@ -67,6 +67,8 @@ void ObjectRecognizer3D2::configure(const map<string,string> & _config){
 		m_recEntries[label].siftfile = siftstr;
 	}
 
+  loadModels();
+
 #ifdef FEAT_VISUALIZATION	
   m_display.configureDisplayClient(_config);
 #endif
@@ -90,8 +92,6 @@ void ObjectRecognizer3D2::start(){
 void ObjectRecognizer3D2::runComponent(){
 
   P::DetectGPUSIFT sift;
-
-  sleepProcess(1000);  // HACK: do i need this?
 
   initRecognizer();
 
@@ -129,11 +129,16 @@ void ObjectRecognizer3D2::receiveRecognitionTask(const cdl::WorkingMemoryChange 
 
 /**
  * allocate recognizer and load models
+ * NOTE: MUST be called within runComponent()
  */
 void ObjectRecognizer3D2::initRecognizer() {
-
 	m_detect = new(P::ODetect3D);
+}
 
+/**
+ * load models
+ */
+void ObjectRecognizer3D2::loadModels() {
 	std::map<std::string,RecEntry>::iterator it;
 	for(it = m_recEntries.begin(); it!=m_recEntries.end(); it++){
 		log("Loading Sift Model '%s'", (*it).second.siftfile.c_str());
