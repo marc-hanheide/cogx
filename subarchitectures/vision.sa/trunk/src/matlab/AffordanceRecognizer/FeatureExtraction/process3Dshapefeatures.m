@@ -64,13 +64,19 @@ function [Features, FeatureNames] = process3Dshapefeatures(FileSpec, varargin)
         end
     end
     
-    % Find the dominant patch...
+    % Default to the first patch as the dominant patch...
+    iDominantPatch = 1;
+    
+    % Which patch is dominant, i.e. contains the most points?
     most_points = 0;
+    
+    % Loop through the patches, gathering features etc.
     for iPatch = 1:length(Patches)
         
+        % Find the dominant patch...
         if size(Patches{iPatch},1) > most_points
             most_points = size(Patches{iPatch},1);
-            Points = Patches{iPatch};
+            iDominantPatch = iPatch;
         end
             
         % Fit a plane to the patch points, then rotate level with the
@@ -104,10 +110,12 @@ function [Features, FeatureNames] = process3Dshapefeatures(FileSpec, varargin)
                
         PointsNormRescaledEroded{iPatch} = PointsNormRescaledEroded{iPatch}(~Outliers,:);
         
-        [Foo Features{iPatch}] = fitsurface(PointsNormRescaledEroded{iPatch});
+        [Foo PatchFeatures{iPatch}] = fitsurface(PointsNormRescaledEroded{iPatch});
     
-        Features{iPatch} = Features{iPatch}';
+        PatchFeatures{iPatch} = PatchFeatures{iPatch}';
     end
+    
+    Features = PatchFeatures{iDominantPatch};
    
     FeatureNames = {'EigenValue1', 'EigenValue2'};
 
