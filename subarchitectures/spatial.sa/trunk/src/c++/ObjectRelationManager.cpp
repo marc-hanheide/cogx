@@ -1829,20 +1829,28 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       string filename = "table+with+" + request->objects[0] + ".txt";
       ofstream tableCloudFile(filename.c_str(), ios::out);
       tableCloudFile << request->outCloud->center.x;
+     tableCloudFile << " " ; 
       tableCloudFile << request->outCloud->center.y;
+     tableCloudFile << " " ; 
       tableCloudFile << request->outCloud->center.z;
+     tableCloudFile << " " ; 
       tableCloudFile << request->outCloud->interval;
+     tableCloudFile << " " ; 
       tableCloudFile << request->outCloud->xExtent;
+     tableCloudFile << " " ; 
       tableCloudFile << request->outCloud->yExtent;
+     tableCloudFile << " " ; 
       tableCloudFile << request->outCloud->zExtent;
-
+     tableCloudFile << " " ; 
       tableCloudFile << request->outCloud->values.size();
       tableCloudFile << " ";
 
       for (unsigned long i = 0; i < request->outCloud->values.size(); i++) {
 	tableCloudFile << request->outCloud->values[i];
+     tableCloudFile << " " ; 
       }
       tableCloudFile << request->outCloud->isBaseObjectKnown;
+     tableCloudFile << " " ; 
 
       tableCloudFile << request->totalMass;
     }
