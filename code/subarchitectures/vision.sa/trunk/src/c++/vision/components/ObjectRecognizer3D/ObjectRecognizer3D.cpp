@@ -107,8 +107,8 @@ void ObjectRecognizer3D::start(){
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
         &ObjectRecognizer3D::receiveDetectionCommand));
 
-  // Initialisation of recognizer
-  init();
+  // init recognizer, phase 1
+  initInStart();
 
 #ifdef FEAT_VISUALIZATION        
   m_display.connectIceClient(*this);
@@ -129,6 +129,9 @@ void ObjectRecognizer3D::runComponent(){
   P::DetectGPUSIFT 	sift;
 
   sleepProcess(1000);  // HACK
+
+  // init recognizer, phase 2
+  initInRun();
 
   // Running Loop
   while(isRunning()){
@@ -423,9 +426,12 @@ std::string ObjectRecognizer3D::loadEmptyVisualModelToWM(std::string &label){
   return newObjID;
 }
 
-// *** Recognizer3D functions ***
 
-void ObjectRecognizer3D::init(){
+/**
+ * Allocate the recignizer and load models, set some state variables.
+ * To be called from start()
+ */
+void ObjectRecognizer3D::initInStart(){
 
 	m_task = RECSTOP;
   m_wait4data = false;
@@ -437,14 +443,19 @@ void ObjectRecognizer3D::init(){
 	}
 
 	m_detect = new(P::ODetect3D);
-
-
 	std::map<std::string,RecEntry>::iterator it;
 	for(it = m_recEntries.begin(); it!=m_recEntries.end(); it++){
 		log("Loading Sift Model '%s'", (*it).second.siftfile.c_str());
 		(*it).second.object = new(P::Object3D);
 		(*it).second.learn = !sift_model_learner.LoadModel((*it).second.siftfile.c_str(),(*(*it).second.object));
 	}
+}
+
+/**
+ * Set camera parameters for the recognizer. This needs an alive video server
+ * hence must be done in runComponent()
+ */
+void ObjectRecognizer3D::initInRun(){
 
   videoServer->getImage(camId, m_image);
   m_iplImage = convertImageToIpl(m_image);
