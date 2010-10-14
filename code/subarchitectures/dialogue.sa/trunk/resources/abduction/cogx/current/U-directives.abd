@@ -36,13 +36,33 @@ understand : event : utter(S, H, Nom) <-
 %	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
 	i : rel_Subject(Nom, SubjNom),
 %	i : 'rel_Cop-Scope'(Nom, ScopeNom),  % XXX garbage
-	i : 'rel_Wh-Restr'(Nom, SubjNom),
+%	i : 'rel_Wh-Restr'(Nom, SubjNom),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
 	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
-	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
-	get_topic_referent(S, H, EpSt, Int, Ref, Nom, BId),
-	int : post(Int, state(['question-answered', agent(H), about(BId), feature(Prop)])) / p(1.0).
+	int : pre(Int, belief(SubjNom, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
+	get_topic_referent(S, H, EpSt, Int, SubjNom, SubjNom, BId),
+	int : post(Int, state(['object-described', agent(H), about(BId)])) / p(1.0).
+
+% do you know what X is
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, cognition),
+	i : prop(Nom, know),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+	i : rel_Patient(Nom, PatNom),
+		i : 'rel_Scope-in'(PatNom, ScopeNom),
+			i : rel_Subject(ScopeNom, SubjNom),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+%	i : 'rel_Cop-Scope'(Nom, ScopeNom),  % XXX garbage
+%	i : 'rel_Wh-Restr'(Nom, SubjNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
+	int : pre(Int, belief(SubjNom, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
+	get_topic_referent(S, H, EpSt, Int, SubjNom, SubjNom, BId),
+	int : post(Int, state(['object-described', agent(H), about(BId)])) / p(1.0).
+
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
