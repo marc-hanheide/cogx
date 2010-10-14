@@ -68,7 +68,7 @@ public class DialogueManager {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 
 	// the dialogue policy
 	DialoguePolicy policy;
@@ -175,6 +175,7 @@ public class DialogueManager {
 			
 			// if the outgoing action is underspecified, fill the arguments
 			if (curNode.getAction().isUnderspecified()) {
+				debug("action is underspecified");
 				curNode.getAction().fillActionArguments(PolicyUtils.extractFilledArguments(obs, selectedEdge));
 			} 
 			

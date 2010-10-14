@@ -27,6 +27,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.FormulaWrapper;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 
@@ -42,7 +43,7 @@ public class PolicyAction extends FormulaWrapper {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 
 	// updated content
 	dFormula updatedContent;
@@ -71,7 +72,9 @@ public class PolicyAction extends FormulaWrapper {
 		super ("");
 		this.id = id;
 		isVoid = true;
-		updatedContent = content;
+		try {
+		updatedContent = FormulaUtils.copy(content);
+		} catch (DialogueException e) {}
 	}
 	
 	/**
@@ -84,7 +87,9 @@ public class PolicyAction extends FormulaWrapper {
 	public PolicyAction(String id, String str) {
 		super(str);
 		this.id = id;
-		updatedContent = content;
+		try {
+			updatedContent = FormulaUtils.copy(content);
+			} catch (DialogueException e) {}
 	}
 	
 	/**
@@ -96,7 +101,9 @@ public class PolicyAction extends FormulaWrapper {
 	public PolicyAction(String id, dFormula formula) {
 		super(formula);
 		this.id = id;
-		updatedContent = content;
+		try {
+			updatedContent = FormulaUtils.copy(content);
+			} catch (DialogueException e) {}
 	}
 	
 
@@ -146,7 +153,13 @@ public class PolicyAction extends FormulaWrapper {
 	 * @param arguments the filled arguments (mapping the argument number i to its formula)
 	 */
 	public void fillActionArguments (HashMap<Integer,dFormula> arguments) {
-		updatedContent = fillActionArguments (content, arguments);
+		dFormula contentCopy;
+		try {
+			contentCopy = FormulaUtils.copy(content);
+			updatedContent = fillActionArguments (contentCopy, arguments);
+		} catch (DialogueException e) {
+			e.printStackTrace();
+		}
 	}
 
 	

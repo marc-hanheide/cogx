@@ -217,7 +217,7 @@ public class FormulaUtils {
 			return new PointerFormula(0, ((PointerFormula)form).pointer, ((PointerFormula)form).type);
 		}
 		else if (form instanceof UnderspecifiedFormula) {
-			return new UnderspecifiedFormula(0);
+			return new UnderspecifiedFormula(form.id);
 		}
 		else if (form instanceof UnknownFormula) {
 			return new UnknownFormula(0);
