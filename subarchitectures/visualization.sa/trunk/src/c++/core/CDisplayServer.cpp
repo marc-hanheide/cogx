@@ -750,7 +750,7 @@ void CDisplayServer::onHtmlClick(CHtmlChunk *pChunk, const std::string& ctrlId)
    if (! pChunk) return;
    if (ctrlId.size() < 1) return;
    CHtmlEventOperation* pOp = new CHtmlEventOperation(pChunk->m_dataOwner);
-   // TODO: set event type
+   pOp->event.type = Visualization::evHtmlOnClick;
    pOp->event.objectId = pChunk->id();
    pOp->event.partId = pChunk->partId();
    pOp->event.sourceId = ctrlId;
@@ -766,7 +766,7 @@ void CDisplayServer::onHtmlSendValue(CHtmlChunk *pChunk, const std::string& ctrl
    if (! pChunk) return;
    if (ctrlId.size() < 1) return;
    CHtmlEventOperation* pOp = new CHtmlEventOperation(pChunk->m_dataOwner);
-   // TODO: set event type
+   pOp->event.type = Visualization::evHtmlOnClick;
    pOp->event.objectId = pChunk->id();
    pOp->event.partId = pChunk->partId();
    pOp->event.sourceId = ctrlId;
@@ -797,7 +797,7 @@ CDisplayServerI::CDisplayServerI(CDisplayServer *pDisplayServer)
 
 void CDisplayServerI::startEventServer()
 {
-   m_pDisplayServer->debug("CDisplayServerI->run()");
+   m_pDisplayServer->debug("CDisplayServerI->startEventServer()");
    try {
       if (m_pEventSenderThread.get() != NULL) {
         m_pDisplayServer->log("WARING m_pEventSenderThread ALREADY RUNNING");
@@ -867,8 +867,9 @@ void CDisplayServerI::run()
                }
                catch(const Ice::Exception& ex) {
                   DMESSAGE(" *** execute crashed with Ice::Exception: " << ex);
-                  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-                  m_EventClients.erase(*p);
+                  //IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
+                  //m_EventClients.erase(*p);
+                  DMESSAGE(" *** idReceiver: " << idReceiver.name << "/" << idReceiver.category);
                   break;
                }
                catch(...) {
