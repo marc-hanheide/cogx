@@ -12,7 +12,7 @@ INCLUDE includes/conceptual.sa/conceptual-base.cast
 INCLUDE includes/conceptual.sa/conceptual-main.cast
 
 # Categorical.SA ############################################################
-INCLUDE includes/categorical.sa/categorical-shape.cast
+INCLUDE includes/categorical.sa/categorical-shape-appearance.cast
 
 
 # vision ######################################################################
