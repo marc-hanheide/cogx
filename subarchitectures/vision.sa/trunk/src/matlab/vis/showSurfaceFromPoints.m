@@ -10,7 +10,7 @@ if isempty(x)
     return ;
 end
 
-turnoffDelaunay =0;
+turnoffDelaunay =1;
 
 if nargin < 2
     rgb3d = [] ;

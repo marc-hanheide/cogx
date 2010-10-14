@@ -1,5 +1,7 @@
 function drawAllClasses( model, hp )
 
+return;
+
 decompose = 0 ;
 colrs = {'r', 'g', 'b', 'y', 'k', 'k', 'm', 'c'} ;
 labls = { 'Hu','Sa','In','S1','S2','S3','S4'} ;
