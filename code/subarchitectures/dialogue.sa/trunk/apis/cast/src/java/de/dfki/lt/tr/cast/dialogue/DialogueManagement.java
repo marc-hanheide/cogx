@@ -94,7 +94,7 @@ public class DialogueManagement extends ManagedComponent {
 		if ((_config.containsKey("--useAck"))) {
 			try {
 				useAcknowledgement = Boolean.parseBoolean(_config.get("--useAck"));
-				log("using acknowledgements when user provide new information");
+				log("using acknowledgements when the user provides new information");
 			}
 			catch (Exception e) { }
 		}
