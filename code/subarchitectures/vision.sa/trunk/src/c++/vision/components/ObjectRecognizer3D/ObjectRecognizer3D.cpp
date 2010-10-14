@@ -107,6 +107,9 @@ void ObjectRecognizer3D::start(){
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
         &ObjectRecognizer3D::receiveDetectionCommand));
 
+  // Initialisation of recognizer
+  init();
+
 #ifdef FEAT_VISUALIZATION        
   m_display.connectIceClient(*this);
   m_display.setClientData(this);
@@ -126,9 +129,6 @@ void ObjectRecognizer3D::runComponent(){
   P::DetectGPUSIFT 	sift;
 
   sleepProcess(1000);  // HACK
-
-  // Initialisation
-  init();
 
   // Running Loop
   while(isRunning()){
