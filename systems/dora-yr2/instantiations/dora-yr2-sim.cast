@@ -43,8 +43,6 @@ INCLUDE includes/binder.sa/binder-base.cast
 # dialogue stuff ##############################################################
 INCLUDE includes/dialogue.sa/dialogue-base.cast
 INCLUDE includes/dialogue.sa/dialogue-dora.cast
-#INCLUDE includes/dialogue.sa/dialogue-dora-exe.cast
-INCLUDE includes/dialogue.sa/dialogue-dora-exe-fake.cast
 
 JAVA MG verbal.kint verbalisation.DoraVerbalisation
 
