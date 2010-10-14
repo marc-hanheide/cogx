@@ -2083,11 +2083,44 @@ log("filled");
 	    // Strip off the "in room" relation from the policy for purposes
 	    // of relation query
 	    strategyStep.erase(strategyStep.begin());
-	    // Get the uninformed sample cloud from the ORM
 
 	    // remove the room relation from the request 
 	    objreq->objects.erase( objreq->objects.end() -1);
 	    objreq->relationTypes.erase( objreq->relationTypes.end() -1);
+
+	    // Huge HACK: REMOVEME
+	    if (objreq->objects.size() == 2 &&
+		objreq->objects.back() == "table") {
+	      string filename = "table+with+" + objreq->objects.front() + ".txt";
+	      ifstream tableCloudFile(filename.c_str(), ios::in);
+	      if (tableCloudFile.is_open()) {
+		FrontierInterface::WeightedPointCloudPtr cloud = 
+		  new FrontierInterface::WeightedPointCloud;
+		tableCloudFile >> cloud->center.x;
+		tableCloudFile >> cloud->center.y;
+		tableCloudFile >> cloud->center.z;
+		tableCloudFile >> cloud->interval;
+		tableCloudFile >> cloud->xExtent;
+		tableCloudFile >> cloud->yExtent;
+		tableCloudFile >> cloud->zExtent;
+
+		cloud->values.resize((2*cloud->xExtent+1)*(2*cloud->yExtent+1)*(2*cloud->zExtent+1));
+		
+		for (unsigned long i = 0; i < cloud->values.size(); i++) {
+		  tableCloudFile >> cloud->values[i];
+		}
+		tableCloudFile >> cloud->isBaseObjectKnown;
+
+		double totalMass;
+		tableCloudFile >> totalMass;
+
+		receivePointCloud(cloud, totalMass);
+
+		m_command = NEXT_NBV;
+	      }
+	    }
+
+	    // Get the uninformed sample cloud from the ORM
 	    // Send request and wait for reply
 	    addToWorkingMemory(newDataID(), objreq);
 	    m_command = IDLE;
@@ -2181,41 +2214,29 @@ log("filled");
       }
 
       void
-	VisualObjectSearch::owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID) {
-	  try {
-	    log("got weighted PC");
-	    FrontierInterface::ObjectPriorRequestPtr req =
-	      getMemoryEntry<FrontierInterface::ObjectPriorRequest>(objID.address);
-	    FrontierInterface::WeightedPointCloudPtr cloud =
-	      req->outCloud;
-
-	    if (m_bSimulation || m_bEvaluation){
-	      log("in simulation");
-	      m_priorreq = req;
-	      m_bEvaluation = false;
-	      return;
-	    }
+	VisualObjectSearch::receivePointCloud(FrontierInterface::WeightedPointCloudPtr cloud, double totalMass)
+	{
 	    vector<Vector3> centers;
 	    centers.push_back(cloud->center);
 
-	    //req->totalMass represents the probability of the relation
+	    //totalMass represents the probability of the relation
 	    //GIVEN that the object is in the room.
 	    //We want m_pout to remain unchanged, and the probability mass
 	    //already in the map diminished so that the relative probability
-	    //inside the room coming from the cloud is req->totalMass.
-	    //I.e., after normalization its mass should be (1-pout)*req->totalMass.
-	    //Before normalization, it will need to be 1/(1-req->totalMass) times larger
+	    //inside the room coming from the cloud is totalMass.
+	    //I.e., after normalization its mass should be (1-pout)*totalMass.
+	    //Before normalization, it will need to be 1/(1-totalMass) times larger
 	    double weightToAdd;
-	    if (req->totalMass > 0.99999999999) {
+	    if (totalMass > 0.99999999999) {
 	      GDProbScale reset(0.0);
 	      m_map->universalQuery(reset, true);
 	      weightToAdd = (1-m_pout);
 	    }
 	    else {
-	      weightToAdd = (1-m_pout)*req->totalMass/(1-req->totalMass);
+	      weightToAdd = (1-m_pout)*totalMass/(1-totalMass);
 	    }
 
-	    cout << req->totalMass << endl;
+	    cout << totalMass << endl;
 	    if(cloud->isBaseObjectKnown) {
 	      log("Got distribution around known object pose");
 	      m_sampler.kernelDensityEstimation3D(*m_map,
@@ -2287,7 +2308,6 @@ log("filled");
 		  m_lgm);
 	      normalizePDF(*m_map,1.0-m_pout);
 	    }
-	    m_command = NEXT_NBV;
 
 	    //	vector< pair<double,double> > thresholds;
 	    //	thresholds.push_back(make_pair(1e-4,1e-3));
@@ -2299,6 +2319,27 @@ log("filled");
 	      pbVis->AddPDF(*m_map);
 	    m_map->clearDirty();
 	    gotPC = true;
+	}
+
+      void
+	VisualObjectSearch::owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID) {
+	  try {
+	    log("got weighted PC");
+	    FrontierInterface::ObjectPriorRequestPtr req =
+	      getMemoryEntry<FrontierInterface::ObjectPriorRequest>(objID.address);
+	    FrontierInterface::WeightedPointCloudPtr cloud =
+	      req->outCloud;
+
+	    if (m_bSimulation || m_bEvaluation){
+	      log("in simulation");
+	      m_priorreq = req;
+	      m_bEvaluation = false;
+	      return;
+	    }
+	    
+	    receivePointCloud(cloud, req->totalMass);
+
+	    m_command = NEXT_NBV;
 	  }
 	  catch (DoesNotExistOnWMException excp) {
 	    log("Error!  WeightedPointCloud does not exist on WM!");

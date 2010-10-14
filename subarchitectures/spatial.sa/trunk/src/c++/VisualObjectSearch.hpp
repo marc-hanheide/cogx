@@ -108,6 +108,7 @@ void newProcessViewPointCommand(const cast::cdl::WorkingMemoryChange &objID);
       void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID);
       void newVisualObject(const cast::cdl::WorkingMemoryChange &objID);
       void owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID);
+      void receivePointCloud(FrontierInterface::WeightedPointCloudPtr cloud, double totalMass);
       SensingAction SampleAndSelect(SpatialGridMap::GridMap<SpatialGridMap::GridMapData>* tmpMap = 0);
       bool isCircleFree(double xW, double yW, double rad);
 
