@@ -6,17 +6,19 @@ color:
 	green
 	orange
 	black
+	white
 
 shape:
 	compact
 	elongated
 	flat
-	spherical
-	cylindrical
+#	spherical
+#	cylindrical
 	conical
 	cuboid
 
-objecttype:
+ident:
 	box
 	ball
-	mug
+#	mug
+#	colacan
