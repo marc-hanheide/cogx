@@ -442,12 +442,14 @@ void ObjectRecognizer3D::initInStart(){
 		cvWaitKey(10);
 	}
 
+  log("loading models ...");
 	std::map<std::string,RecEntry>::iterator it;
 	for(it = m_recEntries.begin(); it!=m_recEntries.end(); it++){
 		log("Loading Sift Model '%s'", (*it).second.siftfile.c_str());
 		(*it).second.object = new(P::Object3D);
 		(*it).second.learn = !sift_model_learner.LoadModel((*it).second.siftfile.c_str(),(*(*it).second.object));
 	}
+  log("... done loading models");
 }
 
 /**
