@@ -23,7 +23,14 @@ if Settings.Disp.TL
       fprintf(fid,'\n<tr>\n') ;
       fprintf(fid,'<td>gains   :</td>'); fprintf(fid,'<td>%3.2f</td>',getc(mC,sc,0,'gains')); %fprintf(fid,'<BR>\n');
       fprintf(fid,'\n<tr>\n') ;
-      fprintf(fid,'<td>Fb      :</td>'); fprintf(fid,'<td>') ; fprintf(fid,'%d, ',getc(mC,sc,0,'Fb')); fprintf(fid,'</td>') ;%fprintf(fid,'<BR>\n');
+%      fprintf(fid,'<td>Fb      :</td>'); fprintf(fid,'<td>') ; fprintf(fid,'%d, ',getc(mC,sc,0,'Fb')); fprintf(fid,'</td>') ;%fprintf(fid,'<BR>\n');
+      fprintf(fid,'<td>Fb      :</td>'); %fprintf(fid,'<td>') ; 
+      fbs=getc(mC,sc,0,'Fb');      
+      for nam = 1 : size(fbs,2);
+         fprintf(fid, '<td>%s </td>', Coma.Fnames(fbs(nam),:)) ;
+      end      
+      %fprintf(fid,'%d, ',getc(mC,sc,0,'Fb')); 
+      %fprintf(fid,'</td>') ;%fprintf(fid,'<BR>\n');
       fprintf(fid, '</table> ') ;
 %       fprintf(fid,'<BR>\n');
    end
