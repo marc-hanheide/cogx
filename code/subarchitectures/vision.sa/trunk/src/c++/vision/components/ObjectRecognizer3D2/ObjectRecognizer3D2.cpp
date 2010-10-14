@@ -25,6 +25,9 @@ using namespace std;
 // in addition to returning the recognition result in the recogition task
 static const bool OVERWRITE_VISUAL_OBJECT = false;
 
+// use segmentation mask inside ROI
+static const bool USE_SEGMENTATION_MASK = false;
+
 ObjectRecognizer3D2::ObjectRecognizer3D2(){
   m_detect = 0;
 	m_min_confidence = 0.08;
@@ -211,7 +214,7 @@ void ObjectRecognizer3D2::fillImages(ProtoObjectPtr pobj, IplImage **img, IplIma
     for(int x = 0; x < pobj->image.width; x++)
     {
       // foreground object is labelled 1
-      if(pobj->mask.data[pobj->image.width*y + x] == 1)
+      if(!USE_SEGMENTATION_MASK || pobj->mask.data[pobj->image.width*y + x] == 1)
       {
         int yy = y + yoffs;
         int xx = x + xoffs;
