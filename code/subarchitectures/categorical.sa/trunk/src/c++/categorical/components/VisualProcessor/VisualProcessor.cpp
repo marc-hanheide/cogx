@@ -467,11 +467,11 @@ void CategoricalVisualProcessor::processImage(const CImage &image,
   }
 
   // Clean up
-  delete classes;
-  delete confidence;
-  delete outputs;
-  delete outputLabels1;
-  delete outputLabels2;
+  free(classes);
+  free(confidence);
+  free(outputs);
+  free(outputLabels1);
+  free(outputLabels2);
   free(libSvmCrfh);
 }
 
