@@ -137,8 +137,9 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
         #self.m_display.addButton("v11n.python.setHtml", "button.test", "Test Button");
 
     def remove_task(self, task):
-        id = "%04d" % task.id
-        self.setHtml(TASKS_ID, id, "");
+        pass
+        #id = "%04d" % task.id
+        #self.setHtml(TASKS_ID, id, "");
 
     def makeHtmlForm(self):
         # A simple form.

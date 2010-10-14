@@ -74,7 +74,12 @@ class CASTTask(object):
             
         self.percepts = []
 
-        cp_problem, self.goaldict = self.state.to_problem(planning_task, deterministic=True, domain=self.cp_domain)
+        cp_problem, self.goaldict = self.state.to_problem(planning_task.goals, deterministic=True, domain=self.cp_domain)
+        for g in self.slice_goals:
+            if g.importance == -1 and g.goalString not in self.goaldict:
+                log.info("Hard goal %s cannot be parsed; planning failed" % g.goalString)
+                self.update_status(TaskStateEnum.FAILED)
+                return
         
         self.cp_task = task.Task(self.id, cp_problem)
         component.planner.register_task(self.cp_task)
@@ -181,8 +186,9 @@ class CASTTask(object):
             return
 
         for sg in plan.goal_node.satisfied_softgoals:
-            slice_goal = self.goaldict[sg]
-            slice_goal.isInPlan = True
+            if sg in self.goaldict:
+                slice_goal = self.goaldict[sg]
+                slice_goal.isInPlan = True
 
         for g in self.slice_goals:
             if g.importance < 0 and g.goalString in self.goaldict:
@@ -232,7 +238,7 @@ class CASTTask(object):
         failed_actions = []
         finished_actions = []
 
-        #Failed dt action causes all actions resulting in the subplan to fail
+        #Failed dt action causes all actions in the subplan to fail
         if dt_action.status == Planner.Completion.ABORTED or dt_action.status == Planner.Completion.FAILED:
             for pnode in self.dt_task.subplan_actions:
                 pnode.status = plans.ActionStatusEnum.FAILED
@@ -363,9 +369,9 @@ class CASTTask(object):
     def monitor_cp(self, pending_updates=False):
         assert self.internal_state in (TaskStateEnum.PROCESSING, TaskStateEnum.WAITING_FOR_ACTION)
             
-        # if self.dt_planning_active():
-        #     self.process_cp_plan()
-        #     return
+        if self.dt_planning_active():
+            self.process_cp_plan()
+            return
 
         self.update_status(TaskStateEnum.PROCESSING)
 
@@ -510,16 +516,20 @@ class CASTTask(object):
             return True
         
         self.state = cast_state.CASTState(beliefs, self.domain, self.state, component=self.component)
-        new_cp_problem, _ = self.state.to_problem(None, deterministic=True, domain=self.cp_domain)
+        new_cp_problem, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True, domain=self.cp_domain)
+        for g in self.slice_goals:
+            if g.importance == -1 and g.goalString not in self.goaldict:
+                log.info("Hard goal %s cannot be parsed; planning failed" % g.goalString)
+                return False
 
-        #check if the goal is still valid
-        try:
-            new_cp_problem.goal = self.cp_task._mapltask.goal.copy(new_cp_problem)
-        except KeyError:
-            log.warning("Goal is not valid anymore.")
-            new_cp_problem.goal = pddl.conditions.Falsity()
-            #self.cp_task.set_state(Planner.Completion.PLANNING_FAILURE)
-            return False
+        # #check if the goal is still valid
+        # try:
+        #     new_cp_problem.goal = self.cp_task._mapltask.goal.copy(new_cp_problem)
+        # except KeyError:
+        #     log.warning("Goal is not valid anymore.")
+        #     new_cp_problem.goal = pddl.conditions.Falsity()
+        #     #self.cp_task.set_state(Planner.Completion.PLANNING_FAILURE)
+        #     return False
         
         self.cp_task.mapltask = new_cp_problem
         self.cp_task.set_state(self.state.state)
