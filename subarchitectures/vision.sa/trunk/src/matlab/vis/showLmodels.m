@@ -55,10 +55,14 @@ for i=1:numCall
    %   set(ha,'ButtonDownFcn',{'showOneModel',mC(i),Fnames,Cnames});
 end
 
-txt=strFromIdxs(mC);
-if length(txt)>1%8
-   set(fig.tx_Fb,'String',txt);
+	
+if length(txt)>1 && numCall>0%8
+    a=axis(ha);
+    text(-(mod( getc(mC,'numC')-1,5)+1)/(a(2)-a(1)),-1.5,txt,'FontSize',12,'HorizontalAlignment','center','Parent',ha);
 end
+% if length(txt)>1%8
+%    set(fig.tx_Fb,'String',txt);
+% end
 displayG(fig.main,'GL');
 displayTL(mC);
 %displayTD(mC);
