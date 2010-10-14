@@ -76,11 +76,14 @@ extends AbstractDialogueComponent {
 	private List<String> files = new LinkedList<String>();
 	private HashMap<String, EpistemicObject> epObjs = new HashMap<String, EpistemicObject>();
 
+	private String abd_serverName = "AbducerServer";
+	private String abd_endpoints = "default -p 10000";
+
 	@Override
 	public void start() {
 		super.start();
 
-		ireal = new IntentionRealization(new IdentifierGenerator() {
+		ireal = new IntentionRealization(abd_serverName, abd_endpoints, new IdentifierGenerator() {
 			@Override
 			public String newIdentifier() {
 				return newDataID();

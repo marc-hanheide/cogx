@@ -48,15 +48,20 @@ public class PresupposedBeliefConstruction {
 	public boolean logging = true;
 	private AbductionEngineConnection abd;
 
+	private String abd_serverName = "";
+	private String abd_endpoints = "";
+
 	public static final String BELIEF_CONSTRUCTION_ENGINE = "BeliefConstruction";
 
-	public PresupposedBeliefConstruction() {
+	public PresupposedBeliefConstruction(String servername, String endpoints) {
+		this.abd_serverName = servername;
+		this.abd_endpoints = endpoints;
 		init();
 	}
 
 	private void init() {
 		abd = new AbductionEngineConnection();
-		abd.connectToServer("AbducerServer", "default -p 10000");
+		abd.connectToServer(abd_serverName, abd_endpoints);
 		abd.bindToEngine(BELIEF_CONSTRUCTION_ENGINE);
 		abd.getProxy().clearContext();
 	}

@@ -377,7 +377,7 @@ public class ReferenceMonitor extends AbstractDialogueComponent {
 				qud_str += MercuryUtils.modalisedAtomToString(fact) + ".\n";
 			}
 		} else {
-			qud_str = "% (none)\n";
+			qud_str += "% (none)\n";
 		}
 
 		try {
