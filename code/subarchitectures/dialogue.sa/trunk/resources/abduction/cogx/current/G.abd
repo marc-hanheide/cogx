@@ -380,6 +380,15 @@ falsification_certainty_to_cannedtext(uncertain, probably_no).
 
 generate : event : utter(S, H, Int) <-
 	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['uncertainty-expressed'|T])),
+	utt_head(Nom),
+%	i : feat_SpeechAct(Nom, reject) / -1.0,
+%	i : feat_AcknoModality(Nom, cognition) / -1.0,
+	i : feat_CannedText(Nom, 'I\'m_not_sure') / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['knowing-disconfirmed'|T])),
 	utt_head(Nom),
 %	i : feat_SpeechAct(Nom, reject) / -1.0,
