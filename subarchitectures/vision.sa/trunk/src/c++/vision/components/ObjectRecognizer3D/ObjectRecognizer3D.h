@@ -104,7 +104,8 @@ private:
   void receiveRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc);
   void PostFake3DObject(const cdl::WorkingMemoryChange & _wmc);
 
-  void init();
+  void initInStart();
+  void initInRun();
   void learnSiftModel(std::string& modelID, std::string& label);
   void learnSiftModel(P::DetectGPUSIFT &sift);
   void recognizeSiftModel(P::DetectGPUSIFT &sift);
