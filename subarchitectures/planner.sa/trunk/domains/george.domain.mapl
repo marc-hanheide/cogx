@@ -118,12 +118,15 @@
   )		
 
   (:derived (allow-general-color-question ?v - visual-object)
-  	    (forall (?c - color-name)
+  	    (or
+		(color-unlearned ?v)
+  	    	(forall (?c - color-name)
 	    	    (or
 			(= ?c unknown-color)
 			(< (p-color ?v ?c) 0.5)
 			(not (= (max-gain-label-color ?v) ?c))
 		    )
+		)
 	    )
   )
 
@@ -131,16 +134,20 @@
   	    (and
 		(>= (p-color ?v ?c) 0.5)
 		(= (max-gain-label-color ?v) ?c)
+		(not (color-unlearned ?v))
 	    )
   )
 
   (:derived (allow-general-shape-question ?v - visual-object)
-  	    (forall (?s - shape-name)
+  	    (or
+		(shape-unlearned ?v)
+  	    	(forall (?s - shape-name)
 	    	    (or
 			(= ?s unknown-shape)
 			(< (p-shape ?v ?s) 0.5)
 			(not (= (max-gain-label-shape ?v) ?s))
 		    )
+		)
 	    )
   )
 
@@ -148,16 +155,20 @@
   	    (and
 		(>= (p-shape ?v ?s) 0.5)
 		(= (max-gain-label-shape ?v) ?s)
+		(not (shape-unlearned ?v))
 	    )
   )
 
   (:derived (allow-general-ident-question ?v - visual-object)
-  	    (forall (?i - ident-name)
+  	    (or
+		(ident-unlearned ?v)
+  	    	(forall (?i - ident-name)
 	    	    (or
 			(= ?i unknown-ident)
 			(< (p-ident ?v ?i) 0.5)
 			(not (= (max-gain-label-ident ?v) ?i))
 		    )
+		)
 	    )
   )
 
@@ -165,6 +176,7 @@
   	    (and
 		(>= (p-ident ?v ?i) 0.5)
 		(= (max-gain-label-ident ?v) ?i)
+		(not (ident-unlearned ?v))
 	    )
   )
 
