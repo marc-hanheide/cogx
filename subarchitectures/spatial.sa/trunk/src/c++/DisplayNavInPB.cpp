@@ -1295,11 +1295,11 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 
     char buf[32];
     peekabot::LabelProxy text;
-    sprintf(buf, "placeid_%d", GetPlaceIdFromNodeId(node.m_Id));
+    sprintf(buf, "%d", GetPlaceIdFromNodeId(node.m_Id));
     text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
     text.set_text(buf);
-  text.set_pose(node.m_X,node.m_Y,0.3,M_PI/2,0,M_PI/2);
-    text.set_scale(30, 30, 30);
+  text.set_pose(node.m_X,node.m_Y,0.3,0,M_PI/2,M_PI/2);
+    text.set_scale(10, 10, 10);
     text.set_alignment(peekabot::ALIGN_CENTER);
     text.set_color(1,0,0);
 
