@@ -46,6 +46,7 @@ generate : event : utter(S, H, Int) <-
 % ASSERTIONS
 %-------------------------------------------------------------------------
 
+% the XY object is Z
 generate : event : utter(S, H, Int) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
@@ -85,6 +86,45 @@ generate : ascribe_property(Nom, UsedNom, inRoom(_C)) <-
 	i : rel_Color(Nom, UsedNom) / -1.0,
 		i : sort(UsedNom, quality) / -1.0,
 		i : prop(UsedNom, pink) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+% "it is a red box"
+% @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ context)  ^ <Type>(b3:thing ^ <InfoStatus>new ^ <Color>red ^ box))) 
+
+% the XY object is Z
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(PropNom),
+	dummy_nom5(TypeNom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['grounded', about(About), content([type(_T) | Feats])])),
+%	Cnt = [SingleCnt],
+	generate : dialogue_move_topic(TargetNom, About) / 0.0,
+	i : feat_SpeechAct(Nom, assertion) / -1.0,
+	i : feat_Relation(Nom, answer) / -1.0,
+	i : rel_Content(Nom, ContentNom) / -1.0,
+		i : sort(ContentNom, ascription) / -1.0,
+		i : rel_Target(ContentNom, TargetNom) / -1.0,
+			generate : it(TargetNom),
+		i : rel_Type(ContentNom, TypeNom) / -1.0,
+			i : sort(TypeNom, thing) / -1.0,
+			i : prop(TypeNom, thing) / -1.0,
+			i : feat_InfoStatus(TypeNom, new) / -1.0,
+			expand_featlist(TypeNom, Feats),
+	event : produce(r, Nom) / -1.0.
+
+expand_featlist(Nom, []).
+
+expand_featlist(Nom, [color(C) | T]) <-
+	i : feat_Color(Nom, C) / -1.0,
+	expand_featlist(Nom, T).
+
+expand_featlist(Nom, [shape(S) | T]) <-
+	i : feat_Shape(Nom, S) / -1.0,
+	expand_featlist(Nom, T).
 
 %-------------------------------------------------------------------------
 % POLAR QUESTIONS
