@@ -38,6 +38,10 @@ void VL_introspect(
 // Load predefined AV Models from a file (Matlab mat file)
 extern void VL_LoadAvModels(const char* filename);
 
+// Load another model from the directory configured in CLFStart
+extern void VL_LoadAvModels_from_configured_dir(const char* filename);
+
+
 // Configure the mapping between label names and integers.
 extern void VL_setEnumeration(const CTypeEnumerator& typeEnum);
 

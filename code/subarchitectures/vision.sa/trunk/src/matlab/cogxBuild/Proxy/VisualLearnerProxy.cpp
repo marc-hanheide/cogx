@@ -57,6 +57,17 @@ void VL_LoadAvModels(const char* filename)
    LRloadAVmodels(fname);
 }
 
+void VL_LoadAvModels_from_configured_dir(const char* filename)
+{
+   CheckInit();
+   mwArray mwConfDir;
+   getGlobalArray(1, mwConfDir, "Dirs", "Dirs.models");
+   mwString mws = mwConfDir.ToString();
+   string sConfDir = string((const char*)mws) + string(filename);
+
+   VL_LoadAvModels(sConfDir.c_str());
+}
+
 void VL_setEnumeration(const CTypeEnumerator& typeEnum)
 {
    Enumerator = typeEnum;
