@@ -388,17 +388,17 @@ void CategoricalDataProvider::runComponent()
       _frameNo++;
 
       // Calculate statistics
-      log("Synchronized data placed in the WM:");
+      debug("Synchronized data placed in the WM:");
       if (_useVision)
-        log("-> Image (timestamp: %fs, difference to ref. time: %fs)",
+    	  debug("-> Image (timestamp: %fs, difference to ref. time: %fs)",
                 castTimeToSeconds(imageTimestamp),
                 castTimeDiffToSeconds(imageTimestamp, refTimestamp) );
       if (_useLaser)
-        log("-> Laser scan (timestamp: %fs, difference to ref. time: %fs)",
+    	  debug("-> Laser scan (timestamp: %fs, difference to ref. time: %fs)",
                 castTimeToSeconds(scanTimestamp),
                 castTimeDiffToSeconds(scanTimestamp, refTimestamp) );
       if (_useOdometry)
-        log("-> Odometry (timestamp: %fs, difference to ref. time: %fs)",
+    	  debug("-> Odometry (timestamp: %fs, difference to ref. time: %fs)",
                 castTimeToSeconds(odomTimestamp),
                 castTimeDiffToSeconds(odomTimestamp, refTimestamp) );
     }
@@ -917,7 +917,7 @@ void CategoricalDataProvider::convertImageRGB24(const Video::Image &src, Categor
   unsigned int l=dest.width*dest.height;
   dest.data.resize(l);
 
-  log("Converting image of size %d %d %d %d", src.width, src.height, src.width*src.height, src.data.size());
+  debug("Converting image of size %d %d %d %d", src.width, src.height, src.width*src.height, src.data.size());
 
   for(unsigned int i = 0; i < l; i++)
   {
