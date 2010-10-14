@@ -21,6 +21,10 @@ using namespace cogx;
 using namespace Math;
 using namespace std;
 
+// whether we should overwrite a recognized visual object in working memory
+// in addition to returning the recognition result in the recogition task
+static const bool OVERWRITE_VISUAL_OBJECT = false;
+
 ObjectRecognizer3D2::ObjectRecognizer3D2(){
   m_detect = 0;
 	m_min_confidence = 0.08;
@@ -93,13 +97,16 @@ void ObjectRecognizer3D2::runComponent(){
 
   // Running Loop
   while(isRunning()) {
-    lockComponent();
-    if(!m_objId.empty())
+    if(!m_recTaskId.empty())
     {
-      recognizeSiftModel(sift, m_objId);
-      m_objId.clear();
+      string objId = m_recTask->visualObjectAddr.id;
+      VisualObjectPtr obj = getMemoryEntry<VisualObject>(objId);
+      recognizeSiftModel(sift, obj, m_recTask);
+      if(OVERWRITE_VISUAL_OBJECT)
+        overwriteWorkingMemory(objId, obj);
+      overwriteWorkingMemory(m_recTaskId, m_recTask);
+      m_recTaskId.clear();
     }
-    unlockComponent();
     // HACK: yes the sleep is ugly ...
     sleepComponent(500);
   }
@@ -116,10 +123,8 @@ void ObjectRecognizer3D2::receiveImages(const std::vector<Video::Image>& images)
 
 void ObjectRecognizer3D2::receiveRecognitionTask(const cdl::WorkingMemoryChange & _wmc){
   log("Receiving receiveDetectionCommand");
-  ObjectRecognitionTaskPtr task = getMemoryEntry<ObjectRecognitionTask>(_wmc.address);
-  //lockComponent();
-  m_objId = task->visualObjectAddr.id;
-  //unlockComponent();
+  m_recTaskId = _wmc.address.id;
+  m_recTask = getMemoryEntry<ObjectRecognitionTask>(_wmc.address);
 }
 
 /**
@@ -172,7 +177,7 @@ void ObjectRecognizer3D2::setCameraParameters(int imgWidth, int igHeight) {
 
     cvReleaseMat(&C);
 
-    camPose = image.camPars.pose;
+    m_camPose = image.camPars.pose;
 
     m_haveCameraParameters = true;
   }
@@ -218,12 +223,17 @@ void ObjectRecognizer3D2::releaseImages(IplImage **img, IplImage **grey)
 	cvReleaseImage(grey);
 }
 
+/**
+ * Recognizes all known models and stores a prob dist over labels in the provided visual model as
+ * as well as in the recTask.
+ */
 void ObjectRecognizer3D2::recognizeAllObjects(P::DetectGPUSIFT &sift, IplImage *img, IplImage *grey,
-  VisualObjectPtr obj, Pose3 &pose)
+  VisualObjectPtr obj, ObjectRecognitionTaskPtr recTask)
 {
   float best_conf = 0;
+  Pose3 best_pose;
 
-  setIdentity(pose);
+  setIdentity(best_pose);
   
   sift.Operate(grey, m_image_keys);
 
@@ -236,49 +246,66 @@ void ObjectRecognizer3D2::recognizeAllObjects(P::DetectGPUSIFT &sift, IplImage *
 	std::map<std::string,RecEntry>::iterator it;
 	for(it = m_recEntries.begin(); it != m_recEntries.end(); it++)
 	{
+	  float conf;
+    Pose3 pose;
     if(!m_detect->Detect(m_image_keys, *(*it).second.object))
     {
-      obj->identLabels.push_back((*it).first);
-      obj->identDistrib.push_back(0.);
+      conf = 0.;
+      setIdentity(pose);
     }
     else
     {
       if((*it).second.object->conf < m_min_confidence)
       {
         // set confidence to 0 to indicate that we consider the object not detected
-        obj->identLabels.push_back((*it).first);
-        obj->identDistrib.push_back(0.);
+        conf = 0.;
+        setIdentity(pose);
 
         P::SDraw::DrawPoly(img, (*it).second.object->contour.v, CV_RGB(255,0,0), 2);
         m_detect->DrawInlier(img, CV_RGB(255,0,0));
       }
       else
       {
-        if((*it).second.object->conf > best_conf)
+        // Transform pose from Camera to world coordinates
+        Pose3 localPose;
+        convertPoseCv2MathPose((*it).second.object->pose, localPose);
+        Math::transform(m_camPose, localPose, pose);
+        
+        conf = (*it).second.object->conf;
+        if(conf > best_conf)
         {
           best_conf = (*it).second.object->conf;
-
-          // Transform pose from Camera to world coordinates
-          Pose3 A;
-          convertPoseCv2MathPose((*it).second.object->pose, A);
-          Math::transform(camPose, A, pose);
+          best_pose = pose;
         }
-
-        obj->identLabels.push_back((*it).first);
-        obj->identDistrib.push_back((*it).second.object->conf);
 
         P::SDraw::DrawPoly(img, (*it).second.object->contour.v, CV_RGB(0,255,0), 2);
         m_detect->DrawInlier(img, CV_RGB(255,0,0));
       }
     }
+
+    // fill the visual object strcuture
+    obj->identLabels.push_back((*it).first);
+    obj->identDistrib.push_back(conf);
+
+    // fill the recognition command results structure
+    RecognitionResult res;
+    res.label = (*it).first;
+    res.probability = conf;
+    // note: we only have one pose as output
+    // note further: this expects the wrong pose format
+    //res.poses.push_back(pose);
+    //res.posePd.push_back(1.);
+    recTask->matches.push_back(res);
 	}
 
+  obj->pose = best_pose;
+  
   for(unsigned i = 0; i < m_image_keys.Size(); i++)
 	  delete(m_image_keys[i]);
 	m_image_keys.Clear();
 }
 
-void ObjectRecognizer3D2::finalizeObject(VisualObjectPtr obj, Pose3 &pose)
+void ObjectRecognizer3D2::finalizeObject(VisualObjectPtr obj)
 {
   obj->identLabels.push_back("unknown");
   // distribution must of course sum to 1
@@ -305,7 +332,6 @@ void ObjectRecognizer3D2::finalizeObject(VisualObjectPtr obj, Pose3 &pose)
   for(size_t i = 0; i < obj->identDistrib.size(); i++)
     if(fpclassify(obj->identDistrib[i]) != FP_ZERO)
       obj->identAmbiguity -= obj->identDistrib[i]*::log(obj->identDistrib[i]);
-  obj->pose = pose;
   obj->componentID = getComponentID();
 }
 
@@ -313,27 +339,22 @@ void ObjectRecognizer3D2::finalizeObject(VisualObjectPtr obj, Pose3 &pose)
  * Recognize which of the learned models matches the image stored in the proto object
  * referred to by given visual object.
  */
-void ObjectRecognizer3D2::recognizeSiftModel(P::DetectGPUSIFT &sift, string &objId){
+void ObjectRecognizer3D2::recognizeSiftModel(P::DetectGPUSIFT &sift, VisualObjectPtr obj,
+  ObjectRecognitionTaskPtr recTask){
 
   log("recognizing object ...");
 
-  VisualObjectPtr obj = getMemoryEntry<VisualObject>(objId);
   ProtoObjectPtr pobj = getMemoryEntry<ProtoObject>(obj->protoObjectID);
   IplImage *img = 0, *grey = 0;
-  Pose3 pose;
 
   fillImages(pobj, &img, &grey);
-
-  recognizeAllObjects(sift, img, grey, obj, pose);
-  
-  finalizeObject(obj, pose);
+  recognizeAllObjects(sift, img, grey, obj, recTask);
+  finalizeObject(obj);
 
 #ifdef FEAT_VISUALIZATION
   m_display.setImage("ObjectRecognizer3D2", img);
 #endif
   
-  overwriteWorkingMemory(objId, obj);
-
   releaseImages(&img, &grey);
   
   log("... done");

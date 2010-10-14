@@ -44,9 +44,10 @@ private:
 	P::ModelObject3D	sift_model_learner;
 	P::ODetect3D*			m_detect;
 	float m_min_confidence;
-	cogx::Math::Pose3 camPose;
+	cogx::Math::Pose3 m_camPose;
   bool m_haveCameraParameters;
-  std::string m_objId;
+  std::string m_recTaskId;
+  ObjectRecognizerIce::ObjectRecognitionTaskPtr m_recTask;
 
   struct RecEntry{
   	std::string siftfile;
@@ -76,9 +77,10 @@ private:
   void fillImages(VisionData::ProtoObjectPtr pobj, IplImage **img, IplImage **grey);
   void releaseImages(IplImage **img, IplImage **grey);
   void recognizeAllObjects(P::DetectGPUSIFT &sift, IplImage *img, IplImage *grey,
-    VisionData::VisualObjectPtr obj, cogx::Math::Pose3 &pose);
-  void finalizeObject(VisionData::VisualObjectPtr obj, cogx::Math::Pose3 &pose);
-  void recognizeSiftModel(P::DetectGPUSIFT &sift, std::string &objId);
+    VisionData::VisualObjectPtr obj, ObjectRecognizerIce::ObjectRecognitionTaskPtr recTask);
+  void finalizeObject(VisionData::VisualObjectPtr obj);
+  void recognizeSiftModel(P::DetectGPUSIFT &sift, VisionData::VisualObjectPtr,
+    ObjectRecognizerIce::ObjectRecognitionTaskPtr recTask);
 
 protected:
 
