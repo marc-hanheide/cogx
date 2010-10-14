@@ -19,6 +19,7 @@ import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
+
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 
 public class IntentionGoalGenerator extends
@@ -29,6 +30,7 @@ public class IntentionGoalGenerator extends
 	public final static String XPATH_SELECT_POINTER_PREFIX = "form/pointer";
 	private final static String[] CONCEPTS_TO_PARSE = new String[] { "color",
 			"shape" };
+	public final static String XPATH_SELECT_NEGATION = "/*/content/distribs/entry/*/*/*/*/*/negForm";		
 
 	/*
 	 * (non-Javadoc)
@@ -53,10 +55,10 @@ public class IntentionGoalGenerator extends
 			if (preBelief==null)
 				return null;
 			CASTIndependentFormulaDistributionsBelief<dBelief> preAttributedBelief;
-			try {
+			try {			
+				dBelief belief = getMemoryEntry(preBelief, dBelief.class);
 				preAttributedBelief = CASTIndependentFormulaDistributionsBelief
-						.create(dBelief.class, getMemoryEntry(preBelief,
-								dBelief.class));
+						.create(dBelief.class, belief);
 				String concept = null;
 				for (String c : CONCEPTS_TO_PARSE) {
 					if (preAttributedBelief.getContent().get(c) != null)
@@ -68,13 +70,21 @@ public class IntentionGoalGenerator extends
 									"the concept in the attributed belief was none of the ones we know about.");
 					return null;
 				}
+				
+				String prefix="";
+				Document xmlAttr = IceXMLSerializer.toXomDom(belief);
+				Nodes negations = xmlAttr.query(XPATH_SELECT_NEGATION);
+			
+				if (negations.size() == 1)
+					prefix="un";					
+				
 				log("inferred concept from attributed belief: " + concept);
 				FormulaDistribution aboutPointerFD = preAttributedBelief
 						.getContent().get(POINTERLABEL.value); 
 				if (aboutPointerFD == null) {
 					getLogger()
 							.warn(
-									"couldn't find any referring pointer, most likelz ref resolution didn't work");
+									"couldn't find any referring pointer, most likely ref resolution didn't work");
 					return null;
 				}
 				WMPointer referredPrivate = WMPointer
@@ -87,7 +97,7 @@ public class IntentionGoalGenerator extends
 				super.fillDefault(goal);
 				goal.referenceEntry = addr;
 				goal.goal = new Goal(-1, "(" + concept.toLowerCase()
-						+ "-learned '" + referredPrivate.getVal().id + "')",
+						+ "-" + prefix + "learned '" + referredPrivate.getVal().id + "')",
 						false);
 				log("goal generated: " + goal.goal.goalString);
 				return goal;
