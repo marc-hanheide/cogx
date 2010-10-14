@@ -1822,6 +1822,26 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     else if (supportObjectLabel == "shelves") {
       request->outCloud->center.z += 1.075+0.00;
     }
+    
+    //HACK for review; removeme
+
+    if (request->objects.size() == 2 && request->objects[1] == "table") {
+      string filename = "table+with+" + request->objects[0] + ".txt";
+      ofstream tableCloudFile(filename.c_str(), ios::out);
+      tableCloudFile << request->outCloud->center.x;
+      tableCloudFile << request->outCloud->center.y;
+      tableCloudFile << request->outCloud->center.z;
+      tableCloudFile << request->outCloud->interval;
+      tableCloudFile << request->outCloud->xExtent;
+      tableCloudFile << request->outCloud->yExtent;
+      tableCloudFile << request->outCloud->zExtent;
+      for (unsigned long i = 0; i < request->outCloud->values.size(); i++) {
+	tableCloudFile << request->outCloud->values[i];
+      }
+      tableCloudFile << request->outCloud->isBaseObjectKnown;
+
+      tableCloudFile << request->totalMass;
+    }
 
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
     log("overwrote point cloud.");
