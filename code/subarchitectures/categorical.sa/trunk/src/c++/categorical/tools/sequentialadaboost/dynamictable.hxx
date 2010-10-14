@@ -111,7 +111,7 @@ void DynamicTable<T>::add(DynamicTable<T>& otherTab) {
 /** Fügt ein Feld an */
 template<class T>
 void DynamicTable<T>::add(T* element) {
-  if (nextField == size)    {
+  if (nextField == size-1)    {
     T** fields2 = new T*[2*size];/* check_alloc checked */
     if (fields2 == NULL) {
       fprintf(stderr,"out of memory! %s at line %d, size=%d\n", __FILE__,__LINE__, 2*size);
