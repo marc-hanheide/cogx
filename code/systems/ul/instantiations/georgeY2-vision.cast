@@ -1,7 +1,7 @@
 # CAST config file
 HOST localhost
 
-COMPONENT CPP stereoserver StereoServer --videoname videoserver --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/review_stereo.ini --logimages --imgsize "320 240 640 480" --maxdisp "128 192" # $V11N_STANDALONE $V11N_STANDALONE_HOST --display
+COMPONENT CPP stereoserver StereoServer --videoname videoserver --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/review_stereo.ini --logimages --imgsize "320 240 640 480" --maxdisp "96 192" # $V11N_STANDALONE $V11N_STANDALONE_HOST --display
 
 ####################################################################################################################
 SUBARCHITECTURE vision.sa
