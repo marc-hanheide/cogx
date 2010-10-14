@@ -19,6 +19,7 @@ import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.framing.SpatioTemporalFrame;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
 import eu.cogx.beliefs.slice.SharedBelief;
 
@@ -39,6 +40,8 @@ public class FakeObjectCreator extends ManagedComponent{
 		((FormulaValues)shapeDistrib.values).values.add(new FormulaProbPair(new ElementaryFormula(0, "compact"), 0.7f));
 		((FormulaValues)shapeDistrib.values).values.add(new FormulaProbPair(new ElementaryFormula(0, "elongated"), 0.3f));
 		
+		BasicProbDistribution salienceDistrib = new BasicProbDistribution("salience", new FormulaValues(new LinkedList<FormulaProbPair>()));
+		((FormulaValues)salienceDistrib.values).values.add(new FormulaProbPair(new FloatFormula(0, 1.0f), 1.0f));
 		
 		BasicProbDistribution typeDistrib = new BasicProbDistribution("objecttype", new FormulaValues(new LinkedList<FormulaProbPair>()));
 		((FormulaValues)typeDistrib.values).values.add(new FormulaProbPair(new ElementaryFormula(0, "box"), 0.8f));
@@ -47,6 +50,7 @@ public class FakeObjectCreator extends ManagedComponent{
 		content.distribs.put("objecttype", typeDistrib);
 		content.distribs.put("color", colorDistrib);
 		content.distribs.put("shape", shapeDistrib);
+		content.distribs.put("salience", salienceDistrib);
 
 		CASTBeliefHistory history = new CASTBeliefHistory(new LinkedList<WorkingMemoryPointer>(), new LinkedList<WorkingMemoryPointer>());
 		
