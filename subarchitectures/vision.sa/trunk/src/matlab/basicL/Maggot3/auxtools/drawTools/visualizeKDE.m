@@ -1,5 +1,6 @@
 function visualizeKDE(varargin)
 
+decompose = 1 ;
 draw_to_these_axes = [] ;
 useEdgeColorBlack = 1 ;
 deactivateFaceColor = 0 ;
@@ -24,7 +25,8 @@ for i = 1:2:nargs
         case 'useAlphaWeights', useAlphaWeights = args{i+1} ;
         case 'deactivateFaceColor', deactivateFaceColor = args{i+1} ;
         case 'useEdgeColorBlack', useEdgeColorBlack = args{i+1}   ;         
-        case 'draw_to_these_axes', draw_to_these_axes = args{i+1}   ;         
+        case 'draw_to_these_axes', draw_to_these_axes = args{i+1}   ;   
+        case 'decompose', decompose = args{i+1}   ;
     end
 end
 
@@ -38,7 +40,7 @@ if size(kde.pdf.Mu,1) ~= 2 || tabulated == 0
 end   
 
 if showTabulated ~= 1
-    drawDistributionGMM( 'pdf',kde.pdf, 'color', color, 'decompose', 1, ...
+    drawDistributionGMM( 'pdf',kde.pdf, 'color', color, 'decompose', decompose, ...
            'useAlphaWeights', useAlphaWeights, 'deactivateFaceColor', deactivateFaceColor, ...
            'useEdgeColorBlack', useEdgeColorBlack, 'draw_to_these_axes', draw_to_these_axes) ;            
 else

@@ -97,6 +97,7 @@ out_kde = [] ;
 input_data = [] ;
 operator_data = '' ; % unlearn_with_input, add_input 
 obs_relative_weights = [] ;
+decompose = 1;
 
 args = varargin;
 nargs = length(args);
@@ -168,6 +169,7 @@ while i <= nargs
         case 'use_revitalization', use_revitalization = args{i+1} ; i = i + 2 ;
         case 'switchSelectionSeeds', switchSelectionSeeds = args{i+1} ; i = i + 2 ;
         case 'draw_to_these_axes', draw_to_these_axes = args{i+1} ; i = i + 2 ;
+        case 'decompose', decompose = args{i+1} ; i = i + 2 ;     
         otherwise
             msg = sprintf('Unknown switch "%s"!',args{i});
             error(msg) ;
@@ -1062,7 +1064,8 @@ switch operator_data
              showkdecolor = 'r' ;
          end
          visualizeKDE('kde', input_kde, 'input_data', input_data, 'tabulated',...
-             showTabulated, 'showkdecolor', showkdecolor, 'draw_to_these_axes', draw_to_these_axes) ;
+             showTabulated, 'showkdecolor', showkdecolor, 'draw_to_these_axes',...
+             draw_to_these_axes, 'decompose', decompose) ;
          out_kde = [] ;
 end
  
