@@ -43,7 +43,7 @@ public class PolicyAction extends FormulaWrapper {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 
 	// updated content
 	dFormula updatedContent;
@@ -74,7 +74,9 @@ public class PolicyAction extends FormulaWrapper {
 		isVoid = true;
 		try {
 		updatedContent = FormulaUtils.copy(content);
-		} catch (DialogueException e) {}
+		} catch (DialogueException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -89,7 +91,9 @@ public class PolicyAction extends FormulaWrapper {
 		this.id = id;
 		try {
 			updatedContent = FormulaUtils.copy(content);
-			} catch (DialogueException e) {}
+			} catch (DialogueException e) {
+				e.printStackTrace();
+			}
 	}
 	
 	/**
@@ -103,7 +107,9 @@ public class PolicyAction extends FormulaWrapper {
 		this.id = id;
 		try {
 			updatedContent = FormulaUtils.copy(content);
-			} catch (DialogueException e) {}
+			} catch (DialogueException e) {
+				e.printStackTrace();
+			}
 	}
 	
 

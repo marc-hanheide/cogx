@@ -162,7 +162,7 @@ public class PolicyCondition extends FormulaWrapper {
 					obs.getProbability(alternative) <= maxProb) {	
 				debug("match found between: " + this.toString() + " and " + obs.toString());
 				return true;
-			}
+			} 
 			// handling <post> operators when handling intentions
 			else if (alternative.toString().contains("<post>") && 
 					!this.toString().contains("<post>")){
