@@ -6,21 +6,22 @@
 
 # Define host names
 # HOST <id>  <ip>//<hostname>
-HOST  Robot          192.168.1.2
-HOST  Remote         192.168.1.1
+HOST  Bamboo          192.168.1.2
+#132.230.209.2
+HOST  Macbook         192.168.1.1
+#132.230.209.191
 
 # All subarchitectures executed on the same host
 # SA  <sa_id>  [<host_id>]//<ip>//<hostname>  <enabled?>
-SA    none           [Robot]  # This is for the default HOST in .cast file (ie. no SA defined yet)
-SA    binder         [Remote]
-SA    coma        [Remote]
-SA    dialogue         [Remote]
-SA    default.sa       [Remote]
-SA    motivation.sa  [Remote]
-SA    conceptual.sa         [Robot]
-SA    planner.sa     [Remote]
-SA    spatial.sa     [Robot]
-SA    vision.sa      [Robot]
+SA    none           [Bamboo]  # This is for the default HOST in .cast file (ie. no SA defined yet)
+SA    binder         [Bamboo]
+SA    coma        [Bamboo]
+SA    dialogue         [Macbook]
+SA    default.sa       [Bamboo]
+SA    conceptual.sa         [Bamboo]
+SA    planner.sa     [Macbook]
+SA    spatial.sa     [Bamboo]
+SA    vision.sa      [Bamboo]
 
 # Special settings for individual components
 # ID  <component_id>  [<host_id>]//<ip>//<hostname>  <enabled?>
@@ -29,5 +30,5 @@ SA    vision.sa      [Robot]
 # Parameters that define hosts
 # HPAR <component_id?>|<param>  [<host_id>]//<ip>//<hostname>
 # Player may execute on a separate computer
-HPAR  |--player-host   [Robot]
+HPAR  |--player-host   [Bamboo]
 
