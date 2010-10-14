@@ -11,6 +11,8 @@ INCLUDE includes/default.sa/default-main.cast
 INCLUDE includes/conceptual.sa/conceptual-base.cast
 INCLUDE includes/conceptual.sa/conceptual-main.cast
 
+# Categorical.SA ############################################################
+INCLUDE includes/categorical.sa/categorical-shape.cast
 
 
 # vision ######################################################################
@@ -30,8 +32,9 @@ CPP MG cameramounttest CameraMountTest --pan "0" --tilt "0.0"
 # CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "instantiations/test-recognition3d/frosties-%d.jpg" --start 0 --end 0 --framerate_ms 1000 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
 
 CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/mug.ply instantiations/ply-models/coffee_filter.ply instantiations/ply-models/coffee.ply instantiations/ply-models/milk_carton.ply instantiations/ply-models/sugar.ply instantiations/ply-models/grape_juice.ply instantiations/ply-models/chocolate_chips.ply instantiations/ply-models/cornflakes.ply instantiations/ply-models/table.ply" --siftfiles "instantiations/sift-models/mug.sift instantiations/sift-models/coffee_filter.sift instantiations/sift-models/coffee.sift instantiations/sift-models/milk_carton.sift instantiations/sift-models/sugar.sift instantiations/sift-models/grape_juice.sift instantiations/sift-models/chocolate_chips.sift instantiations/sift-models/cornflakes.sift instantiations/ply-models/table.sift" --labels "mug coffee_filter coffee milk_carton sugar grape_juice chocolate_chips cornflakes table" --log
 
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/frosties.ply instantiations/ply-models/table.ply" --siftfiles "instantiations/sift-models/frosties.sift instantiations/sift-models/table.sift" --labels "frosties table" --log
+#CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/frosties.ply instantiations/ply-models/table.ply" --siftfiles "instantiations/sift-models/frosties.sift instantiations/sift-models/table.sift" --labels "frosties table" --log
 
 
 # spatial #####################################################################
@@ -80,17 +83,15 @@ JAVA MG executor dora.execution.components.DoraExecutionMediator
 JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, SpatialProperties.ConnectivityPathProperty, comadata.ComaRoom, de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief,  castutils.slice.WMMap"
 
 
-JAVA MG display.GroundedBeliefs castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "eu.cogx.beliefs.slice.GroundedBelief" --generic-col
-JAVA MG display.PerceptBeliefs castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "eu.cogx.beliefs.slice.PerceptBelief" --generic-col
+JAVA MG display.GroundedBeliefs castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "eu.cogx.beliefs.slice.GroundedBelief" 
+#JAVA MG display.PerceptBeliefs castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "eu.cogx.beliefs.slice.PerceptBelief" 
 
-JAVA MG display.places castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "SpatialData.Place"
+#JAVA MG display.places castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "SpatialData.Place"
 JAVA MG display.goals castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "motivation.slice.Motive" --generic-col
 JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "ConceptualData.WorldState" --generic-col
 
-#JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --mode SVG
+JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --mode SVG
 
-JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief" --generic-col
-JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "motivation.slice.Motive"
 JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.Intention" --generic-col
 
 #JAVA MG conedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialData.ViewPoint" --generic-col
