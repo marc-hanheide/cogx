@@ -163,6 +163,12 @@ get__successor(uint action_index
     while(observational_State !=
           _observation_based_successor_driver[index_to_observations]){
         index_to_observations++;
+
+
+        if(index_to_observations >= _observation_based_successor_driver.size()){
+            index_to_observations = 0;
+            break;
+        }
         
         QUERY_UNRECOVERABLE_ERROR
             (index_to_observations >= _observation_based_successor_driver.size()
