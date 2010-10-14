@@ -90,10 +90,9 @@ namespace spatial
       m_bSimulation = true;
 
 
-    m_posttable= true;
-    if (_config.find("--no-table") != _config.end()) 
-      m_posttable= false;
-
+    m_nobaseobject = false;
+    if (_config.find("--no-support-object") != _config.end()) 
+      m_nobaseobject = true;
 
     m_usePeekabot = false;
     if (_config.find("--usepeekabot") != _config.end()) 
@@ -116,8 +115,6 @@ namespace spatial
       m_mapceiling = (atof(it->second.c_str()));
       log("Map ceiling set to: %d", m_mapceiling);
     }
-
-
 
     m_threshold = 0.7;
     it = _config.find("--cov-threshold");
@@ -650,7 +647,10 @@ log("filled");
 	  vp->tilt = nbv.tilt;
 	  vp->label = targetObject;
 	  vp->probability = nbv.totalprob;	
-	  vp->closestPlaceId = GetPlaceIdFromNodeId(GetClosestNodeId(vp->pose.x, vp->pose.y, vp->pose.z)); 
+	  
+	  //vp->closestPlaceId = GetPlaceIdFromNodeId(GetClosestNodeId(vp->pose.x, vp->pose.y, vp->pose.z)); 
+	  
+	  vp->closestPlaceId = FindClosestPlaceID(vp->pose.x, vp->pose.y); 
 	  vp->areaId = GetAreaId(vp->pose.x, vp->pose.y, vp->pose.z); 
 	  addToWorkingMemory(newDataID(),vp);   
 	  
@@ -679,6 +679,29 @@ log("filled");
     return cost; 
   }
 
+  int VisualObjectSearch::FindClosestPlaceID(double x, double y){
+    // first get place positions
+    FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+    vector<pair<double,double> > place_positions;
+    for(unsigned int i= 0; i < m_placestosearch.size(); i++){
+      //Get Node and get
+      NavData::FNodePtr node = agg->getNodeFromPlaceID(m_placestosearch[i]);
+      place_positions.push_back(make_pair(node->x,node->y)); 
+    }
+    double minlen = 100000;
+    int closestplace =0;
+    for(unsigned int i= 0; i < place_positions.size(); i++){
+      double xp = place_positions[i].first;
+      double yp = place_positions[i].second;
+      double len = sqrt ( (x - xp)*(x - xp) + (y-yp)*(y - yp) ); 
+      if ( len < minlen){
+	minlen = len;
+	closestplace = i;
+      }
+    }
+    log("closest placeid to this cone: %d", m_placestosearch[closestplace]);
+    return m_placestosearch[closestplace];
+  }
   void VisualObjectSearch::ChangeMaps(std::string roomid){
     const char* id = &roomid[roomid.size() -1];
     // set our maps for it
@@ -1474,7 +1497,6 @@ log("filled");
       }
 
       void VisualObjectSearch::GenerateViewPoints(){
-
 	// We are being asked to search 
 	InitializeMaps(m_placestosearch);
 	m_map = m_maps[1]; 
@@ -1493,10 +1515,10 @@ log("filled");
 	
 	FrontierInterface::ObjectPriorRequestPtr objreq =
 	  new FrontierInterface::ObjectPriorRequest;
-	if(exists){
+	if(exists && !m_nobaseobject){
 	  log("table exists in the places  what we are asked to search");
 	  // we always execute the first policy
-	  string filename = "table+with+" + targetObject + ".txt";
+	  string filename = "table+with+object.txt";
 	  ifstream tableCloudFile(filename.c_str(), ios::in);
 	  if (tableCloudFile.is_open()) {
 
@@ -1510,14 +1532,12 @@ log("filled");
 	    tableCloudFile >> cloud->xExtent;
 	    tableCloudFile >> cloud->yExtent;
 	    tableCloudFile >> cloud->zExtent;
-	    log("%d", __LINE__);
 
 	    long int valn;
 	    tableCloudFile >> valn;
 
 	    log("xExtend: %d , yExtend: %d, zExtend: %d", cloud->xExtent, cloud->yExtent, cloud->zExtent);
 	    cloud->values.resize(valn);
-	    log("%d", __LINE__);
 
 	    for (unsigned long i = 0; i < valn; i++) {
 	      tableCloudFile >> cloud->values[i];
@@ -1527,22 +1547,10 @@ log("filled");
 	    tableCloudFile >> tmp;
 	    cloud->isBaseObjectKnown = tmp;
 
-	    log("%d", __LINE__);
-	    if(cloud->isBaseObjectKnown){
-	    log("Base known");
-	    }
-	    else{
-	    log("Base unknown");
-
-	    }
 	    double totalMass;
 	    tableCloudFile >> totalMass;
 	    log("totalMass read from file: %3.2f", totalMass);
-	    log("%d", __LINE__);
 	    receivePointCloud(cloud, totalMass);
-	    log("%d", __LINE__);
-	 
-	  
 	  }
 	  else{
 	    FrontierInterface::WeightedPointCloudPtr queryCloud = 
