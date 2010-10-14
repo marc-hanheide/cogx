@@ -22,7 +22,7 @@ if (LIBBUILD_PYTHON_VISION)
    endif(LIBBUILD_CUDASIFT)
 endif(LIBBUILD_PYTHON_VISION)
 
-option(LIBBUILD_LEVMAR_HOMEST "Build homest & levmar libraries required by the 3D shape detector" ON)
+option(LIBBUILD_LEVMAR_HOMEST "Build homest & levmar libraries required by the 3D shape detector" OFF)
 if (LIBBUILD_LEVMAR_HOMEST)
    add_subdirectory(levmar/levmar-2.5)
    add_subdirectory(homest/homest-1.3)
