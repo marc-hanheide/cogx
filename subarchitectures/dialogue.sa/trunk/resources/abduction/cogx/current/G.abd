@@ -224,7 +224,7 @@ generate : the_x(Nom, Label) <-
 
 generate : the_object(Nom) <-
 	i : sort(Nom, thing) / -1.0,
-	i : prop(Nom, thing) / -1.0,
+	i : prop(Nom, object) / -1.0,
 	i : feat_InfoStatus(Nom, familiar) / -1.0,
 	i : feat_Salient(Nom, true) / -1.0.
 

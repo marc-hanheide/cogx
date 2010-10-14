@@ -35,6 +35,12 @@ presuppositions_in(Nom) <-
 	i : rel_Recipient(Nom, RecpNom),
 	find_ref_features(RecpNom, RecpNom).
 
+presuppositions_in(Nom) <-
+	i : rel_Patient(Nom, PatNom),
+		i : 'rel_Scope-in'(PatNom, ScopeNom),
+			i : rel_Subject(ScopeNom, SubjNom),
+			find_ref_features(SubjNom, SubjNom).
+
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
 
