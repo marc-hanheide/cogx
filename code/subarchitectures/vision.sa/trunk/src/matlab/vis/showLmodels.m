@@ -58,7 +58,16 @@ end
 txt=strFromIdxs(mC);	
 if length(txt)>1 && numCall>0%8
     a=axis(ha);
-    text(-(mod( getc(mC,'numC')-1,5)+1)/(a(2)-a(1)),-1.5,txt,'FontSize',12,'HorizontalAlignment','center','Parent',ha);
+    w = a(2) - a(1) ;
+    if size(a) <= 4
+        h = a(4) - a(3) ;
+        text(-(mod( getc(mC,'numC')-1,5)+1)*w/3,-0.2*h/2,txt,'FontSize',12,'HorizontalAlignment','center','Parent',ha);
+    else
+        h = a(6) - a(5) ;
+        text(-(mod( getc(mC,'numC')-1,5)+1)*w/3,0,-0.2*h/2,txt,'FontSize',12,'HorizontalAlignment','center','Parent',ha);
+    end
+    
+    
 end
 % if length(txt)>1%8
 %    set(fig.tx_Fb,'String',txt);
