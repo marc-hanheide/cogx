@@ -72,6 +72,7 @@ private:
 #endif
 
   void initRecognizer();
+  void loadModels();
   void setCameraParameters(int imgWidth, int igHeight);
   void receiveRecognitionTask(const cdl::WorkingMemoryChange & _wmc);
   void fillImages(VisionData::ProtoObjectPtr pobj, IplImage **img, IplImage **grey);
