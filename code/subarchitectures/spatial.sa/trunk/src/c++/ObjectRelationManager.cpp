@@ -1835,6 +1835,10 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       tableCloudFile << request->outCloud->xExtent;
       tableCloudFile << request->outCloud->yExtent;
       tableCloudFile << request->outCloud->zExtent;
+
+      tableCloudFile << request->outCloud->values.size();
+      tableCloudFile << " ";
+
       for (unsigned long i = 0; i < request->outCloud->values.size(); i++) {
 	tableCloudFile << request->outCloud->values[i];
       }

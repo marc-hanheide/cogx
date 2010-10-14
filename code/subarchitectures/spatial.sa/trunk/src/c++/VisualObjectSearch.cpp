@@ -2104,7 +2104,11 @@ log("filled");
 		tableCloudFile >> cloud->yExtent;
 		tableCloudFile >> cloud->zExtent;
 
-		cloud->values.resize((2*cloud->xExtent+1)*(2*cloud->yExtent+1)*(2*cloud->zExtent+1));
+		long int valn;
+
+		tableCloudFile >> valn;
+
+		cloud->values.resize(valn);
 		
 		for (unsigned long i = 0; i < cloud->values.size(); i++) {
 		  tableCloudFile >> cloud->values[i];
