@@ -349,10 +349,22 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID){
  
     if (!m_PeekabotClient.is_connected()) return;
 
-    shared_ptr<CASTData<comadata::ComaRoom> > oobj =
-        getWorkingMemoryEntry<comadata::ComaRoom>(objID.address);
+    comadata::ComaRoomPtr croom;
+    try
+    {
 
-    comadata::ComaRoomPtr croom = (oobj->getData());
+    	shared_ptr<CASTData<comadata::ComaRoom> > oobj =
+            getWorkingMemoryEntry<comadata::ComaRoom>(objID.address);
+
+    	croom = (oobj->getData());
+
+	}
+	catch (DoesNotExistOnWMException)
+	{
+	  log("Error! coma room cloud disappeared from WM.");
+	  return;
+	}
+
 
     ::Ice::Int roomId = croom->roomId;
 
