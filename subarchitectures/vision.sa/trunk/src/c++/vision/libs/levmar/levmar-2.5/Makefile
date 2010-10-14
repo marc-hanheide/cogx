@@ -15,7 +15,7 @@ DEMOBJS=lmdemo.o
 DEMOSRCS=lmdemo.c
 AR=ar
 RANLIB=ranlib
-LAPACKLIBS=-llapack -lblas -lf2c # comment this line if you are not using LAPACK.
+LAPACKLIBS=-llapack -lblas #-lf2c # comment this line if you are not using LAPACK.
                                  # On systems with a FORTRAN (not f2c'ed) version of LAPACK, -lf2c is
                                  # not necessary; on others, -lf2c is equivalent to -lF77 -lI77
 
