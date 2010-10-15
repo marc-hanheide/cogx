@@ -77,6 +77,7 @@ private:
 
     std::string m_python_server;
     bool m_continual_state_updates;
+    int m_active_task_id;
 
 };
 

@@ -83,7 +83,7 @@ class CASTTask(object):
         
         self.cp_task = task.Task(self.id, cp_problem)
         component.planner.register_task(self.cp_task)
-        
+
         self.update_status(TaskStateEnum.INITIALISED)
 
         problem_fn = abspath(join(self.component.get_path(), "problem%d.mapl" % self.id))
@@ -369,9 +369,9 @@ class CASTTask(object):
     def monitor_cp(self, pending_updates=False):
         assert self.internal_state in (TaskStateEnum.PROCESSING, TaskStateEnum.WAITING_FOR_ACTION)
             
-        if self.dt_planning_active():
-            self.process_cp_plan()
-            return
+        # if self.dt_planning_active():
+        #     self.process_cp_plan()
+        #     return
 
         self.update_status(TaskStateEnum.PROCESSING)
 
