@@ -59,12 +59,22 @@ txt=strFromIdxs(mC);
 if length(txt)>1 && numCall>0%8
     a=axis(ha);
     w = a(2) - a(1) ;
+    
+    len_p = length([mC{1}.class_labels,mC{2}.class_labels]) ;
+    sh = mod( len_p,5) ;
+    dd = 0 ;
+    if sh == 0
+        sh = 4 ;
+    end
+    if sh > 2          
+        dd = 4 + sh ;
+    end
     if size(a) <= 4
         h = a(4) - a(3) ;
-        text(-(mod( getc(mC,'numC'),5))*w/6,-0.2*h/2,txt,'FontSize',12,'HorizontalAlignment','center','Parent',ha);
+        text(a(1)- (dd*w/1),a(3)-0.2*h,txt,'FontSize',12 , 'Parent', ha);
     else
-        h = a(6) - a(5) ;
-        text(-(mod( getc(mC,'numC'),5))*w/6,0,-0.01*h/2*0,txt,'FontSize',12,'HorizontalAlignment','center','Parent',ha);
+        h = a(4) - a(3) ;
+        text(a(1)- (dd*w/1),0,a(5)-0.2*h,txt,'FontSize',12 , 'Parent', ha);
     end
     
     
