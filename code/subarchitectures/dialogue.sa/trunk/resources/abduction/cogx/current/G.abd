@@ -406,6 +406,19 @@ generate : event : utter(S, H, Int) <-
 	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
+% NEW OBJECT SEEN
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['new-object-announced', 'about-shared'(SharedBId)])),
+	bel : ancestor(SharBId, PrivBId, _T),
+	utt_head(Nom),
+	generate : dialogue_move_topic(Nom, PrivBId) / 0.0,
+	i : feat_CannedText(Nom, 'I_see_a_new_object') / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
 % CONFIRMATIONS / DISCONFIRMATIONS
 %-------------------------------------------------------------------------
 
@@ -454,3 +467,4 @@ generate : event : utter(S, H, Int) <-
 	i : feat_CannedText(Nom, 'I_don\'t_know') / -1.0,
 %	i : feat_CannedText(Nom, 'sorry_I_do_not_know_that') / -1.0,
 	event : produce(r, Nom) / -1.0.
+
