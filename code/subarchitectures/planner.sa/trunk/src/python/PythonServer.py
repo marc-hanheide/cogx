@@ -146,7 +146,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.address_dict = {}
 
     self.dttasks = {}
-    self.max_dt_id = 0
+    self.last_dt_id = 0
     self.m_display = PlannerDisplayClient()
 
     global cast_log4cxx
@@ -309,8 +309,9 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def start_dt_planning(self, task):
       planning_tmp_dir =  standalone.globals.config.tmp_dir
       tmp_dir = standalone.planner.get_planner_tempdir(planning_tmp_dir)
-      domain_fn = os.path.join(tmp_dir, "domain.dtpddl")
-      problem_fn = os.path.join(tmp_dir, "problem.dtpddl")
+      domain_fn = os.path.join(tmp_dir, "domain%d.dtpddl" % self.last_dt_id)
+      problem_fn = os.path.join(tmp_dir, "problem%d.dtpddl" % self.last_dt_id)
+      self.last_dt_id += 1
 
       #Write dtpddl domain for debugging
       domain_out_fn = abspath(join(self.get_path(), "domain%d.dtpddl" % task.id))
