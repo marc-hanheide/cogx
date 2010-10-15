@@ -54,6 +54,7 @@ import de.dfki.lt.tr.meta.TRResultListener;
 // Dialogue API slice
 import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
 import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
+import java.util.LinkedList;
 
 
 /**
@@ -76,6 +77,8 @@ implements ActionListener
 {
 
 	static private final String newline = "\n";
+
+	LinkedList<String> blocked = new LinkedList<String>();
 	
 	private int idCounter = 0;
 
@@ -133,7 +136,8 @@ implements ActionListener
 			phonString.length= tokenizer.countTokens();
 			phonString.confidenceValue = 1.0f;
 			phonString.NLconfidenceValue= 0.0f;
-			phonString.rank = 1;  
+			phonString.rank = 1;
+			blocked.add(phonString.id);
 			notify((Object)phonString);
 			inputField.setText("");
 		} // end if
@@ -153,6 +157,21 @@ implements ActionListener
 		{
 			utterances.append("Robot: "+soi.phonString+newline);
 		} // end if
+	} // end publishSOI
+
+	public void publishPhonString (PhonString ps)
+	{
+		if (ps != null) {
+			boolean found = false;
+			for (String i : blocked) {
+				if (i.equals(ps.id)) {
+					found = true;
+				}
+			}
+			if (!found) {
+				utterances.append("Human: "+ps.wordSequence+newline);
+			}
+		}
 	} // end publishSOI
 	
 	/**
