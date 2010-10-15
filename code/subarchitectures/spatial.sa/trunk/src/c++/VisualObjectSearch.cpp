@@ -2942,6 +2942,7 @@ log("filled");
 
       void
 	VisualObjectSearch::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID) {
+	  log("got recognizer3D overwrite command:");
 	  try{
 	    VisionData::Recognizer3DCommandPtr cmd(getMemoryEntry<
 		VisionData::Recognizer3DCommand> (objID.address));
@@ -3002,7 +3003,11 @@ log("filled");
 
 	  }
 	  catch (const CASTException &e) {
-	    log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+	    log("owtRecognizer3DCommand disappeared from WM: %s", e.message.c_str());
+	    log("Letting planner know that view point is processed.");
+	    SpatialData::ProcessViewPointCommandPtr VPcmd= new SpatialData::ProcessViewPointCommand;
+	    VPcmd->status = SpatialData::SUCCESS;
+	    overwriteWorkingMemory(m_ProcessVPID,VPcmd);	 
 	  }
 	}
 
@@ -3204,9 +3209,8 @@ log("filled");
 
       void
 	VisualObjectSearch::newVisualObject(const cast::cdl::WorkingMemoryChange &objID) {
-
-	  try{
 	    log("new visual object");
+	  try{
 	    VisionData::VisualObjectPtr visualobject(getMemoryEntry<
 		VisionData::VisualObject> (objID.address));
 
@@ -3234,7 +3238,11 @@ log("filled");
 	    }
 	  }
 	  catch (const CASTException &e) {
-	    log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+	    log("newVisualObject disappeared from WM: %s", e.message.c_str());
+	    log("Letting planner know that view point is processed.");
+	    SpatialData::ProcessViewPointCommandPtr VPcmd= new SpatialData::ProcessViewPointCommand;
+	    VPcmd->status = SpatialData::SUCCESS;
+	    overwriteWorkingMemory(m_ProcessVPID,VPcmd);	 
 	  }
 	}
 
