@@ -35,7 +35,7 @@ static const double FREAKY_CONFIDENCE_SCALE_FACTOR = 20.;
 
 ObjectRecognizer3D2::ObjectRecognizer3D2(){
   m_detect = 0;
-	m_min_confidence = 0.04; // the original authors choice: 0.08;
+	m_min_confidence = 0.01; // thef original authors choice: 0.08;
 	m_haveCameraParameters = false;
 }
 
@@ -300,6 +300,8 @@ void ObjectRecognizer3D2::recognizeAllObjects(P::DetectGPUSIFT &sift, IplImage *
         m_detect->DrawInlier(img, CV_RGB(255,0,0));
       }
     }
+
+    log("recognized %s with confidence %lf", (*it).first.c_str(), conf);
 
     // fill the visual object strcuture
     obj->identLabels.push_back((*it).first);
