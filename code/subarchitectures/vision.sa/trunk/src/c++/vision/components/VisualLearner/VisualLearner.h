@@ -3,6 +3,7 @@
 
 #include <VisionData.hpp>
 #include <MatlabData.hpp>
+#include <CDisplayClient.hpp>
 
 #include <cast/architecture/ManagedComponent.hpp>
 
@@ -22,6 +23,26 @@ public:
    virtual void runComponent();
    virtual void configure(const std::map<std::string,std::string> & _config);
    virtual void start();
+
+#ifdef FEAT_VISUALIZATION
+private:
+   class CMyDisplayClient: public cogx::display::CDisplayClient
+   {
+      VisualLearner* pComponent;
+   public:
+      CMyDisplayClient() { pComponent = NULL; }
+      void setClientData(VisualLearner* pVisualLearnter) { pComponent = pVisualLearnter; }
+      void handleEvent(const Visualization::TEvent &event); /*override*/
+      //std::string getControlState(const std::string& ctrlId); [>override<]
+      //void handleForm(const std::string& id, const std::string& partId,
+      //      const std::map<std::string, std::string>& fields);
+      //bool getFormData(const std::string& id, const std::string& partId,
+      //      std::map<std::string, std::string>& fields);
+
+      void createViews();
+   };
+   CMyDisplayClient m_display;
+#endif
 
 private:
    // Two request queues with a single monitor
