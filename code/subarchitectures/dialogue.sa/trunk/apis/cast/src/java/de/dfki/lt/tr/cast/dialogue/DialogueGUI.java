@@ -90,7 +90,14 @@ implements TRResultListener
         		ChangeFilterFactory.createLocalTypeFilter(SpokenOutputItem.class,  WorkingMemoryOperation.ADD),
             new WorkingMemoryChangeReceiver() {
                 public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-                	handleWorkingMemoryChange(_wmc);
+                	handleSOIAdd(_wmc);
+                }
+            });
+        addChangeFilter(
+        		ChangeFilterFactory.createLocalTypeFilter(PhonString.class,  WorkingMemoryOperation.ADD),
+            new WorkingMemoryChangeReceiver() {
+                public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+                	handlePhonStringAdd(_wmc);
                 }
             });
     } // end start
@@ -100,7 +107,7 @@ implements TRResultListener
      * @param _wmc
      */
     
-    private void handleWorkingMemoryChange (WorkingMemoryChange _wmc)
+    private void handleSOIAdd(WorkingMemoryChange _wmc)
     {
         try {
             // get the data from working memory and publish it
@@ -110,7 +117,18 @@ implements TRResultListener
             e.printStackTrace();
         } // end try..catch
     }
-    
+
+    private void handlePhonStringAdd(WorkingMemoryChange _wmc)
+    {
+        try {
+            // get the data from working memory and publish it
+            gui.publishPhonString(getMemoryEntry(_wmc.address, PhonString.class));
+        }
+        catch (SubarchitectureComponentException e) {
+            e.printStackTrace();
+        } // end try..catch
+    }
+
     /**	
      *  Initializes and displays the GUI
      */
@@ -180,7 +198,7 @@ implements TRResultListener
                     if (phonString.wordSequence.equals("no")) {
                     	phonString.wordSequence = "No";
                     }
-                    addToWorkingMemory(newDataID(), phonString);
+                    addToWorkingMemory(phonString.id, phonString);
                 }
     	}
     	catch (Exception e) {
