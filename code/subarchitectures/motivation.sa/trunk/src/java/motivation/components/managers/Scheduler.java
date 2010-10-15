@@ -419,6 +419,8 @@ public class Scheduler extends ManagedComponent implements
 		List<Goal> goals = new LinkedList<Goal>();
 		for (Motive m : goalsToPlanFor.values()) {
 			if (!m.goal.goalString.isEmpty())
+				if (m.priority==MotivePriority.HIGH)
+					m.goal.importance=-1;
 				goals.add(m.goal);
 		}
 
