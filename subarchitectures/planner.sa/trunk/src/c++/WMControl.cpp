@@ -29,6 +29,7 @@ static const string BINDER_SA = "binder";
 void WMControl::configure(const cast::cdl::StringMap& _config, const Ice::Current& _current) {
     m_lastUpdate = getCASTTime();
     m_new_updates = false;
+    m_active_task_id = -1;
     cast::ManagedComponent::configure(_config, _current);
 
     cast::cdl::StringMap::const_iterator it = _config.begin();
@@ -160,6 +161,10 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
         log("    importance %.2f: %s", g->importance, g->goalString.c_str());
     }
 
+    if (task->executePlan) {
+        m_active_task_id = TASK_ID;
+    }
+
     task->id = TASK_ID;
     task->plan = vector<ActionPtr>();
     task->executionStatus = PENDING;
@@ -203,6 +208,7 @@ void WMControl::taskChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     log("task update from: %s", wmc.src.c_str());
     if (task->executePlan && task->planningStatus == SUCCEEDED && task->firstActionID == "" && task->plan.size() > 0 ) {
         log("Starting execution of task %d", task->id);
+        m_active_task_id = task->id;
         deliverPlan(task->id, task->plan, task->goals);
     }
 }
@@ -242,6 +248,7 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
 
     assert(activeTasks.find(action->taskID) != activeTasks.end());
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[action->taskID]);
+    log("Action is associated with task %d", action->taskID);
 
     assert(task->plan.size() > 0);
     task->plan[0]->status = action->status;
@@ -372,6 +379,11 @@ void WMControl::sendStateChange(int id, std::vector<dBeliefPtr>& changedUnions, 
 }
 
 void WMControl::dispatchPlanning(PlanningTaskPtr& task, int msecs) {
+    if (task->id != m_active_task_id) {
+        log("Not triggering replanning for task %d, it is not the active task (%d is).", task->id, m_active_task_id);
+        return;
+    }
+
     timeval tval;
     gettimeofday(&tval, NULL);
     tval.tv_sec += msecs / 1000;
@@ -415,6 +427,7 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals)
     log("Task %d has costs %.2f.", task->id, task->costs);
 
     if (!task->executePlan) {
+        log("Execution flag is not set.");
         overwriteWorkingMemory(activeTasks[id], task);
         return;
     }
@@ -427,7 +440,7 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals)
 
     if (plan.size() > 0) {
         ActionPtr first_action = plan[0];
-        //log("first action: %s", first_action->fullName.c_str());
+        log("first action: %s", first_action->fullName.c_str());
         first_action->status = PENDING;
         task->executionStatus = INPROGRESS;
 	//nah: don't change this, as ut should be handled by executor

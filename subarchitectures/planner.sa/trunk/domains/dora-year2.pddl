@@ -39,10 +39,12 @@
    (ex-in-room ?l - label ?r - room) - boolean
    (probability ?c - cone) - number
    (p-probability ?p - place ?l - label) - number
+   (virtual-probability ?p - virtual-place) - number
    (p-is-in ?p - place) - number
    (dora__in ?l - label ?c - category ) - number
    (p-category ?r - room ?c - category ) - number
    (log-p-probability ?p - place ?l - label) - number
+   (log-virtual-probability ?p - virtual-place) - number
    (log-dora__in ?l - label ?c - category ) - number
    (log-p-category ?r - room ?c - category ) - number
    (total-p-cost) - number
@@ -55,7 +57,7 @@
    )
 
   (:init-rule init
-              :effect (and (assign (total-p-cost) 50))
+              :effect (and (assign (total-p-cost) 10))
               )
 
   ;; (:init-rule bla
@@ -99,8 +101,14 @@
                                          (= (in-room ?p) ?r)))
               :effect (and (create (?p - virtual-place) (and
                                                          (is-virtual ?p)
-                                                         (assign (in-room ?p) ?r)))
+                                                         (assign (in-room ?p) ?r)
+                                                         (assign (virtual-probability ?p) 0.4))
                            )
+                           (create (?p - virtual-place) (and
+                                                         (is-virtual ?p)
+                                                         (assign (in-room ?p) ?r)
+                                                         (assign (virtual-probability ?p) 0.4))
+                           ))
               )
 
   (:derived (obj-possibly-in-room ?o - visualobject ?r - room)
@@ -157,7 +165,7 @@
                               (obj-possibly-in-room ?o ?r)
                               (not (cones-exist ?l ?r))
                               (= (ex-in-room ?l ?r) true))
-           :effect (probabilistic 0.8 (assign (is-in ?o) ?p))
+           :effect (probabilistic (virtual-probability ?p) (assign (is-in ?o) ?p))
            )
 
    ;; (:durative-action spin
@@ -178,9 +186,10 @@
   (:durative-action report_position
            :agent (?a - robot)
            :parameters (?o - visualobject)
-           :variables (?p - place)
+           :variables (?p - place ?h - human)
            :duration (= ?duration 1.0)
            :condition (over all (and (kval ?a (is-in ?o))
+                                     (= (is-in ?h) ?p)
                                      (= (is-in ?a) ?p)))
            :effect (at end (position-reported ?o))
            )
@@ -206,8 +215,6 @@
                      :duration (= ?duration 10)
                      :condition (and (over all (and (= (is-in ?a) ?p)
                                                     (= (in-room ?p) ?r)
-                                                    ;;(not (not_fully_explored ?r))
-                                                    ;;(hyp (ex-in-room ?l ?r) true)
                                                     (not (done))))
                                      )
                      :effect (and (at end (cones_created ?l ?r))
@@ -228,12 +235,6 @@
    ;;                   :effect (and (at start (started)))
    ;;                   )
 
-; nah: execution is expecting this:
-;   (:durative-action process_all_cones_at_place
-;                     :agent (?a - robot)
-;                     :parameters (?p - place ?l - label)
-
-
 
    (:durative-action process_virtual_place
                      :agent (?a - robot)
@@ -242,11 +243,8 @@
                      :condition (over all (and (not (done))
                                                (cones_created ?l ?r)
                                                (= (in-room ?p) ?r)
-                                               (= (label ?o) ?l)));(over all (= (is-in ?a) ?c))
-                                     ;(at start (hyp (is-in ?o) ?c)))
-                     :effect (and ;;(at end (assign (really-is-in ?o) ?c))
-                                  ;;(at end (kval ?a (is-in ?o)))
-                                  (at start (started)))
+                                               (= (label ?o) ?l)))
+                     :effect (and (at start (started)))
                      )
 
    (:observe visual_object_virtual

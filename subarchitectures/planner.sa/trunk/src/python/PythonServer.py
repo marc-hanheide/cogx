@@ -119,13 +119,12 @@ def pdbdebug(fn):
         try:
             return fn(self, *args, **kwargs)
         except Exception, e:
+            log.error("Python exception: %s", str(e))
+            traceback.print_exception(*sys.exc_info())
             if self.start_pdb:
                 import debug, traceback
-                traceback.print_exception(*sys.exc_info())
                 print "Entering debugger, please telnet to localhost:4444"
                 debug.post_mortem()
-            else:
-                raise
             
     decorated_method.__name__ = fn.__name__
     decorated_method.__dict__ = fn.__dict__
