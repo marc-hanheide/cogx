@@ -616,7 +616,7 @@ class StateTreeNode(dict):
             if p == 1.0 and not marginal:
                 sub = st
             elif p <= 0.001:
-                return
+                continue
             else:
                 if st.has_substate(self.svar, val):
                     oldp, sub = st.get_substate(self.svar, val)

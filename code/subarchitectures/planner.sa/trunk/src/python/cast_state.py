@@ -94,7 +94,7 @@ class CASTState(object):
                     current_objects.discard(gen) # remove matched generated objects that have vanished
                     
             for svar, val in oldstate.generated_facts:
-                if all(a in current_objects for a in chain(svar.args, svar.modal_args, [val])):
+                if all(a in current_objects or a.is_instance_of(pddl.t_number) for a in chain(svar.args, svar.modal_args, [val])):
                     generated_facts[svar] = val
 
             cstate.update(generated_facts)
@@ -266,7 +266,7 @@ class CASTState(object):
             facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.state.iterfacts()]
             if 'numeric-fluents' in domain.requirements:
                 b = pddl.Builder(domain)
-                facts.append(b.init('=', (pddl.dtpddl.total_p_cost,), TOTAL_P_COSTS))
+                #facts.append(b.init('=', (pddl.dtpddl.total_p_cost,), TOTAL_P_COSTS))
         else:
             facts = self.facts
 
