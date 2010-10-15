@@ -47,6 +47,8 @@ import facades.ExecutorFacade;
 public class Scheduler extends ManagedComponent implements
 		ChangeHandler<Motive>, Callable<Object> {
 
+	private static final int MAX_GOALS = 5;
+
 	private static final int MINIMUM_PLANNER_TIMEOUT = 30;
 
 	private static final int TIME_TO_WAIT_TO_SETTLE = 1000;
@@ -285,8 +287,12 @@ public class Scheduler extends ManagedComponent implements
 			Map<WorkingMemoryAddress, Motive> surfacedGoals) {
 		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
 		MotivePriority max = getMaxPriority(surfacedGoals);
+		int capacity=MAX_GOALS;
 		for (Entry<WorkingMemoryAddress, Motive> e : surfacedGoals.entrySet()) {
 			if (e.getValue().priority == max) {
+				capacity--;
+				if (capacity<0)
+					break;
 				result.put(e.getKey(), e.getValue());
 			}
 		}
