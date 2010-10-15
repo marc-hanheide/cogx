@@ -50,6 +50,10 @@ void VisualLearner::configure(const map<string, string>& _config)
       m_ClfConfigFile = s;
       log("--clfconfig='%s'", m_ClfConfigFile.c_str());
    }
+
+#ifdef FEAT_VISUALIZATION
+   m_display.configureDisplayClient(_config);
+#endif
 }
 
 void VisualLearner::start()
@@ -65,7 +69,53 @@ void VisualLearner::start()
 
    addChangeFilter(createGlobalTypeFilter<AffordanceRecognitionTask>(cdl::ADD),
          new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onAdd_AffordanceTask));
+
+#ifdef FEAT_VISUALIZATION
+   m_display.connectIceClient(*this);
+   m_display.installEventReceiver();
+   m_display.createViews();
+#endif
 }
+
+#ifdef FEAT_VISUALIZATION
+#define ID_HTML_OBJECT "VisLearner.htm.LoadModel"
+#define IDCHUNK_MODEL_BUTTONS "model.buttons"
+
+void VisualLearner::CMyDisplayClient::createViews()
+{
+   std::ostringstream ss;
+   const int nModels = 3;
+   const string models[nModels] = {
+      string("mC1"),
+      string("mC2"),
+      string("mC3") };
+
+   for (int i=0; i<nModels; i++) {
+      ss << "<input type='button' value='Load model " << models[i] << "' "
+         << "@@ONCLICK@@('" << models[i] << "');\" /><br>";
+   }
+   
+   //ss << ": <select name='" << IDC_FORM_OBJECT_NAME << "' 
+   //   << " onchange=\"CogxJsSendValue('@@FORMID@@','" << ID_CMD_OBJECT_RELOAD << "','"
+   //   << IDC_FORM_OBJECT_NAME << "');\" >";
+   //for(int i = 0; i < pSim->m_objectNames.size(); i++) {
+   //   ss << "<option>" << pSim->m_objectNames[i] << "</option>";
+   //}
+   //ss << "</select>";
+
+   setActiveHtml(ID_HTML_OBJECT, IDCHUNK_MODEL_BUTTONS, ss.str());
+}
+
+void VisualLearner::CMyDisplayClient::handleEvent(const Visualization::TEvent &event)
+{
+   if (event.type == Visualization::evHtmlOnClick) {
+      log("evHtmlOnClick on " + event.sourceId + " (" + event.objectId + ":" + event.partId + ")");
+      string fname = event.sourceId + ".mat";
+      log("going to load model " + fname);
+      matlab::VL_LoadAvModels_from_configured_dir(fname.c_str());
+   }
+}
+#endif
 
 void VisualLearner::onAdd_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
 {
