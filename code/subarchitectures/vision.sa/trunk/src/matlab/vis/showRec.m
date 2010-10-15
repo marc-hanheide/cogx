@@ -39,7 +39,7 @@ if ~isempty(answ)
    bar(Figs.LRguiR.LRaxRec,answ(:,2),'b');
    set(Figs.LRguiR.LRaxRec,'XTickLabel',Coma.Cnames(answ(:,1),:));
 %    set(Figs.LRguiR.LRaxRec,'title',str); 
-   text(0,0.9,str,'Parent',Figs.LRguiR.LRaxRec );
+   text(0,0.9,0,str,'Parent',Figs.LRguiR.LRaxRec );
    axis(Figs.LRguiR.LRaxRec,[0 numC+1 0 MaxTyp]);
    
    
