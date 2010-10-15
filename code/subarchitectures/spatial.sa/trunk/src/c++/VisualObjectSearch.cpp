@@ -3004,10 +3004,7 @@ log("filled");
 	  }
 	  catch (const CASTException &e) {
 	    log("owtRecognizer3DCommand disappeared from WM: %s", e.message.c_str());
-	    log("Letting planner know that view point is processed.");
-	    SpatialData::ProcessViewPointCommandPtr VPcmd= new SpatialData::ProcessViewPointCommand;
-	    VPcmd->status = SpatialData::SUCCESS;
-	    overwriteWorkingMemory(m_ProcessVPID,VPcmd);	 
+	   	 
 	  }
 	}
 
@@ -3089,6 +3086,7 @@ log("filled");
 	       waitingForDetection.insert(m_objectlist[i]);
 	       }
 	       else{*/
+log("Posting Recognition command for object %s",m_objectlist[i].c_str());
 	    addRecognizer3DCommand(VisionData::RECOGNIZE,m_objectlist[i],"");
 	    waitingForDetection.insert(m_objectlist[i]);
 	    //}
@@ -3232,17 +3230,12 @@ log("filled");
 	      for (std::set<string>::iterator it = waitingForDetection.begin(); it != waitingForDetection.end(); it++) {
 		logString += *it + " ";
 	      }
-	      log(logString.c_str());
-
-
+	      log(logString.c_str());	
 	    }
 	  }
 	  catch (const CASTException &e) {
 	    log("newVisualObject disappeared from WM: %s", e.message.c_str());
-	    log("Letting planner know that view point is processed.");
-	    SpatialData::ProcessViewPointCommandPtr VPcmd= new SpatialData::ProcessViewPointCommand;
-	    VPcmd->status = SpatialData::SUCCESS;
-	    overwriteWorkingMemory(m_ProcessVPID,VPcmd);	 
+	   	 
 	  }
 	}
 
