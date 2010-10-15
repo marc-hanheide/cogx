@@ -14,7 +14,6 @@ MATLAB_RUNTIME_DIR=/opt/MATLAB/MATLAB_Compiler_Runtime/v78/runtime/${MATLAB_ARCH
 
 COGX_BUILD_DIR=${COGX_ROOT}/BUILD
 COGX_LIB_DIR=${COGX_ROOT}/output/lib
-COGX_PY_DIR=${COGX_ROOT}/output/python
 COGX_CLASS_DIR=${COGX_ROOT}/output/classes
 
 CAST_BIN_PREFIX=bin
@@ -22,7 +21,6 @@ CAST_BIN_DIR=${CAST_INSTALL_ROOT}/${CAST_BIN_PREFIX}
 
 CAST_LIB_PREFIX=lib/cast
 CAST_LIB_DIR=${CAST_INSTALL_ROOT}/${CAST_LIB_PREFIX}
-CAST_PY_DIR=${CAST_LIB_DIR}/python
 
 CAST_CONFIG_PATH=share/cast/config/cast_ice_config
 CAST_ICE_CONFIG=${CAST_INSTALL_ROOT}/${CAST_CONFIG_PATH}
@@ -60,8 +58,6 @@ CLASSPATH=<pathlist>
 PYTHONPATH=<pathlist>
    ${COGX_ROOT}/output/planner
    ${COGX_ROOT}/output/python
-   ${CAST_PY_DIR}
-   ${COGX_PY_DIR}
    ${PYTHONPATH}
 </pathlist>
 
