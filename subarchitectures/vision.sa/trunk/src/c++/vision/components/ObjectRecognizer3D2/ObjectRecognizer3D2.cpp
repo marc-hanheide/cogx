@@ -30,7 +30,7 @@ static const bool USE_SEGMENTATION_MASK = false;
 
 ObjectRecognizer3D2::ObjectRecognizer3D2(){
   m_detect = 0;
-	m_min_confidence = 0.08;
+	m_min_confidence = 0.04; // the original authors choice: 0.08;
 	m_haveCameraParameters = false;
 }
 
@@ -312,6 +312,26 @@ void ObjectRecognizer3D2::recognizeAllObjects(P::DetectGPUSIFT &sift, IplImage *
 	}
 
   obj->pose = best_pose;
+
+  RecognitionResult res;
+  res.label = "unknown";
+  // distribution must of course sum to 1
+  // NOTE: this is a crude and clearly non proper way of determining
+  // the likelihood of the unknown class.
+  float sum = 0.;
+  for(size_t i = 0; i < recTask->matches.size(); i++)
+    sum += recTask->matches[i].probability;
+  if(sum < 1.)
+  {
+    res.probability = 1. - sum;
+  }
+  else
+  {
+    for(size_t i = 0; i < recTask->matches.size(); i++)
+      recTask->matches[i].probability /= sum;
+    res.probability = 0.;
+  }
+  recTask->matches.push_back(res);
   
   for(unsigned i = 0; i < m_image_keys.Size(); i++)
 	  delete(m_image_keys[i]);
