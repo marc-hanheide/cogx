@@ -102,12 +102,12 @@
               :effect (and (create (?p - virtual-place) (and
                                                          (is-virtual ?p)
                                                          (assign (in-room ?p) ?r)
-                                                         (assign (virtual-probability ?p) 0.4))
+                                                         (assign (virtual-probability ?p) 0.3))
                            )
                            (create (?p - virtual-place) (and
                                                          (is-virtual ?p)
                                                          (assign (in-room ?p) ?r)
-                                                         (assign (virtual-probability ?p) 0.4))
+                                                         (assign (virtual-probability ?p) 0.3))
                            ))
               )
 
