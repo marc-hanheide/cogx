@@ -60,6 +60,8 @@ CLASSPATH=<pathlist>
 </pathlist>
 
 PYTHONPATH=<pathlist>
+   ${COGX_ROOT}/output/planner
+   ${COGX_ROOT}/output/python
    ${CAST_PY_DIR}
    ${COGX_PY_DIR}
    ${PYTHONPATH}
