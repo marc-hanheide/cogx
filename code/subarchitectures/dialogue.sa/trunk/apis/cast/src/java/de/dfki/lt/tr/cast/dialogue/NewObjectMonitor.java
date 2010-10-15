@@ -96,6 +96,7 @@ public class NewObjectMonitor extends AbstractDialogueComponent {
 			Object body = d.getData();
 			if (body instanceof dBelief) {
 				dBelief b = (dBelief) body;
+				this.sleepComponent(100);
 				log("announcing the new object");
 
 				Intention it = new Intention();
@@ -121,7 +122,7 @@ public class NewObjectMonitor extends AbstractDialogueComponent {
 
 //				CommunicativeIntention cit = new CommunicativeIntention(it);
 
-				log("writing communicative intention " + it.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(it));
+				log("writing intention " + it.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(it));
 				try {
 					addToWorkingMemory(it.id, it);
 				} catch (AlreadyExistsOnWMException ex) {
