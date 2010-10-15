@@ -28,6 +28,11 @@ static const bool OVERWRITE_VISUAL_OBJECT = false;
 // use segmentation mask inside ROI
 static const bool USE_SEGMENTATION_MASK = false;
 
+// recognizer confidences are typically really low (like around 0.1)
+// so scale it up to make it into a "nice" probability.
+// note: probabilities are normalized to 1
+static const double FREAKY_CONFIDENCE_SCALE_FACTOR = 20.;
+
 ObjectRecognizer3D2::ObjectRecognizer3D2(){
   m_detect = 0;
 	m_min_confidence = 0.04; // the original authors choice: 0.08;
@@ -284,7 +289,7 @@ void ObjectRecognizer3D2::recognizeAllObjects(P::DetectGPUSIFT &sift, IplImage *
         convertPoseCv2MathPose((*it).second.object->pose, localPose);
         Math::transform(m_camPose, localPose, pose);
         
-        conf = (*it).second.object->conf;
+        conf = (*it).second.object->conf*FREAKY_CONFIDENCE_SCALE_FACTOR;
         if(conf > best_conf)
         {
           best_conf = (*it).second.object->conf;
