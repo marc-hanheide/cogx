@@ -665,6 +665,10 @@ classdef CodebookAlgorithm < handle & Utils
                     case {'heurfldaolvq3'},
                         Updater = HeurFLDAOLVQ3UpdateRule();
                         
+                    % Heuristic GRLVQ training...
+                    case {'heurgrlvq'},
+                        Updater = HeurGRLVQUpdateRule();
+                        
             end
         end
         

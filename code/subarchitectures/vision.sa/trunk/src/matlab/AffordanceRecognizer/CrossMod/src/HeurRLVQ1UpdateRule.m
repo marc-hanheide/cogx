@@ -21,6 +21,10 @@ classdef HeurRLVQ1UpdateRule < UpdateRule
                 Mod.SOM.mask = max(Mod.SOM.mask - (Mod.a_f * abs(Mod.Dx(Mod.BMUs(1),:)))', Mod.ZeroMask);
                 Mod.SOM.mask = Mod.SOM.mask / sum(Mod.SOM.mask);
                 
+                % Record running stats of correctly classified samples for
+                % each node...
+                Mod.NodeStats{Mod.BMUs(1)}.push(Mod.x);
+                
             else
                 
                 % Update the BMU codebook vector (LVQ)...

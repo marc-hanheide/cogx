@@ -760,7 +760,7 @@ classdef CodebookModality < Modality
                 switch lower(Updaters{i})
                     case {'glvq', 'grlvq', 'ldaglvq', 'ldaglvq_3', 'ldalvq1_3', 'ldaolvq3', 'ldaoglvq', 'ldaoglvq_3',...
                           'laldaglvq', 'laldaolvq', 'lcaldaolvq',...
-                          'heurfldaolvq', 'heurfldaolvq3'}
+                          'heurfldaolvq', 'heurfldaolvq3', 'heurgrlvq'}
                         obj.nBMUs = size(obj.SOM.codebook, 1);
                 end
 
@@ -777,7 +777,7 @@ classdef CodebookModality < Modality
                 % Some cross-modal heuristic update rules will require
                 % auxiliary distances for each node...
                 switch lower(Updaters{i})
-                    case {'heurfldaolvq', 'heurfldaolvq3'}
+                    case {'heurfldaolvq', 'heurfldaolvq3', 'heurgrlvq'}
                         obj.nAuxDists = size(obj.SOM.codebook, 1);
                 end
                 
@@ -785,7 +785,8 @@ classdef CodebookModality < Modality
                 % RunningStat objects for recording a
                 % running mean and variance for each node...
                 switch lower(Updaters{i})
-                    case {'ldalvq1', 'ldalvq1_3', 'ldaolvq3', 'heurfldaolvq3', 'heurforlvq',...
+                    case {'ldalvq1', 'ldalvq1_3', 'ldaolvq3',...
+                          'heurfldaolvq3', 'heurforlvq', 'heurorlvq1', 'heurrlvq1',...
                           'ldaglvq_3', 'ldaoglvq_3',...
                           'lcaldaolvq'}
                         for iNode = 1:size(obj.SOM.codebook,1)
