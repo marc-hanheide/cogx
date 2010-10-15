@@ -27,6 +27,7 @@ if ~isempty(answ)
   end
   set(Figs.LRguiR.LRtxRec,'String',str);
   
+  
 %   str=recYes;
 %   if ~isempty(recPy)
 %      str=[str '    (' recPy ' )'];
@@ -37,7 +38,10 @@ if ~isempty(answ)
   
    bar(Figs.LRguiR.LRaxRec,answ(:,2),'b');
    set(Figs.LRguiR.LRaxRec,'XTickLabel',Coma.Cnames(answ(:,1),:));
+%    set(Figs.LRguiR.LRaxRec,'title',str); 
+   text(0,0.9,str,'Parent',Figs.LRguiR.LRaxRec );
    axis(Figs.LRguiR.LRaxRec,[0 numC+1 0 MaxTyp]);
+   
    
 line([0 numC+1],[THRs(1) THRs(1)],'Color','g','Parent',Figs.LRguiR.LRaxRec);
 line([0 numC+1],[THRs(2) THRs(2)],'Color','m','Parent',Figs.LRguiR.LRaxRec);

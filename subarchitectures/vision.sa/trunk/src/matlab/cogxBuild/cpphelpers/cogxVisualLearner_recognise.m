@@ -21,7 +21,15 @@ function [rCpcx,gain] = cogxVisualLearner_recognise(X, B, pts3d)
       end
 
       X = uint8(X);
-      f = extAPfeatures(X,B,Params.FV,pts3d);
+      try
+          f = extAPfeatures(X,B,Params.FV,pts3d);
+      catch
+          f = [] ;
+          rCqnt = [];
+          rCpcx = [];
+          gain = [];
+          return ;
+      end
       showROI(X,B,f,pts3d);
 
       % figure('color','k');
