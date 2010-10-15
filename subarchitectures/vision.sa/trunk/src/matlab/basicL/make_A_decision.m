@@ -6,7 +6,7 @@ function msg =  make_A_decision( i_c,  P )
 % structure of P: class1, class2, class3, ... , classUnknown 
 
 answers = {'yes', 'prob yes', 'dont know', 'probably no', 'no'} ;
-H_lo = 0.63 ; %45 ; %0.3 ; 
+H_lo = 0.5 ; %45 ; %0.3 ; 
 H_up = 0.75 ; %0.8 ;
 
 % get most likely classification
