@@ -44,6 +44,13 @@ LD_LIBRARY_PATH=<pathlist>
 </pathlist>
 DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
 
+PYTHONPATH=<pathlist>
+   ${CAST_LIB_DIR}/python
+   ${COGX_ROOT}/output/planner
+   ${COGX_ROOT}/output/python
+   ${PYTHONPATH}
+</pathlist>
+
 CLASSPATH=<pathlist>
    ${CLASSPATH}
    ${CAST_INSTALL_ROOT}/share/java/cast.jar
@@ -53,12 +60,6 @@ CLASSPATH=<pathlist>
    /usr/share/java/ant-ice.jar
    /usr/share/java/log4j-1.2.jar
    /usr/share/java/xstream-1.3.1.jar
-</pathlist>
-
-PYTHONPATH=<pathlist>
-   ${COGX_ROOT}/output/planner
-   ${COGX_ROOT}/output/python
-   ${PYTHONPATH}
 </pathlist>
 
 # To redirect the v11n output to a standalone DisplayServer add the
