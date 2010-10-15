@@ -120,7 +120,7 @@ void ObjectRecognizer3D::start(){
 void ObjectRecognizer3D::PostFake3DObject(const cdl::WorkingMemoryChange & _wmc){
 log("Fake 3D Object Received");  
 Post3DObjectPtr f = getMemoryEntry<Post3DObject>(_wmc.address);
-  loadVisualModelToWM(m_recEntries[f->label],f->pose,f->label);
+  loadVisualModelToWM(m_recEntries[f->label],f->pose,f->label,true);
 }
 
 
@@ -366,6 +366,11 @@ log("got ply model");
   obj->identLabels.push_back(label);
   obj->identLabels.push_back("unknown");
   // note: distribution must of course sum to 1
+  if(forceNewObject){
+    rec_entry.object->conf = 0.9;
+  //  rec_entry.object->identDistrib.resize(1);
+  //  rec_entry.object->idenDistrib[0] = 0.9;
+  }
   obj->identDistrib.push_back(rec_entry.object->conf);
   obj->identDistrib.push_back(1. - rec_entry.object->conf);
   // the information gain if we know the label, just set to 1, cause we don't
