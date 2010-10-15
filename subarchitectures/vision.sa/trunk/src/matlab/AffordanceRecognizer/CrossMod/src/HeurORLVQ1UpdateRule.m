@@ -24,6 +24,10 @@ classdef HeurORLVQ1UpdateRule < UpdateRule
                 % Update the feature weights (RLVQ)...
                 Mod.SOM.mask = max(Mod.SOM.mask - (Mod.a_f * abs(Mod.Dx(Mod.BMUs(1),:)))', Mod.ZeroMask);
                 Mod.SOM.mask = Mod.SOM.mask ./ norm(Mod.SOM.mask,1);
+                
+                % Record running stats of correctly classified samples for
+                % each node...
+                Mod.NodeStats{Mod.BMUs(1)}.push(Mod.x);
 
             else % if Mod.AuxDists(1) > Mod.AuxDistStats.mean() + Mod.AuxDistStats.std()
                 % Update the learning rate for the winning node...
