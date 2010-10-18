@@ -47,7 +47,9 @@ void CTomGineModel::deserialize(const std::string& partId, const std::vector<uns
    namespace barch = boost::archive;
 
    TomGine::tgRenderModel* pModel = NULL;
-   if (m_Models.find(partId)->second != NULL) {
+   //if (m_Models.find(partId)->second != NULL) {
+   typeof(m_Models.begin()) itExtng = m_Models.find(partId);
+   if (itExtng != m_Models.end()) {
       pModel = m_Models[partId];
    }
 
@@ -77,7 +79,8 @@ ERenderContext CTomGineModel::getPreferredContext()
 void CTomGineModel::removePart(const std::string&partId)
 {
    typeof(m_Models.begin()) it = m_Models.find(partId);
-   if (it->second != NULL) {
+   //if (it->second != NULL) {
+   if (it != m_Models.end()) {
       TomGine::tgRenderModel* pModel = m_Models[partId];
       m_Models.erase(it);
       delete pModel;
@@ -122,7 +125,9 @@ void CTomGineModel::setPose3D(const std::string& partId, const std::vector<doubl
    assert(rotation.size() == 4);
 
    TomGine::tgRenderModel* pModel = NULL;
-   if (m_Models.find(partId)->second != NULL) {
+   //if (m_Models.find(partId)->second != NULL) {
+   typeof(m_Models.begin()) itExtng = m_Models.find(partId);
+   if (itExtng != m_Models.end()) {
       pModel = m_Models[partId];
    }
    if (! pModel) return;

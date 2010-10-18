@@ -206,7 +206,9 @@ void CLuaGlScript::loadScript(const std::string& partId, const std::string& scri
 {
    CScript* pModel = NULL;
    IceUtil::RWRecMutex::WLock lock(_objectMutex);
-   if (m_Models.find(partId)->second != NULL) {
+   // if (m_Models.find(partId)->second != NULL) {
+   typeof(m_Models.begin()) itExtng = m_Models.find(partId);
+   if (itExtng != m_Models.end()) {
       pModel = m_Models[partId];
    }
 
@@ -225,7 +227,8 @@ void CLuaGlScript::loadScript(const std::string& partId, const std::string& scri
 void CLuaGlScript::removePart(const std::string& partId)
 {
    typeof(m_Models.begin()) it = m_Models.find(partId);
-   if (it->second != NULL) {
+   //if (it->second != NULL) {
+   if (it != m_Models.end()) {
       IceUtil::RWRecMutex::WLock lock(_objectMutex);
       CScript* pModel = m_Models[partId];
       m_Models.erase(it);
