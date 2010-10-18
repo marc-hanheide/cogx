@@ -1,11 +1,12 @@
-
+# cast config
 HOST localhost
 
 SUBARCHITECTURE visualization.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer --redirect-to-host localhost --log true --debug true
 
-CPP MG visualization.test VisualizationTest --videoname videoserver --standalone-display-host localhost --camid 0 --debug true
+CPP MG visualization.test VisualizationTest --videoname videoserver --displayserver "display.srv" --camid 0 --debug true
 
 SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
