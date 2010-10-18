@@ -2,20 +2,22 @@
 HOST localhost
 
 # python
-COMPONENT PYTHON v11n.python.test castmodule.cogxv11n.TestClient --displayserver "display.srv" --standalone-display-host localhost --debug
+COMPONENT PYTHON v11n.python.test castmodule.cogxv11n.TestClient --displayserver "display.srv" --debug
 
 # c++
 SUBARCHITECTURE visualization.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG visualization.test VisualizationTest --displayserver "display.srv" --standalone-display-host localhost --videoname videoserver --camid 0 --debug true
+CPP MG display.srv DisplayServer --redirect-to-host localhost --log true --debug true
+
+CPP MG visualization.test VisualizationTest --displayserver "display.srv" --videoname videoserver --camid 0 --debug true
 
 # java
 SUBARCHITECTURE somethingelse
 JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
 JAVA WM cast.architecture.SubarchitectureWorkingMemory #--log
 
-JAVA MG java.test.client si.unilj.fri.cogx.v11n.test.V11nJavaTestComponent --displayserver "display.srv" --standalone-display-host localhost --debug true
+JAVA MG java.test.client si.unilj.fri.cogx.v11n.test.V11nJavaTestComponent --displayserver "display.srv" --debug true
 
 # Input for c++
 SUBARCHITECTURE vision.sa
