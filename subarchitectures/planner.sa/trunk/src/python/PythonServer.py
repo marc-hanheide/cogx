@@ -170,20 +170,20 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.start_pdb = "--pdb" in config
 
     if "--dtdomain" in config:
-        self.dtdomain_fn = join(dirname(__file__), "dtdomains", config["--dtdomain"])
+        self.dtdomain_fn = join(standalone.globals.config.domain_dir, config["--dtdomain"])
     else:
         self.dtdomain_fn = None
         
     if "--dtproblem" in config:
-        self.dtproblem_fn = join(dirname(__file__), "dtdomains", config["--dtproblem"])
+        self.dtproblem_fn = join(standalone.globals.config.domain_dir, config["--dtproblem"])
     else:
         self.dtproblem_fn = None
     
     if "--domain" in config:
-      self.domain_fn = join(dirname(__file__), "domains", config["--domain"])
+      self.domain_fn = join(standalone.globals.config.domain_dir, config["--domain"])
 
     if "--problem" in config:
-      self.problem_fn = join(dirname(__file__), "domains", config["--problem"])
+      self.problem_fn = join(standalone.globals.config.domain_dir, config["--problem"])
       
   def getClient(self):
     if not self.client:

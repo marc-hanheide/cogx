@@ -1,5 +1,5 @@
 # Config options for the planner that are determined by cmake at build time
 
 planner_dir = ${BASE_PLANNER_ROOT}
-
+cogx_dir = ${COGX_ROOT}
 

@@ -20,4 +20,4 @@ CONFIG_FN = "config.ini"
 CMAKE_CONFIG_FN = "config.auto"
 
 config_autogen = load_config_file(CMAKE_CONFIG_FN)
-config = load_config_file(CONFIG_FN, planner_dir=config_autogen.planner_dir)
+config = load_config_file(CONFIG_FN, **config_autogen.__dict__)
