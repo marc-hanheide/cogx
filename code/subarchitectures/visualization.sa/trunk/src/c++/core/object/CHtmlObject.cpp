@@ -161,7 +161,9 @@ CRenderer* CHtmlObject::getRenderer(ERenderContext context)
 void CHtmlObject::setHtml(const std::string& partId, const std::string& text)
 {
    CHtmlChunk* pPart = NULL;
-   if (m_Parts.find(partId)->second != NULL) {
+   //if (m_Parts.find(partId)->second != NULL) {
+   typeof(m_Parts.begin()) itExtng = m_Parts.find(partId);
+   if (itExtng != m_Parts.end()) {
       pPart = m_Parts[partId];
       // TODO: if type != html, delete
    }
@@ -180,7 +182,9 @@ CHtmlChunk* CHtmlObject::setActiveHtml(const Ice::Identity& ident, const std::st
       const std::string& text)
 {
    CHtmlChunk* pPart = NULL;
-   if (m_Parts.find(partId)->second != NULL) {
+   // if (m_Parts.find(partId)->second != NULL) {
+   typeof(m_Parts.begin()) itExtng = m_Parts.find(partId);
+   if (itExtng != m_Parts.end()) {
       pPart = m_Parts[partId];
       // pPart->m_dataOwner = ident; // just in case it changed
       // TODO: if type != activehtml, delete
@@ -204,7 +208,9 @@ CHtmlChunk* CHtmlObject::setActiveHtml(const Ice::Identity& ident, const std::st
 CHtmlChunk* CHtmlObject::setForm(const Ice::Identity& ident, const std::string& partId, const std::string& text)
 {
    CHtmlChunk* pPart = NULL;
-   if (m_Parts.find(partId)->second != NULL) {
+   // if (m_Parts.find(partId)->second != NULL) {
+   typeof(m_Parts.begin()) itExtng = m_Parts.find(partId);
+   if (itExtng != m_Parts.end()) {
       pPart = m_Parts[partId];
       // pPart->m_dataOwner = ident; // just in case it changed
       // TODO: if type != form, delete
@@ -249,7 +255,9 @@ CHtmlChunk* CHtmlObject::setForm(const Ice::Identity& ident, const std::string& 
 void CHtmlObject::setHead(const std::string& partId, const std::string& text)
 {
    CHtmlChunk* pPart = NULL;
-   if (m_HeadParts.find(partId)->second != NULL) {
+   //if (m_HeadParts.find(partId)->second != NULL) {
+   typeof(m_HeadParts.begin()) itExtng = m_HeadParts.find(partId);
+   if (itExtng != m_HeadParts.end()) {
       pPart = m_HeadParts[partId];
    }
 
@@ -291,15 +299,19 @@ CHtmlChunk* CHtmlObject::getPart(const std::string& partId)
 void CHtmlObject::removePart(const std::string& partId)
 {
    typeof(m_Parts.begin()) itpart = m_Parts.find(partId);
-   if (itpart->second != NULL) {
+   //if (itpart->second != NULL) {
+   if (itpart != m_Parts.end()) {
       CHtmlChunk* pPart = itpart->second;
       m_Parts.erase(itpart);
       delete pPart;
    }
 
    typeof(m_HeadParts.begin()) ithd = m_HeadParts.find(partId);
-   if (ithd->second != NULL) {
-      CHtmlChunk* pPart = m_HeadParts[partId];
+   //if (ithd->second != NULL) {
+   if (ithd != m_HeadParts.end()) {
+      CHtmlChunk* pPart = ithd->second; // m_HeadParts[partId];
+      // XXX: This is where a segfault occurs occasionally
+      //    setHtml() -> (when data is empty) -> removePart()
       m_HeadParts.erase(ithd);
       delete pPart;
    }
