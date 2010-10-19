@@ -1,5 +1,5 @@
 import os
-from os.path import abspath, dirname, join, isdir
+from os.path import abspath, join
 
 from de.dfki.lt.tr.beliefs.slice import logicalcontent
 from autogen import Planner
@@ -169,13 +169,6 @@ class CASTTask(object):
         self.update_status(TaskStateEnum.PROCESSING)
         self.cp_task.replan()
         self.process_cp_plan()
-
-    def waiting_timeout(self):
-        assert self.internal_state == TaskStateEnum.WAITING_FOR_BELIEF
-        if task.dt_planning_active():
-            task.monitor_dt(task_desc.plan)
-        else:
-            task.monitor_dt(task_desc.plan)
 
     def process_cp_plan(self):
         plan = self.get_plan()
@@ -366,7 +359,7 @@ class CASTTask(object):
         self.update_status(TaskStateEnum.WAITING_FOR_DT)
         self.component.getDT().deliverObservation(self.id, observations)
   
-    def monitor_cp(self, pending_updates=False):
+    def monitor_cp(self):
         assert self.internal_state in (TaskStateEnum.PROCESSING, TaskStateEnum.WAITING_FOR_ACTION)
             
         # if self.dt_planning_active():

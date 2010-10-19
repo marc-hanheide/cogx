@@ -3,7 +3,7 @@
 
 import parser, scope
 from mapltypes import Type, FunctionType, TypedObject, TypedNumber, Parameter
-from mapltypes import TRUE, FALSE, t_object, t_boolean
+from mapltypes import t_object, t_boolean
 
 from parser import ParseError, UnexpectedTokenError
 

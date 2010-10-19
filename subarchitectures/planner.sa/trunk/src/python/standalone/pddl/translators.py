@@ -1,5 +1,5 @@
 from collections import defaultdict
-import itertools, time
+import time
 
 from scope import Scope
 import predicates, conditions, effects, actions, axioms, domain, problem
@@ -419,7 +419,6 @@ class CompositeTypeCompiler(Translator):
         
     def translate_domain(self, _domain):
         dom = domain.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
-        typedict = {}
         dom.requirements = _domain.requirements.copy()
 
         dom.predicates = scope.FunctionTable()
@@ -529,7 +528,6 @@ class ObjectFluentNormalizer(Translator):
         @visitors.copy
         def visitor(cond, results):
             if isinstance(cond, conditions.LiteralCondition):
-                pargs = []
                 if cond.predicate in numeric_comparators + [equals]:
                     if cond.predicate in (equals, eq):
                         new_pred = cond.predicate
@@ -610,8 +608,6 @@ class ObjectFluentNormalizer(Translator):
         return visitors.visit(eff, visitor)
         
     def translate_action(self, action, domain=None):
-        import mapl
-
         if domain is None:
             domain = action.parent
 
@@ -919,7 +915,7 @@ class ModalPredicateCompiler(Translator):
         else:
             args = [types.Parameter(p.name, p.type) for p in action.args]
 
-        a2 = action.copy_skeleton(domain)
+        a2 = action.copy_skeleton(domain) # TODO: new_args is being ignored, which is a bug
         
         if action.precondition:
             a2.precondition = action.precondition.copy(copy_instance=True, new_scope=a2).visit(cond_visitor)

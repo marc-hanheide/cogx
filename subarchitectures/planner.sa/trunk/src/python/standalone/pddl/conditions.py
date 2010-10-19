@@ -3,7 +3,6 @@
 
 from parser import UnexpectedTokenError
 import mapltypes as types
-import scope
 from scope import Scope, SCOPE_CONDITION
 import predicates
 
@@ -158,7 +157,7 @@ class Condition(object):
             part2 = it.get(list, "condition")
             it.no_more_tokens()
             condition = Condition.parse(iter(part1), scope)
-            implication = Condition.parse(iter(part1), scope)
+            implication = Condition.parse(iter(part2), scope)
             return Disjunction([condition.negate(), implication])
         elif tag == "forall":
             return QuantifiedCondition.parse(it, scope, UniversalCondition)

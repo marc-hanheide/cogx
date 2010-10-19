@@ -2,7 +2,6 @@
 # -*- coding: latin-1 -*-
 
 import itertools
-from collections import defaultdict
 
 import mapltypes as types
 import predicates

@@ -1,12 +1,12 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
 
-import itertools, time, random
-from itertools import imap, ifilter
+import time, random
+from itertools import imap
 from collections import defaultdict
 
 import mapltypes as types
-import scope, conditions, problem, effects, durative
+import conditions, problem, effects, durative
 from builtin import *
 from durative import change, num_change
 from predicates import *
@@ -199,24 +199,24 @@ class StateVariable(object):
         args = instantiate_args(term.args, state)
         return StateVariable(term.function, args)
 
-    @staticmethod
-    def get_svars_in_term(term, state=None):
-        """Create a new StateVariable from a FunctionTerm and returns
-        a list of all StateVariable that occur in this term (as nested
-        functions). If the Term contains nested functions, a state
-        must be applied to look them up.
+    # @staticmethod
+    # def get_svars_in_term(term, state=None):
+    #     """Create a new StateVariable from a FunctionTerm and returns
+    #     a list of all StateVariable that occur in this term (as nested
+    #     functions). If the Term contains nested functions, a state
+    #     must be applied to look them up.
 
-        Returns a tuple with the resulting StateVariable and a list of
-        contained StateVariables (including the result itself).
+    #     Returns a tuple with the resulting StateVariable and a list of
+    #     contained StateVariables (including the result itself).
 
-        Arguments:
-        term -- FunctionTerm
-        state -- state to look up nested function."""
+    #     Arguments:
+    #     term -- FunctionTerm
+    #     state -- state to look up nested function."""
         
-        assert isinstance(term, FunctionTerm)
-        svar, vars = get_svars_from_term(term, state)
-        vars.add(svar)
-        return svar, vars
+    #     assert isinstance(term, FunctionTerm)
+    #     svar, vars = get_svars_from_term(term, state)
+    #     vars.add(svar)
+    #     return svar, vars
     
     @staticmethod
     def from_literal(literal, state=None):
@@ -698,7 +698,7 @@ class State(dict):
         UniversalCondition that is required to be satisfied will be
         written to that list.
         """
-        import logging
+
         def instantianteAndCheck(cond, params):
             cond.instantiate(dict(zip(cond.args, params)), self.problem)
             result = checkConditionVisitor(cond.condition)
@@ -808,7 +808,6 @@ class State(dict):
                         return
                     
                 combinations = product(*map(lambda a: list(self.problem.get_all_objects(a.type)), cond.args))
-                result = []
                 for c in combinations:
                     cond.instantiate(dict(zip(cond.args, c)), self.problem)
                     dependenciesVisitor(cond.condition)

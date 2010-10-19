@@ -1,7 +1,7 @@
 from parser import *
 import mapltypes as types
 import builtin, predicates, actions, conditions, effects, translators
-from builtin import t_object, t_number, change, num_change
+from builtin import t_number, change, num_change
 from conditions import *
 from scope import SCOPE_EFFECT
 
@@ -166,7 +166,7 @@ class DurativeAction(actions.Action):
                 else:
                     raise UnexpectedTokenError(next.token)
                     
-        except StopIteration, e:
+        except StopIteration:
             pass
             
         return action

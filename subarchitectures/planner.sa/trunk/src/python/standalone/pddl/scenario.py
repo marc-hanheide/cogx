@@ -1,13 +1,9 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
 
-import itertools
-
-import parser
 import mapltypes as types
 import builtin
-import scope
-import predicates, conditions, actions, effects, domain
+import predicates, conditions
 
 from parser import ParseError, UnexpectedTokenError
 from problem import Problem
@@ -34,7 +30,6 @@ class MapsimScenario(object):
         if domname.string != domain.name:
             raise ParseError(domname, "scenario requires domain %s but %s is supplied." % (domname.string, domain.name))
 
-        scenario = None
         common = None
         world = None
         agents = {}

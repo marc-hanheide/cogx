@@ -1,5 +1,5 @@
 import mapltypes as types
-import scope, predicates, conditions, effects, actions, domain, state
+import scope, predicates, conditions, effects, state
 from scope import SCOPE_CONDITION, SCOPE_EFFECT, SCOPE_ALL, SCOPE_INIT
 
 # class build(object):

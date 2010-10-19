@@ -1,9 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
-import itertools
-
 from parser import ParseError, UnexpectedTokenError
-import mapltypes as types
 import predicates, conditions, effects, builtin, visitors
 from scope import Scope
 
@@ -162,7 +159,7 @@ class Action(Scope):
                     
                 next = it.next()
 
-        except StopIteration, e:
+        except StopIteration:
             pass
             
         return action

@@ -1,15 +1,13 @@
-import itertools
-
-import predicates, conditions, effects, actions, domain, problem, writer, translators
+import parser, predicates, conditions, effects, actions, writer, translators
 import mapltypes as types
 import builtin
 import durative
 
 from scope import Scope, SCOPE_CONDITION
 from parser import ParseError, UnexpectedTokenError
-from mapltypes import Type, TypedObject, Parameter
-from predicates import Predicate, Function
-from builtin import t_object, t_boolean
+from mapltypes import Type, Parameter
+from predicates import Predicate
+from builtin import t_object
 
 pddl_module = True
 
@@ -121,7 +119,7 @@ parse_handlers = {
     }
 
 def post_parse(domain):
-    import parser, axioms
+    import axioms
     for axiom_str in mapl_axioms:
         axiom = parser.Parser.parse_as(axiom_str.split("\n"), axioms.Axiom, domain)
         domain.axioms.append(axiom)
@@ -182,9 +180,9 @@ class SenseEffect(object):
         self.sensor = new_scope
 
         if isinstance(self.sense, predicates.Literal):
-            s2 = self.sense.copy(self.sensor)
-        else:
-            s2 = predicates.FunctionTerm(self.sense.function, self.sensor.lookup(self.sense.args))
+            self.sense.set_scope(self.sensor)
+        elif self.sensor is not None:
+            self.sense = predicates.FunctionTerm(self.sense.function, self.sensor.lookup(self.sense.args))
         
     def __eq__(self, other):
         return self.sense == other.sense
@@ -221,9 +219,9 @@ class MAPLAction(actions.Action):
     params = property(lambda self: self._get_args(self._params), lambda self, x: self._set_args(self._params, x))
     vars = property(lambda self: self._get_args(self._vars), lambda self, x: self._set_args(self._vars, x))
 
-    def to_pddl(self):
-        str = ["(:action %s" % self.name]
-        indent = len("(:action ")
+    # def to_pddl(self):
+    #     str = ["(:action %s" % self.name]
+    #     indent = len("(:action ")
 
     def copy(self, newdomain=None):
         if not newdomain:
@@ -320,7 +318,7 @@ class MAPLAction(actions.Action):
                     
                 next = it.next()
 
-        except StopIteration, e:
+        except StopIteration:
             pass
         
         return action
@@ -418,7 +416,7 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
                 else:
                     raise UnexpectedTokenError(next.token)
 
-        except StopIteration, e:
+        except StopIteration:
             pass
         
         return action
@@ -492,7 +490,7 @@ class InitRule(actions.Action):
                     
                 next = it.next()
 
-        except StopIteration, e:
+        except StopIteration:
             pass
             
         return rule

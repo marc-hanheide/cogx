@@ -2,7 +2,7 @@ import math
 from collections import defaultdict
 from itertools import chain
 
-from standalone import task, config, pddl, plans
+from standalone import config, pddl
 from standalone.pddl import state
 
 log = config.logger("PythonServer")
@@ -223,10 +223,8 @@ class PartialProblem(object):
                 for lit in r.conditions:
                     if lit.predicate == pddl.equals:
                         cterm = lit.args[0]
-                        v = lit.args[1]
                     else:
                         cterm = pddl.Term(lit.predicate, lit.args)
-                        v = pddl.TRUE if not lit.negated else pddl.FALSE
 
                     cond_combinations = state.product(*map(lambda a: all_objects(a.object, remaining), cterm.args))
                     for c in cond_combinations:
