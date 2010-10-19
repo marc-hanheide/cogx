@@ -1,12 +1,11 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
 
-import itertools, time, random
-from itertools import imap, ifilter
+import itertools, random
 from collections import defaultdict
 
 import mapltypes as types
-import conditions, problem, effects, mapl
+import problem, effects, mapl
 from state import StateVariable, Fact, State
 from builtin import *
 from predicates import *
@@ -108,8 +107,6 @@ class ProbFact(Fact):
             remaining_effects = []
             p_total = 0
 
-            dist = ValueDistribution()
-            
             for p, eff in effect.effects:
                 assert p_total <= 1.0
                 if p is None:

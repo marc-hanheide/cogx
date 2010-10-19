@@ -1,5 +1,4 @@
-import os, time
-import itertools
+import time
 from itertools import chain
 
 from collections import defaultdict
@@ -170,7 +169,6 @@ class DTProblem(object):
             indep_vars = set()
             depvars = set()
             deps = simplegraph.Graph()
-            prev = None
             for svar, val in pnode.original_preconds:
                 if val.is_instance_of(pddl.t_number):
                     continue
@@ -412,7 +410,7 @@ class DTProblem(object):
             b = pddl.builder.Builder(a)
 
             #conds = [b.cond('not', (dtpddl.committed, term))]
-            conds = [b.cond('not', ('done',))]
+            #conds = [b.cond('not', ('done',))]
             # for gvar in goals:
             #     # don't allow this goal after a commit has been done
             #     gterm = pddl.Term(gvar.function, gvar.get_args())
@@ -449,7 +447,6 @@ class DTProblem(object):
         # import debug
         # debug.set_trace()
         
-        prob_by_layer = {}
         problems =  []
         all_objects = cast_state.objects | cast_state.generated_objects | self.domain.constants
         problems.append(partial_problem.PartialProblem(cast_state.prob_state, all_objects,  [], [], self.dt_rules, self.domain))
@@ -480,10 +477,8 @@ class DTProblem(object):
                 log.info("Selecting layer %d with minimal approx. state size of %d", i, prob.min_size)
                 break
 
-        base_problem = self.subproblems[0]
         problem = self.subproblems[selected]
         objects = problem.objects
-        facts = problem.facts
 
         self.selected_subproblem = selected
 
@@ -566,7 +561,7 @@ class StateTreeNode(dict):
                 
             if isinstance(fact.value, pddl.TypedObject):
                 #t0 = time.time()
-                self.create_subtree(1.0, fact.value, marginal=(val not in objects))
+                self.create_subtree(1.0, fact.value, marginal=(fact.value not in objects))
                 #print "tree for %s=%s took %.2f secs" % (str(self.svar), self.value.name, time.time()-t0)
             else:
                 for val, p in fact.value.iteritems():
@@ -590,10 +585,8 @@ class StateTreeNode(dict):
 
     def add_state(self, st, ratio):
         for val, (subtrees, p, marginal) in self.iteritems():
-            use_ratio = False
             if marginal:
                 val = pddl.UNKNOWN
-                use_ratio = True
 
             if p == 1.0 and not marginal:
                 sub = st
@@ -902,7 +895,7 @@ class HierarchicalState(state.State):
     def __setitem__(self, svar, value):
         assert isinstance(svar, state.StateVariable)
         if isinstance(value, (float, int, long)):
-            value = pddl.TypedNumber(value)
+            value = pddl.types.TypedNumber(value)
         assert value.is_instance_of(svar.get_type()), "type of %s (%s) is incompatible with %s" % (str(svar), str(svar.get_type()), str(value))
         dict.__setitem__(self, svar, value)
 

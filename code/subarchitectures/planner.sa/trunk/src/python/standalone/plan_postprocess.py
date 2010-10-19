@@ -149,8 +149,8 @@ def getRWDescription(action, args, _state, time):
 
 
 def make_po_plan(actions, task):
-    annotations = pddl.translators.Translator.get_annotations(task.mapltask)
-    soft_goals = annotations['soft_goals']
+    #annotations = pddl.translators.Translator.get_annotations(task.mapltask)
+    #soft_goals = annotations['soft_goals']
     #print annotations['soft_goals']
     
     t0 = time.time()
@@ -165,7 +165,6 @@ def make_po_plan(actions, task):
     ignored_soft_goals = set()
     
     state = task.get_state().copy()
-    previous = plan.init_node
     
     for starttime, action in actions:
         t1 = time.time()
@@ -213,7 +212,6 @@ def make_po_plan(actions, task):
             frontier[svar] = pnode
             writers[svar].add(pnode)
 
-        previous = pnode
         log.debug("total time for action: %f", time.time()-t1)
 
     gnode = getGoalDescription(task.get_goal(), plan.goal_node, state)

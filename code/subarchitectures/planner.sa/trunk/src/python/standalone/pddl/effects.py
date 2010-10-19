@@ -3,11 +3,9 @@
 
 import parser
 from parser import ParseError, UnexpectedTokenError
-import mapltypes as types
 from scope import Scope, SCOPE_EFFECT
 import builtin
 import conditions, predicates
-import random
 
 class Effect(object):
     """This is an abstract base class for all effect objects."""
@@ -228,7 +226,7 @@ class UniversalEffect(Scope, Effect):
 
     @staticmethod
     def parse(it, scope):
-        first = it.get("forall")
+        it.get("forall")
         args = predicates.parse_arg_list(iter(it.get(list, "parameter list")), scope.types)
         eff = UniversalEffect(args, None, scope)
         
@@ -309,14 +307,14 @@ class ProbabilisticEffect(Effect):
 
     @staticmethod
     def parse(it, scope):
-        first = it.get("probabilistic")
+        it.get("probabilistic")
         token_dict = {}
         parsed_elements = []
 
         for elem in it:
             try:
                 pddl_elem = Effect.parse(iter(elem), scope)
-            except Exception, e:
+            except ParseError:
                 pddl_elem = predicates.Term.parse(elem, scope)
 
             parsed_elements.append(pddl_elem)
@@ -379,7 +377,7 @@ class ConditionalEffect(Effect):
         
     @staticmethod
     def parse(it, scope):
-        first = it.get("when")
+        it.get("when")
         condition = conditions.Condition.parse(iter(it.get(list, "condition")), scope)
         scope.set_tag("only-simple-effects", True)
         effects = Effect.parse(iter(it.get(list, "effect specification")), scope)

@@ -55,18 +55,15 @@ class CASTState(object):
                     #print "previous match:", belname, gen.name
 
         objects = tp.infer_types(obj_descriptions)
-        #print "before rename", map(str, objects)
+
         self.namedict = tp.rename_objects(objects, self.coma_objects|domain.constants, add_renamings=renamings )
         self.objects = set(list(objects)) # force rehashing
-        #print "after rename", map(str, self.objects)
         self.facts = list(tp.tuples2facts(obj_descriptions))
         self.objects |= self.coma_objects
         self.facts += self.coma_facts
             
         problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
         self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
-        # self.prob_state.apply_init_rules(domain = self.domain) # TODO: this is pretty flakey, as we don't really guarantee
-        #                                                        #       that e.g. generated objects have the same names
 
         self.generated_facts, self.generated_objects = self.generate_init_facts(problem, oldstate)
         self.facts += self.generated_facts
@@ -202,7 +199,7 @@ class CASTState(object):
             
             facts = []
             for f in oldstate.state.iterfacts():
-                if any(a == gen for a in f.svar.args + f.svar.modal_args):
+                if any(a == gen for a in chain(f.svar.args, f.svar.modal_args)):
                     facts.append(f)
                 
             for obj in new_objects:
@@ -265,7 +262,8 @@ class CASTState(object):
         if deterministic:
             facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.state.iterfacts()]
             if 'numeric-fluents' in domain.requirements:
-                b = pddl.Builder(domain)
+                pass
+                #b = pddl.Builder(domain)
                 #facts.append(b.init('=', (pddl.dtpddl.total_p_cost,), TOTAL_P_COSTS))
         else:
             facts = self.facts

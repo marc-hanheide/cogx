@@ -4,7 +4,7 @@
 from collections import defaultdict
 
 import mapltypes as types
-import predicates, conditions, effects, actions
+import predicates, conditions, effects
 import durative
 
 class Writer(object):

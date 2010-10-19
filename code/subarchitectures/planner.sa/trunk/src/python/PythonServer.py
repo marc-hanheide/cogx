@@ -1,5 +1,5 @@
-import os, sys, string, traceback, Ice
-from os.path import abspath, dirname, join, isdir
+import os, sys, traceback
+from os.path import abspath, dirname, join
 from collections import defaultdict
 
 # initialize logging EARLY
@@ -84,18 +84,13 @@ from standalone import config
 
 config.set_logging_factory(CASTLoggerProxy)
 
-import beliefs_cast_ice
-import beliefs_cogx_ice
-import beliefs_ice
 #import de.dfki.lt.tr.beliefs.slice ## must be imported *before* Planner
 from autogen import Planner
 import cast.core
 
 import standalone
-from standalone import pddl, plans
-from standalone.pddl import state
+from standalone import pddl
 
-from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
 
 from cast_task import CASTTask, TaskStateEnum
@@ -122,7 +117,7 @@ def pdbdebug(fn):
             log.error("Python exception: %s", str(e))
             traceback.print_exception(*sys.exc_info())
             if self.start_pdb:
-                import debug, traceback
+                import debug
                 print "Entering debugger, please telnet to localhost:4444"
                 debug.post_mortem()
             

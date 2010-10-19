@@ -1,5 +1,4 @@
 import castinit    # this will add stuff to sys.path
-import cast.core
 import cogxv11n.core.DisplayClient as DisplayClient
 
 import standalone

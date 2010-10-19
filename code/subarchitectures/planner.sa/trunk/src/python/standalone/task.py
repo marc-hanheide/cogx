@@ -1,9 +1,9 @@
 import itertools, time
 
-import config, constants
+import config
 import assertions#, macros
 import pddl
-from  pddl import state, mapl
+from  pddl import state
 import statistics
 
 from utils import Enum

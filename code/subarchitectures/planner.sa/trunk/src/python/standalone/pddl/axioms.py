@@ -2,9 +2,7 @@
 # -*- coding: latin-1 -*-
 from collections import defaultdict
 
-import parser
-import mapltypes as types
-import predicates, conditions, effects
+import predicates, conditions
 from parser import ParseError
 from scope import Scope
 
@@ -28,8 +26,6 @@ class Axiom(Scope):
         if not newdomain:
             newdomain = self.parent
             
-        args = [types.Parameter(p.name, p.type) for p in self.args]
-        
         a = Axiom(self.predicate, [], None, newdomain)
         a.args = a.copy_args(self.args)
         a.condition = self.condition.copy(a)

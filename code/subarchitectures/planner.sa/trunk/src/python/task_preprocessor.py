@@ -1,14 +1,11 @@
 from collections import defaultdict
-import itertools
 import re
 from string import maketrans
 
 import standalone
-from standalone.task import Task  # requires standalone planner to be in PYTHONPATH already
 from standalone import pddl
 from standalone.pddl import state, prob_state
 
-from de.dfki.lt.tr.beliefs.slice.sitbeliefs import dBelief
 from de.dfki.lt.tr.beliefs.slice import logicalcontent, distribs
 
 log = standalone.config.logger("belief-preprocessor")
@@ -121,7 +118,6 @@ def feature_val_to_object(fval):
 
 
 def gen_fact_tuples(beliefs):
-  x = logicalcontent.PointerFormula(None)
   def extract_features(dist):
     # if isinstance(dist, distribs.DistributionWithExistDep):
     #   #ignore existence probability for now
@@ -263,10 +259,10 @@ def infer_types(obj_descriptions):
     pred = str(ftup.feature)
     if pred in current_domain.functions:
       declarations = current_domain.functions[pred]
-      is_function = True
+      #is_function = True
     else:
       declarations = current_domain.predicates[pred]
-      is_function = False
+      #is_function = False
 
     possible_types = defaultdict(set)
     for declaration in declarations:

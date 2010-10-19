@@ -1,5 +1,4 @@
 import math
-import itertools
 from collections import defaultdict
 
 import predicates, conditions, effects, actions, scope, visitors, translators, writer, domain, problem, mapl
@@ -8,9 +7,9 @@ import builtin
 
 from builder import Builder
 from parser import ParseError, UnexpectedTokenError
-from mapltypes import Type, TypedObject, Parameter
+from mapltypes import Parameter
 from predicates import Predicate, Function, FunctionTerm, VariableTerm
-from builtin import t_object, t_boolean, t_number
+from builtin import t_object, t_number
 
 p = Parameter("?f", types.FunctionType(t_object))
 observed = Predicate("observed", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
@@ -122,12 +121,12 @@ class Observation(actions.Action):
     def _set_args(self, names, newvals):
         names[:] = [a.name for a in newvals]
 
-    agents = property(lambda self: self._get_args(self._agents), lambda x: self._set_args(self._agents, x))
-    params = property(lambda self: self._get_args(self._params), lambda x: self._set_args(self._params, x))
+    agents = property(lambda self: self._get_args(self._agents), lambda self, x: self._set_args(self._agents, x))
+    params = property(lambda self: self._get_args(self._params), lambda self, x: self._set_args(self._params, x))
 
-    def to_pddl(self):
-        str = ["(:observe %s" % self.name]
-        indent = len("(:observe ")
+    # def to_pddl(self):
+    #     str = ["(:observe %s" % self.name]
+    #     indent = len("(:observe ")
 
     def copy(self, newdomain=None):
         if not newdomain:
@@ -207,7 +206,7 @@ class Observation(actions.Action):
                     raise UnexpectedTokenError(next.token)
                 next = it.next()
 
-        except StopIteration, e:
+        except StopIteration:
             pass
         
         return observe
@@ -323,7 +322,7 @@ class DTRule(scope.Scope):
         assumed to be in the order of the Action's Parameters."""
         if not isinstance(mapping, dict):
             mapping = dict((param.name, c) for (param, c) in zip(self.args, mapping))
-        Scope.instantiate(self, mapping, parent)
+        scope.Scope.instantiate(self, mapping, parent)
 
     def instantiate_all(self, mapping, parent=None):
         """Instantiate the Parameters of this action.
@@ -412,27 +411,27 @@ class DTRule(scope.Scope):
             return True, None
         return inst_func
         
-    def get_probability(args, value, parent=None):
-        varg = None
-        pterm = None
-        for p, v in self.values:
-            if isinstance(v, predicates.ConstantTerm) and v.object == value:
-                pterm = p
-                varg = v.object
-                break
-            elif isinstance(v, predicates.VariableTerm) and value.is_instance_of(v.get_type()):
-                pterm = p
-                varg = v.object
-                break
-        if varg is None:
-            return predicates.Term(0)
-        mapping = dict((param.name, c) for (param,c ) in zip(self.args, args))
-        if isinstance(varg, Parameter):
-            mapping[varg.name] = value
-        self.instantiate(mapping, parent)
-        result = p.copy_instance()
-        self.uninstantiate()
-        return result
+    # def get_probability(self, args, value, parent=None):
+    #     varg = None
+    #     pterm = None
+    #     for p, v in self.values:
+    #         if isinstance(v, predicates.ConstantTerm) and v.object == value:
+    #             pterm = p
+    #             varg = v.object
+    #             break
+    #         elif isinstance(v, predicates.VariableTerm) and value.is_instance_of(v.get_type()):
+    #             pterm = p
+    #             varg = v.object
+    #             break
+    #     if varg is None:
+    #         return predicates.Term(0)
+    #     mapping = dict((param.name, c) for (param,c ) in zip(self.args, args))
+    #     if isinstance(varg, Parameter):
+    #         mapping[varg.name] = value
+    #     self.instantiate(mapping, parent)
+    #     result = p.copy_instance()
+    #     self.uninstantiate()
+    #     return result
 
     def get_value_args(self):
         result = set()
@@ -640,7 +639,7 @@ class DT2MAPLCompiler(translators.Translator):
                 #acquire_lock = b.timed_effect("start", "select-locked")
                 #release_lock = b.timed_effect("end", "not", ("select-locked",))
                 commit_eff = b.timed_effect("end", "commit", b(r.function, *r.args), v)
-                decrease_eff = b.timed_effect("end", "decrease", (total_p_cost,), "?duration")
+                #decrease_eff = b.timed_effect("end", "decrease", (total_p_cost,), "?duration")
                 #a.effect = effects.ConjunctiveEffect([acquire_lock, release_lock, commit_eff, decrease_eff], a)
                 #a.effect = effects.ConjunctiveEffect([commit_eff, decrease_eff], a)
                 a.effect = effects.ConjunctiveEffect([commit_eff], a)
@@ -685,7 +684,6 @@ class DT2MAPLCompiler(translators.Translator):
             else:
                 actions.append(self.translate_action(a))
                 
-        fdict = dict((r.function, r) for r in rules)
         for f in dom.functions:
             if "p-%s" % f.name not in dom.functions:
                 continue

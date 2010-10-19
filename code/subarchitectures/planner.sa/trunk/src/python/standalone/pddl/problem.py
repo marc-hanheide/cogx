@@ -2,14 +2,12 @@
 # -*- coding: latin-1 -*-
 import itertools
 
-import parser
 import mapltypes as types
 import builtin
-import predicates, conditions, actions, effects, domain
+import predicates, conditions, effects
 
 from scope import Scope, SCOPE_INIT
 from parser import ParseError, UnexpectedTokenError
-from actions import Action
 
 def product(*iterables):
     for el in iterables[0]:

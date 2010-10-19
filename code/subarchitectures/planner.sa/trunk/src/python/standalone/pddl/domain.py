@@ -2,16 +2,13 @@
 # -*- coding: latin-1 -*-
 
 from collections import defaultdict
-import itertools
 
 import parser
 import mapltypes, builtin
 import predicates, axioms
 
-import builtin
-
 from mapltypes import Type, TypedObject
-from parser import Parser, ParseError, UnexpectedTokenError
+from parser import ParseError, UnexpectedTokenError
 from scope import Scope, FunctionTable
 from actions import Action
 from axioms import Axiom
@@ -64,7 +61,7 @@ class ModuleDescription(object):
             desc.modulename = modulename
             registered_modules[name] = desc
             return desc
-        except ImportError, e:
+        except ImportError:
             return False
 
 class Domain(Scope):

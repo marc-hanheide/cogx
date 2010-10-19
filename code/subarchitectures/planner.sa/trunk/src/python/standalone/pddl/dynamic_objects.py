@@ -47,7 +47,7 @@ class CreateEffect(scope.Scope, effects.Effect):
         cp.args = cp.copy_args(self.args, copy_instance)
 
         if new_parts == []:
-            new_parts = ConjunctiveEffect([])
+            new_parts = effects.ConjunctiveEffect([])
         elif new_parts:
             cp.effect = new_parts[0]
             cp.effect.set_scope(cp)
@@ -102,7 +102,7 @@ class DestroyEffect(effects.Effect):
 
     def copy(self, new_scope=None, new_parts=None, copy_instance=False):
         if not new_scope:
-            new_scope = self.parent
+            new_scope = self.scope
         term = self.term.copy(new_scope)
         return DestroyEffect(term, new_scope)
 

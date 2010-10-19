@@ -59,7 +59,8 @@ class Element(list):
 
 class ElementIterator(object):
     def __init__(self, element):
-        assert not element.is_terminal()
+        if element.is_terminal():
+            raise UnexpectedTokenError(element.token, "list")
         self.element = element
         self.it = list.__iter__(element)
 
