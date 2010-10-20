@@ -3,13 +3,13 @@ GARVERSION = 0.8.x
 CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tgz
 MAINTAINER = mhanheid
-#PATCHFILES= gar-base.diff
+PATCHFILES= gar-base.diff
 
 #MASTER_SITES = http://heanet.dl.sourceforge.net/sourceforge/peekabot/
 
 LIBDEPS = 
 
-MFLAGS=$(MFLAGS_NUMCPU)
+#MFLAGS=$(MFLAGS_NUMCPU)
 
 DEB_PACKAGES=\
 	libboost-all-dev@ubuntu libfltk1.1-dev@ubuntu libpng12-dev@ubuntu libxerces-c2-dev@ubuntu bzr@ubuntu libfreetype6-dev@ubuntu libglut3-dev@ubuntu libtool@ubuntu automake@ubuntu autoconf@ubuntu libgtkglextmm-x11-1.2-dev@ubuntu libgtkmm-2.4-dev@ubuntu
