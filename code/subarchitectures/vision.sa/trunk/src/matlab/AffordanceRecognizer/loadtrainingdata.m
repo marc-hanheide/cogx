@@ -2,7 +2,7 @@
 % clear classes;
 
 %% Load the data...
-%load('./Data/ICRA2009Project/PushCenter/features.mat');
+load('./Data/ICRA2009Project/PushCenter/features.mat');
 
 %% Convert it to CrossMod format...
 Data = OPARC_CrossMod_data_struct_converter(Data);
