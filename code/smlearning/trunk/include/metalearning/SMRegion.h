@@ -56,6 +56,7 @@ struct SMRegion {
 	//int sMContextSize;
 	/** instances corresponding to the region */
 	DataSet data;
+	LearningData::DataSet _data;
 	/** RNN learner corresponding to the region */
 	ActiveRNN learner;
 	/** vector corresponding to learning progress */

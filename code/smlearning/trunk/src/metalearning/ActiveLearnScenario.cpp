@@ -101,7 +101,7 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		add_feature_vector (currentFeatureVector, chunk); 
 		if (storeLabels) add_label (currentFeatureVector, chunk);
 		
-		write_feature_vector_into_current_sequence (currentFeatureVector);
+		write_feature_vector_into_current_sequence (currentFeatureVector, chunk);
 
 		// int size = learningData.currentSeq.size();
 		// for (int i=0; i<learningData.currentSeq[size-1].size(); i++) 
@@ -321,8 +321,8 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		move_finger();
 
 		//write sequence into dataset
-		write_current_sequence_into_dataset(data.first);
-		write_current_sequence_into_dataset(currentRegion->data);
+		write_current_sequence_into_dataset(data.first, _data);
+		write_current_sequence_into_dataset(currentRegion->data, currentRegion->_data);
 
 
 		//update RNN learner with current sequence

@@ -162,6 +162,27 @@ struct LearningData {
 
 		return true;
 	}
+
+	///
+	///Write DataSet vector to a file
+	///
+	static bool write_dataset (string fileName, const LearningData::DataSet& data);
+	///
+	///Read DataSet vector from a file
+	///
+	static bool read_dataset (string fileName, LearningData::DataSet& data);
+
+	///
+	///print a DataSet vector
+	///
+	static void print_dataset (const LearningData::DataSet &d);
+
+	///
+	///print a motor command struct
+	///
+	static void print_motorCommand (const LearningData::MotorCommand& mC);
+
+	static void print_Chunk (const LearningData::Chunk& c);
 };
 
 }; /* smlearning namespace */

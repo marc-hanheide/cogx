@@ -541,7 +541,7 @@ void Scenario::add_label (FeatureVector& currentFeatureVector, LearningData::Chu
 ///
 ///add the feature vector to the current sequence
 ///
-void Scenario::write_feature_vector_into_current_sequence(FeatureVector& featureVector){
+void Scenario::write_feature_vector_into_current_sequence(FeatureVector& featureVector, LearningData::Chunk& chunk){
 
 	if (storeLabels)
 		assert (featureVector.size() == featureVectorSize + 1);
@@ -551,6 +551,8 @@ void Scenario::write_feature_vector_into_current_sequence(FeatureVector& feature
 	//writing of the feature vector into sequence
 	learningData.currentSeq.push_back(featureVector);
 	/////////////////////////////////////////////////
+
+	learningData.currentChunkSeq.push_back(chunk);
 }
 
 
@@ -583,7 +585,7 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 // 		learningData.data.push_back(chunk);
 // 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
 
-		write_feature_vector_into_current_sequence (currentFeatureVector);
+		write_feature_vector_into_current_sequence (currentFeatureVector, chunk);
 
 		currentPfRoll = chunk.obRoll;
 		currentPfY = chunk.objectPose.p.v2;
@@ -655,10 +657,8 @@ void Scenario::init_writing(){
 	//create sequence for this loop run and initial (motor command) vector
 	learningData.currentSeq.clear();
 	learningData.currentMotorCommandVector.clear();
-	
-	// learningData._currentSeq.clear();
-	learningData.currentMotorCommand;
-	//learningData.currentFeatureVector.clear();
+
+	learningData.currentChunkSeq.clear();
 	/////////////////////////////////////////////////	
 }
 
@@ -727,7 +727,6 @@ void Scenario::write_motor_vector_into_current_sequence(){
 	//writing of the initial vector into sequence
 	learningData.currentSeq.push_back(learningData.currentMotorCommandVector);
 	/////////////////////////////////////////////////
-	learningData._currentSeq = make_pair (learningData.currentMotorCommand, learningData.currentChunkSeq);
 }
 
 
@@ -773,10 +772,13 @@ void Scenario::move_finger(){
 ///
 ///write vector sequence into current dataset
 ///
-void Scenario::write_current_sequence_into_dataset(DataSet& data){
+void Scenario::write_current_sequence_into_dataset(DataSet& data, LearningData::DataSet& _data){
 	/////////////////////////////////////////////////
 	//writing the sequence into the dataset
 	data.push_back(learningData.currentSeq);
+
+	learningData._currentSeq = make_pair (learningData.currentMotorCommand, learningData.currentChunkSeq);
+	_data.push_back(learningData._currentSeq);
 	/////////////////////////////////////////////////
 }
 
@@ -883,6 +885,7 @@ void Scenario::write_data (){
 	//writing the dataset into binary file
 	//writedown_collected_data(data);
 	write_dataset (dataFileName, data);
+	LearningData::write_dataset (dataFileName, _data);
 	/////////////////////////////////////////////////
 
 	string stpFileName = dataFileName + ".stp";
@@ -945,7 +948,7 @@ void Scenario::run(int argc, char* argv[]) {
 		move_finger();
 
 		//write sequence into dataset
-		write_current_sequence_into_dataset(data.first);
+		write_current_sequence_into_dataset(data.first, _data);
 
 		//turn off collision detection
 		set_collision_detection(false);		

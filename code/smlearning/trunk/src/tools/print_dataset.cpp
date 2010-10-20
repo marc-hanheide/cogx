@@ -1,4 +1,5 @@
-#include <tools/data_handling.h>
+// #include <tools/data_handling.h>
+#include <tools/data_structs.h>
 
 using namespace smlearning;
 
@@ -9,7 +10,7 @@ int main (int argc, char* argv[]) {
 		return 1;
 	}
 	
-	DataSetStruct savedData;
+	/*DataSetStruct savedData;
 	string seqFile = string (argv[1]);
 
 	if (!read_dataset (seqFile, savedData)) {
@@ -18,7 +19,18 @@ int main (int argc, char* argv[]) {
 	}
 
 	print_dataset<double> (savedData.first);
-	print_dataset_params (savedData.second);
+	print_dataset_params (savedData.second);*/
+
+	LearningData::DataSet savedData;
+	string seqFile = string (argv[1]);
+
+	if (!LearningData::read_dataset (seqFile, savedData)) {
+		cerr << "error reading data" << endl;
+		return 1;
+	}
+
+	LearningData::print_dataset (savedData);
+	
 
 	return 0;
 

@@ -87,6 +87,7 @@ bool write_dataset (string fileName, const DataSetStruct& data) {
 }
 
 
+
 ///
 ///read DataSet vector from a file
 ///
@@ -132,6 +133,7 @@ bool read_dataset (string fileName, DataSetStruct& dataStr) {
 	readFile.close();
 	return true;
 }
+
 
 ///
 ///write a cdl file format with zero padding (deprecated)
@@ -1383,4 +1385,4 @@ vector<int> parse_startingPositions(string argsStr, int maxStartPos) {
 
 
 
-};
+};  /* smlearning namespace */

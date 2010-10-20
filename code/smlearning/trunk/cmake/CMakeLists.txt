@@ -145,6 +145,7 @@ INSTALL(FILES ${METALEARNING_HEADERS} DESTINATION include/SMLearning/metalearnin
 
 SET(TOOLS_SOURCES
 	${SMLEARNING_ROOT}/src/tools/data_handling.cpp
+	${SMLEARNING_ROOT}/src/tools/data_structs.cpp
 	${SMLEARNING_ROOT}/src/tools/math_helpers.cpp
 	${SMLEARNING_ROOT}/src/tools/data_plot.cpp
 )

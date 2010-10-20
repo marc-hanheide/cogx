@@ -418,7 +418,7 @@ protected:
 	///
 	///add the feature vector to the current sequence
 	///
-	void write_feature_vector_into_current_sequence(FeatureVector& featureVector);
+	void write_feature_vector_into_current_sequence(FeatureVector& featureVector, LearningData::Chunk& chunk);
 
 	///
 	///initialize learning data
@@ -443,7 +443,7 @@ protected:
 	///
 	///write vector sequence into current dataset
 	///
-	void write_current_sequence_into_dataset(DataSet& data);
+	void write_current_sequence_into_dataset(DataSet& data, LearningData::DataSet& _data);
 
 	///
 	///turn the finger collision detection on (true) or off (false)
