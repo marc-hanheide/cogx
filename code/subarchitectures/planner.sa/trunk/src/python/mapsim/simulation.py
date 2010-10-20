@@ -7,7 +7,6 @@ from standalone import config
 from standalone import statistics
 from standalone.pddl import state, mapl
 
-from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
 
 import standalone.globals as global_vars
@@ -37,7 +36,8 @@ class Simulation(object):
             
         self.number_of_runs = runs
         self.problem = scenario.world
-        self.cleanup_actions()
+        self.domain = self.preprocess_domain(scenario.domain)
+        
         self.stat_per_run = [None for i in xrange(runs)]
         self.statistics = statistics.Statistics(defaults=statistics_defaults)
 
@@ -105,7 +105,7 @@ class Simulation(object):
                 newvar = svar.nonmodal()
                 agent.get_state()[newvar] = self.state[newvar]
         
-    def cleanup_actions(self):
+    def preprocess_domain(self, dom):
         """
         Remove modal predicates from preconditions in the world domain.
         Remove assertions from the world domain.
@@ -124,18 +124,36 @@ class Simulation(object):
                     return None
             return cond
 
-        self.problem.actions = [a for a in self.problem.actions if a.replan is None]
-        for a in self.problem.actions:
+        dom2 = dom.copy()
+
+        dom2.set_actions(a for a in dom2.actions if a.replan is None)
+        for a in dom2.actions:
             if a.precondition:
                 a.precondition = a.precondition.visit(remove_visitor)
+                
+        self.observe_dict = defaultdict(set)
+        if 'partial-observability' in dom2.requirements:
+            for o in dom2.observe:
+                if not o.execution:
+                    for a in dom2.actions:
+                        self.observe_dict[a.name].add(o)
+                for ex in o.execution:
+                    if not ex.negated:
+                        self.observe_dict[ex.action.name].add(o)
+                    else:
+                        for a in dom2.actions:
+                            if a != ex.action:
+                                self.observe_dict[a.name].add(o)
+                        
+        return dom2
             
 
     def schedule(self, action, args, agent):
         self.queue.append((action, args, agent))
         
     def execute(self, action, args, agent):
-        action = self.problem.get_action(action)
-        action.instantiate(args)
+        action = self.domain.get_action(action)
+        action.instantiate(args, self.problem)
 
         if agent != self.agents[action.agents[0].get_instance().name]:
             other = action.agents[0].get_instance()
@@ -156,6 +174,10 @@ class Simulation(object):
             if action.sensors:
                 perceived_facts += self.execute_sensor_action(action, agent)
                 agent.statistics.increase_stat("sensor_actions_executed")
+            if self.observe_dict[action.name]:
+                agent.statistics.increase_stat("sensor_actions_executed")
+                for o in self.observe_dict[action.name]:
+                    perceived_facts += self.compute_observation(action, o, agent)
 
             log.debug("Facts sent to agent %s: %s", agent.name, ", ".join(map(str, perceived_facts)))
             action.uninstantiate()
@@ -178,6 +200,9 @@ class Simulation(object):
             new_facts.append(state.Fact(svar, self.state[svar]))
 
         return new_facts
+
+    def compute_observations(self, action, observe, agent):
+        pass
 
     def execute_sensor_action(self, action, agent):
         perceptions = []
