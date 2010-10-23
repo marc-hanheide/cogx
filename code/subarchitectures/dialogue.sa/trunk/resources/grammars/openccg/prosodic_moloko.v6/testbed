@@ -1,3 +1,0 @@
-export CLASSPATH=../../../../../output/classes/:$CLASSPATH
-ccg-test ./testbed.xml
-#ccg-test /Users/raveesh/cosy/development/comsys-devil/subarchitectures/comsys.mk4/grammars/openccg/moloko.v6/testbed.xml
