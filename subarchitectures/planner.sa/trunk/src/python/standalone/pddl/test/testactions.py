@@ -2,10 +2,9 @@
 # -*- coding: latin-1 -*-
 
 import unittest
-import tempfile
-import os
+import common
 
-import parser, domain, actions, mapl, durative
+import domain, mapl, durative
 from mapltypes import *
 from predicates import *
 from effects import *
@@ -203,7 +202,7 @@ error_load4 = """
                  :effect        (assign (location-of ?p) ?v))
 """
 
-class ActionTest(unittest.TestCase):
+class ActionTest(common.PddlTest):
 
     def setUp(self):
         p = Parser(logistics.split("\n"))
@@ -250,6 +249,38 @@ class ActionTest(unittest.TestCase):
         pre2 = action.precondition.copy(copy_instance=True)
         self.assertEqual(pre2.pddl_str(), "(and (= (location-of ?t) (location-of ?t)) (= (city-of (location-of ?t)) ?c) (= (city-of ?to) ?c))")
         action.uninstantiate()
+
+    def testSmartInstantiation(self):
+        """Testing smart instantiation of actions"""
+        import state, time
+        dom, prob = self.load("testdata/logistics.domain.mapl", "testdata/logistics.problem.large.mapl")
+        st = state.State.from_problem(prob)
+
+        t0 = time.time()
+        ncount = 0
+        ccount = 0
+        for action in dom.actions:
+            combinations = state.product(*map(lambda a: list(prob.get_all_objects(a.type)), action.args))
+            for c in combinations:
+                action.instantiate(c, prob)
+                if st.is_satisfied(action.precondition):
+                    #print "(%s %s)" % (action.name, " ".join(a.name for a in c))
+                    ncount += 1
+                ccount += 1
+                action.uninstantiate()
+        print "total time for naive instantiation: %.2f" % (time.time()-t0)
+        print ccount
+
+        t0 = time.time()
+        scount = 0
+        for action in dom.actions:
+            for mapping in action.smart_instantiate(action.get_inst_func(st), action.args, [prob.get_all_objects(a.type) for a in action.args], prob):
+                #print "(%s %s)" % (action.name, " ".join(mapping[a].name for a in action.args))
+                scount += 1
+        print "total time for smart instantiation: %.2f" % (time.time()-t0)
+        print ncount
+        self.assertEqual(ncount, scount)
+        
         
     def testEffects(self):
         """Testing basic effect parsing"""

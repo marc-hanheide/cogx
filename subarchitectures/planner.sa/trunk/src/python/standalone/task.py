@@ -454,19 +454,20 @@ class TemporalTranslator(pddl.translators.Translator):
         # return a2
 
     def translate_domain(self, _domain):
-        dom = pddl.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
-        dom.requirements = _domain.requirements.copy()
-        dom.requirements.add("durative-actions")
+        dom = _domain.copy_skeleton()
+        if "durative-actions" not in dom.requirements:
+            dom.add_requirement("durative-actions")
         dom.requirements.discard("action-costs")
         
         dom.predicates.add(self.lock_pred)
         dom.predicates.add(self.ended_pred)
 
-        dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
-        dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
+        dom.clear_actions()
+        for a in _domain.get_action_like():
+            dom.add_action(self.translate_action(a, dom))
+            
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
-        dom.name2action = None
         return dom
     
     def translate_problem(self, _problem):

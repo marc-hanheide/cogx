@@ -118,6 +118,16 @@ parse_handlers = {
     ":init-rule" : initrule_handler
     }
 
+def add_hook(self, result, action):
+    if isinstance(action, MAPLAction):
+        self.actions.append(action)
+        self.name2action = None
+
+domain_hooks = {
+    'add_action' : add_hook
+    }
+        
+        
 def post_parse(domain):
     import axioms
     for axiom_str in mapl_axioms:

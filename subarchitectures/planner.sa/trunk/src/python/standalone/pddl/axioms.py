@@ -9,6 +9,7 @@ from scope import Scope
 class Axiom(Scope):
     def __init__(self, pred, args, condition, scope):
         Scope.__init__(self, args, scope)
+        assert isinstance(pred, predicates.Predicate), "not a predicate: %s" % str(pred)
         self.args = args
         self.predicate = pred
 
