@@ -138,7 +138,7 @@ class Literal(object):
         self.predicate = predicate
         self.negated = negated
         self.scope = _scope
-        assert isinstance(predicate, Function)
+        assert isinstance(predicate, Function), "not a function: %s" % str(predicate)
 
         if _scope:
             self.args = _scope.lookup(args)

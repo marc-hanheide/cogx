@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
+from collections import defaultdict
+
 from parser import ParseError, UnexpectedTokenError
 import predicates, conditions, effects, builtin, visitors
 from scope import Scope
@@ -52,6 +54,100 @@ class Action(Scope):
         #str = ["(:action %s" % self.name]
         #indent = len("(:action ")
 
+    def get_inst_func(self, st, ignored_cond=None):
+        import state
+        from predicates import FunctionTerm, VariableTerm
+        
+        def args_visitor(term, results):
+            if isinstance(term, FunctionTerm):
+                return sum(results, [])
+            return [term]
+
+        self.cond_by_arg = defaultdict(set)
+
+        def subcond_visitor(cond, result):
+            for arg in cond.free():
+                self.cond_by_arg[arg].add(cond)
+
+        visitors.visit(self.precondition, subcond_visitor)
+        visitors.visit(self.replan, subcond_visitor)
+        prev_mapping = {}
+        checked = set()
+            
+        def inst_func(mapping, args):
+            next_candidates = []
+            if checked:
+                for k,v in prev_mapping.iteritems():
+                    if mapping.get(k, None) != v:
+                        checked.difference_update(self.cond_by_arg[k])
+            prev_mapping.update(mapping)
+
+            #print [a.name for a in mapping.iterkeys()]
+            forced = []
+            def check(cond):
+                if not cond or cond in checked:
+                    return True
+                if isinstance(cond, conditions.LiteralCondition):
+                    if cond.predicate == builtin.equals and isinstance(cond.args[0], FunctionTerm) and isinstance(cond.args[1], VariableTerm):
+                        v = cond.args[-1]
+                        if all(a.is_instantiated() for a in cond.args[0].args if isinstance(a, VariableTerm)) and  isinstance(v, VariableTerm) and not v.is_instantiated():
+                            svar = state.StateVariable.from_literal(cond, st)
+                            forced.append((v.object, st[svar], cond))
+                    
+                    if all(a.is_instantiated() for a in cond.free()):
+                        fact = state.Fact.from_literal(cond, st)
+                        exst = st.get_extended_state([fact.svar])
+                        #TODO: handle all possible conditions
+                        if exst[fact.svar] != fact.value:
+                            return False
+                        checked.add(cond)
+                        return True
+                    else:
+                        next_candidates.append([a for a in cond.free() if not a.is_instantiated()])
+                elif isinstance(cond, conditions.Truth):
+                    return True
+                elif isinstance(cond, conditions.Falsity):
+                    return False
+                elif isinstance(cond, conditions.Conjunction):
+                    results = [check(c) for c in cond.parts]
+                    if any(c == False for c in results):
+                        return False
+                    if all(c == True for c in results):
+                        checked.add(cond)
+                        return True
+                elif isinstance(cond, conditions.Disjunction):
+                    results = [check(c) for c in cond.parts]
+                    if any(c == True for c in results):
+                        checked.add(cond)
+                        return True
+                    if all(c == False for c in results):
+                        return False
+                else:
+                    assert False
+                return None
+
+            result = check(self.precondition)
+            if result == True:
+                checked.add(self.precondition)
+                #print self.name, "accept:", [a.get_instance().name for a in  args]
+                return True, None
+            elif result == False:
+                #print self.name, "reject:", [a.get_instance().name for a in  args]
+                return None, None
+            
+            if forced:
+                svar, val, lit = forced[0]
+                checked.add(lit)
+                #print "Forced %s = %s" % (str(svar), val.name)
+                return (svar, val)
+            if next_candidates:
+                next_candidates = sorted(next_candidates, key=lambda l: len(l))
+                #print "Next:", next_candidates[0][0]
+                return next_candidates[0][0], None
+            #print self, [a.get_instance().name for a in  args]
+            return True, None
+        return inst_func
+    
     def get_total_cost(self):
         self.totalCostTerm = None
         tct = predicates.Term(builtin.total_cost,[])

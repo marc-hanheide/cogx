@@ -196,8 +196,7 @@ class DynamicObjectsCompiler(translators.Translator):
     @translators.removes('dynamic-objects')
     def translate_domain(self, _domain):
         if self.copy:
-            dom = domain.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
-            dom.requirements = _domain.requirements.copy()
+            dom = _domain.copy_skeleton()
         else:
             dom = _domain
             
@@ -210,12 +209,14 @@ class DynamicObjectsCompiler(translators.Translator):
 
         ctypes, dtypes = self.detect_dynamic_types(_domain)
         dyntypes = ctypes | dtypes
-        
-        dom.actions = [self.translate_action(a, dyntypes, dom) for a in _domain.actions]
-        dom.observe = [self.translate_action(o, dyntypes, dom) for o in _domain.observe]
+
+        actions = dom.get_action_like() 
+        dom.clear_actions()
+        for a in actions:
+            dom.add_action(self.translate_action(a, dyntypes, dom))
+
         dom.axioms = [self.translate_axiom(a, dyntypes, dom) for a in _domain.axioms]
         dom.stratify_axioms()
-        dom.name2action = None
         return dom
 
     @translators.removes('dynamic-objects')

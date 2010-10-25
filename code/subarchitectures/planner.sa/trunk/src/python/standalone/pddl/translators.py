@@ -103,27 +103,23 @@ class Translator(object):
     
     def translate_domain(self, _domain):
         if self.copy:
-            dom = domain.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
+            dom = _domain.copy_skeleton()
         else:
             dom = _domain
-            
-        dom.requirements = _domain.requirements.copy()
-        actions = _domain.actions
-        observe = _domain.observe
+
+        actions = _domain.get_action_like() 
         axioms = _domain.axioms
-        dom.actions = []
-        dom.observe = []
+        dom.clear_actions()
         dom.axioms = []
-        dom.actions += [self.translate_action(a, dom) for a in actions]
-        dom.observe += [self.translate_action(o, dom) for o in observe]
+
+        for a in actions:
+            dom.add_action(self.translate_action(a, dom))
         dom.axioms += [self.translate_axiom(a, dom) for a in axioms]
         dom.stratify_axioms()
-        dom.name2action = None
         return dom
 
     def pass_trough_problem(self, _problem):
         if self.copy:
-            print self, "copy"
             domain = self.pass_trough_domain(_problem.domain)
             return problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
         else:
@@ -418,8 +414,7 @@ class CompositeTypeCompiler(Translator):
         return a2
         
     def translate_domain(self, _domain):
-        dom = domain.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
-        dom.requirements = _domain.requirements.copy()
+        dom = _domain.copy_skeleton()
 
         dom.predicates = scope.FunctionTable()
         for func in _domain.predicates:
@@ -432,28 +427,30 @@ class CompositeTypeCompiler(Translator):
             ftype = CompositeTypeCompiler.replacement_type(func.type, dom.types)
             dom.functions.add(predicates.Function(func.name, args, ftype, func.builtin, func.function_scope))
         
-        dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
-        dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
+        dom.clear_actions()
+        for a in _domain.get_action_like():
+            dom.add_action(self.translate_action(a, dom))
+            
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
-        dom.name2action = None
+
         return dom
     
 
 class ObjectFluentNormalizer(Translator):
     def create_param(self, name, type, names):
-        param = types.Parameter(name, type )
+        pname = name
         i = 1
-        while param.name in names:
-            param.name = "%s%d" % (name, i)
+        while pname in names:
+            pname = "%s%d" % (name, i)
             i += 1
-        return param
+        return types.Parameter(pname, type )
 
     def translate_literal(self, lit, termdict):
         names = set(p.name for p in termdict.itervalues())
         
         def term_visitor(term, results):
-            if isinstance(term, FunctionVariableTerm):
+            if isinstance(term, FunctionVariableTerm) or term.get_type().equal_or_subtype_of(t_number):
                 return term
             if isinstance(term, FunctionTerm):
                 args = []
@@ -484,7 +481,7 @@ class ObjectFluentNormalizer(Translator):
             
         for arg, parg in zip(args, pargs):
             t = arg.visit(term_visitor)
-            if isinstance(parg.type, types.FunctionType):
+            if isinstance(parg.type, types.FunctionType) or parg.is_instance_of(t_number):
                 new_args.append(t)
             elif isinstance(t, FunctionTerm):
                 if t in termdict:
@@ -793,18 +790,21 @@ class ObjectFluentCompiler(Translator):
         for p in _domain.predicates:
             predicates.add(p)
 
-        dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), predicates, functions, [], [])
-        dom.requirements = _domain.requirements.copy()
+        dom = _domain.copy_skeleton()
         dom.requirements.discard('object-fluents')
         if 'fluents' in dom.requirements:
             dom.requirements.discard('fluents')
             dom.requirements.add('numeric-fluents')
             
-        dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
-        dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
+        dom.functions = functions
+        dom.predicates = predicates
+            
+        dom.clear_actions()
+        for a in _domain.get_action_like():
+            dom.add_action(self.translate_action(a, dom))
+            
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
-        dom.name2action = None
         return dom
     
     @removes('object-fluents', 'fluents')
@@ -953,7 +953,6 @@ class ModalPredicateCompiler(Translator):
         
     @removes('modal-predicates')
     def translate_domain(self, _domain):
-        import dtpddl
         import durative
         
         modal = []
@@ -975,28 +974,22 @@ class ModalPredicateCompiler(Translator):
                 new_preds.append(Predicate("%s-%s" % (pred.name, f.name), args))
 
         nonmodal += new_preds
-            
-        dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), scope.FunctionTable(nonmodal), _domain.functions.copy(), [], [])
-        dom.requirements = _domain.requirements.copy()
+
+        dom = _domain.copy_skeleton()
         dom.requirements.discard("modal-predicates")
+        dom.predicates = scope.FunctionTable(nonmodal)
         
-        for ac in _domain.actions + _domain.observe:
+        for ac in _domain.get_action_like():
             func_arg, compiled = self.compile_modal_args(ac.args, funcs)
             if not func_arg:
-                if isinstance(ac, dtpddl.Observation):
-                    dom.observe.append(self.translate_action(ac, dom))
-                else:
-                    dom.actions.append(self.translate_action(ac, dom))
+                dom.add_action(self.translate_action(ac, dom))
             else:
                 for f, args in compiled:
                     ac.instantiate({func_arg : FunctionTerm(f, [Term(a) for a in f.args])})
                     a2 = self.translate_action(ac, dom, args)
                     ac.uninstantiate()
                     a2.name = "%s-%s" % (a2.name, f.name)
-                    if isinstance(a2, dtpddl.Observation):
-                        dom.observe.append(a2)
-                    else:
-                        dom.actions.append(a2)
+                    dom.add_action(a2)
                     
         for ax in _domain.axioms:
             func_arg, compiled = self.compile_modal_args(ax.args, funcs)
@@ -1155,19 +1148,19 @@ class MAPLCompiler(Translator):
     @removes('mapl')
     def translate_domain(self, _domain):
         import mapl
-        
-        dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), _domain.predicates.copy(), _domain.functions.copy(), [], [])
-        dom.requirements = _domain.requirements.copy()
+
+        dom = _domain.copy_skeleton()
         dom.requirements.discard("mapl")
         dom.constants.discard(types.UNKNOWN)
 
         change_builtin_functions(dom.predicates, mapl.modal_predicates)
         
-        dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
-        dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
+        dom.clear_actions()
+        for a in _domain.get_action_like():
+            dom.add_action(self.translate_action(a, dom))
+
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
-        dom.name2action = None
         return dom
 
     @removes('mapl')

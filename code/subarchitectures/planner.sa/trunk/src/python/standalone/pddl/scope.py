@@ -333,10 +333,11 @@ class Scope(dict):
                 next = False
             elif nextval:
                 if nextval not in values[next]:
+                    #print "illegal var:", nextval.name
                     next = False
                 else:
                     curr_arg = next
-                    curr_index == -1
+                    curr_index = -1
             elif next:
                 if next == True:
                     next = iter(remaining).next()
@@ -359,6 +360,7 @@ class Scope(dict):
                     curr_arg.instantiate(None)
                     if curr_index != -1:
                         curr_index += 1
+                    #print "bt:", curr_arg, curr_index
                 nextval = values[curr_arg][curr_index]
 
             assert curr_arg not in set(s[0] for s in stack)

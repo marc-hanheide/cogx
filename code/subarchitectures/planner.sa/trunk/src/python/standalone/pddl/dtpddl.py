@@ -1,7 +1,8 @@
 import math
+from itertools import chain
 from collections import defaultdict
 
-import predicates, conditions, effects, actions, scope, visitors, translators, writer, domain, problem, mapl
+import predicates, conditions, effects, actions, scope, visitors, translators, writer, problem, mapl
 import mapltypes as types
 import builtin
 
@@ -28,6 +29,7 @@ default_predicates = [observed]
 default_functions = [reward]
 
 def prepare_domain(domain):
+    domain.observe = []
     domain.percepts = scope.FunctionTable()
 
 def observe_handler(it, domain):
@@ -49,6 +51,30 @@ parse_handlers = {
     ":observe" : observe_handler
     }
 
+def copy_hook(self, result):
+    result.percepts = self.percepts.copy()
+    result.observe = [s.copy(result) for s in self.observe]
+
+def copy_skel_hook(self, result):
+    result.percepts = self.percepts.copy()
+
+def add_hook(self, result, action):
+    if isinstance(action, Observation):
+        self.observe.append(action)
+
+def clear_hook(self, result):
+    self.observe = []
+
+def get_action_hook(self, result):
+    return result + self.observe
+
+domain_hooks = {
+    'copy' : copy_hook,
+    'copy_skeleton' : copy_skel_hook,
+    'add_action' : add_hook,
+    'clear_actions' : clear_hook,
+    'get_action_like' : get_action_hook
+    }
 
 class ExecutionCondition(object):
     def __init__(self, action, args, negated=False):
@@ -696,11 +722,13 @@ class DT2MAPLCompiler(translators.Translator):
             rule = DTRule(f, args, [varg], [], [(pterm, predicates.Term(varg))], dom)
             rules.append(rule)
 
+        dom.clear_actions()
         commit_actions = self.create_commit_actions(rules, dom)
-        dom.actions = actions + commit_actions
+        for a in chain(actions, commit_actions):
+            dom.add_action(a)
                 
-        self.dtrules = translators.Translator.get_annotations(_domain)['dt_rules']
-        self.dtrules.extend(rules)
+        dtrules = translators.Translator.get_annotations(_domain)['dt_rules']
+        dtrules.extend(rules)
 
         dom.observe = []
         return dom
@@ -747,8 +775,7 @@ class DTPDDLCompiler(translators.Translator):
         return a2
 
     def translate_domain(self, _domain):
-        dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), _domain.predicates.copy(), _domain.functions.copy(), [], [])
-        dom.requirements = _domain.requirements.copy()
+        dom = _domain.copy_skeleton()
         translators.change_builtin_functions(dom.predicates, default_predicates)
         translators.change_builtin_functions(dom.functions, default_functions)
         
@@ -757,11 +784,13 @@ class DTPDDLCompiler(translators.Translator):
         if "decrease" not in dom.predicates:
             dom.predicates.add(builtin.decrease)
 
-        dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
-        dom.observe = [self.translate_action(o, dom) for o in _domain.observe]
+        actions = _domain.get_action_like()
+        dom.clear_actions()
+        for a in actions:
+            dom.add_action(self.translate_action(a, dom))
+
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
-        dom.name2action = None
         return dom
 
     def translate_problem(self, _problem):
@@ -790,8 +819,8 @@ class ProbADLCompiler(translators.ADLCompiler):
         return dom
     
     def translate_problem(self, _problem):
-        domain = self.translate_domain(_problem.domain)
-        p2 = problem.Problem(_problem.name, _problem.objects, [], _problem.goal, domain, _problem.optimization, _problem.opt_func)
+        dom = self.translate_domain(_problem.domain)
+        p2 = problem.Problem(_problem.name, _problem.objects, [], _problem.goal, dom, _problem.optimization, _problem.opt_func)
 
         @visitors.copy
         def init_visitor(elem, results):

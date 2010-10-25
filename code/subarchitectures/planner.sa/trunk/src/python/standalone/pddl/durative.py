@@ -50,6 +50,15 @@ parse_handlers = {
     "Condition" : condition_handler
 }
 
+def add_hook(self, result, action):
+    if action.__class__ == DurativeAction:
+        self.actions.append(action)
+        self.name2action = None
+
+domain_hooks = {
+    'add_action' : add_hook
+    }
+
 class DurationConstraint(object):
     def __init__(self, term, timeSpecifier="start"):
         self.term = term

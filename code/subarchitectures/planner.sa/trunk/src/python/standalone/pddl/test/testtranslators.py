@@ -8,6 +8,15 @@ import common
 import parser, domain, problem, actions, writer, translators #, sas_translate
 import mapl
 
+multi_params = """
+        (:action load_both
+                 :parameters   (?t1 ?t2 - truck ?p1 ?p2 - package)
+                 :precondition (and (= (location-of ?t1) (location-of ?p1))
+                                    (= (location-of ?t2) (location-of ?p2)))
+                 :effect       (and (assign (location-of ?p1) ?t1)
+                                    (assign (location-of ?p2) ?t2)))
+"""
+
 univ_fly = """
         (:action safe_fly
                  :parameters    (?a - airplane ?to - airport)
@@ -131,8 +140,22 @@ class TranslateTests(common.PddlTest):
         t = translators.ObjectFluentCompiler()
         dom2 = t.translate(dom)
         prob2 = t.translate(prob)
-
+        
         self.roundtrip(dom2, prob2)
+
+    def testObjectFluentCompilation2(self):
+        """Testing compilation of object fluents to propositional pddl (2)"""
+        
+        dom, prob = self.load("testdata/logistics.domain.mapl", "testdata/logistics.p1.mapl")
+        mult = parser.Parser.parse_as(multi_params.split("\n"), actions.Action, dom)
+        dom.actions.append(mult)
+
+        t = translators.ObjectFluentCompiler()
+        dom2 = t.translate(dom)
+        prob2 = t.translate(prob)
+        
+        self.roundtrip(dom2, prob2)
+        
         
     def testModalPredicateCompilation(self):
         """Testing compilation of modal predicates"""
@@ -180,10 +203,9 @@ class TranslateTests(common.PddlTest):
         t1 = dom.compile_to(supported)
         t2 = dtpddl.DTPDDLCompiler()
         t = translators.ChainingTranslator(t1, t2)
-        
+
         dom2 = t.translate(dom)
         prob2 = t.translate(prob)
-
         self.assertEqual(len(dom2.observe), 1)
         
         self.roundtrip(dom2, prob2)

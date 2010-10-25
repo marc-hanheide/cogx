@@ -36,8 +36,8 @@ class DTProblem(object):
         # print "\n".join(dom_str)
         # print "\n".join(prob_str)
         
-    def initialize(self, cast_state):
-        self.state = cast_state
+    def initialize(self, prob_state):
+        self.state = prob_state
         self.selected_subproblem = -1
 
         for pnode in self.subplan_actions:
@@ -112,10 +112,10 @@ class DTProblem(object):
     def replanning_neccessary(self, new_state):
         if self.selected_subproblem == -1:
             return True
-        new_objects = new_state.objects - self.state.objects
+        new_objects = new_state.problem.get_all_objects(pddl.t_object) - self.state.problem.get_all_objects(pddl.t_object)
         problem = self.subproblems[self.selected_subproblem]
         for o in new_objects:
-            if all(c.matches(o, self.state.prob_state) for c in problem.constraints):
+            if all(c.matches(o, self.state) for c in problem.constraints):
                 return True
         return False
 
@@ -443,19 +443,20 @@ class DTProblem(object):
         self.subproblems = self.compute_subproblems(self.state)
         self.problem = self.create_problem(self.state, self.dtdomain)
 
-    def compute_subproblems(self, cast_state):
+    def compute_subproblems(self, prob_state):
         # import debug
         # debug.set_trace()
         
         problems =  []
-        all_objects = cast_state.objects | cast_state.generated_objects | self.domain.constants
-        problems.append(partial_problem.PartialProblem(cast_state.prob_state, all_objects,  [], [], self.dt_rules, self.domain))
+        all_objects = set(prob_state.problem.get_all_objects(pddl.t_object))
+        #all_objects = cast_state.objects | cast_state.generated_objects | self.domain.constants
+        problems.append(partial_problem.PartialProblem(prob_state, all_objects,  [], [], self.dt_rules, self.domain))
         i = len(self.relaxation_layers)-1
         prev_constraints = []
         for constraints in reversed(self.relaxation_layers):
             # Iterate over relaxation layers first (from most to least relaxed)
             log.debug("Next layer %d:", i)
-            problems.append(partial_problem.PartialProblem(cast_state.prob_state, problems[-1].objects, prev_constraints, constraints, self.dt_rules, self.domain))
+            problems.append(partial_problem.PartialProblem(prob_state, problems[-1].objects, prev_constraints, constraints, self.dt_rules, self.domain))
                     
             i -= 1
             prev_constraints = constraints
@@ -463,7 +464,7 @@ class DTProblem(object):
         return problems
         
 
-    def create_problem(self, cast_state, domain):
+    def create_problem(self, prob_state, domain):
         t0 = time.time()
         opt = "maximize"
         opt_func = pddl.FunctionTerm(pddl.dtpddl.reward, [])
@@ -482,8 +483,8 @@ class DTProblem(object):
 
         self.selected_subproblem = selected
 
-        trees = StateTreeNode.create_root(cast_state.prob_state, objects, self.dt_rules)
-        hstate = HierarchicalState([], cast_state.prob_state.problem)
+        trees = StateTreeNode.create_root(prob_state, objects, self.dt_rules)
+        hstate = HierarchicalState([], prob_state.problem)
         for t in trees:
             t.create_state(hstate)
             

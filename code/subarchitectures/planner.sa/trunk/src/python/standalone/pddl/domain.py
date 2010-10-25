@@ -38,6 +38,7 @@ class ModuleDescription(object):
         self.post_parse = d.get("post_parse", None)
         self.default_compiler = d.get("default_compiler", None)
         self.compilers = d.get("compilers", {})
+        self.domain_hooks = d.get("domain_hooks", {})
 
     @staticmethod
     def create_module(name, **kwargs):
@@ -64,24 +65,38 @@ class ModuleDescription(object):
         except ImportError:
             return False
 
+def hook(f):
+    import functools
+    @functools.wraps(f)
+    def wrapper(self, *args, **kwargs):
+        result = f(self, *args, **kwargs)
+        if f.__name__ in self.hooks:
+            for h in self.hooks[f.__name__]:
+                hres = h(self, result, *args, **kwargs)
+                result = hres if hres is not None else result
+        return result
+    return wrapper
+    
+        
 class Domain(Scope):
     """This class represents a PDDL domain."""
     
-    def __init__(self, name, types, constants, predicates, functions, actions, axioms, observe=None):
+    def __init__(self, name, reqs,  types, constants, predicates, functions, actions, axioms):
         """Create a new PDDL domain.
 
         Arguments:
         name -- name of the domain
+        req -- domain requirements
         types -- dictionary from typename to Type objects
         constants -- sequence of TypedObjects
         predicates -- FunctionTable with the domain's predicates
         functions -- FunctionTable with the domain's functions
         actions -- List of Action objects
         axioms -- List of Axiom objects
-        observe -- List of Observation objects (for DTPDDL)
         """
         Scope.__init__(self, constants, None)
         self.name = name
+        self.requirements = reqs
         self.types = types
         self.constants = constants
         self.predicates = predicates
@@ -89,31 +104,43 @@ class Domain(Scope):
         self.actions = actions
         self.axioms = axioms
 
-        if observe is None:
-            self.observe = []
-        else:
-            self.observe = observe
+        self.hooks = defaultdict(list)
+        for req in self.requirements:
+            if req in supported:
+                continue
+            m = ModuleDescription.get_module(req)
+            assert m, "%s is not supported." % req
+            
+            if m.parse_handlers:
+                self.parse_handlers.append(m.parse_handlers)
+            for f, h in m.domain_hooks.iteritems():
+                self.hooks[f].append(h)
+            if m.prepare_domain:
+                m.prepare_domain(self)
 
-        self.requirements = set()
         self.stratify_axioms()
         self.name2action = None
-        self.softGoals = set()
 
+
+    @hook
     def copy(self):
         """Create a deep copy of this Domain."""
-        dom = Domain(self.name, self.types.copy(), self.constants.copy(), self.predicates.copy(), self.functions.copy(), [], [])
+        dom = Domain(self.name, set(self.requirements), self.types.copy(), self.constants.copy(), self.predicates.copy(), self.functions.copy(), [], [])
         dom.actions = [a.copy(dom) for a in self.actions]
         dom.axioms = [a.copy(dom) for a in self.axioms]
-        if self.observe:
-            dom.observe = [s.copy(dom) for s in self.observe]
             
         dom.stratify_axioms()
-        dom.name2action = None
-        dom.softGoals = [sg.copy(dom) for sg in self.softGoals]
 
-        dom.requirements = set(self.requirements)
         return dom
 
+    @hook
+    def copy_skeleton(self):
+        """Create a deep copy of the essential elements of this
+        Domain. This includes predicates, functions, constants but
+        excludes actions and axioms."""
+        
+        return Domain(self.name, set(self.requirements), self.types.copy(), self.constants.copy(), self.predicates.copy(), self.functions.copy(), [], [])
+        
     def get_action(self, name):
         """Return the action with the given name.
 
@@ -122,7 +149,39 @@ class Domain(Scope):
         
         if not self.name2action:
             self.name2action = dict((a.name, a) for a in self.actions)
-        return self.name2action[name]
+        try:
+            return self.name2action[name]
+        except:
+            print [a.name for a in self.actions]
+            print [n for n in self.name2action.iterkeys()]
+            raise
+
+
+    @hook
+    def add_action(self, action):
+        if action.__class__ == Action:
+            self.actions.append(action)
+            self.name2action = None
+
+    @hook
+    def clear_actions(self):
+        self.actions = []
+        self.name2action = None
+
+    def set_actions(self, actions):
+        """Set the actions for this domain.
+
+        Arguments:
+        actions -- the new set of actions for this domain.
+        """
+        self.actions = list(actions)
+        #for a in self.actions:
+        #    a.set_scope(self)
+        self.name2action = None
+
+    @hook
+    def get_action_like(self):
+        return self.actions
 
     def stratify_axioms(self):
         """Compute stratification layers for the axioms in this domain."""
@@ -145,6 +204,8 @@ class Domain(Scope):
 
             if module.parse_handlers:
                 self.parse_handlers.append(module.parse_handlers)
+            for f, h in module.domain_hooks.iteritems():
+                self.hooks[f].append(h)
             if module.prepare_domain:
                 module.prepare_domain(self)
             
@@ -261,14 +322,8 @@ class Domain(Scope):
 
             #If domain is not already constructed, create it now
             if type not in (":types", ":constants", ":predicates", ":functions") and domain is None:
-                domain = Domain(domname, typeDict, constants, preds, functions, [], [])
-                domain.requirements = set(requirements)
-                for m in modules:
-                    if m.parse_handlers:
-                        domain.parse_handlers.append(m.parse_handlers)
-                    if m.prepare_domain:
-                        m.prepare_domain(domain)
-
+                domain = Domain(domname, set(requirements), typeDict, constants, preds, functions, [], [])
+                
             handled = False
             for module in modules:
                 if type.string in module.parse_handlers:
@@ -343,11 +398,7 @@ class Domain(Scope):
                 raise ParseError(type, "Unknown section identifier: '%s'." % type.string)
             
         if domain is None:
-            domain = Domain(domname, typeDict, constants, preds, functions, [], [])
-            domain.requirements = set(requirements)
-            for m in modules:
-                if m.prepare_domain:
-                    m.prepare_domain(domain)
+            domain = Domain(domname, set(requirements), typeDict, constants, preds, functions, [], [])
 
         for m in modules:
             if m.post_parse:

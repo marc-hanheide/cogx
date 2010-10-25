@@ -198,7 +198,7 @@ class CASTTask(object):
             
             #self.update_status(self.status)
             if self.dt_planning_active():
-                self.dt_task.initialize(self.state)
+                self.dt_task.initialize(self.state.prob_state)
                 self.update_status(TaskStateEnum.WAITING_FOR_DT)
                 self.component.start_dt_planning(self)
                 return
@@ -318,7 +318,7 @@ class CASTTask(object):
             log.info("DT task requires replanning")
             #send empty observations to terminate previous task
             self.component.getDT().deliverObservation(self.id, [])
-            self.dt_task.recompute_problem(self.state)
+            self.dt_task.recompute_problem(self.state.prob_state)
             self.update_status(TaskStateEnum.WAITING_FOR_DT)
             self.component.start_dt_planning(self)
 
