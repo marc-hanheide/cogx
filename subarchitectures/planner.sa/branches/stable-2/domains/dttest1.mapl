@@ -1,0 +1,135 @@
+(define (domain cogx)
+
+	(:requirements :mapl :adl :object-fluents :partial-observability)
+	
+	(:types 
+		place - object
+		room - object
+		robot - agent
+		robot - movable
+        place_status - object
+        place_name - object
+	)
+	
+	(:constants
+        placeholder trueplace - place_status
+        dora - robot
+        earth mars - place_name
+	)
+
+    (:predicates
+		(connected ?n1 - place ?n2 - place)
+        (visited ?r - robot ?p - place)
+    )	
+
+	(:functions
+        (name ?p - place) - place_name
+        (is-in ?r - movable) - place
+		(placestatus ?n - place) - place_status
+ 	)
+	
+
+;;; actions ;;;
+
+	(:action explore_place
+	 :agent (?a - robot)
+	 :parameters (?loc - place)
+	 :precondition (and
+        (= (placestatus ?loc) placeholder)
+	 	(= (is-in ?a) ?loc)
+		)
+     :effect (assign (placestatus ?loc) trueplace)
+    )
+
+;; 	(:action categorize_place
+;; 	 :agent (?a - robot)
+;; 	 :parameters (?loc - place)
+;; 	 :precondition (and
+;; 	 	(= (is-in ?a) ?loc))
+;;      :sense (place_category ?loc)
+;;     )
+
+
+;; 	(:action categorize_room
+;; 	 :agent (?a - robot)
+;; 	 :parameters (?r - room)
+;; 	 :variables (?loc - place)
+;; 	 :precondition (and
+;; 	 	(= (is-in ?a) ?loc)
+;; ;;		(contains ?r ?loc)
+;; 		)
+;;      :sense (areaclass ?r)
+;;     )
+
+	(:action look-for-object
+	 :agent (?a - robot)
+	 :variables (?loc - place)
+	 :precondition (and
+	 	(= (is-in ?a) ?loc)
+        ;;(in-domain (is-in ?obj) ?loc)
+		)
+     :effect;; (kval ?a (is-in ?obj))
+        (visited dora ?loc)
+    )
+
+    (:action ask-for-placename
+	 :agent (?a - robot)
+	 :parameters (?loc - place)
+	 :precondition (and
+	 	(= (is-in ?a) ?loc)
+		)
+;;     :effect;; (kval ?a (is-in ?obj))
+;;        (kval ?a (name ?loc))
+    )
+
+    (:observe placename
+              :agent (?a - robot)
+              :parameters (?loc - place ?n - place_name)
+              :execution (ask-for-placename ?a ?loc)
+              :effect (and (when (= (name ?loc) ?n) (probabilistic 0.7 (observed (name ?loc) ?n)))
+                           (when (not (= (name ?loc) ?n)) (probabilistic 0.1 (observed (name ?loc) ?n))))
+              )
+
+
+    ;; (:action commit-placename
+	;;  :agent (?a - robot)
+	;;  :parameters (?loc - place ?n - place_name)
+	;;  :precondition (and
+	;;  	(in-domain (name ?loc) ?n)
+	;; 	)
+    ;;  :replan (kval ?a (name ?loc))
+    ;;  :effect;; (kval ?a (is-in ?obj))
+    ;;     (assign (name ?loc) ?n)
+    ;; )
+
+	(:action move
+	 :agent (?a - robot)
+	 :parameters (?to - place)
+	 :variables (?from - place)
+	 :precondition (and
+		(= (is-in ?a) ?from)
+        (or (connected ?from ?to)
+            (connected ?to ?from))
+        ;;(or (= (placestatus ?to) trueplace)
+        ;;    (connected ?from ?to)) 
+		)
+	 :effect (and
+		(assign (is-in ?a) ?to)
+	))
+
+;;; 	(:action move
+;;; 	 :agent (?a - agent)
+;;; 	 :parameters (?to - place)
+;;; 	 :variables (?from - place)
+;;; 	 :precondition (and
+;;; 		(located ?a ?from) 
+;;; 		(connected ?from ?to)
+;;; 		)
+;;; 	 :effect (and
+;;; 		(not (located ?a ?from))
+;;; 		(located ?a ?to)
+;;; 		(connected ?to ?from)   ;; now we assume we can also move back
+;;; 	))
+	
+
+)
