@@ -377,7 +377,7 @@ class ContinualAxiomsFF(BasePlanner):
         proc,_,_ = utils.run_process(cmd, output=stdout_path, error=stdout_path)
         
         if proc.returncode != 0:
-            utils.print_errors(proc, cmd, open(stdout_path).read(), "FF")
+            utils.print_errors(proc, cmd, open(stdout_path).read(), log, "FF")
             return None
         
         try:
@@ -465,7 +465,7 @@ class Downward(BasePlanner):
         log.debug(translate_out)
         
         if proc.returncode != 0:
-            utils.print_errors(proc, cmd, translate_out, "Fast Downward Translate")
+            utils.print_errors(proc, cmd, translate_out, log, "Fast Downward Translate")
             return None
 
         cmd = "%(exec_path)s/preprocess/preprocess" % locals()
@@ -476,7 +476,7 @@ class Downward(BasePlanner):
         log.debug(prep_out)
         
         if proc.returncode != 0:
-            utils.print_errors(proc, cmd, prep_out, "Fast Downward Preprocess")
+            utils.print_errors(proc, cmd, prep_out, log, "Fast Downward Preprocess")
             return None
 
         cmd = "%(exec_path)s/search/search %(search_args)s" % locals()
@@ -487,14 +487,13 @@ class Downward(BasePlanner):
         log.debug(search_out)
         
         if proc.returncode != 0:
-            utils.print_errors(proc, cmd, search_out, "Fast Downward Search")
+            utils.print_errors(proc, cmd, search_out, log, "Fast Downward Search")
             return None
 
         output.close()
         
         try:
             pddl_output = open(plan_path).read()
-            print pddl_output
         except IOError:
             log.warning("Warning: Fast Downward did not find a plan or crashed.")
             log.warning("Call was: %s", cmd)
@@ -600,7 +599,6 @@ class TFD(BasePlanner):
         
         try:
             pddl_output = open(plan_path).read()
-            print pddl_output
         except IOError:
             log.warning("Warning: TFD did not find a plan.")
             log.warning("Call was: %s", cmd)
