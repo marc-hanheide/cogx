@@ -112,7 +112,7 @@ class DTProblem(object):
     def replanning_neccessary(self, new_state):
         if self.selected_subproblem == -1:
             return True
-        new_objects = new_state.problem.get_all_objects(pddl.t_object) - self.state.problem.get_all_objects(pddl.t_object)
+        new_objects = new_state.problem.objects - self.state.problem.objects
         problem = self.subproblems[self.selected_subproblem]
         for o in new_objects:
             if all(c.matches(o, self.state) for c in problem.constraints):
