@@ -671,17 +671,6 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 
 	// Send result to WM
 	overwriteWorkingMemory(m_rec_cmd_id, m_rec_cmd);
-	// note: execution layer expects the comand to be deleted as a signal of completion
-sleep(1);  // why this??
-	try {
-	  if(m_delete_command_from_wm) {
-      deleteFromWorkingMemory(m_rec_cmd_id);
-      m_delete_command_from_wm = false;
-	  }
-	}
-	catch(CASTException &e) {
-	  println("exception while deleting command: " + e.message);
-	}
 
 	m_task = RECSTOP;
 }
