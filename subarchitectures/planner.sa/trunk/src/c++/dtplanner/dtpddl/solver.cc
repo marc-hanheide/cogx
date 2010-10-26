@@ -470,7 +470,7 @@ void Solver::prioritise(Planning::POMDP_State* state,
 
 bool Solver::lao_star()
 {
-    if(this->belief_state__space.size() > 500) return false;
+    if(this->belief_state__space.size() > 1000) return false;
 
     std::vector<Planning::POMDP_State*> local__states_to_expand;
     Planning::POMDP_State* some_state;
@@ -667,7 +667,7 @@ POMDP_State* /*NON-LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POM
                      <<current_state->get__expected_value()<<std::endl);
         }
 
-        if(this->belief_state__space.size() > 1000)break;
+        if(this->belief_state__space.size() > 500)break;
     }
     
     while(policy_Iteration()){

@@ -222,7 +222,196 @@ bool read_in__problem_description()
 //     return current_state;// new_starting_belief_state;
 // }
 
+
+/* As requested by Moritz Fri Oct 22 in the planning meeting with
+ * Richard Dearden.*/
 int main(int argc, char** argv)
+{
+    assert(command_Line_Arguments.size() == 0);
+    command_Line_Arguments = Command_Line_Arguments(argc, argv);
+    
+    while(read_in__domain_description()){};
+    
+    while(read_in__problem_description()){};
+    
+    assert(Planning::Parsing::domains.size() > 0);
+
+    auto problem = Planning::Parsing::problems.begin();
+
+    assert(problem != Planning::Parsing::problems.end());
+    
+#ifdef LAO_STAR
+    string solver_name = "LAO-star";
+    INTERACTIVE_VERBOSER(true, 15000, solver_name<<std::endl);
+    
+#define CHANGE_PHASE 1
+    auto solver = new Planning::Two_Phase_Solver(*problem->second);
+#else       
+    string solver_name = "Sondik 197";
+    INTERACTIVE_VERBOSER(true, 15000, solver_name<<std::endl);
+
+    auto solver = new Planning::Solver(*problem->second);
+#endif
+    
+    solver->set__sink_state_penalty(-1.0);
+    
+    solver->preprocess();
+    
+#ifdef LAO_STAR
+        
+    solver->empty__belief_states_for_expansion();
+    solver->generate_markov_decision_process_starting_states();
+    
+    Planning::Policy_Iteration__GMRES policy_Iteration__for_MDP_states
+        (solver->belief_state__space, solver->get__sink_state_penalty(), .65);
+
+    {
+        
+        auto current_state = solver->peek__next_belief_state_for_expansion();
+                
+        while(solver->expand_belief_state_space()){
+        }
+        while(policy_Iteration__for_MDP_states()){
+        }
+    
+        for(auto mdp_state = solver->belief_state__space.begin()
+                ; mdp_state != solver->belief_state__space.end()
+                ; mdp_state++){
+
+            if(*mdp_state == solver->get__starting_belief_state()){
+                continue;
+            }
+
+            double state_value = (*mdp_state)->get__expected_value();
+
+            auto& belief = (*mdp_state)->get__belief_state();
+
+            QUERY_UNRECOVERABLE_ERROR(belief.size() != 1,
+                                      "Each belief state should contain one element, but we have "
+                                      <<*mdp_state<<std::endl
+                                      <<"That contains :: "<<belief.size()<<std::endl);
+        
+            /*This is an MDP state, so there should only be one atom in the belief.*/
+            assert(1 == belief.size());
+
+            auto state = belief.begin();
+            assert(dynamic_cast<Planning::State*>(state->first));
+            state->first->set__value(state_value);
+        }
+
+    
+#ifdef CHANGE_PHASE
+        solver->change_phase();//HERE -- MONDAY
+#endif
+                
+        solver->reinstate__starting_belief_state();
+    }
+#endif
+
+    INTERACTIVE_VERBOSER(true, 15000, solver_name<<" Getting belief state "<<std::endl);
+    auto current_state = solver->peek__next_belief_state_for_expansion();
+  
+#ifdef LAO_STAR
+    INTERACTIVE_VERBOSER(true, 15000, solver_name<<" One iteration of LAO* "<<std::endl);
+    while(solver->lao_star()){};
+#else
+    INTERACTIVE_VERBOSER(true, 15000, solver_name<<" One iteration "<<std::endl);
+    current_state = solver->solve__for_new_starting_state(current_state);
+#endif
+
+
+    while(true){
+        
+        std::pair<Planning::Formula::Action_Proposition, uint> _action
+            = solver->get_prescribed_action(current_state);
+
+        auto action = _action.first;
+        auto action_index = _action.second;
+
+        std::cout<<action<<std::endl;
+
+    
+        INTERACTIVE_VERBOSER(true, 15000, solver_name
+                             <<" getting percepts "<<std::endl);
+    
+        Planning::Solver::Percept_List percepts;    
+        char ch = ' ';
+        string line_in;
+        do{
+        
+            ch = getchar();
+            
+            if(ch == '(') {
+                ch = ' ';
+            }
+        
+
+            if(ch == ')'){
+
+            
+                Planning::Solver::Precept percept;
+
+                istringstream iss(line_in);
+
+                std::string str;
+                uint count = 0;
+                while(!iss.eof() && iss.good()){
+                    iss>>str;
+                    if(str == "") continue;
+                    
+                    std::cerr<<str<<std::endl;
+                    if(count == 0){
+                        percept.first = str;
+                        percept.second = Planning::Solver::Precept_Arguments();
+                    } else {
+                        percept.second.push_back(str);
+                    }
+                
+                    count++;
+                    continue;
+                }
+            
+                percepts.push_back(percept);
+            
+                line_in = "";
+            
+                continue;
+            }        
+
+        
+            line_in += ch;
+        }while(ch != '\n');    
+
+        /*LOOP EXIT*/
+        if(percepts.size() == 0) break;
+    
+        Planning::POMDP_State* successor_state
+            = solver->take_observation(current_state,
+                                       percepts,
+                                       action_index);
+
+    
+        INTERACTIVE_VERBOSER(true, 15000, solver_name
+                             <<" generated the successor "
+                             <<*successor_state<<std::endl);
+    
+        auto& available_observations = current_state
+            ->get__possible_observations_given_action(action_index);
+    
+        current_state = successor_state;
+            
+        if(1 < available_observations.size()){/*Should we replan, have our beliefs changed?*/
+            current_state = solver->solve__for_new_starting_state(successor_state);
+        }
+    }
+    
+    INTERACTIVE_VERBOSER(true, 15000, solver_name
+                         <<" session terminated "<<std::endl);
+    return 0;
+}
+
+
+int main__OLDER(int argc, char** argv)
 {    
     /*Some preliminary testing.*/
     Turnstyle::test__turnstyle_hh();//turnstyle.hh

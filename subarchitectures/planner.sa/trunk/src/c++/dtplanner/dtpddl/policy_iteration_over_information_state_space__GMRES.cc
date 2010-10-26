@@ -50,7 +50,11 @@ Policy_Iteration__GMRES(Set_Of_POMDP_State_Pointers& states,
 void Policy_Iteration__GMRES::configure_transition_matrix()
 {    
     using boost::numeric::ublas::identity_matrix;
-    state_transition_matrix = GMRES::Matrix(dimension, dimension);
+    
+    if(old__state_space_size != dimension){
+        state_transition_matrix = GMRES::Matrix(dimension, dimension);
+    }
+    
     state_transition_matrix.assign(identity_matrix<double>(dimension));
     
     for(auto _state = states.begin()
@@ -99,7 +103,10 @@ void Policy_Iteration__GMRES::configure_transition_matrix()
 void Policy_Iteration__GMRES::configure_reward_vector()
 {
     
-   instantanious_reward_vector = GMRES::Vector(dimension);
+    if(old__state_space_size != dimension){
+        instantanious_reward_vector = GMRES::Vector(dimension);
+    }
+    
     
     for(auto _state = states.begin()
             ; _state != states.end()
@@ -135,7 +142,6 @@ void Policy_Iteration__GMRES::configure_reward_vector()
     assert(dimension == states.size() + 1);
     assert(dimension == instantanious_reward_vector.size());
     assert(states.size() < dimension);
-    assert(instantanious_reward_vector[states.size()] == 0.0);
     assert(states.size() < instantanious_reward_vector.size());
     
 #ifdef LAO_STAR 
@@ -290,3 +296,10 @@ bool Policy_Iteration__GMRES::operator()()
     return true;
 }
 
+/* "The only sexiest lady in the whole wide world... let's have sex!"
+ *
+ * Sexy Sexy Lover (extended rap), Modern Talking, May 17, 1999. This
+ * song is a testament to the deep and complex thoughtfullness and
+ * depth of the deep deep thoughtful and complex message that
+ * epitomizes Eurodance -- Like a Verdi Falstaff on steriods and
+ * speed. */
