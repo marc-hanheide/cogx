@@ -1,5 +1,11 @@
 
 
+<<<<<<< .mine
+# CPPFLAGS := -ggdb $(WARNINGS) -pg -fmudflap -fmudflapth -fmudflapir -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
+#-fprefetch-loop-arrays -ftracer -ftree-parallelize-loops=4 -fipa-matrix-reorg -fwhole-program -fsee -fsched-spec-load-dangerous -funsafe-loop-optimizations
+CPPFLAGS := $(OPTIMISE)  -fsee -fsched-spec-load-dangerous -funsafe-loop-optimizations -fprefetch-loop-arrays -ftracer -fipa-matrix-reorg -ftree-parallelize-loops=4  -fmodulo-sched -fmodulo-sched-allow-regmoves -fomit-frame-pointer -finline-functions -funroll-all-loops -mpush-args  -maccumulate-outgoing-args -mno-align-stringops  -minline-all-stringops -ffast-math -DNDEBUG -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
+=======
+
 
 
 // int main(int argc, char** argv)

@@ -1,21 +1,21 @@
 
-TARGET=some
+TARGET=pcogx
 
 CXX= g++
 
-CXXPREFIX= #ccache
+CXXPREFIX= ccache
 
 OPTIMISE := -O3 -march=native -mno-align-stringops  -minline-all-stringops -ffast-math #-fsee -fsched-spec-load-dangerous -funsafe-loop-optimizations -fprefetch-loop-arrays -ftracer -fipa-matrix-reorg -ftree-parallelize-loops=4  -fmodulo-sched -fmodulo-sched-allow-regmoves -fomit-frame-pointer -finline-functions -funroll-all-loops -mpush-args  -maccumulate-outgoing-args 
 
 WARNINGS := -Wall -Wextra
 
-#CPPFLAGS := -DLAO_STAR -ggdb $(WARNINGS) -pg -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
+# CPPFLAGS := -ggdb $(WARNINGS) -pg -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
 
-CPPFLAGS := -DLAO_STAR $(OPTIMISE)   -DNDEBUG -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
- 
+# CPPFLAGS :=  $(OPTIMISE)   -DNDEBUG -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
+
 #-DLAO_STAR
 
-#CPPFLAGS := -DLAO_STAR -ggdb $(OPTIMISE) -pg -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
+CPPFLAGS := -ggdb $(OPTIMISE) -pg -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
 
 
 LDFLAGS := -L/data/private/grettonc/lib/ -lz  -lm -lpthread #-lglpk -lltdl -lClp -lCoinUtils
@@ -41,10 +41,10 @@ install: libdtplanning
 	libtool --mode=compile  $(CXX) $(CPPFLAGS) $< -c -o $@
 
 $(TARGET): $(OBJECTS) main.cpp
-	$(CXX) -o $@ main.cpp $(OBJECTS) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) 
+	$(CXXPREFIX) $(CXX) -o $@ main.cpp $(OBJECTS) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) 
 
 %.o: %.cc
-	$(CXX) $(CPPFLAGS) $< -c -o $@
+	$(CXXPREFIX) $(CXX) $(CPPFLAGS) $< -c -o $@
 
 %.d: %.cc
 	$(CXXPREFIX) $(CXX) $(CPPFLAGS) -MM -MT $@ $< -o $@

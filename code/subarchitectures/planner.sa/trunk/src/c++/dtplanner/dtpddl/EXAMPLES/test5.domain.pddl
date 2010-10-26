@@ -28,7 +28,7 @@
 
 
   (:predicates 
-
+   (gambled)
    (biased ?x - coin)
    (chosen ?x - coin)
 
@@ -46,25 +46,33 @@
   (:action flip
 	   :parameters (?x - coin)
 
-	   :precondition (and (chosen ?x))
+	   :precondition (and (biased ?x))
 
-	   :effect (assign (reward) 5)
+	   :effect (when (chosen ?x) (assign (reward) 5))
 	   )
 
-  (:action flip2
-	   :parameters (?x - coin)
+;;   (:action flip2
+;; 	   :parameters (?x - coin)
 
-	   :precondition (and (chosen ?x))
+;; 	   :precondition (and (biased ?x))
 
-	   :effect (increase (reward) 5)
-	   )
+;; 	   :effect (when (chosen ?x) (assign (reward) 10))
+;; 	   )
+
+;;   (:action flip3
+;; 	   :parameters (?x - coin)
+
+;; 	   :precondition (and (biased ?x))
+
+;; 	   :effect (when (chosen ?x) (assign (reward) 1))
+;; 	   )
 
   (:action gamble
 	   :parameters (?x - coin)
 
-	   :precondition ()
+	   :precondition (not (gambled))
 
-	   :effect (chosen ?x)
+	   :effect (and (gambled) (chosen ?x) )
 	   )
 
 
@@ -75,7 +83,7 @@
 
 	   :precondition (not (biased ?x))
 
-	   :effect (probabilistic 0.5 (o-heads ?x)
+	   :effect (probabilistic 0.01 (o-heads ?x)
 		    )
 	   )
 
@@ -86,7 +94,7 @@
 
 	   :precondition (biased ?x)
 
-	   :effect (probabilistic 0.8 (o-heads ?x)
+	   :effect (probabilistic 0.9 (o-heads ?x)
 		    )
 	   )
 
