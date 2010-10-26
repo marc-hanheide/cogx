@@ -77,7 +77,7 @@ public class VisionActionInterface extends ManagedComponent {
 		@Override
 		public void executeAction() {
 			DetectionCommand cmd = new DetectionCommand(m_labels);
-			addThenCompleteOnDelete(cmd);
+			addThenCompleteOnOverwrite(cmd);
 		}
 
 	}
@@ -218,7 +218,7 @@ public class VisionActionInterface extends ManagedComponent {
 			DetectionCommand cmd = new DetectionCommand(
 					new String[foregroundedModels.size()]);
 			cmd.labels = foregroundedModels.toArray(cmd.labels);
-			addThenCompleteOnDelete(cmd);
+			addThenCompleteOnOverwrite(cmd);
 		}
 
 	}
