@@ -4,11 +4,11 @@ from os.path import abspath, join
 from de.dfki.lt.tr.beliefs.slice import logicalcontent
 from autogen import Planner
 
-from standalone import task, plans, plan_postprocess, pddl, config
+from standalone import task, dt_problem, plans, plan_postprocess, pddl, config
 from standalone.task import PlanningStatusEnum
 from standalone.utils import Enum
 
-import cast_state, dt_problem
+import cast_state
 
 TaskStateEnum = Enum("INITIALISED",
                      "PROCESSING",
@@ -314,7 +314,7 @@ class CASTTask(object):
 
         dt_pnode = self.dt_task.dt_plan[-1]
 
-        if self.dt_task.replanning_neccessary(self.state):
+        if self.dt_task.replanning_neccessary(self.state.prob_state):
             log.info("DT task requires replanning")
             #send empty observations to terminate previous task
             self.component.getDT().deliverObservation(self.id, [])
