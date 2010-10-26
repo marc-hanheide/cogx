@@ -73,6 +73,10 @@ public class ViewPointTransferFunction extends
 		} catch (InterruptedException e) {
 			logger.error(e);
 			return null;
+		} catch (NullPointerException e) {
+			logger.error(e);
+			return null;
+			
 		}
 
 		return result;
