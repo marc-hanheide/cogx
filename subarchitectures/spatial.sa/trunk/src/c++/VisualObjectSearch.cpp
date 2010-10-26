@@ -1619,7 +1619,7 @@ log("filled");
       }
       void VisualObjectSearch::runComponent(){
 	m_command = IDLE;
-
+	m_ProcessVPID="";
 
 	//				if (m_posttable){
 	//post a fake table object
@@ -2963,11 +2963,12 @@ log("filled");
 	      }
 	      log(logString.c_str());
 
-	      if (waitingForDetection.empty()) {
+	      if (waitingForDetection.empty() && !m_ProcessVPID.empty()) {
 		log("Letting planner know that view point is processed.");
 		SpatialData::ProcessViewPointCommandPtr VPcmd= new SpatialData::ProcessViewPointCommand;
 		VPcmd->status = SpatialData::SUCCESS;
 		overwriteWorkingMemory(m_ProcessVPID,VPcmd);
+		m_ProcessVPID="";
 	      }
 
 	     if(m_publishSimCones); 
