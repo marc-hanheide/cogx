@@ -58,6 +58,7 @@ namespace spatial
     isSearchFinished = false;
     AVSComponentPtr = this;
     m_policyManager.m_evalpol = this;
+    m_ignoreTilt = false;
     failedPolicyStep = "Unknown";
     map<string,string>::const_iterator it = _config.find("-c");
     if (it== _config.end()) {
@@ -85,10 +86,13 @@ namespace spatial
       m_PbHost = tmp;
     }
 
+    m_ignoreTilt = false;
+    if (_config.find("--ignore-tilt") != _config.end()) 
+      m_ignoreTilt = true;
+
     m_bSimulation = false;
     if (_config.find("--simulate") != _config.end()) 
       m_bSimulation = true;
-
 
     m_nobaseobject = false;
     if (_config.find("--no-support-object") != _config.end()) 
@@ -3044,13 +3048,18 @@ log("filled");
 	      }
 
 	      //only check tilt if pan is ok
+
 	      if (!run) {
-		if (actualtilt < (tilt + tolerance) && actualtilt > (tilt - tolerance)) {
-		  run = false;
-		}
-		else {
-		  //if the previous check fails, loop again
-		  run = true;
+ 	        if (m_ignoreTilt) {
+                  run = false;
+		} else {
+		  if (actualtilt < (tilt + tolerance) && actualtilt > (tilt - tolerance)) {
+		    run = false;
+		  }
+		  else {
+		    //if the previous check fails, loop again
+		    run = true;
+		  }
 		}
 	      }
 
