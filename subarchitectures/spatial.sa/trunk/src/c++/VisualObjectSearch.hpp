@@ -60,6 +60,7 @@ namespace spatial
       // hence don't rely on it!
       int m_currentRoom;
       int m_policyRoom;
+      bool m_ignoreTilt;
       struct ObjectPairRelation{
 	FrontierInterface::ObjectRelation relation;
 	std::string primaryobject;
