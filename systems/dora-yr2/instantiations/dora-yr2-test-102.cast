@@ -6,7 +6,7 @@ HOST localhost
 SUBARCHITECTURE visualization.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG display.srv DisplayServer # --redirect-to-host localhost
+CPP MG display.srv DisplayServer --redirect-to-host localhost
 
 
 # vision stuff ################################################################
@@ -25,14 +25,17 @@ CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "instantiations/test-
 
 CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
 
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/frosties.ply" --siftfiles "instantiations/sift-models/frosties.sift" --labels "frosties" --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --plyfiles "instantiations/ply-models/frosties.ply" --siftfiles "instantiations/sift-models/frosties.sift" --labels "frosties" --log --display
 
 # viewing and debugging
 
-JAVA MG WMViewer castutils.viewer.ViewerCastComponent --log --subscribe "VisionData.VisualObject"
+#CPP MG display.srv DisplayServer
+
+JAVA MG WMViewer castutils.viewer.ViewerCastComponent --log --subscribe "VisionData.VisualObject,de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief" --generic-col
 
 JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --log --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"
 
+JAVA MG objectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --log --subscribe "VisionData.VisualObject" --generic-col
 
 # planning and motivation #####################################################
 
@@ -42,3 +45,6 @@ INCLUDE includes/planner.sa/planner-base.cast
 JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --labels "frosties"
 JAVA MG executor dora.execution.components.DoraExecutionMediator
 
+# binder base #################################################################
+
+INCLUDE includes/binder.sa/binder-base.cast

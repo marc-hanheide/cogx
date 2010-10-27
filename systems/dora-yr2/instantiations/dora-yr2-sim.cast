@@ -8,7 +8,7 @@ INCLUDE includes/spatial.sa/spatial.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter
 INCLUDE includes/spatial.sa/spatial-mediator.cast
-INCLUDE includes/spatial.sa/spatial-objsearch.cast
+INCLUDE includes/spatial.sa/spatial-objsearch-no-tilt.cast
 
 # Default.SA ################################################################
 INCLUDE includes/default.sa/default-base.cast

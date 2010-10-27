@@ -1,1 +1,4 @@
-CPP GD objsearch.process ObjectSearch -c subarchitectures/nav.sa/config/cogxp3.ccf --explore-range 5 --gridsize 250 --cellsize 0.1 --objects "journal teabox cassette juice notebook" --samplesize 1000 --cam-range 4 --cam-fov 45 --coverage-threshold 80  --vp-threshold 1 --away-from-obstacles 0.5 --disp-magn 1  --cam-step 60  --log --ctrl-ptu --display-coverage 
+CPP GD relation.manager ObjectRelationManager -c instantiations/cureconfig/cogxp3.ccf --log --no-vision --display-objects-in-pb #--debug #--no-ptz --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05 --display-objects-in-pb --debug
+
+
+CPP GD visual.search VisualObjectSearch -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 50 --tiltinterval 15 --ctrl-ptu --gridsize 700 --cellsize 0.05  --kernel-width-factor 0.7 --sampleawayfromobs 0.45 --publishsimcones --usepeekabot --log --tpose "table 1.30 -3.60 0" --ignore-tilt
