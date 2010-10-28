@@ -140,6 +140,13 @@ namespace Planning
         typedef CXX__deref__shared_ptr<Perceptual_Proposition> Perceptual_Proposition__Pointer;
         typedef std::vector<Perceptual_Proposition__Pointer> List__Perceptual_Propositions;
         typedef std::set<Perceptual_Proposition__Pointer> Perceptual_Propositions;
+
+
+        
+        typedef CXX__deref__shared_ptr<State_Proposition> State_Proposition__Pointer;
+        typedef std::vector<State_Proposition__Pointer> List__State_Propositions;
+
+        
         
         class Conjunction : public type_wrapper<enum_types::conjunction
                                                 , Subformulae>

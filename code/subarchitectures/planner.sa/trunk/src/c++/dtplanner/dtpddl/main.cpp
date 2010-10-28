@@ -37,8 +37,6 @@
 #include "dtp_pddl_parsing_data.hh"
 #include "dtp_pddl_parsing_data_problem.hh"
 
-
-
 #include "turnstyle.hh"
 
 #include "solver.hh"
@@ -320,92 +318,184 @@ int main(int argc, char** argv)
 #endif
 
 
+    bool post_an_action = true;
+    
     while(true){
-        
+
         std::pair<Planning::Formula::Action_Proposition, uint> _action
             = solver->get_prescribed_action(current_state);
-
+        
         auto action = _action.first;
         auto action_index = _action.second;
-
-        std::cout<<action<<std::endl;
+            
+        if(post_an_action){
+            std::cout<<action<<std::endl;
+        } else {
+            post_an_action = true;
+        }
+        
+        
 
     
         INTERACTIVE_VERBOSER(true, 15000, solver_name
                              <<" getting percepts "<<std::endl);
-    
+
+        bool parsing_observation;
+        Planning::Solver::Proposition_List propositions;
         Planning::Solver::Percept_List percepts;    
         char ch = ' ';
         string line_in;
+        
+        
+        ch = getchar();
+
+        if(ch == 'P'){
+                VERBOSER(16000, solver_name
+                                     <<" Parsing a propositional string "<<std::endl);
+            parsing_observation = false;
+        }
+        if(ch == 'O'){
+                VERBOSER(16000, solver_name
+                                     <<" Parsing an observation string "<<std::endl);
+            parsing_observation = true;
+        }
+        
         do{
-        
             ch = getchar();
+
+            VERBOSER(16000, solver_name
+                                 <<" :--> "<<ch<<std::endl);
             
-            if(ch == '(') {
-                ch = ' ';
-            }
-        
-
-            if(ch == ')'){
-
+            if(parsing_observation){
             
-                Planning::Solver::Precept percept;
+                if(ch == '(') {
+                    VERBOSER(16000, solver_name
+                                         <<" Got an opening bracket "<<std::endl);
+                    ch = ' ';
+                }
 
-                istringstream iss(line_in);
+                if(ch == ')'){
 
-                std::string str;
-                uint count = 0;
-                while(!iss.eof() && iss.good()){
-                    iss>>str;
-                    if(str == "") continue;
+                    VERBOSER(16000, solver_name
+                                         <<" Got a closing bracket "<<std::endl);
+            
+                    Planning::Solver::Precept percept;
+
+                    istringstream iss(line_in);
+
+                    std::string str;
+                    uint count = 0;
+                    while(!iss.eof() && iss.good()){
+                        iss>>str;
+                        if(str == "") continue;
                     
-                    std::cerr<<str<<std::endl;
-                    if(count == 0){
-                        percept.first = str;
-                        percept.second = Planning::Solver::Precept_Arguments();
-                    } else {
-                        percept.second.push_back(str);
-                    }
+                        std::cerr<<str<<std::endl;
+                        if(count == 0){
+                            percept.first = str;
+                            percept.second = Planning::Solver::Precept_Arguments();
+                        } else {
+                            percept.second.push_back(str);
+                        }
                 
-                    count++;
+                        count++;
+                        continue;
+                    }
+            
+                    percepts.push_back(percept);
+            
+                    line_in = "";
+            
                     continue;
                 }
+                
+            } else {
+                
             
-                percepts.push_back(percept);
+                if(ch == '(') {
+                    ch = ' ';
+                }
+        
+
+                if(ch == ')'){
+
             
-                line_in = "";
+                    Planning::Solver::Proposition proposition;
+
+                    istringstream iss(line_in);
+
+                    std::string str;
+                    uint count = 0;
+                    while(!iss.eof() && iss.good()){
+                        iss>>str;
+                        if(str == "") continue;
+                    
+                        std::cerr<<str<<std::endl;
+                        if(count == 0){
+                            proposition.first = str;
+                            proposition.second = Planning::Solver::Proposition_Arguments();
+                        } else {
+                            proposition.second.push_back(str);
+                        }
+                
+                        count++;
+                        continue;
+                    }
             
-                continue;
-            }        
+                    propositions.push_back(proposition);
+            
+                    line_in = "";
+            
+                    continue;
+                }        
 
         
+            }
+            
             line_in += ch;
+                
+            VERBOSER(16000, solver_name
+                                 <<" :--> "<<line_in<<std::endl);
+            
         }while(ch != '\n');    
 
-        /*LOOP EXIT*/
-        if(percepts.size() == 0) break;
+        if(parsing_observation){
+            /*LOOP EXIT*/
+            if(percepts.size() == 0) break;
     
-        Planning::POMDP_State* successor_state
-            = solver->take_observation(current_state,
-                                       percepts,
-                                       action_index);
+            Planning::POMDP_State* successor_state
+                = solver->take_observation(current_state,
+                                           percepts,
+                                           action_index);
 
     
-        INTERACTIVE_VERBOSER(true, 15000, solver_name
-                             <<" generated the successor "
-                             <<*successor_state<<std::endl);
+            VERBOSER(16000, solver_name
+                                 <<" generated the successor "
+                                 <<*successor_state<<std::endl);
     
-        auto& available_observations = current_state
-            ->get__possible_observations_given_action(action_index);
+            auto& available_observations = current_state
+                ->get__possible_observations_given_action(action_index);
     
-        current_state = successor_state;
+            current_state = successor_state;
             
-        if(1 < available_observations.size()){/*Should we replan, have our beliefs changed?*/
-            current_state = solver->solve__for_new_starting_state(successor_state);
+            if(1 < available_observations.size()){/*Should we replan, have our beliefs changed?*/
+                current_state = solver->solve__for_new_starting_state(successor_state);
+            }
+        } else {
+            post_an_action = false;
+
+            std::vector<double> probabilities  =
+                solver->report__probabilities_of_facts(current_state,
+                                                       propositions);
+            for(auto prob = probabilities.begin()
+                    ; prob != probabilities.end()
+                    ; prob++){
+                std::cout<<*prob<<std::endl;
+            }
         }
+        
     }
     
-    INTERACTIVE_VERBOSER(true, 15000, solver_name
+    VERBOSER(15000, solver_name
                          <<" session terminated "<<std::endl);
     return 0;
 }

@@ -69,6 +69,14 @@ namespace Planning
         typedef std::pair<std::string, Precept_Arguments>  Precept;
         typedef std::vector<std::pair<std::string, Precept_Arguments> >  Percept_List;
         
+        typedef std::vector<std::string> Proposition_Arguments;
+        typedef std::pair<std::string, Proposition_Arguments>  Proposition;
+        typedef std::vector<std::pair<std::string, Proposition_Arguments> >  Proposition_List;
+
+        
+        std::vector<double> report__probabilities_of_facts(POMDP_State* current_state,
+                                                           const Percept_List& perceptions);
+        
         POMDP_State* take_observation(POMDP_State* current_state,
                                       Observational_State* observation,
                                       uint action_index);
