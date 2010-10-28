@@ -1,0 +1,12 @@
+# vim:ft=viki:sw=3:ts=8:et
+
+* HTML Forms
+
+   * TODO: Apply the settings from persistent storage at startup when a
+     component registers a form
+
+   * TODO: Add config param to DS to change the location of persistent storage
+
+   * TODO: Add menu entry to change the location of persistent storage
+
+   * TODO: Add widgets to load/save all forms on a page
