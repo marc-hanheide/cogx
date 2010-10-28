@@ -1,0 +1,31 @@
+#!/bin/bash
+# Author: mmarko
+# Created: 2009-11-19
+# Usage: peekabotdata [path-to-data]
+peekaconf=~/.peekabot
+peekadata=$peekaconf/data
+peekadst="$1"
+if [ "$peekadst" == "" ] ; then
+   peekadst=$(pwd)/instantiations/peekabot-models/data
+fi
+
+if [ ! -d $peekaconf ] ; then
+   mkdir $peekaconf
+fi
+if [ ! -d $peekaconf ] ; then
+   echo "Could not create $peekaconf"
+   exit
+fi
+if [ -L $peekadata ] ; then
+   rm $peekadata
+elif [ -d $peekadata ] ; then
+   echo "$peekadata is in the way. Please rename or remove."
+   exit
+   # rmdir $peekadata
+fi 
+
+linkname=$(basename $peekadst)
+ln -s $peekadst $peekaconf
+if [ "$linkname" != "data" ] ; then
+   mv $peekaconf/$linkname $peekadata
+fi
