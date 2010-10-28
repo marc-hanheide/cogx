@@ -64,11 +64,14 @@ class Action(Scope):
             return [term]
 
         self.cond_by_arg = defaultdict(set)
-
+        self.free_args = {}
+        
         def subcond_visitor(cond, result):
             for arg in cond.free():
                 self.cond_by_arg[arg].add(cond)
-
+            if isinstance(cond, conditions.LiteralCondition):
+                self.free_args[cond] = cond.free()
+                
         visitors.visit(self.precondition, subcond_visitor)
         visitors.visit(self.replan, subcond_visitor)
         prev_mapping = {}
@@ -94,7 +97,7 @@ class Action(Scope):
                             svar = state.StateVariable.from_literal(cond, st)
                             forced.append((v.object, st[svar], cond))
                     
-                    if all(a.is_instantiated() for a in cond.free()):
+                    if all(a.is_instantiated() for a in self.free_args[cond]):
                         fact = state.Fact.from_literal(cond, st)
                         exst = st.get_extended_state([fact.svar])
                         #TODO: handle all possible conditions
@@ -103,7 +106,7 @@ class Action(Scope):
                         checked.add(cond)
                         return True
                     else:
-                        next_candidates.append([a for a in cond.free() if not a.is_instantiated()])
+                        next_candidates.append([a for a in self.free_args[cond] if not a.is_instantiated()])
                 elif isinstance(cond, conditions.Truth):
                     return True
                 elif isinstance(cond, conditions.Falsity):

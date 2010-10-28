@@ -2,7 +2,7 @@
 
 (:domain logistics-object-fluents)
 
-(:objects  agent - agent
+(:objects  ;agent - agent
            apn1 apn2 apn3 apn4 - airplane
            tru1 tru2 tru3 tru4 tru5 tru5b - truck
            obj11 obj12 obj13 obj21 obj22 obj23
@@ -29,10 +29,19 @@
 
         (= (location-of obj11) pos11)
         (= (location-of obj12) pos12)
-        (= (location-of obj13) pos13)
+        ;(= (location-of obj13) pos13)
+        (in-domain (location-of obj13) pos11)
+        (in-domain (location-of obj13) pos12)
+        (in-domain (location-of obj13) pos13)
+        (in-domain (location-of obj13) pos14)
         (= (location-of obj21) pos22)
         (= (location-of obj22) pos24)
-        (= (location-of obj23) pos25)
+        ;(= (location-of obj23) pos25)
+        (in-domain (location-of obj23) pos21)
+        (in-domain (location-of obj23) pos22)
+        (in-domain (location-of obj23) pos23)
+        (in-domain (location-of obj23) pos24)
+        (kval agent (location-of obj23))
         (= (location-of obj31) pos32)
         (= (location-of obj32) pos34)
         (= (location-of obj33) pos35)
@@ -42,9 +51,9 @@
         (= (location-of obj51) apt5)
         (= (location-of obj52) pos54)
         (= (location-of obj53) pos55)
-        (= (location-of obj51) pos52)
-        (= (location-of obj52) pos54)
-        (= (location-of obj53) pos51)
+        (= (location-of obj54) pos52)
+        (= (location-of obj55) tru5b)
+        (= (location-of obj56) tru5)
         (= (city-of apt1) cit1)
         (= (city-of pos11) cit1)
         (= (city-of pos12) cit1)

@@ -151,6 +151,17 @@ cost_load = """
 
 """
 
+axiom_action = """
+(:action possibly_load
+         :agent         (?a - agent)
+         :parameters    (?p - package ?loc - location ?v - vehicle)
+         :precondition  (and (= (location-of ?v) ?loc)
+                             (in-domain (location-of ?p) ?loc)
+                             (kval ?a (location-of ?p)))
+         :effect        (and (assign (location-of ?p) ?v))
+)
+"""
+
 modal_action = """
  	(:action tell_val
  	 :agent (?speaker - agent)
@@ -254,6 +265,9 @@ class ActionTest(common.PddlTest):
         """Testing smart instantiation of actions"""
         import state, time
         dom, prob = self.load("testdata/logistics.domain.mapl", "testdata/logistics.problem.large.mapl")
+        ac = Parser.parse_as(axiom_action.split("\n"), mapl.MAPLAction, dom)
+        dom.actions.append(ac)
+        
         st = state.State.from_problem(prob)
 
         t0 = time.time()
@@ -263,7 +277,8 @@ class ActionTest(common.PddlTest):
             combinations = state.product(*map(lambda a: list(prob.get_all_objects(a.type)), action.args))
             for c in combinations:
                 action.instantiate(c, prob)
-                if st.is_satisfied(action.precondition):
+                extstate = st.get_extended_state(st.get_relevant_vars(action.precondition))
+                if extstate.is_satisfied(action.precondition):
                     #print "(%s %s)" % (action.name, " ".join(a.name for a in c))
                     ncount += 1
                 ccount += 1
@@ -272,14 +287,20 @@ class ActionTest(common.PddlTest):
         print ccount
 
         t0 = time.time()
+        counts = {}
         scount = 0
         for action in dom.actions:
-            for mapping in action.smart_instantiate(action.get_inst_func(st), action.args, [prob.get_all_objects(a.type) for a in action.args], prob):
+            counts[action.name] = 0
+            for mapping in action.smart_instantiate(action.get_inst_func(st), action.args, [list(prob.get_all_objects(a.type)) for a in action.args], prob):
                 #print "(%s %s)" % (action.name, " ".join(mapping[a].name for a in action.args))
+                counts[action.name] += 1
                 scount += 1
         print "total time for smart instantiation: %.2f" % (time.time()-t0)
         print ncount
         self.assertEqual(ncount, scount)
+        self.assertEqual(counts['load'], 5)
+        self.assertEqual(counts['possibly_load'], 4)
+        self.assertEqual(counts['unload'], 2)
         
         
     def testEffects(self):
@@ -335,13 +356,13 @@ class ActionTest(common.PddlTest):
         self.assertEqual(p1.function, self.domain.functions["load_succ_prob"][0])
         self.assert_(isinstance(e1.args[0], FunctionTerm))
         self.assert_(isinstance(e1.args[1], VariableTerm))
-        self.assertEqual(p2, 0.5)
+        self.assertEqual(p2.object.value, 0.5)
         self.assert_(isinstance(e2.args[0], FunctionTerm))
         self.assert_(isinstance(e2.args[1], FunctionTerm))
 
         self.assertEqual(ae1, e1)
         self.assertEqual(ae2, e2)
-        self.assertEqual(ap1, 0.5)
+        self.assertEqual(ap1.object.value, 0.5)
         self.assertEqual(ap2, None)
 
         # self.assertEqual(action.effect.parts[0].getRandomEffect(0), e2)

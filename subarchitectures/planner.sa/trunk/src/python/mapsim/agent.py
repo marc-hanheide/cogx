@@ -87,6 +87,16 @@ class Agent(BaseAgent):
         BaseAgent.run(self)
         self.task.replan()
         self.execute_plan(self.task)
+
+    def write_plan(self, plan):
+        if global_vars.mapsim_config.write_dotfiles:
+            G = plan.to_dot()
+            G.write("plan.dot")
+        if global_vars.mapsim_config.write_pdffiles:
+            G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
+            G.layout(prog='dot')
+            G.draw("plan.pdf")
+        
         
     @loggingScope
     @statistics.time_method_for_statistics("execution_time")
@@ -106,13 +116,7 @@ class Agent(BaseAgent):
             return 0
             
         plan = task.get_plan()
-        if global_vars.mapsim_config.write_dotfiles:
-            G = plan.to_dot()
-            G.write("plan.dot")
-        if global_vars.mapsim_config.write_pdffiles:
-            G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
-            G.layout(prog='dot')
-            G.draw("plan.pdf")
+        self.write_plan(plan)
         #all_funcs = set(self.mapltask.functions) | set(self.mapltask.predicates)
         # print "instantiate:"
         #mapl.sas_translate.to_sas(self.mapltask)

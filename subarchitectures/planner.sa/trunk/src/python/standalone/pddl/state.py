@@ -6,7 +6,7 @@ from itertools import imap
 from collections import defaultdict
 
 import mapltypes as types
-import conditions, problem, effects, durative
+import conditions, problem, effects, visitors, durative
 from builtin import *
 from durative import change, num_change
 from predicates import *
@@ -783,30 +783,23 @@ class State(dict):
         cond -- the Condition object to evaluate
         restrict_to -- optionally a list of predicates for which the
         relevance should be checked."""
-        def restrictionVisitor(cond):
+        def restrictionVisitor(cond, results):
             if isinstance(cond, conditions.LiteralCondition):
                 return cond.predicate in restrict_to
-            elif isinstance(cond, conditions.JunctionCondition):
-                return any(imap(restrictionVisitor, cond.parts))
-            elif isinstance(cond, conditions.QuantifiedCondition):
-                return restrictionVisitor(cond.condition)
-            elif isinstance(cond, conditions.PreferenceCondition):
-                return restrictionVisitor(cond.cond)
-            else:
-                return restrictionVisitor(cond.condition)
+            return any(results)
 
         def dependenciesVisitor(cond):
+            if cond is None:
+                return
+            if restrict_to and not visitors.visit(cond, restrictionVisitor, False):
+                return
+            
             if isinstance(cond, conditions.LiteralCondition):
                 self.evaluate_literal(cond, trace_vars=True)
-
             elif isinstance(cond, conditions.JunctionCondition):
                 for p in cond.parts:
                     dependenciesVisitor(p)
             elif isinstance(cond, conditions.QuantifiedCondition):
-                if restrict_to:
-                    if not restrictionVisitor(cond):
-                        return
-                    
                 combinations = product(*map(lambda a: list(self.problem.get_all_objects(a.type)), cond.args))
                 for c in combinations:
                     cond.instantiate(dict(zip(cond.args, c)), self.problem)
@@ -965,23 +958,33 @@ class State(dict):
                                 open.add(dep)
                         ax.uninstantiate()
             return closed
-                
+        
+        stratification = self.problem.domain.stratification
+        if not stratification:
+            #we don't have axioms
+            if getReasons:
+                return self, {}, {}
+            return self
+            
         relevant = set()
         if svars is not None:
             for s in svars:
-                if s.get_predicate() in derived:
+                pred = s.get_predicate()
+                if pred in stratification[1] and pred in self.problem.domain.nonrecursive:
+                    relevant.add(s) #shortcut for nonrecursive, level 1 axioms
+                elif pred in derived:
                     relevant |= getDependencies(s, derived)
+                    
             if not relevant:
                 if getReasons:
                     return self, {}, {}
                 return self
 
-
         if getReasons:
             reasons = defaultdict(set)
             universalReasons = defaultdict(set)
 
-        #print "finding releveant:", time.time()-t0
+        #print "finding relevant:", time.time()-t0
 
         if self.extstate is None:
             self.extstate = self.copy()
@@ -989,7 +992,7 @@ class State(dict):
         import logging
         
         t0 = time.time()
-        for level, preds in sorted(self.problem.domain.stratification.iteritems()):
+        for level, preds in sorted(stratification.iteritems()):
             logging.getLogger().debug("level: %d, %s", level, map(str, preds))
             t1 = time.time()
             axioms = set()
@@ -1012,23 +1015,21 @@ class State(dict):
                 if relevant:
                     gen = []
                     for svar in relevant:
-                        atom = svar.as_literal()
-                        if atom.predicate in preds:
-                            gen.append(atom)
+                        if svar.get_predicate() in preds:
+                            gen.append(svar)
                 else:
                     combinations = product(*map(lambda arg: list(self.problem.get_all_objects(arg.type)), a.args))
 
-                    gen = (Literal(a.predicate, c, self.problem) for c in combinations if is_valid(c))
+                    gen = (StateVariable.from_literal(Literal(a.predicate, c)) for c in combinations if is_valid(c))
                     
-                for atom in gen:
-                    if a.predicate in self.problem.domain.nonrecursive:
-                        nonrecursive_atoms.add(atom)
+                for svar in gen:
+                    if svar.get_predicate() in self.problem.domain.nonrecursive:
+                        nonrecursive_atoms.add(svar)
                     else:
-                        recursive_atoms.add(atom)
+                        recursive_atoms.add(svar)
 
-                    svar = StateVariable.from_literal(atom)
                     if svar in self and self[svar] == TRUE:
-                        true_atoms.add(atom)
+                        true_atoms.add(svar)
 
             #print "collecting level %d (%d atoms):" % (level, len(recursive_atoms)+len(nonrecursive_atoms)), time.time()-t1
             
@@ -1040,10 +1041,10 @@ class State(dict):
                 t2 = time.time()
                 changed = False
                 open = (nonrecursive_atoms | recursive_atoms) - true_atoms
-                for atom in open:
+                for svar in open:
                     #t3 = time.time()
-                    for ax in pred_to_axioms[atom.predicate]:
-                        if ax.tryInstantiate(atom.args, self.problem):
+                    for ax in pred_to_axioms[svar.get_predicate()]:
+                        if ax.tryInstantiate(svar.get_args(), self.problem):
                             if getReasons:
                                 vars = []
                                 universal = []
@@ -1052,17 +1053,16 @@ class State(dict):
                                 universal = None
                                 
                             if self.extstate.is_satisfied(ax.condition, vars, universal):
-                                #logging.getLogger().debug("set to true: %s", atom.pddl_str())
+                                #logging.getLogger().debug("set to true: %s", svar)
 
-                                true_atoms.add(atom)
-                                self.extstate[StateVariable.from_literal(atom)] = TRUE
+                                true_atoms.add(svar)
+                                self.extstate[svar] = TRUE
                                 changed = True
                                 if getReasons:
-                                    this_svar = StateVariable.from_literal(atom)
-                                    for svar in vars:
-                                        reasons[this_svar].add(svar)
+                                    for other_svar in vars:
+                                        reasons[svar].add(other_svar)
                                     for param in universal:
-                                        universalReasons[this_svar].add(param)
+                                        universalReasons[svar].add(param)
                                 break
                                 
                             ax.uninstantiate()

@@ -2,7 +2,7 @@ import itertools, random
 from collections import defaultdict
 
 from standalone import pddl
-from standalone import plans
+from standalone import task, plans
 from standalone import config
 from standalone import statistics
 from standalone.pddl import state, mapl
@@ -35,14 +35,14 @@ class Simulation(object):
             self.seeds = [hash(random.random()) for i in xrange(runs)]
             
         self.number_of_runs = runs
-        self.problem = scenario.world
         self.domain = self.preprocess_domain(scenario.domain)
+        self.problem = self.preprocess_problem(scenario.world)
         
         self.stat_per_run = [None for i in xrange(runs)]
         self.statistics = statistics.Statistics(defaults=statistics_defaults)
 
         self.run_index = 0
-        self.state = state.State.from_problem(self.scenario.world, seed=self.seeds[0])
+        self.state = state.State.from_problem(self.problem, seed=self.seeds[0])
         self.agents = {}
         for a, prob in scenario.agents.iteritems():
             if global_vars.mapsim_config.separate_logs:
@@ -56,7 +56,7 @@ class Simulation(object):
         self.time = 0
         self.queue = []
         self.run_index = run
-        self.state = state.State.from_problem(self.scenario.world, seed=self.seeds[run])
+        self.state = state.State.from_problem(self.problem, seed=self.seeds[run])
 
         self.statistics.reset()
         self.planner.statistics.reset()
@@ -77,6 +77,10 @@ class Simulation(object):
     @statistics.time_method_for_statistics("total_time")
     def single_run(self, run=0):
         self.reset(run)
+        log.debug("state:")
+        log.debug(str(self.state))
+        w = task.PDDLOutput(writer=pddl.dtpddl.DTPDDLWriter())
+        w.write(self.problem, problem_fn="world.pddl")
         
         log.info("Starting simulation with random seed %d", self.seeds[self.run_index])
         for a in self.agents.itervalues():
@@ -146,7 +150,22 @@ class Simulation(object):
                                 self.observe_dict[a.name].add(o)
                         
         return dom2
-            
+
+    def preprocess_problem(self, problem):
+        from standalone import dt_problem
+        pddl.dtpddl.DT2MAPLCompiler().translate(self.domain)
+        dt_rules = pddl.translators.Translator.get_annotations(self.domain).get('dt_rules', [])
+        
+        prob_state = pddl.prob_state.ProbabilisticState.from_problem(problem)
+        objects = self.domain.constants | problem.objects
+        trees = dt_problem.StateTreeNode.create_root(prob_state, objects, dt_rules)
+        hstate = dt_problem.HierarchicalState([], prob_state.problem)
+        for t in trees:
+            t.create_state(hstate)
+        p_facts = hstate.init_facts()
+        return pddl.Problem(problem.name, problem.objects, p_facts, None, self.domain)
+        
+        
 
     def schedule(self, action, args, agent):
         self.queue.append((action, args, agent))
@@ -176,8 +195,7 @@ class Simulation(object):
                 agent.statistics.increase_stat("sensor_actions_executed")
             if self.observe_dict[action.name]:
                 agent.statistics.increase_stat("sensor_actions_executed")
-                for o in self.observe_dict[action.name]:
-                    perceived_facts += self.compute_observation(action, o, agent)
+                perceived_facts += self.compute_observations(action, agent)
 
             log.debug("Facts sent to agent %s: %s", agent.name, ", ".join(map(str, perceived_facts)))
             action.uninstantiate()
@@ -190,7 +208,7 @@ class Simulation(object):
             agent.updateTask([], plans.ActionStatusEnum.FAILED)
 
     def execute_physical_action(self, action, agent):
-        print "%d: %s executes (%s %s)" % (self.time, agent.name, action.name, " ".join(a.get_instance().name for a in action.args))
+        print "%d: %s executes (%s %s)" % (self.time, agent.name, action.name, " ".join(str(a.get_instance().name) for a in action.args))
 
         self.state.written_svars.clear()
         self.state.apply_effect(action.effect, trace_vars=True)
@@ -201,8 +219,28 @@ class Simulation(object):
 
         return new_facts
 
-    def compute_observations(self, action, observe, agent):
-        pass
+    def compute_observations(self, action, agent):
+        obs = []
+        for o in self.observe_dict[action.name]:
+            det_args = None
+            for ex in o.execution:
+                if ex.action == action:
+                    det_args = dict((oarg, aarg.get_instance()) for oarg, aarg in zip(ex.args, action.args ))
+                    break
+
+            assert det_args
+                
+            def get_objects(arg):
+                if arg in det_args:
+                    return [det_args[arg]]
+                return list(self.problem.get_all_objects(arg.type))
+            
+            for mapping in o.smart_instantiate(o.get_inst_func(self.state), o.args, [get_objects(a) for a in o.args], self.problem):
+                log.debug("%d: Agent %s executes observation (%s %s)", self.time, agent.name, o.name, " ".join(a.get_instance().name for a in o.args))
+                facts = [state.Fact(svar, val) for svar, val in self.state.get_effect_facts(o.effect).iteritems()]
+                log.debug("%d: Agent %s receives observations: %s", self.time, agent.name, ", ".join(map(str, facts)))
+                obs += facts
+        return obs
 
     def execute_sensor_action(self, action, agent):
         perceptions = []

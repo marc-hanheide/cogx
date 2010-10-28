@@ -50,7 +50,7 @@ class ProbStateTest(common.PddlTest):
         self.assertEqual(state[svar_loc22][prob["apt2"]], 0.25)
         
         svar_pload_apn1 = StateVariable(prob.functions["p_load_success"][0], [prob["apn1"]])
-        self.assertEqual(state[svar_pload_apn1], 0.8)
+        self.assertEqual(state[svar_pload_apn1].value, 0.8)
         
         
     def testStateDeterminisation(self):
