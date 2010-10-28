@@ -1,0 +1,470 @@
+%-------------------------------------------------------------------------
+% FIXME: this will eventually have to be use probabilities exclusively.
+% For now, let's just use negative weights where we care about having
+% the given query/nominal in the resulting proof.
+%-------------------------------------------------------------------------
+
+% The following dummy facts are bound to nominals in the rules for generation.
+dummy_nom1(dn1_1).
+dummy_nom2(dn1_2).
+dummy_nom3(dn1_3).
+dummy_nom4(dn1_4).
+dummy_nom5(dn1_5).
+dummy_nom6(dn1_6).
+
+%-------------------------------------------------------------------------
+
+utt_head(Nom) <-
+	dummy_nom1(Nom),
+	i : sort(Nom, dvp) / p(1.0),
+	i : prop(Nom, 'c-goal') / p(1.0).
+
+%-------------------------------------------------------------------------
+% ERRORS & COMPLAINTS
+%-------------------------------------------------------------------------
+
+% fallback goal
+% TODO: is it an appropriate one?
+generate : event : utter(robot, H, Int) <-
+	utt_head(Nom),
+	i : feat_SpeechAct(Nom, clarification) / -1.0,
+	i : feat_Modality(Nom, speech) / -1.0,
+	generate : dialogue_move_flag(failure) / 0.0,
+	event : produce(r, Nom) / 20.0.
+
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['error-reported'|T])),
+	i : feat_SpeechAct(Nom, clarification) / -1.0,
+	i : feat_Modality(Nom, speech) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+% ASSERTIONS
+%-------------------------------------------------------------------------
+
+% the XY object is Z
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(PropNom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['grounded', about(About), content(SingleCnt)])),
+%	Cnt = [SingleCnt],
+	generate : dialogue_move_topic(TargetNom, About) / 0.0,
+	i : feat_SpeechAct(Nom, assertion) / -1.0,
+	i : feat_Relation(Nom, answer) / -1.0,
+	i : rel_Content(Nom, ContentNom) / -1.0,
+		i : sort(ContentNom, ascription) / -1.0,
+		i : rel_Target(ContentNom, TargetNom) / -1.0,
+			generate : object_description(Int, TargetNom, About),
+		generate : ascribe_property(ContentNom, PropNom, SingleCnt),
+	event : produce(r, Nom) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+generate : ascribe_property(Nom, UsedNom, color(C)) <-
+	i : rel_Color(Nom, UsedNom) / -1.0,
+		i : sort(UsedNom, quality) / -1.0,
+		i : prop(UsedNom, C) / -1.0.
+
+generate : ascribe_property(Nom, UsedNom, shape(C)) <-
+	i : rel_Shape(Nom, UsedNom) / -1.0,
+		i : sort(UsedNom, quality) / -1.0,
+		i : prop(UsedNom, C) / -1.0.
+
+generate : ascribe_property(Nom, UsedNom, size(C)) <-
+	i : rel_Size(Nom, UsedNom) / -1.0,
+		i : sort(UsedNom, quality) / -1.0,
+		i : prop(UsedNom, C) / -1.0.
+
+generate : ascribe_property(Nom, UsedNom, inRoom(_C)) <-
+	i : rel_Color(Nom, UsedNom) / -1.0,
+		i : sort(UsedNom, quality) / -1.0,
+		i : prop(UsedNom, pink) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+% "it is a red box"
+% @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ context)  ^ <Type>(b3:thing ^ <InfoStatus>new ^ <Color>red ^ box))) 
+
+% the XY object is Z
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(PropNom),
+	dummy_nom5(TypeNom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['grounded', about(About), content([type(_T) | Feats])])),
+%	Cnt = [SingleCnt],
+	generate : dialogue_move_topic(TargetNom, About) / 0.0,
+	i : feat_SpeechAct(Nom, assertion) / -1.0,
+	i : feat_Relation(Nom, answer) / -1.0,
+	i : rel_Content(Nom, ContentNom) / -1.0,
+		i : sort(ContentNom, ascription) / -1.0,
+		i : rel_Target(ContentNom, TargetNom) / -1.0,
+			generate : it(TargetNom),
+		i : rel_Type(ContentNom, TypeNom) / -1.0,
+			i : sort(TypeNom, thing) / -1.0,
+			i : prop(TypeNom, thing) / -1.0,
+			i : feat_InfoStatus(TypeNom, new) / -1.0,
+			expand_featlist(TypeNom, Feats),
+	event : produce(r, Nom) / -1.0.
+
+expand_featlist(Nom, []).
+
+expand_featlist(Nom, [color(C) | T]) <-
+	i : feat_Color(Nom, C) / -1.0,
+	expand_featlist(Nom, T).
+
+expand_featlist(Nom, [shape(S) | T]) <-
+	i : feat_Shape(Nom, S) / -1.0,
+	expand_featlist(Nom, T).
+
+%-------------------------------------------------------------------------
+% POLAR QUESTIONS
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['question-answered', agent(H), about(About), feature(Feat), hypo(Hypo)])),
+	generate : dialogue_move_topic(TargetNom, About) / 0.0,
+	i : feat_SpeechAct(Nom, clarification) / -1.0,
+	i : feat_Modality(Nom, vision) / -1.0,
+	i : rel_Target(Nom, TargetNom) / -1.0,
+		generate : object_description(Int, TargetNom, About),
+	i : rel_Content(Nom, ContentNom) / -1.0,
+		feat_to_sort(Feat, FeatSort),
+		i : sort(ContentNom, FeatSort) / -1.0,
+		i : prop(ContentNom, Hypo) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+feat_to_sort(color, 'q-color').
+feat_to_sort(shape, 'q-shape').
+feat_to_sort(size, 'q-size').
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+maybe_add_hypo(Nom, [hypo(Hypo)|T], clarification) <-
+	i : prop(Nom, Hypo) / -1.0.
+
+maybe_add_hypo(Nom, [], question).
+
+%-------------------------------------------------------------------------
+% WH- QUESTIONS
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['question-answered', agent(H), about(About), feature(Feat)])),
+	generate : dialogue_move_topic(TargetNom, About) / 0.0,
+	i : feat_SpeechAct(Nom, question) / -1.0,
+	i : feat_Modality(Nom, vision) / -1.0,
+	i : rel_Target(Nom, TargetNom) / -1.0,
+		generate : object_description(Int, TargetNom, About),
+	i : rel_Content(Nom, ContentNom) / -1.0,
+		feat_to_sort(Feat, FeatSort),
+		i : sort(ContentNom, FeatSort) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+% OBJECT DESCRIPTIONS
+%-------------------------------------------------------------------------
+
+%generate :
+generate : object_description(Int, Nom, PrivBId) <-
+	generate : the_object(Nom),
+	bel : ancestor(UpBId, PrivBId, _T),
+	try_adding_color(UpBId, Nom),
+	try_adding_shape(UpBId, Nom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+try_adding_color(BId, Nom) <-
+	bel : color(BId, Color),
+	Color \= unknown,
+	i : feat_Color(Nom, Color) / -0.7.
+
+try_adding_color(BId, Nom) <-
+	color_uncertain_or_unknown(BId) / 0.0.
+
+try_adding_shape(BId, Nom) <-
+	bel : shape(BId, Shape),
+	Shape \= unknown,
+	i : feat_Shape(Nom, Shape) / -0.7.
+
+try_adding_shape(BId, Nom) <-
+	shape_uncertain_or_unknown(BId) / 0.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+generate : object_description(Int, Nom, PrivBId) <-
+	att : linguisticsalience(PrivBId, high),
+	generate : using_salience(PrivBId) / -5.0,
+	generate : it(Nom).
+
+%-------------------------------------------------------------------------
+
+%generate : get_label(PrivBId, Label) <-
+%	bel : 
+
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(ActorNom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['object-shown', feature(Feat), hypo(Hypo)])),
+	i : feat_SpeechAct(Nom, request) / -1.0,
+	i : feat_Modality(Nom, vision) / -1.0,
+	i : rel_Actor(Nom, ActorNom) / -1.0,
+		i : sort(ActorNom, person) / -1.0,
+		i : prop(ActorNom, you) / -1.0,
+	i : rel_Content(Nom, ContentNom) / -1.0,
+		generate : expand_feat_hypo(ContentNom, Feat, Hypo),
+	event : produce(r, Nom) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+generate : expand_feat_hypo(Nom, color, C) <-
+		i : sort(Nom, 'q-color') / -1.0,
+		i : prop(Nom, C) / -1.0.
+
+generate : expand_feat_hypo(Nom, shape, C) <-
+		i : sort(Nom, 'q-shape') / -1.0,
+		i : prop(Nom, C) / -1.0.
+
+generate : expand_feat_hypo(Nom, size, C) <-
+		i : sort(Nom, 'q-size') / -1.0,
+		i : prop(Nom, C) / -1.0.
+
+%-------------------------------------------------------------------------
+
+% CAREFUL: "box" is a "thing"
+
+generate : this(Nom) <-
+	i : sort(Nom, entity) / -1.0,
+	i : prop(Nom, context) / -1.0,
+%	i : feat_InfoStatus(Nom, familiar) / -1.0.
+	i : feat_Proximity(Nom, proximal) / -1.0,  % when default, "it" doesn't work
+	i : feat_Salient(Nom, true) / -1.0.
+
+generate : it(Nom) <-
+	i : sort(Nom, entity) / -1.0,
+	i : prop(Nom, context) / -1.0,
+	i : feat_InfoStatus(Nom, familiar) / -1.0,
+	i : feat_Salient(Nom, true) / -1.0.
+
+generate : the_x(Nom, Label) <-
+	i : sort(Nom, thing) / -1.0,
+	i : prop(Nom, Label) / -1.0,
+	i : feat_InfoStatus(Nom, familiar) / -1.0,
+	i : feat_Salient(Nom, true) / -1.0.
+
+generate : the_object(Nom) <-
+	i : sort(Nom, thing) / -1.0,
+	i : prop(Nom, object) / -1.0,
+	i : feat_InfoStatus(Nom, familiar) / -1.0,
+	i : feat_Salient(Nom, true) / -1.0.
+
+generate : the_box(Nom) <-
+	i : sort(Nom, thing) / -1.0,
+	i : prop(Nom, box) / -1.0,
+	i : feat_InfoStatus(Nom, familiar) / -1.0,
+	i : feat_Salient(Nom, true) / -1.0.
+
+generate : complex_ex(Nom) <-
+	generate : the_box(Nom),
+	i : feat_Color(Nom, red) / -1.0,
+	i : feat_Shape(Nom, round) / -1.0.
+
+%-------------------------------------------------------------------------
+% OBJECT DESCRIPTIONS
+%-------------------------------------------------------------------------
+
+% "it is a red box"
+% @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ context)  ^ <Type>(b3:thing ^ <InfoStatus>new ^ <Color>red ^ box))) 
+
+%-------------------------------------------------------------------------
+% HACKS
+%-------------------------------------------------------------------------
+
+% XXX HACK XXX
+% find me a box -> what size is this
+%generate : event : utter(S, H, Int) <-
+%	utt_head(Nom),
+%	i : int : agent(Int, [S]),
+%	i : int : post(Int, state(['found' | T])),
+%	i : feat_CannedText(Nom, 'yummy_yummy_yummy!_dora_likes_sweets') / -1.0,
+%	event : produce(r, Nom) / -1.0.
+
+%generate : event : utter(S, H, Int) <-
+%	utt_head(Nom),
+%	dummy_nom2(ContentNom),
+%	dummy_nom3(TargetNom),
+%	i : int : agent(Int, [S]),
+%	i : int : post(Int, state(['found' | T])),
+%	i : feat_SpeechAct(Nom, question) / -1.0,
+%	i : feat_Modality(Nom, vision) / -1.0,
+%	i : rel_Target(Nom, TargetNom) / -1.0,
+%		generate : this(TargetNom),
+%	i : rel_Content(Nom, ContentNom) / -1.0,
+%		i : sort(ContentNom, 'q-size') / -1.0,
+%	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+
+% XXX HACK XXX
+% bring me a box -> it is blue
+%generate : event : utter(S, H, Int) <-
+%	utt_head(Nom),
+%	dummy_nom2(ContentNom),
+%	dummy_nom3(TargetNom),
+%	dummy_nom4(PropNom),
+%	i : int : agent(Int, [S]),
+%	i : int : post(Int, state(['possession' | T])),
+%	i : feat_SpeechAct(Nom, assertion) / -1.0,
+%	i : feat_Relation(Nom, answer) / -1.0,
+%	i : rel_Content(Nom, ContentNom) / -1.0,
+%		i : sort(ContentNom, 'ascription') / -1.0,
+%		i : rel_Target(ContentNom, TargetNom) / -1.0,
+%			generate : complex_ex(TargetNom),
+%		i : rel_Color(ContentNom, PropNom) / -1.0,
+%			i : sort(PropNom, quality) / -1.0,
+%			i : prop(PropNom, blue) / -1.0,
+%	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+
+% XXX HACK XXX
+% go left -> please show me something red
+%generate : event : utter(S, H, Int) <-
+%	utt_head(Nom),
+%	dummy_nom2(ContentNom),
+%	dummy_nom3(ActorNom),
+%	i : int : agent(Int, [S]),
+%	i : int : post(Int, state(['motion' | T])),
+%	i : feat_SpeechAct(Nom, request) / -1.0,
+%	i : feat_Modality(Nom, vision) / -1.0,
+%	i : rel_Actor(Nom, ActorNom) / -1.0,
+%		i : sort(ActorNom, person) / -1.0,
+%		i : prop(ActorNom, you) / -1.0,
+%	i : rel_Content(Nom, ContentNom) / -1.0,
+%		i : sort(ContentNom, 'q-color') / -1.0,
+%		i : prop(ContentNom, red) / -1.0,
+%	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+% ENGAGEMENT
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['engagement-open'|T])),
+	utt_head(Nom),
+	i : feat_SpeechAct(Nom, greeting) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['engagement-closed'|T])),
+	utt_head(Nom),
+%	i : feat_SpeechAct(Nom, closing) / -1.0,
+	i : feat_CannedText(Nom, goodbye_darling) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+% THANKING
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['acknowledged'|T])),
+	utt_head(Nom),
+%	i : feat_SpeechAct(Nom, confirmation) / -1.0,
+	i : feat_CannedText(Nom, 'ok_thanks') / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['thanked'|T])),
+	utt_head(Nom),
+%	i : feat_SpeechAct(Nom, confirmation) / -1.0,
+	i : feat_CannedText(Nom, 'thank_you') / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+% NEW OBJECT SEEN
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['new-object-announced', 'about-shared'(SharedBId)])),
+	bel : ancestor(SharBId, PrivBId, _T),
+	utt_head(Nom),
+	generate : dialogue_move_topic(Nom, PrivBId) / 0.0,
+	i : feat_CannedText(Nom, 'I_see_a_new_object') / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+% CONFIRMATIONS / DISCONFIRMATIONS
+%-------------------------------------------------------------------------
+
+tail_to_certainty([], certain).
+tail_to_certainty([certainty(C)], C).
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['verified'|T])),
+	tail_to_certainty(T, Cert),
+	verification_certainty_to_cannedtext(Cert, CannedText),
+	utt_head(Nom),
+	i : feat_CannedText(Nom, CannedText) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+verification_certainty_to_cannedtext(certain, yes).
+verification_certainty_to_cannedtext(uncertain, probably_yes).
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['falsified'|T])),
+	tail_to_certainty(T, Cert),
+	falsification_certainty_to_cannedtext(Cert, CannedText),
+	utt_head(Nom),
+	i : feat_CannedText(Nom, CannedText) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+falsification_certainty_to_cannedtext(certain, no).
+falsification_certainty_to_cannedtext(uncertain, probably_no).
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['uncertainty-expressed'|T])),
+	utt_head(Nom),
+%	i : feat_SpeechAct(Nom, reject) / -1.0,
+%	i : feat_AcknoModality(Nom, cognition) / -1.0,
+	i : feat_CannedText(Nom, 'I_am_not_sure') / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['knowing-disconfirmed'|T])),
+	utt_head(Nom),
+%	i : feat_SpeechAct(Nom, reject) / -1.0,
+%	i : feat_AcknoModality(Nom, cognition) / -1.0,
+	i : feat_CannedText(Nom, 'I_don\'t_know') / -1.0,
+%	i : feat_CannedText(Nom, 'sorry_I_do_not_know_that') / -1.0,
+	event : produce(r, Nom) / -1.0.
+
