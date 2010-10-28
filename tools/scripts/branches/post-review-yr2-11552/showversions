@@ -1,0 +1,20 @@
+#!/bin/sh
+echo "\n----------BASH\n"
+bash --version
+echo "\n----------GCC, CMAKE\n"
+gcc --version
+cmake --version
+echo "\n----------JAVA, ANT\n"
+java -version
+ant -version
+echo "\n----------CUDA\n"
+which nvcc
+nvcc --version
+echo "\n----------PYTHON\n"
+python --version
+python -c "import opencv; print 'OpenCv %d.%d' %(opencv.CV_MAJOR_VERSION, opencv.CV_MINOR_VERSION)"
+echo "\nPYTHON Qt4"
+python -c "import PyQt4.QtCore as qt; print 'PyQt4 version', qt.PYQT_VERSION_STR"
+echo "\n----------COGX CODE\n"
+pwd
+svn info
