@@ -1,0 +1,82 @@
+(define (domain dt-cogx)
+
+(:requirements :quantified-preconditions :equality :negative-preconditions :conditional-effects :typing :adl :disjunctive-preconditions :partial-observability)
+
+(:types  room - object
+         place_status - object
+         feature - object
+         agent - object
+         robot - movable
+         robot - agent
+         boolean - object
+         place - object
+         subgoal - object
+         movable - object
+         planning_agent - agent
+         place_label - object
+         
+)
+
+(:functions (reward) - number )
+
+(:predicates  (committed-is-in ?r - movable)
+              (label ?p - place ?value - place_label)
+              (placestatus ?n - place ?value - place_status)
+              (is-in ?r - movable ?value - place)
+              (in-domain-is-in ?r - movable ?v - place)
+              (connected ?n1 - place ?n2 - place)
+              (committed-label ?p - place)
+              (committed-placestatus ?n - place)
+              (visited ?r - robot ?p - place)
+)
+
+(:percepts  (observed-label ?p - place ?v - place_label)
+            (observed-is-in ?r - movable ?v - place)
+            (observed-placestatus ?n - place ?v - place_status)
+)
+
+
+(:constants  kitchen library office - place_label
+             place_0_pt_spatial_data - place
+             placeholder trueplace - place_status
+)
+
+(:action  explore_place
+          :parameters  (?a - robot ?loc - place)
+          :precondition  (and  (placestatus ?loc trueplace)
+                               (is-in ?a ?loc)
+                         )
+          :effect  (and  (visited ?a ?loc) (assign (reward ) 0))
+)
+
+(:action  sense-placelabel
+          :parameters  (?a - robot ?loc - place)
+          :precondition  (is-in ?a ?loc)
+          :effect  (and  (assign (reward ) 0))
+)
+
+(:action  commit-label-place_0_pt_spatial_data
+          :parameters  (?val - place_label)
+          :precondition  (not (committed-label place_0_pt_spatial_data))
+          :effect  (and  (committed-label place_0_pt_spatial_data)
+                         (when  (label place_0_pt_spatial_data ?val)
+			   (assign (reward ) 100)
+                         )
+			 (when (not (label place_0_pt_spatial_data ?val)) 
+			   (assign (reward ) 0))
+                   )
+)
+
+(:observe  placelabel
+           :parameters  (?a - robot ?loc - place ?n - place_label)
+           :execution  (sense-placelabel ?a ?loc)
+           :effect  (and  (when  (label ?loc ?n)
+                                 (probabilistic  0.7  (observed-label ?loc ?n))
+                          )
+                          (when  (not (label ?loc ?n))
+                                 (probabilistic  0.1  (observed-label ?loc ?n))
+                          )
+                    )
+)
+
+)
