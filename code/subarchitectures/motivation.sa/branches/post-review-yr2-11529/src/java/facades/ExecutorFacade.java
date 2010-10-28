@@ -18,6 +18,7 @@ import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTUtils;
 import castutils.castextensions.CASTHelper;
 import castutils.castextensions.WMEntryQueue;
 
@@ -59,7 +60,7 @@ public class ExecutorFacade extends CASTHelper {
 		}
 
 	}
-	
+
 	public class FutureExecutionTask extends FutureTask<PlanProxy> {
 
 		public FutureExecutionTask(WorkingMemoryAddress planID) {
@@ -85,14 +86,25 @@ public class ExecutorFacade extends CASTHelper {
 		PlanningTask pt = component.getMemoryEntry(planID, PlanningTask.class);
 		if (!pt.executePlan) {
 			pt.executePlan = true;
+			logger.info("setting planning task active");
 			component.overwriteWorkingMemory(planID, pt);
 		}
+		try {
+			logger.info("waiting a second as part of a big HACK!");
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			component.logException(e);
+		}
+		logger.info("starting execution for planID "
+				+ CASTUtils.toString(planID));
 		FutureExecutionTask futureExecution = new FutureExecutionTask(planID);
 		executorService.execute(futureExecution);
 		return futureExecution;
 	}
 
-	/** register callables to be called on completion of the executed plan
+	/**
+	 * register callables to be called on completion of the executed plan
+	 * 
 	 * @param c
 	 */
 	public void registerCallable(Callable<?> c) {
