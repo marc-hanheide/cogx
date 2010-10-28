@@ -1,0 +1,19 @@
+HOST localhost
+
+# live images
+# COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids 0 --devnums 0
+
+# reading stored images
+# COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids 1 --files "xdata/videoseq/SwGreenTea/clutter30c/image_%d.jpg" --start 0 --end 15 --framerate_ms 100
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+# CPP MG viewer VideoViewer --videohost localhost --videoname video --camid 1
+
+# CPP MG recognizer ObjectRecognizer --videohost localhost --videoname video --log --testmode 2 --models "SwGreenTea ShelcoreCube CvetMetaTea" --modeldir xdata/models/800 --matcher-cuda
+
+CPP MG vis.learner VisualLearner --log --debug
+# CPP MG vis.tester  TestVisualLearner --testmode "standalone" --log 
+CPP MG vis.tester  TestVisualLearner --testmode "learning" --log 
+

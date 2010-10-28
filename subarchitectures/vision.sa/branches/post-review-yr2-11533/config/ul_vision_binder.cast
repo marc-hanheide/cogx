@@ -1,0 +1,28 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname VideoServer --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/ul_stereo.ini --display
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG VideoServer OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/ul_stereo.ini:L  subarchitectures/vision.sa/config:R"
+
+#CPP MG PlanePopOut PlanePopOut --videoname VideoServer --stereohost localhost --stereoname stereo --log true
+#CPP MG Filter SOIFilter --log true --videoname video --camid 0 --display --stereoname stereo --objht 23 --objdt 60 --bght 24 --bgdt 9999 --fixc 24
+#CPP MG ObjAnalyzer ObjectAnalyzer --log true
+#CPP MG Mediator VisualMediator --log true
+#CPP MG vis.learner   VisualLearner --log true
+
+
+#SUBARCHITECTURE binding 
+
+#JAVA TM cast.architecture.AlwaysPositiveTaskManager --log
+#JAVA WM binder.components.BindingWorkingMemory --log
+
+#JAVA MG monitor binder.components.BinderMonitor --gui --log
+#JAVA MG binder binder.components.Binder --alpha 0.99f --log
+#JAVA MG discretizer binder.components.UnionDiscretizer --log
