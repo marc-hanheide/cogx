@@ -1,0 +1,11 @@
+# cast config
+HOST localhost
+
+INCLUDE v11n_base.cast.inc
+
+SUBARCHITECTURE somethingelse
+JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+JAVA WM cast.architecture.SubarchitectureWorkingMemory #--log
+
+JAVA MG java.test.client si.unilj.fri.cogx.v11n.test.V11nJavaTestComponent --displayserver "display.srv" --debug true
+
