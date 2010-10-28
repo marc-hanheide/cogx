@@ -1,0 +1,97 @@
+// Basic content planning for George, Dora
+
+
+
+// ACKNOWLEDGEMENT WITHOUT ACKNOWLEDGING MODALITY
+
+// Accept: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept)
+// Output: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept ^ <Content>(m1:marker ^ ok))
+// Realize: "ok"
+
+:dvp ^ ! <AcknoModality> ^ <SpeechAct> assertion ^ <Relation> accept ^ <Content> ( #c1: )
+-> 
+#c1 = (:marker ^ ok).
+
+// Reject: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>reject)
+// Output: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept ^ <Content>(m1:marker ^ sorry))
+// Realize: "sorry"  
+
+:dvp ^ ! <AcknoModality> ^ <SpeechAct> assertion ^ <Relation> reject ^ <Content> ( #c1: )
+-> 
+#c1 = (:marker ^ sorry).
+
+// Hold:   @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>hold)
+// Output: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>hold ^ <Content>(LF for "let me see"))
+// Realize: "let me see"
+
+:dvp ^ ! <AcknoModality> ^ <SpeechAct>assertion ^ <Relation> hold ^ <Content> ( #c1: )
+-> 
+#c1 =  (:modal ^ let ^ 
+            <Mood>imp ^ 
+            <Actor>(#a:entity ^ addressee) ^ 
+            <Event>(:perception ^ see ^ <Actor> #i:person) ^ 
+            <Patient>(#i:person ^ I ^ <Num> sg) ^ 
+            <Subject> #a:entity).
+            
+// Answer: 	@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <AnswerType>positive)            
+// Output: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <AnswerType>positive ^ <Content>(m1:marker ^ yes))
+// Realize: "yes"
+            
+:dvp ^ <SpeechAct>assertion ^ <Relation>answer ^ <AnswerType>positive ^ <Content> (#c:)
+-> 
+#c = (:marker ^ yes).
+             
+// Answer: 	@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <AnswerType>negative)            
+// Output: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <AnswerType>negative ^ <Content>(m1:marker ^ no))
+// Realize: "yes"
+            
+:dvp ^ <SpeechAct>assertion ^ <Relation>answer ^ <AnswerType>negative ^ <Content> (#c:)
+-> 
+#c = (:marker ^ no).
+
+
+// ACKNOWLEDGEMENT WITH ACKNOWLEDGING MODALITY
+
+// Accept vision: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept ^ <AcknoModality>vision)
+// Output: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept ^ <AcknoModality>vision 
+// 			^ <Content> (LF for "what do I see"))
+// Realize: "what do I see" 
+
+:dvp ^ <AcknoModality> vision ^ <SpeechAct> assertion ^ <Relation> accept ^ <Content> ( #c1: )
+->
+#c1 = (:perception ^ see ^ 
+                 <Mood> int ^ 
+                 <Tense> pres ^ 
+                 <Actor>(#i:person ^ I ^ <Num> sg) ^ 
+                 <Patient>(#w:entity ^ what) ^ 
+                 <Subject>#i:person ^ 
+                 <Wh-Restr>#w:entity).
+
+// Reject vision: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>reject ^ <AcknoModality>vision)
+// Output: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>reject ^ <AcknoModality>vision 
+//  		^ <Content> (LF for "I can't say I have seen that")                 
+// Realize: "I can't say I have seen that"
+
+:dvp ^ <AcknoModality> vision ^ <SpeechAct> assertion ^ <Relation> reject ^ <Content> ( #c1: )
+->
+#c1 =  (:communication ^ say ^ 
+                    <Mood> ind ^ 
+                    <Polarity> neg ^ 
+                    <Tense> pres ^ 
+                    <Actor>(#i:person ^ I ^ <Num> sg) ^ 
+                    <Event>(#s:perception ^ see ^ 
+                            <Aspect> perfect ^ 
+                            <Mood> ind ^ 
+                            <Tense> pres ^ 
+                            <Actor>(#j:person ^ I ^ 
+                                    <Num>sg) ^ 
+                            <Event>(:event ^ context ^ 
+                                    <Delimitation> unique ^ 
+                                    <Proximity> distal ^ 
+                                    <Quantification> specific) ^ 
+                            <Subject>#j:person) ^ 
+                    <Modifier>(:modal ^ can) ^ 
+                    <Subject>#i:person).
+                
+                 
+                 

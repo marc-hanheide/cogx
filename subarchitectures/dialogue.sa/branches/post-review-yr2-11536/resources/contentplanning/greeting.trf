@@ -1,0 +1,26 @@
+// GREETINGS
+// TODO: Find way to randomise greetings
+
+// if the speech act is a greeting, say "hello" (TODO: make more abstract, randomise greeting to more than just hello)
+:dvp ^ <SpeechAct>greeting ^ <Content>(#c1: ^ ! :greeting)
+->
+#c1 = :greeting ^ random(hello, hi).
+
+// if the speech act is a closing, say "goodbye" (TODO: make more abstract, randomise closing to more than just goodbye)
+:dvp ^ <SpeechAct>closing ^ <Content> (#c1:top)
+-> 
+#c1 = :d-units ^ list ^ 
+              <First>(b1:closing ^ bye) ^ 
+              <Next>(b2:closing ^ bye).
+
+// Thanking (TODO: Is this even necessary??)
+:dvp ^ <SpeechAct>thanking ^ <Content> (#c1:)
+-> 
+#c1 = :communication ^ thank ^ 
+                    <Mood>ind ^ 
+                    <Tense>pres ^ 
+                    <Actor>(s1:entity ^ speaker ^ 
+                            <Num>sg) ^ 
+                    <Patient>x1:entity ^ 
+                    <Recipient>(a1:entity ^ addressee).
+
