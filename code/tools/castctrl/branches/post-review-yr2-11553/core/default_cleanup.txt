@@ -1,0 +1,4 @@
+#dc1394_reset_bus
+#rm robotpose.ccf
+#tools/scripts/peekabotdata ${COGX_ROOT}/instantiations/peekabot-models/data
+
