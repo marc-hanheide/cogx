@@ -1,0 +1,44 @@
+# featureexrtactor eval
+extAPfeatures 
+# "addPaths", # used in both; might add this path: "C:\danijels\Matlab\cogLearn"
+# recogniser eval
+CLFstart
+VMstart
+LRstart
+KDBFrec
+qnt2ql
+lf2sfa
+LRloadAVmodels
+LRvisUpdate
+KDBFupdate
+KDBFunlearn
+
+# 2010
+ODKDEbatch
+ODKDEinit
+ODKDErec
+ODKDEunlearn
+ODKDEupdate
+
+# Affordance Learner
+trainclassifier
+testclassifier
+loadtrainingdata
+AlgorithmFactory
+Evaluator
+som_make
+som_demo1
+som_demo2
+som_demo3
+som_demo4
+
+# some glue
+cogxMatlabWarnings
+cogxVisualLearner_recognise
+cogxVisualLearner_update
+cogxVisualLearner_unlearn
+cogxVisualLearner_introspect
+cogxAffordanceLearner_getFeatures
+cogxAffordanceLearner_recognise
+getGlobalArray
+

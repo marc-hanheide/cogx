@@ -1,0 +1,29 @@
+# CAST config file
+HOST localhost
+
+COMPONENT CPP stereoserver StereoServer --videoname VideoServer --camids "0 1"  --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_new.ini #--display
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer
+
+CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --setvars "dir=/tmp" --monitor "%(dir)/{popout.show.points}" --log true
+#CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --setvars "dir=/tmp" --monitor "PlaneMarkedOnImage=image:%(dir)/{popout.show.image}" --log true
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+#############################
+#CPP MG VideoServer OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/stereo-tuw-2010-02-10.ini:L  subarchitectures/vision.sa/config/stereo-tuw-2010-02-10.ini:R" --imgsize "640 480"
+
+# reading stored images
+#CPP MG  VideoServer OpenCvImgSeqServer --camids "0 1" --files "subarchitectures/vision.sa/config/ul_test_seq_1/img%03d-L.jpg subarchitectures/vision.sa/config/ul_test_seq_1/img%03d-R.jpg" --start 30 --end 30 --framerate_ms 30
+#############################
+
+CPP MG VideoServer OpenCvImgSeqServer --camids "0 1" --files "subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-L.jpg subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-R.jpg" --start 7 --end 7 --framerate_ms 30
+
+
+CPP MG PlanePopOut PlanePopOut --videoname VideoServer --stereohost localhost --stereoname stereoserver  #--display
+

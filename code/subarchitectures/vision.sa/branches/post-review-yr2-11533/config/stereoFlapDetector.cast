@@ -1,0 +1,18 @@
+HOST localhost
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# reading stored images
+CPP MG VideoServer OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw-okt-09/img%03d-L.bmp instantiations/tuw-okt-09/img%03d-R.bmp" --start 0 --end 8 --framerate_ms 200 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R"
+
+#CPP MG VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "instantiations/stereoflaps/img%03d-L.jpg instantiations/stereoflaps/img%03d-R.jpg" --start 0 --end 3 --framerate_ms 200 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo.ini:L subarchitectures/vision.sa/config/tuw_stereo.ini:R"
+
+# use live images from stereo rig
+#CPP MG VideoServer OpenCvLiveServer --videoname video --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R"
+
+
+CPP MG StereoFlapDetector StereoFlapDetector --videoname VideoServer --camids "0 1" --log #--debug 
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --maxModels 1 --log
+CPP MG StereoFlapDetectorDriver StereoFlapDetectorDriver --log
