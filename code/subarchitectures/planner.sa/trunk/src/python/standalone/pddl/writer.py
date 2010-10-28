@@ -289,7 +289,8 @@ class Writer(object):
         strings.append("")
         strings += self.write_init(problem.init)
         strings.append("")
-        strings += self.section(":goal", self.write_condition(problem.goal))
+        if problem.goal:
+            strings += self.section(":goal", self.write_condition(problem.goal))
 
         if problem.optimization:
             strings.append("(:metric %s %s)" % (problem.optimization, self.write_term(problem.opt_func)))

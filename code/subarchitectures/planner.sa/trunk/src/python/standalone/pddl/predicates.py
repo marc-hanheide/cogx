@@ -81,8 +81,7 @@ class Function(object):
         return any(isinstance(a.type, FunctionType) for a in self.args)
     
     def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.hash == other.hash and self.name == other.name \
-            and self.type == other.type and all(map(lambda a,b: a == b, self.args, other.args))
+        return self.__class__ == other.__class__ and self.hash == other.hash
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -139,6 +138,8 @@ class Literal(object):
         self.negated = negated
         self.scope = _scope
         assert isinstance(predicate, Function), "not a function: %s" % str(predicate)
+
+        self.hash = None
 
         if _scope:
             self.args = _scope.lookup(args)
@@ -221,7 +222,9 @@ class Literal(object):
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash((self.predicate, self.negated ) + tuple(self.args))
+        if not self.hash:
+            self.hash = hash((self.predicate, self.negated ) + tuple(self.args))
+        return self.hash
         
     @staticmethod
     def parse(it, scope, negate=False, maxNesting=999, function_scope=scope.SCOPE_ALL):
@@ -497,8 +500,8 @@ class VariableTerm(Term):
     def get_instance(self):
         """Returns the ground object if this terms parameter is
         instantiated."""
-        if self.is_instantiated():
-            return self.object.get_instance()
+        if self._object.is_instantiated():
+            return self._object.get_instance()
         raise Exception, "Term %s is not instantiated" % str(self.object)
 
     def copy_instance(self):

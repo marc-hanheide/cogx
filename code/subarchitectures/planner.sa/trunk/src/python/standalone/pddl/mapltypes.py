@@ -361,19 +361,19 @@ class TypedObject(object):
             return
         self._name = name
         self._type = _type
-        self.hash = hash((self.__class__, self.name, self.type))
+        self.hash = hash((self.name, self.type))
 
     name = property(lambda self: self._name)
     type = property(lambda self: self._type)
 
     def rename(self, name):
         self._name = name
-        self.hash = hash((self.__class__, self.name, self.type))
+        self.hash = hash((self.name, self.type))
 
     def change_type(self, type):
         assert self.type.equal_or_subtype_of(type) or type.equal_or_subtype_of(self.type), "invalid type change from %s to %s." % (str(self.type), str(type))
         self._type = type
-        self.hash = hash((self.__class__, self.name, self.type))
+        self.hash = hash((self.name, self.type))
 
     def get_type(self):
         return self.type
@@ -394,13 +394,10 @@ class TypedObject(object):
         return self.hash
 
     def __eq__(self, other):
-        try:
-            return self.name == other.name and self.type == other.type
-        except:
-            return False
+        return isinstance(other, TypedObject) and self.hash == other.hash
 
     def __ne__(self, other):
-        return not self.__eq__(other)
+        return not isinstance(other, TypedObject) or self.hash != other.hash
 
 class TypedNumber(TypedObject):
     """Specialized subclass of TypedObject to represent numeric
@@ -414,7 +411,7 @@ class TypedNumber(TypedObject):
         """
         self._value = number
         self._type = t_number
-        self.hash = hash((self.__class__, self.name, self.type))
+        self.hash = hash((self._value, self.type))
 
     value = property(lambda self: self._value)
     name = property(lambda self: self._value)
@@ -424,13 +421,7 @@ class TypedNumber(TypedObject):
 
     def __str__(self):
         return "%f" % self.value
-
-    def __eq__(self, other):
-        try:
-            return self.value == other.value and self.type == other.type
-        except:
-            return self.value == other
-        
+    
 class Parameter(TypedObject):
     """Subclass of TypedObject that represents parameters of actions or
     quantified conditions/effects.

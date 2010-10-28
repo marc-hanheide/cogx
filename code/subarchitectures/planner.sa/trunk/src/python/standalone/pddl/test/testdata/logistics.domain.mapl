@@ -31,12 +31,12 @@
 
 (:action drive
          :agent         (?a - agent)
-         :parameters    (?t - truck ?to ?from - location ?c - city)
-         ;; :parameters    (?t - truck ?to - location)
-         :precondition  (and (= (location-of ?t) ?from)
-                             (= (city-of ?to) ?c)
-                             (= (city-of ?from) ?c))
-         ;; :precondition  (= (city-of (location-of ?t)) (city-of ?to))
+;         :parameters    (?t - truck ?to ?from - location ?c - city)
+         :parameters    (?t - truck ?to - location)
+         ;; :precondition  (and (= (location-of ?t) ?from)
+         ;;                     (= (city-of ?to) ?c)
+         ;;                     (= (city-of ?from) ?c))
+         :precondition  (= (city-of (location-of ?t)) (city-of ?to))
          :effect        (assign (location-of ?t) ?to))
 
 (:action fly

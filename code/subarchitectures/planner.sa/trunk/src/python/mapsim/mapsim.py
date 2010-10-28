@@ -22,7 +22,7 @@ import random, logging
 from standalone import pddl, config
 import standalone.globals as global_vars
 
-import simulation, agent, learning_agent
+import simulation, agent
 
 log = config.logger()
 
@@ -83,9 +83,12 @@ if __name__ == '__main__':
     for agt, prob in scenario.agents.iteritems():
         print "  %s: %s" % (agt, prob.goal.pddl_str())
 
-    #TODO: make this more generic
-    if global_vars.mapsim_config.agent_type == 'LearningAgent':
-        agent_type = learning_agent.LearningAgent
+    if global_vars.mapsim_config.agent_type:
+        elems = global_vars.mapsim_config.agent_type.split(".")
+        module_elems = elems[:-1]
+        if module_elems:
+            exec("import %s" % ".".join(module_elems))
+        exec("agent_type = %s" % global_vars.mapsim_config.agent_type)
     else:
         agent_type = agent.Agent
 

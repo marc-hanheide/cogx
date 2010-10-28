@@ -140,9 +140,8 @@ class StateTest(common.PddlTest):
         load.uninstantiate()
 
         fnew2 = Fact(num_packages, TypedNumber(2))
-        fnew2b = Fact(num_packages, 2)
         self.assert_(fnew2 in state)
-        self.assert_(fnew2b in state)
+        self.assertEqual(state[num_packages].value, 2)
         
         unload = self.dom.get_action("unload")
         unload.instantiate(["agent", "obj21", "tru2"], self.prob)
