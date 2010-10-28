@@ -89,7 +89,7 @@
 
   (:observe coin-status-biased
 	   :parameters (?x - coin)
-
+	   
 	   :execution (or (flip ?x) (flip ?x))
 
 	   :precondition (biased ?x)

@@ -240,6 +240,76 @@ POMDP_State* Solver::take_observation(POMDP_State* current_state,
     return successor_state;
 }
 
+std::vector<double>
+Solver::report__probabilities_of_facts(POMDP_State* current_state,
+         const Percept_List& propositions)
+{
+    std::vector<double> answer;
+    
+    Formula::List__State_Propositions planning_propositions;
+    for(auto prop = propositions.begin()
+            ; prop != propositions.end()
+            ; prop++){
+        std::string _predicate_name = (*prop).first;
+
+        NEW_referenced_WRAPPED
+            (domain_Data.get()
+             , Planning::Predicate_Name
+             , predicate_name
+             , _predicate_name);
+        
+        Planning::Constant_Arguments constant_Arguments;
+        for(auto _argument = (*prop).second.begin()
+                ; _argument != (*prop).second.end()
+                ; _argument++){
+
+            std::string argument = *_argument;
+            
+            NEW_referenced_WRAPPED
+                (&problem_Data//runtime_Thread
+                 , Planning::Constant
+                 , constant
+                 , argument);
+            constant_Arguments.push_back(constant);
+        }
+        
+        NEW_referenced_WRAPPED_deref_visitable_POINTER
+            (problem_Grounding.get()
+             , Formula::State_Proposition
+             , __proposition
+             , predicate_name
+             , constant_Arguments);
+        auto proposition =  Formula::State_Proposition__Pointer(__proposition);
+        planning_propositions.push_back(proposition);
+    }
+
+    auto& belief_state = current_state->get__belief_state();
+    
+    for(auto prop = planning_propositions.begin()
+            ; prop != planning_propositions.end()
+            ; prop++){
+        auto& belief_state = current_state->get__belief_state();
+        double prop_probability = 0.0;
+        
+        for(auto atom_info = belief_state.begin()
+                ; atom_info != belief_state.end()
+                ; atom_info++){
+            auto probability = atom_info->second;
+            auto state = atom_info->first;
+
+            if(state->is_true((*prop)->get__id())){
+                prop_probability += probability;
+            }
+        }
+
+        answer.push_back(prop_probability);
+    }
+    
+    return std::move(answer);
+}
+
+
+
 POMDP_State* Solver::take_observation(POMDP_State* current_state,
                                 const Percept_List& perceptions,
                                 uint action_index)
