@@ -365,7 +365,7 @@ class DTProblem(object):
     def create_goal_actions(self, goals, domain):
         commit_actions = []
 
-        confirm_score = 100
+        confirm_score = 500
         
         for svar in goals:
             term = pddl.Term(svar.function, svar.get_args())
@@ -381,7 +381,7 @@ class DTProblem(object):
             a.precondition = b.cond('not', ('done', ))
             #commit_effect = b.effect(dtpddl.committed, [term])
             reward_effect = b('when', ('=', term, val), ('assign', ('reward',), confirm_score))
-            penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -5*confirm_score))
+            penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -1*confirm_score))
             done_effect = b.effect('done')
             a.effect = b.effect('and', reward_effect, penalty_effect, done_effect)
             
@@ -398,7 +398,7 @@ class DTProblem(object):
         if not disconfirm:
             return commit_actions
                         
-        dis_score = float(confirm_score)/len(disconfirm)
+        dis_score = confirm_score #float(confirm_score)/len(disconfirm)
         disconfirm_actions = []
         for svar, val in disconfirm:
             term = pddl.Term(svar.function, svar.get_args())
@@ -424,7 +424,7 @@ class DTProblem(object):
             
             #commit_effect = b.effect(dtpddl.committed, term)
             reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_score))
-            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -10*dis_score))
+            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -1*dis_score))
             done_effect = b.effect('done')
             a.effect = b.effect('and', reward_effect, penalty_effect, done_effect)
             
