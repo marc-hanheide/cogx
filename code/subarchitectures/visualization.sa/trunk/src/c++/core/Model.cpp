@@ -274,6 +274,7 @@ int CDisplayModel::getGuiElements(const std::string &viewId, CPtrVector<CGuiElem
 
 CDisplayObject::CDisplayObject()
 {
+   m_timestamp = 0;
 }
 
 CDisplayObject::~CDisplayObject()

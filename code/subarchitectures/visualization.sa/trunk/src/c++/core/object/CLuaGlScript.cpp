@@ -210,6 +210,7 @@ void CLuaGlScript::loadScript(const std::string& partId, const std::string& scri
    typeof(m_Models.begin()) itExtng = m_Models.find(partId);
    if (itExtng != m_Models.end()) {
       pModel = m_Models[partId];
+      //printf("Replacing existing script\n");
    }
 
    if (pModel == NULL) {
