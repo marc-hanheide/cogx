@@ -294,7 +294,15 @@ class SwitchingAgent(agent.Agent):
                 name = "%s-%s" % (svar.modality.name, svar.function.name)
             else:
                 name = svar.function.name
-            rawobs.append("(%s %s)" % (name, " ".join(a.name for a in svar.args)))
+
+            args = []
+            for a in svar.get_args():
+                if isinstance(a, pddl.TypedObject):
+                    args.append(a)
+                elif isinstance(a, pddl.FunctionTerm):
+                    args += [a.object for a in a.args]
+                
+            rawobs.append("(%s %s)" % (name, " ".join(a.name for a in args)))
 
         self.dt_interface.send_observations(rawobs)
     
