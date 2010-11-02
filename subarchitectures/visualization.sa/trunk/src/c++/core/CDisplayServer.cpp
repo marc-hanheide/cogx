@@ -65,6 +65,7 @@ CDisplayServer::CDisplayServer()
 CDisplayServer::~CDisplayServer()
 {
    pMainFrame = NULL; // don't delete
+   printf("Destroying CDisplayServer\n");
 }
 
 void CDisplayServer::startIceServer()
