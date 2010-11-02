@@ -121,7 +121,7 @@ class DTProblem(object):
 
     def compute_restrictions_new(self):
         def transform_constraints(new_fixed, new_constraints):
-            print map(str, new_fixed)
+            #print map(str, new_fixed)
             c2 = []
             most_relaxed_supertype = {}
             for c in new_constraints:
