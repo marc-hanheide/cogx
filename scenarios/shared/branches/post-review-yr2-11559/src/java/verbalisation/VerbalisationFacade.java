@@ -71,7 +71,7 @@ public class VerbalisationFacade {
 	 */
 	private void verbaliseLF(LogicalForm _greetingLF) {
 		ContentPlanningGoal _cpGoal = new ContentPlanningGoal(m_component
-				.newDataID(), _greetingLF, null);
+				.newDataID(), _greetingLF);
 		try {
 			m_component.addToWorkingMemory(new WorkingMemoryAddress(m_component
 					.newDataID(), m_comsysSA), _cpGoal);
