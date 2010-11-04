@@ -1,0 +1,110 @@
+SYNOPSIS
+  randomnet [-b -c -l -n -o -r -s -t -u -x]
+
+DESCRIPTION
+  Generate randomised power distribution networks consisting of
+  circuit breakers (cb) and switching devices (sd) connected by
+  lines. Output format is
+
+    CB <c> 0 L <l> SD <s> 0
+    <line definition>
+    <line definition>
+    ...
+
+  where c is the number of circuit breakers, l the number of
+  lines and s the number of switching devices. Each line
+  definition is of the form
+
+    <device type> <did> <s> l <lid> <device type> <did> <s>
+
+  where each device type is either "cb" (for circuit breaker) or
+  "sd" (for switching device), <did> is its (integer) id number,
+  <s> is a side (1 or 2) and <lid> is the id of the line. The
+  reading is that line number <lid> connects the specified sides
+  of the two devices. For example,
+
+    cb 3 2 l 8 sd 12 2
+
+  means that side 2 of circuit breaker #3 and side 2 of switching
+  device #12 are connected by line #8.
+
+OPTIONS
+  There are numerous options, mostly to control the average size
+  and topology of the generated networks.
+
+    -b <float>  The probability that a line branches. Default 0.4.
+
+    -c <float>  The probability that an open switch not otherwise
+                used to connect feeders together is connected to
+                other devices on both sides, thus forming a loop
+                in the network rather than a line to earth. Set to
+                0.0 for a loop-free network, 1.0 for as many loops
+                as possible. Default 0.5.
+
+    -f <float>  The proportion of lines (selected at random) to be
+                labelled as "faulty". If this option is given, a
+                second random number seed may be specified with
+                the -z option.
+
+    -h          Help. Prints this text.
+
+    -l <int>    Lower bound on the number of switching devices
+                in each feeder (excluding the circuit breaker at
+                the root). Used to eliminate trivial feeders such
+                as those consisting only of a circuit breaker, or
+                only a circuit breaker and one downstream switch.
+		Default 2.
+
+    -n <int>    The number of circuit breakers. Default 3.
+
+    -o          Print a list of the devices saying which ones are
+                open and which are closed in the initial state of
+                the network. If this option is not included, only
+                the configuration of lines is printed.
+
+    -r <int>    Make <int> attempts to connect the feeders into a
+                single network (a connected graph). Print a
+                warning if no such graph is produced in the
+                stated number of iterations. Default 100.
+
+    -s <int>    Seed for the random number generator. Default 1.
+
+    -t <float>  Probability that a switching device is terminal in
+                its feeder. It is then open, unless it has a line
+                out to earth. All non-terminal devices are closed.
+                Default 0.45.
+
+    -u <int>    Upper bound on the number of switching devices on
+                a feeder. The random network generator can produce
+                very large trees, and though this is rather rare,
+                it can be annoying. If the "upper bound" is set to
+                0, there is no limit and trees of any size may be
+                generated. If it is positive, only feeders with
+                numbers of switching devices in the range
+                (lower-bound ... upper-bound) will be generated.
+                Default 10.
+
+    -x <float>  Probability that a line branches at least B+1 ways
+                given that it branches at least B ways (for B > 1).
+                Branching more than two ways is quite rare in real
+                networks, so this should be a lower value than that
+                given by the -b option. Default 0.15.
+
+    -z <int>    Another random number seed. This one is for
+                selecting which lines are faulty. If option -f is
+                given, the default seed is 1. If -f is not given,
+                -z makes no sense and will be silently ignored.
+
+NOTES:
+  The generator will not accept values for T, B and X which would
+  lead to the expectation that the feeder trees would be infinite.
+  The threshold for this occurs where the expected number of nodes
+  at a given depth in the tree neither increases nor decreases
+  with the depth. Higher values for T lead to finite trees with
+  probability 1; lower values for T may lead to infinite ones. The
+  required inequation for an expectation of finite trees is
+
+           B
+   T > ---------
+       1 - X + B
+
