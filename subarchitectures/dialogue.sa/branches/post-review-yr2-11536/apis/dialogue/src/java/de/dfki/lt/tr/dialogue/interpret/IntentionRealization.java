@@ -140,7 +140,9 @@ public class IntentionRealization {
 		ContentPlanningGoal plf = new ContentPlanningGoal();
 		plf.cpgid = idGen.newIdentifier();
 		plf.lform = lf;
-		plf.topic = nr;
+		
+		//TODO where did the topic go?
+//		plf.topic = nr;
 		return plf;
 	}
 

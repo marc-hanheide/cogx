@@ -404,7 +404,9 @@ public class CCGRealizer
 						}
 						if (!realString.equals(UNABLE_TO_REALISE)) {
 							// assume that realisation worked out
-							nr = productionLF.topic;
+
+							//TODO where did the topic go?
+							//							nr = productionLF.topic;
 						}
 					}
 					// Forward the string to WM, to be synthesized
