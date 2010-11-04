@@ -48,8 +48,9 @@ link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData VisionData SpatialData La
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface)
 if(DISPLAY_COMA_PB)
-  link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface ComaData)
+  link_cast_component(${CAST_COMPONENT_NAME} ComaData)
 endif(DISPLAY_COMA_PB)
 endif(BUILD_SA_SPATIAL_PEEKABOT)
 
