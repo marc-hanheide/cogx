@@ -54,7 +54,7 @@ namespace DTPDDL
                 Side in_side = device__to__line__to__side[*device][input_line];
                 or_conditions<<"(when  "<<Open__predicate(DTPDDL::to_string(*device))
                              <<" (and "
-                             <<"(not "<<Source__predicate(to_string(*device), to_string(in_side))<<" ) "<<std::endl;
+                             <<"(not "<<Source__predicate(to_string(*device), to_string(in_side))<<" ) ) ) "<<std::endl;
             }
         }
 
