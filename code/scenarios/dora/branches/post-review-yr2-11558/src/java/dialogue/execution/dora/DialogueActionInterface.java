@@ -200,7 +200,7 @@ public class DialogueActionInterface extends
 				//HACK  for direct verbalisation of object location
 				
 				String ttsID = getComponent().newDataID();
-				SpokenOutputItem tts = new SpokenOutputItem(ttsID, message, null, null);
+				SpokenOutputItem tts = new SpokenOutputItem(ttsID, message, null);
 				getComponent().addToWorkingMemory(ttsID, "dialogue", tts);
 				
 				//END HACK
