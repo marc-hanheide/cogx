@@ -14,7 +14,7 @@
 #include <ConvertImage.h>
 // Std
 #include <math.h>
-#include <values.h>
+#include <limits.h>
 #include <boost/lexical_cast.hpp>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -26,6 +26,12 @@ using namespace cast;
 using namespace categorical;
 using boost::bad_lexical_cast;
 using boost::shared_ptr;
+
+
+//nah: seems to be a necessary fix for osx
+#ifndef MAXDOUBLE
+#define MAXDOUBLE DBL_MAX
+#endif
 
 
 // ------------------------------------------------------
@@ -333,9 +339,12 @@ void CategoricalDataProvider::runComponent()
   while(isRunning())
   {
     // Get current time and add 1sec
+	 timeval tv;
     timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    ts.tv_sec += 1;
+    gettimeofday(&tv, NULL);
+    ts.tv_sec = tv.tv_sec + 1;
+    ts.tv_nsec = 0;
+
 
     // Wait if necessary
     pthread_mutex_lock(&_signalMutex);
@@ -631,6 +640,7 @@ cast::cdl::CASTTime CategoricalDataProvider::outputImage()
   // Return the image timestamp
   return imageTimeStamp;
 }
+
 
 
 // ------------------------------------------------------
