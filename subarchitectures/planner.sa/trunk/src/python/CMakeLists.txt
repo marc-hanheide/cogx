@@ -1,5 +1,10 @@
-include(Slice2Py)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/standalone/config.auto.in" "${CMAKE_CURRENT_SOURCE_DIR}/standalone/config.auto")
 
+if(PLANNER_STANDALONE)
+  return()
+endif()
+
+include(Slice2Py)
 
 cast_slice2Py(GEN_FILE Planner.ice ${CAST_SLICE_DIR} ${CAST_SLICE_DIR}/cast/slice ${COGX_ROOT}/subarchitectures/binder/src/slice
   ${COGX_ROOT}/tools/beliefs/apis/beliefs/src/slice
@@ -18,8 +23,6 @@ list(APPEND GENERATED ${GEN_COMA_ICE} ${GEN_SPATIAL_PROB_ICE})
 endif(BUILD_SA_COMA)
 
 add_custom_target(python ALL DEPENDS ${GENERATED})
-
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/standalone/config.auto.in" "${CMAKE_CURRENT_SOURCE_DIR}/standalone/config.auto")
 
 #file(GLOB_RECURSE moduleFiles *.py)
 #file(GLOB_RECURSE moduleFilesRel RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)

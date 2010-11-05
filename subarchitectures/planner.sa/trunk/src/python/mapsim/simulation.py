@@ -77,10 +77,11 @@ class Simulation(object):
     @statistics.time_method_for_statistics("total_time")
     def single_run(self, run=0):
         self.reset(run)
-        log.debug("state:")
-        log.debug(str(self.state))
-        w = task.PDDLOutput(writer=pddl.dtpddl.DTPDDLWriter())
-        w.write(self.problem, problem_fn="world.pddl")
+        if 'partial-observability' in self.domain.requirements:
+            log.debug("state:")
+            log.debug(str(self.state))
+            w = task.PDDLOutput(writer=pddl.dtpddl.DTPDDLWriter())
+            w.write(self.problem, problem_fn="world.pddl")
         
         log.info("Starting simulation with random seed %d", self.seeds[self.run_index])
         for a in self.agents.itervalues():
