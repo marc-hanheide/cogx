@@ -2,7 +2,7 @@
 
 add_subdirectory(ContinualAxFF)
 
-option(BUILD_SA_PLANNER_TFD "Build TFD planner in planner.sa" NO)
+option(BUILD_SA_PLANNER_TFD "Build TFD planner in planner.sa" YES)
 if(BUILD_SA_PLANNER_TFD)
 
 set(TFD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tfd")
