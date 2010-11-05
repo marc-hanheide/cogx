@@ -270,11 +270,12 @@ void CategoricalDataSaver::runComponent()
   // Run component
   while(isRunning())
   {
-    // Get current time and add 1 sec
-    timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    ts.tv_sec += 1;
-
+// Get current time and add 1sec
+timeval tv;
+timespec ts;
+gettimeofday(&tv, NULL);
+ts.tv_sec = tv.tv_sec + 1;
+ts.tv_nsec = 0;
     // Wait if necessary
     pthread_mutex_lock(&_saveSignalMutex);
     if ((!_wasSaveImageSignal) || (!_wasSaveScanSignal) || (!_wasSaveOdometrySignal))
