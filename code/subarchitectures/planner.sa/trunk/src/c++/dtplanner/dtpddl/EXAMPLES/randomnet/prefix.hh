@@ -77,7 +77,7 @@ namespace DTPDDL
         }
         
         
-        answer<<"))"<<std::endl;
+        answer<<")))"<<std::endl;
         
         return answer.str();
     }

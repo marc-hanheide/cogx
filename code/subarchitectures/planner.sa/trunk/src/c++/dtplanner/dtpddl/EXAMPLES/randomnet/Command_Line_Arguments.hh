@@ -1,7 +1,19 @@
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <cassert>
+#include <map>
+#include <vector>
+#include <set>
+#include <string>
+
+
 #ifndef ARGUMENTS_HH
 #define ARGUMENTS_HH
 
+
+using namespace std;
 
 class Command_Line_Arguments
 {
