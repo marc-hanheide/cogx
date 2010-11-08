@@ -56,7 +56,30 @@ namespace DTPDDL
 
     string problem_postfix()
     {
-        return "(:metric maximize (reward) )  )";
+        
+        ostringstream answer;
+
+        answer<<"(:metric maximize (reward) )  )"<<std::endl;
+
+        answer<<"(:goal (and "<<std::endl;
+        if(soft_goal){
+            for(auto line = lines.begin()
+                    ; line != lines.end()
+                    ; line++){
+                answer<<"(preference 1 "<<Powered__predicate(to_string(*line))<<" )"<<std::endl;
+            }
+        } else {
+            for(auto line = lines.begin()
+                    ; line != lines.end()
+                    ; line++){
+                answer<<""<<Powered__predicate(to_string(*line))<<std::endl;
+            }
+        }
+        
+        
+        answer<<"))"<<std::endl;
+        
+        return answer.str();
     }
     
     
