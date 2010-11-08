@@ -74,7 +74,7 @@ public:
     bool get_bool(const std::string& = "") const;
     
     /* Return the argument of the last queried std::string (via
-     * \function{gotGuard}) as an \type{std::string}.*/
+     * \function{got_guard}) as an \type{std::string}.*/
     std::string get_string(const std::string& = "") const;
 
     /* Get the \argument{int} argument.*/
