@@ -12,7 +12,7 @@ WARNINGS := -Wall -Wextra
 CPPFLAGS := -ggdb $(OPTIMISE) -pg -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
 
 
-LDFLAGS := -L/data/private/grettonc/lib/ -lz  -lm -lpthread #-lglpk -lltdl -lClp -lCoinUtils
+LDFLAGS := #-L/data/private/grettonc/lib/ #-lz  -lm -lpthread #-lglpk -lltdl -lClp -lCoinUtils
 
 CXXFLAGS :=  -march=native $(WARNINGS) $(OPTIMISE)
 
