@@ -38,7 +38,7 @@ namespace DTPDDL
     string stochastic_fault()
     {
 
-        int fake_fault_probability;
+        int fake_fault_probability = 10;
         if(command_Line_Arguments.got_guard("--fake-faults")){
             fake_fault_probability = command_Line_Arguments.get_int();
         } else {
@@ -81,21 +81,23 @@ namespace DTPDDL
 
         double state_mass = 1.0 / static_cast<double>(all_belief_atoms.size());
 
-        answer<<" (probabilistic ";
-        for(auto atom = all_belief_atoms.begin()
-                ; atom != all_belief_atoms.end()
-                ; atom++){
-            answer<<state_mass<<" (and ";
+        if(all_belief_atoms.size()){ 
+            answer<<" (probabilistic ";
+            for(auto atom = all_belief_atoms.begin()
+                    ; atom != all_belief_atoms.end()
+                    ; atom++){
+                answer<<state_mass<<" (and ";
 
-            for(auto p = atom->begin()
-                    ; p != atom->end()
-                    ; p++){   
-                answer<<Faulty__predicate(to_string(*p));
-            }
+                for(auto p = atom->begin()
+                        ; p != atom->end()
+                        ; p++){   
+                    answer<<Faulty__predicate(to_string(*p));
+                }
             
-            answer<<" )"<<std::endl;
+                answer<<" )"<<std::endl;
+            }
+            answer<<")"<<std::endl;
         }
-        answer<<")"<<std::endl;
         
         
         return answer.str();

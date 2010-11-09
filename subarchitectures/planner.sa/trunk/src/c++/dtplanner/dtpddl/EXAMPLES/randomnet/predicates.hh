@@ -27,6 +27,13 @@ namespace DTPDDL
         return answer.str();
     }
     
+    string O_Powered__predicate()
+    {
+        ostringstream answer;
+        answer<<"(O-Powered ?x - "<<Line__typestring()<<")"<<std::endl;
+        return answer.str();
+    }
+    
     string Open__predicate()
     {
         ostringstream answer;
@@ -64,6 +71,13 @@ namespace DTPDDL
     {
         ostringstream answer;
         answer<<"(Powered "<<str<<")";
+        return answer.str();
+    }
+    
+    string O_Powered__predicate(const string& str)
+    {
+        ostringstream answer;
+        answer<<"(O-Powered "<<str<<")";
         return answer.str();
     }
     
