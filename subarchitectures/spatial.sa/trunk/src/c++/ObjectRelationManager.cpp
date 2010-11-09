@@ -264,8 +264,6 @@ void ObjectRelationManager::start()
       sleep(m_RetryDelay);
     }
 
-   // peekabot::GroupProxy root;
-    //root.assign(m_PeekabotClient, "root");
     if (m_bDisplayPlaneObjectsInPB) {
       m_planeProxies.add(m_PeekabotClient, "plane_objects", peekabot::REPLACE_ON_CONFLICT);
     }
@@ -529,21 +527,6 @@ void ObjectRelationManager::runComponent()
 {
   log("I am running!");
 
-  //REMOVEME
-//   readRelationsFromFile("relationFile.txt");
-
-//   vector<string> ret =
-//     computeMarginalDistribution("book");
-//   for (vector<string>::iterator it = ret.begin(); it != ret.end(); it++) {
-//     log(it->c_str());
-//   }
-  ///REMOVEME
-
-  peekabot::GroupProxy root;
-  if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness 
-      || m_bTestInness) {
-    root.assign(m_PeekabotClient, "root");
-  }
 
   peekabot::SphereProxy sqdp;
   peekabot::SphereProxy scwp;
@@ -573,12 +556,16 @@ void ObjectRelationManager::runComponent()
     table1.radius1 = 0.5;
     table1.radius2 = 0.5;
 
-    pp.add(m_relationTester, "table", peekabot::REPLACE_ON_CONFLICT);
-    pp.add_vertex(table1.radius1, table1.radius2, 0);
-    pp.add_vertex(-table1.radius1, table1.radius2, 0);
-    pp.add_vertex(-table1.radius1, -table1.radius2, 0);
-    pp.add_vertex(table1.radius1, -table1.radius2, 0);
+    peekabot::VertexSet polyVerts;
 
+    pp.add(m_relationTester, "table", peekabot::REPLACE_ON_CONFLICT);
+    pp.set_color(1.0, 1.0, 0);
+    polyVerts.add_vertex(table1.radius1, table1.radius2, 0);
+    polyVerts.add_vertex(-table1.radius1, table1.radius2, 0);
+    polyVerts.add_vertex(-table1.radius1, -table1.radius2, 0);
+    polyVerts.add_vertex(table1.radius1, -table1.radius2, 0);
+
+    pp.add_vertices(polyVerts);
     pp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z);
     pp.rotate(rotAngle, 0.0, 0.0, 1.0);
 
@@ -586,11 +573,13 @@ void ObjectRelationManager::runComponent()
     bp.add(m_relationTester, "krispies", peekabot::REPLACE_ON_CONFLICT);
     bp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.26+0.145);
     bp.set_scale(0.19, 0.09, 0.29);
+    bp.set_color(0.0, 0.0, 1.0);
     bp.set_opacity(0.5);
 
     bp2.add(m_relationTester, "joystick", peekabot::REPLACE_ON_CONFLICT);
     bp2.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.13);
     bp2.set_scale(0.23, 0.21, 0.26);
+    bp2.set_color(1.0, 0.0, 0.0);
     bp2.set_opacity(0.5);
 
     if (m_bTestOnness) {
@@ -791,14 +780,16 @@ void ObjectRelationManager::runComponent()
 	    Witness witness = findContactPatch(box2, box1, &patch);
 	    if (patch.size() > 2) {
 	      peekabot::PolygonProxy patchp;
+	      peekabot::VertexSet polyVerts;
 	      patchp.add(m_relationTester, "Patch", peekabot::REPLACE_ON_CONFLICT);
 	      patchp.set_color(1,0,0);
 	      for (vector<Vector3>::iterator it = patch.begin(); it != patch.end();it++){
-		patchp.add_vertex(it->x, it->y, it->z);
+		polyVerts.add_vertex(it->x, it->y, it->z);
 	      }
+	      patchp.add_vertices(polyVerts);
 	    }
 	    //	  peekabot::CylinderProxy normp;
-	    //	  normp.add(m_onnessTester, "Normal", peekabot::REPLACE_ON_CONFLICT);
+	    //	  normp.add(m_relationTester, "Normal", peekabot::REPLACE_ON_CONFLICT);
 	    //	  normp.set_color(0,0,1);
 	    //	  normp.set_scale(0.005, 0.005, 0.1);
 	    //	  normp.translate(0.05,0,0);
@@ -949,7 +940,7 @@ void ObjectRelationManager::runComponent()
 		  total);
 	      peekabot::LineCloudProxy linecloudp;
 
-	      linecloudp.add(m_PeekabotClient, "root.distribution",
+	      linecloudp.add(m_PeekabotClient, "Scene.distribution",
 		  peekabot::REPLACE_ON_CONFLICT);
 	      linecloudp.clear_vertices();
 	      linecloudp.set_color(0.5, 0, 0.5);
@@ -1124,8 +1115,6 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	  if (obsObject->type == OBJECT_BOX) {
 	    BoxObject *box = (BoxObject*)obsObject;
 	    peekabot::CubeProxy theobjectproxy;
-	    peekabot::GroupProxy root;
-	    root.assign(m_PeekabotClient, "root");
 	    theobjectproxy.add(m_objectProxies, m_objects[obsLabel]->label, peekabot::REPLACE_ON_CONFLICT);
 	    theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
 	    double angle;
@@ -1141,8 +1130,6 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	  else if (obsObject->type == OBJECT_HOLLOW_BOX){
 	    HollowBoxObject *box = (HollowBoxObject*)obsObject;
 	    peekabot::CubeProxy theobjectproxy;
-	    peekabot::GroupProxy root;
-	    root.assign(m_PeekabotClient, "root");
 	    theobjectproxy.add(m_objectProxies, m_objects[obsLabel]->label, peekabot::REPLACE_ON_CONFLICT);
 	    theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
 	    double angle;
@@ -1247,11 +1234,13 @@ ObjectRelationManager::newPlaneObject(const cast::cdl::WorkingMemoryChange &wmc)
 	  char identifier[100];
 	  sprintf(identifier, "label%d", 0);
 	  peekabot::PolygonProxy pp;
+	  peekabot::VertexSet polyVerts;
 	  pp.add(m_planeProxies, identifier, peekabot::REPLACE_ON_CONFLICT);
-	  pp.add_vertex(planeObject.radius1, planeObject.radius2, 0);
-	  pp.add_vertex(-planeObject.radius1, planeObject.radius2, 0);
-	  pp.add_vertex(-planeObject.radius1, -planeObject.radius2, 0);
-	  pp.add_vertex(planeObject.radius1, -planeObject.radius2, 0);
+	  polyVerts.add_vertex(planeObject.radius1, planeObject.radius2, 0);
+	  polyVerts.add_vertex(-planeObject.radius1, planeObject.radius2, 0);
+	  polyVerts.add_vertex(-planeObject.radius1, -planeObject.radius2, 0);
+	  polyVerts.add_vertex(planeObject.radius1, -planeObject.radius2, 0);
+	  pp.add_vertices(polyVerts);
 
 	  pp.translate(observedObject->pos.x, observedObject->pos.y, 
 	      observedObject->pos.z);
@@ -1548,16 +1537,15 @@ ObjectRelationManager::sampleOnnessForObject(const string &supLabel,
       0.04, 0.02);
   objectO->pose = oldPose;
 
-  peekabot::GroupProxy root;
-  root.assign(m_PeekabotClient, "root");
-
   peekabot::PointCloudProxy pcloud;
-  pcloud.add(root,"onpoints", peekabot::REPLACE_ON_CONFLICT);
+  peekabot::VertexSet cloudPoints;
+  pcloud.add(m_relationTester,"onpoints", peekabot::REPLACE_ON_CONFLICT);
 
   for (vector<Vector3>::iterator it = points.begin(); it != points.end();
       it++) {
-    pcloud.add_vertex(it->x,it->y,it->z);
+    cloudPoints.add_vertex(it->x,it->y,it->z);
   }
+  pcloud.add_vertices(cloudPoints);
 }
 
 void
@@ -1604,16 +1592,15 @@ ObjectRelationManager::sampleOnnessForPlane(const string &planeLabel, const stri
       0.1, 0.025);
   objectO->pose = oldPose;
 
-  peekabot::GroupProxy root;
-  root.assign(m_PeekabotClient, "root");
-
   peekabot::PointCloudProxy pcloud;
-  pcloud.add(root,"onpoints", peekabot::REPLACE_ON_CONFLICT);
+  peekabot::VertexSet cloudPoints;
+  pcloud.add(m_relationTester,"onpoints", peekabot::REPLACE_ON_CONFLICT);
 
   for (vector<Vector3>::iterator it = points.begin(); it != points.end();
       it++) {
-    pcloud.add_vertex(it->x,it->y,it->z);
+    cloudPoints.add_vertex(it->x,it->y,it->z);
   }
+  pcloud.add_vertices(cloudPoints);
 }
 
 void 
@@ -2082,9 +2069,13 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	fixedRoomTypeVals[j] = false;
       }
 
+      bool skipThis = false;
+
       // Fix query object to be in fixedRoom
       fixedObjectInRoomVals[object] = true;
       objectInRoomVal[object] = fixedRoom;
+      if (objectInRoomDefault[object * nRoomCategories + roomTypeVal[fixedRoom]] == 0.0)
+	skipThis = true;
 
       i = object;
       while (precursors[i].object != -1) {
@@ -2095,185 +2086,201 @@ ObjectRelationManager::computeMarginalDistribution(string objName)
 	  objectDirectlyOnObjectVal[i] = precursors[i].object;
 	  objectOnObjectVal[i * nObjects + precursors[i].object] = 1;
 	  objectInObjectVal[i * nObjects + precursors[i].object] = 0;
+	  if (objectOnObjectDefault[i * nObjects + precursors[i].object] == 0.0 ||
+objectInObjectDefault[i * nObjects + precursors[i].object] == 1.0) {
+	    skipThis = true;
+	  }
 	}
 	else {
 	  objectDirectlyOnObjectVal[i] = -1;
 	  objectInObjectVal[i * nObjects + precursors[i].object] = 1;
+	  if (objectInObjectDefault[i * nObjects + precursors[i].object] == 0.0) {
+	    skipThis = true;
+	  }
 	}
 	i = precursors[i].object;
       }
-//      // Fixes all relations involving the unrelated trajector to 0
-//      for (int j = i-1; j >= 0; j--) {
-//	fixedObjectInObjectVals[i * nObjects + j] = true;
-//	fixedObjectOnObjectVals[i * nObjects + j] = true;
-//      }
+
+      if (!skipThis) {
+	//      // Fixes all relations involving the unrelated trajector to 0
+	//      for (int j = i-1; j >= 0; j--) {
+	//	fixedObjectInObjectVals[i * nObjects + j] = true;
+	//	fixedObjectOnObjectVals[i * nObjects + j] = true;
+	//      }
 
 
-      while (true) {
+	while (true) {
+	  bool skipThis = false;
 
-	double prob = probabilityOfConfig(roomTypeVal, objectInRoomVal,
-	    objectInObjectVal, objectOnObjectVal, objectDirectlyOnObjectVal);
-	if (prob > 0.0)
-	  combinations++;
+	  double prob = probabilityOfConfig(roomTypeVal, objectInRoomVal,
+	      objectInObjectVal, objectOnObjectVal, objectDirectlyOnObjectVal);
+	  if (prob > 0.0)
+	    combinations++;
 
-	totalProbMass += prob;
+	  totalProbMass += prob;
 
-	int index = 0;
+	  int index = 0;
 
-	while (index < nRooms) {
-	  if (fixedRoomTypeVals[index]) {
-	    index++;
-	  }
-	  else {
-	    roomTypeVal[index]++;
-	    if (roomTypeVal[index] == nRoomCategories) {
-	      roomTypeVal[index] = 0;
+	  while (index < nRooms) {
+	    if (fixedRoomTypeVals[index]) {
 	      index++;
 	    }
 	    else {
-	      break;
-	    }
-	  }
-	}
-
-	if (index < nRooms) 
-	  continue;
-
-	index = 0;
-	int index2 = 1;
-	while (index < nObjects) {
-	  if (index2 >= nObjects) {
-	    index++;
-	    index2 = index+1;
-	  }
-	  else {
-	    if (objectInRoomVal[index] != objectInRoomVal[index2] ||
-		fixedObjectInObjectVals[index2 * nObjects + index]) {
-	      index2++;
-	    }
-	    else {
-	      objectInObjectVal[index2 * nObjects + index]++;
-
-	      if (objectInObjectVal[index2 * nObjects + index] == 2) {
-		objectInObjectVal[index2 * nObjects + index] = 0;
-		index2++;
+	      roomTypeVal[index]++;
+	      if (roomTypeVal[index] == nRoomCategories) {
+		roomTypeVal[index] = 0;
+		index++;
 	      }
 	      else {
 		break;
 	      }
 	    }
 	  }
-	}
 
+	  if (index < nRooms) 
+	    continue;
 
-	if (index < nObjects) 
-	  continue;
-
-//	for (int i = 0; i < nRooms; i++) 
-//	  cout <<roomTypeVal[i];
-//	cout << " ";
-//	for (int i = 0; i < nObjects; i++) 
-//	  cout <<objectInRoomVal[i];
-//	cout << " ";
-//	for (int i = 0; i < nObjects*nObjects; i++) 
-//	  cout <<objectInObjectVal[i];
-//	cout << " ";
-//	for (int i = 0; i < nObjects*nObjects; i++) 
-//	  cout <<objectOnObjectVal[i];
-//	cout << " ";
-//	for (int i = 0; i < nObjects; i++) 
-//	  cout <<objectDirectlyOnObjectVal[i];
-//	cout << "\n";
-
-	index = 0;
-	index2 = 1;
-	while (index < nObjects) {
-	  if (index2 >= nObjects) {
-	    index++;
-	    index2 = index+1;
-	  }
-	  else {
-	    if (objectInRoomVal[index] != objectInRoomVal[index2] ||
-		fixedObjectOnObjectVals[index2 * nObjects + index]) {
-	      index2++;
+	  index = 0;
+	  int index2 = 1;
+	  while (index < nObjects) {
+	    if (index2 >= nObjects) {
+	      index++;
+	      index2 = index+1;
 	    }
 	    else {
-	      objectOnObjectVal[index2 * nObjects + index]++;
-
-	      if (objectOnObjectVal[index2 * nObjects + index] == 2) {
-		objectOnObjectVal[index2 * nObjects + index] = 0;
+	      if (objectInRoomVal[index] != objectInRoomVal[index2] ||
+		  fixedObjectInObjectVals[index2 * nObjects + index]) {
 		index2++;
+	      }
+	      else {
+		objectInObjectVal[index2 * nObjects + index]++;
+
+		if (objectInObjectVal[index2 * nObjects + index] == 2) {
+		  objectInObjectVal[index2 * nObjects + index] = 0;
+		  index2++;
+		}
+		else {
+		  break;
+		}
+	      }
+	    }
+	  }
+
+
+	  if (index < nObjects) 
+	    continue;
+
+//	  	for (int i = 0; i < nRooms; i++) 
+//	  	  cout <<roomTypeVal[i];
+//	  	cout << " ";
+//	  	for (int i = 0; i < nObjects; i++) 
+//	  	  cout <<objectInRoomVal[i];
+//	  	cout << " ";
+//	  	for (int i = 0; i < nObjects*nObjects; i++) 
+//	  	  cout <<objectInObjectVal[i];
+//	  	cout << " ";
+//	  	for (int i = 0; i < nObjects*nObjects; i++) 
+//	  	  cout <<objectOnObjectVal[i];
+//	  	cout << " ";
+//	  	for (int i = 0; i < nObjects; i++) 
+//	  	  cout <<objectDirectlyOnObjectVal[i];
+//	  	cout << "\n";
+
+	  index = 0;
+	  index2 = 1;
+	  while (index < nObjects) {
+	    if (index2 >= nObjects) {
+	      index++;
+	      index2 = index+1;
+	    }
+	    else {
+	      if (objectInRoomVal[index] != objectInRoomVal[index2] ||
+		  fixedObjectOnObjectVals[index2 * nObjects + index]) {
+		index2++;
+	      }
+	      else {
+		objectOnObjectVal[index2 * nObjects + index]++;
+
+		if (objectOnObjectVal[index2 * nObjects + index] == 2) {
+		  objectOnObjectVal[index2 * nObjects + index] = 0;
+		  index2++;
+		}
+		else {
+		  break;
+		}
+	      }
+	    }
+	  }
+
+	  if (index < nObjects) 
+	    continue;
+
+	  index = 0;
+	  while (index < nObjects) {
+	    if (fixedObjectInRoomVals[index]) {
+	      index++;
+	    }
+	    else {
+	      objectInRoomVal[index]++;
+
+	      if (objectInRoomVal[index] == nRooms) {
+		objectInRoomVal[index] = 0;
+		index++;
 	      }
 	      else {
 		break;
 	      }
 	    }
 	  }
-	}
 
-	if (index < nObjects) 
-	  continue;
+	  if (index < nObjects) 
+	    continue;
 
-	index = 0;
-	while (index < nObjects) {
-	  if (fixedObjectInRoomVals[index]) {
-	    index++;
-	  }
-	  else {
-	    objectInRoomVal[index]++;
-
-	    if (objectInRoomVal[index] == nRooms) {
-	      objectInRoomVal[index] = 0;
+	  index = 0;
+	  while (index < nObjects) {
+	    if (fixedObjectDirectlyOnObjectVals[index]) {
 	      index++;
 	    }
 	    else {
-	      break;
-	    }
-	  }
-	}
+	      // Skip past values of objectDirectlyOnObjectVal
+	      // that violate objectOnObjectVal
+	      do {
+		objectDirectlyOnObjectVal[index]++;
+		if (objectDirectlyOnObjectVal[index] >= index)
+		  break;
+	      } while (objectOnObjectVal[index * nObjects + 
+		  objectDirectlyOnObjectVal[index]] == 0 ||
+		  objectOnObjectDefault[index * nObjects +
+		  objectDirectlyOnObjectVal[index]] == 0);
 
-	if (index < nObjects) 
-	  continue;
-
-	index = 0;
-	while (index < nObjects) {
-	  if (fixedObjectDirectlyOnObjectVals[index]) {
-	    index++;
-	  }
-	  else {
-	    // Skip past values of objectDirectlyOnObjectVal
-	    // that violate objectOnObjectVal
-	    do {
-	      objectDirectlyOnObjectVal[index]++;
-	      if (objectDirectlyOnObjectVal[index] >= index)
+	      //	      if (objectDirectlyOnObjectVal[index] == nObjects) 
+	      if (objectDirectlyOnObjectVal[index] >= index) 
+	      { 
+		// We don't need to go farther; no object is allowed
+		//to be on an object with a larger id than itself
+		objectDirectlyOnObjectVal[index] = -1;
+		index++;
+	      }
+	      else {
 		break;
-	    } while (objectOnObjectVal[index * nObjects + 
-		objectDirectlyOnObjectVal[index]] == 0);
-
-	    //	      if (objectDirectlyOnObjectVal[index] == nObjects) 
-	    if (objectDirectlyOnObjectVal[index] >= index) 
-	    { 
-	      // We don't need to go farther; no object is allowed
-	      //to be on an object with a larger id than itself
-	      objectDirectlyOnObjectVal[index] = -1;
-	      index++;
-	    }
-	    else {
-	      break;
+	      }
 	    }
 	  }
-	}
 
-	if (index == nObjects) 
-	  break;
-      };
+	  if (index == nObjects) 
+	    break;
+	};
 
-      ret.push_back(s.str());
-      probs.push_back(totalProbMass);
-      totalOverallMass += totalProbMass;
-      
-      s << totalProbMass << ", " << combinations << " combinations\n";
-//      log("%s", s.str().c_str());
+	ret.push_back(s.str());
+	probs.push_back(totalProbMass);
+	totalOverallMass += totalProbMass;
+
+	s << totalProbMass << ", " << combinations << " combinations\n";
+	//      log("%s", s.str().c_str());
+      }
+      else {
+	log("Skipped");
+      }
 
       // Recursively find the precursor that should be incremented
       bool done = updateHierarchy(precursors, object);
