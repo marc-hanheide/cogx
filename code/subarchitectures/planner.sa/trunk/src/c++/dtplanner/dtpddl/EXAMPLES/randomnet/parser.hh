@@ -157,7 +157,7 @@ void parse(const string& file_name)
                 continue;
             } else if (str == "1" || str == "2") {
 
-                Side starting_side;
+                Side starting_side = Side::side1;
                 if (str == "1" ) {
                     starting_side = Side::side1;
                 } else if (str == "2") {
@@ -192,7 +192,7 @@ void parse(const string& file_name)
                 
                 line_iss>>str;
                 
-                Side ending_side;
+                Side ending_side = Side::side1;
                 if (str == "1" ) {
                     ending_side = Side::side1;
                 } else if (str == "2") {
