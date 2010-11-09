@@ -20,7 +20,7 @@ namespace DTPDDL
     
     string domain_postfix()
     {
-        return ")";
+        return ")";/*END OF DOMAIN DEFINITION*/
     }
     
     string domain_prefix()
@@ -59,7 +59,7 @@ namespace DTPDDL
         
         ostringstream answer;
 
-        answer<<"(:metric maximize (reward) )  )"<<std::endl;
+        answer<<"(:metric maximize (reward) )"<<std::endl;
 
         answer<<"(:goal (and "<<std::endl;
         if(soft_goal){
@@ -77,7 +77,10 @@ namespace DTPDDL
         }
         
         
-        answer<<")))"<<std::endl;
+        answer<<"))"<<std::endl;
+
+        
+        answer<<")"<<std::endl;/*END OF PROBLEM DEFINITION*/
         
         return answer.str();
     }

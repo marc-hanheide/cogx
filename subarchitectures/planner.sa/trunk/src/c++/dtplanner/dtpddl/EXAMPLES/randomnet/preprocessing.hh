@@ -242,10 +242,70 @@ void complete_unary__POWERED()
     }
 }
 
+bool dangerous_opened(Device_Id device, set<Line_Id> lines = set<Line_Id>())
+{
+    if(closed_devices.find(device) == closed_devices.end()){
+        return false;
+    }
+
+    auto& __lines = device__to__line__to__side[device];
+    for(auto _line = __lines.begin()
+            ; _line != __lines.end()
+            ; _line++){
+        auto line = _line->first;
+        
+        if(faulty_lines.find(line) != faulty_lines.end()){
+            return true;
+        }
+    }
+    
+    for(auto _line = __lines.begin()
+            ; _line != __lines.end()
+            ; _line++){
+        auto line = _line->first;
+
+        if(lines.find(line) != lines.end()) continue;
+        lines.insert(line);
+        
+        auto& devices = line__to__devices[line];
+        for(auto _device = devices.begin()
+                ; _device != devices.end()
+                ; _device++){
+            if(*_device != device){
+                if(closed_devices.find(*_device) != closed_devices.end()){   
+                    if(dangerous_opened(*_device, lines)){
+                        return true;
+                    }
+                }
+            }
+        }
+        
+    }
+
+    return false;
+}
+
+void open_breakers_on_broken_feeders()
+{
+    
+    for(auto device = devices.begin()
+            ; device != devices.end()
+            ; device++){
+        if(device->second == circuit_breaker){
+            if(closed_devices.find(*device) != closed_devices.end()){
+                if(dangerous_opened(*device)){
+                    closed_devices.erase(*device);
+                }
+            }
+        }
+    }
+}
 
 
 void preprocess()
 {
+    open_breakers_on_broken_feeders();
+    
     complete_unary__POWERED();
 }
 
