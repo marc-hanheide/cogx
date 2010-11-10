@@ -1,0 +1,9 @@
+HOST localhost
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+INCLUDE vislearner_nodisp.inc
+CPP MG vis.tester  TestVisualLearner --testmode "learning" --log 
+
