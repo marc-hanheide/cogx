@@ -41,7 +41,7 @@ namespace DTPDDL
 //         answer<<to_string(Side::side1)<<" "
 //               <<to_string(Side::side2)<<" - "<<Side__typestring()<<std::endl;
 
-//         answer<<")"<<std::endl;
+        answer<<")"<<std::endl;
         
         return answer.str();
     }
