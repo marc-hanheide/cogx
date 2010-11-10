@@ -3,7 +3,7 @@
 
 %% Load the data...
 %% affordanceFeatures are set in the startup script: George Y2 used cmLearn.config.
-if exist('Settings.affordanceFeatures', 'var')
+if exist('Settings', 'var') && isfield(Settings, 'affordanceFeatures')
    load(Settings.affordanceFeatures);
 else
    load('./Data/ICRA2009Project/PushCenter/features.mat');
