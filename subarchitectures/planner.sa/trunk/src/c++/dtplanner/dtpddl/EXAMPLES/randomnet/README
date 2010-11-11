@@ -17,6 +17,11 @@ execute something like the following on the command line:
 
 ./psr --circuit_breakers 1 --remote_switches 2  --faulty-lines 1.0 generate_network soft_goal
 
+This will generate a problem file, and a domain file, as follows.
+
+PSR-DOMAIN-CB1-L3-SD2.dtpddl
+PSR-DOMAIN-CB1-L3-SD2.dtpddl
+
 The first switch informs the program how many circuit breakers to
 include on the network. the second switch informs the program how many
 remotely controllable switches to include on the network. the third
