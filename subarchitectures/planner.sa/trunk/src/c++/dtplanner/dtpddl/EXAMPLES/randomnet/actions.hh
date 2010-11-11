@@ -62,7 +62,7 @@ namespace DTPDDL
         answer<<"(and ";
         answer<<"(when "
               <<Powered__predicate(to_string(*line))<<" ";
-        answer<<rewards(_line, ++value)
+        answer<<rewards(_line, value + 1)
               <<" )"<<std::endl;
         answer<<"(when (not "
               <<Powered__predicate(to_string(*line))<<" ) ";
