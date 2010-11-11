@@ -218,8 +218,9 @@ pass_block(fh(_Feat, _Val), none).
 pass_block(fh(Feat, _Val), f(Feat0)) <-
 	Feat0 \= Feat.
 
-pass_block(fh(Feat, Val), fh(Feat0, Hypo)) <-
-	Hypo \= Val.
+pass_block(fh(Feat, _Val), fh(Feat0, _Hypo)) <-
+	Feat \= Feat0.
+%	Hypo \= Val.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
