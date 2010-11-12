@@ -47,13 +47,26 @@ void Planning_CNF__to__Action_CNF::operator()(const Formula::Subformula& input)
             auto _proposition = input.cxx_get<Planning::Formula::Action_Proposition>();
 
             auto proposition = *_proposition;
+
+            if( (proposition.get__runtime_Thread() != runtime_Thread)
+                && !proposition.get__arguments().size() ){
+                
+                NEW_referenced_WRAPPED_deref_POINTER
+                    ( runtime_Thread
+                      , Planning::Formula::Action_Proposition
+                      , tmp
+                      , proposition.get__name()
+                      , proposition.get__arguments());
+                proposition = *tmp.cxx_get<Planning::Formula::Action_Proposition>();
+            }
+            
             
             QUERY_UNRECOVERABLE_ERROR(proposition.get__runtime_Thread() != runtime_Thread
                                       , "Proposition :: "<<proposition<<std::endl
                                       <<"Has the wrong runtime thread :: "
                                       <<proposition.get__runtime_Thread()<<std::endl
                                       <<"Expecting :: "<<runtime_Thread<<std::endl);
-
+            
             
             
             auto id = proposition.get__id();
@@ -139,6 +152,7 @@ void Planning_CNF__to__Action_CNF::operator()(const Formula::Subformula& input)
                 clause.push_back(literal__pointer);
                 clause__as_set.insert(literal__pointer);
                 
+                INTERACTIVE_VERBOSER(true, 16000, "Got an unsatisfiable action literal."<<std::endl);
                 return;
             }
             
@@ -156,17 +170,18 @@ void Planning_CNF__to__Action_CNF::operator()(const Formula::Subformula& input)
                 auto deref__st = literal__pointer.cxx_deref_get<basic_type>();
 
                 
-                INTERACTIVE_VERBOSER(true, 9075, "Action :: "
+                INTERACTIVE_VERBOSER(true, 16000, "Action :: "
                                      <<state_Transformation->get__identifier()<<std::endl
                                      <<"Is supposed to wake :: "<<literal__pointer<<std::endl);
                 
                 if(!state_Transformation->add__sleeper(deref__st)){
                     WARNING("Could not add :: "<<literal__pointer<<" to action labelled"
                             <<state_Transformation->get__identifier()<<std::endl);
+                    assert(0);exit(0);
                 }
                 
                 
-                INTERACTIVE_VERBOSER(true, 9075, "Testing if registration of sleeper worked :: "
+                INTERACTIVE_VERBOSER(true, 16000, "Testing if registration of sleeper worked :: "
                                      <<*state_Transformation<<std::endl);
                 
 //                 state_Transformation->add__listener(deref__st);
@@ -176,14 +191,14 @@ void Planning_CNF__to__Action_CNF::operator()(const Formula::Subformula& input)
 //             literal__pointer->configure__negatives(/*literal__pointer,*/ problem__negative_literals);
             
             if(clause__as_set.find(literal__pointer) != clause__as_set.end()){
-                INTERACTIVE_VERBOSER(true, 3124,
+                INTERACTIVE_VERBOSER(true, 16000,
                                      "Already got proposition :: "<<proposition
                                      <<" as literal :: "<<literal__pointer<<std::endl
                                      <<"Registered with the current clause being built.");
                 return;
             }
             
-            INTERACTIVE_VERBOSER(true, 3124,
+            INTERACTIVE_VERBOSER(true, 16000,
                                  "New proposition :: "<<proposition
                                  <<" as literal :: "<<literal__pointer<<std::endl
                                  <<"Now registered with the current clause being built.");
