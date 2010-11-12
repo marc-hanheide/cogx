@@ -39,3 +39,22 @@ add_custom_target(downward ALL)
 add_dependencies(downward downward_preprocess downward_search)
 
 endif(BUILD_SA_PLANNER_DOWNWARD)
+
+option(BUILD_SA_PLANNER_PROB_DOWNWARD "Build probabillistic fast downward planner in planner.sa" NO)
+if(BUILD_SA_PLANNER_PROB_DOWNWARD)
+
+set(PDOWNWARD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/prob_downward")
+
+add_custom_target(pdownward_preprocess
+                   COMMAND make
+                   WORKING_DIRECTORY ${PDOWNWARD_DIR}/preprocess/
+                   COMMENT "Building ${PDOWNWARD_DIR}/preprocess/preprocess")
+add_custom_target(pdownward_search
+                   COMMAND make
+                   WORKING_DIRECTORY ${PDOWNWARD_DIR}/search/
+                   COMMENT "Building ${PDOWNWARD_DIR}/search/search")
+
+add_custom_target(pdownward ALL)
+add_dependencies(pdownward pdownward_preprocess pdownward_search)
+
+endif(BUILD_SA_PLANNER_PROB_DOWNWARD)
