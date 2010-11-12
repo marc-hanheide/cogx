@@ -308,6 +308,7 @@ namespace DTPDDL
               <<Closed__predicate(to_string(device))<<std::endl
               <<Powered__predicate(to_string(unpowered_line))<<std::endl;
         answer<<implement_close__formula(unpowered_line, device)<<std::endl;
+        answer<<"(assign (reward) 0)"<<std::endl;
 //         answer<<rewards()<<std::endl;
         answer<<"   ) "<<std::endl;      
         answer<<")"<<std::endl;
@@ -333,6 +334,7 @@ namespace DTPDDL
         answer<<""<<std::endl;
         answer<<":effect (and "<<Closed__predicate(to_string(device))
               <<" (not "<<Open__predicate(to_string(device))<<" ) "<<std::endl;
+        answer<<"(assign (reward) 0)"<<std::endl;
 //               <<rewards()<<std::endl;
         answer<<")"<<std::endl;
         answer<<""<<std::endl;
@@ -378,6 +380,7 @@ namespace DTPDDL
               <<Powered__predicate(to_string(line))<<std::endl
               <<implement_close__formula(line, device)<<std::endl
               <<std::endl;
+        answer<<"(assign (reward) 0)"<<std::endl;
 //               <<rewards()<<std::endl;
         answer<<")"<<std::endl;
         answer<<""<<std::endl;
@@ -433,6 +436,7 @@ namespace DTPDDL
               <<Open__predicate(to_string(device))<<std::endl;
         answer<<implement_open__formula(line, device)<<std::endl;
         answer<<std::endl;
+        answer<<"(assign (reward) 0)"<<std::endl;
 //               <<rewards()<<std::endl;
         answer<<")"<<std::endl;
         answer<<")"<<std::endl;
@@ -464,6 +468,7 @@ namespace DTPDDL
         answer<<""<<std::endl;
         answer<<":effect (and (not "<<Closed__predicate(to_string(device))<<") "
               <<Open__predicate(to_string(device))<<std::endl;
+        answer<<"(assign (reward) 0)"<<std::endl;
 //               <<rewards()<<std::endl
         answer<<" )"<<std::endl;
         answer<<""<<std::endl;
@@ -485,6 +490,7 @@ namespace DTPDDL
         answer<<"( when "<<Source__predicate(to_string(device), to_string(side2))<<" "
               <<implement_open__formula(side1_line, device)<<" ) "<<std::endl;
         answer<<std::endl;
+        answer<<"(assign (reward) 0)"<<std::endl;
 //               <<rewards()<<std::endl
         answer<<" ) "<<std::endl;
         answer<<")"<<std::endl;
