@@ -28,3 +28,8 @@ if(BUILD_SA_PLANNER_DT)
   add_subdirectory(dtplanner)
 endif(BUILD_SA_PLANNER_DT)
 
+option(BUILD_SA_PLANNER_BNET "Build bayesian network evaluator" NO)
+if(BUILD_SA_PLANNER_BNET)
+  add_subdirectory(bnet)
+endif(BUILD_SA_PLANNER_BNET)
+
