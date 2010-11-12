@@ -240,6 +240,8 @@ class Simulation(object):
                 log.debug("%d: Agent %s executes observation (%s %s)", self.time, agent.name, o.name, " ".join(a.get_instance().name for a in o.args))
                 facts = [state.Fact(svar, val) for svar, val in self.state.get_effect_facts(o.effect).iteritems()]
                 log.debug("%d: Agent %s receives observations: %s", self.time, agent.name, ", ".join(map(str, facts)))
+                for f in facts:
+                    print "%d: %s observes: %s" % (self.time, agent.name, str(f.svar))
                 obs += facts
         return obs
 

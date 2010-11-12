@@ -43,13 +43,18 @@ def collect(f):
     """Decorator that collects the results from all unhandled elements"""
     
     def collect_visitor(elem, results):
-        result = f(elem, results)
-        if isinstance(elem, effects.ProbabilisticEffect):
-            results = [e for p,e in results]
+        if not isinstance(elem, effects.ProbabilisticEffect):
+            input = sum(results, [])
+        else:
+            input = results
+        result = f(elem, input)
         if result:
             if not isinstance(result, list):
                 return [result]
             return result
+        
+        if isinstance(elem, effects.ProbabilisticEffect):
+            results = [e for p,e in results]
         return sum(results, [])
     return collect_visitor
 

@@ -268,15 +268,16 @@ class Planner(object):
             log.debug("total time for validation: %f", time.time()-t0)
             return True
 
-        #apply the action's effects and check if the plan would be executable
-        pnode = plan[last_executed_index]
-        remaining_plan = plan[last_executed_index+1:]
-        for f in pnode.effects:
-            state.set(f)
-        if self.is_plan_valid(remaining_plan, task.get_plan().goal_node, state):
-            task.pending_action = pnode
-            log.debug("total time for validation: %f", time.time()-t0)
-            return False # waiting for action completion
+        if task.wait_for_effects:
+            #apply the action's effects and check if the plan would be executable
+            pnode = plan[last_executed_index]
+            remaining_plan = plan[last_executed_index+1:]
+            for f in pnode.effects:
+                state.set(f)
+            if self.is_plan_valid(remaining_plan, task.get_plan().goal_node, state):
+                task.pending_action = pnode
+                log.debug("total time for validation: %f", time.time()-t0)
+                return False # waiting for action completion
 
         log.debug("total time for validation: %f", time.time()-t0)
         return True
