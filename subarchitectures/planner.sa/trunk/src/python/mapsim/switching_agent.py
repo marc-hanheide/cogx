@@ -1,6 +1,6 @@
 import os, re
 
-from standalone import pddl, plans, task, planner, dt_problem, plan_postprocess
+from standalone import pddl, plans, task, planner, dt_problem, plan_postprocess, bayes
 #from standalone import statistics
 
 import standalone.globals as global_vars
@@ -8,7 +8,8 @@ import agent
 from agent import loggingScope
 
 from standalone import config
-log = config.logger("mapsim")
+log = config.logger("switching")
+
 
 class StandaloneDTInterface(object):
     PDDL_REXP = re.compile("\((.*)\)")
@@ -29,16 +30,20 @@ class StandaloneDTInterface(object):
         dt_task.write_dt_input(self.domain_fn, self.problem_fn)
         
     def run(self):
-        import subprocess
+        import subprocess, atexit
         cmd = "%s --domain %s --problem %s" % (global_vars.config.dt.standalone_executable, self.domain_fn, self.problem_fn)
         log.debug("running dt planner with '%s'", cmd)
         self.process = subprocess.Popen(cmd.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=open("dtout.log", "w"))
+        atexit.register(lambda: self.kill())
         log.debug("process %d created", self.process.pid)
         self.wait_for_action()
 
     def kill(self):
+        if not self.process or self.process.returncode is not None:
+            return
         log.debug("killing process %d", self.process.pid)
         self.process.terminate()
+        self.process = None
         
     def wait_for_action(self):
         while True:
@@ -74,6 +79,7 @@ class SwitchingAgent(agent.Agent):
         self.dt_task = None
         self.step = 0
         self.plan_history = []
+        self.percepts = []
         self.dt_active = False
 
         self.state = pddl.prob_state.ProbabilisticState.from_problem(mapltask)
@@ -81,8 +87,16 @@ class SwitchingAgent(agent.Agent):
         facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
         facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
         cp_problem = pddl.Problem(mapltask.name, mapltask.objects, facts , mapltask.goal, self.cp_domain)
+
+        self.bayes = bayes.BayesianState(self.state, mapltask, self.domain)
+        #bnetif = BnetInterface(self.bayes.nodes.values(), self.bayes.edges, debug=False)
+        #result = bnetif.evaluate()
+        #for node, values in result.iteritems():
+        #    print node.var, values
+        self.bayes.evaluate()
         
         self.task = task.Task(agent.next_id(), cp_problem)
+        self.task.wait_for_effects = False
         self.planner.register_task(self.task)
 
     @loggingScope
@@ -316,18 +330,34 @@ class SwitchingAgent(agent.Agent):
         
     @loggingScope
     def updateTask(self, new_facts, action_status=None):
+        new_percepts = []
         for f in new_facts:
             if f.svar.modality == pddl.dtpddl.observed:
-                self.percepts.append(f.svar)
+                new_percepts.append(f.svar)
             else:
                 self.state.set(f)
+        self.percepts += new_percepts
+
+        action = self.last_action.action
+        action.instantiate(self.last_action.full_args, self.task.mapltask)
+        self.bayes.handle_obs(action, new_percepts)
+        action.uninstantiate()
+        result = self.bayes.evaluate()
+        for node, probs in result.iteritems():
+            if isinstance(node.var, str):
+                continue # observation node
+            svar = node.var
+
+            dist = pddl.prob_state.ValueDistribution(dict((v,p) for v,p in zip(node.values, probs)))
+            self.state[svar] = dist
 
         det_state = self.state.determinized_state(0.05, 0.95)
         facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
+        facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
         cp_problem = pddl.Problem(self.dt_problem.name, self.dt_problem.objects, facts , self.dt_problem.goal, self.cp_domain)
         
         self.task.mapltask = cp_problem
-        self.task.set_state(det_state)
+        self.task.create_initial_state()
                 
         #TODO: start execution
         if self.dt_active:

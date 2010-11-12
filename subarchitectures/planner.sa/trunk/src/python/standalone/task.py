@@ -33,6 +33,7 @@ class Task(object):
         self._plan = None
         self.planner = None
         self.pending_action = None
+        self.wait_for_effects = True
         #for dt testing only
         self.dt_calls = 0
         self.dt_actions = 0

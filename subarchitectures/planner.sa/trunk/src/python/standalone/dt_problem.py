@@ -462,7 +462,11 @@ class DTProblem(object):
             prev_constraints = constraints
 
         return problems
-        
+
+    def create_state_trees(self, prob_state, objects=None):
+        if not objects:
+            objects = prob_state.problems.objects | prob_state.problems.domain.constants
+        return StateTreeNode.create_root(prob_state, objects, self.dt_rules)
 
     def create_problem(self, prob_state, domain):
         t0 = time.time()
@@ -482,11 +486,13 @@ class DTProblem(object):
         objects = problem.objects
 
         self.selected_subproblem = selected
+        rulefuncs = set(r.function for r in self.dt_rules if not r.conditions) # roots of the prob.tree
 
-        trees = StateTreeNode.create_root(prob_state, objects, self.dt_rules)
+        trees = self.create_state_trees(prob_state, objects) 
         hstate = HierarchicalState([], prob_state.problem)
         for t in trees:
-            t.create_state(hstate)
+            if t.svar.function in rulefuncs or len(t) == 1: # HACK! evil HACK!
+                t.create_state(hstate)
             
         #reduce the problem some more if neccessary
         while problem.max_size > global_vars.config.dt.max_state_size:
@@ -547,42 +553,28 @@ def function_visitor(elem, result):
         return result
 
 class StateTreeNode(dict):
-    def __init__(self, rule, st, objects, all_rules, cache, fact=None):
-        self.rule = rule
-        self.state = st
-        self.all_rules = all_rules
-        self.objects = objects
+    def __init__(self, svar):
+        self.svar = svar
+
+    def consolidate(self, existing=None):
+        values = set()
+        if existing:
+            values |= existing.keys()
+            tree = existing
+        else:
+            tree = StateTreeNode(self.svar)
             
-        self.cache = cache
-        
-        if fact is not None:
-            self.svar = fact.svar
-            rules_for_fact = [r for r in all_rules if r.function == self.svar.function]
-            self.rule = (rules_for_fact[0] if rules_for_fact else None)
-                
-            if isinstance(fact.value, pddl.TypedObject):
-                #t0 = time.time()
-                self.create_subtree(1.0, fact.value, marginal=(fact.value not in objects))
-                #print "tree for %s=%s took %.2f secs" % (str(self.svar), self.value.name, time.time()-t0)
-            else:
-                for val, p in fact.value.iteritems():
-                    #t0 = time.time()
-                    self.create_subtree(p, val, marginal=(val not in objects))
-                    #print "tree for %s=%s took %.2f secs" % (str(self.svar), val.name, time.time()-t0)
-            return
-            
-        #assume that the rule is instantiated
-        self.svar = state.StateVariable(rule.function, state.instantiate_args(rule.args))
-        
-        log.debug("creating subtree for %s", str(self.svar))
-        for p, value in rule.values:
-            pval = self.state.evaluate_term(p) # evaluate in original state because probs for marginals could be gone in this partial state
-            if pval == pddl.UNKNOWN or pval.value < 0.01:
-                continue
-            val = self.state.evaluate_term(value)
-            #t0 = time.time()
-            self.create_subtree(pval.value, val, marginal=(val not in objects))
-            #print "tree for %s=%s took %.2f secs" % (str(self.svar), val.name, time.time()-t0)
+        for val, (subtrees, p, marginal) in self.iteritems():
+            assert val not in values
+            values.add(val)
+            st_by_var = {}
+            for sub in subtrees:
+                if sub.svar in st_by_var:
+                    sub.consolidate(existing = st_by_var[sub.svar])
+                else:
+                    st_by_var[sub.svar] = sub.consolidate()
+            tree[val] = (st_by_var.values(), p, marginal)
+        return tree
 
     def add_state(self, st, ratio):
         for val, (subtrees, p, marginal) in self.iteritems():
@@ -625,19 +617,35 @@ class StateTreeNode(dict):
                         t.create_state(sub)
             sub[self.svar] = val
 
-    def create_subtree(self, prob, value, marginal=False):
+    @staticmethod
+    def create(rule, st, objects, all_rules, cache):
+        svar = state.StateVariable(rule.function, state.instantiate_args(rule.args))
+        tree = StateTreeNode(svar)
+        
+        log.debug("creating subtree for %s", str(svar))
+        for p, value in rule.values:
+            pval = st.evaluate_term(p) # evaluate in original state because probs for marginals could be gone in this partial state
+            if pval == pddl.UNKNOWN or pval.value < 0.01:
+                continue
+            val = st.evaluate_term(value)
+            #t0 = time.time()
+            tree.create_subtree(pval.value, val, rule, st, objects, all_rules, cache, marginal=(val not in objects))
+            #print "tree for %s=%s took %.2f secs" % (str(self.svar), val.name, time.time()-t0)
+        return tree
+
+    def create_subtree(self, prob, value, rule, st, objects, all_rules, cache, marginal=False):
         log.debug("creating subtrees for %s=%s (marginal=%s)", str(self.svar), value, str(marginal))
         fact = state.Fact(self.svar, value)
-        if fact in self.cache:
+        if fact in cache:
             #print "cache hit"
-            self[value] = (self.cache[fact], prob, marginal)
+            self[value] = (cache[fact], prob, marginal)
             return
 
-        if self.rule is None:
+        if rule is None:
             self[value] = ([], prob, marginal)
             return
 
-        rules = [r for r in self.all_rules if r.depends_on(self.rule)]
+        rules = [r for r in all_rules if r.depends_on(rule)]
         log.debug("rules depending on this: %s", ", ".join(r.name for r in rules))
         
         subtrees = []
@@ -645,12 +653,12 @@ class StateTreeNode(dict):
             matched_cond = None
             matched_args = {}
             for lit in r.conditions:
-                if lit.predicate == pddl.equals and lit.args[0].function == self.rule.function:
+                if lit.predicate == pddl.equals and lit.args[0].function == rule.function:
                     matched_cond = lit
                     for a, a2 in zip(lit.args[0].args + [lit.args[1]], self.svar.args + (value,)):
                         matched_args[a.object] = a2
                     break
-                elif lit.predicate == self.rule.function:
+                elif lit.predicate == rule.function:
                     matched_cond = lit
                     v = pddl.TRUE if not lit.negated else pddl.FALSE
                     for a, a2 in zip(lit.args + [v], self.svar.args + (value,)):
@@ -663,20 +671,33 @@ class StateTreeNode(dict):
                 if arg in matched_args:
                     return [matched_args[arg]]
                 if arg in r.get_value_args():
-                    return list(self.state.problem.get_all_objects(arg.type))
-                return [o for o in self.objects if o.is_instance_of(arg.type)]
+                    return list(st.problem.get_all_objects(arg.type))
+                return [o for o in objects if o.is_instance_of(arg.type)]
 
 
             args = r.args+r.add_args
-            for mapping in r.smart_instantiate(r.get_inst_func(self.state, matched_cond), args, [get_objects(a) for a in args], self.state.problem):
-                subtrees.append(StateTreeNode(r, self.state, self.objects, self.all_rules, self.cache))
+            for mapping in r.smart_instantiate(r.get_inst_func(st, matched_cond), args, [get_objects(a) for a in args], st.problem):
+                subtrees.append(StateTreeNode.create(r, st, objects, all_rules, cache))
         
-        self.cache[fact] = subtrees
+        cache[fact] = subtrees
         self[value] = (subtrees, prob, marginal)
 
     @staticmethod
     def create_from_fact(fact, st, objects, all_rules, cache):
-        return StateTreeNode(None, st, objects, all_rules, cache, fact=fact)
+        tree = StateTreeNode(fact.svar) 
+        rules_for_fact = [r for r in all_rules if r.function == fact.svar.function]
+        rule = (rules_for_fact[0] if rules_for_fact else None)
+
+        if isinstance(fact.value, pddl.TypedObject):
+            #t0 = time.time()
+            tree.create_subtree(1.0, fact.value, marginal=(fact.value not in objects))
+            #print "tree for %s=%s took %.2f secs" % (str(self.svar), self.value.name, time.time()-t0)
+        else:
+            for val, p in fact.value.iteritems():
+                #t0 = time.time()
+                tree.create_subtree(p, val, rule, st, objects, all_rules, cache, marginal=(val not in objects))
+                #print "tree for %s=%s took %.2f secs" % (str(self.svar), val.name, time.time()-t0)
+        return tree
 
     @staticmethod
     def create_root(st, objects, rules, cache=None):
@@ -710,7 +731,7 @@ class StateTreeNode(dict):
                 svar = state.StateVariable(r.function, state.instantiate_args(r.args))
                 if svar in done:
                     continue
-                subtrees.append(StateTreeNode(r, detstate, objects, rules, cache))
+                subtrees.append(StateTreeNode.create(r, detstate, objects, rules, cache))
 
         return subtrees
         
