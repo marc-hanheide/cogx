@@ -12,6 +12,7 @@ if(NOT PLANNER_STANDALONE)
   add_subdirectory(src/c++)
 else()
   add_subdirectory(src/c++/dtplanner/dtpddl)
+  add_subdirectory(src/c++/bnet)
 endif()
 
 add_subdirectory(src/python)
