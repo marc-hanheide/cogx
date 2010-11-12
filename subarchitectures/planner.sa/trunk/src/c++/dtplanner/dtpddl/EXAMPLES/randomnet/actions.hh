@@ -62,7 +62,7 @@ namespace DTPDDL
         answer<<"(and ";
         answer<<"(when "
               <<Powered__predicate(to_string(*line))<<" ";
-        answer<<rewards(_line, value + 1)
+        answer<<rewards(_line, value + 10)
               <<" )"<<std::endl;
         answer<<"(when (not "
               <<Powered__predicate(to_string(*line))<<" ) ";
@@ -76,10 +76,12 @@ namespace DTPDDL
     
     string implement_open__formula(Line_Id input_line, Device_Id input_device, set<Line_Id> visited = set<Line_Id>())    
     {
-       
         auto& devices = line__to__devices[input_line];
 
         visited.insert(input_line);
+
+        ostringstream answer;
+        answer<<"(and (not "<<Powered__predicate(to_string(input_line))<<" ) "<<std::endl;
         
         ostringstream or_conditions;
         
@@ -92,7 +94,9 @@ namespace DTPDDL
                     //or_conditions<<"(open "<<DTPDDL::to_string(device)<<" )"<<std::endl;
                     continue;
                 }
-                
+
+                auto input_side = device__to__line__to__side[*device][input_line];
+                answer<<"(not "<<Source__predicate(to_string(*device), to_string(input_side))<<" ) "<<std::endl;
                 
                 auto& lines = device__to__line__to__side[*device];
                 Line_Id outgoing_line = 0;
@@ -117,30 +121,28 @@ namespace DTPDDL
                 visited.erase(outgoing_line);
                 or_conditions<<"(when (closed "<<DTPDDL::to_string(*device)
                              <<" ) (and (not "<<Powered__predicate(to_string(outgoing_line))<<" ) "
-                             <<"(not "<<Source__predicate(to_string(*device), to_string(Side::side1))<<" ) "
-                             <<"(not "<<Source__predicate(to_string(*device), to_string(Side::side2))<<" ) "
+                             // <<"(not "<<Source__predicate(to_string(*device),
+                             //                              to_string((input_side == Side::side1)
+                             //                                        ?Side::side2
+                             //                                        :Side::side1)<<" ) "
                              <<subformula<<"  ) ) "<<std::endl;
 
                 
-                Side in_side = device__to__line__to__side[*device][input_line];
-                or_conditions<<"(when  "<<Open__predicate(DTPDDL::to_string(*device))
-                             <<" (and "
-                             <<"(not "<<Source__predicate(to_string(*device), to_string(in_side))<<" ) ) ) "<<std::endl;
+                // or_conditions<<"(when  "<<Open__predicate(DTPDDL::to_string(*device))
+                //              <<" (and "
+                //              <<"(not "<<Source__predicate(to_string(*device), to_string(in_side))<<" ) ) ) "<<std::endl;
             }
         }
 
         string sub_conditions = or_conditions.str();
-
-        ostringstream answer;
         
         if(sub_conditions.size()){
-            answer<<"(and (not "<<Powered__predicate(to_string(input_line))<<" ) "
-                  <<sub_conditions<<" ) "<<std::endl;
-            
-            return answer.str();
-        } else {
-            return "";
-        } 
+            answer<<" "<<sub_conditions<<std::endl;
+        }
+        
+        answer<<" ) "<<std::endl;
+        
+        return answer.str();
     }
     
     string implement_close__formula(Line_Id input_line, Device_Id input_device, set<Line_Id> visited = set<Line_Id>())
@@ -303,7 +305,8 @@ namespace DTPDDL
         answer<<"       "<<std::endl;        
         answer<<")"<<std::endl;
         answer<<":effect (and (not "<<Open__predicate(to_string(device))<<") "
-              <<Closed__predicate(to_string(device))<<std::endl;
+              <<Closed__predicate(to_string(device))<<std::endl
+              <<Powered__predicate(to_string(unpowered_line))<<std::endl;
         answer<<implement_close__formula(unpowered_line, device)<<std::endl;
 //         answer<<rewards()<<std::endl;
         answer<<"   ) "<<std::endl;      
@@ -370,8 +373,9 @@ namespace DTPDDL
               <<")"<<std::endl;
         answer<<""<<std::endl;
         
-        answer<<":effect (and "<<Closed__predicate(to_string(device))
-              <<" (not "<<Open__predicate(to_string(device))<<" )"
+        answer<<":effect (and "<<Closed__predicate(to_string(device))<<std::endl
+              <<" (not "<<Open__predicate(to_string(device))<<" )"<<std::endl
+              <<Powered__predicate(to_string(line))<<std::endl
               <<implement_close__formula(line, device)<<std::endl
               <<std::endl;
 //               <<rewards()<<std::endl;
