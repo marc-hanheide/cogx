@@ -223,6 +223,8 @@ bool read_in__problem_description()
 
 /* As requested by Moritz Fri Oct 22 in the planning meeting with
  * Richard Dearden.*/
+
+#ifndef CHARLES_TESTING
 int main(int argc, char** argv)
 {
     assert(command_Line_Arguments.size() == 0);
@@ -454,7 +456,7 @@ int main(int argc, char** argv)
             line_in += ch;
                 
             VERBOSER(16000, solver_name
-                                 <<" :--> "<<line_in<<std::endl);
+                     <<" :--> "<<line_in<<std::endl);
             
         }while(ch != '\n');    
 
@@ -500,8 +502,11 @@ int main(int argc, char** argv)
     return 0;
 }
 
+#else
 
-int main__OLDER(int argc, char** argv)
+
+/*Charles' testing MAIN.*/
+int main(int argc, char** argv)
 {    
     /*Some preliminary testing.*/
     Turnstyle::test__turnstyle_hh();//turnstyle.hh
@@ -624,7 +629,7 @@ int main__OLDER(int argc, char** argv)
 #endif
             
 #ifdef CHANGE_PHASE
-            INTERACTIVE_VERBOSER(true, 15000, "Done MDP state expansion :: "<<std::endl);
+            INTERACTIVE_VERBOSER(true, 17000, "Done MDP state expansion :: "<<std::endl);
 #endif
                 
 
@@ -641,7 +646,7 @@ int main__OLDER(int argc, char** argv)
             for(auto i = 0; i < 20; i++){
 
                 
-                INTERACTIVE_VERBOSER(true, 15000, "Current state is :: "
+                INTERACTIVE_VERBOSER(true, 17000, "Current state is :: "
                                      <<*current_state<<std::endl
                                      <<"First element is :: "
                                      <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
@@ -649,7 +654,7 @@ int main__OLDER(int argc, char** argv)
                 std::pair<Planning::Formula::Action_Proposition, uint> _action
                     = solver->get_prescribed_action(current_state);
             
-                INTERACTIVE_VERBOSER(true, 15000, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+                INTERACTIVE_VERBOSER(true, 17000, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
             
                 auto observations = current_state->get__possible_observations_given_action(_action.second);
 
@@ -663,7 +668,7 @@ int main__OLDER(int argc, char** argv)
                 for(auto observation = observations.begin()
                         ; observation != observations.end()
                         ; observation++){
-                    INTERACTIVE_VERBOSER(true, 15000, "Observation :: "<<*observations[random_index]<<" "<<_action.second<<std::endl);
+                    INTERACTIVE_VERBOSER(true, 17000, "Observation :: "<<*observations[random_index]<<" "<<_action.second<<std::endl);
             
                     {char ch; std::cin>>ch; if(ch == 'y')break;}
                     random_index++;
@@ -687,7 +692,7 @@ int main__OLDER(int argc, char** argv)
                 
 
                 
-                INTERACTIVE_VERBOSER(true, 15000, "Current belief state is :: "<<*current_state<<std::endl);
+                INTERACTIVE_VERBOSER(true, 17000, "Current belief state is :: "<<*current_state<<std::endl);
             }
 
         
@@ -698,6 +703,8 @@ int main__OLDER(int argc, char** argv)
     
     return 0;
 }
+
+#endif
 
 /* 
  *   With the organic tactility, refreshing scent and minimalist
