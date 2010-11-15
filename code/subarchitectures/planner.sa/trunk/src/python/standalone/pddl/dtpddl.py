@@ -21,6 +21,7 @@ observed = Predicate("observed", [p, Parameter("?v", types.ProxyType(p)), ], bui
 reward = Function("reward", [], t_number, builtin=True)
 
 total_p_cost = Function("total-p-cost", [], t_number)
+probability = Function("probability", [], t_number)
 p_cost_value = 200
 
 pddl_module = True
@@ -750,7 +751,45 @@ class DT2MAPLCompiler(translators.Translator):
         # p2.init += newinit
         # p2.init.append(b.init('=', (total_p_cost,), p_cost_value))
         return p2
+
+class DT2MAPLCompilerFD(DT2MAPLCompiler):
+    def create_commit_actions(self, rules, domain):
+        import durative
+
+        if "probability" not in domain.functions:
+            print "added"
+            domain.functions.add(probability)
+        else:
+            print domain.functions
         
+        p_functions = [r.function for r in rules]
+
+        actions = []
+        action_count = defaultdict(lambda: 0)
+        
+        for r in rules:
+            for p, v in r.values:
+                agent = predicates.Parameter("?a", mapl.t_agent)
+                i = action_count[r.function]
+                action_count[r.function] += 1
+                a = mapl.MAPLAction("select-%s-%d" % (r.function.name,i), [agent], r.args, r.add_args, None, None, None, [], domain)
+                b = Builder(a)
+                cparts = []
+                for lit in r.conditions:
+                    if lit.predicate == builtin.equals and lit.args[0].function in p_functions:
+                        cparts.append(b.cond("hyp", lit.args[0], lit.args[1]))
+                    else:
+                        cparts.append(lit)
+
+                a.precondition = conditions.Conjunction(cparts)
+                commit_eff = b.effect("commit", b(r.function, *r.args), v)
+                prob_eff = b.effect("assign", ("probability",), p )
+                a.effect = effects.ConjunctiveEffect([commit_eff, prob_eff], a)
+
+                actions.append(a)
+            
+        return actions
+
 class DTPDDLCompiler(translators.Translator):
     def __init__(self, copy=True, **kwargs):
         self.depends = [translators.MAPLCompiler(**kwargs)]

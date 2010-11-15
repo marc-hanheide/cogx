@@ -538,7 +538,8 @@ class Downward(BasePlanner):
         plan = plan_postprocess.make_po_plan(times_actions, task)
         return plan
         
-
+class ProbDownward(Downward):
+    pass
     
 class TFD(BasePlanner):
     """
