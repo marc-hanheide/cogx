@@ -66,8 +66,8 @@ void LocalTransition::on_source_expanded(const State &state) {
     assert(source->cost >= 0);
     assert(source->cost < LocalProblem::QUITE_A_LOT);
 
-    target_cost = source->cost + action_cost;
-    //target_cost = source->cost + source->prob * (action_cost + (1-action_prob) * g_reward);
+    //target_cost = source->cost + action_cost;
+    target_cost = source->cost + source->prob * (action_cost + (1-action_prob) * g_reward) +1 ;
     target_prob = source->prob * action_prob;
 
     if(target->cost <= target_cost) {
@@ -105,9 +105,9 @@ void LocalTransition::on_source_expanded(const State &state) {
             child_problem->initialize(source->priority(), current_val, state);
         LocalProblemNode *cond_node = &child_problem->nodes[precond_value];
         if(cond_node->expanded) {
-            //target_cost = target_cost + target_prob * (cond_node->cost + (1-cond_node->prob) * g_reward);
+            target_cost = target_cost + target_prob * (cond_node->cost + (1-cond_node->prob) * g_reward);
             target_prob *= cond_node->prob;
-            target_cost += cond_node->cost;
+            //target_cost += cond_node->cost;
             if(target->cost <= target_cost) {
                 // Transition cannot find a shorter path to target.
                 return;
@@ -333,7 +333,7 @@ int CyclicCGHeuristic::compute_costs(const State &state) {
             if(node->priority() < curr_priority)
                 continue;
             if(node == goal_node)
-                return node->cost + (1-node->prob) * g_reward;
+                return node->cost;// + (1-node->prob) * g_reward;
 
             assert(node->priority() == curr_priority);
             node->on_expand();
