@@ -335,6 +335,11 @@ class ADLCompiler(Translator):
         a2.condition = visitors.visit(a2.condition, ADLCompiler.condition_visitor)
         return a2
 
+    def translate_domain(self, _domain):
+        dom = Translator.translate_domain(self, _domain)
+        dom.requirements.discard('numeric-fluents')
+        return dom
+    
     def translate_problem(self, _problem):
         p2 = Translator.translate_problem(self, _problem)
 
@@ -819,7 +824,7 @@ class ObjectFluentCompiler(Translator):
             if isinstance(lit, Literal):
                 if lit.predicate in assignment_ops:
                     if lit.args[0].function.type == t_number:
-                        return False
+                        return lit
                     new_pred = domain.predicates.get(lit.args[0].function.name, lit.args[0].args + lit.args[-1:])
                     return lit.__class__(new_pred, lit.args[0].args[:] + [lit.args[1]], p2)
 
@@ -1028,7 +1033,7 @@ class ModalPredicateCompiler(Translator):
 
 class RemoveTimeCompiler(Translator):
     def translate_action(self, action, domain=None):
-        import durative
+        import durative, mapl
 
         if domain is None:
             domain = action.domain
@@ -1055,8 +1060,13 @@ class RemoveTimeCompiler(Translator):
         if not isinstance(action, durative.DurativeAction):
             return action.copy(newdomain=domain)
         
-        args = [a for a in action.args if a.name != "?duration"]
-        a2 = actions.Action(action.name, args, None, None, domain)
+        if isinstance(action, mapl.MAPLAction):
+            vars = [a for a in action.vars if a.name != "?duration"]
+            a2 = mapl.MAPLAction(action.name, action.agents, action.params, vars, None, None, None, None, domain)
+            a2.sensors = [s.copy(a2) for s in action.sensors]
+        else:
+            args = [a for a in action.args if a.name != "?duration"]
+            a2 = actions.Action(action.name, args, None, None, domain)
 
         action.instantiate({'?duration' : duration_term})
         action.set_total_cost(duration_term)
@@ -1134,6 +1144,7 @@ class MAPLCompiler(Translator):
             if a2.effect is None:
                 a2.effect = effects.ConjunctiveEffect([])
             a2.effect.set_scope(a2)
+            
         if isinstance(action, mapl.MAPLAction) and action.sensors:
             # commit_cond = action.commit_condition().copy(new_scope=a2)
             # a2.precondition = conditions.Conjunction.new(a2.precondition)
@@ -1143,6 +1154,7 @@ class MAPLCompiler(Translator):
             if a2.effect:
                 keff.parts.insert(0, a2.effect)
             a2.effect = keff
+
         return a2
 
     @removes('mapl')

@@ -68,8 +68,15 @@ class SwitchingAgent(agent.Agent):
         self.last_dt_id = 0
         self.dt_interface = None
         
+        if global_vars.config.base_planner.name == "TFD":
+            dt_compiler = pddl.dtpddl.DT2MAPLCompiler 
+        elif global_vars.config.base_planner.name == "ProbDownward":
+            dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD
+        else:
+            assert False, "Only TFD and modified Fast Downward (ProbDownward) are supported"
+        
         self.domain = mapltask.domain
-        self.cp_domain = pddl.dtpddl.DT2MAPLCompiler().translate(mapltask.domain)
+        self.cp_domain = dt_compiler().translate(mapltask.domain)
         
         agent.Agent.__init__(self, name, mapltask, planner, simulator)
         

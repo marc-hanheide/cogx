@@ -38,11 +38,11 @@
 
    (ex-in-room ?l - label ?r - room) - boolean
    ;;(probability ?c - cone) - number
-   (probability ?p - place ?l - label) - number
+   (place-prob ?p - place ?l - label) - number
    (p-is-in ?p - place) - number
    (dora__in ?l - label ?c - category ) - number
    (p-category ?r - room ?c - category ) - number
-   (log-probability ?p - place ?l - label) - number
+   (log-place-prob ?p - place ?l - label) - number
    (log-dora__in ?l - label ?c - category ) - number
    (log-p-category ?r - room ?c - category ) - number
    (total-p-cost) - number
@@ -82,7 +82,7 @@
                               (= (label ?o) ?l)
                               (in-domain (is-in ?o) ?p) 
                               (= (ex-in-room ?l ?r) true))
-           :effect (probabilistic (probability ?p ?l) (assign (is-in ?o) ?p))
+           :effect (probabilistic (place-prob ?p ?l) (assign (is-in ?o) ?p))
            )
 
    ;; (:durative-action spin
