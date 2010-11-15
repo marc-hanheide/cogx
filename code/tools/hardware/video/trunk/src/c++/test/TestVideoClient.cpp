@@ -65,7 +65,8 @@ void TestVideoClient::receiveImages(const std::vector<Video::Image>& images)
     fprintf(ppm,"P6\n%d %d\n255\n",images[i].width,images[i].height);
     fwrite(&images[i].data[0], 1, 3*images[i].width*images[i].height, ppm);
     fclose(ppm);
-    log("image from cam %d at time %d.%06d", images[i].camId,
+    log("image %dx%d from cam %d at time %d.%06d", 
+        images[i].width, images[i].height, images[i].camId,
         images[i].time.s, images[i].time.us);
   }
 }
