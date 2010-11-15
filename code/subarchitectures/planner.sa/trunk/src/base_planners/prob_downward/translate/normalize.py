@@ -293,11 +293,11 @@ def build_exploration_rules(task):
 
 def condition_to_rule_body(parameters, condition):
   for par in parameters:
-    yield pddl.Atom(par.type, [par.name])
+    yield pddl.Atom("type_"+par.type, [par.name])
   if not isinstance(condition, pddl.Truth):
     if isinstance(condition, pddl.ExistentialCondition):
       for par in condition.parameters:
-        yield pddl.Atom(par.type, [par.name])
+        yield pddl.Atom("type_"+par.type, [par.name])
       condition = condition.parts[0]
     if isinstance(condition, pddl.Conjunction):
       parts = condition.parts
