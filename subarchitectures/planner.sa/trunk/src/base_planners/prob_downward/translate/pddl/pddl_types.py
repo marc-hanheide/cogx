@@ -52,7 +52,7 @@ class TypedObject(object):
         type_map[new_name] = self.type
         return TypedObject(new_name, self.type)
   def to_untyped_strips(self):
-    return conditions.Atom(self.type, [self.name])
+    return conditions.Atom("type_"+self.type, [self.name])
 
 def parse_typed_list(alist, only_variables=False, constructor=TypedObject, functions=False):
   result = []

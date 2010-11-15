@@ -141,7 +141,7 @@ class Rule:
 def translate_typed_object(prog, obj, type_dict):
   supertypes = type_dict[obj.type].supertype_names
   for type_name in [obj.type] + supertypes:
-    prog.add_fact(pddl.Atom(type_name, [obj.name]))
+    prog.add_fact(pddl.Atom("type_"+type_name, [obj.name]))
 
 def translate_facts(prog, task):
   type_dict = dict((type.name, type) for type in task.types)
