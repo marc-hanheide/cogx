@@ -13,7 +13,7 @@ public class LocalVar extends Match implements MatchLVal {
 
   @Override
   public String toString() {
-    return "#" + _varName;
+    return (_negated ? "!" : "") + "#" + _varName;
   }
 
   /**  */

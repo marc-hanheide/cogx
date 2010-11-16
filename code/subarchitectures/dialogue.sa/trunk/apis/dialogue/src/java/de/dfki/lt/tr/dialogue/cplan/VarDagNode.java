@@ -72,7 +72,7 @@ public class VarDagNode extends SpecialDagNode {
       break;
     case Bindings.LOCAL:
       sb.append('#');
-      if (_varName != null) sb.append(_varName);
+      if (_varName != null && _varName.charAt(0) != '#') sb.append(_varName);
       break;
     case Bindings.GLOBAL:
       sb.append("##").append(_varName);

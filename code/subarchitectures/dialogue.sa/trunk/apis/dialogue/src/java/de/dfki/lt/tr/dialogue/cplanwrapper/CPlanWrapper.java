@@ -35,7 +35,7 @@ public class CPlanWrapper {
 
   private void initialize(File ruleFile, File pluginDirectory) {
     _planner = new UtterancePlanner(pluginDirectory);
-    _planner.readProjectFile(ruleFile);
+    _planner.readRuleFile(ruleFile);
   }
 
   private static LFNominal

@@ -24,10 +24,10 @@ public class Rule {
   private Position _position;
 
   /** Create a new rule: bind the left and right hand side */
-  public Rule(List<VarMatch> match, List<Action> right, Position pos) {
+  public Rule(List<VarMatch> match, List<Action> right, RuleParser.Location pos) {
     _matches = match;
     _replace = right;
-    _position = pos;
+    _position = new Position(pos.begin.line, 0, pos.begin.msg);
   }
 
   public StringBuilder appendMatches(StringBuilder sb) {

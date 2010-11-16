@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.LinkedList;
 
 import de.dfki.lt.tr.dialogue.cplan.Path;
+import de.dfki.lt.tr.dialogue.cplan.util.Position;
 import de.dfki.lt.tr.dialogue.cplan.matches.*;
 import de.dfki.lt.tr.dialogue.cplan.actions.*;
 
@@ -13,6 +14,8 @@ import de.dfki.lt.tr.dialogue.cplan.actions.*;
 }
 
 %language "Java"
+
+%locations
 
 %define package "de.dfki.lt.tr.dialogue.cplan"
 
@@ -37,27 +40,28 @@ import de.dfki.lt.tr.dialogue.cplan.actions.*;
       .setInputReader(inputDescription, input);
   }
 
-  private Rule newRule(List matches, List actions) {
+  private Rule newRule(List matches, List actions, Location loc) {
     return new Rule((List<VarMatch>) matches, (List<Action>) actions,
-      ((de.dfki.lt.tr.dialogue.cplan.Lexer)this.yylexer).getCurrentPosition());
+                    loc);
   }
 
-  private FunCall getNewFunCall(String name, List args) {
+  private FunCall getNewFunCall(String name, List args, Location loc) {
     try {
       return new FunCall(name, args);
     }
     catch (NoSuchMethodException ex) {
-      yyerror("No such Function registered: " + ex.getMessage());
+      yyerror(loc, "No such Function registered: " + ex.getMessage());
     }
     return null;
   }
 
-  private FunCallDagNode getNewFunCallDagNode(String name, List args) {
+  private FunCallDagNode getNewFunCallDagNode(String name, List args,
+                                              Location loc) {
     try {
       return new FunCallDagNode(name, args);
     }
     catch (NoSuchMethodException ex) {
-      yyerror("No such Function registered: " + ex.getMessage());
+      yyerror(loc, "No such Function registered: " + ex.getMessage());
     }
     return null;
   }
@@ -93,7 +97,7 @@ rules : rule '.' rules   { if ($1 != null) _ruleStore.add(0, $1);  }
       | rule '.'         { if ($1 != null) _ruleStore.add($1); }
       ;
 
-rule : matches ARROW actions  { $$ = newRule($1, $3); }
+rule : matches ARROW actions  { $$ = newRule($1, $3, @2); }
      | error                  { $$ = null; }
      ;
 
@@ -147,10 +151,10 @@ iv_expr : iv_term               { $$ = $1; }
         | iv_term '|' iv_expr   { $$ = new Disjunction($1, $3); }
         ;
 
-funcall : ID '(' rargs ')' { $$ = getNewFunCall($1, $3);
+funcall : ID '(' rargs ')' { $$ = getNewFunCall($1, $3, @1);
                              if ($$ == null) return YYERROR ;
                            }
-        | ID '(' ')'       { $$ = getNewFunCall($1, null);
+        | ID '(' ')'       { $$ = getNewFunCall($1, null, @1);
                              if ($$ == null) return YYERROR ;
                            }
         ;
@@ -224,10 +228,10 @@ rfeat : rnominal          { $$ = $1; }
                           }
       | r_id_var          { $$ = new DagNode(DagNode.PROP_FEAT_ID, $1); }
       | '(' rexpr ')'     { $$ = $2.setNominal(); }
-      // | ID '(' rargs ')'  { $$ = getNewFunCallDagNode($1, $3);
+      // | ID '(' rargs ')'  { $$ = getNewFunCallDagNode($1, $3, @1);
       //                       if ($$ == null) return YYERROR ;
       //                     }
-      // | ID '(' ')'        { $$ = getNewFunCallDagNode($1, null);
+      // | ID '(' ')'        { $$ = getNewFunCallDagNode($1, null, @1);
       //                       if ($$ == null) return YYERROR ;
       //                     }
       ;
@@ -252,10 +256,10 @@ rarg  : r_id_var  { $$ = $1; }
 r_id_var : ID     { $$ = new DagNode($1); }
          | VAR    { $$ = new VarDagNode($1, Bindings.LOCAL); }
          | GVAR   { $$ = new VarDagNode($1, Bindings.GLOBAL); }
-         | ID '(' rargs ')'  { $$ = getNewFunCallDagNode($1, $3);
+         | ID '(' rargs ')'  { $$ = getNewFunCallDagNode($1, $3, @1);
                                if ($$ == null) return YYERROR ;
                              }
-         | ID '(' ')'        { $$ = getNewFunCallDagNode($1, null);
+         | ID '(' ')'        { $$ = getNewFunCallDagNode($1, null, @1);
                                if ($$ == null) return YYERROR ;
                              }
          ;

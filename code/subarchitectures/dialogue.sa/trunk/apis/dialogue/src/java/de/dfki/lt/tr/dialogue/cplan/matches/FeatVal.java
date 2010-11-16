@@ -52,21 +52,21 @@ public class FeatVal extends Match {
 
   @Override
   public String toString() {
+    String sub;
     if (_feature == -1) {
-      return "<" + _featureVar + "> " + _value;
+      sub =  "<" + _featureVar + "> " + _value;
+    } else if (_feature == DagNode.TYPE_FEAT_ID) {
+      sub = ":" + _value.toString();
+    } else if (_feature == DagNode.ID_FEAT_ID) {
+      sub = _value + ":";
+    } else if (_feature == DagNode.PROP_FEAT_ID) {
+      sub = _value.toString();
+    } else if (_value == null) {
+      sub = " <" + DagNode.getFeatureName(_feature) + "> ";
+    } else {
+      sub = " <" + DagNode.getFeatureName(_feature) + "> " + _value;
     }
-    if (_feature == DagNode.TYPE_FEAT_ID) {
-      return ":" + _value.toString();
-    }
-    if (_feature == DagNode.ID_FEAT_ID) {
-      return _value + ":";
-    }
-    if (_feature == DagNode.PROP_FEAT_ID) {
-      return _value.toString();
-    }
-    return ((_value == null)
-        ? " <" + DagNode.getFeatureName(_feature) + "> "
-        : " <" + DagNode.getFeatureName(_feature) + "> " + _value);
+    return (_negated ? "!" : "") + sub;
   }
 
   @Override

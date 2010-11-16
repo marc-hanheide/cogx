@@ -15,7 +15,7 @@ public class Disjunction extends Match {
 
   @Override
   public String toString() {
-    return "(" + _left + " | " + _right + ")";
+    return (_negated ? "!" : "") + "(" + _left + " | " + _right + ")";
   }
 
   @Override

@@ -1,0 +1,127 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# This file contains the semantic ontologies (type-heirarchies) 
+# used by the grammar (and by dictionary items)
+
+feature{
+
+###########
+## EVENT ##
+###########
+
+
+  ont-event: event{
+                  relational
+                  action {action-motion action-non-motion}
+                  state {presentational ascription}
+                  internal {perception cognition}
+                  modal
+                  communication
+                  symbolic
+                  };
+
+
+  # ! Only 'event' (top level) and 'state' are used in the grammar
+
+
+
+############
+## ENTITY ##
+############
+
+
+  ont-entity: entity{
+                     physical{ 
+                              animate{person}
+                              thing
+                              e-location{e-region e-place}
+  		             }
+                     e-substance {e-material}
+                     e-measure
+                     e-event
+                     e-time{e-time-point e-time-unit}
+                   
+  		     dummy
+  		    };
+
+
+  # ! Only 'entity' (top level), physical, e-time-point, e-time-unit
+  # ! are used in the grammar
+  # ! This is because very few 'semantic' selectional constraints
+  # ! have been included in the grammar
+
+
+
+#############
+## QUALITY ##
+#############
+
+  ont-quality: quality{
+                       q-physical{
+                                  q-size
+                                  q-shape
+                                  q-age
+                                  q-color
+                                  q-state
+                                  q-material
+                                 }
+                       q-position{
+                                  q-location
+                                  q-number {number-cardinal number-ordinal number-id}
+                                  q-temporal
+                                  q-discourse
+                                 }
+                       q-attitude
+                      };
+  
+  
+  # ! Only the top level 'quality' is used in the grammar
+
+##############
+## MODIFIER ##
+##############
+
+  ont-modifier: modifier{
+
+                         m-dynamic{ m-direction m-whereto m-wherefrom m-through }
+                         m-manner
+                         m-time {m-time-point m-time-sequence m-time-interval}
+                         m-location
+                         m-probability
+                         m-frequency     # sometimes, often, usually
+                         m-comment       # quite generic 'affect'
+                         m-serial		   # go get that
+                         m-accompaniment # with GJ...
+                         m-instrumental  # with the ball...
+                         m-benefactor    # for ...
+                         m-relational{m-cause m-result m-condition}
+                         m-purpose       # I went there 'to get it'
+  		         m-intensity
+  		         m-comparison
+  		         m-restriction   # ball that I picked up,  place where I saw you
+                        };
+
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # IMPORTANT:  
+  #            'modifier' is used in the grammar. 
+  #
+  #            Moreover, any changes to this will require changes in these files:
+  #                  types-classes.ccg, prep.ccg, adv.ccg and (perhaps) verb.ccg
+  #            See these files for specifics.
+  #
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+					  
+###############
+## DISCOURSE ##
+###############
+
+  # this needs re-doing!
+  ont-discourse: marker{ d-units alignment cue greeting closing reject acknowledge evaluate };
+				
+###############
+## PROSODY ##
+###############
+  #ont-prosody: tunes{ rhm-thm {thmf rhmf} };
+
+}

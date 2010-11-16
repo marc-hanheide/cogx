@@ -50,31 +50,39 @@ public class LFDagPrinter extends DagPrinter {
 
       int corefNo = getCorefNo(here);
       if (corefNo < 0) { // already printed, only id:type
-        String idName =
-          ((id != null) ? id.getTypeName() : newNominalName(-corefNo));
-        sb.append(idName).append(':');
+        //String idName =
+        //  ((id != null) ? id.getTypeName() : newNominalName(-corefNo));
+        //sb.append(idName).append(':');
+        if (id == null) {
+          sb.append(newNominalName(-corefNo));
+        } else {
+          toStringRec(id, readable, sb);
+        }
+        sb.append(':');
         if (type != null) {
           toStringRec(type, readable, sb);
         }
         return;
       }
 
-      String idName =
-        ((id != null) ? id.getTypeName() : newNominalName(corefNo));
-
       boolean printCaret = false;
       if (root) {
-        sb.append('@').append(idName).append(':');
-        if (type != null) {
-          toStringRec(type, readable, sb);
-        }
+        sb.append('@');
+      } else {
         sb.append('(');
       }
-      else {
-        sb.append('(').append(idName).append(':');
-        if (type != null) {
-          toStringRec(type, readable, sb);
-        }
+      if (id == null) {
+        sb.append(newNominalName(-corefNo));
+      } else {
+        toStringRec(id, readable, sb);
+      }
+      sb.append(':');
+      if (type != null) {
+        toStringRec(type, readable, sb);
+      }
+      if (root) {
+        sb.append('(');
+      } else {
         printCaret = true;
       }
 
@@ -112,7 +120,7 @@ public class LFDagPrinter extends DagPrinter {
         assert(! it.hasNext());
         DagNode sub = edge.getValue();
         if (sub != null) {
-          sb.append(sub.dereference().getTypeName());
+          toStringRec(sub, readable, sb);
         }
       }
       else {

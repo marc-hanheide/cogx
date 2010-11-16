@@ -13,7 +13,7 @@ public class GlobalVar extends Match implements MatchLVal {
 
   @Override
   public String toString() {
-    return "##" + _varName;
+    return (_negated ? "!" : "") + "##" + _varName;
   }
 
   /** This constitutes a new global match ?? Is there a scenario where it would

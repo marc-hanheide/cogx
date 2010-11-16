@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import de.dfki.lt.tr.dialogue.cplan.RuleParser.Location;
 import de.dfki.lt.tr.dialogue.cplan.util.Position;
 
 public class Lexer implements RuleParser.Lexer, LFParser.Lexer  {
@@ -24,6 +25,9 @@ public class Lexer implements RuleParser.Lexer, LFParser.Lexer  {
   /** current stream position */
   private int _line;
   private int _column;
+
+  /** Start position of the last token */
+  private Position _startPos;
 
   /** print errors or only collect them */
   private boolean _quiet = false;
@@ -97,6 +101,20 @@ public class Lexer implements RuleParser.Lexer, LFParser.Lexer  {
   public void yyerror (String msg) {
     _lastErrors.add(new Position(_line, _column,
         _inputDescription + ":" + _line + ":" + _column + ": " + msg));
+    if (! _quiet && _logger == null) {
+      System.out.println(getLastErrorPosition().msg);
+    }
+    else if (_logger != null) {
+      _logger.error(getLastErrorPosition().msg);
+    }
+  }
+
+
+  @Override
+  public void yyerror(Location loc, String msg) {
+    Position beg = loc.begin;
+    _lastErrors.add(new Position(beg.line, beg.column,
+        beg.msg + ":" + beg.line + ":" + beg.column + ":  " + msg));
     if (! _quiet && _logger == null) {
       System.out.println(getLastErrorPosition().msg);
     }
@@ -188,6 +206,7 @@ public class Lexer implements RuleParser.Lexer, LFParser.Lexer  {
   public int yylex () throws java.io.IOException {
     _lval = null;
     skipws();
+    _startPos = getCurrentPosition();
     switch (_nextChar) {
     case RuleParser.EOF:
     case '(':
@@ -268,7 +287,7 @@ public class Lexer implements RuleParser.Lexer, LFParser.Lexer  {
     return _lval;
   }
 
-  public Position getCurrentPosition() {
+  private Position getCurrentPosition() {
     return new Position(_line, _column, _inputDescription);
   }
 
@@ -284,4 +303,13 @@ public class Lexer implements RuleParser.Lexer, LFParser.Lexer  {
     return _lastErrors;
   }
 
+  @Override
+  public Position getEndPos() {
+    return getCurrentPosition();
+  }
+
+  @Override
+  public Position getStartPos() {
+    return _startPos;
+  }
 }
