@@ -32,8 +32,6 @@ public class UtterancePlanner {
 
   /** The lexer to use in rule and logical form parsing */
   private Lexer _ruleLexer;
-  /** The parser for logical forms. */
-  private RuleParser _ruleParser;
 
   /** All the errors from the last round of rule reading */
   private List<Position> _errors;
@@ -54,9 +52,6 @@ public class UtterancePlanner {
 
     _ruleLexer = new Lexer();
     _ruleLexer.setErrorLogger(logger);
-    _ruleParser = new RuleParser(_ruleLexer);
-    _ruleParser.errorVerbose = true;
-    _ruleParser.setDebugLevel(0);
 
     _lfLexer = new Lexer();
     _lfParser = new LFParser(_lfLexer);
@@ -71,19 +66,22 @@ public class UtterancePlanner {
     _processor = new ParallelProcessor(rules);
   }
 
-  public void setTracing(RuleTracer rt) {
+  public void setTracing(AbstractTracer rt) {
     _processor.setTracing(rt);
   }
 
-  public RuleTracer getTracing() {
+  public AbstractTracer getTracing() {
     return _processor.getTracing();
   }
 
   private void readRules(Reader r, String inputDescription, List<Rule> rules)
   throws IOException {
-    _ruleParser.reset(inputDescription, r);
-    _ruleParser.parse();
-    List<Rule> fileRules = _ruleParser.getRules();
+    RuleParser ruleParser = new RuleParser(_ruleLexer);
+    ruleParser.errorVerbose = true;
+    ruleParser.setDebugLevel(0);
+    ruleParser.reset(inputDescription, r);
+    ruleParser.parse();
+    List<Rule> fileRules = ruleParser.getRules();
     if (rules != null) {
       rules.addAll(fileRules);
     }
@@ -159,14 +157,16 @@ public class UtterancePlanner {
   /** Run the processor until there is no more change */
   private DagNode computeFixpoint(DagNode input) {
     Bindings bindings = new Bindings();
-    int globalBindings = 0;
     boolean changed = true;
     while (changed) {
-      DagNode result = _processor.applyRules(input.cloneFS(), bindings);
-      changed = (! result.equals(input) ||
-          globalBindings != bindings.getNumberOfGlobalBindings());
-      globalBindings = bindings.getNumberOfGlobalBindings();
-      input = result;
+      try {
+        DagNode result = _processor.applyRules(input.cloneFS(), bindings);
+        changed = (! result.equals(input) || bindings.globalBindingsChanged());
+        input = result;
+      }
+      catch (InterruptedException ex) {
+        break;
+      }
     }
     return input;
   }

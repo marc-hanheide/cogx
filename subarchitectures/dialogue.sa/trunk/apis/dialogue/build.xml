@@ -91,9 +91,6 @@
     <unzip dest="${output.dir}" src="./lib/tags.jar"/>
     <unzip dest="${output.dir}" src="./lib/sphinx4.jar"/>
     <unzip dest="${output.dir}" src="./lib/log4j-1.2.jar"/>
-    <unzip dest="${output.dir}" src="./lib/jopt-simple-3.1-beta1.jar"/>
-    <unzip dest="${output.dir}" src="./lib/j2emacs.jar"/>
-    <unzip dest="${output.dir}" src="./lib/dataviz-0.1.jar"/>
   </target>
 
   <!-- =================================================================== -->
@@ -112,7 +109,6 @@
         <pathelement path="${slice.dir}"/>
         <pathelement path="${ice.slice.dir}"/>
         <pathelement path="${beliefslice.dir}"/>
-<!--	<pathelement path="../../../../tools/beliefs/apis/beliefs/src/slice/"/> -->
       </includepath>
     </slice2java>
   </target>

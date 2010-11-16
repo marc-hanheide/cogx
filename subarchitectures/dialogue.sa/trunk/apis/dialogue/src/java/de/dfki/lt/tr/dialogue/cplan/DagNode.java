@@ -84,8 +84,8 @@ public class DagNode {
 
   public static int totalNoNodes = 0, totalNoArcs = 0;
 
-  private static int currentGenerationMax = 1;
-  private static int currentGeneration = 1;
+  static int currentGenerationMax = 1;
+  static int currentGeneration = 1;
 
   private static IntIDMap<String> nameToType = new IntIDMap<String>();
 
@@ -115,17 +115,17 @@ public class DagNode {
   // The type of this node
   protected int _typeCode;
   // The feature-value list
-  private ArrayList<DagEdge> _outedges;
+  ArrayList<DagEdge> _outedges;
   // is this node a complex node or just a prop/type
   private boolean _isNominal;
 
   // a generation counter to (in)validate the following scratch fields
-  private int _generation;
+  int _generation;
   // these are the generation-protected scratch slots
   private int _newType;
   private DagNode _forward;
   private DagNode _copy;
-  private ArrayList<DagEdge> _compArcs;
+  ArrayList<DagEdge> _compArcs;
 
   /** so that we don't have to return null when the edges list is empty */
   private static Iterator<DagEdge> emptyEdges =
@@ -458,15 +458,13 @@ public class DagNode {
     newCopy = clone(in.getNewType());
     in.setCopy(newCopy);
 
-    newCopy._isNominal = in._isNominal;
-
     int newsize = 0;
     int cursorArcs = -1, cursorCompArcs = -1;
     if (in._outedges != null && ! in._outedges.isEmpty()) {
       cursorArcs = 0;
       newsize = in._outedges.size();
     }
-    if (_generation == currentGeneration
+    if (in._generation == currentGeneration
         && (in._compArcs != null && ! in._compArcs.isEmpty())) {
       cursorCompArcs = 0;
       newsize += in._compArcs.size();
@@ -496,7 +494,8 @@ public class DagNode {
 
       short feat = arc._feature;
       if (!deleteDaughters || keepFeature(feat)) {
-        newCopy._outedges.add(new DagEdge(feat, arc._value.copyResultRec(false)));
+        newCopy._outedges.add(
+            new DagEdge(feat, arc._value.copyResultRec(false)));
       }
     }
     in._compArcs = null;
@@ -505,6 +504,7 @@ public class DagNode {
     //in.setCopy(null);
     return newCopy;
   }
+
 
   /** Copy the result after a series of unifications.
    * @param deleteDaughters delete some top level features only concerned with

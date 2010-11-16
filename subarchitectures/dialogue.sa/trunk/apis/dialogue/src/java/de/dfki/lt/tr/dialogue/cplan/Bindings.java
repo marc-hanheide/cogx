@@ -1,7 +1,11 @@
 package de.dfki.lt.tr.dialogue.cplan;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.SortedMap;
 import java.util.Stack;
+import java.util.TreeMap;
 
 /** This class stores bindings of global and local variables during matching
  *  and modification phases of the graph transformation algorithm
@@ -10,7 +14,7 @@ public class Bindings {
   private Stack<Object []> _bindings;
 
   /** to count the global bindings stored in this structure */
-  private int _globalBindings;
+  private boolean _globalBindingsChanged;
 
   /** LOCAL bindings are only valid during one rule match/application */
   public static final int LOCAL = 0;
@@ -22,9 +26,9 @@ public class Bindings {
   public static final int ABSOLUTE = 2;
 
 
-    public Bindings() {
+  public Bindings() {
     _bindings = new Stack<Object []>();
-    _globalBindings = 0;
+    _globalBindingsChanged = false;
   }
 
   public Object[] findBinding(String name, int status) {
@@ -40,10 +44,20 @@ public class Bindings {
     Object[] res = findBinding(name, status);
     if (res == null) {
       if (status == GLOBAL) {
-        ++ _globalBindings;
+        _globalBindingsChanged = true;
       }
       Object[] newTriple = { Integer.valueOf(status), name, value };
       _bindings.push(newTriple);
+    } else {
+      // only global variables may be overwritten
+      if (status == GLOBAL) {
+        if (! res[2].equals(value)) {
+          _globalBindingsChanged = true;
+          res[2] = value;
+        }
+      } else {
+        throw new IllegalAccessError("Local Variable " + name + " already bound");
+      }
     }
   }
 
@@ -67,8 +81,10 @@ public class Bindings {
   }
 
   /** Return the number of global bindings in this structure */
-  public int getNumberOfGlobalBindings() {
-    return _globalBindings;
+  public boolean globalBindingsChanged() {
+    boolean result = _globalBindingsChanged;
+    _globalBindingsChanged = false;
+    return result;
   }
 
   /** Copy all local bindings from this to target */
@@ -101,12 +117,39 @@ public class Bindings {
     return _bindings.size();
   }
 
+  /** Return a List View of all global bindings */
+  public SortedMap<String, DagEdge> getGlobalBindings() {
+    SortedMap<String, DagEdge> result = new TreeMap<String, DagEdge>();
+    for (Object[] triple : _bindings) {
+      if ((Integer)triple[0] == GLOBAL) {
+        result.put((String)triple[1], (DagEdge)triple[2]);
+      }
+    }
+    return result;
+  }
+
+  /** This function is called when a local disjunction match branch failed.
+   *  Since no global bindings can be established on the left hand side, only
+   *  local variables can be retracted here.
+   */
   public void retractToLevel(int level) {
     while (_bindings.size() > level) {
       Object[] triple = _bindings.pop();
-      if ((Integer)triple[0] == GLOBAL) {
-        --_globalBindings;
-      }
+      assert((Integer)triple[0] != GLOBAL);
     }
+  }
+
+  /** Do a deep copy of this Bindings object */
+  public Bindings copy() {
+    Bindings result = new Bindings();
+    for (Object[] triple : _bindings) {
+      Object[] newTriple = new Object[triple.length];
+      newTriple[0] = triple[0];  // status
+      newTriple[1] = triple[1];  // name
+      DagEdge edge = ((DagEdge) triple[2]);
+      newTriple[2] = edge.copyIntermediate(new HashMap<Object, Object>());
+      result._bindings.push(triple);
+    }
+    return result;
   }
 }

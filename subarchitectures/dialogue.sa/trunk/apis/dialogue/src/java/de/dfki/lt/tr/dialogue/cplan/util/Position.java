@@ -10,4 +10,16 @@ public class Position {
   public int line;
   public int column;
   public String msg;
+
+  @Override
+  public boolean equals(Object o) {
+    if (! (o instanceof Position)) return false;
+    Position p2 = (Position) o;
+    return line == p2.line && column == p2.column && msg.equals(p2.msg);
+  }
+
+  @Override
+  public String toString() {
+    return msg + ":" + line + ":" + column;
+  }
 }

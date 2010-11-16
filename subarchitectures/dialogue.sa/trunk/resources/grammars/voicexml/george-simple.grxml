@@ -36,6 +36,7 @@
 			<item>right</item>
 			<item>great</item>
 			<item>good</item>
+			<item>correct</item>
 		</one-of>
 	</rule>
 
@@ -50,22 +51,28 @@
 	</rule>
 
 	<rule id="assertion">
-		<ruleref uri="#objref" /> is <ruleref uri="#neg" /><ruleref uri="#propspec" />
+	  <one-of>
+	    <item>there is a <item repeat="0-2"><ruleref uri="#propvalue" /></item><ruleref uri="#objtype" /> </item>
+	<item>	<ruleref uri="#objref" /> is <ruleref uri="#neg" /><ruleref uri="#propspec" /></item>
+		</one-of>
 	</rule>
 
 	<rule id="question">
 		<one-of>
-			<item>is <ruleref uri="#objref" /> <ruleref uri="#neg" /><ruleref uri="#propspec" /></item>
+			<item>is it <ruleref uri="#neg" /><ruleref uri="#propspec" /></item>
+			<item>is this <ruleref uri="#propspec"/></item>
+			<item>is the <ruleref uri="#objtype"/><ruleref uri="#propspec"/></item>
 			<item>what <ruleref uri="#propname" /> is <ruleref uri="#objref" /></item>
-			<item>do you know the <ruleref uri="#propname" /> of <ruleref uri="#objref" /></item>
+			<item>what is this</item>
 			<item>do you know what this is</item>
+			<item>do you know the <ruleref uri="#propname" /> of <ruleref uri="#objref" /></item>
 		</one-of>
 	</rule>
 
 	<rule id="yesno">
 		<one-of>
 			<item>yes</item>
-			<item>no</item>
+			<item>No</item>
 		</one-of>
 	</rule>
 
@@ -79,10 +86,11 @@
 			<item>it</item>
 			<item>
 				<one-of>
+				      <item>a</item>
 					<item>the</item>
 					<item>this</item>
 				</one-of>
-				<item repeat="0-5"><ruleref uri="#propvalue" /></item>
+				<item repeat="0-2"><ruleref uri="#propvalue" /></item>
 				<ruleref uri="#objtype" />
 			</item>
 		</one-of>
@@ -94,6 +102,7 @@
 			<item>ball</item>
 			<item>box</item>
 			<item>mug</item>
+			<item>thing</item>
 		</one-of>
 	</rule>
 
@@ -118,6 +127,7 @@
 		<one-of>
 			<item>blue</item>
 			<item>red</item>
+			<item>compact</item>
 			<item>yellow</item>
 			<item>green</item>
 			<item>orange</item>
@@ -125,6 +135,7 @@
 			<item>elongated</item>
 			<item>small</item>
 			<item>big</item>
+			<item>black</item>
 		</one-of>
 	</rule>
 

@@ -12,13 +12,13 @@ public class ParallelProcessor implements Processor {
   private List<Rule> _rules;
 
   /** An object to trace matching / application of rules */
-  private RuleTracer _tracer;
+  private AbstractTracer _tracer;
 
-  public void setTracing(RuleTracer t) {
+  public void setTracing(AbstractTracer t) {
     _tracer = t;
   }
 
-  public RuleTracer getTracing() {
+  public AbstractTracer getTracing() {
     return _tracer;
   }
 
@@ -27,6 +27,10 @@ public class ParallelProcessor implements Processor {
     _rules = rules;
   }
 
+  /** A local class to store successful matches together with the local bindings
+   *  that were established during the match for later application of rule
+   *  actions.
+   */
   private class RuleAction {
     Rule _rule;
     DagEdge _applicationPoint;
@@ -44,7 +48,16 @@ public class ParallelProcessor implements Processor {
     }
   }
 
-  private List<RuleAction> computeMatches(DagEdge lfEdge, Bindings bindings) {
+  /** This method applies the rules in a pseudo-parallel way to all nodes in the
+   *  graph.
+   *
+   *  The graph is traversed in depth-first postorder, means: the root first,
+   *  then the first daughter, then this nodes first daughter, etc.
+   *  The successful matches are stored, together with the local bindings that
+   *  have been established during the match.
+   */
+  private List<RuleAction> computeMatches(DagEdge lfEdge, Bindings bindings)
+  throws InterruptedException {
     List<RuleAction> result = new LinkedList<RuleAction>();
 
     Stack<DagEdge> path = new Stack<DagEdge>();
@@ -70,12 +83,13 @@ public class ParallelProcessor implements Processor {
       }
       if (nextEdge != null) {
         // apply rules to the node under path in the modified structure
-        for (Rule r : _rules) {
-          if (r.matches(path.lastElement(), bindings)) {
+        for (Rule rule : _rules) {
+          if (rule.matches(path.lastElement(), bindings)) {
             if (_tracer != null) {
-              _tracer.traceMatch(path.lastElement(), r, bindings);
+              _tracer.traceMatch(lfEdge, path.lastElement(),
+                  rule, bindings);
             }
-            result.add(new RuleAction(r, path, bindings));
+            result.add(new RuleAction(rule, path, bindings));
           }
         }
         iterators.push(nextEdge.getValue().getEdgeIterator());
@@ -85,19 +99,25 @@ public class ParallelProcessor implements Processor {
     return result;
   }
 
-
+  /** Match all rules pseudo-parallel to all nodes in the graph, then execute
+   *  the actions in the order in which they were found. Rule matching is
+   *  applied in the order in which the rules are loaded.
+   */
   @Override
-  public DagNode applyRules(DagNode lf, Bindings bindings) {
+  public DagNode applyRules(DagNode lf, Bindings bindings)
+  throws InterruptedException {
     DagEdge lfEdge = new DagEdge((short)-1, lf);
     List<RuleAction> actions = computeMatches(lfEdge, bindings);
     if (actions != null) {
       for (RuleAction action : actions) {
         if (_tracer != null) {
-          _tracer.traceBeforeApplication(action._applicationPoint, action._rule);
+          _tracer.traceBeforeApplication(lfEdge, action._applicationPoint,
+              action._rule, bindings);
         }
         action.apply(bindings);
         if (_tracer != null) {
-          _tracer.traceAfterApplication(action._applicationPoint, action._rule);
+          _tracer.traceAfterApplication(lfEdge, action._applicationPoint,
+              action._rule, bindings);
         }
       }
       return lfEdge.getValue().copyResult(false);

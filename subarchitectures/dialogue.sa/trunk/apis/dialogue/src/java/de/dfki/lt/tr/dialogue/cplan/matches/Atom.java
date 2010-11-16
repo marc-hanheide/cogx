@@ -15,7 +15,7 @@ public class Atom extends Match {
 
   @Override
   public String toString() {
-    return _value;
+    return (_negated ? "!" : "") + _value;
   }
 
   @Override

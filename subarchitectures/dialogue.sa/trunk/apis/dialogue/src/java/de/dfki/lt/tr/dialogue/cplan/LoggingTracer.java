@@ -2,7 +2,7 @@ package de.dfki.lt.tr.dialogue.cplan;
 
 import org.apache.log4j.Logger;
 
-public class LoggingTracer implements RuleTracer {
+public class LoggingTracer extends AbstractTracer {
 
   private int _ruleTracing = 0;
   private Logger logger = Logger.getLogger("TraceLogger");
@@ -12,8 +12,10 @@ public class LoggingTracer implements RuleTracer {
   }
 
   @Override
-  public void traceMatch(DagEdge current, Rule r, Bindings bindings) {
-    if ((_ruleTracing & DISPLAY_MATCHING) != 0) {
+  public void traceMatch(DagEdge root, DagEdge current, Rule r,
+      Bindings bindings) throws InterruptedException {
+    checkInterrupt();
+    if ((_ruleTracing & MATCHING) != 0) {
       StringBuilder sb = new StringBuilder();
       sb.append("\nMATCH: ");
       r.appendMatches(sb).append("\n       ").append(current);
@@ -22,18 +24,18 @@ public class LoggingTracer implements RuleTracer {
   }
 
   @Override
-  public void traceBeforeApplication(DagEdge current, Rule r) {
-    // TODO Auto-generated method stub
-    if ((_ruleTracing & DISPLAY_MODIFICATION) != 0) {
+  public void traceBeforeApplication(DagEdge root, DagEdge current, Rule r,
+      Bindings bindings){
+    if ((_ruleTracing & MODIFICATION) != 0) {
       logger.info("\nAPPLY  " + r.appendActions(new StringBuilder()).toString()
           + "\nTO     " + current);
     }
   }
 
   @Override
-  public void traceAfterApplication(DagEdge current, Rule r) {
-    // TODO Auto-generated method stub
-    if ((_ruleTracing & DISPLAY_MODIFICATION) != 0) {
+  public void traceAfterApplication(DagEdge root, DagEdge current, Rule r,
+      Bindings bindings){
+    if ((_ruleTracing & MODIFICATION) != 0) {
         logger.info("GETS   " + current);
     }
   }

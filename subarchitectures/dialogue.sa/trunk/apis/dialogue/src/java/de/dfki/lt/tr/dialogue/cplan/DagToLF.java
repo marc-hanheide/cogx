@@ -7,6 +7,7 @@ import java.util.IdentityHashMap;
 import opennlp.ccg.realize.Realizer;
 import opennlp.ccg.synsem.LF;
 
+import org.apache.log4j.Logger;
 import org.jdom.DocType;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -195,6 +196,7 @@ public class DagToLF {
 			root1 = root1.addContent(targetElt);
 			// call ccg.Realizer with XML-document to extract the contained LF and
 			// return it
+			Logger.getLogger(DagToLF.class).info(doc.toString());
 			lf = Realizer.getLfFromDoc(doc);
 		} catch (Exception e) {
 			System.err.println("error in LF: " + e.getMessage());
