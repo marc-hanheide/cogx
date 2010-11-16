@@ -1,0 +1,437 @@
+
+
+% File: formatting-instruction.tex
+\documentclass[letterpaper]{article}
+\usepackage{aaai}
+
+
+
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+
+\include{macros}
+
+\nocopyright
+
+\pdfinfo{
+/Title (Switching in Continual Planning for Practical Robot Control)
+/Subject (Proceedings of the 21st International Conference on Automated Planning and Scheduling)
+/Author (NA)}
+% The file aaai.sty is the style file for AAAI Press 
+% proceedings, working notes, and technical reports.
+%
+%\title{Switching in Continual Planning for Practical Robot Control}
+\title{A Continual Planner that Switches Between Serial and
+  Decision-Theoretic Planning} 
+\author{NA}
+\setcounter{secnumdepth}{0}
+
+
+\begin{document} 
+\maketitle
+
+\begin{abstract}
+
+The problem of practical robot control poses many important challenges
+to automated planning. 
+
+Planning and plan execution must be robust, seamlessly accommodating
+exogenous events and the underlying unpredictability of the
+environment. 
+
+Plans with a reasonable chance of exhibiting good behaviours must be
+synthesised in a timely manner.
+
+interleaved planning and execution. 
+
+, reason about degrees of belief and uncertainty about the world, 
+
+\end{abstract}
+
+\section{Introduction}
+
+We describe, \pcogx, the planning component in a robotic system that
+continuously deliberates in a stochastic dynamic environment in order
+to achieve objectives set by the user, and acquire a good
+understanding of its environment.
+%%
+
+Have a good understanding of the contents and function of rooms, as
+well as the linguistic referrents to rooms, widgets, and their visual
+qualities.
+
+Having confidence in its beliefs about the linguistic terms for
+spaces, and the function of those spaces.
+
+
+
+sometimes difficult to predict, with exogenous events, such as the
+changing of the objective, 
+
+
+
+
+
+the speed and scalability of software for serial planning in
+deterministic
+
+
+
+
+We developed a first-order declarative language, called DTPDDL, for
+describing domains of planning problems that correspond to POMDPs.  To
+accompany that language we have developed an information-state
+\laostar\ procedure for solving problems expressed in DTPDDL. We have
+an automated determinisation procedure that generates MAPL
+descriptions given DTPDDL input. To accompany that, we have extended
+MAPSIM to simulate DTPDDL instances, and modified \fastdownward\ so
+that it can find useful serial executions given DTPDDL and MAPL models
+of the problem at hand. 
+
+
+
+
+ called DTPDDL, along
+the lines of PDDL for the partially observable case, an \laostar\
+solution procedure, a determinisation of the DTPDDL problem in MAPL,
+and modify the \fastdownward\ system to find high quality serial plans
+.
+
+We model the environment as a partially observable Markov decision
+process. Although planning in that model is undecidable in
+general~\cite{}, an optimal finite-horizon plan corresponds to a
+contingent plan, that is a function mapping action-observation
+histories to actions.
+
+our continual planner is reactive, replanning whenever the underlying
+domain and problem models change. For example, replanning occurs if
+the motivational component alters the objectives, and if an assumed
+outcome of a sensing action is not realised.
+
+brittle sensing model, 
+
+the evaluation of a fluent at a state is either known. Moreover, there
+is a sensing process that run-time variables  after-which 
+
+%% For $\prop \in \state$ we say proposition $\prop$ characterises state
+%% $\state$. There is always a unique starting state $\state_0$. The goal
+%% $\goal$ is a set of propositions, and we say that state $\state$ is a
+%% goal state iff $\goal \subseteq \state$.
+
+%%  To keep this exposition
+%% simple, for any two distinct actions $\stochAction_i \neq
+%% \stochAction_j$, if outcome $\detAct$ is a possibility for
+%% $\stochAction_i$ then it cannot also be a possibility for
+%% $\stochAction_j$ -- i.e., if $\detAct \in
+%% \detActions(\stochAction_i)$ then $\detAct \not\in
+%% \detActions(\stochAction_j)$.
+
+
+%% The solution to a probabilistic planning problem is a contingency
+%% plan. This consists of an assignment of actions to states at each
+%% discrete timestep up to the planning horizon $n$. The optimal
+%% contingency plan is one which prescribes actions to states that
+%% maximise the probability that the goal is achieved within $n$ steps
+%% from the starting state $\state_0$. For the purposes of this paper
+%% we say a plan fails, i.e. achieves the goal with probability $0$, in
+%% situations where it does not prescribe an action. Computing the
+%% optimal plan for a problem is computationally intractable, and an
+%% important direction for research in the field is to develop
+%% heuristic mechanisms for generating small linear plans
+%% quickly~\cite{littman:etal:98}
+
+An outline of the paper is as follows. We describe POMDPs with a
+propositionally factored representation of states and observations,
+and describe how to evaluate plans when they correspond to
+finite-state controllers.
+
+\section{Propositional Decision-Theoretic Planning}
+
+
+%% {\em runtime variables}
+%% {\em decision variables}
+%% {\em uninitialised variables}
+%% {\em omitted variables}
+
+We describe the partially observable propositional probabilistic
+planning problem, with costs and rewards. The underlying world
+dynamics are modelled in terms of a finite set of stochastic actions
+$\stochActions$, deterministic outcomes $\detActions$, and
+state-characterising propositions $\propositions$.  A problem state
+$\state$ is a set of propositions $\state \subseteq \props$, and we
+denote \states\ the set of reachable states. The perceptual model is
+given in terms of a finite set of stochastic senses $\stochSenses$,
+deterministic sensing outcomes $\detSenses$, and perceptual
+propositions $\percepts$, called percepts. Here, an observation
+$\observ$ is a set of percepts $\observ \subseteq \percepts$, and we
+denote \observations\ the set of reachable observations.
+
+Every stochastic action $\stochAction \in \stochActions$ has a
+precondition $\poss(\stochAction)$, which is a set of propositions. An
+action is applicable at a state $\state$ when $\poss(\stochAction)
+\subseteq \state$. We denote $\stochActions(\state)$ the set of
+actions applicable at state $\state$.  When $\stochAction \in
+\stochActions(\state)$ is applied, nature chooses one elements amongst
+a small set of deterministic outcomes $\detActions(\stochAction)
+\equiv \{\detAction_1, \ldots, \detAction_k \}$. We denote
+$\mu_{\stochAction}(\detAction_i)$ the probability that nature takes
+outcome $\detAct_i$, and for all \stochAction\ we require
+$\sum_{\detAction_i \in \detActions(\stochAction)}
+\mu_{\stochAction}(\detAction_i) = 1$. That outcome so chosen has an
+effect on the underlying state given in terms of two lists of
+propositions. The add-list $\add(\detAction)$ and delete-list
+$\delete(\detAction)$.\footnote{If a proposition is in the add-list of
+$\detAction$, then it cannot be in the delete-list and vice versa.}
+If outcome $\detAction$ with $\add(\detAction) := [\prop_1,
+..,\prop_n]$ and $\delete(\detAction) := [\prop_1, ..,\prop_m]$ is
+chosen by nature when \stochAction\ is applied at state $\state$, then
+the resultant state is $ ( \state \cup \add(\detAction) ) \backslash
+\delete(\detAction)$ -- i.e., propositions from $\add(\detAction)$ are
+added to $\state$, and those from $\delete(\detAction)$ are removed
+from $\state$.
+
+We are concerned with problems that feature partial
+observability. Here the underlying state of the world cannot be
+observed directly, rather, senses $\stochSense \in \stochSenses$
+effect an observation $\observ \in \observations$ that informs what
+should be believed about the world. In the POMDP model, if $\action$
+is applied effecting a transition to a successor state $\state'$, then
+an observation occurs according to the active senses
+$\stochSenses(\stochAction, \state') \subseteq \stochSenses$. A
+precept is active, written $\stochSense \in
+\stochSenses(\stochAction, \state')$, if the senses
+action-precondition, $\poss_\stochActions(\stochSense)$, is equal to
+$\stochAction$, and the state-precondition
+$\poss_\states(\stochSense) \subseteq \propositions$ is satisfied by
+the state $\state'$; In the usual sense that
+$\poss_\states(\stochSense) \subseteq \state'$.
+%%
+When a sense is active, nature must choose exactly one outcome amongst
+a small set of deterministic choices $\detSenses(\stochSense)
+\equiv \{\detSense_1, \ldots, \detSense_k \}$, so that for each
+$i$ we have $\detSense_i \subseteq \percepts$. The probability of
+the $i^{th}$ element being chosen is given by
+$\psi_{\stochSense}(\detSense_i)$, where $\sum_{\detSense_i \in
+\detSenses(\stochSense)} \psi_{\stochSense}(\detSense_i) =
+1$. The observation received by the agent corresponds to the union of
+perceptual propositions from chosen elements of active senses.
+
+A POMDP has a starting configuration that corresponds to a subjective
+Bayesian belief state. Written $\bstate_0$, this is a probability
+distribution over states. We use the notation $\bstate_0(\state)$ to
+denote the probability that the starting state is equal to
+$\state$. We suppose this is given in a factored tree format. 
+
+%% Let $\detSense_i \subseteq \percepts$ for each $i$, so that if
+%% we apply $\stochAction$ and transition to $\state'$, the observation
+%% received will be a union of choices from the active percepts, which
+%% will occur with the probability according to $\psi$ that nature can
+%% make those choices.
+
+
+\subsection{Costs, Rewards, and Plan Evaluation}
+
+Whereas until now we have considered a POMDP model factored in terms
+of propositions and percepts, in order to discuss utilities and
+policies it is convenient to consider the underlying decision process
+in a flat format. This underlying decision process is given by the
+tuple $\langle \states, \bstate_0, \actions, \transProb, \reward,
+\observations, \obsDist \rangle$. Here $\bstate_0$ is the initial
+belief-state, \states\ is the finite set of states, \actions\ is the
+finite set of actions, and \observations\ is the finite set of
+observations.  Where $\state, \state' \in \states$, $a \in \actions$,
+from $\mu$ we have a state transition function $\transProb(\state,
+\action, \state')$ giving the probability of a transition from state
+$s$ to $s'$ if $a$ is applied. For any $\state$ and $\action$ we have
+$\sum_{\state' \in \states} \transProb(\state, \action, \state') = 1$.
+%%
+Function $\reward:\states \times \actions \to \Re$ is a bounded real
+valued reward function.  Consequently there is a positive constant $c$
+so that for all $\state \in \states$ and $\action \in \actions$,
+$|\reward(\state, \action)| < c$.
+%%
+From $\psi$ we have that for each $\state \in \states$ and action
+$\action \in \actions$, an observation $\observ \in \observations$ is
+generated independently according to a probability distribution
+$\obsDist(\state, \action)$. We denote $\obsDist_\observ(\state,
+\action)$ the probability of getting observation $\observ$ in state
+$\state$. For $\state$ and $\action$ we have $\sum_{\observ \in
+\observations} \obsDist_\observ(\state, \action) = 1$.
+
+A general formalism for representing solutions to POMDPs is the
+finite-state controller (FSC). This is a three-tuple $\langle \nodes,
+\selection, \transition \rangle$ where: $\node \in \nodes$ is a set of
+nodes, $\selection_\node(\action) = P(\action | \node)$, and
+$\transition_\node(\action, \observation, \node') = P(\node'|\node,
+\action, \observation)$. The value of state $\state$ at node $\node$
+given a problem model, written $V_\node(\state)$, is:
+
+\begin{equation}\label{eq:evaluation}
+V_\node(\state) = \sum_{\action \in \actions}
+\selection_\node(\action) \reward(\state, \action) + \beta \sum_{\action, \observation,
+\state', \node'} \transition_\node(\action, \observation, \node')
+\transProb(\state, \action, \state') \obsDist_\observ(\state',
+\action) V_{\node'}(\state')
+\end{equation}
+
+Using the notation \bstate\ for a belief-state, and writing
+$\bstate(\state)$ for the probability the robot believes it is in
+state \state, we have that the value of that belief $\bstate$ according to a
+controller is:
+
+\begin{equation} \label{eq:valueBelief}
+V_{\pp{FSC}}(\bstate) = \max_{\node \in \nodes} \sum_{\state \in \states} \bstate(\state) V_\node(\state)
+\end{equation}
+
+
+
+
+
+\section{Serial Planning in Determinisations}
+
+
+
+\section{Decision-Theoretic PDDL}
+
+the effects of a sensing schema are perceptual, whereas the effects of
+an operator schema are on the underlying state space. 
+
+
+knowledge objectives and  sensory effects. 
+
+
+probabilistic models of the sensing consequences of acting to
+quantitatively capture the unreliability of sensing, and thus reason
+precisely about the utility of a plan. 
+
+
+planning in practical sized POMDPs is intractable. One approach is to
+described the task hierarchically, thereby constrain and simplify the
+policy search task. The approach ~\cite{}. 
+
+
+
+It can arise that in some propositional states an action is
+applicable, and in others it is not. Moreover, a belief-state can
+assign non-zero probability to states where that applicability holds,
+and states where it does not. We forbid execution of actions that are
+not applicable in any state of the current belief, and otherwise
+suppose that when a non-applicable action is executed, that it has
+no effect.
+
+
+\section{Evaluation}
+
+
+\section{Discussion}
+
+There have been a number of developments recently towards planning
+under uncertainty using systems that were intended for serial planning
+in deterministic problems.  Notably,
+\system{FFR$_a$}~\cite{yoon:etal:2007}, the winning entry from the
+probabilistic track of the 2004 International Planning Competition,
+uses the fast satisficing procedure
+\system{FF}~\cite{hoffmann:nebel:2001} to compute a serial plan and
+corresponding execution trace. The resulting plan is then executed
+until the observed trace deviates from the planned trace.
+
+ ---i.e., the values of {\em
+runtime variables} in the continual paradigm--- are treated , and
+therefore plan for a specific eventuality, replanning from scratch if
+something
+
+
+More computationally expensive approaches in this vein combine
+sampling strategies on valuations over {\em runtime variables} with
+deterministic planning procedures. The outcome is typically a more
+robust serial plan~\cite{yoon:etal:2008}, or contingent
+plan~\cite{majercik:2006}.
+
+
+
+%%
+Recently the system
+\system{Conformant-FF}~\cite{hoffmann:brafman:2006}, demonstrated how
+conformant planning ---i.e., serial planning in unobservable worlds---
+can be modelled as a deterministic problem, and therefore solved using
+serial systems. In this conformant setting, advances have been towards
+compact representations and lazy evaluations of belief-states.
+ 
+
+\section{Concluding Remarks}
+
+The switching continual planning system we have described serves as
+the underlying planner for CogX. 
+
+
+\bibliography{papers}
+\bibliographystyle{aaai}
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{PPDDL}
+
+We briefly discuss the description language PPDDL, a fairly
+straight-forward extension of the Planning Domain Definition Language
+for describing fully observable Markov decision processes.
+
+\small{
+\begin{tabtt}
+(\= :action look-at-object \\
+  \> :parameters \=(?r - robot ?v - visual-object\\
+  \> \> ?l - label ?p - place) \\
+  \> :precondition (and (= (is-in ?r) ?p) \\
+  \> \> (= (label ?o) ?l) ) \\
+  \> :effect (and (assign (reward) -3) ) ) \\
+\end{tabtt}
+}
+
+\small{
+\begin{tabtt}
+(\= :observe visual-object \\
+  \> :parameters \=(?r - robot ?v - visual-object\\
+  \> \> ?l - label ?p - place) \\
+  \> :execution (look-at-object ?r ?v ?l ?p) \\
+  \> :effect (when (= (is-in ?o) ?p) (probabilistic 0.8)) \\
+\end{tabtt}
+}
+
+\small{
+\begin{tabtt}
+(\= :sensor look-for-object \\
+  \> :agent (?a - robot) \\
+  \> :parameters (?l - label ?p - place) \\
+  \> :variables (?o - visual-object) \\
+  \> :precondition (\=and (= (is-in ?r) ?p) \\
+  \> \> (= (label ?o) ?l) (assume (is-in ?o) ?p) ) \\
+  \> :effect () \\
+  \> :sense (= (is-in ?o) ?p) \\
+\end{tabtt}
+}
+
+\subsection{MAPL}
