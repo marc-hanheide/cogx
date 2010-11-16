@@ -81,13 +81,13 @@ deterministic
 
 We developed a first-order declarative language, called DTPDDL, for
 describing domains of planning problems that correspond to POMDPs.  To
-accompany that language we have developed an information-state
+accompany that language we have implemented an information-state
 \laostar\ procedure for solving problems expressed in DTPDDL. We have
 an automated determinisation procedure that generates MAPL
 descriptions given DTPDDL input. To accompany that, we have extended
 MAPSIM to simulate DTPDDL instances, and modified \fastdownward\ so
 that it can find useful serial executions given DTPDDL and MAPL models
-of the problem at hand. 
+of the problem at hand.
 
 
 
@@ -158,21 +158,15 @@ We describe the partially observable propositional probabilistic
 planning problem, with costs and rewards. The underlying world
 dynamics are modelled in terms of a finite set of stochastic actions
 $\stochActions$, deterministic outcomes $\detActions$, and
-state-characterising propositions $\propositions$.  A problem state
-$\state$ is a set of propositions $\state \subseteq \props$, and we
-denote \states\ the set of reachable states. The perceptual model is
-given in terms of a finite set of stochastic senses $\stochSenses$,
-deterministic sensing outcomes $\detSenses$, and perceptual
-propositions $\percepts$, called percepts. Here, an observation
-$\observ$ is a set of percepts $\observ \subseteq \percepts$, and we
-denote \observations\ the set of reachable observations.
+state-characterising propositions $\propositions$.  
 
-Every stochastic action $\stochAction \in \stochActions$ has a
-precondition $\poss(\stochAction)$, which is a set of propositions. An
+A problem state $\state$ is a set of propositions $\state \subseteq
+\props$. Every stochastic action $\stochAction \in \stochActions$ has
+a precondition $\poss(\stochAction)$, also a set of propositions. An
 action is applicable at a state $\state$ when $\poss(\stochAction)
 \subseteq \state$. We denote $\stochActions(\state)$ the set of
 actions applicable at state $\state$.  When $\stochAction \in
-\stochActions(\state)$ is applied, nature chooses one elements amongst
+\stochActions(\state)$ is applied, nature chooses one element amongst
 a small set of deterministic outcomes $\detActions(\stochAction)
 \equiv \{\detAction_1, \ldots, \detAction_k \}$. We denote
 $\mu_{\stochAction}(\detAction_i)$ the probability that nature takes
@@ -182,9 +176,9 @@ $\sum_{\detAction_i \in \detActions(\stochAction)}
 effect on the underlying state given in terms of two lists of
 propositions. The add-list $\add(\detAction)$ and delete-list
 $\delete(\detAction)$.\footnote{If a proposition is in the add-list of
-$\detAction$, then it cannot be in the delete-list and vice versa.}
+  $\detAction$, then it cannot be in the delete-list and vice versa.}
 If outcome $\detAction$ with $\add(\detAction) := [\prop_1,
-..,\prop_n]$ and $\delete(\detAction) := [\prop_1, ..,\prop_m]$ is
+  ..,\prop_n]$ and $\delete(\detAction) := [\prop_1, ..,\prop_m]$ is
 chosen by nature when \stochAction\ is applied at state $\state$, then
 the resultant state is $ ( \state \cup \add(\detAction) ) \backslash
 \delete(\detAction)$ -- i.e., propositions from $\add(\detAction)$ are
@@ -192,20 +186,24 @@ added to $\state$, and those from $\delete(\detAction)$ are removed
 from $\state$.
 
 We are concerned with problems that feature partial
-observability. Here the underlying state of the world cannot be
+observability. These have a perceptual model given in terms of a
+finite set of stochastic senses $\stochSenses$, deterministic sensing
+outcomes $\detSenses$, and perceptual propositions $\percepts$, called
+percepts. Here, an observation $\observ$ is a set of percepts $\observ
+\subseteq \percepts$, and we denote \observations\ the set of
+reachable observations. The underlying state of the world cannot be
 observed directly, rather, senses $\stochSense \in \stochSenses$
 effect an observation $\observ \in \observations$ that informs what
 should be believed about the world. In the POMDP model, if $\action$
 is applied effecting a transition to a successor state $\state'$, then
 an observation occurs according to the active senses
 $\stochSenses(\stochAction, \state') \subseteq \stochSenses$. A
-precept is active, written $\stochSense \in
-\stochSenses(\stochAction, \state')$, if the senses
-action-precondition, $\poss_\stochActions(\stochSense)$, is equal to
-$\stochAction$, and the state-precondition
-$\poss_\states(\stochSense) \subseteq \propositions$ is satisfied by
-the state $\state'$; In the usual sense that
-$\poss_\states(\stochSense) \subseteq \state'$.
+precept is active, written $\stochSense \in \stochSenses(\stochAction,
+\state')$, if the senses action-precondition,
+$\poss_\stochActions(\stochSense)$, is equal to $\stochAction$, and
+the state-precondition $\poss_\states(\stochSense) \subseteq
+\propositions$ is satisfied by the state $\state'$; In the usual sense
+that $\poss_\states(\stochSense) \subseteq \state'$.
 %%
 When a sense is active, nature must choose exactly one outcome amongst
 a small set of deterministic choices $\detSenses(\stochSense)
@@ -238,13 +236,14 @@ policies it is convenient to consider the underlying decision process
 in a flat format. This underlying decision process is given by the
 tuple $\langle \states, \bstate_0, \actions, \transProb, \reward,
 \observations, \obsDist \rangle$. Here $\bstate_0$ is the initial
-belief-state, \states\ is the finite set of states, \actions\ is the
-finite set of actions, and \observations\ is the finite set of
-observations.  Where $\state, \state' \in \states$, $a \in \actions$,
-from $\mu$ we have a state transition function $\transProb(\state,
-\action, \state')$ giving the probability of a transition from state
-$s$ to $s'$ if $a$ is applied. For any $\state$ and $\action$ we have
-$\sum_{\state' \in \states} \transProb(\state, \action, \state') = 1$.
+belief-state, \states\ is the finite set of reachable propositional
+states, \actions\ is the finite set of actions, and \observations\ is
+the finite set of reachable observations.  Where $\state, \state' \in
+\states$, $a \in \actions$, from $\mu$ we have a state transition
+function $\transProb(\state, \action, \state')$ giving the probability
+of a transition from state $s$ to $s'$ if $a$ is applied. For any
+$\state$ and $\action$ we have $\sum_{\state' \in \states}
+\transProb(\state, \action, \state') = 1$.
 %%
 Function $\reward:\states \times \actions \to \Re$ is a bounded real
 valued reward function.  Consequently there is a positive constant $c$
