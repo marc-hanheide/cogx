@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <sys/time.h>
 #include <flycapture/FlyCapture2.h>
+#include <ImageCache.h>
 #include "VideoServer.h"
 
 namespace cast
@@ -107,6 +108,7 @@ private:
 	bool useVideoMode7;																	///< True, if VideoMode7 / Format7 mode is active.
   bool setAutomaticPropertyAdjustment;								///< Automatic property adjustment between different cameras.
 	bool isCapturing;																		///< Capturing of frames is started.
+  Video::CImageCache m_imageCache;
 
   FlyCapture2::VideoMode selectVideoMode(int &_width, int &_height);
   FlyCapture2::FrameRate selectFrameRate(int &_fps);

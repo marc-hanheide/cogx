@@ -896,27 +896,29 @@ void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height, V
   }
   else
   {
+    char id[16];
+    sprintf(id, "frame%d", camIdx);
+
+    // use image cache to avoid allocate/deallocating all the time
+    IplImage *tmp_resized = m_imageCache.getImage(id, width, height, IPL_DEPTH_8U, 3);
+
 #if USE_WRAPIMAGE_HACK
     IplImage *tmp = wrapFlyCaptureImage(image);
-    IplImage *tmp_resized = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
     cvResize(tmp, tmp_resized);
     convertImageFromIpl(tmp_resized, frame);
-    cvReleaseImage(&tmp_resized);
-		Video::releaseWrappedImage(&tmp);
+    Video::releaseWrappedImage(&tmp);
     // adjust to scaled image size
     changeImageSize(frame.camPars, width, height);
 #else
-		debug("Resize image. Bad solution with copying to iplImage.");
-		/// TODO TODO TODO TODO We should find another solution!
+    debug("Resize image. Bad solution with copying to iplImage.");
+    /// TODO TODO TODO TODO We should find another solution!
     // NOTE: this is very wasteful! And should only be a temporary solution!
-		// convert to iplImage, resize and convert back to Video::Image
+    // convert to iplImage, resize and convert back to Video::Image
     copyImage(image, frame);
     IplImage *tmp = 0;
-    IplImage *tmp_resized = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
     convertImageToIpl(frame, &tmp);
     cvResize(tmp, tmp_resized);
     convertImageFromIpl(tmp_resized, frame);
-    cvReleaseImage(&tmp_resized);
     cvReleaseImage(&tmp);
     // adjust to scaled image size
     changeImageSize(frame.camPars, width, height);
