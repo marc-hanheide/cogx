@@ -938,5 +938,6 @@ def guiMain():
     sys.exit(app.exec_())
     pass
 
-if __name__ == "__main__": guiMain()
+if __name__ == "__main__":
+    guiMain()
 
