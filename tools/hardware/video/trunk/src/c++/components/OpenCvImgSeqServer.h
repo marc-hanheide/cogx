@@ -11,7 +11,7 @@
 #include <map>
 #include <stdexcept>
 #include <cv.h>
-//#include <opencv/cv.h>  -- this is incorrect according to the pkg-config flags
+#include <ImageCache.h>
 #include "VideoServer.h"
 
 #ifdef FEAT_VISUALIZATION
@@ -66,6 +66,10 @@ private:
    * raw Ipl images
    */
   std::vector<IplImage*> grabbedImages;
+
+  // This monitor is used to sync grabFramesInternal and switchSequence threads.
+  IceUtil::Monitor<IceUtil::Mutex> m_sequenceMonitor;
+
   /**
    * time stamps when Ipl images were captured.
    */
@@ -87,6 +91,8 @@ private:
    * NOTE: ignored for now!
    */
   int downsampleFactor;
+
+  Video::CImageCache m_imageCache;
 
   /**
    * Initialise with a filename template and frame numbers.

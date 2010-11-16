@@ -54,11 +54,12 @@ IplImage* convertImageToIpl(const Video::Image & img)
 IplImage* wrapVideoImage(const Video::Image &img)
 {
   // HACK: Data shared between IplImage and vector
-   IplImage* pImg = cvCreateImageHeader(cvSize(img.width, img.height), IPL_DEPTH_8U, 3);
-   pImg->imageData = (char*) &(img.data[0]);
-   pImg->imageDataOrigin = pImg->imageData;
-   pImg->widthStep = img.width * 3;
-   pImg->imageSize = pImg->widthStep * img.height;
+  IplImage* pImg = cvCreateImageHeader(cvSize(img.width, img.height), IPL_DEPTH_8U, 3);
+  pImg->imageData = (char*) &(img.data[0]);
+  pImg->imageDataOrigin = pImg->imageData;
+  pImg->widthStep = img.width * 3;
+  pImg->imageSize = pImg->widthStep * img.height;
+  return pImg;
 }
 
 void releaseWrappedImage(IplImage** pImagePtr)
