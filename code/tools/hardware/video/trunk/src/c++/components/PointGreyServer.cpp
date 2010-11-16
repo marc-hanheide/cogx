@@ -11,6 +11,13 @@
 #include <VideoUtils.h>
 #include "PointGreyServer.h"
 
+#define USE_WRAPIMAGE_HACK 1
+#ifdef USE_WRAPIMAGE_HACK
+#include <ConvertImage.h>
+IplImage* wrapFlyCaptureImage(const FlyCapture2::Image &img);
+#endif
+
+
 /**
  * The function called to create a new instance of our component.
  */
@@ -816,7 +823,6 @@ void PointGreyServer::grabFrames()
   grabFramesInternal();
 }
 
-
 /**
  * @brief Retrieve frames internal. \n
  * Convert color format to RGB and resize image, if necessary.
@@ -890,6 +896,16 @@ void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height, V
   }
   else
   {
+#if USE_WRAPIMAGE_HACK
+    IplImage *tmp = wrapFlyCaptureImage(image);
+    IplImage *tmp_resized = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+    cvResize(tmp, tmp_resized);
+    convertImageFromIpl(tmp_resized, frame);
+    cvReleaseImage(&tmp_resized);
+		Video::releaseWrappedImage(&tmp);
+    // adjust to scaled image size
+    changeImageSize(frame.camPars, width, height);
+#else
 		debug("Resize image. Bad solution with copying to iplImage.");
 		/// TODO TODO TODO TODO We should find another solution!
     // NOTE: this is very wasteful! And should only be a temporary solution!
@@ -904,6 +920,7 @@ void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height, V
     cvReleaseImage(&tmp);
     // adjust to scaled image size
     changeImageSize(frame.camPars, width, height);
+#endif
   }
 }
 
@@ -1023,6 +1040,37 @@ void PointGreyServer::copyImage(const FlyCapture2::Image &flyImg, Video::Image &
   img.data.resize(img.width*img.height*3);
   memcpy(&img.data[0], flyImg.GetData(), img.data.size());
 }
+
+#if USE_WRAPIMAGE_HACK
+/**
+ * @brief Create an IplImage that uses the data from a FlyCapture2::Image. \n
+ * The image data is shared between FlyCapture2::image and IplImage. \n
+ * WARNING: DO NOT cvReleaseImage() the obtained VideoImage.
+ *    Use releaseWrappedImage() instead. \n
+ * WARNING: The Video::Image MUST NOT BE DESTROYED while using the
+ *    IplImage created with this function.
+ * WARNING: At the moment it is not clear if the hack works with
+ *    images whose width is not aligned to 4 bytes.
+ * WARNING: THIS IS A SEVERE HACK: USE AT YOUR OWN RISK.
+ */
+IplImage* wrapFlyCaptureImage(const FlyCapture2::Image &flyImg)
+{
+	if(flyImg.GetPixelFormat() != FlyCapture2::PIXEL_FORMAT_RGB8)
+		throw runtime_error("PointGreyServer: can only handle RGB8 image format");
+	if(flyImg.GetStride() != flyImg.GetCols()*3)
+		throw runtime_error("PointGreyServer: can only handle images with no padding");
+	if(flyImg.GetDataSize() != flyImg.GetCols()*flyImg.GetRows()*3)
+		throw runtime_error("PointGreyServer: can only handle images with size 3*w*h bytes");
+
+	// HACK: Data shared between IplImage and FlyCapture2::Image
+	IplImage* pImg = cvCreateImageHeader(cvSize(flyImg.GetCols(), flyImg.GetRows()), IPL_DEPTH_8U, 3);
+	pImg->imageData = (char*) flyImg.GetData();
+	pImg->imageDataOrigin = pImg->imageData;
+	pImg->widthStep = flyImg.GetCols() * 3;
+	pImg->imageSize = pImg->widthStep * flyImg.GetRows();
+	return pImg;
+}
+#endif
 
 }
 

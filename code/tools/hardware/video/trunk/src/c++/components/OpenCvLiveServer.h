@@ -17,6 +17,7 @@
 // #include <opencv/highgui.h>  -- incorrect according to the opencv pkg-config flags
 #include <dc1394/types.h>		// apt-get libdc1394-22-dev
 #include <dc1394/control.h>	// apt-get libdc1394-22-dev
+#include <ImageCache.h>
 #include "VideoServer.h"
 
 namespace cast
@@ -83,6 +84,8 @@ private:
    * Timer to measure actual frame rate.
    */
   Timer timer;
+
+  Video::CImageCache m_imageCache;
 
   /**
    * get video resolution for given camera

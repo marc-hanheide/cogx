@@ -375,11 +375,13 @@ void OpenCvLiveServer::retrieveFrameInternal(int camIdx, int width, int height,
   }
   else
   {
-    IplImage *tmp = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+    char id[16];
+    sprintf(id, "frame%d", camIdx);
+    // use image cache to avoid allocate/deallocating all the time
+    IplImage *tmp = m_imageCache.getImage(id, width, height, IPL_DEPTH_8U, 3);
     cvResize(retrievedImages[camIdx], tmp);
     copyImage(tmp, frame);
-    // TODO: avoid allocate/deallocating all the time
-    cvReleaseImage(&tmp);
+
     // adjust to scaled image size
     changeImageSize(frame.camPars, width, height);
   }

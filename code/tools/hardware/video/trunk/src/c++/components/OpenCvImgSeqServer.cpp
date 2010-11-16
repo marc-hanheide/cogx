@@ -287,6 +287,8 @@ void OpenCvImgSeqServer::constructFilenames(const vector<string> &fileTemplates,
 
 void OpenCvImgSeqServer::grabFramesInternal() throw(runtime_error)
 {
+  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_sequenceMonitor);
+
   if(filenames.size() == 0)
     throw runtime_error(exceptionMessage(__HERE__, "video not initialised"));
   if(frameCnt < numFrames() || loopSequence)
@@ -335,8 +337,6 @@ void OpenCvImgSeqServer::grabFramesInternal() throw(runtime_error)
 
 void OpenCvImgSeqServer::grabFrames()
 {
-  // TODO: if (VideoSequenceInfo present) switchSequence(seqInfo);
-
   // note that by just calling sleep(framrate) we actually do not really
   // get a fixed framerate, this would require setitimer() and pause()
   sleepComponent(framerateMillis);
@@ -365,11 +365,14 @@ void OpenCvImgSeqServer::retrieveFrameInternal(int camIdx, int width, int height
   }
   else
   {
-    IplImage *tmp = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+    char id[16];
+    sprintf(id, "frame%d", camIdx);
+
+    // use image cache to avoid allocate/deallocating all the time
+    IplImage *tmp = m_imageCache.getImage(id, width, height, IPL_DEPTH_8U, 3);
     cvResize(grabbedImages[camIdx], tmp);
     convertImageFromIpl(tmp, frame);
-    // TODO: avoid allocate/deallocating all the time
-    cvReleaseImage(&tmp);
+
     // adjust to scaled image size
     changeImageSize(frame.camPars, width, height);
   }
@@ -659,6 +662,8 @@ void OpenCvImgSeqServer::CDisplayClient::handleEvent(const Visualization::TEvent
 
 void OpenCvImgSeqServer::switchSequence(CSequenceInfo& seq)
 {
+  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_sequenceMonitor);
+
   seq.checkLimits();
 
   // XXX: filenames are not cleared by constructFilenames().

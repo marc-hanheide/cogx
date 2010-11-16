@@ -2,8 +2,12 @@
 INCLUDE_DIRECTORIES(${COGX_ROOT}/tools/math/src/c++/autogen)
 INCLUDE_DIRECTORIES(${COGX_ROOT}/tools/math/src/c++/math)
 
-ADD_LIBRARY(VideoUtils SHARED CameraParameters.cpp CDataFile.cpp
-    ConvertImage.cpp)
+ADD_LIBRARY(VideoUtils SHARED
+   CDataFile.cpp
+   CameraParameters.cpp
+   ConvertImage.cpp
+   ImageCache.cpp
+   )
 
 # Add libraries to link against.
 TARGET_LINK_LIBRARIES(VideoUtils CASTCore CDL)
