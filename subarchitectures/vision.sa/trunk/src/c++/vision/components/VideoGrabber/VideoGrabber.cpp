@@ -379,7 +379,6 @@ void CVideoGrabber::receiveImages(const std::vector<Video::Image>& images)
       m_frameGrabCount--; // XXX: not thread safe
    }
 #ifdef FEAT_VISUALIZATION
-   //m_display.setImage(IDOBJ_GRABBER, images[0]);
    int w = 0, h = 0;
    double factor = 1.0;
    for (int i = 0; i < images.size(); i++) {
@@ -398,17 +397,14 @@ void CVideoGrabber::receiveImages(const std::vector<Video::Image>& images)
    cvInitFont(&fntPlain, CV_FONT_HERSHEY_PLAIN, 1.0, 1.0, 0, 1.5);
    std::vector<std::string> devnames = getDeviceNames();
    int vp = 0;
-   //pDisp = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
    prepareCanvas(w, h);
    IplImage *pDisp = m_pDisplayCanvas;
    for (int i = 0; i < images.size(); i++) {
-      //IplImage *iplImage = convertImageToIpl(images[i]);
       IplImage *iplImage = cloneVideoImage(images[i]);
       int wi = (int) (images[i].width * factor);
       int hi = (int) (images[i].height * factor);
       cvSetImageROI(pDisp, cvRect(0, vp, wi, vp+hi));
       cvResize(iplImage, pDisp);
-      //cvReleaseImage(&iplImage);
       releaseClonedImage(&iplImage);
 
       std::string sMsg = _str_(i);
@@ -422,8 +418,6 @@ void CVideoGrabber::receiveImages(const std::vector<Video::Image>& images)
       vp += hi;
    }
    m_display.setImage(IDOBJ_GRABBER, w, h, 3, m_DisplayBuffer);
-   //m_display.setImage(IDOBJ_GRABBER, pDisp);
-   //cvReleaseImage(&pDisp);
 #else
    IplImage *iplImage = convertImageToIpl(images[0]);
    cvShowImage(getComponentID().c_str(), iplImage);

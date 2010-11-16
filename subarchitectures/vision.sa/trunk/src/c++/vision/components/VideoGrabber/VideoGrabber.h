@@ -46,9 +46,11 @@ private:
    int m_frameGrabCount;       // how many frames to save
 
 #ifdef FEAT_VISUALIZATION
+   // HACK: The image data in IplImage will point into char data of m_DisplayBuffer.
+   // This way an IplImage can be prapared and sent to the display server without
+   // copying the data to a temporary vector or Video::Image.
    IplImage* m_pDisplayCanvas; // Image for the DisplayServer
    std::vector<unsigned char> m_DisplayBuffer; // For transfering data to the server;
-
    void prepareCanvas(int width, int height);
    void releaseCanvas();
    
