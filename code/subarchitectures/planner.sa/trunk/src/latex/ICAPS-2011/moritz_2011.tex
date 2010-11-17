@@ -246,8 +246,8 @@ effect on states $\bstate(\state) > 0$ where $\poss(\stochAction)
 
 \subsection{Costs, Rewards, and Plan Evaluation}
 
-Whereas until now we have considered a POMDP model factored in terms
-of propositions and percepts, in order to discuss utilities and
+Whereas until now we have considered a POMDP model that is factored in
+terms of propositions and percepts, in order to discuss utilities and
 policies it is convenient to consider the underlying decision process
 in a flat format. This underlying decision process is given by the
 tuple $\langle \states, \bstate_0, \actions, \transProb, \reward,
@@ -273,6 +273,21 @@ $\obsDist(\state, \action)$. We denote $\obsDist_\observ(\state,
 \action)$ the probability of getting observation $\observ$ in state
 $\state$. For $\state$ and $\action$ we have $\sum_{\observ \in
 \observations} \obsDist_\observ(\state, \action) = 1$.
+
+Successive state estimation is available if we applying Bayes' rule.
+Taking the current belief $\bstate$ as our {\em prior}, and supposing
+action $\action$ is executed with perceptive outcome $\observ$, then
+the probability that we are in $\state$ in the successive belief-state
+$\bstate'$ is given by:
+
+\begin{equation}\label{eq:revision}
+\bstate'(\state) = \frac{\obsDist_\observ(\state, \action)
+  \sum_{\state'\in \states} \transProb(\state', \action, \state) \bstate(\state') }{\pp{Pr}(\observ | \action, \bstate)}
+\end{equation}
+
+\noindent where $\pp{Pr}(\observ | \action, \bstate)$ is the
+normalising factor, that is, the probability of getting observation
+$\observ$ given we execute $\action$ in $\bstate$.
 
 A general formalism for representing solutions to POMDPs is the
 finite-state controller (FSC). This is a three-tuple $\langle \nodes,
@@ -307,30 +322,30 @@ V_{\pp{FSC}}(\bstate) = \max_{\node \in \nodes} \sum_{\state \in \states} \bstat
 
 Goal expressions in the problem description ---for example
 $(\pp{kval}~(\pp{location}~\pp{cornflakes}))$ expresses ``the robot
-knows where the {\em cornflakes} are--- are treated as
-control-knowledge by the planner. Here, CP is not allowed to start
-executing a plan, unless in the finial stet the goal condition is
-satisfied.
+knows where the {\em cornflakes}--- are treated as control-knowledge
+by the planner. Here, a plan is not considered valid unless in the
+finial stet the goal condition is satisfied.
 
 
 \section{Decision-Theoretic PDDL}
 
 The modelling language of choice for planning in probabilistic
 problems is the Probabilistic Planning Domain Definition
-Language~\cite{younes:littman:04}. PPDDL has been used to model
-benchmarks in all 3 of the International Planning Competitions since
-2004. A variation on PDDL for describing domains with stochastic
-actions and uncertain starting configurations, PPDDL is a declarative
-first-order (a.k.a., relational) that facilitates factored description
-of domains and problem instances. There are straightforward
-compilations from problems expressed compactly in PPDDL to
-propositional representations amenable to state-of-the-art planning
-procedures.  Because this language cannot model domains that feature
-partial observability, for our setting we have developed DTPDDL, an
-extension of PPDDL to partial observability.
+Language~\cite{younes:littman:04}. PPDDL was used in all 3 of the
+International Planning Competitions since 2004. A variation on PDDL
+for describing domains with stochastic actions and uncertain starting
+configurations, PPDDL is a declarative first-order (a.k.a.,
+relational) that facilitates factored description of domains and
+problem instances. There are straightforward compilations from
+problems expressed compactly in PPDDL to propositional representations
+amenable to state-of-the-art planning procedures.  Because this
+language cannot model domains that feature partial observability, for
+our setting we have developed DTPDDL, an extension of PPDDL to partial
+observability.
 
 For example, $(:\pp{predicates} (\pp{location} ?p - VisualObject))$
 says that there is a unary predicate 
+
 
 
 
