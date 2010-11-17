@@ -232,10 +232,10 @@ some propositional states an action is applicable, and in others it is
 not. Moreover, a belief-state can assign non-zero probability to
 states where that applicability holds, and states where it does
 not. We differ
-from~\citeauthor{younes:littman:04}~\citeyear{younes:littman:04},
+from~\citeauthor{younes:littman:04}~(\citeyear{younes:littman:04}),
 because we forbid the execution of actions that are not applicable in
 any state of the current belief.  Also,
-unlike~\citeauthor{hoffmann:brafman:2006}~\citeyear{hoffmann:brafman:2006},
+unlike~\citeauthor{hoffmann:brafman:2006}~(\citeyear{hoffmann:brafman:2006}),
 we do incorporate a PPDDL-like default semantics, supposing that when
 an action \stochAction\ is executed at $\state_i$ where
 $\bstate(\state_i) > 0$, that it has no effect on states $\state_i$ if
@@ -336,17 +336,19 @@ Language~\cite{younes:littman:04,younes:etal:2005}. PPDDL was used in
 all 3 of the International Planning Competitions since 2004. A
 variation on PDDL for describing domains with stochastic actions and
 uncertain starting configurations, PPDDL is a declarative first-order
-(a.k.a., relational) that facilitates factored description of domains
-and problem instances. There are straightforward compilations from
-problems expressed compactly in PPDDL to propositional representations
-amenable to state-of-the-art planning procedures.  Because this
-language cannot model domains that feature partial observability, for
-our setting we have developed DTPDDL, an extension of PPDDL to partial
-observability.
+(a.k.a., relational) language that facilitates factored description of
+domains and problem instances. There are straightforward compilations
+from problems expressed compactly in PPDDL to propositional
+representations amenable to state-of-the-art planning procedures.
+Because this language cannot model domains that feature partial
+observability, for our setting we have developed DTPDDL, an extension
+of PPDDL to partial observability.
 
 
-We suppose $\bstate_0$ is given in a factored tree format of the
-form:
+Our mobile robot is able to look for a visual object, for example a
+box of cornflakes, at a given place. We can model that deterministic
+action using the following schema:
+
 
 \def\oom{$^{\tt +}$}
 \def\zom{$^*$}
@@ -359,36 +361,72 @@ form:
 \def\la{\langle}
 \def\ra{\rangle}
 
+\small{
+\begin{tabtt}
+(\= :action look-for-object \\
+  \> :parameters \=(?r - robot ?v - visual-object\\
+  \> \> ?l - location) \\
+  \> :precondition (and (= (is-in ?r) ?l) ) \\
+  \> :effect (and (assign (reward) -3) ) ) \\
+\end{tabtt}
+}
+
+\noindent That is, the robot can always look for a visual object at
+its current location. The only effect this has on the state, is that
+the robot incurs a penalty, $3$, that corresponds to the {\em cost} of
+performing a visual search. Instances of this operator are useful,
+because their application activates an the following sense schema:
+
+\small{
+\begin{tabtt}
+(\= :sense vision \\
+  \> :parameters \=(?r - robot ?v - visual-object\\
+  \> \> ?l - location) \\
+  \> :execution (look-for-object ?r ?v ?l) \\
+  \> :effect ( and (when (= (is-in ?v) ?l) \\
+  \> \bump (probabilistic 0.8 \\
+  \> \bump (= (observe-is-in ?v) ?l))) \\
+  \> (when (not (= (is-in ?v) ?l)) \\
+  \> \bump (probabilistic 0.1 \\
+  \> \bump (= (observe-is-in ?v) ?l))))) \\
+\end{tabtt}
+}
+
+\noindent Here, the {\em execution} clause is a lifted description of
+the sense action-precondition -- I.e,
+$(\pp{look-for-object}~\pp{R2D2}~\pp{box}~\pp{desk}) =
+\poss_\stochActions(\pp{vision}~\pp{R2D2}~\pp{box}~\pp{desk})$. No
+other conditions guard the activation of this sense, therefore if
+$(\pp{look-for-object} \pp{Dora} \pp{cornflakes} \pp{bedroom})$ is
+executed, we suppose there is a $0.8$ chance of observing the
+cornflakes if they are in the $\pp{bedroom}$, and otherwise a $0.1$ of
+observing them.\footnote{We have simplified the schemata for
+illustrative purposes. In practice, the probabilities of a particular
+observation here should be parametrised by the type of visual object
+the robot is searching for, and category of the location.}
+
+
+
+
 \scriptsize
 \begin{nopagebreak}\begin{tabtt}
-\bump \= <observation-def> \bump\=::= \=(:obs\=erve <o-symbol> \+\+\+\+\\
-                        %%{[}<extension-def>]  \\
-                        :parameters (<typed list (variable)>)  \\
-                        <o-def body>) \-\-\- \\
-  <o-def body> \> ::= [:state <emptyOr (pre-GD)>] \\
-  \> \> [:action <atomic action(term)> ] \\
-    \> \> [:effect <emptyOr (o-effect)>] \\
+<observation-def> \=::= \=(:sense <observation symbol> \\
+                        \> \> :parameters (<typed list (variable)>)  \\
+                        \> \> <o-def body>) \\
   <o-symbol> \> ::= <name> \\
-  <atomic action(t)> \> ::= (<action-symbol> t\zom) \\
+  <o-def body> \> ::= [:precondition <GD>] \\
+  \> \> [:execution <atomic action(term)> ] \\
+    \> \> [:effect <o-effect>] \\
+  <atomic action(t)> \> ::= (<action symbol> t\zom) \\
   <o-effect> \> ::= (and <c-o-effect>\zom) \\
   <o-effect> \> ::= <c-o-effect> \\
-  <c-o-effect> \> ::= \req{:conditional-effects} (when <GD>
-                        <o-effect>) \\  
-  <c-o-effect> \> ::= \req{:universal-effects} (forall (<typed list (var)>) <o-effect>) \\
-  <c-o-effect> \> ::= \req{:probabilistic-effects} (probabilistic
-  <prob> <o-effect>) \\
-  <c-o-effect> \> ::=  \req{:probabilistic-effects}\req{:universal-unwinding} \\
-%% 
-\hspace{3ex}(probabilistic (for-each (<typed list (x)>) <s-f-head>  <o-effect> )) \\
+  <c-o-effect> \> ::= \req{:probabilistic-effects} (probabilistic <prob> <o-effect>) \\
   <c-o-effect> \> ::= <p-o-effect> \\
   <atomic o-formula(t)> \> ::= (<observation> t\zom) \\
   <p-o-effect> \> ::= <atomic o-formula(term)> \\
   <p-o-effect> \> ::= (not <atomic o-formula(term)>) \\
-  <p-o-effect> \> ::= \req{:fluents}(<assign-op> <o-f-head> <o-f-exp>) \\
   <o-f-comp> \> ::= (<binary-comp> <o-f-exp> <o-f-exp>)\\
   <o-f-exp> \> ::= <number>\\
-  <o-f-exp> \> ::= (<binary-op>  <o-f-exp> <o-f-exp>)\\
-  <o-f-exp> \> ::= (<multi-op>  <o-f-exp> <o-f-exp>\oom)\\
   <o-f-exp> \> ::= (- <o-f-exp>)\\
   <o-f-exp> \> ::= <o-f-head>\\
   <o-f-head> \> ::= (<o-function-symbol> <term>\zom )\\
@@ -396,6 +434,12 @@ form:
 \end{tabtt}\end{nopagebreak}
 \noteme{<structure-def> ::= <attach-def>}
 \normalsize
+
+
+
+We suppose $\bstate_0$ is given in a factored tree format of the
+form:
+
 
 %% \small{
 %% \begin{tabtt}
@@ -432,7 +476,7 @@ corresponding to the node label, .
 
 
 
-For example, $(:\pp{predicates} (\pp{location} ?p - VisualObject))$
+For example, $(:\pp{predicates} (\pp{location} ?l - VisualObject))$
 says that there is a unary predicate 
 
 
@@ -543,8 +587,8 @@ for describing fully observable Markov decision processes.
 \begin{tabtt}
 (\= :action look-at-object \\
   \> :parameters \=(?r - robot ?v - visual-object\\
-  \> \> ?l - label ?p - place) \\
-  \> :precondition (and (= (is-in ?r) ?p) \\
+  \> \> ?l - label ?l - location) \\
+  \> :precondition (and (= (is-in ?r) ?l) \\
   \> \> (= (label ?o) ?l) ) \\
   \> :effect (and (assign (reward) -3) ) ) \\
 \end{tabtt}
@@ -554,9 +598,9 @@ for describing fully observable Markov decision processes.
 \begin{tabtt}
 (\= :observe visual-object \\
   \> :parameters \=(?r - robot ?v - visual-object\\
-  \> \> ?l - label ?p - place) \\
-  \> :execution (look-at-object ?r ?v ?l ?p) \\
-  \> :effect (when (= (is-in ?o) ?p) (probabilistic 0.8)) \\
+  \> \> ?l - label ?l - location) \\
+  \> :execution (look-at-object ?r ?v ?l ?l) \\
+  \> :effect (when (= (is-in ?o) ?l) (probabilistic 0.8)) \\
 \end{tabtt}
 }
 
@@ -564,12 +608,12 @@ for describing fully observable Markov decision processes.
 \begin{tabtt}
 (\= :sensor look-for-object \\
   \> :agent (?a - robot) \\
-  \> :parameters (?l - label ?p - place) \\
+  \> :parameters (?l - label ?l - location) \\
   \> :variables (?o - visual-object) \\
-  \> :precondition (\=and (= (is-in ?r) ?p) \\
-  \> \> (= (label ?o) ?l) (assume (is-in ?o) ?p) ) \\
+  \> :precondition (\=and (= (is-in ?r) ?l) \\
+  \> \> (= (label ?o) ?l) (assume (is-in ?o) ?l) ) \\
   \> :effect () \\
-  \> :sense (= (is-in ?o) ?p) \\
+  \> :sense (= (is-in ?o) ?l) \\
 \end{tabtt}
 }
 
