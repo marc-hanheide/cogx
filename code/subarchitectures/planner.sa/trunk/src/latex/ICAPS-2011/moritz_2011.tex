@@ -227,6 +227,22 @@ $\state$. We suppose this is given in a factored tree format.
 %% will occur with the probability according to $\psi$ that nature can
 %% make those choices.
 
+Finally, we make a number of fairly standard assumptions. First, that
+action execution and sensing occurs instantaneously, and that only one
+action can be applied at a plan-step. Second, it can arise that in
+some propositional states an action is applicable, and in others it is
+not. Moreover, a belief-state can assign non-zero probability to
+states where that applicability holds, and states where it does
+not. We differ
+from~\citeauthor{younes:littman:04}~\citeyear{younes:littman:04},
+because we forbid the execution of actions that are not applicable in
+any state of the current belief.  Also,
+unlike~\citeauthor{hoffmann:brafman:2006}~\citeyear{hoffmann:brafman:2006},
+we do incorporate a PPDDL-like default semantics, supposing that when
+an action \stochAction\ is executed at some \bstate, that it has no
+effect on states $\bstate(\state) > 0$ where $\poss(\stochAction)
+\not\subseteq \state$.
+
 
 \subsection{Costs, Rewards, and Plan Evaluation}
 
@@ -289,12 +305,37 @@ V_{\pp{FSC}}(\bstate) = \max_{\node \in \nodes} \sum_{\state \in \states} \bstat
 
 \section{Serial Planning in Determinisations}
 
+Goal expressions in the problem description ---for example
+$(\pp{kval}~(\pp{location}~\pp{cornflakes}))$ expresses ``the robot
+knows where the {\em cornflakes} are--- are treated as
+control-knowledge by the planner. Here, CP is not allowed to start
+executing a plan, unless in the finial stet the goal condition is
+satisfied.
 
 
 \section{Decision-Theoretic PDDL}
 
-the effects of a sensing schema are perceptual, whereas the effects of
-an operator schema are on the underlying state space. 
+The modelling language of choice for planning in probabilistic
+problems is the Probabilistic Planning Domain Definition
+Language~\cite{younes:littman:04}. PPDDL has been used to model
+benchmarks in all 3 of the International Planning Competitions since
+2004. A variation on PDDL for describing domains with stochastic
+actions and uncertain starting configurations, PPDDL is a declarative
+first-order (a.k.a., relational) that facilitates factored description
+of domains and problem instances. There are straightforward
+compilations from problems expressed compactly in PPDDL to
+propositional representations amenable to state-of-the-art planning
+procedures.  Because this language cannot model domains that feature
+partial observability, for our setting we have developed DTPDDL, an
+extension of PPDDL to partial observability.
+
+For example, $(:\pp{predicates} (\pp{location} ?p - VisualObject))$
+says that there is a unary predicate 
+
+
+
+the effects of a {\em sense} schema are perceptual, whereas the
+effects of an {\em operator} schema are over state propositions.
 
 
 knowledge objectives and  sensory effects. 
@@ -311,13 +352,7 @@ policy search task. The approach ~\cite{}.
 
 
 
-It can arise that in some propositional states an action is
-applicable, and in others it is not. Moreover, a belief-state can
-assign non-zero probability to states where that applicability holds,
-and states where it does not. We forbid execution of actions that are
-not applicable in any state of the current belief, and otherwise
-suppose that when a non-applicable action is executed, that it has
-no effect.
+
 
 
 \section{Evaluation}
