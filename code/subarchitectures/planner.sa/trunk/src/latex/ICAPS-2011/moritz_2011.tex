@@ -53,8 +53,8 @@ interleaved planning and execution.
 
 We describe, \pcogx, the planning component in a robotic system that
 continuously deliberates in a stochastic dynamic environment in order
-to achieve objectives set by the user, and acquire a good
-understanding of its environment.
+to achieve objectives set by the user, and acquire knowledge about its
+surroundings.
 %%
 
 Have a good understanding of the contents and function of rooms, as
@@ -155,30 +155,32 @@ finite-state controllers.
 %% {\em omitted variables}
 
 We describe the partially observable propositional probabilistic
-planning problem, with costs and rewards. The underlying world
+planning problem, with costs and rewards. The underlying process
 dynamics are modelled in terms of a finite set of stochastic actions
 $\stochActions$, deterministic outcomes $\detActions$, and
-state-characterising propositions $\propositions$.  
+state-characterising propositions $\propositions$.
 
-A problem state $\state$ is a set of propositions $\state \subseteq
-\props$. Every stochastic action $\stochAction \in \stochActions$ has
-a precondition $\poss(\stochAction)$, also a set of propositions. An
-action is applicable at a state $\state$ when $\poss(\stochAction)
-\subseteq \state$. We denote $\stochActions(\state)$ the set of
-actions applicable at state $\state$.  When $\stochAction \in
-\stochActions(\state)$ is applied, nature chooses one element amongst
-a small set of deterministic outcomes $\detActions(\stochAction)
-\equiv \{\detAction_1, \ldots, \detAction_k \}$. We denote
-$\mu_{\stochAction}(\detAction_i)$ the probability that nature takes
-outcome $\detAct_i$, and for all \stochAction\ we require
+We model a process state $\state$ as the set of propositions that are
+true of the state. Notationally, we have $\state \subseteq
+\props$. State change is induced by application of actions. A
+stochastic action $\stochAction \in \stochActions$ is applicable if
+its precondition $\poss(\stochAction)$, a set of propositions, are
+satisfied in the current state -- I.e., $\poss(\stochAction) \subseteq
+\state$. We write $\stochActions(\state)$ for set of actions
+applicable at state $\state$.  If action $\stochAction \in
+\stochActions(\state)$ is applied at \state, nature chooses one
+element amongst a small set of deterministic outcomes
+$\detActions(\stochAction) \equiv \{\detAction_1, \ldots, \detAction_k
+\}$. We denote $\mu_{\stochAction}(\detAction_i)$ the probability that
+nature takes outcome $\detAct_i$, and for all \stochAction\ we require
 $\sum_{\detAction_i \in \detActions(\stochAction)}
-\mu_{\stochAction}(\detAction_i) = 1$. That outcome so chosen has an
-effect on the underlying state given in terms of two lists of
-propositions. The add-list $\add(\detAction)$ and delete-list
+\mu_{\stochAction}(\detAction_i) = 1$. The chosen outcome has an
+effect on the state given in terms of two lists of propositions. The
+add-list $\add(\detAction)$ and delete-list
 $\delete(\detAction)$.\footnote{If a proposition is in the add-list of
-  $\detAction$, then it cannot be in the delete-list and vice versa.}
+$\detAction$, then it cannot be in the delete-list and vice versa.}
 If outcome $\detAction$ with $\add(\detAction) := [\prop_1,
-  ..,\prop_n]$ and $\delete(\detAction) := [\prop_1, ..,\prop_m]$ is
+..,\prop_n]$ and $\delete(\detAction) := [\prop_1, ..,\prop_m]$ is
 chosen by nature when \stochAction\ is applied at state $\state$, then
 the resultant state is $ ( \state \cup \add(\detAction) ) \backslash
 \delete(\detAction)$ -- i.e., propositions from $\add(\detAction)$ are
@@ -187,23 +189,23 @@ from $\state$.
 
 We are concerned with problems that feature partial
 observability. These have a perceptual model given in terms of a
-finite set of stochastic senses $\stochSenses$, deterministic sensing
-outcomes $\detSenses$, and perceptual propositions $\percepts$, called
-percepts. Here, an observation $\observ$ is a set of percepts $\observ
-\subseteq \percepts$, and we denote \observations\ the set of
-reachable observations. The underlying state of the world cannot be
-observed directly, rather, senses $\stochSense \in \stochSenses$
-effect an observation $\observ \in \observations$ that informs what
-should be believed about the world. In the POMDP model, if $\action$
-is applied effecting a transition to a successor state $\state'$, then
-an observation occurs according to the active senses
-$\stochSenses(\stochAction, \state') \subseteq \stochSenses$. A
-precept is active, written $\stochSense \in \stochSenses(\stochAction,
-\state')$, if the senses action-precondition,
-$\poss_\stochActions(\stochSense)$, is equal to $\stochAction$, and
-the state-precondition $\poss_\states(\stochSense) \subseteq
-\propositions$ is satisfied by the state $\state'$; In the usual sense
-that $\poss_\states(\stochSense) \subseteq \state'$.
+finite set of stochastic {\em senses} $\stochSenses$, deterministic
+sensing outcomes $\detSenses$, and perceptual propositions
+$\percepts$, called {\em percepts}. Here, an observation $\observ$ is
+a set of percepts $\observ \subseteq \percepts$, and we denote
+\observations\ the set of reachable observations. The underlying state
+of the process cannot be observed directly, rather, senses
+$\stochSense \in \stochSenses$ effect an observation $\observ \in
+\observations$ that informs what should be believed about the state a
+process is in. In detail, if $\action$ is applied effecting a
+transition to a successor state $\state'$, then an observation occurs
+according to the active senses $\stochSenses(\stochAction, \state')
+\subseteq \stochSenses$. A precept is active, written $\stochSense \in
+\stochSenses(\stochAction, \state')$, if the senses'
+action-precondition, $\poss_\stochActions(\stochSense)$, is equal to
+$\stochAction$, and the state-precondition $\poss_\states(\stochSense)
+\subseteq \propositions$ is satisfied by the state $\state'$; In the
+usual sense that $\poss_\states(\stochSense) \subseteq \state'$.
 %%
 When a sense is active, nature must choose exactly one outcome amongst
 a small set of deterministic choices $\detSenses(\stochSense)
@@ -215,17 +217,14 @@ $\psi_{\stochSense}(\detSense_i)$, where $\sum_{\detSense_i \in
 1$. The observation received by the agent corresponds to the union of
 perceptual propositions from chosen elements of active senses.
 
-A POMDP has a starting configuration that corresponds to a subjective
-Bayesian belief state. Written $\bstate_0$, this is a probability
-distribution over states. We use the notation $\bstate_0(\state)$ to
-denote the probability that the starting state is equal to
-$\state$. We suppose this is given in a factored tree format. 
-
-%% Let $\detSense_i \subseteq \percepts$ for each $i$, so that if
-%% we apply $\stochAction$ and transition to $\state'$, the observation
-%% received will be a union of choices from the active percepts, which
-%% will occur with the probability according to $\psi$ that nature can
-%% make those choices.
+A POMDP has a starting configuration that corresponds to a Bayesian
+belief-state. Intuitively, this is the robot's subjective belief about
+its environment. Technically, a belief-state $\bstate$ is a
+probability distribution over process states. We write
+$\bstate(\state)$ to denote the probability that the process is in
+$\state$ according to $\bstate$, and $\bstate_0$ when discussing the
+starting configuration. We suppose the latter is given in a factored
+tree format.
 
 Finally, we make a number of fairly standard assumptions. First, that
 action execution and sensing occurs instantaneously, and that only one
@@ -239,9 +238,10 @@ because we forbid the execution of actions that are not applicable in
 any state of the current belief.  Also,
 unlike~\citeauthor{hoffmann:brafman:2006}~\citeyear{hoffmann:brafman:2006},
 we do incorporate a PPDDL-like default semantics, supposing that when
-an action \stochAction\ is executed at some \bstate, that it has no
-effect on states $\bstate(\state) > 0$ where $\poss(\stochAction)
-\not\subseteq \state$.
+an action \stochAction\ is executed at $\state_i$ where
+$\bstate(\state_i) > 0$, that it has no effect on states $\state_i$ if
+$\poss(\stochAction) \not\subseteq \state_i$ and $\bstate(\state_i) >
+0$.
 
 
 \subsection{Costs, Rewards, and Plan Evaluation}
@@ -254,12 +254,12 @@ tuple $\langle \states, \bstate_0, \actions, \transProb, \reward,
 \observations, \obsDist \rangle$. Here $\bstate_0$ is the initial
 belief-state, \states\ is the finite set of reachable propositional
 states, \actions\ is the finite set of actions, and \observations\ is
-the finite set of reachable observations.  Where $\state, \state' \in
-\states$, $a \in \actions$, from $\mu$ we have a state transition
-function $\transProb(\state, \action, \state')$ giving the probability
-of a transition from state $s$ to $s'$ if $a$ is applied. For any
-$\state$ and $\action$ we have $\sum_{\state' \in \states}
-\transProb(\state, \action, \state') = 1$.
+the finite set of reachable observations (i.e., perceptual states).
+Where $\state, \state' \in \states$, $a \in \actions$, from $\mu$ we
+have a state transition function $\transProb(\state, \action,
+\state')$ giving the probability of a transition from state $s$ to
+$s'$ if $a$ is applied. For any $\state$ and $\action$ we have
+$\sum_{\state' \in \states} \transProb(\state, \action, \state') = 1$.
 %%
 Function $\reward:\states \times \actions \to \Re$ is a bounded real
 valued reward function.  Consequently there is a positive constant $c$
@@ -309,10 +309,8 @@ V_\node(\state) & = & \sum_{\action \in \actions}
 \end{array}
 \end{equation}
 
-Using the notation \bstate\ for a belief-state, and writing
-$\bstate(\state)$ for the probability the robot believes it is in
-state \state, we have that the value of that belief $\bstate$ according to a
-controller is:
+\noindent The value of $\bstate$ according to a controller is
+therefore:
 
 \begin{equation} \label{eq:valueBelief}
 V_{\pp{FSC}}(\bstate) = \max_{\node \in \nodes} \sum_{\state \in \states} \bstate(\state) V_\node(\state)
