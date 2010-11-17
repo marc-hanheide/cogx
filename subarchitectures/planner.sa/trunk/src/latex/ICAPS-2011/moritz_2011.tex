@@ -298,11 +298,15 @@ $\transition_\node(\action, \observation, \node') = P(\node'|\node,
 given a problem model, written $V_\node(\state)$, is:
 
 \begin{equation}\label{eq:evaluation}
-V_\node(\state) = \sum_{\action \in \actions}
-\selection_\node(\action) \reward(\state, \action) + \beta \sum_{\action, \observation,
+\begin{array}{lcl}
+V_\node(\state) & = & \sum_{\action \in \actions}
+\selection_\node(\action) \reward(\state, \action) \;\; + \vspace{1ex} \\
+
+&& \hspace{-10ex} \beta \sum_{\action, \observation,
 \state', \node'} \transition_\node(\action, \observation, \node')
 \transProb(\state, \action, \state') \obsDist_\observ(\state',
 \action) V_{\node'}(\state')
+\end{array}
 \end{equation}
 
 Using the notation \bstate\ for a belief-state, and writing
