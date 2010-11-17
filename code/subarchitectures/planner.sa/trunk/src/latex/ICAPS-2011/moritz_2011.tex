@@ -200,7 +200,7 @@ $\stochSense \in \stochSenses$ effect an observation $\observ \in
 process is in. In detail, if $\action$ is applied effecting a
 transition to a successor state $\state'$, then an observation occurs
 according to the active senses $\stochSenses(\stochAction, \state')
-\subseteq \stochSenses$. A precept is active, written $\stochSense \in
+\subseteq \stochSenses$. A percept is active, written $\stochSense \in
 \stochSenses(\stochAction, \state')$, if the senses'
 action-precondition, $\poss_\stochActions(\stochSense)$, is equal to
 $\stochAction$, and the state-precondition $\poss_\states(\stochSense)
@@ -219,12 +219,11 @@ perceptual propositions from chosen elements of active senses.
 
 A POMDP has a starting configuration that corresponds to a Bayesian
 belief-state. Intuitively, this is the robot's subjective belief about
-its environment. Technically, a belief-state $\bstate$ is a
-probability distribution over process states. We write
-$\bstate(\state)$ to denote the probability that the process is in
-$\state$ according to $\bstate$, and $\bstate_0$ when discussing the
-starting configuration. We suppose the latter is given in a factored
-tree format.
+its environment. Formally, a belief-state $\bstate$ is a probability
+distribution over process states. We write $\bstate(\state)$ to denote
+the probability that the process is in $\state$ according to
+$\bstate$, and $\bstate_0$ when discussing the starting
+configuration. 
 
 Finally, we make a number of fairly standard assumptions. First, that
 action execution and sensing occurs instantaneously, and that only one
@@ -333,17 +332,105 @@ finial stet the goal condition is satisfied.
 
 The modelling language of choice for planning in probabilistic
 problems is the Probabilistic Planning Domain Definition
-Language~\cite{younes:littman:04}. PPDDL was used in all 3 of the
-International Planning Competitions since 2004. A variation on PDDL
-for describing domains with stochastic actions and uncertain starting
-configurations, PPDDL is a declarative first-order (a.k.a.,
-relational) that facilitates factored description of domains and
-problem instances. There are straightforward compilations from
+Language~\cite{younes:littman:04,younes:etal:2005}. PPDDL was used in
+all 3 of the International Planning Competitions since 2004. A
+variation on PDDL for describing domains with stochastic actions and
+uncertain starting configurations, PPDDL is a declarative first-order
+(a.k.a., relational) that facilitates factored description of domains
+and problem instances. There are straightforward compilations from
 problems expressed compactly in PPDDL to propositional representations
 amenable to state-of-the-art planning procedures.  Because this
 language cannot model domains that feature partial observability, for
 our setting we have developed DTPDDL, an extension of PPDDL to partial
 observability.
+
+
+We suppose $\bstate_0$ is given in a factored tree format of the
+form:
+
+\def\oom{$^{\tt +}$}
+\def\zom{$^*$}
+\def\bump{\hspace{1cm}}
+\def\req#1{$^{\tt #1}$}
+\def\noteme#1{}%{[[#1]]}
+\def\notecoauth#1{\ }
+\def\notereader#1{[[#1]]}
+\def\meta{$\uparrow\uparrow$}
+\def\la{\langle}
+\def\ra{\rangle}
+
+\scriptsize
+\begin{nopagebreak}\begin{tabtt}
+\bump \= <observation-def> \bump\=::= \=(:obs\=erve <o-symbol> \+\+\+\+\\
+                        %%{[}<extension-def>]  \\
+                        :parameters (<typed list (variable)>)  \\
+                        <o-def body>) \-\-\- \\
+  <o-def body> \> ::= [:state <emptyOr (pre-GD)>] \\
+  \> \> [:action <atomic action(term)> ] \\
+    \> \> [:effect <emptyOr (o-effect)>] \\
+  <o-symbol> \> ::= <name> \\
+  <atomic action(t)> \> ::= (<action-symbol> t\zom) \\
+  <o-effect> \> ::= (and <c-o-effect>\zom) \\
+  <o-effect> \> ::= <c-o-effect> \\
+  <c-o-effect> \> ::= \req{:conditional-effects} (when <GD>
+                        <o-effect>) \\  
+  <c-o-effect> \> ::= \req{:universal-effects} (forall (<typed list (var)>) <o-effect>) \\
+  <c-o-effect> \> ::= \req{:probabilistic-effects} (probabilistic
+  <prob> <o-effect>) \\
+  <c-o-effect> \> ::=  \req{:probabilistic-effects}\req{:universal-unwinding} \\
+%% 
+\hspace{3ex}(probabilistic (for-each (<typed list (x)>) <s-f-head>  <o-effect> )) \\
+  <c-o-effect> \> ::= <p-o-effect> \\
+  <atomic o-formula(t)> \> ::= (<observation> t\zom) \\
+  <p-o-effect> \> ::= <atomic o-formula(term)> \\
+  <p-o-effect> \> ::= (not <atomic o-formula(term)>) \\
+  <p-o-effect> \> ::= \req{:fluents}(<assign-op> <o-f-head> <o-f-exp>) \\
+  <o-f-comp> \> ::= (<binary-comp> <o-f-exp> <o-f-exp>)\\
+  <o-f-exp> \> ::= <number>\\
+  <o-f-exp> \> ::= (<binary-op>  <o-f-exp> <o-f-exp>)\\
+  <o-f-exp> \> ::= (<multi-op>  <o-f-exp> <o-f-exp>\oom)\\
+  <o-f-exp> \> ::= (- <o-f-exp>)\\
+  <o-f-exp> \> ::= <o-f-head>\\
+  <o-f-head> \> ::= (<o-function-symbol> <term>\zom )\\
+  <o-f-head> \> ::= <o-function-symbol>\\
+\end{tabtt}\end{nopagebreak}
+\noteme{<structure-def> ::= <attach-def>}
+\normalsize
+
+%% \small{
+%% \begin{tabtt}
+%% (:init  (and \=f_{11} f_{12} ..
+%%  \> (probabilistic p_{}) 
+%%  \> (probabilistic ..) ..) \\
+%% \end{tabtt}
+%% }
+
+%% \[(:\pp{init} (and f_{11} f_{12} .. (\pp{probabilistic} p_) ))\]
+
+\noindent Nodes of the tree have one of three types: (1) atomic nodes
+are labelled with a state proposition, e.g., $(=
+(\pp{location}~\pp{cornflakes}) \pp{kitchen})$, (2) probabilistic
+nodes, have the form $(r_1, C_1;..;r_n, C_n)$, and (3) constructive
+nodes, take the form of a set of probabilistic and atomic nodes. The
+root node is conjunctive, and leaves are always atomic. A convenient
+way to give semantics to the tree, is to treat nodes as if they were
+actions. An atomic node is an action with a positive effect
+corresponding to the node label, .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 For example, $(:\pp{predicates} (\pp{location} ?p - VisualObject))$
 says that there is a unary predicate 
@@ -416,8 +503,9 @@ The switching continual planning system we have described serves as
 the underlying planner for CogX. 
 
 
-\bibliography{papers}
 \bibliographystyle{aaai}
+\bibliography{papers}
+
 \end{document}
 
 
