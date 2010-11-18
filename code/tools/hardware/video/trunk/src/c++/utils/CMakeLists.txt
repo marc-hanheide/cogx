@@ -7,6 +7,7 @@ ADD_LIBRARY(VideoUtils SHARED
    CameraParameters.cpp
    ConvertImage.cpp
    ImageCache.cpp
+   VideoClient2.cpp
    )
 
 # Add libraries to link against.
