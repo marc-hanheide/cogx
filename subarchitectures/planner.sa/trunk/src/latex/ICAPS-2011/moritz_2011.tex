@@ -33,23 +33,107 @@
 
 \begin{abstract}
 
-The problem of practical robot control poses many important challenges
-to automated planning. 
 
-Planning and plan execution must be robust, seamlessly accommodating
-exogenous events and the underlying unpredictability of the
-environment. 
+From an automated planning perspective, the problem of practical
+mobile robot control poses important and contrary challenges.
+%%
+On the one hand, planning and execution monitoring must be
+lightweight, robust, timely, and should span the lifetime of the
+robot. Those processes must seamlessly accommodate exogenous events,
+changing objectives, and the underlying unpredictability of the
+environment.
+%%
+On the other hand, robot planning should perform computationally
+expensive reasoning about contingencies, and possible revisions of
+subjective belief according to quantitatively modelled uncertainty in
+acting and sensing. 
 
-Plans with a reasonable chance of exhibiting good behaviours must be
-synthesised in a timely manner.
+In this paper we address these challenges, developing a continual
+planner that switches between sequential and decision-theoretic
+planning. Given a POMDP model of the environment, serial planning is
+responsible for an initial deterministic sequential plan and
+complementary runtime evolution of the decision process. That plan is
+executed until an assumption about a runtime proposition
+
+posted by a motivational component of the underlying robotic
+architecture. 
+
+contingent sensory plans that are tailored to current
+objectives.
+
+In this paper we present an approach to continual planing that uses
+two planning systems. The first 
+
+ to a distinct class of
+challenges. We suppose 
+%%
+The underlying environment is modelled as a POMDP. We use the fast
+classical satisficing system FastDownward to find a deterministic
+sequential plan and complementary runtime evolution of that
+process. This corresponds to a generalisation of replanning in
+probabilistic planning to problems with partial observability.
+
+Interaction between the serial planner and execution proceeds
+more-or-less analogously to popular replanning approaches
+
+Addressing these challenges in a monolithic framework, we present a
+{\em switching} continual planner, that uses the fast serial
+satisficing procedure FastDownward to perform net-benefit
+%%
+makes reasonable assumptions about the evolution of the runtime state
+given a POMDP model of the environment. 
+
+contingent sensory plans that are tailored to current
+objectives.
+
+
+The decision-theoretic planner is able to tailor sensory processing on
+a robot platform to the current objective, while FastDownward  quickly 
+
+
+In this paper we develop a continual planing system that uses two
+planning systems. The first, is a state-of-the-art domain independent
+planner for deterministic problems. The second is a information-state
+contingency planning the information-state space of 
+
+
+Continual planning is a powerful technique that goes some way to
+addressing those challenges. That approach interleaves planning and
+execution, deliberately postponing planing for contingencies unless
+they eventuate during execution. 
+
+
+computing a single serial plan and
+eventuality
+
+
+
+To these challenges it seems a continual planning approach is best, 
+
+where the runtime state evolves during plan execution 
+
 
 interleaved planning and execution. 
 
+the latter is able to tailor sensory processing on a robot platform,
+in order that it.
+
+{\em ad-hoc} 
+
 , reason about degrees of belief and uncertainty about the world, 
+
+probabilistic sequential decision making in practical sized problems
+is intractable.
+
+quantitative probabilistic models of the perception and action .
+
 
 \end{abstract}
 
 \section{Introduction}
+
+
+
 
 We describe, \pcogx, the planning component in a robotic system that
 continuously deliberates in a stochastic dynamic environment in order
