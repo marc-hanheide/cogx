@@ -146,6 +146,40 @@ propositionally factored representation of states and observations,
 and describe how to evaluate plans when they correspond to
 finite-state controllers.
 
+\section{Switching Planner Outline}
+
+Outline the high level approach here:
+\begin{itemize}
+\item Problem input (factored initial state, DTPDDL observations)
+\item Determinisation
+\item Problem generation for DT
+\item Belief revision
+\end{itemize}
+
+\section{Determinisation}
+
+\begin{itemize}
+\item Generation of deterministic sensing models
+\item Determinisation of the initial state
+\item Compiling reward model into (soft-)goal model
+\item Cost function in FD (maybe this could mentioned in the outline?)
+\end{itemize}
+
+\section{Subtask Generation}
+\begin{itemize}
+\item Goal generation from CP trace
+\item Disconfirm actions
+\item State pruning according to CP trace
+\end{itemize}
+
+\section{Belief revision}
+Not sure if this needs its own section
+\begin{itemize}
+\item Convert inital state into bayesian network
+\item Belief updates with observation nodes
+\item Create new network for next planning runs
+\end{itemize}
+
 \section{Propositional Decision-Theoretic Planning}
 
 
@@ -497,11 +531,6 @@ precisely about the utility of a plan.
 planning in practical sized POMDPs is intractable. One approach is to
 described the task hierarchically, thereby constrain and simplify the
 policy search task. The approach ~\cite{}. 
-
-
-
-
-
 
 \section{Evaluation}
 
