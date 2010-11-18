@@ -34,6 +34,7 @@ extern "C"
 #include <ctime>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <pthread.h> // XXX: Testing code
 #include <unistd.h>
 
 double fclocks()
@@ -90,10 +91,27 @@ void CVideoGrabber::start()
    m_display.addCheckBox(IDOBJ_SETTINGS, IDCTRL_STREAMING, "&Streaming");
 #endif
 
-   m_video.setServer(this, m_videoServerName, m_camIds);
-   m_video.setReceiver(new Video::CReceiverMethod<CVideoGrabber>(this, &CVideoGrabber::receiveImages));
-   m_video.connect();
-   m_video.setReceiving(true);
+   Video::CVideoClient2* pVideo;
+   pVideo = new Video::CVideoClient2();
+   pVideo->setServer(this, m_videoServerName, m_camIds);
+   pVideo->setReceiver(new Video::CReceiverMethod<CVideoGrabber>(this, &CVideoGrabber::receiveImages));
+   m_video.push_back(pVideo);
+
+#if 0 // XXX: code for testing
+   std::vector<int> camIds;
+   camIds.push_back(0);
+   pVideo = new Video::CVideoClient2();
+   pVideo->setServer(this, "VideoServer2", camIds);
+   pVideo->setReceiver(new Video::CReceiverMethod<CVideoGrabber>(this, &CVideoGrabber::receiveImages));
+   m_video.push_back(pVideo);
+#endif
+
+   for(unsigned int i = 0; i < m_video.size(); i++) {
+      pVideo = m_video[i];
+      pVideo->setCaching(true);
+      pVideo->connect();
+      pVideo->setReceiving(true);
+   }
 }
 
 #ifdef FEAT_VISUALIZATION
@@ -263,11 +281,11 @@ void CVideoGrabber::CVvDisplayClient::handleEvent(const Visualization::TEvent &e
          bool newrcv = (event.data != "0");
          if (newrcv != pViewer->m_bReceiving) {
             if(pViewer->m_bReceiving) {
-               pViewer->m_video.setReceiving(false);
+               //pViewer->m_video.setReceiving(false);
                pViewer->println("Stopped receiving images");
             }
             else {
-               pViewer->m_video.setReceiving(true);
+               //pViewer->m_video.setReceiving(true);
                pViewer->println("Started receiving images");
             }
             pViewer->m_bReceiving = !pViewer->m_bReceiving;
@@ -367,13 +385,25 @@ void CVideoGrabber::destroy()
 {
 }
 
-void CVideoGrabber::receiveImages(const std::string& serverName, const std::vector<Video::Image>& images)
+void CVideoGrabber::receiveImages(const std::string& serverName, const std::vector<Video::Image>& _images)
 {
-   if (m_frameGrabCount > 0) {
-      saveImages(images);
-      m_frameGrabCount--; // XXX: not thread safe
-   }
+   println("%s 0x%lx", serverName.c_str(), pthread_self()); // XXX: Testing code
+
+   //if (m_frameGrabCount > 0) {
+   //   saveImages(images);
+   //   m_frameGrabCount--; // XXX: not thread safe
+   //}
+
+   if (serverName != m_videoServerName) return;
+
 #ifdef FEAT_VISUALIZATION
+   std::vector<Video::Image> images, timgs;
+   for (unsigned int i = 0; i < m_video.size(); i++) {
+      Video::CVideoClient2& v = *m_video[i];
+      v.getCachedImages(timgs);
+      images.insert(images.end(), timgs.begin(), timgs.end());
+   }
+
    int w = 0, h = 0;
    double factor = 1.0;
    for (unsigned int i = 0; i < images.size(); i++) {

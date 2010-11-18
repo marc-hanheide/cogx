@@ -43,7 +43,7 @@ private:
 
    int m_frameGrabCount;       // how many frames to save
 
-   Video::CVideoClient2 m_video;
+   std::vector<Video::CVideoClient2*> m_video;
 
 #ifdef FEAT_VISUALIZATION
    // HACK: The image data in IplImage will point into char data of m_DisplayBuffer.
