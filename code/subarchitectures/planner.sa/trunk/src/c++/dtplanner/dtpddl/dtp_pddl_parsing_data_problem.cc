@@ -705,15 +705,33 @@ namespace Planning
         template<>
         double Problem_Data::read__static_value(const Planning::Formula::State_Ground_Function& in) const
         {
+//             NEW_object_referenced_WRAPPED(Formula::State_Ground_Function, in, _in.get__name());
+            
+            if(static_ground_double_function.find(in)
+               == static_ground_double_function.end()){
+                
+                for(auto t = static_ground_double_function.begin()
+                   ; t != static_ground_double_function.end()
+                   ; t++){
+                    std::cerr<<t->first<<" "<<t->second<<std::endl;
+                }
+            }
+            
+            
+            
             assert(static_ground_double_function.find(in)
                    != static_ground_double_function.end());
 
+            
+            
             return static_ground_double_function.find(in)->second;
         }
         
         template<>
         int Problem_Data::read__static_value(const Planning::Formula::State_Ground_Function& in) const
         {
+//             NEW_object_referenced_WRAPPED(Formula::State_Ground_Function, in, _in.get__name());
+            
             assert(static_ground_int_function.find(in)
                    != static_ground_int_function.end());
 

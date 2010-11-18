@@ -410,12 +410,16 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
         break;
         case enum_types::state_ground_function:
         {
+            if(deal_with_a_missing_conjunctive_parent(input)){
+                return;
+            }
+            
             assert(literals_at_levels.size());
             assert(input.test_cast<Planning::Formula::State_Ground_Function>());
             auto _symbol = input.cxx_get<Planning::Formula::State_Ground_Function>();
-
+            
             /*In case the symbol is a reference to a number.*/
-            interpret__as_double_valued_ground_state_function(_symbol->get__id());
+            interpret__as_double_valued_ground_state_function(*_symbol.get());//_symbol->get__id());
             
             /*And more generally, if the symbol is a number that characterises states.*/
             NEW_referenced_WRAPPED_deref_POINTER
@@ -749,8 +753,12 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
                     QUERY_WARNING((*probability)->get__type_name() != enum_types::number,
                                   "Was expecting a number, but got :: "<<*probability);
                     
-                    INTERACTIVE_VERBOSER(true, 4110, "Reading a number :: "<<*probability<<" "
-                                         <<((*probability)->get__type_name() == enum_types::number)<<std::endl);
+                    QUERY_WARNING((*probability)->get__type_name() != enum_types::state_ground_function,
+                                  "Was expecting ground state function, but got :: "<<*probability);
+                    
+                    INTERACTIVE_VERBOSER(true, 18000, "Reading a number :: "<<*probability<<" "
+                                         <<((*probability)->get__type_name() == enum_types::number)<<" "<<std::endl
+                                         <<((*probability)->get__type_name() == enum_types::state_ground_function)<<std::endl);
             
                     VISIT(*probability);
                     
@@ -1107,10 +1115,45 @@ void Domain_Action__to__Problem_Action::operator()(const Formula::Subformula& in
     
 }
 
+void  Domain_Action__to__Problem_Action::
+interpret__as_double_valued_ground_state_function(Formula::State_Ground_Function& function_symbol)
+{
+    basic_type::Runtime_Thread formula_runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
+        (dynamic_cast<const Parsing::Formula_Data*>(&problem_Data));
+
+    if(problem_Data.has_static_value(function_symbol)){
+        if(domain_Data.is_type__double(function_symbol.get__name())){
+            last_double_traversed = problem_Data
+                .read__static_value<double>(function_symbol);
+            
+            INTERACTIVE_VERBOSER(true, 3510, "Reading double value :: "
+                                 <<last_double_traversed);
+        }
+    } else {
+        WARNING("Hope "<<function_symbol<<" is supposed to be a referenced read to a dynamic"<<std::endl
+                <<"double-valued number. If it is not, we're stuffed."<<std::endl
+                <<domain_Data.is_type__double(function_symbol.get__name())<<std::endl
+                <<domain_Data.is_type__int(function_symbol.get__name())<<std::endl
+                <<domain_Data.is_type__number(function_symbol.get__name())<<std::endl);
+        
+        
+        if(domain_Data.is_type__double(function_symbol.get__name())){
+            last_double_traversed = problem_Data
+                .read__static_value<double>(function_symbol);
+            
+            INTERACTIVE_VERBOSER(true, 18000, "Reading double value :: "
+                                 <<last_double_traversed);
+        }
+    }
+    
+}
+
 
 void  Domain_Action__to__Problem_Action::
 interpret__as_double_valued_ground_state_function(ID_TYPE function_symbol_id)
 {
+    UNRECOVERABLE_ERROR("Buggy code.");
+    
     assert(function_symbol_id != -1);
     
     basic_type::Runtime_Thread formula_runtime_Thread = reinterpret_cast<basic_type::Runtime_Thread>
@@ -1128,7 +1171,8 @@ interpret__as_double_valued_ground_state_function(ID_TYPE function_symbol_id)
         (formula_runtime_Thread,
          function_symbol_id);
     
-    INTERACTIVE_VERBOSER(true, 3510, "Reading double value for :: "<<function_symbol);
+    INTERACTIVE_VERBOSER(true, 18000, "Reading double value for :: "<<function_symbol<<std::endl
+                         <<" with id :: "<<function_symbol_id);
     
     if(problem_Data.has_static_value(function_symbol)){
         if(domain_Data.is_type__double(function_symbol.get__name())){
@@ -1141,6 +1185,14 @@ interpret__as_double_valued_ground_state_function(ID_TYPE function_symbol_id)
     } else {
         WARNING("Hope that wasn't supposed to be a referenced read to a dynamic"<<std::endl
                 <<"double-valued number. If it was, we're stuffed...");
+
+        if(domain_Data.is_type__double(function_symbol.get__name())){
+            last_double_traversed = problem_Data
+                .read__static_value<double>(function_symbol);
+            
+            INTERACTIVE_VERBOSER(true, 3510, "Reading double value :: "
+                                 <<last_double_traversed);
+        }  
     }
 }
 
@@ -1193,9 +1245,12 @@ process__Function_Modifier(Formula::Subformula& modification,
             list_of_listeners.push_back(deref__st);
             set_of_listeners.insert(deref__st);   
             
-            INTERACTIVE_VERBOSER(true, 3110, "Requests waking :: "<<transformation);
+            INTERACTIVE_VERBOSER(true, 17000, "Got a simple double transformation :: "<<transformation<<std::endl
+                                 <<" to function with index :: "<<last_function_symbol_id);
     
-        } else if (domain_Data.is_type__int(last_function_symbol.get__name()) || domain_Data.is_type__number(last_function_symbol.get__name())) {
+        } else if ( domain_Data.is_type__int(last_function_symbol.get__name()) ||
+                    domain_Data.is_type__number(last_function_symbol.get__name()) ) {
+            
             int value = problem_Data
                 .read__static_value<int>(modification, assignment);
             
@@ -1213,12 +1268,14 @@ process__Function_Modifier(Formula::Subformula& modification,
 
             CXX__deref__shared_ptr<basic_type> deref__st = transformation;//.cxx_deref_get<basic_type>();
             list_of_listeners.push_back(deref__st);
-            set_of_listeners.insert(deref__st);   
-            INTERACTIVE_VERBOSER(true, 3110, "Requests waking :: "<<transformation);
+            set_of_listeners.insert(deref__st);
+            
+            INTERACTIVE_VERBOSER(true, 17000, "Got a simple int transformation :: "<<transformation<<std::endl
+                                 <<" to function with index :: "<<last_function_symbol_id);
 
             
         } else {
-            UNRECOVERABLE_ERROR("unimplemented");
+            UNRECOVERABLE_ERROR("No support for non-static function symbols in modification elements....");
         }
     } else {
         UNRECOVERABLE_ERROR("unimplemented");

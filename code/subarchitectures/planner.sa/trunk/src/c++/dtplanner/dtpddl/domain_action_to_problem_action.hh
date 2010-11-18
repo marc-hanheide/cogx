@@ -81,6 +81,7 @@ namespace Planning
         bool deal_with_a_missing_conjunctive_parent(const Formula::Subformula& input);
         
         void interpret__as_double_valued_ground_state_function(ID_TYPE);
+        void interpret__as_double_valued_ground_state_function(Formula::State_Ground_Function&);
         
         const Planning::State_Transformation__Pointer& generate__null_action(double local_probability) ;
         

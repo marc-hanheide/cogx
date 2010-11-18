@@ -59,7 +59,8 @@ Markov_Decision_Process_State
 (uint propositions_count,
  uint function_count)
     :boolean_State(propositions_count),
-     integer_State(function_count),
+     integer_State(function_count),/*FIX:: Floats and ints need to be dealt with separately. */
+//      float_State(function_count),/*FIX:: Floats and ints need to be dealt with separately. */
      reward(0.0),
      value(0.0)
 {

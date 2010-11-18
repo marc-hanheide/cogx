@@ -249,7 +249,7 @@ interpret__as_double_valued_ground_state_function(ID_TYPE function_symbol_id)
         (formula_runtime_Thread,
          function_symbol_id);
     
-    INTERACTIVE_VERBOSER(true, 3510, "Reading double value for :: "<<function_symbol);
+    INTERACTIVE_VERBOSER(true, 18000, "Reading double value for :: "<<function_symbol);
     
     if(problem_Data.has_static_value(function_symbol)){
         if(domain_Data.is_type__double(function_symbol.get__name())){
@@ -260,8 +260,17 @@ interpret__as_double_valued_ground_state_function(ID_TYPE function_symbol_id)
                                  <<last_double_traversed);
         }
     } else {
+        /*FIX --  this, my test for staticness of functions is not working....*/
         WARNING("Hope that wasn't supposed to be a referenced read to a dynamic"<<std::endl
-                <<"double-valued number. If it was, we're stuffed...");
+                <<"double-valued number. If it was, we're stuffed. Function is :: "
+                <<function_symbol.get__name()<<std::endl);
+        if(domain_Data.is_type__double(function_symbol.get__name())){
+            last_double_traversed = problem_Data
+                .read__static_value<double>(function_symbol);
+            
+            INTERACTIVE_VERBOSER(true, 3510, "Reading double value :: "
+                                 <<last_double_traversed);
+        }    
     }
 }
 
@@ -479,12 +488,17 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
             if(deal_with_a_missing_conjunctive_parent(input)){
                 return;
             }
-
             
             assert(effects_lists.size());
             assert(input.test_cast<Planning::Formula::State_Ground_Function>());
             auto _symbol = input.cxx_get<Planning::Formula::State_Ground_Function>();
 
+            INTERACTIVE_VERBOSER(true, 18000, "Reading value of symbol :: "<<_symbol<<std::endl
+                                 <<" with id :: "<<_symbol->get__id());
+    
+            /* Assert that the function has a double type. */
+            assert(domain_Data.is_type__double(_symbol->get__name()));
+            
             /*In case the symbol is a reference to a number.*/
             interpret__as_double_valued_ground_state_function(_symbol->get__id());/*DONE*/
             
@@ -497,10 +511,11 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                  _symbol->get__arguments());
 
 
-            assert(problem__state_Functions.find(*symbol.cxx_get<Planning::Formula::State_Ground_Function>())
-                   != problem__state_Functions.end());
-//             problem__state_Functions
-//                 .insert(*symbol.cxx_get<Planning::Formula::State_Ground_Function>());
+            if(problem__state_Functions.find(*symbol.cxx_get<Planning::Formula::State_Ground_Function>())
+               == problem__state_Functions.end()){/*FIX : There should not need to be a test here.*/
+                problem__state_Functions
+                    .insert(*symbol.cxx_get<Planning::Formula::State_Ground_Function>());
+            }
 
             last_function_symbol_id = symbol->get__id();            
         }
@@ -895,6 +910,7 @@ void Domain_Observation__to__Problem_Observation::operator()(const Formula::Subf
                         ; probability++, index++){
                     QUERY_WARNING((*probability)->get__type_name() != enum_types::number,
                                   "Was expecting a number, but got :: "<<*probability);
+                    
                     
                     INTERACTIVE_VERBOSER(true, 4110, "Reading a number :: "<<*probability<<" "
                                          <<((*probability)->get__type_name() == enum_types::number)<<std::endl);

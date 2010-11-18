@@ -33,6 +33,10 @@
 #include "dtp_pddl_parsing_data_formula.hh"
 #include "dtp_pddl_parsing_data_constants.hh"
 
+
+#include "dtp_pddl_parsing_data_problem.hh"
+#include "dtp_pddl_parsing_data_domain.hh"
+
 using namespace Planning::Parsing;
 
 bool Formula_Data::is_static_fluent(const Planning::State_Function_Name& state_Function_Name) const
@@ -342,8 +346,74 @@ Formula_Data::complete__probabilistic_formula()
                 break;
                 case enum_types::perceptual_function:
                 break;
+                case enum_types::state_proposition:
+                {   
+                    /* Accidentally decided a ground state function was
+                     * a perceptual proposition. So here we do the
+                     * type translation.*/
+                    
+                    assert(tmp.test_cast<Formula::State_Proposition>());
+                    auto state_Proposition = tmp.cxx_get<Formula::State_Proposition>();
+                    
+                    
+                    /*Turn this perceptual proposition into a ground state function.*/
+                    auto& name = state_Proposition->get__name();
+                    auto& arguments = state_Proposition->get__arguments();
+
+                    
+                    NEW_object_referenced_WRAPPED//_deref_visitable_POINTER
+                        (State_Function_Name
+                         , _name
+                         , name.get__name()
+                         );
+                    
+
+                    NEW_object_referenced_WRAPPED_deref_visitable_POINTER
+                        (Formula::State_Ground_Function
+                         , _tmp
+                         , _name
+                         , arguments);
+                    
+                    tmp = _tmp;
+                    
+                }
+                break;
+                case enum_types::perceptual_proposition:
+                {
+                    
+                    /* Accidentally decided a ground state function was
+                     * a perceptual proposition. So here we do the
+                     * type translation.*/
+                    
+                    assert(tmp.test_cast<Formula::Perceptual_Proposition>());
+                    auto perceptual_Proposition = tmp.cxx_get<Formula::Perceptual_Proposition>();
+                    
+                    
+                    /*Turn this perceptual proposition into a ground state function.*/
+                    auto& name = perceptual_Proposition->get__name();
+                    auto& arguments = perceptual_Proposition->get__arguments();
+
+                    
+                    NEW_object_referenced_WRAPPED//_deref_visitable_POINTER
+                        (State_Function_Name
+                         , _name
+                         , name.get__name()
+                         );
+                    
+
+                    NEW_object_referenced_WRAPPED_deref_visitable_POINTER
+                        (Formula::State_Ground_Function
+                         , _tmp
+                         , _name
+                         , arguments);
+                    
+                    tmp = _tmp;
+                    
+                }
+                break;
                 default:
-                    UNRECOVERABLE_ERROR("Expecting a number, but got :: "<<tmp<<std::endl);
+                    UNRECOVERABLE_ERROR("Expecting a number, but got :: "<<tmp<<" of type "
+                                        <<tmp->get__type_name()<<std::endl);
                     break;
             }
             
@@ -728,8 +798,20 @@ void Formula_Data::report__formula(const std::string& str)
         break;
         case assign:
         {
-
             in_modification_context = false;
+
+            if(parsing_initial_state){
+                INTERACTIVE_VERBOSER(true, 18000, "Parsing an assignment in the initial state.");
+
+                if(1 == formula_parsing_level){
+                    INTERACTIVE_VERBOSER(true, 18000, "Parsing level is at 2.");
+                } else {
+                    INTERACTIVE_VERBOSER(true, 18000, "Parsing level is at :: "<<formula_parsing_level<<std::endl);
+                }
+                
+                
+            }
+            
             
             assert(check__exists_parsed_subformulae(formula_parsing_level + 1));
             check__cardinality_constraint_on_subformulae_at_index
@@ -741,25 +823,42 @@ void Formula_Data::report__formula(const std::string& str)
             auto evaluation_expression_RHS = *subs;
 
             if( parsing_initial_state &&
-                1 == formula_parsing_level &&
+                2 == formula_parsing_level &&
                 enum_types::number == evaluation_expression_RHS->get__type_name() ){
+
+                INTERACTIVE_VERBOSER(true, 18000, "Parsing number in initial state :: "<<evaluation_expression_RHS);
+                
                 if(evaluation_expression_LHS.test_cast<Formula::State_Ground_Function>()){
                 
                     auto index = *evaluation_expression_LHS
                         .CXX__deref__shared_ptr<basic_type>::cxx_get<Formula::State_Ground_Function>();
                 
                     auto value = evaluation_expression_RHS.cxx_get<Formula::Number>()->get__value();
-                    if(is_type__double(index.get__name())){
-                        INTERACTIVE_VERBOSER(true, 5000, "Static DOUBLE assignment for :: "
+
+                    /* We are already parsing an initial state, so we
+                     * must be a problem description. Therefore we can
+                     * make that cast. Then we can extract the domain,
+                     * and do type checking on the function names.  */
+                    auto problem_Data = dynamic_cast<Problem_Data*>(this);
+                    auto domain_Data = problem_Data->get__domain_Data();
+                    //auto domain_formula_data = dynamic_cast<Formula_Data*>(domain_Data);
+                    
+                    if(domain_Data->is_type__double(index.get__name())){
+                        INTERACTIVE_VERBOSER(true, 18000, "Static DOUBLE assignment for :: "
                                              <<"(assign "<<evaluation_expression_LHS
                                              <<" "<<evaluation_expression_RHS<<std::endl);
                         static_ground_double_function[index] = value;
-                    }  else if (is_type__int(index.get__name()) || is_type__number(index.get__name())) {
-                        INTERACTIVE_VERBOSER(true, 5000, "Static INT assignment for :: "
+                    }  else if (domain_Data->is_type__int(index.get__name())
+                                || domain_Data->is_type__number(index.get__name())) {
+                        
+                        INTERACTIVE_VERBOSER(true, 18000, "Static INT assignment for :: "
                                              <<"(assign "<<evaluation_expression_LHS
                                              <<" "<<evaluation_expression_RHS<<std::endl);
                         static_ground_int_function[index] = static_cast<int>(value);
+                    } else {
+                        UNRECOVERABLE_ERROR("Assignment to non-int and non-double.");
                     }
+                    
                 }
             } else if (parsing_initial_state) {
                 

@@ -141,7 +141,12 @@ namespace Planning
         /* All the state formula associated with the ground problem
          * instance (see \member{press_ground_action}).*/
         Formula::State_Propositions state_Propositions;
+        
+        Formula::State_Ground_Functions integer_valued_state_Functions;
+        Formula::State_Ground_Functions double_valued_state_Functions;
+        
         Formula::State_Ground_Functions state_Functions;
+        
         State_Formula::Literals literals;
         State_Formula::Disjunctive_Clauses disjunctive_Clauses;
         State_Formula::Conjunctive_Normal_Form_Formulae conjunctive_Normal_Form_Formulae;

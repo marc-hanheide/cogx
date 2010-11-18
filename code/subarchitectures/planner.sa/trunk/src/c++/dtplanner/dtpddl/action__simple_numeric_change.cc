@@ -293,12 +293,13 @@ namespace Planning
 
 void Planning::Simple_Int_Transformation::set__statically_false(State& state) const
 {
-    INTERACTIVE_VERBOSER(true, 14000, "Reporting statically false element.");
-    assert(state.get__obtainable_rewards_count());
+    INTERACTIVE_VERBOSER(true, 17000, "Reporting statically false element.");
+    
     
     call_count++;
     if(call_count > 1){
         return;
+        assert(state.get__obtainable_rewards_count());
         UNRECOVERABLE_ERROR("Bad call count :: "<<call_count);
     }
     
@@ -317,7 +318,7 @@ void Planning::Simple_Int_Transformation::set__statically_false(State& state) co
     
     state.decrement__obtainable_rewards_count();
     state.decrement__obtainable_rewards_value(get__modification_value());
-    INTERACTIVE_VERBOSER(true, 10909, "State is now :: "<<state);
+    INTERACTIVE_VERBOSER(true, 17000, "State is now :: "<<state);
 }
 
 namespace std

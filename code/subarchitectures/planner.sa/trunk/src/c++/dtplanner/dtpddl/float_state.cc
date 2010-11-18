@@ -42,8 +42,14 @@ Float_State::Float_State(uint size)
     :data(size)
 {
     for(uint i =0; i < size; i++){
+        
+        QUERY_UNRECOVERABLE_ERROR(i >= data.size(),
+                                  "Failed trying to read float at index :: "
+                                  <<index<<std::endl
+                                  <<" as that entry is out of bounds.");
+        
         assert(i < data.size());
-        data[i] =0.0;
+        data[i] = 0.0;
     }
 }
 
@@ -88,6 +94,11 @@ bool Float_State::operator<(const Float_State& state) const
         
 void Float_State::write(uint index, double value)
 {
+    QUERY_UNRECOVERABLE_ERROR(index >= data.size(),
+                              "Failed trying to read float at index :: "
+                              <<index<<std::endl
+                              <<" as that entry is out of bounds.");
+    
     data[index] = value;
 }
        
@@ -104,6 +115,11 @@ void Float_State::write(uint index, double value)
 
 double Float_State::read(uint index) const
 {
+    QUERY_UNRECOVERABLE_ERROR(index >= data.size(),
+                              "Failed trying to read float at index :: "
+                              <<index<<std::endl
+                              <<" as that entry is out of bounds.");
+    
     assert(index < data.size());
 
     return data[index];
@@ -111,6 +127,11 @@ double Float_State::read(uint index) const
 
 bool Float_State::is_equal(uint index, double value) const
 {
+    QUERY_UNRECOVERABLE_ERROR(index >= data.size(),
+                              "Failed trying to read float at index :: "
+                              <<index<<std::endl
+                              <<" as that entry is out of bounds.");
+    
     assert(index < data.size());
 
     return (value == data[index]);

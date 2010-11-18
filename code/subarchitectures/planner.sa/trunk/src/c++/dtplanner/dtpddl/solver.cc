@@ -502,7 +502,6 @@ void Solver::generate_markov_decision_process_starting_states()
     }
 }
 
-
 #ifdef LAO_STAR
 
 void Solver::prioritise(Planning::POMDP_State* state,
@@ -657,6 +656,7 @@ POMDP_State* /*LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POMDP_S
     this->reinstate__starting_belief_state();
     
     auto current_state = this->peek__next_belief_state_for_expansion();//expansion_queue.front();
+    QUERY_UNRECOVERABLE_ERROR(!current_state, "No future state for expansion, presumably the expansion queue is empty.");
     
     INTERACTIVE_VERBOSER(true, 14000, "Current state is :: "
                          <<*current_state<<std::endl
@@ -687,6 +687,7 @@ POMDP_State* /*LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POMDP_S
 
 POMDP_State* /*NON-LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POMDP_State* successor_state)
 {
+    assert(successor_state);
     
     auto new_starting_belief_state = new Planning::POMDP_State();
     auto belief = successor_state->get__belief_state();
@@ -717,6 +718,7 @@ POMDP_State* /*NON-LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POM
     this->reinstate__starting_belief_state();
     
     auto current_state = this->peek__next_belief_state_for_expansion();//expansion_queue.front();
+    QUERY_UNRECOVERABLE_ERROR(!current_state, "No future state for expansion, presumably the expansion queue is empty.");
     
     Planning::Policy_Iteration__GMRES policy_Iteration(this->belief_state__space,
                                                        this->get__sink_state_penalty());

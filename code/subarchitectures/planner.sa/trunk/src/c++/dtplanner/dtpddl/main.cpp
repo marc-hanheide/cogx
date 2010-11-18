@@ -310,7 +310,9 @@ int main(int argc, char** argv)
 
     INTERACTIVE_VERBOSER(true, 15000, solver_name<<" Getting belief state "<<std::endl);
     auto current_state = solver->peek__next_belief_state_for_expansion();
-  
+
+    assert(current_state);
+    
 #ifdef LAO_STAR
     INTERACTIVE_VERBOSER(true, 15000, solver_name<<" One iteration of LAO* "<<std::endl);
     while(solver->lao_star()){};
@@ -352,12 +354,12 @@ int main(int argc, char** argv)
         ch = getchar();
 
         if(ch == 'P'){
-                VERBOSER(16000, solver_name
+                VERBOSER(18000, solver_name
                                      <<" Parsing a propositional string "<<std::endl);
             parsing_observation = false;
         }
         if(ch == 'O'){
-                VERBOSER(16000, solver_name
+                VERBOSER(18000, solver_name
                                      <<" Parsing an observation string "<<std::endl);
             parsing_observation = true;
         }
@@ -365,20 +367,20 @@ int main(int argc, char** argv)
         do{
             ch = getchar();
 
-            VERBOSER(16000, solver_name
+            VERBOSER(18000, solver_name
                                  <<" :--> "<<ch<<std::endl);
             
             if(parsing_observation){
             
                 if(ch == '(') {
-                    VERBOSER(16000, solver_name
+                    VERBOSER(18000, solver_name
                                          <<" Got an opening bracket "<<std::endl);
                     ch = ' ';
                 }
 
                 if(ch == ')'){
 
-                    VERBOSER(16000, solver_name
+                    VERBOSER(18000, solver_name
                                          <<" Got a closing bracket "<<std::endl);
             
                     Planning::Solver::Precept percept;
@@ -455,7 +457,7 @@ int main(int argc, char** argv)
             
             line_in += ch;
                 
-            VERBOSER(16000, solver_name
+            VERBOSER(18000, solver_name
                      <<" :--> "<<line_in<<std::endl);
             
         }while(ch != '\n');    
@@ -470,7 +472,7 @@ int main(int argc, char** argv)
                                            action_index);
 
     
-            VERBOSER(16000, solver_name
+            VERBOSER(18000, solver_name
                                  <<" generated the successor "
                                  <<*successor_state<<std::endl);
     
@@ -497,7 +499,7 @@ int main(int argc, char** argv)
         
     }
     
-    VERBOSER(15000, solver_name
+    VERBOSER(18000, solver_name
                          <<" session terminated "<<std::endl);
     return 0;
 }
@@ -581,17 +583,17 @@ int main(int argc, char** argv)
 
                 auto current_state = solver->peek__next_belief_state_for_expansion();
                 
-                INTERACTIVE_VERBOSER(true, 15000, "MDP state expansion :: "<<*current_state<<std::endl);
+                INTERACTIVE_VERBOSER(true, 18000, "MDP state expansion :: "<<*current_state<<std::endl);
                 
 
                 while(solver->expand_belief_state_space()){
                     
-                    VERBOSER(15000, "MDP state expansion :: "<<solver->belief_state__space.size()<<std::endl);
+                    VERBOSER(18000, "MDP state expansion :: "<<solver->belief_state__space.size()<<std::endl);
                 }
 
                 
                 while(policy_Iteration__for_MDP_states()){
-                    VERBOSER(15000, "Policy iteration."<<std::endl);
+                    VERBOSER(18000, "Policy iteration."<<std::endl);
                 }
                 
                 for(auto mdp_state = solver->belief_state__space.begin()
@@ -646,7 +648,7 @@ int main(int argc, char** argv)
             for(auto i = 0; i < 20; i++){
 
                 
-                INTERACTIVE_VERBOSER(true, 17000, "Current state is :: "
+                INTERACTIVE_VERBOSER(true, 18000, "Current state is :: "
                                      <<*current_state<<std::endl
                                      <<"First element is :: "
                                      <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
@@ -654,7 +656,7 @@ int main(int argc, char** argv)
                 std::pair<Planning::Formula::Action_Proposition, uint> _action
                     = solver->get_prescribed_action(current_state);
             
-                INTERACTIVE_VERBOSER(true, 17000, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+                INTERACTIVE_VERBOSER(true, 18000, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
             
                 auto observations = current_state->get__possible_observations_given_action(_action.second);
 
@@ -668,7 +670,7 @@ int main(int argc, char** argv)
                 for(auto observation = observations.begin()
                         ; observation != observations.end()
                         ; observation++){
-                    INTERACTIVE_VERBOSER(true, 17000, "Observation :: "<<*observations[random_index]<<" "<<_action.second<<std::endl);
+                    INTERACTIVE_VERBOSER(true, 18000, "Observation :: "<<*observations[random_index]<<" "<<_action.second<<std::endl);
             
                     {char ch; std::cin>>ch; if(ch == 'y')break;}
                     random_index++;
@@ -692,7 +694,7 @@ int main(int argc, char** argv)
                 
 
                 
-                INTERACTIVE_VERBOSER(true, 17000, "Current belief state is :: "<<*current_state<<std::endl);
+                INTERACTIVE_VERBOSER(true, 18000, "Current belief state is :: "<<*current_state<<std::endl);
             }
 
         

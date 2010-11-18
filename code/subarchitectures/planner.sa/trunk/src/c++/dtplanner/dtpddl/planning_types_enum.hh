@@ -49,10 +49,10 @@ namespace Planning
         vacuous = 8,
         formula_true = 9,
         formula_false = 10,
-        observational_predicate,
-        observational_proposition,         /* DT-PDDL "ground observational schema".*/
-        perceptual_predicate,
-        perceptual_proposition,         /* DT-PDDL "ground percept". So a ground percept symbol.*/
+        observational_predicate = 11,
+        observational_proposition = 12,         /* DT-PDDL "ground observational schema".*/
+        perceptual_predicate = 13,
+        perceptual_proposition = 14,         /* DT-PDDL "ground percept". So a ground percept symbol.*/
         state_ground_function,
         state_function,
         perceptual_ground_function,

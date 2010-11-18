@@ -275,12 +275,9 @@ void Domain_Data::add__state_function()
 
     range_of_state_function[state_Function_Name] = types_of_types;
 
-    INTERACTIVE_VERBOSER(true, 3110, "type of function :: "<<state_Function_Name<<std::endl
+    INTERACTIVE_VERBOSER(true, 18000, "type of function :: "<<state_Function_Name<<std::endl
                          <<"with arguemnts :: "<<state_function_domain_specification<<std::endl
                          <<"is -- "<<types_of_types<<std::endl);
-        
-    
-    
     
     state_function_domain_specification = Typed_Arguments();
     types_of_types = Types();
@@ -404,9 +401,12 @@ void Domain_Data::add__requirement(const std::string& str){
         {                                                               \
                                                                         \
             bool Domain_Data::                                          \
-            RESULT_TYPE(const QUERY_TYPE& name) const                   \
+            RESULT_TYPE(const QUERY_TYPE& _name) const                  \
             {                                                           \
+                NEW_object_referenced_WRAPPED(QUERY_TYPE, name, _name.get__name()); \
+                                                                        \
                 assert(DATA_BASE.find(name) != DATA_BASE.end());        \
+                                                                        \
                                                                         \
                 auto _range_types = DATA_BASE.find(name);               \
                 if(_range_types != DATA_BASE.end()){                    \

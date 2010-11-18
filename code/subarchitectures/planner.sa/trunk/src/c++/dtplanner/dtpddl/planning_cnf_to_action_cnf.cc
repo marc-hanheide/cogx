@@ -177,7 +177,6 @@ void Planning_CNF__to__Action_CNF::operator()(const Formula::Subformula& input)
                 if(!state_Transformation->add__sleeper(deref__st)){
                     WARNING("Could not add :: "<<literal__pointer<<" to action labelled"
                             <<state_Transformation->get__identifier()<<std::endl);
-                    assert(0);exit(0);
                 }
                 
                 
