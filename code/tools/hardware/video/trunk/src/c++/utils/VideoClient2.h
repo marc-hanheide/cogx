@@ -189,6 +189,7 @@ private:
    virtual void receiveImages(const std::string& serverName, const std::vector<Video::Image>& images);
 
 public:
+   // Note: m_cacheMonitor will prevent copying instaces of this class, which is ok.
    CVideoClient2();
    ~CVideoClient2();
 
