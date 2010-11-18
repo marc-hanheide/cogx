@@ -61,6 +61,8 @@ using namespace Planning;
 bool Partially_Observable_Markov_Decision_Process_State::
 useless() const
 {
+    return false;/*Fix -- the reward counting is broken at the moment. */
+    
     for(auto _mdp_state = belief_State.begin()
             ; _mdp_state != belief_State.end()
             ; _mdp_state++){

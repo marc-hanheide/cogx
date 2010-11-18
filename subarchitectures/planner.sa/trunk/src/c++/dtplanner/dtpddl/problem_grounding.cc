@@ -274,6 +274,8 @@ double Problem_Grounding::get__objective_value(const State& state) const
 
 void Problem_Grounding::set__objective_value(State& state, double value) const
 {
+    INTERACTIVE_VERBOSER(true, 17000, "Setting objective value to :: "<<value<<std::endl);
+    
     if(!is_a_numeric_objective){
         return ;
     }

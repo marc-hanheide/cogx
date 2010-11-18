@@ -28,13 +28,15 @@
 
 
   (:predicates 
+   (started)
    (gambled)
    (biased ?x - coin)
    (chosen ?x - coin)
 
 	       )
 
-  (:functions (reward) - number )
+  (:functions 
+   (reward) - number  )
 
   
   (:percepts
@@ -43,10 +45,17 @@
 
 	       )
 
+  (:action startup
+	   :precondition (not (started))
+	   :effect (and (started)
+			(probabilistic 0.5 (biased c1))
+			(probabilistic 0.5 (biased c2)))
+	   )
+
   (:action flip
 	   :parameters (?x - coin)
 
-	   :precondition (and (biased ?x))
+	   :precondition (and (started) (biased ?x))
 
 	   :effect (when (chosen ?x) (assign (reward) 5))
 	   )
@@ -70,7 +79,7 @@
   (:action gamble
 	   :parameters (?x - coin)
 
-	   :precondition (not (gambled))
+	   :precondition (and (started) (not (gambled)))
 
 	   :effect (and (gambled) (chosen ?x) )
 	   )
@@ -81,7 +90,7 @@
 
 	   :execution (flip ?x)
 
-	   :precondition (not (biased ?x))
+	   :precondition (and (started) (not (biased ?x)))
 
 	   :effect (probabilistic 0.01 (o-heads ?x)
 		    )
@@ -92,7 +101,7 @@
 	   
 	   :execution (or (flip ?x) (flip ?x))
 
-	   :precondition (biased ?x)
+	   :precondition (and (started) (biased ?x))
 
 	   :effect (probabilistic 0.9 (o-heads ?x)
 		    )

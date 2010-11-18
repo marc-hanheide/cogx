@@ -50,6 +50,12 @@ using namespace Planning;
 void State::decrement__obtainable_positive_rewards_count()
 {
     INTERACTIVE_VERBOSER(true, 14000, "Positive rewards :: "<<obtainable_positive_rewards_count);
+
+    if(obtainable_positive_rewards_count == 0){
+        WARNING("Something is wrong with reward counting. Heuristic should not be using reward counts.");
+        return ;
+    }
+    
     assert(obtainable_positive_rewards_count > 0);
     obtainable_positive_rewards_count--;
 }
@@ -84,6 +90,14 @@ int State::get__obtainable_rewards_value() const
 
 void State::decrement__obtainable_rewards_count()
 {
+    if(!obtainable_rewards_count) {
+
+        WARNING("Something is wrong with reward counting. Heuristic should not be using reward counts.");
+        
+        return;
+    }
+    
+    
     assert(obtainable_rewards_count);
     obtainable_rewards_count--;
 }
