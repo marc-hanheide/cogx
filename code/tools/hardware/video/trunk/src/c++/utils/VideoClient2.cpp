@@ -49,6 +49,7 @@ CVideoClient2::CVideoClient2()
    m_height = 0;
    m_bReceiving = false;
    m_pReceiver = 0;
+   m_bCaching = false;
 }
 
 CVideoClient2::~CVideoClient2()
@@ -74,6 +75,11 @@ void CVideoClient2::receiveImages(const std::vector<Video::Image>& images)
 
 void CVideoClient2::receiveImages(const std::string& serverName, const std::vector<Video::Image>& images)
 {
+   if (m_bCaching) {
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_cacheMonitor);
+      m_cache = images;
+   }
+
    if (m_pReceiver) m_pReceiver->receiveImages(serverName, images);
    else receiveImages(images);
 }
@@ -122,4 +128,25 @@ void CVideoClient2::setImageSize(int width, int height)
    m_width = width;
    m_height = height;
 }
+
+void CVideoClient2::setCaching(bool bCaching)
+{
+   m_bCaching = bCaching;
+   if (! m_bCaching) {
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_cacheMonitor);
+      m_cache.clear();
+   }
+}
+
+bool CVideoClient2::isCaching()
+{
+   return m_bCaching;
+}
+
+void CVideoClient2::getCachedImages(std::vector<Video::Image>& images)
+{
+   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_cacheMonitor);
+   images = m_cache;
+}
+
 } // namespace

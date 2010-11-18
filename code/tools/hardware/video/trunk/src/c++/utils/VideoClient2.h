@@ -169,6 +169,13 @@ private:
    bool m_bReceiving;
 
    /**
+    * The client can keep the last received images in cache.
+    */
+   std::vector<Video::Image> m_cache;
+   bool m_bCaching;
+   IceUtil::Monitor<IceUtil::Mutex> m_cacheMonitor;
+
+   /**
     * The callback function for images pushed by the image server.
     *
     * The version with the serverName parameter calls a receiver method if it
@@ -182,7 +189,6 @@ private:
    virtual void receiveImages(const std::string& serverName, const std::vector<Video::Image>& images);
 
 public:
-
    CVideoClient2();
    ~CVideoClient2();
 
@@ -213,6 +219,10 @@ public:
 
    // Set the desired image size. The size will be applied on next setReceiving().
    void setImageSize(int width, int height);
+
+   void setCaching(bool bCaching = true);
+   bool isCaching();
+   void getCachedImages(std::vector<Video::Image>& images);
 };
 
 } // namespace
