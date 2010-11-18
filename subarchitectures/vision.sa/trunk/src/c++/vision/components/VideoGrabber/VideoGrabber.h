@@ -10,7 +10,7 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Video.hpp>
 #include <VisionData.hpp>
-#include <VideoClient.h>
+#include <VideoClient2.h>
 
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
@@ -19,9 +19,7 @@
 namespace cogx
 {
 
-class CVideoGrabber:
-    public cast::ManagedComponent,
-    public cast::VideoClient
+class CVideoGrabber: public cast::ManagedComponent
 {
 private:
    /**
@@ -36,7 +34,7 @@ private:
    /**
     * our ICE proxy to the video server
     */
-   Video::VideoInterfacePrx m_pVideoServer;
+   //Video::VideoInterfacePrx m_pVideoServer;
 
    /**
     * wether we are currently receiving images from the server
@@ -44,6 +42,8 @@ private:
    bool m_bReceiving;
 
    int m_frameGrabCount;       // how many frames to save
+
+   Video::CVideoClient2 m_video;
 
 #ifdef FEAT_VISUALIZATION
    // HACK: The image data in IplImage will point into char data of m_DisplayBuffer.
@@ -113,7 +113,7 @@ public:
     * The callback function for images pushed by the image server.
     * To be overwritten by derived classes.
     */
-   virtual void receiveImages(const std::vector<Video::Image>& images);
+   virtual void receiveImages(const std::string& serverName, const std::vector<Video::Image>& images);
 
    std::vector<std::string> getDeviceNames();
    void saveImages(const std::vector<Video::Image>& images);

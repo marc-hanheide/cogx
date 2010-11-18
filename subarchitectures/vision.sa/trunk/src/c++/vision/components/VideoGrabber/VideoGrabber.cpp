@@ -79,13 +79,6 @@ void CVideoGrabber::configure(const map<string,string> & _config)
 
 void CVideoGrabber::start()
 {
-   // get connection to the video server
-   m_pVideoServer = getIceServer<Video::VideoInterface>(m_videoServerName);
-
-   // register our client interface to allow the video server pushing images
-   Video::VideoClientInterfacePtr servant = new VideoClientI(this);
-   registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
-
 #ifdef FEAT_VISUALIZATION
    m_display.connectIceClient(*this);
    m_display.installEventReceiver();
@@ -97,9 +90,10 @@ void CVideoGrabber::start()
    m_display.addCheckBox(IDOBJ_SETTINGS, IDCTRL_STREAMING, "&Streaming");
 #endif
 
-   // start receiving images pushed by the video server
-   m_pVideoServer->startReceiveImages(getComponentID().c_str(), m_camIds, 0, 0);
-   m_bReceiving = true;
+   m_video.setServer(this, m_videoServerName, m_camIds);
+   m_video.setReceiver(new Video::CReceiverMethod<CVideoGrabber>(this, &CVideoGrabber::receiveImages));
+   m_video.connect();
+   m_video.setReceiving(true);
 }
 
 #ifdef FEAT_VISUALIZATION
@@ -269,11 +263,11 @@ void CVideoGrabber::CVvDisplayClient::handleEvent(const Visualization::TEvent &e
          bool newrcv = (event.data != "0");
          if (newrcv != pViewer->m_bReceiving) {
             if(pViewer->m_bReceiving) {
-               pViewer->m_pVideoServer->stopReceiveImages(pViewer->getComponentID());
+               pViewer->m_video.setReceiving(false);
                pViewer->println("Stopped receiving images");
             }
             else {
-               pViewer->m_pVideoServer->startReceiveImages(pViewer->getComponentID(), pViewer->m_camIds, 0, 0);
+               pViewer->m_video.setReceiving(true);
                pViewer->println("Started receiving images");
             }
             pViewer->m_bReceiving = !pViewer->m_bReceiving;
@@ -353,6 +347,7 @@ IplImage* cloneVideoImage(const Video::Image &img)
    pImg->imageDataOrigin = pImg->imageData;
    pImg->widthStep = img.width * 3;
    pImg->imageSize = pImg->widthStep * img.height;
+   return pImg;
 }
 
 void releaseClonedImage(IplImage** pImagePtr)
@@ -372,7 +367,7 @@ void CVideoGrabber::destroy()
 {
 }
 
-void CVideoGrabber::receiveImages(const std::vector<Video::Image>& images)
+void CVideoGrabber::receiveImages(const std::string& serverName, const std::vector<Video::Image>& images)
 {
    if (m_frameGrabCount > 0) {
       saveImages(images);
@@ -381,7 +376,7 @@ void CVideoGrabber::receiveImages(const std::vector<Video::Image>& images)
 #ifdef FEAT_VISUALIZATION
    int w = 0, h = 0;
    double factor = 1.0;
-   for (int i = 0; i < images.size(); i++) {
+   for (unsigned int i = 0; i < images.size(); i++) {
       if (images[i].width > w) w = images[i].width;
       h += images[i].height;
    }
@@ -399,7 +394,7 @@ void CVideoGrabber::receiveImages(const std::vector<Video::Image>& images)
    int vp = 0;
    prepareCanvas(w, h);
    IplImage *pDisp = m_pDisplayCanvas;
-   for (int i = 0; i < images.size(); i++) {
+   for (unsigned int i = 0; i < images.size(); i++) {
       IplImage *iplImage = cloneVideoImage(images[i]);
       int wi = (int) (images[i].width * factor);
       int hi = (int) (images[i].height * factor);
@@ -460,7 +455,7 @@ void CVideoGrabber::saveImages(const std::vector<Video::Image>& images)
  
    // TODO: conversion to GS when saving;
    // TODO: compression parameters for jpeg and png
-   for (int i = 0; i < images.size(); i++) {
+   for (unsigned int i = 0; i < images.size(); i++) {
       std::string fullname = fname;
       _s_::replace(fullname, "%d", devnames[i]);
       fullname = dir + "/" + fullname;
