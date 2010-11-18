@@ -171,11 +171,11 @@ private:
    /**
     * The callback function for images pushed by the image server.
     *
-    * The version with serverName parameter calls a receiver method if was
-    * installed with setReceiver. Otherwise it will call receiveImages
-    * without serverName parameter (for backward compatibility with the
-    * old implementation of the VideoServer where the receiver function
-    * was meant to be overridden).
+    * The version with the serverName parameter calls a receiver method if it
+    * was installed with setReceiver. Otherwise it will call receiveImages
+    * without the serverName parameter (for backward compatibility with the old
+    * implementation of the VideoServer where the receiver function was meant
+    * to be overridden).
     */
    CReceiverMethodBase* m_pReceiver;
    virtual void receiveImages(const std::vector<Video::Image>& images);
