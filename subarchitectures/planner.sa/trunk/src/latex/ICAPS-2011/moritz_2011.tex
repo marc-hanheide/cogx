@@ -49,6 +49,42 @@ demonstrate the approach in a realistic robot exploration domain.
 
 \end{abstract}
 
+\section{Moritz's Initial Outline}
+
+\subsection{Switching Planner Outline}
+
+Outline the high level approach here:
+\begin{itemize}
+\item Problem input (factored initial state, DTPDDL observations)
+\item Determinisation
+\item Problem generation for DT
+\item Belief revision
+\end{itemize}
+
+\subsection{Determinisation}
+
+\begin{itemize}
+\item Generation of deterministic sensing models
+\item Determinisation of the initial state
+\item Compiling reward model into (soft-)goal model
+\item Cost function in FD (maybe this could mentioned in the outline?)
+\end{itemize}
+
+\subsection{Subtask Generation}
+\begin{itemize}
+\item Goal generation from CP trace
+\item Disconfirm actions
+\item State pruning according to CP trace
+\end{itemize}
+
+\subsection{Belief revision}
+Not sure if this needs its own section
+\begin{itemize}
+\item Convert inital state into bayesian network
+\item Belief updates with observation nodes
+\item Create new network for next planning runs
+\end{itemize}
+
 \section{Introduction}
 
 
@@ -156,40 +192,6 @@ An outline of the paper is as follows. We describe POMDPs with a
 propositionally factored representation of states and observations,
 and describe how to evaluate plans when they correspond to
 finite-state controllers.
-
-\section{Switching Planner Outline}
-
-Outline the high level approach here:
-\begin{itemize}
-\item Problem input (factored initial state, DTPDDL observations)
-\item Determinisation
-\item Problem generation for DT
-\item Belief revision
-\end{itemize}
-
-\section{Determinisation}
-
-\begin{itemize}
-\item Generation of deterministic sensing models
-\item Determinisation of the initial state
-\item Compiling reward model into (soft-)goal model
-\item Cost function in FD (maybe this could mentioned in the outline?)
-\end{itemize}
-
-\section{Subtask Generation}
-\begin{itemize}
-\item Goal generation from CP trace
-\item Disconfirm actions
-\item State pruning according to CP trace
-\end{itemize}
-
-\section{Belief revision}
-Not sure if this needs its own section
-\begin{itemize}
-\item Convert inital state into bayesian network
-\item Belief updates with observation nodes
-\item Create new network for next planning runs
-\end{itemize}
 
 \section{Propositional Decision-Theoretic Planning}
 
@@ -362,17 +364,6 @@ V_{\pp{FSC}}(\bstate) = \max_{\node \in \nodes} \sum_{\state \in \states} \bstat
 
 
 
-
-
-\section{Serial Planning in Determinisations}
-
-Goal expressions in the problem description ---for example
-$(\pp{kval}~(\pp{location}~\pp{cornflakes}))$ expresses ``the robot
-knows where the {\em cornflakes}--- are treated as control-knowledge
-by the planner. Here, a plan is not considered valid unless in the
-finial stet the goal condition is satisfied.
-
-
 \section{Decision-Theoretic PDDL}
 
 The modelling language of choice for planning in probabilistic
@@ -519,6 +510,17 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 .14 & kitchen & kitchen & kitchen \\
 \hline
 \end{tabular}
+
+
+
+
+\section{Serial Planning in Determinisations}
+
+Goal expressions in the problem description ---for example
+$(\pp{kval}~(\pp{location}~\pp{cornflakes}))$ expresses ``the robot
+knows where the {\em cornflakes}--- are treated as control-knowledge
+by the planner. Here, a plan is not considered valid unless in the
+finial stet the goal condition is satisfied.
 
 
 \section{Evaluation}
