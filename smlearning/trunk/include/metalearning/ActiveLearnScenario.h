@@ -95,6 +95,9 @@ protected:
 	/** file name of a trained learner (empty if not provided as a program arg) */
 	string netconfigFileName;
 
+	/** method for feature selection (basis/markov/...?) */
+	string featureSelectionMethod;
+
 	/** constant number of maximum candidate actions */
 	static const int maxNumberCandidateActions = 1000;
 
@@ -117,8 +120,40 @@ protected:
 	golem::Mat34 get_pfefPose_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int startIndex/*, Real maxRange, Real minZ*/, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose);
 
 	/** restore sequence of predicted polyflap poses from neural activations */
-	void get_pfefSeq_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int startIndex/*, Real maxRange, Real minZ*/, vector<golem::Mat34>& currentPredictedPfSeq,  vector<golem::Mat34>& currentPredictedEfSeq);
+	template<class Denormalize>
+	void get_pfefSeq_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int sIndex/*, Real maxRange, Real minZ*/, vector<golem::Mat34>& currentPredictedPfSeq, vector<golem::Mat34>& currentPredictedEfSeq, Denormalize denormalize) {
 
+		currentPredictedPfSeq.clear();
+		for (int i=0; i < outputActivations.shape[0]; i++) {
+			golem::Mat34 currentPredictedPfPose;
+			golem::Mat34 currentPredictedEfPose;
+			int startIndex = sIndex;
+
+			//extract effector Pose
+			// currentPredictedEfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
+			// currentPredictedEfPose.p.v2 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
+			// currentPredictedEfPose.p.v3 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
+			// Real efRoll, efPitch, efYaw;
+			// efRoll = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+			// efPitch = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+			// efYaw = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+			// currentPredictedEfPose.R.fromEuler(efRoll, efPitch, efYaw);
+			// currentPredictedEfSeq.push_back (currentPredictedEfPose);
+		
+			//extract polyflap Pose
+			currentPredictedPfPose.p.v1 = denormalize(outputActivations[i][startIndex++], desc.coordLimits.minX, desc.coordLimits.maxX);
+			currentPredictedPfPose.p.v2 = denormalize(outputActivations[i][startIndex++], desc.coordLimits.minY, desc.coordLimits.maxY);
+			currentPredictedPfPose.p.v3 = denormalize(outputActivations[i][startIndex++], desc.coordLimits.minZ, desc.coordLimits.maxZ);
+			Real pfRoll, pfPitch, pfYaw;
+			pfRoll = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+			pfPitch = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+			pfYaw = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+			currentPredictedPfPose.R.fromEuler(pfRoll, pfPitch, pfYaw);
+			currentPredictedPfSeq.push_back (currentPredictedPfPose);
+		}
+	}
+
+	
 	/** Renders the object. */
         virtual void render();
 

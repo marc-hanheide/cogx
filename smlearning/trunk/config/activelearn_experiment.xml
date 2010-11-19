@@ -49,6 +49,8 @@
 	<minX>0.0</minX>
 	<minY>0.0</minY>
 	<minZ>-0.01</minZ>
+	<minPushDuration>3.0</minPushDuration>
+	<maxPushDuration>5.0</maxPushDuration>
 	<minDuration>5.0</minDuration>
 	<startPolyflapPosition>
 		<x>0.2</x>
@@ -64,6 +66,7 @@
 		<x>0.1</x>
 		<y>0.1</y>
 		<z>0.1</z>
+		<width>0.002</width>
 	</polyflapDimensions>
 	<over>0.017</over>
 	<dist>0.05</dist>

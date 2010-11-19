@@ -112,10 +112,19 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		currentPfY = chunk.objectPose.p.v2;
 
 		//trainSeq = load_trainSeq (learningData.currentSeq, currentRegion->learner.header->inputSize, currentRegion->learner.header->outputSize, motorVectorSize, efVectorSize);
-		trainSeq = load_trainSeq (learningData.currentSeq, data.second);
-		currentRegion->learner.feed_forward (*trainSeq);
-		//get_pfefSeq_from_outputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), desc.maxRange, desc.minZ, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
-		get_pfefSeq_from_outputActivations (currentRegion->learner.net->outputLayer->outputActivations, /*learningData.currentMotorCommandVector.size() - 3*/0, /*desc.maxRange, desc.minZ,*/ learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
+		if (learningData._currentSeq.second.size() > 1) {
+			if (featureSelectionMethod == "basis") 
+				trainSeq = LearningData::load_NNtrainSeq (learningData._currentSeq, LearningData::load_NNsequence_basis<float(*)(float const&, float const&, float const&)>, normalize<float>, learningData.coordLimits);
+			else if (featureSelectionMethod == "markov") 
+				trainSeq = LearningData::load_NNtrainSeq (learningData._currentSeq, LearningData::load_NNsequence_markov<float(*)(float const&, float const&, float const&)>, normalize<float>, learningData.coordLimits);
+				
+				
+			//trainSeq = load_trainSeq (learningData.currentSeq, data.second);
+			currentRegion->learner.feed_forward (*trainSeq);
+		
+			//get_pfefSeq_from_outputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), desc.maxRange, desc.minZ, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
+			get_pfefSeq_from_outputActivations (currentRegion->learner.net->outputLayer->outputActivations, /*learningData.currentMotorCommandVector.size() - 3*/0, /*desc.maxRange, desc.minZ,*/ learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq, denormalize<Real>);
+		}
 	
 	}
 // 	if (bStop) {
@@ -191,21 +200,21 @@ void ActiveLearnScenario::choose_action () {
 			for (int i=0; i<maxNumberCandidateActions; i++) {
 				LearningData::MotorCommand action;
 				int startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
-				//action.speed = floor (randomG.nextUniform (3.0, 6.0));
-				action.speed = 3.0;
+				//action.pushDuration = floor (randomG.nextUniform (3.0, 6.0));
+				action.pushDuration = 3.0;
 				action.horizontalAngle = choose_angle(60.0, 120.0, "cont");
 				FeatureVector motorVector;
 				Vec3 pos;
 				init_positionT (pos);
 				set_coordinates_into_target(/*action.*/startPosition, pos, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
 				write_finger_pos_and_or (motorVector, action, pos);
-				write_finger_speed_and_angle (motorVector, action, action.speed, action.horizontalAngle);
+				write_finger_speed_and_angle (motorVector, action, action.pushDuration, action.horizontalAngle);
 				candidateActions.push_back (make_pair (motorVector, action));
 			}
 
 			pair<FeatureVector, LearningData::MotorCommand> chosenAction = get_action_maxLearningProgress(candidateActions);
 			
-			this->speed = chosenAction.second.speed;
+			this->pushDuration = chosenAction.second.pushDuration;
 			this->horizontalAngle = chosenAction.second.horizontalAngle;
 			this->positionT = chosenAction.second.initEfPosition;
 			this->startPosition = positionsT[this->positionT];
@@ -268,9 +277,9 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	SMRegion firstRegion (regionsCount, /*motorVectorSize, */splittingCriterion1);
 	regions[regionsCount] = firstRegion;
 	if (netconfigFileName.empty())
-		regions[regionsCount].learner.init (motorVectorSize + featureVectorSize,  pfVectorSize);
+		regions[regionsCount].learner.init (/*learningData.motorVectorSize*/2 + learningData.efVectorSize + learningData.pfVectorSize,  learningData.pfVectorSize);
 	else
-		regions[regionsCount].learner.init (motorVectorSize + featureVectorSize, pfVectorSize, netconfigFileName);
+		regions[regionsCount].learner.init (/*learningData.motorVectorSize*/2 + learningData.efVectorSize + learningData.pfVectorSize, learningData.pfVectorSize, netconfigFileName);
 
 	plotApp->init (regionsCount+1, firstRegion.smoothing + firstRegion.timewindow);
 	plotApp->resize(640,480);
@@ -283,14 +292,15 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		
 		// experiment main loops
 		creator.setToDefault();
-		//polyflap actor
 
+		//polyflap actor
 		//create and setup polyflap object, compute its vectors
 		initialize_polyflap();
 
 		//select an optimal action from a random set of actions
 		{
 			CriticalSectionWrapper csw (cs);
+			//choose motor command
 			choose_action ();
 		}
 
@@ -307,7 +317,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		write_finger_pos_and_or(learningData.currentMotorCommandVector, learningData.currentMotorCommand, positionT);
 
 		//write chosen speed and angle of the finger experiment trajectory	
-		write_finger_speed_and_angle(learningData.currentMotorCommandVector, learningData.currentMotorCommand, speed, horizontalAngle);
+		write_finger_speed_and_angle(learningData.currentMotorCommandVector, learningData.currentMotorCommand, pushDuration, horizontalAngle);
 		//add motor vector to the sequence
 		write_motor_vector_into_current_sequence();
 
@@ -328,7 +338,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		//update RNN learner with current sequence
 		{
 			CriticalSectionWrapper csw (cs);
-			update_learners ();
+			//update_learners ();
 			int windowSize = currentRegion->smoothing + currentRegion->timewindow;
 			vector<double> learnProgData;
 			vector<double> errorData;
@@ -359,14 +369,8 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		//remove polyflap object from the scene
 		remove_polyflap();
 
-		//set up needed data for home movement
-		prepare_home_movement();
-				
-		//turn on collision detection
-		set_collision_detection(true);
-			
-		//move the finger to home position	
-		send_position(home , ReacPlanner::ACTION_GLOBAL);
+		//move finger to initial position
+		move_finger_home ();
 
 		//print out end information of this iteration
 		iteration_end_info();		
@@ -410,9 +414,9 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (const rn
 	assert (startIndex < outputsize);
 
 	//extract effector Pose
-	predictedEfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], desc.minX, desc.maxX);
-	predictedEfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], desc.minY, desc.maxY);
-	predictedEfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], desc.minZ, desc.maxZ);
+	predictedEfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], desc.coordLimits.minX, desc.coordLimits.maxX);
+	predictedEfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], desc.coordLimits.minY, desc.coordLimits.maxY);
+	predictedEfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], desc.coordLimits.minZ, desc.coordLimits.maxZ);
 	Real efRoll, efPitch, efYaw;
 	efRoll = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
 	efPitch = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
@@ -420,9 +424,9 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (const rn
 	predictedEfPose.R.fromEuler (efRoll, efPitch, efYaw);
 
 	//extract polyflap Pose
-	predictedPfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], desc.minX, desc.maxX);
-	predictedPfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], desc.minY, desc.maxY);
-	predictedPfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], desc.minZ, desc.maxY);
+	predictedPfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], desc.coordLimits.minX, desc.coordLimits.maxX);
+	predictedPfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], desc.coordLimits.minY, desc.coordLimits.maxY);
+	predictedPfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], desc.coordLimits.minZ, desc.coordLimits.maxY);
 	Real pfRoll, pfPitch, pfYaw;
 	pfRoll = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
 	pfPitch = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
@@ -434,40 +438,10 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (const rn
 }
 
 
-void ActiveLearnScenario::get_pfefSeq_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int sIndex/*, Real maxRange, Real minZ*/, vector<golem::Mat34>& currentPredictedPfSeq, vector<golem::Mat34>& currentPredictedEfSeq) {
-
-	currentPredictedPfSeq.clear();
-	for (int i=0; i < outputActivations.shape[0]; i++) {
-		golem::Mat34 currentPredictedPfPose;
-		golem::Mat34 currentPredictedEfPose;
-		int startIndex = sIndex;
-
-		//extract effector Pose
-		// currentPredictedEfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
-		// currentPredictedEfPose.p.v2 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
-		// currentPredictedEfPose.p.v3 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
-		// Real efRoll, efPitch, efYaw;
-		// efRoll = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
-		// efPitch = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
- 		// efYaw = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
-		// currentPredictedEfPose.R.fromEuler(efRoll, efPitch, efYaw);
-		// currentPredictedEfSeq.push_back (currentPredictedEfPose);
-		
-		//extract polyflap Pose
-		currentPredictedPfPose.p.v1 = denormalize(outputActivations[i][startIndex++], desc.minX, desc.maxX);
-		currentPredictedPfPose.p.v2 = denormalize(outputActivations[i][startIndex++], desc.minY, desc.maxY);
-		currentPredictedPfPose.p.v3 = denormalize(outputActivations[i][startIndex++], desc.minZ, desc.maxZ);
-		Real pfRoll, pfPitch, pfYaw;
-		pfRoll = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
-		pfPitch = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
- 		pfYaw = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
-		currentPredictedPfPose.R.fromEuler(pfRoll, pfPitch, pfYaw);
-		currentPredictedPfSeq.push_back (currentPredictedPfPose);
-	}
-}
 
 
 //------------------------------------------------------------------------------
+
 
 
 ///
@@ -584,7 +558,7 @@ void ActiveLearnScenario::split_region (SMRegion& region) {
 	int cuttingIdx = -1;
 	// SMRegion& region = regions[regionIdx];
 	//for (int i=0; i<region.sMContextSize; i++) {
-	for (int i=0; i<SMRegion::motorVectorSize; i++) {
+	for (int i=0; i<LearningData::motorVectorSize; i++) {
 		for (double j=-0.999; j<1.0; j=j+0.001) {
 			DataSet firstSplittingSetTry;
 			DataSet secondSplittingSetTry;
@@ -596,7 +570,7 @@ void ActiveLearnScenario::split_region (SMRegion& region) {
 				else
 					secondSplittingSetTry.push_back (region.data[k]);
 			}
-			double quantityEval = evaluate_minimality (firstSplittingSetTry, secondSplittingSetTry, motorVectorSize);
+			double quantityEval = evaluate_minimality (firstSplittingSetTry, secondSplittingSetTry, learningData.motorVectorSize);
 			if (quantityEval < minimalQuantity) {
 				minimalQuantity = quantityEval;
 				firstSplittingSet = firstSplittingSetTry;
@@ -615,8 +589,8 @@ void ActiveLearnScenario::split_region (SMRegion& region) {
 	regions[firstRegion.index] = firstRegion;
 	regions[secondRegion.index] = secondRegion;
 
-	regions[firstRegion.index].learner.init (motorVectorSize + featureVectorSize,  pfVectorSize, region.learner.net->weightContainer);
-	regions[secondRegion.index].learner.init (motorVectorSize + featureVectorSize,  pfVectorSize, region.learner.net->weightContainer);
+	regions[firstRegion.index].learner.init (learningData.motorVectorSize + learningData.efVectorSize + learningData.pfVectorSize,  learningData.pfVectorSize, region.learner.net->weightContainer);
+	regions[secondRegion.index].learner.init (learningData.motorVectorSize + learningData.efVectorSize + learningData.pfVectorSize,  learningData.pfVectorSize, region.learner.net->weightContainer);
 
 	assert (regions.erase (region.index) == 1);
 	
@@ -650,6 +624,12 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 		netconfigFileName = vm["netconfigFileName"].as<string>();
 	}
 
+	featureSelectionMethod = "markov";
+
+	if (vm.count("featureSelectionMethod")) {
+		featureSelectionMethod = vm["featureSelectionMethod"].as<string>();
+	}
+
 
 
 	
@@ -668,6 +648,7 @@ try {
 
 	prgOptDesc.add_options()
 		("netconfigFileName,N", po::value<string>(), "name of the netconfig file")
+		("featureSelectionMethod,F", po::value<string>(), "basis/markov (feature selection method, default:markov)")
 	;
 	
 

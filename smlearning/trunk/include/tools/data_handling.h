@@ -149,16 +149,6 @@ bool read_dataset (string fileName, DataSetStruct& data);
 bool read_dataset (string fileName, LearningData::DataSet& data);
 
 ///
-///write DataSet vector to a cdl (netcdf in text format) file using zero-padding (deprecated)
-///
-bool write_cdl_file_padding (string fileName, const DataSet& data);
-
-///
-///write DataSet vector to a cdl (netcdf in text format) file using basis feature vectors
-///(deprecated - do not use)
-bool write_cdl_file_basis (string fileName, const DataSet& data);
-
-///
 ///write DataSet vector to a nc (netcdf format) file using basis feature vectors
 ///
 bool write_nc_file_basis (string fileName, const DataSetStruct& data);

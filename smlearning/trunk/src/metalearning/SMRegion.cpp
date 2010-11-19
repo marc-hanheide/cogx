@@ -127,7 +127,7 @@ bool SMRegion::read_data (string fileName) {
 	
 	readFile.close ();
 
-	learner.init (motorVectorSize + featureVectorSize, pfVectorSize, fileName + ".net");
+	learner.init (LearningData::motorVectorSize + LearningData::efVectorSize + LearningData::pfVectorSize, LearningData::pfVectorSize, fileName + ".net");
 
 	return true;
 }
@@ -155,9 +155,11 @@ int SMRegion::get_SMRegion (const SMRegion::RegionsMap& regions, const FeatureVe
 		bool wrongCuttingValue = false;
 		SMRegion currentRegion = regionIter->second;
 		//assert (sMContext.size() == currentRegion.sMContextSize);
-		assert (sMContext.size() == SMRegion::motorVectorSize);
+		// cout << "sMContext size: " << sMContext.size() << endl;
+		// cout << "motorVectorsize: " << SMRegion::motorVectorSize << endl;
+		assert (sMContext.size() == LearningData::motorVectorSize);
 		//for (int i=0; i<currentRegion.sMContextSize; i++) {
-		for (int i=0; i<SMRegion::motorVectorSize; i++) {
+		for (int i=0; i<LearningData::motorVectorSize; i++) {
 			if ( currentRegion.minValuesSMVector[i] > sMContext[i] ||
 			     currentRegion.maxValuesSMVector[i] < sMContext[i]) {
 				wrongCuttingValue = true;

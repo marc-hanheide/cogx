@@ -45,7 +45,9 @@ int main(int argc, char * argv[]) {
 		cerr << argv[0] << " seq_file (without extension)" << endl;
 		return 1;
 	}
-	DataSetStruct savedData;
+	//DataSetStruct savedData;
+	LearningData::DataSet savedData;
+	LearningData::CoordinateLimits limits;
 
 	//Generate artificial random sequences
 // 	int numSeq = atoi(argv[1]);
@@ -53,8 +55,8 @@ int main(int argc, char * argv[]) {
 // 	generate_rand_sequences (data, numSeq, seqSize);
 
 	string seqFile = string (argv[1]);
-	if (!read_dataset (seqFile, savedData)) {
-		cout << argv[1] << ".seq" << " does not exist!" << endl;
+	if (!LearningData::read_dataset (seqFile, savedData, limits)) {
+		cout << argv[1] << ".seq2" << " does not exist!" << endl;
 		return 1;
 	}
 // 	cout << "printing generated data: " << endl;
@@ -70,7 +72,7 @@ int main(int argc, char * argv[]) {
 // 		cout << "cdl file written" << endl;
 // 	else
 // 		cout << "cdl file NOT written" << endl;
-	if (write_nc_file_basis (seqFile, savedData))
+	if (LearningData::write_nc_file_NNbasis (seqFile, savedData, normalize<Real>, limits))
 		cout << "nc file written" << endl;
 	else
 		cout << "nc file NOT written" << endl;

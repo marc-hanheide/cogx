@@ -105,20 +105,7 @@ public:
 		/** 2D motion constraint */
 		bool motion2D;
 
-		/** assumed maximum range of polyflap X-coordinate location during the experiment */
-		//Real maxRange;
-		/** assumed minimum value for polyflap Z-coordinate location during experiment (in xml file should have value of -0.01... bug in PhysX?) */
-		Real minZ;
-		/** assumed minimum value for polyflap X-coordinate location during experiment */
-		Real minX;
-		/** assumed minimum value for polyflap Y-coordinate location during experiment */
-		Real minY;	
-		/** assumed maximum value for polyflap Z-coordinate location during experiment */
-		Real maxZ;
-		/** assumed maximum value for polyflap X-coordinate location during experiment */
-		Real maxX;
-		/** assumed maximum value for polyflap Y-coordinate location during experiment */
-		Real maxY;	
+		LearningData::CoordinateLimits coordLimits;
 		
 		/** minimal duration of a movement (by normal speed) */
 		SecTmReal minDuration;
@@ -128,6 +115,8 @@ public:
 		Vec3 startPolyflapRotation; 
 		/** Polyflap dimensions */
 		Vec3 polyflapDimensions; 
+		/** polyflap width */
+		Real pfWidth;
 
 //	 	//vertical distance from the ground
 // 		const Real over = 0.01;
@@ -174,18 +163,21 @@ public:
 			speriod = 1.0;
 
 
-			maxX = 0.4;
-			maxY = 0.4;
-			maxZ = 0.4;
-			minX = 0.0;
-			minY = 0.0;
-			minZ = -0.01;
+			coordLimits.maxX = 0.4;
+			coordLimits.maxY = 0.4;
+			coordLimits.maxZ = 0.4;
+			coordLimits.minX = 0.0;
+			coordLimits.minY = 0.0;
+			coordLimits.minZ = -0.01;
+			coordLimits.minDuration = 3.0;
+			coordLimits.maxDuration = 5.0;
 
 			minDuration = 5.0;
 
 			startPolyflapPosition.set(0.2, 0.2, 0.2);
 			startPolyflapRotation.set(0.0, 0.0, 0.0);
 			polyflapDimensions.set(0.1, 0.1, 0.1);
+			pfWidth = 0.002;
 
 			over = 0.017;
 			dist = 0.05;
@@ -217,15 +209,6 @@ public:
 	/** const number of starting positions */
 	static const int startingPositionsCount = 24;
 	/** constant used for assertions (motorCommandVector size should be predefined) */
-	static const int motorVectorSize = 5;
-	/** constant used for assertions (featureVector size should be predefined) */
-	static const int featureVectorSize = 12;
-	/** constant used for assertions (polyflap feature vector size should be predefined) */
-	static const int pfVectorSize = 6;
-	/** constant used for assertions (effector feature vector size should be predefined) */
-	static const int efVectorSize = 6;
-	/** polyflap width */
-	static const Real pfWidth = 0.002;
 
 	/** Run experiment */
 	///
@@ -291,8 +274,8 @@ protected:
 	golem::GenWorkspaceState target;
 	/** position chosen for the start of experiment trajectory */
 	int startPosition;
-	/** speed of movement along the experiment trajectory */
-	int speed;
+	/** duration of movement along the experiment trajectory (speed const.) */
+	Real pushDuration;
 	/** minimal duration of the movement along the experiment trajectory */
 	SecTmReal duration;
 	/** pose describing the endpoint of the experiment trajectory */
@@ -393,7 +376,7 @@ protected:
 	///
 	///try to find a path to given position, if found, move the finegr along it and wait for it to stop
 	///
-	void send_position(golem::GenWorkspaceState position, golem::ReacPlanner::Action action);
+	void send_position(golem::GenWorkspaceState& position, golem::ReacPlanner::Action action);
 
 	///
 	///create feature vector and sequence
@@ -408,7 +391,7 @@ protected:
 	///
 	///write finger features to the vector
 	///
-	void write_finger_speed_and_angle(FeatureVector& featureVector, LearningData::MotorCommand &motorCommand, const int speed, const Real horizontalAngle);
+	void write_finger_speed_and_angle(FeatureVector& featureVector, LearningData::MotorCommand &motorCommand, const Real pushDuration, const Real horizontalAngle);
 
 	///
 	///add the vector to the current sequence
@@ -468,7 +451,7 @@ protected:
 	///
 	///describe the movement to home position
 	///
-	void prepare_home_movement();
+	void move_finger_home ();
 
 	///
 	///print out desired information at the end of a sequence
@@ -502,7 +485,7 @@ protected:
 	void compute_vectors();
 
 	///
-	///set current position of the polyflap as default position for computing of the starting position
+	///set current position of the polyflap as default position for computing the starting finger position
 	///
 	void init_positionT(Vec3& pos);
 
