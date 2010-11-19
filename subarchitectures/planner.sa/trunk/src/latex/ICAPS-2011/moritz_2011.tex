@@ -480,10 +480,11 @@ factored tree-like structure here, in order to aid our discussion of
 sequential planning in POMDP determinisations. The distribution is
 expressed in a tree-like structure of terms. Each term is either: (1)
 atomic, e.g., $(=(\pp{location}~\pp{box})~\pp{office})$, (2)
-probabilistic, e.g., $(\pp{probabilistic}~p_1 (T_1) .. p_n (T_n))$, or
-(3) a conjunct over probabilistic and atomic terms. The root term is
-conjunctive, and the leaves are atomic. For example, the starting
-distribution for $\pp{R2D2}$ might be described thusly:
+probabilistic, e.g., $(\pp{probabilistic}~p_1 (T_1) .. p_n (T_n))$
+where $T_i$ are conjunctive, or (3) a conjunct over probabilistic and
+atomic terms. The root term is always conjunctive, and the leaves are
+atomic. For example, the starting distribution for $\pp{R2D2}$ might
+be described thusly:
 
 \small{
 \begin{tabtt}
@@ -496,7 +497,28 @@ distribution for $\pp{R2D2}$ might be described thusly:
 }
 
 \noindent The interpretation of such an expression can be given
-according to a recursive descent. 
+according to a recursive descent. Here, an atom is visited as soon as
+its conjunctive parent is visited, and a conjunctive term is visited
+if all its immediate subterms are visited. A probabilistic term is
+visited if exactly one of its subterms, $T_i$, is visited. Each valid
+visitation of the root term according to this recursive definition
+encapsulates a starting state, along with the probability it
+occurs. The former corresponds to the union of all visited atoms, and
+the latter corresponds to the product of $p_i$ entries on the visited
+subterms of probabilistic elements. Making these ideas concrete, our
+example yields the following flat state distribution:
+
+
+\begin{tabular}{cccc}
+\hline
+Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
+\hline
+.24 & kitchen & office & office \\
+.06 & kitchen & kitchen & office \\
+.56 & kitchen & office & kitchen \\
+.14 & kitchen & kitchen & kitchen \\
+\hline
+\end{tabular}
 
 
 \section{Evaluation}
