@@ -388,21 +388,21 @@ representations amenable to state-of-the-art planning procedures.
 
 Because PPDDL cannot model domains that feature partial observability,
 we developed an extension of that language, called DTPDDL. This can
-express probabilistic models of the sensing consequences of acting to
+express probabilistic models of the sensing consequences of acting, to
 quantitatively capture unreliability in perception. That expressive
-power is achieved by incorporating perceptual analogues of fluent and
-predicate signatures, and of action definitions. In detail, we have
-declarations of state characterising predicate and fluent symbols as
-usual. In addition, we allow two other declarative blocks, for
-perceptual predicates and fluents respectively. In detail, suppose
-our robot is tasked with exploring {\em locations} in order to
-identify the whereabouts of a {\em visual-object}. We must describe
-state and perceptual facts that model the {\em true}, resp. perceived,
-locations of objects. In DTPDDL, these declarations appear as:
+power is achieved by incorporating perceptual analogues of fluent,
+predicate, and action definitions. In detail, we have declarations of
+state characterising predicate and fluent symbols according to PPDDL
+syntax. In addition, we allow two other declarative blocks, for
+perceptual predicates and fluents respectively. For example, suppose our
+robot is tasked with exploring {\em locations} in order to identify
+the whereabouts of a {\em visual-object}. We must describe state and
+perceptual facts that model the {\em true}, resp. perceived, locations
+of objects. In DTPDDL, these declarations appear as:
 
 \small{
 \begin{tabtt}
-(:\=functions  ;; state fluents\\
+(\=:functions  ;; state fluents\\
   \> (is-in ?v - visual-object) - location )\\
 (:observable-functions  ;; perceptual fluents\\
   \> (o-is-in ?v - visual-object) - location )
@@ -413,12 +413,16 @@ locations of objects. In DTPDDL, these declarations appear as:
 operator-like descriptive elements, with preconditions in both action
 and state symbols, and uniformly positive effects over perceptual
 predicates -- I.e, the negation normal form of a sensing effect
-formula cannot contain negation. Moreover, and without a loss of
-generality, we find it convenient to separate the actional
-precondition from the state precondition. For example, our mobile
-robot is able to look for a visual object, such as a box of
-cornflakes, at a given place. We can model that deterministic action
-using the following operator schema:
+formula cannot contain negation. Whereas the effects of an {\em
+operator} schema are over state propositions, and describe how the
+states change under application of actions, the effects of a {\em
+sense} schema are perceptual, and describe the composition of an
+observation following the execution of an action. Also, and without a
+loss of generality, we find it convenient to separate the actional
+precondition from the state precondition. For example, our robot is
+able to look for a visual object, such as a box of cornflakes, at a
+given place. We can model that deterministic action using the
+following operator schema:
 
 
 \small{
@@ -432,12 +436,13 @@ using the following operator schema:
 }
 
 \noindent In a slight departure from PPDDL, we suppose that
-$\pp{look-for-object}$ has an effect effect on the state. That is,
+$\pp{look-for-object}$ has an effect on the state. That is, its
 execution incurs a penalty, $3$, corresponding to the {\em cost} of
 performing the visual search.\footnote{In PPDDL {\em reward} is a {\em
 reserved word}, and occurs in {\em increased} and {\em decreased}
 clauses of operator schemata. In that setting, {\em reward} is
-interpreted as accumulated rewards and penalties.}  
+interpreted as accumulated (resp. instantaneous) rewards and
+penalties.}
 
 Completing the example, we model the sensing outcome that results from
 instantiating the $\pp{look-for-object}$ operator:
@@ -451,72 +456,47 @@ instantiating the $\pp{look-for-object}$ operator:
  :precondition (and (= (is-in ?r) ?l) ) \\
  :effect \>  (  \> and (when (= (is-in ?v) ?l) \\
    \> \> (probabilistic 0.8 \\
-   \>  \>(= (observe-is-in ?v) ?l))) \\
+   \>  \>(= (o-is-in ?v) ?l))) \\
   \> (when (not (= (is-in ?v) ?l)) \\
    \>  \> (probabilistic 0.1 \\
-   \>  \> (= (observe-is-in ?v) ?l))))) \\
+   \>  \> (= (o-is-in ?v) ?l))))) \\
 \end{tabtt}
 }
 
 \noindent Here, the {\em execution} clause is a lifted description of
 the sense action-precondition -- I.e,
-$(\pp{look-for-object}~\pp{R2D2}~\pp{box}~\pp{desk}) =
-\poss_\stochActions(\pp{vision}~\pp{R2D2}~\pp{box}~\pp{desk})$. We
-also include a redundant state precondition, $(=(\pp{is-in}~?r)?l)$,
-in order to fully demonstrate the syntax. Interpreting the schema, if
-action
-$(\pp{look-for-object}~\pp{robot}~\pp{cornflakes}~\pp{bedroom})$ is
-executed, there is a $0.8$ chance of perceiving the cornflakes if they
-are in the $\pp{bedroom}$, and otherwise a $0.1$ of perceiving them.
-
-%% \footnote{We have simplified the schemata for illustrative
-%% purposes. In practice, the probabilities of a particular observation
-%% here should be parametrised by the type of visual object the robot is
-%% searching for, and category of the location.}
+$(\pp{look-for-object}~\pp{R2D2}~\pp{box}~\pp{office}) =
+\poss_\stochActions(\pp{vision}~\pp{R2D2}~\pp{box}~\pp{office})$. Above,
+we include a redundant state-precondition, $(=(\pp{is-in}~?r)?l)$ in
+order to fully demonstrate the syntax. Interpreting the above schema,
+if action $(\pp{look-for-object}~\pp{R2D2}~\pp{box}~\pp{office})$ is
+executed, there is a $0.8$ chance of perceiving the box if it is in
+the $\pp{office}$, and otherwise a $0.1$ of perceiving it.
 
 
-We suppose $\bstate_0$ is given in a factored tree format of the
-form:
+The syntax and semantics for describing initial state distributions in
+DTPDDL is taken verbatim from PPDDL. It is useful to present that
+factored tree-like structure here, in order to aid our discussion of
+sequential planning in POMDP determinisations. The distribution is
+expressed in a tree-like structure of terms. Each term is either: (1)
+atomic, e.g., $(=(\pp{location}~\pp{box})~\pp{office})$, (2)
+probabilistic, e.g., $(\pp{probabilistic}~p_1 (T_1) .. p_n (T_n))$, or
+(3) a conjunct over probabilistic and atomic terms. The root term is
+conjunctive, and the leaves are atomic. For example, the starting
+distribution for $\pp{R2D2}$ might be described thusly:
 
+\small{
+\begin{tabtt}
+(\=:init (= (is-in R2D2) kitchen) \+ \\
+       (probabilistic \=.8 (= (is-in box) office)  \\
+		      \>.2 (= (is-in box) kitchen)) \\
+       (probabilistic .3 (= (is-in cup) office)  \\
+		      \>.7 (= (is-in cup) kitchen))) \\
+\end{tabtt}
+}
 
-%% \small{
-%% \begin{tabtt}
-%% (:init  (and \=f_{11} f_{12} ..
-%%  \> (probabilistic p_{}) 
-%%  \> (probabilistic ..) ..) \\
-%% \end{tabtt}
-%% }
-
-%% \[(:\pp{init} (and f_{11} f_{12} .. (\pp{probabilistic} p_) ))\]
-
-
-planning in practical sized POMDPs is intractable. One approach is to
-described the task hierarchically, thereby constrain and simplify the
-policy search task. The approach ~\cite{}. 
-
-
-\noindent Nodes of the tree have one of three types: (1) atomic nodes
-are labelled with a state proposition, e.g., $(=
-(\pp{location}~\pp{cornflakes}) \pp{kitchen})$, (2) probabilistic
-nodes, have the form $(r_1, C_1;..;r_n, C_n)$, and (3) constructive
-nodes, take the form of a set of probabilistic and atomic nodes. The
-root node is conjunctive, and leaves are always atomic. A convenient
-way to give semantics to the tree, is to treat nodes as if they were
-actions. An atomic node is an action with a positive effect
-corresponding to the node label, .
-
-
-
-
-
-
-
-
-
-
-
-
-
+\noindent The interpretation of such an expression can be given
+according to a recursive descent. 
 
 
 \section{Evaluation}
@@ -768,4 +748,31 @@ for describing fully observable Markov decision processes.
 %% \end{tabtt}\end{nopagebreak}
 %% \noteme{<structure-def> ::= <attach-def>}
 %% \normalsize
+
+
+
+%% \footnote{We have simplified the schemata for illustrative
+%% purposes. In practice, the probabilities of a particular observation
+%% here should be parametrised by the type of visual object the robot is
+%% searching for, and category of the location.}
+
+
+We suppose $\bstate_0$ is given in a factored tree format of the
+form:
+
+
+%% \small{
+%% \begin{tabtt}
+%% (:init  (and \=f_{11} f_{12} ..
+%%  \> (probabilistic p_{}) 
+%%  \> (probabilistic ..) ..) \\
+%% \end{tabtt}
+%% }
+
+%% \[(:\pp{init} (and f_{11} f_{12} .. (\pp{probabilistic} p_) ))\]
+
+
+planning in practical sized POMDPs is intractable. One approach is to
+described the task hierarchically, thereby constrain and simplify the
+policy search task. The approach ~\cite{}. 
 
