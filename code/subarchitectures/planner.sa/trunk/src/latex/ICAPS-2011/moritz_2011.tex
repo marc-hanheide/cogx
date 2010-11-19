@@ -52,6 +52,15 @@ demonstrate the approach in a realistic robot exploration domain.
 \section{Introduction}
 
 
+Any (PO)MDP with stochastic actions can be compiled into an equivalent
+deterministic-action POMDP with all the action uncertainty expressed
+in the starting-state distribution~\cite{ng:Jordan:2000}. In our
+setting, that of finite-horizon planning, this compilation yields a
+finite flat representation of the POMDP. Therefore, although our
+current implementation does not explicitly support it, our approach
+generalises to POMDPs with stochastic action models.
+
+
 
 
 We describe, \pcogx, the planning component in a robotic system that
@@ -564,12 +573,13 @@ plan~\cite{majercik:2006}.
 
 
 %%
-Recently the system
-\system{Conformant-FF}~\cite{hoffmann:brafman:2006}, demonstrated how
-conformant planning ---i.e., serial planning in unobservable worlds---
-can be modelled as a deterministic problem, and therefore solved using
-serial systems. In this conformant setting, advances have been towards
-compact representations and lazy evaluations of belief-states.
+Recently the systems
+\system{Conformant-FF}~\cite{hoffmann:brafman:2006} and
+$T_0$~\cite{palacios:geffner:2009}, demonstrated how conformant
+planning ---i.e., serial planning in unobservable worlds--- can be
+modelled as a deterministic problem, and therefore solved using serial
+systems. In this conformant setting, advances have been towards
+compact representations and lazy evaluations of beliefs.
  
 
 \section{Concluding Remarks}
