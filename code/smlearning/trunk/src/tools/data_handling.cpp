@@ -135,202 +135,8 @@ bool read_dataset (string fileName, DataSetStruct& dataStr) {
 }
 
 
-///
-///write a cdl file format with zero padding (deprecated)
-///
-bool write_cdl_file_padding (string fileName, const DataSet& data) {
-	fileName += ".cdl";
-	ofstream writeFile(fileName.c_str(), ios::out);
-	if (!writeFile)
-		return false;
 
-	long maxfeatvectorSize = -1;
-
-	//find max. feature vector size which will be inputPattSize and targetPattSize
-	Sequence::const_iterator v = (*(data.begin())).begin();
-	for (int i=0; i<2; i++,v++) {
-		long featvectorSize = (*v).size();
-		if (featvectorSize > maxfeatvectorSize)
-			maxfeatvectorSize = featvectorSize;
-	}
-		
-	stringstream seqLengthsStr;
-	stringstream inputsStr;
-	stringstream targetPatternsStr;
-	long numTimesteps = 0;
-	seqLengthsStr << "\tseqLengths = ";
-	inputsStr << "\tinputs =" << endl << "\t\t";
-	targetPatternsStr << "\ttargetPatterns = " << endl << "\t\t";
-	DataSet::const_iterator s;
-	for (s=data.begin(); s!= data.end(); s++) {
-		long seqSize = (*s).size() - 1;
-		seqLengthsStr << seqSize;
-		numTimesteps += seqSize;
-		if (s+1 == data.end())
-			seqLengthsStr << ";";
-		else
-			seqLengthsStr << ", ";
-
-		Sequence::const_iterator v;
-		for (v=(*s).begin(); v!= (*s).end(); v++) {
-			long featvectorSize = (*v).size();
-			long paddingSize = maxfeatvectorSize - featvectorSize;
-			FeatureVector::const_iterator n;
-			//put inputs and targetPatterns data
-			if (v+1 != (*s).end()) {
-				for (n=(*v).begin(); n!= (*v).end(); n++) {
-					if (n != (*v).begin())
-						inputsStr << ", ";
-					inputsStr << *n;
-				}
-				//zero padding
-				for (int i=0; i<paddingSize; i++)
-					inputsStr << ", 0";
-				if (v+2 == (*s).end() && s+1 == data.end())
-					inputsStr << ";";
-				else
-					inputsStr << "," << endl << "\t\t";
-			}
-			if (v != (*s).begin()) {
-				for (n=(*v).begin(); n!= (*v).end(); n++) {
-					if (n != (*v).begin())
-						targetPatternsStr << ", ";
-					targetPatternsStr << *n;
-				}
-				//zero padding
-  				for (int i=0; i<paddingSize; i++)
-					targetPatternsStr << ", 0";
-				if (v+1 == (*s).end() && s+1 == data.end())
-					targetPatternsStr << ";";
-				else
-					targetPatternsStr << "," << endl << "\t\t";
-			}
-
-			
-		}
-	}
-
-	writeFile << "netcdf " << fileName << " {" << endl;
-	int numSeqs = data.size();
-	writeFile << "dimensions:" << endl;
-	writeFile << "\tnumSeqs = " << numSeqs << ",\n";
-	writeFile << "\tnumTimesteps = " << numTimesteps << "," << endl;
-	writeFile << "\tinputPattSize = " << maxfeatvectorSize << "," << endl;
-	writeFile << "\ttargetPattSize = " << maxfeatvectorSize << ";" << endl;
-	writeFile << "variables:" << endl << "\tfloat inputs(numTimesteps, inputPattSize);" \
-		  << endl << "\tint seqLengths(numSeqs);" << endl \
-		  << "\tfloat targetPatterns(numTimesteps, targetPattSize);" << endl;
-	writeFile << "data:" << endl;
-	writeFile << inputsStr.str() << endl;
-	writeFile << seqLengthsStr.str() << endl;
-	writeFile << targetPatternsStr.str() << endl;
-	writeFile << "}" << endl;
-
-	writeFile.close ();
-	return true;
-}
-
-///
-///write a cdl file format for feature vectors using basis vectors (deprecated - do not use)
-///
-bool write_cdl_file_basis (string fileName, const DataSet& data) {
-	fileName += ".cdl";
-	ofstream writeFile(fileName.c_str(), ios::out);
-	if (!writeFile)
-		return false;
-
-	int initialVectorSize = data[0][0].size();
-	int featureVectorSize = initialVectorSize + data[0][1].size();
-
-	stringstream seqLengthsStr;
-	stringstream inputsStr;
-	stringstream targetPatternsStr;
-	long numTimesteps = 0;
-	seqLengthsStr << "\tseqLengths = ";
-	inputsStr << "\tinputs =" << endl << "\t\t";
-	targetPatternsStr << "\ttargetPatterns = " << endl << "\t\t";
-	DataSet::const_iterator s;
-	for (s=data.begin(); s!= data.end(); s++) {
-		long seqSize = (*s).size() - 1;
-		seqLengthsStr << seqSize;
-		numTimesteps += seqSize;
-		if (s+1 == data.end())
-			seqLengthsStr << ";";
-		else
-			seqLengthsStr << ", ";
-
-		Sequence::const_iterator v;
-		for (v=(*s).begin(); v!= (*s).end(); v++) {
-			FeatureVector::const_iterator n;
-			//put inputs and targetPatterns data
-			if (v+1 != (*s).end()) {
-				if (v != (*s).begin()) {
-					//zero padding
-					for (int i=0; i<initialVectorSize; i++)
-						inputsStr << "0, ";
-				}
-				for (n=(*v).begin(); n!= (*v).end(); n++) {
-					if (n != (*v).begin())
-						inputsStr << ", ";
-					inputsStr << *n;
-				}
-				if (v == (*s).begin()) {
-					//zero padding
-					for (int i=0; i<featureVectorSize - initialVectorSize; i++)
-						inputsStr << ", 0";
-				}
-				if (v+2 == (*s).end() && s+1 == data.end())
-					inputsStr << ";";
-				else
-					inputsStr << "," << endl << "\t\t";
-			}
-			
-			if (v != (*s).begin()) {
-				if (v != (*s).begin()) {
-					//zero padding
-					for (int i=0; i<initialVectorSize; i++)
-						targetPatternsStr << "0, ";
-				}
-				for (n=(*v).begin(); n!= (*v).end(); n++) {
-					if (n != (*v).begin())
-						targetPatternsStr << ", ";
-					targetPatternsStr << *n;
-				}
-				//zero padding
-				if (v == (*s).begin() ) {
-					for (int i=0; i<featureVectorSize - initialVectorSize; i++)
-						targetPatternsStr << ", 0";
-				}
-				if (v+1 == (*s).end() && s+1 == data.end())
-					targetPatternsStr << ";";
-				else
-					targetPatternsStr << "," << endl << "\t\t";
-			}
-		}
-	}
-
-	writeFile << "netcdf " << fileName << " {" << endl;
-	int numSeqs = data.size();
-	writeFile << "dimensions:" << endl;
-	writeFile << "\tnumSeqs = " << numSeqs << ",\n";
-	writeFile << "\tnumTimesteps = " << numTimesteps << "," << endl;
-	writeFile << "\tinputPattSize = " << featureVectorSize << "," << endl;
-	writeFile << "\ttargetPattSize = " << featureVectorSize << ";" << endl;
-	writeFile << "variables:" << endl << "\tfloat inputs(numTimesteps, inputPattSize);" \
-		  << endl << "\tint seqLengths(numSeqs);" << endl \
-		  << "\tfloat targetPatterns(numTimesteps, targetPattSize);" << endl;
-	writeFile << "data:" << endl;
-	writeFile << inputsStr.str() << endl;
-	writeFile << seqLengthsStr.str() << endl;
-	writeFile << targetPatternsStr.str() << endl;
-	writeFile << "}" << endl;
-
-	writeFile.close ();
-	return true;
-	
-}
-
-bool check_nc_err(const int stat, const int line, const char *file) {
+/*bool check_nc_err(const int stat, const int line, const char *file) {
 	if (stat != NC_NOERR) {
 		cerr << "line" <<  line << "of" << file << ": " << nc_strerror(stat) << endl;
 		return true;
@@ -448,7 +254,7 @@ bool write_nc_data (string fileName, const DataSet& data, int inputVectorSize, i
 
 	return true;
 
-}
+}*/
 
 
 
@@ -544,8 +350,8 @@ bool write_nc_file_Markov (string fileName, const DataSet& data) {
 	}
 
 	//netcdf file storing
-	if (!write_nc_data (fileName, data, featureVectorSize, featureVectorSize, inputVector, targetVector, seqLengthsVector, numTimesteps_len))
-		return false;
+	//if (!write_nc_data (fileName, data, featureVectorSize, featureVectorSize, inputVector, targetVector, seqLengthsVector, numTimesteps_len))
+	//	return false;
 
 	return true;
 
@@ -555,7 +361,6 @@ bool write_nc_file_Markov (string fileName, const DataSet& data) {
 ///write a netcdf nc file format for feature vectors using basis vectors
 ///
 bool write_nc_file_basis (string fileName, const DataSetStruct& data) {
-//basis
 	fileName += ".nc";
 
 	//int initialVectorSize = data.first[0][0].size();
@@ -613,7 +418,7 @@ bool write_nc_file_basis (string fileName, const DataSetStruct& data) {
 	}
 
 	//netcdf file storing
-	if (!write_nc_data (fileName, data.first, inputSize, outputSize, inputVector, targetVector, seqLengthsVector, numTimesteps_len))
+	if (!LearningData::write_nc_data (fileName, data.first.size(), inputSize, outputSize, inputVector, targetVector, seqLengthsVector, numTimesteps_len))
 		return false;
 
 	return true;
@@ -923,7 +728,7 @@ map<Vec3, int, compare_Vec3> get_canonical_positions (Scenario::Desc& desc) {
 
 	//initialization of arm target: the center of the polyflap
 	//Vec3 positionT (0.2, 0.2, 0.001);
-	Vec3 positionT (desc.startPolyflapPosition.v1, desc.startPolyflapPosition.v2, Scenario::pfWidth * 0.5);
+	Vec3 positionT (desc.startPolyflapPosition.v1, desc.startPolyflapPosition.v2, desc.pfWidth * 0.5);
 	//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
 	//Vec3 polyflapNormalVec = computeNormalVector(Vec3 (0.2, 0.2, 0.0),Vec3 (0.2, 0.25, 0.0));
 	Vec3 standingPolyflapPosition (desc.startPolyflapPosition.v1, desc.startPolyflapPosition.v2 + desc.polyflapDimensions.v2 * 0.5, desc.startPolyflapPosition.v3);
@@ -961,12 +766,12 @@ CanonicalData::DataSetStruct canonical_input_output_enumerator_with_time (DataSe
 	//    - used for workspace position normalization and later as a position upper bound
 	//      for random polyflap position
 	//Real maxRange = 0.4;
-	assert (data.second.get<limits>().get<minX>() == desc.minX);
-	assert (data.second.get<limits>().get<minY>() == desc.minY);
-	assert (data.second.get<limits>().get<minZ>() == desc.minZ);
-	assert (data.second.get<limits>().get<maxX>() == desc.maxX);
-	assert (data.second.get<limits>().get<maxY>() == desc.maxY);
-	assert (data.second.get<limits>().get<maxZ>() == desc.maxZ);
+	assert (data.second.get<limits>().get<minX>() == desc.coordLimits.minX);
+	assert (data.second.get<limits>().get<minY>() == desc.coordLimits.minY);
+	assert (data.second.get<limits>().get<minZ>() == desc.coordLimits.minZ);
+	assert (data.second.get<limits>().get<maxX>() == desc.coordLimits.maxX);
+	assert (data.second.get<limits>().get<maxY>() == desc.coordLimits.maxY);
+	assert (data.second.get<limits>().get<maxZ>() == desc.coordLimits.maxZ);
 	assert (data.second.get<labels>());
 	assert (data.second.get<lParams>().get<mVSize>() == 5);
 
@@ -997,9 +802,9 @@ CanonicalData::DataSetStruct canonical_input_output_enumerator_with_time (DataSe
 			if (v == s->begin() ) {
 				//assert (featvectorSize == 5);
 				golem::Vec3 startingPosition;
-				startingPosition.v1 = denormalize(v->at(0),desc.minX,desc.maxX);
-				startingPosition.v2 = denormalize(v->at(1),desc.minY,desc.maxY);
-				startingPosition.v3 = denormalize(v->at(2),desc.minZ,desc.maxZ);
+				startingPosition.v1 = denormalize(v->at(0),desc.coordLimits.minX,desc.coordLimits.maxX);
+				startingPosition.v2 = denormalize(v->at(1),desc.coordLimits.minY,desc.coordLimits.maxY);
+				startingPosition.v3 = denormalize(v->at(2),desc.coordLimits.minZ,desc.coordLimits.maxZ);
 // 				printf ("extracted start. pos.: %0.20f %0.20f %0.20f\n", startingPosition.v1, startingPosition.v2, startingPosition.v3);
 				
 				int canonical_start_pos = positionsT.find (startingPosition)->second;

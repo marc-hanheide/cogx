@@ -40,6 +40,11 @@ namespace smlearning {
 
 //const double PI = 3.14159265358979323846;
 
+template <typename R>
+R donotnormalize (R const& value, R const& min, R const& max) {
+	return value;
+}
+
 ///
 ///function for normalizing values according to given bounds
 ///
@@ -47,7 +52,7 @@ template <typename R>
 R normalize(R const& value, R const& min, R const& max) {
 	R val;
 	if (min == -REAL_PI && max == REAL_PI && (value > max || value < min)) {
-		val = fmod(value, REAL_PI);
+		val = fmod(value, (R)REAL_PI);
 	}
 	else {
 		val = value;
@@ -62,10 +67,19 @@ R normalize(R const& value, R const& min, R const& max) {
 	return res;
 }
 
+///
+///denormalizing values according to given bounds
+///
 template <typename R>
 R denormalize (R const& value, R const& min, R const& max) {
 	return (value + 1.0)/2.0*(max-min)+min;
 }
+
+template <typename R>
+R donotdenormalize (R const& value, R const& min, R const& max) {
+	return value;
+}
+
 
 ///
 ///computer an orthogonal vector to some vector (which could be a surface normal vector)

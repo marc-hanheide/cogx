@@ -85,18 +85,22 @@ bool XMLData(Scenario::Desc &val, XMLContext* context) {
 	//      for random polyflap position
 	//maxRange = 0.4;
 	//XMLData(val.maxRange, context->getContextFirst("polyflapInteraction maxRange"));
+	//maximum X value for polyflap position
+	XMLData(val.coordLimits.maxX, context->getContextFirst("polyflapInteraction maxX"));
+	//maximum Y value for polyflap position
+	XMLData(val.coordLimits.maxY, context->getContextFirst("polyflapInteraction maxY"));
+	//maximum Z value for polyflap position
+	XMLData(val.coordLimits.maxZ, context->getContextFirst("polyflapInteraction maxZ"));
 	//minimum X value for polyflap position
-	XMLData(val.maxX, context->getContextFirst("polyflapInteraction maxX"));
+	XMLData(val.coordLimits.minX, context->getContextFirst("polyflapInteraction minX"));
 	//minimum Y value for polyflap position
-	XMLData(val.maxY, context->getContextFirst("polyflapInteraction maxY"));
+	XMLData(val.coordLimits.minY, context->getContextFirst("polyflapInteraction minY"));
 	//minimum Z value for polyflap position
-	XMLData(val.maxZ, context->getContextFirst("polyflapInteraction maxZ"));
-	//minimum X value for polyflap position
-	XMLData(val.minX, context->getContextFirst("polyflapInteraction minX"));
-	//minimum Y value for polyflap position
-	XMLData(val.minY, context->getContextFirst("polyflapInteraction minY"));
-	//minimum Z value for polyflap position
-	XMLData(val.minZ, context->getContextFirst("polyflapInteraction minZ"));
+	XMLData(val.coordLimits.minZ, context->getContextFirst("polyflapInteraction minZ"));
+	//minimum duration value for pushing action
+	XMLData(val.coordLimits.minDuration, context->getContextFirst("polyflapInteraction minPushDuration"));
+	//maximum duration value for pushing action
+	XMLData(val.coordLimits.maxDuration, context->getContextFirst("polyflapInteraction maxPushDuration"));
 
 	//minimal duration of a movement (by normal speed)
 	XMLData(val.minDuration, context->getContextFirst("polyflapInteraction minDuration"));
@@ -122,6 +126,9 @@ bool XMLData(Scenario::Desc &val, XMLContext* context) {
 	XMLData(y, context->getContextFirst("polyflapInteraction polyflapDimensions y"));
 	XMLData(z, context->getContextFirst("polyflapInteraction polyflapDimensions z"));
 	val.polyflapDimensions.set(x, y, z);
+	//Polyflap width
+	XMLData(val.pfWidth, context->getContextFirst("polyflapInteraction polyflapDimensions width"));
+	
 
 	//vertical distance from the ground
 	//const Real over = 0.01;
@@ -210,7 +217,7 @@ Actor* Scenario::setup_polyflap(/*Scene &scene, Vec3 position, Vec3 rotation, Ve
 	Actor *polyFlapActor;
 	
 	// Create polyflap
-	pActorDesc = creator.createSimple2FlapDesc(Real(desc.polyflapDimensions.v1*0.5), Real(desc.polyflapDimensions.v1*0.5), Real(desc.polyflapDimensions.v1*0.5), Real(pfWidth*0.5), REAL_PI_2);
+	pActorDesc = creator.createSimple2FlapDesc(Real(desc.polyflapDimensions.v1*0.5), Real(desc.polyflapDimensions.v1*0.5), Real(desc.polyflapDimensions.v1*0.5), Real(desc.pfWidth*0.5), REAL_PI_2);
 // 	pActorDesc = creator.createSimple2FlapDesc(Real(desc.polyflapDimensions.v1), Real(desc.polyflapDimensions.v1), Real(desc.polyflapDimensions.v1));
 // 	pActorDesc = creator.createSimple2FlapDesc(Real(desc.polyflapDimensions.v1), Real(desc.polyflapDimensions.v1), Real(desc.polyflapDimensions.v1), Real(0.002), Real(REAL_PI_2));
 
@@ -246,7 +253,7 @@ Actor* Scenario::setup_polyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions
 	Actor *polyFlapActor;
 	
 	// Create polyflap
-	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(pfWidth*0.5), REAL_PI_2);
+	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(desc.pfWidth*0.5), REAL_PI_2);
 // 	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1), Real(dimensions.v1), Real(dimensions.v1));
 // 	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1), Real(dimensions.v1), Real(dimensions.v1), Real(0.002), Real(REAL_PI_2));
 
@@ -330,15 +337,15 @@ void Scenario::choose_action () {
 	//choose starting position
 	define_start_position ();
 
-	//speed = floor (randomG.nextUniform (3.0, 6.0));
-	speed = 3;
+	//pushDuration = floor (randomG.nextUniform (3.0, 6.0));
+	pushDuration = 3;
 
 	horizontalAngle = choose_angle(60.0, 120.0, "cont");
 
 }
 
 ///
-///set current position of the polyflap as default position for computing of the starting position
+///set current position of the polyflap as default position for computing the starting finger position
 ///
 void Scenario::init_positionT(Vec3& positionT) {
 	//initialization of arm target: the center of the polyflap
@@ -379,7 +386,7 @@ void Scenario::prepare_target(){
 	// and set target waypoint
 	//golem::GenWorkspaceState target;
 	fromCartesianPose(target.pos, positionT, orientationT);
-	target.vel.setId(); // it doesn't mov
+	target.vel.setId(); // it doesn't move
 	
 	target.t = context.getTimer()->elapsed() + tmDeltaAsync + desc.minDuration; // i.e. the movement will last at least 5 sec
 	
@@ -432,11 +439,11 @@ void Scenario::set_up_movement(){
 
 		
 	// Trajectory duration calculated from a speed constant.
-	//speed = floor (randomG.nextUniform (3.0, 5.0));
-	// speed = 3.0;
-	cout << "speed: " << speed << endl;
+	//pushDuration = floor (randomG.nextUniform (3.0, 5.0));
+	//pushDuration = 3.0;
+	cout << "push duration: " << pushDuration << endl;
 		
-	duration = speed;
+	duration = pushDuration;
 
 
 	// Trajectory end pose equals begin + shift along Y axis
@@ -477,27 +484,27 @@ void Scenario::set_up_movement(){
 void Scenario::add_feature_vector (FeatureVector& currentFeatureVector, LearningData::Chunk& chunk) {
 
 	try {
-	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, desc.minX, desc.maxX));
-	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, desc.minY, desc.maxY));
-	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, desc.minZ, desc.maxZ));
+	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, desc.coordLimits.minX, desc.coordLimits.maxX));
+	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, desc.coordLimits.minY, desc.coordLimits.maxY));
+	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, desc.coordLimits.minZ, desc.coordLimits.maxZ));
 	currentFeatureVector.push_back(normalize(chunk.efRoll, -REAL_PI, REAL_PI));
 	currentFeatureVector.push_back(normalize(chunk.efPitch, -REAL_PI, REAL_PI));
 	currentFeatureVector.push_back(normalize(chunk.efYaw, -REAL_PI, REAL_PI));
 
-	assert (currentFeatureVector.size() == efVectorSize);
+	assert (currentFeatureVector.size() == learningData.efVectorSize);
 	} catch ( ... ) {
 		cerr << "Error normalizing effector feature vector " << endl;
 	};
 
 	try {
-	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, desc.minX, desc.maxX));
-	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, desc.minY, desc.maxY));
-	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, desc.minZ, desc.maxZ));
+	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, desc.coordLimits.minX, desc.coordLimits.maxX));
+	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, desc.coordLimits.minY, desc.coordLimits.maxY));
+	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, desc.coordLimits.minZ, desc.coordLimits.maxZ));
 	currentFeatureVector.push_back(normalize(chunk.obRoll, -REAL_PI, REAL_PI));
 	currentFeatureVector.push_back(normalize(chunk.obPitch, -REAL_PI, REAL_PI));
 	currentFeatureVector.push_back(normalize(chunk.obYaw, -REAL_PI, REAL_PI));
 
-	assert (currentFeatureVector.size() == efVectorSize + pfVectorSize);
+	assert (currentFeatureVector.size() == learningData.efVectorSize + learningData.pfVectorSize);
 	} catch ( ... ) {
 		cerr << "Error normalizing polyflap feature vector " << endl;
 	};
@@ -544,15 +551,18 @@ void Scenario::add_label (FeatureVector& currentFeatureVector, LearningData::Chu
 void Scenario::write_feature_vector_into_current_sequence(FeatureVector& featureVector, LearningData::Chunk& chunk){
 
 	if (storeLabels)
-		assert (featureVector.size() == featureVectorSize + 1);
+		assert (featureVector.size() == learningData.efVectorSize + learningData.pfVectorSize + 1);
 	else
-		assert (featureVector.size() == featureVectorSize);
+		assert (featureVector.size() == learningData.efVectorSize + learningData.pfVectorSize);
 	/////////////////////////////////////////////////
 	//writing of the feature vector into sequence
 	learningData.currentSeq.push_back(featureVector);
 	/////////////////////////////////////////////////
 
 	learningData.currentChunkSeq.push_back(chunk);
+
+	learningData._currentSeq.second = learningData.currentChunkSeq;
+	
 }
 
 
@@ -574,10 +584,10 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		chunk.objectPose.R.toEuler (chunk.obRoll, chunk.obPitch, chunk.obYaw);
 
 		// golem::Mat34 p = chunk.objectPose; 
-		golem::Mat34 p = chunk.effectorPose; 
-		cout << "pose: ";
+		// golem::Mat34 p = chunk.effectorPose; 
+		// cout << "pose: ";
 
-		cout << p.p.v1 << " " << p.p.v2 << " " << p.p.v3 << " " << chunk.efRoll << " " << chunk.efPitch << " " << chunk.efYaw << endl;
+		// cout << p.p.v1 << " " << p.p.v2 << " " << p.p.v3 << " " << chunk.efRoll << " " << chunk.efPitch << " " << chunk.efYaw << endl;
 
 		add_feature_vector (currentFeatureVector, chunk);
 		if (storeLabels) add_label (currentFeatureVector, chunk);
@@ -632,19 +642,19 @@ void Scenario::setup_home(){
 ///
 ///try to find a path to given position, if found, move the finegr along it and wait for it to stop
 ///
-void Scenario::send_position(golem::GenWorkspaceState position, golem::ReacPlanner::Action action){
+void Scenario::send_position(golem::GenWorkspaceState& position, golem::ReacPlanner::Action action){
 // reachedAngle = 0.0;
-		for (int t=0; t<MAX_PLANNER_TRIALS; t++) {
-			if (arm->getReacPlanner().send(position, action)) {
-				break;
-			}
-			context.getLogger()->post(Message::LEVEL_INFO, "Unable to find path to polyflap, trying again.");
+	for (int t=0; t<MAX_PLANNER_TRIALS; t++) {
+		if (arm->getReacPlanner().send(position, action)) {
+			break;
 		}
+		context.getLogger()->post(Message::LEVEL_INFO, "Unable to find path to polyflap, trying again.");
+	}
 
 
-		context.getLogger()->post(Message::LEVEL_INFO, "Moving...");
-		// wait for completion of the action (until the arm stops moving)
-		arm->getReacPlanner().waitForEnd(60000);
+	context.getLogger()->post(Message::LEVEL_INFO, "Moving...");
+	// wait for completion of the action (until the arm stops moving)
+	arm->getReacPlanner().waitForEnd(60000);
 }
 
 
@@ -672,9 +682,9 @@ void Scenario::write_finger_pos_and_or(FeatureVector& featureVector, LearningDat
 	//writing in the initial vector	
 	//initial position, normalized
 	try {
-	featureVector.push_back(normalize<double>(positionT.v1, desc.minX, desc.maxX));
-	featureVector.push_back(normalize<double>(positionT.v2, desc.minY, desc.maxY));
-	featureVector.push_back(normalize<double>(positionT.v3, desc.minZ, desc.maxZ));
+	featureVector.push_back(normalize<double>(positionT.v1, desc.coordLimits.minX, desc.coordLimits.maxX));
+	featureVector.push_back(normalize<double>(positionT.v2, desc.coordLimits.minY, desc.coordLimits.maxY));
+	featureVector.push_back(normalize<double>(positionT.v3, desc.coordLimits.minZ, desc.coordLimits.maxZ));
 	//initial orientation, normalized
 //	currentMotorCommandVector.push_back(normalize<double>(orientationT.v1, -REAL_PI, REAL_PI));
 //	currentMotorCommandVector.push_back(normalize<double>(orientationT.v2, -REAL_PI, REAL_PI));
@@ -692,12 +702,12 @@ void Scenario::write_finger_pos_and_or(FeatureVector& featureVector, LearningDat
 ///
 ///write finger features to the vector
 ///
-void Scenario::write_finger_speed_and_angle(FeatureVector& featureVector, LearningData::MotorCommand &motorCommand, const int speed, const Real horizontalAngle){
+void Scenario::write_finger_speed_and_angle(FeatureVector& featureVector, LearningData::MotorCommand &motorCommand, const Real pushDuration, const Real horizontalAngle){
 
 	try {
 	/////////////////////////////////////////////////
 	//writing in the initial vector
-	featureVector.push_back(normalize<double>(speed, 3.0, 5.0));
+	featureVector.push_back(normalize<double>(pushDuration, 3.0, 5.0));
 	/////////////////////////////////////////////////
 
 
@@ -711,7 +721,7 @@ void Scenario::write_finger_speed_and_angle(FeatureVector& featureVector, Learni
 	}
 
 	motorCommand.horizontalAngle = horizontalAngle;
-	motorCommand.speed = speed;
+	motorCommand.pushDuration = pushDuration;
 	
 	
 }
@@ -722,11 +732,12 @@ void Scenario::write_finger_speed_and_angle(FeatureVector& featureVector, Learni
 ///
 void Scenario::write_motor_vector_into_current_sequence(){
 
-	assert (learningData.currentMotorCommandVector.size() == motorVectorSize);
+	assert (learningData.currentMotorCommandVector.size() == learningData.motorVectorSize);
 	/////////////////////////////////////////////////
 	//writing of the initial vector into sequence
 	learningData.currentSeq.push_back(learningData.currentMotorCommandVector);
 	/////////////////////////////////////////////////
+	learningData._currentSeq.first = learningData.currentMotorCommand;
 }
 
 
@@ -735,7 +746,7 @@ void Scenario::write_motor_vector_into_current_sequence(){
 ///
 void Scenario::init_data(){
 	// initialize data
-	learningData.setToDefault();
+	learningData.setToDefault(desc.coordLimits);
 	learningData.effector = effectorBounds;
 	learningData.object = *object->getLocalBoundsSeq();
 	learningData.obstacles = *obstacles->getGlobalBoundsSeq();
@@ -777,7 +788,6 @@ void Scenario::write_current_sequence_into_dataset(DataSet& data, LearningData::
 	//writing the sequence into the dataset
 	data.push_back(learningData.currentSeq);
 
-	learningData._currentSeq = make_pair (learningData.currentMotorCommand, learningData.currentChunkSeq);
 	_data.push_back(learningData._currentSeq);
 	/////////////////////////////////////////////////
 }
@@ -839,10 +849,17 @@ void Scenario::remove_polyflap(){
 
 
 ///
-///describe the movement to home position
+///movement to home position
 ///
-void Scenario::prepare_home_movement(){
+void Scenario::move_finger_home() {
 	home.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(3.0);
+
+	//turn on collision detection
+	set_collision_detection(true);
+	
+	//move the finger to home position
+	send_position(home , ReacPlanner::ACTION_GLOBAL);
+
 }
 
 
@@ -885,7 +902,7 @@ void Scenario::write_data (){
 	//writing the dataset into binary file
 	//writedown_collected_data(data);
 	write_dataset (dataFileName, data);
-	LearningData::write_dataset (dataFileName, _data);
+	LearningData::write_dataset (dataFileName, _data, learningData.coordLimits);
 	/////////////////////////////////////////////////
 
 	string stpFileName = dataFileName + ".stp";
@@ -937,7 +954,7 @@ void Scenario::run(int argc, char* argv[]) {
 		write_finger_pos_and_or(learningData.currentMotorCommandVector, learningData.currentMotorCommand, positionT);
 
 		//write chosen speed and angle of the finger experiment trajectory
-		write_finger_speed_and_angle(learningData.currentMotorCommandVector, learningData.currentMotorCommand, speed, horizontalAngle);
+		write_finger_speed_and_angle(learningData.currentMotorCommandVector, learningData.currentMotorCommand, pushDuration, horizontalAngle);
 		//add motor feature vector to the sequence
 		write_motor_vector_into_current_sequence();
 
@@ -962,14 +979,8 @@ void Scenario::run(int argc, char* argv[]) {
 		//remove polyflap object from the scene
 		remove_polyflap();
 
-		//set up needed data for home movement
-		prepare_home_movement();
-		
-		//turn on collision detection
-		set_collision_detection(true);
-		
-		//move the finger to home position
-		send_position(home , ReacPlanner::ACTION_GLOBAL);
+		//move finger to initial position
+		move_finger_home ();
 
 		//context.getLogger()->post(Message::LEVEL_INFO, "Moving home...");
 		//arm->getReacPlanner().waitForEnd(60000);
@@ -1054,7 +1065,7 @@ void Scenario::init(boost::program_options::variables_map vm) {
 
 
 
-	data.second = make_tuple (make_tuple((int)motorVectorSize, (int)featureVectorSize, (int)pfVectorSize, (int)efVectorSize), storeLabels, make_tuple(desc.minX, desc.minY, desc.minZ, desc.maxX, desc.maxY, desc.maxZ));
+	data.second = make_tuple (make_tuple((int)learningData.motorVectorSize, (int)learningData.pfVectorSize + learningData.efVectorSize, (int)learningData.pfVectorSize, (int)learningData.efVectorSize), storeLabels, make_tuple(desc.coordLimits.minX, desc.coordLimits.minY, desc.coordLimits.minZ, desc.coordLimits.maxX, desc.coordLimits.maxY, desc.coordLimits.maxZ));
 
 	dataFileName = get_base_filename_from_time ();
 

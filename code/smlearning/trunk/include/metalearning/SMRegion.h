@@ -69,17 +69,6 @@ struct SMRegion {
 	int smoothing;
 	/** constant to define the time window parameter in the evaluation of learning progress */
 	int timewindow;
-	/** constant used for assertions (motorCommandVector size should be predefined) */
-	static const int motorVectorSize = 5;
-	/** constant used for assertions (featureVector size should be predefined) */
-	static const int featureVectorSize = 12;
-	/** constant used for assertions (polyflap feature vector size should be predefined) */
-	static const int pfVectorSize = 6;
-	/** constant used for assertions (effector feature vector size should be predefined) */
-	static const int efVectorSize = 6;
-
-
-
 	
 
 	SMRegion () {
@@ -91,8 +80,8 @@ struct SMRegion {
 	{
 		//minValuesSMVector.resize(sMContextSize, -1.0);
 		//maxValuesSMVector.resize(sMContextSize, 1.0);
-		minValuesSMVector.resize(motorVectorSize, -1.0);
-		maxValuesSMVector.resize(motorVectorSize, 1.0);
+		minValuesSMVector.resize(LearningData::motorVectorSize, -1.0);
+		maxValuesSMVector.resize(LearningData::motorVectorSize, 1.0);
 		timewindow = splittingCriterion1 * 0.375;
 		smoothing = splittingCriterion1 * 0.625;
 		cout << "timewindow: " << timewindow << ", smoothing: " << smoothing << endl;
