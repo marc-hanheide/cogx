@@ -356,52 +356,14 @@ controller transitions to state $\node'$, supposing we execute
 acting for finite $N$ steps, the value of a controller corresponds to
 the expected cumulative reward:
 
-\[
+\begin{equation}\label{eq:expectedvalue}
 V_{\pp{FSC}}(\bstate) = \Expect \bigg{[} 
 \sum_{t=0}^{N}  \reward(\bstate_t) \mid \pp{FSC}, \bstate = \bstate_0 \bigg{]}
-\]
+\end{equation}
 
 \noindent Where $b_t$ is the belief state at time $t$. Finally, it is
 useful to note that there is a corresponding deterministic FSCs for
 both sequential (i.e., conformant) and contingent plans.
-
-
-%% More generally, a useful
-%% formalism for representing solutions to POMDPs is the finite-state
-%% controller (FSC). This is a three-tuple $\langle \nodes, \selection,
-%% \transition \rangle$ where: $\node \in \nodes$ is a set of nodes,
-%% $\selection_\node(\action) = P(\action | \node)$, and
-%% $\transition_\node(\action, \observation, \node') = P(\node'|\node,
-%% \action, \observation)$. Where the value of acting is the discounted
-%% accumulated reward over an infinite horizon, then each controller can
-%% be assigned a value, written $V_\node(\state)$, expressed in the usual
-%% way according to the Bellman equation:
-
-%% \begin{equation}\label{eq:evaluation}
-%% \begin{array}{lcl}
-%% V_\node(\state) & = & \sum_{\action \in \actions}
-%% \selection_\node(\action) \reward(\state, \action) \;\; + \vspace{1ex} \\
-
-%% && \hspace{-10ex} \beta \sum_{\action, \observation,
-%% \state', \node'} \transition_\node(\action, \observation, \node')
-%% \transProb(\state, \action, \state') \obsDist_\observ(\state',
-%% \action) V_{\node'}(\state')
-%% \end{array}
-%% \end{equation}
-
-%% \noindent Here, the value of {\em prior} $\bstate$ given an FSC is
-%% then:
-
-%% \begin{equation} \label{eq:valueBelief}
-%% V_{\pp{FSC}}(\bstate) = \max_{\node \in \nodes} \sum_{\state \in \states} \bstate(\state) V_\node(\state)
-%% \end{equation}
-
-%% \noindent There is a corresponding deterministic FSCs for both
-%% sequential (i.e., conformant) and contingent
-%% plans. Eq~\ref{eq:evaluation} gives their value in the finite-horizon
-%% case, if we take $\beta = 1$, and alter the process dynamics so there
-%% is a compulsory transition to a zero utility sink state when that
-%% horizon is reached.
 
 
 \section{Decision-Theoretic PDDL}
@@ -423,13 +385,13 @@ express probabilistic models of the sensing consequences of acting, to
 quantitatively capture unreliability in perception. That expressive
 power is achieved by incorporating perceptual analogues of fluent,
 predicate, and action definitions. In detail, we have declarations of
-state characterising predicate and fluent symbols according to PPDDL
-syntax. In addition, we allow two other declarative blocks, for
-perceptual predicates and fluents respectively. For example, suppose our
-robot is tasked with exploring {\em locations} in order to identify
-the whereabouts of a {\em visual-object}. We must describe state and
-perceptual facts that model the {\em true}, resp. perceived, locations
-of objects. In DTPDDL, these declarations appear as:
+state characterising predicate and fluent symbols according to the
+PPDDL syntax. In addition, we allow two other declarative blocks, for
+perceptual predicates and fluents respectively. For example, suppose
+our robot is tasked with exploring {\em locations} in order to
+identify the whereabouts of a {\em visual-object}. We must describe
+state and perceptual facts that model the {\em true}, resp. perceived,
+locations of objects. In DTPDDL, these declarations appear as:
 
 \small
 \begin{tabtt}
@@ -450,10 +412,12 @@ states change under application of actions, the effects of a {\em
 sense} schema are perceptual, and describe the composition of an
 observation following the execution of an action. Also, and without a
 loss of generality, we find it convenient to separate the actional
-precondition from the state precondition. For example, our robot is
-able to look for a visual object, such as a box of cornflakes, at a
-given place. We can model that deterministic action using the
-following operator schema:
+precondition from the state precondition. 
+
+Making the above ideas concrete with an example, suppose a robot is
+able to look for a visual-object, such as a box, at a given place. We
+can model that deterministic action using the following operator
+schema:
 
 
 \small
@@ -558,55 +522,46 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 
 
 
-\section{Sequential Planning in Determinisations}
+\section{Sequential Planning in POMDP Determinisations}
+
+
 
 Goal expressions in the problem description ---for example
-$(\pp{kval}~(\pp{location}~\pp{cornflakes}))$ expresses ``the robot
-knows where the {\em cornflakes}--- are treated as control-knowledge
-by the planner. Here, a plan is not considered valid unless in the
-finial stet the goal condition is satisfied.
-
+$(\pp{kval}~(\pp{location}~\pp{box}))$ expresses ``the robot knows the
+location of the {\em box}--- are treated as control-knowledge by the
+planner. Here, a plan is not considered valid unless in the finial
+stet the goal condition is satisfied.
 
 
 \section{Evaluation}
 
 
-\section{Discussion}
+\section{Discussion and Related Work}
 
 There have been a number of developments recently towards planning
-under uncertainty using systems that were intended for sequential planning
-in deterministic problems.  Notably,
+under uncertainty using systems that were intended for sequential
+planning in deterministic problems.  Notably,
 \system{FFR$_a$}~\cite{yoon:etal:2007}, the winning entry from the
 probabilistic track of the 2004 International Planning Competition,
-uses the fast satisficing procedure
-\system{FF}~\cite{hoffmann:nebel:2001} to compute a sequential plan and
-corresponding execution trace. The resulting plan is then executed
-until the observed trace deviates from the planned trace.
-
- ---i.e., the values of {\em
-runtime variables} in the continual paradigm--- are treated , and
-therefore plan for a specific eventuality, replanning from scratch if
-something
-
-
+that in a continual framework uses the fast satisficing procedure
+\system{FF}~\cite{hoffmann:nebel:2001} to compute a sequential plan
+and corresponding execution trace. 
+%%
 More computationally expensive approaches in this vein combine
 sampling strategies on valuations over {\em runtime variables} with
 deterministic planning procedures. The outcome is typically a more
 robust sequential plan~\cite{yoon:etal:2008}, or contingent
 plan~\cite{majercik:2006}.
-
-
-
 %%
-Recently the systems
-\system{Conformant-FF}~\cite{hoffmann:brafman:2006} and
-$T_0$~\cite{palacios:geffner:2009}, demonstrated how conformant
-planning ---i.e., sequential planning in unobservable worlds--- can be
-modelled as a deterministic problem, and therefore solved using sequential
+Also leveraging deterministic planners in problems that feature
+uncertainty, \system{Conformant-FF}~\cite{hoffmann:brafman:2006} and
+$T_0$~\cite{palacios:geffner:2009} demonstrate how conformant planning
+---i.e., sequential planning in unobservable worlds--- can be modelled
+as a deterministic problem, and therefore solved using sequential
 systems. In this conformant setting, advances have been towards
 compact representations of beliefs amenable to existing best-first
-search planning procedures, and lazy evaluations of beliefs. This
-research thread has also been extended recently to contingent planning
+search planning procedures, and lazy evaluations of beliefs. Most
+recently this research thread has been extended to contingent planning
 in fully observable non-deterministic
 environments~\cite{albore:etal:2009}.
 
@@ -845,3 +800,46 @@ planning in practical sized POMDPs is intractable. One approach is to
 described the task hierarchically, thereby constrain and simplify the
 policy search task. The approach ~\cite{}. 
 
+
+%% More generally, a useful
+%% formalism for representing solutions to POMDPs is the finite-state
+%% controller (FSC). This is a three-tuple $\langle \nodes, \selection,
+%% \transition \rangle$ where: $\node \in \nodes$ is a set of nodes,
+%% $\selection_\node(\action) = P(\action | \node)$, and
+%% $\transition_\node(\action, \observation, \node') = P(\node'|\node,
+%% \action, \observation)$. Where the value of acting is the discounted
+%% accumulated reward over an infinite horizon, then each controller can
+%% be assigned a value, written $V_\node(\state)$, expressed in the usual
+%% way according to the Bellman equation:
+
+%% \begin{equation}\label{eq:evaluation}
+%% \begin{array}{lcl}
+%% V_\node(\state) & = & \sum_{\action \in \actions}
+%% \selection_\node(\action) \reward(\state, \action) \;\; + \vspace{1ex} \\
+
+%% && \hspace{-10ex} \beta \sum_{\action, \observation,
+%% \state', \node'} \transition_\node(\action, \observation, \node')
+%% \transProb(\state, \action, \state') \obsDist_\observ(\state',
+%% \action) V_{\node'}(\state')
+%% \end{array}
+%% \end{equation}
+
+%% \noindent Here, the value of {\em prior} $\bstate$ given an FSC is
+%% then:
+
+%% \begin{equation} \label{eq:valueBelief}
+%% V_{\pp{FSC}}(\bstate) = \max_{\node \in \nodes} \sum_{\state \in \states} \bstate(\state) V_\node(\state)
+%% \end{equation}
+
+%% \noindent There is a corresponding deterministic FSCs for both
+%% sequential (i.e., conformant) and contingent
+%% plans. Eq~\ref{eq:evaluation} gives their value in the finite-horizon
+%% case, if we take $\beta = 1$, and alter the process dynamics so there
+%% is a compulsory transition to a zero utility sink state when that
+%% horizon is reached.
+
+
+ ---i.e., the values of {\em
+runtime variables} in the continual paradigm--- are treated , and
+therefore plan for a specific eventuality, replanning from scratch if
+something
