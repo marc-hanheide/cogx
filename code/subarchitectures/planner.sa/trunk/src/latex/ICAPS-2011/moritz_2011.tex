@@ -542,10 +542,10 @@ There have been a number of developments recently towards planning
 under uncertainty using systems that were intended for sequential
 planning in deterministic problems.  Notably,
 \system{FFR$_a$}~\cite{yoon:etal:2007}, the winning entry from the
-probabilistic track of the 2004 International Planning Competition,
-that in a continual framework uses the fast satisficing procedure
-\system{FF}~\cite{hoffmann:nebel:2001} to compute a sequential plan
-and corresponding execution trace. 
+probabilistic track of the 2004 International Planning Competition.
+In the continual paradigm, \system{FFR$_a$} uses the fast satisficing
+procedure \system{FF}~\cite{hoffmann:nebel:2001} to compute sequential
+plans and corresponding execution traces.
 %%
 More computationally expensive approaches in this vein combine
 sampling strategies on valuations over {\em runtime variables} with
@@ -567,17 +567,6 @@ environments~\cite{albore:etal:2009}.
 
 \section{Concluding Remarks}
 
-The switching continual planning system we have described serves as
-the underlying planner for CogX.
-
-
-
-
-the effects of a {\em sense} schema are perceptual, whereas the
-effects of an {\em operator} schema are over state propositions.
-
-
-
 From an automated planning perspective, the problem of practical
 mobile robot control poses important and contrary challenges.
 %%
@@ -594,10 +583,29 @@ acting and sensing.
 
 In this paper we address these challenges, developing a continual
 planner that switches between sequential and decision-theoretic
-planning. Given a POMDP model of the environment, sequential planning is
-responsible for an initial deterministic sequential plan and
+planning. Given a POMDP model of the environment, sequential planning
+is used to compute an initial deterministic sequential plan and
 complementary runtime evolution of the decision process. That plan is
-executed until an assumption about a runtime proposition
+executed until a validation of an assumption about a runtime
+proposition is requested.
+
+
+
+
+
+
+
+The switching continual planning system we have described serves as
+the underlying planner for CogX.
+
+
+
+
+the effects of a {\em sense} schema are perceptual, whereas the
+effects of an {\em operator} schema are over state propositions.
+
+
+
 
 posted by a motivational component of the underlying robotic
 architecture. 
@@ -643,7 +651,7 @@ contingency planning the information-state space of
 
 Continual planning is a powerful technique that goes some way to
 addressing those challenges. That approach interleaves planning and
-execution, deliberately postponing planing for contingencies unless
+execution, deliberately postponing planning for contingencies unless
 they eventuate during execution. 
 
 
