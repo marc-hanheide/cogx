@@ -10,7 +10,7 @@
 \usepackage{helvet}
 \usepackage{courier}
 
-\include{macros}
+\include{macros}%
 
 \nocopyright
 
@@ -23,7 +23,7 @@
 %
 %\title{Switching in Continual Planning for Practical Robot Control}
 \title{A Switching Planner for Combined Task and Observation Planning}
-%\title{A Continual Planner that Switches Between Serial and
+%\title{A Continual Planner that Switches Between Sequential and
 %  Decision-Theoretic Planning} 
 \author{NA}
 \setcounter{secnumdepth}{0}
@@ -121,7 +121,7 @@ changing of the objective,
 
 
 
-the speed and scalability of software for serial planning in
+the speed and scalability of software for sequential planning in
 deterministic
 
 
@@ -132,9 +132,9 @@ describing domains of planning problems that correspond to POMDPs.  To
 accompany that language we have implemented an information-state
 \laostar\ procedure for solving problems expressed in DTPDDL. 
 
-We have extended MAPSIM to simulate DTPDDL instances, and modified
-\fastdownward\ so that it can find useful serial executions given
-DTPDDL models of the problem at hand.
+We have extended MAPSIM to parse and simulate DTPDDL problems, and
+modified \fastdownward\ so that it can find useful sequential executions
+given DTPDDL models of the problem at hand.
 
 
 
@@ -142,7 +142,7 @@ DTPDDL models of the problem at hand.
  called DTPDDL, along
 the lines of PDDL for the partially observable case, an \laostar\
 solution procedure, a determinisation of the DTPDDL problem in MAPL,
-and modify the \fastdownward\ system to find high quality serial plans
+and modify the \fastdownward\ system to find high quality sequential plans
 .
 
 We model the environment as a partially observable Markov decision
@@ -514,7 +514,7 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 
 
 
-\section{Serial Planning in Determinisations}
+\section{Sequential Planning in Determinisations}
 
 Goal expressions in the problem description ---for example
 $(\pp{kval}~(\pp{location}~\pp{cornflakes}))$ expresses ``the robot
@@ -529,12 +529,12 @@ finial stet the goal condition is satisfied.
 \section{Discussion}
 
 There have been a number of developments recently towards planning
-under uncertainty using systems that were intended for serial planning
+under uncertainty using systems that were intended for sequential planning
 in deterministic problems.  Notably,
 \system{FFR$_a$}~\cite{yoon:etal:2007}, the winning entry from the
 probabilistic track of the 2004 International Planning Competition,
 uses the fast satisficing procedure
-\system{FF}~\cite{hoffmann:nebel:2001} to compute a serial plan and
+\system{FF}~\cite{hoffmann:nebel:2001} to compute a sequential plan and
 corresponding execution trace. The resulting plan is then executed
 until the observed trace deviates from the planned trace.
 
@@ -547,7 +547,7 @@ something
 More computationally expensive approaches in this vein combine
 sampling strategies on valuations over {\em runtime variables} with
 deterministic planning procedures. The outcome is typically a more
-robust serial plan~\cite{yoon:etal:2008}, or contingent
+robust sequential plan~\cite{yoon:etal:2008}, or contingent
 plan~\cite{majercik:2006}.
 
 
@@ -556,8 +556,8 @@ plan~\cite{majercik:2006}.
 Recently the systems
 \system{Conformant-FF}~\cite{hoffmann:brafman:2006} and
 $T_0$~\cite{palacios:geffner:2009}, demonstrated how conformant
-planning ---i.e., serial planning in unobservable worlds--- can be
-modelled as a deterministic problem, and therefore solved using serial
+planning ---i.e., sequential planning in unobservable worlds--- can be
+modelled as a deterministic problem, and therefore solved using sequential
 systems. In this conformant setting, advances have been towards
 compact representations of beliefs amenable to existing best-first
 search planning procedures, and lazy evaluations of beliefs. This
@@ -594,7 +594,7 @@ acting and sensing.
 
 In this paper we address these challenges, developing a continual
 planner that switches between sequential and decision-theoretic
-planning. Given a POMDP model of the environment, serial planning is
+planning. Given a POMDP model of the environment, sequential planning is
 responsible for an initial deterministic sequential plan and
 complementary runtime evolution of the decision process. That plan is
 executed until an assumption about a runtime proposition
@@ -617,11 +617,11 @@ sequential plan and complementary runtime evolution of that
 process. This corresponds to a generalisation of replanning in
 probabilistic planning to problems with partial observability.
 
-Interaction between the serial planner and execution proceeds
+Interaction between the sequential planner and execution proceeds
 more-or-less analogously to popular replanning approaches
 
 Addressing these challenges in a monolithic framework, we present a
-{\em switching} continual planner, that uses the fast serial
+{\em switching} continual planner, that uses the fast sequential
 satisficing procedure FastDownward to perform net-benefit
 %%
 makes reasonable assumptions about the evolution of the runtime state
@@ -647,7 +647,7 @@ execution, deliberately postponing planing for contingencies unless
 they eventuate during execution. 
 
 
-computing a single serial plan and
+computing a single sequential plan and
 eventuality
 
 
