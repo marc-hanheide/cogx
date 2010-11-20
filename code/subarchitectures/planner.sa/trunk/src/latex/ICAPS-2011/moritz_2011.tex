@@ -495,9 +495,9 @@ be described thusly:
 
 
 \noindent The interpretation of such an expression can be given
-according to a recursive descent. Here, an atom is visited as soon as
-its conjunctive parent is visited, and a conjunctive term is visited
-if all its immediate subterms are visited. A probabilistic term is
+according to a recursive descent. Here, an atom is visited if its
+conjunctive parent is visited, and a conjunctive term is visited if
+all its immediate subterms are visited. A probabilistic term is
 visited if exactly one of its subterms, $T_i$, is visited. Each valid
 visitation of the root term according to this recursive definition
 encapsulates a starting state, along with the probability it
