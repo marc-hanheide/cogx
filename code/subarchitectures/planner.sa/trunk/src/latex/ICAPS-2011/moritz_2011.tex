@@ -470,7 +470,6 @@ if action $(\pp{look-for-object}~\pp{R2D2}~\pp{box}~\pp{office})$ is
 executed, there is a $0.8$ chance of perceiving the box if it is in
 the $\pp{office}$, and otherwise a $0.1$ of perceiving it.
 
-
 The syntax and semantics for describing initial state distributions in
 DTPDDL is taken verbatim from PPDDL. It is useful to present that
 factored tree-like structure here, in order to aid our discussion of
@@ -495,16 +494,17 @@ be described thusly:
 
 
 \noindent The interpretation of such an expression can be given
-according to a recursive descent. Here, an atom is visited if its
-conjunctive parent is visited, and a conjunctive term is visited if
-all its immediate subterms are visited. A probabilistic term is
-visited if exactly one of its subterms, $T_i$, is visited. Each valid
-visitation of the root term according to this recursive definition
-encapsulates a starting state, along with the probability it
-occurs. The former corresponds to the union of all visited atoms, and
-the latter corresponds to the product of $p_i$ entries on the visited
-subterms of probabilistic elements. Making these ideas concrete, our
-example yields the following flat state distribution:
+according to a recursive note of {\em visiting} terms. Here, an atom
+is visited if its conjunctive parent is visited, and a conjunctive
+term is visited if all its immediate subterms are visited. A
+probabilistic term is visited if exactly one of its subterms, $T_i$,
+is visited. Each valid visitation of the root term according to this
+recursive definition encapsulates a starting state, along with the
+probability it occurs. The former corresponds to the union of all
+visited atoms, and the latter corresponds to the product of $p_i$
+entries on the visited subterms of probabilistic elements. Making
+these ideas concrete, our example yields the following flat state
+distribution:
 
 
 \small
@@ -520,10 +520,56 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 \end{tabular}
 \normalsize
 
+\section{Switching Planner}
+
+RICHARD, I HAVE STOLEN A FEW LINES FROM YOUR HIPPO THREAD TO SKETCH
+THIS STUFF. I HOPE IT'S TAKEN AS FLATTERY :)
+
+We now describe a continual planning approach that switches between
+sequential and decision-theoretic planning. The problem at hand is a
+POMDP described in DTPDDL.  Our approach uses sequential planning to
+compute a linear plan, and one trace of that plan's execution. The
+latter encapsulates assumptions about: (1) the true underlying state,
+(2) how the plan's execution will progress, and (3) the possibility of
+eventually holding strong beliefs about the truth values of specific
+state propositions. Sequential planning proceeds in a continual manner
+until the validation of an assumption about a runtime state
+proposition is scheduled. At that point the system switches to a
+decision-theoretic planner that is used to tailor sensory processing
+by the robot to test the validity of the assumptions so far.
+
+The problem posed to the decision-theoretic system is an abstraction
+of the problem at hand. It is induced according to the executing
+sequential plan. Specifically, the abstract process is derived by
+first omitting all problem variables that are not mentioned in the
+linear trace, and then refining that preliminary model, by
+progressively adding more problem variables while the resulting state
+space remains sufficiently small. Refinement is a simple and
+inexpensive step, guided by the level at which variable symbols occur
+in the description of the initial conditions. The abstract process is
+also given a utility model that captures the reward (resp. penalty) of
+correctly (resp. falsely) in/validating the assumptions made in the
+linear trace. In detail, for each assumption on a state variable, we
+can have a reward of $1$ for correctly rejecting it, and a penalty of
+$-1$ for falsely rejecting it. Decision theoretic planning proceeds in
+a more-or-less continual manner until an assumption is rejected, or
+until it returns control to the sequential system because it can see
+no benefit from performing further actions in the abstraction.
 
 
-\section{Sequential Planning in POMDP Determinisations}
+Addressing briefly the specifics of our mobile robot's
+architecture. In our scenario the utility model for the POMDP posed to
+decision-theoretic planning is sourced from a motivational component
+of our robotic architecture. This proposes a non-zero reward
+(resp. penalty) for sequential planning with a true (resp. false)
+assumption about a state proposition.
 
+
+
+
+
+
+\subsection{Sequential Planning in POMDP Determinisations}
 
 
 Goal expressions in the problem description ---for example
@@ -531,6 +577,10 @@ $(\pp{kval}~(\pp{location}~\pp{box}))$ expresses ``the robot knows the
 location of the {\em box}--- are treated as control-knowledge by the
 planner. Here, a plan is not considered valid unless in the finial
 stet the goal condition is satisfied.
+
+\subsection{Abstractions for Decision-Theoretic Planner}
+
+
 
 
 \section{Evaluation}
