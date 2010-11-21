@@ -522,29 +522,100 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 
 \section{Switching Planner}
 
-RICHARD, I HAVE STOLEN A FEW LINES FROM YOUR HIPPO THREAD TO SKETCH
-THIS STUFF. I HOPE IT'S TAKEN AS FLATTERY :)
+
 
 We now describe a continual planning approach that switches between
 sequential and decision-theoretic planning. The problem at hand is a
-POMDP described in DTPDDL.  Our approach uses sequential planning to
-compute a linear plan, and one trace of that plan's execution. The
-latter encapsulates assumptions about: (1) the true underlying state,
-(2) how the plan's execution will progress, and (3) the possibility of
-eventually holding strong beliefs about the truth values of specific
-state propositions. Sequential planning proceeds in a continual manner
-until the validation of an assumption about a runtime state
-proposition is scheduled. At that point the system switches to a
-decision-theoretic planner that is used to tailor sensory processing
-by the robot to test the validity of the assumptions so far.
+POMDP described in DTPDDL.  
+
+
+
+
+
+\subsection{Sequential Planning in POMDPs}
+
+
+Our approach uses sequential planning to compute a linear plan, and
+one trace of that plan's execution. The latter encapsulates
+assumptions about: (1) the true underlying state, (2) how the plan's
+execution will progress, and (3) the possibility of eventually holding
+strong beliefs about the truth values of specific state
+propositions. Sequential planning proceeds in a continual manner until
+the verification of an assumption about a runtime state proposition is
+scheduled. At that point the system switches to a decision-theoretic
+planner that is used to tailor sensory processing by the robot to test
+the validity of the assumptions so far.
+
+The first actions sequenced by the planner are virtual, and correspond
+to identifying an abstract start state. That prefix corresponds to a
+{\em relaxed visitation} of the root term of the DTPDDL $(:init)$
+block. In the relaxed case, we can modify the initial definition so
+that a conjunctive term is visited provided all its atomic subterms
+are visited, and zero or more of its probabilistic terms are
+visited. Writing \#\ if the value of a proposition is unspecified by a
+the {\em relaxed visitation}, the $\pp{R2D2}$ example has the
+following abstract starting states:
+
+
+\small
+\begin{tabular}{cccc}
+\hline
+Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
+\hline
+.24 & kitchen & office & office \\
+.3 & kitchen & \# & office \\
+.8 & kitchen & office & \# \\
+.2 & kitchen & kitchen & \# \\
+.7 & kitchen & \# &  kitchen\\
+.06 & kitchen & kitchen & office \\
+.56 & kitchen & office & kitchen \\
+.14 & kitchen & kitchen & kitchen \\
+\hline
+\end{tabular}
+\normalsize
+
+
+
+
+
+Sequential planning in our approach proceeds in two phases. In the
+first phase, the goal is to identify a plan prefix
+
+In sequential planning, the plan prefix corresponds to choosing a
+valid abstract starting state. 
+
+moreover, for the purpose of decision-theoretic abstractions, 
+
+
+A relaxed form of {\em visitation} we call {\em abstract
+  visitation}. In the abstract case a conjunctive term is visited
+  provided all its atomic subterms are visited, and zero or more of
+  its probabilistic terms are visited.
+
+The planner has a compulsory starting action, that visits the root
+term, and then has to execute visitation actions until that plan
+prefix corresponds to a valid {\em abstract visitation} of the {\em
+:init} block. Beyond such a prefix, the process actions and senses are
+available to the planner 
+
+
+
+Goal expressions in the problem description ---for example
+$(\pp{kval}~(\pp{location}~\pp{box}))$ expresses ``the robot knows the
+location of the {\em box}--- are treated as control-knowledge by the
+planner. Here, a plan is not considered valid unless in the finial
+stet the goal condition is satisfied.
+
+\subsection{Decision-Theoretic Planning in Abstractions}
 
 The problem posed to the decision-theoretic system is an abstraction
-of the problem at hand. It is induced according to the executing
-sequential plan. Specifically, the abstract process is derived by
-first omitting all problem variables that are not mentioned in the
-linear trace, and then refining that preliminary model, by
-progressively adding more problem variables while the resulting state
-space remains sufficiently small. Refinement is a simple and
+of the problem at hand with a distinct utility model that focuses the
+agents activities on assumption verification. The abstraction is
+induced according to the executing sequential plan. Specifically, we
+first omit all problem variables that are not mentioned in the linear
+trace, and then refine that preliminary model, by progressively adding
+more problem variables while the resulting state space remains of a
+practicable size. Refinement in our approach is a simple and
 inexpensive step, guided by the level at which variable symbols occur
 in the description of the initial conditions. The abstract process is
 also given a utility model that captures the reward (resp. penalty) of
@@ -557,30 +628,13 @@ until it returns control to the sequential system because it can see
 no benefit from performing further actions in the abstraction.
 
 
+
 Addressing briefly the specifics of our mobile robot's
 architecture. In our scenario the utility model for the POMDP posed to
 decision-theoretic planning is sourced from a motivational component
 of our robotic architecture. This proposes a non-zero reward
 (resp. penalty) for sequential planning with a true (resp. false)
 assumption about a state proposition.
-
-
-
-
-
-
-\subsection{Sequential Planning in POMDP Determinisations}
-
-
-Goal expressions in the problem description ---for example
-$(\pp{kval}~(\pp{location}~\pp{box}))$ expresses ``the robot knows the
-location of the {\em box}--- are treated as control-knowledge by the
-planner. Here, a plan is not considered valid unless in the finial
-stet the goal condition is satisfied.
-
-\subsection{Abstractions for Decision-Theoretic Planner}
-
-
 
 
 \section{Evaluation}
