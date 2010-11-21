@@ -88,14 +88,6 @@ Not sure if this needs its own section
 \section{Introduction}
 
 
-Any POMDP with stochastic actions can be compiled into an equivalent
-deterministic-action POMDP with all the action uncertainty expressed
-in the starting-state distribution~\cite{ng:Jordan:2000}. In our
-setting, that of finite-horizon planning, this compilation yields a
-finite flat representation of the POMDP. Therefore, although our
-current implementation does not explicitly support it, our approach
-generalises to POMDPs with stochastic action models.
-
 
 
 
@@ -495,16 +487,16 @@ be described thusly:
 
 \noindent The interpretation of such an expression can be given
 according to a recursive notion of {\em visitation} over terms. Here,
-an atom is {\em visited} if its conjunctive parent is visited, and a
-conjunctive term is visited if all its immediate subterms are
-visited. A probabilistic term is visited if exactly one of its
-subterms, $T_i$, is visited. Each valid visitation of the root term
-according to this recursive definition encapsulates a starting state,
-along with the probability it occurs. The former corresponds to the
-union of all visited atoms, and the latter corresponds to the product
-of $p_i$ entries on the visited subterms of probabilistic
-elements. Making these ideas concrete, our example yields the
-following flat state distribution:
+an atom is {\em visited} iff its conjunctive parent is visited, and a
+conjunctive term is visited iff all its immediate subterms are
+visited. A probabilistic term is visited iff its conjunctive parent is
+visited, and exactly one of its subterms, $T_i$, is visited. Each
+valid visitation of the root term according to this recursive
+definition encapsulates a starting state, along with the probability
+it occurs. The former corresponds to the union of all visited atoms,
+and the latter corresponds to the product of $p_i$ entries on the
+visited subterms of probabilistic elements. Making these ideas
+concrete, our example yields the following flat state distribution:
 
 
 \small
@@ -525,12 +517,26 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 
 
 We now describe a continual planning approach that switches between
-sequential and decision-theoretic planning. The problem at hand is a
-POMDP described in DTPDDL.  
+sequential and decision-theoretic planning. 
 
 
+In this work, the problem at hand is a POMDP described in DTPDDL. From
+hereon, we restrict our attention to POMDPs with deterministic
+actions. Therefore it is worthwhile noting that any POMDP with
+stochastic actions can be compiled into an equivalent
+deterministic-action POMDP, where all the original action uncertainty
+is expressed in the starting-state
+distribution~\cite{ng:Jordan:2000}. In our setting, that of
+finite-horizon planning, such a compilation yields a finite flat
+representation of the original POMDP, only with deterministic
+actions. 
 
 
+\Omit{
+  Therefore, although our current implementation does not
+  explicitly support it, our approach generalises to POMDPs with
+  stochastic action models.
+}
 
 \subsection{Sequential Planning in POMDPs}
 
@@ -544,18 +550,17 @@ propositions. Sequential planning proceeds in a continual manner until
 the verification of an assumption about a runtime state proposition is
 scheduled. At that point the system switches to a decision-theoretic
 planner that is used to tailor sensory processing by the robot to test
-the validity of the assumptions so far.
+the validity of the assumptions made so far.
 
-The first actions sequenced by the planner are virtual, and correspond
-to identifying an abstract start state. That prefix corresponds to a
-{\em relaxed visitation} of the root term of the DTPDDL $(:init)$
-block. In the relaxed case, we can modify the initial definition so
-that a conjunctive term is visited provided all its atomic subterms
-are visited, and zero or more of its probabilistic terms are
-visited. Writing \#\ if the value of a proposition is unspecified by a
-the {\em relaxed visitation}, the $\pp{R2D2}$ example has the
-following abstract starting states:
-
+In a deterministic-action POMDP, all the uncertainty in state and
+action is expressed in the $(\pp{:init})$ declaration. Our approach
+uses the structure of that, as it occurs in the problem description,
+do define a set of abstract state-assumptions available to 
+sequential planning.  
+%%
+Writing \#\ if the value of a proposition is unspecified in the
+assumption, for the $\pp{R2D2}$ example we have that the following
+assumptions are available:
 
 \small
 \begin{tabular}{cccc}
@@ -570,41 +575,39 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 .06 & kitchen & kitchen & office \\
 .56 & kitchen & office & kitchen \\
 .14 & kitchen & kitchen & kitchen \\
+1.0 & kitchen & \# & \# \\
 \hline
 \end{tabular}
 \normalsize
 
+\noindent A valid assumption in our setting corresponds to a {\em
+relaxed} visitation of the root term of $(:init)$. In this relaxed
+case, a conjunctive term is visited iff its atomic subterms are
+visited, and zero or more of its immediate probabilistic subterms are
+visited. The starting state, $s_0$, for sequential planning is the
+abstract state with probability $1.0$ -- E.G., for $\pp{R2D2}$ $s_0
+\equiv \{(= (is-in R2D2) kitchen)\}$.
+
+In order to make assumptions available to the sequential planner, we
+add one action $\actions(p_i;(T_i))$ to the problem for each element,
+$p_i (T_i)$, of each probabilistic term from $(:init)$. The physics
+for these actions is as follows. $\actions(p_i;(T_i))$ can be executed
+if no $\actions(p_j;(T_j))$, $j \neq i$, has been executed from the
+same probabilistic term, and, either
+$(\pp{probabilistic}~..p_i~(T_i)..)$ is in the root conjunct, or it
+occurs in $T_k$ for some executed $\actions(p_k;(T_k))$.
+%%
+Executing $\actions(p_i;(T_i))$ in $s$ effects a transition to a
+successor state $s^v$ with probability $p_i$, and $s^\bot$ with
+probability $1 - p_i$. Here, $s^v$ is characterised by the union of
+$s$ and atomic terms from $T_i$, and $s^\bot$ is a sink state -- I.e.,
+$\forall\action\in\actions$ $\reward(\state^\bot, \action) = 0$ and
+$\transProb(\state^\bot, \action, \state^\bot) = 1$.
 
 
 
 
-Sequential planning in our approach proceeds in two phases. In the
-first phase, the goal is to identify a plan prefix
 
-In sequential planning, the plan prefix corresponds to choosing a
-valid abstract starting state. 
-
-moreover, for the purpose of decision-theoretic abstractions, 
-
-
-A relaxed form of {\em visitation} we call {\em abstract
-  visitation}. In the abstract case a conjunctive term is visited
-  provided all its atomic subterms are visited, and zero or more of
-  its probabilistic terms are visited.
-
-The planner has a compulsory starting action, that visits the root
-term, and then has to execute visitation actions until that plan
-prefix corresponds to a valid {\em abstract visitation} of the {\em
-:init} block. Beyond such a prefix, the process actions and senses are
-available to the planner 
-
-
-
-Goal expressions in the problem description ---for example
-$(\pp{kval}~(\pp{location}~\pp{box}))$ expresses ``the robot knows the
-location of the {\em box}--- are treated as control-knowledge by the
-planner. Here, a plan is not considered valid unless in the finial
-stet the goal condition is satisfied.
 
 \subsection{Decision-Theoretic Planning in Abstractions}
 
@@ -955,3 +958,33 @@ policy search task. The approach ~\cite{}.
 runtime variables} in the continual paradigm--- are treated , and
 therefore plan for a specific eventuality, replanning from scratch if
 something
+
+
+
+
+Sequential planning in our approach proceeds in two phases. In the
+first phase, the goal is to identify a plan prefix
+
+In sequential planning, the plan prefix corresponds to choosing a
+valid abstract starting state. 
+
+moreover, for the purpose of decision-theoretic abstractions, 
+
+
+A relaxed form of {\em visitation} we call {\em abstract
+  visitation}. In the abstract case a conjunctive term is visited
+  provided all its atomic subterms are visited, and zero or more of
+  its probabilistic terms are visited.
+
+The planner has a compulsory starting action, that visits the root
+term, and then has to execute visitation actions until that plan
+prefix corresponds to a valid {\em abstract visitation} of the {\em
+:init} block. Beyond such a prefix, the process actions and senses are
+available to the planner 
+
+
+Goal expressions in the problem description ---for example
+$(\pp{kval}~(\pp{location}~\pp{box}))$ expresses ``the robot knows the
+location of the {\em box}--- are treated as control-knowledge by the
+planner. Here, a plan is not considered valid unless in the finial
+stet the goal condition is satisfied.
