@@ -363,7 +363,7 @@ V_{\pp{FSC}}(\bstate) = \Expect \bigg{[}
 
 \noindent Where $b_t$ is the belief state at time $t$. Finally, it is
 useful to note that there is a corresponding deterministic FSCs for
-both sequential (i.e., conformant) and contingent plans.
+both sequential (e.g., conformant) and contingent plans.
 
 
 \section{Decision-Theoretic PDDL}
@@ -472,7 +472,7 @@ the $\pp{office}$, and otherwise a $0.1$ of perceiving it.
 
 The syntax and semantics for describing initial state distributions in
 DTPDDL is taken verbatim from PPDDL. It is useful to present that
-factored tree-like structure here, in order to aid our discussion of
+factored tree-like structure here, in order to aid us when discussing
 sequential planning in POMDP determinisations. The distribution is
 expressed in a tree-like structure of terms. Each term is either: (1)
 atomic, e.g., $(=(\pp{location}~\pp{box})~\pp{office})$, (2)
@@ -494,17 +494,17 @@ be described thusly:
 
 
 \noindent The interpretation of such an expression can be given
-according to a recursive note of {\em visiting} terms. Here, an atom
-is visited if its conjunctive parent is visited, and a conjunctive
-term is visited if all its immediate subterms are visited. A
-probabilistic term is visited if exactly one of its subterms, $T_i$,
-is visited. Each valid visitation of the root term according to this
-recursive definition encapsulates a starting state, along with the
-probability it occurs. The former corresponds to the union of all
-visited atoms, and the latter corresponds to the product of $p_i$
-entries on the visited subterms of probabilistic elements. Making
-these ideas concrete, our example yields the following flat state
-distribution:
+according to a recursive notion of {\em visitation} over terms. Here,
+an atom is {\em visited} if its conjunctive parent is visited, and a
+conjunctive term is visited if all its immediate subterms are
+visited. A probabilistic term is visited if exactly one of its
+subterms, $T_i$, is visited. Each valid visitation of the root term
+according to this recursive definition encapsulates a starting state,
+along with the probability it occurs. The former corresponds to the
+union of all visited atoms, and the latter corresponds to the product
+of $p_i$ entries on the visited subterms of probabilistic
+elements. Making these ideas concrete, our example yields the
+following flat state distribution:
 
 
 \small
