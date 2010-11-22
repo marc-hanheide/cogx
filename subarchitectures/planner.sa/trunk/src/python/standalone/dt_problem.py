@@ -40,7 +40,7 @@ class DTProblem(object):
     def initialize(self, prob_state):
         self.state = prob_state
         choices = self.extract_choices()
-        #print "choices:", map(str, choices)
+        log.debug("initial choices: %s", map(str, choices))
         facts = dtpddl.PNode.reduce_all(self.pnodes, choices, global_vars.config.dt.max_state_size)
         selected = set()
         add_objects = set()
@@ -50,7 +50,7 @@ class DTProblem(object):
             for v in vals:
                 add_objects.add(v)
                 selected.add(state.Fact(var, v))
-                #print var, v
+                log.debug("selected: %s, %s", var, v)
 
         # print map(str, selected)
 
@@ -122,6 +122,7 @@ class DTProblem(object):
                     others = restr
             return others
 
+        self.select_actions = []
         goal_svars = set()
         #combine consecutive observe actions into one subtask.
         for pnode in plan.topological_sort():
@@ -135,8 +136,8 @@ class DTProblem(object):
                     if svar.modality in (mapl.knowledge, mapl.direct_knowledge):
                         goal_svars.add(svar.nonmodal())
                 self.subplan_actions.append(pnode)
-                self.select_actions = [pnode] + find_restrictions(pnode)
-                break # only one action at a time for now
+                self.select_actions += [pnode] + find_restrictions(pnode)
+                #break # only one action at a time for now
             
             if pnode.action.name not in observe_actions and self.subplan_actions:
                 break
@@ -400,7 +401,13 @@ class DTProblem(object):
     def create_goal_actions(self, goals, domain):
         commit_actions = []
 
-        confirm_score = 100
+        confirm_score = 40
+
+        a = pddl.Action("cancel", [], None, None, domain)
+        b = pddl.builder.Builder(a)
+        a.precondition = b.cond('not', ('done', ))
+        a.effect = b.effect('and', ('done', ), ('assign', ('reward',), 0))
+        commit_actions.append(a) # comment out to disable the cancel action
         
         for svar in goals:
             term = pddl.Term(svar.function, svar.get_args())
@@ -412,13 +419,13 @@ class DTProblem(object):
             a = pddl.Action(name, [val], None, None, domain)
             b = pddl.builder.Builder(a)
             
-            #a.precondition = b.cond('and', ('not', (dtpddl.committed, [term])))
+            #a.precondition = b.cond('and', ('not', (mapl.committed, [term])))
             a.precondition = b.cond('not', ('done', ))
-            #commit_effect = b.effect(dtpddl.committed, [term])
+            commit_effect = b.effect(mapl.committed, [term])
             reward_effect = b('when', ('=', term, val), ('assign', ('reward',), confirm_score))
-            penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -5*confirm_score))
+            penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -confirm_score))
             done_effect = b.effect('done')
-            a.effect = b.effect('and', reward_effect, penalty_effect, done_effect)
+            a.effect = b.effect('and', reward_effect, penalty_effect, commit_effect, done_effect)
             
             commit_actions.append(a)
 
@@ -427,12 +434,12 @@ class DTProblem(object):
             for svar, val in pnode.effects:
                 if svar.modality == mapl.commit:
                     nmvar = svar.nonmodal()
-                    if nmvar not in goals:
-                        disconfirm.append((nmvar, svar.modal_args[0]))
-                        break # only one disconfirm per node
+                    #if nmvar not in goals:
+                    disconfirm.append((nmvar, svar.modal_args[0]))
+                    break # only one disconfirm per node
 
-        if not disconfirm:
-            return commit_actions
+        # if not disconfirm:
+        return commit_actions
                         
         dis_score = float(confirm_score)/len(disconfirm)
         disconfirm_actions = []
@@ -460,7 +467,7 @@ class DTProblem(object):
             
             #commit_effect = b.effect(dtpddl.committed, term)
             reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_score))
-            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -10*dis_score))
+            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -dis_score))
             done_effect = b.effect('done')
             a.effect = b.effect('and', reward_effect, penalty_effect, done_effect)
             

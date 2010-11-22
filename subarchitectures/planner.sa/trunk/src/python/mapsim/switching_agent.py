@@ -1,6 +1,6 @@
 import os, re
 
-from standalone import pddl, plans, task, planner, dt_problem, plan_postprocess, bayes
+from standalone import pddl, plans, task, statistics, planner, dt_problem, plan_postprocess, bayes
 #from standalone import statistics
 
 import standalone.globals as global_vars
@@ -10,13 +10,21 @@ from agent import loggingScope
 from standalone import config
 log = config.logger("switching")
 
+statistics_defaults = dict(
+    dt_planning_calls=0,
+    dt_planning_time=0.0,
+    )
+
+statistics_defaults.update(agent.statistics_defaults)
+
 
 class StandaloneDTInterface(object):
     PDDL_REXP = re.compile("\((.*)\)")
-    def __init__(self, dt_id, dt_task, action_callback):
+    def __init__(self, dt_id, dt_task, action_callback, statistics):
         self.id = dt_id
         self.process = None
         self.action_callback = action_callback
+        self.statistics = statistics
         
         planning_tmp_dir =  global_vars.config.tmp_dir
         tmp_dir = planner.get_planner_tempdir(planning_tmp_dir)
@@ -30,6 +38,8 @@ class StandaloneDTInterface(object):
         dt_task.write_dt_input(self.domain_fn, self.problem_fn)
         
     def run(self):
+        self.statistics.increase_stat("dt_planning_calls")
+        
         import subprocess, atexit
         cmd = "%s --domain %s --problem %s" % (global_vars.config.dt.standalone_executable, self.domain_fn, self.problem_fn)
         log.debug("running dt planner with '%s'", cmd)
@@ -45,6 +55,7 @@ class StandaloneDTInterface(object):
         self.process.terminate()
         self.process = None
         
+    @statistics.time_method_for_statistics("dt_planning_time")
     def wait_for_action(self):
         while self.process.poll() is None:
             line = self.process.stdout.readline()
@@ -72,6 +83,7 @@ class SwitchingAgent(agent.Agent):
         self.domain = mapltask.domain
 
         agent.Agent.__init__(self, name, mapltask, planner, simulator)
+        self.statistics = statistics.Statistics(defaults = statistics_defaults)
         
     def new_task(self, mapltask):
         self.dt_problem = mapltask
@@ -94,6 +106,7 @@ class SwitchingAgent(agent.Agent):
         pnodes, det_lits = pddl.dtpddl.PNode.simplify_all(pnodes)
         #pnodes = pddl.dtpddl.PNode.consolidate_all(pnodes)
         mapltask.init += det_lits
+        self.init_pnodes = pnodes
         self.pnodes = pnodes
         
         if global_vars.config.base_planner.name == "TFD":
@@ -103,10 +116,11 @@ class SwitchingAgent(agent.Agent):
         else:
             assert False, "Only TFD and modified Fast Downward (ProbDownward) are supported"
         
-        self.cp_domain = dt_compiler.translate(mapltask).domain
+        self.prob_functions = dt_compiler.get_prob_functions(mapltask)
+        self.cp_domain = dt_compiler.translate(self.domain, prob_functions=self.prob_functions)
         
         self.state = pddl.prob_state.ProbabilisticState.from_problem(hierarchical)
-        det_state = self.state.determinized_state(0.05, 0.95)
+        det_state = self.state.determinized_state(None, global_vars.mapsim_config.switching.known_threshold)
         facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
         facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
         cp_problem = pddl.Problem(mapltask.name, mapltask.objects, facts , mapltask.goal, self.cp_domain)
@@ -148,7 +162,7 @@ class SwitchingAgent(agent.Agent):
             return
 
         if "partial-observability" in self.domain.requirements:
-            log.info("creating dt task")
+            log.debug("creating dt task")
             self.dt_task = dt_problem.DTProblem(plan, self.pnodes, self.domain)
 
             for pnode in plan.nodes_iter():
@@ -193,6 +207,9 @@ class SwitchingAgent(agent.Agent):
     def action_executed_cp(self, status):
         plan = self.get_plan()
 
+        if status == plans.ActionStatusEnum.FAILED:
+            return
+
         if plan is not None:
             pnode = plan.topological_sort()[plan.execution_position]
             pnode.status = status
@@ -204,10 +221,13 @@ class SwitchingAgent(agent.Agent):
         #test if the dt goals are satisfied:
         sat = True
         for pnode in self.dt_task.subplan_actions:
-            if any(fact not in self.state for fact in pnode.effects):
+            children = self.get_plan().successors(pnode, link_type="depends")
+            if not all(self.task.planner.check_node(c, self.state) for c in children):
+            #if any(fact not in self.state for fact in pnode.effects):
                 sat = False
                 break
         if sat:
+            log.debug("dt planning stopped. Subgoal reached.")
             self.dt_done()
 
         dt_pnode = self.dt_task.dt_plan[-1]
@@ -260,14 +280,16 @@ class SwitchingAgent(agent.Agent):
             elif dt_action_found:
                 break
 
-        log.info("dt planning cancelled.")
+        log.debug("dt planning cancelled.")
         self.dt_interface.kill()
         self.dt_interface = None
         self.dt_active = False
-            
+        
         self.get_plan().execution_position = last_dt_action
         self.plan_history.append(self.dt_task)
+        self.dt_task = None
 
+        self.task.set_plan(None)
         self.task.mark_changed()
         self.monitor_cp()
 
@@ -300,7 +322,7 @@ class SwitchingAgent(agent.Agent):
     def dispatch_actions(self, nodes):
         if nodes:
             self.last_action = nodes[0]
-            log.info("First action: %s", str(nodes[0]))
+            log.debug("First action: %s", str(nodes[0]))
             nodes[0].status = plans.ActionStatusEnum.IN_PROGRESS
             self.execute(nodes[0].action.name, nodes[0].full_args)
         else:
@@ -318,9 +340,9 @@ class SwitchingAgent(agent.Agent):
         return self.dt_task.subplan_active(plan)
 
     def start_dt_planning(self):
-        log.debug("starting dt planner...")
+        log.info("starting dt planner.")
         self.dt_active = True
-        self.dt_interface = StandaloneDTInterface(self.last_dt_id, self.dt_task, lambda n,a: self.action_delivered(n,a))
+        self.dt_interface = StandaloneDTInterface(self.last_dt_id, self.dt_task, lambda n,a: self.action_delivered(n,a), self.statistics)
         self.dt_interface.run()
 
     def deliverObservation(self, obs):
@@ -367,10 +389,10 @@ class SwitchingAgent(agent.Agent):
         action = self.last_action.action
         action.instantiate(self.last_action.full_args, self.task.mapltask)
         if self.bayes.handle_obs(action, new_percepts):
-            result = self.bayes.evaluate()
-            new_nodes = self.bayes.new_ptree(self.pnodes, result)
-            dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD(nodes=new_nodes)
-            self.cp_domain = dt_compiler.translate(self.domain)
+            result, node_probs = self.bayes.evaluate()
+            self.pnodes = self.bayes.new_ptree(self.init_pnodes, node_probs)
+            dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD(nodes=self.pnodes)
+            self.cp_domain = dt_compiler.translate(self.domain, prob_functions=self.prob_functions)
 
             for svar, dist in result.iteritems():
                 if svar.function != pddl.dtpddl.selected:
@@ -378,7 +400,7 @@ class SwitchingAgent(agent.Agent):
         
         action.uninstantiate()
 
-        det_state = self.state.determinized_state(0.05, 0.95)
+        det_state = self.state.determinized_state(None, global_vars.mapsim_config.switching.known_threshold)
         facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
         facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
         cp_problem = pddl.Problem(self.dt_problem.name, self.dt_problem.objects, facts , self.dt_problem.goal, self.cp_domain)
