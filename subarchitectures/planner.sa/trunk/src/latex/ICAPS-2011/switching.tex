@@ -101,11 +101,28 @@ probability $1$, then before it is executed blindly, the sequential
 continual planning switches to a decision-theoretic mode, discussed in
 detail below. Overall, by scheduling $\action$ the sequential planner
 makes a naive assumption about the possibility of the agent eventually
-committing ---for the purpose of the current task--- to the truth
-values of specific state propositions. Second, if the truth value of
-$\prop$ is not known, and no assumption is made about it in the
-current abstract state, then if $\prop \in \poss(\action)$ we have
-that action $\action$ is not applicable.
+``committing'' to the truth values of specific state
+propositions. Thus, the role of decision-theoretic plans is to verify
+the validity of assumptions about the runtime state in sequential
+planning. Second, if the truth value of $\prop$ is not known, and no
+assumption is made about it in the current abstract state, then if
+$\prop \in
+\poss(\action)$ we have that action $\action$ is not applicable.
+
+%% Because $\state_0$ is abstract, and because actions can have
+%% preconditions that are not uniformly true in the underlying
+%% (resp. abstract) belief-state, we must make two further adjustments to
+%% the problem posed to the sequential planner. First, if
+%% $\action\in\actions$ has a precondition that is not true with
+%% probability $1$, then before it is executed blindly, the sequential
+%% continual planning switches to a decision-theoretic mode, discussed in
+%% detail below. Overall, by scheduling $\action$ the sequential planner
+%% makes a naive assumption about the possibility of the agent eventually
+%% committing ---for the purpose of the current task--- to the truth
+%% values of specific state propositions. Second, if the truth value of
+%% $\prop$ is not known, and no assumption is made about it in the
+%% current abstract state, then if $\prop \in \poss(\action)$ we have
+%% that action $\action$ is not applicable.
 
 %% In other words, the value of a proposition in an abstract
 %% state is either {\em true}, {\em false}, or {\em unspecified} (i.e.,
