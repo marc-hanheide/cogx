@@ -19,12 +19,14 @@ def product(*iterables):
 
 class Problem(Scope):
     def __init__(self, name, objects, init, goal, _domain, optimization=None, opt_func=None):
-        Scope.__init__(self, objects, _domain)
+        assert all(o.is_instance_of(builtin.t_object) for o in objects)
+        problem_objects = set(o for o in objects if o not in _domain.constants)
+        Scope.__init__(self, problem_objects, _domain)
         self.set_tag("only-simple-effects", True, inherit=False)
 
         self.name = name
 
-        self.objects = set(o for o in objects)
+        self.objects = problem_objects
         self.init = [l.copy(self) for l in init]
         self.goal = None
         if goal:
@@ -36,17 +38,21 @@ class Problem(Scope):
     def domain(self):
         return self.parent
 
-    def copy(self):
-        return self.__class__(self.name, self.objects, self.init, self.goal, self.domain, self.optimization, self.opt_func)
+    def copy(self, newdomain=None):
+        if not newdomain:
+            newdomain = self.domain
+            
+        return self.__class__(self.name, self.objects, self.init, self.goal, newdomain, self.optimization, self.opt_func)
 
     def add_object(self, object):
+        assert object.is_instance_of(builtin.t_object)
         if object.name in self:
             self.objects.remove(self[object.name])
         self.objects.add(object)
         self.add(object)
 
     def remove_object(self, object):
-        if object.name in self:
+        if dict.__contains__(self, object.name):
             self.objects.remove(self[object.name])
             del self[object.name]
 

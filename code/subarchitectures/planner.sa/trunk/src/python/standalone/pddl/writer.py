@@ -197,7 +197,11 @@ class Writer(object):
                     strings += self.section(p_str, e_str, parens=False)
             return self.section("probabilistic", strings)
         else:
-            return effect.write_pddl(self)
+            try:
+                return effect.write_pddl(self)
+            except:
+                print "warning: couldn't write:", effect
+                return [""]
         
         assert False, effect
             
