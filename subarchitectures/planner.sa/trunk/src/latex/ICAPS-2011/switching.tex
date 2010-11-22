@@ -112,25 +112,49 @@ that action $\action$ is not applicable.
 %% \#). In the last case actions whose execution is preconditioned on the
 %% term being truth functional are not available.
 
-Finally, we come to the issue of valuing sequential plans, and
-therefore giving the criterion that the sequential planner seeks to
-optimise. Where $p_i$ is the probability that the $i^{th}$ action
-execution is not a transition to $s^\bot$, we value a trace according
-to:
+
+Finally, we come to valuing sequential plans, and therefore giving a
+criterion that the sequential planner seeks to optimise. Where $p_i$
+is the probability that the $i^{th}$ action execution is not a
+transition to $s^\bot$, we value a trace according to:
 
 \begin{equation}\label{eq:tracevalue}
 V(s_0, a_0, s_1, a_1,.., s_N) =  \prod_{i=1..N} p_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
 \end{equation}
 
-\noindent In goal directed problems, where the only non-zero reward is
-received at the first transition to a goal state,
+\noindent In other words, the value of a trace captures its
+significance, in relation to other possible realisations of the plan,
+to the overall expected value of the plan in
+Eq~\ref{eq:expectedvalue}. In goal directed problems, where the only
+non-zero reward is received at the first transition to a goal state,
 Eq~\ref{eq:tracevalue} corresponds exactly to the criteria of the
 infamous degenerate hindsight system
 \system{FFR$_a$}~\cite{yoon:etal:2007}. Form the perspective of
 gradient-based reinforcement learning systems, such as William's
 REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
-under reasonable assumptions the optimal trace yields a maximal
-gradient step from a uniform soft-max policy. 
+under reasonable assumptions the optimal trace identifies a maximal
+gradient step from a uniformly random soft-max policy.
+
+
+%% Finally, we come to the issue of valuing sequential plans, and
+%% therefore giving the criterion that the sequential planner seeks to
+%% optimise. Where $p_i$ is the probability that the $i^{th}$ action
+%% execution is not a transition to $s^\bot$, we value a trace according
+%% to:
+
+%% \begin{equation}\label{eq:tracevalue}
+%% V(s_0, a_0, s_1, a_1,.., s_N) =  \prod_{i=1..N} p_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
+%% \end{equation}
+
+%% \noindent In goal directed problems, where the only non-zero reward is
+%% received at the first transition to a goal state,
+%% Eq~\ref{eq:tracevalue} corresponds exactly to the criteria of the
+%% infamous degenerate hindsight system
+%% \system{FFR$_a$}~\cite{yoon:etal:2007}. Form the perspective of
+%% gradient-based reinforcement learning systems, such as William's
+%% REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
+%% under reasonable assumptions the optimal trace yields a maximal
+%% gradient step from a uniform soft-max policy. 
 
 \subsection{Decision-Theoretic Planning in Abstractions}
 
