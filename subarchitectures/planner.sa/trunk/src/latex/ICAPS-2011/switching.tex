@@ -1,0 +1,164 @@
+
+
+We now describe a continual planning approach that switches between
+sequential and decision-theoretic planning. 
+
+
+In this work, the problem at hand is a POMDP described in DTPDDL. From
+hereon, we restrict our attention to POMDPs with deterministic
+actions. Therefore it is worthwhile noting that any POMDP with
+stochastic actions can be compiled into an equivalent
+deterministic-action POMDP, where all the original action uncertainty
+is expressed in the starting-state
+distribution~\cite{ng:Jordan:2000}. In our setting, that of
+finite-horizon planning, such a compilation yields a finite flat
+representation of the original POMDP, only with deterministic
+actions. 
+
+
+PLEASE STICK A PARAGRAPH HERE, (SENSIBLY) REQUESTED BY MORITZ, ABOUT
+HOW WE DO BELIEF REVISION ACROSS SWITCHING.
+
+\Omit{
+  Therefore, although our current implementation does not
+  explicitly support it, our approach generalises to POMDPs with
+  stochastic action models.
+}
+
+\subsection{Sequential Planning in POMDPs}
+
+
+Our approach uses sequential planning to compute a linear plan, and
+one trace of that plan's execution. The latter encapsulates
+assumptions about: (1) the true underlying state, (2) how the plan's
+execution will progress, and (3) the possibility of the agent
+eventually holding strong beliefs about the truth values of specific
+state propositions. Sequential planning proceeds in a continual manner
+until the verification of an assumption about a runtime state
+proposition is scheduled. At that point the system switches to a
+decision-theoretic planner that is used to tailor sensory processing
+by the robot to test the validity of the assumptions made so far.
+
+In a deterministic-action POMDP, all the uncertainty in state and
+action is expressed in the $(\pp{:init})$ declaration. Our approach
+uses the structure of that, as it occurs in the problem description,
+do define a set of abstract state-assumptions available to 
+sequential planning.  
+%%
+Writing \#\ if the value of a proposition is unspecified in the
+assumption, for the $\pp{R2D2}$ example we have that the following
+assumptions are available:
+
+\small
+\begin{tabular}{cccc}
+\hline
+Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
+\hline
+.24 & kitchen & office & office \\
+.06 & kitchen & kitchen & office \\
+.56 & kitchen & office & kitchen \\
+.14 & kitchen & kitchen & kitchen \\
+.7 & kitchen & \# &  kitchen\\
+.3 & kitchen & \# & office \\
+.8 & kitchen & office & \# \\
+.2 & kitchen & kitchen & \# \\
+1.0 & kitchen & \# & \# \\
+\hline
+\end{tabular}
+\normalsize
+
+\noindent A valid assumption in our setting corresponds to a {\em
+relaxed} visitation of the root term of $(:init)$. In this relaxed
+case, a conjunctive term is visited iff its atomic subterms are
+visited, and zero or more of its immediate probabilistic subterms are
+visited. The starting state, $\state_0$, for sequential planning is
+the abstract state with probability $1.0$ -- E.G., for $\pp{R2D2}$
+$s_0 \equiv \{(= (is-in R2D2) kitchen)\}$.
+
+In order to make assumptions available to the sequential planner, we
+add one {\em assumptive} action $\actions(p_i;(T_i))$ to the problem
+for each element, $p_i (T_i)$, of each probabilistic term from
+$(:init)$. The physics of these actions is as
+follows. $\actions(p_i;(T_i))$ can be executed if no
+$\actions(p_j;(T_j))$, $j \neq i$, has been executed from the same
+probabilistic term, and, either $(\pp{probabilistic}~..p_i~(T_i)..)$
+is in the root conjunct, or it occurs in $T_k$ for some executed
+$\actions(p_k;(T_k))$.
+%%
+Executing $\actions(p_i;(T_i))$ in $s$ effects a transition to a
+successor state $s^v$ with probability $p_i$, and $s^\bot$ with
+probability $1 - p_i$. Here, $s^v$ is the union of $s$ and atomic
+terms from $T_i$, and $s^\bot$ is a sink state -- I.e.,
+$\forall\action\in\actions$ $\reward(\state^\bot, \action) = 0$ and
+$\transProb(\state^\bot, \action, \state^\bot) = 1$.
+
+Because $\state_0$ is abstract, and because actions can have
+preconditions that are not uniformly true in the underlying
+(resp. abstract) belief-state, we must make two further adjustments to
+the problem posed to the sequential planner. First, if
+$\action\in\actions$ has a precondition that is not true with
+probability $1$, then before it is executed blindly, the sequential
+continual planning switches to a decision-theoretic mode, discussed in
+detail below. Overall, by scheduling $\action$ the sequential planner
+makes a naive assumption about the possibility of the agent eventually
+committing ---for the purpose of the current task--- to the truth
+values of specific state propositions. Second, if the truth value of
+$\prop$ is not known, and no assumption is made about it in the
+current abstract state, then if $\prop \in \poss(\action)$ we have
+that action $\action$ is not applicable.
+
+%% In other words, the value of a proposition in an abstract
+%% state is either {\em true}, {\em false}, or {\em unspecified} (i.e.,
+%% \#). In the last case actions whose execution is preconditioned on the
+%% term being truth functional are not available.
+
+Finally, we come to the issue of valuing sequential plans, and
+therefore giving the criterion that the sequential planner seeks to
+optimise. Where $p_i$ is the probability that the $i^{th}$ action
+execution is not a transition to $s^\bot$, we value a trace according
+to:
+
+\begin{equation}\label{eq:tracevalue}
+V(s_0, a_0, s_1, a_1,.., s_N) =  \prod_{i=1..N} p_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
+\end{equation}
+
+\noindent In goal directed problems, where the only non-zero reward is
+received at the first transition to a goal state,
+Eq~\ref{eq:tracevalue} corresponds exactly to the criteria of the
+infamous degenerate hindsight system
+\system{FFR$_a$}~\cite{yoon:etal:2007}. Form the perspective of
+gradient-based reinforcement learning systems, such as William's
+REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
+under reasonable assumptions the optimal trace yields a maximal
+gradient step from a uniform soft-max policy. 
+
+\subsection{Decision-Theoretic Planning in Abstractions}
+
+The problem posed to the decision-theoretic system is an abstraction
+of the problem at hand with a distinct utility model that focuses the
+agents activities on assumption verification. The abstraction is
+induced according to the executing sequential plan. Specifically, we
+first omit all problem variables that are not mentioned in the linear
+trace, and then refine that preliminary model, by progressively adding
+more problem variables while the resulting state space remains of a
+practicable size. Refinement in our approach is a simple and
+inexpensive step, guided by the level at which variable symbols occur
+in the description of the initial conditions. The abstract process is
+also given a utility model that captures the reward (resp. penalty) of
+correctly (resp. falsely) in/validating the assumptions made in the
+linear trace. In detail, for each assumption on a state variable, we
+can have a reward of $1$ for correctly rejecting it, and a penalty of
+$-1$ for falsely rejecting it. Decision theoretic planning proceeds in
+a more-or-less continual manner until an assumption is rejected, or
+until it returns control to the sequential system because it can see
+no benefit from performing further actions in the abstraction.
+
+
+
+Addressing briefly the specifics of our mobile robot's
+architecture. In our scenario the utility model for the POMDP posed to
+decision-theoretic planning is sourced from a motivational component
+of our robotic architecture. This proposes a non-zero reward
+(resp. penalty) for sequential planning with a true (resp. false)
+assumption about a state proposition.
+

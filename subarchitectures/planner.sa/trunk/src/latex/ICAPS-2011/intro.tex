@@ -1,0 +1,97 @@
+
+
+
+
+We describe, \pcogx, the planning component in a robotic system that
+continuously deliberates in a stochastic dynamic environment in order
+to achieve objectives set by the user, and acquire knowledge about its
+surroundings.
+%%
+
+Have a good understanding of the contents and function of rooms, as
+well as the linguistic referrents to rooms, widgets, and their visual
+qualities.
+
+Having confidence in its beliefs about the linguistic terms for
+spaces, and the function of those spaces.
+
+
+
+sometimes difficult to predict, with exogenous events, such as the
+changing of the objective, 
+
+
+
+
+
+the speed and scalability of software for sequential planning in
+deterministic
+
+
+
+
+We developed a first-order declarative language, called DTPDDL, for
+describing domains of planning problems that correspond to POMDPs.  To
+accompany that language we have implemented an information-state
+\laostar\ procedure for solving problems expressed in DTPDDL. 
+
+We have extended MAPSIM to parse and simulate DTPDDL problems, and
+modified \fastdownward\ so that it can find useful sequential executions
+given DTPDDL models of the problem at hand.
+
+
+
+
+ called DTPDDL, along
+the lines of PDDL for the partially observable case, an \laostar\
+solution procedure, a determinisation of the DTPDDL problem in MAPL,
+and modify the \fastdownward\ system to find high quality sequential plans
+.
+
+We model the environment as a partially observable Markov decision
+process. Although planning in that model is undecidable in
+general~\cite{}, an optimal finite-horizon plan corresponds to a
+contingent plan, that is a function mapping action-observation
+histories to actions.
+
+our continual planner is reactive, replanning whenever the underlying
+domain and problem models change. For example, replanning occurs if
+the motivational component alters the objectives, and if an assumed
+outcome of a sensing action is not realised.
+
+brittle sensing model, 
+
+the evaluation of a fluent at a state is either known. Moreover, there
+is a sensing process that run-time variables  after-which 
+
+%% For $\prop \in \state$ we say proposition $\prop$ characterises state
+%% $\state$. There is always a unique starting state $\state_0$. The goal
+%% $\goal$ is a set of propositions, and we say that state $\state$ is a
+%% goal state iff $\goal \subseteq \state$.
+
+%%  To keep this exposition
+%% simple, for any two distinct actions $\stochAction_i \neq
+%% \stochAction_j$, if outcome $\detAct$ is a possibility for
+%% $\stochAction_i$ then it cannot also be a possibility for
+%% $\stochAction_j$ -- i.e., if $\detAct \in
+%% \detActions(\stochAction_i)$ then $\detAct \not\in
+%% \detActions(\stochAction_j)$.
+
+
+%% The solution to a probabilistic planning problem is a contingency
+%% plan. This consists of an assignment of actions to states at each
+%% discrete timestep up to the planning horizon $n$. The optimal
+%% contingency plan is one which prescribes actions to states that
+%% maximise the probability that the goal is achieved within $n$ steps
+%% from the starting state $\state_0$. For the purposes of this paper
+%% we say a plan fails, i.e. achieves the goal with probability $0$, in
+%% situations where it does not prescribe an action. Computing the
+%% optimal plan for a problem is computationally intractable, and an
+%% important direction for research in the field is to develop
+%% heuristic mechanisms for generating small linear plans
+%% quickly~\cite{littman:etal:98}
+
+An outline of the paper is as follows. We describe POMDPs with a
+propositionally factored representation of states and observations,
+and describe how to evaluate plans when they correspond to
+finite-state controllers.
