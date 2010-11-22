@@ -162,14 +162,16 @@ void Solver::expand_observations(const State_Transformation* optional_transforma
         } else {
             
             if((*observation__space_iterator)->get__probability_during_expansion() < 1.0){
+
+                assert((*observation__space_iterator)->get__probability_during_expansion() > 0.0);
                 
                 (*observation__space_iterator)
                     ->set__probability_during_expansion(
                         (*observation__space_iterator)->get__probability_during_expansion() +
                         (*observation)->get__probability_during_expansion());
                 
-                QUERY_UNRECOVERABLE_ERROR((*observation__space_iterator)->get__probability_during_expansion() <= 1.0
-                                          || !are_Doubles_Close
+                QUERY_UNRECOVERABLE_ERROR((*observation__space_iterator)->get__probability_during_expansion() > 1.0
+                                          && !are_Doubles_Close
                                           (1.0,
                                            (*observation__space_iterator)->get__probability_during_expansion()),
                                           "Got an observation :: "<<(**observation__space_iterator)<<std::endl

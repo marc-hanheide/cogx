@@ -45,7 +45,7 @@ Float_State::Float_State(uint size)
         
         QUERY_UNRECOVERABLE_ERROR(i >= data.size(),
                                   "Failed trying to read float at index :: "
-                                  <<index<<std::endl
+                                  <<i<<std::endl
                                   <<" as that entry is out of bounds.");
         
         assert(i < data.size());
