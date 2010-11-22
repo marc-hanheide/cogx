@@ -203,6 +203,8 @@ def make_po_plan(actions, task):
             log.debug("%s depends on %s", pnode, frontier[svar])
 
         for svar, val in pnode.effects:
+            if svar.function in (pddl.builtin.total_cost,):
+                continue
             if state[svar] != val:
                 if svar in readers:
                     for node in readers[svar]:

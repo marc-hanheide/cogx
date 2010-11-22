@@ -54,7 +54,7 @@ class Action(Scope):
         #str = ["(:action %s" % self.name]
         #indent = len("(:action ")
 
-    def get_inst_func(self, st, ignored_cond=None):
+    def get_inst_func(self, st, condition=None):
         import state
         from predicates import FunctionTerm, VariableTerm
         
@@ -71,9 +71,12 @@ class Action(Scope):
                 self.cond_by_arg[arg].add(cond)
             if isinstance(cond, conditions.LiteralCondition):
                 self.free_args[cond] = cond.free()
+
+        if not condition:
+            condition = self.precondition
                 
-        visitors.visit(self.precondition, subcond_visitor)
-        visitors.visit(self.replan, subcond_visitor)
+        visitors.visit(condition, subcond_visitor)
+
         prev_mapping = {}
         checked = set()
             
@@ -129,9 +132,9 @@ class Action(Scope):
                     assert False
                 return None
 
-            result = check(self.precondition)
+            result = check(condition)
             if result == True:
-                checked.add(self.precondition)
+                checked.add(condition)
                 #print self.name, "accept:", [a.get_instance().name for a in  args]
                 return True, None
             elif result == False:

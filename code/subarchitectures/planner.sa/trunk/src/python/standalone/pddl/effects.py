@@ -79,7 +79,9 @@ class Effect(object):
                 return "(forall (%s) %s)" % (args, results[0])
             if eff.__class__ == ConditionalEffect:
                 return "(when (%s) %s)" % (eff.condition.pddl_str(), results[0])
-
+            if eff.__class__ == ProbabilisticEffect:
+                pstrs = ["%s %s" % (p.pddl_str(), e.pddl_str()) for p,e in eff.effects]
+                return "(probabilistic %s)" % " ".join(pstrs)
             try:
                 return eff.pddl_str_extra(results, instantiated=instantiated)
             except:
@@ -277,9 +279,9 @@ class ProbabilisticEffect(Effect):
         if new_parts == []:
             return ProbabilisticEffect([])
         elif new_parts:
-            return ProbabilisticEffect([(p, eff.copy(new_scope, copy_instance=copy_instance)) for p,eff in new_parts])
+            return ProbabilisticEffect([(p.copy(new_scope), eff.copy(new_scope, copy_instance=copy_instance)) for p,eff in new_parts])
         else:
-            return ProbabilisticEffect([(p, eff.copy(new_scope, copy_instance=copy_instance)) for p,eff in self.effects])
+            return ProbabilisticEffect([(p.copy(new_scope), eff.copy(new_scope, copy_instance=copy_instance)) for p,eff in self.effects])
 
     def set_scope(self, new_scope):
         self.scope = new_scope
@@ -369,11 +371,11 @@ class ConditionalEffect(Effect):
         if not new_scope:
             new_scope = self.scope
         if new_parts == []:
-            return ConditionalEffect(self.condition.copy(new_scope), ConjunctiveEffect([], new_scope))
+            return ConditionalEffect(self.condition.copy(new_scope), ConjunctiveEffect([], new_scope), new_scope)
         elif new_parts:
-            return ConditionalEffect(self.condition.copy(new_scope), new_parts[0].copy(new_scope, copy_instance=copy_instance))
+            return ConditionalEffect(self.condition.copy(new_scope), new_parts[0].copy(new_scope, copy_instance=copy_instance), new_scope)
         else:
-            return ConditionalEffect(self.condition.copy(new_scope, copy_instance=copy_instance), self.effect.copy(new_scope, copy_instance=copy_instance))
+            return ConditionalEffect(self.condition.copy(new_scope, copy_instance=copy_instance), self.effect.copy(new_scope, copy_instance=copy_instance), new_scope)
         
     def set_scope(self, new_scope):
         self.scope = new_scope
@@ -394,7 +396,7 @@ class ConditionalEffect(Effect):
         effects = Effect.parse(iter(it.get(list, "effect specification")), scope)
         #scope.set_tag("only-simple-effects", False)
             
-        return ConditionalEffect(condition, effects)
+        return ConditionalEffect(condition, effects, scope)
 
 class SimpleEffect(predicates.Literal, Effect):
     """This class represents an effect that sets/unsets a literal or assigns values to fluents."""

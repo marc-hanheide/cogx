@@ -296,7 +296,9 @@ class ProbabilisticState(State):
 
         for svar, dist in self.iterdists():
             total_p = 0
+            dist.normalize()
             for v,p in sorted(dist.items(), key=lambda (v,p): -p):
+                # print svar, v, p
                 if total_p >= upper_threshold:
                     exclude_domains[svar].append(v)
                     continue
