@@ -39,25 +39,25 @@ using namespace std;
  */
 static const char propTypeNames [][30] =
 {
-	"BRIGHTNESS",									// Is per default (10010) manual and (valueA = 0)
-	"AUTO_EXPOSURE",							/// Is per default (10011) (valueA)
-	"SHARPNESS",									/// Is per default (10011) (valueA)
-	"WHITE_BALANCE",							/// Is per default (10011) (valueA-valueB)
-	"HUE",												// Is per default (10000) off and manual(valueA=2048)
-	"SATURATION",									/// Is per default (10011) (valueA-absValue)
-	"GAMMA",											// Is per default (10000) off and manual (valueA=1024-absValue=1.0)
-	"IRIS",												// Not available
-	"FOCUS",											// Not available
-	"ZOOM",												// Not available
-	"PAN",												// Not available
-	"TILT",												// Not available
-	"SHUTTER",										/// Is per default (10011) (valueA-absValue)
-	"GAIN",												/// Is per default (10011) (valueA)
-	"TRIGGER_MODE",								// Is per default (10000) off and manual (valueA=0-absValue=0)
-	"TRIGGER_DELAY",							// Is per default (10000) off and manual (valueA=1024-absValue=1.0)
-	"FRAME_RATE",									// Is per default (10011) (valueA=480-absValue=30.0)
-	"TEMPERATURE",								// Not available
-	"UNSPECIFIED_PROPERTY_TYPE"
+  "BRIGHTNESS",									// Is per default (10010) manual and (valueA = 0)
+  "AUTO_EXPOSURE",							/// Is per default (10011) (valueA)
+  "SHARPNESS",									/// Is per default (10011) (valueA)
+  "WHITE_BALANCE",							/// Is per default (10011) (valueA-valueB)
+  "HUE",												// Is per default (10000) off and manual(valueA=2048)
+  "SATURATION",									/// Is per default (10011) (valueA-absValue)
+  "GAMMA",											// Is per default (10000) off and manual (valueA=1024-absValue=1.0)
+  "IRIS",												// Not available
+  "FOCUS",											// Not available
+  "ZOOM",												// Not available
+  "PAN",												// Not available
+  "TILT",												// Not available
+  "SHUTTER",										/// Is per default (10011) (valueA-absValue)
+  "GAIN",												/// Is per default (10011) (valueA)
+  "TRIGGER_MODE",								// Is per default (10000) off and manual (valueA=0-absValue=0)
+  "TRIGGER_DELAY",							// Is per default (10000) off and manual (valueA=1024-absValue=1.0)
+  "FRAME_RATE",									// Is per default (10011) (valueA=480-absValue=30.0)
+  "TEMPERATURE",								// Not available
+  "UNSPECIFIED_PROPERTY_TYPE"
 };
 
 /**
@@ -72,8 +72,8 @@ static int propActive[sizeof(propTypeNames)/30] = { 0, 1, 1, 1, 0, 1, 0, 0 ,0, 0
 
 static const char bools [][10] =
 {
-	"FALSE",
-	"TRUE"
+  "FALSE",
+  "TRUE"
 };
 
 /**
@@ -126,10 +126,10 @@ PointGreyServer::PointGreyServer()
 {
   cameras = 0;
   width = height = 0;
-	offsetX = offsetY = 0;
-	paketSize = 0;
-	useVideoMode7 = false;
-	setAutomaticPropertyAdjustment = false;
+  offsetX = offsetY = 0;
+  paketSize = 0;
+  useVideoMode7 = false;
+  setAutomaticPropertyAdjustment = false;
 }
 
 
@@ -176,35 +176,35 @@ void PointGreyServer::LogCameraInfo(FlyCapture2::CameraInfo* pCamInfo)
  */
 void PointGreyServer::LogCameraConfig()
 {
-	for(size_t i = 0; i < (size_t)getNumCameras(); i++)
-	{
-		FlyCapture2::FC2Config pConfig;
-		cameras[i]->GetConfiguration(&pConfig);
+  for(size_t i = 0; i < (size_t)getNumCameras(); i++)
+  {
+    FlyCapture2::FC2Config pConfig;
+    cameras[i]->GetConfiguration(&pConfig);
 
-		pConfig.numBuffers = 0;
-		pConfig.grabMode = FlyCapture2::DROP_FRAMES;
-		pConfig.isochBusSpeed = FlyCapture2::BUSSPEED_S800;
-		pConfig.asyncBusSpeed = FlyCapture2::BUSSPEED_S800;
-		cameras[i]->SetConfiguration(&pConfig);
+    pConfig.numBuffers = 0;
+    pConfig.grabMode = FlyCapture2::DROP_FRAMES;
+    pConfig.isochBusSpeed = FlyCapture2::BUSSPEED_S800;
+    pConfig.asyncBusSpeed = FlyCapture2::BUSSPEED_S800;
+    cameras[i]->SetConfiguration(&pConfig);
 
-		cameras[i]->GetConfiguration(&pConfig);
+    cameras[i]->GetConfiguration(&pConfig);
 
-		log("\n\n*** CAMERA CONFIGURATION ***\n"
-				"Number of buffers: %i\n"
-				"Number of image notifications: %i\n"
-				"Grab timeout: %i\n"
-				"Grab mode: %i\n"
-				"Isochronous bus speed: %i\n"
-				"Asyncronous bus speed: %i\n"
-				"Bandwidth allocation: %i\n",
-				pConfig.numBuffers,
-				pConfig.numImageNotifications,
-				(int) pConfig.grabTimeout,
-				(int) pConfig.grabMode,
-				(int) pConfig.isochBusSpeed,
-				(int) pConfig.asyncBusSpeed,
-				(int) pConfig.bandwidthAllocation);
-	}
+    log("\n\n*** CAMERA CONFIGURATION ***\n"
+        "Number of buffers: %i\n"
+        "Number of image notifications: %i\n"
+        "Grab timeout: %i\n"
+        "Grab mode: %i\n"
+        "Isochronous bus speed: %i\n"
+        "Asyncronous bus speed: %i\n"
+        "Bandwidth allocation: %i\n",
+        pConfig.numBuffers,
+        pConfig.numImageNotifications,
+        (int) pConfig.grabTimeout,
+        (int) pConfig.grabMode,
+        (int) pConfig.isochBusSpeed,
+        (int) pConfig.asyncBusSpeed,
+        (int) pConfig.bandwidthAllocation);
+  }
 }
 
 /**
@@ -248,12 +248,12 @@ void PointGreyServer::LogPropertyInfo(FlyCapture2::PropertyInfo* pPropInfo)
  */
 void PointGreyServer::GetPropertyInfo(int camId, FlyCapture2::PropertyType propType, FlyCapture2::PropertyInfo* pPropInfo)
 {
-	pPropInfo->type = propType;
+  pPropInfo->type = propType;
 
-	FlyCapture2::Error error;
-	error = cameras[camId]->GetPropertyInfo(pPropInfo);
-	if(error != FlyCapture2::PGRERROR_OK)
-		throw runtime_error(error.GetDescription());
+  FlyCapture2::Error error;
+  error = cameras[camId]->GetPropertyInfo(pPropInfo);
+  if(error != FlyCapture2::PGRERROR_OK)
+    throw runtime_error(error.GetDescription());
 }
 
 /**
@@ -306,12 +306,12 @@ void PointGreyServer::LogPropertyValues(FlyCapture2::Property* pProp)
  */
 void PointGreyServer::GetProperty(int camId, FlyCapture2::PropertyType propType, FlyCapture2::Property* pProp)
 {
-	pProp->type = propType;
+  pProp->type = propType;
 
-	FlyCapture2::Error error;
-	error = cameras[camId]->GetProperty(pProp);
-	if(error != FlyCapture2::PGRERROR_OK)
-		throw runtime_error(error.GetDescription());
+  FlyCapture2::Error error;
+  error = cameras[camId]->GetProperty(pProp);
+  if(error != FlyCapture2::PGRERROR_OK)
+    throw runtime_error(error.GetDescription());
 }
 
 /**
@@ -322,14 +322,14 @@ void PointGreyServer::GetProperty(int camId, FlyCapture2::PropertyType propType,
  */
 void PointGreyServer::SetPropertyManual(int camId, FlyCapture2::PropertyType propType, bool manual)
 {
-	FlyCapture2::Property pProp;
-	GetProperty(camId, propType, &pProp);
-	pProp.autoManualMode = !manual;
+  FlyCapture2::Property pProp;
+  GetProperty(camId, propType, &pProp);
+  pProp.autoManualMode = !manual;
 
-	FlyCapture2::Error error;
-	error = cameras[camId]->SetProperty(&pProp);
-	if(error != FlyCapture2::PGRERROR_OK)
-		throw runtime_error(error.GetDescription());
+  FlyCapture2::Error error;
+  error = cameras[camId]->SetProperty(&pProp);
+  if(error != FlyCapture2::PGRERROR_OK)
+    throw runtime_error(error.GetDescription());
 }
 
 
@@ -341,16 +341,16 @@ void PointGreyServer::SetPropertyManual(int camId, FlyCapture2::PropertyType pro
  */
 void PointGreyServer::SetPropertyValue(int camId, FlyCapture2::PropertyType propType, int valueA, int valueB, float absValue)
 {
-	FlyCapture2::Property pProp;
-	GetProperty(camId, propType, &pProp);
-	pProp.valueA = valueA;
-	pProp.valueB = valueB;
-	pProp.absValue = absValue;
+  FlyCapture2::Property pProp;
+  GetProperty(camId, propType, &pProp);
+  pProp.valueA = valueA;
+  pProp.valueB = valueB;
+  pProp.absValue = absValue;
 
-	FlyCapture2::Error error;
-	error = cameras[camId]->SetProperty(&pProp);
-	if(error != FlyCapture2::PGRERROR_OK)
-		throw runtime_error(error.GetDescription());
+  FlyCapture2::Error error;
+  error = cameras[camId]->SetProperty(&pProp);
+  if(error != FlyCapture2::PGRERROR_OK)
+    throw runtime_error(error.GetDescription());
 }
 
 
@@ -360,21 +360,21 @@ void PointGreyServer::SetPropertyValue(int camId, FlyCapture2::PropertyType prop
  */
 void PointGreyServer::SetAllPropertiesManual()
 {
-	for(size_t i = 0; i < (size_t)getNumCameras(); i++)
-	{
-		if (i == 0) // set the camera properties of the first camera to auto.
-			for(unsigned j=0; j< sizeof(propTypeNames)/30; j++)
-				if(propActive[j] == 1)
-					SetPropertyManual(i, (FlyCapture2::PropertyType) j, false);
-		if (i > 0) // set later camera properties auto or manual (propActive)
-			for(unsigned j=0; j< sizeof(propTypeNames)/30; j++)
-			{
-				if(propActive[j] == 1)
-					SetPropertyManual(i, (FlyCapture2::PropertyType) j, true);
-				else if(propEnabled[j] == 1)
-					SetPropertyManual(i, (FlyCapture2::PropertyType) j, false);
-			}
-	}
+  for(size_t i = 0; i < (size_t)getNumCameras(); i++)
+  {
+    if (i == 0) // set the camera properties of the first camera to auto.
+      for(unsigned j=0; j< sizeof(propTypeNames)/30; j++)
+        if(propActive[j] == 1)
+          SetPropertyManual(i, (FlyCapture2::PropertyType) j, false);
+    if (i > 0) // set later camera properties auto or manual (propActive)
+      for(unsigned j=0; j< sizeof(propTypeNames)/30; j++)
+      {
+        if(propActive[j] == 1)
+          SetPropertyManual(i, (FlyCapture2::PropertyType) j, true);
+        else if(propEnabled[j] == 1)
+          SetPropertyManual(i, (FlyCapture2::PropertyType) j, false);
+      }
+  }
 }
 
 /**
@@ -383,24 +383,24 @@ void PointGreyServer::SetAllPropertiesManual()
  */
 void PointGreyServer::CopyAllPropertyValues()
 {
-	static int counter = 0;
-	counter++;
-	if (counter > realFps)	// copy the properties every second
-	{
-		counter = 0;
-		FlyCapture2::Property pProp;
-		for(unsigned j=0; j< sizeof(propTypeNames)/30; j++)
-		{
-			if(propActive[j] == 1)
-			{
-				for(size_t i = 0; i < (size_t)getNumCameras(); i++)
-				{
-					if (i == 0) GetProperty(0, (FlyCapture2::PropertyType) j, &pProp);
-					if (i > 0) SetPropertyValue(i, (FlyCapture2::PropertyType) j, pProp.valueA, pProp.valueB, pProp.absValue);
-				}
-			}
-		}
-	}
+  static int counter = 0;
+  counter++;
+  if (counter > realFps)	// copy the properties every second
+  {
+    counter = 0;
+    FlyCapture2::Property pProp;
+    for(unsigned j=0; j< sizeof(propTypeNames)/30; j++)
+    {
+      if(propActive[j] == 1)
+      {
+        for(size_t i = 0; i < (size_t)getNumCameras(); i++)
+        {
+          if (i == 0) GetProperty(0, (FlyCapture2::PropertyType) j, &pProp);
+          if (i > 0) SetPropertyValue(i, (FlyCapture2::PropertyType) j, pProp.valueA, pProp.valueB, pProp.absValue);
+        }
+      }
+    }
+  }
 }
 
 
@@ -410,10 +410,10 @@ void PointGreyServer::CopyAllPropertyValues()
  */
 void PointGreyServer::SetAutomaticPropertyAdjustment()
 {
-	setAutomaticPropertyAdjustment = true;
+  setAutomaticPropertyAdjustment = true;
 
-	SetAllPropertiesManual();
-	CopyAllPropertyValues();
+  SetAllPropertiesManual();
+  CopyAllPropertyValues();
 }
 
 /**
@@ -421,13 +421,13 @@ void PointGreyServer::SetAutomaticPropertyAdjustment()
  */
 void PointGreyServer::SetFormat7Properties(int w, int h, int offX, int offY, int vMode, int pSize)
 {
-	width = w;
-	height = h;
-	offsetX = offX;
-	offsetY = offY;
-	paketSize = pSize;
-	videoMode = vMode;
-	useVideoMode7 = true;
+  width = w;
+  height = h;
+  offsetX = offX;
+  offsetY = offY;
+  paketSize = pSize;
+  videoMode = vMode;
+  useVideoMode7 = true;
 }
 
 
@@ -440,13 +440,13 @@ void PointGreyServer::SetFormat7Properties(int w, int h, int offX, int offY, int
  */
 bool PointGreyServer::IsCurrentlyInFormat7(int camId)
 {
-	FlyCapture2::Error error;
-	FlyCapture2::VideoMode currVideoMode;
-	FlyCapture2::FrameRate currFrameRate;
+  FlyCapture2::Error error;
+  FlyCapture2::VideoMode currVideoMode;
+  FlyCapture2::FrameRate currFrameRate;
 
-	error = cameras[camId]->GetVideoModeAndFrameRate( &currVideoMode, &currFrameRate );
-	if ( error != FlyCapture2::PGRERROR_OK ) throw runtime_error(error.GetDescription());
-	return (currVideoMode == FlyCapture2::VIDEOMODE_FORMAT7);
+  error = cameras[camId]->GetVideoModeAndFrameRate( &currVideoMode, &currFrameRate );
+  if ( error != FlyCapture2::PGRERROR_OK ) throw runtime_error(error.GetDescription());
+  return (currVideoMode == FlyCapture2::VIDEOMODE_FORMAT7);
 }
 
 
@@ -462,43 +462,43 @@ bool PointGreyServer::IsCurrentlyInFormat7(int camId)
  */
 bool PointGreyServer::GetFormat7ImageParametersFromCamera(FlyCapture2::Mode mode, unsigned int* pLeft, unsigned int* pTop, unsigned int* pWidth, unsigned int* pHeight)
 {
-		int camId = 0;							/// camID
-		FlyCapture2::Error error;
+  int camId = 0;							/// camID
+  FlyCapture2::Error error;
 
-		// Get the proper mode offset
-		unsigned int modeOffset = 0;
-		unsigned int modeOffsetRegister = 0x2E0 + (4 * mode);
+  // Get the proper mode offset
+  unsigned int modeOffset = 0;
+  unsigned int modeOffsetRegister = 0x2E0 + (4 * mode);
 
-		error = cameras[camId]->ReadRegister( modeOffsetRegister, &modeOffset );
-		if( error != FlyCapture2::PGRERROR_OK )
-		{
-				return false;
-		}
+  error = cameras[camId]->ReadRegister( modeOffsetRegister, &modeOffset );
+  if( error != FlyCapture2::PGRERROR_OK )
+  {
+    return false;
+  }
 
-		modeOffset *= 4;
-		modeOffset &= 0x000FFFFF;
+  modeOffset *= 4;
+  modeOffset &= 0x000FFFFF;
 
-		unsigned int imageSize;
-		error = cameras[camId]->ReadRegister( modeOffset + 0x008, &imageSize );
-		if( error != FlyCapture2::PGRERROR_OK )
-		{
-				return false;
-		}
+  unsigned int imageSize;
+  error = cameras[camId]->ReadRegister( modeOffset + 0x008, &imageSize );
+  if( error != FlyCapture2::PGRERROR_OK )
+  {
+    return false;
+  }
 
-		*pLeft = imageSize >> 16;
-		*pTop = imageSize & 0x0000FFFF;
+  *pLeft = imageSize >> 16;
+  *pTop = imageSize & 0x0000FFFF;
 
-		unsigned int imagePosition;
-		error = cameras[camId]->ReadRegister( modeOffset + 0x00C, &imagePosition );
-		if( error != FlyCapture2::PGRERROR_OK )
-		{
-				return false;
-		}
+  unsigned int imagePosition;
+  error = cameras[camId]->ReadRegister( modeOffset + 0x00C, &imagePosition );
+  if( error != FlyCapture2::PGRERROR_OK )
+  {
+    return false;
+  }
 
-		*pWidth = imagePosition >> 16;
-		*pHeight = imagePosition & 0x0000FFFF;
+  *pWidth = imagePosition >> 16;
+  *pHeight = imagePosition & 0x0000FFFF;
 
-		return true;
+  return true;
 }
 
 
@@ -508,74 +508,74 @@ bool PointGreyServer::GetFormat7ImageParametersFromCamera(FlyCapture2::Mode mode
  */
 void PointGreyServer::SetVideoMode7(int camId)
 {
-	FlyCapture2::Error error;
+  FlyCapture2::Error error;
 
-	// Save the current settings
-	FlyCapture2::VideoMode currVideoMode;
-	FlyCapture2::FrameRate currFrameRate;
-	FlyCapture2::Format7ImageSettings currFmt7Settings;
-	unsigned int currPacketSize;
+  // Save the current settings
+  FlyCapture2::VideoMode currVideoMode;
+  FlyCapture2::FrameRate currFrameRate;
+  FlyCapture2::Format7ImageSettings currFmt7Settings;
+  unsigned int currPacketSize;
 
-	// Get current video mode and frame rate
-	error = cameras[camId]->GetVideoModeAndFrameRate( &currVideoMode, &currFrameRate );
-	if ( error != FlyCapture2::PGRERROR_OK )
-		throw runtime_error(error.GetDescription());
+  // Get current video mode and frame rate
+  error = cameras[camId]->GetVideoModeAndFrameRate( &currVideoMode, &currFrameRate );
+  if ( error != FlyCapture2::PGRERROR_OK )
+    throw runtime_error(error.GetDescription());
 
-	if ( currVideoMode == FlyCapture2::VIDEOMODE_FORMAT7 )
-	{
-		// Get the current Format 7 settings
-		float percentage;
-		error = cameras[camId]->GetFormat7Configuration( &currFmt7Settings, &currPacketSize, &percentage );
-		if ( error != FlyCapture2::PGRERROR_OK )
-			throw runtime_error(error.GetDescription());
-	}
+  if ( currVideoMode == FlyCapture2::VIDEOMODE_FORMAT7 )
+  {
+    // Get the current Format 7 settings
+    float percentage;
+    error = cameras[camId]->GetFormat7Configuration( &currFmt7Settings, &currPacketSize, &percentage );
+    if ( error != FlyCapture2::PGRERROR_OK )
+      throw runtime_error(error.GetDescription());
+  }
 
-	// Get the image settings
-	FlyCapture2::Format7ImageSettings newFmt7Settings;
-	if(videoMode == 0) newFmt7Settings.mode = FlyCapture2::MODE_0;
-	else if(videoMode == 1) newFmt7Settings.mode = FlyCapture2::MODE_1;
-	else println("wrong video mode for format7-mode selected.");
-	newFmt7Settings.offsetX = offsetX;
-	newFmt7Settings.offsetY = offsetY;
-	newFmt7Settings.width = width;
-	newFmt7Settings.height = height;
-	newFmt7Settings.pixelFormat = FlyCapture2::PIXEL_FORMAT_RGB8;
+  // Get the image settings
+  FlyCapture2::Format7ImageSettings newFmt7Settings;
+  if(videoMode == 0) newFmt7Settings.mode = FlyCapture2::MODE_0;
+  else if(videoMode == 1) newFmt7Settings.mode = FlyCapture2::MODE_1;
+  else println("wrong video mode for format7-mode selected.");
+  newFmt7Settings.offsetX = offsetX;
+  newFmt7Settings.offsetY = offsetY;
+  newFmt7Settings.width = width;
+  newFmt7Settings.height = height;
+  newFmt7Settings.pixelFormat = FlyCapture2::PIXEL_FORMAT_RGB8;
 
-	// Experimentell bestimmte maximale packet-size: für MODE_0: 1600 ==   ~13fps
-	// 																													 3200 ==   ~20fps
-	//																													 2400 == 15-22fps
-	// Experimentell bestimmte maximale packet-size: für MODE_1: 1800 ==   ~15fps
-	//																													 2400 == 15-22fps
-	// Bei MODE_0: 3400 bzw. MODE_1: 2600 bekommt man folgende Meldung:
-	// [VideoServer: ***************************************************************]
-	// [VideoServer: Aborting after catching std::exception from runComponent()]
-	// [VideoServer: what(): PointGreyServer: can only handle images with size 3*w*h bytes]
-	// [VideoServer: ***************************************************************]
-	unsigned int newPacketSize = paketSize;				// Mode_0: 7260 (52Hz) / Mode_1: 3628 (30Hz)
-	if(paketSize > 1600) log("maybe paket size too big: 1600 recommended.");
+  // Experimentell bestimmte maximale packet-size: für MODE_0: 1600 ==   ~13fps
+  // 																													 3200 ==   ~20fps
+  //																													 2400 == 15-22fps
+  // Experimentell bestimmte maximale packet-size: für MODE_1: 1800 ==   ~15fps
+  //																													 2400 == 15-22fps
+  // Bei MODE_0: 3400 bzw. MODE_1: 2600 bekommt man folgende Meldung:
+  // [VideoServer: ***************************************************************]
+  // [VideoServer: Aborting after catching std::exception from runComponent()]
+  // [VideoServer: what(): PointGreyServer: can only handle images with size 3*w*h bytes]
+  // [VideoServer: ***************************************************************]
+  unsigned int newPacketSize = paketSize;				// Mode_0: 7260 (52Hz) / Mode_1: 3628 (30Hz)
+  if(paketSize > 1600) log("maybe paket size too big: 1600 recommended.");
 
-	// Stop the camera: should be stopped at the start
-	// error = m_pCamera->StopCapture();
+  // Stop the camera: should be stopped at the start
+  // error = m_pCamera->StopCapture();
 
-	// Set the Format7 settings
-	error = cameras[camId]->SetFormat7Configuration( &newFmt7Settings, newPacketSize );
-	if ( error != FlyCapture2::PGRERROR_OK )
-	{
-		// Set the camera back to original state, if we got an error.
-		println("could not set the format7 configuration.\n");
-		cameras[camId]->SetVideoModeAndFrameRate( currVideoMode, currFrameRate );
-	}
+  // Set the Format7 settings
+  error = cameras[camId]->SetFormat7Configuration( &newFmt7Settings, newPacketSize );
+  if ( error != FlyCapture2::PGRERROR_OK )
+  {
+    // Set the camera back to original state, if we got an error.
+    println("could not set the format7 configuration.\n");
+    cameras[camId]->SetVideoModeAndFrameRate( currVideoMode, currFrameRate );
+  }
 
-		// Get and print Format7 info
-// 		FlyCapture2::Format7Info pInfo;
-// 		bool pSupported;
-// 		error = cameras[camId]->GetFormat7Info(&pInfo, &pSupported);
-// 		if(error != FlyCapture2::PGRERROR_OK) throw runtime_error(error.GetDescription());
-// 		printf("GetFormat7Info():\n");
-// 		if(pInfo.mode == FlyCapture2::MODE_0) printf("    pInfo.mode = FlyCapture2::MODE_0\n");
-// 		if(pInfo.mode == FlyCapture2::MODE_1) printf("    pInfo.mode = FlyCapture2::MODE_1\n");
-// 		printf("    GOT: Packetsize: %u	percentage: %4.3f\n", pInfo.packetSize, pInfo.percentage);
-// 		printf("    GOT: max. Packetsize: %u	pixelFormatBitField: %u\n", pInfo.maxPacketSize, pInfo.pixelFormatBitField);
+  // Get and print Format7 info
+  // 		FlyCapture2::Format7Info pInfo;
+  // 		bool pSupported;
+  // 		error = cameras[camId]->GetFormat7Info(&pInfo, &pSupported);
+  // 		if(error != FlyCapture2::PGRERROR_OK) throw runtime_error(error.GetDescription());
+  // 		printf("GetFormat7Info():\n");
+  // 		if(pInfo.mode == FlyCapture2::MODE_0) printf("    pInfo.mode = FlyCapture2::MODE_0\n");
+  // 		if(pInfo.mode == FlyCapture2::MODE_1) printf("    pInfo.mode = FlyCapture2::MODE_1\n");
+  // 		printf("    GOT: Packetsize: %u	percentage: %4.3f\n", pInfo.packetSize, pInfo.percentage);
+  // 		printf("    GOT: max. Packetsize: %u	pixelFormatBitField: %u\n", pInfo.maxPacketSize, pInfo.pixelFormatBitField);
 }
 
 
@@ -597,24 +597,24 @@ FlyCapture2::VideoMode PointGreyServer::selectVideoMode(int &_width, int &_heigh
   if(_width == 640)
   {
     _height = 480;
-		if(fps > 15) log("Maybe too high framerate requested: <= 15fps recommended.");
+    if(fps > 15) log("Maybe too high framerate requested: <= 15fps recommended.");
     return FlyCapture2::VIDEOMODE_640x480RGB;
   }
   if(_width == 1280)
   {
     _height = 960;
-		if(fps > 3) log("Maybe too high framerate requested: 3,75fps (3) recommended, <7,5 mandatory.");
-		if(fps > 7)
-		{
-			log("Changed requested framerate to 7,5fps.");
-			fps = 7;
-		}
+    if(fps > 3) log("Maybe too high framerate requested: 3,75fps (3) recommended, <7,5 mandatory.");
+    if(fps > 7)
+    {
+      log("Changed requested framerate to 7,5fps.");
+      fps = 7;
+    }
     return FlyCapture2::VIDEOMODE_1280x960YUV422;
   }
   if(_width <= 640)
   {
     // the default value
-		log("unknown video mode: video mode set to: 640x480RGB");
+    log("unknown video mode: video mode set to: 640x480RGB");
     _width = 640;
     _height = 480;
     return FlyCapture2::VIDEOMODE_640x480RGB;
@@ -622,15 +622,15 @@ FlyCapture2::VideoMode PointGreyServer::selectVideoMode(int &_width, int &_heigh
   if(_width > 640)
   {
     // the default value
-		log("unknown video mode: video mode set to: 1280x960YUV422");
+    log("unknown video mode: video mode set to: 1280x960YUV422");
     _width = 640;
     _height = 480;
-		if(fps > 3) log("Maybe too high framerate requested: 3,75fps (3) recommended, <7,5 mandatory.");
-		if(fps > 7)
-		{
-			log("Changed requested framerate to 7,5fps.");
-			fps = 7;
-		}
+    if(fps > 3) log("Maybe too high framerate requested: 3,75fps (3) recommended, <7,5 mandatory.");
+    if(fps > 7)
+    {
+      log("Changed requested framerate to 7,5fps.");
+      fps = 7;
+    }
     return FlyCapture2::VIDEOMODE_1280x960YUV422;
   }
 }
@@ -642,34 +642,34 @@ FlyCapture2::VideoMode PointGreyServer::selectVideoMode(int &_width, int &_heigh
  */
 FlyCapture2::FrameRate PointGreyServer::selectFrameRate(int &_fps)
 {
-	switch(_fps)
-	{
-		case 1:
-			return FlyCapture2::FRAMERATE_1_875;
-		break;
-		case 3:
-			return FlyCapture2::FRAMERATE_3_75;
-		break;
-		case 7:
-			return FlyCapture2::FRAMERATE_7_5;
-		break;
-		case 15:
-			return FlyCapture2::FRAMERATE_15;
-		break;
-		case 30:
-			return FlyCapture2::FRAMERATE_30;
-		break;
-		case 60:
-			return FlyCapture2::FRAMERATE_60;
-		break;
-		case 120:
-			return FlyCapture2::FRAMERATE_120;
-		break;
-		default:
-		  log("unknown framerate: set to default value: 15fps\n");
-			return FlyCapture2::FRAMERATE_15;
-		break;
-	}
+  switch(_fps)
+  {
+    case 1:
+      return FlyCapture2::FRAMERATE_1_875;
+      break;
+    case 3:
+      return FlyCapture2::FRAMERATE_3_75;
+      break;
+    case 7:
+      return FlyCapture2::FRAMERATE_7_5;
+      break;
+    case 15:
+      return FlyCapture2::FRAMERATE_15;
+      break;
+    case 30:
+      return FlyCapture2::FRAMERATE_30;
+      break;
+    case 60:
+      return FlyCapture2::FRAMERATE_60;
+      break;
+    case 120:
+      return FlyCapture2::FRAMERATE_120;
+      break;
+    default:
+      log("unknown framerate: set to default value: 15fps\n");
+      return FlyCapture2::FRAMERATE_15;
+      break;
+  }
 }
 
 
@@ -717,32 +717,32 @@ void PointGreyServer::init() throw(runtime_error)
     log("setting video mode %d x %d", width, height);
 
     FlyCapture2::VideoMode mode = selectVideoMode(width, height);
-		FlyCapture2::FrameRate rate = selectFrameRate(fps);
-		if(useVideoMode7)
-			SetVideoMode7(i);
-		else
-		{
-			error = cameras[i]->SetVideoModeAndFrameRate(mode, rate);
-			if(error != FlyCapture2::PGRERROR_OK)
-				throw runtime_error(error.GetDescription());
-		}
+    FlyCapture2::FrameRate rate = selectFrameRate(fps);
+    if(useVideoMode7)
+      SetVideoMode7(i);
+    else
+    {
+      error = cameras[i]->SetVideoModeAndFrameRate(mode, rate);
+      if(error != FlyCapture2::PGRERROR_OK)
+        throw runtime_error(error.GetDescription());
+    }
   }
 
-	// Camera configuration
-	// LogCameraConfig();
+  // Camera configuration
+  // LogCameraConfig();
 
-	// start syncronized capturing of images from all cameras
+  // start syncronized capturing of images from all cameras
   error = FlyCapture2::Camera::StartSyncCapture(getNumCameras(), (const FlyCapture2::Camera**)cameras);
   if(error != FlyCapture2::PGRERROR_OK)
     throw runtime_error(error.GetDescription());
 
-// 	// start unsyncronized capturing of images
-// 	for(size_t i=0; i<(size_t)getNumCameras(); i++)
-// 	{
-// 		error = cameras[i]->StartCapture();
-// 		if(error != FlyCapture2::PGRERROR_OK)
-// 			throw runtime_error(error.GetDescription());
-// 	}
+  // 	// start unsyncronized capturing of images
+  // 	for(size_t i=0; i<(size_t)getNumCameras(); i++)
+  // 	{
+  // 		error = cameras[i]->StartCapture();
+  // 		if(error != FlyCapture2::PGRERROR_OK)
+  // 			throw runtime_error(error.GetDescription());
+  // 	}
 }
 
 
@@ -770,10 +770,10 @@ void PointGreyServer::configure(const map<string,string> & _config) throw(runtim
   }
 
   // set the properties before the initialisation
-  if((it = _config.find("--format7")) != _config.end())																				/// TODO Check, if we have 5 properties!
+  if((it = _config.find("--format7")) != _config.end())								/// TODO Check, if we have 5 properties!
   {
-		useVideoMode7 = true;
-		int prop[6];
+    useVideoMode7 = true;
+    int prop[6];
     istringstream str(it->second);
     str >> prop[0] >> prop[1] >> prop[2] >> prop[3] >> prop[4] >> prop[5];
     SetFormat7Properties(prop[0], prop[1], prop[2], prop[3], prop[4], prop[5]);
@@ -783,7 +783,7 @@ void PointGreyServer::configure(const map<string,string> & _config) throw(runtim
   init();
 
   // set same properties AFTER initialisation
-  if((it = _config.find("--setAutPropAdj")) != _config.end())																	/// TODO Check, if we have 6 properties!
+  if((it = _config.find("--setAutPropAdj")) != _config.end())					/// TODO Check, if we have 6 properties!
   {
     istringstream str(it->second);
     str >> propActive[1] >> propActive[2] >> propActive[3] >> propActive[5] >> propActive[12] >> propActive[13];
@@ -818,8 +818,8 @@ void PointGreyServer::grabFramesInternal()
  */
 void PointGreyServer::grabFrames()
 {
-	// If automatic adjustment of properties is active
-	if(setAutomaticPropertyAdjustment) CopyAllPropertyValues();
+  // If automatic adjustment of properties is active
+  if(setAutomaticPropertyAdjustment) CopyAllPropertyValues();
   grabFramesInternal();
 }
 
@@ -833,53 +833,53 @@ void PointGreyServer::grabFrames()
  */
 void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height, Video::Image &frame)
 {
-	// we convert the image to RGB8, if format is different
-	FlyCapture2::Image image;
-	if(retrievedImages[camIdx].GetPixelFormat() != FlyCapture2::PIXEL_FORMAT_RGB8)
-		retrievedImages[camIdx].Convert(FlyCapture2::PIXEL_FORMAT_RGB8, &image);
-	else
-		image = retrievedImages[camIdx];
+  // we convert the image to RGB8, if format is different
+  FlyCapture2::Image image;
+  if(retrievedImages[camIdx].GetPixelFormat() != FlyCapture2::PIXEL_FORMAT_RGB8)
+    retrievedImages[camIdx].Convert(FlyCapture2::PIXEL_FORMAT_RGB8, &image);
+  else
+    image = retrievedImages[camIdx];
 
-	// if image size is greater than actual image size, change camera capturing mode to higher resolution.
-	if (width > this->width)
-	{
-		log("Image with higher resolution requested: %u x %u. Change resolution", width, height);
-	  FlyCapture2::Error error;
+  // if image size is greater than actual image size, change camera capturing mode to higher resolution.
+  if (width > this->width)
+  {
+    log("Image with higher resolution requested: %u x %u. Change resolution", width, height);
+    FlyCapture2::Error error;
 
-		// change image resolution and frame rate
-		if(!useVideoMode7)
-		{
-			for(size_t i=0; i<(size_t)getNumCameras(); i++)
-			{
-				int w = width;
-				int h = height;
-				// stop capturing of images from all cameras
-				error = cameras[i]->StopCapture();
-				if(error != FlyCapture2::PGRERROR_OK)
-					throw runtime_error(error.GetDescription());
+    // change image resolution and frame rate
+    if(!useVideoMode7)
+    {
+      for(size_t i=0; i<(size_t)getNumCameras(); i++)
+      {
+        int w = width;
+        int h = height;
+        // stop capturing of images from all cameras
+        error = cameras[i]->StopCapture();
+        if(error != FlyCapture2::PGRERROR_OK)
+          throw runtime_error(error.GetDescription());
 
         log("setting video mode %d x %d", width, height);
-        
-				FlyCapture2::VideoMode mode = selectVideoMode(w, h);
-				FlyCapture2::FrameRate rate = selectFrameRate(fps);
-				error = cameras[i]->SetVideoModeAndFrameRate(mode, rate);
-				if(error != FlyCapture2::PGRERROR_OK)
-					throw runtime_error(error.GetDescription());
-			}
-			this->width = width;
-			this->height = height;
-		}
-		else log("Image with higher resolution requested: not possible in Format7 mode.");
 
-		// start syncronized capturing of images from all cameras with new video mode
-		error = FlyCapture2::Camera::StartSyncCapture(getNumCameras(), (const FlyCapture2::Camera**)cameras);
-		if(error != FlyCapture2::PGRERROR_OK)
-			throw runtime_error(error.GetDescription());
+        FlyCapture2::VideoMode mode = selectVideoMode(w, h);
+        FlyCapture2::FrameRate rate = selectFrameRate(fps);
+        error = cameras[i]->SetVideoModeAndFrameRate(mode, rate);
+        if(error != FlyCapture2::PGRERROR_OK)
+          throw runtime_error(error.GetDescription());
+      }
+      this->width = width;
+      this->height = height;
+    }
+    else log("Image with higher resolution requested: not possible in Format7 mode.");
 
-		// set new width and height
-		this->width = width;
-		this->height = height;
-	}
+    // start syncronized capturing of images from all cameras with new video mode
+    error = FlyCapture2::Camera::StartSyncCapture(getNumCameras(), (const FlyCapture2::Camera**)cameras);
+    if(error != FlyCapture2::PGRERROR_OK)
+      throw runtime_error(error.GetDescription());
+
+    // set new width and height
+    this->width = width;
+    this->height = height;
+  }
 
   frame.time = grabTimes[camIdx];
   frame.camId = camIds[camIdx];
@@ -978,7 +978,7 @@ void PointGreyServer::retrieveFrame(int camId, int width, int height, Video::Ima
  */
 void PointGreyServer::retrieveHRFrames(std::vector<Video::Image> &frames)
 {
-	printf("PointGreyServer::retrieveHRFrames: Not yet implemented!\n");
+  printf("PointGreyServer::retrieveHRFrames: Not yet implemented!\n");
 }
 
 /**
@@ -1012,12 +1012,12 @@ int PointGreyServer::getFramerateMilliSeconds()
  */
 void PointGreyServer::changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize)
 {
-	if (!useVideoMode7) return;
+  if (!useVideoMode7) return;
 
-	lockComponent();
-	SetFormat7Properties(width, height, offsetX, offsetY, mode, paketSize);
-	for(int i=0; i<getNumCameras(); i++)
-		SetVideoMode7(i);
+  lockComponent();
+  SetFormat7Properties(width, height, offsetX, offsetY, mode, paketSize);
+  for(int i=0; i<getNumCameras(); i++)
+    SetVideoMode7(i);
   unlockComponent();
 }
 
@@ -1057,20 +1057,20 @@ void PointGreyServer::copyImage(const FlyCapture2::Image &flyImg, Video::Image &
  */
 IplImage* wrapFlyCaptureImage(const FlyCapture2::Image &flyImg)
 {
-	if(flyImg.GetPixelFormat() != FlyCapture2::PIXEL_FORMAT_RGB8)
-		throw runtime_error("PointGreyServer: can only handle RGB8 image format");
-	if(flyImg.GetStride() != flyImg.GetCols()*3)
-		throw runtime_error("PointGreyServer: can only handle images with no padding");
-	if(flyImg.GetDataSize() != flyImg.GetCols()*flyImg.GetRows()*3)
-		throw runtime_error("PointGreyServer: can only handle images with size 3*w*h bytes");
+  if(flyImg.GetPixelFormat() != FlyCapture2::PIXEL_FORMAT_RGB8)
+    throw runtime_error("PointGreyServer: can only handle RGB8 image format");
+  if(flyImg.GetStride() != flyImg.GetCols()*3)
+    throw runtime_error("PointGreyServer: can only handle images with no padding");
+  if(flyImg.GetDataSize() != flyImg.GetCols()*flyImg.GetRows()*3)
+    throw runtime_error("PointGreyServer: can only handle images with size 3*w*h bytes");
 
-	// HACK: Data shared between IplImage and FlyCapture2::Image
-	IplImage* pImg = cvCreateImageHeader(cvSize(flyImg.GetCols(), flyImg.GetRows()), IPL_DEPTH_8U, 3);
-	pImg->imageData = (char*) flyImg.GetData();
-	pImg->imageDataOrigin = pImg->imageData;
-	pImg->widthStep = flyImg.GetCols() * 3;
-	pImg->imageSize = pImg->widthStep * flyImg.GetRows();
-	return pImg;
+  // HACK: Data shared between IplImage and FlyCapture2::Image
+  IplImage* pImg = cvCreateImageHeader(cvSize(flyImg.GetCols(), flyImg.GetRows()), IPL_DEPTH_8U, 3);
+  pImg->imageData = (char*) flyImg.GetData();
+  pImg->imageDataOrigin = pImg->imageData;
+  pImg->widthStep = flyImg.GetCols() * 3;
+  pImg->imageSize = pImg->widthStep * flyImg.GetRows();
+  return pImg;
 }
 #endif
 
