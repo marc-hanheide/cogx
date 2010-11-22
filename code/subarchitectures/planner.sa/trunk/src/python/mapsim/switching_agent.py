@@ -46,7 +46,7 @@ class StandaloneDTInterface(object):
         self.process = None
         
     def wait_for_action(self):
-        while True:
+        while self.process.poll() is None:
             line = self.process.stdout.readline()
             log.debug("read: %s", line)
             if (line):
@@ -56,6 +56,7 @@ class StandaloneDTInterface(object):
                     alist = match.group(1).lower().strip().split(" ")
                     self.action_callback(alist[0], alist[1:])
                     return
+        raise Exception("pcogx returned with exit code %d" % self.process.returncode)
 
     def send_observations(self, observations):
         print >> self.process.stdin, "O", " ".join(str(o) for o in observations)
@@ -68,16 +69,8 @@ class SwitchingAgent(agent.Agent):
         self.last_dt_id = 0
         self.dt_interface = None
         
-        if global_vars.config.base_planner.name == "TFD":
-            dt_compiler = pddl.dtpddl.DT2MAPLCompiler 
-        elif global_vars.config.base_planner.name == "ProbDownward":
-            dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD
-        else:
-            assert False, "Only TFD and modified Fast Downward (ProbDownward) are supported"
-        
         self.domain = mapltask.domain
-        self.cp_domain = dt_compiler().translate(mapltask.domain)
-        
+
         agent.Agent.__init__(self, name, mapltask, planner, simulator)
         
     def new_task(self, mapltask):
@@ -89,13 +82,36 @@ class SwitchingAgent(agent.Agent):
         self.percepts = []
         self.dt_active = False
 
-        self.state = pddl.prob_state.ProbabilisticState.from_problem(mapltask)
+        #hierarchical = self.simulator.preprocess_problem(mapltask)
+        hierarchical = mapltask
+        w = task.PDDLOutput(writer=pddl.dtpddl.DTPDDLWriter())
+        w.write(hierarchical, problem_fn="tree.pddl")
+        
+        pnodes = pddl.dtpddl.PNode.from_problem(hierarchical)
+        #nodedict = {}
+        # for n in pnodes:
+        #     n.consolidate(nodedict)
+        pnodes, det_lits = pddl.dtpddl.PNode.simplify_all(pnodes)
+        #pnodes = pddl.dtpddl.PNode.consolidate_all(pnodes)
+        mapltask.init += det_lits
+        self.pnodes = pnodes
+        
+        if global_vars.config.base_planner.name == "TFD":
+            dt_compiler = pddl.dtpddl.DT2MAPLCompiler ()
+        elif global_vars.config.base_planner.name == "ProbDownward":
+            dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD(nodes=pnodes)
+        else:
+            assert False, "Only TFD and modified Fast Downward (ProbDownward) are supported"
+        
+        self.cp_domain = dt_compiler.translate(mapltask).domain
+        
+        self.state = pddl.prob_state.ProbabilisticState.from_problem(hierarchical)
         det_state = self.state.determinized_state(0.05, 0.95)
         facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
         facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
         cp_problem = pddl.Problem(mapltask.name, mapltask.objects, facts , mapltask.goal, self.cp_domain)
 
-        self.bayes = bayes.BayesianState(self.state, mapltask, self.domain)
+        self.bayes = bayes.BayesianState(self.state, mapltask, pnodes, self.domain)
         #bnetif = BnetInterface(self.bayes.nodes.values(), self.bayes.edges, debug=False)
         #result = bnetif.evaluate()
         #for node, values in result.iteritems():
@@ -133,7 +149,7 @@ class SwitchingAgent(agent.Agent):
 
         if "partial-observability" in self.domain.requirements:
             log.info("creating dt task")
-            self.dt_task = dt_problem.DTProblem(plan, self.domain)
+            self.dt_task = dt_problem.DTProblem(plan, self.pnodes, self.domain)
 
             for pnode in plan.nodes_iter():
                 if pnode.is_virtual():
@@ -292,6 +308,9 @@ class SwitchingAgent(agent.Agent):
             self.done()
                 
     def dt_planning_active(self):
+        if not global_vars.mapsim_config.switching.enable_dt:
+            return False
+        
         plan = self.get_plan()
         if not plan or not self.dt_task:
             return False
@@ -347,16 +366,17 @@ class SwitchingAgent(agent.Agent):
 
         action = self.last_action.action
         action.instantiate(self.last_action.full_args, self.task.mapltask)
-        self.bayes.handle_obs(action, new_percepts)
-        action.uninstantiate()
-        result = self.bayes.evaluate()
-        for node, probs in result.iteritems():
-            if isinstance(node.var, str):
-                continue # observation node
-            svar = node.var
+        if self.bayes.handle_obs(action, new_percepts):
+            result = self.bayes.evaluate()
+            new_nodes = self.bayes.new_ptree(self.pnodes, result)
+            dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD(nodes=new_nodes)
+            self.cp_domain = dt_compiler.translate(self.domain)
 
-            dist = pddl.prob_state.ValueDistribution(dict((v,p) for v,p in zip(node.values, probs)))
-            self.state[svar] = dist
+            for svar, dist in result.iteritems():
+                if svar.function != pddl.dtpddl.selected:
+                    self.state[svar] = dist
+        
+        action.uninstantiate()
 
         det_state = self.state.determinized_state(0.05, 0.95)
         facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
@@ -365,6 +385,10 @@ class SwitchingAgent(agent.Agent):
         
         self.task.mapltask = cp_problem
         self.task.create_initial_state()
+
+        # import time
+        # print "sleep"
+        # time.sleep(1)
                 
         #TODO: start execution
         if self.dt_active:

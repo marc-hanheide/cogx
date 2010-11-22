@@ -36,7 +36,8 @@ class Simulation(object):
             
         self.number_of_runs = runs
         self.domain = self.preprocess_domain(scenario.domain)
-        self.problem = self.preprocess_problem(scenario.world)
+        #self.problem = self.preprocess_problem(scenario.world)
+        self.problem = scenario.world
         
         self.stat_per_run = [None for i in xrange(runs)]
         self.statistics = statistics.Statistics(defaults=statistics_defaults)
