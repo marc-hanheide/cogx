@@ -22,8 +22,8 @@ obs2 = """
 (:observe package
  :agent (?a - agent)
  :parameters (?p - package ?v - vehicle)
- :execution (and (not (load ?a ?p ?v))
-               (unload ?a ?p ?v))
+ :execution (or (not (load ?a ?p ?v))
+                (unload ?a ?p ?v))
  :effect (when (= (location-of ?p) (location-of ?v)) (observed (location-of ?p) (location-of ?v)))
 )
 """
@@ -97,7 +97,9 @@ class DTTest(common.PddlTest):
     def testMAPLTranslation(self):
         """Testing translation of  observation models to mapl actions"""
         self.dom = self.load("testdata/logistics.dtpddl")
-        dom2 = DT2MAPLCompiler().translate(self.dom)
+        
+        prob_functions = set(self.dom.functions['location-of'])
+        dom2 = DT2MAPLCompiler().translate(self.dom, prob_functions=prob_functions)
         #self.roundtrip(dom2, print_result=True)
 
         s1 = dom2.get_action("sense_package")

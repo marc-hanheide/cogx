@@ -13,8 +13,9 @@ log = config.logger("dt")
 
 
 class DTProblem(object):
-    def __init__(self, plan, domain):
+    def __init__(self, plan, pnodes, domain):
         self.plan = plan
+        self.pnodes = pnodes
         self.domain = domain
         #self.state = cast_state
         self.subplan_actions = []
@@ -38,15 +39,49 @@ class DTProblem(object):
         
     def initialize(self, prob_state):
         self.state = prob_state
-        self.selected_subproblem = -1
+        choices = self.extract_choices()
+        print "choices:", map(str, choices)
+        facts = dtpddl.PNode.reduce_all(self.pnodes, choices, global_vars.config.dt.max_state_size)
+        selected = set()
+        add_objects = set()
+        for var, vals in facts.iteritems():
+            add_objects.update(var.args)
+            add_objects.update(var.modal_args)
+            for v in vals:
+                add_objects.add(v)
+                selected.add(state.Fact(var, v))
+                print var, v
 
-        for pnode in self.subplan_actions:
-            pnode.status = plans.ActionStatusEnum.IN_PROGRESS
+        # print map(str, selected)
+
+        opt = "maximize"
+        opt_func = pddl.FunctionTerm(pddl.dtpddl.reward, [])
+        init = [f.to_init() for f in self.state.deterministic()]
+        for n in self.pnodes:
+            peff = n.to_init(selected)
+            if peff:
+                init.append(peff)
+            
+        self.problem = pddl.Problem("cogxtask", self.state.problem.objects | add_objects, init, None, self.dtdomain, opt, opt_func)
+        self.problem.goal = pddl.Conjunction([])
+                
+        #self.selected_subproblem = -1
+
+        #for pnode in self.subplan_actions:
+        #    pnode.status = plans.ActionStatusEnum.IN_PROGRESS
         
-        self.relaxation_layers = self.compute_restrictions_new()
+        #self.relaxation_layers = self.compute_restrictions_new()
         #self.relaxation_layers = self.compute_restrictions()
-        self.subproblems = self.compute_subproblems(self.state)
-        self.problem = self.create_problem(self.state, self.dtdomain)
+        #self.subproblems = self.compute_subproblems(self.state)
+        #self.problem = self.create_problem(self.state, self.dtdomain)
+
+    def extract_choices(self):
+        choices = {}
+        for pnode in self.select_actions:
+            for fact in pnode.effects:
+                if not fact.svar.modality and fact.svar.get_type().equal_or_subtype_of(pddl.t_object):
+                    choices[fact.svar] = fact.value
+        return choices
 
     def write_dt_input(self, domain_fn, problem_fn):
         DTPDDLOutput().write(self.problem, domain_fn=domain_fn, problem_fn=problem_fn)
@@ -81,7 +116,7 @@ class DTProblem(object):
             others = []
             for pred in plan.predecessors_iter(pnode, 'depends'):
                 restr = find_restrictions(pred)
-                if pred.action.name.startswith("select-"):
+                if pred.action.name.startswith("commit-"):
                     return [pred] + restr
                 if restr:
                     others = restr
@@ -101,6 +136,7 @@ class DTProblem(object):
                         goal_svars.add(svar.nonmodal())
                 self.subplan_actions.append(pnode)
                 self.select_actions = [pnode] + find_restrictions(pnode)
+                print "here!", map(str, self.select_actions)
                 break # only one action at a time for now
             
             if pnode.action.name not in observe_actions and self.subplan_actions:
@@ -110,13 +146,13 @@ class DTProblem(object):
     
 
     def replanning_neccessary(self, new_state):
-        if self.selected_subproblem == -1:
-            return True
-        new_objects = new_state.problem.objects - self.state.problem.objects
-        problem = self.subproblems[self.selected_subproblem]
-        for o in new_objects:
-            if all(c.matches(o, self.state) for c in problem.constraints):
-                return True
+        #if self.selected_subproblem == -1:
+        #    return True
+        #new_objects = new_state.problem.objects - self.state.problem.objects
+        #problem = self.subproblems[self.selected_subproblem]
+        #for o in new_objects:
+        #    if all(c.matches(o, self.state) for c in problem.constraints):
+        #        return True
         return False
 
     def compute_restrictions_new(self):
@@ -394,6 +430,7 @@ class DTProblem(object):
                     nmvar = svar.nonmodal()
                     if nmvar not in goals:
                         disconfirm.append((nmvar, svar.modal_args[0]))
+                        break # only one disconfirm per node
 
         if not disconfirm:
             return commit_actions
@@ -507,6 +544,7 @@ class DTProblem(object):
         # print map(str, p_facts)
         problem = pddl.Problem("cogxtask", p_objects, p_facts, None, domain, opt, opt_func )
         problem.goal = pddl.Conjunction([])
+        
         log.debug("total time for state creation: %f", time.time()-t0)
         return problem
 

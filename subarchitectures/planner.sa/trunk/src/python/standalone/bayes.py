@@ -1,6 +1,6 @@
-import sys
+import sys, itertools
 
-from itertools import product
+from itertools import chain, product
 from collections import defaultdict
 
 import config, pddl, dt_problem
@@ -85,7 +85,8 @@ class BnetInterface(object):
         for from_, to in self.edges:
             print >> self.out, self.nodedict[from_.var], self.nodedict[to.var]
 
-        for n in self.nodes:
+        for i, n in enumerate(self.nodes):
+            print >> self.out, "node", i
             print >> self.out, len(n.parents) # number of parents
             print >> self.out, " ".join(str(self.nodedict[p]) for p in n.parents) # parents of this node
             for pvals, vals in n.dist.iteritems():
@@ -121,44 +122,51 @@ class BayesNode(object):
         self.dist = {}
 
 class BayesianState(object):
-    def __init__(self, prob_state, problem, domain):
+    def __init__(self, prob_state, problem, pnodes, domain):
         self.obs_id = 0
         self.domain = domain
+        self.pnodes = pnodes
         self.problem = problem
         self.state = prob_state
         self.iface = None
         
-        dt_rules = pddl.translators.Translator.get_annotations(self.domain).get('dt_rules', [])
-        objects = self.domain.constants | prob_state.problem.objects
-        trees = dt_problem.StateTreeNode.create_root(self.state, objects, dt_rules)
+        # dt_rules = pddl.translators.Translator.get_annotations(self.domain).get('dt_rules', [])
+        # objects = self.domain.constants | prob_state.problem.objects
+        # trees = dt_problem.StateTreeNode.create_root(self.state, objects, dt_rules)
+        self.nodedict = {}
+        self.factdict = defaultdict(set)
+        for n in pnodes:
+            n.get_nodedicts(self.nodedict, self.factdict)
 
-        self.init_bayes(trees)
+        self.init_bayes(pnodes)
         self.obs = {}
 
-    def init_bayes(self, subtrees):
+    def init_bayes(self, pnodes):
         self.values = defaultdict(list)
         deps = Graph()
         dists = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: 0)))
 
-        def extract_values(tn):
-            vdist = {}
-            for val, (subtrees, p, marginal) in tn.iteritems():
+        def extract_values(node):
+            vdist = defaultdict(lambda: 0)
+            for val, (p, nodes, facts) in node.children.iteritems():
                 vdist[val] = p
-                if val != pddl.UNKNOWN and val not in self.values[tn.svar]:
-                    self.values[tn.svar].append(val)
-                for sub in subtrees:
-                    deps[tn.svar].add(sub.svar)
-                    dists[tn.svar, val][sub.svar].update(extract_values(sub))
+                if val != pddl.UNKNOWN and val not in self.values[node.svar]:
+                    self.values[node.svar].append(val)
+                for n in nodes:
+                    deps[node.svar].add(n.svar)
+                    dists[node.svar, val][n.svar].update(extract_values(n))
             return vdist
 
-        rootdists = [(t.svar, extract_values(t)) for t in subtrees]
+        rootdists = [(n.svar, extract_values(n)) for n in pnodes]
         rdeps = deps.reverse()
 
         simple_vars = set(svar for svar, _ in rootdists if len(self.values[svar]) < 2 and svar not in deps and svar not in rdeps)
         for svar in simple_vars:
             del self.values[svar]
 
-        self.nodes = {}
+        rootnode = BayesNode("root", [str(True)], [])
+        rootnode.dist[tuple()] = [1.0]
+        self.nodes = {"root" : rootnode}
         self.edges = []
         for svar, vals in self.values.iteritems():
             vals.append(pddl.UNKNOWN) #this will also modify self.values
@@ -170,9 +178,12 @@ class BayesianState(object):
         for svar, dist in rootdists:
             if svar in simple_vars:
                 continue
+            node = self.nodes[svar]
             vec = [dist[v] for v in self.values[svar]]
             vec[-1] += 1-sum(vec)
-            self.nodes[svar].dist[tuple()] = vec
+            node.parents = ["root"]
+            self.edges.append((rootnode, node))
+            node.dist[tuple([str(True)])] = vec
 
         for svar, parents in rdeps.iteritems():
             if not parents:
@@ -209,6 +220,80 @@ class BayesianState(object):
                 #print svar, index, resultvec, map(str,self.nodes[svar].parents)
                 self.nodes[svar].dist[tuple(index)] = resultvec
 
+    # def init_bayes(self, subtrees):
+    #     self.values = defaultdict(list)
+    #     deps = Graph()
+    #     dists = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: 0)))
+
+    #     def extract_values(tn):
+    #         vdist = {}
+    #         for val, (subtrees, p, marginal) in tn.iteritems():
+    #             vdist[val] = p
+    #             if val != pddl.UNKNOWN and val not in self.values[tn.svar]:
+    #                 self.values[tn.svar].append(val)
+    #             for sub in subtrees:
+    #                 deps[tn.svar].add(sub.svar)
+    #                 dists[tn.svar, val][sub.svar].update(extract_values(sub))
+    #         return vdist
+
+    #     rootdists = [(t.svar, extract_values(t)) for t in subtrees]
+    #     rdeps = deps.reverse()
+
+    #     simple_vars = set(svar for svar, _ in rootdists if len(self.values[svar]) < 2 and svar not in deps and svar not in rdeps)
+    #     for svar in simple_vars:
+    #         del self.values[svar]
+
+    #     self.nodes = {}
+    #     self.edges = []
+    #     for svar, vals in self.values.iteritems():
+    #         vals.append(pddl.UNKNOWN) #this will also modify self.values
+    #         self.nodes[svar] = BayesNode(svar, vals, rdeps[svar])
+    #     for svar, dep in deps.iteritems():
+    #         for d in dep:
+    #             self.edges.append((self.nodes[svar], self.nodes[d]))
+
+    #     for svar, dist in rootdists:
+    #         if svar in simple_vars:
+    #             continue
+    #         vec = [dist[v] for v in self.values[svar]]
+    #         vec[-1] += 1-sum(vec)
+    #         self.nodes[svar].dist[tuple()] = vec
+
+    #     for svar, parents in rdeps.iteritems():
+    #         if not parents:
+    #             continue
+            
+    #         parents = list(parents)
+    #         vecs = []
+    #         for p in parents:
+    #             #compute a joint cpt when there are more than one parent.
+    #             pvec = []
+    #             vecs.append(pvec)
+    #             for v1 in self.values[p]:
+    #                 probs = dists[p, v1][svar]
+    #                 vec = [probs[v2] for v2 in self.values[svar]]
+    #                 #vec.append(1-sum(vec))
+    #                 pvec.append((v1, vec))
+    #             #pvec.append((len(values[p]), [0]*len(values[svar])))
+
+    #         combinations = product(*vecs)
+    #         for c in combinations:
+    #             index = []
+    #             resultvec = None
+    #             for val, vec in c:
+    #                 index.append(val)
+    #                 if not resultvec:
+    #                     resultvec = vec
+    #                 else:
+    #                     resultvec = [x+y for x,y in zip(resultvec, vec)]
+    #             vsum = sum(resultvec)
+    #             if vsum > 1:
+    #                 resultvec = [x/vsum for x in resultvec]
+    #                 vsum = sum(resultvec)
+    #             resultvec[-1] += 1-vsum
+    #             #print svar, index, resultvec, map(str,self.nodes[svar].parents)
+    #             self.nodes[svar].dist[tuple(index)] = resultvec
+                
 
     def evaluate(self):
         if not self.iface:
@@ -216,9 +301,50 @@ class BayesianState(object):
         if self.obs:
             self.iface.set_evidence(self.obs)
         results = self.iface.evaluate()
-        for n, r in results.items():
-            log.debug("%-30s %s", n.var, str(r))
-        return results
+        fresults = {}
+        for n, r in results.iteritems():
+            if n.var not in self.nodedict:
+                continue
+            dists = defaultdict(dict)
+            pnode = self.nodedict[n.var]
+            values = self.values[n.var]
+            for p, val in zip(r, values):
+                dists[pnode.svar][val] = p
+                if val not in pnode.children:
+                    continue
+                _, nodes, facts = pnode.children[val]
+                for svar, fval in facts.iteritems():
+                    dists[svar][fval] = p
+            for svar, dist in dists.iteritems():
+                vdist = pddl.prob_state.ValueDistribution(dist)
+                if svar not in fresults:
+                    fresults[svar] = vdist
+                else:
+                    fresults[svar] += vdist
+                #print svar, vdist
+            
+            #log.debug("%-30s %s", n.var, str(r))
+
+        for svar, dist in sorted(fresults.iteritems(), key=lambda (svar,d): str(svar)):
+            log.debug("%-30s %s", svar, str(dist))
+        #    print svar, dist
+        return fresults
+
+    def new_ptree(self, pnodes, newprobs):
+        def replace_tree(node, branch_p):
+            if node.svar not in newprobs or branch_p <= 0.00001:
+                return node
+            vdist = newprobs[node.svar]
+            new_children = {}
+            for var, (p, nodes, facts) in node.children.iteritems():
+                assert var in vdist
+                next_branch_p = vdist[var]
+                new_nodes = [replace_tree(n, next_branch_p) for n in nodes]
+                new_children[var] = (next_branch_p/branch_p, new_nodes, facts)
+            #print self.svar, [p for p, _, _ in new_children.itervalues()]
+            return pddl.dtpddl.PNode(node.svar, new_children)
+
+        return [replace_tree(n, 1.0) for n in pnodes]
         
 
     def expected_observations(self, action):
@@ -271,33 +397,48 @@ class BayesianState(object):
     def handle_obs(self, action, obs):
         expected = self.expected_observations(action)
         if not expected:
-            return
+            return False
         
         new_nodes = []
         for fact, p, cond in expected:
             parents = []
+            valid_values = []
             for f in cond:
-                if f.svar in self.nodes:
-                    parents.append(f)
+                nodes = list(n for n in self.factdict[f.svar] if n.get_branches_for_fact(f))
+                parents.append(nodes)
+
+                valueset = set()
+                for n in nodes:
+                    for val in n.get_branches_for_fact(f):
+                        valueset.add((n,val))
+                
+                valid_values.append(valueset)
 
             if not parents:
                 continue
 
             obs_id = "%s-%d" % (str(fact.svar), self.obs_id)
             # use str(True) here because we can't distinguish bool and int in a dict later
-            bnode = BayesNode(obs_id, [str(True), str(False)], [f.svar for f in parents])
+            bnode = BayesNode(obs_id, [str(True), str(False)], [n.svar for n in chain(*parents)])
             self.nodes[obs_id] = bnode 
             self.obs_id += 1
-            for svar, _ in parents:
-                self.edges.append((self.nodes[svar], bnode))
+            for pnode in chain(*parents):
+                self.edges.append((self.nodes[pnode.svar], bnode))
 
             new_nodes.append((bnode, fact.svar, p, parents))
         
         for bnode, svar, p, parents in new_nodes:
-            combinations = [self.values[f.svar] for f in parents]
+            combinations = [self.values[n.svar] for n in chain(*parents)]
+            # print "valid groups:"
+            # for val in valid_values:
+            #     print ["%s=%s" % (str(n.svar), str(v)) for n,v in val]
             for c in product(*combinations):
-                bnode.dist[tuple(c)] = [0.0, 1.0]
-            bnode.dist[tuple(f.value for f in parents)] = [p, 1-p]
+                cset = set(itertools.izip(chain(*parents), c))
+                if all(valid & cset for valid in valid_values):
+                    res = [p, 1-p]
+                else:
+                    res = [0.0, 1.0]
+                bnode.dist[c] = res
             
             self.obs[bnode] = str(svar in obs)
             if svar in obs:
@@ -307,4 +448,6 @@ class BayesianState(object):
 
         if self.iface:
             self.iface.set_graph(self.nodes.values(), self.edges)
+
+        return True
                                      

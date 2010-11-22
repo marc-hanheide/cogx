@@ -38,15 +38,20 @@ p = Parameter("?f", types.FunctionType(t_object))
 commit = Predicate("commit", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 
 p = Parameter("?f", types.FunctionType(t_object))
+committed = Predicate("committed", [p], builtin=True)
+
+p = Parameter("?f", types.FunctionType(t_object))
 update = Predicate("update", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 p = Parameter("?f", types.FunctionType(t_object))
 update_fail = Predicate("update-failed", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 
-shared_knowledge = Predicate("shval", [Parameter("?a", t_agent), Parameter("?a2", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
+# shared_knowledge = Predicate("shval", [Parameter("?a", t_agent), Parameter("?a2", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
 
-modal_predicates = [knowledge, shared_knowledge, indomain,\
-                    direct_knowledge, i_indomain, update, update_fail,\
-                    hyp, commit, attributed,neg_attributed]
+modal_predicates = [knowledge, indomain,\
+                    direct_knowledge, i_indomain, \
+                    hyp, commit, committed, attributed, neg_attributed, \
+                    update, update_fail]
+# shared_knowledge, , ,\
 
 is_planning_agent = Predicate("is_planning_agent", [Parameter("?a", t_agent)], builtin=True)
 achieved = Predicate("achieved", [Parameter("?sg", t_subgoal)], builtin=True)
@@ -76,8 +81,15 @@ kval_axiom = """
 hyp_axiom = """
 (:derived (hyp ?svar - (function object) ?val - (typeof ?svar))
           (or (= ?svar ?val)
-              (commit ?svar ?val)
+              (and (commit ?svar ?val)
+                   (i_in-domain ?svar ?val))
           )
+)
+"""
+
+committed_axiom = """
+(:derived (committed ?svar - (function object))
+          (exists (?val - (typeof ?svar)) (= ?svar ?val))
 )
 """
 
@@ -90,7 +102,7 @@ in_domain_axiom = """
 )
 """
 
-mapl_axioms = [kval_axiom, in_domain_axiom, hyp_axiom]
+mapl_axioms = [kval_axiom, in_domain_axiom, hyp_axiom, committed_axiom]
 
 def prepare_domain(domain):
     domain.init_rules = []
@@ -154,6 +166,12 @@ class SenseEffect(object):
         if not term:
             return None
         return conditions.LiteralCondition(hyp, [term, value])
+
+    def conditional_knowledge_effect(self):
+        cc = self.commit_condition()
+        if not cc:
+            return self.knowledge_effect()
+        return effects.ConditionalEffect(cc, self.knowledge_effect())
     
     def is_boolean(self):
         return isinstance(self.sense, predicates.Literal)
@@ -275,11 +293,15 @@ class MAPLAction(actions.Action):
     
     def knowledge_effect(self):
         effs = [s.knowledge_effect() for s in self.sensors]
-        return effects.ConjunctiveEffect(effs)
+        return effects.ConjunctiveEffect(list(set(effs)))
 
     def commit_condition(self):
         conds = filter(None, [s.commit_condition() for s in self.sensors])
-        return conditions.Conjunction(conds)
+        return conditions.Conjunction(list(set(conds)))
+
+    def conditional_knowledge_effect(self):
+        effs = [s.conditional_knowledge_effect() for s in self.sensors]
+        return effects.ConjunctiveEffect(list(set(effs)))
     
     def is_pure_sensor(self):
         return not self.effect and self.sensors

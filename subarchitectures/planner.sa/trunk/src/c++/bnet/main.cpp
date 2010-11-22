@@ -86,6 +86,11 @@ void build_bnet(istream &in, bnet &bn) {
 
     // Read in conditional probabilities
     for (int i=prev_num_nodes; i<num_nodes; i++) {
+        string tag;
+        int id;
+        in >> tag;
+        in >> id;
+        assert(id == i);
         unsigned long num = node_num_values(bn, i);
         cerr << "node: "<< i << " ("<< num<< " values)" << endl;
         assignment parent_state;
