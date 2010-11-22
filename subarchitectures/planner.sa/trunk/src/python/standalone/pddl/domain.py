@@ -13,7 +13,7 @@ from scope import Scope, FunctionTable
 from actions import Action
 from axioms import Axiom
 
-supported = set(["modal-predicates", "strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated", "fluents", "numeric-fluents", "object-fluents", "action-costs", "preferences"])
+supported = set(["modal-predicates", "strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "universal-effects", "adl", "derived-predicated", "fluents", "numeric-fluents", "object-fluents", "action-costs", "preferences"])
 
 support_depends = {"adl" : ["typing", "negative-preconditions", "disjunctive-preconditions", "quantified-preconditions", "equality", "conditional-effects"],
                    "fluents" : ["numeric-fluents", "object-fluents"]}
@@ -156,6 +156,11 @@ class Domain(Scope):
             print [n for n in self.name2action.iterkeys()]
             raise
 
+    def add_constant(self, object):
+        if object.name in self:
+            self.constants.remove(self[object.name])
+        self.constants.add(object)
+        self.add(object)
 
     @hook
     def add_action(self, action):
@@ -240,7 +245,7 @@ class Domain(Scope):
                 continue
             desc = ModuleDescription.get_module(req)
             if not desc:
-                print "not found:",r
+                #print "not found:",r
                 continue
 
             compiler = None

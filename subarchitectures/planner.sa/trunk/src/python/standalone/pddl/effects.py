@@ -53,7 +53,7 @@ class Effect(object):
                 return sum([t.visit(visitor) for t in eff.args], [])
             if eff.__class__ == UniversalEffect:
                 vars = results[0]
-                return [p for p in vars if p not in eff]
+                return [p for p in vars if p not in eff.args]
             if eff.__class__ == ConditionalEffect:
                 return results + list(eff.condition.free())
             return sum(results, [])
@@ -156,6 +156,9 @@ class ConjunctiveEffect(Effect):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.parts == other.parts
 
+    def __hash__(self):
+        return hash((self.__class__,) + tuple(self.parts))
+
     @staticmethod
     def join(effs, scope=None):
         """Join together a list of effects in a Conjunctive effect. If an element of the list
@@ -224,6 +227,9 @@ class UniversalEffect(Scope, Effect):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.args == other.args and self.effect == other.effect
 
+    def __hash__(self):
+        return hash((self.__class__, self.effect) + tuple(self.args))
+    
     @staticmethod
     def parse(it, scope):
         it.get("forall")
@@ -282,6 +288,9 @@ class ProbabilisticEffect(Effect):
         
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.effects == other.effects
+
+    def __hash__(self):
+        return hash((self.__class__,) + tuple(self.effects))
 
     @staticmethod
     def parse_assign(it, scope):
@@ -374,14 +383,16 @@ class ConditionalEffect(Effect):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.condition == other.condition and self.effect == other.effect
 
+    def __hash__(self):
+        return hash((self.__class__, self.condition, self.effect))
         
     @staticmethod
     def parse(it, scope):
         it.get("when")
         condition = conditions.Condition.parse(iter(it.get(list, "condition")), scope)
-        scope.set_tag("only-simple-effects", True)
+        #scope.set_tag("only-simple-effects", True)
         effects = Effect.parse(iter(it.get(list, "effect specification")), scope)
-        scope.set_tag("only-simple-effects", False)
+        #scope.set_tag("only-simple-effects", False)
             
         return ConditionalEffect(condition, effects)
 

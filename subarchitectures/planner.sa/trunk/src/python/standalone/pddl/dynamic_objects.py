@@ -193,7 +193,7 @@ class DynamicObjectsCompiler(translators.Translator):
         
         return a2
     
-    @translators.removes('dynamic-objects')
+    @translators.requires('dynamic-objects')
     def translate_domain(self, _domain):
         if self.copy:
             dom = _domain.copy_skeleton()
@@ -219,7 +219,7 @@ class DynamicObjectsCompiler(translators.Translator):
         dom.stratify_axioms()
         return dom
 
-    @translators.removes('dynamic-objects')
+    @translators.requires('dynamic-objects')
     def translate_problem(self, _problem):
         ctypes, dtypes = self.detect_dynamic_types(_problem.domain)
         domain = self.translate_domain(_problem.domain)

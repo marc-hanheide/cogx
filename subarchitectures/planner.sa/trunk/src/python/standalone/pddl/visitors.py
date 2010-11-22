@@ -106,4 +106,39 @@ def collect_functions(elem, results=[]):
         return sum(results, []) + [elem.function]
     if isinstance(elem, predicates.Literal):
         return sum([t.visit(collect_functions) for t in elem.args], [])
-        
+
+@collect
+def collect_non_builtins(elem, results=[]):
+    if elem.__class__ == predicates.FunctionTerm:
+        if not elem.function.builtin:
+            return sum(results, []) + [elem.function]
+    if isinstance(elem, predicates.Literal):
+        init = []
+        if not elem.predicate.builtin:
+            init = [elem.predicate]
+        return sum([t.visit(collect_functions) for t in elem.args], init)
+    
+@collect
+def collect_constants(cond, results=[]):
+    if isinstance(cond, predicates.Term):
+        if isinstance(cond, predicates.VariableTerm):
+            return []
+        if isinstance(cond, predicates.ConstantTerm):
+            return cond.object
+    elif isinstance(cond, predicates.Literal):
+        return sum([t.visit(collect_constants) for t in cond.args], [])
+
+@collect
+def collect_free_vars(elem, results=[]):
+    if isinstance(elem, predicates.Term):
+        if isinstance(elem, predicates.ConstantTerm):
+            return []
+        if isinstance(elem, predicates.ConstantTerm):
+            return cond.object
+    elif isinstance(elem, predicates.Literal):
+        return sum([t.visit(collect_free_vars) for t in cond.args], [])
+    elif isinstance(elem, (conditions.QuantifiedCondition, effects.UniversalEffect)):
+        vars = results[0]
+        return [p for p in vars if p not in elem.args]
+    elif isinstance(elem, effects.ConditionalEffect):
+        return results + eff.condition.visit(collect_free_vars)
