@@ -139,8 +139,109 @@ class BayesianState(object):
             n.get_nodedicts(self.nodedict, self.factdict)
 
         self.init_bayes(pnodes)
+        self.non_mutex = self.find_non_mutex_nodes(pnodes)
         self.obs = {}
 
+    def compute_nonmutex_results(self, results):
+        def compute_mutex_prob(dists):
+            for d in dists:
+                d.normalize()
+            p_total = 0
+            result = pddl.prob_state.ValueDistribution()
+            for c in product(*[d.items() for d in dists]):
+                valid_value = set(filter(lambda (v,p): v != pddl.UNKNOWN, c))
+                if not valid_value:
+                    #all unknown case
+                    p_total += reduce(lambda x,y: x*y, (p for v,p in c), 1)
+                elif len(valid_value) == 1:
+                    prob = reduce(lambda x,y: x*y, (p for v,p in c), 1)
+                    val, _ = valid_value.pop()
+                    result[val] += prob
+                    p_total += prob
+                    
+            if p_total > 0:
+                result *= 1/p_total
+            return result
+            
+        def descend(node):
+            fresults = defaultdict(pddl.prob_state.ValueDistribution)
+            for val, (p, nodes, facts) in node.children.iteritems():
+                p = results[node.svar].get(val, 0)
+                for svar, val in facts.iteritems():
+                    fresults[svar][val] += p
+                branch_results = defaultdict(list)
+                for n in nodes:
+                    for svar, dist in descend(n).iteritems():
+                        branch_results[svar].append(dist)
+                for svar, dists in branch_results.iteritems():
+                    if len(dists) > 1:
+                        fresults[svar] += compute_mutex_prob(dists)
+                    else:
+                        fresults[svar] += dists[0]
+            return fresults
+
+        branch_results = defaultdict(list)
+        for pnode in self.pnodes:
+            for svar, dist in descend(pnode).iteritems():
+                branch_results[svar].append(dist)
+                
+        results = {}
+        for svar, dists in branch_results.iteritems():
+            if len(dists) > 1:
+                results[svar] = compute_mutex_prob(dists)
+            else:
+                results[svar] = dists[0]
+        return results
+            
+
+    def find_non_mutex_nodes(self, pnodes):
+        mutex_pairs = []
+        def find_func(pnode):
+            svars = defaultdict(set)
+            for p, nodes, facts in pnode.children.itervalues():
+                for svar in facts.iterkeys():
+                    svars[svar].add(pnode)
+                branch_svars = defaultdict(set)
+                for n in nodes:
+                    for svar, nds in find_func(n).iteritems():
+                        if svar in branch_svars:
+                            for n1, n2 in product(nds, branch_svars[svar]):
+                                mutex_pairs.append((n1.svar, n2.svar))
+                        branch_svars[svar] |= nds
+                for svar, nds in branch_svars.iteritems():
+                    svars[svar] |= nds
+            return svars
+
+        svars = defaultdict(set)
+        for n in pnodes:
+            for svar, nds in find_func(n).iteritems():
+                if svar in svars:
+                    for n1, n2 in product(nds, svars[svar]):
+                        mutex_pairs.append((n1.svar, n2.svar))
+                svars[svar] |= nds
+        # for n1, n2 in mutex_pairs:
+        #     print n1.svar, n2.svar
+        return mutex_pairs
+
+    def create_mutex_nodes(self, pnodes):
+        for svar, mutex in self.factdict.iteritems():
+            parents = set(n.parent for n in mutex)
+            if len(parents) <= 1:
+                continue
+            
+            mutex = [self.nodes[pn.svar] for pn in mutex]
+            print "mutex:", map(str, mutex)
+            mnode = BayesNode("mutex-%s" % str(svar), [0], [n.var for n in mutex])
+            medges = [(n, mnode) for n in mutex]
+            combinations = product(*[n.values for n in mutex])
+            for c in combinations:
+                if len(filter(lambda v: v != pddl.UNKNOWN, c)) > 1:
+                    mnode.dist[c] = [0.0]
+                else:
+                    mnode.dist[c] = [1.0]
+            self.nodes[mnode.var] = mnode
+            self.edges += medges
+            
     def init_bayes(self, pnodes):
         self.values = defaultdict(list)
         deps = Graph()
@@ -301,7 +402,7 @@ class BayesianState(object):
         if self.obs:
             self.iface.set_evidence(self.obs)
         results = self.iface.evaluate()
-        fresults = {}
+        node_results = defaultdict(dict)
         for n, r in results.iteritems():
             if n.var not in self.nodedict:
                 continue
@@ -309,26 +410,23 @@ class BayesianState(object):
             pnode = self.nodedict[n.var]
             values = self.values[n.var]
             for p, val in zip(r, values):
-                dists[pnode.svar][val] = p
-                if val not in pnode.children:
-                    continue
-                _, nodes, facts = pnode.children[val]
-                for svar, fval in facts.iteritems():
-                    dists[svar][fval] = p
-            for svar, dist in dists.iteritems():
-                vdist = pddl.prob_state.ValueDistribution(dist)
-                if svar not in fresults:
-                    fresults[svar] = vdist
-                else:
-                    fresults[svar] += vdist
-                #print svar, vdist
+                node_results[pnode.svar][val] = p
+            #     if val not in pnode.children:
+            #         continue
+            #     _, nodes, facts = pnode.children[val]
+            #     for svar, fval in facts.iteritems():
+            #         dists[svar][fval] = p
+            # for svar, dist in dists.iteritems():
+            #     vdist = pddl.prob_state.ValueDistribution(dist)
+            #     fresults[svar].append(n.var, vdist)
+            #     #print svar, vdist
+        fresults = self.compute_nonmutex_results(node_results)
             
-            #log.debug("%-30s %s", n.var, str(r))
 
         for svar, dist in sorted(fresults.iteritems(), key=lambda (svar,d): str(svar)):
             log.debug("%-30s %s", svar, str(dist))
         #    print svar, dist
-        return fresults
+        return fresults, node_results
 
     def new_ptree(self, pnodes, newprobs):
         def replace_tree(node, branch_p):
@@ -348,7 +446,9 @@ class BayesianState(object):
         
 
     def expected_observations(self, action):
-        expected_obs = []
+        prob_functions = set(svar.function for svar in self.nodes.iterkeys() if isinstance(svar, pddl.state.StateVariable))
+        
+        expected_obs = defaultdict(list)
         for o in self.domain.observe:
             det_args = {}
             if o.execution:
@@ -374,24 +474,22 @@ class BayesianState(object):
                 if isinstance(eff, pddl.effects.ProbabilisticEffect):
                     res = []
                     for p, sub in results:
-                        p = p.object.value
+                        p = self.state.evaluate_term(p).value
                         for cond, p_old, fact in sub:
                             res.append((cond, p*p_old, fact))
                     return res
                 if isinstance(eff, pddl.ConditionalEffect):
                     cnew = eff.condition.visit(cond_visitor)
                     res = []
-                    #print results
                     for cond, p, fact in results:
                         res.append((cond+cnew, p, fact))
                     return res
-                    
             
             for mapping in o.smart_instantiate(o.get_inst_func(self.state), o.args, [get_objects(a) for a in o.args], self.problem):
                 prec = pddl.visitors.visit(o.precondition, cond_visitor, [])
                 for conds, p, fact in pddl.visitors.visit(o.effect, obs_visitor, []):
                     log.debug("expected: %s (%.2f) (%s)", str(fact.svar), p, " ".join(map(str, conds)))
-                    expected_obs.append((fact, p, conds+prec))
+                    expected_obs[fact].append((p, conds+prec))
         return expected_obs
 
     def handle_obs(self, action, obs):
@@ -400,44 +498,62 @@ class BayesianState(object):
             return False
         
         new_nodes = []
-        for fact, p, cond in expected:
+        for fact, conds in expected.iteritems():
             parents = []
-            valid_values = []
-            for f in cond:
-                nodes = list(n for n in self.factdict[f.svar] if n.get_branches_for_fact(f))
-                parents.append(nodes)
+            conditions = []
+            for p, cfacts in conds:
+                node_disjuncts = []
+                for f in cfacts:
+                    if not f.svar in self.factdict:
+                        #handle deterministic facts
+                        if f in self.state:
+                            continue
+                        else:
+                            node_disjuncts = None
+                            break
+                        
+                    nodes = list(n for n in self.factdict[f.svar] if n.get_branches_for_fact(f))
+                    parents += [n for n in nodes if n not in parents]
 
-                valueset = set()
-                for n in nodes:
-                    for val in n.get_branches_for_fact(f):
-                        valueset.add((n,val))
-                
-                valid_values.append(valueset)
+                    disjunct = set()
+                    for n in nodes:
+                        for val in n.get_branches_for_fact(f):
+                            disjunct.add((n,val))
+
+                    node_disjuncts.append(disjunct)
+                    
+                if node_disjuncts is not None:
+                    conditions.append((p, node_disjuncts))
 
             if not parents:
                 continue
 
             obs_id = "%s-%d" % (str(fact.svar), self.obs_id)
             # use str(True) here because we can't distinguish bool and int in a dict later
-            bnode = BayesNode(obs_id, [str(True), str(False)], [n.svar for n in chain(*parents)])
+            bnode = BayesNode(obs_id, [str(True), str(False)], [n.svar for n in parents])
             self.nodes[obs_id] = bnode 
             self.obs_id += 1
-            for pnode in chain(*parents):
+            for pnode in parents:
                 self.edges.append((self.nodes[pnode.svar], bnode))
 
-            new_nodes.append((bnode, fact.svar, p, parents))
+            new_nodes.append((bnode, fact.svar, conditions, parents))
         
-        for bnode, svar, p, parents in new_nodes:
-            combinations = [self.values[n.svar] for n in chain(*parents)]
+        for bnode, svar, conditions, parents in new_nodes:
+            combinations = [self.values[n.svar] for n in parents]
             # print "valid groups:"
             # for val in valid_values:
             #     print ["%s=%s" % (str(n.svar), str(v)) for n,v in val]
             for c in product(*combinations):
-                cset = set(itertools.izip(chain(*parents), c))
-                if all(valid & cset for valid in valid_values):
-                    res = [p, 1-p]
-                else:
-                    res = [0.0, 1.0]
+                cset = set(itertools.izip(parents, c))
+                inv_p = 1
+                #prob. of getting the observation is 1-(1-p_1)(...)(1-p_n)
+                #for all p_i that can cause this observation
+                for p, disjuncts in conditions:
+                    if all(dis & cset for dis in disjuncts):
+                        inv_p *= (1-p)
+                #print map(str, c), 1-inv_p
+                
+                res = [1-inv_p, inv_p]
                 bnode.dist[c] = res
             
             self.obs[bnode] = str(svar in obs)
