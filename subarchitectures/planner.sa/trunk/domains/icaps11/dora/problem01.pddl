@@ -24,6 +24,14 @@
            (connected p1b p2b)
            (= (placestatus p2b) placeholder)
 
+           (= (difficulty cornflakes) medium)
+           (= (difficulty mug) hard)
+           (= (difficulty table) easy)
+           (= (difficulty oven) easy)
+           (= (difficulty fridge) easy)
+           (= (difficulty book) medium)
+           (= (difficulty board-game) medium)
+
            (= (label obj1) cornflakes)
            (= (label obj2) table)
            (= (label obj3) mug)

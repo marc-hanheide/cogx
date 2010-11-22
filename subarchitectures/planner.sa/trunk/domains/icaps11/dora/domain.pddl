@@ -7,7 +7,7 @@
    visualobject - movable
    robot - agent
    robot human - movable
-   place_status label category - object
+   place_status label category detection_difficulty - object
    )
 
   (:predicates
@@ -15,7 +15,6 @@
    (position-reported ?o - visualobject)
 
    ;;virtual predicates
-   (started)
    (done)
    )
 
@@ -27,10 +26,13 @@
    (placestatus ?n - place) - place_status
 
    (ex-in-room ?l - label ?r - room) - boolean
+   ;; (percept-prob ?l - label) - number
+   (difficulty ?l - label) - detection_difficulty
    )
 
   (:constants
    placeholder trueplace - place_status
+   easy medium hard - detection_difficulty
    )
 
   ;; (:durative-action spin
@@ -45,7 +47,7 @@
                     :parameters (?loc - place)
                     :duration (= ?duration 0.1)
                     :condition (and (over all (= (is-in ?a) ?loc)) (at start (= (placestatus ?loc) placeholder)))
-                    :effect (change (placestatus ?loc) trueplace)
+                    :effect (and (change (placestatus ?loc) trueplace))
                     )
 
   (:durative-action report_position
@@ -56,7 +58,7 @@
                     :condition (over all (and (kval ?a (is-in ?o))
                                               (= (is-in ?h) ?p)
                                               (= (is-in ?a) ?p)))
-                    :effect (at end (position-reported ?o))
+                    :effect (and (at end (position-reported ?o)))
                     )
 
   (:durative-action move
@@ -69,8 +71,7 @@
                                                   ))
                                     (over all (not (done)))
                                     (at start (= (is-in ?a) ?from)))
-                    :effect (and (change (is-in ?a) ?to)
-                                 (at start (started)))
+                    :effect (and (change (is-in ?a) ?to))
                     )
                      
   (:durative-action process_all_cones_at_place
@@ -81,15 +82,19 @@
                     :condition (over all (and (not (done))
                                               (= (is-in ?a) ?p)
                                               (= (label ?o) ?l)))
-                    :effect (and (at start (started)))
+                    :effect (and )
                     )
 
   (:observe visual_object
             :agent (?a - robot)
             :parameters (?o - visualobject ?l - label ?p - place)
             :execution (process_all_cones_at_place ?a ?p ?l ?o)
-            :effect (when (= (is-in ?o) ?p)
-                      (probabilistic 0.8 (observed (is-in ?o) ?p)))
+            :effect (and (when (and (= (is-in ?o) ?p) (= (difficulty ?l) easy))
+                           (probabilistic 0.9 (observed (is-in ?o) ?p)))
+                         (when (and (= (is-in ?o) ?p) (= (difficulty ?l) medium))
+                           (probabilistic 0.7 (observed (is-in ?o) ?p)))
+                         (when (and (= (is-in ?o) ?p) (= (difficulty ?l) hard))
+                           (probabilistic 0.5 (observed (is-in ?o) ?p))))
             )
              
   )
