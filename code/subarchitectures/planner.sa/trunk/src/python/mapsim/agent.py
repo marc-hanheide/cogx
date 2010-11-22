@@ -13,6 +13,7 @@ statistics_defaults = dict(
     physical_actions_executed=0,
     sensor_actions_executed=0,
     speech_acts_executed=0,
+    total_plan_cost=0,
     )
 
 
