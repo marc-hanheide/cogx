@@ -56,7 +56,7 @@ class Translator(object):
             #entity._original = original._original
         t1 = time.time()
 
-        # print "postorder:", type(self), type(entity)
+        #print "postorder:", type(self), type(entity)
         if isinstance(entity, actions.Action):
             result = self.translate_action(entity, **kwargs)
         elif isinstance(entity, axioms.Axiom):
@@ -136,6 +136,28 @@ class Translator(object):
             return problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
         _problem.set_parent(domain)
         return _problem
+
+    def change_functions(self, table, change_func):
+        changes = []
+        for f in table:
+            result = change_func(f)
+            if result:
+                changes.append((f,result))
+        for old, new in changes:
+            table.remove(old)
+            table.add(new)
+
+    def add_function(self, function, domain):
+        table = domain.predicates if isinstance(function, Predicate) else domain.functions
+        
+        f = table.get(function.name, function.args)
+        if f:
+            if f.builtin != function.builtin:
+                table.remove(f)
+            else:
+                return
+            
+        table.add(function)
 
 def change_builtin_functions(table, functions=None):
     if functions is not None:
@@ -819,7 +841,7 @@ class ObjectFluentCompiler(Translator):
         predicates = []
         functions = []
         for f in _domain.functions:
-            if f.type != builtin.t_number:
+            if not f.type.equal_or_subtype_of(t_number):
                 predicates.append(Predicate(f.name, [types.Parameter(p.name, p.type) for p in f.args] + [types.Parameter("?value", f.type)]))
             else:
                 functions.append(f)
@@ -857,7 +879,7 @@ class ObjectFluentCompiler(Translator):
         def eff_visitor(lit, results):
             if isinstance(lit, Literal):
                 if lit.predicate in assignment_ops:
-                    if lit.args[0].function.type == t_number:
+                    if lit.args[0].function.type.equal_or_subtype_of(t_number):
                         return lit
                     new_pred = domain.predicates.get(lit.args[0].function.name, lit.args[0].args + lit.args[-1:])
                     return lit.__class__(new_pred, lit.args[0].args[:] + [lit.args[1]], p2)
@@ -1184,7 +1206,7 @@ class MAPLCompiler(Translator):
             if a2.effect is None:
                 a2.effect = effects.ConjunctiveEffect([])
             a2.effect.set_scope(a2)
-            
+
         if isinstance(action, mapl.MAPLAction) and action.sensors:
             # commit_cond = action.commit_condition().copy(new_scope=a2)
             # a2.precondition = conditions.Conjunction.new(a2.precondition)

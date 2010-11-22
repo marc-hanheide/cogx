@@ -67,7 +67,7 @@
                                           (not (= (placestatus ?p2) trueplace))
                                           (connected ?p ?p2))))
 
-  (:action sample_existence
+  (:action _sample_existence
            :agent (?a - agent)
            :parameters (?l - label ?r - room ?c - category)
            :precondition (= (category ?r) ?c)
@@ -75,7 +75,7 @@
                                                    ;;(assign (ex-in-room ?l ?r) false))
            )
 
-  (:action sample_is_in
+  (:action _sample_is_in
            :agent (?a - agent)
            :parameters (?l - label ?r - room ?p - place ?o - visualobject)
            :precondition (and (= (in-room ?p) ?r)
@@ -121,8 +121,7 @@
                                                    ))
                                      (over all (not (done)))
                                      (at start (= (is-in ?a) ?from)))
-                     :effect (and (change (is-in ?a) ?to)
-                                  (at start (started)))
+                     :effect (and (change (is-in ?a) ?to))
                      )
                      
    (:durative-action process_all_cones_at_place
@@ -133,7 +132,7 @@
                      :condition (over all (and (not (done))
                                                (= (is-in ?a) ?p)
                                                (= (label ?o) ?l)))
-                     :effect (and (at start (started)))
+                     :effect (and )
                      )
 
    (:observe visual_object

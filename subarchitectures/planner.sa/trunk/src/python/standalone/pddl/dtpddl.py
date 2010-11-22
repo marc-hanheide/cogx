@@ -14,6 +14,8 @@ from builtin import t_object, t_number
 
 t_node = types.Type("node")
 t_node_choice = types.Type("node_choice")
+t_integer = types.Type("integer", [t_number])
+t_double = types.Type("double", [t_number])
 
 selected = Function("selected", [Parameter("?n", t_node)], t_node_choice)
 
@@ -21,6 +23,7 @@ p = Parameter("?f", types.FunctionType(t_object))
 observed = Predicate("observed", [p, Parameter("?v", types.ProxyType(p))], builtin=True)
 
 reward = Function("reward", [], t_number, builtin=True)
+started = Predicate("started", [])
 
 total_p_cost = Function("total-p-cost", [], t_number)
 probability = Function("probability", [], t_number)
@@ -176,7 +179,6 @@ class Observation(actions.Action):
             o.execution = [ex.copy(o, newdomain) for ex in self.execution]
         if self.effect:
             o.effect = self.effect.copy(o)
-
         return o
 
     def copy_skeleton(self, newdomain=None):
@@ -623,7 +625,6 @@ class DT2MAPLCompiler(translators.Translator):
                         s_atom = atom.copy_instance()
                         s_atom.set_scope(a)
                         a.sensors.append(mapl.SenseEffect(s_atom, a))
-                        
             observe.uninstantiate()
 
     def create_commit_actions(self, rules, domain):
@@ -707,6 +708,8 @@ class DT2MAPLCompiler(translators.Translator):
         # visitors.visit(action.effect, effect_visitor)
         # if dep_conditions:
         #     action.effect = effects.ConjunctiveEffect.join([action.effect] + list(dep_conditions))
+
+        action.effect = effects.ConjunctiveEffect.join([action.effect, effects.SimpleEffect(started,[])])
             
         # if action.sensors:
         #     commit_cond = action.commit_condition()
@@ -726,8 +729,8 @@ class DT2MAPLCompiler(translators.Translator):
         dom = _domain.copy()
         dom.requirements.discard("partial-observability")
 
-        if 'total-p-cost' not in dom.functions:
-            dom.functions.add(total_p_cost)
+        self.add_function(total_p_cost, dom)
+        self.add_function(started, dom)
 
         for o in dom.observe:
             self.translate_observable(o, prob_functions, dom)
@@ -736,7 +739,7 @@ class DT2MAPLCompiler(translators.Translator):
         actions = []
         rules = []
         for a in dom.actions:
-            if a.name.startswith("sample_"):
+            if a.name.startswith("_sample_"):
                 try:
                     new_rules = DTRule.from_action(a)
                     for r in new_rules:
@@ -770,13 +773,16 @@ class DT2MAPLCompiler(translators.Translator):
         dom.observe = []
         return dom
 
-    @translators.requires('partial-observability')
-    def translate_problem(self, _problem):
+    def get_prob_functions(self, _problem):
         prob_functions = set()
         for i in _problem.init:
             if isinstance(i, effects.ProbabilisticEffect):
                 prob_functions |= set(i.visit(visitors.collect_non_builtins))
-        
+        return prob_functions
+
+    @translators.requires('partial-observability')
+    def translate_problem(self, _problem):
+        prob_functions = self.get_prob_functions(_problem)
         domain = self.translate_domain(_problem.domain, prob_functions)
         if self.copy:
             return problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
@@ -803,7 +809,11 @@ class PNode(object):
         
     def __init__(self, svar, children):
         self.svar = svar
+        self.parent = None
         self.children = children
+        for p, nodes, facts in self.children.itervalues():
+            for n in nodes:
+                n.parent = self
         
         self.branch_vars = self.get_branch_vars()
 
@@ -1140,6 +1150,7 @@ class PNode(object):
             actions.append(a)
             b = Builder(a)
             a.precondition.parts.append(b.cond("not", ("committed", self.svar.as_term())))
+            a.precondition.parts.append(b.cond("not", ("started",)))
             if parent_conds:
                 a.precondition.parts += [c.copy(a) for c in parent_conds]
 
@@ -1188,11 +1199,9 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
 
     def create_commit_actions(self, rules, domain):
         assert self.pnodes
-        
-        if "probability" not in domain.functions:
-            domain.functions.add(probability)
-        if "selected" not in domain.functions:
-            domain.functions.add(selected)
+
+        self.add_function(probability, domain)
+        self.add_function(selected, domain)
         if t_node.name not in domain.types:
             domain.types[t_node] = t_node
             domain.types[t_node_choice] = t_node_choice
@@ -1269,15 +1278,21 @@ class DTPDDLCompiler(translators.Translator):
 
     def translate_domain(self, _domain):
         dom = _domain.copy_skeleton()
+        # dom.types[t_integer.name] = t_integer
+        # dom.types[t_double.name] = t_double
+
+        # def transform(f):
+        #     if f.type == builtin.t_number and not f.builtin:
+        #         return Function(f.name, f.args, t_double)
+        # self.change_functions(dom.functions, transform)
+        
         translators.change_builtin_functions(dom.predicates, default_predicates)
         dom.functions = scope.FunctionTable(f for f in dom.functions if f.type is not builtin.t_number)
-        dom.functions.add(reward)
+        self.add_function(reward, dom)
         translators.change_builtin_functions(dom.functions, default_functions)
-        
-        if "increase" not in dom.predicates:
-            dom.predicates.add(builtin.increase)
-        if "decrease" not in dom.predicates:
-            dom.predicates.add(builtin.decrease)
+
+        self.add_function(builtin.increase, dom)
+        self.add_function(builtin.decrease, dom)
 
         actions = _domain.get_action_like()
         dom.clear_actions()
@@ -1309,7 +1324,7 @@ class ProbADLCompiler(translators.ADLCompiler):
     def translate_domain(self, _domain):
         dom = translators.Translator.translate_domain(self, _domain)
         #FIXME: the "sample_" prefix for dora collides with the rovers domain!!!
-        #dom.actions = [a for a in dom.actions if not a.name.startswith("sample_")]
+        dom.actions = [a for a in dom.actions if not a.name.startswith("_sample_")]
         dom.axioms = []
         dom.name2action = None
         return dom
