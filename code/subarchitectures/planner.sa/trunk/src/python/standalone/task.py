@@ -1,4 +1,4 @@
-import itertools, time
+import sys, itertools, time
 
 import config
 import assertions#, macros
@@ -218,6 +218,15 @@ class PDDLOutput(object):
         log.debug("total time for translation: %f", time.time()-t0)
         return tr_dom, tr_prob
 
+    def print_problem(self, problem, domain=None, fd=None):
+        tr_dom, tr_prob = self.translate(problem, domain)
+        if not fd:
+            fd = sys.stdout
+            
+        prob_str = self.writer.write_problem(tr_prob)
+        for l in prob_str:
+            print >> fd, l
+    
     def write(self, problem, domain=None, domain_fn=None, problem_fn=None):
         tr_dom, tr_prob = self.translate(problem, domain)
         dom_str = self.writer.write_domain(tr_dom)
