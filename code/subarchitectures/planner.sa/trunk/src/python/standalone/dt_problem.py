@@ -40,7 +40,7 @@ class DTProblem(object):
     def initialize(self, prob_state):
         self.state = prob_state
         choices = self.extract_choices()
-        print "choices:", map(str, choices)
+        #print "choices:", map(str, choices)
         facts = dtpddl.PNode.reduce_all(self.pnodes, choices, global_vars.config.dt.max_state_size)
         selected = set()
         add_objects = set()
@@ -50,7 +50,7 @@ class DTProblem(object):
             for v in vals:
                 add_objects.add(v)
                 selected.add(state.Fact(var, v))
-                print var, v
+                #print var, v
 
         # print map(str, selected)
 
@@ -136,7 +136,6 @@ class DTProblem(object):
                         goal_svars.add(svar.nonmodal())
                 self.subplan_actions.append(pnode)
                 self.select_actions = [pnode] + find_restrictions(pnode)
-                print "here!", map(str, self.select_actions)
                 break # only one action at a time for now
             
             if pnode.action.name not in observe_actions and self.subplan_actions:
