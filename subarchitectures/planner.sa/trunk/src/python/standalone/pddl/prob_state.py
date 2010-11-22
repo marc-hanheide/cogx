@@ -158,6 +158,11 @@ class ProbabilisticState(State):
                 if v > 0 or not only_nonzero:
                     yield Fact(svar, k), v
         return itertools.chain(*(fact_iter(svar, dist) for svar,dist in self.iteritems()))
+
+    def deterministic(self):
+        for svar, val in self.iteritems():
+            if val.value:
+                yield Fact(svar, val.value)
     
     def set(self, fact):
         if isinstance(fact, ProbFact):
@@ -288,18 +293,32 @@ class ProbabilisticState(State):
             if not func:
                 return None
             return StateVariable(func, svar.args+(value,))
-        
-        for fact, prob in self.iterfacts(only_nonzero=False):
-            #TODO: Handle cases with limited number of alternatives
-            if fact.value == UNKNOWN and prob > lower_threshold:
-                exclude_domains.setdefault(fact.svar,[])
-            elif prob >= upper_threshold:
-                s.set(fact)
-            elif prob >= lower_threshold:
-#                idvar = fact.svar.as_modality(mapl.not_indomain, [fact.value])
-                domains[fact.svar].append((prob, fact.value))
-            else:
-                exclude_domains[fact.svar].append(fact.value)
+
+        for svar, dist in self.iterdists():
+            total_p = 0
+            for v,p in sorted(dist.items(), key=lambda (v,p): -p):
+                if total_p >= upper_threshold:
+                    exclude_domains[svar].append(v)
+                    continue
+                total_p += p
+                if v == UNKNOWN:
+                    exclude_domains.setdefault(svar,[])
+                elif p >= upper_threshold:
+                    s[svar] = v
+                else:
+                    domains[svar].append((p, v))
+                
+#         for fact, prob in self.iterfacts(only_nonzero=False):
+#             #TODO: Handle cases with limited number of alternatives
+#             if fact.value == UNKNOWN and prob > lower_threshold:
+#                 exclude_domains.setdefault(fact.svar,[])
+#             elif prob >= upper_threshold:
+#                 s.set(fact)
+#             elif prob >= lower_threshold:
+# #                idvar = fact.svar.as_modality(mapl.not_indomain, [fact.value])
+#                 domains[fact.svar].append((prob, fact.value))
+#             else:
+#                 exclude_domains[fact.svar].append(fact.value)
                 
         for svar, values in domains.iteritems():
             if svar in s and s[svar] != UNKNOWN:
