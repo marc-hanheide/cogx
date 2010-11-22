@@ -592,54 +592,61 @@ the abstract state with probability $1.0$ -- E.G., for $\pp{R2D2}$
 $s_0 \equiv \{(= (is-in R2D2) kitchen)\}$.
 
 In order to make assumptions available to the sequential planner, we
-add one action $\actions(p_i;(T_i))$ to the problem for each element,
-$p_i (T_i)$, of each probabilistic term from $(:init)$. The physics
-of these actions is as follows. $\actions(p_i;(T_i))$ can be executed
-if no $\actions(p_j;(T_j))$, $j \neq i$, has been executed from the
-same probabilistic term, and, either
-$(\pp{probabilistic}~..p_i~(T_i)..)$ is in the root conjunct, or it
-occurs in $T_k$ for some executed $\actions(p_k;(T_k))$.
+add one {\em assumptive} action $\actions(p_i;(T_i))$ to the problem
+for each element, $p_i (T_i)$, of each probabilistic term from
+$(:init)$. The physics of these actions is as
+follows. $\actions(p_i;(T_i))$ can be executed if no
+$\actions(p_j;(T_j))$, $j \neq i$, has been executed from the same
+probabilistic term, and, either $(\pp{probabilistic}~..p_i~(T_i)..)$
+is in the root conjunct, or it occurs in $T_k$ for some executed
+$\actions(p_k;(T_k))$.
 %%
 Executing $\actions(p_i;(T_i))$ in $s$ effects a transition to a
 successor state $s^v$ with probability $p_i$, and $s^\bot$ with
-probability $1 - p_i$. Here, $s^v$ is characterised by the union of
-$s$ and atomic terms from $T_i$, and $s^\bot$ is a sink state -- I.e.,
+probability $1 - p_i$. Here, $s^v$ is the union of $s$ and atomic
+terms from $T_i$, and $s^\bot$ is a sink state -- I.e.,
 $\forall\action\in\actions$ $\reward(\state^\bot, \action) = 0$ and
 $\transProb(\state^\bot, \action, \state^\bot) = 1$.
 
 Because $\state_0$ is abstract, and because actions can have
-preconditions that are not necessarily true in the belief-state, we
-must make two further adjustments to our sequential continual
-planning. First, if $\action\in\actions$ has a precondition that is
-not true with probability $1$ in the current state, then before it is
-executed blindly, continual planning switches to a decision-theoretic
-mode, that shall be discussed in detail below. Therefore, by
-scheduling $\action$ the sequential planner makes a naive assumption
-about the possibility of the agent eventually holding strong beliefs
-about the truth values of specific state propositions. Second, if the
-truth value of $\prop$ is not known, and no assumption is made about
-it in the current abstract state, then if $\prop \in \poss(\action)$
-we have that action $\action$ is not applicable.
+preconditions that are not uniformly true in the underlying
+(resp. abstract) belief-state, we must make two further adjustments to
+the problem posed to the sequential planner. First, if
+$\action\in\actions$ has a precondition that is not true with
+probability $1$, then before it is executed blindly, the sequential
+continual planning switches to a decision-theoretic mode, discussed in
+detail below. Overall, by scheduling $\action$ the sequential planner
+makes a naive assumption about the possibility of the agent eventually
+committing ---for the purpose of the current task--- to the truth
+values of specific state propositions. Second, if the truth value of
+$\prop$ is not known, and no assumption is made about it in the
+current abstract state, then if $\prop \in \poss(\action)$ we have
+that action $\action$ is not applicable.
 
-Finally, we come to the issue of optimisation criteria. Here, we
-propose the value of an $N$ horizon trace ---something we expect the
-sequential planner to maximise--- corresponds to the maximal value of
-that trace. In detail, where $p_i$ is the probability that the
-$i^{th}$ execution is not a transition to $s^\bot$, we value a trace
-according to:
+%% In other words, the value of a proposition in an abstract
+%% state is either {\em true}, {\em false}, or {\em unspecified} (i.e.,
+%% \#). In the last case actions whose execution is preconditioned on the
+%% term being truth functional are not available.
+
+Finally, we come to the issue of valuing sequential plans, and
+therefore giving the criterion that the sequential planner seeks to
+optimise. Where $p_i$ is the probability that the $i^{th}$ action
+execution is not a transition to $s^\bot$, we value a trace according
+to:
 
 \begin{equation}\label{eq:tracevalue}
 V(s_0, a_0, s_1, a_1,.., s_N) =  \prod_{i=1..N} p_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
 \end{equation}
 
 \noindent In goal directed problems, where the only non-zero reward is
-received on the first transition to a goal state,
+received at the first transition to a goal state,
 Eq~\ref{eq:tracevalue} corresponds exactly to the criteria of the
 infamous degenerate hindsight system
-\system{FFR$_a$}~\cite{yoon:etal:2007}. Moreover, form the perspective
-of gradient-based reinforcement learning systems, such as William's
-REINFORCE and GPOMDP, our optimal trace yields a maximal gradient
-contribution under reasonable assumptions.
+\system{FFR$_a$}~\cite{yoon:etal:2007}. Form the perspective of
+gradient-based reinforcement learning systems, such as William's
+REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
+under reasonable assumptions the optimal trace yields a maximal
+gradient step from a uniform soft-max policy. 
 
 \subsection{Decision-Theoretic Planning in Abstractions}
 
@@ -706,6 +713,8 @@ environments~\cite{albore:etal:2009}.
 
 \section{Concluding Remarks}
 
+
+
 From an automated planning perspective, the problem of practical
 mobile robot control poses important and contrary challenges.
 %%
@@ -728,6 +737,14 @@ complementary runtime evolution of the decision process. That plan is
 executed until a validation of an assumption about a runtime
 proposition is requested.
 
+
+The sequential mode of our system always schedules decision-theoretic
+planning before executing actions that are not applicable with
+certainty. This is vastly inefficient if the utility of that plan is
+not dependent on the actions successful execution. This is the case
+where a plan is conformant. Therefore, in the future we must develop a
+cheap (heuristic) procedure to evaluate the utility of sensing at
+steps in sequential plan.
 
 
 
