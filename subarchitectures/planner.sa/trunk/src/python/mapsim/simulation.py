@@ -17,6 +17,7 @@ log = config.logger("mapsim")
 
 statistics_defaults = dict(
     total_time=0.0,
+    successful_runs=0,
     )
 
 
@@ -98,6 +99,7 @@ class Simulation(object):
                 return
             
         print "All agents are done."
+        self.statistics.increase_stat("successful_runs")
 
     def add_knowledge(self, agent):
         """
@@ -189,6 +191,10 @@ class Simulation(object):
             log.debug("%d: Agent %s executes (%s %s)", self.time, agent.name, action.name, " ".join(a.name for a in args))
 
             perceived_facts = []
+            cterm = action.get_total_cost()
+            cost = self.state.evaluate_term(cterm).value if cterm else 1
+            agent.statistics.increase_stat("total_plan_cost", cost)
+            
             if action.effect:
                 perceived_facts = self.execute_physical_action(action, agent)
                 agent.statistics.increase_stat("physical_actions_executed")
@@ -315,6 +321,7 @@ class Simulation(object):
 
         aggreg_funcs = defaultdict(lambda : avg_func)  # per default, calculate average
         aggreg_funcs["total_time"] = sum
+        aggreg_funcs["successful_runs"] = sum
 
         all_stats = self.stat_per_run
         keys = set(k for stats in all_stats for k in stats)
