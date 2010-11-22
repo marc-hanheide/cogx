@@ -75,10 +75,7 @@ void CVideoClient2::receiveImages(const std::vector<Video::Image>& images)
 
 void CVideoClient2::receiveImages(const std::string& serverName, const std::vector<Video::Image>& images)
 {
-   if (m_bCaching) {
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_cacheMonitor);
-      m_cache = images;
-   }
+   if (m_bCaching) cacheImages(images);
 
    if (m_pReceiver) m_pReceiver->receiveImages(serverName, images);
    else receiveImages(images);
@@ -143,10 +140,58 @@ bool CVideoClient2::isCaching()
    return m_bCaching;
 }
 
-void CVideoClient2::getCachedImages(std::vector<Video::Image>& images)
+void CVideoClient2::cacheImages(const std::vector<Video::Image>& images)
+{
+   struct _local_ {
+      std::vector<CCachedImagePtr::CStorage*>* m_pLocked;
+      CCachedImagePtr::CStorage* getFreeStore()
+      {
+         std::vector<CCachedImagePtr::CStorage*>::iterator it;
+         for(it = m_pLocked->begin(); it != m_pLocked->end(); it++) {
+            if (! (*it)->isLocked()) break;
+         }
+         if (it == m_pLocked->end()) {
+            return new CCachedImagePtr::CStorage();
+         }
+
+         CCachedImagePtr::CStorage* ps = *it;
+         m_pLocked->erase(it);
+         return ps;
+      }
+      void addLockedStore(CCachedImagePtr::CStorage* pStore)
+      {
+         m_pLocked->push_back(pStore);
+         std::cout << "Images in locked store: " << m_pLocked->size() << std::endl;
+      }
+      _local_(std::vector<CCachedImagePtr::CStorage*>& locked)
+      {
+         m_pLocked = &locked;
+      }
+   } local(m_locked);
+
+   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_cacheMonitor);
+
+   if (images.size() > m_cache.size())
+      m_cache.resize(images.size(), 0);
+
+   for(unsigned int i = 0; i < images.size(); i++) {
+      if (m_cache[i] != 0 && m_cache[i]->isLocked()) {
+         local.addLockedStore(m_cache[i]);
+         m_cache[i] = 0;
+      }
+      if (m_cache[i] == 0)
+         m_cache[i] = local.getFreeStore();
+      m_cache[i]->setImage(images[i]);
+   }
+}
+
+void CVideoClient2::getCachedImages(std::vector<CCachedImagePtr>& images)
 {
    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_cacheMonitor);
-   images = m_cache;
+   images.clear();
+   for(unsigned int i = 0; i < m_cache.size(); i++) {
+      images.push_back(CCachedImagePtr(m_cache[i]));
+   }
 }
 
 } // namespace

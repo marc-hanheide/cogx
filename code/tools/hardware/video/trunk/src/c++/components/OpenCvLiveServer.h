@@ -85,7 +85,7 @@ private:
    */
   Timer timer;
 
-  Video::CImageCache m_imageCache;
+  Video::CIplImageCache m_imageCache;
 
   /**
    * get video resolution for given camera

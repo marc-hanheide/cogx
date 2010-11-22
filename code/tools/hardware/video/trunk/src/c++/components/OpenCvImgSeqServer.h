@@ -92,7 +92,7 @@ private:
    */
   int downsampleFactor;
 
-  Video::CImageCache m_imageCache;
+  Video::CIplImageCache m_imageCache;
 
   /**
    * Initialise with a filename template and frame numbers.

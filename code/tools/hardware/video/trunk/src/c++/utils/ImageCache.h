@@ -14,7 +14,7 @@
 namespace Video {
 
 /**
- * An instance of CImageCache stores reusable IplImages.
+ * An instance of CIplImageCache stores reusable IplImages.
  *
  * Images are accesed by id and are reallocated only when
  * the required format changes.
@@ -22,11 +22,11 @@ namespace Video {
  * The class is used by various VideoServers for temporary frames
  * during frame conversion to substantially reduce reallocations.
  */
-class CImageCache
+class CIplImageCache
 {
   std::map<std::string,IplImage*> m_cache;
 public:
-  ~CImageCache();
+  ~CIplImageCache();
 
   /**
    * An instance of CImageCache stores reusable IplImages.

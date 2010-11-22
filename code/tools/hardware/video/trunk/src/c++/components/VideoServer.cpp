@@ -318,6 +318,7 @@ void VideoServer::runComponent()
 {
   vector<Image> frames;
   int cnt = 10;
+  string myid = getComponentID();
   while(isRunning())
   {
     // TODO: If I could have this lock after grabFrames() I could avoid the
@@ -330,7 +331,7 @@ void VideoServer::runComponent()
       if(swapRB)
         for(size_t i = 0; i < frames.size(); i++)
           SwapRedBlueChannel(frames[i]);
-      imageReceivers[i].videoClient->receiveImages(frames);
+      imageReceivers[i].videoClient->receiveImages2(myid, frames);
     }
     unlockComponent();
     // HACK: to let getImages() have chance to lockComponent()
