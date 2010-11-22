@@ -154,6 +154,7 @@ module Video {
   
   interface VideoClientInterface {
     void receiveImages(ImageSeq images);
+    void receiveImages2(string serverName, ImageSeq images);
   };
 
   // The structure contains parameters that describe the sequence of images
