@@ -117,6 +117,100 @@ public:
    }
 };
 
+// CCachedImagePtr is a smart pointer to a cached Video::Image.
+//
+// The smart pointer uses a reference count to lock a cached image.
+//
+// It is different from an ordinary smart pointer because it doesn't release
+// the underlying Video::Image when the reference count drops to 0 (ie the
+// image is unlocked). Count 0 only informs the cache manager (in this case
+// a CVideoClient2, @see cacheImages) that the image can be reused.
+//
+// When an image is not locked it can be reused for new images when they arrive
+// so that reallocations are avoided.
+class CCachedImagePtr
+{
+public:
+  class CStorage
+  {
+  private:
+    friend class CCachedImagePtr;
+    Video::Image* m_pImage;
+    int m_refCount;
+    void addref()
+    {
+      m_refCount++;
+    }
+    void release()
+    {
+      m_refCount--;
+    }
+  public:
+    CStorage()
+    {
+      m_pImage = 0;
+      m_refCount = 0;
+    }
+    ~CStorage()
+    {
+      if (m_pImage) delete m_pImage;
+    }
+    bool isLocked() const
+    {
+      return m_refCount > 0;
+    }
+    void setImage(const Video::Image& image)
+    {
+      if (m_pImage == 0) m_pImage = new Video::Image();
+      *m_pImage = image; // XXX: hopefully this doesn't reallocate image data when the size is the same
+    }
+  };
+
+private:
+  CStorage* m_pStore;
+
+public:
+  CCachedImagePtr()
+  {
+    m_pStore = 0;
+  }
+  CCachedImagePtr(const CCachedImagePtr& aImage)
+  {
+    m_pStore = aImage.m_pStore;
+    if (m_pStore) m_pStore->addref();
+  }
+  CCachedImagePtr(CStorage* pStore)
+  {
+    m_pStore = pStore;
+    if (pStore) pStore->addref();
+  }
+  ~CCachedImagePtr()
+  {
+    if (m_pStore) m_pStore->release();
+  }
+  CCachedImagePtr& operator=(const CCachedImagePtr& aImage)
+  {
+    if (m_pStore)
+    {
+      if (aImage.m_pStore == m_pStore) return *this;
+      m_pStore->release();
+    }
+    m_pStore = aImage.m_pStore;
+    if (m_pStore) m_pStore->addref();
+    return *this;
+  }
+
+  Video::Image* operator->() const
+  {
+    return m_pStore->m_pImage;
+  }
+
+  Video::Image& operator*() const
+  {
+    return *m_pStore->m_pImage;
+  }
+};
+
 /**
  * An instance of CVideoClient2 will receive images from one VideoServer.
  *
@@ -170,10 +264,22 @@ private:
 
    /**
     * The client can keep the last received images in cache.
+    * The size of m_cache should be the same as the size of m_camIds.
     */
-   std::vector<Video::Image> m_cache;
    bool m_bCaching;
+   std::vector<CCachedImagePtr::CStorage*> m_cache;
+   std::vector<CCachedImagePtr::CStorage*> m_locked;
    IceUtil::Monitor<IceUtil::Mutex> m_cacheMonitor;
+
+   /**
+    * Replaces m_cache with a set of received images.
+    * If an image in m_cache is locked, it is moved to m_locked and an unlocked
+    * one is moved from m_locked to m_cache. If an unlocked imaga doesn't exist
+    * in m_locked, a new one is created.
+    *
+    * TODO: cleanup m_locked when it grows too big (erase unlocked images)
+    */
+   void cacheImages(const std::vector<Video::Image>& images);
 
    /**
     * The callback function for images pushed by the image server.
@@ -223,7 +329,7 @@ public:
 
    void setCaching(bool bCaching = true);
    bool isCaching();
-   void getCachedImages(std::vector<Video::Image>& images);
+   void getCachedImages(std::vector<CCachedImagePtr>& images);
 };
 
 } // namespace

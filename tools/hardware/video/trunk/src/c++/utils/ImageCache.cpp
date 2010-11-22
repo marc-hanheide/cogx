@@ -10,7 +10,7 @@ using namespace std;
 
 namespace Video {
 
-CImageCache::~CImageCache()
+CIplImageCache::~CIplImageCache()
 {
   map<string,IplImage*>::iterator it;
   for(it = m_cache.begin(); it != m_cache.end(); it++) {
@@ -20,7 +20,7 @@ CImageCache::~CImageCache()
   m_cache.clear();
 }
 
-IplImage* CImageCache::getImage(const std::string& id, int width, int height, int depth, int channels)
+IplImage* CIplImageCache::getImage(const std::string& id, int width, int height, int depth, int channels)
 {
   map<string,IplImage*>::iterator it = m_cache.find(id);
   if (it != m_cache.end()) {
@@ -37,7 +37,7 @@ IplImage* CImageCache::getImage(const std::string& id, int width, int height, in
   return m_cache[id];
 }
 
-void CImageCache::releaseImage(const std::string& id)
+void CIplImageCache::releaseImage(const std::string& id)
 {
   map<string,IplImage*>::iterator it = m_cache.find(id);
   if (it == m_cache.end()) return;
