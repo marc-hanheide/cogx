@@ -86,8 +86,8 @@ is in the root conjunct, or it occurs in $T_k$ for some executed
 $\actions(p_k;(T_k))$.
 %%
 Executing $\actions(p_i;(T_i))$ in $s$ effects a transition to a
-successor state $s^v$ with probability $p_i$, and $s^\bot$ with
-probability $1 - p_i$. Here, $s^v$ is the union of $s$ and atomic
+successor state $s^{T_i}$ with probability $p_i$, and $s^\bot$ with
+probability $1 - p_i$. Here, $s^{T_i}$ is the union of $s$ and atomic
 terms from $T_i$, and $s^\bot$ is a sink state -- I.e.,
 $\forall\action\in\actions$ $\reward(\state^\bot, \action) = 0$ and
 $\transProb(\state^\bot, \action, \state^\bot) = 1$.
@@ -114,21 +114,37 @@ that action $\action$ is not applicable.
 
 
 Finally, we come to valuing sequential plans, and therefore giving a
-criteria that the sequential planner seeks to optimise. Where $p_i$
-is the probability that the $i^{th}$ action execution is not a
-transition to $s^\bot$, we value a trace according to:
+criteria for the sequential planner to optimise. Where $p_i$ is the
+probability that the $i^{th}$ sequenced action does not transition to
+$s^\bot$, we value a trace as follows:
 
 \begin{equation}\label{eq:tracevalue}
 V(s_0, a_0, s_1, a_1,.., s_N) =  \prod_{i=1..N} p_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
 \end{equation}
 
-\noindent In other words, the value of a trace captures its
-significance, in relation to other possible realisations of the plan,
-to the overall expected value of the plan in
-Eq~\ref{eq:expectedvalue}. In goal directed problems, where the only
-non-zero reward is received at the first transition to a goal state,
-Eq~\ref{eq:tracevalue} corresponds exactly to the criteria of the
-infamous degenerate hindsight system
+\noindent The optimal trace given a plan, i.e., the non-assumptive
+actions in sequence, therefore has value:
+
+\[
+V^* = \max_{p_1, .., p_n} \prod_{i=1..N} p_i \sum_{i=1..N-1}
+\reward(\state_i, \action_i),
+\]
+
+\noindent which is equal to the maximal contribution a trace of the plan can
+make to Eq~\ref{eq:expectedvalue}. In other words, writing $V_i$ for
+the value of the $i^{th}$ trace of the plan expressed in $s_0, a_0,
+s_1, a_1,.., s_N$, we have:
+
+\[
+V^* = \arg\min_{V_i} \Expect \bigg{[} 
+\sum_{t=0}^{N}  \reward(\bstate_t) \mid \pp{PLAN}, \bstate = \bstate_0
+\bigg{]} - V_i
+\]
+
+In goal directed problems, where the only non-zero reward is received
+at the first transition to a goal state, the Eq~\ref{eq:tracevalue}
+criteria corresponds exactly to that of the infamous degenerate
+hindsight system
 \system{FFR$_a$}~\cite{yoon:etal:2007}. Form the perspective of
 gradient-based reinforcement learning systems, such as William's
 REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
