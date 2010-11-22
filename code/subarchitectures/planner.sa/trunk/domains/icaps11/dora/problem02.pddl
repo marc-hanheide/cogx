@@ -49,6 +49,13 @@
            (connected p2c p3c)
            (connected p3c p1c)
 
+           (= (difficulty cornflakes) medium)
+           (= (difficulty mug) hard)
+           (= (difficulty table) easy)
+           (= (difficulty oven) easy)
+           (= (difficulty fridge) easy)
+           (= (difficulty book) medium)
+           (= (difficulty board-game) medium)
 
            (= (label obj1) cornflakes)
            (= (label obj2) table)
