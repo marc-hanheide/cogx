@@ -133,12 +133,12 @@ V^* = \max_{p_1, .., p_n} \prod_{i=1..N} p_i \sum_{i=1..N-1}
 \noindent which is equal to the maximal contribution a trace of the plan can
 make to Eq~\ref{eq:expectedvalue}. In other words, writing $V_i$ for
 the value of the $i^{th}$ trace of the plan expressed in $s_0, a_0,
-s_1, a_1,.., s_N$, we have:
+s_1, a_1,.., s_N$, we have
 
 \[
 V^* = \arg\min_{V_i} \Expect \bigg{[} 
 \sum_{t=0}^{N}  \reward(\bstate_t) \mid \pp{PLAN}, \bstate_0
-\bigg{]} - V_i
+\bigg{]} - V_i.
 \]
 
 In goal directed problems, where the only non-zero reward is received
