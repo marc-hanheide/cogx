@@ -28,14 +28,30 @@ def effect_handler(it, scope):
     
     first = it.get(None, "effect specification")
     if first.token.string == "at":
-        return TimedEffect.parse(it.reset(), scope)
+        try:
+            second = it.get()
+        except:
+            return None
+        if second.token.string in ("start", "end"):
+            return TimedEffect.parse(it.reset(), scope)
 
 def condition_handler(it, scope):
     if not scope.get_tag("durative_action"):
         return None
-        
+
+    is_durative = False
     first = it.get()
     if first.token.string in ("at", "over"):
+        try:
+            second = it.get()
+        except:
+            return None
+        if first.token.string == "at" and second.token.string in ("start", "end"):
+            is_durative=True
+        if first.token.string == "over" and second.token.string == "all":
+            is_durative=True
+            
+    if is_durative:
         if scope.get_tag("timed_condition"):
             raise ParseError(first.token, "Nested timed conditions are not allowed.")
         return TimedCondition.parse(it.reset(), scope)
