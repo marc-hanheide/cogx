@@ -59,11 +59,24 @@ def getGoalDescription(goal, gnode, _state):
     return gnode
 
 def getRWDescription(action, args, _state, time):
+    cond_keffs = pddl.translators.Translator.get_annotations(_state.problem.domain).get('has_commit_actions', False)
     pnode = plans.PlanNode(action, args, time, plans.ActionStatusEnum.EXECUTABLE)
 
     log.debug("get description for action (%s %s)", action.name, " ".join(a.name for a in action.args))
 
     action.instantiate(args, _state.problem)
+
+    def process_conditions(st, read_vars, universal_args, reasons, universal_reasons):
+        conds = set(read_vars)
+        original_conds = set(state.Fact(var, st[var]) for var in read_vars)
+        universal = set(a.type for a in universal_args)
+        for v in set(read_vars):
+            if v in reasons:
+                conds.remove(v)
+                conds |= reasons[v]
+            if v in universal_reasons:
+                universal |= set(a.type for a in universal_reasons[v])
+        return conds, original_conds, universal
 
     #t0 = time.time()
     if action.replan:
@@ -73,17 +86,8 @@ def getRWDescription(action, args, _state, time):
         extstate, reasons, universalReasons = _state.get_extended_state(_state.get_relevant_vars(action.replan), getReasons=True)
         sat = extstate.is_satisfied(action.replan, read_vars, universal_args)
         assert sat, "%s: %s" % (str(pnode), action.replan.pddl_str())
-        
-        pnode.replanconds = set(read_vars)
-        pnode.original_replan = set(state.Fact(var, extstate[var]) for var in read_vars)
-        pnode.explanations.update(reasons)
-        pnode.replan_universal = set(a.type for a in universal_args)
-        for v in set(read_vars):
-            if v in reasons:
-                pnode.replanconds.remove(v)
-                pnode.replanconds |= reasons[v]
-            if v in universalReasons:
-                pnode.replan_universal |= set(a.type for a in universalReasons[v])
+
+        pnode.replanconds, pnode.original_replan, pnode.replan_universal = process_conditions(extstate, read_vars, universal_args, reasons, universalReasons)
     #print "replan:", time.time()-t0
     #t0 = time.time()
 
@@ -95,29 +99,35 @@ def getRWDescription(action, args, _state, time):
         extstate, reasons, universalReasons = _state.get_extended_state(rel, getReasons=True)
         sat = extstate.is_satisfied(action.precondition, read_vars, universal_args)
         assert sat,  "%s: %s" % (str(pnode), action.precondition.pddl_str())
-        pnode.preconds = set(read_vars)
-        pnode.original_preconds = set(state.Fact(var, extstate[var]) for var in read_vars)
-        pnode.explanations.update(reasons)
-        pnode.preconds_universal = set(a.type for a in universal_args)
-        for v in set(read_vars):
-            if v in reasons:
-                pnode.preconds.remove(v)
-                pnode.preconds |= reasons[v]
-            if v in universalReasons:
-                pnode.preconds_universal |= set(a.type for a in universalReasons[v])
+
+        pnode.preconds, pnode.original_preconds, pnode.preconds_universal = process_conditions(extstate, read_vars, universal_args, reasons, universalReasons)
 
     #print "read:", time.time()-t0
 
     #t0 = time.time()
     _state.read_svars.clear()
     pnode.effects = set()
+    effects = []
     if action.effect:
-        pnode.effects = set(state.Fact(k,v) for k,v in _state.get_effect_facts(action.effect, trace_vars=True).iteritems())
+        effects.append(action.effect)
     if action.sensors:
-        pnode.effects |= set(state.Fact(k,v) for k,v in _state.get_effect_facts(action.knowledge_effect() , trace_vars=True).iteritems())
+        if cond_keffs:
+            effects.append(action.conditional_knowledge_effect())
+        else:
+            effects.append(action.knowledge_effect())
+            
+    if effects:
+        rel = reduce(lambda x,y: x | y, (_state.get_relevant_vars(eff) for eff in effects), set())
+        extstate, reasons, universalReasons = _state.get_extended_state(rel, getReasons=True)
+        pnode.effects = set()
+        for eff in effects:
+            pnode.effects |= set(state.Fact(k,v) for k,v in extstate.get_effect_facts(eff, trace_vars=True).iteritems())
 
-    pnode.preconds |= _state.read_svars
-    pnode.original_preconds |= set(state.Fact(var, extstate[var]) for var in _state.read_svars)
+        eff_conds, original_eff_conds, universal_eff_conds = process_conditions(extstate, extstate.read_svars, [], reasons, universalReasons)
+        pnode.preconds |= eff_conds
+        pnode.original_preconds |= original_eff_conds
+        pnode.preconds_universal |= universal_eff_conds
+        
     #print "write:", time.time()-t0
 
     cost_term = action.get_total_cost()

@@ -146,6 +146,15 @@ class StateVariable(object):
                 args.append(it.next())
         return args
 
+    def as_term(self):
+        """Return a representation of this StateVariable as a Term.
+        
+        If this StateVariable's function is a Predicate or has a
+        modality, an Exception will be raised."""
+
+        assert not self.modality and not isinstance(self.function, Predicate)
+        return FunctionTerm(self.function, [ConstantTerm(a) for a in self.args])
+
     def as_literal(self, _class=None):
         """Return a representation of this StateVariable as a Literal.
         
@@ -777,7 +786,7 @@ class State(dict):
 
     def get_relevant_vars(self, cond, restrict_to=None):
         """Returns a list of StateVariables that might be relevant for
-        determining the truth value of a condition.
+        determining the truth value of a condition or the results of an effect.
 
         Arguments:
         cond -- the Condition object to evaluate
@@ -787,6 +796,11 @@ class State(dict):
             if isinstance(cond, conditions.LiteralCondition):
                 return cond.predicate in restrict_to
             return any(results)
+
+        @visitors.collect
+        def condition_collector(eff, results):
+            if isinstance(eff, effects.ConditionalEffect):
+                return eff.condition
 
         def dependenciesVisitor(cond):
             if cond is None:
@@ -807,12 +821,18 @@ class State(dict):
                     cond.uninstantiate()
             elif isinstance(cond, conditions.PreferenceCondition):
                 dependenciesVisitor(cond.cond)
+            elif isinstance(cond, effects.Effect):
+                for c in cond.visit(condition_collector):
+                    dependenciesVisitor(c)
             else:
                 dependenciesVisitor(cond.condition)
-                    
-        self.read_svars.clear()
+
+        read_vars = self.read_svars
+        self.read_svars = set()
         dependenciesVisitor(cond)
-        return set(self.read_svars)
+        relevant_vars = self.read_svars
+        self.read_svars = read_vars
+        return set(relevant_vars)
 
     def get_effect_facts(self, effect, trace_vars=False):
         """Return list of Facts that describe the effect of applying
@@ -839,9 +859,13 @@ class State(dict):
                 effect.uninstantiate()
                 
         elif isinstance(effect, effects.ConditionalEffect):
-            extstate = self.get_extended_state(self.get_relevant_vars(effect.condition))
-            if extstate.is_satisfied(effect.condition):
+            read_vars = set(self.read_svars) #backup as it may get cleared by is_satisfied()
+            read = [] if trace_vars else None
+            if self.is_satisfied(effect.condition, read):
                 facts.update(self.get_effect_facts(effect.effect, trace_vars))
+            self.read_svars = read_vars
+            if read:
+                self.read_svars |= set(read )
 
         elif isinstance(effect, effects.ProbabilisticEffect):
             remaining_effects = []
