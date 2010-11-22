@@ -43,6 +43,7 @@ private:
 
    int m_frameGrabCount;       // how many frames to save
 
+public: // XXX: testing
    std::vector<Video::CVideoClient2*> m_video;
 
 #ifdef FEAT_VISUALIZATION
@@ -53,6 +54,7 @@ private:
    std::vector<unsigned char> m_DisplayBuffer; // For transfering data to the server;
    void prepareCanvas(int width, int height);
    void releaseCanvas();
+   void sendCachedImages();
    
    class CVvDisplayClient: public cogx::display::CDisplayClient
    {

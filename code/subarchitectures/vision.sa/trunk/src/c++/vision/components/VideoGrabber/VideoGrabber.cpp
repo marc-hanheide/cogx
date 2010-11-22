@@ -3,15 +3,17 @@
  * @date September 2010
  */
 
-#include <highgui.h>
-#include <VideoUtils.h>
 #include "VideoGrabber.h"
 #include "StringFmt.h"
+
+#include <highgui.h>
+#include <VideoUtils.h>
+#include <IceUtil/Timer.h>
 
 #define IDOBJ_GRABBER "Video.Grabber"
 #define IDOBJ_SETTINGS "Video.Grabber.Settings"
 
-#define IDPART_SETTIGS_FORM "001.settings"
+#define IDPART_SETTINGS_FORM "001.settings"
 #define IDCMD_GRAB "video.grab"
 #define IDCTRL_STREAMING "video.streaming"
 
@@ -97,7 +99,7 @@ void CVideoGrabber::start()
    pVideo->setReceiver(new Video::CReceiverMethod<CVideoGrabber>(this, &CVideoGrabber::receiveImages));
    m_video.push_back(pVideo);
 
-#if 0 // XXX: code for testing
+#if 1 // XXX: code for testing
    std::vector<int> camIds;
    camIds.push_back(0);
    pVideo = new Video::CVideoClient2();
@@ -122,7 +124,7 @@ void CVideoGrabber::CVvDisplayClient::createForms()
    //   ".info { font-size: 90%; color: #808080; }"
    //   "</style>"
    //   ;
-   //setHtmlHead(IDOBJ_SETTINGS, IDPART_SETTIGS_FORM, head);
+   //setHtmlHead(IDOBJ_SETTINGS, IDPART_SETTINGS_FORM, head);
    std::ostringstream ss;
    string help1, help2;
    ss <<
@@ -203,7 +205,7 @@ void CVideoGrabber::CVvDisplayClient::createForms()
    setCounterDigits(3);
    setCounterValue(0);
    
-   setHtmlForm(IDOBJ_SETTINGS, IDPART_SETTIGS_FORM, ss.str());
+   setHtmlForm(IDOBJ_SETTINGS, IDPART_SETTINGS_FORM, ss.str());
 }
 
 std::string CVideoGrabber::CVvDisplayClient::getDirectory()
@@ -253,7 +255,6 @@ void CVideoGrabber::CVvDisplayClient::setDeviceNames(const std::string& names)
 long CVideoGrabber::CVvDisplayClient::getCounterDigits()
 {
    // TODO: countersize is a set so getInt doesn't work ... 
-   //pViewer->println("*** miki " + m_frmSettings.get("countersize"));
    return atoi(m_frmSettings.get("countersize").c_str());
 }
 
@@ -299,7 +300,7 @@ void CVideoGrabber::CVvDisplayClient::handleEvent(const Visualization::TEvent &e
 
          std::map<std::string, std::string> fields;
          m_frmSettings.get(fields);
-         setHtmlFormData(IDOBJ_SETTINGS, IDPART_SETTIGS_FORM, fields);
+         setHtmlFormData(IDOBJ_SETTINGS, IDPART_SETTINGS_FORM, fields);
       }
    }
 }
@@ -316,7 +317,7 @@ void CVideoGrabber::CVvDisplayClient::handleForm(const std::string& id,
       const std::string& partId, const std::map<std::string, std::string>& fields)
 {
    std::cout << " *** handleForm " << partId << std::endl;
-   if (partId == IDPART_SETTIGS_FORM) {
+   if (partId == IDPART_SETTINGS_FORM) {
       m_frmSettings.apply(fields);
    }
 }
@@ -324,7 +325,7 @@ void CVideoGrabber::CVvDisplayClient::handleForm(const std::string& id,
 bool CVideoGrabber::CVvDisplayClient::getFormData(const std::string& id,
       const std::string& partId, std::map<std::string, std::string>& fields)
 {
-   if (partId == IDPART_SETTIGS_FORM) {
+   if (partId == IDPART_SETTINGS_FORM) {
       m_frmSettings.get(fields);
       return true;
    }
@@ -385,35 +386,30 @@ void CVideoGrabber::destroy()
 {
 }
 
-void CVideoGrabber::receiveImages(const std::string& serverName, const std::vector<Video::Image>& _images)
+void CVideoGrabber::sendCachedImages()
 {
-   println("%s 0x%lx", serverName.c_str(), pthread_self()); // XXX: Testing code
-
-   //if (m_frameGrabCount > 0) {
-   //   saveImages(images);
-   //   m_frameGrabCount--; // XXX: not thread safe
-   //}
-
-   if (serverName != m_videoServerName) return;
-
 #ifdef FEAT_VISUALIZATION
-   std::vector<Video::Image> images, timgs;
+   std::vector<Video::CCachedImagePtr> images;
    for (unsigned int i = 0; i < m_video.size(); i++) {
       Video::CVideoClient2& v = *m_video[i];
+      std::vector<Video::CCachedImagePtr> timgs;
       v.getCachedImages(timgs);
-      images.insert(images.end(), timgs.begin(), timgs.end());
+      std::vector<Video::CCachedImagePtr>::iterator itt;
+      for(itt = timgs.begin(); itt != timgs.end(); itt++) {
+         images.push_back(*itt);
+      }
    }
 
    int w = 0, h = 0;
    double factor = 1.0;
    for (unsigned int i = 0; i < images.size(); i++) {
-      if (images[i].width > w) w = images[i].width;
-      h += images[i].height;
+      if (images[i]->width > w) w = images[i]->width;
+      h += images[i]->height;
    }
    if (w > 320) {
       factor = 320.0 / w;
-      w = (int) (w * factor);
-      h = (int) (h * factor);
+      w = (int) (w * factor + 0.5);
+      h = (int) (h * factor + 0.5);
    }
    // TODO: every image has its own scale factor
 
@@ -425,9 +421,9 @@ void CVideoGrabber::receiveImages(const std::string& serverName, const std::vect
    prepareCanvas(w, h);
    IplImage *pDisp = m_pDisplayCanvas;
    for (unsigned int i = 0; i < images.size(); i++) {
-      IplImage *iplImage = cloneVideoImage(images[i]);
-      int wi = (int) (images[i].width * factor);
-      int hi = (int) (images[i].height * factor);
+      IplImage *iplImage = cloneVideoImage(*images[i]);
+      int wi = (int) (images[i]->width * factor);
+      int hi = (int) (images[i]->height * factor);
       cvSetImageROI(pDisp, cvRect(0, vp, wi, vp+hi));
       cvResize(iplImage, pDisp);
       releaseClonedImage(&iplImage);
@@ -436,13 +432,29 @@ void CVideoGrabber::receiveImages(const std::string& serverName, const std::vect
       if (i < devnames.size()) sMsg += ":" + devnames[i];
       cvPutText (pDisp, sMsg.c_str(), cvPoint(10, 25), &fntSimplex, cvScalar(255,255,0));
       
-      sMsg = _str_(images[i].width) + "x" + _str_(images[i].height);
+      sMsg = _str_(images[i]->width) + "x" + _str_(images[i]->height);
       cvPutText (pDisp, sMsg.c_str(), cvPoint(10, hi-2), &fntPlain, cvScalar(255,255,0));
 
       cvResetImageROI(pDisp);
       vp += hi;
    }
    m_display.setImage(IDOBJ_GRABBER, w, h, 3, m_DisplayBuffer);
+#endif
+}
+
+void CVideoGrabber::receiveImages(const std::string& serverName, const std::vector<Video::Image>& _images)
+{
+   //println("%s 0x%lx", serverName.c_str(), pthread_self()); // XXX: Testing code
+
+   //if (m_frameGrabCount > 0) {
+   //   saveImages(images);
+   //   m_frameGrabCount--; // XXX: not thread safe
+   //}
+
+   if (serverName != m_videoServerName) return;
+
+#ifdef FEAT_VISUALIZATION
+   //sendCachedImages();
 #else
    IplImage *iplImage = convertImageToIpl(images[0]);
    cvShowImage(getComponentID().c_str(), iplImage);
@@ -496,13 +508,165 @@ void CVideoGrabber::saveImages(const std::vector<Video::Image>& images)
    }
 }
 
+class CTickSyncedTask
+{
+protected:
+   IceUtil::Monitor<IceUtil::Mutex> m_tickerMutex;
+   int m_ticked;
+
+public:
+   CTickSyncedTask()
+   {
+      m_ticked = 0;
+   }
+
+   void tick()
+   {
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_tickerMutex);
+      m_ticked++;
+      m_tickerMutex.notify();
+   }
+
+   int waitForTick(int ms = 500)
+   {
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_tickerMutex);
+      if (! m_ticked)
+         m_tickerMutex.timedWait(IceUtil::Time::milliSeconds(ms));
+      if (! m_ticked) return 0;
+      int rv = m_ticked;
+      m_ticked = 0;
+      return rv;
+   }
+};
+
+class CTickerTask: public IceUtil::TimerTask
+{
+   CTickSyncedTask* m_pWorker;
+public:
+   CTickerTask(CTickSyncedTask* pWorker)
+   {
+      assert(pWorker);
+      m_pWorker = pWorker;
+   }
+   void runTimerTask()
+   {
+      // This should be as short as possible so that we get
+      // approximately equal time periods.
+      m_pWorker->tick();
+   }
+};
+
+
+class CSaveQueThread: public IceUtil::Thread, public CTickSyncedTask
+{
+   CVideoGrabber *m_pGrabber;
+
+public:
+   struct CItem 
+   {
+      long frameId;
+      std::vector<Video::CCachedImagePtr> images;
+   };
+   std::vector<CItem> items;
+
+public:
+   CSaveQueThread(CVideoGrabber *pGrabber)
+   {
+      m_pGrabber = pGrabber;
+   }
+
+   virtual void run()
+   {  
+      while (m_pGrabber && m_pGrabber->isRunning()) {
+         int ticks = waitForTick(500);
+         if (!ticks) continue;
+         if (ticks > 1) 
+            m_pGrabber->println(string(" *** missed ticks ") + _str_(ticks-1));
+
+         IceUtil::Time tm = IceUtil::Time::now();
+         m_pGrabber->println("%lld runTimerTask()", tm.toMilliSeconds());
+
+         CItem pack;
+         std::vector<Video::CCachedImagePtr> queue;
+         for (unsigned int i = 0; i < m_pGrabber->m_video.size(); i++) {
+            std::vector<Video::CCachedImagePtr> timgs;
+            Video::CVideoClient2& v = *m_pGrabber->m_video[i];
+            v.getCachedImages(pack.images);
+            std::vector<Video::CCachedImagePtr>::iterator itt;
+            for(itt = timgs.begin(); itt != timgs.end(); itt++) {
+               pack.images.push_back(*itt);
+            }
+         }
+         pack.frameId = m_pGrabber->m_display.getCounterValue();
+         m_pGrabber->m_display.setCounterValue(pack.frameId + 1);
+         items.push_back(pack);
+         IceUtil::Time tm2 = IceUtil::Time::now() - tm;
+         m_pGrabber->println("images copied in %lld", tm2.toMilliSeconds());
+      }
+   }
+};
+
+class CDrawingThread: public IceUtil::Thread, public CTickSyncedTask
+{
+   CVideoGrabber *m_pGrabber;
+
+public:
+   struct CItem 
+   {
+      long frameId;
+      std::vector<Video::CCachedImagePtr> images;
+   };
+   std::vector<CItem> items;
+
+public:
+   CDrawingThread(CVideoGrabber *pGrabber)
+   {
+      m_pGrabber = pGrabber;
+   }
+
+   virtual void run()
+   {  
+      while (m_pGrabber && m_pGrabber->isRunning()) {
+         int ticks = waitForTick(500);
+         if (!ticks) continue;
+
+         m_pGrabber->sendCachedImages();
+      }
+   }
+};
+
 void CVideoGrabber::runComponent()
 {
    sleepComponent(1000);
+   IceUtil::Timer timer;
+   IceUtil::ThreadPtr pQueue = new CSaveQueThread(this);
+   IceUtil::ThreadPtr pDrawer = new CDrawingThread(this);
+   CTickerTask saveTick(dynamic_cast<CTickSyncedTask*>(pQueue.get()));
+   CTickerTask drawTick(dynamic_cast<CTickSyncedTask*>(pDrawer.get()));
+
+   // Unfortunately Timer isn't exact -- (arbitrary) time spent by runTimerTask
+   // is added to the time of a period; because of this runTimerTask must be
+   // extremely fast so instead of copying image data we implement a locking
+   // image cache and copy only the pointers to locked images; this should take
+   // under 1 microsecond per period. Synchronization/multithreading may make
+   // this time much longer.
+   // XXX With CTickSyncedTask the grabber lost 10ms in 10s. Find a better implementation of Timer.
+   //timer.scheduleRepeated(&saveTick, IceUtil::Time::milliSeconds(200));
+   timer.scheduleRepeated(&drawTick, IceUtil::Time::milliSeconds(200));
+
+   IceUtil::ThreadControl tcQueue = pQueue->start();
+   IceUtil::ThreadControl tcDrawer = pDrawer->start();
 
    while(isRunning()) {
       sleepComponent(300);
    }
+
+   tcQueue.join();
+   tcDrawer.join();
+
+   // XXX: A crash, with both cancel() and destroy()
+   //timer.cancel(&saveTick); timer.cancel(&drawTick);
+   timer.destroy();
 }
 
 } // namespace
