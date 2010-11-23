@@ -10,7 +10,7 @@ from builder import Builder
 from parser import ParseError, UnexpectedTokenError
 from mapltypes import Parameter
 from predicates import Predicate, Function, FunctionTerm, VariableTerm
-from builtin import t_object, t_number
+from builtin import t_object, t_number, UNKNOWN
 
 t_node = types.Type("node")
 t_node_choice = types.Type("node_choice")
@@ -949,74 +949,30 @@ class PNode(object):
             
         return [], {}, False
 
+
     def size(self, selected_facts=None):
-        if selected_facts is not None and self.svar not in selected_facts:
-            #print "tree not evaluated:", self.svar
-            return 1
+        # if selected_facts is not None and self.svar not in selected_facts:
+        #     print "tree not evaluated:", self.svar
+        #     return 1
+        print "start:", self.svar
         size = 0
         total_p = 0
         for val, (p, nodes, facts) in self.children.iteritems():
             total_p += p
-            if selected_facts is not None and val not in selected_facts[self.svar]:
-                #print "branch not evaluated:", self.svar, val
-                continue
+            # if selected_facts is not None and val not in selected_facts[self.svar]:
+            #     print "branch not evaluated:", self.svar, val
+            #     continue
             bsize = 1
             for n in nodes:
+                # print "child", n.svar
                 bsize *= n.size(selected_facts)
             size += bsize
-            #print "evaluated:", self.svar, val, bsize
+            print "evaluated:", self.svar, val, bsize
         if total_p < 1.0:
             size += 1
-        #print "size of", self.svar, size
+        print "size of", self.svar, size
         return size
 
-    @staticmethod
-    def reduce_all(nodes, choices, limit):
-        levels = defaultdict(lambda: -1)
-        def get_level(node, level):
-            cval = choices.get(node.svar, None)
-            if cval and levels[node] < level:
-                levels[node] = level
-                p, nodes, facts = node.children[cval]
-                choices.update(facts)
-                for n in nodes:
-                    get_level(n, level+1)
-
-        def total_size(nodes, facts=None):
-            return reduce(lambda x,y: x*y, [n.size(facts) for n in nodes], 1)
-        
-        def update(d, it):
-            for svar, val in it:
-                d[svar].add(val)
-
-        for n in nodes:
-            get_level(n, 0)
-            
-        nodes_by_level = defaultdict(set)
-        for n, l in levels.iteritems():
-            nodes_by_level[l].add(n)
-        node_order = sorted(nodes_by_level.iteritems(), key = lambda (l,n): -l)
-        
-        selected = defaultdict(set)
-        update(selected, choices.iteritems())
-        node_queue = []
-        # print "initial choices:", [str(state.Fact(s,v)) for s,v in choices.iteritems()]
-        while node_order:
-            #while total_size(nodes, selected) < limit:
-            level, this_nodes = node_order.pop(0)
-            node_queue = chain(*itertools.izip_longest(*[n.add_facts(choices) for n in this_nodes]))
-            for added_facts in node_queue:
-                next = selected.copy()
-                update(next, added_facts)
-                tsize = total_size(nodes, next)
-                if tsize < limit:
-                    #print "added: %s (%d)" % (map(str, added_facts), tsize)
-                    selected = next
-                else:
-                    #print "skipped (size = %d)" % tsize
-                    pass
-        return selected
-            
     def add_facts(self, choices):
         cval = choices.get(self.svar, None)
         if cval:
@@ -1028,7 +984,7 @@ class PNode(object):
             if val == cval:
                 continue
             result = set(state.Fact(svar, val) for svar, val in facts.iteritems())
-            result.add(state.Fact(self.svar, val))
+            #result.add(state.Fact(self.svar, val))
             for n in nodes:
                 result |= n.all_facts()
             # print "branch %s=%s" % (str(self.svar), str(val))
@@ -1045,7 +1001,7 @@ class PNode(object):
     def all_facts(self):
         result = set()
         for val, (p, nodes, facts) in self.children.iteritems():
-            result.add(state.Fact(self.svar, val))
+            #result.add(state.Fact(self.svar, val))
             result |= set(state.Fact(svar, val) for svar, val in facts.iteritems())
             for n in nodes:
                 result |= n.all_facts()

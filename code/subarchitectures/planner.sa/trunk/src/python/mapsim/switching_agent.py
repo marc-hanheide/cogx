@@ -1,5 +1,5 @@
 import os, re
-
+from collections import defaultdict
 from standalone import pddl, plans, task, statistics, planner, dt_problem, plan_postprocess, bayes
 #from standalone import statistics
 
@@ -95,6 +95,7 @@ class SwitchingAgent(agent.Agent):
         self.plan_history = []
         self.percepts = []
         self.dt_active = False
+        self.fail_count = defaultdict(lambda: 0)
 
         #hierarchical = self.simulator.preprocess_problem(mapltask)
         hierarchical = mapltask
@@ -102,11 +103,7 @@ class SwitchingAgent(agent.Agent):
         w.write(hierarchical, problem_fn="tree.pddl")
         
         pnodes = pddl.dtpddl.PNode.from_problem(hierarchical)
-        #nodedict = {}
-        # for n in pnodes:
-        #     n.consolidate(nodedict)
         pnodes, det_lits = pddl.dtpddl.PNode.simplify_all(pnodes)
-        #pnodes = pddl.dtpddl.PNode.consolidate_all(pnodes)
         mapltask.init += det_lits
         self.init_pnodes = pnodes
         self.pnodes = pnodes
@@ -128,10 +125,6 @@ class SwitchingAgent(agent.Agent):
         cp_problem = pddl.Problem(mapltask.name, mapltask.objects, facts , mapltask.goal, self.cp_domain)
 
         self.bayes = bayes.BayesianState(self.state, mapltask, pnodes, self.domain)
-        #bnetif = BnetInterface(self.bayes.nodes.values(), self.bayes.edges, debug=False)
-        #result = bnetif.evaluate()
-        #for node, values in result.iteritems():
-        #    print node.var, values
         self.bayes.evaluate()
         
         self.task = task.Task(agent.next_id(), cp_problem)
@@ -165,7 +158,7 @@ class SwitchingAgent(agent.Agent):
 
         if "partial-observability" in self.domain.requirements:
             log.debug("creating dt task")
-            self.dt_task = dt_problem.DTProblem(plan, self.pnodes, self.domain)
+            self.dt_task = dt_problem.DTProblem(plan, self.pnodes, self.fail_count, self.domain)
 
             for pnode in plan.nodes_iter():
                 if pnode.is_virtual():
@@ -251,7 +244,7 @@ class SwitchingAgent(agent.Agent):
             
         observations = get_observations()
         if not observations:
-            log.info("No observations from %s", str(dt_pnode))
+            log.debug("No observations from %s", str(dt_pnode))
             observations.append(None)
 
         log.debug("delivered observations")
@@ -286,6 +279,15 @@ class SwitchingAgent(agent.Agent):
         self.dt_interface.kill()
         self.dt_interface = None
         self.dt_active = False
+
+        if not self.dt_task.dt_plan:
+            log.debug("dt plan returned without action.")
+            for goal in self.dt_task.goals:
+                self.fail_count[goal] += 1
+        # else:
+        #     for goal in self.dt_task.goals:
+        #         if goal in self.fail_count:
+        #             del self.fail_count[goal]
         
         self.get_plan().execution_position = last_dt_action
         self.plan_history.append(self.dt_task)

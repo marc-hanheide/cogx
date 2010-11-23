@@ -139,7 +139,6 @@ class BayesianState(object):
             n.get_nodedicts(self.nodedict, self.factdict)
 
         self.init_bayes(pnodes)
-        self.non_mutex = self.find_non_mutex_nodes(pnodes)
         self.obs = {}
 
     def compute_nonmutex_results(self, results):
@@ -193,54 +192,6 @@ class BayesianState(object):
                 results[svar] = dists[0]
         return results
             
-
-    def find_non_mutex_nodes(self, pnodes):
-        mutex_pairs = []
-        def find_func(pnode):
-            svars = defaultdict(set)
-            for p, nodes, facts in pnode.children.itervalues():
-                for svar in facts.iterkeys():
-                    svars[svar].add(pnode)
-                branch_svars = defaultdict(set)
-                for n in nodes:
-                    for svar, nds in find_func(n).iteritems():
-                        if svar in branch_svars:
-                            for n1, n2 in product(nds, branch_svars[svar]):
-                                mutex_pairs.append((n1.svar, n2.svar))
-                        branch_svars[svar] |= nds
-                for svar, nds in branch_svars.iteritems():
-                    svars[svar] |= nds
-            return svars
-
-        svars = defaultdict(set)
-        for n in pnodes:
-            for svar, nds in find_func(n).iteritems():
-                if svar in svars:
-                    for n1, n2 in product(nds, svars[svar]):
-                        mutex_pairs.append((n1.svar, n2.svar))
-                svars[svar] |= nds
-        # for n1, n2 in mutex_pairs:
-        #     print n1.svar, n2.svar
-        return mutex_pairs
-
-    def create_mutex_nodes(self, pnodes):
-        for svar, mutex in self.factdict.iteritems():
-            parents = set(n.parent for n in mutex)
-            if len(parents) <= 1:
-                continue
-            
-            mutex = [self.nodes[pn.svar] for pn in mutex]
-            print "mutex:", map(str, mutex)
-            mnode = BayesNode("mutex-%s" % str(svar), [0], [n.var for n in mutex])
-            medges = [(n, mnode) for n in mutex]
-            combinations = product(*[n.values for n in mutex])
-            for c in combinations:
-                if len(filter(lambda v: v != pddl.UNKNOWN, c)) > 1:
-                    mnode.dist[c] = [0.0]
-                else:
-                    mnode.dist[c] = [1.0]
-            self.nodes[mnode.var] = mnode
-            self.edges += medges
             
     def init_bayes(self, pnodes):
         self.values = defaultdict(list)

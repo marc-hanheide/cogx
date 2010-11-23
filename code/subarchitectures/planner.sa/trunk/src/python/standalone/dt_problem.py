@@ -1,4 +1,4 @@
-import time
+import time, math, itertools
 from itertools import chain
 
 from collections import defaultdict
@@ -13,7 +13,7 @@ log = config.logger("dt")
 
 
 class DTProblem(object):
-    def __init__(self, plan, pnodes, domain):
+    def __init__(self, plan, pnodes, failed_goals, domain):
         self.plan = plan
         self.pnodes = pnodes
         self.domain = domain
@@ -29,7 +29,7 @@ class DTProblem(object):
         self.dt_rules = pddl.translators.Translator.get_annotations(domain).get('dt_rules', [])
         
         self.dtdomain = self.create_dt_domain(domain)
-        self.goal_actions = self.create_goal_actions(self.goals, self.dtdomain)
+        self.goal_actions = self.create_goal_actions(self.goals, failed_goals, self.dtdomain)
         self.dtdomain.actions += [a for a in self.goal_actions]
         self.dtdomain.name2action = None
 
@@ -39,9 +39,8 @@ class DTProblem(object):
         
     def initialize(self, prob_state):
         self.state = prob_state
-        choices = self.extract_choices()
-        log.debug("initial choices: %s", map(str, choices))
-        facts = dtpddl.PNode.reduce_all(self.pnodes, choices, global_vars.config.dt.max_state_size)
+        #facts = dtpddl.PNode.reduce_all(self.pnodes, choices, global_vars.config.dt.max_state_size)
+        facts = self.reduce_state(global_vars.config.dt.max_state_size)
         selected = set()
         add_objects = set()
         for var, vals in facts.iteritems():
@@ -123,7 +122,7 @@ class DTProblem(object):
             return others
 
         self.select_actions = []
-        goal_svars = set()
+        goal_facts = set()
         #combine consecutive observe actions into one subtask.
         for pnode in plan.topological_sort():
             if pnode.status == plans.ActionStatusEnum.EXECUTED:
@@ -132,9 +131,11 @@ class DTProblem(object):
                 #print pnode.action.name
                 #print map(str, pnode.effects)
                 #TODO: only add an action if the observe effect supports a later action
-                for svar, val in pnode.effects:
-                    if svar.modality in (mapl.knowledge, mapl.direct_knowledge):
-                        goal_svars.add(svar.nonmodal())
+                for fact in pnode.effects:
+                    if fact.svar.function not in (pddl.builtin.total_cost, ):
+                        goal_facts.add(fact)
+                    # if svar.modality in (mapl.knowledge, mapl.direct_knowledge):
+                    #     goal_svars.add(svar.nonmodal())
                 self.subplan_actions.append(pnode)
                 self.select_actions += [pnode] + find_restrictions(pnode)
                 #break # only one action at a time for now
@@ -142,7 +143,7 @@ class DTProblem(object):
             if pnode.action.name not in observe_actions and self.subplan_actions:
                 break
             
-        return goal_svars
+        return goal_facts
     
 
     def replanning_neccessary(self, new_state):
@@ -398,10 +399,11 @@ class DTProblem(object):
             
         return layers
             
-    def create_goal_actions(self, goals, domain):
+    def create_goal_actions(self, goals, fail_counts, domain):
         commit_actions = []
 
-        confirm_score = 40
+        confirm_score = global_vars.config.dt.confirm_score
+        failure_multiplier = global_vars.config.dt.failure_multiplier
 
         a = pddl.Action("cancel", [], None, None, domain)
         b = pddl.builder.Builder(a)
@@ -409,7 +411,15 @@ class DTProblem(object):
         a.effect = b.effect('and', ('done', ), ('assign', ('reward',), 0))
         commit_actions.append(a) # comment out to disable the cancel action
         
-        for svar in goals:
+        for fact in goals:
+            if fact.svar.modality in (mapl.knowledge, mapl.direct_knowledge):
+                svar = fact.svar.nonmodal()
+            else:
+                log.debug("Goal not yet supported: %s", str(fact))
+                continue
+
+            mult = failure_multiplier**fail_counts[fact]
+
             term = pddl.Term(svar.function, svar.get_args())
             domain.constants |= set(svar.get_args())
             domain.add(svar.get_args())
@@ -422,8 +432,8 @@ class DTProblem(object):
             #a.precondition = b.cond('and', ('not', (mapl.committed, [term])))
             a.precondition = b.cond('not', ('done', ))
             commit_effect = b.effect(mapl.committed, [term])
-            reward_effect = b('when', ('=', term, val), ('assign', ('reward',), confirm_score))
-            penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -confirm_score))
+            reward_effect = b('when', ('=', term, val), ('assign', ('reward',), confirm_score * mult ))
+            penalty_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), -confirm_score * mult))
             done_effect = b.effect('done')
             a.effect = b.effect('and', reward_effect, penalty_effect, commit_effect, done_effect)
             
@@ -438,10 +448,10 @@ class DTProblem(object):
                     disconfirm.append((nmvar, svar.modal_args[0]))
                     break # only one disconfirm per node
 
-        # if not disconfirm:
-        return commit_actions
+        if not disconfirm:
+            return commit_actions
                         
-        dis_score = float(confirm_score)/len(disconfirm)
+        dis_score = float(confirm_score)/(2**(len(disconfirm)-1))
         disconfirm_actions = []
         for svar, val in disconfirm:
             term = pddl.Term(svar.function, svar.get_args())
@@ -472,6 +482,8 @@ class DTProblem(object):
             a.effect = b.effect('and', reward_effect, penalty_effect, done_effect)
             
             disconfirm_actions.append(a)
+            dis_score *= 2
+
                         
         return commit_actions + disconfirm_actions
 
@@ -554,6 +566,205 @@ class DTProblem(object):
         log.debug("total time for state creation: %f", time.time()-t0)
         return problem
 
+    def reduce_state(self, limit):
+        levels = defaultdict(lambda: -1)
+        def get_level(node, level):
+            cval = choices.get(node.svar, None)
+            if cval and levels[node] < level:
+                levels[node] = level
+                p, nodes, facts = node.children[cval]
+                choices.update(facts)
+                for n in nodes:
+                    get_level(n, level+1)
+
+        def total_size(nodes, facts=None):
+            return reduce(lambda x,y: x*y, [n.size(facts) for n in nodes], 1)
+        
+        def update(d, it):
+            d = dict((v,set(s)) for v,s in d.iteritems())
+            for svar, val in it:
+                s = d.setdefault(svar, set())
+                s.add(val)
+            return d
+
+        choices = self.extract_choices()
+        log.debug("initial choices: %s", map(str, choices))
+        o_funcs = self.observable_functions()
+
+        for n in self.pnodes:
+            get_level(n, 0)
+            
+        nodes_by_level = defaultdict(set)
+        for n, l in levels.iteritems():
+            nodes_by_level[l].add(n)
+        node_order = sorted(nodes_by_level.iteritems(), key = lambda (l,n): -l)
+
+        init = update({}, [(svar, val) for svar, val in choices.iteritems() if svar.function != dtpddl.selected])
+        H_init = self.entropy(init, {}, limit)
+        log.debug("initial entropy: %.4f", H_init)
+        # print "initial entropy: %.4f" % H_init
+        # for svar, val in choices.iteritems():
+        #     others = dict((s, set([v])) for s, v in choices.iteritems() if s.function != dtpddl.selected and s != svar)
+        #     print "H(init|%s): %.4f" %(str(svar), self.entropy(others, update({}, [(svar,val)]), limit))
+            
+            
+        selected = update({}, choices.iteritems())
+        node_queue = []
+        # print "initial choices:", [str(state.Fact(s,v)) for s,v in choices.iteritems()]
+        while node_order:
+            #while total_size(nodes, selected) < limit:
+            level, this_nodes = node_order.pop(0)
+            all_facts = set()
+            for n in this_nodes:
+                for facts in n.add_facts(choices):
+                    all_facts |= facts
+            all_facts = set(f for f in all_facts if f.svar.function in o_funcs)
+            # node_queue = chain(*itertools.izip_longest(*[n.add_facts(choices) for n in this_nodes]))
+            # all_new_facts = set(chain(*[f for f in node_queue]))
+            # for fact in sorted(all_facts, key=lambda f: self.cond_entropy(init, update({}, [f]), limit)):
+            all_facts_with_entropy = [(f, self.entropy(init, update({}, [f]), limit)) for f in all_facts]
+            for fact, H in sorted(all_facts_with_entropy, key=lambda (f,H): H):
+                next = update(selected, [fact])
+                tsize = len(self.compute_states(next, limit))
+                if tsize <= limit and H <= H_init - 0.05:
+                    log.debug("added: %s (%d, %.3f)", str(fact), tsize, H)
+                    selected = next
+                else:
+                    log.debug("skipped: %s (%d, %.3f)", str(fact), tsize, H)
+                    pass
+
+            
+            
+            # for added_facts in node_queue:
+            #     for fact in added_facts:
+            #         next = update(selected, [fact])
+            #         tsize = len(self.compute_states(next, limit))
+            #         H = self.cond_entropy(update({}, choices.iteritems()), update({}, [fact]), limit)
+            #         #tsize = total_size(nodes, next)
+            #         if tsize < limit:
+            #             print "added: %s (%d)" % (str(fact), tsize)
+            #             selected = next
+            #         else:
+            #             print "skipped: %s (> %d)" % (str(fact), tsize)
+            #             pass
+        return selected
+
+    def compute_states(self, selected_facts, limit, order=None):
+        if not order:
+            order = list(selected_facts.iterkeys())
+        svar_order = dict((var, i) for i, var in enumerate(order))
+        undef = (pddl.UNKNOWN,)*len(selected_facts)
+        
+        def multiply_states(sset1, sset2):
+            result = defaultdict(lambda: 0.0)
+            # print "--------------------------"
+            # for s, p in sset1.iteritems():
+            #     print map(str,s), p
+            # print
+            # for s, p in sset2.iteritems():
+            #     print map(str,s), p
+            
+            # print len(sset1), len(sset2)
+            for (s1, p1), (s2, p2) in itertools.product(sset1.items(), sset2.items()):
+                res = []
+                for v1, v2 in itertools.izip(s1, s2):
+                    if v1 == pddl.UNKNOWN:
+                        res.append(v2)
+                    else:
+                        if v2 == pddl.UNKNOWN:
+                            res.append(v1)
+                        else:
+                            res = None
+                            break
+                if res:
+                    result[tuple(res)] += p1*p2
+            # print len(result)
+            return result
+                
+        def build_state(node):
+            result = defaultdict(lambda: 0.0)
+            p_total = 0.0
+            for val, (p, nodes, facts) in node.children.iteritems():
+                p_total += p
+                sfacts = [pddl.UNKNOWN]*len(selected_facts)
+                for svar, v in chain(facts.iteritems(), [(node.svar, val)]):
+                    if svar in selected_facts and v in selected_facts[svar]:
+                        # print "set:", svar, v
+                        sfacts[svar_order[svar]] = v
+                branch_states = {tuple(sfacts) : 1.0}
+                # print map(str, sfacts)
+                for n in nodes:
+                    branch_states = multiply_states(branch_states, build_state(n))
+                    if len(branch_states) > limit:
+                        return branch_states
+                    
+                for bs, bp in branch_states.iteritems():
+                    # print map(str, bs) , p*bp
+                    result[bs] += p*bp
+
+                if len(result) > limit:
+                    return result
+            if p_total < 1.0:
+                result[undef] += 1.0 - p_total
+                
+            return result
+
+        states = {undef : 1.0}
+        for n in self.pnodes:
+            states = multiply_states(states, build_state(n))
+            if len(states) > limit:
+                break
+        return states
+
+    def entropy(self, facts, condfacts, limit):
+        # print "\ngiven:"
+        # for svar, vals in facts.iteritems():
+        #     print svar, map(str, vals)
+        # print " cond:"
+        # for svar, vals in condfacts.iteritems():
+        #     print svar, map(str, vals)
+
+        # for svar, vals in facts.iteritems():
+        #     if svar in condfacts:
+        #         condfacts[svar] -= vals
+        # for svar in [svar for svar, vals in condfacts.iteritems() if not vals]:
+        #     del condfacts[svar]
+                
+        # if any(svar in condfacts for svar in facts.iterkeys()) or not condfacts:
+        #     return 0
+        
+        order = list(svar for svar in facts.iterkeys() if svar not in condfacts) + list(condfacts.iterkeys())
+        svar_order = dict((var, i) for i, var in enumerate(order))
+        
+        relevant_facts = {}
+        for svar, vals in facts.iteritems():
+            relevant_facts[svar] = set(vals)
+        for svar, vals in condfacts.iteritems():
+            vset = relevant_facts.setdefault(svar, set())
+            vset |= vals
+
+        states = self.compute_states(relevant_facts, limit, order)
+        cfdict = defaultdict(lambda: 0.0)
+        if condfacts:
+            for s, p in states.iteritems():
+                cf = s[-len(condfacts):]
+                cfdict[cf] += p
+        H = 0
+        for s, p in states.iteritems():
+            cf = s[-len(condfacts):]
+            # print map(str, s), "  ", map(str, cf)
+            # print "+ %.5f * log(%.5f/%.5f) = %.5f" % (p, cfdict[cf], p, p * math.log(cfdict[cf]/p,2) )
+            if p <= 0.000000001:
+                continue
+            if condfacts:
+                H += p * math.log(cfdict[cf]/p,2)
+            else:
+                H -= p * math.log(p,2)
+        # print "H:", H
+        return H
+        
+    
+
     def create_prob_state(self, rules, state):
         pass
     
@@ -570,7 +781,19 @@ class DTProblem(object):
                 return False
 
         return [a for a in self.domain.actions if can_observe(a)]
-            
+
+    def observable_functions(self):
+        @pddl.visitors.collect
+        def obs_visitor(eff, results):
+            if isinstance(eff, pddl.ConditionalEffect):
+                return eff.condition.visit(pddl.visitors.collect_non_builtins)
+
+        obs_funcs = set()
+        for o in self.domain.observe:
+            obs_funcs |= set(pddl.visitors.visit(o.precondition, pddl.visitors.collect_non_builtins, set()))
+            obs_funcs |= set(pddl.visitors.visit(o.effect, obs_visitor , set()))
+        return obs_funcs
+    
     def get_observe_action_preconditions(self):
         all_prec = set()
         for a in self.find_observation_actions():
