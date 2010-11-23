@@ -65,7 +65,7 @@
                     :agent (?a - robot)
                     :parameters (?to - place)
                     :variables (?from - place)
-                    :duration (= ?duration 2)
+                    :duration (= ?duration 3)
                     :condition (and (over all (or (connected ?from ?to)
                                                   (connected ?to ?from)
                                                   ))
@@ -78,22 +78,37 @@
                     :agent (?a - robot)
                     :parameters (?p - place ?l - label )
                     :variables (?o - visualobject)
-                    :duration (= ?duration 10)
+                    :duration (= ?duration 6)
                     :condition (over all (and (not (done))
                                               (= (is-in ?a) ?p)
                                               (= (label ?o) ?l)))
                     :effect (and )
                     )
 
-  (:observe visual_object
+  (:observe visual_object_easy
             :agent (?a - robot)
             :parameters (?o - visualobject ?l - label ?p - place)
             :execution (process_all_cones_at_place ?a ?p ?l ?o)
-            :effect (and (when (and (= (is-in ?o) ?p) (= (difficulty ?l) easy))
-                           (probabilistic 0.9 (observed (is-in ?o) ?p)))
-                         (when (and (= (is-in ?o) ?p) (= (difficulty ?l) medium))
-                           (probabilistic 0.7 (observed (is-in ?o) ?p)))
-                         (when (and (= (is-in ?o) ?p) (= (difficulty ?l) hard))
+            :precondition (= (difficulty ?l) easy)
+            :effect (and (when (and (= (is-in ?o) ?p))
+                           (probabilistic 0.9 (observed (is-in ?o) ?p))))
+            )
+
+  (:observe visual_object_medium
+            :agent (?a - robot)
+            :parameters (?o - visualobject ?l - label ?p - place)
+            :execution (process_all_cones_at_place ?a ?p ?l ?o)
+            :precondition (= (difficulty ?l) medium)
+            :effect (and (when (and (= (is-in ?o) ?p))
+                           (probabilistic 0.7 (observed (is-in ?o) ?p))))
+            )
+
+  (:observe visual_object_hard
+            :agent (?a - robot)
+            :parameters (?o - visualobject ?l - label ?p - place)
+            :execution (process_all_cones_at_place ?a ?p ?l ?o)
+            :precondition (= (difficulty ?l) hard)
+            :effect (and (when (and (= (is-in ?o) ?p))
                            (probabilistic 0.5 (observed (is-in ?o) ?p))))
             )
              
