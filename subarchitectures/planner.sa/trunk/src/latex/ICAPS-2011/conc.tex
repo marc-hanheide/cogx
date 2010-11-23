@@ -15,21 +15,22 @@ subjective belief according to quantitatively modelled uncertainty in
 acting and sensing. 
 
 In this paper we address these challenges, developing a continual
-planner that switches between sequential and decision-theoretic
-planning. Given a POMDP model of the environment, sequential planning
-is used to compute an initial deterministic sequential plan and
-complementary runtime evolution of the decision process. That plan is
-executed until a validation of an assumption about a runtime
-proposition is requested.
+planner that switches between fast sequential and expensive
+decision-theoretic planning. Given a POMDP model of the environment,
+sequential planning is used to compute an initial deterministic
+sequential plan and complementary runtime evolution of the decision
+process. That plan is executed until a validation of an assumption
+about a runtime proposition is schedule. At that point a
+decision-theoretic session performs some sensing which determines
+whether or not the sequential session should be allowed to continue
+without plan repair. 
 
 
 The sequential mode of our system always schedules decision-theoretic
 planning before executing actions that are not applicable with
-certainty. This is vastly inefficient if the utility of that plan is
-not dependent on the actions successful execution. This is the case
-where a plan is conformant. Therefore, in the future we must develop a
-cheap (heuristic) procedure to evaluate the utility of sensing at
-steps in sequential plan.
+certainty. This is inefficient if the utility of the plan is not
+dependent on that actions successful execution. This situation always
+arises for conformant plans. 
 
 
 One theoretical criticism of switching continual planning concerns
