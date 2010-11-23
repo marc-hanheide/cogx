@@ -137,12 +137,15 @@ public:
     friend class CCachedImagePtr;
     Video::Image* m_pImage;
     int m_refCount;
+    IceUtil::Monitor<IceUtil::Mutex> m_refMonitor;
     void addref()
     {
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_refMonitor);
       m_refCount++;
     }
     void release()
     {
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_refMonitor);
       m_refCount--;
     }
   public:
