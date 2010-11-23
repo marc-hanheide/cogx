@@ -17,30 +17,33 @@ struct ActiveFace {
   double length;
 };
 
-double patchThreshold = 0.030;
+RelationEvaluator::RelationEvaluator()
+{
+  patchThreshold = 0.030;
 
-// Separation/interpenetration at which onness drops by half
-double distanceFalloffOutside			= 0.015; 
-double distanceFalloffInside			= 0.010; 
+  // Separation/interpenetration at which onness drops by half
+  distanceFalloffOutside			= 0.15; 
+  distanceFalloffInside			= 0.10; 
 
-// Abruptness of transition as the COM moves out from
-// inside the (horizontal projection of) the contact patch
-double supportCOMContainmentSteepness		= 1;
-// Offset for point of greatest slope. Positive means
-// slope is greatest somewhere outside the patch boundary
-double supportCOMContainmentOffset		= 0.5;
+  // Abruptness of transition as the COM moves out from
+  // inside the (horizontal projection of) the contact patch
+  supportCOMContainmentSteepness		= 1;
+  // Offset for point of greatest slope. Positive means
+  // slope is greatest somewhere outside the patch boundary
+  supportCOMContainmentOffset		= 0.5;
 
-//Old params;unused
-double squareDistanceWeight			= 1.0;
-double supportCOMContainmentWeight		= 1.0;
-double bottomCOMContainmentOffset		= 0.0;
-double bottomCOMContainmentWeight		= 1.0;
-double bottomCOMContainmentSteepness		= 1.0;
-double planeInclinationWeight			= 1.0;
-double overlapWeight				= 1.0;
+
+  planeThickness = 0.05;
+  circlePlaneApproximationThreshold = 0.05; //Controls number of
+  //edges in polygon used to approximate circular planes
+  cylinderApproximationThreshold = 0.01;
+  sphereTessellationFactor = 2; //Number of latitudes and half number of
+  //longitudes. 2 makes the sphere an octahedron
+  boxThickness = 0.02; //Controls thickness of walls of hollow container
+}
 
 double
-computePolyhedronVolume(const Polyhedron &polyhedron)
+RelationEvaluator::computePolyhedronVolume(const Polyhedron &polyhedron)
 {
   if (polyhedron.vertices.size() < 4) 
     return 0.0;
@@ -288,7 +291,7 @@ computePolyhedronVolume(const Polyhedron &polyhedron)
 }
 
 void
-clipPolyhedronToPlane(Polyhedron &polyhedron, const Vector3 &pointInPlane,
+RelationEvaluator::clipPolyhedronToPlane(Polyhedron &polyhedron, const Vector3 &pointInPlane,
     const Vector3 &planeNormal)
 {
   if (polyhedron.vertices.size() == 0) 
@@ -445,7 +448,7 @@ polyhedron.faces[faceNo][edgeGoingIn].first));
 }
 
 std::vector<Vector3>
-findPolygonIntersection(const std::vector<Vector3> &polygon1, 
+RelationEvaluator::findPolygonIntersection(const std::vector<Vector3> &polygon1, 
     const std::vector<Vector3> &polygon2)
 {
   // Find all vertices of either polygon that is strictly inside the other,
@@ -631,7 +634,7 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
 }
 
 double
-findOverlappingArea(const std::vector<Vector3>& polygon, Vector3 circleCenter, double circleRadius, const Vector3 &circleNormal)
+RelationEvaluator::findOverlappingArea(const std::vector<Vector3>& polygon, Vector3 circleCenter, double circleRadius, const Vector3 &circleNormal)
 {
   const Vector3 zeroVec = vector3(0,0,0);
   unsigned nextIndex = 1;
@@ -846,7 +849,7 @@ findOverlappingArea(const std::vector<Vector3>& polygon, Vector3 circleCenter, d
 }
 
 double
-getPolygonArea(const std::vector<Vector3> &polygon)
+RelationEvaluator::RelationEvaluator::getPolygonArea(const std::vector<Vector3> &polygon)
 {
   double ret = 0.0;
 //  for (unsigned int i = 0; i < polygon.size(); i++) {
@@ -867,12 +870,21 @@ getPolygonArea(const std::vector<Vector3> &polygon)
 }
 
 bool
-isIntersecting(double wr, double dr, double hr, const Vector3 BVertices[])
+RelationEvaluator::isIntersecting(double wr, double dr, double hr, const Vector3 BVertices[])
 {
   const int edges[] = {0,1, 1,2, 2,3, 3,0, 0,4, 4,5, 5,1, 5,6,
     6,2, 6,7, 7,3, 7,4}; //pairs of ints, indexing into BVertices
 
   //Check for intersection: 
+  //Check if any vertex of B is inside A
+  for (int vertexNo = 0; vertexNo < 8; vertexNo++)  {
+    Vector3 vert = BVertices[vertexNo];
+    if (vert.x > -wr && vert.x < wr &&
+	vert.y > -dr && vert.y < dr &&
+	vert.z > -hr && vert.z < hr) {
+      return true;
+    }
+  }
   //Check each edge of B against each face of A
   for (int edgeNo = 0; edgeNo < 12; edgeNo++) {
     const Vector3 &point1 = BVertices[edges[edgeNo*2]];
@@ -940,7 +952,7 @@ isIntersecting(double wr, double dr, double hr, const Vector3 BVertices[])
 }
 
 void
-getCornerWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
+RelationEvaluator::getCornerWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
     const vector<Vector3> &BEdges, vector<Witness> &cornerWitnesses)
 {
   const int edges[] = {0,1, 1,2, 2,3, 3,0, 0,4, 4,5, 5,1, 5,6,
@@ -1048,7 +1060,7 @@ getCornerWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
 }
 
 void
-getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
+RelationEvaluator::getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
     const vector<Vector3> &BEdges, vector<Witness> &edgeWitnesses, bool intersecting)
 {
   const Vector3 zeroVec = vector3(0,0,0);
@@ -1202,7 +1214,7 @@ getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
 }
 
 double
-getDistanceToPolygon(const Vector3 &ref, const std::vector<Vector3> &polygon) 
+RelationEvaluator::getDistanceToPolygon(const Vector3 &ref, const std::vector<Vector3> &polygon) 
 {
   // Note: assumes the polygon is in the xy-plane, positive w.r.t. z
   double bestDistSq = FLT_MAX;
@@ -1410,7 +1422,7 @@ randomizeOrientation(Pose3 &pose)
 }
 
 void
-mergeAnyOverlappingVertices(Polyhedron &polyhedron, double eps)
+RelationEvaluator::mergeAnyOverlappingVertices(Polyhedron &polyhedron, double eps)
 {
   if (polyhedron.vertices.size() < 2)
     return;
@@ -1452,6 +1464,63 @@ mergeAnyOverlappingVertices(Polyhedron &polyhedron, double eps)
     }
   }
   polyhedron.vertices = newVerts;
+}
+
+Vector3
+RelationEvaluator::computeAttentionVectorSumForPatch(const vector<Vector3> patch,
+    const Vector3 &focus, const Vector3 &trajector, double falloff) {
+  double totalArea = 0;
+
+  const int subdivisionFactor = 5; // TODO: adapt this to triangle size compared to
+  // falloff
+
+  Vector3 vectorSum = vector3(0,0,0);
+
+  //Divide polygon into triangles
+  int apexIndex = 0;
+  for (int index2 = apexIndex+1; index2 < patch.size()-1; index2++) {
+    Vector3 v1 = patch[index2]-patch[apexIndex];
+    Vector3 v2 = patch[index2+1]-patch[apexIndex];
+
+    Vector3 vectorSumThisTriangle = vector3(0,0,0);
+
+    double triangleArea = 0.5*length(cross(v1,v2));
+
+    Vector3 vStep1 = v1 / subdivisionFactor;
+    Vector3 vStep2 = v2 / subdivisionFactor;
+
+    // Divide triangle into parallelogram tessellation
+    for (int k = 0; k < subdivisionFactor-1; k++) {
+      Vector3 firstCenter = patch[apexIndex] + (k + 0.5)*vStep1;
+      for (int l = 0; l < subdivisionFactor-1-k; l++) {
+	Vector3 center = firstCenter + (l + 0.5)*vStep2;
+
+	double distanceToFocus = length(center-focus);
+	double factor = exp(-distanceToFocus/falloff);
+
+	vectorSumThisTriangle += 2*factor * (trajector - center);
+      }
+    }
+
+    // Add the final fringe of triangles at the far edge
+    Vector3 firstCenter = patch[apexIndex] + 
+      vStep1 * (subdivisionFactor-1 + 1.0/3) + vStep2 * (1.0/3);
+    Vector3 vStep3 = vStep2 - vStep1;
+    for (int k = 0; k < subdivisionFactor; k++) {
+      Vector3 center = firstCenter + k * vStep3;
+
+      double distanceToFocus = length(center-focus);
+      double factor = exp(-distanceToFocus/falloff);
+
+      vectorSumThisTriangle += factor * (trajector - center);
+    }
+
+    vectorSumThisTriangle *= triangleArea / (subdivisionFactor * subdivisionFactor);
+    vectorSum += vectorSumThisTriangle;
+    totalArea += triangleArea;
+  }
+
+  vectorSum /= totalArea;
 }
 
 spatial::Object *

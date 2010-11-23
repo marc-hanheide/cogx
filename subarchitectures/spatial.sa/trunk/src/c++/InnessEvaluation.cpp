@@ -11,17 +11,9 @@ using namespace cogx::Math;
 
 namespace spatial {
 
-const double planeThickness = 0.05;
-const double circlePlaneApproximationThreshold = 0.05; //Controls number of
-//edges in polygon used to approximate circular planes
-const double cylinderApproximationThreshold = 0.01;
-const int sphereTessellationFactor = 2; //Number of latitudes and half number of
-//longitudes. 2 makes the sphere an octahedron
-const double boxThickness = 0.02; //Controls thickness of walls of hollow container
-
 
 double
-evaluateInness(const Object *objectC, const Object *objectO)
+RelationEvaluator::evaluateInness(const Object *objectC, const Object *objectO)
 {
   if (objectC->type == OBJECT_BOX ||
       objectC->type == OBJECT_PLANE ||

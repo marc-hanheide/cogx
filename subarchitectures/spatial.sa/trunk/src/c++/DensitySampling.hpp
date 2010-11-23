@@ -71,7 +71,7 @@ class SampleCloud
     friend ostream &spatial::operator<<(ostream &o, const SampleCloud &c);
     friend istream &spatial::operator>>(istream &o, SampleCloud &c);
 
-    void compute();
+    void compute(RelationEvaluator &evaluator);
 
     SampleCloud composit(const SampleCloud &B) const;
 
@@ -111,7 +111,8 @@ struct SampleCloudContainer
 class DensitySampler
 {
   public:
-    DensitySampler() : m_orientationQuantization(4),
+    DensitySampler(RelationEvaluator *evaluator) : m_evaluator(evaluator),
+    m_orientationQuantization(4),
     m_sampleNumberTarget(5000),
     m_kernelWidthFactor(1.5) 
   { 
@@ -167,6 +168,8 @@ class DensitySampler
     void writeOrientationsToFile(const string &label);
 
   protected:
+    RelationEvaluator * m_evaluator;
+
     SampleCloud *
     createRelativeSampleCloud(SpatialRelationType relationType,
 	Object *o1, Object *o2, 
