@@ -1523,6 +1523,55 @@ RelationEvaluator::computeAttentionVectorSumForPatch(const vector<Vector3> patch
   vectorSum /= totalArea;
 }
 
+Vector3
+RelationEvaluator::computeAttentionVectorSumForSolid(const Object *obj,
+    const Vector3 &focus, const Vector3 &trajector, double falloff) {
+  double totalArea = 0;
+
+  const int subdivisionFactor = 5; // TODO: adapt this to triangle size compared to
+  // falloff
+
+  Vector3 vectorSum = vector3(0,0,0);
+
+  if (obj->type == OBJECT_BOX) {
+    // Loop over elements of box
+    Vector3 v1 = vector3(1,0,0);
+    Vector3 v2 = vector3(0,1,0);
+    Vector3 v3 = vector3(0,0,1);
+    v1 = obj->pose.rot * v1; //transform(obj->pose.rot, v1);
+    v2 = obj->pose.rot * v2; //transform(obj->pose.rot, v2);
+    v3 = obj->pose.rot * v3; //transform(obj->pose.rot, v3);
+    Vector3 vStep1 = v1 / subdivisionFactor;
+    Vector3 vStep2 = v2 / subdivisionFactor;
+    Vector3 vStep3 = v3 / subdivisionFactor;
+    Vector3 firstCenter = obj->pose.pos 
+      - 0.5*v1 + vStep1*0.5
+      - 0.5*v2 + vStep2*0.5
+      - 0.5*v3 + vStep3*0.5;
+
+    for (int i = 0; i < subdivisionFactor; i++) {
+      for (int j = 0; j < subdivisionFactor; j++) {
+	for (int k = 0; k < subdivisionFactor; k++) {
+	  Vector3 center = firstCenter + i * vStep1 + j * vStep2 + k * vStep3;
+
+	  double distanceToFocus = length(center-focus);
+	  double factor = exp(-distanceToFocus/falloff);
+
+	  vectorSum += factor * (trajector - center);
+	}
+      }
+    }
+
+    vectorSum /= (subdivisionFactor * subdivisionFactor * subdivisionFactor);
+  }
+  else {
+    cerr << "Error! Attention vector sum not implemented for this object!\n";
+    return vector3(0,0,0);
+  }
+
+  return vectorSum;
+}
+
 spatial::Object *
 generateNewObjectModel(const std::string &label) {
 //  log("generateNewObjectModel %s", label.c_str());
