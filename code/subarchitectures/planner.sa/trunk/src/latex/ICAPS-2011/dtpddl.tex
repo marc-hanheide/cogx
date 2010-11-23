@@ -93,11 +93,11 @@ instantiating the $\pp{look-for-object}$ operator:
 
 \noindent Here, the {\em execution} clause is a lifted description of
 the sense action-precondition -- I.e,
-$(\pp{look-for-object}~\pp{R2D2}~\pp{box}~\pp{office}) =
-\poss_\stochActions(\pp{vision}~\pp{R2D2}~\pp{box}~\pp{office})$. Above,
+$(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office}) =
+\poss_\stochActions(\pp{vision}~\pp{DORA}~\pp{box}~\pp{office})$. Above,
 we include a redundant state-precondition, $(=(\pp{is-in}~?r)?l)$ in
 order to fully demonstrate the syntax. Interpreting the above schema,
-if action $(\pp{look-for-object}~\pp{R2D2}~\pp{box}~\pp{office})$ is
+if action $(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office})$ is
 executed, there is a $0.8$ chance of perceiving the box if it is in
 the $\pp{office}$, and otherwise a $0.1$ of perceiving it.
 
@@ -110,12 +110,12 @@ atomic, e.g., $(=(\pp{location}~\pp{box})~\pp{office})$, (2)
 probabilistic, e.g., $(\pp{probabilistic}~p_1 (T_1) .. p_n (T_n))$
 where $T_i$ are conjunctive, or (3) a conjunct over probabilistic and
 atomic terms. The root term is always conjunctive, and the leaves are
-atomic. For example, the starting distribution for $\pp{R2D2}$ might
+atomic. For example, the starting distribution for $\pp{DORA}$ might
 be described thusly:
 
 \small
 \begin{tabtt}
-(\=:init (= (is-in R2D2) kitchen) \+ \\
+(\=:init (= (is-in DORA) kitchen) \+ \\
        (probabilistic \=.8 (= (is-in box) office)  \\
 		      \>.2 (= (is-in box) kitchen)) \\
        (probabilistic .3 (= (is-in cup) office)  \\
@@ -141,7 +141,7 @@ concrete, our example yields the following flat state distribution:
 \small
 \begin{tabular}{cccc}
 \hline
-Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
+Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 \hline
 .24 & kitchen & office & office \\
 .06 & kitchen & kitchen & office \\
