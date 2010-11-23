@@ -171,26 +171,6 @@ of a trace of length $N$, there is nothing in our approach that
 artificially limits the length of candidate sequential plans.
 
 
-%% Finally, we come to the issue of valuing sequential plans, and
-%% therefore giving the criterion that the sequential planner seeks to
-%% optimise. Where $p_i$ is the probability that the $i^{th}$ action
-%% execution is not a transition to $s^\bot$, we value a trace according
-%% to:
-
-%% \begin{equation}\label{eq:tracevalue}
-%% V(s_0, a_0, s_1, a_1,.., s_N) =  \prod_{i=1..N} p_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
-%% \end{equation}
-
-%% \noindent In goal directed problems, where the only non-zero reward is
-%% received at the first transition to a goal state,
-%% Eq~\ref{eq:tracevalue} corresponds exactly to the criteria of the
-%% infamous degenerate hindsight system
-%% \system{FFR$_a$}~\cite{yoon:etal:2007}. Form the perspective of
-%% gradient-based reinforcement learning systems, such as William's
-%% REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
-%% under reasonable assumptions the optimal trace yields a maximal
-%% gradient step from a uniform soft-max policy. 
-
 \subsection{Decision-Theoretic Planning in Abstractions}
 
 In the decision-theoretic mode, the switching planner solves a sensing
@@ -199,12 +179,13 @@ actions in the current sequential plan, and the $(\pp{:init})$ block
 from the original problem description. 
 
 The focus for decision-theoretic planning is on sensing, rather than
-the achievement of utility according to the given objectives. The
-process in this mode has a different reward model that reflects the
-value of performing sensing actions in the context of a trace proposed
-for the preceding sequential deliberation. In detail, for each
-$\assumptiveS{i}$ action scheduled in the current sequential plan, we
-have a {\em dual} $\assumptiveDT{i}$ so that
+the achievement of utility according to the given objectives. We
+therefor give the process in this mode a different reward model, which
+reflects the value of performing sensing actions in the context of the
+trace proposed for the preceding sequential deliberation. In detail,
+all positive rewards from the initial POMDP are removed. Then, for
+each $\assumptiveS{i}$ action scheduled in the current sequential
+plan, we have a {\em dual} $\assumptiveDT{i}$ so that
 $\forall\state\in\states$:
 
 \[
@@ -215,13 +196,13 @@ $\forall\state\in\states$:
 \]
 
 \noindent Where $\$(T_i)$ is a positive numeric quantity which
-rewards the agent for correctly jettisoning a false assumption, and
-otherwise penalises the agent. Propositionally these dual actions have
-no preconditions or effects -- I.e., $\forall\state\in\states$ $\poss(\assumptiveDT{i})
-\subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  Additionally, for the action,
+captures the reward the agent receives for correctly jettisoning a
+false assumption. The added dual actions are propositionally trivial
+-- I.e., $\forall\state\in\states$ $\poss(\assumptiveDT{i})
+\subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  Also, for the action,
 $\action_i$, whose scheduled execution triggered the switch to the
-decision-theoretic mode, we include an action
-$\actions.\poss(\action_i)$ with the reward property:
+decision-theoretic mode, we include another propositionally trivial
+action $\actions.\poss(\action_i)$ with the reward property:
 
 \[
 \reward(\state, \actions.\poss(\action_i)) = \bigg\{ \begin{array}{ll}
@@ -230,15 +211,17 @@ $\actions.\poss(\action_i)$ with the reward property:
 \end{array}
 \]
 
-\noindent Execution of either a $\assumptiveDT{i}$
-action, or $\actions.\poss(\action_i)$, returns control to the
-sequential planner. If a dual is executed, then the sequential planner
-must replan with $\bstate_0$ equal to the current belief. Otherwise,
-if $\actions.\poss(\action_i)$ is executed, then the current
-sequential plan is executed until further sensing is scheduled, or to
-completion. In our project the rewards, $\$:2^\propositions\to\Re$,
-for the POMDP posed to decision-theoretic planning is sourced from a
-motivational component of our robotic architecture.
+
+For the management of switching, execution of either a
+$\assumptiveDT{i}$ action, or $\actions.\poss(\action_i)$, returns
+control to the sequential planner. At that point, if a dual is
+executed, then the sequential planner must replan with $\bstate_0$
+equal to the current belief. Otherwise, if $\actions.\poss(\action_i)$
+is executed, then the current sequential plan is executed until
+further sensing is scheduled, or to completion. In our project the
+rewards, i.e., function $\$:2^\propositions\to\Re$, for the POMDP
+posed to decision-theoretic planning are sourced from a motivational
+component of our robotic architecture.
 
 The starting belief-state for the abstract process is given in terms
 of a {\em relaxed} $(\pp{:init})$ block.  This is constructed by first
@@ -277,9 +260,10 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 \end{tabular}
 \normalsize
 
-\noindent At this point, decision-theoretic planning would proceed in a cupless
-abstraction of the environment, where the inclusion (exclusion) of
-POMDP actions is the same as we defined it for the sequential mode.
+\noindent At this point, decision-theoretic planning would proceed in an
+abstraction of the environment that does not contain a $\pp{cup}$,
+where the inclusion (exclusion) of POMDP actions is the same as we
+defined it for the sequential mode.
 
 In a second step, we iteratively refine the {\em relaxed} block by
 adding terms from the original block while the resulting state space
@@ -287,7 +271,7 @@ remains of a practicable size. Of course, it is expensive to measure
 size exactly, thus in practice we estimate it to be
 $2^{|\propositions^\#|}$, where $\propositions^\#$ is the set of
 propositions in the abstraction induced by the proposed tree. Terms
-are proposed for addition, because they are probabilistic, and because
+are proposed for addition because they are probabilistic, and because
 they were omitted in the {\em relaxed} visitation characterised by
 {\em assumptive} actions in the sequential plan. Each iteration, we
 add one candidate term with the largest number of parent terms already

@@ -1,0 +1,26 @@
+There have been a number of developments recently towards planning
+under uncertainty using systems that were intended for sequential
+planning in deterministic problems.  Notably,
+\system{FFR$_a$}~\cite{yoon:etal:2007}, the winning entry from the
+probabilistic track of the 2004 International Planning Competition.
+In the continual paradigm, \system{FFR$_a$} uses the fast satisficing
+procedure \system{FF}~\cite{hoffmann:nebel:2001} to compute sequential
+plans and corresponding execution traces.
+%%
+More computationally expensive approaches in this vein combine
+sampling strategies on valuations over {\em runtime variables} with
+deterministic planning procedures. The outcome is typically a more
+robust sequential plan~\cite{yoon:etal:2008}, or contingent
+plan~\cite{majercik:2006}.
+%%
+Also leveraging deterministic planners in problems that feature
+uncertainty, \system{Conformant-FF}~\cite{hoffmann:brafman:2006} and
+$T_0$~\cite{palacios:geffner:2009} demonstrate how conformant planning
+---i.e., sequential planning in unobservable worlds--- can be modelled
+as a deterministic problem, and therefore solved using sequential
+systems. In this conformant setting, advances have been towards
+compact representations of beliefs amenable to existing best-first
+search planning procedures, and lazy evaluations of beliefs. Most
+recently this research thread has been extended to contingent planning
+in fully observable non-deterministic
+environments~\cite{albore:etal:2009}.
