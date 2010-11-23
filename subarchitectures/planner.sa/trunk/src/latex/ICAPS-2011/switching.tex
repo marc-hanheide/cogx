@@ -46,7 +46,7 @@ do define a set of state-assumptions available to sequential planning.
 %%
 Writing \#\ if the value of a proposition is unspecified in an
 assumption, for our $\pp{DORA}$ example we have that the following
-assumptions are available:
+assumptions:
 
 \small
 \begin{tabular}{cccc}
@@ -71,19 +71,19 @@ relaxed} visitation of the root term of $(:init)$. In this relaxed
 case, a conjunctive term is visited iff its atomic subterms are
 visited, and zero or more of its immediate probabilistic subterms are
 visited. The starting state, $\state_0$, for sequential planning is
-the unique abstract state with probability $1.0$ -- E.G., for
-$\pp{DORA}$ $s_0 \equiv \{(= (is-in DORA) kitchen)\}$.
+the unique abstract state with probability $1.0$ -- E.g., for
+$\pp{DORA}$ $s_0 \equiv \{(= (\pp{is-in}~\pp{DORA})~\pp{kitchen})\}$.
 
 In order to make assumptions available to the sequential planner, we
 add one {\em assumptive} action $\assumptiveS{i}$ to the problem for
 each element, $p_i (T_i)$, of each probabilistic term from
 $(:init)$. The physics of these actions is as
-follows. $\assumptiveS(i)$ can be executed if no $\assumptiveS(j)$,
+follows. $\assumptiveS{i}$ can be executed if no $\assumptiveS{j}$,
 $j \neq i$, has been executed from the same probabilistic term, and,
 either $(\pp{probabilistic}~..p_i~(T_i)..)$ is in the root conjunct,
-or it occurs in $T_k$ for some executed $\assumptiveS(k)$.
+or it occurs in $T_k$ for some executed $\assumptiveS{k}$.
 %%
-Executing $\assumptiveS(i)$ in $s$ effects a transition to a
+Executing $\assumptiveS{i}$ in $s$ effects a transition to a
 successor state $s^{T_i}$ with probability $p_i$, and $s^\bot$ with
 probability $1 - p_i$. Here, $s^{T_i}$ is the union of $s$ and atomic
 terms from $T_i$, and $s^\bot$ is a sink state -- I.e.,
