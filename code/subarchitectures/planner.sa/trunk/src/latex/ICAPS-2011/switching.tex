@@ -72,8 +72,8 @@ relaxed} visitation of the root term of $(:init)$. In this relaxed
 case, a conjunctive term is visited iff its atomic subterms are
 visited, and zero or more of its immediate probabilistic subterms are
 visited. The starting state, $\state_0$, for sequential planning is
-the abstract state with probability $1.0$ -- E.G., for $\pp{R2D2}$
-$s_0 \equiv \{(= (is-in R2D2) kitchen)\}$.
+the unique abstract state with probability $1.0$ -- E.G., for
+$\pp{R2D2}$ $s_0 \equiv \{(= (is-in R2D2) kitchen)\}$.
 
 In order to make assumptions available to the sequential planner, we
 add one {\em assumptive} action $\actions(p_i;(T_i))$ to the problem
@@ -193,6 +193,68 @@ artificially limits the length of candidate sequential plans.
 %% gradient step from a uniform soft-max policy. 
 
 \subsection{Decision-Theoretic Planning in Abstractions}
+
+In the decision-theoretic mode, the switching planner solves a sensing
+problem in an abstract processes defined in terms of the assumptive
+actions in the current sequential plan. Therefore, this mode uses a
+different utility model, that reflects the value of performing sensing
+actions.
+
+We construct a {\em relaxed} $(\pp{:init})$ block by first
+constructing a tree which only includes terms from the {\em relaxed}
+visitation characterised by the {\em assumptive} actions in the
+current sequential plan. For example, if $\pp{R2D2}$'s plan is:
+
+\[
+\begin{array}{c}
+\actions(.8,(=(\pp{is-in}~\pp{box})\pp{office}));\\
+(pp{reportlook-for-object}~\pp{R2D2}~\pp{box}~\pp{office});\\
+(\pp{report-is-in}~\pp{box}~\pp{office})
+\end{array}
+\]
+
+\noindent Then the {\em relaxed} block will be,
+
+\small
+\begin{tabtt}
+(\=:init (= (is-in R2D2) kitchen) \+ \\
+       (probabilistic \=.8 (= (is-in box) office)  \\
+		      \>.2 (= (is-in box) kitchen))) \\
+\end{tabtt}
+\normalsize
+
+\noindent and therefore, the belief-state $\bstate_0$ is:
+
+\small
+\begin{tabular}{cccc}
+\hline
+Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
+\hline
+.8 & kitchen & office & \# \\
+.2 & kitchen & kitchen & \# \\
+\hline
+\end{tabular}
+\normalsize
+
+\noindent At this point, decision-theoretic planning would proceed in a cupless
+abstraction of the environment, where the inclusion (exclusion) of
+POMDP actions is the same as we defined it for the sequential mode.
+
+In the second step, we iteratively add terms from the original
+$(\pp{:init})$ block while the resulting state space remains of a
+practicable size. Of course, it is expensive to measure size exactly,
+thus in practice we estimate it to be $2^{|\propositions^\#|}$, where
+$\propositions^\#$ is the set of propositions in the abstraction
+induced by the proposed tree. Terms are proposed for addition, because
+they are probabilistic, and because they were omitted in the {\em
+relaxed} visitation characterised by {\em assumptive} actions in the
+sequential plan. Each iteration, we add one candidate term with the
+largest number of parent terms.
+
+Terms a proposed sequentially, with preference given to
+terms that are closest to, or which otherwise are, the conjunctive
+leaves.
+
 
 The problem posed to the decision-theoretic system is an abstraction
 of the problem at hand with a distinct utility model that focuses the
