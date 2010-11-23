@@ -44,7 +44,8 @@ class Simulation(object):
         self.statistics = statistics.Statistics(defaults=statistics_defaults)
 
         self.run_index = 0
-        self.state = state.State.from_problem(self.problem, seed=self.seeds[0])
+        #self.prob_state = pddl.prob_state.ProbabilisticState.from_problem(self.problem)
+        self.state =  pddl.prob_state.ProbabilisticState.sample_from_problem(self.problem, self.seeds[0])
         self.agents = {}
         for a, prob in scenario.agents.iteritems():
             if global_vars.mapsim_config.separate_logs:
@@ -58,7 +59,7 @@ class Simulation(object):
         self.time = 0
         self.queue = []
         self.run_index = run
-        self.state = state.State.from_problem(self.problem, seed=self.seeds[run])
+        self.state =  pddl.prob_state.ProbabilisticState.sample_from_problem(self.problem, self.seeds[run])
 
         self.statistics.reset()
         self.planner.statistics.reset()

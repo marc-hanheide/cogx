@@ -36,6 +36,18 @@ class ValueDistribution(defaultdict):
         elif total < 1.0:
             self[UNKNOWN] = 1.0-total
 
+    def sample(self, _random=None):
+        self.normalize()
+        if not _random:
+            _random = random.Random()
+        s = _random.random()
+        p_total = 0.0
+        for v,p in sorted(self.iteritems(), key=lambda (v,p): p):
+            p_total += p
+            if s <= p_total:
+                return v
+        return v
+
     def assert_instanceof(self, svar):
         for val, p in self.iteritems():
             if p <= 0.0:
@@ -97,6 +109,11 @@ class ProbFact(Fact):
                 effect_tups.append((prob, eff))
                 
         return effects.ProbabilisticEffect(effect_tups)
+
+    @staticmethod
+    def from_literal(lit, state=None):
+        det_fact = Fact.from_literal(lit, state)
+        return ProbFact(det_fact.svar, det_fact.value)
                 
     @staticmethod
     def from_effect(effect, state=None):
@@ -227,7 +244,75 @@ class ProbabilisticState(State):
                 s.apply_effect(i)
             else:
                 s.set(Fact.from_literal(i))
+
         return s
+
+    @staticmethod
+    def sample_from_problem(problem, seed=None):
+        st = State([], problem)
+        if seed is not None:
+            st.set_random_seed(seed)
+            
+        def descend(eff):
+            if isinstance(eff, Literal):
+                f = Fact.from_literal(eff)
+                return {f : 1.0}
+            if isinstance(eff, effects.ProbabilisticEffect):
+                p_total = 0.0
+
+                s = st.random.random()
+                for p, e in eff.get_effects(st):
+                    p_total += p
+                    # print p_total, e.pddl_str()
+                    if s <= p_total:
+                        result = descend(e)
+                        for fact, fp in result.iteritems():
+                            result[fact] = fp * p
+                        return result
+                            
+                return {}
+            if isinstance(eff, (effects.ConjunctiveEffect, list)):
+                parts = eff if isinstance(eff, list) else eff.parts
+                
+                result = defaultdict(ValueDistribution)
+                branch_results = defaultdict(list)
+                for e in parts:
+                    for fact, p in descend(e).iteritems():
+                        branch_results[fact.svar].append((fact.value, p))
+                        
+                for svar, values in branch_results.iteritems():
+                    if len(values) == 1:
+                        val, p = values[0]
+                        result[Fact(svar, val)] = p
+                    else:
+                        #sample again:
+                        p_total = 0.0
+                        s = st.random.random() * sum(p for v,p in values)
+                        for v, p in values:
+                            p_total += p
+                            if s <= p_total:
+                                result[Fact(svar, v)] = p
+                                break
+                # print map(str, result.iterkeys())
+                return result
+            assert False, eff
+
+        result = descend(problem.init)
+        for fact in result.iterkeys():
+            st.set(fact)
+        return st
+
+    def sample(self, seed=None):
+        print seed
+        if seed is not None:
+            self.set_random_seed(seed)
+
+        facts = []
+        for svar, dist in sorted(self.iteritems(), key=lambda (svar,dist): str(svar)):
+            val = dist.sample(self.random)
+            facts.append(Fact(svar, val))
+            
+        return State(facts, self.problem)
 
 
     def get_effect_facts(self, effect, trace_vars=False):
@@ -283,7 +368,7 @@ class ProbabilisticState(State):
         elems = sorted("%s = %s" % (str(k), str(v)) for k,v in self.iteritems())
         return "\n".join(elems)
 
-    def determinized_state(self, lower_threshold, upper_threshold):
+    def determinized_state(self, rejection_ratio, upper_threshold):
         s = State(prob=self.problem)
         domains = defaultdict(list)
         exclude_domains = defaultdict(list)
@@ -297,9 +382,11 @@ class ProbabilisticState(State):
         for svar, dist in self.iterdists():
             total_p = 0
             dist.normalize()
+            highest = max(dist.itervalues())
+            lower_bound = highest * rejection_ratio
             for v,p in sorted(dist.items(), key=lambda (v,p): -p):
                 # print svar, v, p
-                if total_p >= upper_threshold:
+                if total_p >= upper_threshold or p < lower_bound:
                     exclude_domains[svar].append(v)
                     continue
                 total_p += p
