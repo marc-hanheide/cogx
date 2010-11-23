@@ -339,7 +339,7 @@ void ObjectRecognizer3D::get3DPointFromTrackerModel(std::string& modelID, Vision
  * @param label the objects label
  * @param forceNewObject if true, we will always add a new object to WM.
  *        otherwise we only add a new model if rec_entry does not yet
- *        have a object id
+ *        have an object id
  */
 void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
   cogx::Math::Pose3 &pose, std::string &label, bool forceNewObject){
@@ -349,7 +349,6 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
 
   if(newModel){
 		// Load geometry
-		log("Loading ply model");
 		ModelLoader modelloader;
 		Model model;
 		modelloader.LoadPly(model, rec_entry.plyfile.c_str());
@@ -360,17 +359,17 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
 		rec_entry.visualObjectID = newDataID();
   }else{
 		obj = getMemoryEntry<VisualObject>(rec_entry.visualObjectID);
+		// these arrays are modified and need to be cleared first
+		obj->identLabels.clear();
+		obj->identDistrib.clear();
   }
-log("got ply model");
+
   // create a very simple distribution: label and unknown
   obj->identLabels.push_back(label);
   obj->identLabels.push_back("unknown");
   // note: distribution must of course sum to 1
-  if(forceNewObject){
+  if(forceNewObject)
     rec_entry.object->conf = 0.9;
-  //  rec_entry.object->identDistrib.resize(1);
-  //  rec_entry.object->idenDistrib[0] = 0.9;
-  }
   obj->identDistrib.push_back(rec_entry.object->conf);
   obj->identDistrib.push_back(1. - rec_entry.object->conf);
   // the information gain if we know the label, just set to 1, cause we don't
@@ -383,7 +382,6 @@ log("got ply model");
       obj->identAmbiguity -= obj->identDistrib[i]*::log(obj->identDistrib[i]);
   obj->pose = pose;
   obj->componentID = getComponentID();
-log("Making WM changes..");
 
   if(newModel){
 		addToWorkingMemory(rec_entry.visualObjectID, obj);
