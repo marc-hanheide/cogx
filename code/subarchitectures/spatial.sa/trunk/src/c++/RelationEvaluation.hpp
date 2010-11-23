@@ -112,6 +112,10 @@ class RelationEvaluator {
       computeAttentionVectorSumForPatch(const std::vector<Vector3> patch,
 	  const Vector3 &focus, const Vector3 &trajector, double falloff);
 
+    Vector3
+      computeAttentionVectorSumForSolid(const Object *obj,
+	  const Vector3 &focus, const Vector3 &trajector, double falloff);
+
   protected:
 
 
