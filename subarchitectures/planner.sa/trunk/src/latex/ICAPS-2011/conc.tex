@@ -32,6 +32,17 @@ cheap (heuristic) procedure to evaluate the utility of sensing at
 steps in sequential plan.
 
 
+One theoretical criticism of switching continual planning concerns
+interleaved sequential and decision-theoretic sessions failing to make
+any progress towards the POMDP objectives. For example, in the worst
+case we could have each sequential session producing an identical
+plan, and each decision-theoretic session rejecting it without further
+sensing. Although this has not been an issue in our work so far, it
+must be dealt with rigorously moving forward. We propose a good way of
+mitigation this problem is by using a {\em motivational} component
+that maintains a {\em dynamic} reward model for sensing.
+
+
 
 
 
