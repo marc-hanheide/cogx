@@ -10,6 +10,8 @@ from agent import loggingScope
 from standalone import config
 log = config.logger("switching")
 
+sw_conf = global_vars.mapsim_config.switching
+
 statistics_defaults = dict(
     dt_planning_calls=0,
     dt_planning_time=0.0,
@@ -120,7 +122,7 @@ class SwitchingAgent(agent.Agent):
         self.cp_domain = dt_compiler.translate(self.domain, prob_functions=self.prob_functions)
         
         self.state = pddl.prob_state.ProbabilisticState.from_problem(hierarchical)
-        det_state = self.state.determinized_state(None, global_vars.mapsim_config.switching.known_threshold)
+        det_state = self.state.determinized_state(sw_conf.rejection_ratio, sw_conf.known_threshold)
         facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
         facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
         cp_problem = pddl.Problem(mapltask.name, mapltask.objects, facts , mapltask.goal, self.cp_domain)
@@ -330,7 +332,7 @@ class SwitchingAgent(agent.Agent):
             self.done()
                 
     def dt_planning_active(self):
-        if not global_vars.mapsim_config.switching.enable_dt:
+        if not sw_conf.enable_dt:
             return False
         
         plan = self.get_plan()
@@ -400,7 +402,7 @@ class SwitchingAgent(agent.Agent):
         
         action.uninstantiate()
 
-        det_state = self.state.determinized_state(None, global_vars.mapsim_config.switching.known_threshold)
+        det_state = self.state.determinized_state(sw_conf.rejection_ratio, sw_conf.known_threshold)
         facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
         facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
         cp_problem = pddl.Problem(self.dt_problem.name, self.dt_problem.objects, facts , self.dt_problem.goal, self.cp_domain)

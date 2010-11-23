@@ -269,6 +269,23 @@ class ProbabilisticEffect(Effect):
     #         if start <= s < end:
     #             return eff
     #     return None
+
+    def get_effects(self, state):
+        remaining_effects = []
+        p_total = 0
+        for p, e in self.effects:
+            assert p_total <= 1.0
+            if p is None:
+                remaining_effects.append(e)
+            else:
+                p = state.evaluate_term(p).value
+                p_total += p
+                yield (p, e)
+
+        if remaining_effects:
+            p = (1.0-p_total) / len(remaining_effects)
+            for e in remaining_effects:
+                yield (p,e)
         
     def visit(self, fn):
         return fn(self, [(p, e.visit(fn)) for p,e in self.effects])
