@@ -295,12 +295,14 @@ void CVideoGrabber::CVvDisplayClient::handleEvent(const Visualization::TEvent &e
    }
    else if (event.type == Visualization::evButtonClick) {
       if (event.sourceId == IDCMD_GRAB) {
-         pViewer->m_frameGrabCount++; // XXX: not thread safe
-         setCounterValue(getCounterValue() + 1);
+         pViewer->startGrabbing(IDCMD_GRAB);
 
-         std::map<std::string, std::string> fields;
-         m_frmSettings.get(fields);
-         setHtmlFormData(IDOBJ_SETTINGS, IDPART_SETTINGS_FORM, fields);
+         //pViewer->m_frameGrabCount++; // XXX: not thread safe
+         //setCounterValue(getCounterValue() + 1);
+
+         //std::map<std::string, std::string> fields;
+         //m_frmSettings.get(fields);
+         //setHtmlFormData(IDOBJ_SETTINGS, IDPART_SETTINGS_FORM, fields);
       }
    }
 }
@@ -472,6 +474,86 @@ std::vector<std::string> CVideoGrabber::getDeviceNames()
    return devnames;
 }
 
+void CVideoGrabber::fillRecordingInfo(CRecordingInfo &info)
+{
+   info.directory = m_display.getDirectory();
+   info.directoryStatus = 0;
+   if (m_display.getCreateDirectory()) {
+      info.directoryStatus = 1;
+   }
+   std::string fname = m_display.getImageFilenamePatt();
+   std::string model = m_display.getModelName();
+   _s_::replace(fname, "%m", model);
+   info.filenamePatt = fname;
+
+   long digits = m_display.getCounterDigits();
+   if (digits < 1) digits = 1;
+   if (digits > 9) digits = 9;
+   info.counterDigits = digits;
+
+   info.counterStart = m_display.getCounterValue();
+   info.counterEnd = info.counterStart; // TODO: calculate from settings
+
+   info.deviceNames = getDeviceNames();
+}
+
+void CVideoGrabber::startGrabbing(const std::string& command)
+{
+   if (isGrabbing()) return;
+   fillRecordingInfo(m_RecordingInfo);
+   m_RecordingInfo.recording = true;
+   // TODO: timer.scheduleRepeated(m_pQueueTick.get(), IceUtil::Time::milliSeconds(200));
+}
+
+void CVideoGrabber::stopGrabbing()
+{
+   if (!isGrabbing()) return;
+   // TODO: timer.cancel(m_pQueueTick.get());
+   m_RecordingInfo.recording = false;
+}
+
+// TODO: frameInfo should be const
+void CVideoGrabber::saveQueuedImages(const std::vector<Video::CCachedImagePtr>& images,
+      CRecordingInfo& frameInfo)
+{
+   if (frameInfo.directoryStatus == 0 || frameInfo.directoryStatus == 1) {
+      struct stat finfo;
+      string& dir = frameInfo.directory;
+      bool exists = (0 == stat(dir.c_str(), &finfo));
+      if (exists) frameInfo.directoryStatus = 2;
+      else {
+         if (frameInfo.directoryStatus == 0) 
+            frameInfo.directoryStatus = -1;
+         else {
+            mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+            exists = (0 == stat(dir.c_str(), &finfo));
+            frameInfo.directoryStatus = exists ? 2 : -1;
+         }
+      }
+   }
+   //if (frameInfo.directoryStatus < 0) return;
+
+   std::string fname = frameInfo.filenamePatt;
+   std::string sval = _str_(frameInfo.counter, frameInfo.counterDigits, '0');
+   _s_::replace(fname, "%c", sval);
+
+   // TODO: conversion to GS when saving;
+   // TODO: compression parameters for jpeg and png
+   for (unsigned int i = 0; i < images.size(); i++) {
+      std::string fullname = fname;
+      std::string devname;
+      if (i < frameInfo.deviceNames.size()) devname = frameInfo.deviceNames[i];
+      else devname = "d" + _str_(i, 2, '0');
+      _s_::replace(fullname, "%d", devname);
+
+      fullname = frameInfo.directory + "/" + fullname;
+      println("Saving image: %s", fullname.c_str());
+      //IplImage *iplImage = cloneVideoImage(*images[i]);
+      //cvSaveImage(fullname.c_str(), iplImage);
+      //releaseClonedImage(&iplImage);
+   }
+}
+
 void CVideoGrabber::saveImages(const std::vector<Video::Image>& images)
 {
    std::string dir = m_display.getDirectory();
@@ -508,141 +590,88 @@ void CVideoGrabber::saveImages(const std::vector<Video::Image>& images)
    }
 }
 
-class CTickSyncedTask
+
+CVideoGrabber::CSaveQueThread::CSaveQueThread(CVideoGrabber *pGrabber)
 {
-protected:
-   IceUtil::Monitor<IceUtil::Mutex> m_tickerMutex;
-   int m_ticked;
+   m_pGrabber = pGrabber;
+}
 
-public:
-   CTickSyncedTask()
-   {
-      m_ticked = 0;
-   }
-
-   void tick()
-   {
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_tickerMutex);
-      m_ticked++;
-      m_tickerMutex.notify();
-   }
-
-   int waitForTick(int ms = 500)
-   {
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_tickerMutex);
-      if (! m_ticked)
-         m_tickerMutex.timedWait(IceUtil::Time::milliSeconds(ms));
-      if (! m_ticked) return 0;
-      int rv = m_ticked;
-      m_ticked = 0;
-      return rv;
-   }
-};
-
-class CTickerTask: public IceUtil::TimerTask
+void CVideoGrabber::CSaveQueThread::getItems(
+      std::vector<CVideoGrabber::CSaveQueThread::CItem>& items,
+      unsigned int maxItems)
 {
-   CTickSyncedTask* m_pWorker;
-public:
-   CTickerTask(CTickSyncedTask* pWorker)
-   {
-      assert(pWorker);
-      m_pWorker = pWorker;
+   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_itemsLock);
+   if (maxItems < 1 || maxItems >= m_items.size()) {
+      items = m_items;
+      m_items.clear();
+      return;
    }
-   void runTimerTask()
-   {
-      // This should be as short as possible so that we get
-      // approximately equal time periods.
-      m_pWorker->tick();
-   }
-};
+   items.clear();
+   items.insert(items.end(), m_items.begin(), m_items.begin() + (maxItems-1));
+   m_items.erase(m_items.begin(), m_items.begin() + (maxItems-1));
+}
 
+void CVideoGrabber::CSaveQueThread::run()
+{  
+   while (m_pGrabber && m_pGrabber->isRunning()) {
+      int ticks = waitForTick(500);
+      if (!ticks) continue;
+      if (!m_pGrabber->isGrabbing()) continue;
+      if (ticks > 1) 
+         m_pGrabber->println(string(" *** CSaveQueThread: missed ticks: ") + _str_(ticks-1));
 
-class CSaveQueThread: public IceUtil::Thread, public CTickSyncedTask
-{
-   CVideoGrabber *m_pGrabber;
+      //IceUtil::Time tm = IceUtil::Time::now();
+      //m_pGrabber->println("%lld runTimerTask()", tm.toMilliSeconds());
 
-public:
-   struct CItem 
-   {
-      long frameId;
-      std::vector<Video::CCachedImagePtr> images;
-   };
-   std::vector<CItem> items;
-
-public:
-   CSaveQueThread(CVideoGrabber *pGrabber)
-   {
-      m_pGrabber = pGrabber;
-   }
-
-   virtual void run()
-   {  
-      while (m_pGrabber && m_pGrabber->isRunning()) {
-         int ticks = waitForTick(500);
-         if (!ticks) continue;
-         if (ticks > 1) 
-            m_pGrabber->println(string(" *** missed ticks ") + _str_(ticks-1));
-
-         IceUtil::Time tm = IceUtil::Time::now();
-         m_pGrabber->println("%lld runTimerTask()", tm.toMilliSeconds());
-
-         CItem pack;
-         std::vector<Video::CCachedImagePtr> queue;
-         for (unsigned int i = 0; i < m_pGrabber->m_video.size(); i++) {
-            std::vector<Video::CCachedImagePtr> timgs;
-            Video::CVideoClient2& v = *m_pGrabber->m_video[i];
-            v.getCachedImages(pack.images);
-            std::vector<Video::CCachedImagePtr>::iterator itt;
-            for(itt = timgs.begin(); itt != timgs.end(); itt++) {
-               pack.images.push_back(*itt);
-            }
+      CItem pack;
+      std::vector<Video::CCachedImagePtr> queue;
+      std::vector<Video::CVideoClient2*> clients;
+      m_pGrabber->getClients(clients);
+      for (unsigned int i = 0; i < clients.size(); i++) {
+         std::vector<Video::CCachedImagePtr> timgs;
+         Video::CVideoClient2& v = *clients[i];
+         v.getCachedImages(timgs);
+         std::vector<Video::CCachedImagePtr>::iterator itt;
+         for(itt = timgs.begin(); itt != timgs.end(); itt++) {
+            pack.images.push_back(*itt);
          }
-         pack.frameId = m_pGrabber->m_display.getCounterValue();
-         m_pGrabber->m_display.setCounterValue(pack.frameId + 1);
-         items.push_back(pack);
-         IceUtil::Time tm2 = IceUtil::Time::now() - tm;
-         m_pGrabber->println("images copied in %lld", tm2.toMilliSeconds());
       }
+      m_pGrabber->m_RecordingInfo.counter++;
+      m_pGrabber->m_display.setCounterValue(m_pGrabber->m_RecordingInfo.counter);
+      pack.frameInfo = m_pGrabber->m_RecordingInfo;
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_itemsLock);
+      m_items.push_back(pack);
+      //IceUtil::Time tm2 = IceUtil::Time::now() - tm;
+      //m_pGrabber->println("images copied in %lld", tm2.toMilliSeconds());
    }
-};
+}
 
-class CDrawingThread: public IceUtil::Thread, public CTickSyncedTask
+CVideoGrabber::CDrawingThread::CDrawingThread(CVideoGrabber *pGrabber)
 {
-   CVideoGrabber *m_pGrabber;
+   m_pGrabber = pGrabber;
+}
 
-public:
-   struct CItem 
-   {
-      long frameId;
-      std::vector<Video::CCachedImagePtr> images;
-   };
-   std::vector<CItem> items;
+void CVideoGrabber::CDrawingThread::run()
+{  
+   while (m_pGrabber && m_pGrabber->isRunning()) {
+      int ticks = waitForTick(500);
+      if (!ticks) continue;
 
-public:
-   CDrawingThread(CVideoGrabber *pGrabber)
-   {
-      m_pGrabber = pGrabber;
+      m_pGrabber->sendCachedImages();
    }
-
-   virtual void run()
-   {  
-      while (m_pGrabber && m_pGrabber->isRunning()) {
-         int ticks = waitForTick(500);
-         if (!ticks) continue;
-
-         m_pGrabber->sendCachedImages();
-      }
-   }
-};
+}
 
 void CVideoGrabber::runComponent()
 {
    sleepComponent(1000);
-   IceUtil::Timer timer;
-   IceUtil::ThreadPtr pQueue = new CSaveQueThread(this);
-   IceUtil::ThreadPtr pDrawer = new CDrawingThread(this);
-   CTickerTask saveTick(dynamic_cast<CTickSyncedTask*>(pQueue.get()));
-   CTickerTask drawTick(dynamic_cast<CTickSyncedTask*>(pDrawer.get()));
+   m_pQueue = new CSaveQueThread(this);
+   m_pDrawer = new CDrawingThread(this);
+
+   m_pQueueTick = new CTickerTask(dynamic_cast<CTickSyncedTask*>(m_pQueue.get()));
+   m_pDrawTick  = new CTickerTask(dynamic_cast<CTickSyncedTask*>(m_pDrawer.get()));
+
+   IceUtil::ThreadControl tcQueue = m_pQueue->start();
+   IceUtil::ThreadControl tcDrawer = m_pDrawer->start();
 
    // Unfortunately Timer isn't exact -- (arbitrary) time spent by runTimerTask
    // is added to the time of a period; because of this runTimerTask must be
@@ -651,14 +680,22 @@ void CVideoGrabber::runComponent()
    // under 1 microsecond per period. Synchronization/multithreading may make
    // this time much longer.
    // XXX With CTickSyncedTask the grabber lost 10ms in 10s. Find a better implementation of Timer.
-   //timer.scheduleRepeated(&saveTick, IceUtil::Time::milliSeconds(200));
-   timer.scheduleRepeated(&drawTick, IceUtil::Time::milliSeconds(200));
-
-   IceUtil::ThreadControl tcQueue = pQueue->start();
-   IceUtil::ThreadControl tcDrawer = pDrawer->start();
+   IceUtil::Timer timer;
+   timer.scheduleRepeated(m_pDrawTick.get(), IceUtil::Time::milliSeconds(200));
 
    while(isRunning()) {
-      sleepComponent(300);
+      vector<CSaveQueThread::CItem> toSave;
+      dynamic_cast<CSaveQueThread*>(m_pQueue.get())->getItems(toSave, 4);
+      if (toSave.size() < 1) {
+         sleepComponent(200);
+         continue;
+      }
+      println("Will save %d frames", toSave.size());
+      vector<CSaveQueThread::CItem>::iterator it;
+      for (it = toSave.begin(); it != toSave.end(); it++) {
+         saveQueuedImages(it->images, it->frameInfo);
+      }
+      toSave.clear();
    }
 
    tcQueue.join();

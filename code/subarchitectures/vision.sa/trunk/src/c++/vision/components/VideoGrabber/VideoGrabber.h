@@ -7,6 +7,8 @@
 #ifndef VIDEOGRABBER_V7JAPUYG
 #define VIDEOGRABBER_V7JAPUYG
 
+#include "ticker.h"
+
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Video.hpp>
 #include <VisionData.hpp>
@@ -18,6 +20,32 @@
 
 namespace cogx
 {
+
+struct CRecordingInfo
+{
+   bool recording;
+   std::string directory;
+   long directoryStatus; // 0: don't; 1: check; 2: exists; -1: error
+   std::string filenamePatt;
+   std::vector<std::string> deviceNames;
+   long counterDigits;
+   long counterStart;
+   long counterEnd;
+   long counter;
+   CRecordingInfo() {
+      recording = false;
+      counterStart = 0;
+      counterEnd = 0;
+      counter = 0;
+#if 1 // XXX testing
+      directory = "/tmp/path/to/Model";
+      filenamePatt = "image-%c-%d.png";
+      deviceNames.push_back("L");
+      deviceNames.push_back("R");
+      counterDigits = 3;
+#endif
+   }
+};
 
 class CVideoGrabber: public cast::ManagedComponent
 {
@@ -43,8 +71,8 @@ private:
 
    int m_frameGrabCount;       // how many frames to save
 
-public: // XXX: testing
    std::vector<Video::CVideoClient2*> m_video;
+   CRecordingInfo m_RecordingInfo;
 
 #ifdef FEAT_VISUALIZATION
    // HACK: The image data in IplImage will point into char data of m_DisplayBuffer.
@@ -90,6 +118,41 @@ public: // XXX: testing
    CVvDisplayClient m_display;
 #endif
 
+   class CSaveQueThread: public IceUtil::Thread, public CTickSyncedTask
+   {
+      CVideoGrabber *m_pGrabber;
+
+   public:
+      struct CItem 
+      {
+         CRecordingInfo frameInfo;
+         std::vector<Video::CCachedImagePtr> images;
+      };
+
+   private:
+      std::vector<CItem> m_items;
+      IceUtil::Monitor<IceUtil::Mutex> m_itemsLock;
+
+   public:
+      CSaveQueThread(CVideoGrabber *pGrabber);
+
+      void getItems(std::vector<CItem>& items, unsigned int maxItems = 0);
+      virtual void run();
+   };
+   IceUtil::ThreadPtr m_pQueue;
+   IceUtil::Handle<CTickerTask> m_pQueueTick;
+
+   class CDrawingThread: public IceUtil::Thread, public CTickSyncedTask
+   {
+      CVideoGrabber *m_pGrabber;
+
+   public:
+      CDrawingThread(CVideoGrabber *pGrabber);
+      virtual void run();
+   };
+   IceUtil::ThreadPtr m_pDrawer;
+   IceUtil::Handle<CTickerTask> m_pDrawTick;
+
 protected:
    virtual void configure(const std::map<std::string,std::string> & _config);
    virtual void start();
@@ -119,6 +182,18 @@ public:
 
    std::vector<std::string> getDeviceNames();
    void saveImages(const std::vector<Video::Image>& images);
+   void saveQueuedImages(const std::vector<Video::CCachedImagePtr>& images, CRecordingInfo& frameInfo);
+   void getClients(std::vector<Video::CVideoClient2*>& clients)
+   {
+      clients = m_video;
+   }
+   void fillRecordingInfo(CRecordingInfo &info);
+   void startGrabbing(const std::string& command);
+   void stopGrabbing();
+   bool isGrabbing()
+   {
+      return m_RecordingInfo.recording;
+   }
 };
 
 } // namespace
