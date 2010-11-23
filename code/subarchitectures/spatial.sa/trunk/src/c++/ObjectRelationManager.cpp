@@ -53,7 +53,7 @@ extern "C" {
 }
 
 
-ObjectRelationManager::ObjectRelationManager()
+ObjectRelationManager::ObjectRelationManager() : m_sampler(&m_evaluator)
 {
   m_bRecognitionIssuedThisStop = false;
   m_maxObjectCounter = 0;
@@ -61,7 +61,6 @@ ObjectRelationManager::ObjectRelationManager()
   m_recognitionTimeThreshold = DBL_MAX;
   m_trackerTimeThreshold = 1.0;
   m_timeSinceLastMoved = 0.0;
-
 }
 
 ObjectRelationManager::~ObjectRelationManager() 
@@ -587,19 +586,19 @@ void ObjectRelationManager::runComponent()
       sliders.add(m_relationTester, "weights", peekabot::REPLACE_ON_CONFLICT);
 
       sqdp.add(sliders, "squareDistanceOutside", peekabot::REPLACE_ON_CONFLICT);
-      sqdp.translate(-1.0, 6.0, 10*distanceFalloffOutside);
+      sqdp.translate(-1.0, 6.0, 10*m_evaluator.distanceFalloffOutside);
       sqdp.set_scale(0.1);
       scwp.add(sliders, "squareDistanceInside", peekabot::REPLACE_ON_CONFLICT);
-      scwp.translate(0.0, 6.0, 10*distanceFalloffInside);
+      scwp.translate(0.0, 6.0, 10*m_evaluator.distanceFalloffInside);
       scwp.set_scale(0.1);
       bcwp.add(sliders, "patchThreshold", peekabot::REPLACE_ON_CONFLICT);
-      bcwp.translate(1.0, 6.0, 10*patchThreshold);
+      bcwp.translate(1.0, 6.0, 10*m_evaluator.patchThreshold);
       bcwp.set_scale(0.1);
       csp.add(sliders, "containmentSteepness", peekabot::REPLACE_ON_CONFLICT);
-      csp.translate(0.0, 6.0, 10*supportCOMContainmentSteepness);
+      csp.translate(0.0, 6.0, 10*m_evaluator.supportCOMContainmentSteepness);
       csp.set_scale(0.1);
       cop.add(sliders, "containmentOffset", peekabot::REPLACE_ON_CONFLICT);
-      cop.translate(0.0, 6.0, supportCOMContainmentOffset);
+      cop.translate(0.0, 6.0, m_evaluator.supportCOMContainmentOffset);
       cop.set_scale(0.1);
 
       sp.add(m_relationTester, "Onness", peekabot::REPLACE_ON_CONFLICT);
@@ -672,26 +671,26 @@ void ObjectRelationManager::runComponent()
       if (r.succeeded()) {
 	Pose3 boxPose;
 	setIdentity(boxPose);
-//	double m[16];
+	double m[16];
 
-//	m[0] = r.get_result().x.x; 
-//	m[1] = r.get_result().y.x;
-//	m[2] = r.get_result().z.x;
-//	m[3] = r.get_result().pos.x;
-//	m[4] = r.get_result().y.x;
-//	m[5] = r.get_result().y.y;
-//	m[6] = r.get_result().z.z;
-//	m[7] = r.get_result().pos.y;
-//	m[8] = r.get_result().z.x;
-//	m[9] = r.get_result().z.y; 
-//	m[10] = r.get_result().z.z; 
-//	m[11] = r.get_result().pos.z; 
-//	m[12] = 0;
-//	m[13] = 0;
-//	m[14] = 0;
-//	m[15] = 0;
-//
-//	setRow44(boxPose, m);
+	m[0] = r.get_result().x.x; 
+	m[1] = r.get_result().y.x;
+	m[2] = r.get_result().z.x;
+	m[3] = r.get_result().pos.x;
+	m[4] = r.get_result().x.y;
+	m[5] = r.get_result().y.y;
+	m[6] = r.get_result().z.y;
+	m[7] = r.get_result().pos.y;
+	m[8] = r.get_result().x.z;
+	m[9] = r.get_result().y.z; 
+	m[10] = r.get_result().z.z; 
+	m[11] = r.get_result().pos.z; 
+	m[12] = 0;
+	m[13] = 0;
+	m[14] = 0;
+	m[15] = 0;
+
+	setRow44(boxPose, m);
 
 	BoxObject box1;
 
@@ -705,25 +704,25 @@ void ObjectRelationManager::runComponent()
 	if (r.succeeded()) {
 	  Pose3 boxPose;
 	  setIdentity(boxPose);
-//	  double m[16];
-//
-//	  m[0] = r.get_result().x.x;
-//	  m[1] = r.get_result().y.x;
-//	  m[2] = r.get_result().z.x;
-//	  m[3] = r.get_result().pos.x;
-//	  m[4] = r.get_result().y.x;
-//	  m[5] = r.get_result().y.y;
-//	  m[6] = r.get_result().z.z;
-//	  m[7] = r.get_result().pos.y;
-//	  m[8] = r.get_result().z.x;
-//	  m[9] = r.get_result().z.y;
-//	  m[10] = r.get_result().z.z;
-//	  m[11] = r.get_result().pos.z;
-//	  m[12] = 0;
-//	  m[13] = 0;
-//	  m[14] = 0;
-//	  m[15] = 0;
-//
+	  double m[16];
+
+	  m[0] = r.get_result().x.x;
+	  m[1] = r.get_result().y.x;
+	  m[2] = r.get_result().z.x;
+	  m[3] = r.get_result().pos.x;
+	  m[4] = r.get_result().x.y;
+	  m[5] = r.get_result().y.y;
+	  m[6] = r.get_result().z.y;
+	  m[7] = r.get_result().pos.y;
+	  m[8] = r.get_result().x.z;
+	  m[9] = r.get_result().y.z;
+	  m[10] = r.get_result().z.z;
+	  m[11] = r.get_result().pos.z;
+	  m[12] = 0;
+	  m[13] = 0;
+	  m[14] = 0;
+	  m[15] = 0;
+
 	  
 	 /* m[0] = r.get_result()(0,0);
 	  m[1] = r.get_result()(0,1);
@@ -742,7 +741,7 @@ void ObjectRelationManager::runComponent()
 	  m[14] = r.get_result()(3,2);
 	  m[15] = r.get_result()(3,3);*/
 
-//	  setRow44(boxPose, m);
+	  setRow44(boxPose, m);
 
 	  HollowBoxObject box2;
 
@@ -773,11 +772,21 @@ void ObjectRelationManager::runComponent()
 //	      supportCOMContainmentOffset = vr.get_result().pos.z;
 	    }
 
-	    sp.set_scale(evaluateOnness(&table1, &box1));
-	    sp2.set_scale(evaluateOnness(&box2, &box1));
+	    double scale1 = m_evaluator.evaluateOnness(&table1, &box1);
+	    double scale2 = m_evaluator.evaluateOnness(&box2, &box1);
+	    Witness w1 = m_evaluator.m_lastWitness;
+	    m_evaluator.evaluateOnness(&box1, &box2);
+	    Witness w2 = m_evaluator.m_lastWitness;
+	    if (w1.distance - w2.distance > 0.0001 ||
+		w1.distance - w2.distance < -0.0001) {
+	      log("Error!");
+	    }
+	    log("%f, %f", scale1, scale2);
+	    sp.set_scale(scale1);
+	    sp2.set_scale(scale2);
 
 	    vector<Vector3> patch;
-	    Witness witness = findContactPatch(box2, box1, &patch);
+	    Witness witness = m_evaluator.findContactPatch(box2, box1, &patch);
 	    if (patch.size() > 2) {
 	      peekabot::PolygonProxy patchp;
 	      peekabot::VertexSet polyVerts;
@@ -917,8 +926,8 @@ void ObjectRelationManager::runComponent()
 	  } // if (m_bTestOnness)
 
 	  if (m_bTestInness) {
-	    sp.set_scale(evaluateInness(&table1, &box1));
-	    sp2.set_scale(evaluateInness(&box2, &box1));
+	    sp.set_scale(m_evaluator.evaluateInness(&table1, &box1));
+	    sp2.set_scale(m_evaluator.evaluateInness(&box2, &box1));
 
 	    if (m_bSampleInness) {
 	      Cure::LocalGridMap<double> pdf(25, 0.05, 0.0, 
@@ -1392,7 +1401,7 @@ ObjectRelationManager::recomputeOnnessForObject(const string &label)
       return;
     }
 //    log("3");
-    double onness = evaluateOnness(&po, obj);
+    double onness = m_evaluator.evaluateOnness(&po, obj);
 //    log("4");
     log("Object %s on object %s is %f", label.c_str(), 
 	it->second->label.c_str(), onness);
@@ -1411,7 +1420,7 @@ ObjectRelationManager::recomputeOnnessForObject(const string &label)
       m_objectModels[supportObjectLabel]->pose = 
 	m_objects[supportObjectLabel]->pose;
 
-      double onness = evaluateOnness(m_objectModels[supportObjectLabel],
+      double onness = m_evaluator.evaluateOnness(m_objectModels[supportObjectLabel],
 	  obj);
 
       log("Object %s on object %s is %f", label.c_str(), 
@@ -1450,7 +1459,7 @@ ObjectRelationManager::recomputeInnessForObject(const string &label)
       m_objectModels[containerObjectLabel]->pose =
 	m_objects[containerObjectLabel]->pose;
 
-      double inness = evaluateInness(m_objectModels[containerObjectLabel],
+      double inness = m_evaluator.evaluateInness(m_objectModels[containerObjectLabel],
 	  obj);
 
       log("Object %s in object %s is %f", label.c_str(),
@@ -1493,7 +1502,7 @@ ObjectRelationManager::recomputeOnnessForPlane(const string &planeLabel)
     m_objectModels[objectLabel]->pose = m_objects[objectLabel]->pose;
     log("Evaluating object %s on object %s",objectLabel.c_str(), 
 	planeLabel.c_str());
-    double onness = evaluateOnness(&po, m_objectModels[objectLabel]);
+    double onness = m_evaluator.evaluateOnness(&po, m_objectModels[objectLabel]);
     log("Object %s on object %s is %f", objectLabel.c_str(), 
 	planeLabel.c_str(), onness);
   }
@@ -1530,7 +1539,7 @@ ObjectRelationManager::sampleOnnessForObject(const string &supLabel,
     supportBox->radius1 : supportBox->radius2;
   frameRadius = frameRadius > supportBox->radius3 ? 
     frameRadius : supportBox->radius3;
-  sampleOnnessDistribution(objectS, objectO, points, 
+  m_evaluator.sampleOnnessDistribution(objectS, objectO, points, 
       objectS->pose.pos.x - frameRadius, objectS->pose.pos.x + frameRadius,
       objectS->pose.pos.y - frameRadius, objectS->pose.pos.y + frameRadius,
       objectS->pose.pos.z - frameRadius, objectS->pose.pos.z + frameRadius*4,
@@ -1585,7 +1594,7 @@ ObjectRelationManager::sampleOnnessForPlane(const string &planeLabel, const stri
   vector<Vector3> points;
   double frameRadius = 1.5 * 
     (po.radius1 > po.radius2 ? po.radius1 : po.radius2);
-  sampleOnnessDistribution(&po, objectO, points, 
+  m_evaluator.sampleOnnessDistribution(&po, objectO, points, 
       po.pose.pos.x - frameRadius, po.pose.pos.x + frameRadius,
       po.pose.pos.y - frameRadius, po.pose.pos.y + frameRadius,
       0, 1.5, 

@@ -70,6 +70,8 @@ public:
 protected:
   int m_maxObjectCounter;
 
+  RelationEvaluator m_evaluator;
+
   //Map from SpatialObject::id to spatial objects managed by this component
   std::map<std::string, SpatialObjectPtr> m_objects; 
   std::map<std::string, spatial::Object*> m_objectModels;

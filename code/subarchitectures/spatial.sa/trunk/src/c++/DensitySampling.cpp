@@ -361,10 +361,10 @@ DensitySampler::sampleBinaryRelationRecursively(const vector <SpatialRelationTyp
 	  onObject->pose.pos.z = sz;
 	  double value;
 	  if (relationType == RELATION_ON) {
-	    value = evaluateOnness(supportObject, onObject);
+	    value = m_evaluator->evaluateOnness(supportObject, onObject);
 	  }
 	  else if (relationType == RELATION_IN) {
-	    value = evaluateInness(supportObject, onObject);
+	    value = m_evaluator->evaluateInness(supportObject, onObject);
 	  }
 	  else {
 	    cerr << "Error! Unknown binary relation type!\n";
@@ -574,7 +574,7 @@ DensitySampler::sampleBinaryRelationSystematically(
 	  supportObjectOrientations, 
 	  m_objectOrientations[onObjectLabel],
 	  cellSize);
-      cloud->compute();
+      cloud->compute(*m_evaluator);
     }
     else {
       // Randomly sampled orientations on both objects
@@ -629,7 +629,7 @@ DensitySampler::sampleBinaryRelationSystematically(
 	      m_objectOrientations[supportObjectLabel],
 	      m_objectOrientations[onObjectLabel],
 	      cellSize);
-	  cloud->compute();
+	  cloud->compute(*m_evaluator);
 
 	  // Save it for next time
 	  writeCloudToFile(cloud, supportObjectLabel, onObjectLabel, relationType);
@@ -791,7 +791,7 @@ SampleCloud::composit(const SampleCloud &B) const {
 }
 
 void
-SampleCloud::compute() {
+SampleCloud::compute(RelationEvaluator &evaluator) {
   // Fill the values vector with values for the relation in question, 
   // for each relative position, and each combination of orientations
   // for the two objects.
@@ -832,7 +832,7 @@ SampleCloud::compute() {
 	      for (vector<Matrix33>::iterator o2it = object2Orientations.begin();
 		  o2it != object2Orientations.end(); o2it++) {
 		object2->pose.rot = *o2it;
-		(*it) = evaluateOnness(object1, object2);
+		(*it) = evaluator.evaluateOnness(object1, object2);
 //		if (*it > 0.5) {
 //		  orientationsOverThreshold.insert(i);
 //		  samplesOverThreshold++;
@@ -863,7 +863,7 @@ SampleCloud::compute() {
 	      for (vector<Matrix33>::iterator o2it = object2Orientations.begin();
 		  o2it != object2Orientations.end(); o2it++) {
 		object2->pose.rot = *o2it;
-		(*it) = evaluateInness(object1, object2);
+		(*it) = evaluator.evaluateInness(object1, object2);
 		it++;
 	      }
 	    }

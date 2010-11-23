@@ -14,7 +14,7 @@ namespace spatial {
 const double planeThickness = 0.05;
 
 double
-evaluateOnness(const Object *objectS, const Object *objectO)
+RelationEvaluator::evaluateOnness(const Object *objectS, const Object *objectO)
 {
   // Retrieve pose for supporting object (S)
   Pose3 Spose = objectS->pose;
@@ -70,19 +70,16 @@ evaluateOnness(const Object *objectS, const Object *objectO)
 
   normalise(witness.normal);
 
+  m_lastWitness = witness;
+  m_lastPatch   = patch;
+
   double contactOnness = 0.0;
   // Put patch and pose in one plane
   if (witness.normal.z > 0) {
     contactOnness = witness.normal.z;
-//    contactOnness = contactOnness*contactOnness;
   }
-  //	else {
-  //	  vector<Vector3> tmpPatch(patch.size());
-  //	  for (unsigned int i = 0; i < patch.size(); i++) {
-  //	    tmpPatch[patch.size()-i-1].z = Obox->pose.pos.z;
-  //	  }
-  //	  std::copy(tmpPatch.begin(), tmpPatch.end(), patch.begin());
-  //	}
+
+  double distanceFactor = 0.0;
 
   if (contactOnness > 0.0) {
     double COMDistance;
@@ -106,7 +103,7 @@ evaluateOnness(const Object *objectS, const Object *objectO)
       COMDistance = length(tmp);
     }
     
-    double distanceFactor = COMDistance / maxPatchClearance;
+    distanceFactor = COMDistance / maxPatchClearance;
 
     // Formula for onness based on COMDistance:
     // y = (1+exp(B*(-1-C))/(1+exp(B*(x-C)))
@@ -123,6 +120,8 @@ evaluateOnness(const Object *objectS, const Object *objectO)
 //    }
   }
 
+  m_lastDistanceFactor = distanceFactor;
+
   double distanceOnness;
   if (witness.distance > 0.0) {
 //    distanceOnness = witness.distance/distanceFalloffOutside;
@@ -133,576 +132,14 @@ evaluateOnness(const Object *objectS, const Object *objectO)
     distanceOnness = exp(witness.distance/distanceFalloffInside * 0.3010129996);
   }
 //  distanceOnness = 1/(1+distanceOnness*distanceOnness);
+  
+//  cout << distanceOnness << "/" << contactOnness << "\n";
 
   return min(distanceOnness, contactOnness);
-
-  // Old version onness below here!
-
-  /*
-  if (objectS->type == OBJECT_PLANE) {
-    PlaneObject *plane = (PlaneObject *)objectS;
-    supportPlaneNormal.z = 1.0;
-    supportPlaneOffset = plane->pose.pos.z;
-    if (plane->shape == PLANE_OBJECT_RECTANGLE) {
-      supportSurfaceType = 3;
-      double width = plane->radius1;
-      double height = plane->radius2;
-      Vector3 corner1 = vector3(width, height, 0.0);
-      Vector3 corner2 = vector3(-width, height, 0.0);
-      Vector3 corner3 = vector3(-width, -height, 0.0);
-      Vector3 corner4 = vector3(width, -height, 0.0);
-      supportSurfaceVertices.push_back(transform(Spose, corner1));
-      supportSurfaceVertices.push_back(transform(Spose, corner2));
-      supportSurfaceVertices.push_back(transform(Spose, corner3));
-      supportSurfaceVertices.push_back(transform(Spose, corner4));
-    }
-    else { 
-      supportSurfaceType = 2;
-      supportSurfaceCenter = plane->pose.pos;
-      supportSurfaceRadius = plane->radius1;
-    }
-  }
-  else if (objectS->type == OBJECT_BOX) {
-    BoxObject *box = (BoxObject *)objectS;
-
-    Vector3 up = vector3(0.0, 0.0, 1.0);
-    Vector3 east = vector3(1.0, 0.0, 0.0);
-    Vector3 north = vector3(0.0, 1.0, 0.0);
-    double z1 = transformDirection(Spose, up).z;
-    double z2 = transformDirection(Spose, east).z;
-    double z3 = transformDirection(Spose, north).z;
-    double r1 = box->radius1;
-    double r2 = box->radius2;
-    double r3 = box->radius3;
-    if (abs(z1) > abs(z2)) {
-      if (abs(z1) > abs(z3)) {
-	if (z1 > 0) {
-	// Top side
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, r2, r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, r2, r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, -r2, r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, -r2, r3)));
-	}
-	else {
-	  // Bottom side
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, r2, -r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, -r2, -r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, -r2, -r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, r2, -r3)));
-	}
-      }
-      else {
-	if (z3 > 0) {
-	  // North side
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, r2, r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, r2, -r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, r2, -r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, r2, r3)));
-	}
-	else {
-	  // South side
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, -r2, r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, -r2, r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, -r2, -r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, -r2, -r3)));
-	}
-      }
-    }
-    else {
-      if (abs(z2) > abs(z3)) {
-	if (z2 > 0) {
-	  // East side
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, r2, r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, -r2, r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, -r2, -r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, r2, -r3)));
-	}
-	else {
-	  // West side
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, r2, r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, r2, -r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, -r2, -r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, -r2, r3)));
-	}
-      }
-      else {
-	if (z3 > 0) {
-	  // North side
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, r2, r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, r2, -r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, r2, -r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, r2, r3)));
-	}
-	else {
-	  // South side
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, -r2, r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, -r2, r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(-r1, -r2, -r3)));
-	  supportSurfaceVertices.push_back(transform(Spose, vector3(r1, -r2, -r3)));
-	}
-      }
-    }
-    Vector3 side1 = supportSurfaceVertices[1] - supportSurfaceVertices[0];
-    Vector3 side2 = supportSurfaceVertices[3] - supportSurfaceVertices[0];
-    supportPlaneNormal = cross(side1, side2);
-    normalise(supportPlaneNormal);
-    supportPlaneOffset = dot(supportPlaneNormal, supportSurfaceVertices[0]);
-    supportSurfaceType = 3;
-  }
-  else {
-//    log ("Support object type not yet...supported.");
-    return 0.0;
-  }
-
-  int bottomSurfaceType; // 0 for point, 1 for line segment, 2 for circle, 3 for rectangle
-  Vector3 bottomSurfaceCenter; 		// For 0 and 2, epicenter
-  std::vector<Vector3> bottomSurfaceVertices; // For 1 and 3, vertices
-  double bottomSurfaceRadius;
-
-  // Find bottom surface of O:
-  //	if O is a box, surface is the rectangle whose normal's Z-component
-  //		is most negative.
-  //	if O is a sphere, surface is a point: the projection of the
-  //		sphere's center in S's support surface
-  //	if O is a cylinder, surface is a circle if either end's Z-component
-  //		exceeds -sqrt(0.5), else it is a line segment, namely
-  //		the projection of the central axis on S' supporting surface
-
-  if (objectO->type == OBJECT_PLANE) {
-    PlaneObject *plane = (PlaneObject *)objectO;
-    if (plane->shape == PLANE_OBJECT_RECTANGLE) {
-      bottomSurfaceType = 3;
-      double width = plane->radius1;
-      double height = plane->radius2;
-      Vector3 corner1 = vector3(width, height, 0.0);
-      Vector3 corner2 = vector3(-width, height, 0.0);
-      Vector3 corner3 = vector3(-width, -height, 0.0);
-      Vector3 corner4 = vector3(width, -height, 0.0);
-      supportSurfaceVertices.push_back(transform(Spose, corner1));
-      supportSurfaceVertices.push_back(transform(Spose, corner2));
-      supportSurfaceVertices.push_back(transform(Spose, corner3));
-      supportSurfaceVertices.push_back(transform(Spose, corner4));
-    }
-    else { 
-      bottomSurfaceType = 2;
-      bottomSurfaceCenter = plane->pose.pos;
-      bottomSurfaceRadius = plane->radius1;
-    }
-  }
-  else if (objectO->type == OBJECT_BOX) {
-    BoxObject *box = (BoxObject *)objectO;
-
-    Vector3 up = vector3(0.0, 0.0, 1.0);
-    Vector3 east = vector3(1.0, 0.0, 0.0);
-    Vector3 north = vector3(0.0, 1.0, 0.0);
-    double z1 = transformDirection(Opose, up).z;
-    double z2 = transformDirection(Opose, east).z;
-    double z3 = transformDirection(Opose, north).z;
-    double r1 = box->radius1;
-    double r2 = box->radius2;
-    double r3 = box->radius3;
-    if (abs(z1) > abs(z2)) {
-      if (abs(z1) > abs(z3)) {
-	if (z1 < 0) {
-	// Top side
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, r2, r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, r2, r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, -r2, r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, -r2, r3)));
-	}
-	else {
-	  // Bottom side
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, r2, -r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, -r2, -r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, -r2, -r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, r2, -r3)));
-	}
-      }
-      else {
-	if (z3 < 0) {
-	  // North side
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, r2, r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, r2, -r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, r2, -r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, r2, r3)));
-	}
-	else {
-	  // South side
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, -r2, r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, -r2, r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, -r2, -r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, -r2, -r3)));
-	}
-      }
-    }
-    else {
-      if (abs(z2) > abs(z3)) {
-	if (z2 < 0) {
-	  // East side
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, r2, r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, -r2, r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, -r2, -r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, r2, -r3)));
-	}
-	else {
-	  // West side
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, r2, r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, r2, -r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, -r2, -r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, -r2, r3)));
-	}
-      }
-      else {
-	if (z3 < 0) {
-	  // North side
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, r2, r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, r2, -r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, r2, -r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, r2, r3)));
-	}
-	else {
-	  // South side
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, -r2, r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, -r2, r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(-r1, -r2, -r3)));
-	  bottomSurfaceVertices.push_back(transform(Opose, vector3(r1, -r2, -r3)));
-	}
-      }
-    }
-    bottomSurfaceType = 3;
-  }
-  else {
-    //log ("Supported object type not yet...supported.");
-    return 0.0;
-  }
-
-  double totalOnness = 0.0;
-
-  // Check Center of Mass vis-a-vis projected bottom/support surfaces
-
-  // COM projected along plane normal
-  Vector3 COMNormal = supportPlaneNormal * (dot(objectO->pose.pos, supportPlaneNormal) - supportPlaneOffset);
-  Vector3 COMNormalProjection = objectO->pose.pos - COMNormal;
-
-  double COMNormalDistance = length(COMNormal);
-  // COM projected along gravity direction
-  Vector3 COMVertical;
-  if (!equals(COMNormalDistance, 0.0, 0.001)) {
-    COMVertical = (length(COMNormal) * length(COMNormal) / COMNormal.z) * vector3(0.0, 0.0, -1.0);
-  }
-  else {
-    //COMVertical = vector3(0, 0, 0.0);
-  }
-  Vector3 COMVerticalProjection = COMVertical + objectO->pose.pos;
-
-  // Compute vertical projection of bottom surface onto the support plane
-  // If S is spherical or cylindrical, use the plane tangential to the
-  // point/line segment.
-
-  // If the bottom surface is a point, project the point.
-  // If it is a line segment, project the endpoints.
-  // If it is a polygon, project its vertices.
-  // If it is a circle, project its centerpoint and
-  // consider it scaled along the minor axis by the dot product
-  // of the respective normals.
-
-  // Compute contact point penalties:
-  // Find the lowest point. Penalize if it is above the support plane.
-  // Penalize more if it below the support plane.
-  if (squareDistanceWeight != 0.0) {
-    if (bottomSurfaceType == 3) {
-      double minNormalDistance = FLT_MAX;
-      for (std::vector<Vector3>::iterator it = bottomSurfaceVertices.begin();
-	  it != bottomSurfaceVertices.end(); it++) {
-	double z0 = dot(*it, supportPlaneNormal) - supportPlaneOffset;
-	if (z0 < minNormalDistance) {
-	  minNormalDistance = z0;
-	}
-      }
-
-      double onnessFactor;
-      if (minNormalDistance > 0.0) {
-	onnessFactor = 1/(1+minNormalDistance*minNormalDistance/(squareDistanceFalloff*squareDistanceFalloff));
-      }
-      else {
-	onnessFactor = 1/(1+minNormalDistance*minNormalDistance/(squareDistanceFalloff*squareDistanceFalloff));
-      }
-
-      if (onnessFactor == 0.0) {
-	return 0.0;
-      }
-      else {
-	totalOnness += log(onnessFactor) * squareDistanceWeight;
-      }
-    }
-    else {
-      //log("Bottom surface type not yet supported!");
-      return 0.0;
-    }
-  }
-
-  // Compute COM projection/support surface penalties
-  // Compute vertical projection of COM on the support plane
-  // If support surface is a polygon, find the closest edge to the COM:
-  // 	Find the normal distance to the line, and the distance to the
-  //	edge points. Find the position along the edge. If it is between
-  //	the end points, use the normal distance, otherwise the end point
-  //	distance nearest. If normal distance is used, it can be
-  //	positive or negative depending on the winding of the polygon. 
-  //	(Assumes convex polygons)
-  // If support surface is an ellipse, find squish factor (ratio of
-  //	minor to major axis); enlarge one coordinate of COM projection
-  //	by this amount, then compute distance to center and subtract
-  //	major axis. (Not exact, but should be good enough for factors
-  //	< sqrt(2))
-  // Do this analogously for the projection of the bottom surface of O.
-
-  if (supportCOMContainmentWeight != 0.0) {
-    if (supportSurfaceType == 3) {
-      bool inside = false;
-      double closestDistance = FLT_MAX;
-
-      // Compare COM position to each edge of support polygon
-      // Note: All geometry is flattened into the XY-plane
-      for (unsigned i = 0; i < supportSurfaceVertices.size(); i++) {
-	unsigned iplus = (i+1 == supportSurfaceVertices.size()) ? 0 : i+1;
-
-	Vector3 side = supportSurfaceVertices[iplus] - supportSurfaceVertices[i];
-	side.z = 0.0;
-	double sideLength = length(side);
-	normalise(side);
-	Vector3 positionAlong = COMVerticalProjection - supportSurfaceVertices[i];
-	positionAlong.z = 0.0;
-	double lengthAlong = dot(positionAlong, side);
-
-	if (lengthAlong < 0) {
-	  // COM is not along the edge but past the "hither" vertex
-	  double distance = length(positionAlong);
-	  if (distance < closestDistance) {
-	    closestDistance = distance;
-	    inside = false;	// Only valid if polygon is convex!
-	  }
-	}
-	else if (lengthAlong > sideLength) {
-	  // COM is not along the edge but past the "further" vertex
-	  // This case will be dealt with next iteraton
-	}
-	else {
-	  // COM is closest to this edge by the normal distance
-	  Vector3 normalDistanceVector = (positionAlong - lengthAlong*side);
-	  double normalDistance = length(normalDistanceVector);
-	  if (normalDistance < closestDistance) {
-	    closestDistance = normalDistance;
-	    // The cross product between the side vector and the normal vector
-	    // points outwards
-	    inside = dot(normalDistanceVector, cross(side, vector3(0.0, 0.0, 1.0))) < 0;
-	  }
-	}
-      }
-
-      // Onness by COM distance to support surface: Distance to nearest edge
-      // divided by maximum distance possible
-      double distanceFactor = closestDistance / 
-	getMaxPolygonClearance(supportSurfaceVertices);
-      double onnessFactor;
-      if (inside) {
-	onnessFactor =
-	  (1 + exp(-supportCOMContainmentSteepness*(1 - supportCOMContainmentOffset)))
-	  / (1 + exp(-supportCOMContainmentSteepness*
-		(distanceFactor - supportCOMContainmentOffset)));
-      }
-      else {
-	onnessFactor =
-	  (1 + exp(-supportCOMContainmentSteepness*(1 - supportCOMContainmentOffset))) 
-	  / (1 + exp(-supportCOMContainmentSteepness*
-		(-distanceFactor - supportCOMContainmentOffset)));
-      }
-      totalOnness += log(onnessFactor) * supportCOMContainmentWeight;
-    }
-    else if (supportSurfaceType == 2) {
-      // Circular support surface
-      Vector3 radiusVector = COMVerticalProjection - supportSurfaceCenter;
-      radiusVector.z = 0.0;
-
-
-      // Can't be bothered to compute the exact distance to the ellipse. It's a 
-      // quartic polynomial. I'll just approximate. Should work for small 
-      // eccentricities.
-      Vector3 minorAxis = supportPlaneNormal;
-      minorAxis.z = 0.0;
-      if (minorAxis != vector3(0.0, 0.0, 0.0)) {
-	double squashFactor = normalise(minorAxis);
-
-	double minorDistance = dot(radiusVector, minorAxis); // COM projection along minor axis
-	double majorDistance = length((radiusVector - minorDistance * minorAxis));
-	double approxCos = majorDistance / length(radiusVector);  
-	double approxSinSq = (1 - approxCos*approxCos) * squashFactor*squashFactor;
-	double approxDistance = length(radiusVector) - supportSurfaceRadius * sqrt(approxCos*approxCos + approxSinSq);
-
-
-	// Onness by COM distance to support surface: Distance to nearest edge
-	// divided by maximum distance possible
-	double distanceFactor = 
-	  approxDistance / supportSurfaceRadius;
-
-	double onnessFactor = 
-	  (1 + exp(-supportCOMContainmentSteepness*(1 - supportCOMContainmentOffset))) 
-	  / (1 + exp(-supportCOMContainmentSteepness*
-		(-distanceFactor - supportCOMContainmentOffset)));
-	totalOnness += log(onnessFactor) * supportCOMContainmentWeight;
-      }
-      else {
-	// Circle
-	double distanceFactor = length(radiusVector) / supportSurfaceRadius - 1;
-	double onnessFactor = 
-	  (1 + exp(-supportCOMContainmentSteepness*(1 - supportCOMContainmentOffset))) 
-	  / (1 + exp(-supportCOMContainmentSteepness*
-		(-distanceFactor - supportCOMContainmentOffset)));
-	totalOnness += log(onnessFactor) * supportCOMContainmentWeight;
-      }
-    }
-    else {
-      //log("Support surface type not supported yet!");
-      return 0.0;
-    }
-  }
-
-  if (bottomCOMContainmentWeight) {
-    if (bottomSurfaceType == 3) {
-      bool inside = false;
-      double closestDistance = FLT_MAX;
-
-      // Compare COM position to each edge of bottom polygon
-      // Note: All geometry is flattened into the XY-plane
-      for (unsigned int i = 0; i < bottomSurfaceVertices.size(); i++) {
-	unsigned int iplus = (i+1 == bottomSurfaceVertices.size()) ? 0 : i+1;
-
-	Vector3 side = bottomSurfaceVertices[iplus] - bottomSurfaceVertices[i];
-	side.z = 0.0;
-	double sideLength = length(side);
-	normalise(side);
-	Vector3 positionAlong = COMVerticalProjection - bottomSurfaceVertices[i];
-	positionAlong.z = 0.0;
-	double lengthAlong = dot(positionAlong, side);
-
-	if (lengthAlong < 0) {
-	  // COM is not along the edge but past the "hither" vertex
-	  double distance = length(positionAlong);
-	  if (distance < closestDistance) {
-	    closestDistance = distance;
-	    inside = false;	// Only valid if polygon is convex!
-	  }
-	}
-	else if (lengthAlong > sideLength) {
-	  // COM is not along the edge but past the "further" vertex
-	  // This case will be dealt with next iteraton
-	}
-	else {
-	  // COM is closest to this edge by the normal distance
-	  Vector3 normalDistanceVector = (positionAlong - lengthAlong*side);
-	  double normalDistance = length(normalDistanceVector);
-	  if (normalDistance < closestDistance) {
-	    closestDistance = normalDistance;
-	    // The cross product between the side vector and the normal vector
-	    // points outwards
-	    inside = dot(normalDistanceVector, cross(side, vector3(0.0, 0.0, -1.0))) < 0;
-	  }
-	}
-      }
-
-      double distanceFactor = closestDistance / 
-	getMaxPolygonClearance(bottomSurfaceVertices);
-      double onnessFactor;
-      if (inside) {
-	onnessFactor =
-	  (1 + exp(-bottomCOMContainmentSteepness*(1 - bottomCOMContainmentOffset)))
-	  / (1 + exp(-bottomCOMContainmentSteepness*
-		(distanceFactor - bottomCOMContainmentOffset)));
-      }
-      else {
-	onnessFactor =
-	  (1 + exp(-bottomCOMContainmentSteepness*(1 - bottomCOMContainmentOffset))) 
-	  / (1 + exp(-bottomCOMContainmentSteepness*
-		(-distanceFactor - bottomCOMContainmentOffset)));
-      }
-      totalOnness += log(onnessFactor) * bottomCOMContainmentWeight;
-    }
-    else {
-      //log("Bottom surface type not supported yet!");
-      return 0.0;
-    }
-  }
-
-  // Impose a large penalty for COMs outside the support surface. 
-  // 	(Highly unstable)
-  // Impose a large penalty for COMs outside the bottom surface
-  //	(Highly unstable)
-  // Impose a small penalty for COMs near the inner edge of the
-  // 	support or bottom surface
-  //	(Close to being unstable)
-
-  // Impose a penalty dependent on the inclination of the support plane
-  if (planeInclinationWeight != 0.0) {
-    double supportPlaneDisinclination = 
-      supportPlaneNormal.z*supportPlaneNormal.z;
-
-    if (supportPlaneDisinclination == 0.0) {
-      return 0.0;
-    }
-    totalOnness += log(supportPlaneDisinclination) * planeInclinationWeight;
-  }
-
-  if (overlapWeight != 0.0) {
-    //Project bottom surface onto support surface plane
-    if (bottomSurfaceType == 3) {
-      std::vector<Vector3> projectedBottomVertices;
-      projectedBottomVertices.reserve(bottomSurfaceVertices.size());
-
-      //Need to reverse the winding on the bottom polygon for overlap compoutation
-      for (int i = bottomSurfaceVertices.size()-1; i >= 0; i--) {
-	projectedBottomVertices.push_back(bottomSurfaceVertices[i]
-	    -supportPlaneNormal*(dot(bottomSurfaceVertices[i],supportPlaneNormal) - supportPlaneOffset));
-      }
-      double maxArea =  getPolygonArea(projectedBottomVertices);
-
-      if (supportSurfaceType == 3) {
-	double overlapArea = getPolygonArea(
-	    findPolygonIntersection(projectedBottomVertices, supportSurfaceVertices));
-	if (overlapArea == 0.0) {
-	  return 0.0;
-	}
-	totalOnness += log(overlapArea/maxArea) * overlapWeight;
-      }
-
-      else if (supportSurfaceType == 2) {
-	double overlapArea = findOverlappingArea(projectedBottomVertices,
-	    supportSurfaceCenter, supportSurfaceRadius, supportPlaneNormal);
-	if (overlapArea == 0.0) {
-	  return 0.0;
-	}
-	totalOnness += log(overlapArea/maxArea) * overlapWeight;
-      }
-
-      else {
-	//log("Support surface type not supported yet");
-	return 0.0;
-      }
-    }
-    else {
-      //log("Bottom surface type not supported yet");
-      return 0.0;
-    }
-  }
-
-  double totalWeights = squareDistanceWeight + supportCOMContainmentWeight +
-    bottomCOMContainmentWeight + planeInclinationWeight + overlapWeight;
-
-  return totalWeights == 0.0 ? 0.0 : exp(totalOnness / totalWeights);
-  */
 }
 
 void
-sampleOnnessDistribution(const Object *objectS, Object *objectO,
+RelationEvaluator::sampleOnnessDistribution(const Object *objectS, Object *objectO,
     std::vector<Vector3> &outPoints, double xmin, double xmax, 
     double ymin, double ymax,  
     double zmin, double zmax,
@@ -799,7 +236,7 @@ sampleOnnessDistribution(const Object *objectS, Object *objectO,
 }
 
 Witness
-findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *outPatch, double *maxPatchClearance)
+RelationEvaluator::findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *outPatch, double *maxPatchClearance)
 {
   const int edges[] = {0,1, 1,2, 2,3, 3,0, 0,4, 4,5, 5,1, 5,6,
     6,2, 6,7, 7,3, 7,4}; //pairs of ints, indexing into BVertices
@@ -835,8 +272,13 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
   double wr = boxA.radius1;
   double dr = boxA.radius2;
   double hr = boxA.radius3;
+  double wr2 = boxB.radius1;
+  double dr2 = boxB.radius2;
+  double hr2 = boxB.radius3;
 
-  bool intersecting = isIntersecting(wr, dr, hr, BVerticesInA);
+  bool intersecting = 
+    isIntersecting(wr, dr, hr, BVerticesInA) ||
+    isIntersecting(wr2, dr2, hr2, AVerticesInB);
 
   vector<Vector3> BEdgesInA;
   BEdgesInA.reserve(12);
@@ -1339,6 +781,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
     }
 
     if (outPatch != 0) {
+      vector<Vector3> &outPatchRef = *outPatch;
       //Enumerate all vertices on B around the selected face.
       //If a vertex is within a threshold of A's face's plane,
       //add it to the patch. Otherwise, if it has a neighbor that is 
@@ -1406,10 +849,23 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
 	}
 
 	//and find the overlap between it and the face. That's the contact patch!!1
-	*outPatch = findPolygonIntersection(AFacePolygon, patchOnA);
+	outPatchRef = findPolygonIntersection(AFacePolygon, patchOnA);
+
+	if (outPatchRef.size() > 2) {
+	  Vector3 tmp = cross(outPatchRef[1] - outPatchRef[0], outPatchRef.back() - outPatchRef[0]);
+	  double dotProd = dot(tmp, AFaceNormal);
+	  if (dotProd < 0.0) {
+	    // findPolygonIntersection returned the wrong order of vertices
+	    for (unsigned int i = 0; i < outPatchRef.size()/2; i++) {
+	      Vector3 tmp = outPatchRef[i];
+	      outPatchRef[i] = outPatchRef[outPatchRef.size()-i-1];
+	      outPatchRef[outPatchRef.size()-i-1] = tmp;
+	    }
+	  }
+	}
 
 	for (unsigned int i = 0; i < outPatch->size(); i++) {
-	  (*outPatch)[i] = transform(boxA.pose, (*outPatch)[i]);
+	  outPatchRef[i] = transform(boxA.pose, outPatchRef[i]);
 	}
       }
       else {
@@ -1426,7 +882,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
 }
 
 double
-getMaxPolygonClearance(const std::vector<Vector3> &polygon) 
+RelationEvaluator::getMaxPolygonClearance(const std::vector<Vector3> &polygon) 
 {
   //Find all bisectors
   std::vector<Vector3>bisectors;

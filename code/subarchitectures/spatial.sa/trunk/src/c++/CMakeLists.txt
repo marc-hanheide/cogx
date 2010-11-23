@@ -168,10 +168,10 @@ IF(APPLE)
 link_cast_component(${CAST_COMPONENT_NAME} ${GTK2_FIX_LIBRARIES})
 ENDIF(APPLE)
 
+endif(BUILD_AVS)
 
 add_cast_component(ObjectRelationManager ObjectRelationManager.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialProperties peekabot PTZ FrontierInterface)
 link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
-endif(BUILD_AVS)
 
