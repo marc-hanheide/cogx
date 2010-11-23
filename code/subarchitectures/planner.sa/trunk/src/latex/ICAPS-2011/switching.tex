@@ -76,16 +76,15 @@ the unique abstract state with probability $1.0$ -- E.G., for
 $\pp{R2D2}$ $s_0 \equiv \{(= (is-in R2D2) kitchen)\}$.
 
 In order to make assumptions available to the sequential planner, we
-add one {\em assumptive} action $\actions(p_i;(T_i))$ to the problem
-for each element, $p_i (T_i)$, of each probabilistic term from
+add one {\em assumptive} action $\assumptiveS{i}$ to the problem for
+each element, $p_i (T_i)$, of each probabilistic term from
 $(:init)$. The physics of these actions is as
-follows. $\actions(p_i;(T_i))$ can be executed if no
-$\actions(p_j;(T_j))$, $j \neq i$, has been executed from the same
-probabilistic term, and, either $(\pp{probabilistic}~..p_i~(T_i)..)$
-is in the root conjunct, or it occurs in $T_k$ for some executed
-$\actions(p_k;(T_k))$.
+follows. $\assumptiveS(i)$ can be executed if no $\assumptiveS(j)$,
+$j \neq i$, has been executed from the same probabilistic term, and,
+either $(\pp{probabilistic}~..p_i~(T_i)..)$ is in the root conjunct,
+or it occurs in $T_k$ for some executed $\assumptiveS(k)$.
 %%
-Executing $\actions(p_i;(T_i))$ in $s$ effects a transition to a
+Executing $\assumptiveS(i)$ in $s$ effects a transition to a
 successor state $s^{T_i}$ with probability $p_i$, and $s^\bot$ with
 probability $1 - p_i$. Here, $s^{T_i}$ is the union of $s$ and atomic
 terms from $T_i$, and $s^\bot$ is a sink state -- I.e.,
@@ -196,18 +195,60 @@ artificially limits the length of candidate sequential plans.
 
 In the decision-theoretic mode, the switching planner solves a sensing
 problem in an abstract processes defined in terms of the assumptive
-actions in the current sequential plan. Therefore, this mode uses a
-different utility model, that reflects the value of performing sensing
-actions.
+actions in the current sequential plan, and the $(\pp{:init})$ block
+from the original problem description. 
 
-We construct a {\em relaxed} $(\pp{:init})$ block by first
+The focus for decision-theoretic planning is on sensing, rather than
+the achievement of utility according to the given objectives. The
+process in this mode has a different reward model that reflects the
+value of performing sensing actions in the context of a trace proposed
+for the preceding sequential deliberation. In detail, for each
+$\assumptiveS{i}$ action scheduled in the current sequential plan, we
+have a {\em dual} $\assumptiveDT{i}$ so that
+$\forall\state\in\states$:
+
+\[
+\reward(\state, \assumptiveDT{i}) = \bigg\{ \begin{array}{ll}
+\$(T_i) & \pp{if}~\;\;T_i \not\subseteq \state \\
+-\$(T_i) & \pp{otherwise} \\
+\end{array}
+\]
+
+\noindent Where $\$(T_i)$ is a positive numeric quantity which
+rewards the agent for correctly jettisoning a false assumption, and
+otherwise penalises the agent. Propositionally these dual actions have
+no preconditions or effects -- I.e., $\forall\state\in\states$ $\poss(\assumptiveDT{i})
+\subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  Additionally, for the action,
+$\action_i$, whose scheduled execution triggered the switch to the
+decision-theoretic mode, we include an action
+$\actions.\poss(\action_i)$ with the reward property:
+
+\[
+\reward(\state, \actions.\poss(\action_i)) = \bigg\{ \begin{array}{ll}
+\$(\poss(\action_i)) & \pp{if}~\;\; \poss(\action_i) \subseteq \state \\
+-\$(\poss(\action_i)) & \pp{otherwise} \\
+\end{array}
+\]
+
+\noindent Execution of either a $\assumptiveDT{i}$
+action, or $\actions.\poss(\action_i)$, returns control to the
+sequential planner. If a dual is executed, then the sequential planner
+must replan with $\bstate_0$ equal to the current belief. Otherwise,
+if $\actions.\poss(\action_i)$ is executed, then the current
+sequential plan is executed until further sensing is scheduled, or to
+completion. In our project the rewards, $\$:2^\propositions\to\Re$,
+for the POMDP posed to decision-theoretic planning is sourced from a
+motivational component of our robotic architecture.
+
+The starting belief-state for the abstract process is given in terms
+of a {\em relaxed} $(\pp{:init})$ block.  This is constructed by first
 constructing a tree which only includes terms from the {\em relaxed}
 visitation characterised by the {\em assumptive} actions in the
 current sequential plan. For example, if $\pp{R2D2}$'s plan is:
 
 \[
 \begin{array}{l}
-\actions(.8;(=(\pp{is-in}~\pp{box})\pp{office}));\\
+\actions^{\circ}(.8;(=(\pp{is-in}~\pp{box})\pp{office}));\\
 (\pp{look-for-object}~\pp{R2D2}~\pp{box}~\pp{office});\\
 (\pp{report-is-in}~\pp{box}~\pp{office})
 \end{array}
@@ -240,49 +281,22 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 abstraction of the environment, where the inclusion (exclusion) of
 POMDP actions is the same as we defined it for the sequential mode.
 
-In the second step, we iteratively add terms from the original
-$(\pp{:init})$ block while the resulting state space remains of a
-practicable size. Of course, it is expensive to measure size exactly,
-thus in practice we estimate it to be $2^{|\propositions^\#|}$, where
-$\propositions^\#$ is the set of propositions in the abstraction
-induced by the proposed tree. Terms are proposed for addition, because
-they are probabilistic, and because they were omitted in the {\em
-relaxed} visitation characterised by {\em assumptive} actions in the
-sequential plan. Each iteration, we add one candidate term with the
-largest number of parent terms.
+In a second step, we iteratively refine the {\em relaxed} block by
+adding terms from the original block while the resulting state space
+remains of a practicable size. Of course, it is expensive to measure
+size exactly, thus in practice we estimate it to be
+$2^{|\propositions^\#|}$, where $\propositions^\#$ is the set of
+propositions in the abstraction induced by the proposed tree. Terms
+are proposed for addition, because they are probabilistic, and because
+they were omitted in the {\em relaxed} visitation characterised by
+{\em assumptive} actions in the sequential plan. Each iteration, we
+add one candidate term with the largest number of parent terms already
+in the candidate tree.
 
 
 
-Terms a proposed sequentially, with preference given to
-terms that are closest to, or which otherwise are, the conjunctive
-leaves.
-
-
-The problem posed to the decision-theoretic system is an abstraction
-of the problem at hand with a distinct utility model that focuses the
-agents activities on assumption verification. The abstraction is
-induced according to the executing sequential plan. Specifically, we
-first omit all problem variables that are not mentioned in the linear
-trace, and then refine that preliminary model, by progressively adding
-more problem variables while the resulting state space remains of a
-practicable size. Refinement in our approach is a simple and
-inexpensive step, guided by the level at which variable symbols occur
-in the description of the initial conditions. The abstract process is
-also given a utility model that captures the reward (resp. penalty) of
-correctly (resp. falsely) in/validating the assumptions made in the
-linear trace. In detail, for each assumption on a state variable, we
-can have a reward of $1$ for correctly rejecting it, and a penalty of
-$-1$ for falsely rejecting it. Decision theoretic planning proceeds in
-a more-or-less continual manner until an assumption is rejected, or
-until it returns control to the sequential system because it can see
-no benefit from performing further actions in the abstraction.
 
 
 
-Addressing briefly the specifics of our mobile robot's
-architecture. In our scenario the utility model for the POMDP posed to
-decision-theoretic planning is sourced from a motivational component
-of our robotic architecture. This proposes a non-zero reward
-(resp. penalty) for sequential planning with a true (resp. false)
-assumption about a state proposition.
+
 
