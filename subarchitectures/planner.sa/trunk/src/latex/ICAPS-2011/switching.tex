@@ -136,14 +136,14 @@ probability that the $i^{th}$ sequenced action does not transition to
 $s^\bot$, we value a trace as follows:
 
 \begin{equation}\label{eq:tracevalue}
-V(s_0, a_0, s_1, a_1,.., s_N) =  \prod_{i=1..N} p_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
+V(s_0, a_0, s_1, a_1,.., s_N) =  \prod_{i=1..N-1} p_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
 \end{equation}
 
 \noindent The optimal trace given a plan, i.e., the non-assumptive
 actions in sequence, therefore has value:
 
 \[
-V^* = \max_{p_1, .., p_n} \prod_{i=1..N} p_i \sum_{i=1..N-1}
+V^* = \max_{p_1, .., p_n} \prod_{i=1..N-1} p_i \sum_{i=1..N-1}
 \reward(\state_i, \action_i),
 \]
 
