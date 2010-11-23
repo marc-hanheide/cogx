@@ -33,7 +33,7 @@ If outcome $\detAction$ with $\add(\detAction) := [\prop_1,
 ..,\prop_n]$ and $\delete(\detAction) := [\overline\prop_{n+1},
 ..,\overline\prop_m]$ is chosen by nature when \stochAction\ is
 applied at state $\state$, then the resultant state is $ ( \state \cup
-\add(\detAction) ) \backslash \delete(\detAction)$ -- i.e.,
+\add(\detAction) ) \backslash \delete(\detAction)$ -- I.e.,
 propositions from $\add(\detAction)$ are added to $\state$, and those
 from $\delete(\detAction)$ are removed from $\state$.
 
@@ -112,7 +112,7 @@ $\sum_{\state' \in \states} \transProb(\state, \action, \state') = 1$.
 Function $\reward:\states \times \actions \to \Re$ is a bounded real
 valued reward function. Therefore a finite positive constant $c$
 exists so that for all $\state \in \states$ and $\action \in
-\actions$, $|\reward(\state, \action)| < c$. We model costs are
+\actions$, $|\reward(\state, \action)| < c$. We model costs as
 negative rewards.
 %%
 From $\psi$ we have that for each $\state \in \states$ and action
@@ -156,12 +156,12 @@ probability that the controller prescribes \action\ when in state
 P(\node'|\node, \action, \observation)$ gives the probability the
 controller transitions to state $\node'$, supposing we execute
 \action\ in state \node\ receiving observation \observation. When
-acting for finite $N$ steps, the value of a controller corresponds to
-the expected cumulative reward:
+acting for finite $N$ steps from controller state $n$, the value of a
+controller corresponds to the expected cumulative reward:
 
 \begin{equation}\label{eq:expectedvalue}
-V_{\pp{FSC}}(\bstate) = \Expect \bigg{[} 
-\sum_{t=0}^{N-1}  \reward(\bstate_t, \pp{FSC}_t) \mid \pp{FSC}, \bstate = \bstate_0 \bigg{]}
+V_{\pp{FSC}}(\bstate, n) = \Expect \bigg{[} 
+\sum_{t=0}^{N-1}  \reward(\bstate_t, \pp{FSC}_t) \mid \pp{FSC}, n_0 = n, \bstate_0 = \bstate \bigg{]}
 \end{equation}
 
 \noindent Where $b_t$ is the belief-state at step $t$, $\pp{FSC}_t$ is
