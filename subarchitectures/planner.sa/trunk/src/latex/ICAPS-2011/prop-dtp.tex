@@ -161,10 +161,16 @@ the expected cumulative reward:
 
 \begin{equation}\label{eq:expectedvalue}
 V_{\pp{FSC}}(\bstate) = \Expect \bigg{[} 
-\sum_{t=0}^{N}  \reward(\bstate_t) \mid \pp{FSC}, \bstate = \bstate_0 \bigg{]}
+\sum_{t=0}^{N-1}  \reward(\bstate_t, \pp{FSC}_t) \mid \pp{FSC}, \bstate = \bstate_0 \bigg{]}
 \end{equation}
 
-\noindent Where $b_t$ is the belief state at time $t$. Finally, it is
+\noindent Where $b_t$ is the belief-state at step $t$, $\pp{FSC}_t$ is
+the action prescribed at step $t$, and
+
+\[\reward(\bstate, \action) = \sum_{\state \in \states}
+\bstate(\state)\reward(\state, \action).\] 
+
+\noindent Finally, it is
 useful to note that there is a corresponding deterministic FSCs for
 both sequential (e.g., conformant) and contingent plans.
 

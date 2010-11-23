@@ -154,7 +154,7 @@ s_1, a_1,.., s_N$, we have
 
 \[
 V^* = \arg\min_{V_i} \Expect \bigg{[} 
-\sum_{t=0}^{N}  \reward(\bstate_t) \mid \pp{PLAN}, \bstate_0
+\sum_{t=0}^{N-1}  \reward(\bstate_t, \pp{PLAN}_t) \mid \pp{PLAN}, \bstate_0
 \bigg{]} - V_i.
 \]
 
