@@ -1,7 +1,7 @@
 
 
 We now describe a continual planning approach that switches between
-sequential and decision-theoretic planning. 
+sequential and decision-theoretic planning sessions. 
 
 
 In this work, the problem at hand is a POMDP described in DTPDDL. From
@@ -42,17 +42,16 @@ by the robot to test the validity of the assumptions made so far.
 In a deterministic-action POMDP, all the uncertainty in state and
 action is expressed in the $(\pp{:init})$ declaration. Our approach
 uses the structure of that, as it occurs in the problem description,
-do define a set of abstract state-assumptions available to 
-sequential planning.  
+do define a set of state-assumptions available to sequential planning.
 %%
-Writing \#\ if the value of a proposition is unspecified in the
-assumption, for the $\pp{R2D2}$ example we have that the following
+Writing \#\ if the value of a proposition is unspecified in an
+assumption, for our $\pp{DORA}$ example we have that the following
 assumptions are available:
 
 \small
 \begin{tabular}{cccc}
 \hline
-Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
+Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 \hline
 .24 & kitchen & office & office \\
 .06 & kitchen & kitchen & office \\
@@ -73,7 +72,7 @@ case, a conjunctive term is visited iff its atomic subterms are
 visited, and zero or more of its immediate probabilistic subterms are
 visited. The starting state, $\state_0$, for sequential planning is
 the unique abstract state with probability $1.0$ -- E.G., for
-$\pp{R2D2}$ $s_0 \equiv \{(= (is-in R2D2) kitchen)\}$.
+$\pp{DORA}$ $s_0 \equiv \{(= (is-in DORA) kitchen)\}$.
 
 In order to make assumptions available to the sequential planner, we
 add one {\em assumptive} action $\assumptiveS{i}$ to the problem for
@@ -97,7 +96,7 @@ preconditions that are not uniformly true in the underlying
 the problem posed to the sequential planner. First, if
 $\action\in\actions$ has a precondition that is not true with
 probability $1$, then before it is executed blindly, the sequential
-continual planning switches to a decision-theoretic mode, discussed in
+continual planning switches to a decision-theoretic session, discussed in
 detail below. Overall, by scheduling $\action$ the sequential planner
 makes a naive assumption about the possibility of the agent eventually
 ``committing'' to the truth values of specific state
@@ -173,14 +172,14 @@ artificially limits the length of candidate sequential plans.
 
 \subsection{Decision-Theoretic Planning in Abstractions}
 
-In the decision-theoretic mode, the switching planner solves a sensing
+In a decision-theoretic session, the switching planner solves a sensing
 problem in an abstract processes defined in terms of the assumptive
 actions in the current sequential plan, and the $(\pp{:init})$ block
 from the original problem description. 
 
 The focus for decision-theoretic planning is on sensing, rather than
 the achievement of utility according to the given objectives. We
-therefor give the process in this mode a different reward model, which
+therefor give the process in this session a different reward model, which
 reflects the value of performing sensing actions in the context of the
 trace proposed for the preceding sequential deliberation. In detail,
 all positive rewards from the initial POMDP are removed. Then, for
@@ -201,7 +200,7 @@ false assumption. The added dual actions are propositionally trivial
 -- I.e., $\forall\state\in\states$ $\poss(\assumptiveDT{i})
 \subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  Also, for the action,
 $\action_i$, whose scheduled execution triggered the switch to the
-decision-theoretic mode, we include another propositionally trivial
+decision-theoretic session, we include another propositionally trivial
 action $\actions.\poss(\action_i)$ with the reward property:
 
 \[
@@ -227,12 +226,12 @@ The starting belief-state for the abstract process is given in terms
 of a {\em relaxed} $(\pp{:init})$ block.  This is constructed by first
 constructing a tree which only includes terms from the {\em relaxed}
 visitation characterised by the {\em assumptive} actions in the
-current sequential plan. For example, if $\pp{R2D2}$'s plan is:
+current sequential plan. For example, if $\pp{DORA}$'s plan is:
 
 \[
 \begin{array}{l}
 \actions^{\circ}(.8;(=(\pp{is-in}~\pp{box})\pp{office}));\\
-(\pp{look-for-object}~\pp{R2D2}~\pp{box}~\pp{office});\\
+(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office});\\
 (\pp{report-is-in}~\pp{box}~\pp{office})
 \end{array}
 \]
@@ -241,7 +240,7 @@ current sequential plan. For example, if $\pp{R2D2}$'s plan is:
 
 \small
 \begin{tabtt}
-(\=:init (= (is-in R2D2) kitchen) \+ \\
+(\=:init (= (is-in DORA) kitchen) \+ \\
        (probabilistic \=.8 (= (is-in box) office)  \\
 		      \>.2 (= (is-in box) kitchen))) \\
 \end{tabtt}
@@ -252,7 +251,7 @@ current sequential plan. For example, if $\pp{R2D2}$'s plan is:
 \small
 \begin{tabular}{cccc}
 \hline
-Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
+Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 \hline
 .8 & kitchen & office & \# \\
 .2 & kitchen & kitchen & \# \\
@@ -263,7 +262,7 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 \noindent At this point, decision-theoretic planning would proceed in an
 abstraction of the environment that does not contain a $\pp{cup}$,
 where the inclusion (exclusion) of POMDP actions is the same as we
-defined it for the sequential mode.
+defined it for the sequential session.
 
 In a second step, we iteratively refine the {\em relaxed} block by
 adding terms from the original block while the resulting state space
