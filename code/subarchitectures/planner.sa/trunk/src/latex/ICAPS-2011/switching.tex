@@ -206,9 +206,9 @@ visitation characterised by the {\em assumptive} actions in the
 current sequential plan. For example, if $\pp{R2D2}$'s plan is:
 
 \[
-\begin{array}{c}
-\actions(.8,(=(\pp{is-in}~\pp{box})\pp{office}));\\
-(pp{reportlook-for-object}~\pp{R2D2}~\pp{box}~\pp{office});\\
+\begin{array}{l}
+\actions(.8;(=(\pp{is-in}~\pp{box})\pp{office}));\\
+(\pp{look-for-object}~\pp{R2D2}~\pp{box}~\pp{office});\\
 (\pp{report-is-in}~\pp{box}~\pp{office})
 \end{array}
 \]
@@ -250,6 +250,8 @@ they are probabilistic, and because they were omitted in the {\em
 relaxed} visitation characterised by {\em assumptive} actions in the
 sequential plan. Each iteration, we add one candidate term with the
 largest number of parent terms.
+
+
 
 Terms a proposed sequentially, with preference given to
 terms that are closest to, or which otherwise are, the conjunctive
