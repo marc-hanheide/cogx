@@ -95,37 +95,17 @@ preconditions that are not uniformly true in the underlying
 (resp. abstract) belief-state, we must make two further adjustments to
 the problem posed to the sequential planner. First, if
 $\action\in\actions$ has a precondition that is not true with
-probability $1$, then before it is executed blindly, the sequential
-continual planning switches to a decision-theoretic session, discussed in
-detail below. Overall, by scheduling $\action$ the sequential planner
-makes a naive assumption about the possibility of the agent eventually
-``committing'' to the truth values of specific state
-propositions. Thus, the role of decision-theoretic plans is to verify
-the validity of assumptions about the runtime state in sequential
-planning. Second, if the truth value of $\prop$ is not known, and no
-assumption is made about it in the current abstract state, then if
-$\prop \in
+probability $1$ in $\bstate_0$, then before it is executed blindly,
+the sequential continual planning switches to a decision-theoretic
+session, discussed in detail below. Overall, by scheduling $\action$
+the sequential planner makes a naive assumption about the possibility
+of the agent eventually ``committing'' to the truth values of specific
+state propositions. Thus, the role of decision-theoretic plans is to
+examine the validity of assumptions about the runtime state of
+sequential planning. Second, if the truth value of $\prop$ is not
+known, and no assumption is made about it in the current abstract
+state, then if $\prop \in
 \poss(\action)$ we have that action $\action$ is not applicable.
-
-%% Because $\state_0$ is abstract, and because actions can have
-%% preconditions that are not uniformly true in the underlying
-%% (resp. abstract) belief-state, we must make two further adjustments to
-%% the problem posed to the sequential planner. First, if
-%% $\action\in\actions$ has a precondition that is not true with
-%% probability $1$, then before it is executed blindly, the sequential
-%% continual planning switches to a decision-theoretic mode, discussed in
-%% detail below. Overall, by scheduling $\action$ the sequential planner
-%% makes a naive assumption about the possibility of the agent eventually
-%% committing ---for the purpose of the current task--- to the truth
-%% values of specific state propositions. Second, if the truth value of
-%% $\prop$ is not known, and no assumption is made about it in the
-%% current abstract state, then if $\prop \in \poss(\action)$ we have
-%% that action $\action$ is not applicable.
-
-%% In other words, the value of a proposition in an abstract
-%% state is either {\em true}, {\em false}, or {\em unspecified} (i.e.,
-%% \#). In the last case actions whose execution is preconditioned on the
-%% term being truth functional are not available.
 
 
 Finally, we come to valuing sequential plans, and therefore giving a
@@ -158,8 +138,7 @@ V^* = \arg\min_{V_i} \Expect \bigg{[}
 
 In goal directed problems, where the only non-zero reward is received
 at the first transition to a goal state, the Eq~\ref{eq:tracevalue}
-criteria corresponds exactly to that of the infamous degenerate
-hindsight system
+criteria corresponds exactly to that of
 \system{FFR$_a$}~\cite{yoon:etal:2007}. Form the perspective of
 gradient-based reinforcement learning systems, such as William's
 REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
@@ -223,10 +202,10 @@ posed to decision-theoretic planning are sourced from a motivational
 component of our robotic architecture.
 
 The starting belief-state for the abstract process is given in terms
-of a {\em relaxed} $(\pp{:init})$ block.  This is constructed by first
-constructing a tree which only includes terms from the {\em relaxed}
-visitation characterised by the {\em assumptive} actions in the
-current sequential plan. For example, if $\pp{DORA}$'s plan is:
+of a {\em relaxed} $(\pp{:init})$ block.  We first construct a
+tree which only includes terms from the {\em relaxed} visitation
+characterised by the {\em assumptive} actions in the current
+sequential plan. For example, if $\pp{DORA}$'s plan is:
 
 \[
 \begin{array}{l}
@@ -267,14 +246,14 @@ defined it for the sequential session.
 In a second step, we iteratively refine the {\em relaxed} block by
 adding terms from the original block while the resulting state space
 remains of a practicable size. Of course, it is expensive to measure
-size exactly, thus in practice we estimate it to be
+size exactly, and in practice we estimate this to be
 $2^{|\propositions^\#|}$, where $\propositions^\#$ is the set of
-propositions in the abstraction induced by the proposed tree. Terms
-are proposed for addition because they are probabilistic, and because
-they were omitted in the {\em relaxed} visitation characterised by
-{\em assumptive} actions in the sequential plan. Each iteration, we
-add one candidate term with the largest number of parent terms already
-in the candidate tree.
+propositions in the abstraction that were not assigned the {\em
+unknown} value \#. Terms are proposed for addition because they are
+probabilistic, and because they were omitted in the {\em relaxed}
+visitation characterised by {\em assumptive} actions in the sequential
+plan. Each iteration, we add one candidate term with the largest
+number of parent terms already in the candidate tree.
 
 
 
