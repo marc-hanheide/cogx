@@ -52,6 +52,7 @@ Command_Line_Arguments command_Line_Arguments;
 
 int min_nonobs_steps = 1;
 int max_expanded_states = 500;
+double beta = 0.95;
 
 namespace GLOBAL__read_in__domain_description
 {
@@ -243,6 +244,12 @@ int main(int argc, char** argv)
         max_expanded_states = command_Line_Arguments.get_int();
     }
     
+    if(!command_Line_Arguments.got_guard("--beta")){
+        WARNING("Using --beta "<<beta<<std::endl);
+    } else {
+       beta = command_Line_Arguments.get_double();
+    }
+    
     while(read_in__domain_description()){};
     
     while(read_in__problem_description()){};
@@ -329,6 +336,11 @@ int main(int argc, char** argv)
 #ifdef LAO_STAR
     INTERACTIVE_VERBOSER(true, 15000, solver_name<<" One iteration of LAO* "<<std::endl);
     while(solver->lao_star()){};
+    Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space,
+                                                       solver->get__sink_state_penalty(),
+                                                       .95);
+    
+    while(policy_Iteration()){};
 #else
     INTERACTIVE_VERBOSER(true, 15000, solver_name<<" One iteration "<<std::endl);
     current_state = solver->solve__for_new_starting_state(current_state);
@@ -548,6 +560,12 @@ int main(int argc, char** argv)
         max_expanded_states = command_Line_Arguments.get_int();
     }
     
+    if(!command_Line_Arguments.got_guard("--beta")){
+        WARNING("Using --beta "<<beta<<std::endl);
+    } else {
+       beta = command_Line_Arguments.get_double();
+    }
+    
     int seed = 2010;
     srandom(seed);
     srand(seed);
@@ -620,7 +638,7 @@ int main(int argc, char** argv)
 
                 while(solver->expand_belief_state_space()){
                     
-                    VERBOSER(18000, "MDP state expansion :: "<<solver->belief_state__space.size()<<std::endl);
+                    VERBOSER(19000, "MDP state expansion :: "<<solver->belief_state__space.size()<<std::endl);
                 }
 
                 
@@ -663,7 +681,7 @@ int main(int argc, char** argv)
 #endif
             
 #ifdef CHANGE_PHASE
-            INTERACTIVE_VERBOSER(true, 17000, "Done MDP state expansion :: "<<std::endl);
+            INTERACTIVE_VERBOSER(true, 19000, "Done MDP state expansion :: "<<std::endl);
 #endif
                 
 
@@ -671,6 +689,12 @@ int main(int argc, char** argv)
             auto current_state = solver->peek__next_belief_state_for_expansion();
 #ifdef LAO_STAR
             while(solver->lao_star()){};
+//             Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space,
+//                                                                solver->get__sink_state_penalty(),
+//                                                                .95);
+            
+//             while(policy_Iteration()){};
+
 #else
             current_state = solver->solve__for_new_starting_state(current_state);
 #endif

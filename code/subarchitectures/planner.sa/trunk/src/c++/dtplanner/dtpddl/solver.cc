@@ -58,6 +58,8 @@ using namespace Planning::Parsing;
 
 extern int max_expanded_states;
 
+extern double beta;
+
 Are_Doubles_Close Solver::are_Doubles_Close(1e-9);
 
 void Solver::cleanup()
@@ -530,6 +532,7 @@ void Solver::prioritise(Planning::POMDP_State* state,
     
     
     auto prescribed_action_index = state->get__prescribed_action();
+//     auto atoms = state->get__successors();
     auto& atoms = state->get__successors(prescribed_action_index);
 
     for(auto atom = atoms.begin()
@@ -539,14 +542,125 @@ void Solver::prioritise(Planning::POMDP_State* state,
     }
 }
 
+// void Solver::prioritise(Planning::POMDP_State* state,
+//                         Planning::Set_Of_POMDP_State_Pointers& locally_traversed)
+// {
+//     if(locally_traversed.find(state) != locally_traversed.end()){
+//         return;
+//     }
+
+//     locally_traversed.insert(state);
+    
+//     INTERACTIVE_VERBOSER(true, 14000, "Testing new state :: "<<*state<<std::endl
+//                          <<!state->get__expansion_attempted()<<std::endl);
+    
+//     if(!state->get__expansion_attempted()){    
+//         INTERACTIVE_VERBOSER(true, 14000, "Reporting new state :: "<<*state<<std::endl);
+//         report__new_belief_state(state);
+//         return;
+//     }
+    
+//     if(state->unexpanded()){
+//         return;
+//     }
+    
+    
+//     auto prescribed_action_index = state->get__prescribed_action();
+//     auto& atoms = state->get__successors(prescribed_action_index);
+
+//     for(auto atom = atoms.begin()
+//             ; atom != atoms.end()
+//             ; atom++){
+//         Solver::prioritise(*atom, locally_traversed);
+//     }
+// }
+
+// bool Solver::lao_star()
+// {
+//     if(this->belief_state__space.size() > max_expanded_states) {return false;}
+    
+
+//     std::vector<Planning::POMDP_State*> local__states_to_expand;
+//     Planning::POMDP_State* some_state;
+//     while(some_state = obtain__next_belief_state_for_expansion()){
+//         if(some_state->get__expansion_attempted()) continue;
+
+        
+//         QUERY_UNRECOVERABLE_ERROR(some_state->get__expansion_attempted(),
+//                                   "#1Expanding a state for the second time...");
+        
+//         local__states_to_expand.push_back(some_state);
+//     }
+//     if(local__states_to_expand.size() == 0) return false;
+
+    
+    
+//     VERBOSER(15000, "Iterating LAO. Expanding a number of states :: "
+//              <<local__states_to_expand.size()<<std::endl);
+
+    
+// //     Planning::Set_Of_POMDP_State_Pointers local_test_set;
+//     for(auto state = local__states_to_expand.begin()
+//             ; state != local__states_to_expand.end()
+//             ; state++){
+        
+
+// //         if((*state)->get__expansion_attempted()){
+// //             QUERY_UNRECOVERABLE_ERROR(*state != starting_belief_state,
+// //                                       "Non starting state double expansion :: "
+// //                                       <<(**state == *starting_belief_state));
+// //             continue;
+// //         }
+        
+// //         QUERY_UNRECOVERABLE_ERROR(local_test_set.find(*state) != local_test_set.end(),
+// //                                   "Same state twice...");
+        
+//         QUERY_UNRECOVERABLE_ERROR((*state)->get__expansion_attempted(),
+//                                   "#2Expanding a state for the second time...");
+//         (*state)->set__expansion_attempted();
+
+// //         local_test_set.insert(*state);
+        
+//         expand_belief_state(*state);
+//     }
+    
+    
+// //     if(!this->expand_belief_state_space()){
+// //         return false;
+// //     }
+
+// //     /*Expand the whole fringe.*/
+// //     while(this->expand_belief_state_space()){
+// //     }
+    
+//     Planning::Policy_Iteration__GMRES policy_Iteration(this->belief_state__space,
+//                                                        this->get__sink_state_penalty(),
+//                                                        .95);
+
+//     //policy_Iteration();
+//     while(policy_Iteration()){};
+    
+//     VERBOSER(15000, "Iterating LAO with a number of belief state :: "<<this->belief_state__space.size()<<std::endl);
+    
+//     Planning::Set_Of_POMDP_State_Pointers locally_traversed;
+//     this->empty__belief_states_for_expansion();
+//     assert(!obtain__next_belief_state_for_expansion());
+//     prioritise(starting_belief_state, locally_traversed);
+    
+//     VERBOSER(15000, "Iterating LAO locality :: "<<locally_traversed.size()<<std::endl);
+
+//     return true;
+// }
+
 bool Solver::lao_star()
 {
-    if(this->belief_state__space.size() > 1000) return false;
+    if(this->belief_state__space.size() > max_expanded_states) {return false;}
+    
 
     std::vector<Planning::POMDP_State*> local__states_to_expand;
     Planning::POMDP_State* some_state;
     while(some_state = obtain__next_belief_state_for_expansion()){
-        if(some_state->get__expansion_attempted()) continue;
+        ;//if(some_state->get__expansion_attempted()) continue;
 
         
         QUERY_UNRECOVERABLE_ERROR(some_state->get__expansion_attempted(),
@@ -554,11 +668,13 @@ bool Solver::lao_star()
         
         local__states_to_expand.push_back(some_state);
     }
-    if(local__states_to_expand.size() == 0) return false;
+    
+    if(local__states_to_expand.size() == 0) {return false;}
+    
 
     
     
-    VERBOSER(15000, "Iterating LAO. Expanding a number of states :: "
+    VERBOSER(19000, "Iterating LAO. Expanding a number of states :: "
              <<local__states_to_expand.size()<<std::endl);
 
     
@@ -600,7 +716,7 @@ bool Solver::lao_star()
                                                        this->get__sink_state_penalty(),
                                                        .95);
 
-    //policy_Iteration();
+    //    policy_Iteration();
     while(policy_Iteration()){};
     
     VERBOSER(15000, "Iterating LAO with a number of belief state :: "<<this->belief_state__space.size()<<std::endl);
@@ -666,7 +782,16 @@ POMDP_State* /*LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POMDP_S
 
     while(lao_star()){
     }
+
+    INTERACTIVE_VERBOSER(true, 19000, "Current state is :: "
+                         <<this->belief_state__space.size()<<std::endl
+                         );
     
+//     Planning::Policy_Iteration__GMRES policy_Iteration(this->belief_state__space,
+//                                                        this->get__sink_state_penalty(),
+//                                                        .95);
+
+//     while(policy_Iteration()){};
 
     return current_state;
 }
@@ -723,7 +848,8 @@ POMDP_State* /*NON-LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POM
     QUERY_UNRECOVERABLE_ERROR(!current_state, "No future state for expansion, presumably the expansion queue is empty.");
     
     Planning::Policy_Iteration__GMRES policy_Iteration(this->belief_state__space,
-                                                       this->get__sink_state_penalty());
+                                                       this->get__sink_state_penalty(),
+                                                       beta);
     
     INTERACTIVE_VERBOSER(true, 14000, "Current state is :: "
                          <<*current_state<<std::endl
