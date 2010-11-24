@@ -14,7 +14,9 @@
 #define IDOBJ_SETTINGS "Video.Grabber.Settings"
 
 #define IDPART_SETTINGS_FORM "001.settings"
-#define IDCMD_GRAB "video.grab"
+#define IDCMD_GRAB   "video.grab"
+#define IDCMD_RECORD "video.record"
+#define IDCMD_STOP   "video.stop"
 #define IDCTRL_STREAMING "video.streaming"
 
 /**
@@ -56,28 +58,56 @@ namespace cxd = cogx::display;
 
 void CVideoGrabber::configure(const map<string,string> & _config)
 {
-   map<string,string>::const_iterator it;
+   map<string,string>::const_iterator it, iCam;
 
-   if((it = _config.find("--videoname")) != _config.end()) {
-      m_videoServerName = it->second;
+   string serverName;
+   vector<int> camids;
+   int id;
+   Video::CVideoClient2* pVideo;
+
+   for (it = _config.begin(); it != _config.end(); it++) {
+      string sffx = "";
+
+      if (it->first == "--videoname") iCam = _config.find("--camids");
+      else if (_s_::startswith(it->first, "--videoname.")) {
+         sffx = it->first.substr(11);
+         iCam = _config.find("--camids" + sffx);
+      }
+      else continue;
+
+      serverName = _s_::strip(it->second);
+      if (serverName == "") continue;
+      camids.clear();
+
+      if (iCam != _config.end()) {
+         istringstream str(iCam->second);
+         while(str >> id) camids.push_back(id);
+      }
+
+      if (camids.size() < 1) {
+         throw runtime_error(exceptionMessage(__HERE__, 
+                  "Grabber id='%s': No --camids%s for VideoServer id='%s'.",
+                  getComponentID().c_str(), sffx.c_str(), serverName.c_str()));
+      }
+
+      pVideo = new Video::CVideoClient2();
+      pVideo->setServer(this, serverName, camids);
+      pVideo->setReceiver(new Video::CReceiverMethod<CVideoGrabber>(this, &CVideoGrabber::receiveImages));
+      m_video.push_back(pVideo);
    }
 
-
-   if((it = _config.find("--camids")) != _config.end()) {
-      istringstream str(it->second);
-      int id;
-      while(str >> id)
-         m_camIds.push_back(id);
+   if((it = _config.find("--fakegrabbing")) != _config.end()) {
+      string s = _s_::lower(it->second);
+      if (s == "1" || s == "yes" || s == "true" || s == "on")
+         m_fakeRecording = true;
    }
 
 #ifdef FEAT_VISUALIZATION
    m_display.configureDisplayClient(_config);
 #endif
 
-   // sanity checks: Have all important things be configured? Is the
-   // configuration consistent?
-   if(m_videoServerName.empty())
-      throw runtime_error(exceptionMessage(__HERE__, "no video server name given"));
+   if(m_video.size() < 1)
+      throw runtime_error(exceptionMessage(__HERE__, "No video server name given"));
 }
 
 void CVideoGrabber::start()
@@ -87,23 +117,30 @@ void CVideoGrabber::start()
    m_display.installEventReceiver();
    m_display.createForms();
 
-   // TODO: Bug: only one (the first) checkbox control is shown ...
-   m_display.addCheckBox(IDOBJ_GRABBER, IDCTRL_STREAMING, "&Streaming");
+   // TODO: Server Bug: only one (the first) checkbox control is shown (same id)...
+   m_display.addCheckBox(IDOBJ_GRABBER, IDCTRL_STREAMING, "Streaming");
    m_display.addButton(IDOBJ_GRABBER, IDCMD_GRAB, "&Grab");
-   m_display.addCheckBox(IDOBJ_SETTINGS, IDCTRL_STREAMING, "&Streaming");
+   m_display.addButton(IDOBJ_GRABBER, IDCMD_RECORD, "&Record");
+   m_display.addButton(IDOBJ_GRABBER, IDCMD_STOP, "&Stop Recording");
+   m_display.addCheckBox(IDOBJ_SETTINGS, IDCTRL_STREAMING, "Streaming");
 #endif
 
    Video::CVideoClient2* pVideo;
+#if 0 // XXX: code for testing
    pVideo = new Video::CVideoClient2();
    pVideo->setServer(this, m_videoServerName, m_camIds);
    pVideo->setReceiver(new Video::CReceiverMethod<CVideoGrabber>(this, &CVideoGrabber::receiveImages));
    m_video.push_back(pVideo);
 
-#if 1 // XXX: code for testing
    std::vector<int> camIds;
    camIds.push_back(0);
    pVideo = new Video::CVideoClient2();
    pVideo->setServer(this, "VideoServer2", camIds);
+   pVideo->setReceiver(new Video::CReceiverMethod<CVideoGrabber>(this, &CVideoGrabber::receiveImages));
+   m_video.push_back(pVideo);
+
+   pVideo = new Video::CVideoClient2();
+   pVideo->setServer(this, "VideoServer3", camIds);
    pVideo->setReceiver(new Video::CReceiverMethod<CVideoGrabber>(this, &CVideoGrabber::receiveImages));
    m_video.push_back(pVideo);
 #endif
@@ -296,15 +333,21 @@ void CVideoGrabber::CVvDisplayClient::handleEvent(const Visualization::TEvent &e
    else if (event.type == Visualization::evButtonClick) {
       if (event.sourceId == IDCMD_GRAB) {
          pViewer->startGrabbing(IDCMD_GRAB);
-
-         //pViewer->m_frameGrabCount++; // XXX: not thread safe
-         //setCounterValue(getCounterValue() + 1);
-
-         //std::map<std::string, std::string> fields;
-         //m_frmSettings.get(fields);
-         //setHtmlFormData(IDOBJ_SETTINGS, IDPART_SETTINGS_FORM, fields);
+      }
+      else if (event.sourceId == IDCMD_RECORD) {
+         pViewer->startGrabbing(IDCMD_RECORD);
+      }
+      else if (event.sourceId == IDCMD_STOP) {
+         pViewer->stopGrabbing();
       }
    }
+}
+
+void CVideoGrabber::CVvDisplayClient::updateDisplay()
+{
+   std::map<std::string, std::string> fields;
+   m_frmSettings.get(fields);
+   setHtmlFormData(IDOBJ_SETTINGS, IDPART_SETTINGS_FORM, fields);
 }
 
 std::string CVideoGrabber::CVvDisplayClient::getControlState(const std::string& ctrlId)
@@ -446,21 +489,14 @@ void CVideoGrabber::sendCachedImages()
 
 void CVideoGrabber::receiveImages(const std::string& serverName, const std::vector<Video::Image>& _images)
 {
-   //println("%s 0x%lx", serverName.c_str(), pthread_self()); // XXX: Testing code
-
-   //if (m_frameGrabCount > 0) {
-   //   saveImages(images);
-   //   m_frameGrabCount--; // XXX: not thread safe
-   //}
-
-   if (serverName != m_videoServerName) return;
-
+#if 0
 #ifdef FEAT_VISUALIZATION
    //sendCachedImages();
 #else
    IplImage *iplImage = convertImageToIpl(images[0]);
    cvShowImage(getComponentID().c_str(), iplImage);
    cvReleaseImage(&iplImage);
+#endif
 #endif
 }
 
@@ -494,6 +530,9 @@ void CVideoGrabber::fillRecordingInfo(CRecordingInfo &info)
    info.counterStart = m_display.getCounterValue();
    info.counterEnd = info.counterStart; // TODO: calculate from settings
 
+   info.tmStart = IceUtil::Time::now();
+   info.tmEnd = info.tmStart + IceUtil::Time::seconds(1); // TODO: calculate from settings
+
    info.deviceNames = getDeviceNames();
 }
 
@@ -501,15 +540,32 @@ void CVideoGrabber::startGrabbing(const std::string& command)
 {
    if (isGrabbing()) return;
    fillRecordingInfo(m_RecordingInfo);
-   m_RecordingInfo.recording = true;
-   // TODO: timer.scheduleRepeated(m_pQueueTick.get(), IceUtil::Time::milliSeconds(200));
+   if (command == IDCMD_GRAB) {
+      // On single-shot grabbing don't install the timer, just grab right now
+      dynamic_cast<CSaveQueThread*>(m_pQueue.get())->grab();
+      m_display.updateDisplay(); // send counter value
+   }
+   else if (command == IDCMD_RECORD) {
+      m_RecordingInfo.recording = true;
+      // TODO: speed from m_display/m_RecordingInfo
+      m_pTimer->scheduleRepeated(m_pQueueTick.get(), IceUtil::Time::milliSeconds(200));
+   }
 }
 
 void CVideoGrabber::stopGrabbing()
 {
    if (!isGrabbing()) return;
-   // TODO: timer.cancel(m_pQueueTick.get());
+   m_pTimer->cancel(m_pQueueTick.get());
    m_RecordingInfo.recording = false;
+   sleepComponent(100);
+   m_display.updateDisplay();
+}
+
+void CVideoGrabber::checkStopGrabbing()
+{
+   CRecordingInfo& ri = m_RecordingInfo;
+   if (ri.counterEnd > ri.counterStart && ri.counter >= ri.counterEnd) stopGrabbing();
+   else if (ri.tmEnd > ri.tmStart && IceUtil::Time::now() >= ri.tmEnd) stopGrabbing();
 }
 
 // TODO: frameInfo should be const
@@ -548,9 +604,11 @@ void CVideoGrabber::saveQueuedImages(const std::vector<Video::CCachedImagePtr>& 
 
       fullname = frameInfo.directory + "/" + fullname;
       println("Saving image: %s", fullname.c_str());
-      //IplImage *iplImage = cloneVideoImage(*images[i]);
-      //cvSaveImage(fullname.c_str(), iplImage);
-      //releaseClonedImage(&iplImage);
+      if (!m_fakeRecording) {
+         IplImage *iplImage = cloneVideoImage(*images[i]);
+         cvSaveImage(fullname.c_str(), iplImage);
+         releaseClonedImage(&iplImage);
+      }
    }
 }
 
@@ -611,6 +669,37 @@ void CVideoGrabber::CSaveQueThread::getItems(
    m_items.erase(m_items.begin(), m_items.begin() + (maxItems-1));
 }
 
+void CVideoGrabber::CSaveQueThread::grab()
+{
+   if (! m_pGrabber) return;
+   //IceUtil::Time tm = IceUtil::Time::now();
+
+   CItem pack;
+   std::vector<Video::CCachedImagePtr> queue;
+   std::vector<Video::CVideoClient2*> clients;
+   m_pGrabber->getClients(clients);
+   for (unsigned int i = 0; i < clients.size(); i++) {
+      std::vector<Video::CCachedImagePtr> timgs;
+      Video::CVideoClient2& v = *clients[i];
+      v.getCachedImages(timgs);
+      std::vector<Video::CCachedImagePtr>::iterator itt;
+      for(itt = timgs.begin(); itt != timgs.end(); itt++) {
+         pack.images.push_back(*itt);
+      }
+   }
+   pack.frameInfo = m_pGrabber->m_RecordingInfo;
+
+   m_pGrabber->m_RecordingInfo.counter++;
+   m_pGrabber->m_display.setCounterValue(m_pGrabber->m_RecordingInfo.counter);
+
+   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_itemsLock);
+   m_items.push_back(pack);
+
+   //IceUtil::Time tm2 = IceUtil::Time::now() - tm;
+   //m_pGrabber->println("images copied in %lld micros", tm2.toMicroSeconds());
+   // result: 2+1 images, 40us
+}
+
 void CVideoGrabber::CSaveQueThread::run()
 {  
    while (m_pGrabber && m_pGrabber->isRunning()) {
@@ -620,29 +709,8 @@ void CVideoGrabber::CSaveQueThread::run()
       if (ticks > 1) 
          m_pGrabber->println(string(" *** CSaveQueThread: missed ticks: ") + _str_(ticks-1));
 
-      //IceUtil::Time tm = IceUtil::Time::now();
-      //m_pGrabber->println("%lld runTimerTask()", tm.toMilliSeconds());
-
-      CItem pack;
-      std::vector<Video::CCachedImagePtr> queue;
-      std::vector<Video::CVideoClient2*> clients;
-      m_pGrabber->getClients(clients);
-      for (unsigned int i = 0; i < clients.size(); i++) {
-         std::vector<Video::CCachedImagePtr> timgs;
-         Video::CVideoClient2& v = *clients[i];
-         v.getCachedImages(timgs);
-         std::vector<Video::CCachedImagePtr>::iterator itt;
-         for(itt = timgs.begin(); itt != timgs.end(); itt++) {
-            pack.images.push_back(*itt);
-         }
-      }
-      m_pGrabber->m_RecordingInfo.counter++;
-      m_pGrabber->m_display.setCounterValue(m_pGrabber->m_RecordingInfo.counter);
-      pack.frameInfo = m_pGrabber->m_RecordingInfo;
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_itemsLock);
-      m_items.push_back(pack);
-      //IceUtil::Time tm2 = IceUtil::Time::now() - tm;
-      //m_pGrabber->println("images copied in %lld", tm2.toMilliSeconds());
+      grab();
+      m_pGrabber->checkStopGrabbing();
    }
 }
 
@@ -680,8 +748,8 @@ void CVideoGrabber::runComponent()
    // under 1 microsecond per period. Synchronization/multithreading may make
    // this time much longer.
    // XXX With CTickSyncedTask the grabber lost 10ms in 10s. Find a better implementation of Timer.
-   IceUtil::Timer timer;
-   timer.scheduleRepeated(m_pDrawTick.get(), IceUtil::Time::milliSeconds(200));
+   m_pTimer = new IceUtil::Timer();
+   m_pTimer->scheduleRepeated(m_pDrawTick.get(), IceUtil::Time::milliSeconds(200));
 
    while(isRunning()) {
       vector<CSaveQueThread::CItem> toSave;
@@ -703,7 +771,7 @@ void CVideoGrabber::runComponent()
 
    // XXX: A crash, with both cancel() and destroy()
    //timer.cancel(&saveTick); timer.cancel(&drawTick);
-   timer.destroy();
+   m_pTimer->destroy();
 }
 
 } // namespace
