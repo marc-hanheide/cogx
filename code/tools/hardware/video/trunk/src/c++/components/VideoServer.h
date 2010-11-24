@@ -82,11 +82,11 @@ public:
   virtual void getScaledImages(Ice::Int width, Ice::Int height,
       Video::ImageSeq& images, const Ice::Current&);
 
-	/**
-	 * @brief Get high resolution (HR) images.
-	 * @param images Video images (sequence)
-	 */
-	virtual bool getHRImages(std::vector<Video::Image> &images, const Ice::Current&);
+  /**
+   * @brief Get high resolution (HR) images.
+   * @param images Video images (sequence)
+   */
+  virtual bool getHRImages(std::vector<Video::Image> &images, const Ice::Current&);
 
   /**
    * @brief Start receiving images from some sources.
@@ -115,19 +115,19 @@ public:
    * @param mode Image grabbing mode for the Format7 mode.
    * @param fps Requested framerate [1/s]
    */
-	virtual void changeFormat7Properties(Ice::Int width, Ice::Int height, Ice::Int offsetX, Ice::Int offsetY, Ice::Int mode, Ice::Int fps, const Ice::Current&);
+  virtual void changeFormat7Properties(Ice::Int width, Ice::Int height, Ice::Int offsetX, Ice::Int offsetY, Ice::Int mode, Ice::Int fps, const Ice::Current&);
 
   /**
    * @brief Returns true, if cameras are in Format7 mode.
    * @return Returns true, if PG cameras are in Format7 mode.
    */
-	virtual bool inFormat7Mode(const Ice::Current&);
+  virtual bool inFormat7Mode(const Ice::Current&);
 
   /**
    * @brief Get name of video server.
    * @return Returns the name of the server.
    */
-	virtual std::string getServerName(const Ice::Current&);
+  virtual std::string getServerName(const Ice::Current&);
 };
 
 
@@ -260,7 +260,7 @@ public:
    * @brief Retrieve previously grabbed frames.
    * @param frames (out) images, including timestamp
    */
-  virtual void retrieveHRFrames(std::vector<Video::Image> &frames) = 0;	/// TODO Pure virtual setzen!
+  virtual void retrieveHRFrames(std::vector<Video::Image> &frames) = 0;    /// TODO Pure virtual setzen!
 
   /**
    * @brief Returns number of cameras this device manages.
@@ -294,26 +294,26 @@ public:
    * @param mode Image grabbing mode for the Format7 mode.
    * @param fps Requested framerate [1/s]
    */
-	virtual void changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize) = 0;
+  virtual void changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize) = 0;
 
   /**
    * @brief Checks if the PointGreyServer is active and in Format7 mode.
    * @return Returns true if PointGreyServer is active and in Format7 mode.
    */
-	virtual bool inFormat7Mode() = 0;
+  virtual bool inFormat7Mode() = 0;
 
   /**
    * @brief Change the properties in the PointGreyServer for the Format7 mode.
    * @return Returns the server name (PointGreyServer / OpenCvImgSeqServer / OpenCvLiveServer)
    */
-	virtual const std::string getServerName() = 0;
+  virtual const std::string getServerName() = 0;
 
 
   void getImage(int camId, Video::Image &img);
   void getImages(std::vector<Video::Image> &images);
-  void getImages(int width, int height, std::vector<Video::Image> &images);								/// TODO unneccessary (== getScaledImages)
+  void getImages(int width, int height, std::vector<Video::Image> &images);                  /// TODO unneccessary (== getScaledImages)
   void getScaledImages(int width, int height, std::vector<Video::Image> &images);
-	bool getHRImages(std::vector<Video::Image> &images);
+  bool getHRImages(std::vector<Video::Image> &images);
   void startReceiveImages(const std::string &receiverComponentId,
       const std::vector<int> &camIds, int width, int height);
   void stopReceiveImages(const std::string &receiverComponentId);

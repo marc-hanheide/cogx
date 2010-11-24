@@ -60,7 +60,7 @@ void VideoServerI::getScaledImages(Ice::Int width, Ice::Int height,
 
 bool VideoServerI::getHRImages(ImageSeq& images, const Ice::Current&)
 {
-	return vidSrv->getHRImages(images);
+  return vidSrv->getHRImages(images);
 }
 
 void VideoServerI::startReceiveImages(const std::string& receiverComponentId,
@@ -79,17 +79,17 @@ void VideoServerI::stopReceiveImages(const std::string& receiverComponentId,
 void VideoServerI::changeFormat7Properties(Ice::Int width, Ice::Int height, Ice::Int offsetX,
     Ice::Int offsetY, Ice::Int mode, Ice::Int fps, const Ice::Current&)
 {
-	vidSrv->changeFormat7Properties(width, height, offsetX, offsetY, mode, fps);
+  vidSrv->changeFormat7Properties(width, height, offsetX, offsetY, mode, fps);
 }
 
 bool VideoServerI::inFormat7Mode(const Ice::Current&)
 {
-	return vidSrv->inFormat7Mode();
+  return vidSrv->inFormat7Mode();
 }
 
 std::string VideoServerI::getServerName(const Ice::Current&)
 {
-	return vidSrv->getServerName();
+  return vidSrv->getServerName();
 }
 
 
@@ -300,13 +300,13 @@ void VideoServer::getScaledImages(int width, int height, std::vector<Video::Imag
 
 bool VideoServer::getHRImages(std::vector<Video::Image> &images)
 {
-	  lockComponent();
-		retrieveHRFrames(images);
-		if(swapRB)
-			for(size_t i = 0; i < images.size(); i++)
-				SwapRedBlueChannel(images[i]);
-	  unlockComponent();
-		return true;																					/// TODO TODO TODO TODO 
+  lockComponent();
+  retrieveHRFrames(images);
+  if(swapRB)
+    for(size_t i = 0; i < images.size(); i++)
+      SwapRedBlueChannel(images[i]);
+  unlockComponent();
+  return true;                                // TODO TODO TODO TODO 
 }
 
 
@@ -346,12 +346,12 @@ void VideoServer::runComponent()
       tm = IceUtil::Time::now();
       int fr = getFramerateMilliSeconds();
       debug("grabbing with %d ms per frame (%.2f frames per second)",
-	  fr, (fr > 0. ? 1000./fr : 0.));
+          fr, (fr > 0. ? 1000./fr : 0.));
       if(fr > 0.) realFps = 1000./fr;
       else realFps = 0.;
       double dfr = tm2.toMilliSeconds() / double(reportDelay);
       debug("sending with %.0f ms per frame (%.2f frames per second)",
-	  dfr, (dfr > 0. ? 1000./dfr : 0.));
+          dfr, (dfr > 0. ? 1000./dfr : 0.));
       cnt = reportDelay;
     }
   }
