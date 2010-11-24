@@ -34,21 +34,23 @@ locations of objects. In DTPDDL, these declarations appear as:
 \normalsize
 
 \noindent To model the sensing capabilities of the agent, we have
-operator-like descriptive elements, with preconditions in both action
-and state symbols, and uniformly positive effects over perceptual
-predicates -- I.e, the negation normal form of a sensing effect
-formula cannot contain negation. Whereas the effects of an {\em
-operator} schema are over state propositions, specifying how the
-states change under application of actions, the effects of a {\em
-sense} schema are perceptual, specifying the composition of an
-observation following the execution of an action. Also, and without a
-loss of generality, we find it convenient to separate the actional
-precondition from the state precondition.
+operator-like declarations, with preconditions expressed using state
+predicate and action function symbols, and uniformly positive effects
+over perceptual predicates. A sense declaration corresponds to a
+lifted description of proposition {\em senses}. Whereas the effects of
+an {\em operator} schema describe how states change under application
+of actions, the effects of a {\em sense} schema are perceptual,
+specifying the composition of an observation following the execution
+of an action. 
 
-Making the above ideas concrete with an example, suppose a robot is
-able to look for a visual-object, such as a $\pp{box}$, at a given place. We
-can model that deterministic action using the following operator
-schema:
+%% Also, and without a loss of generality, we find it
+%% convenient to separate the actional precondition from the state
+%% precondition.
+
+Making the above ideas concrete with an example, suppose a robot
+called $\pp{DORA}$ is able to look for a visual-object, such as a
+$\pp{box}$, at a given place. We can model that deterministic action
+using the following operator schema:
 
 
 \small
@@ -64,12 +66,12 @@ schema:
 
 \noindent In a slight departure from PPDDL, we suppose that
 $\pp{look-for-object}$ has an effect on the state. That is, its
-execution incurs a penalty, $3$, corresponding to the {\em cost} of
-performing the visual search.\footnote{In PPDDL {\em reward} is a {\em
-reserved word}, and occurs in {\em increased} and {\em decreased}
-terms in operator schemata. In that setting, {\em reward} is
-interpreted as accumulated (resp. instantaneous) rewards and
-penalties.}
+execution incurs an instantaneous penalty, $3$, that corresponds to
+the {\em cost} of performing the visual search.\footnote{In PPDDL {\em
+reward} is a {\em reserved word}, and occurs in {\em increased} and
+{\em decreased} terms in operator schemata. In that setting, {\em
+reward} is interpreted as accumulated (resp. instantaneous) rewards
+and penalties.}
 
 Completing the example, we model the sensing outcome that results from
 instantiating the $\pp{look-for-object}$ operator:
@@ -104,14 +106,18 @@ the $\pp{office}$, and otherwise a $0.1$ of perceiving it.
 The syntax and semantics for describing initial state distributions in
 DTPDDL is taken verbatim from PPDDL. It is useful to present that
 factored tree-like structure here, in order to aid us when discussing
-sequential planning in POMDP determinisations. The distribution is
-expressed in a tree-like structure of terms. Each term is either: (1)
-atomic, e.g., $(=(\pp{location}~\pp{box})~\pp{office})$, (2)
-probabilistic, e.g., $(\pp{probabilistic}~p_1 (T_1) .. p_n (T_n))$
+our switching continual planner. The distribution is expressed in a
+tree-like structure of terms. Each term is either: (1) atomic, e.g., a
+state proposition such as $(=(\pp{is-in}~\pp{box})~\pp{office})$,
+(2) probabilistic, e.g., $(\pp{probabilistic}~p_1 (T_1) .. p_n (T_n))$
 where $T_i$ are conjunctive, or (3) a conjunct over probabilistic and
 atomic terms. The root term is always conjunctive, and the leaves are
 atomic. For example, the starting distribution for $\pp{DORA}$ might
-be described thusly:
+be described thusly:\footnote{In PDDL, $(\pp{:init}~T_1..T_n)$
+expresses the conjunctive root of the tree -- I.e., the root node
+$(\pp{and}~T_1..T_n)$. Also, we shall write $\prop$, rather than
+$(\pp{and}~\prop)$, it a conjunctive term contain a single atomic
+subterm.}
 
 \small
 \begin{tabtt}
