@@ -201,9 +201,9 @@ action $\actions.\poss(\action_i)$ with the reward property:
 \]
 
 
-For the management of switching, execution of either a
-$\assumptiveDT{i}$ action, or $\actions.\poss(\action_i)$, returns
-control to the sequential planner. At that point, if a dual is
+For the management of switching, execution of either a dual action of
+the form $\assumptiveDT{i}$, or the $\actions.\poss(\action_i)$,
+returns control to the sequential planner. At that point, if a dual is
 executed, then the sequential planner must replan with $\bstate_0$
 equal to the current belief. Otherwise, if $\actions.\poss(\action_i)$
 is executed, then the current sequential plan is executed until
