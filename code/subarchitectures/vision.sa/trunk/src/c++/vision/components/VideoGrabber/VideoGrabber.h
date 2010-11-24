@@ -32,6 +32,8 @@ struct CRecordingInfo
    long counterStart;
    long counterEnd;
    long counter;
+   IceUtil::Time tmStart;
+   IceUtil::Time tmEnd;
    CRecordingInfo() {
       recording = false;
       counterStart = 0;
@@ -43,6 +45,8 @@ struct CRecordingInfo
       deviceNames.push_back("L");
       deviceNames.push_back("R");
       counterDigits = 3;
+      tmStart = IceUtil::Time::seconds(0);
+      tmEnd = tmStart;
 #endif
    }
 };
@@ -73,6 +77,7 @@ private:
 
    std::vector<Video::CVideoClient2*> m_video;
    CRecordingInfo m_RecordingInfo;
+   bool m_fakeRecording;
 
 #ifdef FEAT_VISUALIZATION
    // HACK: The image data in IplImage will point into char data of m_DisplayBuffer.
@@ -106,6 +111,13 @@ private:
    public:
       CVvDisplayClient() { pViewer = NULL; }
       void setClientData(CVideoGrabber* pVideoGrabber) { pViewer = pVideoGrabber; }
+
+      void createForms();
+
+      // Send current form data to the DisplayServer
+      // (used when the counter must be updated)
+      void updateDisplay();
+
       void handleEvent(const Visualization::TEvent &event); /*override*/
       std::string getControlState(const std::string& ctrlId); /*override*/
       void handleForm(const std::string& id, const std::string& partId,
@@ -113,11 +125,11 @@ private:
       bool getFormData(const std::string& id, const std::string& partId,
             std::map<std::string, std::string>& fields);
 
-      void createForms();
    };
    CVvDisplayClient m_display;
 #endif
 
+   IceUtil::Handle<IceUtil::Timer> m_pTimer;
    class CSaveQueThread: public IceUtil::Thread, public CTickSyncedTask
    {
       CVideoGrabber *m_pGrabber;
@@ -137,6 +149,7 @@ private:
       CSaveQueThread(CVideoGrabber *pGrabber);
 
       void getItems(std::vector<CItem>& items, unsigned int maxItems = 0);
+      virtual void grab();
       virtual void run();
    };
    IceUtil::ThreadPtr m_pQueue;
@@ -170,6 +183,7 @@ public:
    }
    virtual ~CVideoGrabber()
    {
+      m_fakeRecording = false;
 #ifdef FEAT_VISUALIZATION
       releaseCanvas();
 #endif
@@ -190,6 +204,7 @@ public:
    void fillRecordingInfo(CRecordingInfo &info);
    void startGrabbing(const std::string& command);
    void stopGrabbing();
+   void checkStopGrabbing();
    bool isGrabbing()
    {
       return m_RecordingInfo.recording;
