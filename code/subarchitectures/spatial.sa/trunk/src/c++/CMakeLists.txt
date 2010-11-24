@@ -175,3 +175,8 @@ link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialPropert
 link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
 
+add_cast_component(ObjectRelationTester ObjectRelationTester.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
+link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+#link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureAddressBank)
+
