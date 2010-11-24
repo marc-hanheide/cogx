@@ -56,6 +56,8 @@ using namespace Planning;
 using namespace Planning::Parsing;
 
 
+extern int max_expanded_states;
+
 Are_Doubles_Close Solver::are_Doubles_Close(1e-9);
 
 void Solver::cleanup()
@@ -739,7 +741,7 @@ POMDP_State* /*NON-LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POM
                      <<current_state->get__expected_value()<<std::endl);
         }
 
-        if(this->belief_state__space.size() > 1000)break;
+        if(this->belief_state__space.size() > max_expanded_states)break;
     }
     
     while(policy_Iteration()){

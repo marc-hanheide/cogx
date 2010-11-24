@@ -51,6 +51,7 @@ using std::endl;
 Command_Line_Arguments command_Line_Arguments;
 
 int min_nonobs_steps = 1;
+int max_expanded_states = 500;
 
 namespace GLOBAL__read_in__domain_description
 {
@@ -235,6 +236,11 @@ int main(int argc, char** argv)
         WARNING("Using --steps "<<min_nonobs_steps<<std::endl);
     } else {
         min_nonobs_steps = command_Line_Arguments.get_int();
+    }
+    if(!command_Line_Arguments.got_guard("--max-iStates")){
+        WARNING("Using --max-iStates "<<max_expanded_states<<std::endl);
+    } else {
+        max_expanded_states = command_Line_Arguments.get_int();
     }
     
     while(read_in__domain_description()){};
@@ -536,6 +542,11 @@ int main(int argc, char** argv)
     }
     
     
+    if(!command_Line_Arguments.got_guard("--max-iStates")){
+        WARNING("Using --max-iStates "<<max_expanded_states<<std::endl);
+    } else {
+        max_expanded_states = command_Line_Arguments.get_int();
+    }
     
     int seed = 2010;
     srandom(seed);
