@@ -17,7 +17,7 @@ quantitatively capture unreliability in perception. That expressive
 power is achieved by incorporating perceptual analogues of fluent,
 predicate, and action definitions. In detail, we have declarations of
 state characterising predicate and fluent symbols according to the
-PPDDL syntax. In addition, we allow two other declarative blocks, for
+PPDDL syntax. In addition, we allow two other declarations, for
 perceptual predicates and fluents respectively. For example, suppose
 our robot is tasked with exploring {\em locations} in order to
 identify the whereabouts of a {\em visual-object}. We must describe
@@ -67,7 +67,7 @@ $\pp{look-for-object}$ has an effect on the state. That is, its
 execution incurs a penalty, $3$, corresponding to the {\em cost} of
 performing the visual search.\footnote{In PPDDL {\em reward} is a {\em
 reserved word}, and occurs in {\em increased} and {\em decreased}
-clauses of operator schemata. In that setting, {\em reward} is
+terms in operator schemata. In that setting, {\em reward} is
 interpreted as accumulated (resp. instantaneous) rewards and
 penalties.}
 
@@ -91,7 +91,7 @@ instantiating the $\pp{look-for-object}$ operator:
 \normalsize
 
 
-\noindent Here, the {\em execution} clause is a lifted description of
+\noindent Here, the {\em execution} declaration is a lifted description of
 the sense action-precondition -- I.e,
 $(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office}) =
 \poss_\stochActions(\pp{vision}~\pp{DORA}~\pp{box}~\pp{office})$. Above,
