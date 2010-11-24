@@ -398,6 +398,7 @@ class BayesianState(object):
 
     def expected_observations(self, action):
         prob_functions = set(svar.function for svar in self.nodes.iterkeys() if isinstance(svar, pddl.state.StateVariable))
+        self.state.clear_axiom_cache()
         
         expected_obs = defaultdict(list)
         for o in self.domain.observe:
@@ -435,7 +436,7 @@ class BayesianState(object):
                     for cond, p, fact in results:
                         res.append((cond+cnew, p, fact))
                     return res
-            
+
             for mapping in o.smart_instantiate(o.get_inst_func(self.state), o.args, [get_objects(a) for a in o.args], self.problem):
                 prec = pddl.visitors.visit(o.precondition, cond_visitor, [])
                 for conds, p, fact in pddl.visitors.visit(o.effect, obs_visitor, []):
@@ -447,6 +448,7 @@ class BayesianState(object):
         expected = self.expected_observations(action)
         if not expected:
             return False
+        # print map(str, expected)
         
         new_nodes = []
         for fact, conds in expected.iteritems():
@@ -455,9 +457,10 @@ class BayesianState(object):
             for p, cfacts in conds:
                 node_disjuncts = []
                 for f in cfacts:
+                    # print f, self.state[f.svar], self.state[f.svar] == f.value, f in self.state;
                     if not f.svar in self.factdict:
                         #handle deterministic facts
-                        if f in self.state:
+                        if self.state[f.svar] == f.value:
                             continue
                         else:
                             node_disjuncts = None
@@ -472,7 +475,7 @@ class BayesianState(object):
                             disjunct.add((n,val))
 
                     node_disjuncts.append(disjunct)
-                    
+                
                 if node_disjuncts is not None:
                     conditions.append((p, node_disjuncts))
 
@@ -502,7 +505,7 @@ class BayesianState(object):
                 for p, disjuncts in conditions:
                     if all(dis & cset for dis in disjuncts):
                         inv_p *= (1-p)
-                #print map(str, c), 1-inv_p
+                # print map(str, c), 1-inv_p
                 
                 res = [1-inv_p, inv_p]
                 bnode.dist[c] = res

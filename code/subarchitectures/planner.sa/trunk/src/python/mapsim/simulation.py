@@ -221,6 +221,7 @@ class Simulation(object):
 
         self.state.written_svars.clear()
         self.state.apply_effect(action.effect, trace_vars=True)
+        self.state.clear_axiom_cache()
         
         new_facts = []
         for svar in self.state.written_svars:
