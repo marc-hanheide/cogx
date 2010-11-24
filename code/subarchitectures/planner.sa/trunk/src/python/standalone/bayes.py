@@ -93,15 +93,18 @@ class BnetInterface(object):
                 pstr = " ".join(str(self.valdict[pvar][pval]) for pvar, pval in zip(n.parents, pvals))
                 vstr = " ".join(str(v) for v in vals)
                 print >> self.out, pstr, vstr
+        self.out.flush()
                 
     def set_evidence(self, evidence):
         print >> self.out, "evidence"
         print >> self.out, len(evidence)
         for node, val in evidence.iteritems():
             print >> self.out, self.nodedict[node.var], self.valdict[node.var][val]
+        self.out.flush()
         
     def evaluate(self):
         print >> self.out, "evaluate"
+        self.out.flush()
         result = {}
         i = 0
         while i < len(self.nodes):
@@ -125,21 +128,29 @@ class BayesianState(object):
     def __init__(self, prob_state, problem, pnodes, domain):
         self.obs_id = 0
         self.domain = domain
-        self.pnodes = pnodes
         self.problem = problem
-        self.state = prob_state
         self.iface = None
+
+        self.init(prob_state, pnodes)
         
         # dt_rules = pddl.translators.Translator.get_annotations(self.domain).get('dt_rules', [])
         # objects = self.domain.constants | prob_state.problem.objects
         # trees = dt_problem.StateTreeNode.create_root(self.state, objects, dt_rules)
+        
+
+    def init(self, state, pnodes):
+        self.state = state
+        self.pnodes = pnodes
+        
         self.nodedict = {}
         self.factdict = defaultdict(set)
         for n in pnodes:
             n.get_nodedicts(self.nodedict, self.factdict)
 
         self.init_bayes(pnodes)
+        
         self.obs = {}
+        
 
     def compute_nonmutex_results(self, results):
         def compute_mutex_prob(dists):

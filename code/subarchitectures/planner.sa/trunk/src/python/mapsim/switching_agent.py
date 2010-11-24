@@ -41,9 +41,16 @@ class StandaloneDTInterface(object):
         
     def run(self):
         self.statistics.increase_stat("dt_planning_calls")
+        # import time
+        # print "sleep"
+        # time.sleep(1)
+
+        exe = global_vars.config.dt.standalone_executable
+        steps = global_vars.config.dt.steps
+        istates = global_vars.config.dt.max_istates
         
         import subprocess, atexit
-        cmd = "%s --domain %s --problem %s" % (global_vars.config.dt.standalone_executable, self.domain_fn, self.problem_fn)
+        cmd = "%s --steps %d --max-iStates %d --domain %s --problem %s" % (exe, steps, istates, self.domain_fn, self.problem_fn)
         log.debug("running dt planner with '%s'", cmd)
         self.process = subprocess.Popen(cmd.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=open("dtout.log", "w"))
         atexit.register(lambda: self.kill())
@@ -158,7 +165,7 @@ class SwitchingAgent(agent.Agent):
 
         if "partial-observability" in self.domain.requirements:
             log.debug("creating dt task")
-            self.dt_task = dt_problem.DTProblem(plan, self.pnodes, self.fail_count, self.domain)
+            self.dt_task = dt_problem.DTProblem(plan, self.pnodes, self.fail_count, self.prob_functions, self.domain)
 
             for pnode in plan.nodes_iter():
                 if pnode.is_virtual():
@@ -402,6 +409,9 @@ class SwitchingAgent(agent.Agent):
             for svar, dist in result.iteritems():
                 if svar.function != pddl.dtpddl.selected:
                     self.state[svar] = dist
+                    
+            self.bayes.init(self.state, self.pnodes)
+
         
         action.uninstantiate()
 

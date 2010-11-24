@@ -1,5 +1,5 @@
 import time, math, itertools
-from itertools import chain
+from itertools import chain, product
 
 from collections import defaultdict
 from standalone import task, config, pddl, plans
@@ -13,10 +13,11 @@ log = config.logger("dt")
 
 
 class DTProblem(object):
-    def __init__(self, plan, pnodes, failed_goals, domain):
+    def __init__(self, plan, pnodes, failed_goals, prob_functions, domain):
         self.plan = plan
         self.pnodes = pnodes
         self.domain = domain
+        self.prob_functions = prob_functions
         #self.state = cast_state
         self.subplan_actions = []
         self.dt_plan = []
@@ -51,19 +52,72 @@ class DTProblem(object):
                 selected.add(state.Fact(var, v))
                 log.debug("selected: %s, %s", var, v)
 
+        def objects(svar, val):
+            return set(svar.args + svar.modal_args + (val,))
+                
+        def get_used_objects(node):
+            used = set()
+            pruned = set()
+            relevant = False
+            for val, (p, nodes, facts) in node.children.iteritems():
+                branch_rel = state.Fact(node.svar, val) in selected
+                branch_used = set()
+                branch_pruned = set()
+                for svar, val in facts.iteritems():
+                    f = state.Fact(svar, val)
+                    branch_used |= objects(svar, val)
+                    branch_rel |= (f in selected)
+                    # print "rel:", branch_rel, f
+                for n in nodes:
+                    nused, npruned, nrel = get_used_objects(n)
+                    branch_used |= nused
+                    branch_pruned |= npruned
+                    branch_rel |= nrel
+                relevant |= branch_rel
+                pruned |= branch_pruned
+                if branch_rel:
+                    used |= branch_used
+                else:
+                    pruned |= branch_used
+            pruned -= used
+            if used:
+                # print map(str, used)
+                assert relevant
+
+            return used, pruned, relevant
+
+        pruned_objects = set()
+        used_objects = set()
+        for used, pruned, rel in map(get_used_objects, self.pnodes):
+            pruned_objects |= pruned
+            used_objects |= used
+        pruned_objects -= used_objects
+
+        # unused_objects = set()
+        # for svar, val in chain(*map(all_facts, self.pnodes)):
+        #     for obj in objects(svar, val):
+        #         if obj not in self.domain:
+        #             unused_objects.add(obj)
+
+        # for svar, vals in facts.iteritems():
+        #     for obj in chain(svar.args, svar.modal_args, vals):
+        #         unused_objects.discard(obj)
+
+        new_objects = (self.state.problem.objects | add_objects) - pruned_objects
+
         # print map(str, selected)
 
         opt = "maximize"
         opt_func = pddl.FunctionTerm(pddl.dtpddl.reward, [])
-        init = [f.to_init() for f in self.state.deterministic()]
+        init = [f.to_init() for f in self.state.deterministic() if not (objects(*f) & pruned_objects)]
         for n in self.pnodes:
             peff = n.to_init(selected)
             if peff:
                 init.append(peff)
             
-        self.problem = pddl.Problem("cogxtask", self.state.problem.objects | add_objects, init, None, self.dtdomain, opt, opt_func)
+        self.problem = pddl.Problem("cogxtask", new_objects, init, None, self.dtdomain, opt, opt_func)
         self.problem.goal = pddl.Conjunction([])
-                
+
         #self.selected_subproblem = -1
 
         #for pnode in self.subplan_actions:
@@ -76,7 +130,7 @@ class DTProblem(object):
 
     def extract_choices(self):
         choices = {}
-        for pnode in self.select_actions:
+        for pnode, level in self.select_actions:
             for fact in pnode.effects:
                 if not fact.svar.modality and fact.svar.get_type().equal_or_subtype_of(pddl.t_object):
                     choices[fact.svar] = fact.value
@@ -111,12 +165,12 @@ class DTProblem(object):
         if not observe_actions:
             return []
 
-        def find_restrictions(pnode):
+        def find_restrictions(pnode, level):
             others = []
             for pred in plan.predecessors_iter(pnode, 'depends'):
-                restr = find_restrictions(pred)
+                restr = find_restrictions(pred, level+1)
                 if pred.action.name.startswith("commit-"):
-                    return [pred] + restr
+                    return [(pred, level+1)] + restr
                 if restr:
                     others = restr
             return others
@@ -137,7 +191,7 @@ class DTProblem(object):
                     # if svar.modality in (mapl.knowledge, mapl.direct_knowledge):
                     #     goal_svars.add(svar.nonmodal())
                 self.subplan_actions.append(pnode)
-                self.select_actions += [pnode] + find_restrictions(pnode)
+                self.select_actions += [(pnode,0)] + find_restrictions(pnode,0)
                 #break # only one action at a time for now
             
             if pnode.action.name not in observe_actions and self.subplan_actions:
@@ -439,13 +493,15 @@ class DTProblem(object):
             
             commit_actions.append(a)
 
+        max_level = 0
         disconfirm = []
-        for pnode in self.select_actions:
+        for pnode, level in self.select_actions:
             for svar, val in pnode.effects:
                 if svar.modality == mapl.commit:
+                    max_level = max(max_level, level)
                     nmvar = svar.nonmodal()
                     #if nmvar not in goals:
-                    disconfirm.append((nmvar, svar.modal_args[0]))
+                    disconfirm.append((nmvar, svar.modal_args[0], level))
                     break # only one disconfirm per node
 
         if not disconfirm:
@@ -453,7 +509,8 @@ class DTProblem(object):
                         
         dis_score = float(confirm_score)/(2**(len(disconfirm)-1))
         disconfirm_actions = []
-        for svar, val in disconfirm:
+        for svar, val, level in disconfirm:
+            dis_reward = float(confirm_score)/(2**(max_level-level))
             term = pddl.Term(svar.function, svar.get_args())
             domain.constants |= set(svar.get_args() + [val])
             domain.add(svar.get_args() + [val])
@@ -476,13 +533,12 @@ class DTProblem(object):
             a.precondition = b.cond('not', ('done', ))
             
             #commit_effect = b.effect(dtpddl.committed, term)
-            reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_score))
-            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -dis_score))
+            reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_reward))
+            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -dis_reward))
             done_effect = b.effect('done')
             a.effect = b.effect('and', reward_effect, penalty_effect, done_effect)
             
             disconfirm_actions.append(a)
-            dis_score *= 2
 
                         
         return commit_actions + disconfirm_actions
@@ -665,7 +721,7 @@ class DTProblem(object):
             #     print map(str,s), p
             
             # print len(sset1), len(sset2)
-            for (s1, p1), (s2, p2) in itertools.product(sset1.items(), sset2.items()):
+            for (s1, p1), (s2, p2) in product(sset1.items(), sset2.items()):
                 res = []
                 for v1, v2 in itertools.izip(s1, s2):
                     if v1 == pddl.UNKNOWN:
@@ -767,6 +823,65 @@ class DTProblem(object):
 
     def create_prob_state(self, rules, state):
         pass
+
+    def get_observations_for(self, action):
+        for o in self.domain.observe:
+            if not o.execution:
+                yield o
+            for ex in o.execution:
+                if not ex.negated and ex.action == action:
+                    yield o
+
+    def relevant_actions(self, goals):
+        @pddl.visitors.collect
+        def collect_vars(elem, results):
+            if isinstance(elem, pddl.Literal):
+                return state.StateVariable.from_literal(elem)
+            
+        def get_abstract_observations(observe, agent):
+            @pddl.visitors.collect
+            def eff_collector(eff, results):
+                if isinstance(eff, pddl.ConditionalEffect):
+                    return eff.condition.visit(collect_vars)
+                
+            observe.instantiate(observe.args)
+            for svar in chain(pddl.visitors.visit(observe.precondition, collect_vars, []), observe.effect.visit(eff_collector)):
+                if svar.function in self.prob_functions:
+                    yield svar.as_modality(mapl.knowledge, [agent])
+            observe.uninstantiate()
+                
+        def get_abstract_transitions(action):
+            action.instantiate(action.args) # workaround because StateVariables cannot be created from ungrounded literals
+            pre = set(pddl.visitors.visit(action.precondition, collect_vars, set()))
+            eff = set(pddl.visitors.visit(action.effect, collect_vars, set()))
+            for o in self.get_observations_for(action):
+                eff |= set(get_abstract_observations(o, action.agents[0]))
+            action.uninstantiate()
+            return pre , eff
+
+        relevant_actions = defaultdict(lambda: defaultdict(set))
+        for a in self.domain.actions:
+            pre, eff = get_abstract_transitions(a)
+            for p, e in product(pre, eff):
+                relevant_actions[e.function][p.function].add(a)
+                
+        open = set(svar.function for svar, val in goals)
+
+        closed = set()
+        result = set()
+        while open:
+            var = open.pop()
+            closed.add(var)
+            for pre, actions in relevant_actions[var].iteritems():
+                result |= actions
+                if pre not in closed:
+                    open.add(pre)
+
+        for a in result:
+            print a.name
+                    
+        return result
+
     
     def find_observation_actions(self):
         def can_observe(action):
