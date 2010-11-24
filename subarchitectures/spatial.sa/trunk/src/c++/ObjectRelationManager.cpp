@@ -88,34 +88,6 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
     m_bDisplayVisualObjectsInPB = true;
   }
 
-  m_bTestOnness = false;
-  m_bSampleOnness = false;
-  it = _config.find("--test-onness");
-  if (it != _config.end()) {
-    m_bTestOnness = true;
-    it = _config.find("--sample-onness");
-    if (it != _config.end()) {
-      m_bSampleOnness = true;
-    }
-  }
-
-  m_bTestInness = false;
-  m_bSampleInness = false;
-  it = _config.find("--test-inness");
-  if (it != _config.end()) {
-    m_bTestInness = true;
-    it = _config.find("--sample-inness");
-    if (it != _config.end()) {
-      m_bSampleInness = true;
-    }
-  }
-
-  m_bDemoSampling = false;
-  it = _config.find("--demo-sampling");
-  if (it != _config.end()) {
-    m_bDemoSampling = true;
-  }
-
   m_bNoPTZ = false;
   it = _config.find("--no-ptz");
   if (it != _config.end()) {
@@ -256,8 +228,7 @@ void ObjectRelationManager::start()
     m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
   }
 
-  if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness
-      || m_bTestInness) {
+  if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB) {
     while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
       connectPeekabot();
       sleep(m_RetryDelay);
@@ -266,14 +237,8 @@ void ObjectRelationManager::start()
     if (m_bDisplayPlaneObjectsInPB) {
       m_planeProxies.add(m_PeekabotClient, "plane_objects", peekabot::REPLACE_ON_CONFLICT);
     }
-    if (m_bDisplayVisualObjectsInPB || m_bTestOnness || m_bTestInness) {
+    if (m_bDisplayVisualObjectsInPB) {
       m_objectProxies.add(m_PeekabotClient, "visual_objects", peekabot::REPLACE_ON_CONFLICT);
-    }
-    if (m_bTestOnness) {
-      m_relationTester.add(m_PeekabotClient, "on-ness_tester", peekabot::REPLACE_ON_CONFLICT);
-    }
-    else if (m_bTestInness) {
-      m_relationTester.add(m_PeekabotClient, "in-ness_tester", peekabot::REPLACE_ON_CONFLICT);
     }
     println("Connected to peekabot, ready to go");
   }
@@ -287,7 +252,7 @@ void ObjectRelationManager::start()
   log("ObjectRelationManager started");
 }
 
-  void 
+void 
 ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
   double oldX = 0.0;
@@ -478,159 +443,10 @@ void ObjectRelationManager::readRelationsFromFile(const string &filename)
     }
   }
 }
-//  nRooms = 2;
-//  nRoomCategories = 2;
-//  nObjects = 6;
-//  hierarchyObjects.push_back("table2");
-//  hierarchyObjects.push_back("table1");
-////  hierarchyObjects.push_back("bookcase3");
-//  hierarchyObjects.push_back("bookcase_lg");
-//  hierarchyObjects.push_back("bookcase_sm");
-//  hierarchyObjects.push_back("crate");
-////  hierarchyObjects.push_back("dell");
-//  hierarchyObjects.push_back("book");
-//  
-//  roomCategoryDefault[nRoomCategories * 0 + 0] = 1.0;
-//  roomCategoryDefault[nRoomCategories * 1 + 1] = 1.0;
-//
-//  objectInRoomDefault.resize(nObjects * nRoomCategories, 0.0);
-//  objectInRoomDefault[nRoomCategories * 0 + 1] = 1.0;
-//  objectInRoomDefault[nRoomCategories * 1 + 0] = 1.0;
-//  objectInRoomDefault[nRoomCategories * 2 + 0] = 1;
-//  objectInRoomDefault[nRoomCategories * 3 + 1] = 1;
-//  objectInRoomDefault[nRoomCategories * 4 + 0] = 0.2;
-//  objectInRoomDefault[nRoomCategories * 4 + 1] = 0.8;
-//  objectInRoomDefault[nRoomCategories * 5 + 0] = 0.5;
-//  objectInRoomDefault[nRoomCategories * 5 + 1] = 0.5;
-////  objectInRoomDefault[nRooms * 6 + 0] = 0.5;
-////  objectInRoomDefault[nRooms * 6 + 1] = 0.5;
-////  objectInRoomDefault[nRooms * 7 + 0] = 0.5;
-////  objectInRoomDefault[nRooms * 7 + 1] = 0.5;
-// 
-//  objectInObjectDefault.resize(nObjects * nObjects, 0.0);
-//  objectInObjectDefault[nObjects * 5 + 2] = 0.9;
-//  objectInObjectDefault[nObjects * 5 + 3] = 0.9;
-//  objectInObjectDefault[nObjects * 5 + 4] = 0.5;
-//
-//  objectOnObjectDefault.resize(nObjects * nObjects, 0.0);
-//  objectOnObjectDefault[nObjects * 5 + 0] = 0.6;
-//  objectOnObjectDefault[nObjects * 5 + 1] = 0.6;
-//  objectOnObjectDefault[nObjects * 5 + 2] = 0.3;
-//  objectOnObjectDefault[nObjects * 5 + 3] = 0.3;
-//  objectOnObjectDefault[nObjects * 5 + 4] = 0.2;
-//  objectOnObjectDefault[nObjects * 4 + 0] = 0.7;
-//  objectOnObjectDefault[nObjects * 4 + 1] = 0.7;
-//
 
 void ObjectRelationManager::runComponent() 
 {
   log("I am running!");
-
-
-  peekabot::SphereProxy sqdp;
-  peekabot::SphereProxy scwp;
-  peekabot::SphereProxy bcwp;
-  peekabot::SphereProxy op;
-  peekabot::CubeProxy csp;
-  peekabot::CubeProxy cop;
-  peekabot::PolygonProxy pp;
-  peekabot::CubeProxy bp;
-  peekabot::CubeProxy bp2;
-  PlaneObject table1;
-
-  peekabot::SphereProxy sp;
-  peekabot::SphereProxy spm;
-  peekabot::SphereProxy sp2;
-  peekabot::SphereProxy spm2;
-
-  if (m_bTestOnness || m_bTestInness) {
-    table1.type = OBJECT_PLANE;
-
-    Matrix33 rotation;
-    double rotAngle = 0.0;
-    fromAngleAxis(rotation, rotAngle, vector3(0.0, 0.0, 1.0));
-    table1.pose = pose3(vector3(0.0, 0.0, 1.0), rotation);
-
-    table1.shape = PLANE_OBJECT_RECTANGLE;
-    table1.radius1 = 0.5;
-    table1.radius2 = 0.5;
-
-    peekabot::VertexSet polyVerts;
-
-    pp.add(m_relationTester, "table", peekabot::REPLACE_ON_CONFLICT);
-    pp.set_color(1.0, 1.0, 0);
-    polyVerts.add_vertex(table1.radius1, table1.radius2, 0);
-    polyVerts.add_vertex(-table1.radius1, table1.radius2, 0);
-    polyVerts.add_vertex(-table1.radius1, -table1.radius2, 0);
-    polyVerts.add_vertex(table1.radius1, -table1.radius2, 0);
-
-    pp.add_vertices(polyVerts);
-    pp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z);
-    pp.rotate(rotAngle, 0.0, 0.0, 1.0);
-
-
-    bp.add(m_relationTester, "krispies", peekabot::REPLACE_ON_CONFLICT);
-    bp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.26+0.145);
-    bp.set_scale(0.19, 0.09, 0.29);
-    bp.set_color(0.0, 0.0, 1.0);
-    bp.set_opacity(0.5);
-
-    bp2.add(m_relationTester, "joystick", peekabot::REPLACE_ON_CONFLICT);
-    bp2.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.13);
-    bp2.set_scale(0.23, 0.21, 0.26);
-    bp2.set_color(1.0, 0.0, 0.0);
-    bp2.set_opacity(0.5);
-
-    if (m_bTestOnness) {
-      peekabot::GroupProxy sliders;
-      sliders.add(m_relationTester, "weights", peekabot::REPLACE_ON_CONFLICT);
-
-      sqdp.add(sliders, "squareDistanceOutside", peekabot::REPLACE_ON_CONFLICT);
-      sqdp.translate(-1.0, 6.0, 10*m_evaluator.distanceFalloffOutside);
-      sqdp.set_scale(0.1);
-      scwp.add(sliders, "squareDistanceInside", peekabot::REPLACE_ON_CONFLICT);
-      scwp.translate(0.0, 6.0, 10*m_evaluator.distanceFalloffInside);
-      scwp.set_scale(0.1);
-      bcwp.add(sliders, "patchThreshold", peekabot::REPLACE_ON_CONFLICT);
-      bcwp.translate(1.0, 6.0, 10*m_evaluator.patchThreshold);
-      bcwp.set_scale(0.1);
-      csp.add(sliders, "containmentSteepness", peekabot::REPLACE_ON_CONFLICT);
-      csp.translate(0.0, 6.0, 10*m_evaluator.supportCOMContainmentSteepness);
-      csp.set_scale(0.1);
-      cop.add(sliders, "containmentOffset", peekabot::REPLACE_ON_CONFLICT);
-      cop.translate(0.0, 6.0, m_evaluator.supportCOMContainmentOffset);
-      cop.set_scale(0.1);
-
-      sp.add(m_relationTester, "Onness", peekabot::REPLACE_ON_CONFLICT);
-      sp.translate(0.0, 3.0, 1.0);
-      spm.add(m_relationTester, "Onness-max", peekabot::REPLACE_ON_CONFLICT);
-      spm.translate(0.0, 3.0, 1.0);
-      spm.set_opacity(0.3);
-      sp2.add(m_relationTester, "Onness2", peekabot::REPLACE_ON_CONFLICT);
-      sp2.translate(2.0, 3.0, 1.0);
-      spm2.add(m_relationTester, "Onness-max2", peekabot::REPLACE_ON_CONFLICT);
-      spm2.translate(2.0, 3.0, 1.0);
-      spm2.set_opacity(0.3);
-    }
-    if (m_bTestInness) {
-      sp.add(m_relationTester, "Inness", peekabot::REPLACE_ON_CONFLICT);
-      sp.translate(0.0, 3.0, 1.0);
-      spm.add(m_relationTester, "Inness-max", peekabot::REPLACE_ON_CONFLICT);
-      spm.translate(0.0, 3.0, 1.0);
-      spm.set_opacity(0.3);
-      sp2.add(m_relationTester, "Inness2", peekabot::REPLACE_ON_CONFLICT);
-      sp2.translate(2.0, 3.0, 1.0);
-      spm2.add(m_relationTester, "Inness-max2", peekabot::REPLACE_ON_CONFLICT);
-      spm2.translate(2.0, 3.0, 1.0);
-      spm2.set_opacity(0.3);
-    }
-  }
-
-  VisualPB_Bloxel *visualPB; 
-  if (m_bSampleOnness || m_bSampleInness) {
-    visualPB = new VisualPB_Bloxel ("localhost", 5050, 100, 100, 0.05, 1, true);
-    visualPB->connectPeekabot();
-  }
 
   sleepComponent(2000);
 
@@ -639,9 +455,7 @@ void ObjectRelationManager::runComponent()
   def.pdf = 0.0;
   SpatialGridMap::GridMap<SpatialGridMap::GridMapData> pdfMap(100, 100, 0.05, 0.05, 0, 2.0, 0, 0, 0, def);
 
-
   sleepComponent(2000);
-
 
   while (isRunning()) {
     // Dispatch recognition commands if the robot has been standing still
@@ -660,337 +474,6 @@ void ObjectRelationManager::runComponent()
       }
 
       unlockComponent();
-    }
-
-    if (m_bTestOnness || m_bTestInness) {
-    
-      
-      peekabot::Result<peekabot::Transformation> r;
-
-      r = bp.get_transformation(peekabot::WORLD_COORDINATES);
-      if (r.succeeded()) {
-	Pose3 boxPose;
-	setIdentity(boxPose);
-	double m[16];
-
-	m[0] = r.get_result().x.x; 
-	m[1] = r.get_result().y.x;
-	m[2] = r.get_result().z.x;
-	m[3] = r.get_result().pos.x;
-	m[4] = r.get_result().x.y;
-	m[5] = r.get_result().y.y;
-	m[6] = r.get_result().z.y;
-	m[7] = r.get_result().pos.y;
-	m[8] = r.get_result().x.z;
-	m[9] = r.get_result().y.z; 
-	m[10] = r.get_result().z.z; 
-	m[11] = r.get_result().pos.z; 
-	m[12] = 0;
-	m[13] = 0;
-	m[14] = 0;
-	m[15] = 0;
-
-	setRow44(boxPose, m);
-
-	BoxObject box1;
-
-	box1.type = OBJECT_BOX;
-	box1.pose = boxPose;
-	box1.radius1 = 0.095;
-	box1.radius2 = 0.045;
-	box1.radius3 = 0.145;
-
-	r = bp2.get_transformation(peekabot::WORLD_COORDINATES);
-	if (r.succeeded()) {
-	  Pose3 boxPose;
-	  setIdentity(boxPose);
-	  double m[16];
-
-	  m[0] = r.get_result().x.x;
-	  m[1] = r.get_result().y.x;
-	  m[2] = r.get_result().z.x;
-	  m[3] = r.get_result().pos.x;
-	  m[4] = r.get_result().x.y;
-	  m[5] = r.get_result().y.y;
-	  m[6] = r.get_result().z.y;
-	  m[7] = r.get_result().pos.y;
-	  m[8] = r.get_result().x.z;
-	  m[9] = r.get_result().y.z;
-	  m[10] = r.get_result().z.z;
-	  m[11] = r.get_result().pos.z;
-	  m[12] = 0;
-	  m[13] = 0;
-	  m[14] = 0;
-	  m[15] = 0;
-
-	  
-	 /* m[0] = r.get_result()(0,0);
-	  m[1] = r.get_result()(0,1);
-	  m[2] = r.get_result()(0,2);
-	  m[3] = r.get_result()(0,3);
-	  m[4] = r.get_result()(1,0);
-	  m[5] = r.get_result()(1,1);
-	  m[6] = r.get_result()(1,2);
-	  m[7] = r.get_result()(1,3);
-	  m[8] = r.get_result()(2,0);
-	  m[9] = r.get_result()(2,1);
-	  m[10] = r.get_result()(2,2);
-	  m[11] = r.get_result()(2,3);
-	  m[12] = r.get_result()(3,0);
-	  m[13] = r.get_result()(3,1);
-	  m[14] = r.get_result()(3,2);
-	  m[15] = r.get_result()(3,3);*/
-
-	  setRow44(boxPose, m);
-
-	  HollowBoxObject box2;
-
-	  box2.type = OBJECT_HOLLOW_BOX;
-	  box2.pose = boxPose;
-	  box2.radius1 = 0.115;
-	  box2.radius2 = 0.105;
-	  box2.radius3 = 0.13;
-	  box2.thickness = 0.02;
-
-
-	  if (m_bTestOnness) {
-	    peekabot::Result<peekabot::Transformation> vr;
-	    vr = sqdp.get_transformation();
-//	    if (vr.succeeded()) distanceFalloffOutside= 0.1*vr.get_result().pos.z;
-	    vr = scwp.get_transformation();
-//	    if (vr.succeeded()) distanceFalloffInside = 0.1*vr.get_result().pos.z;
-	    vr = bcwp.get_transformation();
-//	    if (vr.succeeded()) patchThreshold = 0.1*vr.get_result().pos.z;
-	    vr = csp.get_transformation();
-	    if (vr.succeeded()) {
-	      //	bottomCOMContainmentSteepness = 
-//	      supportCOMContainmentSteepness = 0.1*vr.get_result().pos.z;
-	    }
-	    vr = cop.get_transformation();
-	    if (vr.succeeded()) {
-	      //	bottomCOMContainmentOffset = 
-//	      supportCOMContainmentOffset = vr.get_result().pos.z;
-	    }
-
-	    double scale1 = m_evaluator.evaluateOnness(&table1, &box1);
-	    double scale2 = m_evaluator.evaluateOnness(&box2, &box1);
-	    Witness w1 = m_evaluator.m_lastWitness;
-	    m_evaluator.evaluateOnness(&box1, &box2);
-	    Witness w2 = m_evaluator.m_lastWitness;
-	    if (w1.distance - w2.distance > 0.0001 ||
-		w1.distance - w2.distance < -0.0001) {
-	      log("Error!");
-	    }
-	    log("%f, %f", scale1, scale2);
-	    sp.set_scale(scale1);
-	    sp2.set_scale(scale2);
-
-	    vector<Vector3> patch;
-	    Witness witness = m_evaluator.findContactPatch(box2, box1, &patch);
-	    if (patch.size() > 2) {
-	      peekabot::PolygonProxy patchp;
-	      peekabot::VertexSet polyVerts;
-	      patchp.add(m_relationTester, "Patch", peekabot::REPLACE_ON_CONFLICT);
-	      patchp.set_color(1,0,0);
-	      for (vector<Vector3>::iterator it = patch.begin(); it != patch.end();it++){
-		polyVerts.add_vertex(it->x, it->y, it->z);
-	      }
-	      patchp.add_vertices(polyVerts);
-	    }
-	    //	  peekabot::CylinderProxy normp;
-	    //	  normp.add(m_relationTester, "Normal", peekabot::REPLACE_ON_CONFLICT);
-	    //	  normp.set_color(0,0,1);
-	    //	  normp.set_scale(0.005, 0.005, 0.1);
-	    //	  normp.translate(0.05,0,0);
-	    //	  normp.set_orientation(witness.normal.x, witness.normal.y, witness.normal.z);
-	    //	  normp.rotate(M_PI/2, 0, 1, 0);
-	    //	  normp.translate(witness.point1.x, witness.point1.y, witness.point1.z,
-	    //	      peekabot::PARENT_COORDINATES);
-
-
-	    peekabot::SphereProxy witp1;
-	    witp1.add(m_relationTester, "Witness 1", peekabot::REPLACE_ON_CONFLICT);
-	    witp1.translate(witness.point1.x, witness.point1.y, witness.point1.z);
-	    witp1.set_scale(0.01);
-	    peekabot::SphereProxy witp2;
-	    witp2.add(m_relationTester, "Witness 2", peekabot::REPLACE_ON_CONFLICT);
-	    witp2.translate(witness.point2.x, witness.point2.y, witness.point2.z);
-	    witp2.set_scale(0.01);
-
-	    if (m_bSampleOnness) {
-	      static bool sampleTable = false;
-
-
-//	      Cure::LocalGridMap<double> pdf(50, 0.05, 0.0, 
-//		  Cure::LocalGridMap<double>::MAP1, 0, 0);
-	      vector<spatial::Object *>objects;
-	      vector<string> objectLabels;
-	      vector<spatial::SpatialRelationType> relations;
-
-	      if (sampleTable) {
-		objects.push_back(&box2);
-		objectLabels.push_back("box2");
-//		objects.push_back(&box1);
-//		objectLabels.push_back("box1");
-//		relations.push_back(RELATION_ON);
-		objects.push_back(&table1);
-		objectLabels.push_back("table1");
-		relations.push_back(RELATION_ON);
-	      }
-	      else {
-		objects.push_back(&box1);
-		objectLabels.push_back("box1");
-//		objects.push_back(&box2);
-//		objectLabels.push_back("box2");
-//		relations.push_back(RELATION_ON);
-		objects.push_back(&table1);
-		objectLabels.push_back("table1");
-		relations.push_back(RELATION_ON);
-	      }
-
-	      //	    objects.push_back(&box2);
-	      //	    objectLabels.push_back("box2");
-	      //	    relations.push_back(RELATION_ON);
-
-	      SampleCloud testCloud;
-	      m_sampler.
-		sampleBinaryRelationSystematically(relations, objects, 
-		    objectLabels, pdfMap.getCellSize(),
-		    testCloud);
-
-	      //  log("Writing into 2D grid");
-//	      testCloud.KernelDensityEstimation2D(pdf, 
-//		  objects.back()->pose.pos, m_sampler.getKernelWidthFactor(), 
-//		  total, 1.0);
-	      testCloud.compact();
-	      Vector3 center;
-	      double interval;
-	      int xExt, yExt, zExt;
-	      vector<double> weights;
-	      testCloud.makePointCloud(center, interval, xExt, yExt, zExt, weights);
-
-	      center += objects.back()->pose.pos;
-	      vector<Vector3>centers;
-	      centers.push_back(center);
-
-	      m_sampler.kernelDensityEstimation3D(pdfMap,
-		  centers, interval, xExt, yExt, zExt, weights, 1.0, 1.0);
-
-	      sampleTable = !sampleTable;
-	      
-	      //visualPB.DisplayMap(pdfMap);
-	      visualPB->AddPDF(pdfMap);
-//	      peekabot::LineCloudProxy linecloudp;
-//
-//	      linecloudp.add(m_PeekabotClient, "root.distribution",
-//		  peekabot::REPLACE_ON_CONFLICT);
-//	      linecloudp.clear_vertices();
-//	      linecloudp.set_color(0.5, 0, 0.5);
-//
-//	      double maxPDFValue = 0.0;
-//	      for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
-//		for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
-//		  if (pdf(x,y) > maxPDFValue) {
-//		    maxPDFValue = pdf(x,y);
-//		  }
-//		}
-//	      }
-//
-//	      for (int x = -pdf.getSize(); x < pdf.getSize(); x++) {
-//		for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
-//		  if (pdf(x, y) == 0)
-//		    continue;
-//		  double xW2, yW2;
-//		  double xW3, yW3;
-//		  pdf.index2WorldCoords(x, y, xW2, yW2);
-//		  pdf.index2WorldCoords(x+1, y, xW3, yW3);
-//		  linecloudp.add_line(xW2, yW2, pdf(x, y)/maxPDFValue,
-//		      xW3, yW3, pdf(x+1, y)/maxPDFValue);
-//		}
-//	      }
-//	      for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
-//		for (int y = -pdf.getSize(); y < pdf.getSize(); y++) {
-//		  if (pdf(x, y) == 0)
-//		    continue;
-//		  double xW2, yW2;
-//		  double xW3, yW3;
-//		  pdf.index2WorldCoords(x, y, xW2, yW2);
-//		  pdf.index2WorldCoords(x, y+1, xW3, yW3);
-//		  linecloudp.add_line(xW2, yW2, pdf(x, y)/maxPDFValue,
-//		      xW3, yW3, pdf(x, y+1)/maxPDFValue);
-//		}
-//	      }
-//
-	    }
-
-	  } // if (m_bTestOnness)
-
-	  if (m_bTestInness) {
-	    sp.set_scale(m_evaluator.evaluateInness(&table1, &box1));
-	    sp2.set_scale(m_evaluator.evaluateInness(&box2, &box1));
-
-	    if (m_bSampleInness) {
-	      Cure::LocalGridMap<double> pdf(25, 0.05, 0.0, 
-		  Cure::LocalGridMap<double>::MAP1, 0, 0);
-	      vector<spatial::Object *>objects;
-	      vector<string>objectLabels;
-	      objects.push_back(&box1);
-	      objectLabels.push_back("box1");
-	      objects.push_back(&box2);
-	      objectLabels.push_back("box2");
-	      //	    objects.push_back(&box2);
-	      vector<spatial::SpatialRelationType> relations;
-	      relations.push_back(RELATION_IN);
-	      //	    relations.push_back(RELATION_IN);
-
-	      double total;
-	      m_sampler.
-		sampleBinaryRelationRecursively(relations, objects, objects.size()-2, pdf,
-		  total);
-	      peekabot::LineCloudProxy linecloudp;
-
-	      linecloudp.add(m_PeekabotClient, "Scene.distribution",
-		  peekabot::REPLACE_ON_CONFLICT);
-	      linecloudp.clear_vertices();
-	      linecloudp.set_color(0.5, 0, 0.5);
-
-	      double maxPDFValue = 0.0;
-	      for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
-		for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
-		  if (pdf(x,y) > maxPDFValue) {
-		    maxPDFValue = pdf(x,y);
-		  }
-		}
-	      }
-
-	      for (int x = -pdf.getSize(); x < pdf.getSize(); x++) {
-		for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
-		  if (pdf(x, y) == 0)
-		    continue;
-		  double xW2, yW2;
-		  double xW3, yW3;
-		  pdf.index2WorldCoords(x, y, xW2, yW2);
-		  pdf.index2WorldCoords(x+1, y, xW3, yW3);
-		  linecloudp.add_line(xW2, yW2, pdf(x, y)/maxPDFValue,
-		      xW3, yW3, pdf(x+1, y)/maxPDFValue);
-		}
-	      }
-	      for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
-		for (int y = -pdf.getSize(); y < pdf.getSize(); y++) {
-		  if (pdf(x, y) == 0)
-		    continue;
-		  double xW2, yW2;
-		  double xW3, yW3;
-		  pdf.index2WorldCoords(x, y, xW2, yW2);
-		  pdf.index2WorldCoords(x, y+1, xW3, yW3);
-		  linecloudp.add_line(xW2, yW2, pdf(x, y)/maxPDFValue,
-		      xW3, yW3, pdf(x, y+1)/maxPDFValue);
-		}
-	      }
-	    }
-	  } // if (m_bTestInness)
-	}
-      }
     }
 
     sleepComponent(500);
@@ -1245,10 +728,10 @@ ObjectRelationManager::newPlaneObject(const cast::cdl::WorkingMemoryChange &wmc)
 	  peekabot::PolygonProxy pp;
 	  peekabot::VertexSet polyVerts;
 	  pp.add(m_planeProxies, identifier, peekabot::REPLACE_ON_CONFLICT);
-	  polyVerts.add_vertex(planeObject.radius1, planeObject.radius2, 0);
-	  polyVerts.add_vertex(-planeObject.radius1, planeObject.radius2, 0);
-	  polyVerts.add_vertex(-planeObject.radius1, -planeObject.radius2, 0);
-	  polyVerts.add_vertex(planeObject.radius1, -planeObject.radius2, 0);
+	  polyVerts.add(planeObject.radius1, planeObject.radius2, 0);
+	  polyVerts.add(-planeObject.radius1, planeObject.radius2, 0);
+	  polyVerts.add(-planeObject.radius1, -planeObject.radius2, 0);
+	  polyVerts.add(planeObject.radius1, -planeObject.radius2, 0);
 	  pp.add_vertices(polyVerts);
 
 	  pp.translate(observedObject->pos.x, observedObject->pos.y, 
@@ -1508,109 +991,109 @@ ObjectRelationManager::recomputeOnnessForPlane(const string &planeLabel)
   }
 }
 
-void
-ObjectRelationManager::sampleOnnessForObject(const string &supLabel, 
-    const string &onLabel) 
-{
-  if (m_objectModels.find(supLabel) == m_objectModels.end() ||
-      m_objects.find(supLabel) == m_objects.end()) {
-    log("Error! Support object model missing!");
-    return;
-  }
-  ASSERT_TYPE(m_objectModels[supLabel]);
-    m_objects[supLabel]->pose;
-
-  spatial::Object *objectS = m_objectModels[supLabel];
-
-  if (m_objectModels.find(onLabel) == m_objectModels.end()) {
-    log("Error! Supported object model missing!");
-    return;
-  }
-
-  ASSERT_TYPE(m_objectModels[onLabel]);
-  spatial::Object *objectO = m_objectModels[onLabel];
-
-  Pose3 oldPose = objectO->pose;
-  vector<Vector3> points;
-
-  BoxObject *supportBox = (BoxObject *)objectS;
-
-  double frameRadius = supportBox->radius1 > supportBox->radius2 ?
-    supportBox->radius1 : supportBox->radius2;
-  frameRadius = frameRadius > supportBox->radius3 ? 
-    frameRadius : supportBox->radius3;
-  m_evaluator.sampleOnnessDistribution(objectS, objectO, points, 
-      objectS->pose.pos.x - frameRadius, objectS->pose.pos.x + frameRadius,
-      objectS->pose.pos.y - frameRadius, objectS->pose.pos.y + frameRadius,
-      objectS->pose.pos.z - frameRadius, objectS->pose.pos.z + frameRadius*4,
-      0.04, 0.02);
-  objectO->pose = oldPose;
-
-  peekabot::PointCloudProxy pcloud;
-  peekabot::VertexSet cloudPoints;
-  pcloud.add(m_relationTester,"onpoints", peekabot::REPLACE_ON_CONFLICT);
-
-  for (vector<Vector3>::iterator it = points.begin(); it != points.end();
-      it++) {
-    cloudPoints.add_vertex(it->x,it->y,it->z);
-  }
-  pcloud.add_vertices(cloudPoints);
-}
-
-void
-ObjectRelationManager::sampleOnnessForPlane(const string &planeLabel, const string &objectLabel) 
-{
-
-
-  if (m_planeObjects.find(planeLabel) == m_planeObjects.end()) {
-    log("Error! Plane object missing!");
-    return;
-  }
-
-  PlaneObject po;
-  po.type = OBJECT_PLANE;
-  po.pose.pos = m_planeObjects[planeLabel]->pos;
-  fromAngleAxis(po.pose.rot, m_planeObjects[planeLabel]->angle, 
-      vector3(0.0, 0.0, 1.0));
-
-  if (m_planeObjectModels.find(planeLabel) != m_planeObjectModels.end()) {
-    po.radius1 = m_planeObjectModels[planeLabel].radius1;
-    po.radius2 = m_planeObjectModels[planeLabel].radius2;
-  }
-  else {
-    log("Error! Unknown plane object!");
-    return;
-  }
-
-  if (m_objectModels.find(objectLabel) == m_objectModels.end()) {
-    log("Error! Object model missing!");
-    return;
-  }
-
-  ASSERT_TYPE(m_objectModels[objectLabel]);
-  spatial::Object *objectO = m_objectModels[objectLabel];
-
-  Pose3 oldPose = objectO->pose;
-  vector<Vector3> points;
-  double frameRadius = 1.5 * 
-    (po.radius1 > po.radius2 ? po.radius1 : po.radius2);
-  m_evaluator.sampleOnnessDistribution(&po, objectO, points, 
-      po.pose.pos.x - frameRadius, po.pose.pos.x + frameRadius,
-      po.pose.pos.y - frameRadius, po.pose.pos.y + frameRadius,
-      0, 1.5, 
-      0.1, 0.025);
-  objectO->pose = oldPose;
-
-  peekabot::PointCloudProxy pcloud;
-  peekabot::VertexSet cloudPoints;
-  pcloud.add(m_relationTester,"onpoints", peekabot::REPLACE_ON_CONFLICT);
-
-  for (vector<Vector3>::iterator it = points.begin(); it != points.end();
-      it++) {
-    cloudPoints.add_vertex(it->x,it->y,it->z);
-  }
-  pcloud.add_vertices(cloudPoints);
-}
+//void
+//ObjectRelationManager::sampleOnnessForObject(const string &supLabel, 
+//    const string &onLabel) 
+//{
+//  if (m_objectModels.find(supLabel) == m_objectModels.end() ||
+//      m_objects.find(supLabel) == m_objects.end()) {
+//    log("Error! Support object model missing!");
+//    return;
+//  }
+//  ASSERT_TYPE(m_objectModels[supLabel]);
+//    m_objects[supLabel]->pose;
+//
+//  spatial::Object *objectS = m_objectModels[supLabel];
+//
+//  if (m_objectModels.find(onLabel) == m_objectModels.end()) {
+//    log("Error! Supported object model missing!");
+//    return;
+//  }
+//
+//  ASSERT_TYPE(m_objectModels[onLabel]);
+//  spatial::Object *objectO = m_objectModels[onLabel];
+//
+//  Pose3 oldPose = objectO->pose;
+//  vector<Vector3> points;
+//
+//  BoxObject *supportBox = (BoxObject *)objectS;
+//
+//  double frameRadius = supportBox->radius1 > supportBox->radius2 ?
+//    supportBox->radius1 : supportBox->radius2;
+//  frameRadius = frameRadius > supportBox->radius3 ? 
+//    frameRadius : supportBox->radius3;
+//  m_evaluator.sampleOnnessDistribution(objectS, objectO, points, 
+//      objectS->pose.pos.x - frameRadius, objectS->pose.pos.x + frameRadius,
+//      objectS->pose.pos.y - frameRadius, objectS->pose.pos.y + frameRadius,
+//      objectS->pose.pos.z - frameRadius, objectS->pose.pos.z + frameRadius*4,
+//      0.04, 0.02);
+//  objectO->pose = oldPose;
+//
+//  peekabot::PointCloudProxy pcloud;
+//  peekabot::VertexSet cloudPoints;
+//  pcloud.add(m_relationTester,"onpoints", peekabot::REPLACE_ON_CONFLICT);
+//
+//  for (vector<Vector3>::iterator it = points.begin(); it != points.end();
+//      it++) {
+//    cloudPoints.add(it->x,it->y,it->z);
+//  }
+//  pcloud.add_vertices(cloudPoints);
+//}
+//
+//void
+//ObjectRelationManager::sampleOnnessForPlane(const string &planeLabel, const string &objectLabel) 
+//{
+//
+//
+//  if (m_planeObjects.find(planeLabel) == m_planeObjects.end()) {
+//    log("Error! Plane object missing!");
+//    return;
+//  }
+//
+//  PlaneObject po;
+//  po.type = OBJECT_PLANE;
+//  po.pose.pos = m_planeObjects[planeLabel]->pos;
+//  fromAngleAxis(po.pose.rot, m_planeObjects[planeLabel]->angle, 
+//      vector3(0.0, 0.0, 1.0));
+//
+//  if (m_planeObjectModels.find(planeLabel) != m_planeObjectModels.end()) {
+//    po.radius1 = m_planeObjectModels[planeLabel].radius1;
+//    po.radius2 = m_planeObjectModels[planeLabel].radius2;
+//  }
+//  else {
+//    log("Error! Unknown plane object!");
+//    return;
+//  }
+//
+//  if (m_objectModels.find(objectLabel) == m_objectModels.end()) {
+//    log("Error! Object model missing!");
+//    return;
+//  }
+//
+//  ASSERT_TYPE(m_objectModels[objectLabel]);
+//  spatial::Object *objectO = m_objectModels[objectLabel];
+//
+//  Pose3 oldPose = objectO->pose;
+//  vector<Vector3> points;
+//  double frameRadius = 1.5 * 
+//    (po.radius1 > po.radius2 ? po.radius1 : po.radius2);
+//  m_evaluator.sampleOnnessDistribution(&po, objectO, points, 
+//      po.pose.pos.x - frameRadius, po.pose.pos.x + frameRadius,
+//      po.pose.pos.y - frameRadius, po.pose.pos.y + frameRadius,
+//      0, 1.5, 
+//      0.1, 0.025);
+//  objectO->pose = oldPose;
+//
+//  peekabot::PointCloudProxy pcloud;
+//  peekabot::VertexSet cloudPoints;
+//  pcloud.add(m_relationTester,"onpoints", peekabot::REPLACE_ON_CONFLICT);
+//
+//  for (vector<Vector3>::iterator it = points.begin(); it != points.end();
+//      it++) {
+//    cloudPoints.add(it->x,it->y,it->z);
+//  }
+//  pcloud.add_vertices(cloudPoints);
+//}
 
 void 
 ObjectRelationManager::addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID){

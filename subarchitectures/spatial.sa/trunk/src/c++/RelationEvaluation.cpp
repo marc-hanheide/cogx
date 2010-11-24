@@ -1521,12 +1521,12 @@ RelationEvaluator::computeAttentionVectorSumForPatch(const vector<Vector3> patch
   }
 
   vectorSum /= totalArea;
+  return vectorSum;
 }
 
 Vector3
 RelationEvaluator::computeAttentionVectorSumForSolid(const Object *obj,
     const Vector3 &focus, const Vector3 &trajector, double falloff) {
-  double totalArea = 0;
 
   const int subdivisionFactor = 5; // TODO: adapt this to triangle size compared to
   // falloff
