@@ -317,8 +317,11 @@ const std::string VideoServer::getServerName() {}
 void VideoServer::runComponent()
 {
   vector<Image> frames;
-  int cnt = 10;
   string myid = getComponentID();
+  IceUtil::Time tm, tm2;
+  tm = IceUtil::Time::now();
+  const int reportDelay = 20;
+  int cnt = reportDelay;
   while(isRunning())
   {
     // TODO: If I could have this lock after grabFrames() I could avoid the
@@ -339,12 +342,17 @@ void VideoServer::runComponent()
     cnt--;
     if(cnt == 0)
     {
+      tm2 = IceUtil::Time::now() - tm;
+      tm = IceUtil::Time::now();
       int fr = getFramerateMilliSeconds();
       debug("grabbing with %d ms per frame (%.2f frames per second)",
-          fr, (fr > 0. ? 1000./fr : 0.));
-			if(fr > 0.) realFps = 1000./fr;
-			else realFps = 0.;
-      cnt = 10;
+	  fr, (fr > 0. ? 1000./fr : 0.));
+      if(fr > 0.) realFps = 1000./fr;
+      else realFps = 0.;
+      double dfr = tm2.toMilliSeconds() / double(reportDelay);
+      debug("sending with %.1f ms per frame (%.2f frames per second)",
+	  dfr, (dfr > 0. ? 1000./dfr : 0.));
+      cnt = reportDelay;
     }
   }
 }
