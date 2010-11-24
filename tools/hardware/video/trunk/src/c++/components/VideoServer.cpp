@@ -350,7 +350,7 @@ void VideoServer::runComponent()
       if(fr > 0.) realFps = 1000./fr;
       else realFps = 0.;
       double dfr = tm2.toMilliSeconds() / double(reportDelay);
-      debug("sending with %.1f ms per frame (%.2f frames per second)",
+      debug("sending with %.0f ms per frame (%.2f frames per second)",
 	  dfr, (dfr > 0. ? 1000./dfr : 0.));
       cnt = reportDelay;
     }
