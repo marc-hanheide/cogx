@@ -144,6 +144,7 @@ namespace Planning
 
         
         const std::vector<POMDP_State*>& get__successors(uint action_index);
+        std::vector<POMDP_State*> get__successors();
         
     private:
         std::vector<uint> action_based_successor_driver;

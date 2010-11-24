@@ -122,6 +122,25 @@ get__possible_observations_given_action(uint action_index) const
     return observation_based_successor_driver[index_to_actions];
 }
 
+std::vector<POMDP_State*>
+Partially_Observable_Markov_Decision_Process_State::
+get__successors()
+{
+    auto answer = std::vector<POMDP_State*>();
+
+    for(auto s = successors.begin()
+            ; s != successors.end()
+            ; s++){
+        for(auto p = s->begin()
+                ; p != s->end()
+                ; p++){
+            answer.push_back(*p);
+        }
+    }
+
+    return std::move(answer);
+}
+
 const std::vector<POMDP_State*>&
 Partially_Observable_Markov_Decision_Process_State::
 get__successors(uint action_index)
