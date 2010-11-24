@@ -161,7 +161,7 @@ void CVideoClient2::cacheImages(const std::vector<Video::Image>& images)
       void addLockedStore(CCachedImagePtr::CStorage* pStore)
       {
          m_pLocked->push_back(pStore);
-         std::cout << "Images in locked store: " << m_pLocked->size() << std::endl;
+         // std::cout << "Images in locked store: " << m_pLocked->size() << std::endl;
       }
       _local_(std::vector<CCachedImagePtr::CStorage*>& locked)
       {
