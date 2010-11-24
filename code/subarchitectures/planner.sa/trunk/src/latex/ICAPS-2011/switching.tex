@@ -67,26 +67,35 @@ Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 \normalsize
 
 \noindent A valid assumption in our setting corresponds to a {\em
-relaxed} visitation of the root term of $(:init)$. In this relaxed
+relaxed} visitation of the root term of $(\pp{:init})$. In this relaxed
 case, a conjunctive term is visited iff its atomic subterms are
 visited, and zero or more of its immediate probabilistic subterms are
 visited. The starting state, $\state_0$, for sequential planning is
 the unique abstract state with probability $1.0$ -- E.g., for
-$\pp{DORA}$ $s_0 \equiv \{(= (\pp{is-in}~\pp{DORA})~\pp{kitchen})\}$.
+$\pp{DORA}$:
+
+\[
+\begin{array}{l}
+s_0 \equiv \{(=(\pp{is-in}~\pp{DORA})~\pp{kitchen}),\\
+\;\;(=(\pp{is-in}~\pp{box})~\#), (=(\pp{is-in}~\pp{cup})~\#)\}.
+\end{array}
+\]
 
 In order to make assumptions available to the sequential planner, we
 add one {\em assumptive} action $\assumptiveS{i}$ to the problem for
 each element, $p_i (T_i)$, of each probabilistic term from
-$(:init)$. The physics of these actions is as
+$(\pp{:init})$. The physics of these actions is as
 follows. $\assumptiveS{i}$ can be executed if no $\assumptiveS{j}$,
 $j \neq i$, has been executed from the same probabilistic term, and,
 either $(\pp{probabilistic}~..p_i~(T_i)..)$ is in the root conjunct,
 or it occurs in $T_k$ for some executed $\assumptiveS{k}$.
 %%
-Executing $\assumptiveS{i}$ in $s$ effects a transition to a
-successor state $s^{T_i}$ with probability $p_i$, and $s^\bot$ with
-probability $1 - p_i$. Here, $s^{T_i}$ is the union of $s$ and atomic
-terms from $T_i$, and $s^\bot$ is a sink state -- I.e.,
+Executing $\assumptiveS{i}$ in $s$ effects a transition to a successor
+state $s^{T_i}$ with probability $p_i$, and $s^\bot$ with probability
+$1 - p_i$. Here, $s^{T_i}$ is the union of $s$ with atomic terms from
+$T_i$ and conflicting propositions from $s$ removed. For example, if
+the action adds $(=(\pp{is-in}~\pp{box})~\pp{office})$, then it must
+delete $(=(\pp{is-in}~\pp{box})~\#)$. State $s^\bot$ is a sink, where
 $\forall\action\in\actions$ $\reward(\state^\bot, \action) = 0$ and
 $\transProb(\state^\bot, \action, \state^\bot) = 1$.
 
@@ -100,10 +109,10 @@ the sequential continual planning switches to a decision-theoretic
 session, discussed in detail below. Overall, by scheduling $\action$
 the sequential planner makes a naive assumption about the possibility
 of the agent eventually ``committing'' to the truth values of specific
-state propositions. Thus, the role of decision-theoretic plans is to
-examine the validity of assumptions about the runtime state of
-sequential planning. Second, if the truth value of $\prop$ is not
-known, and no assumption is made about it in the current abstract
+state propositions in $\poss{\action}$. The role of decision-theoretic
+plans is to examine the validity of assumptions about the runtime
+state of sequential planning. Second, if the truth value of $\prop$ is
+not known, and no assumption is made about it in the current abstract
 state, then if $\prop \in
 \poss(\action)$ we have that action $\action$ is not applicable.
 
@@ -153,7 +162,7 @@ artificially limits the length of candidate sequential plans.
 
 In a decision-theoretic session, the switching planner solves a sensing
 problem in an abstract processes defined in terms of the assumptive
-actions in the current sequential plan, and the $(\pp{:init})$ block
+actions in the current sequential plan, and the $(\pp{:init})$ declaration
 from the original problem description. 
 
 The focus for decision-theoretic planning is on sensing, rather than
@@ -202,7 +211,7 @@ posed to decision-theoretic planning are sourced from a motivational
 component of our robotic architecture.
 
 The starting belief-state for the abstract process is given in terms
-of a {\em relaxed} $(\pp{:init})$ block.  We first construct a
+of a {\em relaxed} $(\pp{:init})$ declaration.  We first construct a
 tree which only includes terms from the {\em relaxed} visitation
 characterised by the {\em assumptive} actions in the current
 sequential plan. For example, if $\pp{DORA}$'s plan is:
@@ -215,7 +224,7 @@ sequential plan. For example, if $\pp{DORA}$'s plan is:
 \end{array}
 \]
 
-\noindent Then the {\em relaxed} block will be,
+\noindent Then the {\em relaxed} declaration will be,
 
 \small
 \begin{tabtt}
@@ -243,17 +252,18 @@ abstraction of the environment that does not contain a $\pp{cup}$,
 where the inclusion (exclusion) of POMDP actions is the same as we
 defined it for the sequential session.
 
-In a second step, we iteratively refine the {\em relaxed} block by
-adding terms from the original block while the resulting state space
-remains of a practicable size. Of course, it is expensive to measure
-size exactly, and in practice we estimate this to be
-$2^{|\propositions^\#|}$, where $\propositions^\#$ is the set of
-propositions in the abstraction that were not assigned the {\em
-unknown} value \#. Terms are proposed for addition because they are
-probabilistic, and because they were omitted in the {\em relaxed}
-visitation characterised by {\em assumptive} actions in the sequential
-plan. Each iteration, we add one candidate term with the largest
-number of parent terms already in the candidate tree.
+In a second step, we iteratively refine the above{\em relaxed}
+declaration by adding terms from the original statement of
+$(\pp{:init})$ while the resulting state space remains of a
+practicable size. Of course, it is expensive to measure size exactly,
+and in practice we estimate this to be $2^{|\propositions^\#|}$, where
+$\propositions^\#$ is the set of propositions in the abstraction that
+were not assigned the {\em unknown} value \#. Terms are proposed for
+addition because they are probabilistic, and because they were omitted
+in the {\em relaxed} visitation characterised by {\em assumptive}
+actions in the sequential plan. Each iteration, we add one candidate
+term with the largest number of parent terms already in the candidate
+tree.
 
 
 
