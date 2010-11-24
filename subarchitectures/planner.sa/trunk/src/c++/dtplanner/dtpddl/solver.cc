@@ -739,7 +739,7 @@ POMDP_State* /*NON-LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POM
                      <<current_state->get__expected_value()<<std::endl);
         }
 
-        if(this->belief_state__space.size() > 500)break;
+        if(this->belief_state__space.size() > 1000)break;
     }
     
     while(policy_Iteration()){

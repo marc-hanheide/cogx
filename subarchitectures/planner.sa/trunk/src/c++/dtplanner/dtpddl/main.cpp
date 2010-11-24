@@ -50,6 +50,7 @@ using std::endl;
 /* WARNING :: C++ zero initialisation is not safe.*/
 Command_Line_Arguments command_Line_Arguments;
 
+int min_nonobs_steps = 1;
 
 namespace GLOBAL__read_in__domain_description
 {
@@ -230,6 +231,12 @@ int main(int argc, char** argv)
     assert(command_Line_Arguments.size() == 0);
     command_Line_Arguments = Command_Line_Arguments(argc, argv);
     
+    if(!command_Line_Arguments.got_guard("--steps")){
+        WARNING("Using --steps "<<min_nonobs_steps<<std::endl);
+    } else {
+        min_nonobs_steps = command_Line_Arguments.get_int();
+    }
+    
     while(read_in__domain_description()){};
     
     while(read_in__problem_description()){};
@@ -323,6 +330,8 @@ int main(int argc, char** argv)
 
 
     bool post_an_action = true;
+    
+    int step_count = 0;
     
     while(true){
 
@@ -482,7 +491,10 @@ int main(int argc, char** argv)
             current_state = successor_state;
             
             if(1 < available_observations.size()){/*Should we replan, have our beliefs changed?*/
-                current_state = solver->solve__for_new_starting_state(successor_state);
+                step_count++;
+                if(!(step_count % min_nonobs_steps)){
+                    current_state = solver->solve__for_new_starting_state(successor_state);
+                }
             }
         } else {
             post_an_action = false;
@@ -507,6 +519,7 @@ int main(int argc, char** argv)
 #else
 
 
+
 /*Charles' testing MAIN.*/
 int main(int argc, char** argv)
 {    
@@ -515,6 +528,14 @@ int main(int argc, char** argv)
     
     assert(command_Line_Arguments.size() == 0);
     command_Line_Arguments = Command_Line_Arguments(argc, argv);
+
+    if(!command_Line_Arguments.got_guard("--steps")){
+        WARNING("Using --steps "<<min_nonobs_steps<<std::endl);
+    } else {
+        min_nonobs_steps = command_Line_Arguments.get_int();
+    }
+    
+    
     
     int seed = 2010;
     srandom(seed);
@@ -644,11 +665,12 @@ int main(int argc, char** argv)
 #endif
 
 
+            int step_count = 0;
             bool needs_to_replan = false;
             for(auto i = 0; i < 20; i++){
 
                 
-                INTERACTIVE_VERBOSER(true, 18000, "Current state is :: "
+                INTERACTIVE_VERBOSER(true, 19000, "Current state is :: "
                                      <<*current_state<<std::endl
                                      <<"First element is :: "
                                      <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
@@ -656,12 +678,12 @@ int main(int argc, char** argv)
                 std::pair<Planning::Formula::Action_Proposition, uint> _action
                     = solver->get_prescribed_action(current_state);
             
-                INTERACTIVE_VERBOSER(true, 18000, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+                INTERACTIVE_VERBOSER(true, 19000, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
             
                 auto observations = current_state->get__possible_observations_given_action(_action.second);
 
                 if(1 == observations.size()){
-                    needs_to_replan = false;
+                    needs_to_replan = needs_to_replan|false;
                 } else {
                     needs_to_replan = true;
                 }
@@ -670,7 +692,7 @@ int main(int argc, char** argv)
                 for(auto observation = observations.begin()
                         ; observation != observations.end()
                         ; observation++){
-                    INTERACTIVE_VERBOSER(true, 18000, "Observation :: "<<*observations[random_index]<<" "<<_action.second<<std::endl);
+                    INTERACTIVE_VERBOSER(true, 19000, "Observation :: "<<*observations[random_index]<<" "<<_action.second<<std::endl);
             
                     {char ch; std::cin>>ch; if(ch == 'y')break;}
                     random_index++;
@@ -688,13 +710,18 @@ int main(int argc, char** argv)
                 current_state = successor_state;
 
                 /*TWO DAYS TO GO -- Do not replan unless there was sensing.*/
-                if(needs_to_replan){
-                    current_state = solver->solve__for_new_starting_state(successor_state);
+                if(observations.size() > 1){//;°needs_to_replan){
+                    
+                    step_count++;
+
+                    if(!(step_count % min_nonobs_steps)){
+                        current_state = solver->solve__for_new_starting_state(successor_state);
+                    }
                 }
                 
 
                 
-                INTERACTIVE_VERBOSER(true, 18000, "Current belief state is :: "<<*current_state<<std::endl);
+                INTERACTIVE_VERBOSER(true, 19000, "Current belief state is :: "<<*current_state<<std::endl);
             }
 
         
