@@ -224,6 +224,7 @@ class SwitchingAgent(agent.Agent):
         if sat:
             log.debug("dt planning stopped. Subgoal reached.")
             self.dt_done()
+            return
 
         dt_pnode = self.dt_task.dt_plan[-1]
 

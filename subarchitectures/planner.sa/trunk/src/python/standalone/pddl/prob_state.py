@@ -229,6 +229,7 @@ class ProbabilisticState(State):
             dict.__setitem__(self, svar, ValueDistribution(value))
 
     def __contains__(self, key):
+        #FIXME: This fails for default values (e.g. testing for P(x)=FALSE)
         if isinstance(key, Fact):
             return dict.__contains__(self, key.svar) and self.dist(key.svar)[key.value] > 0.0
         return dict.__contains__(self, key)
