@@ -183,20 +183,18 @@ artificially limits the length of candidate sequential plans.
 
 \subsection{Decision-Theoretic Planning in Abstractions}
 
-In a decision-theoretic session, the switching planner solves a sensing
-problem in an abstract processes defined in terms of the assumptive
-actions in the current sequential plan, and the $(\pp{:init})$ declaration
-from the original problem description. 
+In a contingent session our switching planner solves a sensing problem
+in an abstract processes defined in terms of the assumptive actions in
+the current sequential plan, and the $(\pp{:init})$ declaration from
+the original problem description.
 
-The focus for decision-theoretic planning is on sensing, rather than
-the achievement of utility according to the given objectives. We
-therefor give the process in this session a different reward model, which
-reflects the value of performing sensing actions in the context of the
-trace proposed for the preceding sequential deliberation. In detail,
-all positive rewards from the initial POMDP are removed. Then, for
-each $\assumptiveS{i}$ action scheduled in the current sequential
-plan, we have a {\em dual} $\assumptiveDT{i}$ so that
-$\forall\state\in\states$:
+The focus for contingent planning is on sensing, we therefore give the
+process in this session an augmented reward model.  This reflects the
+value of performing sensing actions in the context of the trace
+proposed by the preceding sequential deliberation. First, all rewards
+from the original POMDP are retained. Then, for each $\assumptiveS{i}$
+action scheduled by the current trace, we have a {\em dual}
+$\assumptiveDT{i}$ so that $\forall\state\in\states$:
 
 \[
 \reward(\state, \assumptiveDT{i}) = \bigg\{ \begin{array}{ll}
@@ -206,13 +204,19 @@ $\forall\state\in\states$:
 \]
 
 \noindent Where $\$(T_i)$ is a positive numeric quantity which
-captures the reward the agent receives for correctly jettisoning a
+captures the reward the agent receives for correctly rejecting a
 false assumption. The added dual actions are propositionally trivial
 -- i.e., $\forall\state\in\states$ $\poss(\assumptiveDT{i})
-\subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  Also, for the action,
-$\action_i$, whose scheduled execution triggered the switch to the
-decision-theoretic session, we include another propositionally trivial
-action $\actions.\poss(\action_i)$ with the reward property:
+\subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  
+%%
+In order to reduce the scope of possible rejections, we compile the
+serial trace into a partially ordered plan (POP). If $\action_i$ is
+the sequentially scheduled execution that triggered the switch to the
+contingent session, then we discard assumptive duals that are not
+ordered before $\action_i$ in that POP.
+%%
+Also for the action $\action_i$, we include another propositionally
+trivial action $\actions.\poss(\action_i)$ with the reward property:
 
 \[
 \reward(\state, \actions.\poss(\action_i)) = \bigg\{ \begin{array}{ll}
@@ -272,14 +276,14 @@ Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 
 \noindent At this point, decision-theoretic planning would proceed in an
 abstraction of the environment that does not contain a $\pp{cup}$,
-where the inclusion (exclusion) of POMDP actions is the same as we
+where the applicability of POMDP actions is the same as we
 defined it for the sequential session.
 
 In a second step, we iteratively refine the above{\em relaxed}
 declaration by adding terms from the original statement of
 $(\pp{:init})$ while the resulting state space remains of a
 practicable size. Of course, it is expensive to measure size exactly,
-and in practice we estimate this to be $2^{|\propositions^\#|}$, where
+and in practise we estimate this to be $2^{|\propositions^\#|}$, where
 $\propositions^\#$ is the set of propositions in the abstraction that
 were not assigned the {\em unknown} value \#. Terms are proposed for
 addition because they are probabilistic, and because they were omitted
