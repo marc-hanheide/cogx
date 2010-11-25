@@ -1,23 +1,22 @@
 
 
 We describe our continual planning approach that switches between
-sequential and decision-theoretic sessions. Continual planning and
-execution proceeds in a POMDP described in DTPDDL. During sequential
-sessions, planning is performed by a ``classical'' system,\footnote{By
-``classical'', we mean a system the is designed to solve fully
-observable deterministic tasks.}  and execution proceeds according to
-the {\em trace} computed by that system. In the format of a classical
-plan, that {\em trace} specifies a sequence of POMDP actions that
-achieves the agent's objectives for a deterministic approximation,
-i.e., {\em determinisation}, of the problem at hand. More precisely,
-the trace is an interleaved sequence of POMDP actions and {\em
-assumptive} actions. The latter give some of the assumptions the
-planner makes about the truth value of {\em runtime state variables}
--- e.g. that a box of cornflakes is located in the kitchen at the
-third plan step. Another kind of assumption, called an {\em
-executability} assumption, is made when the trace includes an action
-$\action$ that is not applicable with probability $1$ at the
-belief-state
+sequential and contingent sessions. Continual planning and execution
+proceeds in a deterministic-action POMDP described in DTPDDL. During a
+sequential session, planning is performed by a ``classical''
+system,\footnote{That is, a system designed to solve fully observable
+deterministic tasks.}  and execution proceeds according to the {\em
+trace} computed by that system. Taking the form of a classical plan,
+the {\em trace} specifies a sequence of POMDP actions that achieve the
+agent's objectives in a deterministic approximation, i.e., {\em
+determinisation}, of the problem at hand. More precisely, the trace is
+an interleaved sequence of POMDP actions and {\em assumptive}
+actions. The latter correspond to assumptions the planner makes about
+the truth value of {\em runtime state variables} -- e.g. that a box of
+cornflakes is located in the kitchen at the third plan step. Another
+kind of assumption, called an {\em applicability} assumption, is made
+when the trace includes an action $\action$ that is not applicable
+with probability $1$ at the belief-state
 \bstate\ that the system is projected to be in when \action\ is executed, 
 i.e., $\exists\state\in\states
 \bstate(\state) > 0$ and $\poss(\action)\not\subseteq\state$. By
@@ -25,30 +24,27 @@ scheduling
 \action,  the serial planner makes an assumption about the
 observability of the precondition $\poss(\action)$.
 
-A sequential session always proceeds first. Planning and execution are
-interleaved according to the continual paradigm until an executability
-assumption about an action, $\action$, scheduled for execution,
-occurs. At this point our approach switches to using a
-decision-theoretic solver which tailors sensory processing by the
-agent to test the validity of the assumptions made in the trace,
-including the truth value of $\poss(\action)$.
-
-%% Sequential planning proceeds in a continual manner until the
-%% verification of an assumption about runtime state is scheduled. At
-%% that point the system switches to a decision-theoretic planner that is
-%% used to tailor sensory processing by the robot to test the validity of
-%% the assumptions made so far.
-
-In this work, the problem at hand is a POMDP described in DTPDDL. From
-hereon, we restrict our attention to POMDPs with deterministic
-actions. Therefore it is worthwhile noting that any POMDP with
-stochastic actions can be compiled into an equivalent
-deterministic-action POMDP, where all the original action uncertainty
-is expressed in the starting-state
-distribution~\cite{ng:Jordan:2000}. In our setting, that of
-finite-horizon planning, such a compilation yields a finite flat
-representation of the original POMDP, only with deterministic
-actions. 
+Our approach always begins with a sequential session. Non-assumptive
+actions from the trace are executed until the applicability of the
+next scheduled action, here \action, is questionable. A contingent
+session then begins, which tailors sensory processing by the agent to
+perceive whether the assumptions made in the trace hold. For each
+active assumption in the trace, we add a {\em disconfirm} action to
+the POMDP whose execution is rewarding (resp. costly) if the
+assumption is false (resp. true). We also add one {\em confirm} action
+that is rewarding (resp. costly) to execute if $\poss(\action)$ is
+true (resp. false). If execution of the contingent plan applies a
+disconfirm action, then a new sequential session begins at the current
+underlying belief-state. If the confirm action is executed, the
+sequential session is resumed, and \action\ is executed. Otherwise,
+control rests in the continual session.
+%%
+Finally, because contingent planning is only practical in relatively
+small POMDPs, contingent sessions proceed in an abstract decision
+process determined by the current trace. That abstract process is
+constructed by first omitting all variables from the model that are
+not featured in the trace, and by then iteratively refining that
+abstraction while the resulting model is of a practicable size.
 
 
 PLEASE STICK A PARAGRAPH HERE, (SENSIBLY) REQUESTED BY MORITZ, ABOUT

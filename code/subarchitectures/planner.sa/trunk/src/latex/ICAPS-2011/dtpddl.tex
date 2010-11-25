@@ -157,3 +157,13 @@ Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 \hline
 \end{tabular}
 \normalsize
+
+From hereon, in order to simplify the discussion (and implementation)
+we shall restrict our attention to POMDPs with deterministic
+actions. It is worthwhile noting that any POMDP with stochastic
+actions can be compiled into an equivalent deterministic-action POMDP,
+where all the original action uncertainty is expressed in the
+starting-state distribution~\cite{ng:Jordan:2000}. In our setting,
+that of finite-horizon planning, such a compilation yields a finite
+flat representation of the original POMDP, only with deterministic
+actions.
