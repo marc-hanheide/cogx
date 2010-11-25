@@ -10,9 +10,9 @@ MAINTAINER = ttoenige
 
 MASTER_SITES =
 
-LIBDEPS =
+LIBDEPS = cogx/kni_3.9.2
 
-DEB_PACKAGES=
+DEB_PACKAGES= 
 
 MFLAGS=$(MFLAGS_NUMCPU)
 
@@ -31,3 +31,5 @@ checksum-$(DISTFILES):
 checksum-$(PATCHFILES): 
 	true
 
+post-install:
+	cp $(WORKDIR)/$(DISTNAME)/resources 
