@@ -43,10 +43,10 @@ state propositions.
 In a deterministic-action POMDP, all the uncertainty in state and
 action is expressed in the $(\pp{:init})$ declaration. Our approach
 uses the structure of that, as it occurs in the problem description,
-do define a set of state-assumptions available to sequential planning.
+to define a set of state-assumptions available to sequential planning.
 %%
 Writing \#\ if the value of a proposition is unspecified in an
-assumption, for our $\pp{DORA}$ example we have that the following
+assumption, for our $\pp{DORA}$ example we have the following
 assumptions:
 
 \small
@@ -72,7 +72,7 @@ relaxed} visitation of the root term of $(\pp{:init})$. In this relaxed
 case, a conjunctive term is visited iff its atomic subterms are
 visited, and zero or more of its immediate probabilistic subterms are
 visited. The starting state, $\state_0$, for sequential planning is
-the unique abstract state with probability $1.0$ -- E.g., for
+the unique abstract state with probability $1.0$ -- e.g., for
 $\pp{DORA}$:
 
 \[
@@ -150,7 +150,7 @@ make to Eq~\ref{eq:expectedvalue}. %% In other words, writing $V_i$ for
 In goal directed problems, where the only non-zero reward is received
 at the first transition to a goal state, the Eq~\ref{eq:tracevalue}
 criteria corresponds exactly to that of
-\system{FFR$_a$}~\cite{yoon:etal:2007}. Form the perspective of
+\system{FFR$_a$}~\cite{yoon:etal:2007}. From the perspective of
 gradient-based reinforcement learning systems, such as William's
 REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
 under reasonable assumptions the optimal trace identifies a maximal
@@ -187,7 +187,7 @@ $\forall\state\in\states$:
 \noindent Where $\$(T_i)$ is a positive numeric quantity which
 captures the reward the agent receives for correctly jettisoning a
 false assumption. The added dual actions are propositionally trivial
--- I.e., $\forall\state\in\states$ $\poss(\assumptiveDT{i})
+-- i.e., $\forall\state\in\states$ $\poss(\assumptiveDT{i})
 \subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  Also, for the action,
 $\action_i$, whose scheduled execution triggered the switch to the
 decision-theoretic session, we include another propositionally trivial
@@ -263,9 +263,9 @@ $\propositions^\#$ is the set of propositions in the abstraction that
 were not assigned the {\em unknown} value \#. Terms are proposed for
 addition because they are probabilistic, and because they were omitted
 in the {\em relaxed} visitation characterised by {\em assumptive}
-actions in the sequential plan. Each iteration, we add one candidate
-term with the largest number of parent terms already in the candidate
-tree.
+actions in the sequential plan. In each iteration, we add one
+candidate term with the largest number of parent terms already in the
+candidate tree.
 
 
 

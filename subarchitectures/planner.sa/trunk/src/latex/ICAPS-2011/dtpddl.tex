@@ -5,24 +5,25 @@ Language~\cite{younes:littman:04,younes:etal:2005}. PPDDL was used in
 all 3 of the International Planning Competitions since 2004. A
 variation on PDDL for describing domains with stochastic actions and
 uncertain starting configurations, PPDDL is a declarative first-order
-language that facilitates factored description of domains and problem
+language that facilitates factored descriptions of domains and problem
 instances. There are straightforward compilations from problems
 expressed compactly in PPDDL to propositional representations amenable
 to state-of-the-art planning procedures.
 
 Because PPDDL cannot model domains that feature partial observability,
-we developed an extension of that language, called DTPDDL. This can
-express probabilistic models of the sensing consequences of acting, to
-quantitatively capture unreliability in perception. That expressive
-power is achieved by incorporating perceptual analogues of fluent,
-predicate, and action definitions. In detail, we have declarations of
-state characterising predicate and fluent symbols according to the
-PPDDL syntax. In addition, we allow two other declarations, for
-perceptual predicates and fluents respectively. For example, suppose
-our robot is tasked with exploring {\em locations} in order to
-identify the whereabouts of a {\em visual-object}. We must describe
-state and perceptual facts that model the {\em true}, resp. perceived,
-locations of objects. In DTPDDL, these declarations appear as:
+we developed an extension of that language, called decision-theoretic
+(DT)PDDL. This can express probabilistic models of the sensing
+consequences of acting, to quantitatively capture unreliability in
+perception. That expressive power is achieved by incorporating
+perceptual analogues of fluent, predicate, and action definitions. In
+detail, we have declarations of state characterising predicate and
+fluent symbols according to the PPDDL syntax. In addition, we allow
+two other declarations, for perceptual predicates and fluents
+respectively. For example, suppose our robot is tasked with exploring
+{\em locations} in order to identify the whereabouts of a {\em
+visual-object}. We must describe state and perceptual facts that model
+the {\em true}, resp. perceived, locations of objects. In DTPDDL,
+these declarations appear as:
 
 \small
 \begin{tabtt}
@@ -94,14 +95,14 @@ instantiating the $\pp{look-for-object}$ operator:
 
 
 \noindent Here, the {\em execution} declaration is a lifted description of
-the sense action-precondition -- I.e,
+the sense action-precondition -- i.e,
 $(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office}) =
 \poss_\stochActions(\pp{vision}~\pp{DORA}~\pp{box}~\pp{office})$. Above,
 we include a redundant state-precondition, $(=(\pp{is-in}~?r)?l)$ in
 order to fully demonstrate the syntax. Interpreting the above schema,
 if action $(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office})$ is
 executed, there is a $0.8$ chance of perceiving the box if it is in
-the $\pp{office}$, and otherwise a $0.1$ of perceiving it.
+the $\pp{office}$, and otherwise a $0.1$ chance of perceiving it.
 
 The syntax and semantics for describing initial state distributions in
 DTPDDL is taken verbatim from PPDDL. It is useful to present that
@@ -114,7 +115,7 @@ where $T_i$ are conjunctive, or (3) a conjunct over probabilistic and
 atomic terms. The root term is always conjunctive, and the leaves are
 atomic. For example, the starting distribution for $\pp{DORA}$ might
 be described thusly:\footnote{In PDDL, $(\pp{:init}~T_1..T_n)$
-expresses the conjunctive root of the tree -- I.e., the root node
+expresses the conjunctive root of the tree -- i.e., the root node
 $(\pp{and}~T_1..T_n)$. Also, we shall write $\prop$, rather than
 $(\pp{and}~\prop)$, it a conjunctive term contain a single atomic
 subterm.}
