@@ -18,7 +18,7 @@ kind of assumption, called an {\em applicability} assumption, is made
 when the trace includes an action $\action$ that is not applicable
 with probability $1$ at the belief-state
 \bstate\ that the system is projected to be in when \action\ is executed, 
-i.e., $\exists\state\in\states
+i.e., $\exists\state\in\states\;
 \bstate(\state) > 0$ and $\poss(\action)\not\subseteq\state$. By
 scheduling
 \action,  the serial planner makes an assumption about the
@@ -58,22 +58,22 @@ HOW WE DO BELIEF REVISION ACROSS SWITCHING.
 
 \subsection{Sequential Planning in POMDPs}
 
+A sequential session uses a classical planner to compute a trace. The
+latter encapsulates assumptions about: (1) the true underlying state,
+(2) how the plan's execution will progress, and (3) the possibility of
+the agent eventually holding strong beliefs about the truth values of
+specific state propositions. Here we describe the deterministic
+planning problem, derived from the DTPDDL model, that admits plans
+which correspond to traces.
 
-Our approach uses sequential planning to compute a linear plan, and
-one trace of that plan's execution. The latter encapsulates
-assumptions about: (1) the true underlying state, (2) how the plan's
-execution will progress, and (3) the possibility of the agent
-eventually holding strong beliefs about the truth values of specific
-state propositions.
-
-In a deterministic-action POMDP, all the uncertainty in state and
-action is expressed in the $(\pp{:init})$ declaration. Our approach
-uses the structure of that, as it occurs in the problem description,
-to define a set of state-assumptions available to sequential planning.
+In a deterministic-action POMDP all the uncertainty in state and
+action is expressed in the $(\pp{:init})$ DTPDDL declaration. Our
+approach uses the structure of that, as it occurs in the problem
+description, to define a set of state-assumptions available to
+sequential planning.
 %%
-Writing \#\ if the value of a proposition is unspecified in an
-assumption, for our $\pp{DORA}$ example we have the following
-assumptions:
+Writing \#\ if the value of a proposition is unspecified, for
+$\pp{DORA}$ we have the following assumptions:
 
 \small
 \begin{tabular}{cccc}
@@ -93,13 +93,13 @@ Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 \end{tabular}
 \normalsize
 
-\noindent A valid assumption in our setting corresponds to a {\em
-relaxed} visitation of the root term of $(\pp{:init})$. In this relaxed
-case, a conjunctive term is visited iff its atomic subterms are
-visited, and zero or more of its immediate probabilistic subterms are
-visited. The starting state, $\state_0$, for sequential planning is
-the unique abstract state with probability $1.0$ -- e.g., for
-$\pp{DORA}$:
+\noindent In detail, a valid assumption in our setting corresponds to a {\em
+relaxed} visitation of the root term of $(\pp{:init})$. In this
+relaxed case, a conjunctive term is visited iff its atomic subterms
+are visited, and zero or more of its immediate probabilistic subterms
+are visited. The starting state, $\state_0$, for sequential planning
+is an {\em abstract} state that captures the unique assumption which
+has probability $1.0$. In $\pp{DORA}$, that is:
 
 \[
 \begin{array}{l}
@@ -120,63 +120,58 @@ or it occurs in $T_k$ for some executed $\assumptiveS{k}$.
 Executing $\assumptiveS{i}$ in $s$ effects a transition to a successor
 state $s^{T_i}$ with probability $p_i$, and $s^\bot$ with probability
 $1 - p_i$. Here, $s^{T_i}$ is the union of $s$ with atomic terms from
-$T_i$ and conflicting propositions from $s$ removed. For example, if
+$T_i$ and conflicting propositions from $s$ deleted. For example, if
 the action adds $(=(\pp{is-in}~\pp{box})~\pp{office})$, then it must
-delete $(=(\pp{is-in}~\pp{box})~\#)$. State $s^\bot$ is a sink, where
-$\forall\action\in\actions$ $\reward(\state^\bot, \action) = 0$ and
-$\transProb(\state^\bot, \action, \state^\bot) = 1$.
+delete $(=(\pp{is-in}~\pp{box})~\#)$. State $s^\bot$ is an added sink,
+where $\forall\action\in\actions$ $\reward(\state^\bot, \action) = 0$
+and $\transProb(\state^\bot, \action, \state^\bot) = 1$.
 
-Because $\state_0$ is abstract, and because actions can have
-preconditions that are not uniformly true in the underlying
-(resp. abstract) belief-state, we must make two further adjustments to
-the problem posed to the sequential planner. First, if
+For sequential planning the operators from the POMDP model are
+available with semantics that accommodate the above abstraction as
+follows. In the deterministic model a proposition $\prop$ can be
+thought to have a ternary interpretation at a state \state, as either
+{\em true}, written $\prop\in\state$, {\em false}, written
+$\prop\not\in\state$, or {\em unspecified}, with a slight abuse of
+notation written $\prop=\#\in\state$. For example, in $\pp{DORA}$
+$(=(\pp{is-in}~\pp{box})\pp{office})\#\in\state_0$. For POMDP actions
+$\action\in\actions$ in the deterministic model, if
+$\prop \in \poss(\action)$, or if $\prop$ is the subject of a positive
+or negative effect of $\action$, then $\action$ is not applicable
+in \state\ if $\prop=\#\in\state$. Indeed, first an assumptive action
+must be applied to make a truth assignment to \prop, and then that
+truth assignment could be modified by POMDP operators. Lastly, we
+address the switching semantics of action execution. If
 $\action\in\actions$ has a precondition that is not true with
-probability $1$ in $\bstate_0$, then before it is executed blindly,
-the sequential continual planning switches to a decision-theoretic
-session, discussed in detail below. Overall, by scheduling $\action$
-the sequential planner makes a naive assumption about the possibility
-of the agent eventually ``committing'' to the truth values of specific
-state propositions in $\poss(\action)$. The role of decision-theoretic
-plans is to examine the validity of assumptions about the runtime
-state of sequential planning. Second, if in the current state \state\
-the value of $\prop$ is $\#$ ---because a truth value is not specified
-in $\state_0$ and no assumption is made about it in the plan
-to \state--- then if $\prop \in \poss(\action)$, or if $\prop$ is the
-subject of a positive or negative effect of $\action$, we have that
-action $\action$ is not applicable in \state.
+probability $1$ in the underlying belief $\bstate$, then before it is
+executed blindly, the system switches to a contingent session,
+discussed in detail in the following section.
 
-Finally, we come to valuing sequential plans, and therefore giving a
-criteria for the sequential planner to optimise. Where $p_i$ is the
-probability that the $i^{th}$ sequenced action does not transition to
-$s^\bot$, we value a trace as follows:
+
+We now describe the optimisation criteria given to the classical
+planner. Where $\prob_i$ is the probability that the $i^{th}$
+sequenced action $\action_i$ does not transition to $\state^\bot$, we
+define the value of a trace
+$\state_0, \action_0, \state_1, \action_1,.., \state_N$ from the
+deterministic model to equal:
 
 \begin{equation}\label{eq:tracevalue}
-V(s_0, a_0, s_1, a_1,.., s_N) =  \prod_{i=1..N-1} p_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
+V(\state_0, \action_0, \state_1, \action_1,.., \state_N) =  \prod_{i=1..N-1} \prob_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
 \end{equation}
 
-\noindent The optimal trace given a plan, i.e., the non-assumptive
-actions in sequence, therefore has value:
+\noindent The optimal trace given a plan, i.e., the sequence of non-assumptive
+actions from the trace, therefore has value:
 
 \[
-V^* = \max_{p_1, .., p_n} \prod_{i=1..N-1} p_i \sum_{i=1..N-1}
+V^* = \max_{\prob_1, .., \prob_n} \prod_{i=1..N-1} \prob_i \sum_{i=1..N-1}
 \reward(\state_i, \action_i),
 \]
 
-\noindent which is equal to the maximal contribution a trace of the plan can
-make to Eq~\ref{eq:expectedvalue}. %% In other words, writing $V_i$ for
-%% the value of the $i^{th}$ trace of the plan expressed in $s_0, a_0,
-%% s_1, a_1,.., s_N$, we have
-%%
-%% \[
-%% V^* = \arg\min_{V_i} \Expect \bigg{[} 
-%% \sum_{t=0}^{N-1}  \reward(\bstate_t, \pp{PLAN}_t) \mid \pp{PLAN}, \bstate_0
-%% \bigg{]} - V_i.
-%% \]
-%%
-In goal directed problems, where the only non-zero reward is received
-at the first transition to a goal state, the Eq~\ref{eq:tracevalue}
-criteria corresponds exactly to that of
-\system{FFR$_a$}~\cite{yoon:etal:2007}. From the perspective of
+\noindent which is equal to the maximal additive contribution a trace of the plan can
+make to Eq~\ref{eq:expectedvalue}, taking an FSC that corresponds to
+the sequential plan.  In goal directed problems, where the only
+non-zero reward is received at the first transition to a goal state,
+the Eq~\ref{eq:tracevalue} criteria gives us the behaviour
+of \system{FFR$_a$}~\cite{yoon:etal:2007}. From the perspective of
 gradient-based reinforcement learning systems, such as William's
 REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
 under reasonable assumptions the optimal trace identifies a maximal
