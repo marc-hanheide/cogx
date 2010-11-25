@@ -14,6 +14,7 @@
 #define IDOBJ_SETTINGS "Video.Grabber.Settings"
 
 #define IDPART_SETTINGS_FORM "001.settings"
+#define IDPART_SETTINGS_VALUES "002.values"
 #define IDCMD_GRAB   "video.grab"
 #define IDCMD_RECORD "video.record"
 #define IDCMD_STOP   "video.stop"
@@ -101,6 +102,12 @@ void CVideoGrabber::configure(const map<string,string> & _config)
       if (s == "1" || s == "yes" || s == "true" || s == "on")
          m_fakeRecording = true;
    }
+
+   if((it = _config.find("--grab_ms")) != _config.end()) {
+      istringstream str(it->second);
+      str >> m_frameGrabMs;
+   }
+   if (m_frameGrabMs < 10) m_frameGrabMs = 10;
 
 #ifdef FEAT_VISUALIZATION
    m_display.configureDisplayClient(_config);
@@ -225,6 +232,15 @@ void CVideoGrabber::CVvDisplayClient::createForms()
       "</table>";
    m_frmSettings.add(new cxd::CFormValues::field("devicenames"));
 
+   help1 = "Stop recording after limited time. Enter 0 or less for no limit.";
+   ss <<
+      "<table>"
+      "<tr><td>Recording limit: </td><td>"
+      "<input type='text' name='recordtimelimit' style='width:10em;' title='" << help1 << "' /> milliseconds"
+      "</td></tr>"
+      "</table>";
+   m_frmSettings.add(new cxd::CFormValues::field("recordtimelimit"));
+
    ss << "<input type='submit' value='Apply' />";
 
    ss << 
@@ -241,8 +257,26 @@ void CVideoGrabber::CVvDisplayClient::createForms()
    setDeviceNames("L R");
    setCounterDigits(3);
    setCounterValue(0);
+   setRecordTimeLimit(5000);
    
    setHtmlForm(IDOBJ_SETTINGS, IDPART_SETTINGS_FORM, ss.str());
+   showCurrentSettings();
+}
+
+void CVideoGrabber::CVvDisplayClient::showCurrentSettings()
+{
+   std::ostringstream ss;
+   ss <<
+      "<hr>"
+      "Current settings:"
+      "<div>"
+      "Saving to: " << getDirectory() << "/" << getImageFilenamePatt() << "<br>"
+      "Next counter value: " << getCounterValue() << "<br>"
+      "Time limit: " << getRecordTimeLimit() << "ms<br>"
+      "Grabbing speed: " << pViewer->m_frameGrabMs << "ms, "
+      << _str_(1000.0/pViewer->m_frameGrabMs, 0, 3, ' ') << "fps<br>"
+      "</div>";
+   setHtml(IDOBJ_SETTINGS, IDPART_SETTINGS_VALUES, ss.str());
 }
 
 std::string CVideoGrabber::CVvDisplayClient::getDirectory()
@@ -310,6 +344,16 @@ void CVideoGrabber::CVvDisplayClient::setCounterValue(long nValue)
    m_frmSettings.setValue("countervalue", _str_(nValue));
 }
 
+long CVideoGrabber::CVvDisplayClient::getRecordTimeLimit()
+{
+   return m_frmSettings.getInt("recordtimelimit");
+}
+
+void CVideoGrabber::CVvDisplayClient::setRecordTimeLimit(long nValue)
+{
+   m_frmSettings.setValue("recordtimelimit", _str_(nValue));
+}
+
 void CVideoGrabber::CVvDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
    //debug(event.data + " (received by VideoViewer)");
@@ -348,6 +392,7 @@ void CVideoGrabber::CVvDisplayClient::updateDisplay()
    std::map<std::string, std::string> fields;
    m_frmSettings.get(fields);
    setHtmlFormData(IDOBJ_SETTINGS, IDPART_SETTINGS_FORM, fields);
+   showCurrentSettings();
 }
 
 std::string CVideoGrabber::CVvDisplayClient::getControlState(const std::string& ctrlId)
@@ -364,6 +409,7 @@ void CVideoGrabber::CVvDisplayClient::handleForm(const std::string& id,
    std::cout << " *** handleForm " << partId << std::endl;
    if (partId == IDPART_SETTINGS_FORM) {
       m_frmSettings.apply(fields);
+      showCurrentSettings();
    }
 }
 
@@ -503,10 +549,11 @@ void CVideoGrabber::receiveImages(const std::string& serverName, const std::vect
 std::vector<std::string> CVideoGrabber::getDeviceNames()
 {
    std::vector<std::string> devnames = _s_::split(m_display.getDeviceNames(), " ", 0, false);
-   while (devnames.size() < m_camIds.size()) {
-      int i = m_camIds[devnames.size()];
-      devnames.push_back(_str_(i));
-   }
+   // TODO: add missing device names, form m_video
+   //while (devnames.size() < m_camIds.size()) {
+   //   int i = m_camIds[devnames.size()];
+   //   devnames.push_back(_str_(i));
+   //}
    return devnames;
 }
 
@@ -529,9 +576,11 @@ void CVideoGrabber::fillRecordingInfo(CRecordingInfo &info)
 
    info.counterStart = m_display.getCounterValue();
    info.counterEnd = info.counterStart; // TODO: calculate from settings
+   info.counter = info.counterStart;
 
+   long reclimit = m_display.getRecordTimeLimit();
    info.tmStart = IceUtil::Time::now();
-   info.tmEnd = info.tmStart + IceUtil::Time::seconds(1); // TODO: calculate from settings
+   info.tmEnd = info.tmStart + IceUtil::Time::milliSeconds(reclimit);
 
    info.deviceNames = getDeviceNames();
 }
@@ -547,8 +596,7 @@ void CVideoGrabber::startGrabbing(const std::string& command)
    }
    else if (command == IDCMD_RECORD) {
       m_RecordingInfo.recording = true;
-      // TODO: speed from m_display/m_RecordingInfo
-      m_pTimer->scheduleRepeated(m_pQueueTick.get(), IceUtil::Time::milliSeconds(200));
+      m_pTimer->scheduleRepeated(m_pQueueTick.get(), IceUtil::Time::milliSeconds(m_frameGrabMs));
    }
 }
 
@@ -696,7 +744,7 @@ void CVideoGrabber::CSaveQueThread::grab()
    m_items.push_back(pack);
 
    //IceUtil::Time tm2 = IceUtil::Time::now() - tm;
-   //m_pGrabber->println("images copied in %lld micros", tm2.toMicroSeconds());
+   //m_pGrabber->debug("images copied in %lld micros", tm2.toMicroSeconds());
    // result: 2+1 images, 40us
 }
 
@@ -747,7 +795,7 @@ void CVideoGrabber::runComponent()
    // image cache and copy only the pointers to locked images; this should take
    // under 1 microsecond per period. Synchronization/multithreading may make
    // this time much longer.
-   // XXX With CTickSyncedTask the grabber lost 10ms in 10s. Find a better implementation of Timer.
+   // XXX With CTickSyncedTask the grabber lost 10ms in 10s. Find a more precise implementation of Timer.
    m_pTimer = new IceUtil::Timer();
    m_pTimer->scheduleRepeated(m_pDrawTick.get(), IceUtil::Time::milliSeconds(200));
 
@@ -758,19 +806,21 @@ void CVideoGrabber::runComponent()
          sleepComponent(200);
          continue;
       }
-      println("Will save %d frames", toSave.size());
+      debug("Will save %d frames", toSave.size());
       vector<CSaveQueThread::CItem>::iterator it;
       for (it = toSave.begin(); it != toSave.end(); it++) {
+         IceUtil::Time tm = IceUtil::Time::now();
          saveQueuedImages(it->images, it->frameInfo);
+         IceUtil::Time tm2 = IceUtil::Time::now() - tm;
+         debug("%d images saved in %lld ms", it->images.size(), tm2.toMilliSeconds());
       }
       toSave.clear();
    }
 
+   debug("joining worker threads");
    tcQueue.join();
    tcDrawer.join();
 
-   // XXX: A crash, with both cancel() and destroy()
-   //timer.cancel(&saveTick); timer.cancel(&drawTick);
    m_pTimer->destroy();
 }
 

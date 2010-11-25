@@ -55,29 +55,14 @@ class CVideoGrabber: public cast::ManagedComponent
 {
 private:
    /**
-    * Which camera to get images from
-    */
-   std::vector<int> m_camIds;
-
-   /**
-    * component ID of the video server to connect to
-    */
-   std::string m_videoServerName;
-   /**
-    * our ICE proxy to the video server
-    */
-   //Video::VideoInterfacePrx m_pVideoServer;
-
-   /**
     * wether we are currently receiving images from the server
     */
    bool m_bReceiving;
 
-   int m_frameGrabCount;       // how many frames to save
-
    std::vector<Video::CVideoClient2*> m_video;
    CRecordingInfo m_RecordingInfo;
    bool m_fakeRecording;
+   long m_frameGrabMs;
 
 #ifdef FEAT_VISUALIZATION
    // HACK: The image data in IplImage will point into char data of m_DisplayBuffer.
@@ -107,10 +92,13 @@ private:
       void setCounterDigits(long nDigits);
       long getCounterValue();
       void setCounterValue(long nValue);
+      long getRecordTimeLimit();
+      void setRecordTimeLimit(long nValue);
 
    public:
       CVvDisplayClient() { pViewer = NULL; }
       void setClientData(CVideoGrabber* pVideoGrabber) { pViewer = pVideoGrabber; }
+      void showCurrentSettings();
 
       void createForms();
 
@@ -175,7 +163,7 @@ protected:
 public:
    CVideoGrabber()
    {
-      m_frameGrabCount = 0;
+      m_frameGrabMs = 200;
 #ifdef FEAT_VISUALIZATION
       m_pDisplayCanvas = NULL;
       m_display.setClientData(this);
