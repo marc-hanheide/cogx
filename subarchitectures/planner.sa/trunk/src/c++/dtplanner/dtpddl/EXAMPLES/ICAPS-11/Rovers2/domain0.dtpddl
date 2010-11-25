@@ -182,17 +182,17 @@
                    )
 )
 
-(:action  disconfirm-rock_type-r2
-          :precondition  (not (done ))
-          :effect  (and  (when  (not (rock_type r2 carbonate))
-                                (assign (reward ) 300.0000)
-                         )
-                         (when  (rock_type r2 carbonate)
-                                (assign (reward ) -300.0000)
-                         )
-                         (done )
-                   )
-)
+;; (:action  disconfirm-rock_type-r2
+;;           :precondition  (not (done ))
+;;           :effect  (and  (when  (not (rock_type r2 carbonate))
+;;                                 (assign (reward ) 300.0000)
+;;                          )
+;;                          (when  (rock_type r2 carbonate)
+;;                                 (assign (reward ) -300.0000)
+;;                          )
+;;                          (done )
+;;                    )
+;; )
 
 
 (:observe  rock_type_spectrometer

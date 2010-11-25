@@ -674,7 +674,7 @@ bool Solver::lao_star()
 
     
     
-    VERBOSER(19000, "Iterating LAO. Expanding a number of states :: "
+    VERBOSER(189000, "Iterating LAO. Expanding a number of states :: "
              <<local__states_to_expand.size()<<std::endl);
 
     
@@ -714,7 +714,7 @@ bool Solver::lao_star()
     
     Planning::Policy_Iteration__GMRES policy_Iteration(this->belief_state__space,
                                                        this->get__sink_state_penalty(),
-                                                       .95);
+                                                       beta);
 
     //    policy_Iteration();
     while(policy_Iteration()){};
@@ -783,7 +783,7 @@ POMDP_State* /*LAO_STAR*/Solver::solve__for_new_starting_state(Planning::POMDP_S
     while(lao_star()){
     }
 
-    INTERACTIVE_VERBOSER(true, 19000, "Current state is :: "
+    INTERACTIVE_VERBOSER(true, 18900, "Current state is :: "
                          <<this->belief_state__space.size()<<std::endl
                          );
     
