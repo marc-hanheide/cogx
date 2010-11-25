@@ -53,6 +53,7 @@ Command_Line_Arguments command_Line_Arguments;
 int min_nonobs_steps = 1;
 int max_expanded_states = 500;
 double beta = 0.95;
+double beta_mdp = 0.95;
 
 namespace GLOBAL__read_in__domain_description
 {
@@ -250,6 +251,12 @@ int main(int argc, char** argv)
        beta = command_Line_Arguments.get_double();
     }
     
+    if(!command_Line_Arguments.got_guard("--beta-mdp")){
+        WARNING("Using --beta-mdp "<<beta_mdp<<std::endl);
+    } else {
+       beta_mdp = command_Line_Arguments.get_double();
+    }
+    
     while(read_in__domain_description()){};
     
     while(read_in__problem_description()){};
@@ -283,7 +290,7 @@ int main(int argc, char** argv)
     solver->generate_markov_decision_process_starting_states();
     
     Planning::Policy_Iteration__GMRES policy_Iteration__for_MDP_states
-        (solver->belief_state__space, solver->get__sink_state_penalty(), .65);
+        (solver->belief_state__space, solver->get__sink_state_penalty(), beta_mdp);
 
     {
         
@@ -338,7 +345,7 @@ int main(int argc, char** argv)
     while(solver->lao_star()){};
     Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space,
                                                        solver->get__sink_state_penalty(),
-                                                       .95);
+                                                       beta_mdp);
     
     while(policy_Iteration()){};
 #else
@@ -566,6 +573,12 @@ int main(int argc, char** argv)
        beta = command_Line_Arguments.get_double();
     }
     
+    if(!command_Line_Arguments.got_guard("--beta-mdp")){
+        WARNING("Using --beta-mdp "<<beta_mdp<<std::endl);
+    } else {
+       beta_mdp = command_Line_Arguments.get_double();
+    }
+    
     int seed = 2010;
     srandom(seed);
     srand(seed);
@@ -629,7 +642,7 @@ int main(int argc, char** argv)
                 solver->generate_markov_decision_process_starting_states();
 
                 Planning::Policy_Iteration__GMRES policy_Iteration__for_MDP_states
-                    (solver->belief_state__space, solver->get__sink_state_penalty(), .95);
+                    (solver->belief_state__space, solver->get__sink_state_penalty(), .65);
 
                 auto current_state = solver->peek__next_belief_state_for_expansion();
                 
