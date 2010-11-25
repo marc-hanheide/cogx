@@ -77,19 +77,19 @@
 
 (:action  spin :precondition (done) :effect (assign (reward ) 0))
 
-;; (:action  navigate
-;;           :parameters  (?x - rover ?y - waypoint ?z - waypoint)
-;;           :precondition  (and  (can_traverse ?x ?y ?z)
-;;                                (available ?x)
-;;                                (at ?x ?y)
-;;                                (visible ?y ?z)
-;;                                (not (done ))
-;;                          )
-;;           :effect  (and  (not (at ?x ?y))
-;;                          (at ?x ?z)
-;;                          (assign (reward ) -5.0000)
-;;                    )
-;; )
+(:action  navigate
+          :parameters  (?x - rover ?y - waypoint ?z - waypoint)
+          :precondition  (and  (can_traverse ?x ?y ?z)
+                               (available ?x)
+                               (at ?x ?y)
+                               (visible ?y ?z)
+                               (not (done ))
+                         )
+          :effect  (and  (not (at ?x ?y))
+                         (at ?x ?z)
+                         (assign (reward ) -5.0000)
+                   )
+)
 
 (:action  sample_rock_spectrometer
           :parameters  (?x - rover ?r - rock ?s - store ?p - waypoint)
@@ -102,7 +102,7 @@
                          )
           :effect  (and  (not (empty ?s))
                          (full ?s)
-                         (assign (reward ) -40)
+                         (assign (reward ) -25)
                    )
 )
 
@@ -113,7 +113,7 @@
                                (has_microscope ?x)
                                (not (done ))
                          )
-          :effect  (and  (assign (reward ) -1))
+          :effect  (and  (assign (reward ) -12))
 )
 
 (:action  apply_rat
