@@ -15,7 +15,7 @@ WARNINGS := -Wall -Wextra
 
 #-DLAO_STAR
 
-CPPFLAGS := -ggdb $(OPTIMISE) -DCHARLES_TESTING -pg -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
+CPPFLAGS := -ggdb $(OPTIMISE) -DLAO_STAR -DCHARLES_TESTING -pg -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
 
 
 LDFLAGS := -lm -lpthread  # -L/data/private/grettonc/lib/ -lz  #-lglpk -lltdl -lClp -lCoinUtils
