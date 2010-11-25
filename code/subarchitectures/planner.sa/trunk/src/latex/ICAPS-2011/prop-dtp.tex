@@ -15,7 +15,7 @@ true of the state. Notationally, we have $\state \subseteq
 \props$. State change is induced by application of actions. A
 stochastic action $\stochAction \in \stochActions$ is applicable if
 its precondition $\poss(\stochAction)$, a set of propositions, are
-satisfied in the current state -- I.e., $\poss(\stochAction) \subseteq
+satisfied in the current state -- i.e., $\poss(\stochAction) \subseteq
 \state$. We write $\stochActions(\state)$ for set of actions
 applicable at state $\state$.  If action $\stochAction \in
 \stochActions(\state)$ is applied at \state, nature chooses one
@@ -33,7 +33,7 @@ If outcome $\detAction$ with $\add(\detAction) := [\prop_1,
 ..,\prop_n]$ and $\delete(\detAction) := [\prop_{n+1},
 ..,\prop_m]$ is chosen by nature when \stochAction\ is
 applied at state $\state$, then the resultant state is $ ( \state \cup
-\add(\detAction) ) \backslash \delete(\detAction)$ -- I.e.,
+\add(\detAction) ) \backslash \delete(\detAction)$ -- i.e.,
 propositions from $\add(\detAction)$ are added to $\state$, and those
 from $\delete(\detAction)$ are removed from $\state$.
 
@@ -86,10 +86,10 @@ from~\citeauthor{younes:littman:04}~(\citeyear{younes:littman:04}),
 because we forbid the execution of actions that are not applicable in
 any state of the current belief.  Also,
 unlike~\citeauthor{hoffmann:brafman:2006}~(\citeyear{hoffmann:brafman:2006}),
-we do incorporate a PPDDL-like default semantics, supposing that when
-an action \stochAction\ is executed at $\state_i$, that it has no
-effect on states $\state_i$ if $\poss(\stochAction) \not\subseteq
-\state_i$.
+we do incorporate a PPDDL-like default semantics, treating an action
+\stochAction\ executed at $\state_i$ as if it has no effect at
+states $\state$ if $\poss(\stochAction) \not\subseteq
+\state$.
 
 
 \subsection{Costs, Rewards, and Belief Revision}
@@ -145,7 +145,7 @@ and can be expressed as a mapping from observation histories to
 actions. Although suboptimal in general, useful plans can also take a
 classical sequential format. This is the case in {\em conformant}
 planning, where the objective is to find a sequence of actions that
-achieves a goal ---I.e., reaches a state that satisfies some given
+achieves a goal ---i.e., reaches a state that satisfies some given
 Boolean condition--- with probability $1$.  More generally, a useful
 formalism for representing solutions to POMDPs is the finite-state
 controller (FSC). This is a three-tuple $\langle \nodes, \selection,
