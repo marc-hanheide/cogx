@@ -145,32 +145,36 @@ and can be expressed as a mapping from observation histories to
 actions. Although suboptimal in general, useful plans can also take a
 classical sequential format. This is the case in {\em conformant}
 planning, where the objective is to find a sequence of actions that
-achieves a goal ---i.e., reaches a state that satisfies some given
-Boolean condition--- with probability $1$.  More generally, a useful
-formalism for representing solutions to POMDPs is the finite-state
-controller (FSC). This is a three-tuple $\langle \nodes, \selection,
-\transition \rangle$ where: $\node \in \nodes$ is a set of controller
-states, $\selection_\node(\action) = P(\action | \node)$ gives the
-probability that the controller prescribes \action\ when in state
-\node, and $\transition_\node(\action, \observation, \node') =
-P(\node'|\node, \action, \observation)$ gives the probability the
-controller transitions to state $\node'$, supposing we execute
-\action\ in state \node\ receiving observation \observation. When
-acting for finite $N$ steps from controller state $n$, the value of a
-controller corresponds to the expected cumulative reward:
+achieves a goal ---i.e., reaches a state that satisfies a given
+Boolean condition--- with probability $1$.  Generally, whatever the
+structure of a plan, its value corresponds to the expected cumulative
+reward:
+
+%% More generally, a useful
+%% formalism for representing solutions to POMDPs is the finite-state
+%% controller (FSC). This is a three-tuple $\langle \nodes, \selection,
+%% \transition \rangle$ where: $\node \in \nodes$ is a set of controller
+%% states, $\selection_\node(\action) = P(\action | \node)$ gives the
+%% probability that the controller prescribes \action\ when in state
+%% \node, and $\transition_\node(\action, \observation, \node') =
+%% P(\node'|\node, \action, \observation)$ gives the probability the
+%% controller transitions to state $\node'$, supposing we execute
+%% \action\ in state \node\ receiving observation \observation. When
+%% acting for finite $N$ steps from controller state $n$, the value of a
+%% controller corresponds to the expected cumulative reward:
 
 \begin{equation}\label{eq:expectedvalue}
-V_{\pp{FSC}}(\bstate, n) = \Expect \bigg{[} 
-\sum_{t=0}^{N-1}  \reward(\bstate_t, \pp{FSC}_t) \mid \pp{FSC}, n_0 = n, \bstate_0 = \bstate \bigg{]}
+V_{\pp{PLAN}}(\bstate, n) = \Expect \bigg{[} 
+\sum_{t=0}^{N-1}  \reward(\bstate_t, \pp{PLAN}_t) \mid \pp{PLAN}, \bstate_0 = \bstate \bigg{]}
 \end{equation}
 
-\noindent Where $b_t$ is the belief-state at step $t$, $\pp{FSC}_t$ is
+\noindent Where $b_t$ is the belief-state at step $t$, $\pp{PLAN}_t$ is
 the action prescribed at step $t$, and
 
 \[\reward(\bstate, \action) = \sum_{\state \in \states}
 \bstate(\state)\reward(\state, \action).\] 
 
-\noindent Finally, it is
-useful to note that there is a corresponding deterministic FSCs for
-both sequential (e.g., conformant) and contingent plan formats.
+%% \noindent Finally, it is
+%% useful to note that there is a corresponding deterministic FSCs for
+%% both sequential (e.g., conformant) and contingent plan formats.
 
