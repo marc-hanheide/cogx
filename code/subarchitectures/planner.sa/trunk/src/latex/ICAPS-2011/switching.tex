@@ -1,23 +1,22 @@
 
 
 We describe our continual planning approach that switches between
-sequential and contingent sessions. This proceeds by interleaved
+sequential and contingent sessions. It proceeds by interleaved
 planning and execution in a deterministic-action POMDP described in
 DTPDDL. During a sequential session, planning is performed by a
-``classical'' system,\footnote{That is, a system designed to solve
+``classical'' system,\footnote{That is, a planner designed to solve
 fully observable deterministic tasks.}  and execution proceeds
 according to the {\em trace} computed by that system. Taking the form
-of a classical plan, the trace specifies a sequence of POMDP
-actions that achieve the agent's objectives in a deterministic
-approximation, i.e., {\em determinisation}, of the problem at
-hand. More precisely, the trace is an interleaved sequence of POMDP
-actions and {\em assumptive} actions. The latter correspond to
-assumptions the planner makes about the truth value of {\em runtime
-state variables} -- e.g. that a box of cornflakes is located in the
-kitchen at the third plan step. Another kind of assumption, called an
-{\em applicability} assumption, is made when the trace includes an
-action $\action$ that is not applicable with probability $1$ at the
-belief-state
+of a classical plan, the trace specifies a sequence of POMDP actions
+that achieve the agent's objectives in a deterministic approximation,
+i.e., {\em determinisation}, of the problem at hand. More precisely,
+the trace is an interleaved sequence of POMDP actions and {\em
+assumptive} actions. The latter correspond to assumptions the planner
+makes about the truth value of propositions -- e.g. that a box of
+cornflakes is located in the kitchen at the third plan step. Another
+kind of assumption, called an {\em applicability} assumption, is made
+when the trace includes an action $\action$ that is not applicable
+with probability $1$ at the belief-state
 \bstate\ that the system is projected to be in when \action\ is
 scheduled for execution, i.e., $\exists\state\in\states\;
 \bstate(\state) > 0$ and $\poss(\action)\not\subseteq\state$. By
@@ -27,37 +26,37 @@ observability of the precondition $\poss(\action)$.
 
 Our approach always begins with a sequential session. Non-assumptive
 actions from the trace are executed in sequence until the
-applicability of the next scheduled action is uncertain. Here, that
-action is denoted \switchAction.  A contingent session then begins,
-which tailors sensory processing by the agent to determine whether the
-assumptions made in the trace hold. For each {\em active} assumption
-in the trace, we add a {\em disconfirm} action to the POMDP whose
-execution is rewarding (resp. costly) if the assumption is false
-(resp. true). We also add one {\em confirm} action that is rewarding
-(resp. costly) to execute if $\poss(\action)$ is true
-(resp. false). If execution of the contingent plan applies a
-disconfirm action, then a new sequential session begins at the {\em
-underlying} belief-state. If the confirm action is executed, the
-sequential session is resumed, and
+applicability of the next scheduled action is uncertain. We denote
+that action \switchAction.  A contingent session then begins, which
+tailors sensory processing by the agent to determine whether the
+assumptions made in the trace hold. For assumptions in the trace, we
+add a {\em disconfirm} action to the POMDP whose execution is
+rewarding (resp. costly) if the assumption is false (resp. true). We
+also add one {\em confirm} action that is rewarding (resp. costly) to
+execute if $\poss(\switchAction)$ is true (resp. false). If execution
+of the contingent plan applies a disconfirm action, then a new
+sequential session begins at the {\em underlying} belief-state. If the
+confirm action is executed, the sequential session is resumed, and
 \switchAction\ is executed. Otherwise, control rests in the continual
 session.
 %%
 Because contingent planning is only practical in relatively small
-POMDPs, contingent sessions proceed in an abstract decision process
-determined by the current trace. That abstract process is constructed
-by first omitting all variables from the model that are not featured
-in the trace, and by then iteratively refining that abstraction while
-the resulting model is of a practicable size.
+POMDPs, contingent sessions plan in an abstract decision process
+determined by the current trace. This abstraction is constructed by
+first omitting all propositions that do not featured in the trace, and
+by then iteratively refining the model while the result is of a
+practicable size.
 
 Finally, whether proceeding in a sequential or contingent session, our
 continual planner maintains a factored representation of successive
-{\em belief-states}, by performing belief revision according to
-Eq~\ref{eq:revision}. Moreover, our internal representation of that
-distribution corresponds more-or-less directly to an $(\pp{:init})$
-declaration in DTPDDL. Our approach uses that underlying belief-state
-as: (1) the source of determinisations for sequential planning, (2)
-the basis for switching, and (3) a mechanism to guide construction of
-an abstract process for contingent sessions.
+belief-states, by performing belief revision according to
+Eq~\ref{eq:revision}. Moreover, our internal representation the
+underlying belief-state corresponds more-or-less directly to an
+$(\pp{:init})$ declaration in DTPDDL. Our approach uses that
+distribution: (1) as the source of candidate determinisations for
+sequential planning, (2) to determine when to switch, and (3) as a
+mechanism to guide construction of an abstract process for contingent
+sessions.
 
 %% PLEASE STICK A PARAGRAPH HERE, (SENSIBLY) REQUESTED BY MORITZ, ABOUT
 %% HOW WE DO BELIEF REVISION ACROSS SWITCHING.
