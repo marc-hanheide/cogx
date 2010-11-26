@@ -28,8 +28,8 @@ Our approach always begins with a sequential session. Non-assumptive
 actions from the trace are executed until the applicability of the
 next scheduled action, here \action, is questionable. A contingent
 session then begins, which tailors sensory processing by the agent to
-perceive whether the assumptions made in the trace hold. For each
-active assumption in the trace, we add a {\em disconfirm} action to
+perceive whether the assumptions made in the trace hold. For each {\em
+active} assumption in the trace, we add a {\em disconfirm} action to
 the POMDP whose execution is rewarding (resp. costly) if the
 assumption is false (resp. true). We also add one {\em confirm} action
 that is rewarding (resp. costly) to execute if $\poss(\action)$ is
@@ -38,17 +38,19 @@ disconfirm action, then a new sequential session begins at the current
 underlying belief-state. If the confirm action is executed, the
 sequential session is resumed, and \action\ is executed. Otherwise,
 control rests in the continual session.
-%%
-Finally, because contingent planning is only practical in relatively
-small POMDPs, contingent sessions proceed in an abstract decision
-process determined by the current trace. That abstract process is
-constructed by first omitting all variables from the model that are
-not featured in the trace, and by then iteratively refining that
-abstraction while the resulting model is of a practicable size.
 
 
-PLEASE STICK A PARAGRAPH HERE, (SENSIBLY) REQUESTED BY MORITZ, ABOUT
-HOW WE DO BELIEF REVISION ACROSS SWITCHING.
+
+Because contingent planning is only practical in relatively small
+POMDPs, contingent sessions proceed in an abstract decision process
+determined by the current trace. That abstract process is constructed
+by first omitting all variables from the model that are not featured
+in the trace, and by then iteratively refining that abstraction while
+the resulting model is of a practicable size.
+
+
+%% PLEASE STICK A PARAGRAPH HERE, (SENSIBLY) REQUESTED BY MORITZ, ABOUT
+%% HOW WE DO BELIEF REVISION ACROSS SWITCHING.
 
 \Omit{
   Therefore, although our current implementation does not
@@ -132,12 +134,12 @@ follows. In the deterministic model a proposition $\prop$ can be
 thought to have a ternary interpretation at a state \state, as either
 {\em true}, written $\prop\in\state$, {\em false}, written
 $\prop\not\in\state$, or {\em unspecified}, with a slight abuse of
-notation written $\prop=\#\in\state$. For example, in $\pp{DORA}$
+notation written $\prop\#\in\state$. For example, in $\pp{DORA}$
 $(=(\pp{is-in}~\pp{box})\pp{office})\#\in\state_0$. For POMDP actions
 $\action\in\actions$ in the deterministic model, if
 $\prop \in \poss(\action)$, or if $\prop$ is the subject of a positive
 or negative effect of $\action$, then $\action$ is not applicable
-in \state\ if $\prop=\#\in\state$. Indeed, first an assumptive action
+in \state\ if $\prop\#\in\state$. Indeed, first an assumptive action
 must be applied to make a truth assignment to \prop, and then that
 truth assignment could be modified by POMDP operators. Lastly, we
 address the switching semantics of action execution. If
@@ -185,8 +187,8 @@ artificially limits the length of candidate sequential plans.
 
 In a contingent session our switching planner solves a sensing problem
 in an abstract processes defined in terms of the assumptive actions in
-the current sequential plan, and the $(\pp{:init})$ declaration from
-the original problem description.
+the current trace, and the $(\pp{:init})$ declaration from the
+original problem description.
 
 The focus for contingent planning is on sensing, we therefore give the
 process in this session an augmented reward model.  This reflects the
@@ -209,14 +211,35 @@ false assumption. The added dual actions are propositionally trivial
 -- i.e., $\forall\state\in\states$ $\poss(\assumptiveDT{i})
 \subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  
 %%
-In order to reduce the scope of possible rejections, we compile the
-serial trace into a partially ordered plan (POP). If $\action_i$ is
-the sequentially scheduled execution that triggered the switch to the
-contingent session, then we discard assumptive duals that are not
-ordered before $\action_i$ in that POP.
-%%
-Also for the action $\action_i$, we include another propositionally
-trivial action $\actions.\poss(\action_i)$ with the reward property:
+In order to reduce the number of possible rejections we do not
+consider assumptions that are not {\em active} with respect to the
+action, $\action_i$, whose scheduled execution switch the system into
+the contingent session. A assumption $\assumptiveS{i}$ is active if
+$\action_i$ is not applicable in the sequential model unless
+$\assumptiveS{i}$ is scheduled in the trace prefix to $\action_i$. For
+example, if $\pp{DORA}$'s trace is:
+
+\[
+\begin{array}{l}
+\actions^{\circ}(.8;(=(\pp{is-in}~\pp{box})\pp{office}));\\
+\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}));\\
+(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office});\\
+(\pp{look-for-object}~\pp{DORA}~\pp{cup}~\pp{kitchen});\\
+(\pp{report-is-in}~\pp{box}~\pp{office}); \\
+(\pp{report-is-in}~\pp{cup}~\pp{kitchen})
+\end{array}
+\]
+
+\noindent Taking the switching action $\action_i$ to be
+$(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office})$, we have that
+$\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ is not
+active, and therefore exclude
+$\actions^{\bullet}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ from the
+POMDP posed to the contingent session.
+
+Again taking $\action_i$ to be the switching action, we include
+another propositionally trivial action $\actions.\poss(\action_i)$
+with the reward property:
 
 \[
 \reward(\state, \actions.\poss(\action_i)) = \bigg\{ \begin{array}{ll}
@@ -225,33 +248,24 @@ trivial action $\actions.\poss(\action_i)$ with the reward property:
 \end{array}
 \]
 
-
-For the management of switching, execution of either a dual action of
-the form $\assumptiveDT{i}$, or the $\actions.\poss(\action_i)$,
-returns control to the sequential planner. At that point, if a dual is
-executed, then the sequential planner must replan with $\bstate_0$
-equal to the current belief. Otherwise, if $\actions.\poss(\action_i)$
-is executed, then the current sequential plan is executed until
-further sensing is scheduled, or to completion. In our project the
-rewards, i.e., function $\$:2^\propositions\to\Re$, for the POMDP
-posed to decision-theoretic planning are sourced from a motivational
-component of our robotic architecture.
+For the purposes of successive switching, execution of either a dual
+action of the form $\assumptiveDT{i}$, or the
+$\actions.\poss(\action_i)$, returns control to a sequential
+session. If a dual is executed, then the sequential planner must
+replan with $\bstate_0$ equal to the underlying
+belief-state. Otherwise, if $\actions.\poss(\action_i)$ is executed,
+then the current sequential plan is executed until further sensing is
+scheduled, or to completion. In our project the rewards, i.e.,
+function $\$:2^\propositions\to\Re$, for the POMDP posed to the
+contingent session are sourced from a motivational component of our
+robotic architecture.
 
 The starting belief-state for the abstract process is given in terms
 of a {\em relaxed} $(\pp{:init})$ declaration.  We first construct a
 tree which only includes terms from the {\em relaxed} visitation
-characterised by the {\em assumptive} actions in the current
-sequential plan. For example, if $\pp{DORA}$'s plan is:
-
-\[
-\begin{array}{l}
-\actions^{\circ}(.8;(=(\pp{is-in}~\pp{box})\pp{office}));\\
-(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office});\\
-(\pp{report-is-in}~\pp{box}~\pp{office})
-\end{array}
-\]
-
-\noindent Then the {\em relaxed} declaration will be,
+characterised by the active {\em assumptive} actions in the current
+sequential plan. Taking our example trace from earlier, we have a {\em
+relaxed} declaration:
 
 \small
 \begin{tabtt}
@@ -274,23 +288,41 @@ Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 \end{tabular}
 \normalsize
 
-\noindent At this point, decision-theoretic planning would proceed in an
-abstraction of the environment that does not contain a $\pp{cup}$,
-where the applicability of POMDP actions is the same as we
-defined it for the sequential session.
+\noindent At this point, the session would proceed in an
+abstraction of the environment that does not contain a
+$\pp{cup}$. With regards to abstraction, the contingent and serial
+sessions apply the same applicability conditions ---i.e., that each
+effect and condition $\prop$ is specified $\prop\in\state$
+(resp. $\prop\#\in\state$)--- to actions from the DTPDDL problem
+description.
 
-In a second step, we iteratively refine the above{\em relaxed}
-declaration by adding terms from the original statement of
-$(\pp{:init})$ while the resulting state space remains of a
-practicable size. Of course, it is expensive to measure size exactly,
-and in practise we estimate this to be $2^{|\propositions^\#|}$, where
-$\propositions^\#$ is the set of propositions in the abstraction that
-were not assigned the {\em unknown} value \#. Terms are proposed for
-addition because they are probabilistic, and because they were omitted
-in the {\em relaxed} visitation characterised by {\em assumptive}
-actions in the sequential plan. In each iteration, we add one
-candidate term with the largest number of parent terms already in the
-candidate tree.
+In a second step, we iteratively refine the relaxed declaration by
+adding terms from the original statement of $(\pp{:init})$ while the
+number of abstract states that occur with non-zero probability
+according to that refined declaration remains of a practicable
+size. In detail, for each excluded atomic term, we compute the {\em
+entropy} of the corresponding proposition, {\em conditional} on the
+active assumptions. The {\em conditional entropy} measure
+is higher the more uncertain that proposition is given truth
+assignments to propositions that are the subject of active
+assumptions. Propositions that in the first place were excluded are
+iteratively added to the problem posed to the conditional session in
+increasing order according to that measure. 
+
+%% In particular, we compute the {\em conditional entropy} of
+%% each excluded proposition given the active assumptions. Propositions
+%% are candidates for addition in increasing order according to that
+%% measure.
+
+%% Of course, it is expensive to measure size exactly,
+%% and in practise we estimate this to be $2^{|\propositions^\#|}$, where
+%% $\propositions^\#$ is the set of propositions in the abstraction that
+%% were not assigned the {\em unknown} value \#. Terms are proposed for
+%% addition because they are probabilistic, and because they were omitted
+%% in the {\em relaxed} visitation characterised by {\em assumptive}
+%% actions in the sequential plan. In each iteration, we add one
+%% candidate term with the largest number of parent terms already in the
+%% candidate tree.
 
 
 
