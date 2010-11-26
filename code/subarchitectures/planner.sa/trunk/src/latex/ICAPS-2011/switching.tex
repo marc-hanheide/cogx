@@ -71,11 +71,11 @@ sessions.
 
 A sequential session uses a classical planner to compute a trace. The
 latter encapsulates assumptions about: (1) the true underlying state,
-(2) how the plan's execution will progress, and (3) the possibility of
-the agent eventually holding strong beliefs about the truth values of
-specific state propositions. Here we describe the deterministic
-planning problem, derived from the DTPDDL model, that admits plans
-which correspond to traces.
+(2) how execution will progress, and (3) the possibility of the agent
+eventually holding strong beliefs about the truth values of specific
+state propositions. Here we describe the deterministic planning
+problem, derived from the DTPDDL model, that admits plans which
+correspond to traces.
 
 In a deterministic-action POMDP all the uncertainty in state and
 action is expressed in the $(\pp{:init})$ DTPDDL declaration. Our
@@ -104,7 +104,7 @@ Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 \end{tabular}
 \normalsize
 
-\noindent In detail, a valid assumption in our setting corresponds to a {\em
+\noindent An assumption corresponds to a {\em
 relaxed} visitation of the root term of $(\pp{:init})$. In this
 relaxed case, a conjunctive term is visited iff its atomic subterms
 are visited, and zero or more of its immediate probabilistic subterms
@@ -121,19 +121,20 @@ has probability $1.0$. In $\pp{DORA}$, that is:
 
 In order to make assumptions available to the sequential planner, we
 add one {\em assumptive} action $\assumptiveS{i}$ to the problem for
-each element, $p_i (T_i)$, of each probabilistic term from
+each element, $\prob_i (T_i)$, of each probabilistic term from
 $(\pp{:init})$. The physics of these actions is as
 follows. $\assumptiveS{i}$ can be executed if no $\assumptiveS{j}$,
 $j \neq i$, has been executed from the same probabilistic term, and,
-either $(\pp{probabilistic}~..p_i~(T_i)..)$ is in the root conjunct,
+either $(\pp{probabilistic}~..\prob_i~(T_i)..)$ is in the root conjunct,
 or it occurs in $T_k$ for some executed $\assumptiveS{k}$.
 %%
-Executing $\assumptiveS{i}$ in $s$ effects a transition to a successor
-state $s^{T_i}$ with probability $p_i$, and $s^\bot$ with probability
-$1 - p_i$. Here, $s^{T_i}$ is the union of $s$ with atomic terms from
-$T_i$ and conflicting propositions from $s$ deleted. For example, if
-the action adds $(=(\pp{is-in}~\pp{box})~\pp{office})$, then it must
-delete $(=(\pp{is-in}~\pp{box})~\#)$. State $s^\bot$ is an added sink,
+Executing $\assumptiveS{i}$ in $\state$ effects a transition to a
+successor state $\state^{T_i}$ with probability $\prob_i$, and
+$\state^\bot$ with probability $1 - \prob_i$. Here, $\state^{T_i}$ is
+the union of $\state$ with atomic terms from $T_i$ and conflicting
+propositions from $s$ deleted. For example, if the action adds
+$(=(\pp{is-in}~\pp{box})~\pp{office})$, then it must delete
+$(=(\pp{is-in}~\pp{box})~\#)$. State $\state^\bot$ is an added sink,
 where $\forall\action\in\actions$ $\reward(\state^\bot, \action) = 0$
 and $\transProb(\state^\bot, \action, \state^\bot) = 1$.
 
@@ -148,26 +149,30 @@ $(=(\pp{is-in}~\pp{box})\pp{office})\#\in\state_0$. For POMDP actions
 $\action\in\actions$ in the deterministic model, if
 $\prop \in \poss(\action)$, or if $\prop$ is the subject of a positive
 or negative effect of $\action$, then $\action$ is not applicable
-in \state\ if $\prop\#\in\state$. Indeed, first an assumptive action
+in \state\ if $\prop\#\in\state$. In other words, an assumptive action
 must be applied to make a truth assignment to \prop, and then that
-truth assignment could be modified by POMDP operators. 
-
-Addressing now the switching semantics of action execution. If
-$\action\in\actions$ has a precondition that is not true with
-probability $1$ in the underlying belief $\bstate$, then before it is
-executed blindly, the system switches to a contingent session,
-discussed in the following section. In detail, we halt the sequential
-session at \action\ if $\exists
-\state$ s.t. $\bstate(\state)>0$, 
-$\prop\in\poss(\action)$ , and $\prop\not\in\state$. According to the
-semantics of action execution there must be a $\state'$ s.t.
-$\bstate(\state')>0$ and $\prop\in\state'$. Otherwise, \action\ must
-not have been scheduled at \bstate.
+truth assignment could be modified by the DTPDDL domain operators.
+%%
+Lastly, With regards to switching, we have that if $\action$ has a
+precondition that is not true with probability $1$ in the underlying
+belief $\bstate$, then immediately before it is executed blindly, the
+system switches to a contingent session, discussed in the following
+section.
 
 
-then $\reward(\state,\action)=10$, and
-otherwise if $\prop\not\in\state'$ then
-$\reward(\state',\action)=-10$.
+%% Addressing now the switching semantics of action execution. I
+%% %% In detail, we halt the sequential
+%% session at \action\ if $\exists
+%% \state$ s.t. $\bstate(\state)>0$, 
+%% $\prop\in\poss(\action)$ , and $\prop\not\in\state$. According to the
+%% semantics of action execution there must be a $\state'$ s.t.
+%% $\bstate(\state')>0$ and $\prop\in\state'$. Otherwise, \action\ must
+%% not have been scheduled at \bstate.
+
+
+%% then $\reward(\state,\action)=10$, and
+%% otherwise if $\prop\not\in\state'$ then
+%% $\reward(\state',\action)=-10$.
 
 
 We now describe the optimisation criteria given to the classical
@@ -189,9 +194,9 @@ V^* = \max_{\prob_1, .., \prob_n} \prod_{i=1..N-1} \prob_i \sum_{i=1..N-1}
 \reward(\state_i, \action_i),
 \]
 
-\noindent which is equal to the maximal additive contribution a trace of the plan can
-make to Eq~\ref{eq:expectedvalue}, taking an FSC that corresponds to
-the sequential plan.  In goal directed problems, where the only
+\noindent which is equal to the maximal 
+additive contribution a trace of the plan can make to
+Eq~\ref{eq:expectedvalue}.  In goal directed problems, where the only
 non-zero reward is received at the first transition to a goal state,
 the Eq~\ref{eq:tracevalue} criteria gives us the behaviour
 of \system{FFR$_a$}~\cite{yoon:etal:2007}. From the perspective of
@@ -208,8 +213,8 @@ artificially limits the length of candidate sequential plans.
 
 In a contingent session our switching planner solves a sensing problem
 in an abstract processes defined in terms of the assumptive actions in
-the current trace, and the $(\pp{:init})$ declaration from the
-original problem description.
+the current trace, and the $(\pp{:init})$ declaration that models the
+underlying belief-state.
 
 The focus for contingent planning is on sensing, we therefore give the
 process in this session an augmented reward model.  This reflects the
@@ -232,13 +237,13 @@ false assumption. The added dual actions are propositionally trivial
 -- i.e., $\forall\state\in\states$ $\poss(\assumptiveDT{i})
 \subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  
 %%
-In order to reduce the number of possible rejections we do not
-consider assumptions that are not {\em active} with respect to the
-action, $\action_i$, whose scheduled execution switch the system into
-the contingent session. A assumption $\assumptiveS{i}$ is active if
-$\action_i$ is not applicable in the sequential model unless
-$\assumptiveS{i}$ is scheduled in the trace prefix to $\action_i$. For
-example, if $\pp{DORA}$'s trace is:
+In order to reduce the number of possible rejections we omit
+assumptions that are not {\em active} with respect to the action,
+\switchAction, whose scheduled execution switched the system into
+the contingent session. An assumption $\assumptiveS{i}$ is active if
+\switchAction\ is not applicable in the sequential model unless
+$\assumptiveS{i}$ is scheduled in the trace prefix
+to \switchAction. For example, if $\pp{DORA}$'s trace is:
 
 \[
 \begin{array}{l}
@@ -251,35 +256,35 @@ example, if $\pp{DORA}$'s trace is:
 \end{array}
 \]
 
-\noindent Taking the switching action $\action_i$ to be
+\noindent Taking the switching action \switchAction\ to be
 $(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office})$, we have that
 $\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ is not
 active, and therefore exclude
 $\actions^{\bullet}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ from the
-POMDP posed to the contingent session.
+POMDP posed to the contingent session. 
 
-Again taking $\action_i$ to be the switching action, we include
-another propositionally trivial action $\actions.\poss(\action_i)$
-with the reward property:
+We also include another propositionally trivial action
+$\actions.\poss(\switchAction)$ with the reward property:
 
 \[
-\reward(\state, \actions.\poss(\action_i)) = \bigg\{ \begin{array}{ll}
-\$(\poss(\action_i)) & \pp{if}~\;\; \poss(\action_i) \subseteq \state \\
--\$(\poss(\action_i)) & \pp{otherwise} \\
+\reward(\state, \actions.\poss(\switchAction)) = \bigg\{ \begin{array}{ll}
+\$(\poss(\switchAction)) & \pp{if}~\;\; \poss(\switchAction) \subseteq \state \\
+-\$(\poss(\switchAction)) & \pp{otherwise} \\
 \end{array}
 \]
 
 For the purposes of successive switching, execution of either a dual
 action of the form $\assumptiveDT{i}$, or the
-$\actions.\poss(\action_i)$, returns control to a sequential
+$\actions.\poss(\switchAction)$, returns control to a sequential
 session. If a dual is executed, then the sequential planner must
 replan with $\bstate_0$ equal to the underlying
-belief-state. Otherwise, if $\actions.\poss(\action_i)$ is executed,
-then the current sequential plan is executed until further sensing is
-scheduled, or to completion. In our project the rewards, i.e.,
-function $\$:2^\propositions\to\Re$, for the POMDP posed to the
-contingent session are sourced from a motivational component of our
-robotic architecture.
+belief-state. Otherwise, if $\actions.\poss(\switchAction)$ is
+executed, then the current sequential plan is executed until further
+sensing is scheduled, or to completion. Lastly, we note that in our
+project the rewards, i.e., function $\$:2^\propositions\to\Re$, for
+the POMDP posed to the contingent session are sourced from a
+motivational component of our robotic architecture. We make no
+assumptions about how they are derived.
 
 The starting belief-state for the abstract process is given in terms
 of a {\em relaxed} $(\pp{:init})$ declaration.  We first construct a
@@ -313,9 +318,8 @@ Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 abstraction of the environment that does not contain a
 $\pp{cup}$. With regards to abstraction, the contingent and serial
 sessions apply the same applicability conditions ---i.e., that each
-effect and condition $\prop$ is specified $\prop\in\state$
-(resp. $\prop\#\in\state$)--- to actions from the DTPDDL problem
-description.
+effect and condition $\prop$ is specified, $\prop\in\state$--- to
+actions from the DTPDDL problem description.
 
 In a second step, we iteratively refine the relaxed declaration by
 adding terms from the original statement of $(\pp{:init})$ while the
