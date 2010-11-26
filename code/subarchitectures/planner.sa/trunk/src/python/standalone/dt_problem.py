@@ -17,22 +17,18 @@ class DTProblem(object):
         self.plan = plan
         self.pnodes = pnodes
         self.domain = domain
+        self.failed_goals = failed_goals
         self.prob_functions = prob_functions
-        #self.state = cast_state
         self.subplan_actions = []
         self.dt_plan = []
-        self.select_actions = []
         
-        self.goals = self.create_goals(plan)
+        self.goals, self.assumptions = self.create_goals(plan)
         if not self.goals:
             return
         
         self.dt_rules = pddl.translators.Translator.get_annotations(domain).get('dt_rules', [])
         
         self.dtdomain = self.create_dt_domain(domain)
-        self.goal_actions = self.create_goal_actions(self.goals, failed_goals, self.dtdomain)
-        self.dtdomain.actions += [a for a in self.goal_actions]
-        self.dtdomain.name2action = None
 
         # dom_str, prob_str = DTPDDLOutput().write(self.problem)
         # print "\n".join(dom_str)
@@ -40,16 +36,25 @@ class DTProblem(object):
         
     def initialize(self, prob_state):
         self.state = prob_state
-        #facts = dtpddl.PNode.reduce_all(self.pnodes, choices, global_vars.config.dt.max_state_size)
+        def node_filter(node):
+            for f in node.all_facts():
+                if f.svar.function == dtpddl.selected:
+                    continue
+                if f.svar not in self.state or not self.state.is_det(f.svar):
+                    return True
+            return False
+
+        self.pnodes = filter(node_filter, self.pnodes)
+            
         facts = self.reduce_state(global_vars.config.dt.max_state_size)
-        selected = set()
+        self.selected_facts = set()
         add_objects = set()
         for var, vals in facts.iteritems():
             add_objects.update(var.args)
             add_objects.update(var.modal_args)
             for v in vals:
                 add_objects.add(v)
-                selected.add(state.Fact(var, v))
+                self.selected_facts.add(state.Fact(var, v))
                 log.debug("selected: %s, %s", var, v)
 
         def objects(svar, val):
@@ -60,13 +65,13 @@ class DTProblem(object):
             pruned = set()
             relevant = False
             for val, (p, nodes, facts) in node.children.iteritems():
-                branch_rel = state.Fact(node.svar, val) in selected
+                branch_rel = state.Fact(node.svar, val) in self.selected_facts
                 branch_used = set()
                 branch_pruned = set()
                 for svar, val in facts.iteritems():
                     f = state.Fact(svar, val)
                     branch_used |= objects(svar, val)
-                    branch_rel |= (f in selected)
+                    branch_rel |= (f in self.selected_facts)
                     # print "rel:", branch_rel, f
                 for n in nodes:
                     nused, npruned, nrel = get_used_objects(n)
@@ -93,6 +98,10 @@ class DTProblem(object):
             used_objects |= used
         pruned_objects -= used_objects
 
+        self.goal_actions = self.create_goal_actions(self.goals, self.failed_goals, self.dtdomain)
+        self.dtdomain.actions += [a for a in self.goal_actions]
+        self.dtdomain.name2action = None
+
         # unused_objects = set()
         # for svar, val in chain(*map(all_facts, self.pnodes)):
         #     for obj in objects(svar, val):
@@ -111,7 +120,8 @@ class DTProblem(object):
         opt_func = pddl.FunctionTerm(pddl.dtpddl.reward, [])
         init = [f.to_init() for f in self.state.deterministic() if not (objects(*f) & pruned_objects)]
         for n in self.pnodes:
-            peff = n.to_init(selected)
+            peff = n.to_init(self.selected_facts)
+            # new_objects |= set(peff.visit(pddl.visitors.collect_constants)) - self.domain.constants
             if peff:
                 init.append(peff)
             
@@ -130,10 +140,10 @@ class DTProblem(object):
 
     def extract_choices(self):
         choices = {}
-        for pnode, level in self.select_actions:
+        for pnode, level in self.assumptions:
             for fact in pnode.effects:
                 if not fact.svar.modality and fact.svar.get_type().equal_or_subtype_of(pddl.t_object):
-                    choices[fact.svar] = fact.value
+                    choices[fact.svar] = (fact.value, level)
         return choices
 
     def write_dt_input(self, domain_fn, problem_fn):
@@ -175,8 +185,8 @@ class DTProblem(object):
                     others = restr
             return others
 
-        self.select_actions = []
         goal_facts = set()
+        assumptions = []
         #combine consecutive observe actions into one subtask.
         for pnode in plan.topological_sort():
             if pnode.status == plans.ActionStatusEnum.EXECUTED:
@@ -188,17 +198,25 @@ class DTProblem(object):
                 for fact in pnode.effects:
                     if fact.svar.function not in (pddl.builtin.total_cost, ):
                         goal_facts.add(fact)
-                    # if svar.modality in (mapl.knowledge, mapl.direct_knowledge):
-                    #     goal_svars.add(svar.nonmodal())
                 self.subplan_actions.append(pnode)
-                self.select_actions += [(pnode,0)] + find_restrictions(pnode,0)
-                #break # only one action at a time for now
+                assumptions += [(pnode,0)] + find_restrictions(pnode,0)
             
             if pnode.action.name not in observe_actions and self.subplan_actions:
                 break
             
-        return goal_facts
-    
+        return goal_facts, assumptions
+
+    def expected_observation(self, svar):
+        #This is a hack to prevent pcogx from segfaulting
+        if svar.modality != dtpddl.observed:
+            return True # Don't handle those
+        ground_fact = pddl.state.Fact(svar.nonmodal(), svar.modal_args[0])
+        if ground_fact not in self.selected_facts:
+            print ground_fact
+            print map(str, self.selected_facts)
+            return False
+        return True
+
 
     def replanning_neccessary(self, new_state):
         #if self.selected_subproblem == -1:
@@ -495,7 +513,7 @@ class DTProblem(object):
 
         max_level = 0
         disconfirm = []
-        for pnode, level in self.select_actions:
+        for pnode, level in self.assumptions:
             for svar, val in pnode.effects:
                 if svar.modality == mapl.commit:
                     max_level = max(max_level, level)
@@ -511,6 +529,11 @@ class DTProblem(object):
         disconfirm_actions = []
         for svar, val, level in disconfirm:
             dis_reward = float(confirm_score)/(2**(max_level-level))
+            if isinstance(self.state[svar], pddl.TypedObject):
+                continue # no use in disconfirming known facts
+            p = self.state[svar][val]
+            dis_penalty = -dis_reward * (1-p)/p
+            
             term = pddl.Term(svar.function, svar.get_args())
             domain.constants |= set(svar.get_args() + [val])
             domain.add(svar.get_args() + [val])
@@ -534,7 +557,7 @@ class DTProblem(object):
             
             #commit_effect = b.effect(dtpddl.committed, term)
             reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_reward))
-            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -dis_reward))
+            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), dis_penalty))
             done_effect = b.effect('done')
             a.effect = b.effect('and', reward_effect, penalty_effect, done_effect)
             
@@ -625,11 +648,13 @@ class DTProblem(object):
     def reduce_state(self, limit):
         levels = defaultdict(lambda: -1)
         def get_level(node, level):
-            cval = choices.get(node.svar, None)
+            cval, clevel = choices.get(node.svar, (None, -1))
             if cval and levels[node] < level:
                 levels[node] = level
                 p, nodes, facts = node.children[cval]
-                choices.update(facts)
+                for svar, val in facts.iteritems():
+                    choices[svar] = (val, clevel)
+                    # cfacts.update(facts)
                 for n in nodes:
                     get_level(n, level+1)
 
@@ -655,16 +680,32 @@ class DTProblem(object):
             nodes_by_level[l].add(n)
         node_order = sorted(nodes_by_level.iteritems(), key = lambda (l,n): -l)
 
-        init = update({}, [(svar, val) for svar, val in choices.iteritems() if svar.function != dtpddl.selected])
+        cfacts = dict((svar, val) for svar, (val, level) in choices.iteritems())
+        init = update({}, [(svar, val) for svar, val in cfacts.iteritems() if svar.function != dtpddl.selected])
         H_init = self.entropy(init, {}, limit)
         log.debug("initial entropy: %.4f", H_init)
         # print "initial entropy: %.4f" % H_init
-        # for svar, val in choices.iteritems():
-        #     others = dict((s, set([v])) for s, v in choices.iteritems() if s.function != dtpddl.selected and s != svar)
-        #     print "H(init|%s): %.4f" %(str(svar), self.entropy(others, update({}, [(svar,val)]), limit))
+        
+        choice_by_level = defaultdict(set)
+        for svar, (val, level) in choices.iteritems():
+            choice_by_level[level].add((svar, val))
+
+        toplevel = update({}, choice_by_level[1])
             
+        selected = {}
+        for level, facts in sorted(choice_by_level.iteritems(),key=lambda (l,f): l):
+            if selected:
+                for svar, val in facts:
+                    log.debug("H(top|%s): %.4f", str(svar), self.entropy(toplevel, update({}, [(svar,val)]), limit))
+                    log.debug("H(parents|%s): %.4f", str(svar), self.entropy(selected, update({}, [(svar,val)]), limit))
+            selected = update(selected, facts)
+                
+
+        for svar, val in cfacts.iteritems():
+            others = dict((s, set([v])) for s, v in cfacts.iteritems() if s.function != dtpddl.selected and s != svar)
+            log.debug("H(init|%s): %.4f", str(svar), self.entropy(others, update({}, [(svar,val)]), limit))
             
-        selected = update({}, choices.iteritems())
+        # selected = update({}, cfacts)
         node_queue = []
         # print "initial choices:", [str(state.Fact(s,v)) for s,v in choices.iteritems()]
         while node_order:
@@ -672,7 +713,7 @@ class DTProblem(object):
             level, this_nodes = node_order.pop(0)
             all_facts = set()
             for n in this_nodes:
-                for facts in n.add_facts(choices):
+                for facts in n.add_facts(cfacts):
                     all_facts |= facts
             all_facts = set(f for f in all_facts if f.svar.function in o_funcs)
             # node_queue = chain(*itertools.izip_longest(*[n.add_facts(choices) for n in this_nodes]))

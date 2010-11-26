@@ -16,6 +16,13 @@ class Struct:
     def __init__(self, **entries):
         self.__dict__.update(entries)
 
+    def merge(self, other):
+        for key, value in other.__dict__.iteritems():
+            if isinstance(value, Struct) and isinstance(self.__dict__.get(key, None), Struct):
+                self.__dict__[key].merge(value)
+            else:
+                self.__dict__[key] = value
+
     def __cmp__(self, other):
         if isinstance(other, Struct):
             return cmp(self.__dict__, other.__dict__)

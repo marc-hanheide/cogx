@@ -68,6 +68,9 @@ class Agent(BaseAgent):
     def get_state(self):
         return self.task.get_state()
 
+    def update_state(self, svar, val):
+        self.get_state()[svar] = val
+
     def new_task(self, mapltask):
         self.mapltask = mapltask.copy()
 
