@@ -287,10 +287,15 @@ void OpenCvImgSeqServer::constructFilenames(const vector<string> &fileTemplates,
 
 void OpenCvImgSeqServer::grabFramesInternal() throw(runtime_error)
 {
+  if(filenames.size() == 0 || frameCnt >= numFrames() && !loopSequence)
+    tryNextSequence();
+
+  // tryNextSequence can cause a deadlock if it's afer this lock
   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_sequenceMonitor);
 
   if(filenames.size() == 0)
     throw runtime_error(exceptionMessage(__HERE__, "video not initialised"));
+
   if(frameCnt < numFrames() || loopSequence)
   {
     // number of current frame, note that we loop
@@ -434,8 +439,6 @@ int OpenCvImgSeqServer::getFramerateMilliSeconds()
 void OpenCvImgSeqServer::configure(const map<string,string> & _config)
   throw(runtime_error)
 {
-  //int start = 0, end = 0, step = 1;
-  //vector<string> fileTemplates;
   map<string,string>::const_iterator it;
 
   // first let the base class configure itself
@@ -451,36 +454,60 @@ void OpenCvImgSeqServer::configure(const map<string,string> & _config)
   }
 
   CSequenceInfo sequenceInfo;
-  sequenceInfo.parseConfig(_config);
+  string firstSequence = "";
 
-#ifdef FEAT_VISUALIZATION
+  sequenceInfo.parseConfig(_config);
+  if (sequenceInfo.fileTemplates.length() > 0) {
+    firstSequence = "[--files]";
+    if (sequenceInfo.loop) sequenceMap[firstSequence] = sequenceInfo;
+    else leadInMap[firstSequence] = sequenceInfo;
+  }
+
   if((it = _config.find("--sequences")) != _config.end())
   {
+#ifndef FEAT_VISUALIZATION
+    println(" *** --sequences parameter requires BUILD_HAL_VIDEO_IMG_SEQ_UI=ON");
+#else
     sequenceIniFile = it->second;
     if (! parseSequenceIniFile(sequenceIniFile)) {
       sequenceIniFile = "";
     }
+#endif
   }
 
   if((it = _config.find("--show_sequence")) != _config.end())
   {
-    if (sequenceMap.find(it->second) == sequenceMap.end()) {
+#ifndef FEAT_VISUALIZATION
+    println(" *** --show_sequence parameter requires BUILD_HAL_VIDEO_IMG_SEQ_UI=ON");
+#else
+    if (leadInMap.find(it->second) == leadInMap.end() && sequenceMap.find(it->second) == sequenceMap.end())
+    {
         throw runtime_error(exceptionMessage(__HERE__,
               "The sequence '%s' specified in --show_sequence does not exist in --sequences",
               it->second.c_str()));
     }
     else {
-      sequenceInfo = sequenceMap[it->second];
+      firstSequence = it->second;
     }
   }
+  else if (firstSequence == "") {
+    // Choose a random sequence
+    if (!leadInMap.empty()) firstSequence = leadInMap.begin()->first;
+    else if (!sequenceMap.empty()) firstSequence = sequenceMap.begin()->first;
 #endif
-
-  if (sequenceInfo.fileTemplates.length() < 1) {
-    throw runtime_error(exceptionMessage(__HERE__,
-          "No video sequence was configured. Use --files or --sequences/--show_sequence."));
   }
 
-  switchSequence(sequenceInfo);
+  if (firstSequence == "" && sequenceMap.empty() && leadInMap.empty()) {
+#ifdef FEAT_VISUALIZATION
+    throw runtime_error(exceptionMessage(__HERE__,
+          "No video sequence was configured. Use --files or --sequences/--show_sequence."));
+#else
+    throw runtime_error(exceptionMessage(__HERE__,
+          "No video sequence was configured. Use --files."));
+#endif
+  }
+
+  installSequence(firstSequence);
 
 #ifdef FEAT_VISUALIZATION
   m_display.configureDisplayClient(_config);
@@ -602,14 +629,21 @@ bool OpenCvImgSeqServer::parseSequenceIniFile(const std::string& fname)
         if (var == "sequence") {
           CSequenceInfo info;
           info.parseConfig(state.expandVars(value));
+          if (!info.loop) info.loop = true;
           sequenceMap[section] = info;
         }
-        // transitions - may be supported some day
-        //else if (var == "in" || var == "out") {
-        //  CSequenceInfo info;
-        //  info.parseConfig(state.expandVars(value));
-        //  transitionMap[section + "-" + var] = info;
-        //}
+        else if (var == "in") {
+          CSequenceInfo info;
+          info.parseConfig(state.expandVars(value));
+          if (info.loop) info.loop = false;
+          leadInMap[section] = info;
+        }
+        else if (var == "out") {
+          CSequenceInfo info;
+          info.parseConfig(state.expandVars(value));
+          if (info.loop) info.loop = false;
+          leadOutMap[section] = info;
+        }
         else if (var == "INI_DIR") {
           continue; // TODO: notify error: some names shouldn't be used
         }
@@ -649,12 +683,10 @@ void OpenCvImgSeqServer::start()
 void OpenCvImgSeqServer::CDisplayClient::handleEvent(const Visualization::TEvent& event)
 {
   if (event.type == Visualization::evHtmlOnClick) {
-    log("evHtmlOnClick on " + event.sourceId + " (" + event.objectId + ":" + event.partId + ")");
+    debug("evHtmlOnClick on " + event.sourceId + " (" + event.objectId + ":" + event.partId + ")");
     string seqname = event.sourceId;
-    if (pComponent->sequenceMap.find(seqname) != pComponent->sequenceMap.end()) {
-      log("going to load sequence " + seqname);
-      pComponent->switchSequence(pComponent->sequenceMap[seqname]);
-    }
+    debug("going to install sequence " + seqname);
+    pComponent->installSequence(seqname);
   }
 
 }
@@ -690,6 +722,61 @@ void OpenCvImgSeqServer::switchSequence(CSequenceInfo& seq)
   // Restart the sequence
   frameRepeatPos = frameRepeatCnt;
   frameCnt = 0;
+}
+
+
+void OpenCvImgSeqServer::installSequence(const std::string& name)
+{
+  std::map<std::string,CSequenceInfo>::iterator it;
+  if (m_currentSequenceName != "") {
+    it = leadOutMap.find(m_currentSequenceName);
+    if (it != leadOutMap.end()) {
+      m_sequenceStage = stLeadOut;
+      switchSequence(leadOutMap[m_currentSequenceName]);
+      m_nextSequenceName = name;
+      return;
+    }
+  }
+  m_nextSequenceName = name;
+  tryNextSequence();
+}
+
+void OpenCvImgSeqServer::tryNextSequence()
+{
+  std::map<std::string,CSequenceInfo>::iterator it;
+
+  if (m_nextSequenceName == "") {
+    if (m_sequenceStage == stLeadIn) {
+      it = sequenceMap.find(m_currentSequenceName);
+      if (it != sequenceMap.end()) {
+        switchSequence(sequenceMap[m_currentSequenceName]);
+        return;
+      }
+    }
+    return;
+  }
+
+  it = leadInMap.find(m_nextSequenceName);
+  if (it != leadInMap.end())
+  {
+    switchSequence(leadInMap[m_nextSequenceName]);
+    m_currentSequenceName = m_nextSequenceName;
+    m_nextSequenceName = "";
+    m_sequenceStage = stLeadIn;
+    return;
+  }
+
+  it = sequenceMap.find(m_nextSequenceName);
+  if (it != sequenceMap.end())
+  {
+    switchSequence(sequenceMap[m_nextSequenceName]);
+    m_currentSequenceName = m_nextSequenceName;
+    m_nextSequenceName = "";
+    m_sequenceStage = stLoop;
+    return;
+  }
+
+  m_nextSequenceName = "";
 }
 
 /**

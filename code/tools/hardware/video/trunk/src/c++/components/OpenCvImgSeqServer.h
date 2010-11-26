@@ -33,6 +33,7 @@ struct CSequenceInfo
   int step;
 
   // True, if the sequence should play continuously.
+  // TODO: make int to add bidirectional looping; rename to loopmode, add loopdirection
   bool loop;
 
   // How many times to repeat each frame.
@@ -50,6 +51,7 @@ struct CSequenceInfo
   void parseConfig(const std::string& _configStr);
   void setInfo(Video::VideoSequenceInfo& info);
 };
+
 
 /**
  * Video device reading from stored files.
@@ -92,6 +94,9 @@ private:
    */
   int downsampleFactor;
 
+  /**
+   * Image cache that reduces the number of reallocations.
+   */
   Video::CIplImageCache m_imageCache;
 
   /**
@@ -136,9 +141,21 @@ public:
   virtual const std::string getServerName();
 
 private:
+  std::map<std::string, CSequenceInfo> leadInMap;
+  std::map<std::string, CSequenceInfo> sequenceMap;
+  std::map<std::string, CSequenceInfo> leadOutMap;
+  std::string m_currentSequenceName;
+  std::string m_nextSequenceName;
+  enum SequenceStage {
+    stLeadIn, stLoop, stLeadOut
+  };
+  SequenceStage m_sequenceStage;
+  void installSequence(const std::string& name);
+  void tryNextSequence();
+
 #ifdef FEAT_VISUALIZATION
   std::string sequenceIniFile;
-  std::map<std::string, CSequenceInfo> sequenceMap;
+  int displayStage; // in/loop/out
   class CDisplayClient: public cogx::display::CDisplayClient
   {
     OpenCvImgSeqServer* pComponent;
