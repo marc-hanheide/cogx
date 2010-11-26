@@ -27,25 +27,27 @@ recently this research thread has been extended to contingent planning
 in fully observable non-deterministic
 environments~\cite{albore:etal:2009}.
 %%
-The continual planning algorithm we use \cite{brenner:nebel:jaamas09}
-also has this characteristic, and has been applied in completely
-observable domains, particularly those featuring multple communicating
-agents. The use of knowledge operators in domains allows plans that
-act to gain knowledge, but the approach assumes that such actions are
-deterministic and reliable, an assumption that we relax in this work.
+The continual planning system that motivated our
+project~\cite{brenner:nebel:jaamas09} also has this characteristic,
+and has been applied in completely observable domains, particularly
+those featuring multple communicating agents. The use of knowledge
+operators in domains allows plans that act to gain knowledge, but the
+approach assumes that such actions are deterministic and reliable, an
+assumption that we relax in this work.
 
-The particular domain we are interested in contains a mixture of task
+Our work is motivated by domains that contain a mixture of task
 planning and observation planning. There have been a number of recent
 papers representing observation planning problems as POMDPs and using
 various techniques to manage the large state
-space. In \cite{hippo-jnl} the authors take this approach in a vision
-algorithm selection problem. In their case there is a natural
-factorisation of the problem which allows them to solve large problems
-by decomposing them into a set of much smaller POMDPs. Doshi and
-Roy \cite{doshi08:pref_elic} represent a preference elicitation
-problem as a POMDP and take advantage of symmetry in the belief space
-(essentially the idea that it doesn't matter what the value of the
-variable you are trying to observe is) to exponentially shrink the
-state space. Unfortunately, although we are still exploring the Doshi
-and Roy approach, we have yet to find structure we can exploit
-similarly in our domain due to the task planning component.
+space. \citeauthor{hippo-jnl}~(\citeyear{hippo-jnl}) take this
+approach in a vision algorithm selection problem. In their case there
+is a natural hierarchical decomposition of the problem which allows
+them to solve large problems by breaking them into a set of small
+POMDPs. \citeauthor{doshi08:pref_elic}~(\citeyear{doshi08:pref_elic})
+represent a preference elicitation problem as a POMDP and take
+advantage of symmetry in the belief space ---essentially the idea that
+it does not matter what the value of the variable you are trying to
+observe is--- to exponentially shrink the state space. Although we
+have been actively exploring the \citeauthor{doshi08:pref_elic}
+approach, we have yet to find those exploitable structures in our
+domain due to the task planning component.
