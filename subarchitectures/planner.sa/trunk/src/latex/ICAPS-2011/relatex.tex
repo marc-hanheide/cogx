@@ -11,9 +11,17 @@ More computationally expensive approaches in this vein combine
 sampling strategies on valuations over {\em runtime variables} with
 deterministic planning procedures. The outcome is typically a more
 robust sequential plan~\cite{yoon:etal:2008}, or contingent
-plan~\cite{majercik:2006}. However, as we said in the introduction,
-all these approaches struggle in partially observable domains as they
-rely on being able to determine the state at all times.
+plan~\cite{majercik:2006}. 
+
+%%No! They simply haven't been evaluated in PO settings. They may, or
+%%may not struggle. They have sampling of traces, and that would
+%%include observations, and therefore evolutions of beliefs. SSAT was
+%%proposed by Littman for POMDPs. So the majercik stuff is perfectly
+%%suited to POMDPs.
+%%
+%% However, as we said in the introduction,
+%% all these approaches struggle in partially observable domains as they
+%% rely on being able to determine the state at all times.
 
 Also leveraging deterministic planners in problems that feature
 uncertainty, \system{Conformant-FF}~\cite{hoffmann:brafman:2006} and
