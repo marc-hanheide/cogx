@@ -7,6 +7,7 @@
  *   - switch image sequence while running
  *   - parser for INI files that describe available image sequences
  *   - UI to select a sequence using the Display Server (requires Visualization SA)
+ *   - sequences have three parts: lead-in, loop, lead-out
  */
 
 #include <highgui.h>
