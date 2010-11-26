@@ -112,7 +112,7 @@ class Simulation(object):
                 continue
             if svar.modality == mapl.knowledge and svar.modal_args[0] == a:
                 newvar = svar.nonmodal()
-                agent.get_state()[newvar] = self.state[newvar]
+                agent.update_state(newvar, self.state[newvar])
         
     def preprocess_domain(self, dom):
         """

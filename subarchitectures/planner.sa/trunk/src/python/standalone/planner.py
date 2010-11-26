@@ -453,12 +453,17 @@ class Downward(BasePlanner):
     def _run(self, input_data, task):
         import subprocess
         domain_path, problem_path, mutex_path, output_sas_path, output_path, plan_path, stdout_path, tmp_dir = input_data
-        exec_path = os.path.join(global_vars.src_path, self.executable)
+        translate_path = os.path.join(global_vars.src_path, self.executable, self.config.translate)
+        preprocess_path = os.path.join(global_vars.src_path, self.executable, self.config.preprocess)
+        search_path = os.path.join(global_vars.src_path, self.executable, self.config.search)
         search_args = self.config.search_args
 
         output = open(stdout_path, "w")
+
+        # print "sleep"
+        # time.sleep(1)
         
-        cmd = "%(exec_path)s/translate/translate.py  %(domain_path)s %(problem_path)s -m %(mutex_path)s" % locals()
+        cmd = "%(translate_path)s  %(domain_path)s %(problem_path)s -m %(mutex_path)s" % locals()
         with statistics.time_block_for_statistics(self.main_planner, "translate_time"):
             proc, translate_out,_ = utils.run_process(cmd, error=subprocess.STDOUT, dir=tmp_dir, wait=True)
         output.write(translate_out)
@@ -469,7 +474,7 @@ class Downward(BasePlanner):
             utils.print_errors(proc, cmd, translate_out, log, "Fast Downward Translate")
             return None
 
-        cmd = "%(exec_path)s/preprocess/preprocess" % locals()
+        cmd = "%(preprocess_path)s" % locals()
         with statistics.time_block_for_statistics(self.main_planner, "preprocess_time"):
             proc, prep_out,_ = utils.run_process(cmd, error=subprocess.STDOUT, input=output_sas_path, dir=tmp_dir, wait=True)
         output.write(prep_out)
@@ -480,7 +485,7 @@ class Downward(BasePlanner):
             utils.print_errors(proc, cmd, prep_out, log, "Fast Downward Preprocess")
             return None
 
-        cmd = "%(exec_path)s/search/search %(search_args)s" % locals()
+        cmd = "%(search_path)s %(search_args)s" % locals()
         with statistics.time_block_for_statistics(self.main_planner, "search_time"):
              proc, search_out,_ = utils.run_process(cmd, error=subprocess.STDOUT, input=output_path, dir=tmp_dir, wait=True)
         output.write(search_out)
@@ -496,13 +501,13 @@ class Downward(BasePlanner):
         try:
             pddl_output = open(plan_path).read()
         except IOError:
-            log.warning("Warning: Fast Downward did not find a plan or crashed.")
-            log.warning("Call was: %s", cmd)
-            log.warning("FD output was:\n\n>>>")
-            log.warning(translate_out)
-            log.warning(prep_out)
-            log.warning(search_out)
-            log.warning("<<<\n")
+            log.info("Warning: Fast Downward did not find a plan.")
+            log.info("Call was: %s", cmd)
+            # log.warning("FD output was:\n\n>>>")
+            # log.warning(translate_out)
+            # log.warning(prep_out)
+            # log.warning(search_out)
+            # log.warning("<<<\n")
             return None
         pddl_plan = self.parse_fd_output(pddl_output)
         return pddl_plan

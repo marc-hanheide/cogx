@@ -48,9 +48,10 @@ class StandaloneDTInterface(object):
         exe = global_vars.config.dt.standalone_executable
         steps = global_vars.config.dt.steps
         istates = global_vars.config.dt.max_istates
+        beta = global_vars.config.dt.beta
         
         import subprocess, atexit
-        cmd = "%s --steps %d --max-iStates %d --domain %s --problem %s" % (exe, steps, istates, self.domain_fn, self.problem_fn)
+        cmd = "%s --steps %d --max-iStates %d --beta %f --domain %s --problem %s" % (exe, steps, istates, beta, self.domain_fn, self.problem_fn)
         log.debug("running dt planner with '%s'", cmd)
         self.process = subprocess.Popen(cmd.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=open("dtout.log", "w"))
         atexit.register(lambda: self.kill())
@@ -138,6 +139,10 @@ class SwitchingAgent(agent.Agent):
         self.task.wait_for_effects = False
         self.planner.register_task(self.task)
 
+    def update_state(self, svar, val):
+        self.task.get_state()[svar] = val
+        self.state[svar] = val
+        
     @loggingScope
     def run(self):
         agent.BaseAgent.run(self)
@@ -228,10 +233,10 @@ class SwitchingAgent(agent.Agent):
             #if any(fact not in self.state for fact in pnode.effects):
                 sat = False
                 break
-        if sat:
-            log.debug("dt planning stopped. Subgoal reached.")
-            self.dt_done()
-            return
+        # if sat:
+        #     log.debug("dt planning stopped. Subgoal reached.")
+        #     self.dt_done()
+        #     return
 
         dt_pnode = self.dt_task.dt_plan[-1]
 
@@ -363,6 +368,11 @@ class SwitchingAgent(agent.Agent):
             if svar is None:
                 rawobs.append("(null)")
                 continue
+
+            if not self.dt_task.expected_observation(svar):
+                log.debug("observation %s was rejected by dt task.", str(svar))
+                rawobs.append("(null)")
+                continue
             
             if svar.modality:
                 name = "%s-%s" % (svar.modality.name, svar.function.name)
@@ -401,13 +411,21 @@ class SwitchingAgent(agent.Agent):
         action = self.last_action.action
         action.instantiate(self.last_action.full_args, self.task.mapltask)
         if self.bayes.handle_obs(action, new_percepts):
+            def node_filter(node):
+                for f in node.all_facts():
+                    if f.svar.function == pddl.dtpddl.selected:
+                        continue
+                    if f.svar not in self.state or not self.state.is_det(f.svar):
+                        return True
+                return False
+
             result, node_probs = self.bayes.evaluate()
-            self.pnodes = self.bayes.new_ptree(self.init_pnodes, node_probs)
+            self.pnodes = filter(node_filter, self.bayes.new_ptree(self.init_pnodes, node_probs))
             dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD(nodes=self.pnodes)
             self.cp_domain = dt_compiler.translate(self.domain, prob_functions=self.prob_functions)
 
             for svar, dist in result.iteritems():
-                if svar.function != pddl.dtpddl.selected:
+                if svar.function != pddl.dtpddl.selected and (svar not in self.state or not self.state.is_det(svar)):
                     self.state[svar] = dist
                     
             self.bayes.init(self.state, self.pnodes)
