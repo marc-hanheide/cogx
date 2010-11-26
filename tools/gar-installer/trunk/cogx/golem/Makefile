@@ -7,8 +7,8 @@ WORKSRC = $(WORKDIR)/$(DISTNAME)/compiler/cmake/default/
 
 MAINTAINER = ttoenige
 
-
-MASTER_SITES =
+SVNUSER = pub
+MASTER_SITES = svnhttps://codex.cs.bham.ac.uk/svn/msk/development/Golem/trunk/
 
 LIBDEPS = cogx/kni_3.9.2
 
@@ -30,6 +30,3 @@ checksum-$(DISTFILES):
 	true
 checksum-$(PATCHFILES): 
 	true
-
-post-install:
-	cp $(WORKDIR)/$(DISTNAME)/resources 
