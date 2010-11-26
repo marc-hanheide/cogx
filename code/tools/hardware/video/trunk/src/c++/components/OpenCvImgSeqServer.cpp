@@ -288,7 +288,7 @@ void OpenCvImgSeqServer::constructFilenames(const vector<string> &fileTemplates,
 
 void OpenCvImgSeqServer::grabFramesInternal() throw(runtime_error)
 {
-  if(filenames.size() == 0 || frameCnt >= numFrames() && !loopSequence)
+  if((filenames.size() == 0) || (frameCnt >= numFrames() && !loopSequence))
     tryNextSequence();
 
   // tryNextSequence can cause a deadlock if it's afer this lock
