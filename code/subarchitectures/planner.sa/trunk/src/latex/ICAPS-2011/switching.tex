@@ -26,8 +26,9 @@ scheduling
 observability of the precondition $\poss(\action)$.
 
 Our approach always begins with a sequential session. Non-assumptive
-actions from the trace are executed until the applicability of the
-next scheduled action is uncertain.  A contingent session then begins,
+actions from the trace are executed in sequence until the
+applicability of the next scheduled action is uncertain. Here, that
+action is denoted \switchAction.  A contingent session then begins,
 which tailors sensory processing by the agent to determine whether the
 assumptions made in the trace hold. For each {\em active} assumption
 in the trace, we add a {\em disconfirm} action to the POMDP whose
@@ -35,14 +36,12 @@ execution is rewarding (resp. costly) if the assumption is false
 (resp. true). We also add one {\em confirm} action that is rewarding
 (resp. costly) to execute if $\poss(\action)$ is true
 (resp. false). If execution of the contingent plan applies a
-disconfirm action, then a new sequential session begins at the current
-underlying belief-state. If the confirm action is executed, the
+disconfirm action, then a new sequential session begins at the {\em
+underlying} belief-state. If the confirm action is executed, the
 sequential session is resumed, and
 \switchAction\ is executed. Otherwise, control rests in the continual
 session.
-
-
-
+%%
 Because contingent planning is only practical in relatively small
 POMDPs, contingent sessions proceed in an abstract decision process
 determined by the current trace. That abstract process is constructed
@@ -55,10 +54,10 @@ continual planner maintains a factored representation of successive
 {\em belief-states}, by performing belief revision according to
 Eq~\ref{eq:revision}. Moreover, our internal representation of that
 distribution corresponds more-or-less directly to an $(\pp{:init})$
-declaration in DTPDDL. Our approach uses that {\em underlying}
-belief-state as: (1) the source of determinisations for sequential
-planning, (2) the basis for switching, and (3) the source for state
-abstraction in contingent sessions.
+declaration in DTPDDL. Our approach uses that underlying belief-state
+as: (1) the source of determinisations for sequential planning, (2)
+the basis for switching, and (3) the source for state abstraction in
+contingent sessions.
 
 %% PLEASE STICK A PARAGRAPH HERE, (SENSIBLY) REQUESTED BY MORITZ, ABOUT
 %% HOW WE DO BELIEF REVISION ACROSS SWITCHING.
