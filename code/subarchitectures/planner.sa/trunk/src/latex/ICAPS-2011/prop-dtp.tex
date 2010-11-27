@@ -5,47 +5,64 @@
 %% {\em omitted variables}
 
 We describe the partially observable propositional probabilistic
-planning problem, with costs and rewards. The underlying process
-dynamics are modelled in terms of a finite set of stochastic actions
-$\stochActions$, deterministic outcomes $\detActions$, and
+planning problem, with costs and rewards. We model a process
+state $\state$ as the set of propositions that are true of the
+state. Notationally, we have $\state \subseteq
+\props$. The underlying process
+dynamics are modelled in terms of a finite set of {\em probabilistic
+STRIPS operators}~\cite{boutilier:1996} $\stochActions$ over
 state-characterising propositions $\propositions$.
-
-We model a process state $\state$ as the set of propositions that are
-true of the state. Notationally, we have $\state \subseteq
-\props$. State change is induced by application of actions. A
-stochastic action $\stochAction \in \stochActions$ is applicable if
-its precondition $\poss(\stochAction)$, a set of propositions, are
-satisfied in the current state -- i.e., $\poss(\stochAction) \subseteq
-\state$. We write $\stochActions(\state)$ for set of actions
-applicable at state $\state$.  If action $\stochAction \in
-\stochActions(\state)$ is applied at \state, nature chooses one
-element amongst a small set of deterministic outcomes
-$\detActions(\stochAction) \equiv \{\detAction_1, \ldots, \detAction_k
-\}$. We denote $\mu_{\stochAction}(\detAction_i)$ the probability that
-nature takes outcome $\detAct_i$, and for all \stochAction\ we require
+%%
+Notationally, we say an action $\stochAction \in \stochActions$ is
+applicable if its precondition $\poss(\stochAction)$, a set of
+propositions, are satisfied in the current state -- i.e., $\poss(\stochAction) \subseteq
+\state$. We denote $\mu_{\stochAction}(\detAction_i)$ the probability that
+nature chooses a deterministic STRIPS effect $\detAct_i$, and for
+all \stochAction\ we require
 $\sum_{\detAction_i \in \detActions(\stochAction)}
-\mu_{\stochAction}(\detAction_i) = 1$. The chosen outcome has an
-effect on the state given in terms of two lists of propositions. The
-add-list $\add(\detAction)$ and delete-list
-$\delete(\detAction)$.\footnote{If a proposition is in the add-list of
-$\detAction$, then it cannot be in the delete-list and vice versa.}
-If outcome $\detAction$ with $\add(\detAction) := [\prop_1,
-..,\prop_n]$ and $\delete(\detAction) := [\prop_{n+1},
-..,\prop_m]$ is chosen by nature when \stochAction\ is
-applied at state $\state$, then the resultant state is $ ( \state \cup
-\add(\detAction) ) \backslash \delete(\detAction)$ -- i.e.,
-propositions from $\add(\detAction)$ are added to $\state$, and those
-from $\delete(\detAction)$ are removed from $\state$.
+\mu_{\stochAction}(\detAction_i) = 1$.
+
+%% We model a process state $\state$ as the set of propositions that are
+%% true of the state. Notationally, we have $\state \subseteq
+%% \props$. State change is induced by application of actions. A
+%% stochastic action $\stochAction \in \stochActions$ is applicable if
+%% its precondition $\poss(\stochAction)$, a set of propositions, are
+%% satisfied in the current state. We write $\stochActions(\state)$ for set of actions
+%% applicable at state $\state$.  If action $\stochAction \in
+%% \stochActions(\state)$ is applied at \state, nature chooses one
+%% element amongst a small set of deterministic outcomes
+%% $\detActions(\stochAction) \equiv \{\detAction_1, \ldots, \detAction_k
+%% \}$. We denote $\mu_{\stochAction}(\detAction_i)$ the probability that
+%% nature takes outcome $\detAct_i$, and for all \stochAction\ we require
+%% $\sum_{\detAction_i \in \detActions(\stochAction)}
+%% \mu_{\stochAction}(\detAction_i) = 1$. The chosen outcome has an
+%% effect on the state given in terms of two lists of propositions. The
+%% add-list $\add(\detAction)$ and delete-list
+%% $\delete(\detAction)$.\footnote{If a proposition is in the add-list of
+%% $\detAction$, then it cannot be in the delete-list and vice versa.}
+%% If outcome $\detAction$ with $\add(\detAction) := [\prop_1,
+%% ..,\prop_n]$ and $\delete(\detAction) := [\prop_{n+1},
+%% ..,\prop_m]$ is chosen by nature when \stochAction\ is
+%% applied at state $\state$, then the resultant state is $ ( \state \cup
+%% \add(\detAction) ) \backslash \delete(\detAction)$ -- i.e.,
+%% propositions from $\add(\detAction)$ are added to $\state$, and those
+%% from $\delete(\detAction)$ are removed from $\state$.
+
+%% \citeauthor{rintanen:01}~(\citeyear{rintanen:01})
 
 We are concerned with problems that feature partial
-observability. These have a perceptual model given in terms of a
-finite set of stochastic {\em senses} $\stochSenses$, deterministic
-sensing outcomes $\detSenses$, and perceptual propositions
-$\percepts$, called {\em percepts}. Here, an observation $\observ$ is
-a set of percepts $\observ \subseteq \percepts$, and we denote
-\observations\ the set of reachable observations. The underlying state
-of the process cannot be observed directly, rather, senses
-$\stochSense \in \stochSenses$ effect an observation $\observ \in
+observability. Although we could invoke {\em extended probabilistic
+STRIPS operators}~\cite{rintanen:01} to model actions and observations
+propositionally, we find it convenient for our presentation to clearly
+separate sensing and action. Therefore, we suppose a POMDP has a
+perceptual model given in terms of a finite set of stochastic {\em
+senses} $\stochSenses$, deterministic sensing outcomes $\detSenses$,
+and perceptual propositions $\percepts$, called {\em percepts}. In
+detail, we take an observation $\observ$ to be a set of percepts
+$\observ \subseteq \percepts$, and denote \observations\ the set of
+reachable observations. The underlying state of the process cannot be
+observed directly, rather, senses $\stochSense \in \stochSenses$
+effect an observation $\observ \in
 \observations$ that informs what should be believed about the state a
 process is in. In detail, if $\action$ is applied effecting a
 transition to a successor state $\state'$, then an observation occurs
@@ -65,7 +82,8 @@ the $i^{th}$ element being chosen is given by
 $\psi_{\stochSense}(\detSense_i)$, where $\sum_{\detSense_i \in
 \detSenses(\stochSense)} \psi_{\stochSense}(\detSense_i) =
 1$. The observation received by the agent corresponds to the union of
-perceptual propositions from chosen elements of active senses.
+perceptual propositions from chosen elements of active
+senses.
 
 A POMDP has a starting configuration that corresponds to a Bayesian
 belief-state. Intuitively, this is the robot's subjective belief about
