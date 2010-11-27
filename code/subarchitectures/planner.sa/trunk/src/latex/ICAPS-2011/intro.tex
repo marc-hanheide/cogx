@@ -7,10 +7,10 @@ optimal or close to optimal planners can handle. For the easier
 problem of planning in completely observable stochastic domains, an
 alternative approach has been to use classical sequential planners and
 replan when actions have unplanned-for
-outcomes \cite{yoon:etal:2007}. However, these approaches aren't so
+outcomes \cite{yoon:etal:2007}. However, these approaches are not as
 useful in partially observable domains as replanning is triggered when
 the system ends up in a state other than the desired one, and this
-state can't in general be determined.
+state cannot in general be determined.
 
 In this paper we describe, \pcogx, the planning component in a robotic
 system that continuously deliberates in a stochastic dynamic
@@ -30,7 +30,7 @@ reasoning about observations is required to find good plans. We refer
 to the complete system as a {\em switching planner}. The approach is
 not optimal, particularly as it is based on a satisficing sequential
 planner, but it performs better than the sequential planner alone and
-is fast enough to be used onboard the robot for decision-making. As an
+is fast enough to be used on the robot for decision-making. As an
 illustration, consider a robot searching for a box that it knows is
 often found in offices. The sequential planner might produce a plan
 that assumes that {\sc Room a} is an office, that the box is in {\sc
@@ -66,7 +66,7 @@ heuristic. For reasons of space, we will not describe this system in
 detail here.
 
 The switching planner approach gives us some important advantages in
-our robotic domain. Firstly, the main source of uncertainty in the
+our robotic domain. First, the main source of uncertainty in the
 domain is unreliable observations, rather than stochasticity in the
 action effects, and this approach is particularly suited to problems
 that combine a deterministic task planning problem with observations
@@ -166,7 +166,7 @@ world, both of which are features of our domain.
 
 An outline of the paper is as follows. We begin by describing POMDPs with a
 propositionally factored representation of states and observations,
-and therelationship between this and a flat POMDP representation. Next
+and the relationship between this and a flat POMDP representation. Next
 we describe our DTPDDL language using a running example of the robot
 looking for a box. Then we describe the switching planner, including
 how the sequential domain is produced and a plan is generated, and how

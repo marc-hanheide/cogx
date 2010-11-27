@@ -11,7 +11,7 @@ expressed compactly in PPDDL to propositional representations amenable
 to state-of-the-art planning procedures.
 
 Because PPDDL cannot model domains that feature partial observability,
-we developed an extension of that language, called Decision-Theoretic
+we develop an extension of that language, called Decision-Theoretic
 (DT)PDDL. This can express probabilistic models of the sensing
 consequences of acting, to quantitatively capture unreliability in
 perception. That expressive power is achieved by incorporating
@@ -114,11 +114,11 @@ probabilistic, e.g., $(\pp{probabilistic}~\prob_1 (T_1) .. \prob_n
 (T_n))$ where $T_i$ are conjunctive, or (3) a conjunct over
 probabilistic and atomic terms. The root term is always conjunctive,
 and the leaves are atomic. For example, the starting distribution for
-$\pp{DORA}$ might be described thusly:\footnote{In PDDL,
+$\pp{DORA}$ might be described as follows:\footnote{In PDDL,
 $(\pp{:init}~T_1..T_n)$ expresses the conjunctive root of the tree --
 i.e., the root node $(\pp{and}~T_1..T_n)$. Also, we shall write
-$\prop$, rather than $(\pp{and}~\prop)$, it a conjunctive term
-contains a single atomic subterm.}
+$\prop$, rather than $(\pp{and}~\prop)$, for conjunctive terms
+that contain a single atomic subterm.}
 
 \small
 \begin{tabtt}
@@ -138,7 +138,7 @@ iff all its immediate subterms are visited. A probabilistic term is
 visited iff its conjunctive parent is visited, and exactly one of its
 subterms, $T_i$, is visited. Each visitation of the root term
 according to this recursive definition encapsulates a starting state,
-along with the probability it occurs. The former corresponds to the
+along with the probability that it occurs. The former corresponds to the
 union of all visited atoms, and the latter corresponds to the product
 of $\prob_i$ entries on the visited subterms of probabilistic
 elements. Making these ideas concrete, our example yields the

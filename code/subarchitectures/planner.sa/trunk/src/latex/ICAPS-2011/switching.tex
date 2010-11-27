@@ -27,7 +27,7 @@ observability of the precondition $\poss(\action)$.
 Our approach always begins with a sequential session. Non-assumptive
 actions from the trace are executed in sequence until the
 applicability of the next scheduled action is uncertain. We denote
-that action \switchAction.  A contingent session then begins, which
+that action \switchAction.  A contingent session then begins, that
 tailors sensory processing by the agent to determine whether the
 assumptions made in the trace hold. For each assumption we add a {\em
 disconfirm} action to the POMDP whose execution is rewarding
@@ -231,7 +231,7 @@ $\assumptiveDT{i}$ so that $\forall\state\in\states$:
 \end{array}
 \]
 
-\noindent Where $\$(T_i)$ is a positive numeric quantity which
+\noindent where $\$(T_i)$ is a positive numeric quantity which
 captures the reward the agent receives for correctly rejecting a
 false assumption. The added dual actions are propositionally trivial
 -- i.e., $\forall\state\in\states$ $\poss(\assumptiveDT{i})
@@ -284,7 +284,7 @@ sensing is scheduled, or to completion. Lastly, we note that in our
 project the rewards, i.e., function $\$:2^\propositions\to\Re$, for
 the POMDP posed to the contingent session are sourced from a
 motivational component of our robotic architecture. We make no
-assumptions about how they are derived.
+assumptions here about how they are derived.
 
 The starting belief-state for the abstract process is given in terms
 of a {\em relaxed} $(\pp{:init})$ declaration.  We first construct a
