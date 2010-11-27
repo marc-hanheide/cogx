@@ -29,14 +29,14 @@ actions from the trace are executed in sequence until the
 applicability of the next scheduled action is uncertain. We denote
 that action \switchAction.  A contingent session then begins, which
 tailors sensory processing by the agent to determine whether the
-assumptions made in the trace hold. For assumptions in the trace, we
-add a {\em disconfirm} action to the POMDP whose execution is
-rewarding (resp. costly) if the assumption is false (resp. true). We
-also add one {\em confirm} action that is rewarding (resp. costly) to
-execute if $\poss(\switchAction)$ is true (resp. false). If execution
-of the contingent plan applies a disconfirm action, then a new
-sequential session begins at the {\em underlying} belief-state. If the
-confirm action is executed, the sequential session is resumed, and
+assumptions made in the trace hold. For each assumption we add a {\em
+disconfirm} action to the POMDP whose execution is rewarding
+(resp. costly) if the assumption is false (resp. true). We also add
+one {\em confirm} action that is rewarding (resp. costly) to execute
+if $\poss(\switchAction)$ is true (resp. false). If execution of the
+contingent plan applies a disconfirm action, then a new sequential
+session begins at the {\em underlying} belief-state. If the confirm
+action is executed, the sequential session is resumed, and
 \switchAction\ is executed. Otherwise, control rests in the continual
 session.
 %%
@@ -50,7 +50,7 @@ practicable size.
 Finally, whether proceeding in a sequential or contingent session, our
 continual planner maintains a factored representation of successive
 belief-states, by performing belief revision according to
-Eq~\ref{eq:revision}. Moreover, our internal representation the
+Eq~\ref{eq:revision}. Moreover, our internal representation of the
 underlying belief-state corresponds more-or-less directly to an
 $(\pp{:init})$ declaration in DTPDDL. Our approach uses that
 distribution: (1) as the source of candidate determinisations for
@@ -110,7 +110,7 @@ relaxed case, a conjunctive term is visited iff its atomic subterms
 are visited, and zero or more of its immediate probabilistic subterms
 are visited. The starting state, $\state_0$, for sequential planning
 is an {\em abstract} state that captures the unique assumption which
-has probability $1.0$. In $\pp{DORA}$, that is:
+has probability $1$. In $\pp{DORA}$, that is:
 
 \[
 \begin{array}{l}
@@ -135,7 +135,7 @@ the union of $\state$ with atomic terms from $T_i$ and conflicting
 propositions from $s$ deleted. For example, if the action adds
 $(=(\pp{is-in}~\pp{box})~\pp{office})$, then it must delete
 $(=(\pp{is-in}~\pp{box})~\#)$. State $\state^\bot$ is an added sink,
-where $\forall\action\in\actions$ $\reward(\state^\bot, \action) = 0$
+where $\forall\action$ $\reward(\state^\bot, \action) = 0$
 and $\transProb(\state^\bot, \action, \state^\bot) = 1$.
 
 For sequential planning the operators from the POMDP model are
@@ -153,7 +153,7 @@ in \state\ if $\prop\#\in\state$. In other words, an assumptive action
 must be applied to make a truth assignment to \prop, and then that
 truth assignment could be modified by the DTPDDL domain operators.
 %%
-Lastly, With regards to switching, we have that if $\action$ has a
+Lastly, with regards to switching, we have that if $\action$ has a
 precondition that is not true with probability $1$ in the underlying
 belief $\bstate$, then immediately before it is executed blindly, the
 system switches to a contingent session, discussed in the following
@@ -198,8 +198,8 @@ V^* = \max_{\prob_1, .., \prob_n} \prod_{i=1..N-1} \prob_i \sum_{i=1..N-1}
 additive contribution a trace of the plan can make to
 Eq~\ref{eq:expectedvalue}.  In goal directed problems, where the only
 non-zero reward is received at the first transition to a goal state,
-the Eq~\ref{eq:tracevalue} criteria gives us the behaviour
-of \system{FFR$_a$}~\cite{yoon:etal:2007}. From the perspective of
+the Eq~\ref{eq:tracevalue} criteria gives us the behaviour sought
+by \system{FFR$_a$}~\cite{yoon:etal:2007}. From the perspective of
 gradient-based reinforcement learning systems, such as William's
 REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
 under reasonable assumptions the optimal trace identifies a maximal
