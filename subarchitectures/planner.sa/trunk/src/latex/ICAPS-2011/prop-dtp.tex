@@ -112,11 +112,10 @@ states $\state$ if $\poss(\stochAction) \not\subseteq
 
 \subsection{Costs, Rewards, and Belief Revision}
 
-Whereas until now we have considered a POMDP model that is factored in
-terms of propositions and percepts, in order to discuss belief
-revision and utility it is convenient to consider the underlying
-decision process in a flat format. This underlying decision process is
-given by the tuple
+Until now we have discussed the POMDP in terms of propositions and
+percepts, in order to address belief revision and utility it is
+convenient to consider the underlying decision process in a flat
+format. This is given by the tuple
 $\langle \states, \bstate_0, \actions, \transProb, \reward,
 \observations, \obsDist \rangle$. Here $\bstate_0$ is the initial
 belief-state, \states\ is the finite set of reachable propositional
@@ -142,11 +141,11 @@ $\obsDist(\state, \action)$. We denote $\obsDist_\observ(\state,
 $\state$. For $\state$ and $\action$ we have $\sum_{\observ \in
 \observations} \obsDist_\observ(\state, \action) = 1$.
 
-In the POMDP model successive state estimation is available by
-application of Bayes' rule.  Taking the current belief $\bstate$ as
-the {\em prior}, and supposing action $\action$ is executed with
-perceptive outcome $\observ$, then the probability that we are in
-$\state$ in the successive belief-state $\bstate'$ is given by:
+Successive state estimation is available by application of Bayes'
+rule.  Taking the current belief $\bstate$ as the {\em prior}, and
+supposing action $\action$ is executed with perceptive outcome
+$\observ$, then the probability that we are in $\state$ in the
+successive belief-state $\bstate'$ is given by:
 
 \begin{equation}\label{eq:revision}
 \bstate'(\state) = \frac{\obsDist_\observ(\state, \action)
