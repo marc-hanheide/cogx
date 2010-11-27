@@ -1,6 +1,90 @@
 % coming soon
 
+\subsection{Implementation}
+
+The implementation of the continual planning and switching parts is
+based on MAPSIM \cite{brenner:nebel:jaamas09} and is able to use several planners as
+the underlying planning system. We use a modified version of Fast
+Downward \cite{fast-downward}, which we extended with the support for
+actions with probabilities.
 
 Our implementation uses the
 ~\citeauthor{king:2009}~(\citeyear{king:2009}) \system{dlib-ml} for
 successive estimation of the underlying belief-state.
+
+The baseline approach is using the same continual planning system as
+the switching planner, but instead of creating an observation problem
+for the decision theoretic planner it will just execute one sensing
+action -- assuming that this action will confirm its assumption.
+
+\subsection{Experiments}
+For evaluation, we used a robot exploration domain similar to the one
+used on a physical robotic system. The goal of the robot is to find
+objects in a human environment and reporting back their position to a
+human.
+
+The basic building blocks of the domain consist of {\tt rooms}, {\tt
+places} and {\tt objects}. Places are grouped in rooms and objects (as
+well as the robot) are always in a place. The robot can move around
+the rooms via connections between places given by the {\tt connected}
+predicate. Each room has a (possibly unknown) {\em category/}
+(e.g. kitchen, office, living room) and depending on this category,
+objects are placed inside the rooms. An instance of this domain is
+shown in figure\ref{fig}.
+
+The robot can find out if an object is at a certain place by executing
+the {\tt look-for-object} action, which may result in a perception if
+the object is in fact there (though some objects are harder to detect
+than others -- so absence of a percept is no proof of the object's
+absence). Additionally, if the robot is in the presence of a human, it
+may simply ask what type of room they are currently in -- but
+conducting a dialogue is a bit more costly than simply running the
+vision algorithm (cost of 8 vs costs of 3).
+
+We conducted experiments on scenarios of several sizes with several
+kinds of goals (though the goal is always reporting the position of a
+certain kind of object). In order to determine the impact of sensor
+reliability on both approaches, we also ran several tests in identical
+problems with different probabilities for sensing the goal object.
+These problems are denoted by the -easy, -medium and -hard suffixes;
+in the easy case the probability of percieving the object is 0.9, in
+medium it is 0.65 and 0.4 in hard.
+
+As the initial state of the problems is stochastic, we ran 50
+simulations for each configuration. In each run the simulator
+generated the true world state by sampling from the same initial state
+distribution the planner was using. So on average the world did
+conform to the planner's expectations. Not all problems generated in
+this manner have a solution. We did not reject these problems, as we
+think that detecting the non-existance of a solution is as valuable in
+exploration problems than finding one.
+
+Fast Downward was run with the cyclic causal graph heuristic using A*
+search or weighted A* with a weight of 5, depending on the difficulty
+of the problem. We then performed multiple tests with different limits
+for the belief space size of the decision theoretic subtask. Higher
+limits should cause longer planning times but be beneficial to plan
+quality as more contingencies can be taken in to account by the POMDP
+planner.
+
+The graphs show the average costs of the agent's actions, the number
+of solved tasks as a percentage of the solvable tasks, as well as the
+planing time for the continual and decision theoretic planners.
+
+For objects that can be easily detected there is little gain in using
+a decision theoretic planner, as the greedy sensing appoach by the
+baseline continual planner is obviously sufficient here. With
+decreasing sensor reliability the more sophisticated observation
+planning pays off: while the resulting plans are still longer on
+average, the impact on the number of solved tasks was much smaller
+than for the baseline system. 
+
+We think that a part of the improvement is due to the segmentation of
+the plan into several subtask, essentially performing hierarchical
+planning. Especially when the continual planner performs badly this is
+a huge gain.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "moritz_2011"
+%%% End: 
