@@ -13,7 +13,7 @@ dynamics are modelled in terms of a finite set of {\em probabilistic
 STRIPS operators}~\cite{boutilier:1996} $\stochActions$ over
 state-characterising propositions $\propositions$.
 %%
-Notationally, we say an action $\stochAction \in \stochActions$ is
+We say an action $\stochAction \in \stochActions$ is
 applicable if its precondition $\poss(\stochAction)$, a set of
 propositions, are satisfied in the current state -- i.e., $\poss(\stochAction) \subseteq
 \state$. We denote $\mu_{\stochAction}(\detAction_i)$ the probability that
@@ -64,7 +64,7 @@ reachable observations. The underlying state of the process cannot be
 observed directly, rather, senses $\stochSense \in \stochSenses$
 effect an observation $\observ \in
 \observations$ that informs what should be believed about the state a
-process is in. In detail, if $\action$ is applied effecting a
+process is in. If $\action$ is applied effecting a
 transition to a successor state $\state'$, then an observation occurs
 according to the active senses $\stochSenses(\stochAction, \state')
 \subseteq \stochSenses$. A sense $\stochSense$ is active, written
@@ -82,7 +82,7 @@ the $i^{th}$ element being chosen is given by
 $\psi_{\stochSense}(\detSense_i)$, where $\sum_{\detSense_i \in
 \detSenses(\stochSense)} \psi_{\stochSense}(\detSense_i) =
 1$. The observation received by the agent corresponds to the union of
-perceptual propositions from chosen elements of active
+perceptual propositions from the chosen elements of active
 senses.
 
 A POMDP has a starting configuration that corresponds to a Bayesian
