@@ -1,3 +1,5 @@
+
+
 Planning for agents acting in partially observable environments with
 stochastic actions is extremely computationally
 expensive \cite{mdp-complexity}. Even relatively small partially
@@ -67,14 +69,29 @@ decision-theoretic planner we use forward search in the information
 state.
 
 The switching planner approach gives us some important advantages in
-our robotic domain. First, the main source of uncertainty in the
-domain is unreliable observations, rather than stochasticity in the
-action effects, and this approach is particularly suited to problems
-that combine a deterministic task planning problem with observations
-as the decision-theoretic planner is only invoked to determine the
-values of variables. Secondly, the replanning makes the system very
-robust to changing goals and the discovery of new facts about the
-world, both of which are features of our domain.
+our robotic domain. First, the significant source of uncertainty in
+the domain is the unreliability of observations, and this approach is
+particularly suited to problems that combine a deterministic task
+planning problem with observations as the decision-theoretic planner
+is only invoked to determine a characteristic of the underlying
+state. Secondly, the replanning makes the system very robust to
+changing objectives and the discovery of new facts about the world, both of
+which are features of our domain.
+
+The remainder of the paper proceeds as follows. We begin by describing
+POMDPs with a propositionally factored representation of states and
+observations. We also outline the relationship between this and a flat
+POMDP representation. Next we describe our DTPDDL language with
+example declarations from a mobile robot exploration task. Then we
+describe the switching planner, including how the sequential domain is
+produced and a plan is generated, and how this then provides the input
+for the decision-theoretic planner. Finally we provide an evaluation
+of the system on the example robot domain, and finish with a short
+survey of related work and some concluding remarks.
+
+
+
+
 
 %To accompany
 %that language we have implemented an information-state
@@ -164,14 +181,3 @@ world, both of which are features of our domain.
 %% important direction for research in the field is to develop
 %% heuristic mechanisms for generating small linear plans
 %% quickly~\cite{littman:etal:98}
-
-An outline of the paper is as follows. We begin by describing POMDPs with a
-propositionally factored representation of states and observations,
-and the relationship between this and a flat POMDP representation. Next
-we describe our DTPDDL language using a running example of the robot
-looking for a box. Then we describe the switching planner, including
-how the sequential domain is produced and a plan is generated, and how
-this then provides the input for the decision-theoretic
-planner. Finally we provide an evaluation of the system on the example
-robot domain, and finish with a short survey of related work and some
-concluding remarks.

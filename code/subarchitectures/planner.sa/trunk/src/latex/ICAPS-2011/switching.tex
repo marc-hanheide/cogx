@@ -326,13 +326,24 @@ adding terms from the original statement of $(\pp{:init})$ while the
 number of abstract states that occur with non-zero probability
 according to that refined declaration remains of a practicable
 size. In detail, for each excluded atomic term, we compute the {\em
-entropy} of the corresponding proposition, {\em conditional} on the
-active assumptions. The {\em conditional entropy} measure
-is higher the more uncertain that proposition is given truth
-assignments to propositions that are the subject of active
-assumptions. Propositions that in the first place were excluded are
-iteratively added to the problem posed to the conditional session in
-increasing order according to that measure. 
+entropy} of the active assumptions, {\em conditional} on the
+corresponding proposition. Loosely speaking, the {\em conditional
+entropy} measure is higher the more uncertain those assumptions are
+given truth assignment to the proposition. Propositions that in the
+first place were excluded are iteratively added to the problem posed
+to the conditional session in increasing order according to that
+measure.
+
+
+%% In detail, for each excluded atomic term, we compute the {\em
+%% entropy} of the corresponding proposition, {\em conditional} on the
+%% active assumptions. The {\em conditional entropy} measure
+%% is higher the more uncertain that proposition is given truth
+%% assignments to propositions that are the subject of active
+%% assumptions. Propositions that in the first place were excluded are
+%% iteratively added to the problem posed to the conditional session in
+%% increasing order according to that measure.
+
 
 %% In particular, we compute the {\em conditional entropy} of
 %% each excluded proposition given the active assumptions. Propositions
