@@ -4,10 +4,10 @@ Planning for agents acting in partially observable environments with
 stochastic actions is extremely computationally
 expensive~\cite{mdp-complexity}. Even relatively small partially
 observable Markov decision problems (POMDPs), represented by tens of
-propositional variables, produce state spaces far larger than existing
+propositional variables, have state spaces far larger than existing
 optimal or close to optimal planners can handle. For the easier
 problem of planning in completely observable stochastic domains, an
-alternative approach has been to use classical sequential planners and
+alternative has been to use classical sequential planners and
 replan when actions have unplanned-for outcomes~\cite{yoon:etal:2007}.
 Execution monitoring tracks properties of the state that determine
 whether further planning is required. For partially observable
@@ -66,12 +66,12 @@ on a mobile robot.
 %% Room a}, which will then lead to replanning by the sequential planner
 %% based on the newly discovered knowledge.
 
-Our switching system is domain independent, taking domain and problem
+Our system is domain independent, taking domain and problem
 descriptions in a first-order declarative language we have developed,
 called the decision-theoretic planning domain definition language
-(DTPDDL). From those descriptions of POMDPs, we automatically
+(DTPDDL). From these descriptions of POMDPs, we automatically
 construct a deterministic model for the sequential planner. That model
-includes operators which correspond to assumptions about the values of
+includes actions which correspond to making assumptions about the values of
 imperfectly known state variables. Assumptions scheduled by the
 sequential system are used to propose a pragmatic abstract
 belief-state space to the decision-theoretic system, and to modify the
@@ -90,6 +90,17 @@ assumptions.
 %% THIS. For the decision-theoretic planner we have implemented our own
 %% forward search in the belief-state space.
 
+
+The switching planner provides important advantages in our
+mobile robot domain. First, the significant source of uncertainty in the
+domain is the unreliability of observations and this approach is
+particularly suited to problems that combine a deterministic task
+planning problem with observations because the decision-theoretic planner
+is only invoked to deal with state uncertainty.
+%determine a characteristic of the underlying state. 
+Secondly, replanning makes the system robust to
+changing objectives and discoveries about the world,
+both of which feature in our domain.
 
 The remainder of the paper proceeds as follows. We begin by describing
 POMDPs with a propositionally factored representation of states and

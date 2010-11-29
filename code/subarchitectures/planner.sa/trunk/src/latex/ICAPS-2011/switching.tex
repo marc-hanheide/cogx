@@ -140,7 +140,7 @@ and $\transProb(\state^\bot, \action, \state^\bot) = 1$.
 
 For sequential planning the operators from the POMDP model are
 available with semantics that accommodate the above abstraction as
-follows. In the deterministic model a proposition $\prop$ can be
+follows: In the deterministic model a proposition $\prop$ can be
 thought to have a ternary interpretation at a state \state, as either
 {\em true}, written $\prop\in\state$, {\em false}, written
 $\prop\not\in\state$, or {\em unspecified}, with a slight abuse of
@@ -153,7 +153,7 @@ in \state\ if $\prop\#\in\state$. In other words, an assumptive action
 must be applied to make a truth assignment to \prop, and then that
 truth assignment could be modified by the DTPDDL domain operators.
 %%
-Lastly, with regards to switching, we have that if $\action$ has a
+Lastly, we have that if $\action$ has a
 precondition that is not true with probability $1$ in the underlying
 belief $\bstate$, then immediately before it is executed blindly, the
 system switches to a contingent session, discussed in the following

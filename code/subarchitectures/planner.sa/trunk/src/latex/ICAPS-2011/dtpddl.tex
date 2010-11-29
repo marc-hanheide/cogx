@@ -1,18 +1,18 @@
 
 The modelling language of choice for planning in probabilistic
 problems is the Probabilistic Planning Domain Definition
-Language~\cite{younes:littman:04,younes:etal:2005}. PPDDL was used in
-all 3 of the International Planning Competitions since 2004. A
-variation on PDDL for describing domains with stochastic actions and
-uncertain starting configurations, PPDDL is a declarative first-order
-language that facilitates factored descriptions of domains and problem
-instances. There are straightforward compilations from problems
-expressed compactly in PPDDL to propositional representations amenable
-to state-of-the-art planning procedures.
+Language~\cite{younes:littman:04,younes:etal:2005}. PPDDL has been
+used in all three of the International Planning Competitions since
+2004. A variation on PDDL for describing domains with stochastic
+actions and uncertain starting configurations, PPDDL is a declarative
+first-order language that facilitates factored descriptions of domains
+and problems. There are straightforward compilations from problems
+expressed in PPDDL to propositional representations amenable
+to state-of-the-art planners.
 
 Because PPDDL cannot model domains that feature partial observability,
-we develop an extension of that language, called Decision-Theoretic
-(DT)PDDL. This can express probabilistic models of the sensing
+we develop an extension we call {\em Decision-Theoretic
+(DT)PDDL}. This can express probabilistic models of the sensing
 consequences of acting, to quantitatively capture unreliability in
 perception. That expressive power is achieved by incorporating
 perceptual analogues of fluent, predicate, and action definitions. In
@@ -70,11 +70,10 @@ $\pp{look-for-object}$ has an effect on the state. That is, its
 execution incurs an instantaneous penalty, $3$, that corresponds to
 the {\em cost} of performing the visual search.\footnote{In PPDDL {\em
 reward} is a {\em reserved word}, and occurs in {\em increased} and
-{\em decreased} terms in operator schemata. In that setting, {\em
-reward} is interpreted as accumulated, whereas in DTPDDL it is
-instantaneous.}
+{\em decreased} terms in operator schemata. In that setting, reward is
+accumulated, whereas in DTPDDL it is instantaneous.}
 
-Completing the example, we model the sensing outcome that results from
+Completing the example, we model the sensing that results from
 instantiating the $\pp{look-for-object}$ operator:
 
 \small
@@ -132,7 +131,7 @@ that contain a single atomic subterm.}
 
 
 \noindent The interpretation of such an expression can be given
-according to a {\em visitation} of terms. An atom is {\em visited} iff
+by a {\em visitation} of terms: An atom is {\em visited} iff
 its conjunctive parent is visited, and a conjunctive term is visited
 iff all its immediate subterms are visited. A probabilistic term is
 visited iff its conjunctive parent is visited, and exactly one of its
@@ -158,10 +157,10 @@ Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 \end{tabular}
 \normalsize
 
-From hereon, in order to simplify the discussion (and implementation)
+From hereon, to simplify the discussion (and implementation)
 we shall restrict our attention to POMDPs with deterministic
-actions. It is worthwhile noting that any POMDP with stochastic
-actions can be compiled into an equivalent deterministic-action POMDP,
+actions. We note that POMDPs with stochastic
+actions can be compiled into equivalent deterministic-action POMDPs,
 where all the original action uncertainty is expressed in the
 starting-state distribution~\cite{ng:Jordan:2000}. In our setting,
 that of finite-horizon planning, such a compilation yields a finite

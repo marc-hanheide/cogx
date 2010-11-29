@@ -10,7 +10,7 @@ state $\state$ as the set of propositions that are true of the
 state. Notationally, we have $\state \subseteq
 \props$. The underlying process
 dynamics are modelled in terms of a finite set of {\em probabilistic
-STRIPS operators}~\cite{boutilier:1996} $\stochActions$ over
+STRIPS operators}~\cite{boutilier:abstraction} $\stochActions$ over
 state-characterising propositions $\propositions$.
 %%
 We say an action $\stochAction \in \stochActions$ is
@@ -93,22 +93,35 @@ the probability that the process is in $\state$ according to
 $\bstate$, and $\bstate_0$ when discussing the starting
 configuration. 
 
-Finally, we make a number of fairly standard assumptions. First, that
-action execution and sensing occurs instantaneously, and that only one
-action can be applied at a plan-step. Second, it can arise that in
-some propositional states an action is applicable, and in others it is
-not. Moreover, a belief-state can assign non-zero probability to
-states where that applicability holds, and states where it does
-not. We differ
-from~\citeauthor{younes:littman:04}~(\citeyear{younes:littman:04}),
-because we forbid the execution of actions that are not applicable in
-any state of the current belief.  Also,
+Finally, we make some fairly standard assumptions. First, that
+action execution and sensing occur instantaneously, and that only one
+action can be applied per plan-step. Second, 
+that
+%it can arise that in
+%some propositional states an action is applicable, and in others it is
+%not. Moreover, a belief-state can assign non-zero probability to
+%states where that applicability holds, and states where it does
+%not. We differ
+%%in situations where an action exists that is applicable in some state 
+%% with non-zero probability, and not applicable in another, we differ
+%from~\citeauthor{younes:littman:04}~(\citeyear{younes:littman:04}),
+%because 
+%%in that
+%we forbid the execution of the action.
+%actions that are not applicable in
+%any state of the current belief.  
+%Also,
 unlike~\citeauthor{hoffmann:brafman:2006}~(\citeyear{hoffmann:brafman:2006}),
-we do incorporate a PPDDL-like default semantics, treating an action
+we incorporate a PPDDL-like default semantics, treating an action
 \stochAction\ executed at $\state_i$ as if it has no effect at
 states $\state$ if $\poss(\stochAction) \not\subseteq
 \state$.
 
+% Mucked around with this, then realised the two sentences were
+% contradictory. If we forbid actions applicable in one state but not
+% another in the belief state, then clearly we aren't using a
+% PPDDL-like semantics.
+%% Doubled comments are stuff I added, then removed.
 
 \subsection{Costs, Rewards, and Belief Revision}
 
@@ -141,11 +154,11 @@ $\obsDist(\state, \action)$. We denote $\obsDist_\observ(\state,
 $\state$. For $\state$ and $\action$ we have $\sum_{\observ \in
 \observations} \obsDist_\observ(\state, \action) = 1$.
 
-Successive state estimation is available by application of Bayes'
+Successive state estimation is by application of Bayes'
 rule.  Taking the current belief $\bstate$ as the {\em prior}, and
 supposing action $\action$ is executed with perceptive outcome
-$\observ$, then the probability that we are in $\state$ in the
-successive belief-state $\bstate'$ is given by:
+$\observ$, the probability that we are in $\state$ in the
+successive belief-state $\bstate'$ is:
 
 \begin{equation}\label{eq:revision}
 \bstate'(\state) = \frac{\obsDist_\observ(\state, \action)
