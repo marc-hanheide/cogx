@@ -14,7 +14,7 @@ problem at hand. More precisely, the trace is an interleaved sequence
 of POMDP actions and {\em assumptive} actions. The latter correspond
 to assumptions the planner makes about the truth value of propositions
 -- e.g. that a box of cornflakes is located in the kitchen at the
-third plan step. These are called {\em applicability} assumptions if
+third plan step. They are called {\em applicability} assumptions if
 the trace includes an action $\action$ that is not applicable with
 probability $1$ at the belief-state
 \bstate\ that the system is projected to be in when \action\ is
@@ -85,10 +85,9 @@ problem, derived from the DTPDDL model, that admits plans which
 correspond to traces.
 
 In a deterministic-action POMDP all the uncertainty in state and
-action is expressed in the $(\pp{:init})$ DTPDDL declaration. Our
-approach uses the structure of that, as it occurs in the problem
-description, to define a set of state-assumptions available to
-sequential planning.
+action is expressed in the $(\pp{:init})$ declaration. Our approach
+uses the structure of that, as it occurs in the problem description,
+to define a set of state-assumptions available to sequential planning.
 %%
 Writing \#\ if the value of a proposition is unspecified, for
 $\pp{DORA}$ we have the following assumptions:
@@ -134,7 +133,7 @@ follows. $\assumptiveS{i}$ can be executed if no $\assumptiveS{j}$,
 $j \neq i$, has been executed from the same probabilistic term, and,
 either $(\pp{probabilistic}~..\prob_i~(T_i)..)$ is in the root
 conjunct, or it occurs in $T_k$ for some executed
-$\assumptiveS{k}$. Also, a distinct assumption about a proposition
+$\assumptiveS{k}$. Also, an assumption about a proposition
 $\prop$ can only be made once, and must be sequenced before any POMDP
 actions that have $\prop$ in their precondition or effect.
 %%
@@ -146,17 +145,17 @@ truth assignment can be modified by the DTPDDL domain operators.
 Executing $\assumptiveS{i}$ in $\state$ effects a transition to a
 successor state $\state^{T_i}$ with probability $\prob_i$, and
 $\state^\bot$ with probability $1 - \prob_i$. Here, $\state^{T_i}$ is
-the union of $\state$ with atomic terms from $T_i$ and the proposition
-denoting the undefined fact is deleted. For example, if the action
-adds $(=(\pp{is-in}~\pp{box})~\pp{office})$, then it must delete
-$(=(\pp{is-in}~\pp{box})~\#)$. State $\state^\bot$ is an added sink,
-where $\forall\action$ $\reward(\state^\bot, \action) = 0$ and
+the union of $\state$ with atomic terms from $T_i$ with the
+proposition denoting the undefined fact is deleted. For example, if
+the action adds $(=(\pp{is-in}~\pp{box})~\pp{office})$, then it must
+delete $(=(\pp{is-in}~\pp{box})~\#)$. State $\state^\bot$ is an added
+sink, where $\forall\action$ $\reward(\state^\bot, \action) = 0$ and
 $\transProb(\state^\bot, \action, \state^\bot) = 1$.
 %%
 Lastly, we have that if $\action$ has a precondition that is not true
 with probability $\theta$, a given threshold, in the underlying belief
-$\bstate$, then immediately before it is executed blindly, the system
-switches to a contingent session, discussed in the following section.
+$\bstate$, then immediately before it is executed blindly the system
+switches to a contingent session (described below).
 
 
 %% For sequential planning the operators from the POMDP model are
@@ -243,14 +242,15 @@ $\assumptiveDT{i}$ so that $\forall\state\in\states$:
 \[
 \reward(\state, \assumptiveDT{i}) = \bigg\{ \begin{array}{ll}
 \$(T_i) & \pp{if}~\;\;T_i \not\subseteq \state \\
--\$(T_i) & \pp{otherwise} \\
+\hat\$(T_i) & \pp{otherwise} \\
 \end{array}
 \]
 
-\noindent where $\$(T_i)$ is a positive numeric quantity which
-captures the reward the agent receives for correctly rejecting a
-false assumption. The added dual actions are propositionally trivial
--- i.e., $\forall\state\in\states$ $\poss(\assumptiveDT{i})
+\noindent where $\$(T_i)$ (resp. $\hat\$(T_i)$) is a positive
+(negative) numeric quantity which captures the utility the agent
+receives for correctly (incorrectly) rejecting a false assumption. The
+added dual actions are propositionally trivial -- i.e.,
+$\forall\state\in\states$ $\poss(\assumptiveDT{i})
 \subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  
 %%
 In order to reduce the number of possible rejections we omit
@@ -285,7 +285,7 @@ $\actions.\poss(\switchAction)$ with the reward property:
 \[
 \reward(\state, \actions.\poss(\switchAction)) = \bigg\{ \begin{array}{ll}
 \$(\poss(\switchAction)) & \pp{if}~\;\; \poss(\switchAction) \subseteq \state \\
--\$(\poss(\switchAction)) & \pp{otherwise} \\
+\hat\$(\poss(\switchAction)) & \pp{otherwise} \\
 \end{array}
 \]
 
@@ -297,10 +297,14 @@ replan with $\bstate_0$ equal to the underlying
 belief-state. Otherwise, if $\actions.\poss(\switchAction)$ is
 executed, then the current sequential plan is executed until further
 sensing is scheduled, or to completion. Lastly, we note that in our
-project the rewards, i.e., function $\$:2^\propositions\to\Re$, for
-the POMDP posed to the contingent session are sourced from a
-motivational component of our robotic architecture. We make no
-assumptions here about how they are derived.
+project the rewards, i.e., functions
+$\$,\hat\$:2^\propositions\to\Re$, for the POMDP posed to the
+contingent session are sourced from a motivational component of our
+robotic architecture. For this paper we take $\hat\$(x)= - \$(x)(1 -
+p) / p$, where $\$(x)$ is a given constant.
+
+%%  We make no assumptions here about how they are
+%% derived.
 
 The starting belief-state for the abstract process is given in terms
 of a {\em relaxed} $(\pp{:init})$ declaration.  We first construct a
@@ -339,10 +343,10 @@ actions from the DTPDDL problem description.
 
 In a second step, we iteratively refine the relaxed declaration by
 adding terms from the original statement of $(\pp{:init})$ while the
-number of abstract states that occur with non-zero probability
-according to that refined declaration remains of a practicable
-size. In detail, for each excluded atomic term, we compute the {\em
-entropy} of the active assumptions, {\em conditional} on the
+number of abstract states in $\bstate_0$ that occur with non-zero
+probability according to that refined declaration remains of a
+practicable size. In detail, for each excluded atomic term, we compute
+the {\em entropy} of the active assumptions, {\em conditional} on the
 corresponding proposition. Loosely speaking, the {\em conditional
 entropy} measure is higher the more uncertain those assumptions are
 given truth assignment to the proposition. Propositions that in the

@@ -60,34 +60,35 @@ can move around the rooms via connections between places given by the
   category} (e.g. kitchen, office, living room) and depending on this
 category, objects are placed inside the rooms.
 
-The robot can find out if an object is at a certain place by executing
-the {\tt look-for-object} action. Moreover, the contents of a room
-indicates its category, and certain objects are more likely to be
-located in rooms of certain categories. For example, a box of
-cornflakes is more likely to be located in the kitchen than the
-office. The {\tt look-for-object} might result in a positive
-perception if the object is there. An instantaneous positive detection
-of the object is not proof positive that it is there. Also, some
-objects are harder to detect than others. Also, Additionally, if the
-robot is in the presence of a human, it can ask what type of room they
-are currently in, however conducting a dialogue is more costly than
-running a vision algorithm (cost of 8 vs costs of 3).
+The robot can look for an object at a place by executing a {\tt
+  look-for-object} action. Moreover, the contents of a room indicate
+its category, because certain objects are more likely to be located in
+rooms of particular categories. For example, a box of cornflakes is
+more likely to be located in the kitchen than the office. Executing
+{\tt look-for-object} results in a noisy sensing outcome, sometimes
+indicating a positive perception if the object is there. Here, some
+objects are harder to detect than others. Lastly, if the robot is in
+the presence of a human, it can ask what type of room it is currently
+in, however conducting a dialogue is more costly than running a vision
+algorithm (cost of 8 vs costs of 3).
 
-We perform experiments on tasks of several sizes. The robot's
-objective is to find one or more objects and report back their
-position to a person. In order to determine the impact of sensor
-reliability in a comparison with the baseline, we also run tests on
-identical problems but changed the sensor model for the target
-objects: the probability for perceiving the object if it was there
-went from 0.9 in the easiest case to 0.65 and 0.4 in the average and
-hard cases respectively. In addition, we test how our system performs
-in tasks requiring indirect sensing. Here, we gave the planner rewards
-for visiting a certain type of room (e.g. kitchen or office). We did
-not place any humans in those scenarios, so the only way of
-determining the room category is by looking for objects typical for
-that room type. As this indirect reasoning is a tasks that cannot be
-performed by the continual planner alone, we did not run the baseline
-system on those problems.
+%%  Therefore, an instantaneous positive detection of an object is
+%% not proof positive of it being there.
+
+We perform experiments on tasks of several sizes. The objective is to
+find one or more objects and report their position to the user. In
+order to determine the impact of the reliability of sensing in a
+comparison with the baseline, we run tests on identical problems but
+changed the sensor model for the target objects: the probability for
+perceiving the object if it was there went from 0.9 in the easiest
+case to 0.65 and 0.4 in the average and hard cases respectively. In
+addition, we test how our system performs in tasks requiring indirect
+sensing. Here, we gave the planner rewards for visiting a certain type
+of room (e.g. kitchen or office). We did not place any humans in those
+scenarios, so the only way of determining the room category is by
+looking for objects typical for that room type. As this indirect
+reasoning is a tasks that cannot be performed by the continual planner
+alone, we did not run the baseline system on those problems.
 
 
 
