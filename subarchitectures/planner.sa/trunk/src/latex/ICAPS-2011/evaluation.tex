@@ -39,10 +39,10 @@ resulting belief-state.
 %% will just execute one sensing action -- assuming that this action will
 %% confirm its assumption.
 
-To test our approach we use a robot exploration domain based on a that
-from our physical robotic system. Here, a robot is exploring an office
-or living environment, and trying to report the locations of objects
-to their owner.
+To test our approach we use a robot exploration domain based on a
+scenario from our physical robotic system. Here, a robot is
+exploring an office or living environment, and trying to report the
+locations of objects to their owner.
 
 \begin{figure}[h]
   \centering
@@ -66,11 +66,11 @@ indicates its category, and certain objects are more likely to be
 located in rooms of certain categories. For example, a box of
 cornflakes is more likely to be located in the kitchen than the
 office. The {\tt look-for-object} might result in a positive
-perception if the object is there. Some objects are harder to detect
-than others, and an instantaneous positive detection of the object is
-not proof positive that it is there. Additionally, if the robot is in
-the presence of a human, it can ask what type of room they are
-currently in, however conducting a dialogue is more costly than
+perception if the object is there. An instantaneous positive detection
+of the object is not proof positive that it is there. Also, some
+objects are harder to detect than others. Also, Additionally, if the
+robot is in the presence of a human, it can ask what type of room they
+are currently in, however conducting a dialogue is more costly than
 running a vision algorithm (cost of 8 vs costs of 3).
 
 We perform experiments on tasks of several sizes. The robot's
