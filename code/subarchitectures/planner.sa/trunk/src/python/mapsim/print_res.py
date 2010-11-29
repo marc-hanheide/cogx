@@ -3,15 +3,21 @@ import sys, itertools
 from collections import defaultdict
 
 pfile = sys.argv[1]
-if len(sys.argv) > 2:
-    confs = sys.argv[2:]
-else:
-    confs = []
+add_args = []
+confs = []
+for i,a in enumerate(sys.argv[2:]):
+    if a == "--":
+        add_args = sys.argv[i+2:]
+        break
+    confs.append(a)
 
 pf = open(pfile)
 pf.readline()
 
 configs = {}
+configs_common = {}
+configs_succ = {}
+configs_common_succ = {}
 
 def extract_dict(line):
     try:
@@ -22,6 +28,8 @@ def extract_dict(line):
     return sdict
 
 cf_order = confs[:]
+
+statsdict = {}
 
 while True:
     cfline = pf.readline()
@@ -34,21 +42,27 @@ while True:
     cheader, count = cfline.split()
     assert cheader == "count"
     count = int(count)
+    stats = {}
     for i in xrange(count):
-        pf.readline()
+        seed = int(pf.readline().strip())
+        stats[seed] = extract_dict(pf.readline())
         
     avg = extract_dict(pf.readline())
+    avg_common = extract_dict(pf.readline())
+    avg_succ = extract_dict(pf.readline())
+    avg_common_succ = extract_dict(pf.readline())
     if not confs or conf in confs:
         if not confs:
             cf_order.append(conf)
+        statsdict[conf] = stats
         configs[conf] = avg
-    
+        configs_common[conf] = avg_common
+        configs_succ[conf] = avg_succ
+        configs_common_succ[conf] = avg_common_succ
 
 if not confs:
     cf_order = sorted(cf_order)
     print map(str, cf_order)
-
-print "results for", pfile
 
 fields = [("cost", "total_plan_cost", "%5d"),
           ("actions", "sensor_actions_executed + physical_actions_executed", "%5d"),
@@ -59,19 +73,107 @@ fields = [("cost", "total_plan_cost", "%5d"),
           ("success", "successful_runs", "%5.2f"),
           ("#", "sample_count", "%5d")]
 
-def get_field(f, c, format):
+def calc_averages(stats, filters, common_filters):
+    def eval_dict(d, f):
+        locals().update(d)
+        return eval(f)
+
+    no_data_confs = set()
+    common_seeds = None
+    if common_filters:
+        for conf, s in stats.iteritems():
+            seeds = set()
+            for seed, d in s.iteritems():
+                if all(eval_dict(d, f) for f in common_filters):
+                    seeds.add(seed)
+            if not seeds:
+                no_data_confs.add(conf)
+            elif common_seeds is None:
+                common_seeds = seeds
+            else:
+                common_seeds &= seeds
+
+    cavgs = {}
+    for conf, s in stats.iteritems():
+        if conf in no_data_confs:
+            cavgs[conf] = {}
+            continue
+        averages = defaultdict(lambda: 0)
+        count = 0
+        for seed, d in s.iteritems():
+            if common_seeds and seed not in common_seeds:
+                continue
+            if all(eval_dict(d, f) for f in filters):
+                for key, value in d.iteritems():
+                    averages[key] += value
+                count += 1
+        if count == 0:
+            cavgs[conf] = {'sample_count' : 0}
+            continue
+        
+        for key, value in averages.iteritems():
+            averages[key] = float(value) / count
+        averages['sample_count'] = count
+        cavgs[conf] = averages
+    return cavgs
+
+def get_field(f, c, format, d):
     if c == '-':
         return "|"
-    if not c in configs:
+    if not c in d:
         return "--"
         
-    locals().update(configs[c])
+    locals().update(d[c])
     return format % eval(f)
 
-count = 0
-for fname, f, format in fields:
-    #for s_tup in itertools.izip_longest(*file_stats, fillvalue={}):
-    #for c in cf_order:
-    results = [get_field(f, c, format) for c in cf_order]
-    print "%10s: " % fname + " ".join(results)
+def print_set(fields, filters=[], common_filters=[]):
+    cavgs = calc_averages(statsdict, filters, common_filters)
+    
+    for fname, f, format in fields:
+        #for s_tup in itertools.izip_longest(*file_stats, fillvalue={}):
+        #for c in cf_order:
+        results = [get_field(f, c, format, cavgs) for c in cf_order]
+        print "%10s: " % fname + " ".join(results)
+
+def print_set_gnuplot(fields, filters=[], common_filters=[]):
+    cavgs = calc_averages(statsdict, filters, common_filters)
+    for c in cf_order:
+        print c, " ".join(get_field(f, c, format, cavgs) for fname, f, format in fields)
+
+if "gnu" in add_args:
+    fields = [("cp time", "planning_time", "%5.1f"),
+              ("dt time", "dt_planning_time", "%5.1f"),
+              ("success", "successful_runs", "%5.4f"),
+              ("cost", "total_plan_cost", "%5d"),
+              ]
+    print_set_gnuplot(fields)
+else:
+    print "results for", pfile
+    print_set(fields)
+    print
+    print_set(fields, common_filters=["True"])
+    # print_set(fields, common_filters=["successful_runs > 0"])
+    # print
+    # print_set(fields, common_filters=["successful_runs == 0"])
         
+# print
+# for fname, f, format in fields:
+#     #for s_tup in itertools.izip_longest(*file_stats, fillvalue={}):
+#     #for c in cf_order:
+#     results = [get_field(f, c, format, configs_common) for c in cf_order]
+#     print "%10s: " % fname + " ".join(results)
+
+# print
+# for fname, f, format in fields:
+#     #for s_tup in itertools.izip_longest(*file_stats, fillvalue={}):
+#     #for c in cf_order:
+#     results = [get_field(f, c, format, configs_succ) for c in cf_order]
+#     print "%10s: " % fname + " ".join(results)
+
+# print
+# for fname, f, format in fields:
+#     #for s_tup in itertools.izip_longest(*file_stats, fillvalue={}):
+#     #for c in cf_order:
+#     results = [get_field(f, c, format, configs_common_succ) for c in cf_order]
+#     print "%10s: " % fname + " ".join(results)
+
